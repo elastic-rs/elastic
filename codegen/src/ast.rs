@@ -1,5 +1,5 @@
 use std::collections::BTreeMap;
-use serde::{ Serialize, Serializer, Deserialize, Deserializer };
+use serde::{ Serializer, Deserializer };
 
 #[derive(Serialize, Deserialize)]
 pub struct ApiEndpoint {

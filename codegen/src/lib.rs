@@ -8,16 +8,11 @@ extern crate regex;
 pub mod parse;
 pub mod ast;
 
-use ast::*;
-use parse::*;
-
-use std::fs::File;
-
 #[test]
-fn can_prase_from_file() {
-	let mut f = File::open("api/bulk.json").unwrap();
+fn can_parse_from_file() {
+	let mut f = std::fs::File::open("api/bulk.json").unwrap();
 
-	let endpoint = parse::from_reader(&mut f).unwrap();
+	let _ = parse::from_reader(&mut f).unwrap();
 }
 
 #[test]

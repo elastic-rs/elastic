@@ -6,12 +6,10 @@ use serde_json::value;
 use regex::Regex;
 use ::ast::ApiEndpoint;
 
-pub fn from_reader<R>(rdr: &mut R) -> Result<ApiEndpoint, String> where R: Read {
+pub fn from_reader<R>(rdr: &mut R) -> Result<ApiEndpoint, &str> where R: Read {
 	//Read the file to string
 	let mut json = String::new();
-	rdr.read_to_string(&mut json);
-
-	//We need to replace all occurences of '"type" :' and '{type}' because we can't deserialise fields of that name
+	let _ = rdr.read_to_string(&mut json).unwrap();
 	json = replace_type_fields(&mut json);
 
 	let root: Value = serde_json::from_str(&json[..]).unwrap();
@@ -23,11 +21,11 @@ pub fn from_reader<R>(rdr: &mut R) -> Result<ApiEndpoint, String> where R: Read 
 
 			//Deserialise the api ast and set the name
 			let mut endpoint = value::from_value::<ApiEndpoint>(tree.clone()).unwrap();
-			endpoint.name = Some(name.to_owned());
+			endpoint.name = Some(name.clone());
 
 			Ok(endpoint)
 		},
-		_ => Err("unexpected format".to_string())
+		_ => Err("unexpected format")
 	}
 }
 
