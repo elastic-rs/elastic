@@ -2,6 +2,7 @@ use std::marker::PhantomData;
 use chrono;
 use chrono::offset::TimeZone;
 use chrono::{ UTC };
+use serde::{ Serialize, Serializer };
 
 pub type DT = chrono::DateTime<UTC>;
 
@@ -65,6 +66,13 @@ impl <T: Format> Default for DateTime<T> {
 			phantom: PhantomData
 		}
 	}
+}
+
+impl <T: Format> Serialize for DateTime<T> {
+	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where S: Serializer
+    {
+        serializer.visit_str(&self.to_string()[..])
+    }
 }
 
 pub fn now<T: Format>() -> DateTime<T> {

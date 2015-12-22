@@ -1,9 +1,14 @@
+#![feature(custom_derive, custom_attribute, plugin)]
+#![plugin(serde_macros)]
+
 extern crate serde;
+extern crate serde_json;
 extern crate chrono;
 extern crate elastic_types;
 
 use chrono::Datelike;
 use chrono::offset::TimeZone;
+use serde::{ Serialize };
 use elastic_types::date::*;
 
 //MyType -> MyTypeFmtd
@@ -11,13 +16,14 @@ use elastic_types::date::*;
 //2015/05/13 -> 2015/05/13 00:00:00
 
 //Unexpanded
+#[derive(Default, Serialize)]
 struct MyType {
 	//#[es_date_format("yyyy/mm/dd", "dd/mm/yyyy")]
 	pub date: DateTime
 }
 
 //Expanded
-#[derive(Default)]
+#[derive(Default, Serialize)]
 struct MyTypeFmtd {
 	pub date: DateTime<MyType_date_fmt>
 }
@@ -60,4 +66,19 @@ fn dates_with_multi_formats_should_use_first_successful() {
 	assert_eq!(2015, dt.value.year());
 	assert_eq!(5, dt.value.month());
 	assert_eq!(13, dt.value.day());
+}
+
+#[test]
+fn serialised_dates_use_specified_format_when_serializing() {
+	let my_type = MyType {
+		date: DateTime::new(
+			chrono::UTC.datetime_from_str(
+				"13/05/2015 00:00:00", "%d/%m/%Y %H:%M:%S"
+			).unwrap()
+		)
+	};
+
+	let ser = serde_json::to_string(&my_type).unwrap();
+
+	assert_eq!(r#"{"date":"2015-05-13T00:00:00Z"}"#, ser);
 }
