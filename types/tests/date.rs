@@ -9,7 +9,8 @@ extern crate elastic_types;
 use chrono::Datelike;
 use chrono::offset::TimeZone;
 use serde::{ Serialize, Deserialize };
-use elastic_types::date::*;
+use elastic_types::date::{ DateTime, Format };
+use elastic_types::date::format::{ BasicDateTime, BASIC_DATE_TIME };
 
 //MyType -> MyTypeFmtd
 //yyyy/mm/dd -> %Y/%m/%d %H:%M:%S
@@ -28,20 +29,26 @@ struct MyTypeFmtd {
 	pub date: DateTime<MyType_date_fmt>
 }
 
+const MYTYPE_DATE_FMT_1: &'static str = "%Y/%m/%d %H:%M:%S";
+const MYTYPE_DATE_FMT_2: &'static str = "%d/%m/%Y %H:%M:%S";
+
 #[allow(non_camel_case_types)]
 struct MyType_date_fmt;
 impl Format for MyType_date_fmt {
 	fn fmt() -> Vec<&'static str> {
-		vec!["%Y/%m/%d %H:%M:%S", "%d/%m/%Y %H:%M:%S"]
+		vec![MYTYPE_DATE_FMT_1, MYTYPE_DATE_FMT_2]
+	}
+	fn es_fmt() -> &'static str {
+		"yyyy/MM/dd HH:mm:ss||dd/MM/yyyy HH:mm:ss"
 	}
 }
 
 #[test]
 fn dates_without_format_specified_use_default() {
 	let _dt = chrono::UTC::now();
-	let expected = _dt.format("%Y/%m/%d %H:%M:%S").to_string();
+	let expected = _dt.format(BASIC_DATE_TIME).to_string();
 
-	let dt = DateTime::<MyType_date_fmt>::new(_dt.clone());
+	let dt = DateTime::<BasicDateTime>::new(_dt.clone());
 	let actual = dt.to_string();
 
 	assert_eq!(expected, actual);
@@ -50,7 +57,7 @@ fn dates_without_format_specified_use_default() {
 #[test]
 fn dates_with_format_specified_should_use_first_provided() {
 	let _dt = chrono::UTC.datetime_from_str("13/05/2015 00:00:00", "%d/%m/%Y %H:%M:%S").unwrap();
-	let expected = _dt.format("%Y/%m/%d %H:%M:%S").to_string();
+	let expected = _dt.format(MYTYPE_DATE_FMT_1).to_string();
 
 	let dt = DateTime::<MyType_date_fmt>::new(_dt.clone());
 	let actual = dt.to_string();
@@ -61,7 +68,7 @@ fn dates_with_format_specified_should_use_first_provided() {
 #[test]
 fn dates_with_multi_formats_should_use_first_successful() {
 	//Match %d/%m/%Y
-	let dt = DateTime::<MyType_date_fmt>::parse("13/05/2015 00:00:00");
+	let dt = DateTime::<MyType_date_fmt>::parse("13/05/2015 00:00:00").unwrap();
 
 	assert_eq!(2015, dt.value.year());
 	assert_eq!(5, dt.value.month());
@@ -73,19 +80,19 @@ fn dates_use_specified_format_when_serialising() {
 	let my_type = MyType {
 		date: DateTime::new(
 			chrono::UTC.datetime_from_str(
-				"13/05/2015 00:00:00", "%d/%m/%Y %H:%M:%S"
+				"13/05/2015 00:00:00", MYTYPE_DATE_FMT_2
 			).unwrap()
 		)
 	};
 
 	let ser = serde_json::to_string(&my_type).unwrap();
 
-	assert_eq!(r#"{"date":"2015-05-13T00:00:00Z"}"#, ser);
+	assert_eq!(r#"{"date":"20150513T000000.000Z"}"#, ser);
 }
 
 #[test]
 fn dates_use_specified_format_when_deserialising() {
-	let my_type: MyType = serde_json::from_str(r#"{"date":"2015-05-13T00:00:00Z"}"#).unwrap();
+	let my_type: MyType = serde_json::from_str(r#"{"date":"20150513T000000.000Z"}"#).unwrap();
 
 	assert_eq!(2015, my_type.date.value.year());
 	assert_eq!(5, my_type.date.value.month());

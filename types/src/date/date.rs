@@ -1,17 +1,20 @@
+use std::error::Error;
 use std::marker::PhantomData;
 use chrono;
 use chrono::offset::TimeZone;
 use chrono::{ UTC };
 use serde;
 use serde::{ Serialize, Deserialize, Serializer, Deserializer };
+use super::Format;
 
 pub type DT = chrono::DateTime<UTC>;
 
 #[derive(Clone)]
-pub struct DateTime<T: Format = StrictDateOptionalTime> {
+pub struct DateTime<T: Format = super::format::BasicDateTime> {
 	pub value: DT,
 	phantom: PhantomData<T>
 }
+
 impl <T: Format> DateTime<T> {
 	pub fn new(date: DT) -> DateTime<T> {
 		DateTime {
@@ -20,30 +23,29 @@ impl <T: Format> DateTime<T> {
 		}
 	}
 
-	pub fn parse(date: &str) -> DateTime<T> {
-		//Get the formats, we need to find the first positive match
+	//TODO: Add proper error type for accumulating format failures
+	pub fn parse(date: &str) -> Result<DateTime<T>, String> {
 		let fmts = T::fmt();
 
-		let mut dt: Option<DT> = None;
+		let mut result: Result<DateTime<T>, String> = Err(String::new());
 		for fmt in fmts {
-			match chrono::UTC.datetime_from_str(date, fmt) {
+			match chrono::UTC.datetime_from_str(date, fmt).map_err(|err| format!("{}", err).to_string()) {
 				Ok(parsed) => {
-					dt = Some(
-						chrono::DateTime::from_utc(
-							parsed.naive_utc(), 
-							chrono::UTC
+					result = Ok(
+						DateTime::<T>::new(
+							chrono::DateTime::from_utc(
+								parsed.naive_utc(), 
+								chrono::UTC
+							)
 						)
 					);
 					break;
 				},
-				Err(_) => ()
+				Err(e) => result = Err(e)
 			}
 		}
 
-		match dt {
-			Some(dt) => DateTime::<T>::new(dt),
-			None => DateTime::<T>::default()
-		}
+		result
 	}
 }
 
@@ -101,39 +103,11 @@ impl <T: Format> serde::de::Visitor for DateTimeVisitor<T> {
 	type Value = DateTime<T>;
 
 	fn visit_str<E>(&mut self, v: &str) -> Result<DateTime<T>, E> where E: serde::de::Error {
-		Ok(DateTime::<T>::parse(v))
+		let result = DateTime::<T>::parse(v);
+		result.map_err(|err| E::syntax(&format!("{}", err)))
 	}
 }
 
 pub fn now<T: Format>() -> DateTime<T> {
 	DateTime::<T>::default()
-}
-
-//Date formats
-pub trait Format {
-	fn fmt() -> Vec<&'static str>;
-}
-
-#[derive(Clone)]
-pub struct EpochSecond;
-impl Format for EpochSecond {
-	fn fmt() -> Vec<&'static str> {
-		vec!["%s"]
-	}
-}
-
-#[derive(Clone)]
-pub struct DateOptionalTime;
-impl Format for DateOptionalTime {
-	fn fmt() -> Vec<&'static str> {
-		vec!["%Y-%m-%dT%H:%M:%SZ"]
-	}
-}
-
-#[derive(Clone)]
-pub struct StrictDateOptionalTime;
-impl Format for StrictDateOptionalTime {
-	fn fmt() -> Vec<&'static str> {
-		vec!["%Y-%m-%dT%H:%M:%SZ"]
-	}
 }
