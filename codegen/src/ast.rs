@@ -2,7 +2,7 @@ use std::collections::BTreeMap;
 use serde::{ Serialize };
 
 #[derive(Serialize, Deserialize)]
-pub struct ApiEndpoint {
+pub struct SyntaxTree {
 	pub name: Option<String>,
 	pub documentation: String,
 	methods: Vec<String>,
@@ -10,7 +10,7 @@ pub struct ApiEndpoint {
 	pub url: Url
 }
 
-impl ApiEndpoint {
+impl SyntaxTree {
 	pub fn get_methods(&self) -> Vec<HttpMethod> {
 		self.methods.iter().map(|method| HttpMethod::parse(&method[..])).collect()
 	}

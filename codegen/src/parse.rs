@@ -3,9 +3,9 @@ extern crate serde_json;
 use std::io::Read;
 use serde_json::Value;
 use serde_json::value;
-use ::ast::ApiEndpoint;
+use ::ast::SyntaxTree;
 
-pub fn from_reader<R>(rdr: &mut R) -> Result<ApiEndpoint, &str> where R: Read {
+pub fn from_reader<R>(rdr: &mut R) -> Result<SyntaxTree, &'static str> where R: Read {
 	//Read the file to string
 	let mut json = String::new();
 	let _ = rdr.read_to_string(&mut json).unwrap();
@@ -18,7 +18,7 @@ pub fn from_reader<R>(rdr: &mut R) -> Result<ApiEndpoint, &str> where R: Read {
 			let (name, tree) = data.iter().next().unwrap();
 
 			//Deserialise the api ast and set the name
-			let mut endpoint = value::from_value::<ApiEndpoint>(tree.clone()).unwrap();
+			let mut endpoint = value::from_value::<SyntaxTree>(tree.clone()).unwrap();
 			endpoint.name = Some(name.clone());
 
 			Ok(endpoint)
