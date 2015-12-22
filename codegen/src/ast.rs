@@ -5,9 +5,65 @@ use serde::{ Serialize };
 pub struct ApiEndpoint {
 	pub name: Option<String>,
 	pub documentation: String,
-	pub methods: Vec<String>,
+	methods: Vec<String>,
 	pub body: Option<Body>,
 	pub url: Url
+}
+
+impl ApiEndpoint {
+	pub fn get_methods(&self) -> Vec<HttpMethod> {
+		self.methods.iter().map(|method| HttpMethod::parse(&method[..])).collect()
+	}
+}
+
+#[derive(PartialEq)]
+pub enum HttpMethod {
+	Head,
+	Get,
+	Post,
+	Put,
+	Patch,
+	Delete,
+	Other(String)
+}
+
+impl HttpMethod {
+	pub fn parse(_method: &str) -> HttpMethod {
+		match _method {
+			"HEAD" => HttpMethod::Head,
+			"GET" => HttpMethod::Get,
+			"POST" => HttpMethod::Post,
+			"PUT" => HttpMethod::Put,
+			"PATCH" => HttpMethod::Patch,
+			"DELETE" => HttpMethod::Delete,
+			m => HttpMethod::Other(m.to_string())
+		}
+	}
+}
+
+#[derive(PartialEq)]
+pub enum Type {
+	Bool,
+	Num,
+	Str,
+	Time,
+	List,
+	Enum(Vec<String>),
+	Other(String)
+}
+
+impl Type {
+	pub fn parse(_type: &str, opts: Option<Vec<String>>) -> Type {
+		match _type {
+			"boolean" => Type::Bool,
+			"number" => Type::Num,
+			"string" => Type::Str,
+			"time" => Type::Time,
+			"list" => Type::List,
+			"enum" => Type::Enum(opts.unwrap()),
+			t => Type::Other(t.to_string())
+		}
+	}
 }
 
 #[derive(Serialize, Deserialize)]
@@ -28,14 +84,27 @@ pub struct Url {
 #[derive(Serialize, Deserialize)]
 pub struct Part {
 	#[serde(rename="type")]
-	pub field_type: String,
+	_type: String,
+	pub options: Option<Vec<String>>,
 	pub description: String
+}
+
+impl Part {
+	pub fn get_type(&self) -> Type {
+		Type::parse(&self._type[..], self.options.clone())
+	}
 }
 
 #[derive(Serialize, Deserialize)]
 pub struct Param {
 	#[serde(rename="type")]
-	pub field_type: String,
+	_type: String,
 	pub description: String,
 	pub options: Option<Vec<String>>
+}
+
+impl Param {
+	pub fn get_type(&self) -> Type {
+		Type::parse(&self._type[..], self.options.clone())
+	}
 }
