@@ -62,7 +62,8 @@ fn can_parse_type() {
 		Type { name: "time", opts: None },
 		Type { name: "list", opts: None },
 		Type { name: "number", opts: None },
-		Type { name: "enum", opts: Some(vec!("OpA".to_string(), "OpB".to_string(), "OpC".to_string())) }
+		Type { name: "enum", opts: Some(vec!("OpA".to_string(), "OpB".to_string(), "OpC".to_string())) },
+		Type { name: "stuff", opts: None }
 	);
 
 	let expected_types = vec!(
@@ -71,7 +72,8 @@ fn can_parse_type() {
 		ast::Type::Time,
 		ast::Type::List,
 		ast::Type::Num,
-		ast::Type::Enum(vec!("OpA".to_string(), "OpB".to_string(), "OpC".to_string()))
+		ast::Type::Enum(vec!("OpA".to_string(), "OpB".to_string(), "OpC".to_string())),
+		ast::Type::Other("stuff".to_string())
 	);
 
 	let types: Vec<ast::Type> = raw_types.iter().map(|t| ast::Type::parse(t.name, t.opts.clone())).collect();
