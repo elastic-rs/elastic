@@ -47,6 +47,8 @@ pub enum Type {
 	Num,
 	Str,
 	Time,
+	Bin,
+	Geo,
 	List,
 	Enum(Vec<String>),
 	Other(String)
@@ -56,9 +58,11 @@ impl Type {
 	pub fn parse(_type: &str, opts: Option<Vec<String>>) -> Type {
 		match _type {
 			"boolean" => Type::Bool,
-			"number" => Type::Num,
+			"number"|"long"|"integer"|"short"|"byte"|"double"|"float" => Type::Num,
 			"string" => Type::Str,
-			"time" => Type::Time,
+			"time"|"date" => Type::Time,
+			"binary" => Type::Bin,
+			"geo_point"|"geo_shape" => Type::Geo,
 			"list" => Type::List,
 			"enum" => Type::Enum(opts.unwrap()),
 			t => Type::Other(t.to_string())
