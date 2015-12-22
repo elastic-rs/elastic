@@ -1,5 +1,4 @@
 use std::marker::PhantomData;
-use std::str::FromStr;
 use chrono;
 use chrono::offset::TimeZone;
 use chrono::{ UTC };
@@ -35,7 +34,7 @@ impl <T: Format> DateTime<T> {
 					);
 					break;
 				},
-				Err(e) => ()
+				Err(_) => ()
 			}
 		}
 
@@ -74,6 +73,22 @@ pub fn now<T: Format>() -> DateTime<T> {
 
 pub trait Format {
 	fn fmt() -> Vec<&'static str>;
+}
+
+#[derive(Clone)]
+pub struct EpochSecond;
+impl Format for EpochSecond {
+	fn fmt() -> Vec<&'static str> {
+		vec!["%s"]
+	}
+}
+
+#[derive(Clone)]
+pub struct DateOptionalTime;
+impl Format for DateOptionalTime {
+	fn fmt() -> Vec<&'static str> {
+		vec!["%Y-%m-%dT%H:%M:%SZ"]
+	}
 }
 
 #[derive(Clone)]
