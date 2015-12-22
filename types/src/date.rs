@@ -69,6 +69,7 @@ impl <T: Format> Default for DateTime<T> {
 	}
 }
 
+//Serialize
 impl <T: Format> Serialize for DateTime<T> {
 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where S: Serializer
     {
@@ -76,6 +77,7 @@ impl <T: Format> Serialize for DateTime<T> {
     }
 }
 
+//Deserialize
 impl <T: Format> Deserialize for DateTime<T> {
 	fn deserialize<D>(deserializer: &mut D) -> Result<DateTime<T>, D::Error> where D: Deserializer,
     {
@@ -107,6 +109,7 @@ pub fn now<T: Format>() -> DateTime<T> {
 	DateTime::<T>::default()
 }
 
+//Date formats
 pub trait Format {
 	fn fmt() -> Vec<&'static str>;
 }
