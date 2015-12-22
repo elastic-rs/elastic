@@ -2,7 +2,8 @@ use std::marker::PhantomData;
 use chrono;
 use chrono::offset::TimeZone;
 use chrono::{ UTC };
-use serde::{ Serialize, Serializer };
+use serde;
+use serde::{ Serialize, Deserialize, Serializer, Deserializer };
 
 pub type DT = chrono::DateTime<UTC>;
 
@@ -73,6 +74,33 @@ impl <T: Format> Serialize for DateTime<T> {
     {
         serializer.visit_str(&self.to_string()[..])
     }
+}
+
+impl <T: Format> Deserialize for DateTime<T> {
+	fn deserialize<D>(deserializer: &mut D) -> Result<DateTime<T>, D::Error> where D: Deserializer,
+    {
+        deserializer.visit_str(DateTimeVisitor::<T>::default())
+    }
+}
+
+struct DateTimeVisitor<T: Format> {
+	phantom: PhantomData<T>
+}
+
+impl <T: Format> Default for DateTimeVisitor<T> {
+	fn default() -> DateTimeVisitor<T> {
+		DateTimeVisitor::<T> {
+			phantom: PhantomData
+		}
+	}
+}
+
+impl <T: Format> serde::de::Visitor for DateTimeVisitor<T> {
+	type Value = DateTime<T>;
+
+	fn visit_str<E>(&mut self, v: &str) -> Result<DateTime<T>, E> where E: serde::de::Error {
+		Ok(DateTime::<T>::parse(v))
+	}
 }
 
 pub fn now<T: Format>() -> DateTime<T> {
