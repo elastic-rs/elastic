@@ -107,3 +107,18 @@ fn dates_use_specified_format_when_deserialising() {
 	assert_eq!(5, my_type.date.value.month());
 	assert_eq!(13, my_type.date.value.day());
 }
+
+#[test]
+fn can_parse_es_date_format() {
+	let parse_result = elastic_types::date::parse::parse("yyyyMMddTHHmmssSSS");
+
+	assert!(parse_result.is_valid());
+}
+
+#[test]
+fn parsed_date_formats_detect_missing_time() {
+	let parse_result = elastic_types::date::parse::parse("yyyyMMdd");
+
+	assert!(parse_result.is_valid());
+	assert!(parse_result.no_time_specified());
+}
