@@ -1,3 +1,5 @@
+pub mod parse;
+
 //Date formats
 pub trait Format {
 	fn fmt() -> Vec<&'static str>;

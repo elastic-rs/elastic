@@ -64,6 +64,7 @@ fn not_date_token(c: u8) -> bool {
 	}
 }
 
+//TODO: Replace this with a match statement over sub-parsers
 fn parse(i: Input<u8>) -> U8Result<DateToken> {
 	or(i, 
 		//Year -> y*
@@ -127,15 +128,15 @@ fn has_time(fmt: &Vec<DateToken>) -> bool {
 	)
 }
 
-pub fn parse_format(fmt: &str) -> Vec<DateToken> {
+pub fn format(fmt: &str) -> Vec<DateToken> {
 	parse_only(|i| many(i, |i| parse(i)), fmt.as_bytes()).unwrap()
 }
 
-pub fn parse_tokens(fmt: &Vec<DateToken>) -> String {
+pub fn tokens(fmt: &Vec<DateToken>) -> String {
 	_parse_tokens(fmt, |i| i.to_string())
 }
 
-pub fn parse_es_tokens(fmt: &Vec<DateToken>) -> String {
+pub fn es_tokens(fmt: &Vec<DateToken>) -> String {
 	_parse_tokens(fmt, |i| i.to_es_string())
 }
 
