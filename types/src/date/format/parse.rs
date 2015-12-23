@@ -133,14 +133,14 @@ pub fn format(fmt: &str) -> Vec<DateToken> {
 }
 
 pub fn tokens(fmt: &Vec<DateToken>) -> String {
-	_parse_tokens(fmt, |i| i.to_string())
+	format_tokens(fmt, |i| i.to_string())
 }
 
 pub fn es_tokens(fmt: &Vec<DateToken>) -> String {
-	_parse_tokens(fmt, |i| i.to_es_string())
+	format_tokens(fmt, |i| i.to_es_string())
 }
 
-fn _parse_tokens<'a, F>(fmt: &'a Vec<DateToken>, f: F) -> String where F: FnMut(&DateToken<'a>) -> String {
+fn format_tokens<'a, F>(fmt: &'a Vec<DateToken>, f: F) -> String where F: FnMut(&DateToken<'a>) -> String {
 	//If time is supplied, use it
 	let f: Vec<String> = 
 		if has_time(fmt) {
