@@ -11,6 +11,7 @@ use chrono::offset::TimeZone;
 use serde::{ Serialize, Deserialize };
 use elastic_types::date::{ DateTime, Format };
 use elastic_types::date::format::{ BasicDateTime, BASIC_DATE_TIME };
+use elastic_types::date::parse::{ DateToken, parse_format, parse_tokens };
 
 //MyType -> MyTypeFmtd
 //yyyy/mm/dd -> %Y/%m/%d %H:%M:%S
@@ -110,15 +111,16 @@ fn dates_use_specified_format_when_deserialising() {
 
 #[test]
 fn can_parse_es_date_format() {
-	let parse_result = elastic_types::date::parse::parse("yyyyMMddTHHmmssSSS");
+	let parse_result = parse_format("yyyyMMddTHHmmssSSSZ");
+	let fmt = parse_tokens(&parse_result);
 
-	assert!(parse_result.is_valid());
+	assert_eq!("%Y%m%dT%H%M%S%.3fZ".to_string(), fmt);
 }
 
 #[test]
-fn parsed_date_formats_detect_missing_time() {
-	let parse_result = elastic_types::date::parse::parse("yyyyMMdd");
+fn can_append_time_to_es_format_where_not_provided() {
+	let parse_result = parse_format("yyyyMMdd");
+	let fmt = parse_tokens(&parse_result);
 
-	assert!(parse_result.is_valid());
-	assert!(parse_result.no_time_specified());
+	assert_eq!("%Y%m%dT%H%M%S%.3fZ".to_string(), fmt);
 }

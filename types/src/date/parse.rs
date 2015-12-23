@@ -1,147 +1,140 @@
+use std::str;
 use chomp::*;
 
-pub struct DateParseResult {
-	pub year: Vec<u8>,
-	pub month: Vec<u8>,
-	pub day: Vec<u8>,
-	pub hour: Vec<u8>,
-	pub min: Vec<u8>,
-	pub sec: Vec<u8>,
-	pub msec: Vec<u8>
+#[derive(Clone, Debug, PartialEq)]
+pub enum DateToken<'a> {
+	Chars(&'a str),
+	Year,
+	Month,
+	Day,
+	Hour,
+	Min,
+	Sec,
+	Msec
 }
 
-impl DateParseResult {
-	pub fn is_valid(&self) -> bool {
-		self.date_is_valid() && (self.time_is_valid() || self.no_time_specified())
-	}
-
-	pub fn date_is_valid(&self) -> bool {
-		self.year_is_valid() && self.month_is_valid() && self.day_is_valid()
-	}
-
-	pub fn time_is_valid(&self) -> bool {
-		self.hour_is_valid() && self.min_is_valid() && self.sec_is_valid()
-	}
-
-	pub fn no_time_specified(&self) -> bool {
-		self.hour.len() == 0 && self.min.len() == 0 && self.sec.len() == 0 && self.msec.len() == 0
-	}
-
-	pub fn year_is_valid(&self) -> bool {
-		self.year.len() == 4
-	}
-
-	pub fn month_is_valid(&self) -> bool {
-		let len = self.month.len();
-		len == 2 || (len == 0 && self.day.len() == 3)
-	}
-
-	pub fn day_is_valid(&self) -> bool {
-		let len = self.day.len();
-		len == 2 || (self.month.len() == 0 && len == 3)
-	}
-
-	pub fn hour_is_valid(&self) -> bool {
-		self.hour.len() == 2
-	}
-
-	pub fn min_is_valid(&self) -> bool {
-		self.min.len() == 2
-	}
-
-	pub fn sec_is_valid(&self) -> bool {
-		self.sec.len() == 2
-	}
-
-	pub fn msec_is_valid(&self) -> bool {
-		self.msec.len() == 3
+impl <'a> ToString for DateToken<'a> {
+	fn to_string(&self) -> String {
+		match *self {
+			DateToken::Chars(c) => c.to_string(),
+			DateToken::Year => "%Y".to_string(),
+			DateToken::Month => "%m".to_string(),
+			DateToken::Day => "%d".to_string(),
+			DateToken::Hour => "%H".to_string(),
+			DateToken::Min => "%M".to_string(),
+			DateToken::Sec => "%S".to_string(),
+			DateToken::Msec => "%.3f".to_string()
+		}
 	}
 }
 
-fn es_year(i: Input<u8>) -> U8Result<&[u8]> {
-	parse!{i;
-		take_while(|c| c != b'y');
-		take_while1(|c| c == b'y')
+const YEAR: u8 = b'y';
+const MONTH: u8 = b'M';
+const DAY: u8 = b'd';
+const HOUR: u8 = b'H';
+const MIN: u8 = b'm';
+const SEC: u8 = b's';
+const MSEC: u8 = b'S';
+
+fn not_date_token(c: u8) -> bool {
+	match c {
+		YEAR => false,
+		MONTH => false,
+		DAY => false,
+		HOUR => false,
+		MIN => false,
+		SEC => false,
+		MSEC => false,
+		_ => true
 	}
 }
 
-fn es_month(i: Input<u8>) -> U8Result<&[u8]> {
-	parse!{i;
-		take_while(|c| c != b'M');
-		take_while1(|c| c == b'M')
-	}
+//TODO: Wrap this in a match instead
+fn parse(i: Input<u8>) -> U8Result<DateToken> {
+	or(i, 
+		//Year
+		|i| parse!{i;
+			take_while1(|c| c == YEAR);
+			ret DateToken::Year
+		},
+		|i| or(i, 
+		//Month
+		|i| parse!{i;
+			take_while1(|c| c == MONTH);
+			ret DateToken::Month
+		},
+		|i| or(i, 
+		//Day
+		|i| parse!{i;
+			take_while1(|c| c == DAY);
+			ret DateToken::Day
+		},
+		|i| or(i, 
+		//Hour
+		|i| parse!{i;
+			take_while1(|c| c == HOUR);
+			ret DateToken::Hour
+		},
+		|i| or(i, 
+		//Minute
+		|i| parse!{i;
+			take_while1(|c| c == MIN);
+			ret DateToken::Min
+		},
+		|i| or(i, 
+		//Second
+		|i| parse!{i;
+			take_while1(|c| c == SEC);
+			ret DateToken::Sec
+		},
+		|i| or(i, 
+		//Millisecond
+		|i| parse!{i;
+			take_while1(|c| c == MSEC);
+			ret DateToken::Msec
+		},
+		//Other
+		|i| parse!{i;
+			let res = take_while1(not_date_token);
+			ret DateToken::Chars(str::from_utf8(res).unwrap())
+		}))))))
+	)
 }
 
-fn es_day(i: Input<u8>) -> U8Result<&[u8]> {
-	parse!{i;
-		take_while(|c| c != b'd');
-		take_while1(|c| c == b'd')
-	}
+fn has_time(fmt: &Vec<DateToken>) -> bool {
+	fmt.iter().any(|i| match *i {
+			DateToken::Hour => true,
+			DateToken::Min => true,
+			DateToken::Sec => true,
+			DateToken::Msec => true,
+			_ => false
+		}
+	)
 }
 
-fn es_hour(i: Input<u8>) -> U8Result<&[u8]> {
-	parse!{i;
-		take_while(|c| c != b'H');
-		take_while1(|c| c == b'H')
-	}
+pub fn parse_format(fmt: &str) -> Vec<DateToken> {
+	parse_only(
+		|i| many(i, |i| 
+			parse(i)
+		), fmt.as_bytes()).unwrap()
 }
 
-fn es_min(i: Input<u8>) -> U8Result<&[u8]> {
-	parse!{i;
-		take_while(|c| c != b'm');
-		take_while1(|c| c == b'm')
+pub fn parse_tokens(fmt: &Vec<DateToken>) -> String {
+	let f: Vec<String> = if has_time(fmt) {
+		fmt.iter().map(|i| i.to_string()).collect()
 	}
-}
-
-fn es_sec(i: Input<u8>) -> U8Result<&[u8]> {
-	parse!{i;
-		take_while(|c| c != b's');
-		take_while1(|c| c == b's')
-	}
-}
-
-fn es_msec(i: Input<u8>) -> U8Result<&[u8]> {
-	parse!{i;
-		take_while(|c| c != b'S');
-		take_while1(|c| c == b'S')
-	}
-}
-
-//TODO: This could be improved a lot.
-//Should run in a single pass
-//Pass in transform to output, so we can use to generate chrono format, or validate result
-pub fn parse(fmt: &str) -> DateParseResult {
-	let mut res = DateParseResult {
-		year: Vec::new(),
-		month: Vec::new(),
-		day: Vec::new(),
-		hour: Vec::new(),
-		min: Vec::new(),
-		sec: Vec::new(),
-		msec: Vec::new()
+	else {
+		let mut _fmt = fmt.clone();
+		_fmt.push_all(&vec![
+			DateToken::Chars("T"),
+			DateToken::Hour,
+			DateToken::Min,
+			DateToken::Sec,
+			DateToken::Msec,
+			DateToken::Chars("Z")
+		]);
+		_fmt.iter().map(|i| i.to_string()).collect()
 	};
 
-	if let Ok(d) = parse_only(es_year, fmt.as_bytes()) {
-		res.year = d.iter().cloned().collect();
-	}
-	if let Ok(d) = parse_only(es_month, fmt.as_bytes()) {
-		res.month = d.iter().cloned().collect();
-	}
-	if let Ok(d) = parse_only(es_day, fmt.as_bytes()) {
-		res.day = d.iter().cloned().collect();
-	}
-	if let Ok(d) = parse_only(es_hour, fmt.as_bytes()) {
-		res.hour = d.iter().cloned().collect();
-	}
-	if let Ok(d) = parse_only(es_min, fmt.as_bytes()) {
-		res.min = d.iter().cloned().collect();
-	}
-	if let Ok(d) = parse_only(es_sec, fmt.as_bytes()) {
-		res.sec = d.iter().cloned().collect();
-	}
-	if let Ok(d) = parse_only(es_msec, fmt.as_bytes()) {
-		res.msec = d.iter().cloned().collect();
-	}
-
-	res
+	f.join("")
 }
