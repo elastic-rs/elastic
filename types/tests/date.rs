@@ -67,12 +67,21 @@ fn dates_with_format_specified_should_use_first_provided() {
 
 #[test]
 fn dates_with_multi_formats_should_use_first_successful() {
-	//Match %d/%m/%Y
 	let dt = DateTime::<MyType_date_fmt>::parse("13/05/2015 00:00:00").unwrap();
 
 	assert_eq!(2015, dt.value.year());
 	assert_eq!(5, dt.value.month());
 	assert_eq!(13, dt.value.day());
+}
+
+#[test]
+fn dates_with_multi_formats_should_return_all_errors_if_none_successful() {
+	let dt = DateTime::<MyType_date_fmt>::parse("this is not a date");
+
+	assert_eq!(
+		"%Y/%m/%d %H:%M:%S : input contains invalid characters, %d/%m/%Y %H:%M:%S : input contains invalid characters".to_string(), 
+		format!("{}", dt.err().unwrap())
+	);
 }
 
 #[test]

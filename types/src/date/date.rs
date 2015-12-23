@@ -27,9 +27,12 @@ impl <T: Format> DateTime<T> {
 	pub fn parse(date: &str) -> Result<DateTime<T>, String> {
 		let fmts = T::fmt();
 
+		let mut errors: Vec<String> = Vec::with_capacity(fmts.len());
 		let mut result: Result<DateTime<T>, String> = Err(String::new());
+
 		for fmt in fmts {
-			match chrono::UTC.datetime_from_str(date, fmt).map_err(|err| format!("{}", err).to_string()) {
+			match chrono::UTC.datetime_from_str(date, fmt)
+			.map_err(|err| format!("{} : {}", fmt, err).to_string()) {
 				Ok(parsed) => {
 					result = Ok(
 						DateTime::<T>::new(
@@ -41,11 +44,11 @@ impl <T: Format> DateTime<T> {
 					);
 					break;
 				},
-				Err(e) => result = Err(e)
+				Err(e) => errors.push(e)
 			}
 		}
 
-		result
+		result.map_err(|_| errors.join(", "))
 	}
 }
 
