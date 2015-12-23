@@ -5,8 +5,8 @@ pub use self::format::Format;
 use std::error::Error;
 use std::marker::PhantomData;
 use chrono;
+use chrono::UTC;
 use chrono::offset::TimeZone;
-use chrono::{ UTC };
 use serde;
 use serde::{ Serialize, Deserialize, Serializer, Deserializer };
 

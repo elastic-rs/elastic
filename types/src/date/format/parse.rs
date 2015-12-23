@@ -43,23 +43,23 @@ impl <'a> DateToken<'a> {
 	}
 }
 
-const YEAR: u8 = b'y';
-const MONTH: u8 = b'M';
-const DAY: u8 = b'd';
-const HOUR: u8 = b'H';
-const MIN: u8 = b'm';
-const SEC: u8 = b's';
-const MSEC: u8 = b'S';
+const ES_YEAR: u8 = b'y';
+const ES_MONTH: u8 = b'M';
+const ES_DAY: u8 = b'd';
+const ES_HOUR: u8 = b'H';
+const ES_MIN: u8 = b'm';
+const ES_SEC: u8 = b's';
+const ES_MSEC: u8 = b'S';
 
 fn not_date_token(c: u8) -> bool {
 	match c {
-		YEAR => false,
-		MONTH => false,
-		DAY => false,
-		HOUR => false,
-		MIN => false,
-		SEC => false,
-		MSEC => false,
+		ES_YEAR => false,
+		ES_MONTH => false,
+		ES_DAY => false,
+		ES_HOUR => false,
+		ES_MIN => false,
+		ES_SEC => false,
+		ES_MSEC => false,
 		_ => true
 	}
 }
@@ -69,44 +69,44 @@ fn parse(i: Input<u8>) -> U8Result<DateToken> {
 	or(i, 
 		//Year -> y*
 		|i| parse!{i;
-			take_while1(|c| c == YEAR);
+			take_while1(|c| c == ES_YEAR);
 			ret DateToken::Year
 		},
 		|i| or(i, 
 		//Month -> M*
 		|i| parse!{i;
-			take_while1(|c| c == MONTH);
+			take_while1(|c| c == ES_MONTH);
 			ret DateToken::Month
 		},
 		|i| or(i, 
 		//Day -> d*
 		|i| parse!{i;
-			take_while1(|c| c == DAY);
+			take_while1(|c| c == ES_DAY);
 			ret DateToken::Day
 		},
 		|i| or(i, 
 		//Hour -> H*
 		|i| parse!{i;
-			take_while1(|c| c == HOUR);
+			take_while1(|c| c == ES_HOUR);
 			ret DateToken::Hour
 		},
 		|i| or(i, 
 		//Minute -> m*
 		|i| parse!{i;
-			take_while1(|c| c == MIN);
+			take_while1(|c| c == ES_MIN);
 			ret DateToken::Min
 		},
 		|i| or(i, 
 		//Second -> s*
 		|i| parse!{i;
-			take_while1(|c| c == SEC);
+			take_while1(|c| c == ES_SEC);
 			ret DateToken::Sec
 		},
 		|i| or(i, 
 		//Millisecond -> \.S*
 		|i| parse!{i;
 			token(b'.');
-			take_while1(|c| c == MSEC);
+			take_while1(|c| c == ES_MSEC);
 			ret DateToken::Msec
 		},
 		//Other -> .*

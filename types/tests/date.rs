@@ -14,8 +14,8 @@ use elastic_types::date::format::parse;
 use elastic_types::date::format::parse::{ DateToken };
 
 //MyType -> MyTypeFmtd
-//yyyy/mm/dd -> %Y/%m/%d %H:%M:%S
-//2015/05/13 -> 2015/05/13 00:00:00
+//yyyy/mm/dd -> %Y/%m/%dT%H:%M:%SZ
+//2015/05/13 -> 2015/05/13T00:00:00Z
 
 //Unexpanded
 #[derive(Default, Serialize, Deserialize)]
