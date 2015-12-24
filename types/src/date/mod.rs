@@ -31,6 +31,7 @@ impl <T: Format> DateTime<T> {
 	}
 
 	//TODO: Add proper error type for accumulating format failures
+        //TODO: Look at moving this into different struct with default for potential overloading
 	pub fn parse(date: &str) -> Result<DateTime<T>, String> {
 		let fmts = T::fmt();
 
