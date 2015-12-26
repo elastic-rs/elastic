@@ -4,6 +4,7 @@
 extern crate serde;
 extern crate serde_json;
 extern crate chrono;
+#[macro_use(date_fmt)]
 extern crate elastic_types;
 
 pub mod date;

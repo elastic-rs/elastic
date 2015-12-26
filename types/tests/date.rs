@@ -6,10 +6,11 @@ extern crate serde_json;
 extern crate chrono;
 extern crate elastic_types;
 
-use chrono::Datelike;
+use chrono::{ Datelike, Timelike };
+use chrono::format::Parsed;
 use chrono::offset::TimeZone;
 use elastic_types::date::{ DateTime, Format };
-use elastic_types::date::format::{ BasicDateTime, BASIC_DATE_TIME };
+use elastic_types::date::format::{ BasicDateTime, BASIC_DATE_TIME, BasicDateTimeNoMillis };
 use elastic_types::date::format::parse;
 use elastic_types::date::format::parse::{ DateToken };
 
@@ -104,40 +105,36 @@ fn dates_use_specified_format_when_serialising() {
 fn dates_use_specified_format_when_deserialising() {
 	let my_type: MyType = serde_json::from_str(r#"{"date":"20150513T000000.000Z"}"#).unwrap();
 
-	assert_eq!(2015, my_type.date.value.year());
-	assert_eq!(5, my_type.date.value.month());
-	assert_eq!(13, my_type.date.value.day());
+	assert_eq!((2015, 5, 13), (my_type.date.value.year(), my_type.date.value.month(), my_type.date.value.day()));
 }
 
 #[test]
-fn can_parse_es_date_format() {
-	let parse_result = parse::format("yyyyMMddTHHmmss.SSSZ");
-	let fmt = parse::tokens(&parse_result);
+fn can_parse_es_date_format_to_chrono() {
+	let parse_result = parse::to_tokens("yyyyMMddTHHmmss.SSSZ");
+	let fmt = parse::to_chrono_format(parse_result);
 
 	assert_eq!("%Y%m%dT%H%M%S%.3fZ".to_string(), fmt);
 }
 
 #[test]
-fn can_parse_partial_date_format() {
-	//The milliseconds portion requires a '.' at the start to be valid
-	let parse_result = parse::format("yyyy/MM/HH/mm/ss");
-	let fmt = parse::tokens(&parse_result);
+fn can_parse_dates_with_no_time() {
+	let date = DateTime::<BasicDateTimeNoMillis>::parse("20150310").unwrap();
 
-	assert_eq!("%Y/%m/%H/%M/%S".to_string(), fmt);
+	assert_eq!((0, 0), (date.value.hour(), date.value.minute()));
 }
 
 #[test]
-fn can_append_time_to_es_format_where_not_provided() {
-	let parse_result = parse::format("yyyyMMdd");
-	let fmt = parse::tokens(&parse_result);
+fn can_parse_chrono_date_format_to_es() {
+	let parse_result = parse::to_tokens("%Y%m%dT%H%M%S%.3fZ");
+	let fmt = parse::to_es_format(parse_result);
 
-	assert_eq!("%Y%m%dT%H%M%S%.3fZ".to_string(), fmt);
+	assert_eq!("yyyyMMddTHHmmss.SSSZ".to_string(), fmt);
 }
 
 #[test]
 fn can_get_es_format_from_tokens() {
-	let parse_result = parse::format("yyyyMMdd");
-	let fmt = parse::es_tokens(&parse_result);
+	let parse_result = parse::to_tokens("yyyyMMdd");
+	let fmt = parse::to_es_format(parse_result);
 
-	assert_eq!("yyyyMMddTHHmmss.SSSZ".to_string(), fmt);
+	assert_eq!("yyyyMMdd".to_string(), fmt);
 }
