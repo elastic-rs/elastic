@@ -1,6 +1,32 @@
 use std::str;
 use chrono::format::{ Item, Fixed, Numeric, Pad };
 
+pub fn to_tokens(fmt: &str) -> Vec<DateToken> {
+	let mut res = Vec::<DateToken>::new();
+	parse_all(fmt.as_bytes(), &mut res);
+
+	res
+}
+
+pub fn to_chrono_format(fmt: Vec<DateToken>) -> String {
+	format_tokens(fmt, |i| i.to_string())
+}
+
+pub fn to_chrono_tokens(fmt: Vec<DateToken>) -> Vec<Item> {
+	let f: Vec<Item> = fmt.iter().map(|c| c.to_item()).collect();
+	f
+}
+
+pub fn to_es_format(fmt: Vec<DateToken>) -> String {
+	format_tokens(fmt, |i| i.to_es_string())
+}
+
+fn format_tokens<'a, F>(fmt: Vec<DateToken<'a>>, f: F) -> String where F: FnMut(&DateToken<'a>) -> String {
+	let f: Vec<String> = fmt.iter().map(f).collect();
+
+	f.join("")
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub enum DateToken<'a> {
 	Chars(&'a str),
@@ -63,7 +89,15 @@ const ES_HOUR: u8 = b'H';
 const ES_MIN: u8 = b'm';
 const ES_SEC: u8 = b's';
 const ES_MSEC: u8 = b'S';
+const ES_MSEC_PRE: u8 = b'.';
 const CR_PREFIX: u8 = b'%';
+const CR_YEAR: u8 = b'Y';
+const CR_MONTH: u8 = b'm';
+const CR_DAY: u8 = b'd';
+const CR_HOUR: u8 = b'H';
+const CR_MIN: u8 = b'M';
+const CR_SEC: u8 = b'S';
+const CR_MSEC_PRE: u8 = b'.';
 
 fn not_date_token(c: u8) -> bool {
 	match c {
@@ -97,14 +131,15 @@ fn parse<'a>(i: &'a [u8]) -> (&'a [u8], Option<DateToken<'a>>) {
 	}
 	else {
 		match i[0] {
-			b'y' => parse_year(i),
-			b'M' => parse_month(i),
-			b'd' => parse_day(i),
-			b'H' => parse_hour(i),
-			b'm' => parse_minute(i),
-			b's' => parse_second(i),
-			b'.' => parse_millisecond(i),
-			b'%' => parse_chrono(i),
+			ES_YEAR => parse_year(i),
+			ES_MONTH => parse_month(i),
+			ES_DAY => parse_day(i),
+			ES_HOUR => parse_hour(i),
+			ES_MIN => parse_min(i),
+			ES_SEC => parse_sec(i),
+			ES_MSEC => parse_msec(i),
+			ES_MSEC_PRE => parse_msec(i),
+			CR_PREFIX => parse_chrono(i),
 			_ => parse_chars(i)
 		}
 	}
@@ -116,13 +151,13 @@ fn parse_chrono<'a>(i: &'a [u8]) -> (&'a [u8], Option<DateToken<'a>>) {
 	}
 	else {
 		match i[1] {
-			b'Y' => parse_year(i),
-			b'm' => parse_month(i),
-			b'd' => parse_day(i),
-			b'H' => parse_hour(i),
-			b'M' => parse_minute(i),
-			b'S' => parse_second(i),
-			b'.' => parse_millisecond(i),
+			CR_YEAR => parse_year(i),
+			CR_MONTH => parse_month(i),
+			CR_DAY => parse_day(i),
+			CR_HOUR => parse_hour(i),
+			CR_MIN => parse_min(i),
+			CR_SEC => parse_sec(i),
+			CR_MSEC_PRE => parse_msec(i),
 			_ => panic!("unexpected symbol")
 		}
 	}
@@ -154,18 +189,18 @@ fn parse_hour<'a>(i: &'a [u8]) -> (&'a [u8], Option<DateToken<'a>>) {
 	parse_token!(i, b'H', Some(DateToken::Hour))
 }
 
-fn parse_minute<'a>(i: &'a [u8]) -> (&'a [u8], Option<DateToken<'a>>) {
+fn parse_min<'a>(i: &'a [u8]) -> (&'a [u8], Option<DateToken<'a>>) {
 	parse_token!(i, b'm', Some(DateToken::Min))
 }
 
-fn parse_second<'a>(i: &'a [u8]) -> (&'a [u8], Option<DateToken<'a>>) {
+fn parse_sec<'a>(i: &'a [u8]) -> (&'a [u8], Option<DateToken<'a>>) {
 	parse_token!(i, b's', Some(DateToken::Sec))
 }
 
-fn parse_millisecond<'a>(i: &'a [u8]) -> (&'a [u8], Option<DateToken<'a>>) {
+fn parse_msec<'a>(i: &'a [u8]) -> (&'a [u8], Option<DateToken<'a>>) {
 	match i[0] {
 		b'.' => {
-			parse_millisecond(shift(i, 1))
+			parse_msec(shift(i, 1))
 		},
 		b'S' => {
 			(shift_while(i, |c| c == b'S'), Some(DateToken::Msec))
@@ -217,30 +252,4 @@ fn shift(i: &[u8], c: usize) -> &[u8] {
 		c if c >= i.len() => &[],
 		_ => &i[c..]
 	}
-}
-
-pub fn to_tokens(fmt: &str) -> Vec<DateToken> {
-	let mut res = Vec::<DateToken>::new();
-	parse_all(fmt.as_bytes(), &mut res);
-
-	res
-}
-
-pub fn to_chrono_format(fmt: Vec<DateToken>) -> String {
-	format_tokens(fmt, |i| i.to_string())
-}
-
-pub fn to_chrono_tokens(fmt: Vec<DateToken>) -> Vec<Item> {
-	let f: Vec<Item> = fmt.iter().map(|c| c.to_item()).collect();
-	f
-}
-
-pub fn to_es_format(fmt: Vec<DateToken>) -> String {
-	format_tokens(fmt, |i| i.to_es_string())
-}
-
-fn format_tokens<'a, F>(fmt: Vec<DateToken<'a>>, f: F) -> String where F: FnMut(&DateToken<'a>) -> String {
-	let f: Vec<String> = fmt.iter().map(f).collect();
-
-	f.join("")
 }
