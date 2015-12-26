@@ -117,7 +117,7 @@ fn can_parse_es_date_format_to_chrono() {
 
 #[test]
 fn can_parse_dates_with_no_time() {
-	let date = DateTime::<BasicDateTimeNoMillis>::parse("20150310").unwrap();
+	let date = DateTime::<BasicDateTimeNoMillis>::parse("20150310T000000Z").unwrap();
 
 	assert_eq!((0, 0), (date.value.hour(), date.value.minute()));
 }

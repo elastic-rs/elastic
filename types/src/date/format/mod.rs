@@ -9,34 +9,50 @@ macro_rules! date_fmt(
 	});
 );
 
-//Date formats
+mod formats;
+pub use self::formats::*;
+
+use chrono;
+use chrono::DateTime;
+use chrono::UTC;
+use chrono::format::Parsed;
+
 pub trait Format {
+	fn parse(date: &str) -> Result<DateTime<UTC>, String> {
+		let fmts = Self::fmt();
+
+		let mut errors: Vec<String> = Vec::with_capacity(fmts.len());
+		let mut result: Result<DateTime<UTC>, String> = Err(String::new());
+
+		for fmt in fmts {
+			let f = parse::to_tokens(fmt);
+			let mut parsed = Parsed::new();
+
+			match chrono::format::parse(&mut parsed, date, f.into_iter())
+			.map_err(|err| format!("{} : {}", fmt, err).to_string()) {
+				Ok(_) => {
+					//If the parsed result doesn't contain any time, set it to the default
+					if parsed.hour_mod_12.is_none() {
+						let _ = parsed.set_hour(0);
+						let _ = parsed.set_minute(0);
+					}
+
+					//Set the DateTime result
+					result = Ok(
+						chrono::DateTime::from_utc(
+							parsed.to_naive_datetime_with_offset(0).unwrap(), 
+							chrono::UTC
+						)	
+					);
+					break;
+				},
+				Err(e) => errors.push(e)
+			}
+		}
+
+		result.map_err(|_| errors.join(", "))
+	}
+
 	fn fmt() -> Vec<&'static str>;
 	fn es_fmt() -> &'static str;
-}
-
-pub const BASIC_DATE_TIME_NO_MILLIS: &'static str = "%Y%m%d";
-
-#[derive(Clone)]
-pub struct BasicDateTimeNoMillis;
-impl Format for BasicDateTimeNoMillis {
-	fn fmt() -> Vec<&'static str> {
-		vec![BASIC_DATE_TIME_NO_MILLIS]
-	}
-	fn es_fmt() -> &'static str {
-		"basic_date_time_no_millis"
-	}
-}
-
-pub const BASIC_DATE_TIME: &'static str = "%Y%m%dT%H%M%S%.3fZ";
-
-#[derive(Clone)]
-pub struct BasicDateTime;
-impl Format for BasicDateTime {
-	fn fmt() -> Vec<&'static str> {
-		vec![BASIC_DATE_TIME]
-	}
-	fn es_fmt() -> &'static str {
-		"basic_date_time"
-	}
 }

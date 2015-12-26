@@ -1,4 +1,4 @@
-#![feature(custom_derive, custom_attribute, plugin)]
+#![feature(associated_type_defaults, custom_derive, custom_attribute, plugin)]
 #![plugin(serde_macros)]
 
 #[macro_use]

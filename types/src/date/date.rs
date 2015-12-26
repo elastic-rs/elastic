@@ -2,12 +2,10 @@ use std::error::Error;
 use std::marker::PhantomData;
 use chrono;
 use chrono::UTC;
-use chrono::format::Parsed;
 use serde;
 use serde::{ Serialize, Deserialize, Serializer, Deserializer };
 use super::Format;
 use super::format::BasicDateTime;
-use super::format::parse;
 
 pub type DT = chrono::DateTime<UTC>;
 
@@ -29,43 +27,8 @@ impl <T: Format> DateTime<T> {
 		DateTime::<T>::default()
 	}
 
-	//TODO: Add proper error type for accumulating format failures
-    //TODO: Look at moving this into different struct with default for potential overloading
 	pub fn parse(date: &str) -> Result<DateTime<T>, String> {
-		let fmts = T::fmt();
-
-		let mut errors: Vec<String> = Vec::with_capacity(fmts.len());
-		let mut result: Result<DateTime<T>, String> = Err(String::new());
-
-		for fmt in fmts {
-			let f = parse::to_tokens(fmt);
-			let mut parsed = Parsed::new();
-
-			match chrono::format::parse(&mut parsed, date, f.into_iter())
-			.map_err(|err| format!("{} : {}", fmt, err).to_string()) {
-				Ok(_) => {
-					//If the parsed result doesn't contain any time, set it to the default
-					if parsed.hour_mod_12.is_none() {
-						let _ = parsed.set_hour(0);
-						let _ = parsed.set_minute(0);
-					}
-
-					//Set the DateTime result
-					result = Ok(
-						DateTime::new(
-							chrono::DateTime::from_utc(
-								parsed.to_naive_datetime_with_offset(0).unwrap(), 
-								chrono::UTC
-							)	
-						)
-					);
-					break;
-				},
-				Err(e) => errors.push(e)
-			}
-		}
-
-		result.map_err(|_| errors.join(", "))
+		T::parse(date).map(|r| DateTime::new(r))
 	}
 }
 
