@@ -1,83 +1,54 @@
 use std::str;
 use chrono::format::{ Item, Fixed, Numeric, Pad };
 
-pub fn to_tokens(fmt: &str) -> Vec<DateToken> {
-	let mut res = Vec::<DateToken>::new();
+pub fn to_tokens(fmt: &str) -> Vec<Item> {
+	let mut res = Vec::<Item>::new();
 	parse_all(fmt.as_bytes(), &mut res);
 
 	res
 }
 
-pub fn to_chrono_format(fmt: Vec<DateToken>) -> String {
-	format_tokens(fmt, |i| i.to_string())
+pub fn to_chrono_format(fmt: Vec<Item>) -> String {
+	format_tokens(fmt, |i| Formatter::to_chrono_string(i))
 }
 
-pub fn to_chrono_tokens(fmt: Vec<DateToken>) -> Vec<Item> {
-	let f: Vec<Item> = fmt.iter().map(|c| c.to_item()).collect();
-	f
+pub fn to_es_format(fmt: Vec<Item>) -> String {
+	format_tokens(fmt, |i| Formatter::to_es_string(i))
 }
 
-pub fn to_es_format(fmt: Vec<DateToken>) -> String {
-	format_tokens(fmt, |i| i.to_es_string())
-}
-
-fn format_tokens<'a, F>(fmt: Vec<DateToken<'a>>, f: F) -> String where F: FnMut(&DateToken<'a>) -> String {
+fn format_tokens<'a, F>(fmt: Vec<Item<'a>>, f: F) -> String where F: FnMut(&Item<'a>) -> String {
 	let f: Vec<String> = fmt.iter().map(f).collect();
 
 	f.join("")
 }
 
-#[derive(Clone, Debug, PartialEq)]
-pub enum DateToken<'a> {
-	Chars(&'a str),
-	Year,
-	Month,
-	Day,
-	Hour,
-	Min,
-	Sec,
-	Msec
-}
-
-impl <'a> ToString for DateToken<'a> {
-	fn to_string(&self) -> String {
-		match *self {
-			DateToken::Chars(c) => c.to_string(),
-			DateToken::Year => "%Y".to_string(),
-			DateToken::Month => "%m".to_string(),
-			DateToken::Day => "%d".to_string(),
-			DateToken::Hour => "%H".to_string(),
-			DateToken::Min => "%M".to_string(),
-			DateToken::Sec => "%S".to_string(),
-			DateToken::Msec => "%.3f".to_string()
-		}
-	}
-}
-
-impl <'a> DateToken<'a> {
-	fn to_es_string(&self) -> String {
-		match *self {
-			DateToken::Chars(c) => c.to_string(),
-			DateToken::Year => "yyyy".to_string(),
-			DateToken::Month => "MM".to_string(),
-			DateToken::Day => "dd".to_string(),
-			DateToken::Hour => "HH".to_string(),
-			DateToken::Min => "mm".to_string(),
-			DateToken::Sec => "ss".to_string(),
-			DateToken::Msec => ".SSS".to_string()
+pub struct Formatter;
+impl Formatter {
+	fn to_es_string(item: &Item) -> String {
+		match *item {
+			Item::Literal(c) => c.to_string(),
+			Item::Numeric(Numeric::Year, Pad::Zero) => "yyyy".to_string(),
+			Item::Numeric(Numeric::Month, Pad::Zero) => "MM".to_string(),
+			Item::Numeric(Numeric::Day, Pad::Zero) => "dd".to_string(),
+			Item::Numeric(Numeric::Hour, Pad::Zero) => "HH".to_string(),
+			Item::Numeric(Numeric::Minute, Pad::Zero) => "mm".to_string(),
+			Item::Numeric(Numeric::Second, Pad::Zero) => "ss".to_string(),
+			Item::Fixed(Fixed::Nanosecond3) => ".SSS".to_string(),
+			_ => "".to_string()
 		}
 	}
 
-	fn to_item(&self) -> Item<'a> {
-		match *self {
-			DateToken::Chars(c) => Item::Literal(c),
-			DateToken::Year => Item::Numeric(Numeric::Year, Pad::Zero),
-			DateToken::Month => Item::Numeric(Numeric::Month, Pad::Zero),
-			DateToken::Day => Item::Numeric(Numeric::Day, Pad::Zero),
-			DateToken::Hour => Item::Numeric(Numeric::Hour, Pad::Zero),
-			DateToken::Min => Item::Numeric(Numeric::Minute, Pad::Zero),
-			DateToken::Sec => Item::Numeric(Numeric::Second, Pad::Zero),
-			DateToken::Msec => Item::Fixed(Fixed::Nanosecond3)
+	fn to_chrono_string(item: &Item) -> String {
+		match *item {
+			Item::Literal(c) => c.to_string(),
+			Item::Numeric(Numeric::Year, Pad::Zero) => "%Y".to_string(),
+			Item::Numeric(Numeric::Month, Pad::Zero) => "%m".to_string(),
+			Item::Numeric(Numeric::Day, Pad::Zero) => "%d".to_string(),
+			Item::Numeric(Numeric::Hour, Pad::Zero) => "%H".to_string(),
+			Item::Numeric(Numeric::Minute, Pad::Zero) => "%M".to_string(),
+			Item::Numeric(Numeric::Second, Pad::Zero) => "%S".to_string(),
+			Item::Fixed(Fixed::Nanosecond3) => "%.3f".to_string(),
+			_ => "".to_string()
 		}
 	}
 }
@@ -113,7 +84,7 @@ fn not_date_token(c: u8) -> bool {
 	}
 }
 
-fn parse_all<'a, 'b>(i: &'a [u8], r: &'b mut Vec<DateToken<'a>>) {
+fn parse_all<'a, 'b>(i: &'a [u8], r: &'b mut Vec<Item<'a>>) {
 	let (k, res) = parse(i);
 
 	match res {
@@ -125,40 +96,38 @@ fn parse_all<'a, 'b>(i: &'a [u8], r: &'b mut Vec<DateToken<'a>>) {
 	}
 }
 
-fn parse<'a>(i: &'a [u8]) -> (&'a [u8], Option<DateToken<'a>>) {
-	if i.len() == 0 {
+fn parse<'a>(i: &'a [u8]) -> (&'a [u8], Option<Item<'a>>) {
+	let l = i.len();
+	if l == 0 {
 		(i, None)
 	}
 	else {
-		match i[0] {
-			ES_YEAR => parse_year(i),
-			ES_MONTH => parse_month(i),
-			ES_DAY => parse_day(i),
-			ES_HOUR => parse_hour(i),
-			ES_MIN => parse_min(i),
-			ES_SEC => parse_sec(i),
-			ES_MSEC => parse_msec(i),
-			ES_MSEC_PRE => parse_msec(i),
-			CR_PREFIX => parse_chrono(i),
-			_ => parse_chars(i)
+		let (i0, i1) = if l == 1 {
+			(i[0], 0)
 		}
-	}
-}
+		else {
+			(i[0], i[1])
+		};
 
-fn parse_chrono<'a>(i: &'a [u8]) -> (&'a [u8], Option<DateToken<'a>>) {
-	if i.len() < 2 {
-		(i, None)
-	}
-	else {
-		match i[1] {
-			CR_YEAR => parse_year(i),
-			CR_MONTH => parse_month(i),
-			CR_DAY => parse_day(i),
-			CR_HOUR => parse_hour(i),
-			CR_MIN => parse_min(i),
-			CR_SEC => parse_sec(i),
-			CR_MSEC_PRE => parse_msec(i),
-			_ => panic!("unexpected symbol")
+		match (i0, i1) {
+			//yy* | %Y
+			(ES_YEAR, ES_YEAR)|(CR_PREFIX, CR_YEAR) => parse_year(i),
+			//MM* | %m
+			(ES_MONTH, ES_MONTH)|(CR_PREFIX, CR_MONTH) => parse_month(i),
+			//dd* | %d
+			(ES_DAY, ES_DAY)|(CR_PREFIX, CR_DAY) => parse_day(i),
+			//HH* | %H
+			(ES_HOUR, ES_HOUR)|(CR_PREFIX, CR_HOUR) => parse_hour(i),
+			//mm* | %M
+			(ES_MIN, ES_MIN)|(CR_PREFIX, CR_MIN) => parse_min(i),
+			//ss* | %S
+			(ES_SEC, ES_SEC)|(CR_PREFIX, CR_SEC) => parse_sec(i),
+			//SS* | %.
+			(ES_MSEC, ES_MSEC)|(CR_PREFIX, CR_MSEC_PRE) => parse_msec(i),
+			//.S*
+			(ES_MSEC_PRE, ES_MSEC) => parse_msec(i),
+			//.*
+			_ => parse_chars(i)
 		}
 	}
 }
@@ -173,49 +142,49 @@ macro_rules! parse_token {
     })
 }
 
-fn parse_year<'a>(i: &'a [u8]) -> (&'a [u8], Option<DateToken<'a>>) {
-	parse_token!(i, b'y', Some(DateToken::Year))
+fn parse_year<'a>(i: &'a [u8]) -> (&'a [u8], Option<Item<'a>>) {
+	parse_token!(i, b'y', Some(Item::Numeric(Numeric::Year, Pad::Zero)))
 }
 
-fn parse_month<'a>(i: &'a [u8]) -> (&'a [u8], Option<DateToken<'a>>) {
-	parse_token!(i, b'M', Some(DateToken::Month))
+fn parse_month<'a>(i: &'a [u8]) -> (&'a [u8], Option<Item<'a>>) {
+	parse_token!(i, b'M', Some(Item::Numeric(Numeric::Month, Pad::Zero)))
 }
 
-fn parse_day<'a>(i: &'a [u8]) -> (&'a [u8], Option<DateToken<'a>>) {
-	parse_token!(i, b'd', Some(DateToken::Day))
+fn parse_day<'a>(i: &'a [u8]) -> (&'a [u8], Option<Item<'a>>) {
+	parse_token!(i, b'd', Some(Item::Numeric(Numeric::Day, Pad::Zero)))
 }
 
-fn parse_hour<'a>(i: &'a [u8]) -> (&'a [u8], Option<DateToken<'a>>) {
-	parse_token!(i, b'H', Some(DateToken::Hour))
+fn parse_hour<'a>(i: &'a [u8]) -> (&'a [u8], Option<Item<'a>>) {
+	parse_token!(i, b'H', Some(Item::Numeric(Numeric::Hour, Pad::Zero)))
 }
 
-fn parse_min<'a>(i: &'a [u8]) -> (&'a [u8], Option<DateToken<'a>>) {
-	parse_token!(i, b'm', Some(DateToken::Min))
+fn parse_min<'a>(i: &'a [u8]) -> (&'a [u8], Option<Item<'a>>) {
+	parse_token!(i, b'm', Some(Item::Numeric(Numeric::Minute, Pad::Zero)))
 }
 
-fn parse_sec<'a>(i: &'a [u8]) -> (&'a [u8], Option<DateToken<'a>>) {
-	parse_token!(i, b's', Some(DateToken::Sec))
+fn parse_sec<'a>(i: &'a [u8]) -> (&'a [u8], Option<Item<'a>>) {
+	parse_token!(i, b's', Some(Item::Numeric(Numeric::Second, Pad::Zero)))
 }
 
-fn parse_msec<'a>(i: &'a [u8]) -> (&'a [u8], Option<DateToken<'a>>) {
+fn parse_msec<'a>(i: &'a [u8]) -> (&'a [u8], Option<Item<'a>>) {
 	match i[0] {
 		b'.' => {
 			parse_msec(shift(i, 1))
 		},
 		b'S' => {
-			(shift_while(i, |c| c == b'S'), Some(DateToken::Msec))
+			(shift_while(i, |c| c == b'S'), Some(Item::Fixed(Fixed::Nanosecond3)))
 		},
 		b'%' => {
-			let (k, r) = (shift(i, 4), Some(DateToken::Msec));
+			let (k, r) = (shift(i, 4), Some(Item::Fixed(Fixed::Nanosecond3)));
 			(k, r)
 		},
 		_ => panic!("unexpected symbol")
 	}
 }
 
-fn parse_chars<'a>(i: &'a [u8]) -> (&'a [u8], Option<DateToken<'a>>) {
+fn parse_chars<'a>(i: &'a [u8]) -> (&'a [u8], Option<Item<'a>>) {
 	let (k, s) = take_while(i, |c| not_date_token(c));
-	(k, Some(DateToken::Chars(s)))
+	(k, Some(Item::Literal(s)))
 }
 
 fn shift_while<F>(i: &[u8], f: F) -> &[u8] where F: Fn(u8) -> bool {

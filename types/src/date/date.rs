@@ -38,7 +38,7 @@ impl <T: Format> DateTime<T> {
 		let mut result: Result<DateTime<T>, String> = Err(String::new());
 
 		for fmt in fmts {
-			let f = parse::to_chrono_tokens(parse::to_tokens(fmt));
+			let f = parse::to_tokens(fmt);
 			let mut parsed = Parsed::new();
 
 			match chrono::format::parse(&mut parsed, date, f.into_iter())

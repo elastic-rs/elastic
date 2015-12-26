@@ -12,7 +12,6 @@ use chrono::offset::TimeZone;
 use elastic_types::date::{ DateTime, Format };
 use elastic_types::date::format::{ BasicDateTime, BASIC_DATE_TIME, BasicDateTimeNoMillis };
 use elastic_types::date::format::parse;
-use elastic_types::date::format::parse::{ DateToken };
 
 //MyType -> MyTypeFmtd
 //yyyy/mm/dd -> %Y/%m/%dT%H:%M:%SZ
