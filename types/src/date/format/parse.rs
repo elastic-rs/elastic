@@ -79,6 +79,7 @@ fn not_date_token(c: u8) -> bool {
 		ES_MIN => false,
 		ES_SEC => false,
 		ES_MSEC => false,
+		ES_MSEC_PRE => false,
 		CR_PREFIX => false,
 		_ => true
 	}
@@ -183,7 +184,7 @@ fn parse_msec<'a>(i: &'a [u8]) -> (&'a [u8], Option<Item<'a>>) {
 }
 
 fn parse_chars<'a>(i: &'a [u8]) -> (&'a [u8], Option<Item<'a>>) {
-	let (k, s) = take_while(i, |c| not_date_token(c));
+	let (k, s) = take_while1(i, |c| not_date_token(c));
 	(k, Some(Item::Literal(s)))
 }
 
@@ -206,6 +207,21 @@ fn take_while<F>(i: &[u8], f: F) -> (&[u8], &str) where F: Fn(u8) -> bool {
 
 	for c in i {
 		if f(*c) {
+			ctr += 1;
+		}
+		else {
+			break;
+		}
+	}
+
+	(&i[ctr..], str::from_utf8(&i[0..ctr]).unwrap())
+}
+
+fn take_while1<F>(i: &[u8], f: F) -> (&[u8], &str) where F: Fn(u8) -> bool {
+	let mut ctr = 0;
+
+	for c in i {
+		if f(*c) || ctr == 0 {
 			ctr += 1;
 		}
 		else {
