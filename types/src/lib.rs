@@ -1,8 +1,6 @@
 #![feature(custom_derive, custom_attribute, plugin)]
 #![plugin(serde_macros)]
 
-#[macro_use]
-extern crate chomp;
 extern crate chrono;
 extern crate serde;
 
