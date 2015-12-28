@@ -6,10 +6,9 @@ extern crate serde_json;
 extern crate chrono;
 extern crate elastic_types;
 
-use chrono::{ Datelike, Timelike };
 use chrono::format::Parsed;
 use chrono::offset::TimeZone;
-use elastic_types::date::{ DateTime, Format };
+use elastic_types::date::{ DateTime, Datelike, Timelike, Format };
 use elastic_types::date::format::{ BasicDateTime, BASIC_DATE_TIME, BasicDateTimeNoMillis };
 use elastic_types::date::format::parse;
 

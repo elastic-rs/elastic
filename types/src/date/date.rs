@@ -7,15 +7,61 @@ use serde::{ Serialize, Deserialize, Serializer, Deserializer };
 use super::Format;
 use super::format::BasicDateTime;
 
+/// A re-export of the `chrono::DateTime` struct with `UTC` timezone
 pub type DT = chrono::DateTime<UTC>;
+pub use chrono::{ Datelike, Timelike };
 
+/// An Elasticsearch `date` type with a required `time` component. 
+/// The [format](format/index.html) is provided as a generic parameter.
+///
+/// # Examples
+/// Defining a date using the default format:
+/// 
+/// ```
+/// use elastic_types::date::DateTime;
+/// 
+/// let date: DateTime = DateTime::now();
+/// ```
+/// Defining a date using a named format:
+/// 
+/// ```
+/// use elastic_types::date::DateTime;
+/// use elastic_types::date::format::BasicDateTime;
+/// 
+/// let date = DateTime::<BasicDateTime>::now();
+/// ```
+/// Accessing the values of a date:
+/// 
+/// ```
+/// use elastic_types::date::{ DateTime, Datelike, Timelike };
+/// use elastic_types::date::format::BasicDateTime;
+/// 
+/// let date = DateTime::<BasicDateTime>::now();
+/// 
+/// //eg: 2010/04/30 13:56
+/// println!("{}/{}/{} {}:{}", 
+///		date.value.year(), 
+/// 	date.value.month(), 
+/// 	date.value.day(), 
+/// 	date.value.hour(), 
+/// 	date.value.minute()
+/// );
+/// ```
+/// For a full list of available date and time functions on `date.value` see [Datelike](trait.Datelike.html) and [Timelike](trait.Timelike.html).
+/// 
+/// # Links
+/// - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/date.html)
 #[derive(Clone)]
 pub struct DateTime<T: Format = BasicDateTime> {
+	/// The date and time value
 	pub value: DT,
 	phantom: PhantomData<T>
 }
 
 impl <T: Format> DateTime<T> {
+	/// Creates a new `DateTime` from the given `chrono::DateTime<UTC>`
+	/// 
+	/// # Examples
 	pub fn new(date: DT) -> DateTime<T> {
 		DateTime {
 			value: date,
