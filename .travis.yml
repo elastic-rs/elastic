@@ -6,10 +6,6 @@ rust:
 os:
   - linux
   - osx
-  - windows
-env:
-  global:
-    - LD_LIBRARY_PATH: /usr/local/lib
 script:
   - cd types
   - cargo build -v
