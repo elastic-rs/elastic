@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/KodrAus/elasticsearch-rs.svg?branch=master)](https://travis-ci.org/KodrAus/elasticsearch-rs)
+Currently only compiling on the `nightly` channel. Support for `stable` will be added.
 
 # elasticsearch-rs
 Elasticsearch client for Rust
