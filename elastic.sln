@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.24720.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{78C9907C-C22D-4F8D-B13A-49F213FF1631}") = "elastic_types", "types\elastic_types.rsproj", "{B07470A6-6D7E-4423-BD2D-6C57B3620EEE}"
+EndProject
+Project("{78C9907C-C22D-4F8D-B13A-49F213FF1631}") = "elastic_codegen", "codegen\elastic_codegen.rsproj", "{39913FCF-2CB8-46E8-B393-B5AC08C15554}"
+EndProject
+Project("{78C9907C-C22D-4F8D-B13A-49F213FF1631}") = "elastic", "elastic\elastic.rsproj", "{EC127BA0-E005-4DBE-97A2-8512D210988E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|default = Debug|default
+		Release|default = Release|default
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B07470A6-6D7E-4423-BD2D-6C57B3620EEE}.Debug|default.ActiveCfg = Debug|default
+		{B07470A6-6D7E-4423-BD2D-6C57B3620EEE}.Debug|default.Build.0 = Debug|default
+		{B07470A6-6D7E-4423-BD2D-6C57B3620EEE}.Release|default.ActiveCfg = Release|default
+		{B07470A6-6D7E-4423-BD2D-6C57B3620EEE}.Release|default.Build.0 = Release|default
+		{39913FCF-2CB8-46E8-B393-B5AC08C15554}.Debug|default.ActiveCfg = Debug|default
+		{39913FCF-2CB8-46E8-B393-B5AC08C15554}.Debug|default.Build.0 = Debug|default
+		{39913FCF-2CB8-46E8-B393-B5AC08C15554}.Release|default.ActiveCfg = Release|default
+		{39913FCF-2CB8-46E8-B393-B5AC08C15554}.Release|default.Build.0 = Release|default
+		{EC127BA0-E005-4DBE-97A2-8512D210988E}.Debug|default.ActiveCfg = Debug|default
+		{EC127BA0-E005-4DBE-97A2-8512D210988E}.Debug|default.Build.0 = Debug|default
+		{EC127BA0-E005-4DBE-97A2-8512D210988E}.Release|default.ActiveCfg = Release|default
+		{EC127BA0-E005-4DBE-97A2-8512D210988E}.Release|default.Build.0 = Release|default
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
