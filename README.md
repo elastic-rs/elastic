@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/KodrAus/elasticsearch-rs.svg?branch=master)](https://travis-ci.org/KodrAus/elasticsearch-rs)
+
 # elasticsearch-rs
 Elasticsearch client for Rust
 
