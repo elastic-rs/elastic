@@ -9,5 +9,7 @@ serde_json = "*"
 serde_macros = "*"
 aster = "*"
 
+hyper = "*"
+
 [dependencies.elastic_types]
 path = "../types"
