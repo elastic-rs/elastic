@@ -21,6 +21,8 @@ I'd like to follow a similar pattern to the Query DSL as the C# client does, whe
 
 ## Roadmap
 
+See [milestones](https://github.com/KodrAus/elasticsearch-rs/milestones)
+
 - Codegen API endpoints
 - Implement core Elasticsearch types
 - io layer
