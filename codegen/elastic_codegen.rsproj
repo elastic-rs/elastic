@@ -5,9 +5,9 @@
     <Platform Condition=" '$(Platform)' == '' ">default</Platform>
     <ProjectGuid>{39913fcf-2cb8-46e8-b393-b5ac08c15554}</ProjectGuid>
     <OutputType>library</OutputType>
-    <CrateName>elastic_types</CrateName>
-    <Name>elastic_types</Name>
-    <RootNamespace>elastic_types</RootNamespace>
+    <CrateName>elastic_codegen</CrateName>
+    <Name>elastic_codegen</Name>
+    <RootNamespace>elastic_codegen</RootNamespace>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|default' ">
     <LinkTimeOptimization>false</LinkTimeOptimization>
@@ -22,10 +22,12 @@
     <PlatformTarget>default</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
+    <Folder Include="spec\" />
     <Folder Include="src\" />
     <Folder Include="benches\" />
     <Folder Include="tests\" />
     <Code Include="src\*" />
+    <Code Include="spec\*" />
     <Code Include="benches\*" />
     <Code Include="tests\*" />
   </ItemGroup>

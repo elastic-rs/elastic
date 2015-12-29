@@ -1,6 +1,3 @@
-//TODO: This could be moved into its own crate
-pub mod hyper;
-
 use ::ast::*;
 use aster::AstBuilder;
 

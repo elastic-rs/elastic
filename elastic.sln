@@ -7,7 +7,7 @@ Project("{78C9907C-C22D-4F8D-B13A-49F213FF1631}") = "elastic_types", "types\elas
 EndProject
 Project("{78C9907C-C22D-4F8D-B13A-49F213FF1631}") = "elastic_codegen", "codegen\elastic_codegen.rsproj", "{39913FCF-2CB8-46E8-B393-B5AC08C15554}"
 EndProject
-Project("{78C9907C-C22D-4F8D-B13A-49F213FF1631}") = "elastic", "elastic\elastic.rsproj", "{EC127BA0-E005-4DBE-97A2-8512D210988E}"
+Project("{78C9907C-C22D-4F8D-B13A-49F213FF1631}") = "elastic_client", "client\elastic_client.rsproj", "{EC127BA0-E005-4DBE-97A2-8512D210988E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8AA33C32-E760-463C-B6AE-341FA18E8E83}"
 	ProjectSection(SolutionItems) = preProject

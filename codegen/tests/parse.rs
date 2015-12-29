@@ -7,7 +7,7 @@ use elastic_codegen::parse::*;
 
 #[test]
 fn can_parse_from_file() {
-	let mut f = File::open("api/bulk.json").unwrap();
+	let mut f = File::open("spec/api/bulk.json").unwrap();
 	let parsed = parse::from_reader(&mut f).unwrap();
 
 	assert!(parsed.name.unwrap() == "bulk".to_string());
