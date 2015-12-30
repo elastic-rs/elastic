@@ -17,6 +17,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.md = README.md
 	EndProjectSection
 EndProject
+Project("{78C9907C-C22D-4F8D-B13A-49F213FF1631}") = "elastic_hyper", "hyper\elastic_hyper.rsproj", "{E7571D90-A65D-43A6-ACF7-52D62FCCF1C9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|default = Debug|default
@@ -35,6 +37,10 @@ Global
 		{EC127BA0-E005-4DBE-97A2-8512D210988E}.Debug|default.Build.0 = Debug|default
 		{EC127BA0-E005-4DBE-97A2-8512D210988E}.Release|default.ActiveCfg = Release|default
 		{EC127BA0-E005-4DBE-97A2-8512D210988E}.Release|default.Build.0 = Release|default
+		{E7571D90-A65D-43A6-ACF7-52D62FCCF1C9}.Debug|default.ActiveCfg = Debug|default
+		{E7571D90-A65D-43A6-ACF7-52D62FCCF1C9}.Debug|default.Build.0 = Debug|default
+		{E7571D90-A65D-43A6-ACF7-52D62FCCF1C9}.Release|default.ActiveCfg = Release|default
+		{E7571D90-A65D-43A6-ACF7-52D62FCCF1C9}.Release|default.Build.0 = Release|default
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
