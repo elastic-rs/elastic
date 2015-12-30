@@ -36,7 +36,7 @@ Provides rust implementations of the main Elasticsearch types (like `date`) and 
 
 ### elastic_client
 
-Provides the high-level, strongly-typed client on top of the low-level client and `elastic_types`. The direction of this crate isn't really decided yet, but I'm liking the idea of using closures to thread type info through a query builder, like the C# client.
+Provides the high-level, strongly-typed client on top of the low-level client and `elastic_types`. The direction of this crate isn't really decided yet, but I'm liking the idea of using closures to thread type info through a query builder, like the [C# client](https://github.com/elastic/elasticsearch-net).
 
 ## Roadmap
 
