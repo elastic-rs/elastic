@@ -1,4 +1,3 @@
-use std::error::Error;
 use std::marker::PhantomData;
 use chrono;
 use chrono::UTC;

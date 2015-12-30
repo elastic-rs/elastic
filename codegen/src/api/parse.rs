@@ -1,9 +1,10 @@
 extern crate serde_json;
 
+use std::fs::File;
 use std::io::Read;
-use serde_json::Value;
-use serde_json::value;
-use ::ast::SyntaxTree;
+use std::fs::read_dir;
+use serde_json::{ Value, value };
+use super::ast::SyntaxTree;
 
 pub fn from_reader<R>(rdr: &mut R) -> Result<SyntaxTree, &'static str> where R: Read {
 	//Read the file to string
@@ -25,4 +26,21 @@ pub fn from_reader<R>(rdr: &mut R) -> Result<SyntaxTree, &'static str> where R: 
 		},
 		_ => Err("unexpected format")
 	}
+}
+
+pub fn from_dir(path: &str) -> Result<Vec<SyntaxTree>, &'static str> {
+	let mut all_parsed: Vec<SyntaxTree> = Vec::new();
+
+	let paths = read_dir(path).unwrap();
+	for path in paths {
+		let p = path.unwrap().path();
+		println!("parsing: {}", p.display());
+
+		let mut f = File::open(p).unwrap();
+		let parsed = try!(from_reader(&mut f));
+
+		all_parsed.push(parsed);
+	}
+
+	Ok(all_parsed)
 }

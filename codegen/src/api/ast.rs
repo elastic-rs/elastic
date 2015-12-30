@@ -1,5 +1,7 @@
 use std::collections::BTreeMap;
-use serde::{ Serialize };
+use serde::{ Serialize, Deserialize };
+use serde_json::Value;
+use serde_json::value;
 
 #[derive(Serialize, Deserialize)]
 pub struct SyntaxTree {
@@ -73,8 +75,17 @@ impl Type {
 #[derive(Serialize, Deserialize)]
 pub struct Body {
 	pub description: String,
-	pub required: bool,
-	pub serialize: Option<String>
+	required: Option<bool>,
+	pub serialize: Option<String>,
+}
+
+impl Body {
+	pub fn required(&self) -> bool {
+		match self.required {
+			None => false,
+			Some(r) => r
+		}
+	}
 }
 
 #[derive(Serialize, Deserialize)]
@@ -90,6 +101,7 @@ pub struct Part {
 	#[serde(rename="type")]
 	_type: String,
 	pub options: Option<Vec<String>>,
+	required: Option<bool>,
 	pub description: String
 }
 
@@ -97,18 +109,53 @@ impl Part {
 	pub fn get_type(&self) -> Type {
 		Type::parse(&self._type[..], self.options.clone())
 	}
+
+	pub fn required(&self) -> bool {
+		match self.required {
+			None => false,
+			Some(r) => r
+		}
+	}
 }
 
 #[derive(Serialize, Deserialize)]
 pub struct Param {
 	#[serde(rename="type")]
-	_type: String,
+	_type: Option<String>,
 	pub description: String,
-	pub options: Option<Vec<String>>
+	pub options: Option<Vec<String>>,
+	required: Option<bool>,
+	default: Value
 }
 
 impl Param {
+	pub fn new(_type: &str, desc: &str, default: Value, opts: Option<Vec<String>>) -> Param {
+		Param {
+			_type: Some(_type.to_string()),
+			description: desc.to_string(),
+			options: opts,
+			required: None,
+			default: default
+		}
+	}
+
 	pub fn get_type(&self) -> Type {
-		Type::parse(&self._type[..], self.options.clone())
+		let _type: String = match self._type.clone() {
+			None => "unknown".to_string(),
+			Some(t) => t
+		};
+
+		Type::parse(&_type[..], self.options.clone())
+	}
+
+	pub fn get_default<T: Deserialize>(&self) -> T {
+		value::from_value::<T>(self.default.clone()).unwrap()
+	}
+
+	pub fn required(&self) -> bool {
+		match self.required {
+			None => false,
+			Some(r) => r
+		}
 	}
 }

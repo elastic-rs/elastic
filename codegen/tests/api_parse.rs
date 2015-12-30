@@ -1,17 +1,10 @@
 extern crate elastic_codegen;
+extern crate serde_json;
 
 use std::fs::File;
-use elastic_codegen::parse;
-use elastic_codegen::ast::*;
-use elastic_codegen::parse::*;
-
-#[test]
-fn can_parse_from_file() {
-	let mut f = File::open("spec/api/bulk.json").unwrap();
-	let parsed = parse::from_reader(&mut f).unwrap();
-
-	assert!(parsed.name.unwrap() == "bulk".to_string());
-}
+use elastic_codegen::api::ast::*;
+use elastic_codegen::api::parse;
+use serde_json::Value;
 
 #[test]
 fn can_parse_http_method() {
@@ -84,4 +77,42 @@ fn can_parse_type() {
 	}
 
 	assert!(success);
+}
+
+#[test]
+fn can_parse_param_default() {
+	//A string value
+	let str_param = Param::new(
+		"string",
+		"stuff",
+		Value::String("op1".to_string()),
+		None
+	);
+
+	assert_eq!("op1".to_string(), str_param.get_default::<String>());
+
+	//A bool value
+	let bool_param = Param::new(
+		"boolean",
+		"stuff",
+		Value::Bool(false),
+		None
+	);
+
+	assert_eq!(false, bool_param.get_default::<bool>());
+}
+
+#[test]
+fn can_parse_from_file() {
+	let mut f = File::open("spec/api/bulk.json").unwrap();
+	let parsed = parse::from_reader(&mut f).unwrap();
+
+	assert!(parsed.name.unwrap() == "bulk".to_string());
+}
+
+#[test]
+fn can_parse_all_in_dir() {
+	let parsed = parse::from_dir("spec/api");
+
+	assert!(parsed.is_ok());
 }

@@ -1,4 +1,4 @@
-use ::ast::*;
+use super::ast::*;
 use aster::AstBuilder;
 
 /// Generic codegen trait

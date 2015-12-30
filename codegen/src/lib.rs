@@ -8,6 +8,5 @@ extern crate serde;
 extern crate serde_json;
 extern crate aster;
 
-pub mod parse;
-pub mod ast;
-pub mod gen;
+pub mod api;
+pub mod test;
