@@ -20,7 +20,7 @@ impl HyperFnBodyGen {
 }
 
 impl <'a> Gen<'a, &'a mut AstBuilder> for HyperFnBodyGen {
-	fn gen(&'a mut self, ast: SyntaxTree) -> Result<&'a mut AstBuilder, &'static str> {
+	fn gen(&'a mut self, ast: Endpoint) -> Result<&'a mut AstBuilder, &'static str> {
 		//TODO: Examine fn params, build GET/POST/PUT with appropriate url
 		Ok(&mut self.bldr)
 	}

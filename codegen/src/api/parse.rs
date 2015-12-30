@@ -4,9 +4,9 @@ use std::fs::File;
 use std::io::Read;
 use std::fs::read_dir;
 use serde_json::{ Value, value };
-use super::ast::SyntaxTree;
+use super::ast::Endpoint;
 
-pub fn from_reader<R>(rdr: &mut R) -> Result<SyntaxTree, &'static str> where R: Read {
+pub fn from_reader<R>(rdr: &mut R) -> Result<Endpoint, &'static str> where R: Read {
 	//Read the file to string
 	let mut json = String::new();
 	let _ = rdr.read_to_string(&mut json).unwrap();
@@ -19,7 +19,7 @@ pub fn from_reader<R>(rdr: &mut R) -> Result<SyntaxTree, &'static str> where R: 
 			let (name, tree) = data.iter().next().unwrap();
 
 			//Deserialise the api ast and set the name
-			let mut endpoint = value::from_value::<SyntaxTree>(tree.clone()).unwrap();
+			let mut endpoint = value::from_value::<Endpoint>(tree.clone()).unwrap();
 			endpoint.name = Some(name.clone());
 
 			Ok(endpoint)
@@ -28,8 +28,8 @@ pub fn from_reader<R>(rdr: &mut R) -> Result<SyntaxTree, &'static str> where R: 
 	}
 }
 
-pub fn from_dir(path: &str) -> Result<Vec<SyntaxTree>, &'static str> {
-	let mut all_parsed: Vec<SyntaxTree> = Vec::new();
+pub fn from_dir(path: &str) -> Result<Vec<Endpoint>, &'static str> {
+	let mut all_parsed: Vec<Endpoint> = Vec::new();
 
 	let paths = read_dir(path).unwrap();
 	for path in paths {

@@ -18,15 +18,15 @@ fn can_parse_http_method() {
 	);
 
 	let expected_methods = vec!(
-		HttpMethod::Head,
-		HttpMethod::Get,
-		HttpMethod::Post,
-		HttpMethod::Put,
-		HttpMethod::Delete,
-		HttpMethod::Other("STUFF".to_string())
+		HttpVerb::Head,
+		HttpVerb::Get,
+		HttpVerb::Post,
+		HttpVerb::Put,
+		HttpVerb::Delete,
+		HttpVerb::Other("STUFF".to_string())
 	);
 
-	let methods: Vec<HttpMethod> = raw_methods.iter().map(|m| HttpMethod::parse(m)).collect();
+	let methods: Vec<HttpVerb> = raw_methods.iter().map(|m| HttpVerb::parse(m)).collect();
 
 	let mut success = true;
 	for i in 0..methods.len() {
@@ -82,24 +82,14 @@ fn can_parse_type() {
 #[test]
 fn can_parse_param_default() {
 	//A string value
-	let str_param = Param::new(
-		"string",
-		"stuff",
-		Value::String("op1".to_string()),
-		None
-	);
+	let str_param = Param::string(false, Some("op1".to_string()));
 
-	assert_eq!("op1".to_string(), str_param.get_default::<String>());
+	assert_eq!("op1".to_string(), str_param.get_default::<String>().unwrap());
 
 	//A bool value
-	let bool_param = Param::new(
-		"boolean",
-		"stuff",
-		Value::Bool(false),
-		None
-	);
+	let bool_param = Param::bool(false, Some(false));
 
-	assert_eq!(false, bool_param.get_default::<bool>());
+	assert_eq!(false, bool_param.get_default::<bool>().unwrap());
 }
 
 #[test]
