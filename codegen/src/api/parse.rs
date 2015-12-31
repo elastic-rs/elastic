@@ -6,6 +6,7 @@ use std::fs::read_dir;
 use serde_json::{ Value, value };
 use super::ast::Endpoint;
 
+//TODO: Proper error handling
 pub fn from_reader<R>(rdr: &mut R) -> Result<Endpoint, &'static str> where R: Read {
 	//Read the file to string
 	let mut json = String::new();
