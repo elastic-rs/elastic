@@ -1,5 +1,6 @@
 use std::str;
-use chrono::format::{ Item, Fixed, Numeric, Pad };
+
+pub use chrono::format::{ Item, Fixed, Numeric, Pad };
 
 pub fn to_tokens(fmt: &str) -> Vec<Item> {
 	let mut res = Vec::<Item>::new();
