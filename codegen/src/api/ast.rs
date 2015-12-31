@@ -74,6 +74,7 @@ impl HttpVerb {
 			"PUT" => HttpVerb::Put,
 			"PATCH" => HttpVerb::Patch,
 			"DELETE" => HttpVerb::Delete,
+			//TODO: prefer &str over String, should just be able to HttpVerb::Other(_method)
 			m => HttpVerb::Other(m.to_string())
 		}
 	}
@@ -127,6 +128,7 @@ impl Type {
 	pub fn parse(_type: &str, opts: Option<Vec<String>>) -> Type {
 		match _type {
 			"boolean" => Type::Bool,
+			//TODO: Split into Type::Num(Num::I64|I32|I16|Flt)
 			"number"|"long"|"integer"|"short"|"byte"|"double"|"float" => Type::Num,
 			"string" => Type::Str,
 			"time"|"date" => Type::Time,
@@ -134,6 +136,7 @@ impl Type {
 			"geo_point"|"geo_shape" => Type::Geo,
 			"list" => Type::List,
 			"enum" => Type::Enum(opts.unwrap()),
+			//TODO: prefer &str over String, should just be able to Type::Other(_type)
 			t => Type::Other(t.to_string())
 		}
 	}
@@ -318,6 +321,8 @@ impl Param {
 			description: String::new()
 		}
 	}
+	
+	//TODO: impls for num
 
 	/// Get the `Type` for the `Param`.
 	pub fn get_type(&self) -> Type {
