@@ -6,10 +6,8 @@ os:
   - osx
 script:
   - cd types
-  - cargo build -v
   - cargo test -v
   - cargo doc
   - cd ../codegen
-  - cargo build -v
   - cargo test -v
   - cargo doc
