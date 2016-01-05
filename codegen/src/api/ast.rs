@@ -322,7 +322,7 @@ impl Param {
 		}
 	}
 	
-	//TODO: impls for num
+	//TODO: impls for num and borrow instead of clone for get_type
 
 	/// Get the `Type` for the `Param`.
 	pub fn get_type(&self) -> Type {
