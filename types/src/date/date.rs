@@ -11,7 +11,9 @@ pub type DT = chrono::DateTime<UTC>;
 pub use chrono::{ Datelike, Timelike };
 
 /// An Elasticsearch `date` type with a required `time` component. 
+/// 
 /// The [format](format/index.html) is provided as a generic parameter.
+/// This struct wraps up a `chrono::DateTime<UTC>` struct, meaning storing time in `UTC` is required.
 ///
 /// # Examples
 /// Defining a date using the default format:
@@ -21,6 +23,7 @@ pub use chrono::{ Datelike, Timelike };
 /// 
 /// let date: DateTime = DateTime::now();
 /// ```
+/// 
 /// Defining a date using a named format:
 /// 
 /// ```
@@ -29,6 +32,7 @@ pub use chrono::{ Datelike, Timelike };
 /// 
 /// let date = DateTime::<BasicDateTime>::now();
 /// ```
+/// 
 /// Accessing the values of a date:
 /// 
 /// ```
@@ -58,9 +62,24 @@ pub struct DateTime<T: Format = BasicDateTime> {
 }
 
 impl <T: Format> DateTime<T> {
-	/// Creates a new `DateTime` from the given `chrono::DateTime<UTC>`
+	/// Creates a new `DateTime` from the given `chrono::DateTime<UTC>`.
+	/// 
+	/// This function will consume the provided `chrono` date.
 	/// 
 	/// # Examples
+	/// 
+	/// Create a `DateTime` from the current date:
+	/// 
+	/// ```
+	/// use chrono::UTC;
+	/// use elastic_types::date::DateTime;
+	/// 
+	/// //Create a chrono DateTime struct
+	/// let chronoDate = UTC::now();
+	/// 
+	/// //Give it to the elastic DateTime struct
+	/// let esDate = DateTime::new(chronoDate);
+	/// ```
 	pub fn new(date: DT) -> DateTime<T> {
 		DateTime {
 			value: date,
