@@ -25,6 +25,7 @@ pub trait Format {
 		let mut result: Result<DateTime<UTC>, String> = Err(String::new());
 
 		for fmt in fmts {
+			//TODO: Cache this
 			let f = parse::to_tokens(fmt);
 			let mut parsed = Parsed::new();
 
