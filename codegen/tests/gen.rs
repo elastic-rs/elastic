@@ -7,9 +7,16 @@ use elastic_codegen::api::gen::RustApiFnGen;
 
 #[test]
 fn can_build_rust_fn_from_ast() {
-	let (fun, safety, constness, token, gen) = RustApiFnGen::gen("my_fun");
-	let fun = syntax::print::pprust::fun_to_string(&fun, safety, constness, token, None, &gen);
+	let fun = RustApiFnGen::gen_fn("my_fun");
+	let fun_str = syntax::print::pprust::fun_to_string(
+		&fun.decl, 
+		fun.unsafety, 
+		fun.constness, 
+		fun.identifier, 
+		None, 
+		&fun.generics
+	);
 
-	println!("{}", fun);
+	println!("{}", fun_str);
 	panic!("implement");
 }
