@@ -1,32 +1,9 @@
 use std::intrinsics::type_name;
-use syntax::ast::{ 
-	Ident, 
-	FnDecl, 
-	Generics, 
-	Block, 
-	BlockCheckMode,
-	Unsafety, 
-	Constness, 
-	FunctionRetTy, 
-	Pat, 
-	PatIdent, 
-	BindingMode, 
-	Ty, 
-	Ty_, 
-	MutTy, 
-	Arg,
-	Path,
-	PathParameters, 
-	PathSegment, 
-	DUMMY_NODE_ID 
-};
+use syntax::ast::*;
 use syntax::parse::token;
 use syntax::print::pprust;
 use syntax::codemap::{ Spanned, DUMMY_SP };
 use syntax::ptr::P;
-
-/// Rexport of the libsyntax Mutability enum
-pub use syntax::ast::Mutability;
 
 /// A representation of a Rust fn
 pub struct Fn {
@@ -151,11 +128,11 @@ impl RustApiFnBldr {
 	}
 
 	/// Generate a type pointer with a specified name
-	pub fn gen_ty_ptr_as<T>(&self, name: &str, mutbl: Mutability) -> Ty {
+	pub fn gen_ty_ptr_as(&self, name: &str, mutbl: Mutability, lifetime: Option<Lifetime>) -> Ty {
 		Ty {
 			id: DUMMY_NODE_ID,
 			node: Ty_::TyRptr(
-				None,
+				lifetime,
 				self.gen_ty_mut_as(name, mutbl)
 			),
 			span: DUMMY_SP
@@ -163,11 +140,11 @@ impl RustApiFnBldr {
 	}
 
 	/// Generate a type pointer
-	pub fn gen_ty_ptr<T>(&self, mutbl: Mutability) -> Ty {
+	pub fn gen_ty_ptr<T>(&self, mutbl: Mutability, lifetime: Option<Lifetime>) -> Ty {
 		Ty {
 			id: DUMMY_NODE_ID,
 			node: Ty_::TyRptr(
-				None,
+				lifetime,
 				self.gen_ty_mut::<T>(mutbl)
 			),
 			span: DUMMY_SP
