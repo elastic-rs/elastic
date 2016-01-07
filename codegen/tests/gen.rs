@@ -22,8 +22,8 @@ fn can_build_rust_fn_from_ast() {
 
 	fun.add_lifetime(lifetime);
 
-	//Write the function
-	let _ = fun.to_string();
+	//fn my_fun<'a>(arg1: MyStruct, arg2: &'a mut i32, arg3: &'a str){ }
+	println!("{}", fun.to_string());
 }
 
 #[test]
