@@ -93,6 +93,7 @@ pub fn build_arg(name: &str, ty: Ty) -> Arg {
 	}
 }
 
+/// Generate a lifetime parameter
 pub fn lifetime(name: &str) -> Lifetime {
 	Lifetime {
 		id: DUMMY_NODE_ID,
