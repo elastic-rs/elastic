@@ -4,26 +4,20 @@ extern crate elastic_codegen;
 extern crate syntax;
 
 use syntax::ast::*;
-use syntax::codemap::DUMMY_SP;
-use syntax::parse::token::intern;
 use elastic_codegen::api::gen::*;
 
 #[test]
 fn can_build_rust_fn_from_ast() {
 	//Create a builder
-	let bldr = RustApiFnBldr::new();
+	let fnbldr = RustApiFnBldr::new();
 
 	//Define a lifetime 'a
-	let lifetime = Lifetime {
-		id: DUMMY_NODE_ID,
-		span: DUMMY_SP,
-		name: intern("'a")
-	};
+	let lifetime = fnbldr.lifetime("'a");
 
 	//Get a function signature
-	let mut fun = bldr.gen_fn("my_fun", vec![
-		bldr.gen_arg("arg1", bldr.gen_ty_ptr::<i32>(Mutability::MutMutable, Some(lifetime))),
-		bldr.gen_arg("arg2", bldr.gen_ty_ptr_as("str", Mutability::MutImmutable, Some(lifetime)))
+	let mut fun = fnbldr.build_fn("my_fun", vec![
+		fnbldr.arg_ptr::<i32>("arg1", Mutability::MutMutable, Some(lifetime)),
+		fnbldr.build_arg("arg2", fnbldr.build_ty_ptr("str", Mutability::MutImmutable, Some(lifetime)))
 	]);
 
 	//Add the 'a lifetime to the function declaration

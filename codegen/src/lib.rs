@@ -6,6 +6,7 @@
 
 extern crate serde;
 extern crate serde_json;
+extern crate aster;
 extern crate syntax;
 
 pub mod api;

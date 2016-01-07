@@ -4,7 +4,6 @@ extern crate serde_json;
 use std::fs::File;
 use elastic_codegen::api::ast::*;
 use elastic_codegen::api::parse;
-use serde_json::Value;
 
 #[test]
 fn can_parse_http_method() {

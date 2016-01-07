@@ -4,9 +4,10 @@ version = "0.1.0"
 authors = ["Ashley Mannix <ashleymannix@live.com.au>"]
 
 [features]
-codegen = ["elastic_codegen"]
+codegen = ["elastic_codegen", "aster"]
 
 [dependencies]
+aster = { version = "*", optional = true }
 
 [dependencies.elastic_codegen]
 path = "../codegen"

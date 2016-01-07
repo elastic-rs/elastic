@@ -3,7 +3,9 @@ use syntax::ast::*;
 use syntax::parse::token;
 use syntax::print::pprust;
 use syntax::codemap::{ Spanned, DUMMY_SP };
+use syntax::parse::token::intern;
 use syntax::ptr::P;
+use aster::AstBuilder;
 
 /// A representation of a Rust fn
 pub struct Fn {
@@ -40,15 +42,20 @@ impl ToString for Fn {
 }
 
 /// Generates function signatures for the Elasticsearch API
-pub struct RustApiFnBldr;
+pub struct RustApiFnBldr {
+	pub bldr: AstBuilder
+}
+
 impl RustApiFnBldr {
 	/// Create a new builder
 	pub fn new() -> RustApiFnBldr {
-		RustApiFnBldr
+		RustApiFnBldr {
+			bldr: AstBuilder::new()
+		}
 	}
 
 	/// Generate a function
-	pub fn gen_fn(&self, name: &str, inputs: Vec<Arg>) -> Fn {
+	pub fn build_fn(&self, name: &str, inputs: Vec<Arg>) -> Fn {
 		Fn {
 			identifier: token::str_to_ident(name),
 			decl: FnDecl {
@@ -70,7 +77,7 @@ impl RustApiFnBldr {
 	}
 
 	/// Generate a function arg with a type
-	pub fn gen_arg(&self, name: &str, ty: Ty) -> Arg {
+	pub fn build_arg(&self, name: &str, ty: Ty) -> Arg {
 		Arg {
 			ty: P(ty),
 			pat: P(Pat {
@@ -90,7 +97,7 @@ impl RustApiFnBldr {
 	}
 
 	/// Generate a type with a specified name
-	pub fn gen_ty_as(&self, name: &str) -> Ty {
+	pub fn build_ty(&self, name: &str) -> Ty {
 		Ty {
 			id: DUMMY_NODE_ID,
 			node: Ty_::TyPath(None, Path {
@@ -106,46 +113,64 @@ impl RustApiFnBldr {
 		}
 	}
 
-	/// Generate a type
-	pub fn gen_ty<T>(&self) -> Ty {
-		self.gen_ty_as(name_of::<T>())
-	}
-
 	/// Generate a potentially mutable type with a specified name
-	pub fn gen_ty_mut_as(&self, name: &str, mutbl: Mutability) -> MutTy {
+	pub fn build_ty_mut(&self, name: &str, mutbl: Mutability) -> MutTy {
 		MutTy {
-			ty: P(self.gen_ty_as(name)),
-			mutbl: mutbl
-		}
-	}
-
-	/// Generate a potentially mutable type
-	pub fn gen_ty_mut<T>(&self, mutbl: Mutability) -> MutTy {
-		MutTy {
-			ty: P(self.gen_ty::<T>()),
+			ty: P(self.build_ty(name)),
 			mutbl: mutbl
 		}
 	}
 
 	/// Generate a type pointer with a specified name
-	pub fn gen_ty_ptr_as(&self, name: &str, mutbl: Mutability, lifetime: Option<Lifetime>) -> Ty {
+	pub fn build_ty_ptr(&self, name: &str, mutbl: Mutability, lifetime: Option<Lifetime>) -> Ty {
 		Ty {
 			id: DUMMY_NODE_ID,
 			node: Ty_::TyRptr(
 				lifetime,
-				self.gen_ty_mut_as(name, mutbl)
+				self.build_ty_mut(name, mutbl)
 			),
 			span: DUMMY_SP
 		}
 	}
 
+	pub fn lifetime(&self, name: &str) -> Lifetime {
+		Lifetime {
+			id: DUMMY_NODE_ID,
+			span: DUMMY_SP,
+			name: intern("'a")
+		}
+	}
+
+	/// Generate an arg with the specified type
+	pub fn arg<T>(&self, name: &str) -> Arg {
+		self.build_arg(name, self.ty::<T>())
+	}
+
+	/// Generate a potentially mutable arg with the specified type
+	pub fn arg_ptr<T>(&self, name: &str, mutbl: Mutability, lifetime: Option<Lifetime>) -> Arg {
+		self.build_arg(name, self.ty_ptr::<T>(mutbl, lifetime))
+	}
+
+	/// Generate a type
+	pub fn ty<T>(&self) -> Ty {
+		self.build_ty(name_of::<T>())
+	}
+
+	/// Generate a potentially mutable type
+	pub fn ty_mut<T>(&self, mutbl: Mutability) -> MutTy {
+		MutTy {
+			ty: P(self.ty::<T>()),
+			mutbl: mutbl
+		}
+	}
+
 	/// Generate a type pointer
-	pub fn gen_ty_ptr<T>(&self, mutbl: Mutability, lifetime: Option<Lifetime>) -> Ty {
+	pub fn ty_ptr<T>(&self, mutbl: Mutability, lifetime: Option<Lifetime>) -> Ty {
 		Ty {
 			id: DUMMY_NODE_ID,
 			node: Ty_::TyRptr(
 				lifetime,
-				self.gen_ty_mut::<T>(mutbl)
+				self.ty_mut::<T>(mutbl)
 			),
 			span: DUMMY_SP
 		}
