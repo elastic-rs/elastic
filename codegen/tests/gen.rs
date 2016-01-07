@@ -8,23 +8,16 @@ use elastic_codegen::api::gen::*;
 
 #[test]
 fn can_build_rust_fn_from_ast() {
-	//Create a builder
-	let fnbldr = RustApiFnBldr::new();
-
 	//Define a lifetime 'a
-	let lifetime = fnbldr.lifetime("'a");
+	let lifetime = lifetime("'a");
 
 	//Get a function signature
-	let mut fun = fnbldr.build_fn("my_fun", vec![
-		fnbldr.arg_ptr::<i32>("arg1", Mutability::MutMutable, Some(lifetime)),
-		fnbldr.build_arg("arg2", fnbldr.build_ty_ptr("str", Mutability::MutImmutable, Some(lifetime)))
+	let mut fun = build_fn("my_fun", vec![
+		arg_ptr::<i32>("arg1", Mutability::MutMutable, Some(lifetime)),
+		build_arg("arg2", build_ty_ptr("str", Mutability::MutImmutable, Some(lifetime)))
 	]);
 
-	//Add the 'a lifetime to the function declaration
-	fun.generics.lifetimes.push(LifetimeDef {
-		lifetime: lifetime,
-		bounds: Vec::new()
-	});
+	fun.add_lifetime(lifetime);
 
 	//Write the function
 	let fun_str = fun.to_string();
