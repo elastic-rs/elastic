@@ -12,3 +12,4 @@ extern crate chomp;
 
 pub mod api;
 pub mod test;
+pub mod gen;

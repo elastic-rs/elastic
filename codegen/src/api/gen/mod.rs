@@ -1,24 +1,37 @@
-mod fun;
-mod ty;
-
-pub use self::fun::*;
-pub use self::ty::*;
-pub mod url;
-
 use std::str;
 use chomp::*;
 
-fn parse_path_segment(i: Input<u8>) -> U8Result<String> {
+fn parse_path_param(i: Input<u8>) -> U8Result<String> {
 	parse!{i;
-		//Trim leading :
-		let _ = take_while(|c| c == b':');
-		let seg = take_while1(|c| c != b':');
+		//Read to '{' and trim
+		let _ = take_while(|c| c != b'{');
+		let _ = take(1);
 
-		ret str::from_utf8(seg).unwrap().to_string()
+		//Read until '}' encountered
+		let param = take_while1(|c| c != b'}');
+
+		ret str::from_utf8(param).unwrap().to_string()
 	}
 }
 
-/// Parses a Rust path to its segments.
-pub fn parse_path(path: &str) -> Vec<String> {
-	parse_only(|i| many(i, |i| parse_path_segment(i)), path.as_bytes()).unwrap()
+fn parse_path_part(i: Input<u8>) -> U8Result<String> {
+	parse!{i;
+		//Read to '{'
+		let path = take_while(|c| c != b'{');
+		//Read until '}' encountered
+		let _ = take_while1(|c| c != b'}');
+		let _ = take(1);
+
+		ret str::from_utf8(path).unwrap().to_string()
+	}
+}
+
+/// Finds the Params that make up an Elasticsearch URL Part.
+pub fn parse_path_params(url: &str) -> Vec<String> {
+	parse_only(|i| many(i, |i| parse_path_param(i)), url.as_bytes()).unwrap()
+}
+
+/// Finds the Parts that make up an Elasticsearch URL.
+pub fn parse_path_parts(url: &str) -> Vec<String> {
+	parse_only(|i| many(i, |i| parse_path_part(i)), url.as_bytes()).unwrap()
 }

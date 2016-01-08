@@ -7,3 +7,4 @@ extern crate elastic_types;
 
 pub mod api_parse;
 pub mod gen;
+pub mod rust_gen;
