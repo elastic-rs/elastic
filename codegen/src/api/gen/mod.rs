@@ -1,3 +1,5 @@
+pub mod rust;
+
 use std::str;
 use chomp::*;
 

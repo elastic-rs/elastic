@@ -25,6 +25,8 @@
     <Folder Include="spec\" />
     <Folder Include="src\" />
     <Folder Include="benches\" />
+    <Folder Include="src\api\" />
+    <Folder Include="src\api\gen\" />
     <Folder Include="tests\" />
     <Code Include="src\*" />
     <Code Include="spec\*" />
