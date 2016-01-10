@@ -1,3 +1,7 @@
+//! Rust Codegen Helpers
+//! 
+//! Contains helpers that use the `libsyntax` crate for generating Rust code.
+
 mod fun;
 mod ty;
 

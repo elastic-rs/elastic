@@ -45,3 +45,10 @@ fn can_parse_parts_from_es_url() {
 
 	assert!(success);
 }
+
+#[test]
+fn can_build_url_format() {
+	let fmt = parse_fmt("/{index}/_alias/{name}");
+
+	assert_eq!("/{}/_alias/{}", &fmt[..]);
+}

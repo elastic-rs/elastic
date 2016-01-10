@@ -6,7 +6,7 @@ use std::fs::read_dir;
 use serde_json::{ Value, value };
 use super::ast::Endpoint;
 
-//TODO: Proper error handling
+/// Parses a Reader to an Elasticsearch API spec to an Endpoint.
 pub fn from_reader<R>(rdr: &mut R) -> Result<Endpoint, &'static str> where R: Read {
 	//Read the file to string
 	let mut json = String::new();
@@ -29,6 +29,7 @@ pub fn from_reader<R>(rdr: &mut R) -> Result<Endpoint, &'static str> where R: Re
 	}
 }
 
+/// Parses all Elasticsearch API spec files in a directory to Endpoints.
 pub fn from_dir(path: &str) -> Result<Vec<Endpoint>, &'static str> {
 	let mut all_parsed: Vec<Endpoint> = Vec::new();
 

@@ -1,4 +1,4 @@
-//! Elasticsearch API Codegen
+//! Elasticsearch API
 //! 
 //! Utilities for parsing the Elasticsearch API spec to a common format for code generation.
 
