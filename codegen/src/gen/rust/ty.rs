@@ -45,33 +45,23 @@ pub fn build_ty_ptr(name: &str, mutbl: Mutability, lifetime: Option<Lifetime>) -
 
 /// Generate a type
 pub fn ty<T>() -> Ty {
-	build_ty(name_of::<T>())
+	build_ty(type_of::<T>())
 }
 
 //TODO: build_ty_mut ()
 /// Generate a potentially mutable type
 pub fn ty_mut<T>(mutbl: Mutability) -> MutTy {
-	MutTy {
-		ty: P(ty::<T>()),
-		mutbl: mutbl
-	}
+	build_ty_mut(type_of::<T>(), mutbl)
 }
 
 //TODO: build_ty_ptr ()
 /// Generate a type pointer
 pub fn ty_ptr<T>(mutbl: Mutability, lifetime: Option<Lifetime>) -> Ty {
-	Ty {
-		id: DUMMY_NODE_ID,
-		node: Ty_::TyRptr(
-			lifetime,
-			ty_mut::<T>(mutbl)
-		),
-		span: DUMMY_SP
-	}
+	build_ty_ptr(type_of::<T>(), mutbl, lifetime)
 }
 
 /// Get the full-path name of a type
-pub fn name_of<'a, T>() -> &'a str {
+pub fn type_of<'a, T>() -> &'a str {
     let t =
         unsafe {
             type_name::<T>()
@@ -80,6 +70,6 @@ pub fn name_of<'a, T>() -> &'a str {
 }
 
 /// Get the full-path name of a type inferred from the argument
-pub fn infer_name_of<T>(_: &T) -> &str {
-    name_of::<T>()
+pub fn infer_type_of<T>(_: &T) -> &str {
+    type_of::<T>()
 }
