@@ -2,6 +2,8 @@
 //! 
 //! Utilities for parsing the Elasticsearch API spec to a common format for code generation.
 
+pub mod rust;
+
 use std::str;
 use chomp::*;
 

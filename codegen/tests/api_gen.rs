@@ -1,6 +1,7 @@
 extern crate elastic_codegen;
 
 use elastic_codegen::api::gen::*;
+use elastic_codegen::api::gen::rust::*;
 
 #[test]
 fn can_parse_params_from_es_url() {
@@ -47,8 +48,13 @@ fn can_parse_parts_from_es_url() {
 }
 
 #[test]
+<<<<<<< HEAD:codegen/tests/api_gen.rs
 fn can_build_url_format() {
 	let fmt = parse_fmt("/{index}/_alias/{name}");
 
 	assert_eq!("/{}/_alias/{}", &fmt[..]);
+=======
+fn can_build_url_format_stmt() {
+	let (ident, stmt) = url_fmt_dec("/{}/_alias/{}", Vec::new());
+>>>>>>> 14b407a32ab4b313e376c4d8c605b285c210466c:codegen/tests/api_gen.rs
 }
