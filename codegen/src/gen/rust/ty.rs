@@ -48,13 +48,11 @@ pub fn ty<T>() -> Ty {
 	build_ty(type_of::<T>())
 }
 
-//TODO: build_ty_mut ()
 /// Generate a potentially mutable type
 pub fn ty_mut<T>(mutbl: Mutability) -> MutTy {
 	build_ty_mut(type_of::<T>(), mutbl)
 }
 
-//TODO: build_ty_ptr ()
 /// Generate a type pointer
 pub fn ty_ptr<T>(mutbl: Mutability, lifetime: Option<Lifetime>) -> Ty {
 	build_ty_ptr(type_of::<T>(), mutbl, lifetime)
