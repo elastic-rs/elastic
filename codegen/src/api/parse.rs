@@ -6,7 +6,21 @@ use std::fs::read_dir;
 use serde_json::{ Value, value };
 use super::ast::Endpoint;
 
-/// Parses a Reader to an Elasticsearch API spec to an Endpoint.
+/// Parses a Reader from an Elasticsearch API spec to an Endpoint.
+/// 
+/// Anything that implements `Read` can be used as a source for the spec.
+/// 
+/// # Examples
+/// 
+/// Parse from a file:
+/// 
+/// ```
+/// use std::fs::File;
+/// use elastic_codegen::api::parse;
+/// 
+/// let mut f = File::open("spec/api/bulk.json").unwrap();
+///	let parsed = parse::from_reader(&mut f).unwrap();
+/// ```
 pub fn from_reader<R>(rdr: &mut R) -> Result<Endpoint, &'static str> where R: Read {
 	//Read the file to string
 	let mut json = String::new();
@@ -30,6 +44,14 @@ pub fn from_reader<R>(rdr: &mut R) -> Result<Endpoint, &'static str> where R: Re
 }
 
 /// Parses all Elasticsearch API spec files in a directory to Endpoints.
+/// 
+/// # Examples
+/// 
+/// ```
+/// use elastic_codegen::api::parse;
+/// 
+/// let parsed = parse::from_dir("spec/api");
+/// ```
 pub fn from_dir(path: &str) -> Result<Vec<Endpoint>, &'static str> {
 	let mut all_parsed: Vec<Endpoint> = Vec::new();
 

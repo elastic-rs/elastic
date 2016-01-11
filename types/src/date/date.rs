@@ -76,12 +76,13 @@ impl <T: Format> DateTime<T> {
 	/// # fn main() {
 	/// use chrono::UTC;
 	/// use elastic_types::date::DateTime;
+	/// use elastic_types::date::format::BasicDateTime;
 	/// 
 	/// //Create a chrono DateTime struct
 	/// let chronoDate = UTC::now();
 	/// 
 	/// //Give it to the elastic DateTime struct
-	/// let esDate = DateTime::new(chronoDate);
+	/// let esDate = DateTime::<BasicDateTime>::new(chronoDate);
 	/// # }
 	/// ```
 	pub fn new(date: DT) -> DateTime<T> {
