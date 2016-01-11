@@ -43,7 +43,7 @@ pub use chrono::{ Datelike, Timelike };
 /// 
 /// //eg: 2010/04/30 13:56
 /// println!("{}/{}/{} {}:{}", 
-///		date.value.year(), 
+///	date.value.year(), 
 /// 	date.value.month(), 
 /// 	date.value.day(), 
 /// 	date.value.hour(), 
@@ -71,6 +71,9 @@ impl <T: Format> DateTime<T> {
 	/// Create a `DateTime` from the current date:
 	/// 
 	/// ```
+	/// # extern crate elastic_types;
+	/// # extern crate chrono;
+	/// # fn main() {
 	/// use chrono::UTC;
 	/// use elastic_types::date::DateTime;
 	/// 
@@ -79,6 +82,7 @@ impl <T: Format> DateTime<T> {
 	/// 
 	/// //Give it to the elastic DateTime struct
 	/// let esDate = DateTime::new(chronoDate);
+	/// #}
 	/// ```
 	pub fn new(date: DT) -> DateTime<T> {
 		DateTime {
