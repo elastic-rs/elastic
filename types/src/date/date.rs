@@ -82,7 +82,7 @@ impl <T: Format> DateTime<T> {
 	/// 
 	/// //Give it to the elastic DateTime struct
 	/// let esDate = DateTime::new(chronoDate);
-	/// #}
+	/// # }
 	/// ```
 	pub fn new(date: DT) -> DateTime<T> {
 		DateTime {
