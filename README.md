@@ -1,5 +1,5 @@
 # elasticsearch-rs
-Elasticsearch client for Rust
+Yet another work in progress Elasticsearch client for Rust.
 
 ## Status
 
@@ -10,9 +10,12 @@ Windows  | [![Build status](https://ci.appveyor.com/api/projects/status/s0yo6i7s
 
 Currently only compiling on the `nightly` channel. Support for `stable` will be added.
 
+If the build is red, you can check the Travis build history to find the last `nightly` version that worked. Failures are usually because of Rust regressions.
+
+
 ## Goals
 
-To provide a strongly-typed, full-featured and efficient Elasticsearch client for Rust over asynchronous io.
+To provide a strongly-typed, full-featured and efficient Elasticsearch client for Rust over asynchronous (eventually) io.
 
 I'd like to follow a similar pattern to the Query DSL as the C# client does, where type info is always available when constructing queries. With Rust, it should be possible to produce a synax that's closer to the actual JSON spec, possibly using macros.
 
