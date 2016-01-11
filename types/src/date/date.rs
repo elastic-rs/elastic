@@ -6,9 +6,12 @@ use serde::{ Serialize, Deserialize, Serializer, Deserializer };
 use super::Format;
 use super::format::BasicDateTime;
 
-/// A re-export of the `chrono::DateTime` struct with `UTC` timezone
+/// A re-export of the `chrono::DateTime` struct with `UTC` timezone.
 pub type DT = chrono::DateTime<UTC>;
 pub use chrono::{ Datelike, Timelike };
+
+/// The default DateTime format.
+pub type DefaultFormat = BasicDateTime;
 
 /// An Elasticsearch `date` type with a required `time` component. 
 /// 
@@ -55,7 +58,7 @@ pub use chrono::{ Datelike, Timelike };
 /// # Links
 /// - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/date.html)
 #[derive(Clone)]
-pub struct DateTime<T: Format = BasicDateTime> {
+pub struct DateTime<T: Format = DefaultFormat> {
 	/// The date and time value
 	pub value: DT,
 	phantom: PhantomData<T>
@@ -75,14 +78,13 @@ impl <T: Format> DateTime<T> {
 	/// # extern crate chrono;
 	/// # fn main() {
 	/// use chrono::UTC;
-	/// use elastic_types::date::DateTime;
-	/// use elastic_types::date::format::BasicDateTime;
+	/// use elastic_types::date::*;
 	/// 
 	/// //Create a chrono DateTime struct
 	/// let chronoDate = UTC::now();
 	/// 
 	/// //Give it to the elastic DateTime struct
-	/// let esDate = DateTime::<BasicDateTime>::new(chronoDate);
+	/// let esDate = DateTime::<DefaultFormat>::new(chronoDate);
 	/// # }
 	/// ```
 	pub fn new(date: DT) -> DateTime<T> {
@@ -98,6 +100,34 @@ impl <T: Format> DateTime<T> {
 
 	pub fn parse(date: &str) -> Result<DateTime<T>, String> {
 		T::parse(date).map(|r| DateTime::new(r))
+	}
+}
+
+impl DateTime<DefaultFormat> {
+	/// Creates a new `DateTime` from the given `chrono::DateTime<UTC>` with the default `Format`.
+	/// 
+	/// This function will consume the provided `chrono` date.
+	/// 
+	/// # Examples
+	/// 
+	/// Create a `DateTime` from the current date:
+	/// 
+	/// ```
+	/// # extern crate elastic_types;
+	/// # extern crate chrono;
+	/// # fn main() {
+	/// use chrono::UTC;
+	/// use elastic_types::date::*;
+	/// 
+	/// //Create a chrono DateTime struct
+	/// let chronoDate = UTC::now();
+	/// 
+	/// //Give it to the elastic DateTime struct
+	/// let esDate = DateTime::default(chronoDate);
+	/// # }
+	/// ```
+	pub fn default(date: DT) -> DateTime<DefaultFormat> {
+		DateTime::new(date)
 	}
 }
 
