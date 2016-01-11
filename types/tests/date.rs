@@ -44,17 +44,6 @@ impl Format for MyType_date_fmt {
 }
 
 #[test]
-fn dates_without_format_specified_use_default() {
-	let _dt = chrono::UTC::now();
-	let expected = _dt.format(BASIC_DATE_TIME).to_string();
-
-	let dt = DateTime::<BasicDateTime>::new(_dt.clone());
-	let actual = dt.to_string();
-
-	assert_eq!(expected, actual);
-}
-
-#[test]
 fn dates_with_format_specified_should_use_first_provided() {
 	let _dt = chrono::UTC.datetime_from_str("13/05/2015 00:00:00", "%d/%m/%Y %H:%M:%S").unwrap();
 	let expected = _dt.format(MYTYPE_DATE_FMT_1).to_string();
