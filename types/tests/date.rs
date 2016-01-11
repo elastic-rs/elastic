@@ -58,9 +58,14 @@ fn dates_with_format_specified_should_use_first_provided() {
 fn dates_with_multi_formats_should_use_first_successful() {
 	let dt = DateTime::<MyType_date_fmt>::parse("13/05/2015 00:00:00").unwrap();
 
-	assert_eq!(2015, dt.value.year());
-	assert_eq!(5, dt.value.month());
-	assert_eq!(13, dt.value.day());
+	assert_eq!(
+		(2015i32, 5u32, 13u32), 
+		(
+			dt.value.year(),
+			dt.value.month(),
+			dt.value.day()
+		)
+	);
 }
 
 #[test]
