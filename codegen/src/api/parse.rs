@@ -19,7 +19,7 @@ use super::ast::Endpoint;
 /// use elastic_codegen::api::parse;
 /// 
 /// let mut f = File::open("spec/api/bulk.json").unwrap();
-///	let parsed = parse::from_reader(&mut f).unwrap();
+/// let parsed = parse::from_reader(&mut f).unwrap();
 /// ```
 pub fn from_reader<R>(rdr: &mut R) -> Result<Endpoint, &'static str> where R: Read {
 	//Read the file to string
@@ -45,12 +45,14 @@ pub fn from_reader<R>(rdr: &mut R) -> Result<Endpoint, &'static str> where R: Re
 
 /// Parses all Elasticsearch API spec files in a directory to Endpoints.
 /// 
+/// The parsed endpoints are not necessarily in alphabetical order.
+/// 
 /// # Examples
 /// 
 /// ```
 /// use elastic_codegen::api::parse;
 /// 
-/// let parsed = parse::from_dir("spec/api");
+/// let parsed = parse::from_dir("spec/api").unwrap();
 /// ```
 pub fn from_dir(path: &str) -> Result<Vec<Endpoint>, &'static str> {
 	let mut all_parsed: Vec<Endpoint> = Vec::new();
