@@ -44,15 +44,18 @@ pub type DefaultFormat = BasicDateTime;
 /// 
 /// let date = DateTime::<BasicDateTime>::now();
 /// 
-/// //eg: 2010/04/30 13:56
-/// println!("{}/{}/{} {}:{}", 
+/// //eg: 2010/04/30 13:56:59.37296
+/// println!("{}/{}/{} {}:{}:{}.{}", 
 ///	date.value.year(), 
 /// 	date.value.month(), 
 /// 	date.value.day(), 
 /// 	date.value.hour(), 
-/// 	date.value.minute()
+/// 	date.value.minute(),
+/// 	date.value.second(), 
+/// 	date.value.microsecond()
 /// );
 /// ```
+/// 
 /// For a full list of available date and time functions on `date.value` see [Datelike](trait.Datelike.html) and [Timelike](trait.Timelike.html).
 /// 
 /// # Links
@@ -94,10 +97,31 @@ impl <T: Format> DateTime<T> {
 		}
 	}
 
+	/// Gets the current system time.
+	/// 
+	/// # Examples
+	/// 
+	/// ```
+	/// use elastic_types::date::*;
+	/// 
+	/// let date = DateTime::<DefaultFormat>::now();
+	/// ```
 	pub fn now() -> DateTime<T> {
 		DateTime::<T>::default()
 	}
 
+	/// Parse the date and time from a string.
+	/// 
+	/// The format of the string must match the specified `Format`.
+	/// For more details on the available formats, see the `format` module.
+	/// 
+	/// # Examples
+	/// 
+	/// ```
+	/// use elastic_types::date::*;
+	/// 
+	/// let date = DateTime::<DefaultFormat>::parse("20151126T145543.778Z");
+	/// ```
 	pub fn parse(date: &str) -> Result<DateTime<T>, String> {
 		T::parse(date).map(|r| DateTime::new(r))
 	}
@@ -156,17 +180,17 @@ impl <T: Format> Default for DateTime<T> {
 //Serialize
 impl <T: Format> Serialize for DateTime<T> {
 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where S: Serializer
-    {
-        serializer.visit_str(&self.to_string()[..])
-    }
+	{
+		serializer.visit_str(&self.to_string()[..])
+	}
 }
 
 //Deserialize
 impl <T: Format> Deserialize for DateTime<T> {
 	fn deserialize<D>(deserializer: &mut D) -> Result<DateTime<T>, D::Error> where D: Deserializer,
-    {
-        deserializer.visit_str(DateTimeVisitor::<T>::default())
-    }
+	{
+		deserializer.visit_str(DateTimeVisitor::<T>::default())
+	}
 }
 
 struct DateTimeVisitor<T: Format> {
