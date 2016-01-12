@@ -1,6 +1,7 @@
 //! Rust Codegen Helpers
 //! 
 //! Contains helpers that use the `libsyntax` crate for generating Rust code.
+//! The functions and structures in this module are consumed by both the higher-level API and Test codegen modules.
 
 mod fun;
 mod ty;
@@ -22,6 +23,16 @@ fn parse_path_segment(i: Input<u8>) -> U8Result<String> {
 }
 
 /// Parses a Rust path to its segments.
+/// 
+/// The path is split by '::' and each segment is added in order.
+/// 
+/// # Examples
+/// 
+/// Parse a path:
+/// 
+/// ```
+/// let parsed = parse_path("crate::mod_a::mod_b::fn");
+/// ```
 pub fn parse_path(path: &str) -> Vec<String> {
 	parse_only(|i| many(i, |i| parse_path_segment(i)), path.as_bytes()).unwrap()
 }
