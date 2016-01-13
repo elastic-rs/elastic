@@ -15,9 +15,8 @@
 //! - [Spec Source](https://github.com/elastic/elasticsearch/tree/master/rest-api-spec)
 //! - [Github](https://github.com/KodrAus/elasticsearch-rs)
 
-//TODO: Uncomment attr
-//#![deny(missing_docs)]
 
+#![deny(missing_docs)]
 #![feature(rustc_private, core_intrinsics, custom_derive, custom_attribute, plugin)]
 #![plugin(serde_macros)]
 

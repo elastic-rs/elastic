@@ -5,7 +5,7 @@ use syntax::codemap::DUMMY_SP;
 use syntax::ptr::P;
 use super::parse_path;
 
-/// Generate a type with a specified name
+/// Generate a type with a specified name.
 pub fn build_ty(name: &str) -> Ty {
 	let segments = parse_path(name).iter().map(|seg| PathSegment {
 		identifier: token::str_to_ident(&seg[..]),
@@ -23,7 +23,7 @@ pub fn build_ty(name: &str) -> Ty {
 	}
 }
 
-/// Generate a potentially mutable type with a specified name
+/// Generate a potentially mutable type with a specified name.
 pub fn build_ty_mut(name: &str, mutbl: Mutability) -> MutTy {
 	MutTy {
 		ty: P(build_ty(name)),
@@ -31,7 +31,7 @@ pub fn build_ty_mut(name: &str, mutbl: Mutability) -> MutTy {
 	}
 }
 
-/// Generate a type pointer with a specified name
+/// Generate a type pointer with a specified name.
 pub fn build_ty_ptr(name: &str, mutbl: Mutability, lifetime: Option<Lifetime>) -> Ty {
 	Ty {
 		id: DUMMY_NODE_ID,
@@ -43,22 +43,22 @@ pub fn build_ty_ptr(name: &str, mutbl: Mutability, lifetime: Option<Lifetime>) -
 	}
 }
 
-/// Generate a type
+/// Generate a type.
 pub fn ty<T>() -> Ty {
 	build_ty(type_of::<T>())
 }
 
-/// Generate a potentially mutable type
+/// Generate a potentially mutable type.
 pub fn ty_mut<T>(mutbl: Mutability) -> MutTy {
 	build_ty_mut(type_of::<T>(), mutbl)
 }
 
-/// Generate a type pointer
+/// Generate a type pointer.
 pub fn ty_ptr<T>(mutbl: Mutability, lifetime: Option<Lifetime>) -> Ty {
 	build_ty_ptr(type_of::<T>(), mutbl, lifetime)
 }
 
-/// Get the full-path name of a type
+/// Get the full-path name of a type.
 pub fn type_of<'a, T>() -> &'a str {
     let t =
         unsafe {
@@ -67,7 +67,7 @@ pub fn type_of<'a, T>() -> &'a str {
     t
 }
 
-/// Get the full-path name of a type inferred from the argument
+/// Get the full-path name of a type inferred from the argument.
 pub fn infer_type_of<T>(_: &T) -> &str {
     type_of::<T>()
 }

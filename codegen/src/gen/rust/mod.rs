@@ -31,6 +31,8 @@ fn parse_path_segment(i: Input<u8>) -> U8Result<String> {
 /// Parse a path:
 /// 
 /// ```
+/// use elastic_codegen::gen::rust::parse_path;
+/// 
 /// let parsed = parse_path("crate::mod_a::mod_b::fn");
 /// ```
 pub fn parse_path(path: &str) -> Vec<String> {

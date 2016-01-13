@@ -1,3 +1,8 @@
+//! API Spec Abstract Syntax Tree
+//! 
+//! Contains Rust structures for the API specification.
+//! Structs in this module are designed for inspecting after instantiation by `serde`, rather than constructing directly.
+
 use std::collections::BTreeMap;
 use serde;
 use serde::{ Deserialize, Deserializer };
@@ -11,7 +16,7 @@ use serde_json::value;
 pub struct Endpoint {
 	/// The name of the `Endpoint`.
 	/// 
-	/// This may contain a hierarchy of features, separated by `.`. For example: `cluster.health`, `cluster.state` and 'cluster.reroute` all belong to `cluster`.
+	/// This may contain a hierarchy of features, separated by `.`. For example: `cluster.health`, `cluster.state` and `cluster.reroute` all belong to `cluster`.
 	pub name: Option<String>,
 	/// A link to the Elasticsearch documentation for this `Endpoint`.
 	pub documentation: String,
@@ -49,7 +54,7 @@ impl HttpVerb {
 	/// 
 	/// # Examples
 	/// 
-	/// This method is case sensitive.
+	/// This method is case sensitive. So:
 	/// 
 	/// ```
 	/// use elastic_codegen::api::ast::HttpVerb;
