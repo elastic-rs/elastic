@@ -44,7 +44,7 @@ pub type DefaultFormat = BasicDateTime;
 /// 
 /// let date = DateTime::<BasicDateTime>::now();
 /// 
-/// //eg: 2010/04/30 13:56:59.37296
+/// //eg: 2010/04/30 13:56:59.372
 /// println!("{}/{}/{} {}:{}:{}.{}", 
 ///	date.value.year(), 
 /// 	date.value.month(), 
@@ -52,7 +52,7 @@ pub type DefaultFormat = BasicDateTime;
 /// 	date.value.hour(), 
 /// 	date.value.minute(),
 /// 	date.value.second(), 
-/// 	date.value.microsecond()
+/// 	date.value.nanosecond() / 1000000
 /// );
 /// ```
 /// 
@@ -87,7 +87,7 @@ impl <T: Format> DateTime<T> {
 	/// let chronoDate = UTC::now();
 	/// 
 	/// //Give it to the elastic DateTime struct
-	/// let esDate = DateTime::<DefaultFormat>::new(chronoDate);
+	/// let esDate: DateTime = DateTime::new(chronoDate);
 	/// # }
 	/// ```
 	pub fn new(date: DT) -> DateTime<T> {
@@ -104,7 +104,7 @@ impl <T: Format> DateTime<T> {
 	/// ```
 	/// use elastic_types::date::*;
 	/// 
-	/// let date = DateTime::<DefaultFormat>::now();
+	/// let date: DateTime = DateTime::now();
 	/// ```
 	pub fn now() -> DateTime<T> {
 		DateTime::<T>::default()
@@ -112,46 +112,20 @@ impl <T: Format> DateTime<T> {
 
 	/// Parse the date and time from a string.
 	/// 
-	/// The format of the string must match the specified `Format`.
-	/// For more details on the available formats, see the `format` module.
+	/// The format of the string must match the given `Format`.
 	/// 
 	/// # Examples
 	/// 
-	/// ```
-	/// use elastic_types::date::*;
+	/// Parsing from a specified `Format`.
 	/// 
-	/// let date = DateTime::<DefaultFormat>::parse("20151126T145543.778Z");
+	/// ```
+	/// use elastic_types::date::DateTime;
+	/// use elastic_types::date::format::BasicDateTime;
+	/// 
+	/// let date = DateTime::<BasicDateTime>::parse("20151126T145543.778Z");
 	/// ```
 	pub fn parse(date: &str) -> Result<DateTime<T>, String> {
 		T::parse(date).map(|r| DateTime::new(r))
-	}
-}
-
-impl DateTime<DefaultFormat> {
-	/// Creates a new `DateTime` from the given `chrono::DateTime<UTC>` with the default `Format`.
-	/// 
-	/// This function will consume the provided `chrono` date.
-	/// 
-	/// # Examples
-	/// 
-	/// Create a `DateTime` from the current date:
-	/// 
-	/// ```
-	/// # extern crate elastic_types;
-	/// # extern crate chrono;
-	/// # fn main() {
-	/// use chrono::UTC;
-	/// use elastic_types::date::*;
-	/// 
-	/// //Create a chrono DateTime struct
-	/// let chronoDate = UTC::now();
-	/// 
-	/// //Give it to the elastic DateTime struct
-	/// let esDate = DateTime::default(chronoDate);
-	/// # }
-	/// ```
-	pub fn default(date: DT) -> DateTime<DefaultFormat> {
-		DateTime::new(date)
 	}
 }
 

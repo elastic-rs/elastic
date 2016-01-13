@@ -15,6 +15,7 @@
 //! - [Spec Source](https://github.com/elastic/elasticsearch/tree/master/rest-api-spec)
 //! - [Github](https://github.com/KodrAus/elasticsearch-rs)
 
+#![doc(html_root_url = "http://kodraus.github.io/rustdoc/elastic_codegen/")]
 
 #![deny(missing_docs)]
 #![feature(rustc_private, core_intrinsics, custom_derive, custom_attribute, plugin)]
