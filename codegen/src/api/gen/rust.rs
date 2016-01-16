@@ -3,6 +3,7 @@
 //! Utilities for parsing the Elasticsearch API spec to Rust source code.
 
 use syntax::ast::*;
+use syntax::attr::ThinAttributes;
 use syntax::parse::token;
 use syntax::codemap::{ Spanned, DUMMY_SP };
 use syntax::ptr::P;
@@ -13,6 +14,33 @@ use syntax::ptr::P;
 /// Returns the `Ident` for the formatted string and the `Stmt` that declares it.
 pub fn url_fmt_dec(_url: &str, _parts: Vec<Ident>) -> (Ident, Stmt) {
 	let ident = token::str_to_ident("url_fmtd");
+
+	//Build up the macro arguments
+	let mut args = vec![
+		//The url format
+		TokenTree::Token(
+			DUMMY_SP, token::Token::Literal(
+				token::Lit::Str_(token::intern(_url)),
+				None
+			)
+		),
+		TokenTree::Token(
+			DUMMY_SP, token::Token::Comma
+		),
+	];
+
+	for part in _parts {
+		args.push(TokenTree::Token(
+			DUMMY_SP, token::Token::Ident(
+				part, 
+				token::IdentStyle::Plain
+			)
+		));
+		args.push(TokenTree::Token(
+			DUMMY_SP, token::Token::Comma
+		));
+	}
+
 	let stmt = Stmt {
 		node: Stmt_::StmtDecl(
 			P(Decl {
@@ -32,7 +60,30 @@ pub fn url_fmt_dec(_url: &str, _parts: Vec<Ident>) -> (Ident, Stmt) {
 						}),
 						ty: None,
 						//TODO: format!(url, parts[0], ..., parts[n])
-						init: None,
+						init: Some(
+							P(Expr {
+								id: DUMMY_NODE_ID,
+								node: Expr_::ExprMac(Spanned {
+									span: DUMMY_SP,
+									node: Mac_ {
+										path: Path {
+											span: DUMMY_SP,
+											global: false,
+											segments: vec![
+												PathSegment {
+													identifier: token::str_to_ident("format"),
+													parameters: PathParameters::none()
+												}
+											]
+										},
+										tts: args,
+										ctxt: SyntaxContext(0)
+									}
+								}),
+								span: DUMMY_SP,
+								attrs: None
+							})
+						),
 						id: DUMMY_NODE_ID,
 						span: DUMMY_SP,
 						attrs: None

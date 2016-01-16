@@ -1,5 +1,10 @@
-extern crate elastic_codegen;
+#![feature(rustc_private)]
 
+extern crate elastic_codegen;
+extern crate syntax;
+
+use syntax::parse::token;
+use syntax::print::pprust;
 use elastic_codegen::api::gen::*;
 use elastic_codegen::api::gen::rust::*;
 
@@ -49,5 +54,12 @@ fn can_parse_parts_from_es_url() {
 
 #[test]
 fn can_build_url_format_stmt() {
-	let (ident, stmt) = url_fmt_dec("/{}/_alias/{}", Vec::new());
+	let (ident, stmt) = url_fmt_dec("/{}/_alias/{}", vec![
+		token::str_to_ident("index"),
+		token::str_to_ident("name")
+	]);
+	let result = pprust::stmt_to_string(&stmt);
+
+	//let url_fmtd = format!("/{}/_alias/{}" , index , name ,);
+	println!("{}", result);
 }
