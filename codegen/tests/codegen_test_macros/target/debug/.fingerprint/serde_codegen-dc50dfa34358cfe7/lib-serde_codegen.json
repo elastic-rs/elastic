@@ -1,0 +1,1 @@
+{"rustc":4499846452505162446,"target":10991843943269549700,"profile":13023446655302672390,"local":{"variant":"Precalculated","fields":["0.6.9"]},"features":"Some([\"nightly\", \"quasi_macros\"])","deps":[["aster v0.10.0",10607166570058082154],["quasi v0.4.0",14345120337987054416],["quasi_macros v0.4.0",1315255900425125218]]}
