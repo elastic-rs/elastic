@@ -2,6 +2,7 @@
 //! 
 //! Utilities for emitting generated code to some output.
 
+pub mod default;
 pub mod rust;
 
 use std::marker::PhantomData;
@@ -71,18 +72,10 @@ pub trait Emitter<'a> {
 /// use std::io::Write;
 /// use elastic_codegen::emit::*;
 /// 
-/// //Define an emittable item
-/// struct MyEmittable;
-/// impl Emit<(), EmitError> for MyEmittable {
-/// 	fn emit(&self, _: ()) -> Result<String, EmitError> {
-/// 		Ok("some result".to_string())
-/// 	}
-/// }
-/// 
 /// let mut buf: Vec<u8> = Vec::new();
 /// let emitter: CtxtFreeEmitter = CtxtFreeEmitter::new();
 /// 
-/// let item = MyEmittable;
+/// let item = "my emittable item";
 /// let _ = emitter.emit(&item, &mut buf).unwrap();
 /// ```
 pub struct CtxtFreeEmitter<E = EmitError> where E: From<EmitError> {
