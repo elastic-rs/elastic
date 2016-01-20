@@ -64,6 +64,27 @@ pub trait Emitter<'a> {
 /// Default context-free Emitter
 /// 
 /// This emitter will emit items that implement `Emit<(), _>`
+/// 
+/// # Examples
+/// 
+/// ```
+/// use std::io::Write;
+/// use elastic_codegen::emit::*;
+/// 
+/// //Define an emittable item
+/// struct MyEmittable;
+/// impl Emit<(), EmitError> for MyEmittable {
+/// 	fn emit(&self, _: ()) -> Result<String, EmitError> {
+/// 		Ok("some result".to_string())
+/// 	}
+/// }
+/// 
+/// let mut buf: Vec<u8> = Vec::new();
+/// let emitter: CtxtFreeEmitter = CtxtFreeEmitter::new();
+/// 
+/// let item = MyEmittable;
+/// let _ = emitter.emit(&item, &mut buf).unwrap();
+/// ```
 pub struct CtxtFreeEmitter<E = EmitError> where E: From<EmitError> {
 	phantom: PhantomData<E>
 }
