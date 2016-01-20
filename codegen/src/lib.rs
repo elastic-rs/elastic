@@ -18,7 +18,7 @@
 #![doc(html_root_url = "http://kodraus.github.io/rustdoc/elastic_codegen/")]
 
 #![deny(missing_docs)]
-#![feature(rustc_private, core_intrinsics, custom_derive, custom_attribute, plugin)]
+#![feature(associated_type_defaults, rustc_private, core_intrinsics, custom_derive, custom_attribute, plugin)]
 #![plugin(serde_macros)]
 
 extern crate serde;
@@ -30,3 +30,4 @@ extern crate chomp;
 pub mod api;
 pub mod test;
 pub mod gen;
+pub mod emit;

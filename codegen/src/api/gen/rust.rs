@@ -4,39 +4,39 @@
 
 use syntax::ast::*;
 use syntax::parse::token;
-use syntax::codemap::{ Spanned, Span };
+use syntax::codemap::{ Spanned, DUMMY_SP };
 use syntax::ptr::P;
 
 /// Generate a statement to replace the params in a url.
 /// 
 /// Generates statements of the form `let url_fmtd = format!(url, parts[0], ..., parts[n]);`. 
 /// Returns the `Ident` for the formatted string and the `Stmt` that declares it.
-pub fn url_fmt_dec(_url: &str, _parts: Vec<Ident>, sp: Span) -> (Ident, Stmt) {
+pub fn url_fmt_dec(_url: &str, _parts: Vec<Ident>) -> (Ident, Stmt) {
 	let ident = token::str_to_ident("url_fmtd");
 
 	//Build up the macro arguments
 	let mut args = vec![
 		//The url format
 		TokenTree::Token(
-			sp, token::Token::Literal(
+			DUMMY_SP, token::Token::Literal(
 				token::Lit::Str_(token::intern(_url)),
 				None
 			)
 		),
 		TokenTree::Token(
-			sp, token::Token::Comma
+			DUMMY_SP, token::Token::Comma
 		),
 	];
 
 	for part in _parts {
 		args.push(TokenTree::Token(
-			sp, token::Token::Ident(
+			DUMMY_SP, token::Token::Ident(
 				part, 
 				token::IdentStyle::Plain
 			)
 		));
 		args.push(TokenTree::Token(
-			sp, token::Token::Comma
+			DUMMY_SP, token::Token::Comma
 		));
 	}
 
@@ -50,22 +50,23 @@ pub fn url_fmt_dec(_url: &str, _parts: Vec<Ident>, sp: Span) -> (Ident, Stmt) {
 							node: PatIdent(
 								BindingMode::ByValue(Mutability::MutImmutable),
 								Spanned {
-									span: sp,
+									span: DUMMY_SP,
 									node: ident
 								},
 								None
 								),
-							span: sp
+							span: DUMMY_SP
 						}),
 						ty: None,
+						//TODO: format!(url, parts[0], ..., parts[n])
 						init: Some(
 							P(Expr {
 								id: DUMMY_NODE_ID,
 								node: Expr_::ExprMac(Spanned {
-									span: sp,
+									span: DUMMY_SP,
 									node: Mac_ {
 										path: Path {
-											span: sp,
+											span: DUMMY_SP,
 											global: false,
 											segments: vec![
 												PathSegment {
@@ -78,20 +79,20 @@ pub fn url_fmt_dec(_url: &str, _parts: Vec<Ident>, sp: Span) -> (Ident, Stmt) {
 										ctxt: SyntaxContext(0)
 									}
 								}),
-								span: sp,
+								span: DUMMY_SP,
 								attrs: None
 							})
 						),
 						id: DUMMY_NODE_ID,
-						span: sp,
+						span: DUMMY_SP,
 						attrs: None
 					})
 				),
-				span: sp
+				span: DUMMY_SP
 			}),
 			DUMMY_NODE_ID
 		),
-		span: sp
+		span: DUMMY_SP
 	};
 
     (ident, stmt)
