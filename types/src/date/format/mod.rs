@@ -25,7 +25,6 @@ pub trait Format {
 		let mut result: Result<DateTime<UTC>, String> = Err(String::new());
 
 		for fmt in fmts {
-			//TODO: Cache this
 			let f = parse::to_tokens(fmt);
 			let mut parsed = Parsed::new();
 
@@ -39,13 +38,12 @@ pub trait Format {
 					}
 
 					//Set the DateTime result
-					result = Ok(
+					return Ok(
 						chrono::DateTime::from_utc(
 							parsed.to_naive_datetime_with_offset(0).unwrap(), 
 							chrono::UTC
 						)	
 					);
-					break;
 				},
 				Err(e) => errors.push(e)
 			}
