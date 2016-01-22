@@ -32,6 +32,20 @@ impl Fn {
 
 		self
 	}
+
+	/// Set the return type of the function.
+	pub fn set_return<'a, T>(&'a mut self) -> &'a mut Fn {
+		self.decl.output = FunctionRetTy::Return(P(ty::<T>()));
+
+		self
+	}
+
+	/// Append a statement to the function body.
+	pub fn add_body_stmt<'a>(&'a mut self, stmt: P<Stmt>) -> &'a mut Fn {
+		self.body.stmts.push(stmt);
+
+		self
+	}
 }
 
 impl ToString for Fn {

@@ -43,7 +43,6 @@ pub trait Emitter<'a> {
 	type Ctxt: 'a;
 	/// The context passed to the implementors of `Emit`.
 	type CtxtBrw: 'a = &'a Self::Ctxt;
-
 	/// An error returned by `emit()`.
 	type Error: From<EmitError> = EmitError;
 	
@@ -59,6 +58,11 @@ pub trait Emitter<'a> {
 		Er: Into<EmitError>, 
 		W: Write {
 			DefaultEmitter::emit::<Self::CtxtBrw, Self::Error, Em, Er, W>(self.get_cx(), e, writer)
+	}
+
+	/// Emit a string
+	fn emit_str<W>(&self, e: &str, writer: &'a mut W) -> Result<(), Self::Error> where W: Write {
+		DefaultEmitter::emit_str::<Self::Error, W>(e, writer)
 	}
 }
 
@@ -124,6 +128,10 @@ impl <'a, E> Emitter<'a> for CtxtFreeEmitter<E> where E: From<EmitError> {
 		W: Write {
 			DefaultEmitter::emit::<Self::CtxtBrw, Self::Error, Em, Er, W>(self.get_cx(), e, writer)
 	}
+
+	fn emit_str<W>(&self, e: &str, writer: &mut W) -> Result<(), Self::Error> where W: Write {
+		DefaultEmitter::emit_str::<Self::Error, W>(e, writer)
+	}
 }
 
 struct DefaultEmitter;
@@ -138,6 +146,15 @@ impl DefaultEmitter {
 			);
 			
 			writer.write_all(&emitted.into_bytes()[..]).map_err(|e| {
+				let emit_err: EmitError = e.into();
+				emit_err.into()
+			})
+	}
+
+	pub fn emit_str<E, W>(e: &str, writer: &mut W) -> Result<(), E>  where 
+		E: From<EmitError>, 
+		W: Write {
+			writer.write_all(e.as_bytes()).map_err(|e| {
 				let emit_err: EmitError = e.into();
 				emit_err.into()
 			})
