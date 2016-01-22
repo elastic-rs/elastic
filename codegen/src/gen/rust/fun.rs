@@ -1,3 +1,4 @@
+use std::ops::Deref;
 use syntax::ast::*;
 use syntax::parse::token;
 use syntax::print::pprust;
@@ -43,6 +44,14 @@ impl Fn {
 	/// Append a statement to the function body.
 	pub fn add_body_stmt<'a>(&'a mut self, stmt: P<Stmt>) -> &'a mut Fn {
 		self.body.stmts.push(stmt);
+
+		self
+	}
+
+	/// Set the function body
+	pub fn set_body<'a>(&'a mut self, body: P<Block>) -> &'a mut Fn {
+		//TODO: Fix this
+		self.body = body.deref().clone();
 
 		self
 	}

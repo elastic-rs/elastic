@@ -33,29 +33,31 @@ fn can_add_lifetime_to_fn() {
 
 #[test]
 fn can_add_body_stmt_to_fn() {
+	//Build an execution context
 	let ps = syntax::parse::ParseSess::new();
-    let mut feature_gated_cfgs = vec![];
-    let mut cx = syntax::ext::base::ExtCtxt::new(
-        &ps, vec![],
-        syntax::ext::expand::ExpansionConfig::default("qquote".to_string()),
-        &mut feature_gated_cfgs
-    );
-    cx.bt_push(syntax::codemap::ExpnInfo {
-        call_site: DUMMY_SP,
-        callee: syntax::codemap::NameAndSpan {
-            format: syntax::codemap::MacroBang(intern("")),
-            allow_internal_unstable: false,
-            span: None,
-        }
-    });
-    let cx = &mut cx;
+	let mut feature_gated_cfgs = vec![];
+	let mut cx = syntax::ext::base::ExtCtxt::new(
+		&ps, vec![],
+		syntax::ext::expand::ExpansionConfig::default("qquote".to_string()),
+		&mut feature_gated_cfgs
+	);
+	cx.bt_push(syntax::codemap::ExpnInfo {
+		call_site: DUMMY_SP,
+		callee: syntax::codemap::NameAndSpan {
+			format: syntax::codemap::MacroBang(intern("")),
+			allow_internal_unstable: false,
+			span: None,
+		}
+	});
+	let cx = &mut cx;
 
+	//Build a function
 	let mut fun = build_fn("my_fun", vec![
 		arg::<MyStruct>("arg1")
 	]);
 
+	//Add a statement to the function body
 	let stmt = quote_stmt!(cx, let x = 1;).unwrap();
-
 	fun.add_body_stmt(stmt);
 
 	assert_eq!(1, fun.body.stmts.len());
