@@ -9,24 +9,6 @@ use elastic_codegen::gen::rust::*;
 struct MyStruct;
 
 #[test]
-fn can_build_rust_fn_from_ast() {
-	//Define a lifetime 'a
-	let lifetime = lifetime("'a");
-
-	//Get a function signature
-	let mut fun = build_fn("my_fun", vec![
-		arg::<MyStruct>("arg1"),
-		arg_ptr::<i32>("arg2", Mutability::MutMutable, Some(lifetime)),
-		build_arg("arg3", build_ty_ptr("str", Mutability::MutImmutable, Some(lifetime)))
-	]);
-
-	fun.add_lifetime(lifetime);
-
-	//fn my_fun<'a>(arg1: MyStruct, arg2: &'a mut i32, arg3: &'a str){ }
-	println!("{}", fun.to_string());
-}
-
-#[test]
 fn can_parse_path() {
 	let parsed = parse_path("std::thread::Thread");
 

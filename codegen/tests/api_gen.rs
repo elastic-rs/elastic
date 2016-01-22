@@ -51,15 +51,3 @@ fn can_parse_parts_from_es_url() {
 
 	assert!(success);
 }
-
-#[test]
-fn can_build_url_format_stmt() {
-	let (ident, stmt) = url_fmt_dec("/{}/_alias/{}", vec![
-		token::str_to_ident("index"),
-		token::str_to_ident("name")
-	]);
-	let result = pprust::stmt_to_string(&stmt);
-
-	//let url_fmtd = format!("/{}/_alias/{}" , index , name ,);
-	println!("{}", result);
-}

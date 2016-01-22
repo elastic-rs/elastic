@@ -11,6 +11,29 @@ use syntax::ptr::P;
 /// 
 /// Generates statements of the form `let url_fmtd = format!(url, parts[0], ..., parts[n]);`. 
 /// Returns the `Ident` for the formatted string and the `Stmt` that declares it.
+/// 
+/// # Examples
+/// 
+/// ```
+/// # #![feature(rustc_private)]
+/// # extern crate syntax;
+/// # extern crate elastic_codegen;
+/// # fn main() {
+/// use syntax::parse::token;
+/// use syntax::print::pprust;
+/// use elastic_codegen::api::gen::rust::*;
+/// 
+/// //Generate the statement
+/// let (ident, stmt) = url_fmt_dec("/{}/_alias/{}", vec![
+/// 	token::str_to_ident("index"),
+/// 	token::str_to_ident("name")
+/// ]);
+/// 
+/// //Print the result: 'let url_fmtd = format!("/{}/_alias/{}" , index , name ,);'
+/// let result = pprust::stmt_to_string(&stmt);
+/// println!("{}", result);
+/// # }
+/// ```
 pub fn url_fmt_dec(_url: &str, _parts: Vec<Ident>) -> (Ident, Stmt) {
 	let ident = token::str_to_ident("url_fmtd");
 

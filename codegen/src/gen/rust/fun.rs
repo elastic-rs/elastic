@@ -53,6 +53,33 @@ impl ToString for Fn {
 }
 
 /// Generate a function.
+/// 
+/// # Examples
+/// 
+/// ```
+/// # #![feature(rustc_private)]
+/// # extern crate syntax;
+/// # extern crate elastic_codegen;
+/// # fn main() {
+/// # struct MyStruct;
+/// use syntax::ast::*;
+/// use elastic_codegen::gen::rust::*;
+/// 
+/// //Define a lifetime 'a
+/// let lifetime = lifetime("'a");
+/// 
+/// //Build a function signature
+/// let mut fun = build_fn("my_fun", vec![
+/// 	arg::<MyStruct>("arg1"),
+/// 	arg_ptr::<i32>("arg2", Mutability::MutMutable, Some(lifetime)),
+/// 	build_arg("arg3", build_ty_ptr("str", Mutability::MutImmutable, Some(lifetime)))
+/// ]);
+/// fun.add_lifetime(lifetime);
+/// 
+/// //Print the results: 'fn my_fun<'a>(arg1: MyStruct, arg2: &'a mut i32, arg3: &'a str){ }'
+/// println!("{}", fun.to_string());
+/// # }
+/// ```
 pub fn build_fn(name: &str, inputs: Vec<Arg>) -> Fn {
 	Fn {
 		identifier: token::str_to_ident(name),
