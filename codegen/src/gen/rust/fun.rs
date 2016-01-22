@@ -48,11 +48,29 @@ impl Fn {
 		self
 	}
 
-	/// Set the function body
+	/// Set the function body.
 	pub fn set_body<'a>(&'a mut self, body: P<Block>) -> &'a mut Fn {
-		//TODO: Fix this
 		self.body = body.deref().clone();
 
+		self
+	}
+
+	/// Append the body to existing statements.
+	/// 
+	/// This will update the return expression if the function declaration has a return type set.
+	pub fn add_body_stmts<'a>(&'a mut self, body: P<Block>) -> &'a mut Fn {
+		let _body = body.deref();
+
+		//Append the body statements
+		let mut body_stmts = _body.stmts.clone();
+		self.body.stmts.append(&mut body_stmts);
+
+		//Set the return type if the function takes one
+		match self.decl.output {
+			FunctionRetTy::Return(_) => self.body.expr = _body.expr.clone(),
+			_ => ()
+		}
+		
 		self
 	}
 }
