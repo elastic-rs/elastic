@@ -48,13 +48,6 @@ impl Fn {
 		self
 	}
 
-	/// Set the function body.
-	pub fn set_body<'a>(&'a mut self, body: P<Block>) -> &'a mut Fn {
-		self.body = body.deref().clone();
-
-		self
-	}
-
 	/// Append the body to existing statements.
 	/// 
 	/// This will update the return expression if the function declaration has a return type set.
@@ -71,6 +64,13 @@ impl Fn {
 			_ => ()
 		}
 		
+		self
+	}
+
+	/// Set the function body.
+	pub fn set_body<'a>(&'a mut self, body: P<Block>) -> &'a mut Fn {
+		self.body = body.deref().clone();
+
 		self
 	}
 }
@@ -144,6 +144,11 @@ pub fn build_fn(name: &str, inputs: Vec<Arg>) -> Fn {
 
 /// Generate a function arg with a type.
 pub fn build_arg(name: &str, ty: Ty) -> Arg {
+	build_arg_ident(token::str_to_ident(name), ty)
+}
+
+/// Generate a function arg with a type and existing ident.
+pub fn build_arg_ident(name: Ident, ty: Ty) -> Arg {
 	Arg {
 		ty: P(ty),
 		pat: P(Pat {
@@ -152,7 +157,7 @@ pub fn build_arg(name: &str, ty: Ty) -> Arg {
 				BindingMode::ByValue(Mutability::MutImmutable),
 				Spanned {
 					span: DUMMY_SP,
-					node: token::str_to_ident(name)
+					node: name
 				},
 				None
 				),
@@ -176,7 +181,17 @@ pub fn arg<T>(name: &str) -> Arg {
 	build_arg(name, ty::<T>())
 }
 
+/// Generate an arg using the specified type and existing ident
+pub fn arg_ident<T>(name: Ident) -> Arg {
+	build_arg_ident(name, ty::<T>())
+}
+
 /// Generate a potentially mutable arg with the specified type.
 pub fn arg_ptr<T>(name: &str, mutbl: Mutability, lifetime: Option<Lifetime>) -> Arg {
 	build_arg(name, ty_ptr::<T>(mutbl, lifetime))
+}
+
+/// Generate a potentially mutable arg with the specified type.
+pub fn arg_ptr_ident<T>(name: Ident, mutbl: Mutability, lifetime: Option<Lifetime>) -> Arg {
+	build_arg_ident(name, ty_ptr::<T>(mutbl, lifetime))
 }
