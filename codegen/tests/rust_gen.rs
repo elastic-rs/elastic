@@ -120,7 +120,7 @@ fn can_parse_path() {
 
 #[test]
 fn can_build_type_from_generic_param_for_std_type() {
-	let success = match ty::<i32>(TyPath::Full).node {
+	let success = match ty::<i32>(TyPathOpts::Full).node {
 		Ty_::TyPath(_, path) => {
 			path.segments.iter().any(|seg| seg.identifier.to_string() == "i32".to_string())
 		},
@@ -133,7 +133,7 @@ fn can_build_type_from_generic_param_for_std_type() {
 #[test]
 fn can_build_type_from_generic_param_for_custom_type() {
 	let success = match ty::<MyStruct>(TyPath::Full).node {
-		Ty_::TyPath(_, path) => {
+		Ty_::TyPathOpts(_, path) => {
 			path.segments.iter().any(|seg| seg.identifier.to_string() == "MyStruct".to_string())
 		},
 		_ => false
@@ -144,7 +144,7 @@ fn can_build_type_from_generic_param_for_custom_type() {
 
 #[test]
 fn can_build_type_with_name_only() {
-	let string_type = ty::<String>(TyPath::NameOnly);
+	let string_type = ty::<String>(TyPathOpts::NameOnly);
 
 	let mut c = 0;
 	let success = match string_type.node {
