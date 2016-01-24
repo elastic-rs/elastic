@@ -5,7 +5,7 @@ use syntax::print::pprust;
 use syntax::codemap::{ Spanned, DUMMY_SP };
 use syntax::parse::token::intern;
 use syntax::ptr::P;
-use super::{ ty, ty_ptr, TyPath };
+use super::{ ty, ty_ptr, TyPathOpts };
 
 /// A representation of a Rust fn.
 pub struct Fn {
@@ -178,20 +178,20 @@ pub fn lifetime(name: &str) -> Lifetime {
 
 /// Generate an arg with the specified type.
 pub fn arg<T>(name: &str) -> Arg {
-	build_arg(name, ty::<T>(TyPath::default()))
+	build_arg(name, ty::<T>(TyPathOpts::default()))
 }
 
 /// Generate an arg using the specified type and existing ident
 pub fn arg_ident<T>(name: Ident) -> Arg {
-	build_arg_ident(name, ty::<T>(TyPath::default()))
+	build_arg_ident(name, ty::<T>(TyPathOpts::default()))
 }
 
 /// Generate a potentially mutable arg with the specified type.
 pub fn arg_ptr<T>(name: &str, mutbl: Mutability, lifetime: Option<Lifetime>) -> Arg {
-	build_arg(name, ty_ptr::<T>(mutbl, lifetime, TyPath::default()))
+	build_arg(name, ty_ptr::<T>(mutbl, lifetime, TyPathOpts::default()))
 }
 
 /// Generate a potentially mutable arg with the specified type.
 pub fn arg_ptr_ident<T>(name: Ident, mutbl: Mutability, lifetime: Option<Lifetime>) -> Arg {
-	build_arg_ident(name, ty_ptr::<T>(mutbl, lifetime, TyPath::default()))
+	build_arg_ident(name, ty_ptr::<T>(mutbl, lifetime, TyPathOpts::default()))
 }
