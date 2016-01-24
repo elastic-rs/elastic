@@ -81,7 +81,6 @@ pub fn url_fmt_dec(_url: &str, _parts: Vec<Ident>) -> (Ident, Stmt) {
 							span: DUMMY_SP
 						}),
 						ty: None,
-						//TODO: format!(url, parts[0], ..., parts[n])
 						init: Some(
 							P(Expr {
 								id: DUMMY_NODE_ID,
