@@ -8,16 +8,16 @@ use super::parse_path;
 /// The kind of path to use in the type Ident.
 /// 
 /// The default value is `NameOnly`.
-pub enum TyPath {
+pub enum TyPathOpts {
 	/// Use just the name of the type.
 	NameOnly,
 	/// Use the full Rust path, including crates and modules.
 	Full
 }
 
-impl Default for TyPath {
-	fn default() -> TyPath {
-		TyPath::NameOnly
+impl Default for TyPathOpts {
+	fn default() -> TyPathOpts {
+		TyPathOpts::NameOnly
 	}
 }
 
@@ -60,17 +60,17 @@ pub fn build_ty_ptr(name: &str, mutbl: Mutability, lifetime: Option<Lifetime>) -
 }
 
 /// Generate a type.
-pub fn ty<T>(opts: TyPath) -> Ty {
+pub fn ty<T>(opts: TyPathOpts) -> Ty {
 	build_ty(&_type_of::<T>(opts)[..])
 }
 
 /// Generate a potentially mutable type.
-pub fn ty_mut<T>(mutbl: Mutability, opts: TyPath) -> MutTy {
+pub fn ty_mut<T>(mutbl: Mutability, opts: TyPathOpts) -> MutTy {
 	build_ty_mut(&_type_of::<T>(opts)[..], mutbl)
 }
 
 /// Generate a type pointer.
-pub fn ty_ptr<T>(mutbl: Mutability, lifetime: Option<Lifetime>, opts: TyPath) -> Ty {
+pub fn ty_ptr<T>(mutbl: Mutability, lifetime: Option<Lifetime>, opts: TyPathOpts) -> Ty {
 	build_ty_ptr(&_type_of::<T>(opts)[..], mutbl, lifetime)
 }
 
@@ -83,10 +83,10 @@ pub fn type_of<'a, T>() -> &'a str {
     t
 }
 
-fn _type_of<T>(opts: TyPath) -> String {
+fn _type_of<T>(opts: TyPathOpts) -> String {
 	match opts {
-		TyPath::Full => type_of::<T>().to_string(),
-		TyPath::NameOnly => {
+		TyPathOpts::Full => type_of::<T>().to_string(),
+		TyPathOpts::NameOnly => {
 			let mut parts = parse_path(type_of::<T>());
 			parts.pop().unwrap_or(String::new())
 		}
