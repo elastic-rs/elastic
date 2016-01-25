@@ -22,6 +22,7 @@ use syntax::parse::token;
 use syntax::codemap::DUMMY_SP;
 use syntax::parse::token::intern;
 use elastic_codegen::emit::*;
+use elastic_codegen::emit::default::*;
 use elastic_codegen::gen::rust::*;
 use elastic_codegen::api::gen::parse_path_params;
 use elastic_codegen::api::gen::rust::*;
