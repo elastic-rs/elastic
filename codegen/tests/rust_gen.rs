@@ -93,13 +93,6 @@ fn can_get_type_name_of_param() {
 }
 
 #[test]
-fn can_ignore_path_in_type_name() {
-	//With TyPathOpts::Full this would emit 'collections::string::String' instead of 'String'
-	let name = type_of::<String>();
-	assert_eq!("String", name);
-}
-
-#[test]
 fn can_parse_path() {
 	let parsed = parse_path("std::thread::Thread");
 
@@ -134,8 +127,8 @@ fn can_build_type_from_generic_param_for_std_type() {
 
 #[test]
 fn can_build_type_from_generic_param_for_custom_type() {
-	let success = match ty::<MyStruct>(TyPath::Full).node {
-		Ty_::TyPathOpts(_, path) => {
+	let success = match ty::<MyStruct>(TyPathOpts::Full).node {
+		Ty_::TyPath(_, path) => {
 			path.segments.iter().any(|seg| seg.identifier.to_string() == "MyStruct".to_string())
 		},
 		_ => false

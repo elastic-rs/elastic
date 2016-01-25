@@ -36,7 +36,7 @@ impl Fn {
 
 	/// Set the return type of the function.
 	pub fn set_return<'a, T>(&'a mut self) -> &'a mut Fn {
-		self.decl.output = FunctionRetTy::Return(P(ty::<T>(TyPath::default())));
+		self.decl.output = FunctionRetTy::Return(P(ty::<T>(TyPathOpts::default())));
 
 		self
 	}
