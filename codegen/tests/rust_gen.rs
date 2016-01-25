@@ -94,7 +94,9 @@ fn can_get_type_name_of_param() {
 
 #[test]
 fn can_ignore_path_in_type_name() {
+	//With TyPathOpts::Full this would emit 'collections::string::String' instead of 'String'
 	let name = type_of::<String>();
+	assert_eq!("String", name);
 }
 
 #[test]
