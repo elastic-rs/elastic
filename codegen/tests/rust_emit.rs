@@ -22,7 +22,6 @@ use syntax::parse::token;
 use syntax::codemap::DUMMY_SP;
 use syntax::parse::token::intern;
 use elastic_codegen::emit::*;
-use elastic_codegen::emit::rust::*;
 use elastic_codegen::gen::rust::*;
 use elastic_codegen::api::gen::parse_path_params;
 use elastic_codegen::api::gen::rust::*;
@@ -54,7 +53,22 @@ macro_rules! get_ctxt {
 }
 
 #[test]
+fn can_include_default_emit_ops_per_type() {
+	use elastic_codegen::emit::default::num::i;
+
+	let num = 13;
+
+	let mut buf: Vec<u8> = Vec::new();
+	let emitter: CtxtFreeEmitter = CtxtFreeEmitter::new();
+	let result = emitter.emit(&num, &mut buf);
+
+	assert!(result.is_ok());
+}
+
+#[test]
 fn can_emit_rs_fn_to_file() {
+	use elastic_codegen::emit::rust::*;
+
 	//Build an execution context
 	let ps = syntax::parse::ParseSess::new();
 	let mut fgc = vec![];
@@ -96,6 +110,8 @@ fn can_emit_rs_fn_to_file() {
 
 #[test]
 fn can_emit_rs_fn_with_body_to_file() {
+	use elastic_codegen::emit::rust::*;
+
 	//Build an execution context
 	let ps = syntax::parse::ParseSess::new();
 	let mut fgc = vec![];

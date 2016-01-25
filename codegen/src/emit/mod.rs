@@ -11,6 +11,32 @@ use std::error;
 use std::fmt;
 use std::io::Error as IoError;
 
+macro_rules! emit {
+	($cx:ident, $emittable:ident, $writer:ident) => {
+		{
+			let emitted = try!(
+				$emittable.emit($cx).map_err(|e| e.into())
+			);
+			
+			$writer.write_all(&emitted.into_bytes()[..]).map_err(|e| {
+				let _e: EmitError = e.into();
+				_e.into()
+			})
+		}
+	}
+}
+
+macro_rules! emit_str {
+	($emittable:ident, $writer:ident) => {
+		{
+			$writer.write_all($emittable.as_bytes()).map_err(|e| {
+				let _e: EmitError = e.into();
+				_e.into()
+			})
+		}
+	}
+}
+
 /// An emittable codegen item.
 /// 
 /// Takes in a context struct. This is necessary for rust `TokenTrees`, but may not be required in other cases.
@@ -53,16 +79,17 @@ pub trait Emitter<'a> {
 	/// 
 	/// This default implementation will attempt to emit results in-line, 
 	/// so no extra characters, such as new lines or whitespace, will be emitted.
-	fn emit<Em, Er, W>(&self, e: &'a Em, writer: &'a mut W) -> Result<(), Self::Error> where 
-		Em: Emit<Self::CtxtBrw, Er>, 
-		Er: Into<EmitError>, 
+	fn emit<Emittable, EmError, W>(&self, e: &'a Emittable, writer: &'a mut W) -> Result<(), Self::Error> where 
+		Emittable: Emit<Self::CtxtBrw, EmError>, 
+		EmError: Into<EmitError>, 
 		W: Write {
-			DefaultEmitter::emit::<Self::CtxtBrw, Self::Error, Em, Er, W>(self.get_cx(), e, writer)
+			let cx = self.get_cx();
+			emit!(cx, e, writer)
 	}
 
 	/// Emit a string
 	fn emit_str<W>(&self, e: &str, writer: &'a mut W) -> Result<(), Self::Error> where W: Write {
-		DefaultEmitter::emit_str::<Self::Error, W>(e, writer)
+		emit_str!(e, writer)
 	}
 }
 
@@ -95,6 +122,7 @@ impl <E> CtxtFreeEmitter<E> where E: From<EmitError> {
 	/// 
 	/// ```
 	/// use elastic_codegen::emit::*;
+	/// use elastic_codegen::emit::default::string;
 	/// 
 	/// let emitter: CtxtFreeEmitter = CtxtFreeEmitter::new();
 	/// ```
@@ -122,42 +150,16 @@ impl <'a, E> Emitter<'a> for CtxtFreeEmitter<E> where E: From<EmitError> {
 
 	}
 
-	fn emit<Em, Er, W>(&self, e: &'a Em, writer: &'a mut W) -> Result<(), Self::Error> where 
-		Em: Emit<Self::CtxtBrw, Er>, 
-		Er: Into<EmitError>, 
+	fn emit<Emittable, EmError, W>(&self, e: &'a Emittable, writer: &'a mut W) -> Result<(), Self::Error> where 
+		Emittable: Emit<Self::CtxtBrw, EmError>, 
+		EmError: Into<EmitError>, 
 		W: Write {
-			DefaultEmitter::emit::<Self::CtxtBrw, Self::Error, Em, Er, W>(self.get_cx(), e, writer)
+			let cx = self.get_cx();
+			emit!(cx, e, writer)
 	}
 
 	fn emit_str<W>(&self, e: &str, writer: &mut W) -> Result<(), Self::Error> where W: Write {
-		DefaultEmitter::emit_str::<Self::Error, W>(e, writer)
-	}
-}
-
-struct DefaultEmitter;
-impl DefaultEmitter {
-	pub fn emit<'a, Cb, E, Em, Er, W>(c: Cb, e: &'a Em, writer: &'a mut W) -> Result<(), E>  where 
-		Em: Emit<Cb, Er>, 
-		E: From<EmitError>, 
-		Er: Into<EmitError>, 
-		W: Write {
-			let emitted = try!(
-				e.emit(c).map_err(|e| e.into())
-			);
-			
-			writer.write_all(&emitted.into_bytes()[..]).map_err(|e| {
-				let emit_err: EmitError = e.into();
-				emit_err.into()
-			})
-	}
-
-	pub fn emit_str<E, W>(e: &str, writer: &mut W) -> Result<(), E>  where 
-		E: From<EmitError>, 
-		W: Write {
-			writer.write_all(e.as_bytes()).map_err(|e| {
-				let emit_err: EmitError = e.into();
-				emit_err.into()
-			})
+		emit_str!(e, writer)
 	}
 }
 
