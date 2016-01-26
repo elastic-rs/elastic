@@ -142,7 +142,7 @@ fn can_emit_rs_fn_with_body_to_file() {
 		let cx = &mut cx;
 
 		//Get the url replacement statement and resulting ident
-		let (url_ident, url_stmt) = url_fmt_dec(url, params);
+		let (url_ident, url_stmt) = url_fmt_decl(url, params);
 
 		//Add the url format statement to the function body
 		fun.add_body_stmt(P(url_stmt));

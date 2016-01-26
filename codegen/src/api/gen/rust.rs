@@ -24,7 +24,7 @@ use syntax::ptr::P;
 /// use elastic_codegen::api::gen::rust::*;
 /// 
 /// //Generate the statement
-/// let (ident, stmt) = url_fmt_dec("/{}/_alias/{}", vec![
+/// let (ident, stmt) = url_fmt_decl("/{}/_alias/{}", vec![
 /// 	token::str_to_ident("index"),
 /// 	token::str_to_ident("name")
 /// ]);
@@ -34,7 +34,7 @@ use syntax::ptr::P;
 /// println!("{}", result);
 /// # }
 /// ```
-pub fn url_fmt_dec(_url: &str, _parts: Vec<Ident>) -> (Ident, Stmt) {
+pub fn url_fmt_decl(_url: &str, _parts: Vec<Ident>) -> (Ident, Stmt) {
 	let ident = token::str_to_ident("url_fmtd");
 
 	//Build up the macro arguments
