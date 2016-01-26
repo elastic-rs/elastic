@@ -12,14 +12,14 @@ use test::Bencher;
 #[bench]
 fn parse_date_format(b: &mut Bencher) {
 	b.iter(|| {
-	    parse::to_tokens("yyyyMMddTHHmmss.SSSZ");
+	    parse::to_tokens("yyyyMMddTHHmmss.SSSZ")
 	});
 }
 
 #[bench]
 fn parse_date_from_format(b: &mut Bencher) {
 	b.iter(|| {
-		DateTime::<BasicDateTime>::parse("20150620T134501.034Z").unwrap();
+		DateTime::<BasicDateTime>::parse("20150620T134501.034Z").unwrap()
 	});
 }
 
