@@ -12,14 +12,14 @@ use test::Bencher;
 #[bench]
 fn parse_date_format(b: &mut Bencher) {
 	b.iter(|| {
-		let _ = parse::to_tokens("yyyyMMddTHHmmss.SSSZ");
+	    parse::to_tokens("yyyyMMddTHHmmss.SSSZ");
 	});
 }
 
 #[bench]
 fn parse_date_from_format(b: &mut Bencher) {
 	b.iter(|| {
-		let _ = DateTime::<BasicDateTime>::parse("20150620T134501.034Z").unwrap();
+		DateTime::<BasicDateTime>::parse("20150620T134501.034Z").unwrap();
 	});
 }
 
@@ -29,13 +29,15 @@ fn parse_date_from_tokens(b: &mut Bencher) {
 
 	b.iter(|| {
 		let mut parsed = chrono::format::Parsed::new();
-		let _ = chrono::format::parse(&mut parsed, "20150620T134501.034Z", f.clone().into_iter()).unwrap();
+		let fmt = chrono::format::parse(&mut parsed, "20150620T134501.034Z", f.clone().into_iter()).unwrap();
 
-		let _ = DateTime::<BasicDateTime>::new(
+		let dt = DateTime::<BasicDateTime>::new(
 			chrono::DateTime::from_utc(
 				parsed.to_naive_datetime_with_offset(0).unwrap(), 
 				chrono::UTC
 			)	
 		);
+
+                (fmt, dt)
 	});
 }
