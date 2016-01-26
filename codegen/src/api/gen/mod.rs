@@ -5,7 +5,28 @@
 pub mod rust;
 
 use std::str;
+use chomp;
 use chomp::*;
+
+/// Rexport of the chomp `ParseError`.
+pub type UrlParseError<'a> = chomp::ParseError<'a, u8, chomp::parsers::Error<u8>>;
+
+/// Finds the Params that make up an Elasticsearch URL Part.
+pub fn parse_path_params(url: &str) -> Result<Vec<String>, UrlParseError> {
+	parse_only(|i| many(i, |i| parse_path_param(i)), url.as_bytes())
+}
+
+/// Finds the Parts that make up an Elasticsearch URL.
+pub fn parse_path_parts(url: &str) -> Result<Vec<String>, UrlParseError> {
+	parse_only(|i| many(i, |i| parse_path_part(i)), url.as_bytes())
+}
+
+/// Builds a format string that can be used by the `format!` macro.
+pub fn parse_fmt(url: &str) -> Result<String, UrlParseError> {
+	let res: Vec<String> = try!(parse_only(|i| many(i, |i| parse_fmt_seg(i)), url.as_bytes()));
+
+	Ok(res.join(""))
+}
 
 fn parse_path_param(i: Input<u8>) -> U8Result<String> {
 	parse!{i;
@@ -43,24 +64,4 @@ fn parse_fmt_seg(i: Input<u8>) -> U8Result<String> {
 		//Build the format replacement part + '{}'
 		ret format!("{}{{}}", str::from_utf8(path).unwrap())
 	}
-}
-
-//TODO: Proper error handling
-/// Finds the Params that make up an Elasticsearch URL Part.
-pub fn parse_path_params(url: &str) -> Vec<String> {
-	parse_only(|i| many(i, |i| parse_path_param(i)), url.as_bytes()).unwrap()
-}
-
-//TODO: Proper error handling
-/// Finds the Parts that make up an Elasticsearch URL.
-pub fn parse_path_parts(url: &str) -> Vec<String> {
-	parse_only(|i| many(i, |i| parse_path_part(i)), url.as_bytes()).unwrap()
-}
-
-//TODO: Proper error handling
-/// Builds a format string that can be used by the `format!` macro.
-pub fn parse_fmt(url: &str) -> String {
-	let res: Vec<String> = parse_only(|i| many(i, |i| parse_fmt_seg(i)), url.as_bytes()).unwrap();
-
-	res.join("")
 }

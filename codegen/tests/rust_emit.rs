@@ -122,6 +122,7 @@ fn can_emit_rs_fn_with_body_to_file() {
 	//Get the params of a url as Idents
 	let url = "/{index}/_alias/{name}";
 	let params: Vec<Ident> = parse_path_params(url)
+		.unwrap()
 		.iter()
 		.map(|p| token::str_to_ident(&p))
 		.collect();

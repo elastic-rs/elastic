@@ -12,7 +12,7 @@ use elastic_codegen::api::gen::rust::*;
 fn can_parse_params_from_es_url() {
 	let url = "/{index}/{type}/_bulk";
 
-	let params = parse_path_params(url);
+	let params = parse_path_params(url).unwrap();
 
 	let expected = vec![
 		"index".to_string(),
@@ -34,7 +34,7 @@ fn can_parse_params_from_es_url() {
 fn can_parse_parts_from_es_url() {
 	let url = "/{index}/_alias/{name}";
 
-	let parts = parse_path_parts(url);
+	let parts = parse_path_parts(url).unwrap();
 
 	let expected = vec![
 		"/".to_string(),
