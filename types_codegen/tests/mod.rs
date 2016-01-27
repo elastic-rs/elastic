@@ -5,5 +5,5 @@ use chrono::format::{ Item, Fixed, Numeric, Pad };
 
 #[test]
 fn can_generate_date_formats() {
-	let _ = date_fmt!(yyyyMMddTHHmmss.SSSZ);
+	let _ = date_fmt!("yyyyMMddTHHmmss.SSSZ");
 }

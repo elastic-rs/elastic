@@ -20,13 +20,19 @@ use rustc_plugin::Registry;
 use chrono::format::{ Item, Fixed, Numeric, Pad };
 
 fn expand_date_fmt(cx: &mut ExtCtxt, sp: Span, args: &[TokenTree]) -> Box<MacResult+'static> {
-	let fmt = match args[0] {
-		TokenTree::Token(_, token::Ident(s, _)) => s.to_string(),
-		_ => {
-			cx.span_err(sp, "argument should be a single identifier");
-			return DummyResult::any(sp);
-		}
-	};
+	let mut fmt = String::new();
+
+	for arg in args {
+		let _fmt = match *arg {
+			TokenTree::Token(_, token::Literal(token::Lit::Str_(s), _)) => s.to_string(),
+			_ => {
+				cx.span_err(sp, "argument should be a single identifier");
+				return DummyResult::any(sp);
+			}
+		};
+
+		fmt.push_str(&_fmt[..]);
+	}
 
 	//Build up the token tree
 	let tokens = date::to_tokens(&fmt[..]);
