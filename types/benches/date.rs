@@ -9,10 +9,19 @@ use elastic_types::date::format::parse;
 
 use test::Bencher;
 
+/*
+	Here we're testing options for parsing dates.
+
+	See: https://github.com/KodrAus/elasticsearch-rs/issues/4
+
+	As an optimisation, we can use a macro to parse the date format to DateTokens at compile time.
+	See `parse_date_from_tokens` vs `parse_date_from_format` performance.
+*/
+
 #[bench]
 fn parse_date_format(b: &mut Bencher) {
 	b.iter(|| {
-	    parse::to_tokens("yyyyMMddTHHmmss.SSSZ")
+		parse::to_tokens("yyyyMMddTHHmmss.SSSZ")
 	});
 }
 
@@ -38,6 +47,6 @@ fn parse_date_from_tokens(b: &mut Bencher) {
 			)	
 		);
 
-                (fmt, dt)
+		(fmt, dt)
 	});
 }

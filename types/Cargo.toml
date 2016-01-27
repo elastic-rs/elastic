@@ -8,3 +8,6 @@ chrono = "*"
 serde = "*"
 serde_json = "*"
 serde_macros = "*"
+
+[dependencies.elastic_types_codegen]
+path = "../types_codegen"

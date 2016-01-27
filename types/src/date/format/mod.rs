@@ -1,14 +1,4 @@
 pub mod parse;
-
-#[macro_export]
-macro_rules! date_fmt(
-	($fmt:expr) => ({
-		$crate::date::format::parse::items(
-			$crate::date::format::parse::format($fmt)
-		)
-	});
-);
-
 mod formats;
 pub use self::formats::*;
 
