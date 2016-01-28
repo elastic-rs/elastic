@@ -39,15 +39,15 @@ fn expand_date_fmt(cx: &mut ExtCtxt, sp: Span, args: &[TokenTree]) -> Box<MacRes
 	let token_expr = cx.expr_vec(
 		sp, 
 		tokens.iter().map(|t| match *t {
-			Item::Literal(c) => quote_expr!(cx, Item::Literal($c)),
-			Item::Numeric(Numeric::Year, Pad::Zero) => quote_expr!(cx, Item::Numeric(Numeric::Year, Pad::Zero)),
-			Item::Numeric(Numeric::Month, Pad::Zero) => quote_expr!(cx, Item::Numeric(Numeric::Month, Pad::Zero)),
-			Item::Numeric(Numeric::Day, Pad::Zero) => quote_expr!(cx, Item::Numeric(Numeric::Day, Pad::Zero)),
-			Item::Numeric(Numeric::Hour, Pad::Zero) => quote_expr!(cx, Item::Numeric(Numeric::Hour, Pad::Zero)),
-			Item::Numeric(Numeric::Minute, Pad::Zero) => quote_expr!(cx, Item::Numeric(Numeric::Minute, Pad::Zero)),
-			Item::Numeric(Numeric::Second, Pad::Zero) => quote_expr!(cx, Item::Numeric(Numeric::Second, Pad::Zero)),
-			Item::Fixed(Fixed::Nanosecond3) => quote_expr!(cx, Item::Fixed(Fixed::Nanosecond3)),
-			_ => quote_expr!(cx, Item::Literal(""))
+			Item::Literal(c) => quote_expr!(cx, chrono::format::Item::Literal($c)),
+			Item::Numeric(Numeric::Year, Pad::Zero) => quote_expr!(cx, chrono::format::Item::Numeric(chrono::format::Numeric::Year, chrono::format::Pad::Zero)),
+			Item::Numeric(Numeric::Month, Pad::Zero) => quote_expr!(cx, chrono::format::Item::Numeric(chrono::format::Numeric::Month, chrono::format::Pad::Zero)),
+			Item::Numeric(Numeric::Day, Pad::Zero) => quote_expr!(cx, chrono::format::Item::Numeric(chrono::format::Numeric::Day, chrono::format::Pad::Zero)),
+			Item::Numeric(Numeric::Hour, Pad::Zero) => quote_expr!(cx, chrono::format::Item::Numeric(chrono::format::Numeric::Hour, chrono::format::Pad::Zero)),
+			Item::Numeric(Numeric::Minute, Pad::Zero) => quote_expr!(cx, chrono::format::Item::Numeric(chrono::format::Numeric::Minute, chrono::format::Pad::Zero)),
+			Item::Numeric(Numeric::Second, Pad::Zero) => quote_expr!(cx, chrono::format::Item::Numeric(chrono::format::Numeric::Second, chrono::format::Pad::Zero)),
+			Item::Fixed(Fixed::Nanosecond3) => quote_expr!(cx, chrono::format::Item::Fixed(chrono::format::Fixed::Nanosecond3)),
+			_ => quote_expr!(cx, chrono::format::Item::Literal(""))
 		}).collect()
 	);
 
