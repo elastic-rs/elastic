@@ -1,4 +1,6 @@
 # elasticsearch-rs core types
+[Docs](http://kodraus.github.io/rustdoc/elastic_types/)
+
 Yet another work in progress Elasticsearch client for Rust.
 
 A high-level implementation of the core types in Elasticsearch documents.
