@@ -41,6 +41,10 @@ Provides a [hyper]("https://github.com/hyperium/hyper") implementation of the El
 
 Provides rust implementations of the main Elasticsearch types (like `date`) and responses. Required by the high-level client and useful for the low-level client, especially if you're mostly just using the [Document API](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs.html?q=document).
 
+#### elastic_types_codegen
+
+Provides compiler plugins and macros for the `elastic_types` crate, such as parsing a date format to an array of [Items](https://github.com/lifthrasiir/rust-chrono/blob/master/src/format/mod.rs#L161) at compile-time for efficient runtime date parsing.
+
 ### elastic_client
 
 Provides the high-level, strongly-typed client on top of the low-level client and `elastic_types`. The direction of this crate isn't really decided yet, but I'm liking the idea of using closures to thread type info through a query builder, like the [C# client](https://github.com/elastic/elasticsearch-net).
