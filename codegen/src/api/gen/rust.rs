@@ -120,7 +120,7 @@ pub fn url_fmt_decl(_url: &str, _parts: Vec<Ident>) -> (Ident, Stmt) {
     (ident, stmt)
 }
 
-pub fn url_push_decl(_url: &str, _parts: Vec<Ident>) -> (Ident, Vec<Stmt>) {
+fn url_push_decl(_url: &str, _parts: Vec<Ident>) -> (Ident, Vec<Stmt>) {
 	//See: format_url_push bench
 	panic!("implement")
 }
