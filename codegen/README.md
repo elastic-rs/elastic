@@ -1,4 +1,6 @@
 # elasticsearch-rs codegen
+[Docs](http://kodraus.github.io/rustdoc/elastic_codegen/)
+
 Yet another work in progress Elasticsearch client for Rust.
 
 A library that contains useful structures and functions for generating code from the Elasticsearch API specification.
