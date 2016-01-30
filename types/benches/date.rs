@@ -6,7 +6,7 @@ extern crate chrono;
 extern crate elastic_types;
 
 use elastic_types::date::DateTime;
-use elastic_types::date::format::{ BasicDateTime };
+use elastic_types::date::format::{ Format, BasicDateTime };
 
 use test::Bencher;
 
@@ -32,5 +32,12 @@ fn parse_date_to_string(b: &mut Bencher) {
 
 	b.iter(|| {
 		dt.to_string()
+	});
+}
+
+#[bench]
+fn get_date_fmt(b: &mut Bencher) {
+	b.iter(|| {
+		BasicDateTime::fmt()
 	});
 }

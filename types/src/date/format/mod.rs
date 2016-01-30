@@ -6,6 +6,8 @@ use chrono::DateTime;
 use chrono::UTC;
 use chrono::format::{ Parsed, Item };
 
+//TODO: Proper error trait
+
 pub trait Format {
 	fn parse<'a>(date: &str) -> Result<DateTime<UTC>, String> {
 		let fmts = Self::fmt();
@@ -39,7 +41,9 @@ pub trait Format {
 		Err(String::new()).map_err(|_| errors.join(", "))
 	}
 
+	//TODO: Return std::slice::Iter instead of Vec<Item>
 	fn fmt<'a>() -> Vec<Vec<Item<'a>>>;
+	//TODO: Remove this
 	fn fmt_str() -> &'static str;
 	fn name() -> &'static str;
 }

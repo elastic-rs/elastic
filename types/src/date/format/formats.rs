@@ -8,6 +8,8 @@ macro_rules! own {
     }
 }
 
+//TODO: Tidy this up. No duplication or weird macros
+
 pub const BASIC_DATE_TIME_NO_MILLIS: &'static str = "%Y%m%dT%H%M%SZ";
 const BASIC_DATE_TIME_NO_MILLIS_ITEMS: [Item<'static>; 8] = date_fmt!("%Y%m%dT%H%M%SZ");
 #[derive(Clone)]
