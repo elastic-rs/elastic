@@ -119,6 +119,8 @@ impl <T: Format> DateTime<T> {
 	/// Parsing from a specified `Format`.
 	/// 
 	/// ```
+	/// #[feature(plugin)]
+	/// #![plugin(elastic_types_codegen)]
 	/// use elastic_types::date::DateTime;
 	/// use elastic_types::date::format::BasicDateTime;
 	/// 
@@ -130,15 +132,9 @@ impl <T: Format> DateTime<T> {
 }
 
 impl <T: Format> ToString for DateTime<T> {
+	//TODO: Use chrono::format::Item::format()
 	fn to_string(&self) -> String {
-		//Get the format. We want the first item in the list
-		let fmts = T::fmt();
-		let fmt = &fmts
-			.iter()
-			.next()
-			.unwrap();
-
-		self.value.format(fmt).to_string()
+		self.value.format(T::fmt_str()).to_string()
 	}
 }
 

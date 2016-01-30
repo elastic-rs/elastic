@@ -1,16 +1,23 @@
 #![feature(custom_derive, custom_attribute, plugin)]
 #![plugin(serde_macros)]
+#![plugin(elastic_types_codegen)]
 
 extern crate serde;
 extern crate serde_json;
 extern crate chrono;
 extern crate elastic_types;
 
-use chrono::format::Parsed;
+use chrono::format::{ Parsed, Item };
 use chrono::offset::TimeZone;
 use elastic_types::date::{ DateTime, Datelike, Timelike, Format };
 use elastic_types::date::format::{ BasicDateTime, BASIC_DATE_TIME, BasicDateTimeNoMillis };
-use elastic_types::date::format::parse;
+
+//This should be covered by a macro to generate date formats
+macro_rules! own {
+    ($items:ident) => {
+    	$items.iter().map(|t| t.clone()).collect()
+    }
+}
 
 //MyType -> MyTypeFmtd
 //yyyy/mm/dd -> %Y/%m/%dT%H:%M:%SZ
@@ -30,16 +37,21 @@ struct MyTypeFmtd {
 }
 
 const MYTYPE_DATE_FMT_1: &'static str = "%Y/%m/%d %H:%M:%S";
+const MYTYPE_DATE_FMT_1_ITEMS: [Item<'static>; 11] = date_fmt!("%Y/%m/%d %H:%M:%S");
 const MYTYPE_DATE_FMT_2: &'static str = "%d/%m/%Y %H:%M:%S";
+const MYTYPE_DATE_FMT_2_ITEMS: [Item<'static>; 11] = date_fmt!("%d/%m/%Y %H:%M:%S");
 
 #[allow(non_camel_case_types)]
 struct MyType_date_fmt;
 impl Format for MyType_date_fmt {
-	fn fmt() -> Vec<&'static str> {
-		vec![MYTYPE_DATE_FMT_1, MYTYPE_DATE_FMT_2]
+	fn fmt<'a>() -> Vec<Vec<Item<'a>>> {
+		vec![own!(MYTYPE_DATE_FMT_1_ITEMS), own!(MYTYPE_DATE_FMT_2_ITEMS)]
 	}
-	fn es_fmt() -> &'static str {
-		"yyyy/MM/dd HH:mm:ss||dd/MM/yyyy HH:mm:ss"
+	fn fmt_str() -> &'static str {
+		MYTYPE_DATE_FMT_1
+	}
+	fn name() -> &'static str {
+		"mytype_date_fmt"
 	}
 }
 
@@ -73,7 +85,7 @@ fn dates_with_multi_formats_should_return_all_errors_if_none_successful() {
 	let dt = DateTime::<MyType_date_fmt>::parse("this is not a date");
 
 	assert_eq!(
-		"%Y/%m/%d %H:%M:%S : input contains invalid characters, %d/%m/%Y %H:%M:%S : input contains invalid characters".to_string(), 
+		"Date parse error: input contains invalid characters, Date parse error: input contains invalid characters".to_string(), 
 		format!("{}", dt.err().unwrap())
 	);
 }
@@ -98,51 +110,4 @@ fn dates_use_specified_format_when_deserialising() {
 	let my_type: MyType = serde_json::from_str(r#"{"date":"20150513T000000.000Z"}"#).unwrap();
 
 	assert_eq!((2015, 5, 13), (my_type.date.value.year(), my_type.date.value.month(), my_type.date.value.day()));
-}
-
-#[test]
-fn can_parse_es_date_format_to_chrono() {
-	let parse_result = parse::to_tokens("yyyyMMddTHHmmss.SSSZ");
-	let fmt = parse::to_chrono_format(parse_result);
-
-	assert_eq!("%Y%m%dT%H%M%S%.3fZ".to_string(), fmt);
-}
-
-#[test]
-fn can_parse_dates_with_no_time() {
-	let date = DateTime::<BasicDateTimeNoMillis>::parse("20150310T000000Z").unwrap();
-
-	assert_eq!((0, 0), (date.value.hour(), date.value.minute()));
-}
-
-#[test]
-fn can_parse_chrono_date_format_to_es() {
-	let parse_result = parse::to_tokens("%Y%m%dT%H%M%S%.3fZ");
-	let fmt = parse::to_es_format(parse_result);
-
-	assert_eq!("yyyyMMddTHHmmss.SSSZ".to_string(), fmt);
-}
-
-#[test]
-fn can_get_es_format_from_tokens() {
-	let parse_result = parse::to_tokens("yyyyMMdd");
-	let fmt = parse::to_es_format(parse_result);
-
-	assert_eq!("yyyyMMdd".to_string(), fmt);
-}
-
-#[test]
-fn edgecase_can_parse_period_as_literal() {
-	let parse_result = parse::to_tokens("yyyy.MM.dd");
-	let fmt = parse::to_es_format(parse_result);
-
-	assert_eq!("yyyy.MM.dd".to_string(), fmt);
-}
-
-#[test]
-fn edgecase_can_parse_millis_after_literal() {
-	let parse_result = parse::to_tokens("T.SSS");
-	let fmt = parse::to_es_format(parse_result);
-
-	assert_eq!("T.SSS".to_string(), fmt);
 }

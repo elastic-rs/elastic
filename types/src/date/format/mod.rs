@@ -1,25 +1,22 @@
-pub mod parse;
 mod formats;
 pub use self::formats::*;
 
 use chrono;
 use chrono::DateTime;
 use chrono::UTC;
-use chrono::format::Parsed;
+use chrono::format::{ Parsed, Item };
 
 pub trait Format {
-	fn parse(date: &str) -> Result<DateTime<UTC>, String> {
+	fn parse<'a>(date: &str) -> Result<DateTime<UTC>, String> {
 		let fmts = Self::fmt();
 
 		let mut errors: Vec<String> = Vec::with_capacity(fmts.len());
-		let mut result: Result<DateTime<UTC>, String> = Err(String::new());
 
 		for fmt in fmts {
-			let f = parse::to_tokens(fmt);
 			let mut parsed = Parsed::new();
 
-			match chrono::format::parse(&mut parsed, date, f.into_iter())
-			.map_err(|err| format!("{} : {}", fmt, err).to_string()) {
+			match chrono::format::parse(&mut parsed, date, fmt.into_iter())
+			.map_err(|err| format!("Date parse error: {}", err).to_string()) {
 				Ok(_) => {
 					//If the parsed result doesn't contain any time, set it to the default
 					if parsed.hour_mod_12.is_none() {
@@ -39,9 +36,10 @@ pub trait Format {
 			}
 		}
 
-		result.map_err(|_| errors.join(", "))
+		Err(String::new()).map_err(|_| errors.join(", "))
 	}
 
-	fn fmt() -> Vec<&'static str>;
-	fn es_fmt() -> &'static str;
+	fn fmt<'a>() -> Vec<Vec<Item<'a>>>;
+	fn fmt_str() -> &'static str;
+	fn name() -> &'static str;
 }
