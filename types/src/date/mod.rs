@@ -6,8 +6,10 @@
 //! # Links
 //! - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/date.html)
 
-pub mod format;
+mod format;
 mod date;
+mod formats;
 
-pub use self::format::Format;
+pub use self::format::*;
 pub use self::date::*;
+pub use self::formats::*;

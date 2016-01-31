@@ -9,85 +9,69 @@ extern crate elastic_types;
 
 use chrono::format::{ Parsed, Item };
 use chrono::offset::TimeZone;
-use elastic_types::date::{ DateTime, Datelike, Timelike, Format };
-use elastic_types::date::format::{ BasicDateTime, BASIC_DATE_TIME, BasicDateTimeNoMillis };
+use elastic_types::date::*;
 
-//This should be covered by a macro to generate date formats
-macro_rules! own {
-    ($items:ident) => {
-    	$items.iter().map(|t| t.clone()).collect()
-    }
-}
-
-//MyType -> MyTypeFmtd
-//yyyy/mm/dd -> %Y/%m/%dT%H:%M:%SZ
-//2015/05/13 -> 2015/05/13T00:00:00Z
-
-//Unexpanded
 #[derive(Default, Serialize, Deserialize)]
 struct MyType {
-	//#[es_date_format("yyyy/mm/dd", "dd/mm/yyyy")]
 	pub date: DateTime
 }
 
-//Expanded
 #[derive(Default, Serialize, Deserialize)]
 struct MyTypeFmtd {
-	pub date: DateTime<MyType_date_fmt>
+	pub date: DateTime<TestDateFormat1>
 }
 
 const MYTYPE_DATE_FMT_1: &'static str = "%Y/%m/%d %H:%M:%S";
-const MYTYPE_DATE_FMT_1_ITEMS: [Item<'static>; 11] = date_fmt!("%Y/%m/%d %H:%M:%S");
 const MYTYPE_DATE_FMT_2: &'static str = "%d/%m/%Y %H:%M:%S";
-const MYTYPE_DATE_FMT_2_ITEMS: [Item<'static>; 11] = date_fmt!("%d/%m/%Y %H:%M:%S");
 
 #[allow(non_camel_case_types)]
-struct MyType_date_fmt;
-impl Format for MyType_date_fmt {
-	fn fmt<'a>() -> Vec<Vec<Item<'a>>> {
-		vec![own!(MYTYPE_DATE_FMT_1_ITEMS), own!(MYTYPE_DATE_FMT_2_ITEMS)]
-	}
-	fn fmt_str() -> &'static str {
-		MYTYPE_DATE_FMT_1
+pub struct TestDateFormat1;
+impl Format for TestDateFormat1 {
+	fn fmt<'a>() -> Vec<Item<'a>> {
+		date_fmt!("%Y/%m/%d %H:%M:%S")
+			.iter()
+			.map(|t| *t)
+			.collect()
 	}
 	fn name() -> &'static str {
-		"mytype_date_fmt"
+		"test_date_1"
+	}
+}
+
+#[allow(non_camel_case_types)]
+pub struct TestDateFormat2;
+impl Format for TestDateFormat2 {
+	fn fmt<'a>() -> Vec<Item<'a>> {
+		date_fmt!("yyyyMMdd")
+			.iter()
+			.map(|t| *t)
+			.collect()
+	}
+	fn name() -> &'static str {
+		"test_date_2"
 	}
 }
 
 #[test]
-fn dates_with_format_specified_should_use_first_provided() {
+fn dates_should_use_chrono_format() {
 	let _dt = chrono::UTC.datetime_from_str("13/05/2015 00:00:00", "%d/%m/%Y %H:%M:%S").unwrap();
 	let expected = _dt.format(MYTYPE_DATE_FMT_1).to_string();
 
-	let dt = DateTime::<MyType_date_fmt>::new(_dt.clone());
-	let actual = dt.to_string();
+	let dt = DateTime::<TestDateFormat1>::new(_dt.clone());
+	let actual = dt.format();
 
 	assert_eq!(expected, actual);
 }
 
 #[test]
-fn dates_with_multi_formats_should_use_first_successful() {
-	let dt = DateTime::<MyType_date_fmt>::parse("13/05/2015 00:00:00").unwrap();
+fn dates_should_use_es_format() {
+	let _dt = chrono::UTC.datetime_from_str("13/05/2015 00:00:00", "%d/%m/%Y %H:%M:%S").unwrap();
+	let expected = "20150513".to_string();
 
-	assert_eq!(
-		(2015i32, 5u32, 13u32), 
-		(
-			dt.value.year(),
-			dt.value.month(),
-			dt.value.day()
-		)
-	);
-}
+	let dt = DateTime::<TestDateFormat2>::new(_dt.clone());
+	let actual = dt.format();
 
-#[test]
-fn dates_with_multi_formats_should_return_all_errors_if_none_successful() {
-	let dt = DateTime::<MyType_date_fmt>::parse("this is not a date");
-
-	assert_eq!(
-		"Date parse error: input contains invalid characters, Date parse error: input contains invalid characters".to_string(), 
-		format!("{}", dt.err().unwrap())
-	);
+	assert_eq!(expected, actual);
 }
 
 #[test]

@@ -1,10 +1,11 @@
 use std::marker::PhantomData;
 use chrono;
 use chrono::UTC;
+use chrono::format::Item;
 use serde;
 use serde::{ Serialize, Deserialize, Serializer, Deserializer };
 use super::Format;
-use super::format::BasicDateTime;
+use super::BasicDateTime;
 
 /// A re-export of the `chrono::DateTime` struct with `UTC` timezone.
 pub type DT = chrono::DateTime<UTC>;
@@ -129,12 +130,9 @@ impl <T: Format> DateTime<T> {
 	pub fn parse(date: &str) -> Result<DateTime<T>, String> {
 		T::parse(date).map(|r| DateTime::new(r))
 	}
-}
 
-impl <T: Format> ToString for DateTime<T> {
-	//TODO: Use chrono::format::Item::format()
-	fn to_string(&self) -> String {
-		self.value.format(T::fmt_str()).to_string()
+	pub fn format<'a>(&self) -> String {
+		T::format(&self.value)
 	}
 }
 
@@ -151,7 +149,7 @@ impl <T: Format> Default for DateTime<T> {
 impl <T: Format> Serialize for DateTime<T> {
 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where S: Serializer
 	{
-		serializer.visit_str(&self.to_string()[..])
+		serializer.visit_str(&self.format()[..])
 	}
 }
 

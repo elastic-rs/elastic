@@ -1,5 +1,6 @@
 #![feature(test, custom_derive, custom_attribute, plugin)]
 #![plugin(serde_macros)]
+#![plugin(elastic_types_codegen)]
 
 extern crate test;
 extern crate serde;
