@@ -8,7 +8,4 @@ codegen = ["elastic_codegen", "aster"]
 
 [dependencies]
 aster = { version = "*", optional = true }
-
-[dependencies.elastic_codegen]
-path = "../codegen"
-optional = true
+elastic_codegen = { version = "*", path = "../codegen", optional = true }

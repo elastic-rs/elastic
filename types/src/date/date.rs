@@ -31,8 +31,7 @@ pub type DefaultFormat = BasicDateTime;
 /// Defining a date using a named format:
 /// 
 /// ```
-/// use elastic_types::date::DateTime;
-/// use elastic_types::date::format::BasicDateTime;
+/// use elastic_types::date::{ DateTime, BasicDateTime };
 /// 
 /// let date = DateTime::<BasicDateTime>::now();
 /// ```
@@ -40,8 +39,7 @@ pub type DefaultFormat = BasicDateTime;
 /// Accessing the values of a date:
 /// 
 /// ```
-/// use elastic_types::date::{ DateTime, Datelike, Timelike };
-/// use elastic_types::date::format::BasicDateTime;
+/// use elastic_types::date::{ DateTime, Datelike, Timelike, BasicDateTime };
 /// 
 /// let date = DateTime::<BasicDateTime>::now();
 /// 
@@ -120,10 +118,7 @@ impl <T: Format> DateTime<T> {
 	/// Parsing from a specified `Format`.
 	/// 
 	/// ```
-	/// #[feature(plugin)]
-	/// #![plugin(elastic_types_codegen)]
-	/// use elastic_types::date::DateTime;
-	/// use elastic_types::date::format::BasicDateTime;
+	/// use elastic_types::date::{ DateTime, BasicDateTime };
 	/// 
 	/// let date = DateTime::<BasicDateTime>::parse("20151126T145543.778Z");
 	/// ```
@@ -131,6 +126,21 @@ impl <T: Format> DateTime<T> {
 		T::parse(date).map(|r| DateTime::new(r))
 	}
 
+	/// Format the date and time as a string.
+	/// 
+	/// The format of the string is specified by the given `Format`.
+	/// 
+	/// # Examples
+	/// 
+	/// ```
+	/// use elastic_types::date::{ DateTime, BasicDateTime };
+	/// 
+	/// let date: DateTime = DateTime::now();
+	/// let fmt = date.format();
+	/// 
+	/// //eg: 20151126T145543.778Z
+	/// println!("{}", fmt);
+	/// ```
 	pub fn format<'a>(&self) -> String {
 		T::format(&self.value)
 	}
