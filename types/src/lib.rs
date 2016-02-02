@@ -9,8 +9,7 @@
 //! - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/guide/current/mapping.html)
 //! - [Github](https://github.com/KodrAus/elasticsearch-rs)
 
-//TODO: Uncomment attr
-//#![deny(missing_docs)]
+#![deny(missing_docs)]
 
 #![feature(custom_derive, custom_attribute, plugin)]
 #![plugin(serde_macros)]

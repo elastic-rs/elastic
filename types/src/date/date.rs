@@ -1,10 +1,9 @@
 use std::marker::PhantomData;
 use chrono;
 use chrono::UTC;
-use chrono::format::Item;
 use serde;
 use serde::{ Serialize, Deserialize, Serializer, Deserializer };
-use super::Format;
+use super::{ Format, ParseError };
 use super::BasicDateTime;
 
 /// A re-export of the `chrono::DateTime` struct with `UTC` timezone.
@@ -120,9 +119,9 @@ impl <T: Format> DateTime<T> {
 	/// ```
 	/// use elastic_types::date::{ DateTime, BasicDateTime };
 	/// 
-	/// let date = DateTime::<BasicDateTime>::parse("20151126T145543.778Z");
+	/// let date = DateTime::<BasicDateTime>::parse("20151126T145543.778Z").unwrap();
 	/// ```
-	pub fn parse(date: &str) -> Result<DateTime<T>, String> {
+	pub fn parse(date: &str) -> Result<DateTime<T>, ParseError> {
 		T::parse(date).map(|r| DateTime::new(r))
 	}
 

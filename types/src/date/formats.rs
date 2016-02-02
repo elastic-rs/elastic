@@ -3,6 +3,10 @@ use chrono;
 use chrono::format::Item;
 use super::{ Format };
 
+/// Format for `basic_date_time_no_millis`.
+/// 
+/// # Links
+/// - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-date-format.html#built-in-date-formats)
 #[derive(Clone)]
 pub struct BasicDateTimeNoMillis;
 impl Format for BasicDateTimeNoMillis {
@@ -17,6 +21,10 @@ impl Format for BasicDateTimeNoMillis {
 	}
 }
 
+/// Format for `basic_date_time`.
+/// 
+/// # Links
+/// - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-date-format.html#built-in-date-formats)
 #[derive(Clone)]
 pub struct BasicDateTime;
 impl Format for BasicDateTime {
