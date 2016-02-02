@@ -1,6 +1,5 @@
 use chrono;
-use chrono::DateTime;
-use chrono::UTC;
+use chrono::{ DateTime, UTC };
 use chrono::format::{ Parsed, Item };
 
 /// A re-export of the `chrono::ParseError`.
