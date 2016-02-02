@@ -1,8 +1,6 @@
 # elasticsearch-rs
 Yet another work in progress Elasticsearch client for Rust.
 
-## Status
-
 Platform  | Status
 ------------- | -------------
 Linux / OSX  | [![Build Status](https://travis-ci.org/KodrAus/elasticsearch-rs.svg?branch=master)](https://travis-ci.org/KodrAus/elasticsearch-rs)
@@ -10,8 +8,20 @@ Windows  | [![Build status](https://ci.appveyor.com/api/projects/status/s0yo6i7s
 
 Currently only compiling on the `nightly` channel. Support for `stable` will be added.
 
-If the build is red, you can check the Travis build history to find the last `nightly` version that worked. Failures are usually because of Rust regressions.
+If the build is red, you can check the Travis build history to find the last `nightly` version that worked. Failures are usually because of changes to dependencies upstream.
 
+## Roadmap
+
+*Not useable yet*
+
+See [milestones](https://github.com/KodrAus/elasticsearch-rs/milestones).
+
+- Codegen API endpoints
+- Implement core Elasticsearch types
+- io layer
+- Doc APIs
+- Query DSL proof-of-concept to test design
+- Everything else
 
 ## Goals
 
@@ -48,14 +58,3 @@ Provides compiler plugins and macros for the `elastic_types` crate, such as pars
 ### elastic_client
 
 Provides the high-level, strongly-typed client on top of the low-level client and `elastic_types`. The direction of this crate isn't really decided yet, but I'm liking the idea of using closures to thread type info through a query builder, like the [C# client](https://github.com/elastic/elasticsearch-net).
-
-## Roadmap
-
-See [milestones](https://github.com/KodrAus/elasticsearch-rs/milestones)
-
-- Codegen API endpoints
-- Implement core Elasticsearch types
-- io layer
-- Doc APIs
-- Query DSL proof-of-concept to test design
-- Everything else
