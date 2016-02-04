@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 use chrono;
-use chrono::UTC;
+use chrono::{ UTC, Weekday };
 use serde;
 use serde::{ Serialize, Deserialize, Serializer, Deserializer };
 use super::{ Format, ParseError };
@@ -44,24 +44,24 @@ pub type DefaultFormat = BasicDateTime;
 /// 
 /// //eg: 2010/04/30 13:56:59.372
 /// println!("{}/{}/{} {}:{}:{}.{}", 
-///	date.value.year(), 
-/// 	date.value.month(), 
-/// 	date.value.day(), 
-/// 	date.value.hour(), 
-/// 	date.value.minute(),
-/// 	date.value.second(), 
-/// 	date.value.nanosecond() / 1000000
+///		date.year(), 
+/// 	date.month(), 
+/// 	date.day(), 
+/// 	date.hour(), 
+/// 	date.minute(),
+/// 	date.second(), 
+/// 	date.nanosecond() / 1000000
 /// );
 /// ```
 /// 
-/// For a full list of available date and time functions on `date.value` see [Datelike](trait.Datelike.html) and [Timelike](trait.Timelike.html).
+/// For a full list of available date and time functions on `date` see [Datelike](trait.Datelike.html) and [Timelike](trait.Timelike.html).
 /// 
 /// # Links
 /// - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/date.html)
 #[derive(Clone)]
 pub struct DateTime<T: Format = DefaultFormat> {
 	/// The date and time value
-	pub value: DT,
+	value: DT,
 	phantom: PhantomData<T>
 }
 
@@ -105,7 +105,10 @@ impl <T: Format> DateTime<T> {
 	/// let date: DateTime = DateTime::now();
 	/// ```
 	pub fn now() -> DateTime<T> {
-		DateTime::<T>::default()
+		DateTime {
+			value: chrono::UTC::now(),
+			phantom: PhantomData
+		}
 	}
 
 	/// Parse the date and time from a string.
@@ -147,11 +150,110 @@ impl <T: Format> DateTime<T> {
 
 impl <T: Format> Default for DateTime<T> {
 	fn default() -> DateTime<T> {
-		DateTime {
-			value: chrono::UTC::now(),
-			phantom: PhantomData
-		}
+		DateTime::<T>::now()
 	}
+}
+
+impl <T: Format> From<DT> for DateTime<T> {
+	fn from(dt: DT) -> DateTime<T> {
+		DateTime::<T>::new(dt)
+	}
+}
+
+impl <T: Format> Datelike for DateTime<T> {
+	fn year(&self) -> i32 { self.value.year() }
+    fn month(&self) -> u32 { self.value.month() }
+    fn month0(&self) -> u32 { self.value.month0() }
+    fn day(&self) -> u32 { self.value.day() }
+    fn day0(&self) -> u32 { self.value.day0() }
+    fn ordinal(&self) -> u32 { self.value.ordinal() }
+    fn ordinal0(&self) -> u32 { self.value.ordinal0() }
+    fn weekday(&self) -> Weekday { self.value.weekday() }
+    fn isoweekdate(&self) -> (i32, u32, Weekday) { self.value.isoweekdate() }
+
+    fn with_year(&self, year: i32) -> Option<DateTime<T>> {
+        match self.value.with_year(year) {
+        	Some(dt) => Some(DateTime::new(dt)),
+        	None => None
+        }
+    }
+
+    fn with_month(&self, month: u32) -> Option<DateTime<T>> {
+        match self.value.with_month(month) {
+        	Some(dt) => Some(DateTime::new(dt)),
+        	None => None
+        }
+    }
+
+    fn with_month0(&self, month0: u32) -> Option<DateTime<T>> {
+        match self.value.with_month0(month0) {
+        	Some(dt) => Some(DateTime::new(dt)),
+        	None => None
+        }
+    }
+
+    fn with_day(&self, day: u32) -> Option<DateTime<T>> {
+        match self.value.with_day(day) {
+        	Some(dt) => Some(DateTime::new(dt)),
+        	None => None
+        }
+    }
+
+    fn with_day0(&self, day0: u32) -> Option<DateTime<T>> {
+        match self.value.with_day0(day0) {
+        	Some(dt) => Some(DateTime::new(dt)),
+        	None => None
+        }
+    }
+
+    fn with_ordinal(&self, ordinal: u32) -> Option<DateTime<T>> {
+        match self.value.with_ordinal(ordinal) {
+        	Some(dt) => Some(DateTime::new(dt)),
+        	None => None
+        }
+    }
+
+    fn with_ordinal0(&self, ordinal0: u32) -> Option<DateTime<T>> {
+        match self.value.with_ordinal0(ordinal0) {
+        	Some(dt) => Some(DateTime::new(dt)),
+        	None => None
+        }
+    }
+}
+
+impl <T: Format> Timelike for DateTime<T> {
+	fn hour(&self) -> u32 { self.value.hour() }
+    fn minute(&self) -> u32 { self.value.minute() }
+    fn second(&self) -> u32 { self.value.second() }
+    fn nanosecond(&self) -> u32 { self.value.nanosecond() }
+
+    fn with_hour(&self, hour: u32) -> Option<DateTime<T>> {
+        match self.value.with_hour(hour) {
+        	Some(dt) => Some(DateTime::new(dt)),
+        	None => None
+        }
+    }
+
+    fn with_minute(&self, min: u32) -> Option<DateTime<T>> {
+        match self.value.with_minute(min) {
+        	Some(dt) => Some(DateTime::new(dt)),
+        	None => None
+        }
+    }
+
+    fn with_second(&self, sec: u32) -> Option<DateTime<T>> {
+        match self.value.with_second(sec) {
+        	Some(dt) => Some(DateTime::new(dt)),
+        	None => None
+        }
+    }
+
+    fn with_nanosecond(&self, nano: u32) -> Option<DateTime<T>> {
+        match self.value.with_nanosecond(nano) {
+        	Some(dt) => Some(DateTime::new(dt)),
+        	None => None
+        }
+    }
 }
 
 //Serialize

@@ -10,12 +10,12 @@ fn basic_datetime_no_millis() {
 	assert_eq!(
 		(2015i32, 7u32, 3u32, 14u32, 55u32, 2u32),
 		(
-			date.value.year(), 
-			date.value.month(), 
-			date.value.day(),
-			date.value.hour(), 
-			date.value.minute(), 
-			date.value.second()
+			date.year(), 
+			date.month(), 
+			date.day(),
+			date.hour(), 
+			date.minute(), 
+			date.second()
 		)
 	);
 
@@ -30,13 +30,13 @@ fn basic_date_time() {
 	assert_eq!(
 		(2015i32, 7u32, 3u32, 14u32, 55u32, 2u32, 478u32),
 		(
-			date.value.year(), 
-			date.value.month(), 
-			date.value.day(),
-			date.value.hour(), 
-			date.value.minute(), 
-			date.value.second(),
-			date.value.nanosecond() / 1000000
+			date.year(), 
+			date.month(), 
+			date.day(),
+			date.hour(), 
+			date.minute(), 
+			date.second(),
+			date.nanosecond() / 1000000
 		)
 	);
 
@@ -51,13 +51,13 @@ fn epoch_millis() {
 	assert_eq!(
 		(2015i32, 7u32, 3u32, 14u32, 55u32, 2u32, 478u32),
 		(
-			date.value.year(), 
-			date.value.month(), 
-			date.value.day(),
-			date.value.hour(), 
-			date.value.minute(), 
-			date.value.second(),
-			date.value.nanosecond() / 1000000
+			date.year(), 
+			date.month(), 
+			date.day(),
+			date.hour(), 
+			date.minute(), 
+			date.second(),
+			date.nanosecond() / 1000000
 		)
 	);
 
@@ -72,13 +72,13 @@ fn epoch_millis_negative() {
 	assert_eq!(
 		(1715i32, 7u32, 3u32, 14u32, 55u32, 2u32, 478u32),
 		(
-			date.value.year(), 
-			date.value.month(), 
-			date.value.day(),
-			date.value.hour(), 
-			date.value.minute(), 
-			date.value.second(),
-			date.value.nanosecond() / 1000000
+			date.year(), 
+			date.month(), 
+			date.day(),
+			date.hour(), 
+			date.minute(), 
+			date.second(),
+			date.nanosecond() / 1000000
 		)
 	);
 

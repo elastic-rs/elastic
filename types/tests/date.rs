@@ -93,5 +93,18 @@ fn dates_use_specified_format_when_serialising() {
 fn dates_use_specified_format_when_deserialising() {
 	let my_type: MyType = serde_json::from_str(r#"{"date":"20150513T000000.000Z"}"#).unwrap();
 
-	assert_eq!((2015, 5, 13), (my_type.date.value.year(), my_type.date.value.month(), my_type.date.value.day()));
+	assert_eq!((2015, 5, 13), (my_type.date.year(), my_type.date.month(), my_type.date.day()));
+}
+
+#[test]
+fn can_cast_chrono_date_into_elastic_date() {
+	fn takes_es_date<T: Into<DateTime<BasicDateTime>>>(_: T) {
+		
+	}
+
+	let date = chrono::UTC.datetime_from_str(
+		"13/05/2015 00:00:00", MYTYPE_DATE_FMT_2
+	).unwrap();
+
+	takes_es_date(date);
 }
