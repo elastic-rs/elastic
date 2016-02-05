@@ -85,3 +85,24 @@ fn epoch_millis_negative() {
 	let fmtd = date.format();
 	assert_eq!("-8031171898478", &fmtd);
 }
+
+#[test]
+fn epoch_millis_short() {
+	let date = DateTime::<EpochMillis>::parse("100").unwrap();
+	
+	assert_eq!(
+		(1970i32, 1u32, 1u32, 0u32, 1u32, 40u32, 0u32),
+		(
+			date.year(), 
+			date.month(), 
+			date.day(),
+			date.hour(), 
+			date.minute(), 
+			date.second(),
+			date.nanosecond() / 1000000
+		)
+	);
+
+	let fmtd = date.format();
+	assert_eq!("100", &fmtd);
+}
