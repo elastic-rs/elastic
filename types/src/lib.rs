@@ -9,6 +9,7 @@
 //! - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/guide/current/mapping.html)
 //! - [Github](https://github.com/KodrAus/elasticsearch-rs)
 
+#![doc(html_root_url = "http://kodraus.github.io/rustdoc/elastic_types/")]
 #![deny(missing_docs)]
 
 #![feature(custom_derive, custom_attribute, plugin)]

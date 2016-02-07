@@ -20,8 +20,8 @@
 //! - [Github](https://github.com/KodrAus/elasticsearch-rs)
 
 #![doc(html_root_url = "http://kodraus.github.io/rustdoc/elastic_codegen/")]
-
 #![deny(missing_docs)]
+
 #![feature(associated_type_defaults, rustc_private, core_intrinsics, custom_derive, custom_attribute, plugin)]
 #![plugin(serde_macros)]
 

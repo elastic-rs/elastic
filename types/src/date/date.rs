@@ -146,6 +146,23 @@ impl <T: Format> DateTime<T> {
 	pub fn format<'a>(&self) -> String {
 		T::format(&self.value)
 	}
+
+	/// Change the format of this date.
+	/// 
+	/// # Examples
+	/// 
+	/// ```
+	/// use elastic_types::date::{ DateTime, BasicDateTime, EpochMillis };
+	/// 
+	/// //Get the current datetime formatted as basic_date_time
+	/// let date: DateTime<BasicDateTime> = DateTime::now();
+	/// 
+	/// //Change the format to epoch_millis
+	/// let otherdate: DateTime<EpochMillis> = date.into();
+	/// ```
+	pub fn into<TInto: Format>(self) -> DateTime<TInto> {
+		DateTime::<TInto>::new(self.value)
+	}
 }
 
 impl <T: Format> Default for DateTime<T> {

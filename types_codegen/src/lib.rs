@@ -1,3 +1,37 @@
+//! Elasticsearch Core Types Codegen
+//!
+//! Compile-time code generation for Elasticsearch type implementations.
+//!
+//! # Date Formatting
+//!
+//! The `date_fmt!` macro will take a literal date format and parse it to a more efficient `Vec<Item>`.
+//! This is used by date formatters.
+//! 
+//! ```
+//! # #![feature(plugin)]
+//! # #![plugin(elastic_types_codegen)]
+//! # extern crate chrono;
+//! # fn main() {
+//! let my_fmt = date_fmt!("yyyyMMddTHHmmss.SSSZ");
+//! # }
+//! ```
+//! 
+//! This also works for `chrono` date formats:
+//! 
+//! ```
+//! # #![feature(plugin)]
+//! # #![plugin(elastic_types_codegen)]
+//! # extern crate chrono;
+//! # fn main() {
+//! let my_fmt = date_fmt!("%Y%m%dT%H%M%S%.3fZ");
+//! # }
+//! ```
+//! 
+//! # Links
+//! - [Github](https://github.com/KodrAus/elasticsearch-rs)
+
+#![doc(html_root_url = "http://kodraus.github.io/rustdoc/elastic_types_codegen/")]
+
 #![crate_type="dylib"]
 #![feature(plugin_registrar, rustc_private, quote)]
 
