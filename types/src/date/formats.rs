@@ -59,23 +59,27 @@ impl Format for EpochMillis {
 		"epoch_millis"
 	}
 
+	//TODO: Use a different error trait. `chrono::ParseError` is not reusable here
 	fn parse<'a>(date: &str) -> Result<DateTime<UTC>, ParseError> {
 		let (secs, msecs) = match (date.len(), date.chars().next().unwrap()) {
-			//4 or less chars with minus sign. This is a special case between 31/12/69 23:59:99.900 and 01/01/70 00:00:00.000
+			//For negative timestamps
 			(n, '-') if n <= 4 => {
 				let (s, m) = (Ok(-1i64), date[1..].parse::<u32>());
 				(s, Ok(1000 - m.unwrap()))
 			},
-			//11 or less chars with minus sign
-			(n, '-') if n <= 11 => (date[0..n-3].parse::<i64>(), date[n-3..].parse::<u32>()),
-			//minus sign
-			(14, '-') => (date[0..11].parse::<i64>(), date[11..14].parse::<u32>()),
-			//3 or less chars
+			(n, '-') if n <= 11 => {
+				let (s, m) = (date[0..n-3].parse::<i64>(), date[n-3..].parse::<u32>());
+				(s, Ok(1000 - m.unwrap()))
+			},
+			(14, '-') => {
+				let (s, m) = (date[0..11].parse::<i64>(), date[11..14].parse::<u32>());
+				(s, Ok(1000 - m.unwrap()))
+			},
+			//For positive timestamps
 			(n, _) if n <= 3 => (Ok(0i64), date.parse::<u32>()),
-			//10 or less chars
 			(n, _) if n <= 10 => (date[0..n-3].parse::<i64>(), date[n-3..].parse::<u32>()),
-			//Standard
-			(_, _) => (date[0..10].parse::<i64>(), date[10..13].parse::<u32>())
+			(13, _) => (date[0..10].parse::<i64>(), date[10..13].parse::<u32>()),
+			_ => panic!("unexpected format")
 		};
 		
 		let _secs = secs.unwrap();
@@ -87,12 +91,34 @@ impl Format for EpochMillis {
 	fn format<'a>(date: &DateTime<UTC>) -> String {
 		let mut fmtd = String::with_capacity(13);
 
-		let sec = date.timestamp().to_string();
-		fmtd.push_str(&sec);
+		let sec = date.timestamp();
 
-		let msec = (date.nanosecond() / 1000000).to_string();
-		fmtd.push_str(&msec);
+		//For positive timestamps
+		if (sec >= 0) {
+			if (sec != 0) {
+				let s = sec.to_string();
+				fmtd.push_str(&s);
+			}
 
-		fmtd
+			let msec = (date.nanosecond() / 1000000).to_string();
+			fmtd.push_str(&msec);
+
+			fmtd
+		}
+		//For negative timestamps
+		else {
+			if (sec != -1) {
+				let s = sec.to_string();
+				fmtd.push_str(&s);
+			}
+			else {
+				fmtd.push_str("-");
+			}
+
+			let msec = (1000 - (date.nanosecond() / 1000000)).to_string();
+			fmtd.push_str(&msec);
+
+			fmtd
+		}
 	}
 }
