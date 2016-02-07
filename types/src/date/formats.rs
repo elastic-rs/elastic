@@ -42,6 +42,11 @@ impl Format for BasicDateTime {
 
 /// Format for `epoch_millis`.
 /// 
+/// Takes up to a 13 digit string of millis since the epoch and converts to a `DateTime`.
+/// This is an efficient formatter, so is a good choice for storing timestamps.
+/// It's not recommended to use for historical dates, especially those close to or before 01/01/1970,
+/// which may produce imprecise results.
+/// 
 /// # Links
 /// - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-date-format.html#built-in-date-formats)
 #[derive(Clone)]
@@ -54,12 +59,6 @@ impl Format for EpochMillis {
 		"epoch_millis"
 	}
 
-	///  Formats a given `chrono::DateTime<UTC>` as a string.
-	/// 
-	/// Takes up to a 13 digit string of millis since the epoch and converts to a `DateTime`.
-	/// This is an efficient formatter, so is a good choice for storing timestamps.
-	/// It's not recommended to use for historical dates, especially those close to 01/01/1970,
-	/// which may produce incorrect results.
 	fn parse<'a>(date: &str) -> Result<DateTime<UTC>, ParseError> {
 		let (secs, msecs) = match (date.len(), date.chars().next().unwrap()) {
 			//4 or less chars with minus sign. This is a special case between 31/12/69 23:59:99.900 and 01/01/70 00:00:00.000
