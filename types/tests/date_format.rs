@@ -87,11 +87,11 @@ fn epoch_millis_negative() {
 }
 
 #[test]
-fn epoch_millis_short() {
+fn epoch_millis_very_short() {
 	let date = DateTime::<EpochMillis>::parse("100").unwrap();
 	
 	assert_eq!(
-		(1970i32, 1u32, 1u32, 0u32, 1u32, 40u32, 0u32),
+		(1970i32, 1u32, 1u32, 0u32, 0u32, 0u32, 100u32),
 		(
 			date.year(), 
 			date.month(), 
@@ -104,5 +104,68 @@ fn epoch_millis_short() {
 	);
 
 	let fmtd = date.format();
-	assert_eq!("100", &fmtd);
+	assert_eq!("0100", &fmtd);
+}
+
+#[test]
+fn epoch_millis_short() {
+	let date = DateTime::<EpochMillis>::parse("5100").unwrap();
+	
+	assert_eq!(
+		(1970i32, 1u32, 1u32, 0u32, 0u32, 5u32, 100u32),
+		(
+			date.year(), 
+			date.month(), 
+			date.day(),
+			date.hour(), 
+			date.minute(), 
+			date.second(),
+			date.nanosecond() / 1000000
+		)
+	);
+
+	let fmtd = date.format();
+	assert_eq!("5100", &fmtd);
+}
+
+#[test]
+fn epoch_millis_very_short_minus() {
+	let date = DateTime::<EpochMillis>::parse("-100").unwrap();
+	
+	assert_eq!(
+		(1969i32, 12u32, 31u32, 23u32, 59u32, 59u32, 900u32),
+		(
+			date.year(), 
+			date.month(), 
+			date.day(),
+			date.hour(), 
+			date.minute(), 
+			date.second(),
+			date.nanosecond() / 1000000
+		)
+	);
+
+	let fmtd = date.format();
+	assert_eq!("-1900", &fmtd);
+}
+
+#[test]
+fn epoch_millis_short_minus() {
+	let date = DateTime::<EpochMillis>::parse("-5100").unwrap();
+	
+	assert_eq!(
+		(1969i32, 12u32, 31u32, 23u32, 59u32, 55u32, 100u32),
+		(
+			date.year(), 
+			date.month(), 
+			date.day(),
+			date.hour(), 
+			date.minute(), 
+			date.second(),
+			date.nanosecond() / 1000000
+		)
+	);
+
+	let fmtd = date.format();
+	assert_eq!("-5100", &fmtd);
 }

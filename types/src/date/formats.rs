@@ -54,11 +54,29 @@ impl Format for EpochMillis {
 		"epoch_millis"
 	}
 
+	///  Formats a given `chrono::DateTime<UTC>` as a string.
+	/// 
+	/// Takes up to a 13 digit string of millis since the epoch and converts to a `DateTime`.
+	/// This is an efficient formatter, so is a good choice for storing timestamps.
+	/// It's not recommended to use for historical dates, especially those close to 01/01/1970,
+	/// which may produce incorrect results.
 	fn parse<'a>(date: &str) -> Result<DateTime<UTC>, ParseError> {
-		//TODO: Determine if this is correct
-		let (secs, msecs) = match date.chars().next().unwrap() {
-			'-' => (date[0..11].parse::<i64>(), date[11..14].parse::<u32>()),
-			_ => (date[0..10].parse::<i64>(), date[10..13].parse::<u32>())
+		let (secs, msecs) = match (date.len(), date.chars().next().unwrap()) {
+			//4 or less chars with minus sign. This is a special case between 31/12/69 23:59:99.900 and 01/01/70 00:00:00.000
+			(n, '-') if n <= 4 => {
+				let (s, m) = (Ok(-1i64), date[1..].parse::<u32>());
+				(s, Ok(1000 - m.unwrap()))
+			},
+			//11 or less chars with minus sign
+			(n, '-') if n <= 11 => (date[0..n-3].parse::<i64>(), date[n-3..].parse::<u32>()),
+			//minus sign
+			(14, '-') => (date[0..11].parse::<i64>(), date[11..14].parse::<u32>()),
+			//3 or less chars
+			(n, _) if n <= 3 => (Ok(0i64), date.parse::<u32>()),
+			//10 or less chars
+			(n, _) if n <= 10 => (date[0..n-3].parse::<i64>(), date[n-3..].parse::<u32>()),
+			//Standard
+			(_, _) => (date[0..10].parse::<i64>(), date[10..13].parse::<u32>())
 		};
 		
 		let _secs = secs.unwrap();

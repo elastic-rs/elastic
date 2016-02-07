@@ -93,6 +93,28 @@ fn can_get_type_name_of_param() {
 }
 
 #[test]
+fn can_build_type_with_name_only() {
+	let string_type = ty::<MyStruct>(TyPathOpts::NameOnly);
+
+	let success = match string_type.node {
+		Ty_::TyPath(_, path) => {
+			path.segments.iter().any(|seg| {
+				seg.identifier.to_string() == "MyStruct".to_string()
+			})
+		},
+		_ => false
+	};
+
+	assert_eq!(true, success);
+}
+
+#[test]
+fn can_build_type_with_full_path() {
+	let name = type_of::<String>();
+	assert_eq!("collections::string::String", name);
+}
+
+#[test]
 fn can_parse_path() {
 	let parsed = parse_path("std::thread::Thread");
 
@@ -111,43 +133,4 @@ fn can_parse_path() {
 	}
 
 	assert!(success);
-}
-
-#[test]
-fn can_build_type_from_generic_param_for_std_type() {
-	let success = match ty::<i32>(TyPathOpts::Full).node {
-		Ty_::TyPath(_, path) => {
-			path.segments.iter().any(|seg| seg.identifier.to_string() == "i32".to_string())
-		},
-		_ => false
-	};
-
-	assert!(success);
-}
-
-#[test]
-fn can_build_type_from_generic_param_for_custom_type() {
-	let success = match ty::<MyStruct>(TyPathOpts::Full).node {
-		Ty_::TyPath(_, path) => {
-			path.segments.iter().any(|seg| seg.identifier.to_string() == "MyStruct".to_string())
-		},
-		_ => false
-	};
-
-	assert!(success);
-}
-
-#[test]
-fn can_build_type_with_name_only() {
-	let string_type = ty::<String>(TyPathOpts::NameOnly);
-
-	let mut c = 0;
-	let success = match string_type.node {
-		Ty_::TyPath(_, path) => {
-			c += 1;
-			path.segments.iter().any(|seg| seg.identifier.to_string() == "String".to_string())
-		},
-		_ => false
-	};
-	assert_eq!((true, 1), (success, c));
 }
