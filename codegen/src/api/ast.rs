@@ -211,15 +211,15 @@ pub struct Url {
 	/// The url may also contain `Parts` for replacement in braces, for example: `/{index}/{type}`.
 	/// Each of these `Parts` will have an entry in the `parts` field.
 	pub path: String,
-	/// Alternatives to `path`.
+	/// Alternatives to `path` containing literal segments and url parameters as `Path`s.
 	pub paths: Vec<String>,
-	/// Details for replacement parts in `path` and `paths`.
+	/// `Url` paramaters.
 	pub parts: BTreeMap<String, Part>,
 	/// `Body` parameters.
 	pub params: BTreeMap<String, Param>
 }
 
-/// A replacement part of a `Url`.
+/// A `Url` parameter for an `Endpoint`.
 #[derive(Serialize, Deserialize)]
 pub struct Part {
 	#[serde(rename="type")]
@@ -248,7 +248,7 @@ impl Part {
 	}
 }
 
-/// A `Url` parameter for an `Endpoint`.
+/// A `Body` parameter for an `Endpoint`.
 #[derive(Serialize, Deserialize)]
 pub struct Param {
 	#[serde(rename="type")]
