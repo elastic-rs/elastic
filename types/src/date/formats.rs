@@ -44,8 +44,6 @@ impl Format for BasicDateTime {
 /// 
 /// Takes up to a 13 digit string of millis since the epoch and converts to a `DateTime`.
 /// This is an efficient formatter, so is a good choice for storing timestamps.
-/// It's not recommended to use for historical dates, especially those close to or before 01/01/1970,
-/// which may produce imprecise results.
 /// 
 /// # Links
 /// - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-date-format.html#built-in-date-formats)
