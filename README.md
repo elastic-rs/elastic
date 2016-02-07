@@ -53,6 +53,8 @@ Provides rust implementations of the main Elasticsearch types (like `date`) and 
 
 #### elastic_types_codegen
 
+[Docs](http://kodraus.github.io/rustdoc/elastic_types_codegen/)
+
 Provides compiler plugins and macros for the `elastic_types` crate, such as parsing a date format to an array of [Items](https://github.com/lifthrasiir/rust-chrono/blob/master/src/format/mod.rs#L161) at compile-time for efficient runtime date parsing.
 
 ### elastic_client
