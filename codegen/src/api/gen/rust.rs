@@ -7,6 +7,10 @@ use syntax::parse::token;
 use syntax::codemap::{ Spanned, DUMMY_SP };
 use syntax::ptr::P;
 
+pub fn get_fns_for_endpoint(endpoint: &Endpoint) -> Hashmap<String, Vec<Fn>> {
+
+}
+
 /// Generate a statement to replace the params in a url.
 /// 
 /// Generates statements of the form `let url_fmtd = format!(url, parts[0], ..., parts[n]);`. 
