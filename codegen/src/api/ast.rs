@@ -107,8 +107,8 @@ impl serde::de::Visitor for HttpVerbVisitor {
 pub enum Type {
 	/// boolean
 	Bool,
-	/// number|long|integer|short|byte|double|float
-	Num,
+	/// number
+	Number(Num),
 	/// string
 	Str,
 	/// time|date
@@ -125,6 +125,23 @@ pub enum Type {
 	Other(String)
 }
 
+/// Represents a number type
+#[derive(PartialEq)]
+pub enum Num {
+	/// long
+	Long,
+	/// integer
+	Int,
+	/// short
+	Short,
+	/// byte
+	Byte,
+	/// double
+	Double,
+	/// float
+	Float
+}
+
 impl Type {
 	/// Parses a type name from a string.
 	/// 
@@ -133,15 +150,18 @@ impl Type {
 	pub fn parse(_type: &str, opts: Option<Vec<String>>) -> Type {
 		match _type {
 			"boolean" => Type::Bool,
-			//TODO: Split into Type::Num(Num::I64|I32|I16|Flt)
-			"number"|"long"|"integer"|"short"|"byte"|"double"|"float" => Type::Num,
+			"number"|"long" => Type::Number(Num::Long),
+			"integer" => Type::Number(Num::Int),
+			"short" => Type::Number(Num::Short),
+			"byte" => Type::Number(Num::Byte),
+			"double" => Type::Number(Num::Double),
+			"float" => Type::Number(Num::Float),
 			"string" => Type::Str,
 			"time"|"date" => Type::Time,
 			"binary" => Type::Bin,
 			"geo_point"|"geo_shape" => Type::Geo,
 			"list" => Type::List,
 			"enum" => Type::Enum(opts.unwrap()),
-			//TODO: prefer &str over String, should just be able to Type::Other(_type)
 			t => Type::Other(t.to_string())
 		}
 	}
@@ -228,7 +248,7 @@ impl Part {
 	}
 }
 
-/// A `Body` parameter for an `Endpoint`.
+/// A `Url` parameter for an `Endpoint`.
 #[derive(Serialize, Deserialize)]
 pub struct Param {
 	#[serde(rename="type")]
@@ -326,9 +346,111 @@ impl Param {
 			description: String::new()
 		}
 	}
-	
-	//TODO: impls for num and borrow instead of clone for get_type
 
+	/// Create a new i64 `Param`.
+	/// 
+	/// # Examples
+	/// 
+	/// With a default value:
+	/// 
+	/// ```
+	/// use elastic_codegen::api::ast::Param;
+	/// 
+	/// let param = Param::long(false, Some(18i64));
+	/// ```
+	pub fn long(required: bool, default: Option<i64>) -> Param {
+		let def: Value = match default {
+			Some(n) => Value::I64(n),
+			None => Value::Null
+		};
+
+		Param {
+			_type: Some("long".to_string()),
+			default: def,
+			required: Some(required),
+			options: None,
+			description: String::new()
+		}
+	}
+
+	/// Create a new i32 `Param`.
+	/// 
+	/// # Examples
+	/// 
+	/// With a default value:
+	/// 
+	/// ```
+	/// use elastic_codegen::api::ast::Param;
+	/// 
+	/// let param = Param::int(false, Some(18i32));
+	/// ```
+	pub fn int(required: bool, default: Option<i32>) -> Param {
+		let def: Value = match default {
+			Some(n) => Value::I64(n as i64),
+			None => Value::Null
+		};
+
+		Param {
+			_type: Some("integer".to_string()),
+			default: def,
+			required: Some(required),
+			options: None,
+			description: String::new()
+		}
+	}
+
+	/// Create a new i16 `Param`.
+	/// 
+	/// # Examples
+	/// 
+	/// With a default value:
+	/// 
+	/// ```
+	/// use elastic_codegen::api::ast::Param;
+	/// 
+	/// let param = Param::short(false, Some(18i16));
+	/// ```
+	pub fn short(required: bool, default: Option<i16>) -> Param {
+		let def: Value = match default {
+			Some(n) => Value::I64(n as i64),
+			None => Value::Null
+		};
+
+		Param {
+			_type: Some("short".to_string()),
+			default: def,
+			required: Some(required),
+			options: None,
+			description: String::new()
+		}
+	}
+
+	/// Create a new f64 `Param`.
+	/// 
+	/// # Examples
+	/// 
+	/// With a default value:
+	/// 
+	/// ```
+	/// use elastic_codegen::api::ast::Param;
+	/// 
+	/// let param = Param::float(false, Some(18.00f64));
+	/// ```
+	pub fn float(required: bool, default: Option<f64>) -> Param {
+		let def: Value = match default {
+			Some(n) => Value::F64(n),
+			None => Value::Null
+		};
+
+		Param {
+			_type: Some("long".to_string()),
+			default: def,
+			required: Some(required),
+			options: None,
+			description: String::new()
+		}
+	}
+	
 	/// Get the `Type` for the `Param`.
 	pub fn get_type(&self) -> Type {
 		let _type: String = match self._type.clone() {

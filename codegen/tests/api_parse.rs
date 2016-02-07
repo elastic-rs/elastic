@@ -51,6 +51,12 @@ fn can_parse_type() {
 		TypeRef { name: "time", opts: None },
 		TypeRef { name: "list", opts: None },
 		TypeRef { name: "number", opts: None },
+		TypeRef { name: "long", opts: None },
+		TypeRef { name: "integer", opts: None },
+		TypeRef { name: "short", opts: None },
+		TypeRef { name: "byte", opts: None },
+		TypeRef { name: "float", opts: None },
+		TypeRef { name: "double", opts: None },
 		TypeRef { name: "enum", opts: Some(vec!("OpA".to_string(), "OpB".to_string(), "OpC".to_string())) },
 		TypeRef { name: "stuff", opts: None }
 	);
@@ -60,7 +66,13 @@ fn can_parse_type() {
 		Type::Bool,
 		Type::Time,
 		Type::List,
-		Type::Num,
+		Type::Number(Num::Long),
+		Type::Number(Num::Long),
+		Type::Number(Num::Int),
+		Type::Number(Num::Short),
+		Type::Number(Num::Byte),
+		Type::Number(Num::Float),
+		Type::Number(Num::Double),
 		Type::Enum(vec!("OpA".to_string(), "OpB".to_string(), "OpC".to_string())),
 		Type::Other("stuff".to_string())
 	);
