@@ -12,6 +12,15 @@ pub enum ReplacementPart {
 	Value
 }
 
+impl ToString for JsonPart {
+	fn to_string(&self) -> String {
+		match *self {
+			JsonPart::Literal(ref s) => s.clone(),
+			JsonPart::Replacement(ref s, _) => s.clone()
+		}
+	}
+}
+
 pub fn parse_to_replacement(json: &[u8], parts: &mut Vec<JsonPart>) {
 	if json.len() > 0 {
 		let (a, part) = take_while1(json, |c| c != b'$');

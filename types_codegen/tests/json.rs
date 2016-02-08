@@ -27,20 +27,18 @@ fn can_parse_json_to_parts() {
 
 	let expected = vec![
 		JsonPart::Literal("{ \"a\" : ".to_string()),
-		JsonPart::Replacement("abc".to_string()),
+		JsonPart::Replacement("abc".to_string(), ReplacementPart::Value),
 		JsonPart::Literal(" , \"b\" : { \"c\" : ".to_string()),
-		JsonPart::Replacement("b".to_string()),
+		JsonPart::Replacement("b".to_string(), ReplacementPart::Value),
 		JsonPart::Literal(", ".to_string()),
-		JsonPart::Replacement("c".to_string()),
+		JsonPart::Replacement("c".to_string(), ReplacementPart::Key),
 		JsonPart::Literal(": \"stuff\", ".to_string()),
-		JsonPart::Replacement("doc".to_string()),
+		JsonPart::Replacement("doc".to_string(), ReplacementPart::Key),
 		JsonPart::Literal(":[ {}, { \"e\" : 15 }] } }".to_string())
 	];
 
 	let mut success = true;
 	for i in 0..tree.len() {
-		println!("'{}' : '{}'", expected[i].to_string(), tree[i].to_string());
-
 		if expected[i] != tree[i] {
 			success = false;
 			break;
