@@ -93,12 +93,15 @@ fn expand_date_fmt(cx: &mut ExtCtxt, sp: Span, args: &[TokenTree]) -> Box<MacRes
 	}))
 }
 
+//TODO: Clean up
 fn expand_json(cx: &mut ExtCtxt, sp: Span, args: &[TokenTree]) -> Box<MacResult+'static> {
 	//Get idents first, separated by commas
 	let mut idents: Vec<syntax::ast::Ident> = Vec::new();
 
 	//We expect a comma delimited list of idents
 	//If none are found, we move on
+
+	//TODO: Use BTreeMap instead of Vec. Doesn't support params out of order or reuse
 	let mut ac = 0;
 	for arg in args {
 		match *arg {
