@@ -2,8 +2,15 @@ use chrono;
 use chrono::{ DateTime, UTC };
 use chrono::format::{ Parsed, Item };
 
-/// A re-export of the `chrono::ParseError`.
-pub type ParseError = chrono::ParseError;
+/// An error encountered during format parsing.
+pub struct ParseError;
+
+enum ParseErrorKind {
+    ChronoFormat(chrono::ParseError),
+    Other(String)
+}
+
+//TODO: impl Error for ParseError
 
 /// A format used for parsing and formatting dates.
 /// 
