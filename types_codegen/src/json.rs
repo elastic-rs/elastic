@@ -21,6 +21,11 @@ impl ToString for JsonPart {
 	}
 }
 
+//TODO: Strip whitespace and quote unquoted keys
+pub fn sanitise(json: &[u8]) -> &[u8] {
+	panic!("implement");
+}
+
 pub fn parse_to_replacement(json: &[u8], parts: &mut Vec<JsonPart>) {
 	if json.len() > 0 {
 		let (a, part) = take_while1(json, |c| c != b'$');
