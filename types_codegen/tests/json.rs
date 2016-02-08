@@ -48,4 +48,4 @@ fn can_parse_json_to_parts() {
 	assert!(success);
 }
 
-//TODO: Tests for json replacement, json with nested json, building json with iterator
+//TODO: Tests for json replacement, json with nested json, building json with iterator, json with new lines after replacement keys
