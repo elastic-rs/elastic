@@ -43,3 +43,5 @@ fn parse_repl_json_sml(b: &mut Bencher) {
 		})
 	});
 }
+
+//TODO: bench for large json replacement
