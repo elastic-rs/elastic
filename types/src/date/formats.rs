@@ -1,7 +1,7 @@
-use std::slice::Iter;
 use chrono;
 use chrono::{ DateTime, NaiveDateTime, UTC, Timelike };
 use chrono::format::Item;
+use std::error::Error;
 use super::{ Format, ParseError };
 
 /// Format for `basic_date_time_no_millis`.
@@ -57,31 +57,37 @@ impl Format for EpochMillis {
 		"epoch_millis"
 	}
 
-	//TODO: Use a different error trait. `chrono::ParseError` is not reusable here
 	fn parse<'a>(date: &str) -> Result<DateTime<UTC>, ParseError> {
-		let (secs, msecs) = match (date.len(), date.chars().next().unwrap()) {
+		let c = try!(date.chars().next().ok_or("Date input was empty".to_string()));
+		let (secs, msecs) = match (date.len(), c) {
 			//For negative timestamps
 			(n, '-') if n <= 4 => {
 				let (s, m) = (Ok(-1i64), date[1..].parse::<u32>());
-				(s, Ok(1000 - m.unwrap()))
+				let mu = try!(m.map_err(|e| e.description().to_string()));
+
+				(s, Ok(1000 - mu))
 			},
 			(n, '-') if n <= 11 => {
 				let (s, m) = (date[0..n-3].parse::<i64>(), date[n-3..].parse::<u32>());
-				(s, Ok(1000 - m.unwrap()))
+				let mu = try!(m.map_err(|e| e.description().to_string()));
+
+				(s, Ok(1000 - mu))
 			},
 			(14, '-') => {
 				let (s, m) = (date[0..11].parse::<i64>(), date[11..14].parse::<u32>());
-				(s, Ok(1000 - m.unwrap()))
+				let mu = try!(m.map_err(|e| e.description().to_string()));
+
+				(s, Ok(1000 - mu))
 			},
 			//For positive timestamps
 			(n, _) if n <= 3 => (Ok(0i64), date.parse::<u32>()),
 			(n, _) if n <= 10 => (date[0..n-3].parse::<i64>(), date[n-3..].parse::<u32>()),
 			(13, _) => (date[0..10].parse::<i64>(), date[10..13].parse::<u32>()),
-			_ => panic!("unexpected format")
+			_ => return Err("unexpected format".to_string().into())
 		};
 		
-		let _secs = secs.unwrap();
-		let _msecs = msecs.unwrap();
+		let _secs = try!(secs.map_err(|e| e.description().to_string()));
+		let _msecs = try!(msecs.map_err(|e| e.description().to_string()));
 
 		Ok(DateTime::from_utc(NaiveDateTime::from_num_seconds_from_unix_epoch(_secs, _msecs * 1000000), UTC))
 	}
@@ -92,8 +98,8 @@ impl Format for EpochMillis {
 		let sec = date.timestamp();
 
 		//For positive timestamps
-		if (sec >= 0) {
-			if (sec != 0) {
+		if sec >= 0 {
+			if sec != 0 {
 				let s = sec.to_string();
 				fmtd.push_str(&s);
 			}
@@ -105,7 +111,7 @@ impl Format for EpochMillis {
 		}
 		//For negative timestamps
 		else {
-			if (sec != -1) {
+			if sec != -1 {
 				let s = sec.to_string();
 				fmtd.push_str(&s);
 			}

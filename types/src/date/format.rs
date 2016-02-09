@@ -1,16 +1,61 @@
 use chrono;
 use chrono::{ DateTime, UTC };
 use chrono::format::{ Parsed, Item };
+use std::error::Error;
+use std::fmt;
 
-/// An error encountered during format parsing.
-pub struct ParseError;
+/// Represents an error encountered during parsing.
+#[derive(Debug)]
+pub struct ParseError {
+	kind: ParseErrorKind
+}
 
+#[derive_Debug]
 enum ParseErrorKind {
-    ChronoFormat(chrono::ParseError),
+    Chrono(chrono::ParseError),
     Other(String)
 }
 
-//TODO: impl Error for ParseError
+impl fmt::Display for ParseError {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		match self.kind {
+			ParseErrorKind::Chrono(ref err) => write!(f, "Chrono error: {}", err),
+			ParseErrorKind::Other(ref err) => write!(f, "Error: {}", err)
+		}
+	}
+}
+
+impl Error for ParseError {
+	fn description(&self) -> &str {
+		match self.kind {
+			ParseErrorKind::Chrono(ref err) => err.description(),
+			ParseErrorKind::Other(ref err) => &err[..]
+		}
+	}
+
+	fn cause(&self) -> Option<&Error> {
+		match self.kind {
+			ParseErrorKind::Chrono(ref err) => Some(err),
+			ParseErrorKind::Other(_) => None
+		}
+	}
+}
+
+impl From<chrono::ParseError> for ParseError {
+	fn from(err: chrono::ParseError) -> ParseError {
+		ParseError {
+			kind: ParseErrorKind::Chrono(err)
+		}
+	}
+}
+
+impl From<String> for ParseError {
+	fn from(err: String) -> ParseError {
+		ParseError {
+			kind: ParseErrorKind::Other(err)
+		}
+	}
+}
 
 /// A format used for parsing and formatting dates.
 /// 
@@ -33,14 +78,10 @@ pub trait Format {
 				}
 
 				//Set the DateTime result
-				return Ok(
-					chrono::DateTime::from_utc(
-						parsed.to_naive_datetime_with_offset(0).unwrap(), 
-						chrono::UTC
-					)	
-				);
+				let dt = try!(parsed.to_naive_datetime_with_offset(0));
+				return Ok(chrono::DateTime::from_utc(dt, chrono::UTC));
 			},
-			Err(e) => return Err(e)
+			Err(e) => return Err(e.into())
 		}
 	}
 

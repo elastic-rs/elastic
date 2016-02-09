@@ -1,7 +1,0 @@
-[package]
-name = "test"
-version = "0.1.0"
-authors = ["Ashley Mannix <ashleymannix@live.com.au>"]
-
-[dependencies]
-elastic_types_codegen = { version = "*", path = "../../" }

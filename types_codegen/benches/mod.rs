@@ -11,7 +11,7 @@ use test::Bencher;
 #[bench]
 fn parse_plain_json_sml(b: &mut Bencher) {
 	b.iter(|| {
-		json!({
+		return json!({
 			query: {
 				filtered: {
 					query: {
@@ -35,7 +35,7 @@ fn parse_plain_json_sml(b: &mut Bencher) {
 #[bench]
 fn parse_plain_json_med(b: &mut Bencher) {
 	b.iter(|| {
-		json!({
+		return json!({
 			query: {
 				filtered: {
 					query: {
@@ -72,7 +72,7 @@ fn parse_plain_json_med(b: &mut Bencher) {
 #[bench]
 fn parse_plain_json_lrg(b: &mut Bencher) {
 	b.iter(|| {
-		json!({
+		return json!({
 			query: {
 				filtered: {
 					query: {
