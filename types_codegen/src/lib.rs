@@ -114,14 +114,17 @@ fn expand_json(cx: &mut ExtCtxt, sp: Span, args: &[TokenTree]) -> Box<MacResult+
 		}
 	}
 
+	//Parse the tokens to a string and sanitise the results
 	let json = syntax::print::pprust::tts_to_string(&args[ac..]);
-
+	let mut sanitised = String::with_capacity(json.len());
+	json::sanitise(json.as_bytes(), &mut sanitised);
+	
 	//If there are no idents, just emit the json string
 	if ac == 0 {
-		return MacEager::expr(cx.expr_str(sp, token::intern_and_get_ident(&json)))
+		return MacEager::expr(cx.expr_str(sp, token::intern_and_get_ident(&sanitised)))
 	}
 	
-	let json_bytes = json.as_bytes();
+	let json_bytes = sanitised.as_bytes();
 
 	let mut tree = Vec::new();
 	let json_parts = json::parse_to_replacement(json_bytes, &mut tree);
