@@ -33,24 +33,26 @@
 #![doc(html_root_url = "http://kodraus.github.io/rustdoc/elastic_types_codegen/")]
 
 #![crate_type="dylib"]
-#![feature(plugin_registrar, rustc_private, quote, vec_push_all)]
+#![feature(plugin_registrar, rustc_private, quote, plugin)]
+#![plugin(serde_macros)]
 
 extern crate syntax;
 extern crate rustc;
 extern crate rustc_plugin;
 extern crate chrono;
+extern crate serde;
+extern crate serde_json;
 
 pub mod parsers;
 pub mod date;
 pub mod json;
 
-use std::ops::Deref;
+use std::collections::BTreeMap;
 use syntax::codemap::Span;
 use syntax::parse::token;
 use syntax::ast::{ Stmt };
 use syntax::ptr::P;
-use syntax::ext::quote;
-use syntax::ast::{ TokenTree, Expr };
+use syntax::ast::TokenTree;
 use syntax::ext::base::{ExtCtxt, MacResult, DummyResult, MacEager};
 use syntax::ext::build::AstBuilder;
 use rustc_plugin::Registry;
@@ -93,20 +95,15 @@ fn expand_date_fmt(cx: &mut ExtCtxt, sp: Span, args: &[TokenTree]) -> Box<MacRes
 	}))
 }
 
-//TODO: Clean up
 fn expand_json(cx: &mut ExtCtxt, sp: Span, args: &[TokenTree]) -> Box<MacResult+'static> {
 	//Get idents first, separated by commas
-	let mut idents: Vec<syntax::ast::Ident> = Vec::new();
-
-	//We expect a comma delimited list of idents
-	//If none are found, we move on
-
-	//TODO: Use BTreeMap instead of Vec. Doesn't support params out of order or reuse
+	//If none are found then we just continue on
+	let mut idents: BTreeMap<String, syntax::ast::Ident> = BTreeMap::new();
 	let mut ac = 0;
 	for arg in args {
 		match *arg {
 			TokenTree::Token(_, token::Ident(s, _)) => {
-				idents.push(s);
+				idents.insert(s.to_string(), s);
 				ac += 1;
 			},
 			TokenTree::Token(_, token::Token::Comma) => ac += 1,
@@ -120,14 +117,12 @@ fn expand_json(cx: &mut ExtCtxt, sp: Span, args: &[TokenTree]) -> Box<MacResult+
 	json::sanitise(json.as_bytes(), &mut sanitised);
 	
 	//If there are no idents, just emit the json string
-	if ac == 0 {
+	if idents.len() == 0 {
 		return MacEager::expr(cx.expr_str(sp, token::intern_and_get_ident(&sanitised)))
 	}
 	
-	let json_bytes = sanitised.as_bytes();
-
 	let mut tree = Vec::new();
-	let json_parts = json::parse_to_replacement(json_bytes, &mut tree);
+	json::parse_to_replacement(sanitised.as_bytes(), &mut tree);
 
 	let mut stmts: Vec<P<Stmt>> = Vec::new();
 	let mut push_stmts: Vec<P<Stmt>> = Vec::new();
@@ -135,8 +130,6 @@ fn expand_json(cx: &mut ExtCtxt, sp: Span, args: &[TokenTree]) -> Box<MacResult+
 	stmts.push(quote_stmt!(cx, let mut c = 0).unwrap());
 
 	let mut c = 0;
-	let mut ic = 0;
-
 	for t in tree {
 		match t {
 			//For literals, emit the string value
@@ -152,20 +145,19 @@ fn expand_json(cx: &mut ExtCtxt, sp: Span, args: &[TokenTree]) -> Box<MacResult+
 				push_stmts.push(quote_stmt!(cx, jval.push_str($jname)).unwrap());
 			},
 			//For replacements, convert the input first
-			//TODO: replace `to_string` with `serde_json::to_str`
-			json::JsonPart::Replacement(_, part) => {
-				let name = idents[ic];
+			json::JsonPart::Replacement(ref ident, ref part) => {
+				let name = idents.get(ident).unwrap();
 				let jn = format!("jrepl_{}", c);
 				let jname = token::str_to_ident(&jn);
 				
-				match part {
+				match *part {
 					//For keys, emit the value surrounded by quotes
 					//This may no longer be needed when using serde
 					json::ReplacementPart::Key => {
 						stmts.push(quote_stmt!(cx, let $jname = {
 							let mut tmpstr = String::with_capacity(&$name.len() + 2);
 							tmpstr.push('\"');
-							let tmpjval = $name.to_string();
+							let tmpjval = serde_json::to_string(&$name).unwrap();
 							tmpstr.push_str(&tmpjval);
 							tmpstr.push('\"');
 
@@ -174,14 +166,12 @@ fn expand_json(cx: &mut ExtCtxt, sp: Span, args: &[TokenTree]) -> Box<MacResult+
 					},
 					//For values, just emit the string value
 					json::ReplacementPart::Value => {
-						stmts.push(quote_stmt!(cx, let $jname = $name.to_string()).unwrap());
+						stmts.push(quote_stmt!(cx, let $jname = serde_json::to_string(&$name).unwrap()).unwrap());
 					}
 				}
 
 				stmts.push(quote_stmt!(cx, c += $jname.len()).unwrap());
 				push_stmts.push(quote_stmt!(cx, jval.push_str(&$jname)).unwrap());
-
-				ic += 1;
 			}
 		}
 
@@ -189,7 +179,7 @@ fn expand_json(cx: &mut ExtCtxt, sp: Span, args: &[TokenTree]) -> Box<MacResult+
 	};
 
 	stmts.push(quote_stmt!(cx, let mut jval = String::with_capacity(c)).unwrap());
-	stmts.push_all(&mut push_stmts);
+	stmts.extend_from_slice(&mut push_stmts);
 
 	MacEager::expr(cx.expr_block(cx.block(sp, stmts, Some(quote_expr!(cx, jval)))))
 }

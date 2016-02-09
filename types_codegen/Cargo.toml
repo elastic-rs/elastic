@@ -10,3 +10,6 @@ plugin = true
 
 [dependencies]
 chrono = "*"
+serde = "*"
+serde_json = "*"
+serde_macros = "*"

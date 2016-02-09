@@ -1,6 +1,8 @@
 #![feature(plugin)]
 #![plugin(elastic_types_codegen)]
 extern crate chrono;
+extern crate serde;
+extern crate serde_json;
 extern crate elastic_types_codegen;
 
 use elastic_types_codegen::json::*;
@@ -9,12 +11,46 @@ use elastic_types_codegen::json::*;
 fn can_generate_json() {
 	let j = json!({ 
 		"a": 7, 
-		"b": { 
-			"c": "some stuff" 
-		} 
+		"b": { "c": "some stuff" },
+		"data": [
+			{ "id": 1, "name": "stuff" },
+			{ "id": 2, "name": "stuff" }
+		]
 	});
 
-	assert_eq!("{ \"a\" : 7 , \"b\" : { \"c\" : \"some stuff\" } }", j);
+	assert_eq!("{\"a\":7,\"b\":{\"c\":\"some stuff\"},\"data\":[{\"id\":1,\"name\":\"stuff\"},{\"id\":2,\"name\":\"stuff\"}]}", j);
+}
+
+#[test]
+fn can_generate_quasi_json() {
+	let j = json!({ 
+		a: 7, 
+		b: { c: "some stuff" },
+		data: [
+			{ id: 1, name: "stuff" },
+			{ id: 2, name: "stuff" }
+		]
+	});
+
+	assert_eq!("{\"a\":7,\"b\":{\"c\":\"some stuff\"},\"data\":[{\"id\":1,\"name\":\"stuff\"},{\"id\":2,\"name\":\"stuff\"}]}", j);
+}
+
+#[test]
+fn can_add_replacement_idents_to_json() {
+	let a = 7;
+	let c = "some stuff";
+	let name = "stuff";
+
+	let j = json!(a, c, name, { 
+		a: $a, 
+		b: { c: $c },
+		data: [
+			{ id: 1, name: $name },
+			{ id: 2, name: $name }
+		]
+	});
+
+	assert_eq!("{\"a\":7,\"b\":{\"c\":\"some stuff\"},\"data\":[{\"id\":1,\"name\":\"stuff\"},{\"id\":2,\"name\":\"stuff\"}]}", j);
 }
 
 #[test]
@@ -48,4 +84,42 @@ fn can_parse_json_to_parts() {
 	assert!(success);
 }
 
-//TODO: Tests for json replacement, json with nested json, building json with iterator, json with new lines after replacement keys
+#[test]
+fn sanitisation_removes_whitespace() {
+	let j = "\n{ \"a\" : \"stuff\", \"b\":{  \"c\":[ 0, \r\n1 ] }		,\"d\":14 }";
+
+	let mut sanitised = String::new();
+	sanitise(j.as_bytes(), &mut sanitised);
+
+	assert_eq!("{\"a\":\"stuff\",\"b\":{\"c\":[0,1]},\"d\":14}", &sanitised);
+}
+
+#[test]
+fn sanitisation_does_not_affect_strings() {
+	let j = "\n{ \"a\" : \"stuff and data.\n 	More.\"}";
+
+	let mut sanitised = String::new();
+	sanitise(j.as_bytes(), &mut sanitised);
+
+	assert_eq!("{\"a\":\"stuff and data.\n 	More.\"}", &sanitised);
+}
+
+#[test]
+fn sanitisation_standardises_quotes() {
+	let j = "{ 'a' : \"stuff\", \"b\":{  \"c\":[ '0', 1 ] },\"d\":14 }";
+
+	let mut sanitised = String::new();
+	sanitise(j.as_bytes(), &mut sanitised);
+
+	assert_eq!("{\"a\":\"stuff\",\"b\":{\"c\":[\"0\",1]},\"d\":14}", &sanitised);
+}
+
+#[test]
+fn sanitisation_quotes_unquoted_keys() {
+	let j = "{ a : \"stuff\", \"b\":{  c:[ 0, 1 ] },d:14 }";
+
+	let mut sanitised = String::new();
+	sanitise(j.as_bytes(), &mut sanitised);
+
+	assert_eq!("{\"a\":\"stuff\",\"b\":{\"c\":[0,1]},\"d\":14}", &sanitised);
+}
