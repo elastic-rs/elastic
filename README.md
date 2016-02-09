@@ -25,9 +25,32 @@ See [milestones](https://github.com/KodrAus/elasticsearch-rs/milestones).
 
 ## Goals
 
-To provide a strongly-typed, full-featured and efficient Elasticsearch client for Rust over asynchronous (eventually) io.
+To provide a strongly-typed, full-featured and efficient Elasticsearch client for Rust over (eventually) asynchronous io.
 
-I'd like to follow a similar pattern to the Query DSL as the C# client does, where type info is always available when constructing queries. With Rust, it should be possible to produce a synax that's closer to the actual JSON spec, possibly using macros.
+The REST API will be provided by inline JSON so it's efficient and always in line with whatever version of Elasticsearch you're targeting. For example:
+
+```
+let colour = "blue";
+let count = 5;
+let result = search_index_type(
+  "myindex", "mytype", 
+    body!(colour, count, {
+      nested : {
+        path : "obj1",
+        score_mode : "avg",
+        query : {
+          bool : {
+            must : [
+              {match : {obj1.name : $colour }},
+              {range : {obj1.count : {gt : $count}}}
+            ]
+          }
+        }
+      }
+    }
+  )
+);
+```
 
 ## Design
 
@@ -56,7 +79,3 @@ Provides rust implementations of the main Elasticsearch types (like `date`) and 
 [Docs](http://kodraus.github.io/rustdoc/elastic_types_codegen/)
 
 Provides compiler plugins and macros for the `elastic_types` crate, such as parsing a date format to an array of [Items](https://github.com/lifthrasiir/rust-chrono/blob/master/src/format/mod.rs#L161) at compile-time for efficient runtime date parsing.
-
-### elastic_client
-
-Provides the high-level, strongly-typed client on top of the low-level client and `elastic_types`. The direction of this crate isn't really decided yet, but I'm liking the idea of using closures to thread type info through a query builder, like the [C# client](https://github.com/elastic/elasticsearch-net).
