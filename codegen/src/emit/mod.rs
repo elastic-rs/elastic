@@ -77,13 +77,13 @@ pub trait Emitter<'a> {
 	type Error: From<EmitError> = EmitError;
 	
 	/// Gets the context struct.
-	fn get_cx(&self) -> Self::CtxtBrw;
+	fn get_cx(&'a self) -> Self::CtxtBrw;
 	
 	/// Emit a codegen item to the provided writer.
 	/// 
 	/// This default implementation will attempt to emit results in-line, 
 	/// so no extra characters, such as new lines or whitespace, will be emitted.
-	fn emit<Emittable, EmError, W>(&self, e: &'a Emittable, writer: &'a mut W) -> Result<(), Self::Error> where 
+	fn emit<Emittable, EmError, W>(&'a self, e: &'a Emittable, writer: &'a mut W) -> Result<(), Self::Error> where 
 		Emittable: Emit<Self::CtxtBrw, EmError>, 
 		EmError: Into<EmitError>, 
 		W: Write {
