@@ -119,7 +119,7 @@ impl <'a> RustEmitter<'a> {
 impl <'a> Emitter<'a> for RustEmitter<'a> {
 	type Ctxt = ExtCtxt<'a>;
 	
-	fn get_cx(&self) -> &'a Self::Ctxt {
+	fn get_cx(&'a self) -> &'a Self::Ctxt {
 		&self.cx
 	}
 }
