@@ -1,0 +1,11 @@
+[package]
+name = "es_benches"
+version = "0.1.0"
+authors = ["Ashley Mannix <Ashley.Mannix@sunshinecoast.qld.gov.au>"]
+
+[dependencies]
+serde = "*"
+serde_json = "*"
+serde_macros = "*"
+hyper = "*"
+elastic_types_codegen = { version = "*", path = "../../types_codegen" }
