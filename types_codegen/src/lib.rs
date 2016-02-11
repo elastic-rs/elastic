@@ -1,6 +1,94 @@
 //! Elasticsearch Core Types Codegen
 //!
 //! Compile-time code generation for Elasticsearch type implementations.
+//! 
+//! # Json Parsing
+//! 
+//! The `json!` macro will take an inline token tree and serialise it as json:
+//! 
+//! ```
+//! # #![feature(plugin)]
+//! # #![plugin(elastic_types_codegen)]
+//! # fn main() {
+//! let json = json!({
+//! 	"query": {
+//! 		"filtered": {
+//! 			"query": {
+//! 				"match_all": {}
+//! 			},
+//! 			"filter": {
+//! 				"geo_distance": {
+//! 					"distance": "20km",
+//! 					"location": {
+//! 						"lat": 37.776,
+//! 						"lon": -122.41
+//! 					}
+//! 				}
+//! 			}
+//! 		}
+//! 	}
+//! });
+//! # }
+//! ```
+//! 
+//! This will also work for unquoted keys for something a bit more `rusty`:
+//! 
+//! ```
+//! # #![feature(plugin)]
+//! # #![plugin(elastic_types_codegen)]
+//! # fn main() {
+//! let json = json!({
+//! 	query: {
+//! 		filtered: {
+//! 			query: {
+//! 				match_all: {}
+//! 			},
+//! 			filter: {
+//! 				geo_distance: {
+//! 					distance: "20km",
+//! 					location: {
+//! 						lat: 37.776,
+//! 						lon: -122.41
+//! 					}
+//! 				}
+//! 			}
+//! 		}
+//! 	}
+//! });
+//! # }
+//! ```
+//! 
+//! Json values can be spliced in to the result if they implement `serde::Serialize`:
+//! 
+//! ```
+//! # #![feature(plugin)]
+//! # #![plugin(elastic_types_codegen)]
+//! # fn main() {
+//! let query = "match_all";
+//! let dist = "20km";
+//! let lat = 37.776;
+//! let lon = -122.41;
+//! 
+//! let json = json!(key, dist, lat, lon {
+//! 	query: {
+//! 		filtered: {
+//! 			query: {
+//! 				$query: {}
+//! 			},
+//! 			filter: {
+//! 				geo_distance: {
+//! 					distance: $dist,
+//! 					location: {
+//! 						lat: $lat,
+//! 						lon: $lon
+//! 					}
+//! 				}
+//! 			}
+//! 		}
+//! 	}
+//! });
+//! # }
+//! ```
 //!
 //! # Date Formatting
 //!

@@ -8,4 +8,6 @@ serde = "*"
 serde_json = "*"
 serde_macros = "*"
 hyper = "*"
+rs-es = "*"
+stopwatch = "*"
 elastic_types_codegen = { version = "*", path = "../../types_codegen" }
