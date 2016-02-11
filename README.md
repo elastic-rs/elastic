@@ -54,7 +54,9 @@ Provides a [hyper]("https://github.com/hyperium/hyper") implementation of the El
 [Docs](http://kodraus.github.io/rustdoc/elastic_types/)
 [Issues](https://github.com/KodrAus/elasticsearch-rs/labels/types)
 
-Provides rust implementations of the main Elasticsearch types (like `date`) and responses/errors. This crate is not required for working with `elastic_hyper`, but does have a lot of utility, especially for designing your document types.
+Provides rust implementations of the main [Elasticsearch types](https://www.elastic.co/guide/en/elasticsearch/reference/1.4/mapping-core-types.html) (like `date`) and responses/errors. This crate is not required for working with `elastic_hyper`, but does have a lot of utility, especially for designing your document types.
+
+The `elastic_types` crate tries not to reinvent the wheel wherever possible and relies on some common dependencies for types, such as [chrono](https://github.com/lifthrasiir/rust-chrono) for dates and [rust-geo](https://github.com/georust/rust-geo) for geometry.
 
 #### elastic_types_codegen
 
