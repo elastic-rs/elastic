@@ -22,8 +22,7 @@ use rs_es::query::*;
 
 Working on a few ideas for the client implementation. 
 
-The current json! macro seems to have horrible performance for some reason.
-Will need to look at the output binary and see what's actually happening.
+This is using rs-es as a benchmark.
 
 */
 
@@ -45,10 +44,10 @@ fn rs_es_query(b: &mut Bencher) {
 }
 
 #[bench]
-fn elastic_hyper_query_a(b: &mut Bencher) {
+fn elastic_hyper_query(b: &mut Bencher) {
 	b.iter(|| {
 		let mut client = hyper::Client::new();
-		post_index_type_a(
+		post_index_type(
 			client, "http://localhost:9200", "bench_index", "docs", 
 			json!({
 				query: {
@@ -62,18 +61,7 @@ fn elastic_hyper_query_a(b: &mut Bencher) {
 	});
 }
 
-#[bench]
-fn elastic_hyper_query_aa(b: &mut Bencher) {
-	b.iter(|| {
-		let mut client = hyper::Client::new();
-		post_index_type_a(
-			client, "http://localhost:9200", "bench_index", "docs", 
-			"{ 'query': { 'query_string': { 'default_field': 'title', 'query': 'doc' } } }"
-		).unwrap()
-	});
-}
-
-fn post_index_type_a(client: hyper::Client, baseurl: &str, index: &str, _type: &str, body: &str) -> Result<Response> {
+fn post_index_type(client: hyper::Client, baseurl: &str, index: &str, _type: &str, body: &str) -> Result<Response> {
 	let mut url = String::with_capacity(
 		baseurl.len() +
 		"/".len() + 
