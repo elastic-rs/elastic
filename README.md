@@ -47,7 +47,7 @@ Right now, it's used by `elastic_hyper` to build the client, but could also be u
 
 [Issues](https://github.com/KodrAus/elasticsearch-rs/labels/hyper)
 
-Provides a [hyper]("https://github.com/hyperium/hyper") implementation of the Elasticsearch REST API. This is the current client that works purely through JSON. This crate is responsible for the `gen` in `elastic_codegen` and builds its own source and tests.
+Provides a [hyper](https://github.com/hyperium/hyper) implementation of the Elasticsearch REST API. This is the current client that works purely through JSON. This crate is responsible for the `gen` in `elastic_codegen` and builds its own source and tests.
 
 ### elastic_types
 
