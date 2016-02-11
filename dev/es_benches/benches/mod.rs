@@ -78,3 +78,6 @@ fn post_index_type(client: hyper::Client, baseurl: &str, index: &str, _type: &st
         
     res.send()
 }
+
+//TODO: rotor-http implementation (provided body is supported)
+//Look at splitting these benches and impls out into their own files
