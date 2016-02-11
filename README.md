@@ -16,12 +16,11 @@ If the build is red, you can check the Travis build history to find the last `ni
 
 See [milestones](https://github.com/KodrAus/elasticsearch-rs/milestones).
 
-- Codegen API endpoints
-- Implement core Elasticsearch types
-- io layer
-- Doc APIs
-- Query DSL proof-of-concept to test design
-- Everything else
+- [ ] Codegen API endpoints
+- [ ] Implement core Elasticsearch types
+- [ ] Client
+- [x] Doc APIs
+- [x] Query DSL proof-of-concept to test design
 
 ## Goals
 
