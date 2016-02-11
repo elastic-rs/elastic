@@ -27,30 +27,9 @@ See [milestones](https://github.com/KodrAus/elasticsearch-rs/milestones).
 
 To provide a strongly-typed, full-featured and efficient Elasticsearch client for Rust over (eventually) asynchronous io.
 
-The REST API will be provided by inline JSON so it's efficient and always in line with whatever version of Elasticsearch you're targeting. For example:
+The REST API is provided by an [inline JSON macro](http://kodraus.github.io/rustdoc/elastic_types_codegen/#json-parsing) so it's efficient and always in line with whatever version of Elasticsearch you're targeting.
 
-```
-let colour = "blue";
-let count = 5;
-let result = search_index_type(
-  "myindex", "mytype", 
-    body!(colour, count, {
-      nested : {
-        path : "obj1",
-        score_mode : "avg",
-        query : {
-          bool : {
-            must : [
-              {match : {obj1.name : $colour }},
-              {range : {obj1.count : {gt : $count}}}
-            ]
-          }
-        }
-      }
-    }
-  )
-);
-```
+This means you don't need to learn another API for interacting with Elasticsearch; queries mocked in [Sense](https://www.elastic.co/blog/found-sense-a-cool-json-aware-interface-to-elasticsearch) can literally just be copy+pasted into your Rust code.
 
 ## Design
 
@@ -62,17 +41,17 @@ The client is divided into a few crates by utility. These will probably be moved
 
 Provides code generation for the Elasticsearch REST API from the official [spec](https://github.com/elastic/elasticsearch/tree/master/rest-api-spec) and generic helpers for rust source and integration tests. The goal is to keep this package fairly agnostic, so the same `ast` can be used to generate other kinds of output.
 
-Right now, it's used be `elastic_hyper` to build the low-level client, but could also be used to generate other implementations, like `elastic_rotor`.
+Right now, it's used by `elastic_hyper` to build the client, but could also be used to generate other implementations, like `elastic_rotor` for an asynchronous client.
 
 ### elastic_hyper
 
-Provides a [hyper]("https://github.com/hyperium/hyper") implementation of the Elasticsearch REST API. This is the 'low-level' client that works purely through JSON. This crate is responsible for the `gen` in `elastic_codegen` and builds its own source and tests.
+Provides a [hyper]("https://github.com/hyperium/hyper") implementation of the Elasticsearch REST API. This is the current client that works purely through JSON. This crate is responsible for the `gen` in `elastic_codegen` and builds its own source and tests.
 
 ### elastic_types
 
 [Docs](http://kodraus.github.io/rustdoc/elastic_types/)
 
-Provides rust implementations of the main Elasticsearch types (like `date`) and responses. Required by the high-level client and useful for the low-level client, especially if you're mostly just using the [Document API](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs.html?q=document).
+Provides rust implementations of the main Elasticsearch types (like `date`) and responses/errors. This crate is not required for working with `elastic_hyper`, but does have a lot of utility, especially for designing your document types.
 
 #### elastic_types_codegen
 
