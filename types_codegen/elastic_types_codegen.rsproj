@@ -3,11 +3,11 @@
   <PropertyGroup>
     <Configuration Condition="'$(Configuration)' == ''">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">default</Platform>
-    <ProjectGuid>{39913fcf-2cb8-46e8-b393-b5ac08c15554}</ProjectGuid>
+    <ProjectGuid>{8714246a-4f89-4b7f-bd41-7beac191d0ed}</ProjectGuid>
     <OutputType>library</OutputType>
-    <CrateName>elastic_codegen</CrateName>
-    <Name>elastic_codegen</Name>
-    <RootNamespace>elastic_codegen</RootNamespace>
+    <CrateName>elastic_types</CrateName>
+    <Name>elastic_types</Name>
+    <RootNamespace>elastic_types</RootNamespace>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|default' ">
     <LinkTimeOptimization>false</LinkTimeOptimization>
@@ -22,17 +22,10 @@
     <PlatformTarget>default</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
-    <Folder Include="spec\" />
-    <Folder Include="spec\api" />
-    <Folder Include="spec\test" />
     <Folder Include="src\" />
     <Folder Include="benches\" />
-    <Folder Include="src\api\" />
-    <Folder Include="src\api\gen\" />
     <Folder Include="tests\" />
     <Code Include="src\*" />
-    <Code Include="spec\api\*" />
-    <Code Include="spec\test\*" />
     <Code Include="benches\*" />
     <Code Include="tests\*" />
   </ItemGroup>
