@@ -15,7 +15,7 @@ use test::Bencher;
 	See: https://github.com/KodrAus/elasticsearch-rs/issues/4
 
 	As an optimisation, we can use a macro to parse the date format to DateTokens at compile time.
-	See `parse_date_from_tokens` vs `parse_date_from_format` performance.
+	See `parse_date_from_tokens` vs `parse_date_from_format` performance in the `elastic_types_codegen` crate.
 */
 
 #[bench]
