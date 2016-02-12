@@ -1,5 +1,5 @@
 [package]
-name = "es_benches"
+name = "es_benches_rust"
 version = "0.1.0"
 authors = ["Ashley Mannix <Ashley.Mannix@sunshinecoast.qld.gov.au>"]
 
@@ -9,5 +9,4 @@ serde_json = "*"
 serde_macros = "*"
 hyper = "*"
 rs-es = "*"
-stopwatch = "*"
 elastic_types_codegen = { version = "*", path = "../../types_codegen" }

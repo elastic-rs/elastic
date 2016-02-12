@@ -5,7 +5,6 @@
 extern crate serde;
 extern crate serde_json;
 extern crate elastic_types_codegen;
-extern crate rs_es;
 extern crate hyper;
 
 extern crate test;
@@ -16,35 +15,9 @@ use test::Bencher;
 use hyper::header::{ Headers, ContentType };
 use hyper::client::response::Response;
 use hyper::error::Result;
-use rs_es::query::*;
-
-/*
-
-Working on a few ideas for the client implementation. 
-
-This is using rs-es as a benchmark.
-
-*/
 
 #[bench]
-fn rs_es_query(b: &mut Bencher) {
-	b.iter(|| {
-		let mut client = rs_es::Client::new("localhost", 9200);
-		let query = Query::build_query_string("doc")
-			.with_default_field("title")
-			.build();
-
-		client.search_query()
-			.with_indexes(&["bench_index"])
-			.with_types(&["docs"])
-			.with_query(&query)
-			.send()
-			.unwrap()
-	});
-}
-
-#[bench]
-fn elastic_hyper_query(b: &mut Bencher) {
+fn query(b: &mut Bencher) {
 	b.iter(|| {
 		let mut client = hyper::Client::new();
 		post_index_type(
