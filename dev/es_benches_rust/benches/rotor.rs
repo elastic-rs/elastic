@@ -12,6 +12,8 @@ use rotor_http::client::{ Context as HttpCtx };
 use rotor_http::Version::Http11;
 use rotor_http::Deadline;
 
+//TODO: Write a context that returns the result via channel so the bench can be run completely
+
 struct Context;
 
 impl HttpCtx for Context {}
@@ -71,7 +73,6 @@ impl Client for Req {
 		unimplemented!();
 	}
 }
-
 
 fn main() {
 	let creator = rotor::Loop::new(&rotor::Config::new()).unwrap();
