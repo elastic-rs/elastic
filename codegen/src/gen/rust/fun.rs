@@ -36,13 +36,13 @@ impl Fn {
 
 	/// Set the return type of the function.
 	pub fn set_return<'a, T>(&'a mut self) -> &'a mut Fn {
-		self.decl.output = FunctionRetTy::Return(P(ty::<T>(TyPathOpts::default())));
+		self.decl.output = FunctionRetTy::Ty(P(ty::<T>(TyPathOpts::default())));
 
 		self
 	}
 
 	/// Append a statement to the function body.
-	pub fn add_body_stmt<'a>(&'a mut self, stmt: P<Stmt>) -> &'a mut Fn {
+	pub fn add_body_stmt<'a>(&'a mut self, stmt: Stmt) -> &'a mut Fn {
 		self.body.stmts.push(stmt);
 
 		self
@@ -60,7 +60,7 @@ impl Fn {
 
 		//Set the return type if the function takes one
 		match self.decl.output {
-			FunctionRetTy::Return(_) => self.body.expr = _body.expr.clone(),
+			FunctionRetTy::Ty(_) => self.body.expr = _body.expr.clone(),
 			_ => ()
 		}
 		
@@ -112,8 +112,8 @@ impl ToString for Fn {
 /// //Build a function signature
 /// let mut fun = build_fn("my_fun", vec![
 /// 	arg::<MyStruct>("arg1"),
-/// 	arg_ptr::<i32>("arg2", Mutability::MutMutable, Some(lifetime)),
-/// 	build_arg("arg3", build_ty_ptr("str", Mutability::MutImmutable, Some(lifetime)))
+/// 	arg_ptr::<i32>("arg2", Mutability::Mutable, Some(lifetime)),
+/// 	build_arg("arg3", build_ty_ptr("str", Mutability::Immutable, Some(lifetime)))
 /// ]);
 /// fun.add_lifetime(lifetime);
 /// 
@@ -126,7 +126,7 @@ pub fn build_fn(name: &str, inputs: Vec<Arg>) -> Fn {
 		identifier: token::str_to_ident(name),
 		decl: FnDecl {
 			inputs: inputs,
-			output: FunctionRetTy::DefaultReturn(DUMMY_SP),
+			output: FunctionRetTy::Default(DUMMY_SP),
 			variadic: false
 		},
 		generics: Generics::default(),
@@ -134,7 +134,7 @@ pub fn build_fn(name: &str, inputs: Vec<Arg>) -> Fn {
 			stmts: Vec::new(),
 			expr: None,
 			id: DUMMY_NODE_ID,
-			rules: BlockCheckMode::DefaultBlock,
+			rules: BlockCheckMode::Default,
 			span: DUMMY_SP
 		},
 		unsafety: Unsafety::Normal,
@@ -154,7 +154,7 @@ pub fn build_arg_ident(name: Ident, ty: Ty) -> Arg {
 		pat: P(Pat {
 			id: DUMMY_NODE_ID,
 			node: PatIdent(
-				BindingMode::ByValue(Mutability::MutImmutable),
+				BindingMode::ByValue(Mutability::Immutable),
 				Spanned {
 					span: DUMMY_SP,
 					node: name

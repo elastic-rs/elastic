@@ -30,7 +30,7 @@ pub fn build_ty(name: &str) -> Ty {
 
 	Ty {
 		id: DUMMY_NODE_ID,
-		node: Ty_::TyPath(None, Path {
+		node: TyKind::Path(None, Path {
 			span: DUMMY_SP,
 			global: false,
 			segments: segments
@@ -51,7 +51,7 @@ pub fn build_ty_mut(name: &str, mutbl: Mutability) -> MutTy {
 pub fn build_ty_ptr(name: &str, mutbl: Mutability, lifetime: Option<Lifetime>) -> Ty {
 	Ty {
 		id: DUMMY_NODE_ID,
-		node: Ty_::TyRptr(
+		node: TyKind::Rptr(
 			lifetime,
 			build_ty_mut(name, mutbl)
 		),

@@ -11,13 +11,6 @@ extern crate elastic_codegen;
 use std::fs;
 use std::fs::File;
 use syntax::ast::*;
-use syntax::parse::ParseSess;
-use syntax::feature_gate::GatedCfgAttr;
-use syntax::ext::base::ExtCtxt;
-use syntax::ext::expand::ExpansionConfig;
-use syntax::print::pprust;
-use syntax::ext::quote;
-use syntax::ptr::P;
 use syntax::parse::token;
 use syntax::codemap::DUMMY_SP;
 use syntax::parse::token::intern;
@@ -55,7 +48,7 @@ macro_rules! get_ctxt {
 
 #[test]
 fn can_include_default_emit_ops_per_type() {
-	use elastic_codegen::emit::default::num::i;
+	use elastic_codegen::emit::default::num::i::*;
 
 	let num = 13;
 
@@ -81,8 +74,8 @@ fn can_emit_rs_fn_to_file() {
 
 	//Function signature
 	let mut fun = build_fn("my_fun", vec![
-		arg_ptr::<i32>("arg1", Mutability::MutMutable, Some(lifetime)),
-		build_arg("arg2", build_ty_ptr("str", Mutability::MutImmutable, Some(lifetime)))
+		arg_ptr::<i32>("arg1", Mutability::Mutable, Some(lifetime)),
+		build_arg("arg2", build_ty_ptr("str", Mutability::Immutable, Some(lifetime)))
 	]);
 
 	//Function return type
@@ -145,7 +138,7 @@ fn can_emit_rs_fn_with_body_to_file() {
 		let (url_ident, url_stmt) = url_fmt_decl(url, params);
 
 		//Add the url format statement to the function body
-		fun.add_body_stmt(P(url_stmt));
+		fun.add_body_stmt(url_stmt);
 
 		//Add the rest of the function body. This just returns the formatted url
 		fun.add_body_stmts(quote_block!(cx, {

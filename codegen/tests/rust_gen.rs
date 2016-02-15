@@ -23,8 +23,8 @@ fn can_add_lifetime_to_fn() {
 
 	let mut fun = build_fn("my_fun", vec![
 		arg::<MyStruct>("arg1"),
-		arg_ptr::<i32>("arg2", Mutability::MutMutable, Some(lifetime)),
-		build_arg("arg3", build_ty_ptr("str", Mutability::MutImmutable, Some(lifetime)))
+		arg_ptr::<i32>("arg2", Mutability::Mutable, Some(lifetime)),
+		build_arg("arg3", build_ty_ptr("str", Mutability::Immutable, Some(lifetime)))
 	]);
 	fun.add_lifetime(lifetime);
 
@@ -72,7 +72,7 @@ fn can_set_return_type_of_fn() {
 	fun.set_return::<i32>();
 
 	let retty = match fun.decl.output {
-		FunctionRetTy::Return(t) => Some(t),
+		FunctionRetTy::Ty(t) => Some(t),
 		_ => None
 	};
 
@@ -97,7 +97,7 @@ fn can_build_type_with_name_only() {
 	let string_type = ty::<MyStruct>(TyPathOpts::NameOnly);
 
 	let success = match string_type.node {
-		Ty_::TyPath(_, path) => {
+		TyKind::Path(_, path) => {
 			path.segments.iter().any(|seg| {
 				seg.identifier.to_string() == "MyStruct".to_string()
 			})

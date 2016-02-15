@@ -64,14 +64,14 @@ pub fn url_fmt_decl(_url: &str, _parts: Vec<Ident>) -> (Ident, Stmt) {
 	}
 
 	let stmt = Stmt {
-		node: Stmt_::StmtDecl(
+		node: StmtKind::Decl(
 			P(Decl {
-				node: Decl_::DeclLocal(
+				node: DeclKind::Local(
 					P(Local {
 						pat: P(Pat {
 							id: DUMMY_NODE_ID,
 							node: PatIdent(
-								BindingMode::ByValue(Mutability::MutImmutable),
+								BindingMode::ByValue(Mutability::Immutable),
 								Spanned {
 									span: DUMMY_SP,
 									node: ident
@@ -84,7 +84,7 @@ pub fn url_fmt_decl(_url: &str, _parts: Vec<Ident>) -> (Ident, Stmt) {
 						init: Some(
 							P(Expr {
 								id: DUMMY_NODE_ID,
-								node: Expr_::ExprMac(Spanned {
+								node: ExprKind::Mac(Spanned {
 									span: DUMMY_SP,
 									node: Mac_ {
 										path: Path {

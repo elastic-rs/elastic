@@ -96,8 +96,8 @@ impl <'a> Emit<&'a ExtCtxt<'a>, EmitError> for rust::Fn {
 /// //Emit a function signature
 /// let lifetime = lifetime("'a");
 /// let mut fun = build_fn("my_fun", vec![
-/// 	arg_ptr::<i32>("arg1", Mutability::MutMutable, Some(lifetime)),
-/// 	build_arg("arg2", build_ty_ptr("str", Mutability::MutImmutable, Some(lifetime)))
+/// 	arg_ptr::<i32>("arg1", Mutability::Mutable, Some(lifetime)),
+/// 	build_arg("arg2", build_ty_ptr("str", Mutability::Immutable, Some(lifetime)))
 /// ]);
 /// 
 /// let _ = emitter.emit(&fun, &mut buf).unwrap();

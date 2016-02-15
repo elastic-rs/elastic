@@ -139,7 +139,6 @@ use std::collections::BTreeMap;
 use syntax::codemap::Span;
 use syntax::parse::token;
 use syntax::ast::{ Stmt };
-use syntax::ptr::P;
 use syntax::ast::TokenTree;
 use syntax::ext::base::{ExtCtxt, MacResult, DummyResult, MacEager};
 use syntax::ext::build::AstBuilder;
@@ -212,8 +211,8 @@ fn expand_json(cx: &mut ExtCtxt, sp: Span, args: &[TokenTree]) -> Box<MacResult+
 	let mut tree = Vec::new();
 	json::parse_to_replacement(sanitised.as_bytes(), &mut tree);
 
-	let mut stmts: Vec<P<Stmt>> = Vec::new();
-	let mut push_stmts: Vec<P<Stmt>> = Vec::new();
+	let mut stmts: Vec<Stmt> = Vec::new();
+	let mut push_stmts: Vec<Stmt> = Vec::new();
 
 	stmts.push(quote_stmt!(cx, let mut c = 0).unwrap());
 
