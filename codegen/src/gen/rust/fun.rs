@@ -48,10 +48,18 @@ impl Fn {
 		self
 	}
 
+	/// Append a collection of statements to the function body.
+	pub fn add_body_stmts<'a>(&'a mut self, stmts: Vec<Stmt>) -> &'a mut Fn {
+		let mut _stmts = stmts.clone();
+		self.body.stmts.append(&mut _stmts);
+
+		self
+	}
+
 	/// Append the body to existing statements.
 	/// 
 	/// This will update the return expression if the function declaration has a return type set.
-	pub fn add_body_stmts<'a>(&'a mut self, body: P<Block>) -> &'a mut Fn {
+	pub fn add_body_block<'a>(&'a mut self, body: P<Block>) -> &'a mut Fn {
 		let _body = body.deref();
 
 		//Append the body statements

@@ -32,6 +32,22 @@ fn can_add_lifetime_to_fn() {
 }
 
 #[test]
+fn can_set_return_type_of_fn() {
+	let mut fun = build_fn("my_fun", vec![
+		arg::<MyStruct>("arg1")
+	]);
+
+	fun.set_return::<i32>();
+
+	let retty = match fun.decl.output {
+		FunctionRetTy::Ty(t) => Some(t),
+		_ => None
+	};
+
+	assert!(retty.is_some());
+}
+
+#[test]
 fn can_add_body_stmt_to_fn() {
 	//Build an execution context
 	let ps = syntax::parse::ParseSess::new();
@@ -57,26 +73,116 @@ fn can_add_body_stmt_to_fn() {
 	]);
 
 	//Add a statement to the function body
-	let stmt = quote_stmt!(cx, let x = 1;).unwrap();
-	fun.add_body_stmt(stmt);
+	fun.add_body_stmt(quote_stmt!(cx, let x = 1;).unwrap());
 
 	assert_eq!(1, fun.body.stmts.len());
 }
 
 #[test]
-fn can_set_return_type_of_fn() {
+fn can_add_body_stmts_to_fn() {
+	//Build an execution context
+	let ps = syntax::parse::ParseSess::new();
+	let mut feature_gated_cfgs = vec![];
+	let mut cx = syntax::ext::base::ExtCtxt::new(
+		&ps, vec![],
+		syntax::ext::expand::ExpansionConfig::default("qquote".to_string()),
+		&mut feature_gated_cfgs
+	);
+	cx.bt_push(syntax::codemap::ExpnInfo {
+		call_site: DUMMY_SP,
+		callee: syntax::codemap::NameAndSpan {
+			format: syntax::codemap::MacroBang(intern("")),
+			allow_internal_unstable: false,
+			span: None,
+		}
+	});
+	let cx = &mut cx;
+
+	//Build a function
 	let mut fun = build_fn("my_fun", vec![
 		arg::<MyStruct>("arg1")
 	]);
 
+	//Add a statement to the function body
+	fun.add_body_stmts(vec![
+		quote_stmt!(cx, let x = 1;).unwrap(),
+		quote_stmt!(cx, let y = 1;).unwrap()
+	]);
+
+	assert_eq!(2, fun.body.stmts.len());
+}
+
+#[test]
+fn can_add_body_block_to_fn() {
+	//Build an execution context
+	let ps = syntax::parse::ParseSess::new();
+	let mut feature_gated_cfgs = vec![];
+	let mut cx = syntax::ext::base::ExtCtxt::new(
+		&ps, vec![],
+		syntax::ext::expand::ExpansionConfig::default("qquote".to_string()),
+		&mut feature_gated_cfgs
+	);
+	cx.bt_push(syntax::codemap::ExpnInfo {
+		call_site: DUMMY_SP,
+		callee: syntax::codemap::NameAndSpan {
+			format: syntax::codemap::MacroBang(intern("")),
+			allow_internal_unstable: false,
+			span: None,
+		}
+	});
+	let cx = &mut cx;
+
+	//Build a function
+	let mut fun = build_fn("my_fun", vec![
+		arg::<MyStruct>("arg1")
+	]);
+
+	//Add a statement to the function body
+	fun.add_body_block(quote_block!(cx, {
+		let x = 1;
+		let y = 1;
+		x
+	}));
+
+	//Assert the statements are added
+	assert_eq!(2, fun.body.stmts.len());
+}
+
+#[test]
+fn can_set_return_expr_when_adding_body_block_if_fn_has_return_ty() {
+	//Build an execution context
+	let ps = syntax::parse::ParseSess::new();
+	let mut feature_gated_cfgs = vec![];
+	let mut cx = syntax::ext::base::ExtCtxt::new(
+		&ps, vec![],
+		syntax::ext::expand::ExpansionConfig::default("qquote".to_string()),
+		&mut feature_gated_cfgs
+	);
+	cx.bt_push(syntax::codemap::ExpnInfo {
+		call_site: DUMMY_SP,
+		callee: syntax::codemap::NameAndSpan {
+			format: syntax::codemap::MacroBang(intern("")),
+			allow_internal_unstable: false,
+			span: None,
+		}
+	});
+	let cx = &mut cx;
+
+	//Build a function that returns i32
+	let mut fun = build_fn("my_fun", vec![
+		arg::<MyStruct>("arg1")
+	]);
 	fun.set_return::<i32>();
 
-	let retty = match fun.decl.output {
-		FunctionRetTy::Ty(t) => Some(t),
-		_ => None
-	};
+	//Add a statement to the function body
+	//This statement has a return expr and the fn expects a return value so we add it
+	fun.add_body_block(quote_block!(cx, {
+		let x = 1;
+		let y = 1;
+		x
+	}));
 
-	assert!(retty.is_some());
+	assert!(fun.body.expr.is_some());
 }
 
 #[test]
