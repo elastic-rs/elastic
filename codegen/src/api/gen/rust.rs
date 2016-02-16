@@ -183,6 +183,8 @@ pub fn url_push_decl(url_base: Ident, url_parts: Vec<String>, param_parts: Vec<I
 		.iter()
 		.map(|p| token::str_to_ident(&(format!("\"{}\"", p))))
 		.collect();
+
+	//Get the string arg params
 	let url_part_tokens: Vec<TokenTree> = url_parts.iter().map(|p| TokenTree::Token(
 			DUMMY_SP, token::Token::Literal(
 				token::Lit::Str_(token::intern(&p)),
