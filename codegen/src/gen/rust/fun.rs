@@ -24,6 +24,8 @@ pub struct Fn {
 }
 
 impl Fn {
+	//TODO: add_arg and add_args
+
 	/// Append a lifetime to the function generics.
 	pub fn add_lifetime<'a>(&'a mut self, lifetime: Lifetime) -> &'a mut Fn {
 		self.generics.lifetimes.push(LifetimeDef {
