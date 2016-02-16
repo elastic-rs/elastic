@@ -17,7 +17,7 @@ use syntax::parse::token::intern;
 use elastic_codegen::emit::*;
 use elastic_codegen::emit::default::*;
 use elastic_codegen::gen::rust::*;
-use elastic_codegen::api::gen::{ parse_path_parts, parse_path_params };
+use elastic_codegen::api::gen::{ parse_path_parts, parse_path_params, parse_fmt };
 use elastic_codegen::api::gen::rust::*;
 
 fn get_file(path: &str) -> File {
@@ -113,12 +113,14 @@ fn can_emit_rs_fn_with_fmt_body_to_file() {
 	get_ctxt!(cx, ps, fgc);
 	
 	//Get the params of a url as Idents
+	let base = token::str_to_ident("http://localhost:9200");
 	let url = "/{index}/_alias/{name}";
 	let params: Vec<Ident> = parse_path_params(url)
 		.unwrap()
 		.iter()
 		.map(|p| token::str_to_ident(&p))
 		.collect();
+	let fmt = parse_fmt(url).unwrap();
 
 	//Function signature from params
 	let mut fun = build_fn("my_fun", params
@@ -135,7 +137,7 @@ fn can_emit_rs_fn_with_fmt_body_to_file() {
 		let cx = &mut cx;
 
 		//Get the url replacement statement and resulting ident
-		let (url_ident, url_stmt) = url_fmt_decl(url, params);
+		let (url_ident, url_stmt) = url_fmt_decl(&fmt, base, params);
 
 		//Add the url format statement to the function body
 		fun.add_body_stmt(url_stmt);
@@ -169,6 +171,7 @@ fn can_emit_rs_fn_with_push_body_to_file() {
 	get_ctxt!(cx, ps, fgc);
 	
 	//Get the params of a url as Idents
+	let base = token::str_to_ident("base");
 	let url = "/{index}/_alias/{name}";
 	let params: Vec<Ident> = parse_path_params(url)
 		.unwrap()
@@ -178,7 +181,13 @@ fn can_emit_rs_fn_with_push_body_to_file() {
 	let parts = parse_path_parts(url).unwrap();
 
 	//Function signature from params
-	let mut fun = build_fn("my_fun", params
+	let mut all_params = Vec::new();
+	all_params.push(base);
+	for param in params.iter() {
+		all_params.push(param.clone());
+	}
+
+	let mut fun = build_fn("my_fun", all_params
 		.iter()
 		.map(|p: &Ident| arg_ident::<String>(p.clone()))
 		.collect()
@@ -192,7 +201,7 @@ fn can_emit_rs_fn_with_push_body_to_file() {
 		let cx = &mut cx;
 
 		//Get the url replacement statement and resulting ident
-		let (url_ident, url_stmts) = url_push_decl(parts, params);
+		let (url_ident, url_stmts) = url_push_decl(base, parts, params);
 		println!("fun");
 
 		//Add the url push statements to the function body

@@ -6,7 +6,7 @@ use syntax::ast::*;
 use syntax::parse::token;
 use syntax::codemap::{ Spanned, DUMMY_SP };
 use syntax::ptr::P;
-use ::gen::rust::{ ty, TyPathOpts };
+use ::gen::rust::ty;
 
 /// Generate a statement to replace the params in a url.
 /// 
@@ -25,17 +25,21 @@ use ::gen::rust::{ ty, TyPathOpts };
 /// use elastic_codegen::api::gen::rust::*;
 /// 
 /// //Generate the statement
-/// let (ident, stmt) = url_fmt_decl("/{}/_alias/{}", vec![
-/// 	token::str_to_ident("index"),
-/// 	token::str_to_ident("name")
-/// ]);
+/// let (ident, stmt) = url_fmt_decl(
+/// 	"/{}/_alias/{}", 
+/// 	token::str_to_ident("http://localhost:9200"), 
+/// 	vec![
+/// 		token::str_to_ident("index"),
+/// 		token::str_to_ident("name")
+/// 	]
+/// );
 /// 
 /// //Print the result: 'let url_fmtd = format!("/{}/_alias/{}" , index , name ,);'
 /// let result = pprust::stmt_to_string(&stmt);
 /// println!("{}", result);
 /// # }
 /// ```
-pub fn url_fmt_decl(url: &str, param_parts: Vec<Ident>) -> (Ident, Stmt) {
+pub fn url_fmt_decl(url: &str, url_base: Ident, param_parts: Vec<Ident>) -> (Ident, Stmt) {
 	let ident = token::str_to_ident("url_fmtd");
 
 	//Build up the macro arguments
@@ -43,8 +47,18 @@ pub fn url_fmt_decl(url: &str, param_parts: Vec<Ident>) -> (Ident, Stmt) {
 		//The url format
 		TokenTree::Token(
 			DUMMY_SP, token::Token::Literal(
-				token::Lit::Str_(token::intern(url)),
+				token::Lit::Str_(token::intern(&format!("{{}}{}", url))),
 				None
+			)
+		),
+		TokenTree::Token(
+			DUMMY_SP, token::Token::Comma
+		),
+		//The url base
+		TokenTree::Token(
+			DUMMY_SP, token::Token::Ident(
+				url_base, 
+				token::IdentStyle::Plain
 			)
 		),
 		TokenTree::Token(
@@ -122,11 +136,57 @@ pub fn url_fmt_decl(url: &str, param_parts: Vec<Ident>) -> (Ident, Stmt) {
 }
 
 /// Generate a series of statements to compose a url.
-pub fn url_push_decl(url_parts: Vec<String>, param_parts: Vec<Ident>) -> (Ident, Vec<Stmt>) {
+/// 
+/// Generates a series of statements of the form:
+/// 
+/// ```text
+/// fn my_fun(base: String, index: String, name: String) -> String {
+/// 	let mut url_fmtd = String::with_capacity(base.len() + "/".len() + "/_alias/".len() + index.len() + name.len());
+/// 
+/// 	url_fmtd.push_str(&base);
+/// 	url_fmtd.push_str("/");
+/// 	url_fmtd.push_str(&index);
+/// 	url_fmtd.push_str("/_alias/");
+/// 	url_fmtd.push_str(&name);
+/// 
+/// 	url_fmtd
+/// }
+/// ```
+/// 
+/// # Examples
+/// 
+/// ```
+/// # #![feature(rustc_private)]
+/// # extern crate syntax;
+/// # extern crate elastic_codegen;
+/// # fn main() {
+/// use syntax::parse::token;
+/// use syntax::print::pprust;
+/// use elastic_codegen::api::gen::rust::*;
+/// 
+/// //Generate the statement
+/// let (ident, stmt) = url_push_decl(
+/// 	token::str_to_ident("base"), 
+/// 	vec![
+/// 		"/_alias/".to_string(),
+/// 		"/".to_string()
+/// 	],
+/// 	vec![
+/// 		token::str_to_ident("index"),
+/// 		token::str_to_ident("name")
+/// 	]
+/// );
+/// # }
+/// ```
+pub fn url_push_decl(url_base: Ident, url_parts: Vec<String>, param_parts: Vec<Ident>) -> (Ident, Vec<Stmt>) {
 	let ident = token::str_to_ident("url_fmtd");
 
 	//Get the string literal params
-	let _url_parts: Vec<TokenTree> = url_parts.iter().map(|p| TokenTree::Token(
+	let url_part_idents: Vec<Ident> = url_parts
+		.iter()
+		.map(|p| token::str_to_ident(&(format!("\"{}\"", p))))
+		.collect();
+	let url_part_tokens: Vec<TokenTree> = url_parts.iter().map(|p| TokenTree::Token(
 			DUMMY_SP, token::Token::Literal(
 				token::Lit::Str_(token::intern(&p)),
 				None
@@ -135,6 +195,27 @@ pub fn url_push_decl(url_parts: Vec<String>, param_parts: Vec<Ident>) -> (Ident,
 	)
 	.collect();
 
+	//Get the length expression
+	//This is the sum of all parts and args
+
+	//Sum the url parts
+	let mut url_iter = url_part_idents.iter();
+
+	let mut add_expr = len_add(
+		len_expr(url_base), 
+		url_iter.next().unwrap().clone()
+	);
+	for url_part in url_iter {
+		add_expr = len_add(add_expr, url_part.clone());
+	}
+
+	//Sum the url params
+	for url_param in param_parts {
+		add_expr = len_add(add_expr, url_param);
+	}
+
+	//Get the declaration statement
+	//let url_fmtd = String::with_capacity(url_base.len() + "/".len() + param1.len() + "/part/".len() + param2.len());
 	let url_decl = Stmt {
 		node: StmtKind::Decl(
 			P(Decl {
@@ -179,9 +260,7 @@ pub fn url_push_decl(url_parts: Vec<String>, param_parts: Vec<Ident>) -> (Ident,
 										span: DUMMY_SP,
 										attrs: None
 									}),
-									//TODO: Single param; the length of each param
-									//This is just a shim to demo getting the length of params
-									param_parts.iter().map(|item| get_item_length(*item)).collect()
+									vec![add_expr]
 								),
 								span: DUMMY_SP,
 								attrs: None
@@ -202,7 +281,7 @@ pub fn url_push_decl(url_parts: Vec<String>, param_parts: Vec<Ident>) -> (Ident,
 	(ident, vec![url_decl])
 }
 
-fn get_item_length(item: Ident) -> P<Expr> {
+fn len_expr(item: Ident) -> P<Expr> {
 	P(Expr {
 		id: DUMMY_NODE_ID,
 		node: ExprKind::MethodCall(
@@ -231,6 +310,22 @@ fn get_item_length(item: Ident) -> P<Expr> {
 					attrs: None
 				})
 			]
+		),
+		span: DUMMY_SP,
+		attrs: None
+	})
+}
+
+fn len_add(current_add: P<Expr>, to_add: Ident) -> P<Expr> {
+	P(Expr {
+		id: DUMMY_NODE_ID,
+		node: ExprKind::Binary(
+			Spanned {
+				span: DUMMY_SP,
+				node: BinOpKind::Add
+			},
+			current_add,
+			len_expr(to_add)
 		),
 		span: DUMMY_SP,
 		attrs: None
