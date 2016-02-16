@@ -5,6 +5,8 @@
 	There's still heaps of work to do here to make things friendlier.
 */
 
+//TODO: Tidy up all_params. Create fun with base param and append args
+
 extern crate syntax;
 extern crate elastic_codegen;
 
@@ -77,8 +79,6 @@ fn can_emit_rs_fn_to_file() {
 		arg_ptr::<i32>("arg1", Mutability::Mutable, Some(lifetime)),
 		build_arg("arg2", build_ty_ptr("str", Mutability::Immutable, Some(lifetime)))
 	]);
-
-	//Function return type
 	fun.set_return::<i32>();
 
 	//Function body
@@ -118,7 +118,8 @@ fn can_emit_rs_fn_with_fmt_body_to_file() {
 
 	let params: Vec<Ident> = parse_path_params(url)
 		.unwrap().iter()
-		.map(|p| token::str_to_ident(&p)).collect();
+		.map(|p| token::str_to_ident(&p))
+		.collect();
 
 	let fmt = parse_fmt(url).unwrap();
 
@@ -179,7 +180,8 @@ fn can_emit_rs_fn_with_push_body_to_file() {
 
 	let params: Vec<Ident> = parse_path_params(url)
 		.unwrap().iter()
-		.map(|p| token::str_to_ident(&p)).collect();
+		.map(|p| token::str_to_ident(&p))
+		.collect();
 		
 	let parts = parse_path_parts(url).unwrap();
 
