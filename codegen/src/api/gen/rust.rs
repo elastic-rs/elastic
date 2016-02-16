@@ -9,7 +9,7 @@ use syntax::ptr::P;
 
 /// Generate a statement to replace the params in a url.
 /// 
-/// Generates statements of the form `let url_fmtd = format!(url, parts[0], ..., parts[n]);`. 
+/// Generates statements of the form `let url_fmtd = format!(url, base, parts[0], ..., parts[n]);`. 
 /// Returns the `Ident` for the formatted string and the `Stmt` that declares it.
 /// 
 /// # Examples
@@ -25,15 +25,15 @@ use syntax::ptr::P;
 /// 
 /// //Generate the statement
 /// let (ident, stmt) = url_fmt_decl(
-/// 	"/{}/_alias/{}", 
-/// 	token::str_to_ident("http://localhost:9200"), 
+/// 	"{}/{}/_alias/{}", 
+/// 	token::str_to_ident("base"), 
 /// 	vec![
 /// 		token::str_to_ident("index"),
 /// 		token::str_to_ident("name")
 /// 	]
 /// );
 /// 
-/// //Print the result: 'let url_fmtd = format!("/{}/_alias/{}" , index , name ,);'
+/// //Print the result: 'let url_fmtd = format!("{}/{}/_alias/{}" , base , index , name ,);'
 /// let result = pprust::stmt_to_string(&stmt);
 /// println!("{}", result);
 /// # }
