@@ -125,6 +125,7 @@ pub enum Type {
 	Other(String)
 }
 
+//TODO: rename to 'NumberKind'
 /// Represents a number type
 #[derive(PartialEq)]
 pub enum Num {
