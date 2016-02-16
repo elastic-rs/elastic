@@ -140,17 +140,15 @@ pub fn url_fmt_decl(url: &str, url_base: Ident, param_parts: Vec<Ident>) -> (Ide
 /// Generates a series of statements of the form:
 /// 
 /// ```text
-/// fn my_fun(base: String, index: String, name: String) -> String {
-/// 	let mut url_fmtd = String::with_capacity(base.len() + "/".len() + "/_alias/".len() + index.len() + name.len());
+/// let mut url_fmtd = String::with_capacity(base.len() + "/".len() + "/_alias/".len() + index.len() + name.len());
 /// 
-/// 	url_fmtd.push_str(&base);
-/// 	url_fmtd.push_str("/");
-/// 	url_fmtd.push_str(&index);
-/// 	url_fmtd.push_str("/_alias/");
-/// 	url_fmtd.push_str(&name);
+/// url_fmtd.push_str(&base);
+/// url_fmtd.push_str("/");
+/// url_fmtd.push_str(&index);
+/// url_fmtd.push_str("/_alias/");
+/// url_fmtd.push_str(&name);
 /// 
-/// 	url_fmtd
-/// }
+/// url_fmtd
 /// ```
 /// 
 /// # Examples
