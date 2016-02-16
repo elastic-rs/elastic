@@ -113,23 +113,28 @@ fn can_emit_rs_fn_with_fmt_body_to_file() {
 	get_ctxt!(cx, ps, fgc);
 	
 	//Get the params of a url as Idents
-	let base = token::str_to_ident("http://localhost:9200");
+	let base = token::str_to_ident("base");
 	let url = "/{index}/_alias/{name}";
+
 	let params: Vec<Ident> = parse_path_params(url)
-		.unwrap()
-		.iter()
-		.map(|p| token::str_to_ident(&p))
-		.collect();
+		.unwrap().iter()
+		.map(|p| token::str_to_ident(&p)).collect();
+
 	let fmt = parse_fmt(url).unwrap();
 
+	//Get the function params
+	let mut all_params = Vec::new();
+	all_params.push(base);
+	for param in params.iter() {
+		all_params.push(param.clone());
+	}
+
 	//Function signature from params
-	let mut fun = build_fn("my_fun", params
+	let mut fun = build_fn("my_fun", all_params
 		.iter()
 		.map(|p: &Ident| arg_ident::<String>(p.clone()))
 		.collect()
 	);
-
-	//Function return type
 	fun.set_return::<String>();
 
 	//Function body
@@ -138,8 +143,6 @@ fn can_emit_rs_fn_with_fmt_body_to_file() {
 
 		//Get the url replacement statement and resulting ident
 		let (url_ident, url_stmt) = url_fmt_decl(&fmt, base, params);
-
-		//Add the url format statement to the function body
 		fun.add_body_stmt(url_stmt);
 
 		//Add the rest of the function body. This just returns the formatted url
@@ -170,14 +173,14 @@ fn can_emit_rs_fn_with_push_body_to_file() {
 	let mut cx;
 	get_ctxt!(cx, ps, fgc);
 	
-	//Get the params of a url as Idents
+	//Get the params of the url format as Idents
 	let base = token::str_to_ident("base");
 	let url = "/{index}/_alias/{name}";
+
 	let params: Vec<Ident> = parse_path_params(url)
-		.unwrap()
-		.iter()
-		.map(|p| token::str_to_ident(&p))
-		.collect();
+		.unwrap().iter()
+		.map(|p| token::str_to_ident(&p)).collect();
+		
 	let parts = parse_path_parts(url).unwrap();
 
 	//Function signature from params
@@ -192,8 +195,6 @@ fn can_emit_rs_fn_with_push_body_to_file() {
 		.map(|p: &Ident| arg_ident::<String>(p.clone()))
 		.collect()
 	);
-
-	//Function return type
 	fun.set_return::<String>();
 
 	//Function body
@@ -202,9 +203,6 @@ fn can_emit_rs_fn_with_push_body_to_file() {
 
 		//Get the url replacement statement and resulting ident
 		let (url_ident, url_stmts) = url_push_decl(base, parts, params);
-		println!("fun");
-
-		//Add the url push statements to the function body
 		fun.add_body_stmts(url_stmts);
 
 		//Add the rest of the function body. This just returns the formatted url

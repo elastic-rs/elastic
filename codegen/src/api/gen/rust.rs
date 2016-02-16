@@ -6,7 +6,6 @@ use syntax::ast::*;
 use syntax::parse::token;
 use syntax::codemap::{ Spanned, DUMMY_SP };
 use syntax::ptr::P;
-use ::gen::rust::ty;
 
 /// Generate a statement to replace the params in a url.
 /// 
