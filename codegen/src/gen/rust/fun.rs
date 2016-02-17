@@ -42,7 +42,7 @@ impl Fn {
     }
     
     /// Add a collection of arguments to the function signature.
-    pub fn add_args(mut self, args: Vec<Arg>) -> Fn {
+    pub fn add_args(mut self, args: &Vec<Arg>) -> Fn {
        let mut _args = args.clone();
        self.decl.inputs.append(&mut _args);
        
@@ -64,7 +64,7 @@ impl Fn {
 	}
 
 	/// Append a collection of statements to the function body.
-	pub fn add_body_stmts(mut self, stmts: Vec<Stmt>) -> Fn {
+	pub fn add_body_stmts(mut self, stmts: &Vec<Stmt>) -> Fn {
 		let mut _stmts = stmts.clone();
 		self.body.stmts.append(&mut _stmts);
 
@@ -133,7 +133,7 @@ impl ToString for Fn {
 /// let lifetime = lifetime("'a");
 /// 
 /// //Build a function signature
-/// let mut fun = build_fn("my_fun", vec![
+/// let mut fun = build_fn("my_fun", &vec![
 /// 	arg::<MyStruct>("arg1"),
 /// 	arg_ptr::<i32>("arg2", Mutability::Mutable, Some(lifetime)),
 /// 	build_arg("arg3", build_ty_ptr("str", Mutability::Immutable, Some(lifetime)))
@@ -144,11 +144,11 @@ impl ToString for Fn {
 /// println!("{}", fun.to_string());
 /// # }
 /// ```
-pub fn build_fn(name: &str, inputs: Vec<Arg>) -> Fn {
+pub fn build_fn(name: &str, inputs: &Vec<Arg>) -> Fn {
 	Fn {
 		identifier: token::str_to_ident(name),
 		decl: FnDecl {
-			inputs: inputs,
+			inputs: inputs.clone(),
 			output: FunctionRetTy::Default(DUMMY_SP),
 			variadic: false
 		},

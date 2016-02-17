@@ -40,7 +40,7 @@ fn can_add_lifetime_to_fn() {
 	//Define a lifetime 'a
 	let lifetime = lifetime("'a");
 
-	let mut fun = build_fn("my_fun", vec![
+	let mut fun = build_fn("my_fun", &vec![
 		arg::<MyStruct>("arg1"),
 		arg_ptr::<i32>("arg2", Mutability::Mutable, Some(lifetime)),
 		build_arg("arg3", build_ty_ptr("str", Mutability::Immutable, Some(lifetime)))
@@ -52,7 +52,7 @@ fn can_add_lifetime_to_fn() {
 
 #[test]
 fn can_set_return_type_of_fn() {
-	let mut fun = build_fn("my_fun", vec![
+	let mut fun = build_fn("my_fun", &vec![
 		arg::<MyStruct>("arg1")
 	])
     .set_return::<i32>();
@@ -67,7 +67,7 @@ fn can_set_return_type_of_fn() {
 
 #[test]
 fn can_add_arg_to_fn() {
-    let mut fun = build_fn("my_fun", vec![
+    let mut fun = build_fn("my_fun", &vec![
 		arg::<MyStruct>("arg1")
 	])
     .add_arg(arg::<MyStruct>("arg2"));
@@ -77,10 +77,10 @@ fn can_add_arg_to_fn() {
 
 #[test]
 fn can_add_args_to_fn() {
-    let mut fun = build_fn("my_fun", vec![
+    let mut fun = build_fn("my_fun", &vec![
 		arg::<MyStruct>("arg1")
 	])
-    .add_args(vec![
+    .add_args(&vec![
 		arg::<MyStruct>("arg2"),
 		arg::<MyStruct>("arg3")
 	]);
@@ -98,7 +98,7 @@ fn can_add_body_stmt_to_fn() {
     let cx = &mut cx;
 
 	//Build a function
-	let mut fun = build_fn("my_fun", vec![
+	let mut fun = build_fn("my_fun", &vec![
 		arg::<MyStruct>("arg1")
 	])
     .add_body_stmt(quote_stmt!(cx, let x = 1;).unwrap());
@@ -116,10 +116,10 @@ fn can_add_body_stmts_to_fn() {
     let cx = &mut cx;
     
 	//Build a function
-	let mut fun = build_fn("my_fun", vec![
+	let mut fun = build_fn("my_fun", &vec![
 		arg::<MyStruct>("arg1")
 	])
-    .add_body_stmts(vec![
+    .add_body_stmts(&vec![
 		quote_stmt!(cx, let x = 1;).unwrap(),
 		quote_stmt!(cx, let y = 1;).unwrap()
 	]);
@@ -137,7 +137,7 @@ fn can_add_body_block_to_fn() {
     let cx = &mut cx;
 
 	//Build a function
-	let mut fun = build_fn("my_fun", vec![
+	let mut fun = build_fn("my_fun", &vec![
 		arg::<MyStruct>("arg1")
 	])
     .add_body_block(quote_block!(cx, {
@@ -160,7 +160,7 @@ fn can_set_return_expr_when_adding_body_block_if_fn_has_return_ty() {
     let cx = &mut cx;
 
 	//Build a function that returns i32
-	let mut fun = build_fn("my_fun", vec![
+	let mut fun = build_fn("my_fun", &vec![
 		arg::<MyStruct>("arg1")
 	])
     .set_return::<i32>()

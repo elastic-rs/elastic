@@ -27,7 +27,7 @@ use syntax::ptr::P;
 /// let (ident, stmt) = url_fmt_decl(
 /// 	"{}/{}/_alias/{}", 
 /// 	token::str_to_ident("base"), 
-/// 	vec![
+/// 	&vec![
 /// 		token::str_to_ident("index"),
 /// 		token::str_to_ident("name")
 /// 	]
@@ -38,7 +38,7 @@ use syntax::ptr::P;
 /// println!("{}", result);
 /// # }
 /// ```
-pub fn url_fmt_decl(url: &str, url_base: Ident, param_parts: Vec<Ident>) -> (Ident, Stmt) {
+pub fn url_fmt_decl(url: &str, url_base: Ident, param_parts: &Vec<Ident>) -> (Ident, Stmt) {
 	let ident = token::str_to_ident("url_fmtd");
 
 	//Build up the macro arguments
@@ -68,7 +68,7 @@ pub fn url_fmt_decl(url: &str, url_base: Ident, param_parts: Vec<Ident>) -> (Ide
 	for part in param_parts {
 		args.push(TokenTree::Token(
 			DUMMY_SP, token::Token::Ident(
-				part, 
+				part.clone(), 
 				token::IdentStyle::Plain
 			)
 		));
@@ -164,18 +164,18 @@ pub fn url_fmt_decl(url: &str, url_base: Ident, param_parts: Vec<Ident>) -> (Ide
 /// //Generate the statement
 /// let (ident, stmt) = url_push_decl(
 /// 	token::str_to_ident("base"), 
-/// 	vec![
+/// 	&vec![
 /// 		"/_alias/".to_string(),
 /// 		"/".to_string()
 /// 	],
-/// 	vec![
+/// 	&vec![
 /// 		token::str_to_ident("index"),
 /// 		token::str_to_ident("name")
 /// 	]
 /// );
 /// # }
 /// ```
-pub fn url_push_decl(url_base: Ident, url_parts: Vec<String>, param_parts: Vec<Ident>) -> (Ident, Vec<Stmt>) {
+pub fn url_push_decl(url_base: Ident, url_parts: &Vec<String>, param_parts: &Vec<Ident>) -> (Ident, Vec<Stmt>) {
 	let ident = token::str_to_ident("url_fmtd");
 
 	//Get the string literal params
@@ -210,7 +210,7 @@ pub fn url_push_decl(url_base: Ident, url_parts: Vec<String>, param_parts: Vec<I
 
 	//Sum the url params
 	for url_param in param_parts {
-		add_expr = len_add(add_expr, url_param);
+		add_expr = len_add(add_expr, url_param.clone());
 	}
 
 	//Get the declaration statement
