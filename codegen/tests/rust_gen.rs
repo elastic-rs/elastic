@@ -25,8 +25,8 @@ fn can_add_lifetime_to_fn() {
 		arg::<MyStruct>("arg1"),
 		arg_ptr::<i32>("arg2", Mutability::Mutable, Some(lifetime)),
 		build_arg("arg3", build_ty_ptr("str", Mutability::Immutable, Some(lifetime)))
-	]);
-	fun.add_lifetime(lifetime);
+	])
+    .add_lifetime(lifetime);
 
 	assert_eq!(1, fun.generics.lifetimes.len());
 }
@@ -35,9 +35,8 @@ fn can_add_lifetime_to_fn() {
 fn can_set_return_type_of_fn() {
 	let mut fun = build_fn("my_fun", vec![
 		arg::<MyStruct>("arg1")
-	]);
-
-	fun.set_return::<i32>();
+	])
+    .set_return::<i32>();
 
 	let retty = match fun.decl.output {
 		FunctionRetTy::Ty(t) => Some(t),
@@ -45,6 +44,29 @@ fn can_set_return_type_of_fn() {
 	};
 
 	assert!(retty.is_some());
+}
+
+#[test]
+fn can_add_arg_to_fn() {
+    let mut fun = build_fn("my_fun", vec![
+		arg::<MyStruct>("arg1")
+	])
+    .add_arg(arg::<MyStruct>("arg2"));
+    
+    assert_eq!(2, fun.decl.inputs.len());
+}
+
+#[test]
+fn can_add_args_to_fn() {
+    let mut fun = build_fn("my_fun", vec![
+		arg::<MyStruct>("arg1")
+	])
+    .add_args(vec![
+		arg::<MyStruct>("arg2"),
+		arg::<MyStruct>("arg3")
+	]);
+    
+    assert_eq!(3, fun.decl.inputs.len());
 }
 
 #[test]
@@ -70,10 +92,8 @@ fn can_add_body_stmt_to_fn() {
 	//Build a function
 	let mut fun = build_fn("my_fun", vec![
 		arg::<MyStruct>("arg1")
-	]);
-
-	//Add a statement to the function body
-	fun.add_body_stmt(quote_stmt!(cx, let x = 1;).unwrap());
+	])
+    .add_body_stmt(quote_stmt!(cx, let x = 1;).unwrap());
 
 	assert_eq!(1, fun.body.stmts.len());
 }
@@ -101,10 +121,8 @@ fn can_add_body_stmts_to_fn() {
 	//Build a function
 	let mut fun = build_fn("my_fun", vec![
 		arg::<MyStruct>("arg1")
-	]);
-
-	//Add a statement to the function body
-	fun.add_body_stmts(vec![
+	])
+    .add_body_stmts(vec![
 		quote_stmt!(cx, let x = 1;).unwrap(),
 		quote_stmt!(cx, let y = 1;).unwrap()
 	]);
@@ -135,10 +153,8 @@ fn can_add_body_block_to_fn() {
 	//Build a function
 	let mut fun = build_fn("my_fun", vec![
 		arg::<MyStruct>("arg1")
-	]);
-
-	//Add a statement to the function body
-	fun.add_body_block(quote_block!(cx, {
+	])
+    .add_body_block(quote_block!(cx, {
 		let x = 1;
 		let y = 1;
 		x
@@ -171,12 +187,9 @@ fn can_set_return_expr_when_adding_body_block_if_fn_has_return_ty() {
 	//Build a function that returns i32
 	let mut fun = build_fn("my_fun", vec![
 		arg::<MyStruct>("arg1")
-	]);
-	fun.set_return::<i32>();
-
-	//Add a statement to the function body
-	//This statement has a return expr and the fn expects a return value so we add it
-	fun.add_body_block(quote_block!(cx, {
+	])
+    .set_return::<i32>()
+    .add_body_block(quote_block!(cx, {
 		let x = 1;
 		let y = 1;
 		x

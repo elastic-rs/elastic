@@ -5,8 +5,6 @@
 	There's still heaps of work to do here to make things friendlier.
 */
 
-//TODO: Tidy up all_params. Create fun with base param and append args
-
 extern crate syntax;
 extern crate elastic_codegen;
 
@@ -78,13 +76,13 @@ fn can_emit_rs_fn_to_file() {
 	let mut fun = build_fn("my_fun", vec![
 		arg_ptr::<i32>("arg1", Mutability::Mutable, Some(lifetime)),
 		build_arg("arg2", build_ty_ptr("str", Mutability::Immutable, Some(lifetime)))
-	]);
-	fun.set_return::<i32>();
+	])
+    .set_return::<i32>();
 
 	//Function body
 	{
 		let cx = &mut cx;
-		fun.set_body(quote_block!(cx, {
+		fun = fun.set_body(quote_block!(cx, {
 			let x = 1;
 			x
 		}));
@@ -123,20 +121,14 @@ fn can_emit_rs_fn_with_fmt_body_to_file() {
 
 	let fmt = parse_fmt(url).unwrap();
 
-	//Get the function params
-	let mut all_params = Vec::new();
-	all_params.push(base);
-	for param in params.iter() {
-		all_params.push(param.clone());
-	}
-
 	//Function signature from params
-	let mut fun = build_fn("my_fun", all_params
+	let mut fun = build_fn("my_fun", vec![arg_ident::<String>(base)])
+    .add_args(params
 		.iter()
 		.map(|p: &Ident| arg_ident::<String>(p.clone()))
 		.collect()
-	);
-	fun.set_return::<String>();
+    )
+    .set_return::<String>();
 
 	//Function body
 	{
@@ -144,10 +136,9 @@ fn can_emit_rs_fn_with_fmt_body_to_file() {
 
 		//Get the url replacement statement and resulting ident
 		let (url_ident, url_stmt) = url_fmt_decl(&fmt, base, params);
-		fun.add_body_stmt(url_stmt);
-
-		//Add the rest of the function body. This just returns the formatted url
-		fun.add_body_block(quote_block!(cx, {
+		fun = fun
+        .add_body_stmt(url_stmt)
+        .add_body_block(quote_block!(cx, {
 			$url_ident
 		}));
 	}
@@ -185,19 +176,13 @@ fn can_emit_rs_fn_with_push_body_to_file() {
 		
 	let parts = parse_path_parts(url).unwrap();
 
-	//Function signature from params
-	let mut all_params = Vec::new();
-	all_params.push(base);
-	for param in params.iter() {
-		all_params.push(param.clone());
-	}
-
-	let mut fun = build_fn("my_fun", all_params
+	let mut fun = build_fn("my_fun", vec![arg_ident::<String>(base)])
+    .add_args(params
 		.iter()
 		.map(|p: &Ident| arg_ident::<String>(p.clone()))
 		.collect()
-	);
-	fun.set_return::<String>();
+    )
+    .set_return::<String>();
 
 	//Function body
 	{
@@ -205,10 +190,9 @@ fn can_emit_rs_fn_with_push_body_to_file() {
 
 		//Get the url replacement statement and resulting ident
 		let (url_ident, url_stmts) = url_push_decl(base, parts, params);
-		fun.add_body_stmts(url_stmts);
-
-		//Add the rest of the function body. This just returns the formatted url
-		fun.add_body_block(quote_block!(cx, {
+		fun = fun
+        .add_body_stmts(url_stmts)
+        .add_body_block(quote_block!(cx, {
 			$url_ident
 		}));
 	}

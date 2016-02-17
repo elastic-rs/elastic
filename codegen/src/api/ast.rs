@@ -79,7 +79,6 @@ impl HttpVerb {
 			"PUT" => HttpVerb::Put,
 			"PATCH" => HttpVerb::Patch,
 			"DELETE" => HttpVerb::Delete,
-			//TODO: prefer &str over String, should just be able to HttpVerb::Other(_method)
 			m => HttpVerb::Other(m.to_string())
 		}
 	}
@@ -108,7 +107,7 @@ pub enum Type {
 	/// boolean
 	Bool,
 	/// number
-	Number(Num),
+	Number(NumberKind),
 	/// string
 	Str,
 	/// time|date
@@ -125,10 +124,9 @@ pub enum Type {
 	Other(String)
 }
 
-//TODO: rename to 'NumberKind'
 /// Represents a number type
 #[derive(PartialEq)]
-pub enum Num {
+pub enum NumberKind {
 	/// long
 	Long,
 	/// integer
@@ -151,12 +149,12 @@ impl Type {
 	pub fn parse(_type: &str, opts: Option<Vec<String>>) -> Type {
 		match _type {
 			"boolean" => Type::Bool,
-			"number"|"long" => Type::Number(Num::Long),
-			"integer" => Type::Number(Num::Int),
-			"short" => Type::Number(Num::Short),
-			"byte" => Type::Number(Num::Byte),
-			"double" => Type::Number(Num::Double),
-			"float" => Type::Number(Num::Float),
+			"number"|"long" => Type::Number(NumberKind::Long),
+			"integer" => Type::Number(NumberKind::Int),
+			"short" => Type::Number(NumberKind::Short),
+			"byte" => Type::Number(NumberKind::Byte),
+			"double" => Type::Number(NumberKind::Double),
+			"float" => Type::Number(NumberKind::Float),
 			"string" => Type::Str,
 			"time"|"date" => Type::Time,
 			"binary" => Type::Bin,

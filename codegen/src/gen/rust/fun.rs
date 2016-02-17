@@ -24,10 +24,8 @@ pub struct Fn {
 }
 
 impl Fn {
-	//TODO: add_arg and add_args
-
 	/// Append a lifetime to the function generics.
-	pub fn add_lifetime<'a>(&'a mut self, lifetime: Lifetime) -> &'a mut Fn {
+	pub fn add_lifetime(mut self, lifetime: Lifetime) -> Fn {
 		self.generics.lifetimes.push(LifetimeDef {
 			lifetime: lifetime,
 			bounds: Vec::new()
@@ -35,23 +33,38 @@ impl Fn {
 
 		self
 	}
+    
+    /// Add an argument to the function signature.
+    pub fn add_arg(mut self, arg: Arg) -> Fn {
+        self.decl.inputs.push(arg);
+        
+        self
+    }
+    
+    /// Add a collection of arguments to the function signature.
+    pub fn add_args(mut self, args: Vec<Arg>) -> Fn {
+       let mut _args = args.clone();
+       self.decl.inputs.append(&mut _args);
+       
+       self
+    }
 
 	/// Set the return type of the function.
-	pub fn set_return<'a, T>(&'a mut self) -> &'a mut Fn {
+	pub fn set_return<T>(mut self) -> Fn {
 		self.decl.output = FunctionRetTy::Ty(P(ty::<T>(TyPathOpts::default())));
 
 		self
 	}
 
 	/// Append a statement to the function body.
-	pub fn add_body_stmt<'a>(&'a mut self, stmt: Stmt) -> &'a mut Fn {
+	pub fn add_body_stmt(mut self, stmt: Stmt) -> Fn {
 		self.body.stmts.push(stmt);
 
 		self
 	}
 
 	/// Append a collection of statements to the function body.
-	pub fn add_body_stmts<'a>(&'a mut self, stmts: Vec<Stmt>) -> &'a mut Fn {
+	pub fn add_body_stmts(mut self, stmts: Vec<Stmt>) -> Fn {
 		let mut _stmts = stmts.clone();
 		self.body.stmts.append(&mut _stmts);
 
@@ -61,7 +74,7 @@ impl Fn {
 	/// Append the body to existing statements.
 	/// 
 	/// This will update the return expression if the function declaration has a return type set.
-	pub fn add_body_block<'a>(&'a mut self, body: P<Block>) -> &'a mut Fn {
+	pub fn add_body_block(mut self, body: P<Block>) -> Fn {
 		let _body = body.deref();
 
 		//Append the body statements
@@ -78,7 +91,7 @@ impl Fn {
 	}
 
 	/// Set the function body.
-	pub fn set_body<'a>(&'a mut self, body: P<Block>) -> &'a mut Fn {
+	pub fn set_body(mut self, body: P<Block>) -> Fn {
 		self.body = body.deref().clone();
 
 		self
@@ -124,8 +137,8 @@ impl ToString for Fn {
 /// 	arg::<MyStruct>("arg1"),
 /// 	arg_ptr::<i32>("arg2", Mutability::Mutable, Some(lifetime)),
 /// 	build_arg("arg3", build_ty_ptr("str", Mutability::Immutable, Some(lifetime)))
-/// ]);
-/// fun.add_lifetime(lifetime);
+/// ])
+/// .add_lifetime(lifetime);
 /// 
 /// //Print the results: 'fn my_fun<'a>(arg1: MyStruct, arg2: &'a mut i32, arg3: &'a str){ }'
 /// println!("{}", fun.to_string());
