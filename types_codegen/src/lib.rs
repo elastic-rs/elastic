@@ -137,6 +137,7 @@ pub mod json;
 
 use std::collections::BTreeMap;
 use syntax::codemap::Span;
+use syntax::ptr::P;
 use syntax::parse::token;
 use syntax::ast::{ Stmt };
 use syntax::ast::TokenTree;
@@ -205,7 +206,8 @@ fn expand_json(cx: &mut ExtCtxt, sp: Span, args: &[TokenTree]) -> Box<MacResult+
 	
 	//If there are no idents, just emit the json string
 	if idents.len() == 0 {
-		return MacEager::expr(cx.expr_str(sp, token::intern_and_get_ident(&sanitised)))
+        let str_lit = cx.expr_str(sp, token::intern_and_get_ident(&sanitised));
+		return MacEager::expr(P(quote_expr!(cx, String::from($str_lit)).unwrap()))
 	}
 	
 	let mut tree = Vec::new();
