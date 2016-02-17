@@ -2,6 +2,7 @@
 //! 
 //! Utilities for parsing the Elasticsearch API spec to Rust source code.
 
+use std::collections::BTreeMap;
 use syntax::ast::*;
 use syntax::parse::token;
 use syntax::codemap::{ Spanned, DUMMY_SP };
@@ -11,6 +12,26 @@ use syntax::ptr::P;
 // - doc_comment
 // - fn_sigs (fn name and params)
 // - mod_name (split on '.' in endpoint name)
+
+/// Rust specific metadata for an API Endpoint.
+/// 
+/// This has been implemented on a trait instead of directly on `Endpoint` to prevent collisions with other languages that might want similar names.
+pub trait RustEndpoint {
+    /// Gets the documentation comment for the endpoint.
+    /// 
+    /// This is generic to the entire `Endpoint` module.
+    fn doc(&self) -> Stmt;
+    
+    /// Gets the potential function signatures for the `Endpoint`.
+    /// 
+    /// Each signature corresponds to one of the possible url routes.
+    fn fn_signatures(&self) -> BTreeMap<String, String>;
+    
+    /// Gets the name of the Rust module for the `Endpoint`.
+    /// 
+    /// For `Endpoint`s with a parent name, such as 'cluster.*' this will return 'cluster'.
+    fn mod_name(&self) -> String;
+}
 
 /// Generate a statement to replace the params in a url.
 /// 
