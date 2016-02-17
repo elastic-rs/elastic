@@ -14,6 +14,25 @@ use syntax::codemap::DUMMY_SP;
 use syntax::parse::token::intern;
 use elastic_codegen::gen::rust::*;
 
+macro_rules! get_ctxt {
+    ($cx:ident, $ps:ident, $fgc:ident) => {
+    	
+		$cx = syntax::ext::base::ExtCtxt::new(
+			&$ps, vec![],
+			syntax::ext::expand::ExpansionConfig::default("qquote".to_string()),
+			&mut $fgc
+		);
+		$cx.bt_push(syntax::codemap::ExpnInfo {
+			call_site: DUMMY_SP,
+			callee: syntax::codemap::NameAndSpan {
+				format: syntax::codemap::MacroBang(intern("")),
+				allow_internal_unstable: false,
+				span: None,
+			}
+		});
+    };
+}
+
 struct MyStruct;
 
 #[test]
@@ -73,21 +92,10 @@ fn can_add_args_to_fn() {
 fn can_add_body_stmt_to_fn() {
 	//Build an execution context
 	let ps = syntax::parse::ParseSess::new();
-	let mut feature_gated_cfgs = vec![];
-	let mut cx = syntax::ext::base::ExtCtxt::new(
-		&ps, vec![],
-		syntax::ext::expand::ExpansionConfig::default("qquote".to_string()),
-		&mut feature_gated_cfgs
-	);
-	cx.bt_push(syntax::codemap::ExpnInfo {
-		call_site: DUMMY_SP,
-		callee: syntax::codemap::NameAndSpan {
-			format: syntax::codemap::MacroBang(intern("")),
-			allow_internal_unstable: false,
-			span: None,
-		}
-	});
-	let cx = &mut cx;
+	let mut fgc = vec![];
+	let mut cx;
+	get_ctxt!(cx, ps, fgc);
+    let cx = &mut cx;
 
 	//Build a function
 	let mut fun = build_fn("my_fun", vec![
@@ -102,22 +110,11 @@ fn can_add_body_stmt_to_fn() {
 fn can_add_body_stmts_to_fn() {
 	//Build an execution context
 	let ps = syntax::parse::ParseSess::new();
-	let mut feature_gated_cfgs = vec![];
-	let mut cx = syntax::ext::base::ExtCtxt::new(
-		&ps, vec![],
-		syntax::ext::expand::ExpansionConfig::default("qquote".to_string()),
-		&mut feature_gated_cfgs
-	);
-	cx.bt_push(syntax::codemap::ExpnInfo {
-		call_site: DUMMY_SP,
-		callee: syntax::codemap::NameAndSpan {
-			format: syntax::codemap::MacroBang(intern("")),
-			allow_internal_unstable: false,
-			span: None,
-		}
-	});
-	let cx = &mut cx;
-
+	let mut fgc = vec![];
+	let mut cx;
+	get_ctxt!(cx, ps, fgc);
+    let cx = &mut cx;
+    
 	//Build a function
 	let mut fun = build_fn("my_fun", vec![
 		arg::<MyStruct>("arg1")
@@ -134,21 +131,10 @@ fn can_add_body_stmts_to_fn() {
 fn can_add_body_block_to_fn() {
 	//Build an execution context
 	let ps = syntax::parse::ParseSess::new();
-	let mut feature_gated_cfgs = vec![];
-	let mut cx = syntax::ext::base::ExtCtxt::new(
-		&ps, vec![],
-		syntax::ext::expand::ExpansionConfig::default("qquote".to_string()),
-		&mut feature_gated_cfgs
-	);
-	cx.bt_push(syntax::codemap::ExpnInfo {
-		call_site: DUMMY_SP,
-		callee: syntax::codemap::NameAndSpan {
-			format: syntax::codemap::MacroBang(intern("")),
-			allow_internal_unstable: false,
-			span: None,
-		}
-	});
-	let cx = &mut cx;
+	let mut fgc = vec![];
+	let mut cx;
+	get_ctxt!(cx, ps, fgc);
+    let cx = &mut cx;
 
 	//Build a function
 	let mut fun = build_fn("my_fun", vec![
@@ -168,21 +154,10 @@ fn can_add_body_block_to_fn() {
 fn can_set_return_expr_when_adding_body_block_if_fn_has_return_ty() {
 	//Build an execution context
 	let ps = syntax::parse::ParseSess::new();
-	let mut feature_gated_cfgs = vec![];
-	let mut cx = syntax::ext::base::ExtCtxt::new(
-		&ps, vec![],
-		syntax::ext::expand::ExpansionConfig::default("qquote".to_string()),
-		&mut feature_gated_cfgs
-	);
-	cx.bt_push(syntax::codemap::ExpnInfo {
-		call_site: DUMMY_SP,
-		callee: syntax::codemap::NameAndSpan {
-			format: syntax::codemap::MacroBang(intern("")),
-			allow_internal_unstable: false,
-			span: None,
-		}
-	});
-	let cx = &mut cx;
+	let mut fgc = vec![];
+	let mut cx;
+	get_ctxt!(cx, ps, fgc);
+    let cx = &mut cx;
 
 	//Build a function that returns i32
 	let mut fun = build_fn("my_fun", vec![
