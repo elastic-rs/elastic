@@ -7,6 +7,11 @@ use syntax::parse::token;
 use syntax::codemap::{ Spanned, DUMMY_SP };
 use syntax::ptr::P;
 
+//TODO: impls for ast::Endpoint:
+// - doc_comment
+// - fn_sigs (fn name and params)
+// - mod_name (split on '.' in endpoint name)
+
 /// Generate a statement to replace the params in a url.
 /// 
 /// Generates statements of the form `let url_fmtd = format!(url, base, parts[0], ..., parts[n]);`. 
@@ -276,10 +281,14 @@ pub fn url_push_decl(url_base: Ident, url_parts: &Vec<String>, param_parts: &Vec
 		),
 		span: DUMMY_SP
 	};
+    
+    //TODO: Get str_push() stmts in order
+    //base, (lit, param)*
 
 	(ident, vec![url_decl])
 }
 
+/// Gets an expression of the form 'item.len()' where item is an ident or string literal.
 fn len_expr(item: Ident) -> P<Expr> {
 	P(Expr {
 		id: DUMMY_NODE_ID,
@@ -315,6 +324,7 @@ fn len_expr(item: Ident) -> P<Expr> {
 	})
 }
 
+/// Adds the result of `len_expr(to_add)` to the `current_add`, for chaining addition ops together.
 fn len_add(current_add: P<Expr>, to_add: Ident) -> P<Expr> {
 	P(Expr {
 		id: DUMMY_NODE_ID,

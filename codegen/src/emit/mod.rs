@@ -82,7 +82,7 @@ pub trait Emitter<'a> {
 	/// Emit a codegen item to the provided writer.
 	/// 
 	/// This default implementation will attempt to emit results in-line, 
-	/// so no extra characters, such as new lines or whitespace, will be emitted.
+	/// so no extra characters, such as new lines or whitespace, will be emitted between calls to `emit`.
 	fn emit<Emittable, EmError, W>(&'a self, e: &'a Emittable, writer: &'a mut W) -> Result<(), Self::Error> where 
 		Emittable: Emit<Self::CtxtBrw, EmError>, 
 		EmError: Into<EmitError>, 

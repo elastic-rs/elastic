@@ -5,22 +5,6 @@ use syntax::codemap::DUMMY_SP;
 use syntax::ptr::P;
 use super::parse_path;
 
-/// The kind of path to use in the type Ident.
-/// 
-/// The default value is `NameOnly`.
-pub enum TyPathOpts {
-	/// Use just the name of the type.
-	NameOnly,
-	/// Use the full Rust path, including crates and modules.
-	Full
-}
-
-impl Default for TyPathOpts {
-	fn default() -> TyPathOpts {
-		TyPathOpts::NameOnly
-	}
-}
-
 /// Generate a type with a specified name.
 pub fn build_ty(name: &str) -> Ty {
 	let segments = parse_path(name).iter().map(|seg| PathSegment {
@@ -96,4 +80,20 @@ fn _type_of<T>(opts: TyPathOpts) -> String {
 /// Get the full-path name of a type inferred from the argument.
 pub fn infer_type_of<T>(_: &T) -> &str {
     type_of::<T>()
+}
+
+/// The kind of path to use in the type Ident.
+/// 
+/// The default value is `NameOnly`.
+pub enum TyPathOpts {
+	/// Use just the name of the type.
+	NameOnly,
+	/// Use the full Rust path, including crates and modules.
+	Full
+}
+
+impl Default for TyPathOpts {
+	fn default() -> TyPathOpts {
+		TyPathOpts::NameOnly
+	}
 }
