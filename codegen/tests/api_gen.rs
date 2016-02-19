@@ -156,7 +156,7 @@ fn can_get_mod_name_for_endpoint() {
 }
 
 #[test]
-fn can_get_mod_name_for_endpoint_with_parent_in_name() {
+fn can_get_mod_name_for_endpoint_with_parent() {
     let endpoint = Endpoint {
           name: Some("indices.shard_stores".to_string()),
           documentation: String::new(),
@@ -186,4 +186,9 @@ fn can_get_mod_name_for_endpoint_with_parent_in_name() {
 	}
 
 	assert!(success);
+}
+
+#[test]
+fn can_get_url_fns_from_paths() {
+    panic!("implement")
 }

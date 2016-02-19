@@ -3,14 +3,13 @@
 //! Utilities for parsing the Elasticsearch API spec to Rust source code.
 
 use std::collections::BTreeMap;
-use std::borrow::Cow;
 use syntax::ast::*;
 use syntax::parse::token;
 use syntax::codemap::{ Spanned, DUMMY_SP };
 use syntax::ptr::P;
 use ::api::ast as api;
 use ::gen::rust::{ ty, build_ty, TyPathOpts };
-use super::{ parse_mod_path, ModPathParseError };
+use super::{ parse_path_params, parse_mod_path, ModPathParseError };
 
 impl api::Endpoint {
     /// Get the Rust doc comment for this endpoint.
@@ -51,7 +50,50 @@ impl api::Endpoint {
     }
 }
 
-impl Into<Option<Ty>> for api::Type {
+/// A single function for a url path.
+pub struct UrlFn<'a> {
+    /// The name of the function.
+    pub name: &'a str,
+    /// The url path for the function.
+    pub path: &'a str,
+    /// The replacement parts in the url path.
+    pub parts: BTreeMap<String, &'a api::Part>
+}
+
+impl api::Url {
+    /// Get the function definitions for this endpoint.
+    /// 
+    /// Each possible url path is considered a function.
+    pub fn get_fns<'a>(&'a self) -> Vec<Option<UrlFn<'a>>> {
+        self.paths.iter()
+            .map(|p| {
+                let mut parts = BTreeMap::new();
+                
+                let params = parse_path_params(p);
+                if params.is_err() {
+                    return None
+                }
+                
+                for param in params.unwrap() {
+                    match self.parts.get(&param) {
+                        Some(part) => {
+                            let _ = parts.insert(param, part);
+                        },
+                        None => ()
+                    };
+                }
+                
+                Some(UrlFn {
+                    name: "",
+                    path: p,
+                    parts: parts
+                })
+            })
+        .collect()
+    }
+}
+
+impl <'a> Into<Option<Ty>> for api::Type<'a> {
     fn into(self) -> Option<Ty> {
         match self {
 			api::Type::Bool => Some(ty::<bool>(TyPathOpts::NameOnly)),
@@ -63,7 +105,7 @@ impl Into<Option<Ty>> for api::Type {
 			api::Type::Number(api::NumberKind::Float) => Some(ty::<f32>(TyPathOpts::NameOnly)),
 			api::Type::Str => Some(ty::<String>(TyPathOpts::NameOnly)),
 			api::Type::Bin => Some(ty::<Vec<u8>>(TyPathOpts::NameOnly)),
-			api::Type::Other(t) => Some(build_ty(&t)),
+			api::Type::Other(t) => Some(build_ty(t)),
             _ => None
 		}
     }
@@ -237,7 +279,7 @@ pub fn url_fmt_decl(url: &str, url_base: Ident, param_parts: &Vec<Ident>) -> (Id
 /// );
 /// # }
 /// ```
-pub fn url_push_decl(url_base: Ident, url_parts: &Vec<String>, param_parts: &Vec<Ident>) -> (Ident, Vec<Stmt>) {
+pub fn url_push_decl(url_base: &Ident, url_parts: &Vec<String>, param_parts: &Vec<Ident>) -> (Ident, Vec<Stmt>) {
 	let ident = token::str_to_ident("url_fmtd");
 
 	//Get the string literal params
@@ -264,15 +306,15 @@ pub fn url_push_decl(url_base: Ident, url_parts: &Vec<String>, param_parts: &Vec
 
 	let mut add_expr = len_add(
 		len_expr(url_base), 
-		url_iter.next().unwrap().clone()
+		url_iter.next().unwrap()
 	);
 	for url_part in url_iter {
-		add_expr = len_add(add_expr, url_part.clone());
+		add_expr = len_add(add_expr, url_part);
 	}
 
 	//Sum the url params
 	for url_param in param_parts {
-		add_expr = len_add(add_expr, url_param.clone());
+		add_expr = len_add(add_expr, url_param);
 	}
 
 	//Get the declaration statement
@@ -346,7 +388,7 @@ pub fn url_push_decl(url_base: Ident, url_parts: &Vec<String>, param_parts: &Vec
 }
 
 /// Gets an expression of the form 'item.len()' where item is an ident or string literal.
-fn len_expr(item: Ident) -> P<Expr> {
+fn len_expr(item: &Ident) -> P<Expr> {
 	P(Expr {
 		id: DUMMY_NODE_ID,
 		node: ExprKind::MethodCall(
@@ -365,7 +407,7 @@ fn len_expr(item: Ident) -> P<Expr> {
 							global: false,
 							segments: vec![
 								PathSegment {
-									identifier: item,
+									identifier: item.clone(),
 									parameters: PathParameters::none()
 								}
 							]
@@ -382,7 +424,7 @@ fn len_expr(item: Ident) -> P<Expr> {
 }
 
 /// Adds the result of `len_expr(to_add)` to the `current_add`, for chaining addition ops together.
-fn len_add(current_add: P<Expr>, to_add: Ident) -> P<Expr> {
+fn len_add(current_add: P<Expr>, to_add: &Ident) -> P<Expr> {
 	P(Expr {
 		id: DUMMY_NODE_ID,
 		node: ExprKind::Binary(

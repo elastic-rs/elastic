@@ -44,9 +44,7 @@ pub enum HttpVerb {
 	/// PATCH
 	Patch,
 	/// DELETE
-	Delete,
-	/// Unknown verb
-	Other(String)
+	Delete
 }
 
 impl HttpVerb {
@@ -69,22 +67,21 @@ impl HttpVerb {
 	/// use elastic_codegen::api::ast::HttpVerb;
 	/// 
 	/// let verb = HttpVerb::parse("get");
-	/// assert!(verb == HttpVerb::Other("get".to_string()));
+	/// assert!(verb == HttpVerb::Other("get"));
 	/// ```
 	pub fn parse(_method: &str) -> HttpVerb {
 		match _method {
 			"HEAD" => HttpVerb::Head,
-			"GET" => HttpVerb::Get,
 			"POST" => HttpVerb::Post,
 			"PUT" => HttpVerb::Put,
 			"PATCH" => HttpVerb::Patch,
 			"DELETE" => HttpVerb::Delete,
-			m => HttpVerb::Other(m.to_string())
+            _ => HttpVerb::Get
 		}
 	}
 }
 
-impl Deserialize for HttpVerb {
+impl  Deserialize for HttpVerb {
 	fn deserialize<D>(deserializer: &mut D) -> Result<HttpVerb, D::Error> where D: Deserializer,
     {
         deserializer.visit_str(HttpVerbVisitor)
@@ -103,7 +100,7 @@ impl serde::de::Visitor for HttpVerbVisitor {
 
 /// Represents a `Param` or `Part` type.
 #[derive(PartialEq)]
-pub enum Type {
+pub enum Type<'a> {
 	/// boolean
 	Bool,
 	/// number
@@ -119,9 +116,9 @@ pub enum Type {
 	/// list
 	List,
 	/// enum
-	Enum(Vec<String>),
+	Enum(&'a Option<Vec<String>>),
 	/// unknown
-	Other(String)
+	Other(&'a str)
 }
 
 /// Represents a number type
@@ -141,12 +138,12 @@ pub enum NumberKind {
 	Float
 }
 
-impl Type {
+impl <'a> Type<'a> {
 	/// Parses a type name from a string.
 	/// 
 	/// This parser is lossy, it only retains the minimal amount of info that could be needed for code generation.
 	/// It also doesn't cover all possible Elasticsearch types, only those that appear in the API spec.
-	pub fn parse(_type: &str, opts: Option<Vec<String>>) -> Type {
+	pub fn parse(_type: &'a str, opts: &'a Option<Vec<String>>) -> Type<'a> {
 		match _type {
 			"boolean" => Type::Bool,
 			"number"|"long" => Type::Number(NumberKind::Long),
@@ -160,8 +157,8 @@ impl Type {
 			"binary" => Type::Bin,
 			"geo_point"|"geo_shape" => Type::Geo,
 			"list" => Type::List,
-			"enum" => Type::Enum(opts.unwrap()),
-			t => Type::Other(t.to_string())
+			"enum" => Type::Enum(opts),
+			t => Type::Other(t)
 		}
 	}
 }
@@ -232,8 +229,8 @@ pub struct Part {
 
 impl Part {
 	/// Get the `Type` for the `Part`.
-	pub fn get_type(&self) -> Type {
-		Type::parse(&self._type[..], self.options.clone())
+	pub fn get_type<'a>(&'a self) -> Type<'a> {
+		Type::parse(&self._type, &self.options)
 	}
 
 	/// Get whether or not the `Part` is required.
@@ -451,13 +448,11 @@ impl Param {
 	}
 	
 	/// Get the `Type` for the `Param`.
-	pub fn get_type(&self) -> Type {
-		let _type: String = match self._type.clone() {
-			None => "unknown".to_string(),
-			Some(t) => t
-		};
-
-		Type::parse(&_type[..], self.options.clone())
+	pub fn get_type<'a>(&'a self) -> Type<'a> {
+		match self._type {
+            Some(ref t) => Type::parse(t, &self.options),
+            None => Type::parse("unknown", &self.options)
+        }
 	}
 
 	/// Get the default value for the `Param`.
@@ -477,7 +472,7 @@ impl Param {
 	pub fn get_default<T: Deserialize>(&self) -> Option<T> {
 		match self.default {
 			Value::Null => None,
-			_ => Some(value::from_value::<T>(self.default.clone()).unwrap())
+			ref d => Some(value::from_value::<T>(d.clone()).unwrap())
 		}
 	}
 
