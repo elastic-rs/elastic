@@ -7,23 +7,23 @@ use elastic_codegen::api::parse;
 
 #[test]
 fn can_parse_http_method() {
-	let raw_methods = vec!(
+	let raw_methods = vec![
 		"HEAD",
 		"GET",
 		"POST",
 		"PUT",
 		"DELETE",
 		"STUFF"
-	);
+    ];
 
-	let expected_methods = vec!(
+	let expected_methods = vec![
 		HttpVerb::Head,
 		HttpVerb::Get,
 		HttpVerb::Post,
 		HttpVerb::Put,
 		HttpVerb::Delete,
 		HttpVerb::Other("STUFF".to_string())
-	);
+    ];
 
 	let methods: Vec<HttpVerb> = raw_methods.iter().map(|m| HttpVerb::parse(m)).collect();
 
@@ -45,7 +45,7 @@ fn can_parse_type() {
 		opts: Option<Vec<String>>
 	}
 
-	let raw_types: Vec<TypeRef> = vec!(
+	let raw_types: Vec<TypeRef> = vec![
 		TypeRef { name: "string", opts: None },
 		TypeRef { name: "boolean", opts: None },
 		TypeRef { name: "time", opts: None },
@@ -59,9 +59,9 @@ fn can_parse_type() {
 		TypeRef { name: "double", opts: None },
 		TypeRef { name: "enum", opts: Some(vec!("OpA".to_string(), "OpB".to_string(), "OpC".to_string())) },
 		TypeRef { name: "stuff", opts: None }
-	);
+    ];
 
-	let expected_types = vec!(
+	let expected_types = vec![
 		Type::Str,
 		Type::Bool,
 		Type::Time,
@@ -75,7 +75,7 @@ fn can_parse_type() {
 		Type::Number(NumberKind::Double),
 		Type::Enum(vec!("OpA".to_string(), "OpB".to_string(), "OpC".to_string())),
 		Type::Other("stuff".to_string())
-	);
+    ];
 
 	let types: Vec<Type> = raw_types.iter().map(|t| Type::parse(t.name, t.opts.clone())).collect();
 

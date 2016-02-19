@@ -7,9 +7,10 @@ use syntax::ast::*;
 use syntax::parse::token;
 use syntax::codemap::{ Spanned, DUMMY_SP };
 use syntax::ptr::P;
-use ::api::ast::{ Endpoint };
+use ::api::ast as api;
+use ::gen::rust::{ ty, build_ty, TyPathOpts };
 
-impl Endpoint {
+impl api::Endpoint {
     /// Get the Rust doc comment for this endpoint.
     /// 
     /// This is the `documentation` value formatted as a Rust doc comment.
@@ -37,6 +38,24 @@ impl Endpoint {
                 is_sugared_doc: true
             }
         }
+    }
+}
+
+impl Into<Option<Ty>> for api::Type {
+    fn into(self) -> Option<Ty> {
+        match self {
+			api::Type::Bool => Some(ty::<bool>(TyPathOpts::NameOnly)),
+			api::Type::Number(api::NumberKind::Long) => Some(ty::<i64>(TyPathOpts::NameOnly)),
+			api::Type::Number(api::NumberKind::Int) => Some(ty::<i32>(TyPathOpts::NameOnly)),
+			api::Type::Number(api::NumberKind::Short) => Some(ty::<i16>(TyPathOpts::NameOnly)),
+			api::Type::Number(api::NumberKind::Byte) => Some(ty::<u8>(TyPathOpts::NameOnly)),
+			api::Type::Number(api::NumberKind::Double) => Some(ty::<f32>(TyPathOpts::NameOnly)),
+			api::Type::Number(api::NumberKind::Float) => Some(ty::<f32>(TyPathOpts::NameOnly)),
+			api::Type::Str => Some(ty::<String>(TyPathOpts::NameOnly)),
+			api::Type::Bin => Some(ty::<Vec<u8>>(TyPathOpts::NameOnly)),
+			api::Type::Other(t) => Some(build_ty(&t)),
+            _ => None
+		}
     }
 }
 
