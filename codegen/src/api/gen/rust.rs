@@ -3,12 +3,14 @@
 //! Utilities for parsing the Elasticsearch API spec to Rust source code.
 
 use std::collections::BTreeMap;
+use std::borrow::Cow;
 use syntax::ast::*;
 use syntax::parse::token;
 use syntax::codemap::{ Spanned, DUMMY_SP };
 use syntax::ptr::P;
 use ::api::ast as api;
 use ::gen::rust::{ ty, build_ty, TyPathOpts };
+use super::{ parse_mod_path, ModPathParseError };
 
 impl api::Endpoint {
     /// Get the Rust doc comment for this endpoint.
@@ -38,6 +40,14 @@ impl api::Endpoint {
                 is_sugared_doc: true
             }
         }
+    }
+    
+    /// Get the module name for all functions in this endpoint.
+    pub fn get_mod_path(&self) -> Result<Vec<String>, ModPathParseError> {
+        parse_mod_path(match self.name {
+            Some(ref n) => n,
+            None => ""
+        })
     }
 }
 

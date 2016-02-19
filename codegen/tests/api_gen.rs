@@ -122,3 +122,68 @@ fn can_get_rust_doc_comment_for_endpoint() {
     //TODO: Get the '///' or '//!' prepended
     assert_eq!("My docs", pprust::attr_to_string(&docs));
 }
+
+#[test]
+fn can_get_mod_name_for_endpoint() {
+    let endpoint = Endpoint {
+          name: Some("index".to_string()),
+          documentation: String::new(),
+          methods: Vec::new(),
+          body: None,
+          url: Url {
+              path: String::new(),
+              paths: Vec::new(),
+              parts: BTreeMap::new(),
+              params: BTreeMap::new()
+          }
+    };
+    
+    let path = endpoint.get_mod_path().unwrap();
+    
+    let expected_path = vec![
+        "index".to_string()
+    ];
+
+    let mut success = true;
+	for i in 0..path.len() {        
+		if expected_path[i] != path[i] {
+			success = false;
+			break;
+		}
+	}
+
+	assert!(success);
+}
+
+#[test]
+fn can_get_mod_name_for_endpoint_with_parent_in_name() {
+    let endpoint = Endpoint {
+          name: Some("indices.shard_stores".to_string()),
+          documentation: String::new(),
+          methods: Vec::new(),
+          body: None,
+          url: Url {
+              path: String::new(),
+              paths: Vec::new(),
+              parts: BTreeMap::new(),
+              params: BTreeMap::new()
+          }
+    };
+    
+    let path = endpoint.get_mod_path().unwrap();
+    
+    let expected_path = vec![
+        "indices".to_string(),
+        "shard_stores".to_string()
+    ];
+
+    let mut success = true;
+	for i in 0..path.len() {        
+		if expected_path[i] != path[i] {
+			success = false;
+			break;
+		}
+	}
+
+	assert!(success);
+}

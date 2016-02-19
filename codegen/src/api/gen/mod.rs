@@ -11,6 +11,9 @@ use chomp::*;
 /// Rexport of the chomp `ParseError`.
 pub type UrlParseError<'a> = chomp::ParseError<'a, u8, chomp::parsers::Error<u8>>;
 
+/// Rexport of the chomp `ParseError`.
+pub type ModPathParseError<'a> = chomp::ParseError<'a, u8, chomp::parsers::Error<u8>>;
+
 /// Finds the Params that make up an Elasticsearch URL Part.
 pub fn parse_path_params(url: &str) -> Result<Vec<String>, UrlParseError> {
 	parse_only(|i| many(i, |i| parse_path_param(i)), url.as_bytes())
@@ -26,6 +29,11 @@ pub fn parse_fmt(url: &str) -> Result<String, UrlParseError> {
 	let res: Vec<String> = try!(parse_only(|i| many(i, |i| parse_fmt_seg(i)), url.as_bytes()));
 
 	Ok(res.join(""))
+}
+
+/// Finds the module path tree for an Elasticsearch Endpoint.
+pub fn parse_mod_path(path: &str) -> Result<Vec<String>, ModPathParseError> {
+	parse_only(|i| many(i, |i| parse_mod_path_part(i)), path.as_bytes())
 }
 
 fn parse_path_param(i: Input<u8>) -> U8Result<String> {
@@ -63,5 +71,15 @@ fn parse_fmt_seg(i: Input<u8>) -> U8Result<String> {
 
 		//Build the format replacement part + '{}'
 		ret format!("{}{{}}", str::from_utf8(path).unwrap())
+	}
+}
+
+fn parse_mod_path_part(i: Input<u8>) -> U8Result<String> {
+    parse!{i;
+		//Read to '.'
+		let path = take_while(|c| c != b'.');
+		let _ = take(1);
+
+		ret str::from_utf8(path).unwrap().to_string()
 	}
 }
