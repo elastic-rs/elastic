@@ -96,15 +96,15 @@ impl api::Url {
 impl <'a> Into<Option<Ty>> for api::Type<'a> {
     fn into(self) -> Option<Ty> {
         match self {
-			api::Type::Bool => Some(ty::<bool>(TyPathOpts::NameOnly)),
-			api::Type::Number(api::NumberKind::Long) => Some(ty::<i64>(TyPathOpts::NameOnly)),
-			api::Type::Number(api::NumberKind::Int) => Some(ty::<i32>(TyPathOpts::NameOnly)),
-			api::Type::Number(api::NumberKind::Short) => Some(ty::<i16>(TyPathOpts::NameOnly)),
-			api::Type::Number(api::NumberKind::Byte) => Some(ty::<u8>(TyPathOpts::NameOnly)),
-			api::Type::Number(api::NumberKind::Double) => Some(ty::<f32>(TyPathOpts::NameOnly)),
-			api::Type::Number(api::NumberKind::Float) => Some(ty::<f32>(TyPathOpts::NameOnly)),
-			api::Type::Str => Some(ty::<String>(TyPathOpts::NameOnly)),
-			api::Type::Bin => Some(ty::<Vec<u8>>(TyPathOpts::NameOnly)),
+			api::Type::Bool => Some(ty::<bool>(TyPathOpts::default())),
+			api::Type::Number(api::NumberKind::Long) => Some(ty::<i64>(TyPathOpts::default())),
+			api::Type::Number(api::NumberKind::Int) => Some(ty::<i32>(TyPathOpts::default())),
+			api::Type::Number(api::NumberKind::Short) => Some(ty::<i16>(TyPathOpts::default())),
+			api::Type::Number(api::NumberKind::Byte) => Some(ty::<u8>(TyPathOpts::default())),
+			api::Type::Number(api::NumberKind::Double) => Some(ty::<f32>(TyPathOpts::default())),
+			api::Type::Number(api::NumberKind::Float) => Some(ty::<f32>(TyPathOpts::default())),
+			api::Type::Str => Some(ty::<String>(TyPathOpts::default())),
+			api::Type::Bin => Some(ty::<Vec<u8>>(TyPathOpts::default())),
 			api::Type::Other(t) => Some(build_ty(t)),
             _ => None
 		}
@@ -142,7 +142,7 @@ impl <'a> Into<Option<Ty>> for api::Type<'a> {
 /// println!("{}", result);
 /// # }
 /// ```
-pub fn url_fmt_decl(url: &str, url_base: Ident, param_parts: &Vec<Ident>) -> (Ident, Stmt) {
+pub fn url_fmt_decl(url: &str, url_base: &Ident, param_parts: &Vec<Ident>) -> (Ident, Stmt) {
 	let ident = token::str_to_ident("url_fmtd");
 
 	//Build up the macro arguments
@@ -160,7 +160,7 @@ pub fn url_fmt_decl(url: &str, url_base: Ident, param_parts: &Vec<Ident>) -> (Id
 		//The url base
 		TokenTree::Token(
 			DUMMY_SP, token::Token::Ident(
-				url_base, 
+				url_base.to_owned(), 
 				token::IdentStyle::Plain
 			)
 		),
@@ -172,7 +172,7 @@ pub fn url_fmt_decl(url: &str, url_base: Ident, param_parts: &Vec<Ident>) -> (Id
 	for part in param_parts {
 		args.push(TokenTree::Token(
 			DUMMY_SP, token::Token::Ident(
-				part.clone(), 
+				part.to_owned(), 
 				token::IdentStyle::Plain
 			)
 		));
@@ -407,7 +407,7 @@ fn len_expr(item: &Ident) -> P<Expr> {
 							global: false,
 							segments: vec![
 								PathSegment {
-									identifier: item.clone(),
+									identifier: item.to_owned(),
 									parameters: PathParameters::none()
 								}
 							]

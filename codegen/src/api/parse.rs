@@ -117,8 +117,8 @@ pub fn from_reader<R>(rdr: &mut R) -> ParseResult<Endpoint> where R: Read {
 			);
 
 			//Deserialise the api ast and set the name
-			let mut endpoint = try!(value::from_value::<Endpoint>(tree.clone()));
-			endpoint.name = Some(name.clone());
+			let mut endpoint = try!(value::from_value::<Endpoint>(tree.to_owned()));
+			endpoint.name = Some(name.to_owned());
 
 			Ok(endpoint)
 		},

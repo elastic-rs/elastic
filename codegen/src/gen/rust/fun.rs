@@ -15,8 +15,10 @@ pub struct Fn {
 	pub decl: FnDecl,
 	/// The lifetimes and generic params for the fn.
 	pub generics: Generics,
-	/// The body of the fn.
-	pub body: Block,
+	/// The body statements of the fn.
+	pub stmts: Vec<Stmt>,
+    /// The optional return statement of the fn.
+    pub expr: Option<P<Expr>>,
 	/// Whether or not the fn is unsafe.
 	pub unsafety: Unsafety,
 	/// Whether or not the fn is constant.
@@ -25,9 +27,9 @@ pub struct Fn {
 
 impl Fn {
 	/// Append a lifetime to the function generics.
-	pub fn add_lifetime(mut self, lifetime: Lifetime) -> Fn {
+	pub fn add_lifetime(mut self, lifetime: &Lifetime) -> Fn {
 		self.generics.lifetimes.push(LifetimeDef {
-			lifetime: lifetime,
+			lifetime: lifetime.clone(),
 			bounds: Vec::new()
 		});
 
@@ -37,53 +39,46 @@ impl Fn {
     /// Add an argument to the function signature.
     pub fn add_arg(mut self, arg: Arg) -> Fn {
         self.decl.inputs.push(arg);
-        
         self
     }
     
     /// Add a collection of arguments to the function signature.
-    pub fn add_args(mut self, args: &Vec<Arg>) -> Fn {
-       let mut _args = args.clone();
-       self.decl.inputs.append(&mut _args);
-       
-       self
+    pub fn add_args<I>(mut self, args: I) -> Fn 
+        where I: IntoIterator<Item=Arg> {
+            self.decl.inputs.extend(args);
+            self
     }
 
 	/// Set the return type of the function.
 	pub fn set_return<T>(mut self) -> Fn {
 		self.decl.output = FunctionRetTy::Ty(P(ty::<T>(TyPathOpts::default())));
-
 		self
 	}
 
 	/// Append a statement to the function body.
 	pub fn add_body_stmt(mut self, stmt: Stmt) -> Fn {
-		self.body.stmts.push(stmt);
+		self.stmts.push(stmt);
 
 		self
 	}
 
 	/// Append a collection of statements to the function body.
-	pub fn add_body_stmts(mut self, stmts: &Vec<Stmt>) -> Fn {
-		let mut _stmts = stmts.clone();
-		self.body.stmts.append(&mut _stmts);
-
-		self
+	pub fn add_body_stmts<I>(mut self, stmts: I) -> Fn 
+        where I: IntoIterator<Item=Stmt> {
+            self.stmts.extend(stmts);
+            self
 	}
 
 	/// Append the body to existing statements.
 	/// 
 	/// This will update the return expression if the function declaration has a return type set.
-	pub fn add_body_block(mut self, body: P<Block>) -> Fn {
-		let _body = body.deref();
-
+	pub fn add_body_block(mut self, mut body: P<Block>) -> Fn {
 		//Append the body statements
-		let mut body_stmts = _body.stmts.clone();
-		self.body.stmts.append(&mut body_stmts);
+		self.stmts.extend(body.stmts.to_vec());
 
 		//Set the return type if the function takes one
 		match self.decl.output {
-			FunctionRetTy::Ty(_) => self.body.expr = _body.expr.clone(),
+			FunctionRetTy::Ty(_) => self.expr = body.expr.to_owned(),
 			_ => ()
 		}
 		
@@ -92,7 +87,8 @@ impl Fn {
 
 	/// Set the function body.
 	pub fn set_body(mut self, body: P<Block>) -> Fn {
-		self.body = body.deref().clone();
+		self.stmts = body.stmts.to_vec();
+        self.expr = body.expr.to_owned();
 
 		self
 	}
@@ -109,8 +105,16 @@ impl ToString for Fn {
 			None, 
 			&self.generics
 		);
+        
+        let block = P(Block {
+            stmts: self.stmts.clone(),
+            expr: self.expr.clone(),
+            id: DUMMY_NODE_ID,
+            rules: BlockCheckMode::Default,
+            span: DUMMY_SP,
+        });
 
-		let body = pprust::block_to_string(&self.body);
+		let body = pprust::block_to_string(&block);
 
 		decl + &body
 	}
@@ -144,22 +148,18 @@ impl ToString for Fn {
 /// println!("{}", fun.to_string());
 /// # }
 /// ```
-pub fn build_fn(name: &str, inputs: &Vec<Arg>) -> Fn {
+pub fn build_fn<I>(name: &str, inputs: I) -> Fn 
+    where I: IntoIterator<Item=Arg> {
 	Fn {
 		identifier: token::str_to_ident(name),
 		decl: FnDecl {
-			inputs: inputs.clone(),
+			inputs: inputs.into_iter().collect(),
 			output: FunctionRetTy::Default(DUMMY_SP),
 			variadic: false
 		},
 		generics: Generics::default(),
-		body: Block {
-			stmts: Vec::new(),
-			expr: None,
-			id: DUMMY_NODE_ID,
-			rules: BlockCheckMode::Default,
-			span: DUMMY_SP
-		},
+        stmts: Vec::new(),
+		expr: None,
 		unsafety: Unsafety::Normal,
 		constness: Constness::NotConst
 	}
