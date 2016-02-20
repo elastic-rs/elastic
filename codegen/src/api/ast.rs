@@ -60,15 +60,6 @@ impl HttpVerb {
 	/// let verb = HttpVerb::parse("GET");
 	/// assert!(verb == HttpVerb::Get);
 	/// ```
-	/// 
-	/// but:
-	/// 
-	/// ```
-	/// use elastic_codegen::api::ast::HttpVerb;
-	/// 
-	/// let verb = HttpVerb::parse("get");
-	/// assert!(verb == HttpVerb::Other("get"));
-	/// ```
 	pub fn parse(_method: &str) -> HttpVerb {
 		match _method {
 			"HEAD" => HttpVerb::Head,

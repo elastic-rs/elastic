@@ -133,7 +133,7 @@ impl <'a> Into<Option<Ty>> for api::Type<'a> {
 /// let (ident, stmt) = url_fmt_decl(
 /// 	"{}/{}/_alias/{}", 
 /// 	token::str_to_ident("base"), 
-/// 	&vec![
+/// 	vec![
 /// 		token::str_to_ident("index"),
 /// 		token::str_to_ident("name")
 /// 	]
@@ -271,11 +271,11 @@ pub fn url_fmt_decl<I>(url: &str, url_base: Ident, param_parts: I) -> (Ident, St
 /// //Generate the statement
 /// let (ident, stmt) = url_push_decl(
 /// 	token::str_to_ident("base"), 
-/// 	&vec![
-/// 		"/_alias/".to_string(),
-/// 		"/".to_string()
+/// 	vec![
+/// 		"/_alias/",
+/// 		"/"
 /// 	],
-/// 	&vec![
+/// 	vec![
 /// 		token::str_to_ident("index"),
 /// 		token::str_to_ident("name")
 /// 	]

@@ -137,7 +137,7 @@ impl ToString for Fn {
 /// let lifetime = lifetime("'a");
 /// 
 /// //Build a function signature
-/// let mut fun = build_fn("my_fun", &vec![
+/// let mut fun = build_fn("my_fun", vec![
 /// 	arg::<MyStruct>("arg1"),
 /// 	arg_ptr::<i32>("arg2", Mutability::Mutable, Some(lifetime)),
 /// 	build_arg("arg3", build_ty_ptr("str", Mutability::Immutable, Some(lifetime)))
