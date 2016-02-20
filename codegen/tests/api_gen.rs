@@ -70,29 +70,29 @@ fn can_get_api_type_as_rust_type() {
 		Type::Number(NumberKind::Byte).into(),
 		Type::Number(NumberKind::Float).into(),
 		Type::Number(NumberKind::Double).into(),
-        Type::Bin.into(),
-		Type::Enum(vec!("OpA".to_string(), "OpB".to_string(), "OpC".to_string())).into(),
-		Type::Other("stuff".to_string()).into()
+				Type::Bin.into(),
+		Type::Enum(&Some(vec!("OpA".to_string(), "OpB".to_string(), "OpC".to_string()))).into(),
+		Type::Other("stuff").into()
 	];
-    
-    let expected_types = vec![
-        Some(ty::<String>(TyPathOpts::NameOnly)),
-        Some(ty::<bool>(TyPathOpts::NameOnly)),
-        None,
-        None,
-        Some(ty::<i64>(TyPathOpts::NameOnly)),
-        Some(ty::<i32>(TyPathOpts::NameOnly)),
-        Some(ty::<i16>(TyPathOpts::NameOnly)),
-        Some(ty::<u8>(TyPathOpts::NameOnly)),
-        Some(ty::<f32>(TyPathOpts::NameOnly)),
-        Some(ty::<f32>(TyPathOpts::NameOnly)),
-        Some(ty::<Vec<u8>>(TyPathOpts::NameOnly)),
-        None,
-        Some(build_ty("stuff"))
-    ];
+		
+		let expected_types = vec![
+				Some(ty::<String>(TyPathOpts::NameOnly)),
+				Some(ty::<bool>(TyPathOpts::NameOnly)),
+				None,
+				None,
+				Some(ty::<i64>(TyPathOpts::NameOnly)),
+				Some(ty::<i32>(TyPathOpts::NameOnly)),
+				Some(ty::<i16>(TyPathOpts::NameOnly)),
+				Some(ty::<u8>(TyPathOpts::NameOnly)),
+				Some(ty::<f32>(TyPathOpts::NameOnly)),
+				Some(ty::<f32>(TyPathOpts::NameOnly)),
+				Some(ty::<Vec<u8>>(TyPathOpts::NameOnly)),
+				None,
+				Some(build_ty("stuff"))
+		];
 
-    let mut success = true;
-	for i in 0..types.len() {        
+		let mut success = true;
+	for i in 0..types.len() {
 		if expected_types[i] != types[i] {
 			success = false;
 			break;
@@ -104,48 +104,48 @@ fn can_get_api_type_as_rust_type() {
 
 #[test]
 fn can_get_rust_doc_comment_for_endpoint() {
-    let endpoint = Endpoint {
-          name: None,
-          documentation: "My docs".to_string(),
-          methods: Vec::new(),
-          body: None,
-          url: Url {
-              path: String::new(),
-              paths: Vec::new(),
-              parts: BTreeMap::new(),
-              params: BTreeMap::new()
-          }
-    };
-    
-    let docs = endpoint.get_doc();
-    
-    //TODO: Get the '///' or '//!' prepended
-    assert_eq!("My docs", pprust::attr_to_string(&docs));
+		let endpoint = Endpoint {
+					name: None,
+					documentation: "My docs".to_string(),
+					methods: Vec::new(),
+					body: None,
+					url: Url {
+							path: String::new(),
+							paths: Vec::new(),
+							parts: BTreeMap::new(),
+							params: BTreeMap::new()
+					}
+		};
+		
+		let docs = endpoint.get_doc();
+		
+		//TODO: Get the '///' or '//!' prepended
+		assert_eq!("My docs", pprust::attr_to_string(&docs));
 }
 
 #[test]
 fn can_get_mod_name_for_endpoint() {
-    let endpoint = Endpoint {
-          name: Some("index".to_string()),
-          documentation: String::new(),
-          methods: Vec::new(),
-          body: None,
-          url: Url {
-              path: String::new(),
-              paths: Vec::new(),
-              parts: BTreeMap::new(),
-              params: BTreeMap::new()
-          }
-    };
-    
-    let path = endpoint.get_mod_path().unwrap();
-    
-    let expected_path = vec![
-        "index".to_string()
-    ];
+		let endpoint = Endpoint {
+					name: Some("index".to_string()),
+					documentation: String::new(),
+					methods: Vec::new(),
+					body: None,
+					url: Url {
+							path: String::new(),
+							paths: Vec::new(),
+							parts: BTreeMap::new(),
+							params: BTreeMap::new()
+					}
+		};
+		
+		let path = endpoint.get_mod_path().unwrap();
+		
+		let expected_path = vec![
+				"index".to_string()
+		];
 
-    let mut success = true;
-	for i in 0..path.len() {        
+		let mut success = true;
+	for i in 0..path.len() {
 		if expected_path[i] != path[i] {
 			success = false;
 			break;
@@ -157,28 +157,28 @@ fn can_get_mod_name_for_endpoint() {
 
 #[test]
 fn can_get_mod_name_for_endpoint_with_parent() {
-    let endpoint = Endpoint {
-          name: Some("indices.shard_stores".to_string()),
-          documentation: String::new(),
-          methods: Vec::new(),
-          body: None,
-          url: Url {
-              path: String::new(),
-              paths: Vec::new(),
-              parts: BTreeMap::new(),
-              params: BTreeMap::new()
-          }
-    };
-    
-    let path = endpoint.get_mod_path().unwrap();
-    
-    let expected_path = vec![
-        "indices".to_string(),
-        "shard_stores".to_string()
-    ];
+		let endpoint = Endpoint {
+					name: Some("indices.shard_stores".to_string()),
+					documentation: String::new(),
+					methods: Vec::new(),
+					body: None,
+					url: Url {
+							path: String::new(),
+							paths: Vec::new(),
+							parts: BTreeMap::new(),
+							params: BTreeMap::new()
+					}
+		};
+		
+		let path = endpoint.get_mod_path().unwrap();
+		
+		let expected_path = vec![
+				"indices".to_string(),
+				"shard_stores".to_string()
+		];
 
-    let mut success = true;
-	for i in 0..path.len() {        
+		let mut success = true;
+	for i in 0..path.len() {
 		if expected_path[i] != path[i] {
 			success = false;
 			break;
@@ -190,5 +190,5 @@ fn can_get_mod_name_for_endpoint_with_parent() {
 
 #[test]
 fn can_get_url_fns_from_paths() {
-    panic!("implement")
+		panic!("implement")
 }

@@ -17,8 +17,8 @@ pub struct Fn {
 	pub generics: Generics,
 	/// The body statements of the fn.
 	pub stmts: Vec<Stmt>,
-    /// The optional return statement of the fn.
-    pub expr: Option<P<Expr>>,
+	/// The optional return statement of the fn.
+	pub expr: Option<P<Expr>>,
 	/// Whether or not the fn is unsafe.
 	pub unsafety: Unsafety,
 	/// Whether or not the fn is constant.
@@ -35,19 +35,19 @@ impl Fn {
 
 		self
 	}
-    
-    /// Add an argument to the function signature.
-    pub fn add_arg(mut self, arg: Arg) -> Fn {
-        self.decl.inputs.push(arg);
-        self
-    }
-    
-    /// Add a collection of arguments to the function signature.
-    pub fn add_args<I>(mut self, args: I) -> Fn 
-        where I: IntoIterator<Item=Arg> {
-            self.decl.inputs.extend(args);
-            self
-    }
+	
+	/// Add an argument to the function signature.
+	pub fn add_arg(mut self, arg: Arg) -> Fn {
+		self.decl.inputs.push(arg);
+		self
+	}
+	
+	/// Add a collection of arguments to the function signature.
+	pub fn add_args<I>(mut self, args: I) -> Fn 
+		where I: IntoIterator<Item=Arg> {
+			self.decl.inputs.extend(args);
+			self
+	}
 
 	/// Set the return type of the function.
 	pub fn set_return<T>(mut self) -> Fn {
@@ -64,9 +64,9 @@ impl Fn {
 
 	/// Append a collection of statements to the function body.
 	pub fn add_body_stmts<I>(mut self, stmts: I) -> Fn 
-        where I: IntoIterator<Item=Stmt> {
-            self.stmts.extend(stmts);
-            self
+		where I: IntoIterator<Item=Stmt> {
+			self.stmts.extend(stmts);
+			self
 	}
 
 	/// Append the body to existing statements.
@@ -88,7 +88,7 @@ impl Fn {
 	/// Set the function body.
 	pub fn set_body(mut self, body: P<Block>) -> Fn {
 		self.stmts = body.stmts.to_vec();
-        self.expr = body.expr.to_owned();
+		self.expr = body.expr.to_owned();
 
 		self
 	}
@@ -105,14 +105,14 @@ impl ToString for Fn {
 			None, 
 			&self.generics
 		);
-        
-        let block = P(Block {
-            stmts: self.stmts.clone(),
-            expr: self.expr.clone(),
-            id: DUMMY_NODE_ID,
-            rules: BlockCheckMode::Default,
-            span: DUMMY_SP,
-        });
+		
+		let block = P(Block {
+			stmts: self.stmts.clone(),
+			expr: self.expr.clone(),
+			id: DUMMY_NODE_ID,
+			rules: BlockCheckMode::Default,
+			span: DUMMY_SP,
+		});
 
 		let body = pprust::block_to_string(&block);
 
@@ -149,7 +149,7 @@ impl ToString for Fn {
 /// # }
 /// ```
 pub fn build_fn<I>(name: &str, inputs: I) -> Fn 
-    where I: IntoIterator<Item=Arg> {
+	where I: IntoIterator<Item=Arg> {
 	Fn {
 		identifier: token::str_to_ident(name),
 		decl: FnDecl {
@@ -158,7 +158,7 @@ pub fn build_fn<I>(name: &str, inputs: I) -> Fn
 			variadic: false
 		},
 		generics: Generics::default(),
-        stmts: Vec::new(),
+		stmts: Vec::new(),
 		expr: None,
 		unsafety: Unsafety::Normal,
 		constness: Constness::NotConst

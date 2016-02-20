@@ -12,18 +12,16 @@ fn can_parse_http_method() {
 		"GET",
 		"POST",
 		"PUT",
-		"DELETE",
-		"STUFF"
-    ];
+		"DELETE"
+	];
 
 	let expected_methods = vec![
 		HttpVerb::Head,
 		HttpVerb::Get,
 		HttpVerb::Post,
 		HttpVerb::Put,
-		HttpVerb::Delete,
-		HttpVerb::Other("STUFF".to_string())
-    ];
+		HttpVerb::Delete
+	];
 
 	let methods: Vec<HttpVerb> = raw_methods.iter().map(|m| HttpVerb::parse(m)).collect();
 
@@ -59,8 +57,9 @@ fn can_parse_type() {
 		TypeRef { name: "double", opts: None },
 		TypeRef { name: "enum", opts: Some(vec!("OpA".to_string(), "OpB".to_string(), "OpC".to_string())) },
 		TypeRef { name: "stuff", opts: None }
-    ];
+	];
 
+	let opts = Some(vec!("OpA".to_string(), "OpB".to_string(), "OpC".to_string()));
 	let expected_types = vec![
 		Type::Str,
 		Type::Bool,
@@ -73,11 +72,11 @@ fn can_parse_type() {
 		Type::Number(NumberKind::Byte),
 		Type::Number(NumberKind::Float),
 		Type::Number(NumberKind::Double),
-		Type::Enum(vec!("OpA".to_string(), "OpB".to_string(), "OpC".to_string())),
-		Type::Other("stuff".to_string())
-    ];
+		Type::Enum(&opts),
+		Type::Other("stuff")
+	];
 
-	let types: Vec<Type> = raw_types.iter().map(|t| Type::parse(t.name, t.opts.clone())).collect();
+	let types: Vec<Type> = raw_types.iter().map(|t| Type::parse(t.name, &t.opts)).collect();
 
 	let mut success = true;
 	for i in 0..types.len() {
