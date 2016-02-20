@@ -309,16 +309,16 @@ pub fn url_push_decl<'a, I, K>(url_base: Ident, url_parts: I, param_parts: K) ->
 			.map(|&(ident, _)| ident);
 
 		let mut add_expr = len_add(
-			len_expr(url_base), 
-			url_iter.next().unwrap()
+			len_expr(ident_expr(url_base)), 
+			ident_expr(url_iter.next().unwrap())
 		);
 		for url_part in url_iter {
-			add_expr = len_add(add_expr, url_part);
+			add_expr = len_add(add_expr, ident_expr(url_part));
 		}
 
 		//Sum the url params
 		for url_param in param_parts {
-			add_expr = len_add(add_expr, url_param);
+			add_expr = len_add(add_expr, ident_expr(url_param));
 		}
 
 		//Get the declaration statement
@@ -384,26 +384,78 @@ pub fn url_push_decl<'a, I, K>(url_base: Ident, url_parts: I, param_parts: K) ->
 			),
 			span: DUMMY_SP
 		};
+
+		//TODO: Get str_push() stmts in order
+		//base, (lit, param)*
 		
 		let mut stmts = Vec::new();
 		stmts.push(url_decl);
 
-		stmts.push(push_stmt(ident, url_base));
-
-		//TODO: Get str_push() stmts in order
-		//base, (lit, param)*
+		stmts.push(push_stmt(ident, ident_expr_brw(url_base)));
 
 		for url_part in url_part_ids_tokens
 			.iter()
 			.map(|&(ident, _)| ident) {
-				stmts.push(push_stmt(ident, url_part));
+				stmts.push(push_stmt(ident, ident_expr(url_part)));
 		}
 
 		(ident, stmts)
 }
 
+/// Gets an ident as a borrow
+fn ident_expr_brw(item: Ident) -> P<Expr> {
+	P(Expr {
+		id: DUMMY_NODE_ID,
+		node: ExprKind::AddrOf(
+			Mutability::Immutable,
+			P(Expr {
+				id: DUMMY_NODE_ID,
+				node: ExprKind::Path(
+					None,
+					Path {
+						span: DUMMY_SP,
+						global: false,
+						segments: vec![
+							PathSegment {
+								identifier: item,
+								parameters: PathParameters::none()
+							}
+						]
+					}
+				),
+				span: DUMMY_SP,
+				attrs: None
+			})
+		),
+		span: DUMMY_SP,
+		attrs: None
+	})
+}
+
+/// Gets an ident as an expression
+fn ident_expr(item: Ident) -> P<Expr> {
+	P(Expr {
+		id: DUMMY_NODE_ID,
+		node: ExprKind::Path(
+			None,
+			Path {
+				span: DUMMY_SP,
+				global: false,
+				segments: vec![
+					PathSegment {
+						identifier: item,
+						parameters: PathParameters::none()
+					}
+				]
+			}
+		),
+		span: DUMMY_SP,
+		attrs: None
+	})
+}
+
 /// Gets an expression of the form 'item.len()' where item is an ident or string literal.
-fn len_expr(item: Ident) -> P<Expr> {
+fn len_expr(item: P<Expr>) -> P<Expr> {
 	P(Expr {
 		id: DUMMY_NODE_ID,
 		node: ExprKind::MethodCall(
@@ -412,26 +464,7 @@ fn len_expr(item: Ident) -> P<Expr> {
 				node: token::str_to_ident("len")
 			},
 			Vec::new(),
-			vec![
-				P(Expr {
-					id: DUMMY_NODE_ID,
-					node: ExprKind::Path(
-						None,
-						Path {
-							span: DUMMY_SP,
-							global: false,
-							segments: vec![
-								PathSegment {
-									identifier: item,
-									parameters: PathParameters::none()
-								}
-							]
-						}
-					),
-					span: DUMMY_SP,
-					attrs: None
-				})
-			]
+			vec![item]
 		),
 		span: DUMMY_SP,
 		attrs: None
@@ -439,7 +472,7 @@ fn len_expr(item: Ident) -> P<Expr> {
 }
 
 /// Gets an expression of the form 'url.push_str(item)' where item is an ident or string literal.
-fn push_stmt(url_ident: Ident, item: Ident) -> Stmt {
+fn push_stmt(url_ident: Ident, item: P<Expr>) -> Stmt {
 	Spanned {
 		span: DUMMY_SP,
 		node: StmtKind::Expr(
@@ -469,7 +502,8 @@ fn push_stmt(url_ident: Ident, item: Ident) -> Stmt {
 							),
 							span: DUMMY_SP,
 							attrs: None
-						})
+						}),
+						item
 					]
 				),
 				span: DUMMY_SP,
@@ -482,7 +516,7 @@ fn push_stmt(url_ident: Ident, item: Ident) -> Stmt {
 }
 
 /// Adds the result of `len_expr(to_add)` to the `current_add`, for chaining addition ops together.
-fn len_add(current_add: P<Expr>, to_add: Ident) -> P<Expr> {
+fn len_add(current_add: P<Expr>, to_add: P<Expr>) -> P<Expr> {
 	P(Expr {
 		id: DUMMY_NODE_ID,
 		node: ExprKind::Binary(
