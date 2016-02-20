@@ -3,5 +3,8 @@ fn my_fun(base: String, index: String, name: String) -> String{
     let mut url_fmtd =
         String::with_capacity(base.len() + "/".len() + "/_alias/".len() +
                                   index.len() + name.len());
+    url_fmtd.push_str();
+    url_fmtd.push_str();
+    url_fmtd.push_str();
     url_fmtd
 }

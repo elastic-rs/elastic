@@ -12,7 +12,7 @@ use serde_json::value;
 /// Elasticsearch API Endpoint.
 /// 
 /// Represents an endpoint on the Elasticsearch REST API.
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct Endpoint {
 	/// The name of the `Endpoint`.
 	/// 
@@ -31,7 +31,7 @@ pub struct Endpoint {
 }
 
 /// Represents a HTTP verb
-#[derive(PartialEq)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub enum HttpVerb {
 	/// HEAD
 	Head,
@@ -99,7 +99,7 @@ impl serde::de::Visitor for HttpVerbVisitor {
 }
 
 /// Represents a `Param` or `Part` type.
-#[derive(PartialEq)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub enum Type<'a> {
 	/// boolean
 	Bool,
@@ -122,7 +122,7 @@ pub enum Type<'a> {
 }
 
 /// Represents a number type
-#[derive(PartialEq)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub enum NumberKind {
 	/// long
 	Long,
@@ -166,7 +166,7 @@ impl <'a> Type<'a> {
 /// The HTTP body of an API request.
 /// 
 /// Represents the JSON body of an Elasticsearch request. Extra details are in the `Params` on the `Url`.
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Body {
 	required: Option<bool>,
 	/// A description of the `Body`.
@@ -199,7 +199,7 @@ impl Body {
 /// A potential `Url` for an API `Endpoint`.
 /// 
 /// Each `Url` may be a template containing `Parts` and `Params`.
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Url {
 	/// The default right side of the `Url`.
 	/// 
@@ -216,7 +216,7 @@ pub struct Url {
 }
 
 /// A `Url` parameter for an `Endpoint`.
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Part {
 	#[serde(rename="type")]
 	_type: String,
@@ -245,7 +245,7 @@ impl Part {
 }
 
 /// A `Body` parameter for an `Endpoint`.
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Param {
 	#[serde(rename="type")]
 	_type: Option<String>,

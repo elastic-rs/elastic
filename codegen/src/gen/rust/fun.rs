@@ -1,4 +1,3 @@
-use std::ops::Deref;
 use syntax::ast::*;
 use syntax::parse::token;
 use syntax::print::pprust;
@@ -8,6 +7,7 @@ use syntax::ptr::P;
 use super::{ ty, ty_ptr, TyPathOpts };
 
 /// A representation of a Rust fn.
+#[derive(Debug, Clone)]
 pub struct Fn {
 	/// The name of the fn.
 	pub identifier: Ident,
@@ -27,9 +27,9 @@ pub struct Fn {
 
 impl Fn {
 	/// Append a lifetime to the function generics.
-	pub fn add_lifetime(mut self, lifetime: &Lifetime) -> Fn {
+	pub fn add_lifetime(mut self, lifetime: Lifetime) -> Fn {
 		self.generics.lifetimes.push(LifetimeDef {
-			lifetime: lifetime.clone(),
+			lifetime: lifetime,
 			bounds: Vec::new()
 		});
 
@@ -72,7 +72,7 @@ impl Fn {
 	/// Append the body to existing statements.
 	/// 
 	/// This will update the return expression if the function declaration has a return type set.
-	pub fn add_body_block(mut self, mut body: P<Block>) -> Fn {
+	pub fn add_body_block(mut self, body: P<Block>) -> Fn {
 		//Append the body statements
 		self.stmts.extend(body.stmts.to_vec());
 

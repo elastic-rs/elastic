@@ -45,7 +45,7 @@ fn can_add_lifetime_to_fn() {
 		arg_ptr::<i32>("arg2", Mutability::Mutable, Some(lifetime)),
 		build_arg("arg3", build_ty_ptr("str", Mutability::Immutable, Some(lifetime)))
 	])
-    .add_lifetime(&lifetime);
+    .add_lifetime(lifetime);
 
 	assert_eq!(1, fun.generics.lifetimes.len());
 }

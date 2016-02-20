@@ -116,7 +116,7 @@ fn can_emit_rs_fn_with_fmt_body_to_file() {
 	let fmt = parse_fmt(url).unwrap();
 	
 	//Get the format statement
-	let (url_ident, url_stmt) = url_fmt_decl(&fmt, &base, &params);
+	let (url_ident, url_stmt) = url_fmt_decl(&fmt, base, params.to_vec());
 	
 	//Function signature from params
 	let mut fun = build_fn("my_fun", vec![arg_ident::<String>(base)])
@@ -162,7 +162,7 @@ fn can_emit_rs_fn_with_push_body_to_file() {
 	let parts = parse_path_parts(url).unwrap();
 	
 	//Get the push statements
-	let (url_ident, url_stmts) = url_push_decl(&base, &parts, &params);
+	let (url_ident, url_stmts) = url_push_decl(base, parts.iter().map(|p| p.as_str()), params.to_vec());
 
 	//Function signature from params
 	let mut fun = build_fn("my_fun", vec![arg_ident::<String>(base)])
