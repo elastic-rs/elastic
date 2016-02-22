@@ -3,13 +3,80 @@
 //! Utilities for parsing the Elasticsearch API spec to Rust source code.
 
 use std::collections::BTreeMap;
+use std::error;
+use std::fmt;
 use syntax::ast::*;
 use syntax::parse::token;
 use syntax::codemap::{ Spanned, DUMMY_SP };
 use syntax::ptr::P;
 use ::api::ast as api;
 use ::gen::rust::{ ty, build_ty, TyPathOpts };
-use super::{ parse_path_params, parse_mod_path, ModPathParseError };
+use super::{ parse_path_params, parse_mod_path, ApiParseError };
+
+/// A single function for a url path.
+pub struct UrlFn<'a> {
+	/// The name of the function.
+	pub name: String,
+	/// The url path for the function.
+	pub path: &'a str,
+	/// The replacement parts in the url path.
+	pub parts: BTreeMap<String, &'a api::Part>
+}
+
+#[derive(Debug)]
+enum ApiGenErrorKind<'a> {
+	Parse(ApiParseError<'a>),
+	Other(String)
+}
+
+/// Represents an error encountered during parsing.
+/// 
+/// This could include errors while reading the file or deserialising the contents.
+#[derive(Debug)]
+pub struct ApiGenError<'a> {
+	kind: ApiGenErrorKind<'a>
+}
+
+impl <'a> fmt::Display for ApiGenError<'a> {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		match self.kind {
+			ApiGenErrorKind::Parse(ref err) => write!(f, "Parse error: {:?}", err),
+			ApiGenErrorKind::Other(ref err) => write!(f, "Error: {}", err)
+		}
+	}
+}
+
+impl <'a> error::Error for ApiGenError<'a> {
+	fn description(&self) -> &str {
+		match self.kind {
+			ApiGenErrorKind::Parse(_) => "Error parsing API data",
+			ApiGenErrorKind::Other(ref err) => &err[..]
+		}
+	}
+
+	fn cause(&self) -> Option<&error::Error> {
+		match self.kind {
+			ApiGenErrorKind::Parse(_) => None,
+			ApiGenErrorKind::Other(_) => None
+		}
+	}
+}
+
+impl <'a> From<String> for ApiGenError<'a> {
+	fn from(err: String) -> ApiGenError<'a> {
+		ApiGenError {
+			kind: ApiGenErrorKind::Other(err)
+		}
+	}
+}
+
+impl <'a> From<ApiParseError<'a>> for ApiGenError<'a> {
+	fn from(err: ApiParseError<'a>) -> ApiGenError<'a> {
+		ApiGenError {
+			kind: ApiGenErrorKind::Parse(err)
+		}
+	}
+}
 
 impl api::Endpoint {
 	/// Get the Rust doc comment for this endpoint.
@@ -40,58 +107,90 @@ impl api::Endpoint {
 			}
 		}
 	}
-	
-	/// Get the module name for all functions in this endpoint.
-	pub fn get_mod_path(&self) -> Result<Vec<String>, ModPathParseError> {
-		parse_mod_path(match self.name {
+
+	/// Gets the name of the Endpoint if it's set or returns an empty string.
+	pub fn get_name<'a>(&'a self) -> &'a str {
+		match self.name {
 			Some(ref n) => n,
 			None => ""
-		})
+		}
 	}
-}
+	
+	/// Get the module name for all functions in this endpoint.
+	/// 
+	/// The name is a hierarchy of modules, which are determined by splitting the endpoint name on '.'.
+	/// So for example, the `indices.shard_stores` endpoint has the following module path:
+	/// 
+	/// - `indices`
+	/// - `shard_stores`
+	pub fn get_mod_path(&self) -> Result<Vec<String>, ApiParseError> {
+		parse_mod_path(self.get_name())
+	}
 
-/// A single function for a url path.
-pub struct UrlFn<'a> {
-	/// The name of the function.
-	pub name: &'a str,
-	/// The url path for the function.
-	pub path: &'a str,
-	/// The replacement parts in the url path.
-	pub parts: BTreeMap<String, &'a api::Part>
-}
-
-impl api::Url {
 	/// Get the function definitions for this endpoint.
 	/// 
 	/// Each possible url path is considered a function.
-	pub fn get_fns<'a>(&'a self) -> Vec<Option<UrlFn<'a>>> {
-		self.paths.iter()
-			.map(|p| {
-				let mut parts = BTreeMap::new();
-				
-				let params = parse_path_params(p);
-				if params.is_err() {
-					return None
-				}
-				
-				for param in params.unwrap() {
-					match self.parts.get(&param) {
-						Some(part) => {
-							let _ = parts.insert(param, part);
-						},
-						None => ()
-					};
-				}
+	/// Names take the (rather verbose) form: `{http_verb}_{endpoint_name}_{param_1}_{param_n}`.
+	/// So for example, the `count` endpoint will produce the following `fn` names:
+	/// 
+	/// - `get_count`
+	/// - `post_count`
+	/// - `get_count_index`
+	/// - `post_count_index`
+	/// - `get_count_index_type`
+	/// - `post_count_index_type`
+	/// 
+	/// This is to try and prevent collisions with the names where not a lot of info about each endpoint is available.
+	pub fn get_fns<'a>(&'a self) -> Result<Vec<UrlFn<'a>>, ApiGenError> {
+		let mut fns = Vec::new();
+		for path in &self.url.paths {
+			//Parse the params used by this path
+			let mut fn_parts = BTreeMap::new();
+			let params = try!(parse_path_params(&path));
 
-				//TODO: get name for the fn
-				
-				Some(UrlFn {
-					name: "",
-					path: p,
-					parts: parts
+			for param in params.iter() {
+				let param = param.to_owned();
+				match self.url.parts.get(&param) {
+					Some(part) => {
+						let _ = fn_parts.insert(param, part);
+					},
+					None => ()
+				};
+			}
+
+			//Return a function for each method on the url
+			for method in &self.methods {
+				let method_name = match *method {
+					api::HttpVerb::Head => "head",
+					api::HttpVerb::Post => "post",
+					api::HttpVerb::Put => "put",
+					api::HttpVerb::Patch => "patch",
+					api::HttpVerb::Delete => "delete",
+					_ => "get"
+				};
+
+				let path_name = match params.len() {
+					//No params, return default name
+					0 => self.get_name().to_string(),
+					//If params are set, use to build up a unique fn name
+					_ => {
+						let param_names = params.to_vec().join("_");
+						format!("{}_{}", self.get_name(), param_names)
+					}
+				};
+
+				let name = format!("{}_{}", method_name, path_name);
+
+				//Names take the (rather verbose) form {http_verb}_{endpoint_name}_{param_1}_{param_n}
+				fns.push(UrlFn {
+					name: name,
+					path: &path,
+					parts: fn_parts.clone()
 				})
-			})
-		.collect()
+			}
+		}
+
+		Ok(fns)
 	}
 }
 

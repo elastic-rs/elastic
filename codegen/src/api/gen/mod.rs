@@ -9,30 +9,27 @@ use chomp;
 use chomp::*;
 
 /// Rexport of the chomp `ParseError`.
-pub type UrlParseError<'a> = chomp::ParseError<'a, u8, chomp::parsers::Error<u8>>;
-
-/// Rexport of the chomp `ParseError`.
-pub type ModPathParseError<'a> = chomp::ParseError<'a, u8, chomp::parsers::Error<u8>>;
+pub type ApiParseError<'a> = chomp::ParseError<'a, u8, chomp::parsers::Error<u8>>;
 
 /// Finds the Params that make up an Elasticsearch URL Part.
-pub fn parse_path_params(url: &str) -> Result<Vec<String>, UrlParseError> {
+pub fn parse_path_params(url: &str) -> Result<Vec<String>, ApiParseError> {
 	parse_only(|i| many(i, |i| parse_path_param(i)), url.as_bytes())
 }
 
 /// Finds the Parts that make up an Elasticsearch URL.
-pub fn parse_path_parts(url: &str) -> Result<Vec<String>, UrlParseError> {
+pub fn parse_path_parts(url: &str) -> Result<Vec<String>, ApiParseError> {
 	parse_only(|i| many(i, |i| parse_path_part(i)), url.as_bytes())
 }
 
 /// Builds a format string that can be used by the `format!` macro.
-pub fn parse_fmt(url: &str) -> Result<String, UrlParseError> {
+pub fn parse_fmt(url: &str) -> Result<String, ApiParseError> {
 	let res: Vec<String> = try!(parse_only(|i| many(i, |i| parse_fmt_seg(i)), url.as_bytes()));
 
 	Ok(res.join(""))
 }
 
 /// Finds the module path tree for an Elasticsearch Endpoint.
-pub fn parse_mod_path(path: &str) -> Result<Vec<String>, ModPathParseError> {
+pub fn parse_mod_path(path: &str) -> Result<Vec<String>, ApiParseError> {
 	parse_only(|i| many(i, |i| parse_mod_path_part(i)), path.as_bytes())
 }
 
