@@ -356,6 +356,8 @@ pub fn url_fmt_decl<I>(url: &str, url_base: Ident, param_parts: I) -> (Ident, St
 /// url_fmtd
 /// ```
 /// 
+/// Right now, this method expects that param idents are `String`s. This will be updated in the future.
+/// 
 /// # Examples
 /// 
 /// ```
@@ -386,26 +388,18 @@ pub fn url_push_decl<'a, I, K>(url_base: Ident, url_parts: I, param_parts: K) ->
 		let ident = token::str_to_ident("url_fmtd");
 
 		//Get the string literal params
-		let url_part_ids_tokens: Vec<(Ident, TokenTree)> = url_parts
+		let url_part_ids: Vec<Ident> = url_parts
 			.into_iter()
-			.map(|p| {(
-				token::str_to_ident(&(format!("\"{}\"", p))), 
-				TokenTree::Token(
-					DUMMY_SP, token::Token::Literal(
-						token::Lit::Str_(token::intern(p)),
-						None
-					)
-				)
-			)})
+			.map(|p| token::str_to_ident(&(format!("\"{}\"", p))))
 			.collect();
 
 		//Get the length expression
 		//This is the sum of all parts and args
 
 		//Sum the url parts
-		let mut url_iter = url_part_ids_tokens
+		let mut url_iter = url_part_ids
 			.iter()
-			.map(|&(ident, _)| ident);
+			.map(|&ident| ident);
 
 		let mut add_expr = len_add(
 			len_expr(ident_expr(url_base)), 
@@ -416,7 +410,9 @@ pub fn url_push_decl<'a, I, K>(url_base: Ident, url_parts: I, param_parts: K) ->
 		}
 
 		//Sum the url params
+		let mut param_part_ids = Vec::new();
 		for url_param in param_parts {
+			param_part_ids.push(url_param.clone());
 			add_expr = len_add(add_expr, ident_expr(url_param));
 		}
 
@@ -484,18 +480,33 @@ pub fn url_push_decl<'a, I, K>(url_base: Ident, url_parts: I, param_parts: K) ->
 			span: DUMMY_SP
 		};
 
-		//TODO: Get str_push() stmts in order
-		//base, (lit, param)*
-		
 		let mut stmts = Vec::new();
-		stmts.push(url_decl);
 
+		//Push the declaration statement and the base url
+		stmts.push(url_decl);
 		stmts.push(push_stmt(ident, ident_expr_brw(url_base)));
 
-		for url_part in url_part_ids_tokens
-			.iter()
-			.map(|&(ident, _)| ident) {
-				stmts.push(push_stmt(ident, ident_expr(url_part)));
+		//Thread through each url part and param, pushing a part, then a param to keep the url in order
+		let (mut part_iter, mut param_iter) = (
+			url_part_ids.iter().map(|&ident| ident),
+			param_part_ids.iter().map(|&ident| ident)
+		);
+		let mut cont = true;
+		while cont {
+			let part = part_iter.next();
+			let param = param_iter.next();
+
+			match (part, param) {
+				//If there's a part and a param, push the part first
+				(Some(part), Some(param)) => {
+					stmts.push(push_stmt(ident, ident_expr(part)));
+					stmts.push(push_stmt(ident, ident_expr_brw(param)));
+				},
+				(Some(part), None) => stmts.push(push_stmt(ident, ident_expr(part))),
+				(None, Some(param)) => stmts.push(push_stmt(ident, ident_expr_brw(param))),
+				//If there are no url parts or params left, stop iterating
+				(None, None) => cont = false
+			}
 		}
 
 		(ident, stmts)
