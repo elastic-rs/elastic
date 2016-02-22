@@ -176,7 +176,7 @@ pub fn build_arg_ident(name: Ident, ty: Ty) -> Arg {
 		ty: P(ty),
 		pat: P(Pat {
 			id: DUMMY_NODE_ID,
-			node: PatIdent(
+			node: PatKind::Ident(
 				BindingMode::ByValue(Mutability::Immutable),
 				Spanned {
 					span: DUMMY_SP,

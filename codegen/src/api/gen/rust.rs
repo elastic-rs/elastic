@@ -191,7 +191,7 @@ pub fn url_fmt_decl<I>(url: &str, url_base: Ident, param_parts: I) -> (Ident, St
 						P(Local {
 							pat: P(Pat {
 								id: DUMMY_NODE_ID,
-								node: PatIdent(
+								node: PatKind::Ident(
 									BindingMode::ByValue(Mutability::Immutable),
 									Spanned {
 										span: DUMMY_SP,
@@ -330,7 +330,7 @@ pub fn url_push_decl<'a, I, K>(url_base: Ident, url_parts: I, param_parts: K) ->
 						P(Local {
 							pat: P(Pat {
 								id: DUMMY_NODE_ID,
-								node: PatIdent(
+								node: PatKind::Ident(
 									BindingMode::ByValue(Mutability::Mutable),
 									Spanned {
 										span: DUMMY_SP,
