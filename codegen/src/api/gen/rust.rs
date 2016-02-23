@@ -179,6 +179,7 @@ impl api::Endpoint {
 					}
 				};
 
+				//TODO: Don't add endpoint name. Expect it will live in a unique module
 				let name = format!("{}_{}", method_name, path_name);
 
 				//Names take the (rather verbose) form {http_verb}_{endpoint_name}_{param_1}_{param_n}
@@ -383,6 +384,7 @@ pub fn url_fmt_decl<I>(url: &str, url_base: Ident, param_parts: I) -> (Ident, St
 /// );
 /// # }
 /// ```
+//TODO: Pass (Ident, Ty) to check if String or str. This will determine how push_str is called
 pub fn url_push_decl<'a, I, K>(url_base: Ident, url_parts: I, param_parts: K) -> (Ident, Vec<Stmt>) 
 	where I: IntoIterator<Item=&'a str>, K: IntoIterator<Item=Ident> {
 		let ident = token::str_to_ident("url_fmtd");
