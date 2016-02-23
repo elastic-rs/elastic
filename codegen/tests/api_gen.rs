@@ -126,22 +126,22 @@ fn can_get_rust_doc_comment_for_endpoint() {
 #[test]
 fn can_get_mod_name_for_endpoint() {
 		let endpoint = Endpoint {
-					name: Some("index".to_string()),
-					documentation: String::new(),
-					methods: Vec::new(),
-					body: None,
-					url: Url {
-							path: String::new(),
-							paths: Vec::new(),
-							parts: BTreeMap::new(),
-							params: BTreeMap::new()
-					}
+            name: Some("index".to_string()),
+            documentation: String::new(),
+            methods: Vec::new(),
+            body: None,
+            url: Url {
+                    path: String::new(),
+                    paths: Vec::new(),
+                    parts: BTreeMap::new(),
+                    params: BTreeMap::new()
+            }
 		};
 		
 		let path = endpoint.get_mod_path().unwrap();
 		
 		let expected_path = vec![
-				"index".to_string()
+			"index".to_string()
 		];
 
 		let mut success = true;

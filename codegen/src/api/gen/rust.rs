@@ -403,17 +403,17 @@ pub fn url_push_decl<'a, I, K>(url_base: Ident, url_parts: I, param_parts: K) ->
 
 		let mut add_expr = len_add(
 			len_expr(ident_expr(url_base)), 
-			ident_expr(url_iter.next().unwrap())
+			len_of_ident_expr(url_iter.next().unwrap())
 		);
 		for url_part in url_iter {
-			add_expr = len_add(add_expr, ident_expr(url_part));
+			add_expr = len_add(add_expr, len_of_ident_expr(url_part));
 		}
 
 		//Sum the url params
 		let mut param_part_ids = Vec::new();
 		for url_param in param_parts {
 			param_part_ids.push(url_param.clone());
-			add_expr = len_add(add_expr, ident_expr(url_param));
+			add_expr = len_add(add_expr, len_expr(ident_expr(url_param)));
 		}
 
 		//Get the declaration statement
@@ -564,6 +564,28 @@ fn ident_expr(item: Ident) -> P<Expr> {
 	})
 }
 
+/// Gets the length of an ident string as a literal int
+/// 
+/// This method expects the ident is quoted, so 2 is subtracted from the length.
+fn len_of_ident_expr(item: Ident) -> P<Expr> {
+    let len = match item.name.as_str().len() {
+        x if x <= 2 => 0,
+        x => x - 2  
+    };
+    
+    P(Expr {
+		id: DUMMY_NODE_ID,
+		node: ExprKind::Lit(
+			P(Spanned {
+                span: DUMMY_SP,
+                node: LitKind::Int(len as u64, LitIntType::Unsuffixed)
+            })
+		),
+		span: DUMMY_SP,
+		attrs: None
+	})
+}
+
 /// Gets an expression of the form 'item.len()' where item is an ident or string literal.
 fn len_expr(item: P<Expr>) -> P<Expr> {
 	P(Expr {
@@ -635,7 +657,7 @@ fn len_add(current_add: P<Expr>, to_add: P<Expr>) -> P<Expr> {
 				node: BinOpKind::Add
 			},
 			current_add,
-			len_expr(to_add)
+			to_add
 		),
 		span: DUMMY_SP,
 		attrs: None
