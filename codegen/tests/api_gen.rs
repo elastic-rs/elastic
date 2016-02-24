@@ -126,7 +126,7 @@ fn can_get_rust_doc_comment_for_endpoint() {
 #[test]
 fn can_get_mod_name_for_endpoint() {
 		let endpoint = Endpoint {
-            name: Some("index".to_string()),
+            name: Some("bulk".to_string()),
             documentation: String::new(),
             methods: Vec::new(),
             body: None,
@@ -141,7 +141,7 @@ fn can_get_mod_name_for_endpoint() {
 		let path = endpoint.get_mod_path().unwrap();
 		
 		let expected_path = vec![
-			"index".to_string()
+			"bulk".to_string()
 		];
 
 		let mut success = true;
