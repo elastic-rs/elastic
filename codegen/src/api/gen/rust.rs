@@ -123,8 +123,8 @@ impl api::Endpoint {
 	/// 
 	/// - `indices`
 	/// - `shard_stores`
-	pub fn get_mod_path(&self) -> Result<Vec<String>, ApiParseError> {
-		parse_mod_path(self.get_name())
+	pub fn get_mod_path(&self) -> Result<Vec<String>, ApiGenError> {
+		parse_mod_path(self.get_name()).map_err(|e| e.into())
 	}
 
 	/// Get the function definitions for this endpoint.

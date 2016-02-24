@@ -1,8 +1,6 @@
 #![cfg(feature = "codegen")]
 #![feature(rustc_private)]
 
-#[macro_use]
-extern crate chomp;
 extern crate syntax;
 extern crate aster;
 extern crate elastic_codegen;
@@ -84,7 +82,7 @@ fn gen_from_source(source_dir: &str, dest_dir: &str) -> Result<(), String> {
                 "mod".to_string()
             },
             1 => {
-                endpoint.get_name().to_string()
+                "mod".to_string()
             },
             _ => try!(path.pop().ok_or(format!("Error parsing path filename for {}", endpoint.get_name())))
         };
