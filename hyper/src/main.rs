@@ -4,7 +4,7 @@
 extern crate syntax;
 extern crate aster;
 extern crate elastic_codegen;
-extern crate scan_dir;
+extern crate walkdir;
 
 use std::error::Error;
 use std::fs;
@@ -21,13 +21,12 @@ use elastic_codegen::api::gen::rust::*;
 use elastic_codegen::gen::rust::*;
 use elastic_codegen::emit::*;
 use elastic_codegen::emit::rust::*;
-use scan_dir::ScanDir;
+use walkdir::WalkDir;
 
 use std::env;
 
 macro_rules! get_ctxt {
 	($cx:ident, $ps:ident, $fgc:ident) => {
-		
 		$cx = ExtCtxt::new(
 			&$ps, vec![],
 			syntax::ext::expand::ExpansionConfig::default("qquote".to_string()),
@@ -110,32 +109,48 @@ fn gen_from_source(source_dir: &str, dest_dir: &str) -> Result<(), String> {
         try!(src_file.sync_all().map_err(|e| e.description().to_string()));
         
         //5. TODO: Generate and emit source functions
+        
+        //6. Emit mod header if file isn't mod
+        if !file_is_mod {
+            let mod_path = format!("{}/{}.rs", dir_path, "mod");
+            let mut mod_file = match OpenOptions::new().write(true).append(true).open(&mod_path) {
+                Ok(f) => f,
+                Err(_) => File::create(&mod_path).unwrap()
+            };
+            
+            try!(emitter.emit_str(&format!("pub mod {};\n", file), &mut mod_file).map_err(|e| e.description().to_string()));
+            try!(mod_file.sync_all().map_err(|e| e.description().to_string()));
+        }
     }
     
-    //Pass through each folder and update mod files as needed
-    //TODO: Make this work. Issues with permissions?
-    ScanDir::dirs().walk(dest_dir, |iter| {
-        for (entry, name) in iter {
-            //For each dir, emit a mod.rs file to the parent
-            if let Some(parent) = entry.path().parent() {
-                let mut parent = parent.clone();
-                
-                let mod_path = format!("{}/{}.rs", parent.to_str().unwrap(), "mod");
-                println!("Mod has full path {:?}", &mod_path);
-                let mod_file = match OpenOptions::new().write(true).append(true).open(&mod_path) {
-                    Ok(f) => {
-                        println!("Opened file...");
-                        f
-                    },
-                    Err(_) => {
-                        println!("Creating file...");
-                        File::create(&parent).unwrap()
-                    }
-                };
-            }
-            println!("File {:?} has full path {:?}", name, entry.path());
-        }
-    }).unwrap();
+    File::create("src/genned/mod.rs").unwrap();
     
+    let mut mod_paths = Vec::new();
+    
+    for entry in WalkDir::new(dest_dir).min_depth(1).max_open(1).into_iter().filter_map(|e| e.ok()) {
+        let meta = entry.metadata().unwrap();
+        if meta.is_dir() {
+            if let Some(parent) = entry.path().parent() {
+                let mut parent = parent;
+                let name = entry.file_name();
+                
+                mod_paths.push((
+                    (format!("{}/{}.rs", parent.to_str().unwrap().to_string(), "mod")), 
+                    name.to_str().unwrap().to_string()
+                ));
+            }
+        }
+    }
+    
+    for (path, name) in mod_paths {
+        let mut mod_file = match OpenOptions::new().write(true).append(true).open(&path) {
+            Ok(f) => f,
+            Err(_) => File::create(&path).unwrap()
+        };
+        
+        try!(emitter.emit_str(&format!("pub mod {};\n", name), &mut mod_file).map_err(|e| e.description().to_string()));
+        try!(mod_file.sync_all().map_err(|e| e.description().to_string()));
+    }
+
     Ok(())
 }
