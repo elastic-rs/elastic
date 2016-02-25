@@ -219,17 +219,18 @@ fn can_get_url_fns_from_paths() {
 		.collect();
 
 	let expected_fns = vec![
-		"get_count",
-		"post_count",
-		"get_count_index",
-		"post_count_index",
-		"get_count_index_type",
-		"post_count_index_type"
+		"get",
+		"post",
+		"get_index",
+		"post_index",
+		"get_index_type",
+		"post_index_type"
 	];
 
 	let mut success = true;
 	for i in 0..fn_names.len() {
 		if expected_fns[i] != &fn_names[i] {
+            println!("{} {}", expected_fns[i], &fn_names[i]);
 			success = false;
 			break;
 		}

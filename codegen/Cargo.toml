@@ -7,4 +7,3 @@ authors = ["Ashley Mannix <ashleymannix@live.com.au>"]
 serde = "*"
 serde_json = "*"
 serde_macros = "*"
-chomp = "*"

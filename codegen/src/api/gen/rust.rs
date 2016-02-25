@@ -24,8 +24,8 @@ pub struct UrlFn<'a> {
 }
 
 #[derive(Debug)]
-enum ApiGenErrorKind<'a> {
-	Parse(ApiParseError<'a>),
+enum ApiGenErrorKind {
+	Parse(ApiParseError),
 	Other(String)
 }
 
@@ -33,11 +33,11 @@ enum ApiGenErrorKind<'a> {
 /// 
 /// This could include errors while reading the file or deserialising the contents.
 #[derive(Debug)]
-pub struct ApiGenError<'a> {
-	kind: ApiGenErrorKind<'a>
+pub struct ApiGenError {
+	kind: ApiGenErrorKind
 }
 
-impl <'a> fmt::Display for ApiGenError<'a> {
+impl fmt::Display for ApiGenError {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		match self.kind {
 			ApiGenErrorKind::Parse(ref err) => write!(f, "Parse error: {:?}", err),
@@ -46,7 +46,7 @@ impl <'a> fmt::Display for ApiGenError<'a> {
 	}
 }
 
-impl <'a> error::Error for ApiGenError<'a> {
+impl error::Error for ApiGenError {
 	fn description(&self) -> &str {
 		match self.kind {
 			ApiGenErrorKind::Parse(_) => "Error parsing API data",
@@ -62,18 +62,10 @@ impl <'a> error::Error for ApiGenError<'a> {
 	}
 }
 
-impl <'a> From<String> for ApiGenError<'a> {
-	fn from(err: String) -> ApiGenError<'a> {
+impl From<String> for ApiGenError {
+	fn from(err: String) -> ApiGenError {
 		ApiGenError {
 			kind: ApiGenErrorKind::Other(err)
-		}
-	}
-}
-
-impl <'a> From<ApiParseError<'a>> for ApiGenError<'a> {
-	fn from(err: ApiParseError<'a>) -> ApiGenError<'a> {
-		ApiGenError {
-			kind: ApiGenErrorKind::Parse(err)
 		}
 	}
 }
@@ -133,12 +125,12 @@ impl api::Endpoint {
 	/// Names take the (rather verbose) form: `{http_verb}_{endpoint_name}_{param_1}_{param_n}`.
 	/// So for example, the `count` endpoint will produce the following `fn` names:
 	/// 
-	/// - `get_count`
-	/// - `post_count`
-	/// - `get_count_index`
-	/// - `post_count_index`
-	/// - `get_count_index_type`
-	/// - `post_count_index_type`
+	/// - `get`
+	/// - `post`
+	/// - `get_index`
+	/// - `post_index`
+	/// - `get_index_type`
+	/// - `post_index_type`
 	/// 
 	/// This is to try and prevent collisions with the names where not a lot of info about each endpoint is available.
 	pub fn get_fns<'a>(&'a self) -> Result<Vec<UrlFn<'a>>, ApiGenError> {
@@ -171,16 +163,12 @@ impl api::Endpoint {
 
 				let path_name = match params.len() {
 					//No params, return default name
-					0 => self.get_name().to_string(),
+					0 => String::new(),
 					//If params are set, use to build up a unique fn name
-					_ => {
-						let param_names = params.to_vec().join("_");
-						format!("{}_{}", self.get_name(), param_names)
-					}
+					_ => format!("_{}", params.to_vec().join("_"))
 				};
 
-				//TODO: Don't add endpoint name. Expect it will live in a unique module
-				let name = format!("{}_{}", method_name, path_name);
+				let name = format!("{}{}", method_name, path_name);
 
 				//Names take the (rather verbose) form {http_verb}_{endpoint_name}_{param_1}_{param_n}
 				fns.push(UrlFn {

@@ -44,6 +44,7 @@ macro_rules! get_ctxt {
 	};
 }
 
+//TODO: Move this into its own crate (not on crates.io though)
 fn main() {
     //TODO: Do this properly with getopts
     let mut args = env::args();
@@ -112,6 +113,7 @@ fn gen_from_source(source_dir: &str, dest_dir: &str) -> Result<(), String> {
     }
     
     //Pass through each folder and update mod files as needed
+    //TODO: Make this work. Issues with permissions?
     ScanDir::dirs().walk(dest_dir, |iter| {
         for (entry, name) in iter {
             //For each dir, emit a mod.rs file to the parent

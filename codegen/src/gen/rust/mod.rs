@@ -11,18 +11,7 @@ pub use self::item::*;
 pub use self::fun::*;
 pub use self::ty::*;
 
-use std::str;
-use chomp::*;
-
-fn parse_path_segment(i: Input<u8>) -> U8Result<String> {
-	parse!{i;
-		//Trim leading ':'
-		let _ = take_while(|c| c == b':');
-		let seg = take_while1(|c| c != b':');
-
-		ret str::from_utf8(seg).unwrap().to_string()
-	}
-}
+use ::parsers::*;
 
 /// Parses a Rust path to its segments.
 /// 
@@ -38,5 +27,21 @@ fn parse_path_segment(i: Input<u8>) -> U8Result<String> {
 /// let parsed = parse_path("crate::mod_a::mod_b::fn");
 /// ```
 pub fn parse_path(path: &str) -> Vec<String> {
-	parse_only(|i| many(i, |i| parse_path_segment(i)), path.as_bytes()).unwrap()
+	let mut parts = Vec::new();
+    parse_path_parts(path.as_bytes(), &mut parts);
+    
+    parts
+}
+
+fn parse_path_parts(path: &[u8], parts: &mut Vec<String>) {
+	if path.len() == 0 {
+		return;
+	}
+    
+    let trim_colons = shift_while(path, |c| c == b':');
+    let (remainder, seg) = take_while1(trim_colons, |c| c != b':');
+    
+    parts.push(seg.to_string());
+    
+    parse_path_parts(remainder, parts);
 }
