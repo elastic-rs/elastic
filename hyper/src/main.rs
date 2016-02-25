@@ -123,8 +123,6 @@ fn gen_from_source(source_dir: &str, dest_dir: &str) -> Result<(), String> {
         }
     }
     
-    File::create("src/genned/mod.rs").unwrap();
-    
     let mut mod_paths = Vec::new();
     
     for entry in WalkDir::new(dest_dir).min_depth(1).max_open(1).into_iter().filter_map(|e| e.ok()) {
