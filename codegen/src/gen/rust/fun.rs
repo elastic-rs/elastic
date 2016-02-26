@@ -114,9 +114,7 @@ impl ToString for Fn {
 			span: DUMMY_SP,
 		});
 
-		let body = pprust::block_to_string(&block);
-
-		decl + &body
+		format!("{}{}", pprust::visibility_qualified(Visibility::Public, &decl), pprust::block_to_string(&block))
 	}
 }
 
