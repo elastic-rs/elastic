@@ -54,6 +54,12 @@ impl Fn {
 		self.decl.output = FunctionRetTy::Ty(P(ty::<T>(TyPathOpts::default())));
 		self
 	}
+    
+    /// Set the return type of the function.
+	pub fn set_return_ty(mut self, ty: Ty) -> Fn {
+		self.decl.output = FunctionRetTy::Ty(P(ty));
+		self
+	}
 
 	/// Append a statement to the function body.
 	pub fn add_body_stmt(mut self, stmt: Stmt) -> Fn {

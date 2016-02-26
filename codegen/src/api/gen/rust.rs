@@ -17,7 +17,9 @@ use super::{ parse_path_params, parse_mod_path, ApiParseError };
 pub struct UrlFn<'a> {
 	/// The name of the function.
 	pub name: String,
-	/// The url path for the function.
+	/// The HTTP verb for the fn url
+    pub method: &'a api::HttpVerb,
+    /// The url path for the function.
 	pub path: &'a str,
 	/// The replacement parts in the url path.
 	pub parts: BTreeMap<String, &'a api::Part>
@@ -152,13 +154,13 @@ impl api::Endpoint {
 
 			//Return a function for each method on the url
 			for method in &self.methods {
-				let method_name = match *method {
-					api::HttpVerb::Head => "head",
-					api::HttpVerb::Post => "post",
-					api::HttpVerb::Put => "put",
-					api::HttpVerb::Patch => "patch",
-					api::HttpVerb::Delete => "delete",
-					_ => "get"
+				let (method_name, m) = match *method {
+					api::HttpVerb::Head => ("head", method),
+					api::HttpVerb::Post => ("post", method),
+					api::HttpVerb::Put => ("put", method),
+					api::HttpVerb::Patch => ("patch", method),
+					api::HttpVerb::Delete => ("delete", method),
+					_ => ("get", method)
 				};
 
 				let path_name = match params.len() {
@@ -173,6 +175,7 @@ impl api::Endpoint {
 				//Names take the (rather verbose) form {http_verb}_{endpoint_name}_{param_1}_{param_n}
 				fns.push(UrlFn {
 					name: name,
+                    method: m,
 					path: &path,
 					parts: fn_parts.clone()
 				})
