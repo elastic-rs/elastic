@@ -1,5 +1,5 @@
 #![cfg(feature = "codegen")]
-#![feature(rustc_private)]
+#![feature(rustc_private, quote)]
 
 extern crate syntax;
 extern crate aster;
@@ -19,6 +19,7 @@ use elastic_codegen::api::ast::*;
 use elastic_codegen::api::parse;
 use elastic_codegen::api::gen::rust::*;
 use elastic_codegen::gen::rust::*;
+use elastic_codegen::api::gen::{ parse_path_parts, parse_path_params, parse_fmt };
 use elastic_codegen::emit::*;
 use elastic_codegen::emit::rust::*;
 use walkdir::WalkDir;
@@ -64,12 +65,17 @@ fn gen_from_source(source_dir: &str, dest_dir: &str) -> Result<(), String> {
     let _ = fs::remove_dir_all(dest_dir).map_err(|e| e.description().to_string());
     let _ = fs::create_dir_all(dest_dir).map_err(|e| e.description().to_string());
     
-    //Create an emitter
+    //Create an emitter and Execution Context
     let ps = syntax::parse::ParseSess::new();
 	let mut fgc = vec![];
 	let mut cx;
 	get_ctxt!(cx, ps, fgc);
-    let emitter = RustEmitter::new(cx);
+    
+    let ps = syntax::parse::ParseSess::new();
+	let mut fgc = vec![];
+	let mut _cx;
+	get_ctxt!(_cx, ps, fgc);
+    let emitter = RustEmitter::new(_cx);
     
     //Get the spec source
     println!("parsing source spec files...");
@@ -109,8 +115,37 @@ fn gen_from_source(source_dir: &str, dest_dir: &str) -> Result<(), String> {
         try!(src_file.sync_all().map_err(|e| e.description().to_string()));
         
         //5. Generate and emit source functions
-        for fun in endpoint.get_fns() {
-            println!("{}", fun.name);
+        let fun_sigs = try!(endpoint.get_fns().map_err(|e| e.description().to_string()));
+        for fun in fun_sigs {            
+            println!("emitting fn {}", &fun.name);
+            
+            //The base url argument
+            let base = token::str_to_ident("base");
+            
+            let params: Vec<Ident> = parse_path_params(&fun.path)
+                .unwrap().iter()
+                .map(|p| token::str_to_ident(&p))
+                .collect();
+            let parts = parse_path_parts(&fun.path).unwrap();
+            
+            //Get the push statements
+            let (url_ident, url_stmts) = url_push_decl(base, parts.iter().map(|p| p.as_str()), params.to_vec());
+
+            //Function signature from params
+            let mut rs_fun = build_fn(&fun.name, vec![arg_ident::<String>(base)])
+            .add_args(params
+                .iter()
+                .map(|p: &Ident| arg_ident::<String>(p.clone()))
+            )
+            .set_return::<String>()
+            .add_body_stmts(url_stmts)
+            .add_body_block(quote_block!(&mut cx, {
+                $url_ident
+            }));
+            
+            try!(emitter.emit(&rs_fun, &mut src_file).map_err(|e| e.description().to_string()));
+            try!(emitter.emit_str(&"\n", &mut src_file).map_err(|e| e.description().to_string()));
+            try!(src_file.sync_all().map_err(|e| e.description().to_string()));
         }
         
         //6. Emit mod header if file isn't mod
@@ -126,6 +161,7 @@ fn gen_from_source(source_dir: &str, dest_dir: &str) -> Result<(), String> {
         }
     }
     
+    //7. Build up the mod structure
     let mut mod_paths = Vec::new();
     for entry in WalkDir::new(dest_dir).min_depth(1).max_open(1).into_iter().filter_map(|e| e.ok()) {
         let meta = entry.metadata().unwrap();
