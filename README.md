@@ -12,8 +12,6 @@ If the build is red, you can check the Travis build history to find the last `ni
 
 ## Roadmap
 
-*Not useable yet*
-
 See [milestones](https://github.com/KodrAus/elasticsearch-rs/milestones).
 
 - [x] Codegen API endpoints
