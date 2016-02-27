@@ -16,9 +16,9 @@ If the build is red, you can check the Travis build history to find the last `ni
 
 See [milestones](https://github.com/KodrAus/elasticsearch-rs/milestones).
 
-- [ ] Codegen API endpoints
+- [x] Codegen API endpoints
 - [ ] Implement core Elasticsearch types
-- [ ] Client
+- [x] Client
 - [x] Doc APIs
 - [x] Query DSL proof-of-concept to test design
 
@@ -45,6 +45,7 @@ Right now, it's used by `elastic_hyper` to build the client, but could also be u
 
 ### elastic_hyper
 
+[Docs](http://kodraus.github.io/rustdoc/elastic_hyper/)
 [Issues](https://github.com/KodrAus/elasticsearch-rs/labels/hyper)
 
 Provides a [hyper](https://github.com/hyperium/hyper) implementation of the Elasticsearch REST API. This is the current client that works purely through JSON. This crate is responsible for the `gen` in `elastic_codegen` and builds its own source and tests.
