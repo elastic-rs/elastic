@@ -90,7 +90,7 @@ impl api::Endpoint {
 							span: DUMMY_SP,
 							node: LitKind::Str(
 								token::InternedString::new_from_name(
-									token::intern(&self.documentation)
+									token::intern(&format!("//! {}", self.documentation))
 								),
 								StrStyle::Cooked
 							)
