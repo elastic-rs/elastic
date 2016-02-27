@@ -7,19 +7,19 @@ use hyper::header::{Headers, ContentType};
 use hyper::client::response::Response;
 use hyper::error::Result;
 
-pub fn post_index_type_id<'a>(client: &'a mut Client, base: String, index: String,
-                          _type: String, id: String, body: String)
- -> Result<Response>{
+pub fn post_index_type_id<'a>(client: &'a mut Client, base: &'a str,
+                          index: &'a str, _type: &'a str, id: &'a str,
+                          body: String) -> Result<Response>{
     let mut url_fmtd =
         String::with_capacity(base.len() + 1 + 1 + 1 + 8 + index.len() +
                                   _type.len() + id.len());
-    url_fmtd.push_str(&base);
+    url_fmtd.push_str(base);
     url_fmtd.push_str("/");
-    url_fmtd.push_str(&index);
+    url_fmtd.push_str(index);
     url_fmtd.push_str("/");
-    url_fmtd.push_str(&_type);
+    url_fmtd.push_str(_type);
     url_fmtd.push_str("/");
-    url_fmtd.push_str(&id);
+    url_fmtd.push_str(id);
     url_fmtd.push_str("/_update");
     let mut headers = Headers::new();
     headers.set(ContentType::json());

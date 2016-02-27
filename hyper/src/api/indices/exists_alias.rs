@@ -7,39 +7,39 @@ use hyper::header::{Headers, ContentType};
 use hyper::client::response::Response;
 use hyper::error::Result;
 
-pub fn head_index_name<'a>(client: &'a mut Client, base: String, index: String,
-                       name: String) -> Result<Response>{
+pub fn head_index_name<'a>(client: &'a mut Client, base: &'a str, index: &'a str,
+                       name: &'a str) -> Result<Response>{
     let mut url_fmtd =
         String::with_capacity(base.len() + 1 + 8 + index.len() + name.len());
-    url_fmtd.push_str(&base);
+    url_fmtd.push_str(base);
     url_fmtd.push_str("/");
-    url_fmtd.push_str(&index);
+    url_fmtd.push_str(index);
     url_fmtd.push_str("/_alias/");
-    url_fmtd.push_str(&name);
+    url_fmtd.push_str(name);
     let mut headers = Headers::new();
     headers.set(ContentType::json());
     let res = client.head(&url_fmtd).headers(headers);
     res.send()
 }
-pub fn head_name<'a>(client: &'a mut Client, base: String, name: String)
- -> Result<Response>{
-    let mut url_fmtd = String::with_capacity(base.len() + 8 + name.len());
-    url_fmtd.push_str(&base);
-    url_fmtd.push_str("/_alias/");
-    url_fmtd.push_str(&name);
-    let mut headers = Headers::new();
-    headers.set(ContentType::json());
-    let res = client.head(&url_fmtd).headers(headers);
-    res.send()
-}
-pub fn head_index<'a>(client: &'a mut Client, base: String, index: String)
+pub fn head_index<'a>(client: &'a mut Client, base: &'a str, index: &'a str)
  -> Result<Response>{
     let mut url_fmtd =
         String::with_capacity(base.len() + 1 + 7 + index.len());
-    url_fmtd.push_str(&base);
+    url_fmtd.push_str(base);
     url_fmtd.push_str("/");
-    url_fmtd.push_str(&index);
+    url_fmtd.push_str(index);
     url_fmtd.push_str("/_alias");
+    let mut headers = Headers::new();
+    headers.set(ContentType::json());
+    let res = client.head(&url_fmtd).headers(headers);
+    res.send()
+}
+pub fn head_name<'a>(client: &'a mut Client, base: &'a str, name: &'a str)
+ -> Result<Response>{
+    let mut url_fmtd = String::with_capacity(base.len() + 8 + name.len());
+    url_fmtd.push_str(base);
+    url_fmtd.push_str("/_alias/");
+    url_fmtd.push_str(name);
     let mut headers = Headers::new();
     headers.set(ContentType::json());
     let res = client.head(&url_fmtd).headers(headers);

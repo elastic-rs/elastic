@@ -477,7 +477,7 @@ pub fn url_push_decl<'a, I, K>(url_base: Ident, url_parts: I, param_parts: K) ->
 
 		//Push the declaration statement and the base url
 		stmts.push(url_decl);
-		stmts.push(push_stmt(ident, ident_expr_brw(url_base)));
+		stmts.push(push_stmt(ident, ident_expr(url_base)));
 
 		//Thread through each url part and param, pushing a part, then a param to keep the url in order
 		let (mut part_iter, mut param_iter) = (
@@ -493,10 +493,10 @@ pub fn url_push_decl<'a, I, K>(url_base: Ident, url_parts: I, param_parts: K) ->
 				//If there's a part and a param, push the part first
 				(Some(part), Some(param)) => {
 					stmts.push(push_stmt(ident, ident_expr(part)));
-					stmts.push(push_stmt(ident, ident_expr_brw(param)));
+					stmts.push(push_stmt(ident, ident_expr(param)));
 				},
 				(Some(part), None) => stmts.push(push_stmt(ident, ident_expr(part))),
-				(None, Some(param)) => stmts.push(push_stmt(ident, ident_expr_brw(param))),
+				(None, Some(param)) => stmts.push(push_stmt(ident, ident_expr(param))),
 				//If there are no url parts or params left, stop iterating
 				(None, None) => cont = false
 			}

@@ -7,10 +7,10 @@ use hyper::header::{Headers, ContentType};
 use hyper::client::response::Response;
 use hyper::error::Result;
 
-pub fn put<'a>(client: &'a mut Client, base: String, body: String)
+pub fn put<'a>(client: &'a mut Client, base: &'a str, body: String)
  -> Result<Response>{
     let mut url_fmtd = String::with_capacity(base.len() + 18);
-    url_fmtd.push_str(&base);
+    url_fmtd.push_str(base);
     url_fmtd.push_str("/_cluster/settings");
     let mut headers = Headers::new();
     headers.set(ContentType::json());

@@ -165,11 +165,15 @@ fn can_emit_rs_fn_with_push_body_to_file() {
 	let (url_ident, url_stmts) = url_push_decl(base, parts.iter().map(|p| p.as_str()), params.to_vec());
 
 	//Function signature from params
-	let mut fun = build_fn("my_fun", vec![arg_ident::<String>(base)])
+	let lifetime = lifetime("'a");
+	let mut fun = build_fn("my_fun", vec![
+		build_arg_ident(base, build_ty_ptr("str", Mutability::Immutable, Some(lifetime)))
+	])
 	.add_args(params
 		.iter()
-		.map(|p: &Ident| arg_ident::<String>(p.clone()))
+		.map(|p: &Ident| build_arg_ident(p.clone(), build_ty_ptr("str", Mutability::Immutable, Some(lifetime))))
 	)
+	.add_lifetime(lifetime)
 	.set_return::<String>()
 	.add_body_stmts(url_stmts)
 	.add_body_block(quote_block!(&mut cx, {

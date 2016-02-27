@@ -7,78 +7,78 @@ use hyper::header::{Headers, ContentType};
 use hyper::client::response::Response;
 use hyper::error::Result;
 
-pub fn put<'a>(client: &'a mut Client, base: String, body: String)
- -> Result<Response>{
-    let mut url_fmtd = String::with_capacity(base.len() + 6);
-    url_fmtd.push_str(&base);
-    url_fmtd.push_str("/_bulk");
-    let mut headers = Headers::new();
-    headers.set(ContentType::json());
-    let res = client.put(&url_fmtd).headers(headers).body(&body);
-    res.send()
-}
-pub fn post<'a>(client: &'a mut Client, base: String, body: String)
- -> Result<Response>{
-    let mut url_fmtd = String::with_capacity(base.len() + 6);
-    url_fmtd.push_str(&base);
-    url_fmtd.push_str("/_bulk");
-    let mut headers = Headers::new();
-    headers.set(ContentType::json());
-    let res = client.post(&url_fmtd).headers(headers).body(&body);
-    res.send()
-}
-pub fn put_index_type<'a>(client: &'a mut Client, base: String, index: String,
-                      _type: String, body: String) -> Result<Response>{
-    let mut url_fmtd =
-        String::with_capacity(base.len() + 1 + 1 + 6 + index.len() +
-                                  _type.len());
-    url_fmtd.push_str(&base);
-    url_fmtd.push_str("/");
-    url_fmtd.push_str(&index);
-    url_fmtd.push_str("/");
-    url_fmtd.push_str(&_type);
-    url_fmtd.push_str("/_bulk");
-    let mut headers = Headers::new();
-    headers.set(ContentType::json());
-    let res = client.put(&url_fmtd).headers(headers).body(&body);
-    res.send()
-}
-pub fn put_index<'a>(client: &'a mut Client, base: String, index: String,
+pub fn put_index<'a>(client: &'a mut Client, base: &'a str, index: &'a str,
                  body: String) -> Result<Response>{
     let mut url_fmtd =
         String::with_capacity(base.len() + 1 + 6 + index.len());
-    url_fmtd.push_str(&base);
+    url_fmtd.push_str(base);
     url_fmtd.push_str("/");
-    url_fmtd.push_str(&index);
+    url_fmtd.push_str(index);
     url_fmtd.push_str("/_bulk");
     let mut headers = Headers::new();
     headers.set(ContentType::json());
     let res = client.put(&url_fmtd).headers(headers).body(&body);
     res.send()
 }
-pub fn post_index<'a>(client: &'a mut Client, base: String, index: String,
-                  body: String) -> Result<Response>{
+pub fn post_index_type<'a>(client: &'a mut Client, base: &'a str, index: &'a str,
+                       _type: &'a str, body: String) -> Result<Response>{
     let mut url_fmtd =
-        String::with_capacity(base.len() + 1 + 6 + index.len());
-    url_fmtd.push_str(&base);
+        String::with_capacity(base.len() + 1 + 1 + 6 + index.len() +
+                                  _type.len());
+    url_fmtd.push_str(base);
     url_fmtd.push_str("/");
-    url_fmtd.push_str(&index);
+    url_fmtd.push_str(index);
+    url_fmtd.push_str("/");
+    url_fmtd.push_str(_type);
     url_fmtd.push_str("/_bulk");
     let mut headers = Headers::new();
     headers.set(ContentType::json());
     let res = client.post(&url_fmtd).headers(headers).body(&body);
     res.send()
 }
-pub fn post_index_type<'a>(client: &'a mut Client, base: String, index: String,
-                       _type: String, body: String) -> Result<Response>{
+pub fn put_index_type<'a>(client: &'a mut Client, base: &'a str, index: &'a str,
+                      _type: &'a str, body: String) -> Result<Response>{
     let mut url_fmtd =
         String::with_capacity(base.len() + 1 + 1 + 6 + index.len() +
                                   _type.len());
-    url_fmtd.push_str(&base);
+    url_fmtd.push_str(base);
     url_fmtd.push_str("/");
-    url_fmtd.push_str(&index);
+    url_fmtd.push_str(index);
     url_fmtd.push_str("/");
-    url_fmtd.push_str(&_type);
+    url_fmtd.push_str(_type);
+    url_fmtd.push_str("/_bulk");
+    let mut headers = Headers::new();
+    headers.set(ContentType::json());
+    let res = client.put(&url_fmtd).headers(headers).body(&body);
+    res.send()
+}
+pub fn post<'a>(client: &'a mut Client, base: &'a str, body: String)
+ -> Result<Response>{
+    let mut url_fmtd = String::with_capacity(base.len() + 6);
+    url_fmtd.push_str(base);
+    url_fmtd.push_str("/_bulk");
+    let mut headers = Headers::new();
+    headers.set(ContentType::json());
+    let res = client.post(&url_fmtd).headers(headers).body(&body);
+    res.send()
+}
+pub fn put<'a>(client: &'a mut Client, base: &'a str, body: String)
+ -> Result<Response>{
+    let mut url_fmtd = String::with_capacity(base.len() + 6);
+    url_fmtd.push_str(base);
+    url_fmtd.push_str("/_bulk");
+    let mut headers = Headers::new();
+    headers.set(ContentType::json());
+    let res = client.put(&url_fmtd).headers(headers).body(&body);
+    res.send()
+}
+pub fn post_index<'a>(client: &'a mut Client, base: &'a str, index: &'a str,
+                  body: String) -> Result<Response>{
+    let mut url_fmtd =
+        String::with_capacity(base.len() + 1 + 6 + index.len());
+    url_fmtd.push_str(base);
+    url_fmtd.push_str("/");
+    url_fmtd.push_str(index);
     url_fmtd.push_str("/_bulk");
     let mut headers = Headers::new();
     headers.set(ContentType::json());

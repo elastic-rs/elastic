@@ -7,21 +7,21 @@ use hyper::header::{Headers, ContentType};
 use hyper::client::response::Response;
 use hyper::error::Result;
 
-pub fn get_fields<'a>(client: &'a mut Client, base: String, fields: String)
- -> Result<Response>{
-    let mut url_fmtd = String::with_capacity(base.len() + 16 + fields.len());
-    url_fmtd.push_str(&base);
-    url_fmtd.push_str("/_cat/fielddata/");
-    url_fmtd.push_str(&fields);
+pub fn get<'a>(client: &'a mut Client, base: &'a str) -> Result<Response>{
+    let mut url_fmtd = String::with_capacity(base.len() + 15);
+    url_fmtd.push_str(base);
+    url_fmtd.push_str("/_cat/fielddata");
     let mut headers = Headers::new();
     headers.set(ContentType::json());
     let res = client.get(&url_fmtd).headers(headers);
     res.send()
 }
-pub fn get<'a>(client: &'a mut Client, base: String) -> Result<Response>{
-    let mut url_fmtd = String::with_capacity(base.len() + 15);
-    url_fmtd.push_str(&base);
-    url_fmtd.push_str("/_cat/fielddata");
+pub fn get_fields<'a>(client: &'a mut Client, base: &'a str, fields: &'a str)
+ -> Result<Response>{
+    let mut url_fmtd = String::with_capacity(base.len() + 16 + fields.len());
+    url_fmtd.push_str(base);
+    url_fmtd.push_str("/_cat/fielddata/");
+    url_fmtd.push_str(fields);
     let mut headers = Headers::new();
     headers.set(ContentType::json());
     let res = client.get(&url_fmtd).headers(headers);

@@ -7,21 +7,21 @@ use hyper::header::{Headers, ContentType};
 use hyper::client::response::Response;
 use hyper::error::Result;
 
-pub fn get_name<'a>(client: &'a mut Client, base: String, name: String)
- -> Result<Response>{
-    let mut url_fmtd = String::with_capacity(base.len() + 14 + name.len());
-    url_fmtd.push_str(&base);
-    url_fmtd.push_str("/_cat/aliases/");
-    url_fmtd.push_str(&name);
+pub fn get<'a>(client: &'a mut Client, base: &'a str) -> Result<Response>{
+    let mut url_fmtd = String::with_capacity(base.len() + 13);
+    url_fmtd.push_str(base);
+    url_fmtd.push_str("/_cat/aliases");
     let mut headers = Headers::new();
     headers.set(ContentType::json());
     let res = client.get(&url_fmtd).headers(headers);
     res.send()
 }
-pub fn get<'a>(client: &'a mut Client, base: String) -> Result<Response>{
-    let mut url_fmtd = String::with_capacity(base.len() + 13);
-    url_fmtd.push_str(&base);
-    url_fmtd.push_str("/_cat/aliases");
+pub fn get_name<'a>(client: &'a mut Client, base: &'a str, name: &'a str)
+ -> Result<Response>{
+    let mut url_fmtd = String::with_capacity(base.len() + 14 + name.len());
+    url_fmtd.push_str(base);
+    url_fmtd.push_str("/_cat/aliases/");
+    url_fmtd.push_str(name);
     let mut headers = Headers::new();
     headers.set(ContentType::json());
     let res = client.get(&url_fmtd).headers(headers);

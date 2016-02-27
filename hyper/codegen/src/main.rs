@@ -164,11 +164,11 @@ fn gen_from_source(source_dir: &str, dest_dir: &str) -> Result<(), String> {
             //Function signature from params
             let mut rs_fun = build_fn(&fun.name, vec![
                 build_arg(_client, build_ty_ptr("Client", Mutability::Mutable, Some(lifetime))),
-                arg_ident::<String>(base)
+                build_arg_ident(base, build_ty_ptr("str", Mutability::Immutable, Some(lifetime)))
             ])
             .add_args(params
                 .iter()
-                .map(|p: &Ident| arg_ident::<String>(p.clone()))
+                .map(|p: &Ident| build_arg_ident(p.clone(), build_ty_ptr("str", Mutability::Immutable, Some(lifetime))))
             )
             .add_lifetime(lifetime)
             .set_return_ty(build_ty("Result<Response>"))

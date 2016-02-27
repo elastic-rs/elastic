@@ -7,12 +7,12 @@ use hyper::header::{Headers, ContentType};
 use hyper::client::response::Response;
 use hyper::error::Result;
 
-pub fn delete_name<'a>(client: &'a mut Client, base: String, name: String)
+pub fn delete_name<'a>(client: &'a mut Client, base: &'a str, name: &'a str)
  -> Result<Response>{
     let mut url_fmtd = String::with_capacity(base.len() + 11 + name.len());
-    url_fmtd.push_str(&base);
+    url_fmtd.push_str(base);
     url_fmtd.push_str("/_template/");
-    url_fmtd.push_str(&name);
+    url_fmtd.push_str(name);
     let mut headers = Headers::new();
     headers.set(ContentType::json());
     let res = client.delete(&url_fmtd).headers(headers);

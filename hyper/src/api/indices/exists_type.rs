@@ -7,15 +7,15 @@ use hyper::header::{Headers, ContentType};
 use hyper::client::response::Response;
 use hyper::error::Result;
 
-pub fn head_index_type<'a>(client: &'a mut Client, base: String, index: String,
-                       _type: String) -> Result<Response>{
+pub fn head_index_type<'a>(client: &'a mut Client, base: &'a str, index: &'a str,
+                       _type: &'a str) -> Result<Response>{
     let mut url_fmtd =
         String::with_capacity(base.len() + 1 + 1 + index.len() + _type.len());
-    url_fmtd.push_str(&base);
+    url_fmtd.push_str(base);
     url_fmtd.push_str("/");
-    url_fmtd.push_str(&index);
+    url_fmtd.push_str(index);
     url_fmtd.push_str("/");
-    url_fmtd.push_str(&_type);
+    url_fmtd.push_str(_type);
     let mut headers = Headers::new();
     headers.set(ContentType::json());
     let res = client.head(&url_fmtd).headers(headers);
