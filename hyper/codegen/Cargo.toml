@@ -1,0 +1,9 @@
+[package]
+name = "elastic_hyper_codegen"
+version = "0.1.0"
+authors = ["Ashley Mannix <ashleymannix@live.com.au>"]
+
+[dependencies]
+aster = { version = "*" }
+elastic_codegen = { version = "*", path = "../../codegen" }
+walkdir = { version = "*" }

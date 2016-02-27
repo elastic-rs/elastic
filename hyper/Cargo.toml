@@ -3,10 +3,5 @@ name = "elastic_hyper"
 version = "0.1.0"
 authors = ["Ashley Mannix <ashleymannix@live.com.au>"]
 
-[features]
-codegen = ["elastic_codegen", "aster", "walkdir"]
-
 [dependencies]
-aster = { version = "*", optional = true }
-elastic_codegen = { version = "*", path = "../codegen", optional = true }
-walkdir = { version = "*", optional = true }
+hyper = "*"
