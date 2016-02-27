@@ -120,7 +120,7 @@ fn can_get_rust_doc_comment_for_endpoint() {
 	let docs = endpoint.get_doc();
 	
 	//TODO: Get the '///' or '//!' prepended
-	assert_eq!("My docs", pprust::attr_to_string(&docs));
+	assert_eq!("//! My docs", pprust::attr_to_string(&docs));
 }
 
 #[test]
