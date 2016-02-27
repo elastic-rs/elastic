@@ -337,18 +337,18 @@ pub fn url_fmt_decl<I>(url: &str, url_base: Ident, param_parts: I) -> (Ident, St
 /// Generates a series of statements of the form:
 /// 
 /// ```text
-/// let mut url_fmtd = String::with_capacity(base.len() + "/".len() + "/_alias/".len() + index.len() + name.len());
+/// let mut url_fmtd = String::with_capacity(base.len() + 1 + 8 + index.len() + name.len());
 /// 
-/// url_fmtd.push_str(&base);
+/// url_fmtd.push_str(base);
 /// url_fmtd.push_str("/");
 /// url_fmtd.push_str(&index);
 /// url_fmtd.push_str("/_alias/");
-/// url_fmtd.push_str(&name);
+/// url_fmtd.push_str(name);
 /// 
 /// url_fmtd
 /// ```
 /// 
-/// Right now, this method expects that param idents are `String`s. This will be updated in the future.
+/// Right now, this method expects that param idents are `&str`s. This will be updated in the future.
 /// 
 /// # Examples
 /// 
@@ -375,7 +375,6 @@ pub fn url_fmt_decl<I>(url: &str, url_base: Ident, param_parts: I) -> (Ident, St
 /// );
 /// # }
 /// ```
-//TODO: Pass (Ident, Ty) to check if String or str. This will determine how push_str is called
 pub fn url_push_decl<'a, I, K>(url_base: Ident, url_parts: I, param_parts: K) -> (Ident, Vec<Stmt>) 
 	where I: IntoIterator<Item=&'a str>, K: IntoIterator<Item=Ident> {
 		let ident = token::str_to_ident("url_fmtd");
