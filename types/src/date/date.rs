@@ -277,7 +277,7 @@ impl <T: Format> Timelike for DateTime<T> {
 impl <T: Format> Serialize for DateTime<T> {
 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where S: Serializer
 	{
-		serializer.visit_str(&self.format()[..])
+		serializer.serialize_str(&self.format()[..])
 	}
 }
 
@@ -285,7 +285,7 @@ impl <T: Format> Serialize for DateTime<T> {
 impl <T: Format> Deserialize for DateTime<T> {
 	fn deserialize<D>(deserializer: &mut D) -> Result<DateTime<T>, D::Error> where D: Deserializer,
 	{
-		deserializer.visit_str(DateTimeVisitor::<T>::default())
+		deserializer.deserialize(DateTimeVisitor::<T>::default())
 	}
 }
 
@@ -306,6 +306,6 @@ impl <T: Format> serde::de::Visitor for DateTimeVisitor<T> {
 
 	fn visit_str<E>(&mut self, v: &str) -> Result<DateTime<T>, E> where E: serde::de::Error {
 		let result = DateTime::<T>::parse(v);
-		result.map_err(|err| E::syntax(&format!("{}", err)))
+		result.map_err(|err| serde::de::Error::custom(format!("{}", err)))
 	}
 }

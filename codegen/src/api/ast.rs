@@ -73,20 +73,19 @@ impl HttpVerb {
 }
 
 impl  Deserialize for HttpVerb {
-	fn deserialize<D>(deserializer: &mut D) -> Result<HttpVerb, D::Error> where D: Deserializer,
-    {
-        deserializer.visit_str(HttpVerbVisitor)
+	fn deserialize<D>(deserializer: &mut D) -> Result<HttpVerb, D::Error> where D: Deserializer {
+		struct HttpVerbVisitor;
+		impl serde::de::Visitor for HttpVerbVisitor {
+			type Value = HttpVerb;
+
+			fn visit_str<E>(&mut self, v: &str) -> Result<HttpVerb, E> where E: serde::de::Error {
+				let result = HttpVerb::parse(v);
+				Ok(result)
+			}
+		}
+	
+        deserializer.deserialize(HttpVerbVisitor)
     }
-}
-
-struct HttpVerbVisitor;
-impl serde::de::Visitor for HttpVerbVisitor {
-	type Value = HttpVerb;
-
-	fn visit_str<E>(&mut self, v: &str) -> Result<HttpVerb, E> where E: serde::de::Error {
-		let result = HttpVerb::parse(v);
-		Ok(result)
-	}
 }
 
 /// Represents a `Param` or `Part` type.
