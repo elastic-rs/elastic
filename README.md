@@ -12,7 +12,7 @@ If the build is red, you can check the Travis build history to find the last `ni
 
 ## Example
 
-The `elastic_hyper` client is a thin layer over `hyper`, which just maps functions to routes. It's up to the caller to serialise and deserialise HTTP content.
+The `elastic_hyper` client is a thin layer over `hyper`; it just maps functions to routes. It's up to the caller to serialise and deserialise HTTP content.
 For serialisation though, the `elastic_macros` crate provides the `json!` macro for serialising abitrary rust-like code to json. 
 The deserialisation story is a work in progress.
 
@@ -39,7 +39,7 @@ let res = elastic::search::post_index_type(&mut client, "http://localhost:9200",
 ).unwrap()
 ```
 
-See [elastic_hyper](#elastic_hyper) and [elastic_macros](#elastic_macros) for more details.
+See the [samples](https://github.com/KodrAus/elasticsearch-rs/tree/master/hyper/samples), [elastic_hyper](#elastic_hyper) and [elastic_macros](#elastic_macros) for more details.
 
 If you'd prefer to call Elasticsearch using a Query DSL builder, see [rs-es](https://github.com/benashford/rs-es).
 
