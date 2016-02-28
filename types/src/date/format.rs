@@ -101,7 +101,7 @@ pub trait Format {
 	/// 
 	/// ```
 	/// # #![feature(plugin)]
-	/// # #![plugin(elastic_types_codegen)]
+	/// # #![plugin(elastic_macros)]
 	/// # extern crate elastic_types;
 	/// # extern crate chrono;
 	/// # fn main() {

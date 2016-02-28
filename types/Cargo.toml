@@ -8,4 +8,4 @@ chrono = "*"
 serde = "*"
 serde_json = "*"
 serde_macros = "*"
-elastic_types_codegen = { version = "*", path = "../types_codegen" }
+elastic_macros = { version = "*", path = "../macros" }

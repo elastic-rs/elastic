@@ -3,7 +3,7 @@
 //! See the benches for progress.
 
 #![feature(plugin)]
-#![plugin(elastic_types_codegen)]
+#![plugin(elastic_macros)]
 #![plugin(serde_macros)]
 
 extern crate rotor;
@@ -11,7 +11,7 @@ extern crate rotor_http;
 extern crate time;
 extern crate serde;
 extern crate serde_json;
-extern crate elastic_types_codegen;
+extern crate elastic_macros;
 
 use std::sync::mpsc;
 use std::thread;

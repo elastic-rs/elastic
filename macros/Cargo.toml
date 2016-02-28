@@ -1,10 +1,10 @@
 [package]
-name = "elastic_types_codegen"
+name = "elastic_macros"
 version = "0.1.0"
 authors = ["Ashley Mannix <ashleymannix@live.com.au>"]
 
 [lib]
-name = "elastic_types_codegen"
+name = "elastic_macros"
 crate_type = ["dylib"]
 plugin = true
 

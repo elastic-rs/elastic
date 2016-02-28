@@ -12,4 +12,4 @@ time = "*"
 rotor = "*"
 rotor-http = { git = "https://github.com/tailhook/rotor-http.git" }
 rs-es = "*"
-elastic_types_codegen = { version = "*", path = "../../types_codegen" }
+elastic_macros = { version = "*", path = "../../macros" }

@@ -1,5 +1,5 @@
 #![feature(test, plugin)]
-#![plugin(elastic_types_codegen)]
+#![plugin(elastic_macros)]
 #![plugin(serde_macros)]
 
 extern crate test;
