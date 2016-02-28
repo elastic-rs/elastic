@@ -28,6 +28,8 @@ elastic::ping::head(&mut client, "http://localhost:9200").unwrap();
 A simple `query_string` query:
 
 ```
+#![feature(plugin)]
+#![plugin(elastic_macros)]
 extern crate elastic_hyper as elastic;
 
 let mut client = hyper::Client::new();
