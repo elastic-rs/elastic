@@ -29,6 +29,7 @@ fn main() {
 		})
 	).unwrap();
 
+	//Deserialisation goes here
 	let mut message = String::new();
 	let _ = res.read_to_string(&mut message);
 
