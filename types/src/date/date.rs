@@ -14,7 +14,54 @@ pub use chrono::{ Datelike, Timelike };
 /// The default DateTime format.
 pub type DefaultFormat = BasicDateTime;
 
-#[dervice(Debug, Copy)]
+/// The base requirements for mapping a `date` type.
+/// 
+/// # Examples
+/// 
+/// Custom mappings can be defined by implementing `ElasticDateMapping`:
+/// 
+/// ```
+/// use elastic_types::date::{ ElasticDateMapping, BasicDateTime, NullValue };
+/// use elastic_types::date::Format;
+/// 
+/// struct MyDateMapping;
+/// impl ElasticDateMapping<BasicDateTime> for MyDateMapping {
+/// 	fn get_ignore_malformed() -> Option<bool> {
+/// 		Some(true)
+///		}
+/// 
+/// 	fn get_null_value() -> Option<NullValue> {
+/// 		Some(NullValue::Default("20150701T000000.000Z"))
+/// 	}
+/// }
+/// ```
+/// 
+/// The above example binds the mapping to the `BasicDateTime` format, so `get_null_value` returns a properly formated value.
+pub trait ElasticDateMapping<T: Format> {
+	/// The date format(s) that can be parsed.
+	fn get_format() -> &'static str {
+		T::name()
+	}
+
+	/// If `true`, malformed numbers are ignored. 
+	/// If `false` (default), malformed numbers throw an exception and reject the whole document.
+	fn get_ignore_malformed() -> Option<bool> {
+		None
+	}
+
+	/// Accepts a date value in one of the configured format's as the field which is substituted for any explicit null values. 
+	/// Defaults to null, which means the field is treated as missing.
+	fn get_null_value() -> Option<NullValue> {
+		None
+	}
+
+	/// Controls the number of extra terms that are indexed to make range queries faster. Defaults to 16.
+	fn get_precision_step() -> Option<i32> {
+		None
+	}
+}
+
+#[derive(Debug, Clone, Copy)]
 /// Accepts a date value in one of the configured format's as the field which is substituted for any explicit null values. 
 /// Defaults to `null`, which means the field is treated as missing.
 pub enum NullValue {
@@ -22,31 +69,6 @@ pub enum NullValue {
 	Null,
 	/// Substitute missing fields with a default value.
 	Default(&'static str)
-}
-
-/// The base requirements for a mapping a `date` type.
-pub trait ElasticDateMapping<T: Format> {
-	/// The date format(s) that can be parsed.
-	fn get_format(&self) -> &'static str {
-		T::name()
-	}
-
-	/// If true, malformed numbers are ignored. 
-	/// If false (default), malformed numbers throw an exception and reject the whole document.
-	fn get_ignore_malformed(&self) -> bool {
-		false
-	}
-
-	/// Accepts a date value in one of the configured format's as the field which is substituted for any explicit null values. 
-	/// Defaults to null, which means the field is treated as missing.
-	fn null_value(&self) -> NullValue {
-		NullValue::Null
-	}
-
-	/// Controls the number of extra terms that are indexed to make range queries faster. Defaults to 16.
-	fn get_precision_step(&self) -> i32 {
-		16
-	}
 }
 
 /// Default mapping for `DateTime`.
@@ -128,6 +150,14 @@ where Self: Sized + ElasticType + Datelike + Timelike {
 /// let date = DateTime::<BasicDateTime>::now();
 /// ```
 /// 
+/// Defining a date using a custom mapping:
+/// 
+/// ```
+/// use elastic_types::date::{ DateTime, BasicDateTime, DefaultDateMapping };
+/// 
+/// let date = DateTime::<BasicDateTime, DefaultDateMapping>::now();
+/// ```
+/// 
 /// Accessing the values of a date:
 /// 
 /// ```
@@ -207,7 +237,7 @@ impl <F: Format, T: ElasticMapping + ElasticDateMapping<F>> DateTime<F, T> {
 		}
 	}
 
-	/// Change the format of this date.
+	/// Change the format/mapping of this date.
 	/// 
 	/// # Examples
 	/// 

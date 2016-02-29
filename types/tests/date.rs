@@ -110,3 +110,10 @@ fn can_cast_chrono_date_into_elastic_date() {
 
 	takes_es_date(date);
 }
+
+//TODO: Test mapping formats
+// - Serialisation
+// - All defaults
+// - Different format, default mapping
+// - Different mapping and format
+// - Casting between formats and mappings
