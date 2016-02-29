@@ -1,9 +1,37 @@
+//! Implementation of the Elasticsearch `string` type.
+//! 
+//! Strings are stored as a sequence of tokens, constructed based on the given `analyzer`.
+//! 
+//! # Links
+//! - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/string.html)
+
+/// A Rust representation of an Elasticsearch `string`.
+pub trait ElasticStringLike {
+	fn get_analyzer(&self) -> Option<&'static str>;
+	fn get_boost(&self) -> Option<&'static f32>;
+	fn get_doc_values(&self) -> Option<&'static bool>;
+	fn get_fielddata(&self) -> Option<&'static FieldData>;
+}
+
 #[derive(Default)]
-pub struct StringMeta {
-	pub analyzer: Option<String>,
-	pub boost: Option<f32>,
-	pub doc_values: Option<bool>,
-	pub fielddata: Option<FieldData>
+/// A representation of an Elasticsearch `string`.
+/// 
+/// String types have a number of static values describing how they're analysed at
+pub struct ElasticString {
+	data: String,
+	pub analyzer: Option<&'static str>,
+	pub boost: Option<&'static f32>,
+	pub doc_values: Option<&'static bool>,
+	pub fielddata: Option<&'static FieldData>
+}
+
+impl From<String> for ElasticString {
+	fn from(string: String) -> ElasticString {
+		ElasticString {
+			data: string,
+			..Default::default()
+		}
+	}
 }
 
 pub enum FieldData {

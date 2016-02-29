@@ -103,27 +103,6 @@ fn can_get_api_type_as_rust_type() {
 }
 
 #[test]
-fn can_get_rust_doc_comment_for_endpoint() {
-	let endpoint = Endpoint {
-		name: None,
-		documentation: "My docs".to_string(),
-		methods: Vec::new(),
-		body: None,
-		url: Url {
-				path: String::new(),
-				paths: Vec::new(),
-				parts: BTreeMap::new(),
-				params: BTreeMap::new()
-		}
-	};
-	
-	let docs = endpoint.get_doc();
-	
-	//TODO: Get the '///' or '//!' prepended
-	assert_eq!("//! My docs", pprust::attr_to_string(&docs));
-}
-
-#[test]
 fn can_get_mod_name_for_endpoint() {
 		let endpoint = Endpoint {
             name: Some("bulk".to_string()),

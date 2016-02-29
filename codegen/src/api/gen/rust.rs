@@ -73,35 +73,6 @@ impl From<String> for ApiGenError {
 }
 
 impl api::Endpoint {
-	/// Get the Rust doc comment for this endpoint.
-	/// 
-	/// This is the `documentation` value formatted as a Rust doc comment.
-	pub fn get_doc(&self) -> Attribute {
-		Spanned {
-			span: DUMMY_SP,
-			node: Attribute_ {
-				id: AttrId(0),
-				style: AttrStyle::Inner,
-				value: P(Spanned {
-					span: DUMMY_SP,
-					node: MetaItemKind::NameValue(
-						token::InternedString::new(""),
-						Spanned { 
-							span: DUMMY_SP,
-							node: LitKind::Str(
-								token::InternedString::new_from_name(
-									token::intern(&format!("//! {}", self.documentation))
-								),
-								StrStyle::Cooked
-							)
-						}
-					)
-				}),
-				is_sugared_doc: true
-			}
-		}
-	}
-
 	/// Gets the name of the Endpoint if it's set or returns an empty string.
 	pub fn get_name<'a>(&'a self) -> &'a str {
 		match self.name {
