@@ -294,12 +294,12 @@ impl ElasticMapping for DefaultStringMapping {
 }
 
 /// A Rust representation of an Elasticsearch `string`.
-pub trait ElasticStringType<T: ElasticMapping + ElasticStringMapping> where Self: Sized + ElasticType {
+pub trait ElasticStringType<T: ElasticMapping + ElasticStringMapping> where Self: Sized + ElasticType<T> {
 
 }
 
-impl ElasticType for String {
-	type Mapping = DefaultStringMapping;
+impl ElasticType<DefaultStringMapping> for String {
+
 }
 
 impl ElasticStringType<DefaultStringMapping> for String {
@@ -378,8 +378,8 @@ impl <T: ElasticMapping + ElasticStringMapping> ElasticString<T> {
 	}
 }
 
-impl <T: ElasticMapping + ElasticStringMapping> ElasticType for ElasticString<T> {
-	type Mapping = T;
+impl <T: ElasticMapping + ElasticStringMapping> ElasticType<T> for ElasticString<T> {
+
 }
 
 impl <T: ElasticMapping + ElasticStringMapping> ElasticStringType<T> for ElasticString<T> {

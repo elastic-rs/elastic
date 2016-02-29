@@ -94,7 +94,7 @@ impl <T: Format> ElasticMapping for DefaultDateMapping<T> {
 
 /// A Rust representation of an Elasticsearch `date`.
 pub trait ElasticDateType<F: Format = DefaultFormat, T: ElasticMapping + ElasticDateMapping<F> = DefaultDateMapping<F>> 
-where Self: Sized + ElasticType + Datelike + Timelike {
+where Self: Sized + ElasticType<T> + Datelike + Timelike {
 	/// Parse the date and time from a string.
 	/// 
 	/// The format of the string must match the given `Format`.
@@ -177,8 +177,6 @@ where Self: Sized + ElasticType + Datelike + Timelike {
 /// );
 /// ```
 /// 
-/// For a full list of available date and time functions on `date` see [Datelike](trait.Datelike.html) and [Timelike](trait.Timelike.html).
-/// 
 /// # Links
 /// - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/date.html)
 #[derive(Clone)]
@@ -255,8 +253,8 @@ impl <F: Format, T: ElasticMapping + ElasticDateMapping<F>> DateTime<F, T> {
 	}
 }
 
-impl <F: Format, T: ElasticMapping + ElasticDateMapping<F>> ElasticType for DateTime<F, T> {
-	type Mapping = T;
+impl <F: Format, T: ElasticMapping + ElasticDateMapping<F>> ElasticType<T> for DateTime<F, T> {
+
 }
 
 impl <F: Format, T: ElasticMapping + ElasticDateMapping<F>> ElasticDateType<F, T> for DateTime<F, T> {

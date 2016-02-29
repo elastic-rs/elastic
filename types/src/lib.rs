@@ -12,7 +12,7 @@
 #![doc(html_root_url = "http://kodraus.github.io/rustdoc/elastic_types/")]
 #![deny(missing_docs)]
 
-#![feature(custom_derive, custom_attribute, plugin)]
+#![feature(custom_derive, custom_attribute, plugin, associated_type_defaults)]
 #![plugin(serde_macros)]
 #![plugin(elastic_macros)]
 
@@ -59,12 +59,8 @@ pub trait ElasticMapping {
 }
 
 /// A type that can be indexed in Elasticsearch.
-pub trait ElasticType {
-	/// The mapping definition for this type.
-	/// 
-	/// The shape of the mapping is specific to each type, 
-	/// but the values are specific to each implementation.
-	type Mapping: ElasticMapping;
+pub trait ElasticType<T: ElasticMapping> {
+	
 }
 
 /// Should the field be searchable? Accepts `not_analyzed` (default) and `no`.
