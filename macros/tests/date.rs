@@ -1,9 +1,9 @@
 #![feature(plugin)]
-#![plugin(elastic_types_codegen)]
+#![plugin(elastic_macros)]
 extern crate chrono;
-extern crate elastic_types_codegen;
+extern crate elastic_macros;
 
-use elastic_types_codegen::date;
+use elastic_macros::date;
 
 #[test]
 fn can_generate_date_formats() {

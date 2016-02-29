@@ -8,7 +8,7 @@
 //! 
 //! ```
 //! # #![feature(plugin)]
-//! # #![plugin(elastic_types_codegen)]
+//! # #![plugin(elastic_macros)]
 //! # fn main() {
 //! let json = json!({
 //! 	"query": {
@@ -35,7 +35,7 @@
 //! 
 //! ```
 //! # #![feature(plugin)]
-//! # #![plugin(elastic_types_codegen)]
+//! # #![plugin(elastic_macros)]
 //! # fn main() {
 //! let json = json!({
 //! 	query: {
@@ -62,7 +62,7 @@
 //! 
 //! ```
 //! # #![feature(plugin)]
-//! # #![plugin(elastic_types_codegen)]
+//! # #![plugin(elastic_macros)]
 //! # fn main() {
 //! let query = "match_all";
 //! let dist = "20km";
@@ -97,7 +97,7 @@
 //! 
 //! ```
 //! # #![feature(plugin)]
-//! # #![plugin(elastic_types_codegen)]
+//! # #![plugin(elastic_macros)]
 //! # extern crate chrono;
 //! # fn main() {
 //! let my_fmt = date_fmt!("yyyyMMddTHHmmss.SSSZ");
@@ -108,7 +108,7 @@
 //! 
 //! ```
 //! # #![feature(plugin)]
-//! # #![plugin(elastic_types_codegen)]
+//! # #![plugin(elastic_macros)]
 //! # extern crate chrono;
 //! # fn main() {
 //! let my_fmt = date_fmt!("%Y%m%dT%H%M%S%.3fZ");
@@ -118,7 +118,7 @@
 //! # Links
 //! - [Github](https://github.com/KodrAus/elasticsearch-rs)
 
-#![doc(html_root_url = "http://kodraus.github.io/rustdoc/elastic_types_codegen/")]
+#![doc(html_root_url = "http://kodraus.github.io/rustdoc/elastic_macros/")]
 
 #![crate_type="dylib"]
 #![feature(plugin_registrar, rustc_private, quote, plugin)]

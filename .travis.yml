@@ -5,7 +5,7 @@ os:
   - linux
   - osx
 script:
-  - cd types_codegen
+  - cd macros
   - cargo test -v
   - cargo doc
   - cd ../types
