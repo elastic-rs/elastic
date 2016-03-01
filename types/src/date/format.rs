@@ -118,6 +118,6 @@ pub trait Format {
 
 	/// The name of the format.
 	/// 
-	/// This is only used for debugging.
+	/// This is the string used when defining the format in the field mapping.
 	fn name() -> &'static str;
 }

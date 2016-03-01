@@ -149,6 +149,7 @@ impl <F: Format, T: ElasticMapping + ElasticDateMapping<F>> Default for ElasticD
 	}
 }
 
+//TODO: Generate this code. A macro should be fine
 impl <F: Format, T: ElasticMapping + ElasticDateMapping<F>> serde::ser::MapVisitor for ElasticDateMappingVisitor<F, T> {
 	fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
     where S: Serializer {

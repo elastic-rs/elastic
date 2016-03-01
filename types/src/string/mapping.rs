@@ -283,3 +283,6 @@ impl ElasticMapping for DefaultStringMapping { }
 
 /// A Rust representation of an Elasticsearch `string`.
 pub trait ElasticStringType<T: ElasticMapping + ElasticStringMapping> where Self: Sized + ElasticType<T> { }
+
+//TODO: Mapping serialisation
+//TODO: Generate this code. A macro should be fine

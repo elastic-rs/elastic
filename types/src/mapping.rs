@@ -91,6 +91,7 @@ impl serde::Serialize for IndexAnalysis {
 }
 
 //TODO: Make this take in str for field name
+//TODO: Generate this code. A macro should be fine
 /// Base visitor for serialising datatype mappings.
 pub struct ElasticMappingVisitor<T: ElasticMapping> {
 	phantom: PhantomData<T>

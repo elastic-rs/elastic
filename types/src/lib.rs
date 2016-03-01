@@ -10,7 +10,7 @@
 //! - [Github](https://github.com/KodrAus/elasticsearch-rs)
 
 #![doc(html_root_url = "http://kodraus.github.io/rustdoc/elastic_types/")]
-//#![deny(missing_docs)]
+#![deny(missing_docs)]
 
 #![feature(custom_derive, custom_attribute, plugin, optin_builtin_traits, associated_type_defaults)]
 #![plugin(serde_macros)]
