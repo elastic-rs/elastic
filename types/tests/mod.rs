@@ -9,5 +9,10 @@ extern crate chrono;
 extern crate elastic_types;
 
 pub mod mapping;
+
 pub mod date;
 pub mod date_format;
+pub mod date_mapping;
+
+pub mod string;
+pub mod string_mapping;

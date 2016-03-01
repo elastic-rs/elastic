@@ -41,12 +41,10 @@ pub trait ElasticMapping {
 
 /// A mapping implementation for a non-core type, or any where nobody cares about how it's mapped.
 pub struct NullMapping;
-impl ElasticMapping for NullMapping {
-
-}
+impl ElasticMapping for NullMapping { }
 
 impl serde::Serialize for NullMapping {
-    fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+    fn serialize<S>(&self, _: &mut S) -> Result<(), S::Error>
         where S: serde::Serializer
     {
         Ok(())
@@ -57,9 +55,7 @@ impl ElasticType<NullMapping> for .. { }
 
 /// A type that can be indexed in Elasticsearch.
 //TODO: Rename to ElasticDataType
-pub trait ElasticType<T: ElasticMapping> {
-	
-}
+pub trait ElasticType<T: ElasticMapping> { }
 
 //TODO: Need ElasticType, which is a main type that can be derived
 //This needs to map each property. Probably through a custom derive
@@ -94,6 +90,7 @@ impl serde::Serialize for IndexAnalysis {
     }
 }
 
+//TODO: Make this take in str for field name
 /// Base visitor for serialising datatype mappings.
 pub struct ElasticMappingVisitor<T: ElasticMapping> {
 	phantom: PhantomData<T>

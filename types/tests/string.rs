@@ -1,5 +1,1 @@
-//TODO: Tests for string mapping serialisation
-#[test]
-fn string_mapping_serialises_overriden_params() {
-	
-}
+//TODO: Tests for string changing types and as strings

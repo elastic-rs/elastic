@@ -12,8 +12,19 @@
 
 mod format;
 mod date;
+mod mapping;
 mod formats;
 
+pub use self::mapping::*;
 pub use self::format::*;
 pub use self::date::*;
 pub use self::formats::*;
+
+use chrono;
+use chrono::UTC;
+
+/// A re-export of the `chrono::DateTime` struct with `UTC` timezone.
+pub type DT = chrono::DateTime<UTC>;
+
+/// The default DateTime format.
+pub type DefaultFormat = BasicDateTime;
