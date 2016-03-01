@@ -9,7 +9,7 @@ extern crate elastic_types;
 
 use chrono::format::{ Parsed, Item };
 use chrono::offset::TimeZone;
-use elastic_types::*;
+use elastic_types::mapping::*;
 use elastic_types::date::*;
 
 #[derive(Default, Serialize, Deserialize)]
@@ -53,6 +53,27 @@ impl Format for TestDateFormat2 {
 	fn name() -> &'static str {
 		"test_date_2"
 	}
+}
+
+//A custom date mapping
+struct MyDateMapping;
+impl ElasticMapping for MyDateMapping {
+	fn get_boost() -> Option<f32> {
+		Some(1.01)
+	}
+}
+impl ElasticDateMapping<TestDateFormat2> for MyDateMapping {
+	fn get_null_value() -> Option<NullValue> {
+		Some(NullValue::Default("20150701"))
+	}
+}
+
+impl serde::Serialize for MyDateMapping {
+    fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+        where S: serde::Serializer
+    {
+        serializer.serialize_struct("mapping", ElasticDateMappingVisitor::<TestDateFormat2, MyDateMapping>::default())
+    }
 }
 
 #[test]
@@ -113,13 +134,17 @@ fn can_cast_chrono_date_into_elastic_date() {
 }
 
 #[test]
-fn date_format_mapping_serialises_overriden_params() {
-	
+fn mapping_serialises_overriden_params() {
+	let mapping = MyDateMapping;
+	let ser = serde_json::to_string(&mapping).unwrap();
+
+	assert_eq!(r#"{"boost":1.01,"format":"test_date_2","null_value":"20150701"}"#, ser);
 }
 
-//TODO: Test mapping formats
-// - Serialisation
-// - All defaults
-// - Different format, default mapping
-// - Different mapping and format
-// - Casting between formats and mappings
+#[test]
+fn default_mapping_serialises_only_format() {
+	let mapping = DefaultDateMapping::<BasicDateTime>::new();
+	let ser = serde_json::to_string(&mapping).unwrap();
+
+	assert_eq!(r#"{"format":"basic_date_time"}"#, ser);
+}

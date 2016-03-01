@@ -5,9 +5,9 @@
 //! # Links
 //! - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/string.html)
 
-use ::{ ElasticMapping, ElasticType };
 use std::collections::BTreeMap;
 use std::marker::PhantomData;
+use ::mapping::{ ElasticMapping, ElasticType };
 
 /// The base requirements for mapping a `string` type.
 /// 

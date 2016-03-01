@@ -6,7 +6,7 @@ extern crate serde;
 extern crate serde_json;
 extern crate elastic_types;
 
-use elastic_types::*;
+use elastic_types::mapping::*;
 use elastic_types::string::*;
 
 struct MyMapping;
@@ -14,9 +14,22 @@ impl ElasticMapping for MyMapping {
 	fn get_boost() -> Option<f32> {
 		Some(1.01)
 	}
+
+	fn get_index() -> Option<IndexAnalysis> {
+		Some(IndexAnalysis::No)
+	}
 }
 impl ElasticStringMapping for MyMapping { }
 
+impl serde::Serialize for MyMapping {
+    fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+        where S: serde::Serializer
+    {
+        serializer.serialize_struct("mapping", ElasticMappingVisitor::<MyMapping>::default())
+    }
+}
+
+//An example function that infers the mapping for a given input
 fn get_mapping_field<T, M>(t: &T) -> Option<f32> where M: ElasticMapping, T: ElasticType<M> {
 	M::get_boost()
 }
@@ -44,9 +57,9 @@ fn null_mapping_serialises_to_nothing() {
 }
 
 #[test]
-fn elastic_mapping_serialises_overriden_params() {
-	
-}
+fn mapping_serialises_overriden_params() {
+	let mapping = MyMapping;
+	let ser = serde_json::to_string(&mapping).unwrap();
 
-//TODO: Need a standard MappingVisitor<M: ElasticMapping>
-//This needs to be implemented for each core type
+	assert_eq!(r#"{"boost":1.01,"index":"no"}"#, ser);
+}

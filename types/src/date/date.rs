@@ -5,7 +5,7 @@ use serde;
 use serde::{ Serialize, Deserialize, Serializer, Deserializer };
 use super::{ Format, ParseError };
 use super::BasicDateTime;
-use ::{ ElasticMapping, ElasticType };
+use ::mapping::{ ElasticMapping, ElasticType, ElasticMappingVisitor };
 
 /// A re-export of the `chrono::DateTime` struct with `UTC` timezone.
 pub type DT = chrono::DateTime<UTC>;
@@ -71,6 +71,17 @@ pub enum NullValue {
 	Default(&'static str)
 }
 
+impl serde::Serialize for NullValue {
+    fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+        where S: serde::Serializer
+    {
+    	match *self {
+        	NullValue::Null => Ok(()),
+        	NullValue::Default(s) => serializer.serialize_str(s)
+        }
+    }
+}
+
 /// Default mapping for `DateTime`.
 pub struct DefaultDateMapping<T: Format = DefaultFormat> {
 	phantom: PhantomData<T>
@@ -90,6 +101,14 @@ impl <T: Format> ElasticDateMapping<T> for DefaultDateMapping<T> {
 
 impl <T: Format> ElasticMapping for DefaultDateMapping<T> {
 
+}
+
+impl <T: Format> serde::Serialize for DefaultDateMapping<T> {
+    fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+        where S: serde::Serializer
+    {
+        serializer.serialize_struct("mapping", ElasticDateMappingVisitor::<T, DefaultDateMapping<T>>::default())
+    }
 }
 
 /// A Rust representation of an Elasticsearch `date`.
@@ -412,4 +431,46 @@ impl <F: Format, T: ElasticMapping + ElasticDateMapping<F>> Deserialize for Date
 
 		deserializer.deserialize(DateTimeVisitor::<F, T>::default())
 	}
+}
+
+/// Visitor for a `date` map.
+pub struct ElasticDateMappingVisitor<F: Format, T: ElasticMapping + ElasticDateMapping<F>> {
+	phantom_f: PhantomData<F>,
+	phantom_t: PhantomData<T>
+}
+
+impl <F: Format, T: ElasticMapping + ElasticDateMapping<F>> Default for ElasticDateMappingVisitor<F, T> {
+	fn default() -> ElasticDateMappingVisitor<F, T> {
+		ElasticDateMappingVisitor::<F, T> {
+			phantom_f: PhantomData,
+			phantom_t: PhantomData
+		}
+	}
+}
+
+impl <F: Format, T: ElasticMapping + ElasticDateMapping<F>> serde::ser::MapVisitor for ElasticDateMappingVisitor<F, T> {
+	fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
+    where S: Serializer {
+    	let mut base = ElasticMappingVisitor::<T>::default();
+    	try!(base.visit(serializer));
+
+		try!(serializer.serialize_struct_elt("format", T::get_format()));
+
+		match T::get_ignore_malformed() {
+			Some(ignore_malformed) => try!(serializer.serialize_struct_elt("ignore_malformed", ignore_malformed)),
+			None => ()
+		};
+
+		match T::get_null_value() {
+			Some(null_value) => try!(serializer.serialize_struct_elt("null_value", null_value)),
+			None => ()
+		};
+
+		match T::get_precision_step() {
+			Some(precision_step) => try!(serializer.serialize_struct_elt("precision_step", precision_step)),
+			None => ()
+		};
+
+		Ok(None)
+    }
 }
