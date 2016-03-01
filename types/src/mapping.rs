@@ -7,6 +7,14 @@ use serde;
 /// 
 /// Each type will have its own implementing structures with extra type-specific mapping parameters.
 pub trait ElasticMapping {
+	/// The serialisation visitor used to inspect this mapping.
+	type Visitor : serde::ser::MapVisitor + Default;
+
+	/// Gets an instance of the `Visitor` for serialisation.
+	fn get_visitor() -> Self::Visitor {
+		Self::Visitor::default()
+	}
+
 	/// Field-level index time boosting. Accepts a floating point number, defaults to `1.0`.
 	fn get_boost() -> Option<f32> {
 		None
@@ -41,13 +49,24 @@ pub trait ElasticMapping {
 
 /// A mapping implementation for a non-core type, or any where nobody cares about how it's mapped.
 pub struct NullMapping;
-impl ElasticMapping for NullMapping { }
+impl ElasticMapping for NullMapping {
+	type Visitor = NullMappingVisitor;
+}
 
 impl serde::Serialize for NullMapping {
     fn serialize<S>(&self, _: &mut S) -> Result<(), S::Error>
-        where S: serde::Serializer
-    {
+    where S: serde::Serializer {
         Ok(())
+    }
+}
+
+/// A default empty visitor.
+#[derive(Default)]
+pub struct NullMappingVisitor;
+impl serde::ser::MapVisitor for NullMappingVisitor {
+	fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
+    where S: serde::Serializer {
+		Ok(None)
     }
 }
 

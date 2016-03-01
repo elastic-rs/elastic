@@ -28,7 +28,8 @@ use ::mapping::{ ElasticMapping, ElasticType, ElasticMappingVisitor };
 /// ```
 /// 
 /// The above example binds the mapping to the `BasicDateTime` format, so `get_null_value` returns a properly formated value.
-pub trait ElasticDateMapping<T: Format> {
+pub trait ElasticDateMapping<T: Format> : ElasticMapping
+where Self : Sized {
 	/// The date format(s) that can be parsed.
 	fn get_format() -> &'static str {
 		T::name()
@@ -88,7 +89,9 @@ impl <T: Format> DefaultDateMapping<T> {
 }
 
 impl <T: Format> ElasticDateMapping<T> for DefaultDateMapping<T> { }
-impl <T: Format> ElasticMapping for DefaultDateMapping<T> { }
+impl <T: Format> ElasticMapping for DefaultDateMapping<T> {
+	type Visitor = ElasticDateMappingVisitor<T, Self>;
+}
 
 impl <T: Format> serde::Serialize for DefaultDateMapping<T> {
     fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>

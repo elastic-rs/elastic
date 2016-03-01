@@ -32,7 +32,7 @@ use ::mapping::{ ElasticMapping, ElasticType };
 /// 	}
 /// }
 /// ```
-pub trait ElasticStringMapping {
+pub trait ElasticStringMapping : ElasticMapping {
 	/// The analyzer which should be used for analyzed string fields, 
 	/// both at index-time and at search-time (unless overridden by the `search_analyzer`). 
 	/// Defaults to the default index analyzer, or the `standard` analyzer.
@@ -279,7 +279,9 @@ pub enum TermVector {
 pub struct DefaultStringMapping;
 impl ElasticStringMapping for DefaultStringMapping { }
 
-impl ElasticMapping for DefaultStringMapping { }
+impl ElasticMapping for DefaultStringMapping { 
+	type Visitor = ::mapping::NullMappingVisitor;
+}
 
 /// A Rust representation of an Elasticsearch `string`.
 pub trait ElasticStringType<T: ElasticMapping + ElasticStringMapping> where Self: Sized + ElasticType<T> { }

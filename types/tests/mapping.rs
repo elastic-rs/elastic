@@ -11,6 +11,8 @@ use elastic_types::string::*;
 
 struct MyMapping;
 impl ElasticMapping for MyMapping {
+	type Visitor = NullMappingVisitor;
+
 	fn get_boost() -> Option<f32> {
 		Some(1.01)
 	}
@@ -29,23 +31,34 @@ impl serde::Serialize for MyMapping {
     }
 }
 
-//An example function that infers the mapping for a given input
-fn get_mapping_field<T, M>(t: &T) -> Option<f32> where M: ElasticMapping, T: ElasticType<M> {
-	M::get_boost()
+//This is a quick mockup struct that accesses the mapping on a struct
+use std::marker::PhantomData;
+struct MappingDispatch<T: ElasticType<M>, M: ElasticMapping = NullMapping> {
+	phantom_m: PhantomData<M>,
+	phantom_t: PhantomData<T>
+}
+impl <T: ElasticType<M>, M: ElasticMapping = NullMapping> MappingDispatch<T, M> {
+	pub fn map(t: &T) -> Option<f32> {
+		//Check out the Visitor associated type on the mapping
+		let _ = M::get_visitor();
+
+		//Return something to prove we're looking at a unique mapping
+		M::get_boost()
+	}
 }
 
 #[test]
 fn can_access_mapping_fns() {
 	let ty = ElasticString::<MyMapping>::new("");
 
-	assert_eq!(Some(1.01), get_mapping_field(&ty));
+	assert_eq!(Some(1.01), MappingDispatch::map(&ty));
 }
 
 #[test]
 fn can_access_mapping_for_auto_impls() {
-	let ty = 16;
+	let ty: i32 = 16;
 
-	assert_eq!(None, get_mapping_field::<_, NullMapping>(&ty));
+	assert_eq!(None, MappingDispatch::<i32>::map(&ty));
 }
 
 #[test]
