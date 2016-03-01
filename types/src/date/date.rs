@@ -375,7 +375,7 @@ impl <F: Format, T: ElasticMapping + ElasticDateMapping<F>> Timelike for DateTim
 	}
 }
 
-//Serialize
+//Serialize date
 impl <F: Format, T: ElasticMapping + ElasticDateMapping<F>> Serialize for DateTime<F, T> {
 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where S: Serializer
 	{
@@ -383,7 +383,7 @@ impl <F: Format, T: ElasticMapping + ElasticDateMapping<F>> Serialize for DateTi
 	}
 }
 
-//Deserialize
+//Deserialize date
 impl <F: Format, T: ElasticMapping + ElasticDateMapping<F>> Deserialize for DateTime<F, T> {
 	fn deserialize<D>(deserializer: &mut D) -> Result<DateTime<F, T>, D::Error> where D: Deserializer,
 	{

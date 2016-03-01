@@ -112,6 +112,11 @@ fn can_cast_chrono_date_into_elastic_date() {
 	takes_es_date(date);
 }
 
+#[test]
+fn date_format_mapping_serialises_overriden_params() {
+	
+}
+
 //TODO: Test mapping formats
 // - Serialisation
 // - All defaults

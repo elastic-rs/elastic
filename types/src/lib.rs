@@ -12,7 +12,7 @@
 #![doc(html_root_url = "http://kodraus.github.io/rustdoc/elastic_types/")]
 #![deny(missing_docs)]
 
-#![feature(custom_derive, custom_attribute, plugin, associated_type_defaults)]
+#![feature(custom_derive, custom_attribute, plugin, optin_builtin_traits, associated_type_defaults)]
 #![plugin(serde_macros)]
 #![plugin(elastic_macros)]
 
@@ -58,10 +58,30 @@ pub trait ElasticMapping {
 	}
 }
 
+/// A mapping implementation for a non-core type, or any where nobody cares about how it's mapped.
+pub struct NullMapping;
+impl ElasticMapping for NullMapping {
+
+}
+
+impl serde::Serialize for NullMapping {
+    fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+        where S: serde::Serializer
+    {
+        Ok(())
+    }
+}
+
+impl ElasticType<NullMapping> for .. { }
+
 /// A type that can be indexed in Elasticsearch.
+//TODO: Rename to ElasticDataType
 pub trait ElasticType<T: ElasticMapping> {
 	
 }
+
+//TODO: Need ElasticType, which is a main type that can be derived
+//This needs to map each property. Probably through a custom derive
 
 /// Should the field be searchable? Accepts `not_analyzed` (default) and `no`.
 #[derive(Debug, Clone, Copy)]
@@ -79,4 +99,10 @@ pub enum IndexAnalysis {
 	NotAnalyzed,
 	/// Do not add this field value to the index. With this setting, the field will not be queryable.
 	No
+}
+
+trait ElasticMappingVisitor {
+	fn visit_null_map(&self);
+	fn visit_string_map<T>(&self, _: T) where T: ElasticMapping + string::ElasticStringMapping;
+	fn visit_date_map<F, T>(&self, _: T) where F: date::Format, T: ElasticMapping + date::ElasticDateMapping<F>;
 }
