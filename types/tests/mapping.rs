@@ -20,15 +20,27 @@ impl ElasticMapping for MyMapping {
 	fn get_index() -> Option<IndexAnalysis> {
 		Some(IndexAnalysis::No)
 	}
+
+	fn get_doc_values() -> Option<bool> {
+		Some(true)
+	}
+
+	fn get_include_in_all() -> Option<bool> {
+		Some(false)
+	}
+
+	fn get_store() -> Option<bool> {
+		Some(true)
+	}
 }
 impl ElasticStringMapping for MyMapping { }
 
 impl serde::Serialize for MyMapping {
-    fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
-        where S: serde::Serializer
-    {
-        serializer.serialize_struct("mapping", ElasticMappingVisitor::<MyMapping>::default())
-    }
+	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+		where S: serde::Serializer
+	{
+		serializer.serialize_struct("mapping", ElasticMappingVisitor::<MyMapping>::default())
+	}
 }
 
 //This is a quick mockup struct that accesses the mapping on a struct
@@ -58,11 +70,12 @@ fn can_access_mapping_fns() {
 fn can_access_mapping_for_auto_impls() {
 	let ty: i32 = 16;
 
+	//For auto impls, we need to send along at least the type too as a generic param
 	assert_eq!(None, MappingDispatch::<i32>::map(&ty));
 }
 
 #[test]
-fn null_mapping_serialises_to_nothing() {
+fn serialise_mapping_null() {
 	let mapping = NullMapping;
 	let ser = serde_json::to_string(&mapping).unwrap();
 
@@ -70,9 +83,37 @@ fn null_mapping_serialises_to_nothing() {
 }
 
 #[test]
-fn mapping_serialises_overriden_params() {
+fn serialise_mapping_custom() {
 	let mapping = MyMapping;
 	let ser = serde_json::to_string(&mapping).unwrap();
 
-	assert_eq!(r#"{"boost":1.01,"index":"no"}"#, ser);
+	assert_eq!(r#"{"boost":1.01,"doc_values":true,"include_in_all":false,"index":"no","store":true}"#, ser);
+}
+
+#[test]
+fn serialise_mapping_index() {
+	let index_opts: Vec<String> = vec![
+		IndexAnalysis::Analyzed,
+		IndexAnalysis::NotAnalyzed,
+		IndexAnalysis::No
+	]
+	.iter()
+	.map(|i| serde_json::to_string(i).unwrap())
+	.collect();
+
+	let expected_opts = vec![
+		r#""analyzed""#,
+		r#""not_analyzed""#,
+		r#""no""#
+	];
+
+	let mut success = true;
+	for i in 0..index_opts.len() {
+		if expected_opts[i] != &index_opts[i] {
+			success = false;
+			break;
+		}
+	}
+
+	assert!(success);
 }

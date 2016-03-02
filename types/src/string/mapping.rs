@@ -1,4 +1,7 @@
 use std::collections::BTreeMap;
+use std::marker::PhantomData;
+use serde;
+use serde::{ Serializer, Serialize };
 use ::mapping::{ ElasticMapping, ElasticType };
 
 /// The base requirements for mapping a `string` type.
@@ -72,7 +75,7 @@ pub trait ElasticStringMapping : ElasticMapping {
 
 	/// Accepts a string value which is substituted for any explicit null values. 
 	/// Defaults to null, which means the field is treated as missing.
-	fn get_null_value() -> Option<NullValue> {
+	fn get_null_value() -> Option<&'static str> {
 		None
 	}
 
@@ -124,7 +127,7 @@ pub struct ElasticStringFieldMapping {
 	pub norms: Option<Norms>,
 	/// Accepts a string value which is substituted for any explicit null values. 
 	/// Defaults to null, which means the field is treated as missing.
-	pub null_value: Option<NullValue>,
+	pub null_value: Option<&'static str>,
 	/// Whether field-length should be taken into account when scoring queries. 
 	pub position_increment_gap: Option<usize>,
 	/// The analyzer that should be used at search time on analyzed fields. 
@@ -228,16 +231,6 @@ pub enum IndexOptions {
 	Offsets
 }
 
-/// Accepts a date value in one of the configured format's as the field which is substituted for any explicit null values. 
-/// Defaults to `null`, which means the field is treated as missing.
-#[derive(Debug, Clone, Copy)]
-pub enum NullValue {
-	/// Don't substitute missing fields.
-	Null,
-	/// Substitute missing fields with a default value.
-	Default(&'static str)
-}
-
 /// Whether field-length should be taken into account when scoring queries. 
 #[derive(Debug, Clone, Copy)]
 pub enum Norms {
@@ -276,15 +269,92 @@ pub enum TermVector {
 }
 
 /// Default mapping for `String`.
+#[derive(Debug)]
 pub struct DefaultStringMapping;
 impl ElasticStringMapping for DefaultStringMapping { }
 
 impl ElasticMapping for DefaultStringMapping { 
-	type Visitor = ::mapping::NullMappingVisitor;
+	type Visitor = ElasticStringMappingVisitor<Self>;
 }
 
 /// A Rust representation of an Elasticsearch `string`.
 pub trait ElasticStringType<T: ElasticMapping + ElasticStringMapping> where Self: Sized + ElasticType<T> { }
 
-//TODO: Mapping serialisation
-//TODO: Generate this code. A macro should be fine
+//TODO: Make this take in str for field name
+/// Base visitor for serialising string mappings.
+pub struct ElasticStringMappingVisitor<T: ElasticMapping> {
+	phantom: PhantomData<T>
+}
+
+impl <T: ElasticMapping> Default for ElasticStringMappingVisitor<T> {
+	fn default() -> ElasticStringMappingVisitor<T> {
+		ElasticStringMappingVisitor::<T> {
+			phantom: PhantomData
+		}
+	}
+}
+
+impl <T: ElasticMapping> serde::ser::MapVisitor for ElasticStringMappingVisitor<T> {
+	fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
+	where S: serde::Serializer {
+		let mut base = ::mapping::ElasticMappingVisitor::<T>::default();
+		try!(base.visit(serializer));
+
+		/*match T::get_analyzer() {
+			Some(analyzer) => try!(serializer.serialize_struct_elt("analyzer", analyzer)),
+			None => ()
+		};
+
+		match T::get_fielddata() {
+			Some(fielddata) => try!(serializer.serialize_struct_elt("fielddata", fielddata)),
+			None => ()
+		};
+
+		match T::get_ignore_above() {
+			Some(ignore_above) => try!(serializer.serialize_struct_elt("ignore_above", ignore_above)),
+			None => ()
+		};
+
+		match T::get_index_options() {
+			Some(index_options) => try!(serializer.serialize_struct_elt("index_options", index_options)),
+			None => ()
+		};
+
+		match T::get_norms() {
+			Some(norms) => try!(serializer.serialize_struct_elt("norms", norms)),
+			None => ()
+		};
+
+		match T::get_null_value() {
+			Some(null_value) => try!(serializer.serialize_struct_elt("null_value", null_value)),
+			None => ()
+		};
+
+		match T::get_position_increment_gap() {
+			Some(position_increment_gap) => try!(serializer.serialize_struct_elt("position_increment_gap", position_increment_gap)),
+			None => ()
+		};
+
+		match T::get_search_analyzer() {
+			Some(search_analyzer) => try!(serializer.serialize_struct_elt("search_analyzer", search_analyzer)),
+			None => ()
+		};
+
+		match T::get_search_quote_analyzer() {
+			Some(search_quote_analyzer) => try!(serializer.serialize_struct_elt("search_quote_analyzer", search_quote_analyzer)),
+			None => ()
+		};
+
+		match T::get_similarity() {
+			Some(similarity) => try!(serializer.serialize_struct_elt("similarity", similarity)),
+			None => ()
+		};
+
+		match T::get_term_vector() {
+			Some(term_vector) => try!(serializer.serialize_struct_elt("term_vector", term_vector)),
+			None => ()
+		};*/
+
+		Ok(None)
+	}
+}

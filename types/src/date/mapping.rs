@@ -43,7 +43,7 @@ where Self : Sized {
 
 	/// Accepts a date value in one of the configured format's as the field which is substituted for any explicit null values. 
 	/// Defaults to null, which means the field is treated as missing.
-	fn get_null_value() -> Option<NullValue> {
+	fn get_null_value() -> Option<&'static str> {
 		None
 	}
 
@@ -51,27 +51,6 @@ where Self : Sized {
 	fn get_precision_step() -> Option<i32> {
 		None
 	}
-}
-
-#[derive(Debug, Clone, Copy)]
-/// Accepts a date value in one of the configured format's as the field which is substituted for any explicit null values. 
-/// Defaults to `null`, which means the field is treated as missing.
-pub enum NullValue {
-	/// Don't substitute missing fields.
-	Null,
-	/// Substitute missing fields with a default value.
-	Default(&'static str)
-}
-
-impl serde::Serialize for NullValue {
-    fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
-        where S: serde::Serializer
-    {
-    	match *self {
-        	NullValue::Null => Ok(()),
-        	NullValue::Default(s) => serializer.serialize_str(s)
-        }
-    }
 }
 
 //TODO: Make this take in str for field name
@@ -94,11 +73,11 @@ impl <T: Format> ElasticMapping for DefaultDateMapping<T> {
 }
 
 impl <T: Format> serde::Serialize for DefaultDateMapping<T> {
-    fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
-        where S: serde::Serializer
-    {
-        serializer.serialize_struct("mapping", ElasticDateMappingVisitor::<T, DefaultDateMapping<T>>::default())
-    }
+	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+		where S: serde::Serializer
+	{
+		serializer.serialize_struct("mapping", ElasticDateMappingVisitor::<T, DefaultDateMapping<T>>::default())
+	}
 }
 
 /// A Rust representation of an Elasticsearch `date`.
@@ -152,12 +131,11 @@ impl <F: Format, T: ElasticMapping + ElasticDateMapping<F>> Default for ElasticD
 	}
 }
 
-//TODO: Generate this code. A macro should be fine
 impl <F: Format, T: ElasticMapping + ElasticDateMapping<F>> serde::ser::MapVisitor for ElasticDateMappingVisitor<F, T> {
 	fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
-    where S: Serializer {
-    	let mut base = ElasticMappingVisitor::<T>::default();
-    	try!(base.visit(serializer));
+	where S: Serializer {
+		let mut base = ElasticMappingVisitor::<T>::default();
+		try!(base.visit(serializer));
 
 		try!(serializer.serialize_struct_elt("format", T::get_format()));
 
@@ -177,5 +155,5 @@ impl <F: Format, T: ElasticMapping + ElasticDateMapping<F>> serde::ser::MapVisit
 		};
 
 		Ok(None)
-    }
+	}
 }

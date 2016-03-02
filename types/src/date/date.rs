@@ -259,14 +259,13 @@ impl <F: Format, T: ElasticMapping + ElasticDateMapping<F>> Timelike for DateTim
 impl <F: Format, T: ElasticMapping + ElasticDateMapping<F>> Serialize for DateTime<F, T> {
 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where S: Serializer
 	{
-		serializer.serialize_str(&self.format()[..])
+		serializer.serialize_str(&self.format())
 	}
 }
 
 //Deserialize date
 impl <F: Format, T: ElasticMapping + ElasticDateMapping<F>> Deserialize for DateTime<F, T> {
-	fn deserialize<D>(deserializer: &mut D) -> Result<DateTime<F, T>, D::Error> where D: Deserializer,
-	{
+	fn deserialize<D>(deserializer: &mut D) -> Result<DateTime<F, T>, D::Error> where D: Deserializer {
 		struct DateTimeVisitor<F: Format, T: ElasticMapping + ElasticDateMapping<F>> {
 			phantom_f: PhantomData<F>,
 			phantom_t: PhantomData<T>

@@ -54,10 +54,10 @@ impl ElasticMapping for NullMapping {
 }
 
 impl serde::Serialize for NullMapping {
-    fn serialize<S>(&self, _: &mut S) -> Result<(), S::Error>
-    where S: serde::Serializer {
-        Ok(())
-    }
+	fn serialize<S>(&self, _: &mut S) -> Result<(), S::Error>
+	where S: serde::Serializer {
+		Ok(())
+	}
 }
 
 /// A default empty visitor.
@@ -65,9 +65,9 @@ impl serde::Serialize for NullMapping {
 pub struct NullMappingVisitor;
 impl serde::ser::MapVisitor for NullMappingVisitor {
 	fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
-    where S: serde::Serializer {
+	where S: serde::Serializer {
 		Ok(None)
-    }
+	}
 }
 
 impl ElasticType<NullMapping> for .. { }
@@ -98,19 +98,18 @@ pub enum IndexAnalysis {
 }
 
 impl serde::Serialize for IndexAnalysis {
-    fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
-        where S: serde::Serializer
-    {
-        serializer.serialize_str(match *self {
-        	IndexAnalysis::Analyzed => "analyzed",
-        	IndexAnalysis::NotAnalyzed => "not_analyzed",
-        	IndexAnalysis::No => "no"
-        })
-    }
+	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+		where S: serde::Serializer
+	{
+		serializer.serialize_str(match *self {
+			IndexAnalysis::Analyzed => "analyzed",
+			IndexAnalysis::NotAnalyzed => "not_analyzed",
+			IndexAnalysis::No => "no"
+		})
+	}
 }
 
 //TODO: Make this take in str for field name
-//TODO: Generate this code. A macro should be fine
 /// Base visitor for serialising datatype mappings.
 pub struct ElasticMappingVisitor<T: ElasticMapping> {
 	phantom: PhantomData<T>
@@ -126,8 +125,8 @@ impl <T: ElasticMapping> Default for ElasticMappingVisitor<T> {
 
 impl <T: ElasticMapping> serde::ser::MapVisitor for ElasticMappingVisitor<T> {
 	fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
-    where S: serde::Serializer {
-    	match T::get_boost() {
+	where S: serde::Serializer {
+		match T::get_boost() {
 			Some(boost) => try!(serializer.serialize_struct_elt("boost", boost)),
 			None => ()
 		};
@@ -149,5 +148,5 @@ impl <T: ElasticMapping> serde::ser::MapVisitor for ElasticMappingVisitor<T> {
 		};
 
 		Ok(None)
-    }
+	}
 }
