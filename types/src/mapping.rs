@@ -64,7 +64,7 @@ impl serde::Serialize for NullMapping {
 #[derive(Default)]
 pub struct NullMappingVisitor;
 impl serde::ser::MapVisitor for NullMappingVisitor {
-	fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
+	fn visit<S>(&mut self, _: &mut S) -> Result<Option<()>, S::Error>
 	where S: serde::Serializer {
 		Ok(None)
 	}

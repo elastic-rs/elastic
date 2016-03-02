@@ -78,19 +78,6 @@ fn dates_should_use_es_format() {
 }
 
 #[test]
-fn can_cast_chrono_date_into_elastic_date() {
-	fn takes_es_date<T: Into<DateTime<BasicDateTime>>>(_: T) {
-		
-	}
-
-	let date = chrono::UTC.datetime_from_str(
-		"13/05/2015 00:00:00", MYTYPE_DATE_FMT_2
-	).unwrap();
-
-	takes_es_date(date);
-}
-
-#[test]
 fn serialise_date() {
 	let date = DateTime::<BasicDateTime>::new(
 		chrono::UTC.datetime_from_str(

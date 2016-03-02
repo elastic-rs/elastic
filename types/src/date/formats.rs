@@ -8,7 +8,7 @@ use super::{ Format, ParseError };
 /// 
 /// # Links
 /// - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-date-format.html#built-in-date-formats)
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct BasicDateTimeNoMillis;
 impl Format for BasicDateTimeNoMillis {
 	fn fmt<'a>() -> Vec<Item<'a>> {
@@ -26,7 +26,7 @@ impl Format for BasicDateTimeNoMillis {
 /// 
 /// # Links
 /// - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-date-format.html#built-in-date-formats)
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct BasicDateTime;
 impl Format for BasicDateTime {
 	fn fmt<'a>() -> Vec<Item<'a>>{
@@ -47,7 +47,7 @@ impl Format for BasicDateTime {
 /// 
 /// # Links
 /// - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-date-format.html#built-in-date-formats)
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct EpochMillis;
 impl Format for EpochMillis {
 	fn fmt<'a>() -> Vec<Item<'a>>{

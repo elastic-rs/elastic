@@ -108,7 +108,7 @@ pub trait ElasticStringMapping : ElasticMapping {
 }
 
 /// A multi-field string mapping.
-#[derive(Debug, Default, Clone, Copy)]
+#[derive(Debug, Default, Clone, Copy, Serialize)]
 pub struct ElasticStringFieldMapping {
 /// The analyzer which should be used for analyzed string fields, 
 	/// both at index-time and at search-time (unless overridden by the `search_analyzer`). 
@@ -150,21 +150,48 @@ pub enum FieldData {
 	/// Disallow in-memory fielddata.
 	Disabled
 }
-impl FieldData {
-	/// Parse field data from in input string.
-	/// 
-	/// This will only look at the name, not other details
-	pub fn parse(fd: &str) -> FieldData {
-		match fd {
-			"disabled" => FieldData::Disabled,
-			_ => FieldData::default()
+
+impl serde::Serialize for FieldData {
+	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+	where S: Serializer
+	{
+		match *self {
+			FieldData::PagedBytes(None, None) => Ok(()),
+			fielddata => serializer.serialize_struct("fielddata", FieldDataVisitor::new(fielddata))
 		}
 	}
 }
 
-impl Default for FieldData {
-	fn default() -> FieldData {
-		FieldData::PagedBytes(None, None)
+struct FieldDataVisitor {
+	value: FieldData
+}
+impl FieldDataVisitor {
+	pub fn new(value: FieldData) -> FieldDataVisitor {
+		FieldDataVisitor {
+			value: value
+		}
+	}
+}
+
+impl serde::ser::MapVisitor for FieldDataVisitor {
+	fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
+	where S: Serializer {
+		match self.value {
+			FieldData::Disabled => try!(serializer.serialize_struct_elt("format", "disabled")),
+			FieldData::PagedBytes(loading, filter) => {
+				match loading {
+					Some(loading) => try!(serializer.serialize_struct_elt("loading", loading)),
+					None => ()
+				};
+
+				match filter {
+					Some(filter) => try!(serializer.serialize_struct_elt("filter", filter)),
+					None => ()
+				};
+			}
+		}
+
+		Ok(None)
 	}
 }
 
@@ -185,9 +212,15 @@ pub enum FieldDataLoading {
 	EagerGlobalOrdinals
 }
 
-impl Default for FieldDataLoading {
-	fn default() -> FieldDataLoading {
-		FieldDataLoading::Lazy
+impl serde::Serialize for FieldDataLoading {
+	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+	where S: Serializer
+	{
+		serializer.serialize_str(match *self {
+			FieldDataLoading::Lazy => "lazy",
+			FieldDataLoading::Eager => "eager",
+			FieldDataLoading::EagerGlobalOrdinals => "eager_global_ordinals"
+		})
 	}
 }
 
@@ -198,19 +231,62 @@ pub enum FieldDataFilter {
 	/// which can be expressed an absolute number (when the number is bigger than 1.0) or as a percentage (eg 0.01 is 1% and 1.0 is 100%). 
 	/// Frequency is calculated per segment. Percentages are based on the number of docs which have a value for the field, 
 	/// as opposed to all docs in the segment.
-	Frequency { 
-		/// The min frequency.
-		min: f32, 
-		/// The max frequency.
-		max: f32, 
-		/// The minimum segment size before loading.
-		min_segment_size: usize 
-	},
+	Frequency(FrequencyFilter),
 	/// Terms can also be filtered by regular expression - only values which match the regular expression are loaded. 
 	/// Note: the regular expression is applied to each term in the field, not to the whole field value. 
-	Regex { 
-		/// The regex pattern.
-		pattern: &'static str 
+	Regex(RegexFilter)
+}
+
+/// The frequency filter allows you to only load terms whose term frequency falls between a min and max value, 
+/// which can be expressed an absolute number (when the number is bigger than 1.0) or as a percentage (eg 0.01 is 1% and 1.0 is 100%). 
+/// Frequency is calculated per segment. Percentages are based on the number of docs which have a value for the field, 
+/// as opposed to all docs in the segment.
+#[derive(Debug, Clone, Copy, Serialize)]
+pub struct FrequencyFilter { 
+	/// The min frequency.
+	pub min: f32, 
+	/// The max frequency.
+	pub max: f32, 
+	/// The minimum segment size before loading.
+	pub min_segment_size: usize 
+}
+
+/// Terms can also be filtered by regular expression - only values which match the regular expression are loaded. 
+/// Note: the regular expression is applied to each term in the field, not to the whole field value. 
+#[derive(Debug, Clone, Copy, Serialize)]
+pub struct RegexFilter { 
+	/// The regex pattern.
+	pub pattern: &'static str 
+}
+
+impl serde::Serialize for FieldDataFilter {
+	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+	where S: Serializer
+	{
+		serializer.serialize_struct("filter", FieldDataFilterVisitor::new(*self))
+	}
+}
+
+struct FieldDataFilterVisitor {
+	value: FieldDataFilter
+}
+impl FieldDataFilterVisitor {
+	pub fn new(value: FieldDataFilter) -> FieldDataFilterVisitor {
+		FieldDataFilterVisitor {
+			value: value
+		}
+	}
+}
+
+impl serde::ser::MapVisitor for FieldDataFilterVisitor {
+	fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
+	where S: Serializer {
+		match self.value {
+			FieldDataFilter::Frequency(freq) => try!(serializer.serialize_struct_elt("frequency", freq)),
+			FieldDataFilter::Regex(pat) => try!(serializer.serialize_struct_elt("regex", pat))
+		}
+
+		Ok(None)
 	}
 }
 
@@ -231,6 +307,19 @@ pub enum IndexOptions {
 	Offsets
 }
 
+impl serde::Serialize for IndexOptions {
+	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+	where S: Serializer
+	{
+		serializer.serialize_str(match *self {
+			IndexOptions::Docs => "docs",
+			IndexOptions::Freqs => "freqs",
+			IndexOptions::Positions => "positions",
+			IndexOptions::Offsets => "offsets"
+		})
+	}
+}
+
 /// Whether field-length should be taken into account when scoring queries. 
 #[derive(Debug, Clone, Copy)]
 pub enum Norms {
@@ -243,6 +332,37 @@ pub enum Norms {
 	Disabled
 }
 
+struct NormsVisitor {
+	value: Norms
+}
+impl NormsVisitor {
+	pub fn new(value: Norms) -> NormsVisitor {
+		NormsVisitor {
+			value: value
+		}
+	}
+}
+
+impl serde::ser::MapVisitor for NormsVisitor {
+	fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
+	where S: Serializer {
+		match self.value {
+			Norms::Enabled { loading: l } => try!(serializer.serialize_struct_elt("loading", l)),
+			Norms::Disabled => try!(serializer.serialize_struct_elt("enabled", false))
+		}
+
+		Ok(None)
+	}
+}
+
+impl serde::Serialize for Norms {
+	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+	where S: Serializer
+	{
+		serializer.serialize_struct("norms", NormsVisitor::new(*self))
+	}
+}
+
 /// Whether the norms should be loaded into memory eagerly (`eager`), 
 /// whenever a new segment comes online, or they can loaded lazily (`lazy`, default).
 #[derive(Debug, Clone, Copy)]
@@ -251,6 +371,17 @@ pub enum NormsLoading {
 	Eager,
 	/// Load norms lazily.
 	Lazy
+}
+
+impl serde::Serialize for NormsLoading {
+	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+	where S: Serializer
+	{
+		serializer.serialize_str(match *self {
+			NormsLoading::Eager => "eager",
+			NormsLoading::Lazy => "lazy"
+		})
+	}
 }
 
 /// Term vectors contain information about the terms produced by the analysis process.
@@ -268,13 +399,35 @@ pub enum TermVector {
 	WithPositionsOffsets
 }
 
+impl serde::Serialize for TermVector {
+	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+	where S: Serializer
+	{
+		serializer.serialize_str(match *self {
+			TermVector::No => "no",
+			TermVector::Yes => "yes",
+			TermVector::WithPositions => "with_positions",
+			TermVector::WithOffsets => "with_offsets",
+			TermVector::WithPositionsOffsets => "with_positions_offsets"
+		})
+	}
+}
+
 /// Default mapping for `String`.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct DefaultStringMapping;
 impl ElasticStringMapping for DefaultStringMapping { }
 
 impl ElasticMapping for DefaultStringMapping { 
 	type Visitor = ElasticStringMappingVisitor<Self>;
+}
+
+impl Serialize for DefaultStringMapping {
+	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+		where S: serde::Serializer
+	{
+		serializer.serialize_struct("mapping", ElasticStringMappingVisitor::<DefaultStringMapping>::default())
+	}
 }
 
 /// A Rust representation of an Elasticsearch `string`.
@@ -294,18 +447,24 @@ impl <T: ElasticMapping> Default for ElasticStringMappingVisitor<T> {
 	}
 }
 
-impl <T: ElasticMapping> serde::ser::MapVisitor for ElasticStringMappingVisitor<T> {
+impl <T: ElasticMapping + ElasticStringMapping> serde::ser::MapVisitor for ElasticStringMappingVisitor<T> {
 	fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
 	where S: serde::Serializer {
 		let mut base = ::mapping::ElasticMappingVisitor::<T>::default();
 		try!(base.visit(serializer));
 
-		/*match T::get_analyzer() {
+		match T::get_analyzer() {
 			Some(analyzer) => try!(serializer.serialize_struct_elt("analyzer", analyzer)),
 			None => ()
 		};
 
+		match T::get_fields() {
+			Some(fields) => try!(serializer.serialize_struct_elt("fields", fields)),
+			None => ()
+		};
+
 		match T::get_fielddata() {
+			Some(FieldData::PagedBytes(None, None)) => (),
 			Some(fielddata) => try!(serializer.serialize_struct_elt("fielddata", fielddata)),
 			None => ()
 		};
@@ -353,7 +512,7 @@ impl <T: ElasticMapping> serde::ser::MapVisitor for ElasticStringMappingVisitor<
 		match T::get_term_vector() {
 			Some(term_vector) => try!(serializer.serialize_struct_elt("term_vector", term_vector)),
 			None => ()
-		};*/
+		};
 
 		Ok(None)
 	}

@@ -55,6 +55,7 @@ where Self : Sized {
 
 //TODO: Make this take in str for field name
 /// Default mapping for `DateTime`.
+#[derive(Debug, Clone)]
 pub struct DefaultDateMapping<T: Format = DefaultFormat> {
 	phantom: PhantomData<T>
 }

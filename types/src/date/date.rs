@@ -59,7 +59,7 @@ pub use chrono::{ Datelike, Timelike };
 /// 
 /// # Links
 /// - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/date.html)
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct DateTime<F: Format = DefaultFormat, T: ElasticMapping + ElasticDateMapping<F> = DefaultDateMapping<F>> {
 	/// The date and time value
 	value: DT,
