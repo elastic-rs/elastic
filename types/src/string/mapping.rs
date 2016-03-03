@@ -2,7 +2,7 @@ use std::collections::BTreeMap;
 use std::marker::PhantomData;
 use serde;
 use serde::{ Serializer, Serialize };
-use ::mapping::{ ElasticMapping, ElasticType };
+use ::mapping::{ ElasticMapping, ElasticType, IndexAnalysis };
 
 /// The base requirements for mapping a `string` type.
 /// 
@@ -35,7 +35,39 @@ use ::mapping::{ ElasticMapping, ElasticType };
 /// 	}
 /// }
 /// ```
-pub trait ElasticStringMapping : ElasticMapping {
+pub trait ElasticStringMapping 
+where Self : Sized + Serialize {
+	/// Field-level index time boosting. Accepts a floating point number, defaults to `1.0`.
+	fn get_boost() -> Option<f32> {
+		None
+	}
+
+	/// Should the field be stored on disk in a column-stride fashion, 
+	/// so that it can later be used for sorting, aggregations, or scripting? 
+	/// Accepts `true` (default) or `false`.
+	fn get_doc_values() -> Option<bool> {
+		None
+	}
+
+	/// Whether or not the field value should be included in the `_all` field? 
+	/// Accepts true or false. 
+	/// Defaults to `false` if index is set to `no`, or if a parent object field sets `include_in_all` to false. 
+	/// Otherwise defaults to `true`.
+	fn get_include_in_all() -> Option<bool> {
+		None
+	}
+
+	/// Should the field be searchable? Accepts `not_analyzed` (default) and `no`.
+	fn get_index() -> Option<IndexAnalysis> {
+		None
+	}
+
+	/// Whether the field value should be stored and retrievable separately from the `_source` field. 
+	/// Accepts `true` or `false` (default).
+	fn get_store() -> Option<bool> {
+		None
+	}
+
 	/// The analyzer which should be used for analyzed string fields, 
 	/// both at index-time and at search-time (unless overridden by the `search_analyzer`). 
 	/// Defaults to the default index analyzer, or the `standard` analyzer.
@@ -104,6 +136,14 @@ pub trait ElasticStringMapping : ElasticMapping {
 	/// Whether term vectors should be stored for an analyzed field. Defaults to `no`.
 	fn get_term_vector() -> Option<TermVector> {
 		None
+	}
+}
+
+impl <M: ElasticStringMapping> ElasticMapping for M {
+	type Visitor = ElasticStringMappingVisitor<M>;
+
+	fn get_type() -> &'static str {
+		"string"
 	}
 }
 
@@ -418,10 +458,6 @@ impl serde::Serialize for TermVector {
 pub struct DefaultStringMapping;
 impl ElasticStringMapping for DefaultStringMapping { }
 
-impl ElasticMapping for DefaultStringMapping { 
-	type Visitor = ElasticStringMappingVisitor<Self>;
-}
-
 impl Serialize for DefaultStringMapping {
 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
 		where S: serde::Serializer
@@ -431,10 +467,11 @@ impl Serialize for DefaultStringMapping {
 }
 
 /// A Rust representation of an Elasticsearch `string`.
-pub trait ElasticStringType<T: ElasticMapping + ElasticStringMapping> where Self: Sized + ElasticType<T> { }
+pub trait ElasticStringType<T: ElasticMapping + ElasticStringMapping> where Self: Sized + ElasticType<T, ()> { }
 
 //TODO: Make this take in str for field name
 /// Base visitor for serialising string mappings.
+#[derive(Debug, PartialEq)]
 pub struct ElasticStringMappingVisitor<T: ElasticMapping> {
 	phantom: PhantomData<T>
 }
@@ -450,8 +487,26 @@ impl <T: ElasticMapping> Default for ElasticStringMappingVisitor<T> {
 impl <T: ElasticMapping + ElasticStringMapping> serde::ser::MapVisitor for ElasticStringMappingVisitor<T> {
 	fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
 	where S: serde::Serializer {
-		let mut base = ::mapping::ElasticMappingVisitor::<T>::default();
-		try!(base.visit(serializer));
+		match T::get_boost() {
+			Some(boost) => try!(serializer.serialize_struct_elt("boost", boost)),
+			None => ()
+		};
+		match T::get_doc_values() {
+			Some(doc_values) => try!(serializer.serialize_struct_elt("doc_values", doc_values)),
+			None => ()
+		};
+		match T::get_include_in_all() {
+			Some(include_in_all) => try!(serializer.serialize_struct_elt("include_in_all", include_in_all)),
+			None => ()
+		};
+		match T::get_index() {
+			Some(index) => try!(serializer.serialize_struct_elt("index", index)),
+			None => ()
+		};
+		match T::get_store() {
+			Some(store) => try!(serializer.serialize_struct_elt("store", store)),
+			None => ()
+		};
 
 		match T::get_analyzer() {
 			Some(analyzer) => try!(serializer.serialize_struct_elt("analyzer", analyzer)),

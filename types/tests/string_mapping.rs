@@ -11,9 +11,7 @@ use elastic_types::mapping::*;
 use elastic_types::string::*;
 
 pub struct MyStringMapping;
-impl ElasticMapping for MyStringMapping { 
-	type Visitor = ElasticStringMappingVisitor<Self>;
-
+impl ElasticStringMapping for MyStringMapping { 
 	fn get_boost() -> Option<f32> {
 		Some(1.01)
 	}
@@ -33,9 +31,7 @@ impl ElasticMapping for MyStringMapping {
 	fn get_store() -> Option<bool> {
 		Some(true)
 	}
-}
-
-impl ElasticStringMapping for MyStringMapping { 
+	
 	fn get_analyzer() -> Option<&'static str> {
 		Some("my_analyzer")
 	}

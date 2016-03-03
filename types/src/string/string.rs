@@ -77,7 +77,7 @@ impl <T: ElasticMapping + ElasticStringMapping> ElasticString<T> {
 	}
 }
 
-impl <T: ElasticMapping + ElasticStringMapping> ElasticType<T> for ElasticString<T> { }
+impl <T: ElasticMapping + ElasticStringMapping> ElasticType<T, ()> for ElasticString<T> { }
 impl <T: ElasticMapping + ElasticStringMapping> ElasticStringType<T> for ElasticString<T> { }
 
 impl From<String> for ElasticString<DefaultStringMapping> {
@@ -142,7 +142,7 @@ impl<'a, T: ElasticMapping + ElasticStringMapping> PartialEq<ElasticString<T>> f
 	}
 }
 
-impl ElasticType<DefaultStringMapping> for String { }
+impl ElasticType<DefaultStringMapping, ()> for String { }
 impl ElasticStringType<DefaultStringMapping> for String { }
 
 //Serialize elastic string

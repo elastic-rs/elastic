@@ -11,9 +11,7 @@ use elastic_types::date::*;
 
 //A custom date mapping
 struct MyDateMapping;
-impl ElasticMapping for MyDateMapping {
-	type Visitor = ElasticDateMappingVisitor<EpochMillis, MyDateMapping>;
-	
+impl ElasticDateMapping<EpochMillis> for MyDateMapping {
 	fn get_boost() -> Option<f32> {
 		Some(1.01)
 	}
@@ -33,8 +31,7 @@ impl ElasticMapping for MyDateMapping {
 	fn get_store() -> Option<bool> {
 		Some(true)
 	}
-}
-impl ElasticDateMapping<EpochMillis> for MyDateMapping {
+	
 	fn get_null_value() -> Option<&'static str> {
 		Some("0")
 	}

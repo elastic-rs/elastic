@@ -10,9 +10,7 @@ use elastic_types::mapping::*;
 use elastic_types::string::*;
 
 struct MyMapping;
-impl ElasticMapping for MyMapping {
-	type Visitor = NullMappingVisitor;
-
+impl ElasticStringMapping for MyMapping { 
 	fn get_boost() -> Option<f32> {
 		Some(1.01)
 	}
@@ -33,7 +31,6 @@ impl ElasticMapping for MyMapping {
 		Some(true)
 	}
 }
-impl ElasticStringMapping for MyMapping { }
 
 impl serde::Serialize for MyMapping {
 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
@@ -45,17 +42,18 @@ impl serde::Serialize for MyMapping {
 
 //This is a quick mockup struct that accesses the mapping on a struct
 use std::marker::PhantomData;
-struct MappingDispatch<T: ElasticType<M>, M: ElasticMapping = NullMapping> {
+struct MappingDispatch<T: ElasticType<M, F>, M: ElasticMapping<F> = NullMapping, F = ()> {
 	phantom_m: PhantomData<M>,
-	phantom_t: PhantomData<T>
+	phantom_t: PhantomData<T>,
+	phantom_f: PhantomData<F>
 }
-impl <T: ElasticType<M>, M: ElasticMapping = NullMapping> MappingDispatch<T, M> {
-	pub fn map(t: &T) -> Option<f32> {
+impl <T: ElasticType<M, F>, M: ElasticMapping<F> = NullMapping, F = ()> MappingDispatch<T, M, F> {
+	pub fn map(t: &T) -> &'static str {
 		//Check out the Visitor associated type on the mapping
 		let _ = M::get_visitor();
 
-		//Return something to prove we're looking at a unique mapping
-		M::get_boost()
+		//Return the type of this mapping to prove we're looking at something unique
+		M::get_type()
 	}
 }
 
@@ -63,7 +61,7 @@ impl <T: ElasticType<M>, M: ElasticMapping = NullMapping> MappingDispatch<T, M> 
 fn can_access_mapping_fns() {
 	let ty = ElasticString::<MyMapping>::new("");
 
-	assert_eq!(Some(1.01), MappingDispatch::map(&ty));
+	assert_eq!("string", MappingDispatch::map(&ty));
 }
 
 #[test]
@@ -71,7 +69,7 @@ fn can_access_mapping_for_auto_impls() {
 	let ty: i32 = 16;
 
 	//For auto impls, we need to send along at least the type too as a generic param
-	assert_eq!(None, MappingDispatch::<i32>::map(&ty));
+	assert_eq!("", MappingDispatch::<i32>::map(&ty));
 }
 
 #[test]
@@ -80,14 +78,6 @@ fn serialise_mapping_null() {
 	let ser = serde_json::to_string(&mapping).unwrap();
 
 	assert_eq!("", ser);
-}
-
-#[test]
-fn serialise_mapping_custom() {
-	let mapping = MyMapping;
-	let ser = serde_json::to_string(&mapping).unwrap();
-
-	assert_eq!(r#"{"boost":1.01,"doc_values":true,"include_in_all":false,"index":"no","store":true}"#, ser);
 }
 
 #[test]

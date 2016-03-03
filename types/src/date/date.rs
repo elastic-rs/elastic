@@ -60,14 +60,14 @@ pub use chrono::{ Datelike, Timelike };
 /// # Links
 /// - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/date.html)
 #[derive(Debug, Clone)]
-pub struct DateTime<F: Format = DefaultFormat, T: ElasticMapping + ElasticDateMapping<F> = DefaultDateMapping<F>> {
+pub struct DateTime<F: Format = DefaultFormat, T: ElasticMapping<F> + ElasticDateMapping<F> = DefaultDateMapping<F>> {
 	/// The date and time value
 	value: DT,
 	phantom_f: PhantomData<F>,
 	phantom_t: PhantomData<T>
 }
 
-impl <F: Format, T: ElasticMapping + ElasticDateMapping<F>> DateTime<F, T> {
+impl <F: Format, T: ElasticMapping<F> + ElasticDateMapping<F>> DateTime<F, T> {
 	/// Creates a new `DateTime` from the given `chrono::DateTime<UTC>`.
 	/// 
 	/// This function will consume the provided `chrono` date.
@@ -133,11 +133,11 @@ impl <F: Format, T: ElasticMapping + ElasticDateMapping<F>> DateTime<F, T> {
 	}
 }
 
-impl <F: Format, T: ElasticMapping + ElasticDateMapping<F>> ElasticType<T> for DateTime<F, T> {
+impl <F: Format, T: ElasticMapping<F> + ElasticDateMapping<F>> ElasticType<T, F> for DateTime<F, T> {
 
 }
 
-impl <F: Format, T: ElasticMapping + ElasticDateMapping<F>> ElasticDateType<F, T> for DateTime<F, T> {
+impl <F: Format, T: ElasticMapping<F> + ElasticDateMapping<F>> ElasticDateType<F, T> for DateTime<F, T> {
 	fn parse(date: &str) -> Result<DateTime<F, T>, ParseError> {
 		F::parse(date).map(|r| DateTime::new(r))
 	}
@@ -147,19 +147,19 @@ impl <F: Format, T: ElasticMapping + ElasticDateMapping<F>> ElasticDateType<F, T
 	}
 }
 
-impl <F: Format, T: ElasticMapping + ElasticDateMapping<F>> Default for DateTime<F, T> {
+impl <F: Format, T: ElasticMapping<F> + ElasticDateMapping<F>> Default for DateTime<F, T> {
 	fn default() -> DateTime<F, T> {
 		DateTime::<F, T>::now()
 	}
 }
 
-impl <F: Format, T: ElasticMapping + ElasticDateMapping<F>> From<DT> for DateTime<F, T> {
+impl <F: Format, T: ElasticMapping<F> + ElasticDateMapping<F>> From<DT> for DateTime<F, T> {
 	fn from(dt: DT) -> DateTime<F, T> {
 		DateTime::<F, T>::new(dt)
 	}
 }
 
-impl <F: Format, T: ElasticMapping + ElasticDateMapping<F>> Datelike for DateTime<F, T> {
+impl <F: Format, T: ElasticMapping<F> + ElasticDateMapping<F>> Datelike for DateTime<F, T> {
 	fn year(&self) -> i32 { self.value.year() }
 	fn month(&self) -> u32 { self.value.month() }
 	fn month0(&self) -> u32 { self.value.month0() }
@@ -220,7 +220,7 @@ impl <F: Format, T: ElasticMapping + ElasticDateMapping<F>> Datelike for DateTim
 	}
 }
 
-impl <F: Format, T: ElasticMapping + ElasticDateMapping<F>> Timelike for DateTime<F, T> {
+impl <F: Format, T: ElasticMapping<F> + ElasticDateMapping<F>> Timelike for DateTime<F, T> {
 	fn hour(&self) -> u32 { self.value.hour() }
 	fn minute(&self) -> u32 { self.value.minute() }
 	fn second(&self) -> u32 { self.value.second() }
@@ -256,7 +256,7 @@ impl <F: Format, T: ElasticMapping + ElasticDateMapping<F>> Timelike for DateTim
 }
 
 //Serialize date
-impl <F: Format, T: ElasticMapping + ElasticDateMapping<F>> Serialize for DateTime<F, T> {
+impl <F: Format, T: ElasticMapping<F> + ElasticDateMapping<F>> Serialize for DateTime<F, T> {
 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where S: Serializer
 	{
 		serializer.serialize_str(&self.format())
@@ -264,14 +264,14 @@ impl <F: Format, T: ElasticMapping + ElasticDateMapping<F>> Serialize for DateTi
 }
 
 //Deserialize date
-impl <F: Format, T: ElasticMapping + ElasticDateMapping<F>> Deserialize for DateTime<F, T> {
+impl <F: Format, T: ElasticMapping<F> + ElasticDateMapping<F>> Deserialize for DateTime<F, T> {
 	fn deserialize<D>(deserializer: &mut D) -> Result<DateTime<F, T>, D::Error> where D: Deserializer {
-		struct DateTimeVisitor<F: Format, T: ElasticMapping + ElasticDateMapping<F>> {
+		struct DateTimeVisitor<F: Format, T: ElasticMapping<F> + ElasticDateMapping<F>> {
 			phantom_f: PhantomData<F>,
 			phantom_t: PhantomData<T>
 		}
 
-		impl <F: Format, T: ElasticMapping + ElasticDateMapping<F>> Default for DateTimeVisitor<F, T> {
+		impl <F: Format, T: ElasticMapping<F> + ElasticDateMapping<F>> Default for DateTimeVisitor<F, T> {
 			fn default() -> DateTimeVisitor<F, T> {
 				DateTimeVisitor::<F, T> {
 					phantom_f: PhantomData,
@@ -280,7 +280,7 @@ impl <F: Format, T: ElasticMapping + ElasticDateMapping<F>> Deserialize for Date
 			}
 		}
 
-		impl <F: Format, T: ElasticMapping + ElasticDateMapping<F>> serde::de::Visitor for DateTimeVisitor<F, T> {
+		impl <F: Format, T: ElasticMapping<F> + ElasticDateMapping<F>> serde::de::Visitor for DateTimeVisitor<F, T> {
 			type Value = DateTime<F, T>;
 
 			fn visit_str<E>(&mut self, v: &str) -> Result<DateTime<F, T>, E> where E: serde::de::Error {
