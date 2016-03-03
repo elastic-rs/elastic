@@ -51,27 +51,6 @@ impl <T: ElasticMapping + ElasticStringMapping> ElasticString<T> {
 	}
 
 	/// Change the mapping of this string.
-	/// 
-	/// # Examples
-	/// 
-	/// ```
-	/// use elastic_types::ElasticMapping;
-	/// use elastic_types::string::{ ElasticString, ElasticStringMapping, DefaultStringMapping };
-	/// 
-	/// //Define a custom mapping that adjusts the boost value
-	/// struct MyStringMapping;
-	/// impl ElasticStringMapping for MyStringMapping { }
-	/// impl ElasticMapping for MyStringMapping {
-	/// 	fn get_boost() -> Option<f32> {
-	/// 		Some(2.0)
-	/// 	}
-	/// }
-	/// 
-	/// //Use the default format, where boost is given no value.
-	/// let string1 = ElasticString::<DefaultStringMapping>::new("my string");
-	/// 
-	/// let string2: ElasticString<MyStringMapping> = string1.into();
-	/// ```
 	pub fn into<TInto: ElasticMapping + ElasticStringMapping>(self) -> ElasticString<TInto> {
 		ElasticString::<TInto>::new(self.value)
 	}

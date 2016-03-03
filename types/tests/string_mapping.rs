@@ -31,7 +31,7 @@ impl ElasticStringMapping for MyStringMapping {
 	fn get_store() -> Option<bool> {
 		Some(true)
 	}
-	
+
 	fn get_analyzer() -> Option<&'static str> {
 		Some("my_analyzer")
 	}
@@ -101,10 +101,10 @@ impl serde::Serialize for MyStringMapping {
 
 #[test]
 fn serialise_mapping_default() {
-	/*let mapping = DefaultDateMapping::<BasicDateTime>::new();
+	let mapping = DefaultStringMapping;
 	let ser = serde_json::to_string(&mapping).unwrap();
 
-	assert_eq!(r#"{"format":"basic_date_time"}"#, ser);*/
+	assert_eq!(r#"{"type":"string"}"#, ser);
 }
 
 #[test]
@@ -112,7 +112,7 @@ fn serialise_mapping_custom() {
 	let mapping = MyStringMapping;
 	let ser = serde_json::to_string(&mapping).unwrap();
 
-	assert_eq!(r#"{"boost":1.01,"doc_values":true,"include_in_all":false,"index":"no","store":true,"analyzer":"my_analyzer","fields":{"bm25_field":{"analyzer":null,"fielddata":null,"ignore_above":null,"index_options":null,"norms":null,"null_value":null,"position_increment_gap":null,"search_analyzer":null,"search_quote_analyzer":null,"similarity":"BM25","term_vector":null},"raw":{"analyzer":"my_analyzer","fielddata":null,"ignore_above":null,"index_options":null,"norms":null,"null_value":null,"position_increment_gap":null,"search_analyzer":null,"search_quote_analyzer":null,"similarity":null,"term_vector":null}},"fielddata":{"format":"disabled"},"ignore_above":50,"index_options":"docs","norms":{"enabled":false},"null_value":"my default value","position_increment_gap":8,"search_analyzer":"my_search_analyzer","search_quote_analyzer":"my_quote_search_analyzer","similarity":"my_similarity","term_vector":"no"}"#, ser);
+	assert_eq!(r#"{"type":"string","boost":1.01,"doc_values":true,"include_in_all":false,"index":"no","store":true,"analyzer":"my_analyzer","fields":{"bm25_field":{"analyzer":null,"fielddata":null,"ignore_above":null,"index_options":null,"norms":null,"null_value":null,"position_increment_gap":null,"search_analyzer":null,"search_quote_analyzer":null,"similarity":"BM25","term_vector":null},"raw":{"analyzer":"my_analyzer","fielddata":null,"ignore_above":null,"index_options":null,"norms":null,"null_value":null,"position_increment_gap":null,"search_analyzer":null,"search_quote_analyzer":null,"similarity":null,"term_vector":null}},"fielddata":{"format":"disabled"},"ignore_above":50,"index_options":"docs","norms":{"enabled":false},"null_value":"my default value","position_increment_gap":8,"search_analyzer":"my_search_analyzer","search_quote_analyzer":"my_quote_search_analyzer","similarity":"my_similarity","term_vector":"no"}"#, ser);
 }
 
 #[test]

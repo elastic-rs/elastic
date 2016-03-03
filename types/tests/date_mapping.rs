@@ -31,7 +31,7 @@ impl ElasticDateMapping<EpochMillis> for MyDateMapping {
 	fn get_store() -> Option<bool> {
 		Some(true)
 	}
-	
+
 	fn get_null_value() -> Option<&'static str> {
 		Some("0")
 	}
@@ -58,7 +58,7 @@ fn serialise_mapping_default() {
 	let mapping = DefaultDateMapping::<BasicDateTime>::new();
 	let ser = serde_json::to_string(&mapping).unwrap();
 
-	assert_eq!(r#"{"format":"basic_date_time"}"#, ser);
+	assert_eq!(r#"{"type":"date","format":"basic_date_time"}"#, ser);
 }
 
 #[test]
@@ -66,5 +66,5 @@ fn serialise_mapping_custom() {
 	let mapping = MyDateMapping;
 	let ser = serde_json::to_string(&mapping).unwrap();
 
-	assert_eq!(r#"{"boost":1.01,"doc_values":true,"include_in_all":false,"index":"no","store":true,"format":"epoch_millis","ignore_malformed":true,"null_value":"0","precision_step":6}"#, ser);
+	assert_eq!(r#"{"type":"date","boost":1.01,"doc_values":true,"include_in_all":false,"index":"no","store":true,"format":"epoch_millis","ignore_malformed":true,"null_value":"0","precision_step":6}"#, ser);
 }

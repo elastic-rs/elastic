@@ -11,13 +11,24 @@ use ::mapping::{ ElasticMapping, ElasticType, IndexAnalysis };
 /// Custom mappings can be defined by implementing `ElasticStringMapping`:
 /// 
 /// ```
+/// # extern crate serde;
+/// # extern crate elastic_types;
+/// # fn main() {
 /// use std::collections::BTreeMap;
-/// use elastic_types::string::{ ElasticStringMapping, ElasticStringFieldMapping, NullValue };
+/// use elastic_types::mapping::ElasticMapping;
+/// use elastic_types::string::{ ElasticStringMapping, ElasticStringFieldMapping };
 /// 
 /// struct MyStringMapping;
+/// impl serde::Serialize for MyStringMapping {
+/// 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+/// 	where S: serde::Serializer {
+/// 		serializer.serialize_struct("mapping", MyStringMapping::get_visitor())
+/// 	}
+/// }
+/// 
 /// impl ElasticStringMapping for MyStringMapping {
-/// 	fn get_null_value() -> Option<NullValue> {
-/// 		Some(NullValue::Default("my default value"))
+/// 	fn get_null_value() -> Option<&'static str> {
+/// 		Some("my default value")
 /// 	}
 /// 
 /// 	fn get_fields() -> Option<BTreeMap<&'static str, ElasticStringFieldMapping>> {
@@ -34,6 +45,7 @@ use ::mapping::{ ElasticMapping, ElasticType, IndexAnalysis };
 /// 		Some(fields)
 /// 	}
 /// }
+/// # }
 /// ```
 pub trait ElasticStringMapping 
 where Self : Sized + Serialize {
@@ -487,6 +499,8 @@ impl <T: ElasticMapping> Default for ElasticStringMappingVisitor<T> {
 impl <T: ElasticMapping + ElasticStringMapping> serde::ser::MapVisitor for ElasticStringMappingVisitor<T> {
 	fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
 	where S: serde::Serializer {
+		try!(serializer.serialize_struct_elt("type", T::get_type()));
+
 		match T::get_boost() {
 			Some(boost) => try!(serializer.serialize_struct_elt("boost", boost)),
 			None => ()

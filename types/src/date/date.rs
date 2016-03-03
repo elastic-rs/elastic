@@ -128,7 +128,7 @@ impl <F: Format, T: ElasticMapping<F> + ElasticDateMapping<F>> DateTime<F, T> {
 	/// //Change the format to epoch_millis
 	/// let otherdate: DateTime<EpochMillis> = date.into();
 	/// ```
-	pub fn into<FInto: Format, TInto: ElasticMapping + ElasticDateMapping<FInto>>(self) -> DateTime<FInto, TInto> {
+	pub fn into<FInto: Format, TInto: ElasticMapping<FInto> + ElasticDateMapping<FInto>>(self) -> DateTime<FInto, TInto> {
 		DateTime::<FInto, TInto>::new(self.value)
 	}
 }

@@ -12,19 +12,29 @@ use ::mapping::{ ElasticMapping, ElasticType, ElasticMappingVisitor, IndexAnalys
 /// Custom mappings can be defined by implementing `ElasticDateMapping`:
 /// 
 /// ```
-/// use elastic_types::date::{ ElasticDateMapping, BasicDateTime, NullValue };
-/// use elastic_types::date::Format;
+/// # extern crate serde;
+/// # extern crate elastic_types;
+/// # fn main() {
+/// use elastic_types::mapping::ElasticMapping;
+/// use elastic_types::date::{ ElasticDateMapping, BasicDateTime, Format };
 /// 
 /// struct MyDateMapping;
+/// impl serde::Serialize for MyDateMapping {
+/// 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+/// 	where S: serde::Serializer {
+/// 		serializer.serialize_struct("mapping", MyDateMapping::get_visitor())
+/// 	}
+/// }
 /// impl ElasticDateMapping<BasicDateTime> for MyDateMapping {
 /// 	fn get_ignore_malformed() -> Option<bool> {
 /// 		Some(true)
 ///		}
 /// 
-/// 	fn get_null_value() -> Option<NullValue> {
-/// 		Some(NullValue::Default("20150701T000000.000Z"))
+/// 	fn get_null_value() -> Option<&'static str> {
+/// 		Some("20150701T000000.000Z")
 /// 	}
 /// }
+/// # }
 /// ```
 /// 
 /// The above example binds the mapping to the `BasicDateTime` format, so `get_null_value` returns a properly formated value.
@@ -172,6 +182,8 @@ impl <F: Format, T: ElasticDateMapping<F>> Default for ElasticDateMappingVisitor
 impl <F: Format, T: ElasticDateMapping<F>> serde::ser::MapVisitor for ElasticDateMappingVisitor<F, T> {
 	fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
 	where S: Serializer {
+		try!(serializer.serialize_struct_elt("type", T::get_type()));
+
 		match T::get_boost() {
 			Some(boost) => try!(serializer.serialize_struct_elt("boost", boost)),
 			None => ()
