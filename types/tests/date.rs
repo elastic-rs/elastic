@@ -9,7 +9,6 @@ extern crate elastic_types;
 
 use chrono::format::{ Parsed, Item };
 use chrono::offset::TimeZone;
-use elastic_types::mapping::*;
 use elastic_types::date::*;
 
 #[derive(Default, Serialize, Deserialize)]
