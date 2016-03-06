@@ -65,7 +65,7 @@ pub trait Format {
 	/// Parses a date string to a `chrono::DateTime<UTC>` result.
 	/// 
 	/// The date string must match the format specified by `fmt()`.
-	fn parse<'a>(date: &str) -> Result<DateTime<UTC>, ParseError> {
+	fn parse(date: &str) -> Result<DateTime<UTC>, ParseError> {
 		let fmt = Self::fmt();
 
 		let mut parsed = Parsed::new();
@@ -79,16 +79,16 @@ pub trait Format {
 
 				//Set the DateTime result
 				let dt = try!(parsed.to_naive_datetime_with_offset(0));
-				return Ok(chrono::DateTime::from_utc(dt, chrono::UTC));
+				Ok(chrono::DateTime::from_utc(dt, chrono::UTC))
 			},
-			Err(e) => return Err(e.into())
+			Err(e) => Err(e.into())
 		}
 	}
 
 	/// Formats a given `chrono::DateTime<UTC>` as a string.
 	/// 
 	/// The resulting string is based off the format specified by `fmt()`.
-	fn format<'a>(date: &DateTime<UTC>) -> String {
+	fn format(date: &DateTime<UTC>) -> String {
 		let fmt = Self::fmt();
 
 		date.format_with_items(fmt.iter().cloned()).to_string()

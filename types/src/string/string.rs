@@ -43,7 +43,7 @@ impl <T: ElasticMapping + ElasticStringMapping> ElasticString<T> {
 	}
 
 	/// Get the value of the string.
-	pub fn get<'a>(&'a self) -> &'a str {
+	pub fn get(&self) -> &str {
 		&self.value
 	}
 
@@ -80,44 +80,40 @@ impl <T: ElasticMapping + ElasticStringMapping> Into<String> for ElasticString<T
 }
 
 impl<'a, T: ElasticMapping + ElasticStringMapping> PartialEq<String> for ElasticString<T> {
-	#[inline(always)]
 	fn eq(&self, other: &String) -> bool {
 		PartialEq::eq(&self.value, other)
 	}
-	#[inline(always)]
+
 	fn ne(&self, other: &String) -> bool {
 		PartialEq::ne(&self.value, other)
 	}
 }
 
 impl<'a, T: ElasticMapping + ElasticStringMapping> PartialEq<ElasticString<T>> for String {
-	#[inline(always)]
 	fn eq(&self, other: &ElasticString<T>) -> bool {
 		PartialEq::eq(self, &other.value)
 	}
-	#[inline(always)]
+
 	fn ne(&self, other: &ElasticString<T>) -> bool {
 		PartialEq::ne(self, &other.value)
 	}
 }
 
 impl<'a, T: ElasticMapping + ElasticStringMapping> PartialEq<&'a str> for ElasticString<T> {
-	#[inline(always)]
 	fn eq(&self, other: & &'a str) -> bool {
 		PartialEq::eq(&self.value[..], *other)
 	}
-	#[inline(always)]
+
 	fn ne(&self, other: & &'a str) -> bool {
 		PartialEq::ne(&self.value[..], *other)
 	}
 }
 
 impl<'a, T: ElasticMapping + ElasticStringMapping> PartialEq<ElasticString<T>> for &'a str {
-	#[inline(always)]
 	fn eq(&self, other: &ElasticString<T>) -> bool {
 		PartialEq::eq(*self, &other.value[..])
 	}
-	#[inline(always)]
+
 	fn ne(&self, other: &ElasticString<T>) -> bool {
 		PartialEq::ne(*self, &other.value[..])
 	}

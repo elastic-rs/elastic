@@ -131,7 +131,7 @@ impl <F: Format, T: ElasticMapping<F> + ElasticDateMapping<F>> DateTime<F, T> {
 	/// let date = DateTime::<BasicDateTime>::parse("20151126T145543.778Z").unwrap();
 	/// ```
 	pub fn parse(date: &str) -> Result<DateTime<F, T>, ParseError> {
-		F::parse(date).map(|r| DateTime::new(r))
+		F::parse(date).map(DateTime::new)
 	}
 
 	/// Format the date and time as a string.
@@ -149,7 +149,7 @@ impl <F: Format, T: ElasticMapping<F> + ElasticDateMapping<F>> DateTime<F, T> {
 	/// //eg: 20151126T145543.778Z
 	/// println!("{}", fmt);
 	/// ```
-	pub fn format<'a>(&self) -> String {
+	pub fn format(&self) -> String {
 		F::format(&self.value)
 	}
 

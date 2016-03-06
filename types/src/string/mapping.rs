@@ -233,15 +233,13 @@ impl serde::ser::MapVisitor for FieldDataVisitor {
 		match self.value {
 			FieldData::Disabled => try!(serializer.serialize_struct_elt("format", "disabled")),
 			FieldData::PagedBytes(loading, filter) => {
-				match loading {
-					Some(loading) => try!(serializer.serialize_struct_elt("loading", loading)),
-					None => ()
-				};
+				if let Some(loading) = loading {
+					try!(serializer.serialize_struct_elt("loading", loading));
+				}
 
-				match filter {
-					Some(filter) => try!(serializer.serialize_struct_elt("filter", filter)),
-					None => ()
-				};
+				if let Some(filter) = filter {
+					try!(serializer.serialize_struct_elt("filter", filter));
+				}
 			}
 		}
 
@@ -499,91 +497,80 @@ impl <T: ElasticMapping> Default for ElasticStringMappingVisitor<T> {
 }
 
 impl <T: ElasticMapping + ElasticStringMapping> serde::ser::MapVisitor for ElasticStringMappingVisitor<T> {
+	#[allow(cyclomatic_complexity)]
 	fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
 	where S: serde::Serializer {
 		try!(serializer.serialize_struct_elt("type", T::field_type()));
 
-		match T::boost() {
-			Some(boost) => try!(serializer.serialize_struct_elt("boost", boost)),
-			None => ()
-		};
-		match T::doc_values() {
-			Some(doc_values) => try!(serializer.serialize_struct_elt("doc_values", doc_values)),
-			None => ()
-		};
-		match T::include_in_all() {
-			Some(include_in_all) => try!(serializer.serialize_struct_elt("include_in_all", include_in_all)),
-			None => ()
-		};
-		match T::index() {
-			Some(index) => try!(serializer.serialize_struct_elt("index", index)),
-			None => ()
-		};
-		match T::store() {
-			Some(store) => try!(serializer.serialize_struct_elt("store", store)),
-			None => ()
-		};
+		if let Some(boost) = T::boost() {
+			try!(serializer.serialize_struct_elt("boost", boost));
+		}
 
-		match T::analyzer() {
-			Some(analyzer) => try!(serializer.serialize_struct_elt("analyzer", analyzer)),
-			None => ()
-		};
+		if let Some(doc_values) = T::doc_values() {
+			try!(serializer.serialize_struct_elt("doc_values", doc_values));
+		}
 
-		match T::fields() {
-			Some(fields) => try!(serializer.serialize_struct_elt("fields", fields)),
-			None => ()
-		};
+		if let Some(include_in_all) = T::include_in_all() {
+			try!(serializer.serialize_struct_elt("include_in_all", include_in_all));
+		}
+
+		if let Some(index) = T::index() {
+			try!(serializer.serialize_struct_elt("index", index));
+		}
+
+		if let Some(store) = T::store() {
+			try!(serializer.serialize_struct_elt("store", store));
+		}
+
+		if let Some(analyzer) = T::analyzer() {
+			try!(serializer.serialize_struct_elt("analyzer", analyzer));
+		}
+
+		if let Some(fields) = T::fields() {
+			try!(serializer.serialize_struct_elt("fields", fields));
+		}
 
 		match T::fielddata() {
 			Some(FieldData::PagedBytes(None, None)) => (),
 			Some(fielddata) => try!(serializer.serialize_struct_elt("fielddata", fielddata)),
 			None => ()
-		};
+		}
 
-		match T::ignore_above() {
-			Some(ignore_above) => try!(serializer.serialize_struct_elt("ignore_above", ignore_above)),
-			None => ()
-		};
+		if let Some(ignore_above) = T::ignore_above() {
+			try!(serializer.serialize_struct_elt("ignore_above", ignore_above));
+		}
 
-		match T::index_options() {
-			Some(index_options) => try!(serializer.serialize_struct_elt("index_options", index_options)),
-			None => ()
-		};
+		if let Some(index_options) = T::index_options() {
+			try!(serializer.serialize_struct_elt("index_options", index_options));
+		}
 
-		match T::norms() {
-			Some(norms) => try!(serializer.serialize_struct_elt("norms", norms)),
-			None => ()
-		};
+		if let Some(norms) = T::norms() {
+			try!(serializer.serialize_struct_elt("norms", norms));
+		}
 
-		match T::null_value() {
-			Some(null_value) => try!(serializer.serialize_struct_elt("null_value", null_value)),
-			None => ()
-		};
+		if let Some(null_value) = T::null_value() {
+			try!(serializer.serialize_struct_elt("null_value", null_value));
+		}
 
-		match T::position_increment_gap() {
-			Some(position_increment_gap) => try!(serializer.serialize_struct_elt("position_increment_gap", position_increment_gap)),
-			None => ()
-		};
+		if let Some(position_increment_gap) = T::position_increment_gap() {
+			try!(serializer.serialize_struct_elt("position_increment_gap", position_increment_gap));
+		}
 
-		match T::search_analyzer() {
-			Some(search_analyzer) => try!(serializer.serialize_struct_elt("search_analyzer", search_analyzer)),
-			None => ()
-		};
+		if let Some(search_analyzer) = T::search_analyzer() {
+			try!(serializer.serialize_struct_elt("search_analyzer", search_analyzer));
+		}
 
-		match T::search_quote_analyzer() {
-			Some(search_quote_analyzer) => try!(serializer.serialize_struct_elt("search_quote_analyzer", search_quote_analyzer)),
-			None => ()
-		};
+		if let Some(search_quote_analyzer) = T::search_quote_analyzer() {
+			try!(serializer.serialize_struct_elt("search_quote_analyzer", search_quote_analyzer))
+		}
 
-		match T::similarity() {
-			Some(similarity) => try!(serializer.serialize_struct_elt("similarity", similarity)),
-			None => ()
-		};
+		if let Some(similarity) = T::similarity() {
+			try!(serializer.serialize_struct_elt("similarity", similarity))
+		}
 
-		match T::term_vector() {
-			Some(term_vector) => try!(serializer.serialize_struct_elt("term_vector", term_vector)),
-			None => ()
-		};
+		if let Some(term_vector) = T::term_vector() {
+			try!(serializer.serialize_struct_elt("term_vector", term_vector));
+		}
 
 		Ok(None)
 	}

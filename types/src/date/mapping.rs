@@ -1,11 +1,10 @@
 //! Mapping for the Elasticsearch `date` type.
 
 use std::marker::PhantomData;
-use chrono::{ Datelike, Timelike };
 use serde;
 use serde::{ Serializer, Serialize };
-use super::{ Format, ParseError, DefaultFormat };
-use ::mapping::{ ElasticMapping, ElasticType, IndexAnalysis };
+use super::{ Format, DefaultFormat };
+use ::mapping::{ ElasticMapping, IndexAnalysis };
 
 /// The base requirements for mapping a `date` type.
 /// 
@@ -151,42 +150,38 @@ impl <F: Format, T: ElasticDateMapping<F>> serde::ser::MapVisitor for ElasticDat
 	where S: Serializer {
 		try!(serializer.serialize_struct_elt("type", T::field_type()));
 
-		match T::boost() {
-			Some(boost) => try!(serializer.serialize_struct_elt("boost", boost)),
-			None => ()
+		if let Some(boost) = T::boost() {
+			try!(serializer.serialize_struct_elt("boost", boost));
 		};
-		match T::doc_values() {
-			Some(doc_values) => try!(serializer.serialize_struct_elt("doc_values", doc_values)),
-			None => ()
+
+		if let Some(doc_values) = T::doc_values() {
+			try!(serializer.serialize_struct_elt("doc_values", doc_values));
 		};
-		match T::include_in_all() {
-			Some(include_in_all) => try!(serializer.serialize_struct_elt("include_in_all", include_in_all)),
-			None => ()
+		
+		if let Some(include_in_all) = T::include_in_all() {
+			try!(serializer.serialize_struct_elt("include_in_all", include_in_all));
 		};
-		match T::index() {
-			Some(index) => try!(serializer.serialize_struct_elt("index", index)),
-			None => ()
+
+		if let Some(index) = T::index() {
+			try!(serializer.serialize_struct_elt("index", index));
 		};
-		match T::store() {
-			Some(store) => try!(serializer.serialize_struct_elt("store", store)),
-			None => ()
+
+		if let Some(store) = T::store() {
+			try!(serializer.serialize_struct_elt("store", store));
 		};
 
 		try!(serializer.serialize_struct_elt("format", T::format()));
 
-		match T::ignore_malformed() {
-			Some(ignore_malformed) => try!(serializer.serialize_struct_elt("ignore_malformed", ignore_malformed)),
-			None => ()
+		if let Some(ignore_malformed) = T::ignore_malformed() {
+			try!(serializer.serialize_struct_elt("ignore_malformed", ignore_malformed));
 		};
 
-		match T::null_value() {
-			Some(null_value) => try!(serializer.serialize_struct_elt("null_value", null_value)),
-			None => ()
+		if let Some(null_value) = T::null_value() {
+			try!(serializer.serialize_struct_elt("null_value", null_value));
 		};
 
-		match T::precision_step() {
-			Some(precision_step) => try!(serializer.serialize_struct_elt("precision_step", precision_step)),
-			None => ()
+		if let Some(precision_step) = T::precision_step() {
+			try!(serializer.serialize_struct_elt("precision_step", precision_step));
 		};
 
 		Ok(None)

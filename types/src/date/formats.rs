@@ -14,7 +14,7 @@ impl Format for BasicDateTimeNoMillis {
 	fn fmt<'a>() -> Vec<Item<'a>> {
 		date_fmt!("%Y%m%dT%H%M%SZ")
 			.iter()
-			.map(|t| *t)
+			.cloned()
 			.collect()
 	}
 	fn name() -> &'static str {
@@ -32,7 +32,7 @@ impl Format for BasicDateTime {
 	fn fmt<'a>() -> Vec<Item<'a>>{
 		date_fmt!("%Y%m%dT%H%M%S%.3fZ")
 			.iter()
-			.map(|t| *t)
+			.cloned()
 			.collect()
 	}
 	fn name() -> &'static str {
@@ -57,7 +57,7 @@ impl Format for EpochMillis {
 		"epoch_millis"
 	}
 
-	fn parse<'a>(date: &str) -> Result<DateTime<UTC>, ParseError> {
+	fn parse(date: &str) -> Result<DateTime<UTC>, ParseError> {
 		let c = try!(date.chars().next().ok_or("Date input was empty".to_string()));
 		let (secs, msecs) = match (date.len(), c) {
 			//For negative timestamps
@@ -83,16 +83,16 @@ impl Format for EpochMillis {
 			(n, _) if n <= 3 => (Ok(0i64), date.parse::<u32>()),
 			(n, _) if n <= 10 => (date[0..n-3].parse::<i64>(), date[n-3..].parse::<u32>()),
 			(13, _) => (date[0..10].parse::<i64>(), date[10..13].parse::<u32>()),
-			_ => return Err("unexpected format".to_string().into())
+			_ => return Err("unexpected format".to_owned().into())
 		};
 		
-		let _secs = try!(secs.map_err(|e| e.description().to_string()));
-		let _msecs = try!(msecs.map_err(|e| e.description().to_string()));
+		let s = try!(secs.map_err(|e| e.description().to_string()));
+		let m = try!(msecs.map_err(|e| e.description().to_string()));
 
-		Ok(DateTime::from_utc(NaiveDateTime::from_num_seconds_from_unix_epoch(_secs, _msecs * 1000000), UTC))
+		Ok(DateTime::from_utc(NaiveDateTime::from_num_seconds_from_unix_epoch(s, m * 1000000), UTC))
 	}
 
-	fn format<'a>(date: &DateTime<UTC>) -> String {
+	fn format(date: &DateTime<UTC>) -> String {
 		let mut fmtd = String::with_capacity(13);
 
 		let sec = date.timestamp();
@@ -111,12 +111,12 @@ impl Format for EpochMillis {
 		}
 		//For negative timestamps
 		else {
-			if sec != -1 {
-				let s = sec.to_string();
-				fmtd.push_str(&s);
+			if sec == -1 {
+				fmtd.push_str("-");
 			}
 			else {
-				fmtd.push_str("-");
+				let s = sec.to_string();
+				fmtd.push_str(&s);
 			}
 
 			let msec = (1000 - (date.nanosecond() / 1000000)).to_string();

@@ -104,7 +104,7 @@ impl <T: ElasticMapping> Default for ElasticMappingVisitor<T> {
 }
 
 impl <T: ElasticMapping> serde::ser::MapVisitor for ElasticMappingVisitor<T> {
-	fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
+	fn visit<S>(&mut self, _: &mut S) -> Result<Option<()>, S::Error>
 	where S: serde::Serializer {
 		Ok(None)
 	}
