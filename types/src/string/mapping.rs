@@ -1,3 +1,5 @@
+//! Mapping for the Elasticsearch `string` type.
+
 use std::collections::BTreeMap;
 use std::marker::PhantomData;
 use serde;
@@ -16,7 +18,7 @@ use ::mapping::{ ElasticMapping, ElasticType, IndexAnalysis };
 /// # fn main() {
 /// use std::collections::BTreeMap;
 /// use elastic_types::mapping::ElasticMapping;
-/// use elastic_types::string::{ ElasticStringMapping, ElasticStringFieldMapping };
+/// use elastic_types::string::mapping::{ ElasticStringMapping, ElasticStringFieldMapping };
 /// 
 /// struct MyStringMapping;
 /// impl serde::Serialize for MyStringMapping {
@@ -27,11 +29,11 @@ use ::mapping::{ ElasticMapping, ElasticType, IndexAnalysis };
 /// }
 /// 
 /// impl ElasticStringMapping for MyStringMapping {
-/// 	fn get_null_value() -> Option<&'static str> {
+/// 	fn null_value() -> Option<&'static str> {
 /// 		Some("my default value")
 /// 	}
 /// 
-/// 	fn get_fields() -> Option<BTreeMap<&'static str, ElasticStringFieldMapping>> {
+/// 	fn fields() -> Option<BTreeMap<&'static str, ElasticStringFieldMapping>> {
 /// 		let mut fields = BTreeMap::new();
 /// 		fields.insert("raw", ElasticStringFieldMapping {
 /// 			analyzer: Some("my_analyzer"),
@@ -50,14 +52,14 @@ use ::mapping::{ ElasticMapping, ElasticType, IndexAnalysis };
 pub trait ElasticStringMapping 
 where Self : Sized + Serialize {
 	/// Field-level index time boosting. Accepts a floating point number, defaults to `1.0`.
-	fn get_boost() -> Option<f32> {
+	fn boost() -> Option<f32> {
 		None
 	}
 
 	/// Should the field be stored on disk in a column-stride fashion, 
 	/// so that it can later be used for sorting, aggregations, or scripting? 
 	/// Accepts `true` (default) or `false`.
-	fn get_doc_values() -> Option<bool> {
+	fn doc_values() -> Option<bool> {
 		None
 	}
 
@@ -65,88 +67,88 @@ where Self : Sized + Serialize {
 	/// Accepts true or false. 
 	/// Defaults to `false` if index is set to `no`, or if a parent object field sets `include_in_all` to false. 
 	/// Otherwise defaults to `true`.
-	fn get_include_in_all() -> Option<bool> {
+	fn include_in_all() -> Option<bool> {
 		None
 	}
 
 	/// Should the field be searchable? Accepts `not_analyzed` (default) and `no`.
-	fn get_index() -> Option<IndexAnalysis> {
+	fn index() -> Option<IndexAnalysis> {
 		None
 	}
 
 	/// Whether the field value should be stored and retrievable separately from the `_source` field. 
 	/// Accepts `true` or `false` (default).
-	fn get_store() -> Option<bool> {
+	fn store() -> Option<bool> {
 		None
 	}
 
 	/// The analyzer which should be used for analyzed string fields, 
 	/// both at index-time and at search-time (unless overridden by the `search_analyzer`). 
 	/// Defaults to the default index analyzer, or the `standard` analyzer.
-	fn get_analyzer() -> Option<&'static str> {
+	fn analyzer() -> Option<&'static str> {
 		None
 	}
 
 	/// Can the field use in-memory fielddata for sorting, aggregations, or scripting? 
 	/// Accepts disabled or `paged_bytes` (default). 
 	/// Not analyzed fields will use doc values in preference to fielddata.
-	fn get_fielddata() -> Option<FieldData> {
+	fn fielddata() -> Option<FieldData> {
 		None
 	}
 
 	/// Multi-fields allow the same string value to be indexed in multiple ways for different purposes, 
 	/// such as one field for search and a multi-field for sorting and aggregations, 
 	/// or the same string value analyzed by different analyzers.
-	fn get_fields() -> Option<BTreeMap<&'static str, ElasticStringFieldMapping>> {
+	fn fields() -> Option<BTreeMap<&'static str, ElasticStringFieldMapping>> {
 		None
 	}
 
 	/// Do not index or analyze any string longer than this value. Defaults to 0 (disabled).
-	fn get_ignore_above() -> Option<usize> {
+	fn ignore_above() -> Option<usize> {
 		None
 	}
 
 	/// What information should be stored in the index, for search and highlighting purposes. 
 	/// Defaults to positions for analyzed fields, and to docs for not_analyzed fields.
-	fn get_index_options() -> Option<IndexOptions> {
+	fn index_options() -> Option<IndexOptions> {
 		None
 	}
 
 	/// Whether field-length should be taken into account when scoring queries.
-	fn get_norms() -> Option<Norms> {
+	fn norms() -> Option<Norms> {
 		None
 	}
 
 	/// Accepts a string value which is substituted for any explicit null values. 
 	/// Defaults to null, which means the field is treated as missing.
-	fn get_null_value() -> Option<&'static str> {
+	fn null_value() -> Option<&'static str> {
 		None
 	}
 
 	/// Whether field-length should be taken into account when scoring queries. 
-	fn get_position_increment_gap() -> Option<usize> {
+	fn position_increment_gap() -> Option<usize> {
 		None
 	}
 
 	/// The analyzer that should be used at search time on analyzed fields. 
 	/// Defaults to the analyzer setting.
-	fn get_search_analyzer() -> Option<&'static str> {
+	fn search_analyzer() -> Option<&'static str> {
 		None
 	}
 
 	/// The analyzer that should be used at search time when a phrase is encountered. 
 	/// Defaults to the search_analyzer setting.
-	fn get_search_quote_analyzer() -> Option<&'static str> {
+	fn search_quote_analyzer() -> Option<&'static str> {
 		None
 	}
 
 	/// Which scoring algorithm or similarity should be used. Defaults to `default`, which uses TF/IDF.
-	fn get_similarity() -> Option<&'static str> {
+	fn similarity() -> Option<&'static str> {
 		None
 	}
 
 	/// Whether term vectors should be stored for an analyzed field. Defaults to `no`.
-	fn get_term_vector() -> Option<TermVector> {
+	fn term_vector() -> Option<TermVector> {
 		None
 	}
 }
@@ -154,7 +156,7 @@ where Self : Sized + Serialize {
 impl <M: ElasticStringMapping> ElasticMapping for M {
 	type Visitor = ElasticStringMappingVisitor<M>;
 
-	fn get_type() -> &'static str {
+	fn field_type() -> &'static str {
 		"string"
 	}
 }
@@ -499,86 +501,86 @@ impl <T: ElasticMapping> Default for ElasticStringMappingVisitor<T> {
 impl <T: ElasticMapping + ElasticStringMapping> serde::ser::MapVisitor for ElasticStringMappingVisitor<T> {
 	fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
 	where S: serde::Serializer {
-		try!(serializer.serialize_struct_elt("type", T::get_type()));
+		try!(serializer.serialize_struct_elt("type", T::field_type()));
 
-		match T::get_boost() {
+		match T::boost() {
 			Some(boost) => try!(serializer.serialize_struct_elt("boost", boost)),
 			None => ()
 		};
-		match T::get_doc_values() {
+		match T::doc_values() {
 			Some(doc_values) => try!(serializer.serialize_struct_elt("doc_values", doc_values)),
 			None => ()
 		};
-		match T::get_include_in_all() {
+		match T::include_in_all() {
 			Some(include_in_all) => try!(serializer.serialize_struct_elt("include_in_all", include_in_all)),
 			None => ()
 		};
-		match T::get_index() {
+		match T::index() {
 			Some(index) => try!(serializer.serialize_struct_elt("index", index)),
 			None => ()
 		};
-		match T::get_store() {
+		match T::store() {
 			Some(store) => try!(serializer.serialize_struct_elt("store", store)),
 			None => ()
 		};
 
-		match T::get_analyzer() {
+		match T::analyzer() {
 			Some(analyzer) => try!(serializer.serialize_struct_elt("analyzer", analyzer)),
 			None => ()
 		};
 
-		match T::get_fields() {
+		match T::fields() {
 			Some(fields) => try!(serializer.serialize_struct_elt("fields", fields)),
 			None => ()
 		};
 
-		match T::get_fielddata() {
+		match T::fielddata() {
 			Some(FieldData::PagedBytes(None, None)) => (),
 			Some(fielddata) => try!(serializer.serialize_struct_elt("fielddata", fielddata)),
 			None => ()
 		};
 
-		match T::get_ignore_above() {
+		match T::ignore_above() {
 			Some(ignore_above) => try!(serializer.serialize_struct_elt("ignore_above", ignore_above)),
 			None => ()
 		};
 
-		match T::get_index_options() {
+		match T::index_options() {
 			Some(index_options) => try!(serializer.serialize_struct_elt("index_options", index_options)),
 			None => ()
 		};
 
-		match T::get_norms() {
+		match T::norms() {
 			Some(norms) => try!(serializer.serialize_struct_elt("norms", norms)),
 			None => ()
 		};
 
-		match T::get_null_value() {
+		match T::null_value() {
 			Some(null_value) => try!(serializer.serialize_struct_elt("null_value", null_value)),
 			None => ()
 		};
 
-		match T::get_position_increment_gap() {
+		match T::position_increment_gap() {
 			Some(position_increment_gap) => try!(serializer.serialize_struct_elt("position_increment_gap", position_increment_gap)),
 			None => ()
 		};
 
-		match T::get_search_analyzer() {
+		match T::search_analyzer() {
 			Some(search_analyzer) => try!(serializer.serialize_struct_elt("search_analyzer", search_analyzer)),
 			None => ()
 		};
 
-		match T::get_search_quote_analyzer() {
+		match T::search_quote_analyzer() {
 			Some(search_quote_analyzer) => try!(serializer.serialize_struct_elt("search_quote_analyzer", search_quote_analyzer)),
 			None => ()
 		};
 
-		match T::get_similarity() {
+		match T::similarity() {
 			Some(similarity) => try!(serializer.serialize_struct_elt("similarity", similarity)),
 			None => ()
 		};
 
-		match T::get_term_vector() {
+		match T::term_vector() {
 			Some(term_vector) => try!(serializer.serialize_struct_elt("term_vector", term_vector)),
 			None => ()
 		};

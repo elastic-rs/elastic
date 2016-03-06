@@ -21,7 +21,7 @@ pub trait ElasticMapping<F = ()> {
 	}
 
 	/// Get the type name for this mapping, like `date` or `string`.
-	fn get_type() -> &'static str {
+	fn field_type() -> &'static str {
 		""
 	}
 }

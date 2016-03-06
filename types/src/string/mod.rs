@@ -5,8 +5,7 @@
 //! # Links
 //! - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/string.html)
 
-mod mapping;
 mod string;
 
-pub use self::mapping::*;
+pub mod mapping;
 pub use self::string::*;

@@ -12,10 +12,9 @@
 
 mod format;
 mod date;
-mod mapping;
 mod formats;
 
-pub use self::mapping::*;
+pub mod mapping;
 pub use self::format::*;
 pub use self::date::*;
 pub use self::formats::*;

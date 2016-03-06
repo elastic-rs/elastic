@@ -3,7 +3,8 @@ use chrono;
 use chrono::Weekday;
 use serde;
 use serde::{ Serialize, Deserialize, Serializer, Deserializer };
-use super::{ DT, Format, ParseError, ElasticDateMapping, ElasticDateType, DefaultDateMapping, DefaultFormat };
+use super::{ DT, Format, ParseError, DefaultFormat };
+use super::mapping::{ ElasticDateMapping, DefaultDateMapping };
 use ::mapping::{ ElasticMapping, ElasticType };
 
 pub use chrono::{ Datelike, Timelike };
@@ -33,7 +34,8 @@ pub use chrono::{ Datelike, Timelike };
 /// Defining a date using a custom mapping:
 /// 
 /// ```
-/// use elastic_types::date::{ DateTime, BasicDateTime, DefaultDateMapping };
+/// use elastic_types::date::mapping::DefaultDateMapping;
+/// use elastic_types::date::{ DateTime, BasicDateTime };
 /// 
 /// let date = DateTime::<BasicDateTime, DefaultDateMapping>::now();
 /// ```
@@ -115,6 +117,42 @@ impl <F: Format, T: ElasticMapping<F> + ElasticDateMapping<F>> DateTime<F, T> {
 		}
 	}
 
+	/// Parse the date and time from a string.
+	/// 
+	/// The format of the string must match the given `Format`.
+	/// 
+	/// # Examples
+	/// 
+	/// Parsing from a specified `Format`.
+	/// 
+	/// ```
+	/// use elastic_types::date::{ DateTime, BasicDateTime };
+	/// 
+	/// let date = DateTime::<BasicDateTime>::parse("20151126T145543.778Z").unwrap();
+	/// ```
+	pub fn parse(date: &str) -> Result<DateTime<F, T>, ParseError> {
+		F::parse(date).map(|r| DateTime::new(r))
+	}
+
+	/// Format the date and time as a string.
+	/// 
+	/// The format of the string is specified by the given `Format`.
+	/// 
+	/// # Examples
+	/// 
+	/// ```
+	/// use elastic_types::date::{ DateTime, BasicDateTime };
+	/// 
+	/// let date: DateTime = DateTime::now();
+	/// let fmt = date.format();
+	/// 
+	/// //eg: 20151126T145543.778Z
+	/// println!("{}", fmt);
+	/// ```
+	pub fn format<'a>(&self) -> String {
+		F::format(&self.value)
+	}
+
 	/// Change the format/mapping of this date.
 	/// 
 	/// # Examples
@@ -135,16 +173,6 @@ impl <F: Format, T: ElasticMapping<F> + ElasticDateMapping<F>> DateTime<F, T> {
 
 impl <F: Format, T: ElasticMapping<F> + ElasticDateMapping<F>> ElasticType<T, F> for DateTime<F, T> {
 
-}
-
-impl <F: Format, T: ElasticMapping<F> + ElasticDateMapping<F>> ElasticDateType<F, T> for DateTime<F, T> {
-	fn parse(date: &str) -> Result<DateTime<F, T>, ParseError> {
-		F::parse(date).map(|r| DateTime::new(r))
-	}
-
-	fn format<'a>(&self) -> String {
-		F::format(&self.value)
-	}
 }
 
 impl <F: Format, T: ElasticMapping<F> + ElasticDateMapping<F>> Default for DateTime<F, T> {

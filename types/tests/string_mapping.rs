@@ -8,39 +8,40 @@ extern crate elastic_types;
 
 use std::collections::BTreeMap;
 use elastic_types::mapping::*;
+use elastic_types::string::mapping::*;
 use elastic_types::string::*;
 
 pub struct MyStringMapping;
 impl ElasticStringMapping for MyStringMapping { 
-	fn get_boost() -> Option<f32> {
+	fn boost() -> Option<f32> {
 		Some(1.01)
 	}
 
-	fn get_index() -> Option<IndexAnalysis> {
+	fn index() -> Option<IndexAnalysis> {
 		Some(IndexAnalysis::No)
 	}
 
-	fn get_doc_values() -> Option<bool> {
+	fn doc_values() -> Option<bool> {
 		Some(true)
 	}
 
-	fn get_include_in_all() -> Option<bool> {
+	fn include_in_all() -> Option<bool> {
 		Some(false)
 	}
 
-	fn get_store() -> Option<bool> {
+	fn store() -> Option<bool> {
 		Some(true)
 	}
 
-	fn get_analyzer() -> Option<&'static str> {
+	fn analyzer() -> Option<&'static str> {
 		Some("my_analyzer")
 	}
 
-	fn get_fielddata() -> Option<FieldData> {
+	fn fielddata() -> Option<FieldData> {
 		Some(FieldData::Disabled)
 	}
 
-	fn get_fields() -> Option<BTreeMap<&'static str, ElasticStringFieldMapping>> {
+	fn fields() -> Option<BTreeMap<&'static str, ElasticStringFieldMapping>> {
 		let mut fields = BTreeMap::new();
  		fields.insert("raw", ElasticStringFieldMapping {
  			analyzer: Some("my_analyzer"),
@@ -54,39 +55,39 @@ impl ElasticStringMapping for MyStringMapping {
  		Some(fields)
 	}
 
-	fn get_ignore_above() -> Option<usize> {
+	fn ignore_above() -> Option<usize> {
 		Some(50)
 	}
 
-	fn get_index_options() -> Option<IndexOptions> {
+	fn index_options() -> Option<IndexOptions> {
 		Some(IndexOptions::Docs)
 	}
 
-	fn get_norms() -> Option<Norms> {
+	fn norms() -> Option<Norms> {
 		Some(Norms::Disabled)
 	}
 
-	fn get_null_value() -> Option<&'static str> {
+	fn null_value() -> Option<&'static str> {
 		Some("my default value")
 	}
 
-	fn get_position_increment_gap() -> Option<usize> {
+	fn position_increment_gap() -> Option<usize> {
 		Some(8)
 	}
 
-	fn get_search_analyzer() -> Option<&'static str> {
+	fn search_analyzer() -> Option<&'static str> {
 		Some("my_search_analyzer")
 	}
 
-	fn get_search_quote_analyzer() -> Option<&'static str> {
+	fn search_quote_analyzer() -> Option<&'static str> {
 		Some("my_quote_search_analyzer")
 	}
 
-	fn get_similarity() -> Option<&'static str> {
+	fn similarity() -> Option<&'static str> {
 		Some("my_similarity")
 	}
 
-	fn get_term_vector() -> Option<TermVector> {
+	fn term_vector() -> Option<TermVector> {
 		Some(TermVector::No)
 	}
 }

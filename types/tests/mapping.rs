@@ -7,27 +7,28 @@ extern crate serde_json;
 extern crate elastic_types;
 
 use elastic_types::mapping::*;
+use elastic_types::string::mapping::*;
 use elastic_types::string::*;
 
 struct MyMapping;
 impl ElasticStringMapping for MyMapping { 
-	fn get_boost() -> Option<f32> {
+	fn boost() -> Option<f32> {
 		Some(1.01)
 	}
 
-	fn get_index() -> Option<IndexAnalysis> {
+	fn index() -> Option<IndexAnalysis> {
 		Some(IndexAnalysis::No)
 	}
 
-	fn get_doc_values() -> Option<bool> {
+	fn doc_values() -> Option<bool> {
 		Some(true)
 	}
 
-	fn get_include_in_all() -> Option<bool> {
+	fn include_in_all() -> Option<bool> {
 		Some(false)
 	}
 
-	fn get_store() -> Option<bool> {
+	fn store() -> Option<bool> {
 		Some(true)
 	}
 }
@@ -53,7 +54,7 @@ impl <T: ElasticType<M, F>, M: ElasticMapping<F> = NullMapping, F = ()> MappingD
 		let _ = M::get_visitor();
 
 		//Return the type of this mapping to prove we're looking at something unique
-		M::get_type()
+		M::field_type()
 	}
 }
 

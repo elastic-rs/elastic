@@ -7,40 +7,41 @@ extern crate serde_json;
 extern crate elastic_types;
 
 use elastic_types::mapping::*;
+use elastic_types::date::mapping::*;
 use elastic_types::date::*;
 
 //A custom date mapping
 struct MyDateMapping;
 impl ElasticDateMapping<EpochMillis> for MyDateMapping {
-	fn get_boost() -> Option<f32> {
+	fn boost() -> Option<f32> {
 		Some(1.01)
 	}
 
-	fn get_index() -> Option<IndexAnalysis> {
+	fn index() -> Option<IndexAnalysis> {
 		Some(IndexAnalysis::No)
 	}
 
-	fn get_doc_values() -> Option<bool> {
+	fn doc_values() -> Option<bool> {
 		Some(true)
 	}
 
-	fn get_include_in_all() -> Option<bool> {
+	fn include_in_all() -> Option<bool> {
 		Some(false)
 	}
 
-	fn get_store() -> Option<bool> {
+	fn store() -> Option<bool> {
 		Some(true)
 	}
 
-	fn get_null_value() -> Option<&'static str> {
+	fn null_value() -> Option<&'static str> {
 		Some("0")
 	}
 
-	fn get_ignore_malformed() -> Option<bool> {
+	fn ignore_malformed() -> Option<bool> {
 		Some(true)
 	}
 
-	fn get_precision_step() -> Option<i32> {
+	fn precision_step() -> Option<i32> {
 		Some(6)
 	}
 }

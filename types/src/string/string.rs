@@ -12,7 +12,8 @@ use ::mapping::{ ElasticMapping, ElasticType };
 /// Defining a string with a format:
 /// 
 /// ```
-/// use elastic_types::string::{ ElasticString, DefaultStringMapping };
+/// use elastic_types::string::mapping::DefaultStringMapping;
+/// use elastic_types::string::ElasticString;
 /// 
 /// let string = ElasticString::<DefaultStringMapping>::new("my string value");
 /// ```
@@ -29,7 +30,8 @@ impl <T: ElasticMapping + ElasticStringMapping> ElasticString<T> {
 	/// Create a new `ElasticString` from a `String`:
 	/// 
 	/// ```
-	/// use elastic_types::string::{ ElasticString, DefaultStringMapping };
+	/// use elastic_types::string::mapping::DefaultStringMapping;
+	/// use elastic_types::string::ElasticString;
 	/// 
 	/// let string = ElasticString::<DefaultStringMapping>::new(String::from("my string"));
 	/// ```

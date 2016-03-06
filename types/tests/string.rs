@@ -7,6 +7,7 @@ extern crate serde_json;
 extern crate elastic_types;
 
 use elastic_types::mapping::*;
+use elastic_types::string::mapping::*;
 use elastic_types::string::*;
 
 #[test]
