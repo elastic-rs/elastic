@@ -15,6 +15,7 @@
 #![feature(custom_derive, custom_attribute, plugin, optin_builtin_traits, associated_type_defaults)]
 #![plugin(serde_macros)]
 #![plugin(elastic_macros)]
+#![plugin(clippy)]
 
 extern crate chrono;
 extern crate serde;

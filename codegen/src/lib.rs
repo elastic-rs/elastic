@@ -24,6 +24,7 @@
 
 #![feature(associated_type_defaults, rustc_private, core_intrinsics, custom_derive, custom_attribute, plugin)]
 #![plugin(serde_macros)]
+#![plugin(clippy)]
 
 extern crate serde;
 extern crate serde_json;
