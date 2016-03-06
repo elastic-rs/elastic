@@ -9,15 +9,6 @@ use elastic_types::date::{ DateTime, Format, BasicDateTime, EpochMillis };
 
 use test::Bencher;
 
-/*
-	Here we're testing options for parsing dates.
-
-	See: https://github.com/KodrAus/elasticsearch-rs/issues/4
-
-	As an optimisation, we can use a macro to parse the date format to DateTokens at compile time.
-	See `parse_date_from_tokens` vs `parse_date_from_format` performance in the `elastic_macros` crate.
-*/
-
 #[bench]
 fn parse_date_from_format(b: &mut Bencher) {
 	b.iter(|| {

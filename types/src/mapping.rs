@@ -1,5 +1,8 @@
 //! Implementation for data type mappings.
 
+pub use ::date::mapping::*;
+pub use ::string::mapping::*;
+
 use std::marker::PhantomData;
 use serde;
 
