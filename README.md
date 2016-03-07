@@ -18,7 +18,7 @@ The deserialisation story is a work in progress.
 
 Ping the availability of your cluster:
 
-```
+```rust
 extern crate elastic_hyper as elastic;
 
 let mut client = hyper::Client::new();
@@ -27,13 +27,14 @@ elastic::ping::head(&mut client, "http://localhost:9200").unwrap();
 
 A simple `query_string` query:
 
-```
+```rust
 #![feature(plugin)]
 #![plugin(elastic_macros)]
 extern crate elastic_hyper as elastic;
 
 let mut client = hyper::Client::new();
-let res = elastic::search::post_index_type(&mut client, "http://localhost:9200", "bench_index", "docs", 
+let res = elastic::search::post_index_type(&mut client, 
+	"http://localhost:9200", "bench_index", "docs", 
 	json!({
 		query: {
 			query_string: {
