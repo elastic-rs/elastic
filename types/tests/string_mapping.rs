@@ -7,7 +7,7 @@ extern crate serde_json;
 extern crate elastic_types;
 
 use std::collections::BTreeMap;
-use elastic_types::mapping::*;
+use elastic_types::mapping::prelude::*;
 use elastic_types::string::*;
 
 pub struct MyStringMapping;

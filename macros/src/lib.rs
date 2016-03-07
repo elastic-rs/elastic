@@ -183,6 +183,7 @@ fn expand_date_fmt(cx: &mut ExtCtxt, sp: Span, args: &[TokenTree]) -> Box<MacRes
 	}))
 }
 
+//TODO: Clean this up
 fn expand_json(cx: &mut ExtCtxt, sp: Span, args: &[TokenTree]) -> Box<MacResult+'static> {
 	//Get idents first, separated by commas
 	//If none are found then we just continue on
@@ -272,6 +273,8 @@ fn expand_json(cx: &mut ExtCtxt, sp: Span, args: &[TokenTree]) -> Box<MacResult+
 
 	MacEager::expr(cx.expr_block(cx.block(sp, stmts, Some(quote_expr!(cx, jval)))))
 }
+
+//TODO: Add macros for codegenning Serialize for ElasticMapping. Possibly feature-gate
 
 #[plugin_registrar]
 pub fn plugin_registrar(reg: &mut Registry) {

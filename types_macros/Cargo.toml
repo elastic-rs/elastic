@@ -1,7 +1,0 @@
-[package]
-name = "elastic_types_macros"
-version = "0.1.0"
-authors = ["Ashley Mannix <ashleymannix@live.com.au>"]
-
-[dependencies]
-elastic_types = { version = "*", path = "../types" }

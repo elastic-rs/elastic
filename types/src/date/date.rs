@@ -3,7 +3,8 @@ use chrono;
 use chrono::Weekday;
 use serde;
 use serde::{ Serialize, Deserialize, Serializer, Deserializer };
-use super::{ DT, Format, ParseError, DefaultFormat };
+use super::{ DT, DefaultFormat };
+use super::format::{ Format, ParseError };
 use super::mapping::{ ElasticDateMapping, DefaultDateMapping };
 use ::mapping::{ ElasticMapping, ElasticType };
 

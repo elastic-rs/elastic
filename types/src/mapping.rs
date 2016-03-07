@@ -1,7 +1,14 @@
 //! Implementation for data type mappings.
 
-pub use ::date::mapping::*;
-pub use ::string::mapping::*;
+pub mod prelude {
+    //! Includes mapping types for all data types.
+    //! 
+    //! This is a convenience module to make it easy to build mappings for multiple types without too many `use` statements.
+    
+    pub use super::{ ElasticType, ElasticMapping, NullMapping, IndexAnalysis, ElasticMappingVisitor };
+    pub use ::date::mapping::*;
+    pub use ::string::mapping::*;
+}
 
 use std::marker::PhantomData;
 use serde;
