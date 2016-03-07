@@ -101,6 +101,8 @@ The `elastic_types` crate tries not to reinvent the wheel wherever possible and 
 
 ### elastic_macros
 
+[![Latest Version](https://img.shields.io/crates/v/elastic_macros.svg)](https://crates.io/crates/elastic_macros)
+
 [Docs](http://kodraus.github.io/rustdoc/elastic_macros/)
 
 Provides compiler plugins and macros for the `elastic_types` crate, such as parsing a date format to an array of [Items](https://github.com/lifthrasiir/rust-chrono/blob/master/src/format/mod.rs#L161) at compile-time for efficient runtime date parsing.
