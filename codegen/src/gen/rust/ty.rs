@@ -3,7 +3,7 @@ use syntax::ast::*;
 use syntax::parse::token;
 use syntax::codemap::DUMMY_SP;
 use syntax::ptr::P;
-use super::parse_path;
+use super::parse::parse_path;
 
 /// Generate a type with a specified name.
 pub fn build_ty(name: &str) -> Ty {

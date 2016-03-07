@@ -18,7 +18,7 @@ use syntax::parse::token::intern;
 use elastic_codegen::emit::*;
 use elastic_codegen::emit::default::*;
 use elastic_codegen::gen::rust::*;
-use elastic_codegen::api::gen::{ parse_path_parts, parse_path_params, parse_fmt };
+use elastic_codegen::api::gen::parse::{ parse_path_parts, parse_path_params, parse_fmt };
 use elastic_codegen::api::gen::rust::*;
 
 fn get_file(path: &str) -> File {
@@ -113,7 +113,7 @@ fn can_emit_rs_fn_with_fmt_body_to_file() {
 		.unwrap().iter()
 		.map(|p| token::str_to_ident(&p))
 		.collect();
-	let fmt = parse_fmt(url).unwrap();
+	let fmt = parse_fmt(&url).unwrap();
 	
 	//Get the format statement
 	let (url_ident, url_stmt) = url_fmt_decl(&fmt, base, params.to_vec());

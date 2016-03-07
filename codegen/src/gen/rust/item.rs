@@ -2,7 +2,7 @@ use syntax::ast::*;
 use syntax::parse::token;
 use syntax::codemap::{ Spanned, DUMMY_SP };
 use syntax::ptr::P;
-use super::parse_path;
+use super::parse::parse_path;
 
 /// Get a `use` statement for a path
 pub fn use_ident<I>(path: &str, idents: I) -> Stmt

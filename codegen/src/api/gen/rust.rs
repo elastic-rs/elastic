@@ -11,7 +11,7 @@ use syntax::codemap::{ Spanned, DUMMY_SP };
 use syntax::ptr::P;
 use ::api::ast as api;
 use ::gen::rust::{ ty, build_ty, TyPathOpts };
-use super::{ parse_path_params, parse_mod_path, ApiParseError };
+use super::parse::{ parse_path_params, parse_mod_path, ApiParseError };
 
 /// A single function for a url path.
 pub struct UrlFn<'a> {

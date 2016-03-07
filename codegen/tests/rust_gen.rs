@@ -13,6 +13,7 @@ use syntax::ext::expand::ExpansionConfig;
 use syntax::codemap::DUMMY_SP;
 use syntax::parse::token::intern;
 use elastic_codegen::gen::rust::*;
+use elastic_codegen::gen::rust::parse::*;
 
 macro_rules! get_ctxt {
     ($cx:ident, $ps:ident, $fgc:ident) => {

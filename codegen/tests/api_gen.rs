@@ -10,7 +10,7 @@ use syntax::parse::token;
 use syntax::print::pprust;
 use elastic_codegen::gen::rust::*;
 use elastic_codegen::api::ast::*;
-use elastic_codegen::api::gen::*;
+use elastic_codegen::api::gen::parse::*;
 use elastic_codegen::api::gen::rust::*;
 
 #[test]

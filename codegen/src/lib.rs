@@ -34,4 +34,4 @@ pub mod api;
 pub mod test;
 pub mod gen;
 pub mod emit;
-mod parsers;
+mod parse;
