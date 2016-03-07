@@ -20,6 +20,7 @@ use ::mapping::{ ElasticMapping, IndexAnalysis };
 /// use elastic_types::date::mapping::ElasticDateMapping;
 /// use elastic_types::date::{ BasicDateTime, Format };
 /// 
+/// #[derive(Default)]
 /// struct MyDateMapping;
 /// impl serde::Serialize for MyDateMapping {
 /// 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
@@ -41,7 +42,7 @@ use ::mapping::{ ElasticMapping, IndexAnalysis };
 /// 
 /// The above example binds the mapping to the `BasicDateTime` format, so `get_null_value` returns a properly formated value.
 pub trait ElasticDateMapping<T: Format>
-where Self : Sized + Serialize {
+where Self : Sized + Serialize + Default {
 	/// Field-level index time boosting. Accepts a floating point number, defaults to `1.0`.
 	fn boost() -> Option<f32> {
 		None
@@ -99,14 +100,13 @@ where Self : Sized + Serialize {
 impl <T: Format, M: ElasticDateMapping<T>> ElasticMapping<T> for M {
 	type Visitor = ElasticDateMappingVisitor<T, M>;
 
-	fn field_type() -> &'static str {
+	fn data_type() -> &'static str {
 		"date"
 	}
 }
 
-//TODO: Make this take in str for field name
 /// Default mapping for `DateTime`.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct DefaultDateMapping<T: Format = DefaultFormat> {
 	phantom: PhantomData<T>
 }
@@ -148,7 +148,7 @@ impl <F: Format, T: ElasticDateMapping<F>> Default for ElasticDateMappingVisitor
 impl <F: Format, T: ElasticDateMapping<F>> serde::ser::MapVisitor for ElasticDateMappingVisitor<F, T> {
 	fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
 	where S: Serializer {
-		try!(serializer.serialize_struct_elt("type", T::field_type()));
+		try!(serializer.serialize_struct_elt("type", T::data_type()));
 
 		if let Some(boost) = T::boost() {
 			try!(serializer.serialize_struct_elt("boost", boost));

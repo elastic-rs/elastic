@@ -10,6 +10,7 @@ use std::collections::BTreeMap;
 use elastic_types::mapping::prelude::*;
 use elastic_types::string::*;
 
+#[derive(Default)]
 pub struct MyStringMapping;
 impl ElasticStringMapping for MyStringMapping { 
 	fn boost() -> Option<f32> {

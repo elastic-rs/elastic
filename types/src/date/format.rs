@@ -4,64 +4,12 @@ use chrono::format::{ Parsed, Item };
 use std::error::Error;
 use std::fmt;
 
-/// Represents an error encountered during parsing.
-#[derive(Debug)]
-pub struct ParseError {
-	kind: ParseErrorKind
-}
-
-#[derive_Debug]
-enum ParseErrorKind {
-    Chrono(chrono::ParseError),
-    Other(String)
-}
-
-impl fmt::Display for ParseError {
-	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-		match self.kind {
-			ParseErrorKind::Chrono(ref err) => write!(f, "Chrono error: {}", err),
-			ParseErrorKind::Other(ref err) => write!(f, "Error: {}", err)
-		}
-	}
-}
-
-impl Error for ParseError {
-	fn description(&self) -> &str {
-		match self.kind {
-			ParseErrorKind::Chrono(ref err) => err.description(),
-			ParseErrorKind::Other(ref err) => &err[..]
-		}
-	}
-
-	fn cause(&self) -> Option<&Error> {
-		match self.kind {
-			ParseErrorKind::Chrono(ref err) => Some(err),
-			ParseErrorKind::Other(_) => None
-		}
-	}
-}
-
-impl From<chrono::ParseError> for ParseError {
-	fn from(err: chrono::ParseError) -> ParseError {
-		ParseError {
-			kind: ParseErrorKind::Chrono(err)
-		}
-	}
-}
-
-impl From<String> for ParseError {
-	fn from(err: String) -> ParseError {
-		ParseError {
-			kind: ParseErrorKind::Other(err)
-		}
-	}
-}
-
 /// A format used for parsing and formatting dates.
 /// 
 /// The format is specified as two functions; `parse` and `format`, which are backed by `chrono::format::Item`s.
 /// Not all formats use the `Item`s though, for example `EpochMillis`, which is more efficient than other formats.
-pub trait Format {
+pub trait Format
+where Self : Default {
 	/// Parses a date string to a `chrono::DateTime<UTC>` result.
 	/// 
 	/// The date string must match the format specified by `fmt()`.
@@ -120,4 +68,57 @@ pub trait Format {
 	/// 
 	/// This is the string used when defining the format in the field mapping.
 	fn name() -> &'static str;
+}
+
+/// Represents an error encountered during parsing.
+#[derive(Debug)]
+pub struct ParseError {
+	kind: ParseErrorKind
+}
+
+#[derive_Debug]
+enum ParseErrorKind {
+    Chrono(chrono::ParseError),
+    Other(String)
+}
+
+impl fmt::Display for ParseError {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		match self.kind {
+			ParseErrorKind::Chrono(ref err) => write!(f, "Chrono error: {}", err),
+			ParseErrorKind::Other(ref err) => write!(f, "Error: {}", err)
+		}
+	}
+}
+
+impl Error for ParseError {
+	fn description(&self) -> &str {
+		match self.kind {
+			ParseErrorKind::Chrono(ref err) => err.description(),
+			ParseErrorKind::Other(ref err) => &err[..]
+		}
+	}
+
+	fn cause(&self) -> Option<&Error> {
+		match self.kind {
+			ParseErrorKind::Chrono(ref err) => Some(err),
+			ParseErrorKind::Other(_) => None
+		}
+	}
+}
+
+impl From<chrono::ParseError> for ParseError {
+	fn from(err: chrono::ParseError) -> ParseError {
+		ParseError {
+			kind: ParseErrorKind::Chrono(err)
+		}
+	}
+}
+
+impl From<String> for ParseError {
+	fn from(err: String) -> ParseError {
+		ParseError {
+			kind: ParseErrorKind::Other(err)
+		}
+	}
 }

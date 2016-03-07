@@ -4,7 +4,7 @@ use std::collections::BTreeMap;
 use std::marker::PhantomData;
 use serde;
 use serde::{ Serializer, Serialize };
-use ::mapping::{ ElasticMapping, ElasticType, IndexAnalysis };
+use ::mapping::{ ElasticMapping, ElasticDataType, IndexAnalysis };
 
 /// The base requirements for mapping a `string` type.
 /// 
@@ -20,6 +20,7 @@ use ::mapping::{ ElasticMapping, ElasticType, IndexAnalysis };
 /// use elastic_types::mapping::ElasticMapping;
 /// use elastic_types::string::mapping::{ ElasticStringMapping, ElasticStringFieldMapping };
 /// 
+/// #[derive(Default)]
 /// struct MyStringMapping;
 /// impl serde::Serialize for MyStringMapping {
 /// 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
@@ -50,7 +51,7 @@ use ::mapping::{ ElasticMapping, ElasticType, IndexAnalysis };
 /// # }
 /// ```
 pub trait ElasticStringMapping 
-where Self : Sized + Serialize {
+where Self : Sized + Serialize + Default {
 	/// Field-level index time boosting. Accepts a floating point number, defaults to `1.0`.
 	fn boost() -> Option<f32> {
 		None
@@ -156,7 +157,7 @@ where Self : Sized + Serialize {
 impl <M: ElasticStringMapping> ElasticMapping for M {
 	type Visitor = ElasticStringMappingVisitor<M>;
 
-	fn field_type() -> &'static str {
+	fn data_type() -> &'static str {
 		"string"
 	}
 }
@@ -466,7 +467,7 @@ impl serde::Serialize for TermVector {
 }
 
 /// Default mapping for `String`.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct DefaultStringMapping;
 impl ElasticStringMapping for DefaultStringMapping { }
 
@@ -479,9 +480,8 @@ impl Serialize for DefaultStringMapping {
 }
 
 /// A Rust representation of an Elasticsearch `string`.
-pub trait ElasticStringType<T: ElasticMapping + ElasticStringMapping> where Self: Sized + ElasticType<T, ()> { }
+pub trait ElasticStringType<T: ElasticMapping + ElasticStringMapping> where Self: Sized + ElasticDataType<T, ()> { }
 
-//TODO: Make this take in str for field name
 /// Base visitor for serialising string mappings.
 #[derive(Debug, PartialEq)]
 pub struct ElasticStringMappingVisitor<T: ElasticMapping> {
@@ -500,7 +500,7 @@ impl <T: ElasticMapping + ElasticStringMapping> serde::ser::MapVisitor for Elast
 	#[allow(cyclomatic_complexity)]
 	fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
 	where S: serde::Serializer {
-		try!(serializer.serialize_struct_elt("type", T::field_type()));
+		try!(serializer.serialize_struct_elt("type", T::data_type()));
 
 		if let Some(boost) = T::boost() {
 			try!(serializer.serialize_struct_elt("boost", boost));

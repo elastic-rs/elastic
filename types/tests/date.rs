@@ -26,6 +26,7 @@ const MYTYPE_DATE_FMT_2: &'static str = "%d/%m/%Y %H:%M:%S";
 
 //A date format based on a chrono format string
 #[allow(non_camel_case_types)]
+#[derive(Default)]
 pub struct TestDateFormat1;
 impl Format for TestDateFormat1 {
 	fn fmt<'a>() -> Vec<Item<'a>> {
@@ -41,6 +42,7 @@ impl Format for TestDateFormat1 {
 
 //A date format based on an elasticsearch formart string
 #[allow(non_camel_case_types)]
+#[derive(Default)]
 pub struct TestDateFormat2;
 impl Format for TestDateFormat2 {
 	fn fmt<'a>() -> Vec<Item<'a>> {

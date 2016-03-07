@@ -8,7 +8,8 @@ extern crate chrono;
 #[macro_use]
 extern crate elastic_types;
 
-pub mod mapping;
+pub mod type_mapping;
+pub mod field_mapping;
 
 pub mod date;
 pub mod date_format;

@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 use serde;
 use serde::{ Serialize, Deserialize, Serializer, Deserializer };
 use super::mapping::{ ElasticStringType, ElasticStringMapping, DefaultStringMapping };
-use ::mapping::{ ElasticMapping, ElasticType };
+use ::mapping::{ ElasticMapping, ElasticDataType };
 
 /// An Elasticsearch `string` with a mapping.
 /// 
@@ -58,7 +58,7 @@ impl <T: ElasticMapping + ElasticStringMapping> ElasticString<T> {
 	}
 }
 
-impl <T: ElasticMapping + ElasticStringMapping> ElasticType<T, ()> for ElasticString<T> { }
+impl <T: ElasticMapping + ElasticStringMapping> ElasticDataType<T, ()> for ElasticString<T> { }
 impl <T: ElasticMapping + ElasticStringMapping> ElasticStringType<T> for ElasticString<T> { }
 
 impl From<String> for ElasticString<DefaultStringMapping> {
@@ -119,7 +119,7 @@ impl<'a, T: ElasticMapping + ElasticStringMapping> PartialEq<ElasticString<T>> f
 	}
 }
 
-impl ElasticType<DefaultStringMapping, ()> for String { }
+impl ElasticDataType<DefaultStringMapping, ()> for String { }
 impl ElasticStringType<DefaultStringMapping> for String { }
 
 //Serialize elastic string

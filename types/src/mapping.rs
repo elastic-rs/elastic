@@ -5,7 +5,7 @@ pub mod prelude {
     //! 
     //! This is a convenience module to make it easy to build mappings for multiple types without too many `use` statements.
     
-    pub use super::{ ElasticType, ElasticMapping, NullMapping, IndexAnalysis, ElasticMappingVisitor };
+    pub use super::{ ElasticDataType, ElasticMapping, NullMapping, IndexAnalysis, ElasticMappingVisitor };
     pub use ::date::mapping::*;
     pub use ::string::mapping::*;
 }
@@ -13,10 +13,18 @@ pub mod prelude {
 use std::marker::PhantomData;
 use serde;
 
-/// The base requirements for mapping an Elasticsearch type.
+/// The base representation of an Elasticsearch data type.
 /// 
-/// Each type will have its own implementing structures with extra type-specific mapping parameters.
-pub trait ElasticMapping<F = ()> {
+/// # Links
+/// 
+/// - [Elasticsearch docs](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-types.html)
+pub trait ElasticDataType<T: ElasticMapping<F>, F> { }
+
+/// The base requirements for mapping an Elasticsearch data type.
+/// 
+/// Each type has its own implementing structures with extra type-specific mapping parameters.
+pub trait ElasticMapping<F = ()>
+where Self: Default + serde::Serialize {
 	/// The serialisation visitor used to inspect this mapping.
 	type Visitor : serde::ser::MapVisitor + Default;
 
@@ -31,22 +39,26 @@ pub trait ElasticMapping<F = ()> {
 	}
 
 	/// Get the type name for this mapping, like `date` or `string`.
-	fn field_type() -> &'static str {
+	fn data_type() -> &'static str {
 		""
 	}
 }
 
 /// A mapping implementation for a non-core type, or any where nobody cares about how it's mapped.
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Default)]
 pub struct NullMapping;
 impl ElasticMapping for NullMapping {
 	type Visitor = NullMappingVisitor;
+
+	fn data_type() -> &'static str {
+		"object"
+	}
 }
 
 impl serde::Serialize for NullMapping {
-	fn serialize<S>(&self, _: &mut S) -> Result<(), S::Error>
+	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
 	where S: serde::Serializer {
-		Ok(())
+		serializer.serialize_struct("mapping", NullMappingVisitor::default())
 	}
 }
 
@@ -54,20 +66,15 @@ impl serde::Serialize for NullMapping {
 #[derive(Default, Debug, PartialEq)]
 pub struct NullMappingVisitor;
 impl serde::ser::MapVisitor for NullMappingVisitor {
-	fn visit<S>(&mut self, _: &mut S) -> Result<Option<()>, S::Error>
+	fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
 	where S: serde::Serializer {
+		try!(serializer.serialize_struct_elt("type", NullMapping::data_type()));
+
 		Ok(None)
 	}
 }
 
-impl ElasticType<(), NullMapping> for .. { }
-
-/// A type that can be indexed in Elasticsearch.
-//TODO: Rename to ElasticDataType
-pub trait ElasticType<T: ElasticMapping<F>, F> { }
-
-//TODO: Need ElasticType, which is a main type that can be derived
-//This needs to map each property. Probably through a custom derive
+impl ElasticDataType<(), NullMapping> for .. { }
 
 /// Should the field be searchable? Accepts `not_analyzed` (default) and `no`.
 #[derive(Debug, Clone, Copy)]

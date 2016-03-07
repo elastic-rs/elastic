@@ -6,7 +6,7 @@ use serde::{ Serialize, Deserialize, Serializer, Deserializer };
 use super::{ DT, DefaultFormat };
 use super::format::{ Format, ParseError };
 use super::mapping::{ ElasticDateMapping, DefaultDateMapping };
-use ::mapping::{ ElasticMapping, ElasticType };
+use ::mapping::{ ElasticMapping, ElasticDataType };
 
 pub use chrono::{ Datelike, Timelike };
 
@@ -172,7 +172,7 @@ impl <F: Format, T: ElasticMapping<F> + ElasticDateMapping<F>> DateTime<F, T> {
 	}
 }
 
-impl <F: Format, T: ElasticMapping<F> + ElasticDateMapping<F>> ElasticType<T, F> for DateTime<F, T> {
+impl <F: Format, T: ElasticMapping<F> + ElasticDateMapping<F>> ElasticDataType<T, F> for DateTime<F, T> {
 
 }
 

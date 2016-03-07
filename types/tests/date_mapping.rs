@@ -10,6 +10,7 @@ use elastic_types::mapping::prelude::*;
 use elastic_types::date::*;
 
 //A custom date mapping
+#[derive(Default)]
 struct MyDateMapping;
 impl ElasticDateMapping<EpochMillis> for MyDateMapping {
 	fn boost() -> Option<f32> {

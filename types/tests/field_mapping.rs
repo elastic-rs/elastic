@@ -9,6 +9,7 @@ extern crate elastic_types;
 use elastic_types::mapping::prelude::*;
 use elastic_types::string::*;
 
+#[derive(Default)]
 struct MyMapping;
 impl ElasticStringMapping for MyMapping { 
 	fn boost() -> Option<f32> {
@@ -42,18 +43,18 @@ impl serde::Serialize for MyMapping {
 
 //This is a quick mockup struct that accesses the mapping on a struct
 use std::marker::PhantomData;
-struct MappingDispatch<T: ElasticType<M, F>, M: ElasticMapping<F> = NullMapping, F = ()> {
+struct MappingDispatch<T: ElasticDataType<M, F>, M: ElasticMapping<F> = NullMapping, F = ()> {
 	phantom_m: PhantomData<M>,
 	phantom_t: PhantomData<T>,
 	phantom_f: PhantomData<F>
 }
-impl <T: ElasticType<M, F>, M: ElasticMapping<F> = NullMapping, F = ()> MappingDispatch<T, M, F> {
+impl <T: ElasticDataType<M, F>, M: ElasticMapping<F> = NullMapping, F = ()> MappingDispatch<T, M, F> {
 	pub fn map(t: &T) -> &'static str {
 		//Check out the Visitor associated type on the mapping
 		let _ = M::get_visitor();
 
 		//Return the type of this mapping to prove we're looking at something unique
-		M::field_type()
+		M::data_type()
 	}
 }
 
@@ -69,7 +70,7 @@ fn can_access_mapping_for_auto_impls() {
 	let ty: i32 = 16;
 
 	//For auto impls, we need to send along at least the type too as a generic param
-	assert_eq!("", MappingDispatch::<i32>::map(&ty));
+	assert_eq!("object", MappingDispatch::<i32>::map(&ty));
 }
 
 #[test]
@@ -77,7 +78,7 @@ fn serialise_mapping_null() {
 	let mapping = NullMapping;
 	let ser = serde_json::to_string(&mapping).unwrap();
 
-	assert_eq!("", ser);
+	assert_eq!(r#"{"type":"object"}"#, ser);
 }
 
 #[test]
