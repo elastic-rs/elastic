@@ -33,7 +33,7 @@ pub mod parse {
         let (remainder, param) = take_while1(part_start, |c| c != b'}');
 
         if param.len() > 0 {
-            parts.push(param.to_string());
+            parts.push(param.to_owned());
         }
         
         parse_path_param_parts(remainder, parts);
@@ -57,7 +57,7 @@ pub mod parse {
         let skip_param = shift_while(remainder, |c| c != b'}');
         
         if part.len() > 0 {
-            parts.push(part.to_string());
+            parts.push(part.to_owned());
         }
         
         if skip_param.len() != 0 {
@@ -107,7 +107,7 @@ pub mod parse {
         let (remainder, part) = take_while1(path, |c| c != b'.');
         
         if part.len() > 0 {
-            parts.push(part.to_string());
+            parts.push(part.to_owned());
         }
         
         if remainder.len() != 0 {

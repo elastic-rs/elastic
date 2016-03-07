@@ -60,26 +60,24 @@ pub fn ty_ptr<T>(mutbl: Mutability, lifetime: Option<Lifetime>, opts: TyPathOpts
 
 /// Get the full-path name of a type.
 pub fn type_of<'a, T>() -> &'a str {
-    let t =
-        unsafe {
-            type_name::<T>()
-        };
-    t
+	unsafe {
+		type_name::<T>()
+	} 
 }
 
 fn _type_of<T>(opts: TyPathOpts) -> String {
 	match opts {
-		TyPathOpts::Full => type_of::<T>().to_string(),
+		TyPathOpts::Full => type_of::<T>().to_owned(),
 		TyPathOpts::NameOnly => {
 			let mut parts = parse_path(type_of::<T>());
-			parts.pop().unwrap_or(String::new())
+			parts.pop().unwrap_or_default()
 		}
 	}
 }
 
 /// Get the full-path name of a type inferred from the argument.
 pub fn infer_type_of<T>(_: &T) -> &str {
-    type_of::<T>()
+	type_of::<T>()
 }
 
 /// The kind of path to use in the type Ident.

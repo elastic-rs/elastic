@@ -26,6 +26,8 @@ use std::marker::PhantomData;
 struct MyTypeMapping<'a> {
 	phantom: PhantomData<&'a ()>
 }
+
+//TODO: Derive this
 impl <'a> ElasticMapping<()> for MyTypeMapping<'a> {
 	type Visitor = MyTypeMappingVisitor<'a>;
 }
@@ -34,7 +36,7 @@ impl <'a> ElasticMapping<()> for MyTypeMapping<'a> {
 use std::borrow::Cow;
 use std::borrow::Borrow;
 
-//TODO: This can probably be standardised
+//TODO: Derive this
 struct MyTypeMappingVisitor<'a> { 
 	data: Cow<'a, MyType>
 }

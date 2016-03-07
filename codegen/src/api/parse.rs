@@ -113,7 +113,7 @@ pub fn from_reader<R>(rdr: &mut R) -> ParseResult<Endpoint> where R: Read {
 			let (name, tree) = try!(
 				data.iter()
 				.next()
-				.ok_or("unexpected format".to_string())
+				.ok_or("unexpected format".to_owned())
 			);
 
 			//Deserialise the api ast and set the name
@@ -122,7 +122,7 @@ pub fn from_reader<R>(rdr: &mut R) -> ParseResult<Endpoint> where R: Read {
 
 			Ok(endpoint)
 		},
-		_ => Err(ParseError::from("unexpected format".to_string()))
+		_ => Err(ParseError::from("unexpected format".to_owned()))
 	}
 }
 

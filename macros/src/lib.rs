@@ -131,7 +131,7 @@ extern crate chrono;
 extern crate serde;
 extern crate serde_json;
 
-pub mod parsers;
+pub mod parse;
 pub mod date;
 pub mod json;
 

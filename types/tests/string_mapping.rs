@@ -43,16 +43,16 @@ impl ElasticStringMapping for MyStringMapping {
 
 	fn fields() -> Option<BTreeMap<&'static str, ElasticStringFieldMapping>> {
 		let mut fields = BTreeMap::new();
- 		fields.insert("raw", ElasticStringFieldMapping {
- 			analyzer: Some("my_analyzer"),
- 			..Default::default()
- 		});
- 		fields.insert("bm25_field", ElasticStringFieldMapping {
- 			similarity: Some("BM25"),
- 			..Default::default()
- 		});
- 		
- 		Some(fields)
+		fields.insert("raw", ElasticStringFieldMapping {
+			analyzer: Some("my_analyzer"),
+			..Default::default()
+		});
+		fields.insert("bm25_field", ElasticStringFieldMapping {
+			similarity: Some("BM25"),
+			..Default::default()
+		});
+		
+		Some(fields)
 	}
 
 	fn ignore_above() -> Option<usize> {
@@ -92,6 +92,7 @@ impl ElasticStringMapping for MyStringMapping {
 	}
 }
 
+//TODO: derive this
 impl serde::Serialize for MyStringMapping {
 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
 		where S: serde::Serializer

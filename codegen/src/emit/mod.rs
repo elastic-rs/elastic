@@ -18,8 +18,8 @@ mod macros {
 				);
 				
 				$writer.write_all(&emitted.into_bytes()[..]).map_err(|e| {
-					let _e: EmitError = e.into();
-					_e.into()
+					let err: EmitError = e.into();
+					err.into()
 				})
 			}
 		}
@@ -30,8 +30,8 @@ mod macros {
 		($emittable:ident, $writer:ident) => {
 			{
 				$writer.write_all($emittable.as_bytes()).map_err(|e| {
-					let _e: EmitError = e.into();
-					_e.into()
+					let err: EmitError = e.into();
+					err.into()
 				})
 			}
 		}
@@ -124,7 +124,7 @@ impl error::Error for EmitError {
 	fn description(&self) -> &str {
 		match self.kind {
 			EmitErrorKind::Io(ref err) => err.description(),
-			EmitErrorKind::Other(ref err) => &err[..]
+			EmitErrorKind::Other(ref err) => &err
 		}
 	}
 

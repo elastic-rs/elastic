@@ -60,8 +60,8 @@ impl HttpVerb {
 	/// let verb = HttpVerb::parse("GET");
 	/// assert!(verb == HttpVerb::Get);
 	/// ```
-	pub fn parse(_method: &str) -> HttpVerb {
-		match _method {
+	pub fn parse(method: &str) -> HttpVerb {
+		match method {
 			"HEAD" => HttpVerb::Head,
 			"POST" => HttpVerb::Post,
 			"PUT" => HttpVerb::Put,
@@ -438,7 +438,7 @@ impl Param {
 	}
 	
 	/// Get the `Type` for the `Param`.
-	pub fn get_type<'a>(&'a self) -> Type<'a> {
+	pub fn get_type(&self) -> Type {
 		match self._type {
             Some(ref t) => Type::parse(t, &self.options),
             None => Type::parse("unknown", &self.options)

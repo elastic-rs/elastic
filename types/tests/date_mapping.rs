@@ -46,6 +46,7 @@ impl ElasticDateMapping<EpochMillis> for MyDateMapping {
 	}
 }
 
+//TODO: derive this
 impl serde::Serialize for MyDateMapping {
 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
 		where S: serde::Serializer
