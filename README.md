@@ -33,7 +33,8 @@ A simple `query_string` query:
 extern crate elastic_hyper as elastic;
 
 let mut client = hyper::Client::new();
-let res = elastic::search::post_index_type(&mut client, "http://localhost:9200", "bench_index", "docs", 
+let res = elastic::search::post_index_type(&mut client, 
+	"http://localhost:9200", "bench_index", "docs", 
 	json!({
 		query: {
 			query_string: {
