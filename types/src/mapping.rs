@@ -18,14 +18,26 @@ use serde;
 /// # Links
 /// 
 /// - [Elasticsearch docs](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-types.html)
-pub trait ElasticDataType<T: ElasticMapping<F>, F> { }
+pub trait ElasticDataType<T: ElasticMapping<F>, F> : TypeEllision { }
+
+#[doc(hidden)]
+pub enum TypeEllisionKind {
+	Explicit,
+	Ellided
+}
+#[doc(hidden)]
+pub trait TypeEllision {
+	fn get_ellision() -> TypeEllisionKind {
+		TypeEllisionKind::Explicit
+	}
+}
 
 /// The base requirements for mapping an Elasticsearch data type.
 /// 
 /// Each type has its own implementing structures with extra type-specific mapping parameters.
 pub trait ElasticMapping<F = ()>
 where Self: Default + serde::Serialize {
-	/// The serialisation visitor used to inspect this mapping.
+	#[doc(hidden)]
 	type Visitor : serde::ser::MapVisitor + Default;
 
 	/// An optional associated type that mappings may need.
@@ -33,7 +45,7 @@ where Self: Default + serde::Serialize {
 	/// For example; the `Format` trait on `DateTime`.
 	type Format = F;
 
-	/// Gets an instance of the `Visitor` for serialisation.
+	#[doc(hidden)]
 	fn get_visitor() -> Self::Visitor {
 		Self::Visitor::default()
 	}

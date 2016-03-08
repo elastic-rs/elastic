@@ -74,6 +74,11 @@ fn can_access_mapping_for_auto_impls() {
 }
 
 #[test]
+fn can_access_type_ellision_for_mappings() {
+	
+}
+
+#[test]
 fn serialise_mapping_null() {
 	let mapping = NullMapping;
 	let ser = serde_json::to_string(&mapping).unwrap();

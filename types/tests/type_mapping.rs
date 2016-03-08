@@ -17,6 +17,7 @@ struct MyType {
 	pub num: i32
 }
 
+//All this should be derived
 impl <'a> ElasticDataType<MyTypeMapping<'a>, ()> for MyType { }
 
 //The mapping for our type
@@ -62,7 +63,7 @@ impl <'a> serde::Serialize for MyTypeMapping<'a> {
 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
 	where S: serde::Serializer
 	{
-		serializer.serialize_struct("mapping", MyTypeMappingVisitor::default())
+		serializer.serialize_struct("properties", MyTypeMappingVisitor::default())
 	}
 }
 
