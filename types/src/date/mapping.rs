@@ -110,23 +110,9 @@ where Self : ElasticMapping<T> + Sized + Serialize + Default {
 pub struct DefaultDateMapping<T: DateFormat = DefaultFormat> {
 	phantom: PhantomData<T>
 }
-
-impl <T: DateFormat> ElasticMapping<T> for DefaultDateMapping<T> {
-	type Visitor = ElasticDateMappingVisitor<T, DefaultDateMapping<T>>;
-
-	fn data_type() -> &'static str {
-		"date"
-	}
-}
-
 impl <T: DateFormat> ElasticDateMapping<T> for DefaultDateMapping<T> { }
 
-impl <T: DateFormat> serde::Serialize for DefaultDateMapping<T> {
-	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
-	where S: serde::Serializer {
-		serializer.serialize_struct("mapping", Self::get_visitor())
-	}
-}
+impl_date_mapping!(DefaultDateMapping<T>);
 
 /// Visitor for a `date` map.
 #[derive(Debug, PartialEq, Default)]

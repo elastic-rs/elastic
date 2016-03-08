@@ -170,23 +170,9 @@ impl StringFormat for DefaultStringFormat { }
 pub struct DefaultStringMapping<T: StringFormat = DefaultStringFormat> {
 	phantom: PhantomData<T>
 }
-
-impl <T: StringFormat> ElasticMapping<T> for DefaultStringMapping<T> {
-	type Visitor = ElasticStringMappingVisitor<DefaultStringMapping<T>, T>;
-
-	fn data_type() -> &'static str {
-		"string"
-	}
-}
-
 impl <T: StringFormat> ElasticStringMapping<T> for DefaultStringMapping<T> { }
 
-impl <T: StringFormat> Serialize for DefaultStringMapping<T> {
-	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
-	where S: serde::Serializer {
-		serializer.serialize_struct("mapping", Self::get_visitor())
-	}
-}
+impl_string_mapping!(DefaultStringMapping<T>);
 
 /// Base visitor for serialising string mappings.
 #[derive(Debug, PartialEq, Default)]

@@ -17,6 +17,79 @@
 #![plugin(elastic_macros)]
 #![plugin(clippy)]
 
+#![macro_use]
+#[macro_export]
+macro_rules! impl_string_mapping {
+	($t:ty, $f:ty) => (
+    	impl $crate::mapping::ElasticMapping<$f> for $t {
+			type Visitor = $crate::string::mapping::ElasticStringMappingVisitor<$t, $f>;
+
+			fn data_type() -> &'static str {
+				"string"
+			}
+		}
+
+		impl serde::Serialize for $t {
+			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+			where S: serde::Serializer {
+				serializer.serialize_struct("mapping", Self::get_visitor())
+			}
+		}
+    );
+    ($t:ty) => (
+    	impl <T: $crate::string::mapping::StringFormat> $crate::mapping::ElasticMapping<T> for $t {
+			type Visitor = $crate::string::mapping::ElasticStringMappingVisitor<$t, T>;
+
+			fn data_type() -> &'static str {
+				"string"
+			}
+		}
+
+		impl <T: $crate::string::mapping::StringFormat> serde::Serialize for $t {
+			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+			where S: serde::Serializer {
+				serializer.serialize_struct("mapping", Self::get_visitor())
+			}
+		}
+    )
+}
+
+#[macro_export]
+macro_rules! impl_date_mapping {
+	($t:ty, $f:ty) => (
+    	impl $crate::mapping::ElasticMapping<$f> for $t {
+			type Visitor = $crate::date::mapping::ElasticDateMappingVisitor<$f, $t>;
+
+			fn data_type() -> &'static str {
+				"date"
+			}
+		}
+		
+		impl serde::Serialize for $t {
+			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+			where S: serde::Serializer {
+				serializer.serialize_struct("mapping", Self::get_visitor())
+			}
+		}
+    );
+    ($t:ty) => (
+    	impl <T: $crate::date::DateFormat> $crate::mapping::ElasticMapping<T> for $t {
+			type Visitor = $crate::date::mapping::ElasticDateMappingVisitor<T, $t>;
+
+			fn data_type() -> &'static str {
+				"date"
+			}
+		}
+
+		impl <T: $crate::date::DateFormat> serde::Serialize for $t {
+			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+			where S: serde::Serializer {
+				serializer.serialize_struct("mapping", Self::get_visitor())
+			}
+		}
+    )
+}
+
 extern crate chrono;
 extern crate serde;
 
