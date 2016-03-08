@@ -92,7 +92,7 @@ impl ElasticStringMapping for MyStringMapping {
 }
 
 impl ElasticMapping<DefaultStringFormat> for MyStringMapping {
-	type Visitor = ElasticStringMappingVisitor<DefaultStringFormat, MyStringMapping>;
+	type Visitor = ElasticStringMappingVisitor<MyStringMapping, DefaultStringFormat>;
 
 	fn data_type() -> &'static str {
 		"string"

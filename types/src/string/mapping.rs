@@ -23,11 +23,11 @@ where Self: Default { }
 /// # extern crate elastic_types;
 /// # fn main() {
 /// use elastic_types::mapping::prelude::*;
+/// use elastic_types::string::prelude::*;
 ///
 /// #[derive(Debug, Clone, Default)]
 /// pub struct MyStringMapping;
-/// 
-/// impl ElasticStringMapping for MyStringMapping {
+/// impl ElasticStringMapping<DefaultStringFormat> for MyStringMapping {
 /// 	//Overload the mapping functions here
 /// 	fn boost() -> Option<f32> {
 ///			Some(1.5)
@@ -35,8 +35,8 @@ where Self: Default { }
 /// }
 /// 
 /// //We also need to implement the base `ElasticMapping` and `serde::Serialize` for our custom mapping type
-/// impl ElasticMapping for MyStringMapping {
-/// 	type Visitor = ElasticStringMappingVisitor<DefaultStringFormat, MyStringMapping>;
+/// impl ElasticMapping<DefaultStringFormat> for MyStringMapping {
+/// 	type Visitor = ElasticStringMappingVisitor<MyStringMapping, DefaultStringFormat>;
 /// 
 /// 	fn data_type() -> &'static str {
 /// 		"string"
@@ -156,7 +156,7 @@ where Self : ElasticMapping<T> + Sized + Serialize + Default {
 }
 
 /// A Rust representation of an Elasticsearch `string`.
-pub trait ElasticStringType<F: StringFormat, T: ElasticMapping<F> + ElasticStringMapping<F>> where Self: Sized + ElasticDataType<T, F> { }
+pub trait ElasticStringType<T: ElasticMapping<F> + ElasticStringMapping<F>, F: StringFormat> where Self: Sized + ElasticDataType<T, F> { }
 
 /// Default format for `string` types.
 /// 
@@ -172,7 +172,7 @@ pub struct DefaultStringMapping<T: StringFormat = DefaultStringFormat> {
 }
 
 impl <T: StringFormat> ElasticMapping<T> for DefaultStringMapping<T> {
-	type Visitor = ElasticStringMappingVisitor<T, DefaultStringMapping<T>>;
+	type Visitor = ElasticStringMappingVisitor<DefaultStringMapping<T>, T>;
 
 	fn data_type() -> &'static str {
 		"string"
@@ -190,12 +190,12 @@ impl <T: StringFormat> Serialize for DefaultStringMapping<T> {
 
 /// Base visitor for serialising string mappings.
 #[derive(Debug, PartialEq, Default)]
-pub struct ElasticStringMappingVisitor<F: StringFormat, T: ElasticStringMapping<F>> {
+pub struct ElasticStringMappingVisitor<T: ElasticStringMapping<F>, F: StringFormat> {
 	phantom_f: PhantomData<F>,
 	phantom_t: PhantomData<T>
 }
 
-impl <F: StringFormat, T: ElasticStringMapping<F>> serde::ser::MapVisitor for ElasticStringMappingVisitor<F, T> {
+impl <T: ElasticStringMapping<F>, F: StringFormat> serde::ser::MapVisitor for ElasticStringMappingVisitor<T, F> {
 	#[allow(cyclomatic_complexity)]
 	fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
 	where S: serde::Serializer {

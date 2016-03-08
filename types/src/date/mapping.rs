@@ -17,10 +17,11 @@ use ::mapping::{ ElasticMapping, IndexAnalysis };
 /// # extern crate elastic_types;
 /// # fn main() {
 /// use elastic_types::mapping::prelude::*;
+/// use elastic_types::date::prelude::*;
 /// 
 /// #[derive(Debug, Clone, Default)]
-/// pub struct MyDateMapping<T: DateFormat = DefaultFormat> {
-/// 	phantom: PhantomData<T>
+/// pub struct MyDateMapping<T: DateFormat> {
+/// 	phantom: std::marker::PhantomData<T>
 /// }
 /// 
 /// impl <T: DateFormat> ElasticMapping<T> for MyDateMapping<T> {

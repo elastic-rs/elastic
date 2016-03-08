@@ -16,7 +16,7 @@ use elastic_types::string::prelude::*;
 struct MyType {
 	pub my_date1: DateTime,
 	pub my_date2: DateTime<EpochMillis, MyDateMapping>,
-	pub my_string: ElasticString<DefaultStringFormat, DefaultStringMapping>,
+	pub my_string: ElasticString<DefaultStringMapping, DefaultStringFormat>,
 	pub my_num: i32
 }
 

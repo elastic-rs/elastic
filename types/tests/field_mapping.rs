@@ -11,7 +11,7 @@ use elastic_types::string::prelude::*;
 
 #[derive(Default)]
 struct MyMapping;
-impl ElasticStringMapping<DefaultStringFormat> for MyMapping { 
+impl ElasticStringMapping for MyMapping { 
 	fn boost() -> Option<f32> {
 		Some(1.01)
 	}
@@ -34,7 +34,7 @@ impl ElasticStringMapping<DefaultStringFormat> for MyMapping {
 }
 
 impl ElasticMapping<DefaultStringFormat> for MyMapping {
-	type Visitor = ElasticStringMappingVisitor<DefaultStringFormat, MyMapping>;
+	type Visitor = ElasticStringMappingVisitor<MyMapping, DefaultStringFormat>;
 
 	fn data_type() -> &'static str {
 		"string"
@@ -67,7 +67,7 @@ impl <T: ElasticDataType<M, F>, M: ElasticMapping<F> = NullMapping, F = ()> Mapp
 
 #[test]
 fn can_access_mapping_fns() {
-	let ty = ElasticString::<DefaultStringFormat, MyMapping>::new("");
+	let ty = ElasticString::<MyMapping>::new("");
 
 	assert_eq!("string", MappingDispatch::map(&ty));
 }

@@ -11,7 +11,7 @@ use elastic_types::string::prelude::*;
 
 #[test]
 fn serialise_elastic_string() {
-	let string = ElasticString::<DefaultStringFormat, DefaultStringMapping>::new("my string");
+	let string: ElasticString<DefaultStringMapping> = ElasticString::new("my string");
 
 	let ser = serde_json::to_string(&string).unwrap();
 
@@ -20,7 +20,7 @@ fn serialise_elastic_string() {
 
 #[test]
 fn deserialise_elastic_string() {
-	let string: ElasticString<DefaultStringFormat, DefaultStringMapping> = serde_json::from_str(r#""my string""#).unwrap();
+	let string: ElasticString<DefaultStringMapping> = serde_json::from_str(r#""my string""#).unwrap();
 
 	assert_eq!("my string", string);
 }
