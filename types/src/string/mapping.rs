@@ -6,52 +6,53 @@ use serde;
 use serde::{ Serializer, Serialize };
 use ::mapping::{ ElasticMapping, ElasticDataType, IndexAnalysis };
 
+/// A string format
+pub trait StringFormat 
+where Self: Default { }
+
 /// The base requirements for mapping a `string` type.
+/// 
+/// Custom mappings can be defined by implementing `ElasticStringMapping`.
 /// 
 /// # Examples
 /// 
-/// Custom mappings can be defined by implementing `ElasticStringMapping`:
+/// Manually define a custom `ElasticStringMapping`:
 /// 
 /// ```
 /// # extern crate serde;
 /// # extern crate elastic_types;
 /// # fn main() {
-/// use std::collections::BTreeMap;
-/// use elastic_types::mapping::ElasticMapping;
-/// use elastic_types::string::mapping::{ ElasticStringMapping, ElasticStringFieldMapping };
+/// use elastic_types::mapping::prelude::*;
+///
+/// #[derive(Debug, Clone, Default)]
+/// pub struct MyStringMapping;
 /// 
-/// #[derive(Default)]
-/// struct MyStringMapping;
-/// impl serde::Serialize for MyStringMapping {
-/// 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
-/// 	where S: serde::Serializer {
-/// 		serializer.serialize_struct("mapping", MyStringMapping::get_visitor())
+/// impl ElasticStringMapping for MyStringMapping {
+/// 	//Overload the mapping functions here
+/// 	fn boost() -> Option<f32> {
+///			Some(1.5)
+///		}
+/// }
+/// 
+/// //We also need to implement the base `ElasticMapping` and `serde::Serialize` for our custom mapping type
+/// impl ElasticMapping for MyStringMapping {
+/// 	type Visitor = ElasticStringMappingVisitor<DefaultStringFormat, MyStringMapping>;
+/// 
+/// 	fn data_type() -> &'static str {
+/// 		"string"
 /// 	}
 /// }
 /// 
-/// impl ElasticStringMapping for MyStringMapping {
-/// 	fn null_value() -> Option<&'static str> {
-/// 		Some("my default value")
-/// 	}
-/// 
-/// 	fn fields() -> Option<BTreeMap<&'static str, ElasticStringFieldMapping>> {
-/// 		let mut fields = BTreeMap::new();
-/// 		fields.insert("raw", ElasticStringFieldMapping {
-/// 			analyzer: Some("my_analyzer"),
-/// 			..Default::default()
-/// 		});
-/// 		fields.insert("bm25_field", ElasticStringFieldMapping {
-/// 			similarity: Some("BM25"),
-/// 			..Default::default()
-/// 		});
-/// 		
-/// 		Some(fields)
+/// impl serde::Serialize for MyStringMapping {
+/// 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+/// 	where S: serde::Serializer {
+/// 		serializer.serialize_struct("mapping", Self::get_visitor())
 /// 	}
 /// }
 /// # }
 /// ```
-pub trait ElasticStringMapping 
-where Self : Sized + Serialize + Default {
+pub trait ElasticStringMapping<T: StringFormat = DefaultStringFormat>
+where Self : ElasticMapping<T> + Sized + Serialize + Default {
 	/// Field-level index time boosting. Accepts a floating point number, defaults to `1.0`.
 	fn boost() -> Option<f32> {
 		None
@@ -154,11 +155,123 @@ where Self : Sized + Serialize + Default {
 	}
 }
 
-impl <M: ElasticStringMapping> ElasticMapping for M {
-	type Visitor = ElasticStringMappingVisitor<M>;
+/// A Rust representation of an Elasticsearch `string`.
+pub trait ElasticStringType<F: StringFormat, T: ElasticMapping<F> + ElasticStringMapping<F>> where Self: Sized + ElasticDataType<T, F> { }
+
+/// Default format for `string` types.
+/// 
+/// Currently, there's nothing here to use.
+#[derive(Debug, Clone, Default)]
+pub struct DefaultStringFormat;
+impl StringFormat for DefaultStringFormat { }
+
+/// Default mapping for `String`.
+#[derive(Debug, Clone, Default)]
+pub struct DefaultStringMapping<T: StringFormat = DefaultStringFormat> {
+	phantom: PhantomData<T>
+}
+
+impl <T: StringFormat> ElasticMapping<T> for DefaultStringMapping<T> {
+	type Visitor = ElasticStringMappingVisitor<T, DefaultStringMapping<T>>;
 
 	fn data_type() -> &'static str {
 		"string"
+	}
+}
+
+impl <T: StringFormat> ElasticStringMapping<T> for DefaultStringMapping<T> { }
+
+impl <T: StringFormat> Serialize for DefaultStringMapping<T> {
+	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+	where S: serde::Serializer {
+		serializer.serialize_struct("mapping", Self::get_visitor())
+	}
+}
+
+/// Base visitor for serialising string mappings.
+#[derive(Debug, PartialEq, Default)]
+pub struct ElasticStringMappingVisitor<F: StringFormat, T: ElasticStringMapping<F>> {
+	phantom_f: PhantomData<F>,
+	phantom_t: PhantomData<T>
+}
+
+impl <F: StringFormat, T: ElasticStringMapping<F>> serde::ser::MapVisitor for ElasticStringMappingVisitor<F, T> {
+	#[allow(cyclomatic_complexity)]
+	fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
+	where S: serde::Serializer {
+		try!(serializer.serialize_struct_elt("type", T::data_type()));
+
+		if let Some(boost) = T::boost() {
+			try!(serializer.serialize_struct_elt("boost", boost));
+		}
+
+		if let Some(doc_values) = T::doc_values() {
+			try!(serializer.serialize_struct_elt("doc_values", doc_values));
+		}
+
+		if let Some(include_in_all) = T::include_in_all() {
+			try!(serializer.serialize_struct_elt("include_in_all", include_in_all));
+		}
+
+		if let Some(index) = T::index() {
+			try!(serializer.serialize_struct_elt("index", index));
+		}
+
+		if let Some(store) = T::store() {
+			try!(serializer.serialize_struct_elt("store", store));
+		}
+
+		if let Some(analyzer) = T::analyzer() {
+			try!(serializer.serialize_struct_elt("analyzer", analyzer));
+		}
+
+		if let Some(fields) = T::fields() {
+			try!(serializer.serialize_struct_elt("fields", fields));
+		}
+
+		match T::fielddata() {
+			Some(FieldData::PagedBytes(None, None)) => (),
+			Some(fielddata) => try!(serializer.serialize_struct_elt("fielddata", fielddata)),
+			None => ()
+		}
+
+		if let Some(ignore_above) = T::ignore_above() {
+			try!(serializer.serialize_struct_elt("ignore_above", ignore_above));
+		}
+
+		if let Some(index_options) = T::index_options() {
+			try!(serializer.serialize_struct_elt("index_options", index_options));
+		}
+
+		if let Some(norms) = T::norms() {
+			try!(serializer.serialize_struct_elt("norms", norms));
+		}
+
+		if let Some(null_value) = T::null_value() {
+			try!(serializer.serialize_struct_elt("null_value", null_value));
+		}
+
+		if let Some(position_increment_gap) = T::position_increment_gap() {
+			try!(serializer.serialize_struct_elt("position_increment_gap", position_increment_gap));
+		}
+
+		if let Some(search_analyzer) = T::search_analyzer() {
+			try!(serializer.serialize_struct_elt("search_analyzer", search_analyzer));
+		}
+
+		if let Some(search_quote_analyzer) = T::search_quote_analyzer() {
+			try!(serializer.serialize_struct_elt("search_quote_analyzer", search_quote_analyzer))
+		}
+
+		if let Some(similarity) = T::similarity() {
+			try!(serializer.serialize_struct_elt("similarity", similarity))
+		}
+
+		if let Some(term_vector) = T::term_vector() {
+			try!(serializer.serialize_struct_elt("term_vector", term_vector));
+		}
+
+		Ok(None)
 	}
 }
 
@@ -463,115 +576,5 @@ impl serde::Serialize for TermVector {
 			TermVector::WithOffsets => "with_offsets",
 			TermVector::WithPositionsOffsets => "with_positions_offsets"
 		})
-	}
-}
-
-/// Default mapping for `String`.
-#[derive(Debug, Clone, Default)]
-pub struct DefaultStringMapping;
-impl ElasticStringMapping for DefaultStringMapping { }
-
-impl Serialize for DefaultStringMapping {
-	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
-		where S: serde::Serializer
-	{
-		serializer.serialize_struct("mapping", ElasticStringMappingVisitor::<DefaultStringMapping>::default())
-	}
-}
-
-/// A Rust representation of an Elasticsearch `string`.
-pub trait ElasticStringType<T: ElasticMapping + ElasticStringMapping> where Self: Sized + ElasticDataType<T, ()> { }
-
-/// Base visitor for serialising string mappings.
-#[derive(Debug, PartialEq)]
-pub struct ElasticStringMappingVisitor<T: ElasticMapping> {
-	phantom: PhantomData<T>
-}
-
-impl <T: ElasticMapping> Default for ElasticStringMappingVisitor<T> {
-	fn default() -> ElasticStringMappingVisitor<T> {
-		ElasticStringMappingVisitor::<T> {
-			phantom: PhantomData
-		}
-	}
-}
-
-impl <T: ElasticMapping + ElasticStringMapping> serde::ser::MapVisitor for ElasticStringMappingVisitor<T> {
-	#[allow(cyclomatic_complexity)]
-	fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
-	where S: serde::Serializer {
-		try!(serializer.serialize_struct_elt("type", T::data_type()));
-
-		if let Some(boost) = T::boost() {
-			try!(serializer.serialize_struct_elt("boost", boost));
-		}
-
-		if let Some(doc_values) = T::doc_values() {
-			try!(serializer.serialize_struct_elt("doc_values", doc_values));
-		}
-
-		if let Some(include_in_all) = T::include_in_all() {
-			try!(serializer.serialize_struct_elt("include_in_all", include_in_all));
-		}
-
-		if let Some(index) = T::index() {
-			try!(serializer.serialize_struct_elt("index", index));
-		}
-
-		if let Some(store) = T::store() {
-			try!(serializer.serialize_struct_elt("store", store));
-		}
-
-		if let Some(analyzer) = T::analyzer() {
-			try!(serializer.serialize_struct_elt("analyzer", analyzer));
-		}
-
-		if let Some(fields) = T::fields() {
-			try!(serializer.serialize_struct_elt("fields", fields));
-		}
-
-		match T::fielddata() {
-			Some(FieldData::PagedBytes(None, None)) => (),
-			Some(fielddata) => try!(serializer.serialize_struct_elt("fielddata", fielddata)),
-			None => ()
-		}
-
-		if let Some(ignore_above) = T::ignore_above() {
-			try!(serializer.serialize_struct_elt("ignore_above", ignore_above));
-		}
-
-		if let Some(index_options) = T::index_options() {
-			try!(serializer.serialize_struct_elt("index_options", index_options));
-		}
-
-		if let Some(norms) = T::norms() {
-			try!(serializer.serialize_struct_elt("norms", norms));
-		}
-
-		if let Some(null_value) = T::null_value() {
-			try!(serializer.serialize_struct_elt("null_value", null_value));
-		}
-
-		if let Some(position_increment_gap) = T::position_increment_gap() {
-			try!(serializer.serialize_struct_elt("position_increment_gap", position_increment_gap));
-		}
-
-		if let Some(search_analyzer) = T::search_analyzer() {
-			try!(serializer.serialize_struct_elt("search_analyzer", search_analyzer));
-		}
-
-		if let Some(search_quote_analyzer) = T::search_quote_analyzer() {
-			try!(serializer.serialize_struct_elt("search_quote_analyzer", search_quote_analyzer))
-		}
-
-		if let Some(similarity) = T::similarity() {
-			try!(serializer.serialize_struct_elt("similarity", similarity))
-		}
-
-		if let Some(term_vector) = T::term_vector() {
-			try!(serializer.serialize_struct_elt("term_vector", term_vector));
-		}
-
-		Ok(None)
 	}
 }

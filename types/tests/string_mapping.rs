@@ -8,7 +8,6 @@ extern crate elastic_types;
 
 use std::collections::BTreeMap;
 use elastic_types::mapping::prelude::*;
-use elastic_types::string::*;
 
 #[derive(Default)]
 pub struct MyStringMapping;
@@ -43,16 +42,16 @@ impl ElasticStringMapping for MyStringMapping {
 
 	fn fields() -> Option<BTreeMap<&'static str, ElasticStringFieldMapping>> {
 		let mut fields = BTreeMap::new();
- 		fields.insert("raw", ElasticStringFieldMapping {
- 			analyzer: Some("my_analyzer"),
- 			..Default::default()
- 		});
- 		fields.insert("bm25_field", ElasticStringFieldMapping {
- 			similarity: Some("BM25"),
- 			..Default::default()
- 		});
- 		
- 		Some(fields)
+		fields.insert("raw", ElasticStringFieldMapping {
+			analyzer: Some("my_analyzer"),
+			..Default::default()
+		});
+		fields.insert("bm25_field", ElasticStringFieldMapping {
+			similarity: Some("BM25"),
+			..Default::default()
+		});
+		
+		Some(fields)
 	}
 
 	fn ignore_above() -> Option<usize> {
@@ -92,17 +91,24 @@ impl ElasticStringMapping for MyStringMapping {
 	}
 }
 
+impl ElasticMapping<DefaultStringFormat> for MyStringMapping {
+	type Visitor = ElasticStringMappingVisitor<DefaultStringFormat, MyStringMapping>;
+
+	fn data_type() -> &'static str {
+		"string"
+	}
+}
+
 impl serde::Serialize for MyStringMapping {
 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
-		where S: serde::Serializer
-	{
-		serializer.serialize_struct("mapping", MyStringMapping::get_visitor())
+	where S: serde::Serializer {
+		serializer.serialize_struct("mapping", Self::get_visitor())
 	}
 }
 
 #[test]
 fn serialise_mapping_default() {
-	let mapping = DefaultStringMapping;
+	let mapping: DefaultStringMapping = DefaultStringMapping::default();
 	let ser = serde_json::to_string(&mapping).unwrap();
 
 	assert_eq!(r#"{"type":"string"}"#, ser);

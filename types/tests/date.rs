@@ -9,7 +9,7 @@ extern crate elastic_types;
 
 use chrono::format::{ Parsed, Item };
 use chrono::offset::TimeZone;
-use elastic_types::date::*;
+use elastic_types::date::prelude::*;
 
 #[derive(Default, Serialize, Deserialize)]
 struct MyType {
@@ -28,7 +28,7 @@ const MYTYPE_DATE_FMT_2: &'static str = "%d/%m/%Y %H:%M:%S";
 #[allow(non_camel_case_types)]
 #[derive(Default)]
 pub struct TestDateFormat1;
-impl Format for TestDateFormat1 {
+impl DateFormat for TestDateFormat1 {
 	fn fmt<'a>() -> Vec<Item<'a>> {
 		date_fmt!("%Y/%m/%d %H:%M:%S")
 			.iter()
@@ -44,7 +44,7 @@ impl Format for TestDateFormat1 {
 #[allow(non_camel_case_types)]
 #[derive(Default)]
 pub struct TestDateFormat2;
-impl Format for TestDateFormat2 {
+impl DateFormat for TestDateFormat2 {
 	fn fmt<'a>() -> Vec<Item<'a>> {
 		date_fmt!("yyyyMMdd")
 			.iter()

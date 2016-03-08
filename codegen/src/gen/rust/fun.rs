@@ -83,9 +83,8 @@ impl Fn {
 		self.stmts.extend(body.stmts.to_vec());
 
 		//Set the return type if the function takes one
-		match self.decl.output {
-			FunctionRetTy::Ty(_) => self.expr = body.expr.to_owned(),
-			_ => ()
+		if let FunctionRetTy::Ty(_) = self.decl.output {
+			self.expr = body.expr.to_owned();
 		}
 		
 		self

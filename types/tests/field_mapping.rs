@@ -7,11 +7,11 @@ extern crate serde_json;
 extern crate elastic_types;
 
 use elastic_types::mapping::prelude::*;
-use elastic_types::string::*;
+use elastic_types::string::prelude::*;
 
 #[derive(Default)]
 struct MyMapping;
-impl ElasticStringMapping for MyMapping { 
+impl ElasticStringMapping<DefaultStringFormat> for MyMapping { 
 	fn boost() -> Option<f32> {
 		Some(1.01)
 	}
@@ -33,11 +33,18 @@ impl ElasticStringMapping for MyMapping {
 	}
 }
 
+impl ElasticMapping<DefaultStringFormat> for MyMapping {
+	type Visitor = ElasticStringMappingVisitor<DefaultStringFormat, MyMapping>;
+
+	fn data_type() -> &'static str {
+		"string"
+	}
+}
+
 impl serde::Serialize for MyMapping {
 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
-		where S: serde::Serializer
-	{
-		serializer.serialize_struct("mapping", ElasticMappingVisitor::<MyMapping>::default())
+	where S: serde::Serializer {
+		serializer.serialize_struct("mapping", Self::get_visitor())
 	}
 }
 
@@ -60,7 +67,7 @@ impl <T: ElasticDataType<M, F>, M: ElasticMapping<F> = NullMapping, F = ()> Mapp
 
 #[test]
 fn can_access_mapping_fns() {
-	let ty = ElasticString::<MyMapping>::new("");
+	let ty = ElasticString::<DefaultStringFormat, MyMapping>::new("");
 
 	assert_eq!("string", MappingDispatch::map(&ty));
 }
@@ -75,7 +82,7 @@ fn can_access_mapping_for_auto_impls() {
 
 #[test]
 fn can_access_type_ellision_for_mappings() {
-	
+
 }
 
 #[test]

@@ -2,7 +2,7 @@ use chrono;
 use chrono::{ DateTime, NaiveDateTime, UTC, Timelike };
 use chrono::format::Item;
 use std::error::Error;
-use super::{ Format, ParseError };
+use super::{ DateFormat, ParseError };
 
 /// Format for `basic_date_time_no_millis`.
 /// 
@@ -10,7 +10,7 @@ use super::{ Format, ParseError };
 /// - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-date-format.html#built-in-date-formats)
 #[derive(Debug, Clone, Default)]
 pub struct BasicDateTimeNoMillis;
-impl Format for BasicDateTimeNoMillis {
+impl DateFormat for BasicDateTimeNoMillis {
 	fn fmt<'a>() -> Vec<Item<'a>> {
 		date_fmt!("%Y%m%dT%H%M%SZ")
 			.iter()
@@ -28,7 +28,7 @@ impl Format for BasicDateTimeNoMillis {
 /// - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-date-format.html#built-in-date-formats)
 #[derive(Debug, Clone, Default)]
 pub struct BasicDateTime;
-impl Format for BasicDateTime {
+impl DateFormat for BasicDateTime {
 	fn fmt<'a>() -> Vec<Item<'a>>{
 		date_fmt!("%Y%m%dT%H%M%S%.3fZ")
 			.iter()
@@ -49,7 +49,7 @@ impl Format for BasicDateTime {
 /// - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-date-format.html#built-in-date-formats)
 #[derive(Debug, Clone, Default)]
 pub struct EpochMillis;
-impl Format for EpochMillis {
+impl DateFormat for EpochMillis {
 	fn fmt<'a>() -> Vec<Item<'a>>{
 		Vec::new()
 	}

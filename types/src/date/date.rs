@@ -4,9 +4,9 @@ use chrono::Weekday;
 use serde;
 use serde::{ Serialize, Deserialize, Serializer, Deserializer };
 use super::{ DT, DefaultFormat };
-use super::format::{ Format, ParseError };
+use super::format::{ DateFormat, ParseError };
 use super::mapping::{ ElasticDateMapping, DefaultDateMapping };
-use ::mapping::{ ElasticMapping, ElasticDataType };
+use ::mapping::{ ElasticMapping, ElasticDataType, TypeEllision, TypeEllisionKind };
 
 pub use chrono::{ Datelike, Timelike };
 
@@ -63,14 +63,14 @@ pub use chrono::{ Datelike, Timelike };
 /// # Links
 /// - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/date.html)
 #[derive(Debug, Clone)]
-pub struct DateTime<F: Format = DefaultFormat, T: ElasticMapping<F> + ElasticDateMapping<F> = DefaultDateMapping<F>> {
+pub struct DateTime<F: DateFormat = DefaultFormat, T: ElasticMapping<F> + ElasticDateMapping<F> = DefaultDateMapping<F>> {
 	/// The date and time value
 	value: DT,
 	phantom_f: PhantomData<F>,
 	phantom_t: PhantomData<T>
 }
 
-impl <F: Format, T: ElasticMapping<F> + ElasticDateMapping<F>> DateTime<F, T> {
+impl <F: DateFormat, T: ElasticMapping<F> + ElasticDateMapping<F>> DateTime<F, T> {
 	/// Creates a new `DateTime` from the given `chrono::DateTime<UTC>`.
 	/// 
 	/// This function will consume the provided `chrono` date.
@@ -120,11 +120,11 @@ impl <F: Format, T: ElasticMapping<F> + ElasticDateMapping<F>> DateTime<F, T> {
 
 	/// Parse the date and time from a string.
 	/// 
-	/// The format of the string must match the given `Format`.
+	/// The format of the string must match the given `DateFormat`.
 	/// 
 	/// # Examples
 	/// 
-	/// Parsing from a specified `Format`.
+	/// Parsing from a specified `DateFormat`.
 	/// 
 	/// ```
 	/// use elastic_types::date::{ DateTime, BasicDateTime };
@@ -137,7 +137,7 @@ impl <F: Format, T: ElasticMapping<F> + ElasticDateMapping<F>> DateTime<F, T> {
 
 	/// Format the date and time as a string.
 	/// 
-	/// The format of the string is specified by the given `Format`.
+	/// The format of the string is specified by the given `DateFormat`.
 	/// 
 	/// # Examples
 	/// 
@@ -167,28 +167,34 @@ impl <F: Format, T: ElasticMapping<F> + ElasticDateMapping<F>> DateTime<F, T> {
 	/// //Change the format to epoch_millis
 	/// let otherdate: DateTime<EpochMillis> = date.into();
 	/// ```
-	pub fn into<FInto: Format, TInto: ElasticMapping<FInto> + ElasticDateMapping<FInto>>(self) -> DateTime<FInto, TInto> {
+	pub fn into<FInto: DateFormat, TInto: ElasticMapping<FInto> + ElasticDateMapping<FInto>>(self) -> DateTime<FInto, TInto> {
 		DateTime::<FInto, TInto>::new(self.value)
 	}
 }
 
-impl <F: Format, T: ElasticMapping<F> + ElasticDateMapping<F>> ElasticDataType<T, F> for DateTime<F, T> {
+impl <F: DateFormat, T: ElasticMapping<F> + ElasticDateMapping<F>> TypeEllision for DateTime<F, T> {
+	fn get_ellision() -> TypeEllisionKind {
+		TypeEllisionKind::Ellided
+	}
+}
+
+impl <F: DateFormat, T: ElasticMapping<F> + ElasticDateMapping<F>> ElasticDataType<T, F> for DateTime<F, T> {
 
 }
 
-impl <F: Format, T: ElasticMapping<F> + ElasticDateMapping<F>> Default for DateTime<F, T> {
+impl <F: DateFormat, T: ElasticMapping<F> + ElasticDateMapping<F>> Default for DateTime<F, T> {
 	fn default() -> DateTime<F, T> {
 		DateTime::<F, T>::now()
 	}
 }
 
-impl <F: Format, T: ElasticMapping<F> + ElasticDateMapping<F>> From<DT> for DateTime<F, T> {
+impl <F: DateFormat, T: ElasticMapping<F> + ElasticDateMapping<F>> From<DT> for DateTime<F, T> {
 	fn from(dt: DT) -> DateTime<F, T> {
 		DateTime::<F, T>::new(dt)
 	}
 }
 
-impl <F: Format, T: ElasticMapping<F> + ElasticDateMapping<F>> Datelike for DateTime<F, T> {
+impl <F: DateFormat, T: ElasticMapping<F> + ElasticDateMapping<F>> Datelike for DateTime<F, T> {
 	fn year(&self) -> i32 { self.value.year() }
 	fn month(&self) -> u32 { self.value.month() }
 	fn month0(&self) -> u32 { self.value.month0() }
@@ -249,7 +255,7 @@ impl <F: Format, T: ElasticMapping<F> + ElasticDateMapping<F>> Datelike for Date
 	}
 }
 
-impl <F: Format, T: ElasticMapping<F> + ElasticDateMapping<F>> Timelike for DateTime<F, T> {
+impl <F: DateFormat, T: ElasticMapping<F> + ElasticDateMapping<F>> Timelike for DateTime<F, T> {
 	fn hour(&self) -> u32 { self.value.hour() }
 	fn minute(&self) -> u32 { self.value.minute() }
 	fn second(&self) -> u32 { self.value.second() }
@@ -285,7 +291,7 @@ impl <F: Format, T: ElasticMapping<F> + ElasticDateMapping<F>> Timelike for Date
 }
 
 //Serialize date
-impl <F: Format, T: ElasticMapping<F> + ElasticDateMapping<F>> Serialize for DateTime<F, T> {
+impl <F: DateFormat, T: ElasticMapping<F> + ElasticDateMapping<F>> Serialize for DateTime<F, T> {
 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where S: Serializer
 	{
 		serializer.serialize_str(&self.format())
@@ -293,23 +299,15 @@ impl <F: Format, T: ElasticMapping<F> + ElasticDateMapping<F>> Serialize for Dat
 }
 
 //Deserialize date
-impl <F: Format, T: ElasticMapping<F> + ElasticDateMapping<F>> Deserialize for DateTime<F, T> {
+impl <F: DateFormat, T: ElasticMapping<F> + ElasticDateMapping<F>> Deserialize for DateTime<F, T> {
 	fn deserialize<D>(deserializer: &mut D) -> Result<DateTime<F, T>, D::Error> where D: Deserializer {
-		struct DateTimeVisitor<F: Format, T: ElasticMapping<F> + ElasticDateMapping<F>> {
+		#[derive(Default)]
+		struct DateTimeVisitor<F: DateFormat, T: ElasticMapping<F> + ElasticDateMapping<F>> {
 			phantom_f: PhantomData<F>,
 			phantom_t: PhantomData<T>
 		}
 
-		impl <F: Format, T: ElasticMapping<F> + ElasticDateMapping<F>> Default for DateTimeVisitor<F, T> {
-			fn default() -> DateTimeVisitor<F, T> {
-				DateTimeVisitor::<F, T> {
-					phantom_f: PhantomData,
-					phantom_t: PhantomData
-				}
-			}
-		}
-
-		impl <F: Format, T: ElasticMapping<F> + ElasticDateMapping<F>> serde::de::Visitor for DateTimeVisitor<F, T> {
+		impl <F: DateFormat, T: ElasticMapping<F> + ElasticDateMapping<F>> serde::de::Visitor for DateTimeVisitor<F, T> {
 			type Value = DateTime<F, T>;
 
 			fn visit_str<E>(&mut self, v: &str) -> Result<DateTime<F, T>, E> where E: serde::de::Error {

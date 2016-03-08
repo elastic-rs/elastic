@@ -57,10 +57,7 @@ impl error::Error for ApiGenError {
 	}
 
 	fn cause(&self) -> Option<&error::Error> {
-		match self.kind {
-			ApiGenErrorKind::Parse(_) => None,
-			ApiGenErrorKind::Other(_) => None
-		}
+		None
 	}
 }
 
@@ -74,7 +71,7 @@ impl From<String> for ApiGenError {
 
 impl api::Endpoint {
 	/// Gets the name of the Endpoint if it's set or returns an empty string.
-	pub fn get_name<'a>(&'a self) -> &'a str {
+	pub fn get_name(&self) -> &str {
 		match self.name {
 			Some(ref n) => n,
 			None => ""
@@ -106,21 +103,18 @@ impl api::Endpoint {
 	/// - `post_index_type`
 	/// 
 	/// This is to try and prevent collisions with the names where not a lot of info about each endpoint is available.
-	pub fn get_fns<'a>(&'a self) -> Result<Vec<UrlFn<'a>>, ApiGenError> {
+	pub fn get_fns(&self) -> Result<Vec<UrlFn>, ApiGenError> {
 		let mut fns = Vec::new();
 		for path in &self.url.paths {
 			//Parse the params used by this path
 			let mut fn_parts = BTreeMap::new();
 			let params = try!(parse_path_params(&path));
 
-			for param in params.iter() {
+			for param in &params {
 				let param = param.to_owned();
-				match self.url.parts.get(&param) {
-					Some(part) => {
-						let _ = fn_parts.insert(param, part);
-					},
-					None => ()
-				};
+				if let Some(part) = self.url.parts.get(&param) {
+					fn_parts.insert(param, part);
+				}
 			}
 
 			//Return a function for each method on the url
@@ -362,7 +356,7 @@ pub fn url_push_decl<'a, I, K>(url_base: Ident, url_parts: I, param_parts: K) ->
 		//Sum the url parts
 		let mut url_iter = url_part_ids
 			.iter()
-			.map(|&ident| ident);
+			.cloned();
 
 		let mut add_expr = len_add(
 			len_expr(ident_expr(url_base)), 
@@ -375,7 +369,7 @@ pub fn url_push_decl<'a, I, K>(url_base: Ident, url_parts: I, param_parts: K) ->
 		//Sum the url params
 		let mut param_part_ids = Vec::new();
 		for url_param in param_parts {
-			param_part_ids.push(url_param.clone());
+			param_part_ids.push(url_param);
 			add_expr = len_add(add_expr, len_expr(ident_expr(url_param)));
 		}
 
@@ -451,8 +445,8 @@ pub fn url_push_decl<'a, I, K>(url_base: Ident, url_parts: I, param_parts: K) ->
 
 		//Thread through each url part and param, pushing a part, then a param to keep the url in order
 		let (mut part_iter, mut param_iter) = (
-			url_part_ids.iter().map(|&ident| ident),
-			param_part_ids.iter().map(|&ident| ident)
+			url_part_ids.iter().cloned(),
+			param_part_ids.iter().cloned()
 		);
 		let mut cont = true;
 		while cont {

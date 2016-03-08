@@ -1,4 +1,4 @@
-use super::parsers::*;
+use super::parse::*;
 
 #[derive(PartialEq)]
 pub enum JsonPart {

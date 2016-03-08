@@ -3,7 +3,7 @@
 use std::marker::PhantomData;
 use serde;
 use serde::{ Serializer, Serialize };
-use super::{ Format, DefaultFormat };
+use super::{ DateFormat, DefaultFormat };
 use ::mapping::{ ElasticMapping, IndexAnalysis };
 
 /// The base requirements for mapping a `date` type.
@@ -16,33 +16,40 @@ use ::mapping::{ ElasticMapping, IndexAnalysis };
 /// # extern crate serde;
 /// # extern crate elastic_types;
 /// # fn main() {
-/// use elastic_types::mapping::ElasticMapping;
-/// use elastic_types::date::mapping::ElasticDateMapping;
-/// use elastic_types::date::{ BasicDateTime, Format };
+/// use elastic_types::mapping::prelude::*;
 /// 
-/// #[derive(Default)]
-/// struct MyDateMapping;
-/// impl serde::Serialize for MyDateMapping {
-/// 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
-/// 	where S: serde::Serializer {
-/// 		serializer.serialize_struct("mapping", MyDateMapping::get_visitor())
+/// #[derive(Debug, Clone, Default)]
+/// pub struct MyDateMapping<T: DateFormat = DefaultFormat> {
+/// 	phantom: PhantomData<T>
+/// }
+/// 
+/// impl <T: DateFormat> ElasticMapping<T> for MyDateMapping<T> {
+/// 	type Visitor = ElasticDateMappingVisitor<T, MyDateMapping<T>>;
+/// 
+/// 	fn data_type() -> &'static str {
+/// 		"date"
 /// 	}
 /// }
-/// impl ElasticDateMapping<BasicDateTime> for MyDateMapping {
-/// 	fn ignore_malformed() -> Option<bool> {
-/// 		Some(true)
-///		}
 /// 
-/// 	fn null_value() -> Option<&'static str> {
-/// 		Some("20150701T000000.000Z")
+/// impl <T: DateFormat> ElasticDateMapping<T> for MyDateMapping<T> {
+/// 	//Overload the mapping functions here
+/// 	fn boost() -> Option<f32> {
+///			Some(1.5)
+///		}
+/// }
+/// 
+/// impl <T: DateFormat> serde::Serialize for MyDateMapping<T> {
+/// 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+/// 	where S: serde::Serializer {
+/// 		serializer.serialize_struct("mapping", Self::get_visitor())
 /// 	}
 /// }
 /// # }
 /// ```
 /// 
 /// The above example binds the mapping to the `BasicDateTime` format, so `get_null_value` returns a properly formated value.
-pub trait ElasticDateMapping<T: Format>
-where Self : Sized + Serialize + Default {
+pub trait ElasticDateMapping<T: DateFormat>
+where Self : ElasticMapping<T> + Sized + Serialize + Default {
 	/// Field-level index time boosting. Accepts a floating point number, defaults to `1.0`.
 	fn boost() -> Option<f32> {
 		None
@@ -97,55 +104,37 @@ where Self : Sized + Serialize + Default {
 	}
 }
 
-impl <T: Format, M: ElasticDateMapping<T>> ElasticMapping<T> for M {
-	type Visitor = ElasticDateMappingVisitor<T, M>;
+/// Default mapping for `DateTime`.
+#[derive(Debug, Clone, Default)]
+pub struct DefaultDateMapping<T: DateFormat = DefaultFormat> {
+	phantom: PhantomData<T>
+}
+
+impl <T: DateFormat> ElasticMapping<T> for DefaultDateMapping<T> {
+	type Visitor = ElasticDateMappingVisitor<T, DefaultDateMapping<T>>;
 
 	fn data_type() -> &'static str {
 		"date"
 	}
 }
 
-/// Default mapping for `DateTime`.
-#[derive(Debug, Clone, Default)]
-pub struct DefaultDateMapping<T: Format = DefaultFormat> {
-	phantom: PhantomData<T>
-}
-impl <T: Format> DefaultDateMapping<T> {
-	/// Get a new default mapping
-	pub fn new() -> DefaultDateMapping<T> {
-		DefaultDateMapping {
-			phantom: PhantomData
-		}
-	}
-}
+impl <T: DateFormat> ElasticDateMapping<T> for DefaultDateMapping<T> { }
 
-impl <T: Format> ElasticDateMapping<T> for DefaultDateMapping<T> { }
-
-impl <T: Format> serde::Serialize for DefaultDateMapping<T> {
+impl <T: DateFormat> serde::Serialize for DefaultDateMapping<T> {
 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
-		where S: serde::Serializer
-	{
-		serializer.serialize_struct("mapping", ElasticDateMappingVisitor::<T, DefaultDateMapping<T>>::default())
+	where S: serde::Serializer {
+		serializer.serialize_struct("mapping", Self::get_visitor())
 	}
 }
 
 /// Visitor for a `date` map.
-#[derive(Debug, PartialEq)]
-pub struct ElasticDateMappingVisitor<F: Format, T: ElasticDateMapping<F>> {
+#[derive(Debug, PartialEq, Default)]
+pub struct ElasticDateMappingVisitor<F: DateFormat, T: ElasticDateMapping<F>> {
 	phantom_f: PhantomData<F>,
 	phantom_t: PhantomData<T>
 }
 
-impl <F: Format, T: ElasticDateMapping<F>> Default for ElasticDateMappingVisitor<F, T> {
-	fn default() -> ElasticDateMappingVisitor<F, T> {
-		ElasticDateMappingVisitor::<F, T> {
-			phantom_f: PhantomData,
-			phantom_t: PhantomData
-		}
-	}
-}
-
-impl <F: Format, T: ElasticDateMapping<F>> serde::ser::MapVisitor for ElasticDateMappingVisitor<F, T> {
+impl <F: DateFormat, T: ElasticDateMapping<F>> serde::ser::MapVisitor for ElasticDateMappingVisitor<F, T> {
 	fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
 	where S: Serializer {
 		try!(serializer.serialize_struct_elt("type", T::data_type()));

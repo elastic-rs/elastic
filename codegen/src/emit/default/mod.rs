@@ -66,16 +66,13 @@ impl <'a, E> Emitter<'a> for CtxtFreeEmitter<E> where E: From<EmitError> {
 	type CtxtBrw = ();
 	type Error = E;
 
-	fn get_cx(&self) {
+	fn get_cx(&self) { }
 
-	}
-
-	fn emit<Emittable, EmError, W>(&self, e: &'a Emittable, writer: &'a mut W) -> Result<(), Self::Error> where 
-		Emittable: Emit<Self::CtxtBrw, EmError>, 
-		EmError: Into<EmitError>, 
-		W: Write {
-			let cx = self.get_cx();
-			emit!(cx, e, writer)
+	#[allow(let_unit_value)]
+	fn emit<Emittable, EmError, W>(&self, e: &'a Emittable, writer: &'a mut W) -> Result<(), Self::Error> 
+	where Emittable: Emit<Self::CtxtBrw, EmError>, EmError: Into<EmitError>, W: Write {
+		let cx = self.get_cx();
+		emit!(cx, e, writer)
 	}
 
 	fn emit_str<W>(&self, e: &str, writer: &mut W) -> Result<(), Self::Error> where W: Write {

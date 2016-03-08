@@ -7,11 +7,11 @@ extern crate serde_json;
 extern crate elastic_types;
 
 use elastic_types::string::mapping::*;
-use elastic_types::string::*;
+use elastic_types::string::prelude::*;
 
 #[test]
 fn serialise_elastic_string() {
-	let string = ElasticString::<DefaultStringMapping>::new("my string");
+	let string = ElasticString::<DefaultStringFormat, DefaultStringMapping>::new("my string");
 
 	let ser = serde_json::to_string(&string).unwrap();
 
@@ -20,7 +20,7 @@ fn serialise_elastic_string() {
 
 #[test]
 fn deserialise_elastic_string() {
-	let string: ElasticString<DefaultStringMapping> = serde_json::from_str(r#""my string""#).unwrap();
+	let string: ElasticString<DefaultStringFormat, DefaultStringMapping> = serde_json::from_str(r#""my string""#).unwrap();
 
 	assert_eq!("my string", string);
 }

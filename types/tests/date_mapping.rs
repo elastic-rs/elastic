@@ -7,7 +7,7 @@ extern crate serde_json;
 extern crate elastic_types;
 
 use elastic_types::mapping::prelude::*;
-use elastic_types::date::*;
+use elastic_types::date::prelude::*;
 
 //A custom date mapping
 #[derive(Default)]
@@ -46,17 +46,24 @@ impl ElasticDateMapping<EpochMillis> for MyDateMapping {
 	}
 }
 
+impl ElasticMapping<EpochMillis> for MyDateMapping {
+	type Visitor = ElasticDateMappingVisitor<EpochMillis, MyDateMapping>;
+
+	fn data_type() -> &'static str {
+		"date"
+	}
+}
+
 impl serde::Serialize for MyDateMapping {
 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
-		where S: serde::Serializer
-	{
-		serializer.serialize_struct("mapping", ElasticDateMappingVisitor::<EpochMillis, MyDateMapping>::default())
+	where S: serde::Serializer {
+		serializer.serialize_struct("mapping", Self::get_visitor())
 	}
 }
 
 #[test]
 fn serialise_mapping_default() {
-	let mapping = DefaultDateMapping::<BasicDateTime>::new();
+	let mapping = DefaultDateMapping::<BasicDateTime>::default();
 	let ser = serde_json::to_string(&mapping).unwrap();
 
 	assert_eq!(r#"{"type":"date","format":"basic_date_time"}"#, ser);

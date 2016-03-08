@@ -1,7 +1,7 @@
 extern crate chrono;
 extern crate elastic_types;
 
-use elastic_types::date::*;
+use elastic_types::date::prelude::*;
 
 #[test]
 fn basic_datetime_no_millis() {

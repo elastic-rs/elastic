@@ -5,7 +5,15 @@ pub mod prelude {
     //! 
     //! This is a convenience module to make it easy to build mappings for multiple types without too many `use` statements.
     
-    pub use super::{ ElasticDataType, ElasticMapping, NullMapping, IndexAnalysis, ElasticMappingVisitor };
+    pub use super::{ 
+    	ElasticDataType, 
+    	ElasticMapping, 
+    	NullMapping, 
+    	IndexAnalysis, 
+    	ElasticMappingVisitor, 
+    	TypeEllision, 
+    	TypeEllisionKind 
+    };
     pub use ::date::mapping::*;
     pub use ::string::mapping::*;
 }
@@ -18,31 +26,34 @@ use serde;
 /// # Links
 /// 
 /// - [Elasticsearch docs](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-types.html)
-pub trait ElasticDataType<T: ElasticMapping<F>, F> : TypeEllision { }
+pub trait ElasticDataType<T: ElasticMapping<F>, F> 
+where Self : TypeEllision + serde::Serialize { }
 
 #[doc(hidden)]
 pub enum TypeEllisionKind {
+	Ignore,
 	Explicit,
 	Ellided
 }
+
 #[doc(hidden)]
 pub trait TypeEllision {
 	fn get_ellision() -> TypeEllisionKind {
-		TypeEllisionKind::Explicit
+		TypeEllisionKind::Ignore
 	}
 }
 
 /// The base requirements for mapping an Elasticsearch data type.
 /// 
 /// Each type has its own implementing structures with extra type-specific mapping parameters.
-pub trait ElasticMapping<F = ()>
+pub trait ElasticMapping<F>
 where Self: Default + serde::Serialize {
 	#[doc(hidden)]
 	type Visitor : serde::ser::MapVisitor + Default;
 
 	/// An optional associated type that mappings may need.
 	/// 
-	/// For example; the `Format` trait on `DateTime`.
+	/// For example; the `DateFormat` trait on `DateTime`.
 	type Format = F;
 
 	#[doc(hidden)]
@@ -59,7 +70,7 @@ where Self: Default + serde::Serialize {
 /// A mapping implementation for a non-core type, or any where nobody cares about how it's mapped.
 #[derive(Debug, PartialEq, Default)]
 pub struct NullMapping;
-impl ElasticMapping for NullMapping {
+impl ElasticMapping<()> for NullMapping {
 	type Visitor = NullMappingVisitor;
 
 	fn data_type() -> &'static str {
@@ -85,8 +96,6 @@ impl serde::ser::MapVisitor for NullMappingVisitor {
 		Ok(None)
 	}
 }
-
-impl ElasticDataType<(), NullMapping> for .. { }
 
 /// Should the field be searchable? Accepts `not_analyzed` (default) and `no`.
 #[derive(Debug, Clone, Copy)]
@@ -118,13 +127,12 @@ impl serde::Serialize for IndexAnalysis {
 	}
 }
 
-//TODO: Make this take in str for field name
 /// Base visitor for serialising datatype mappings.
-pub struct ElasticMappingVisitor<T: ElasticMapping> {
+pub struct ElasticMappingVisitor<T: ElasticMapping<()>> {
 	phantom: PhantomData<T>
 }
 
-impl <T: ElasticMapping> Default for ElasticMappingVisitor<T> {
+impl <T: ElasticMapping<()>> Default for ElasticMappingVisitor<T> {
 	fn default() -> ElasticMappingVisitor<T> {
 		ElasticMappingVisitor::<T> {
 			phantom: PhantomData
@@ -132,9 +140,41 @@ impl <T: ElasticMapping> Default for ElasticMappingVisitor<T> {
 	}
 }
 
-impl <T: ElasticMapping> serde::ser::MapVisitor for ElasticMappingVisitor<T> {
+impl <T: ElasticMapping<()>> serde::ser::MapVisitor for ElasticMappingVisitor<T> {
 	fn visit<S>(&mut self, _: &mut S) -> Result<Option<()>, S::Error>
 	where S: serde::Serializer {
 		Ok(None)
 	}
 }
+
+macro_rules! impl_mapping {
+    ($($t:ty),*) => (
+    	$(
+    		impl $crate::mapping::ElasticDataType<NullMapping, ()> for $t { }
+            impl $crate::mapping::TypeEllision for $t { }
+        )*
+    )
+}
+
+impl_mapping!(
+	bool,
+	isize,
+	i8,
+	i16,
+	i32,
+	i64,
+	usize,
+	u8,
+	u16,
+	u32,
+	u64,
+	f32,
+	f64,
+	char
+);
+
+impl <T: serde::Serialize> ElasticDataType<NullMapping, ()> for Vec<T> { }
+impl <T: serde::Serialize> TypeEllision for Vec<T> { }
+
+impl <'a, T: serde::Serialize> ElasticDataType<NullMapping, ()> for &'a [T] { }
+impl <'a, T: serde::Serialize> TypeEllision for &'a [T] { }

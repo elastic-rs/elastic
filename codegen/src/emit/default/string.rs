@@ -10,7 +10,7 @@ impl Emit<(), EmitError> for AsRef<String> {
 
 impl <'a> Emit<(), EmitError> for &'a str {
 	fn emit(&self, _: ()) -> Result<String, EmitError> {
-		Ok(self.to_string())
+		Ok((*self).to_owned())
 	}
 }
 

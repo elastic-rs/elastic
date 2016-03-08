@@ -27,3 +27,13 @@ pub type DT = chrono::DateTime<UTC>;
 
 /// The default DateTime format.
 pub type DefaultFormat = BasicDateTime;
+
+pub mod prelude {
+	//! Includes non-mapping types for the `date` type.
+    //! 
+    //! This is a convenience module to make it easy to build mappings for multiple types without too many `use` statements.
+
+	pub use super::format::*;
+	pub use super::date::*;
+	pub use super::formats::*;
+}

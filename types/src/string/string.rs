@@ -1,8 +1,17 @@
 use std::marker::PhantomData;
 use serde;
 use serde::{ Serialize, Deserialize, Serializer, Deserializer };
-use super::mapping::{ ElasticStringType, ElasticStringMapping, DefaultStringMapping };
-use ::mapping::{ ElasticMapping, ElasticDataType };
+use super::mapping::{ ElasticStringType, ElasticStringMapping, StringFormat, DefaultStringMapping };
+use ::mapping::{ ElasticMapping, ElasticDataType, TypeEllision, TypeEllisionKind };
+
+impl TypeEllision for String {
+	fn get_ellision() -> TypeEllisionKind {
+		TypeEllisionKind::Ellided
+	}
+}
+
+impl <F: StringFormat> ElasticDataType<DefaultStringMapping<F>, F> for String { }
+impl <F: StringFormat> ElasticStringType<F, DefaultStringMapping<F>> for String { }
 
 /// An Elasticsearch `string` with a mapping.
 /// 
@@ -17,12 +26,13 @@ use ::mapping::{ ElasticMapping, ElasticDataType };
 /// 
 /// let string = ElasticString::<DefaultStringMapping>::new("my string value");
 /// ```
-#[derive(Debug, Clone)]
-pub struct ElasticString<T: ElasticMapping + ElasticStringMapping> {
+#[derive(Debug, Clone, Default)]
+pub struct ElasticString<F: StringFormat, T: ElasticMapping<F> + ElasticStringMapping<F>> {
 	value: String,
-	phantom: PhantomData<T>
+	phantom_f: PhantomData<F>,
+	phantom_t: PhantomData<T>
 }
-impl <T: ElasticMapping + ElasticStringMapping> ElasticString<T> {
+impl <F: StringFormat, T: ElasticMapping<F> + ElasticStringMapping<F>> ElasticString<F, T> {
 	/// Creates a new `ElasticString` with the given mapping.
 	/// 
 	/// # Examples
@@ -35,10 +45,11 @@ impl <T: ElasticMapping + ElasticStringMapping> ElasticString<T> {
 	/// 
 	/// let string = ElasticString::<DefaultStringMapping>::new(String::from("my string"));
 	/// ```
-	pub fn new<I: Into<String>>(string: I) -> ElasticString<T> {
+	pub fn new<I: Into<String>>(string: I) -> ElasticString<F, T> {
 		ElasticString {
 			value: string.into(),
-			phantom: PhantomData
+			phantom_f: PhantomData,
+			phantom_t: PhantomData
 		}
 	}
 
@@ -53,33 +64,39 @@ impl <T: ElasticMapping + ElasticStringMapping> ElasticString<T> {
 	}
 
 	/// Change the mapping of this string.
-	pub fn into<TInto: ElasticMapping + ElasticStringMapping>(self) -> ElasticString<TInto> {
-		ElasticString::<TInto>::new(self.value)
+	pub fn into<TInto: ElasticMapping<F> + ElasticStringMapping<F>>(self) -> ElasticString<F, TInto> {
+		ElasticString::<F, TInto>::new(self.value)
 	}
 }
 
-impl <T: ElasticMapping + ElasticStringMapping> ElasticDataType<T, ()> for ElasticString<T> { }
-impl <T: ElasticMapping + ElasticStringMapping> ElasticStringType<T> for ElasticString<T> { }
+impl <F: StringFormat, T: ElasticMapping<F> + ElasticStringMapping<F>> TypeEllision for ElasticString<F, T> {
+	fn get_ellision() -> TypeEllisionKind {
+		TypeEllisionKind::Ellided
+	}
+}
 
-impl From<String> for ElasticString<DefaultStringMapping> {
+impl <F: StringFormat, T: ElasticMapping<F> + ElasticStringMapping<F>> ElasticDataType<T, F> for ElasticString<F, T> { }
+impl <F: StringFormat, T: ElasticMapping<F> + ElasticStringMapping<F>> ElasticStringType<F, T> for ElasticString<F, T> { }
+
+impl <F: StringFormat> From<String> for ElasticString<F, DefaultStringMapping<F>> {
 	fn from(string: String) -> Self {
 		ElasticString::new(string)
 	}
 }
 
-impl <T: ElasticMapping + ElasticStringMapping> AsRef<str> for ElasticString<T> {
+impl <F: StringFormat, T: ElasticMapping<F> + ElasticStringMapping<F>> AsRef<str> for ElasticString<F, T> {
 	fn as_ref(&self) -> &str {
 		&self.value
 	}
 }
 
-impl <T: ElasticMapping + ElasticStringMapping> Into<String> for ElasticString<T> {
+impl <F: StringFormat, T: ElasticMapping<F> + ElasticStringMapping<F>> Into<String> for ElasticString<F, T> {
 	fn into(self) -> String {
 		self.value
 	}
 }
 
-impl<'a, T: ElasticMapping + ElasticStringMapping> PartialEq<String> for ElasticString<T> {
+impl<'a, F: StringFormat, T: ElasticMapping<F> + ElasticStringMapping<F>> PartialEq<String> for ElasticString<F, T> {
 	fn eq(&self, other: &String) -> bool {
 		PartialEq::eq(&self.value, other)
 	}
@@ -89,17 +106,17 @@ impl<'a, T: ElasticMapping + ElasticStringMapping> PartialEq<String> for Elastic
 	}
 }
 
-impl<'a, T: ElasticMapping + ElasticStringMapping> PartialEq<ElasticString<T>> for String {
-	fn eq(&self, other: &ElasticString<T>) -> bool {
+impl<'a, F: StringFormat, T: ElasticMapping<F> + ElasticStringMapping<F>> PartialEq<ElasticString<F, T>> for String {
+	fn eq(&self, other: &ElasticString<F, T>) -> bool {
 		PartialEq::eq(self, &other.value)
 	}
 
-	fn ne(&self, other: &ElasticString<T>) -> bool {
+	fn ne(&self, other: &ElasticString<F, T>) -> bool {
 		PartialEq::ne(self, &other.value)
 	}
 }
 
-impl<'a, T: ElasticMapping + ElasticStringMapping> PartialEq<&'a str> for ElasticString<T> {
+impl<'a, F: StringFormat, T: ElasticMapping<F> + ElasticStringMapping<F>> PartialEq<&'a str> for ElasticString<F, T> {
 	fn eq(&self, other: & &'a str) -> bool {
 		PartialEq::eq(&self.value[..], *other)
 	}
@@ -109,21 +126,18 @@ impl<'a, T: ElasticMapping + ElasticStringMapping> PartialEq<&'a str> for Elasti
 	}
 }
 
-impl<'a, T: ElasticMapping + ElasticStringMapping> PartialEq<ElasticString<T>> for &'a str {
-	fn eq(&self, other: &ElasticString<T>) -> bool {
+impl<'a, F: StringFormat, T: ElasticMapping<F> + ElasticStringMapping<F>> PartialEq<ElasticString<F, T>> for &'a str {
+	fn eq(&self, other: &ElasticString<F, T>) -> bool {
 		PartialEq::eq(*self, &other.value[..])
 	}
 
-	fn ne(&self, other: &ElasticString<T>) -> bool {
+	fn ne(&self, other: &ElasticString<F, T>) -> bool {
 		PartialEq::ne(*self, &other.value[..])
 	}
 }
 
-impl ElasticDataType<DefaultStringMapping, ()> for String { }
-impl ElasticStringType<DefaultStringMapping> for String { }
-
 //Serialize elastic string
-impl <T: ElasticMapping + ElasticStringMapping> Serialize for ElasticString<T> {
+impl <F: StringFormat, T: ElasticMapping<F> + ElasticStringMapping<F>> Serialize for ElasticString<F, T> {
 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where S: Serializer
 	{
 		serializer.serialize_str(&self.value)
@@ -131,28 +145,22 @@ impl <T: ElasticMapping + ElasticStringMapping> Serialize for ElasticString<T> {
 }
 
 //Deserialize elastic string
-impl <T: ElasticMapping + ElasticStringMapping> Deserialize for ElasticString<T> {
-	fn deserialize<D>(deserializer: &mut D) -> Result<ElasticString<T>, D::Error> where D: Deserializer {
-		struct ElasticStringVisitor<T: ElasticMapping + ElasticStringMapping> {
-			phantom: PhantomData<T>
+impl <F: StringFormat, T: ElasticMapping<F> + ElasticStringMapping<F>> Deserialize for ElasticString<F, T> {
+	fn deserialize<D>(deserializer: &mut D) -> Result<ElasticString<F, T>, D::Error> where D: Deserializer {
+		#[derive(Default)]
+		struct ElasticStringVisitor<F: StringFormat, T: ElasticMapping<F> + ElasticStringMapping<F>> {
+			phantom_f: PhantomData<F>,
+			phantom_t: PhantomData<T>
 		}
 
-		impl <T: ElasticMapping + ElasticStringMapping> Default for ElasticStringVisitor<T> {
-			fn default() -> ElasticStringVisitor<T> {
-				ElasticStringVisitor::<T> {
-					phantom: PhantomData
-				}
+		impl <F: StringFormat, T: ElasticMapping<F> + ElasticStringMapping<F>> serde::de::Visitor for ElasticStringVisitor<F, T> {
+			type Value = ElasticString<F, T>;
+
+			fn visit_str<E>(&mut self, v: &str) -> Result<ElasticString<F, T>, E> where E: serde::de::Error {
+				Ok(ElasticString::<F, T>::new(v))
 			}
 		}
 
-		impl <T: ElasticMapping + ElasticStringMapping> serde::de::Visitor for ElasticStringVisitor<T> {
-			type Value = ElasticString<T>;
-
-			fn visit_str<E>(&mut self, v: &str) -> Result<ElasticString<T>, E> where E: serde::de::Error {
-				Ok(ElasticString::<T>::new(v))
-			}
-		}
-
-		deserializer.deserialize(ElasticStringVisitor::<T>::default())
+		deserializer.deserialize(ElasticStringVisitor::<F, T>::default())
 	}
 }

@@ -12,40 +12,40 @@ pub use self::fun::*;
 pub use self::ty::*;
 
 pub mod parse {
-    //! Rust Codegen parsers.
+	//! Rust Codegen parsers.
 
-    use ::parse::*;
+	use ::parse::*;
 
-    /// Parses a Rust path to its segments.
-    /// 
-    /// The path is split by '::' and each segment is added in order.
-    /// 
-    /// # Examples
-    /// 
-    /// Parse a path:
-    /// 
-    /// ```
-    /// use elastic_codegen::gen::rust::parse::parse_path;
-    /// 
-    /// let parsed = parse_path("crate::mod_a::mod_b::fn");
-    /// ```
-    pub fn parse_path(path: &str) -> Vec<String> {
-    	let mut parts = Vec::new();
-        parse_path_parts(path.as_bytes(), &mut parts);
-        
-        parts
-    }
+	/// Parses a Rust path to its segments.
+	/// 
+	/// The path is split by '::' and each segment is added in order.
+	/// 
+	/// # Examples
+	/// 
+	/// Parse a path:
+	/// 
+	/// ```
+	/// use elastic_codegen::gen::rust::parse::parse_path;
+	/// 
+	/// let parsed = parse_path("crate::mod_a::mod_b::fn");
+	/// ```
+	pub fn parse_path(path: &str) -> Vec<String> {
+		let mut parts = Vec::new();
+		parse_path_parts(path.as_bytes(), &mut parts);
+		
+		parts
+	}
 
-    fn parse_path_parts(path: &[u8], parts: &mut Vec<String>) {
-    	if path.len() == 0 {
-    		return;
-    	}
-        
-        let trim_colons = shift_while(path, |c| c == b':');
-        let (remainder, seg) = take_while1(trim_colons, |c| c != b':');
-        
-        parts.push(seg.to_string());
-        
-        parse_path_parts(remainder, parts);
-    }
+	fn parse_path_parts(path: &[u8], parts: &mut Vec<String>) {
+		if path.len() == 0 {
+			return;
+		}
+		
+		let trim_colons = shift_while(path, |c| c == b':');
+		let (remainder, seg) = take_while1(trim_colons, |c| c != b':');
+		
+		parts.push(seg.to_owned());
+		
+		parse_path_parts(remainder, parts);
+	}
 }

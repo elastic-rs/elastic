@@ -16,6 +16,14 @@ The `elastic_hyper` client is a thin layer over `hyper`; it just maps functions 
 For serialisation though, the `elastic_macros` crate provides the `json!` macro for serialising abitrary rust-like code to json. 
 The deserialisation story is a work in progress.
 
+Add `elastic_hyper` and `elastic_macros` to your `Cargo.toml`:
+
+```
+[dependencies]
+elastic_hyper = "*"
+elastic_macros = "*"
+```
+
 Ping the availability of your cluster:
 
 ```rust
@@ -86,10 +94,20 @@ Right now, it's used by `elastic_hyper` to build the client, but could also be u
 
 ### elastic_hyper
 
+[![Latest Version](https://img.shields.io/crates/v/elastic_hyper.svg)](https://crates.io/crates/elastic_hyper)
+
 [Docs](http://kodraus.github.io/rustdoc/elastic_hyper/)
 [Issues](https://github.com/KodrAus/elasticsearch-rs/labels/hyper)
 
 Provides a [hyper](https://github.com/hyperium/hyper) implementation of the Elasticsearch REST API. This is the current client that works purely through JSON. This crate is responsible for the `gen` in `elastic_codegen` and builds its own source and tests.
+
+### elastic_macros
+
+[![Latest Version](https://img.shields.io/crates/v/elastic_macros.svg)](https://crates.io/crates/elastic_macros)
+
+[Docs](http://kodraus.github.io/rustdoc/elastic_macros/)
+
+Provides compiler plugins and macros for the `elastic_types` crate, such as parsing a date format to an array of [Items](https://github.com/lifthrasiir/rust-chrono/blob/master/src/format/mod.rs#L161) at compile-time for efficient runtime date parsing.
 
 ### elastic_types
 
@@ -99,11 +117,3 @@ Provides a [hyper](https://github.com/hyperium/hyper) implementation of the Elas
 Provides rust implementations of the main [Elasticsearch types](https://www.elastic.co/guide/en/elasticsearch/reference/1.4/mapping-core-types.html) (like `date`) and responses/errors. This crate is not required for working with `elastic_hyper`, but does have a lot of utility, especially for designing your document types.
 
 The `elastic_types` crate tries not to reinvent the wheel wherever possible and relies on some common dependencies for types, such as [chrono](https://github.com/lifthrasiir/rust-chrono) for dates and [rust-geo](https://github.com/georust/rust-geo) for geometry.
-
-### elastic_macros
-
-[![Latest Version](https://img.shields.io/crates/v/elastic_macros.svg)](https://crates.io/crates/elastic_macros)
-
-[Docs](http://kodraus.github.io/rustdoc/elastic_macros/)
-
-Provides compiler plugins and macros for the `elastic_types` crate, such as parsing a date format to an array of [Items](https://github.com/lifthrasiir/rust-chrono/blob/master/src/format/mod.rs#L161) at compile-time for efficient runtime date parsing.
