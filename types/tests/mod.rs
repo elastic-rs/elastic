@@ -144,12 +144,7 @@ pub mod string_fixtures {
 	impl_string_mapping!(MyStringMapping, DefaultStringFormat);
 }
 
-pub mod type_mapping;
-pub mod field_mapping;
-
+pub mod ty;
+pub mod field;
 pub mod date;
-pub mod date_format;
-pub mod date_mapping;
-
 pub mod string;
-pub mod string_mapping;

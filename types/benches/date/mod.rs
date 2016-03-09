@@ -5,7 +5,9 @@ extern crate test;
 extern crate chrono;
 extern crate elastic_types;
 
-use elastic_types::date::{ DateTime, Format, BasicDateTime, EpochMillis };
+pub mod format;
+
+use elastic_types::date::prelude::*;
 
 use test::Bencher;
 

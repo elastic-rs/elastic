@@ -2,6 +2,9 @@
 #![plugin(serde_macros)]
 #![plugin(elastic_macros)]
 
+pub mod mapping;
+pub mod formats;
+
 extern crate serde;
 extern crate serde_json;
 extern crate chrono;
