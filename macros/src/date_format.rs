@@ -1,3 +1,7 @@
+use syntax::ptr::P;
+use syntax::ast::Expr;
+use syntax::ext::base::ExtCtxt;
+
 use chrono::format::{ Item, Fixed, Numeric, Pad };
 use super::parse::*;
 
@@ -24,7 +28,7 @@ fn format_tokens<'a, F>(fmt: Vec<Item<'a>>, f: F) -> String where F: FnMut(&Item
 
 pub struct Formatter;
 impl Formatter {
-	fn to_es_string(item: &Item) -> String {
+	pub fn to_es_string(item: &Item) -> String {
 		match *item {
 			Item::Literal(c) => c.to_string(),
 			Item::Numeric(Numeric::Year, Pad::Zero) => "yyyy".to_string(),
@@ -38,7 +42,7 @@ impl Formatter {
 		}
 	}
 
-	fn to_chrono_string(item: &Item) -> String {
+	pub fn to_chrono_string(item: &Item) -> String {
 		match *item {
 			Item::Literal(c) => c.to_string(),
 			Item::Numeric(Numeric::Year, Pad::Zero) => "%Y".to_string(),
@@ -49,6 +53,20 @@ impl Formatter {
 			Item::Numeric(Numeric::Second, Pad::Zero) => "%S".to_string(),
 			Item::Fixed(Fixed::Nanosecond3) => "%.3f".to_string(),
 			_ => "".to_string()
+		}
+	}
+
+	pub fn to_stmt(item: &Item, cx: &ExtCtxt) -> P<Expr> {
+		match *item {
+			Item::Literal(c) => quote_expr!(cx, chrono::format::Item::Literal($c)),
+			Item::Numeric(Numeric::Year, Pad::Zero) => quote_expr!(cx, chrono::format::Item::Numeric(chrono::format::Numeric::Year, chrono::format::Pad::Zero)),
+			Item::Numeric(Numeric::Month, Pad::Zero) => quote_expr!(cx, chrono::format::Item::Numeric(chrono::format::Numeric::Month, chrono::format::Pad::Zero)),
+			Item::Numeric(Numeric::Day, Pad::Zero) => quote_expr!(cx, chrono::format::Item::Numeric(chrono::format::Numeric::Day, chrono::format::Pad::Zero)),
+			Item::Numeric(Numeric::Hour, Pad::Zero) => quote_expr!(cx, chrono::format::Item::Numeric(chrono::format::Numeric::Hour, chrono::format::Pad::Zero)),
+			Item::Numeric(Numeric::Minute, Pad::Zero) => quote_expr!(cx, chrono::format::Item::Numeric(chrono::format::Numeric::Minute, chrono::format::Pad::Zero)),
+			Item::Numeric(Numeric::Second, Pad::Zero) => quote_expr!(cx, chrono::format::Item::Numeric(chrono::format::Numeric::Second, chrono::format::Pad::Zero)),
+			Item::Fixed(Fixed::Nanosecond3) => quote_expr!(cx, chrono::format::Item::Fixed(chrono::format::Fixed::Nanosecond3)),
+			_ => quote_expr!(cx, chrono::format::Item::Literal(""))
 		}
 	}
 }

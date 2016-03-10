@@ -132,7 +132,7 @@ extern crate serde;
 extern crate serde_json;
 
 pub mod parse;
-pub mod date;
+pub mod date_format;
 pub mod json;
 
 use std::collections::BTreeMap;
@@ -141,7 +141,7 @@ use syntax::ptr::P;
 use syntax::parse::token;
 use syntax::ast::{ Stmt };
 use syntax::ast::TokenTree;
-use syntax::ext::base::{ExtCtxt, MacResult, DummyResult, MacEager};
+use syntax::ext::base::{ ExtCtxt, MacResult, DummyResult, MacEager };
 use syntax::ext::build::AstBuilder;
 use rustc_plugin::Registry;
 use chrono::format::{ Item, Fixed, Numeric, Pad };
@@ -162,21 +162,8 @@ fn expand_date_fmt(cx: &mut ExtCtxt, sp: Span, args: &[TokenTree]) -> Box<MacRes
 	}
 
 	//Build up the token tree
-	let tokens = date::to_tokens(&fmt[..]);
-	let token_expr = cx.expr_vec(
-		sp, 
-		tokens.iter().map(|t| match *t {
-			Item::Literal(c) => quote_expr!(cx, chrono::format::Item::Literal($c)),
-			Item::Numeric(Numeric::Year, Pad::Zero) => quote_expr!(cx, chrono::format::Item::Numeric(chrono::format::Numeric::Year, chrono::format::Pad::Zero)),
-			Item::Numeric(Numeric::Month, Pad::Zero) => quote_expr!(cx, chrono::format::Item::Numeric(chrono::format::Numeric::Month, chrono::format::Pad::Zero)),
-			Item::Numeric(Numeric::Day, Pad::Zero) => quote_expr!(cx, chrono::format::Item::Numeric(chrono::format::Numeric::Day, chrono::format::Pad::Zero)),
-			Item::Numeric(Numeric::Hour, Pad::Zero) => quote_expr!(cx, chrono::format::Item::Numeric(chrono::format::Numeric::Hour, chrono::format::Pad::Zero)),
-			Item::Numeric(Numeric::Minute, Pad::Zero) => quote_expr!(cx, chrono::format::Item::Numeric(chrono::format::Numeric::Minute, chrono::format::Pad::Zero)),
-			Item::Numeric(Numeric::Second, Pad::Zero) => quote_expr!(cx, chrono::format::Item::Numeric(chrono::format::Numeric::Second, chrono::format::Pad::Zero)),
-			Item::Fixed(Fixed::Nanosecond3) => quote_expr!(cx, chrono::format::Item::Fixed(chrono::format::Fixed::Nanosecond3)),
-			_ => quote_expr!(cx, chrono::format::Item::Literal(""))
-		}).collect()
-	);
+	let tokens = date_format::to_tokens(&fmt[..]);
+	let token_expr = cx.expr_vec(sp, tokens.iter().map(|t| date_format::Formatter::to_stmt(t, cx)).collect());
 
 	MacEager::expr(quote_expr!(cx, {
 		$token_expr

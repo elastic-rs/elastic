@@ -7,5 +7,5 @@ extern crate serde;
 extern crate serde_json;
 extern crate elastic_macros;
 
-pub mod date;
+pub mod date_format;
 pub mod json;
