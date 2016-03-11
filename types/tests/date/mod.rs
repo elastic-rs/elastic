@@ -35,7 +35,7 @@ impl DateFormat for TestDateFormat1 {
 	fn fmt<'a>() -> Vec<Item<'a>> {
 		date_fmt!("%Y/%m/%d %H:%M:%S")
 			.iter()
-			.map(|t| *t)
+			.cloned()
 			.collect()
 	}
 	fn name() -> &'static str {
@@ -51,7 +51,7 @@ impl DateFormat for TestDateFormat2 {
 	fn fmt<'a>() -> Vec<Item<'a>> {
 		date_fmt!("yyyyMMdd")
 			.iter()
-			.map(|t| *t)
+			.cloned()
 			.collect()
 	}
 	fn name() -> &'static str {
