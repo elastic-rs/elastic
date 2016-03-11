@@ -1,12 +1,12 @@
 use super::parse::*;
 
-#[derive(PartialEq)]
+#[derive(Debug, PartialEq)]
 pub enum JsonPart {
 	Literal(String),
 	Replacement(String, ReplacementPart)
 }
 
-#[derive(PartialEq)]
+#[derive(Debug, PartialEq)]
 pub enum ReplacementPart {
 	Key,
 	Value
@@ -15,12 +15,13 @@ pub enum ReplacementPart {
 impl ToString for JsonPart {
 	fn to_string(&self) -> String {
 		match *self {
-			JsonPart::Literal(ref s) => s.clone(),
-			JsonPart::Replacement(ref s, _) => s.clone()
+			JsonPart::Literal(ref s) => 		s.clone(),
+			JsonPart::Replacement(ref s, _) => 	s.clone()
 		}
 	}
 }
 
+//TODO: Should take json state. Don't check for special values if parsing key
 pub fn sanitise(remainder: &[u8], current: &mut String) {
 	//Parse to a change of state, sending in the remainder and current
 	if remainder.len() == 0 {
@@ -75,9 +76,17 @@ pub fn sanitise(remainder: &[u8], current: &mut String) {
 				c == b'.'
 			);
 			
-			current.push('"');
-			current.push_str(key);
-			current.push('"');
+			//Check if the string is a special value; true, false or null
+			//For special values, push them as straight unquoted values. Otherwise, quote them
+			match key {
+				"true"|"false"|"null" => 
+					current.push_str(key),
+				_ => {
+					current.push('"');
+					current.push_str(key);
+					current.push('"');
+				}
+			}
 			
 			sanitise(rest, current)
 		},
@@ -123,7 +132,7 @@ pub fn parse_to_replacement(json: &[u8], parts: &mut Vec<JsonPart>) {
 			let id = ident.to_string().replace(" ", "");
 			match token {
 				b':' => parts.push(JsonPart::Replacement(id, ReplacementPart::Key)),
-				_ => parts.push(JsonPart::Replacement(id, ReplacementPart::Value))
+				_ => 	parts.push(JsonPart::Replacement(id, ReplacementPart::Value))
 			}
 			parse_to_replacement(b, parts);
 		}

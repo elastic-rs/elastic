@@ -5,6 +5,8 @@ extern crate elastic_macros;
 
 use elastic_macros::date_format;
 
+//TODO: Feature gate : types
+
 #[test]
 fn can_generate_date_formats() {
 	let _ = date_fmt!("yyyyMMddTHHmmss.SSSZ");

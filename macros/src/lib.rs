@@ -132,6 +132,7 @@ extern crate serde;
 extern crate serde_json;
 
 pub mod parse;
+//TODO: Feature gate: types
 pub mod date_format;
 pub mod json;
 
@@ -146,6 +147,7 @@ use syntax::ext::build::AstBuilder;
 use rustc_plugin::Registry;
 use chrono::format::{ Item, Fixed, Numeric, Pad };
 
+//TODO: Feature gate: types
 fn expand_date_fmt(cx: &mut ExtCtxt, sp: Span, args: &[TokenTree]) -> Box<MacResult+'static> {
 	let mut fmt = String::new();
 

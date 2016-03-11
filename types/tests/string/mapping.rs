@@ -15,7 +15,11 @@ fn serialise_mapping_default() {
 	let mapping: DefaultStringMapping = DefaultStringMapping::default();
 	let ser = serde_json::to_string(&mapping).unwrap();
 
-	assert_eq!(r#"{"type":"string"}"#, ser);
+	let expected = json!({
+		"type": "string"
+	});
+
+	assert_eq!(expected, ser);
 }
 
 #[test]
@@ -23,33 +27,75 @@ fn serialise_mapping_custom() {
 	let mapping = MyStringMapping;
 	let ser = serde_json::to_string(&mapping).unwrap();
 
-	assert_eq!(r#"{"type":"string","boost":1.01,"doc_values":true,"include_in_all":false,"index":"no","store":true,"analyzer":"my_analyzer","fields":{"bm25_field":{"analyzer":null,"fielddata":null,"ignore_above":null,"index_options":null,"norms":null,"null_value":null,"position_increment_gap":null,"search_analyzer":null,"search_quote_analyzer":null,"similarity":"BM25","term_vector":null},"raw":{"analyzer":"my_analyzer","fielddata":null,"ignore_above":null,"index_options":null,"norms":null,"null_value":null,"position_increment_gap":null,"search_analyzer":null,"search_quote_analyzer":null,"similarity":null,"term_vector":null}},"fielddata":{"format":"disabled"},"ignore_above":50,"index_options":"docs","norms":{"enabled":false},"null_value":"my default value","position_increment_gap":8,"search_analyzer":"my_search_analyzer","search_quote_analyzer":"my_quote_search_analyzer","similarity":"my_similarity","term_vector":"no"}"#, ser);
+	let expected = json!({
+		"type": "string",
+		"boost": 1.01,
+		"doc_values": true,
+		"include_in_all": false,
+		"index": "no",
+		"store": true,
+		"analyzer": "my_analyzer",
+		"fields": {
+			"bm25_field": {
+				"similarity": "BM25"
+			}
+		},
+		"fielddata": {
+			"format": "disabled"
+		},
+		"ignore_above": 50,
+		"index_options": "docs",
+		"norms": {
+			"enabled": false
+		},
+		"null_value": "my default value",
+		"position_increment_gap": 8,
+		"search_analyzer": "my_search_analyzer",
+		"search_quote_analyzer": "my_quote_search_analyzer",
+		"similarity": "my_similarity",
+		"term_vector": "no"
+	});
+
+	assert_eq!(expected, ser);
 }
 
 #[test]
 fn serialise_mapping_field_data() {
 	let fd_opts: Vec<String> = vec![
 		FieldData::Disabled,
-		FieldData::PagedBytes(None, None),
 		FieldData::PagedBytes(Some(FieldDataLoading::Lazy), None),
 		FieldData::PagedBytes(None, Some(FieldDataFilter::Regex(RegexFilter { pattern: ".*" }))),
-		FieldData::PagedBytes(Some(FieldDataLoading::Lazy), Some(FieldDataFilter::Regex(RegexFilter { pattern: ".*" })))
+		FieldData::PagedBytes(Some(FieldDataLoading::Lazy), Some(FieldDataFilter::Regex(RegexFilter { pattern: ".*" }))),
+		FieldData::PagedBytes(None, None),
 	]
 	.iter()
 	.map(|i| serde_json::to_string(i).unwrap())
 	.collect();
 
 	let expected_opts = vec![
-		r#"{"format":"disabled"}"#,
-		r#""#,
-		r#"{"loading":"lazy"}"#,
-		r#"{"filter":{"regex":{"pattern":".*"}}}"#,
-		r#"{"loading":"lazy","filter":{"regex":{"pattern":".*"}}}"#
+		json!({ "format": "disabled" }),
+		json!({ "loading": "lazy" }),
+		json!({
+			"filter": {
+				"regex": {
+					"pattern": ".*"
+				}
+			}
+		}),
+		json!({
+			"loading": "lazy",
+			"filter": {
+				"regex": {
+					"pattern": ".*"
+				}
+			}
+		}),
+		String::from("")
 	];
 
 	let mut success = true;
 	for i in 0..fd_opts.len() {
-		if expected_opts[i] != &fd_opts[i] {
+		if expected_opts[i] != fd_opts[i] {
 			success = false;
 			break;
 		}
@@ -77,7 +123,7 @@ fn serialise_mapping_field_data_loading() {
 
 	let mut success = true;
 	for i in 0..fd_opts.len() {
-		if expected_opts[i] != &fd_opts[i] {
+		if expected_opts[i] != fd_opts[i] {
 			success = false;
 			break;
 		}
@@ -103,13 +149,23 @@ fn serialise_mapping_field_filter() {
 	.collect();
 
 	let expected_opts = vec![
-		r#"{"frequency":{"min":0.001,"max":0.1,"min_segment_size":500}}"#,
-		r#"{"regex":{"pattern":"^#.*"}}"#
+		json!({
+			"frequency": {
+				"min": 0.001,
+				"max": 0.1,
+				"min_segment_size": 500
+			}
+		}),
+		json!({
+			"regex": {
+				"pattern": "^#.*"
+			}
+		})
 	];
 
 	let mut success = true;
 	for i in 0..fd_opts.len() {
-		if expected_opts[i] != &fd_opts[i] {
+		if expected_opts[i] != fd_opts[i] {
 			success = false;
 			break;
 		}
@@ -139,7 +195,7 @@ fn serialise_mapping_index_options() {
 
 	let mut success = true;
 	for i in 0..io_opts.len() {
-		if expected_opts[i] != &io_opts[i] {
+		if expected_opts[i] != io_opts[i] {
 			success = false;
 			break;
 		}
@@ -161,13 +217,13 @@ fn serialise_mapping_norms() {
 	.collect();
 
 	let expected_opts = vec![
-		r#"{"loading":"eager"}"#,
-		r#"{"enabled":false}"#
+		json!({ "loading": "eager" }),
+		json!({ "enabled": false })
 	];
 
 	let mut success = true;
 	for i in 0..n_opts.len() {
-		if expected_opts[i] != &n_opts[i] {
+		if expected_opts[i] != n_opts[i] {
 			success = false;
 			break;
 		}
@@ -193,7 +249,7 @@ fn serialise_mapping_norms_loading() {
 
 	let mut success = true;
 	for i in 0..n_opts.len() {
-		if expected_opts[i] != &n_opts[i] {
+		if expected_opts[i] != n_opts[i] {
 			success = false;
 			break;
 		}
@@ -225,7 +281,7 @@ fn serialise_mapping_terms_vector() {
 
 	let mut success = true;
 	for i in 0..v_opts.len() {
-		if expected_opts[i] != &v_opts[i] {
+		if expected_opts[i] != v_opts[i] {
 			success = false;
 			break;
 		}

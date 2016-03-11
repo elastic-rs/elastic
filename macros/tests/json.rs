@@ -123,3 +123,13 @@ fn sanitisation_quotes_unquoted_keys() {
 
 	assert_eq!("{\"a\":\"stuff\",\"b\":{\"c\":[0,1]},\"d\":14}", &sanitised);
 }
+
+#[test]
+fn sanitisation_does_not_quote_special_values() {
+	let j = "{ \"a\": \"stuff\", \"b\": true, \"c\": false, \"d\": null }";
+
+	let mut sanitised = String::new();
+	sanitise(j.as_bytes(), &mut sanitised);
+
+	assert_eq!("{\"a\":\"stuff\",\"b\":true,\"c\":false,\"d\":null}", &sanitised);
+}

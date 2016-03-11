@@ -90,7 +90,11 @@ fn serialise_mapping_null() {
 	let mapping = NullMapping;
 	let ser = serde_json::to_string(&mapping).unwrap();
 
-	assert_eq!(r#"{"type":"object"}"#, ser);
+	let expected = json!({
+		"type": "object"
+	});
+
+	assert_eq!(expected, ser);
 }
 
 #[test]
