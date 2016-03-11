@@ -145,7 +145,6 @@ use syntax::ast::TokenTree;
 use syntax::ext::base::{ ExtCtxt, MacResult, DummyResult, MacEager };
 use syntax::ext::build::AstBuilder;
 use rustc_plugin::Registry;
-use chrono::format::{ Item, Fixed, Numeric, Pad };
 
 //TODO: Feature gate: types
 fn expand_date_fmt(cx: &mut ExtCtxt, sp: Span, args: &[TokenTree]) -> Box<MacResult+'static> {
