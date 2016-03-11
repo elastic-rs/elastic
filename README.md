@@ -107,7 +107,7 @@ Provides a [hyper](https://github.com/hyperium/hyper) implementation of the Elas
 
 [Docs](http://kodraus.github.io/rustdoc/elastic_macros/)
 
-Provides compiler plugins and macros for the `elastic_types` crate, such as parsing a date format to an array of [Items](https://github.com/lifthrasiir/rust-chrono/blob/master/src/format/mod.rs#L161) at compile-time for efficient runtime date parsing.
+Provides compiler plugins and macros for working with other `elastic` crates. Macros relevant to specific crates are feature-gated, but you don't normally need to worry about this.
 
 ### elastic_types
 
