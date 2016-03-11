@@ -93,7 +93,13 @@
 //! # Types Macros
 //! 
 //! There are also a couple of macros designed to work with `elastic_types`. 
-//! These are feature-gated, so you'll need to use the `types` feature when building.
+//! These are feature-gated, so you'll need to use the `types` feature in your `Cargo.toml`:
+//! 
+//! ```norun
+//! [dependencies.elastic_macros]
+//! version = "*"
+//! features = [ "types" ]
+//! ```
 //! 
 //! ## Date Formatting
 //! 
@@ -135,7 +141,9 @@ extern crate rustc_plugin;
 extern crate serde;
 extern crate serde_json;
 
+#[doc(hidden)]
 pub mod parse;
+#[doc(hidden)]
 pub mod json;
 
 use std::collections::BTreeMap;
@@ -238,11 +246,13 @@ fn expand_json(cx: &mut ExtCtxt, sp: Span, args: &[TokenTree]) -> Box<MacResult+
 	MacEager::expr(cx.expr_block(cx.block(sp, stmts, Some(quote_expr!(cx, jval)))))
 }
 
+#[doc(hidden)]
 #[cfg(feature = "types")]
 pub mod types;
 
 //TODO: Add macros for codegenning Serialize for ElasticMapping. Possibly feature-gate
 
+#[doc(hidden)]
 #[plugin_registrar]
 pub fn plugin_registrar(reg: &mut Registry) {
     reg.register_macro("json", expand_json);
