@@ -146,116 +146,18 @@ pub mod parse;
 #[doc(hidden)]
 pub mod json;
 
-use std::collections::BTreeMap;
-use syntax::codemap::Span;
-use syntax::ptr::P;
-use syntax::parse::token;
-use syntax::ast::{ Stmt };
-use syntax::ast::TokenTree;
-use syntax::ext::base::{ ExtCtxt, MacResult, MacEager };
-use syntax::ext::build::AstBuilder;
-use rustc_plugin::Registry;
-
-fn expand_json(cx: &mut ExtCtxt, sp: Span, args: &[TokenTree]) -> Box<MacResult+'static> {
-	//Get idents first, separated by commas
-	//If none are found then we just continue on
-	let mut idents: BTreeMap<String, syntax::ast::Ident> = BTreeMap::new();
-	let mut ac = 0;
-	for arg in args {
-		match *arg {
-			TokenTree::Token(_, token::Ident(s, _)) => {
-				idents.insert(s.to_string(), s);
-				ac += 1;
-			},
-			TokenTree::Token(_, token::Token::Comma) => ac += 1,
-	        _ => break
-		}
-	}
-
-	//Parse the tokens to a string and sanitise the results
-	let json = syntax::print::pprust::tts_to_string(&args[ac..]);
-	let mut sanitised = String::with_capacity(json.len());
-	json::sanitise(json.as_bytes(), &mut sanitised);
-	
-	//If there are no idents, just emit the json string
-	if idents.len() == 0 {
-        let str_lit = cx.expr_str(sp, token::intern_and_get_ident(&sanitised));
-		return MacEager::expr(P(quote_expr!(cx, String::from($str_lit)).unwrap()))
-	}
-	
-	let mut tree = Vec::new();
-	json::parse_to_replacement(sanitised.as_bytes(), &mut tree);
-
-	let mut stmts: Vec<Stmt> = Vec::new();
-	let mut push_stmts: Vec<Stmt> = Vec::new();
-
-	stmts.push(quote_stmt!(cx, let mut c = 0).unwrap());
-
-	let mut c = 0;
-	for t in tree {
-		match t {
-			//For literals, emit the string value
-			json::JsonPart::Literal(ref lit) => {
-				let s = lit.clone();
-
-				let jn = format!("jlit_{}", c);
-				let jname = token::str_to_ident(&jn);
-
-				stmts.push(quote_stmt!(cx, let $jname = $s).unwrap());
-				stmts.push(quote_stmt!(cx, c += $jname.len()).unwrap());
-
-				push_stmts.push(quote_stmt!(cx, jval.push_str($jname)).unwrap());
-			},
-			//For replacements, convert the input first
-			json::JsonPart::Replacement(ref ident, ref part) => {
-				let name = idents.get(ident).unwrap();
-				let jn = format!("jrepl_{}", c);
-				let jname = token::str_to_ident(&jn);
-				
-				match *part {
-					//For keys, emit the value surrounded by quotes
-					//This may no longer be needed when using serde
-					json::ReplacementPart::Key => {
-						stmts.push(quote_stmt!(cx, let $jname = {
-							let mut tmpstr = String::with_capacity(&$name.len() + 2);
-							tmpstr.push('\"');
-							let tmpjval = serde_json::to_string(&$name).unwrap();
-							tmpstr.push_str(&tmpjval);
-							tmpstr.push('\"');
-
-							tmpstr
-						}).unwrap());
-					},
-					//For values, just emit the string value
-					json::ReplacementPart::Value => {
-						stmts.push(quote_stmt!(cx, let $jname = serde_json::to_string(&$name).unwrap()).unwrap());
-					}
-				}
-
-				stmts.push(quote_stmt!(cx, c += $jname.len()).unwrap());
-				push_stmts.push(quote_stmt!(cx, jval.push_str(&$jname)).unwrap());
-			}
-		}
-
-		c += 1;
-	};
-
-	stmts.push(quote_stmt!(cx, let mut jval = String::with_capacity(c)).unwrap());
-	stmts.extend_from_slice(&mut push_stmts);
-
-	MacEager::expr(cx.expr_block(cx.block(sp, stmts, Some(quote_expr!(cx, jval)))))
-}
-
 #[doc(hidden)]
 #[cfg(feature = "types")]
 pub mod types;
+
+use rustc_plugin::Registry;
 
 //TODO: Add macros for codegenning Serialize for ElasticMapping. Possibly feature-gate
 
 #[doc(hidden)]
 #[plugin_registrar]
 pub fn plugin_registrar(reg: &mut Registry) {
-    reg.register_macro("json", expand_json);
+    reg.register_macro("json", json::expand_json);
 
     #[cfg(feature = "types")]
 	reg.register_macro("date_fmt", types::expand_date_fmt);
