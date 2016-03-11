@@ -2,7 +2,7 @@
 //!
 //! Compile-time code generation for Elasticsearch type implementations.
 //! 
-//! # Json Parsing
+//! # Json Macros
 //! 
 //! The `json!` macro will take an inline token tree and serialise it as json:
 //! 
@@ -89,14 +89,19 @@
 //! });
 //! # }
 //! ```
-//!
-//! # Date Formatting
-//!
+//! 
+//! # Types Macros
+//! 
+//! There are also a couple of macros designed to work with `elastic_types`. 
+//! These are feature-gated, so you'll need to use the `types` feature when building.
+//! 
+//! ## Date Formatting
+//! 
 //! The `date_fmt!` macro will take a literal date format and parse it to a more efficient `Vec<Item>`.
 //! This is used by date formatters.
 //! 
 //! ```
-//! # #![feature(plugin)]
+//! # #![feature(plugin, types]
 //! # #![plugin(elastic_macros)]
 //! # extern crate chrono;
 //! # fn main() {
@@ -121,19 +126,16 @@
 #![doc(html_root_url = "http://kodraus.github.io/rustdoc/elastic_macros/")]
 
 #![crate_type="dylib"]
-#![feature(plugin_registrar, rustc_private, quote, plugin)]
+#![feature(plugin_registrar, rustc_private, quote, plugin, stmt_expr_attributes)]
 #![plugin(serde_macros)]
 
 extern crate syntax;
 extern crate rustc;
 extern crate rustc_plugin;
-extern crate chrono;
 extern crate serde;
 extern crate serde_json;
 
 pub mod parse;
-//TODO: Feature gate: types
-pub mod date_format;
 pub mod json;
 
 use std::collections::BTreeMap;
@@ -142,36 +144,10 @@ use syntax::ptr::P;
 use syntax::parse::token;
 use syntax::ast::{ Stmt };
 use syntax::ast::TokenTree;
-use syntax::ext::base::{ ExtCtxt, MacResult, DummyResult, MacEager };
+use syntax::ext::base::{ ExtCtxt, MacResult, MacEager };
 use syntax::ext::build::AstBuilder;
 use rustc_plugin::Registry;
 
-//TODO: Feature gate: types
-fn expand_date_fmt(cx: &mut ExtCtxt, sp: Span, args: &[TokenTree]) -> Box<MacResult+'static> {
-	let mut fmt = String::new();
-
-	for arg in args {
-		let _fmt = match *arg {
-			TokenTree::Token(_, token::Literal(token::Lit::Str_(s), _)) => s.to_string(),
-			_ => {
-				cx.span_err(sp, "argument should be a single identifier");
-				return DummyResult::any(sp);
-			}
-		};
-
-		fmt.push_str(&_fmt[..]);
-	}
-
-	//Build up the token tree
-	let tokens = date_format::to_tokens(&fmt[..]);
-	let token_expr = cx.expr_vec(sp, tokens.iter().map(|t| date_format::Formatter::to_stmt(t, cx)).collect());
-
-	MacEager::expr(quote_expr!(cx, {
-		$token_expr
-	}))
-}
-
-//TODO: Clean this up
 fn expand_json(cx: &mut ExtCtxt, sp: Span, args: &[TokenTree]) -> Box<MacResult+'static> {
 	//Get idents first, separated by commas
 	//If none are found then we just continue on
@@ -262,10 +238,15 @@ fn expand_json(cx: &mut ExtCtxt, sp: Span, args: &[TokenTree]) -> Box<MacResult+
 	MacEager::expr(cx.expr_block(cx.block(sp, stmts, Some(quote_expr!(cx, jval)))))
 }
 
+#[cfg(feature = "types")]
+pub mod types;
+
 //TODO: Add macros for codegenning Serialize for ElasticMapping. Possibly feature-gate
 
 #[plugin_registrar]
 pub fn plugin_registrar(reg: &mut Registry) {
-    reg.register_macro("date_fmt", expand_date_fmt);
     reg.register_macro("json", expand_json);
+
+    #[cfg(feature = "types")]
+	reg.register_macro("date_fmt", types::expand_date_fmt);
 }

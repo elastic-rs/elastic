@@ -21,10 +21,10 @@
 
 #![doc(html_root_url = "http://kodraus.github.io/rustdoc/elastic_codegen/")]
 #![deny(missing_docs)]
+#![cfg_attr(feature = "nightly-testing", plugin(clippy))]
 
 #![feature(associated_type_defaults, rustc_private, core_intrinsics, custom_derive, custom_attribute, plugin)]
 #![plugin(serde_macros)]
-#![plugin(clippy)]
 
 extern crate serde;
 extern crate serde_json;

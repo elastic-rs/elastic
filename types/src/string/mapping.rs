@@ -182,7 +182,7 @@ pub struct ElasticStringMappingVisitor<T: ElasticStringMapping<F>, F: StringForm
 }
 
 impl <T: ElasticStringMapping<F>, F: StringFormat> serde::ser::MapVisitor for ElasticStringMappingVisitor<T, F> {
-	#[allow(cyclomatic_complexity)]
+	#[cfg_attr(feature = "nightly-testing", allow(cyclomatic_complexity))]
 	fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
 	where S: serde::Serializer {
 		try!(serializer.serialize_struct_elt("type", T::data_type()));
@@ -319,7 +319,7 @@ impl <'a> ElasticStringFieldMappingVisitor<'a> {
 }
 
 impl <'a> serde::ser::MapVisitor for ElasticStringFieldMappingVisitor<'a> {
-	#[allow(cyclomatic_complexity)]
+	#[cfg_attr(feature = "nightly-testing", allow(cyclomatic_complexity))]
 	fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
 	where S: serde::Serializer {
 		if let Some(analyzer) = self.data.analyzer {

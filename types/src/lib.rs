@@ -11,11 +11,11 @@
 
 #![doc(html_root_url = "http://kodraus.github.io/rustdoc/elastic_types/")]
 #![deny(missing_docs)]
+#![cfg_attr(feature = "nightly-testing", plugin(clippy))]
 
 #![feature(custom_derive, custom_attribute, plugin, optin_builtin_traits, associated_type_defaults)]
 #![plugin(serde_macros)]
 #![plugin(elastic_macros)]
-#![plugin(clippy)]
 
 #![macro_use]
 #[macro_export]

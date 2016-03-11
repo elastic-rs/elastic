@@ -3,9 +3,11 @@ name = "elastic_codegen"
 version = "0.1.0"
 authors = ["Ashley Mannix <ashleymannix@live.com.au>"]
 
+[features]
+nightly-testing = [ "clippy" ]
+
 [dependencies]
 serde = "*"
 serde_json = "*"
 serde_macros = "*"
-
-clippy = "*"
+clippy = { version = "*", optional = true }

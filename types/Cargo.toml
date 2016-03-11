@@ -3,11 +3,17 @@ name = "elastic_types"
 version = "0.1.0"
 authors = ["Ashley Mannix <ashleymannix@live.com.au>"]
 
+[features]
+nightly-testing = [ "clippy" ]
+
 [dependencies]
 chrono = "*"
 serde = "*"
 serde_json = "*"
 serde_macros = "*"
-elastic_macros = { version = "*", path = "../macros" }
+clippy = { version = "*", optional = true }
 
-clippy = "*"
+[dependencies.elastic_macros]
+version = "*"
+path = "../macros"
+features = [ "types" ]

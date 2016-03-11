@@ -3,9 +3,7 @@
 extern crate chrono;
 extern crate elastic_macros;
 
-use elastic_macros::date_format;
-
-//TODO: Feature gate : types
+use elastic_macros::types::date_format;
 
 #[test]
 fn can_generate_date_formats() {

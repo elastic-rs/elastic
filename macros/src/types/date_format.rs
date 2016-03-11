@@ -2,8 +2,8 @@ use syntax::ptr::P;
 use syntax::ast::Expr;
 use syntax::ext::base::ExtCtxt;
 
-use chrono::format::{ Item, Fixed, Numeric, Pad };
-use super::parse::*;
+use types::chrono::format::{ Item, Fixed, Numeric, Pad };
+use ::parse::*;
 
 pub fn to_tokens(fmt: &str) -> Vec<Item> {
 	let mut res = Vec::<Item>::new();
