@@ -37,7 +37,21 @@ fn serialise_mapping_custom() {
 		"analyzer": "my_analyzer",
 		"fields": {
 			"bm25_field": {
-				"similarity": "BM25"
+				"analyzer": "my_analyzer",
+				"fielddata": {
+					"format": "disabled"
+				},
+				"ignore_above": 50,
+				"index_options": "docs",
+				"norms": {
+					"enabled": false
+				},
+				"null_value": "my default value",
+				"position_increment_gap": 8,
+				"search_analyzer": "my_search_analyzer",
+				"search_quote_analyzer": "my_quote_search_analyzer",
+				"similarity": "BM25",
+				"term_vector": "no"
 			},
 			"raw": {
 				"analyzer": "my_analyzer"

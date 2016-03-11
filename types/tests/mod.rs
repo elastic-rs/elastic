@@ -97,8 +97,17 @@ pub mod string_fixtures {
 				..Default::default()
 			});
 			fields.insert("bm25_field", ElasticStringFieldMapping {
-				similarity: Some("BM25"),
-				..Default::default()
+				analyzer: 					Some("my_analyzer"),
+				fielddata: 					Some(FieldData::Disabled),
+				ignore_above: 				Some(50),
+				index_options: 				Some(IndexOptions::Docs),
+				norms: 						Some(Norms::Disabled),
+				null_value: 				Some("my default value"),
+				position_increment_gap: 	Some(8),
+				search_analyzer: 			Some("my_search_analyzer"),
+				search_quote_analyzer: 		Some("my_quote_search_analyzer"),
+				similarity: 				Some("BM25"),
+				term_vector: 				Some(TermVector::No)
 			});
 			
 			Some(fields)
