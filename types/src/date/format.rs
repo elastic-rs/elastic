@@ -57,7 +57,7 @@ where Self : Default {
 	/// fn fmt<'a>() -> Vec<Item<'a>> {
 	/// 	date_fmt!("%Y%m%dT%H%M%SZ")
 	/// 		.iter()
-	/// 		.map(|t| *t)
+	/// 		.cloned()
 	/// 		.collect()
 	/// }
 	/// # }

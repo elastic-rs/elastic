@@ -38,6 +38,9 @@ fn serialise_mapping_custom() {
 		"fields": {
 			"bm25_field": {
 				"similarity": "BM25"
+			},
+			"raw": {
+				"analyzer": "my_analyzer"
 			}
 		},
 		"fielddata": {

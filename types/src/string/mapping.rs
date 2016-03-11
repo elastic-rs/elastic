@@ -262,7 +262,7 @@ impl <T: ElasticStringMapping<F>, F: StringFormat> serde::ser::MapVisitor for El
 }
 
 /// A multi-field string mapping.
-#[derive(Debug, Default, Clone, Copy, Serialize)]
+#[derive(Debug, Default, Clone, Copy)]
 pub struct ElasticStringFieldMapping {
 /// The analyzer which should be used for analyzed string fields, 
 	/// both at index-time and at search-time (unless overridden by the `search_analyzer`). 
@@ -294,6 +294,82 @@ pub struct ElasticStringFieldMapping {
 	pub similarity: Option<&'static str>,
 	/// Whether term vectors should be stored for an analyzed field. Defaults to `no`.
 	pub term_vector: Option<TermVector>
+}
+
+impl serde::Serialize for ElasticStringFieldMapping {
+	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+	where S: Serializer
+	{
+		serializer.serialize_struct("fields", ElasticStringFieldMappingVisitor::new(&self))
+	}
+}
+
+#[doc(hidden)]
+#[derive(Debug)]
+pub struct ElasticStringFieldMappingVisitor<'a> {
+	data: &'a ElasticStringFieldMapping
+}
+impl <'a> ElasticStringFieldMappingVisitor<'a> {
+	#[doc(hidden)]
+	pub fn new(field: &'a ElasticStringFieldMapping) -> Self {
+		ElasticStringFieldMappingVisitor {
+			data: field
+		}
+	}
+}
+
+impl <'a> serde::ser::MapVisitor for ElasticStringFieldMappingVisitor<'a> {
+	#[allow(cyclomatic_complexity)]
+	fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
+	where S: serde::Serializer {
+		if let Some(analyzer) = self.data.analyzer {
+			try!(serializer.serialize_struct_elt("analyzer", analyzer));
+		}
+
+		match self.data.fielddata {
+			Some(FieldData::PagedBytes(None, None)) => (),
+			Some(fielddata) => try!(serializer.serialize_struct_elt("fielddata", fielddata)),
+			None => ()
+		}
+
+		if let Some(ignore_above) = self.data.ignore_above {
+			try!(serializer.serialize_struct_elt("ignore_above", ignore_above));
+		}
+
+		if let Some(index_options) = self.data.index_options {
+			try!(serializer.serialize_struct_elt("index_options", index_options));
+		}
+
+		if let Some(norms) = self.data.norms {
+			try!(serializer.serialize_struct_elt("norms", norms));
+		}
+
+		if let Some(null_value) = self.data.null_value {
+			try!(serializer.serialize_struct_elt("null_value", null_value));
+		}
+
+		if let Some(position_increment_gap) = self.data.position_increment_gap {
+			try!(serializer.serialize_struct_elt("position_increment_gap", position_increment_gap));
+		}
+
+		if let Some(search_analyzer) = self.data.search_analyzer {
+			try!(serializer.serialize_struct_elt("search_analyzer", search_analyzer));
+		}
+
+		if let Some(search_quote_analyzer) = self.data.search_quote_analyzer {
+			try!(serializer.serialize_struct_elt("search_quote_analyzer", search_quote_analyzer))
+		}
+
+		if let Some(similarity) = self.data.similarity {
+			try!(serializer.serialize_struct_elt("similarity", similarity))
+		}
+
+		if let Some(term_vector) = self.data.term_vector {
+			try!(serializer.serialize_struct_elt("term_vector", term_vector));
+		}
+
+		Ok(None)
+	}
 }
 
 /// Can the field use in memory fielddata for sorting, aggregations, or scripting?
