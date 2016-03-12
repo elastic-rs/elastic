@@ -1,10 +1,10 @@
 # elasticsearch-rs
 Yet another work in progress Elasticsearch client for Rust.
 
-Platform  | Status
-------------- | -------------
-Linux / OSX  | [![Build Status](https://travis-ci.org/KodrAus/elasticsearch-rs.svg?branch=master)](https://travis-ci.org/KodrAus/elasticsearch-rs)
-Windows  | [![Build status](https://ci.appveyor.com/api/projects/status/s0yo6i7sr4kc5sd5?svg=true)](https://ci.appveyor.com/project/KodrAus/elasticsearch-rs)
+Platform  | Channel | Status
+------------- | ------------- | -------------
+Linux / OSX  | Nightly | [![Build Status](https://travis-ci.org/KodrAus/elasticsearch-rs.svg?branch=master)](https://travis-ci.org/KodrAus/elasticsearch-rs)
+Windows  | Nightly | [![Build status](https://ci.appveyor.com/api/projects/status/s0yo6i7sr4kc5sd5?svg=true)](https://ci.appveyor.com/project/KodrAus/elasticsearch-rs)
 
 Currently only compiling on the `nightly` channel. Support for `stable` will be added.
 
