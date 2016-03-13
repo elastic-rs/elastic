@@ -71,7 +71,6 @@ impl <'a> ElasticMapping<()> for MyTypeMapping<'a> {
 
 //Serialisation for our mapping
 use std::borrow::Cow;
-use std::borrow::Borrow;
 
 struct MyTypeMappingVisitor<'a> { 
 	data: Cow<'a, MyType>
@@ -87,11 +86,10 @@ impl <'a> Default for MyTypeMappingVisitor<'a> {
 impl <'a> serde::ser::MapVisitor for MyTypeMappingVisitor<'a> {
 	fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
 	where S: serde::Serializer {
-		MappingDispatch::map("my_date1", &self.data.my_date1, serializer);
-		MappingDispatch::map("my_date2", &self.data.my_date2, serializer);
-		MappingDispatch::map("my_string", &self.data.my_string, serializer);
-		//TODO: This is an issue because we need to be able to deferentiate types with NullMapping. See how serde does it
-		MappingDispatch::<i32>::map("my_num", &self.data.my_num, serializer);
+		try!(MappingDispatch::map("my_date1", &self.data.my_date1, serializer));
+		try!(MappingDispatch::map("my_date2", &self.data.my_date2, serializer));
+		try!(MappingDispatch::map("my_string", &self.data.my_string, serializer));
+		try!(MappingDispatch::map("my_num", &self.data.my_num, serializer));
 
 		Ok(None)
 	}

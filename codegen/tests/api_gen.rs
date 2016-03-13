@@ -6,12 +6,9 @@ extern crate syntax;
 use std::collections::BTreeMap;
 use syntax::ast::*;
 use syntax::attr::AttrMetaMethods;
-use syntax::parse::token;
-use syntax::print::pprust;
 use elastic_codegen::gen::rust::*;
 use elastic_codegen::api::ast::*;
 use elastic_codegen::api::gen::parse::*;
-use elastic_codegen::api::gen::rust::*;
 
 #[test]
 fn can_parse_params_from_es_url() {

@@ -1,3 +1,6 @@
+#![allow(unused_attributes)]
+#![allow(plugin_as_library)]
+
 #![feature(plugin)]
 #![plugin(elastic_macros)]
 #![plugin(serde_macros)]

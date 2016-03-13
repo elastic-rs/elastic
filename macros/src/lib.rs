@@ -152,8 +152,6 @@ pub mod types;
 
 use rustc_plugin::Registry;
 
-//TODO: Add macros for codegenning Serialize for ElasticMapping. Possibly feature-gate
-
 #[doc(hidden)]
 #[plugin_registrar]
 pub fn plugin_registrar(reg: &mut Registry) {

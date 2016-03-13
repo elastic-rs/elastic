@@ -1,3 +1,5 @@
+#![allow(unused_attributes)]
+
 #![feature(quote, rustc_private)]
 
 extern crate syntax;

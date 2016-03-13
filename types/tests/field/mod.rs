@@ -56,7 +56,7 @@ struct MappingDispatch<T: ElasticDataType<M, F>, M: ElasticMapping<F> = NullMapp
 	phantom_f: PhantomData<F>
 }
 impl <T: ElasticDataType<M, F>, M: ElasticMapping<F> = NullMapping, F = ()> MappingDispatch<T, M, F> {
-	pub fn map(t: &T) -> &'static str {
+	pub fn map(_: &T) -> &'static str {
 		//Check out the Visitor associated type on the mapping
 		let _ = M::get_visitor();
 

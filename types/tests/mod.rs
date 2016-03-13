@@ -1,3 +1,5 @@
+#![allow(unused_attributes)]
+
 #![feature(custom_derive, custom_attribute, plugin)]
 #![plugin(serde_macros)]
 #![plugin(elastic_macros)]
@@ -57,7 +59,6 @@ pub mod string_fixtures {
 	use serde;
 	use std::collections::BTreeMap;
 	use elastic_types::mapping::prelude::*;
-	use elastic_types::string::prelude::*;
 
 	#[derive(Default)]
 	pub struct MyStringMapping;

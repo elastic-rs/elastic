@@ -29,3 +29,5 @@ pub fn expand_date_fmt(cx: &mut ExtCtxt, sp: Span, args: &[TokenTree]) -> Box<Ma
 
 	MacEager::expr(quote_expr!(cx, { $token_expr }))
 }
+
+//TODO: Add macros for codegenning Serialize for ElasticMapping
