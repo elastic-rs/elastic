@@ -153,6 +153,38 @@ where Self: Default + serde::ser::MapVisitor {
 	fn new(data: &'a T) -> Self;
 }
 
+/// Helper for mapping data type fields.
+#[derive(Default)]
+pub struct DataMapper<T: ElasticDataType<M, F>, M: ElasticMapping<F> = NullMapping, F = ()> {
+	phantom_m: PhantomData<M>,
+	phantom_t: PhantomData<T>,
+	phantom_f: PhantomData<F>
+}
+impl <T: ElasticDataType<M, F>, M: ElasticMapping<F>, F> DataMapper<T, M, F> {
+	/// Infer the mapping of a data type and map using its `Visitor`.
+	pub fn map<S>(key: &'static str, _: &T, serializer: &mut S) -> Result<(), S::Error> 
+	where S: serde::Serializer {
+		serializer.serialize_struct_elt(key, M::default())
+	}
+}
+
+/// Helper for mapping user-defined types.
+pub struct TypeMapper<'a, T: ElasticDataType<M, ()>, M: TypeMapping<'a, T>> {
+	phantom_a: PhantomData<&'a ()>,
+	phantom_m: PhantomData<M>,
+	phantom_t: PhantomData<T>
+}
+impl <'a, T: ElasticDataType<M, ()>, M: TypeMapping<'a, T>> TypeMapper<'a, T, M> {
+	/// Map a user-defined type.
+	pub fn map<S>(t: &'a T, serializer: &mut S) -> Result<(), S::Error> 
+	where S: serde::Serializer {
+		serializer.serialize_struct(
+			<M as ElasticMapping<()>>::data_type(), 
+			<M as TypeMapping<'a, T>>::get_visitor(&t)
+		)
+	}
+}
+
 macro_rules! impl_mapping {
 	($($t:ty),*) => (
 		$(

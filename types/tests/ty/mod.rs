@@ -6,8 +6,8 @@ extern crate serde;
 extern crate serde_json;
 extern crate elastic_types;
 
-use serde::Serialize;
 use serde_json::ser::Serializer;
+use elastic_types::mapping::TypeMapper;
 use elastic_types::mapping::prelude::*;
 use elastic_types::date::prelude::*;
 use elastic_types::string::prelude::*;
@@ -22,105 +22,82 @@ struct MyType {
 	pub my_num: i32
 }
 
-//TODO: Start Derive -----
-use std::marker::PhantomData;
-use std::borrow::Cow;
+//TODO: Derive this -----
+mod mytype_mapping {
+	use std::marker::PhantomData;
+	use std::borrow::Cow;
+	use serde;
+	use serde::Serialize;
+	use elastic_types::mapping::DataMapper;
+	use elastic_types::mapping::prelude::*;
+	use super::MyType;
 
-//Implement the base data type on our struct
-impl <'a> ElasticDataType<MyTypeMapping<'a>, ()> for MyType { }
+	//Implement the base data type on our struct
+	impl <'a> ElasticDataType<MyTypeMapping<'a>, ()> for MyType { }
 
-//Define our custom mapping type for our struct
-#[derive(Default, Clone)]
-struct MyTypeMapping<'a> {
-	phantom: PhantomData<&'a ()>
-}
-
-//Implement the base mapping type for our mapping 
-impl <'a> ElasticMapping<()> for MyTypeMapping<'a> {
-	type Visitor = MyTypeMappingVisitor<'a>;
-
-	fn data_type() -> &'static str {
-		"mytype"
+	//Define our custom mapping type for our struct
+	#[derive(Default, Clone)]
+	struct MyTypeMapping<'a> {
+		phantom: PhantomData<&'a ()>
 	}
-}
 
-//Implement the type mapping type for our mapping
-impl <'a> TypeMapping<'a, MyType> for MyTypeMapping<'a> {
-	type Visitor = MyTypeMappingVisitor<'a>;
-}
+	//Implement the base mapping type for our mapping 
+	impl <'a> ElasticMapping<()> for MyTypeMapping<'a> {
+		type Visitor = MyTypeMappingVisitor<'a>;
 
-//Implement serialisation for our mapping
-impl <'a> Serialize for MyTypeMapping<'a> {
-	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
-	where S: serde::Serializer
-	{
-		serializer.serialize_struct("properties", MyTypeMappingVisitor::default())
-	}
-}
-
-//Define a visitor for our mapping
-struct MyTypeMappingVisitor<'a> { 
-	data: Cow<'a, MyType>
-}
-
-//Implement the base type mapping visitor for our visitor
-impl <'a> TypeMappingVisitor<'a, MyType> for MyTypeMappingVisitor<'a> {
-	fn new(data: &'a MyType) -> Self {
-		MyTypeMappingVisitor {
-			data: Cow::Borrowed(data)
+		fn data_type() -> &'static str {
+			"mytype"
 		}
 	}
-}
 
-impl <'a> Default for MyTypeMappingVisitor<'a> {
-	fn default() -> MyTypeMappingVisitor<'a> {
-		MyTypeMappingVisitor {
-			data: Cow::Owned(MyType::default())
+	//Implement the type mapping type for our mapping
+	impl <'a> TypeMapping<'a, MyType> for MyTypeMapping<'a> {
+		type Visitor = MyTypeMappingVisitor<'a>;
+	}
+
+	//Implement serialisation for our mapping
+	impl <'a> Serialize for MyTypeMapping<'a> {
+		fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+		where S: serde::Serializer {
+			serializer.serialize_struct("properties", MyTypeMappingVisitor::default())
 		}
 	}
-}
 
-//Derive serialisation for our visitor
-impl <'a> serde::ser::MapVisitor for MyTypeMappingVisitor<'a> {
-	fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
-	where S: serde::Serializer {
-		//Dispatch serialisation of the mappable properties
-		try!(DataMapper::map("my_date1", &self.data.my_date1, serializer));
-		try!(DataMapper::map("my_date2", &self.data.my_date2, serializer));
-		try!(DataMapper::map("my_string", &self.data.my_string, serializer));
-		try!(DataMapper::map("my_num", &self.data.my_num, serializer));
-
-		Ok(None)
+	//Define a visitor for our mapping
+	struct MyTypeMappingVisitor<'a> { 
+		data: Cow<'a, MyType>
 	}
-}
 
-//TODO: End derive -----
-
-//TODO: Standardise this in the main crate
-struct DataMapper<T: ElasticDataType<M, F>, M: ElasticMapping<F> = NullMapping, F = ()> {
-	phantom_m: PhantomData<M>,
-	phantom_t: PhantomData<T>,
-	phantom_f: PhantomData<F>
-}
-impl <T: ElasticDataType<M, F>, M: ElasticMapping<F>, F> DataMapper<T, M, F> {
-	pub fn map<S>(key: &'static str, _: &T, serializer: &mut S) -> Result<(), S::Error> 
-	where S: serde::Serializer {
-		serializer.serialize_struct_elt(key, M::default())
+	//Implement the base type mapping visitor for our visitor
+	impl <'a> TypeMappingVisitor<'a, MyType> for MyTypeMappingVisitor<'a> {
+		fn new(data: &'a MyType) -> Self {
+			MyTypeMappingVisitor {
+				data: Cow::Borrowed(data)
+			}
+		}
 	}
-}
 
-struct TypeMapper<'a, T: ElasticDataType<M, ()>, M: TypeMapping<'a, T>> {
-	phantom_a: PhantomData<&'a ()>,
-	phantom_m: PhantomData<M>,
-	phantom_t: PhantomData<T>
-}
-impl <'a, T: ElasticDataType<M, ()>, M: TypeMapping<'a, T>> TypeMapper<'a, T, M> {
-	pub fn map<S>(t: &'a T, serializer: &mut S) -> Result<(), S::Error> 
-	where S: serde::Serializer {
-		serializer.serialize_struct(
-			<M as ElasticMapping<()>>::data_type(), 
-			<M as TypeMapping<'a, T>>::get_visitor(&t)
-		)
+	impl <'a> Default for MyTypeMappingVisitor<'a> {
+		fn default() -> MyTypeMappingVisitor<'a> {
+			MyTypeMappingVisitor {
+				data: Cow::Owned(MyType::default())
+			}
+		}
+	}
+
+	//Derive serialisation for our visitor
+	impl <'a> serde::ser::MapVisitor for MyTypeMappingVisitor<'a> {
+		fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
+		where S: serde::Serializer {
+			//Dispatch serialisation of the mappable properties
+			//Needs to iterate over each property and map
+			try!(DataMapper::map("my_date1", &self.data.my_date1, serializer));
+			try!(DataMapper::map("my_date2", &self.data.my_date2, serializer));
+			try!(DataMapper::map("my_string", &self.data.my_string, serializer));
+			try!(DataMapper::map("my_num", &self.data.my_num, serializer));
+
+			Ok(None)
+		}
 	}
 }
 

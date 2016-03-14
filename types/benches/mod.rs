@@ -1,3 +1,5 @@
+#![allow(unused_attributes)]
+
 #![feature(test, custom_derive, custom_attribute, plugin)]
 #![plugin(serde_macros)]
 #![plugin(elastic_macros)]
@@ -16,7 +18,7 @@ pub mod date_fixtures {
 	use elastic_types::date::prelude::*;
 
 	//A custom date mapping
-	#[derive(Default)]
+	#[derive(Default, Clone)]
 	pub struct MyDateMapping;
 	impl ElasticDateMapping<EpochMillis> for MyDateMapping {
 		fn boost() -> Option<f32> {
@@ -59,9 +61,8 @@ pub mod string_fixtures {
 	use serde;
 	use std::collections::BTreeMap;
 	use elastic_types::mapping::prelude::*;
-	use elastic_types::string::prelude::*;
 
-	#[derive(Default)]
+	#[derive(Default, Clone)]
 	pub struct MyStringMapping;
 	impl ElasticStringMapping<DefaultStringFormat> for MyStringMapping { 
 		fn boost() -> Option<f32> {
