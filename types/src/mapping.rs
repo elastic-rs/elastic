@@ -133,6 +133,7 @@ impl <T: ElasticMapping<()>> serde::ser::MapVisitor for ElasticMappingVisitor<T>
 	}
 }
 
+//TODO: Rename ElasticTypeMapping
 /// The base requirements for mapping a user-defined type.
 pub trait TypeMapping<'a, T>
 where Self: ElasticMapping<()> + Default + Clone + serde::Serialize {

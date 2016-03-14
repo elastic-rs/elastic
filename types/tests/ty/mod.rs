@@ -38,6 +38,10 @@ struct MyTypeMapping<'a> {
 //Implement the base mapping type for our mapping 
 impl <'a> ElasticMapping<()> for MyTypeMapping<'a> {
 	type Visitor = MyTypeMappingVisitor<'a>;
+
+	fn data_type() -> &'static str {
+		"mytype"
+	}
 }
 
 //Implement the type mapping type for our mapping
@@ -81,10 +85,10 @@ impl <'a> serde::ser::MapVisitor for MyTypeMappingVisitor<'a> {
 	fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
 	where S: serde::Serializer {
 		//Dispatch serialisation of the mappable properties
-		try!(MappingDispatch::map("my_date1", &self.data.my_date1, serializer));
-		try!(MappingDispatch::map("my_date2", &self.data.my_date2, serializer));
-		try!(MappingDispatch::map("my_string", &self.data.my_string, serializer));
-		try!(MappingDispatch::map("my_num", &self.data.my_num, serializer));
+		try!(DataMapper::map("my_date1", &self.data.my_date1, serializer));
+		try!(DataMapper::map("my_date2", &self.data.my_date2, serializer));
+		try!(DataMapper::map("my_string", &self.data.my_string, serializer));
+		try!(DataMapper::map("my_num", &self.data.my_num, serializer));
 
 		Ok(None)
 	}
@@ -93,27 +97,30 @@ impl <'a> serde::ser::MapVisitor for MyTypeMappingVisitor<'a> {
 //TODO: End derive -----
 
 //TODO: Standardise this in the main crate
-struct MappingDispatch<T: ElasticDataType<M, F>, M: ElasticMapping<F> = NullMapping, F = ()> {
+struct DataMapper<T: ElasticDataType<M, F>, M: ElasticMapping<F> = NullMapping, F = ()> {
 	phantom_m: PhantomData<M>,
 	phantom_t: PhantomData<T>,
 	phantom_f: PhantomData<F>
 }
-impl <T: ElasticDataType<M, F>, M: ElasticMapping<F>, F> MappingDispatch<T, M, F> {
+impl <T: ElasticDataType<M, F>, M: ElasticMapping<F>, F> DataMapper<T, M, F> {
 	pub fn map<S>(key: &'static str, _: &T, serializer: &mut S) -> Result<(), S::Error> 
 	where S: serde::Serializer {
 		serializer.serialize_struct_elt(key, M::default())
 	}
 }
 
-struct Mapper<'a, T: ElasticDataType<M, ()>, M: TypeMapping<'a, T>> {
+struct TypeMapper<'a, T: ElasticDataType<M, ()>, M: TypeMapping<'a, T>> {
 	phantom_a: PhantomData<&'a ()>,
 	phantom_m: PhantomData<M>,
 	phantom_t: PhantomData<T>
 }
-impl <'a, T: ElasticDataType<M, ()>, M: TypeMapping<'a, T>> Mapper<'a, T, M> {
+impl <'a, T: ElasticDataType<M, ()>, M: TypeMapping<'a, T>> TypeMapper<'a, T, M> {
 	pub fn map<S>(t: &'a T, serializer: &mut S) -> Result<(), S::Error> 
 	where S: serde::Serializer {
-		serializer.serialize_struct("mapping", <M as TypeMapping<'a, T>>::get_visitor(&t))
+		serializer.serialize_struct(
+			<M as ElasticMapping<()>>::data_type(), 
+			<M as TypeMapping<'a, T>>::get_visitor(&t)
+		)
 	}
 }
 
@@ -126,7 +133,7 @@ fn serialise_mapping_type() {
 	let mut writer = Vec::with_capacity(128);
 	{
 		let mut ser = Serializer::new(&mut writer);
-		let _ = Mapper::map(&mytype, &mut ser).unwrap();
+		let _ = TypeMapper::map(&mytype, &mut ser).unwrap();
 	}
 	let ser = String::from_utf8(writer).unwrap();
 
