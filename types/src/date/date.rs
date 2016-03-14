@@ -6,7 +6,7 @@ use serde::{ Serialize, Deserialize, Serializer, Deserializer };
 use super::{ DT, DefaultFormat };
 use super::format::{ DateFormat, ParseError };
 use super::mapping::{ ElasticDateMapping, DefaultDateMapping };
-use ::mapping::{ ElasticMapping, ElasticDataType, TypeEllision, TypeEllisionKind };
+use ::mapping::{ ElasticMapping, ElasticDataType };
 
 pub use chrono::{ Datelike, Timelike };
 
@@ -169,12 +169,6 @@ impl <F: DateFormat, T: ElasticMapping<F> + ElasticDateMapping<F>> DateTime<F, T
 	/// ```
 	pub fn into<FInto: DateFormat, TInto: ElasticMapping<FInto> + ElasticDateMapping<FInto>>(self) -> DateTime<FInto, TInto> {
 		DateTime::<FInto, TInto>::new(self.value)
-	}
-}
-
-impl <F: DateFormat, T: ElasticMapping<F> + ElasticDateMapping<F>> TypeEllision for DateTime<F, T> {
-	fn get_ellision() -> TypeEllisionKind {
-		TypeEllisionKind::Ellided
 	}
 }
 

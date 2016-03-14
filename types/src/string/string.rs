@@ -2,13 +2,7 @@ use std::marker::PhantomData;
 use serde;
 use serde::{ Serialize, Deserialize, Serializer, Deserializer };
 use super::mapping::{ ElasticStringType, ElasticStringMapping, StringFormat, DefaultStringMapping, DefaultStringFormat };
-use ::mapping::{ ElasticMapping, ElasticDataType, TypeEllision, TypeEllisionKind };
-
-impl TypeEllision for String {
-	fn get_ellision() -> TypeEllisionKind {
-		TypeEllisionKind::Ellided
-	}
-}
+use ::mapping::{ ElasticMapping, ElasticDataType };
 
 impl ElasticDataType<DefaultStringMapping<DefaultStringFormat>, DefaultStringFormat> for String { }
 impl ElasticStringType<DefaultStringMapping<DefaultStringFormat>, DefaultStringFormat> for String { }
@@ -66,12 +60,6 @@ impl <T: ElasticMapping<F> + ElasticStringMapping<F>, F: StringFormat> ElasticSt
 	/// Change the mapping of this string.
 	pub fn into<TInto: ElasticMapping<F> + ElasticStringMapping<F>>(self) -> ElasticString<TInto, F> {
 		ElasticString::<TInto, F>::new(self.value)
-	}
-}
-
-impl <F: StringFormat, T: ElasticMapping<F> + ElasticStringMapping<F>> TypeEllision for ElasticString<T, F> {
-	fn get_ellision() -> TypeEllisionKind {
-		TypeEllisionKind::Ellided
 	}
 }
 

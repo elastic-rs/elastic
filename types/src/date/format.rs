@@ -9,7 +9,7 @@ use std::fmt;
 /// The format is specified as two functions; `parse` and `format`, which are backed by `chrono::format::Item`s.
 /// Not all formats use the `Item`s though, for example `EpochMillis`, which is more efficient than other formats.
 pub trait DateFormat
-where Self : Default {
+where Self : Default + Clone {
 	/// Parses a date string to a `chrono::DateTime<UTC>` result.
 	/// 
 	/// The date string must match the format specified by `fmt()`.

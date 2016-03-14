@@ -8,7 +8,7 @@ use ::mapping::{ ElasticMapping, ElasticDataType, IndexAnalysis };
 
 /// A string format
 pub trait StringFormat 
-where Self: Default { }
+where Self: Default + Clone { }
 
 /// The base requirements for mapping a `string` type.
 /// 
@@ -52,7 +52,7 @@ where Self: Default { }
 /// # }
 /// ```
 pub trait ElasticStringMapping<T: StringFormat = DefaultStringFormat>
-where Self : ElasticMapping<T> + Sized + Serialize + Default {
+where Self : ElasticMapping<T> + Sized + Serialize + Default + Clone {
 	/// Field-level index time boosting. Accepts a floating point number, defaults to `1.0`.
 	fn boost() -> Option<f32> {
 		None
@@ -161,12 +161,12 @@ pub trait ElasticStringType<T: ElasticMapping<F> + ElasticStringMapping<F>, F: S
 /// Default format for `string` types.
 /// 
 /// Currently, there's nothing here to use.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct DefaultStringFormat;
 impl StringFormat for DefaultStringFormat { }
 
 /// Default mapping for `String`.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct DefaultStringMapping<T: StringFormat = DefaultStringFormat> {
 	phantom: PhantomData<T>
 }

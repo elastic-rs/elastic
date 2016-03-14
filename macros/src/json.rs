@@ -21,7 +21,7 @@ pub fn expand_json(cx: &mut ExtCtxt, sp: Span, args: &[TokenTree]) -> Box<MacRes
 				ac += 1;
 			},
 			TokenTree::Token(_, token::Token::Comma) => ac += 1,
-	        _ => break
+			_ => break
 		}
 	}
 
@@ -32,7 +32,7 @@ pub fn expand_json(cx: &mut ExtCtxt, sp: Span, args: &[TokenTree]) -> Box<MacRes
 	
 	//If there are no idents, just emit the json string
 	if idents.len() == 0 {
-        let str_lit = cx.expr_str(sp, token::intern_and_get_ident(&sanitised));
+		let str_lit = cx.expr_str(sp, token::intern_and_get_ident(&sanitised));
 		return MacEager::expr(P(quote_expr!(cx, String::from($str_lit)).unwrap()))
 	}
 	

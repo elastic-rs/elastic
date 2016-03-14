@@ -50,7 +50,7 @@ use ::mapping::{ ElasticMapping, IndexAnalysis };
 /// 
 /// The above example binds the mapping to the `BasicDateTime` format, so `get_null_value` returns a properly formated value.
 pub trait ElasticDateMapping<T: DateFormat>
-where Self : ElasticMapping<T> + Sized + Serialize + Default {
+where Self : ElasticMapping<T> + Sized + Serialize + Default + Clone {
 	/// Field-level index time boosting. Accepts a floating point number, defaults to `1.0`.
 	fn boost() -> Option<f32> {
 		None
@@ -106,7 +106,7 @@ where Self : ElasticMapping<T> + Sized + Serialize + Default {
 }
 
 /// Default mapping for `DateTime`.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct DefaultDateMapping<T: DateFormat = DefaultFormat> {
 	phantom: PhantomData<T>
 }

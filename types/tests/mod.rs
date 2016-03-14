@@ -16,7 +16,7 @@ pub mod date_fixtures {
 	use elastic_types::date::prelude::*;
 
 	//A custom date mapping
-	#[derive(Default)]
+	#[derive(Default, Clone)]
 	pub struct MyDateMapping;
 	impl ElasticDateMapping<EpochMillis> for MyDateMapping {
 		fn boost() -> Option<f32> {
@@ -60,7 +60,7 @@ pub mod string_fixtures {
 	use std::collections::BTreeMap;
 	use elastic_types::mapping::prelude::*;
 
-	#[derive(Default)]
+	#[derive(Default, Clone)]
 	pub struct MyStringMapping;
 	impl ElasticStringMapping<DefaultStringFormat> for MyStringMapping { 
 		fn boost() -> Option<f32> {
@@ -155,6 +155,5 @@ pub mod string_fixtures {
 }
 
 pub mod ty;
-pub mod field;
 pub mod date;
 pub mod string;

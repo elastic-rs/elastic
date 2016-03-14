@@ -153,13 +153,13 @@ fn parse<'a>(i: &'a [u8]) -> (&'a [u8], Option<Item<'a>>) {
 }
 
 macro_rules! parse_token {
-    ($i:ident, $m:expr, $r:expr) => ({
-    	match $i[0] {
+	($i:ident, $m:expr, $r:expr) => ({
+		match $i[0] {
 			$m => (shift_while($i, |c| c == $m), $r),
 			b'%' => (shift($i, 2), $r),
 			_ => panic!("unexpected symbol")
 		}
-    })
+	})
 }
 
 fn parse_year<'a>(i: &'a [u8]) -> (&'a [u8], Option<Item<'a>>) {
