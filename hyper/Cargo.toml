@@ -6,7 +6,7 @@ license = "Apache-2.0"
 description = "A lightweight implementation of the Elasticsearch API based on Hyper."
 documentation = "http://kodraus.github.io/rustdoc/elastic_hyper/"
 repository = "https://github.com/KodrAus/elasticsearch-rs"
-exclude = ["samples"]
+exclude = [ "samples", "codegen" ]
 
 [features]
 test-integration = [ "elastic_macros", "serde", "serde_macros", "serde_json" ]
