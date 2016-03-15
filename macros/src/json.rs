@@ -3,7 +3,7 @@ use syntax;
 use syntax::codemap::Span;
 use syntax::ptr::P;
 use syntax::parse::token;
-use syntax::ast::{ Stmt };
+use syntax::ast::{ Stmt, Ident };
 use syntax::ast::TokenTree;
 use syntax::ext::base::{ ExtCtxt, MacResult, MacEager, DummyResult };
 use syntax::ext::build::AstBuilder;
@@ -11,14 +11,25 @@ use ::parse::*;
 
 //TODO: Clean this up, it's an awful macro in this state. Look at using serde_json for intermediate representation
 pub fn expand_json(cx: &mut ExtCtxt, sp: Span, args: &[TokenTree]) -> Box<MacResult+'static> {
-	//Get idents first, separated by commas
-	//If none are found then we just continue on
-	let mut idents: BTreeMap<String, syntax::ast::Ident> = BTreeMap::new();
+	let (json, repl_args) = parse_tt(&args);
+	
+	//If there are no idents, just emit the json string
+	if repl_args.len() == 0 {
+		let str_lit = cx.expr_str(sp, token::intern_and_get_ident(&json));
+		MacEager::expr(P(quote_expr!(cx, String::from($str_lit)).unwrap()))
+	}
+	else {
+		expand_repl(cx, sp, &json, &repl_args)
+	}
+}
+
+fn parse_tt(args: &[TokenTree]) -> (String, BTreeMap<String, Ident>) {
+	let mut repl_args: BTreeMap<String, Ident> = BTreeMap::new();
 	let mut ac = 0;
 	for arg in args {
 		match *arg {
 			TokenTree::Token(_, token::Ident(s, _)) => {
-				idents.insert(s.to_string(), s);
+				repl_args.insert(s.to_string(), s);
 				ac += 1;
 			},
 			TokenTree::Token(_, token::Token::Comma) => ac += 1,
@@ -30,111 +41,122 @@ pub fn expand_json(cx: &mut ExtCtxt, sp: Span, args: &[TokenTree]) -> Box<MacRes
 	let json = syntax::print::pprust::tts_to_string(&args[ac..]);
 	let mut sanitised = String::with_capacity(json.len());
 	sanitise(json.as_bytes(), &mut sanitised);
-	
-	//If there are no idents, just emit the json string
-	if idents.len() == 0 {
-		let str_lit = cx.expr_str(sp, token::intern_and_get_ident(&sanitised));
-		return MacEager::expr(P(quote_expr!(cx, String::from($str_lit)).unwrap()))
-	}
-	
-	//TODO: Split this out, so it's obvious that replacements are treated differently
-	let mut tree = Vec::new();
-	parse_to_replacement(sanitised.as_bytes(), &mut tree);
+
+	(sanitised, repl_args)
+}
+
+fn expand_repl(cx: &mut ExtCtxt, sp: Span, json: &str, repl_args: &BTreeMap<String, Ident>) -> Box<MacResult+'static> {
+	let mut repl_json = Vec::new();
+	parse_to_replacement(json.as_bytes(), &mut repl_json);
 
 	let mut stmts: Vec<Stmt> = Vec::new();
 	let mut push_stmts: Vec<Stmt> = Vec::new();
 
 	stmts.push(quote_stmt!(cx, let mut c = 0).unwrap());
 
-	let mut tcount = 0;
-	for t in tree {
+	let mut repl_count = 0;
+	for t in repl_json {
 		match t {
-			//For literals, emit the string value
 			JsonPart::Literal(ref lit) => {
-				let jname = token::str_to_ident(&format!("jlit_{}", tcount));
-				let len = lit.len();
-
-				stmts.push(quote_stmt!(cx, let $jname = $lit).unwrap());
-				stmts.push(quote_stmt!(cx, c += $len).unwrap());
-
-				push_stmts.push(quote_stmt!(cx, jval.push_str($jname)).unwrap());
-			},
-			//For replacements, convert the input first
-			JsonPart::Replacement(ref ident, ref part) => {
-				let name = match idents.get(ident) {
-					Some(name) => name,
-					None => {
-						cx.span_err(sp, &format!("failed to find '{}' in the supplied replacement args", ident));
+				match expand_repl_lit(cx, &mut stmts, &mut push_stmts, repl_count, lit) {
+					Err(e) => {
+						cx.span_err(sp, &e);
 						return DummyResult::any(sp);
-					}
-				};
-
-				let jname = token::str_to_ident(&format!("jrepl_{}", tcount));
-				
-				match *part {
-					//For keys, emit the value surrounded by quotes
-					ReplacementPart::Key => {
-						stmts.push(quote_stmt!(cx, let $jname = {
-							let mut tmpstr = String::with_capacity(&$name.len() + 2);
-							tmpstr.push('\"');
-							tmpstr.push_str(&$name.to_string());
-							tmpstr.push('\"');
-
-							tmpstr
-						}).unwrap());
 					},
-					//For values, emit as inline json if the first non quote char is an object, emit inline, otherwise emit the serde string
-					ReplacementPart::Value => {
-						stmts.push(quote_stmt!(cx, let $jname = {
-							let tmpstr = serde_json::to_string(&$name).unwrap();
-							let len = tmpstr.len();
-							let mut chars = tmpstr.chars();
-
-							if len > 2 {
-								let mut parsed = String::with_capacity(len);
-								let char_quote = chars.next().unwrap();
-								let char_obj = chars.next().unwrap();
-
-								match char_obj {
-									'{'|'[' => {
-										parsed.push(char_obj);
-										chars.next();
-										for c in chars {
-											match c {
-												'\\' => (),
-												_ => parsed.push(c)
-											}
-										}
-										let _ = parsed.pop();
-										parsed
-									},
-									_ => {
-										parsed.push(char_quote);
-										parsed.push(char_obj);
-										parsed.push_str(chars.as_str());
-										parsed
-									}
-								}
-							}
-							else {
-							    String::from(chars.as_str())
-							}
-						}).unwrap());
-					}
+					_ => ()
 				}
-
-				stmts.push(quote_stmt!(cx, c += $jname.len()).unwrap());
-				push_stmts.push(quote_stmt!(cx, jval.push_str(&$jname)).unwrap());
+			},
+			JsonPart::Replacement(ref ident, ref part) => {
+				match expand_repl_arg(cx, &mut stmts, &mut push_stmts, repl_count, repl_args, ident, part) {
+					Err(e) => {
+						cx.span_err(sp, &e);
+						return DummyResult::any(sp);
+					},
+					_ => ()
+				}
 			}
 		}
 
-		tcount += 1;
+		repl_count += 1;
 	};
 
 	stmts.push(quote_stmt!(cx, let mut jval = String::with_capacity(c)).unwrap());
 	stmts.extend_from_slice(&mut push_stmts);
 
 	MacEager::expr(cx.expr_block(cx.block(sp, stmts, Some(quote_expr!(cx, jval)))))
+}
+
+fn expand_repl_lit(cx: &mut ExtCtxt, stmts: &mut Vec<Stmt>, push_stmts: &mut Vec<Stmt>, repl_count: usize, repl: &str) -> Result<(), String> {
+	let jname = token::str_to_ident(&format!("jlit_{}", repl_count));
+	let len = repl.len();
+
+	stmts.push(quote_stmt!(cx, let $jname = $repl).unwrap());
+	stmts.push(quote_stmt!(cx, c += $len).unwrap());
+
+	push_stmts.push(quote_stmt!(cx, jval.push_str($jname)).unwrap());
+
+	Ok(())
+}
+
+fn expand_repl_arg(cx: &mut ExtCtxt, stmts: &mut Vec<Stmt>, push_stmts: &mut Vec<Stmt>, repl_count: usize, repl_args: &BTreeMap<String, Ident>, ident: &str, part: &ReplacementPart) -> Result<(), String> {
+	let name = try!(repl_args.get(ident).ok_or(format!("failed to find '{}' in the supplied replacement args", ident)));
+	let jname = token::str_to_ident(&format!("jrepl_{}", repl_count));
+
+	match *part {
+		//For keys, emit the value surrounded by quotes
+		ReplacementPart::Key => {
+			stmts.push(quote_stmt!(cx, let $jname = {
+				let mut tmpstr = String::with_capacity(&$name.len() + 2);
+				tmpstr.push('\"');
+				tmpstr.push_str(&$name.to_string());
+				tmpstr.push('\"');
+				tmpstr
+			}).unwrap());
+		},
+		//For values, emit as inline json if the first non quote char is an object, emit inline, otherwise emit the serde string
+		ReplacementPart::Value => {
+			stmts.push(quote_stmt!(cx, let $jname = {
+				let tmpstr = serde_json::to_string(&$name).unwrap();
+				let len = tmpstr.len();
+				let mut chars = tmpstr.chars();
+
+				if len > 2 {
+					let mut parsed = String::with_capacity(len);
+					let char_quote = chars.next().unwrap();
+					let char_obj = chars.next().unwrap();
+
+					match char_obj {
+						'{'|'[' => {
+							parsed.push(char_obj);
+							chars.next();
+							for c in chars {
+								match c {
+									'\\' => (),
+									_ => parsed.push(c)
+								}
+							}
+							let _ = parsed.pop();
+							parsed
+						},
+						_ => {
+							parsed.push(char_quote);
+							parsed.push(char_obj);
+							parsed.push_str(chars.as_str());
+							parsed
+						}
+					}
+				}
+				else {
+				    String::from(chars.as_str())
+				}
+			}).unwrap());
+		}
+	}
+
+	stmts.push(quote_stmt!(cx, c += $jname.len()).unwrap());
+	push_stmts.push(quote_stmt!(cx, jval.push_str(&$jname)).unwrap());
+
+	Ok(())
 }
 
 #[derive(Debug, PartialEq)]
