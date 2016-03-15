@@ -9,7 +9,9 @@ use syntax::ext::base::{ ExtCtxt, MacResult, MacEager, DummyResult };
 use syntax::ext::build::AstBuilder;
 use ::parse::*;
 
-//TODO: Clean this up, it's an awful macro in this state. Look at using serde_json for intermediate representation
+//Parse a token tree to a json `String` at compile time.
+//Where there are no replacements, this is super efficient.
+//Where there are replacements, this is super-not-so efficient
 pub fn expand_json(cx: &mut ExtCtxt, sp: Span, args: &[TokenTree]) -> Box<MacResult+'static> {
 	let (json, repl_args) = parse_tt(&args);
 	
@@ -23,6 +25,9 @@ pub fn expand_json(cx: &mut ExtCtxt, sp: Span, args: &[TokenTree]) -> Box<MacRes
 	}
 }
 
+//The token tree is split into two parts; arguments and json.
+//We consider any idents, optionally separated by commas, to be replacement args.
+//Once a non-ident token is encountered, the rest of the tree is considered to be json.
 fn parse_tt(args: &[TokenTree]) -> (String, BTreeMap<String, Ident>) {
 	let mut repl_args: BTreeMap<String, Ident> = BTreeMap::new();
 	let mut ac = 0;
@@ -86,6 +91,7 @@ fn expand_repl(cx: &mut ExtCtxt, sp: Span, json: &str, repl_args: &BTreeMap<Stri
 	MacEager::expr(cx.expr_block(cx.block(sp, stmts, Some(quote_expr!(cx, jval)))))
 }
 
+//Json literals are pushed in line.
 fn expand_repl_lit(cx: &mut ExtCtxt, stmts: &mut Vec<Stmt>, push_stmts: &mut Vec<Stmt>, repl_count: usize, repl: &str) -> Result<(), String> {
 	let arg_key = token::str_to_ident(&format!("jlit_{}", repl_count));
 	let len = repl.len();
@@ -98,6 +104,7 @@ fn expand_repl_lit(cx: &mut ExtCtxt, stmts: &mut Vec<Stmt>, push_stmts: &mut Vec
 	Ok(())
 }
 
+//Replacement args can either be json keys or values.
 fn expand_repl_arg(cx: &mut ExtCtxt, stmts: &mut Vec<Stmt>, push_stmts: &mut Vec<Stmt>, repl_count: usize, repl_args: &BTreeMap<String, Ident>, ident: &str, part: &ReplacementPart) -> Result<(), String> {
 	let arg_val = try!(repl_args.get(ident).ok_or(format!("failed to find '{}' in the supplied replacement args", ident)));
 	let arg_key = token::str_to_ident(&format!("jrepl_{}", repl_count));
@@ -113,6 +120,7 @@ fn expand_repl_arg(cx: &mut ExtCtxt, stmts: &mut Vec<Stmt>, push_stmts: &mut Vec
 	Ok(())
 }
 
+//Key expansion takes the replacement value as a string and wraps it in quotes.
 fn expand_repl_key(cx: &mut ExtCtxt, arg_key: Ident, arg_val: Ident) -> Option<Stmt> {
 	quote_stmt!(cx, let $arg_key = {
 		let mut tmpstr = String::with_capacity(&$arg_val.len() + 2);
@@ -123,6 +131,9 @@ fn expand_repl_key(cx: &mut ExtCtxt, arg_key: Ident, arg_val: Ident) -> Option<S
 	})
 }
 
+//Value expansion is a bit hacky, currently it checks whether the json has been double encoded.
+//The implementation is trying to prevent the need for extra `use`s or `impl`s on the value replacement.
+//This approach doesn't scale very well, so for large replacement values, the `serde` macro would be better.
 fn expand_repl_value(cx: &mut ExtCtxt, arg_key: Ident, arg_val: Ident) -> Option<Stmt> {
 	quote_stmt!(cx, let $arg_key = {
 		let tmpstr = serde_json::to_string(&$arg_val).unwrap();
