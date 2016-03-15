@@ -28,18 +28,7 @@ fn serialise_mapping_custom() {
 	let mapping = MyDateMapping;
 	let ser = serde_json::to_string(&mapping).unwrap();
 
-	let expected = json!({
-		"type": "date",
-		"boost": 1.01,
-		"doc_values": true,
-		"include_in_all": false,
-		"index": "no",
-		"store": true,
-		"format": "epoch_millis",
-		"ignore_malformed": true,
-		"null_value": "0",
-		"precision_step": 6
-	});
+	let expected = mydatemapping_json();
 
 	assert_eq!(expected, ser);
 }

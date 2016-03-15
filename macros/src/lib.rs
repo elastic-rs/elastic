@@ -69,7 +69,7 @@
 //! let lat = 37.776;
 //! let lon = -122.41;
 //! 
-//! let json = json!(key, dist, lat, lon {
+//! let json = json!(query, dist, lat, lon {
 //! 	query: {
 //! 		filtered: {
 //! 			query: {
