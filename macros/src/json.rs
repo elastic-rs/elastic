@@ -55,10 +55,9 @@ pub fn expand_json(cx: &mut ExtCtxt, sp: Span, args: &[TokenTree]) -> Box<MacRes
 		match t {
 			//For literals, emit the string value
 			JsonPart::Literal(ref lit) => {
-				let s = lit.clone();
 				let jname = token::str_to_ident(&format!("jlit_{}", tcount));
 
-				stmts.push(quote_stmt!(cx, let $jname = $s).unwrap());
+				stmts.push(quote_stmt!(cx, let $jname = $lit).unwrap());
 				stmts.push(quote_stmt!(cx, c += $jname.len()).unwrap());
 
 				push_stmts.push(quote_stmt!(cx, jval.push_str($jname)).unwrap());
@@ -189,7 +188,7 @@ pub fn sanitise(remainder: &[u8], current: &mut String) {
 		//Replacements
 		b'$' => {
 			let (rest, key) = take_while1(&remainder[1..], |c| 
-				(c as char).is_alphabetic() ||
+				(c as char).is_alphanumeric() ||
 				c == b'_' ||
 				c == b'.'
 			);
