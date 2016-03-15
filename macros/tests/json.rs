@@ -4,9 +4,9 @@
 
 extern crate serde;
 extern crate serde_json;
+#[allow(plugin_as_library)]
 extern crate elastic_macros;
 
-use serde::Serialize;
 use elastic_macros::json::*;
 
 #[test]
@@ -80,11 +80,6 @@ fn can_add_replacement_serde_to_json() {
 	#[derive(Serialize)]
 	struct MyStruct {
 		pub a: usize
-	}
-	impl ToString for MyStruct {
-		fn to_string(&self) -> String {
-			String::from("")
-		}
 	}
 
 	let a = 7;

@@ -56,9 +56,10 @@ pub fn expand_json(cx: &mut ExtCtxt, sp: Span, args: &[TokenTree]) -> Box<MacRes
 			//For literals, emit the string value
 			JsonPart::Literal(ref lit) => {
 				let jname = token::str_to_ident(&format!("jlit_{}", tcount));
+				let len = lit.len();
 
 				stmts.push(quote_stmt!(cx, let $jname = $lit).unwrap());
-				stmts.push(quote_stmt!(cx, c += $jname.len()).unwrap());
+				stmts.push(quote_stmt!(cx, c += $len).unwrap());
 
 				push_stmts.push(quote_stmt!(cx, jval.push_str($jname)).unwrap());
 			},
