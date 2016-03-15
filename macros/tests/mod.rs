@@ -1,7 +1,7 @@
 #![allow(unused_attributes)]
 #![allow(plugin_as_library)]
 
-#![feature(plugin)]
+#![feature(plugin, custom_derive)]
 #![plugin(elastic_macros)]
 #![plugin(serde_macros)]
 

@@ -11,7 +11,7 @@ use test::Bencher;
 #[bench]
 fn parse_plain_json_sml(b: &mut Bencher) {
 	b.iter(|| {
-		return json!({
+		json!({
 			query: {
 				filtered: {
 					query: {
@@ -35,7 +35,7 @@ fn parse_plain_json_sml(b: &mut Bencher) {
 #[bench]
 fn parse_plain_json_med(b: &mut Bencher) {
 	b.iter(|| {
-		return json!({
+		json!({
 			query: {
 				filtered: {
 					query: {
@@ -72,7 +72,7 @@ fn parse_plain_json_med(b: &mut Bencher) {
 #[bench]
 fn parse_plain_json_lrg(b: &mut Bencher) {
 	b.iter(|| {
-		return json!({
+		json!({
 			query: {
 				filtered: {
 					query: {
@@ -254,6 +254,102 @@ fn parse_repl_json_lrg(b: &mut Bencher) {
 							}
 						}
 					}
+				}
+			}
+		})
+	});
+}
+
+#[bench]
+fn parse_repl_obj_json_sml(b: &mut Bencher) {
+	let dist = "20km";
+	let lat = 37.776;
+	let lon = -122.41;
+
+	let query = "query";
+	let filtered = "filtered";
+	let filter = "filter";
+
+	let qry = json!(query, filtered, filter, dist, lat, lon, {
+		$filtered: {
+			$query: {
+				match_all: {}
+			},
+			$filter: {
+				geo_distance: {
+					distance: $dist,
+					location: {
+						lat: $lat,
+						lon: $lon
+					}
+				}
+			}
+		}
+	});
+
+	b.iter(|| {
+		json!(qry, query, filtered, filter, dist, lat, lon, {
+			$query: {
+				$filtered: {
+					$query: $qry,
+					$filter: {
+						geo_distance: {
+							distance: $dist,
+							location: {
+								lat: $lat,
+								lon: $lon
+							}
+						}
+					}
+				}
+			}
+		})
+	});
+}
+
+#[bench]
+fn parse_repl_obj_json_med(b: &mut Bencher) {
+	let dist = "20km";
+	let lat = 37.776;
+	let lon = -122.41;
+
+	let query = "query";
+	let filtered = "filtered";
+	let filter = "filter";
+
+	let qry = json!(query, filtered, filter, dist, lat, lon, {
+		$filtered: {
+			$query: {
+				match_all: {}
+			},
+			$filter: {
+				geo_distance: {
+					distance: $dist,
+					location: {
+						lat: $lat,
+						lon: $lon
+					}
+				}
+			}
+		}
+	});
+
+	let fltr = json!(dist, lat, lon, {
+		geo_distance: {
+			distance: $dist,
+			location: {
+				lat: $lat,
+				lon: $lon
+			}
+		}
+	});
+
+	b.iter(|| {
+		json!(qry, fltr, query, filtered, filter, dist, lat, lon, {
+			$query: {
+				$filtered: {
+					$query: $qry,
+					$filter: $fltr
 				}
 			}
 		})

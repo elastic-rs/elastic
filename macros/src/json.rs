@@ -5,10 +5,15 @@ use syntax::ptr::P;
 use syntax::parse::token;
 use syntax::ast::{ Stmt };
 use syntax::ast::TokenTree;
-use syntax::ext::base::{ ExtCtxt, MacResult, MacEager };
+use syntax::ext::base::{ ExtCtxt, MacResult, MacEager, DummyResult };
 use syntax::ext::build::AstBuilder;
 use ::parse::*;
 
+//TODO: Clean this up, it's an awful macro in this state. Look at using serde_json for intermediate representation
+//If the macro returns a serde_json::Value, then it could be spliced in, possibly at the expense of performance
+//Also need to avoid unwrapping in here as it will cause panics
+//Return Result<Cow<str>, JsonParseError>
+//Internal parse errors should return span error
 pub fn expand_json(cx: &mut ExtCtxt, sp: Span, args: &[TokenTree]) -> Box<MacResult+'static> {
 	//Get idents first, separated by commas
 	//If none are found then we just continue on
@@ -36,6 +41,7 @@ pub fn expand_json(cx: &mut ExtCtxt, sp: Span, args: &[TokenTree]) -> Box<MacRes
 		return MacEager::expr(P(quote_expr!(cx, String::from($str_lit)).unwrap()))
 	}
 	
+	//TODO: Split this out, so it's obvious that replacements are treated differently
 	let mut tree = Vec::new();
 	parse_to_replacement(sanitised.as_bytes(), &mut tree);
 
@@ -44,15 +50,13 @@ pub fn expand_json(cx: &mut ExtCtxt, sp: Span, args: &[TokenTree]) -> Box<MacRes
 
 	stmts.push(quote_stmt!(cx, let mut c = 0).unwrap());
 
-	let mut c = 0;
+	let mut tcount = 0;
 	for t in tree {
 		match t {
 			//For literals, emit the string value
 			JsonPart::Literal(ref lit) => {
 				let s = lit.clone();
-
-				let jn = format!("jlit_{}", c);
-				let jname = token::str_to_ident(&jn);
+				let jname = token::str_to_ident(&format!("jlit_{}", tcount));
 
 				stmts.push(quote_stmt!(cx, let $jname = $s).unwrap());
 				stmts.push(quote_stmt!(cx, c += $jname.len()).unwrap());
@@ -61,27 +65,63 @@ pub fn expand_json(cx: &mut ExtCtxt, sp: Span, args: &[TokenTree]) -> Box<MacRes
 			},
 			//For replacements, convert the input first
 			JsonPart::Replacement(ref ident, ref part) => {
-				let name = idents.get(ident).unwrap();
-				let jn = format!("jrepl_{}", c);
-				let jname = token::str_to_ident(&jn);
+				let name = match idents.get(ident) {
+					Some(name) => name,
+					None => {
+						cx.span_err(sp, &format!("failed to find '{}' in the supplied replacement args", ident));
+						return DummyResult::any(sp);
+					}
+				};
+
+				let jname = token::str_to_ident(&format!("jrepl_{}", tcount));
 				
 				match *part {
 					//For keys, emit the value surrounded by quotes
-					//This may no longer be needed when using serde
 					ReplacementPart::Key => {
 						stmts.push(quote_stmt!(cx, let $jname = {
 							let mut tmpstr = String::with_capacity(&$name.len() + 2);
 							tmpstr.push('\"');
-							let tmpjval = serde_json::to_string(&$name).unwrap();
-							tmpstr.push_str(&tmpjval);
+							tmpstr.push_str(&$name.to_string());
 							tmpstr.push('\"');
 
 							tmpstr
 						}).unwrap());
 					},
-					//For values, just emit the string value
+					//For values, emit as inline json if the first non quote char is an object, emit inline, otherwise emit the serde string
 					ReplacementPart::Value => {
-						stmts.push(quote_stmt!(cx, let $jname = serde_json::to_string(&$name).unwrap()).unwrap());
+						stmts.push(quote_stmt!(cx, let $jname = {
+							let tmpstr = serde_json::to_string(&$name).unwrap();
+							let len = tmpstr.len();
+
+							if len > 2 {
+								match tmpstr.chars().nth(1).unwrap() {
+									'{'|'[' => {
+										let tmpstr_chars = tmpstr.chars();
+										let mut parsed = String::with_capacity(len);
+
+										let mut i = 0;
+										let k = len - 1;
+
+										for c in tmpstr_chars {
+											if i > 0 && i < k {
+												match c {
+													'\\' => (),
+													_ => parsed.push(c)
+												}
+											}
+
+											i += 1;
+										}
+
+										parsed
+									},
+									_ => tmpstr
+								}
+							}
+							else {
+								tmpstr
+							}
+						}).unwrap());
 					}
 				}
 
@@ -90,7 +130,7 @@ pub fn expand_json(cx: &mut ExtCtxt, sp: Span, args: &[TokenTree]) -> Box<MacRes
 			}
 		}
 
-		c += 1;
+		tcount += 1;
 	};
 
 	stmts.push(quote_stmt!(cx, let mut jval = String::with_capacity(c)).unwrap());
@@ -129,17 +169,9 @@ pub fn sanitise(remainder: &[u8], current: &mut String) {
 	
 	match remainder[0] {
 		//Key
-		b'"' => {
-			let (rest, key) = take_while1(&remainder[1..], |c| c != b'"');
-			
-			current.push('"');
-			current.push_str(key);
-			current.push('"');
-			
-			sanitise(&rest[1..], current)
-		},
-		b'\'' => {
-			let (rest, key) = take_while1(&remainder[1..], |c| c != b'\'');
+		b'"'|b'\'' => {
+			let quote_byte = remainder[0];
+			let (rest, key) = take_while1(&remainder[1..], |c| c != quote_byte);
 			
 			current.push('"');
 			current.push_str(key);

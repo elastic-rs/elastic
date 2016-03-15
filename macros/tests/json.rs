@@ -1,9 +1,12 @@
-#![feature(plugin)]
+#![feature(plugin, custom_derive)]
+#![plugin(serde_macros)]
 #![plugin(elastic_macros)]
+
 extern crate serde;
 extern crate serde_json;
 extern crate elastic_macros;
 
+use serde::Serialize;
 use elastic_macros::json::*;
 
 #[test]
@@ -50,6 +53,56 @@ fn can_add_replacement_idents_to_json() {
 	});
 
 	assert_eq!("{\"a\":7,\"b\":{\"c\":\"some stuff\"},\"data\":[{\"id\":1,\"name\":\"stuff\"},{\"id\":2,\"name\":\"stuff\"}]}", j);
+}
+
+#[test]
+fn can_add_replacement_json_to_json() {
+	let a = 7;
+	let c = "some stuff";
+	let name = json!(a, {
+		a: $a
+	});
+
+	let j = json!(a, c, name, { 
+		a: $a, 
+		b: { c: $c },
+		data: [
+			{ id: 1, name: $name },
+			{ id: 2, name: $name }
+		]
+	});
+
+	assert_eq!("{\"a\":7,\"b\":{\"c\":\"some stuff\"},\"data\":[{\"id\":1,\"name\":{\"a\":7}},{\"id\":2,\"name\":{\"a\":7}}]}", j);
+}
+
+#[test]
+fn can_add_replacement_serde_to_json() {
+	#[derive(Serialize)]
+	struct MyStruct {
+		pub a: usize
+	}
+	impl ToString for MyStruct {
+		fn to_string(&self) -> String {
+			String::from("")
+		}
+	}
+
+	let a = 7;
+	let c = "some stuff";
+	let name = MyStruct {
+		a: 7
+	};
+
+	let j = json!(a, c, name, { 
+		a: $a, 
+		b: { c: $c },
+		data: [
+			{ id: 1, name: $name },
+			{ id: 2, name: $name }
+		]
+	});
+
+	assert_eq!("{\"a\":7,\"b\":{\"c\":\"some stuff\"},\"data\":[{\"id\":1,\"name\":{\"a\":7}},{\"id\":2,\"name\":{\"a\":7}}]}", j);
 }
 
 #[test]

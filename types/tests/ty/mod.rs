@@ -114,29 +114,20 @@ fn serialise_mapping_type() {
 	}
 	let ser = String::from_utf8(writer).unwrap();
 
-	//TODO: This is actually incorrect. Needs to wrap in 'properties' object
-	let expected = json!({
-		"my_date1":{
-			"type":"date",
-			"format":"basic_date_time"
-		},
-		"my_date2":{
-			"type":"date",
-			"boost":1.01,
-			"doc_values":true,
-			"include_in_all":false,
-			"index":"no",
-			"store":true,
-			"format":"epoch_millis",
-			"ignore_malformed":true,
-			"null_value":"0",
-			"precision_step":6
-		},
-		"my_string":{
-			"type":"string"
-		},
-		"my_num":{
-			"type":"object"
+	let date2_map = mydatemapping_json();
+	let expected = json!(date2_map, {
+		"properties": {
+			"my_date1":{
+				"type":"date",
+				"format":"basic_date_time"
+			},
+			"my_date2": $date2_map,
+			"my_string":{
+				"type":"string"
+			},
+			"my_num":{
+				"type":"object"
+			}
 		}
 	});
 
