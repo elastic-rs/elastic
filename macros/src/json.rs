@@ -87,76 +87,78 @@ fn expand_repl(cx: &mut ExtCtxt, sp: Span, json: &str, repl_args: &BTreeMap<Stri
 }
 
 fn expand_repl_lit(cx: &mut ExtCtxt, stmts: &mut Vec<Stmt>, push_stmts: &mut Vec<Stmt>, repl_count: usize, repl: &str) -> Result<(), String> {
-	let jname = token::str_to_ident(&format!("jlit_{}", repl_count));
+	let arg_key = token::str_to_ident(&format!("jlit_{}", repl_count));
 	let len = repl.len();
 
-	stmts.push(quote_stmt!(cx, let $jname = $repl).unwrap());
+	stmts.push(quote_stmt!(cx, let $arg_key = $repl).unwrap());
 	stmts.push(quote_stmt!(cx, c += $len).unwrap());
 
-	push_stmts.push(quote_stmt!(cx, jval.push_str($jname)).unwrap());
+	push_stmts.push(quote_stmt!(cx, jval.push_str($arg_key)).unwrap());
 
 	Ok(())
 }
 
 fn expand_repl_arg(cx: &mut ExtCtxt, stmts: &mut Vec<Stmt>, push_stmts: &mut Vec<Stmt>, repl_count: usize, repl_args: &BTreeMap<String, Ident>, ident: &str, part: &ReplacementPart) -> Result<(), String> {
-	let name = try!(repl_args.get(ident).ok_or(format!("failed to find '{}' in the supplied replacement args", ident)));
-	let jname = token::str_to_ident(&format!("jrepl_{}", repl_count));
+	let arg_val = try!(repl_args.get(ident).ok_or(format!("failed to find '{}' in the supplied replacement args", ident)));
+	let arg_key = token::str_to_ident(&format!("jrepl_{}", repl_count));
 
 	match *part {
-		//For keys, emit the value surrounded by quotes
-		ReplacementPart::Key => {
-			stmts.push(quote_stmt!(cx, let $jname = {
-				let mut tmpstr = String::with_capacity(&$name.len() + 2);
-				tmpstr.push('\"');
-				tmpstr.push_str(&$name.to_string());
-				tmpstr.push('\"');
-				tmpstr
-			}).unwrap());
-		},
-		//For values, emit as inline json if the first non quote char is an object, emit inline, otherwise emit the serde string
-		ReplacementPart::Value => {
-			stmts.push(quote_stmt!(cx, let $jname = {
-				let tmpstr = serde_json::to_string(&$name).unwrap();
-				let len = tmpstr.len();
-				let mut chars = tmpstr.chars();
-
-				if len > 2 {
-					let mut parsed = String::with_capacity(len);
-					let char_quote = chars.next().unwrap();
-					let char_obj = chars.next().unwrap();
-
-					match char_obj {
-						'{'|'[' => {
-							parsed.push(char_obj);
-							chars.next();
-							for c in chars {
-								match c {
-									'\\' => (),
-									_ => parsed.push(c)
-								}
-							}
-							let _ = parsed.pop();
-							parsed
-						},
-						_ => {
-							parsed.push(char_quote);
-							parsed.push(char_obj);
-							parsed.push_str(chars.as_str());
-							parsed
-						}
-					}
-				}
-				else {
-				    String::from(chars.as_str())
-				}
-			}).unwrap());
-		}
+		ReplacementPart::Key => stmts.push(expand_repl_key(cx, arg_key, *arg_val).unwrap()),
+		ReplacementPart::Value => stmts.push(expand_repl_value(cx, arg_key, *arg_val).unwrap())
 	}
 
-	stmts.push(quote_stmt!(cx, c += $jname.len()).unwrap());
-	push_stmts.push(quote_stmt!(cx, jval.push_str(&$jname)).unwrap());
+	stmts.push(quote_stmt!(cx, c += $arg_key.len()).unwrap());
+	push_stmts.push(quote_stmt!(cx, jval.push_str(&$arg_key)).unwrap());
 
 	Ok(())
+}
+
+fn expand_repl_key(cx: &mut ExtCtxt, arg_key: Ident, arg_val: Ident) -> Option<Stmt> {
+	quote_stmt!(cx, let $arg_key = {
+		let mut tmpstr = String::with_capacity(&$arg_val.len() + 2);
+		tmpstr.push('\"');
+		tmpstr.push_str(&$arg_val.to_string());
+		tmpstr.push('\"');
+		tmpstr
+	})
+}
+
+fn expand_repl_value(cx: &mut ExtCtxt, arg_key: Ident, arg_val: Ident) -> Option<Stmt> {
+	quote_stmt!(cx, let $arg_key = {
+		let tmpstr = serde_json::to_string(&$arg_val).unwrap();
+		let len = tmpstr.len();
+		let mut chars = tmpstr.chars();
+
+		if len > 2 {
+			let mut parsed = String::with_capacity(len);
+			let char_quote = chars.next().unwrap();
+			let char_obj = chars.next().unwrap();
+
+			match char_obj {
+				'{'|'[' => {
+					parsed.push(char_obj);
+					chars.next();
+					for c in chars {
+						match c {
+							'\\' => (),
+							_ => parsed.push(c)
+						}
+					}
+					let _ = parsed.pop();
+					parsed
+				},
+				_ => {
+					parsed.push(char_quote);
+					parsed.push(char_obj);
+					parsed.push_str(chars.as_str());
+					parsed
+				}
+			}
+		}
+		else {
+		    String::from(chars.as_str())
+		}
+	})
 }
 
 #[derive(Debug, PartialEq)]
@@ -169,15 +171,6 @@ pub enum JsonPart {
 pub enum ReplacementPart {
 	Key,
 	Value
-}
-
-impl ToString for JsonPart {
-	fn to_string(&self) -> String {
-		match *self {
-			JsonPart::Literal(ref s) => 		s.clone(),
-			JsonPart::Replacement(ref s, _) => 	s.clone()
-		}
-	}
 }
 
 //TODO: Should take json state. Don't check for special values if parsing key
