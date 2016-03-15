@@ -318,38 +318,104 @@ fn parse_repl_obj_json_med(b: &mut Bencher) {
 	let filter = "filter";
 
 	let qry = json!(query, filtered, filter, dist, lat, lon, {
-		$filtered: {
-			$query: {
-				match_all: {}
-			},
-			$filter: {
-				geo_distance: {
-					distance: $dist,
-					location: {
-						lat: $lat,
-						lon: $lon
+		$query: {
+			$filtered: {
+				$filtered: {
+					query: {
+						match_all: {}
+					},
+					$filter: {
+						geo_distance: {
+							distance: $dist,
+							location: {
+								lat: $lat,
+								lon: $lon
+							}
+						}
 					}
 				}
 			}
 		}
 	});
 
-	let fltr = json!(dist, lat, lon, {
-		geo_distance: {
-			distance: $dist,
-			location: {
-				lat: $lat,
-				lon: $lon
+	b.iter(|| {
+		json!(qry, query, filtered, filter, dist, lat, lon, {
+			$query: {
+				$filtered: {
+					$query: $qry,
+					$filter: {
+						geo_distance: {
+							distance: $dist,
+							location: {
+								lat: $lat,
+								lon: $lon
+							}
+						}
+					}
+				}
+			}
+		})
+	});
+}
+
+#[bench]
+fn parse_repl_obj_json_lrg(b: &mut Bencher) {
+	let dist = "20km";
+	let lat = 37.776;
+	let lon = -122.41;
+
+	let query = "query";
+	let filtered = "filtered";
+	let filter = "filter";
+
+	let qry = json!(query, filtered, filter, dist, lat, lon, {
+		$filtered: {
+			$filtered: {
+				$query: {
+					$filtered: {
+						$filtered: {
+							$query: {
+								match_all: {}
+							},
+							$filter: {
+								geo_distance: {
+									distance: $dist,
+									location: {
+										lat: $lat,
+										lon: $lon
+									}
+								}
+							}
+						}
+					}
+				},
+				$filter: {
+					geo_distance: {
+						distance: $dist,
+						location: {
+							lat: $lat,
+							lon: $lon
+						}
+					}
+				}
 			}
 		}
 	});
 
 	b.iter(|| {
-		json!(qry, fltr, query, filtered, filter, dist, lat, lon, {
+		json!(qry, query, filtered, filter, dist, lat, lon, {
 			$query: {
 				$filtered: {
 					$query: $qry,
-					$filter: $fltr
+					$filter: {
+						geo_distance: {
+							distance: $dist,
+							location: {
+								lat: $lat,
+								lon: $lon
+							}
+						}
+					}
 				}
 			}
 		})
