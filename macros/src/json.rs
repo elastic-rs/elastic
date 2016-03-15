@@ -10,10 +10,6 @@ use syntax::ext::build::AstBuilder;
 use ::parse::*;
 
 //TODO: Clean this up, it's an awful macro in this state. Look at using serde_json for intermediate representation
-//If the macro returns a serde_json::Value, then it could be spliced in, possibly at the expense of performance
-//Also need to avoid unwrapping in here as it will cause panics
-//Return Result<Cow<str>, JsonParseError>
-//Internal parse errors should return span error
 pub fn expand_json(cx: &mut ExtCtxt, sp: Span, args: &[TokenTree]) -> Box<MacResult+'static> {
 	//Get idents first, separated by commas
 	//If none are found then we just continue on
@@ -92,34 +88,36 @@ pub fn expand_json(cx: &mut ExtCtxt, sp: Span, args: &[TokenTree]) -> Box<MacRes
 						stmts.push(quote_stmt!(cx, let $jname = {
 							let tmpstr = serde_json::to_string(&$name).unwrap();
 							let len = tmpstr.len();
+							let mut chars = tmpstr.chars();
 
 							if len > 2 {
-								match tmpstr.chars().nth(1).unwrap() {
+								let mut parsed = String::with_capacity(len);
+								let char_quote = chars.next().unwrap();
+								let char_obj = chars.next().unwrap();
+
+								match char_obj {
 									'{'|'[' => {
-										let tmpstr_chars = tmpstr.chars();
-										let mut parsed = String::with_capacity(len);
-
-										let mut i = 0;
-										let k = len - 1;
-
-										for c in tmpstr_chars {
-											if i > 0 && i < k {
-												match c {
-													'\\' => (),
-													_ => parsed.push(c)
-												}
+										parsed.push(char_obj);
+										chars.next();
+										for c in chars {
+											match c {
+												'\\' => (),
+												_ => parsed.push(c)
 											}
-
-											i += 1;
 										}
-
+										let _ = parsed.pop();
 										parsed
 									},
-									_ => tmpstr
+									_ => {
+										parsed.push(char_quote);
+										parsed.push(char_obj);
+										parsed.push_str(chars.as_str());
+										parsed
+									}
 								}
 							}
 							else {
-								tmpstr
+							    String::from(chars.as_str())
 							}
 						}).unwrap());
 					}
