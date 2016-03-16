@@ -145,8 +145,8 @@ fn expand_repl_value(cx: &mut ExtCtxt, arg_key: Ident, arg_val: Ident) -> Option
 			let char_quote = chars.next().unwrap();
 			let char_obj = chars.next().unwrap();
 
-			match char_obj {
-				'{'|'[' => {
+			match (char_quote, char_obj) {
+				('"', '{')|('"', '[') => {
 					parsed.push(char_obj);
 					chars.next();
 					for c in chars {
@@ -276,11 +276,11 @@ pub fn parse_to_replacement(json: &[u8], parts: &mut Vec<JsonPart>) {
 			);
 
 			let (_, token) = take_first(a, |c|
-				c == b':' || 
-				c == b'"' ||
+				c == b':'  || 
+				c == b'"'  ||
 				c == b'\'' ||
-				c == b',' ||
-				c == b'{' ||
+				c == b','  ||
+				c == b'{'  ||
 				c == b'['
 			);
 
