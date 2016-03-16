@@ -88,16 +88,19 @@ fn can_add_replacement_serde_to_json() {
 		a: 7
 	};
 
-	let j = json!(a, c, name, { 
+	let arr = vec![MyStruct { a: 1 }, MyStruct { a: 2 }];
+
+	let j = json!(a, c, name, arr, { 
 		a: $a, 
 		b: { c: $c },
 		data: [
 			{ id: 1, name: $name },
 			{ id: 2, name: $name }
-		]
+		],
+		arr: $arr
 	});
 
-	assert_eq!("{\"a\":7,\"b\":{\"c\":\"some stuff\"},\"data\":[{\"id\":1,\"name\":{\"a\":7}},{\"id\":2,\"name\":{\"a\":7}}]}", j);
+	assert_eq!("{\"a\":7,\"b\":{\"c\":\"some stuff\"},\"data\":[{\"id\":1,\"name\":{\"a\":7}},{\"id\":2,\"name\":{\"a\":7}}],\"arr\":[{\"a\":1},{\"a\":2}]}", j);
 }
 
 #[test]
