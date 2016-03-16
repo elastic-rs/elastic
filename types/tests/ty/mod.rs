@@ -59,11 +59,13 @@ mod mytype_mapping {
 	impl <'a> Serialize for MyTypeMapping<'a> {
 		fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
 		where S: serde::Serializer {
-			serializer.serialize_struct("properties", MyTypeMappingVisitor::default())
+			serializer.serialize_struct("mytype", MyTypeMappingVisitor::default())
 		}
 	}
 
 	//Define a visitor for our mapping
+	//Serialises "properties": { ... }
+	//TODO: Tidy this up. Remove unnecessary bits
 	struct MyTypeMappingVisitor<'a> { 
 		data: Cow<'a, MyType>
 	}
@@ -89,8 +91,50 @@ mod mytype_mapping {
 	impl <'a> serde::ser::MapVisitor for MyTypeMappingVisitor<'a> {
 		fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
 		where S: serde::Serializer {
+			try!(serializer.serialize_struct_elt("properties", MyTypeProperties::new(&self.data)));
+
+			Ok(None)
+		}
+	}
+
+	//Serialises: "...": { ... }
+	struct MyTypeProperties<'a> { 
+		data: Cow<'a, MyType>
+	}
+	impl <'a> MyTypeProperties<'a> {
+		fn new(data: &'a MyType) -> Self {
+			MyTypeProperties {
+				data: Cow::Borrowed(data)
+			}
+		}
+	}
+
+	impl <'a> serde::Serialize for MyTypeProperties<'a> {
+		fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+		where S: serde::Serializer {
+			serializer.serialize_struct("properties", MyTypePropertiesVisitor::new(&self.data))
+		}
+	}
+
+	//Serialises "...": { "prop1", ... }
+	struct MyTypePropertiesVisitor<'a> { 
+		data: Cow<'a, MyType>
+	}
+	impl <'a> MyTypePropertiesVisitor<'a> {
+		fn new(data: &'a MyType) -> Self {
+			MyTypePropertiesVisitor {
+				data: Cow::Borrowed(data)
+			}
+		}
+	}
+
+	//Derive serialisation for our visitor
+	impl <'a> serde::ser::MapVisitor for MyTypePropertiesVisitor<'a> {
+		fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
+		where S: serde::Serializer {
 			//Dispatch serialisation of the mappable properties
 			//Needs to iterate over each property and map
+			//The names need to come from serde fetching attribute values
 			try!(DataMapper::map("my_date1", &self.data.my_date1, serializer));
 			try!(DataMapper::map("my_date2", &self.data.my_date2, serializer));
 			try!(DataMapper::map("my_string", &self.data.my_string, serializer));
