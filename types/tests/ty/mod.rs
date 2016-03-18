@@ -65,7 +65,6 @@ mod mytype_mapping {
 
 	//Define a visitor for our mapping
 	//Serialises "properties": { ... }
-	//TODO: Tidy this up. Remove unnecessary bits
 	struct MyTypeMappingVisitor<'a> { 
 		data: Cow<'a, MyType>
 	}
@@ -97,6 +96,7 @@ mod mytype_mapping {
 		}
 	}
 
+	//TODO: Move this to main crate?
 	//Serialises: "...": { ... }
 	struct MyTypeProperties<'a> { 
 		data: Cow<'a, MyType>

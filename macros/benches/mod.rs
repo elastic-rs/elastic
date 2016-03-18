@@ -288,21 +288,8 @@ fn parse_repl_obj_json_sml(b: &mut Bencher) {
 	});
 
 	b.iter(|| {
-		json!(qry, query, filtered, filter, dist, lat, lon, {
-			$query: {
-				$filtered: {
-					$query: $qry,
-					$filter: {
-						geo_distance: {
-							distance: $dist,
-							location: {
-								lat: $lat,
-								lon: $lon
-							}
-						}
-					}
-				}
-			}
+		json!(qry, query {
+			$query: $qry
 		})
 	});
 }
@@ -318,20 +305,31 @@ fn parse_repl_obj_json_med(b: &mut Bencher) {
 	let filter = "filter";
 
 	let qry = json!(query, filtered, filter, dist, lat, lon, {
-		$query: {
-			$filtered: {
+		$filtered: {
+			$query: {
 				$filtered: {
-					query: {
-						match_all: {}
-					},
-					$filter: {
-						geo_distance: {
-							distance: $dist,
-							location: {
-								lat: $lat,
-								lon: $lon
+					$filtered: {
+						query: {
+							match_all: {}
+						},
+						$filter: {
+							geo_distance: {
+								distance: $dist,
+								location: {
+									lat: $lat,
+									lon: $lon
+								}
 							}
 						}
+					}
+				}
+			},
+			$filter: {
+				geo_distance: {
+					distance: $dist,
+					location: {
+						lat: $lat,
+						lon: $lon
 					}
 				}
 			}
@@ -339,21 +337,8 @@ fn parse_repl_obj_json_med(b: &mut Bencher) {
 	});
 
 	b.iter(|| {
-		json!(qry, query, filtered, filter, dist, lat, lon, {
-			$query: {
-				$filtered: {
-					$query: $qry,
-					$filter: {
-						geo_distance: {
-							distance: $dist,
-							location: {
-								lat: $lat,
-								lon: $lon
-							}
-						}
-					}
-				}
-			}
+		json!(qry, query {
+			$query: $qry
 		})
 	});
 }
@@ -370,32 +355,45 @@ fn parse_repl_obj_json_lrg(b: &mut Bencher) {
 
 	let qry = json!(query, filtered, filter, dist, lat, lon, {
 		$filtered: {
-			$filtered: {
-				$query: {
+			$query: {
+				$filtered: {
 					$filtered: {
-						$filtered: {
-							$query: {
-								match_all: {}
-							},
-							$filter: {
-								geo_distance: {
-									distance: $dist,
-									location: {
-										lat: $lat,
-										lon: $lon
+						$query: {
+							$filtered: {
+								$filtered: {
+									$query: {
+										match_all: {}
+									},
+									$filter: {
+										geo_distance: {
+											distance: $dist,
+											location: {
+												lat: $lat,
+												lon: $lon
+											}
+										}
 									}
+								}
+							}
+						},
+						$filter: {
+							geo_distance: {
+								distance: $dist,
+								location: {
+									lat: $lat,
+									lon: $lon
 								}
 							}
 						}
 					}
-				},
-				$filter: {
-					geo_distance: {
-						distance: $dist,
-						location: {
-							lat: $lat,
-							lon: $lon
-						}
+				}
+			},
+			$filter: {
+				geo_distance: {
+					distance: $dist,
+					location: {
+						lat: $lat,
+						lon: $lon
 					}
 				}
 			}
@@ -403,21 +401,8 @@ fn parse_repl_obj_json_lrg(b: &mut Bencher) {
 	});
 
 	b.iter(|| {
-		json!(qry, query, filtered, filter, dist, lat, lon, {
-			$query: {
-				$filtered: {
-					$query: $qry,
-					$filter: {
-						geo_distance: {
-							distance: $dist,
-							location: {
-								lat: $lat,
-								lon: $lon
-							}
-						}
-					}
-				}
-			}
+		json!(qry, query {
+			$query: $qry
 		})
 	});
 }
