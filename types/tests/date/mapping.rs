@@ -15,7 +15,7 @@ fn serialise_mapping_default() {
 	let mapping = DefaultDateMapping::<BasicDateTime>::default();
 	let ser = serde_json::to_string(&mapping).unwrap();
 
-	let expected = json!({
+	let expected = json_str!({
 		"type": "date",
 		"format": "basic_date_time"
 	});

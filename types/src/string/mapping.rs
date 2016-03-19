@@ -8,7 +8,7 @@ use ::mapping::{ ElasticMapping, ElasticDataType, IndexAnalysis };
 
 /// A string format
 pub trait StringFormat 
-where Self: Default + Clone { }
+where Self: Default + Copy { }
 
 /// The base requirements for mapping a `string` type.
 /// 
@@ -161,12 +161,12 @@ pub trait ElasticStringType<T: ElasticMapping<F> + ElasticStringMapping<F>, F: S
 /// Default format for `string` types.
 /// 
 /// Currently, there's nothing here to use.
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default, Clone, Copy)]
 pub struct DefaultStringFormat;
 impl StringFormat for DefaultStringFormat { }
 
 /// Default mapping for `String`.
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default, Clone, Copy)]
 pub struct DefaultStringMapping<T: StringFormat = DefaultStringFormat> {
 	phantom: PhantomData<T>
 }

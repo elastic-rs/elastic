@@ -16,7 +16,7 @@ pub mod date_fixtures {
 	use elastic_types::date::prelude::*;
 
 	//A custom date mapping
-	#[derive(Default, Clone)]
+	#[derive(Default, Clone, Copy)]
 	pub struct MyDateMapping;
 	impl ElasticDateMapping<EpochMillis> for MyDateMapping {
 		fn boost() -> Option<f32> {
@@ -55,7 +55,7 @@ pub mod date_fixtures {
 	impl_date_mapping!(MyDateMapping, EpochMillis);
 
 	pub fn mydatemapping_json() -> String {
-		json!({
+		json_str!({
 			"type": "date",
 			"boost": 1.01,
 			"doc_values": true,
@@ -169,7 +169,7 @@ pub mod string_fixtures {
 	impl_string_mapping!(MyStringMapping, DefaultStringFormat);
 
 	pub fn mystringmapping_json() -> String {
-		json!({
+		json_str!({
 			"type": "string",
 			"boost": 1.01,
 			"doc_values": true,

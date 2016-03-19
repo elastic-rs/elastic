@@ -14,7 +14,7 @@ fn serialise_mapping_default() {
 	let mapping: DefaultStringMapping = DefaultStringMapping::default();
 	let ser = serde_json::to_string(&mapping).unwrap();
 
-	let expected = json!({
+	let expected = json_str!({
 		"type": "string"
 	});
 
@@ -45,16 +45,16 @@ fn serialise_mapping_field_data() {
 	.collect();
 
 	let expected_opts = vec![
-		json!({ "format": "disabled" }),
-		json!({ "loading": "lazy" }),
-		json!({
+		json_str!({ "format": "disabled" }),
+		json_str!({ "loading": "lazy" }),
+		json_str!({
 			"filter": {
 				"regex": {
 					"pattern": ".*"
 				}
 			}
 		}),
-		json!({
+		json_str!({
 			"loading": "lazy",
 			"filter": {
 				"regex": {
@@ -121,14 +121,14 @@ fn serialise_mapping_field_filter() {
 	.collect();
 
 	let expected_opts = vec![
-		json!({
+		json_str!({
 			"frequency": {
 				"min": 0.001,
 				"max": 0.1,
 				"min_segment_size": 500
 			}
 		}),
-		json!({
+		json_str!({
 			"regex": {
 				"pattern": "^#.*"
 			}
@@ -189,8 +189,8 @@ fn serialise_mapping_norms() {
 	.collect();
 
 	let expected_opts = vec![
-		json!({ "loading": "eager" }),
-		json!({ "enabled": false })
+		json_str!({ "loading": "eager" }),
+		json_str!({ "enabled": false })
 	];
 
 	let mut success = true;

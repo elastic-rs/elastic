@@ -159,7 +159,7 @@ fn serialise_mapping_type() {
 	let ser = String::from_utf8(writer).unwrap();
 
 	let date2_map = mydatemapping_json();
-	let expected = json!(date2_map, {
+	let expected = json_str!(date2_map, {
 		"properties": {
 			"my_date1":{
 				"type":"date",
