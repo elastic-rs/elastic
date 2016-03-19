@@ -2,6 +2,7 @@
 //! 
 //! Contains implementations of `emit` for the `libsyntax` crate and other `gen::rust` modules.
 
+use std::io::Write;
 use syntax::ext::base::ExtCtxt;
 use syntax::ext::quote::rt::ToTokens;
 use syntax::print::pprust;
@@ -118,8 +119,23 @@ impl <'a> RustEmitter<'a> {
 
 impl <'a> Emitter<'a> for RustEmitter<'a> {
 	type Ctxt = ExtCtxt<'a>;
+	type CtxtBrw = &'a ExtCtxt<'a>;
+	type Error = EmitError;
 	
-	fn get_cx(&'a self) -> &'a Self::Ctxt {
+	fn get_cx(&'a self) -> &'a ExtCtxt<'a> {
 		&self.cx
+	}
+
+	fn emit<Emittable, EmError, W>(&'a self, e: &'a Emittable, writer: &'a mut W) -> Result<(), Self::Error> where 
+		Emittable: Emit<Self::CtxtBrw, EmError>, 
+		EmError: Into<EmitError>, 
+		W: Write {
+			let cx = self.get_cx();
+			emit!(cx, e, writer)
+	}
+
+	/// Emit a string
+	fn emit_str<W>(&self, e: &str, writer: &'a mut W) -> Result<(), Self::Error> where W: Write {
+		emit_str!(e, writer)
 	}
 }
