@@ -155,7 +155,7 @@ use rustc_plugin::Registry;
 #[doc(hidden)]
 #[plugin_registrar]
 pub fn plugin_registrar(reg: &mut Registry) {
-	reg.register_macro("json", json::expand_json);
+	reg.register_macro("json_str", json::expand_json);
 
 	#[cfg(feature = "types")]
 	reg.register_macro("date_fmt", types::expand_date_fmt);

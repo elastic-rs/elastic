@@ -11,7 +11,7 @@ use elastic_macros::json::*;
 
 #[test]
 fn can_generate_json() {
-	let j = json!({ 
+	let j = json_str!({ 
 		"a": 7, 
 		"b": { "c": "some stuff" },
 		"data": [
@@ -25,7 +25,7 @@ fn can_generate_json() {
 
 #[test]
 fn can_generate_quasi_json() {
-	let j = json!({ 
+	let j = json_str!({ 
 		a: 7, 
 		b: { c: "some stuff" },
 		data: [
@@ -43,7 +43,7 @@ fn can_add_replacement_idents_to_json() {
 	let c = "some stuff";
 	let name = "stuff";
 
-	let j = json!(a, c, name, { 
+	let j = json_str!(a, c, name, { 
 		a: $a, 
 		b: { c: $c },
 		data: [
@@ -59,11 +59,11 @@ fn can_add_replacement_idents_to_json() {
 fn can_add_replacement_json_to_json() {
 	let a = 7;
 	let c = "some stuff";
-	let name = json!(a, {
+	let name = json_str!(a, {
 		a: $a
 	});
 
-	let j = json!(a, c, name, { 
+	let j = json_str!(a, c, name, { 
 		a: $a, 
 		b: { c: $c },
 		data: [
@@ -90,7 +90,7 @@ fn can_add_replacement_serde_to_json() {
 
 	let arr = vec![MyStruct { a: 1 }, MyStruct { a: 2 }];
 
-	let j = json!(a, c, name, arr, { 
+	let j = json_str!(a, c, name, arr, { 
 		a: $a, 
 		b: { c: $c },
 		data: [
