@@ -43,7 +43,7 @@ extern crate elastic_hyper as elastic;
 let mut client = hyper::Client::new();
 let res = elastic::search::post_index_type(&mut client, 
 	"http://localhost:9200", "bench_index", "docs", 
-	json!({
+	json_str!({
 		query: {
 			query_string: {
 				default_field: "title",
