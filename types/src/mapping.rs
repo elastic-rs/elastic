@@ -1,4 +1,6 @@
 //! Implementation for data type mappings.
+//! 
+//! There are a few traits 
 
 pub mod prelude {
 	//! Includes mapping types for all data types.
@@ -23,6 +25,29 @@ use serde;
 
 /// The base representation of an Elasticsearch data type.
 /// 
+/// 
+/// `ElasticDataType` is the main `trait` you need to care about when building your own Elasticsearch types.
+/// Each type has two generic arguments that help define its mapping:
+/// 
+/// - A mapping type, which implements `ElasticMapping`
+/// - A format type, which is usually `()`. Types with multiple formats, like `DateTime`, can use the format in the type definition.
+/// 
+/// ### Automatic
+/// 
+/// The `elastic_macros` crate provides a plugin for you to automatically derive `ElasticDataType`:
+/// 
+/// ```
+/// //TODO: Implement this
+/// ```
+/// 
+/// ### Manual
+/// 
+/// You can also derive `ElasticDataType` manually to get more control over the structure of your type mapping.
+/// 
+/// ```
+/// //TODO: Implement this
+/// ```
+/// 
 /// # Links
 /// 
 /// - [Elasticsearch docs](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-types.html)
@@ -32,6 +57,7 @@ where Self : serde::Serialize { }
 /// The base requirements for mapping an Elasticsearch data type.
 /// 
 /// Each type has its own implementing structures with extra type-specific mapping parameters.
+/// If you're building your own Elasticsearch types, see `TypeMapping`, which is a specialization of `ElasticMapping<()>`.
 pub trait ElasticMapping<F>
 where Self: Default + Clone + serde::Serialize {
 	#[doc(hidden)]
@@ -48,12 +74,14 @@ where Self: Default + Clone + serde::Serialize {
 	}
 
 	/// Get the type name for this mapping, like `date` or `string`.
+	/// 
+	/// For user-defined types, this is the name of the type in Elasticsearch, like `my_type`.
 	fn data_type() -> &'static str {
 		""
 	}
 }
 
-/// A mapping implementation for a non-core type, or any where nobody cares about how it's mapped.
+/// A mapping implementation for a non-core type, or any where it's ok for Elasticsearch to infer the mapping at index-time.
 #[derive(Debug, PartialEq, Default, Clone)]
 pub struct NullMapping;
 impl ElasticMapping<()> for NullMapping {
@@ -135,6 +163,14 @@ impl <T: ElasticMapping<()>> serde::ser::MapVisitor for ElasticMappingVisitor<T>
 
 //TODO: Rename ElasticTypeMapping
 /// The base requirements for mapping a user-defined type.
+/// 
+/// # Examples
+/// 
+/// Define a custom type mapping:
+/// 
+/// ```
+/// //TODO: Implement this
+/// ```
 pub trait TypeMapping<'a, T>
 where Self: ElasticMapping<()> + Default + Clone + serde::Serialize {
 	#[doc(hidden)]
@@ -154,6 +190,8 @@ where Self: Default + serde::ser::MapVisitor {
 }
 
 /// Helper for mapping data type fields.
+/// 
+/// The mapping is inferred from the given `ElasticDataType`.
 #[derive(Default)]
 pub struct DataMapper<T: ElasticDataType<M, F>, M: ElasticMapping<F> = NullMapping, F = ()> {
 	phantom_m: PhantomData<M>,
@@ -162,6 +200,8 @@ pub struct DataMapper<T: ElasticDataType<M, F>, M: ElasticMapping<F> = NullMappi
 }
 impl <T: ElasticDataType<M, F>, M: ElasticMapping<F>, F> DataMapper<T, M, F> {
 	/// Infer the mapping of a data type and map using its `Visitor`.
+	/// 
+	/// The mapping is emitted as a json field, where the key is the name of the field on the type.
 	pub fn map<S>(key: &'static str, _: &T, serializer: &mut S) -> Result<(), S::Error> 
 	where S: serde::Serializer {
 		serializer.serialize_struct_elt(key, M::default())
@@ -169,6 +209,8 @@ impl <T: ElasticDataType<M, F>, M: ElasticMapping<F>, F> DataMapper<T, M, F> {
 }
 
 /// Helper for mapping user-defined types.
+/// 
+/// This mapper is designed to take a given user-defined type and pass it around to various visitors to map fields.
 pub struct TypeMapper<'a, T: ElasticDataType<M, ()>, M: TypeMapping<'a, T>> {
 	phantom_a: PhantomData<&'a ()>,
 	phantom_m: PhantomData<M>,
@@ -176,6 +218,8 @@ pub struct TypeMapper<'a, T: ElasticDataType<M, ()>, M: TypeMapping<'a, T>> {
 }
 impl <'a, T: ElasticDataType<M, ()>, M: TypeMapping<'a, T>> TypeMapper<'a, T, M> {
 	/// Map a user-defined type.
+	/// 
+	/// The mapping is emitted as a json field, where the key is the name of the type, as defined by `M::data_type()`.
 	pub fn map<S>(t: &'a T, serializer: &mut S) -> Result<(), S::Error> 
 	where S: serde::Serializer {
 		serializer.serialize_struct(

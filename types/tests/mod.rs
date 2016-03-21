@@ -53,21 +53,6 @@ pub mod date_fixtures {
 	}
 
 	impl_date_mapping!(MyDateMapping, EpochMillis);
-
-	pub fn mydatemapping_json() -> String {
-		json_str!({
-			"type": "date",
-			"boost": 1.01,
-			"doc_values": true,
-			"include_in_all": false,
-			"index": "no",
-			"store": true,
-			"format": "epoch_millis",
-			"ignore_malformed": true,
-			"null_value": "0",
-			"precision_step": 6
-		})
-	}
 }
 
 pub mod string_fixtures {
@@ -167,54 +152,6 @@ pub mod string_fixtures {
 	}
 
 	impl_string_mapping!(MyStringMapping, DefaultStringFormat);
-
-	pub fn mystringmapping_json() -> String {
-		json_str!({
-			"type": "string",
-			"boost": 1.01,
-			"doc_values": true,
-			"include_in_all": false,
-			"index": "no",
-			"store": true,
-			"analyzer": "my_analyzer",
-			"fields": {
-				"bm25_field": {
-					"analyzer": "my_analyzer",
-					"fielddata": {
-						"format": "disabled"
-					},
-					"ignore_above": 50,
-					"index_options": "docs",
-					"norms": {
-						"enabled": false
-					},
-					"null_value": "my default value",
-					"position_increment_gap": 8,
-					"search_analyzer": "my_search_analyzer",
-					"search_quote_analyzer": "my_quote_search_analyzer",
-					"similarity": "BM25",
-					"term_vector": "no"
-				},
-				"raw": {
-					"analyzer": "my_analyzer"
-				}
-			},
-			"fielddata": {
-				"format": "disabled"
-			},
-			"ignore_above": 50,
-			"index_options": "docs",
-			"norms": {
-				"enabled": false
-			},
-			"null_value": "my default value",
-			"position_increment_gap": 8,
-			"search_analyzer": "my_search_analyzer",
-			"search_quote_analyzer": "my_quote_search_analyzer",
-			"similarity": "my_similarity",
-			"term_vector": "no"
-		})
-	}
 }
 
 pub mod ty;

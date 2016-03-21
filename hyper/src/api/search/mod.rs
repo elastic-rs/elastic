@@ -7,13 +7,13 @@ use hyper::header::{Headers, ContentType};
 use hyper::client::response::Response;
 use hyper::error::Result;
 
-pub fn post<'a>(client: &'a mut Client, base: &'a str, body: String) -> Result<Response> {
+pub fn post<'a, T: Into<String>>(client: &'a mut Client, base: &'a str, body: T) -> Result<Response> {
     let mut url_fmtd = String::with_capacity(base.len() + 8);
     url_fmtd.push_str(base);
     url_fmtd.push_str("/_search");
     let mut headers = Headers::new();
     headers.set(ContentType::json());
-    let res = client.post(&url_fmtd).headers(headers).body(&body);
+    let res = client.post(&url_fmtd).headers(headers).body(body.into());
     res.send()
 }
 pub fn get_index<'a>(client: &'a mut Client, base: &'a str, index: &'a str) -> Result<Response> {

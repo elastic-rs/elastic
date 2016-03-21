@@ -5,6 +5,14 @@
 //! Types within this crate are self-contained and handle their own serialisation/deserialisation requirements.
 //! Each type also supplies a `struct` for its [Put Mapping API](https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-put-mapping.html) properties.
 //! 
+//! # Examples
+//! 
+//! Derive `ElasticType` on your Elasticsearch-mappable types:
+//! 
+//! ```
+//! //TODO: Implement this
+//! ```
+//! 
 //! # Links
 //! - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/guide/current/mapping.html)
 //! - [Github](https://github.com/KodrAus/elasticsearch-rs)

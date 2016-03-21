@@ -26,7 +26,51 @@ fn serialise_mapping_custom() {
 	let mapping = MyStringMapping;
 	let ser = serde_json::to_string(&mapping).unwrap();
 
-	let expected = mystringmapping_json();
+	let expected = json_str!({
+		"type": "string",
+		"boost": 1.01,
+		"doc_values": true,
+		"include_in_all": false,
+		"index": "no",
+		"store": true,
+		"analyzer": "my_analyzer",
+		"fields": {
+			"bm25_field": {
+				"analyzer": "my_analyzer",
+				"fielddata": {
+					"format": "disabled"
+				},
+				"ignore_above": 50,
+				"index_options": "docs",
+				"norms": {
+					"enabled": false
+				},
+				"null_value": "my default value",
+				"position_increment_gap": 8,
+				"search_analyzer": "my_search_analyzer",
+				"search_quote_analyzer": "my_quote_search_analyzer",
+				"similarity": "BM25",
+				"term_vector": "no"
+			},
+			"raw": {
+				"analyzer": "my_analyzer"
+			}
+		},
+		"fielddata": {
+			"format": "disabled"
+		},
+		"ignore_above": 50,
+		"index_options": "docs",
+		"norms": {
+			"enabled": false
+		},
+		"null_value": "my default value",
+		"position_increment_gap": 8,
+		"search_analyzer": "my_search_analyzer",
+		"search_quote_analyzer": "my_quote_search_analyzer",
+		"similarity": "my_similarity",
+		"term_vector": "no"
+	});
 
 	assert_eq!(expected, ser);
 }
@@ -62,7 +106,7 @@ fn serialise_mapping_field_data() {
 				}
 			}
 		}),
-		String::from("")
+		""
 	];
 
 	let mut success = true;

@@ -4,13 +4,13 @@
 //! 
 //! # Json Macros
 //! 
-//! The `json!` macro will take an inline token tree and serialise it as json:
+//! The `json_str!` macro will take an inline token tree and return an `str` literal:
 //! 
 //! ```
 //! # #![feature(plugin)]
 //! # #![plugin(elastic_macros)]
 //! # fn main() {
-//! let json = json!({
+//! let json = json_str!({
 //! 	"query": {
 //! 		"filtered": {
 //! 			"query": {
@@ -37,7 +37,7 @@
 //! # #![feature(plugin)]
 //! # #![plugin(elastic_macros)]
 //! # fn main() {
-//! let json = json!({
+//! let json = json_str!({
 //! 	query: {
 //! 		filtered: {
 //! 			query: {
@@ -58,37 +58,7 @@
 //! # }
 //! ```
 //! 
-//! Json values can be spliced in to the result if they implement `serde::Serialize`:
-//! 
-//! ```
-//! # #![feature(plugin)]
-//! # #![plugin(elastic_macros)]
-//! # fn main() {
-//! let query = "match_all";
-//! let dist = "20km";
-//! let lat = 37.776;
-//! let lon = -122.41;
-//! 
-//! let json = json!(query, dist, lat, lon {
-//! 	query: {
-//! 		filtered: {
-//! 			query: {
-//! 				$query: {}
-//! 			},
-//! 			filter: {
-//! 				geo_distance: {
-//! 					distance: $dist,
-//! 					location: {
-//! 						lat: $lat,
-//! 						lon: $lon
-//! 					}
-//! 				}
-//! 			}
-//! 		}
-//! 	}
-//! });
-//! # }
-//! ```
+//! For values that can't be determined at compile-time, use [json_macros](https://github.com/tomjakubowski/json_macros) instead.
 //! 
 //! # Types Macros
 //! 
@@ -100,6 +70,11 @@
 //! version = "*"
 //! features = [ "types" ]
 //! ```
+//! 
+//! ## Elastic Types
+//! 
+//! Derive `ElasticType` to implement the required `trait`s for mapping your Elasticsearch types.
+//! _TODO: Fill this section out_
 //! 
 //! ## Date Formatting
 //! 
