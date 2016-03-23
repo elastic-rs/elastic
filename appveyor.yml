@@ -12,11 +12,11 @@ install:
   - cargo -vV
 build: false
 test_script:
-  - ps: cd types
+  - cd types
   - cargo test --verbose
-  - ps: cd ../codegen
+  - cd ../codegen
   - cargo test --verbose
-  - ps: cd ../hyper
+  - cd ../hyper
   - cargo build --verbose
-  - ps: cd codegen
+  - cd codegen
   - cargo build --verbose
