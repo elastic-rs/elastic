@@ -6,10 +6,6 @@ use serde;
 use serde::{ Serializer, Serialize };
 use ::mapping::{ ElasticMapping, ElasticDataType, IndexAnalysis };
 
-/// A string format
-pub trait StringFormat 
-where Self: Default + Copy { }
-
 /// The base requirements for mapping a `string` type.
 /// 
 /// Custom mappings can be defined by implementing `ElasticStringMapping`.
@@ -27,7 +23,7 @@ where Self: Default + Copy { }
 ///
 /// #[derive(Debug, Clone, Default)]
 /// pub struct MyStringMapping;
-/// impl ElasticStringMapping<DefaultStringFormat> for MyStringMapping {
+/// impl ElasticStringMapping for MyStringMapping {
 /// 	//Overload the mapping functions here
 /// 	fn boost() -> Option<f32> {
 ///			Some(1.5)
@@ -35,8 +31,8 @@ where Self: Default + Copy { }
 /// }
 /// 
 /// //We also need to implement the base `ElasticMapping` and `serde::Serialize` for our custom mapping type
-/// impl ElasticMapping<DefaultStringFormat> for MyStringMapping {
-/// 	type Visitor = ElasticStringMappingVisitor<MyStringMapping, DefaultStringFormat>;
+/// impl ElasticMapping<()> for MyStringMapping {
+/// 	type Visitor = ElasticStringMappingVisitor<MyStringMapping>;
 /// 
 /// 	fn data_type() -> &'static str {
 /// 		"string"
@@ -51,8 +47,8 @@ where Self: Default + Copy { }
 /// }
 /// # }
 /// ```
-pub trait ElasticStringMapping<T: StringFormat = DefaultStringFormat>
-where Self : ElasticMapping<T> + Sized + Serialize + Default + Clone {
+pub trait ElasticStringMapping
+where Self : ElasticMapping<()> + Sized + Serialize + Default + Clone {
 	/// Field-level index time boosting. Accepts a floating point number, defaults to `1.0`.
 	fn boost() -> Option<f32> {
 		None
@@ -156,32 +152,22 @@ where Self : ElasticMapping<T> + Sized + Serialize + Default + Clone {
 }
 
 /// A Rust representation of an Elasticsearch `string`.
-pub trait ElasticStringType<T: ElasticMapping<F> + ElasticStringMapping<F>, F: StringFormat> where Self: Sized + ElasticDataType<T, F> { }
-
-/// Default format for `string` types.
-/// 
-/// Currently, there's nothing here to use.
-#[derive(Debug, Default, Clone, Copy)]
-pub struct DefaultStringFormat;
-impl StringFormat for DefaultStringFormat { }
+pub trait ElasticStringType<T: ElasticMapping<()> + ElasticStringMapping> where Self: Sized + ElasticDataType<T, ()> { }
 
 /// Default mapping for `String`.
 #[derive(Debug, Default, Clone, Copy)]
-pub struct DefaultStringMapping<T: StringFormat = DefaultStringFormat> {
-	phantom: PhantomData<T>
-}
-impl <T: StringFormat> ElasticStringMapping<T> for DefaultStringMapping<T> { }
+pub struct DefaultStringMapping;
+impl ElasticStringMapping for DefaultStringMapping { }
 
-impl_string_mapping!(DefaultStringMapping<T>);
+impl_string_mapping!(DefaultStringMapping);
 
 /// Base visitor for serialising string mappings.
 #[derive(Debug, PartialEq, Default)]
-pub struct ElasticStringMappingVisitor<T: ElasticStringMapping<F>, F: StringFormat> {
-	phantom_f: PhantomData<F>,
-	phantom_t: PhantomData<T>
+pub struct ElasticStringMappingVisitor<T: ElasticStringMapping> {
+	phantom: PhantomData<T>
 }
 
-impl <T: ElasticStringMapping<F>, F: StringFormat> serde::ser::MapVisitor for ElasticStringMappingVisitor<T, F> {
+impl <T: ElasticStringMapping> serde::ser::MapVisitor for ElasticStringMappingVisitor<T> {
 	#[cfg_attr(feature = "nightly-testing", allow(cyclomatic_complexity))]
 	fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
 	where S: serde::Serializer {

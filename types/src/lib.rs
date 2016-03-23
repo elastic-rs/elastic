@@ -28,9 +28,9 @@
 #![macro_use]
 #[macro_export]
 macro_rules! impl_string_mapping {
-	($t:ty, $f:ty) => (
-    	impl $crate::mapping::ElasticMapping<$f> for $t {
-			type Visitor = $crate::string::mapping::ElasticStringMappingVisitor<$t, $f>;
+    ($t:ty) => (
+    	impl $crate::mapping::ElasticMapping<()> for $t {
+			type Visitor = $crate::string::mapping::ElasticStringMappingVisitor<$t>;
 
 			fn data_type() -> &'static str {
 				"string"
@@ -38,22 +38,6 @@ macro_rules! impl_string_mapping {
 		}
 
 		impl serde::Serialize for $t {
-			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
-			where S: serde::Serializer {
-				serializer.serialize_struct("mapping", Self::get_visitor())
-			}
-		}
-    );
-    ($t:ty) => (
-    	impl <T: $crate::string::mapping::StringFormat> $crate::mapping::ElasticMapping<T> for $t {
-			type Visitor = $crate::string::mapping::ElasticStringMappingVisitor<$t, T>;
-
-			fn data_type() -> &'static str {
-				"string"
-			}
-		}
-
-		impl <T: $crate::string::mapping::StringFormat> serde::Serialize for $t {
 			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
 			where S: serde::Serializer {
 				serializer.serialize_struct("mapping", Self::get_visitor())

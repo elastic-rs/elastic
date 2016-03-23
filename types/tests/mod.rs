@@ -62,7 +62,7 @@ pub mod string_fixtures {
 
 	#[derive(Default, Clone)]
 	pub struct MyStringMapping;
-	impl ElasticStringMapping<DefaultStringFormat> for MyStringMapping { 
+	impl ElasticStringMapping for MyStringMapping { 
 		fn boost() -> Option<f32> {
 			Some(1.01)
 		}
@@ -151,7 +151,7 @@ pub mod string_fixtures {
 		}
 	}
 
-	impl_string_mapping!(MyStringMapping, DefaultStringFormat);
+	impl_string_mapping!(MyStringMapping);
 }
 
 pub mod ty;
