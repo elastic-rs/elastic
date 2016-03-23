@@ -16,3 +16,7 @@ test_script:
   - cargo test --verbose
   - ps: cd ../codegen
   - cargo test --verbose
+  - ps: cd ../hyper
+  - cargo build --verbose
+  - ps: cd codegen
+  - cargo build --verbose
