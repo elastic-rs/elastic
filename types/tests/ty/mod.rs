@@ -7,7 +7,7 @@ extern crate serde_json;
 extern crate elastic_types;
 
 use serde_json::ser::Serializer;
-use elastic_types::mapping::TypeMapper;
+use elastic_types::mapping::{ DataMapper, TypeMapper };
 use elastic_types::mapping::prelude::*;
 use elastic_types::date::prelude::*;
 use elastic_types::string::prelude::*;
@@ -22,7 +22,9 @@ struct MyType {
 	pub my_num: i32
 }
 
-//TODO: Derive this -----
+//TODO: Get this to work properly; TypeMapper should serialize { "properties": {} }
+//TODO: DataMapper should serialize { "type": "", "properties": {}}
+//TODO: Also needs to work for types within types
 mod mytype_mapping {
 	use std::marker::PhantomData;
 	use std::borrow::Cow;
@@ -32,109 +34,102 @@ mod mytype_mapping {
 	use elastic_types::mapping::prelude::*;
 	use super::MyType;
 
-	//Implement the base data type on our struct
-	impl <'a> ElasticDataType<MyTypeMapping<'a>, ()> for MyType { }
+	impl <'a> ElasticType<MyTypeMapping<'a>, ()> for MyType { }
 
-	//Define our custom mapping type for our struct
 	#[derive(Default, Clone)]
 	struct MyTypeMapping<'a> {
 		phantom: PhantomData<&'a ()>
 	}
 
-	//Implement the base mapping type for our mapping 
-	impl <'a> ElasticMapping<()> for MyTypeMapping<'a> {
-		type Visitor = MyTypeMappingVisitor<'a>;
+	impl <'a> ElasticTypeMapping<()> for MyTypeMapping<'a> {
+		type Visitor = MyTypeNestedMappingVisitor<'a>;
 
 		fn data_type() -> &'static str {
+			"nested"
+		}
+	}
+	impl <'a> ElasticUserTypeMapping<'a, MyType> for MyTypeMapping<'a> {
+		type Visitor = MyTypeMappingVisitor<'a>;
+		type PropertiesVisitor = MyTypePropertiesVisitor<'a>;
+
+		fn name() -> &'static str {
 			"mytype"
 		}
 	}
 
-	//Implement the type mapping type for our mapping
-	impl <'a> TypeMapping<'a, MyType> for MyTypeMapping<'a> {
-		type Visitor = MyTypeMappingVisitor<'a>;
-	}
-
-	//Implement serialisation for our mapping
-	impl <'a> Serialize for MyTypeMapping<'a> {
+	impl <'a> serde::Serialize for MyTypeMapping<'a> {
 		fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
 		where S: serde::Serializer {
-			serializer.serialize_struct("mytype", MyTypeMappingVisitor::default())
+			serializer.serialize_struct(Self::name(), MyTypeNestedMappingVisitor::default())
 		}
 	}
 
-	//Define a visitor for our mapping
-	//Serialises "properties": { ... }
-	struct MyTypeMappingVisitor<'a> { 
+	struct MyTypeNestedMappingVisitor<'a> { 
 		data: Cow<'a, MyType>
 	}
 
-	//Implement the base type mapping visitor for our visitor
-	impl <'a> TypeMappingVisitor<'a, MyType> for MyTypeMappingVisitor<'a> {
+	impl <'a> MyTypeNestedMappingVisitor<'a> {
 		fn new(data: &'a MyType) -> Self {
-			MyTypeMappingVisitor {
+			MyTypeNestedMappingVisitor {
 				data: Cow::Borrowed(data)
 			}
 		}
 	}
 
-	impl <'a> Default for MyTypeMappingVisitor<'a> {
-		fn default() -> MyTypeMappingVisitor<'a> {
-			MyTypeMappingVisitor {
+	impl <'a> Default for MyTypeNestedMappingVisitor<'a> {
+		fn default() -> MyTypeNestedMappingVisitor<'a> {
+			MyTypeNestedMappingVisitor {
 				data: Cow::Owned(MyType::default())
 			}
 		}
 	}
 
-	//Derive serialisation for our visitor
-	impl <'a> serde::ser::MapVisitor for MyTypeMappingVisitor<'a> {
+	impl <'a> serde::ser::MapVisitor for MyTypeNestedMappingVisitor<'a> {
 		fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
 		where S: serde::Serializer {
-			try!(serializer.serialize_struct_elt("properties", MyTypeProperties::new(&self.data)));
+			try!(serializer.serialize_struct_elt("type", MyTypeMapping::data_type()));
+			try!(serializer.serialize_struct_elt("properties", ElasticUserTypeProperties::<'a, MyType, MyTypeMapping<'a>>::new(&self.data)));
 
 			Ok(None)
 		}
 	}
 
-	//TODO: Move this to main crate?
-	//Serialises: "...": { ... }
-	struct MyTypeProperties<'a> { 
-		data: Cow<'a, MyType>
+	struct MyTypeMappingVisitor<'a> { 
+		data: &'a MyType
 	}
-	impl <'a> MyTypeProperties<'a> {
+
+	impl <'a> ElasticUserTypeVisitor<'a, MyType> for MyTypeMappingVisitor<'a> {
 		fn new(data: &'a MyType) -> Self {
-			MyTypeProperties {
-				data: Cow::Borrowed(data)
+			MyTypeMappingVisitor {
+				data: data
 			}
 		}
 	}
 
-	impl <'a> serde::Serialize for MyTypeProperties<'a> {
-		fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+	impl <'a> serde::ser::MapVisitor for MyTypeMappingVisitor<'a> {
+		fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
 		where S: serde::Serializer {
-			serializer.serialize_struct("properties", MyTypePropertiesVisitor::new(&self.data))
+			try!(serializer.serialize_struct_elt("properties", ElasticUserTypeProperties::<'a, MyType, MyTypeMapping<'a>>::new(&self.data)));
+
+			Ok(None)
 		}
 	}
 
-	//Serialises "...": { "prop1", ... }
-	struct MyTypePropertiesVisitor<'a> { 
-		data: Cow<'a, MyType>
+	struct MyTypePropertiesVisitor<'a> {
+		data: &'a MyType
 	}
-	impl <'a> MyTypePropertiesVisitor<'a> {
+
+	impl <'a> ElasticUserTypeVisitor<'a, MyType> for MyTypePropertiesVisitor<'a> {
 		fn new(data: &'a MyType) -> Self {
 			MyTypePropertiesVisitor {
-				data: Cow::Borrowed(data)
+				data: data
 			}
 		}
 	}
 
-	//Derive serialisation for our visitor
 	impl <'a> serde::ser::MapVisitor for MyTypePropertiesVisitor<'a> {
 		fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
 		where S: serde::Serializer {
-			//Dispatch serialisation of the mappable properties
-			//Needs to iterate over each property and map
-			//The names need to come from serde fetching attribute values
 			try!(DataMapper::map("my_date1", &self.data.my_date1, serializer));
 			try!(DataMapper::map("my_date2", &self.data.my_date2, serializer));
 			try!(DataMapper::map("my_string", &self.data.my_string, serializer));
@@ -159,6 +154,51 @@ fn serialise_mapping_type() {
 	let ser = String::from_utf8(writer).unwrap();
 
 	let expected = json_str!({
+		"properties": {
+			"my_date1":{
+				"type":"date",
+				"format":"basic_date_time"
+			},
+			"my_date2": {
+				"type": "date",
+				"boost": 1.01,
+				"doc_values": true,
+				"include_in_all": false,
+				"index": "no",
+				"store": true,
+				"format": "epoch_millis",
+				"ignore_malformed": true,
+				"null_value": "0",
+				"precision_step": 6
+			},
+			"my_string":{
+				"type":"string"
+			},
+			"my_num":{
+				"type":"object"
+			}
+		}
+	});
+
+	assert_eq!(expected, ser);
+}
+
+#[test]
+fn serialise_mapping_type_as_nested() {
+	//Define an instance of our mapping type
+	let mytype = MyType::default();
+
+	//Build a serialiser and use the mapper to serialise the mapping for the given type
+	let mut writer = Vec::with_capacity(128);
+	{
+		let mut ser = Serializer::new(&mut writer);
+		let _ = DataMapper::map("mytype", &mytype, &mut ser).unwrap();
+	}
+	let ser = String::from_utf8(writer).unwrap();
+
+	//TODO: Test this on a derived subtype
+	let expected = json_str!(, "mytype": {
+		"type": "nested",
 		"properties": {
 			"my_date1":{
 				"type":"date",

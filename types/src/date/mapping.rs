@@ -4,7 +4,7 @@ use std::marker::PhantomData;
 use serde;
 use serde::{ Serializer, Serialize };
 use super::{ DateFormat, DefaultFormat };
-use ::mapping::{ ElasticMapping, IndexAnalysis };
+use ::mapping::{ ElasticTypeMapping, IndexAnalysis };
 
 /// The base requirements for mapping a `date` type.
 /// 
@@ -24,7 +24,7 @@ use ::mapping::{ ElasticMapping, IndexAnalysis };
 /// 	phantom: std::marker::PhantomData<T>
 /// }
 /// 
-/// impl <T: DateFormat> ElasticMapping<T> for MyDateMapping<T> {
+/// impl <T: DateFormat> ElasticTypeMapping<T> for MyDateMapping<T> {
 /// 	type Visitor = ElasticDateMappingVisitor<T, MyDateMapping<T>>;
 /// 
 /// 	fn data_type() -> &'static str {
@@ -50,7 +50,7 @@ use ::mapping::{ ElasticMapping, IndexAnalysis };
 /// 
 /// The above example binds the mapping to the `BasicDateTime` format, so `get_null_value` returns a properly formated value.
 pub trait ElasticDateMapping<T: DateFormat>
-where Self : ElasticMapping<T> + Sized + Serialize + Default + Copy {
+where Self : ElasticTypeMapping<T> + Sized + Serialize + Default + Copy {
 	/// Field-level index time boosting. Accepts a floating point number, defaults to `1.0`.
 	fn boost() -> Option<f32> {
 		None

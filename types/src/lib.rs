@@ -19,17 +19,17 @@
 
 #![doc(html_root_url = "http://kodraus.github.io/rustdoc/elastic_types/")]
 #![deny(missing_docs)]
-#![cfg_attr(feature = "nightly-testing", plugin(clippy))]
 
 #![feature(custom_derive, custom_attribute, plugin, optin_builtin_traits, associated_type_defaults)]
-#![plugin(serde_macros)]
-#![plugin(elastic_macros)]
+#![cfg_attr(feature = "nightly-testing", plugin(clippy))]
+#![plugin(serde_macros, elastic_macros)]
 
+//TODO: Move these to elastic_macros
 #![macro_use]
 #[macro_export]
 macro_rules! impl_string_mapping {
     ($t:ty) => (
-    	impl $crate::mapping::ElasticMapping<()> for $t {
+    	impl $crate::mapping::ElasticTypeMapping<()> for $t {
 			type Visitor = $crate::string::mapping::ElasticStringMappingVisitor<$t>;
 
 			fn data_type() -> &'static str {
@@ -49,7 +49,7 @@ macro_rules! impl_string_mapping {
 #[macro_export]
 macro_rules! impl_date_mapping {
 	($t:ty, $f:ty) => (
-    	impl $crate::mapping::ElasticMapping<$f> for $t {
+    	impl $crate::mapping::ElasticTypeMapping<$f> for $t {
 			type Visitor = $crate::date::mapping::ElasticDateMappingVisitor<$f, $t>;
 
 			fn data_type() -> &'static str {
@@ -65,7 +65,7 @@ macro_rules! impl_date_mapping {
 		}
     );
     ($t:ty) => (
-    	impl <T: $crate::date::DateFormat> $crate::mapping::ElasticMapping<T> for $t {
+    	impl <T: $crate::date::DateFormat> $crate::mapping::ElasticTypeMapping<T> for $t {
 			type Visitor = $crate::date::mapping::ElasticDateMappingVisitor<T, $t>;
 
 			fn data_type() -> &'static str {
@@ -77,6 +77,18 @@ macro_rules! impl_date_mapping {
 			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
 			where S: serde::Serializer {
 				serializer.serialize_struct("mapping", Self::get_visitor())
+			}
+		}
+    )
+}
+
+#[macro_export]
+macro_rules! impl_properties {
+    ($t:ty) => (
+    	impl <'a> serde::Serialize for $t {
+			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+			where S: serde::Serializer {
+				serializer.serialize_struct("properties", self.get_visitor())
 			}
 		}
     )

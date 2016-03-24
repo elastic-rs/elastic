@@ -4,7 +4,7 @@ use std::collections::BTreeMap;
 use std::marker::PhantomData;
 use serde;
 use serde::{ Serializer, Serialize };
-use ::mapping::{ ElasticMapping, ElasticDataType, IndexAnalysis };
+use ::mapping::{ ElasticTypeMapping, ElasticType, IndexAnalysis };
 
 /// The base requirements for mapping a `string` type.
 /// 
@@ -30,8 +30,8 @@ use ::mapping::{ ElasticMapping, ElasticDataType, IndexAnalysis };
 ///		}
 /// }
 /// 
-/// //We also need to implement the base `ElasticMapping` and `serde::Serialize` for our custom mapping type
-/// impl ElasticMapping<()> for MyStringMapping {
+/// //We also need to implement the base `ElasticTypeMapping` and `serde::Serialize` for our custom mapping type
+/// impl ElasticTypeMapping<()> for MyStringMapping {
 /// 	type Visitor = ElasticStringMappingVisitor<MyStringMapping>;
 /// 
 /// 	fn data_type() -> &'static str {
@@ -48,7 +48,7 @@ use ::mapping::{ ElasticMapping, ElasticDataType, IndexAnalysis };
 /// # }
 /// ```
 pub trait ElasticStringMapping
-where Self : ElasticMapping<()> + Sized + Serialize + Default + Clone {
+where Self : ElasticTypeMapping<()> + Sized + Serialize + Default + Clone {
 	/// Field-level index time boosting. Accepts a floating point number, defaults to `1.0`.
 	fn boost() -> Option<f32> {
 		None
@@ -152,7 +152,7 @@ where Self : ElasticMapping<()> + Sized + Serialize + Default + Clone {
 }
 
 /// A Rust representation of an Elasticsearch `string`.
-pub trait ElasticStringType<T: ElasticMapping<()> + ElasticStringMapping> where Self: Sized + ElasticDataType<T, ()> { }
+pub trait ElasticStringType<T: ElasticTypeMapping<()> + ElasticStringMapping> where Self: Sized + ElasticType<T, ()> { }
 
 /// Default mapping for `String`.
 #[derive(Debug, Default, Clone, Copy)]
