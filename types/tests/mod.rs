@@ -154,6 +154,6 @@ pub mod string_fixtures {
 	impl_string_mapping!(MyStringMapping);
 }
 
-pub mod ty;
+pub mod user_type;
 pub mod date;
 pub mod string;
