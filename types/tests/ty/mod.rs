@@ -7,7 +7,6 @@ extern crate serde_json;
 extern crate elastic_types;
 
 use serde_json::ser::Serializer;
-use elastic_types::mapping::{ DataMapper, TypeMapper };
 use elastic_types::mapping::prelude::*;
 use elastic_types::date::prelude::*;
 use elastic_types::string::prelude::*;
@@ -30,7 +29,6 @@ mod mytype_mapping {
 	use std::borrow::Cow;
 	use serde;
 	use serde::Serialize;
-	use elastic_types::mapping::DataMapper;
 	use elastic_types::mapping::prelude::*;
 	use super::MyType;
 

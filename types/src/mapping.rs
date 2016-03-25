@@ -1,6 +1,21 @@
-//! Implementation for data type mappings.
+//! Base requirements for type mappings.
 //! 
-//! There are a few traits 
+//! There are two kinds of types we can map in Elasticsearch; `field`/`data` types and `user-defined` types.
+//! Either kind of type must implement `ElasticType`, which captures the mapping and possible formatting requirements as generic parameters.
+//! Most of the work lives in the `ElasticTypeMapping`, which holds the serialisation requirements to convert a Rust type into an Elasticsearch mapping.
+//! User-defined types must also implement `ElasticUserTypeMapping`, which maps the fields of a struct as properties, and treats the type as `nested` when used as a field itself.
+//! 
+//! # Notes
+//! 
+//! Currently, there's a lot of ceremony around the type mapping. The reason for doing this with types instead of simple hashmaps is to try and capture type mapping using types themselves.
+//! This means more boilerplate while certain Rust features haven't landed yet ([specialisation](https://github.com/rust-lang/rust/issues/31844) and [negative trait bounds](https://github.com/rust-lang/rfcs/issues/1053)),
+//! but it also constrains the shapes that Elasticsearch types can take by using the Rust type system. That seems like a nice property.
+//! 
+//! The mapping serialisation in general tries to limit allocations wherever possible, but more can be done to clean this up.
+//! 
+//! # Links
+//! - [Field Types](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-types.html)
+//! - [User-defined Types](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping.html)
 
 pub mod prelude {
 	//! Includes mapping types for all data types.
@@ -12,11 +27,11 @@ pub mod prelude {
 		ElasticTypeMapping, 
 		NullMapping, 
 		IndexAnalysis, 
-		ElasticTypeMappingVisitor,
-		ElasticUserTypeMapping,
-		ElasticUserTypeProperties,
-		ElasticUserTypeVisitor
+		ElasticTypeMappingVisitor
 	};
+
+	pub use ::user_type::*;
+	pub use ::mappers::*;
 	pub use ::date::mapping::*;
 	pub use ::string::mapping::*;
 }
@@ -161,132 +176,3 @@ impl <T: ElasticTypeMapping<()>> serde::ser::MapVisitor for ElasticTypeMappingVi
 		Ok(None)
 	}
 }
-
-//TODO: Sort this out; reduce unnecessary code and make the TypeMapper work.
-/// The base requirements for mapping a user-defined type.
-/// 
-/// # Examples
-/// 
-/// Define a custom type mapping:
-/// 
-/// ```
-/// //TODO: Implement this
-/// ```
-pub trait ElasticUserTypeMapping<'a, T: 'a + Clone + Default>
-where Self: ElasticTypeMapping<()> + Default + Clone + serde::Serialize {
-	#[doc(hidden)]
-	type Visitor: ElasticUserTypeVisitor<'a, T>;
-	#[doc(hidden)]
-	type PropertiesVisitor: ElasticUserTypeVisitor<'a, T>;
-
-	/// The name of the user-defined type used in Elasticsearch.
-	fn name() -> &'static str;
-}
-
-/// Represents the properties object that encapsulates type mappings.
-pub struct ElasticUserTypeProperties<'a, T: 'a + Clone + Default, M: ElasticUserTypeMapping<'a, T>> { 
-	data: &'a T,
-	phantom: PhantomData<M>
-}
-impl <'a, T: 'a + Clone + Default, M: ElasticUserTypeMapping<'a, T>> ElasticUserTypeProperties<'a, T, M> {
-	/// Create a new properties struct from a borrowed user-defined type.
-	pub fn new(data: &'a T) -> Self {
-		ElasticUserTypeProperties {
-			data: data,
-			phantom: PhantomData
-		}
-	}
-}
-
-impl <'a, T: 'a + Clone + Default, M: ElasticUserTypeMapping<'a, T>> serde::Serialize for ElasticUserTypeProperties<'a, T, M> {
-	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
-	where S: serde::Serializer {
-		serializer.serialize_struct("properties", <M as ElasticUserTypeMapping<T>>::PropertiesVisitor::new(&self.data))
-	}
-}
-
-/// Visitor for the `ElasticUserTypeProperties` struct and given user-defined type.
-/// 
-/// The purpose of this trait is to serialise the mapping for each datatype on the user-defined type `T`.
-/// To make this easier, the `DataMapper` can be used to infer the mapping for a field that implements `ElasticType`.
-/// 
-/// # Examples
-/// 
-/// Implement `ElasticUserTypeVisitor` for a user-defined type:
-/// 
-/// ```
-/// //TODO: Implement
-/// ```
-pub trait ElasticUserTypeVisitor<'a, T: 'a + Clone + Default>
-where Self: serde::ser::MapVisitor { 
-	/// Create a new visitor from a borrowed user-defined type.
-	fn new(data: &'a T) -> Self;
-}
-
-/// Helper for mapping data type fields.
-/// 
-/// The mapping is inferred from the given `ElasticType`.
-#[derive(Default)]
-pub struct DataMapper<T: ElasticType<M, F>, M: ElasticTypeMapping<F> = NullMapping, F = ()> {
-	phantom_m: PhantomData<M>,
-	phantom_t: PhantomData<T>,
-	phantom_f: PhantomData<F>
-}
-impl <T: ElasticType<M, F>, M: ElasticTypeMapping<F>, F> DataMapper<T, M, F> {
-	/// Infer the mapping of a data type and map using its `Visitor`.
-	/// 
-	/// The mapping is emitted as a json field, where the key is the name of the field on the type.
-	pub fn map<S>(key: &'static str, _: &T, serializer: &mut S) -> Result<(), S::Error> 
-	where S: serde::Serializer {
-		serializer.serialize_struct_elt(key, M::default())
-	}
-}
-
-/// Helper for mapping user-defined types.
-/// 
-/// This mapper is designed to take a given user-defined type and pass it around to various visitors to map fields.
-pub struct TypeMapper<'a, T: 'a + ElasticType<M, ()> + Clone + Default, M: ElasticUserTypeMapping<'a, T>> {
-	phantom_a: PhantomData<&'a ()>,
-	phantom_m: PhantomData<M>,
-	phantom_t: PhantomData<T>
-}
-impl <'a, T: 'a + ElasticType<M, ()> + Clone + Default, M: ElasticUserTypeMapping<'a, T>> TypeMapper<'a, T, M> {
-	/// Map a user-defined type.
-	/// 
-	/// The mapping is emitted as a json field, where the key is the name of the type, as defined by `M::data_type()`.
-	pub fn map<S>(t: &'a T, serializer: &mut S) -> Result<(), S::Error> 
-	where S: serde::Serializer {
-		serializer.serialize_struct(
-			<M as ElasticTypeMapping<()>>::data_type(), 
-			<M as ElasticUserTypeMapping<'a, T>>::Visitor::new(&t)
-		)
-	}
-}
-
-macro_rules! impl_mapping {
-	($($t:ty),*) => (
-		$(
-			impl $crate::mapping::ElasticType<NullMapping, ()> for $t { }
-		)*
-	)
-}
-
-impl_mapping!(
-	bool,
-	isize,
-	i8,
-	i16,
-	i32,
-	i64,
-	usize,
-	u8,
-	u16,
-	u32,
-	u64,
-	f32,
-	f64,
-	char
-);
-
-impl <T: serde::Serialize> ElasticType<NullMapping, ()> for Vec<T> { }
-impl <'a, T: serde::Serialize> ElasticType<NullMapping, ()> for &'a [T] { }

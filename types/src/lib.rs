@@ -98,6 +98,36 @@ extern crate chrono;
 extern crate serde;
 
 pub mod mapping;
+pub mod mappers;
 
+pub mod user_type;
 pub mod date;
 pub mod string;
+
+macro_rules! impl_mapping {
+	($($t:ty),*) => (
+		$(
+			impl $crate::mapping::ElasticType<$crate::mapping::NullMapping, ()> for $t { }
+		)*
+	)
+}
+
+impl_mapping!(
+	bool,
+	isize,
+	i8,
+	i16,
+	i32,
+	i64,
+	usize,
+	u8,
+	u16,
+	u32,
+	u64,
+	f32,
+	f64,
+	char
+);
+
+impl <T: serde::Serialize> mapping::ElasticType<mapping::NullMapping, ()> for Vec<T> { }
+impl <'a, T: serde::Serialize> mapping::ElasticType<mapping::NullMapping, ()> for &'a [T] { }
