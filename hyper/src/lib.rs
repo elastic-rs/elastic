@@ -25,6 +25,21 @@ use url::form_urlencoded::serialize;
 /// The `RequestParams` struct allows you to set headers and url parameters for your requests.
 /// By default, the `ContentType::json` header will always be added.
 /// Url parameters are added as simple key-value pairs, and serialised by [rust-url](http://servo.github.io/rust-url/url/index.html).
+/// 
+/// # Examples
+/// 
+/// Add url query parameters to the request:
+/// 
+/// ```
+/// extern crate hyper;
+/// extern crate elastic_hyper as elastic;
+/// 
+/// let params = elastic::RequestParams::new(hyper::header::Headers::new())
+/// 		.url_params(vec![
+/// 			("pretty", "true".to_owned()),
+/// 			("q", "*".to_owned())
+/// 		]);
+/// ```
 pub struct RequestParams {
 	/// Simple key-value store for url query params.
 	pub url_params: BTreeMap<&'static str, String>,
