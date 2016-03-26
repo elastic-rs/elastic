@@ -19,3 +19,5 @@ script:
   - cargo doc
   - cd codegen
   - cargo build -v
+  - cd ../samples
+  - cargo build -v
