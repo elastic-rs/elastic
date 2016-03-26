@@ -51,7 +51,6 @@ pub mod date_fixtures {
 			Some(6)
 		}
 	}
-
 	impl_date_mapping!(MyDateMapping, EpochMillis);
 }
 
@@ -150,8 +149,31 @@ pub mod string_fixtures {
 			Some(TermVector::No)
 		}
 	}
-
 	impl_string_mapping!(MyStringMapping);
+}
+
+pub mod user_type_fixtures {
+	use elastic_types::mapping::prelude::*;
+	use elastic_types::date::prelude::*;
+	use elastic_types::string::prelude::*;
+	use ::date_fixtures::*;
+
+	#[derive(Default, Clone, Serialize)]
+	pub struct MyType {
+		pub my_date1: DateTime,
+		pub my_date2: DateTime<EpochMillis, MyDateMapping>,
+		pub my_string: ElasticString<DefaultStringMapping>,
+		pub my_num: i32
+	}
+	impl_elastic_type!(MyType, inner1, "my_type", [my_date1, my_date2, my_string, my_num]);
+
+	#[derive(Default, Clone, Serialize)]
+	pub struct MyOtherType {
+		pub my_date: DateTime,
+		pub my_type: MyType,
+		pub my_num: i32
+	}
+	impl_elastic_type!(MyOtherType, inner2, "my_other_type", [my_date, my_type, my_num]);
 }
 
 pub mod user_type;

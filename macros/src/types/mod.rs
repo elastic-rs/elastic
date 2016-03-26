@@ -1,7 +1,7 @@
 extern crate chrono;
 
 pub mod date_format;
-pub mod ty;
+pub mod user_type;
 
 use syntax::codemap::Span;
 use syntax::parse::token;
@@ -31,6 +31,6 @@ pub fn expand_date_fmt(cx: &mut ExtCtxt, sp: Span, args: &[TokenTree]) -> Box<Ma
 	MacEager::expr(quote_expr!(cx, { $token_expr }))
 }
 
-pub fn expand_elastic_type(cx: &mut ExtCtxt, sp: Span, args: &[TokenTree]) -> Box<MacResult+'static> {
+pub fn expand_type(cx: &mut ExtCtxt, sp: Span, args: &[TokenTree]) -> Box<MacResult+'static> {
 	panic!("implement")
 }

@@ -24,79 +24,11 @@
 #![cfg_attr(feature = "nightly-testing", plugin(clippy))]
 #![plugin(serde_macros, elastic_macros)]
 
-//TODO: Move these to elastic_macros
-#![macro_use]
-
-macro_rules! impl_mapping {
-	($($t:ty),*) => (
-		$(
-			impl $crate::mapping::ElasticType<$crate::mapping::NullMapping, ()> for $t { }
-		)*
-	)
-}
-
-#[macro_export]
-macro_rules! impl_string_mapping {
-    ($t:ty) => (
-    	impl $crate::mapping::ElasticTypeMapping<()> for $t {
-			type Visitor = $crate::string::mapping::ElasticStringMappingVisitor<$t>;
-
-			fn data_type() -> &'static str {
-				"string"
-			}
-		}
-
-		impl serde::Serialize for $t {
-			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
-			where S: serde::Serializer {
-				serializer.serialize_struct("mapping", Self::get_visitor())
-			}
-		}
-    )
-}
-
-#[macro_export]
-macro_rules! impl_date_mapping {
-	($t:ty, $f:ty) => (
-    	impl $crate::mapping::ElasticTypeMapping<$f> for $t {
-			type Visitor = $crate::date::mapping::ElasticDateMappingVisitor<$f, $t>;
-
-			fn data_type() -> &'static str {
-				"date"
-			}
-		}
-		
-		impl serde::Serialize for $t {
-			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
-			where S: serde::Serializer {
-				serializer.serialize_struct("mapping", Self::get_visitor())
-			}
-		}
-    );
-    ($t:ty) => (
-    	impl <T: $crate::date::DateFormat> $crate::mapping::ElasticTypeMapping<T> for $t {
-			type Visitor = $crate::date::mapping::ElasticDateMappingVisitor<T, $t>;
-
-			fn data_type() -> &'static str {
-				"date"
-			}
-		}
-
-		impl <T: $crate::date::DateFormat> serde::Serialize for $t {
-			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
-			where S: serde::Serializer {
-				serializer.serialize_struct("mapping", Self::get_visitor())
-			}
-		}
-    )
-}
-
-//impl_date_format(MyFormat, "yyyy-MM-dd")
-
-//impl_type_mapping(MyType, [my_date1, my_date2, my_string, my_num])
-
 extern crate chrono;
 extern crate serde;
+
+#[macro_use]
+pub mod macros;
 
 pub mod mapping;
 pub mod mappers;

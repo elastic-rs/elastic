@@ -10,17 +10,7 @@ use super::{ DateFormat, ParseError };
 /// - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-date-format.html#built-in-date-formats)
 #[derive(Debug, Default, Clone, Copy)]
 pub struct BasicDateTimeNoMillis;
-impl DateFormat for BasicDateTimeNoMillis {
-	fn fmt<'a>() -> Vec<Item<'a>> {
-		date_fmt!("%Y%m%dT%H%M%SZ")
-			.iter()
-			.cloned()
-			.collect()
-	}
-	fn name() -> &'static str {
-		"basic_date_time_no_millis"
-	}
-}
+impl_date_fmt!(BasicDateTimeNoMillis, "%Y%m%dT%H%M%SZ", "basic_date_time_no_millis");
 
 /// Format for `basic_date_time`.
 /// 
@@ -28,17 +18,7 @@ impl DateFormat for BasicDateTimeNoMillis {
 /// - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-date-format.html#built-in-date-formats)
 #[derive(Debug, Default, Clone, Copy)]
 pub struct BasicDateTime;
-impl DateFormat for BasicDateTime {
-	fn fmt<'a>() -> Vec<Item<'a>>{
-		date_fmt!("%Y%m%dT%H%M%S%.3fZ")
-			.iter()
-			.cloned()
-			.collect()
-	}
-	fn name() -> &'static str {
-		"basic_date_time"
-	}
-}
+impl_date_fmt!(BasicDateTime, "%Y%m%dT%H%M%S%.3fZ", "basic_date_time");
 
 /// Format for `epoch_millis`.
 /// 

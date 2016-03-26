@@ -123,6 +123,7 @@ pub mod json;
 
 #[doc(hidden)]
 #[cfg(feature = "types")]
+#[macro_use]
 pub mod types;
 
 use rustc_plugin::Registry;
