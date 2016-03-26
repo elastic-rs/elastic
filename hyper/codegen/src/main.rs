@@ -127,6 +127,9 @@ fn gen_from_source(source_dir: &str, dest_dir: &str) -> Result<(), String> {
 			
 			try!(emitter.emit(&quote_stmt!(&mut cx, use hyper::error::Result;), &mut src_file).map_err(|e| e.description().to_string()));
 			try!(emitter.emit_str(&"\n\n", &mut src_file).map_err(|e| e.description().to_string()));
+
+			try!(emitter.emit(&quote_stmt!(&mut cx, use ::RequestParams;), &mut src_file).map_err(|e| e.description().to_string()));
+			try!(emitter.emit_str(&"\n\n", &mut src_file).map_err(|e| e.description().to_string()));
 			
 			try!(src_file.sync_all().map_err(|e| e.description().to_string()));
 		}
@@ -145,25 +148,35 @@ fn gen_from_source(source_dir: &str, dest_dir: &str) -> Result<(), String> {
 			let base = token::str_to_ident("base");
 			let _client = "client";
 			let client = token::str_to_ident(_client);
+			let req = token::str_to_ident("req");
 			let body = token::str_to_ident("body");
+			let qry = token::str_to_ident("url_qry");
 			
 			let lifetime = lifetime("'a");
 			
-			let params: Vec<Ident> = parse_path_params(&fun.path)
+			let mut params: Vec<Ident> = parse_path_params(&fun.path)
 				.unwrap().iter()
 				.map(|p| token::str_to_ident(match p.as_str() {
 					"type" => "_type",
 					s => s
 				}))
 				.collect();
+
+			//Add the query string param so it's included when building full url
+			params.push(qry);
+
 			let parts = parse_path_parts(&fun.path).unwrap();
 			
 			//Get the push statements
 			let (url_ident, url_stmts) = url_push_decl(base, parts.iter().map(|p| p.as_str()), params.to_vec());
 
+			//Remove the query string param so it's not included in fn signature
+			let _ = params.pop();
+
 			//Function signature from params
 			let mut rs_fun = build_fn(&fun.name, vec![
 				build_arg(_client, build_ty_ptr("Client", Mutability::Mutable, Some(lifetime))),
+				build_arg_ident(req, build_ty("RequestParams")),
 				build_arg_ident(base, build_ty_ptr("str", Mutability::Immutable, Some(lifetime)))
 			])
 			.add_args(params
@@ -172,6 +185,9 @@ fn gen_from_source(source_dir: &str, dest_dir: &str) -> Result<(), String> {
 			)
 			.add_lifetime(lifetime)
 			.set_return_ty(build_ty("Result<Response>"))
+			.add_body_block(quote_block!(&mut cx, {
+				let $qry = &$req.get_url_qry();
+			}))
 			.add_body_stmts(url_stmts)
 			.add_body_block(quote_block!(&mut cx, {
 				let mut headers = Headers::new();

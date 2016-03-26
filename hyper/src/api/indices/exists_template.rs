@@ -7,12 +7,17 @@ use hyper::header::{Headers, ContentType};
 use hyper::client::response::Response;
 use hyper::error::Result;
 
-pub fn head_name<'a>(client: &'a mut Client, base: &'a str, name: &'a str)
- -> Result<Response>{
-    let mut url_fmtd = String::with_capacity(base.len() + 11 + name.len());
+use RequestParams;
+
+pub fn head_name<'a>(client: &'a mut Client, req: RequestParams, base: &'a str,
+                 name: &'a str) -> Result<Response>{
+    let url_qry = &req.get_url_qry();
+    let mut url_fmtd =
+        String::with_capacity(base.len() + 11 + name.len() + url_qry.len());
     url_fmtd.push_str(base);
     url_fmtd.push_str("/_template/");
     url_fmtd.push_str(name);
+    url_fmtd.push_str(url_qry);
     let mut headers = Headers::new();
     headers.set(ContentType::json());
     let res = client.head(&url_fmtd).headers(headers);

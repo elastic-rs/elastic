@@ -7,40 +7,50 @@ use hyper::header::{Headers, ContentType};
 use hyper::client::response::Response;
 use hyper::error::Result;
 
-pub fn get<'a>(client: &'a mut Client, base: &'a str) -> Result<Response>{
-    let mut url_fmtd = String::with_capacity(base.len() + 18);
+use RequestParams;
+
+pub fn get<'a>(client: &'a mut Client, req: RequestParams, base: &'a str)
+ -> Result<Response>{
+    let url_qry = &req.get_url_qry();
+    let mut url_fmtd = String::with_capacity(base.len() + 18 + url_qry.len());
     url_fmtd.push_str(base);
     url_fmtd.push_str("/_snapshot/_status");
+    url_fmtd.push_str(url_qry);
     let mut headers = Headers::new();
     headers.set(ContentType::json());
     let res = client.get(&url_fmtd).headers(headers);
     res.send()
 }
-pub fn get_repository_snapshot<'a>(client: &'a mut Client, base: &'a str,
-                               repository: &'a str, snapshot: &'a str)
- -> Result<Response>{
+pub fn get_repository_snapshot<'a>(client: &'a mut Client, req: RequestParams,
+                               base: &'a str, repository: &'a str,
+                               snapshot: &'a str) -> Result<Response>{
+    let url_qry = &req.get_url_qry();
     let mut url_fmtd =
         String::with_capacity(base.len() + 11 + 1 + 8 + repository.len() +
-                                  snapshot.len());
+                                  snapshot.len() + url_qry.len());
     url_fmtd.push_str(base);
     url_fmtd.push_str("/_snapshot/");
     url_fmtd.push_str(repository);
     url_fmtd.push_str("/");
     url_fmtd.push_str(snapshot);
     url_fmtd.push_str("/_status");
+    url_fmtd.push_str(url_qry);
     let mut headers = Headers::new();
     headers.set(ContentType::json());
     let res = client.get(&url_fmtd).headers(headers);
     res.send()
 }
-pub fn get_repository<'a>(client: &'a mut Client, base: &'a str,
-                      repository: &'a str) -> Result<Response>{
+pub fn get_repository<'a>(client: &'a mut Client, req: RequestParams,
+                      base: &'a str, repository: &'a str) -> Result<Response>{
+    let url_qry = &req.get_url_qry();
     let mut url_fmtd =
-        String::with_capacity(base.len() + 11 + 8 + repository.len());
+        String::with_capacity(base.len() + 11 + 8 + repository.len() +
+                                  url_qry.len());
     url_fmtd.push_str(base);
     url_fmtd.push_str("/_snapshot/");
     url_fmtd.push_str(repository);
     url_fmtd.push_str("/_status");
+    url_fmtd.push_str(url_qry);
     let mut headers = Headers::new();
     headers.set(ContentType::json());
     let res = client.get(&url_fmtd).headers(headers);

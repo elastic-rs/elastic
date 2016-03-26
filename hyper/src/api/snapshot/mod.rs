@@ -1,9 +1,9 @@
-pub mod status;
-pub mod get_repository;
-pub mod restore;
-pub mod get;
-pub mod delete;
-pub mod delete_repository;
 pub mod create;
 pub mod create_repository;
+pub mod delete;
+pub mod delete_repository;
+pub mod get;
+pub mod get_repository;
+pub mod restore;
+pub mod status;
 pub mod verify_repository;

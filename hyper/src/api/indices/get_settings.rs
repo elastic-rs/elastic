@@ -7,48 +7,63 @@ use hyper::header::{Headers, ContentType};
 use hyper::client::response::Response;
 use hyper::error::Result;
 
-pub fn get<'a>(client: &'a mut Client, base: &'a str) -> Result<Response>{
-    let mut url_fmtd = String::with_capacity(base.len() + 10);
-    url_fmtd.push_str(base);
-    url_fmtd.push_str("/_settings");
-    let mut headers = Headers::new();
-    headers.set(ContentType::json());
-    let res = client.get(&url_fmtd).headers(headers);
-    res.send()
-}
-pub fn get_index<'a>(client: &'a mut Client, base: &'a str, index: &'a str)
+use RequestParams;
+
+pub fn get_index_name<'a>(client: &'a mut Client, req: RequestParams,
+                      base: &'a str, index: &'a str, name: &'a str)
  -> Result<Response>{
+    let url_qry = &req.get_url_qry();
     let mut url_fmtd =
-        String::with_capacity(base.len() + 1 + 10 + index.len());
-    url_fmtd.push_str(base);
-    url_fmtd.push_str("/");
-    url_fmtd.push_str(index);
-    url_fmtd.push_str("/_settings");
-    let mut headers = Headers::new();
-    headers.set(ContentType::json());
-    let res = client.get(&url_fmtd).headers(headers);
-    res.send()
-}
-pub fn get_name<'a>(client: &'a mut Client, base: &'a str, name: &'a str)
- -> Result<Response>{
-    let mut url_fmtd = String::with_capacity(base.len() + 11 + name.len());
-    url_fmtd.push_str(base);
-    url_fmtd.push_str("/_settings/");
-    url_fmtd.push_str(name);
-    let mut headers = Headers::new();
-    headers.set(ContentType::json());
-    let res = client.get(&url_fmtd).headers(headers);
-    res.send()
-}
-pub fn get_index_name<'a>(client: &'a mut Client, base: &'a str, index: &'a str,
-                      name: &'a str) -> Result<Response>{
-    let mut url_fmtd =
-        String::with_capacity(base.len() + 1 + 11 + index.len() + name.len());
+        String::with_capacity(base.len() + 1 + 11 + index.len() + name.len() +
+                                  url_qry.len());
     url_fmtd.push_str(base);
     url_fmtd.push_str("/");
     url_fmtd.push_str(index);
     url_fmtd.push_str("/_settings/");
     url_fmtd.push_str(name);
+    url_fmtd.push_str(url_qry);
+    let mut headers = Headers::new();
+    headers.set(ContentType::json());
+    let res = client.get(&url_fmtd).headers(headers);
+    res.send()
+}
+pub fn get<'a>(client: &'a mut Client, req: RequestParams, base: &'a str)
+ -> Result<Response>{
+    let url_qry = &req.get_url_qry();
+    let mut url_fmtd = String::with_capacity(base.len() + 10 + url_qry.len());
+    url_fmtd.push_str(base);
+    url_fmtd.push_str("/_settings");
+    url_fmtd.push_str(url_qry);
+    let mut headers = Headers::new();
+    headers.set(ContentType::json());
+    let res = client.get(&url_fmtd).headers(headers);
+    res.send()
+}
+pub fn get_name<'a>(client: &'a mut Client, req: RequestParams, base: &'a str,
+                name: &'a str) -> Result<Response>{
+    let url_qry = &req.get_url_qry();
+    let mut url_fmtd =
+        String::with_capacity(base.len() + 11 + name.len() + url_qry.len());
+    url_fmtd.push_str(base);
+    url_fmtd.push_str("/_settings/");
+    url_fmtd.push_str(name);
+    url_fmtd.push_str(url_qry);
+    let mut headers = Headers::new();
+    headers.set(ContentType::json());
+    let res = client.get(&url_fmtd).headers(headers);
+    res.send()
+}
+pub fn get_index<'a>(client: &'a mut Client, req: RequestParams, base: &'a str,
+                 index: &'a str) -> Result<Response>{
+    let url_qry = &req.get_url_qry();
+    let mut url_fmtd =
+        String::with_capacity(base.len() + 1 + 10 + index.len() +
+                                  url_qry.len());
+    url_fmtd.push_str(base);
+    url_fmtd.push_str("/");
+    url_fmtd.push_str(index);
+    url_fmtd.push_str("/_settings");
+    url_fmtd.push_str(url_qry);
     let mut headers = Headers::new();
     headers.set(ContentType::json());
     let res = client.get(&url_fmtd).headers(headers);
