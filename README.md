@@ -40,18 +40,23 @@ A simple `query_string` query:
 #![plugin(elastic_macros)]
 extern crate elastic_hyper as elastic;
 
-let mut client = hyper::Client::new();
-let res = elastic::search::post_index_type(&mut client, 
-	"http://localhost:9200", "bench_index", "docs", 
+let mut client = Client::new();
+let params = elastic::RequestParams::new(Headers::new())
+	.url_params(vec![
+		("pretty", "true".to_owned())
+	]);
+
+let mut res = elastic::search::post(
+	&mut client, params,
+	"http://localhost:9200",
 	json_str!({
 		query: {
 			query_string: {
-				default_field: "title",
-				query: "doc"
+				query: "*"
 			}
 		}
 	})
-).unwrap()
+).unwrap();
 ```
 
 See the [samples](https://github.com/KodrAus/elasticsearch-rs/tree/master/hyper/samples), [elastic_hyper](#elastic_hyper) and [elastic_macros](#elastic_macros) for more details.
