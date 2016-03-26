@@ -26,6 +26,15 @@
 
 //TODO: Move these to elastic_macros
 #![macro_use]
+
+macro_rules! impl_mapping {
+	($($t:ty),*) => (
+		$(
+			impl $crate::mapping::ElasticType<$crate::mapping::NullMapping, ()> for $t { }
+		)*
+	)
+}
+
 #[macro_export]
 macro_rules! impl_string_mapping {
     ($t:ty) => (
@@ -82,18 +91,6 @@ macro_rules! impl_date_mapping {
     )
 }
 
-#[macro_export]
-macro_rules! impl_properties {
-    ($t:ty) => (
-    	impl <'a> serde::Serialize for $t {
-			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
-			where S: serde::Serializer {
-				serializer.serialize_struct("properties", self.get_visitor())
-			}
-		}
-    )
-}
-
 extern crate chrono;
 extern crate serde;
 
@@ -103,14 +100,6 @@ pub mod mappers;
 pub mod user_type;
 pub mod date;
 pub mod string;
-
-macro_rules! impl_mapping {
-	($($t:ty),*) => (
-		$(
-			impl $crate::mapping::ElasticType<$crate::mapping::NullMapping, ()> for $t { }
-		)*
-	)
-}
 
 impl_mapping!(
 	bool,
