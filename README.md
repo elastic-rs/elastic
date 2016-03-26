@@ -40,12 +40,17 @@ A simple `query_string` query:
 #![plugin(elastic_macros)]
 extern crate elastic_hyper as elastic;
 
+// Requests take a standard hyper http client
 let mut client = Client::new();
+
+// Optional headers and url query parameters can be added
+// By default, `elastic::RequestParams::new(Headers::new())` is enough
 let params = elastic::RequestParams::new(Headers::new())
 	.url_params(vec![
 		("pretty", "true".to_owned())
 	]);
 
+// Execute a querystring request on a local Elasticsearch instance
 let mut res = elastic::search::post(
 	&mut client, params,
 	"http://localhost:9200",
