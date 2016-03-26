@@ -15,7 +15,7 @@ script:
   - cargo test -v
   - cargo doc
   - cd ../hyper
-  - cargo build -v
+  - cargo test -v
   - cargo doc
   - cd codegen
   - cargo build -v
