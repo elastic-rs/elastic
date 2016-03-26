@@ -49,7 +49,7 @@ impl <'a, T: 'a + Clone + Default, M: ElasticUserTypeMapping<'a, T>> serde::Seri
 /// Visitor for the `ElasticUserTypeProperties` struct and given user-defined type.
 /// 
 /// The purpose of this trait is to serialise the mapping for each datatype on the user-defined type `T`.
-/// To make this easier, the `DataMapper` can be used to infer the mapping for a field that implements `ElasticType`.
+/// To make this easier, the `FieldMapper` can be used to infer the mapping for a field that implements `ElasticType`.
 /// 
 /// # Examples
 /// 

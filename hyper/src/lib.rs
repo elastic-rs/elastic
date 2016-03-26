@@ -28,6 +28,27 @@ use url::form_urlencoded::serialize;
 /// 
 /// # Examples
 /// 
+/// With default query parameters:
+/// 
+/// ```
+/// extern crate hyper;
+/// extern crate elastic_hyper as elastic;
+/// 
+/// let params = elastic::RequestParams::default();
+/// ```
+/// 
+/// With custom headers:
+/// 
+/// ```
+/// extern crate hyper;
+/// extern crate elastic_hyper as elastic;
+/// 
+/// let mut params = elastic::RequestParams::new(hyper::header::Headers::new());
+/// 
+/// //Add your own headers
+/// params.headers.set(hyper::header::Authorization("let me in".to_owned()));
+/// ```
+/// 
 /// Add url query parameters to the request:
 /// 
 /// ```

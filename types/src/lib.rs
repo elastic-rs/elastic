@@ -91,6 +91,10 @@ macro_rules! impl_date_mapping {
     )
 }
 
+//impl_date_format(MyFormat, "yyyy-MM-dd")
+
+//impl_type_mapping(MyType, [my_date1, my_date2, my_string, my_num])
+
 extern crate chrono;
 extern crate serde;
 

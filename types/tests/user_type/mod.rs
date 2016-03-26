@@ -21,9 +21,7 @@ struct MyType {
 	pub my_num: i32
 }
 
-//TODO: Get this to work properly; TypeMapper should serialize { "properties": {} }
-//TODO: DataMapper should serialize { "type": "", "properties": {}}
-//TODO: Also needs to work for types within types
+//TODO: Macro for deriving this. Should only need to take props to map in definition
 mod mytype_mapping {
 	use std::marker::PhantomData;
 	use std::borrow::Cow;
@@ -128,10 +126,10 @@ mod mytype_mapping {
 	impl <'a> serde::ser::MapVisitor for MyTypePropertiesVisitor<'a> {
 		fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
 		where S: serde::Serializer {
-			try!(DataMapper::map("my_date1", &self.data.my_date1, serializer));
-			try!(DataMapper::map("my_date2", &self.data.my_date2, serializer));
-			try!(DataMapper::map("my_string", &self.data.my_string, serializer));
-			try!(DataMapper::map("my_num", &self.data.my_num, serializer));
+			try!(FieldMapper::map("my_date1", &self.data.my_date1, serializer));
+			try!(FieldMapper::map("my_date2", &self.data.my_date2, serializer));
+			try!(FieldMapper::map("my_string", &self.data.my_string, serializer));
+			try!(FieldMapper::map("my_num", &self.data.my_num, serializer));
 
 			Ok(None)
 		}
@@ -190,7 +188,7 @@ fn serialise_mapping_type_as_nested() {
 	let mut writer = Vec::with_capacity(128);
 	{
 		let mut ser = Serializer::new(&mut writer);
-		let _ = DataMapper::map("mytype", &mytype, &mut ser).unwrap();
+		let _ = FieldMapper::map("mytype", &mytype, &mut ser).unwrap();
 	}
 	let ser = String::from_utf8(writer).unwrap();
 

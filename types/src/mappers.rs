@@ -4,7 +4,7 @@
 //! There are two mappers provided:
 //! 
 //! - `TypeMapper` for mapping user-defined types for the [Put Mapping API](https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-put-mapping.html)
-//! - `DataMapper` for mapping fields on user-defined types. User-defined types as fields are mapped as [Nested objects](https://www.elastic.co/guide/en/elasticsearch/guide/current/nested-objects.html)
+//! - `FieldMapper` for mapping fields on user-defined types. User-defined types as fields are mapped as [Nested objects](https://www.elastic.co/guide/en/elasticsearch/guide/current/nested-objects.html)
 
 use std::marker::PhantomData;
 use serde;
@@ -37,12 +37,12 @@ impl <'a, T: 'a + ElasticType<M, ()> + Clone + Default, M: ElasticUserTypeMappin
 /// 
 /// The mapping is inferred from the given `ElasticType`.
 #[derive(Default)]
-pub struct DataMapper<T: ElasticType<M, F>, M: ElasticTypeMapping<F> = NullMapping, F = ()> {
+pub struct FieldMapper<T: ElasticType<M, F>, M: ElasticTypeMapping<F> = NullMapping, F = ()> {
 	phantom_m: PhantomData<M>,
 	phantom_t: PhantomData<T>,
 	phantom_f: PhantomData<F>
 }
-impl <T: ElasticType<M, F>, M: ElasticTypeMapping<F>, F> DataMapper<T, M, F> {
+impl <T: ElasticType<M, F>, M: ElasticTypeMapping<F>, F> FieldMapper<T, M, F> {
 	/// Infer the mapping of a data type and map using its `Visitor`.
 	/// 
 	/// The mapping is emitted as a json field, where the key is the name of the field on the type.
