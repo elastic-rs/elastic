@@ -7,6 +7,7 @@
 
 //Hyper is the base HTTP library that we sit on top of
 extern crate hyper;
+use hyper::header::Headers;
 use hyper::client::Client;
 use std::io::Read;
 
@@ -16,11 +17,16 @@ extern crate elastic_hyper as elastic;
 fn main() {
 	//Create a hyper client
 	let mut client = Client::new();
+	let params = elastic::RequestParams::new(Headers::new())
+		.url_params(vec![
+			("pretty", "true".to_owned())
+		]);
 
 	//Execute a HTTP Post search request. Other variants include post_index, post_index_type
 	let mut res = elastic::search::post(
-		&mut client, "http://localhost:9200",
-		json!({
+		&mut client, params,
+		"http://localhost:9200",
+		json_str!({
 			query: {
 				query_string: {
 					query: "*"
