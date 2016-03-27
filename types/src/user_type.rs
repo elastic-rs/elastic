@@ -245,7 +245,7 @@
 //! 
 //! First, we need to implement `ElasticType`, which takes the mapping as a generic parameter:
 //! 
-//! ```text
+//! ```ignore
 //! impl <'a> ElasticType<MyTypeMapping<'a>, ()> for MyType { }
 //! ```
 //! 
