@@ -245,14 +245,14 @@
 //! 
 //! First, we need to implement `ElasticType`, which takes the mapping as a generic parameter:
 //! 
-//! ```no_run
+//! ```text
 //! impl <'a> ElasticType<MyTypeMapping<'a>, ()> for MyType { }
 //! ```
 //! 
 //! The mapping struct is pretty simple. It takes an explicit lifetime parameter though so we can pass around an instance
 //! of our `MyType` and avoid allocations:
 //!
-//! ```no_run
+//! ```ignore
 //! #[derive(Default, Clone)]
 //! struct MyTypeMapping<'a> {
 //! 	phantom: PhantomData<&'a ()>
@@ -261,7 +261,7 @@
 //! 
 //! When mapping our type as a field, we implement `ElasticTypeMapping`:
 //! 
-//! ```no_run
+//! ```ignore
 //! impl <'a> ElasticTypeMapping<()> for MyTypeMapping<'a> {
 //! 	type Visitor = MyTypeNestedMappingVisitor<'a>;
 //! 
@@ -282,7 +282,7 @@
 //! Again we use an explicit lifetime so it's possible to build our visitor with either a default owned `MyType`
 //! or a borrowed instance:
 //! 
-//! ```no_run
+//! ```ignore
 //! struct MyTypeNestedMappingVisitor<'a> { 
 //! 	data: Cow<'a, MyType>
 //! }
@@ -316,7 +316,7 @@
 //! 
 //! The actual mapping of the properties is offloaded to yet another visitor:
 //! 
-//! ```no_run
+//! ```ignore
 //! struct MyTypePropertiesVisitor<'a> {
 //! 	data: &'a MyType
 //! }
@@ -345,7 +345,7 @@
 //! The reason we do this is so the serialisation can be reused by the mapping when we map as a standalone type,
 //! rather than as a field:
 //! 
-//! ```no_run
+//! ```ignore
 //! impl <'a> ElasticUserTypeMapping<'a, MyType> for MyTypeMapping<'a> {
 //! 	type Visitor = MyTypeMappingVisitor<'a>;
 //! 	type PropertiesVisitor = MyTypePropertiesVisitor<'a>;
@@ -360,7 +360,7 @@
 //! and an alternative to the `MyTypeNestedMappingVisitor`. 
 //! The difference is that we don't need to specify the `type` field as `nested`:
 //! 
-//! ```no_run
+//! ```ignore
 //! struct MyTypeMappingVisitor<'a> { 
 //! 	data: &'a MyType
 //! }
