@@ -165,7 +165,7 @@ pub mod user_type_fixtures {
 		pub my_string: ElasticString<DefaultStringMapping>,
 		pub my_num: i32
 	}
-	impl_elastic_type!(MyType, inner1, "my_type", [my_date1, my_date2, my_string, my_num]);
+	impl_type_mapping!(MyType, inner1, "my_type", [my_date1, my_date2, my_string, my_num]);
 
 	#[derive(Default, Clone, Serialize)]
 	pub struct MyOtherType {
@@ -173,7 +173,7 @@ pub mod user_type_fixtures {
 		pub my_type: MyType,
 		pub my_num: i32
 	}
-	impl_elastic_type!(MyOtherType, inner2, "my_other_type", [my_date, my_type, my_num]);
+	impl_type_mapping!(MyOtherType, inner2, "my_other_type", [my_date, my_type, my_num]);
 }
 
 pub mod user_type;

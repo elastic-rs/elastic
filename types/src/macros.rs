@@ -82,8 +82,8 @@ macro_rules! impl_date_fmt {
 }
 
 #[macro_export]
-macro_rules! impl_elastic_type {
-    ($t:ident, $es_ty:expr, [$($arg:ident),*]) => (impl_elastic_type!($t, inner, $es_ty, [$($arg),*]););
+macro_rules! impl_type_mapping {
+    ($t:ident, $es_ty:expr, [$($arg:ident),*]) => (impl_type_mapping!($t, inner, $es_ty, [$($arg),*]););
     ($t:ident, $mod_name:ident, $es_ty:expr, [$($arg:ident),*]) => (
     	mod $mod_name {
 			use std::marker::PhantomData;
