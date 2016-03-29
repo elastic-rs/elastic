@@ -196,7 +196,7 @@ pub mod object_fixtures {
 	#[derive(Default, Clone)]
 	struct MyOtherTypeMapping;
 	impl ElasticObjectMapping for MyOtherTypeMapping { }
-	impl_object_mapping!(MyOtherType, MyOtherTypeMapping, "my_other_type", inner2, [my_date, my_type, my_num]);
+	impl_object_mapping!(MyOtherType, MyOtherTypeMapping, "my_other_type", inner2, [{ "my_date", my_date }, { "my_renamed_type", my_type }, { "my_num", my_num }]);
 }
 
 pub mod object;

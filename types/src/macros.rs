@@ -83,8 +83,7 @@ macro_rules! impl_date_fmt {
 
 #[macro_export]
 macro_rules! impl_object_mapping {
-	($t:ident, $m:ident, $es_ty:expr, $mod_name:ident, [$($field:ident),*]) => (impl_object_mapping!($t, $m, $es_ty, $mod_name, [$(stringify!($field), $field),*]););
-	($t:ident, $m:ident, $es_ty:expr, $mod_name:ident, [$($key:expr, $field:ident),*]) => (
+	($t:ident, $m:ident, $es_ty:expr, $mod_name:ident, [$({$key:expr, $field:ident}),*]) => (
 		mod $mod_name {
 			use std::marker::PhantomData;
 			use serde;
@@ -198,5 +197,6 @@ macro_rules! impl_object_mapping {
 
 			impl <'a> ElasticType<TypeMapping<'a>, ()> for $t { }
 		}
-	)
+	);
+	($t:ident, $m:ident, $es_ty:expr, $mod_name:ident, [$($field:ident),*]) => (impl_object_mapping!($t, $m, $es_ty, $mod_name, [$({stringify!($field), $field}),*]);)
 }
