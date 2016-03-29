@@ -54,5 +54,4 @@ impl_mapping!(
 	char
 );
 
-impl <T: serde::Serialize> mapping::ElasticType<mapping::NullMapping, ()> for Vec<T> { }
-impl <'a, T: serde::Serialize> mapping::ElasticType<mapping::NullMapping, ()> for &'a [T] { }
+impl <T: serde::Serialize + serde::Deserialize> mapping::ElasticType<mapping::NullMapping, ()> for Vec<T> { }

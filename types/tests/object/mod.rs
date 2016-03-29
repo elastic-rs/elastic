@@ -8,9 +8,6 @@ extern crate elastic_types;
 
 use serde_json::ser::Serializer;
 use elastic_types::mapping::prelude::*;
-use elastic_types::date::prelude::*;
-use elastic_types::string::prelude::*;
-use ::date_fixtures::*;
 use ::object_fixtures::*;
 
 #[test]

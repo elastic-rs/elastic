@@ -68,7 +68,7 @@ use serde;
 /// 
 /// - [Elasticsearch docs](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-types.html)
 pub trait ElasticType<T: ElasticTypeMapping<F>, F> 
-where Self : serde::Serialize { }
+where Self : serde::Serialize + serde::Deserialize { }
 
 /// The base requirements for mapping an Elasticsearch data type.
 /// 

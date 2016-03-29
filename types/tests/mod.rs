@@ -153,13 +153,12 @@ pub mod string_fixtures {
 }
 
 pub mod object_fixtures {
-	use std::marker::PhantomData;
 	use elastic_types::mapping::prelude::*;
 	use elastic_types::date::prelude::*;
 	use elastic_types::string::prelude::*;
 	use ::date_fixtures::*;
 
-	#[derive(Default, Clone, Serialize)]
+	#[derive(Default, Clone, Serialize, Deserialize)]
 	pub struct MyType {
 		pub my_date1: DateTime,
 		pub my_date2: DateTime<EpochMillis, MyDateMapping>,
@@ -188,7 +187,7 @@ pub mod object_fixtures {
 	}
 	impl_object_mapping!(MyType, MyTypeMapping, "my_type", inner1, [my_date1, my_date2, my_string, my_num]);
 
-	#[derive(Default, Clone, Serialize)]
+	#[derive(Default, Clone, Serialize, Deserialize)]
 	pub struct MyOtherType {
 		pub my_date: DateTime,
 		pub my_type: MyType,

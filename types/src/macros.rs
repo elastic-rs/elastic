@@ -81,28 +81,13 @@ macro_rules! impl_date_fmt {
     )
 }
 
-//TODO: See if we can get away without explicit lifetime
-//TODO: See if we can specify the type name here
-/*
-#[derive(Default, Clone)]
-struct MyMapping<'a> {
-	phantom: PhantomData<&'a ()>
-}
-impl ElasticObjectMapping for MyMapping {
-	fn data_type() -> ObjectType {
-        ObjectType::Nested;
-    }
-}
-*/
-
 #[macro_export]
 macro_rules! impl_object_mapping {
-    ($t:ident, $m:ident, $es_ty:expr, $mod_name:ident, [$($arg:ident),*]) => (
+    ($t:ident, $m:ident, $es_ty:expr, $mod_name:ident, [$($field:ident),*]) => (impl_object_mapping!($t, $m, $es_ty, $mod_name, [$(stringify!($field), $field),*]););
+    ($t:ident, $m:ident, $es_ty:expr, $mod_name:ident, [$($key:expr, $field:ident),*]) => (
     	mod $mod_name {
 			use std::marker::PhantomData;
-			use std::borrow::Cow;
 			use serde;
-			use serde::Serialize;
 			use $crate::mapping::prelude::*;
 			use super::{ $t, $m };
 
@@ -123,7 +108,7 @@ macro_rules! impl_object_mapping {
 				fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
 				where S: serde::Serializer {
 					$(
-						try!(FieldMapper::map(stringify!($arg), &self.data.$arg, serializer));
+						try!(FieldMapper::map($key, &self.data.$field, serializer));
 					)*
 
 					Ok(None)
