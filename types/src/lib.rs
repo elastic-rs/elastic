@@ -18,7 +18,7 @@
 //! - [Github](https://github.com/KodrAus/elasticsearch-rs)
 
 #![doc(html_root_url = "http://kodraus.github.io/rustdoc/elastic_types/")]
-#![deny(missing_docs)]
+//#![deny(missing_docs)]
 
 #![feature(custom_derive, custom_attribute, plugin, optin_builtin_traits, associated_type_defaults)]
 #![cfg_attr(feature = "nightly-testing", plugin(clippy))]
@@ -33,7 +33,7 @@ pub mod macros;
 pub mod mapping;
 pub mod mappers;
 
-pub mod user_type;
+pub mod object;
 pub mod date;
 pub mod string;
 

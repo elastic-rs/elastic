@@ -30,7 +30,7 @@ pub mod prelude {
 		ElasticTypeMappingVisitor
 	};
 
-	pub use ::user_type::*;
+	pub use ::object::*;
 	pub use ::mappers::*;
 	pub use ::date::mapping::*;
 	pub use ::string::mapping::*;
@@ -67,14 +67,16 @@ use serde;
 /// # Links
 /// 
 /// - [Elasticsearch docs](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-types.html)
-pub trait ElasticType<T: ElasticTypeMapping<F>, F> 
+pub trait ElasticType<'a, T: ElasticTypeMapping<'a, F>, F> 
 where Self : serde::Serialize { }
+
+//TODO: See if visitors can take a lifetime param for borrowing complex fields rather than reallocating
 
 /// The base requirements for mapping an Elasticsearch data type.
 /// 
 /// Each type has its own implementing structures with extra type-specific mapping parameters.
 /// If you're building your own Elasticsearch types, see `TypeMapping`, which is a specialization of `ElasticTypeMapping<()>`.
-pub trait ElasticTypeMapping<F>
+pub trait ElasticTypeMapping<'a, F>
 where Self: Default + Clone + serde::Serialize {
 	#[doc(hidden)]
 	type Visitor : serde::ser::MapVisitor + Default;
@@ -158,11 +160,11 @@ impl serde::Serialize for IndexAnalysis {
 }
 
 /// Base visitor for serialising datatype mappings.
-pub struct ElasticTypeMappingVisitor<T: ElasticTypeMapping<()>> {
-	phantom: PhantomData<T>
+pub struct ElasticTypeMappingVisitor<'a, T: ElasticTypeMapping<()>> {
+	phantom: PhantomData<&'a T>
 }
 
-impl <T: ElasticTypeMapping<()>> Default for ElasticTypeMappingVisitor<T> {
+impl <'a, T: ElasticTypeMapping<'a, ()>> Default for ElasticTypeMappingVisitor<'a, T> {
 	fn default() -> ElasticTypeMappingVisitor<T> {
 		ElasticTypeMappingVisitor::<T> {
 			phantom: PhantomData
@@ -170,7 +172,7 @@ impl <T: ElasticTypeMapping<()>> Default for ElasticTypeMappingVisitor<T> {
 	}
 }
 
-impl <T: ElasticTypeMapping<()>> serde::ser::MapVisitor for ElasticTypeMappingVisitor<T> {
+impl <'a, T: ElasticTypeMapping<'a, ()>> serde::ser::MapVisitor for ElasticTypeMappingVisitor<'a, T> {
 	fn visit<S>(&mut self, _: &mut S) -> Result<Option<()>, S::Error>
 	where S: serde::Serializer {
 		Ok(None)

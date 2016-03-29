@@ -388,6 +388,7 @@
 
 use std::marker::PhantomData;
 use serde;
+use serde::{ Serialize, Serializer };
 use ::mapping::{ ElasticTypeMapping };
 
 /// The base requirements for mapping a user-defined type.
@@ -402,6 +403,67 @@ where Self: ElasticTypeMapping<()> + Default + Clone + serde::Serialize {
 	fn name() -> &'static str;
 }
 
+/// Visitor for the `ElasticUserTypeProperties` struct and given user-defined type.
+/// 
+/// The purpose of this trait is to serialise the mapping for each datatype on the user-defined type `T`.
+/// To make this easier, the `FieldMapper` can be used to infer the mapping for a field that implements `ElasticType`.
+/// 
+/// # Examples
+/// 
+/// Implement `ElasticUserTypeVisitor` for a user-defined type:
+/// 
+/// ```
+/// //TODO: Implement
+/// ```
+pub trait ElasticUserTypeVisitor<'a, T: 'a + Clone + Default>
+where Self: serde::ser::MapVisitor { 
+	/// Create a new visitor from a borrowed user-defined type.
+	fn new(data: &'a T) -> Self;
+}
+
+pub trait ElasticObjectMapping
+where Self : ElasticTypeMapping<()> + Sized + Serialize + Default + Clone {
+    fn data_type() -> ObjectType {
+        ObjectType::Nested
+    }
+
+    fn dynamic() -> Option<bool> {
+    	None
+    }
+}
+
+pub enum ObjectType {
+    Object,
+    Nested
+}
+
+impl ObjectType {
+	pub fn as_str(&self) -> &str {
+		match *self {
+			ObjectType::Object => "object",
+			ObjectType::Nested => "nested"
+		}
+	}
+}
+
+//TODO: Figure out how to work this in to the serialisation
+#[derive(Debug, PartialEq, Default)]
+pub struct ElasticObjectMappingVisitor<T: ElasticObjectMapping> {
+	phantom: PhantomData<T>
+}
+
+impl <T: ElasticObjectMapping> serde::ser::MapVisitor for ElasticObjectMappingVisitor<T> {
+	fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
+	where S: Serializer {
+		if let Some(dynamic) = T::dynamic() {
+			try!(serializer.serialize_struct_elt("dynamic", dynamic));
+		};
+
+		Ok(None)
+	}
+}
+
+//TODO: Rename ElasticObjectProperties?
 /// Represents the properties object that encapsulates type mappings.
 pub struct ElasticUserTypeProperties<'a, T: 'a + Clone + Default, M: ElasticUserTypeMapping<'a, T>> { 
 	data: &'a T,
@@ -422,22 +484,4 @@ impl <'a, T: 'a + Clone + Default, M: ElasticUserTypeMapping<'a, T>> serde::Seri
 	where S: serde::Serializer {
 		serializer.serialize_struct("properties", <M as ElasticUserTypeMapping<T>>::PropertiesVisitor::new(&self.data))
 	}
-}
-
-/// Visitor for the `ElasticUserTypeProperties` struct and given user-defined type.
-/// 
-/// The purpose of this trait is to serialise the mapping for each datatype on the user-defined type `T`.
-/// To make this easier, the `FieldMapper` can be used to infer the mapping for a field that implements `ElasticType`.
-/// 
-/// # Examples
-/// 
-/// Implement `ElasticUserTypeVisitor` for a user-defined type:
-/// 
-/// ```
-/// //TODO: Implement
-/// ```
-pub trait ElasticUserTypeVisitor<'a, T: 'a + Clone + Default>
-where Self: serde::ser::MapVisitor { 
-	/// Create a new visitor from a borrowed user-defined type.
-	fn new(data: &'a T) -> Self;
 }

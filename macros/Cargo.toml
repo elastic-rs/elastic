@@ -9,7 +9,7 @@ repository = "https://github.com/KodrAus/elasticsearch-rs"
 
 [lib]
 name = "elastic_macros"
-crate_type = ["dylib"]
+crate_type = [ "dylib" ]
 plugin = true
 
 [features]

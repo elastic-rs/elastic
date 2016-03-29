@@ -11,7 +11,7 @@ use elastic_types::mapping::prelude::*;
 use elastic_types::date::prelude::*;
 use elastic_types::string::prelude::*;
 use ::date_fixtures::*;
-use ::user_type_fixtures::*;
+use ::object_fixtures::*;
 
 #[test]
 fn serialise_mapping_type() {

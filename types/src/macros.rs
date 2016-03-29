@@ -81,96 +81,52 @@ macro_rules! impl_date_fmt {
     )
 }
 
+//TODO: See if we can get away without explicit lifetime
+//TODO: See if we can specify the type name here
+/*
+#[derive(Default, Clone)]
+struct MyMapping;
+impl ElasticObjectMapping for MyMapping {
+	fn data_type() -> ObjectType {
+        ObjectType::Nested;
+    }
+}
+*/
+
 #[macro_export]
-macro_rules! impl_type_mapping {
-    ($t:ident, $es_ty:expr, [$($arg:ident),*]) => (impl_type_mapping!($t, inner, $es_ty, [$($arg),*]););
-    ($t:ident, $mod_name:ident, $es_ty:expr, [$($arg:ident),*]) => (
+macro_rules! impl_object_mapping {
+    ($t:ident, $m:ident, $es_ty:expr, [$($arg:ident),*]) => (impl_object_mapping!($t, $m, inner, $es_ty, [$($arg),*]););
+    ($t:ident, $m:ident, $mod_name:ident, $es_ty:expr, [$($arg:ident),*]) => (
     	mod $mod_name {
 			use std::marker::PhantomData;
 			use std::borrow::Cow;
 			use serde;
 			use serde::Serialize;
 			use $crate::mapping::prelude::*;
-			use super::$t;
+			use super::{ $t, $m };
 
-			impl <'a> ElasticType<MyMapping<'a>, ()> for $t { }
+			impl ElasticType<$m, ()> for $t { }
 
-			#[derive(Default, Clone)]
-			struct MyMapping<'a> {
-				phantom: PhantomData<&'a ()>
-			}
-
-			impl <'a> ElasticTypeMapping<()> for MyMapping<'a> {
-				type Visitor = MyNestedMappingVisitor<'a>;
+			impl <'a> ElasticTypeMapping<'a, ()> for $m {
+				type Visitor = MyFieldMappingVisitor<'a>;
 
 				fn data_type() -> &'static str {
-					"nested"
+					<Self as ElasticObjectMapping>::data_type().as_str()
 				}
 			}
-			impl <'a> ElasticUserTypeMapping<'a, $t> for MyMapping<'a> {
-				type Visitor = MyMappingVisitor<'a>;
+			impl <'a> ElasticUserTypeMapping<'a, $t> for $m {
+				type Visitor = MyTypeMappingVisitor<'a>;
 				type PropertiesVisitor = MyPropertiesVisitor<'a>;
 
 				fn name() -> &'static str {
-					"mytype"
+					$es_ty
 				}
 			}
 
-			impl <'a> serde::Serialize for MyMapping<'a> {
+			impl <'a> serde::Serialize for $m {
 				fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
 				where S: serde::Serializer {
-					serializer.serialize_struct(Self::name(), MyNestedMappingVisitor::default())
-				}
-			}
-
-			struct MyNestedMappingVisitor<'a> { 
-				data: Cow<'a, $t>
-			}
-
-			impl <'a> MyNestedMappingVisitor<'a> {
-				fn new(data: &'a $t) -> Self {
-					MyNestedMappingVisitor {
-						data: Cow::Borrowed(data)
-					}
-				}
-			}
-
-			impl <'a> Default for MyNestedMappingVisitor<'a> {
-				fn default() -> MyNestedMappingVisitor<'a> {
-					MyNestedMappingVisitor {
-						data: Cow::Owned($t::default())
-					}
-				}
-			}
-
-			impl <'a> serde::ser::MapVisitor for MyNestedMappingVisitor<'a> {
-				fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
-				where S: serde::Serializer {
-					try!(serializer.serialize_struct_elt("type", MyMapping::data_type()));
-					try!(serializer.serialize_struct_elt("properties", ElasticUserTypeProperties::<'a, $t, MyMapping<'a>>::new(&self.data)));
-
-					Ok(None)
-				}
-			}
-
-			struct MyMappingVisitor<'a> { 
-				data: &'a $t
-			}
-
-			impl <'a> ElasticUserTypeVisitor<'a, $t> for MyMappingVisitor<'a> {
-				fn new(data: &'a $t) -> Self {
-					MyMappingVisitor {
-						data: data
-					}
-				}
-			}
-
-			impl <'a> serde::ser::MapVisitor for MyMappingVisitor<'a> {
-				fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
-				where S: serde::Serializer {
-					try!(serializer.serialize_struct_elt("properties", ElasticUserTypeProperties::<'a, $t, MyMapping<'a>>::new(&self.data)));
-
-					Ok(None)
+					serializer.serialize_struct(Self::name(), MyFieldMappingVisitor::default())
 				}
 			}
 
@@ -196,8 +152,56 @@ macro_rules! impl_type_mapping {
 					Ok(None)
 				}
 			}
+
+			struct MyFieldMappingVisitor<'a> { 
+				data: Cow<'a, $t>
+			}
+
+			impl <'a> Default for MyFieldMappingVisitor<'a> {
+				fn default() -> MyFieldMappingVisitor<'a> {
+					MyFieldMappingVisitor {
+						data: Cow::Owned($t::default())
+					}
+				}
+			}
+
+			impl <'a> serde::ser::MapVisitor for MyFieldMappingVisitor<'a> {
+				fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
+				where S: serde::Serializer {
+					try!(serializer.serialize_struct_elt("type", <$m as ElasticTypeMapping<()>>::data_type()));
+
+					let mut object_mapper = ElasticObjectMappingVisitor::<$m>::default();
+					try!(object_mapper.visit(&mut serializer));
+
+					try!(serializer.serialize_struct_elt("properties", ElasticUserTypeProperties::<'a, $t, $m>::new(&self.data)));
+
+					Ok(None)
+				}
+			}
+
+			struct MyTypeMappingVisitor<'a> { 
+				data: &'a $t
+			}
+
+			impl <'a> ElasticUserTypeVisitor<'a, $t> for MyTypeMappingVisitor<'a> {
+				fn new(data: &'a $t) -> Self {
+					MyTypeMappingVisitor {
+						data: data
+					}
+				}
+			}
+
+			impl <'a> serde::ser::MapVisitor for MyTypeMappingVisitor<'a> {
+				fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
+				where S: serde::Serializer {
+					let mut object_mapper = ElasticObjectMappingVisitor::<$m>::default();
+					try!(object_mapper.visit(&mut serializer));
+
+					try!(serializer.serialize_struct_elt("properties", ElasticUserTypeProperties::<'a, $t, $m>::new(&self.data)));
+
+					Ok(None)
+				}
+			}
 		}
     )
 }
-
-//impl_type_mapping(MyType, [my_date1, my_date2, my_string, my_num])
