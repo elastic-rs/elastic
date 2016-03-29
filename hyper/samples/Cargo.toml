@@ -6,7 +6,7 @@ authors = ["Ashley Mannix <ashleymannix@live.com.au>"]
 [dependencies]
 elastic_hyper = "*"
 elastic_macros = "*"
-hyper = "0.7.2"
+hyper = "0.8.0"
 serde = "*"
 serde_macros = "*"
 serde_json = "*"
