@@ -12,7 +12,7 @@ use ::string_fixtures::*;
 use test::Bencher;
 
 #[bench]
-fn serialise_string_format(b: &mut Bencher) {
+fn mapping(b: &mut Bencher) {
 	b.iter(|| {
 		let mapping = MyStringMapping;
 		serde_json::to_string(&mapping).unwrap()

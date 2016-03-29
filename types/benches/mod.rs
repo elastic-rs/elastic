@@ -1,14 +1,13 @@
 #![allow(unused_attributes)]
 
-#![feature(test, custom_derive, custom_attribute, plugin)]
+#![feature(custom_derive, custom_attribute, plugin, test)]
 #![plugin(serde_macros)]
 #![plugin(elastic_macros)]
 
-extern crate test;
 extern crate serde;
 extern crate serde_json;
 extern crate chrono;
-
+extern crate test;
 #[macro_use]
 extern crate elastic_types;
 
@@ -18,7 +17,7 @@ pub mod date_fixtures {
 	use elastic_types::date::prelude::*;
 
 	//A custom date mapping
-	#[derive(Default, Clone)]
+	#[derive(Default, Clone, Copy)]
 	pub struct MyDateMapping;
 	impl ElasticDateMapping<EpochMillis> for MyDateMapping {
 		fn boost() -> Option<f32> {
@@ -53,7 +52,6 @@ pub mod date_fixtures {
 			Some(6)
 		}
 	}
-
 	impl_date_mapping!(MyDateMapping, EpochMillis);
 }
 
@@ -64,7 +62,7 @@ pub mod string_fixtures {
 
 	#[derive(Default, Clone)]
 	pub struct MyStringMapping;
-	impl ElasticStringMapping<DefaultStringFormat> for MyStringMapping { 
+	impl ElasticStringMapping for MyStringMapping { 
 		fn boost() -> Option<f32> {
 			Some(1.01)
 		}
@@ -100,8 +98,17 @@ pub mod string_fixtures {
 				..Default::default()
 			});
 			fields.insert("bm25_field", ElasticStringFieldMapping {
-				similarity: Some("BM25"),
-				..Default::default()
+				analyzer: 					Some("my_analyzer"),
+				fielddata: 					Some(FieldData::Disabled),
+				ignore_above: 				Some(50),
+				index_options: 				Some(IndexOptions::Docs),
+				norms: 						Some(Norms::Disabled),
+				null_value: 				Some("my default value"),
+				position_increment_gap: 	Some(8),
+				search_analyzer: 			Some("my_search_analyzer"),
+				search_quote_analyzer: 		Some("my_quote_search_analyzer"),
+				similarity: 				Some("BM25"),
+				term_vector: 				Some(TermVector::No)
 			});
 			
 			Some(fields)
@@ -143,10 +150,98 @@ pub mod string_fixtures {
 			Some(TermVector::No)
 		}
 	}
+	impl_string_mapping!(MyStringMapping);
+}
 
-	impl_string_mapping!(MyStringMapping, DefaultStringFormat);
+pub mod object_fixtures {
+	use elastic_types::mapping::prelude::*;
+	use elastic_types::date::prelude::*;
+	use elastic_types::string::prelude::*;
+
+	#[derive(Default, Clone, Serialize, Deserialize)]
+	pub struct MySmlType {
+		pub my_date1: DateTime,
+		pub my_string: ElasticString<DefaultStringMapping>,
+		pub my_num: i32
+	}
+	#[derive(Default, Clone)]
+	struct MySmlTypeMapping;
+	impl ElasticObjectMapping for MySmlTypeMapping {
+		fn data_type() -> &'static str {
+			"object"
+		}
+
+		fn dynamic() -> Option<bool> {
+			Some(true)
+		}
+
+		fn enabled() -> Option<bool> {
+			Some(false)
+		}
+
+		fn include_in_all() -> Option<bool> {
+			Some(true)
+		}
+	}
+	impl_object_mapping!(MySmlType, MySmlTypeMapping, "my_sml_type", inner1, [my_date1, my_string, my_num]);
+
+	#[derive(Default, Clone, Serialize, Deserialize)]
+	pub struct MyMedType {
+		pub my_date1: DateTime,
+		pub my_string: ElasticString<DefaultStringMapping>,
+		pub my_num: i32,
+		pub my_type: MySmlType
+	}
+	#[derive(Default, Clone)]
+	struct MyMedTypeMapping;
+	impl ElasticObjectMapping for MyMedTypeMapping {
+		fn data_type() -> &'static str {
+			"object"
+		}
+
+		fn dynamic() -> Option<bool> {
+			Some(true)
+		}
+
+		fn enabled() -> Option<bool> {
+			Some(false)
+		}
+
+		fn include_in_all() -> Option<bool> {
+			Some(true)
+		}
+	}
+	impl_object_mapping!(MyMedType, MyMedTypeMapping, "my_med_type", inner2, [my_date1, my_string, my_num, my_type]);
+
+	#[derive(Default, Clone, Serialize, Deserialize)]
+	pub struct MyLrgType {
+		pub my_date1: DateTime,
+		pub my_string: ElasticString<DefaultStringMapping>,
+		pub my_num: i32,
+		pub my_type: MyMedType
+	}
+	#[derive(Default, Clone)]
+	struct MyLrgTypeMapping;
+	impl ElasticObjectMapping for MyLrgTypeMapping {
+		fn data_type() -> &'static str {
+			"object"
+		}
+
+		fn dynamic() -> Option<bool> {
+			Some(true)
+		}
+
+		fn enabled() -> Option<bool> {
+			Some(false)
+		}
+
+		fn include_in_all() -> Option<bool> {
+			Some(true)
+		}
+	}
+	impl_object_mapping!(MyLrgType, MyLrgTypeMapping, "my_lrg_type", inner3, [my_date1, my_string, my_num, my_type]);
 }
 
 pub mod date;
 pub mod string;
-pub mod ty;
+pub mod object;

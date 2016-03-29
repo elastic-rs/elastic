@@ -6,13 +6,13 @@ use ::mapping::{ ElasticTypeMapping };
 
 pub trait ElasticObjectMapping
 where Self : ElasticTypeMapping<()> + Sized + Serialize + Default + Clone {
-    fn data_type() -> &'static str {
-        "nested"
-    }
+	fn data_type() -> &'static str {
+		"nested"
+	}
 
-    fn dynamic() -> Option<bool> {
-    	None
-    }
+	fn dynamic() -> Option<bool> {
+		None
+	}
 
 	fn enabled() -> Option<bool> {
 		None

@@ -1,13 +1,14 @@
 #![feature(test, plugin)]
 #![plugin(elastic_macros)]
 
+extern crate serde;
+extern crate serde_json;
 extern crate test;
 extern crate chrono;
 extern crate elastic_types;
 
-pub mod format;
-
 use elastic_types::date::prelude::*;
+use ::date_fixtures::*;
 
 use test::Bencher;
 
@@ -47,5 +48,13 @@ fn parse_date_to_epoch(b: &mut Bencher) {
 fn get_date_fmt_vec(b: &mut Bencher) {
 	b.iter(|| {
 		BasicDateTime::fmt()
+	});
+}
+
+#[bench]
+fn mapping(b: &mut Bencher) {
+	b.iter(|| {
+		let mapping = MyDateMapping;
+		serde_json::to_string(&mapping).unwrap()
 	});
 }

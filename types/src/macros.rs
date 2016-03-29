@@ -11,8 +11,8 @@ macro_rules! impl_mapping {
 
 #[macro_export]
 macro_rules! impl_string_mapping {
-    ($t:ty) => (
-    	impl $crate::mapping::ElasticTypeMapping<()> for $t {
+	($t:ty) => (
+		impl $crate::mapping::ElasticTypeMapping<()> for $t {
 			type Visitor = $crate::string::mapping::ElasticStringMappingVisitor<$t>;
 
 			fn data_type() -> &'static str {
@@ -26,13 +26,13 @@ macro_rules! impl_string_mapping {
 				serializer.serialize_struct("mapping", Self::get_visitor())
 			}
 		}
-    )
+	)
 }
 
 #[macro_export]
 macro_rules! impl_date_mapping {
 	($t:ty, $f:ty) => (
-    	impl $crate::mapping::ElasticTypeMapping<$f> for $t {
+		impl $crate::mapping::ElasticTypeMapping<$f> for $t {
 			type Visitor = $crate::date::mapping::ElasticDateMappingVisitor<$f, $t>;
 
 			fn data_type() -> &'static str {
@@ -46,9 +46,9 @@ macro_rules! impl_date_mapping {
 				serializer.serialize_struct("mapping", Self::get_visitor())
 			}
 		}
-    );
-    ($t:ty) => (
-    	impl <T: $crate::date::DateFormat> $crate::mapping::ElasticTypeMapping<T> for $t {
+	);
+	($t:ty) => (
+		impl <T: $crate::date::DateFormat> $crate::mapping::ElasticTypeMapping<T> for $t {
 			type Visitor = $crate::date::mapping::ElasticDateMappingVisitor<T, $t>;
 
 			fn data_type() -> &'static str {
@@ -62,12 +62,12 @@ macro_rules! impl_date_mapping {
 				serializer.serialize_struct("mapping", Self::get_visitor())
 			}
 		}
-    )
+	)
 }
 
 #[macro_export]
 macro_rules! impl_date_fmt {
-    ($t:ty, $f:tt, $n:expr) => (
+	($t:ty, $f:tt, $n:expr) => (
 		impl $crate::date::DateFormat for $t {
 			fn fmt<'a>() -> Vec<chrono::format::Item<'a>> {
 				date_fmt!($f)
@@ -78,14 +78,14 @@ macro_rules! impl_date_fmt {
 
 			fn name() -> &'static str { $n }
 		}
-    )
+	)
 }
 
 #[macro_export]
 macro_rules! impl_object_mapping {
-    ($t:ident, $m:ident, $es_ty:expr, $mod_name:ident, [$($field:ident),*]) => (impl_object_mapping!($t, $m, $es_ty, $mod_name, [$(stringify!($field), $field),*]););
-    ($t:ident, $m:ident, $es_ty:expr, $mod_name:ident, [$($key:expr, $field:ident),*]) => (
-    	mod $mod_name {
+	($t:ident, $m:ident, $es_ty:expr, $mod_name:ident, [$($field:ident),*]) => (impl_object_mapping!($t, $m, $es_ty, $mod_name, [$(stringify!($field), $field),*]););
+	($t:ident, $m:ident, $es_ty:expr, $mod_name:ident, [$($key:expr, $field:ident),*]) => (
+		mod $mod_name {
 			use std::marker::PhantomData;
 			use serde;
 			use $crate::mapping::prelude::*;
@@ -198,5 +198,5 @@ macro_rules! impl_object_mapping {
 
 			impl <'a> ElasticType<TypeMapping<'a>, ()> for $t { }
 		}
-    )
+	)
 }
