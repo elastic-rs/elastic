@@ -9,7 +9,7 @@
 use std::marker::PhantomData;
 use serde;
 use ::mapping::{ ElasticType, ElasticTypeMapping, NullMapping };
-use ::object::{ ElasticUserTypeMapping, ElasticUserTypeVisitor};
+use ::object::{ ElasticUserTypeMapping, ElasticObjectMapping, ElasticObjectTypeVisitor };
 
 /// Helper for mapping user-defined types.
 /// 
@@ -31,7 +31,6 @@ impl <'a, T: 'a + ElasticType<M, ()> + Clone + Default, M: ElasticUserTypeMappin
 		)
 	}
 }
-
 
 /// Helper for mapping data type fields.
 /// 

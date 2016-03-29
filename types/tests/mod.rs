@@ -153,6 +153,7 @@ pub mod string_fixtures {
 }
 
 pub mod object_fixtures {
+	use std::marker::PhantomData;
 	use elastic_types::mapping::prelude::*;
 	use elastic_types::date::prelude::*;
 	use elastic_types::string::prelude::*;
@@ -169,11 +170,23 @@ pub mod object_fixtures {
 	#[derive(Default, Clone)]
 	struct MyTypeMapping;
 	impl ElasticObjectMapping for MyTypeMapping {
-		fn data_type() -> ObjectType {
-	        ObjectType::Object;
-	    }
+		fn data_type() -> &'static str {
+			"object"
+		}
+
+		fn dynamic() -> Option<bool> {
+			Some(true)
+		}
+
+		fn enabled() -> Option<bool> {
+			Some(false)
+		}
+
+		fn include_in_all() -> Option<bool> {
+			Some(true)
+		}
 	}
-	impl_object_mapping!(MyType, MyTypeMapping, inner1, "my_type", [my_date1, my_date2, my_string, my_num]);
+	impl_object_mapping!(MyType, MyTypeMapping, "my_type", inner1, [my_date1, my_date2, my_string, my_num]);
 
 	#[derive(Default, Clone, Serialize)]
 	pub struct MyOtherType {
@@ -184,7 +197,7 @@ pub mod object_fixtures {
 	#[derive(Default, Clone)]
 	struct MyOtherTypeMapping;
 	impl ElasticObjectMapping for MyOtherTypeMapping { }
-	impl_object_mapping!(MyOtherType, MyOtherTypeMapping, inner2, "my_other_type", [my_date, my_type, my_num]);
+	impl_object_mapping!(MyOtherType, MyOtherTypeMapping, "my_other_type", inner2, [my_date, my_type, my_num]);
 }
 
 pub mod object;

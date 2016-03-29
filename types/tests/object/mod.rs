@@ -70,34 +70,36 @@ fn serialise_mapping_type_as_nested() {
 	let ser = String::from_utf8(writer).unwrap();
 
 	let expected = json_str!({
-		"properties": {
+		"properties":{
 			"my_date":{
 				"type":"date",
 				"format":"basic_date_time"
-			}, 
-			"my_type": {
-				"type": "nested",
-				"properties": {
+			},
+			"my_type":{
+				"type":"object",
+				"dynamic":true,
+				"enabled":false,
+				"include_in_all":true,
+				"properties":{
 					"my_date1":{
 						"type":"date",
 						"format":"basic_date_time"
 					},
-					"my_date2": {
-						"type": "date",
-						"boost": 1.01,
-						"doc_values": true,
-						"include_in_all": false,
-						"index": "no",
-						"store": true,
-						"format": "epoch_millis",
-						"ignore_malformed": true,
-						"null_value": "0",
-						"precision_step": 6
+					"my_date2":{
+						"type":"date",
+						"boost":1.01,
+						"doc_values":true,
+						"include_in_all":false,
+						"index":"no",
+						"store":true,
+						"format":"epoch_millis",
+						"ignore_malformed":true,
+						"null_value":"0",
+						"precision_step":6
 					},
 					"my_string":{
 						"type":"string"
-					},
-					"my_num":{
+					},"my_num":{
 						"type":"object"
 					}
 				}
