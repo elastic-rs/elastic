@@ -171,8 +171,8 @@ pub mod object_fixtures {
 			"object"
 		}
 
-		fn dynamic() -> Option<bool> {
-			Some(true)
+		fn dynamic() -> Option<Dynamic> {
+			Some(Dynamic::True)
 		}
 
 		fn enabled() -> Option<bool> {
@@ -199,8 +199,8 @@ pub mod object_fixtures {
 			"object"
 		}
 
-		fn dynamic() -> Option<bool> {
-			Some(true)
+		fn dynamic() -> Option<Dynamic> {
+			Some(Dynamic::True)
 		}
 
 		fn enabled() -> Option<bool> {
