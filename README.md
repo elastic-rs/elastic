@@ -62,14 +62,85 @@ See the [samples](https://github.com/KodrAus/elasticsearch-rs/tree/master/hyper/
 
 If you'd prefer to call Elasticsearch using a Query DSL builder, see [rs-es](https://github.com/benashford/rs-es).
 
+`elastic_types` is a library for building Elasticsearch types in Rust. Define your Elasticsearch types as PORS (Plain Old Rust Structures) and generate an equivalent Elasticsearch mapping from them.
+
+Add `elastic_types` to your `Cargo.toml`:
+
+```
+[dependencies]
+elastic_types = "*"
+```
+
+Define a custom Elasticsearch type called `my_type`:
+
+```rust
+#![feature(plugin, custom_derive)]
+#![plugin(elastic_macros)]
+
+#[macro_use]
+extern crate elastic_types;
+extern crate serde;
+
+use serde::{ Serialize, Deserialize };
+use elastic_types::mapping::prelude::*;
+use elastic_types::date::{ DateTime, EpochMillis };
+use elastic_types::string::ElasticString;
+
+//Define a struct for your type
+//Elasticsearch core types are provided out-of-the-box
+#[derive(Default, Clone, Serialize, Deserialize)]
+pub struct MyType {
+	pub my_date1: DateTime,
+	pub my_date2: DateTime<EpochMillis>,
+	pub my_string: String,
+	pub my_string2: ElasticString<DefaultStringMapping>,
+	pub my_num: i32
+}
+
+//Define the object mapping for the type
+#[derive(Default, Clone)]
+struct MyTypeMapping;
+impl ElasticObjectMapping for MyTypeMapping {
+	//Mapping meta-parameters are exposed as functions
+	fn dynamic() -> Option<bool> {
+		Some(false)
+	}
+}
+impl_object_mapping!(MyType, MyTypeMapping, "my_type", inner, [my_date1, my_date2, my_string1, my_string2, my_num]);
+```
+
+Compiler-plugins to automatically derive mapping will be added in the future.
+
+Get the mapping for your type:
+
+```rust
+extern crate serde_json;
+
+use serde_json::ser::Serializer;
+use elastic_types::mappers::TypeMapper;
+
+let mytype = MyType::default();
+
+//Build a serialiser and map our type
+let mut writer = Vec::new();
+{
+	let mut ser = Serializer::new(&mut writer);
+	let _ = TypeMapper::map(&mytype, &mut ser).unwrap();
+}
+let mapping = String::from_utf8(writer).unwrap();
+```
+
+See the [elastic_types](#elastic_types) and [elastic_macros](#elastic_macros) for more details.
+
 ## Roadmap
 
 See [milestones](https://github.com/KodrAus/elasticsearch-rs/milestones).
 
 - [ ] Implement core Elasticsearch types
 - [ ] Implement Elasticsearch response types
+- [ ] Rotor Client
 - [x] Codegen API endpoints
-- [x] Client
+- [x] Hyper Client
 - [x] Doc APIs
 - [x] Query DSL proof-of-concept to test design
 
@@ -83,13 +154,15 @@ This means you don't need to learn another API for interacting with Elasticsearc
 
 The core focus of this project is on strong typing over the core types and responses in Elasticsearch, rather than trying to map the entire Query DSL.
 
+Support for Elastic's plugin products, like `watcher` and `graph` could be added as feature-gated modules in the `elastic_hyper` and `elastic_rotor` clients and `elastic_types` as necessary.
+
 ## Design
 
 The client is divided into a few crates by utility. These will probably be moved into their own repositories to tidy up build/test, but for now it's conventient to develop them together.
 
 ### elastic_codegen
 
-[Docs](http://kodraus.github.io/rustdoc/elastic_codegen/)
+[Docs](http://kodraus.github.io/rustdoc/elastic_codegen/) |
 [Issues](https://github.com/KodrAus/elasticsearch-rs/labels/codegen)
 
 Provides code generation for the Elasticsearch REST API from the official [spec](https://github.com/elastic/elasticsearch/tree/master/rest-api-spec) and generic helpers for rust source and integration tests. The goal is to keep this package fairly agnostic, so the same `ast` can be used to generate other kinds of output.
@@ -100,24 +173,33 @@ Right now, it's used by `elastic_hyper` to build the client, but could also be u
 
 [![Latest Version](https://img.shields.io/crates/v/elastic_hyper.svg)](https://crates.io/crates/elastic_hyper)
 
-[Docs](http://kodraus.github.io/rustdoc/elastic_hyper/)
-[Issues](https://github.com/KodrAus/elasticsearch-rs/labels/hyper)
+[Docs](http://kodraus.github.io/rustdoc/elastic_hyper/) |
+[Issues](https://github.com/KodrAus/elasticsearch-rs/labels/hyper) |
+[samples](https://github.com/KodrAus/elasticsearch-rs/tree/master/hyper/samples)
 
-Provides a [hyper](https://github.com/hyperium/hyper) implementation of the Elasticsearch REST API. This is the current client that works purely through JSON. This crate is responsible for the `gen` in `elastic_codegen` and builds its own source and tests.
+Provides a synchronous [hyper](https://github.com/hyperium/hyper) implementation of the Elasticsearch REST API. The `hyper` client is simple to use; there's basically no setup needed besides creating a `hyper::Client` object to use for requests. The `hyper` client is general-purpose, and suitable for any scenario where on-demand requests are sufficient.
+
+### elastic_rotor
+
+[Issues](https://github.com/KodrAus/elasticsearch-rs/labels/rotor)
+
+Provides an asynchronous [rotor-http] implementation of the Elasticsearch REST API. This client is an active work in progress, as is `rotor` itself so things will change a lot. The `rotor` client is more complex than the `hyper` one, providing connection pooling and long-lived requests. It's best suited to streaming scenarios, or where Elasticsearch connections will be used heavily.
 
 ### elastic_macros
 
 [![Latest Version](https://img.shields.io/crates/v/elastic_macros.svg)](https://crates.io/crates/elastic_macros)
 
-[Docs](http://kodraus.github.io/rustdoc/elastic_macros/)
+[Docs](http://kodraus.github.io/rustdoc/elastic_macros/) |
+[Issues](https://github.com/KodrAus/elasticsearch-rs/labels/macros)
 
 Provides compiler plugins and macros for working with other `elastic` crates. Macros relevant to specific crates are feature-gated, but you don't normally need to worry about this.
 
 ### elastic_types
 
-[Docs](http://kodraus.github.io/rustdoc/elastic_types/)
+[Docs](http://kodraus.github.io/rustdoc/elastic_types/) |
 [Issues](https://github.com/KodrAus/elasticsearch-rs/labels/types)
 
-Provides rust implementations of the main [Elasticsearch types](https://www.elastic.co/guide/en/elasticsearch/reference/1.4/mapping-core-types.html) (like `date`) and responses/errors. This crate is not required for working with `elastic_hyper`, but does have a lot of utility, especially for designing your document types.
+Provides rust implementations of the main [Elasticsearch types](https://www.elastic.co/guide/en/elasticsearch/reference/1.4/mapping-core-types.html) (like `date`) and responses/errors. This crate is not required for working with `elastic_hyper` or `elastic_rotor`, but does have a lot of utility, especially for designing your document types.
 
 The `elastic_types` crate tries not to reinvent the wheel wherever possible and relies on some common dependencies for types, such as [chrono](https://github.com/lifthrasiir/rust-chrono) for dates and [rust-geo](https://github.com/georust/rust-geo) for geometry.
+

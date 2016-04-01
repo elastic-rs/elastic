@@ -109,3 +109,31 @@ fn serialise_mapping_type_as_nested() {
 
 	assert_eq!(expected, ser);
 }
+
+#[test]
+fn serialise_mapping_dynamic() {
+	let d_opts: Vec<String> = vec![
+		Dynamic::True,
+		Dynamic::False,
+		Dynamic::Strict
+	]
+	.iter()
+	.map(|i| serde_json::to_string(i).unwrap())
+	.collect();
+
+	let expected_opts = vec![
+		r#"true"#,
+		r#"false"#,
+		r#""strict""#
+	];
+
+	let mut success = true;
+	for i in 0..d_opts.len() {
+		if expected_opts[i] != d_opts[i] {
+			success = false;
+			break;
+		}
+	}
+
+	assert!(success);
+}

@@ -173,8 +173,8 @@ pub mod object_fixtures {
 			"object"
 		}
 
-		fn dynamic() -> Option<bool> {
-			Some(true)
+		fn dynamic() -> Option<Dynamic> {
+			Some(Dynamic::True)
 		}
 
 		fn enabled() -> Option<bool> {
@@ -193,6 +193,7 @@ pub mod object_fixtures {
 		pub my_type: MyType,
 		pub my_num: i32
 	}
+	
 	#[derive(Default, Clone)]
 	struct MyOtherTypeMapping;
 	impl ElasticObjectMapping for MyOtherTypeMapping { }

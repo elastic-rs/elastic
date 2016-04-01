@@ -5,10 +5,6 @@
 //! Define your Elasticsearch types using _Plain Old Rust Structures_. 
 //! Your types should at least derive `Default`, `Clone` and `serde::Serialize`.
 //! 
-//! ## Derive Mapping
-//! 
-//! _TODO: Fill this in_
-//! 
 //! ## Mapping with Macros
 //! 
 //! The `impl_type_mapping` macro can be used to hide a lot of the boilerplate in serialising the mapping:
@@ -41,8 +37,8 @@
 //! 		"object"
 //! 	}
 //! 
-//! 	fn dynamic() -> Option<bool> {
-//! 		Some(true)
+//! 	fn dynamic() -> Option<Dynamic> {
+//! 		Some(Dynamic::True)
 //! 	}
 //! 
 //! 	fn enabled() -> Option<bool> {
@@ -131,9 +127,6 @@
 //! # fn main() {
 //! # }
 //! ```
-//! 
-//! ## Mapping manually
-//! 
 
 use serde;
 

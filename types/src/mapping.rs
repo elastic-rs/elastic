@@ -90,8 +90,6 @@ where Self: Default + Clone + serde::Serialize {
 	}
 
 	/// Get the type name for this mapping, like `date` or `string`.
-	/// 
-	/// For user-defined types, this is the name of the type in Elasticsearch, like `my_type`.
 	fn data_type() -> &'static str {
 		""
 	}

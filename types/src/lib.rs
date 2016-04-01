@@ -18,7 +18,7 @@
 //! - [Github](https://github.com/KodrAus/elasticsearch-rs)
 
 #![doc(html_root_url = "http://kodraus.github.io/rustdoc/elastic_types/")]
-//#![deny(missing_docs)]
+#![deny(missing_docs)]
 
 #![feature(custom_derive, custom_attribute, plugin, optin_builtin_traits, associated_type_defaults)]
 #![cfg_attr(feature = "nightly-testing", plugin(clippy))]
@@ -54,4 +54,5 @@ impl_mapping!(
 	char
 );
 
+//TODO: This should map as T
 impl <T: serde::Serialize + serde::Deserialize> mapping::ElasticType<mapping::NullMapping, ()> for Vec<T> { }

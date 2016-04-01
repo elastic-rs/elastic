@@ -90,7 +90,6 @@ macro_rules! impl_object_mapping {
 			use $crate::mapping::prelude::*;
 			use super::{ $t, $m };
 
-			//Properties mapping
 			struct ObjectPropertiesVisitor<'a> {
 				data: &'a $t
 			}
@@ -126,7 +125,6 @@ macro_rules! impl_object_mapping {
 				}
 			}
 
-			//Mapping as a field
 			impl ElasticTypeMapping<()> for $m {
 				type Visitor = FieldMappingVisitor;
 
@@ -148,8 +146,6 @@ macro_rules! impl_object_mapping {
 			impl serde::ser::MapVisitor for FieldMappingVisitor {
 				fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
 				where S: serde::Serializer {
-					try!(serializer.serialize_struct_elt("type", <$m as ElasticTypeMapping<()>>::data_type()));
-
 					let mut object_mapper = ElasticObjectMappingVisitor::<$m>::default();
 					try!(object_mapper.visit(serializer));
 
@@ -160,7 +156,6 @@ macro_rules! impl_object_mapping {
 				}
 			}
 
-			//Mapping as a type
 			#[derive(Default, Clone)]
 			struct TypeMapping<'a> {
 				phantom: PhantomData<&'a ()>

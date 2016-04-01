@@ -1,10 +1,12 @@
 use std::marker::PhantomData;
 use serde;
-use serde::{ Serializer };
+use serde::Serializer;
 use super::ElasticObjectTypeVisitor;
-use ::mapping::{ ElasticTypeMapping };
+use ::mapping::ElasticTypeMapping;
 
 /// The base requirements for mapping a user-defined type.
+/// 
+/// User-defined type mappings are tied to `object` mappings.
 pub trait ElasticUserTypeMapping<'a, T: 'a + Clone + Default>
 where Self: ElasticTypeMapping<()> + Default + Clone + serde::Serialize {
 	#[doc(hidden)]
