@@ -127,7 +127,7 @@ See [milestones](https://github.com/KodrAus/elasticsearch-rs/milestones).
 
 ## Goals
 
-To provide a strongly-typed, full-featured and efficient Elasticsearch client for Rust over (eventually) asynchronous io.
+To provide a strongly-typed, full-featured and efficient Elasticsearch client for Rust over (eventually) asynchronous io. Rust gives us a lot of tools for building super-performant but highly accessible libraries, which we aim to continue.
 
 The REST API is provided by an [inline JSON macro](http://kodraus.github.io/rustdoc/elastic_macros/#json-parsing) so it's efficient and always in line with whatever version of Elasticsearch you're targeting.
 
@@ -164,7 +164,9 @@ Provides a synchronous [hyper](https://github.com/hyperium/hyper) implementation
 
 [Issues](https://github.com/KodrAus/elasticsearch-rs/labels/rotor)
 
-Provides an asynchronous [rotor-http] implementation of the Elasticsearch REST API. This client is an active work in progress, as is `rotor` itself so things will change a lot. The `rotor` client is more complex than the `hyper` one, providing connection pooling and long-lived requests. It's best suited to streaming scenarios, or where Elasticsearch connections will be used heavily.
+_In Progress_
+
+Will provide an asynchronous [rotor-http] implementation of the Elasticsearch REST API. This client is an active work in progress, as is `rotor` itself so things will change a lot. The `rotor` client is more complex than the `hyper` one, providing connection pooling and long-lived requests. It'll be best suited to streaming scenarios, or where Elasticsearch connections will be used heavily.
 
 ### elastic_macros
 
