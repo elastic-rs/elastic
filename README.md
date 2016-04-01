@@ -36,8 +36,6 @@ elastic::ping::head(&mut client, elastic::RequestParams::default(), "http://loca
 A simple `query_string` query:
 
 ```rust
-#![feature(plugin)]
-#![plugin(elastic_macros)]
 extern crate elastic_hyper as elastic;
 
 // Requests take a standard hyper http client
@@ -74,18 +72,6 @@ elastic_types = "*"
 Define a custom Elasticsearch type called `my_type`:
 
 ```rust
-#![feature(plugin, custom_derive)]
-#![plugin(elastic_macros)]
-
-#[macro_use]
-extern crate elastic_types;
-extern crate serde;
-
-use serde::{ Serialize, Deserialize };
-use elastic_types::mapping::prelude::*;
-use elastic_types::date::{ DateTime, EpochMillis };
-use elastic_types::string::ElasticString;
-
 //Define a struct for your type
 //Elasticsearch core types are provided out-of-the-box
 #[derive(Default, Clone, Serialize, Deserialize)]
@@ -102,7 +88,7 @@ pub struct MyType {
 struct MyTypeMapping;
 impl ElasticObjectMapping for MyTypeMapping {
 	//Mapping meta-parameters are exposed as functions
-	fn dynamic() -> Option<bool> {
+	fn include_in_all() -> Option<bool> {
 		Some(false)
 	}
 }
@@ -114,11 +100,6 @@ Compiler-plugins to automatically derive mapping will be added in the future.
 Get the mapping for your type:
 
 ```rust
-extern crate serde_json;
-
-use serde_json::ser::Serializer;
-use elastic_types::mappers::TypeMapper;
-
 let mytype = MyType::default();
 
 //Build a serialiser and map our type
