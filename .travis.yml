@@ -10,9 +10,11 @@ script:
   - cargo doc
   - cd ../types
   - cargo test -v
+  - cargo bench -v
   - cargo doc
   - cd ../codegen
   - cargo test -v
+  - cargo bench -v
   - cargo doc
   - cd ../hyper
   - cargo test -v
