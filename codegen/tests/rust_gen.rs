@@ -200,7 +200,7 @@ fn can_build_type_with_name_only() {
 #[test]
 fn can_build_type_with_full_path() {
 	let name = type_of::<String>();
-	assert_eq!("collections::string::String", name);
+	assert_eq!("std::string::String", name);
 }
 
 #[test]

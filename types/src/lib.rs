@@ -29,7 +29,6 @@ extern crate serde;
 
 #[macro_use]
 pub mod macros;
-
 pub mod mapping;
 pub mod mappers;
 
