@@ -10,13 +10,13 @@ use hyper::error::Result;
 use RequestParams;
 
 pub fn get_index_type_name<'a>(client: &'a mut Client, req: RequestParams,
-                           base: &'a str, index: &'a str, _type: &'a str,
-                           name: &'a str) -> Result<Response>{
+                           index: &'a str, _type: &'a str, name: &'a str)
+ -> Result<Response>{
     let url_qry = &req.get_url_qry();
     let mut url_fmtd =
-        String::with_capacity(base.len() + 1 + 1 + 9 + index.len() +
+        String::with_capacity(req.base_url.len() + 1 + 1 + 9 + index.len() +
                                   _type.len() + name.len() + url_qry.len());
-    url_fmtd.push_str(base);
+    url_fmtd.push_str(req.base_url);
     url_fmtd.push_str("/");
     url_fmtd.push_str(index);
     url_fmtd.push_str("/");
@@ -29,11 +29,11 @@ pub fn get_index_type_name<'a>(client: &'a mut Client, req: RequestParams,
     let res = client.get(&url_fmtd).headers(headers);
     res.send()
 }
-pub fn get<'a>(client: &'a mut Client, req: RequestParams, base: &'a str)
- -> Result<Response>{
+pub fn get<'a>(client: &'a mut Client, req: RequestParams) -> Result<Response>{
     let url_qry = &req.get_url_qry();
-    let mut url_fmtd = String::with_capacity(base.len() + 8 + url_qry.len());
-    url_fmtd.push_str(base);
+    let mut url_fmtd =
+        String::with_capacity(req.base_url.len() + 8 + url_qry.len());
+    url_fmtd.push_str(req.base_url);
     url_fmtd.push_str("/_warmer");
     url_fmtd.push_str(url_qry);
     let mut headers = Headers::new();
@@ -42,15 +42,29 @@ pub fn get<'a>(client: &'a mut Client, req: RequestParams, base: &'a str)
     res.send()
 }
 pub fn get_index_name<'a>(client: &'a mut Client, req: RequestParams,
-                      base: &'a str, index: &'a str, name: &'a str)
+                      index: &'a str, name: &'a str) -> Result<Response>{
+    let url_qry = &req.get_url_qry();
+    let mut url_fmtd =
+        String::with_capacity(req.base_url.len() + 1 + 9 + index.len() +
+                                  name.len() + url_qry.len());
+    url_fmtd.push_str(req.base_url);
+    url_fmtd.push_str("/");
+    url_fmtd.push_str(index);
+    url_fmtd.push_str("/_warmer/");
+    url_fmtd.push_str(name);
+    url_fmtd.push_str(url_qry);
+    let mut headers = Headers::new();
+    headers.set(ContentType::json());
+    let res = client.get(&url_fmtd).headers(headers);
+    res.send()
+}
+pub fn get_name<'a>(client: &'a mut Client, req: RequestParams, name: &'a str)
  -> Result<Response>{
     let url_qry = &req.get_url_qry();
     let mut url_fmtd =
-        String::with_capacity(base.len() + 1 + 9 + index.len() + name.len() +
+        String::with_capacity(req.base_url.len() + 9 + name.len() +
                                   url_qry.len());
-    url_fmtd.push_str(base);
-    url_fmtd.push_str("/");
-    url_fmtd.push_str(index);
+    url_fmtd.push_str(req.base_url);
     url_fmtd.push_str("/_warmer/");
     url_fmtd.push_str(name);
     url_fmtd.push_str(url_qry);
@@ -59,30 +73,16 @@ pub fn get_index_name<'a>(client: &'a mut Client, req: RequestParams,
     let res = client.get(&url_fmtd).headers(headers);
     res.send()
 }
-pub fn get_index<'a>(client: &'a mut Client, req: RequestParams, base: &'a str,
-                 index: &'a str) -> Result<Response>{
+pub fn get_index<'a>(client: &'a mut Client, req: RequestParams, index: &'a str)
+ -> Result<Response>{
     let url_qry = &req.get_url_qry();
     let mut url_fmtd =
-        String::with_capacity(base.len() + 1 + 8 + index.len() +
+        String::with_capacity(req.base_url.len() + 1 + 8 + index.len() +
                                   url_qry.len());
-    url_fmtd.push_str(base);
+    url_fmtd.push_str(req.base_url);
     url_fmtd.push_str("/");
     url_fmtd.push_str(index);
     url_fmtd.push_str("/_warmer");
-    url_fmtd.push_str(url_qry);
-    let mut headers = Headers::new();
-    headers.set(ContentType::json());
-    let res = client.get(&url_fmtd).headers(headers);
-    res.send()
-}
-pub fn get_name<'a>(client: &'a mut Client, req: RequestParams, base: &'a str,
-                name: &'a str) -> Result<Response>{
-    let url_qry = &req.get_url_qry();
-    let mut url_fmtd =
-        String::with_capacity(base.len() + 9 + name.len() + url_qry.len());
-    url_fmtd.push_str(base);
-    url_fmtd.push_str("/_warmer/");
-    url_fmtd.push_str(name);
     url_fmtd.push_str(url_qry);
     let mut headers = Headers::new();
     headers.set(ContentType::json());

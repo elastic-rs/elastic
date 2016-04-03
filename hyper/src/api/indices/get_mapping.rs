@@ -9,14 +9,43 @@ use hyper::error::Result;
 
 use RequestParams;
 
-pub fn get_type<'a>(client: &'a mut Client, req: RequestParams, base: &'a str,
-                _type: &'a str) -> Result<Response>{
+pub fn get_index<'a>(client: &'a mut Client, req: RequestParams, index: &'a str)
+ -> Result<Response>{
     let url_qry = &req.get_url_qry();
     let mut url_fmtd =
-        String::with_capacity(base.len() + 10 + _type.len() + url_qry.len());
-    url_fmtd.push_str(base);
+        String::with_capacity(req.base_url.len() + 1 + 9 + index.len() +
+                                  url_qry.len());
+    url_fmtd.push_str(req.base_url);
+    url_fmtd.push_str("/");
+    url_fmtd.push_str(index);
+    url_fmtd.push_str("/_mapping");
+    url_fmtd.push_str(url_qry);
+    let mut headers = Headers::new();
+    headers.set(ContentType::json());
+    let res = client.get(&url_fmtd).headers(headers);
+    res.send()
+}
+pub fn get_type<'a>(client: &'a mut Client, req: RequestParams, _type: &'a str)
+ -> Result<Response>{
+    let url_qry = &req.get_url_qry();
+    let mut url_fmtd =
+        String::with_capacity(req.base_url.len() + 10 + _type.len() +
+                                  url_qry.len());
+    url_fmtd.push_str(req.base_url);
     url_fmtd.push_str("/_mapping/");
     url_fmtd.push_str(_type);
+    url_fmtd.push_str(url_qry);
+    let mut headers = Headers::new();
+    headers.set(ContentType::json());
+    let res = client.get(&url_fmtd).headers(headers);
+    res.send()
+}
+pub fn get<'a>(client: &'a mut Client, req: RequestParams) -> Result<Response>{
+    let url_qry = &req.get_url_qry();
+    let mut url_fmtd =
+        String::with_capacity(req.base_url.len() + 9 + url_qry.len());
+    url_fmtd.push_str(req.base_url);
+    url_fmtd.push_str("/_mapping");
     url_fmtd.push_str(url_qry);
     let mut headers = Headers::new();
     headers.set(ContentType::json());
@@ -24,45 +53,16 @@ pub fn get_type<'a>(client: &'a mut Client, req: RequestParams, base: &'a str,
     res.send()
 }
 pub fn get_index_type<'a>(client: &'a mut Client, req: RequestParams,
-                      base: &'a str, index: &'a str, _type: &'a str)
- -> Result<Response>{
+                      index: &'a str, _type: &'a str) -> Result<Response>{
     let url_qry = &req.get_url_qry();
     let mut url_fmtd =
-        String::with_capacity(base.len() + 1 + 10 + index.len() + _type.len()
-                                  + url_qry.len());
-    url_fmtd.push_str(base);
+        String::with_capacity(req.base_url.len() + 1 + 10 + index.len() +
+                                  _type.len() + url_qry.len());
+    url_fmtd.push_str(req.base_url);
     url_fmtd.push_str("/");
     url_fmtd.push_str(index);
     url_fmtd.push_str("/_mapping/");
     url_fmtd.push_str(_type);
-    url_fmtd.push_str(url_qry);
-    let mut headers = Headers::new();
-    headers.set(ContentType::json());
-    let res = client.get(&url_fmtd).headers(headers);
-    res.send()
-}
-pub fn get<'a>(client: &'a mut Client, req: RequestParams, base: &'a str)
- -> Result<Response>{
-    let url_qry = &req.get_url_qry();
-    let mut url_fmtd = String::with_capacity(base.len() + 9 + url_qry.len());
-    url_fmtd.push_str(base);
-    url_fmtd.push_str("/_mapping");
-    url_fmtd.push_str(url_qry);
-    let mut headers = Headers::new();
-    headers.set(ContentType::json());
-    let res = client.get(&url_fmtd).headers(headers);
-    res.send()
-}
-pub fn get_index<'a>(client: &'a mut Client, req: RequestParams, base: &'a str,
-                 index: &'a str) -> Result<Response>{
-    let url_qry = &req.get_url_qry();
-    let mut url_fmtd =
-        String::with_capacity(base.len() + 1 + 9 + index.len() +
-                                  url_qry.len());
-    url_fmtd.push_str(base);
-    url_fmtd.push_str("/");
-    url_fmtd.push_str(index);
-    url_fmtd.push_str("/_mapping");
     url_fmtd.push_str(url_qry);
     let mut headers = Headers::new();
     headers.set(ContentType::json());

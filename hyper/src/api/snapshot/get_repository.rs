@@ -9,11 +9,11 @@ use hyper::error::Result;
 
 use RequestParams;
 
-pub fn get<'a>(client: &'a mut Client, req: RequestParams, base: &'a str)
- -> Result<Response>{
+pub fn get<'a>(client: &'a mut Client, req: RequestParams) -> Result<Response>{
     let url_qry = &req.get_url_qry();
-    let mut url_fmtd = String::with_capacity(base.len() + 10 + url_qry.len());
-    url_fmtd.push_str(base);
+    let mut url_fmtd =
+        String::with_capacity(req.base_url.len() + 10 + url_qry.len());
+    url_fmtd.push_str(req.base_url);
     url_fmtd.push_str("/_snapshot");
     url_fmtd.push_str(url_qry);
     let mut headers = Headers::new();
@@ -22,12 +22,12 @@ pub fn get<'a>(client: &'a mut Client, req: RequestParams, base: &'a str)
     res.send()
 }
 pub fn get_repository<'a>(client: &'a mut Client, req: RequestParams,
-                      base: &'a str, repository: &'a str) -> Result<Response>{
+                      repository: &'a str) -> Result<Response>{
     let url_qry = &req.get_url_qry();
     let mut url_fmtd =
-        String::with_capacity(base.len() + 11 + repository.len() +
+        String::with_capacity(req.base_url.len() + 11 + repository.len() +
                                   url_qry.len());
-    url_fmtd.push_str(base);
+    url_fmtd.push_str(req.base_url);
     url_fmtd.push_str("/_snapshot/");
     url_fmtd.push_str(repository);
     url_fmtd.push_str(url_qry);

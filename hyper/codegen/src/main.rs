@@ -145,10 +145,11 @@ fn gen_from_source(source_dir: &str, dest_dir: &str) -> Result<(), String> {
 			println!("emitting fn {}", &fun.name);
 			
 			//The base url argument
-			let base = token::str_to_ident("base");
 			let _client = "client";
 			let client = token::str_to_ident(_client);
+
 			let req = token::str_to_ident("req");
+			let base = token::str_to_ident("req.base_url");
 			let body = token::str_to_ident("body");
 			let qry = token::str_to_ident("url_qry");
 			
@@ -176,8 +177,7 @@ fn gen_from_source(source_dir: &str, dest_dir: &str) -> Result<(), String> {
 			//Function signature from params
 			let mut rs_fun = build_fn(&fun.name, vec![
 				build_arg(_client, build_ty_ptr("Client", Mutability::Mutable, Some(lifetime))),
-				build_arg_ident(req, build_ty("RequestParams")),
-				build_arg_ident(base, build_ty_ptr("str", Mutability::Immutable, Some(lifetime)))
+				build_arg_ident(req, build_ty("RequestParams"))
 			])
 			.add_args(params
 				.iter()

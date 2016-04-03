@@ -10,13 +10,13 @@ use hyper::error::Result;
 use RequestParams;
 
 pub fn post_index_type_id<'a>(client: &'a mut Client, req: RequestParams,
-                          base: &'a str, index: &'a str, _type: &'a str,
-                          id: &'a str, body: &'a str) -> Result<Response>{
+                          index: &'a str, _type: &'a str, id: &'a str,
+                          body: &'a str) -> Result<Response>{
     let url_qry = &req.get_url_qry();
     let mut url_fmtd =
-        String::with_capacity(base.len() + 1 + 1 + 1 + 8 + index.len() +
-                                  _type.len() + id.len() + url_qry.len());
-    url_fmtd.push_str(base);
+        String::with_capacity(req.base_url.len() + 1 + 1 + 1 + 8 + index.len()
+                                  + _type.len() + id.len() + url_qry.len());
+    url_fmtd.push_str(req.base_url);
     url_fmtd.push_str("/");
     url_fmtd.push_str(index);
     url_fmtd.push_str("/");

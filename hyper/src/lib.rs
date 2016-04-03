@@ -43,7 +43,7 @@ use url::form_urlencoded::serialize;
 /// extern crate hyper;
 /// extern crate elastic_hyper as elastic;
 /// 
-/// let mut params = elastic::RequestParams::new(hyper::header::Headers::new());
+/// let mut params = elastic::RequestParams::default();
 /// 
 /// //Add your own headers
 /// params.headers.set(hyper::header::Authorization("let me in".to_owned()));
@@ -55,13 +55,24 @@ use url::form_urlencoded::serialize;
 /// extern crate hyper;
 /// extern crate elastic_hyper as elastic;
 /// 
-/// let params = elastic::RequestParams::new(hyper::header::Headers::new())
+/// let params = elastic::RequestParams::default()
 /// 		.url_params(vec![
 /// 			("pretty", "true".to_owned()),
 /// 			("q", "*".to_owned())
 /// 		]);
 /// ```
+/// 
+/// With a custom base url:
+/// 
+/// ```
+/// extern crate hyper;
+/// extern crate elastic_hyper as elastic;
+/// 
+/// let params = elastic::RequestParams::new("http://mybaseurl:9200", hyper::header::Headers::new());
+/// ```
 pub struct RequestParams {
+	/// Base url for Elasticsearch
+	pub base_url: &'static str,
 	/// Simple key-value store for url query params.
 	pub url_params: BTreeMap<&'static str, String>,
 	/// The complete set of headers that will be sent with the request.
@@ -72,10 +83,11 @@ impl RequestParams {
 	/// Create a new container for request parameters.
 	/// 
 	/// Attempts to add `ContentType::json` to the passed in `headers` param.
-	pub fn new(mut headers: Headers) -> Self {
+	pub fn new(base: &'static str, mut headers: Headers) -> Self {
 		headers.set(ContentType::json());
 
 		RequestParams {
+			base_url: base,
 			headers: headers,
 			url_params: BTreeMap::new()
 		}
@@ -112,7 +124,7 @@ impl RequestParams {
 
 impl Default for RequestParams {
 	fn default() -> Self {
-		RequestParams::new(Headers::new())
+		RequestParams::new("http://localhost:9200", Headers::new())
 	}
 }
 

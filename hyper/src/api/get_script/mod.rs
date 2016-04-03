@@ -9,13 +9,13 @@ use hyper::error::Result;
 
 use RequestParams;
 
-pub fn get_lang_id<'a>(client: &'a mut Client, req: RequestParams, base: &'a str,
-                   lang: &'a str, id: &'a str) -> Result<Response>{
+pub fn get_lang_id<'a>(client: &'a mut Client, req: RequestParams, lang: &'a str,
+                   id: &'a str) -> Result<Response>{
     let url_qry = &req.get_url_qry();
     let mut url_fmtd =
-        String::with_capacity(base.len() + 10 + 1 + lang.len() + id.len() +
-                                  url_qry.len());
-    url_fmtd.push_str(base);
+        String::with_capacity(req.base_url.len() + 10 + 1 + lang.len() +
+                                  id.len() + url_qry.len());
+    url_fmtd.push_str(req.base_url);
     url_fmtd.push_str("/_scripts/");
     url_fmtd.push_str(lang);
     url_fmtd.push_str("/");

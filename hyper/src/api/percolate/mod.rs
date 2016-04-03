@@ -9,14 +9,33 @@ use hyper::error::Result;
 
 use RequestParams;
 
-pub fn post_index_type_id<'a>(client: &'a mut Client, req: RequestParams,
-                          base: &'a str, index: &'a str, _type: &'a str,
-                          id: &'a str, body: &'a str) -> Result<Response>{
+pub fn get_index_type<'a>(client: &'a mut Client, req: RequestParams,
+                      index: &'a str, _type: &'a str) -> Result<Response>{
     let url_qry = &req.get_url_qry();
     let mut url_fmtd =
-        String::with_capacity(base.len() + 1 + 1 + 1 + 11 + index.len() +
-                                  _type.len() + id.len() + url_qry.len());
-    url_fmtd.push_str(base);
+        String::with_capacity(req.base_url.len() + 1 + 1 + 11 + index.len() +
+                                  _type.len() + url_qry.len());
+    url_fmtd.push_str(req.base_url);
+    url_fmtd.push_str("/");
+    url_fmtd.push_str(index);
+    url_fmtd.push_str("/");
+    url_fmtd.push_str(_type);
+    url_fmtd.push_str("/_percolate");
+    url_fmtd.push_str(url_qry);
+    let mut headers = Headers::new();
+    headers.set(ContentType::json());
+    let res = client.get(&url_fmtd).headers(headers);
+    res.send()
+}
+pub fn post_index_type_id<'a>(client: &'a mut Client, req: RequestParams,
+                          index: &'a str, _type: &'a str, id: &'a str,
+                          body: &'a str) -> Result<Response>{
+    let url_qry = &req.get_url_qry();
+    let mut url_fmtd =
+        String::with_capacity(req.base_url.len() + 1 + 1 + 1 + 11 +
+                                  index.len() + _type.len() + id.len() +
+                                  url_qry.len());
+    url_fmtd.push_str(req.base_url);
     url_fmtd.push_str("/");
     url_fmtd.push_str(index);
     url_fmtd.push_str("/");
@@ -31,13 +50,14 @@ pub fn post_index_type_id<'a>(client: &'a mut Client, req: RequestParams,
     res.send()
 }
 pub fn get_index_type_id<'a>(client: &'a mut Client, req: RequestParams,
-                         base: &'a str, index: &'a str, _type: &'a str,
-                         id: &'a str) -> Result<Response>{
+                         index: &'a str, _type: &'a str, id: &'a str)
+ -> Result<Response>{
     let url_qry = &req.get_url_qry();
     let mut url_fmtd =
-        String::with_capacity(base.len() + 1 + 1 + 1 + 11 + index.len() +
-                                  _type.len() + id.len() + url_qry.len());
-    url_fmtd.push_str(base);
+        String::with_capacity(req.base_url.len() + 1 + 1 + 1 + 11 +
+                                  index.len() + _type.len() + id.len() +
+                                  url_qry.len());
+    url_fmtd.push_str(req.base_url);
     url_fmtd.push_str("/");
     url_fmtd.push_str(index);
     url_fmtd.push_str("/");
@@ -51,33 +71,14 @@ pub fn get_index_type_id<'a>(client: &'a mut Client, req: RequestParams,
     let res = client.get(&url_fmtd).headers(headers);
     res.send()
 }
-pub fn get_index_type<'a>(client: &'a mut Client, req: RequestParams,
-                      base: &'a str, index: &'a str, _type: &'a str)
+pub fn post_index_type<'a>(client: &'a mut Client, req: RequestParams,
+                       index: &'a str, _type: &'a str, body: &'a str)
  -> Result<Response>{
     let url_qry = &req.get_url_qry();
     let mut url_fmtd =
-        String::with_capacity(base.len() + 1 + 1 + 11 + index.len() +
+        String::with_capacity(req.base_url.len() + 1 + 1 + 11 + index.len() +
                                   _type.len() + url_qry.len());
-    url_fmtd.push_str(base);
-    url_fmtd.push_str("/");
-    url_fmtd.push_str(index);
-    url_fmtd.push_str("/");
-    url_fmtd.push_str(_type);
-    url_fmtd.push_str("/_percolate");
-    url_fmtd.push_str(url_qry);
-    let mut headers = Headers::new();
-    headers.set(ContentType::json());
-    let res = client.get(&url_fmtd).headers(headers);
-    res.send()
-}
-pub fn post_index_type<'a>(client: &'a mut Client, req: RequestParams,
-                       base: &'a str, index: &'a str, _type: &'a str,
-                       body: &'a str) -> Result<Response>{
-    let url_qry = &req.get_url_qry();
-    let mut url_fmtd =
-        String::with_capacity(base.len() + 1 + 1 + 11 + index.len() +
-                                  _type.len() + url_qry.len());
-    url_fmtd.push_str(base);
+    url_fmtd.push_str(req.base_url);
     url_fmtd.push_str("/");
     url_fmtd.push_str(index);
     url_fmtd.push_str("/");

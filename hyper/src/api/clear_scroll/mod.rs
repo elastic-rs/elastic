@@ -9,11 +9,11 @@ use hyper::error::Result;
 
 use RequestParams;
 
-pub fn delete<'a>(client: &'a mut Client, req: RequestParams, base: &'a str)
- -> Result<Response>{
+pub fn delete<'a>(client: &'a mut Client, req: RequestParams) -> Result<Response>{
     let url_qry = &req.get_url_qry();
-    let mut url_fmtd = String::with_capacity(base.len() + 15 + url_qry.len());
-    url_fmtd.push_str(base);
+    let mut url_fmtd =
+        String::with_capacity(req.base_url.len() + 15 + url_qry.len());
+    url_fmtd.push_str(req.base_url);
     url_fmtd.push_str("/_search/scroll");
     url_fmtd.push_str(url_qry);
     let mut headers = Headers::new();
@@ -22,12 +22,12 @@ pub fn delete<'a>(client: &'a mut Client, req: RequestParams, base: &'a str)
     res.send()
 }
 pub fn delete_scroll_id<'a>(client: &'a mut Client, req: RequestParams,
-                        base: &'a str, scroll_id: &'a str) -> Result<Response>{
+                        scroll_id: &'a str) -> Result<Response>{
     let url_qry = &req.get_url_qry();
     let mut url_fmtd =
-        String::with_capacity(base.len() + 16 + scroll_id.len() +
+        String::with_capacity(req.base_url.len() + 16 + scroll_id.len() +
                                   url_qry.len());
-    url_fmtd.push_str(base);
+    url_fmtd.push_str(req.base_url);
     url_fmtd.push_str("/_search/scroll/");
     url_fmtd.push_str(scroll_id);
     url_fmtd.push_str(url_qry);
