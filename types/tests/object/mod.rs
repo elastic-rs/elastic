@@ -46,6 +46,23 @@ fn serialise_mapping_type() {
 }
 
 #[test]
+fn serialise_mapping_as_value() {
+	//Define an instance of our mapping type
+	let mytype = MyType::default();
+	let value = TypeMapper::map_val(&mytype).unwrap();
+
+	//Serialise to a json value, and perform a lookup
+	let ser = serde_json::ser::to_string(&value.lookup("properties.my_date1").unwrap()).unwrap();
+
+	let expected = json_str!({
+		"format":"basic_date_time",
+		"type":"date"
+	});
+
+	assert_eq!(expected, ser);
+}
+
+#[test]
 fn serialise_mapping_type_as_nested() {
 	//Define an instance of our mapping type
 	let mytype = MyOtherType::default();
