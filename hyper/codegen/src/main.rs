@@ -44,9 +44,7 @@ macro_rules! get_ctxt {
 	};
 }
 
-//TODO: Move this into its own crate (not on crates.io though)
 fn main() {
-	//TODO: Do this properly with getopts
 	let mut args = env::args();
 	let _ = args.next().unwrap();
 	let indir = args.next().unwrap();
@@ -58,7 +56,6 @@ fn main() {
 	gen_from_source(&indir, &outdir).unwrap();
 }
 
-//TODO: Split this up into smaller chunks once the process is worked out
 fn gen_from_source(source_dir: &str, dest_dir: &str) -> Result<(), String> {
 	//Clear out the contents of the dest_dir
 	println!("clearing destination dir...");
