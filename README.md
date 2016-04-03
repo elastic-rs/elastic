@@ -95,7 +95,7 @@ impl ElasticObjectMapping for MyTypeMapping {
 impl_object_mapping!(MyType, MyTypeMapping, "my_type", inner, [my_date1, my_date2, my_string1, my_string2, my_num]);
 ```
 
-Compiler-plugins to automatically derive mapping will be added in the future.
+Compiler-plugins to [automatically derive mapping](https://github.com/KodrAus/elasticsearch-rs/issues/83) will be added in the future.
 
 Get the mapping for your type:
 
@@ -156,7 +156,7 @@ Right now, it's used by `elastic_hyper` to build the client, but could also be u
 
 [Docs](http://kodraus.github.io/rustdoc/elastic_hyper/) |
 [Issues](https://github.com/KodrAus/elasticsearch-rs/labels/hyper) |
-[samples](https://github.com/KodrAus/elasticsearch-rs/tree/master/hyper/samples)
+[Samples](https://github.com/KodrAus/elasticsearch-rs/tree/master/hyper/samples)
 
 Provides a synchronous [hyper](https://github.com/hyperium/hyper) implementation of the Elasticsearch REST API. The `hyper` client is simple to use; there's basically no setup needed besides creating a `hyper::Client` object to use for requests. The `hyper` client is general-purpose, and suitable for any scenario where on-demand requests are sufficient.
 
