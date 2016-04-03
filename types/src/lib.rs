@@ -26,6 +26,7 @@
 
 extern crate chrono;
 extern crate serde;
+extern crate serde_json;
 
 #[macro_use]
 pub mod macros;

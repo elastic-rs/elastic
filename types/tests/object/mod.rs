@@ -6,7 +6,6 @@ extern crate serde;
 extern crate serde_json;
 extern crate elastic_types;
 
-use serde_json::ser::Serializer;
 use elastic_types::mapping::prelude::*;
 use ::object_fixtures::*;
 
@@ -14,14 +13,7 @@ use ::object_fixtures::*;
 fn serialise_mapping_type() {
 	//Define an instance of our mapping type
 	let mytype = MyType::default();
-
-	//Build a serialiser and use the mapper to serialise the mapping for the given type
-	let mut writer = Vec::with_capacity(128);
-	{
-		let mut ser = Serializer::new(&mut writer);
-		let _ = TypeMapper::map(&mytype, &mut ser).unwrap();
-	}
-	let ser = String::from_utf8(writer).unwrap();
+	let ser = TypeMapper::map_str(&mytype).unwrap();
 
 	let expected = json_str!({
 		"properties": {
@@ -57,14 +49,7 @@ fn serialise_mapping_type() {
 fn serialise_mapping_type_as_nested() {
 	//Define an instance of our mapping type
 	let mytype = MyOtherType::default();
-
-	//Build a serialiser and use the mapper to serialise the mapping for the given type
-	let mut writer = Vec::with_capacity(256);
-	{
-		let mut ser = Serializer::new(&mut writer);
-		let _ = TypeMapper::map(&mytype, &mut ser).unwrap();
-	}
-	let ser = String::from_utf8(writer).unwrap();
+	let ser = TypeMapper::map_str(&mytype).unwrap();
 
 	let expected = json_str!({
 		"properties":{
