@@ -30,7 +30,7 @@ Ping the availability of your cluster:
 extern crate elastic_hyper as elastic;
 
 let mut client = hyper::Client::new();
-elastic::ping::head(&mut client, elastic::RequestParams::default(), "http://localhost:9200").unwrap();
+elastic::ping::head(&mut client, elastic::RequestParams::default()).unwrap();
 ```
 
 A simple `query_string` query:
@@ -45,7 +45,6 @@ let mut client = Client::new();
 // Execute a querystring request on a local Elasticsearch instance
 let mut res = elastic::search::post(
 	&mut client, elastic::RequestParams::default(),
-	"http://localhost:9200",
 	json_str!({
 		query: {
 			query_string: {
