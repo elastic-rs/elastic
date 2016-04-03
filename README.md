@@ -100,14 +100,7 @@ Get the mapping for your type:
 
 ```rust
 let mytype = MyType::default();
-
-//Build a serialiser and map our type
-let mut writer = Vec::new();
-{
-	let mut ser = Serializer::new(&mut writer);
-	let _ = TypeMapper::map(&mytype, &mut ser).unwrap();
-}
-let mapping = String::from_utf8(writer).unwrap();
+let mapping = TypeMapper::map_str(&mytype).unwrap();
 ```
 
 See the [elastic_types](#elastic_types) and [elastic_macros](#elastic_macros) for more details.
