@@ -70,9 +70,10 @@ use url::form_urlencoded::serialize;
 /// 
 /// let params = elastic::RequestParams::new("http://mybaseurl:9200", hyper::header::Headers::new());
 /// ```
+#[derive(Debug, Clone)]
 pub struct RequestParams {
 	/// Base url for Elasticsearch
-	pub base_url: &'static str,
+	pub base_url: String,
 	/// Simple key-value store for url query params.
 	pub url_params: BTreeMap<&'static str, String>,
 	/// The complete set of headers that will be sent with the request.
@@ -83,11 +84,11 @@ impl RequestParams {
 	/// Create a new container for request parameters.
 	/// 
 	/// Attempts to add `ContentType::json` to the passed in `headers` param.
-	pub fn new(base: &'static str, mut headers: Headers) -> Self {
+	pub fn new<T: Into<String>>(base: T, mut headers: Headers) -> Self {
 		headers.set(ContentType::json());
 
 		RequestParams {
-			base_url: base,
+			base_url: base.into(),
 			headers: headers,
 			url_params: BTreeMap::new()
 		}

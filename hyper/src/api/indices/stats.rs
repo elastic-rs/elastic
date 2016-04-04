@@ -9,13 +9,16 @@ use hyper::error::Result;
 
 use RequestParams;
 
-pub fn get_metric<'a>(client: &'a mut Client, req: RequestParams, metric: &'a str)
- -> Result<Response>{
+pub fn get_index_metric<'a>(client: &'a mut Client, req: RequestParams,
+                        index: &'a str, metric: &'a str) -> Result<Response>{
     let url_qry = &req.get_url_qry();
+    let base = &req.base_url;
     let mut url_fmtd =
-        String::with_capacity(req.base_url.len() + 8 + metric.len() +
-                                  url_qry.len());
-    url_fmtd.push_str(req.base_url);
+        String::with_capacity(base.len() + 1 + 8 + index.len() + metric.len()
+                                  + url_qry.len());
+    url_fmtd.push_str(base);
+    url_fmtd.push_str("/");
+    url_fmtd.push_str(index);
     url_fmtd.push_str("/_stats/");
     url_fmtd.push_str(metric);
     url_fmtd.push_str(url_qry);
@@ -26,9 +29,9 @@ pub fn get_metric<'a>(client: &'a mut Client, req: RequestParams, metric: &'a st
 }
 pub fn get<'a>(client: &'a mut Client, req: RequestParams) -> Result<Response>{
     let url_qry = &req.get_url_qry();
-    let mut url_fmtd =
-        String::with_capacity(req.base_url.len() + 7 + url_qry.len());
-    url_fmtd.push_str(req.base_url);
+    let base = &req.base_url;
+    let mut url_fmtd = String::with_capacity(base.len() + 7 + url_qry.len());
+    url_fmtd.push_str(base);
     url_fmtd.push_str("/_stats");
     url_fmtd.push_str(url_qry);
     let mut headers = Headers::new();
@@ -39,10 +42,11 @@ pub fn get<'a>(client: &'a mut Client, req: RequestParams) -> Result<Response>{
 pub fn get_index<'a>(client: &'a mut Client, req: RequestParams, index: &'a str)
  -> Result<Response>{
     let url_qry = &req.get_url_qry();
+    let base = &req.base_url;
     let mut url_fmtd =
-        String::with_capacity(req.base_url.len() + 1 + 7 + index.len() +
+        String::with_capacity(base.len() + 1 + 7 + index.len() +
                                   url_qry.len());
-    url_fmtd.push_str(req.base_url);
+    url_fmtd.push_str(base);
     url_fmtd.push_str("/");
     url_fmtd.push_str(index);
     url_fmtd.push_str("/_stats");
@@ -52,15 +56,13 @@ pub fn get_index<'a>(client: &'a mut Client, req: RequestParams, index: &'a str)
     let res = client.get(&url_fmtd).headers(headers);
     res.send()
 }
-pub fn get_index_metric<'a>(client: &'a mut Client, req: RequestParams,
-                        index: &'a str, metric: &'a str) -> Result<Response>{
+pub fn get_metric<'a>(client: &'a mut Client, req: RequestParams, metric: &'a str)
+ -> Result<Response>{
     let url_qry = &req.get_url_qry();
+    let base = &req.base_url;
     let mut url_fmtd =
-        String::with_capacity(req.base_url.len() + 1 + 8 + index.len() +
-                                  metric.len() + url_qry.len());
-    url_fmtd.push_str(req.base_url);
-    url_fmtd.push_str("/");
-    url_fmtd.push_str(index);
+        String::with_capacity(base.len() + 8 + metric.len() + url_qry.len());
+    url_fmtd.push_str(base);
     url_fmtd.push_str("/_stats/");
     url_fmtd.push_str(metric);
     url_fmtd.push_str(url_qry);

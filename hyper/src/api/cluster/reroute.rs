@@ -12,9 +12,9 @@ use RequestParams;
 pub fn post<'a>(client: &'a mut Client, req: RequestParams, body: &'a str)
  -> Result<Response>{
     let url_qry = &req.get_url_qry();
-    let mut url_fmtd =
-        String::with_capacity(req.base_url.len() + 17 + url_qry.len());
-    url_fmtd.push_str(req.base_url);
+    let base = &req.base_url;
+    let mut url_fmtd = String::with_capacity(base.len() + 17 + url_qry.len());
+    url_fmtd.push_str(base);
     url_fmtd.push_str("/_cluster/reroute");
     url_fmtd.push_str(url_qry);
     let mut headers = Headers::new();

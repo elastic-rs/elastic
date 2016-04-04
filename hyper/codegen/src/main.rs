@@ -149,7 +149,7 @@ fn gen_from_source(source_dir: &str, dest_dir: &str) -> Result<(), String> {
 			let client = token::str_to_ident(_client);
 
 			let req = token::str_to_ident("req");
-			let base = token::str_to_ident("req.base_url");
+			let base = token::str_to_ident("base");
 			let body = token::str_to_ident("body");
 			let qry = token::str_to_ident("url_qry");
 			
@@ -187,6 +187,7 @@ fn gen_from_source(source_dir: &str, dest_dir: &str) -> Result<(), String> {
 			.set_return_ty(build_ty("Result<Response>"))
 			.add_body_block(quote_block!(&mut cx, {
 				let $qry = &$req.get_url_qry();
+				let $base = &$req.base_url;
 			}))
 			.add_body_stmts(url_stmts)
 			.add_body_block(quote_block!(&mut cx, {
