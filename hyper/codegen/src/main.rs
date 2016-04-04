@@ -115,9 +115,6 @@ fn gen_from_source(source_dir: &str, dest_dir: &str) -> Result<(), String> {
 
 			try!(emitter.emit(&quote_stmt!(&mut cx, use hyper::client::Client;), &mut src_file).map_err(|e| e.description().to_string()));
 			try!(emitter.emit_str(&"\n", &mut src_file).map_err(|e| e.description().to_string()));
-
-			try!(emitter.emit(&quote_stmt!(&mut cx, use hyper::header::{ Headers, ContentType };), &mut src_file).map_err(|e| e.description().to_string()));
-			try!(emitter.emit_str(&"\n", &mut src_file).map_err(|e| e.description().to_string()));
 			
 			try!(emitter.emit(&quote_stmt!(&mut cx, use hyper::client::response::Response;), &mut src_file).map_err(|e| e.description().to_string()));
 			try!(emitter.emit_str(&"\n", &mut src_file).map_err(|e| e.description().to_string()));
@@ -186,18 +183,14 @@ fn gen_from_source(source_dir: &str, dest_dir: &str) -> Result<(), String> {
 				let $qry = &$req.get_url_qry();
 				let $base = &$req.base_url;
 			}))
-			.add_body_stmts(url_stmts)
-			.add_body_block(quote_block!(&mut cx, {
-				let mut headers = Headers::new();
-				headers.set(ContentType::json());
-			}));
+			.add_body_stmts(url_stmts);
 			
 			match *fun.method {
 				HttpVerb::Head => {
 					rs_fun = rs_fun
 					.add_body_block(quote_block!(&mut cx, {
 						let res = $client.head(&$url_ident)
-							.headers(headers);
+							.headers($req.headers);
 							
 						res.send()
 					}));
@@ -206,7 +199,7 @@ fn gen_from_source(source_dir: &str, dest_dir: &str) -> Result<(), String> {
 					rs_fun = rs_fun
 					.add_body_block(quote_block!(&mut cx, {
 						let res = $client.get(&$url_ident)
-							.headers(headers);
+							.headers($req.headers);
 							
 						res.send()
 					}));
@@ -215,7 +208,7 @@ fn gen_from_source(source_dir: &str, dest_dir: &str) -> Result<(), String> {
 					rs_fun = rs_fun
 					.add_body_block(quote_block!(&mut cx, {
 						let res = $client.delete(&$url_ident)
-							.headers(headers);
+							.headers($req.headers);
 							
 						res.send()
 					}));
@@ -225,7 +218,7 @@ fn gen_from_source(source_dir: &str, dest_dir: &str) -> Result<(), String> {
 					.add_arg(build_arg_ident(body, build_ty_ptr("str", Mutability::Immutable, Some(lifetime))))
 					.add_body_block(quote_block!(&mut cx, {
 						let res = $client.post(&$url_ident)
-							.headers(headers)
+							.headers($req.headers)
 							.body($body);
 							
 						res.send()
@@ -236,7 +229,7 @@ fn gen_from_source(source_dir: &str, dest_dir: &str) -> Result<(), String> {
 					.add_arg(build_arg_ident(body, build_ty_ptr("str", Mutability::Immutable, Some(lifetime))))
 					.add_body_block(quote_block!(&mut cx, {
 						let res = $client.put(&$url_ident)
-							.headers(headers)
+							.headers($req.headers)
 							.body($body);
 							
 						res.send()
@@ -247,7 +240,7 @@ fn gen_from_source(source_dir: &str, dest_dir: &str) -> Result<(), String> {
 					.add_arg(build_arg_ident(body, build_ty_ptr("str", Mutability::Immutable, Some(lifetime))))
 					.add_body_block(quote_block!(&mut cx, {
 						let res = $client.patch(&$url_ident)
-							.headers(headers)
+							.headers($req.headers)
 							.body($body);
 							
 						res.send()

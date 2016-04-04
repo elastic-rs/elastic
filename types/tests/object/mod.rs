@@ -51,7 +51,8 @@ fn serialise_mapping_as_value() {
 	let mytype = MyType::default();
 	let value = TypeMapper::map_val(&mytype).unwrap();
 
-	//Serialise to a json value, and perform a lookup
+	//Serialise to a json value, and perform a lookup. Make sure the value is serialised properly
+	//There does seem to be some weird thing with f32 serialisation; 1.01 results in ~1.0999
 	let ser = serde_json::ser::to_string(&value.lookup("properties.my_date1").unwrap()).unwrap();
 
 	let expected = json_str!({
