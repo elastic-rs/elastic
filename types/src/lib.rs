@@ -36,21 +36,10 @@ pub mod mappers;
 pub mod object;
 pub mod date;
 pub mod string;
+pub mod number;
 
 impl_mapping!(
 	bool,
-	isize,
-	i8,
-	i16,
-	i32,
-	i64,
-	usize,
-	u8,
-	u16,
-	u32,
-	u64,
-	f32,
-	f64,
 	char
 );
 

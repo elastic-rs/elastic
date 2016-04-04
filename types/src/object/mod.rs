@@ -1,4 +1,4 @@
-//! Requirements for mapping user-defined types.
+//! Requirements for mapping `user-defined` types.
 //! 
 //! # Examples
 //! 
@@ -17,15 +17,13 @@
 //! # extern crate serde;
 //! # use serde::{ Serialize, Deserialize };
 //! use elastic_types::mapping::prelude::*;
-//! use elastic_types::date::{ DateTime, EpochMillis };
-//! use elastic_types::string::ElasticString;
+//! use elastic_types::date::DateTime;
 //! 
 //! //Define a struct for your type
 //! #[derive(Default, Clone, Serialize, Deserialize)]
 //! pub struct MyType {
-//! 	pub my_date1: DateTime,
-//! 	pub my_date2: DateTime<EpochMillis>,
-//! 	pub my_string: ElasticString<DefaultStringMapping>,
+//! 	pub my_date: DateTime,
+//! 	pub my_string: String,
 //! 	pub my_num: i32
 //! }
 //! 
@@ -49,7 +47,7 @@
 //! 		Some(true)
 //! 	}
 //! }
-//! impl_object_mapping!(MyType, MyTypeMapping, "my_type", inner1, [my_date1, my_date2, my_string, my_num]);
+//! impl_object_mapping!(MyType, MyTypeMapping, "my_type", inner1, [my_date, my_string, my_num]);
 //! # impl serde::Serialize for MyType {
 //! # 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where S: serde::Serializer {
 //! # 		unimplemented!()

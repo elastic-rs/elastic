@@ -30,6 +30,26 @@ macro_rules! impl_string_mapping {
 }
 
 #[macro_export]
+macro_rules! impl_number_mapping {
+	($t:ty, $es_ty:expr) => (
+		impl $crate::mapping::ElasticTypeMapping<()> for $t {
+			type Visitor = $crate::number::mapping::ElasticNumberMappingVisitor<$t>;
+
+			fn data_type() -> &'static str {
+				$es_ty
+			}
+		}
+		
+		impl serde::Serialize for $t {
+			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+			where S: serde::Serializer {
+				serializer.serialize_struct("mapping", Self::get_visitor())
+			}
+		}
+	)
+}
+
+#[macro_export]
 macro_rules! impl_date_mapping {
 	($t:ty, $f:ty) => (
 		impl $crate::mapping::ElasticTypeMapping<$f> for $t {

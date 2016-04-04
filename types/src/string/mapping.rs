@@ -12,7 +12,32 @@ use ::mapping::{ ElasticTypeMapping, ElasticType, IndexAnalysis };
 /// 
 /// # Examples
 /// 
-/// Manually define a custom `ElasticStringMapping`:
+/// Define a custom `ElasticStringMapping`:
+/// 
+/// ## With Macros
+/// 
+/// ```
+/// # extern crate serde;
+/// # #[macro_use]
+/// # extern crate elastic_types;
+/// # fn main() {
+/// use elastic_types::mapping::prelude::*;
+/// use elastic_types::string::prelude::*;
+///
+/// #[derive(Debug, Clone, Default)]
+/// pub struct MyStringMapping;
+/// impl ElasticStringMapping for MyStringMapping {
+/// 	//Overload the mapping functions here
+/// 	fn boost() -> Option<f32> {
+///			Some(1.5)
+///		}
+/// }
+/// 
+/// impl_string_mapping!(MyStringMapping);
+/// # }
+/// ```
+/// 
+/// ## Manually
 /// 
 /// ```
 /// # extern crate serde;
@@ -118,7 +143,7 @@ where Self : ElasticTypeMapping<()> + Sized + Serialize + Default + Clone {
 	}
 
 	/// Accepts a string value which is substituted for any explicit null values. 
-	/// Defaults to null, which means the field is treated as missing.
+	/// Defaults to `null`, which means the field is treated as missing.
 	fn null_value() -> Option<&'static str> {
 		None
 	}
@@ -152,7 +177,8 @@ where Self : ElasticTypeMapping<()> + Sized + Serialize + Default + Clone {
 }
 
 /// A Rust representation of an Elasticsearch `string`.
-pub trait ElasticStringType<T: ElasticTypeMapping<()> + ElasticStringMapping> where Self: Sized + ElasticType<T, ()> { }
+pub trait ElasticStringType<T: ElasticTypeMapping<()> + ElasticStringMapping> 
+where Self: Sized + ElasticType<T, ()> { }
 
 /// Default mapping for `String`.
 #[derive(Debug, Default, Clone, Copy)]

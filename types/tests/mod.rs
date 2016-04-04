@@ -152,6 +152,31 @@ pub mod string_fixtures {
 	impl_string_mapping!(MyStringMapping);
 }
 
+pub mod number_fixtures {
+	use serde;
+	use elastic_types::mapping::prelude::*;
+
+	#[derive(Debug, Clone, Default)]
+	pub struct MyNumberMapping;
+	impl ElasticNumberMapping for MyNumberMapping {
+		fn null_value() -> Option<Number> {
+			Some(Number::Integer(42))
+		}
+	}
+	impl ElasticTypeMapping<()> for MyNumberMapping {
+		type Visitor = ElasticNumberMappingVisitor<MyNumberMapping>;
+		fn data_type() -> &'static str {
+			"integer"
+		}
+	}
+	impl serde::Serialize for MyNumberMapping {
+		fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+		where S: serde::Serializer {
+			serializer.serialize_struct("mapping", Self::get_visitor())
+		}
+	}
+}
+
 pub mod object_fixtures {
 	use elastic_types::mapping::prelude::*;
 	use elastic_types::date::prelude::*;
@@ -203,3 +228,4 @@ pub mod object_fixtures {
 pub mod object;
 pub mod date;
 pub mod string;
+//pub mod number;

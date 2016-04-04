@@ -12,7 +12,8 @@ impl ElasticStringType<DefaultStringMapping> for String { }
 /// Where the mapping isn't custom, you can use the standard library `String` instead.
 /// 
 /// # Examples
-/// Defining a string with a format:
+/// 
+/// Defining a string with a mapping:
 /// 
 /// ```
 /// use elastic_types::string::mapping::DefaultStringMapping;
@@ -56,6 +57,41 @@ impl <T: ElasticTypeMapping<()> + ElasticStringMapping> ElasticString<T> {
 	}
 
 	/// Change the mapping of this string.
+	/// 
+	/// # Examples
+	/// 
+	/// Change the mapping for a given `ElasticString`:
+	/// 
+	/// ```
+	/// # extern crate serde;
+	/// # extern crate elastic_types;
+	/// # fn main() {
+	/// # use elastic_types::mapping::prelude::*;
+	/// # use elastic_types::string::prelude::*;
+	/// # #[derive(Debug, Clone, Default)]
+	/// # pub struct MyStringMapping;
+	/// # impl ElasticStringMapping for MyStringMapping {
+	/// # 	fn boost() -> Option<f32> {
+	/// #			Some(1.5)
+	/// #		}
+	/// # }
+	/// # impl ElasticTypeMapping<()> for MyStringMapping {
+	/// # 	type Visitor = ElasticStringMappingVisitor<MyStringMapping>; 
+	/// # 	fn data_type() -> &'static str {
+	/// # 		"string"
+	/// # 	}
+	/// # }
+	/// # impl serde::Serialize for MyStringMapping {
+	/// # 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+	/// # 	where S: serde::Serializer {
+	/// # 		serializer.serialize_struct("mapping", Self::get_visitor())
+	/// # 	}
+	/// # }
+	/// let es_string = ElasticString::<DefaultStringMapping>::new(String::from("my string"));
+	/// 
+	/// let string: ElasticString<MyStringMapping> = es_string.into();
+	/// # }
+	/// ```
 	pub fn into<TInto: ElasticTypeMapping<()> + ElasticStringMapping>(self) -> ElasticString<TInto> {
 		ElasticString::<TInto>::new(self.value)
 	}
@@ -124,8 +160,7 @@ impl<'a, T: ElasticTypeMapping<()> + ElasticStringMapping> PartialEq<ElasticStri
 
 //Serialize elastic string
 impl <T: ElasticTypeMapping<()> + ElasticStringMapping> Serialize for ElasticString<T> {
-	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where S: Serializer
-	{
+	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where S: Serializer {
 		serializer.serialize_str(&self.value)
 	}
 }

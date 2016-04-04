@@ -37,7 +37,7 @@ fn serialise_mapping_type() {
 				"type":"string"
 			},
 			"my_num":{
-				"type":"object"
+				"type":"integer"
 			}
 		}
 	});
@@ -100,12 +100,12 @@ fn serialise_mapping_type_as_nested() {
 					"my_string":{
 						"type":"string"
 					},"my_num":{
-						"type":"object"
+						"type":"integer"
 					}
 				}
 			},
 			"my_num":{
-				"type":"object"
+				"type":"integer"
 			}
 		}
 	});

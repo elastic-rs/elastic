@@ -12,16 +12,46 @@ use ::mapping::{ ElasticTypeMapping, IndexAnalysis };
 /// 
 /// Custom mappings can be defined by implementing `ElasticDateMapping`:
 /// 
+/// ## With Macros
+/// 
 /// ```
 /// # extern crate serde;
+/// #[macro_use]
 /// # extern crate elastic_types;
+/// # use std::marker::PhantomData;
 /// # fn main() {
 /// use elastic_types::mapping::prelude::*;
 /// use elastic_types::date::prelude::*;
 /// 
 /// #[derive(Debug, Default, Clone, Copy)]
 /// pub struct MyDateMapping<T: DateFormat> {
-/// 	phantom: std::marker::PhantomData<T>
+/// 	phantom: PhantomData<T>
+/// }
+/// 
+/// impl <T: DateFormat> ElasticDateMapping<T> for MyDateMapping<T> {
+/// 	//Overload the mapping functions here
+/// 	fn boost() -> Option<f32> {
+///			Some(1.5)
+///		}
+/// }
+/// 
+/// impl_date_mapping!(MyDateMapping<T>);
+/// # }
+/// ```
+/// 
+/// ## Manually
+/// 
+/// ```
+/// # extern crate serde;
+/// # extern crate elastic_types;
+/// # use std::marker::PhantomData;
+/// # fn main() {
+/// use elastic_types::mapping::prelude::*;
+/// use elastic_types::date::prelude::*;
+/// 
+/// #[derive(Debug, Default, Clone, Copy)]
+/// pub struct MyDateMapping<T: DateFormat> {
+/// 	phantom: PhantomData<T>
 /// }
 /// 
 /// impl <T: DateFormat> ElasticTypeMapping<T> for MyDateMapping<T> {
@@ -94,7 +124,7 @@ where Self : ElasticTypeMapping<T> + Sized + Serialize + Default + Copy {
 	}
 
 	/// Accepts a date value in one of the configured format's as the field which is substituted for any explicit null values. 
-	/// Defaults to null, which means the field is treated as missing.
+	/// Defaults to `null`, which means the field is treated as missing.
 	fn null_value() -> Option<&'static str> {
 		None
 	}
