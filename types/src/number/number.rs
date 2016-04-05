@@ -21,8 +21,8 @@ macro_rules! number_type {
 			}
 
 			/// Get the value of the number.
-			pub fn get(&self) -> &$n {
-				&self.value
+			pub fn get(&self) -> $n {
+				self.value
 			}
 
 			/// Set the value of the number.

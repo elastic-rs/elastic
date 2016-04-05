@@ -2,6 +2,34 @@
 //! 
 //! Strings are stored as a sequence of tokens, constructed based on the given `analyzer`.
 //! 
+//! # Examples
+//! 
+//! Map with a default `string`:
+//! 
+//! ```
+//! struct MyType {
+//! 	pub field: String
+//! }
+//! ```
+//! 
+//! Map with a custom `string`:
+//! 
+//! ```
+//! # extern crate serde;
+//! # #[macro_use]
+//! # extern crate elastic_types;
+//! # fn main() {
+//! # use elastic_types::mapping::prelude::*;
+//! # use elastic_types::string::prelude::*;
+//! # #[derive(Debug, Clone, Default)]
+//! # pub struct MyStringMapping;
+//! # impl ElasticStringMapping for MyStringMapping { }
+//! # impl_string_mapping!(MyStringMapping);
+//! struct MyType {
+//! 	pub field: ElasticString<MyStringMapping>
+//! }
+//! # }
+//! ```
 //! # Links
 //! - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/string.html)
 

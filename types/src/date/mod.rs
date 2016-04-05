@@ -7,6 +7,37 @@
 //! 
 //! Because date conversion needs to be done by the `caller`, the `Format` is a first-class citizen in the `DateTime` design.
 //! 
+//! # Examples
+//! 
+//! Map with a default `date`:
+//! 
+//! ```
+//! # use elastic_types::date::prelude::*;
+//! struct MyType {
+//! 	pub field: DateTime
+//! }
+//! ```
+//! 
+//! Map with a custom `date`:
+//! 
+//! ```
+//! # extern crate serde;
+//! # #[macro_use]
+//! # extern crate elastic_types;
+//! # use std::marker::PhantomData;
+//! # fn main() {
+//! # use elastic_types::mapping::prelude::*;
+//! # use elastic_types::date::prelude::*;
+//! # #[derive(Debug, Default, Clone, Copy)]
+//! # pub struct MyDateMapping;
+//! # impl ElasticDateMapping<EpochMillis> for MyDateMapping { }
+//! # impl_date_mapping!(MyDateMapping, EpochMillis);
+//! struct MyType {
+//! 	pub field: DateTime<EpochMillis, MyDateMapping>
+//! }
+//! # }
+//! ```
+//! 
 //! # Links
 //! - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/date.html)
 

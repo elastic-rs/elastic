@@ -80,7 +80,7 @@ macro_rules! number_mapping {
 			}
 
 			/// Field-level index time boosting. Accepts a floating point number, defaults to `1.0`.
-			fn boost() -> Option<bool> {
+			fn boost() -> Option<f32> {
 				None
 			}
 
@@ -118,7 +118,7 @@ macro_rules! number_mapping {
 
 			/// Controls the number of extra terms that are indexed to make range queries faster. 
 			/// The default depends on the numeric type.
-			fn precision_step() -> Option<bool> {
+			fn precision_step() -> Option<u32> {
 				None
 			}
 

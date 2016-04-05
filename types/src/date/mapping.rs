@@ -14,9 +14,35 @@ use ::mapping::{ ElasticTypeMapping, IndexAnalysis };
 /// 
 /// ## With Macros
 /// 
+/// Create a mapping that's valid for a single date format (`EpochMillis` in this case):
+/// 
 /// ```
 /// # extern crate serde;
-/// #[macro_use]
+/// # #[macro_use]
+/// # extern crate elastic_types;
+/// # use std::marker::PhantomData;
+/// # fn main() {
+/// use elastic_types::mapping::prelude::*;
+/// use elastic_types::date::prelude::*;
+/// 
+/// #[derive(Debug, Default, Clone, Copy)]
+/// pub struct MyDateMapping;
+/// impl ElasticDateMapping<EpochMillis> for MyDateMapping {
+/// 	//Overload the mapping functions here
+/// 	fn boost() -> Option<f32> {
+///			Some(1.5)
+///		}
+/// }
+/// 
+/// impl_date_mapping!(MyDateMapping, EpochMillis);
+/// # }
+/// ```
+/// 
+/// Create a mapping that's valid for any date format:
+/// 
+/// ```
+/// # extern crate serde;
+/// # #[macro_use]
 /// # extern crate elastic_types;
 /// # use std::marker::PhantomData;
 /// # fn main() {

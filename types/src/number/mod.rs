@@ -14,6 +14,35 @@
 //! For mapping a number with the default mapping, you can use the Rust primitive.
 //! If you need to use a custom mapping, then there is an `Elastic*` type for each number.
 //! 
+//! # Examples
+//! 
+//! Map with a default `number`:
+//! 
+//! ```
+//! struct MyType {
+//! 	pub field: i32
+//! }
+//! ```
+//! 
+//! Map with a custom `number`:
+//! 
+//! ```
+//! # extern crate serde;
+//! # #[macro_use]
+//! # extern crate elastic_types;
+//! # fn main() {
+//! # use elastic_types::mapping::prelude::*;
+//! # use elastic_types::number::prelude::*; 
+//! # #[derive(Debug, Clone, Default)]
+//! # pub struct MyIntegerMapping;
+//! # impl ElasticIntegerMapping for MyIntegerMapping { }
+//! # impl_integer_mapping!(MyIntegerMapping);
+//! struct MyType {
+//! 	pub field: ElasticInteger<MyIntegerMapping>
+//! }
+//! # }
+//! ```
+//! 
 //! # Links
 //! - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/number.html)
 

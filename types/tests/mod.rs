@@ -159,12 +159,248 @@ pub mod number_fixtures {
 	#[derive(Debug, Clone, Default)]
 	pub struct MyIntegerMapping;
 	impl ElasticIntegerMapping for MyIntegerMapping {
+		fn coerce() -> Option<bool> {
+			Some(true)
+		}
+
+		fn boost() -> Option<f32> {
+			Some(1.1)
+		}
+
+		fn doc_values() -> Option<bool> {
+			Some(false)
+		}
+
+		fn ignore_malformed() -> Option<bool> {
+			Some(true)
+		}
+
+		fn include_in_all() -> Option<bool> {
+			Some(true)
+		}
+
+		fn index() -> Option<IndexAnalysis> {
+			Some(IndexAnalysis::No)
+		}
+
+		fn precision_step() -> Option<u32> {
+			Some(2147483647)
+		}
+
+		fn store() -> Option<bool> {
+			Some(true)
+		}
+
 		fn null_value() -> Option<i32> {
 			Some(42)
 		}
 	}
-
 	impl_integer_mapping!(MyIntegerMapping);
+
+	#[derive(Debug, Clone, Default)]
+	pub struct MyLongMapping;
+	impl ElasticLongMapping for MyLongMapping {
+		fn coerce() -> Option<bool> {
+			Some(true)
+		}
+
+		fn boost() -> Option<f32> {
+			Some(1.1)
+		}
+
+		fn doc_values() -> Option<bool> {
+			Some(false)
+		}
+
+		fn ignore_malformed() -> Option<bool> {
+			Some(true)
+		}
+
+		fn include_in_all() -> Option<bool> {
+			Some(true)
+		}
+
+		fn index() -> Option<IndexAnalysis> {
+			Some(IndexAnalysis::No)
+		}
+
+		fn precision_step() -> Option<u32> {
+			Some(2147483647)
+		}
+
+		fn store() -> Option<bool> {
+			Some(true)
+		}
+
+		fn null_value() -> Option<i64> {
+			Some(42)
+		}
+	}
+	impl_long_mapping!(MyLongMapping);
+
+	#[derive(Debug, Clone, Default)]
+	pub struct MyShortMapping;
+	impl ElasticShortMapping for MyShortMapping {
+		fn coerce() -> Option<bool> {
+			Some(true)
+		}
+
+		fn boost() -> Option<f32> {
+			Some(1.1)
+		}
+
+		fn doc_values() -> Option<bool> {
+			Some(false)
+		}
+
+		fn ignore_malformed() -> Option<bool> {
+			Some(true)
+		}
+
+		fn include_in_all() -> Option<bool> {
+			Some(true)
+		}
+
+		fn index() -> Option<IndexAnalysis> {
+			Some(IndexAnalysis::No)
+		}
+
+		fn precision_step() -> Option<u32> {
+			Some(2147483647)
+		}
+
+		fn store() -> Option<bool> {
+			Some(true)
+		}
+
+		fn null_value() -> Option<i16> {
+			Some(-42)
+		}
+	}
+	impl_short_mapping!(MyShortMapping);
+
+	#[derive(Debug, Clone, Default)]
+	pub struct MyByteMapping;
+	impl ElasticByteMapping for MyByteMapping {
+		fn coerce() -> Option<bool> {
+			Some(true)
+		}
+
+		fn boost() -> Option<f32> {
+			Some(1.1)
+		}
+
+		fn doc_values() -> Option<bool> {
+			Some(false)
+		}
+
+		fn ignore_malformed() -> Option<bool> {
+			Some(true)
+		}
+
+		fn include_in_all() -> Option<bool> {
+			Some(true)
+		}
+
+		fn index() -> Option<IndexAnalysis> {
+			Some(IndexAnalysis::No)
+		}
+
+		fn precision_step() -> Option<u32> {
+			Some(2147483647)
+		}
+
+		fn store() -> Option<bool> {
+			Some(true)
+		}
+
+		fn null_value() -> Option<i8> {
+			Some(1)
+		}
+	}
+	impl_byte_mapping!(MyByteMapping);
+
+	#[derive(Debug, Clone, Default)]
+	pub struct MyFloatMapping;
+	impl ElasticFloatMapping for MyFloatMapping {
+		fn coerce() -> Option<bool> {
+			Some(true)
+		}
+
+		fn boost() -> Option<f32> {
+			Some(1.1)
+		}
+
+		fn doc_values() -> Option<bool> {
+			Some(false)
+		}
+
+		fn ignore_malformed() -> Option<bool> {
+			Some(true)
+		}
+
+		fn include_in_all() -> Option<bool> {
+			Some(true)
+		}
+
+		fn index() -> Option<IndexAnalysis> {
+			Some(IndexAnalysis::No)
+		}
+
+		fn precision_step() -> Option<u32> {
+			Some(2147483647)
+		}
+
+		fn store() -> Option<bool> {
+			Some(true)
+		}
+
+		fn null_value() -> Option<f32> {
+			Some(1.04)
+		}
+	}
+	impl_float_mapping!(MyFloatMapping);
+
+	#[derive(Debug, Clone, Default)]
+	pub struct MyDoubleMapping;
+	impl ElasticDoubleMapping for MyDoubleMapping {
+		fn coerce() -> Option<bool> {
+			Some(true)
+		}
+
+		fn boost() -> Option<f32> {
+			Some(1.1)
+		}
+
+		fn doc_values() -> Option<bool> {
+			Some(false)
+		}
+
+		fn ignore_malformed() -> Option<bool> {
+			Some(true)
+		}
+
+		fn include_in_all() -> Option<bool> {
+			Some(true)
+		}
+
+		fn index() -> Option<IndexAnalysis> {
+			Some(IndexAnalysis::No)
+		}
+
+		fn precision_step() -> Option<u32> {
+			Some(2147483647)
+		}
+
+		fn store() -> Option<bool> {
+			Some(true)
+		}
+		
+		fn null_value() -> Option<f64> {
+			Some(-0.00002)
+		}
+	}
+	impl_double_mapping!(MyDoubleMapping);
 }
 
 pub mod object_fixtures {
@@ -218,4 +454,4 @@ pub mod object_fixtures {
 pub mod object;
 pub mod date;
 pub mod string;
-//pub mod number;
+pub mod number;

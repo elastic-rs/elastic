@@ -11,7 +11,7 @@ use ::string_fixtures::*;
 
 #[test]
 fn serialise_mapping_default() {
-	let mapping: DefaultStringMapping = DefaultStringMapping::default();
+	let mapping = DefaultStringMapping::default();
 	let ser = serde_json::to_string(&mapping).unwrap();
 
 	let expected = json_str!({

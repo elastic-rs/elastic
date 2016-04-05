@@ -10,7 +10,55 @@
 //! Derive `ElasticType` on your Elasticsearch-mappable types:
 //! 
 //! ```
-//! //TODO: Implement this
+//! # #![feature(plugin, custom_derive)]
+//! # #![plugin(elastic_macros)]
+//! # #[macro_use]
+//! # extern crate elastic_types;
+//! # extern crate serde;
+//! # use serde::{ Serialize, Deserialize };
+//! # use elastic_types::mapping::prelude::*;
+//! # use elastic_types::date::DateTime;
+//! 
+//! #[derive(Default, Clone, Serialize, Deserialize)]
+//! pub struct MyType {
+//! 	pub my_date: DateTime,
+//! 	pub my_string: String,
+//! 	pub my_num: i32
+//! }
+//! 
+//! #[derive(Default, Clone)]
+//! struct MyTypeMapping;
+//! impl ElasticObjectMapping for MyTypeMapping {
+//! 	fn data_type() -> &'static str {
+//! 		"object"
+//! 	}
+//! 
+//! 	fn dynamic() -> Option<Dynamic> {
+//! 		Some(Dynamic::True)
+//! 	}
+//! 
+//! 	fn enabled() -> Option<bool> {
+//! 		Some(false)
+//! 	}
+//! 
+//! 	fn include_in_all() -> Option<bool> {
+//! 		Some(true)
+//! 	}
+//! }
+//! 
+//! impl_object_mapping!(MyType, MyTypeMapping, "my_type", inner1, [my_date, my_string, my_num]);
+//! # impl serde::Serialize for MyType {
+//! # 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where S: serde::Serializer {
+//! # 		unimplemented!()
+//! # 	}
+//! # }
+//! # impl serde::Deserialize for MyType {
+//! # 	 fn deserialize<D>(deserializer: &mut D) -> Result<Self, D::Error> where D: serde::Deserializer {
+//! # 		unimplemented!()
+//! # 	}
+//! # }
+//! # fn main() {
+//! # }
 //! ```
 //! 
 //! # Links
