@@ -7,9 +7,12 @@
 //! `i64` |  `long`
 //! `i32` | `integer`
 //! `i16` | `short`
-//! `u8` | `byte`
+//! `i8` | `byte`
 //! `f64` | `double`
 //! `f32` | `float`
+//! 
+//! For mapping a number with the default mapping, you can use the Rust primitive.
+//! If you need to use a custom mapping, then there is an `Elastic*` type for each number.
 //! 
 //! # Links
 //! - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/number.html)

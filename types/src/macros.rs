@@ -29,14 +29,133 @@ macro_rules! impl_string_mapping {
 	)
 }
 
-#[macro_export]
 macro_rules! impl_number_mapping {
-	($t:ty, $es_ty:expr) => (
+	($t:ty, $v:ident, $es_ty:expr) => (
 		impl $crate::mapping::ElasticTypeMapping<()> for $t {
-			type Visitor = $crate::number::mapping::ElasticNumberMappingVisitor<$t>;
+			type Visitor = $v;
 
 			fn data_type() -> &'static str {
 				$es_ty
+			}
+		}
+		
+		impl serde::Serialize for $t {
+			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+			where S: serde::Serializer {
+				serializer.serialize_struct("mapping", Self::get_visitor())
+			}
+		}
+	)
+}
+
+#[macro_export]
+macro_rules! impl_integer_mapping {
+	($t:ty) => (
+		impl $crate::mapping::ElasticTypeMapping<()> for $t {
+			type Visitor = ElasticIntegerMappingVisitor<$t>;
+
+			fn data_type() -> &'static str {
+				"integer"
+			}
+		}
+		
+		impl serde::Serialize for $t {
+			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+			where S: serde::Serializer {
+				serializer.serialize_struct("mapping", Self::get_visitor())
+			}
+		}
+	)
+}
+
+#[macro_export]
+macro_rules! impl_long_mapping {
+	($t:ty) => (
+		impl $crate::mapping::ElasticTypeMapping<()> for $t {
+			type Visitor = ElasticLongMappingVisitor<$t>;
+
+			fn data_type() -> &'static str {
+				"long"
+			}
+		}
+		
+		impl serde::Serialize for $t {
+			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+			where S: serde::Serializer {
+				serializer.serialize_struct("mapping", Self::get_visitor())
+			}
+		}
+	)
+}
+
+#[macro_export]
+macro_rules! impl_short_mapping {
+	($t:ty) => (
+		impl $crate::mapping::ElasticTypeMapping<()> for $t {
+			type Visitor = ElasticShortMappingVisitor<$t>;
+
+			fn data_type() -> &'static str {
+				"short"
+			}
+		}
+		
+		impl serde::Serialize for $t {
+			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+			where S: serde::Serializer {
+				serializer.serialize_struct("mapping", Self::get_visitor())
+			}
+		}
+	)
+}
+
+#[macro_export]
+macro_rules! impl_byte_mapping {
+	($t:ty) => (
+		impl $crate::mapping::ElasticTypeMapping<()> for $t {
+			type Visitor = ElasticByteMappingVisitor<$t>;
+
+			fn data_type() -> &'static str {
+				"byte"
+			}
+		}
+		
+		impl serde::Serialize for $t {
+			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+			where S: serde::Serializer {
+				serializer.serialize_struct("mapping", Self::get_visitor())
+			}
+		}
+	)
+}
+
+#[macro_export]
+macro_rules! impl_float_mapping {
+	($t:ty) => (
+		impl $crate::mapping::ElasticTypeMapping<()> for $t {
+			type Visitor = ElasticFloatMappingVisitor<$t>;
+
+			fn data_type() -> &'static str {
+				"float"
+			}
+		}
+		
+		impl serde::Serialize for $t {
+			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+			where S: serde::Serializer {
+				serializer.serialize_struct("mapping", Self::get_visitor())
+			}
+		}
+	)
+}
+
+#[macro_export]
+macro_rules! impl_double_mapping {
+	($t:ty) => (
+		impl $crate::mapping::ElasticTypeMapping<()> for $t {
+			type Visitor = ElasticDoubleMappingVisitor<$t>;
+
+			fn data_type() -> &'static str {
+				"double"
 			}
 		}
 		
