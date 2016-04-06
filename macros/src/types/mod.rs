@@ -16,7 +16,7 @@ pub fn expand_date_fmt(cx: &mut ExtCtxt, sp: Span, args: &[TokenTree]) -> Box<Ma
 		let _fmt = match *arg {
 			TokenTree::Token(_, token::Literal(token::Lit::Str_(s), _)) => s.to_string(),
 			_ => {
-				cx.span_err(sp, "argument should be a single identifier");
+				cx.span_err(sp, "argument should be a single string literal");
 				return DummyResult::any(sp);
 			}
 		};
