@@ -5,10 +5,11 @@ use super::ElasticObjectTypeVisitor;
 use ::mapping::ElasticTypeMapping;
 
 /// The base requirements for mapping a user-defined type.
-/// 
+///
 /// User-defined type mappings are tied to `object` mappings.
-pub trait ElasticUserTypeMapping<'a, T: 'a + Clone + Default>
-where Self: ElasticTypeMapping<()> + Default + Clone + serde::Serialize {
+pub trait ElasticUserTypeMapping<'a, T> where
+T: 'a + Clone + Default,
+Self: ElasticTypeMapping<()> + Default + Clone + serde::Serialize {
 	#[doc(hidden)]
 	type Visitor: ElasticObjectTypeVisitor<'a, T>;
 	#[doc(hidden)]
@@ -19,11 +20,15 @@ where Self: ElasticTypeMapping<()> + Default + Clone + serde::Serialize {
 }
 
 /// Represents the properties object that encapsulates type mappings.
-pub struct ElasticTypeProperties<'a, T: 'a + Clone + Default, M: ElasticUserTypeMapping<'a, T>> { 
+pub struct ElasticTypeProperties<'a, T, M> where
+T: 'a + Clone + Default,
+M: ElasticUserTypeMapping<'a, T> {
 	data: &'a T,
 	phantom: PhantomData<M>
 }
-impl <'a, T: 'a + Clone + Default, M: ElasticUserTypeMapping<'a, T>> ElasticTypeProperties<'a, T, M> {
+impl <'a, T, M> ElasticTypeProperties<'a, T, M> where
+T: 'a + Clone + Default,
+M: ElasticUserTypeMapping<'a, T> {
 	/// Create a new properties struct from a borrowed user-defined type.
 	pub fn new(data: &'a T) -> Self {
 		ElasticTypeProperties {
@@ -33,7 +38,9 @@ impl <'a, T: 'a + Clone + Default, M: ElasticUserTypeMapping<'a, T>> ElasticType
 	}
 }
 
-impl <'a, T: 'a + Clone + Default, M: ElasticUserTypeMapping<'a, T>> serde::Serialize for ElasticTypeProperties<'a, T, M> {
+impl <'a, T, M> serde::Serialize for ElasticTypeProperties<'a, T, M> where
+T: 'a + Clone + Default,
+M: ElasticUserTypeMapping<'a, T> {
 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
 	where S: serde::Serializer {
 		serializer.serialize_struct("properties", <M as ElasticUserTypeMapping<T>>::PropertiesVisitor::new(&self.data))

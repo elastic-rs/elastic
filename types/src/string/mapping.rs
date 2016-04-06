@@ -7,15 +7,15 @@ use serde::{ Serializer, Serialize };
 use ::mapping::{ ElasticTypeMapping, ElasticType, IndexAnalysis };
 
 /// The base requirements for mapping a `string` type.
-/// 
+///
 /// Custom mappings can be defined by implementing `ElasticStringMapping`.
-/// 
+///
 /// # Examples
-/// 
+///
 /// Define a custom `ElasticStringMapping`:
-/// 
+///
 /// ## With Macros
-/// 
+///
 /// ```
 /// # extern crate serde;
 /// # #[macro_use]
@@ -32,13 +32,13 @@ use ::mapping::{ ElasticTypeMapping, ElasticType, IndexAnalysis };
 ///			Some(1.5)
 ///		}
 /// }
-/// 
+///
 /// impl_string_mapping!(MyStringMapping);
 /// # }
 /// ```
-/// 
+///
 /// ## Manually
-/// 
+///
 /// ```
 /// # extern crate serde;
 /// # extern crate elastic_types;
@@ -54,16 +54,16 @@ use ::mapping::{ ElasticTypeMapping, ElasticType, IndexAnalysis };
 ///			Some(1.5)
 ///		}
 /// }
-/// 
+///
 /// //We also need to implement the base `ElasticTypeMapping` and `serde::Serialize` for our custom mapping type
 /// impl ElasticTypeMapping<()> for MyStringMapping {
 /// 	type Visitor = ElasticStringMappingVisitor<MyStringMapping>;
-/// 
+///
 /// 	fn data_type() -> &'static str {
 /// 		"string"
 /// 	}
 /// }
-/// 
+///
 /// impl serde::Serialize for MyStringMapping {
 /// 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
 /// 	where S: serde::Serializer {
@@ -72,23 +72,23 @@ use ::mapping::{ ElasticTypeMapping, ElasticType, IndexAnalysis };
 /// }
 /// # }
 /// ```
-pub trait ElasticStringMapping
-where Self : ElasticTypeMapping<()> + Sized + Serialize + Default + Clone {
+pub trait ElasticStringMapping where
+Self: ElasticTypeMapping<()> + Sized + Serialize + Default + Clone {
 	/// Field-level index time boosting. Accepts a floating point number, defaults to `1.0`.
 	fn boost() -> Option<f32> {
 		None
 	}
 
-	/// Should the field be stored on disk in a column-stride fashion, 
-	/// so that it can later be used for sorting, aggregations, or scripting? 
+	/// Should the field be stored on disk in a column-stride fashion,
+	/// so that it can later be used for sorting, aggregations, or scripting?
 	/// Accepts `true` (default) or `false`.
 	fn doc_values() -> Option<bool> {
 		None
 	}
 
-	/// Whether or not the field value should be included in the `_all` field? 
-	/// Accepts true or false. 
-	/// Defaults to `false` if index is set to `no`, or if a parent object field sets `include_in_all` to false. 
+	/// Whether or not the field value should be included in the `_all` field?
+	/// Accepts true or false.
+	/// Defaults to `false` if index is set to `no`, or if a parent object field sets `include_in_all` to false.
 	/// Otherwise defaults to `true`.
 	fn include_in_all() -> Option<bool> {
 		None
@@ -99,28 +99,28 @@ where Self : ElasticTypeMapping<()> + Sized + Serialize + Default + Clone {
 		None
 	}
 
-	/// Whether the field value should be stored and retrievable separately from the `_source` field. 
+	/// Whether the field value should be stored and retrievable separately from the `_source` field.
 	/// Accepts `true` or `false` (default).
 	fn store() -> Option<bool> {
 		None
 	}
 
-	/// The analyzer which should be used for analyzed string fields, 
-	/// both at index-time and at search-time (unless overridden by the `search_analyzer`). 
+	/// The analyzer which should be used for analyzed string fields,
+	/// both at index-time and at search-time (unless overridden by the `search_analyzer`).
 	/// Defaults to the default index analyzer, or the `standard` analyzer.
 	fn analyzer() -> Option<&'static str> {
 		None
 	}
 
-	/// Can the field use in-memory fielddata for sorting, aggregations, or scripting? 
-	/// Accepts disabled or `paged_bytes` (default). 
+	/// Can the field use in-memory fielddata for sorting, aggregations, or scripting?
+	/// Accepts disabled or `paged_bytes` (default).
 	/// Not analyzed fields will use doc values in preference to fielddata.
 	fn fielddata() -> Option<FieldData> {
 		None
 	}
 
-	/// Multi-fields allow the same string value to be indexed in multiple ways for different purposes, 
-	/// such as one field for search and a multi-field for sorting and aggregations, 
+	/// Multi-fields allow the same string value to be indexed in multiple ways for different purposes,
+	/// such as one field for search and a multi-field for sorting and aggregations,
 	/// or the same string value analyzed by different analyzers.
 	fn fields() -> Option<BTreeMap<&'static str, ElasticStringFieldMapping>> {
 		None
@@ -131,7 +131,7 @@ where Self : ElasticTypeMapping<()> + Sized + Serialize + Default + Clone {
 		None
 	}
 
-	/// What information should be stored in the index, for search and highlighting purposes. 
+	/// What information should be stored in the index, for search and highlighting purposes.
 	/// Defaults to positions for analyzed fields, and to docs for not_analyzed fields.
 	fn index_options() -> Option<IndexOptions> {
 		None
@@ -142,24 +142,24 @@ where Self : ElasticTypeMapping<()> + Sized + Serialize + Default + Clone {
 		None
 	}
 
-	/// Accepts a string value which is substituted for any explicit null values. 
+	/// Accepts a string value which is substituted for any explicit null values.
 	/// Defaults to `null`, which means the field is treated as missing.
 	fn null_value() -> Option<&'static str> {
 		None
 	}
 
-	/// Whether field-length should be taken into account when scoring queries. 
+	/// Whether field-length should be taken into account when scoring queries.
 	fn position_increment_gap() -> Option<usize> {
 		None
 	}
 
-	/// The analyzer that should be used at search time on analyzed fields. 
+	/// The analyzer that should be used at search time on analyzed fields.
 	/// Defaults to the analyzer setting.
 	fn search_analyzer() -> Option<&'static str> {
 		None
 	}
 
-	/// The analyzer that should be used at search time when a phrase is encountered. 
+	/// The analyzer that should be used at search time when a phrase is encountered.
 	/// Defaults to the search_analyzer setting.
 	fn search_quote_analyzer() -> Option<&'static str> {
 		None
@@ -177,8 +177,9 @@ where Self : ElasticTypeMapping<()> + Sized + Serialize + Default + Clone {
 }
 
 /// A Rust representation of an Elasticsearch `string`.
-pub trait ElasticStringType<T: ElasticTypeMapping<()> + ElasticStringMapping> 
-where Self: Sized + ElasticType<T, ()> { }
+pub trait ElasticStringType<T> where
+T: ElasticTypeMapping<()> + ElasticStringMapping,
+Self: Sized + ElasticType<T, ()> { }
 
 /// Default mapping for `String`.
 #[derive(Debug, Default, Clone, Copy)]
@@ -189,11 +190,12 @@ impl_string_mapping!(DefaultStringMapping);
 
 /// Base visitor for serialising string mappings.
 #[derive(Debug, PartialEq, Default)]
-pub struct ElasticStringMappingVisitor<T: ElasticStringMapping> {
+pub struct ElasticStringMappingVisitor<T> where T: ElasticStringMapping {
 	phantom: PhantomData<T>
 }
 
-impl <T: ElasticStringMapping> serde::ser::MapVisitor for ElasticStringMappingVisitor<T> {
+impl <T> serde::ser::MapVisitor for ElasticStringMappingVisitor<T> where
+T: ElasticStringMapping {
 	#[cfg_attr(feature = "nightly-testing", allow(cyclomatic_complexity))]
 	fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
 	where S: serde::Serializer {
@@ -276,30 +278,30 @@ impl <T: ElasticStringMapping> serde::ser::MapVisitor for ElasticStringMappingVi
 /// A multi-field string mapping.
 #[derive(Debug, Default, Clone, Copy)]
 pub struct ElasticStringFieldMapping {
-/// The analyzer which should be used for analyzed string fields, 
-	/// both at index-time and at search-time (unless overridden by the `search_analyzer`). 
+/// The analyzer which should be used for analyzed string fields,
+	/// both at index-time and at search-time (unless overridden by the `search_analyzer`).
 	/// Defaults to the default index analyzer, or the `standard` analyzer.
 	pub analyzer: Option<&'static str>,
-	/// Can the field use in-memory fielddata for sorting, aggregations, or scripting? 
-	/// Accepts disabled or `paged_bytes` (default). 
+	/// Can the field use in-memory fielddata for sorting, aggregations, or scripting?
+	/// Accepts disabled or `paged_bytes` (default).
 	/// Not analyzed fields will use doc values in preference to fielddata.
 	pub fielddata: Option<FieldData>,
 	/// Do not index or analyze any string longer than this value. Defaults to 0 (disabled).
 	pub ignore_above: Option<usize>,
-	/// What information should be stored in the index, for search and highlighting purposes. 
+	/// What information should be stored in the index, for search and highlighting purposes.
 	/// Defaults to positions for analyzed fields, and to docs for not_analyzed fields.
 	pub index_options: Option<IndexOptions>,
 	/// Whether field-length should be taken into account when scoring queries.
 	pub norms: Option<Norms>,
-	/// Accepts a string value which is substituted for any explicit null values. 
+	/// Accepts a string value which is substituted for any explicit null values.
 	/// Defaults to null, which means the field is treated as missing.
 	pub null_value: Option<&'static str>,
-	/// Whether field-length should be taken into account when scoring queries. 
+	/// Whether field-length should be taken into account when scoring queries.
 	pub position_increment_gap: Option<usize>,
-	/// The analyzer that should be used at search time on analyzed fields. 
+	/// The analyzer that should be used at search time on analyzed fields.
 	/// Defaults to the analyzer setting.
 	pub search_analyzer: Option<&'static str>,
-	/// The analyzer that should be used at search time when a phrase is encountered. 
+	/// The analyzer that should be used at search time when a phrase is encountered.
 	/// Defaults to the search_analyzer setting.
 	pub search_quote_analyzer: Option<&'static str>,
 	/// Which scoring algorithm or similarity should be used. Defaults to `default`, which uses TF/IDF.
@@ -440,14 +442,14 @@ impl serde::ser::MapVisitor for FieldDataVisitor {
 pub enum FieldDataLoading {
 	/// Fielddata is only loaded into memory when it is needed. (default).
 	Lazy,
-	/// Fielddata is loaded into memory before a new search segment becomes visible to search. 
-	/// This can reduce the latency that a user may experience if their search request has to 
+	/// Fielddata is loaded into memory before a new search segment becomes visible to search.
+	/// This can reduce the latency that a user may experience if their search request has to
 	/// trigger lazy loading from a big segment.
 	Eager,
-	/// Loading fielddata into memory is only part of the work that is required. 
-	/// After loading the fielddata for each segment, Elasticsearch builds the 
-	/// Global ordinals data structure to make a list of all unique terms across all the segments in a shard. 
-	/// By default, global ordinals are built lazily. If the field has a very high cardinality, 
+	/// Loading fielddata into memory is only part of the work that is required.
+	/// After loading the fielddata for each segment, Elasticsearch builds the
+	/// Global ordinals data structure to make a list of all unique terms across all the segments in a shard.
+	/// By default, global ordinals are built lazily. If the field has a very high cardinality,
 	/// global ordinals may take some time to build, in which case you can use eager loading instead.
 	EagerGlobalOrdinals
 }
@@ -467,36 +469,36 @@ impl serde::Serialize for FieldDataLoading {
 /// Fielddata filtering can be used to reduce the number of terms loaded into memory, and thus reduce memory usage.
 #[derive(Debug, Clone, Copy)]
 pub enum FieldDataFilter {
-	/// The frequency filter allows you to only load terms whose term frequency falls between a min and max value, 
-	/// which can be expressed an absolute number (when the number is bigger than 1.0) or as a percentage (eg 0.01 is 1% and 1.0 is 100%). 
-	/// Frequency is calculated per segment. Percentages are based on the number of docs which have a value for the field, 
+	/// The frequency filter allows you to only load terms whose term frequency falls between a min and max value,
+	/// which can be expressed an absolute number (when the number is bigger than 1.0) or as a percentage (eg 0.01 is 1% and 1.0 is 100%).
+	/// Frequency is calculated per segment. Percentages are based on the number of docs which have a value for the field,
 	/// as opposed to all docs in the segment.
 	Frequency(FrequencyFilter),
-	/// Terms can also be filtered by regular expression - only values which match the regular expression are loaded. 
-	/// Note: the regular expression is applied to each term in the field, not to the whole field value. 
+	/// Terms can also be filtered by regular expression - only values which match the regular expression are loaded.
+	/// Note: the regular expression is applied to each term in the field, not to the whole field value.
 	Regex(RegexFilter)
 }
 
-/// The frequency filter allows you to only load terms whose term frequency falls between a min and max value, 
-/// which can be expressed an absolute number (when the number is bigger than 1.0) or as a percentage (eg 0.01 is 1% and 1.0 is 100%). 
-/// Frequency is calculated per segment. Percentages are based on the number of docs which have a value for the field, 
+/// The frequency filter allows you to only load terms whose term frequency falls between a min and max value,
+/// which can be expressed an absolute number (when the number is bigger than 1.0) or as a percentage (eg 0.01 is 1% and 1.0 is 100%).
+/// Frequency is calculated per segment. Percentages are based on the number of docs which have a value for the field,
 /// as opposed to all docs in the segment.
 #[derive(Debug, Clone, Copy, Serialize)]
-pub struct FrequencyFilter { 
+pub struct FrequencyFilter {
 	/// The min frequency.
-	pub min: f32, 
+	pub min: f32,
 	/// The max frequency.
-	pub max: f32, 
+	pub max: f32,
 	/// The minimum segment size before loading.
-	pub min_segment_size: usize 
+	pub min_segment_size: usize
 }
 
-/// Terms can also be filtered by regular expression - only values which match the regular expression are loaded. 
-/// Note: the regular expression is applied to each term in the field, not to the whole field value. 
+/// Terms can also be filtered by regular expression - only values which match the regular expression are loaded.
+/// Note: the regular expression is applied to each term in the field, not to the whole field value.
 #[derive(Debug, Clone, Copy, Serialize)]
-pub struct RegexFilter { 
+pub struct RegexFilter {
 	/// The regex pattern.
-	pub pattern: &'static str 
+	pub pattern: &'static str
 }
 
 impl serde::Serialize for FieldDataFilter {
@@ -535,14 +537,14 @@ impl serde::ser::MapVisitor for FieldDataFilterVisitor {
 pub enum IndexOptions {
 	/// Only the doc number is indexed. Can answer the question Does this term exist in this field?
 	Docs,
-	/// Doc number and term frequencies are indexed. 
+	/// Doc number and term frequencies are indexed.
 	/// Term frequencies are used to score repeated terms higher than single terms.
 	Freqs,
-	/// Doc number, term frequencies, and term positions (or order) are indexed. 
+	/// Doc number, term frequencies, and term positions (or order) are indexed.
 	/// Positions can be used for proximity or phrase queries.
 	Positions,
-	/// Doc number, term frequencies, positions, 
-	/// and start and end character offsets (which map the term back to the original string) are indexed. 
+	/// Doc number, term frequencies, positions,
+	/// and start and end character offsets (which map the term back to the original string) are indexed.
 	/// Offsets are used by the postings highlighter.
 	Offsets
 }
@@ -560,13 +562,13 @@ impl serde::Serialize for IndexOptions {
 	}
 }
 
-/// Whether field-length should be taken into account when scoring queries. 
+/// Whether field-length should be taken into account when scoring queries.
 #[derive(Debug, Clone, Copy)]
 pub enum Norms {
 	/// Enabled norms with eagerness.
-	Enabled { 
+	Enabled {
 		/// Whether the loading is eager or lazy.
-		loading: NormsLoading 
+		loading: NormsLoading
 	},
 	/// Disabled norms.
 	Disabled
@@ -603,7 +605,7 @@ impl serde::Serialize for Norms {
 	}
 }
 
-/// Whether the norms should be loaded into memory eagerly (`eager`), 
+/// Whether the norms should be loaded into memory eagerly (`eager`),
 /// whenever a new segment comes online, or they can loaded lazily (`lazy`, default).
 #[derive(Debug, Clone, Copy)]
 pub enum NormsLoading {

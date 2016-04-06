@@ -7,15 +7,15 @@ use super::{ DateFormat, DefaultFormat };
 use ::mapping::{ ElasticTypeMapping, IndexAnalysis };
 
 /// The base requirements for mapping a `date` type.
-/// 
+///
 /// # Examples
-/// 
+///
 /// Custom mappings can be defined by implementing `ElasticDateMapping`:
-/// 
+///
 /// ## With Macros
-/// 
+///
 /// Create a mapping that's valid for a single date format (`EpochMillis` in this case):
-/// 
+///
 /// ```
 /// # extern crate serde;
 /// # #[macro_use]
@@ -24,7 +24,7 @@ use ::mapping::{ ElasticTypeMapping, IndexAnalysis };
 /// # fn main() {
 /// use elastic_types::mapping::prelude::*;
 /// use elastic_types::date::prelude::*;
-/// 
+///
 /// #[derive(Debug, Default, Clone, Copy)]
 /// pub struct MyDateMapping;
 /// impl ElasticDateMapping<EpochMillis> for MyDateMapping {
@@ -33,13 +33,13 @@ use ::mapping::{ ElasticTypeMapping, IndexAnalysis };
 ///			Some(1.5)
 ///		}
 /// }
-/// 
+///
 /// impl_date_mapping!(MyDateMapping, EpochMillis);
 /// # }
 /// ```
-/// 
+///
 /// Create a mapping that's valid for any date format:
-/// 
+///
 /// ```
 /// # extern crate serde;
 /// # #[macro_use]
@@ -48,25 +48,25 @@ use ::mapping::{ ElasticTypeMapping, IndexAnalysis };
 /// # fn main() {
 /// use elastic_types::mapping::prelude::*;
 /// use elastic_types::date::prelude::*;
-/// 
+///
 /// #[derive(Debug, Default, Clone, Copy)]
 /// pub struct MyDateMapping<T: DateFormat> {
 /// 	phantom: PhantomData<T>
 /// }
-/// 
+///
 /// impl <T: DateFormat> ElasticDateMapping<T> for MyDateMapping<T> {
 /// 	//Overload the mapping functions here
 /// 	fn boost() -> Option<f32> {
 ///			Some(1.5)
 ///		}
 /// }
-/// 
+///
 /// impl_date_mapping!(MyDateMapping<T>);
 /// # }
 /// ```
-/// 
+///
 /// ## Manually
-/// 
+///
 /// ```
 /// # extern crate serde;
 /// # extern crate elastic_types;
@@ -74,27 +74,27 @@ use ::mapping::{ ElasticTypeMapping, IndexAnalysis };
 /// # fn main() {
 /// use elastic_types::mapping::prelude::*;
 /// use elastic_types::date::prelude::*;
-/// 
+///
 /// #[derive(Debug, Default, Clone, Copy)]
 /// pub struct MyDateMapping<T: DateFormat> {
 /// 	phantom: PhantomData<T>
 /// }
-/// 
+///
 /// impl <T: DateFormat> ElasticTypeMapping<T> for MyDateMapping<T> {
 /// 	type Visitor = ElasticDateMappingVisitor<T, MyDateMapping<T>>;
-/// 
+///
 /// 	fn data_type() -> &'static str {
 /// 		"date"
 /// 	}
 /// }
-/// 
+///
 /// impl <T: DateFormat> ElasticDateMapping<T> for MyDateMapping<T> {
 /// 	//Overload the mapping functions here
 /// 	fn boost() -> Option<f32> {
 ///			Some(1.5)
 ///		}
 /// }
-/// 
+///
 /// impl <T: DateFormat> serde::Serialize for MyDateMapping<T> {
 /// 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
 /// 	where S: serde::Serializer {
@@ -103,25 +103,26 @@ use ::mapping::{ ElasticTypeMapping, IndexAnalysis };
 /// }
 /// # }
 /// ```
-/// 
+///
 /// The above example binds the mapping to the `BasicDateTime` format, so `get_null_value` returns a properly formated value.
-pub trait ElasticDateMapping<T: DateFormat>
-where Self : ElasticTypeMapping<T> + Sized + Serialize + Default + Copy {
+pub trait ElasticDateMapping<T> where
+T: DateFormat,
+Self: ElasticTypeMapping<T> + Sized + Serialize + Default + Copy {
 	/// Field-level index time boosting. Accepts a floating point number, defaults to `1.0`.
 	fn boost() -> Option<f32> {
 		None
 	}
 
-	/// Should the field be stored on disk in a column-stride fashion, 
-	/// so that it can later be used for sorting, aggregations, or scripting? 
+	/// Should the field be stored on disk in a column-stride fashion,
+	/// so that it can later be used for sorting, aggregations, or scripting?
 	/// Accepts `true` (default) or `false`.
 	fn doc_values() -> Option<bool> {
 		None
 	}
 
-	/// Whether or not the field value should be included in the `_all` field? 
-	/// Accepts true or false. 
-	/// Defaults to `false` if index is set to `no`, or if a parent object field sets `include_in_all` to false. 
+	/// Whether or not the field value should be included in the `_all` field?
+	/// Accepts true or false.
+	/// Defaults to `false` if index is set to `no`, or if a parent object field sets `include_in_all` to false.
 	/// Otherwise defaults to `true`.
 	fn include_in_all() -> Option<bool> {
 		None
@@ -132,7 +133,7 @@ where Self : ElasticTypeMapping<T> + Sized + Serialize + Default + Copy {
 		None
 	}
 
-	/// Whether the field value should be stored and retrievable separately from the `_source` field. 
+	/// Whether the field value should be stored and retrievable separately from the `_source` field.
 	/// Accepts `true` or `false` (default).
 	fn store() -> Option<bool> {
 		None
@@ -143,13 +144,13 @@ where Self : ElasticTypeMapping<T> + Sized + Serialize + Default + Copy {
 		T::name()
 	}
 
-	/// If `true`, malformed numbers are ignored. 
+	/// If `true`, malformed numbers are ignored.
 	/// If `false` (default), malformed numbers throw an exception and reject the whole document.
 	fn ignore_malformed() -> Option<bool> {
 		None
 	}
 
-	/// Accepts a date value in one of the configured format's as the field which is substituted for any explicit null values. 
+	/// Accepts a date value in one of the configured format's as the field which is substituted for any explicit null values.
 	/// Defaults to `null`, which means the field is treated as missing.
 	fn null_value() -> Option<&'static str> {
 		None
@@ -163,21 +164,27 @@ where Self : ElasticTypeMapping<T> + Sized + Serialize + Default + Copy {
 
 /// Default mapping for `DateTime`.
 #[derive(Debug, Default, Clone, Copy)]
-pub struct DefaultDateMapping<T: DateFormat = DefaultFormat> {
+pub struct DefaultDateMapping<T = DefaultFormat> where
+T: DateFormat {
 	phantom: PhantomData<T>
 }
-impl <T: DateFormat> ElasticDateMapping<T> for DefaultDateMapping<T> { }
+impl <T> ElasticDateMapping<T> for DefaultDateMapping<T> where
+T: DateFormat { }
 
 impl_date_mapping!(DefaultDateMapping<T>);
 
 /// Visitor for a `date` map.
 #[derive(Debug, PartialEq, Default)]
-pub struct ElasticDateMappingVisitor<F: DateFormat, T: ElasticDateMapping<F>> {
+pub struct ElasticDateMappingVisitor<F, T> where
+F: DateFormat,
+T: ElasticDateMapping<F> {
 	phantom_f: PhantomData<F>,
 	phantom_t: PhantomData<T>
 }
 
-impl <F: DateFormat, T: ElasticDateMapping<F>> serde::ser::MapVisitor for ElasticDateMappingVisitor<F, T> {
+impl <F, T> serde::ser::MapVisitor for ElasticDateMappingVisitor<F, T>  where
+F: DateFormat,
+T: ElasticDateMapping<F> {
 	fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
 	where S: Serializer {
 		try!(serializer.serialize_struct_elt("type", T::data_type()));
@@ -189,7 +196,7 @@ impl <F: DateFormat, T: ElasticDateMapping<F>> serde::ser::MapVisitor for Elasti
 		if let Some(doc_values) = T::doc_values() {
 			try!(serializer.serialize_struct_elt("doc_values", doc_values));
 		};
-		
+
 		if let Some(include_in_all) = T::include_in_all() {
 			try!(serializer.serialize_struct_elt("include_in_all", include_in_all));
 		};

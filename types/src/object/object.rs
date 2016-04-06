@@ -5,32 +5,36 @@ use super::ElasticObjectTypeVisitor;
 use ::mapping::{ ElasticTypeMapping };
 
 /// The base requirements for mapping an `object` type.
-/// 
+///
 /// Object mappings are tied to user-defined `type` mappings.
-pub trait ElasticObjectMapping
-where Self : ElasticTypeMapping<()> + Sized + Serialize + Default + Clone {
+pub trait ElasticObjectMapping where
+Self: ElasticTypeMapping<()> + Sized + Serialize + Default + Clone {
 	/// Get the type name for this mapping, like `object` or `nested`.
 	fn data_type() -> &'static str {
 		"object"
 	}
 
-	/// Whether or not new properties should be added dynamically to an existing object. Accepts `true` (default), `false` and `strict`.
+	/// Whether or not new properties should be added dynamically to an existing object.
+	/// Accepts `true` (default), `false` and `strict`.
 	fn dynamic() -> Option<Dynamic> {
 		None
 	}
 
-	/// Whether the JSON value given for the object field should be parsed and indexed (`true`, default) or completely ignored (`false`).
+	/// Whether the JSON value given for the object field should be parsed and indexed
+	/// (`true`, default) or completely ignored (`false`).
 	fn enabled() -> Option<bool> {
 		None
 	}
 
-	/// Sets the default `include_in_all` value for all the properties within the object. The object itself is not added to the `_all` field.
+	/// Sets the default `include_in_all` value for all the properties within the object.
+	/// The object itself is not added to the `_all` field.
 	fn include_in_all() -> Option<bool> {
 		None
 	}
 }
 
-/// The dynamic setting may be set at the mapping type level, and on each inner object. Inner objects inherit the setting from their parent object or from the mapping type.
+/// The dynamic setting may be set at the mapping type level, and on each inner object.
+/// Inner objects inherit the setting from their parent object or from the mapping type.
 #[derive(Debug, Clone, Copy)]
 pub enum Dynamic {
 	/// Newly detected fields are added to the mapping. (default).
@@ -54,11 +58,15 @@ impl serde::Serialize for Dynamic {
 }
 
 /// Represents the properties object that encapsulates type mappings.
-pub struct ElasticObjectProperties<'a, T: 'a + Clone + Default, V: ElasticObjectTypeVisitor<'a, T>> { 
+pub struct ElasticObjectProperties<'a, T, V> where
+T: 'a + Clone + Default,
+V: ElasticObjectTypeVisitor<'a, T> {
 	data: &'a T,
 	phantom: PhantomData<V>
 }
-impl <'a, T: 'a + Clone + Default, V: ElasticObjectTypeVisitor<'a, T>> ElasticObjectProperties<'a, T, V> {
+impl <'a, T, V> ElasticObjectProperties<'a, T, V> where
+T: 'a + Clone + Default,
+V: ElasticObjectTypeVisitor<'a, T> {
 	/// Create a new properties struct from a borrowed user-defined type.
 	pub fn new(data: &'a T) -> Self {
 		ElasticObjectProperties {
@@ -68,7 +76,9 @@ impl <'a, T: 'a + Clone + Default, V: ElasticObjectTypeVisitor<'a, T>> ElasticOb
 	}
 }
 
-impl <'a, T: 'a + Clone + Default, V: ElasticObjectTypeVisitor<'a, T>> serde::Serialize for ElasticObjectProperties<'a, T, V> {
+impl <'a, T, V> serde::Serialize for ElasticObjectProperties<'a, T, V> where
+T: 'a + Clone + Default,
+V: ElasticObjectTypeVisitor<'a, T> {
 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
 	where S: serde::Serializer {
 		serializer.serialize_struct("properties", V::new(&self.data))
@@ -77,11 +87,12 @@ impl <'a, T: 'a + Clone + Default, V: ElasticObjectTypeVisitor<'a, T>> serde::Se
 
 /// Visitor for an `object` field mapping.
 #[derive(Debug, PartialEq, Default)]
-pub struct ElasticObjectMappingVisitor<T: ElasticObjectMapping> {
+pub struct ElasticObjectMappingVisitor<T> where T: ElasticObjectMapping {
 	phantom: PhantomData<T>
 }
 
-impl <T: ElasticObjectMapping> serde::ser::MapVisitor for ElasticObjectMappingVisitor<T> {
+impl <T> serde::ser::MapVisitor for ElasticObjectMappingVisitor<T> where
+T: ElasticObjectMapping {
 	fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
 	where S: Serializer {
 		try!(serializer.serialize_struct_elt("type", <T as ElasticTypeMapping<()>>::data_type()));

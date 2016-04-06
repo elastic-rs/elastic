@@ -1,14 +1,14 @@
 //! Mapping for the Elasticsearch `number` types.
-//! 
+//!
 //! Custom mappings can be defined by implementing the right number mapping for some Rust primitive number type.
 //! The implementation is the same for all number types, the only difference is the return type of `null_value`.
-//! 
+//!
 //! # Examples
-//! 
+//!
 //! Define a custom `ElasticIntegerMapping`:
-//! 
+//!
 //! ## With Macros
-//! 
+//!
 //! ```
 //! # extern crate serde;
 //! # #[macro_use]
@@ -16,7 +16,7 @@
 //! # fn main() {
 //! use elastic_types::mapping::prelude::*;
 //! use elastic_types::number::prelude::*;
-//! 
+//!
 //! #[derive(Debug, Clone, Default)]
 //! pub struct MyIntegerMapping;
 //! impl ElasticIntegerMapping for MyIntegerMapping {
@@ -25,20 +25,20 @@
 //! 		Some(42)
 //! 	}
 //! }
-//! 
+//!
 //! impl_integer_mapping!(MyIntegerMapping);
 //! # }
 //! ```
-//! 
+//!
 //! ## Manually
-//! 
+//!
 //! ```
 //! # extern crate serde;
 //! # extern crate elastic_types;
 //! # fn main() {
 //! use elastic_types::mapping::prelude::*;
 //! use elastic_types::number::prelude::*;
-//! 
+//!
 //! #[derive(Debug, Clone, Default)]
 //! pub struct MyIntegerMapping;
 //! impl ElasticIntegerMapping for MyIntegerMapping {
@@ -47,14 +47,14 @@
 //! 		Some(42)
 //! 	}
 //! }
-//! 
+//!
 //! impl ElasticTypeMapping<()> for MyIntegerMapping {
 //! 	type Visitor = ElasticIntegerMappingVisitor<MyIntegerMapping>;
 //! 	fn data_type() -> &'static str {
 //! 		"integer"
 //! 	}
 //! }
-//! 
+//!
 //! impl serde::Serialize for MyIntegerMapping {
 //! 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
 //! 	where S: serde::Serializer {
@@ -84,22 +84,22 @@ macro_rules! number_mapping {
 				None
 			}
 
-			/// Should the field be stored on disk in a column-stride fashion, 
-			/// so that it can later be used for sorting, aggregations, or scripting? 
+			/// Should the field be stored on disk in a column-stride fashion,
+			/// so that it can later be used for sorting, aggregations, or scripting?
 			/// Accepts `true` (default) or `false`.
 			fn doc_values() -> Option<bool> {
 				None
 			}
 
-			/// If `true`, malformed numbers are ignored. If `false` (default), 
+			/// If `true`, malformed numbers are ignored. If `false` (default),
 			/// malformed numbers throw an exception and reject the whole document.
 			fn ignore_malformed() -> Option<bool> {
 				None
 			}
 
-			/// Whether or not the field value should be included in the `_all` field? 
-			/// Accepts `true` or `false`. Defaults to false if index is set to no, 
-			/// or if a parent object field sets `include_in_all` to false. 
+			/// Whether or not the field value should be included in the `_all` field?
+			/// Accepts `true` or `false`. Defaults to false if index is set to no,
+			/// or if a parent object field sets `include_in_all` to false.
 			/// Otherwise defaults to `true`.
 			fn include_in_all() -> Option<bool> {
 				None
@@ -110,19 +110,19 @@ macro_rules! number_mapping {
 				None
 			}
 
-			/// Accepts a numeric value of the same type as the field which is substituted for any explicit null values. 
+			/// Accepts a numeric value of the same type as the field which is substituted for any explicit null values.
 			/// Defaults to `null`, which means the field is treated as missing.
 			fn null_value() -> Option<$n> {
 				None
 			}
 
-			/// Controls the number of extra terms that are indexed to make range queries faster. 
+			/// Controls the number of extra terms that are indexed to make range queries faster.
 			/// The default depends on the numeric type.
 			fn precision_step() -> Option<u32> {
 				None
 			}
 
-			/// Whether the field value should be stored and retrievable separately from the `_source` field. 
+			/// Whether the field value should be stored and retrievable separately from the `_source` field.
 			/// Accepts true or false (default).
 			fn store() -> Option<bool> {
 				None
@@ -131,11 +131,11 @@ macro_rules! number_mapping {
 
 		/// Visitor for a `number` field mapping.
 		#[derive(Debug, PartialEq, Default)]
-		pub struct $v<T: $m> {
+		pub struct $v<T> where T: $m {
 			phantom: PhantomData<T>
 		}
 
-		impl <T: $m> serde::ser::MapVisitor for $v<T> {
+		impl <T> serde::ser::MapVisitor for $v<T> where T: $m {
 			fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
 			where S: Serializer {
 				try!(serializer.serialize_struct_elt("type", T::data_type()));

@@ -7,11 +7,11 @@ macro_rules! number_type {
     ($t:ident, $m:ident, $n:ident) => (
     	/// Number type with a given mapping.
     	#[derive(Debug, Default, Clone)]
-		pub struct $t<M: ElasticTypeMapping<()> + $m> {
+		pub struct $t<M> where M: ElasticTypeMapping<()> + $m {
 			value: $n,
 			phantom: PhantomData<M>
 		}
-		impl <M: ElasticTypeMapping<()> + $m> $t<M> {
+		impl <M> $t<M> where M: ElasticTypeMapping<()> + $m {
 			/// Creates a new `$t` with the given mapping.
 			pub fn new<I: Into<$n>>(num: I) -> $t<M> {
 				$t {
@@ -36,24 +36,26 @@ macro_rules! number_type {
 			}
 		}
 
-		impl <M: ElasticTypeMapping<()> + $m> ElasticType<M, ()> for $t<M> { }
+		impl <M> ElasticType<M, ()> for $t<M> where M: ElasticTypeMapping<()> + $m { }
 
-		impl <M: ElasticTypeMapping<()> + $m> From<$n> for $t<M> {
+		impl <M> From<$n> for $t<M> where M: ElasticTypeMapping<()> + $m {
 			fn from(num: $n) -> Self {
 				$t::<M>::new(num)
 			}
 		}
 
 		//Serialize elastic number
-		impl <M: ElasticTypeMapping<()> + $m> Serialize for $t<M> {
-			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where S: Serializer {
+		impl <M> Serialize for $t<M> where M: ElasticTypeMapping<()> + $m {
+			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where
+            S: Serializer {
 				self.value.serialize(serializer)
 			}
 		}
 
 		//Deserialize elastic number
 		impl <M: ElasticTypeMapping<()> + $m> Deserialize for $t<M> {
-			fn deserialize<D>(deserializer: &mut D) -> Result<$t<M>, D::Error> where D: Deserializer {
+			fn deserialize<D>(deserializer: &mut D) -> Result<$t<M>, D::Error> where
+            D: Deserializer {
 				let t = try!($n::deserialize(deserializer));
 
 				Ok($t::<M>::new(t))
