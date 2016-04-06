@@ -443,8 +443,8 @@ pub mod object_fixtures {
 		pub my_date: DateTime,
 		pub my_type: MyType,
 		pub my_num: i32,
-		pub my_strings: String,
-		pub my_dates: DateTime
+		pub my_strings: Vec<String>,
+		pub my_dates: Vec<DateTime>
 	}
 
 	#[derive(Default, Clone)]
