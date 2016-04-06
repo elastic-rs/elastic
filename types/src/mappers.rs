@@ -30,8 +30,8 @@ M: ElasticUserTypeMapping<'a, T> {
 	/// Map a user-defined type with a given `Serializer`.
 	///
 	/// The mapping is emitted as a json field, where the key is the name of the type, as defined by `M::data_type()`.
-	pub fn map<S>(t: &'a T, serializer: &mut S) -> Result<(), S::Error>
-	where S: serde::Serializer {
+	pub fn map<S>(t: &'a T, serializer: &mut S) -> Result<(), S::Error> where
+	S: serde::Serializer {
 		serializer.serialize_struct(
 			<M as ElasticTypeMapping<()>>::data_type(),
 			<M as ElasticUserTypeMapping<'a, T>>::Visitor::new(&t)

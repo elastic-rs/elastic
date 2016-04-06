@@ -61,7 +61,7 @@ pub mod string_fixtures {
 
 	#[derive(Default, Clone)]
 	pub struct MyStringMapping;
-	impl ElasticStringMapping for MyStringMapping { 
+	impl ElasticStringMapping for MyStringMapping {
 		fn boost() -> Option<f32> {
 			Some(1.01)
 		}
@@ -109,7 +109,7 @@ pub mod string_fixtures {
 				similarity: 				Some("BM25"),
 				term_vector: 				Some(TermVector::No)
 			});
-			
+
 			Some(fields)
 		}
 
@@ -395,7 +395,7 @@ pub mod number_fixtures {
 		fn store() -> Option<bool> {
 			Some(true)
 		}
-		
+
 		fn null_value() -> Option<f64> {
 			Some(-0.00002)
 		}
@@ -442,13 +442,15 @@ pub mod object_fixtures {
 	pub struct MyOtherType {
 		pub my_date: DateTime,
 		pub my_type: MyType,
-		pub my_num: i32
+		pub my_num: i32,
+		pub my_strings: String,
+		pub my_dates: DateTime
 	}
-	
+
 	#[derive(Default, Clone)]
 	struct MyOtherTypeMapping;
 	impl ElasticObjectMapping for MyOtherTypeMapping { }
-	impl_object_mapping!(MyOtherType, MyOtherTypeMapping, "my_other_type", inner2, [{ "my_date", my_date }, { "my_renamed_type", my_type }, { "my_num", my_num }]);
+	impl_object_mapping!(MyOtherType, MyOtherTypeMapping, "my_other_type", inner2, [{ "my_date", my_date }, { "my_renamed_type", my_type }, { "my_num", my_num }, { "my_strings", my_strings }, { "my_dates", my_dates }]);
 }
 
 pub mod object;

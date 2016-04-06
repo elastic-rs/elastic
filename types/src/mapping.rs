@@ -112,6 +112,33 @@ impl serde::ser::MapVisitor for NullMappingVisitor {
 	}
 }
 
+impl serde::Serialize for IndexAnalysis {
+	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+		where S: serde::Serializer
+	{
+		serializer.serialize_str(match *self {
+			IndexAnalysis::Analyzed => "analyzed",
+			IndexAnalysis::NotAnalyzed => "not_analyzed",
+			IndexAnalysis::No => "no"
+		})
+	}
+}
+
+/// Base visitor for serialising datatype mappings.
+#[derive(Default)]
+pub struct ElasticTypeMappingVisitor<T> where
+T: ElasticTypeMapping<()> {
+	phantom: PhantomData<T>
+}
+
+impl <T> serde::ser::MapVisitor for ElasticTypeMappingVisitor<T> where
+T: ElasticTypeMapping<()> {
+	fn visit<S>(&mut self, _: &mut S) -> Result<Option<()>, S::Error>
+	where S: serde::Serializer {
+		Ok(None)
+	}
+}
+
 /// Should the field be searchable? Accepts `not_analyzed` (default) and `no`.
 #[derive(Debug, Clone, Copy)]
 pub enum IndexAnalysis {
@@ -130,48 +157,40 @@ pub enum IndexAnalysis {
 	No
 }
 
-impl serde::Serialize for IndexAnalysis {
-	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
-		where S: serde::Serializer
-	{
-		serializer.serialize_str(match *self {
-			IndexAnalysis::Analyzed => "analyzed",
-			IndexAnalysis::NotAnalyzed => "not_analyzed",
-			IndexAnalysis::No => "no"
-		})
-	}
-}
-
-/// Base visitor for serialising datatype mappings.
-pub struct ElasticTypeMappingVisitor<T> where
-T: ElasticTypeMapping<()> {
-	phantom: PhantomData<T>
-}
-
-impl <T> Default for ElasticTypeMappingVisitor<T> where
-T: ElasticTypeMapping<()> {
-	fn default() -> ElasticTypeMappingVisitor<T> {
-		ElasticTypeMappingVisitor::<T> {
-			phantom: PhantomData
-		}
-	}
-}
-
-impl <T> serde::ser::MapVisitor for ElasticTypeMappingVisitor<T> where
-T: ElasticTypeMapping<()> {
-	fn visit<S>(&mut self, _: &mut S) -> Result<Option<()>, S::Error>
-	where S: serde::Serializer {
-		Ok(None)
-	}
-}
-
 /// Mapping for a collection.
 ///
 /// In Elasticsearch, arrays aren't a special type, anything can be indexed as an array.
 /// So the mapping for an array is just the mapping for its members.
 #[derive(Debug, Default, Clone)]
-pub struct ElasticArrayMapping<M, F>
-where M: ElasticTypeMapping<F> {
+pub struct ElasticArrayMapping<M, F> where
+M: ElasticTypeMapping<F>,
+F: Default + Clone {
 	phantom_m: PhantomData<M>,
 	phantom_f: PhantomData<F>
+}
+
+impl <M, F> ElasticTypeMapping<F> for ElasticArrayMapping<M, F> where
+M: ElasticTypeMapping<F>,
+F: Default + Clone {
+	type Visitor = M::Visitor;
+
+	fn data_type() -> &'static str {
+		M::data_type()
+	}
+}
+
+impl <M, F> serde::Serialize for ElasticArrayMapping<M, F> where
+M: ElasticTypeMapping<F>,
+F: Default + Clone {
+	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+	where S: serde::Serializer {
+		serializer.serialize_struct("mapping", Self::get_visitor())
+	}
+}
+
+impl <T, M, F> ElasticType<ElasticArrayMapping<M, F>, F> for Vec<T> where
+T: ElasticType<M, F>,
+M: ElasticTypeMapping<F>,
+F: Default + Clone {
+	
 }

@@ -99,13 +99,21 @@ fn serialise_mapping_type_as_nested() {
 					},
 					"my_string":{
 						"type":"string"
-					},"my_num":{
+					},
+					"my_num":{
 						"type":"integer"
 					}
 				}
 			},
 			"my_num":{
 				"type":"integer"
+			},
+			"my_strings":{
+				"type":"string"
+			},
+			"my_dates":{
+				"type":"date",
+				"format":"basic_date_time"
 			}
 		}
 	});
