@@ -131,7 +131,9 @@ Support for Elastic's plugin products, like `watcher` and `graph` could be added
 
 ## Design
 
-![Architecture](http://kodraus.github.io/es_arch.svg)
+<p align="center">
+  <img src="http://kodraus.github.io/es_arch.svg" />
+</p>
 
 The client is divided into a few crates by utility. These will probably be moved into their own repositories to tidy up build/test, but for now it's conventient to develop them together.
 
