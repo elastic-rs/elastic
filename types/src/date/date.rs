@@ -303,8 +303,8 @@ T: ElasticTypeMapping<F> + ElasticDateMapping<F> {
 impl <F, T> Serialize for DateTime<F, T> where
 F: DateFormat,
 T: ElasticTypeMapping<F> + ElasticDateMapping<F> {
-	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where S: Serializer
-	{
+	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where
+	S: Serializer {
 		serializer.serialize_str(&self.format())
 	}
 }
@@ -313,9 +313,12 @@ T: ElasticTypeMapping<F> + ElasticDateMapping<F> {
 impl <F, T> Deserialize for DateTime<F, T> where
 F: DateFormat,
 T: ElasticTypeMapping<F> + ElasticDateMapping<F> {
-	fn deserialize<D>(deserializer: &mut D) -> Result<DateTime<F, T>, D::Error> where D: Deserializer {
+	fn deserialize<D>(deserializer: &mut D) -> Result<DateTime<F, T>, D::Error> where
+	D: Deserializer {
 		#[derive(Default)]
-		struct DateTimeVisitor<F: DateFormat, T: ElasticTypeMapping<F> + ElasticDateMapping<F>> {
+		struct DateTimeVisitor<F, T> where
+		F: DateFormat,
+		T: ElasticTypeMapping<F> + ElasticDateMapping<F> {
 			phantom_f: PhantomData<F>,
 			phantom_t: PhantomData<T>
 		}
@@ -325,7 +328,8 @@ T: ElasticTypeMapping<F> + ElasticDateMapping<F> {
 		T: ElasticTypeMapping<F> + ElasticDateMapping<F> {
 			type Value = DateTime<F, T>;
 
-			fn visit_str<E>(&mut self, v: &str) -> Result<DateTime<F, T>, E> where E: serde::de::Error {
+			fn visit_str<E>(&mut self, v: &str) -> Result<DateTime<F, T>, E> where
+			E: serde::de::Error {
 				let result = DateTime::<F, T>::parse(v);
 				result.map_err(|err| serde::de::Error::custom(format!("{}", err)))
 			}
