@@ -43,28 +43,11 @@ use serde;
 
 /// The base representation of an Elasticsearch data type.
 ///
-///
 /// `ElasticType` is the main `trait` you need to care about when building your own Elasticsearch types.
 /// Each type has two generic arguments that help define its mapping:
 ///
 /// - A mapping type, which implements `ElasticTypeMapping`
 /// - A format type, which is usually `()`. Types with multiple formats, like `DateTime`, can use the format in the type definition.
-///
-/// ### Automatic
-///
-/// The `elastic_macros` crate provides a plugin for you to automatically derive `ElasticType`:
-///
-/// ```
-/// //TODO: Implement this
-/// ```
-///
-/// ### Manual
-///
-/// You can also derive `ElasticType` manually to get more control over the structure of your type mapping.
-///
-/// ```
-/// //TODO: Implement this
-/// ```
 ///
 /// # Links
 ///
@@ -76,7 +59,8 @@ Self : serde::Serialize + serde::Deserialize { }
 /// The base requirements for mapping an Elasticsearch data type.
 ///
 /// Each type has its own implementing structures with extra type-specific mapping parameters.
-/// If you're building your own Elasticsearch types, see `TypeMapping`, which is a specialization of `ElasticTypeMapping<()>`.
+/// If you're building your own Elasticsearch types, see `ElasticUserTypeMapping`,
+/// which is a specialization of `ElasticTypeMapping<()>`.
 pub trait ElasticTypeMapping<F>
 where Self: Default + Clone + serde::Serialize {
 	#[doc(hidden)]
@@ -159,11 +143,13 @@ impl serde::Serialize for IndexAnalysis {
 }
 
 /// Base visitor for serialising datatype mappings.
-pub struct ElasticTypeMappingVisitor<T: ElasticTypeMapping<()>> {
+pub struct ElasticTypeMappingVisitor<T> where
+T: ElasticTypeMapping<()> {
 	phantom: PhantomData<T>
 }
 
-impl <T: ElasticTypeMapping<()>> Default for ElasticTypeMappingVisitor<T> {
+impl <T> Default for ElasticTypeMappingVisitor<T> where
+T: ElasticTypeMapping<()> {
 	fn default() -> ElasticTypeMappingVisitor<T> {
 		ElasticTypeMappingVisitor::<T> {
 			phantom: PhantomData
@@ -171,9 +157,21 @@ impl <T: ElasticTypeMapping<()>> Default for ElasticTypeMappingVisitor<T> {
 	}
 }
 
-impl <T: ElasticTypeMapping<()>> serde::ser::MapVisitor for ElasticTypeMappingVisitor<T> {
+impl <T> serde::ser::MapVisitor for ElasticTypeMappingVisitor<T> where
+T: ElasticTypeMapping<()> {
 	fn visit<S>(&mut self, _: &mut S) -> Result<Option<()>, S::Error>
 	where S: serde::Serializer {
 		Ok(None)
 	}
+}
+
+/// Mapping for a collection.
+///
+/// In Elasticsearch, arrays aren't a special type, anything can be indexed as an array.
+/// So the mapping for an array is just the mapping for its members.
+#[derive(Debug, Default, Clone)]
+pub struct ElasticArrayMapping<M, F>
+where M: ElasticTypeMapping<F> {
+	phantom_m: PhantomData<M>,
+	phantom_f: PhantomData<F>
 }

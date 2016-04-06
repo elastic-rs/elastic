@@ -143,6 +143,3 @@ impl_mapping!(
 	bool,
 	char
 );
-
-//TODO: This should map as T
-impl <T: serde::Serialize + serde::Deserialize> mapping::ElasticType<mapping::NullMapping, ()> for Vec<T> { }
