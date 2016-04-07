@@ -34,6 +34,7 @@
 //!  `float`            | `f32`                    | `std`     | `ElasticFloat<M>`     | `()`
 //!  `double`           | `f64`                    | `std`     | `ElasticDouble<M>`    | `()`
 //!  `string`           | `String`                 | `std`     | `ElasticString<M>`    | `()`
+//!  `boolean`          | `bool`                   | `std`     | `ElasticBoolean<M>`   | `()`
 //!  `date`             | `DateTime`               | `chrono`  | `DateTime<F, M>`      | `DateFormat`
 //!  `object`           | -                        | -         | user-defined `struct` | `()`
 //!
