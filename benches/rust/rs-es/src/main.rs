@@ -17,24 +17,6 @@ struct BenchDoc {
     pub timestamp: i64
 }
 
-fn percentiles(data: &Vec<i64>) -> Vec<(f32, i64)> {
-    vec![
-        0.50,
-        0.66,
-        0.75,
-        0.80,
-        0.90,
-        0.95,
-        0.98,
-        0.99,
-        1.00
-    ].iter().map(|p| {
-        let p: f32 = *p;
-        let i: usize = (p * 200f32) as usize;
-        (p, data.get(i - 1).unwrap().to_owned())
-    }).collect()
-}
-
 fn main() {
     let mut client = Client::new("localhost", 9200);
 
@@ -64,4 +46,22 @@ fn main() {
     for (p, n) in pv {
         println!("Percentile {}%: {}ns", p * 100f32, n);
     }
+}
+
+fn percentiles(data: &Vec<i64>) -> Vec<(f32, i64)> {
+    vec![
+        0.50,
+        0.66,
+        0.75,
+        0.80,
+        0.90,
+        0.95,
+        0.98,
+        0.99,
+        1.00
+    ].iter().map(|p| {
+        let p: f32 = *p;
+        let i: usize = (p * 200f32) as usize;
+        (p, data.get(i - 1).unwrap().to_owned())
+    }).collect()
 }
