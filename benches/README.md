@@ -158,10 +158,38 @@ Percentage of the requests served within a certain time (ms)
  100%     18.555058 (longest request)
 ```
 
-### Rust (elastic_hyper)
+### Rust (elastic_hyper + elastic_types)
 
 ```
-TODO
+Time per request:       2.335910 [ms] (mean)
+
+Percentage of the requests served within a certain time (ms)
+  50%      2.284115
+  66%      2.297106
+  75%      2.302009
+  80%      2.308742
+  90%      2.336854
+  95%      2.367203
+  98%      2.399045
+  99%      2.799395
+ 100%     10.003992 (longest request)
+```
+
+### Rust (elastic_hyper + custom)
+
+```
+Time per request:       1.573568 [ms] (mean)
+
+Percentage of the requests served within a certain time (ms)
+  50%      1.512144
+  66%      1.529050
+  75%      1.538743
+  80%      1.545430
+  90%      1.571101
+  95%      1.757354
+  98%      2.467757
+  99%      2.849229
+ 100%      4.878057 (longest request)
 ```
 
 ### CSharp (Elasticsearch.NET)

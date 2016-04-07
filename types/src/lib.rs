@@ -140,6 +140,8 @@ pub mod date;
 pub mod string;
 pub mod number;
 
+pub mod response;
+
 impl_mapping!(
 	bool,
 	char

@@ -1,0 +1,14 @@
+[package]
+name = "elastic_hyper_bench"
+version = "0.1.0"
+authors = ["Ashley Mannix <ashleymannix@live.com.au>"]
+
+[dependencies]
+serde = "*"
+serde_json = "*"
+serde_macros = "*"
+hyper = "*"
+elastic_hyper = "*"
+elastic_macros = "*"
+elastic_types = { version = "*", path = "../../../types" }
+"stopwatch" = "*"

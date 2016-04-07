@@ -333,6 +333,18 @@ T: ElasticTypeMapping<F> + ElasticDateMapping<F> {
 				let result = DateTime::<F, T>::parse(v);
 				result.map_err(|err| serde::de::Error::custom(format!("{}", err)))
 			}
+
+			fn visit_i64<E>(&mut self, v: i64) -> Result<DateTime<F, T>, E> where
+			E: serde::de::Error {
+				let result = DateTime::<F, T>::parse(&v.to_string());
+				result.map_err(|err| serde::de::Error::custom(format!("{}", err)))
+			}
+
+			fn visit_u64<E>(&mut self, v: u64) -> Result<DateTime<F, T>, E> where
+			E: serde::de::Error {
+				let result = DateTime::<F, T>::parse(&v.to_string());
+				result.map_err(|err| serde::de::Error::custom(format!("{}", err)))
+			}
 		}
 
 		deserializer.deserialize(DateTimeVisitor::<F, T>::default())
