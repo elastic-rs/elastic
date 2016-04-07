@@ -2,11 +2,12 @@
 
 This repo is an unscientific attempt to benchmark the performance of a few Elasticsearch clients.
 Results are really just an indication of the amount of work a particular client on a particular
-platform needs to do to send a single search request to Elasticsearch and deserialise the results
-into some native form.
+platform needs to do to send a single search request to Elasticsearch and deserialise the results into some native form.
+
+This is only benchmarking the time it takes to send a single request, so things like connection pools don't come into the equation, even though they're super-important.
 
 It would be great to have a _real_ test dataset that can be used for a more realistic set of
-benchmarks. This will do for now though.
+benchmarks including concurrent queries and doc indexing. This will do for now though.
 
 ## Process
 
@@ -176,6 +177,10 @@ Percentage of the requests served within a certain time (ms)
 ```
 
 ### Rust (elastic_hyper + custom)
+
+*NOTE:* This implementation breaks the rules by specifying a `filter_path` on the return set. So there are actually fewer bits being returned.
+
+The point of this one is to show that `elastic_hyper` basically sits right on top of the minimum request time possible, and any work you do to the response is up to you.
 
 ```
 Time per request:       1.573568 [ms] (mean)
