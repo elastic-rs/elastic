@@ -117,47 +117,17 @@ POST bench_index/bench_doc/_search
 ```
 
 A baseline that gives the approximate time taken to get a response from Elasticsearch is produced
-using `ab` as follows:
+using `ab`:
+
+## Results
+
+### Baseline
 
 ```
 ab -n 200 -c 1 -T 'application/json' -p postdata.txt http://localhost:9200/bench_index/bench_doc/_search
-This is ApacheBench, Version 2.3 <$Revision: 1706008 $>
-Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
-Licensed to The Apache Software Foundation, http://www.apache.org/
 
-Benchmarking localhost (be patient)
-Completed 100 requests
-Completed 200 requests
-Finished 200 requests
-
-
-Server Software:        
-Server Hostname:        localhost
-Server Port:            9200
-
-Document Path:          /bench_index/bench_doc/_search
-Document Length:        1583 bytes
-
-Concurrency Level:      1
-Time taken for tests:   0.260 seconds
-Complete requests:      200
-Failed requests:        0
-Total transferred:      334200 bytes
-Total body sent:        43800
-HTML transferred:       316600 bytes
-Requests per second:    770.26 [#/sec] (mean)
 Time per request:       1.298 [ms] (mean)
-Time per request:       1.298 [ms] (mean, across all concurrent requests)
-Transfer rate:          1256.94 [Kbytes/sec] received
-                        164.73 kb/s sent
                         1421.67 kb/s total
-
-Connection Times (ms)
-              min  mean[+/-sd] median   max
-Connect:        0    0   0.1      0       1
-Processing:     1    1   1.0      1      10
-Waiting:        1    1   1.0      1      10
-Total:          1    1   1.0      1      10
 
 Percentage of the requests served within a certain time (ms)
   50%      1
@@ -169,4 +139,33 @@ Percentage of the requests served within a certain time (ms)
   98%      4
   99%      9
  100%     10 (longest request)
+```
+
+### Rust (rs-es)
+
+```
+Time per request:       2.309447 [ms] (mean)
+
+Percentage of the requests served within a certain time (ms)
+  50%      2.219113
+  66%      2.231041
+  75%      2.242552
+  80%      2.249886
+  90%      2.277720
+  95%      2.298054
+  98%      2.349468
+  99%      2.413538
+ 100%     18.555058 (longest request)
+```
+
+### Rust (elastic_hyper)
+
+```
+TODO
+```
+
+### CSharp (Elasticsearch.NET)
+
+```
+TODO
 ```
