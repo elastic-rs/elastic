@@ -122,6 +122,14 @@ using a raw `elastic_hyper` query.
 
 ## Results
 
+### Request/Response Time (Mean ns)
+
+![alt text](http://kodraus.github.io/query_mean.png)
+
+### Request/Response Time (Percentile ns)
+
+![alt text](http://kodraus.github.io/query_percentiles.png)
+
 ### Rust (elastic_hyper raw) (baseline)
 
 ```
