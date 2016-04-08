@@ -1,26 +1,15 @@
 #![feature(test, plugin, custom_derive, iter_arith)]
-#![plugin(serde_macros, elastic_macros)]
+#![plugin(elastic_macros)]
 
 extern crate test;
-extern crate serde;
-extern crate serde_json;
+
 extern crate stopwatch;
 extern crate hyper;
-extern crate elastic_types;
 extern crate elastic_hyper as elastic;
 
 use std::env;
 use stopwatch::Stopwatch;
 use hyper::client::Client;
-use elastic_types::response::*;
-use elastic_types::date::prelude::*;
-
-#[derive(Deserialize)]
-struct BenchDoc {
-    pub id: i32,
-    pub title: String,
-    pub timestamp: DateTime<EpochMillis>
-}
 
 fn main() {
     let mut args = env::args();
@@ -33,27 +22,27 @@ fn main() {
             200
         }
     };
+
 	let params = elastic::RequestParams::default();
 
-    let mut results = Vec::<i64>::with_capacity(runs as usize);
+    let mut results = Vec::<i64>::with_capacity(200 as usize);
 
     for _ in 0..runs {
         let mut client = Client::new();
+
         let mut sw = Stopwatch::start_new();
 
-        let res: SearchResponse<BenchDoc> = serde_json::de::from_reader(
-            elastic::search::post_index_type(
-        		&mut client, params.clone(),
-                "bench_index", "bench_doc",
-        		json_str!({
-        			query: {
-        				query_string: {
-        					query: "*"
-        				}
-        			},
-                    size: 10
-        		})
-        	).unwrap()
+        let res = elastic::search::post_index_type(
+    		&mut client, params.clone(),
+            "bench_index", "bench_doc",
+    		json_str!({
+    			query: {
+    				query_string: {
+    					query: "*"
+    				}
+    			},
+                size: 10
+    		})
         ).unwrap();
 
         sw.stop();

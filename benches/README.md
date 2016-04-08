@@ -1,4 +1,4 @@
-# Client Performance Tests
+# Client Micro-benchmark Tests
 
 This repo is an unscientific attempt to benchmark the performance of a few Elasticsearch clients.
 Results are really just an indication of the amount of work a particular client on a particular
@@ -118,62 +118,44 @@ POST bench_index/bench_doc/_search
 ```
 
 A baseline that gives the approximate time taken to get a response from Elasticsearch is produced
-using `ab`:
+using a raw `elastic_hyper` query.
 
 ## Results
 
-### Baseline
+### Rust (elastic_hyper raw) (baseline)
 
 ```
-ab -n 200 -c 1 -T 'application/json' -p postdata.txt http://localhost:9200/bench_index/bench_doc/_search
+target/release/elastic_hyper_raw 1000
 
-Time per request:       1.298 [ms] (mean)
-                        1421.67 kb/s total
+Time per request:       1139549 [ns] (mean)
 
-Percentage of the requests served within a certain time (ms)
-  50%      1
-  66%      1
-  75%      1
-  80%      1
-  90%      2
-  95%      2
-  98%      4
-  99%      9
- 100%     10 (longest request)
-```
-
-### Rust (rs-es)
-
-```
-Time per request:       2.309447 [ms] (mean)
-
-Percentage of the requests served within a certain time (ms)
-  50%      2.219113
-  66%      2.231041
-  75%      2.242552
-  80%      2.249886
-  90%      2.277720
-  95%      2.298054
-  98%      2.349468
-  99%      2.413538
- 100%     18.555058 (longest request)
+Percentage of the requests served within a certain time (ns)
+  50%      1098626
+  66%      1110958
+  75%      1121555
+  80%      1128979
+  90%      1146547
+  95%      1179442
+  98%      1772267
+  99%      2193342
 ```
 
 ### Rust (elastic_hyper + elastic_types)
 
 ```
-Time per request:       2.335910 [ms] (mean)
+target/release/elastic_hyper_bench 1000
 
-Percentage of the requests served within a certain time (ms)
-  50%      2.284115
-  66%      2.297106
-  75%      2.302009
-  80%      2.308742
-  90%      2.336854
-  95%      2.367203
-  98%      2.399045
-  99%      2.799395
- 100%     10.003992 (longest request)
+Time per request:       1436260 [ns] (mean)
+
+Percentage of the requests served within a certain time (ns)
+  50%      1388881
+  66%      1420875
+  75%      1443839
+  80%      1458862
+  90%      1499976
+  95%      1565245
+  98%      1839258
+  99%      2627653
 ```
 
 ### Rust (elastic_hyper + custom)
@@ -183,33 +165,53 @@ Percentage of the requests served within a certain time (ms)
 The point of this one is to show that `elastic_hyper` basically sits right on top of the minimum request time possible, and any work you do to the response is up to you.
 
 ```
-Time per request:       1.573568 [ms] (mean)
+target/release/elastic_hyper_fltrd_bench 1000
 
-Percentage of the requests served within a certain time (ms)
-  50%      1.512144
-  66%      1.529050
-  75%      1.538743
-  80%      1.545430
-  90%      1.571101
-  95%      1.757354
-  98%      2.467757
-  99%      2.849229
- 100%      4.878057 (longest request)
+Time per request:       1242905 [ns] (mean)
+
+Percentage of the requests served within a certain time (ns)
+  50%      1188268
+  66%      1204799
+  75%      1217937
+  80%      1226329
+  90%      1261835
+  95%      1311765
+  98%      1805281
+  99%      2300044
+```
+
+### Rust (rs-es)
+
+```
+target/release/rs-es_bench 1000
+
+Time per request:       1266050 [ns] (mean)
+
+Percentage of the requests served within a certain time (ns)
+  50%      1223386
+  66%      1238574
+  75%      1251329
+  80%      1263147
+  90%      1291514
+  95%      1325730
+  98%      1443468
+  99%      2083648
 ```
 
 ### CSharp (Elasticsearch.NET)
 
 ```
-Time per request:       3.023890 [ms] (mean)
+dnx --configuration Release run 1000
 
-Percentage of the requests served within a certain time (ms)
-  50%      1.708400
-  66%      1.766000
-  75%      1.817200
-  80%      1.939000
-  90%      2.547900
-  95%      2.643800
-  98%      3.322400
-  99%      6.002800
- 100%    224.919900 (longest request)
+Time per request:       2298637 [ns] (mean)
+
+Percentage of the requests served within a certain time (ns)
+  50%      1183200
+  66%      1207600
+  75%      1224700
+  80%      1231900
+  90%      1269600
+  95%      1388000
+  98%      3153400
+  99%      5986600
 ```

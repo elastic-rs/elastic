@@ -16,13 +16,15 @@ namespace Elasticsearch.Net.Bench
     {
         public static void Main(string[] args)
         {
+            int runs = args.Count() > 0 ? Convert.ToInt32(args.First()) : 200;
+
             var config = new ConnectionConfiguration(new Uri("http://localhost:9200"));
             config.DisablePing();
 
             var client = new ElasticLowLevelClient(config);
 
             var results = new List<long>();
-            for (int i = 0; i < 200; i++)
+            for (int i = 0; i < runs; i++)
             {
                 var watch = Stopwatch.StartNew();
                 var req = new {
@@ -33,7 +35,10 @@ namespace Elasticsearch.Net.Bench
                     },
                     size = 10
                   };
-                var data = client.Search<BenchDoc>(new PostData<object>(req));
+                var data = client.Search<BenchDoc>(
+                    "bench_index", "bench_type",
+                    new PostData<object>(req)
+                );
                 watch.Stop();
 
                 results.Add(watch.Elapsed.Ticks * 100);
@@ -43,18 +48,18 @@ namespace Elasticsearch.Net.Bench
 
             var percentiles = new List<Tuple<double, long>>
             {
-                new Tuple<double, long>(0.5, sorted[GetIndex(0.5)]),
-                new Tuple<double, long>(0.66, sorted[GetIndex(0.66)]),
-                new Tuple<double, long>(0.75, sorted[GetIndex(0.75)]),
-                new Tuple<double, long>(0.80, sorted[GetIndex(0.80)]),
-                new Tuple<double, long>(0.90, sorted[GetIndex(0.90)]),
-                new Tuple<double, long>(0.95, sorted[GetIndex(0.95)]),
-                new Tuple<double, long>(0.98, sorted[GetIndex(0.98)]),
-                new Tuple<double, long>(0.99, sorted[GetIndex(0.99)]),
-                new Tuple<double, long>(1.0, sorted[GetIndex(1.0)])
+                new Tuple<double, long>(0.5, sorted[GetIndex(0.5, runs)]),
+                new Tuple<double, long>(0.66, sorted[GetIndex(0.66, runs)]),
+                new Tuple<double, long>(0.75, sorted[GetIndex(0.75, runs)]),
+                new Tuple<double, long>(0.80, sorted[GetIndex(0.80, runs)]),
+                new Tuple<double, long>(0.90, sorted[GetIndex(0.90, runs)]),
+                new Tuple<double, long>(0.95, sorted[GetIndex(0.95, runs)]),
+                new Tuple<double, long>(0.98, sorted[GetIndex(0.98, runs)]),
+                new Tuple<double, long>(0.99, sorted[GetIndex(0.99, runs)]),
+                new Tuple<double, long>(1.0, sorted[GetIndex(1.0, runs)])
             };
 
-            Console.WriteLine("took mean {0}ns", results.Sum() / 200.0);
+            Console.WriteLine("took mean {0}ns", results.Sum() / (float)runs);
 
             foreach (var p in percentiles)
             {
@@ -62,9 +67,9 @@ namespace Elasticsearch.Net.Bench
             }
         }
 
-        static int GetIndex(double percentile)
+        static int GetIndex(double percentile, int runs)
         {
-            return (int)((percentile * 200) - 1);
+            return (int)((percentile * runs) - 1);
         }
     }
 }
