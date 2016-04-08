@@ -4,7 +4,7 @@ This repo is an unscientific attempt to benchmark the performance of a few Elast
 Results are really just an indication of the amount of work a particular client on a particular
 platform needs to do to send a single search request to Elasticsearch and deserialise the results into some native form.
 
-This is only benchmarking the time it takes to send a single request, so things like connection pools don't come into the equation, even though they're super-important.
+This is only benchmarking the time it takes to send a single request with `keep_alive` enabled.
 
 It would be great to have a _real_ test dataset that can be used for a more realistic set of
 benchmarks including concurrent queries and doc indexing. This will do for now though.
@@ -130,40 +130,22 @@ using a raw `elastic_hyper` query.
 
 ![alt text](http://kodraus.github.io/query_percentiles.png)
 
-### Rust (elastic_hyper raw) (baseline)
-
-```
-target/release/elastic_hyper_raw 1000
-
-Time per request:       1139549 [ns] (mean)
-
-Percentage of the requests served within a certain time (ns)
-  50%      1098626
-  66%      1110958
-  75%      1121555
-  80%      1128979
-  90%      1146547
-  95%      1179442
-  98%      1772267
-  99%      2193342
-```
-
 ### Rust (elastic_hyper + elastic_types)
 
 ```
 target/release/elastic_hyper_bench 1000
 
-Time per request:       1436260 [ns] (mean)
+Time per request:       365466 [ns] (mean)
 
 Percentage of the requests served within a certain time (ns)
-  50%      1388881
-  66%      1420875
-  75%      1443839
-  80%      1458862
-  90%      1499976
-  95%      1565245
-  98%      1839258
-  99%      2627653
+  50%      359611
+  66%      363613
+  75%      366488
+  80%      368328
+  90%      373225
+  95%      379301
+  98%      391994
+  99%      419145
 ```
 
 ### Rust (elastic_hyper + custom)
@@ -175,17 +157,17 @@ The point of this one is to show that `elastic_hyper` basically sits right on to
 ```
 target/release/elastic_hyper_fltrd_bench 1000
 
-Time per request:       1242905 [ns] (mean)
+Time per request:       338909 [ns] (mean)
 
 Percentage of the requests served within a certain time (ns)
-  50%      1188268
-  66%      1204799
-  75%      1217937
-  80%      1226329
-  90%      1261835
-  95%      1311765
-  98%      1805281
-  99%      2300044
+  50%      327194
+  66%      331722
+  75%      335546
+  80%      338625
+  90%      345013
+  95%      352359
+  98%      386021
+  99%      463996
 ```
 
 ### Rust (rs-es)
@@ -193,33 +175,40 @@ Percentage of the requests served within a certain time (ns)
 ```
 target/release/rs-es_bench 1000
 
-Time per request:       1266050 [ns] (mean)
+Time per request:       366679 [ns] (mean)
 
 Percentage of the requests served within a certain time (ns)
-  50%      1223386
-  66%      1238574
-  75%      1251329
-  80%      1263147
-  90%      1291514
-  95%      1325730
-  98%      1443468
-  99%      2083648
+  50%      359821
+  66%      364438
+  75%      367154
+  80%      369198
+  90%      375461
+  95%      381692
+  98%      393719
+  99%      402724
 ```
 
 ### Go (elastic)
 
-Note the `go` client is connection pooled whether you like it or not, and thawrted
-my attempts to get a single-request benchmark (sockets were shared).
-
-It's a really nice client, actually. Below is the best of 10 individual runs.
-
 ```
-go run main.go --runs=1
+go run main.go --runs=1000
 
-Time per request:       1457551 [ns] (mean)
+Time per request:       454216 [ns] (mean)
+
+Percentage of the requests served within a certain time (ns)
+  50%      436441
+  66%      442593
+  75%      447330
+  80%      451547
+  90%      465539
+  95%      489054
+  98%      762119
+  99%      918507
 ```
 
 ### CSharp (Elasticsearch.NET)
+
+_TODO: Update with keep alive_
 
 ```
 dnx --configuration Release run 1000

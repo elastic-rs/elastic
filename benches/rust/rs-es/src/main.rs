@@ -32,10 +32,10 @@ fn main() {
         }
     };
 
+    let mut client = Client::new("localhost", 9200);
+
     let mut results = Vec::<i64>::with_capacity(runs as usize);
     for _ in 0..runs {
-        let mut client = Client::new("localhost", 9200);
-        
         let mut sw = Stopwatch::start_new();
 
         let res: SearchResult<BenchDoc> = client.search_query()

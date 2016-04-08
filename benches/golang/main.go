@@ -15,7 +15,7 @@ type BenchDoc struct {
 }
 
 func main() {
-  var runs = flag.Int("runs", 1, "number of times to run the benchmark")
+  var runs = flag.Int("runs", 1000, "number of times to run the benchmark")
 
   results := make([]float64, *runs)
   for i := 0; i < *runs; i++ {

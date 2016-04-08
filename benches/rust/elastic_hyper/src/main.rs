@@ -12,6 +12,7 @@ extern crate elastic_hyper as elastic;
 use std::env;
 use stopwatch::Stopwatch;
 use hyper::client::Client;
+use hyper::header::Connection;
 use elastic_types::response::*;
 use elastic_types::date::prelude::*;
 
@@ -33,12 +34,13 @@ fn main() {
             200
         }
     };
-	let params = elastic::RequestParams::default();
+
+    let mut client = Client::new();
+	let mut params = elastic::RequestParams::default();
+    params.headers.set(Connection::keep_alive());
 
     let mut results = Vec::<i64>::with_capacity(runs as usize);
-
     for _ in 0..runs {
-        let mut client = Client::new();
         let mut sw = Stopwatch::start_new();
 
         let res: SearchResponse<BenchDoc> = serde_json::de::from_reader(
