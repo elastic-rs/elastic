@@ -200,5 +200,16 @@ Percentage of the requests served within a certain time (ms)
 ### CSharp (Elasticsearch.NET)
 
 ```
-TODO
+Time per request:       3.023890 [ms] (mean)
+
+Percentage of the requests served within a certain time (ms)
+  50%      1.708400
+  66%      1.766000
+  75%      1.817200
+  80%      1.939000
+  90%      2.547900
+  95%      2.643800
+  98%      3.322400
+  99%      6.002800
+ 100%    224.919900 (longest request)
 ```

@@ -14,21 +14,29 @@ namespace Elasticsearch.Net.Bench
 
     public class Program
     {
-        public void Main(string[] args)
+        public static void Main(string[] args)
         {
             var config = new ConnectionConfiguration(new Uri("http://localhost:9200"));
             config.DisablePing();
+
             var client = new ElasticLowLevelClient(config);
 
             var results = new List<long>();
-
             for (int i = 0; i < 200; i++)
             {
                 var watch = Stopwatch.StartNew();
-                var data = client.Search<BenchDoc>(new PostData<object>("{'query':{'query_string':{'query':'*'}},'size':10}"));
+                var req = new {
+                  query = new {
+                    query_string = new {
+                      query = "*"
+                      }
+                    },
+                    size = 10
+                  };
+                var data = client.Search<BenchDoc>(new PostData<object>(req));
                 watch.Stop();
 
-                results.Add((watch.ElapsedTicks / Stopwatch.Frequency) * 1000000000);
+                results.Add(watch.Elapsed.Ticks * 100);
             }
 
             var sorted = results.OrderBy(r => r).ToArray();
@@ -46,11 +54,11 @@ namespace Elasticsearch.Net.Bench
                 new Tuple<double, long>(1.0, sorted[GetIndex(1.0)])
             };
 
-            Console.WriteLine("took mean {0}ns", sorted.Sum() / 200.0);
+            Console.WriteLine("took mean {0}ns", results.Sum() / 200.0);
 
             foreach (var p in percentiles)
             {
-                Console.WriteLine("percentile {}%: {}ns", p.Item1 * 100, p.Item2);
+                Console.WriteLine("percentile {0}%: {1}ns", p.Item1 * 100, p.Item2);
             }
         }
 
