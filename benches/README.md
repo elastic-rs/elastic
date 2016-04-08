@@ -198,6 +198,19 @@ Percentage of the requests served within a certain time (ns)
   99%      2083648
 ```
 
+### Go (elastic)
+
+Note the `go` client is connection pooled whether you like it or not, and thawrted
+my attempts to get a single-request benchmark (sockets were shared).
+
+It's a really nice client, actually. Below is the best of 10 individual runs.
+
+```
+go run main.go --runs=1
+
+Time per request:       1457551 [ns] (mean)
+```
+
 ### CSharp (Elasticsearch.NET)
 
 ```
