@@ -100,12 +100,8 @@ A simple `query_string` query:
 ```rust
 extern crate elastic_hyper as elastic;
 
-// Requests take a standard hyper http client
 let mut client = Client::new();
-
-// Optional headers and url query parameters can be added
-// Execute a querystring request on a local Elasticsearch instance
-let mut res = elastic::search::post(
+let response = elastic::search::post(
 	&mut client, elastic::RequestParams::default(),
 	json_str!({
 		query: {
@@ -159,8 +155,6 @@ elastic_types = "*"
 Define a custom Elasticsearch type called `my_type`:
 
 ```rust
-//Define a struct for your type
-//Elasticsearch core types are provided out-of-the-box
 #[derive(Default, Clone, Serialize, Deserialize)]
 pub struct MyType {
 	pub my_date1: DateTime,
@@ -170,11 +164,9 @@ pub struct MyType {
 	pub my_num: i32
 }
 
-//Define the object mapping for the type
 #[derive(Default, Clone)]
 struct MyTypeMapping;
 impl ElasticObjectMapping for MyTypeMapping {
-	//Mapping meta-parameters are exposed as functions
 	fn include_in_all() -> Option<bool> {
 		Some(false)
 	}
