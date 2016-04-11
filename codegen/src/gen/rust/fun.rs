@@ -35,15 +35,15 @@ impl Fn {
 
 		self
 	}
-	
+
 	/// Add an argument to the function signature.
 	pub fn add_arg(mut self, arg: Arg) -> Fn {
 		self.decl.inputs.push(arg);
 		self
 	}
-	
+
 	/// Add a collection of arguments to the function signature.
-	pub fn add_args<I>(mut self, args: I) -> Fn 
+	pub fn add_args<I>(mut self, args: I) -> Fn
 		where I: IntoIterator<Item=Arg> {
 			self.decl.inputs.extend(args);
 			self
@@ -54,7 +54,7 @@ impl Fn {
 		self.decl.output = FunctionRetTy::Ty(P(ty::<T>(TyPathOpts::default())));
 		self
 	}
-    
+
     /// Set the return type of the function.
 	pub fn set_return_ty(mut self, ty: Ty) -> Fn {
 		self.decl.output = FunctionRetTy::Ty(P(ty));
@@ -69,14 +69,14 @@ impl Fn {
 	}
 
 	/// Append a collection of statements to the function body.
-	pub fn add_body_stmts<I>(mut self, stmts: I) -> Fn 
+	pub fn add_body_stmts<I>(mut self, stmts: I) -> Fn
 		where I: IntoIterator<Item=Stmt> {
 			self.stmts.extend(stmts);
 			self
 	}
 
 	/// Append the body to existing statements.
-	/// 
+	///
 	/// This will update the return expression if the function declaration has a return type set.
 	pub fn add_body_block(mut self, body: P<Block>) -> Fn {
 		//Append the body statements
@@ -86,7 +86,7 @@ impl Fn {
 		if let FunctionRetTy::Ty(_) = self.decl.output {
 			self.expr = body.expr.to_owned();
 		}
-		
+
 		self
 	}
 
@@ -103,14 +103,14 @@ impl ToString for Fn {
 	/// Outputs the fn declaration and body as Rust source.
 	fn to_string(&self) -> String {
 		let decl = pprust::fun_to_string(
-			&self.decl, 
-			self.unsafety, 
-			self.constness, 
-			self.identifier, 
-			None, 
+			&self.decl,
+			self.unsafety,
+			self.constness,
+			self.identifier,
+			None,
 			&self.generics
 		);
-		
+
 		let block = P(Block {
 			stmts: self.stmts.clone(),
 			expr: self.expr.clone(),
@@ -119,14 +119,14 @@ impl ToString for Fn {
 			span: DUMMY_SP,
 		});
 
-		format!("{}{}", pprust::visibility_qualified(Visibility::Public, &decl), pprust::block_to_string(&block))
+		format!("{}{}", pprust::visibility_qualified(&Visibility::Public, &decl), pprust::block_to_string(&block))
 	}
 }
 
 /// Generate a function.
-/// 
+///
 /// # Examples
-/// 
+///
 /// ```
 /// # #![feature(rustc_private)]
 /// # extern crate syntax;
@@ -135,10 +135,10 @@ impl ToString for Fn {
 /// # struct MyStruct;
 /// use syntax::ast::*;
 /// use elastic_codegen::gen::rust::*;
-/// 
+///
 /// //Define a lifetime 'a
 /// let lifetime = lifetime("'a");
-/// 
+///
 /// //Build a function signature
 /// let mut fun = build_fn("my_fun", vec![
 /// 	arg::<MyStruct>("arg1"),
@@ -146,12 +146,12 @@ impl ToString for Fn {
 /// 	build_arg("arg3", build_ty_ptr("str", Mutability::Immutable, Some(lifetime)))
 /// ])
 /// .add_lifetime(lifetime);
-/// 
+///
 /// //Print the results: 'fn my_fun<'a>(arg1: MyStruct, arg2: &'a mut i32, arg3: &'a str){ }'
 /// println!("{}", fun.to_string());
 /// # }
 /// ```
-pub fn build_fn<I>(name: &str, inputs: I) -> Fn 
+pub fn build_fn<I>(name: &str, inputs: I) -> Fn
 	where I: IntoIterator<Item=Arg> {
 	Fn {
 		identifier: token::str_to_ident(name),
