@@ -38,7 +38,7 @@ macro_rules! impl_number_mapping {
 				$es_ty
 			}
 		}
-		
+
 		impl serde::Serialize for $t {
 			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
 			where S: serde::Serializer {
@@ -58,7 +58,7 @@ macro_rules! impl_integer_mapping {
 				"integer"
 			}
 		}
-		
+
 		impl serde::Serialize for $t {
 			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
 			where S: serde::Serializer {
@@ -78,7 +78,7 @@ macro_rules! impl_long_mapping {
 				"long"
 			}
 		}
-		
+
 		impl serde::Serialize for $t {
 			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
 			where S: serde::Serializer {
@@ -98,7 +98,7 @@ macro_rules! impl_short_mapping {
 				"short"
 			}
 		}
-		
+
 		impl serde::Serialize for $t {
 			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
 			where S: serde::Serializer {
@@ -118,7 +118,7 @@ macro_rules! impl_byte_mapping {
 				"byte"
 			}
 		}
-		
+
 		impl serde::Serialize for $t {
 			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
 			where S: serde::Serializer {
@@ -138,7 +138,7 @@ macro_rules! impl_float_mapping {
 				"float"
 			}
 		}
-		
+
 		impl serde::Serialize for $t {
 			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
 			where S: serde::Serializer {
@@ -158,7 +158,7 @@ macro_rules! impl_double_mapping {
 				"double"
 			}
 		}
-		
+
 		impl serde::Serialize for $t {
 			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
 			where S: serde::Serializer {
@@ -178,7 +178,7 @@ macro_rules! impl_date_mapping {
 				"date"
 			}
 		}
-		
+
 		impl serde::Serialize for $t {
 			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
 			where S: serde::Serializer {
@@ -229,7 +229,7 @@ macro_rules! impl_object_mapping {
 			use $crate::mapping::prelude::*;
 			use super::{ $t, $m };
 
-			struct ObjectPropertiesVisitor<'a> {
+			pub struct ObjectPropertiesVisitor<'a> {
 				data: &'a $t
 			}
 
@@ -252,7 +252,7 @@ macro_rules! impl_object_mapping {
 				}
 			}
 
-			struct TypeMappingVisitor<'a> { 
+			pub struct TypeMappingVisitor<'a> {
 				data: &'a $t
 			}
 
@@ -280,7 +280,7 @@ macro_rules! impl_object_mapping {
 			}
 
 			#[derive(Default)]
-			struct FieldMappingVisitor;
+			pub struct FieldMappingVisitor;
 
 			impl serde::ser::MapVisitor for FieldMappingVisitor {
 				fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
