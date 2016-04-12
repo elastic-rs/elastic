@@ -15,13 +15,13 @@ use test::Bencher;
 #[bench]
 fn parse_date_from_format(b: &mut Bencher) {
 	b.iter(|| {
-		DateTime::<BasicDateTime>::parse("20150620T134501.034Z").unwrap()
+		ElasticDate::<BasicDateTime>::parse("20150620T134501.034Z").unwrap()
 	});
 }
 
 #[bench]
 fn parse_date_to_string(b: &mut Bencher) {
-	let dt: DateTime = DateTime::now();
+	let dt: ElasticDate = ElasticDate::now();
 
 	b.iter(|| {
 		dt.format()
@@ -31,13 +31,13 @@ fn parse_date_to_string(b: &mut Bencher) {
 #[bench]
 fn parse_date_from_epoch(b: &mut Bencher) {
 	b.iter(|| {
-		DateTime::<EpochMillis>::parse("1435935302478").unwrap()
+		ElasticDate::<EpochMillis>::parse("1435935302478").unwrap()
 	});
 }
 
 #[bench]
 fn parse_date_to_epoch(b: &mut Bencher) {
-	let dt = DateTime::<EpochMillis>::now();
+	let dt = ElasticDate::<EpochMillis>::now();
 
 	b.iter(|| {
 		dt.format()

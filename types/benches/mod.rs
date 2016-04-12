@@ -62,7 +62,7 @@ pub mod string_fixtures {
 
 	#[derive(Default, Clone)]
 	pub struct MyStringMapping;
-	impl ElasticStringMapping for MyStringMapping { 
+	impl ElasticStringMapping for MyStringMapping {
 		fn boost() -> Option<f32> {
 			Some(1.01)
 		}
@@ -110,7 +110,7 @@ pub mod string_fixtures {
 				similarity: Some("BM25"),
 				term_vector: Some(TermVector::No)
 			});
-			
+
 			Some(fields)
 		}
 
@@ -160,7 +160,7 @@ pub mod object_fixtures {
 
 	#[derive(Default, Clone, Serialize, Deserialize)]
 	pub struct MySmlType {
-		pub my_date1: DateTime,
+		pub my_date1: ElasticDate,
 		pub my_string: ElasticString<DefaultStringMapping>,
 		pub my_num: i32
 	}
@@ -187,7 +187,7 @@ pub mod object_fixtures {
 
 	#[derive(Default, Clone, Serialize, Deserialize)]
 	pub struct MyMedType {
-		pub my_date1: DateTime,
+		pub my_date1: ElasticDate,
 		pub my_string: ElasticString<DefaultStringMapping>,
 		pub my_num: i32,
 		pub my_type: MySmlType
@@ -215,7 +215,7 @@ pub mod object_fixtures {
 
 	#[derive(Default, Clone, Serialize, Deserialize)]
 	pub struct MyLrgType {
-		pub my_date1: DateTime,
+		pub my_date1: ElasticDate,
 		pub my_string: ElasticString<DefaultStringMapping>,
 		pub my_num: i32,
 		pub my_type: MyMedType
