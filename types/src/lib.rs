@@ -35,7 +35,7 @@
 //!  `double`           | `f64`                    | `std`     | `ElasticDouble<M>`    | `()`
 //!  `string`           | `String`                 | `std`     | `ElasticString<M>`    | `()`
 //!  `boolean`          | `bool`                   | `std`     | `ElasticBoolean<M>`   | `()`
-//!  `date`             | `DateTime`               | `chrono`  | `DateTime<F, M>`      | `DateFormat`
+//!  `date`             | `DateTime`               | `chrono`  | `ElasticDate<F, M>`   | `DateFormat`
 //!  `object`           | -                        | -         | user-defined `struct` | `()`
 //!
 //! The following sections explain this table.
@@ -52,11 +52,11 @@
 //! that wraps the `std` type but also takes an explicit mapping (like `ElasticInteger` for `i32`).
 //!
 //! Where there isn't a `std` type available (like `date`), an external crate is used and an implementation of
-//! that type is provided (like `DateTime`, which implements `chrono::DateLike + chrono::TimeLike`).
+//! that type is provided (like `ElasticDate`, which implements `chrono::DateLike + chrono::TimeLike`).
 //!
 //! ## Formats
 //!
-//! For some types (like `DateTime`), it's helpful to have an extra generic parameter that describes the
+//! For some types (like `ElasticDate`), it's helpful to have an extra generic parameter that describes the
 //! `format` the data can take. For most types the format is `()`, because there aren't any alternative formats available.
 //!
 //! # Examples
@@ -71,11 +71,11 @@
 //! # extern crate serde;
 //! # use serde::{ Serialize, Deserialize };
 //! # use elastic_types::mapping::prelude::*;
-//! # use elastic_types::date::DateTime;
+//! # use elastic_types::date::ElasticDate;
 //!
 //! #[derive(Default, Clone, Serialize, Deserialize)]
 //! pub struct MyType {
-//! 	pub my_date: DateTime,
+//! 	pub my_date: ElasticDate,
 //! 	pub my_string: String,
 //! 	pub my_num: i32
 //! }

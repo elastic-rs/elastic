@@ -17,12 +17,12 @@
 //! # extern crate serde;
 //! # use serde::{ Serialize, Deserialize };
 //! use elastic_types::mapping::prelude::*;
-//! use elastic_types::date::DateTime;
+//! use elastic_types::date::ElasticDate;
 //!
 //! //Define a struct for your type
 //! #[derive(Default, Clone, Serialize, Deserialize)]
 //! pub struct MyType {
-//! 	pub my_date: DateTime,
+//! 	pub my_date: ElasticDate,
 //! 	pub my_string: String,
 //! 	pub my_num: i32
 //! }
@@ -79,12 +79,12 @@
 //! # extern crate serde;
 //! # use serde::{ Serialize, Deserialize };
 //! # use elastic_types::mapping::prelude::*;
-//! # use elastic_types::date::{ DateTime, EpochMillis };
+//! # use elastic_types::date::{ ElasticDate, EpochMillis };
 //! # use elastic_types::string::ElasticString;
 //! # #[derive(Default, Clone, Serialize, Deserialize)]
 //! # pub struct MyType {
-//! # 	pub my_date1: DateTime,
-//! # 	pub my_date2: DateTime<EpochMillis>,
+//! # 	pub my_date1: ElasticDate,
+//! # 	pub my_date2: ElasticDate<EpochMillis>,
 //! # 	pub my_string: ElasticString<DefaultStringMapping>,
 //! # 	pub my_num: i32
 //! # }
@@ -104,7 +104,7 @@
 //! # }
 //! #[derive(Default, Clone, Serialize, Deserialize)]
 //! pub struct MyOtherType {
-//! 	pub my_date: DateTime,
+//! 	pub my_date: ElasticDate,
 //! 	pub my_type: MyType,
 //! 	pub my_num: i32
 //! }

@@ -411,8 +411,8 @@ pub mod object_fixtures {
 
 	#[derive(Default, Clone, Serialize, Deserialize)]
 	pub struct MyType {
-		pub my_date1: DateTime,
-		pub my_date2: DateTime<EpochMillis, MyDateMapping>,
+		pub my_date1: ElasticDate,
+		pub my_date2: ElasticDate<EpochMillis, MyDateMapping>,
 		pub my_string: ElasticString<DefaultStringMapping>,
 		pub my_num: i32
 	}
@@ -440,11 +440,11 @@ pub mod object_fixtures {
 
 	#[derive(Default, Clone, Serialize, Deserialize)]
 	pub struct MyOtherType {
-		pub my_date: DateTime,
+		pub my_date: ElasticDate,
 		pub my_type: MyType,
 		pub my_num: i32,
 		pub my_strings: Vec<String>,
-		pub my_dates: Vec<DateTime>
+		pub my_dates: Vec<ElasticDate>
 	}
 
 	#[derive(Default, Clone)]

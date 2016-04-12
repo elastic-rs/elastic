@@ -16,12 +16,12 @@ use elastic_types::date::prelude::*;
 
 #[derive(Default, Serialize, Deserialize)]
 struct MyType {
-	pub date: DateTime
+	pub date: ElasticDate
 }
 
 #[derive(Default, Serialize, Deserialize)]
 struct MyTypeFmtd {
-	pub date: DateTime<TestDateFormat1>
+	pub date: ElasticDate<TestDateFormat1>
 }
 
 const MYTYPE_DATE_FMT_1: &'static str = "%Y/%m/%d %H:%M:%S";
@@ -64,7 +64,7 @@ fn dates_should_use_chrono_format() {
 	let _dt = chrono::UTC.datetime_from_str("13/05/2015 00:00:00", "%d/%m/%Y %H:%M:%S").unwrap();
 	let expected = _dt.format(MYTYPE_DATE_FMT_1).to_string();
 
-	let dt = DateTime::<TestDateFormat1>::new(_dt.clone());
+	let dt = ElasticDate::<TestDateFormat1>::new(_dt.clone());
 	let actual = dt.format();
 
 	assert_eq!(expected, actual);
@@ -75,7 +75,7 @@ fn dates_should_use_es_format() {
 	let _dt = chrono::UTC.datetime_from_str("13/05/2015 00:00:00", "%d/%m/%Y %H:%M:%S").unwrap();
 	let expected = "20150513".to_string();
 
-	let dt = DateTime::<TestDateFormat2>::new(_dt.clone());
+	let dt = ElasticDate::<TestDateFormat2>::new(_dt.clone());
 	let actual = dt.format();
 
 	assert_eq!(expected, actual);
@@ -83,7 +83,7 @@ fn dates_should_use_es_format() {
 
 #[test]
 fn serialise_date() {
-	let date = DateTime::<BasicDateTime>::new(
+	let date = ElasticDate::<BasicDateTime>::new(
 		chrono::UTC.datetime_from_str(
 			"13/05/2015 00:00:00", MYTYPE_DATE_FMT_2
 		).unwrap()
@@ -96,7 +96,7 @@ fn serialise_date() {
 
 #[test]
 fn deserialise_date() {
-	let date: DateTime<BasicDateTime> = serde_json::from_str(r#""20150513T000000.000Z""#).unwrap();
+	let date: ElasticDate<BasicDateTime> = serde_json::from_str(r#""20150513T000000.000Z""#).unwrap();
 
 	assert_eq!((2015, 5, 13), (date.year(), date.month(), date.day()));
 }

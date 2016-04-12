@@ -162,7 +162,7 @@ Self: ElasticTypeMapping<T> + Sized + Serialize + Default + Copy {
 	}
 }
 
-/// Default mapping for `DateTime`.
+/// Default mapping for `ElasticDate`.
 #[derive(Debug, Default, Clone, Copy)]
 pub struct DefaultDateMapping<T = DefaultFormat> where
 T: DateFormat {

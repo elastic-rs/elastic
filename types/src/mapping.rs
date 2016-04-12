@@ -47,7 +47,7 @@ use serde;
 /// Each type has two generic arguments that help define its mapping:
 ///
 /// - A mapping type, which implements `ElasticTypeMapping`
-/// - A format type, which is usually `()`. Types with multiple formats, like `DateTime`, can use the format in the type definition.
+/// - A format type, which is usually `()`. Types with multiple formats, like `ElasticDate`, can use the format in the type definition.
 ///
 /// # Links
 ///
@@ -68,7 +68,7 @@ where Self: Default + Clone + serde::Serialize {
 
 	/// An optional associated type that mappings may need.
 	///
-	/// For example; the `DateFormat` trait on `DateTime`.
+	/// For example; the `DateFormat` trait on `ElasticDate`.
 	type Format = F;
 
 	#[doc(hidden)]
@@ -192,5 +192,5 @@ impl <T, M, F> ElasticType<ElasticArrayMapping<M, F>, F> for Vec<T> where
 T: ElasticType<M, F>,
 M: ElasticTypeMapping<F>,
 F: Default + Clone {
-	
+
 }
