@@ -153,6 +153,52 @@ pub mod string_fixtures {
 	impl_string_mapping!(MyStringMapping);
 }
 
+pub mod number_fixtures {
+	use serde;
+	use elastic_types::mapping::prelude::*;
+
+	#[derive(Debug, Clone, Default)]
+	pub struct MyIntegerMapping;
+	impl ElasticIntegerMapping for MyIntegerMapping {
+		fn coerce() -> Option<bool> {
+			Some(true)
+		}
+
+		fn boost() -> Option<f32> {
+			Some(1.1)
+		}
+
+		fn doc_values() -> Option<bool> {
+			Some(false)
+		}
+
+		fn ignore_malformed() -> Option<bool> {
+			Some(true)
+		}
+
+		fn include_in_all() -> Option<bool> {
+			Some(true)
+		}
+
+		fn index() -> Option<IndexAnalysis> {
+			Some(IndexAnalysis::No)
+		}
+
+		fn precision_step() -> Option<u32> {
+			Some(2147483647)
+		}
+
+		fn store() -> Option<bool> {
+			Some(true)
+		}
+
+		fn null_value() -> Option<i32> {
+			Some(42)
+		}
+	}
+	impl_integer_mapping!(MyIntegerMapping);
+}
+
 pub mod object_fixtures {
 	use elastic_types::mapping::prelude::*;
 	use elastic_types::date::prelude::*;
@@ -244,4 +290,5 @@ pub mod object_fixtures {
 
 pub mod date;
 pub mod string;
+pub mod number;
 pub mod object;

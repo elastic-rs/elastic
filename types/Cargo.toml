@@ -7,11 +7,14 @@ authors = ["Ashley Mannix <ashleymannix@live.com.au>"]
 nightly-testing = [ "clippy" ]
 
 [dependencies]
-chrono = "*"
 serde = "*"
 serde_json = "*"
 serde_macros = "*"
 clippy = { version = "*", optional = true }
+
+[dependencies.chrono]
+version = "*"
+features = [ "serde" ]
 
 [dependencies.elastic_macros]
 version = "*"

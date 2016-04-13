@@ -82,7 +82,7 @@ fn dates_should_use_es_format() {
 }
 
 #[test]
-fn serialise_date() {
+fn serialise_elastic_date() {
 	let date = ElasticDate::<BasicDateTime>::new(
 		chrono::UTC.datetime_from_str(
 			"13/05/2015 00:00:00", MYTYPE_DATE_FMT_2
@@ -95,7 +95,7 @@ fn serialise_date() {
 }
 
 #[test]
-fn deserialise_date() {
+fn deserialise_elastic_date() {
 	let date: ElasticDate<BasicDateTime> = serde_json::from_str(r#""20150513T000000.000Z""#).unwrap();
 
 	assert_eq!((2015, 5, 13), (date.year(), date.month(), date.day()));

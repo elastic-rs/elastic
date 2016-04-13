@@ -404,17 +404,38 @@ pub mod number_fixtures {
 }
 
 pub mod object_fixtures {
+	use chrono;
+	use chrono::{ DateTime, UTC };
 	use elastic_types::mapping::prelude::*;
 	use elastic_types::date::prelude::*;
+	use elastic_types::number::prelude::*;
 	use elastic_types::string::prelude::*;
 	use ::date_fixtures::*;
+	use ::number_fixtures::*;
 
-	#[derive(Default, Clone, Serialize, Deserialize)]
+	#[derive(Clone, Serialize, Deserialize)]
 	pub struct MyType {
-		pub my_date1: ElasticDate,
-		pub my_date2: ElasticDate<EpochMillis, MyDateMapping>,
-		pub my_string: ElasticString<DefaultStringMapping>,
-		pub my_num: i32
+		pub my_date1: DateTime<UTC>,
+		pub my_date2: ElasticDate,
+		pub my_date3: ElasticDate<EpochMillis, MyDateMapping>,
+		pub my_string1: String,
+		pub my_string2: ElasticString<DefaultStringMapping>,
+		pub my_num1: i32,
+		pub my_num2: ElasticInteger<MyIntegerMapping>
+	}
+
+	impl Default for MyType {
+		fn default() -> MyType {
+			MyType {
+				my_date1: chrono::UTC::now(),
+				my_date2: ElasticDate::default(),
+				my_date3: ElasticDate::<EpochMillis, MyDateMapping>::default(),
+				my_string1: String::default(),
+				my_string2: ElasticString::<DefaultStringMapping>::default(),
+				my_num1: i32::default(),
+				my_num2: ElasticInteger::<MyIntegerMapping>::default()
+			}
+		}
 	}
 
 	#[derive(Default, Clone)]
@@ -436,7 +457,15 @@ pub mod object_fixtures {
 			Some(true)
 		}
 	}
-	impl_object_mapping!(MyType, MyTypeMapping, "my_type", inner1, [my_date1, my_date2, my_string, my_num]);
+	impl_object_mapping!(MyType, MyTypeMapping, "my_type", inner1, [
+		my_date1,
+		my_date2,
+		my_date3,
+		my_string1,
+		my_string2,
+		my_num1,
+		my_num2
+	]);
 
 	#[derive(Default, Clone, Serialize, Deserialize)]
 	pub struct MyOtherType {
@@ -450,7 +479,13 @@ pub mod object_fixtures {
 	#[derive(Default, Clone)]
 	struct MyOtherTypeMapping;
 	impl ElasticObjectMapping for MyOtherTypeMapping { }
-	impl_object_mapping!(MyOtherType, MyOtherTypeMapping, "my_other_type", inner2, [{ "my_date", my_date }, { "my_renamed_type", my_type }, { "my_num", my_num }, { "my_strings", my_strings }, { "my_dates", my_dates }]);
+	impl_object_mapping!(MyOtherType, MyOtherTypeMapping, "my_other_type", inner2, [
+		{ "my_date", my_date },
+		{ "my_renamed_type", my_type },
+		{ "my_num", my_num },
+		{ "my_strings", my_strings },
+		{ "my_dates", my_dates }
+	]);
 }
 
 pub mod object;

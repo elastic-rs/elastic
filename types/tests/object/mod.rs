@@ -17,11 +17,15 @@ fn serialise_mapping_type() {
 
 	let expected = json_str!({
 		"properties": {
-			"my_date1":{
-				"type":"date",
-				"format":"basic_date_time"
+			"my_date1": {
+				"type": "date",
+				"format": "basic_date_time"
 			},
 			"my_date2": {
+				"type": "date",
+				"format": "basic_date_time"
+			},
+			"my_date3": {
 				"type": "date",
 				"boost": 1.01,
 				"doc_values": true,
@@ -33,11 +37,25 @@ fn serialise_mapping_type() {
 				"null_value": "0",
 				"precision_step": 6
 			},
-			"my_string":{
-				"type":"string"
+			"my_string1": {
+				"type": "string"
 			},
-			"my_num":{
-				"type":"integer"
+			"my_string2": {
+				"type": "string"
+			},
+			"my_num1": {
+				"type": "integer"
+			},
+			"my_num2": {
+				"type": "integer",
+				"coerce": true,
+				"boost": 1.1,
+				"doc_values": false,
+				"ignore_malformed": true,
+				"include_in_all": true,
+				"null_value": 42,
+				"precision_step": 2147483647,
+				"store": true
 			}
 		}
 	});
@@ -70,50 +88,68 @@ fn serialise_mapping_type_as_nested() {
 	let ser = TypeMapper::map_str(&mytype).unwrap();
 
 	let expected = json_str!({
-		"properties":{
-			"my_date":{
-				"type":"date",
-				"format":"basic_date_time"
+		"properties": {
+			"my_date": {
+				"type": "date",
+				"format": "basic_date_time"
 			},
-			"my_renamed_type":{
-				"type":"object",
-				"dynamic":true,
-				"enabled":false,
-				"include_in_all":true,
-				"properties":{
-					"my_date1":{
-						"type":"date",
-						"format":"basic_date_time"
+			"my_renamed_type": {
+				"type": "object",
+				"dynamic": true,
+				"enabled": false,
+				"include_in_all": true,
+				"properties": {
+					"my_date1": {
+						"type": "date",
+						"format": "basic_date_time"
 					},
-					"my_date2":{
-						"type":"date",
-						"boost":1.01,
-						"doc_values":true,
-						"include_in_all":false,
-						"index":"no",
-						"store":true,
-						"format":"epoch_millis",
-						"ignore_malformed":true,
-						"null_value":"0",
-						"precision_step":6
+					"my_date2": {
+						"type": "date",
+						"format": "basic_date_time"
 					},
-					"my_string":{
-						"type":"string"
+					"my_date3": {
+						"type": "date",
+						"boost": 1.01,
+						"doc_values": true,
+						"include_in_all": false,
+						"index": "no",
+						"store": true,
+						"format": "epoch_millis",
+						"ignore_malformed": true,
+						"null_value": "0",
+						"precision_step": 6
 					},
-					"my_num":{
-						"type":"integer"
+					"my_string1": {
+						"type": "string"
+					},
+					"my_string2": {
+						"type": "string"
+					},
+					"my_num1": {
+						"type": "integer"
+					},
+					"my_num2": {
+						"type": "integer",
+						"coerce": true,
+						"boost": 1.1,
+						"doc_values": false,
+						"ignore_malformed": true,
+						"include_in_all": true,
+						"null_value": 42,
+						"precision_step": 2147483647,
+						"store": true
 					}
 				}
 			},
-			"my_num":{
-				"type":"integer"
+			"my_num": {
+				"type": "integer"
 			},
-			"my_strings":{
-				"type":"string"
+			"my_strings": {
+				"type": "string"
 			},
-			"my_dates":{
-				"type":"date",
-				"format":"basic_date_time"
+			"my_dates": {
+				"type": "date",
+				"format": "basic_date_time"
 			}
 		}
 	});

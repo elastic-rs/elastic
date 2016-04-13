@@ -350,3 +350,7 @@ T: ElasticTypeMapping<F> + ElasticDateMapping<F> {
 		deserializer.deserialize(DateTimeVisitor::<F, T>::default())
 	}
 }
+
+impl ElasticType<DefaultDateMapping, DefaultFormat> for DT {
+
+}
