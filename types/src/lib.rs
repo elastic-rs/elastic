@@ -25,18 +25,18 @@
 //!
 //! The following table illustrates the types provided by `elastic_types`:
 //!
-//!  Elasticsearch Type | Rust Primitive (Default) | Crate     | Rust Type (Custom)    | Format Type
-//!  ------------------ | ------------------------ | --------- | --------------------- | -----------
-//!  `integer`          | `i32`                    | `std`     | `ElasticInteger<M>`   | `()`
-//!  `long`             | `i64`                    | `std`     | `ElasticLong<M>`      | `()`
-//!  `short`            | `i16`                    | `std`     | `ElasticShort<M>`     | `()`
-//!  `byte`             | `i8`                     | `std`     | `ElasticByte<M>`      | `()`
-//!  `float`            | `f32`                    | `std`     | `ElasticFloat<M>`     | `()`
-//!  `double`           | `f64`                    | `std`     | `ElasticDouble<M>`    | `()`
-//!  `string`           | `String`                 | `std`     | `ElasticString<M>`    | `()`
-//!  `boolean`          | `bool`                   | `std`     | `ElasticBoolean<M>`   | `()`
-//!  `date`             | `DateTime<UTC>`          | `chrono`  | `ElasticDate<F, M>`   | `DateFormat`
-//!  `object`           | -                        | -         | user-defined `struct` | `()`
+//!  Elasticsearch Type | Rust Type (Default Mapping) | Crate     | Rust Type (Custom Mapping)    | Format Type
+//!  ------------------ | --------------------------- | --------- | ----------------------------- | -----------
+//!  `integer`          | `i32`                       | `std`     | `ElasticInteger<M>`           | `()`
+//!  `long`             | `i64`                       | `std`     | `ElasticLong<M>`              | `()`
+//!  `short`            | `i16`                       | `std`     | `ElasticShort<M>`             | `()`
+//!  `byte`             | `i8`                        | `std`     | `ElasticByte<M>`              | `()`
+//!  `float`            | `f32`                       | `std`     | `ElasticFloat<M>`             | `()`
+//!  `double`           | `f64`                       | `std`     | `ElasticDouble<M>`            | `()`
+//!  `string`           | `String`                    | `std`     | `ElasticString<M>`            | `()`
+//!  `boolean`          | `bool`                      | `std`     | `ElasticBoolean<M>`           | `()`
+//!  `date`             | `DateTime<UTC>`             | `chrono`  | `ElasticDate<F, M>`           | `DateFormat`
+//!  `object`           | -                           | -         | user-defined `struct`         | `()`
 //!
 //! The following sections explain this table.
 //!
