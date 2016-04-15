@@ -440,8 +440,10 @@ pub mod object_fixtures {
 	use elastic_types::date::prelude::*;
 	use elastic_types::number::prelude::*;
 	use elastic_types::string::prelude::*;
+	use elastic_types::boolean::prelude::*;
 	use ::date_fixtures::*;
 	use ::number_fixtures::*;
+	use ::boolean_fixtures::*;
 
 	#[derive(Clone, Serialize, Deserialize)]
 	pub struct MyType {
@@ -451,7 +453,9 @@ pub mod object_fixtures {
 		pub my_string1: String,
 		pub my_string2: ElasticString<DefaultStringMapping>,
 		pub my_num1: i32,
-		pub my_num2: ElasticInteger<MyIntegerMapping>
+		pub my_num2: ElasticInteger<MyIntegerMapping>,
+		pub my_bool1: bool,
+		pub my_bool2: ElasticBoolean<MyBooleanMapping>
 	}
 
 	impl Default for MyType {
@@ -463,7 +467,9 @@ pub mod object_fixtures {
 				my_string1: String::default(),
 				my_string2: ElasticString::<DefaultStringMapping>::default(),
 				my_num1: i32::default(),
-				my_num2: ElasticInteger::<MyIntegerMapping>::default()
+				my_num2: ElasticInteger::<MyIntegerMapping>::default(),
+				my_bool1: false,
+				my_bool2: ElasticBoolean::<MyBooleanMapping>::default()
 			}
 		}
 	}
@@ -494,7 +500,9 @@ pub mod object_fixtures {
 		my_string1,
 		my_string2,
 		my_num1,
-		my_num2
+		my_num2,
+		my_bool1,
+		my_bool2
 	]);
 
 	#[derive(Default, Clone, Serialize, Deserialize)]
@@ -522,3 +530,4 @@ pub mod object;
 pub mod date;
 pub mod string;
 pub mod number;
+pub mod boolean;

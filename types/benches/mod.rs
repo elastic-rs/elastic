@@ -153,6 +153,36 @@ pub mod string_fixtures {
 	impl_string_mapping!(MyStringMapping);
 }
 
+pub mod boolean_fixtures {
+	use serde;
+	use elastic_types::mapping::prelude::*;
+
+	#[derive(Default, Clone)]
+	pub struct MyBooleanMapping;
+	impl ElasticBooleanMapping for MyBooleanMapping {
+		fn boost() -> Option<f32> {
+			Some(1.01)
+		}
+
+		fn index() -> Option<IndexAnalysis> {
+			Some(IndexAnalysis::No)
+		}
+
+		fn doc_values() -> Option<bool> {
+			Some(true)
+		}
+
+		fn store() -> Option<bool> {
+			Some(true)
+		}
+
+		fn null_value() -> Option<bool> {
+			Some(false)
+		}
+	}
+	impl_boolean_mapping!(MyBooleanMapping);
+}
+
 pub mod number_fixtures {
 	use serde;
 	use elastic_types::mapping::prelude::*;
@@ -291,4 +321,5 @@ pub mod object_fixtures {
 pub mod date;
 pub mod string;
 pub mod number;
+pub mod boolean;
 pub mod object;

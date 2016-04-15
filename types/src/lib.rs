@@ -142,8 +142,3 @@ pub mod number;
 pub mod boolean;
 
 pub mod response;
-
-impl_mapping!(
-	bool,
-	char
-);

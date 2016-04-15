@@ -56,6 +56,17 @@ fn serialise_mapping_type() {
 				"null_value": 42,
 				"precision_step": 2147483647,
 				"store": true
+			},
+			"my_bool1": {
+				"type": "boolean"
+			},
+			"my_bool2": {
+				"type": "boolean",
+				"boost": 1.01,
+				"doc_values": true,
+				"index": "no",
+				"store": true,
+				"null_value": false
 			}
 		}
 	});
@@ -138,6 +149,17 @@ fn serialise_mapping_type_as_nested() {
 						"null_value": 42,
 						"precision_step": 2147483647,
 						"store": true
+					},
+					"my_bool1": {
+						"type": "boolean"
+					},
+					"my_bool2": {
+						"type": "boolean",
+						"boost": 1.01,
+						"doc_values": true,
+						"index": "no",
+						"store": true,
+						"null_value": false
 					}
 				}
 			},
