@@ -1,11 +1,10 @@
 use std::marker::PhantomData;
 use serde;
 use serde::{ Serialize, Deserialize, Serializer, Deserializer };
-use super::mapping::{ ElasticStringType, ElasticStringMapping, DefaultStringMapping };
+use super::mapping::{ ElasticStringMapping, DefaultStringMapping };
 use ::mapping::{ ElasticTypeMapping, ElasticType };
 
 impl ElasticType<DefaultStringMapping, ()> for String { }
-impl ElasticStringType<DefaultStringMapping> for String { }
 
 /// An Elasticsearch `string` with a mapping.
 ///
@@ -101,8 +100,6 @@ T: ElasticTypeMapping<()> + ElasticStringMapping {
 }
 
 impl <T> ElasticType<T, ()> for ElasticString<T> where
-T: ElasticTypeMapping<()> + ElasticStringMapping { }
-impl <T> ElasticStringType<T> for ElasticString<T> where
 T: ElasticTypeMapping<()> + ElasticStringMapping { }
 
 impl From<String> for ElasticString<DefaultStringMapping> {

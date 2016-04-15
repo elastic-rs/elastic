@@ -4,7 +4,7 @@ use std::collections::BTreeMap;
 use std::marker::PhantomData;
 use serde;
 use serde::{ Serializer, Serialize };
-use ::mapping::{ ElasticTypeMapping, ElasticType, IndexAnalysis };
+use ::mapping::{ ElasticTypeMapping, IndexAnalysis };
 
 /// The base requirements for mapping a `string` type.
 ///
@@ -175,11 +175,6 @@ Self: ElasticTypeMapping<()> + Sized + Serialize + Default + Clone {
 		None
 	}
 }
-
-/// A Rust representation of an Elasticsearch `string`.
-pub trait ElasticStringType<T> where
-T: ElasticTypeMapping<()> + ElasticStringMapping,
-Self: Sized + ElasticType<T, ()> { }
 
 /// Default mapping for `String`.
 #[derive(Debug, Default, Clone, Copy)]

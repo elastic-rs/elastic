@@ -53,8 +53,8 @@ pub use self::number::*;
 
 pub mod prelude {
 	//! Includes non-mapping types for the `number` type.
-    //!
-    //! This is a convenience module to make it easy to build mappings for multiple types without too many `use` statements.
+	//!
+	//! This is a convenience module to make it easy to build mappings for multiple types without too many `use` statements.
 
 	pub use super::number::*;
 }

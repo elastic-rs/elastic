@@ -36,6 +36,7 @@ pub mod prelude {
 	pub use ::date::mapping::*;
 	pub use ::string::mapping::*;
 	pub use ::number::mapping::*;
+	pub use ::boolean::mapping::*;
 }
 
 use std::marker::PhantomData;
