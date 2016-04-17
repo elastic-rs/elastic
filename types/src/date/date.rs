@@ -10,6 +10,10 @@ use ::mapping::{ ElasticTypeMapping, ElasticType };
 
 pub use chrono::{ Datelike, Timelike };
 
+impl ElasticType<DefaultDateMapping, DefaultFormat> for DT {
+
+}
+
 /// An Elasticsearch `date` type with a required `time` component.
 ///
 /// The [format](format/index.html) is provided as a generic parameter.
@@ -349,8 +353,4 @@ T: ElasticTypeMapping<F> + ElasticDateMapping<F> {
 
 		deserializer.deserialize(DateTimeVisitor::<F, T>::default())
 	}
-}
-
-impl ElasticType<DefaultDateMapping, DefaultFormat> for DT {
-
 }
