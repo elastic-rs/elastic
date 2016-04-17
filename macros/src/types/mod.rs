@@ -34,7 +34,6 @@ pub fn expand_date_fmt(cx: &mut ExtCtxt, sp: Span, args: &[TokenTree]) -> Box<Ma
 	MacEager::expr(quote_expr!(cx, { $token_expr }))
 }
 
-//TODO: Derive may not work as expected with this setup. Need to be able to return a macro result
 pub fn expand_derive_type_mapping(cx: &mut ExtCtxt, span: Span, meta_item: &MetaItem, annotatable: &Annotatable, push: &mut FnMut(Annotatable)) {
 	//Annotatable item for a struct with struct fields
     let item = match *annotatable {
@@ -61,9 +60,11 @@ pub fn expand_derive_type_mapping(cx: &mut ExtCtxt, span: Span, meta_item: &Meta
     let (item, fields, generics) = item.unwrap();
 
     //Get or build the mapping type
+    //TODO: Pass in fn to build_mapping rather than maybe returning None
     let (mapping, mapping_ident) = get_mapping(cx, item).unwrap_or(build_mapping(cx, span, item));
 
     //Get the serializable fields
+    //TODO: Use Vec<(Ident, ast::StructField)>
     let fields: Vec<(InternedString, ast::StructField)> = fields
     	.iter()
     	.map(|f| get_ser_field_name(cx, f))
@@ -71,20 +72,12 @@ pub fn expand_derive_type_mapping(cx: &mut ExtCtxt, span: Span, meta_item: &Meta
     	.map(|f| f.unwrap())
     	.collect();
 
-    /*
-	impl_object_mapping!($item.ident, $mapping, $mapping_name, $mod_name, [
-		{ $field_name, $field },
-		{ $field_name, $field }
-	]);
-    */
-
     if let Some(mapping_ident) = mapping_ident {
     	push(Annotatable::Item(mapping_ident));
     }
 }
 
 //Try get mapping name from attribute
-//TODO: Determine if this will work. Expansion may have problems
 fn get_mapping(cx: &ExtCtxt, item: &ast::Item) -> Option<(Ident, Option<P<ast::Item>>)> {
 	for meta_items in item.attrs.iter().filter_map(get_elastic_meta_items) {
         for meta_item in meta_items {
@@ -119,10 +112,10 @@ fn get_ser_field_name(cx: &mut ExtCtxt, field: &ast::StructField) -> Option<(Int
 	}
 
 	let name = get_field_name(cx, field);
-
 	Some((name, field.to_owned()))
 }
 
+//TODO: Use serde_codegen for this
 fn serialized_by_serde(field: &ast::StructField) -> bool {
     for meta_items in field.attrs.iter().filter_map(get_serde_meta_items) {
         for meta_item in meta_items {
@@ -159,6 +152,7 @@ fn get_serde_meta_items(attr: &ast::Attribute) -> Option<&[P<ast::MetaItem>]> {
 }
 
 //TODO: Use serde_codegen for this
+//TODO: Return Ident
 fn get_field_name(cx: &ExtCtxt, field: &ast::StructField) -> InternedString {
 	for meta_items in field.attrs.iter().filter_map(get_serde_meta_items) {
         for meta_item in meta_items {
