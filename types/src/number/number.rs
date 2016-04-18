@@ -12,7 +12,7 @@ macro_rules! number_type {
 			phantom: PhantomData<M>
 		}
 		impl <M> $t<M> where M: ElasticTypeMapping<()> + $m {
-			/// Creates a new `$t` with the given mapping.
+			/// Creates a new number with the given mapping.
 			pub fn new<I: Into<$n>>(num: I) -> $t<M> {
 				$t {
 					value: num.into(),
@@ -44,7 +44,7 @@ macro_rules! number_type {
 			}
 		}
 
-		//Serialize elastic number
+		//Serialize elastic number.
 		impl <M> Serialize for $t<M> where M: ElasticTypeMapping<()> + $m {
 			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where
             S: Serializer {
@@ -52,7 +52,7 @@ macro_rules! number_type {
 			}
 		}
 
-		//Deserialize elastic number
+		//Deserialize elastic number.
 		impl <M: ElasticTypeMapping<()> + $m> Deserialize for $t<M> {
 			fn deserialize<D>(deserializer: &mut D) -> Result<$t<M>, D::Error> where
             D: Deserializer {
