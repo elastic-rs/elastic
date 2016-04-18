@@ -500,6 +500,8 @@ pub mod object_fixtures {
 		pub my_date: ElasticDate,
 		#[serde(rename="my_renamed_type")]
 		pub my_type: MyType,
+		#[serde(skip_serializing)]
+		pub ignored: String,
 		pub my_num: i32,
 		pub my_strings: Vec<String>,
 		pub my_dates: Vec<ElasticDate>

@@ -73,34 +73,13 @@
 //! # use elastic_types::mapping::prelude::*;
 //! # use elastic_types::date::ElasticDate;
 //!
-//! #[derive(Default, Clone, Serialize, Deserialize)]
+//! #[derive(Default, Clone, Serialize, Deserialize, ElasticType)]
 //! pub struct MyType {
 //! 	pub my_date: ElasticDate,
 //! 	pub my_string: String,
 //! 	pub my_num: i32
 //! }
 //!
-//! #[derive(Default, Clone)]
-//! struct MyTypeMapping;
-//! impl ElasticObjectMapping for MyTypeMapping {
-//! 	fn data_type() -> &'static str {
-//! 		"object"
-//! 	}
-//!
-//! 	fn dynamic() -> Option<Dynamic> {
-//! 		Some(Dynamic::True)
-//! 	}
-//!
-//! 	fn enabled() -> Option<bool> {
-//! 		Some(false)
-//! 	}
-//!
-//! 	fn include_in_all() -> Option<bool> {
-//! 		Some(true)
-//! 	}
-//! }
-//!
-//! impl_object_mapping!(MyType, MyTypeMapping, "my_type", inner1, [my_date, my_string, my_num]);
 //! # impl serde::Serialize for MyType {
 //! # 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where S: serde::Serializer {
 //! # 		unimplemented!()

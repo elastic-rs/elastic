@@ -234,7 +234,8 @@ pub mod object_fixtures {
 	use elastic_types::date::prelude::*;
 	use elastic_types::string::prelude::*;
 
-	#[derive(Default, Clone, Serialize, Deserialize)]
+	#[derive(Default, Clone, Serialize, Deserialize, ElasticType)]
+	#[elastic(mapping="MySmlTypeMapping")]
 	pub struct MySmlType {
 		pub my_date1: ElasticDate,
 		pub my_string: ElasticString<DefaultStringMapping>,
@@ -259,9 +260,9 @@ pub mod object_fixtures {
 			Some(true)
 		}
 	}
-	impl_object_mapping!(MySmlType, MySmlTypeMapping, "my_sml_type", inner1, [my_date1, my_string, my_num]);
 
-	#[derive(Default, Clone, Serialize, Deserialize)]
+	#[derive(Default, Clone, Serialize, Deserialize, ElasticType)]
+	#[elastic(mapping="MyMedTypeMapping")]
 	pub struct MyMedType {
 		pub my_date1: ElasticDate,
 		pub my_string: ElasticString<DefaultStringMapping>,
@@ -287,15 +288,16 @@ pub mod object_fixtures {
 			Some(true)
 		}
 	}
-	impl_object_mapping!(MyMedType, MyMedTypeMapping, "my_med_type", inner2, [my_date1, my_string, my_num, my_type]);
 
-	#[derive(Default, Clone, Serialize, Deserialize)]
+	#[derive(Default, Clone, Serialize, Deserialize, ElasticType)]
+	#[elastic(mapping="MyLrgTypeMapping")]
 	pub struct MyLrgType {
 		pub my_date1: ElasticDate,
 		pub my_string: ElasticString<DefaultStringMapping>,
 		pub my_num: i32,
 		pub my_type: MyMedType
 	}
+
 	#[derive(Default, Clone)]
 	struct MyLrgTypeMapping;
 	impl ElasticObjectMapping for MyLrgTypeMapping {
@@ -315,7 +317,6 @@ pub mod object_fixtures {
 			Some(true)
 		}
 	}
-	impl_object_mapping!(MyLrgType, MyLrgTypeMapping, "my_lrg_type", inner3, [my_date1, my_string, my_num, my_type]);
 }
 
 pub mod date;

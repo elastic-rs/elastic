@@ -155,7 +155,8 @@ elastic_types = "*"
 Define a custom Elasticsearch type called `my_type`:
 
 ```rust
-#[derive(Default, Clone, Serialize, Deserialize)]
+#[derive(Default, Clone, Serialize, Deserialize, ElasticType)]
+#[elastic(mapping="MyTypeMapping")]
 pub struct MyType {
 	pub my_date1: ElasticDate,
 	pub my_date2: ElasticDate<EpochMillis>,
@@ -171,7 +172,6 @@ impl ElasticObjectMapping for MyTypeMapping {
 		Some(false)
 	}
 }
-impl_object_mapping!(MyType, MyTypeMapping, "my_type", inner, [my_date1, my_date2, my_string1, my_string2, my_num]);
 ```
 
 Compiler-plugins to [automatically derive mapping](https://github.com/KodrAus/elasticsearch-rs/issues/83) will be added in the future.
