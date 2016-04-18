@@ -158,10 +158,8 @@ Define a custom Elasticsearch type called `my_type`:
 #[derive(Default, Clone, Serialize, Deserialize, ElasticType)]
 #[elastic(mapping="MyTypeMapping")]
 pub struct MyType {
-	pub my_date1: ElasticDate,
-	pub my_date2: ElasticDate<EpochMillis>,
+	pub my_date: ElasticDate<EpochMillis>,
 	pub my_string: String,
-	pub my_string2: ElasticString<DefaultStringMapping>,
 	pub my_num: i32
 }
 
@@ -177,6 +175,5 @@ impl ElasticObjectMapping for MyTypeMapping {
 Get the mapping for your type:
 
 ```rust
-let mytype = MyType::default();
-let mapping = TypeMapper::map_str(&mytype).unwrap();
+let mapping = TypeMapper::map_str(&MyType::default()).unwrap();
 ```

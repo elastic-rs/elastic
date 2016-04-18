@@ -59,7 +59,7 @@ use ::mapping::{ ElasticTypeMapping, IndexAnalysis };
 /// 	type Visitor = ElasticBooleanMappingVisitor<MyBooleanMapping>;
 ///
 /// 	fn data_type() -> &'static str {
-/// 		"string"
+/// 		"boolean"
 /// 	}
 /// }
 ///

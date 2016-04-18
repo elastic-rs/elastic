@@ -160,6 +160,7 @@ extern crate serde;
 extern crate serde_json;
 
 #[macro_use]
+#[doc(hidden)]
 pub mod macros;
 pub mod mapping;
 pub mod mappers;

@@ -1,5 +1,3 @@
-//! Implementation helper macros.
-
 #[macro_export]
 macro_rules! impl_mapping {
 	($($t:ty),*) => (

@@ -12,8 +12,7 @@ use ::object_fixtures::*;
 #[test]
 fn serialise_mapping_type() {
 	//Define an instance of our mapping type
-	let mytype = MyType::default();
-	let ser = TypeMapper::map_str(&mytype).unwrap();
+	let ser = TypeMapper::map_str(&MyType::default()).unwrap();
 
 	let expected = json_str!({
 		"properties": {
@@ -77,8 +76,7 @@ fn serialise_mapping_type() {
 #[test]
 fn serialise_mapping_as_value() {
 	//Define an instance of our mapping type
-	let mytype = MyType::default();
-	let value = TypeMapper::map_val(&mytype).unwrap();
+	let value = TypeMapper::map_val(&MyType::default()).unwrap();
 
 	//Serialise to a json value, and perform a lookup. Make sure the value is serialised properly
 	//There does seem to be some weird thing with f32 serialisation; 1.01 results in ~1.0999
@@ -95,8 +93,7 @@ fn serialise_mapping_as_value() {
 #[test]
 fn serialise_mapping_type_as_nested() {
 	//Define an instance of our mapping type
-	let mytype = MyOtherType::default();
-	let ser = TypeMapper::map_str(&mytype).unwrap();
+	let ser = TypeMapper::map_str(&MyOtherType::default()).unwrap();
 
 	let expected = json_str!({
 		"properties": {
