@@ -445,7 +445,8 @@ pub mod object_fixtures {
 	use ::number_fixtures::*;
 	use ::boolean_fixtures::*;
 
-	#[derive(Clone, Serialize, Deserialize)]
+	#[derive(Clone, Serialize, Deserialize, ElasticType)]
+	#[elastic(ty="my_type", mapping="MyTypeMapping")]
 	pub struct MyType {
 		pub my_date1: DateTime<UTC>,
 		pub my_date2: ElasticDate,
@@ -493,17 +494,6 @@ pub mod object_fixtures {
 			Some(true)
 		}
 	}
-	impl_object_mapping!(MyType, MyTypeMapping, "my_type", inner1, [
-		my_date1,
-		my_date2,
-		my_date3,
-		my_string1,
-		my_string2,
-		my_num1,
-		my_num2,
-		my_bool1,
-		my_bool2
-	]);
 
 	#[derive(Default, Clone, Serialize, Deserialize)]
 	pub struct MyOtherType {

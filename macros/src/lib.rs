@@ -1,11 +1,11 @@
 //! Elasticsearch Core Types Codegen
 //!
 //! Compile-time code generation for Elasticsearch type implementations.
-//! 
+//!
 //! # Json Macros
-//! 
+//!
 //! The `json_str!` macro will take an inline token tree and return an `str` literal:
-//! 
+//!
 //! ```
 //! # #![feature(plugin)]
 //! # #![plugin(elastic_macros)]
@@ -30,9 +30,9 @@
 //! });
 //! # }
 //! ```
-//! 
+//!
 //! This will also work for unquoted keys for something a bit more `rusty`:
-//! 
+//!
 //! ```
 //! # #![feature(plugin)]
 //! # #![plugin(elastic_macros)]
@@ -57,30 +57,30 @@
 //! });
 //! # }
 //! ```
-//! 
+//!
 //! For values that can't be determined at compile-time, use [json_macros](https://github.com/tomjakubowski/json_macros) instead.
-//! 
+//!
 //! # Types Macros
-//! 
-//! There are also a couple of macros designed to work with `elastic_types`. 
+//!
+//! There are also a couple of macros designed to work with `elastic_types`.
 //! These are feature-gated, so you'll need to use the `types` feature in your `Cargo.toml`:
-//! 
+//!
 //! ```norun
 //! [dependencies.elastic_macros]
 //! version = "*"
 //! features = [ "types" ]
 //! ```
-//! 
+//!
 //! ## Elastic Types
-//! 
+//!
 //! Derive `ElasticType` to implement the required `trait`s for mapping your Elasticsearch types.
 //! _TODO: Fill this section out_
-//! 
+//!
 //! ## Date Formatting
-//! 
+//!
 //! The `date_fmt!` macro will take a literal date format and parse it to a more efficient `Vec<Item>`.
 //! This is used by date formatters.
-//! 
+//!
 //! ```
 //! # #![feature(plugin, types]
 //! # #![plugin(elastic_macros)]
@@ -89,9 +89,9 @@
 //! let my_fmt = date_fmt!("yyyyMMddTHHmmss.SSSZ");
 //! # }
 //! ```
-//! 
+//!
 //! This also works for `chrono` date formats:
-//! 
+//!
 //! ```
 //! # #![feature(plugin)]
 //! # #![plugin(elastic_macros)]
@@ -100,7 +100,7 @@
 //! let my_fmt = date_fmt!("%Y%m%dT%H%M%S%.3fZ");
 //! # }
 //! ```
-//! 
+//!
 //! # Links
 //! - [Github](https://github.com/KodrAus/elasticsearch-rs)
 
@@ -135,4 +135,10 @@ pub fn plugin_registrar(reg: &mut Registry) {
 
 	#[cfg(feature = "types")]
 	reg.register_macro("date_fmt", types::expand_date_fmt);
+
+	#[cfg(feature = "types")]
+	reg.register_syntax_extension(
+        syntax::parse::token::intern("derive_ElasticType"),
+        syntax::ext::base::MultiDecorator(
+            Box::new(types::expand_derive_type_mapping)));
 }
