@@ -94,6 +94,56 @@
 //! # }
 //! ```
 //!
+//! Of course, structs that derive `ElasticType` can also be used as fields on other Elasticsearch types:
+//!
+//! ```
+//! # #![feature(plugin, custom_derive, custom_attribute)]
+//! # #![plugin(elastic_macros)]
+//! # #[macro_use]
+//! # extern crate elastic_types;
+//! # extern crate serde;
+//! # use serde::{ Serialize, Deserialize };
+//! # use elastic_types::mapping::prelude::*;
+//! # use elastic_types::date::ElasticDate;
+//! # #[derive(Default, Clone, Serialize, Deserialize, ElasticType)]
+//! # pub struct MyType {
+//! # 	pub my_date: ElasticDate,
+//! # 	pub my_string: String,
+//! # 	pub my_num: i32
+//! # }
+//! # impl serde::Serialize for MyType {
+//! # 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where S: serde::Serializer {
+//! # 		unimplemented!()
+//! # 	}
+//! # }
+//! # impl serde::Deserialize for MyType {
+//! # 	 fn deserialize<D>(deserializer: &mut D) -> Result<Self, D::Error> where D: serde::Deserializer {
+//! # 		unimplemented!()
+//! # 	}
+//! # }
+//! #[derive(Default, Clone, Serialize, Deserialize, ElasticType)]
+//! pub struct MyOtherType {
+//! 	pub my_type: MyType
+//! }
+//! # impl serde::Serialize for MyOtherType {
+//! # 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where S: serde::Serializer {
+//! # 		unimplemented!()
+//! # 	}
+//! # }
+//! # impl serde::Deserialize for MyOtherType {
+//! # 	 fn deserialize<D>(deserializer: &mut D) -> Result<Self, D::Error> where D: serde::Deserializer {
+//! # 		unimplemented!()
+//! # 	}
+//! # }
+//! # fn main() {
+//! # }
+//! ```
+//!
+//! Note there's a lot of traits that are required for Elasticsearch types.
+//! This [may change](https://github.com/KodrAus/elasticsearch-rs/issues/75) in the future,
+//! but if the bounds are an issue, you may have to just create an Elasticsearch mappable type as a DTO
+//! (this is probably a good idea anyway).
+//!
 //! # Links
 //! - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/guide/current/mapping.html)
 //! - [Github](https://github.com/KodrAus/elasticsearch-rs)
