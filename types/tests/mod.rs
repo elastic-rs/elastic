@@ -495,25 +495,15 @@ pub mod object_fixtures {
 		}
 	}
 
-	#[derive(Default, Clone, Serialize, Deserialize)]
+	#[derive(Default, Clone, Serialize, Deserialize, ElasticType)]
 	pub struct MyOtherType {
 		pub my_date: ElasticDate,
+		#[serde(rename="my_renamed_type")]
 		pub my_type: MyType,
 		pub my_num: i32,
 		pub my_strings: Vec<String>,
 		pub my_dates: Vec<ElasticDate>
 	}
-
-	#[derive(Default, Clone)]
-	struct MyOtherTypeMapping;
-	impl ElasticObjectMapping for MyOtherTypeMapping { }
-	impl_object_mapping!(MyOtherType, MyOtherTypeMapping, "my_other_type", inner2, [
-		{ "my_date", my_date },
-		{ "my_renamed_type", my_type },
-		{ "my_num", my_num },
-		{ "my_strings", my_strings },
-		{ "my_dates", my_dates }
-	]);
 }
 
 pub mod object;

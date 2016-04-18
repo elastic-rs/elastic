@@ -14,9 +14,6 @@ Self: ElasticTypeMapping<()> + Default + Clone + serde::Serialize {
 	type Visitor: ElasticObjectTypeVisitor<'a, T>;
 	#[doc(hidden)]
 	type PropertiesVisitor: ElasticObjectTypeVisitor<'a, T>;
-
-	/// The name of the user-defined type used in Elasticsearch.
-	fn name() -> &'static str;
 }
 
 /// Represents the properties object that encapsulates type mappings.

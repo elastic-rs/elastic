@@ -79,7 +79,7 @@ pub fn expand_derive_type_mapping(cx: &mut ExtCtxt, span: Span, meta_item: &Meta
 	}
 
 	let field_visitor = build_field_visitor(cx, item, push);
-	impl_field_mapping(cx, &field_mapping, &field_visitor, push);
+	impl_field_mapping(cx, span, &es_ty, &field_mapping, &field_visitor, push);
 
 	let object_visitor = build_object_visitor(cx, span, item, &fields, push);
 
@@ -108,14 +108,23 @@ fn build_field_mapping(cx: &mut ExtCtxt, item: &ast::Item, push: &mut FnMut(Anno
 
 	push(Annotatable::Item(
 		quote_item!(cx,
+			#[derive(Default, Clone)]
 			pub struct $name;
+		).unwrap()
+	));
+
+	push(Annotatable::Item(
+		quote_item!(cx,
+			impl ::elastic_types::object::ElasticObjectMapping for $name { }
 		).unwrap()
 	));
 
 	name
 }
 
-fn impl_field_mapping(cx: &mut ExtCtxt, mapping: &Ident, field_visitor: &Ident, push: &mut FnMut(Annotatable)) {
+fn impl_field_mapping(cx: &mut ExtCtxt, span: Span, es_ty: &Ident, mapping: &Ident, field_visitor: &Ident, push: &mut FnMut(Annotatable)) {
+	let lit = cx.expr_str(span, es_ty.name.as_str());
+
 	push(Annotatable::Item(
 		quote_item!(cx,
 			impl ::elastic_types::mapping::ElasticTypeMapping<()> for $mapping {
@@ -123,6 +132,10 @@ fn impl_field_mapping(cx: &mut ExtCtxt, mapping: &Ident, field_visitor: &Ident, 
 
 				fn data_type() -> &'static str {
 					<Self as ElasticObjectMapping>::data_type()
+				}
+
+				fn name() -> &'static str {
+					$lit
 				}
 			}
 		).unwrap()
@@ -138,6 +151,63 @@ fn impl_field_mapping_ser(cx: &mut ExtCtxt, mapping: &Ident, visitor: &Ident, pu
 				fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
 				where S: ::serde::Serializer {
 					serializer.serialize_struct("", $visitor)
+				}
+			}
+		).unwrap()
+	));
+}
+
+//Build a type mapping and return the name
+fn build_type_mapping(cx: &mut ExtCtxt, item: &ast::Item, push: &mut FnMut(Annotatable)) -> Ident {
+	let name = token::str_to_ident(&format!("{}TypeMapping", item.ident));
+
+	push(Annotatable::Item(
+		quote_item!(cx,
+			#[derive(Default, Clone)]
+			pub struct $name<'a> {
+				phantom: ::std::marker::PhantomData<&'a ()>
+			}
+		).unwrap()
+	));
+
+	name
+}
+
+fn impl_type_mapping(cx: &mut ExtCtxt, span: Span, es_ty: &Ident, item: &ast::Item, mapping: &Ident, type_visitor: &Ident, object_visitor: &Ident, field_visitor: &Ident, push: &mut FnMut(Annotatable)) {
+	let ty = item.ident;
+	let lit = cx.expr_str(span, es_ty.name.as_str());
+
+	push(Annotatable::Item(
+		quote_item!(cx,
+			impl <'a> ::elastic_types::object::ElasticUserTypeMapping<'a, $ty> for $mapping<'a> {
+				type Visitor = $type_visitor<'a>;
+				type PropertiesVisitor = $object_visitor<'a>;
+			}
+		).unwrap()
+	));
+
+	push(Annotatable::Item(
+		quote_item!(cx,
+			impl <'a> ::elastic_types::mapping::ElasticTypeMapping<()> for $mapping<'a> {
+				type Visitor = $field_visitor;
+
+				fn name() -> &'static str {
+					$lit
+				}
+			}
+		).unwrap()
+	));
+
+	impl_type_mapping_ser(cx, mapping, field_visitor, push);
+}
+
+fn impl_type_mapping_ser(cx: &mut ExtCtxt, mapping: &Ident, visitor: &Ident, push: &mut FnMut(Annotatable)) {
+	push(Annotatable::Item(
+		quote_item!(cx,
+			impl <'a> ::serde::Serialize for $mapping<'a> {
+				fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+				where S: ::serde::Serializer {
+					serializer.serialize_struct(Self::name(), $visitor::default())
 				}
 			}
 		).unwrap()
@@ -287,63 +357,6 @@ fn impl_type_visitor_ser(cx: &mut ExtCtxt, item: &ast::Item, mapping: &Ident, vi
 					try!(serializer.serialize_struct_elt("properties", ::elastic_types::object::ElasticTypeProperties::<'a, $ty, $mapping<'a>>::new(&self.data)));
 
 					Ok(None)
-				}
-			}
-		).unwrap()
-	));
-}
-
-//Build a type mapping and return the name
-fn build_type_mapping(cx: &mut ExtCtxt, item: &ast::Item, push: &mut FnMut(Annotatable)) -> Ident {
-	let name = token::str_to_ident(&format!("{}TypeMapping", item.ident));
-
-	push(Annotatable::Item(
-		quote_item!(cx,
-			#[derive(Default, Clone)]
-			pub struct $name<'a> {
-				phantom: ::std::marker::PhantomData<&'a ()>
-			}
-		).unwrap()
-	));
-
-	name
-}
-
-fn impl_type_mapping(cx: &mut ExtCtxt, span: Span, es_ty: &Ident, item: &ast::Item, mapping: &Ident, type_visitor: &Ident, object_visitor: &Ident, field_visitor: &Ident, push: &mut FnMut(Annotatable)) {
-	let ty = item.ident;
-	let lit = cx.expr_str(span, es_ty.name.as_str());
-
-	push(Annotatable::Item(
-		quote_item!(cx,
-			impl <'a> ::elastic_types::object::ElasticUserTypeMapping<'a, $ty> for $mapping<'a> {
-				type Visitor = $type_visitor<'a>;
-				type PropertiesVisitor = $object_visitor<'a>;
-
-				fn name() -> &'static str {
-					$lit
-				}
-			}
-		).unwrap()
-	));
-
-	push(Annotatable::Item(
-		quote_item!(cx,
-			impl <'a> ::elastic_types::mapping::ElasticTypeMapping<()> for $mapping<'a> {
-				type Visitor = $field_visitor;
-			}
-		).unwrap()
-	));
-
-	impl_type_mapping_ser(cx, mapping, field_visitor, push);
-}
-
-fn impl_type_mapping_ser(cx: &mut ExtCtxt, mapping: &Ident, visitor: &Ident, push: &mut FnMut(Annotatable)) {
-	push(Annotatable::Item(
-		quote_item!(cx,
-			impl <'a> ::serde::Serialize for $mapping<'a> {
-				fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
-				where S: ::serde::Serializer {
-					serializer.serialize_struct(Self::name(), $visitor::default())
 				}
 			}
 		).unwrap()

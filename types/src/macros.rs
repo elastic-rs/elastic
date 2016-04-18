@@ -323,14 +323,14 @@ macro_rules! impl_object_mapping {
 			impl <'a> ElasticUserTypeMapping<'a, $t> for TypeMapping<'a> {
 				type Visitor = TypeMappingVisitor<'a>;
 				type PropertiesVisitor = ObjectPropertiesVisitor<'a>;
-
-				fn name() -> &'static str {
-					$es_ty
-				}
 			}
 
 			impl <'a> ElasticTypeMapping<()> for TypeMapping<'a> {
 				type Visitor = FieldMappingVisitor;
+
+				fn name() -> &'static str {
+					$es_ty
+				}
 			}
 
 			impl <'a> serde::Serialize for TypeMapping<'a> {

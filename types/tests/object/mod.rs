@@ -206,3 +206,13 @@ fn serialise_mapping_dynamic() {
 
 	assert!(success);
 }
+
+#[test]
+fn get_type_name_default() {
+	assert_eq!("myothertype", MyOtherType::name());
+}
+
+#[test]
+fn get_type_name_custom() {
+	assert_eq!("my_type", MyType::name());
+}

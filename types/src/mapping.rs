@@ -55,7 +55,12 @@ use serde;
 /// - [Elasticsearch docs](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-types.html)
 pub trait ElasticType<T, F> where
 T: ElasticTypeMapping<F>,
-Self : serde::Serialize + serde::Deserialize { }
+Self : serde::Serialize + serde::Deserialize {
+	/// Get the type name for the given mapping.
+	fn name() -> &'static str {
+		T::name()
+	}
+}
 
 /// The base requirements for mapping an Elasticsearch data type.
 ///
@@ -79,7 +84,12 @@ where Self: Default + Clone + serde::Serialize {
 
 	/// Get the type name for this mapping, like `date` or `string`.
 	fn data_type() -> &'static str {
-		""
+		"object"
+	}
+
+	#[doc(hidden)]
+	fn name() -> &'static str {
+		Self::data_type()
 	}
 }
 
