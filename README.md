@@ -174,8 +174,6 @@ impl ElasticObjectMapping for MyTypeMapping {
 }
 ```
 
-Compiler-plugins to [automatically derive mapping](https://github.com/KodrAus/elasticsearch-rs/issues/83) will be added in the future.
-
 Get the mapping for your type:
 
 ```rust
