@@ -4,23 +4,15 @@ rust:
 os:
   - linux
   - osx
+env:
+  - CRATE="codegen"
+  - CRATE="hyper"
+  - CRATE="hyper/codegen"
+  - CRATE="hyper/samples"
+  - CRATE="macros"
+  - CRATE="types"
 script:
-  - cd macros
+  - cd $CRATE
   - cargo test -v
   - cargo bench -v
   - cargo doc
-  - cd ../types
-  - cargo test -v
-  - cargo bench -v
-  - cargo doc
-  - cd ../codegen
-  - cargo test -v
-  - cargo bench -v
-  - cargo doc
-  - cd ../hyper
-  - cargo test -v
-  - cargo doc
-  - cd codegen
-  - cargo build -v
-  - cd ../samples
-  - cargo build -v
