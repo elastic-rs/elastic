@@ -11,14 +11,17 @@ extern crate chrono;
 extern crate elastic_types;
 
 pub mod date_fixtures {
+	use std::marker::PhantomData;
 	use serde;
 	use elastic_types::mapping::prelude::*;
 	use elastic_types::date::prelude::*;
 
 	//A custom date mapping
-	#[derive(Default, Clone, Copy)]
-	pub struct MyDateMapping;
-	impl ElasticDateMapping<EpochMillis> for MyDateMapping {
+	#[derive(Default, Clone, Copy, ElasticDateMapping)]
+	pub struct MyDateMapping<T: DateFormat = EpochMillis> {
+		phantom: PhantomData<T>
+	}
+	impl <T: DateFormat> ElasticDateMapping<T> for MyDateMapping<T> {
 		fn boost() -> Option<f32> {
 			Some(1.01)
 		}
@@ -51,15 +54,13 @@ pub mod date_fixtures {
 			Some(6)
 		}
 	}
-	impl_date_mapping!(MyDateMapping, EpochMillis);
 }
 
 pub mod string_fixtures {
-	use serde;
 	use std::collections::BTreeMap;
 	use elastic_types::mapping::prelude::*;
 
-	#[derive(Default, Clone)]
+	#[derive(Default, Clone, ElasticStringMapping)]
 	pub struct MyStringMapping;
 	impl ElasticStringMapping for MyStringMapping {
 		fn boost() -> Option<f32> {
@@ -149,14 +150,12 @@ pub mod string_fixtures {
 			Some(TermVector::No)
 		}
 	}
-	impl_string_mapping!(MyStringMapping);
 }
 
 pub mod boolean_fixtures {
-	use serde;
 	use elastic_types::mapping::prelude::*;
 
-	#[derive(Default, Clone)]
+	#[derive(Default, Clone, ElasticBooleanMapping)]
 	pub struct MyBooleanMapping;
 	impl ElasticBooleanMapping for MyBooleanMapping {
 		fn boost() -> Option<f32> {
@@ -179,14 +178,12 @@ pub mod boolean_fixtures {
 			Some(false)
 		}
 	}
-	impl_boolean_mapping!(MyBooleanMapping);
 }
 
 pub mod number_fixtures {
-	use serde;
 	use elastic_types::mapping::prelude::*;
 
-	#[derive(Debug, Clone, Default)]
+	#[derive(Debug, Clone, Default, ElasticIntegerMapping)]
 	pub struct MyIntegerMapping;
 	impl ElasticIntegerMapping for MyIntegerMapping {
 		fn coerce() -> Option<bool> {
@@ -225,9 +222,8 @@ pub mod number_fixtures {
 			Some(42)
 		}
 	}
-	impl_integer_mapping!(MyIntegerMapping);
 
-	#[derive(Debug, Clone, Default)]
+	#[derive(Debug, Clone, Default, ElasticLongMapping)]
 	pub struct MyLongMapping;
 	impl ElasticLongMapping for MyLongMapping {
 		fn coerce() -> Option<bool> {
@@ -266,9 +262,8 @@ pub mod number_fixtures {
 			Some(42)
 		}
 	}
-	impl_long_mapping!(MyLongMapping);
 
-	#[derive(Debug, Clone, Default)]
+	#[derive(Debug, Clone, Default, ElasticShortMapping)]
 	pub struct MyShortMapping;
 	impl ElasticShortMapping for MyShortMapping {
 		fn coerce() -> Option<bool> {
@@ -307,9 +302,8 @@ pub mod number_fixtures {
 			Some(-42)
 		}
 	}
-	impl_short_mapping!(MyShortMapping);
 
-	#[derive(Debug, Clone, Default)]
+	#[derive(Debug, Clone, Default, ElasticByteMapping)]
 	pub struct MyByteMapping;
 	impl ElasticByteMapping for MyByteMapping {
 		fn coerce() -> Option<bool> {
@@ -348,9 +342,8 @@ pub mod number_fixtures {
 			Some(1)
 		}
 	}
-	impl_byte_mapping!(MyByteMapping);
 
-	#[derive(Debug, Clone, Default)]
+	#[derive(Debug, Clone, Default, ElasticFloatMapping)]
 	pub struct MyFloatMapping;
 	impl ElasticFloatMapping for MyFloatMapping {
 		fn coerce() -> Option<bool> {
@@ -389,9 +382,8 @@ pub mod number_fixtures {
 			Some(1.04)
 		}
 	}
-	impl_float_mapping!(MyFloatMapping);
 
-	#[derive(Debug, Clone, Default)]
+	#[derive(Debug, Clone, Default, ElasticDoubleMapping)]
 	pub struct MyDoubleMapping;
 	impl ElasticDoubleMapping for MyDoubleMapping {
 		fn coerce() -> Option<bool> {
@@ -430,7 +422,6 @@ pub mod number_fixtures {
 			Some(-0.00002)
 		}
 	}
-	impl_double_mapping!(MyDoubleMapping);
 }
 
 pub mod object_fixtures {

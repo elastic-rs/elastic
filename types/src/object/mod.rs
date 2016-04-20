@@ -113,7 +113,6 @@
 //! # use serde::{ Serialize, Deserialize };
 //! # use elastic_types::mapping::prelude::*;
 //! # use elastic_types::date::ElasticDate;
-//!
 //! #[derive(Default, Clone, Serialize, Deserialize, ElasticType)]
 //! #[elastic(ty="my_type")]
 //! pub struct MyType {
@@ -149,7 +148,6 @@
 //! # use serde::{ Serialize, Deserialize };
 //! # use elastic_types::mapping::prelude::*;
 //! # use elastic_types::date::ElasticDate;
-//!
 //! #[derive(Default, Clone, Serialize, Deserialize, ElasticType)]
 //! pub struct MyType {
 //! 	#[serde(rename="my_renamed_date")]

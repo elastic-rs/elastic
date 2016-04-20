@@ -19,13 +19,13 @@ fn serialise_mapping_default() {
 		"type": "date",
 		"format": "basic_date_time"
 	});
-	
+
 	assert_eq!(expected, ser);
 }
 
 #[test]
 fn serialise_mapping_custom() {
-	let mapping = MyDateMapping;
+	let mapping: MyDateMapping = MyDateMapping::default();
 	let ser = serde_json::to_string(&mapping).unwrap();
 
 	let expected = json_str!({

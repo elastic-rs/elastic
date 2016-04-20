@@ -13,6 +13,28 @@ use ::mapping::{ ElasticTypeMapping, IndexAnalysis };
 ///
 /// Define a custom `ElasticBooleanMapping`:
 ///
+/// ## Derive Mapping
+///
+/// ```
+/// # #![feature(plugin, custom_derive, custom_attribute)]
+/// # #![plugin(elastic_macros)]
+/// # #[macro_use]
+/// # extern crate elastic_types;
+/// # extern crate serde;
+/// use elastic_types::mapping::prelude::*;
+/// use elastic_types::boolean::prelude::*;
+///
+/// #[derive(Debug, Clone, Default, ElasticBooleanMapping)]
+/// pub struct MyBooleanMapping;
+/// impl ElasticBooleanMapping for MyBooleanMapping {
+/// 	//Overload the mapping functions here
+/// 	fn boost() -> Option<f32> {
+///			Some(1.5)
+///		}
+/// }
+/// # fn main() {}
+/// ```
+///
 /// ## With Macros
 ///
 /// ```

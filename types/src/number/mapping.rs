@@ -7,6 +7,28 @@
 //!
 //! Define a custom `ElasticIntegerMapping`:
 //!
+//! ## Derive Mapping
+//!
+//! ```
+//! # #![feature(plugin, custom_derive, custom_attribute)]
+//! # #![plugin(elastic_macros)]
+//! # #[macro_use]
+//! # extern crate elastic_types;
+//! # extern crate serde;
+//! use elastic_types::mapping::prelude::*;
+//! use elastic_types::number::prelude::*;
+//!
+//! #[derive(Debug, Clone, Default, ElasticIntegerMapping)]
+//! pub struct MyIntegerMapping;
+//! impl ElasticIntegerMapping for MyIntegerMapping {
+//! 	//Overload the mapping functions here
+//! 	fn null_value() -> Option<i32> {
+//! 		Some(42)
+//! 	}
+//! }
+//! # fn main() {}
+//! ```
+//!
 //! ## With Macros
 //!
 //! ```

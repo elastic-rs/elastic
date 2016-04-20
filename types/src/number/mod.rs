@@ -16,6 +16,8 @@
 //!
 //! # Examples
 //!
+//! For defining your own number mapping, see [mapping details](mapping/index.html#derive-mapping).
+//!
 //! Map with a default `number` (`i32` in this case):
 //!
 //! ```

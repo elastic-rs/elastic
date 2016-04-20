@@ -10,11 +10,39 @@ use ::mapping::{ ElasticTypeMapping, IndexAnalysis };
 ///
 /// # Examples
 ///
-/// Custom mappings can be defined by implementing `ElasticDateMapping`:
+/// Define a custom `ElasticDateMapping`:
+///
+/// ## Derive Mapping
+///
+/// Currently, deriving mapping only works for structs that take a generic `DateFormat` parameter.
+///
+/// ```
+/// # #![feature(plugin, custom_derive, custom_attribute)]
+/// # #![plugin(elastic_macros)]
+/// # #[macro_use]
+/// # extern crate elastic_types;
+/// # extern crate serde;
+/// use std::marker::PhantomData;
+/// use elastic_types::mapping::prelude::*;
+/// use elastic_types::date::prelude::*;
+///
+/// #[derive(Default, Clone, Copy, ElasticDateMapping)]
+/// pub struct MyDateMapping<T: DateFormat = EpochMillis> {
+/// 	phantom: PhantomData<T>
+/// }
+/// impl <T: DateFormat> ElasticDateMapping<T> for MyDateMapping<T> {
+/// 	//Overload the mapping functions here
+/// 	fn boost() -> Option<f32> {
+///			Some(1.5)
+///		}
+/// }
+/// # fn main() {}
+/// ```
 ///
 /// ## With Macros
 ///
-/// Create a mapping that's valid for a single date format (`EpochMillis` in this case):
+/// With macros, it's possible to create a mapping that's valid for a single date format
+/// (`EpochMillis` in this case):
 ///
 /// ```
 /// # extern crate serde;
@@ -38,7 +66,7 @@ use ::mapping::{ ElasticTypeMapping, IndexAnalysis };
 /// # }
 /// ```
 ///
-/// Create a mapping that's valid for any date format:
+/// You can also create a mapping that's valid for any date format:
 ///
 /// ```
 /// # extern crate serde;

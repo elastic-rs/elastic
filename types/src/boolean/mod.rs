@@ -2,6 +2,8 @@
 //!
 //! # Examples
 //!
+//! For defining your own boolean mapping, see [mapping details](mapping/trait.ElasticBooleanMapping.html#derive-mapping).
+//!
 //! Map with a default `boolean`:
 //!
 //! ```

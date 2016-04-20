@@ -72,7 +72,6 @@
 //! # use serde::{ Serialize, Deserialize };
 //! # use elastic_types::mapping::prelude::*;
 //! # use elastic_types::date::ElasticDate;
-//!
 //! #[derive(Default, Clone, Serialize, Deserialize, ElasticType)]
 //! pub struct MyType {
 //! 	pub my_date: ElasticDate,

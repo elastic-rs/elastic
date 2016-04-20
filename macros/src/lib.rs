@@ -134,11 +134,67 @@ pub fn plugin_registrar(reg: &mut Registry) {
 	reg.register_macro("json_str", json::expand_json);
 
 	#[cfg(feature = "types")]
-	reg.register_macro("date_fmt", types::expand_date_fmt);
+	{
+		reg.register_macro("date_fmt", types::expand_date_fmt);
 
-	#[cfg(feature = "types")]
-	reg.register_syntax_extension(
-        syntax::parse::token::intern("derive_ElasticType"),
-        syntax::ext::base::MultiDecorator(
-            Box::new(types::expand_derive_type_mapping)));
+		reg.register_syntax_extension(
+	        syntax::parse::token::intern("derive_ElasticType"),
+	        syntax::ext::base::MultiDecorator(
+	            Box::new(types::expand_derive_type_mapping))
+		);
+
+		reg.register_syntax_extension(
+	        syntax::parse::token::intern("derive_ElasticStringMapping"),
+	        syntax::ext::base::MultiDecorator(
+	            Box::new(types::expand_derive_string_mapping))
+		);
+
+		reg.register_syntax_extension(
+	        syntax::parse::token::intern("derive_ElasticBooleanMapping"),
+	        syntax::ext::base::MultiDecorator(
+	            Box::new(types::expand_derive_boolean_mapping))
+		);
+
+		reg.register_syntax_extension(
+	        syntax::parse::token::intern("derive_ElasticIntegerMapping"),
+	        syntax::ext::base::MultiDecorator(
+	            Box::new(types::expand_derive_integer_mapping))
+		);
+
+		reg.register_syntax_extension(
+	        syntax::parse::token::intern("derive_ElasticLongMapping"),
+	        syntax::ext::base::MultiDecorator(
+	            Box::new(types::expand_derive_long_mapping))
+		);
+
+		reg.register_syntax_extension(
+	        syntax::parse::token::intern("derive_ElasticShortMapping"),
+	        syntax::ext::base::MultiDecorator(
+	            Box::new(types::expand_derive_short_mapping))
+		);
+
+		reg.register_syntax_extension(
+	        syntax::parse::token::intern("derive_ElasticByteMapping"),
+	        syntax::ext::base::MultiDecorator(
+	            Box::new(types::expand_derive_byte_mapping))
+		);
+
+		reg.register_syntax_extension(
+	        syntax::parse::token::intern("derive_ElasticDoubleMapping"),
+	        syntax::ext::base::MultiDecorator(
+	            Box::new(types::expand_derive_double_mapping))
+		);
+
+		reg.register_syntax_extension(
+	        syntax::parse::token::intern("derive_ElasticFloatMapping"),
+	        syntax::ext::base::MultiDecorator(
+	            Box::new(types::expand_derive_float_mapping))
+		);
+
+		reg.register_syntax_extension(
+	        syntax::parse::token::intern("derive_ElasticDateMapping"),
+	        syntax::ext::base::MultiDecorator(
+	            Box::new(types::expand_derive_date_mapping))
+		);
+	}
 }
