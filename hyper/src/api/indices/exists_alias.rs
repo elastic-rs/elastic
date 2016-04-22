@@ -10,35 +10,7 @@ use hyper::error::Result;
 
 use ::RequestParams;
 
-pub fn head_index<'a>(client: &'a mut Client, req: RequestParams, index: &'a str)
- -> Result<Response>{
-    let url_qry = &req.get_url_qry();
-    let base = &req.base_url;
-    let mut url_fmtd =
-        String::with_capacity(base.len() + 1 + 7 + index.len() +
-                                  url_qry.len());
-    url_fmtd.push_str(base);
-    url_fmtd.push_str("/");
-    url_fmtd.push_str(index);
-    url_fmtd.push_str("/_alias");
-    url_fmtd.push_str(url_qry);
-    let res = client.head(&url_fmtd).headers(req.headers);
-    res.send()
-}
-pub fn head_name<'a>(client: &'a mut Client, req: RequestParams, name: &'a str)
- -> Result<Response>{
-    let url_qry = &req.get_url_qry();
-    let base = &req.base_url;
-    let mut url_fmtd =
-        String::with_capacity(base.len() + 8 + name.len() + url_qry.len());
-    url_fmtd.push_str(base);
-    url_fmtd.push_str("/_alias/");
-    url_fmtd.push_str(name);
-    url_fmtd.push_str(url_qry);
-    let res = client.head(&url_fmtd).headers(req.headers);
-    res.send()
-}
-pub fn head_index_name<'a>(client: &'a mut Client, req: RequestParams,
+pub fn head_index_name<'a>(client: &'a mut Client, req: &'a RequestParams,
                        index: &'a str, name: &'a str) -> Result<Response>{
     let url_qry = &req.get_url_qry();
     let base = &req.base_url;
@@ -51,6 +23,34 @@ pub fn head_index_name<'a>(client: &'a mut Client, req: RequestParams,
     url_fmtd.push_str("/_alias/");
     url_fmtd.push_str(name);
     url_fmtd.push_str(url_qry);
-    let res = client.head(&url_fmtd).headers(req.headers);
+    let res = client.head(&url_fmtd).headers(req.headers.to_owned());
+    res.send()
+}
+pub fn head_index<'a>(client: &'a mut Client, req: &'a RequestParams,
+                  index: &'a str) -> Result<Response>{
+    let url_qry = &req.get_url_qry();
+    let base = &req.base_url;
+    let mut url_fmtd =
+        String::with_capacity(base.len() + 1 + 7 + index.len() +
+                                  url_qry.len());
+    url_fmtd.push_str(base);
+    url_fmtd.push_str("/");
+    url_fmtd.push_str(index);
+    url_fmtd.push_str("/_alias");
+    url_fmtd.push_str(url_qry);
+    let res = client.head(&url_fmtd).headers(req.headers.to_owned());
+    res.send()
+}
+pub fn head_name<'a>(client: &'a mut Client, req: &'a RequestParams,
+                 name: &'a str) -> Result<Response>{
+    let url_qry = &req.get_url_qry();
+    let base = &req.base_url;
+    let mut url_fmtd =
+        String::with_capacity(base.len() + 8 + name.len() + url_qry.len());
+    url_fmtd.push_str(base);
+    url_fmtd.push_str("/_alias/");
+    url_fmtd.push_str(name);
+    url_fmtd.push_str(url_qry);
+    let res = client.head(&url_fmtd).headers(req.headers.to_owned());
     res.send()
 }

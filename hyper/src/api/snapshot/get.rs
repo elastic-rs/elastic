@@ -10,7 +10,7 @@ use hyper::error::Result;
 
 use ::RequestParams;
 
-pub fn get_repository_snapshot<'a>(client: &'a mut Client, req: RequestParams,
+pub fn get_repository_snapshot<'a>(client: &'a mut Client, req: &'a RequestParams,
                                repository: &'a str, snapshot: &'a str)
  -> Result<Response>{
     let url_qry = &req.get_url_qry();
@@ -24,6 +24,6 @@ pub fn get_repository_snapshot<'a>(client: &'a mut Client, req: RequestParams,
     url_fmtd.push_str("/");
     url_fmtd.push_str(snapshot);
     url_fmtd.push_str(url_qry);
-    let res = client.get(&url_fmtd).headers(req.headers);
+    let res = client.get(&url_fmtd).headers(req.headers.to_owned());
     res.send()
 }

@@ -10,8 +10,8 @@ use hyper::error::Result;
 
 use ::RequestParams;
 
-pub fn head_index<'a>(client: &'a mut Client, req: RequestParams, index: &'a str)
- -> Result<Response>{
+pub fn head_index<'a>(client: &'a mut Client, req: &'a RequestParams,
+                  index: &'a str) -> Result<Response>{
     let url_qry = &req.get_url_qry();
     let base = &req.base_url;
     let mut url_fmtd =
@@ -20,6 +20,6 @@ pub fn head_index<'a>(client: &'a mut Client, req: RequestParams, index: &'a str
     url_fmtd.push_str("/");
     url_fmtd.push_str(index);
     url_fmtd.push_str(url_qry);
-    let res = client.head(&url_fmtd).headers(req.headers);
+    let res = client.head(&url_fmtd).headers(req.headers.to_owned());
     res.send()
 }

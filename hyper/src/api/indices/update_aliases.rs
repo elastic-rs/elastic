@@ -11,7 +11,7 @@ use hyper::error::Result;
 use ::RequestParams;
 
 pub fn post<'a,
-        I: Into<Body<'a>>>(client: &'a mut Client, req: RequestParams,
+        I: Into<Body<'a>>>(client: &'a mut Client, req: &'a RequestParams,
                            body: I) -> Result<Response>{
     let url_qry = &req.get_url_qry();
     let base = &req.base_url;
@@ -19,6 +19,7 @@ pub fn post<'a,
     url_fmtd.push_str(base);
     url_fmtd.push_str("/_aliases");
     url_fmtd.push_str(url_qry);
-    let res = client.post(&url_fmtd).headers(req.headers).body(body.into());
+    let res =
+        client.post(&url_fmtd).headers(req.headers.to_owned()).body(body.into());
     res.send()
 }

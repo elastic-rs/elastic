@@ -10,7 +10,7 @@ use hyper::error::Result;
 
 use ::RequestParams;
 
-pub fn get_id<'a>(client: &'a mut Client, req: RequestParams, id: &'a str)
+pub fn get_id<'a>(client: &'a mut Client, req: &'a RequestParams, id: &'a str)
  -> Result<Response>{
     let url_qry = &req.get_url_qry();
     let base = &req.base_url;
@@ -20,6 +20,6 @@ pub fn get_id<'a>(client: &'a mut Client, req: RequestParams, id: &'a str)
     url_fmtd.push_str("/_search/template/");
     url_fmtd.push_str(id);
     url_fmtd.push_str(url_qry);
-    let res = client.get(&url_fmtd).headers(req.headers);
+    let res = client.get(&url_fmtd).headers(req.headers.to_owned());
     res.send()
 }

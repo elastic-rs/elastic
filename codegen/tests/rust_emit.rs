@@ -30,7 +30,7 @@ fn get_file(path: &str) -> File {
 
 macro_rules! get_ctxt {
 	($cx:ident, $ps:ident, $fgc:ident) => {
-		
+
 		$cx = ExtCtxt::new(
 			&$ps, vec![],
 			syntax::ext::expand::ExpansionConfig::default("qquote".to_string()),
@@ -67,14 +67,22 @@ fn can_emit_rs_fn_to_file() {
 	let mut fgc = vec![];
 	let mut cx;
 	get_ctxt!(cx, ps, fgc);
-	
+
 	//Function lifetime
 	let lifetime = lifetime("'a");
+
+	let generic = "I";
 
 	//Function signature
 	let fun = build_fn("my_fun", vec![
 		arg_ptr::<i32>("arg1", Mutability::Mutable, Some(lifetime)),
-		build_arg("arg2", build_ty_ptr("str", Mutability::Immutable, Some(lifetime)))
+		build_arg("arg2", build_ty_ptr("str", Mutability::Immutable, Some(lifetime))),
+		build_arg("arg3", build_ty(generic))
+	])
+	.set_generic_params(vec![
+		build_ty_param(generic, vec![
+			"Into<Body<'a>>"
+		])
 	])
 	.set_return::<i32>()
 	.set_body(quote_block!(&mut cx, {
@@ -102,20 +110,20 @@ fn can_emit_rs_fn_with_fmt_body_to_file() {
 	let mut fgc = vec![];
 	let mut cx;
 	get_ctxt!(cx, ps, fgc);
-	
+
 	//Get the params of a url as Idents
 	let base = token::str_to_ident("base");
 	let url = "/{index}/_alias/{name}";
-	
+
 	let params: Vec<Ident> = parse_path_params(url)
 		.unwrap().iter()
 		.map(|p| token::str_to_ident(&p))
 		.collect();
 	let fmt = parse_fmt(&url).unwrap();
-	
+
 	//Get the format statement
 	let (url_ident, url_stmt) = url_fmt_decl(&fmt, base, params.to_vec());
-	
+
 	//Function signature from params
 	let fun = build_fn("my_fun", vec![arg_ident::<String>(base)])
 	.add_args(params
@@ -148,7 +156,7 @@ fn can_emit_rs_fn_with_push_body_to_file() {
 	let mut fgc = vec![];
 	let mut cx;
 	get_ctxt!(cx, ps, fgc);
-	
+
 	//Get the params of the url format as Idents
 	let base = token::str_to_ident("base");
 	let url = "/{index}/_alias/{name}";
@@ -158,7 +166,7 @@ fn can_emit_rs_fn_with_push_body_to_file() {
 		.map(|p| token::str_to_ident(&p))
 		.collect();
 	let parts = parse_path_parts(url).unwrap();
-	
+
 	//Get the push statements
 	let (url_ident, url_stmts) = url_push_decl(base, parts.iter().map(|p| p.as_str()), params.to_vec());
 
@@ -192,19 +200,19 @@ fn can_emit_rs_fn_with_push_body_to_file() {
 #[test]
 fn can_emit_rs_use_stmts_to_file() {
     use elastic_codegen::emit::rust::*;
-    
+
     //Build an execution context
 	let ps = syntax::parse::ParseSess::new();
 	let mut fgc = vec![];
 	let mut cx;
 	get_ctxt!(cx, ps, fgc);
-    
+
     //Get a use statement
     let use_stmt = use_ident("std::collections", vec![
         token::str_to_ident("BTreeMap"),
         token::str_to_ident("String")
     ]);
-    
+
     let emitter = RustEmitter::new(cx);
 
 	//Get a file ref

@@ -178,7 +178,7 @@ fn gen_from_source(source_dir: &str, dest_dir: &str) -> Result<(), String> {
 			//Function signature from params
 			let mut rs_fun = build_fn(&fun.name, vec![
 				build_arg(_client, build_ty_ptr("Client", Mutability::Mutable, Some(lifetime))),
-				build_arg_ident(req, build_ty("RequestParams"))
+				build_arg_ident(req, build_ty_ptr("RequestParams", Mutability::Immutable, Some(lifetime)))
 			])
 			.add_args(params
 				.iter()
@@ -197,7 +197,7 @@ fn gen_from_source(source_dir: &str, dest_dir: &str) -> Result<(), String> {
 					rs_fun = rs_fun
 					.add_body_block(quote_block!(&mut cx, {
 						let res = $client.head(&$url_ident)
-							.headers($req.headers);
+							.headers($req.headers.to_owned());
 
 						res.send()
 					}));
@@ -206,7 +206,7 @@ fn gen_from_source(source_dir: &str, dest_dir: &str) -> Result<(), String> {
 					rs_fun = rs_fun
 					.add_body_block(quote_block!(&mut cx, {
 						let res = $client.get(&$url_ident)
-							.headers($req.headers);
+							.headers($req.headers.to_owned());
 
 						res.send()
 					}));
@@ -215,7 +215,7 @@ fn gen_from_source(source_dir: &str, dest_dir: &str) -> Result<(), String> {
 					rs_fun = rs_fun
 					.add_body_block(quote_block!(&mut cx, {
 						let res = $client.delete(&$url_ident)
-							.headers($req.headers);
+							.headers($req.headers.to_owned());
 
 						res.send()
 					}));
@@ -230,7 +230,7 @@ fn gen_from_source(source_dir: &str, dest_dir: &str) -> Result<(), String> {
 					.add_arg(build_arg_ident(body, build_ty("I")))
 					.add_body_block(quote_block!(&mut cx, {
 						let res = $client.post(&$url_ident)
-							.headers($req.headers)
+							.headers($req.headers.to_owned())
 							.body($body.into());
 
 						res.send()
@@ -246,7 +246,7 @@ fn gen_from_source(source_dir: &str, dest_dir: &str) -> Result<(), String> {
 					.add_arg(build_arg_ident(body, build_ty("I")))
 					.add_body_block(quote_block!(&mut cx, {
 						let res = $client.put(&$url_ident)
-							.headers($req.headers)
+							.headers($req.headers.to_owned())
 							.body($body.into());
 
 						res.send()
@@ -262,7 +262,7 @@ fn gen_from_source(source_dir: &str, dest_dir: &str) -> Result<(), String> {
 					.add_arg(build_arg_ident(body, build_ty("I")))
 					.add_body_block(quote_block!(&mut cx, {
 						let res = $client.patch(&$url_ident)
-							.headers($req.headers)
+							.headers($req.headers.to_owned())
 							.body($body.into());
 
 						res.send()

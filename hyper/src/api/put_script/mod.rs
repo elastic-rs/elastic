@@ -10,10 +10,10 @@ use hyper::error::Result;
 
 use ::RequestParams;
 
-pub fn put_lang_id<'a,
-               I: Into<Body<'a>>>(client: &'a mut Client, req: RequestParams,
-                                  lang: &'a str, id: &'a str, body: I)
- -> Result<Response>{
+pub fn post_lang_id<'a,
+                I: Into<Body<'a>>>(client: &'a mut Client,
+                                   req: &'a RequestParams, lang: &'a str,
+                                   id: &'a str, body: I) -> Result<Response>{
     let url_qry = &req.get_url_qry();
     let base = &req.base_url;
     let mut url_fmtd =
@@ -25,13 +25,14 @@ pub fn put_lang_id<'a,
     url_fmtd.push_str("/");
     url_fmtd.push_str(id);
     url_fmtd.push_str(url_qry);
-    let res = client.put(&url_fmtd).headers(req.headers).body(body.into());
+    let res =
+        client.post(&url_fmtd).headers(req.headers.to_owned()).body(body.into());
     res.send()
 }
-pub fn post_lang_id<'a,
-                I: Into<Body<'a>>>(client: &'a mut Client, req: RequestParams,
-                                   lang: &'a str, id: &'a str, body: I)
- -> Result<Response>{
+pub fn put_lang_id<'a,
+               I: Into<Body<'a>>>(client: &'a mut Client,
+                                  req: &'a RequestParams, lang: &'a str,
+                                  id: &'a str, body: I) -> Result<Response>{
     let url_qry = &req.get_url_qry();
     let base = &req.base_url;
     let mut url_fmtd =
@@ -43,6 +44,7 @@ pub fn post_lang_id<'a,
     url_fmtd.push_str("/");
     url_fmtd.push_str(id);
     url_fmtd.push_str(url_qry);
-    let res = client.post(&url_fmtd).headers(req.headers).body(body.into());
+    let res =
+        client.put(&url_fmtd).headers(req.headers.to_owned()).body(body.into());
     res.send()
 }

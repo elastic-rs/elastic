@@ -10,7 +10,7 @@ use hyper::error::Result;
 
 use ::RequestParams;
 
-pub fn delete_index_type_id<'a>(client: &'a mut Client, req: RequestParams,
+pub fn delete_index_type_id<'a>(client: &'a mut Client, req: &'a RequestParams,
                             index: &'a str, _type: &'a str, id: &'a str)
  -> Result<Response>{
     let url_qry = &req.get_url_qry();
@@ -26,6 +26,6 @@ pub fn delete_index_type_id<'a>(client: &'a mut Client, req: RequestParams,
     url_fmtd.push_str("/");
     url_fmtd.push_str(id);
     url_fmtd.push_str(url_qry);
-    let res = client.delete(&url_fmtd).headers(req.headers);
+    let res = client.delete(&url_fmtd).headers(req.headers.to_owned());
     res.send()
 }

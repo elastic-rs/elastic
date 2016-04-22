@@ -36,6 +36,13 @@ impl Fn {
 		self
 	}
 
+	/// Append a generic parameter to the function generics.
+	pub fn set_generic_params(mut self, params: Vec<TyParam>) -> Fn {
+		self.generics.ty_params = P::from_vec(params);
+
+		self
+	}
+
 	/// Add an argument to the function signature.
 	pub fn add_arg(mut self, arg: Arg) -> Fn {
 		self.decl.inputs.push(arg);

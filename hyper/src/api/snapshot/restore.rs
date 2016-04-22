@@ -12,7 +12,7 @@ use ::RequestParams;
 
 pub fn post_repository_snapshot<'a,
                             I: Into<Body<'a>>>(client: &'a mut Client,
-                                               req: RequestParams,
+                                               req: &'a RequestParams,
                                                repository: &'a str,
                                                snapshot: &'a str, body: I)
  -> Result<Response>{
@@ -28,6 +28,7 @@ pub fn post_repository_snapshot<'a,
     url_fmtd.push_str(snapshot);
     url_fmtd.push_str("/_restore");
     url_fmtd.push_str(url_qry);
-    let res = client.post(&url_fmtd).headers(req.headers).body(body.into());
+    let res =
+        client.post(&url_fmtd).headers(req.headers.to_owned()).body(body.into());
     res.send()
 }

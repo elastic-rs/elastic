@@ -18,7 +18,7 @@
 //! # fn main() {
 //! let mut client = hyper::Client::new();
 //!
-//! elastic::ping::head(&mut client, elastic::RequestParams::default()).unwrap();
+//! elastic::ping::head(&mut client, &elastic::RequestParams::default()).unwrap();
 //! # }
 //! ```
 //!
@@ -35,7 +35,7 @@
 //! 		("q", "'my string'".to_owned())
 //! 	]);
 //!
-//! elastic::search::get_index_type(&mut client, params, "myindex", "mytype").unwrap();
+//! elastic::search::get_index_type(&mut client, &params, "myindex", "mytype").unwrap();
 //! # }
 //! ```
 //!

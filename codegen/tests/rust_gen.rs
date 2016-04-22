@@ -11,7 +11,7 @@ use elastic_codegen::gen::rust::parse::*;
 
 macro_rules! get_ctxt {
     ($cx:ident, $ps:ident, $fgc:ident) => {
-    	
+
 		$cx = syntax::ext::base::ExtCtxt::new(
 			&$ps, vec![],
 			syntax::ext::expand::ExpansionConfig::default("qquote".to_string()),
@@ -31,7 +31,7 @@ macro_rules! get_ctxt {
 struct MyStruct;
 
 #[test]
-fn can_add_lifetime_to_fn() {	 
+fn can_add_lifetime_to_fn() {
 	//Define a lifetime 'a
 	let lifetime = lifetime("'a");
 
@@ -43,6 +43,22 @@ fn can_add_lifetime_to_fn() {
     .add_lifetime(lifetime);
 
 	assert_eq!(1, fun.generics.lifetimes.len());
+}
+
+#[test]
+fn can_set_generics_of_fn() {
+    let generic = "I";
+
+    let fun = build_fn("my_fun", vec![
+		build_arg("arg", build_ty(generic))
+	])
+    .set_generic_params(vec![
+		build_ty_param(generic, vec![
+			"Into<Body<'a>>"
+		])
+	]);
+
+	assert_eq!(1, fun.generics.ty_params.len());
 }
 
 #[test]
@@ -66,7 +82,7 @@ fn can_add_arg_to_fn() {
 		arg::<MyStruct>("arg1")
 	])
     .add_arg(arg::<MyStruct>("arg2"));
-    
+
     assert_eq!(2, fun.decl.inputs.len());
 }
 
@@ -79,7 +95,7 @@ fn can_add_args_to_fn() {
 		arg::<MyStruct>("arg2"),
 		arg::<MyStruct>("arg3")
 	]);
-    
+
     assert_eq!(3, fun.decl.inputs.len());
 }
 
@@ -109,7 +125,7 @@ fn can_add_body_stmts_to_fn() {
 	let mut cx;
 	get_ctxt!(cx, ps, fgc);
     let cx = &mut cx;
-    
+
 	//Build a function
 	let fun = build_fn("my_fun", vec![
 		arg::<MyStruct>("arg1")

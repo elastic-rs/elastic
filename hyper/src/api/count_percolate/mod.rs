@@ -10,44 +10,7 @@ use hyper::error::Result;
 
 use ::RequestParams;
 
-pub fn get_index_type<'a>(client: &'a mut Client, req: RequestParams,
-                      index: &'a str, _type: &'a str) -> Result<Response>{
-    let url_qry = &req.get_url_qry();
-    let base = &req.base_url;
-    let mut url_fmtd =
-        String::with_capacity(base.len() + 1 + 1 + 17 + index.len() +
-                                  _type.len() + url_qry.len());
-    url_fmtd.push_str(base);
-    url_fmtd.push_str("/");
-    url_fmtd.push_str(index);
-    url_fmtd.push_str("/");
-    url_fmtd.push_str(_type);
-    url_fmtd.push_str("/_percolate/count");
-    url_fmtd.push_str(url_qry);
-    let res = client.get(&url_fmtd).headers(req.headers);
-    res.send()
-}
-pub fn post_index_type<'a,
-                   I: Into<Body<'a>>>(client: &'a mut Client,
-                                      req: RequestParams, index: &'a str,
-                                      _type: &'a str, body: I)
- -> Result<Response>{
-    let url_qry = &req.get_url_qry();
-    let base = &req.base_url;
-    let mut url_fmtd =
-        String::with_capacity(base.len() + 1 + 1 + 17 + index.len() +
-                                  _type.len() + url_qry.len());
-    url_fmtd.push_str(base);
-    url_fmtd.push_str("/");
-    url_fmtd.push_str(index);
-    url_fmtd.push_str("/");
-    url_fmtd.push_str(_type);
-    url_fmtd.push_str("/_percolate/count");
-    url_fmtd.push_str(url_qry);
-    let res = client.post(&url_fmtd).headers(req.headers).body(body.into());
-    res.send()
-}
-pub fn get_index_type_id<'a>(client: &'a mut Client, req: RequestParams,
+pub fn get_index_type_id<'a>(client: &'a mut Client, req: &'a RequestParams,
                          index: &'a str, _type: &'a str, id: &'a str)
  -> Result<Response>{
     let url_qry = &req.get_url_qry();
@@ -64,13 +27,52 @@ pub fn get_index_type_id<'a>(client: &'a mut Client, req: RequestParams,
     url_fmtd.push_str(id);
     url_fmtd.push_str("/_percolate/count");
     url_fmtd.push_str(url_qry);
-    let res = client.get(&url_fmtd).headers(req.headers);
+    let res = client.get(&url_fmtd).headers(req.headers.to_owned());
+    res.send()
+}
+pub fn get_index_type<'a>(client: &'a mut Client, req: &'a RequestParams,
+                      index: &'a str, _type: &'a str) -> Result<Response>{
+    let url_qry = &req.get_url_qry();
+    let base = &req.base_url;
+    let mut url_fmtd =
+        String::with_capacity(base.len() + 1 + 1 + 17 + index.len() +
+                                  _type.len() + url_qry.len());
+    url_fmtd.push_str(base);
+    url_fmtd.push_str("/");
+    url_fmtd.push_str(index);
+    url_fmtd.push_str("/");
+    url_fmtd.push_str(_type);
+    url_fmtd.push_str("/_percolate/count");
+    url_fmtd.push_str(url_qry);
+    let res = client.get(&url_fmtd).headers(req.headers.to_owned());
+    res.send()
+}
+pub fn post_index_type<'a,
+                   I: Into<Body<'a>>>(client: &'a mut Client,
+                                      req: &'a RequestParams, index: &'a str,
+                                      _type: &'a str, body: I)
+ -> Result<Response>{
+    let url_qry = &req.get_url_qry();
+    let base = &req.base_url;
+    let mut url_fmtd =
+        String::with_capacity(base.len() + 1 + 1 + 17 + index.len() +
+                                  _type.len() + url_qry.len());
+    url_fmtd.push_str(base);
+    url_fmtd.push_str("/");
+    url_fmtd.push_str(index);
+    url_fmtd.push_str("/");
+    url_fmtd.push_str(_type);
+    url_fmtd.push_str("/_percolate/count");
+    url_fmtd.push_str(url_qry);
+    let res =
+        client.post(&url_fmtd).headers(req.headers.to_owned()).body(body.into());
     res.send()
 }
 pub fn post_index_type_id<'a,
                       I: Into<Body<'a>>>(client: &'a mut Client,
-                                         req: RequestParams, index: &'a str,
-                                         _type: &'a str, id: &'a str, body: I)
+                                         req: &'a RequestParams,
+                                         index: &'a str, _type: &'a str,
+                                         id: &'a str, body: I)
  -> Result<Response>{
     let url_qry = &req.get_url_qry();
     let base = &req.base_url;
@@ -86,6 +88,7 @@ pub fn post_index_type_id<'a,
     url_fmtd.push_str(id);
     url_fmtd.push_str("/_percolate/count");
     url_fmtd.push_str(url_qry);
-    let res = client.post(&url_fmtd).headers(req.headers).body(body.into());
+    let res =
+        client.post(&url_fmtd).headers(req.headers.to_owned()).body(body.into());
     res.send()
 }

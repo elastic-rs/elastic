@@ -10,13 +10,14 @@ use hyper::error::Result;
 
 use ::RequestParams;
 
-pub fn head<'a>(client: &'a mut Client, req: RequestParams) -> Result<Response>{
+pub fn head<'a>(client: &'a mut Client, req: &'a RequestParams)
+ -> Result<Response>{
     let url_qry = &req.get_url_qry();
     let base = &req.base_url;
     let mut url_fmtd = String::with_capacity(base.len() + 1 + url_qry.len());
     url_fmtd.push_str(base);
     url_fmtd.push_str("/");
     url_fmtd.push_str(url_qry);
-    let res = client.head(&url_fmtd).headers(req.headers);
+    let res = client.head(&url_fmtd).headers(req.headers.to_owned());
     res.send()
 }
