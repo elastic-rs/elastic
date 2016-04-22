@@ -78,6 +78,8 @@ The `elastic_hyper` client is a thin layer over `hyper`; it just maps functions 
 For serialisation though, the `elastic_macros` crate provides the `json!` macro for serialising abitrary rust-like code to json.
 The deserialisation story is a work in progress.
 
+Currently targeting the `master` Elasticsearch branch. This will be stabilised through features in the future.
+
 Add `elastic_hyper` and `elastic_macros` to your `Cargo.toml`:
 
 ```
