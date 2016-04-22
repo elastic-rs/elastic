@@ -7,6 +7,38 @@
 //! The functions are also designed to work well with the `elastic_types`
 //! and `elastic_macros` crates, but deserialisation is the responsibility of the caller.
 //!
+//! # Examples
+//!
+//! Ping the availability of your cluster (http: `HEAD /`):
+//!
+//! ```no_run
+//! extern crate hyper;
+//! extern crate elastic_hyper as elastic;
+//!
+//! # fn main() {
+//! let mut client = hyper::Client::new();
+//!
+//! elastic::ping::head(&mut client, elastic::RequestParams::default()).unwrap();
+//! # }
+//! ```
+//!
+//! Ping the availability of your cluster (http: `GET /myindex/mytype/_search?q='my string'`):
+//!
+//! ```no_run
+//! extern crate hyper;
+//! extern crate elastic_hyper as elastic;
+//!
+//! # fn main() {
+//! let mut client = hyper::Client::new();
+//! let mut params = elastic::RequestParams::default()
+//! 	.url_params(vec![
+//! 		("q", "'my string'".to_owned())
+//! 	]);
+//!
+//! elastic::search::get_index_type(&mut client, params, "myindex", "mytype").unwrap();
+//! # }
+//! ```
+//!
 //! # Links
 //! - [elastic_types](http://kodraus.github.io/rustdoc/elastic_types/index.html)
 //! - [elastic_macros](http://kodraus.github.io/rustdoc/elastic_macros/index.html)
@@ -21,53 +53,53 @@ use hyper::header::ContentType;
 use url::form_urlencoded::serialize;
 
 /// Misc parameters for any request.
-/// 
+///
 /// The `RequestParams` struct allows you to set headers and url parameters for your requests.
 /// By default, the `ContentType::json` header will always be added.
 /// Url parameters are added as simple key-value pairs, and serialised by [rust-url](http://servo.github.io/rust-url/url/index.html).
-/// 
+///
 /// # Examples
-/// 
+///
 /// With default query parameters:
-/// 
+///
 /// ```
 /// extern crate hyper;
 /// extern crate elastic_hyper as elastic;
-/// 
+///
 /// let params = elastic::RequestParams::default();
 /// ```
-/// 
+///
 /// With custom headers:
-/// 
+///
 /// ```
 /// extern crate hyper;
 /// extern crate elastic_hyper as elastic;
-/// 
+///
 /// let mut params = elastic::RequestParams::default();
-/// 
+///
 /// //Add your own headers
 /// params.headers.set(hyper::header::Authorization("let me in".to_owned()));
 /// ```
-/// 
+///
 /// Add url query parameters to the request:
-/// 
+///
 /// ```
 /// extern crate hyper;
 /// extern crate elastic_hyper as elastic;
-/// 
+///
 /// let params = elastic::RequestParams::default()
 /// 		.url_params(vec![
 /// 			("pretty", "true".to_owned()),
 /// 			("q", "*".to_owned())
 /// 		]);
 /// ```
-/// 
+///
 /// With a custom base url:
-/// 
+///
 /// ```
 /// extern crate hyper;
 /// extern crate elastic_hyper as elastic;
-/// 
+///
 /// let params = elastic::RequestParams::new("http://mybaseurl:9200", hyper::header::Headers::new());
 /// ```
 #[derive(Debug, Clone)]
@@ -82,7 +114,7 @@ pub struct RequestParams {
 
 impl RequestParams {
 	/// Create a new container for request parameters.
-	/// 
+	///
 	/// Attempts to add `ContentType::json` to the passed in `headers` param.
 	pub fn new<T: Into<String>>(base: T, mut headers: Headers) -> Self {
 		headers.set(ContentType::json());
@@ -105,7 +137,7 @@ impl RequestParams {
 	}
 
 	/// Get the url params as a formatted string.
-	/// 
+	///
 	/// Follows the `application/x-www-form-urlencoded` format.
 	pub fn get_url_qry(&self) -> String {
 		if self.url_params.len() > 0 {

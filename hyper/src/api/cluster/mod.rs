@@ -1,3 +1,4 @@
+pub mod allocation_explain;
 pub mod get_settings;
 pub mod health;
 pub mod pending_tasks;

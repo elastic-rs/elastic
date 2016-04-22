@@ -15,4 +15,5 @@ pub mod repositories;
 pub mod segments;
 pub mod shards;
 pub mod snapshots;
+pub mod tasks;
 pub mod thread_pool;
