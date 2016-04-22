@@ -1,5 +1,5 @@
 //! Elasticsearch Hyper Client Samples
-//! 
+//!
 //! This sample executes a simple search request against a local cluster. No index or type info is provided.
 
 #![feature(plugin)]
@@ -23,7 +23,7 @@ fn main() {
 
 	//Execute a HTTP Post search request. Other variants include post_index, post_index_type
 	let mut res = elastic::search::post(
-		&mut client, params,
+		&mut client, &params,
 		json_str!({
 			query: {
 				query_string: {

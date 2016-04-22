@@ -63,7 +63,7 @@ fn main() {
 
         let res: SearchResponse = serde_json::de::from_reader(
             elastic::search::post_index_type(
-        		&mut client, params.clone(),
+        		&mut client, &params,
                 "bench_index", "bench_doc",
         		json_str!({
         			query: {
