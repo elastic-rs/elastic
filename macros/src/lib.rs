@@ -2,7 +2,24 @@
 //!
 //! Compile-time code generation for Elasticsearch type implementations.
 //!
-//! # Json Macros
+//! # Usage
+//!
+//! This crate is on [crates.io](https://crates.io/crates/elastic_macros).
+//! To get started, add `elastic_macros` to your `Cargo.toml`:
+//!
+//! ```ignore
+//! [dependencies]
+//! elastic_macros = "*"
+//! ```
+//!
+//! And reference it in your crate root:
+//!
+//! ```ignore
+//! #![feature(plugin)]
+//! #![plugin(elastic_macros)]
+//! ```
+//!
+//! ## Json Macros
 //!
 //! The `json_str!` macro will take an inline token tree and return an `str` literal:
 //!
@@ -60,7 +77,7 @@
 //!
 //! For values that can't be determined at compile-time, use [json_macros](https://github.com/tomjakubowski/json_macros) instead.
 //!
-//! # Types Macros
+//! ## Types Macros
 //!
 //! There are also a couple of macros designed to work with `elastic_types`.
 //! These are feature-gated, so you'll need to use the `types` feature in your `Cargo.toml`:
@@ -71,12 +88,7 @@
 //! features = [ "types" ]
 //! ```
 //!
-//! ## Elastic Types
-//!
-//! Derive `ElasticType` to implement the required `trait`s for mapping your Elasticsearch types.
-//! _TODO: Fill this section out_
-//!
-//! ## Date Formatting
+//! ### Date Formatting
 //!
 //! The `date_fmt!` macro will take a literal date format and parse it to a more efficient `Vec<Item>`.
 //! This is used by date formatters.

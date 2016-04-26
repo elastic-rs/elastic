@@ -7,27 +7,42 @@
 //! The functions are also designed to work well with the `elastic_types`
 //! and `elastic_macros` crates, but deserialisation is the responsibility of the caller.
 //!
-//! # Examples
+//! # Usage
 //!
-//! Ping the availability of your cluster (http: `HEAD /`):
+//! This crate is on [crates.io](https://crates.io/crates/elastic_hyper).
+//! To get started, add `elastic_hyper` and `hyper` to your `Cargo.toml`:
+//!
+//! ```ignore
+//! [dependencies]
+//! elastic_hyper = "*"
+//! hyper = "*"
+//! ```
+//!
+//! And reference them in your crate root:
+//!
+//! ```ignore
+//! extern crate elastic_hyper as elastic;
+//! extern crate hyper;
+//! ```
+//!
+//! Ping the availability of your cluster:
 //!
 //! ```no_run
-//! extern crate hyper;
-//! extern crate elastic_hyper as elastic;
-//!
+//! # extern crate hyper;
+//! # extern crate elastic_hyper as elastic;
 //! # fn main() {
 //! let mut client = hyper::Client::new();
 //!
+//! //HTTP HEAD /
 //! elastic::ping::head(&mut client, &elastic::RequestParams::default()).unwrap();
 //! # }
 //! ```
 //!
-//! Ping the availability of your cluster (http: `GET /myindex/mytype/_search?q='my string'`):
+//! Ping the availability of your cluster:
 //!
 //! ```no_run
-//! extern crate hyper;
-//! extern crate elastic_hyper as elastic;
-//!
+//! # extern crate hyper;
+//! # extern crate elastic_hyper as elastic;
 //! # fn main() {
 //! let mut client = hyper::Client::new();
 //! let mut params = elastic::RequestParams::default()
@@ -35,6 +50,7 @@
 //! 		("q", "'my string'".to_owned())
 //! 	]);
 //!
+//! //HTTP GET /myindex/mytype/_search?q='my string'
 //! elastic::search::get_index_type(&mut client, &params, "myindex", "mytype").unwrap();
 //! # }
 //! ```
