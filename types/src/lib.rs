@@ -155,7 +155,7 @@
 //! [dependencies.elastic_types]
 //! version = "*"
 //! default-features = false
-//! features = [ "date_ty", "reaponse_ty" ] }
+//! features = [ "date_ty", "response_ty" ] }
 //! ```
 //!
 //! The full list of features is as follows:
