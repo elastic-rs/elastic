@@ -4,6 +4,28 @@ version = "0.1.4"
 authors = ["Ashley Mannix <ashleymannix@live.com.au>"]
 
 [features]
+default = [
+  "boolean_ty",
+  "date_ty",
+  "geo_ty",
+  "number_ty",
+  "response_ty",
+  "string_ty"
+]
+no_response_ty = [
+  "boolean_ty",
+  "date_ty",
+  "geo_ty",
+  "number_ty",
+  "string_ty"
+]
+boolean_ty = []
+date_ty = []
+geo_ty = []
+number_ty = []
+response_ty = []
+string_ty = []
+
 nightly-testing = [ "clippy" ]
 
 [dependencies]
@@ -15,6 +37,10 @@ clippy = { version = "*", optional = true }
 [dependencies.chrono]
 version = "*"
 features = [ "serde" ]
+
+[dependencies.geojson]
+version = "*"
+features = [ "with-serde" ]
 
 [dependencies.elastic_macros]
 version = "*"

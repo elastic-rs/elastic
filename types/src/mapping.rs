@@ -26,16 +26,19 @@ pub mod prelude {
 		ElasticType,
 		ElasticTypeMapping,
 		NullMapping,
-		IndexAnalysis,
-		ElasticTypeMappingVisitor
+		IndexAnalysis
 	};
 
 	pub use ::object::*;
 	pub use ::mappers::*;
 
+	#[cfg(feature="date_ty")]
 	pub use ::date::mapping::*;
+	#[cfg(feature="string_ty")]
 	pub use ::string::mapping::*;
+	#[cfg(feature="number_ty")]
 	pub use ::number::mapping::*;
+	#[cfg(feature="boolean_ty")]
 	pub use ::boolean::mapping::*;
 }
 
@@ -69,12 +72,13 @@ Self : serde::Serialize + serde::Deserialize {
 /// which is a specialization of `ElasticTypeMapping<()>`.
 pub trait ElasticTypeMapping<F>
 where Self: Default + Clone + serde::Serialize {
+	//TODO: Make this bound take ElasticTypeVisitor
 	#[doc(hidden)]
 	type Visitor : serde::ser::MapVisitor + Default;
 
 	/// An optional associated type that mappings may need.
 	///
-	/// For example; the `DateFormat` trait on `ElasticDate`.
+	/// For example the `DateFormat` trait on `ElasticDate`.
 	type Format = F;
 
 	#[doc(hidden)]
@@ -91,6 +95,15 @@ where Self: Default + Clone + serde::Serialize {
 	fn name() -> &'static str {
 		Self::data_type()
 	}
+}
+
+//TODO: Determine if the bound on just T is sufficient
+/// Base visitor for serialising a datatype.
+pub trait ElasticTypeVisitor<'a, T> where
+T: 'a,
+Self: serde::ser::MapVisitor {
+	/// Create a new visitor from a borrowed datatype.
+	fn new(data: &'a T) -> Self;
 }
 
 /// A mapping implementation for a non-core type, or any where it's ok for Elasticsearch to infer the mapping at index-time.
@@ -132,21 +145,6 @@ impl serde::Serialize for IndexAnalysis {
 			IndexAnalysis::NotAnalyzed => "not_analyzed",
 			IndexAnalysis::No => "no"
 		})
-	}
-}
-
-/// Base visitor for serialising datatype mappings.
-#[derive(Default)]
-pub struct ElasticTypeMappingVisitor<T> where
-T: ElasticTypeMapping<()> {
-	phantom: PhantomData<T>
-}
-
-impl <T> serde::ser::MapVisitor for ElasticTypeMappingVisitor<T> where
-T: ElasticTypeMapping<()> {
-	fn visit<S>(&mut self, _: &mut S) -> Result<Option<()>, S::Error>
-	where S: serde::Serializer {
-		Ok(None)
 	}
 }
 

@@ -61,6 +61,8 @@
 //!
 //! # Examples
 //!
+//! ## Map Your Types
+//!
 //! Derive `ElasticType` on your Elasticsearch-mappable types:
 //!
 //! ```
@@ -143,6 +145,36 @@
 //! but if the bounds are an issue, you may have to just create an Elasticsearch mappable type as a DTO
 //! (this is probably a good idea anyway).
 //!
+//! # Exclude Type Dependencies
+//!
+//! Each datatype is actually feature-gated, but included by default.
+//! This means you can exclude datatypes and their dependant crates if you need to.
+//! In your `Cargo.toml`, include `elastic_types` as follows:
+//!
+//! ```ignore
+//! [dependencies.elastic_types]
+//! version = "*"
+//! default-features = false
+//! features = [ "date_ty", "reaponse_ty" ] }
+//! ```
+//!
+//! The full list of features is as follows:
+//!
+//!  Elasticsearch Type | Feature
+//!  ------------------ | ---------------
+//!  `integer`          | `number_ty`
+//!  `long`             | `number_ty`
+//!  `short`            | `number_ty`
+//!  `byte`             | `number_ty`
+//!  `float`            | `number_ty`
+//!  `double`           | `number_ty`
+//!  `string`           | `string_ty`
+//!  `boolean`          | `boolean_ty`
+//!  `date`             | `date_ty`
+//!  responses          | `response_ty`
+//!
+//! To include all types except for responses, you can use the `no_response_ty` feature.
+//!
 //! # Links
 //! - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/guide/current/mapping.html)
 //! - [Github](https://github.com/KodrAus/elasticsearch-rs)
@@ -165,9 +197,13 @@ pub mod mapping;
 pub mod mappers;
 
 pub mod object;
+#[cfg(feature="date_ty")]
 pub mod date;
+#[cfg(feature="string_ty")]
 pub mod string;
+#[cfg(feature="number_ty")]
 pub mod number;
+#[cfg(feature="boolean_ty")]
 pub mod boolean;
-
+#[cfg(feature="response_ty")]
 pub mod response;
