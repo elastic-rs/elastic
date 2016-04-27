@@ -20,8 +20,8 @@ no_response_ty = [
   "string_ty"
 ]
 boolean_ty = []
-date_ty = [ "geojson" ]
-geo_ty = [ "chrono" ]
+date_ty = [ "chrono" ]
+geo_ty = [ "geojson" ]
 number_ty = []
 response_ty = []
 string_ty = []
