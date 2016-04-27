@@ -177,5 +177,5 @@ impl ElasticObjectMapping for MyTypeMapping {
 Get the mapping for your type:
 
 ```rust
-let mapping = TypeMapper::map_str(&MyType::default()).unwrap();
+let mapping = TypeMapper::to_string(MyTypeMapping).unwrap();
 ```
