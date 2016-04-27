@@ -15,16 +15,16 @@
 //! Map with a custom `boolean`:
 //!
 //! ```
+//! # #![feature(plugin, custom_derive)]
+//! # #![plugin(elastic_macros)]
 //! # extern crate serde;
-//! # #[macro_use]
 //! # extern crate elastic_types;
 //! # fn main() {
 //! # use elastic_types::mapping::prelude::*;
 //! # use elastic_types::boolean::prelude::*;
-//! # #[derive(Debug, Clone, Default)]
+//! # #[derive(Debug, Clone, Default, ElasticBooleanMapping)]
 //! # pub struct MyBooleanMapping;
 //! # impl ElasticBooleanMapping for MyBooleanMapping { }
-//! # impl_boolean_mapping!(MyBooleanMapping);
 //! struct MyType {
 //! 	pub field: ElasticBoolean<MyBooleanMapping>
 //! }

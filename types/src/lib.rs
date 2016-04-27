@@ -36,10 +36,10 @@
 //! # extern crate serde;
 //! # use serde::{ Serialize, Deserialize };
 //! # use elastic_types::mapping::prelude::*;
-//! # use elastic_types::date::ElasticDate;
-//! #[derive(Default, Clone, Serialize, Deserialize, ElasticType)]
+//! # use elastic_types::date::prelude::*;
+//! #[derive(Serialize, Deserialize, ElasticType)]
 //! pub struct MyType {
-//! 	pub my_date: ElasticDate,
+//! 	pub my_date: ElasticDate<DefaultFormat>,
 //! 	pub my_string: String,
 //! 	pub my_num: i32
 //! }
@@ -68,10 +68,10 @@
 //! # extern crate serde;
 //! # use serde::{ Serialize, Deserialize };
 //! # use elastic_types::mapping::prelude::*;
-//! # use elastic_types::date::ElasticDate;
-//! # #[derive(Default, Clone, Serialize, Deserialize, ElasticType)]
+//! # use elastic_types::date::prelude::*;
+//! # #[derive(Serialize, Deserialize, ElasticType)]
 //! # pub struct MyType {
-//! # 	pub my_date: ElasticDate,
+//! # 	pub my_date: ElasticDate<DefaultFormat>,
 //! # 	pub my_string: String,
 //! # 	pub my_num: i32
 //! # }
@@ -85,7 +85,7 @@
 //! # 		unimplemented!()
 //! # 	}
 //! # }
-//! #[derive(Default, Clone, Serialize, Deserialize, ElasticType)]
+//! #[derive(Serialize, Deserialize, ElasticType)]
 //! pub struct MyOtherType {
 //! 	pub my_type: MyType
 //! }
@@ -102,11 +102,6 @@
 //! # fn main() {
 //! # }
 //! ```
-//!
-//! Note there's a lot of traits that are required for Elasticsearch types.
-//! This [may change](https://github.com/KodrAus/elasticsearch-rs/issues/75) in the future,
-//! but if the bounds are an issue, you may have to just create an Elasticsearch mappable type as a DTO
-//! (this is probably a good idea anyway).
 //!
 //! # Exclude Type Dependencies
 //!
@@ -208,8 +203,7 @@ extern crate serde;
 extern crate serde_json;
 
 #[macro_use]
-#[doc(hidden)]
-pub mod macros;
+mod macros;
 pub mod mapping;
 pub mod mappers;
 

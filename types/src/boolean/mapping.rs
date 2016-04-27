@@ -3,7 +3,7 @@
 use std::marker::PhantomData;
 use serde;
 use serde::{ Serializer, Serialize };
-use ::mapping::{ ElasticTypeMapping, IndexAnalysis };
+use ::mapping::{ ElasticTypeMapping, ElasticTypeVisitor, IndexAnalysis };
 
 /// The base requirements for mapping a `boolean` type.
 ///
@@ -33,29 +33,6 @@ use ::mapping::{ ElasticTypeMapping, IndexAnalysis };
 ///		}
 /// }
 /// # fn main() {}
-/// ```
-///
-/// ## With Macros
-///
-/// ```
-/// # extern crate serde;
-/// # #[macro_use]
-/// # extern crate elastic_types;
-/// # fn main() {
-/// use elastic_types::mapping::prelude::*;
-/// use elastic_types::boolean::prelude::*;
-///
-/// #[derive(Debug, Clone, Default)]
-/// pub struct MyBooleanMapping;
-/// impl ElasticBooleanMapping for MyBooleanMapping {
-/// 	//Overload the mapping functions here
-/// 	fn boost() -> Option<f32> {
-///			Some(1.5)
-///		}
-/// }
-///
-/// impl_boolean_mapping!(MyBooleanMapping);
-/// # }
 /// ```
 ///
 /// ## Manually
@@ -94,7 +71,7 @@ use ::mapping::{ ElasticTypeMapping, IndexAnalysis };
 /// # }
 /// ```
 pub trait ElasticBooleanMapping where
-Self: ElasticTypeMapping<()> + Sized + Serialize + Default + Clone {
+Self: ElasticTypeMapping<()> + Sized + Serialize {
 	/// Field-level index time boosting. Accepts a floating point number, defaults to `1.0`.
 	fn boost() -> Option<f32> {
 		None
@@ -138,6 +115,14 @@ pub struct ElasticBooleanMappingVisitor<T> where T: ElasticBooleanMapping {
 	phantom: PhantomData<T>
 }
 
+impl <T> ElasticTypeVisitor for ElasticBooleanMappingVisitor<T> where
+T: ElasticBooleanMapping {
+	fn new() -> Self {
+		ElasticBooleanMappingVisitor {
+			phantom: PhantomData
+		}
+	}
+}
 impl <T> serde::ser::MapVisitor for ElasticBooleanMappingVisitor<T> where
 T: ElasticBooleanMapping {
 	fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>

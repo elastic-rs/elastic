@@ -12,14 +12,17 @@ extern crate test;
 extern crate elastic_types;
 
 pub mod date_fixtures {
+	use std::marker::PhantomData;
 	use serde;
 	use elastic_types::mapping::prelude::*;
 	use elastic_types::date::prelude::*;
 
 	//A custom date mapping
-	#[derive(Default, Clone, Copy)]
-	pub struct MyDateMapping;
-	impl ElasticDateMapping<EpochMillis> for MyDateMapping {
+	#[derive(Default, Clone, ElasticDateMapping)]
+	pub struct MyDateMapping<T: DateFormat> {
+		phantom: PhantomData<T>
+	}
+	impl <T: DateFormat> ElasticDateMapping<T> for MyDateMapping<T> {
 		fn boost() -> Option<f32> {
 			Some(1.01)
 		}
@@ -52,15 +55,13 @@ pub mod date_fixtures {
 			Some(6)
 		}
 	}
-	impl_date_mapping!(MyDateMapping, EpochMillis);
 }
 
 pub mod string_fixtures {
-	use serde;
 	use std::collections::BTreeMap;
 	use elastic_types::mapping::prelude::*;
 
-	#[derive(Default, Clone)]
+	#[derive(Default, Clone, ElasticStringMapping)]
 	pub struct MyStringMapping;
 	impl ElasticStringMapping for MyStringMapping {
 		fn boost() -> Option<f32> {
@@ -150,14 +151,12 @@ pub mod string_fixtures {
 			Some(TermVector::No)
 		}
 	}
-	impl_string_mapping!(MyStringMapping);
 }
 
 pub mod boolean_fixtures {
-	use serde;
 	use elastic_types::mapping::prelude::*;
 
-	#[derive(Default, Clone)]
+	#[derive(Default, Clone, ElasticBooleanMapping)]
 	pub struct MyBooleanMapping;
 	impl ElasticBooleanMapping for MyBooleanMapping {
 		fn boost() -> Option<f32> {
@@ -180,14 +179,12 @@ pub mod boolean_fixtures {
 			Some(false)
 		}
 	}
-	impl_boolean_mapping!(MyBooleanMapping);
 }
 
 pub mod number_fixtures {
-	use serde;
 	use elastic_types::mapping::prelude::*;
 
-	#[derive(Debug, Clone, Default)]
+	#[derive(Debug, Clone, Default, ElasticIntegerMapping)]
 	pub struct MyIntegerMapping;
 	impl ElasticIntegerMapping for MyIntegerMapping {
 		fn coerce() -> Option<bool> {
@@ -226,7 +223,6 @@ pub mod number_fixtures {
 			Some(42)
 		}
 	}
-	impl_integer_mapping!(MyIntegerMapping);
 }
 
 pub mod object_fixtures {
@@ -237,12 +233,12 @@ pub mod object_fixtures {
 	#[derive(Default, Clone, Serialize, Deserialize, ElasticType)]
 	#[elastic(mapping="MySmlTypeMapping")]
 	pub struct MySmlType {
-		pub my_date1: ElasticDate,
+		pub my_date1: ElasticDate<DefaultFormat>,
 		pub my_string: ElasticString<DefaultStringMapping>,
 		pub my_num: i32
 	}
 	#[derive(Default, Clone)]
-	struct MySmlTypeMapping;
+	pub struct MySmlTypeMapping;
 	impl ElasticObjectMapping for MySmlTypeMapping {
 		fn data_type() -> &'static str {
 			"object"
@@ -264,13 +260,13 @@ pub mod object_fixtures {
 	#[derive(Default, Clone, Serialize, Deserialize, ElasticType)]
 	#[elastic(mapping="MyMedTypeMapping")]
 	pub struct MyMedType {
-		pub my_date1: ElasticDate,
+		pub my_date1: ElasticDate<DefaultFormat>,
 		pub my_string: ElasticString<DefaultStringMapping>,
 		pub my_num: i32,
 		pub my_type: MySmlType
 	}
 	#[derive(Default, Clone)]
-	struct MyMedTypeMapping;
+	pub struct MyMedTypeMapping;
 	impl ElasticObjectMapping for MyMedTypeMapping {
 		fn data_type() -> &'static str {
 			"object"
@@ -292,14 +288,14 @@ pub mod object_fixtures {
 	#[derive(Default, Clone, Serialize, Deserialize, ElasticType)]
 	#[elastic(mapping="MyLrgTypeMapping")]
 	pub struct MyLrgType {
-		pub my_date1: ElasticDate,
+		pub my_date1: ElasticDate<DefaultFormat>,
 		pub my_string: ElasticString<DefaultStringMapping>,
 		pub my_num: i32,
 		pub my_type: MyMedType
 	}
 
 	#[derive(Default, Clone)]
-	struct MyLrgTypeMapping;
+	pub struct MyLrgTypeMapping;
 	impl ElasticObjectMapping for MyLrgTypeMapping {
 		fn data_type() -> &'static str {
 			"object"

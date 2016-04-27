@@ -10,7 +10,7 @@ use ::mapping::{ ElasticTypeMapping, ElasticType };
 
 pub use chrono::{ Datelike, Timelike };
 
-impl ElasticType<DefaultDateMapping, DefaultFormat> for DT {
+impl ElasticType<DefaultDateMapping<DefaultFormat>, DefaultFormat> for DT {
 
 }
 
@@ -23,9 +23,9 @@ impl ElasticType<DefaultDateMapping, DefaultFormat> for DT {
 /// Defining a date using the default format:
 ///
 /// ```
-/// use elastic_types::date::ElasticDate;
+/// use elastic_types::date::{ ElasticDate, DefaultFormat };
 ///
-/// let date: ElasticDate = ElasticDate::now();
+/// let date: ElasticDate<DefaultFormat> = ElasticDate::now();
 /// ```
 ///
 /// Defining a date using a named format:
@@ -42,7 +42,7 @@ impl ElasticType<DefaultDateMapping, DefaultFormat> for DT {
 /// use elastic_types::date::mapping::DefaultDateMapping;
 /// use elastic_types::date::{ ElasticDate, BasicDateTime };
 ///
-/// let date = ElasticDate::<BasicDateTime, DefaultDateMapping>::now();
+/// let date: ElasticDate<BasicDateTime, DefaultDateMapping<_>> = ElasticDate::now();
 /// ```
 ///
 /// Accessing the values of a date:
@@ -67,7 +67,7 @@ impl ElasticType<DefaultDateMapping, DefaultFormat> for DT {
 /// # Links
 /// - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/date.html)
 #[derive(Debug, Clone)]
-pub struct ElasticDate<F = DefaultFormat, T = DefaultDateMapping<F>> where
+pub struct ElasticDate<F, T = DefaultDateMapping<F>> where
 F: DateFormat,
 T: ElasticTypeMapping<F> + ElasticDateMapping<F> {
 	value: DT,
@@ -91,13 +91,13 @@ T: ElasticTypeMapping<F> + ElasticDateMapping<F> {
 	/// # extern crate chrono;
 	/// # fn main() {
 	/// use chrono::UTC;
-	/// use elastic_types::date::*;
+	/// use elastic_types::date::{ ElasticDate, DefaultFormat };
 	///
 	/// //Create a chrono DateTime struct
 	/// let chronoDate = UTC::now();
 	///
 	/// //Give it to the ElasticDate struct
-	/// let esDate: ElasticDate = ElasticDate::new(chronoDate);
+	/// let esDate: ElasticDate<DefaultFormat> = ElasticDate::new(chronoDate);
 	/// # }
 	/// ```
 	pub fn new(date: DT) -> ElasticDate<F, T> {
@@ -113,9 +113,9 @@ T: ElasticTypeMapping<F> + ElasticDateMapping<F> {
 	/// # Examples
 	///
 	/// ```
-	/// use elastic_types::date::*;
+	/// use elastic_types::date::{ ElasticDate, DefaultFormat };
 	///
-	/// let date: ElasticDate = ElasticDate::now();
+	/// let date: ElasticDate<DefaultFormat> = ElasticDate::now();
 	/// ```
 	pub fn now() -> ElasticDate<F, T> {
 		ElasticDate {
@@ -151,7 +151,7 @@ T: ElasticTypeMapping<F> + ElasticDateMapping<F> {
 	/// ```
 	/// use elastic_types::date::{ ElasticDate, BasicDateTime };
 	///
-	/// let date: ElasticDate = ElasticDate::now();
+	/// let date: ElasticDate<BasicDateTime> = ElasticDate::now();
 	/// let fmt = date.format();
 	///
 	/// //eg: 20151126T145543.778Z

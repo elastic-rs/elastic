@@ -29,16 +29,16 @@
 //! Map with a custom `number` (`i32` in this case):
 //!
 //! ```
+//! # #![feature(plugin, custom_derive)]
+//! # #![plugin(elastic_macros)]
 //! # extern crate serde;
-//! # #[macro_use]
 //! # extern crate elastic_types;
 //! # fn main() {
 //! # use elastic_types::mapping::prelude::*;
 //! # use elastic_types::number::prelude::*;
-//! # #[derive(Debug, Clone, Default)]
+//! # #[derive(Clone, Default, ElasticIntegerMapping)]
 //! # pub struct MyIntegerMapping;
 //! # impl ElasticIntegerMapping for MyIntegerMapping { }
-//! # impl_integer_mapping!(MyIntegerMapping);
 //! struct MyType {
 //! 	pub field: ElasticInteger<MyIntegerMapping>
 //! }

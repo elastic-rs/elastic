@@ -4,7 +4,7 @@ use std::collections::BTreeMap;
 use std::marker::PhantomData;
 use serde;
 use serde::{ Serializer, Serialize };
-use ::mapping::{ ElasticTypeMapping, IndexAnalysis };
+use ::mapping::{ ElasticTypeMapping, ElasticTypeVisitor, IndexAnalysis };
 
 /// The base requirements for mapping a `string` type.
 ///
@@ -24,7 +24,7 @@ use ::mapping::{ ElasticTypeMapping, IndexAnalysis };
 /// # extern crate serde;
 /// use elastic_types::mapping::prelude::*;
 /// use elastic_types::string::prelude::*;
-/// 
+///
 /// #[derive(Debug, Clone, Default, ElasticStringMapping)]
 /// pub struct MyStringMapping;
 /// impl ElasticStringMapping for MyStringMapping {
@@ -34,29 +34,6 @@ use ::mapping::{ ElasticTypeMapping, IndexAnalysis };
 ///		}
 /// }
 /// # fn main() {}
-/// ```
-///
-/// ## With Macros
-///
-/// ```
-/// # extern crate serde;
-/// # #[macro_use]
-/// # extern crate elastic_types;
-/// # fn main() {
-/// use elastic_types::mapping::prelude::*;
-/// use elastic_types::string::prelude::*;
-///
-/// #[derive(Debug, Clone, Default)]
-/// pub struct MyStringMapping;
-/// impl ElasticStringMapping for MyStringMapping {
-/// 	//Overload the mapping functions here
-/// 	fn boost() -> Option<f32> {
-///			Some(1.5)
-///		}
-/// }
-///
-/// impl_string_mapping!(MyStringMapping);
-/// # }
 /// ```
 ///
 /// ## Manually
@@ -95,7 +72,7 @@ use ::mapping::{ ElasticTypeMapping, IndexAnalysis };
 /// # }
 /// ```
 pub trait ElasticStringMapping where
-Self: ElasticTypeMapping<()> + Sized + Serialize + Default + Clone {
+Self: ElasticTypeMapping<()> + Sized + Serialize {
 	/// Field-level index time boosting. Accepts a floating point number, defaults to `1.0`.
 	fn boost() -> Option<f32> {
 		None
@@ -206,11 +183,19 @@ impl ElasticStringMapping for DefaultStringMapping { }
 impl_string_mapping!(DefaultStringMapping);
 
 /// Base visitor for serialising string mappings.
-#[derive(Debug, PartialEq, Default)]
+#[derive(Debug, PartialEq)]
 pub struct ElasticStringMappingVisitor<T> where T: ElasticStringMapping {
 	phantom: PhantomData<T>
 }
 
+impl <T> ElasticTypeVisitor for ElasticStringMappingVisitor<T> where
+T: ElasticStringMapping {
+	fn new() -> Self {
+		ElasticStringMappingVisitor {
+			phantom: PhantomData
+		}
+	}
+}
 impl <T> serde::ser::MapVisitor for ElasticStringMappingVisitor<T> where
 T: ElasticStringMapping {
 	#[cfg_attr(feature = "nightly-testing", allow(cyclomatic_complexity))]

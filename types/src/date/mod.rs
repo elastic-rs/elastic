@@ -16,24 +16,26 @@
 //! ```
 //! # use elastic_types::date::prelude::*;
 //! struct MyType {
-//! 	pub field: ElasticDate
+//! 	pub field: ElasticDate<DefaultFormat>
 //! }
 //! ```
 //!
 //! Map with a custom `date`:
 //!
 //! ```
+//! # #![feature(plugin, custom_derive)]
+//! # #![plugin(elastic_macros)]
 //! # extern crate serde;
-//! # #[macro_use]
 //! # extern crate elastic_types;
 //! # use std::marker::PhantomData;
 //! # fn main() {
 //! # use elastic_types::mapping::prelude::*;
 //! # use elastic_types::date::prelude::*;
-//! # #[derive(Debug, Default, Clone, Copy)]
-//! # pub struct MyDateMapping;
-//! # impl ElasticDateMapping<EpochMillis> for MyDateMapping { }
-//! # impl_date_mapping!(MyDateMapping, EpochMillis);
+//! # #[derive(Default, Clone, ElasticDateMapping)]
+//! # pub struct MyDateMapping<T: DateFormat = EpochMillis> {
+//! 	phantom: PhantomData<T>
+//! }
+//! # impl <T: DateFormat> ElasticDateMapping<T> for MyDateMapping<T> { }
 //! struct MyType {
 //! 	pub field: ElasticDate<EpochMillis, MyDateMapping>
 //! }
@@ -66,6 +68,7 @@ pub mod prelude {
 	//!
 	//! This is a convenience module to make it easy to build mappings for multiple types without too many `use` statements.
 
+	pub use super::DefaultFormat;
 	pub use super::format::*;
 	pub use super::date::*;
 	pub use super::formats::*;

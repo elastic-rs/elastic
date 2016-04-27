@@ -29,29 +29,6 @@
 //! # fn main() {}
 //! ```
 //!
-//! ## With Macros
-//!
-//! ```
-//! # extern crate serde;
-//! # #[macro_use]
-//! # extern crate elastic_types;
-//! # fn main() {
-//! use elastic_types::mapping::prelude::*;
-//! use elastic_types::number::prelude::*;
-//!
-//! #[derive(Debug, Clone, Default)]
-//! pub struct MyIntegerMapping;
-//! impl ElasticIntegerMapping for MyIntegerMapping {
-//! 	//Overload the mapping functions here
-//! 	fn null_value() -> Option<i32> {
-//! 		Some(42)
-//! 	}
-//! }
-//!
-//! impl_integer_mapping!(MyIntegerMapping);
-//! # }
-//! ```
-//!
 //! ## Manually
 //!
 //! ```
@@ -89,13 +66,13 @@
 use std::marker::PhantomData;
 use serde;
 use serde::{ Serialize, Serializer };
-use ::mapping::{ ElasticType, ElasticTypeMapping, IndexAnalysis };
+use ::mapping::{ ElasticType, ElasticTypeMapping, ElasticTypeVisitor, IndexAnalysis };
 
 macro_rules! number_mapping {
     ($m:ident, $v:ident, $n:ty) => (
     	/// Base `number` mapping.
     	pub trait $m
-		where Self : ElasticTypeMapping<()> + Sized + Serialize + Default + Clone {
+		where Self : ElasticTypeMapping<()> + Sized + Serialize {
 			/// Try to convert strings to numbers and truncate fractions for integers. Accepts `true` (default) and `false`.
 			fn coerce() -> Option<bool> {
 				None
@@ -152,11 +129,18 @@ macro_rules! number_mapping {
 		}
 
 		/// Visitor for a `number` field mapping.
-		#[derive(Debug, PartialEq, Default)]
+		#[derive(Debug, PartialEq)]
 		pub struct $v<T> where T: $m {
 			phantom: PhantomData<T>
 		}
 
+        impl <T> ElasticTypeVisitor for $v<T> where T: $m {
+            fn new() -> Self {
+        		$v {
+                    phantom: PhantomData
+                }
+        	}
+        }
 		impl <T> serde::ser::MapVisitor for $v<T> where T: $m {
 			fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
 			where S: Serializer {

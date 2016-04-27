@@ -11,22 +11,18 @@ use std::marker::PhantomData;
 use serde;
 use serde::ser::Error as SerError;
 use serde_json;
-use ::mapping::{ ElasticType, ElasticTypeMapping, NullMapping };
-use ::object::{ ElasticUserTypeMapping, ElasticObjectTypeVisitor };
+use ::mapping::{ ElasticTypeMapping, ElasticTypeVisitor };
+use ::object::ElasticUserTypeMapping;
 
 /// Helper for mapping user-defined types.
 ///
 /// This mapper is designed to take a given user-defined type and pass it around to various visitors to map fields.
-pub struct TypeMapper<'a, T, M> where
-T: 'a + ElasticType<M, ()> + Clone + Default,
-M: ElasticUserTypeMapping<'a, T> {
-	phantom_a: PhantomData<&'a ()>,
-	phantom_m: PhantomData<M>,
-	phantom_t: PhantomData<T>
+pub struct TypeMapper<M> where
+M: ElasticUserTypeMapping {
+	phantom_m: PhantomData<M>
 }
-impl <'a, T, M> TypeMapper<'a, T, M> where
-T: 'a + ElasticType<M, ()> + Clone + Default,
-M: ElasticUserTypeMapping<'a, T> {
+impl <M> TypeMapper<M> where
+M: ElasticUserTypeMapping {
 	/// Map a user-defined type with a given `Serializer`.
 	///
 	/// The mapping is emitted as a json field, where the key is the name of the type, as defined by `M::data_type()`.
@@ -42,10 +38,10 @@ M: ElasticUserTypeMapping<'a, T> {
 	/// # extern crate serde_json;
 	/// # use serde::{ Serialize, Deserialize };
 	/// # use elastic_types::mapping::prelude::*;
-	/// # use elastic_types::date::ElasticDate;
+	/// # use elastic_types::date::prelude::*;
 	/// # #[derive(Default, Clone, Serialize, Deserialize, ElasticType)]
 	/// # pub struct MyType {
-	/// # 	pub my_date: ElasticDate,
+	/// # 	pub my_date: ElasticDate<DefaultFormat>,
 	/// # 	pub my_string: String,
 	/// # 	pub my_num: i32
 	/// # }
@@ -62,14 +58,14 @@ M: ElasticUserTypeMapping<'a, T> {
 	/// # fn main() {
 	/// let mut writer = Vec::new();
 	/// let mut ser = serde_json::Serializer::new(&mut writer);
-	/// let _ = TypeMapper::map(&MyType::default(), &mut ser).unwrap();
+	/// let _ = TypeMapper::to_writer(MyTypeMapping, &mut ser).unwrap();
 	/// # }
 	/// ```
-	pub fn map<S>(t: &'a T, serializer: &mut S) -> Result<(), S::Error> where
+	pub fn to_writer<S>(_: M, serializer: &mut S) -> Result<(), S::Error> where
 	S: serde::Serializer {
 		serializer.serialize_struct(
 			<M as ElasticTypeMapping<()>>::data_type(),
-			<M as ElasticUserTypeMapping<'a, T>>::Visitor::new(&t)
+			<M as ElasticUserTypeMapping>::Visitor::new()
 		)
 	}
 
@@ -88,10 +84,10 @@ M: ElasticUserTypeMapping<'a, T> {
 	/// # extern crate serde_json;
 	/// # use serde::{ Serialize, Deserialize };
 	/// # use elastic_types::mapping::prelude::*;
-	/// # use elastic_types::date::ElasticDate;
+	/// # use elastic_types::date::prelude::*;
 	/// # #[derive(Default, Clone, Serialize, Deserialize, ElasticType)]
 	/// # pub struct MyType {
-	/// # 	pub my_date: ElasticDate,
+	/// # 	pub my_date: ElasticDate<DefaultFormat>,
 	/// # 	pub my_string: String,
 	/// # 	pub my_num: i32
 	/// # }
@@ -106,14 +102,14 @@ M: ElasticUserTypeMapping<'a, T> {
 	/// # 	}
 	/// # }
 	/// # fn main() {
-	/// let _ = TypeMapper::map_str(&MyType::default()).unwrap();
+	/// let _ = TypeMapper::to_string(MyTypeMapping).unwrap();
 	/// # }
 	/// ```
-	pub fn map_str(t: &'a T) -> Result<String, serde_json::Error> {
+	pub fn to_string(t: M) -> Result<String, serde_json::Error> {
 		let mut writer = Vec::new();
 		{
 			let mut ser = serde_json::Serializer::new(&mut writer);
-			let _ = try!(Self::map(&t, &mut ser));
+			let _ = try!(Self::to_writer(t, &mut ser));
 		}
 
 		String::from_utf8(writer).map_err(|e| serde_json::Error::custom(e.description()))
@@ -134,10 +130,10 @@ M: ElasticUserTypeMapping<'a, T> {
 	/// # extern crate serde_json;
 	/// # use serde::{ Serialize, Deserialize };
 	/// # use elastic_types::mapping::prelude::*;
-	/// # use elastic_types::date::ElasticDate;
+	/// # use elastic_types::date::prelude::*;
 	/// # #[derive(Default, Clone, Serialize, Deserialize, ElasticType)]
 	/// # pub struct MyType {
-	/// # 	pub my_date: ElasticDate,
+	/// # 	pub my_date: ElasticDate<DefaultFormat>,
 	/// # 	pub my_string: String,
 	/// # 	pub my_num: i32
 	/// # }
@@ -152,75 +148,15 @@ M: ElasticUserTypeMapping<'a, T> {
 	/// # 	}
 	/// # }
 	/// # fn main() {
-	/// let val = TypeMapper::map_val(&MyType::default()).unwrap();
+	/// let val = TypeMapper::to_value(MyTypeMapping).unwrap();
 	///
 	/// let ty = val.lookup("properties.my_date.type");
 	/// # }
 	/// ```
-	pub fn map_val(t: &'a T) -> Result<serde_json::Value, serde_json::Error> {
+	pub fn to_value(t: M) -> Result<serde_json::Value, serde_json::Error> {
 		let mut ser = serde_json::value::Serializer::new();
-		let _ = try!(Self::map(&t, &mut ser));
+		let _ = try!(Self::to_writer(t, &mut ser));
 
 		Ok(ser.unwrap())
-	}
-}
-
-/// Helper for mapping data type fields.
-///
-/// The mapping is inferred from the given `ElasticType`.
-#[derive(Default)]
-pub struct FieldMapper<T, M = NullMapping, F = ()> where
-T: ElasticType<M, F>,
-M: ElasticTypeMapping<F> {
-	phantom_m: PhantomData<M>,
-	phantom_t: PhantomData<T>,
-	phantom_f: PhantomData<F>
-}
-impl <T, M, F> FieldMapper<T, M, F> where
-T: ElasticType<M, F>,
-M: ElasticTypeMapping<F> {
-	/// Infer the mapping of a data type and map using its `Visitor`.
-	///
-	/// The mapping is emitted as a json field, where the key is the name of the field on the type.
-	///
-	/// # Examples
-	///
-	/// ```
-	/// # #![feature(plugin, custom_derive)]
-	/// # #![plugin(elastic_macros)]
-	/// # #[macro_use]
-	/// # extern crate elastic_types;
-	/// # extern crate serde;
-	/// # extern crate serde_json;
-	/// # use serde::{ Serialize, Deserialize };
-	/// # use elastic_types::mapping::prelude::*;
-	/// # use elastic_types::date::ElasticDate;
-	/// # #[derive(Default, Clone, Serialize, Deserialize, ElasticType)]
-	/// # pub struct MyType {
-	/// # 	pub my_date: ElasticDate,
-	/// # 	pub my_string: String,
-	/// # 	pub my_num: i32
-	/// # }
-	/// # impl serde::Serialize for MyType {
-	/// # 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where S: serde::Serializer {
-	/// # 		unimplemented!()
-	/// # 	}
-	/// # }
-	/// # impl serde::Deserialize for MyType {
-	/// # 	 fn deserialize<D>(deserializer: &mut D) -> Result<Self, D::Error> where D: serde::Deserializer {
-	/// # 		unimplemented!()
-	/// # 	}
-	/// # }
-	/// # fn main() {
-	/// let mut writer = Vec::new();
-	/// let mut ser = serde_json::Serializer::new(&mut writer);
-	///
-	/// let mytype = MyType::default();
-	/// let _ = FieldMapper::map("my_date", &mytype.my_date, &mut ser).unwrap();
-	/// # }
-	/// ```
-	pub fn map<S>(key: &'static str, _: &T, serializer: &mut S) -> Result<(), S::Error>
-	where S: serde::Serializer {
-		serializer.serialize_struct_elt(key, M::default())
 	}
 }

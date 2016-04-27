@@ -1,45 +1,42 @@
 use std::marker::PhantomData;
 use serde;
 use serde::Serializer;
-use super::ElasticObjectTypeVisitor;
-use ::mapping::ElasticTypeMapping;
+use ::mapping::{ ElasticTypeMapping, ElasticTypeVisitor };
 
 /// The base requirements for mapping a user-defined type.
 ///
 /// User-defined type mappings are tied to `object` mappings.
-pub trait ElasticUserTypeMapping<'a, T> where
-T: 'a + Clone + Default,
+pub trait ElasticUserTypeMapping where
 Self: ElasticTypeMapping<()> + Default + Clone + serde::Serialize {
 	#[doc(hidden)]
-	type Visitor: ElasticObjectTypeVisitor<'a, T>;
+	type Visitor: ElasticTypeVisitor;
 	#[doc(hidden)]
-	type PropertiesVisitor: ElasticObjectTypeVisitor<'a, T>;
+	type PropertiesVisitor: ElasticTypeVisitor;
 }
 
 /// Represents the properties object that encapsulates type mappings.
-pub struct ElasticTypeProperties<'a, T, M> where
-T: 'a + Clone + Default,
-M: ElasticUserTypeMapping<'a, T> {
-	data: &'a T,
-	phantom: PhantomData<M>
+#[derive(Clone)]
+pub struct ElasticTypeProperties<T, M> where
+M: ElasticUserTypeMapping {
+	phantom_t: PhantomData<T>,
+	phantom_m: PhantomData<M>
 }
-impl <'a, T, M> ElasticTypeProperties<'a, T, M> where
-T: 'a + Clone + Default,
-M: ElasticUserTypeMapping<'a, T> {
-	/// Create a new properties struct from a borrowed user-defined type.
-	pub fn new(data: &'a T) -> Self {
+
+impl <T, M> ElasticTypeProperties<T, M> where
+M: ElasticUserTypeMapping {
+	/// Create a new type properties container.
+	pub fn new() -> Self {
 		ElasticTypeProperties {
-			data: data,
-			phantom: PhantomData
+			phantom_t: PhantomData,
+			phantom_m: PhantomData
 		}
 	}
 }
 
-impl <'a, T, M> serde::Serialize for ElasticTypeProperties<'a, T, M> where
-T: 'a + Clone + Default,
-M: ElasticUserTypeMapping<'a, T> {
+impl <T, M> serde::Serialize for ElasticTypeProperties<T, M> where
+M: ElasticUserTypeMapping {
 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
 	where S: serde::Serializer {
-		serializer.serialize_struct("properties", <M as ElasticUserTypeMapping<T>>::PropertiesVisitor::new(&self.data))
+		serializer.serialize_struct("properties", <M as ElasticUserTypeMapping>::PropertiesVisitor::new())
 	}
 }

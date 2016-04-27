@@ -1,8 +1,7 @@
 use std::marker::PhantomData;
 use serde;
 use serde::{ Serialize, Serializer };
-use super::ElasticObjectTypeVisitor;
-use ::mapping::{ ElasticTypeMapping };
+use ::mapping::{ ElasticTypeMapping, ElasticTypeVisitor };
 
 /// The base requirements for mapping an `object` type.
 ///
@@ -58,37 +57,43 @@ impl serde::Serialize for Dynamic {
 }
 
 /// Represents the properties object that encapsulates type mappings.
-pub struct ElasticObjectProperties<'a, T, V> where
-T: 'a + Clone + Default,
-V: ElasticObjectTypeVisitor<'a, T> {
-	data: &'a T,
-	phantom: PhantomData<V>
+#[derive(Debug)]
+pub struct ElasticObjectProperties<V> where
+V: ElasticTypeVisitor {
+	phantom_v: PhantomData<V>
 }
-impl <'a, T, V> ElasticObjectProperties<'a, T, V> where
-T: 'a + Clone + Default,
-V: ElasticObjectTypeVisitor<'a, T> {
-	/// Create a new properties struct from a borrowed user-defined type.
-	pub fn new(data: &'a T) -> Self {
+
+impl <V> ElasticObjectProperties<V> where
+V: ElasticTypeVisitor {
+	/// Create a new properties container.
+	pub fn new() -> Self {
 		ElasticObjectProperties {
-			data: data,
-			phantom: PhantomData
+			phantom_v: PhantomData
 		}
 	}
 }
 
-impl <'a, T, V> serde::Serialize for ElasticObjectProperties<'a, T, V> where
-T: 'a + Clone + Default,
-V: ElasticObjectTypeVisitor<'a, T> {
+impl <V> serde::Serialize for ElasticObjectProperties<V> where
+V: ElasticTypeVisitor {
 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
 	where S: serde::Serializer {
-		serializer.serialize_struct("properties", V::new(&self.data))
+		serializer.serialize_struct("properties", V::new())
 	}
 }
 
 /// Visitor for an `object` field mapping.
-#[derive(Debug, PartialEq, Default)]
+#[derive(Debug, PartialEq)]
 pub struct ElasticObjectMappingVisitor<T> where T: ElasticObjectMapping {
 	phantom: PhantomData<T>
+}
+
+impl <T> ElasticTypeVisitor for ElasticObjectMappingVisitor<T> where
+T: ElasticObjectMapping  {
+	fn new() -> Self {
+		ElasticObjectMappingVisitor {
+			phantom: PhantomData
+		}
+	}
 }
 
 impl <T> serde::ser::MapVisitor for ElasticObjectMappingVisitor<T> where

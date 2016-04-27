@@ -3,8 +3,8 @@
 use std::marker::PhantomData;
 use serde;
 use serde::{ Serializer, Serialize };
-use super::{ DateFormat, DefaultFormat };
-use ::mapping::{ ElasticTypeMapping, IndexAnalysis };
+use super::DateFormat;
+use ::mapping::{ ElasticTypeMapping, ElasticTypeVisitor, IndexAnalysis };
 
 /// The base requirements for mapping a `date` type.
 ///
@@ -37,60 +37,6 @@ use ::mapping::{ ElasticTypeMapping, IndexAnalysis };
 ///		}
 /// }
 /// # fn main() {}
-/// ```
-///
-/// ## With Macros
-///
-/// With macros, it's possible to create a mapping that's valid for a single date format
-/// (`EpochMillis` in this case):
-///
-/// ```
-/// # extern crate serde;
-/// # #[macro_use]
-/// # extern crate elastic_types;
-/// # use std::marker::PhantomData;
-/// # fn main() {
-/// use elastic_types::mapping::prelude::*;
-/// use elastic_types::date::prelude::*;
-///
-/// #[derive(Debug, Default, Clone, Copy)]
-/// pub struct MyDateMapping;
-/// impl ElasticDateMapping<EpochMillis> for MyDateMapping {
-/// 	//Overload the mapping functions here
-/// 	fn boost() -> Option<f32> {
-///			Some(1.5)
-///		}
-/// }
-///
-/// impl_date_mapping!(MyDateMapping, EpochMillis);
-/// # }
-/// ```
-///
-/// You can also create a mapping that's valid for any date format:
-///
-/// ```
-/// # extern crate serde;
-/// # #[macro_use]
-/// # extern crate elastic_types;
-/// # use std::marker::PhantomData;
-/// # fn main() {
-/// use elastic_types::mapping::prelude::*;
-/// use elastic_types::date::prelude::*;
-///
-/// #[derive(Debug, Default, Clone, Copy)]
-/// pub struct MyDateMapping<T: DateFormat> {
-/// 	phantom: PhantomData<T>
-/// }
-///
-/// impl <T: DateFormat> ElasticDateMapping<T> for MyDateMapping<T> {
-/// 	//Overload the mapping functions here
-/// 	fn boost() -> Option<f32> {
-///			Some(1.5)
-///		}
-/// }
-///
-/// impl_date_mapping!(MyDateMapping<T>);
-/// # }
 /// ```
 ///
 /// ## Manually
@@ -135,7 +81,7 @@ use ::mapping::{ ElasticTypeMapping, IndexAnalysis };
 /// The above example binds the mapping to the `BasicDateTime` format, so `get_null_value` returns a properly formated value.
 pub trait ElasticDateMapping<T> where
 T: DateFormat,
-Self: ElasticTypeMapping<T> + Sized + Serialize + Default + Copy {
+Self: ElasticTypeMapping<T> + Sized + Serialize {
 	/// Field-level index time boosting. Accepts a floating point number, defaults to `1.0`.
 	fn boost() -> Option<f32> {
 		None
@@ -192,7 +138,7 @@ Self: ElasticTypeMapping<T> + Sized + Serialize + Default + Copy {
 
 /// Default mapping for `ElasticDate`.
 #[derive(Debug, Default, Clone, Copy)]
-pub struct DefaultDateMapping<T = DefaultFormat> where
+pub struct DefaultDateMapping<T> where
 T: DateFormat {
 	phantom: PhantomData<T>
 }
@@ -202,7 +148,7 @@ T: DateFormat { }
 impl_date_mapping!(DefaultDateMapping<T>);
 
 /// Visitor for a `date` map.
-#[derive(Debug, PartialEq, Default)]
+#[derive(Debug, PartialEq)]
 pub struct ElasticDateMappingVisitor<F, T> where
 F: DateFormat,
 T: ElasticDateMapping<F> {
@@ -210,6 +156,16 @@ T: ElasticDateMapping<F> {
 	phantom_t: PhantomData<T>
 }
 
+impl <F, T> ElasticTypeVisitor for ElasticDateMappingVisitor<F, T> where
+F: DateFormat,
+T: ElasticDateMapping<F> {
+	fn new() -> Self {
+		ElasticDateMappingVisitor {
+			phantom_f: PhantomData,
+			phantom_t: PhantomData
+		}
+	}
+}
 impl <F, T> serde::ser::MapVisitor for ElasticDateMappingVisitor<F, T>  where
 F: DateFormat,
 T: ElasticDateMapping<F> {

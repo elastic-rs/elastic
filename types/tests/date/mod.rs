@@ -13,10 +13,11 @@ extern crate elastic_types;
 use chrono::format::Item;
 use chrono::offset::TimeZone;
 use elastic_types::date::prelude::*;
+use elastic_types::mapping::prelude::*;
 
 #[derive(Default, Serialize, Deserialize)]
 struct MyType {
-	pub date: ElasticDate
+	pub date: ElasticDate<DefaultFormat>
 }
 
 #[derive(Default, Serialize, Deserialize)]

@@ -25,6 +25,7 @@ pub mod prelude {
 	pub use super::{
 		ElasticType,
 		ElasticTypeMapping,
+		ElasticTypeVisitor,
 		NullMapping,
 		IndexAnalysis
 	};
@@ -63,6 +64,11 @@ Self : serde::Serialize + serde::Deserialize {
 	fn name() -> &'static str {
 		T::name()
 	}
+
+	/// Get the mapping for this type.
+	fn mapping() -> T {
+		T::default()
+	}
 }
 
 /// The base requirements for mapping an Elasticsearch data type.
@@ -72,9 +78,8 @@ Self : serde::Serialize + serde::Deserialize {
 /// which is a specialization of `ElasticTypeMapping<()>`.
 pub trait ElasticTypeMapping<F>
 where Self: Default + Clone + serde::Serialize {
-	//TODO: Make this bound take ElasticTypeVisitor
 	#[doc(hidden)]
-	type Visitor : serde::ser::MapVisitor + Default;
+	type Visitor : ElasticTypeVisitor;
 
 	/// An optional associated type that mappings may need.
 	///
@@ -83,7 +88,7 @@ where Self: Default + Clone + serde::Serialize {
 
 	#[doc(hidden)]
 	fn get_visitor() -> Self::Visitor {
-		Self::Visitor::default()
+		Self::Visitor::new()
 	}
 
 	/// Get the type name for this mapping, like `date` or `string`.
@@ -97,18 +102,17 @@ where Self: Default + Clone + serde::Serialize {
 	}
 }
 
-//TODO: Determine if the bound on just T is sufficient
 /// Base visitor for serialising a datatype.
-pub trait ElasticTypeVisitor<'a, T> where
-T: 'a,
+pub trait ElasticTypeVisitor where
 Self: serde::ser::MapVisitor {
-	/// Create a new visitor from a borrowed datatype.
-	fn new(data: &'a T) -> Self;
+	/// Create a new instance of the visitor.
+	fn new() -> Self;
 }
 
 /// A mapping implementation for a non-core type, or any where it's ok for Elasticsearch to infer the mapping at index-time.
 #[derive(Debug, PartialEq, Default, Clone)]
 pub struct NullMapping;
+
 impl ElasticTypeMapping<()> for NullMapping {
 	type Visitor = NullMappingVisitor;
 
@@ -120,13 +124,18 @@ impl ElasticTypeMapping<()> for NullMapping {
 impl serde::Serialize for NullMapping {
 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
 	where S: serde::Serializer {
-		serializer.serialize_struct("mapping", NullMappingVisitor::default())
+		serializer.serialize_struct("mapping", NullMappingVisitor::new())
 	}
 }
 
 /// A default empty visitor.
-#[derive(Default, Debug, PartialEq)]
+#[derive(Debug, PartialEq)]
 pub struct NullMappingVisitor;
+impl ElasticTypeVisitor for NullMappingVisitor {
+	fn new() -> Self {
+		NullMappingVisitor
+	}
+}
 impl serde::ser::MapVisitor for NullMappingVisitor {
 	fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
 	where S: serde::Serializer {

@@ -17,16 +17,16 @@
 //! Map with a custom `string`:
 //!
 //! ```
+//! # #![feature(plugin, custom_derive)]
+//! # #![plugin(elastic_macros)]
 //! # extern crate serde;
-//! # #[macro_use]
 //! # extern crate elastic_types;
 //! # fn main() {
 //! # use elastic_types::mapping::prelude::*;
 //! # use elastic_types::string::prelude::*;
-//! # #[derive(Debug, Clone, Default)]
+//! # #[derive(Clone, Default, ElasticStringMapping)]
 //! # pub struct MyStringMapping;
 //! # impl ElasticStringMapping for MyStringMapping { }
-//! # impl_string_mapping!(MyStringMapping);
 //! struct MyType {
 //! 	pub field: ElasticString<MyStringMapping>
 //! }

@@ -84,13 +84,12 @@ pub fn expand_derive_type_mapping(cx: &mut ExtCtxt, span: Span, meta_item: &Meta
 
 	let object_visitor = object::build_object_visitor(cx, span, item, &fields, push);
 
-	object::impl_field_visitor_ser(cx, item, &field_mapping, &field_visitor, &object_visitor, push);
+	object::impl_field_visitor_ser(cx, &field_mapping, &field_visitor, &object_visitor, push);
 
-	let type_mapping = object::build_type_mapping(cx, item, push);
-	let type_visitor = object::build_type_visitor(cx, item, &type_mapping, push);
-	object::impl_type_mapping(cx, span, &es_ty, item, &type_mapping, &type_visitor, &object_visitor, &field_visitor, push);
+	let type_visitor = object::build_type_visitor(cx, item, &field_mapping, push);
+	object::impl_type_mapping(cx, &field_mapping, &type_visitor, &object_visitor, push);
 
-	object::impl_type(cx, item, &type_mapping, push);
+	object::impl_type(cx, item, &field_mapping, push);
 }
 
 macro_rules! expect_item {

@@ -425,7 +425,6 @@ pub mod number_fixtures {
 }
 
 pub mod object_fixtures {
-	use chrono;
 	use chrono::{ DateTime, UTC };
 	use elastic_types::mapping::prelude::*;
 	use elastic_types::date::prelude::*;
@@ -436,11 +435,11 @@ pub mod object_fixtures {
 	use ::number_fixtures::*;
 	use ::boolean_fixtures::*;
 
-	#[derive(Clone, Serialize, Deserialize, ElasticType)]
+	#[derive(Serialize, Deserialize, ElasticType)]
 	#[elastic(ty="my_type", mapping="MyTypeMapping")]
 	pub struct MyType {
 		pub my_date1: DateTime<UTC>,
-		pub my_date2: ElasticDate,
+		pub my_date2: ElasticDate<DefaultFormat>,
 		pub my_date3: ElasticDate<EpochMillis, MyDateMapping>,
 		pub my_string1: String,
 		pub my_string2: ElasticString<DefaultStringMapping>,
@@ -450,24 +449,8 @@ pub mod object_fixtures {
 		pub my_bool2: ElasticBoolean<MyBooleanMapping>
 	}
 
-	impl Default for MyType {
-		fn default() -> MyType {
-			MyType {
-				my_date1: chrono::UTC::now(),
-				my_date2: ElasticDate::default(),
-				my_date3: ElasticDate::<EpochMillis, MyDateMapping>::default(),
-				my_string1: String::default(),
-				my_string2: ElasticString::<DefaultStringMapping>::default(),
-				my_num1: i32::default(),
-				my_num2: ElasticInteger::<MyIntegerMapping>::default(),
-				my_bool1: false,
-				my_bool2: ElasticBoolean::<MyBooleanMapping>::default()
-			}
-		}
-	}
-
 	#[derive(Default, Clone)]
-	struct MyTypeMapping;
+	pub struct MyTypeMapping;
 	impl ElasticObjectMapping for MyTypeMapping {
 		fn data_type() -> &'static str {
 			"object"
@@ -486,16 +469,16 @@ pub mod object_fixtures {
 		}
 	}
 
-	#[derive(Default, Clone, Serialize, Deserialize, ElasticType)]
+	#[derive(Serialize, Deserialize, ElasticType)]
 	pub struct MyOtherType {
-		pub my_date: ElasticDate,
+		pub my_date: ElasticDate<DefaultFormat>,
 		#[serde(rename="my_renamed_type")]
 		pub my_type: MyType,
 		#[serde(skip_serializing)]
 		pub ignored: String,
 		pub my_num: i32,
 		pub my_strings: Vec<String>,
-		pub my_dates: Vec<ElasticDate>
+		pub my_dates: Vec<ElasticDate<DefaultFormat>>
 	}
 }
 
