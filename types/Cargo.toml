@@ -20,8 +20,8 @@ no_response_ty = [
   "string_ty"
 ]
 boolean_ty = []
-date_ty = []
-geo_ty = []
+date_ty = [ "geojson" ]
+geo_ty = [ "chrono" ]
 number_ty = []
 response_ty = []
 string_ty = []
@@ -36,10 +36,12 @@ clippy = { version = "*", optional = true }
 
 [dependencies.chrono]
 version = "*"
+optional = true
 features = [ "serde" ]
 
 [dependencies.geojson]
 version = "*"
+optional = true
 features = [ "with-serde" ]
 
 [dependencies.elastic_macros]
