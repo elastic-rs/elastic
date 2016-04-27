@@ -32,7 +32,10 @@ nightly-testing = [ "clippy" ]
 serde = "*"
 serde_json = "*"
 serde_macros = "*"
-clippy = { version = "*", optional = true }
+
+[dependencies.clippy]
+version = "*"
+optional = true
 
 [dependencies.chrono]
 version = "*"
