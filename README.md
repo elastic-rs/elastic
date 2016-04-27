@@ -157,7 +157,7 @@ elastic_types = "*"
 Define a custom Elasticsearch type called `my_type`:
 
 ```rust
-#[derive(Default, Clone, Serialize, Deserialize, ElasticType)]
+#[derive(Serialize, Deserialize, ElasticType)]
 #[elastic(mapping="MyTypeMapping")]
 pub struct MyType {
 	pub my_date: ElasticDate<EpochMillis>,
