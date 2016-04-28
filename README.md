@@ -152,6 +152,7 @@ Add `elastic_types` to your `Cargo.toml`:
 ```
 [dependencies]
 elastic_types = "*"
+elastic_macros = "*"
 ```
 
 Define a custom Elasticsearch type called `my_type`:
@@ -178,4 +179,23 @@ Get the mapping for your type:
 
 ```rust
 let mapping = TypeMapper::to_string(MyTypeMapping).unwrap();
+```
+
+This will return:
+
+```json
+{
+  "properties": {
+    "my_date": {
+      "type": "date",
+      "format": "epoch_millis"
+    },
+    "my_string": {
+      "type": "string"
+    },
+    "my_num": {
+      "type": "integer"
+    }
+  }
+}
 ```

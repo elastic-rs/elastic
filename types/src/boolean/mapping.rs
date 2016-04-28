@@ -35,6 +35,37 @@ use ::mapping::{ ElasticTypeMapping, ElasticTypeVisitor, IndexAnalysis };
 /// # fn main() {}
 /// ```
 ///
+/// This will produce the following mapping:
+///
+/// ```
+/// # #![feature(plugin, custom_derive, custom_attribute)]
+/// # #![plugin(elastic_macros)]
+/// # #[macro_use]
+/// # extern crate elastic_types;
+/// # extern crate serde;
+/// # extern crate serde_json;
+/// # use elastic_types::mapping::prelude::*;
+/// # use elastic_types::boolean::prelude::*;
+/// # #[derive(Debug, Clone, Default, ElasticBooleanMapping)]
+/// # pub struct MyBooleanMapping;
+/// # impl ElasticBooleanMapping for MyBooleanMapping {
+/// # 	//Overload the mapping functions here
+/// # 	fn boost() -> Option<f32> {
+///	# 		Some(1.5)
+///	# 	}
+/// # }
+/// # fn main() {
+/// # let mapping = serde_json::to_string(&MyBooleanMapping).unwrap();
+/// # let json = json_str!(
+/// {
+///     "type": "boolean",
+/// 	"boost": 1.5
+/// }
+/// # );
+/// # assert_eq!(json, &mapping);
+/// # }
+/// ```
+///
 /// ## Manually
 ///
 /// ```

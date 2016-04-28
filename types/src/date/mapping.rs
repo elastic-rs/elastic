@@ -39,6 +39,41 @@ use ::mapping::{ ElasticTypeMapping, ElasticTypeVisitor, IndexAnalysis };
 /// # fn main() {}
 /// ```
 ///
+/// This will produce the following mapping:
+///
+/// ```
+/// # #![feature(plugin, custom_derive, custom_attribute)]
+/// # #![plugin(elastic_macros)]
+/// # #[macro_use]
+/// # extern crate elastic_types;
+/// # extern crate serde;
+/// # extern crate serde_json;
+/// # use std::marker::PhantomData;
+/// # use elastic_types::mapping::prelude::*;
+/// # use elastic_types::date::prelude::*;
+/// # #[derive(Default, Clone, Copy, ElasticDateMapping)]
+/// # pub struct MyDateMapping<T: DateFormat = EpochMillis> {
+/// # 	phantom: PhantomData<T>
+/// # }
+/// # impl <T: DateFormat> ElasticDateMapping<T> for MyDateMapping<T> {
+/// # 	//Overload the mapping functions here
+/// # 	fn boost() -> Option<f32> {
+///	# 		Some(1.5)
+///	# 	}
+/// # }
+/// # fn main() {
+/// # let mapping = serde_json::to_string(&MyDateMapping::<EpochMillis>::default()).unwrap();
+/// # let json = json_str!(
+/// {
+///     "type": "date",
+/// 	"boost": 1.5,
+/// 	"format": "epoch_millis"
+/// }
+/// # );
+/// # assert_eq!(json, &mapping);
+/// # }
+/// ```
+///
 /// ## Manually
 ///
 /// ```

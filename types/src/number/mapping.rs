@@ -29,6 +29,37 @@
 //! # fn main() {}
 //! ```
 //!
+//! This will produce the following mapping:
+//!
+//! ```
+//! # #![feature(plugin, custom_derive, custom_attribute)]
+//! # #![plugin(elastic_macros)]
+//! # #[macro_use]
+//! # extern crate elastic_types;
+//! # extern crate serde;
+//! # extern crate serde_json;
+//! # use elastic_types::mapping::prelude::*;
+//! # use elastic_types::number::prelude::*;
+//! # #[derive(Debug, Clone, Default, ElasticIntegerMapping)]
+//! # pub struct MyIntegerMapping;
+//! # impl ElasticIntegerMapping for MyIntegerMapping {
+//! # 	//Overload the mapping functions here
+//! # 	fn null_value() -> Option<i32> {
+//! # 		Some(42)
+//! # 	}
+//! # }
+//! # fn main() {
+//! # let mapping = serde_json::to_string(&MyIntegerMapping).unwrap();
+//! # let json = json_str!(
+//! {
+//!     "type": "integer",
+//! 	"null_value": 42
+//! }
+//! # );
+//! # assert_eq!(json, &mapping);
+//! # }
+//! ```
+//!
 //! ## Manually
 //!
 //! ```
