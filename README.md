@@ -1,4 +1,4 @@
-# elasticsearch-rs
+# Elastic
 Yet another work in progress Elasticsearch client for Rust.
 
 Platform  | Channel | Status
@@ -15,7 +15,7 @@ For more details, see:
 - [samples](https://github.com/KodrAus/elasticsearch-rs/tree/master/hyper/samples)
 - [benchmarks](https://github.com/KodrAus/elasticsearch-rs/tree/master/benches)
 - [elastic_hyper](#elastic_hyper)
-- [macros](#macros)
+- [macros](#Macros)
 
 If you'd prefer to call Elasticsearch using a Query DSL builder, see [rs-es](https://github.com/benashford/rs-es).
 
@@ -125,7 +125,7 @@ Will provide an asynchronous [rotor-http](https://github.com/tailhook/rotor-http
 
 The crate will allow you to use connections in two ways; add connections as state machines to your own `mio` loop, or use an out-of-the-box connection pool.
 
-### elastic_macros
+### Macros
 
 #### json_str
 
