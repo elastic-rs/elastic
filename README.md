@@ -104,7 +104,7 @@ extern crate elastic_hyper as elastic;
 
 let mut client = Client::new();
 let response = elastic::search::post(
-	&mut client, elastic::RequestParams::default(),
+	&mut client, &elastic::RequestParams::default(),
 	json_str!({
 		query: {
 			query_string: {
