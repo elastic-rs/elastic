@@ -15,7 +15,7 @@ For more details, see:
 - [samples](https://github.com/KodrAus/elasticsearch-rs/tree/master/hyper/samples)
 - [benchmarks](https://github.com/KodrAus/elasticsearch-rs/tree/master/benches)
 - [elastic_hyper](#elastic_hyper)
-- [json_str](#json_str)
+- [macros](#macros)
 
 If you'd prefer to call Elasticsearch using a Query DSL builder, see [rs-es](https://github.com/benashford/rs-es).
 
@@ -138,7 +138,7 @@ Provides an easy way to build json literals without having to use ungainly strin
 
 #### elastic_types_macros
 
-[![Latest Version](https://img.shields.io/crates/v/json_str.svg)](https://crates.io/crates/elastic_types_macros)
+[![Latest Version](https://img.shields.io/crates/v/elastic_types_macros.svg)](https://crates.io/crates/elastic_types_macros)
 
 [Docs](http://kodraus.github.io/rustdoc/elastic_types_macros/) |
 [Issues](https://github.com/KodrAus/elasticsearch-rs/labels/macros)
@@ -147,7 +147,7 @@ Provides custom derive plugins for Elasticsearch datatypes and mappings in [elas
 
 #### elastic_date_macros
 
-[![Latest Version](https://img.shields.io/crates/v/json_str.svg)](https://crates.io/crates/elastic_date_macros)
+[![Latest Version](https://img.shields.io/crates/v/elastic_date_macros.svg)](https://crates.io/crates/elastic_date_macros)
 
 [Docs](http://kodraus.github.io/rustdoc/elastic_date_macros/) |
 [Issues](https://github.com/KodrAus/elasticsearch-rs/labels/macros)
@@ -156,7 +156,7 @@ Provides date-specific plugins for the date datatype in [elastic_types](#elastic
 
 ### elastic_types
 
-[![Latest Version](https://img.shields.io/crates/v/json_str.svg)](https://crates.io/crates/elastic_types)
+[![Latest Version](https://img.shields.io/crates/v/elastic_types.svg)](https://crates.io/crates/elastic_types)
 
 [Docs](http://kodraus.github.io/rustdoc/elastic_types/) |
 [Issues](https://github.com/KodrAus/elasticsearch-rs/labels/types)
@@ -174,7 +174,7 @@ Add `elastic_types` to your `Cargo.toml`:
 ```
 [dependencies]
 elastic_types = "*"
-json_str = "*"
+elastic_types_macros = "*"
 ```
 
 Define a custom Elasticsearch type called `my_type`:
