@@ -1,5 +1,5 @@
 #![feature(test, plugin)]
-#![plugin(elastic_macros)]
+#![plugin(json_str)]
 #![plugin(serde_macros)]
 #![plugin(json_macros)]
 

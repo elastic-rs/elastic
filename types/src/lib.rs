@@ -7,19 +7,20 @@
 //!
 //! # Usage
 //!
-//! To get started, add `elastic_types` and `elastic_macros` to your `Cargo.toml`:
+//! This crate is on [crates.io](https://crates.io/crates/elastic_types).
+//! To get started, add `elastic_types` and [elastic_types_macros](http://kodraus.github.io/rustdoc/elastic_types_macros/) to your `Cargo.toml`:
 //!
 //! ```ignore
 //! [dependencies]
 //! elastic_types = "*"
-//! elastic_macros = "*"
+//! elastic_types_macros = "*"
 //! ```
 //!
 //! And reference them in your crate root:
 //!
 //! ```ignore
 //! #![feature(plugin)]
-//! #![plugin(elastic_macros)]
+//! #![plugin(elastic_types_macros)]
 //!
 //! extern crate elastic_types;
 //! ```
@@ -30,7 +31,7 @@
 //!
 //! ```
 //! # #![feature(plugin, custom_derive)]
-//! # #![plugin(elastic_macros)]
+//! # #![plugin(json_str, elastic_types_macros)]
 //! # #[macro_use]
 //! # extern crate elastic_types;
 //! # extern crate serde;
@@ -64,7 +65,7 @@
 //!
 //! ```
 //! # #![feature(plugin, custom_derive, custom_attribute)]
-//! # #![plugin(elastic_macros)]
+//! # #![plugin(json_str, elastic_types_macros)]
 //! # #[macro_use]
 //! # extern crate elastic_types;
 //! # extern crate serde;
@@ -96,7 +97,7 @@
 //!
 //! ```
 //! # #![feature(plugin, custom_derive, custom_attribute)]
-//! # #![plugin(elastic_macros)]
+//! # #![plugin(json_str, elastic_types_macros)]
 //! # extern crate elastic_types;
 //! # extern crate serde;
 //! # use serde::{ Serialize, Deserialize };
@@ -144,7 +145,7 @@
 //!
 //! ```
 //! # #![feature(plugin, custom_derive, custom_attribute)]
-//! # #![plugin(elastic_macros)]
+//! # #![plugin(json_str, elastic_types_macros)]
 //! # #[macro_use]
 //! # extern crate elastic_types;
 //! # extern crate serde;
@@ -189,7 +190,7 @@
 //!
 //! ```
 //! # #![feature(plugin, custom_derive, custom_attribute)]
-//! # #![plugin(elastic_macros)]
+//! # #![plugin(json_str, elastic_types_macros)]
 //! # extern crate elastic_types;
 //! # extern crate serde;
 //! # use serde::{ Serialize, Deserialize };
@@ -262,25 +263,25 @@
 //! [dependencies.elastic_types]
 //! version = "*"
 //! default-features = false
-//! features = [ "date_ty", "response_ty" ] }
+//! features = [ "date-ty", "response-ty" ] }
 //! ```
 //!
 //! The full list of features is as follows:
 //!
 //!  Elasticsearch Type | Feature
 //!  ------------------ | ---------------
-//!  `integer`          | `number_ty`
-//!  `long`             | `number_ty`
-//!  `short`            | `number_ty`
-//!  `byte`             | `number_ty`
-//!  `float`            | `number_ty`
-//!  `double`           | `number_ty`
-//!  `string`           | `string_ty`
-//!  `boolean`          | `boolean_ty`
-//!  `date`             | `date_ty`
-//!  responses          | `response_ty`
+//!  `integer`          | `number-ty`
+//!  `long`             | `number-ty`
+//!  `short`            | `number-ty`
+//!  `byte`             | `number-ty`
+//!  `float`            | `number-ty`
+//!  `double`           | `number-ty`
+//!  `string`           | `string-ty`
+//!  `boolean`          | `boolean-ty`
+//!  `date`             | `date-ty`
+//!  responses          | `response-ty`
 //!
-//! To include all types except for responses, you can use the `no_response_ty` feature.
+//! To include all types except for responses, you can use the `no-response-ty` feature.
 //!
 //! # Types
 //!
@@ -345,9 +346,10 @@
 
 #![feature(custom_derive, custom_attribute, plugin, optin_builtin_traits, associated_type_defaults)]
 #![cfg_attr(feature = "nightly-testing", plugin(clippy))]
-#![plugin(serde_macros, elastic_macros)]
+#![cfg_attr(feature = "date-ty", plugin(elastic_date_macros))]
+#![plugin(serde_macros)]
 
-#[cfg(feature="date_ty")]
+#[cfg(feature="date-ty")]
 extern crate chrono;
 extern crate serde;
 extern crate serde_json;
@@ -358,13 +360,13 @@ pub mod mapping;
 pub mod mappers;
 
 pub mod object;
-#[cfg(feature="date_ty")]
+#[cfg(feature="date-ty")]
 pub mod date;
-#[cfg(feature="string_ty")]
+#[cfg(feature="string-ty")]
 pub mod string;
-#[cfg(feature="number_ty")]
+#[cfg(feature="number-ty")]
 pub mod number;
-#[cfg(feature="boolean_ty")]
+#[cfg(feature="boolean-ty")]
 pub mod boolean;
-#[cfg(feature="response_ty")]
+#[cfg(feature="response-ty")]
 pub mod response;

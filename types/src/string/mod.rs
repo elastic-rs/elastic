@@ -18,7 +18,7 @@
 //!
 //! ```
 //! # #![feature(plugin, custom_derive)]
-//! # #![plugin(elastic_macros)]
+//! # #![plugin(json_str, elastic_types_macros)]
 //! # extern crate serde;
 //! # extern crate elastic_types;
 //! # fn main() {

@@ -1,7 +1,11 @@
-# elasticsearch-rs macros
+# elasticsearch macros
 Yet another work in progress Elasticsearch client for Rust.
 
-A library for compiler plugins and macros used by the `elastic_types` crate. The focus for this crate is to make it easy to do as much work at comile-time as possible. This includes converting Elasticsearch [date foramts](https://www.elastic.co/guide/en/elasticsearch/reference/2.1/mapping-date-format.html) to a tree of `Item`s.
+A collection of compiler-plugin macros for the various other Elasticsearch crates:
+
+- `elastic_types_macros` for custom derive attributes on mapping types
+- `elastic_date_macros` for date-specific compiler plugins
+- `json_str` for building json string literals (probably moving to a separate repo in the future)
 
 # Links
 - [Compiler Plugins](https://doc.rust-lang.org/book/compiler-plugins.html)

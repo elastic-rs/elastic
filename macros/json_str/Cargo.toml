@@ -1,0 +1,27 @@
+[package]
+name = "json_str"
+version = "0.2.1"
+authors = ["Ashley Mannix <ashleymannix@live.com.au>"]
+license = "Apache-2.0"
+description = "Write json literals without ungainly strings."
+documentation = "http://kodraus.github.io/rustdoc/json_str/"
+repository = "https://github.com/KodrAus/elasticsearch-rs"
+
+[lib]
+name = "json_str"
+crate_type = [ "dylib" ]
+plugin = true
+
+[features]
+nightly-testing = [ "clippy" ]
+
+[dependencies]
+serde = "^0.7"
+serde_json = "^0.7"
+serde_macros = "^0.7"
+clippy = { version = "^0.*", optional = true }
+
+[dependencies.json_macros]
+version = "^0.3"
+default-features = false
+features = [ "with-serde" ]

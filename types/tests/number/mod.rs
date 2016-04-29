@@ -1,6 +1,6 @@
 #![feature(custom_derive, custom_attribute, plugin)]
 #![plugin(serde_macros)]
-#![plugin(elastic_macros)]
+#![plugin(json_str)]
 
 pub mod mapping;
 

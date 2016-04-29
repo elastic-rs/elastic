@@ -1,6 +1,6 @@
 #![feature(custom_derive, custom_attribute, plugin)]
 #![plugin(serde_macros)]
-#![plugin(elastic_macros)]
+#![plugin(json_str, elastic_types_macros, elastic_date_macros)]
 
 pub mod mapping;
 pub mod formats;

@@ -1,0 +1,20 @@
+[package]
+name = "elastic_date_macros"
+version = "0.2.0"
+authors = ["Ashley Mannix <ashleymannix@live.com.au>"]
+license = "Apache-2.0"
+description = "Compile-time code generation for chrono date formats."
+documentation = "http://kodraus.github.io/rustdoc/elastic_date_macros/"
+repository = "https://github.com/KodrAus/elasticsearch-rs"
+
+[lib]
+name = "elastic_date_macros"
+crate_type = [ "dylib" ]
+plugin = true
+
+[features]
+nightly-testing = [ "clippy" ]
+
+[dependencies]
+chrono = { version = "~0.2.20" }
+clippy = { version = "^0.*", optional = true }

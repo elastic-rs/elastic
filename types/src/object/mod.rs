@@ -11,13 +11,13 @@
 //!
 //! ```
 //! # #![feature(plugin, custom_derive, custom_attribute)]
-//! # #![plugin(elastic_macros)]
+//! # #![plugin(json_str, elastic_types_macros)]
 //! # #[macro_use]
 //! # extern crate elastic_types;
 //! # extern crate serde;
 //! # use serde::{ Serialize, Deserialize };
-//! # use elastic_types::mapping::prelude::*;
-//! # use elastic_types::date::prelude::*;
+//! use elastic_types::mapping::prelude::*;
+//! use elastic_types::date::prelude::*;
 //!
 //! #[derive(Default, Clone, Serialize, Deserialize, ElasticType)]
 //! pub struct MyType {
@@ -25,7 +25,6 @@
 //! 	pub my_string: String,
 //! 	pub my_num: i32
 //! }
-//!
 //! # impl serde::Serialize for MyType {
 //! # 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where S: serde::Serializer {
 //! # 		unimplemented!()
@@ -48,14 +47,13 @@
 //!
 //! ```
 //! # #![feature(plugin, custom_derive, custom_attribute)]
-//! # #![plugin(elastic_macros)]
+//! # #![plugin(json_str, elastic_types_macros)]
 //! # #[macro_use]
 //! # extern crate elastic_types;
 //! # extern crate serde;
 //! # use serde::{ Serialize, Deserialize };
 //! # use elastic_types::mapping::prelude::*;
 //! # use elastic_types::date::prelude::*;
-//!
 //! #[derive(Default, Clone, Serialize, Deserialize, ElasticType)]
 //! #[elastic(mapping="MyTypeMapping")]
 //! pub struct MyType {
@@ -83,7 +81,6 @@
 //! 		Some(true)
 //! 	}
 //! }
-//!
 //! # impl serde::Serialize for MyType {
 //! # 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where S: serde::Serializer {
 //! # 		unimplemented!()
@@ -106,7 +103,7 @@
 //!
 //! ```
 //! # #![feature(plugin, custom_derive, custom_attribute)]
-//! # #![plugin(elastic_macros)]
+//! # #![plugin(json_str, elastic_types_macros)]
 //! # #[macro_use]
 //! # extern crate elastic_types;
 //! # extern crate serde;
@@ -120,7 +117,6 @@
 //! 	pub my_string: String,
 //! 	pub my_num: i32
 //! }
-//!
 //! # impl serde::Serialize for MyType {
 //! # 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where S: serde::Serializer {
 //! # 		unimplemented!()
@@ -141,7 +137,7 @@
 //!
 //! ```
 //! # #![feature(plugin, custom_derive, custom_attribute)]
-//! # #![plugin(elastic_macros)]
+//! # #![plugin(json_str, elastic_types_macros)]
 //! # #[macro_use]
 //! # extern crate elastic_types;
 //! # extern crate serde;
@@ -156,7 +152,6 @@
 //! 	pub my_string: String,
 //! 	pub my_num: i32
 //! }
-//!
 //! # impl serde::Serialize for MyType {
 //! # 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where S: serde::Serializer {
 //! # 		unimplemented!()
@@ -171,6 +166,16 @@
 //! # }
 //! ```
 //!
+//! ## Limitations
+//!
+//! Automatically deriving mapping has the following limitations:
+//!
+//! - Generics aren't supported by auto deriving.
+//! So you can't `#[derive(ElasticType)]` on `MyType<T>`.
+//! - Mapping types can't be shared. This is because they need to map the type fields, so are specific to that type.
+//! So you can't share `MyTypeMapping` between `MyType` and `MyOtherType`.
+//!
+//! All of the above limitations can be worked around by implementing the mapping manually.
 //!
 //! Remember that Elasticsearch will automatically update mappings based on the objects it sees though,
 //! so if your 'un-mapped' field is serialised on `index`, then some mapping will be added for it.

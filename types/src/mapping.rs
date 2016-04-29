@@ -33,13 +33,13 @@ pub mod prelude {
 	pub use ::object::*;
 	pub use ::mappers::*;
 
-	#[cfg(feature="date_ty")]
+	#[cfg(feature="date-ty")]
 	pub use ::date::mapping::*;
-	#[cfg(feature="string_ty")]
+	#[cfg(feature="string-ty")]
 	pub use ::string::mapping::*;
-	#[cfg(feature="number_ty")]
+	#[cfg(feature="number-ty")]
 	pub use ::number::mapping::*;
-	#[cfg(feature="boolean_ty")]
+	#[cfg(feature="boolean-ty")]
 	pub use ::boolean::mapping::*;
 }
 

@@ -1,8 +1,33 @@
-use syntax::ptr::P;
-use syntax::ast::Expr;
-use syntax::ext::base::ExtCtxt;
+//! Elasticsearch Core Types Codegen
+//!
+//! Compile-time code generation for Elasticsearch type implementations.
+//!
+//! # Links
+//! - [Github](https://github.com/KodrAus/elasticsearch-rs)
 
-use types::chrono::format::{ Item, Fixed, Numeric, Pad };
+#![doc(html_root_url = "http://kodraus.github.io/rustdoc/json_str/")]
+
+#![crate_type="dylib"]
+#![feature(plugin_registrar, rustc_private, quote, stmt_expr_attributes)]
+
+extern crate syntax;
+extern crate rustc;
+extern crate rustc_plugin;
+extern crate chrono;
+
+#[doc(hidden)]
+pub mod parse;
+
+use rustc_plugin::Registry;
+use syntax::ast::Expr;
+use syntax::codemap::Span;
+use syntax::parse::token::{self};
+use syntax::ast::TokenTree;
+use syntax::ptr::P;
+use syntax::ext::base::{ ExtCtxt, MacResult, DummyResult, MacEager };
+use syntax::ext::build::AstBuilder;
+
+use chrono::format::{ Item, Fixed, Numeric, Pad };
 use ::parse::*;
 
 pub fn to_tokens(fmt: &str) -> Vec<Item> {
@@ -20,7 +45,7 @@ pub fn to_es_format(fmt: Vec<Item>) -> String {
 	format_tokens(fmt, |i| Formatter::to_es_string(i))
 }
 
-fn format_tokens<'a, F>(fmt: Vec<Item<'a>>, f: F) -> String 
+fn format_tokens<'a, F>(fmt: Vec<Item<'a>>, f: F) -> String
 where F: FnMut(&Item<'a>) -> String {
 	let f: Vec<String> = fmt.iter().map(f).collect();
 
@@ -205,4 +230,33 @@ fn parse_msec<'a>(i: &'a [u8]) -> (&'a [u8], Option<Item<'a>>) {
 fn parse_chars<'a>(i: &'a [u8]) -> (&'a [u8], Option<Item<'a>>) {
 	let (k, s) = take_while1(i, |c| not_date_token(c));
 	(k, Some(Item::Literal(s)))
+}
+
+#[doc(hidden)]
+pub fn expand_date_fmt(cx: &mut ExtCtxt, sp: Span, args: &[TokenTree]) -> Box<MacResult+'static> {
+	let mut fmt = String::new();
+
+	for arg in args {
+		let _fmt = match *arg {
+			TokenTree::Token(_, token::Literal(token::Lit::Str_(s), _)) => s.to_string(),
+			_ => {
+				cx.span_err(sp, "argument should be a single string literal");
+				return DummyResult::any(sp);
+			}
+		};
+
+		fmt.push_str(&_fmt);
+	}
+
+	//Build up the token tree
+	let tokens = to_tokens(&fmt);
+	let token_expr = cx.expr_vec(sp, tokens.iter().map(|t| Formatter::to_stmt(t, cx)).collect());
+
+	MacEager::expr(quote_expr!(cx, { $token_expr }))
+}
+
+#[doc(hidden)]
+#[plugin_registrar]
+pub fn plugin_registrar(reg: &mut Registry) {
+	reg.register_macro("date_fmt", expand_date_fmt);
 }

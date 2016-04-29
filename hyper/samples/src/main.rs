@@ -3,7 +3,7 @@
 //! This sample executes a simple search request against a local cluster. No index or type info is provided.
 
 #![feature(plugin)]
-#![plugin(serde_macros, elastic_macros)]
+#![plugin(serde_macros, json_str)]
 
 //Hyper is the base HTTP library that we sit on top of
 extern crate hyper;

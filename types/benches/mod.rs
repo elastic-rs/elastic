@@ -2,7 +2,7 @@
 
 #![feature(custom_derive, custom_attribute, plugin, test)]
 #![plugin(serde_macros)]
-#![plugin(elastic_macros)]
+#![plugin(elastic_types_macros)]
 
 extern crate serde;
 extern crate serde_json;

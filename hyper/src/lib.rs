@@ -5,7 +5,7 @@
 //! Each API endpoint is represented as its own function,
 //! so each possible http route gets its own function.
 //! The functions are also designed to work well with the `elastic_types`
-//! and `elastic_macros` crates, but deserialisation is the responsibility of the caller.
+//! and `json_str` crates, but deserialisation is the responsibility of the caller.
 //!
 //! # Usage
 //!
@@ -57,7 +57,7 @@
 //!
 //! # Links
 //! - [elastic_types](http://kodraus.github.io/rustdoc/elastic_types/index.html)
-//! - [elastic_macros](http://kodraus.github.io/rustdoc/elastic_macros/index.html)
+//! - [json_str](http://kodraus.github.io/rustdoc/json_str/index.html)
 //! - [Github](https://github.com/KodrAus/elasticsearch-rs)
 
 extern crate hyper;

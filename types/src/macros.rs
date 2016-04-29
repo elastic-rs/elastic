@@ -6,7 +6,7 @@ macro_rules! impl_mapping {
 	)
 }
 
-#[cfg(feature="string_ty")]
+#[cfg(feature="string-ty")]
 macro_rules! impl_string_mapping {
 	($t:ty) => (
 		impl $crate::mapping::ElasticTypeMapping<()> for $t {
@@ -26,7 +26,7 @@ macro_rules! impl_string_mapping {
 	)
 }
 
-#[cfg(feature="boolean_ty")]
+#[cfg(feature="boolean-ty")]
 macro_rules! impl_boolean_mapping {
 	($t:ty) => (
 		impl $crate::mapping::ElasticTypeMapping<()> for $t {
@@ -46,7 +46,7 @@ macro_rules! impl_boolean_mapping {
 	)
 }
 
-#[cfg(feature="number_ty")]
+#[cfg(feature="number-ty")]
 macro_rules! impl_number_mapping {
 	($t:ty, $v:ident, $es_ty:expr) => (
 		impl $crate::mapping::ElasticTypeMapping<()> for $t {
@@ -66,7 +66,7 @@ macro_rules! impl_number_mapping {
 	)
 }
 
-#[cfg(feature="number_ty")]
+#[cfg(feature="number-ty")]
 macro_rules! impl_integer_mapping {
 	($t:ty) => (
 		impl $crate::mapping::ElasticTypeMapping<()> for $t {
@@ -86,7 +86,7 @@ macro_rules! impl_integer_mapping {
 	)
 }
 
-#[cfg(feature="number_ty")]
+#[cfg(feature="number-ty")]
 macro_rules! impl_long_mapping {
 	($t:ty) => (
 		impl $crate::mapping::ElasticTypeMapping<()> for $t {
@@ -106,7 +106,7 @@ macro_rules! impl_long_mapping {
 	)
 }
 
-#[cfg(feature="number_ty")]
+#[cfg(feature="number-ty")]
 macro_rules! impl_short_mapping {
 	($t:ty) => (
 		impl $crate::mapping::ElasticTypeMapping<()> for $t {
@@ -126,7 +126,7 @@ macro_rules! impl_short_mapping {
 	)
 }
 
-#[cfg(feature="number_ty")]
+#[cfg(feature="number-ty")]
 macro_rules! impl_byte_mapping {
 	($t:ty) => (
 		impl $crate::mapping::ElasticTypeMapping<()> for $t {
@@ -146,7 +146,7 @@ macro_rules! impl_byte_mapping {
 	)
 }
 
-#[cfg(feature="number_ty")]
+#[cfg(feature="number-ty")]
 macro_rules! impl_float_mapping {
 	($t:ty) => (
 		impl $crate::mapping::ElasticTypeMapping<()> for $t {
@@ -166,7 +166,7 @@ macro_rules! impl_float_mapping {
 	)
 }
 
-#[cfg(feature="number_ty")]
+#[cfg(feature="number-ty")]
 macro_rules! impl_double_mapping {
 	($t:ty) => (
 		impl $crate::mapping::ElasticTypeMapping<()> for $t {
@@ -186,7 +186,7 @@ macro_rules! impl_double_mapping {
 	)
 }
 
-#[cfg(feature="date_ty")]
+#[cfg(feature="date-ty")]
 macro_rules! impl_date_mapping {
 	($t:ty, $f:ty) => (
 		impl $crate::mapping::ElasticTypeMapping<$f> for $t {
@@ -222,7 +222,7 @@ macro_rules! impl_date_mapping {
 	)
 }
 
-#[cfg(feature="date_ty")]
+#[cfg(feature="date-ty")]
 macro_rules! impl_date_fmt {
 	($t:ty, $f:tt, $n:expr) => (
 		impl $crate::date::DateFormat for $t {

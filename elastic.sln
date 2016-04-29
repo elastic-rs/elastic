@@ -17,7 +17,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{78C9907C-C22D-4F8D-B13A-49F213FF1631}") = "elastic_hyper", "hyper\elastic_hyper.rsproj", "{E7571D90-A65D-43A6-ACF7-52D62FCCF1C9}"
 EndProject
-Project("{78C9907C-C22D-4F8D-B13A-49F213FF1631}") = "elastic_macros", "macros\elastic_macros.rsproj", "{8714246A-4F89-4B7F-BD41-7BEAC191D0ED}"
+Project("{78C9907C-C22D-4F8D-B13A-49F213FF1631}") = "json_str", "macros\json_str.rsproj", "{8714246A-4F89-4B7F-BD41-7BEAC191D0ED}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "types", "types", "{F0086760-1C7B-47D2-BFCC-B14AFD5EE653}"
 EndProject

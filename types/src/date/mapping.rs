@@ -18,7 +18,7 @@ use ::mapping::{ ElasticTypeMapping, ElasticTypeVisitor, IndexAnalysis };
 ///
 /// ```
 /// # #![feature(plugin, custom_derive, custom_attribute)]
-/// # #![plugin(elastic_macros)]
+/// # #![plugin(json_str, elastic_types_macros)]
 /// # #[macro_use]
 /// # extern crate elastic_types;
 /// # extern crate serde;
@@ -27,7 +27,7 @@ use ::mapping::{ ElasticTypeMapping, ElasticTypeVisitor, IndexAnalysis };
 /// use elastic_types::date::prelude::*;
 ///
 /// #[derive(Default, Clone, Copy, ElasticDateMapping)]
-/// pub struct MyDateMapping<T: DateFormat = EpochMillis> {
+/// pub struct MyDateMapping<T: DateFormat> {
 /// 	phantom: PhantomData<T>
 /// }
 /// impl <T: DateFormat> ElasticDateMapping<T> for MyDateMapping<T> {
@@ -43,7 +43,7 @@ use ::mapping::{ ElasticTypeMapping, ElasticTypeVisitor, IndexAnalysis };
 ///
 /// ```
 /// # #![feature(plugin, custom_derive, custom_attribute)]
-/// # #![plugin(elastic_macros)]
+/// # #![plugin(json_str, elastic_types_macros)]
 /// # #[macro_use]
 /// # extern crate elastic_types;
 /// # extern crate serde;
@@ -74,7 +74,18 @@ use ::mapping::{ ElasticTypeMapping, ElasticTypeVisitor, IndexAnalysis };
 /// # }
 /// ```
 ///
+/// ## Limitations
+///
+/// Automatically deriving mapping has the following limitations:
+///
+/// - Non-generic mappings aren't supported by auto deriving.
+/// So your date mapping must take generic parameter `<T: DateFormat>`.
+///
+/// The above limitation can be worked around by implementing the mapping manually.
+///
 /// ## Manually
+///
+/// Define a date mapping that's only valid for the `EpochMillis` format:
 ///
 /// ```
 /// # extern crate serde;
@@ -84,7 +95,44 @@ use ::mapping::{ ElasticTypeMapping, ElasticTypeVisitor, IndexAnalysis };
 /// use elastic_types::mapping::prelude::*;
 /// use elastic_types::date::prelude::*;
 ///
-/// #[derive(Debug, Default, Clone, Copy)]
+/// #[derive(Default, Clone)]
+/// pub struct MyDateMapping;
+///
+/// impl ElasticTypeMapping<EpochMillis> for MyDateMapping {
+/// 	type Visitor = ElasticDateMappingVisitor<EpochMillis, MyDateMapping>;
+///
+/// 	fn data_type() -> &'static str {
+/// 		"date"
+/// 	}
+/// }
+///
+/// impl ElasticDateMapping<EpochMillis> for MyDateMapping {
+/// 	//Overload the mapping functions here
+/// 	fn boost() -> Option<f32> {
+///			Some(1.5)
+///		}
+/// }
+///
+/// impl serde::Serialize for MyDateMapping {
+/// 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+/// 	where S: serde::Serializer {
+/// 		serializer.serialize_struct("mapping", Self::get_visitor())
+/// 	}
+/// }
+/// # }
+/// ```
+///
+/// Define a date mapping that's valid for any `DateFormat` (equivalent to the auto derive example):
+///
+/// ```
+/// # extern crate serde;
+/// # extern crate elastic_types;
+/// # use std::marker::PhantomData;
+/// # fn main() {
+/// use elastic_types::mapping::prelude::*;
+/// use elastic_types::date::prelude::*;
+///
+/// #[derive(Default, Clone)]
 /// pub struct MyDateMapping<T: DateFormat> {
 /// 	phantom: PhantomData<T>
 /// }
@@ -112,8 +160,6 @@ use ::mapping::{ ElasticTypeMapping, ElasticTypeVisitor, IndexAnalysis };
 /// }
 /// # }
 /// ```
-///
-/// The above example binds the mapping to the `BasicDateTime` format, so `get_null_value` returns a properly formated value.
 pub trait ElasticDateMapping<T> where
 T: DateFormat,
 Self: ElasticTypeMapping<T> + Sized + Serialize {

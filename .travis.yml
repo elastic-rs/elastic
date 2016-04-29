@@ -9,7 +9,9 @@ env:
   - CRATE="hyper"
   - CRATE="hyper/codegen"
   - CRATE="hyper/samples"
-  - CRATE="macros"
+  - CRATE="macros/date"
+  - CRATE="macros/types"
+  - CRATE="macros/json_str"
   - CRATE="types"
 script:
   - cd $CRATE

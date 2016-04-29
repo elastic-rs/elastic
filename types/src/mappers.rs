@@ -31,7 +31,7 @@ M: ElasticUserTypeMapping {
 	///
 	/// ```
 	/// # #![feature(plugin, custom_derive)]
-	/// # #![plugin(elastic_macros)]
+	/// # #![plugin(json_str, elastic_types_macros)]
 	/// # #[macro_use]
 	/// # extern crate elastic_types;
 	/// # extern crate serde;
@@ -77,7 +77,7 @@ M: ElasticUserTypeMapping {
 	///
 	/// ```
 	/// # #![feature(plugin, custom_derive)]
-	/// # #![plugin(elastic_macros)]
+	/// # #![plugin(json_str, elastic_types_macros)]
 	/// # #[macro_use]
 	/// # extern crate elastic_types;
 	/// # extern crate serde;
@@ -123,7 +123,7 @@ M: ElasticUserTypeMapping {
 	///
 	/// ```
 	/// # #![feature(plugin, custom_derive)]
-	/// # #![plugin(elastic_macros)]
+	/// # #![plugin(json_str, elastic_types_macros)]
 	/// # #[macro_use]
 	/// # extern crate elastic_types;
 	/// # extern crate serde;

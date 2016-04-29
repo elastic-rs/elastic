@@ -9,6 +9,6 @@ serde_json = "*"
 serde_macros = "*"
 hyper = "*"
 elastic_hyper = "*"
-elastic_macros = "*"
+json_str = "*"
 elastic_types = { version = "*", path = "../../../types" }
 "stopwatch" = "*"

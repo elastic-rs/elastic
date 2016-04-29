@@ -1,5 +1,5 @@
 #![feature(test, plugin)]
-#![plugin(elastic_macros)]
+#![plugin(json_str)]
 
 extern crate serde;
 extern crate serde_json;

@@ -15,11 +15,11 @@ For more details, see:
 - [samples](https://github.com/KodrAus/elasticsearch-rs/tree/master/hyper/samples)
 - [benchmarks](https://github.com/KodrAus/elasticsearch-rs/tree/master/benches)
 - [elastic_hyper](#elastic_hyper)
-- [elastic_macros](#elastic_macros)
+- [json_str](#json_str)
 
 If you'd prefer to call Elasticsearch using a Query DSL builder, see [rs-es](https://github.com/benashford/rs-es).
 
-See the [elastic_types](#elastic_types) and [elastic_macros](#elastic_macros) for more details.
+See the [elastic_types](#elastic_types) and [json_str](#json_str) for more details.
 
 ## Roadmap
 
@@ -37,7 +37,7 @@ See [milestones](https://github.com/KodrAus/elasticsearch-rs/milestones).
 
 To provide a strongly-typed, full-featured and efficient Elasticsearch client for Rust over (eventually) asynchronous io. Rust gives us a lot of tools for building super-performant but highly accessible libraries, which we aim to continue.
 
-The REST API is provided by an [inline JSON macro](http://kodraus.github.io/rustdoc/elastic_macros/#json-parsing) so it's efficient and always in line with whatever version of Elasticsearch you're targeting.
+The REST API is provided by an [inline JSON macro](http://kodraus.github.io/rustdoc/json_str/#json-parsing) so it's efficient and always in line with whatever version of Elasticsearch you're targeting.
 
 This means you don't need to learn another API for interacting with Elasticsearch; queries mocked in [Sense](https://www.elastic.co/blog/found-sense-a-cool-json-aware-interface-to-elasticsearch) can literally just be copy+pasted into your Rust code.
 
@@ -75,17 +75,17 @@ Provides a synchronous [hyper](https://github.com/hyperium/hyper) implementation
 #### Example
 
 The `elastic_hyper` client is a thin layer over `hyper`; it just maps functions to routes. It's up to the caller to serialise and deserialise HTTP content.
-For serialisation though, the `elastic_macros` crate provides the `json!` macro for serialising abitrary rust-like code to json.
+For serialisation though, the `json_str` crate provides the `json!` macro for serialising abitrary rust-like code to json.
 The deserialisation story is a work in progress.
 
 Currently targeting the `master` Elasticsearch branch. This will be stabilised through features in the future.
 
-Add `elastic_hyper` and `elastic_macros` to your `Cargo.toml`:
+Add `elastic_hyper` and `json_str` to your `Cargo.toml`:
 
 ```
 [dependencies]
 elastic_hyper = "*"
-elastic_macros = "*"
+json_str = "*"
 ```
 
 Ping the availability of your cluster:
@@ -127,14 +127,36 @@ The crate will allow you to use connections in two ways; add connections as stat
 
 ### elastic_macros
 
-[![Latest Version](https://img.shields.io/crates/v/elastic_macros.svg)](https://crates.io/crates/elastic_macros)
+#### json_str
 
-[Docs](http://kodraus.github.io/rustdoc/elastic_macros/) |
+[![Latest Version](https://img.shields.io/crates/v/json_str.svg)](https://crates.io/crates/json_str)
+
+[Docs](http://kodraus.github.io/rustdoc/json_str/) |
 [Issues](https://github.com/KodrAus/elasticsearch-rs/labels/macros)
 
-Provides compiler plugins and macros for working with other `elastic` crates. Macros relevant to specific crates are feature-gated, but you don't normally need to worry about this.
+Provides an easy way to build json literals without having to use ungainly strings.
+
+#### elastic_types_macros
+
+[![Latest Version](https://img.shields.io/crates/v/json_str.svg)](https://crates.io/crates/elastic_types_macros)
+
+[Docs](http://kodraus.github.io/rustdoc/elastic_types_macros/) |
+[Issues](https://github.com/KodrAus/elasticsearch-rs/labels/macros)
+
+Provides custom derive plugins for Elasticsearch datatypes and mappings in [elastic_types](#elastic_types).
+
+#### elastic_date_macros
+
+[![Latest Version](https://img.shields.io/crates/v/json_str.svg)](https://crates.io/crates/elastic_date_macros)
+
+[Docs](http://kodraus.github.io/rustdoc/elastic_date_macros/) |
+[Issues](https://github.com/KodrAus/elasticsearch-rs/labels/macros)
+
+Provides date-specific plugins for the date datatype in [elastic_types](#elastic_types).
 
 ### elastic_types
+
+[![Latest Version](https://img.shields.io/crates/v/json_str.svg)](https://crates.io/crates/elastic_types)
 
 [Docs](http://kodraus.github.io/rustdoc/elastic_types/) |
 [Issues](https://github.com/KodrAus/elasticsearch-rs/labels/types)
@@ -152,7 +174,7 @@ Add `elastic_types` to your `Cargo.toml`:
 ```
 [dependencies]
 elastic_types = "*"
-elastic_macros = "*"
+json_str = "*"
 ```
 
 Define a custom Elasticsearch type called `my_type`:

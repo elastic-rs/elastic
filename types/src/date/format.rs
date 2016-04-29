@@ -5,13 +5,13 @@ use std::error::Error;
 use std::fmt;
 
 /// A format used for parsing and formatting dates.
-/// 
+///
 /// The format is specified as two functions; `parse` and `format`, which are backed by `chrono::format::Item`s.
 /// Not all formats use the `Item`s though, for example `EpochMillis`, which is more efficient than other formats.
 pub trait DateFormat
 where Self : Default + Copy {
 	/// Parses a date string to a `chrono::DateTime<UTC>` result.
-	/// 
+	///
 	/// The date string must match the format specified by `fmt()`.
 	fn parse(date: &str) -> Result<DateTime<UTC>, ParseError> {
 		let fmt = Self::fmt();
@@ -34,7 +34,7 @@ where Self : Default + Copy {
 	}
 
 	/// Formats a given `chrono::DateTime<UTC>` as a string.
-	/// 
+	///
 	/// The resulting string is based off the format specified by `fmt()`.
 	fn format(date: &DateTime<UTC>) -> String {
 		let fmt = Self::fmt();
@@ -43,13 +43,15 @@ where Self : Default + Copy {
 	}
 
 	/// The format used for parsing and formatting dates.
-	/// 
+	///
 	/// This is specified as a collection of `chrono::format::Item`s for efficiency.
 	/// To make it easier to build formats, you can use the `date_fmt` macro to convert a string format to `Item`s at compile time:
-	/// 
+	///
 	/// ```
 	/// # #![feature(plugin)]
-	/// # #![plugin(elastic_macros)]
+	/// # #![plugin(json_str, elastic_types_macros)]
+	/// #![plugin(elastic_date_macros)]
+	///
 	/// # extern crate elastic_types;
 	/// # extern crate chrono;
 	/// # fn main() {
@@ -65,7 +67,7 @@ where Self : Default + Copy {
 	fn fmt<'a>() -> Vec<Item<'a>>;
 
 	/// The name of the format.
-	/// 
+	///
 	/// This is the string used when defining the format in the field mapping.
 	fn name() -> &'static str;
 }

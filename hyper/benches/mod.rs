@@ -1,11 +1,11 @@
 #![cfg(feature="test-integration")]
 
 #![feature(test, plugin)]
-#![plugin(elastic_macros)]
+#![plugin(json_str)]
 #![plugin(serde_macros)]
 
 extern crate hyper;
-extern crate elastic_macros;
+extern crate json_str;
 extern crate elastic_hyper as elastic;
 
 extern crate test;

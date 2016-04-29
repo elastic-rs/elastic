@@ -11,7 +11,7 @@
 //!
 //! ```
 //! # #![feature(plugin, custom_derive, custom_attribute)]
-//! # #![plugin(elastic_macros)]
+//! # #![plugin(json_str, elastic_types_macros)]
 //! # #[macro_use]
 //! # extern crate elastic_types;
 //! # extern crate serde;
@@ -33,7 +33,7 @@
 //!
 //! ```
 //! # #![feature(plugin, custom_derive, custom_attribute)]
-//! # #![plugin(elastic_macros)]
+//! # #![plugin(json_str, elastic_types_macros)]
 //! # #[macro_use]
 //! # extern crate elastic_types;
 //! # extern crate serde;

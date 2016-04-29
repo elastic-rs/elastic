@@ -1,5 +1,5 @@
 #![feature(test, plugin, custom_derive, iter_arith)]
-#![plugin(serde_macros, elastic_macros)]
+#![plugin(serde_macros, json_str)]
 
 extern crate test;
 extern crate serde;

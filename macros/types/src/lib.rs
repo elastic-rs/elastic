@@ -1,40 +1,37 @@
-extern crate chrono;
+//! Elasticsearch Core Types Codegen
+//!
+//! Compile-time code generation for Elasticsearch type implementations.
+//! This crate provides custom `derive` attributes for data types in the [elastic_types](http://kodraus.github.io/rustdoc/elastic_types/) crate.
+//!
+//! # Links
+//! - [Github](https://github.com/KodrAus/elasticsearch-rs)
 
-pub mod date_format;
+#![doc(html_root_url = "http://kodraus.github.io/rustdoc/elastic_types_macros/")]
+
+#![crate_type="dylib"]
+#![feature(plugin_registrar, rustc_private, quote, plugin, stmt_expr_attributes)]
+#![plugin(serde_macros)]
+
+extern crate syntax;
+extern crate rustc;
+extern crate rustc_plugin;
+extern crate serde;
+extern crate serde_json;
+
+use rustc_plugin::Registry;
+
 mod object;
 
 use syntax::codemap::Span;
 use syntax::parse::token::{self};
 use syntax::attr;
 use syntax::ast;
-use syntax::ast::{ MetaItem, TokenTree, Ident };
+use syntax::ast::{ MetaItem, Ident };
 use syntax::ptr::P;
-use syntax::ext::base::{ ExtCtxt, MacResult, DummyResult, MacEager, Annotatable };
-use syntax::ext::build::AstBuilder;
+use syntax::ext::base::{ ExtCtxt, Annotatable };
 use syntax::print::pprust::lit_to_string;
 
-pub fn expand_date_fmt(cx: &mut ExtCtxt, sp: Span, args: &[TokenTree]) -> Box<MacResult+'static> {
-	let mut fmt = String::new();
-
-	for arg in args {
-		let _fmt = match *arg {
-			TokenTree::Token(_, token::Literal(token::Lit::Str_(s), _)) => s.to_string(),
-			_ => {
-				cx.span_err(sp, "argument should be a single string literal");
-				return DummyResult::any(sp);
-			}
-		};
-
-		fmt.push_str(&_fmt);
-	}
-
-	//Build up the token tree
-	let tokens = date_format::to_tokens(&fmt);
-	let token_expr = cx.expr_vec(sp, tokens.iter().map(|t| date_format::Formatter::to_stmt(t, cx)).collect());
-
-	MacEager::expr(quote_expr!(cx, { $token_expr }))
-}
-
+#[doc(hidden)]
 pub fn expand_derive_type_mapping(cx: &mut ExtCtxt, span: Span, meta_item: &MetaItem, annotatable: &Annotatable, push: &mut FnMut(Annotatable)) {
 	//Annotatable item for a struct with struct fields
     let item = match *annotatable {
@@ -120,6 +117,7 @@ macro_rules! expect_item {
 	})
 }
 
+#[doc(hidden)]
 pub fn expand_derive_string_mapping(cx: &mut ExtCtxt, _: Span, meta_item: &MetaItem, annotatable: &Annotatable, push: &mut FnMut(Annotatable)) {
     let item = expect_item!(cx, meta_item, annotatable);
 	let ty = item.ident;
@@ -139,6 +137,7 @@ pub fn expand_derive_string_mapping(cx: &mut ExtCtxt, _: Span, meta_item: &MetaI
 	impl_mapping_ser(cx, &ty, push);
 }
 
+#[doc(hidden)]
 pub fn expand_derive_boolean_mapping(cx: &mut ExtCtxt, _: Span, meta_item: &MetaItem, annotatable: &Annotatable, push: &mut FnMut(Annotatable)) {
 	let item = expect_item!(cx, meta_item, annotatable);
 	let ty = item.ident;
@@ -158,6 +157,7 @@ pub fn expand_derive_boolean_mapping(cx: &mut ExtCtxt, _: Span, meta_item: &Meta
 	impl_mapping_ser(cx, &ty, push);
 }
 
+#[doc(hidden)]
 pub fn expand_derive_integer_mapping(cx: &mut ExtCtxt, _: Span, meta_item: &MetaItem, annotatable: &Annotatable, push: &mut FnMut(Annotatable)) {
 	let item = expect_item!(cx, meta_item, annotatable);
 	let ty = item.ident;
@@ -177,6 +177,7 @@ pub fn expand_derive_integer_mapping(cx: &mut ExtCtxt, _: Span, meta_item: &Meta
 	impl_mapping_ser(cx, &ty, push);
 }
 
+#[doc(hidden)]
 pub fn expand_derive_long_mapping(cx: &mut ExtCtxt, _: Span, meta_item: &MetaItem, annotatable: &Annotatable, push: &mut FnMut(Annotatable)) {
 	let item = expect_item!(cx, meta_item, annotatable);
 	let ty = item.ident;
@@ -196,6 +197,7 @@ pub fn expand_derive_long_mapping(cx: &mut ExtCtxt, _: Span, meta_item: &MetaIte
 	impl_mapping_ser(cx, &ty, push);
 }
 
+#[doc(hidden)]
 pub fn expand_derive_short_mapping(cx: &mut ExtCtxt, _: Span, meta_item: &MetaItem, annotatable: &Annotatable, push: &mut FnMut(Annotatable)) {
 	let item = expect_item!(cx, meta_item, annotatable);
 	let ty = item.ident;
@@ -215,6 +217,7 @@ pub fn expand_derive_short_mapping(cx: &mut ExtCtxt, _: Span, meta_item: &MetaIt
 	impl_mapping_ser(cx, &ty, push);
 }
 
+#[doc(hidden)]
 pub fn expand_derive_byte_mapping(cx: &mut ExtCtxt, _: Span, meta_item: &MetaItem, annotatable: &Annotatable, push: &mut FnMut(Annotatable)) {
 	let item = expect_item!(cx, meta_item, annotatable);
 	let ty = item.ident;
@@ -234,6 +237,7 @@ pub fn expand_derive_byte_mapping(cx: &mut ExtCtxt, _: Span, meta_item: &MetaIte
 	impl_mapping_ser(cx, &ty, push);
 }
 
+#[doc(hidden)]
 pub fn expand_derive_double_mapping(cx: &mut ExtCtxt, _: Span, meta_item: &MetaItem, annotatable: &Annotatable, push: &mut FnMut(Annotatable)) {
 	let item = expect_item!(cx, meta_item, annotatable);
 	let ty = item.ident;
@@ -253,6 +257,7 @@ pub fn expand_derive_double_mapping(cx: &mut ExtCtxt, _: Span, meta_item: &MetaI
 	impl_mapping_ser(cx, &ty, push);
 }
 
+#[doc(hidden)]
 pub fn expand_derive_float_mapping(cx: &mut ExtCtxt, _: Span, meta_item: &MetaItem, annotatable: &Annotatable, push: &mut FnMut(Annotatable)) {
 	let item = expect_item!(cx, meta_item, annotatable);
 	let ty = item.ident;
@@ -273,6 +278,7 @@ pub fn expand_derive_float_mapping(cx: &mut ExtCtxt, _: Span, meta_item: &MetaIt
 }
 
 //TODO: Make it possible to implement for a single date format
+#[doc(hidden)]
 pub fn expand_derive_date_mapping(cx: &mut ExtCtxt, _: Span, meta_item: &MetaItem, annotatable: &Annotatable, push: &mut FnMut(Annotatable)) {
 	let item = match *annotatable {
 		Annotatable::Item(ref item) => {
@@ -423,4 +429,68 @@ fn get_ident_from_lit(cx: &ExtCtxt, name: &str, lit: &ast::Lit) -> Result<Ident,
             return Err("Unable to get str from lit");
         }
     }
+}
+
+#[doc(hidden)]
+#[plugin_registrar]
+pub fn plugin_registrar(reg: &mut Registry) {
+	reg.register_syntax_extension(
+		syntax::parse::token::intern("derive_ElasticType"),
+		syntax::ext::base::MultiDecorator(
+			Box::new(expand_derive_type_mapping))
+	);
+
+	reg.register_syntax_extension(
+		syntax::parse::token::intern("derive_ElasticStringMapping"),
+		syntax::ext::base::MultiDecorator(
+			Box::new(expand_derive_string_mapping))
+	);
+
+	reg.register_syntax_extension(
+		syntax::parse::token::intern("derive_ElasticBooleanMapping"),
+		syntax::ext::base::MultiDecorator(
+			Box::new(expand_derive_boolean_mapping))
+	);
+
+	reg.register_syntax_extension(
+		syntax::parse::token::intern("derive_ElasticIntegerMapping"),
+		syntax::ext::base::MultiDecorator(
+			Box::new(expand_derive_integer_mapping))
+	);
+
+	reg.register_syntax_extension(
+		syntax::parse::token::intern("derive_ElasticLongMapping"),
+		syntax::ext::base::MultiDecorator(
+			Box::new(expand_derive_long_mapping))
+	);
+
+	reg.register_syntax_extension(
+		syntax::parse::token::intern("derive_ElasticShortMapping"),
+		syntax::ext::base::MultiDecorator(
+			Box::new(expand_derive_short_mapping))
+	);
+
+	reg.register_syntax_extension(
+		syntax::parse::token::intern("derive_ElasticByteMapping"),
+		syntax::ext::base::MultiDecorator(
+			Box::new(expand_derive_byte_mapping))
+	);
+
+	reg.register_syntax_extension(
+		syntax::parse::token::intern("derive_ElasticDoubleMapping"),
+		syntax::ext::base::MultiDecorator(
+			Box::new(expand_derive_double_mapping))
+	);
+
+	reg.register_syntax_extension(
+		syntax::parse::token::intern("derive_ElasticFloatMapping"),
+		syntax::ext::base::MultiDecorator(
+			Box::new(expand_derive_float_mapping))
+	);
+
+	reg.register_syntax_extension(
+		syntax::parse::token::intern("derive_ElasticDateMapping"),
+		syntax::ext::base::MultiDecorator(
+			Box::new(expand_derive_date_mapping))
+	);
 }

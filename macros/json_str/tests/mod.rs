@@ -1,18 +1,18 @@
 #![feature(plugin, custom_derive)]
 #![plugin(serde_macros)]
-#![plugin(elastic_macros)]
+#![plugin(json_str)]
 
 extern crate serde;
 extern crate serde_json;
 #[allow(plugin_as_library)]
-extern crate elastic_macros;
+extern crate json_str;
 
-use elastic_macros::json::*;
+use json_str::json::*;
 
 #[test]
 fn can_generate_json() {
-	let j = json_str!({ 
-		"a": 7, 
+	let j = json_str!({
+		"a": 7,
 		"b": { "c": "some stuff" },
 		"data": [
 			{ "id": 1, "name": "stuff" },
@@ -25,8 +25,8 @@ fn can_generate_json() {
 
 #[test]
 fn can_generate_quasi_json() {
-	let j = json_str!({ 
-		a: 7, 
+	let j = json_str!({
+		a: 7,
 		b: { c: "some stuff" },
 		data: [
 			{ id: 1, name: "stuff" },
