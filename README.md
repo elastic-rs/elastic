@@ -125,35 +125,6 @@ Will provide an asynchronous [rotor-http](https://github.com/tailhook/rotor-http
 
 The crate will allow you to use connections in two ways; add connections as state machines to your own `mio` loop, or use an out-of-the-box connection pool.
 
-### Macros
-
-#### json_str
-
-[![Latest Version](https://img.shields.io/crates/v/json_str.svg)](https://crates.io/crates/json_str)
-
-[Docs](http://kodraus.github.io/rustdoc/json_str/) |
-[Issues](https://github.com/KodrAus/elasticsearch-rs/labels/macros)
-
-Provides an easy way to build json literals without having to use ungainly strings.
-
-#### elastic_types_macros
-
-[![Latest Version](https://img.shields.io/crates/v/elastic_types_macros.svg)](https://crates.io/crates/elastic_types_macros)
-
-[Docs](http://kodraus.github.io/rustdoc/elastic_types_macros/) |
-[Issues](https://github.com/KodrAus/elasticsearch-rs/labels/macros)
-
-Provides custom derive plugins for Elasticsearch datatypes and mappings in [elastic_types](#elastic_types).
-
-#### elastic_date_macros
-
-[![Latest Version](https://img.shields.io/crates/v/elastic_date_macros.svg)](https://crates.io/crates/elastic_date_macros)
-
-[Docs](http://kodraus.github.io/rustdoc/elastic_date_macros/) |
-[Issues](https://github.com/KodrAus/elasticsearch-rs/labels/macros)
-
-Provides date-specific plugins for the date datatype in [elastic_types](#elastic_types).
-
 ### elastic_types
 
 [![Latest Version](https://img.shields.io/crates/v/elastic_types.svg)](https://crates.io/crates/elastic_types)
@@ -221,3 +192,32 @@ This will return:
   }
 }
 ```
+
+### Macros
+
+#### json_str
+
+[![Latest Version](https://img.shields.io/crates/v/json_str.svg)](https://crates.io/crates/json_str)
+
+[Docs](http://kodraus.github.io/rustdoc/json_str/) |
+[Issues](https://github.com/KodrAus/elasticsearch-rs/labels/macros)
+
+Provides an easy way to build json literals without having to use ungainly strings.
+
+#### elastic_types_macros
+
+[![Latest Version](https://img.shields.io/crates/v/elastic_types_macros.svg)](https://crates.io/crates/elastic_types_macros)
+
+[Docs](http://kodraus.github.io/rustdoc/elastic_types_macros/) |
+[Issues](https://github.com/KodrAus/elasticsearch-rs/labels/macros)
+
+Provides custom derive plugins for Elasticsearch datatypes and mappings in [elastic_types](#elastic_types).
+
+#### elastic_date_macros
+
+[![Latest Version](https://img.shields.io/crates/v/elastic_date_macros.svg)](https://crates.io/crates/elastic_date_macros)
+
+[Docs](http://kodraus.github.io/rustdoc/elastic_date_macros/) |
+[Issues](https://github.com/KodrAus/elasticsearch-rs/labels/macros)
+
+Provides date-specific plugins for the date datatype in [elastic_types](#elastic_types).
