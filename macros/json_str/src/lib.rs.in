@@ -1,0 +1,29 @@
+extern crate syntax;
+extern crate rustc;
+extern crate rustc_plugin;
+
+use rustc_plugin::Registry;
+
+use syntax::codemap::Span;
+use syntax::ptr::P;
+use syntax::parse::token;
+use syntax::ast::TokenTree;
+use syntax::ext::base::{ ExtCtxt, MacResult, MacEager };
+use syntax::ext::build::AstBuilder;
+use ::parse::*;
+
+//Parse a token tree to a json `str` at compile time.
+pub fn expand_json(cx: &mut ExtCtxt, sp: Span, args: &[TokenTree]) -> Box<MacResult+'static> {
+	let json_raw = syntax::print::pprust::tts_to_string(&args);
+	let mut json = String::with_capacity(json_raw.len());
+	sanitise(json_raw.as_bytes(), &mut json);
+
+	let str_lit = cx.expr_str(sp, token::intern_and_get_ident(&json));
+	MacEager::expr(P(quote_expr!(cx, $str_lit).unwrap()))
+}
+
+#[doc(hidden)]
+#[plugin_registrar]
+pub fn plugin_registrar(reg: &mut Registry) {
+	reg.register_macro("json_str", expand_json);
+}

@@ -1,5 +1,9 @@
-#![feature(test, plugin)]
-#![plugin(json_str)]
+#![feature(test, plugin, custom_derive)]
+#![cfg_attr(feature = "nightly", plugin(json_str))]
+
+#[cfg_attr(feature = "nightly", allow(plugin_as_library))]
+#[macro_use]
+extern crate json_str;
 
 extern crate test;
 

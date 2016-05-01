@@ -2,16 +2,13 @@
 //!
 //! This sample executes a simple search request against a local cluster. No index or type info is provided.
 
-#![feature(plugin)]
-#![plugin(serde_macros, json_str)]
-
-//Hyper is the base HTTP library that we sit on top of
+#[macro_use]
+extern crate json_str;
 extern crate hyper;
+extern crate elastic_hyper as elastic;
+
 use hyper::client::Client;
 use std::io::Read;
-
-//API functions live in elastic_hyper
-extern crate elastic_hyper as elastic;
 
 fn main() {
 	//Create a hyper client
@@ -24,7 +21,7 @@ fn main() {
 	//Execute a HTTP Post search request. Other variants include post_index, post_index_type
 	let mut res = elastic::search::post(
 		&mut client, &params,
-		json_str!({
+		&json_str!({
 			query: {
 				query_string: {
 					query: "*"

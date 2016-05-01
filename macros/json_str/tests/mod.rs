@@ -1,10 +1,11 @@
-#![feature(plugin, custom_derive)]
-#![plugin(json_str)]
+#![cfg_attr(feature = "nightly", feature(plugin, custom_derive))]
+#![cfg_attr(feature = "nightly", plugin(json_str))]
 
-#[allow(plugin_as_library)]
+#[cfg_attr(feature = "nightly", allow(plugin_as_library))]
+#[macro_use]
 extern crate json_str;
 
-use json_str::json::*;
+use json_str::parse::*;
 
 #[test]
 fn can_generate_json() {

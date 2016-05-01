@@ -6,6 +6,12 @@
 //! # Usage
 //!
 //! This crate is on [crates.io](https://crates.io/crates/json_str).
+//!
+//! There are two ways to reference `json_str` in your projects, depending on whether you're on
+//! the `stable`/`beta` or `nightly` channels.
+//!
+//! ## Stable
+//!
 //! To get started, add `json_str` to your `Cargo.toml`:
 //!
 //! ```ignore
@@ -16,9 +22,31 @@
 //! And reference it in your crate root:
 //!
 //! ```ignore
+//! #[macro_use]
+//! extern crate json_str;
+//! ```
+//!
+//! ## Nightly
+//!
+//! To get started, add `json_str` to your `Cargo.toml`:
+//!
+//! ```ignore
+//! [dependencies]
+//! json_str = { version = "*", features = "nightly" }
+//! ```
+//!
+//! And reference it in your crate root:
+//!
+//! ```ignore
 //! #![feature(plugin)]
 //! #![plugin(json_str)]
 //! ```
+//!
+//! If you're on the `nightly` channel, it's better to use the above `plugin` version, because
+//! the conversion and sanitisation takes place at compile-time instead of runtime, saving precious
+//! runtime cycles.
+//!
+//! ## Examples
 //!
 //! The `json_str!` macro will take an inline token tree and return an `str` literal:
 //!
@@ -78,23 +106,23 @@
 //! use [json_macros](https://github.com/tomjakubowski/json_macros) instead.
 
 #![doc(html_root_url = "http://kodraus.github.io/rustdoc/json_str/")]
-
-#![crate_type="dylib"]
-#![feature(plugin_registrar, rustc_private, quote, plugin, stmt_expr_attributes)]
-
-extern crate syntax;
-extern crate rustc;
-extern crate rustc_plugin;
+#![cfg_attr(feature = "nightly", crate_type="dylib")]
+#![cfg_attr(feature = "nightly", feature(plugin_registrar, rustc_private, quote, plugin, stmt_expr_attributes))]
 
 #[doc(hidden)]
 pub mod parse;
-#[doc(hidden)]
-pub mod json;
 
-use rustc_plugin::Registry;
+#[cfg(feature = "nightly")]
+include!("lib.rs.in");
 
-#[doc(hidden)]
-#[plugin_registrar]
-pub fn plugin_registrar(reg: &mut Registry) {
-	reg.register_macro("json_str", json::expand_json);
+#[cfg_attr(not(feature = "nightly"), macro_export)]
+#[cfg(not(feature = "nightly"))]
+macro_rules! json_str {
+	($j:tt) => ({
+		let json_raw = stringify!($j);
+		let mut json = String::with_capacity(json_raw.len());
+		$crate::parse::sanitise(json_raw.as_bytes(), &mut json);
+
+		json
+	})
 }
