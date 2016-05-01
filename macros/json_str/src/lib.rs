@@ -48,7 +48,8 @@
 //!
 //! ## Examples
 //!
-//! The `json_str!` macro will take an inline token tree and return an `str` literal:
+//! The `json_str!` macro will take an inline token tree and return a string
+//! (`&'static str` on `nightly` or `String` on `stable`):
 //!
 //! ```
 //! # #![feature(plugin)]
