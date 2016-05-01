@@ -81,13 +81,10 @@
 
 #![crate_type="dylib"]
 #![feature(plugin_registrar, rustc_private, quote, plugin, stmt_expr_attributes)]
-#![plugin(serde_macros)]
 
 extern crate syntax;
 extern crate rustc;
 extern crate rustc_plugin;
-extern crate serde;
-extern crate serde_json;
 
 #[doc(hidden)]
 pub mod parse;

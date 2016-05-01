@@ -1,9 +1,6 @@
 #![feature(plugin, custom_derive)]
-#![plugin(serde_macros)]
 #![plugin(json_str)]
 
-extern crate serde;
-extern crate serde_json;
 #[allow(plugin_as_library)]
 extern crate json_str;
 
