@@ -65,7 +65,7 @@ fn main() {
             elastic::search::post_index_type(
         		&mut client, &params,
                 "bench_index", "bench_doc",
-        		json_str!({
+        		json_lit!({
         			query: {
         				query_string: {
         					query: "*"

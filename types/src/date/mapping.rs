@@ -70,7 +70,7 @@ use ::mapping::{ ElasticTypeMapping, ElasticTypeVisitor, IndexAnalysis };
 /// 	"format": "epoch_millis"
 /// }
 /// # );
-/// # assert_eq!(json, &mapping);
+/// # assert_eq!(json, mapping);
 /// # }
 /// ```
 ///

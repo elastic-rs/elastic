@@ -56,7 +56,7 @@
 //! 	"null_value": 42
 //! }
 //! # );
-//! # assert_eq!(json, &mapping);
+//! # assert_eq!(json, mapping);
 //! # }
 //! ```
 //!

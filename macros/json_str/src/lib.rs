@@ -42,18 +42,17 @@
 //! #![plugin(json_str)]
 //! ```
 //!
-//! If you're on the `nightly` channel, it's better to use the above `plugin` version, because
-//! the conversion and sanitisation takes place at compile-time instead of runtime, saving precious
-//! runtime cycles.
+//! If you're on the `nightly` channel, it's better to use the above `plugin` version with the `nightly`
+//! feature because the conversion and sanitisation takes place at compile-time instead of runtime,
+//! saving precious runtime cycles.
 //!
 //! ## Examples
 //!
-//! The `json_str!` macro will take an inline token tree and return a string
-//! (`&'static str` on `nightly` or `String` on `stable`):
+//! The `json_str!` macro will take an inline token tree and return a sanitised json `String`:
 //!
 //! ```
 //! # #![feature(plugin)]
-//! # #![plugin(json_str, elastic_types_macros)]
+//! # #![plugin(json_str)]
 //! # fn main() {
 //! let json = json_str!({
 //! 	"query": {
@@ -80,7 +79,7 @@
 //!
 //! ```
 //! # #![feature(plugin)]
-//! # #![plugin(json_str, elastic_types_macros)]
+//! # #![plugin(json_str)]
 //! # fn main() {
 //! let json = json_str!({
 //! 	query: {
@@ -94,6 +93,35 @@
 //! 					location: {
 //! 						lat: 37.776,
 //! 						lon: -122.41
+//! 					}
+//! 				}
+//! 			}
+//! 		}
+//! 	}
+//! });
+//! # }
+//! ```
+//!
+//! On `nightly`, there's an additional plugin called `json_lit` that returns a `&'satic str`
+//! instead of a `String`, so you can avoid allocating each time. The syntax is otherwise the same
+//! as `json_str`:
+//!
+//! ```
+//! # #![feature(plugin)]
+//! # #![plugin(json_str)]
+//! # fn main() {
+//! let json = json_lit!({
+//! 	"query": {
+//! 		"filtered": {
+//! 			"query": {
+//! 				"match_all": {}
+//! 			},
+//! 			"filter": {
+//! 				"geo_distance": {
+//! 					"distance": "20km",
+//! 					"location": {
+//! 						"lat": 37.776,
+//! 						"lon": -122.41
 //! 					}
 //! 				}
 //! 			}

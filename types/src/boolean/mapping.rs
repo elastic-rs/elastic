@@ -62,7 +62,7 @@ use ::mapping::{ ElasticTypeMapping, ElasticTypeVisitor, IndexAnalysis };
 /// 	"boost": 1.5
 /// }
 /// # );
-/// # assert_eq!(json, &mapping);
+/// # assert_eq!(json, mapping);
 /// # }
 /// ```
 ///

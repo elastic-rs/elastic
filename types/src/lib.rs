@@ -137,7 +137,7 @@
 //!     }
 //! }
 //! # );
-//! # assert_eq!(json, &mapping);
+//! # assert_eq!(json, mapping);
 //! # }
 //! ```
 //!
@@ -249,7 +249,7 @@
 //!     }
 //! }
 //! # );
-//! # assert_eq!(json, &mapping);
+//! # assert_eq!(json, mapping);
 //! # }
 //! ```
 //!

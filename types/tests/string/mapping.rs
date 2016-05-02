@@ -106,7 +106,7 @@ fn serialise_mapping_field_data() {
 				}
 			}
 		}),
-		""
+		String::new()
 	];
 
 	let mut success = true;
