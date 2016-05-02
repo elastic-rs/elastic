@@ -1,7 +1,8 @@
 //! Json String Literal Generator
 //!
 //! Write json with Rust syntax instead of hard to read inline strings.
-//! Results are converted to a `&'static str` at compile-time.
+//! This crate doesn't evaluate any expressions, it just converts a Rust _token tree_ into a
+//! minified json string.
 //!
 //! # Usage
 //!
