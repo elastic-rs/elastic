@@ -6,6 +6,9 @@ use serde::{ Serializer, Serialize };
 use super::DateFormat;
 use ::mapping::{ ElasticTypeMapping, ElasticTypeVisitor, IndexAnalysis };
 
+/// Elasticsearch datatype name.
+pub const DATE_DATATYPE: &'static str = "date";
+
 /// The base requirements for mapping a `date` type.
 ///
 /// # Examples
@@ -102,7 +105,7 @@ use ::mapping::{ ElasticTypeMapping, ElasticTypeVisitor, IndexAnalysis };
 /// 	type Visitor = ElasticDateMappingVisitor<EpochMillis, MyDateMapping>;
 ///
 /// 	fn data_type() -> &'static str {
-/// 		"date"
+/// 		DATE_DATATYPE
 /// 	}
 /// }
 ///
@@ -141,7 +144,7 @@ use ::mapping::{ ElasticTypeMapping, ElasticTypeVisitor, IndexAnalysis };
 /// 	type Visitor = ElasticDateMappingVisitor<T, MyDateMapping<T>>;
 ///
 /// 	fn data_type() -> &'static str {
-/// 		"date"
+/// 		DATE_DATATYPE
 /// 	}
 /// }
 ///

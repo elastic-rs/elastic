@@ -5,6 +5,9 @@ use serde;
 use serde::{ Serializer, Serialize };
 use ::mapping::{ ElasticTypeMapping, ElasticTypeVisitor, IndexAnalysis };
 
+/// Elasticsearch datatype name.
+pub const BOOLEAN_DATATYPE: &'static str = "boolean";
+
 /// The base requirements for mapping a `boolean` type.
 ///
 /// Custom mappings can be defined by implementing `ElasticBooleanMapping`.
@@ -89,7 +92,7 @@ use ::mapping::{ ElasticTypeMapping, ElasticTypeVisitor, IndexAnalysis };
 /// 	type Visitor = ElasticBooleanMappingVisitor<MyBooleanMapping>;
 ///
 /// 	fn data_type() -> &'static str {
-/// 		"boolean"
+/// 		BOOLEAN_DATATYPE
 /// 	}
 /// }
 ///

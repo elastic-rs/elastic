@@ -105,7 +105,7 @@ pub fn expand_derive_string_mapping(cx: &mut ExtCtxt, _: Span, meta_item: &MetaI
 				type Visitor = ::elastic_types::string::mapping::ElasticStringMappingVisitor<$ty>;
 
 				fn data_type() -> &'static str {
-					"string"
+					::elastic_types::string::mapping::STRING_DATATYPE
 				}
 			}
 		).unwrap()
@@ -124,7 +124,7 @@ pub fn expand_derive_boolean_mapping(cx: &mut ExtCtxt, _: Span, meta_item: &Meta
 				type Visitor = ::elastic_types::boolean::mapping::ElasticBooleanMappingVisitor<$ty>;
 
 				fn data_type() -> &'static str {
-					"boolean"
+					::elastic_types::boolean::mapping::BOOLEAN_DATATYPE
 				}
 			}
 		).unwrap()
@@ -143,7 +143,7 @@ pub fn expand_derive_integer_mapping(cx: &mut ExtCtxt, _: Span, meta_item: &Meta
 				type Visitor = ::elastic_types::number::mapping::ElasticIntegerMappingVisitor<$ty>;
 
 				fn data_type() -> &'static str {
-					"integer"
+					::elastic_types::number::mapping::INTEGER_DATATYPE
 				}
 			}
 		).unwrap()
@@ -162,7 +162,7 @@ pub fn expand_derive_long_mapping(cx: &mut ExtCtxt, _: Span, meta_item: &MetaIte
 				type Visitor = ::elastic_types::number::mapping::ElasticLongMappingVisitor<$ty>;
 
 				fn data_type() -> &'static str {
-					"long"
+					::elastic_types::number::mapping::LONG_DATATYPE
 				}
 			}
 		).unwrap()
@@ -181,7 +181,7 @@ pub fn expand_derive_short_mapping(cx: &mut ExtCtxt, _: Span, meta_item: &MetaIt
 				type Visitor = ::elastic_types::number::mapping::ElasticShortMappingVisitor<$ty>;
 
 				fn data_type() -> &'static str {
-					"short"
+					::elastic_types::number::mapping::SHORT_DATATYPE
 				}
 			}
 		).unwrap()
@@ -200,7 +200,7 @@ pub fn expand_derive_byte_mapping(cx: &mut ExtCtxt, _: Span, meta_item: &MetaIte
 				type Visitor = ::elastic_types::number::mapping::ElasticByteMappingVisitor<$ty>;
 
 				fn data_type() -> &'static str {
-					"byte"
+					::elastic_types::number::mapping::BYTE_DATATYPE
 				}
 			}
 		).unwrap()
@@ -219,7 +219,7 @@ pub fn expand_derive_double_mapping(cx: &mut ExtCtxt, _: Span, meta_item: &MetaI
 				type Visitor = ::elastic_types::number::mapping::ElasticDoubleMappingVisitor<$ty>;
 
 				fn data_type() -> &'static str {
-					"double"
+					::elastic_types::number::mapping::DOUBLE_DATATYPE
 				}
 			}
 		).unwrap()
@@ -238,7 +238,7 @@ pub fn expand_derive_float_mapping(cx: &mut ExtCtxt, _: Span, meta_item: &MetaIt
 				type Visitor = ::elastic_types::number::mapping::ElasticFloatMappingVisitor<$ty>;
 
 				fn data_type() -> &'static str {
-					"float"
+					::elastic_types::number::mapping::FLOAT_DATATYPE
 				}
 			}
 		).unwrap()
@@ -280,7 +280,7 @@ pub fn expand_derive_date_mapping(cx: &mut ExtCtxt, _: Span, meta_item: &MetaIte
 					type Visitor = ::elastic_types::date::mapping::ElasticDateMappingVisitor<T, $ty<T>>;
 
 					fn data_type() -> &'static str {
-						"date"
+						::elastic_types::date::mapping::DATE_DATATYPE
 					}
 				}
 			).unwrap()

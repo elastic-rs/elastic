@@ -81,7 +81,7 @@
 //! impl ElasticTypeMapping<()> for MyIntegerMapping {
 //! 	type Visitor = ElasticIntegerMappingVisitor<MyIntegerMapping>;
 //! 	fn data_type() -> &'static str {
-//! 		"integer"
+//! 		INTEGER_DATATYPE
 //! 	}
 //! }
 //!
@@ -93,6 +93,19 @@
 //! }
 //! # }
 //! ```
+
+/// Elasticsearch datatype name.
+pub const INTEGER_DATATYPE: &'static str = "integer";
+/// Elasticsearch datatype name.
+pub const LONG_DATATYPE: &'static str = "long";
+/// Elasticsearch datatype name.
+pub const SHORT_DATATYPE: &'static str = "short";
+/// Elasticsearch datatype name.
+pub const BYTE_DATATYPE: &'static str = "byte";
+/// Elasticsearch datatype name.
+pub const DOUBLE_DATATYPE: &'static str = "double";
+/// Elasticsearch datatype name.
+pub const FLOAT_DATATYPE: &'static str = "float";
 
 use std::marker::PhantomData;
 use serde;

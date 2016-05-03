@@ -6,6 +6,9 @@ use serde;
 use serde::{ Serializer, Serialize };
 use ::mapping::{ ElasticTypeMapping, ElasticTypeVisitor, IndexAnalysis };
 
+/// Elasticsearch datatype name.
+pub const STRING_DATATYPE: &'static str = "string";
+
 /// The base requirements for mapping a `string` type.
 ///
 /// Custom mappings can be defined by implementing `ElasticStringMapping`.
@@ -90,7 +93,7 @@ use ::mapping::{ ElasticTypeMapping, ElasticTypeVisitor, IndexAnalysis };
 /// 	type Visitor = ElasticStringMappingVisitor<MyStringMapping>;
 ///
 /// 	fn data_type() -> &'static str {
-/// 		"string"
+/// 		STRING_DATATYPE
 /// 	}
 /// }
 ///

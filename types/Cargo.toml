@@ -39,7 +39,7 @@ nightly-testing = [ "clippy" ]
 serde = "~0.7.0"
 serde_json = "~0.7.0"
 serde_macros = "~0.7.0"
-elastic_types_macros = "~0.1.0"
+elastic_types_macros = { version = "*", path = "../macros/types" }
 
 [dependencies.chrono]
 version = "~0.2.20"
