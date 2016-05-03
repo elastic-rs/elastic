@@ -11,7 +11,7 @@ pub trait ElasticObjectMapping where
 Self: ElasticFieldMapping<()> + Sized + Serialize + Default + Clone {
 	/// Get the type name for this mapping, like `object` or `nested`.
 	fn data_type() -> &'static str {
-		"object"
+		super::OBJECT_DATATYPE
 	}
 
 	/// Whether or not new properties should be added dynamically to an existing object.

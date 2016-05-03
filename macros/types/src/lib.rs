@@ -66,7 +66,7 @@ pub fn expand_derive_type_mapping(cx: &mut ExtCtxt, span: Span, meta_item: &Meta
     	.collect();
 
 	let es_ty = object::get_type_name(cx, item);
-    let object_visitor = object::build_object_visitor(cx, span, item, &fields, push);
+    let object_visitor = object::build_properties_visitor(cx, span, item, &fields, push);
 
     //Get or build the mapping type
 	let field_mapping;

@@ -81,7 +81,7 @@ pub fn impl_type_mapping(cx: &mut ExtCtxt, mapping: &Ident, object_visitor: &Ide
 }
 
 //Build an object visitor and return the name
-pub fn build_object_visitor(cx: &mut ExtCtxt, span: Span, item: &ast::Item, fields: &Vec<(Ident, ast::StructField)>, push: &mut FnMut(Annotatable)) -> Ident {
+pub fn build_properties_visitor(cx: &mut ExtCtxt, span: Span, item: &ast::Item, fields: &Vec<(Ident, ast::StructField)>, push: &mut FnMut(Annotatable)) -> Ident {
 	let name = token::str_to_ident(&format!("{}ObjectVisitor", item.ident));
 
 	push(Annotatable::Item(
@@ -91,12 +91,12 @@ pub fn build_object_visitor(cx: &mut ExtCtxt, span: Span, item: &ast::Item, fiel
 		).unwrap()
 	));
 
-	impl_object_visitor(cx, span, &name, fields, push);
+	impl_properties_visitor(cx, span, &name, fields, push);
 
 	name
 }
 
-fn impl_object_visitor(cx: &mut ExtCtxt, span: Span, visitor: &Ident, fields: &Vec<(Ident, ast::StructField)>, push: &mut FnMut(Annotatable)) {
+fn impl_properties_visitor(cx: &mut ExtCtxt, span: Span, visitor: &Ident, fields: &Vec<(Ident, ast::StructField)>, push: &mut FnMut(Annotatable)) {
 
 	push(Annotatable::Item(
 		quote_item!(cx,
@@ -108,10 +108,10 @@ fn impl_object_visitor(cx: &mut ExtCtxt, span: Span, visitor: &Ident, fields: &V
 		).unwrap()
 	));
 
-	impl_object_visitor_ser(cx, span, visitor, fields, push);
+	impl_properties_visitor_ser(cx, span, visitor, fields, push);
 }
 
-fn impl_object_visitor_ser(cx: &mut ExtCtxt, span: Span, visitor: &Ident, fields: &Vec<(Ident, ast::StructField)>, push: &mut FnMut(Annotatable)) {
+fn impl_properties_visitor_ser(cx: &mut ExtCtxt, span: Span, visitor: &Ident, fields: &Vec<(Ident, ast::StructField)>, push: &mut FnMut(Annotatable)) {
 	let stmts: Vec<ast::Stmt> = fields.iter().cloned().map(|(name, field)| {
 		let lit = cx.expr_str(span, name.name.as_str());
 		let ty = match field.ty.node {

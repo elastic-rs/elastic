@@ -66,7 +66,7 @@
 //! struct MyTypeMapping;
 //! impl ElasticObjectMapping for MyTypeMapping {
 //! 	fn data_type() -> &'static str {
-//! 		"object"
+//! 		OBJECT_DATATYPE
 //! 	}
 //!
 //! 	fn dynamic() -> Option<Dynamic> {
@@ -179,6 +179,97 @@
 //!
 //! Remember that Elasticsearch will automatically update mappings based on the objects it sees though,
 //! so if your 'un-mapped' field is serialised on `index`, then some mapping will be added for it.
+//!
+//! ## Manually
+//!
+//! You can also build object mappings manually, although this requires a lot of boilerplate:
+//!
+//! ```
+//! # #![feature(custom_derive, custom_attribute, plugin)]
+//! # #![plugin(serde_macros, elastic_types_macros)]
+//! # extern crate serde;
+//! # extern crate elastic_types;
+//! # use elastic_types::mapping::prelude::*;
+//! # use elastic_types::date::prelude::*;
+//! #[derive(Serialize, Deserialize)]
+//! pub struct MyType {
+//!     pub my_date2: ElasticDate<DefaultFormat>,
+//!     pub my_string1: String,
+//!     pub my_num1: i32,
+//!     pub my_bool1: bool,
+//! }
+//!
+//! //Implement ElasticType for your type
+//! impl ElasticType<MyTypeMapping, ()> for MyType { }
+//!
+//! #[derive(Default, Clone)]
+//! pub struct MyTypeMapping;
+//!
+//! impl serde::Serialize for MyTypeMapping {
+//!     fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where
+//!     S: serde::Serializer {
+//!         serializer.serialize_struct("", Self::get_visitor())
+//!     }
+//! }
+//!
+//! //Our type can be mapped in one of two ways:
+//! // - As a custom type (used in the REST API)
+//! // - As a field on another type
+//!
+//! //Implement Object and Field mapping for mapping our type as a field
+//! impl ElasticObjectMapping for MyTypeMapping {
+//! 	//Overload the mapping functions here
+//! 	fn data_type() -> &'static str {
+//! 		DYNAMIC_DATATYPE
+//! 	}
+//! }
+//! impl ElasticFieldMapping<()> for MyTypeMapping {
+//!     type Visitor = ElasticObjectMappingVisitor<MyTypeMapping, MyTypeObjectVisitor>;
+//!
+//!     fn data_type() -> &'static str {
+//!         <Self as ElasticObjectMapping>::data_type()
+//!     }
+//!
+//!     fn name() -> &'static str {
+//!     	"mytype"
+//!     }
+//! }
+//!
+//! //Implement User Type mapping for mapping our type as a custom type in an Elasticsearch index.
+//! impl ElasticUserTypeMapping for MyTypeMapping {
+//!     type Visitor = ElasticUserTypeMappingVisitor<MyTypeObjectVisitor>;
+//! }
+//!
+//! //Create a visitor for mapping the fields. This is used when mapping as a custom type
+//! //or when mapping as a field on another type.
+//! #[derive(Default, Clone)]
+//! pub struct MyTypeObjectVisitor;
+//!
+//! impl ElasticTypeVisitor for MyTypeObjectVisitor {
+//!     fn new() -> Self {
+//!     	MyTypeObjectVisitor
+//!     }
+//! }
+//!
+//! impl serde::ser::MapVisitor for MyTypeObjectVisitor {
+//!     fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
+//!      where S: serde::Serializer {
+//! 			//List your fields to map here
+//!             try!(serializer.serialize_struct_elt("my_date2", ElasticDate::<DefaultFormat>::mapping()));
+//!             try!(serializer.serialize_struct_elt("my_string1", String::mapping()));
+//!             try!(serializer.serialize_struct_elt("my_num1", i32::mapping()));
+//!             try!(serializer.serialize_struct_elt("my_bool1", bool::mapping()));
+//!         Ok(None)
+//!     }
+//! }
+//! # fn main() {
+//! # }
+//! ```
+
+/// Elasticsearch datatype name.
+pub const OBJECT_DATATYPE: &'static str = "object";
+/// Elasticsearch datatype name.
+pub const DYNAMIC_DATATYPE: &'static str = "dynamic";
 
 mod object;
 mod user_type;
