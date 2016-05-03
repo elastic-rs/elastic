@@ -185,3 +185,33 @@ mod user_type;
 
 pub use self::object::*;
 pub use self::user_type::*;
+
+use std::marker::PhantomData;
+use serde;
+use serde::Serializer;
+use ::mapping::ElasticTypeVisitor;
+
+/// Represents the properties object that encapsulates field type mappings.
+#[derive(Debug)]
+pub struct ElasticObjectProperties<V> where
+V: ElasticTypeVisitor {
+	phantom_v: PhantomData<V>
+}
+
+impl <V> ElasticObjectProperties<V> where
+V: ElasticTypeVisitor {
+	/// Create a new properties container.
+	pub fn new() -> Self {
+		ElasticObjectProperties {
+			phantom_v: PhantomData
+		}
+	}
+}
+
+impl <V> serde::Serialize for ElasticObjectProperties<V> where
+V: ElasticTypeVisitor {
+	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+	where S: serde::Serializer {
+		serializer.serialize_struct("properties", V::new())
+	}
+}

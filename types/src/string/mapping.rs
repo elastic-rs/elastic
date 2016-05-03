@@ -4,7 +4,7 @@ use std::collections::BTreeMap;
 use std::marker::PhantomData;
 use serde;
 use serde::{ Serializer, Serialize };
-use ::mapping::{ ElasticTypeMapping, ElasticTypeVisitor, IndexAnalysis };
+use ::mapping::{ ElasticFieldMapping, ElasticTypeVisitor, IndexAnalysis };
 
 /// Elasticsearch datatype name.
 pub const STRING_DATATYPE: &'static str = "string";
@@ -88,8 +88,8 @@ pub const STRING_DATATYPE: &'static str = "string";
 ///		}
 /// }
 ///
-/// //We also need to implement the base `ElasticTypeMapping` and `serde::Serialize` for our custom mapping type
-/// impl ElasticTypeMapping<()> for MyStringMapping {
+/// //We also need to implement the base `ElasticFieldMapping` and `serde::Serialize` for our custom mapping type
+/// impl ElasticFieldMapping<()> for MyStringMapping {
 /// 	type Visitor = ElasticStringMappingVisitor<MyStringMapping>;
 ///
 /// 	fn data_type() -> &'static str {
@@ -106,7 +106,7 @@ pub const STRING_DATATYPE: &'static str = "string";
 /// # }
 /// ```
 pub trait ElasticStringMapping where
-Self: ElasticTypeMapping<()> + Sized + Serialize {
+Self: ElasticFieldMapping<()> + Sized + Serialize {
 	/// Field-level index time boosting. Accepts a floating point number, defaults to `1.0`.
 	fn boost() -> Option<f32> {
 		None

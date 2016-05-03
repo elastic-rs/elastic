@@ -78,7 +78,7 @@
 //! 	}
 //! }
 //!
-//! impl ElasticTypeMapping<()> for MyIntegerMapping {
+//! impl ElasticFieldMapping<()> for MyIntegerMapping {
 //! 	type Visitor = ElasticIntegerMappingVisitor<MyIntegerMapping>;
 //! 	fn data_type() -> &'static str {
 //! 		INTEGER_DATATYPE
@@ -110,13 +110,13 @@ pub const FLOAT_DATATYPE: &'static str = "float";
 use std::marker::PhantomData;
 use serde;
 use serde::{ Serialize, Serializer };
-use ::mapping::{ ElasticType, ElasticTypeMapping, ElasticTypeVisitor, IndexAnalysis };
+use ::mapping::{ ElasticType, ElasticFieldMapping, ElasticTypeVisitor, IndexAnalysis };
 
 macro_rules! number_mapping {
     ($m:ident, $v:ident, $n:ty) => (
     	/// Base `number` mapping.
     	pub trait $m
-		where Self : ElasticTypeMapping<()> + Sized + Serialize {
+		where Self : ElasticFieldMapping<()> + Sized + Serialize {
 			/// Try to convert strings to numbers and truncate fractions for integers. Accepts `true` (default) and `false`.
 			fn coerce() -> Option<bool> {
 				None

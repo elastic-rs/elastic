@@ -4,7 +4,7 @@ use std::marker::PhantomData;
 use serde;
 use serde::{ Serializer, Serialize };
 use super::DateFormat;
-use ::mapping::{ ElasticTypeMapping, ElasticTypeVisitor, IndexAnalysis };
+use ::mapping::{ ElasticFieldMapping, ElasticTypeVisitor, IndexAnalysis };
 
 /// Elasticsearch datatype name.
 pub const DATE_DATATYPE: &'static str = "date";
@@ -101,7 +101,7 @@ pub const DATE_DATATYPE: &'static str = "date";
 /// #[derive(Default, Clone)]
 /// pub struct MyDateMapping;
 ///
-/// impl ElasticTypeMapping<EpochMillis> for MyDateMapping {
+/// impl ElasticFieldMapping<EpochMillis> for MyDateMapping {
 /// 	type Visitor = ElasticDateMappingVisitor<EpochMillis, MyDateMapping>;
 ///
 /// 	fn data_type() -> &'static str {
@@ -140,7 +140,7 @@ pub const DATE_DATATYPE: &'static str = "date";
 /// 	phantom: PhantomData<T>
 /// }
 ///
-/// impl <T: DateFormat> ElasticTypeMapping<T> for MyDateMapping<T> {
+/// impl <T: DateFormat> ElasticFieldMapping<T> for MyDateMapping<T> {
 /// 	type Visitor = ElasticDateMappingVisitor<T, MyDateMapping<T>>;
 ///
 /// 	fn data_type() -> &'static str {
@@ -165,7 +165,7 @@ pub const DATE_DATATYPE: &'static str = "date";
 /// ```
 pub trait ElasticDateMapping<T> where
 T: DateFormat,
-Self: ElasticTypeMapping<T> + Sized + Serialize {
+Self: ElasticFieldMapping<T> + Sized + Serialize {
 	/// Field-level index time boosting. Accepts a floating point number, defaults to `1.0`.
 	fn boost() -> Option<f32> {
 		None

@@ -66,6 +66,7 @@ pub fn expand_derive_type_mapping(cx: &mut ExtCtxt, span: Span, meta_item: &Meta
     	.collect();
 
 	let es_ty = object::get_type_name(cx, item);
+    let object_visitor = object::build_object_visitor(cx, span, item, &fields, push);
 
     //Get or build the mapping type
 	let field_mapping;
@@ -76,15 +77,8 @@ pub fn expand_derive_type_mapping(cx: &mut ExtCtxt, span: Span, meta_item: &Meta
 		field_mapping = object::build_field_mapping(cx, item, push);
 	}
 
-	let field_visitor = object::build_field_visitor(cx, item, push);
-	object::impl_field_mapping(cx, span, &es_ty, &field_mapping, &field_visitor, push);
-
-	let object_visitor = object::build_object_visitor(cx, span, item, &fields, push);
-
-	object::impl_field_visitor_ser(cx, &field_mapping, &field_visitor, &object_visitor, push);
-
-	let type_visitor = object::build_type_visitor(cx, item, &field_mapping, push);
-	object::impl_type_mapping(cx, &field_mapping, &type_visitor, &object_visitor, push);
+	object::impl_field_mapping(cx, span, &es_ty, &field_mapping, &object_visitor, push);
+	object::impl_type_mapping(cx, &field_mapping, &object_visitor, push);
 
 	object::impl_type(cx, item, &field_mapping, push);
 }
@@ -124,7 +118,7 @@ pub fn expand_derive_string_mapping(cx: &mut ExtCtxt, _: Span, meta_item: &MetaI
 
 	push(Annotatable::Item(
 		quote_item!(cx,
-			impl ::elastic_types::mapping::ElasticTypeMapping<()> for $ty {
+			impl ::elastic_types::mapping::ElasticFieldMapping<()> for $ty {
 				type Visitor = ::elastic_types::string::mapping::ElasticStringMappingVisitor<$ty>;
 
 				fn data_type() -> &'static str {
@@ -144,7 +138,7 @@ pub fn expand_derive_boolean_mapping(cx: &mut ExtCtxt, _: Span, meta_item: &Meta
 
 	push(Annotatable::Item(
 		quote_item!(cx,
-			impl ::elastic_types::mapping::ElasticTypeMapping<()> for $ty {
+			impl ::elastic_types::mapping::ElasticFieldMapping<()> for $ty {
 				type Visitor = ::elastic_types::boolean::mapping::ElasticBooleanMappingVisitor<$ty>;
 
 				fn data_type() -> &'static str {
@@ -164,7 +158,7 @@ pub fn expand_derive_integer_mapping(cx: &mut ExtCtxt, _: Span, meta_item: &Meta
 
 	push(Annotatable::Item(
 		quote_item!(cx,
-			impl ::elastic_types::mapping::ElasticTypeMapping<()> for $ty {
+			impl ::elastic_types::mapping::ElasticFieldMapping<()> for $ty {
 				type Visitor = ::elastic_types::number::mapping::ElasticIntegerMappingVisitor<$ty>;
 
 				fn data_type() -> &'static str {
@@ -184,7 +178,7 @@ pub fn expand_derive_long_mapping(cx: &mut ExtCtxt, _: Span, meta_item: &MetaIte
 
 	push(Annotatable::Item(
 		quote_item!(cx,
-			impl ::elastic_types::mapping::ElasticTypeMapping<()> for $ty {
+			impl ::elastic_types::mapping::ElasticFieldMapping<()> for $ty {
 				type Visitor = ::elastic_types::number::mapping::ElasticLongMappingVisitor<$ty>;
 
 				fn data_type() -> &'static str {
@@ -204,7 +198,7 @@ pub fn expand_derive_short_mapping(cx: &mut ExtCtxt, _: Span, meta_item: &MetaIt
 
 	push(Annotatable::Item(
 		quote_item!(cx,
-			impl ::elastic_types::mapping::ElasticTypeMapping<()> for $ty {
+			impl ::elastic_types::mapping::ElasticFieldMapping<()> for $ty {
 				type Visitor = ::elastic_types::number::mapping::ElasticShortMappingVisitor<$ty>;
 
 				fn data_type() -> &'static str {
@@ -224,7 +218,7 @@ pub fn expand_derive_byte_mapping(cx: &mut ExtCtxt, _: Span, meta_item: &MetaIte
 
 	push(Annotatable::Item(
 		quote_item!(cx,
-			impl ::elastic_types::mapping::ElasticTypeMapping<()> for $ty {
+			impl ::elastic_types::mapping::ElasticFieldMapping<()> for $ty {
 				type Visitor = ::elastic_types::number::mapping::ElasticByteMappingVisitor<$ty>;
 
 				fn data_type() -> &'static str {
@@ -244,7 +238,7 @@ pub fn expand_derive_double_mapping(cx: &mut ExtCtxt, _: Span, meta_item: &MetaI
 
 	push(Annotatable::Item(
 		quote_item!(cx,
-			impl ::elastic_types::mapping::ElasticTypeMapping<()> for $ty {
+			impl ::elastic_types::mapping::ElasticFieldMapping<()> for $ty {
 				type Visitor = ::elastic_types::number::mapping::ElasticDoubleMappingVisitor<$ty>;
 
 				fn data_type() -> &'static str {
@@ -264,7 +258,7 @@ pub fn expand_derive_float_mapping(cx: &mut ExtCtxt, _: Span, meta_item: &MetaIt
 
 	push(Annotatable::Item(
 		quote_item!(cx,
-			impl ::elastic_types::mapping::ElasticTypeMapping<()> for $ty {
+			impl ::elastic_types::mapping::ElasticFieldMapping<()> for $ty {
 				type Visitor = ::elastic_types::number::mapping::ElasticFloatMappingVisitor<$ty>;
 
 				fn data_type() -> &'static str {
@@ -307,7 +301,7 @@ pub fn expand_derive_date_mapping(cx: &mut ExtCtxt, _: Span, meta_item: &MetaIte
 	if generics.ty_params.len() == 1 {
 		push(Annotatable::Item(
 			quote_item!(cx,
-				impl <T: ::elastic_types::date::DateFormat> ::elastic_types::mapping::ElasticTypeMapping<T> for $ty<T> {
+				impl <T: ::elastic_types::date::DateFormat> ::elastic_types::mapping::ElasticFieldMapping<T> for $ty<T> {
 					type Visitor = ::elastic_types::date::mapping::ElasticDateMappingVisitor<T, $ty<T>>;
 
 					fn data_type() -> &'static str {

@@ -11,7 +11,7 @@ use std::marker::PhantomData;
 use serde;
 use serde::ser::Error as SerError;
 use serde_json;
-use ::mapping::{ ElasticTypeMapping, ElasticTypeVisitor };
+use ::mapping::{ ElasticFieldMapping, ElasticTypeVisitor };
 use ::object::ElasticUserTypeMapping;
 
 /// Helper for mapping user-defined types.
@@ -64,7 +64,7 @@ M: ElasticUserTypeMapping {
 	pub fn to_writer<S>(_: M, serializer: &mut S) -> Result<(), S::Error> where
 	S: serde::Serializer {
 		serializer.serialize_struct(
-			<M as ElasticTypeMapping<()>>::data_type(),
+			<M as ElasticFieldMapping<()>>::data_type(),
 			<M as ElasticUserTypeMapping>::Visitor::new()
 		)
 	}

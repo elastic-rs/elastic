@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 use serde;
 use serde::{ Serialize, Deserialize, Serializer, Deserializer };
 use super::mapping::{ ElasticStringMapping, DefaultStringMapping };
-use ::mapping::{ ElasticTypeMapping, ElasticType };
+use ::mapping::{ ElasticFieldMapping, ElasticType };
 
 impl ElasticType<DefaultStringMapping, ()> for String { }
 
@@ -22,12 +22,12 @@ impl ElasticType<DefaultStringMapping, ()> for String { }
 /// ```
 #[derive(Debug, Clone, Default)]
 pub struct ElasticString<T> where
-T: ElasticTypeMapping<()> + ElasticStringMapping {
+T: ElasticFieldMapping<()> + ElasticStringMapping {
 	value: String,
 	phantom: PhantomData<T>
 }
 impl <T> ElasticString<T> where
-T: ElasticTypeMapping<()> + ElasticStringMapping {
+T: ElasticFieldMapping<()> + ElasticStringMapping {
 	/// Creates a new `ElasticString` with the given mapping.
 	///
 	/// # Examples
@@ -76,7 +76,7 @@ T: ElasticTypeMapping<()> + ElasticStringMapping {
 	/// #			Some(1.5)
 	/// #		}
 	/// # }
-	/// # impl ElasticTypeMapping<()> for MyStringMapping {
+	/// # impl ElasticFieldMapping<()> for MyStringMapping {
 	/// # 	type Visitor = ElasticStringMappingVisitor<MyStringMapping>;
 	/// # 	fn data_type() -> &'static str {
 	/// # 		"string"
@@ -94,13 +94,13 @@ T: ElasticTypeMapping<()> + ElasticStringMapping {
 	/// # }
 	/// ```
 	pub fn into<TInto>(self) -> ElasticString<TInto> where
-	TInto: ElasticTypeMapping<()> + ElasticStringMapping {
+	TInto: ElasticFieldMapping<()> + ElasticStringMapping {
 		ElasticString::<TInto>::new(self.value)
 	}
 }
 
 impl <T> ElasticType<T, ()> for ElasticString<T> where
-T: ElasticTypeMapping<()> + ElasticStringMapping { }
+T: ElasticFieldMapping<()> + ElasticStringMapping { }
 
 impl From<String> for ElasticString<DefaultStringMapping> {
 	fn from(string: String) -> Self {
@@ -109,21 +109,21 @@ impl From<String> for ElasticString<DefaultStringMapping> {
 }
 
 impl <T> AsRef<str> for ElasticString<T> where
-T: ElasticTypeMapping<()> + ElasticStringMapping {
+T: ElasticFieldMapping<()> + ElasticStringMapping {
 	fn as_ref(&self) -> &str {
 		&self.value
 	}
 }
 
 impl <T> Into<String> for ElasticString<T> where
-T: ElasticTypeMapping<()> + ElasticStringMapping {
+T: ElasticFieldMapping<()> + ElasticStringMapping {
 	fn into(self) -> String {
 		self.value
 	}
 }
 
 impl<'a, T> PartialEq<String> for ElasticString<T> where
-T: ElasticTypeMapping<()> + ElasticStringMapping {
+T: ElasticFieldMapping<()> + ElasticStringMapping {
 	fn eq(&self, other: &String) -> bool {
 		PartialEq::eq(&self.value, other)
 	}
@@ -134,7 +134,7 @@ T: ElasticTypeMapping<()> + ElasticStringMapping {
 }
 
 impl<'a, T> PartialEq<ElasticString<T>> for String where
-T: ElasticTypeMapping<()> + ElasticStringMapping {
+T: ElasticFieldMapping<()> + ElasticStringMapping {
 	fn eq(&self, other: &ElasticString<T>) -> bool {
 		PartialEq::eq(self, &other.value)
 	}
@@ -145,7 +145,7 @@ T: ElasticTypeMapping<()> + ElasticStringMapping {
 }
 
 impl<'a, T> PartialEq<&'a str> for ElasticString<T> where
-T: ElasticTypeMapping<()> + ElasticStringMapping {
+T: ElasticFieldMapping<()> + ElasticStringMapping {
 	fn eq(&self, other: & &'a str) -> bool {
 		PartialEq::eq(&self.value[..], *other)
 	}
@@ -156,7 +156,7 @@ T: ElasticTypeMapping<()> + ElasticStringMapping {
 }
 
 impl<'a, T> PartialEq<ElasticString<T>> for &'a str where
-T: ElasticTypeMapping<()> + ElasticStringMapping {
+T: ElasticFieldMapping<()> + ElasticStringMapping {
 	fn eq(&self, other: &ElasticString<T>) -> bool {
 		PartialEq::eq(*self, &other.value[..])
 	}
@@ -168,7 +168,7 @@ T: ElasticTypeMapping<()> + ElasticStringMapping {
 
 //Serialize elastic string
 impl <T> Serialize for ElasticString<T> where
-T: ElasticTypeMapping<()> + ElasticStringMapping {
+T: ElasticFieldMapping<()> + ElasticStringMapping {
 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where
 	S: Serializer {
 		serializer.serialize_str(&self.value)
@@ -177,17 +177,17 @@ T: ElasticTypeMapping<()> + ElasticStringMapping {
 
 //Deserialize elastic string
 impl <T> Deserialize for ElasticString<T> where
-T: ElasticTypeMapping<()> + ElasticStringMapping {
+T: ElasticFieldMapping<()> + ElasticStringMapping {
 	fn deserialize<D>(deserializer: &mut D) -> Result<ElasticString<T>, D::Error> where
 	D: Deserializer {
 		#[derive(Default)]
 		struct ElasticStringVisitor<T> where
-		T: ElasticTypeMapping<()> + ElasticStringMapping {
+		T: ElasticFieldMapping<()> + ElasticStringMapping {
 			phantom: PhantomData<T>
 		}
 
 		impl <T> serde::de::Visitor for ElasticStringVisitor<T> where
-		T: ElasticTypeMapping<()> + ElasticStringMapping {
+		T: ElasticFieldMapping<()> + ElasticStringMapping {
 			type Value = ElasticString<T>;
 
 			fn visit_str<E>(&mut self, v: &str) -> Result<ElasticString<T>, E> where

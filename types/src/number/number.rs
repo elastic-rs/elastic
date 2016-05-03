@@ -1,17 +1,17 @@
 use std::marker::PhantomData;
 use serde::{ Serialize, Deserialize, Serializer, Deserializer };
 use super::mapping::*;
-use ::mapping::{ ElasticType, ElasticTypeMapping };
+use ::mapping::{ ElasticType, ElasticFieldMapping };
 
 macro_rules! number_type {
     ($t:ident, $m:ident, $n:ident) => (
     	/// Number type with a given mapping.
     	#[derive(Debug, Default, Clone)]
-		pub struct $t<M> where M: ElasticTypeMapping<()> + $m {
+		pub struct $t<M> where M: ElasticFieldMapping<()> + $m {
 			value: $n,
 			phantom: PhantomData<M>
 		}
-		impl <M> $t<M> where M: ElasticTypeMapping<()> + $m {
+		impl <M> $t<M> where M: ElasticFieldMapping<()> + $m {
 			/// Creates a new number with the given mapping.
 			pub fn new<I: Into<$n>>(num: I) -> $t<M> {
 				$t {
@@ -31,21 +31,21 @@ macro_rules! number_type {
 			}
 
 			/// Change the mapping of this number.
-			pub fn into<MInto: ElasticTypeMapping<()> + $m>(self) -> $t<MInto> {
+			pub fn into<MInto: ElasticFieldMapping<()> + $m>(self) -> $t<MInto> {
 				$t::<MInto>::new(self.value)
 			}
 		}
 
-		impl <M> ElasticType<M, ()> for $t<M> where M: ElasticTypeMapping<()> + $m { }
+		impl <M> ElasticType<M, ()> for $t<M> where M: ElasticFieldMapping<()> + $m { }
 
-		impl <M> From<$n> for $t<M> where M: ElasticTypeMapping<()> + $m {
+		impl <M> From<$n> for $t<M> where M: ElasticFieldMapping<()> + $m {
 			fn from(num: $n) -> Self {
 				$t::<M>::new(num)
 			}
 		}
 
 		//Serialize elastic number.
-		impl <M> Serialize for $t<M> where M: ElasticTypeMapping<()> + $m {
+		impl <M> Serialize for $t<M> where M: ElasticFieldMapping<()> + $m {
 			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where
             S: Serializer {
 				self.value.serialize(serializer)
@@ -53,7 +53,7 @@ macro_rules! number_type {
 		}
 
 		//Deserialize elastic number.
-		impl <M: ElasticTypeMapping<()> + $m> Deserialize for $t<M> {
+		impl <M: ElasticFieldMapping<()> + $m> Deserialize for $t<M> {
 			fn deserialize<D>(deserializer: &mut D) -> Result<$t<M>, D::Error> where
             D: Deserializer {
 				let t = try!($n::deserialize(deserializer));

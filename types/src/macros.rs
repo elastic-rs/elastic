@@ -9,7 +9,7 @@ macro_rules! impl_mapping {
 #[cfg(feature="string-ty")]
 macro_rules! impl_string_mapping {
 	($t:ty) => (
-		impl $crate::mapping::ElasticTypeMapping<()> for $t {
+		impl $crate::mapping::ElasticFieldMapping<()> for $t {
 			type Visitor = $crate::string::mapping::ElasticStringMappingVisitor<$t>;
 
 			fn data_type() -> &'static str {
@@ -29,7 +29,7 @@ macro_rules! impl_string_mapping {
 #[cfg(feature="boolean-ty")]
 macro_rules! impl_boolean_mapping {
 	($t:ty) => (
-		impl $crate::mapping::ElasticTypeMapping<()> for $t {
+		impl $crate::mapping::ElasticFieldMapping<()> for $t {
 			type Visitor = $crate::boolean::mapping::ElasticBooleanMappingVisitor<$t>;
 
 			fn data_type() -> &'static str {
@@ -49,7 +49,7 @@ macro_rules! impl_boolean_mapping {
 #[cfg(feature="number-ty")]
 macro_rules! impl_number_mapping {
 	($t:ty, $v:ident, $es_ty:expr) => (
-		impl $crate::mapping::ElasticTypeMapping<()> for $t {
+		impl $crate::mapping::ElasticFieldMapping<()> for $t {
 			type Visitor = $v;
 
 			fn data_type() -> &'static str {
@@ -69,7 +69,7 @@ macro_rules! impl_number_mapping {
 #[cfg(feature="number-ty")]
 macro_rules! impl_integer_mapping {
 	($t:ty) => (
-		impl $crate::mapping::ElasticTypeMapping<()> for $t {
+		impl $crate::mapping::ElasticFieldMapping<()> for $t {
 			type Visitor = ElasticIntegerMappingVisitor<$t>;
 
 			fn data_type() -> &'static str {
@@ -89,7 +89,7 @@ macro_rules! impl_integer_mapping {
 #[cfg(feature="number-ty")]
 macro_rules! impl_long_mapping {
 	($t:ty) => (
-		impl $crate::mapping::ElasticTypeMapping<()> for $t {
+		impl $crate::mapping::ElasticFieldMapping<()> for $t {
 			type Visitor = ElasticLongMappingVisitor<$t>;
 
 			fn data_type() -> &'static str {
@@ -109,7 +109,7 @@ macro_rules! impl_long_mapping {
 #[cfg(feature="number-ty")]
 macro_rules! impl_short_mapping {
 	($t:ty) => (
-		impl $crate::mapping::ElasticTypeMapping<()> for $t {
+		impl $crate::mapping::ElasticFieldMapping<()> for $t {
 			type Visitor = ElasticShortMappingVisitor<$t>;
 
 			fn data_type() -> &'static str {
@@ -129,7 +129,7 @@ macro_rules! impl_short_mapping {
 #[cfg(feature="number-ty")]
 macro_rules! impl_byte_mapping {
 	($t:ty) => (
-		impl $crate::mapping::ElasticTypeMapping<()> for $t {
+		impl $crate::mapping::ElasticFieldMapping<()> for $t {
 			type Visitor = ElasticByteMappingVisitor<$t>;
 
 			fn data_type() -> &'static str {
@@ -149,7 +149,7 @@ macro_rules! impl_byte_mapping {
 #[cfg(feature="number-ty")]
 macro_rules! impl_float_mapping {
 	($t:ty) => (
-		impl $crate::mapping::ElasticTypeMapping<()> for $t {
+		impl $crate::mapping::ElasticFieldMapping<()> for $t {
 			type Visitor = ElasticFloatMappingVisitor<$t>;
 
 			fn data_type() -> &'static str {
@@ -169,7 +169,7 @@ macro_rules! impl_float_mapping {
 #[cfg(feature="number-ty")]
 macro_rules! impl_double_mapping {
 	($t:ty) => (
-		impl $crate::mapping::ElasticTypeMapping<()> for $t {
+		impl $crate::mapping::ElasticFieldMapping<()> for $t {
 			type Visitor = ElasticDoubleMappingVisitor<$t>;
 
 			fn data_type() -> &'static str {
@@ -189,7 +189,7 @@ macro_rules! impl_double_mapping {
 #[cfg(feature="date-ty")]
 macro_rules! impl_date_mapping {
 	($t:ty, $f:ty) => (
-		impl $crate::mapping::ElasticTypeMapping<$f> for $t {
+		impl $crate::mapping::ElasticFieldMapping<$f> for $t {
 			type Visitor = $crate::date::mapping::ElasticDateMappingVisitor<$f, $t>;
 
 			fn data_type() -> &'static str {
@@ -205,7 +205,7 @@ macro_rules! impl_date_mapping {
 		}
 	);
 	($t:ty) => (
-		impl <T: $crate::date::DateFormat> $crate::mapping::ElasticTypeMapping<T> for $t {
+		impl <T: $crate::date::DateFormat> $crate::mapping::ElasticFieldMapping<T> for $t {
 			type Visitor = $crate::date::mapping::ElasticDateMappingVisitor<T, $t>;
 
 			fn data_type() -> &'static str {

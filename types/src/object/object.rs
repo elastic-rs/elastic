@@ -1,13 +1,14 @@
 use std::marker::PhantomData;
 use serde;
 use serde::{ Serialize, Serializer };
-use ::mapping::{ ElasticTypeMapping, ElasticTypeVisitor };
+use super::ElasticObjectProperties;
+use ::mapping::{ ElasticFieldMapping, ElasticTypeVisitor };
 
 /// The base requirements for mapping an `object` type.
 ///
 /// Object mappings are tied to user-defined `type` mappings.
 pub trait ElasticObjectMapping where
-Self: ElasticTypeMapping<()> + Sized + Serialize + Default + Clone {
+Self: ElasticFieldMapping<()> + Sized + Serialize + Default + Clone {
 	/// Get the type name for this mapping, like `object` or `nested`.
 	fn data_type() -> &'static str {
 		"object"
@@ -56,51 +57,32 @@ impl serde::Serialize for Dynamic {
 	}
 }
 
-/// Represents the properties object that encapsulates type mappings.
-#[derive(Debug)]
-pub struct ElasticObjectProperties<V> where
+/// Visitor for an `object` field mapping.
+#[derive(Debug, PartialEq)]
+pub struct ElasticObjectMappingVisitor<T, V> where
+T: ElasticObjectMapping,
 V: ElasticTypeVisitor {
+	phantom_t: PhantomData<T>,
 	phantom_v: PhantomData<V>
 }
 
-impl <V> ElasticObjectProperties<V> where
+impl <T, V> ElasticTypeVisitor for ElasticObjectMappingVisitor<T, V> where
+T: ElasticObjectMapping,
 V: ElasticTypeVisitor {
-	/// Create a new properties container.
-	pub fn new() -> Self {
-		ElasticObjectProperties {
+	fn new() -> Self {
+		ElasticObjectMappingVisitor {
+			phantom_t: PhantomData,
 			phantom_v: PhantomData
 		}
 	}
 }
 
-impl <V> serde::Serialize for ElasticObjectProperties<V> where
+impl <T, V> serde::ser::MapVisitor for ElasticObjectMappingVisitor<T, V> where
+T: ElasticObjectMapping,
 V: ElasticTypeVisitor {
-	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
-	where S: serde::Serializer {
-		serializer.serialize_struct("properties", V::new())
-	}
-}
-
-/// Visitor for an `object` field mapping.
-#[derive(Debug, PartialEq)]
-pub struct ElasticObjectMappingVisitor<T> where T: ElasticObjectMapping {
-	phantom: PhantomData<T>
-}
-
-impl <T> ElasticTypeVisitor for ElasticObjectMappingVisitor<T> where
-T: ElasticObjectMapping  {
-	fn new() -> Self {
-		ElasticObjectMappingVisitor {
-			phantom: PhantomData
-		}
-	}
-}
-
-impl <T> serde::ser::MapVisitor for ElasticObjectMappingVisitor<T> where
-T: ElasticObjectMapping {
 	fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
 	where S: Serializer {
-		try!(serializer.serialize_struct_elt("type", <T as ElasticTypeMapping<()>>::data_type()));
+		try!(serializer.serialize_struct_elt("type", <T as ElasticFieldMapping<()>>::data_type()));
 
 		if let Some(dynamic) = T::dynamic() {
 			try!(serializer.serialize_struct_elt("dynamic", dynamic));
@@ -113,6 +95,8 @@ T: ElasticObjectMapping {
 		if let Some(include_in_all) = T::include_in_all() {
 			try!(serializer.serialize_struct_elt("include_in_all", include_in_all));
 		};
+
+		try!(serializer.serialize_struct_elt("properties", ElasticObjectProperties::<V>::new()));
 
 		Ok(None)
 	}

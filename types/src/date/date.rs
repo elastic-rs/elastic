@@ -6,7 +6,7 @@ use serde::{ Serialize, Deserialize, Serializer, Deserializer };
 use super::{ DT, DefaultFormat };
 use super::format::{ DateFormat, ParseError };
 use super::mapping::{ ElasticDateMapping, DefaultDateMapping };
-use ::mapping::{ ElasticTypeMapping, ElasticType };
+use ::mapping::{ ElasticFieldMapping, ElasticType };
 
 pub use chrono::{ Datelike, Timelike };
 
@@ -69,7 +69,7 @@ impl ElasticType<DefaultDateMapping<DefaultFormat>, DefaultFormat> for DT {
 #[derive(Debug, Clone)]
 pub struct ElasticDate<F, T = DefaultDateMapping<F>> where
 F: DateFormat,
-T: ElasticTypeMapping<F> + ElasticDateMapping<F> {
+T: ElasticFieldMapping<F> + ElasticDateMapping<F> {
 	value: DT,
 	phantom_f: PhantomData<F>,
 	phantom_t: PhantomData<T>
@@ -77,7 +77,7 @@ T: ElasticTypeMapping<F> + ElasticDateMapping<F> {
 
 impl <F, T> ElasticDate<F, T> where
 F: DateFormat,
-T: ElasticTypeMapping<F> + ElasticDateMapping<F> {
+T: ElasticFieldMapping<F> + ElasticDateMapping<F> {
 	/// Creates a new `ElasticDate` from the given `chrono::DateTime<UTC>`.
 	///
 	/// This function will consume the provided `chrono` date.
@@ -176,20 +176,20 @@ T: ElasticTypeMapping<F> + ElasticDateMapping<F> {
 	/// ```
 	pub fn into<FInto, TInto>(self) -> ElasticDate<FInto, TInto> where
 	FInto: DateFormat,
-	TInto: ElasticTypeMapping<FInto> + ElasticDateMapping<FInto> {
+	TInto: ElasticFieldMapping<FInto> + ElasticDateMapping<FInto> {
 		ElasticDate::<FInto, TInto>::new(self.value)
 	}
 }
 
 impl <F, T> ElasticType<T, F> for ElasticDate<F, T> where
 F: DateFormat,
-T: ElasticTypeMapping<F> + ElasticDateMapping<F> {
+T: ElasticFieldMapping<F> + ElasticDateMapping<F> {
 
 }
 
 impl <F, T> Default for ElasticDate<F, T> where
 F: DateFormat,
-T: ElasticTypeMapping<F> + ElasticDateMapping<F> {
+T: ElasticFieldMapping<F> + ElasticDateMapping<F> {
 	fn default() -> ElasticDate<F, T> {
 		ElasticDate::<F, T>::now()
 	}
@@ -197,7 +197,7 @@ T: ElasticTypeMapping<F> + ElasticDateMapping<F> {
 
 impl <F, T> From<DT> for ElasticDate<F, T> where
 F: DateFormat,
-T: ElasticTypeMapping<F> + ElasticDateMapping<F> {
+T: ElasticFieldMapping<F> + ElasticDateMapping<F> {
 	fn from(dt: DT) -> ElasticDate<F, T> {
 		ElasticDate::<F, T>::new(dt)
 	}
@@ -205,7 +205,7 @@ T: ElasticTypeMapping<F> + ElasticDateMapping<F> {
 
 impl <F, T> Datelike for ElasticDate<F, T> where
 F: DateFormat,
-T: ElasticTypeMapping<F> + ElasticDateMapping<F> {
+T: ElasticFieldMapping<F> + ElasticDateMapping<F> {
 	fn year(&self) -> i32 { self.value.year() }
 	fn month(&self) -> u32 { self.value.month() }
 	fn month0(&self) -> u32 { self.value.month0() }
@@ -268,7 +268,7 @@ T: ElasticTypeMapping<F> + ElasticDateMapping<F> {
 
 impl <F, T> Timelike for ElasticDate<F, T> where
 F: DateFormat,
-T: ElasticTypeMapping<F> + ElasticDateMapping<F> {
+T: ElasticFieldMapping<F> + ElasticDateMapping<F> {
 	fn hour(&self) -> u32 { self.value.hour() }
 	fn minute(&self) -> u32 { self.value.minute() }
 	fn second(&self) -> u32 { self.value.second() }
@@ -306,7 +306,7 @@ T: ElasticTypeMapping<F> + ElasticDateMapping<F> {
 //Serialize date
 impl <F, T> Serialize for ElasticDate<F, T> where
 F: DateFormat,
-T: ElasticTypeMapping<F> + ElasticDateMapping<F> {
+T: ElasticFieldMapping<F> + ElasticDateMapping<F> {
 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where
 	S: Serializer {
 		serializer.serialize_str(&self.format())
@@ -316,20 +316,20 @@ T: ElasticTypeMapping<F> + ElasticDateMapping<F> {
 //Deserialize date
 impl <F, T> Deserialize for ElasticDate<F, T> where
 F: DateFormat,
-T: ElasticTypeMapping<F> + ElasticDateMapping<F> {
+T: ElasticFieldMapping<F> + ElasticDateMapping<F> {
 	fn deserialize<D>(deserializer: &mut D) -> Result<ElasticDate<F, T>, D::Error> where
 	D: Deserializer {
 		#[derive(Default)]
 		struct DateTimeVisitor<F, T> where
 		F: DateFormat,
-		T: ElasticTypeMapping<F> + ElasticDateMapping<F> {
+		T: ElasticFieldMapping<F> + ElasticDateMapping<F> {
 			phantom_f: PhantomData<F>,
 			phantom_t: PhantomData<T>
 		}
 
 		impl <F, T> serde::de::Visitor for DateTimeVisitor<F, T> where
 		F: DateFormat,
-		T: ElasticTypeMapping<F> + ElasticDateMapping<F> {
+		T: ElasticFieldMapping<F> + ElasticDateMapping<F> {
 			type Value = ElasticDate<F, T>;
 
 			fn visit_str<E>(&mut self, v: &str) -> Result<ElasticDate<F, T>, E> where

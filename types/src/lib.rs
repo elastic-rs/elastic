@@ -298,7 +298,7 @@
 //!
 //! The source is a `string` and the mapping is `DefaultStringMapping`.
 //!
-//! All Elasticsearch types implement the base `ElasticType<M: ElasticTypeMapping<F>, F>` trait
+//! All Elasticsearch types implement the base `ElasticType<M: ElasticFieldMapping<F>, F>` trait
 //! where `M` is the mapping and `F` is a type-specific format.
 //!
 //! The following table illustrates the types provided by `elastic_types`:

@@ -2,7 +2,7 @@
 //!
 //! There are two kinds of types we can map in Elasticsearch; `field`/`data` types and `user-defined` types.
 //! Either kind of type must implement `ElasticType`, which captures the mapping and possible formatting requirements as generic parameters.
-//! Most of the work lives in the `ElasticTypeMapping`, which holds the serialisation requirements to convert a Rust type into an Elasticsearch mapping.
+//! Most of the work lives in the `ElasticFieldMapping`, which holds the serialisation requirements to convert a Rust type into an Elasticsearch mapping.
 //! User-defined types must also implement `ElasticUserTypeMapping`, which maps the fields of a struct as properties, and treats the type as `nested` when used as a field itself.
 //!
 //! # Notes
@@ -24,7 +24,7 @@ pub mod prelude {
 
 	pub use super::{
 		ElasticType,
-		ElasticTypeMapping,
+		ElasticFieldMapping,
 		ElasticTypeVisitor,
 		NullMapping,
 		IndexAnalysis
@@ -51,14 +51,14 @@ use serde;
 /// `ElasticType` is the main `trait` you need to care about when building your own Elasticsearch types.
 /// Each type has two generic arguments that help define its mapping:
 ///
-/// - A mapping type, which implements `ElasticTypeMapping`
+/// - A mapping type, which implements `ElasticFieldMapping`
 /// - A format type, which is usually `()`. Types with multiple formats, like `ElasticDate`, can use the format in the type definition.
 ///
 /// # Links
 ///
 /// - [Elasticsearch docs](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-types.html)
 pub trait ElasticType<T, F> where
-T: ElasticTypeMapping<F>,
+T: ElasticFieldMapping<F>,
 Self : serde::Serialize + serde::Deserialize {
 	/// Get the type name for the given mapping.
 	fn name() -> &'static str {
@@ -75,8 +75,8 @@ Self : serde::Serialize + serde::Deserialize {
 ///
 /// Each type has its own implementing structures with extra type-specific mapping parameters.
 /// If you're building your own Elasticsearch types, see `ElasticUserTypeMapping`,
-/// which is a specialization of `ElasticTypeMapping<()>`.
-pub trait ElasticTypeMapping<F>
+/// which is a specialization of `ElasticFieldMapping<()>`.
+pub trait ElasticFieldMapping<F>
 where Self: Default + Clone + serde::Serialize {
 	#[doc(hidden)]
 	type Visitor : ElasticTypeVisitor;
@@ -113,7 +113,7 @@ Self: serde::ser::MapVisitor {
 #[derive(Debug, PartialEq, Default, Clone)]
 pub struct NullMapping;
 
-impl ElasticTypeMapping<()> for NullMapping {
+impl ElasticFieldMapping<()> for NullMapping {
 	type Visitor = NullMappingVisitor;
 
 	fn data_type() -> &'static str {
@@ -181,14 +181,14 @@ pub enum IndexAnalysis {
 /// So the mapping for an array is just the mapping for its members.
 #[derive(Debug, Default, Clone)]
 pub struct ElasticArrayMapping<M, F> where
-M: ElasticTypeMapping<F>,
+M: ElasticFieldMapping<F>,
 F: Default + Clone {
 	phantom_m: PhantomData<M>,
 	phantom_f: PhantomData<F>
 }
 
-impl <M, F> ElasticTypeMapping<F> for ElasticArrayMapping<M, F> where
-M: ElasticTypeMapping<F>,
+impl <M, F> ElasticFieldMapping<F> for ElasticArrayMapping<M, F> where
+M: ElasticFieldMapping<F>,
 F: Default + Clone {
 	type Visitor = M::Visitor;
 
@@ -198,7 +198,7 @@ F: Default + Clone {
 }
 
 impl <M, F> serde::Serialize for ElasticArrayMapping<M, F> where
-M: ElasticTypeMapping<F>,
+M: ElasticFieldMapping<F>,
 F: Default + Clone {
 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
 	where S: serde::Serializer {
@@ -208,7 +208,7 @@ F: Default + Clone {
 
 impl <T, M, F> ElasticType<ElasticArrayMapping<M, F>, F> for Vec<T> where
 T: ElasticType<M, F>,
-M: ElasticTypeMapping<F>,
+M: ElasticFieldMapping<F>,
 F: Default + Clone {
 
 }
