@@ -232,7 +232,7 @@
 //! {
 //!     "properties": {
 //!         "my_type": {
-//!             "type": "object",
+//!             "type": "nested",
 //!             "properties": {
 //!                 "my_date": {
 //!                     "type": "date",

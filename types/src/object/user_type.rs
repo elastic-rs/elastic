@@ -13,7 +13,7 @@ Self: super::ElasticObjectMapping {
 	type Visitor : ElasticTypeVisitor;
 }
 
-/// Visitor for an `object` type mapping.
+/// Visitor for an `object` type mapping when mapping as a user-defined type in an Elasticsearch index.
 #[derive(Debug, PartialEq)]
 pub struct ElasticUserTypeMappingVisitor<V> where
 V: ElasticTypeVisitor {

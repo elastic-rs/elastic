@@ -5,8 +5,6 @@ use super::ElasticObjectProperties;
 use ::mapping::{ ElasticFieldMapping, ElasticTypeVisitor };
 
 /// The base requirements for mapping an `object` type.
-///
-/// Object mappings are tied to user-defined `type` mappings.
 pub trait ElasticObjectMapping where
 Self: ElasticFieldMapping<()> + Sized + Serialize + Default + Clone {
 	/// Get the type name for this mapping, like `object` or `nested`.
@@ -57,7 +55,7 @@ impl serde::Serialize for Dynamic {
 	}
 }
 
-/// Visitor for an `object` field mapping.
+/// Visitor for an `object` type mapping when mapping as a field.
 #[derive(Debug, PartialEq)]
 pub struct ElasticObjectMappingVisitor<T, V> where
 T: ElasticObjectMapping,
