@@ -53,15 +53,6 @@ Support for Elastic's plugin products, like `watcher` and `graph` could be added
 
 The client is divided into a few crates by utility. These will probably be moved into their own repositories to tidy up build/test, but for now it's conventient to develop them together.
 
-### elastic_codegen
-
-[Docs](http://kodraus.github.io/rustdoc/elastic_codegen/) |
-[Issues](https://github.com/KodrAus/elasticsearch-rs/labels/codegen)
-
-Provides code generation for the Elasticsearch REST API from the official [spec](https://github.com/elastic/elasticsearch/tree/master/rest-api-spec) and generic helpers for rust source and integration tests. The goal is to keep this package fairly agnostic, so the same `ast` can be used to generate other kinds of output.
-
-Right now, it's used by `elastic_hyper` to build the client, but could also be used to generate other implementations, like `elastic_rotor` for an asynchronous client.
-
 ### elastic_hyper
 
 [![Latest Version](https://img.shields.io/crates/v/elastic_hyper.svg)](https://crates.io/crates/elastic_hyper)
@@ -132,6 +123,8 @@ The crate will allow you to use connections in two ways; add connections as stat
 [Docs](http://kodraus.github.io/rustdoc/elastic_types/) |
 [Issues](https://github.com/KodrAus/elasticsearch-rs/labels/types)
 
+_In Progress_
+
 Provides rust implementations of the main [Elasticsearch types](https://www.elastic.co/guide/en/elasticsearch/reference/1.4/mapping-core-types.html) (like `date`) and responses/errors. This crate is not required for working with `elastic_hyper` or `elastic_rotor`, but does have a lot of utility, especially for designing your document types.
 
 The `elastic_types` crate tries not to reinvent the wheel wherever possible and relies on some common dependencies for types, such as [chrono](https://github.com/lifthrasiir/rust-chrono) for dates and [rust-geo](https://github.com/georust/rust-geo) for geometry.
@@ -192,6 +185,15 @@ This will return:
   }
 }
 ```
+
+### elastic_codegen
+
+[Docs](http://kodraus.github.io/rustdoc/elastic_codegen/) |
+[Issues](https://github.com/KodrAus/elasticsearch-rs/labels/codegen)
+
+Provides code generation for the Elasticsearch REST API from the official [spec](https://github.com/elastic/elasticsearch/tree/master/rest-api-spec) and generic helpers for rust source and integration tests. The goal is to keep this package fairly agnostic, so the same `ast` can be used to generate other kinds of output.
+
+Right now, it's used by `elastic_hyper` to build the client, but could also be used to generate other implementations, like `elastic_rotor` for an asynchronous client.
 
 ### Macros
 

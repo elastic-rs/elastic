@@ -23,6 +23,7 @@ no-response-ty = [
   "number-ty",
   "string-ty"
 ]
+no-ty = []
 boolean-ty = []
 date-ty = [
   "chrono",

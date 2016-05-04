@@ -102,7 +102,7 @@ fn serialise_mapping_type_as_nested() {
 				"format": "basic_date_time"
 			},
 			"my_renamed_type": {
-				"type": "object",
+				"type": "nested",
 				"dynamic": true,
 				"enabled": false,
 				"include_in_all": true,

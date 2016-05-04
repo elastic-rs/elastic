@@ -191,7 +191,7 @@
 //! # extern crate elastic_types;
 //! use elastic_types::mapping::prelude::*;
 //! use elastic_types::date::prelude::*;
-//! 
+//!
 //! #[derive(Serialize, Deserialize)]
 //! pub struct MyType {
 //!     pub my_date2: ElasticDate<DefaultFormat>,
@@ -272,6 +272,8 @@
 pub const OBJECT_DATATYPE: &'static str = "object";
 /// Elasticsearch datatype name.
 pub const DYNAMIC_DATATYPE: &'static str = "dynamic";
+/// Elasticsearch datatype name.
+pub const NESTED_DATATYPE: &'static str = "nested";
 
 mod object;
 mod user_type;
