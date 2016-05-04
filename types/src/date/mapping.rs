@@ -3,7 +3,7 @@
 use std::marker::PhantomData;
 use serde;
 use serde::{ Serializer, Serialize };
-use super::DateFormat;
+use super::{ DateFormat, ElasticDate };
 use ::mapping::{ ElasticFieldMapping, ElasticTypeVisitor, IndexAnalysis };
 
 /// Elasticsearch datatype name.
@@ -210,7 +210,7 @@ Self: ElasticFieldMapping<T> + Sized + Serialize {
 
 	/// Accepts a date value in one of the configured format's as the field which is substituted for any explicit null values.
 	/// Defaults to `null`, which means the field is treated as missing.
-	fn null_value() -> Option<&'static str> {
+	fn null_value() -> Option<ElasticDate<T>> {
 		None
 	}
 

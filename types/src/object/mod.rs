@@ -189,8 +189,9 @@
 //! # #![plugin(serde_macros, elastic_types_macros)]
 //! # extern crate serde;
 //! # extern crate elastic_types;
-//! # use elastic_types::mapping::prelude::*;
-//! # use elastic_types::date::prelude::*;
+//! use elastic_types::mapping::prelude::*;
+//! use elastic_types::date::prelude::*;
+//! 
 //! #[derive(Serialize, Deserialize)]
 //! pub struct MyType {
 //!     pub my_date2: ElasticDate<DefaultFormat>,
@@ -201,6 +202,30 @@
 //!
 //! //Implement ElasticType for your type
 //! impl ElasticType<MyTypeMapping, ()> for MyType { }
+//!
+//! //Create a visitor for the field mappings. This is used when mapping as a custom type
+//! //or when mapping as a field on another type.
+//! #[derive(Default, Clone)]
+//! pub struct MyTypeObjectVisitor;
+//!
+//! impl ElasticTypeVisitor for MyTypeObjectVisitor {
+//!     fn new() -> Self {
+//!     	MyTypeObjectVisitor
+//!     }
+//! }
+//!
+//! impl serde::ser::MapVisitor for MyTypeObjectVisitor {
+//!     fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
+//!      where S: serde::Serializer {
+//! 			//List your fields to map here
+//! 			//All implementations of ElasticType have a static `::mapping()` method
+//!             try!(serializer.serialize_struct_elt("my_date2", ElasticDate::<DefaultFormat>::mapping()));
+//!             try!(serializer.serialize_struct_elt("my_string1", String::mapping()));
+//!             try!(serializer.serialize_struct_elt("my_num1", i32::mapping()));
+//!             try!(serializer.serialize_struct_elt("my_bool1", bool::mapping()));
+//!         Ok(None)
+//!     }
+//! }
 //!
 //! #[derive(Default, Clone)]
 //! pub struct MyTypeMapping;
@@ -238,29 +263,6 @@
 //! //Implement User Type mapping for mapping our type as a custom type in an Elasticsearch index.
 //! impl ElasticUserTypeMapping for MyTypeMapping {
 //!     type Visitor = ElasticUserTypeMappingVisitor<MyTypeObjectVisitor>;
-//! }
-//!
-//! //Create a visitor for mapping the fields. This is used when mapping as a custom type
-//! //or when mapping as a field on another type.
-//! #[derive(Default, Clone)]
-//! pub struct MyTypeObjectVisitor;
-//!
-//! impl ElasticTypeVisitor for MyTypeObjectVisitor {
-//!     fn new() -> Self {
-//!     	MyTypeObjectVisitor
-//!     }
-//! }
-//!
-//! impl serde::ser::MapVisitor for MyTypeObjectVisitor {
-//!     fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
-//!      where S: serde::Serializer {
-//! 			//List your fields to map here
-//!             try!(serializer.serialize_struct_elt("my_date2", ElasticDate::<DefaultFormat>::mapping()));
-//!             try!(serializer.serialize_struct_elt("my_string1", String::mapping()));
-//!             try!(serializer.serialize_struct_elt("my_num1", i32::mapping()));
-//!             try!(serializer.serialize_struct_elt("my_bool1", bool::mapping()));
-//!         Ok(None)
-//!     }
 //! }
 //! # fn main() {
 //! # }

@@ -42,8 +42,8 @@ pub mod date_fixtures {
 			Some(true)
 		}
 
-		fn null_value() -> Option<&'static str> {
-			Some("0")
+		fn null_value() -> Option<ElasticDate<T>> {
+			Some(ElasticDate::<T>::parse("0").unwrap())
 		}
 
 		fn ignore_malformed() -> Option<bool> {
