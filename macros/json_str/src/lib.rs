@@ -103,7 +103,7 @@
 //! # }
 //! ```
 //!
-//! On `nightly`, there's an additional plugin called `json_lit` that returns a `&'satic str`
+//! On `nightly`, there's an additional plugin called `json_lit` that returns a `&'static str`
 //! instead of a `String`, so you can avoid allocating each time. The syntax is otherwise the same
 //! as `json_str`:
 //!
