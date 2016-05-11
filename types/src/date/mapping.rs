@@ -103,6 +103,7 @@ pub const DATE_DATATYPE: &'static str = "date";
 ///
 /// impl ElasticFieldMapping<EpochMillis> for MyDateMapping {
 /// 	type Visitor = ElasticDateMappingVisitor<EpochMillis, MyDateMapping>;
+/// 	type MultiFieldMapping = Self;
 ///
 /// 	fn data_type() -> &'static str {
 /// 		DATE_DATATYPE

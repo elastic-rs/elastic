@@ -91,6 +91,7 @@ pub const STRING_DATATYPE: &'static str = "string";
 /// //We also need to implement the base `ElasticFieldMapping` and `serde::Serialize` for our custom mapping type
 /// impl ElasticFieldMapping<()> for MyStringMapping {
 /// 	type Visitor = ElasticStringMappingVisitor<MyStringMapping>;
+/// 	type MultiFieldMapping = Self;
 ///
 /// 	fn data_type() -> &'static str {
 /// 		STRING_DATATYPE

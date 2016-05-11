@@ -41,7 +41,7 @@ M: ElasticUserTypeMapping {
 	/// # use elastic_types::date::prelude::*;
 	/// # #[derive(Default, Clone, Serialize, Deserialize, ElasticType)]
 	/// # pub struct MyType {
-	/// # 	pub my_date: ElasticDate<DefaultFormat>,
+	/// # 	pub my_date: ElasticDate<DefaultDateFormat>,
 	/// # 	pub my_string: String,
 	/// # 	pub my_num: i32
 	/// # }
@@ -87,7 +87,7 @@ M: ElasticUserTypeMapping {
 	/// # use elastic_types::date::prelude::*;
 	/// # #[derive(Default, Clone, Serialize, Deserialize, ElasticType)]
 	/// # pub struct MyType {
-	/// # 	pub my_date: ElasticDate<DefaultFormat>,
+	/// # 	pub my_date: ElasticDate<DefaultDateFormat>,
 	/// # 	pub my_string: String,
 	/// # 	pub my_num: i32
 	/// # }
@@ -133,7 +133,7 @@ M: ElasticUserTypeMapping {
 	/// # use elastic_types::date::prelude::*;
 	/// # #[derive(Default, Clone, Serialize, Deserialize, ElasticType)]
 	/// # pub struct MyType {
-	/// # 	pub my_date: ElasticDate<DefaultFormat>,
+	/// # 	pub my_date: ElasticDate<DefaultDateFormat>,
 	/// # 	pub my_string: String,
 	/// # 	pub my_num: i32
 	/// # }

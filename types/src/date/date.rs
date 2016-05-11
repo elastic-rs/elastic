@@ -1,16 +1,16 @@
 use std::marker::PhantomData;
 use chrono;
-use chrono::Weekday;
+use chrono::{ UTC, Weekday, NaiveDateTime, NaiveDate, NaiveTime };
 use serde;
 use serde::{ Serialize, Deserialize, Serializer, Deserializer };
-use super::{ DT, DefaultFormat };
+use super::{ DT, DefaultDateFormat };
 use super::format::{ DateFormat, ParseError };
 use super::mapping::{ ElasticDateMapping, DefaultDateMapping };
 use ::mapping::{ ElasticFieldMapping, ElasticType };
 
 pub use chrono::{ Datelike, Timelike };
 
-impl ElasticType<DefaultDateMapping<DefaultFormat>, DefaultFormat> for DT {
+impl ElasticType<DefaultDateMapping<DefaultDateFormat>, DefaultDateFormat> for DT {
 
 }
 
@@ -23,9 +23,9 @@ impl ElasticType<DefaultDateMapping<DefaultFormat>, DefaultFormat> for DT {
 /// Defining a date using the default format:
 ///
 /// ```
-/// use elastic_types::date::{ ElasticDate, DefaultFormat };
+/// use elastic_types::date::{ ElasticDate, DefaultDateFormat };
 ///
-/// let date: ElasticDate<DefaultFormat> = ElasticDate::now();
+/// let date: ElasticDate<DefaultDateFormat> = ElasticDate::now();
 /// ```
 ///
 /// Defining a date using a named format:
@@ -84,20 +84,20 @@ T: ElasticFieldMapping<F> + ElasticDateMapping<F> {
 	///
 	/// # Examples
 	///
-	/// Create a `ElasticDate` from the current date:
+	/// Create an `ElasticDate` from the given `chrono::DateTime`:
 	///
 	/// ```
 	/// # extern crate elastic_types;
 	/// # extern crate chrono;
 	/// # fn main() {
 	/// use chrono::UTC;
-	/// use elastic_types::date::{ ElasticDate, DefaultFormat };
+	/// use elastic_types::date::{ ElasticDate, DefaultDateFormat };
 	///
 	/// //Create a chrono DateTime struct
 	/// let chronoDate = UTC::now();
 	///
 	/// //Give it to the ElasticDate struct
-	/// let esDate: ElasticDate<DefaultFormat> = ElasticDate::new(chronoDate);
+	/// let esDate: ElasticDate<DefaultDateFormat> = ElasticDate::new(chronoDate);
 	/// # }
 	/// ```
 	pub fn new(date: DT) -> ElasticDate<F, T> {
@@ -108,14 +108,40 @@ T: ElasticFieldMapping<F> + ElasticDateMapping<F> {
 		}
 	}
 
+	/// Creates an `ElasticDate` from the given UTC primitives:
+	///
+	/// ```
+	/// # extern crate elastic_types;
+	/// # extern crate chrono;
+	/// # fn main() {
+	/// use chrono::UTC;
+	/// use elastic_types::date::{ ElasticDate, DefaultDateFormat };
+	///
+	/// let esDate: ElasticDate<DefaultDateFormat> = ElasticDate::build(2015, 5, 14, 16, 45, 886);
+	/// # }
+	/// ```
+	pub fn from_prim(year: i32, month: u32, day: u32, hour: u32, minute: u32, second: u32, milli: u32) -> ElasticDate<F, T> {
+		ElasticDate {
+			value: DT::from_utc(
+				NaiveDateTime::new(
+					NaiveDate::from_ymd(year, month, day),
+					NaiveTime::from_hms_milli(hour, minute, second, milli)
+				),
+				UTC
+			),
+			phantom_f: PhantomData,
+			phantom_t: PhantomData
+		}
+	}
+
 	/// Gets the current system time.
 	///
 	/// # Examples
 	///
 	/// ```
-	/// use elastic_types::date::{ ElasticDate, DefaultFormat };
+	/// use elastic_types::date::{ ElasticDate, DefaultDateFormat };
 	///
-	/// let date: ElasticDate<DefaultFormat> = ElasticDate::now();
+	/// let date: ElasticDate<DefaultDateFormat> = ElasticDate::now();
 	/// ```
 	pub fn now() -> ElasticDate<F, T> {
 		ElasticDate {

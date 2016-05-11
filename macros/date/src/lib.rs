@@ -2,33 +2,96 @@
 //!
 //! Compile-time code generation for Elasticsearch type implementations.
 //!
+//! # Usage
+//!
+//! This crate is on [crates.io](https://crates.io/crates/json_str).
+//!
+//! There are two ways to reference `elastic_date_macros` in your projects, depending on whether you're on
+//! the `stable`/`beta` or `nightly` channels.
+//!
+//! ## Stable
+//!
+//! To get started, add `elastic_date_macros` to your `Cargo.toml`:
+//!
+//! ```ignore
+//! [dependencies]
+//! elastic_date_macros = "*"
+//! ```
+//!
+//! And reference it in your crate root:
+//!
+//! ```ignore
+//! #[macro_use]
+//! extern crate elastic_date_macros;
+//! ```
+//!
+//! ## Nightly
+//!
+//! To get started, add `elastic_date_macros` to your `Cargo.toml`:
+//!
+//! ```ignore
+//! [dependencies]
+//! elastic_date_macros = { version = "*", features = "nightly" }
+//! ```
+//!
+//! And reference it in your crate root:
+//!
+//! ```ignore
+//! #![feature(plugin)]
+//! #![plugin(elastic_date_macros)]
+//! ```
+//!
+//! If you're on the `nightly` channel, it's better to use the above `plugin` version with the `nightly`
+//! feature because the conversion of formats from strings to Items takes place at compile-time instead of runtime,
+//! saving precious runtime cycles.
+//!
+//! This crate provides the utility macro `date_fmt` which can be used to build a `Vec<chrono::Item>`
+//! from either an elasticsearch or chrono date format.
+//!
+//! ```
+//! # #![feature(plugin)]
+//! # #![plugin(elastic_date_macros)]
+//! # fn main() {
+//! //A chrono-based format
+//! let items = date_fmt!("%Y%m%dT%H%M%S%.3fZ");
+//! # }
+//! ```
+//!
+//! ```
+//! # #![feature(plugin)]
+//! # #![plugin(elastic_date_macros)]
+//! # fn main() {
+//! //An elasticsearch-based format
+//! let items = date_fmt!("yyyyMMddTHHmmss.SSSZ");
+//! # }
+//! ```
+//!
 //! # Links
 //! - [Github](https://github.com/KodrAus/elasticsearch-rs)
 
 #![doc(html_root_url = "http://kodraus.github.io/rustdoc/json_str/")]
 
-#![crate_type="dylib"]
-#![feature(plugin_registrar, rustc_private, quote, stmt_expr_attributes)]
+#![cfg_attr(feature = "nightly", crate_type="dylib")]
+#![cfg_attr(feature = "nightly", feature(plugin_registrar, rustc_private, quote, stmt_expr_attributes))]
 
-extern crate syntax;
-extern crate rustc;
-extern crate rustc_plugin;
 extern crate chrono;
 
 #[doc(hidden)]
 pub mod parse;
 
-use rustc_plugin::Registry;
-use syntax::ast::Expr;
-use syntax::codemap::Span;
-use syntax::parse::token::{self};
-use syntax::ast::TokenTree;
-use syntax::ptr::P;
-use syntax::ext::base::{ ExtCtxt, MacResult, DummyResult, MacEager };
-use syntax::ext::build::AstBuilder;
-
 use chrono::format::{ Item, Fixed, Numeric, Pad };
 use ::parse::*;
+
+#[cfg(feature = "nightly")]
+include!("lib.rs.in");
+
+#[cfg_attr(not(feature = "nightly"), macro_export)]
+#[cfg(not(feature = "nightly"))]
+macro_rules! date_fmt {
+	($fmt:expr) => ({
+		$crate::to_tokens($fmt)
+	})
+}
 
 pub fn to_tokens(fmt: &str) -> Vec<Item> {
 	let mut res = Vec::<Item>::new();
@@ -79,20 +142,6 @@ impl Formatter {
 			Item::Numeric(Numeric::Second, Pad::Zero) => 	"%S".to_string(),
 			Item::Fixed(Fixed::Nanosecond3) => 				"%.3f".to_string(),
 			_ => "".to_string()
-		}
-	}
-
-	pub fn to_stmt(item: &Item, cx: &ExtCtxt) -> P<Expr> {
-		match *item {
-			Item::Literal(c) => 							quote_expr!(cx, chrono::format::Item::Literal($c)),
-			Item::Numeric(Numeric::Year, Pad::Zero) => 		quote_expr!(cx, chrono::format::Item::Numeric(chrono::format::Numeric::Year, chrono::format::Pad::Zero)),
-			Item::Numeric(Numeric::Month, Pad::Zero) => 	quote_expr!(cx, chrono::format::Item::Numeric(chrono::format::Numeric::Month, chrono::format::Pad::Zero)),
-			Item::Numeric(Numeric::Day, Pad::Zero) => 		quote_expr!(cx, chrono::format::Item::Numeric(chrono::format::Numeric::Day, chrono::format::Pad::Zero)),
-			Item::Numeric(Numeric::Hour, Pad::Zero) => 		quote_expr!(cx, chrono::format::Item::Numeric(chrono::format::Numeric::Hour, chrono::format::Pad::Zero)),
-			Item::Numeric(Numeric::Minute, Pad::Zero) => 	quote_expr!(cx, chrono::format::Item::Numeric(chrono::format::Numeric::Minute, chrono::format::Pad::Zero)),
-			Item::Numeric(Numeric::Second, Pad::Zero) => 	quote_expr!(cx, chrono::format::Item::Numeric(chrono::format::Numeric::Second, chrono::format::Pad::Zero)),
-			Item::Fixed(Fixed::Nanosecond3) => 				quote_expr!(cx, chrono::format::Item::Fixed(chrono::format::Fixed::Nanosecond3)),
-			_ => 											quote_expr!(cx, chrono::format::Item::Literal(""))
 		}
 	}
 }
@@ -154,6 +203,7 @@ fn parse<'a>(i: &'a [u8]) -> (&'a [u8], Option<Item<'a>>) {
 			(i[0], i[1])
 		};
 
+		//TODO: Need to be able to determine how many items to read for alternative representations, like ddd
 		match (i0, i1) {
 			//yy* | %Y
 			(ES_YEAR, ES_YEAR)|(CR_PREFIX, CR_YEAR) => 		parse_year(i),
@@ -230,33 +280,4 @@ fn parse_msec<'a>(i: &'a [u8]) -> (&'a [u8], Option<Item<'a>>) {
 fn parse_chars<'a>(i: &'a [u8]) -> (&'a [u8], Option<Item<'a>>) {
 	let (k, s) = take_while1(i, |c| not_date_token(c));
 	(k, Some(Item::Literal(s)))
-}
-
-#[doc(hidden)]
-pub fn expand_date_fmt(cx: &mut ExtCtxt, sp: Span, args: &[TokenTree]) -> Box<MacResult+'static> {
-	let mut fmt = String::new();
-
-	for arg in args {
-		let _fmt = match *arg {
-			TokenTree::Token(_, token::Literal(token::Lit::Str_(s), _)) => s.to_string(),
-			_ => {
-				cx.span_err(sp, "argument should be a single string literal");
-				return DummyResult::any(sp);
-			}
-		};
-
-		fmt.push_str(&_fmt);
-	}
-
-	//Build up the token tree
-	let tokens = to_tokens(&fmt);
-	let token_expr = cx.expr_vec(sp, tokens.iter().map(|t| Formatter::to_stmt(t, cx)).collect());
-
-	MacEager::expr(quote_expr!(cx, { $token_expr }))
-}
-
-#[doc(hidden)]
-#[plugin_registrar]
-pub fn plugin_registrar(reg: &mut Registry) {
-	reg.register_macro("date_fmt", expand_date_fmt);
 }

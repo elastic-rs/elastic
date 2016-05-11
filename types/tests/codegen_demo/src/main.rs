@@ -9,7 +9,7 @@ use elastic_types::date::prelude::*;
 
 #[derive(Serialize, Deserialize, ElasticType)]
 pub struct MyType {
-    pub my_date2: ElasticDate<DefaultFormat>,
+    pub my_date2: ElasticDate<DefaultDateFormat>,
     pub my_string1: String,
     pub my_num1: i32,
     pub my_bool1: bool

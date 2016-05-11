@@ -16,7 +16,7 @@
 //! ```
 //! # use elastic_types::date::prelude::*;
 //! struct MyType {
-//! 	pub field: ElasticDate<DefaultFormat>
+//! 	pub field: ElasticDate<DefaultDateFormat>
 //! }
 //! ```
 //!
@@ -46,8 +46,8 @@
 //! - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/date.html)
 
 mod format;
-mod date;
 mod formats;
+mod date;
 
 pub mod mapping;
 pub use self::format::*;
@@ -61,14 +61,14 @@ use chrono::UTC;
 pub type DT = chrono::DateTime<UTC>;
 
 /// The default date format.
-pub type DefaultFormat = BasicDateTime;
+pub type DefaultDateFormat = BasicDateTime;
 
 pub mod prelude {
 	//! Includes non-mapping types for the `date` type.
 	//!
 	//! This is a convenience module to make it easy to build mappings for multiple types without too many `use` statements.
 
-	pub use super::DefaultFormat;
+	pub use super::DefaultDateFormat;
 	pub use super::format::*;
 	pub use super::date::*;
 	pub use super::formats::*;

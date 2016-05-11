@@ -8,15 +8,36 @@
 //! # Usage
 //!
 //! This crate is on [crates.io](https://crates.io/crates/elastic_types).
-//! To get started, add `elastic_types` and [elastic_types_macros](http://kodraus.github.io/rustdoc/elastic_types_macros/) to your `Cargo.toml`:
+//!
+//! There are two ways to reference `elastic_types` in your projects, depending on whether you're on
+//! the `stable`/`beta` or `nightly` channels.
+//!
+//! ## Stable
+//!
+//! To get started, add `elastic_types` to your `Cargo.toml`:
 //!
 //! ```ignore
 //! [dependencies]
 //! elastic_types = "*"
+//! ```
+//!
+//! And reference it in your crate root:
+//!
+//! ```ignore
+//! extern crate elastic_types;
+//! ```
+//!
+//! ## Nightly
+//!
+//! To get started, add `elastic_types` and `elastic_types_macros` to your `Cargo.toml`:
+//!
+//! ```ignore
+//! [dependencies]
+//! elastic_types = { version = "*", defeault-features = false, features = "nightly" }
 //! elastic_types_macros = "*"
 //! ```
 //!
-//! And reference them in your crate root:
+//! And reference it in your crate root:
 //!
 //! ```ignore
 //! #![feature(plugin)]
@@ -24,6 +45,10 @@
 //!
 //! extern crate elastic_types;
 //! ```
+//!
+//! Builds on `nightly` benefit from compile-time codegen for better performance and easier
+//! mapping definitions.
+//! The story on `stable` will be improved over time so it won't be a second-class citizen forever.
 //!
 //! ## Map Your Types
 //!
@@ -40,7 +65,7 @@
 //! # use elastic_types::date::prelude::*;
 //! #[derive(Serialize, Deserialize, ElasticType)]
 //! pub struct MyType {
-//! 	pub my_date: ElasticDate<DefaultFormat>,
+//! 	pub my_date: ElasticDate<DefaultDateFormat>,
 //! 	pub my_string: String,
 //! 	pub my_num: i32
 //! }
@@ -74,7 +99,7 @@
 //! # use elastic_types::date::prelude::*;
 //! # #[derive(Serialize, Deserialize, ElasticType)]
 //! # pub struct MyType {
-//! # 	pub my_date: ElasticDate<DefaultFormat>,
+//! # 	pub my_date: ElasticDate<DefaultDateFormat>,
 //! # 	pub my_string: String,
 //! # 	pub my_num: i32
 //! # }
@@ -105,7 +130,7 @@
 //! # use elastic_types::date::prelude::*;
 //! # #[derive(Serialize, Deserialize, ElasticType)]
 //! # pub struct MyType {
-//! # 	pub my_date: ElasticDate<DefaultFormat>,
+//! # 	pub my_date: ElasticDate<DefaultDateFormat>,
 //! # 	pub my_string: String,
 //! # 	pub my_num: i32
 //! # }
@@ -154,7 +179,7 @@
 //! # use elastic_types::date::prelude::*;
 //! # #[derive(Serialize, Deserialize, ElasticType)]
 //! # pub struct MyType {
-//! # 	pub my_date: ElasticDate<DefaultFormat>,
+//! # 	pub my_date: ElasticDate<DefaultDateFormat>,
 //! # 	pub my_string: String,
 //! # 	pub my_num: i32
 //! # }
@@ -198,7 +223,7 @@
 //! # use elastic_types::date::prelude::*;
 //! # #[derive(Serialize, Deserialize, ElasticType)]
 //! # pub struct MyType {
-//! # 	pub my_date: ElasticDate<DefaultFormat>,
+//! # 	pub my_date: ElasticDate<DefaultDateFormat>,
 //! # 	pub my_string: String,
 //! # 	pub my_num: i32
 //! # }
@@ -253,36 +278,6 @@
 //! # }
 //! ```
 //!
-//! # Exclude Type Dependencies
-//!
-//! Each datatype is actually feature-gated, but included by default.
-//! This means you can exclude datatypes and their dependant crates if you need to.
-//! In your `Cargo.toml`, include `elastic_types` as follows:
-//!
-//! ```ignore
-//! [dependencies.elastic_types]
-//! version = "*"
-//! default-features = false
-//! features = [ "date-ty", "response-ty" ] }
-//! ```
-//!
-//! The full list of features is as follows:
-//!
-//!  Elasticsearch Type | Feature
-//!  ------------------ | ---------------
-//!  `integer`          | `number-ty`
-//!  `long`             | `number-ty`
-//!  `short`            | `number-ty`
-//!  `byte`             | `number-ty`
-//!  `float`            | `number-ty`
-//!  `double`           | `number-ty`
-//!  `string`           | `string-ty`
-//!  `boolean`          | `boolean-ty`
-//!  `date`             | `date-ty`
-//!  responses          | `response-ty`
-//!
-//! To include all types except for responses, you can use the `no-response-ty` feature.
-//!
 //! # Types
 //!
 //! Types in Elasticsearch are a combination of _source_ and _mapping_.
@@ -303,18 +298,28 @@
 //!
 //! The following table illustrates the types provided by `elastic_types`:
 //!
-//!  Elasticsearch Type | Rust Type (Default Mapping) | Crate     | Rust Type (Custom Mapping)    | Format Type
-//!  ------------------ | --------------------------- | --------- | ----------------------------- | -----------
-//!  `integer`          | `i32`                       | `std`     | `ElasticInteger<M>`           | `()`
-//!  `long`             | `i64`                       | `std`     | `ElasticLong<M>`              | `()`
-//!  `short`            | `i16`                       | `std`     | `ElasticShort<M>`             | `()`
-//!  `byte`             | `i8`                        | `std`     | `ElasticByte<M>`              | `()`
-//!  `float`            | `f32`                       | `std`     | `ElasticFloat<M>`             | `()`
-//!  `double`           | `f64`                       | `std`     | `ElasticDouble<M>`            | `()`
-//!  `string`           | `String`                    | `std`     | `ElasticString<M>`            | `()`
-//!  `boolean`          | `bool`                      | `std`     | `ElasticBoolean<M>`           | `()`
-//!  `date`             | `DateTime<UTC>`             | `chrono`  | `ElasticDate<F, M>`           | `DateFormat`
-//!  `object`           | -                           | -         | user-defined `struct`         | `()`
+//!  Elasticsearch Type  | Rust Type (Default Mapping) | Crate     | Rust Type (Custom Mapping)    | Format Type
+//!  ------------------- | --------------------------- | --------- | ----------------------------- | -----------
+//!  `integer`           | `i32`                       | `std`     | `ElasticInteger<M>`           | `()`
+//!  `long`              | `i64`                       | `std`     | `ElasticLong<M>`              | `()`
+//!  `short`             | `i16`                       | `std`     | `ElasticShort<M>`             | `()`
+//!  `byte`              | `i8`                        | `std`     | `ElasticByte<M>`              | `()`
+//!  `float`             | `f32`                       | `std`     | `ElasticFloat<M>`             | `()`
+//!  `double`            | `f64`                       | `std`     | `ElasticDouble<M>`            | `()`
+//!  `string`            | `String`                    | `std`     | `ElasticString<M>`            | `()`
+//!  `boolean`           | `bool`                      | `std`     | `ElasticBoolean<M>`           | `()`
+//!  `date`              | `DateTime<UTC>`             | `chrono`  | `ElasticDate<F, M>`           | `DateFormat`
+//!  `geo_point`         | -                           | -         | `ElasticGeoPoint<F, M>`       | `GeoPointFormat`
+//!  `geo_shape`         | `Geometry`                  | `geojson` | `ElasticGeoShape<M>`          | `()`
+//!  `point`             | `PointType`                 | `geojson` | `ElasticPoint<M>`             | `()`
+//!  `linestring`        | `LineStringType`            | `geojson` | `ElasticLineString<M>`        | `()`
+//!  `polygon`           | `PolygonType`               | `geojson` | `ElasticPolygon<M>`           | `()`
+//!  `multipoint`        | `Vec<PointType>`            | `geojson` | `ElasticMultiPoint<M>`        | `()`
+//!  `multipolygon`      | `Vec<PolygonType`           | `geojson` | `ElasticMultiPolygon<M>`      | `()`
+//!  `geometrycollection`| `Vec<Geometry>`             | `geojson` | `ElasticGeoCollection<M>`     | `()`
+//!  `envelope`          | -                           | -         | `ElasticEnvelope<M>`          | `()`
+//!  `circle`            | -                           | -         | `ElasticCircle<M>`            | `()`
+//!  `object`            | -                           | -         | user-defined `struct`         | `()`
 //!
 //! The following sections explain this table.
 //!
@@ -344,29 +349,23 @@
 #![doc(html_root_url = "http://kodraus.github.io/rustdoc/elastic_types/")]
 #![deny(missing_docs)]
 
-#![feature(custom_derive, custom_attribute, plugin, optin_builtin_traits, associated_type_defaults)]
 #![cfg_attr(feature = "nightly-testing", plugin(clippy))]
-#![cfg_attr(feature = "date-ty", plugin(elastic_date_macros))]
-#![plugin(serde_macros)]
 
-#[cfg(feature="date-ty")]
+#![cfg_attr(feature = "nightly", feature(custom_derive, plugin, associated_type_defaults))]
+#![cfg_attr(feature = "nightly", plugin(elastic_date_macros, serde_macros))]
+
+#[cfg_attr(not(feature = "nightly"), macro_use)]
+#[cfg(not(feature = "nightly"))]
+extern crate elastic_date_macros;
+
 extern crate chrono;
+extern crate geojson;
+
 extern crate serde;
 extern crate serde_json;
 
-#[macro_use]
-mod macros;
-pub mod mapping;
-pub mod mappers;
+#[cfg(feature = "serde_macros")]
+include!("lib.rs.in");
 
-pub mod object;
-#[cfg(feature="date-ty")]
-pub mod date;
-#[cfg(feature="string-ty")]
-pub mod string;
-#[cfg(feature="number-ty")]
-pub mod number;
-#[cfg(feature="boolean-ty")]
-pub mod boolean;
-#[cfg(feature="response-ty")]
-pub mod response;
+#[cfg(not(feature = "serde_macros"))]
+include!(concat!(env!("OUT_DIR"), "/lib.rs"));

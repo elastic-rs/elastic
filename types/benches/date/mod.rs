@@ -21,7 +21,7 @@ fn parse_date_from_format(b: &mut Bencher) {
 
 #[bench]
 fn parse_date_to_string(b: &mut Bencher) {
-	let dt: ElasticDate<DefaultFormat> = ElasticDate::now();
+	let dt: ElasticDate<DefaultDateFormat> = ElasticDate::now();
 
 	b.iter(|| {
 		dt.format()
@@ -54,7 +54,7 @@ fn get_date_fmt_vec(b: &mut Bencher) {
 #[bench]
 fn mapping(b: &mut Bencher) {
 	b.iter(|| {
-		let mapping = MyDateMapping::<DefaultFormat>::default();
+		let mapping = MyDateMapping::<DefaultDateFormat>::default();
 		serde_json::to_string(&mapping).unwrap()
 	});
 }

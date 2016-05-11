@@ -21,7 +21,7 @@
 //!
 //! #[derive(Default, Clone, Serialize, Deserialize, ElasticType)]
 //! pub struct MyType {
-//! 	pub my_date: ElasticDate<DefaultFormat>,
+//! 	pub my_date: ElasticDate<DefaultDateFormat>,
 //! 	pub my_string: String,
 //! 	pub my_num: i32
 //! }
@@ -57,7 +57,7 @@
 //! #[derive(Default, Clone, Serialize, Deserialize, ElasticType)]
 //! #[elastic(mapping="MyTypeMapping")]
 //! pub struct MyType {
-//! 	pub my_date: ElasticDate<DefaultFormat>,
+//! 	pub my_date: ElasticDate<DefaultDateFormat>,
 //! 	pub my_string: String,
 //! 	pub my_num: i32
 //! }
@@ -113,7 +113,7 @@
 //! #[derive(Default, Clone, Serialize, Deserialize, ElasticType)]
 //! #[elastic(ty="my_type")]
 //! pub struct MyType {
-//! 	pub my_date: ElasticDate<DefaultFormat>,
+//! 	pub my_date: ElasticDate<DefaultDateFormat>,
 //! 	pub my_string: String,
 //! 	pub my_num: i32
 //! }
@@ -147,7 +147,7 @@
 //! #[derive(Default, Clone, Serialize, Deserialize, ElasticType)]
 //! pub struct MyType {
 //! 	#[serde(rename="my_renamed_date")]
-//! 	pub my_date: ElasticDate<DefaultFormat>,
+//! 	pub my_date: ElasticDate<DefaultDateFormat>,
 //! 	#[serde(skip_serializing)]
 //! 	pub my_string: String,
 //! 	pub my_num: i32
@@ -194,7 +194,7 @@
 //!
 //! #[derive(Serialize, Deserialize)]
 //! pub struct MyType {
-//!     pub my_date2: ElasticDate<DefaultFormat>,
+//!     pub my_date2: ElasticDate<DefaultDateFormat>,
 //!     pub my_string1: String,
 //!     pub my_num1: i32,
 //!     pub my_bool1: bool,
@@ -219,7 +219,7 @@
 //!      where S: serde::Serializer {
 //! 			//List your fields to map here
 //! 			//All implementations of ElasticType have a static `::mapping()` method
-//!             try!(serializer.serialize_struct_elt("my_date2", ElasticDate::<DefaultFormat>::mapping()));
+//!             try!(serializer.serialize_struct_elt("my_date2", ElasticDate::<DefaultDateFormat>::mapping()));
 //!             try!(serializer.serialize_struct_elt("my_string1", String::mapping()));
 //!             try!(serializer.serialize_struct_elt("my_num1", i32::mapping()));
 //!             try!(serializer.serialize_struct_elt("my_bool1", bool::mapping()));

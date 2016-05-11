@@ -233,7 +233,7 @@ pub mod object_fixtures {
 	#[derive(Default, Clone, Serialize, Deserialize, ElasticType)]
 	#[elastic(mapping="MySmlTypeMapping")]
 	pub struct MySmlType {
-		pub my_date1: ElasticDate<DefaultFormat>,
+		pub my_date1: ElasticDate<DefaultDateFormat>,
 		pub my_string: ElasticString<DefaultStringMapping>,
 		pub my_num: i32
 	}
@@ -260,7 +260,7 @@ pub mod object_fixtures {
 	#[derive(Default, Clone, Serialize, Deserialize, ElasticType)]
 	#[elastic(mapping="MyMedTypeMapping")]
 	pub struct MyMedType {
-		pub my_date1: ElasticDate<DefaultFormat>,
+		pub my_date1: ElasticDate<DefaultDateFormat>,
 		pub my_string: ElasticString<DefaultStringMapping>,
 		pub my_num: i32,
 		pub my_type: MySmlType
@@ -288,7 +288,7 @@ pub mod object_fixtures {
 	#[derive(Default, Clone, Serialize, Deserialize, ElasticType)]
 	#[elastic(mapping="MyLrgTypeMapping")]
 	pub struct MyLrgType {
-		pub my_date1: ElasticDate<DefaultFormat>,
+		pub my_date1: ElasticDate<DefaultDateFormat>,
 		pub my_string: ElasticString<DefaultStringMapping>,
 		pub my_num: i32,
 		pub my_type: MyMedType

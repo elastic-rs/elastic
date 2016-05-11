@@ -112,7 +112,7 @@ let response = elastic::search::post(
 
 _In Progress_
 
-Will provide an asynchronous [rotor-http](https://github.com/tailhook/rotor-http) implementation of the Elasticsearch REST API. This client is an active work in progress, as is `rotor` itself so things will change a lot. The `rotor` client is more complex than the `hyper` one, providing connection pooling and long-lived requests. It'll be best suited to streaming scenarios, or where Elasticsearch connections will be used heavily.
+Will provide an asynchronous [rotor-http](https://github.com/tailhook/rotor-http) implementation of the Elasticsearch REST API. This client is an active work in progress, as is `rotor` itself so things will change a lot. It'll be best suited to streaming scenarios, or where Elasticsearch connections will be used heavily.
 
 The crate will allow you to use connections in two ways; add connections as state machines to your own `mio` loop, or use an out-of-the-box connection pool.
 

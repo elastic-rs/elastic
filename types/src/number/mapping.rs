@@ -80,6 +80,8 @@
 //!
 //! impl ElasticFieldMapping<()> for MyIntegerMapping {
 //! 	type Visitor = ElasticIntegerMappingVisitor<MyIntegerMapping>;
+//!     type MultiFieldMapping = Self;
+//! 
 //! 	fn data_type() -> &'static str {
 //! 		INTEGER_DATATYPE
 //! 	}

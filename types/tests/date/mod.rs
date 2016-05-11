@@ -1,6 +1,12 @@
-#![feature(custom_derive, custom_attribute, plugin)]
-#![plugin(serde_macros)]
-#![plugin(json_str, elastic_types_macros, elastic_date_macros)]
+#![cfg(feature = "nightly", feature(custom_derive, custom_attribute, plugin))]
+#![cfg(feature = "nightly", plugin(serde_macros, json_str, elastic_types_macros, elastic_date_macros))]
+
+#[cfg_attr(feature = "nightly", allow(plugin_as_library))]
+#[macro_use]
+extern crate json_str;
+#[cfg_attr(feature = "nightly", allow(plugin_as_library))]
+#[macro_use]
+extern crate elastic_date_macros;
 
 pub mod mapping;
 pub mod formats;
@@ -17,7 +23,7 @@ use elastic_types::mapping::prelude::*;
 
 #[derive(Default, Serialize, Deserialize)]
 struct MyType {
-	pub date: ElasticDate<DefaultFormat>
+	pub date: ElasticDate<DefaultDateFormat>
 }
 
 #[derive(Default, Serialize, Deserialize)]
@@ -80,6 +86,21 @@ fn dates_should_use_es_format() {
 	let actual = dt.format();
 
 	assert_eq!(expected, actual);
+}
+
+#[test]
+fn can_change_date_mapping() {
+	panic!("implement")
+}
+
+#[test]
+fn can_build_date_from_chrono() {
+	panic!("implement")
+}
+
+#[test]
+fn can_build_date_from_prim() {
+	panic!("implement")
 }
 
 #[test]

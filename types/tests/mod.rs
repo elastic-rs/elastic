@@ -1,8 +1,19 @@
+//Currently we only support `nightly` for testing.
+//This should be removed once `stable` support is better for `elastic_types_macros`.
+//It's also a bit of a smell that responsibilities are being mixed.
+#![cfg(feature = "nightly")]
+
 #![allow(unused_attributes)]
 
-#![feature(custom_derive, custom_attribute, plugin)]
-#![plugin(serde_macros)]
-#![plugin(json_str, elastic_types_macros, elastic_date_macros)]
+#![cfg(feature = "nightly", feature(custom_derive, custom_attribute, plugin))]
+#![cfg(feature = "nightly", plugin(serde_macros, json_str, elastic_types_macros, elastic_date_macros))]
+
+#[cfg_attr(feature = "nightly", allow(plugin_as_library))]
+#[macro_use]
+extern crate json_str;
+#[cfg_attr(feature = "nightly", allow(plugin_as_library))]
+#[macro_use]
+extern crate elastic_date_macros;
 
 extern crate serde;
 extern crate serde_json;
@@ -43,7 +54,7 @@ pub mod date_fixtures {
 		}
 
 		fn null_value() -> Option<ElasticDate<T>> {
-			Some(ElasticDate::<T>::parse("0").unwrap())
+			Some(ElasticDate::<T>::from_prim(2015, 3, 14, 16, 45, 778))
 		}
 
 		fn ignore_malformed() -> Option<bool> {
@@ -439,7 +450,7 @@ pub mod object_fixtures {
 	#[elastic(ty="my_type", mapping="MyTypeMapping")]
 	pub struct MyType {
 		pub my_date1: DateTime<UTC>,
-		pub my_date2: ElasticDate<DefaultFormat>,
+		pub my_date2: ElasticDate<DefaultDateFormat>,
 		pub my_date3: ElasticDate<EpochMillis, MyDateMapping>,
 		pub my_string1: String,
 		pub my_string2: ElasticString<DefaultStringMapping>,
@@ -471,14 +482,14 @@ pub mod object_fixtures {
 
 	#[derive(Serialize, Deserialize, ElasticType)]
 	pub struct MyOtherType {
-		pub my_date: ElasticDate<DefaultFormat>,
+		pub my_date: ElasticDate<DefaultDateFormat>,
 		#[serde(rename="my_renamed_type")]
 		pub my_type: MyType,
 		#[serde(skip_serializing)]
 		pub ignored: String,
 		pub my_num: i32,
 		pub my_strings: Vec<String>,
-		pub my_dates: Vec<ElasticDate<DefaultFormat>>
+		pub my_dates: Vec<ElasticDate<DefaultDateFormat>>
 	}
 }
 

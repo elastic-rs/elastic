@@ -78,7 +78,7 @@ pub struct ParseError {
 	kind: ParseErrorKind
 }
 
-#[derive_Debug]
+#[derive(Debug)]
 enum ParseErrorKind {
     Chrono(chrono::ParseError),
     Other(String)
