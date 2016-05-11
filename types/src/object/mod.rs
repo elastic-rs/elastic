@@ -283,7 +283,6 @@ pub use self::user_type::*;
 
 use std::marker::PhantomData;
 use serde;
-use serde::Serializer;
 use ::mapping::ElasticTypeVisitor;
 
 /// Represents the properties object that encapsulates field type mappings.

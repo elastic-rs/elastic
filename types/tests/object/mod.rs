@@ -1,6 +1,5 @@
-#![feature(custom_derive, custom_attribute, plugin)]
-#![plugin(serde_macros)]
-#![plugin(json_str)]
+#![cfg_attr(feature = "nightly", feature(custom_derive, custom_attribute, plugin))]
+#![plugin(serde_macros, json_str, elastic_types_macros, elastic_date_macros)]
 
 extern crate serde;
 extern crate serde_json;
@@ -33,7 +32,7 @@ fn serialise_mapping_type() {
 				"store": true,
 				"format": "epoch_millis",
 				"ignore_malformed": true,
-				"null_value": "0",
+				"null_value": "1426351513778",
 				"precision_step": 6
 			},
 			"my_string1": {
@@ -124,7 +123,7 @@ fn serialise_mapping_type_as_nested() {
 						"store": true,
 						"format": "epoch_millis",
 						"ignore_malformed": true,
-						"null_value": "0",
+						"null_value": "1426351513778",
 						"precision_step": 6
 					},
 					"my_string1": {

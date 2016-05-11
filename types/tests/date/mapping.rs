@@ -1,12 +1,5 @@
-#![cfg(feature = "nightly", feature(custom_derive, custom_attribute, plugin))]
-#![cfg(feature = "nightly", plugin(serde_macros, json_str, elastic_types_macros, elastic_date_macros))]
-
-#[cfg_attr(feature = "nightly", allow(plugin_as_library))]
-#[macro_use]
-extern crate json_str;
-#[cfg_attr(feature = "nightly", allow(plugin_as_library))]
-#[macro_use]
-extern crate elastic_date_macros;
+#![cfg_attr(feature = "nightly", feature(custom_derive, custom_attribute, plugin))]
+#![cfg_attr(feature = "nightly", plugin(serde_macros, json_str, elastic_types_macros, elastic_date_macros))]
 
 extern crate serde;
 extern crate serde_json;
@@ -43,7 +36,7 @@ fn serialise_mapping_custom() {
 		"store": true,
 		"format": "epoch_millis",
 		"ignore_malformed": true,
-		"null_value": "0",
+		"null_value": "1426351513778",
 		"precision_step": 6
 	});
 

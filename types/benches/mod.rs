@@ -1,8 +1,12 @@
+//Currently we only support `nightly` for testing.
+//This should be removed once `stable` support is better for `elastic_types_macros`.
+//It's also a bit of a smell that responsibilities are being mixed.
+#![cfg(feature = "nightly-testing")]
+
 #![allow(unused_attributes)]
 
-#![feature(custom_derive, custom_attribute, plugin, test)]
-#![plugin(serde_macros)]
-#![plugin(elastic_types_macros)]
+#![cfg_attr(feature = "nightly", feature(custom_derive, custom_attribute, plugin))]
+#![cfg_attr(feature = "nightly", plugin(serde_macros, elastic_types_macros, elastic_date_macros))]
 
 extern crate serde;
 extern crate serde_json;

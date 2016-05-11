@@ -120,6 +120,7 @@ pub fn expand_derive_string_mapping(cx: &mut ExtCtxt, _: Span, meta_item: &MetaI
 		quote_item!(cx,
 			impl ::elastic_types::mapping::ElasticFieldMapping<()> for $ty {
 				type Visitor = ::elastic_types::string::mapping::ElasticStringMappingVisitor<$ty>;
+                type MultiFieldMapping = Self;
 
 				fn data_type() -> &'static str {
 					"string"
@@ -140,6 +141,7 @@ pub fn expand_derive_boolean_mapping(cx: &mut ExtCtxt, _: Span, meta_item: &Meta
 		quote_item!(cx,
 			impl ::elastic_types::mapping::ElasticFieldMapping<()> for $ty {
 				type Visitor = ::elastic_types::boolean::mapping::ElasticBooleanMappingVisitor<$ty>;
+                type MultiFieldMapping = Self;
 
 				fn data_type() -> &'static str {
 					"boolean"
@@ -160,6 +162,7 @@ pub fn expand_derive_integer_mapping(cx: &mut ExtCtxt, _: Span, meta_item: &Meta
 		quote_item!(cx,
 			impl ::elastic_types::mapping::ElasticFieldMapping<()> for $ty {
 				type Visitor = ::elastic_types::number::mapping::ElasticIntegerMappingVisitor<$ty>;
+                type MultiFieldMapping = Self;
 
 				fn data_type() -> &'static str {
 					"integer"
@@ -180,6 +183,7 @@ pub fn expand_derive_long_mapping(cx: &mut ExtCtxt, _: Span, meta_item: &MetaIte
 		quote_item!(cx,
 			impl ::elastic_types::mapping::ElasticFieldMapping<()> for $ty {
 				type Visitor = ::elastic_types::number::mapping::ElasticLongMappingVisitor<$ty>;
+                type MultiFieldMapping = Self;
 
 				fn data_type() -> &'static str {
 					"long"
@@ -200,6 +204,7 @@ pub fn expand_derive_short_mapping(cx: &mut ExtCtxt, _: Span, meta_item: &MetaIt
 		quote_item!(cx,
 			impl ::elastic_types::mapping::ElasticFieldMapping<()> for $ty {
 				type Visitor = ::elastic_types::number::mapping::ElasticShortMappingVisitor<$ty>;
+                type MultiFieldMapping = Self;
 
 				fn data_type() -> &'static str {
 					"short"
@@ -220,6 +225,7 @@ pub fn expand_derive_byte_mapping(cx: &mut ExtCtxt, _: Span, meta_item: &MetaIte
 		quote_item!(cx,
 			impl ::elastic_types::mapping::ElasticFieldMapping<()> for $ty {
 				type Visitor = ::elastic_types::number::mapping::ElasticByteMappingVisitor<$ty>;
+                type MultiFieldMapping = Self;
 
 				fn data_type() -> &'static str {
 					"byte"
@@ -240,6 +246,7 @@ pub fn expand_derive_double_mapping(cx: &mut ExtCtxt, _: Span, meta_item: &MetaI
 		quote_item!(cx,
 			impl ::elastic_types::mapping::ElasticFieldMapping<()> for $ty {
 				type Visitor = ::elastic_types::number::mapping::ElasticDoubleMappingVisitor<$ty>;
+                type MultiFieldMapping = Self;
 
 				fn data_type() -> &'static str {
 					"double"
@@ -260,6 +267,7 @@ pub fn expand_derive_float_mapping(cx: &mut ExtCtxt, _: Span, meta_item: &MetaIt
 		quote_item!(cx,
 			impl ::elastic_types::mapping::ElasticFieldMapping<()> for $ty {
 				type Visitor = ::elastic_types::number::mapping::ElasticFloatMappingVisitor<$ty>;
+                type MultiFieldMapping = Self;
 
 				fn data_type() -> &'static str {
 					"float"
@@ -303,6 +311,7 @@ pub fn expand_derive_date_mapping(cx: &mut ExtCtxt, _: Span, meta_item: &MetaIte
 			quote_item!(cx,
 				impl <T: ::elastic_types::date::DateFormat> ::elastic_types::mapping::ElasticFieldMapping<T> for $ty<T> {
 					type Visitor = ::elastic_types::date::mapping::ElasticDateMappingVisitor<T, $ty<T>>;
+                    type MultiFieldMapping = Self;
 
 					fn data_type() -> &'static str {
 						"date"

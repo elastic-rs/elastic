@@ -2,7 +2,7 @@
 
 use std::marker::PhantomData;
 use serde;
-use serde::{ Serializer, Serialize };
+use serde::Serialize;
 use ::mapping::{ ElasticFieldMapping, ElasticTypeVisitor, IndexAnalysis };
 
 /// Elasticsearch datatype name.

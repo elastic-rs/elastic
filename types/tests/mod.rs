@@ -1,12 +1,12 @@
 //Currently we only support `nightly` for testing.
 //This should be removed once `stable` support is better for `elastic_types_macros`.
 //It's also a bit of a smell that responsibilities are being mixed.
-#![cfg(feature = "nightly")]
+#![cfg(feature = "nightly-testing")]
 
 #![allow(unused_attributes)]
 
-#![cfg(feature = "nightly", feature(custom_derive, custom_attribute, plugin))]
-#![cfg(feature = "nightly", plugin(serde_macros, json_str, elastic_types_macros, elastic_date_macros))]
+#![cfg_attr(feature = "nightly", feature(custom_derive, custom_attribute, plugin))]
+#![cfg_attr(feature = "nightly", plugin(serde_macros, json_str, elastic_types_macros, elastic_date_macros))]
 
 #[cfg_attr(feature = "nightly", allow(plugin_as_library))]
 #[macro_use]
@@ -54,7 +54,7 @@ pub mod date_fixtures {
 		}
 
 		fn null_value() -> Option<ElasticDate<T>> {
-			Some(ElasticDate::<T>::from_prim(2015, 3, 14, 16, 45, 778))
+			Some(ElasticDate::<T>::from_prim(2015, 3, 14, 16, 45, 13, 778))
 		}
 
 		fn ignore_malformed() -> Option<bool> {
@@ -463,10 +463,6 @@ pub mod object_fixtures {
 	#[derive(Default, Clone)]
 	pub struct MyTypeMapping;
 	impl ElasticObjectMapping for MyTypeMapping {
-		fn data_type() -> &'static str {
-			"object"
-		}
-
 		fn dynamic() -> Option<Dynamic> {
 			Some(Dynamic::True)
 		}

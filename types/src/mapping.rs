@@ -1,17 +1,20 @@
 //! Base requirements for type mappings.
 //!
 //! There are two kinds of types we can map in Elasticsearch; `field`/`data` types and `user-defined` types.
-//! Either kind of type must implement `ElasticType`, which captures the mapping and possible formatting requirements as generic parameters.
-//! Most of the work lives in the `ElasticFieldMapping`, which holds the serialisation requirements to convert a Rust type into an Elasticsearch mapping.
-//! User-defined types must also implement `ElasticUserTypeMapping`, which maps the fields of a struct as properties, and treats the type as `nested` when used as a field itself.
+//! Either kind of type must implement `ElasticType`, which captures the mapping and possible formatting
+//! requirements as generic parameters.
+//! Most of the work lives in the `ElasticFieldMapping`, which holds the serialisation requirements
+//! to convert a Rust type into an Elasticsearch mapping.
+//! User-defined types must also implement `ElasticUserTypeMapping`, which maps the fields of a struct as properties,
+//! and treats the type as `nested` when used as a field itself.
 //!
 //! # Notes
 //!
-//! Currently, there's a lot of ceremony around the type mapping. The reason for doing this with types instead of simple hashmaps is to try and capture type mapping using types themselves.
-//! This means more boilerplate while certain Rust features haven't landed yet ([specialisation](https://github.com/rust-lang/rust/issues/31844) and [negative trait bounds](https://github.com/rust-lang/rfcs/issues/1053)),
-//! but it also constrains the shapes that Elasticsearch types can take by using the Rust type system. That seems like a nice property.
-//!
-//! The mapping serialisation in general tries to limit allocations wherever possible, but more can be done to clean this up.
+//! Currently, there's a lot of ceremony around the type mapping.
+//! The reason for doing this with types instead of simple hashmaps is to try and capture type mapping using types themselves.
+//! This means more boilerplate while certain Rust features haven't landed yet ([negative trait bounds](https://github.com/rust-lang/rfcs/issues/1053)),
+//! but it also constrains the shapes that Elasticsearch types can take by using the Rust type system.
+//! That seems like a nice property.
 //!
 //! # Links
 //! - [Field Types](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-types.html)
@@ -33,13 +36,9 @@ pub mod prelude {
 	pub use ::object::*;
 	pub use ::mappers::*;
 
-	#[cfg(feature="date-ty")]
 	pub use ::date::mapping::*;
-	#[cfg(feature="string-ty")]
 	pub use ::string::mapping::*;
-	#[cfg(feature="number-ty")]
 	pub use ::number::mapping::*;
-	#[cfg(feature="boolean-ty")]
 	pub use ::boolean::mapping::*;
 }
 
