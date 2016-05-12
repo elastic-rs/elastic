@@ -11,7 +11,7 @@ use syntax::codemap::{ Spanned, DUMMY_SP };
 use syntax::ptr::P;
 use ::api::ast as api;
 use ::gen::rust::{ ty, build_ty, TyPathOpts };
-use super::parse::{ parse_path_params, parse_mod_path, ApiParseError };
+use super::parse::{ parse_path_params, parse_mod_path };
 
 /// A single function for a url path.
 pub struct UrlFn<'a> {
@@ -27,7 +27,6 @@ pub struct UrlFn<'a> {
 
 #[derive(Debug)]
 enum ApiGenErrorKind {
-	Parse(ApiParseError),
 	Other(String)
 }
 
@@ -42,7 +41,6 @@ pub struct ApiGenError {
 impl fmt::Display for ApiGenError {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		match self.kind {
-			ApiGenErrorKind::Parse(ref err) => write!(f, "Parse error: {:?}", err),
 			ApiGenErrorKind::Other(ref err) => write!(f, "Error: {}", err)
 		}
 	}
@@ -51,7 +49,6 @@ impl fmt::Display for ApiGenError {
 impl error::Error for ApiGenError {
 	fn description(&self) -> &str {
 		match self.kind {
-			ApiGenErrorKind::Parse(_) => "Error parsing API data",
 			ApiGenErrorKind::Other(ref err) => &err[..]
 		}
 	}
@@ -465,36 +462,6 @@ pub fn url_push_decl<'a, I, K>(url_base: Ident, url_parts: I, param_parts: K) ->
 		}
 
 		(ident, stmts)
-}
-
-/// Gets an ident as a borrow
-fn ident_expr_brw(item: Ident) -> P<Expr> {
-	P(Expr {
-		id: DUMMY_NODE_ID,
-		node: ExprKind::AddrOf(
-			Mutability::Immutable,
-			P(Expr {
-				id: DUMMY_NODE_ID,
-				node: ExprKind::Path(
-					None,
-					Path {
-						span: DUMMY_SP,
-						global: false,
-						segments: vec![
-							PathSegment {
-								identifier: item,
-								parameters: PathParameters::none()
-							}
-						]
-					}
-				),
-				span: DUMMY_SP,
-				attrs: None
-			})
-		),
-		span: DUMMY_SP,
-		attrs: None
-	})
 }
 
 /// Gets an ident as an expression

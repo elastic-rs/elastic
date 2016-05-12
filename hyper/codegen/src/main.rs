@@ -8,7 +8,6 @@ extern crate walkdir;
 use std::error::Error;
 use std::fs;
 use std::fs::{ File, OpenOptions };
-use std::io::Write;
 use std::collections::HashMap;
 use syntax::ast::*;
 use syntax::ext::base::ExtCtxt;

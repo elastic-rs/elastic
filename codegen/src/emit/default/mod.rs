@@ -12,19 +12,19 @@ use std::io::Write;
 use super::{ Emit, EmitError, Emitter };
 
 /// Default context-free Emitter
-/// 
+///
 /// This emitter will emit items that implement `Emit<(), _>`
-/// 
+///
 /// # Examples
-/// 
+///
 /// ```
 /// use std::io::Write;
 /// use elastic_codegen::emit::*;
 /// use elastic_codegen::emit::default::*;
-/// 
+///
 /// let mut buf: Vec<u8> = Vec::new();
 /// let emitter: CtxtFreeEmitter = CtxtFreeEmitter::new();
-/// 
+///
 /// let item = "my emittable item";
 /// let _ = emitter.emit(&item, &mut buf).unwrap();
 /// ```
@@ -34,24 +34,24 @@ pub struct CtxtFreeEmitter<E = EmitError> where E: From<EmitError> {
 
 impl <E> CtxtFreeEmitter<E> where E: From<EmitError> {
 	/// Creates a new emitter.
-	/// 
+	///
 	/// # Examples
-	/// 
+	///
 	/// Create a default `CtxtFreeEmitter`:
-	/// 
+	///
 	/// ```
 	/// use elastic_codegen::emit::*;
 	/// use elastic_codegen::emit::default::*;
-	/// 
+	///
 	/// let emitter: CtxtFreeEmitter = CtxtFreeEmitter::new();
 	/// ```
-	/// 
+	///
 	/// Create a `CtxtFreeEmitter` with the specified `Error` type:
-	/// 
+	///
 	/// ```
 	/// use elastic_codegen::emit::*;
 	/// use elastic_codegen::emit::default::*;
-	/// 
+	///
 	/// let emitter = CtxtFreeEmitter::<EmitError>::new();
 	/// ```
 	pub fn new() -> CtxtFreeEmitter<E> {
@@ -68,8 +68,7 @@ impl <'a, E> Emitter<'a> for CtxtFreeEmitter<E> where E: From<EmitError> {
 
 	fn get_cx(&self) { }
 
-	#[allow(let_unit_value)]
-	fn emit<Emittable, EmError, W>(&self, e: &'a Emittable, writer: &'a mut W) -> Result<(), Self::Error> 
+	fn emit<Emittable, EmError, W>(&self, e: &'a Emittable, writer: &'a mut W) -> Result<(), Self::Error>
 	where Emittable: Emit<Self::CtxtBrw, EmError>, EmError: Into<EmitError>, W: Write {
 		let cx = self.get_cx();
 		emit!(cx, e, writer)
