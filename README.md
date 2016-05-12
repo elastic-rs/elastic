@@ -19,7 +19,7 @@ For more details, see:
 
 If you'd prefer to call Elasticsearch using a Query DSL builder, see [rs-es](https://github.com/benashford/rs-es).
 
-See the [elastic_types](#elastic_types) and [json_str](#json_str) for more details.
+See [elastic_types](#elastic_types) and [json_str](#json_str) for more details.
 
 ## Roadmap
 
