@@ -1,20 +1,43 @@
+sudo: false
 language: rust
+addons:
+  apt:
+    packages:
+      - libcurl4-openssl-dev
+      - libelf-dev
+      - libdw-dev
+      - binutils-dev # optional: only required for the --verify flag of coveralls
 rust:
   - nightly
-os:
-  - linux
-  - osx
+  - stable
+matrix:
+  exclude:
+    - rust: stable
+      env:
+        matrix:
+          - CRATE="codegen"
+          - CRATE="hyper/codegen"
 env:
-  - CRATE="codegen"
-  - CRATE="hyper"
-  - CRATE="hyper/codegen"
-  - CRATE="hyper/samples"
-  - CRATE="macros/date"
-  - CRATE="macros/types"
-  - CRATE="macros/json_str"
-  - CRATE="types"
+  global:
+    - TRAVIS_CARGO_NIGHTLY_FEATURE=""
+  matrix:
+    - CRATE="codegen"
+    - CRATE="hyper"
+    - CRATE="hyper/codegen"
+    - CRATE="hyper/samples"
+    - CRATE="macros/date"
+    - CRATE="macros/types"
+    - CRATE="macros/json_str"
+    - CRATE="types"
+
+before_script:
+  - |
+      pip install 'travis-cargo<0.2' --user &&
+      export PATH=$HOME/.local/bin:$PATH
 script:
-  - cd $CRATE
-  - cargo test -v
-  - cargo bench -v
-  - cargo doc
+  - |
+      cd $CRATE &&
+      travis-cargo --only nightly test -- --features nightly-testing --no-default-features &&
+      travis-cargo test &&
+      travis-cargo bench &&
+      travis-cargo --only nightly doc
