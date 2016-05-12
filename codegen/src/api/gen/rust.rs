@@ -1,5 +1,5 @@
 //! Elasticsearch API Rust Codegen
-//! 
+//!
 //! Utilities for parsing the Elasticsearch API spec to Rust source code.
 
 use std::collections::BTreeMap;
@@ -32,7 +32,7 @@ enum ApiGenErrorKind {
 }
 
 /// Represents an error encountered during parsing.
-/// 
+///
 /// This could include errors while reading the file or deserialising the contents.
 #[derive(Debug)]
 pub struct ApiGenError {
@@ -77,12 +77,12 @@ impl api::Endpoint {
 			None => ""
 		}
 	}
-	
+
 	/// Get the module name for all functions in this endpoint.
-	/// 
+	///
 	/// The name is a hierarchy of modules, which are determined by splitting the endpoint name on '.'.
 	/// So for example, the `indices.shard_stores` endpoint has the following module path:
-	/// 
+	///
 	/// - `indices`
 	/// - `shard_stores`
 	pub fn get_mod_path(&self) -> Result<Vec<String>, ApiGenError> {
@@ -90,18 +90,18 @@ impl api::Endpoint {
 	}
 
 	/// Get the function definitions for this endpoint.
-	/// 
+	///
 	/// Each possible url path is considered a function.
 	/// Names take the (rather verbose) form: `{http_verb}_{endpoint_name}_{param_1}_{param_n}`.
 	/// So for example, the `count` endpoint will produce the following `fn` names:
-	/// 
+	///
 	/// - `get`
 	/// - `post`
 	/// - `get_index`
 	/// - `post_index`
 	/// - `get_index_type`
 	/// - `post_index_type`
-	/// 
+	///
 	/// This is to try and prevent collisions with the names where not a lot of info about each endpoint is available.
 	pub fn get_fns(&self) -> Result<Vec<UrlFn>, ApiGenError> {
 		let mut fns = Vec::new();
@@ -170,12 +170,12 @@ impl <'a> Into<Option<Ty>> for api::Type<'a> {
 }
 
 /// Generate a statement to replace the params in a url.
-/// 
-/// Generates statements of the form `let url_fmtd = format!(url, base, parts[0], ..., parts[n]);`. 
+///
+/// Generates statements of the form `let url_fmtd = format!(url, base, parts[0], ..., parts[n]);`.
 /// Returns the `Ident` for the formatted string and the `Stmt` that declares it.
-/// 
+///
 /// # Examples
-/// 
+///
 /// ```
 /// # #![feature(rustc_private)]
 /// # extern crate syntax;
@@ -184,17 +184,17 @@ impl <'a> Into<Option<Ty>> for api::Type<'a> {
 /// use syntax::parse::token;
 /// use syntax::print::pprust;
 /// use elastic_codegen::api::gen::rust::*;
-/// 
+///
 /// //Generate the statement
 /// let (ident, stmt) = url_fmt_decl(
-/// 	"{}/{}/_alias/{}", 
-/// 	token::str_to_ident("base"), 
+/// 	"{}/{}/_alias/{}",
+/// 	token::str_to_ident("base"),
 /// 	vec![
 /// 		token::str_to_ident("index"),
 /// 		token::str_to_ident("name")
 /// 	]
 /// );
-/// 
+///
 /// //Print the result: 'let url_fmtd = format!("{}/{}/_alias/{}" , base , index , name ,);'
 /// let result = pprust::stmt_to_string(&stmt);
 /// println!("{}", result);
@@ -219,8 +219,7 @@ pub fn url_fmt_decl<I>(url: &str, url_base: Ident, param_parts: I) -> (Ident, St
 			//The url base
 			TokenTree::Token(
 				DUMMY_SP, token::Token::Ident(
-					url_base, 
-					token::IdentStyle::Plain
+					url_base
 				)
 			),
 			TokenTree::Token(
@@ -231,8 +230,7 @@ pub fn url_fmt_decl<I>(url: &str, url_base: Ident, param_parts: I) -> (Ident, St
 		for part in param_parts {
 			args.push(TokenTree::Token(
 				DUMMY_SP, token::Token::Ident(
-					part, 
-					token::IdentStyle::Plain
+					part
 				)
 			));
 			args.push(TokenTree::Token(
@@ -298,25 +296,25 @@ pub fn url_fmt_decl<I>(url: &str, url_base: Ident, param_parts: I) -> (Ident, St
 }
 
 /// Generate a series of statements to compose a url.
-/// 
+///
 /// Generates a series of statements of the form:
-/// 
+///
 /// ```text
 /// let mut url_fmtd = String::with_capacity(base.len() + 1 + 8 + index.len() + name.len());
-/// 
+///
 /// url_fmtd.push_str(base);
 /// url_fmtd.push_str("/");
 /// url_fmtd.push_str(&index);
 /// url_fmtd.push_str("/_alias/");
 /// url_fmtd.push_str(name);
-/// 
+///
 /// url_fmtd
 /// ```
-/// 
+///
 /// Right now, this method expects that param idents are `&str`s. This will be updated in the future.
-/// 
+///
 /// # Examples
-/// 
+///
 /// ```
 /// # #![feature(rustc_private)]
 /// # extern crate syntax;
@@ -325,10 +323,10 @@ pub fn url_fmt_decl<I>(url: &str, url_base: Ident, param_parts: I) -> (Ident, St
 /// use syntax::parse::token;
 /// use syntax::print::pprust;
 /// use elastic_codegen::api::gen::rust::*;
-/// 
+///
 /// //Generate the statement
 /// let (ident, stmt) = url_push_decl(
-/// 	token::str_to_ident("base"), 
+/// 	token::str_to_ident("base"),
 /// 	vec![
 /// 		"/_alias/",
 /// 		"/"
@@ -340,7 +338,7 @@ pub fn url_fmt_decl<I>(url: &str, url_base: Ident, param_parts: I) -> (Ident, St
 /// );
 /// # }
 /// ```
-pub fn url_push_decl<'a, I, K>(url_base: Ident, url_parts: I, param_parts: K) -> (Ident, Vec<Stmt>) 
+pub fn url_push_decl<'a, I, K>(url_base: Ident, url_parts: I, param_parts: K) -> (Ident, Vec<Stmt>)
 	where I: IntoIterator<Item=&'a str>, K: IntoIterator<Item=Ident> {
 		let ident = token::str_to_ident("url_fmtd");
 
@@ -359,7 +357,7 @@ pub fn url_push_decl<'a, I, K>(url_base: Ident, url_parts: I, param_parts: K) ->
 			.cloned();
 
 		let mut add_expr = len_add(
-			len_expr(ident_expr(url_base)), 
+			len_expr(ident_expr(url_base)),
 			len_of_ident_expr(url_iter.next().unwrap())
 		);
 		for url_part in url_iter {
@@ -522,14 +520,14 @@ fn ident_expr(item: Ident) -> P<Expr> {
 }
 
 /// Gets the length of an ident string as a literal int
-/// 
+///
 /// This method expects the ident is quoted, so 2 is subtracted from the length.
 fn len_of_ident_expr(item: Ident) -> P<Expr> {
     let len = match item.name.as_str().len() {
         x if x <= 2 => 0,
-        x => x - 2  
+        x => x - 2
     };
-    
+
     P(Expr {
 		id: DUMMY_NODE_ID,
 		node: ExprKind::Lit(
@@ -598,7 +596,7 @@ fn push_stmt(url_ident: Ident, item: P<Expr>) -> Stmt {
 				span: DUMMY_SP,
 				attrs: None
 			}
-		), 
+		),
 		DUMMY_NODE_ID
 		)
 	}
