@@ -1,8 +1,3 @@
-//Currently we only support `nightly` for testing.
-//This should be removed once `stable` support is better for `elastic_types_macros`.
-//It's also a bit of a smell that responsibilities are being mixed.
-#![cfg(feature = "nightly-testing")]
-
 #![allow(unused_attributes)]
 
 #![cfg_attr(feature = "nightly", feature(custom_derive, custom_attribute, plugin))]
