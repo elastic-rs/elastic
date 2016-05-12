@@ -8,30 +8,39 @@ addons:
       - libdw-dev
       - binutils-dev # optional: only required for the --verify flag of coveralls
 
+rust:
+  - stable
+  - nightly
+
+env:
+  global:
+    - TRAVIS_CARGO_NIGHTLY_FEATURE=""
+  matrix:
+    - CRATE="codegen"
+    - CRATE="hyper"
+    - CRATE="hyper/codegen"
+    - CRATE="hyper/samples"
+    - CRATE="macros/date"
+    - CRATE="macros/types"
+    - CRATE="macros/json_str"
+    - CRATE="types"
+    
 matrix:
   include:
     - rust: stable
       env:
-        matrix:
-          - CRATE="hyper"
-          - CRATE="hyper/samples"
-          - CRATE="macros/date"
-          - CRATE="macros/json_str"
-          - CRATE="types"
-    - rust: nightly
+        - CRATE="types"
+        - NO_TEST=true
+  exclude:
+    - rust: stable
       env:
-        matrix:
-          - CRATE="codegen"
-          - CRATE="hyper"
-          - CRATE="hyper/codegen"
-          - CRATE="hyper/samples"
-          - CRATE="macros/date"
-          - CRATE="macros/types"
-          - CRATE="macros/json_str"
-          - CRATE="types"
-env:
-  global:
-    - TRAVIS_CARGO_NIGHTLY_FEATURE=""
+        - CRATE="codegen"
+    - rust: stable
+      env:
+        - CRATE="hyper/codegen"
+    - rust: stable
+      env:
+        - CRATE="types"
 
 before_script:
   - |
