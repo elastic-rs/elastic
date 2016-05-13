@@ -63,7 +63,7 @@ script:
       cd $CRATE &&
       travis-cargo build &&
       if [ -z $NO_TEST ]; then travis-cargo --only stable test; fi &&
-      travis-cargo bench &&
+      travis-cargo bench --only stable &&
       travis-cargo --only nightly test -- --features nightly-testing --no-default-features &&
       travis-cargo --only nightly bench -- --features nightly-testing --no-default-features &&
       travis-cargo --only nightly doc
