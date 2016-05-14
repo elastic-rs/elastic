@@ -66,7 +66,6 @@
 //! #[derive(Serialize, Deserialize, ElasticType)]
 //! pub struct MyType {
 //! 	pub my_date: ElasticDate<DefaultDateFormat>,
-//! 	pub my_string: String,
 //! 	pub my_num: i32
 //! }
 //!
