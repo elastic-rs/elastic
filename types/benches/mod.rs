@@ -5,7 +5,7 @@
 
 #![allow(unused_attributes)]
 
-#![cfg_attr(feature = "nightly", feature(custom_derive, custom_attribute, plugin))]
+#![cfg_attr(feature = "nightly", feature(custom_derive, custom_attribute, plugin, test))]
 #![cfg_attr(feature = "nightly", plugin(serde_macros, elastic_types_macros, elastic_date_macros))]
 
 extern crate serde;
