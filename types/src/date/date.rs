@@ -117,10 +117,18 @@ T: ElasticFieldMapping<F> + ElasticDateMapping<F> {
 	/// use chrono::UTC;
 	/// use elastic_types::date::{ ElasticDate, DefaultDateFormat };
 	///
-	/// let esDate: ElasticDate<DefaultDateFormat> = ElasticDate::build(2015, 5, 14, 16, 45, 886);
+	/// let esDate: ElasticDate<DefaultDateFormat> = ElasticDate::build(
+	/// 	2015,
+	/// 	5,
+	/// 	14,
+	/// 	16,
+	/// 	45,
+	/// 	8,
+	/// 	886
+	/// );
 	/// # }
 	/// ```
-	pub fn from_prim(year: i32, month: u32, day: u32, hour: u32, minute: u32, second: u32, milli: u32) -> ElasticDate<F, T> {
+	pub fn build(year: i32, month: u32, day: u32, hour: u32, minute: u32, second: u32, milli: u32) -> ElasticDate<F, T> {
 		ElasticDate {
 			value: DT::from_utc(
 				NaiveDateTime::new(
@@ -198,9 +206,9 @@ T: ElasticFieldMapping<F> + ElasticDateMapping<F> {
 	/// let date: ElasticDate<BasicDateTime> = ElasticDate::now();
 	///
 	/// //Change the format to epoch_millis
-	/// let otherdate: ElasticDate<EpochMillis> = date.into();
+	/// let otherdate: ElasticDate<EpochMillis> = date.remap();
 	/// ```
-	pub fn into<FInto, TInto>(self) -> ElasticDate<FInto, TInto> where
+	pub fn remap<FInto, TInto>(self) -> ElasticDate<FInto, TInto> where
 	FInto: DateFormat,
 	TInto: ElasticFieldMapping<FInto> + ElasticDateMapping<FInto> {
 		ElasticDate::<FInto, TInto>::new(self.value)

@@ -31,7 +31,7 @@ macro_rules! number_type {
 			}
 
 			/// Change the mapping of this number.
-			pub fn into<MInto: ElasticFieldMapping<()> + $m>(self) -> $t<MInto> {
+			pub fn remap<MInto: ElasticFieldMapping<()> + $m>(self) -> $t<MInto> {
 				$t::<MInto>::new(self.value)
 			}
 		}

@@ -122,7 +122,9 @@
 //!
 //! ```
 //! # #![feature(plugin, custom_derive, custom_attribute)]
-//! # #![plugin(json_str, elastic_types_macros)]
+//! # #![plugin(elastic_types_macros)]
+//! # #[macro_use]
+//! # extern crate json_str;
 //! # extern crate elastic_types;
 //! # extern crate serde;
 //! # use serde::{ Serialize, Deserialize };
@@ -131,7 +133,6 @@
 //! # #[derive(Serialize, Deserialize, ElasticType)]
 //! # pub struct MyType {
 //! # 	pub my_date: ElasticDate<DefaultDateFormat>,
-//! # 	pub my_string: String,
 //! # 	pub my_num: i32
 //! # }
 //! # impl serde::Serialize for MyType {
@@ -153,9 +154,6 @@
 //!             "type": "date",
 //!             "format": "basic_date_time"
 //!         },
-//!         "my_string": {
-//!             "type": "string"
-//!         },
 //!         "my_num": {
 //!             "type": "integer"
 //!         }
@@ -170,8 +168,7 @@
 //!
 //! ```
 //! # #![feature(plugin, custom_derive, custom_attribute)]
-//! # #![plugin(json_str, elastic_types_macros)]
-//! # #[macro_use]
+//! # #![plugin(elastic_types_macros)]
 //! # extern crate elastic_types;
 //! # extern crate serde;
 //! # use serde::{ Serialize, Deserialize };
@@ -180,7 +177,6 @@
 //! # #[derive(Serialize, Deserialize, ElasticType)]
 //! # pub struct MyType {
 //! # 	pub my_date: ElasticDate<DefaultDateFormat>,
-//! # 	pub my_string: String,
 //! # 	pub my_num: i32
 //! # }
 //! # impl serde::Serialize for MyType {
@@ -215,7 +211,9 @@
 //!
 //! ```
 //! # #![feature(plugin, custom_derive, custom_attribute)]
-//! # #![plugin(json_str, elastic_types_macros)]
+//! # #![plugin(elastic_types_macros)]
+//! # #[macro_use]
+//! # extern crate json_str;
 //! # extern crate elastic_types;
 //! # extern crate serde;
 //! # use serde::{ Serialize, Deserialize };
@@ -224,15 +222,14 @@
 //! # #[derive(Serialize, Deserialize, ElasticType)]
 //! # pub struct MyType {
 //! # 	pub my_date: ElasticDate<DefaultDateFormat>,
-//! # 	pub my_string: String,
 //! # 	pub my_num: i32
 //! # }
-//! # impl serde::Serialize for MyType {
+//! # impl Serialize for MyType {
 //! # 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where S: serde::Serializer {
 //! # 		unimplemented!()
 //! # 	}
 //! # }
-//! # impl serde::Deserialize for MyType {
+//! # impl Deserialize for MyType {
 //! # 	 fn deserialize<D>(deserializer: &mut D) -> Result<Self, D::Error> where D: serde::Deserializer {
 //! # 		unimplemented!()
 //! # 	}
@@ -241,12 +238,12 @@
 //! # pub struct MyOtherType {
 //! # 	pub my_type: MyType
 //! # }
-//! # impl serde::Serialize for MyOtherType {
+//! # impl Serialize for MyOtherType {
 //! # 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where S: serde::Serializer {
 //! # 		unimplemented!()
 //! # 	}
 //! # }
-//! # impl serde::Deserialize for MyOtherType {
+//! # impl Deserialize for MyOtherType {
 //! # 	 fn deserialize<D>(deserializer: &mut D) -> Result<Self, D::Error> where D: serde::Deserializer {
 //! # 		unimplemented!()
 //! # 	}
@@ -262,9 +259,6 @@
 //!                 "my_date": {
 //!                     "type": "date",
 //!                     "format": "basic_date_time"
-//!                 },
-//!                 "my_string": {
-//!                     "type": "string"
 //!                 },
 //!                 "my_num": {
 //!                     "type": "integer"

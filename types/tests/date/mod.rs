@@ -83,17 +83,45 @@ fn dates_should_use_es_format() {
 
 #[test]
 fn can_change_date_mapping() {
-	panic!("implement")
+	fn takes_epoch_millis(date: ElasticDate<EpochMillis>) -> bool {
+		true
+	}
+
+	let date: ElasticDate<BasicDateTime> = ElasticDate::now();
+
+	assert!(takes_epoch_millis(date.remap()));
 }
 
 #[test]
 fn can_build_date_from_chrono() {
-	panic!("implement")
+	let date: ElasticDate<DefaultDateFormat> = ElasticDate::new(
+		chrono::UTC.datetime_from_str("13/05/2015 00:00:00", "%d/%m/%Y %H:%M:%S").unwrap()
+	);
+
+	assert_eq!((2015, 5, 13, 0, 0, 0), (
+		date.year(),
+		date.month(),
+		date.day(),
+		date.hour(),
+		date.minute(),
+		date.second()
+	));
 }
 
 #[test]
 fn can_build_date_from_prim() {
-	panic!("implement")
+	let date: ElasticDate<DefaultDateFormat> = ElasticDate::build(
+		2015, 5, 13, 0, 0, 0, 0
+	);
+
+	assert_eq!((2015, 5, 13, 0, 0, 0), (
+		date.year(),
+		date.month(),
+		date.day(),
+		date.hour(),
+		date.minute(),
+		date.second()
+	));
 }
 
 #[test]
@@ -113,5 +141,9 @@ fn serialise_elastic_date() {
 fn deserialise_elastic_date() {
 	let date: ElasticDate<BasicDateTime> = serde_json::from_str(r#""20150513T000000.000Z""#).unwrap();
 
-	assert_eq!((2015, 5, 13), (date.year(), date.month(), date.day()));
+	assert_eq!((2015, 5, 13), (
+		date.year(),
+		date.month(),
+		date.day()
+	));
 }

@@ -9,10 +9,17 @@ extern crate elastic_types;
 
 use elastic_types::boolean::mapping::*;
 use elastic_types::boolean::prelude::*;
+use ::boolean_fixtures::*;
 
 #[test]
 fn can_change_boolean_mapping() {
-	panic!("implement")
+	fn takes_custom_mapping(boolean: ElasticBoolean<MyBooleanMapping>) -> bool {
+		true
+	}
+
+	let boolean: ElasticBoolean<DefaultBooleanMapping> = ElasticBoolean::new(true);
+
+	assert!(takes_custom_mapping(boolean.remap()));
 }
 
 #[test]

@@ -78,6 +78,7 @@ T: ElasticFieldMapping<()> + ElasticBooleanMapping {
 	/// # }
 	/// # impl ElasticFieldMapping<()> for MyBooleanMapping {
 	/// # 	type Visitor = ElasticBooleanMappingVisitor<MyBooleanMapping>;
+	/// # 	type MultiFieldMapping = Self;
 	/// # 	fn data_type() -> &'static str {
 	/// # 		"boolean"
 	/// # 	}
@@ -90,10 +91,10 @@ T: ElasticFieldMapping<()> + ElasticBooleanMapping {
 	/// # }
 	/// let es_boolean = ElasticBoolean::<DefaultBooleanMapping>::new(true);
 	///
-	/// let boolean: ElasticBoolean<MyBooleanMapping> = es_boolean.into();
+	/// let boolean: ElasticBoolean<MyBooleanMapping> = es_boolean.remap();
 	/// # }
 	/// ```
-	pub fn into<TInto>(self) -> ElasticBoolean<TInto> where
+	pub fn remap<TInto>(self) -> ElasticBoolean<TInto> where
 	TInto: ElasticFieldMapping<()> + ElasticBooleanMapping {
 		ElasticBoolean::<TInto>::new(self.value)
 	}

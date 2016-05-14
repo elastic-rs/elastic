@@ -46,8 +46,9 @@ pub const DATE_DATATYPE: &'static str = "date";
 ///
 /// ```
 /// # #![feature(plugin, custom_derive, custom_attribute)]
-/// # #![plugin(json_str, elastic_types_macros)]
+/// # #![plugin(elastic_types_macros)]
 /// # #[macro_use]
+/// # extern crate json_str;
 /// # extern crate elastic_types;
 /// # extern crate serde;
 /// # extern crate serde_json;
@@ -143,6 +144,7 @@ pub const DATE_DATATYPE: &'static str = "date";
 ///
 /// impl <T: DateFormat> ElasticFieldMapping<T> for MyDateMapping<T> {
 /// 	type Visitor = ElasticDateMappingVisitor<T, MyDateMapping<T>>;
+/// 	type MultiFieldMapping = Self;
 ///
 /// 	fn data_type() -> &'static str {
 /// 		DATE_DATATYPE

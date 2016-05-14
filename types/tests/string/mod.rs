@@ -9,10 +9,17 @@ extern crate elastic_types;
 
 use elastic_types::string::mapping::*;
 use elastic_types::string::prelude::*;
+use ::string_fixtures::*;
 
 #[test]
 fn can_change_string_mapping() {
-	panic!("implement")
+	fn takes_custom_mapping(string: ElasticString<MyStringMapping>) -> bool {
+		true
+	}
+
+	let string: ElasticString<MyStringMapping> = ElasticString::new("stuff");
+
+	assert!(takes_custom_mapping(string.remap()));
 }
 
 #[test]

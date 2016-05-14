@@ -49,7 +49,7 @@ pub mod date_fixtures {
 		}
 
 		fn null_value() -> Option<ElasticDate<T>> {
-			Some(ElasticDate::<T>::from_prim(2015, 3, 14, 16, 45, 13, 778))
+			Some(ElasticDate::<T>::build(2015, 3, 14, 16, 45, 13, 778))
 		}
 
 		fn ignore_malformed() -> Option<bool> {

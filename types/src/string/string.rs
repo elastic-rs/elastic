@@ -78,6 +78,7 @@ T: ElasticFieldMapping<()> + ElasticStringMapping {
 	/// # }
 	/// # impl ElasticFieldMapping<()> for MyStringMapping {
 	/// # 	type Visitor = ElasticStringMappingVisitor<MyStringMapping>;
+	/// # 	type MultiFieldMapping = Self;
 	/// # 	fn data_type() -> &'static str {
 	/// # 		"string"
 	/// # 	}
@@ -90,10 +91,10 @@ T: ElasticFieldMapping<()> + ElasticStringMapping {
 	/// # }
 	/// let es_string = ElasticString::<DefaultStringMapping>::new(String::from("my string"));
 	///
-	/// let string: ElasticString<MyStringMapping> = es_string.into();
+	/// let string: ElasticString<MyStringMapping> = es_string.remap();
 	/// # }
 	/// ```
-	pub fn into<TInto>(self) -> ElasticString<TInto> where
+	pub fn remap<TInto>(self) -> ElasticString<TInto> where
 	TInto: ElasticFieldMapping<()> + ElasticStringMapping {
 		ElasticString::<TInto>::new(self.value)
 	}

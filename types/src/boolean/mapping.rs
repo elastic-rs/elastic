@@ -42,8 +42,9 @@ pub const BOOLEAN_DATATYPE: &'static str = "boolean";
 ///
 /// ```
 /// # #![feature(plugin, custom_derive, custom_attribute)]
-/// # #![plugin(json_str, elastic_types_macros)]
+/// # #![plugin(elastic_types_macros)]
 /// # #[macro_use]
+/// # extern crate json_str;
 /// # extern crate elastic_types;
 /// # extern crate serde;
 /// # extern crate serde_json;

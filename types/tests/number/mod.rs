@@ -12,7 +12,13 @@ use ::number_fixtures::*;
 
 #[test]
 fn can_change_number_mapping() {
-	panic!("implement")
+	fn takes_custom_mapping(number: ElasticInteger<MyIntegerMapping>) -> bool {
+		true
+	}
+
+	let number: ElasticInteger<MyIntegerMapping> = ElasticInteger::new(1);
+
+	assert!(takes_custom_mapping(number.remap()));
 }
 
 #[test]
