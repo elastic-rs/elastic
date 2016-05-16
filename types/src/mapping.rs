@@ -36,7 +36,15 @@ pub mod prelude {
 	pub use ::object::*;
 	pub use ::mappers::*;
 
+	#[cfg(any(feature = "date-ty", feature = "date-ty-nightly"))]
 	pub use ::date::mapping::*;
+
+	#[cfg(any(feature = "geo-ty", feature = "geo-ty-nightly"))]
+	pub use ::geo::point::mapping::*;
+	#[cfg(any(feature = "geo-ty", feature = "geo-ty-nightly"))]
+	pub use ::geo::shape::mapping::*;
+
+
 	pub use ::string::mapping::*;
 	pub use ::number::mapping::*;
 	pub use ::boolean::mapping::*;

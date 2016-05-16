@@ -12,6 +12,29 @@
 //! There are two ways to reference `elastic_types` in your projects, depending on whether you're on
 //! the `stable`/`beta` or `nightly` channels.
 //!
+//! Builds on `nightly` benefit from compile-time codegen for better performance and easier
+//! mapping definitions.
+//! The story on `stable` will be improved over time so it won't be a second-class citizen forever.
+//!
+//! ## Nightly
+//!
+//! To get started, add `elastic_types` and `elastic_types_macros` to your `Cargo.toml`:
+//!
+//! ```ignore
+//! [dependencies]
+//! elastic_types = { version = "*", defeault-features = false, features = "nightly-default" }
+//! elastic_types_macros = "*"
+//! ```
+//!
+//! And reference it in your crate root:
+//!
+//! ```ignore
+//! #![feature(plugin)]
+//! #![plugin(elastic_types_macros)]
+//!
+//! extern crate elastic_types;
+//! ```
+//!
 //! ## Stable
 //!
 //! To get started, add `elastic_types` to your `Cargo.toml`:
@@ -26,29 +49,6 @@
 //! ```ignore
 //! extern crate elastic_types;
 //! ```
-//!
-//! ## Nightly
-//!
-//! To get started, add `elastic_types` and `elastic_types_macros` to your `Cargo.toml`:
-//!
-//! ```ignore
-//! [dependencies]
-//! elastic_types = { version = "*", defeault-features = false, features = "nightly" }
-//! elastic_types_macros = "*"
-//! ```
-//!
-//! And reference it in your crate root:
-//!
-//! ```ignore
-//! #![feature(plugin)]
-//! #![plugin(elastic_types_macros)]
-//!
-//! extern crate elastic_types;
-//! ```
-//!
-//! Builds on `nightly` benefit from compile-time codegen for better performance and easier
-//! mapping definitions.
-//! The story on `stable` will be improved over time so it won't be a second-class citizen forever.
 //!
 //! ## Map Your Types
 //!
@@ -302,7 +302,7 @@
 //!  `string`            | `String`                    | `std`     | `ElasticString<M>`            | `()`
 //!  `boolean`           | `bool`                      | `std`     | `ElasticBoolean<M>`           | `()`
 //!  `date`              | `DateTime<UTC>`             | `chrono`  | `ElasticDate<F, M>`           | `DateFormat`
-//!  `geo_point`         | -                           | -         | `ElasticGeoPoint<F, M>`       | `GeoPointFormat`
+//!  `geo_point`         | `Point`                     | `geo`     | `ElasticGeoPoint<F, M>`       | `GeoPointFormat`
 //!  `geo_shape`         | `Geometry`                  | `geojson` | `ElasticGeoShape<M>`          | `()`
 //!  `point`             | `PointType`                 | `geojson` | `ElasticPoint<M>`             | `()`
 //!  `linestring`        | `LineStringType`            | `geojson` | `ElasticLineString<M>`        | `()`
@@ -335,6 +335,82 @@
 //! For some types (like `ElasticDate`), it's helpful to have an extra generic parameter that describes the
 //! `format` the data can take. For most types the format is `()`, because there aren't any alternative formats available.
 //!
+//! # Excluding Dependencies
+//!
+//! Any Elasticsearch type that requires an external dependency (like `chrono` for `ElasticDate`)
+//! is actually feature-gated, and that type can be excluded from builds if they aren't needed
+//! to reduce the dependency footprint.
+//!
+//! To exclude types, use the appropriate base features in your `Cargo.toml` as defined below.
+//! The base feature will exclude all possible types, so you can go and include just the ones you need.
+//!
+//! On `nightly`:
+//!
+//! ```ignore
+//! elastic_types = { version = "*", default-features = false, features = [ "nightly", {type features here} ] }
+//! ```
+//!
+//! On `stable`:
+//!
+//! ```ignore
+//! elastic_types = { version = "*", default-features = false, features = [ "stable", {type features here} ]}
+//! ```
+//!
+//! ## Possible Features
+//!
+//! The following types are provided as features (enabled by default):
+//!
+//!  Rust Type      | Stable Feature | Nightly Feature      | Excluded Crates
+//!  -------------- | -------------- | -------------------- | ----------------------------
+//!  `ElasticDate`  | `date-ty`      | `date-ty-nightly`    | `chrono`
+//!  `ElasticGeo*`  | `geo-ty`       | `geo-ty-nightly`     | `geo`, `geohash`, `geojson`
+//!
+//! ## Examples
+//!
+//! Exclude all types with dependent crates:
+//!
+//! On `nightly`:
+//!
+//! ```ignore
+//! elastic_types = {
+//!     version = "*",
+//!     default-features = false,
+//!     features = [ "nightly" ]
+//! }
+//! ```
+//!
+//! On `stable`:
+//!
+//! ```ignore
+//! elastic_types = {
+//!     version = "*",
+//!     default-features = false,
+//!     features = [ "stable" ]
+//! }
+//! ```
+//!
+//! Include just `ElasticDate`:
+//!
+//! On `nightly`:
+//!
+//! ```ignore
+//! elastic_types = {
+//!     version = "*",
+//!     default-features = false,
+//!     features = [ "nightly", "date-ty-nightly" ]
+//! }
+//! ```
+//!
+//! On `stable`:
+//!
+//! ```ignore
+//! elastic_types = {
+//!     version = "*",
+//!     default-features = false,
+//!     features = [ "stable", "date-ty" ]
+//! }
+//! ```
+//!
 //! # Links
 //! - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/guide/current/mapping.html)
 //! - [Github](https://github.com/KodrAus/elasticsearch-rs)
@@ -345,22 +421,38 @@
 #![cfg_attr(feature = "nightly-testing", plugin(clippy))]
 
 #![cfg_attr(feature = "nightly", feature(custom_derive, plugin, associated_type_defaults))]
-#![cfg_attr(feature = "nightly", plugin(elastic_date_macros, serde_macros))]
+#![cfg_attr(feature = "nightly", plugin(serde_macros))]
+#![cfg_attr(all(feature = "elastic_date_macros", feature = "nightly"), plugin(elastic_date_macros))]
 
-#[cfg_attr(not(feature = "nightly"), macro_use)]
-#[cfg(not(feature = "nightly"))]
+#[macro_use]
+mod macros;
+pub mod mappers;
+
+//Date type dependencies
+#[cfg_attr(all(feature = "elastic_date_macros", not(feature = "nightly")), macro_use)]
+#[cfg(all(feature = "elastic_date_macros", not(feature = "nightly")))]
 extern crate elastic_date_macros;
-
+#[cfg(feature = "chrono")]
 extern crate chrono;
+#[cfg(any(feature = "date-ty", feature = "date-ty-nightly"))]
+pub mod date;
+
+//Geo type dependencies
+#[cfg(feature = "geo")]
+extern crate geo;
+#[cfg(feature = "geohash")]
+extern crate geohash;
+#[cfg(feature = "geojson")]
 extern crate geojson;
+#[cfg(any(feature = "geo-ty", feature = "geo-ty-nightly"))]
+pub mod geo;
 
 extern crate serde;
 extern crate serde_json;
 
+//Other type dependencies
 #[cfg(feature = "serde_macros")]
 include!("lib.rs.in");
 
 #[cfg(not(feature = "serde_macros"))]
 include!(concat!(env!("OUT_DIR"), "/lib.rs"));
-
-pub mod mappers;

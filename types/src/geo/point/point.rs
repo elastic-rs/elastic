@@ -1,8 +1,7 @@
 pub struct ElasticGeoPoint<F, T = DefaultGeoPointMapping<F>> where
 F: GeoPointFormat,
 T: ElasticFieldMapping<F> + ElasticGeoPointMapping<F> {
-    pub lon: f64,
-    pub lat: f64,
+    pub value: Point,
 	phantom_f: PhantomData<F>,
 	phantom_t: PhantomData<T>
 }
@@ -10,10 +9,11 @@ T: ElasticFieldMapping<F> + ElasticGeoPointMapping<F> {
 impl <F, T> ElasticGeoPoint where
 F: GeoPointFormat,
 T: ElasticFieldMapping<F> + ElasticGeoPointMapping<F> {
-    pub fn new(lon: f64, lat: f64) -> ElasticGeoPoint<F, T> {
-        ElasticFieldMapping {
-            lon: lon,
-            lat: lat
+    pub fn new(point: Coordinate) -> ElasticGeoPoint<F, T> {
+        ElasticGeoPoint {
+            value: Point(point),
+            phantom_f: PhantomData,
+            phantom_t: PhantomData
         }
     }
 
@@ -23,3 +23,5 @@ T: ElasticFieldMapping<F> + ElasticGeoPointMapping<F> {
 		ElasticDate::<FInto, TInto>::new(self.value)
 	}
 }
+
+//TODO: impl default for geo::Point

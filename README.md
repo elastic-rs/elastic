@@ -131,15 +131,15 @@ The `elastic_types` crate tries not to reinvent the wheel wherever possible and 
 
 `elastic_types` is a library for building Elasticsearch types in Rust. Define your Elasticsearch types as PORS (Plain Old Rust Structures) and generate an equivalent Elasticsearch mapping from them.
 
-Add `elastic_types` to your `Cargo.toml`:
+On `nightly`, add `elastic_types` to your `Cargo.toml`:
 
 ```
 [dependencies]
-elastic_types = "*"
+elastic_types = { version = "*", default-features = false, features = "nightly-default" }
 elastic_types_macros = "*"
 ```
 
-Define a custom Elasticsearch type called `my_type`:
+Define a custom Elasticsearch type called `mytype`:
 
 ```rust
 #[derive(Serialize, Deserialize, ElasticType)]
@@ -183,6 +183,8 @@ This will return:
   }
 }
 ```
+
+The `stable` channel is also supported, see the [docs](http://kodraus.github.io/rustdoc/elastic_types/) for details.
 
 ### elastic_codegen
 
