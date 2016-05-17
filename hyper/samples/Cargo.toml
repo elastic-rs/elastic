@@ -9,4 +9,4 @@ nightly-testing = []
 [dependencies]
 elastic_hyper = "*"
 json_str = "*"
-hyper = "~0.8.0"
+hyper = "~0.9.0"
