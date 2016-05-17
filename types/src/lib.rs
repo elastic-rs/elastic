@@ -439,7 +439,7 @@ pub mod date;
 
 //Geo type dependencies
 #[cfg(feature = "geo")]
-extern crate geo;
+extern crate geo as georust;
 #[cfg(feature = "geohash")]
 extern crate geohash;
 #[cfg(feature = "geojson")]

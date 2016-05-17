@@ -7,7 +7,7 @@ pub use self::point::*;
 pub use self::format::*;
 pub use self::formats::*;
 
-pub type DefaultGeoPointFormat = BasicDateTime;
+pub type DefaultGeoPointFormat = GeoPointObject;
 
 pub mod prelude {
 	//! Includes non-mapping types for the `geo_point` type.
@@ -16,6 +16,6 @@ pub mod prelude {
 
 	pub use super::DefaultGeoPointFormat;
 	pub use super::format::*;
-	pub use super::date::*;
+	pub use super::point::*;
 	pub use super::formats::*;
 }

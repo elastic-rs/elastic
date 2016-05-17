@@ -1,3 +1,10 @@
+use std::marker::PhantomData;
+use serde::{ Serialize, Deserialize, Serializer, Deserializer };
+use georust::{ Coordinate, Point };
+use ::mapping::{ ElasticFieldMapping, ElasticType };
+use super::mapping::{ ElasticGeoPointMapping, DefaultGeoPointMapping };
+use super::GeoPointFormat;
+
 pub struct ElasticGeoPoint<F, T = DefaultGeoPointMapping<F>> where
 F: GeoPointFormat,
 T: ElasticFieldMapping<F> + ElasticGeoPointMapping<F> {
@@ -6,7 +13,7 @@ T: ElasticFieldMapping<F> + ElasticGeoPointMapping<F> {
 	phantom_t: PhantomData<T>
 }
 
-impl <F, T> ElasticGeoPoint where
+impl <F, T> ElasticGeoPoint<F, T> where
 F: GeoPointFormat,
 T: ElasticFieldMapping<F> + ElasticGeoPointMapping<F> {
     pub fn new(point: Coordinate) -> ElasticGeoPoint<F, T> {
@@ -17,11 +24,11 @@ T: ElasticFieldMapping<F> + ElasticGeoPointMapping<F> {
         }
     }
 
-	pub fn into<FInto, TInto>(self) -> ElasticDate<FInto, TInto> where
-	FInto: DateFormat,
-	TInto: ElasticFieldMapping<FInto> + ElasticDateMapping<FInto> {
-		ElasticDate::<FInto, TInto>::new(self.value)
+	pub fn into<FInto, TInto>(self) -> ElasticGeoPoint<FInto, TInto> where
+	FInto: GeoPointFormat,
+	TInto: ElasticFieldMapping<FInto> + ElasticGeoPointMapping<FInto> {
+		ElasticGeoPoint::<FInto, TInto>::new(self.value.0)
 	}
 }
 
-//TODO: impl default for geo::Point
+//TODO: impl ToGeo for ElasticGeoPoint
