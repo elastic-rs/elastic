@@ -1,5 +1,7 @@
-#[cfg(any(feature = "geo-ty", feature = "geo-ty-nightly"))]
-pub mod point;
+//! Implementation of the Elasticsearch `geo` types.
+//!
+//! For indexing simple geo points with an `x` and `y` coordinate, use `point::ElasticGeoPoint`.
+//! For indexing `geojson`, there are implementations like `shape::ElasticGeometry`.
 
-#[cfg(any(feature = "geo-ty", feature = "geo-ty-nightly"))]
+pub mod point;
 pub mod shape;

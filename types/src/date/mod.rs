@@ -60,7 +60,7 @@ use chrono::UTC;
 /// A re-export of the `chrono::DateTime` struct with `UTC` timezone.
 pub type DT = chrono::DateTime<UTC>;
 
-/// The default date format.
+/// The default `date` format.
 pub type DefaultDateFormat = BasicDateTime;
 
 pub mod prelude {

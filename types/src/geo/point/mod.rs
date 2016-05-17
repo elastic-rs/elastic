@@ -1,3 +1,8 @@
+//! Implementation of the Elasticsearch `geo_point` type.
+//!
+//! Geo points are an Elasticsearch specific geospatial type with an `x` (`lon`) and `y` (`lat`)
+//! component.
+
 mod point;
 mod format;
 mod formats;
@@ -7,6 +12,7 @@ pub use self::point::*;
 pub use self::format::*;
 pub use self::formats::*;
 
+/// The default `geo_point` format.
 pub type DefaultGeoPointFormat = GeoPointObject;
 
 pub mod prelude {

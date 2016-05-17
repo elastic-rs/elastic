@@ -5,9 +5,11 @@ use ::mapping::{ ElasticFieldMapping, ElasticType };
 use super::mapping::{ ElasticGeoPointMapping, DefaultGeoPointMapping };
 use super::GeoPointFormat;
 
+/// An Elasticsearch `geo_point` type with a format.
 pub struct ElasticGeoPoint<F, T = DefaultGeoPointMapping<F>> where
 F: GeoPointFormat,
 T: ElasticFieldMapping<F> + ElasticGeoPointMapping<F> {
+    /// The `x` and `y` coordinate for the point.
     pub value: Point,
 	phantom_f: PhantomData<F>,
 	phantom_t: PhantomData<T>
@@ -16,6 +18,7 @@ T: ElasticFieldMapping<F> + ElasticGeoPointMapping<F> {
 impl <F, T> ElasticGeoPoint<F, T> where
 F: GeoPointFormat,
 T: ElasticFieldMapping<F> + ElasticGeoPointMapping<F> {
+    /// Creates a new `ElasticGeoPoint` from the given coordinate.
     pub fn new(point: Coordinate) -> ElasticGeoPoint<F, T> {
         ElasticGeoPoint {
             value: Point(point),
@@ -24,6 +27,7 @@ T: ElasticFieldMapping<F> + ElasticGeoPointMapping<F> {
         }
     }
 
+    /// Change the format/mapping of this geo point.
 	pub fn into<FInto, TInto>(self) -> ElasticGeoPoint<FInto, TInto> where
 	FInto: GeoPointFormat,
 	TInto: ElasticFieldMapping<FInto> + ElasticGeoPointMapping<FInto> {
@@ -32,3 +36,4 @@ T: ElasticFieldMapping<F> + ElasticGeoPointMapping<F> {
 }
 
 //TODO: impl ToGeo for ElasticGeoPoint
+//TODO: impl serialisation
