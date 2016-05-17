@@ -66,7 +66,7 @@ extern crate url;
 use std::collections::BTreeMap;
 use hyper::header::Headers;
 use hyper::header::ContentType;
-use url::form_urlencoded::serialize;
+use url::form_urlencoded::Serializer;
 
 /// Misc parameters for any request.
 ///
@@ -157,7 +157,9 @@ impl RequestParams {
 	/// Follows the `application/x-www-form-urlencoded` format.
 	pub fn get_url_qry(&self) -> String {
 		if self.url_params.len() > 0 {
-			let qry = serialize(self.url_params.iter());
+			let qry: String = Serializer::new(String::new())
+				.extend_pairs(self.url_params.iter())
+				.finish();
 			let mut url_qry = String::with_capacity(qry.len() + 1);
 
 			url_qry.push('?');
