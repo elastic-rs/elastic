@@ -13,12 +13,19 @@ install:
 build: false
 test_script:
   - ps: cd macros
+  - ps: cd json_str
   - cargo test --verbose
   - ps: cd ../types
+  - cargo test --verbose
+  - ps: cd ../date
+  - cargo test --verbose
+  - ps: cd ../../types
   - cargo test --verbose
   - ps: cd ../codegen
   - cargo test --verbose
   - ps: cd ../hyper
   - cargo build --verbose
-  - ps: cd codegen
+  - ps: cd samples
+  - cargo build --verbose
+  - ps: cd ../codegen
   - cargo build --verbose
