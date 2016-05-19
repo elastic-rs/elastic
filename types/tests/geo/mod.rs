@@ -4,6 +4,9 @@
 pub mod mapping;
 pub mod formats;
 
+use elastic_types::geo::point::prelude::*;
+use georust::Coordinate;
+
 #[test]
 fn can_change_point_mapping() {
 	panic!("implement")
@@ -11,8 +14,14 @@ fn can_change_point_mapping() {
 
 #[test]
 fn can_build_point_from_geo() {
-	//Test we can build a point using a Coordinate
-	panic!("implement")
+	let coord = Coordinate { x: 1.0, y: 1.0 };
+
+	let point = ElasticGeoPoint::<DefaultGeoPointFormat>::new(coord.clone());
+
+	assert_eq!(
+		(coord.x, coord.y),
+		(point.x(), point.y())
+	);
 }
 
 #[test]

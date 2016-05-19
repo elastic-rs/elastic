@@ -6,6 +6,7 @@
 #[cfg_attr(feature = "nightly", allow(plugin_as_library))]
 #[macro_use]
 extern crate json_str;
+
 #[cfg_attr(feature = "nightly", allow(plugin_as_library))]
 #[macro_use]
 extern crate elastic_date_macros;
@@ -13,6 +14,8 @@ extern crate elastic_date_macros;
 extern crate serde;
 extern crate serde_json;
 extern crate chrono;
+extern crate geo as georust;
+
 #[macro_use]
 extern crate elastic_types;
 
@@ -485,6 +488,7 @@ pub mod object_fixtures {
 }
 
 pub mod object;
+pub mod geo;
 pub mod date;
 pub mod string;
 pub mod number;

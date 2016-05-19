@@ -27,6 +27,16 @@ T: ElasticFieldMapping<F> + ElasticGeoPointMapping<F> {
         }
     }
 
+    /// Get `x` coordinate.
+    pub fn x(&self) -> f64 {
+        self.value.x()
+    }
+
+    /// Get `y` coordinate.
+    pub fn y(&self) -> f64 {
+        self.value.y()
+    }
+
     /// Change the format/mapping of this geo point.
 	pub fn into<FInto, TInto>(self) -> ElasticGeoPoint<FInto, TInto> where
 	FInto: GeoPointFormat,
