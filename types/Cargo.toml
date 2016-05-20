@@ -17,11 +17,13 @@ nightly = [
 ]
 default = [
   "stable",
-  "date-ty"
+  "date-ty",
+  "geo-ty"
 ]
 nightly-default = [
   "nightly",
-  "date-ty-nightly"
+  "date-ty-nightly",
+  "geo-ty-nightly"
 ]
 nightly-testing = [
   "nightly-default",
