@@ -4,9 +4,12 @@
 pub mod mapping;
 pub mod formats;
 
+extern crate serde;
+extern crate serde_json;
+
 use elastic_types::geo::point::mapping::*;
 use elastic_types::geo::point::prelude::*;
-use georust::Coordinate;
+use georust::{ Geometry, ToGeo, Coordinate };
 
 use ::geo_point_fixtures::*;
 
@@ -35,16 +38,30 @@ fn can_build_point_from_geo() {
 
 #[test]
 fn can_convert_point_to_geo() {
-	//Test we can run to_geo() on ElasticGeoPoint and get geo::Geometry::Point
-	panic!("implement")
+	let point = ElasticGeoPoint::<DefaultGeoPointFormat>::new(Coordinate { x: 1.0, y: 1.0 });
+	let geo = point.to_geo();
+
+	match geo {
+		Geometry::Point(_) => (),
+		_ => panic!("expected point")
+	}
 }
 
 #[test]
 fn serialise_elastic_point() {
-	panic!("implement")
+	let point = ElasticGeoPoint::<GeoPointString, DefaultGeoPointMapping<GeoPointString>>::new(Coordinate { x: -71.34, y: 41.12 });
+
+	let ser = serde_json::to_string(&point).unwrap();
+
+	assert_eq!(r#""41.12,-71.34""#, ser);
 }
 
 #[test]
 fn deserialise_elastic_point() {
-	panic!("implement")
+	let point: ElasticGeoPoint<GeoPointString, DefaultGeoPointMapping<GeoPointString>> = serde_json::from_str(r#""41.12,-71.34""#).unwrap();
+
+	assert_eq!((-71.34, 41.12), (
+		point.x(),
+		point.y()
+	));
 }
