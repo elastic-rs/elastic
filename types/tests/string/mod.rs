@@ -17,7 +17,7 @@ fn can_change_string_mapping() {
 		true
 	}
 
-	let string: ElasticString<MyStringMapping> = ElasticString::new("stuff");
+	let string: ElasticString<DefaultStringMapping> = ElasticString::new("stuff");
 
 	assert!(takes_custom_mapping(string.remap()));
 }

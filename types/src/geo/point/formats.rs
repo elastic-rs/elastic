@@ -2,6 +2,8 @@ use serde::{ Serializer, Deserializer };
 use georust::Point;
 use super::GeoPointFormat;
 
+//TODO: Fill in formatting
+
 /// Geo-point expressed as an object, with `lat` and `lon` keys.
 #[derive(Debug, Default, Clone, Copy)]
 pub struct GeoPointObject;

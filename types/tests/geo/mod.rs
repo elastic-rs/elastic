@@ -4,12 +4,21 @@
 pub mod mapping;
 pub mod formats;
 
+use elastic_types::geo::point::mapping::*;
 use elastic_types::geo::point::prelude::*;
 use georust::Coordinate;
 
+use ::geo_point_fixtures::*;
+
 #[test]
 fn can_change_point_mapping() {
-	panic!("implement")
+	fn takes_custom_mapping(point: ElasticGeoPoint<GeoPointObject, MyGeoPointMapping>) -> bool {
+		true
+	}
+
+	let point: ElasticGeoPoint<GeoPointString, DefaultGeoPointMapping<GeoPointString>> = ElasticGeoPoint::new(Coordinate { x: 1.0, y: 1.0 });
+
+	assert!(takes_custom_mapping(point.remap()));
 }
 
 #[test]

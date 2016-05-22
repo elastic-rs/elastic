@@ -7,6 +7,7 @@ extern crate serde;
 extern crate serde_json;
 extern crate elastic_types;
 
+use elastic_types::number::mapping::*;
 use elastic_types::number::prelude::*;
 use ::number_fixtures::*;
 
@@ -16,7 +17,7 @@ fn can_change_number_mapping() {
 		true
 	}
 
-	let number: ElasticInteger<MyIntegerMapping> = ElasticInteger::new(1);
+	let number: ElasticInteger<DefaultIntegerMapping> = ElasticInteger::new(1);
 
 	assert!(takes_custom_mapping(number.remap()));
 }

@@ -36,11 +36,6 @@ pub const GEOPOINT_TYPE: &'static str = "geo_point";
 pub trait ElasticGeoPointMapping<T> where
 T: GeoPointFormat,
 Self: ElasticFieldMapping<T> + Sized + Serialize {
-    /// Field-level index time boosting. Accepts a floating point number, defaults to `1.0`.
-	fn boost() -> Option<f32> {
-		None
-	}
-
     /// Should the `geo-point` also be indexed as a geohash in the `.geohash` sub-field? Defaults to `false`,
     /// unless `geohash_prefix` is `true`.
     fn geohash() -> Option<bool> {
@@ -112,10 +107,6 @@ T: ElasticGeoPointMapping<F> {
 	fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
 	where S: Serializer {
 		try!(serializer.serialize_struct_elt("type", T::data_type()));
-
-		if let Some(boost) = T::boost() {
-			try!(serializer.serialize_struct_elt("boost", boost));
-		};
 
         if let Some(geohash) = T::geohash() {
 			try!(serializer.serialize_struct_elt("geohash", geohash));

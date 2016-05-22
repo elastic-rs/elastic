@@ -123,7 +123,7 @@ pub fn expand_derive_string_mapping(cx: &mut ExtCtxt, _: Span, meta_item: &MetaI
                 type MultiFieldMapping = Self;
 
 				fn data_type() -> &'static str {
-					"string"
+					::elastic_types::string::mapping::STRING_DATATYPE
 				}
 			}
 		).unwrap()
@@ -144,7 +144,7 @@ pub fn expand_derive_boolean_mapping(cx: &mut ExtCtxt, _: Span, meta_item: &Meta
                 type MultiFieldMapping = Self;
 
 				fn data_type() -> &'static str {
-					"boolean"
+					::elastic_types::boolean::mapping::BOOLEAN_DATATYPE
 				}
 			}
 		).unwrap()
@@ -165,7 +165,7 @@ pub fn expand_derive_integer_mapping(cx: &mut ExtCtxt, _: Span, meta_item: &Meta
                 type MultiFieldMapping = Self;
 
 				fn data_type() -> &'static str {
-					"integer"
+					::elastic_types::number::mapping::INTEGER_DATATYPE
 				}
 			}
 		).unwrap()
@@ -186,7 +186,7 @@ pub fn expand_derive_long_mapping(cx: &mut ExtCtxt, _: Span, meta_item: &MetaIte
                 type MultiFieldMapping = Self;
 
 				fn data_type() -> &'static str {
-					"long"
+					::elastic_types::number::mapping::LONG_DATATYPE
 				}
 			}
 		).unwrap()
@@ -207,7 +207,7 @@ pub fn expand_derive_short_mapping(cx: &mut ExtCtxt, _: Span, meta_item: &MetaIt
                 type MultiFieldMapping = Self;
 
 				fn data_type() -> &'static str {
-					"short"
+					::elastic_types::number::mapping::SHORT_DATATYPE
 				}
 			}
 		).unwrap()
@@ -228,7 +228,7 @@ pub fn expand_derive_byte_mapping(cx: &mut ExtCtxt, _: Span, meta_item: &MetaIte
                 type MultiFieldMapping = Self;
 
 				fn data_type() -> &'static str {
-					"byte"
+					::elastic_types::number::mapping::BYTE_DATATYPE
 				}
 			}
 		).unwrap()
@@ -249,7 +249,7 @@ pub fn expand_derive_double_mapping(cx: &mut ExtCtxt, _: Span, meta_item: &MetaI
                 type MultiFieldMapping = Self;
 
 				fn data_type() -> &'static str {
-					"double"
+					::elastic_types::number::mapping::DOUBLE_DATATYPE
 				}
 			}
 		).unwrap()
@@ -270,7 +270,7 @@ pub fn expand_derive_float_mapping(cx: &mut ExtCtxt, _: Span, meta_item: &MetaIt
                 type MultiFieldMapping = Self;
 
 				fn data_type() -> &'static str {
-					"float"
+					::elastic_types::number::mapping::FLOAT_DATATYPE
 				}
 			}
 		).unwrap()
@@ -314,7 +314,7 @@ pub fn expand_derive_date_mapping(cx: &mut ExtCtxt, _: Span, meta_item: &MetaIte
                     type MultiFieldMapping = Self;
 
 					fn data_type() -> &'static str {
-						"date"
+						::elastic_types::date::mapping::DATE_DATATYPE
 					}
 				}
 			).unwrap()
@@ -335,6 +335,66 @@ pub fn expand_derive_date_mapping(cx: &mut ExtCtxt, _: Span, meta_item: &MetaIte
 		cx.span_err(
 			meta_item.span,
 			"`#[derive(ElasticDateMapping)]` may only be applied to structs with a generic parameter");
+		return;
+	}
+}
+
+//TODO: Make it possible to implement for a single geo_point format
+#[doc(hidden)]
+pub fn expand_derive_geo_point_mapping(cx: &mut ExtCtxt, _: Span, meta_item: &MetaItem, annotatable: &Annotatable, push: &mut FnMut(Annotatable)) {
+	let item = match *annotatable {
+		Annotatable::Item(ref item) => {
+			match item.node {
+				ast::ItemKind::Struct(ref data, ref generics) => {
+					match *data {
+						ast::VariantData::Struct(_, _) => Some((item, generics)),
+						_ => None
+					}
+				},
+				_ => None
+			}
+		},
+		_ => None
+	};
+
+	if item.is_none() {
+		cx.span_err(
+			meta_item.span,
+			"`#[derive(ElasticGeoPointMapping)]` may only be applied to structs with a generic parameter");
+		return;
+	}
+	let (item, generics) = item.unwrap();
+	let ty = item.ident;
+
+	if generics.ty_params.len() == 1 {
+		push(Annotatable::Item(
+			quote_item!(cx,
+				impl <T: ::elastic_types::geo::point::GeoPointFormat> ::elastic_types::mapping::ElasticFieldMapping<T> for $ty<T> {
+					type Visitor = ::elastic_types::geo::point::mapping::ElasticGeoPointMappingVisitor<T, $ty<T>>;
+                    type MultiFieldMapping = Self;
+
+					fn data_type() -> &'static str {
+						::elastic_types::geo::point::mapping::GEOPOINT_TYPE
+					}
+				}
+			).unwrap()
+		));
+
+		push(Annotatable::Item(
+			quote_item!(cx,
+				impl <T: ::elastic_types::geo::point::GeoPointFormat> serde::Serialize for $ty<T> {
+					fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+					where S: serde::Serializer {
+						serializer.serialize_struct("mapping", Self::get_visitor())
+					}
+				}
+			).unwrap()
+		));
+	}
+	else {
+		cx.span_err(
+			meta_item.span,
+			"`#[derive(ElasticGeoPointMapping)]` may only be applied to structs with a generic parameter");
 		return;
 	}
 }
@@ -495,5 +555,11 @@ pub fn plugin_registrar(reg: &mut Registry) {
 		syntax::parse::token::intern("derive_ElasticDateMapping"),
 		syntax::ext::base::MultiDecorator(
 			Box::new(expand_derive_date_mapping))
+	);
+
+    reg.register_syntax_extension(
+		syntax::parse::token::intern("derive_ElasticGeoPointMapping"),
+		syntax::ext::base::MultiDecorator(
+			Box::new(expand_derive_geo_point_mapping))
 	);
 }
