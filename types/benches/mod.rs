@@ -11,6 +11,7 @@
 extern crate serde;
 extern crate serde_json;
 extern crate chrono;
+extern crate geo as georust;
 extern crate test;
 #[macro_use]
 extern crate elastic_types;
@@ -229,6 +230,44 @@ pub mod number_fixtures {
 	}
 }
 
+pub mod geo_point_fixtures {
+	use std::marker::PhantomData;
+	use serde;
+	use georust::Coordinate;
+	use elastic_types::mapping::prelude::*;
+	use elastic_types::geo::point::prelude::*;
+
+	#[derive(Debug, Clone, Default, ElasticGeoPointMapping)]
+	pub struct MyGeoPointMapping<T: GeoPointFormat = GeoPointObject> {
+		phantom: PhantomData<T>
+	}
+	impl <T: GeoPointFormat> ElasticGeoPointMapping<T> for MyGeoPointMapping<T> {
+		fn geohash() -> Option<bool> {
+	        Some(false)
+	    }
+
+	    fn geohash_precision() -> Option<u8> {
+	        Some(12)
+	    }
+
+	    fn geohash_prefix() -> Option<bool> {
+	        Some(true)
+	    }
+
+	    fn ignore_malformed() -> Option<bool> {
+	        Some(true)
+	    }
+
+	    fn lat_lon() -> Option<bool> {
+	        Some(true)
+	    }
+
+	    fn precision_step() -> Option<i32> {
+	        Some(128)
+	    }
+	}
+}
+
 pub mod object_fixtures {
 	use elastic_types::mapping::prelude::*;
 	use elastic_types::date::prelude::*;
@@ -320,6 +359,7 @@ pub mod object_fixtures {
 }
 
 pub mod date;
+pub mod geo_point;
 pub mod string;
 pub mod number;
 pub mod boolean;

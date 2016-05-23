@@ -526,7 +526,7 @@ pub mod object_fixtures {
 }
 
 pub mod object;
-pub mod geo;
+pub mod geo_point;
 pub mod date;
 pub mod string;
 pub mod number;
