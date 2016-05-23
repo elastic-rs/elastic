@@ -5,7 +5,7 @@ use std::error::Error;
 use super::{ DateFormat, ParseError };
 
 /// Format for `basic_date_time_no_millis`.
-/// 
+///
 /// # Links
 /// - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-date-format.html#built-in-date-formats)
 #[derive(Debug, Default, Clone, Copy)]
@@ -13,7 +13,7 @@ pub struct BasicDateTimeNoMillis;
 impl_date_fmt!(BasicDateTimeNoMillis, "%Y%m%dT%H%M%SZ", "basic_date_time_no_millis");
 
 /// Format for `basic_date_time`.
-/// 
+///
 /// # Links
 /// - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-date-format.html#built-in-date-formats)
 #[derive(Debug, Default, Clone, Copy)]
@@ -21,12 +21,13 @@ pub struct BasicDateTime;
 impl_date_fmt!(BasicDateTime, "%Y%m%dT%H%M%S%.3fZ", "basic_date_time");
 
 /// Format for `epoch_millis`.
-/// 
+///
 /// Takes up to a 13 digit string of millis since the epoch and converts to a `DateTime`.
 /// This is an efficient formatter, so is a good choice for storing timestamps.
-/// 
+///
 /// # Links
 /// - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-date-format.html#built-in-date-formats)
+//TODO: Should simply parse a long instead of checking the length. See: https://github.com/elastic/elasticsearch/issues/17936
 #[derive(Debug, Default, Clone, Copy)]
 pub struct EpochMillis;
 impl DateFormat for EpochMillis {
@@ -65,7 +66,7 @@ impl DateFormat for EpochMillis {
 			(13, _) => (date[0..10].parse::<i64>(), date[10..13].parse::<u32>()),
 			_ => return Err("unexpected format".to_owned().into())
 		};
-		
+
 		let s = try!(secs.map_err(|e| e.description().to_string()));
 		let m = try!(msecs.map_err(|e| e.description().to_string()));
 
