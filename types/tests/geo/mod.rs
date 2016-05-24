@@ -19,7 +19,7 @@ fn can_change_point_mapping() {
 		true
 	}
 
-	let point: ElasticGeoPoint<GeoPointString> = ElasticGeoPoint::new(Coordinate { x: 1.0, y: 1.0 });
+	let point: ElasticGeoPoint<GeoPointString, DefaultGeoPointMapping<GeoPointString>> = ElasticGeoPoint::new(Coordinate { x: 1.0, y: 1.0 });
 
 	assert!(takes_custom_mapping(point.remap()));
 }
@@ -42,10 +42,26 @@ fn can_convert_point_to_geo() {
 	let geo = point.to_geo();
 
 	match geo {
-		Geometry::Point(point) => assert_eq!(
-			(1.0, 1.0),
-			(point.x(), point.y())
-		),
+		Geometry::Point(_) => (),
 		_ => panic!("expected point")
 	}
+}
+
+#[test]
+fn serialise_elastic_point() {
+	let point = ElasticGeoPoint::<GeoPointString, DefaultGeoPointMapping<GeoPointString>>::new(Coordinate { x: -71.34, y: 41.12 });
+
+	let ser = serde_json::to_string(&point).unwrap();
+
+	assert_eq!(r#""41.12,-71.34""#, ser);
+}
+
+#[test]
+fn deserialise_elastic_point() {
+	let point: ElasticGeoPoint<GeoPointString, DefaultGeoPointMapping<GeoPointString>> = serde_json::from_str(r#""41.12,-71.34""#).unwrap();
+
+	assert_eq!((-71.34, 41.12), (
+		point.x(),
+		point.y()
+	));
 }

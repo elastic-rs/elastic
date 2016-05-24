@@ -4,6 +4,26 @@ extern crate elastic_types;
 use elastic_types::date::prelude::*;
 
 #[test]
+fn chrono() {
+	let date = ElasticDate::<ChronoFormat>::parse("2015-07-03T14:55:02Z").unwrap();
+
+	assert_eq!(
+		(2015i32, 7u32, 3u32, 14u32, 55u32, 2u32),
+		(
+			date.year(),
+			date.month(),
+			date.day(),
+			date.hour(),
+			date.minute(),
+			date.second()
+		)
+	);
+
+	let fmtd = date.format();
+	assert_eq!("2015-07-03T14:55:02Z", &fmtd);
+}
+
+#[test]
 fn basic_datetime_no_millis() {
 	let date = ElasticDate::<BasicDateTimeNoMillis>::parse("20150703T145502Z").unwrap();
 

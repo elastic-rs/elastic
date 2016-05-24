@@ -17,7 +17,7 @@ fn serialise_mapping_type() {
 		"properties": {
 			"my_date1": {
 				"type": "date",
-				"format": "basic_date_time"
+				"format": "yyyy-MM-ddTHH:mm:ssZ"
 			},
 			"my_date2": {
 				"type": "date",
@@ -79,7 +79,7 @@ fn serialise_mapping_as_value() {
 
 	//Serialise to a json value, and perform a lookup. Make sure the value is serialised properly
 	//There does seem to be some weird thing with f32 serialisation; 1.01 results in ~1.0999
-	let ser = serde_json::ser::to_string(&value.lookup("properties.my_date1").unwrap()).unwrap();
+	let ser = serde_json::ser::to_string(&value.lookup("properties.my_date2").unwrap()).unwrap();
 
 	let expected = json_str!({
 		"format":"basic_date_time",
@@ -108,7 +108,7 @@ fn serialise_mapping_type_as_nested() {
 				"properties": {
 					"my_date1": {
 						"type": "date",
-						"format": "basic_date_time"
+						"format": "yyyy-MM-ddTHH:mm:ssZ"
 					},
 					"my_date2": {
 						"type": "date",

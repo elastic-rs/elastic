@@ -3,14 +3,15 @@ use chrono;
 use chrono::{ UTC, Weekday, NaiveDateTime, NaiveDate, NaiveTime };
 use serde;
 use serde::{ Serialize, Deserialize, Serializer, Deserializer };
-use super::{ DT, DefaultDateFormat };
+use super::DT;
 use super::format::{ DateFormat, ParseError };
+use super::formats::ChronoFormat;
 use super::mapping::{ ElasticDateMapping, DefaultDateMapping };
 use ::mapping::{ ElasticFieldMapping, ElasticType };
 
 pub use chrono::{ Datelike, Timelike };
 
-impl ElasticType<DefaultDateMapping<DefaultDateFormat>, DefaultDateFormat> for DT {
+impl ElasticType<DefaultDateMapping<ChronoFormat>, ChronoFormat> for DT {
 
 }
 
