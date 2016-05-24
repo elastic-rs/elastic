@@ -18,20 +18,153 @@ pub const GEOPOINT_TYPE: &'static str = "geo_point";
 ///
 /// ## Derive Mapping
 ///
+/// Currently, deriving mapping only works for structs that take a generic `GeoPointFormat` parameter.
+///
 /// ```
-/// //TODO: implement
+/// # #![feature(plugin, custom_derive, custom_attribute)]
+/// # #![plugin(json_str, elastic_types_macros)]
+/// # #[macro_use]
+/// # extern crate elastic_types;
+/// # extern crate serde;
+/// use std::marker::PhantomData;
+/// use elastic_types::mapping::prelude::*;
+/// use elastic_types::geo::point::prelude::*;
+///
+/// #[derive(Default, Clone, Copy, ElasticGeoPointMapping)]
+/// pub struct MyGeoPointMapping<T: GeoPointFormat> {
+/// 	phantom: PhantomData<T>
+/// }
+/// impl <T: GeoPointFormat> ElasticGeoPointMapping<T> for MyGeoPointMapping<T> {
+/// 	//Overload the mapping functions here
+/// 	fn geohash() -> Option<bool> {
+///			Some(true)
+///		}
+/// }
+/// # fn main() {}
 /// ```
 ///
 /// This will produce the following mapping:
 ///
 /// ```
-/// //TODO: implement
+/// # #![feature(plugin, custom_derive, custom_attribute)]
+/// # #![plugin(elastic_types_macros)]
+/// # #[macro_use]
+/// # extern crate json_str;
+/// # extern crate elastic_types;
+/// # extern crate serde;
+/// # extern crate serde_json;
+/// # use std::marker::PhantomData;
+/// # use elastic_types::mapping::prelude::*;
+/// # use elastic_types::geo::point::prelude::*;
+/// #
+/// # #[derive(Default, Clone, Copy, ElasticGeoPointMapping)]
+/// # pub struct MyGeoPointMapping<T: GeoPointFormat> {
+/// # 	phantom: PhantomData<T>
+/// # }
+/// # impl <T: GeoPointFormat> ElasticGeoPointMapping<T> for MyGeoPointMapping<T> {
+/// # 	//Overload the mapping functions here
+/// # 	fn geohash() -> Option<bool> {
+/// #			Some(true)
+/// #		}
+/// # }
+/// # fn main() {
+/// # let mapping = serde_json::to_string(&MyGeoPointMapping::<DefaultGeoPointFormat>::default()).unwrap();
+/// # let json = json_str!(
+/// {
+///     "type": "geo_point"
+/// }
+/// # );
+/// # assert_eq!(json, mapping);
+/// # }
 /// ```
+///
+/// ## Limitations
+///
+/// Automatically deriving mapping has the following limitations:
+///
+/// - Non-generic mappings aren't supported by auto deriving.
+/// So your date mapping must take generic parameter `<T: GeoPointFormat>`.
+///
+/// The above limitation can be worked around by implementing the mapping manually.
 ///
 /// ## Manually
 ///
+/// Define a geo point mapping that's only valid for the `GeoPointString` format:
+///
 /// ```
-/// //TODO: implement
+/// # extern crate serde;
+/// # extern crate elastic_types;
+/// # use std::marker::PhantomData;
+/// # fn main() {
+/// use elastic_types::mapping::prelude::*;
+/// use elastic_types::geo::point::prelude::*;
+///
+/// #[derive(Default, Clone)]
+/// pub struct MyGeoPointMapping;
+///
+/// impl ElasticFieldMapping<GeoPointString> for MyGeoPointMapping {
+/// 	type Visitor = ElasticGeoPointMappingVisitor<GeoPointString, MyGeoPointMapping>;
+/// 	type MultiFieldMapping = Self;
+///
+/// 	fn data_type() -> &'static str {
+/// 		GEOPOINT_DATATYPE
+/// 	}
+/// }
+///
+/// impl ElasticGeoPointMapping<GeoPointString> for MyGeoPointMapping {
+/// 	//Overload the mapping functions here
+/// 	fn geohash() -> Option<bool> {
+///			Some(true)
+///		}
+/// }
+///
+/// impl serde::Serialize for MyGeoPointMapping {
+/// 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+/// 	where S: serde::Serializer {
+/// 		serializer.serialize_struct("mapping", Self::get_visitor())
+/// 	}
+/// }
+/// # }
+/// ```
+///
+/// Define a date mapping that's valid for any `GeoPointFormat` (equivalent to the auto derive example):
+///
+/// ```
+/// # extern crate serde;
+/// # extern crate elastic_types;
+/// # use std::marker::PhantomData;
+/// # fn main() {
+/// use elastic_types::mapping::prelude::*;
+/// use elastic_types::geo::point::prelude::*;
+///
+/// #[derive(Default, Clone)]
+/// pub struct MyGeoPointMapping<T: GeoPointFormat> {
+///     phantom: PhantomData<T>
+/// }
+///
+/// impl <T: GeoPointString> ElasticFieldMapping<T> for MyGeoPointMapping<T> {
+/// 	type Visitor = ElasticGeoPointMappingVisitor<T, MyGeoPointMapping<T>>;
+/// 	type MultiFieldMapping = Self;
+///
+/// 	fn data_type() -> &'static str {
+/// 		GEOPOINT_DATATYPE
+/// 	}
+/// }
+///
+/// impl <T: GeoPointString> ElasticGeoPointMapping<T> for MyGeoPointMapping<T> {
+/// 	//Overload the mapping functions here
+/// 	fn geohash() -> Option<bool> {
+///			Some(true)
+///		}
+/// }
+///
+/// impl <T: GeoPointString> serde::Serialize for MyGeoPointMapping<T> {
+/// 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+/// 	where S: serde::Serializer {
+/// 		serializer.serialize_struct("mapping", Self::get_visitor())
+/// 	}
+/// }
+/// # }
 /// ```
 pub trait ElasticGeoPointMapping<T> where
 T: GeoPointFormat,

@@ -112,10 +112,6 @@ T: ElasticFieldMapping<F> + ElasticDateMapping<F> {
 	/// Creates an `ElasticDate` from the given UTC primitives:
 	///
 	/// ```
-	/// # extern crate elastic_types;
-	/// # extern crate chrono;
-	/// # fn main() {
-	/// use chrono::UTC;
 	/// use elastic_types::date::{ ElasticDate, DefaultDateFormat };
 	///
 	/// let esDate: ElasticDate<DefaultDateFormat> = ElasticDate::build(
@@ -127,7 +123,6 @@ T: ElasticFieldMapping<F> + ElasticDateMapping<F> {
 	/// 	8,
 	/// 	886
 	/// );
-	/// # }
 	/// ```
 	pub fn build(year: i32, month: u32, day: u32, hour: u32, minute: u32, second: u32, milli: u32) -> ElasticDate<F, T> {
 		ElasticDate {
@@ -338,7 +333,6 @@ T: ElasticFieldMapping<F> + ElasticDateMapping<F> {
 	}
 }
 
-//Serialize date
 impl <F, T> Serialize for ElasticDate<F, T> where
 F: DateFormat,
 T: ElasticFieldMapping<F> + ElasticDateMapping<F> {
@@ -348,7 +342,6 @@ T: ElasticFieldMapping<F> + ElasticDateMapping<F> {
 	}
 }
 
-//Deserialize date
 impl <F, T> Deserialize for ElasticDate<F, T> where
 F: DateFormat,
 T: ElasticFieldMapping<F> + ElasticDateMapping<F> {

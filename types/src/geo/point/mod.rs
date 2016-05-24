@@ -2,6 +2,46 @@
 //!
 //! Geo points are an Elasticsearch specific geospatial type with an `x` (`lon`) and `y` (`lat`)
 //! component.
+//! `ElasticGeoPoint` is a good choice for storing and analysing geospatial points where geojson
+//! compatibility isn't needed.
+//!
+//! # Examples
+//!
+//! For defining your own geo point mapping, see [mapping details](mapping/trait.ElasticGeoPointMapping.html#derive-mapping).
+//!
+//! Map with a default `geo_point`:
+//!
+//! ```
+//! # use elastic_types::geo::point::prelude::*;
+//! struct MyType {
+//! 	pub field: ElasticGeoPoint<DefaultGeoPointFormat>
+//! }
+//! ```
+//!
+//! Map with a custom `geo_point`:
+//!
+//! ```
+//! # #![feature(plugin, custom_derive)]
+//! # #![plugin(json_str, elastic_types_macros)]
+//! # extern crate serde;
+//! # extern crate elastic_types;
+//! # use std::marker::PhantomData;
+//! # fn main() {
+//! # use elastic_types::mapping::prelude::*;
+//! # use elastic_types::geo::point::prelude::*;
+//! # #[derive(Default, Clone, ElasticGeoPointMapping)]
+//! # pub struct MyGeoPointMapping<T: GeoPointFormat = GeoPointString> {
+//! #	phantom: PhantomData<T>
+//! # }
+//! # impl <T: GeoPointFormat> ElasticDateMapping<T> for MyGeoPointMapping<T> { }
+//! struct MyType {
+//! 	pub field: ElasticGeoPoint<GeoPointString, MyGeoPointMapping>
+//! }
+//! # }
+//! ```
+//!
+//! # Links
+//! - _TODO: Check link_ [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/geo.html)
 
 mod point;
 mod format;

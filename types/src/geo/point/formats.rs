@@ -11,6 +11,7 @@ use super::GeoPointFormat;
 pub struct GeoPointObject;
 
 impl GeoPointFormat for GeoPointObject {
+	//TODO: Will need a special struct or HashMap to serialize with, could possibly get away with custom visitor
 	fn parse<D>(deserializer: &mut D) -> Result<Point, D::Error> where
 	D: Deserializer {
         panic!("implement")
@@ -80,6 +81,7 @@ impl GeoPointFormat for GeoPointString {
 #[derive(Debug, Default, Clone, Copy)]
 pub struct GeoPointHash;
 impl GeoPointFormat for GeoPointHash {
+	//TODO: Need to work out how geohash crate works
 	fn parse<D>(deserializer: &mut D) -> Result<Point, D::Error> where
 	D: Deserializer {
         panic!("implement")
@@ -91,10 +93,11 @@ impl GeoPointFormat for GeoPointHash {
     }
 }
 
-/// Geo-point expressed as an array with the format: [ lon, lat]
+/// Geo-point expressed as an array with the format: `[lon, lat]`
 #[derive(Debug, Default, Clone, Copy)]
 pub struct GeoPointArray;
 impl GeoPointFormat for GeoPointArray {
+	//TODO: Simple array serialisation
 	fn parse<D>(deserializer: &mut D) -> Result<Point, D::Error> where
 	D: Deserializer {
         panic!("implement")
