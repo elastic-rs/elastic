@@ -264,7 +264,7 @@ macro_rules! impl_geo_point_mapping {
 			type MultiFieldMapping = Self;
 
 			fn data_type() -> &'static str {
-				$crate::geo::point::mapping::GEOPOINT_TYPE
+				$crate::geo::point::mapping::GEOPOINT_DATATYPE
 			}
 		}
 

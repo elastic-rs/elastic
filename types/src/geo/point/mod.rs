@@ -33,7 +33,7 @@
 //! # pub struct MyGeoPointMapping<T: GeoPointFormat = GeoPointString> {
 //! #	phantom: PhantomData<T>
 //! # }
-//! # impl <T: GeoPointFormat> ElasticDateMapping<T> for MyGeoPointMapping<T> { }
+//! # impl <T: GeoPointFormat> ElasticGeoPointMapping<T> for MyGeoPointMapping<T> { }
 //! struct MyType {
 //! 	pub field: ElasticGeoPoint<GeoPointString, MyGeoPointMapping>
 //! }

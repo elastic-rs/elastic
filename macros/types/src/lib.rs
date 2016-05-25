@@ -374,7 +374,7 @@ pub fn expand_derive_geo_point_mapping(cx: &mut ExtCtxt, _: Span, meta_item: &Me
                     type MultiFieldMapping = Self;
 
 					fn data_type() -> &'static str {
-						::elastic_types::geo::point::mapping::GEOPOINT_TYPE
+						::elastic_types::geo::point::mapping::GEOPOINT_DATATYPE
 					}
 				}
 			).unwrap()

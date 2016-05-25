@@ -8,7 +8,7 @@ use ::mapping::{ ElasticFieldMapping, ElasticTypeVisitor };
 
 
 /// Elasticsearch datatype name.
-pub const GEOPOINT_TYPE: &'static str = "geo_point";
+pub const GEOPOINT_DATATYPE: &'static str = "geo_point";
 
 /// The base requirements for mapping a `geo_point` type.
 ///
@@ -71,7 +71,8 @@ pub const GEOPOINT_TYPE: &'static str = "geo_point";
 /// # let mapping = serde_json::to_string(&MyGeoPointMapping::<DefaultGeoPointFormat>::default()).unwrap();
 /// # let json = json_str!(
 /// {
-///     "type": "geo_point"
+///     "type": "geo_point",
+///     "geohash": true
 /// }
 /// # );
 /// # assert_eq!(json, mapping);
@@ -142,7 +143,7 @@ pub const GEOPOINT_TYPE: &'static str = "geo_point";
 ///     phantom: PhantomData<T>
 /// }
 ///
-/// impl <T: GeoPointString> ElasticFieldMapping<T> for MyGeoPointMapping<T> {
+/// impl <T: GeoPointFormat> ElasticFieldMapping<T> for MyGeoPointMapping<T> {
 /// 	type Visitor = ElasticGeoPointMappingVisitor<T, MyGeoPointMapping<T>>;
 /// 	type MultiFieldMapping = Self;
 ///
@@ -151,14 +152,14 @@ pub const GEOPOINT_TYPE: &'static str = "geo_point";
 /// 	}
 /// }
 ///
-/// impl <T: GeoPointString> ElasticGeoPointMapping<T> for MyGeoPointMapping<T> {
+/// impl <T: GeoPointFormat> ElasticGeoPointMapping<T> for MyGeoPointMapping<T> {
 /// 	//Overload the mapping functions here
 /// 	fn geohash() -> Option<bool> {
 ///			Some(true)
 ///		}
 /// }
 ///
-/// impl <T: GeoPointString> serde::Serialize for MyGeoPointMapping<T> {
+/// impl <T: GeoPointFormat> serde::Serialize for MyGeoPointMapping<T> {
 /// 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
 /// 	where S: serde::Serializer {
 /// 		serializer.serialize_struct("mapping", Self::get_visitor())

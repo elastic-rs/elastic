@@ -33,7 +33,7 @@ use super::GeoPointFormat;
 /// use elastic_types::geo::point::mapping::DefaultGeoPointMapping;
 /// use elastic_types::geo::point::{ ElasticGeoPoint, GeoPointString };
 ///
-/// let point: ElasticDate<GeoPointString, DefaultGeoPointMapping<_>> = ElasticGeoPoint::build(1.0, 1.0);
+/// let point: ElasticGeoPoint<GeoPointString, DefaultGeoPointMapping<_>> = ElasticGeoPoint::build(1.0, 1.0);
 /// ```
 ///
 /// Accessing the values of a geo point:
@@ -77,7 +77,7 @@ T: ElasticFieldMapping<F> + ElasticGeoPointMapping<F> {
 	/// # extern crate geo;
 	/// # fn main() {
 	/// use geo::Coordinate;
-	/// use elastic_types::geo::point::{ ElasticGeoPoint, DefaultGeoPointMapping };
+	/// use elastic_types::geo::point::{ ElasticGeoPoint, DefaultGeoPointFormat };
 	///
 	/// //Create a geo Coordinate struct
 	/// let coord = Coordinate { x: 1.0, y: 1.0 };
