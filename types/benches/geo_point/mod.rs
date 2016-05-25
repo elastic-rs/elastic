@@ -15,7 +15,7 @@ use ::geo_point_fixtures::*;
 use test::Bencher;
 
 #[bench]
-fn parse_geo_string(b: &mut Bencher) {
+fn parse_string(b: &mut Bencher) {
     let ser = r#""41.12,-71.34""#;
     b.iter(|| {
         let point: ElasticGeoPoint<GeoPointString> = serde_json::from_str(ser).unwrap();
@@ -24,7 +24,7 @@ fn parse_geo_string(b: &mut Bencher) {
 }
 
 #[bench]
-fn fmt_geo_string(b: &mut Bencher) {
+fn fmt_string(b: &mut Bencher) {
     let point = ElasticGeoPoint::<GeoPointString>::new(Coordinate { x: -71.34, y: 41.12 });
 
 	b.iter(|| {
@@ -33,12 +33,16 @@ fn fmt_geo_string(b: &mut Bencher) {
 }
 
 #[bench]
-fn parse_geo_object(b: &mut Bencher) {
-    panic!("implement")
+fn parse_object(b: &mut Bencher) {
+    let ser = r#"{"lat":41,"lon":-71.34}"#;
+    b.iter(|| {
+        let point: ElasticGeoPoint<GeoPointObject> = serde_json::from_str(ser).unwrap();
+        point
+	});
 }
 
 #[bench]
-fn fmt_geo_object(b: &mut Bencher) {
+fn fmt_object(b: &mut Bencher) {
     let point = ElasticGeoPoint::<GeoPointObject>::new(Coordinate { x: -71.34, y: 41.12 });
 
 	b.iter(|| {
@@ -47,12 +51,16 @@ fn fmt_geo_object(b: &mut Bencher) {
 }
 
 #[bench]
-fn parse_geo_hash(b: &mut Bencher) {
-    panic!("implement")
+fn parse_hash(b: &mut Bencher) {
+    let ser = r#""drm3btev3e86""#;
+    b.iter(|| {
+        let point: ElasticGeoPoint<GeoPointHash> = serde_json::from_str(ser).unwrap();
+        point
+	});
 }
 
 #[bench]
-fn fmt_geo_hash(b: &mut Bencher) {
+fn fmt_hash(b: &mut Bencher) {
     let point = ElasticGeoPoint::<GeoPointHash>::new(Coordinate { x: -71.34, y: 41.12 });
 
 	b.iter(|| {
@@ -61,12 +69,16 @@ fn fmt_geo_hash(b: &mut Bencher) {
 }
 
 #[bench]
-fn parse_geo_array(b: &mut Bencher) {
-    panic!("implement")
+fn parse_array(b: &mut Bencher) {
+    let ser = r#"[-71.34,41]"#;
+    b.iter(|| {
+        let point: ElasticGeoPoint<GeoPointArray> = serde_json::from_str(ser).unwrap();
+        point
+	});
 }
 
 #[bench]
-fn fmt_geo_array(b: &mut Bencher) {
+fn fmt_array(b: &mut Bencher) {
     let point = ElasticGeoPoint::<GeoPointArray>::new(Coordinate { x: -71.34, y: 41.12 });
 
 	b.iter(|| {

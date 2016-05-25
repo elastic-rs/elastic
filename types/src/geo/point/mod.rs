@@ -41,7 +41,7 @@
 //! ```
 //!
 //! # Links
-//! - _TODO: Check link_ [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/geo.html)
+//! - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/geo-point.html)
 
 mod point;
 mod format;
@@ -52,8 +52,8 @@ pub use self::point::*;
 pub use self::format::*;
 pub use self::formats::*;
 
-/// The default `geo_point` format.
-pub type DefaultGeoPointFormat = GeoPointObject;
+/// The default `geo_point` format (`GeoPointArray`).
+pub type DefaultGeoPointFormat = GeoPointArray;
 
 pub mod prelude {
 	//! Includes non-mapping types for the `geo_point` type.

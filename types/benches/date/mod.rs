@@ -13,14 +13,14 @@ use ::date_fixtures::*;
 use test::Bencher;
 
 #[bench]
-fn parse_date_from_format(b: &mut Bencher) {
+fn parse_string(b: &mut Bencher) {
 	b.iter(|| {
 		ElasticDate::<BasicDateTime>::parse("20150620T134501.034Z").unwrap()
 	});
 }
 
 #[bench]
-fn parse_date_to_string(b: &mut Bencher) {
+fn fmt_string(b: &mut Bencher) {
 	let dt: ElasticDate<DefaultDateFormat> = ElasticDate::now();
 
 	b.iter(|| {
@@ -29,25 +29,18 @@ fn parse_date_to_string(b: &mut Bencher) {
 }
 
 #[bench]
-fn parse_date_from_epoch(b: &mut Bencher) {
+fn parse_epoch(b: &mut Bencher) {
 	b.iter(|| {
 		ElasticDate::<EpochMillis>::parse("1435935302478").unwrap()
 	});
 }
 
 #[bench]
-fn parse_date_to_epoch(b: &mut Bencher) {
+fn fmt_epoch(b: &mut Bencher) {
 	let dt = ElasticDate::<EpochMillis>::now();
 
 	b.iter(|| {
 		dt.format()
-	});
-}
-
-#[bench]
-fn get_date_fmt_vec(b: &mut Bencher) {
-	b.iter(|| {
-		BasicDateTime::fmt()
 	});
 }
 

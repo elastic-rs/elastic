@@ -55,6 +55,8 @@
 //!
 //! ## Map Your Types
 //!
+//! _For mapping on `stable`, see [here](object/index.html#manually)._
+//!
 //! Derive `ElasticType` on your Elasticsearch-mappable types:
 //!
 //! ```
