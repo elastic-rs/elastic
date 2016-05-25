@@ -9,59 +9,31 @@ repository = "https://github.com/KodrAus/elasticsearch-rs"
 build = "build.rs"
 
 [features]
-stable = [
-  "serde_codegen"
-]
 nightly = [
-  "serde_macros"
-]
-default = [
-  "stable",
-  "date-ty",
-  "geo-ty"
-]
-nightly-default = [
-  "nightly",
-  "date-ty-nightly",
-  "geo-ty-nightly"
-]
-nightly-testing = [
-  "nightly-default",
-  "clippy",
-  "elastic_types_macros"
-]
-
-date-ty = [
-  "chrono",
-  "elastic_date_macros"
-]
-date-ty-nightly = [
-  "chrono",
+  "serde_macros",
   "elastic_date_macros/nightly"
 ]
-
-geo-ty = [
-  "geo",
-  "geohash",
-  "geojson"
+default = [
+  "serde_codegen",
+  "elastic_date_macros"
 ]
-geo-ty-nightly = [
-  "geo-ty"
+nightly-testing = [
+  "nightly",
+  "clippy",
+  "elastic_types_macros"
 ]
 
 [dependencies]
 serde = "~0.7.0"
 serde_json = "~0.7.0"
-serde_macros = { version = "*", optional = true }
+chrono = { version = "~0.2.20", features = [ "serde" ]}
+geo = "~0.0.7"
+geohash = "~0.2.7"
+geojson = { version = "~0.2.1", features = [ "with-serde" ] }
 
-chrono = { version = "~0.2.20", optional = true, features = [ "serde" ] }
 elastic_date_macros = { version = "~0.2.1", optional = true }
-
-geo = { version = "~0.0.7", optional = true }
-geohash = { version = "~0.2.6", optional = true }
-geojson = { version = "~0.2.1", optional = true, features = [ "with-serde" ] }
-
 clippy = { version = "^0.*", optional = true }
+serde_macros = { version = "*", optional = true }
 elastic_types_macros = { version = "^0.*", path = "../macros/types", optional = true }
 
 [build-dependencies]

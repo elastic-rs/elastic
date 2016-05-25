@@ -109,13 +109,6 @@ impl From<bool> for ElasticBoolean<DefaultBooleanMapping> {
 	}
 }
 
-impl <T> Into<bool> for ElasticBoolean<T> where
-T: ElasticFieldMapping<()> + ElasticBooleanMapping {
-	fn into(self) -> bool {
-		self.value
-	}
-}
-
 impl<'a, T> PartialEq<bool> for ElasticBoolean<T> where
 T: ElasticFieldMapping<()> + ElasticBooleanMapping {
 	fn eq(&self, other: &bool) -> bool {

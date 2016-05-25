@@ -1,25 +1,35 @@
 use std::str::FromStr;
 use serde;
-use serde::{ Error, Serializer, Deserializer };
+use serde::{ Error, Serialize, Serializer, Deserialize, Deserializer };
 use georust::{ Coordinate, Point };
+use geohash;
 use super::GeoPointFormat;
-
-//TODO: Fill in formatting
 
 /// Geo-point expressed as an object, with `lat` and `lon` keys.
 #[derive(Debug, Default, Clone, Copy)]
 pub struct GeoPointObject;
 
+#[derive(Serialize, Deserialize)]
+struct GeoPointObjectType {
+	pub lat: f64,
+	pub lon: f64
+}
+
 impl GeoPointFormat for GeoPointObject {
-	//TODO: Will need a special struct or HashMap to serialize with, could possibly get away with custom visitor
 	fn parse<D>(deserializer: &mut D) -> Result<Point, D::Error> where
 	D: Deserializer {
-        panic!("implement")
+        let point = try!(GeoPointObjectType::deserialize(deserializer));
+
+		Ok(Point(Coordinate {
+			x: point.lon,
+			y: point.lat
+		}))
     }
 
-	fn format<S>(point: &Point, serializer: &mut S) -> Result<(), S::Error> where
+	fn format<S, M>(point: &Point, serializer: &mut S) -> Result<(), S::Error> where
+	M: ::geo::point::mapping::ElasticGeoPointMapping<Self>,
 	S: Serializer {
-        panic!("implement")
+        GeoPointObjectType { lon: point.x(), lat: point.y() }.serialize(serializer)
     }
 }
 
@@ -48,7 +58,7 @@ impl GeoPointFormat for GeoPointString {
 
 		let xy: Vec<&str> = fmtd.split(",").collect();
 		if xy.len() != 2 {
-			return Err(D::Error::invalid_value("point must be formatted as '{y},{x}'"))
+			return Err(D::Error::invalid_value("point must be formatted as `'{y},{x}'`"))
 		}
 
 		let x = match f64::from_str(xy[1]) {
@@ -63,7 +73,8 @@ impl GeoPointFormat for GeoPointString {
 		Ok(Point(Coordinate { x: x, y: y }))
     }
 
-	fn format<S>(point: &Point, serializer: &mut S) -> Result<(), S::Error> where
+	fn format<S, M>(point: &Point, serializer: &mut S) -> Result<(), S::Error> where
+	M: ::geo::point::mapping::ElasticGeoPointMapping<Self>,
 	S: Serializer {
 		let x = point.0.x.to_string();
 		let y = point.0.y.to_string();
@@ -81,15 +92,37 @@ impl GeoPointFormat for GeoPointString {
 #[derive(Debug, Default, Clone, Copy)]
 pub struct GeoPointHash;
 impl GeoPointFormat for GeoPointHash {
-	//TODO: Need to work out how geohash crate works
 	fn parse<D>(deserializer: &mut D) -> Result<Point, D::Error> where
 	D: Deserializer {
-        panic!("implement")
+		struct PointVisitor;
+		impl serde::de::Visitor for PointVisitor {
+			type Value = String;
+
+			fn visit_str<E>(&mut self, value: &str) -> Result<String, E> where
+			E: serde::de::Error {
+				Ok(String::from(value))
+			}
+
+			fn visit_string<E>(&mut self, value: String) -> Result<String, E> where
+			E: serde::de::Error {
+				Ok(value)
+			}
+		}
+
+        let hash = try!(deserializer.deserialize_string(PointVisitor));
+		let (coord, _, _) = geohash::decode(&hash);
+		Ok(Point(coord))
     }
 
-	fn format<S>(point: &Point, serializer: &mut S) -> Result<(), S::Error> where
+	fn format<S, M>(point: &Point, serializer: &mut S) -> Result<(), S::Error> where
+	M: ::geo::point::mapping::ElasticGeoPointMapping<Self>,
 	S: Serializer {
-        panic!("implement")
+		let len = match M::geohash_precision() {
+			Some(l) => l as usize,
+			None => 12usize
+		};
+
+		geohash::encode(Coordinate { x: point.x(), y: point.y() }, len).serialize(serializer)
     }
 }
 
@@ -97,14 +130,20 @@ impl GeoPointFormat for GeoPointHash {
 #[derive(Debug, Default, Clone, Copy)]
 pub struct GeoPointArray;
 impl GeoPointFormat for GeoPointArray {
-	//TODO: Simple array serialisation
 	fn parse<D>(deserializer: &mut D) -> Result<Point, D::Error> where
 	D: Deserializer {
-        panic!("implement")
+        let point = try!(deserializer.deserialize_seq(serde::de::impls::VecVisitor::<f64>::new()));
+
+		if point.len() != 2 {
+			return Err(D::Error::invalid_value("point must be formatted as `[{x},{y}]`"))
+		}
+
+		Ok(Point(Coordinate { x: point[0], y: point[1] }))
     }
 
-	fn format<S>(point: &Point, serializer: &mut S) -> Result<(), S::Error> where
+	fn format<S, M>(point: &Point, serializer: &mut S) -> Result<(), S::Error> where
+	M: ::geo::point::mapping::ElasticGeoPointMapping<Self>,
 	S: Serializer {
-        panic!("implement")
+        [point.x(), point.y()].serialize(serializer)
     }
 }

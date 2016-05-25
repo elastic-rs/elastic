@@ -116,13 +116,6 @@ T: ElasticFieldMapping<()> + ElasticStringMapping {
 	}
 }
 
-impl <T> Into<String> for ElasticString<T> where
-T: ElasticFieldMapping<()> + ElasticStringMapping {
-	fn into(self) -> String {
-		self.value
-	}
-}
-
 impl<'a, T> PartialEq<String> for ElasticString<T> where
 T: ElasticFieldMapping<()> + ElasticStringMapping {
 	fn eq(&self, other: &String) -> bool {

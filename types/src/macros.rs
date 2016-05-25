@@ -186,7 +186,6 @@ macro_rules! impl_double_mapping {
 	)
 }
 
-#[cfg(any(feature = "date-ty", feature = "date-ty-nightly"))]
 macro_rules! impl_date_mapping {
 	($t:ty, $f:ty) => (
 		impl $crate::mapping::ElasticFieldMapping<$f> for $t {
@@ -226,7 +225,6 @@ macro_rules! impl_date_mapping {
 
 //TODO: Remove need to iterate over this. Requires updating date_fmt to return vec![..] instead of [..]
 //TODO: See if we can return a borrowed &[Item] instead of owned Vec<Item>, needs to work on stable too
-#[cfg(any(feature = "date-ty", feature = "date-ty-nightly"))]
 macro_rules! impl_date_fmt {
 	($t:ty, $f:tt, $n:expr) => (
 		impl $crate::date::DateFormat for $t {
@@ -242,7 +240,6 @@ macro_rules! impl_date_fmt {
 	)
 }
 
-#[cfg(any(feature = "geo-ty", feature = "geo-ty-nightly"))]
 macro_rules! impl_geo_point_mapping {
 	($t:ty, $f:ty) => (
 		impl $crate::mapping::ElasticFieldMapping<$f> for $t {

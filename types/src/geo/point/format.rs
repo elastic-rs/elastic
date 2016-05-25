@@ -15,6 +15,10 @@ where Self : Default + Copy {
 	///
 	/// This requires access to the full `serde` serializer because geo points can be serialised as
 	/// different kinds of complex objects.
-	fn format<S>(point: &Point, serializer: &mut S) -> Result<(), S::Error> where
+	///
+	/// Formatting also has access to the mapping type, which could be needed to build the structure
+	/// properly.
+	fn format<S, M>(point: &Point, serializer: &mut S) -> Result<(), S::Error> where
+	M: ::geo::point::mapping::ElasticGeoPointMapping<Self>,
 	S: Serializer;
 }

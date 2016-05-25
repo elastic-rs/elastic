@@ -141,6 +141,14 @@ T: ElasticFieldMapping<F> + ElasticGeoPointMapping<F> {
 
 }
 
+impl <F, T> From<Coordinate> for ElasticGeoPoint<F, T> where
+F: GeoPointFormat,
+T: ElasticFieldMapping<F> + ElasticGeoPointMapping<F> {
+	fn from(point: Coordinate) -> ElasticGeoPoint<F, T> {
+		ElasticGeoPoint::<F, T>::new(point)
+	}
+}
+
 impl <F, T> From<Point> for ElasticGeoPoint<F, T> where
 F: GeoPointFormat,
 T: ElasticFieldMapping<F> + ElasticGeoPointMapping<F> {
@@ -162,7 +170,7 @@ F: GeoPointFormat,
 T: ElasticFieldMapping<F> + ElasticGeoPointMapping<F> {
 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where
 	S: Serializer {
-		F::format(&self.value, serializer)
+		F::format::<S, T>(&self.value, serializer)
 	}
 }
 
