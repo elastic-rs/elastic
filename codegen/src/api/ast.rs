@@ -1,5 +1,5 @@
 //! API Spec Abstract Syntax Tree
-//! 
+//!
 //! Contains Rust structures for the API specification.
 //! Structs in this module are designed for inspecting after instantiation by `serde`, rather than constructing directly.
 
@@ -10,18 +10,18 @@ use serde_json::Value;
 use serde_json::value;
 
 /// Elasticsearch API Endpoint.
-/// 
+///
 /// Represents an endpoint on the Elasticsearch REST API.
 #[derive(Debug, Deserialize, Clone)]
 pub struct Endpoint {
 	/// The name of the `Endpoint`.
-	/// 
+	///
 	/// This may contain a hierarchy of features, separated by `.`. For example: `cluster.health`, `cluster.state` and `cluster.reroute` all belong to `cluster`.
 	pub name: Option<String>,
 	/// A link to the Elasticsearch documentation for this `Endpoint`.
 	pub documentation: String,
 	/// The allowed HTTP verbs.
-	/// 
+	///
 	/// All possible `Url`s for the `Endpoint` are assumed to be valid for all HTTP verbs.
 	pub methods: Vec<HttpVerb>,
 	/// The `Body` on a request (if required).
@@ -49,14 +49,14 @@ pub enum HttpVerb {
 
 impl HttpVerb {
 	/// Parses a HTTP verb from a string.
-	/// 
+	///
 	/// # Examples
-	/// 
+	///
 	/// This method is case sensitive. So:
-	/// 
+	///
 	/// ```
 	/// use elastic_codegen::api::ast::HttpVerb;
-	/// 
+	///
 	/// let verb = HttpVerb::parse("GET");
 	/// assert!(verb == HttpVerb::Get);
 	/// ```
@@ -83,7 +83,7 @@ impl  Deserialize for HttpVerb {
 				Ok(result)
 			}
 		}
-	
+
         deserializer.deserialize(HttpVerbVisitor)
     }
 }
@@ -130,7 +130,7 @@ pub enum NumberKind {
 
 impl <'a> Type<'a> {
 	/// Parses a type name from a string.
-	/// 
+	///
 	/// This parser is lossy, it only retains the minimal amount of info that could be needed for code generation.
 	/// It also doesn't cover all possible Elasticsearch types, only those that appear in the API spec.
 	pub fn parse(_type: &'a str, opts: &'a Option<Vec<String>>) -> Type<'a> {
@@ -154,7 +154,7 @@ impl <'a> Type<'a> {
 }
 
 /// The HTTP body of an API request.
-/// 
+///
 /// Represents the JSON body of an Elasticsearch request. Extra details are in the `Params` on the `Url`.
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Body {
@@ -176,7 +176,7 @@ impl Body {
 	}
 
 	/// Get whether or not the `Body` is required.
-	/// 
+	///
 	/// If the `required` field is not specified in the API spec, then it's assumed `false`.
 	pub fn required(&self) -> bool {
 		match self.required {
@@ -187,12 +187,12 @@ impl Body {
 }
 
 /// A potential `Url` for an API `Endpoint`.
-/// 
+///
 /// Each `Url` may be a template containing `Parts` and `Params`.
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Url {
 	/// The default right side of the `Url`.
-	/// 
+	///
 	/// For example `/cluster/health`. The `path` is also the first entry in `paths` if there are alternative urls.
 	/// The url may also contain `Parts` for replacement in braces, for example: `/{index}/{type}`.
 	/// Each of these `Parts` will have an entry in the `parts` field.
@@ -224,7 +224,7 @@ impl Part {
 	}
 
 	/// Get whether or not the `Part` is required.
-	/// 
+	///
 	/// If the `required` field is not specified in the API spec, then it's assumed `false`.
 	pub fn required(&self) -> bool {
 		match self.required {
@@ -240,7 +240,7 @@ pub struct Param {
 	#[serde(rename="type")]
 	_type: Option<String>,
 	required: Option<bool>,
-	default: Value,
+	default: Option<Value>,
 	/// A description of the `Param`.
 	pub description: String,
 	/// Options for an `Enum` param.
@@ -249,29 +249,29 @@ pub struct Param {
 
 impl Param {
 	/// Create a new `Param`.
-	/// 
+	///
 	/// # Examples
-	/// 
+	///
 	/// Create a new enum `Param`:
-	/// 
+	///
 	/// ```
 	/// # extern crate serde_json;
 	/// # extern crate elastic_codegen;
 	/// # fn main() {
 	/// use serde_json::Value;
 	/// use elastic_codegen::api::ast::Param;
-	/// 
+	///
 	/// let param = Param::new(
-	/// 	"enum", 
-	/// 	Value::String("op1".to_string()), 
+	/// 	"enum",
+	/// 	Some(Value::String("op1".to_string())),
 	/// 	Some(vec![
-	/// 		"op1".to_string(), 
+	/// 		"op1".to_string(),
 	/// 		"op2".to_string()]
 	/// 	)
 	/// );
 	/// # }
 	/// ```
-	pub fn new(_type: &str, default: Value, opts: Option<Vec<String>>) -> Param {
+	pub fn new(_type: &str, default: Option<Value>, opts: Option<Vec<String>>) -> Param {
 		Param {
 			_type: Some(_type.to_string()),
 			required: None,
@@ -282,20 +282,20 @@ impl Param {
 	}
 
 	/// Create a new string `Param`.
-	/// 
+	///
 	/// # Examples
-	/// 
+	///
 	/// With a default value:
-	/// 
+	///
 	/// ```
 	/// use elastic_codegen::api::ast::Param;
-	/// 
+	///
 	/// let param = Param::string(false, Some("my default".to_string()));
 	/// ```
 	pub fn string(required: bool, default: Option<String>) -> Param {
-		let def: Value = match default {
-			Some(s) => Value::String(s),
-			None => Value::Null
+		let def = match default {
+			Some(s) => Some(Value::String(s)),
+			None => None
 		};
 
 		Param {
@@ -308,20 +308,20 @@ impl Param {
 	}
 
 	/// Create a new bool `Param`.
-	/// 
+	///
 	/// # Examples
-	/// 
+	///
 	/// With a default value:
-	/// 
+	///
 	/// ```
 	/// use elastic_codegen::api::ast::Param;
-	/// 
+	///
 	/// let param = Param::bool(false, Some(true));
 	/// ```
 	pub fn bool(required: bool, default: Option<bool>) -> Param {
-		let def: Value = match default {
-			Some(b) => Value::Bool(b),
-			None => Value::Null
+		let def = match default {
+			Some(b) => Some(Value::Bool(b)),
+			None => None
 		};
 
 		Param {
@@ -334,20 +334,20 @@ impl Param {
 	}
 
 	/// Create a new i64 `Param`.
-	/// 
+	///
 	/// # Examples
-	/// 
+	///
 	/// With a default value:
-	/// 
+	///
 	/// ```
 	/// use elastic_codegen::api::ast::Param;
-	/// 
+	///
 	/// let param = Param::long(false, Some(18i64));
 	/// ```
 	pub fn long(required: bool, default: Option<i64>) -> Param {
-		let def: Value = match default {
-			Some(n) => Value::I64(n),
-			None => Value::Null
+		let def = match default {
+			Some(n) => Some(Value::I64(n)),
+			None => None
 		};
 
 		Param {
@@ -360,20 +360,20 @@ impl Param {
 	}
 
 	/// Create a new i32 `Param`.
-	/// 
+	///
 	/// # Examples
-	/// 
+	///
 	/// With a default value:
-	/// 
+	///
 	/// ```
 	/// use elastic_codegen::api::ast::Param;
-	/// 
+	///
 	/// let param = Param::int(false, Some(18i32));
 	/// ```
 	pub fn int(required: bool, default: Option<i32>) -> Param {
-		let def: Value = match default {
-			Some(n) => Value::I64(n as i64),
-			None => Value::Null
+		let def = match default {
+			Some(n) => Some(Value::I64(n as i64)),
+			None => None
 		};
 
 		Param {
@@ -386,20 +386,20 @@ impl Param {
 	}
 
 	/// Create a new i16 `Param`.
-	/// 
+	///
 	/// # Examples
-	/// 
+	///
 	/// With a default value:
-	/// 
+	///
 	/// ```
 	/// use elastic_codegen::api::ast::Param;
-	/// 
+	///
 	/// let param = Param::short(false, Some(18i16));
 	/// ```
 	pub fn short(required: bool, default: Option<i16>) -> Param {
-		let def: Value = match default {
-			Some(n) => Value::I64(n as i64),
-			None => Value::Null
+		let def = match default {
+			Some(n) => Some(Value::I64(n as i64)),
+			None => None
 		};
 
 		Param {
@@ -412,20 +412,20 @@ impl Param {
 	}
 
 	/// Create a new f64 `Param`.
-	/// 
+	///
 	/// # Examples
-	/// 
+	///
 	/// With a default value:
-	/// 
+	///
 	/// ```
 	/// use elastic_codegen::api::ast::Param;
-	/// 
+	///
 	/// let param = Param::float(false, Some(18.00f64));
 	/// ```
 	pub fn float(required: bool, default: Option<f64>) -> Param {
-		let def: Value = match default {
-			Some(n) => Value::F64(n),
-			None => Value::Null
+		let def = match default {
+			Some(n) => Some(Value::F64(n)),
+			None => None
 		};
 
 		Param {
@@ -436,7 +436,7 @@ impl Param {
 			description: String::new()
 		}
 	}
-	
+
 	/// Get the `Type` for the `Param`.
 	pub fn get_type(&self) -> Type {
 		match self._type {
@@ -446,28 +446,28 @@ impl Param {
 	}
 
 	/// Get the default value for the `Param`.
-	/// 
+	///
 	/// # Examples
-	/// 
+	///
 	/// Get the default value for a `Param`:
-	/// 
+	///
 	/// ```
 	/// use elastic_codegen::api::ast::Param;
-	/// 
+	///
 	/// let param = Param::bool(false, Some(true));
 	/// let default = param.get_default::<bool>().unwrap();
-	/// 
+	///
 	/// assert_eq!(true, default);
 	/// ```
 	pub fn get_default<T: Deserialize>(&self) -> Option<T> {
 		match self.default {
-			Value::Null => None,
-			ref d => Some(value::from_value::<T>(d.clone()).unwrap())
+			None => None,
+			Some(ref d) => Some(value::from_value::<T>(d.clone()).unwrap())
 		}
 	}
 
 	/// Get whether or not the `Param` is required.
-	/// 
+	///
 	/// If the `required` field is not specified in the API spec, then it's assumed `false`.
 	pub fn required(&self) -> bool {
 		match self.required {

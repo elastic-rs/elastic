@@ -10,6 +10,8 @@
          "type" : "string",
          "description" : "The id of the stored search template"
         }
+      },
+      "params": {
       }
     },
     "body": {
