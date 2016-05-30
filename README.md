@@ -197,15 +197,6 @@ Right now, it's used by `elastic_hyper` to build the client, but could also be u
 
 ### Macros
 
-#### json_str
-
-[![Latest Version](https://img.shields.io/crates/v/json_str.svg)](https://crates.io/crates/json_str)
-
-[Docs](http://kodraus.github.io/rustdoc/json_str/) |
-[Issues](https://github.com/KodrAus/elasticsearch-rs/labels/macros)
-
-Provides an easy way to build json literals without having to use ungainly strings.
-
 #### elastic_types_macros
 
 [![Latest Version](https://img.shields.io/crates/v/elastic_types_macros.svg)](https://crates.io/crates/elastic_types_macros)
