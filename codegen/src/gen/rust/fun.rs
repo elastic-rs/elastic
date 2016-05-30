@@ -114,7 +114,6 @@ impl ToString for Fn {
 			self.unsafety,
 			self.constness,
 			self.identifier,
-			None,
 			&self.generics
 		);
 
