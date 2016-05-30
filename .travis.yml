@@ -21,9 +21,6 @@ matrix:
         - CRATE="macros/date"
     - rust: stable
       env:
-        - CRATE="macros/json_str"
-    - rust: stable
-      env:
         - CRATE="types"
         - NO_TEST=true
     - rust: nightly
@@ -44,9 +41,6 @@ matrix:
     - rust: nightly
       env:
         - CRATE="macros/types"
-    - rust: nightly
-      env:
-        - CRATE="macros/json_str"
     - rust: nightly
       env:
         - CRATE="types"
