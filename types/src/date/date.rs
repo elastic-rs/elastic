@@ -21,6 +21,7 @@ impl ElasticType<DefaultDateMapping<ChronoFormat>, ChronoFormat> for DT {
 /// This struct wraps up a `chrono::DateTime<UTC>` struct, meaning storing time in `UTC` is required.
 ///
 /// # Examples
+///
 /// Defining a date using the default format:
 ///
 /// ```
@@ -66,6 +67,7 @@ impl ElasticType<DefaultDateMapping<ChronoFormat>, ChronoFormat> for DT {
 /// ```
 ///
 /// # Links
+///
 /// - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/date.html)
 #[derive(Debug, Clone)]
 pub struct ElasticDate<F, T = DefaultDateMapping<F>> where

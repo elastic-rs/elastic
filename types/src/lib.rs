@@ -341,6 +341,7 @@
 //! `format` the data can take. For most types the format is `()`, because there aren't any alternative formats available.
 //!
 //! # Links
+//!
 //! - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/guide/current/mapping.html)
 //! - [Github](https://github.com/KodrAus/elasticsearch-rs)
 

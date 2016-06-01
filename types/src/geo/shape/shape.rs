@@ -1,36 +1,37 @@
 use std::marker::PhantomData;
 use serde::{ Serialize, Deserialize, Serializer, Deserializer };
+use geojson::{ PointType };
 use super::mapping::*;
 use ::mapping::{ ElasticType, ElasticFieldMapping };
 
-macro_rules! number_type {
+macro_rules! geo_shape_type {
     ($t:ident, $m:ident, $n:ident) => (
-    	/// Number type with a given mapping.
+    	/// Geo shape type with a given mapping.
     	#[derive(Debug, Default, Clone)]
 		pub struct $t<M> where M: ElasticFieldMapping<()> + $m {
 			value: $n,
 			phantom: PhantomData<M>
 		}
 		impl <M> $t<M> where M: ElasticFieldMapping<()> + $m {
-			/// Creates a new number with the given mapping.
-			pub fn new<I: Into<$n>>(num: I) -> $t<M> {
+			/// Creates a new geo shape with the given mapping.
+			pub fn new<I: Into<$n>>(geo: I) -> $t<M> {
 				$t {
-					value: num.into(),
+					value: geo.into(),
 					phantom: PhantomData
 				}
 			}
 
-			/// Get the value of the number.
-			pub fn get(&self) -> $n {
-				self.value
+			/// Get the value of the geo shape.
+			pub fn get(&self) -> &$n {
+				&self.value
 			}
 
-			/// Set the value of the number.
-			pub fn set<I: Into<$n>>(&mut self, num: I) {
-				self.value = num.into()
+			/// Set the value of the geo shape.
+			pub fn set<I: Into<$n>>(&mut self, geo: I) {
+				self.value = geo.into()
 			}
 
-			/// Change the mapping of this number.
+			/// Change the mapping of this geo shape.
 			pub fn remap<MInto: ElasticFieldMapping<()> + $m>(self) -> $t<MInto> {
 				$t::<MInto>::new(self.value)
 			}
@@ -44,7 +45,7 @@ macro_rules! number_type {
 			}
 		}
 
-		//Serialize elastic number.
+		//Serialize elastic geo_shape.
 		impl <M> Serialize for $t<M> where M: ElasticFieldMapping<()> + $m {
 			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where
             S: Serializer {
@@ -52,7 +53,7 @@ macro_rules! number_type {
 			}
 		}
 
-		//Deserialize elastic number.
+		//Deserialize elastic geo_shape.
 		impl <M: ElasticFieldMapping<()> + $m> Deserialize for $t<M> {
 			fn deserialize<D>(deserializer: &mut D) -> Result<$t<M>, D::Error> where
             D: Deserializer {
@@ -64,9 +65,4 @@ macro_rules! number_type {
     )
 }
 
-number_type!(ElasticInteger, ElasticIntegerMapping, i32);
-number_type!(ElasticLong, ElasticLongMapping, i64);
-number_type!(ElasticShort, ElasticShortMapping, i16);
-number_type!(ElasticByte, ElasticByteMapping, i8);
-number_type!(ElasticFloat, ElasticFloatMapping, f32);
-number_type!(ElasticDouble, ElasticDoubleMapping, f64);
+geo_shape_type!(ElasticPoint, ElasticPointMapping, PointType);

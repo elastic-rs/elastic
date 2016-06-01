@@ -56,7 +56,7 @@ pub struct ElasticGeoPoint<F, T = DefaultGeoPointMapping<F>> where
 F: GeoPointFormat,
 T: ElasticFieldMapping<F> + ElasticGeoPointMapping<F> {
     /// The `x` and `y` coordinate for the point.
-    pub value: Point,
+    value: Point,
 	phantom_f: PhantomData<F>,
 	phantom_t: PhantomData<T>
 }
@@ -103,6 +103,16 @@ T: ElasticFieldMapping<F> + ElasticGeoPointMapping<F> {
 	/// ```
     pub fn build(x: f64, y: f64) -> ElasticGeoPoint<F, T> {
         ElasticGeoPoint::<F, T>::new(Coordinate { x: x, y: y })
+    }
+
+    /// Get the underlying `Point` coordinate.
+    pub fn get(&self) -> &Point {
+        &self.value
+    }
+
+    /// Set the underlying `Point` coordinate.
+    pub fn set(&mut self, point: Coordinate) {
+        self.value = Point(point);
     }
 
     /// Get the `x` part of the coordinate.

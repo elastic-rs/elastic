@@ -118,8 +118,8 @@ use ::mapping::{ ElasticType, ElasticFieldMapping, ElasticTypeVisitor, IndexAnal
 macro_rules! number_mapping {
     ($m:ident, $v:ident, $n:ty) => (
     	/// Base `number` mapping.
-    	pub trait $m
-		where Self : ElasticFieldMapping<()> + Sized + Serialize {
+    	pub trait $m where 
+        Self: ElasticFieldMapping<()> + Sized + Serialize {
 			/// Try to convert strings to numbers and truncate fractions for integers. Accepts `true` (default) and `false`.
 			fn coerce() -> Option<bool> {
 				None

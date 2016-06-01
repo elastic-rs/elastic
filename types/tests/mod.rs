@@ -471,6 +471,10 @@ pub mod geo_point_fixtures {
 	}
 }
 
+pub mod geo_shape_fixtures {
+	
+}
+
 pub mod object_fixtures {
 	use chrono::{ DateTime, UTC };
 	use elastic_types::mapping::prelude::*;

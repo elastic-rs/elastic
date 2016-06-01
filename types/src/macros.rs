@@ -46,26 +46,6 @@ macro_rules! impl_boolean_mapping {
 	)
 }
 
-macro_rules! impl_number_mapping {
-	($t:ty, $v:ident, $es_ty:expr) => (
-		impl $crate::mapping::ElasticFieldMapping<()> for $t {
-			type Visitor = $v;
-			type MultiFieldMapping = Self;
-
-			fn data_type() -> &'static str {
-				$es_ty
-			}
-		}
-
-		impl serde::Serialize for $t {
-			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
-			where S: serde::Serializer {
-				serializer.serialize_struct("mapping", Self::get_visitor())
-			}
-		}
-	)
-}
-
 macro_rules! impl_integer_mapping {
 	($t:ty) => (
 		impl $crate::mapping::ElasticFieldMapping<()> for $t {
@@ -269,6 +249,47 @@ macro_rules! impl_geo_point_mapping {
 		}
 
 		impl <T: $crate::geo::point::GeoPointFormat> serde::Serialize for $t {
+			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+			where S: serde::Serializer {
+				serializer.serialize_struct("mapping", Self::get_visitor())
+			}
+		}
+	)
+}
+
+macro_rules! impl_geo_shape_mapping {
+	($t:ty) => (
+		impl $crate::mapping::ElasticFieldMapping<()> for $t {
+			type Visitor = $crate::geo::shape::ElasticGeoShapeMappingVisitor<$t>;
+			type MultiFieldMapping = Self;
+
+			fn data_type() -> &'static str {
+				$crate::number::mapping::GEOSHAPE_DATATYPE
+			}
+		}
+
+		impl serde::Serialize for $t {
+			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+			where S: serde::Serializer {
+				serializer.serialize_struct("mapping", Self::get_visitor())
+			}
+		}
+	)
+}
+
+//TODO: Other geo_shape types
+macro_rules! impl_point_mapping {
+	($t:ty) => (
+		impl $crate::mapping::ElasticFieldMapping<()> for $t {
+			type Visitor = $crate::geo::shape::mapping::ElasticPointMappingVisitor<$t>;
+			type MultiFieldMapping = $crate::geo::shape::mapping::ElasticMultiPointMapping<Self>;
+
+			fn data_type() -> &'static str {
+				$crate::geo::shape::mapping::POINT_DATATYPE
+			}
+		}
+
+		impl serde::Serialize for $t {
 			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
 			where S: serde::Serializer {
 				serializer.serialize_struct("mapping", Self::get_visitor())

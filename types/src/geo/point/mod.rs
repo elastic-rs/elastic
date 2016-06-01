@@ -41,6 +41,7 @@
 //! ```
 //!
 //! # Links
+//!
 //! - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/geo-point.html)
 
 mod point;
