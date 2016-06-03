@@ -10,7 +10,6 @@ macro_rules! impl_string_mapping {
 	($t:ty) => (
 		impl $crate::mapping::ElasticFieldMapping<()> for $t {
 			type Visitor = $crate::string::mapping::ElasticStringMappingVisitor<$t>;
-			type MultiFieldMapping = Self;
 
 			fn data_type() -> &'static str {
 				$crate::string::mapping::STRING_DATATYPE
@@ -30,7 +29,6 @@ macro_rules! impl_boolean_mapping {
 	($t:ty) => (
 		impl $crate::mapping::ElasticFieldMapping<()> for $t {
 			type Visitor = $crate::boolean::mapping::ElasticBooleanMappingVisitor<$t>;
-			type MultiFieldMapping = Self;
 
 			fn data_type() -> &'static str {
 				$crate::boolean::mapping::BOOLEAN_DATATYPE
@@ -50,7 +48,6 @@ macro_rules! impl_integer_mapping {
 	($t:ty) => (
 		impl $crate::mapping::ElasticFieldMapping<()> for $t {
 			type Visitor = $crate::number::mapping::ElasticIntegerMappingVisitor<$t>;
-			type MultiFieldMapping = Self;
 
 			fn data_type() -> &'static str {
 				$crate::number::mapping::INTEGER_DATATYPE
@@ -70,7 +67,6 @@ macro_rules! impl_long_mapping {
 	($t:ty) => (
 		impl $crate::mapping::ElasticFieldMapping<()> for $t {
 			type Visitor = $crate::number::mapping::ElasticLongMappingVisitor<$t>;
-			type MultiFieldMapping = Self;
 
 			fn data_type() -> &'static str {
 				$crate::number::mapping::LONG_DATATYPE
@@ -90,7 +86,6 @@ macro_rules! impl_short_mapping {
 	($t:ty) => (
 		impl $crate::mapping::ElasticFieldMapping<()> for $t {
 			type Visitor = $crate::number::mapping::ElasticShortMappingVisitor<$t>;
-			type MultiFieldMapping = Self;
 
 			fn data_type() -> &'static str {
 				$crate::number::mapping::SHORT_DATATYPE
@@ -110,7 +105,6 @@ macro_rules! impl_byte_mapping {
 	($t:ty) => (
 		impl $crate::mapping::ElasticFieldMapping<()> for $t {
 			type Visitor = $crate::number::mapping::ElasticByteMappingVisitor<$t>;
-			type MultiFieldMapping = Self;
 
 			fn data_type() -> &'static str {
 				$crate::number::mapping::BYTE_DATATYPE
@@ -130,7 +124,6 @@ macro_rules! impl_float_mapping {
 	($t:ty) => (
 		impl $crate::mapping::ElasticFieldMapping<()> for $t {
 			type Visitor = $crate::number::mapping::ElasticFloatMappingVisitor<$t>;
-			type MultiFieldMapping = Self;
 
 			fn data_type() -> &'static str {
 				$crate::number::mapping::FLOAT_DATATYPE
@@ -150,7 +143,6 @@ macro_rules! impl_double_mapping {
 	($t:ty) => (
 		impl $crate::mapping::ElasticFieldMapping<()> for $t {
 			type Visitor = $crate::number::mapping::ElasticDoubleMappingVisitor<$t>;
-			type MultiFieldMapping = Self;
 
 			fn data_type() -> &'static str {
 				$crate::number::mapping::DOUBLE_DATATYPE
@@ -170,7 +162,6 @@ macro_rules! impl_date_mapping {
 	($t:ty, $f:ty) => (
 		impl $crate::mapping::ElasticFieldMapping<$f> for $t {
 			type Visitor = $crate::date::mapping::ElasticDateMappingVisitor<$f, $t>;
-			type MultiFieldMapping = Self;
 
 			fn data_type() -> &'static str {
 				$crate::date::mapping::DATE_DATATYPE
@@ -187,7 +178,6 @@ macro_rules! impl_date_mapping {
 	($t:ty) => (
 		impl <T: $crate::date::DateFormat> $crate::mapping::ElasticFieldMapping<T> for $t {
 			type Visitor = $crate::date::mapping::ElasticDateMappingVisitor<T, $t>;
-			type MultiFieldMapping = Self;
 
 			fn data_type() -> &'static str {
 				$crate::date::mapping::DATE_DATATYPE
@@ -224,7 +214,6 @@ macro_rules! impl_geo_point_mapping {
 	($t:ty, $f:ty) => (
 		impl $crate::mapping::ElasticFieldMapping<$f> for $t {
 			type Visitor = $crate::geo::point::mapping::ElasticGeoPointMappingVisitor<$f, $t>;
-			type MultiFieldMapping = Self;
 
 			fn data_type() -> &'static str {
 				$crate::geo::point::mapping::GEOPOINT_TYPE
@@ -241,7 +230,6 @@ macro_rules! impl_geo_point_mapping {
 	($t:ty) => (
 		impl <T: $crate::geo::point::GeoPointFormat> $crate::mapping::ElasticFieldMapping<T> for $t {
 			type Visitor = $crate::geo::point::mapping::ElasticGeoPointMappingVisitor<T, $t>;
-			type MultiFieldMapping = Self;
 
 			fn data_type() -> &'static str {
 				$crate::geo::point::mapping::GEOPOINT_DATATYPE
@@ -260,11 +248,10 @@ macro_rules! impl_geo_point_mapping {
 macro_rules! impl_geo_shape_mapping {
 	($t:ty) => (
 		impl $crate::mapping::ElasticFieldMapping<()> for $t {
-			type Visitor = $crate::geo::shape::ElasticGeoShapeMappingVisitor<$t>;
-			type MultiFieldMapping = Self;
+			type Visitor = $crate::geo::shape::mapping::ElasticGeoShapeMappingVisitor<$t>;
 
 			fn data_type() -> &'static str {
-				$crate::number::mapping::GEOSHAPE_DATATYPE
+				$crate::geo::shape::mapping::GEOSHAPE_DATATYPE
 			}
 		}
 
@@ -282,7 +269,6 @@ macro_rules! impl_point_mapping {
 	($t:ty) => (
 		impl $crate::mapping::ElasticFieldMapping<()> for $t {
 			type Visitor = $crate::geo::shape::mapping::ElasticPointMappingVisitor<$t>;
-			type MultiFieldMapping = $crate::geo::shape::mapping::ElasticMultiPointMapping<Self>;
 
 			fn data_type() -> &'static str {
 				$crate::geo::shape::mapping::POINT_DATATYPE

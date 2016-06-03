@@ -309,12 +309,6 @@
 //!  `date`              | `DateTime<UTC>`             | `chrono`  | `ElasticDate<F, M>`           | `DateFormat`
 //!  `geo_point`         | `Point`                     | `geo`     | `ElasticGeoPoint<F, M>`       | `GeoPointFormat`
 //!  `geo_shape`         | `Geometry`                  | `geojson` | `ElasticGeoShape<M>`          | `()`
-//!  `point`             | `PointType`                 | `geojson` | `ElasticPoint<M>`             | `()`
-//!  `linestring`        | `LineStringType`            | `geojson` | `ElasticLineString<M>`        | `()`
-//!  `polygon`           | `PolygonType`               | `geojson` | `ElasticPolygon<M>`           | `()`
-//!  `multipoint`        | `Vec<PointType>`            | `geojson` | `ElasticMultiPoint<M>`        | `()`
-//!  `multipolygon`      | `Vec<PolygonType`           | `geojson` | `ElasticMultiPolygon<M>`      | `()`
-//!  `geometrycollection`| `Vec<Geometry>`             | `geojson` | `ElasticGeoCollection<M>`     | `()`
 //!  `envelope`          | -                           | -         | `ElasticEnvelope<M>`          | `()`
 //!  `circle`            | -                           | -         | `ElasticCircle<M>`            | `()`
 //!  `object`            | -                           | -         | user-defined `struct`         | `()`

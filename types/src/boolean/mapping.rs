@@ -91,7 +91,6 @@ pub const BOOLEAN_DATATYPE: &'static str = "boolean";
 /// //We also need to implement the base `ElasticFieldMapping` and `serde::Serialize` for our custom mapping type
 /// impl ElasticFieldMapping<()> for MyBooleanMapping {
 /// 	type Visitor = ElasticBooleanMappingVisitor<MyBooleanMapping>;
-/// 	type MultiFieldMapping = Self;
 ///
 /// 	fn data_type() -> &'static str {
 /// 		BOOLEAN_DATATYPE

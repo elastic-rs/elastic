@@ -13,7 +13,7 @@ use ::boolean_fixtures::*;
 
 #[test]
 fn can_change_boolean_mapping() {
-	fn takes_custom_mapping(boolean: ElasticBoolean<MyBooleanMapping>) -> bool {
+	fn takes_custom_mapping(_: ElasticBoolean<MyBooleanMapping>) -> bool {
 		true
 	}
 

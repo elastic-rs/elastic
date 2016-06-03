@@ -15,7 +15,7 @@ use ::geo_point_fixtures::*;
 
 #[test]
 fn can_change_point_mapping() {
-	fn takes_custom_mapping(point: ElasticGeoPoint<GeoPointObject, MyGeoPointMapping>) -> bool {
+	fn takes_custom_mapping(_: ElasticGeoPoint<GeoPointObject, MyGeoPointMapping>) -> bool {
 		true
 	}
 

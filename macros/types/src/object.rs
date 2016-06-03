@@ -42,7 +42,6 @@ pub fn impl_field_mapping(cx: &mut ExtCtxt, span: Span, es_ty: &Ident, mapping: 
 		quote_item!(cx,
 			impl ::elastic_types::mapping::ElasticFieldMapping<()> for $mapping {
 				type Visitor = ::elastic_types::object::ElasticObjectMappingVisitor<$mapping, $object_visitor>;
-				type MultiFieldMapping = Self;
 
 				fn data_type() -> &'static str {
 					<Self as ElasticObjectMapping>::data_type()

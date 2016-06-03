@@ -81,13 +81,6 @@ where Self: Default + Clone + serde::Serialize {
 	#[doc(hidden)]
 	type Visitor : ElasticTypeVisitor;
 
-	/// How this type is mapped as an array.
-	///
-	/// For most types the mapping is exactly the same, but arrays of geo types
-	/// are mapped using special collection types (like `point` and 'multipoint').
-	//TODO: Reintroduce associated_type_defaults: type MultiFieldMapping: ElasticFieldMapping<F> = Self;
-	type MultiFieldMapping: ElasticFieldMapping<F>;
-
 	#[doc(hidden)]
 	fn get_visitor() -> Self::Visitor {
 		Self::Visitor::new()
@@ -117,7 +110,6 @@ pub struct NullMapping;
 
 impl ElasticFieldMapping<()> for NullMapping {
 	type Visitor = NullMappingVisitor;
-	type MultiFieldMapping = Self;
 
 	fn data_type() -> &'static str {
 		"object"
@@ -194,7 +186,6 @@ impl <M, F> ElasticFieldMapping<F> for ElasticArrayMapping<M, F> where
 M: ElasticFieldMapping<F>,
 F: Default + Clone {
 	type Visitor = M::Visitor;
-	type MultiFieldMapping = Self;
 
 	fn data_type() -> &'static str {
 		M::data_type()
@@ -206,7 +197,7 @@ M: ElasticFieldMapping<F>,
 F: Default + Clone {
 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
 	where S: serde::Serializer {
-		serializer.serialize_struct("mapping", M::MultiFieldMapping::get_visitor())
+		serializer.serialize_struct("mapping", M::get_visitor())
 	}
 }
 

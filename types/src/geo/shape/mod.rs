@@ -1,15 +1,5 @@
-//! Implementation of the Elasticsearch `geo_shape` types.
+//! Implementation of the Elasticsearch `geo_shape` type.
 //!
-//! Each geojson type has an equivalent Elasticsearch geo shape type:
-//!
-//!  GeoJSON Type         | Rust Type
-//!  -------------------- | -------------------------
-//!  `Point`              | `ElasticPoint`
-//!  `LineString`         | `ElasticLineString`
-//!  `Polygon`            | `ElasticPolygon`
-//!  `MultiPoint`         | `Vec<ElasticPoint>`
-//!  `MultiLineString`    | `Vec<LineString>`
-//!  `MultiPolygon`       | `Vec<Polygon>`
 
 mod shape;
 

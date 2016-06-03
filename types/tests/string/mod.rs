@@ -13,7 +13,7 @@ use ::string_fixtures::*;
 
 #[test]
 fn can_change_string_mapping() {
-	fn takes_custom_mapping(string: ElasticString<MyStringMapping>) -> bool {
+	fn takes_custom_mapping(_: ElasticString<MyStringMapping>) -> bool {
 		true
 	}
 

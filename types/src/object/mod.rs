@@ -250,7 +250,6 @@
 //! }
 //! impl ElasticFieldMapping<()> for MyTypeMapping {
 //!     type Visitor = ElasticObjectMappingVisitor<MyTypeMapping, MyTypeObjectVisitor>;
-//! 	type MultiFieldMapping = Self;
 //!
 //!     fn data_type() -> &'static str {
 //!         <Self as ElasticObjectMapping>::data_type()

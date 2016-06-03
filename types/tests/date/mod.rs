@@ -83,7 +83,7 @@ fn dates_should_use_es_format() {
 
 #[test]
 fn can_change_date_mapping() {
-	fn takes_epoch_millis(date: ElasticDate<EpochMillis>) -> bool {
+	fn takes_epoch_millis(_: ElasticDate<EpochMillis>) -> bool {
 		true
 	}
 

@@ -105,7 +105,6 @@ pub const GEOPOINT_DATATYPE: &'static str = "geo_point";
 ///
 /// impl ElasticFieldMapping<GeoPointString> for MyGeoPointMapping {
 /// 	type Visitor = ElasticGeoPointMappingVisitor<GeoPointString, MyGeoPointMapping>;
-/// 	type MultiFieldMapping = Self;
 ///
 /// 	fn data_type() -> &'static str {
 /// 		GEOPOINT_DATATYPE
@@ -145,7 +144,6 @@ pub const GEOPOINT_DATATYPE: &'static str = "geo_point";
 ///
 /// impl <T: GeoPointFormat> ElasticFieldMapping<T> for MyGeoPointMapping<T> {
 /// 	type Visitor = ElasticGeoPointMappingVisitor<T, MyGeoPointMapping<T>>;
-/// 	type MultiFieldMapping = Self;
 ///
 /// 	fn data_type() -> &'static str {
 /// 		GEOPOINT_DATATYPE

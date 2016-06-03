@@ -78,7 +78,6 @@ T: ElasticFieldMapping<()> + ElasticStringMapping {
 	/// # }
 	/// # impl ElasticFieldMapping<()> for MyStringMapping {
 	/// # 	type Visitor = ElasticStringMappingVisitor<MyStringMapping>;
-	/// # 	type MultiFieldMapping = Self;
 	/// # 	fn data_type() -> &'static str {
 	/// # 		"string"
 	/// # 	}

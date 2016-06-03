@@ -13,7 +13,7 @@ use ::number_fixtures::*;
 
 #[test]
 fn can_change_number_mapping() {
-	fn takes_custom_mapping(number: ElasticInteger<MyIntegerMapping>) -> bool {
+	fn takes_custom_mapping(_: ElasticInteger<MyIntegerMapping>) -> bool {
 		true
 	}
 

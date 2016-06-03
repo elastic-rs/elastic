@@ -104,7 +104,6 @@ pub const DATE_DATATYPE: &'static str = "date";
 ///
 /// impl ElasticFieldMapping<EpochMillis> for MyDateMapping {
 /// 	type Visitor = ElasticDateMappingVisitor<EpochMillis, MyDateMapping>;
-/// 	type MultiFieldMapping = Self;
 ///
 /// 	fn data_type() -> &'static str {
 /// 		DATE_DATATYPE
@@ -144,7 +143,6 @@ pub const DATE_DATATYPE: &'static str = "date";
 ///
 /// impl <T: DateFormat> ElasticFieldMapping<T> for MyDateMapping<T> {
 /// 	type Visitor = ElasticDateMappingVisitor<T, MyDateMapping<T>>;
-/// 	type MultiFieldMapping = Self;
 ///
 /// 	fn data_type() -> &'static str {
 /// 		DATE_DATATYPE

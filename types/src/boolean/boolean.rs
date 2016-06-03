@@ -78,7 +78,6 @@ T: ElasticFieldMapping<()> + ElasticBooleanMapping {
 	/// # }
 	/// # impl ElasticFieldMapping<()> for MyBooleanMapping {
 	/// # 	type Visitor = ElasticBooleanMappingVisitor<MyBooleanMapping>;
-	/// # 	type MultiFieldMapping = Self;
 	/// # 	fn data_type() -> &'static str {
 	/// # 		"boolean"
 	/// # 	}
