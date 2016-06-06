@@ -1,29 +1,110 @@
 //! Mapping for Elasticsearch `geo_shape` types.
-//!
-//! Custom mappings can be defined by implementing the right number mapping for some Rust primitive number type.
-//! The implementation is the same for all number types, the only difference is the return type of `null_value`.
-//!
-//! # Examples
-//!
-//! Define a custom `ElasticGeoShapeMapping`:
-//!
-//! ## Derive Mapping
-//!
-//! This will produce the following mapping:
-//!
-//! ## Manually
-//!
 
 use std::marker::PhantomData;
 use serde;
 use serde::{ Serialize, Serializer };
-use geojson::{ PointType };
-use ::mapping::{ ElasticType, ElasticFieldMapping, ElasticTypeVisitor };
+use ::mapping::{ ElasticFieldMapping, ElasticTypeVisitor };
 
 /// Elasticsearch datatype name.
 pub const GEOSHAPE_DATATYPE: &'static str = "geo_shape";
 
-/// Base `geo_shape` mapping.
+/// The base requirements for mapping a `geo_shape` type.
+///
+/// Custom mappings can be defined by implementing `ElasticGeoShapeMapping`.
+///
+/// # Examples
+///
+/// Define a custom `ElasticGeoShapeMapping`:
+///
+/// ## Derive Mapping
+///
+/// ```
+/// # #![feature(plugin, custom_derive, custom_attribute)]
+/// # #![plugin(json_str, elastic_types_macros)]
+/// # #[macro_use]
+/// # extern crate elastic_types;
+/// # extern crate serde;
+/// use elastic_types::mapping::prelude::*;
+/// use elastic_types::geo::shape::prelude::*;
+///
+/// #[derive(Debug, Clone, Default, ElasticGeoShapeMapping)]
+/// pub struct MyGeoShapeMapping;
+/// impl ElasticGeoShapeMapping for MyGeoShapeMapping {
+/// 	//Overload the mapping functions here
+/// 	fn tree_levels() -> Option<i32> {
+///			Some(2)
+///		}
+/// }
+/// # fn main() {}
+/// ```
+///
+/// This will produce the following mapping:
+///
+/// ```
+/// # #![feature(plugin, custom_derive, custom_attribute)]
+/// # #![plugin(elastic_types_macros)]
+/// # #[macro_use]
+/// # extern crate json_str;
+/// # extern crate elastic_types;
+/// # extern crate serde;
+/// # extern crate serde_json;
+/// # use elastic_types::mapping::prelude::*;
+/// # use elastic_types::geo::shape::prelude::*;
+/// # #[derive(Debug, Clone, Default, ElasticGeoShapeMapping)]
+/// # pub struct MyGeoShapeMapping;
+/// # impl ElasticGeoShapeMapping for MyGeoShapeMapping {
+/// # 	//Overload the mapping functions here
+/// # 	fn tree_levels() -> Option<i32> {
+///	# 		Some(2)
+///	# 	}
+/// # }
+/// # fn main() {
+/// # let mapping = serde_json::to_string(&MyGeoShapeMapping).unwrap();
+/// # let json = json_str!(
+/// {
+///     "type": "geo_shape",
+/// 	"tree_levels": 2
+/// }
+/// # );
+/// # assert_eq!(json, mapping);
+/// # }
+/// ```
+///
+/// ## Manually
+///
+/// ```
+/// # extern crate serde;
+/// # extern crate elastic_types;
+/// # fn main() {
+/// use elastic_types::mapping::prelude::*;
+/// use elastic_types::geo::shape::prelude::*;
+///
+/// #[derive(Debug, Clone, Default)]
+/// pub struct MyGeoShapeMapping;
+/// impl ElasticGeoShapeMapping for MyGeoShapeMapping {
+/// 	//Overload the mapping functions here
+/// 	fn tree_levels() -> Option<i32> {
+///			Some(2)
+///		}
+/// }
+///
+/// //We also need to implement the base `ElasticFieldMapping` and `serde::Serialize` for our custom mapping type
+/// impl ElasticFieldMapping<()> for MyGeoShapeMapping {
+/// 	type Visitor = ElasticGeoShapeMappingVisitor<MyGeoShapeMapping>;
+///
+/// 	fn data_type() -> &'static str {
+/// 		GEOSHAPE_DATATYPE
+/// 	}
+/// }
+///
+/// impl serde::Serialize for MyGeoShapeMapping {
+/// 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+/// 	where S: serde::Serializer {
+/// 		serializer.serialize_struct("mapping", Self::get_visitor())
+/// 	}
+/// }
+/// # }
+/// ```
 pub trait ElasticGeoShapeMapping where
 Self: ElasticFieldMapping<()> + Sized + Serialize {
     /// Name of the PrefixTree implementation to be used:

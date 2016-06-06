@@ -1,13 +1,30 @@
 use std::marker::PhantomData;
-use serde;
 use serde::{ Serialize, Deserialize, Serializer, Deserializer };
 use geojson::Geometry;
 use super::mapping::*;
 use ::mapping::{ ElasticType, ElasticFieldMapping };
 
 /// Geo shape type with a given mapping.
+///
+/// Defining a `geo_shape` with a mapping:
+///
+/// ```
+/// # extern crate elastic_types;
+/// extern crate geojson;
+/// use geojson::{ Geometry, Value };
+///
+/// use elastic_types::geo::shape::mapping::DefaultGeoShapeMapping;
+/// use elastic_types::geo::shape::ElasticGeoShape;
+/// # fn main() {
+/// let point: ElasticGeoShape<DefaultGeoShapeMapping> = ElasticGeoShape::new(
+///     Geometry::new(
+///         Value::Point(vec![ 1.0, 1.0 ])
+///     )
+/// );
+/// # }
+/// ```
 #[derive(Debug, Clone)]
-pub struct ElasticGeoShape<M> where M: ElasticFieldMapping<()> + ElasticGeoShapeMapping {
+pub struct ElasticGeoShape<M = DefaultGeoShapeMapping> where M: ElasticFieldMapping<()> + ElasticGeoShapeMapping {
     value: Geometry,
     phantom: PhantomData<M>
 }

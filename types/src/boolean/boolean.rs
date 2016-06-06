@@ -12,7 +12,7 @@ impl ElasticType<DefaultBooleanMapping, ()> for bool { }
 ///
 /// # Examples
 ///
-/// Defining a bool with a mapping:
+/// Defining a `bool` with a mapping:
 ///
 /// ```
 /// use elastic_types::boolean::mapping::DefaultBooleanMapping;

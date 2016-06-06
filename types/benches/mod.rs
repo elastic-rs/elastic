@@ -12,6 +12,7 @@ extern crate serde;
 extern crate serde_json;
 extern crate chrono;
 extern crate geo as georust;
+extern crate geojson;
 extern crate test;
 #[macro_use]
 extern crate elastic_types;
@@ -268,6 +269,46 @@ pub mod geo_point_fixtures {
 	}
 }
 
+pub mod geo_shape_fixtures {
+	use std::marker::PhantomData;
+	use serde;
+	use geojson::{ PointType };
+	use elastic_types::mapping::prelude::*;
+	use elastic_types::geo::shape::prelude::*;
+
+	#[derive(Debug, Clone, Default, ElasticGeoShapeMapping)]
+	pub struct MyGeoShapeMapping;
+	impl ElasticGeoShapeMapping for MyGeoShapeMapping {
+		fn tree() -> Option<Tree> {
+			Some(Tree::Geohash)
+		}
+
+		fn precision() -> Option<Distance> {
+			Some(Distance(50.0, DistanceUnit::Meters))
+		}
+
+		fn tree_levels() -> Option<i32> {
+			Some(8)
+		}
+
+		fn strategy() -> Option<Strategy> {
+			Some(Strategy::Recursive)
+		}
+
+		fn distance_error_pct() -> Option<f32> {
+			Some(0.5)
+		}
+
+		fn orientation() -> Option<Orientation> {
+			Some(Orientation::Clockwise)
+		}
+
+		fn points_only() -> Option<bool> {
+			Some(false)
+		}
+	}
+}
+
 pub mod object_fixtures {
 	use elastic_types::mapping::prelude::*;
 	use elastic_types::date::prelude::*;
@@ -360,6 +401,7 @@ pub mod object_fixtures {
 
 pub mod date;
 pub mod geo_point;
+pub mod geo_shape;
 pub mod string;
 pub mod number;
 pub mod boolean;
