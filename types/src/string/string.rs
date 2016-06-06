@@ -79,7 +79,7 @@ M: ElasticFieldMapping<()> + ElasticStringMapping {
 	/// # impl ElasticFieldMapping<()> for MyStringMapping {
 	/// # 	type Visitor = ElasticStringMappingVisitor<MyStringMapping>;
 	/// # 	fn data_type() -> &'static str {
-	/// # 		"string"
+	/// # 		STRING_DATATYPE
 	/// # 	}
 	/// # }
 	/// # impl serde::Serialize for MyStringMapping {

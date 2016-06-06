@@ -434,6 +434,35 @@ pub mod number_fixtures {
 	}
 }
 
+pub mod ip_fixtures {
+	use std::net::Ipv4Addr;
+	use elastic_types::mapping::prelude::*;
+
+	#[derive(Default, Clone, ElasticIpMapping)]
+	pub struct MyIpMapping;
+	impl ElasticIpMapping for MyIpMapping {
+		fn boost() -> Option<f32> {
+			Some(1.01)
+		}
+
+		fn index() -> Option<IndexAnalysis> {
+			Some(IndexAnalysis::No)
+		}
+
+		fn doc_values() -> Option<bool> {
+			Some(true)
+		}
+
+		fn store() -> Option<bool> {
+			Some(true)
+		}
+
+		fn null_value() -> Option<Ipv4Addr> {
+			Some(Ipv4Addr::new(127, 0, 0, 1))
+		}
+	}
+}
+
 pub mod geo_point_fixtures {
 	use std::marker::PhantomData;
 	use serde;
@@ -511,6 +540,7 @@ pub mod object_fixtures {
 	use chrono::{ DateTime, UTC };
 	use elastic_types::mapping::prelude::*;
 	use elastic_types::date::prelude::*;
+	use elastic_types::ip::prelude::*;
 	use elastic_types::number::prelude::*;
 	use elastic_types::string::prelude::*;
 	use elastic_types::boolean::prelude::*;
@@ -518,6 +548,7 @@ pub mod object_fixtures {
 	use ::date_fixtures::*;
 	use ::number_fixtures::*;
 	use ::boolean_fixtures::*;
+	use ::ip_fixtures::*;
 
 	#[derive(Serialize, Deserialize, ElasticType)]
 	#[elastic(ty="my_type", mapping="MyTypeMapping")]
@@ -559,6 +590,7 @@ pub mod object_fixtures {
 		pub my_num: i32,
 		pub my_point: ElasticGeoPoint<DefaultGeoPointFormat>,
 		pub my_shape: ElasticGeoShape<DefaultGeoShapeMapping>,
+		pub my_ip: ElasticIp<MyIpMapping>,
 		pub my_strings: Vec<String>,
 		pub my_dates: Vec<ElasticDate<DefaultDateFormat>>
 	}

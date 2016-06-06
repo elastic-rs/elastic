@@ -3,5 +3,6 @@ pub mod object;
 pub mod string;
 pub mod number;
 pub mod boolean;
+pub mod ip;
 pub mod geo;
 pub mod date;

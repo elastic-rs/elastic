@@ -309,6 +309,35 @@ pub mod geo_shape_fixtures {
 	}
 }
 
+pub mod ip_fixtures {
+	use std::net::Ipv4Addr;
+	use elastic_types::mapping::prelude::*;
+
+	#[derive(Default, Clone, ElasticIpMapping)]
+	pub struct MyIpMapping;
+	impl ElasticIpMapping for MyIpMapping {
+		fn boost() -> Option<f32> {
+			Some(1.01)
+		}
+
+		fn index() -> Option<IndexAnalysis> {
+			Some(IndexAnalysis::No)
+		}
+
+		fn doc_values() -> Option<bool> {
+			Some(true)
+		}
+
+		fn store() -> Option<bool> {
+			Some(true)
+		}
+
+		fn null_value() -> Option<Ipv4Addr> {
+			Some(Ipv4Addr::new(127, 0, 0, 1))
+		}
+	}
+}
+
 pub mod object_fixtures {
 	use elastic_types::mapping::prelude::*;
 	use elastic_types::date::prelude::*;
@@ -402,6 +431,7 @@ pub mod object_fixtures {
 pub mod date;
 pub mod geo_point;
 pub mod geo_shape;
+pub mod ip;
 pub mod string;
 pub mod number;
 pub mod boolean;

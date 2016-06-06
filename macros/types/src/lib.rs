@@ -271,6 +271,26 @@ pub fn expand_derive_float_mapping(cx: &mut ExtCtxt, _: Span, meta_item: &MetaIt
 	impl_mapping_ser(cx, &ty, push);
 }
 
+#[doc(hidden)]
+pub fn expand_derive_ip_mapping(cx: &mut ExtCtxt, _: Span, meta_item: &MetaItem, annotatable: &Annotatable, push: &mut FnMut(Annotatable)) {
+	let item = expect_item!(cx, meta_item, annotatable);
+	let ty = item.ident;
+
+	push(Annotatable::Item(
+		quote_item!(cx,
+			impl ::elastic_types::mapping::ElasticFieldMapping<()> for $ty {
+				type Visitor = ::elastic_types::ip::mapping::ElasticIpMappingVisitor<$ty>;
+
+				fn data_type() -> &'static str {
+					::elastic_types::ip::mapping::IP_DATATYPE
+				}
+			}
+		).unwrap()
+	));
+
+	impl_mapping_ser(cx, &ty, push);
+}
+
 //TODO: Make it possible to implement for a single date format
 #[doc(hidden)]
 pub fn expand_derive_date_mapping(cx: &mut ExtCtxt, _: Span, meta_item: &MetaItem, annotatable: &Annotatable, push: &mut FnMut(Annotatable)) {
@@ -565,6 +585,12 @@ pub fn plugin_registrar(reg: &mut Registry) {
 		syntax::parse::token::intern("derive_ElasticDateMapping"),
 		syntax::ext::base::MultiDecorator(
 			Box::new(expand_derive_date_mapping))
+	);
+
+    reg.register_syntax_extension(
+		syntax::parse::token::intern("derive_ElasticIpMapping"),
+		syntax::ext::base::MultiDecorator(
+			Box::new(expand_derive_ip_mapping))
 	);
 
     reg.register_syntax_extension(

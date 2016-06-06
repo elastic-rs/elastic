@@ -144,7 +144,7 @@ impl ElasticBooleanMapping for DefaultBooleanMapping { }
 
 impl_boolean_mapping!(DefaultBooleanMapping);
 
-/// Base visitor for serialising string mappings.
+/// Base visitor for serialising boolean mappings.
 #[derive(Debug, PartialEq, Default)]
 pub struct ElasticBooleanMappingVisitor<M> where M: ElasticBooleanMapping {
 	phantom: PhantomData<M>

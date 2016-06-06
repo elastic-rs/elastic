@@ -79,7 +79,7 @@ M: ElasticFieldMapping<()> + ElasticBooleanMapping {
 	/// # impl ElasticFieldMapping<()> for MyBooleanMapping {
 	/// # 	type Visitor = ElasticBooleanMappingVisitor<MyBooleanMapping>;
 	/// # 	fn data_type() -> &'static str {
-	/// # 		"boolean"
+	/// # 		BOOLEAN_DATATYPE
 	/// # 	}
 	/// # }
 	/// # impl serde::Serialize for MyBooleanMapping {

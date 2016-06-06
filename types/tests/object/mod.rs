@@ -168,6 +168,14 @@ fn serialise_mapping_type_as_nested() {
 			"my_shape": {
 				"type": "geo_shape"
 			},
+			"my_ip": {
+				"type": "ip",
+				"boost": 1.01,
+				"doc_values": true,
+				"index": "no",
+				"store": true,
+				"null_value": "127.0.0.1"
+			},
 			"my_strings": {
 				"type": "string"
 			},

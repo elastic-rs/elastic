@@ -23,7 +23,7 @@ fn can_change_boolean_mapping() {
 }
 
 #[test]
-fn serialise_elastic_string() {
+fn serialise_elastic_boolean() {
 	let boolean: ElasticBoolean<DefaultBooleanMapping> = ElasticBoolean::new(true);
 
 	let ser = serde_json::to_string(&boolean).unwrap();
@@ -32,7 +32,7 @@ fn serialise_elastic_string() {
 }
 
 #[test]
-fn deserialise_elastic_string() {
+fn deserialise_elastic_boolean() {
 	let boolean: ElasticBoolean<DefaultBooleanMapping> = serde_json::from_str("true").unwrap();
 
 	assert_eq!(true, boolean);

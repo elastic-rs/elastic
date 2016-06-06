@@ -307,11 +307,8 @@
 //!  `string`            | `String`                    | `std`     | `ElasticString<M>`            | `()`
 //!  `boolean`           | `bool`                      | `std`     | `ElasticBoolean<M>`           | `()`
 //!  `date`              | `DateTime<UTC>`             | `chrono`  | `ElasticDate<F, M>`           | `DateFormat`
+//!  `ip`                | `Ipv4Addr`                  | `std`     | `ElasticIp<M>`                | `()`
 //!  `geo_point`         | `Point`                     | `geo`     | `ElasticGeoPoint<F, M>`       | `GeoPointFormat`
-//!  `geo_shape`         | `Geometry`                  | `geojson` | `ElasticGeoShape<M>`          | `()`
-//!  `envelope`          | -                           | -         | `ElasticEnvelope<M>`          | `()`
-//!  `circle`            | -                           | -         | `ElasticCircle<M>`            | `()`
-//!  `object`            | -                           | -         | user-defined `struct`         | `()`
 //!
 //! The following sections explain this table.
 //!
@@ -351,10 +348,10 @@
 #[cfg(not(feature = "nightly"))]
 extern crate elastic_date_macros;
 
-extern crate chrono;
-extern crate geo as georust;
+pub extern crate chrono;
+pub extern crate geo as georust;
 extern crate geohash;
-extern crate geojson;
+pub extern crate geojson;
 
 extern crate serde;
 extern crate serde_json;

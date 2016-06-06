@@ -210,6 +210,25 @@ macro_rules! impl_date_fmt {
 	)
 }
 
+macro_rules! impl_ip_mapping {
+	($t:ty) => (
+		impl $crate::mapping::ElasticFieldMapping<()> for $t {
+			type Visitor = $crate::ip::mapping::ElasticIpMappingVisitor<$t>;
+
+			fn data_type() -> &'static str {
+				$crate::ip::mapping::IP_DATATYPE
+			}
+		}
+
+		impl serde::Serialize for $t {
+			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+			where S: serde::Serializer {
+				serializer.serialize_struct("mapping", Self::get_visitor())
+			}
+		}
+	)
+}
+
 macro_rules! impl_geo_point_mapping {
 	($t:ty, $f:ty) => (
 		impl $crate::mapping::ElasticFieldMapping<$f> for $t {
