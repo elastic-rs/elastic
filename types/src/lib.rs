@@ -276,6 +276,84 @@
 //! # }
 //! ```
 //!
+//! Elasticsearch doesn't differentiate between nullable or collections, so it's also possible to
+//! map properties as `Option` or `Vec`s:
+//!
+//! ```
+//! # #![feature(plugin, custom_derive)]
+//! # #![plugin(json_str, elastic_types_macros)]
+//! # #[macro_use]
+//! # extern crate elastic_types;
+//! # extern crate serde;
+//! # use serde::{ Serialize, Deserialize };
+//! # use elastic_types::mapping::prelude::*;
+//! # use elastic_types::date::prelude::*;
+//! #[derive(Serialize, Deserialize, ElasticType)]
+//! pub struct MyType {
+//! 	pub my_date: Option<ElasticDate<DefaultDateFormat>>,
+//! 	pub my_num: Vec<i32>
+//! }
+//!
+//! # impl serde::Serialize for MyType {
+//! # 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where S: serde::Serializer {
+//! # 		unimplemented!()
+//! # 	}
+//! # }
+//! # impl serde::Deserialize for MyType {
+//! # 	 fn deserialize<D>(deserializer: &mut D) -> Result<Self, D::Error> where D: serde::Deserializer {
+//! # 		unimplemented!()
+//! # 	}
+//! # }
+//! # fn main() {
+//! # }
+//! ```
+//!
+//! Which produces the same mapping as before: 
+//!
+//! ```
+//! # #![feature(plugin, custom_derive, custom_attribute)]
+//! # #![plugin(elastic_types_macros)]
+//! # #[macro_use]
+//! # extern crate json_str;
+//! # extern crate elastic_types;
+//! # extern crate serde;
+//! # use serde::{ Serialize, Deserialize };
+//! # use elastic_types::mapping::prelude::*;
+//! # use elastic_types::date::prelude::*;
+//! # #[derive(Serialize, Deserialize, ElasticType)]
+//! # pub struct MyType {
+//! # 	pub my_date: Option<ElasticDate<DefaultDateFormat>>,
+//! # 	pub my_num: Vec<i32>
+//! # }
+//! # impl serde::Serialize for MyType {
+//! # 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where S: serde::Serializer {
+//! # 		unimplemented!()
+//! # 	}
+//! # }
+//! # impl serde::Deserialize for MyType {
+//! # 	 fn deserialize<D>(deserializer: &mut D) -> Result<Self, D::Error> where D: serde::Deserializer {
+//! # 		unimplemented!()
+//! # 	}
+//! # }
+//! # fn main() {
+//! # let mapping = TypeMapper::to_string(MyTypeMapping).unwrap();
+//! # let json = json_str!(
+//! {
+//!     "properties": {
+//!         "my_date": {
+//!             "type": "date",
+//!             "format": "basic_date_time"
+//!         },
+//!         "my_num": {
+//!             "type": "integer"
+//!         }
+//!     }
+//! }
+//! # );
+//! # assert_eq!(json, mapping);
+//! # }
+//! ```
+//!
 //! # Types
 //!
 //! Types in Elasticsearch are a combination of _source_ and _mapping_.
