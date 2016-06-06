@@ -437,7 +437,6 @@ pub mod number_fixtures {
 pub mod geo_point_fixtures {
 	use std::marker::PhantomData;
 	use serde;
-	use georust::Coordinate;
 	use elastic_types::mapping::prelude::*;
 	use elastic_types::geo::point::prelude::*;
 
@@ -473,11 +472,7 @@ pub mod geo_point_fixtures {
 }
 
 pub mod geo_shape_fixtures {
-	use std::marker::PhantomData;
-	use serde;
-	use geojson::{ PointType };
 	use elastic_types::mapping::prelude::*;
-	use elastic_types::geo::shape::prelude::*;
 
 	#[derive(Debug, Clone, Default, ElasticGeoShapeMapping)]
 	pub struct MyGeoShapeMapping;
@@ -519,6 +514,7 @@ pub mod object_fixtures {
 	use elastic_types::number::prelude::*;
 	use elastic_types::string::prelude::*;
 	use elastic_types::boolean::prelude::*;
+	use elastic_types::geo::prelude::*;
 	use ::date_fixtures::*;
 	use ::number_fixtures::*;
 	use ::boolean_fixtures::*;
@@ -561,6 +557,8 @@ pub mod object_fixtures {
 		#[serde(skip_serializing)]
 		pub ignored: String,
 		pub my_num: i32,
+		pub my_point: ElasticGeoPoint<DefaultGeoPointFormat>,
+		pub my_shape: ElasticGeoShape<DefaultGeoShapeMapping>,
 		pub my_strings: Vec<String>,
 		pub my_dates: Vec<ElasticDate<DefaultDateFormat>>
 	}

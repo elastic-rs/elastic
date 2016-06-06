@@ -70,17 +70,17 @@ impl ElasticType<DefaultDateMapping<ChronoFormat>, ChronoFormat> for DT {
 ///
 /// - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/date.html)
 #[derive(Debug, Clone)]
-pub struct ElasticDate<F, T = DefaultDateMapping<F>> where
+pub struct ElasticDate<F, M = DefaultDateMapping<F>> where
 F: DateFormat,
-T: ElasticFieldMapping<F> + ElasticDateMapping<F> {
+M: ElasticFieldMapping<F> + ElasticDateMapping<F> {
 	value: DT,
 	phantom_f: PhantomData<F>,
-	phantom_t: PhantomData<T>
+	phantom_t: PhantomData<M>
 }
 
-impl <F, T> ElasticDate<F, T> where
+impl <F, M> ElasticDate<F, M> where
 F: DateFormat,
-T: ElasticFieldMapping<F> + ElasticDateMapping<F> {
+M: ElasticFieldMapping<F> + ElasticDateMapping<F> {
 	/// Creates a new `ElasticDate` from the given `chrono::DateTime<UTC>`.
 	///
 	/// This function will consume the provided `chrono` date.
@@ -103,7 +103,7 @@ T: ElasticFieldMapping<F> + ElasticDateMapping<F> {
 	/// let esDate: ElasticDate<DefaultDateFormat> = ElasticDate::new(chronoDate);
 	/// # }
 	/// ```
-	pub fn new(date: DT) -> ElasticDate<F, T> {
+	pub fn new(date: DT) -> ElasticDate<F, M> {
 		ElasticDate {
 			value: date,
 			phantom_f: PhantomData,
@@ -126,7 +126,7 @@ T: ElasticFieldMapping<F> + ElasticDateMapping<F> {
 	/// 	886
 	/// );
 	/// ```
-	pub fn build(year: i32, month: u32, day: u32, hour: u32, minute: u32, second: u32, milli: u32) -> ElasticDate<F, T> {
+	pub fn build(year: i32, month: u32, day: u32, hour: u32, minute: u32, second: u32, milli: u32) -> ElasticDate<F, M> {
 		ElasticDate {
 			value: DT::from_utc(
 				NaiveDateTime::new(
@@ -149,7 +149,7 @@ T: ElasticFieldMapping<F> + ElasticDateMapping<F> {
 	///
 	/// let date: ElasticDate<DefaultDateFormat> = ElasticDate::now();
 	/// ```
-	pub fn now() -> ElasticDate<F, T> {
+	pub fn now() -> ElasticDate<F, M> {
 		ElasticDate {
 			value: chrono::UTC::now(),
 			phantom_f: PhantomData,
@@ -170,7 +170,7 @@ T: ElasticFieldMapping<F> + ElasticDateMapping<F> {
 	///
 	/// let date = ElasticDate::<BasicDateTime>::parse("20151126T145543.778Z").unwrap();
 	/// ```
-	pub fn parse(date: &str) -> Result<ElasticDate<F, T>, ParseError> {
+	pub fn parse(date: &str) -> Result<ElasticDate<F, M>, ParseError> {
 		F::parse(date).map(ElasticDate::new)
 	}
 
@@ -206,38 +206,38 @@ T: ElasticFieldMapping<F> + ElasticDateMapping<F> {
 	/// //Change the format to epoch_millis
 	/// let otherdate: ElasticDate<EpochMillis> = date.remap();
 	/// ```
-	pub fn remap<FInto, TInto>(self) -> ElasticDate<FInto, TInto> where
+	pub fn remap<FInto, MInto>(self) -> ElasticDate<FInto, MInto> where
 	FInto: DateFormat,
-	TInto: ElasticFieldMapping<FInto> + ElasticDateMapping<FInto> {
-		ElasticDate::<FInto, TInto>::new(self.value)
+	MInto: ElasticFieldMapping<FInto> + ElasticDateMapping<FInto> {
+		ElasticDate::<FInto, MInto>::new(self.value)
 	}
 }
 
-impl <F, T> ElasticType<T, F> for ElasticDate<F, T> where
+impl <F, M> ElasticType<M, F> for ElasticDate<F, M> where
 F: DateFormat,
-T: ElasticFieldMapping<F> + ElasticDateMapping<F> {
+M: ElasticFieldMapping<F> + ElasticDateMapping<F> {
 
 }
 
-impl <F, T> Default for ElasticDate<F, T> where
+impl <F, M> Default for ElasticDate<F, M> where
 F: DateFormat,
-T: ElasticFieldMapping<F> + ElasticDateMapping<F> {
-	fn default() -> ElasticDate<F, T> {
-		ElasticDate::<F, T>::now()
+M: ElasticFieldMapping<F> + ElasticDateMapping<F> {
+	fn default() -> ElasticDate<F, M> {
+		ElasticDate::<F, M>::now()
 	}
 }
 
-impl <F, T> From<DT> for ElasticDate<F, T> where
+impl <F, M> From<DT> for ElasticDate<F, M> where
 F: DateFormat,
-T: ElasticFieldMapping<F> + ElasticDateMapping<F> {
-	fn from(dt: DT) -> ElasticDate<F, T> {
-		ElasticDate::<F, T>::new(dt)
+M: ElasticFieldMapping<F> + ElasticDateMapping<F> {
+	fn from(dt: DT) -> ElasticDate<F, M> {
+		ElasticDate::<F, M>::new(dt)
 	}
 }
 
-impl <F, T> Datelike for ElasticDate<F, T> where
+impl <F, M> Datelike for ElasticDate<F, M> where
 F: DateFormat,
-T: ElasticFieldMapping<F> + ElasticDateMapping<F> {
+M: ElasticFieldMapping<F> + ElasticDateMapping<F> {
 	fn year(&self) -> i32 { self.value.year() }
 	fn month(&self) -> u32 { self.value.month() }
 	fn month0(&self) -> u32 { self.value.month0() }
@@ -248,49 +248,49 @@ T: ElasticFieldMapping<F> + ElasticDateMapping<F> {
 	fn weekday(&self) -> Weekday { self.value.weekday() }
 	fn isoweekdate(&self) -> (i32, u32, Weekday) { self.value.isoweekdate() }
 
-	fn with_year(&self, year: i32) -> Option<ElasticDate<F, T>> {
+	fn with_year(&self, year: i32) -> Option<ElasticDate<F, M>> {
 		match self.value.with_year(year) {
 			Some(dt) => Some(ElasticDate::new(dt)),
 			None => None
 		}
 	}
 
-	fn with_month(&self, month: u32) -> Option<ElasticDate<F, T>> {
+	fn with_month(&self, month: u32) -> Option<ElasticDate<F, M>> {
 		match self.value.with_month(month) {
 			Some(dt) => Some(ElasticDate::new(dt)),
 			None => None
 		}
 	}
 
-	fn with_month0(&self, month0: u32) -> Option<ElasticDate<F, T>> {
+	fn with_month0(&self, month0: u32) -> Option<ElasticDate<F, M>> {
 		match self.value.with_month0(month0) {
 			Some(dt) => Some(ElasticDate::new(dt)),
 			None => None
 		}
 	}
 
-	fn with_day(&self, day: u32) -> Option<ElasticDate<F, T>> {
+	fn with_day(&self, day: u32) -> Option<ElasticDate<F, M>> {
 		match self.value.with_day(day) {
 			Some(dt) => Some(ElasticDate::new(dt)),
 			None => None
 		}
 	}
 
-	fn with_day0(&self, day0: u32) -> Option<ElasticDate<F, T>> {
+	fn with_day0(&self, day0: u32) -> Option<ElasticDate<F, M>> {
 		match self.value.with_day0(day0) {
 			Some(dt) => Some(ElasticDate::new(dt)),
 			None => None
 		}
 	}
 
-	fn with_ordinal(&self, ordinal: u32) -> Option<ElasticDate<F, T>> {
+	fn with_ordinal(&self, ordinal: u32) -> Option<ElasticDate<F, M>> {
 		match self.value.with_ordinal(ordinal) {
 			Some(dt) => Some(ElasticDate::new(dt)),
 			None => None
 		}
 	}
 
-	fn with_ordinal0(&self, ordinal0: u32) -> Option<ElasticDate<F, T>> {
+	fn with_ordinal0(&self, ordinal0: u32) -> Option<ElasticDate<F, M>> {
 		match self.value.with_ordinal0(ordinal0) {
 			Some(dt) => Some(ElasticDate::new(dt)),
 			None => None
@@ -298,36 +298,36 @@ T: ElasticFieldMapping<F> + ElasticDateMapping<F> {
 	}
 }
 
-impl <F, T> Timelike for ElasticDate<F, T> where
+impl <F, M> Timelike for ElasticDate<F, M> where
 F: DateFormat,
-T: ElasticFieldMapping<F> + ElasticDateMapping<F> {
+M: ElasticFieldMapping<F> + ElasticDateMapping<F> {
 	fn hour(&self) -> u32 { self.value.hour() }
 	fn minute(&self) -> u32 { self.value.minute() }
 	fn second(&self) -> u32 { self.value.second() }
 	fn nanosecond(&self) -> u32 { self.value.nanosecond() }
 
-	fn with_hour(&self, hour: u32) -> Option<ElasticDate<F, T>> {
+	fn with_hour(&self, hour: u32) -> Option<ElasticDate<F, M>> {
 		match self.value.with_hour(hour) {
 			Some(dt) => Some(ElasticDate::new(dt)),
 			None => None
 		}
 	}
 
-	fn with_minute(&self, min: u32) -> Option<ElasticDate<F, T>> {
+	fn with_minute(&self, min: u32) -> Option<ElasticDate<F, M>> {
 		match self.value.with_minute(min) {
 			Some(dt) => Some(ElasticDate::new(dt)),
 			None => None
 		}
 	}
 
-	fn with_second(&self, sec: u32) -> Option<ElasticDate<F, T>> {
+	fn with_second(&self, sec: u32) -> Option<ElasticDate<F, M>> {
 		match self.value.with_second(sec) {
 			Some(dt) => Some(ElasticDate::new(dt)),
 			None => None
 		}
 	}
 
-	fn with_nanosecond(&self, nano: u32) -> Option<ElasticDate<F, T>> {
+	fn with_nanosecond(&self, nano: u32) -> Option<ElasticDate<F, M>> {
 		match self.value.with_nanosecond(nano) {
 			Some(dt) => Some(ElasticDate::new(dt)),
 			None => None
@@ -335,52 +335,52 @@ T: ElasticFieldMapping<F> + ElasticDateMapping<F> {
 	}
 }
 
-impl <F, T> Serialize for ElasticDate<F, T> where
+impl <F, M> Serialize for ElasticDate<F, M> where
 F: DateFormat,
-T: ElasticFieldMapping<F> + ElasticDateMapping<F> {
+M: ElasticFieldMapping<F> + ElasticDateMapping<F> {
 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where
 	S: Serializer {
 		serializer.serialize_str(&self.format())
 	}
 }
 
-impl <F, T> Deserialize for ElasticDate<F, T> where
+impl <F, M> Deserialize for ElasticDate<F, M> where
 F: DateFormat,
-T: ElasticFieldMapping<F> + ElasticDateMapping<F> {
-	fn deserialize<D>(deserializer: &mut D) -> Result<ElasticDate<F, T>, D::Error> where
+M: ElasticFieldMapping<F> + ElasticDateMapping<F> {
+	fn deserialize<D>(deserializer: &mut D) -> Result<ElasticDate<F, M>, D::Error> where
 	D: Deserializer {
 		#[derive(Default)]
-		struct DateTimeVisitor<F, T> where
+		struct DateTimeVisitor<F, M> where
 		F: DateFormat,
-		T: ElasticFieldMapping<F> + ElasticDateMapping<F> {
+		M: ElasticFieldMapping<F> + ElasticDateMapping<F> {
 			phantom_f: PhantomData<F>,
-			phantom_t: PhantomData<T>
+			phantom_t: PhantomData<M>
 		}
 
-		impl <F, T> serde::de::Visitor for DateTimeVisitor<F, T> where
+		impl <F, M> serde::de::Visitor for DateTimeVisitor<F, M> where
 		F: DateFormat,
-		T: ElasticFieldMapping<F> + ElasticDateMapping<F> {
-			type Value = ElasticDate<F, T>;
+		M: ElasticFieldMapping<F> + ElasticDateMapping<F> {
+			type Value = ElasticDate<F, M>;
 
-			fn visit_str<E>(&mut self, v: &str) -> Result<ElasticDate<F, T>, E> where
+			fn visit_str<E>(&mut self, v: &str) -> Result<ElasticDate<F, M>, E> where
 			E: serde::de::Error {
-				let result = ElasticDate::<F, T>::parse(v);
+				let result = ElasticDate::<F, M>::parse(v);
 				result.map_err(|err| serde::de::Error::custom(format!("{}", err)))
 			}
 
-			fn visit_i64<E>(&mut self, v: i64) -> Result<ElasticDate<F, T>, E> where
+			fn visit_i64<E>(&mut self, v: i64) -> Result<ElasticDate<F, M>, E> where
 			E: serde::de::Error {
-				let result = ElasticDate::<F, T>::parse(&v.to_string());
+				let result = ElasticDate::<F, M>::parse(&v.to_string());
 				result.map_err(|err| serde::de::Error::custom(format!("{}", err)))
 			}
 
-			fn visit_u64<E>(&mut self, v: u64) -> Result<ElasticDate<F, T>, E> where
+			fn visit_u64<E>(&mut self, v: u64) -> Result<ElasticDate<F, M>, E> where
 			E: serde::de::Error {
-				let result = ElasticDate::<F, T>::parse(&v.to_string());
+				let result = ElasticDate::<F, M>::parse(&v.to_string());
 				result.map_err(|err| serde::de::Error::custom(format!("{}", err)))
 			}
 		}
 
-		deserializer.deserialize(DateTimeVisitor::<F, T>::default())
+		deserializer.deserialize(DateTimeVisitor::<F, M>::default())
 	}
 }

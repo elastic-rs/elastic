@@ -345,6 +345,7 @@
 #![cfg_attr(feature = "nightly", feature(custom_derive, plugin, associated_type_defaults))]
 #![cfg_attr(feature = "nightly", plugin(serde_macros, elastic_date_macros))]
 #![cfg_attr(feature = "nightly-testing", plugin(clippy))]
+#![cfg_attr(feature = "nightly-testing", allow(identity_op))]
 
 #[cfg_attr(not(feature = "nightly"), macro_use)]
 #[cfg(not(feature = "nightly"))]

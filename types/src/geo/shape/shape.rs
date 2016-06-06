@@ -24,7 +24,7 @@ use ::mapping::{ ElasticType, ElasticFieldMapping };
 /// # }
 /// ```
 #[derive(Debug, Clone)]
-pub struct ElasticGeoShape<M = DefaultGeoShapeMapping> where M: ElasticFieldMapping<()> + ElasticGeoShapeMapping {
+pub struct ElasticGeoShape<M> where M: ElasticFieldMapping<()> + ElasticGeoShapeMapping {
     value: Geometry,
     phantom: PhantomData<M>
 }

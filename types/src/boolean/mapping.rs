@@ -146,41 +146,41 @@ impl_boolean_mapping!(DefaultBooleanMapping);
 
 /// Base visitor for serialising string mappings.
 #[derive(Debug, PartialEq, Default)]
-pub struct ElasticBooleanMappingVisitor<T> where T: ElasticBooleanMapping {
-	phantom: PhantomData<T>
+pub struct ElasticBooleanMappingVisitor<M> where M: ElasticBooleanMapping {
+	phantom: PhantomData<M>
 }
 
-impl <T> ElasticTypeVisitor for ElasticBooleanMappingVisitor<T> where
-T: ElasticBooleanMapping {
+impl <M> ElasticTypeVisitor for ElasticBooleanMappingVisitor<M> where
+M: ElasticBooleanMapping {
 	fn new() -> Self {
 		ElasticBooleanMappingVisitor {
 			phantom: PhantomData
 		}
 	}
 }
-impl <T> serde::ser::MapVisitor for ElasticBooleanMappingVisitor<T> where
-T: ElasticBooleanMapping {
+impl <M> serde::ser::MapVisitor for ElasticBooleanMappingVisitor<M> where
+M: ElasticBooleanMapping {
 	fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
 	where S: serde::Serializer {
-		try!(serializer.serialize_struct_elt("type", T::data_type()));
+		try!(serializer.serialize_struct_elt("type", M::data_type()));
 
-		if let Some(boost) = T::boost() {
+		if let Some(boost) = M::boost() {
 			try!(serializer.serialize_struct_elt("boost", boost));
 		}
 
-		if let Some(doc_values) = T::doc_values() {
+		if let Some(doc_values) = M::doc_values() {
 			try!(serializer.serialize_struct_elt("doc_values", doc_values));
 		}
 
-		if let Some(index) = T::index() {
+		if let Some(index) = M::index() {
 			try!(serializer.serialize_struct_elt("index", index));
 		}
 
-		if let Some(store) = T::store() {
+		if let Some(store) = M::store() {
 			try!(serializer.serialize_struct_elt("store", store));
 		}
 
-		if let Some(null_value) = T::null_value() {
+		if let Some(null_value) = M::null_value() {
 			try!(serializer.serialize_struct_elt("null_value", null_value));
 		}
 

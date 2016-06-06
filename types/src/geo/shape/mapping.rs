@@ -186,50 +186,50 @@ impl_geo_shape_mapping!(DefaultGeoShapeMapping);
 
 /// Visitor for a `geo_shape` field mapping.
 #[derive(Debug, PartialEq)]
-pub struct ElasticGeoShapeMappingVisitor<T> where
-T: ElasticGeoShapeMapping {
-    phantom: PhantomData<T>
+pub struct ElasticGeoShapeMappingVisitor<M> where
+M: ElasticGeoShapeMapping {
+    phantom: PhantomData<M>
 }
 
-impl <T> ElasticTypeVisitor for ElasticGeoShapeMappingVisitor<T> where
-T: ElasticGeoShapeMapping {
+impl <M> ElasticTypeVisitor for ElasticGeoShapeMappingVisitor<M> where
+M: ElasticGeoShapeMapping {
     fn new() -> Self {
         ElasticGeoShapeMappingVisitor {
             phantom: PhantomData
         }
     }
 }
-impl <T> serde::ser::MapVisitor for ElasticGeoShapeMappingVisitor<T> where
-T: ElasticGeoShapeMapping {
+impl <M> serde::ser::MapVisitor for ElasticGeoShapeMappingVisitor<M> where
+M: ElasticGeoShapeMapping {
     fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
     where S: Serializer {
-        try!(serializer.serialize_struct_elt("type", T::data_type()));
+        try!(serializer.serialize_struct_elt("type", M::data_type()));
 
-        if let Some(tree) = T::tree() {
+        if let Some(tree) = M::tree() {
             try!(serializer.serialize_struct_elt("tree", tree));
         }
 
-        if let Some(precision) = T::precision() {
+        if let Some(precision) = M::precision() {
             try!(serializer.serialize_struct_elt("precision", precision));
         }
 
-        if let Some(tree_levels) = T::tree_levels() {
+        if let Some(tree_levels) = M::tree_levels() {
             try!(serializer.serialize_struct_elt("tree_levels", tree_levels));
         }
 
-        if let Some(strategy) = T::strategy() {
+        if let Some(strategy) = M::strategy() {
             try!(serializer.serialize_struct_elt("strategy", strategy));
         }
 
-        if let Some(distance_error_pct) = T::distance_error_pct() {
+        if let Some(distance_error_pct) = M::distance_error_pct() {
             try!(serializer.serialize_struct_elt("distance_error_pct", distance_error_pct));
         }
 
-        if let Some(orientation) = T::orientation() {
+        if let Some(orientation) = M::orientation() {
             try!(serializer.serialize_struct_elt("orientation", orientation));
         }
 
-        if let Some(points_only) = T::points_only() {
+        if let Some(points_only) = M::points_only() {
             try!(serializer.serialize_struct_elt("points_only", points_only));
         }
 

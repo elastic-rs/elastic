@@ -52,18 +52,18 @@ use super::GeoPointFormat;
 ///
 /// # Links
 /// - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/geo-point.html)
-pub struct ElasticGeoPoint<F, T = DefaultGeoPointMapping<F>> where
+pub struct ElasticGeoPoint<F, M = DefaultGeoPointMapping<F>> where
 F: GeoPointFormat,
-T: ElasticFieldMapping<F> + ElasticGeoPointMapping<F> {
+M: ElasticFieldMapping<F> + ElasticGeoPointMapping<F> {
     /// The `x` and `y` coordinate for the point.
     value: Point,
 	phantom_f: PhantomData<F>,
-	phantom_t: PhantomData<T>
+	phantom_t: PhantomData<M>
 }
 
-impl <F, T> ElasticGeoPoint<F, T> where
+impl <F, M> ElasticGeoPoint<F, M> where
 F: GeoPointFormat,
-T: ElasticFieldMapping<F> + ElasticGeoPointMapping<F> {
+M: ElasticFieldMapping<F> + ElasticGeoPointMapping<F> {
     /// Creates a new `ElasticGeoPoint` from the given coordinate.
 	///
 	/// This function will consume the provided `Coordinate`.
@@ -86,7 +86,7 @@ T: ElasticFieldMapping<F> + ElasticGeoPointMapping<F> {
 	/// let point: ElasticGeoPoint<DefaultGeoPointFormat> = ElasticGeoPoint::new(coord);
 	/// # }
 	/// ```
-    pub fn new(point: Coordinate) -> ElasticGeoPoint<F, T> {
+    pub fn new(point: Coordinate) -> ElasticGeoPoint<F, M> {
         ElasticGeoPoint {
             value: Point(point),
             phantom_f: PhantomData,
@@ -101,8 +101,8 @@ T: ElasticFieldMapping<F> + ElasticGeoPointMapping<F> {
 	///
 	/// let point: ElasticGeoPoint<DefaultGeoPointFormat> = ElasticGeoPoint::build(1.0, 1.0);
 	/// ```
-    pub fn build(x: f64, y: f64) -> ElasticGeoPoint<F, T> {
-        ElasticGeoPoint::<F, T>::new(Coordinate { x: x, y: y })
+    pub fn build(x: f64, y: f64) -> ElasticGeoPoint<F, M> {
+        ElasticGeoPoint::<F, M>::new(Coordinate { x: x, y: y })
     }
 
     /// Get the underlying `Point` coordinate.
@@ -138,56 +138,56 @@ T: ElasticFieldMapping<F> + ElasticGeoPointMapping<F> {
 	/// //Change the format to an object
 	/// let otherpoint: ElasticGeoPoint<GeoPointObject> = point.remap();
 	/// ```
-	pub fn remap<FInto, TInto>(self) -> ElasticGeoPoint<FInto, TInto> where
+	pub fn remap<FInto, MInto>(self) -> ElasticGeoPoint<FInto, MInto> where
 	FInto: GeoPointFormat,
-	TInto: ElasticFieldMapping<FInto> + ElasticGeoPointMapping<FInto> {
-		ElasticGeoPoint::<FInto, TInto>::new(self.value.0)
+	MInto: ElasticFieldMapping<FInto> + ElasticGeoPointMapping<FInto> {
+		ElasticGeoPoint::<FInto, MInto>::new(self.value.0)
 	}
 }
 
-impl <F, T> ElasticType<T, F> for ElasticGeoPoint<F, T> where
+impl <F, M> ElasticType<M, F> for ElasticGeoPoint<F, M> where
 F: GeoPointFormat,
-T: ElasticFieldMapping<F> + ElasticGeoPointMapping<F> {
+M: ElasticFieldMapping<F> + ElasticGeoPointMapping<F> {
 
 }
 
-impl <F, T> From<Coordinate> for ElasticGeoPoint<F, T> where
+impl <F, M> From<Coordinate> for ElasticGeoPoint<F, M> where
 F: GeoPointFormat,
-T: ElasticFieldMapping<F> + ElasticGeoPointMapping<F> {
-	fn from(point: Coordinate) -> ElasticGeoPoint<F, T> {
-		ElasticGeoPoint::<F, T>::new(point)
+M: ElasticFieldMapping<F> + ElasticGeoPointMapping<F> {
+	fn from(point: Coordinate) -> ElasticGeoPoint<F, M> {
+		ElasticGeoPoint::<F, M>::new(point)
 	}
 }
 
-impl <F, T> From<Point> for ElasticGeoPoint<F, T> where
+impl <F, M> From<Point> for ElasticGeoPoint<F, M> where
 F: GeoPointFormat,
-T: ElasticFieldMapping<F> + ElasticGeoPointMapping<F> {
-	fn from(point: Point) -> ElasticGeoPoint<F, T> {
-		ElasticGeoPoint::<F, T>::new(point.0)
+M: ElasticFieldMapping<F> + ElasticGeoPointMapping<F> {
+	fn from(point: Point) -> ElasticGeoPoint<F, M> {
+		ElasticGeoPoint::<F, M>::new(point.0)
 	}
 }
 
-impl <F, T> ToGeo for ElasticGeoPoint<F, T> where
+impl <F, M> ToGeo for ElasticGeoPoint<F, M> where
 F: GeoPointFormat,
-T: ElasticFieldMapping<F> + ElasticGeoPointMapping<F> {
+M: ElasticFieldMapping<F> + ElasticGeoPointMapping<F> {
     fn to_geo(&self) -> Geometry {
         Geometry::Point(self.value.clone())
     }
 }
 
-impl <F, T> Serialize for ElasticGeoPoint<F, T> where
+impl <F, M> Serialize for ElasticGeoPoint<F, M> where
 F: GeoPointFormat,
-T: ElasticFieldMapping<F> + ElasticGeoPointMapping<F> {
+M: ElasticFieldMapping<F> + ElasticGeoPointMapping<F> {
 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where
 	S: Serializer {
-		F::format::<S, T>(&self.value, serializer)
+		F::format::<S, M>(&self.value, serializer)
 	}
 }
 
-impl <F, T> Deserialize for ElasticGeoPoint<F, T> where
+impl <F, M> Deserialize for ElasticGeoPoint<F, M> where
 F: GeoPointFormat,
-T: ElasticFieldMapping<F> + ElasticGeoPointMapping<F> {
-	fn deserialize<D>(deserializer: &mut D) -> Result<ElasticGeoPoint<F, T>, D::Error> where
+M: ElasticFieldMapping<F> + ElasticGeoPointMapping<F> {
+	fn deserialize<D>(deserializer: &mut D) -> Result<ElasticGeoPoint<F, M>, D::Error> where
 	D: Deserializer {
         let point = try!(F::parse(deserializer));
 

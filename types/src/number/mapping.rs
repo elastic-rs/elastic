@@ -176,51 +176,51 @@ macro_rules! number_mapping {
 
 		/// Visitor for a `number` field mapping.
 		#[derive(Debug, PartialEq)]
-		pub struct $v<T> where T: $m {
-			phantom: PhantomData<T>
+		pub struct $v<M> where M: $m {
+			phantom: PhantomData<M>
 		}
 
-        impl <T> ElasticTypeVisitor for $v<T> where T: $m {
+        impl <M> ElasticTypeVisitor for $v<M> where M: $m {
             fn new() -> Self {
         		$v {
                     phantom: PhantomData
                 }
         	}
         }
-		impl <T> serde::ser::MapVisitor for $v<T> where T: $m {
+		impl <M> serde::ser::MapVisitor for $v<M> where M: $m {
 			fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
 			where S: Serializer {
-				try!(serializer.serialize_struct_elt("type", T::data_type()));
+				try!(serializer.serialize_struct_elt("type", M::data_type()));
 
-				if let Some(coerce) = T::coerce() {
+				if let Some(coerce) = M::coerce() {
 					try!(serializer.serialize_struct_elt("coerce", coerce));
 				}
 
-				if let Some(boost) = T::boost() {
+				if let Some(boost) = M::boost() {
 					try!(serializer.serialize_struct_elt("boost", boost));
 				}
 
-				if let Some(doc_values) = T::doc_values() {
+				if let Some(doc_values) = M::doc_values() {
 					try!(serializer.serialize_struct_elt("doc_values", doc_values));
 				}
 
-				if let Some(ignore_malformed) = T::ignore_malformed() {
+				if let Some(ignore_malformed) = M::ignore_malformed() {
 					try!(serializer.serialize_struct_elt("ignore_malformed", ignore_malformed));
 				}
 
-				if let Some(include_in_all) = T::include_in_all() {
+				if let Some(include_in_all) = M::include_in_all() {
 					try!(serializer.serialize_struct_elt("include_in_all", include_in_all));
 				}
 
-				if let Some(null_value) = T::null_value() {
+				if let Some(null_value) = M::null_value() {
 					try!(serializer.serialize_struct_elt("null_value", null_value));
 				}
 
-				if let Some(precision_step) = T::precision_step() {
+				if let Some(precision_step) = M::precision_step() {
 					try!(serializer.serialize_struct_elt("precision_step", precision_step));
 				}
 
-				if let Some(store) = T::store() {
+				if let Some(store) = M::store() {
 					try!(serializer.serialize_struct_elt("store", store));
 				}
 

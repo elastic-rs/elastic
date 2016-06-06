@@ -1,6 +1,6 @@
 //! Implementation of the Elasticsearch `geo_shape` type.
 //!
-//! Geo shape is a wrapper for storing [GeoJSON](http://geojson.org/) structures in Elasticsearch.
+//! Geo shape is a wrapper for storing [geojson](http://geojson.org/) structures in Elasticsearch.
 //!
 //! # Examples
 //!
@@ -10,8 +10,9 @@
 //!
 //! ```
 //! # use elastic_types::geo::shape::prelude::*;
+//! # use elastic_types::geo::shape::mapping::*;
 //! struct MyType {
-//! 	pub field: ElasticGeoShape
+//! 	pub field: ElasticGeoShape<DefaultGeoShapeMapping>
 //! }
 //! ```
 //!

@@ -57,15 +57,15 @@ impl serde::Serialize for Dynamic {
 
 /// Visitor for an `object` type mapping when mapping as a field.
 #[derive(Debug, PartialEq)]
-pub struct ElasticObjectMappingVisitor<T, V> where
-T: ElasticObjectMapping,
+pub struct ElasticObjectMappingVisitor<M, V> where
+M: ElasticObjectMapping,
 V: ElasticTypeVisitor {
-	phantom_t: PhantomData<T>,
+	phantom_t: PhantomData<M>,
 	phantom_v: PhantomData<V>
 }
 
-impl <T, V> ElasticTypeVisitor for ElasticObjectMappingVisitor<T, V> where
-T: ElasticObjectMapping,
+impl <M, V> ElasticTypeVisitor for ElasticObjectMappingVisitor<M, V> where
+M: ElasticObjectMapping,
 V: ElasticTypeVisitor {
 	fn new() -> Self {
 		ElasticObjectMappingVisitor {
@@ -75,22 +75,22 @@ V: ElasticTypeVisitor {
 	}
 }
 
-impl <T, V> serde::ser::MapVisitor for ElasticObjectMappingVisitor<T, V> where
-T: ElasticObjectMapping,
+impl <M, V> serde::ser::MapVisitor for ElasticObjectMappingVisitor<M, V> where
+M: ElasticObjectMapping,
 V: ElasticTypeVisitor {
 	fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
 	where S: Serializer {
-		try!(serializer.serialize_struct_elt("type", <T as ElasticFieldMapping<()>>::data_type()));
+		try!(serializer.serialize_struct_elt("type", <M as ElasticFieldMapping<()>>::data_type()));
 
-		if let Some(dynamic) = T::dynamic() {
+		if let Some(dynamic) = M::dynamic() {
 			try!(serializer.serialize_struct_elt("dynamic", dynamic));
 		};
 
-		if let Some(enabled) = T::enabled() {
+		if let Some(enabled) = M::enabled() {
 			try!(serializer.serialize_struct_elt("enabled", enabled));
 		};
 
-		if let Some(include_in_all) = T::include_in_all() {
+		if let Some(include_in_all) = M::include_in_all() {
 			try!(serializer.serialize_struct_elt("include_in_all", include_in_all));
 		};
 

@@ -30,10 +30,10 @@ pub const DATE_DATATYPE: &'static str = "date";
 /// use elastic_types::date::prelude::*;
 ///
 /// #[derive(Default, Clone, Copy, ElasticDateMapping)]
-/// pub struct MyDateMapping<T: DateFormat> {
-/// 	phantom: PhantomData<T>
+/// pub struct MyDateMapping<F: DateFormat> {
+/// 	phantom: PhantomData<F>
 /// }
-/// impl <T: DateFormat> ElasticDateMapping<T> for MyDateMapping<T> {
+/// impl <F: DateFormat> ElasticDateMapping<F> for MyDateMapping<F> {
 /// 	//Overload the mapping functions here
 /// 	fn boost() -> Option<f32> {
 ///			Some(1.5)
@@ -56,10 +56,10 @@ pub const DATE_DATATYPE: &'static str = "date";
 /// # use elastic_types::mapping::prelude::*;
 /// # use elastic_types::date::prelude::*;
 /// # #[derive(Default, Clone, Copy, ElasticDateMapping)]
-/// # pub struct MyDateMapping<T: DateFormat = EpochMillis> {
-/// # 	phantom: PhantomData<T>
+/// # pub struct MyDateMapping<F: DateFormat = EpochMillis> {
+/// # 	phantom: PhantomData<F>
 /// # }
-/// # impl <T: DateFormat> ElasticDateMapping<T> for MyDateMapping<T> {
+/// # impl <F: DateFormat> ElasticDateMapping<F> for MyDateMapping<F> {
 /// # 	//Overload the mapping functions here
 /// # 	fn boost() -> Option<f32> {
 ///	# 		Some(1.5)
@@ -83,7 +83,7 @@ pub const DATE_DATATYPE: &'static str = "date";
 /// Automatically deriving mapping has the following limitations:
 ///
 /// - Non-generic mappings aren't supported by auto deriving.
-/// So your date mapping must take generic parameter `<T: DateFormat>`.
+/// So your date mapping must take generic parameter `<F: DateFormat>`.
 ///
 /// The above limitation can be worked around by implementing the mapping manually.
 ///
@@ -137,26 +137,26 @@ pub const DATE_DATATYPE: &'static str = "date";
 /// use elastic_types::date::prelude::*;
 ///
 /// #[derive(Default, Clone)]
-/// pub struct MyDateMapping<T: DateFormat> {
-/// 	phantom: PhantomData<T>
+/// pub struct MyDateMapping<F: DateFormat> {
+/// 	phantom: PhantomData<F>
 /// }
 ///
-/// impl <T: DateFormat> ElasticFieldMapping<T> for MyDateMapping<T> {
-/// 	type Visitor = ElasticDateMappingVisitor<T, MyDateMapping<T>>;
+/// impl <F: DateFormat> ElasticFieldMapping<F> for MyDateMapping<F> {
+/// 	type Visitor = ElasticDateMappingVisitor<F, MyDateMapping<F>>;
 ///
 /// 	fn data_type() -> &'static str {
 /// 		DATE_DATATYPE
 /// 	}
 /// }
 ///
-/// impl <T: DateFormat> ElasticDateMapping<T> for MyDateMapping<T> {
+/// impl <F: DateFormat> ElasticDateMapping<F> for MyDateMapping<F> {
 /// 	//Overload the mapping functions here
 /// 	fn boost() -> Option<f32> {
 ///			Some(1.5)
 ///		}
 /// }
 ///
-/// impl <T: DateFormat> serde::Serialize for MyDateMapping<T> {
+/// impl <F: DateFormat> serde::Serialize for MyDateMapping<F> {
 /// 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
 /// 	where S: serde::Serializer {
 /// 		serializer.serialize_struct("mapping", Self::get_visitor())
@@ -164,9 +164,9 @@ pub const DATE_DATATYPE: &'static str = "date";
 /// }
 /// # }
 /// ```
-pub trait ElasticDateMapping<T> where
-T: DateFormat,
-Self: ElasticFieldMapping<T> + Sized + Serialize {
+pub trait ElasticDateMapping<F> where
+F: DateFormat,
+Self: ElasticFieldMapping<F> + Sized + Serialize {
 	/// Field-level index time boosting. Accepts a floating point number, defaults to `1.0`.
 	fn boost() -> Option<f32> {
 		None
@@ -200,7 +200,7 @@ Self: ElasticFieldMapping<T> + Sized + Serialize {
 
 	/// The date format(s) that can be parsed.
 	fn format() -> &'static str {
-		T::name()
+		F::name()
 	}
 
 	/// If `true`, malformed numbers are ignored.
@@ -211,7 +211,7 @@ Self: ElasticFieldMapping<T> + Sized + Serialize {
 
 	/// Accepts a date value in one of the configured format's as the field which is substituted for any explicit null values.
 	/// Defaults to `null`, which means the field is treated as missing.
-	fn null_value() -> Option<ElasticDate<T>> {
+	fn null_value() -> Option<ElasticDate<F>> {
 		None
 	}
 
@@ -223,27 +223,27 @@ Self: ElasticFieldMapping<T> + Sized + Serialize {
 
 /// Default mapping for `ElasticDate`.
 #[derive(Debug, Default, Clone, Copy)]
-pub struct DefaultDateMapping<T> where
-T: DateFormat {
-	phantom: PhantomData<T>
+pub struct DefaultDateMapping<F> where
+F: DateFormat {
+	phantom: PhantomData<F>
 }
-impl <T> ElasticDateMapping<T> for DefaultDateMapping<T> where
-T: DateFormat { }
+impl <F> ElasticDateMapping<F> for DefaultDateMapping<F> where
+F: DateFormat { }
 
-impl_date_mapping!(DefaultDateMapping<T>);
+impl_date_mapping!(DefaultDateMapping<F>);
 
 /// Visitor for a `date` map.
 #[derive(Debug, PartialEq)]
-pub struct ElasticDateMappingVisitor<F, T> where
+pub struct ElasticDateMappingVisitor<F, M> where
 F: DateFormat,
-T: ElasticDateMapping<F> {
+M: ElasticDateMapping<F> {
 	phantom_f: PhantomData<F>,
-	phantom_t: PhantomData<T>
+	phantom_t: PhantomData<M>
 }
 
-impl <F, T> ElasticTypeVisitor for ElasticDateMappingVisitor<F, T> where
+impl <F, M> ElasticTypeVisitor for ElasticDateMappingVisitor<F, M> where
 F: DateFormat,
-T: ElasticDateMapping<F> {
+M: ElasticDateMapping<F> {
 	fn new() -> Self {
 		ElasticDateMappingVisitor {
 			phantom_f: PhantomData,
@@ -251,44 +251,44 @@ T: ElasticDateMapping<F> {
 		}
 	}
 }
-impl <F, T> serde::ser::MapVisitor for ElasticDateMappingVisitor<F, T>  where
+impl <F, M> serde::ser::MapVisitor for ElasticDateMappingVisitor<F, M>  where
 F: DateFormat,
-T: ElasticDateMapping<F> {
+M: ElasticDateMapping<F> {
 	fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
 	where S: Serializer {
-		try!(serializer.serialize_struct_elt("type", T::data_type()));
+		try!(serializer.serialize_struct_elt("type", M::data_type()));
 
-		if let Some(boost) = T::boost() {
+		if let Some(boost) = M::boost() {
 			try!(serializer.serialize_struct_elt("boost", boost));
 		};
 
-		if let Some(doc_values) = T::doc_values() {
+		if let Some(doc_values) = M::doc_values() {
 			try!(serializer.serialize_struct_elt("doc_values", doc_values));
 		};
 
-		if let Some(include_in_all) = T::include_in_all() {
+		if let Some(include_in_all) = M::include_in_all() {
 			try!(serializer.serialize_struct_elt("include_in_all", include_in_all));
 		};
 
-		if let Some(index) = T::index() {
+		if let Some(index) = M::index() {
 			try!(serializer.serialize_struct_elt("index", index));
 		};
 
-		if let Some(store) = T::store() {
+		if let Some(store) = M::store() {
 			try!(serializer.serialize_struct_elt("store", store));
 		};
 
-		try!(serializer.serialize_struct_elt("format", T::format()));
+		try!(serializer.serialize_struct_elt("format", M::format()));
 
-		if let Some(ignore_malformed) = T::ignore_malformed() {
+		if let Some(ignore_malformed) = M::ignore_malformed() {
 			try!(serializer.serialize_struct_elt("ignore_malformed", ignore_malformed));
 		};
 
-		if let Some(null_value) = T::null_value() {
+		if let Some(null_value) = M::null_value() {
 			try!(serializer.serialize_struct_elt("null_value", null_value));
 		};
 
-		if let Some(precision_step) = T::precision_step() {
+		if let Some(precision_step) = M::precision_step() {
 			try!(serializer.serialize_struct_elt("precision_step", precision_step));
 		};
 

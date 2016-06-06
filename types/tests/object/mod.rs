@@ -162,6 +162,12 @@ fn serialise_mapping_type_as_nested() {
 			"my_num": {
 				"type": "integer"
 			},
+			"my_point": {
+				"type": "geo_point"
+			},
+			"my_shape": {
+				"type": "geo_shape"
+			},
 			"my_strings": {
 				"type": "string"
 			},

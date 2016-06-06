@@ -219,92 +219,92 @@ impl_string_mapping!(DefaultStringMapping);
 
 /// Base visitor for serialising string mappings.
 #[derive(Debug, PartialEq)]
-pub struct ElasticStringMappingVisitor<T> where T: ElasticStringMapping {
-	phantom: PhantomData<T>
+pub struct ElasticStringMappingVisitor<M> where M: ElasticStringMapping {
+	phantom: PhantomData<M>
 }
 
-impl <T> ElasticTypeVisitor for ElasticStringMappingVisitor<T> where
-T: ElasticStringMapping {
+impl <M> ElasticTypeVisitor for ElasticStringMappingVisitor<M> where
+M: ElasticStringMapping {
 	fn new() -> Self {
 		ElasticStringMappingVisitor {
 			phantom: PhantomData
 		}
 	}
 }
-impl <T> serde::ser::MapVisitor for ElasticStringMappingVisitor<T> where
-T: ElasticStringMapping {
+impl <M> serde::ser::MapVisitor for ElasticStringMappingVisitor<M> where
+M: ElasticStringMapping {
 	#[cfg_attr(feature = "nightly-testing", allow(cyclomatic_complexity))]
 	fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
 	where S: serde::Serializer {
-		try!(serializer.serialize_struct_elt("type", T::data_type()));
+		try!(serializer.serialize_struct_elt("type", M::data_type()));
 
-		if let Some(boost) = T::boost() {
+		if let Some(boost) = M::boost() {
 			try!(serializer.serialize_struct_elt("boost", boost));
 		}
 
-		if let Some(doc_values) = T::doc_values() {
+		if let Some(doc_values) = M::doc_values() {
 			try!(serializer.serialize_struct_elt("doc_values", doc_values));
 		}
 
-		if let Some(include_in_all) = T::include_in_all() {
+		if let Some(include_in_all) = M::include_in_all() {
 			try!(serializer.serialize_struct_elt("include_in_all", include_in_all));
 		}
 
-		if let Some(index) = T::index() {
+		if let Some(index) = M::index() {
 			try!(serializer.serialize_struct_elt("index", index));
 		}
 
-		if let Some(store) = T::store() {
+		if let Some(store) = M::store() {
 			try!(serializer.serialize_struct_elt("store", store));
 		}
 
-		if let Some(analyzer) = T::analyzer() {
+		if let Some(analyzer) = M::analyzer() {
 			try!(serializer.serialize_struct_elt("analyzer", analyzer));
 		}
 
-		if let Some(fields) = T::fields() {
+		if let Some(fields) = M::fields() {
 			try!(serializer.serialize_struct_elt("fields", fields));
 		}
 
-		match T::fielddata() {
+		match M::fielddata() {
 			Some(FieldData::PagedBytes(None, None)) => (),
 			Some(fielddata) => try!(serializer.serialize_struct_elt("fielddata", fielddata)),
 			None => ()
 		}
 
-		if let Some(ignore_above) = T::ignore_above() {
+		if let Some(ignore_above) = M::ignore_above() {
 			try!(serializer.serialize_struct_elt("ignore_above", ignore_above));
 		}
 
-		if let Some(index_options) = T::index_options() {
+		if let Some(index_options) = M::index_options() {
 			try!(serializer.serialize_struct_elt("index_options", index_options));
 		}
 
-		if let Some(norms) = T::norms() {
+		if let Some(norms) = M::norms() {
 			try!(serializer.serialize_struct_elt("norms", norms));
 		}
 
-		if let Some(null_value) = T::null_value() {
+		if let Some(null_value) = M::null_value() {
 			try!(serializer.serialize_struct_elt("null_value", null_value));
 		}
 
-		if let Some(position_increment_gap) = T::position_increment_gap() {
+		if let Some(position_increment_gap) = M::position_increment_gap() {
 			try!(serializer.serialize_struct_elt("position_increment_gap", position_increment_gap));
 		}
 
-		if let Some(search_analyzer) = T::search_analyzer() {
+		if let Some(search_analyzer) = M::search_analyzer() {
 			try!(serializer.serialize_struct_elt("search_analyzer", search_analyzer));
 		}
 
-		if let Some(search_quote_analyzer) = T::search_quote_analyzer() {
+		if let Some(search_quote_analyzer) = M::search_quote_analyzer() {
 			try!(serializer.serialize_struct_elt("search_quote_analyzer", search_quote_analyzer))
 		}
 
-		if let Some(similarity) = T::similarity() {
+		if let Some(similarity) = M::similarity() {
 			try!(serializer.serialize_struct_elt("similarity", similarity))
 		}
 
-		if let Some(term_vector) = T::term_vector() {
+		if let Some(term_vector) = M::term_vector() {
 			try!(serializer.serialize_struct_elt("term_vector", term_vector));
 		}
 
@@ -569,7 +569,7 @@ impl serde::ser::MapVisitor for FieldDataFilterVisitor {
 	}
 }
 
-/// The index_options parameter controls what information is added to the inverted index, for search and highlighting purposes.
+/// The `index_options` parameter controls what information is added to the inverted index, for search and highlighting purposes.
 #[derive(Debug, Clone, Copy)]
 pub enum IndexOptions {
 	/// Only the doc number is indexed. Can answer the question Does this term exist in this field?

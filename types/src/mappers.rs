@@ -109,7 +109,7 @@ M: ElasticUserTypeMapping {
 		let mut writer = Vec::new();
 		{
 			let mut ser = serde_json::Serializer::new(&mut writer);
-			let _ = try!(Self::to_writer(t, &mut ser));
+			try!(Self::to_writer(t, &mut ser));
 		}
 
 		String::from_utf8(writer).map_err(|e| serde_json::Error::custom(e.description()))
@@ -155,7 +155,7 @@ M: ElasticUserTypeMapping {
 	/// ```
 	pub fn to_value(t: M) -> Result<serde_json::Value, serde_json::Error> {
 		let mut ser = serde_json::value::Serializer::new();
-		let _ = try!(Self::to_writer(t, &mut ser));
+		try!(Self::to_writer(t, &mut ser));
 
 		Ok(ser.unwrap())
 	}

@@ -6,7 +6,6 @@ extern crate serde_json;
 
 use elastic_types::geo::point::mapping::*;
 use elastic_types::geo::point::prelude::*;
-use georust::{ Geometry, ToGeo, Coordinate };
 
 use ::geo_point_fixtures::*;
 

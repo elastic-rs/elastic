@@ -31,10 +31,10 @@ pub const GEOPOINT_DATATYPE: &'static str = "geo_point";
 /// use elastic_types::geo::point::prelude::*;
 ///
 /// #[derive(Default, Clone, Copy, ElasticGeoPointMapping)]
-/// pub struct MyGeoPointMapping<T: GeoPointFormat> {
-/// 	phantom: PhantomData<T>
+/// pub struct MyGeoPointMapping<F: GeoPointFormat> {
+/// 	phantom: PhantomData<F>
 /// }
-/// impl <T: GeoPointFormat> ElasticGeoPointMapping<T> for MyGeoPointMapping<T> {
+/// impl <F: GeoPointFormat> ElasticGeoPointMapping<F> for MyGeoPointMapping<F> {
 /// 	//Overload the mapping functions here
 /// 	fn geohash() -> Option<bool> {
 ///			Some(true)
@@ -58,10 +58,10 @@ pub const GEOPOINT_DATATYPE: &'static str = "geo_point";
 /// # use elastic_types::geo::point::prelude::*;
 /// #
 /// # #[derive(Default, Clone, Copy, ElasticGeoPointMapping)]
-/// # pub struct MyGeoPointMapping<T: GeoPointFormat> {
-/// # 	phantom: PhantomData<T>
+/// # pub struct MyGeoPointMapping<F: GeoPointFormat> {
+/// # 	phantom: PhantomData<F>
 /// # }
-/// # impl <T: GeoPointFormat> ElasticGeoPointMapping<T> for MyGeoPointMapping<T> {
+/// # impl <F: GeoPointFormat> ElasticGeoPointMapping<F> for MyGeoPointMapping<F> {
 /// # 	//Overload the mapping functions here
 /// # 	fn geohash() -> Option<bool> {
 /// #			Some(true)
@@ -84,7 +84,7 @@ pub const GEOPOINT_DATATYPE: &'static str = "geo_point";
 /// Automatically deriving mapping has the following limitations:
 ///
 /// - Non-generic mappings aren't supported by auto deriving.
-/// So your date mapping must take generic parameter `<T: GeoPointFormat>`.
+/// So your date mapping must take generic parameter `<F: GeoPointFormat>`.
 ///
 /// The above limitation can be worked around by implementing the mapping manually.
 ///
@@ -138,26 +138,26 @@ pub const GEOPOINT_DATATYPE: &'static str = "geo_point";
 /// use elastic_types::geo::point::prelude::*;
 ///
 /// #[derive(Default, Clone)]
-/// pub struct MyGeoPointMapping<T: GeoPointFormat> {
-///     phantom: PhantomData<T>
+/// pub struct MyGeoPointMapping<F: GeoPointFormat> {
+///     phantom: PhantomData<F>
 /// }
 ///
-/// impl <T: GeoPointFormat> ElasticFieldMapping<T> for MyGeoPointMapping<T> {
-/// 	type Visitor = ElasticGeoPointMappingVisitor<T, MyGeoPointMapping<T>>;
+/// impl <F: GeoPointFormat> ElasticFieldMapping<F> for MyGeoPointMapping<F> {
+/// 	type Visitor = ElasticGeoPointMappingVisitor<F, MyGeoPointMapping<F>>;
 ///
 /// 	fn data_type() -> &'static str {
 /// 		GEOPOINT_DATATYPE
 /// 	}
 /// }
 ///
-/// impl <T: GeoPointFormat> ElasticGeoPointMapping<T> for MyGeoPointMapping<T> {
+/// impl <F: GeoPointFormat> ElasticGeoPointMapping<F> for MyGeoPointMapping<F> {
 /// 	//Overload the mapping functions here
 /// 	fn geohash() -> Option<bool> {
 ///			Some(true)
 ///		}
 /// }
 ///
-/// impl <T: GeoPointFormat> serde::Serialize for MyGeoPointMapping<T> {
+/// impl <F: GeoPointFormat> serde::Serialize for MyGeoPointMapping<F> {
 /// 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
 /// 	where S: serde::Serializer {
 /// 		serializer.serialize_struct("mapping", Self::get_visitor())
@@ -165,9 +165,9 @@ pub const GEOPOINT_DATATYPE: &'static str = "geo_point";
 /// }
 /// # }
 /// ```
-pub trait ElasticGeoPointMapping<T> where
-T: GeoPointFormat,
-Self: ElasticFieldMapping<T> + Sized + Serialize {
+pub trait ElasticGeoPointMapping<F> where
+F: GeoPointFormat,
+Self: ElasticFieldMapping<F> + Sized + Serialize {
     /// Should the `geo-point` also be indexed as a geohash in the `.geohash` sub-field? Defaults to `false`,
     /// unless `geohash_prefix` is `true`.
     fn geohash() -> Option<bool> {
@@ -205,27 +205,27 @@ Self: ElasticFieldMapping<T> + Sized + Serialize {
 
 /// Default mapping for `ElasticGeoPoint`.
 #[derive(Debug, Default, Clone, Copy)]
-pub struct DefaultGeoPointMapping<T> where
-T: GeoPointFormat {
-	phantom: PhantomData<T>
+pub struct DefaultGeoPointMapping<F> where
+F: GeoPointFormat {
+	phantom: PhantomData<F>
 }
-impl <T> ElasticGeoPointMapping<T> for DefaultGeoPointMapping<T> where
-T: GeoPointFormat { }
+impl <F> ElasticGeoPointMapping<F> for DefaultGeoPointMapping<F> where
+F: GeoPointFormat { }
 
-impl_geo_point_mapping!(DefaultGeoPointMapping<T>);
+impl_geo_point_mapping!(DefaultGeoPointMapping<F>);
 
 /// Visitor for a `geo_point` map.
 #[derive(Debug, PartialEq)]
-pub struct ElasticGeoPointMappingVisitor<F, T> where
+pub struct ElasticGeoPointMappingVisitor<F, M> where
 F: GeoPointFormat,
-T: ElasticGeoPointMapping<F> {
+M: ElasticGeoPointMapping<F> {
 	phantom_f: PhantomData<F>,
-	phantom_t: PhantomData<T>
+	phantom_t: PhantomData<M>
 }
 
-impl <F, T> ElasticTypeVisitor for ElasticGeoPointMappingVisitor<F, T> where
+impl <F, M> ElasticTypeVisitor for ElasticGeoPointMappingVisitor<F, M> where
 F: GeoPointFormat,
-T: ElasticGeoPointMapping<F> {
+M: ElasticGeoPointMapping<F> {
 	fn new() -> Self {
 		ElasticGeoPointMappingVisitor {
 			phantom_f: PhantomData,
@@ -233,34 +233,34 @@ T: ElasticGeoPointMapping<F> {
 		}
 	}
 }
-impl <F, T> serde::ser::MapVisitor for ElasticGeoPointMappingVisitor<F, T>  where
+impl <F, M> serde::ser::MapVisitor for ElasticGeoPointMappingVisitor<F, M>  where
 F: GeoPointFormat,
-T: ElasticGeoPointMapping<F> {
+M: ElasticGeoPointMapping<F> {
 	fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
 	where S: Serializer {
-		try!(serializer.serialize_struct_elt("type", T::data_type()));
+		try!(serializer.serialize_struct_elt("type", M::data_type()));
 
-        if let Some(geohash) = T::geohash() {
+        if let Some(geohash) = M::geohash() {
 			try!(serializer.serialize_struct_elt("geohash", geohash));
 		};
 
-        if let Some(geohash_precision) = T::geohash_precision() {
+        if let Some(geohash_precision) = M::geohash_precision() {
 			try!(serializer.serialize_struct_elt("geohash_precision", geohash_precision));
 		};
 
-        if let Some(geohash_prefix) = T::geohash_prefix() {
+        if let Some(geohash_prefix) = M::geohash_prefix() {
 			try!(serializer.serialize_struct_elt("geohash_prefix", geohash_prefix));
 		};
 
-        if let Some(ignore_malformed) = T::ignore_malformed() {
+        if let Some(ignore_malformed) = M::ignore_malformed() {
 			try!(serializer.serialize_struct_elt("ignore_malformed", ignore_malformed));
 		};
 
-        if let Some(lat_lon) = T::lat_lon() {
+        if let Some(lat_lon) = M::lat_lon() {
 			try!(serializer.serialize_struct_elt("lat_lon", lat_lon));
 		};
 
-        if let Some(precision_step) = T::precision_step() {
+        if let Some(precision_step) = M::precision_step() {
 			try!(serializer.serialize_struct_elt("precision_step", precision_step));
 		};
 

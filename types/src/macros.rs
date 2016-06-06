@@ -176,15 +176,15 @@ macro_rules! impl_date_mapping {
 		}
 	);
 	($t:ty) => (
-		impl <T: $crate::date::DateFormat> $crate::mapping::ElasticFieldMapping<T> for $t {
-			type Visitor = $crate::date::mapping::ElasticDateMappingVisitor<T, $t>;
+		impl <F: $crate::date::DateFormat> $crate::mapping::ElasticFieldMapping<F> for $t {
+			type Visitor = $crate::date::mapping::ElasticDateMappingVisitor<F, $t>;
 
 			fn data_type() -> &'static str {
 				$crate::date::mapping::DATE_DATATYPE
 			}
 		}
 
-		impl <T: $crate::date::DateFormat> serde::Serialize for $t {
+		impl <F: $crate::date::DateFormat> serde::Serialize for $t {
 			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
 			where S: serde::Serializer {
 				serializer.serialize_struct("mapping", Self::get_visitor())
@@ -228,15 +228,15 @@ macro_rules! impl_geo_point_mapping {
 		}
 	);
 	($t:ty) => (
-		impl <T: $crate::geo::point::GeoPointFormat> $crate::mapping::ElasticFieldMapping<T> for $t {
-			type Visitor = $crate::geo::point::mapping::ElasticGeoPointMappingVisitor<T, $t>;
+		impl <F: $crate::geo::point::GeoPointFormat> $crate::mapping::ElasticFieldMapping<F> for $t {
+			type Visitor = $crate::geo::point::mapping::ElasticGeoPointMappingVisitor<F, $t>;
 
 			fn data_type() -> &'static str {
 				$crate::geo::point::mapping::GEOPOINT_DATATYPE
 			}
 		}
 
-		impl <T: $crate::geo::point::GeoPointFormat> serde::Serialize for $t {
+		impl <F: $crate::geo::point::GeoPointFormat> serde::Serialize for $t {
 			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
 			where S: serde::Serializer {
 				serializer.serialize_struct("mapping", Self::get_visitor())
@@ -252,26 +252,6 @@ macro_rules! impl_geo_shape_mapping {
 
 			fn data_type() -> &'static str {
 				$crate::geo::shape::mapping::GEOSHAPE_DATATYPE
-			}
-		}
-
-		impl serde::Serialize for $t {
-			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
-			where S: serde::Serializer {
-				serializer.serialize_struct("mapping", Self::get_visitor())
-			}
-		}
-	)
-}
-
-//TODO: Other geo_shape types
-macro_rules! impl_point_mapping {
-	($t:ty) => (
-		impl $crate::mapping::ElasticFieldMapping<()> for $t {
-			type Visitor = $crate::geo::shape::mapping::ElasticPointMappingVisitor<$t>;
-
-			fn data_type() -> &'static str {
-				$crate::geo::shape::mapping::POINT_DATATYPE
 			}
 		}
 

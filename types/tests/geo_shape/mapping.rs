@@ -5,7 +5,6 @@ extern crate serde;
 extern crate serde_json;
 extern crate elastic_types;
 
-use elastic_types::geo::shape::prelude::*;
 use elastic_types::mapping::prelude::*;
 use ::geo_shape_fixtures::*;
 
