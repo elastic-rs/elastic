@@ -60,7 +60,7 @@ use serde;
 /// - [Elasticsearch docs](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-types.html)
 pub trait ElasticType<T, F> where
 T: ElasticFieldMapping<F>,
-Self : serde::Serialize + serde::Deserialize {
+Self : serde::Serialize {
 	/// Get the type name for the given mapping.
 	fn name() -> &'static str {
 		T::name()
@@ -203,6 +203,82 @@ F: Default + Clone {
 }
 
 impl <T, M, F> ElasticType<ElasticArrayMapping<M, F>, F> for Vec<T> where
+T: ElasticType<M, F>,
+M: ElasticFieldMapping<F>,
+F: Default + Clone {
+
+}
+
+/// Mapping for an optional type.
+///
+/// Elasticsearch doesn't differentiate between properties that are nullable or not.
+/// That means the only _really_ safe way to map your fields is to make them all `Option<T>`
+/// instead of `T`.
+/// This probably isn't necessary unless you have no control over the indexed data though.
+#[derive(Debug, Default, Clone)]
+pub struct ElasticOptionMapping<M, F> where
+M: ElasticFieldMapping<F>,
+F: Default + Clone {
+	phantom_m: PhantomData<M>,
+	phantom_f: PhantomData<F>
+}
+
+impl <M, F> ElasticFieldMapping<F> for ElasticOptionMapping<M, F> where
+M: ElasticFieldMapping<F>,
+F: Default + Clone {
+	type Visitor = M::Visitor;
+
+	fn data_type() -> &'static str {
+		M::data_type()
+	}
+}
+
+impl <M, F> serde::Serialize for ElasticOptionMapping<M, F> where
+M: ElasticFieldMapping<F>,
+F: Default + Clone {
+	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+	where S: serde::Serializer {
+		serializer.serialize_struct("mapping", M::get_visitor())
+	}
+}
+
+impl <T, M, F> ElasticType<ElasticArrayMapping<M, F>, F> for Option<T> where
+T: ElasticType<M, F>,
+M: ElasticFieldMapping<F>,
+F: Default + Clone {
+
+}
+
+/// Mapping for a borrowed type.
+#[derive(Debug, Default, Clone)]
+pub struct ElasticBorrowMapping<'a, M, F> where
+M: ElasticFieldMapping<F>,
+F: Default + Clone {
+	phantom_m: PhantomData<M>,
+	phantom_f: PhantomData<F>,
+	phantom_a: PhantomData<&'a ()>
+}
+
+impl <'a, M, F> ElasticFieldMapping<F> for ElasticBorrowMapping<'a, M, F> where
+M: ElasticFieldMapping<F>,
+F: Default + Clone {
+	type Visitor = M::Visitor;
+
+	fn data_type() -> &'static str {
+		M::data_type()
+	}
+}
+
+impl <'a, M, F> serde::Serialize for ElasticBorrowMapping<'a, M, F> where
+M: ElasticFieldMapping<F>,
+F: Default + Clone {
+	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+	where S: serde::Serializer {
+		serializer.serialize_struct("mapping", M::get_visitor())
+	}
+}
+
+impl <'a, T, M, F> ElasticType<ElasticBorrowMapping<'a, M, F>, F> for &'a T where
 T: ElasticType<M, F>,
 M: ElasticFieldMapping<F>,
 F: Default + Clone {

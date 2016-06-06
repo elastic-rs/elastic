@@ -537,6 +537,7 @@ pub mod geo_shape_fixtures {
 }
 
 pub mod object_fixtures {
+	use std::net::Ipv4Addr;
 	use chrono::{ DateTime, UTC };
 	use elastic_types::mapping::prelude::*;
 	use elastic_types::date::prelude::*;
@@ -548,6 +549,7 @@ pub mod object_fixtures {
 	use ::date_fixtures::*;
 	use ::number_fixtures::*;
 	use ::boolean_fixtures::*;
+	use ::geo_shape_fixtures::*;
 	use ::ip_fixtures::*;
 
 	#[derive(Serialize, Deserialize, ElasticType)]
@@ -561,7 +563,9 @@ pub mod object_fixtures {
 		pub my_num1: i32,
 		pub my_num2: ElasticInteger<MyIntegerMapping>,
 		pub my_bool1: bool,
-		pub my_bool2: ElasticBoolean<MyBooleanMapping>
+		pub my_bool2: ElasticBoolean<MyBooleanMapping>,
+		pub my_geo: Option<ElasticGeoShape<MyGeoShapeMapping>>,
+		pub my_ips: Option<Vec<Ipv4Addr>>
 	}
 
 	#[derive(Default, Clone)]
@@ -580,7 +584,7 @@ pub mod object_fixtures {
 		}
 	}
 
-	#[derive(Serialize, Deserialize, ElasticType)]
+	#[derive(Serialize, ElasticType)]
 	pub struct MyOtherType {
 		pub my_date: ElasticDate<DefaultDateFormat>,
 		#[serde(rename="my_renamed_type")]
@@ -592,7 +596,9 @@ pub mod object_fixtures {
 		pub my_shape: ElasticGeoShape<DefaultGeoShapeMapping>,
 		pub my_ip: ElasticIp<MyIpMapping>,
 		pub my_strings: Vec<String>,
-		pub my_dates: Vec<ElasticDate<DefaultDateFormat>>
+		pub my_dates: Vec<ElasticDate<DefaultDateFormat>>,
+		pub my_brw_ip: &'static Ipv4Addr,
+		pub my_brw_point: &'static ElasticGeoPoint<DefaultGeoPointFormat>
 	}
 }
 

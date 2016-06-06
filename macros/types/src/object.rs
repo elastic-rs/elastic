@@ -4,6 +4,7 @@ use syntax::ast;
 use syntax::ast::Ident;
 use syntax::ext::base::{ ExtCtxt, Annotatable };
 use syntax::ext::build::AstBuilder;
+use syntax::print::pprust;
 
 pub fn impl_type(cx: &mut ExtCtxt, item: &ast::Item, mapping: &Ident, push: &mut FnMut(Annotatable)) {
 	let ty = item.ident;
@@ -115,7 +116,15 @@ fn impl_properties_visitor_ser(cx: &mut ExtCtxt, span: Span, visitor: &Ident, fi
 	let stmts: Vec<ast::Stmt> = fields.iter().cloned().map(|(name, field)| {
 		let lit = cx.expr_str(span, name.name.as_str());
 		let ty = match field.ty.node {
+			//Standard type path
 			ast::TyKind::Path(_, ref p) => Some(p),
+			//Borrowed type
+			ast::TyKind::Rptr(_, ref t) => {
+				match t.ty.node {
+					ast::TyKind::Path(_, ref p) => Some(p),
+					_ => None
+				}
+			},
 			_ => None
 		};
 

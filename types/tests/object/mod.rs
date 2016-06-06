@@ -65,6 +65,19 @@ fn serialise_mapping_type() {
 				"index": "no",
 				"store": true,
 				"null_value": false
+			},
+			"my_geo": {
+				"type": "geo_shape",
+				"tree": "geohash",
+				"precision": "50m",
+				"tree_levels": 8,
+				"strategy": "recursive",
+				"distance_error_pct": 0.5,
+				"orientation": "cw",
+				"points_only": false
+			},
+			"my_ips": {
+				"type": "ip"
 			}
 		}
 	});
@@ -156,6 +169,19 @@ fn serialise_mapping_type_as_nested() {
 						"index": "no",
 						"store": true,
 						"null_value": false
+					},
+					"my_geo": {
+						"type": "geo_shape",
+						"tree": "geohash",
+						"precision": "50m",
+						"tree_levels": 8,
+						"strategy": "recursive",
+						"distance_error_pct": 0.5,
+						"orientation": "cw",
+						"points_only": false
+					},
+					"my_ips": {
+						"type": "ip"
 					}
 				}
 			},
@@ -182,6 +208,12 @@ fn serialise_mapping_type_as_nested() {
 			"my_dates": {
 				"type": "date",
 				"format": "basic_date_time"
+			},
+			"my_brw_ip": {
+				"type": "ip"
+			},
+			"my_brw_point": {
+				"type": "geo_point"
 			}
 		}
 	});
