@@ -309,6 +309,7 @@
 //!  `date`              | `DateTime<UTC>`             | `chrono`  | `ElasticDate<F, M>`           | `DateFormat`
 //!  `ip`                | `Ipv4Addr`                  | `std`     | `ElasticIp<M>`                | `()`
 //!  `geo_point`         | `Point`                     | `geo`     | `ElasticGeoPoint<F, M>`       | `GeoPointFormat`
+//!  `geo_shape`         | -                           | `geojson` | `ElasticGeoShape<M>`          | `()`
 //!
 //! The following sections explain this table.
 //!
