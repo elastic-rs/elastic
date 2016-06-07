@@ -82,8 +82,8 @@ Ping the availability of your cluster:
 ```rust
 extern crate elastic_hyper as elastic;
 
-let mut client = hyper::Client::new();
-elastic::ping::head(&mut client, elastic::RequestParams::default()).unwrap();
+let (mut client, params) = elastic::default();
+elastic::ping::head(&mut client, &params).unwrap();
 ```
 
 A simple `query_string` query:
@@ -91,9 +91,10 @@ A simple `query_string` query:
 ```rust
 extern crate elastic_hyper as elastic;
 
-let mut client = Client::new();
+let (mut client, params) = elastic::default();
+
 let response = elastic::search::post(
-	&mut client, &elastic::RequestParams::default(),
+	&mut client, &params,
 	&json_str!({
 		query: {
 			query_string: {
