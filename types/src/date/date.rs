@@ -69,7 +69,7 @@ impl ElasticType<DefaultDateMapping<ChronoFormat>, ChronoFormat> for DT {
 /// # Links
 ///
 /// - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/date.html)
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct ElasticDate<F, M = DefaultDateMapping<F>> where
 F: DateFormat,
 M: ElasticFieldMapping<F> + ElasticDateMapping<F> {
@@ -210,6 +210,30 @@ M: ElasticFieldMapping<F> + ElasticDateMapping<F> {
 	FInto: DateFormat,
 	MInto: ElasticFieldMapping<FInto> + ElasticDateMapping<FInto> {
 		ElasticDate::<FInto, MInto>::new(self.value)
+	}
+}
+
+impl<'a, F, M> PartialEq<DT> for ElasticDate<F, M> where
+F: DateFormat,
+M: ElasticFieldMapping<F> + ElasticDateMapping<F> {
+	fn eq(&self, other: &DT) -> bool {
+		PartialEq::eq(&self.value, other)
+	}
+
+	fn ne(&self, other: &DT) -> bool {
+		PartialEq::ne(&self.value, other)
+	}
+}
+
+impl<'a, F, M> PartialEq<ElasticDate<F, M>> for DT where
+F: DateFormat,
+M: ElasticFieldMapping<F> + ElasticDateMapping<F> {
+	fn eq(&self, other: &ElasticDate<F, M>) -> bool {
+		PartialEq::eq(self, &other.value)
+	}
+
+	fn ne(&self, other: &ElasticDate<F, M>) -> bool {
+		PartialEq::ne(self, &other.value)
 	}
 }
 

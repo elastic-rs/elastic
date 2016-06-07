@@ -23,7 +23,7 @@ use ::mapping::{ ElasticType, ElasticFieldMapping };
 /// );
 /// # }
 /// ```
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct ElasticGeoShape<M> where M: ElasticFieldMapping<()> + ElasticGeoShapeMapping {
     value: Geometry,
     phantom: PhantomData<M>
@@ -51,6 +51,28 @@ impl <M> ElasticGeoShape<M> where M: ElasticFieldMapping<()> + ElasticGeoShapeMa
     pub fn remap<MInto: ElasticFieldMapping<()> + ElasticGeoShapeMapping>(self) -> ElasticGeoShape<MInto> {
         ElasticGeoShape::<MInto>::new(self.value)
     }
+}
+
+impl<'a, M> PartialEq<Geometry> for ElasticGeoShape<M> where
+M: ElasticFieldMapping<()> + ElasticGeoShapeMapping {
+	fn eq(&self, other: &Geometry) -> bool {
+		PartialEq::eq(&self.value, other)
+	}
+
+	fn ne(&self, other: &Geometry) -> bool {
+		PartialEq::ne(&self.value, other)
+	}
+}
+
+impl<'a, M> PartialEq<ElasticGeoShape<M>> for Geometry where
+M: ElasticFieldMapping<()> + ElasticGeoShapeMapping {
+	fn eq(&self, other: &ElasticGeoShape<M>) -> bool {
+		PartialEq::eq(self, &other.value)
+	}
+
+	fn ne(&self, other: &ElasticGeoShape<M>) -> bool {
+		PartialEq::ne(self, &other.value)
+	}
 }
 
 impl <M> ElasticType<M, ()> for ElasticGeoShape<M> where M: ElasticFieldMapping<()> + ElasticGeoShapeMapping { }

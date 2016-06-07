@@ -308,7 +308,7 @@
 //! # }
 //! ```
 //!
-//! Which produces the same mapping as before: 
+//! Which produces the same mapping as before:
 //!
 //! ```
 //! # #![feature(plugin, custom_derive, custom_attribute)]
@@ -384,8 +384,8 @@
 //!  `double`            | `f64`                       | `std`     | `ElasticDouble<M>`            | `()`
 //!  `string`            | `String`                    | `std`     | `ElasticString<M>`            | `()`
 //!  `boolean`           | `bool`                      | `std`     | `ElasticBoolean<M>`           | `()`
-//!  `date`              | `DateTime<UTC>`             | `chrono`  | `ElasticDate<F, M>`           | `DateFormat`
 //!  `ip`                | `Ipv4Addr`                  | `std`     | `ElasticIp<M>`                | `()`
+//!  `date`              | `DateTime<UTC>`             | `chrono`  | `ElasticDate<F, M>`           | `DateFormat`
 //!  `geo_point`         | `Point`                     | `geo`     | `ElasticGeoPoint<F, M>`       | `GeoPointFormat`
 //!  `geo_shape`         | -                           | `geojson` | `ElasticGeoShape<M>`          | `()`
 //!

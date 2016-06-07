@@ -20,7 +20,7 @@ impl ElasticType<DefaultStringMapping, ()> for String { }
 ///
 /// let string = ElasticString::<DefaultStringMapping>::new("my string value");
 /// ```
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, PartialEq)]
 pub struct ElasticString<M> where
 M: ElasticFieldMapping<()> + ElasticStringMapping {
 	value: String,
@@ -140,22 +140,22 @@ M: ElasticFieldMapping<()> + ElasticStringMapping {
 impl<'a, M> PartialEq<&'a str> for ElasticString<M> where
 M: ElasticFieldMapping<()> + ElasticStringMapping {
 	fn eq(&self, other: & &'a str) -> bool {
-		PartialEq::eq(&self.value[..], *other)
+		PartialEq::eq(&self.value, *other)
 	}
 
 	fn ne(&self, other: & &'a str) -> bool {
-		PartialEq::ne(&self.value[..], *other)
+		PartialEq::ne(&self.value, *other)
 	}
 }
 
 impl<'a, M> PartialEq<ElasticString<M>> for &'a str where
 M: ElasticFieldMapping<()> + ElasticStringMapping {
 	fn eq(&self, other: &ElasticString<M>) -> bool {
-		PartialEq::eq(*self, &other.value[..])
+		PartialEq::eq(*self, &other.value)
 	}
 
 	fn ne(&self, other: &ElasticString<M>) -> bool {
-		PartialEq::ne(*self, &other.value[..])
+		PartialEq::ne(*self, &other.value)
 	}
 }
 

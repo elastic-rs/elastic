@@ -52,6 +52,7 @@ use super::GeoPointFormat;
 ///
 /// # Links
 /// - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/geo-point.html)
+#[derive(Debug, Clone, PartialEq)]
 pub struct ElasticGeoPoint<F, M = DefaultGeoPointMapping<F>> where
 F: GeoPointFormat,
 M: ElasticFieldMapping<F> + ElasticGeoPointMapping<F> {
@@ -173,6 +174,30 @@ M: ElasticFieldMapping<F> + ElasticGeoPointMapping<F> {
     fn to_geo(&self) -> Geometry {
         Geometry::Point(self.value.clone())
     }
+}
+
+impl<'a, F, M> PartialEq<Point> for ElasticGeoPoint<F, M> where
+F: GeoPointFormat,
+M: ElasticFieldMapping<()> + ElasticGeoPointMapping<F> {
+	fn eq(&self, other: &Point) -> bool {
+		PartialEq::eq(&self.value, other)
+	}
+
+	fn ne(&self, other: &Point) -> bool {
+		PartialEq::ne(&self.value, other)
+	}
+}
+
+impl<'a, F, M> PartialEq<ElasticGeoPoint<F, M>> for Point where
+F: GeoPointFormat,
+M: ElasticFieldMapping<()> + ElasticGeoPointMapping<F> {
+	fn eq(&self, other: &ElasticGeoPoint<F, M>) -> bool {
+		PartialEq::eq(self, &other.value)
+	}
+
+	fn ne(&self, other: &ElasticGeoPoint<F, M>) -> bool {
+		PartialEq::ne(self, &other.value)
+	}
 }
 
 impl <F, M> Serialize for ElasticGeoPoint<F, M> where

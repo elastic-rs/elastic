@@ -20,7 +20,7 @@ impl ElasticType<DefaultBooleanMapping, ()> for bool { }
 ///
 /// let boolean = ElasticBoolean::<DefaultBooleanMapping>::new(true);
 /// ```
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, PartialEq)]
 pub struct ElasticBoolean<M> where
 M: ElasticFieldMapping<()> + ElasticBooleanMapping {
 	value: bool,

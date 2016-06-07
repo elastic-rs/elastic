@@ -600,9 +600,23 @@ pub mod object_fixtures {
 		pub my_brw_ip: &'static Ipv4Addr,
 		pub my_brw_point: &'static ElasticGeoPoint<DefaultGeoPointFormat>
 	}
+
+	#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, ElasticType)]
+	pub struct MyStruct {
+		pub id: i32,
+		pub title: String,
+		pub timestamp: DateTime<UTC>,
+		pub geo: GeoLocation
+	}
+
+	#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, ElasticType)]
+	pub struct GeoLocation {
+		pub ip: Ipv4Addr
+	}
 }
 
 pub mod object;
+pub mod response;
 pub mod geo_point;
 pub mod geo_shape;
 pub mod date;

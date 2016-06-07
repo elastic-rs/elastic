@@ -4,7 +4,6 @@ use syntax::ast;
 use syntax::ast::Ident;
 use syntax::ext::base::{ ExtCtxt, Annotatable };
 use syntax::ext::build::AstBuilder;
-use syntax::print::pprust;
 
 pub fn impl_type(cx: &mut ExtCtxt, item: &ast::Item, mapping: &Ident, push: &mut FnMut(Annotatable)) {
 	let ty = item.ident;

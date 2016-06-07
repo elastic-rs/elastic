@@ -24,7 +24,7 @@ impl ElasticType<DefaultIpMapping, ()> for Ipv4Addr { }
 ///
 /// let ip = ElasticIp::<DefaultIpMapping>::new(Ipv4Addr::new(127, 0, 0, 1));
 /// ```
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct ElasticIp<M> where
 M: ElasticFieldMapping<()> + ElasticIpMapping {
 	value: Ipv4Addr,

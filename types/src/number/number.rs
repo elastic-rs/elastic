@@ -6,7 +6,7 @@ use ::mapping::{ ElasticType, ElasticFieldMapping };
 macro_rules! number_type {
     ($t:ident, $m:ident, $n:ident) => (
     	/// Number type with a given mapping.
-    	#[derive(Debug, Default, Clone)]
+    	#[derive(Debug, Default, Clone, PartialEq)]
 		pub struct $t<M> where M: ElasticFieldMapping<()> + $m {
 			value: $n,
 			phantom: PhantomData<M>
@@ -43,6 +43,28 @@ macro_rules! number_type {
 				$t::<M>::new(num)
 			}
 		}
+
+        impl<'a, M> PartialEq<$n> for $t<M> where
+        M: ElasticFieldMapping<()> + $m {
+        	fn eq(&self, other: &$n) -> bool {
+        		PartialEq::eq(&self.value, other)
+        	}
+
+        	fn ne(&self, other: &$n) -> bool {
+        		PartialEq::ne(&self.value, other)
+        	}
+        }
+
+        impl<'a, M> PartialEq<$t<M>> for $n where
+        M: ElasticFieldMapping<()> + $m {
+        	fn eq(&self, other: &$t<M>) -> bool {
+        		PartialEq::eq(self, &other.value)
+        	}
+
+        	fn ne(&self, other: &$t<M>) -> bool {
+        		PartialEq::ne(self, &other.value)
+        	}
+        }
 
 		//Serialize elastic number.
 		impl <M> Serialize for $t<M> where M: ElasticFieldMapping<()> + $m {
