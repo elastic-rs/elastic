@@ -3,11 +3,13 @@
 
 extern crate test;
 
+extern crate time;
 extern crate serde;
 extern crate stopwatch;
 extern crate rs_es;
 
 use std::env;
+use time::Duration;
 use stopwatch::Stopwatch;
 use rs_es::Client;
 use rs_es::query::Query;
@@ -50,7 +52,8 @@ fn main() {
 
         test::black_box(res);
 
-        results.push(sw.elapsed().num_nanoseconds().unwrap());
+        let elapsed = Duration::from_std(sw.elapsed()).unwrap();
+        results.push(elapsed.num_nanoseconds().unwrap());
     }
 
     results.sort();

@@ -17,9 +17,9 @@ namespace Elasticsearch.Net.Bench
         public static void Main(string[] args)
         {
             int runs = args.Count() > 0 ? Convert.ToInt32(args.First()) : 200;
-            //TODO: Enable keep alive
+            
             var config = new ConnectionConfiguration(new Uri("http://localhost:9200"));
-            config.DisablePing();
+            config.EnableTcpKeepAlive(TimeSpan.FromSeconds(5), TimeSpan.FromMilliseconds(1000));
 
             var client = new ElasticLowLevelClient(config);
 

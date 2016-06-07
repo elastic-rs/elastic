@@ -3,6 +3,7 @@
 
 extern crate test;
 
+extern crate time;
 extern crate serde;
 extern crate serde_json;
 extern crate stopwatch;
@@ -10,6 +11,7 @@ extern crate hyper;
 extern crate elastic_hyper as elastic;
 
 use std::env;
+use time::Duration;
 use stopwatch::Stopwatch;
 use hyper::client::Client;
 use hyper::header::Connection;
@@ -80,7 +82,8 @@ fn main() {
 
         test::black_box(res);
 
-        results.push(sw.elapsed().num_nanoseconds().unwrap());
+        let elapsed = Duration::from_std(sw.elapsed()).unwrap();
+        results.push(elapsed.num_nanoseconds().unwrap());
     }
 
     results.sort();

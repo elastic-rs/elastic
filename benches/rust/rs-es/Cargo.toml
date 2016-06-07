@@ -7,5 +7,6 @@ authors = ["Ashley Mannix <ashleymannix@live.com.au>"]
 serde = "*"
 serde_json = "*"
 serde_macros = "*"
-"rs-es" = { version = "0.3.1", default-features = false, features = [ "nightly" ] }
-"stopwatch" = "*"
+rs-es = { version = "*", default-features = false, features = [ "nightly" ] }
+stopwatch = "*"
+time = "*"

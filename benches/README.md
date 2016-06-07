@@ -127,17 +127,17 @@ using a raw `elastic_hyper` query.
 ```
 target/release/elastic_hyper_bench 1000
 
-Time per request:       365466 [ns] (mean)
+Time per request:       443930ns (mean)
 
 Percentage of the requests served within a certain time (ns)
-  50%      359611
-  66%      363613
-  75%      366488
-  80%      368328
-  90%      373225
-  95%      379301
-  98%      391994
-  99%      419145
+  50%      440680ns
+  66%      449437ns
+  75%      453430ns
+  80%      456648ns
+  90%      468064ns
+  95%      480051ns
+  98%      491004ns
+  99%      498912ns
 ```
 
 ### Rust (elastic_hyper + custom)
@@ -149,17 +149,17 @@ The point of this one is to show that `elastic_hyper` basically sits right on to
 ```
 target/release/elastic_hyper_fltrd_bench 1000
 
-Time per request:       338909 [ns] (mean)
+Time per request:       418474ns (mean)
 
 Percentage of the requests served within a certain time (ns)
-  50%      327194
-  66%      331722
-  75%      335546
-  80%      338625
-  90%      345013
-  95%      352359
-  98%      386021
-  99%      463996
+  50%      408622ns
+  66%      417205ns
+  75%      424182ns
+  80%      428961ns
+  90%      439819ns
+  95%      451993ns
+  98%      473822ns
+  99%      496964ns
 ```
 
 ### Rust (rs-es)
@@ -167,17 +167,17 @@ Percentage of the requests served within a certain time (ns)
 ```
 target/release/rs-es_bench 1000
 
-Time per request:       366679 [ns] (mean)
+Time per request:       441224ns (mean)
 
 Percentage of the requests served within a certain time (ns)
-  50%      359821
-  66%      364438
-  75%      367154
-  80%      369198
-  90%      375461
-  95%      381692
-  98%      393719
-  99%      402724
+  50%      430000ns
+  66%      443157ns
+  75%      450988ns
+  80%      458268ns
+  90%      481121ns
+  95%      498099ns
+  98%      523963ns
+  99%      533303ns
 ```
 
 ### Go (elastic)
@@ -185,35 +185,33 @@ Percentage of the requests served within a certain time (ns)
 ```
 go run main.go --runs=1000
 
-Time per request:       454216 [ns] (mean)
+Time per request:       591804ns (mean)
 
 Percentage of the requests served within a certain time (ns)
-  50%      436441
-  66%      442593
-  75%      447330
-  80%      451547
-  90%      465539
-  95%      489054
-  98%      762119
-  99%      918507
+  50%      577550ns
+  66%      592822ns
+  75%      604616ns
+  80%      612085ns
+  90%      634805ns
+  95%      666371ns
+  98%      732796ns
+  99%      1106103ns
 ```
 
 ### CSharp (Elasticsearch.NET)
 
-_TODO: Update with keep alive_
-
 ```
 dnx --configuration Release run 1000
 
-Time per request:       2298637 [ns] (mean)
+Time per request:       1503586ns (mean)
 
 Percentage of the requests served within a certain time (ns)
-  50%      1183200
-  66%      1207600
-  75%      1224700
-  80%      1231900
-  90%      1269600
-  95%      1388000
-  98%      3153400
-  99%      5986600
+  50%      1209800ns
+  66%      1246300ns
+  75%      1271100ns
+  80%      1292800ns
+  90%      1341900ns
+  95%      1400400ns
+  98%      2310900ns
+  99%      5948600ns
 ```

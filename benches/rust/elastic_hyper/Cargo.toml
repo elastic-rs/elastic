@@ -10,5 +10,6 @@ serde_macros = "*"
 hyper = "*"
 elastic_hyper = "*"
 json_str = { version = "*", features = [ "nightly" ] }
-elastic_types = { version = "*", path = "../../../types" }
-"stopwatch" = "*"
+elastic_types = { version = "*", features = [ "nightly" ], default-features = false }
+time = "*"
+stopwatch = "*"

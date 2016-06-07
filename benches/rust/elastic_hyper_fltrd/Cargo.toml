@@ -10,4 +10,5 @@ serde_macros = "*"
 hyper = "*"
 elastic_hyper = "*"
 json_str = { version = "*", features = [ "nightly" ] }
-"stopwatch" = "*"
+stopwatch = "*"
+time = "*"

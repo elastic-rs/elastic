@@ -1,6 +1,7 @@
 #![feature(test, plugin, custom_derive, iter_arith)]
 #![plugin(serde_macros, json_str)]
 
+extern crate time;
 extern crate test;
 extern crate serde;
 extern crate serde_json;
@@ -10,8 +11,8 @@ extern crate elastic_types;
 extern crate elastic_hyper as elastic;
 
 use std::env;
+use time::Duration;
 use stopwatch::Stopwatch;
-use hyper::client::Client;
 use hyper::header::Connection;
 use elastic_types::response::*;
 use elastic_types::date::prelude::*;
@@ -35,8 +36,7 @@ fn main() {
         }
     };
 
-    let mut client = Client::new();
-	let mut params = elastic::RequestParams::default();
+    let (mut client, mut params) = elastic::default();
     params.headers.set(Connection::keep_alive());
 
     let mut results = Vec::<i64>::with_capacity(runs as usize);
@@ -62,7 +62,8 @@ fn main() {
 
         test::black_box(res);
 
-        results.push(sw.elapsed().num_nanoseconds().unwrap());
+        let elapsed = Duration::from_std(sw.elapsed()).unwrap();
+        results.push(elapsed.num_nanoseconds().unwrap());
     }
 
     results.sort();
