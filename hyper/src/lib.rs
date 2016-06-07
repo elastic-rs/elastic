@@ -31,10 +31,10 @@
 //! # extern crate hyper;
 //! # extern crate elastic_hyper as elastic;
 //! # fn main() {
-//! let mut client = hyper::Client::new();
+//! let (mut client, params) = elastic::default();
 //!
 //! //HTTP HEAD /
-//! elastic::ping::head(&mut client, &elastic::RequestParams::default()).unwrap();
+//! elastic::ping::head(&mut client, &params).unwrap();
 //! # }
 //! ```
 //!
@@ -181,3 +181,8 @@ impl Default for RequestParams {
 
 mod api;
 pub use api::*;
+
+/// Get a default `Client` and `RequestParams`.
+pub fn default() -> (hyper::Client, RequestParams) {
+	(hyper::Client::new(), RequestParams::default())
+}

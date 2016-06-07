@@ -19,9 +19,8 @@ use std::{ thread, time };
 use elastic_types::mapping::prelude::*;
 use elastic_types::response::SearchResponse;
 use elastic_types::date::prelude::*;
-use hyper::client::Client;
 
-//
+//The type we want to index in Elasticsearch
 #[derive(Clone, Debug, Serialize, Deserialize, ElasticType)]
 pub struct MyStruct {
 	pub id: i32,
@@ -39,18 +38,21 @@ const INDEX: &'static str = "testidx";
 
 fn main() {
 	//Create a hyper client
-	let (mut client, params) = (Client::new(), elastic::RequestParams::default());
+	let (mut client, params) = elastic::default();
 
 	//Create an index and map our type
 	println!("setting up index and mapping...");
-	let _ = elastic::indices::create::put_index(&mut client, &params, INDEX, "").unwrap();
+	let _ = elastic::indices::create::put_index(
+		&mut client, &params,
+		INDEX, ""
+	).unwrap();
 	let _ = elastic::indices::put_mapping::put_index_type(
 		&mut client, &params,
 		INDEX, MyStruct::name(),
 		&TypeMapper::to_string(MyStructMapping).unwrap()
 	).unwrap();
 
-	//Index some data. For lots of data, prefer the `bulk` mod
+	//Index some objects. For lots of data, prefer the `bulk` mod
 	println!("indexing data...");
 	for t in get_data() {
 		let _ = elastic::index::put_index_type_id(
