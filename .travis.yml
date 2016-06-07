@@ -15,7 +15,7 @@ matrix:
         - CRATE="hyper"
     - rust: stable
       env:
-        - CRATE="hyper/samples"
+        - CRATE="hyper/samples/basic"
     - rust: stable
       env:
         - CRATE="macros/date"
@@ -34,7 +34,10 @@ matrix:
         - CRATE="hyper/codegen"
     - rust: nightly
       env:
-        - CRATE="hyper/samples"
+        - CRATE="hyper/samples/basic"
+    - rust: nightly
+      env:
+        - CRATE="hyper/samples/typed"
     - rust: nightly
       env:
         - CRATE="macros/date"

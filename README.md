@@ -23,7 +23,7 @@ See [elastic_types](#elastic_types) and [json_str](#json_str) for more details.
 
 See [milestones](https://github.com/KodrAus/elasticsearch-rs/milestones).
 
-- [ ] Implement core Elasticsearch types
+- [x] Implement core Elasticsearch types
 - [ ] Implement Elasticsearch response types
 - [ ] Rotor Client
 - [x] Codegen API endpoints
@@ -120,8 +120,6 @@ The crate will allow you to use connections in two ways; add connections as stat
 
 [Docs](http://kodraus.github.io/rustdoc/elastic_types/) |
 [Issues](https://github.com/KodrAus/elasticsearch-rs/labels/types)
-
-_In Progress_
 
 Provides rust implementations of the main [Elasticsearch types](https://www.elastic.co/guide/en/elasticsearch/reference/1.4/mapping-core-types.html) (like `date`) and responses/errors. This crate is not required for working with `elastic_hyper` or `elastic_rotor`, but does have a lot of utility, especially for designing your document types.
 
