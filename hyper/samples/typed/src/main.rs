@@ -68,7 +68,7 @@ fn main() {
 
 fn create_index(client: &mut Client, params: &RequestParams) {
 	//Create index
-	let _ = elastic::indices::create::put_index( client, &params, INDEX, "").unwrap();
+	let _ = elastic::indices::create::put_index(client, &params, INDEX, "").unwrap();
 
 	//Put mapping for MyStruct
 	let _ = elastic::indices::put_mapping::put_index_type(client, &params,
