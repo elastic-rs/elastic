@@ -13,7 +13,6 @@ For more details, see:
 - [samples](https://github.com/KodrAus/elasticsearch-rs/tree/master/hyper/samples)
 - [benchmarks](https://github.com/KodrAus/elasticsearch-rs/tree/master/benches)
 - [elastic_hyper](#elastic_hyper)
-- [macros](#Macros)
 
 If you'd prefer to call Elasticsearch using a Query DSL builder, see [rs-es](https://github.com/benashford/rs-es).
 
@@ -24,7 +23,7 @@ See [elastic_types](#elastic_types) and [json_str](#json_str) for more details.
 See [milestones](https://github.com/KodrAus/elasticsearch-rs/milestones).
 
 - [x] Implement core Elasticsearch types
-- [ ] Implement Elasticsearch response types
+- [ ] Implement Elasticsearch response types (interop with `rs-es`)
 - [ ] Rotor Client
 - [x] Codegen API endpoints
 - [x] Hyper Client
@@ -51,7 +50,7 @@ Support for Elastic's plugin products, like `watcher` and `graph` could be added
 
 The client is divided into a few crates by utility. These will probably be moved into their own repositories to tidy up build/test, but for now it's conventient to develop them together.
 
-### elastic_hyper
+### [`elastic_hyper`](http://kodraus.github.io/rustdoc/elastic_hyper/)
 
 [![Latest Version](https://img.shields.io/crates/v/elastic_hyper.svg)](https://crates.io/crates/elastic_hyper)
 
@@ -64,10 +63,11 @@ Provides a synchronous [hyper](https://github.com/hyperium/hyper) implementation
 #### Example
 
 The `elastic_hyper` client is a thin layer over `hyper`; it just maps functions to routes. It's up to the caller to serialise and deserialise HTTP content.
-For serialisation though, the `json_str` crate provides the `json!` macro for serialising abitrary rust-like code to json.
-The deserialisation story is a work in progress.
+- For query serialisation, the [`json_str`](http://kodraus.github.io/rustdoc/json_str/) crate provides the `json_str!` macro for serialising abitrary rust-like code to json.
+- For type serialisation / deserialisation, see [`elastic_types`](http://kodraus.github.io/rustdoc/elastic_types/).
 
-Currently targeting the `master` Elasticsearch branch. This will be stabilised through features in the future.
+Currently targeting the `master` Elasticsearch branch, aiming for `5.x`.
+This will be stabilised through features in the future.
 
 Add `elastic_hyper` and `json_str` to your `Cargo.toml`:
 
@@ -105,17 +105,7 @@ let response = elastic::search::post(
 ).unwrap();
 ```
 
-### elastic_rotor
-
-[Issues](https://github.com/KodrAus/elasticsearch-rs/labels/rotor)
-
-_In Progress_
-
-Will provide an asynchronous [rotor-http](https://github.com/tailhook/rotor-http) implementation of the Elasticsearch REST API. This client is an active work in progress, as is `rotor` itself so things will change a lot. It'll be best suited to streaming scenarios, or where Elasticsearch connections will be used heavily.
-
-The crate will allow you to use connections in two ways; add connections as state machines to your own `mio` loop, or use an out-of-the-box connection pool.
-
-### elastic_types
+### [`elastic_types`](http://kodraus.github.io/rustdoc/elastic_types/)
 
 [![Latest Version](https://img.shields.io/crates/v/elastic_types.svg)](https://crates.io/crates/elastic_types)
 
@@ -177,7 +167,17 @@ This will return:
 
 The `stable` channel is also supported, see the [docs](http://kodraus.github.io/rustdoc/elastic_types/) for details.
 
-### elastic_codegen
+### `elastic_rotor`
+
+[Issues](https://github.com/KodrAus/elasticsearch-rs/labels/rotor)
+
+_In Progress_
+
+Will provide an asynchronous [rotor-http](https://github.com/tailhook/rotor-http) implementation of the Elasticsearch REST API. This client is an active work in progress, as is `rotor` itself so things will change a lot. It'll be best suited to streaming scenarios, or where Elasticsearch connections will be used heavily.
+
+The crate will allow you to use connections in two ways; add connections as state machines to your own `mio` loop, or use an out-of-the-box connection pool.
+
+### `elastic_codegen`
 
 [Docs](http://kodraus.github.io/rustdoc/elastic_codegen/) |
 [Issues](https://github.com/KodrAus/elasticsearch-rs/labels/codegen)
@@ -188,7 +188,7 @@ Right now, it's used by `elastic_hyper` to build the client, but could also be u
 
 ### Macros
 
-#### elastic_types_macros
+#### [`elastic_types_macros`](http://kodraus.github.io/rustdoc/elastic_types_macros/)
 
 [![Latest Version](https://img.shields.io/crates/v/elastic_types_macros.svg)](https://crates.io/crates/elastic_types_macros)
 
@@ -197,7 +197,7 @@ Right now, it's used by `elastic_hyper` to build the client, but could also be u
 
 Provides custom derive plugins for Elasticsearch datatypes and mappings in [elastic_types](#elastic_types).
 
-#### elastic_date_macros
+#### [`elastic_date_macros`](http://kodraus.github.io/rustdoc/elastic_date_macros/)
 
 [![Latest Version](https://img.shields.io/crates/v/elastic_date_macros.svg)](https://crates.io/crates/elastic_date_macros)
 

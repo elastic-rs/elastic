@@ -354,6 +354,8 @@
 //! # }
 //! ```
 //!
+//! See the [object](object/index.html) mod for more mapping examples.
+//!
 //! # Types
 //!
 //! Types in Elasticsearch are a combination of _source_ and _mapping_.
