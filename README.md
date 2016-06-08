@@ -8,47 +8,23 @@ Windows  | Nightly | [![Build status](https://ci.appveyor.com/api/projects/statu
 
 If the build is red, you can check the Travis build history to find the last `nightly` version that worked. Failures are usually because of changes to dependencies upstream.
 
-For more details, see:
+Quick reference:
 
+- [crates](#crates)
 - [samples](https://github.com/KodrAus/elasticsearch-rs/tree/master/hyper/samples)
 - [benchmarks](https://github.com/KodrAus/elasticsearch-rs/tree/master/benches)
-- [elastic_hyper](#elastic_hyper)
+- [fluff](#design)
 
-If you'd prefer to call Elasticsearch using a Query DSL builder, see [rs-es](https://github.com/benashford/rs-es).
+## Crates
 
-See [elastic_types](#elastic_types) and [json_str](#json_str) for more details.
+`elastic_*` is an ecosystem of libraries for interacting with different parts of Elasticsearch
+including:
 
-## Roadmap
+- Transport
+- Type Mapping
+- Codegen
 
-See [milestones](https://github.com/KodrAus/elasticsearch-rs/milestones).
-
-- [x] Implement core Elasticsearch types
-- [ ] Implement Elasticsearch response types (interop with `rs-es`)
-- [ ] Rotor Client
-- [x] Codegen API endpoints
-- [x] Hyper Client
-- [x] Doc APIs
-- [x] Query DSL proof-of-concept to test design
-
-## Goals
-
-To provide a strongly-typed, full-featured and efficient Elasticsearch client for Rust over (eventually) asynchronous io. Rust gives us a lot of tools for building super-performant but highly accessible libraries, which we aim to continue.
-
-The REST API is provided by an [inline JSON macro](http://kodraus.github.io/rustdoc/json_str/#json-parsing) so it's efficient and always in line with whatever version of Elasticsearch you're targeting.
-
-This means you don't need to learn another API for interacting with Elasticsearch; queries mocked in [Sense](https://www.elastic.co/blog/found-sense-a-cool-json-aware-interface-to-elasticsearch) can literally just be copy+pasted into your Rust code.
-
-The core focus of this project is on strong typing over the core types and responses in Elasticsearch, rather than trying to map the entire Query DSL.
-
-Support for Elastic's plugin products, like `watcher` and `graph` could be added as feature-gated modules in the `elastic_hyper` and `elastic_rotor` clients and `elastic_types` as necessary.
-
-## Design
-
-<p align="center">
-  <img src="http://kodraus.github.io/es_arch.svg" />
-</p>
-
-The client is divided into a few crates by utility. These will probably be moved into their own repositories to tidy up build/test, but for now it's conventient to develop them together.
+They're designed to work well together or independently.
 
 ### [`elastic_hyper`](http://kodraus.github.io/rustdoc/elastic_hyper/)
 
@@ -59,6 +35,8 @@ The client is divided into a few crates by utility. These will probably be moved
 [Samples](https://github.com/KodrAus/elasticsearch-rs/tree/master/hyper/samples)
 
 Provides a synchronous [hyper](https://github.com/hyperium/hyper) implementation of the Elasticsearch REST API. The `hyper` client is simple to use; there's basically no setup needed besides creating a `hyper::Client` object to use for requests. The `hyper` client is general-purpose, and suitable for any scenario where on-demand requests are sufficient.
+
+If you'd prefer to call Elasticsearch using a Query DSL builder, see [rs-es](https://github.com/benashford/rs-es).
 
 #### Example
 
@@ -205,3 +183,35 @@ Provides custom derive plugins for Elasticsearch datatypes and mappings in [elas
 [Issues](https://github.com/KodrAus/elasticsearch-rs/labels/macros)
 
 Provides date-specific plugins for the date datatype in [elastic_types](#elastic_types).
+
+## Design
+
+<p align="center">
+  <img src="http://kodraus.github.io/es_arch.svg" />
+</p>
+
+The client is divided into a few crates by utility. These will probably be moved into their own repositories to tidy up build/test, but for now it's conventient to develop them together.
+
+## Goals
+
+To provide a strongly-typed, full-featured and efficient Elasticsearch client for Rust over (eventually) asynchronous io. Rust gives us a lot of tools for building super-performant but highly accessible libraries, which we aim to continue.
+
+The REST API is provided by an [inline JSON macro](http://kodraus.github.io/rustdoc/json_str/#json-parsing) so it's efficient and always in line with whatever version of Elasticsearch you're targeting.
+
+This means you don't need to learn another API for interacting with Elasticsearch; queries mocked in [Sense](https://www.elastic.co/blog/found-sense-a-cool-json-aware-interface-to-elasticsearch) can literally just be copy+pasted into your Rust code.
+
+The core focus of this project is on strong typing over the core types and responses in Elasticsearch, rather than trying to map the entire Query DSL.
+
+Support for Elastic's plugin products, like `watcher` and `graph` could be added as feature-gated modules in the `elastic_hyper` and `elastic_rotor` clients and `elastic_types` as necessary.
+
+## Roadmap
+
+See [milestones](https://github.com/KodrAus/elasticsearch-rs/milestones).
+
+- [x] Implement core Elasticsearch types
+- [ ] Implement Elasticsearch response types (interop with `rs-es`)
+- [ ] Rotor Client
+- [x] Codegen API endpoints
+- [x] Hyper Client
+- [x] Doc APIs
+- [x] Query DSL proof-of-concept to test design
