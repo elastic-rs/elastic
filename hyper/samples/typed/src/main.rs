@@ -16,8 +16,11 @@ extern crate elastic_hyper as elastic;
 
 use std::net::Ipv4Addr;
 use std::{ thread, time };
+use hyper::Client;
+use elastic::RequestParams;
 use elastic_types::mapping::prelude::*;
 use elastic_types::response::SearchResponse;
+use elastic_types::geo::prelude::*;
 use elastic_types::date::prelude::*;
 
 //The type we want to index in Elasticsearch
@@ -31,7 +34,8 @@ pub struct MyStruct {
 
 #[derive(Clone, Debug, Serialize, Deserialize, ElasticType)]
 pub struct GeoLocation {
-	pub ip: Ipv4Addr
+	pub ip: Ipv4Addr,
+	pub loc: ElasticGeoPoint<DefaultGeoPointFormat>
 }
 
 const INDEX: &'static str = "testidx";
@@ -41,45 +45,18 @@ fn main() {
 	let (mut client, params) = elastic::default();
 
 	//Create an index and map our type
-	println!("setting up index and mapping...");
-	let _ = elastic::indices::create::put_index(
-		&mut client, &params,
-		INDEX, ""
-	).unwrap();
-	let _ = elastic::indices::put_mapping::put_index_type(
-		&mut client, &params,
-		INDEX, MyStruct::name(),
-		&TypeMapper::to_string(MyStructMapping).unwrap()
-	).unwrap();
+	create_index(&mut client, &params);
 
 	//Index some objects. For lots of data, prefer the `bulk` mod
-	println!("indexing data...");
 	for t in get_data() {
-		let _ = elastic::index::put_index_type_id(
-			&mut client, &params,
-			INDEX, MyStruct::name(), &t.id.to_string(),
-			&serde_json::to_string(&t).unwrap()
-		).unwrap();
+		index_datum(&mut client, &params, &t);
 	}
 
 	//NOTE: Elasticsearch is _near_ realtime, so results aren't guaranteed to show up right away
 	thread::sleep(time::Duration::from_secs(2));
 
 	//Perform a search request and deserialise to `SearchResponse`
-	println!("searching...");
-	let res: SearchResponse<MyStruct> = serde_json::de::from_reader(
-		elastic::search::post_index_type(
-			&mut client, &params,
-			INDEX, MyStruct::name(),
-			json_lit!({
-				query: {
-					query_string: {
-						query: "*"
-					}
-				}
-			})
-		).unwrap()
-	).unwrap();
+	let res = query(&mut client, &params);
 
 	println!("results: {}", res.hits.total);
 	for hit in res.hits.hits {
@@ -89,6 +66,19 @@ fn main() {
 	}
 }
 
+fn create_index(client: &mut Client, params: &RequestParams) {
+	//Create index
+	let _ = elastic::indices::create::put_index( client, &params, INDEX, "").unwrap();
+
+	//Put mapping for MyStruct
+	let _ = elastic::indices::put_mapping::put_index_type(client, &params,
+		//Index and type
+		INDEX, MyStruct::name(),
+		//Serialised mapping
+		&TypeMapper::to_string(MyStructMapping).unwrap()
+	).unwrap();
+}
+
 fn get_data() -> Vec<MyStruct> {
 	vec![
 		MyStruct {
@@ -96,7 +86,8 @@ fn get_data() -> Vec<MyStruct> {
 			title: String::from("Some Title"),
 			timestamp: ElasticDate::now(),
 			geo: GeoLocation {
-				ip: Ipv4Addr::new(10, 0, 0, 1)
+				ip: Ipv4Addr::new(10, 0, 0, 1),
+				loc: ElasticGeoPoint::build(-71.34, 41.12)
 			}
 		},
 		MyStruct {
@@ -104,8 +95,35 @@ fn get_data() -> Vec<MyStruct> {
 			title: String::from("Some Other Title"),
 			timestamp: ElasticDate::now(),
 			geo: GeoLocation {
-				ip: Ipv4Addr::new(10, 0, 0, 2)
+				ip: Ipv4Addr::new(10, 0, 0, 2),
+				loc: ElasticGeoPoint::build(-71.34, 41.12)
 			}
 		}
 	]
+}
+
+fn index_datum(client: &mut Client, params: &RequestParams, datum: &MyStruct) {
+	let _ = elastic::index::put_index_type_id(client, &params,
+		//Index, type and id
+		INDEX, MyStruct::name(), &datum.id.to_string(),
+		//Serialised data
+		&serde_json::to_string(&datum).unwrap()
+	).unwrap();
+}
+
+fn query(client: &mut Client, params: &RequestParams) -> SearchResponse<MyStruct> {
+	serde_json::de::from_reader(
+		elastic::search::post_index_type(client, &params,
+			//Index and type
+			INDEX, MyStruct::name(),
+			//Query
+			json_lit!({
+				query: {
+					query_string: {
+						query: "*"
+					}
+				}
+			})
+		).unwrap()
+	).unwrap()
 }
