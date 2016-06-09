@@ -75,7 +75,7 @@ fn create_index(client: &mut Client, params: &RequestParams) {
 		//Index and type
 		INDEX, MyStruct::name(),
 		//Serialised mapping
-		&TypeMapper::to_string(MyStructMapping).unwrap()
+		&TypeMapper::to_string(MyStruct::mapping()).unwrap()
 	).unwrap();
 }
 
