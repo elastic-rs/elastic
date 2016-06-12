@@ -1,3 +1,7 @@
+//! An example that uses `elastic_types_macros` to generate mapping boilerplate.
+//! 
+//! Build with `--pretty=expanded` to see the results of the compiler plugin.
+
 #![feature(custom_derive, custom_attribute, plugin)]
 #![plugin(serde_macros, elastic_types_macros)]
 
@@ -15,6 +19,4 @@ pub struct MyType {
     pub my_bool1: bool
 }
 
-fn main() {
-    println!("Hello, world!");
-}
+fn main() {}
