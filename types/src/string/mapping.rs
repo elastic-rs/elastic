@@ -160,6 +160,52 @@ Self: ElasticFieldMapping<()> + Sized + Serialize {
 	/// Multi-fields allow the same string value to be indexed in multiple ways for different purposes,
 	/// such as one field for search and a multi-field for sorting and aggregations,
 	/// or the same string value analyzed by different analyzers.
+	///
+	/// # Examples
+	///
+	/// Subfields are provided as simple `struct`s, so you don't need to define a separate type
+	/// to map them:
+	///
+	/// ```
+	/// # #![feature(plugin, custom_derive, custom_attribute)]
+	/// # #![plugin(json_str, elastic_types_macros)]
+	/// # #[macro_use]
+	/// # extern crate elastic_types;
+	/// # extern crate serde;
+	/// use std::collections::BTreeMap;
+	/// use elastic_types::mapping::prelude::*;
+	/// use elastic_types::string::prelude::*;
+	///
+	/// #[derive(Debug, Clone, Default, ElasticStringMapping)]
+	/// pub struct MyStringMapping;
+	/// impl ElasticStringMapping for MyStringMapping {
+	/// 	//Overload the mapping functions here
+	/// 	fn fields() -> Option<BTreeMap<&'static str, ElasticStringField>> {
+	///			let mut fields = BTreeMap::new();
+	///
+	/// 		//Add another string type as a sub field
+	/// 		fields.insert("raw", ElasticStringField::String(
+	/// 			ElasticStringFieldMapping {
+	/// 				analyzer: Some("my_analyzer"),
+	/// 				..Default::default()
+	/// 			})
+	/// 		);
+	///
+	/// 		//Add a `token_count` as a sub field
+	/// 		fields.insert("count", ElasticStringField::TokenCount(
+	/// 			ElasticTokenCountFieldMapping::default())
+	/// 		);
+	///
+	/// 		//Add a `completion` suggester as a sub field
+	/// 		fields.insert("comp", ElasticStringField::Completion(
+	/// 			ElasticCompletionFieldMapping::default())
+	/// 		);
+	///
+	/// 		Some(fields)
+	///		}
+	/// }
+	/// # fn main() {}
+	/// ```
 	fn fields() -> Option<BTreeMap<&'static str, ElasticStringField>> {
 		None
 	}
