@@ -8,7 +8,6 @@ extern crate geo as georust;
 extern crate elastic_types;
 
 use georust::Coordinate;
-use elastic_types::geo::point::mapping::*;
 use elastic_types::geo::point::prelude::*;
 use ::geo_point_fixtures::*;
 
