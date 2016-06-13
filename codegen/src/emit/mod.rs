@@ -55,40 +55,33 @@ pub mod rust;
 /// struct MyEmittable;
 ///
 /// impl Emit<(), EmitError> for MyEmittable {
-/// 	fn emit(&self, _: ()) -> Result<String, EmitError> {
+/// 	fn emit(&self, _: &()) -> Result<String, EmitError> {
 /// 		Ok("some result".to_string())
 /// 	}
 /// }
 /// ```
 pub trait Emit<T, E> where E: Into<EmitError> {
 	/// Emit to a string
-	fn emit(&self, cx: T) -> Result<String, E>;
+	fn emit(&self, cx: &T) -> Result<String, E>;
 }
 
-//TODO: Take Ctxt in method calls. Don't close over lifetime
 /// Emitter for codegen items.
 ///
 /// The `Emitter` takes compatible `Emit` structs and writes them to a destination.
-pub trait Emitter<'a> {
+pub trait Emitter {
 	/// A context struct that's threaded through calls to `Emit::emit`.
-	type Ctxt: 'a;
-	/// The context passed to the implementors of `Emit`.
-	type CtxtBrw: 'a = &'a Self::Ctxt;
+	type Ctxt;
 	/// An error returned by `emit()`.
 	type Error: From<EmitError> = EmitError;
-
-	/// Gets the context struct.
-	fn get_cx(&'a self) -> Self::CtxtBrw;
 
 	/// Emit a codegen item to the provided writer.
 	///
 	/// This default implementation will attempt to emit results in-line,
 	/// so no extra characters, such as new lines or whitespace, will be emitted between calls to `emit`.
-	fn emit<Emittable, EmError, W>(&'a self, e: &Emittable, writer: &mut W) -> Result<(), Self::Error> where
-		Emittable: Emit<Self::CtxtBrw, EmError>,
+	fn emit<Emittable, EmError, W>(&self, e: &Emittable, cx: &Self::Ctxt, writer: &mut W) -> Result<(), Self::Error> where
+		Emittable: Emit<Self::Ctxt, EmError>,
 		EmError: Into<EmitError>,
 		W: Write {
-			let cx = self.get_cx();
 			emit!(cx, e, writer)
 	}
 

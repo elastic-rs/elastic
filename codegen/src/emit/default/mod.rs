@@ -26,7 +26,7 @@ use super::{ Emit, EmitError, Emitter };
 /// let emitter: CtxtFreeEmitter = CtxtFreeEmitter::new();
 ///
 /// let item = "my emittable item";
-/// let _ = emitter.emit(&item, &mut buf).unwrap();
+/// let _ = emitter.emit(&item, &(), &mut buf).unwrap();
 /// ```
 pub struct CtxtFreeEmitter<E = EmitError> where E: From<EmitError> {
 	phantom: PhantomData<E>
@@ -61,16 +61,12 @@ impl <E> CtxtFreeEmitter<E> where E: From<EmitError> {
 	}
 }
 
-impl <'a, E> Emitter<'a> for CtxtFreeEmitter<E> where E: From<EmitError> {
+impl <E> Emitter for CtxtFreeEmitter<E> where E: From<EmitError> {
 	type Ctxt = ();
-	type CtxtBrw = ();
 	type Error = E;
 
-	fn get_cx(&self) { }
-
-	fn emit<Emittable, EmError, W>(&self, e: &Emittable, writer: &mut W) -> Result<(), Self::Error>
-	where Emittable: Emit<Self::CtxtBrw, EmError>, EmError: Into<EmitError>, W: Write {
-		let cx = self.get_cx();
+	fn emit<Emittable, EmError, W>(&self, e: &Emittable, cx: &(), writer: &mut W) -> Result<(), Self::Error>
+	where Emittable: Emit<Self::Ctxt, EmError>, EmError: Into<EmitError>, W: Write {
 		emit!(cx, e, writer)
 	}
 

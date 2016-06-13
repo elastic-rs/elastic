@@ -2,6 +2,7 @@
 //!
 //! Contains implementations of `emit` for the `libsyntax` crate and other `gen::rust` modules.
 
+use std::marker::PhantomData;
 use std::io::Write;
 use syntax::ext::base::ExtCtxt;
 use syntax::ext::quote::rt::ToTokens;
@@ -10,14 +11,14 @@ use ::gen::rust;
 use super::{ Emit, Emitter, EmitResult, EmitError };
 
 /// Emit a Rust AST
-impl <'a, T> Emit<&'a ExtCtxt<'a>, EmitError> for T where T: ToTokens {
+impl <'a, T> Emit<ExtCtxt<'a>, EmitError> for T where T: ToTokens {
 	fn emit(&self, cx: &ExtCtxt) -> EmitResult {
 		Ok(pprust::tts_to_string(&self.to_tokens(cx)[..]))
 	}
 }
 
 /// Emit a Rust Function
-impl <'a> Emit<&'a ExtCtxt<'a>, EmitError> for rust::Fn {
+impl <'a> Emit<ExtCtxt<'a>, EmitError> for rust::Fn {
 	fn emit(&self, _: &ExtCtxt) -> EmitResult {
 		Ok(self.to_string())
 	}
@@ -47,22 +48,21 @@ impl <'a> Emit<&'a ExtCtxt<'a>, EmitError> for rust::Fn {
 /// let sess = ParseSess::new();
 /// let mut attrs: Vec<GatedCfgAttr> = Vec::new();
 /// let mut loader = DummyMacroLoader;
-///
-/// let emitter = RustEmitter::new(
-/// 	ExtCtxt::new(
-/// 		&sess,
-/// 		Vec::new(),
-/// 		ExpansionConfig::default("".to_string()),
-/// 		&mut attrs,
-/// 		&mut loader
-/// 	)
+/// let mut cx = ExtCtxt::new(
+/// 	&sess,
+/// 	Vec::new(),
+/// 	ExpansionConfig::default("".to_string()),
+/// 	&mut attrs,
+/// 	&mut loader
 /// );
+///
+/// let emitter = RustEmitter::new();
 ///
 /// let mut buf: Vec<u8> = Vec::new();
 ///
 /// //Emit a token
 /// let token = token::str_to_ident("some_ident");
-/// let _ = emitter.emit(&token, &mut buf).unwrap();
+/// let _ = emitter.emit(&token, &cx, &mut buf).unwrap();
 /// # }
 /// ```
 ///
@@ -87,16 +87,15 @@ impl <'a> Emit<&'a ExtCtxt<'a>, EmitError> for rust::Fn {
 /// let sess = ParseSess::new();
 /// let mut attrs: Vec<GatedCfgAttr> = Vec::new();
 /// let mut loader = DummyMacroLoader;
-///
-/// let emitter = RustEmitter::new(
-/// 	ExtCtxt::new(
-/// 		&sess,
-/// 		Vec::new(),
-/// 		ExpansionConfig::default("".to_string()),
-/// 		&mut attrs,
-/// 		&mut loader
-/// 	)
+/// let mut cx = ExtCtxt::new(
+/// 	&sess,
+/// 	Vec::new(),
+/// 	ExpansionConfig::default("".to_string()),
+/// 	&mut attrs,
+/// 	&mut loader
 /// );
+///
+/// let emitter = RustEmitter::new();
 ///
 /// let mut buf: Vec<u8> = Vec::new();
 ///
@@ -107,41 +106,30 @@ impl <'a> Emit<&'a ExtCtxt<'a>, EmitError> for rust::Fn {
 /// 	build_arg("arg2", build_ty_ptr("str", Mutability::Immutable, Some(lifetime)))
 /// ]);
 ///
-/// let _ = emitter.emit(&fun, &mut buf).unwrap();
+/// let _ = emitter.emit(&fun, &cx, &mut buf).unwrap();
 /// # }
 /// ```
 pub struct RustEmitter<'a> {
-	cx: ExtCtxt<'a>
+	phantom: PhantomData<&'a ()>
 }
 
 impl <'a> RustEmitter<'a> {
 	/// Create a new emitter with the provided `ExtCtxt`.
-	pub fn new(cx: ExtCtxt<'a>) -> RustEmitter<'a> {
+	pub fn new() -> RustEmitter<'a> {
 		RustEmitter {
-			cx: cx
+			phantom: PhantomData
 		}
-	}
-
-	/// Get a mutable reference to the `ExtCtxt`
-	pub fn get_cx_mut(&mut self) -> &mut ExtCtxt<'a> {
-		&mut self.cx
 	}
 }
 
-impl <'a> Emitter<'a> for RustEmitter<'a> {
+impl <'a> Emitter for RustEmitter<'a> {
 	type Ctxt = ExtCtxt<'a>;
-	type CtxtBrw = &'a ExtCtxt<'a>;
 	type Error = EmitError;
 
-	fn get_cx(&'a self) -> &'a ExtCtxt<'a> {
-		&self.cx
-	}
-
-	fn emit<Emittable, EmError, W>(&'a self, e: &Emittable, writer: &mut W) -> Result<(), Self::Error> where
-		Emittable: Emit<Self::CtxtBrw, EmError>,
+	fn emit<Emittable, EmError, W>(&self, e: &Emittable, cx: &ExtCtxt<'a>, writer: &mut W) -> Result<(), Self::Error> where
+		Emittable: Emit<Self::Ctxt, EmError>,
 		EmError: Into<EmitError>,
 		W: Write {
-			let cx = self.get_cx();
 			emit!(cx, e, writer)
 	}
 
