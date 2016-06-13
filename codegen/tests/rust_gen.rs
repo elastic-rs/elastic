@@ -4,18 +4,19 @@ extern crate elastic_codegen;
 extern crate syntax;
 
 use syntax::ast::*;
+use syntax::ext::base::{ ExtCtxt, DummyMacroLoader };
 use syntax::codemap::DUMMY_SP;
 use syntax::parse::token::intern;
 use elastic_codegen::gen::rust::*;
 use elastic_codegen::gen::rust::parse::*;
 
 macro_rules! get_ctxt {
-    ($cx:ident, $ps:ident, $fgc:ident) => {
-
-		$cx = syntax::ext::base::ExtCtxt::new(
+    ($cx:ident, $ps:ident, $fgc:ident, $ml:ident) => {
+		$cx = ExtCtxt::new(
 			&$ps, vec![],
 			syntax::ext::expand::ExpansionConfig::default("qquote".to_string()),
-			&mut $fgc
+			&mut $fgc,
+            &mut $ml
 		);
 		$cx.bt_push(syntax::codemap::ExpnInfo {
 			call_site: DUMMY_SP,
@@ -104,8 +105,9 @@ fn can_add_body_stmt_to_fn() {
 	//Build an execution context
 	let ps = syntax::parse::ParseSess::new();
 	let mut fgc = vec![];
+    let mut mc = DummyMacroLoader;
 	let mut cx;
-	get_ctxt!(cx, ps, fgc);
+	get_ctxt!(cx, ps, fgc, mc);
     let cx = &mut cx;
 
 	//Build a function
@@ -122,8 +124,9 @@ fn can_add_body_stmts_to_fn() {
 	//Build an execution context
 	let ps = syntax::parse::ParseSess::new();
 	let mut fgc = vec![];
+    let mut mc = DummyMacroLoader;
 	let mut cx;
-	get_ctxt!(cx, ps, fgc);
+	get_ctxt!(cx, ps, fgc, mc);
     let cx = &mut cx;
 
 	//Build a function
@@ -143,8 +146,9 @@ fn can_add_body_block_to_fn() {
 	//Build an execution context
 	let ps = syntax::parse::ParseSess::new();
 	let mut fgc = vec![];
+    let mut mc = DummyMacroLoader;
 	let mut cx;
-	get_ctxt!(cx, ps, fgc);
+	get_ctxt!(cx, ps, fgc, mc);
     let cx = &mut cx;
 
 	//Build a function
@@ -166,8 +170,9 @@ fn can_set_return_expr_when_adding_body_block_if_fn_has_return_ty() {
 	//Build an execution context
 	let ps = syntax::parse::ParseSess::new();
 	let mut fgc = vec![];
+    let mut mc = DummyMacroLoader;
 	let mut cx;
-	get_ctxt!(cx, ps, fgc);
+	get_ctxt!(cx, ps, fgc, mc);
     let cx = &mut cx;
 
 	//Build a function that returns i32

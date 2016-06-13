@@ -10,7 +10,7 @@ use std::fs;
 use std::fs::{ File, OpenOptions };
 use std::collections::HashMap;
 use syntax::ast::*;
-use syntax::ext::base::ExtCtxt;
+use syntax::ext::base::{ ExtCtxt, DummyMacroLoader };
 use syntax::parse::token;
 use syntax::codemap::DUMMY_SP;
 use syntax::parse::token::intern;
@@ -26,11 +26,12 @@ use walkdir::WalkDir;
 use std::env;
 
 macro_rules! get_ctxt {
-	($cx:ident, $ps:ident, $fgc:ident) => {
+	($cx:ident, $ps:ident, $fgc:ident, $mc:ident) => {
 		$cx = ExtCtxt::new(
 			&$ps, vec![],
 			syntax::ext::expand::ExpansionConfig::default("qquote".to_string()),
-			&mut $fgc
+			&mut $fgc,
+			&mut $mc
 		);
 		$cx.bt_push(syntax::codemap::ExpnInfo {
 			call_site: DUMMY_SP,
@@ -64,14 +65,21 @@ fn gen_from_source(source_dir: &str, dest_dir: &str) -> Result<(), String> {
 	//Create an emitter and Execution Context
 	let ps = syntax::parse::ParseSess::new();
 	let mut fgc = vec![];
+	let mut mc = DummyMacroLoader;
 	let mut cx;
-	get_ctxt!(cx, ps, fgc);
+	get_ctxt!(cx, ps, fgc, mc);
 
-	let ps = syntax::parse::ParseSess::new();
-	let mut fgc = vec![];
-	let mut _cx;
-	get_ctxt!(_cx, ps, fgc);
-	let emitter = RustEmitter::new(_cx);
+	let _ps = syntax::parse::ParseSess::new();
+	let mut _fgc = vec![];
+	let mut _mc = DummyMacroLoader;
+
+	let emitter = RustEmitter::new(
+	{
+		let mut _cx;
+		get_ctxt!(_cx, _ps, _fgc, _mc);
+
+		_cx
+	});
 
 	//Get the spec source
 	println!("parsing source spec files...");

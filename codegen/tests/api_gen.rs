@@ -5,7 +5,6 @@ extern crate syntax;
 
 use std::collections::BTreeMap;
 use syntax::ast::*;
-use syntax::attr::AttrMetaMethods;
 use elastic_codegen::gen::rust::*;
 use elastic_codegen::api::ast::*;
 use elastic_codegen::api::gen::parse::*;
@@ -71,7 +70,7 @@ fn can_get_api_type_as_rust_type() {
 		Type::Enum(&Some(vec!("OpA".to_string(), "OpB".to_string(), "OpC".to_string()))).into(),
 		Type::Other("stuff").into()
 	];
-		
+
 	let expected_types = vec![
 		Some(ty::<String>(TyPathOpts::NameOnly)),
 		Some(ty::<bool>(TyPathOpts::NameOnly)),
@@ -113,9 +112,9 @@ fn can_get_mod_name_for_endpoint() {
                     params: BTreeMap::new()
             }
 		};
-		
+
 		let path = endpoint.get_mod_path().unwrap();
-		
+
 		let expected_path = vec![
 			"bulk".to_string()
 		];
@@ -145,10 +144,10 @@ fn can_get_mod_name_for_endpoint_with_parent() {
 			params: BTreeMap::new()
 		}
 	};
-	
+
 	//Get the hierarchy paths for the endpoint
 	let path = endpoint.get_mod_path().unwrap();
-	
+
 	let expected_path = vec![
 			"indices".to_string(),
 			"shard_stores".to_string()
@@ -178,8 +177,8 @@ fn can_get_url_fns_from_paths() {
 		url: Url {
 			path: String::new(),
 			paths: vec![
-				"/_count".to_string(), 
-				"/{index}/_count".to_string(), 
+				"/_count".to_string(),
+				"/{index}/_count".to_string(),
 				"/{index}/{type}/_count".to_string()
 			],
 			parts: BTreeMap::new(),

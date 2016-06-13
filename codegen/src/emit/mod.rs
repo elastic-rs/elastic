@@ -1,5 +1,5 @@
 //! Elasticsearch Emitter
-//! 
+//!
 //! Utilities for emitting generated code to some output.
 
 use std::io::Write;
@@ -16,7 +16,7 @@ mod macros {
 				let emitted = try!(
 					$emittable.emit($cx).map_err(|e| e.into())
 				);
-				
+
 				$writer.write_all(&emitted.into_bytes()[..]).map_err(|e| {
 					let err: EmitError = e.into();
 					err.into()
@@ -42,18 +42,18 @@ pub mod default;
 pub mod rust;
 
 /// An emittable codegen item.
-/// 
+///
 /// Takes in a context struct. This is necessary for rust `TokenTrees`, but may not be required in other cases.
-/// 
+///
 /// # Examples
-/// 
+///
 /// Implement `Emit` with no context:
-/// 
+///
 /// ```
 /// use elastic_codegen::emit::*;
-/// 
+///
 /// struct MyEmittable;
-/// 
+///
 /// impl Emit<(), EmitError> for MyEmittable {
 /// 	fn emit(&self, _: ()) -> Result<String, EmitError> {
 /// 		Ok("some result".to_string())
@@ -65,8 +65,9 @@ pub trait Emit<T, E> where E: Into<EmitError> {
 	fn emit(&self, cx: T) -> Result<String, E>;
 }
 
+//TODO: Take Ctxt in method calls. Don't close over lifetime
 /// Emitter for codegen items.
-/// 
+///
 /// The `Emitter` takes compatible `Emit` structs and writes them to a destination.
 pub trait Emitter<'a> {
 	/// A context struct that's threaded through calls to `Emit::emit`.
@@ -75,24 +76,24 @@ pub trait Emitter<'a> {
 	type CtxtBrw: 'a = &'a Self::Ctxt;
 	/// An error returned by `emit()`.
 	type Error: From<EmitError> = EmitError;
-	
+
 	/// Gets the context struct.
 	fn get_cx(&'a self) -> Self::CtxtBrw;
-	
+
 	/// Emit a codegen item to the provided writer.
-	/// 
-	/// This default implementation will attempt to emit results in-line, 
+	///
+	/// This default implementation will attempt to emit results in-line,
 	/// so no extra characters, such as new lines or whitespace, will be emitted between calls to `emit`.
-	fn emit<Emittable, EmError, W>(&'a self, e: &'a Emittable, writer: &'a mut W) -> Result<(), Self::Error> where 
-		Emittable: Emit<Self::CtxtBrw, EmError>, 
-		EmError: Into<EmitError>, 
+	fn emit<Emittable, EmError, W>(&'a self, e: &Emittable, writer: &mut W) -> Result<(), Self::Error> where
+		Emittable: Emit<Self::CtxtBrw, EmError>,
+		EmError: Into<EmitError>,
 		W: Write {
 			let cx = self.get_cx();
 			emit!(cx, e, writer)
 	}
 
 	/// Emit a string
-	fn emit_str<W>(&self, e: &str, writer: &'a mut W) -> Result<(), Self::Error> where W: Write {
+	fn emit_str<W>(&self, e: &str, writer: &mut W) -> Result<(), Self::Error> where W: Write {
 		emit_str!(e, writer)
 	}
 }
@@ -104,7 +105,7 @@ enum EmitErrorKind {
 }
 
 /// Represents an error encountered during emission.
-/// 
+///
 /// This could include errors while converting to string or writing.
 #[derive(Debug)]
 pub struct EmitError {

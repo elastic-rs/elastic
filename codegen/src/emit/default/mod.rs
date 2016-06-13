@@ -68,7 +68,7 @@ impl <'a, E> Emitter<'a> for CtxtFreeEmitter<E> where E: From<EmitError> {
 
 	fn get_cx(&self) { }
 
-	fn emit<Emittable, EmError, W>(&self, e: &'a Emittable, writer: &'a mut W) -> Result<(), Self::Error>
+	fn emit<Emittable, EmError, W>(&self, e: &Emittable, writer: &mut W) -> Result<(), Self::Error>
 	where Emittable: Emit<Self::CtxtBrw, EmError>, EmError: Into<EmitError>, W: Write {
 		let cx = self.get_cx();
 		emit!(cx, e, writer)

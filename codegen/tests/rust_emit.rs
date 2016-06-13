@@ -11,7 +11,7 @@ extern crate elastic_codegen;
 use std::fs;
 use std::fs::File;
 use syntax::ast::*;
-use syntax::ext::base::ExtCtxt;
+use syntax::ext::base::{ ExtCtxt, DummyMacroLoader };
 use syntax::parse::token;
 use syntax::codemap::DUMMY_SP;
 use syntax::parse::token::intern;
@@ -29,12 +29,12 @@ fn get_file(path: &str) -> File {
 }
 
 macro_rules! get_ctxt {
-	($cx:ident, $ps:ident, $fgc:ident) => {
-
+	($cx:ident, $ps:ident, $fgc:ident, $ml:ident) => {
 		$cx = ExtCtxt::new(
 			&$ps, vec![],
 			syntax::ext::expand::ExpansionConfig::default("qquote".to_string()),
-			&mut $fgc
+			&mut $fgc,
+            &mut $ml
 		);
 		$cx.bt_push(syntax::codemap::ExpnInfo {
 			call_site: DUMMY_SP,
@@ -63,10 +63,17 @@ fn can_emit_rs_fn_to_file() {
 	use elastic_codegen::emit::rust::*;
 
 	//Build an execution context
-	let ps = syntax::parse::ParseSess::new();
-	let mut fgc = vec![];
-	let mut cx;
-	get_ctxt!(cx, ps, fgc);
+	let _ps = syntax::parse::ParseSess::new();
+	let mut _fgc = vec![];
+	let mut _mc = DummyMacroLoader;
+
+	let mut emitter = RustEmitter::new(
+	{
+		let mut _cx;
+		get_ctxt!(_cx, _ps, _fgc, _mc);
+
+		_cx
+	});
 
 	//Function lifetime
 	let lifetime = lifetime("'a");
@@ -85,12 +92,10 @@ fn can_emit_rs_fn_to_file() {
 		])
 	])
 	.set_return::<i32>()
-	.set_body(quote_block!(&mut cx, {
+	.set_body(quote_block!(emitter.get_cx_mut(), {
 		let x = 1;
 		x
 	}));
-
-	let emitter = RustEmitter::new(cx);
 
 	//Get a file ref
 	let mut f = get_file("can_emit_rs_fn_to_file");
@@ -106,10 +111,17 @@ fn can_emit_rs_fn_with_fmt_body_to_file() {
 	use elastic_codegen::emit::rust::*;
 
 	//Build an execution context
-	let ps = syntax::parse::ParseSess::new();
-	let mut fgc = vec![];
-	let mut cx;
-	get_ctxt!(cx, ps, fgc);
+	let _ps = syntax::parse::ParseSess::new();
+	let mut _fgc = vec![];
+	let mut _mc = DummyMacroLoader;
+
+	let mut emitter = RustEmitter::new(
+	{
+		let mut _cx;
+		get_ctxt!(_cx, _ps, _fgc, _mc);
+
+		_cx
+	});
 
 	//Get the params of a url as Idents
 	let base = token::str_to_ident("base");
@@ -132,11 +144,9 @@ fn can_emit_rs_fn_with_fmt_body_to_file() {
 	)
 	.set_return::<String>()
 	.add_body_stmt(url_stmt)
-	.add_body_block(quote_block!(&mut cx, {
+	.add_body_block(quote_block!(emitter.get_cx_mut(), {
 		$url_ident
 	}));
-
-	let emitter = RustEmitter::new(cx);
 
 	//Get a file ref
 	let mut f = get_file("can_emit_rs_fn_with_fmt_body_to_file");
@@ -152,10 +162,17 @@ fn can_emit_rs_fn_with_push_body_to_file() {
 	use elastic_codegen::emit::rust::*;
 
 	//Build an execution context
-	let ps = syntax::parse::ParseSess::new();
-	let mut fgc = vec![];
-	let mut cx;
-	get_ctxt!(cx, ps, fgc);
+	let _ps = syntax::parse::ParseSess::new();
+	let mut _fgc = vec![];
+	let mut _mc = DummyMacroLoader;
+
+	let mut emitter = RustEmitter::new(
+	{
+		let mut _cx;
+		get_ctxt!(_cx, _ps, _fgc, _mc);
+
+		_cx
+	});
 
 	//Get the params of the url format as Idents
 	let base = token::str_to_ident("base");
@@ -182,11 +199,9 @@ fn can_emit_rs_fn_with_push_body_to_file() {
 	.add_lifetime(lifetime)
 	.set_return::<String>()
 	.add_body_stmts(url_stmts)
-	.add_body_block(quote_block!(&mut cx, {
+	.add_body_block(quote_block!(emitter.get_cx_mut(), {
 		$url_ident
 	}));
-
-	let emitter = RustEmitter::new(cx);
 
 	//Get a file ref
 	let mut f = get_file("can_emit_rs_fn_with_push_body_to_file");
@@ -201,19 +216,24 @@ fn can_emit_rs_fn_with_push_body_to_file() {
 fn can_emit_rs_use_stmts_to_file() {
     use elastic_codegen::emit::rust::*;
 
-    //Build an execution context
-	let ps = syntax::parse::ParseSess::new();
-	let mut fgc = vec![];
-	let mut cx;
-	get_ctxt!(cx, ps, fgc);
+	//Build an execution context
+	let _ps = syntax::parse::ParseSess::new();
+	let mut _fgc = vec![];
+	let mut _mc = DummyMacroLoader;
+
+	let mut emitter = RustEmitter::new(
+	{
+		let mut _cx;
+		get_ctxt!(_cx, _ps, _fgc, _mc);
+
+		_cx
+	});
 
     //Get a use statement
     let use_stmt = use_ident("std::collections", vec![
         token::str_to_ident("BTreeMap"),
         token::str_to_ident("String")
     ]);
-
-    let emitter = RustEmitter::new(cx);
 
 	//Get a file ref
 	let mut f = get_file("can_emit_rs_use_stmts_to_file");
