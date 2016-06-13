@@ -34,22 +34,11 @@ fn serialise_mapping_custom() {
 		"store": true,
 		"analyzer": "my_analyzer",
 		"fields": {
-			"bm25_field": {
-				"analyzer": "my_analyzer",
-				"fielddata": {
-					"format": "disabled"
-				},
-				"ignore_above": 50,
-				"index_options": "docs",
-				"norms": {
-					"enabled": false
-				},
-				"null_value": "my default value",
-				"position_increment_gap": 8,
-				"search_analyzer": "my_search_analyzer",
-				"search_quote_analyzer": "my_quote_search_analyzer",
-				"similarity": "BM25",
-				"term_vector": "no"
+			"comp": {
+				"type": "completion"
+			},
+			"count": {
+				"type": "token_count"
 			},
 			"raw": {
 				"analyzer": "my_analyzer"
@@ -303,4 +292,98 @@ fn serialise_mapping_terms_vector() {
 	}
 
 	assert!(success);
+}
+
+#[test]
+fn serialise_mapping_string_field() {
+	let mapping = ElasticStringField::String(
+		ElasticStringFieldMapping {
+			analyzer: Some("my_analyzer"),
+			fielddata: Some(FieldData::Disabled),
+			ignore_above: Some(1),
+			index_options: Some(IndexOptions::Docs),
+			norms: Some(Norms::Disabled),
+			position_increment_gap: Some(1),
+			search_analyzer: Some("my_analyzer"),
+			search_quote_analyzer: Some("my_analyzer"),
+			similarity: Some("my_similarity"),
+			term_vector: Some(TermVector::No)
+		}
+	);
+	let ser = serde_json::to_string(&mapping).unwrap();
+
+	let expected = json_str!({
+		"analyzer": "my_analyzer",
+		"fielddata": {
+			"format": "disabled"
+		},
+		"ignore_above": 1,
+		"index_options": "docs",
+		"norms": {
+			"enabled": false
+		},
+		"position_increment_gap": 1,
+		"search_analyzer": "my_analyzer",
+		"search_quote_analyzer": "my_analyzer",
+		"similarity": "my_similarity",
+		"term_vector": "no"
+	});
+
+	assert_eq!(expected, ser);
+}
+
+#[test]
+fn serialise_mapping_token_count_field() {
+	let mapping = ElasticStringField::TokenCount(
+		ElasticTokenCountFieldMapping {
+			analyzer: Some("my_analyzer"),
+			boost: Some(1.3),
+			doc_values: Some(false),
+			index: Some(IndexAnalysis::No),
+			include_in_all: Some(true),
+			precision_step: Some(15),
+			store: Some(true)
+		}
+	);
+	let ser = serde_json::to_string(&mapping).unwrap();
+
+	let expected = json_str!({
+		"type": "token_count",
+		"analyzer": "my_analyzer",
+		"boost": 1.3,
+		"doc_values": false,
+		"index": "no",
+		"include_in_all": true,
+		"precision_step": 15,
+		"store": true
+	});
+
+	assert_eq!(expected, ser);
+}
+
+#[test]
+fn serialise_mapping_completion_field() {
+	let mapping = ElasticStringField::Completion(
+		ElasticCompletionFieldMapping {
+			analyzer: Some("my_analyzer"),
+			search_analyzer: Some("my_analyzer"),
+			payloads: Some(true),
+			preserve_separators: Some(false),
+			preserve_position_increments: Some(true),
+			max_input_length: Some(512)
+		}
+	);
+	let ser = serde_json::to_string(&mapping).unwrap();
+
+	let expected = json_str!({
+		"type": "completion",
+		"analyzer": "my_analyzer",
+		"search_analyzer": "my_analyzer",
+		"payloads": true,
+		"preserve_separators": false,
+		"preserve_position_increments": true,
+		"max_input_length": 512
+	});
+
+	assert_eq!(expected, ser);
 }

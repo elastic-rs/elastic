@@ -12,6 +12,7 @@ mod inner {
         let src = Path::new("src/lib.rs.in");
         let dst = Path::new(&out_dir).join("lib.rs");
 
+        //TODO: Use serde_codegen::expand()
         let mut registry = syntex::Registry::new();
 
         serde_codegen::register(&mut registry);

@@ -8,6 +8,10 @@ use ::mapping::{ ElasticFieldMapping, ElasticTypeVisitor, IndexAnalysis };
 
 /// Elasticsearch datatype name.
 pub const STRING_DATATYPE: &'static str = "string";
+/// Elasticsearch datatype name.
+pub const TOKENCOUNT_DATATYPE: &'static str = "token_count";
+/// Elasticsearch datatype name.
+pub const COMPLETION_DATATYPE: &'static str = "completion";
 
 /// The base requirements for mapping a `string` type.
 ///
@@ -156,7 +160,7 @@ Self: ElasticFieldMapping<()> + Sized + Serialize {
 	/// Multi-fields allow the same string value to be indexed in multiple ways for different purposes,
 	/// such as one field for search and a multi-field for sorting and aggregations,
 	/// or the same string value analyzed by different analyzers.
-	fn fields() -> Option<BTreeMap<&'static str, ElasticStringFieldMapping>> {
+	fn fields() -> Option<BTreeMap<&'static str, ElasticStringField>> {
 		None
 	}
 
@@ -312,10 +316,204 @@ M: ElasticStringMapping {
 	}
 }
 
+/// A string sub-field type.
+///
+/// String types can have a number of alternative field representations for different purposes.
+#[derive(Debug, Clone, Copy)]
+pub enum ElasticStringField {
+	/// A `token_count` sub field.
+	TokenCount(ElasticTokenCountFieldMapping),
+	/// A `completion` suggester sub field.
+	Completion(ElasticCompletionFieldMapping),
+	/// A standard `string` sub field.
+	String(ElasticStringFieldMapping)
+}
+
+impl serde::Serialize for ElasticStringField {
+	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where
+	S: Serializer {
+		match *self {
+			ElasticStringField::TokenCount(m) => m.serialize(serializer),
+			ElasticStringField::Completion(m) => m.serialize(serializer),
+			ElasticStringField::String(m) => m.serialize(serializer)
+		}
+	}
+}
+
+/// A multi-field string mapping for a [token count](https://www.elastic.co/guide/en/elasticsearch/reference/current/token-count.html).
+#[derive(Debug, Default, Clone, Copy)]
+pub struct ElasticTokenCountFieldMapping {
+	/// The analyzer which should be used for analyzed string fields,
+	/// both at index-time and at search-time (unless overridden by the `search_analyzer`).
+	/// Defaults to the default index analyzer, or the `standard` analyzer.
+	pub analyzer: Option<&'static str>,
+	/// Field-level index time boosting. Accepts a floating point number, defaults to `1.0`.
+	pub boost: Option<f32>,
+	/// Should the field be stored on disk in a column-stride fashion,
+	/// so that it can later be used for sorting, aggregations, or scripting?
+	/// Accepts `true` (default) or `false`.
+	pub doc_values: Option<bool>,
+	/// Should the field be searchable? Accepts `not_analyzed` (default) and `no`.
+	pub index: Option<IndexAnalysis>,
+	/// Whether or not the field value should be included in the `_all` field?
+	/// Accepts true or false.
+	/// Defaults to `false` if index is set to `no`, or if a parent object field sets `include_in_all` to false.
+	/// Otherwise defaults to `true`.
+	pub include_in_all: Option<bool>,
+	/// Controls the number of extra terms that are indexed to make range queries faster.
+	/// Defaults to `32`.
+	pub precision_step: Option<u32>,
+	/// Whether the field value should be stored and retrievable separately from the `_source` field.
+	/// Accepts `true` or `false` (default).
+	pub store: Option<bool>
+}
+
+impl serde::Serialize for ElasticTokenCountFieldMapping {
+	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where
+	S: Serializer {
+		serializer.serialize_struct("fields", ElasticTokenCountFieldMappingVisitor::new(&self))
+	}
+}
+
+#[doc(hidden)]
+#[derive(Debug)]
+pub struct ElasticTokenCountFieldMappingVisitor<'a> {
+	data: &'a ElasticTokenCountFieldMapping
+}
+impl <'a> ElasticTokenCountFieldMappingVisitor<'a> {
+	#[doc(hidden)]
+	pub fn new(field: &'a ElasticTokenCountFieldMapping) -> Self {
+		ElasticTokenCountFieldMappingVisitor {
+			data: field
+		}
+	}
+}
+
+impl <'a> serde::ser::MapVisitor for ElasticTokenCountFieldMappingVisitor<'a> {
+	fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
+	where S: serde::Serializer {
+		try!(serializer.serialize_struct_elt("type", TOKENCOUNT_DATATYPE));
+
+		if let Some(analyzer) = self.data.analyzer {
+			try!(serializer.serialize_struct_elt("analyzer", analyzer));
+		}
+
+		if let Some(boost) = self.data.boost {
+			try!(serializer.serialize_struct_elt("boost", boost));
+		}
+
+		if let Some(doc_values) = self.data.doc_values {
+			try!(serializer.serialize_struct_elt("doc_values", doc_values));
+		}
+
+		if let Some(index) = self.data.index {
+			try!(serializer.serialize_struct_elt("index", index));
+		}
+
+		if let Some(include_in_all) = self.data.include_in_all {
+			try!(serializer.serialize_struct_elt("include_in_all", include_in_all));
+		}
+
+		if let Some(precision_step) = self.data.precision_step {
+			try!(serializer.serialize_struct_elt("precision_step", precision_step));
+		}
+
+		if let Some(store) = self.data.store {
+			try!(serializer.serialize_struct_elt("store", store));
+		}
+
+		Ok(None)
+	}
+}
+
+/// A multi-field string mapping for a [completion suggester](https://www.elastic.co/guide/en/elasticsearch/reference/current/search-suggesters-completion.html#search-suggesters-completion).
+#[derive(Debug, Default, Clone, Copy)]
+pub struct ElasticCompletionFieldMapping {
+	/// The analyzer which should be used for analyzed string fields,
+	/// both at index-time and at search-time (unless overridden by the `search_analyzer`).
+	/// Defaults to the default index analyzer, or the `standard` analyzer.
+	pub analyzer: Option<&'static str>,
+	/// The search analyzer to use, defaults to value of analyzer.
+	pub search_analyzer: Option<&'static str>,
+	/// Enables the storing of payloads, defaults to `false`.
+	pub payloads: Option<bool>,
+	/// Preserves the separators, defaults to `true`.
+	/// If disabled, you could find a field starting with Foo Fighters,
+	/// if you suggest for foof.
+	pub preserve_separators: Option<bool>,
+	/// Enables position increments, defaults to `true`.
+	/// If disabled and using stopwords analyzer,
+	/// you could get a field starting with The Beatles, if you suggest for b.
+	/// > Note: You could also achieve this by indexing two inputs, Beatles and The Beatles,
+	/// no need to change a simple analyzer, if you are able to enrich your data.
+	pub preserve_position_increments: Option<bool>,
+	/// Limits the length of a single input, defaults to `50` `UTF-16` code points.
+	/// This limit is only used at index time to reduce the total number of characters per input
+	/// string in order to prevent massive inputs from bloating the underlying datastructure.
+	/// The most usecases won’t be influenced by the default value since prefix completions
+	/// hardly grow beyond prefixes longer than a handful of characters.
+	/// (Old name "max_input_len" is deprecated)
+	pub max_input_length: Option<u32>
+}
+
+impl serde::Serialize for ElasticCompletionFieldMapping {
+	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where
+	S: Serializer {
+		serializer.serialize_struct("fields", ElasticCompletionFieldMappingVisitor::new(&self))
+	}
+}
+
+#[doc(hidden)]
+#[derive(Debug)]
+pub struct ElasticCompletionFieldMappingVisitor<'a> {
+	data: &'a ElasticCompletionFieldMapping
+}
+impl <'a> ElasticCompletionFieldMappingVisitor<'a> {
+	#[doc(hidden)]
+	pub fn new(field: &'a ElasticCompletionFieldMapping) -> Self {
+		ElasticCompletionFieldMappingVisitor {
+			data: field
+		}
+	}
+}
+
+impl <'a> serde::ser::MapVisitor for ElasticCompletionFieldMappingVisitor<'a> {
+	fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
+	where S: serde::Serializer {
+		try!(serializer.serialize_struct_elt("type", COMPLETION_DATATYPE));
+
+		if let Some(analyzer) = self.data.analyzer {
+			try!(serializer.serialize_struct_elt("analyzer", analyzer));
+		}
+
+		if let Some(search_analyzer) = self.data.search_analyzer {
+			try!(serializer.serialize_struct_elt("search_analyzer", search_analyzer));
+		}
+
+		if let Some(payloads) = self.data.payloads {
+			try!(serializer.serialize_struct_elt("payloads", payloads));
+		}
+
+		if let Some(preserve_separators) = self.data.preserve_separators {
+			try!(serializer.serialize_struct_elt("preserve_separators", preserve_separators));
+		}
+
+		if let Some(preserve_position_increments) = self.data.preserve_position_increments {
+			try!(serializer.serialize_struct_elt("preserve_position_increments", preserve_position_increments));
+		}
+
+		if let Some(max_input_length) = self.data.max_input_length {
+			try!(serializer.serialize_struct_elt("max_input_length", max_input_length));
+		}
+
+		Ok(None)
+	}
+}
+
 /// A multi-field string mapping.
 #[derive(Debug, Default, Clone, Copy)]
 pub struct ElasticStringFieldMapping {
-/// The analyzer which should be used for analyzed string fields,
+	/// The analyzer which should be used for analyzed string fields,
 	/// both at index-time and at search-time (unless overridden by the `search_analyzer`).
 	/// Defaults to the default index analyzer, or the `standard` analyzer.
 	pub analyzer: Option<&'static str>,
@@ -330,9 +528,6 @@ pub struct ElasticStringFieldMapping {
 	pub index_options: Option<IndexOptions>,
 	/// Whether field-length should be taken into account when scoring queries.
 	pub norms: Option<Norms>,
-	/// Accepts a string value which is substituted for any explicit null values.
-	/// Defaults to null, which means the field is treated as missing.
-	pub null_value: Option<&'static str>,
 	/// Whether field-length should be taken into account when scoring queries.
 	pub position_increment_gap: Option<usize>,
 	/// The analyzer that should be used at search time on analyzed fields.
@@ -393,10 +588,6 @@ impl <'a> serde::ser::MapVisitor for ElasticStringFieldMappingVisitor<'a> {
 
 		if let Some(norms) = self.data.norms {
 			try!(serializer.serialize_struct_elt("norms", norms));
-		}
-
-		if let Some(null_value) = self.data.null_value {
-			try!(serializer.serialize_struct_elt("null_value", null_value));
 		}
 
 		if let Some(position_increment_gap) = self.data.position_increment_gap {
