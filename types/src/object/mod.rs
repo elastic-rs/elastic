@@ -267,6 +267,10 @@
 //! # fn main() {
 //! # }
 //! ```
+//!
+//! # Links
+//!
+//! - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/2.3/_basic_concepts.html#_type)
 
 /// Elasticsearch datatype name.
 pub const OBJECT_DATATYPE: &'static str = "object";

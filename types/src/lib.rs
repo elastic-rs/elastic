@@ -2,8 +2,8 @@
 //!
 //! A high-level implementation of the core types in Elasticsearch documents.
 //!
-//! Types within this crate are self-contained and handle their own serialisation/deserialisation requirements.
-//! Each type also supplies a `struct` for its [Put Mapping API](https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-put-mapping.html) properties.
+//! Provides `struct`s and `trait`s for defining and deriving a correct Elasticsearch mapping
+//! definition from your Rust structures.
 //!
 //! # Usage
 //!
@@ -276,8 +276,8 @@
 //! # }
 //! ```
 //!
-//! Elasticsearch doesn't differentiate between nullable or collections, so it's also possible to
-//! map properties as `Option` or `Vec`s:
+//! Elasticsearch doesn't differentiate between nullable types or collections, so it's also possible
+//! to derive mapping from `Option` or `Vec` types:
 //!
 //! ```
 //! # #![feature(plugin, custom_derive)]
@@ -308,52 +308,7 @@
 //! # }
 //! ```
 //!
-//! Which produces the same mapping as before:
-//!
-//! ```
-//! # #![feature(plugin, custom_derive, custom_attribute)]
-//! # #![plugin(elastic_types_macros)]
-//! # #[macro_use]
-//! # extern crate json_str;
-//! # extern crate elastic_types;
-//! # extern crate serde;
-//! # use serde::{ Serialize, Deserialize };
-//! # use elastic_types::mapping::prelude::*;
-//! # use elastic_types::date::prelude::*;
-//! # #[derive(Serialize, Deserialize, ElasticType)]
-//! # pub struct MyType {
-//! # 	pub my_date: Option<ElasticDate<DefaultDateFormat>>,
-//! # 	pub my_num: Vec<i32>
-//! # }
-//! # impl serde::Serialize for MyType {
-//! # 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where S: serde::Serializer {
-//! # 		unimplemented!()
-//! # 	}
-//! # }
-//! # impl serde::Deserialize for MyType {
-//! # 	 fn deserialize<D>(deserializer: &mut D) -> Result<Self, D::Error> where D: serde::Deserializer {
-//! # 		unimplemented!()
-//! # 	}
-//! # }
-//! # fn main() {
-//! # let mapping = TypeMapper::to_string(MyTypeMapping).unwrap();
-//! # let json = json_str!(
-//! {
-//!     "properties": {
-//!         "my_date": {
-//!             "type": "date",
-//!             "format": "basic_date_time"
-//!         },
-//!         "my_num": {
-//!             "type": "integer"
-//!         }
-//!     }
-//! }
-//! # );
-//! # assert_eq!(json, mapping);
-//! # }
-//! ```
-//!
+//! Which produces the same mapping as before.
 //! See the [object](object/index.html) mod for more mapping examples.
 //!
 //! # Types
@@ -414,7 +369,8 @@
 //!
 //! # Links
 //!
-//! - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/guide/current/mapping.html)
+//! - [Elasticsearch Mapping Concepts](https://www.elastic.co/guide/en/elasticsearch/guide/current/mapping.html)
+//! - [Elasticsearch Type Concepts](https://www.elastic.co/guide/en/elasticsearch/reference/2.3/_basic_concepts.html#_type)
 //! - [Github](https://github.com/KodrAus/elasticsearch-rs)
 
 #![doc(html_root_url = "http://kodraus.github.io/rustdoc/elastic_types/")]
