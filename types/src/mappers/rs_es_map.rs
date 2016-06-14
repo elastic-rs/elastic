@@ -42,10 +42,10 @@ impl Mapping {
     }
 
     /// Build an `rs-es` mapping structure from the internal state.
-	pub fn result<'a>(&'a self) -> HashMap<&'a str, HashMap<&'a str, &'a str>> {
+	pub fn result(&self) -> HashMap<&str, HashMap<&str, &str>> {
 		let mut map = HashMap::new();
 
-        for (k, v) in self.map.iter() {
+        for (k, v) in &self.map {
             let mut props = HashMap::new();
 
             for (pk, pv) in v {

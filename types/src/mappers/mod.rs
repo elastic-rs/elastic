@@ -213,7 +213,7 @@ V: ElasticTypeVisitor {
     /// //Map `ser` with `rs_es::Client`
 	/// # }
 	/// ```
-    pub fn to_value<'a>(_: M, serializer: &'a mut rs_es_map::Serializer) -> Result<HashMap<&'a str, HashMap<&'a str, &'a str>>, rs_es_map::Error> {
+    pub fn to_value(_: M, serializer: &mut rs_es_map::Serializer) -> Result<HashMap<&str, HashMap<&str, &str>>, rs_es_map::Error> {
         try!(serializer.serialize_struct("", V::new()));
 
         Ok(serializer.value.result())
