@@ -3,16 +3,20 @@
 //! Mapping for types is inferred from the generic mapping parameters on `ElasticType`.
 //! There are two mappers provided:
 //!
-//! - `TypeMapper` for mapping user-defined types for the [Put Mapping API](https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-put-mapping.html)
-//! - `FieldMapper` for mapping fields on user-defined types. User-defined types as fields are mapped as [Nested objects](https://www.elastic.co/guide/en/elasticsearch/guide/current/nested-objects.html)
+//! - `TypeMapper` for mapping user-defined types for the [Put Mapping API](https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-put-mapping.html).
+//! - `RsesMapper` for mapping with [`rs-es`](http://benashford.github.io/rs-es/rs_es/index.html).
 
 use std::error::Error;
 use std::marker::PhantomData;
+use std::collections::HashMap;
 use serde;
+use serde::Serializer;
 use serde::ser::Error as SerError;
 use serde_json;
 use ::mapping::{ ElasticFieldMapping, ElasticTypeVisitor };
-use ::object::ElasticUserTypeMapping;
+use ::object::{ ElasticUserTypeMapping, ElasticUserTypeMappingVisitor };
+
+pub mod rs_es_map;
 
 /// Helper for mapping user-defined types.
 ///
@@ -159,4 +163,59 @@ M: ElasticUserTypeMapping {
 
 		Ok(ser.unwrap())
 	}
+}
+
+/// Helper for mapping `elastic_type`s with `rs-es`.
+pub struct RsesMapper<M, V> where
+M: ElasticUserTypeMapping<Visitor = ElasticUserTypeMappingVisitor<V>>,
+V: ElasticTypeVisitor {
+    phantom_m: PhantomData<M>,
+    phantom_v: PhantomData<V>
+}
+
+impl <M, V> RsesMapper<M, V> where
+M: ElasticUserTypeMapping<Visitor = ElasticUserTypeMappingVisitor<V>>,
+V: ElasticTypeVisitor {
+    /// Map a user-defined type to a `HashMap`.
+	///
+    /// # Examples
+	///
+	/// ```no_run
+	/// # #![feature(plugin, custom_derive)]
+	/// # #![plugin(json_str, elastic_types_macros)]
+	/// # #[macro_use]
+	/// # extern crate elastic_types;
+	/// # extern crate serde;
+	/// # use serde::{ Serialize, Deserialize };
+	/// use elastic_types::mapping::prelude::*;
+    ///
+	/// # use elastic_types::date::prelude::*;
+	/// # #[derive(Default, Clone, Serialize, Deserialize, ElasticType)]
+	/// # pub struct MyType {
+	/// # 	pub my_date: ElasticDate<DefaultDateFormat>,
+	/// # 	pub my_string: String,
+	/// # 	pub my_num: i32
+	/// # }
+	/// # impl serde::Serialize for MyType {
+	/// # 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where S: serde::Serializer {
+	/// # 		unimplemented!()
+	/// # 	}
+	/// # }
+	/// # impl serde::Deserialize for MyType {
+	/// # 	 fn deserialize<D>(deserializer: &mut D) -> Result<Self, D::Error> where D: serde::Deserializer {
+	/// # 		unimplemented!()
+	/// # 	}
+	/// # }
+	/// # fn main() {
+	/// let mut writer = rs_es_map::Serializer::default();
+	/// let mut ser = RsesMapper::to_value(MyTypeMapping, &mut writer);
+    ///
+    /// //Map `ser` with `rs_es::Client`
+	/// # }
+	/// ```
+    pub fn to_value<'a>(_: M, serializer: &'a mut rs_es_map::Serializer) -> Result<HashMap<&'a str, HashMap<&'a str, &'a str>>, rs_es_map::Error> {
+        try!(serializer.serialize_struct("", V::new()));
+
+        Ok(serializer.value.result())
+    }
 }

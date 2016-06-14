@@ -250,6 +250,105 @@ fn serialise_mapping_dynamic() {
 }
 
 #[test]
+fn serialize_mapping_rses() {
+	let mut serialiser = rs_es_map::Serializer::default();
+	let ser = RsesMapper::to_value(MyTypeMapping, &mut serialiser).unwrap();
+
+	let expected = hashmap! {
+		"my_num2" => hashmap! {
+			"doc_values" => "false",
+			"precision_step" => "2147483647",
+			"include_in_all" => "true",
+			"type" => "integer",
+			"coerce" => "true",
+			"boost" => "1.1",
+			"store" => "true",
+			"null_value" => "42",
+			"ignore_malformed" => "true"
+		},
+		"my_string2" => hashmap! {
+			"type" => "string"
+		},
+		"my_num1" => hashmap! {
+			"type" => "integer"
+		},
+		"my_geo" => hashmap! {
+			"points_only" => "false",
+			"tree" => "geohash",
+			"strategy" => "recursive",
+			"orientation" => "cw",
+			"precision" => "50m",
+			"type" => "geo_shape",
+			"distance_error_pct" => "0.5",
+			"tree_levels" => "8"
+		},
+		"my_string1" => hashmap! {
+			"type" => "string"
+		},
+		"my_bool2" => hashmap! {
+			"doc_values" => "true",
+			"type" => "boolean",
+			"boost" => "1.01",
+			"null_value" => "false",
+			"store" => "true",
+			"index" => "no"
+		},
+		"my_date2" => hashmap! {
+			"format" => "basic_date_time",
+			"type" => "date"
+		},
+		"my_ips" => hashmap! {
+			"type" => "ip"
+		},
+		"my_bool1" => hashmap! {
+			"type" => "boolean"
+		},
+		"my_date3" => hashmap! {
+			"index" => "no",
+			"doc_values" => "true",
+			"precision_step" => "6",
+			"include_in_all" => "false",
+			"format" => "epoch_millis",
+			"type" => "date",
+			"boost" => "1.01",
+			"store" => "true",
+			"null_value" => "1426351513778",
+			"ignore_malformed" => "true"
+		},
+		"my_date1" => hashmap! {
+			"format" => "yyyy-MM-ddTHH:mm:ssZ",
+			"type" => "date"
+		}
+	};
+
+	assert_eq!(expected, ser);
+}
+
+#[test]
+fn serialise_mapping_rses_nested() {
+	let mut serialiser = rs_es_map::Serializer::default();
+	let ser = RsesMapper::to_value(MyStructMapping, &mut serialiser).unwrap();
+
+	let expected = hashmap! {
+		"title" => hashmap! {
+			"type" => "string"
+		},
+		"geo" => hashmap! {
+			"type" => "nested"
+		},
+		"id" => hashmap! {
+			"type" => "integer"
+		},
+		"timestamp" => hashmap! {
+			"type" => "date",
+			"format" => "yyyy-MM-ddTHH:mm:ssZ"
+		}
+	};
+
+	assert_eq!(expected, ser);
+}
+
+#[test]
 fn get_type_name_default() {
 	assert_eq!("myothertype", MyOtherType::name());
 }

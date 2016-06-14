@@ -309,7 +309,9 @@
 //! ```
 //!
 //! Which produces the same mapping as before.
-//! See the [object](object/index.html) mod for more mapping examples.
+//! See the [`object`](object/index.html) mod for more mapping examples.
+//!
+//! For mapping in [`rs-es`](http://benashford.github.io/rs-es/rs_es/index.html), see the [`RsesMapper`](mappers/struct.RsesMapper.html#examples).
 //!
 //! # Types
 //!

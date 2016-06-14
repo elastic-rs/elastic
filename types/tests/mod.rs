@@ -7,6 +7,9 @@
 #[macro_use]
 extern crate json_str;
 
+#[macro_use]
+extern crate maplit;
+
 #[cfg_attr(feature = "nightly", allow(plugin_as_library))]
 #[macro_use]
 extern crate elastic_date_macros;
