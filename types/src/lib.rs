@@ -333,20 +333,20 @@
 //!
 //! The following table illustrates the types provided by `elastic_types`:
 //!
-//!  Elasticsearch Type  | Rust Type (Default Mapping) | Crate     | Rust Type (Custom Mapping)    | Format Type
-//!  ------------------- | --------------------------- | --------- | ----------------------------- | -----------
-//!  `integer`           | `i32`                       | `std`     | `ElasticInteger<M>`           | `()`
-//!  `long`              | `i64`                       | `std`     | `ElasticLong<M>`              | `()`
-//!  `short`             | `i16`                       | `std`     | `ElasticShort<M>`             | `()`
-//!  `byte`              | `i8`                        | `std`     | `ElasticByte<M>`              | `()`
-//!  `float`             | `f32`                       | `std`     | `ElasticFloat<M>`             | `()`
-//!  `double`            | `f64`                       | `std`     | `ElasticDouble<M>`            | `()`
-//!  `string`            | `String`                    | `std`     | `ElasticString<M>`            | `()`
-//!  `boolean`           | `bool`                      | `std`     | `ElasticBoolean<M>`           | `()`
-//!  `ip`                | `Ipv4Addr`                  | `std`     | `ElasticIp<M>`                | `()`
-//!  `date`              | `DateTime<UTC>`             | `chrono`  | `ElasticDate<F, M>`           | `DateFormat`
-//!  `geo_point`         | `Point`                     | `geo`     | `ElasticGeoPoint<F, M>`       | `GeoPointFormat`
-//!  `geo_shape`         | -                           | `geojson` | `ElasticGeoShape<M>`          | `()`
+//!  Elasticsearch Type  | Rust Type (Default Mapping) | Crate     | Rust Type (Custom Mapping)                                                       | Format Type
+//!  ------------------- | --------------------------- | --------- | -------------------------------------------------------------------------------- | -----------
+//!  `integer`           | `i32`                       | `std`     | [`ElasticInteger<M>`](number/mapping/trait.ElasticIntegerMapping.html)           | `()`
+//!  `long`              | `i64`                       | `std`     | [`ElasticLong<M>`](number/mapping/trait.ElasticLongMapping.html)                 | `()`
+//!  `short`             | `i16`                       | `std`     | [`ElasticShort<M>`](number/mapping/trait.ElasticShortMapping.html)               | `()`
+//!  `byte`              | `i8`                        | `std`     | [`ElasticByte<M>`](number/mapping/trait.ElasticByteMapping.html)                 | `()`
+//!  `float`             | `f32`                       | `std`     | [`ElasticFloat<M>`](number/mapping/trait.ElasticFloatMapping.html)               | `()`
+//!  `double`            | `f64`                       | `std`     | [`ElasticDouble<M>`](number/mapping/trait.ElasticDoubleMapping.html)             | `()`
+//!  `string`            | `String`                    | `std`     | [`ElasticString<M>`](string/mapping/trait.ElasticStringMapping.html)             | `()`
+//!  `boolean`           | `bool`                      | `std`     | [`ElasticBoolean<M>`](boolean/mapping/trait.ElasticBooleanMapping.html)          | `()`
+//!  `ip`                | `Ipv4Addr`                  | `std`     | [`ElasticIp<M>`](ip/mapping/trait.ElasticIpMapping.html)                         | `()`
+//!  `date`              | `DateTime<UTC>`             | `chrono`  | [`ElasticDate<F, M>`](date/mapping/trait.ElasticDateMapping.html)                | `DateFormat`
+//!  `geo_point`         | `Point`                     | `geo`     | [`ElasticGeoPoint<F, M>`](geo/point/mapping/trait.ElasticGeoPointMapping.html)   | `GeoPointFormat`
+//!  `geo_shape`         | -                           | `geojson` | [`ElasticGeoShape<M>`](geo/shape/mapping/trait.ElasticGeoShapeMapping.html)      | `()`
 //!
 //! The following sections explain this table.
 //!

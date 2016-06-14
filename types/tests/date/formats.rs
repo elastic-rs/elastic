@@ -86,11 +86,32 @@ fn epoch_millis() {
 }
 
 #[test]
+fn epoch_millis_no_millis() {
+	let date = ElasticDate::<EpochMillis>::parse("1435935302000").unwrap();
+
+	assert_eq!(
+		(2015i32, 7u32, 3u32, 14u32, 55u32, 2u32, 0u32),
+		(
+			date.year(),
+			date.month(),
+			date.day(),
+			date.hour(),
+			date.minute(),
+			date.second(),
+			date.nanosecond() / 1000000
+		)
+	);
+
+	let fmtd = date.format();
+	assert_eq!("1435935302000", &fmtd);
+}
+
+#[test]
 fn epoch_millis_minus() {
 	let date = ElasticDate::<EpochMillis>::parse("-8031171898478").unwrap();
 
 	assert_eq!(
-		(1715i32, 7u32, 3u32, 14u32, 55u32, 2u32, 522u32),
+		(1715i32, 7u32, 3u32, 14u32, 55u32, 1u32, 522u32),
 		(
 			date.year(),
 			date.month(),
@@ -104,6 +125,27 @@ fn epoch_millis_minus() {
 
 	let fmtd = date.format();
 	assert_eq!("-8031171898478", &fmtd);
+}
+
+#[test]
+fn epoch_millis_minus_no_millis() {
+	let date = ElasticDate::<EpochMillis>::parse("-8031171898000").unwrap();
+
+	assert_eq!(
+		(1715i32, 7u32, 3u32, 14u32, 55u32, 1u32, 1000u32),
+		(
+			date.year(),
+			date.month(),
+			date.day(),
+			date.hour(),
+			date.minute(),
+			date.second(),
+			date.nanosecond() / 1000000
+		)
+	);
+
+	let fmtd = date.format();
+	assert_eq!("-8031171898000", &fmtd);
 }
 
 #[test]
@@ -174,7 +216,7 @@ fn epoch_millis_short_minus() {
 	let date = ElasticDate::<EpochMillis>::parse("-5100").unwrap();
 
 	assert_eq!(
-		(1969i32, 12u32, 31u32, 23u32, 59u32, 55u32, 900u32),
+		(1969i32, 12u32, 31u32, 23u32, 59u32, 54u32, 900u32),
 		(
 			date.year(),
 			date.month(),
