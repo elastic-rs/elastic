@@ -7,10 +7,7 @@ extern crate chrono;
 extern crate elastic_types;
 
 use std::net::Ipv4Addr;
-use chrono::{ DateTime, UTC };
 use chrono::offset::TimeZone;
-use elastic_types::mapping::prelude::*;
-use elastic_types::geo::prelude::*;
 use elastic_types::response::*;
 use ::object_fixtures::*;
 

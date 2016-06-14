@@ -3,15 +3,78 @@
 //! `rs-es` uses a `HashMap` structure to build mappings.
 //! The current design limits the depth of the structure to a single layer, which works in most
 //! cases, but means you'll lose information when mapping nested types.
+//!
+//! The hashmap is built using a `serde::Serializer`, which holds the source for the borrowed
+//! `HashMap<&str, HashMap<&str, &str>>` result.
+//! This means you need to keep the `Serializer` around for as long as you need to access the
+//! data for `rs-es`.
 
+use std::marker::PhantomData;
 use std::fmt;
 use std::error::Error as StdError;
 use std::collections::HashMap;
 use serde;
 use serde::Serializer as SerSerializer;
 use serde::ser::Error as SerError;
+use ::mapping::ElasticTypeVisitor;
+use ::object::{ ElasticUserTypeMapping, ElasticUserTypeMappingVisitor };
 
-//TODO: This currently only supports mapping structs 1 level deep. This means stuff can get lost
+//TODO: This currently only supports mapping structs 1 level deep. This means stuff can get lost.
+
+/// Helper for mapping `elastic_type`s with `rs-es`.
+pub struct RsesMapper<M, V> where
+M: ElasticUserTypeMapping<Visitor = ElasticUserTypeMappingVisitor<V>>,
+V: ElasticTypeVisitor {
+    phantom_m: PhantomData<M>,
+    phantom_v: PhantomData<V>
+}
+
+impl <M, V> RsesMapper<M, V> where
+M: ElasticUserTypeMapping<Visitor = ElasticUserTypeMappingVisitor<V>>,
+V: ElasticTypeVisitor {
+    /// Map a user-defined type to a `HashMap`.
+	///
+    /// # Examples
+	///
+	/// ```no_run
+	/// # #![feature(plugin, custom_derive)]
+	/// # #![plugin(json_str, elastic_types_macros)]
+	/// # #[macro_use]
+	/// # extern crate elastic_types;
+	/// # extern crate serde;
+	/// # use serde::{ Serialize, Deserialize };
+	/// use elastic_types::mapping::prelude::*;
+    ///
+	/// # use elastic_types::date::prelude::*;
+	/// # #[derive(Default, Clone, Serialize, Deserialize, ElasticType)]
+	/// # pub struct MyType {
+	/// # 	pub my_date: ElasticDate<DefaultDateFormat>,
+	/// # 	pub my_string: String,
+	/// # 	pub my_num: i32
+	/// # }
+	/// # impl serde::Serialize for MyType {
+	/// # 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where S: serde::Serializer {
+	/// # 		unimplemented!()
+	/// # 	}
+	/// # }
+	/// # impl serde::Deserialize for MyType {
+	/// # 	 fn deserialize<D>(deserializer: &mut D) -> Result<Self, D::Error> where D: serde::Deserializer {
+	/// # 		unimplemented!()
+	/// # 	}
+	/// # }
+	/// # fn main() {
+	/// let mut writer = RsesSerializer::default();
+	/// let mut ser = RsesMapper::to_value(MyTypeMapping, &mut writer);
+    ///
+    /// //Map `ser` with `rs_es::Client`
+	/// # }
+	/// ```
+    pub fn to_value(_: M, serializer: &mut Serializer) -> Result<HashMap<&str, HashMap<&str, &str>>, Error> {
+        try!(serializer.serialize_struct("", V::new()));
+
+        Ok(serializer.value.result())
+    }
+}
 
 /// A representation of an `rs-es` mapping.
 pub struct Mapping {
