@@ -2,6 +2,8 @@
 //!
 //! Utilities for parsing the Elasticsearch API spec to Rust source code.
 
+//TODO: Take an `ExtCtxt` and avoid manual AST generation
+
 use std::collections::BTreeMap;
 use std::error;
 use std::fmt;

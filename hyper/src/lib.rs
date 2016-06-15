@@ -26,46 +26,93 @@
 //! hyper = { version = "*", default-features = false }
 //! ```
 //!
-//! And reference them in your crate root:
+//! Then reference in your crate root:
 //!
 //! ```ignore
 //! extern crate elastic_hyper as elastic;
 //! extern crate hyper;
 //! ```
 //!
+//! ## Minimal Example
+//!
 //! Ping the availability of your cluster:
 //!
 //! ```no_run
+//! //HTTP HEAD /
+//!
 //! # extern crate hyper;
 //! # extern crate elastic_hyper as elastic;
 //! # fn main() {
 //! let (mut client, params) = elastic::default();
 //!
-//! //HTTP HEAD /
 //! elastic::ping::head(&mut client, &params).unwrap();
 //! # }
 //! ```
 //!
-//! Ping the availability of your cluster:
+//! ## Search Request with Url Param
+//!
+//! Execute a search query with a url parameter:
 //!
 //! ```no_run
+//! //HTTP GET /myindex/mytype/_search?q='my string'
+//!
 //! # extern crate hyper;
 //! # extern crate elastic_hyper as elastic;
 //! # fn main() {
 //! let mut client = hyper::Client::new();
 //! let mut params = elastic::RequestParams::default()
 //! 	.url_params(vec![
-//! 		("q", "'my string'".to_owned())
+//! 		("q", "'my string'".to_owned()),
+//! 		("pretty", "true".to_owned())
 //! 	]);
 //!
-//! //HTTP GET /myindex/mytype/_search?q='my string'
 //! elastic::search::get_index_type(&mut client, &params, "myindex", "mytype").unwrap();
 //! # }
 //! ```
 //!
+//! ## Search Request with Json
+//!
+//! Using the [`json_str`](http://kodraus.github.io/rustdoc/json_str/) crate, you can execute
+//! queries using pure json:
+//!
+//! ```no_run
+//! //HTTP POST /myindex/mytype/_search
+//!
+//! # #[macro_use]
+//! # extern crate json_str;
+//! # extern crate hyper;
+//! # extern crate elastic_hyper as elastic;
+//! # fn main() {
+//! let (mut client, params) = elastic::default();
+//!
+//! elastic::search::post_index_type(&mut client, &params,
+//! 	"myindex", "mytype", &json_str!({
+//! 		"query": {
+//! 			"filtered": {
+//! 				"query": {
+//! 					"match_all": {}
+//! 				},
+//! 				"filter": {
+//! 					"geo_distance": {
+//! 						"distance": "20km",
+//! 						"location": {
+//! 							"lat": 37.776,
+//! 							"lon": -122.41
+//! 						}
+//! 					}
+//! 				}
+//! 			}
+//! 		}
+//! 	})
+//! ).unwrap();
+//! # }
+//! ```
+//!
+//! The entire API is generated from the official Elasticsearch spec, so it's always current.
+//!
 //! # Links
-//! - [elastic_types](http://kodraus.github.io/rustdoc/elastic_types/index.html)
-//! - [json_str](http://kodraus.github.io/rustdoc/json_str/index.html)
+//! - [Elasticsearch Docs](https://www.elastic.co/guide/en/elasticsearch/reference/current/index.html)
+//! - [examples](https://github.com/KodrAus/elasticsearch-rs/tree/master/hyper/samples)
 //! - [Github](https://github.com/KodrAus/elasticsearch-rs)
 
 extern crate hyper;

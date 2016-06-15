@@ -331,7 +331,8 @@
 //! All Elasticsearch types implement the base `ElasticType<M: ElasticFieldMapping<F>, F>` trait
 //! where `M` is the mapping and `F` is a type-specific format.
 //!
-//! The following table illustrates the types provided by `elastic_types`:
+//! The following table illustrates the types provided by `elastic_types`
+//! (links to the relevant mapping type):
 //!
 //!  Elasticsearch Type  | Rust Type (Default Mapping) | Crate     | Rust Type (Custom Mapping)                                                       | Format Type
 //!  ------------------- | --------------------------- | --------- | -------------------------------------------------------------------------------- | -----------
