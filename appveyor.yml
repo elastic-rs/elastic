@@ -13,19 +13,13 @@ install:
 build: false
 test_script:
   - ps: cd macros
-  - ps: cd json_str
-  - cargo test --verbose --features nightly-testing --no-default-features
-  - ps: cd ../types
+  - ps: cd types
   - cargo test --verbose --features nightly-testing --no-default-features
   - ps: cd ../date
   - cargo test --verbose --features nightly-testing --no-default-features
   - ps: cd ../../types
   - cargo test --verbose --features nightly-testing --no-default-features
-  - ps: cd ../codegen
-  - cargo test --verbose --features nightly-testing --no-default-features
   - ps: cd ../hyper
   - cargo build --verbose --features nightly-testing --no-default-features
   - ps: cd samples
-  - cargo build --verbose --features nightly-testing --no-default-features
-  - ps: cd ../codegen
   - cargo build --verbose --features nightly-testing --no-default-features
