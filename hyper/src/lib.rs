@@ -18,6 +18,14 @@
 //! hyper = "*"
 //! ```
 //!
+//! For `Windows`, you may need to exclude `openssl` or the build can fail:
+//!
+//! ```ignore
+//! [dependencies]
+//! elastic_hyper = { version = "*", default-features = false }
+//! hyper = { version = "*", default-features = false }
+//! ```
+//!
 //! And reference them in your crate root:
 //!
 //! ```ignore

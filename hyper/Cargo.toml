@@ -1,6 +1,6 @@
 [package]
 name = "elastic_hyper"
-version = "0.2.2"
+version = "0.2.3"
 authors = ["Ashley Mannix <ashleymannix@live.com.au>"]
 license = "Apache-2.0"
 description = "A lightweight implementation of the Elasticsearch API based on Hyper."
@@ -9,9 +9,11 @@ repository = "https://github.com/KodrAus/elasticsearch-rs"
 exclude = [ "samples", "codegen" ]
 
 [features]
+default = [ "ssl" ]
+ssl = [ "hyper/ssl" ]
 nightly-testing = [ "clippy" ]
 
 [dependencies]
-hyper = "~0.9.0"
+hyper = { version = "~0.9.0", default-features = false }
 url = "~1.1.0"
 clippy = { version = "^0.*", optional = true }
