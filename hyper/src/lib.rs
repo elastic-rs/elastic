@@ -1,11 +1,13 @@
-//! Elasticsearch Hyper Client
+//! Elasticsearch REST API Client
 //!
-//! A lightweight implementation of the Elasticsearch API based on Hyper.
+//! A lightweight implementation of the Elasticsearch API based on the
+//! [`hyper`](http://hyper.rs/hyper/master/hyper/index.html) HTTP client.
 //!
-//! Each API endpoint is represented as its own function,
-//! so each possible http route gets its own function.
-//! The functions are also designed to work well with the `elastic_types`
-//! and `json_str` crates, but deserialisation is the responsibility of the caller.
+//! Each API endpoint is represented as its own function, so each possible http route gets its own function.
+//! This library makes very few assumptions, leaving it up to you to decide what to invest your
+//! precious CPU cycles into.
+//!
+//! The entire API is generated from the official Elasticsearch spec, so it's always current.
 //!
 //! # Usage
 //!
@@ -108,11 +110,25 @@
 //! # }
 //! ```
 //!
-//! The entire API is generated from the official Elasticsearch spec, so it's always current.
+//! See more [examples](https://github.com/KodrAus/elasticsearch-rs/tree/master/hyper/samples).
+//!
+//! # See Also
+//!
+//! ## [`rs-es`](http://benashford.github.io/rs-es/rs_es/index.html)
+//!
+//! An alternative Elasticsearch client for Rust that provides an implementation of the Query DSL.
+//!
+//! ## [`elastic_types`](http://kodraus.github.io/rustdoc/elastic_types/)
+//!
+//! A library that implements the core datatypes in Elasticsearch documents and automatically generates
+//! a json mapping from your Rust structures.
+//!
+//! ## [`json_str`](http://kodraus.github.io/rustdoc/json_str/)
+//!
+//! A library for generating minified json strings from Rust syntax.
 //!
 //! # Links
 //! - [Elasticsearch Docs](https://www.elastic.co/guide/en/elasticsearch/reference/current/index.html)
-//! - [examples](https://github.com/KodrAus/elasticsearch-rs/tree/master/hyper/samples)
 //! - [Github](https://github.com/KodrAus/elasticsearch-rs)
 
 extern crate hyper;
