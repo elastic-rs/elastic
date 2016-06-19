@@ -1,5 +1,5 @@
 # Elastic
-Yet another work in progress Elasticsearch client for Rust.
+Yet another work in progress Elasticsearch client for Rust, targeting the new Elasticsearch `5.x` version.
 
 Platform  | Channel | Status
 ------------- | ------------- | -------------
