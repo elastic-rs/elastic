@@ -464,7 +464,17 @@ fn get_serde_meta_items(attr: &ast::Attribute) -> Option<&[P<ast::MetaItem>]> {
     }
 }
 
-//TODO: Use serde_codegen for this
+//NOTE: Needs to remain in step with `serde_codegen`
+fn get_ser_field(cx: &mut ExtCtxt, field: &ast::StructField) -> Option<(Ident, ast::StructField)> {
+	//Get all fields on struct where there isn't `skip_serializing`
+	if !serialized_by_serde(field) {
+		return None;
+	}
+
+	let name = get_field_name(cx, field);
+	Some((name, field.to_owned()))
+}
+
 fn serialized_by_serde(field: &ast::StructField) -> bool {
     for meta_items in field.attrs.iter().filter_map(get_serde_meta_items) {
         for meta_item in meta_items {
@@ -479,7 +489,6 @@ fn serialized_by_serde(field: &ast::StructField) -> bool {
     true
 }
 
-//TODO: Use serde_codegen for this
 fn get_field_name(cx: &ExtCtxt, field: &ast::StructField) -> Ident {
 	for meta_items in field.attrs.iter().filter_map(get_serde_meta_items) {
         for meta_item in meta_items {
@@ -496,17 +505,6 @@ fn get_field_name(cx: &ExtCtxt, field: &ast::StructField) -> Ident {
     }
 
     field.ident.unwrap()
-}
-
-//TODO: Use serde_codegen for this
-fn get_ser_field(cx: &mut ExtCtxt, field: &ast::StructField) -> Option<(Ident, ast::StructField)> {
-	//Get all fields on struct where there isn't `skip_serializing`
-	if !serialized_by_serde(field) {
-		return None;
-	}
-
-	let name = get_field_name(cx, field);
-	Some((name, field.to_owned()))
 }
 
 fn get_ident_from_lit(cx: &ExtCtxt, name: &str, lit: &ast::Lit) -> Result<Ident, &'static str> {
