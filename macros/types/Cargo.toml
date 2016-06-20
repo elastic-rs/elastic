@@ -19,6 +19,6 @@ nightly-testing = [ "clippy" ]
 [dependencies]
 serde = "~0.7.0"
 serde_json = "~0.7.0"
-serde_item = { version = "*", default-features = false }
+serde_item = { version = "~0.1.0", default-features = false }
 serde_macros = "~0.7.0"
 clippy = { version = "^0.*", optional = true }
