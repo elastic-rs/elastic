@@ -97,7 +97,6 @@ pub fn build_properties_visitor(cx: &mut ExtCtxt, span: Span, item: &ast::Item, 
 }
 
 fn impl_properties_visitor(cx: &mut ExtCtxt, span: Span, visitor: &Ident, fields: &Vec<(Ident, ast::StructField)>, push: &mut FnMut(Annotatable)) {
-
 	push(Annotatable::Item(
 		quote_item!(cx,
 			impl ::elastic_types::mapping::ElasticTypeVisitor for $visitor {

@@ -16,6 +16,7 @@ extern crate syntax;
 extern crate rustc;
 extern crate rustc_plugin;
 extern crate serde;
+extern crate serde_item;
 extern crate serde_json;
 
 use rustc_plugin::Registry;
@@ -454,70 +455,15 @@ fn get_elastic_meta_items(attr: &ast::Attribute) -> Option<&[P<ast::MetaItem>]> 
     }
 }
 
-#[cfg(not(feature = "serde-attrs"))]
-fn get_ser_field(_: &mut ExtCtxt, field: &ast::StructField) -> Option<(Ident, ast::StructField)> {
-    Some((field.ident.unwrap(), field.to_owned()))
-}
-
-#[cfg(feature = "serde-attrs")]
 fn get_ser_field(cx: &mut ExtCtxt, field: &ast::StructField) -> Option<(Ident, ast::StructField)> {
+    let serde_field = serde_item::attr::Field::from_ast(cx, 0, field);
+
     //Get all fields on struct where there isn't `skip_serializing`
-    if !serde_codegen::serialized_by_serde(field) {
+    if serde_field.skip_serializing() {
         return None;
     }
 
-    let name = serde_codegen::get_field_name(cx, field);
-    Some((name, field.to_owned()))
-}
-
-#[cfg(feature = "serde-attrs")]
-mod serde_codegen {
-    use syntax::ast;
-    use syntax::ast::Ident;
-    use syntax::ptr::P;
-    use syntax::ext::base::ExtCtxt;
-
-    fn get_serde_meta_items(attr: &ast::Attribute) -> Option<&[P<ast::MetaItem>]> {
-        match attr.node.value.node {
-            //Also get serde meta items, but don't mark as used
-            ast::MetaItemKind::List(ref name, ref items) if name == &"serde" => {
-                Some(items)
-            }
-            _ => None
-        }
-    }
-
-    pub fn serialized_by_serde(field: &ast::StructField) -> bool {
-        for meta_items in field.attrs.iter().filter_map(get_serde_meta_items) {
-            for meta_item in meta_items {
-                match meta_item.node {
-                    ast::MetaItemKind::Word(ref name) if name == &"skip_serializing" => {
-                        return false
-                    }
-                    _ => {}
-                }
-            }
-        }
-        true
-    }
-
-    pub fn get_field_name(cx: &ExtCtxt, field: &ast::StructField) -> Ident {
-    	for meta_items in field.attrs.iter().filter_map(get_serde_meta_items) {
-            for meta_item in meta_items {
-                match meta_item.node {
-                    // Parse `#[serde(rename="foo")]`
-                    ast::MetaItemKind::NameValue(ref name, ref lit) if name == &"rename" => {
-                        let s = super::get_ident_from_lit(cx, name, lit).unwrap_or(field.ident.unwrap());
-
-                        return s;
-                    }
-                    _ => ()
-                }
-            }
-        }
-
-        field.ident.unwrap()
-    }
+    Some((token::str_to_ident(serde_field.name().serialize_name().as_ref()), field.to_owned()))
 }
 
 fn get_ident_from_lit(cx: &ExtCtxt, name: &str, lit: &ast::Lit) -> Result<Ident, &'static str> {
