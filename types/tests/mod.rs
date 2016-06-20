@@ -540,6 +540,7 @@ pub mod geo_shape_fixtures {
 pub mod object_fixtures {
 	use std::collections::BTreeMap;
 	use std::net::Ipv4Addr;
+	use serde_json;
 	use chrono::{ DateTime, UTC };
 	use elastic_types::mapping::prelude::*;
 	use elastic_types::date::prelude::*;
@@ -568,8 +569,9 @@ pub mod object_fixtures {
 		pub my_bool2: ElasticBoolean<MyBooleanMapping>,
 		pub my_geo: Option<ElasticGeoShape<MyGeoShapeMapping>>,
 		pub my_ips: Option<Vec<Ipv4Addr>>,
-		pub my_map1: BTreeMap<String, String>,
-		pub my_map2: serde_json::Value
+		pub my_map1: BTreeMap<String, serde_json::Value>,
+		pub my_map2: BTreeMap<String, String>,
+		pub my_val: serde_json::Value
 	}
 
 	#[derive(Default, Clone)]

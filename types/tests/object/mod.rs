@@ -78,6 +78,15 @@ fn serialise_mapping_type() {
 			},
 			"my_ips": {
 				"type": "ip"
+			},
+			"my_map1": {
+				"type": "object"
+			},
+			"my_map2": {
+				"type": "object"
+			},
+			"my_val": {
+				"type": "object"
 			}
 		}
 	});
@@ -182,6 +191,15 @@ fn serialise_mapping_type_as_nested() {
 					},
 					"my_ips": {
 						"type": "ip"
+					},
+					"my_map1": {
+						"type": "object"
+					},
+					"my_map2": {
+						"type": "object"
+					},
+					"my_val": {
+						"type": "object"
 					}
 				}
 			},
@@ -318,6 +336,15 @@ fn serialize_mapping_rses() {
 		"my_date1" => hashmap! {
 			"format" => "yyyy-MM-ddTHH:mm:ssZ",
 			"type" => "date"
+		},
+		"my_map1" => hashmap! {
+			"type" => "object"
+		},
+		"my_map2" => hashmap! {
+			"type" => "object"
+		},
+		"my_val" => hashmap! {
+			"type" => "object"
 		}
 	};
 

@@ -29,7 +29,7 @@ pub mod prelude {
 		ElasticType,
 		ElasticFieldMapping,
 		ElasticTypeVisitor,
-		NullMapping,
+		DefaultMapping,
 		IndexAnalysis
 	};
 
@@ -44,8 +44,11 @@ pub mod prelude {
 	pub use ::boolean::mapping::*;
 }
 
+use std::collections;
+use std::hash::Hash;
 use std::marker::PhantomData;
 use serde;
+use serde_json;
 
 /// The base representation of an Elasticsearch data type.
 ///
@@ -107,35 +110,35 @@ Self: serde::ser::MapVisitor {
 
 /// A mapping implementation for a non-core type, or any where it's ok for Elasticsearch to infer the mapping at index-time.
 #[derive(Debug, PartialEq, Default, Clone)]
-pub struct NullMapping;
+pub struct DefaultMapping;
 
-impl ElasticFieldMapping<()> for NullMapping {
-	type Visitor = NullMappingVisitor;
+impl ElasticFieldMapping<()> for DefaultMapping {
+	type Visitor = DefaultMappingVisitor;
 
 	fn data_type() -> &'static str {
 		"object"
 	}
 }
 
-impl serde::Serialize for NullMapping {
+impl serde::Serialize for DefaultMapping {
 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
 	where S: serde::Serializer {
-		serializer.serialize_struct("mapping", NullMappingVisitor::new())
+		serializer.serialize_struct("mapping", DefaultMappingVisitor::new())
 	}
 }
 
 /// A default empty visitor.
 #[derive(Debug, PartialEq)]
-pub struct NullMappingVisitor;
-impl ElasticTypeVisitor for NullMappingVisitor {
+pub struct DefaultMappingVisitor;
+impl ElasticTypeVisitor for DefaultMappingVisitor {
 	fn new() -> Self {
-		NullMappingVisitor
+		DefaultMappingVisitor
 	}
 }
-impl serde::ser::MapVisitor for NullMappingVisitor {
+impl serde::ser::MapVisitor for DefaultMappingVisitor {
 	fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
 	where S: serde::Serializer {
-		try!(serializer.serialize_struct_elt("type", NullMapping::data_type()));
+		try!(serializer.serialize_struct_elt("type", DefaultMapping::data_type()));
 
 		Ok(None)
 	}
@@ -242,7 +245,7 @@ F: Default + Clone {
 	}
 }
 
-impl <T, M, F> ElasticType<ElasticArrayMapping<M, F>, F> for Option<T> where
+impl <T, M, F> ElasticType<ElasticOptionMapping<M, F>, F> for Option<T> where
 T: ElasticType<M, F>,
 M: ElasticFieldMapping<F>,
 F: Default + Clone {
@@ -282,5 +285,23 @@ impl <'a, T, M, F> ElasticType<ElasticBorrowMapping<'a, M, F>, F> for &'a T wher
 T: ElasticType<M, F>,
 M: ElasticFieldMapping<F>,
 F: Default + Clone {
+
+}
+
+//It's not possible to know at compile-time exactly what type Value can take.
+//The only way to map it as as a default object.
+impl ElasticType<DefaultMapping, ()> for serde_json::Value {
+
+}
+
+impl <K, V> ElasticType<DefaultMapping, ()> for collections::BTreeMap<K, V> where
+K: AsRef<str> + Ord + serde::Serialize,
+V: serde::Serialize {
+
+}
+
+impl <K, V> ElasticType<DefaultMapping, ()> for collections::HashMap<K, V> where
+K: AsRef<str> + Eq + Hash + serde::Serialize,
+V: serde::Serialize {
 
 }
