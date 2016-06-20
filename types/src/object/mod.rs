@@ -133,7 +133,16 @@
 //!
 //! ### Ignore or Rename Fields
 //!
-//! The mapping will respect standard `serde` attributes for renaming or ignoring fields:
+//! If you add the `serde_attrs` feature to `elastic_types_macros`,
+//! the mapping will respect standard `serde` attributes for renaming or ignoring fields.
+//!
+//! Use `elsatic_types_macros` in your `Cargo.toml` as follows:
+//!
+//! ```ignore
+//! elastic_types_macros = { version = "*", features = [ "serde-attrs" ] }
+//! ```
+//!
+//! You can then serialise type mappings with `serde` attributes:
 //!
 //! ```
 //! # #![feature(plugin, custom_derive, custom_attribute)]
