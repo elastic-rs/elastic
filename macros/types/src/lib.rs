@@ -16,6 +16,7 @@ extern crate syntax;
 extern crate rustc;
 extern crate rustc_plugin;
 extern crate serde;
+extern crate serde_item;
 extern crate serde_json;
 
 use rustc_plugin::Registry;
@@ -454,59 +455,15 @@ fn get_elastic_meta_items(attr: &ast::Attribute) -> Option<&[P<ast::MetaItem>]> 
     }
 }
 
-fn get_serde_meta_items(attr: &ast::Attribute) -> Option<&[P<ast::MetaItem>]> {
-    match attr.node.value.node {
-        //Also get serde meta items, but don't mark as used
-        ast::MetaItemKind::List(ref name, ref items) if name == &"serde" => {
-            Some(items)
-        }
-        _ => None
-    }
-}
-
-//TODO: Use serde_codegen for this
-fn serialized_by_serde(field: &ast::StructField) -> bool {
-    for meta_items in field.attrs.iter().filter_map(get_serde_meta_items) {
-        for meta_item in meta_items {
-            match meta_item.node {
-                ast::MetaItemKind::Word(ref name) if name == &"skip_serializing" => {
-                    return false
-                }
-                _ => {}
-            }
-        }
-    }
-    true
-}
-
-//TODO: Use serde_codegen for this
-fn get_field_name(cx: &ExtCtxt, field: &ast::StructField) -> Ident {
-	for meta_items in field.attrs.iter().filter_map(get_serde_meta_items) {
-        for meta_item in meta_items {
-            match meta_item.node {
-                // Parse `#[serde(rename="foo")]`
-                ast::MetaItemKind::NameValue(ref name, ref lit) if name == &"rename" => {
-                    let s = get_ident_from_lit(cx, name, lit).unwrap_or(field.ident.unwrap());
-
-                    return s;
-                }
-                _ => ()
-            }
-        }
-    }
-
-    field.ident.unwrap()
-}
-
-//TODO: Use serde_codegen for this
 fn get_ser_field(cx: &mut ExtCtxt, field: &ast::StructField) -> Option<(Ident, ast::StructField)> {
-	//Get all fields on struct where there isn't `skip_serializing`
-	if !serialized_by_serde(field) {
-		return None;
-	}
+    let serde_field = serde_item::attr::Field::from_ast(cx, 0, field);
 
-	let name = get_field_name(cx, field);
-	Some((name, field.to_owned()))
+    //Get all fields on struct where there isn't `skip_serializing`
+    if serde_field.skip_serializing() {
+        return None;
+    }
+
+    Some((token::str_to_ident(serde_field.name().serialize_name().as_ref()), field.to_owned()))
 }
 
 fn get_ident_from_lit(cx: &ExtCtxt, name: &str, lit: &ast::Lit) -> Result<Ident, &'static str> {

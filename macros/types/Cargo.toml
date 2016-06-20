@@ -1,6 +1,6 @@
 [package]
 name = "elastic_types_macros"
-version = "0.2.1"
+version = "0.3.1"
 authors = ["Ashley Mannix <ashleymannix@live.com.au>"]
 license = "Apache-2.0"
 description = "Compile-time code generation for Elasticsearch type implementations."
@@ -18,5 +18,6 @@ nightly-testing = [ "clippy" ]
 [dependencies]
 serde = "~0.7.0"
 serde_json = "~0.7.0"
+serde_item = { version = "*", default-features = false }
 serde_macros = "~0.7.0"
 clippy = { version = "^0.*", optional = true }
