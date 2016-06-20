@@ -454,57 +454,70 @@ fn get_elastic_meta_items(attr: &ast::Attribute) -> Option<&[P<ast::MetaItem>]> 
     }
 }
 
-fn get_serde_meta_items(attr: &ast::Attribute) -> Option<&[P<ast::MetaItem>]> {
-    match attr.node.value.node {
-        //Also get serde meta items, but don't mark as used
-        ast::MetaItemKind::List(ref name, ref items) if name == &"serde" => {
-            Some(items)
-        }
-        _ => None
-    }
+#[cfg(not(feature = "serde-attrs"))]
+fn get_ser_field(_: &mut ExtCtxt, field: &ast::StructField) -> Option<(Ident, ast::StructField)> {
+    Some((field.ident.unwrap(), field.to_owned()))
 }
 
-//NOTE: Needs to remain in step with `serde_codegen`
+#[cfg(feature = "serde-attrs")]
 fn get_ser_field(cx: &mut ExtCtxt, field: &ast::StructField) -> Option<(Ident, ast::StructField)> {
-	//Get all fields on struct where there isn't `skip_serializing`
-	if !serialized_by_serde(field) {
-		return None;
-	}
-
-	let name = get_field_name(cx, field);
-	Some((name, field.to_owned()))
-}
-
-fn serialized_by_serde(field: &ast::StructField) -> bool {
-    for meta_items in field.attrs.iter().filter_map(get_serde_meta_items) {
-        for meta_item in meta_items {
-            match meta_item.node {
-                ast::MetaItemKind::Word(ref name) if name == &"skip_serializing" => {
-                    return false
-                }
-                _ => {}
-            }
-        }
+    //Get all fields on struct where there isn't `skip_serializing`
+    if !serde_codegen::serialized_by_serde(field) {
+        return None;
     }
-    true
+
+    let name = serde_codegen::get_field_name(cx, field);
+    Some((name, field.to_owned()))
 }
 
-fn get_field_name(cx: &ExtCtxt, field: &ast::StructField) -> Ident {
-	for meta_items in field.attrs.iter().filter_map(get_serde_meta_items) {
-        for meta_item in meta_items {
-            match meta_item.node {
-                // Parse `#[serde(rename="foo")]`
-                ast::MetaItemKind::NameValue(ref name, ref lit) if name == &"rename" => {
-                    let s = get_ident_from_lit(cx, name, lit).unwrap_or(field.ident.unwrap());
+#[cfg(feature = "serde-attrs")]
+mod serde_codegen {
+    use syntax::ast;
+    use syntax::ast::Ident;
+    use syntax::ptr::P;
+    use syntax::ext::base::ExtCtxt;
 
-                    return s;
-                }
-                _ => ()
+    fn get_serde_meta_items(attr: &ast::Attribute) -> Option<&[P<ast::MetaItem>]> {
+        match attr.node.value.node {
+            //Also get serde meta items, but don't mark as used
+            ast::MetaItemKind::List(ref name, ref items) if name == &"serde" => {
+                Some(items)
             }
+            _ => None
         }
     }
 
-    field.ident.unwrap()
+    pub fn serialized_by_serde(field: &ast::StructField) -> bool {
+        for meta_items in field.attrs.iter().filter_map(get_serde_meta_items) {
+            for meta_item in meta_items {
+                match meta_item.node {
+                    ast::MetaItemKind::Word(ref name) if name == &"skip_serializing" => {
+                        return false
+                    }
+                    _ => {}
+                }
+            }
+        }
+        true
+    }
+
+    pub fn get_field_name(cx: &ExtCtxt, field: &ast::StructField) -> Ident {
+    	for meta_items in field.attrs.iter().filter_map(get_serde_meta_items) {
+            for meta_item in meta_items {
+                match meta_item.node {
+                    // Parse `#[serde(rename="foo")]`
+                    ast::MetaItemKind::NameValue(ref name, ref lit) if name == &"rename" => {
+                        let s = super::get_ident_from_lit(cx, name, lit).unwrap_or(field.ident.unwrap());
+
+                        return s;
+                    }
+                    _ => ()
+                }
+            }
+        }
+
+        field.ident.unwrap()
+    }
 }
 
 fn get_ident_from_lit(cx: &ExtCtxt, name: &str, lit: &ast::Lit) -> Result<Ident, &'static str> {
