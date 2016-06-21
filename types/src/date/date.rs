@@ -408,3 +408,46 @@ M: ElasticFieldMapping<F> + ElasticDateMapping<F> {
 		deserializer.deserialize(DateTimeVisitor::<F, M>::default())
 	}
 }
+
+#[derive(Debug, Clone, PartialEq)]
+#[doc(hidden)]
+pub struct ElasticDateBrw<'a, F, M = DefaultDateMapping<F>> where
+F: DateFormat,
+M: ElasticFieldMapping<F> + ElasticDateMapping<F> {
+	value: &'a DT,
+	phantom_f: PhantomData<F>,
+	phantom_t: PhantomData<M>
+}
+
+impl <'a, F, M> ElasticDateBrw<'a, F, M> where
+F: DateFormat,
+M: ElasticFieldMapping<F> + ElasticDateMapping<F> {
+	#[doc(hidden)]
+	pub fn new(date: &'a DT) -> ElasticDateBrw<'a, F, M> {
+		ElasticDateBrw {
+			value: date,
+			phantom_f: PhantomData,
+			phantom_t: PhantomData
+		}
+	}
+
+	#[doc(hidden)]
+	pub fn format(&self) -> String {
+		F::format(&self.value)
+	}
+}
+
+impl <'a, F, M> ElasticType<M, F> for ElasticDateBrw<'a, F, M> where
+F: DateFormat,
+M: ElasticFieldMapping<F> + ElasticDateMapping<F> {
+
+}
+
+impl <'a, F, M> Serialize for ElasticDateBrw<'a, F, M> where
+F: DateFormat,
+M: ElasticFieldMapping<F> + ElasticDateMapping<F> {
+	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where
+	S: Serializer {
+		serializer.serialize_str(&self.format())
+	}
+}

@@ -146,3 +146,16 @@ fn deserialise_elastic_date() {
 		date.day()
 	));
 }
+
+#[test]
+fn serialise_elastic_date_brw() {
+	let chrono_date = chrono::UTC.datetime_from_str(
+		"13/05/2015 00:00:00", MYTYPE_DATE_FMT_2
+	).unwrap();
+
+	let date = ElasticDateBrw::<BasicDateTime>::new(&chrono_date);
+
+	let ser = serde_json::to_string(&date).unwrap();
+
+	assert_eq!(r#""20150513T000000.000Z""#, ser);
+}
