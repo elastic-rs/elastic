@@ -63,7 +63,7 @@ use serde_json;
 /// - [Elasticsearch docs](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-types.html)
 pub trait ElasticType<T, F> where
 T: ElasticFieldMapping<F>,
-Self : serde::Serialize {
+Self: serde::Serialize {
 	/// Get the type name for the given mapping.
 	fn name() -> &'static str {
 		T::name()

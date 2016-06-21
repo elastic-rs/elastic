@@ -62,13 +62,11 @@ fn gen_from_source(source_dir: &str, dest_dir: &str) -> Result<()> {
 
 	//Create an emitter and Execution Context
 	let ps = syntax::parse::ParseSess::new();
-	let mut fgc = vec![];
 	let mut mc = DummyMacroLoader;
 
 	let mut cx = ExtCtxt::new(
 		&ps, vec![],
 		syntax::ext::expand::ExpansionConfig::default("qquote".to_string()),
-		&mut fgc,
 		&mut mc
 	);
 	cx.bt_push(syntax::codemap::ExpnInfo {

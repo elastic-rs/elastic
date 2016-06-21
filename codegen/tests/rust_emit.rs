@@ -29,11 +29,10 @@ fn get_file(path: &str) -> File {
 }
 
 macro_rules! get_ctxt {
-	($cx:ident, $ps:ident, $fgc:ident, $ml:ident) => {
+	($cx:ident, $ps:ident, $ml:ident) => {
 		$cx = ExtCtxt::new(
 			&$ps, vec![],
 			syntax::ext::expand::ExpansionConfig::default("qquote".to_string()),
-			&mut $fgc,
             &mut $ml
 		);
 		$cx.bt_push(syntax::codemap::ExpnInfo {
@@ -53,10 +52,10 @@ fn can_emit_rs_fn_to_file() {
 
 	//Build an execution context
 	let ps = syntax::parse::ParseSess::new();
-	let mut fgc = vec![];
-	let mut mc = DummyMacroLoader;
+    let mut mc = DummyMacroLoader;
 	let mut cx;
-	get_ctxt!(cx, ps, fgc, mc);
+	get_ctxt!(cx, ps, mc);
+    let cx = &mut cx;
 
 	let emitter = RustEmitter::new();
 
@@ -97,10 +96,10 @@ fn can_emit_rs_fn_with_fmt_body_to_file() {
 
 	//Build an execution context
 	let ps = syntax::parse::ParseSess::new();
-	let mut fgc = vec![];
-	let mut mc = DummyMacroLoader;
+    let mut mc = DummyMacroLoader;
 	let mut cx;
-	get_ctxt!(cx, ps, fgc, mc);
+	get_ctxt!(cx, ps, mc);
+    let cx = &mut cx;
 
 	let emitter = RustEmitter::new();
 
@@ -144,10 +143,10 @@ fn can_emit_rs_fn_with_push_body_to_file() {
 
 	//Build an execution context
 	let ps = syntax::parse::ParseSess::new();
-	let mut fgc = vec![];
-	let mut mc = DummyMacroLoader;
+    let mut mc = DummyMacroLoader;
 	let mut cx;
-	get_ctxt!(cx, ps, fgc, mc);
+	get_ctxt!(cx, ps, mc);
+    let cx = &mut cx;
 
 	let emitter = RustEmitter::new();
 
@@ -195,10 +194,10 @@ fn can_emit_rs_use_stmts_to_file() {
 
 	//Build an execution context
 	let ps = syntax::parse::ParseSess::new();
-	let mut fgc = vec![];
-	let mut mc = DummyMacroLoader;
+    let mut mc = DummyMacroLoader;
 	let mut cx;
-	get_ctxt!(cx, ps, fgc, mc);
+	get_ctxt!(cx, ps, mc);
+    let cx = &mut cx;
 
 	let emitter = RustEmitter::new();
 

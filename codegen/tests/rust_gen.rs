@@ -15,7 +15,6 @@ macro_rules! get_ctxt {
 		$cx = ExtCtxt::new(
 			&$ps, vec![],
 			syntax::ext::expand::ExpansionConfig::default("qquote".to_string()),
-			&mut $fgc,
             &mut $ml
 		);
 		$cx.bt_push(syntax::codemap::ExpnInfo {
@@ -104,10 +103,9 @@ fn can_add_args_to_fn() {
 fn can_add_body_stmt_to_fn() {
 	//Build an execution context
 	let ps = syntax::parse::ParseSess::new();
-	let mut fgc = vec![];
     let mut mc = DummyMacroLoader;
 	let mut cx;
-	get_ctxt!(cx, ps, fgc, mc);
+	get_ctxt!(cx, ps, mc);
     let cx = &mut cx;
 
 	//Build a function
@@ -123,10 +121,9 @@ fn can_add_body_stmt_to_fn() {
 fn can_add_body_stmts_to_fn() {
 	//Build an execution context
 	let ps = syntax::parse::ParseSess::new();
-	let mut fgc = vec![];
     let mut mc = DummyMacroLoader;
 	let mut cx;
-	get_ctxt!(cx, ps, fgc, mc);
+	get_ctxt!(cx, ps, mc);
     let cx = &mut cx;
 
 	//Build a function
@@ -145,10 +142,9 @@ fn can_add_body_stmts_to_fn() {
 fn can_add_body_block_to_fn() {
 	//Build an execution context
 	let ps = syntax::parse::ParseSess::new();
-	let mut fgc = vec![];
     let mut mc = DummyMacroLoader;
 	let mut cx;
-	get_ctxt!(cx, ps, fgc, mc);
+	get_ctxt!(cx, ps, mc);
     let cx = &mut cx;
 
 	//Build a function
@@ -169,10 +165,9 @@ fn can_add_body_block_to_fn() {
 fn can_set_return_expr_when_adding_body_block_if_fn_has_return_ty() {
 	//Build an execution context
 	let ps = syntax::parse::ParseSess::new();
-	let mut fgc = vec![];
     let mut mc = DummyMacroLoader;
 	let mut cx;
-	get_ctxt!(cx, ps, fgc, mc);
+	get_ctxt!(cx, ps, mc);
     let cx = &mut cx;
 
 	//Build a function that returns i32
