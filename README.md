@@ -1,12 +1,19 @@
 # Elastic
-Yet another work in progress Elasticsearch client for Rust, targeting the new Elasticsearch `5.x` version.
 
 Platform  | Channel | Status
 ------------- | ------------- | -------------
 Linux / OSX  | Stable / Nightly | [![Build Status](https://travis-ci.org/KodrAus/elasticsearch-rs.svg?branch=master)](https://travis-ci.org/KodrAus/elasticsearch-rs)
 Windows  | Nightly | [![Build status](https://ci.appveyor.com/api/projects/status/s0yo6i7sr4kc5sd5?svg=true)](https://ci.appveyor.com/project/KodrAus/elasticsearch-rs)
 
-If the build is red, you can check the Travis build history to find the last `nightly` version that worked. Failures are usually because of changes to dependencies upstream.
+`elastic_*` is an ecosystem of crates for interacting with Elasticsearch from Rust.
+The API is targeting the `5.x` branch of Elasticsearch, which is currently in alpha.
+This means the library is in a fairly inconsistent state, but will be stabilised along with Elasticsearch.
+
+Crate functionality covers:
+
+- [transport](#elastic_hyper)
+- [type mapping](#elastic_types)
+- [codegen](#elastic_codegen)
 
 Quick reference:
 
@@ -17,15 +24,6 @@ Quick reference:
 
 ## Crates
 
-`elastic_*` is an ecosystem of libraries for interacting with different parts of Elasticsearch
-including:
-
-- Transport
-- Type Mapping
-- Codegen
-
-They're designed to work well together or independently.
-
 ### [`elastic_hyper`](http://kodraus.github.io/rustdoc/elastic_hyper/)
 
 [![Latest Version](https://img.shields.io/crates/v/elastic_hyper.svg)](https://crates.io/crates/elastic_hyper)
@@ -34,9 +32,9 @@ They're designed to work well together or independently.
 [Issues](https://github.com/KodrAus/elasticsearch-rs/labels/hyper) |
 [Samples](https://github.com/KodrAus/elasticsearch-rs/tree/master/hyper/samples)
 
-Provides a synchronous [hyper](https://github.com/hyperium/hyper) implementation of the Elasticsearch REST API. The `hyper` client is simple to use; there's basically no setup needed besides creating a `hyper::Client` object to use for requests. The `hyper` client is general-purpose, and suitable for any scenario where on-demand requests are sufficient.
+Provides a synchronous [`hyper`](https://github.com/hyperium/hyper) implementation of the Elasticsearch REST API. The `hyper` client is simple to use; there's basically no setup needed besides creating a `hyper::Client` object to use for requests. The `hyper` client is general-purpose, and suitable for any scenario where on-demand requests are sufficient.
 
-If you'd prefer to call Elasticsearch using a Query DSL builder, see [rs-es](https://github.com/benashford/rs-es).
+If you'd prefer to call Elasticsearch using a Query DSL builder, see [`rs-es`](https://github.com/benashford/rs-es).
 
 #### Example
 
@@ -58,15 +56,20 @@ json_str = "*"
 Ping the availability of your cluster:
 
 ```rust
+#[macro_use]
+extern crate json_str;
 extern crate elastic_hyper as elastic;
 
 let (mut client, params) = elastic::default();
+
 elastic::ping::head(&mut client, &params).unwrap();
 ```
 
 A simple `query_string` query:
 
 ```rust
+#[macro_use]
+extern crate json_str;
 extern crate elastic_hyper as elastic;
 
 let (mut client, params) = elastic::default();
@@ -90,19 +93,20 @@ let response = elastic::search::post(
 [Docs](http://kodraus.github.io/rustdoc/elastic_types/) |
 [Issues](https://github.com/KodrAus/elasticsearch-rs/labels/types)
 
-Provides rust implementations of the main [Elasticsearch types](https://www.elastic.co/guide/en/elasticsearch/reference/1.4/mapping-core-types.html) (like `date`) and responses/errors. This crate is not required for working with `elastic_hyper` or `elastic_rotor`, but does have a lot of utility, especially for designing your document types.
+`elastic_types` is a library for building Elasticsearch types in Rust. Define your Elasticsearch types as PORS (Plain Old Rust Structures) and generate an equivalent Elasticsearch mapping from them.
+It provides rust implementations of the core [Elasticsearch datatypes](https://www.elastic.co/guide/en/elasticsearch/reference/1.4/mapping-core-types.html) (like `date`, `geo_point`) and responses/errors.
 
-The `elastic_types` crate tries not to reinvent the wheel wherever possible and relies on some common dependencies for types, such as [chrono](https://github.com/lifthrasiir/rust-chrono) for dates and [rust-geo](https://github.com/georust/rust-geo) for geometry.
+Supports both the [`elastic_hyper`](#elastic_hyper) and [`rs-es`](https://github.com/benashford/rs-es) clients.
+
+The `elastic_types` crate tries not to reinvent the wheel wherever possible and relies on some common dependencies for types, such as [`chrono`](https://github.com/lifthrasiir/rust-chrono) for dates and [`rust-geo`](https://github.com/georust/rust-geo) for geometry.
 
 #### Example
-
-`elastic_types` is a library for building Elasticsearch types in Rust. Define your Elasticsearch types as PORS (Plain Old Rust Structures) and generate an equivalent Elasticsearch mapping from them.
 
 On `nightly`, add `elastic_types` to your `Cargo.toml`:
 
 ```
 [dependencies]
-elastic_types = { version = "*", default-features = false, features = "nightly-default" }
+elastic_types = { version = "*", default-features = false, features = "nightly" }
 elastic_types_macros = "*"
 ```
 
