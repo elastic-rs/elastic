@@ -37,7 +37,6 @@ impl <'a> Emit<ExtCtxt<'a>, EmitError> for rust::Fn {
 /// # fn main() {
 /// use syntax::parse::token;
 /// use syntax::parse::ParseSess;
-/// use syntax::feature_gate::GatedCfgAttr;
 /// use syntax::ext::base::{ ExtCtxt, DummyMacroLoader };
 /// use syntax::ext::expand::ExpansionConfig;
 /// use syntax::print::pprust;
@@ -46,13 +45,11 @@ impl <'a> Emit<ExtCtxt<'a>, EmitError> for rust::Fn {
 ///
 /// //Create an ExtCtxt to use in the emitter
 /// let sess = ParseSess::new();
-/// let mut attrs: Vec<GatedCfgAttr> = Vec::new();
 /// let mut loader = DummyMacroLoader;
 /// let mut cx = ExtCtxt::new(
 /// 	&sess,
 /// 	Vec::new(),
 /// 	ExpansionConfig::default("".to_string()),
-/// 	&mut attrs,
 /// 	&mut loader
 /// );
 ///
@@ -75,7 +72,6 @@ impl <'a> Emit<ExtCtxt<'a>, EmitError> for rust::Fn {
 /// # fn main() {
 /// use syntax::ast::*;
 /// use syntax::parse::ParseSess;
-/// use syntax::feature_gate::GatedCfgAttr;
 /// use syntax::ext::base::{ ExtCtxt, DummyMacroLoader };
 /// use syntax::ext::expand::ExpansionConfig;
 /// use syntax::print::pprust;
@@ -85,13 +81,11 @@ impl <'a> Emit<ExtCtxt<'a>, EmitError> for rust::Fn {
 ///
 /// //Create an ExtCtxt to use in the emitter
 /// let sess = ParseSess::new();
-/// let mut attrs: Vec<GatedCfgAttr> = Vec::new();
 /// let mut loader = DummyMacroLoader;
 /// let mut cx = ExtCtxt::new(
 /// 	&sess,
 /// 	Vec::new(),
 /// 	ExpansionConfig::default("".to_string()),
-/// 	&mut attrs,
 /// 	&mut loader
 /// );
 ///

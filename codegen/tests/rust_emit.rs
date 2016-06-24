@@ -55,7 +55,6 @@ fn can_emit_rs_fn_to_file() {
     let mut mc = DummyMacroLoader;
 	let mut cx;
 	get_ctxt!(cx, ps, mc);
-    let cx = &mut cx;
 
 	let emitter = RustEmitter::new();
 
@@ -99,7 +98,6 @@ fn can_emit_rs_fn_with_fmt_body_to_file() {
     let mut mc = DummyMacroLoader;
 	let mut cx;
 	get_ctxt!(cx, ps, mc);
-    let cx = &mut cx;
 
 	let emitter = RustEmitter::new();
 
@@ -146,7 +144,6 @@ fn can_emit_rs_fn_with_push_body_to_file() {
     let mut mc = DummyMacroLoader;
 	let mut cx;
 	get_ctxt!(cx, ps, mc);
-    let cx = &mut cx;
 
 	let emitter = RustEmitter::new();
 
@@ -197,7 +194,6 @@ fn can_emit_rs_use_stmts_to_file() {
     let mut mc = DummyMacroLoader;
 	let mut cx;
 	get_ctxt!(cx, ps, mc);
-    let cx = &mut cx;
 
 	let emitter = RustEmitter::new();
 

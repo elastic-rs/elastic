@@ -11,7 +11,7 @@ use elastic_codegen::gen::rust::*;
 use elastic_codegen::gen::rust::parse::*;
 
 macro_rules! get_ctxt {
-    ($cx:ident, $ps:ident, $fgc:ident, $ml:ident) => {
+    ($cx:ident, $ps:ident, $ml:ident) => {
 		$cx = ExtCtxt::new(
 			&$ps, vec![],
 			syntax::ext::expand::ExpansionConfig::default("qquote".to_string()),

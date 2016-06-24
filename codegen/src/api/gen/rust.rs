@@ -510,7 +510,7 @@ fn len_of_ident_expr(item: Ident) -> P<Expr> {
 	})
 }
 
-/// Gets an expression of the form 'item.len()' where item is an ident or string literal.
+/// Gets an expression of the form `item.len()` where item is an ident or string literal.
 fn len_expr(item: P<Expr>) -> P<Expr> {
 	P(Expr {
 		id: DUMMY_NODE_ID,
@@ -527,7 +527,7 @@ fn len_expr(item: P<Expr>) -> P<Expr> {
 	})
 }
 
-/// Gets an expression of the form 'url.push_str(item)' where item is an ident or string literal.
+/// Gets an expression of the form `url.push_str(item)` where item is an ident or string literal.
 fn push_stmt(url_ident: Ident, item: P<Expr>) -> Stmt {
 	Spanned {
 		span: DUMMY_SP,

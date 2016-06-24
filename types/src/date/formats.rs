@@ -32,7 +32,6 @@ impl_date_fmt!(BasicDateTime, "%Y%m%dT%H%M%S%.3fZ", "basic_date_time");
 ///
 /// # Links
 /// - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-date-format.html#built-in-date-formats)
-//TODO: Should simply parse a long instead of checking the length. See: https://github.com/elastic/elasticsearch/issues/17936
 #[derive(Debug, Default, Clone, Copy)]
 pub struct EpochMillis;
 impl DateFormat for EpochMillis {
