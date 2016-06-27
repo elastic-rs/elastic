@@ -222,7 +222,7 @@ M: ElasticFieldMapping<F> + ElasticGeoPointMapping<F> {
 
 #[derive(Debug, Clone, PartialEq)]
 #[doc(hidden)]
-pub struct ElasticGeoPointBrw<'a F, M = DefaultGeoPointMapping<F>> where
+pub struct ElasticGeoPointBrw<'a, F, M = DefaultGeoPointMapping<F>> where
 F: GeoPointFormat,
 M: ElasticFieldMapping<F> + ElasticGeoPointMapping<F> {
     value: &'a Point,
