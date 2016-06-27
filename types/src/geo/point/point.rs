@@ -219,3 +219,40 @@ M: ElasticFieldMapping<F> + ElasticGeoPointMapping<F> {
         Ok(point.into())
     }
 }
+
+#[derive(Debug, Clone, PartialEq)]
+#[doc(hidden)]
+pub struct ElasticGeoPointBrw<'a F, M = DefaultGeoPointMapping<F>> where
+F: GeoPointFormat,
+M: ElasticFieldMapping<F> + ElasticGeoPointMapping<F> {
+    value: &'a Point,
+	phantom_f: PhantomData<F>,
+	phantom_t: PhantomData<M>
+}
+
+impl <F, M> ElasticGeoPointBrw<F, M> where
+F: GeoPointFormat,
+M: ElasticFieldMapping<F> + ElasticGeoPointMapping<F> {
+    pub fn new(point: &'a Point) -> ElasticGeoPointBrw<'a F, M> {
+        ElasticGeoPointBrw {
+            value: point,
+            phantom_f: PhantomData,
+            phantom_t: PhantomData
+        }
+    }
+}
+
+impl <'a, F, M> ElasticType<M, F> for ElasticGeoPointBrw<'a, F, M> where
+F: GeoPointFormat,
+M: ElasticFieldMapping<F> + ElasticGeoPointMapping<F> {
+
+}
+
+impl <'a, F, M> Serialize for ElasticGeoPointBrw<'a, F, M> where
+F: GeoPointFormat,
+M: ElasticFieldMapping<F> + ElasticGeoPointMapping<F> {
+	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where
+	S: Serializer {
+		F::format::<S, M>(self.value, serializer)
+	}
+}
