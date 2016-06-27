@@ -41,7 +41,8 @@ use std::thread;
 
 use url::Url;
 use rotor::{ Scope, Time };
-use rotor_http::client::{ connect_tcp, Request, Head, Client, RecvMode };
+use rotor::mio::tcp::TcpStream;
+use rotor_http::client::{ connect_tcp, Request, Head, Client, RecvMode, Persistent };
 use rotor_http::client::{ Connection, Requester, Task, Version, ResponseError, ProtocolError };
 use crossbeam::sync::MsQueue;
 
@@ -180,18 +181,12 @@ fn main() {
 	    let creator = rotor::Loop::new(&rotor::Config::new()).unwrap();
     	let mut loop_inst = creator.instantiate(Context::new());
 
-    	//Add two machines listening on queue 0
 	    loop_inst.add_machine_with(|scope| {
-	        connect_tcp::<Cli>(scope, &addr, 0)
-	    }).unwrap();
-	    loop_inst.add_machine_with(|scope| {
-	        connect_tcp::<Cli>(scope, &addr, 0)
+	    	//TODO: Add queue here?
+	    	Persistent::<Cli, TcpStream>::connect(scope, addr.clone(), 0)
 	    }).unwrap();
 
-	    //Add one machine listening on queue 1
-	    loop_inst.add_machine_with(|scope| {
-	        connect_tcp::<Cli>(scope, &addr, 1)
-	    }).unwrap();
+	    //TODO: Create a Router state machine
 
 	    loop_inst.run().unwrap();
 	});
