@@ -9,28 +9,31 @@ use rotor_http::client::*;
 
 use super::{ ElasticContext, ElasticRequest };
 
-//State machine for HTTP requests
-pub struct Req<C: ElasticContext> {
+/// A state machine for an individual HTTP request to an Elasticsearch API endpoint.
+pub struct ElasticHttp<C: ElasticContext> {
 	req: ElasticRequest,
 	_marker: PhantomData<C>
 }
-impl <C: ElasticContext> Req<C> {
+impl <C: ElasticContext> ElasticHttp<C> {
 	pub fn new(req: ElasticRequest) -> Self {
-		Req {
+		ElasticHttp {
 			req: req,
 			_marker: PhantomData
 		}
 	}
 }
-impl <C: ElasticContext> Requester for Req<C> {
+impl <C: ElasticContext> Requester for ElasticHttp<C> {
     type Context = C;
 
     fn prepare_request(self, req: &mut Request, _scope: &mut Scope<Self::Context>) -> Option<Self> {
     	println!("Req.prepare_request");
 
         req.start("GET", &self.req.url.path(), Version::Http11);
+
         req.add_header("Host", self.req.url.host_str().unwrap().as_bytes()).unwrap();
+        req.add_header("Content-Type", b"application/json").unwrap();
         req.add_header("Connection", b"keep-alive").unwrap();
+
         req.done_headers().unwrap();
         req.done();
         Some(self)

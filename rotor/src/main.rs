@@ -4,7 +4,7 @@ rotor_http scratchpad
 
 Expects Elasticsearch cluster at http://localhost:9200
 The loop won't close on its own, you have to kill the process yourself
-Adapted from: https://github.com/tailhook/rotor-http/blob/master/examples/client.rs
+Adapted from: https://github.com/tailhook/rotor-http/blob/master/examples/ElasticConnectionent.rs
 
 Need to figure out what the best way to implement certain features is.
 
@@ -59,7 +59,7 @@ fn main() {
 
 	    loop_inst.add_machine_with(|scope| {
 	    	//TODO: Add queue here?
-	    	Persistent::<Cli<Context>, TcpStream>::connect(scope, addr.clone(), 0)
+	    	Persistent::<ElasticConnection<Context>, TcpStream>::connect(scope, addr.clone(), 0)
 	    }).unwrap();
 
 	    //TODO: Create a Router state machine

@@ -3,20 +3,26 @@ use std::collections::BTreeMap;
 use url::Url;
 use crossbeam::sync::MsQueue;
 
-/// The attributes of a machine.
+/// The attributes of a connection.
 /// 
-/// `State`s don't have to have unique attributes across machines, 
+/// `State`s don't have to have unique attributes across connections, 
 /// and can be used to share queues.
 #[derive(Clone, Copy)]
 pub struct State {
-	/// An id for the 
+	/// The id of the queue to process requests from.
 	pub queue: usize,
 	//TODO: Add host etc
 }
+
+/// A request that can be processed by a connection.
 pub struct ElasticRequest {
+	/// The REST API url to call.
 	pub url: Url
 }
 
+/// A global loop context required by `ElasticConnection`s.
+/// 
+/// The context stores a collection of queues that are accessed by individual connections.
 pub trait ElasticContext {
 	fn add_queue(&mut self, id: usize);
 	fn queue_exists(&self, id: &usize) -> bool;
