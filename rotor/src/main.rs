@@ -42,11 +42,10 @@ use std::thread;
 use url::Url;
 use rotor::{ Scope, Time };
 use rotor::mio::tcp::TcpStream;
-use rotor_http::client::{ connect_tcp, Request, Head, Client, RecvMode, Persistent };
-use rotor_http::client::{ Connection, Requester, Task, Version, ResponseError, ProtocolError };
+use rotor_http::client::*;
 use crossbeam::sync::MsQueue;
 
-//Loop context
+//Global loop context
 struct Context {
 	pub queues: BTreeMap<usize, MsQueue<Url>>
 }
@@ -61,9 +60,11 @@ impl Context {
 //State machine for connections
 struct Cli(usize);
 impl Client for Cli {
+	//The Requester ties the Context to this FSM
     type Requester = Req;
     type Seed = usize;
 
+    //Create a machine that looks at a queue in the global context
     fn create(seed: Self::Seed, scope: &mut Scope<<Self::Requester as Requester>::Context>) -> Self {
     	println!("{}: Cli.create", seed);
 
@@ -79,7 +80,8 @@ impl Client for Cli {
         Cli(seed)
     }
 
-    fn connection_idle(mut self, _conn: &Connection, scope: &mut Scope<Context>) -> Task<Cli> {
+    //If we're twiddling thumbs, try to pop a request from our queue
+    fn connection_idle(self, _conn: &Connection, scope: &mut Scope<Context>) -> Task<Cli> {
     	println!("{}: Cli.connection_idle", self.0);
 
     	let queue = scope.queues.get(&self.0).unwrap();
@@ -98,22 +100,25 @@ impl Client for Cli {
 		}
     }
 
-    fn connection_error(self, err: &ProtocolError, _scope: &mut Scope<Context>) {
-    	println!("{}: Cli.connection_error", self.0);
-
-        writeln!(&mut stderr(), "----- Bad response: {} -----", err).ok();
-        exit(1);
-    }
+    //Check for a new message
     fn wakeup(self, conn: &Connection, scope: &mut Scope<<Self::Requester as Requester>::Context>) -> Task<Cli> {
     	println!("{}: Cli.wakeup", self.0);
 
         self.connection_idle(conn, scope)
     }
 
+    //Wakeup and check for a new message
     fn timeout(self, conn: &Connection, scope: &mut Scope<<Self::Requester as Requester>::Context>) -> Task<Cli> {
         println!("{}: Cli.timeout", self.0);
 
         self.wakeup(conn, scope)
+    }
+
+    fn connection_error(self, err: &ProtocolError, _scope: &mut Scope<Context>) {
+    	println!("{}: Cli.connection_error", self.0);
+
+        writeln!(&mut stderr(), "----- Bad response: {} -----", err).ok();
+        exit(1);
     }
 }
 
@@ -191,5 +196,5 @@ fn main() {
 	    loop_inst.run().unwrap();
 	});
 
-	handle.join();
+	handle.join().unwrap();
 }
