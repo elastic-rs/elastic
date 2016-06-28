@@ -23,6 +23,13 @@ or some API calls, like `_bulk` to a different machine than `_search`.
 
 Need to figure out how to get access to the internal queues to push data.
 Not sure how this will work. Should we allow references to queues to be returned?
+
+Push a message to the queue, then call wakeup on all machines registered to that queue.
+
+Need to determine whether the queue approach is idiomatic for rotor. 
+Seems to be designed to compose state machines as a hierarchy rather than abstracting them.
+Not sure how to do this yet though...
+
 */
 
 extern crate rotor;
