@@ -36,6 +36,7 @@ impl <C: ElasticContext> Requester for ElasticHttp<C> {
 
         req.done_headers().unwrap();
         req.done();
+
         Some(self)
     }
 
@@ -78,7 +79,7 @@ impl <C: ElasticContext> Requester for ElasticHttp<C> {
     fn timeout(self, _request: &mut Request, _scope: &mut Scope<Self::Context>) -> Option<(Self, Time)> {
         unreachable!();
     }
-    fn wakeup(self, _request: &mut Request, _scope: &mut Scope<Self::Context>) -> Option<Self> {
-        unimplemented!();
+    fn wakeup(self, request: &mut Request, scope: &mut Scope<Self::Context>) -> Option<Self> {
+        self.prepare_request(request, scope)
     }
 }

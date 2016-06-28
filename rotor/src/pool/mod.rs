@@ -1,7 +1,17 @@
 use std::collections::BTreeMap;
+use std::net::{ SocketAddr, SocketAddrV4, Ipv4Addr };
 
+use rotor::{ GenericScope, Void, Response, Notifier };
+use rotor::mio::tcp::TcpStream;
+use rotor_http::client::Persistent;
 use url::Url;
 use crossbeam::sync::MsQueue;
+
+mod conn;
+mod req;
+
+pub use self::conn::*;
+pub use self::req::*;
 
 /// The attributes of a connection.
 /// 
@@ -69,8 +79,13 @@ impl ElasticContext for Context {
 	}
 }
 
-mod conn;
-mod req;
+pub fn connect_localhost<S: GenericScope, C: ElasticContext>(scope: &mut S, seed: usize) -> Response<(Persistent<ElasticConnection<C>, TcpStream>, Notifier), Void> {
+    connect_addr(scope, SocketAddr::V4(SocketAddrV4::new(Ipv4Addr::new(127, 0, 0, 1), 9200)), seed)
+}
 
-pub use self::conn::*;
-pub use self::req::*;
+pub fn connect_addr<S: GenericScope, C: ElasticContext>(scope: &mut S, addr: SocketAddr, seed: usize) -> Response<(Persistent<ElasticConnection<C>, TcpStream>, Notifier), Void> {
+    let notifier = scope.notifier();
+    Persistent::connect(scope, addr, seed).wrap(|fsm| {
+        (fsm, notifier)
+    })
+}

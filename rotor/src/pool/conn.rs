@@ -73,27 +73,28 @@ impl <C: ElasticContext> Client for ElasticConnection<C> {
     fn wakeup(self, conn: &Connection, scope: &mut Scope<<Self::Requester as Requester>::Context>) -> Task<Self> {
     	println!("{}: ElasticConnection.wakeup", self.state.queue);
 
-        self.connection_idle(conn, scope)
+        //TODO: Remove this. Just testing stuff
+        println!("{}: ElasticConnection.wakeup: pushing test message", self.state.queue);
+        scope.push(
+            &self.state.queue, 
+            ElasticRequest {
+                url: Url::parse("http://localhost:9200").unwrap()
+            }
+        );
+
+        if conn.is_idle() {
+            println!("{}: ElasticConnection.wakeup: requesting", self.state.queue);
+            self.connection_idle(conn, scope)
+        }
+        else {
+            println!("{}: ElasticConnection.wakeup: sleeping", self.state.queue);
+            Task::Sleep(self, scope.now() + Duration::from_millis(1000))
+        }
     }
 
     //Wakeup and check for a new message
     fn timeout(self, conn: &Connection, scope: &mut Scope<<Self::Requester as Requester>::Context>) -> Task<Self> {
         println!("{}: ElasticConnection.timeout", self.state.queue);
-
-        //TODO: Remove this. Just testing stuff
-        println!("{}: ElasticConnection.timeout: pushing test message", self.state.queue);
-        scope.push(
-            &self.state.queue, 
-            ElasticRequest {
-                url: Url::parse("http://localhost:9200").unwrap()
-            }
-        );
-        scope.push(
-            &self.state.queue, 
-            ElasticRequest {
-                url: Url::parse("http://localhost:9200").unwrap()
-            }
-        );
 
         self.wakeup(conn, scope)
     }
