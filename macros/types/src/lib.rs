@@ -16,7 +16,7 @@ extern crate syntax;
 extern crate rustc;
 extern crate rustc_plugin;
 extern crate serde;
-extern crate serde_item;
+extern crate serde_codegen_internals;
 extern crate serde_json;
 
 use rustc_plugin::Registry;
@@ -31,6 +31,8 @@ use syntax::ast::{ MetaItem, Ident };
 use syntax::ptr::P;
 use syntax::ext::base::{ ExtCtxt, Annotatable };
 use syntax::print::pprust::lit_to_string;
+
+use serde_codegen_internals::attr as serde_attr;
 
 #[doc(hidden)]
 pub fn expand_derive_type_mapping(cx: &mut ExtCtxt, span: Span, meta_item: &MetaItem, annotatable: &Annotatable, push: &mut FnMut(Annotatable)) {
@@ -456,7 +458,7 @@ fn get_elastic_meta_items(attr: &ast::Attribute) -> Option<&[P<ast::MetaItem>]> 
 }
 
 fn get_ser_field(cx: &mut ExtCtxt, field: &ast::StructField) -> Option<(Ident, ast::StructField)> {
-    let serde_field = serde_item::attr::Field::from_ast(cx, 0, field);
+    let serde_field = serde_attr::Field::from_ast(cx, 0, field);
 
     //Get all fields on struct where there isn't `skip_serializing`
     if serde_field.skip_serializing() {
