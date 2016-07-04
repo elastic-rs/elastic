@@ -24,7 +24,7 @@ use rustc_plugin::Registry;
 mod object;
 
 use syntax::codemap::Span;
-use syntax::parse::token::{self};
+use syntax::parse::token::self;
 use syntax::attr;
 use syntax::ast;
 use syntax::ast::{ MetaItem, Ident };
