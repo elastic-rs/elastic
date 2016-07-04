@@ -8,6 +8,7 @@ use std::collections::BTreeMap;
 use std::error;
 use std::fmt;
 use syntax::ast::*;
+use syntax::tokenstream::*;
 use syntax::parse::token;
 use syntax::codemap::{ Spanned, DUMMY_SP };
 use syntax::ptr::P;
@@ -238,55 +239,49 @@ pub fn url_fmt_decl<I>(url: &str, url_base: Ident, param_parts: I) -> (Ident, St
 		}
 
 		let stmt = Stmt {
-			node: StmtKind::Decl(
-				P(Decl {
-					node: DeclKind::Local(
-						P(Local {
-							pat: P(Pat {
-								id: DUMMY_NODE_ID,
-								node: PatKind::Ident(
-									BindingMode::ByValue(Mutability::Immutable),
-									Spanned {
-										span: DUMMY_SP,
-										node: ident
-									},
-									None
-									),
-								span: DUMMY_SP
-							}),
-							ty: None,
-							init: Some(
-								P(Expr {
-									id: DUMMY_NODE_ID,
-									node: ExprKind::Mac(Spanned {
-										span: DUMMY_SP,
-										node: Mac_ {
-											path: Path {
-												span: DUMMY_SP,
-												global: false,
-												segments: vec![
-													PathSegment {
-														identifier: token::str_to_ident("format"),
-														parameters: PathParameters::none()
-													}
-												]
-											},
-											tts: args,
-											ctxt: SyntaxContext(0)
-										}
-									}),
-									span: DUMMY_SP,
-									attrs: None
-								})
+			id: DUMMY_NODE_ID,
+			node: StmtKind::Local(
+				P(Local {
+					pat: P(Pat {
+						id: DUMMY_NODE_ID,
+						node: PatKind::Ident(
+							BindingMode::ByValue(Mutability::Immutable),
+							Spanned {
+								span: DUMMY_SP,
+								node: ident
+							},
+							None
 							),
+						span: DUMMY_SP
+					}),
+					ty: None,
+					init: Some(
+						P(Expr {
 							id: DUMMY_NODE_ID,
+							node: ExprKind::Mac(Spanned {
+								span: DUMMY_SP,
+								node: Mac_ {
+									path: Path {
+										span: DUMMY_SP,
+										global: false,
+										segments: vec![
+											PathSegment {
+												identifier: token::str_to_ident("format"),
+												parameters: PathParameters::none()
+											}
+										]
+									},
+									tts: args
+								}
+							}),
 							span: DUMMY_SP,
-							attrs: None
+							attrs: ThinVec::new()
 						})
 					),
-					span: DUMMY_SP
+					id: DUMMY_NODE_ID,
+					span: DUMMY_SP,
+					attrs: ThinVec::new()
 				}),
-				DUMMY_NODE_ID
 			),
 			span: DUMMY_SP
 		};
@@ -373,63 +368,58 @@ pub fn url_push_decl<'a, I, K>(url_base: Ident, url_parts: I, param_parts: K) ->
 		//Get the declaration statement
 		//let url_fmtd = String::with_capacity(url_base.len() + "/".len() + param1.len() + "/part/".len() + param2.len());
 		let url_decl = Stmt {
-			node: StmtKind::Decl(
-				P(Decl {
-					node: DeclKind::Local(
-						P(Local {
-							pat: P(Pat {
-								id: DUMMY_NODE_ID,
-								node: PatKind::Ident(
-									BindingMode::ByValue(Mutability::Mutable),
-									Spanned {
-										span: DUMMY_SP,
-										node: ident
-									},
-									None
-									),
-								span: DUMMY_SP
-							}),
-							ty: None,
-							init: Some(
+			id: DUMMY_NODE_ID,
+			node: StmtKind::Local(
+				P(Local {
+					pat: P(Pat {
+						id: DUMMY_NODE_ID,
+						node: PatKind::Ident(
+							BindingMode::ByValue(Mutability::Mutable),
+							Spanned {
+								span: DUMMY_SP,
+								node: ident
+							},
+							None
+							),
+						span: DUMMY_SP
+					}),
+					ty: None,
+					init: Some(
+						P(Expr {
+							id: DUMMY_NODE_ID,
+							node: ExprKind::Call(
 								P(Expr {
 									id: DUMMY_NODE_ID,
-									node: ExprKind::Call(
-										P(Expr {
-											id: DUMMY_NODE_ID,
-											node: ExprKind::Path(
-												None,
-												Path {
-													span: DUMMY_SP,
-													global: false,
-													segments: vec![
-														PathSegment {
-															identifier: token::str_to_ident("String"),
-															parameters: PathParameters::none()
-														},
-														PathSegment {
-															identifier: token::str_to_ident("with_capacity"),
-															parameters: PathParameters::none()
-														}
-													]
-												}
-											),
+									node: ExprKind::Path(
+										None,
+										Path {
 											span: DUMMY_SP,
-											attrs: None
-										}),
-										vec![add_expr]
+											global: false,
+											segments: vec![
+												PathSegment {
+													identifier: token::str_to_ident("String"),
+													parameters: PathParameters::none()
+												},
+												PathSegment {
+													identifier: token::str_to_ident("with_capacity"),
+													parameters: PathParameters::none()
+												}
+											]
+										}
 									),
 									span: DUMMY_SP,
-									attrs: None
-								})
+									attrs: ThinVec::new()
+								}),
+								vec![add_expr]
 							),
-							id: DUMMY_NODE_ID,
 							span: DUMMY_SP,
-							attrs: None
+							attrs: ThinVec::new()
 						})
 					),
-					span: DUMMY_SP
-				}),
-				DUMMY_NODE_ID
+					id: DUMMY_NODE_ID,
+					span: DUMMY_SP,
+					attrs: ThinVec::new()
+				})
 			),
 			span: DUMMY_SP
 		};
@@ -484,7 +474,7 @@ fn ident_expr(item: Ident) -> P<Expr> {
 			}
 		),
 		span: DUMMY_SP,
-		attrs: None
+		attrs: ThinVec::new()
 	})
 }
 
@@ -506,7 +496,7 @@ fn len_of_ident_expr(item: Ident) -> P<Expr> {
             })
 		),
 		span: DUMMY_SP,
-		attrs: None
+		attrs: ThinVec::new()
 	})
 }
 
@@ -523,13 +513,14 @@ fn len_expr(item: P<Expr>) -> P<Expr> {
 			vec![item]
 		),
 		span: DUMMY_SP,
-		attrs: None
+		attrs: ThinVec::new()
 	})
 }
 
 /// Gets an expression of the form `url.push_str(item)` where item is an ident or string literal.
 fn push_stmt(url_ident: Ident, item: P<Expr>) -> Stmt {
-	Spanned {
+	Stmt {
+		id: DUMMY_NODE_ID,
 		span: DUMMY_SP,
 		node: StmtKind::Expr(
 			P(Expr {
@@ -557,16 +548,14 @@ fn push_stmt(url_ident: Ident, item: P<Expr>) -> Stmt {
 								}
 							),
 							span: DUMMY_SP,
-							attrs: None
+							attrs: ThinVec::new()
 						}),
 						item
 					]
 				),
 				span: DUMMY_SP,
-				attrs: None
-			}
-		),
-		DUMMY_NODE_ID
+				attrs: ThinVec::new()
+			})
 		)
 	}
 }
@@ -584,6 +573,6 @@ fn len_add(current_add: P<Expr>, to_add: P<Expr>) -> P<Expr> {
 			to_add
 		),
 		span: DUMMY_SP,
-		attrs: None
+		attrs: ThinVec::new()
 	})
 }

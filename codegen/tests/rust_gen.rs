@@ -112,9 +112,9 @@ fn can_add_body_stmt_to_fn() {
 	let fun = build_fn("my_fun", vec![
 		arg::<MyStruct>("arg1")
 	])
-    .add_body_stmt(quote_stmt!(cx, let x = 1;).unwrap());
+    .add_body_stmts(vec![quote_stmt!(cx, let x = 1;).unwrap()]);
 
-	assert_eq!(1, fun.stmts.len());
+	assert_eq!(1, fun.body.stmts.len());
 }
 
 #[test]
@@ -135,7 +135,7 @@ fn can_add_body_stmts_to_fn() {
 		quote_stmt!(cx, let y = 1;).unwrap()
 	]);
 
-	assert_eq!(2, fun.stmts.len());
+	assert_eq!(2, fun.body.stmts.len());
 }
 
 #[test]
@@ -151,37 +151,28 @@ fn can_add_body_block_to_fn() {
 	let fun = build_fn("my_fun", vec![
 		arg::<MyStruct>("arg1")
 	])
-    .add_body_block(quote_block!(cx, {
+    .set_body(quote_block!(cx, {
 		let x = 1;
 		let y = 1;
 		x
 	}));
 
 	//Assert the statements are added
-	assert_eq!(2, fun.stmts.len());
+	assert_eq!(3, fun.body.stmts.len());
 }
 
 #[test]
 fn can_set_return_expr_when_adding_body_block_if_fn_has_return_ty() {
-	//Build an execution context
-	let ps = syntax::parse::ParseSess::new();
-    let mut mc = DummyMacroLoader;
-	let mut cx;
-	get_ctxt!(cx, ps, mc);
-    let cx = &mut cx;
-
 	//Build a function that returns i32
 	let fun = build_fn("my_fun", vec![
 		arg::<MyStruct>("arg1")
 	])
-    .set_return::<i32>()
-    .add_body_block(quote_block!(cx, {
-		let x = 1;
-		let y = 1;
-		x
-	}));
+    .set_return::<i32>();
 
-	assert!(fun.expr.is_some());
+	assert!(match fun.decl.output {
+		FunctionRetTy::Ty(_) => true,
+		_ => false
+	});
 }
 
 #[test]

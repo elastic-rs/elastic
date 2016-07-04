@@ -16,9 +16,7 @@ pub struct Fn {
 	/// The lifetimes and generic params for the fn.
 	pub generics: Generics,
 	/// The body statements of the fn.
-	pub stmts: Vec<Stmt>,
-	/// The optional return statement of the fn.
-	pub expr: Option<P<Expr>>,
+	pub body: P<Block>,
 	/// Whether or not the fn is unsafe.
 	pub unsafety: Unsafety,
 	/// Whether or not the fn is constant.
@@ -68,39 +66,27 @@ impl Fn {
 		self
 	}
 
-	/// Append a statement to the function body.
-	pub fn add_body_stmt(mut self, stmt: Stmt) -> Fn {
-		self.stmts.push(stmt);
-
-		self
-	}
-
 	/// Append a collection of statements to the function body.
 	pub fn add_body_stmts<I>(mut self, stmts: I) -> Fn
 		where I: IntoIterator<Item=Stmt> {
-			self.stmts.extend(stmts);
+			let mut s = self.body.stmts.clone();
+			s.extend(stmts);
+
+			let b = P(Block {
+				stmts: s,
+				id: self.body.id,
+				rules: self.body.rules,
+				span: self.body.span
+			});
+
+			self.body = b;
+
 			self
-	}
-
-	/// Append the body to existing statements.
-	///
-	/// This will update the return expression if the function declaration has a return type set.
-	pub fn add_body_block(mut self, body: P<Block>) -> Fn {
-		//Append the body statements
-		self.stmts.extend(body.stmts.to_vec());
-
-		//Set the return type if the function takes one
-		if let FunctionRetTy::Ty(_) = self.decl.output {
-			self.expr = body.expr.to_owned();
-		}
-
-		self
 	}
 
 	/// Set the function body.
 	pub fn set_body(mut self, body: P<Block>) -> Fn {
-		self.stmts = body.stmts.to_vec();
-		self.expr = body.expr.to_owned();
+		self.body = body;
 
 		self
 	}
@@ -117,15 +103,7 @@ impl ToString for Fn {
 			&self.generics
 		);
 
-		let block = P(Block {
-			stmts: self.stmts.clone(),
-			expr: self.expr.clone(),
-			id: DUMMY_NODE_ID,
-			rules: BlockCheckMode::Default,
-			span: DUMMY_SP,
-		});
-
-		format!("{}{}", pprust::visibility_qualified(&Visibility::Public, &decl), pprust::block_to_string(&block))
+		format!("{}{}", pprust::visibility_qualified(&Visibility::Public, &decl), pprust::block_to_string(&*self.body))
 	}
 }
 
@@ -167,8 +145,12 @@ pub fn build_fn<I>(name: &str, inputs: I) -> Fn
 			variadic: false
 		},
 		generics: Generics::default(),
-		stmts: Vec::new(),
-		expr: None,
+		body: P(Block {
+			stmts: Vec::new(),
+			id: DUMMY_NODE_ID,
+			rules: BlockCheckMode::Default,
+			span: DUMMY_SP
+		}),
 		unsafety: Unsafety::Normal,
 		constness: Constness::NotConst
 	}

@@ -191,10 +191,10 @@ fn gen_from_source(source_dir: &str, dest_dir: &str) -> Result<()> {
 			)
 			.add_lifetime(lifetime)
 			.set_return_ty(build_ty("Result<Response>"))
-			.add_body_block(quote_block!(&mut cx, {
-				let $qry = &$req.get_url_qry();
-				let $base = &$req.base_url;
-			}))
+			.add_body_stmts(vec![
+				quote_stmt!(&mut cx, let $qry = &$req.get_url_qry();).unwrap(),
+				quote_stmt!(&mut cx, let $base = &$req.base_url;).unwrap()
+			])
 			.add_body_stmts(url_stmts);
 
 			match *fun.method {
@@ -285,12 +285,10 @@ fn gen_from_source(source_dir: &str, dest_dir: &str) -> Result<()> {
 
 fn block(rs_fun: Fn, cx: &mut ExtCtxt, call: Ident, url_ident: Ident, req: Ident) -> Fn {
 	rs_fun
-	.add_body_block(quote_block!(cx, {
-		let res = $call(&$url_ident)
-			.headers($req.headers.to_owned());
-
-		res.send()
-	}))
+	.add_body_stmts(vec![
+		quote_stmt!(cx, let res = $call(&$url_ident).headers($req.headers.to_owned());).unwrap(),
+		quote_stmt!(cx, res.send()).unwrap()
+	])
 }
 
 fn block_with_body(rs_fun: Fn, cx: &mut ExtCtxt, call: Ident, url_ident: Ident, req: Ident, generic: &str, body: Ident) -> Fn {
@@ -301,11 +299,8 @@ fn block_with_body(rs_fun: Fn, cx: &mut ExtCtxt, call: Ident, url_ident: Ident, 
 		])
 	])
 	.add_arg(build_arg_ident(body, build_ty(generic)))
-	.add_body_block(quote_block!(cx, {
-		let res = $call(&$url_ident)
-			.headers($req.headers.to_owned())
-			.body($body.into());
-
-		res.send()
-	}))
+	.add_body_stmts(vec![
+		quote_stmt!(cx, let res = $call(&$url_ident).headers($req.headers.to_owned()).body($body.into());).unwrap(),
+		quote_stmt!(cx, res.send()).unwrap()
+	])
 }

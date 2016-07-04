@@ -1,7 +1,7 @@
 macro_rules! impl_mapping {
 	($($t:ty),*) => (
 		$(
-			impl $crate::mapping::ElasticType<$crate::mapping::NullMapping, ()> for $t { }
+			impl $crate::mapping::ElasticType<$crate::mapping::DefaultMapping, ()> for $t { }
 		)*
 	)
 }

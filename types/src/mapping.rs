@@ -83,7 +83,7 @@ Self: serde::Serialize {
 pub trait ElasticFieldMapping<F>
 where Self: Default + Clone + serde::Serialize {
 	#[doc(hidden)]
-	type Visitor : ElasticTypeVisitor;
+	type Visitor: ElasticTypeVisitor;
 
 	#[doc(hidden)]
 	fn get_visitor() -> Self::Visitor {
@@ -111,7 +111,6 @@ Self: serde::ser::MapVisitor {
 /// A mapping implementation for a non-core type, or any where it's ok for Elasticsearch to infer the mapping at index-time.
 #[derive(Debug, PartialEq, Default, Clone)]
 pub struct DefaultMapping;
-
 impl ElasticFieldMapping<()> for DefaultMapping {
 	type Visitor = DefaultMappingVisitor;
 

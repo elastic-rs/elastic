@@ -5,9 +5,7 @@
 
 mod fun;
 mod ty;
-mod item;
 
-pub use self::item::*;
 pub use self::fun::*;
 pub use self::ty::*;
 
