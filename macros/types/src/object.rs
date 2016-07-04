@@ -2,6 +2,7 @@ use syntax::codemap::Span;
 use syntax::parse::token;
 use syntax::ast;
 use syntax::ast::Ident;
+use syntax::attr::HasAttrs;
 use syntax::ext::base::{ ExtCtxt, Annotatable };
 use syntax::ext::build::AstBuilder;
 
@@ -147,7 +148,7 @@ fn impl_properties_visitor_ser(cx: &mut ExtCtxt, span: Span, visitor: &Ident, fi
 	.filter_map(|stmt| stmt)
 	.collect();
 
-	let block = cx.expr_block(cx.block(span, stmts, None));
+	let block = cx.expr_block(cx.block(span, stmts));
 
 	push(Annotatable::Item(
 		quote_item!(cx,
