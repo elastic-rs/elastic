@@ -21,22 +21,27 @@ fn main() {
 	//Spawn an io thread
 	let (tx, rx) = mpsc::channel();
 	let t = thread::spawn(move || {
-		let queue = fsm::Queue::new();
+		//Get a shared queue reference
+		let queue = &QUEUE;
 
-	    let creator = rotor::Loop::new(&rotor::Config::new()).unwrap();
-		let mut loop_inst = creator.instantiate(fsm::Context::new(&QUEUE));
+		//Build a loop
+		let creator = rotor::Loop::new(&rotor::Config::new()).unwrap();
+		let mut loop_inst = creator.instantiate(fsm::Context);
 
-		let notifier = loop_inst.add_and_fetch(|fsm| fsm, |scope| {
-	        fsm::connect_localhost(scope)
-	    }).unwrap();
+		//Add a state machine with a reference to our queue
+		let handle = loop_inst.add_and_fetch(|fsm| fsm, |scope| {
+			fsm::connect_localhost(scope, queue)
+		}).unwrap();
 
-	    tx.send(fsm::Handle::new(&QUEUE, notifier)).unwrap();
+		tx.send(handle).unwrap();
 
-	    loop_inst.run().unwrap();
+		loop_inst.run().unwrap();
 	});
-    
-    let handle = rx.recv().unwrap();
+	
+	//Get the FSM handle. This is for a single machine.
+	//We could either combine them to use a Vec<Handle>, or a Handle with a Vec<Notifier>
+	let handle = rx.recv().unwrap();
 
-    //Block
-    t.join().unwrap();
+	//Block
+	t.join().unwrap();
 }
