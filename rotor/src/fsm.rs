@@ -6,37 +6,52 @@ use rotor::{ Notifier, Scope, GenericScope, Response, Void, Time, WakeupError };
 use rotor::mio::tcp::TcpStream;
 use rotor_http::client::{ Client, Request, Requester, Persistent, Connection, ResponseError, ProtocolError, Task, Head, RecvMode };
 
+/// A request message.
 pub struct Message;
+
+/// A common message queue shared by multiple machines.
 pub type Queue = MsQueue<Message>;
 
-//NOTE: It may be better to pass around a different queue struct, that machines can register with.
-//That way all machines consuming the same queue can all be woken up together, some _someone_ will handle the request.
+/// A client-side handle to sned request messages to a running loop.
 pub struct Handle<'a> {
 	queue: &'a Queue,
-	notifier: Notifier
+	notifiers: Vec<Notifier>
 }
 
 impl <'a> Handle<'a> {
-	pub fn new(queue: &'a Queue, notifier: Notifier) -> Self {
+	/// Create a new handle with no listeners.
+	pub fn new(queue: &'a Queue) -> Self {
 		Handle {
 			queue: queue,
-			notifier: notifier
+			notifiers: Vec::new()
 		}
 	}
 
-	pub fn wakeup(&self) -> Result<(), WakeupError> {
-		self.notifier.wakeup()
+	/// Add a machine as a listener on this handle's queue.
+	pub fn add_listener(&mut self, notifier: Notifier) -> &'a Queue {
+		self.notifiers.push(notifier);
+		&self.queue
 	}
 
+	/// Push a message to the queue without blocking and notify listening machines.
 	pub fn push(&self, msg: Message) {
-		self.queue.push(msg)
+		self.queue.push(msg);
+
+		for notifier in &self.notifiers {
+			notifier.wakeup();
+		}
+	}
+
+	/// Try pop a message off the queue without blocking.
+	pub fn pop(&self) -> Option<Message> {
+		self.queue.try_pop()
 	}
 }
 
-//NOTE: Could add global queue here with a trait
+#[doc(hidden)]
 pub struct Context;
 
-//Our general state machine
+/// A state machine for managing a persistent connection to an Elasticsearch node.
 pub struct Fsm<'a, C> {
 	queue: &'a Queue,
 	_marker: PhantomData<C>
@@ -78,7 +93,7 @@ impl <'a, C> Client for Fsm<'a, C> {
 	}
 }
 
-//Our HTTP state machine
+/// A state machine for managing the HTTP component of an Elasticsearch connection.
 pub struct RequestFsm<C> {
 	_marker: PhantomData<C>
 }
@@ -116,13 +131,14 @@ impl <C> Requester for RequestFsm<C> {
 	}
 }
 
-pub fn connect_localhost<S: GenericScope, C>(scope: &mut S, queue: &'static Queue) -> Response<(Persistent<Fsm<'static, C>, TcpStream>, Handle<'static>), Void> {
-	connect_addr(scope, SocketAddr::V4(SocketAddrV4::new(Ipv4Addr::new(127, 0, 0, 1), 9200)), queue)
+/// Connect a persistent state machine to a node running on `localhost:9200`.
+pub fn connect_localhost<S: GenericScope, C>(scope: &mut S, handle: &mut Handle<'static>) -> Response<Persistent<Fsm<'static, C>, TcpStream>, Void> {
+	connect_addr(scope, SocketAddr::V4(SocketAddrV4::new(Ipv4Addr::new(127, 0, 0, 1), 9200)), handle)
 }
 
-pub fn connect_addr<S: GenericScope, C>(scope: &mut S, addr: SocketAddr, queue: &'static Queue) -> Response<(Persistent<Fsm<'static, C>, TcpStream>, Handle<'static>), Void> {
-	let notifier = scope.notifier();
-	Persistent::connect(scope, addr, queue).wrap(|fsm| {
-		(fsm, Handle::new(queue, notifier))
-	})
+/// Connect a persistent state machine to a node running at the given address.
+pub fn connect_addr<S: GenericScope, C>(scope: &mut S, addr: SocketAddr, handle: &mut Handle<'static>) -> Response<Persistent<Fsm<'static, C>, TcpStream>, Void> {
+	let queue = handle.add_listener(scope.notifier());
+
+	Persistent::connect(scope, addr, queue)
 }

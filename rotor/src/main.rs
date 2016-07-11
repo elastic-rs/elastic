@@ -18,29 +18,21 @@ lazy_static! {
 }
 
 fn main() {
-	//Spawn an io thread
-	let (tx, rx) = mpsc::channel();
-	let t = thread::spawn(move || {
-		//Get a shared queue reference
-		let queue = &QUEUE;
+	let mut handle = fsm::Handle::new(&QUEUE);
 
+	//Spawn an io thread
+	let t = thread::spawn(move || {
 		//Build a loop
 		let creator = rotor::Loop::new(&rotor::Config::new()).unwrap();
 		let mut loop_inst = creator.instantiate(fsm::Context);
 
 		//Add a state machine with a reference to our queue
-		let handle = loop_inst.add_and_fetch(|fsm| fsm, |scope| {
-			fsm::connect_localhost(scope, queue)
+		loop_inst.add_machine_with(|scope| {
+			fsm::connect_localhost(scope, &mut handle)
 		}).unwrap();
-
-		tx.send(handle).unwrap();
 
 		loop_inst.run().unwrap();
 	});
-	
-	//Get the FSM handle. This is for a single machine.
-	//We could either combine them to use a Vec<Handle>, or a Handle with a Vec<Notifier>
-	let handle = rx.recv().unwrap();
 
 	//Block
 	t.join().unwrap();
