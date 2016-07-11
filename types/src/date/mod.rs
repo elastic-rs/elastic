@@ -34,8 +34,8 @@
 //! # use elastic_types::date::prelude::*;
 //! # #[derive(Default, Clone, ElasticDateMapping)]
 //! # pub struct MyDateMapping<T: DateFormat = EpochMillis> {
-//! 	phantom: PhantomData<T>
-//! }
+//! # 	phantom: PhantomData<T>
+//! # }
 //! # impl <T: DateFormat> ElasticDateMapping<T> for MyDateMapping<T> { }
 //! struct MyType {
 //! 	pub field: ElasticDate<EpochMillis, MyDateMapping>

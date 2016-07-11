@@ -9,6 +9,8 @@ use rotor_http::client::{ Client, Request, Requester, Persistent, Connection, Re
 pub struct Message;
 pub type Queue = MsQueue<Message>;
 
+//NOTE: It may be better to pass around a different queue struct, that machines can register with.
+//That way all machines consuming the same queue can all be woken up together, some _someone_ will handle the request.
 pub struct Handle<'a> {
 	queue: &'a Queue,
 	notifier: Notifier
@@ -59,7 +61,7 @@ impl <'a, C> Client for Fsm<'a, C> {
 		else {
 			//Snooze
 		}
-		
+
 		unimplemented!()
 	}
 
