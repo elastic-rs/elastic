@@ -14,7 +14,7 @@ fn can_generate_date_formats() {
 
 #[test]
 fn can_parse_es_date_format_to_chrono() {
-	let parse_result = elastic_date_macros::to_tokens("yyyyMMddTHHmmss.SSSZ");
+	let parse_result = elastic_date_macros::to_tokens("yyyyMMdd'T'HHmmss.SSSZ");
 	let fmt = elastic_date_macros::to_chrono_format(parse_result);
 
 	assert_eq!("%Y%m%dT%H%M%S%.3fZ".to_string(), fmt);
@@ -25,15 +25,24 @@ fn can_parse_chrono_date_format_to_es() {
 	let parse_result = elastic_date_macros::to_tokens("%Y%m%dT%H%M%S%.3fZ");
 	let fmt = elastic_date_macros::to_es_format(parse_result);
 
-	assert_eq!("yyyyMMddTHHmmss.SSSZ".to_string(), fmt);
+	assert_eq!("yyyyMMdd'T'HHmmss.SSSZ".to_string(), fmt);
+}
+
+
+#[test]
+fn can_get_chrono_format_from_tokens() {
+	let parse_result = elastic_date_macros::to_tokens("%Y%m%dT%H%M%S%.3fZ");
+	let fmt = elastic_date_macros::to_chrono_format(parse_result);
+
+	assert_eq!("%Y%m%dT%H%M%S%.3fZ".to_string(), fmt);
 }
 
 #[test]
 fn can_get_es_format_from_tokens() {
-	let parse_result = elastic_date_macros::to_tokens("yyyyMMdd");
+	let parse_result = elastic_date_macros::to_tokens("yyyyMMdd'T'");
 	let fmt = elastic_date_macros::to_es_format(parse_result);
 
-	assert_eq!("yyyyMMdd".to_string(), fmt);
+	assert_eq!("yyyyMMdd'T'".to_string(), fmt);
 }
 
 #[test]
@@ -46,8 +55,8 @@ fn edgecase_can_parse_period_as_literal() {
 
 #[test]
 fn edgecase_can_parse_millis_after_literal() {
-	let parse_result = elastic_date_macros::to_tokens("T.SSS");
+	let parse_result = elastic_date_macros::to_tokens("TT.SSS");
 	let fmt = elastic_date_macros::to_es_format(parse_result);
 
-	assert_eq!("T.SSS".to_string(), fmt);
+	assert_eq!("'TT'.SSS".to_string(), fmt);
 }

@@ -119,7 +119,22 @@ pub struct Formatter;
 impl Formatter {
 	pub fn to_es_string(item: &Item) -> String {
 		match *item {
-			Item::Literal(c) => c.to_string(),
+			Item::Literal("Z") => 							"Z".to_string(),
+			Item::Literal(c) if c.len() > 0 => {
+				let fst = c.chars().next().unwrap();
+
+				if !fst.is_alphanumeric() {
+					c.to_string()
+				}
+				else {
+					let mut buf = String::with_capacity(c.len() + 2);
+					buf.push('\'');
+					buf.push_str(c);
+					buf.push('\'');
+					buf
+				}
+			},
+			Item::Literal(c) => 							c.to_string(),
 			Item::Numeric(Numeric::Year, Pad::Zero) => 		"yyyy".to_string(),
 			Item::Numeric(Numeric::Month, Pad::Zero) => 	"MM".to_string(),
 			Item::Numeric(Numeric::Day, Pad::Zero) => 		"dd".to_string(),
@@ -127,13 +142,22 @@ impl Formatter {
 			Item::Numeric(Numeric::Minute, Pad::Zero) => 	"mm".to_string(),
 			Item::Numeric(Numeric::Second, Pad::Zero) => 	"ss".to_string(),
 			Item::Fixed(Fixed::Nanosecond3) => 				".SSS".to_string(),
-			_ => "".to_string()
+			_ => 											"".to_string()
 		}
 	}
 
 	pub fn to_chrono_string(item: &Item) -> String {
 		match *item {
-			Item::Literal(c) => c.to_string(),
+			Item::Literal(c) if c.len() > 0 => {
+				let mut chars = c.chars();
+
+				if chars.next().unwrap() == '\'' {
+					c[1..c.len()-1].to_string()
+				}
+				else {
+					c.to_string()
+				}
+			},
 			Item::Numeric(Numeric::Year, Pad::Zero) => 		"%Y".to_string(),
 			Item::Numeric(Numeric::Month, Pad::Zero) => 	"%m".to_string(),
 			Item::Numeric(Numeric::Day, Pad::Zero) => 		"%d".to_string(),
@@ -141,7 +165,7 @@ impl Formatter {
 			Item::Numeric(Numeric::Minute, Pad::Zero) => 	"%M".to_string(),
 			Item::Numeric(Numeric::Second, Pad::Zero) => 	"%S".to_string(),
 			Item::Fixed(Fixed::Nanosecond3) => 				"%.3f".to_string(),
-			_ => "".to_string()
+			_ => 											"".to_string()
 		}
 	}
 }
