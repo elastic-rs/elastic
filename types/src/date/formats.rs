@@ -7,7 +7,7 @@ use super::{ DateFormat, ParseError };
 /// Format for default `chrono::DateTime`.
 #[derive(Debug, Default, Clone, Copy)]
 pub struct ChronoFormat;
-impl_date_fmt!(ChronoFormat, "yyyy-MM-ddTHH:mm:ssZ", "yyyy-MM-ddTHH:mm:ssZ");
+impl_date_fmt!(ChronoFormat, "yyyy-MM-ddTHH:mm:ssZ", "yyyy-MM-dd'T'HH:mm:ssZ");
 
 /// Format for `basic_date_time_no_millis`.
 ///

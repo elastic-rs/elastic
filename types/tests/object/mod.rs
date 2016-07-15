@@ -17,7 +17,7 @@ fn serialise_mapping_type() {
 		"properties": {
 			"my_date1": {
 				"type": "date",
-				"format": "yyyy-MM-ddTHH:mm:ssZ"
+				"format": "yyyy-MM-dd'T'HH:mm:ssZ"
 			},
 			"my_date2": {
 				"type": "date",
@@ -130,7 +130,7 @@ fn serialise_mapping_type_as_nested() {
 				"properties": {
 					"my_date1": {
 						"type": "date",
-						"format": "yyyy-MM-ddTHH:mm:ssZ"
+						"format": "yyyy-MM-dd'T'HH:mm:ssZ"
 					},
 					"my_date2": {
 						"type": "date",
@@ -334,7 +334,7 @@ fn serialize_mapping_rses() {
 			"ignore_malformed" => "true"
 		},
 		"my_date1" => hashmap! {
-			"format" => "yyyy-MM-ddTHH:mm:ssZ",
+			"format" => "yyyy-MM-dd'T'HH:mm:ssZ",
 			"type" => "date"
 		},
 		"my_map1" => hashmap! {
@@ -368,7 +368,7 @@ fn serialise_mapping_rses_nested() {
 		},
 		"timestamp" => hashmap! {
 			"type" => "date",
-			"format" => "yyyy-MM-ddTHH:mm:ssZ"
+			"format" => "yyyy-MM-dd'T'HH:mm:ssZ"
 		}
 	};
 
