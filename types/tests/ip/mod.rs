@@ -8,7 +8,8 @@ extern crate serde_json;
 extern crate elastic_types;
 
 use std::net::Ipv4Addr;
-use elastic_types::ip::mapping::*;
+
+use elastic_types::mapping::prelude::*;
 use elastic_types::ip::prelude::*;
 use ::ip_fixtures::*;
 

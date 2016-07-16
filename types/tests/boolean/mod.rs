@@ -7,7 +7,7 @@ extern crate serde;
 extern crate serde_json;
 extern crate elastic_types;
 
-use elastic_types::boolean::mapping::*;
+use elastic_types::mapping::prelude::*;
 use elastic_types::boolean::prelude::*;
 use ::boolean_fixtures::*;
 

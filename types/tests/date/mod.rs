@@ -11,6 +11,7 @@ extern crate elastic_types;
 
 use chrono::format::Item;
 use chrono::offset::TimeZone;
+
 use elastic_types::date::prelude::*;
 
 #[derive(Default, Serialize, Deserialize)]

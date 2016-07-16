@@ -4,9 +4,8 @@
 extern crate serde;
 extern crate serde_json;
 
-use elastic_types::geo::point::mapping::*;
+use elastic_types::mapping::prelude::*;
 use elastic_types::geo::point::prelude::*;
-
 use ::geo_point_fixtures::*;
 
 #[test]

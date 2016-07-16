@@ -9,7 +9,8 @@ extern crate geojson;
 extern crate elastic_types;
 
 use geojson::{ Geometry, Value };
-use elastic_types::geo::shape::mapping::*;
+
+use elastic_types::mapping::prelude::*;
 use elastic_types::geo::shape::prelude::*;
 use ::geo_shape_fixtures::*;
 
