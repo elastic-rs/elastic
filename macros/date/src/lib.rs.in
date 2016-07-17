@@ -6,6 +6,7 @@ use rustc_plugin::Registry;
 use syntax::ast::Expr;
 use syntax::codemap::Span;
 use syntax::parse::token::{self};
+use syntax::print::pprust::expr_to_string;
 use syntax::tokenstream::TokenTree;
 use syntax::ptr::P;
 use syntax::ext::base::{ ExtCtxt, MacResult, DummyResult, MacEager };
@@ -29,9 +30,21 @@ pub fn expand_date_fmt(cx: &mut ExtCtxt, sp: Span, args: &[TokenTree]) -> Box<Ma
 
 	//Build up the token tree
 	let tokens = to_tokens(&fmt);
-	let token_expr = cx.expr_vec(sp, tokens.iter().map(|t| Formatter::to_stmt(t, cx)).collect());
 
-	MacEager::expr(quote_expr!(cx, { $token_expr }))
+	let ident = token::str_to_ident("items");
+	let c = tokens.len();
+
+	let mut stmts = vec![quote_stmt!(cx, let mut $ident = Vec::with_capacity($c);).unwrap()];
+
+	stmts.extend(tokens.iter().map(|t| {
+		let t = Formatter::to_stmt(t, cx);
+		quote_stmt!(cx, $ident.push($t);).unwrap()
+	}));
+	stmts.push(cx.stmt_expr(quote_expr!(cx, $ident)));
+
+	let block = cx.block(sp, stmts);
+
+	MacEager::expr(quote_expr!(cx, $block))
 }
 
 #[doc(hidden)]

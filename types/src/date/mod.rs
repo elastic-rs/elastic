@@ -10,6 +10,8 @@
 //!
 //! # Examples
 //!
+//! For defining your own date format, see the [`DateFormat`](trait.DateFormat.html#examples) trait.
+//! 
 //! For defining your own date mapping, see [mapping details](mapping/trait.ElasticDateMapping.html#derive-mapping).
 //!
 //! Map with a default `date`:

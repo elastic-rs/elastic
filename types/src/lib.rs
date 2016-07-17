@@ -1,9 +1,9 @@
 //! Elasticsearch Core Types
 //!
-//! A high-level implementation of the core types in Elasticsearch documents.
+//! An implementation of the core types in Elasticsearch documents.
 //!
-//! Provides `struct`s and `trait`s for defining and deriving a correct Elasticsearch mapping
-//! definition from your Rust structures.
+//! Provides `struct`s and `trait`s for defining Elasticsearch type mapping,
+//! where correctness is enforced by Rust's type system.
 //!
 //! # Usage
 //!

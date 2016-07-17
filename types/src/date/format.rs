@@ -8,8 +8,33 @@ use std::fmt;
 ///
 /// The format is specified as two functions; `parse` and `format`, which are backed by `chrono::format::Item`s.
 /// Not all formats use the `Item`s though, for example `EpochMillis`, which is more efficient than other formats.
+/// 
+/// # Examples
+/// 
+/// Create a custom date format for `yyyy-MM-dd'T'HH:mm:ss`.
+/// To make it easier to build formats, use the `date_fmt` macro 
+/// from [`elastic_date_macros`](http://kodraus.github.io/rustdoc/elastic_date_macros/index.html) to convert a string format to `Item`s.
+/// 
+/// ```
+/// # #![feature(plugin)]
+/// # #![plugin(json_str, elastic_types_macros)]
+/// # #![plugin(elastic_date_macros)]
+/// # extern crate elastic_types;
+/// # extern crate chrono;
+/// # use elastic_types::date::DateFormat;
+/// # fn main() {
+/// #[derive(Default, Clone)]
+/// struct MyFormat;
+/// impl DateFormat for MyFormat {
+/// 	fn fmt<'a>() -> Vec<chrono::format::Item<'a>> {
+/// 		date_fmt!("yyyy-MM-ddTHH:mm:ss")
+/// 	}
+/// 
+/// 	fn name() -> &'static str { "yyyy-MM-dd'T'HH:mm:ss" }
+/// }
+/// # }
 pub trait DateFormat
-where Self : Default + Copy {
+where Self : Default + Clone {
 	/// Parses a date string to a `chrono::DateTime<UTC>` result.
 	///
 	/// The date string must match the format specified by `fmt()`.
@@ -45,30 +70,14 @@ where Self : Default + Copy {
 	/// The format used for parsing and formatting dates.
 	///
 	/// This is specified as a collection of `chrono::format::Item`s for efficiency.
-	/// To make it easier to build formats, you can use the `date_fmt` macro to convert a string format to `Item`s at compile time:
-	///
-	/// ```
-	/// # #![feature(plugin)]
-	/// # #![plugin(json_str, elastic_types_macros)]
-	/// #![plugin(elastic_date_macros)]
-	///
-	/// # extern crate elastic_types;
-	/// # extern crate chrono;
-	/// # fn main() {
-	/// use chrono::format::Item;
-	/// fn fmt<'a>() -> Vec<Item<'a>> {
-	/// 	date_fmt!("%Y%m%dT%H%M%SZ")
-	/// 		.iter()
-	/// 		.cloned()
-	/// 		.collect()
-	/// }
-	/// # }
-	/// ```
 	fn fmt<'a>() -> Vec<Item<'a>>;
 
 	/// The name of the format.
 	///
 	/// This is the string used when defining the format in the field mapping.
+	/// 
+	/// It's important to remember that Elasticsearch expects non-symbolic literals in date formats to be escaped,
+	/// so `yyyy-MM-ddTHH:mm` needs to be represented as `yyyy-MM-dd'T'HH:mm`.
 	fn name() -> &'static str;
 }
 

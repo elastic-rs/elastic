@@ -93,7 +93,7 @@ let response = elastic::search::post(
 [Docs](http://kodraus.github.io/rustdoc/elastic_types/) |
 [Issues](https://github.com/KodrAus/elasticsearch-rs/labels/types)
 
-`elastic_types` is a library for building Elasticsearch types in Rust. Define your Elasticsearch types as PORS (Plain Old Rust Structures) and generate an equivalent Elasticsearch mapping from them.
+`elastic_types` is a library for building Elasticsearch types in Rust. Define your Elasticsearch types as PORS (Plain Old Rust Structures) and generate an equivalent Elasticsearch mapping from them, where correctness is enforced by Rust's type system.
 It provides rust implementations of the core [Elasticsearch datatypes](https://www.elastic.co/guide/en/elasticsearch/reference/1.4/mapping-core-types.html) (like `date`, `geo_point`) and responses/errors.
 
 Supports both the [`elastic_hyper`](#elastic_hyper) and [`rs-es`](https://github.com/benashford/rs-es) clients.
