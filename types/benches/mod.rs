@@ -49,8 +49,8 @@ pub mod date_fixtures {
 			Some(true)
 		}
 
-		fn null_value() -> Option<ElasticDate<T>> {
-			Some(ElasticDate::<T>::now())
+		fn null_value() -> Option<ElasticDate<T, Self>> {
+			Some(ElasticDate::now())
 		}
 
 		fn ignore_malformed() -> Option<bool> {
