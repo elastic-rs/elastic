@@ -1,6 +1,7 @@
 extern crate chrono;
 extern crate elastic_types;
 
+use chrono::{ DateTime, UTC };
 use elastic_types::date::prelude::*;
 
 #[test]
@@ -230,4 +231,39 @@ fn epoch_millis_short_minus() {
 
 	let fmtd = date.format();
 	assert_eq!("-5100", &fmtd);
+}
+
+#[test]
+fn custom_format() {
+	struct MyCustomFormat;
+	impl CustomDateFormat for MyCustomFormat {
+		fn name() -> &'static str { "yyyy-MM-dd'T'HH:mm:ssZ" }
+	
+		fn format(date: &DateTime<UTC>) -> String {
+			date.to_rfc3339()
+		}
+		
+		fn parse(date: &str) -> Result<DateTime<UTC>, ParseError> {
+			let date = try!(DateTime::parse_from_rfc3339(date).map_err(|e| ParseError::from(e)));
+
+			Ok(DateTime::from_utc(date.naive_local(), UTC))
+		}
+	}
+
+	let date = ElasticDate::<MyCustomFormat>::parse("2015-07-03T14:55:02+00:00").unwrap();
+
+	assert_eq!(
+		(2015i32, 7u32, 3u32, 14u32, 55u32, 2u32),
+		(
+			date.year(),
+			date.month(),
+			date.day(),
+			date.hour(),
+			date.minute(),
+			date.second()
+		)
+	);
+
+	let fmtd = date.format();
+	assert_eq!("2015-07-03T14:55:02+00:00", &fmtd);
 }
