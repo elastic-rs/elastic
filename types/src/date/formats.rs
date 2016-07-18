@@ -1,8 +1,7 @@
 use chrono;
 use chrono::{ DateTime, NaiveDateTime, UTC, Timelike };
-use chrono::format::Item;
 use std::error::Error;
-use super::{ DateFormat, ParseError };
+use super::{ CustomDateFormat, ParseError };
 
 /// Format for default `chrono::DateTime`.
 #[derive(Debug, Default, Clone, Copy)]
@@ -34,10 +33,7 @@ impl_date_fmt!(BasicDateTime, "%Y%m%dT%H%M%S%.3fZ", "basic_date_time");
 /// - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-date-format.html#built-in-date-formats)
 #[derive(Debug, Default, Clone, Copy)]
 pub struct EpochMillis;
-impl DateFormat for EpochMillis {
-	fn fmt<'a>() -> Vec<Item<'a>>{
-		Vec::new()
-	}
+impl CustomDateFormat for EpochMillis {
 	fn name() -> &'static str {
 		"epoch_millis"
 	}
