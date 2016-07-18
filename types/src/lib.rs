@@ -53,6 +53,74 @@
 //! Any code examples that aren't compatible with both `nightly` and `stable`, like deriving mappings,
 //! have alternatives depending on the channel you're targeting.
 //!
+//! ## A Complete Example
+//! 
+//! Before digging in to the API, consider the following complete example for defining and mapping a
+//! type called `Article` on `nightly`:
+//! 
+//! ```
+//! #![feature(plugin, custom_derive)]
+//! #![plugin(serde_macros, elastic_types_macros, elastic_date_macros)]
+//! 
+//! extern crate serde;
+//! extern crate elastic_types;
+//! 
+//! use std::marker::PhantomData;
+//! 
+//! use elastic_types::prelude::*;
+//! 
+//! 
+//! //Our main datatype, `article`
+//! 
+//! #[derive(Serialize, Deserialize, ElasticType)]
+//! struct Article {
+//! 	pub id: i32,
+//! 	pub title: String,
+//! 	pub content: ElasticString<ContentMapping>,
+//! 	pub timestamp: Option<ElasticDate<EpochMillis, TimestampMapping>>,
+//! 	pub geoip: GeoIp
+//! }
+//! 
+//! #[derive(Serialize, Deserialize, ElasticType)]
+//! struct GeoIp {
+//! 	pub ip: std::net::Ipv4Addr,
+//! 	pub loc: ElasticGeoPoint<DefaultGeoPointFormat>
+//! }
+//! 
+//! 
+//! //Mappings for our datatype fields
+//! 
+//! #[derive(Default, Clone, ElasticStringMapping)]
+//! struct ContentMapping;
+//! impl ElasticStringMapping for ContentMapping {
+//! 	fn analyzer() -> Option<&'static str> {
+//! 		Some("content_text")
+//! 	}
+//! }
+//! 
+//! #[derive(Default, Clone, ElasticDateMapping)]
+//! struct TimestampMapping<T: DateFormat = EpochMillis> {
+//! 	_marker: PhantomData<T>
+//! }
+//! impl <T: DateFormat> ElasticDateMapping<T> for TimestampMapping<T> {
+//! 	fn null_value() -> Option<ElasticDate<T, Self>> {
+//! 		Some(ElasticDate::now())
+//! 	}
+//! }
+//! 
+//! fn main() {
+//! 	println!("{}: {}", Article::name(), TypeMapper::to_string(Article::mapping()).unwrap());
+//! }
+//! ```
+//! 
+//! The above example defines a `struct` called `Article` with a few fields:
+//! 
+//! - A default `integer` called `id`
+//! - A default `string` called `title`
+//! - A `string` with a custom analyser called `content`
+//! - A `date` with the `epoch_millis` format that defaults to `now` called `timestamp`
+//! - An object called `GeoIp` with default `ip` and `geo_point` fields.
+//!
 //! ## Map Your Types
 //!
 //! _For mapping on `stable`, see [here](object/index.html#manually)._
@@ -406,3 +474,17 @@ include!("lib.rs.in");
 
 #[cfg(not(feature = "serde_macros"))]
 include!(concat!(env!("OUT_DIR"), "/lib.rs"));
+
+pub mod prelude {
+	//! Includes non-mapping types for all data types.
+	//!
+	//! This is a convenience module to make it easy to build mappings for multiple types without too many `use` statements.
+
+	pub use ::mapping::prelude::*;
+	pub use ::boolean::prelude::*;
+	pub use ::date::prelude::*;
+	pub use ::geo::prelude::*;
+	pub use ::ip::prelude::*;
+	pub use ::number::prelude::*;
+	pub use ::string::prelude::*;
+}

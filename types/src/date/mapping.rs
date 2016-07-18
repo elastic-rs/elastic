@@ -211,7 +211,7 @@ Self: ElasticFieldMapping<F> + Sized + Serialize {
 
 	/// Accepts a date value in one of the configured format's as the field which is substituted for any explicit null values.
 	/// Defaults to `null`, which means the field is treated as missing.
-	fn null_value() -> Option<ElasticDate<F>> {
+	fn null_value() -> Option<ElasticDate<F, Self>> {
 		None
 	}
 
