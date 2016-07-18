@@ -6,6 +6,7 @@
       "path": "/_cat/plugins",
       "paths": ["/_cat/plugins"],
       "parts": {
+
       },
       "params": {
         "format": {

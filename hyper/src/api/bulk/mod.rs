@@ -10,24 +10,6 @@ use hyper::error::Result;
 
 use ::RequestParams;
 
-pub fn post_index<'a,
-              I: Into<Body<'a>>>(client: &'a mut Client,
-                                 req: &'a RequestParams, index: &'a str,
-                                 body: I) -> Result<Response>{
-    let url_qry = &req.get_url_qry();
-    let base = &req.base_url;
-    let mut url_fmtd =
-        String::with_capacity(base.len() + 1 + 6 + index.len() +
-                                  url_qry.len());
-    url_fmtd.push_str(base);
-    url_fmtd.push_str("/");
-    url_fmtd.push_str(index);
-    url_fmtd.push_str("/_bulk");
-    url_fmtd.push_str(url_qry);
-    let res =
-        client.post(&url_fmtd).headers(req.headers.to_owned()).body(body.into());
-    res.send()
-}
 pub fn put_index_type<'a,
                   I: Into<Body<'a>>>(client: &'a mut Client,
                                      req: &'a RequestParams, index: &'a str,
@@ -47,6 +29,24 @@ pub fn put_index_type<'a,
     url_fmtd.push_str(url_qry);
     let res =
         client.put(&url_fmtd).headers(req.headers.to_owned()).body(body.into());
+    res.send()
+}
+pub fn post_index<'a,
+              I: Into<Body<'a>>>(client: &'a mut Client,
+                                 req: &'a RequestParams, index: &'a str,
+                                 body: I) -> Result<Response>{
+    let url_qry = &req.get_url_qry();
+    let base = &req.base_url;
+    let mut url_fmtd =
+        String::with_capacity(base.len() + 1 + 6 + index.len() +
+                                  url_qry.len());
+    url_fmtd.push_str(base);
+    url_fmtd.push_str("/");
+    url_fmtd.push_str(index);
+    url_fmtd.push_str("/_bulk");
+    url_fmtd.push_str(url_qry);
+    let res =
+        client.post(&url_fmtd).headers(req.headers.to_owned()).body(body.into());
     res.send()
 }
 pub fn post_index_type<'a,
@@ -70,6 +70,24 @@ pub fn post_index_type<'a,
         client.post(&url_fmtd).headers(req.headers.to_owned()).body(body.into());
     res.send()
 }
+pub fn put_index<'a,
+             I: Into<Body<'a>>>(client: &'a mut Client,
+                                req: &'a RequestParams, index: &'a str,
+                                body: I) -> Result<Response>{
+    let url_qry = &req.get_url_qry();
+    let base = &req.base_url;
+    let mut url_fmtd =
+        String::with_capacity(base.len() + 1 + 6 + index.len() +
+                                  url_qry.len());
+    url_fmtd.push_str(base);
+    url_fmtd.push_str("/");
+    url_fmtd.push_str(index);
+    url_fmtd.push_str("/_bulk");
+    url_fmtd.push_str(url_qry);
+    let res =
+        client.put(&url_fmtd).headers(req.headers.to_owned()).body(body.into());
+    res.send()
+}
 pub fn post<'a,
         I: Into<Body<'a>>>(client: &'a mut Client, req: &'a RequestParams,
                            body: I) -> Result<Response>{
@@ -90,24 +108,6 @@ pub fn put<'a,
     let base = &req.base_url;
     let mut url_fmtd = String::with_capacity(base.len() + 6 + url_qry.len());
     url_fmtd.push_str(base);
-    url_fmtd.push_str("/_bulk");
-    url_fmtd.push_str(url_qry);
-    let res =
-        client.put(&url_fmtd).headers(req.headers.to_owned()).body(body.into());
-    res.send()
-}
-pub fn put_index<'a,
-             I: Into<Body<'a>>>(client: &'a mut Client,
-                                req: &'a RequestParams, index: &'a str,
-                                body: I) -> Result<Response>{
-    let url_qry = &req.get_url_qry();
-    let base = &req.base_url;
-    let mut url_fmtd =
-        String::with_capacity(base.len() + 1 + 6 + index.len() +
-                                  url_qry.len());
-    url_fmtd.push_str(base);
-    url_fmtd.push_str("/");
-    url_fmtd.push_str(index);
     url_fmtd.push_str("/_bulk");
     url_fmtd.push_str(url_qry);
     let res =
