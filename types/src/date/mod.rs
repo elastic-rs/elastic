@@ -9,8 +9,6 @@
 //! Because date conversion needs to be done by the `caller`, the `Format` is a first-class citizen in the `ElasticDate` design.
 //!
 //! # Examples
-//!
-//! For defining your own date format, see the [`DateFormat`](trait.DateFormat.html#examples) trait.
 //! 
 //! For defining your own date mapping, see [mapping details](mapping/trait.ElasticDateMapping.html#derive-mapping).
 //!
@@ -42,6 +40,60 @@
 //! struct MyType {
 //! 	pub field: ElasticDate<EpochMillis, MyDateMapping>
 //! }
+//! # }
+//! ```
+//!
+//! ## Creating Formats
+//! 
+//! To make it easier to build formats, use the `date_fmt!` macro 
+//! from [`elastic_date_macros`](http://kodraus.github.io/rustdoc/elastic_date_macros/index.html) to convert a string format to `Item`s.
+//! 
+//! ```
+//! # #![feature(plugin)]
+//! # #![plugin(json_str, elastic_types_macros)]
+//! # #![plugin(elastic_date_macros)]
+//! # extern crate elastic_types;
+//! # extern crate chrono;
+//! # use elastic_types::date::DateFormat;
+//! # fn main() {
+//! #[derive(Default, Clone)]
+//! struct MyFormat;
+//! impl DateFormat for MyFormat {
+//! 	fn fmt<'a>() -> Vec<chrono::format::Item<'a>> {
+//! 		date_fmt!("yyyy-MM-ddTHH:mm:ss")
+//! 	}
+//! 
+//! 	fn name() -> &'static str { "yyyy-MM-dd'T'HH:mm:ss" }
+//! }
+//! # }
+//! ```
+//! 
+//! You can also avoid having to use `Item`s by implementing `CustomDateFormat` and handling formatting and parsing yourself:
+//!
+//! ```
+//! # #![feature(plugin)]
+//! # #![plugin(json_str, elastic_types_macros)]
+//! # #![plugin(elastic_date_macros)]
+//! # extern crate elastic_types;
+//! # extern crate chrono;
+//! # use chrono::{ DateTime, UTC };
+//! # use elastic_types::date::{ CustomDateFormat, ParseError };
+//! # fn main() {
+//! #[derive(Default, Clone)]
+//! struct MyCustomFormat;
+//! impl CustomDateFormat for MyCustomFormat {
+//! 	fn name() -> &'static str { "yyyy-MM-dd'T'HH:mm:ssZ" }
+//! 
+//! 	fn format(date: &DateTime<UTC>) -> String {
+//! 		date.to_rfc3339()
+//! 	}
+//! 	
+//! 	fn parse(date: &str) -> Result<DateTime<UTC>, ParseError> {
+//! 		let date = try!(DateTime::parse_from_rfc3339(date).map_err(|e| ParseError::from(e)));
+//! 
+//!			Ok(DateTime::from_utc(date.naive_local(), UTC))
+//!		}
+//!	}
 //! # }
 //! ```
 //!
