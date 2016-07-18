@@ -1,4 +1,13 @@
 pub mod rethrottle;
+use hyper::client::Client;
+#[allow(unused_imports)]
+use hyper::client::Body;
+use hyper::client::response::Response;
+use hyper::error::Result;
+
+use ::RequestParams;
+
+/// https://www.elastic.co/guide/en/elasticsearch/reference/master/docs-reindex.html
 pub fn post<'a,
         I: Into<Body<'a>>>(client: &'a mut Client, req: &'a RequestParams,
                            body: I) -> Result<Response>{
@@ -12,3 +21,4 @@ pub fn post<'a,
         client.post(&url_fmtd).headers(req.headers.to_owned()).body(body.into());
     res.send()
 }
+
