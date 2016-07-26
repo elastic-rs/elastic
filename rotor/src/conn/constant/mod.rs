@@ -5,7 +5,9 @@
 //! 
 //! The constant connection pool is fast to set up, but won't cope with node addresses that can change.
 
+use std::str;
 use std::marker::PhantomData;
+use std::time::Duration;
 use std::net::{ SocketAddr, SocketAddrV4, Ipv4Addr };
 
 use rotor::{ Notifier, Scope, GenericScope, Response, Void };
@@ -54,11 +56,6 @@ impl <'a> Handle<'a> {
 			notifier.wakeup();
 		}
 	}
-
-	/// Try pop a message off the queue without blocking.
-	pub fn pop(&self) -> Option<Message> {
-		self.queue.try_pop()
-	}
 }
 
 #[doc(hidden)]
@@ -75,6 +72,8 @@ impl <'a, C> Client for Fsm<'a, C> {
 	type Seed = &'a Queue;
 
 	fn create(seed: Self::Seed, scope: &mut Scope<<Self::Requester as Requester>::Context>) -> Self {
+		println!("client: create");
+
 		Fsm {
 			queue: seed,
 			_marker: PhantomData
@@ -84,21 +83,36 @@ impl <'a, C> Client for Fsm<'a, C> {
 	fn connection_idle(self, _conn: &Connection, scope: &mut Scope<C>) -> Task<Self> {
 		//Look for a message without blocking
 		if let Some(msg) = self.queue.try_pop() {
-			//Handle
+			println!("client: connection_idle: message: '{}', '{}'", msg.get_url(), str::from_utf8(msg.get_body()).unwrap());
+
+			Task::Request(self, ApiRequest::for_msg(msg))
 		}
 		else {
-			//Snooze
+			println!("client: connection_idle: no message");
+			Task::Sleep(self, scope.now() + Duration::from_millis(2000))
 		}
-
-		unimplemented!()
 	}
 
 	fn wakeup(self, conn: &Connection, scope: &mut Scope<<Self::Requester as Requester>::Context>) -> Task<Self> {
-		unimplemented!()
+		if conn.is_idle() {
+			println!("client: wakeup: idle");
+			self.connection_idle(conn, scope)
+		}
+		else {
+			println!("client: wakeup: not idle");
+			Task::Sleep(self, scope.now() + Duration::from_millis(2000))
+		}
 	}
 
 	fn timeout(self, conn: &Connection, scope: &mut Scope<<Self::Requester as Requester>::Context>) -> Task<Self> {
-		unimplemented!()
+		if conn.is_idle() {
+			println!("client: timeout: idle");
+			self.connection_idle(conn, scope)
+		}
+		else {
+			println!("client: timeout: not idle");
+			Task::Sleep(self, scope.now() + Duration::from_millis(2000))
+		}
 	}
 
 	fn connection_error(self, err: &ProtocolError, _scope: &mut Scope<C>) {
