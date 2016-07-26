@@ -37,15 +37,16 @@
 //!
 //! - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/string.html)
 
-mod string;
-
-pub mod mapping;
-pub use self::string::*;
+mod keyword;
+mod text;
 
 pub mod prelude {
 	//! Includes non-mapping types for the `string` type.
     //!
     //! This is a convenience module to make it easy to build mappings for multiple types without too many `use` statements.
 
-	pub use super::string::*;
+	pub use super::keyword::ElasticKeyword;
+	pub use super::text::ElasticText;
 }
+
+pub mod mapping;

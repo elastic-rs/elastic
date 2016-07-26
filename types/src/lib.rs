@@ -468,6 +468,14 @@ extern crate serde_json;
 mod macros;
 pub mod mappers;
 
+macro_rules! ser_field {
+    ($s:ident, $f:expr, $n:expr) => (
+    	if let Some(f) = $f {
+			try!($s.serialize_struct_elt($n, f));
+		}
+    )
+}
+
 //Other type dependencies
 #[cfg(feature = "serde_macros")]
 include!("lib.rs.in");
