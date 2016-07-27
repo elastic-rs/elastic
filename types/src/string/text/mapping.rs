@@ -307,7 +307,7 @@ impl serde::Serialize for TermVector {
 }
 
 /// Fielddata for term frequency as a percentage range.
-#[derive(Debug, PartialEq, Clone, Copy)]
+#[derive(Debug, Default, PartialEq, Clone, Copy)]
 pub struct FieldDataFrequencyFilter {
 	/// The min frequency percentage.
 	pub min: Option<f32>,

@@ -73,42 +73,14 @@ pub mod string_fixtures {
 	use std::collections::BTreeMap;
 	use elastic_types::mapping::prelude::*;
 
-	#[derive(Default, Clone, ElasticStringMapping)]
-	pub struct MyStringMapping;
-	impl ElasticStringMapping for MyStringMapping {
-		fn boost() -> Option<f32> {
-			Some(1.01)
-		}
-
-		fn index() -> Option<IndexAnalysis> {
-			Some(IndexAnalysis::No)
-		}
-
-		fn doc_values() -> Option<bool> {
-			Some(true)
-		}
-
-		fn include_in_all() -> Option<bool> {
-			Some(false)
-		}
-
-		fn store() -> Option<bool> {
-			Some(true)
-		}
-
-		fn analyzer() -> Option<&'static str> {
-			Some("my_analyzer")
-		}
-
-		fn fielddata() -> Option<FieldData> {
-			Some(FieldData::Disabled)
-		}
-
+	#[derive(Default, Clone, ElasticTextMapping)]
+	pub struct MyTextMapping;
+	impl ElasticTextMapping for MyTextMapping {
 		fn fields() -> Option<BTreeMap<&'static str, ElasticStringField>> {
 			let mut fields = BTreeMap::new();
 
-			fields.insert("raw", ElasticStringField::String(
-				ElasticStringFieldMapping {
+			fields.insert("raw", ElasticStringField::Keyword(
+				ElasticKeywordFieldMapping {
 					analyzer: Some("my_analyzer"),
 					..Default::default()
 				})
@@ -125,41 +97,90 @@ pub mod string_fixtures {
 			Some(fields)
 		}
 
-		fn ignore_above() -> Option<usize> {
-			Some(50)
+		fn fielddata_frequency_filter() -> Option<FieldDataFrequencyFilter> { 
+			Some(FieldDataFrequencyFilter { min: Some(0.0), ..Default::default() })
 		}
 
-		fn index_options() -> Option<IndexOptions> {
-			Some(IndexOptions::Docs)
+		fn analyzer() -> Option<&'static str> { Some("my_analyzer") }
+
+		fn boost() -> Option<f32> { Some(1.3) }
+
+		fn eager_global_ordinals() -> Option<bool> { Some(false) }
+
+		fn fielddata() -> Option<bool> { Some(true) }
+
+		fn include_in_all() -> Option<bool> { Some(true) }
+
+		fn ignore_above() -> Option<u32> { Some(512) }
+
+		fn index() -> Option<bool> { Some(false) }
+
+		fn index_options() -> Option<IndexOptions> { Some(IndexOptions::Freqs) }
+
+		fn norms() -> Option<bool> { Some(true) }
+
+		fn position_increment_gap() -> Option<u32> { Some(1) }
+
+		fn store() -> Option<bool> { Some(true) }
+
+		fn search_analyzer() -> Option<&'static str> { Some("my_analyzer") }
+
+		fn search_quote_analyzer() -> Option<&'static str> { Some("my_analyzer") }
+
+		fn similarity() -> Option<&'static str> { Some("BM25") }
+
+		fn term_vector() -> Option<TermVector> { Some(TermVector::Yes) }
+	}
+
+	#[derive(Default, Clone, ElasticKeywordMapping)]
+	pub struct MyKeywordMapping;
+	impl ElasticKeywordMapping for MyKeywordMapping {
+		fn fields() -> Option<BTreeMap<&'static str, ElasticStringField>> {
+			let mut fields = BTreeMap::new();
+
+			fields.insert("text", ElasticStringField::Text(
+				ElasticTextFieldMapping {
+					analyzer: Some("my_analyzer"),
+					..Default::default()
+				})
+			);
+
+			fields.insert("count", ElasticStringField::TokenCount(
+				ElasticTokenCountFieldMapping::default())
+			);
+
+			fields.insert("comp", ElasticStringField::Completion(
+				ElasticCompletionFieldMapping::default())
+			);
+
+			Some(fields)
 		}
 
-		fn norms() -> Option<Norms> {
-			Some(Norms::Disabled)
-		}
+		fn analyzer() -> Option<&'static str> { Some("my_analyzer") }
 
-		fn null_value() -> Option<&'static str> {
-			Some("my default value")
-		}
+		fn boost() -> Option<f32> { Some(1.03) }
 
-		fn position_increment_gap() -> Option<usize> {
-			Some(8)
-		}
+		fn doc_values() -> Option<bool> { Some(true) }
 
-		fn search_analyzer() -> Option<&'static str> {
-			Some("my_search_analyzer")
-		}
+		fn eager_global_ordinals() -> Option<bool> { Some(false) }
 
-		fn search_quote_analyzer() -> Option<&'static str> {
-			Some("my_quote_search_analyzer")
-		}
+		fn include_in_all() -> Option<bool> { Some(false) }
 
-		fn similarity() -> Option<&'static str> {
-			Some("my_similarity")
-		}
+		fn ignore_above() -> Option<u32> { Some(256) }
 
-		fn term_vector() -> Option<TermVector> {
-			Some(TermVector::No)
-		}
+		fn index() -> Option<bool> { Some(true) }
+
+		fn index_options() -> Option<IndexOptions> { Some(IndexOptions::Docs) }
+
+		fn norms() -> Option<bool> { Some(false) }
+
+		fn null_value() -> Option<&'static str> { Some("my string") }
+
+		fn store() -> Option<bool> { Some(false) }
+
+		fn search_analyzer() -> Option<&'static str> { Some("my_analyzer") }
+
+		fn similarity() -> Option<&'static str> { Some("classic") }
 	}
 }
 
@@ -562,7 +583,8 @@ pub mod object_fixtures {
 		pub my_date2: ElasticDate<DefaultDateFormat>,
 		pub my_date3: ElasticDate<EpochMillis, MyDateMapping>,
 		pub my_string1: String,
-		pub my_string2: ElasticString<DefaultStringMapping>,
+		pub my_string2: ElasticText<DefaultTextMapping>,
+		pub my_string3: ElasticKeyword<DefaultKeywordMapping>,
 		pub my_num1: i32,
 		pub my_num2: ElasticInteger<MyIntegerMapping>,
 		pub my_bool1: bool,

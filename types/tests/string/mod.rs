@@ -12,19 +12,19 @@ use elastic_types::string::prelude::*;
 use ::string_fixtures::*;
 
 #[test]
-fn can_change_string_mapping() {
-	fn takes_custom_mapping(_: ElasticString<MyStringMapping>) -> bool {
+fn can_change_keyword_mapping() {
+	fn takes_custom_mapping(_: ElasticKeyword<MyKeywordMapping>) -> bool {
 		true
 	}
 
-	let string: ElasticString<DefaultStringMapping> = ElasticString::new("stuff");
+	let string: ElasticKeyword<DefaultStringMapping> = ElasticKeyword::new("stuff");
 
 	assert!(takes_custom_mapping(string.remap()));
 }
 
 #[test]
-fn serialise_elastic_string() {
-	let string: ElasticString<DefaultStringMapping> = ElasticString::new("my string");
+fn serialise_elastic_keyword() {
+	let string: ElasticKeyword<DefaultStringMapping> = ElasticKeyword::new("my string");
 
 	let ser = serde_json::to_string(&string).unwrap();
 
@@ -32,8 +32,35 @@ fn serialise_elastic_string() {
 }
 
 #[test]
-fn deserialise_elastic_string() {
-	let string: ElasticString<DefaultStringMapping> = serde_json::from_str(r#""my string""#).unwrap();
+fn deserialise_elastic_keyword() {
+	let string: ElasticKeyword<DefaultKeywordMapping> = serde_json::from_str(r#""my string""#).unwrap();
+
+	assert_eq!("my string", string);
+}
+
+#[test]
+fn can_change_text_mapping() {
+	fn takes_custom_mapping(_: ElasticText<MyTextMapping>) -> bool {
+		true
+	}
+
+	let string: ElasticText<DefaultTextMapping> = ElasticText::new("stuff");
+
+	assert!(takes_custom_mapping(string.remap()));
+}
+
+#[test]
+fn serialise_elastic_text() {
+	let string: ElasticText<DefaultTextMapping> = ElasticText::new("my string");
+
+	let ser = serde_json::to_string(&string).unwrap();
+
+	assert_eq!(r#""my string""#, ser);
+}
+
+#[test]
+fn deserialise_elastic_text() {
+	let string: ElasticText<DefaultTextMapping> = serde_json::from_str(r#""my string""#).unwrap();
 
 	assert_eq!("my string", string);
 }
