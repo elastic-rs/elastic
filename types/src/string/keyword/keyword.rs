@@ -4,8 +4,6 @@ use serde::{ Serialize, Deserialize, Serializer, Deserializer };
 use super::mapping::{ ElasticKeywordMapping, DefaultKeywordMapping };
 use ::mapping::{ ElasticFieldMapping, ElasticType };
 
-impl ElasticType<DefaultKeywordMapping, ()> for String { }
-
 /// An Elasticsearch `keyword` with a mapping.
 ///
 /// Where the mapping isn't custom, you can use the standard library `String` instead.

@@ -115,17 +115,37 @@ macro_rules! expect_item {
 }
 
 #[doc(hidden)]
-pub fn expand_derive_string_mapping(cx: &mut ExtCtxt, _: Span, meta_item: &MetaItem, annotatable: &Annotatable, push: &mut FnMut(Annotatable)) {
+pub fn expand_derive_keyword_mapping(cx: &mut ExtCtxt, _: Span, meta_item: &MetaItem, annotatable: &Annotatable, push: &mut FnMut(Annotatable)) {
     let item = expect_item!(cx, meta_item, annotatable);
 	let ty = item.ident;
 
 	push(Annotatable::Item(
 		quote_item!(cx,
 			impl ::elastic_types::mapping::ElasticFieldMapping<()> for $ty {
-				type Visitor = ::elastic_types::string::mapping::ElasticStringMappingVisitor<$ty>;
+				type Visitor = ::elastic_types::string::mapping::ElasticKeywordMappingVisitor<$ty>;
 
 				fn data_type() -> &'static str {
-					::elastic_types::string::mapping::STRING_DATATYPE
+					::elastic_types::string::mapping::KEYWORD_DATATYPE
+				}
+			}
+		).unwrap()
+	));
+
+	impl_mapping_ser(cx, &ty, push);
+}
+
+#[doc(hidden)]
+pub fn expand_derive_text_mapping(cx: &mut ExtCtxt, _: Span, meta_item: &MetaItem, annotatable: &Annotatable, push: &mut FnMut(Annotatable)) {
+    let item = expect_item!(cx, meta_item, annotatable);
+	let ty = item.ident;
+
+	push(Annotatable::Item(
+		quote_item!(cx,
+			impl ::elastic_types::mapping::ElasticFieldMapping<()> for $ty {
+				type Visitor = ::elastic_types::string::mapping::ElasticTextMappingVisitor<$ty>;
+
+				fn data_type() -> &'static str {
+					::elastic_types::string::mapping::TEXT_DATATYPE
 				}
 			}
 		).unwrap()
@@ -493,9 +513,15 @@ pub fn plugin_registrar(reg: &mut Registry) {
 	);
 
 	reg.register_syntax_extension(
-		syntax::parse::token::intern("derive_ElasticStringMapping"),
+		syntax::parse::token::intern("derive_ElasticKeywordMapping"),
 		syntax::ext::base::MultiDecorator(
-			Box::new(expand_derive_string_mapping))
+			Box::new(expand_derive_keyword_mapping))
+	);
+
+	reg.register_syntax_extension(
+		syntax::parse::token::intern("derive_ElasticTextMapping"),
+		syntax::ext::base::MultiDecorator(
+			Box::new(expand_derive_text_mapping))
 	);
 
 	reg.register_syntax_extension(

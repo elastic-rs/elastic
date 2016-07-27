@@ -17,14 +17,14 @@ fn can_change_keyword_mapping() {
 		true
 	}
 
-	let string: ElasticKeyword<DefaultStringMapping> = ElasticKeyword::new("stuff");
+	let string: ElasticKeyword<DefaultKeywordMapping> = ElasticKeyword::new("stuff");
 
 	assert!(takes_custom_mapping(string.remap()));
 }
 
 #[test]
 fn serialise_elastic_keyword() {
-	let string: ElasticKeyword<DefaultStringMapping> = ElasticKeyword::new("my string");
+	let string: ElasticKeyword<DefaultKeywordMapping> = ElasticKeyword::new("my string");
 
 	let ser = serde_json::to_string(&string).unwrap();
 

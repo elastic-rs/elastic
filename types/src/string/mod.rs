@@ -60,7 +60,7 @@
 //! - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/string.html)
 
 macro_rules! impl_string_type {
-    ($t:ty, $m:ty, $d:ty) => (
+    ($t:ident, $m:ident, $d:ident) => (
     	impl <M> ElasticType<M, ()> for $t<M> where
 		M: ElasticFieldMapping<()> + $m { }
 
@@ -152,19 +152,33 @@ macro_rules! impl_string_type {
 				deserializer.deserialize(StringVisitor::<M>::default())
 			}
 		}
-    )
+    );
 }
+
+macro_rules! ser_sub_field {
+	($s:ident, $f:expr, $n:expr) => (
+		if let Some(f) = $f {
+			try!($s.serialize_struct_elt($n, f));
+		}
+	)
+}
+
+pub mod mapping;
+
+impl ::mapping::ElasticType<mapping::DefaultStringMapping, ()> for String { }
 
 mod keyword;
 mod text;
 
+pub use self::keyword::ElasticKeyword;
+pub use self::text::ElasticText;
+
+
 pub mod prelude {
-	//! Includes non-mapping types for the `string` type.
-    //!
-    //! This is a convenience module to make it easy to build mappings for multiple types without too many `use` statements.
+	//! Includes non-mapping types for the `string` types.
+	//!
+	//! This is a convenience module to make it easy to build mappings for multiple types without too many `use` statements.
 
 	pub use super::keyword::ElasticKeyword;
 	pub use super::text::ElasticText;
 }
-
-pub mod mapping;

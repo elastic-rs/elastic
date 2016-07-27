@@ -101,35 +101,35 @@ pub mod string_fixtures {
 			Some(FieldDataFrequencyFilter { min: Some(0.0), ..Default::default() })
 		}
 
-		fn analyzer() -> Option<&'static str> { Some("my_analyzer") }
+		fn analyzer() -> Option<&'static str> 				{ Some("my_analyzer") }
 
-		fn boost() -> Option<f32> { Some(1.3) }
+		fn boost() -> Option<f32> 							{ Some(1.3) }
 
-		fn eager_global_ordinals() -> Option<bool> { Some(false) }
+		fn eager_global_ordinals() -> Option<bool> 			{ Some(false) }
 
-		fn fielddata() -> Option<bool> { Some(true) }
+		fn fielddata() -> Option<bool> 						{ Some(true) }
 
-		fn include_in_all() -> Option<bool> { Some(true) }
+		fn include_in_all() -> Option<bool> 				{ Some(true) }
 
-		fn ignore_above() -> Option<u32> { Some(512) }
+		fn ignore_above() -> Option<u32> 					{ Some(512) }
 
-		fn index() -> Option<bool> { Some(false) }
+		fn index() -> Option<bool> 							{ Some(false) }
 
-		fn index_options() -> Option<IndexOptions> { Some(IndexOptions::Freqs) }
+		fn index_options() -> Option<IndexOptions> 			{ Some(IndexOptions::Freqs) }
 
-		fn norms() -> Option<bool> { Some(true) }
+		fn norms() -> Option<bool> 							{ Some(true) }
 
-		fn position_increment_gap() -> Option<u32> { Some(1) }
+		fn position_increment_gap() -> Option<u32> 			{ Some(1) }
 
-		fn store() -> Option<bool> { Some(true) }
+		fn store() -> Option<bool> 							{ Some(true) }
 
-		fn search_analyzer() -> Option<&'static str> { Some("my_analyzer") }
+		fn search_analyzer() -> Option<&'static str> 		{ Some("my_analyzer") }
 
-		fn search_quote_analyzer() -> Option<&'static str> { Some("my_analyzer") }
+		fn search_quote_analyzer() -> Option<&'static str> 	{ Some("my_analyzer") }
 
-		fn similarity() -> Option<&'static str> { Some("BM25") }
+		fn similarity() -> Option<&'static str> 			{ Some("BM25") }
 
-		fn term_vector() -> Option<TermVector> { Some(TermVector::Yes) }
+		fn term_vector() -> Option<TermVector> 				{ Some(TermVector::Yes) }
 	}
 
 	#[derive(Default, Clone, ElasticKeywordMapping)]
@@ -156,31 +156,31 @@ pub mod string_fixtures {
 			Some(fields)
 		}
 
-		fn analyzer() -> Option<&'static str> { Some("my_analyzer") }
+		fn analyzer() -> Option<&'static str> 			{ Some("my_analyzer") }
 
-		fn boost() -> Option<f32> { Some(1.03) }
+		fn boost() -> Option<f32> 						{ Some(1.03) }
 
-		fn doc_values() -> Option<bool> { Some(true) }
+		fn doc_values() -> Option<bool> 				{ Some(true) }
 
-		fn eager_global_ordinals() -> Option<bool> { Some(false) }
+		fn eager_global_ordinals() -> Option<bool> 		{ Some(false) }
 
-		fn include_in_all() -> Option<bool> { Some(false) }
+		fn include_in_all() -> Option<bool> 			{ Some(false) }
 
-		fn ignore_above() -> Option<u32> { Some(256) }
+		fn ignore_above() -> Option<u32> 				{ Some(256) }
 
-		fn index() -> Option<bool> { Some(true) }
+		fn index() -> Option<bool> 						{ Some(true) }
 
-		fn index_options() -> Option<IndexOptions> { Some(IndexOptions::Docs) }
+		fn index_options() -> Option<IndexOptions> 		{ Some(IndexOptions::Docs) }
 
-		fn norms() -> Option<bool> { Some(false) }
+		fn norms() -> Option<bool> 						{ Some(false) }
 
-		fn null_value() -> Option<&'static str> { Some("my string") }
+		fn null_value() -> Option<&'static str> 		{ Some("my string") }
 
-		fn store() -> Option<bool> { Some(false) }
+		fn store() -> Option<bool> 						{ Some(false) }
 
-		fn search_analyzer() -> Option<&'static str> { Some("my_analyzer") }
+		fn search_analyzer() -> Option<&'static str> 	{ Some("my_analyzer") }
 
-		fn similarity() -> Option<&'static str> { Some("classic") }
+		fn similarity() -> Option<&'static str> 		{ Some("classic") }
 	}
 }
 
@@ -579,62 +579,56 @@ pub mod object_fixtures {
 	#[derive(Serialize, Deserialize, ElasticType)]
 	#[elastic(ty="my_type", mapping="MyTypeMapping")]
 	pub struct MyType {
-		pub my_date1: DateTime<UTC>,
-		pub my_date2: ElasticDate<DefaultDateFormat>,
-		pub my_date3: ElasticDate<EpochMillis, MyDateMapping>,
-		pub my_string1: String,
-		pub my_string2: ElasticText<DefaultTextMapping>,
-		pub my_string3: ElasticKeyword<DefaultKeywordMapping>,
-		pub my_num1: i32,
-		pub my_num2: ElasticInteger<MyIntegerMapping>,
-		pub my_bool1: bool,
-		pub my_bool2: ElasticBoolean<MyBooleanMapping>,
-		pub my_geo: Option<ElasticGeoShape<MyGeoShapeMapping>>,
-		pub my_ips: Option<Vec<Ipv4Addr>>,
-		pub my_map1: BTreeMap<String, serde_json::Value>,
-		pub my_map2: BTreeMap<String, String>,
-		pub my_val: serde_json::Value
+		pub my_date1: 		DateTime<UTC>,
+		pub my_date2: 		ElasticDate<DefaultDateFormat>,
+		pub my_date3: 		ElasticDate<EpochMillis, MyDateMapping>,
+		pub my_string1: 	String,
+		pub my_string2: 	ElasticText<DefaultTextMapping>,
+		pub my_string3: 	ElasticKeyword<DefaultKeywordMapping>,
+		pub my_num1: 		i32,
+		pub my_num2: 		ElasticInteger<MyIntegerMapping>,
+		pub my_bool1: 		bool,
+		pub my_bool2: 		ElasticBoolean<MyBooleanMapping>,
+		pub my_geo: 		Option<ElasticGeoShape<MyGeoShapeMapping>>,
+		pub my_ips: 		Option<Vec<Ipv4Addr>>,
+		pub my_map1: 		BTreeMap<String, serde_json::Value>,
+		pub my_map2: 		BTreeMap<String, String>,
+		pub my_val: 		serde_json::Value
 	}
 
 	#[derive(Default, Clone)]
 	pub struct MyTypeMapping;
 	impl ElasticObjectMapping for MyTypeMapping {
-		fn dynamic() -> Option<Dynamic> {
-			Some(Dynamic::True)
-		}
+		fn dynamic() -> Option<Dynamic> { Some(Dynamic::True) }
 
-		fn enabled() -> Option<bool> {
-			Some(false)
-		}
+		fn enabled() -> Option<bool> { Some(false) }
 
-		fn include_in_all() -> Option<bool> {
-			Some(true)
-		}
+		fn include_in_all() -> Option<bool> { Some(true) }
 	}
 
 	#[derive(Serialize, ElasticType)]
 	pub struct MyOtherType {
-		pub my_date: ElasticDate<DefaultDateFormat>,
+		pub my_date: 		ElasticDate<DefaultDateFormat>,
 		#[serde(rename="my_renamed_type")]
-		pub my_type: MyType,
+		pub my_type: 		MyType,
 		#[serde(skip_serializing)]
-		pub ignored: String,
-		pub my_num: i32,
-		pub my_point: ElasticGeoPoint<DefaultGeoPointFormat>,
-		pub my_shape: ElasticGeoShape<DefaultGeoShapeMapping>,
-		pub my_ip: ElasticIp<MyIpMapping>,
-		pub my_strings: Vec<String>,
-		pub my_dates: Vec<ElasticDate<DefaultDateFormat>>,
-		pub my_brw_ip: &'static Ipv4Addr,
-		pub my_brw_point: &'static ElasticGeoPoint<DefaultGeoPointFormat>
+		pub ignored: 		String,
+		pub my_num: 		i32,
+		pub my_point: 		ElasticGeoPoint<DefaultGeoPointFormat>,
+		pub my_shape: 		ElasticGeoShape<DefaultGeoShapeMapping>,
+		pub my_ip: 			ElasticIp<MyIpMapping>,
+		pub my_strings: 	Vec<String>,
+		pub my_dates: 		Vec<ElasticDate<DefaultDateFormat>>,
+		pub my_brw_ip: 		&'static Ipv4Addr,
+		pub my_brw_point: 	&'static ElasticGeoPoint<DefaultGeoPointFormat>
 	}
 
 	#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, ElasticType)]
 	pub struct MyStruct {
-		pub id: i32,
-		pub title: String,
-		pub timestamp: DateTime<UTC>,
-		pub geo: GeoLocation
+		pub id: 			i32,
+		pub title: 			String,
+		pub timestamp: 		DateTime<UTC>,
+		pub geo: 			GeoLocation
 	}
 
 	#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, ElasticType)]

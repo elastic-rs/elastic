@@ -76,7 +76,7 @@
 //! struct Article {
 //! 	pub id: i32,
 //! 	pub title: String,
-//! 	pub content: ElasticString<ContentMapping>,
+//! 	pub content: ElasticText<ContentMapping>,
 //! 	pub timestamp: Option<ElasticDate<EpochMillis, TimestampMapping>>,
 //! 	pub geoip: GeoIp
 //! }
@@ -90,9 +90,9 @@
 //! 
 //! //Mappings for our datatype fields
 //! 
-//! #[derive(Default, Clone, ElasticStringMapping)]
+//! #[derive(Default, Clone, ElasticTextMapping)]
 //! struct ContentMapping;
-//! impl ElasticStringMapping for ContentMapping {
+//! impl ElasticTextMapping for ContentMapping {
 //! 	fn analyzer() -> Option<&'static str> {
 //! 		Some("content_text")
 //! 	}

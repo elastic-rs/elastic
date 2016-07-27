@@ -50,7 +50,6 @@ pub const TEXT_DATATYPE: &'static str = "text";
 /// # extern crate serde;
 /// # extern crate serde_json;
 /// # use elastic_types::mapping::prelude::*;
-/// # use elastic_types::string::prelude::*;
 /// # #[derive(Debug, Clone, Default, ElasticTextMapping)]
 /// # pub struct MyStringMapping;
 /// # impl ElasticTextMapping for MyStringMapping {
@@ -63,7 +62,7 @@ pub const TEXT_DATATYPE: &'static str = "text";
 /// # let mapping = serde_json::to_string(&MyStringMapping).unwrap();
 /// # let json = json_str!(
 /// {
-///     "type": "string",
+///     "type": "text",
 /// 	"boost": 1.5
 /// }
 /// # );
@@ -94,7 +93,7 @@ pub const TEXT_DATATYPE: &'static str = "text";
 /// 	type Visitor = ElasticTextMappingVisitor<MyStringMapping>;
 ///
 /// 	fn data_type() -> &'static str {
-/// 		STRING_DATATYPE
+/// 		TEXT_DATATYPE
 /// 	}
 /// }
 ///
@@ -152,24 +151,16 @@ Self: ElasticFieldMapping<()> + Sized + Serialize {
 	/// pub struct MyStringMapping;
 	/// impl ElasticTextMapping for MyStringMapping {
 	/// 	//Overload the mapping functions here
-	/// 	fn fields() -> Option<BTreeMap<&'static str, ElasticTextField>> {
+	/// 	fn fields() -> Option<BTreeMap<&'static str, ElasticStringField>> {
 	///			let mut fields = BTreeMap::new();
 	///
-	/// 		//Add another string type as a sub field
-	/// 		fields.insert("raw", ElasticTextField::String(
-	/// 			ElasticTextFieldMapping {
-	/// 				analyzer: Some("my_analyzer"),
-	/// 				..Default::default()
-	/// 			})
-	/// 		);
-	///
 	/// 		//Add a `token_count` as a sub field
-	/// 		fields.insert("count", ElasticTextField::TokenCount(
+	/// 		fields.insert("count", ElasticStringField::TokenCount(
 	/// 			ElasticTokenCountFieldMapping::default())
 	/// 		);
 	///
 	/// 		//Add a `completion` suggester as a sub field
-	/// 		fields.insert("comp", ElasticTextField::Completion(
+	/// 		fields.insert("comp", ElasticStringField::Completion(
 	/// 			ElasticCompletionFieldMapping::default())
 	/// 		);
 	///
@@ -343,6 +334,107 @@ impl <'a> serde::ser::MapVisitor for FieldDataFrequencyFilterVisitor<'a> {
 		if let Some(min_segment_size) = self.data.min_segment_size {
 			try!(serializer.serialize_struct_elt("min_segment_size", min_segment_size));
 		}
+
+		Ok(None)
+	}
+}
+
+/// A multi-field string mapping.
+#[derive(Debug, Default, Clone, Copy)]
+pub struct ElasticTextFieldMapping {
+	/// The analyzer which should be used for analyzed string fields,
+	/// both at index-time and at search-time (unless overridden by the `search_analyzer`).
+	/// Defaults to the default index analyzer, or the `standard` analyzer.
+	pub analyzer: Option<&'static str>,
+	/// Should global ordinals be loaded eagerly on refresh? 
+	/// Accepts `true` or `false` (default).
+	/// Enabling this is a good idea on fields that are frequently used for (significant) terms aggregations. 
+	pub eager_global_ordinals: Option<bool>,
+	/// Can the field use in-memory fielddata for sorting, aggregations, or scripting? 
+	/// Accepts `true` or `false` (default).
+	pub fielddata: Option<bool>,
+	/// Expert settings which allow to decide which values to load in memory when `fielddata` is enabled. 
+	/// By default all values are loaded.
+	pub fielddata_frequency_filter: Option<FieldDataFrequencyFilter>,
+	/// Whether or not the field value should be included in the `_all` field?
+	/// Accepts true or false.
+	/// Defaults to `false` if index is set to `no`, or if a parent object field sets `include_in_all` to false.
+	/// Otherwise defaults to `true`.
+	pub include_in_all: Option<bool>,
+	/// The maximum number of characters to index.
+	/// Any characters over this length will be ignored.
+	pub ignore_above: Option<u32>,
+	/// Should the field be searchable? Accepts `true` (default) or `false`.
+	pub index: Option<bool>,
+	/// What information should be stored in the index, for search and highlighting purposes. Defaults to `Positions`.
+	pub index_options: Option<IndexOptions>,
+	/// Whether field-length should be taken into account when scoring queries. Accepts `true` (default) or `false`.
+	pub norms: Option<bool>,
+	/// The number of fake term position which should be inserted between each element of an array of strings. 
+	/// Defaults to the `position_increment_gap` configured on the analyzer which defaults to `100`. 
+	/// `100` was chosen because it prevents phrase queries with reasonably large slops (less than `100`) 
+	/// from matching terms across field values.
+	pub position_increment_gap: Option<u32>,
+	/// Whether the field value should be stored and retrievable separately from the `_source` field. 
+	/// Accepts `true` or `false` (default).
+	pub store: Option<bool>,
+	/// The analyzer that should be used at search time on analyzed fields. 
+	/// Defaults to the analyzer setting.
+	pub search_analyzer: Option<&'static str>,
+	/// The analyzer that should be used at search time when a phrase is encountered. 
+	/// Defaults to the `search_analyzer` setting.
+	pub search_quote_analyzer: Option<&'static str>,
+	/// Which scoring algorithm or similarity should be used. 
+	/// Defaults to `"classic"`, which uses TF/IDF. 
+	pub similarity: Option<&'static str>,
+	/// Whether term vectors should be stored for an `analyzed` field. 
+	/// Defaults to `No`.
+	pub term_vector: Option<TermVector>
+}
+
+impl serde::Serialize for ElasticTextFieldMapping {
+	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+	where S: Serializer
+	{
+		serializer.serialize_struct("fields", ElasticTextFieldMappingVisitor::new(&self))
+	}
+}
+
+#[doc(hidden)]
+#[derive(Debug)]
+pub struct ElasticTextFieldMappingVisitor<'a> {
+	data: &'a ElasticTextFieldMapping
+}
+impl <'a> ElasticTextFieldMappingVisitor<'a> {
+	#[doc(hidden)]
+	pub fn new(field: &'a ElasticTextFieldMapping) -> Self {
+		ElasticTextFieldMappingVisitor {
+			data: field
+		}
+	}
+}
+
+impl <'a> serde::ser::MapVisitor for ElasticTextFieldMappingVisitor<'a> {
+	#[cfg_attr(feature = "nightly-testing", allow(cyclomatic_complexity))]
+	fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
+	where S: serde::Serializer {
+		try!(serializer.serialize_struct_elt("type", TEXT_DATATYPE));
+
+		ser_sub_field!(serializer, self.data.analyzer, "analyzer");
+		ser_sub_field!(serializer, self.data.eager_global_ordinals, "eager_global_ordinals");
+		ser_sub_field!(serializer, self.data.fielddata, "fielddata");
+		ser_sub_field!(serializer, self.data.fielddata_frequency_filter, "fielddata_frequency_filter");
+		ser_sub_field!(serializer, self.data.include_in_all, "include_in_all");
+		ser_sub_field!(serializer, self.data.ignore_above, "ignore_above");
+		ser_sub_field!(serializer, self.data.index, "index");
+		ser_sub_field!(serializer, self.data.index_options, "index_options");
+		ser_sub_field!(serializer, self.data.norms, "norms");
+		ser_sub_field!(serializer, self.data.position_increment_gap, "position_increment_gap");
+		ser_sub_field!(serializer, self.data.store, "store");
+		ser_sub_field!(serializer, self.data.search_analyzer, "search_analyzer");
+		ser_sub_field!(serializer, self.data.search_quote_analyzer, "search_quote_analyzer");
+		ser_sub_field!(serializer, self.data.similarity, "similarity");
+		ser_sub_field!(serializer, self.data.term_vector, "term_vector");
 
 		Ok(None)
 	}

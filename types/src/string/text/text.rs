@@ -4,8 +4,6 @@ use serde::{ Serialize, Deserialize, Serializer, Deserializer };
 use super::mapping::{ ElasticTextMapping, DefaultTextMapping };
 use ::mapping::{ ElasticFieldMapping, ElasticType };
 
-impl ElasticType<DefaultTextMapping, ()> for String { }
-
 /// An Elasticsearch `text` field with a mapping.
 ///
 /// Where the mapping isn't custom, you can use the standard library `String` instead.
