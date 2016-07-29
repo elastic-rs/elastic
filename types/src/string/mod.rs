@@ -12,8 +12,9 @@
 //! # Examples
 //!
 //! For defining your own string mapping, see: 
+//! 
 //! - [keyword mapping details](mapping/trait.ElasticKeywordMapping.html#derive-mapping)
-//! - [text mapping details](mapping/trait.ElasticKeywordMapping.html#derive-mapping).
+//! - [text mapping details](mapping/trait.ElasticTextMapping.html#derive-mapping).
 //!
 //! Map with a default `string` (follows the [semantics](CHECK ME) for legacy `string` mapping:
 //!

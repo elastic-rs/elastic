@@ -143,30 +143,28 @@ Self: ElasticFieldMapping<()> + Sized + Serialize {
 	/// # #[macro_use]
 	/// # extern crate elastic_types;
 	/// # extern crate serde;
-	/// use std::collections::BTreeMap;
-	/// use elastic_types::mapping::prelude::*;
-	/// use elastic_types::string::prelude::*;
+	/// # use std::collections::BTreeMap;
+	/// # use elastic_types::mapping::prelude::*;
+	/// # use elastic_types::string::prelude::*;\
+	/// # #[derive(Debug, Clone, Default, ElasticTextMapping)]
+	/// # pub struct MyStringMapping;
+	/// # impl ElasticTextMapping for MyStringMapping {
+	/// fn fields() -> Option<BTreeMap<&'static str, ElasticStringField>> {
+	///		let mut fields = BTreeMap::new();
 	///
-	/// #[derive(Debug, Clone, Default, ElasticTextMapping)]
-	/// pub struct MyStringMapping;
-	/// impl ElasticTextMapping for MyStringMapping {
-	/// 	//Overload the mapping functions here
-	/// 	fn fields() -> Option<BTreeMap<&'static str, ElasticStringField>> {
-	///			let mut fields = BTreeMap::new();
+	/// 	//Add a `token_count` as a sub field
+	/// 	fields.insert("count", ElasticStringField::TokenCount(
+	/// 		ElasticTokenCountFieldMapping::default())
+	/// 	);
 	///
-	/// 		//Add a `token_count` as a sub field
-	/// 		fields.insert("count", ElasticStringField::TokenCount(
-	/// 			ElasticTokenCountFieldMapping::default())
-	/// 		);
+	/// 	//Add a `completion` suggester as a sub field
+	/// 	fields.insert("comp", ElasticStringField::Completion(
+	/// 		ElasticCompletionFieldMapping::default())
+	/// 	);
 	///
-	/// 		//Add a `completion` suggester as a sub field
-	/// 		fields.insert("comp", ElasticStringField::Completion(
-	/// 			ElasticCompletionFieldMapping::default())
-	/// 		);
-	///
-	/// 		Some(fields)
-	///		}
-	/// }
+	/// 	Some(fields)
+	///	}
+	/// # }
 	/// # fn main() {}
 	/// ```
 	fn fields() -> Option<BTreeMap<&'static str, ElasticStringField>> { None }
