@@ -134,7 +134,6 @@ fn serialise_mapping_type_as_nested() {
 			"my_renamed_type":{
 				"type":"nested",
 				"dynamic":true,
-				"enabled":false,
 				"include_in_all":true,
 				"properties":{
 					"my_date1":{

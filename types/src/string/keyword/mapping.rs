@@ -142,7 +142,7 @@ Self: ElasticFieldMapping<()> + Sized + Serialize {
 	/// # extern crate serde;
 	/// # use std::collections::BTreeMap;
 	/// # use elastic_types::mapping::prelude::*;
-	/// # use elastic_types::string::prelude::*;\
+	/// # use elastic_types::string::prelude::*;
 	/// # #[derive(Debug, Clone, Default, ElasticKeywordMapping)]
 	/// # pub struct MyStringMapping;
 	/// # impl ElasticKeywordMapping for MyStringMapping {
