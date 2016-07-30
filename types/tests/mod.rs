@@ -190,25 +190,15 @@ pub mod boolean_fixtures {
 	#[derive(Default, Clone, ElasticBooleanMapping)]
 	pub struct MyBooleanMapping;
 	impl ElasticBooleanMapping for MyBooleanMapping {
-		fn boost() -> Option<f32> {
-			Some(1.01)
-		}
+		fn boost() -> Option<f32> 			{ Some(1.01) }
 
-		fn index() -> Option<IndexAnalysis> {
-			Some(IndexAnalysis::No)
-		}
+		fn index() -> Option<bool> 			{ Some(false) }
 
-		fn doc_values() -> Option<bool> {
-			Some(true)
-		}
+		fn doc_values() -> Option<bool> 	{ Some(true) }
 
-		fn store() -> Option<bool> {
-			Some(true)
-		}
+		fn store() -> Option<bool> 			{ Some(true) }
 
-		fn null_value() -> Option<bool> {
-			Some(false)
-		}
+		fn null_value() -> Option<bool> 	{ Some(false) }
 	}
 }
 

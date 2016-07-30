@@ -71,7 +71,7 @@ fn serialise_mapping_type() {
 				"type":"boolean",
 				"boost":1.01,
 				"doc_values":true,
-				"index":"no",
+				"index":false,
 				"store":true,
 				"null_value":false
 			},
@@ -192,7 +192,7 @@ fn serialise_mapping_type_as_nested() {
 						"type":"boolean",
 						"boost":1.01,
 						"doc_values":true,
-						"index":"no",
+						"index":false,
 						"store":true,
 						"null_value":false
 					},
@@ -319,7 +319,7 @@ fn serialize_mapping_rses() {
 			"store" => "true", 
 			"null_value" => "false", 
 			"type" => "boolean", 
-			"index" => "no", 
+			"index" => "false", 
 			"boost" => "1.01"
 		}, 
 		"my_map2" => hashmap! {
