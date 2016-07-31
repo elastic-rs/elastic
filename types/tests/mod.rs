@@ -192,241 +192,121 @@ pub mod number_fixtures {
 	#[derive(Debug, Clone, Default, ElasticIntegerMapping)]
 	pub struct MyIntegerMapping;
 	impl ElasticIntegerMapping for MyIntegerMapping {
-		fn coerce() -> Option<bool> {
-			Some(true)
-		}
+		fn coerce() -> Option<bool> 			{ Some(true) }
 
-		fn boost() -> Option<f32> {
-			Some(1.1)
-		}
+		fn boost() -> Option<f32> 				{ Some(1.1) }
 
-		fn doc_values() -> Option<bool> {
-			Some(false)
-		}
+		fn doc_values() -> Option<bool> 		{ Some(false) }
 
-		fn ignore_malformed() -> Option<bool> {
-			Some(true)
-		}
+		fn ignore_malformed() -> Option<bool> 	{ Some(true) }
 
-		fn include_in_all() -> Option<bool> {
-			Some(true)
-		}
+		fn include_in_all() -> Option<bool> 	{ Some(true) }
 
-		fn index() -> Option<IndexAnalysis> {
-			Some(IndexAnalysis::No)
-		}
+		fn index() -> Option<bool> 				{ Some(false) }
 
-		fn precision_step() -> Option<u32> {
-			Some(2147483647)
-		}
+		fn store() -> Option<bool> 				{ Some(true) }
 
-		fn store() -> Option<bool> {
-			Some(true)
-		}
-
-		fn null_value() -> Option<i32> {
-			Some(42)
-		}
+		fn null_value() -> Option<i32> 			{ Some(42) }
 	}
 
 	#[derive(Debug, Clone, Default, ElasticLongMapping)]
 	pub struct MyLongMapping;
 	impl ElasticLongMapping for MyLongMapping {
-		fn coerce() -> Option<bool> {
-			Some(true)
-		}
+		fn coerce() -> Option<bool> 			{ Some(true) }
 
-		fn boost() -> Option<f32> {
-			Some(1.1)
-		}
+		fn boost() -> Option<f32> 				{ Some(1.1) }
 
-		fn doc_values() -> Option<bool> {
-			Some(false)
-		}
+		fn doc_values() -> Option<bool> 		{ Some(false) }
 
-		fn ignore_malformed() -> Option<bool> {
-			Some(true)
-		}
+		fn ignore_malformed() -> Option<bool> 	{ Some(true) }
 
-		fn include_in_all() -> Option<bool> {
-			Some(true)
-		}
+		fn include_in_all() -> Option<bool> 	{ Some(true) }
 
-		fn index() -> Option<IndexAnalysis> {
-			Some(IndexAnalysis::No)
-		}
+		fn index() -> Option<bool> 				{ Some(false) }
 
-		fn precision_step() -> Option<u32> {
-			Some(2147483647)
-		}
+		fn store() -> Option<bool> 				{ Some(true) }
 
-		fn store() -> Option<bool> {
-			Some(true)
-		}
-
-		fn null_value() -> Option<i64> {
-			Some(42)
-		}
+		fn null_value() -> Option<i64> 			{ Some(-42) }
 	}
 
 	#[derive(Debug, Clone, Default, ElasticShortMapping)]
 	pub struct MyShortMapping;
 	impl ElasticShortMapping for MyShortMapping {
-		fn coerce() -> Option<bool> {
-			Some(true)
-		}
+		fn coerce() -> Option<bool> 			{ Some(true) }
 
-		fn boost() -> Option<f32> {
-			Some(1.1)
-		}
+		fn boost() -> Option<f32> 				{ Some(1.1) }
 
-		fn doc_values() -> Option<bool> {
-			Some(false)
-		}
+		fn doc_values() -> Option<bool> 		{ Some(false) }
 
-		fn ignore_malformed() -> Option<bool> {
-			Some(true)
-		}
+		fn ignore_malformed() -> Option<bool> 	{ Some(true) }
 
-		fn include_in_all() -> Option<bool> {
-			Some(true)
-		}
+		fn include_in_all() -> Option<bool> 	{ Some(true) }
 
-		fn index() -> Option<IndexAnalysis> {
-			Some(IndexAnalysis::No)
-		}
+		fn index() -> Option<bool> 				{ Some(false) }
 
-		fn precision_step() -> Option<u32> {
-			Some(2147483647)
-		}
+		fn store() -> Option<bool> 				{ Some(true) }
 
-		fn store() -> Option<bool> {
-			Some(true)
-		}
-
-		fn null_value() -> Option<i16> {
-			Some(-42)
-		}
+		fn null_value() -> Option<i16> 			{ Some(42) }
 	}
 
 	#[derive(Debug, Clone, Default, ElasticByteMapping)]
 	pub struct MyByteMapping;
 	impl ElasticByteMapping for MyByteMapping {
-		fn coerce() -> Option<bool> {
-			Some(true)
-		}
+		fn coerce() -> Option<bool> 			{ Some(true) }
 
-		fn boost() -> Option<f32> {
-			Some(1.1)
-		}
+		fn boost() -> Option<f32> 				{ Some(1.1) }
 
-		fn doc_values() -> Option<bool> {
-			Some(false)
-		}
+		fn doc_values() -> Option<bool> 		{ Some(false) }
 
-		fn ignore_malformed() -> Option<bool> {
-			Some(true)
-		}
+		fn ignore_malformed() -> Option<bool> 	{ Some(true) }
 
-		fn include_in_all() -> Option<bool> {
-			Some(true)
-		}
+		fn include_in_all() -> Option<bool> 	{ Some(true) }
 
-		fn index() -> Option<IndexAnalysis> {
-			Some(IndexAnalysis::No)
-		}
+		fn index() -> Option<bool> 				{ Some(false) }
 
-		fn precision_step() -> Option<u32> {
-			Some(2147483647)
-		}
+		fn store() -> Option<bool> 				{ Some(true) }
 
-		fn store() -> Option<bool> {
-			Some(true)
-		}
-
-		fn null_value() -> Option<i8> {
-			Some(1)
-		}
+		fn null_value() -> Option<i8> 			{ Some(1) }
 	}
 
 	#[derive(Debug, Clone, Default, ElasticFloatMapping)]
 	pub struct MyFloatMapping;
 	impl ElasticFloatMapping for MyFloatMapping {
-		fn coerce() -> Option<bool> {
-			Some(true)
-		}
+		fn coerce() -> Option<bool> 			{ Some(true) }
 
-		fn boost() -> Option<f32> {
-			Some(1.1)
-		}
+		fn boost() -> Option<f32> 				{ Some(1.1) }
 
-		fn doc_values() -> Option<bool> {
-			Some(false)
-		}
+		fn doc_values() -> Option<bool> 		{ Some(false) }
 
-		fn ignore_malformed() -> Option<bool> {
-			Some(true)
-		}
+		fn ignore_malformed() -> Option<bool> 	{ Some(true) }
 
-		fn include_in_all() -> Option<bool> {
-			Some(true)
-		}
+		fn include_in_all() -> Option<bool> 	{ Some(true) }
 
-		fn index() -> Option<IndexAnalysis> {
-			Some(IndexAnalysis::No)
-		}
+		fn index() -> Option<bool> 				{ Some(false) }
 
-		fn precision_step() -> Option<u32> {
-			Some(2147483647)
-		}
+		fn store() -> Option<bool> 				{ Some(true) }
 
-		fn store() -> Option<bool> {
-			Some(true)
-		}
-
-		fn null_value() -> Option<f32> {
-			Some(1.04)
-		}
+		fn null_value() -> Option<f32> 			{ Some(1.04) }
 	}
 
 	#[derive(Debug, Clone, Default, ElasticDoubleMapping)]
 	pub struct MyDoubleMapping;
 	impl ElasticDoubleMapping for MyDoubleMapping {
-		fn coerce() -> Option<bool> {
-			Some(true)
-		}
+		fn coerce() -> Option<bool> 			{ Some(true) }
 
-		fn boost() -> Option<f32> {
-			Some(1.1)
-		}
+		fn boost() -> Option<f32> 				{ Some(1.1) }
 
-		fn doc_values() -> Option<bool> {
-			Some(false)
-		}
+		fn doc_values() -> Option<bool> 		{ Some(false) }
 
-		fn ignore_malformed() -> Option<bool> {
-			Some(true)
-		}
+		fn ignore_malformed() -> Option<bool> 	{ Some(true) }
 
-		fn include_in_all() -> Option<bool> {
-			Some(true)
-		}
+		fn include_in_all() -> Option<bool> 	{ Some(true) }
 
-		fn index() -> Option<IndexAnalysis> {
-			Some(IndexAnalysis::No)
-		}
+		fn index() -> Option<bool> 				{ Some(false) }
 
-		fn precision_step() -> Option<u32> {
-			Some(2147483647)
-		}
+		fn store() -> Option<bool> 				{ Some(true) }
 
-		fn store() -> Option<bool> {
-			Some(true)
-		}
-
-		fn null_value() -> Option<f64> {
-			Some(-0.00002)
-		}
+		fn null_value() -> Option<f64> 			{ Some(-0.00002) }
 	}
 }
 

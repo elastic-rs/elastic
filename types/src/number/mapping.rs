@@ -112,7 +112,7 @@ pub const FLOAT_DATATYPE: &'static str = "float";
 use std::marker::PhantomData;
 use serde;
 use serde::{ Serialize, Serializer };
-use ::mapping::{ ElasticType, ElasticFieldMapping, ElasticTypeVisitor, IndexAnalysis };
+use ::mapping::{ ElasticType, ElasticFieldMapping, ElasticTypeVisitor };
 
 macro_rules! number_mapping {
     ($m:ident, $v:ident, $n:ty) => (
@@ -120,58 +120,36 @@ macro_rules! number_mapping {
     	pub trait $m where
         Self: ElasticFieldMapping<()> + Sized + Serialize {
 			/// Try to convert strings to numbers and truncate fractions for integers. Accepts `true` (default) and `false`.
-			fn coerce() -> Option<bool> {
-				None
-			}
+			fn coerce() -> Option<bool> { None }
 
 			/// Field-level index time boosting. Accepts a floating point number, defaults to `1.0`.
-			fn boost() -> Option<f32> {
-				None
-			}
+			fn boost() -> Option<f32> { None }
 
 			/// Should the field be stored on disk in a column-stride fashion,
 			/// so that it can later be used for sorting, aggregations, or scripting?
 			/// Accepts `true` (default) or `false`.
-			fn doc_values() -> Option<bool> {
-				None
-			}
+			fn doc_values() -> Option<bool> { None }
 
 			/// If `true`, malformed numbers are ignored. If `false` (default),
 			/// malformed numbers throw an exception and reject the whole document.
-			fn ignore_malformed() -> Option<bool> {
-				None
-			}
+			fn ignore_malformed() -> Option<bool> { None }
 
 			/// Whether or not the field value should be included in the `_all` field?
 			/// Accepts `true` or `false`. Defaults to false if index is set to no,
 			/// or if a parent object field sets `include_in_all` to false.
 			/// Otherwise defaults to `true`.
-			fn include_in_all() -> Option<bool> {
-				None
-			}
+			fn include_in_all() -> Option<bool> { None }
 
 			/// Should the field be searchable? Accepts `not_analyzed` (default) and `no`.
-			fn index() -> Option<IndexAnalysis> {
-				None
-			}
+			fn index() -> Option<bool> { None }
 
 			/// Accepts a numeric value of the same type as the field which is substituted for any explicit null values.
 			/// Defaults to `null`, which means the field is treated as missing.
-			fn null_value() -> Option<$n> {
-				None
-			}
-
-			/// Controls the number of extra terms that are indexed to make range queries faster.
-			/// The default depends on the numeric type.
-			fn precision_step() -> Option<u32> {
-				None
-			}
+			fn null_value() -> Option<$n> { None }
 
 			/// Whether the field value should be stored and retrievable separately from the `_source` field.
 			/// Accepts true or false (default).
-			fn store() -> Option<bool> {
-				None
-			}
+			fn store() -> Option<bool> { None }
 		}
 
 		/// Visitor for a `number` field mapping.
@@ -192,37 +170,13 @@ macro_rules! number_mapping {
 			where S: Serializer {
 				try!(serializer.serialize_struct_elt("type", M::data_type()));
 
-				if let Some(coerce) = M::coerce() {
-					try!(serializer.serialize_struct_elt("coerce", coerce));
-				}
-
-				if let Some(boost) = M::boost() {
-					try!(serializer.serialize_struct_elt("boost", boost));
-				}
-
-				if let Some(doc_values) = M::doc_values() {
-					try!(serializer.serialize_struct_elt("doc_values", doc_values));
-				}
-
-				if let Some(ignore_malformed) = M::ignore_malformed() {
-					try!(serializer.serialize_struct_elt("ignore_malformed", ignore_malformed));
-				}
-
-				if let Some(include_in_all) = M::include_in_all() {
-					try!(serializer.serialize_struct_elt("include_in_all", include_in_all));
-				}
-
-				if let Some(null_value) = M::null_value() {
-					try!(serializer.serialize_struct_elt("null_value", null_value));
-				}
-
-				if let Some(precision_step) = M::precision_step() {
-					try!(serializer.serialize_struct_elt("precision_step", precision_step));
-				}
-
-				if let Some(store) = M::store() {
-					try!(serializer.serialize_struct_elt("store", store));
-				}
+				ser_field!(serializer, M::coerce(), "coerce");
+				ser_field!(serializer, M::boost(), "boost");
+				ser_field!(serializer, M::doc_values(), "doc_values");
+				ser_field!(serializer, M::ignore_malformed(), "ignore_malformed");
+				ser_field!(serializer, M::include_in_all(), "include_in_all");
+				ser_field!(serializer, M::null_value(), "null_value");
+				ser_field!(serializer, M::store(), "store");
 
 				Ok(None)
 			}

@@ -33,7 +33,6 @@ fn serialise_mapping_integer_custom() {
 		"ignore_malformed": true,
 		"include_in_all": true,
 		"null_value": 42,
-		"precision_step": 2147483647,
 		"store": true
 	});
 
@@ -64,8 +63,7 @@ fn serialise_mapping_long_custom() {
 		"doc_values": false,
 		"ignore_malformed": true,
 		"include_in_all": true,
-		"null_value": 42,
-		"precision_step": 2147483647,
+		"null_value": -42,
 		"store": true
 	});
 
@@ -96,8 +94,7 @@ fn serialise_mapping_short_custom() {
 		"doc_values": false,
 		"ignore_malformed": true,
 		"include_in_all": true,
-		"null_value": -42,
-		"precision_step": 2147483647,
+		"null_value": 42,
 		"store": true
 	});
 
@@ -129,7 +126,6 @@ fn serialise_mapping_byte_custom() {
 		"ignore_malformed": true,
 		"include_in_all": true,
 		"null_value": 1,
-		"precision_step": 2147483647,
 		"store": true
 	});
 
@@ -161,7 +157,6 @@ fn serialise_mapping_double_custom() {
 		"ignore_malformed": true,
 		"include_in_all": true,
 		"null_value": -0.00002,
-		"precision_step": 2147483647,
 		"store": true
 	});
 
@@ -193,7 +188,6 @@ fn serialise_mapping_float_custom() {
 		"ignore_malformed": true,
 		"include_in_all": true,
 		"null_value": 1.04,
-		"precision_step": 2147483647,
 		"store": true
 	});
 

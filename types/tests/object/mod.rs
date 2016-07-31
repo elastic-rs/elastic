@@ -60,7 +60,6 @@ fn serialise_mapping_type() {
 				"ignore_malformed":true,
 				"include_in_all":true,
 				"null_value":42,
-				"precision_step":2147483647,
 				"store":true
 			},
 			"my_bool1":{
@@ -180,7 +179,6 @@ fn serialise_mapping_type_as_nested() {
 						"ignore_malformed":true,
 						"include_in_all":true,
 						"null_value":42,
-						"precision_step":2147483647,
 						"store":true
 					},
 					"my_bool1":{
@@ -327,7 +325,6 @@ fn serialize_mapping_rses() {
 		}, 
 		"my_num2" => hashmap! {
 			"coerce" => "true", 
-			"precision_step" => "2147483647", 
 			"doc_values" => "false", 
 			"ignore_malformed" => "true", 
 			"store" => "true", 
