@@ -213,8 +213,8 @@ Support for Elastic's plugin products, like `watcher` and `graph` could be added
 See [milestones](https://github.com/KodrAus/elasticsearch-rs/milestones).
 
 - [x] Implement core Elasticsearch types
-- [ ] Implement Elasticsearch response types (interop with `rs-es`)
-- [ ] Proper type mapping compatibility with ES 5.x. See [here](https://github.com/KodrAus/elasticsearch-rs/issues/121)
+- [x] Implement Elasticsearch response types (interop with `rs-es`)
+- [x] Proper type mapping compatibility with ES 5.x. See [here](https://github.com/KodrAus/elasticsearch-rs/issues/121)
 - [ ] Rotor Client
 - [x] Codegen API endpoints
 - [x] Hyper Client
