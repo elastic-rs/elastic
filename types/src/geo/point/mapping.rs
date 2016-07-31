@@ -3,7 +3,8 @@
 use std::marker::PhantomData;
 use serde;
 use serde::{ Serializer, Serialize };
-use super::{ GeoPointFormat };
+use super::GeoPointFormat;
+use ::geo::mapping::Distance;
 use ::mapping::{ ElasticFieldMapping, ElasticTypeVisitor };
 
 
@@ -170,37 +171,21 @@ F: GeoPointFormat,
 Self: ElasticFieldMapping<F> + Sized + Serialize {
     /// Should the `geo-point` also be indexed as a geohash in the `.geohash` sub-field? Defaults to `false`,
     /// unless `geohash_prefix` is `true`.
-    fn geohash() -> Option<bool> {
-        None
-    }
+    fn geohash() -> Option<bool> { None }
 
     /// The maximum length of the geohash to use for the geohash and `geohash_prefix` options.
-    fn geohash_precision() -> Option<u8> {
-        None
-    }
+    fn geohash_precision() -> Option<Distance> { None }
 
     /// Should the `geo-point` also be indexed as a geohash plus all its prefixes? Defaults to `false`.
-    fn geohash_prefix() -> Option<bool> {
-        None
-    }
+    fn geohash_prefix() -> Option<bool> { None }
 
     /// If `true`, malformed `geo-points` are ignored.
     /// If `false` (default), malformed `geo-points` throw an exception and reject the whole document.
-    fn ignore_malformed() -> Option<bool> {
-        None
-    }
+    fn ignore_malformed() -> Option<bool> { None }
 
     /// Should the `geo-point` also be indexed as `.lat` and `.lon` sub-fields?
     /// Accepts `true` and `false` (default).
-    fn lat_lon() -> Option<bool> {
-        None
-    }
-
-    /// Controls the number of extra terms that are indexed for each lat/lon point. Defaults to `16`.
-    /// Ignored if `lat_lon` is `false`.
-    fn precision_step() -> Option<i32> {
-        None
-    }
+    fn lat_lon() -> Option<bool> { None }
 }
 
 /// Default mapping for `ElasticGeoPoint`.
@@ -240,29 +225,11 @@ M: ElasticGeoPointMapping<F> {
 	where S: Serializer {
 		try!(serializer.serialize_struct_elt("type", M::data_type()));
 
-        if let Some(geohash) = M::geohash() {
-			try!(serializer.serialize_struct_elt("geohash", geohash));
-		};
-
-        if let Some(geohash_precision) = M::geohash_precision() {
-			try!(serializer.serialize_struct_elt("geohash_precision", geohash_precision));
-		};
-
-        if let Some(geohash_prefix) = M::geohash_prefix() {
-			try!(serializer.serialize_struct_elt("geohash_prefix", geohash_prefix));
-		};
-
-        if let Some(ignore_malformed) = M::ignore_malformed() {
-			try!(serializer.serialize_struct_elt("ignore_malformed", ignore_malformed));
-		};
-
-        if let Some(lat_lon) = M::lat_lon() {
-			try!(serializer.serialize_struct_elt("lat_lon", lat_lon));
-		};
-
-        if let Some(precision_step) = M::precision_step() {
-			try!(serializer.serialize_struct_elt("precision_step", precision_step));
-		};
+        ser_field!(serializer, M::geohash(), "geohash");
+        ser_field!(serializer, M::geohash_precision(), "geohash_precision");
+        ser_field!(serializer, M::geohash_prefix(), "geohash_prefix");
+        ser_field!(serializer, M::ignore_malformed(), "ignore_malformed");
+        ser_field!(serializer, M::lat_lon(), "lat_lon");
 
 		Ok(None)
 	}

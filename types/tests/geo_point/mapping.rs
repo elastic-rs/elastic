@@ -28,11 +28,10 @@ fn serialise_mapping_custom() {
 	let expected = json_str!({
 		"type": "geo_point",
 		"geohash": false,
-		"geohash_precision": 12,
+		"geohash_precision": "50m",
 		"geohash_prefix": true,
 		"ignore_malformed": true,
-		"lat_lon": true,
-		"precision_step": 128
+		"lat_lon": true
 	});
 
 	assert_eq!(expected, ser);

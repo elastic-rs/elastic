@@ -340,29 +340,15 @@ pub mod geo_point_fixtures {
 		phantom: PhantomData<T>
 	}
 	impl <T: GeoPointFormat> ElasticGeoPointMapping<T> for MyGeoPointMapping<T> {
-		fn geohash() -> Option<bool> {
-	        Some(false)
-	    }
+		fn geohash() -> Option<bool> 				{ Some(false) }
 
-	    fn geohash_precision() -> Option<u8> {
-	        Some(12)
-	    }
+	    fn geohash_precision() -> Option<Distance> 	{ Some(Distance(50.0, DistanceUnit::Meters)) }
 
-	    fn geohash_prefix() -> Option<bool> {
-	        Some(true)
-	    }
+	    fn geohash_prefix() -> Option<bool> 		{ Some(true) }
 
-	    fn ignore_malformed() -> Option<bool> {
-	        Some(true)
-	    }
+	    fn ignore_malformed() -> Option<bool> 		{ Some(true) }
 
-	    fn lat_lon() -> Option<bool> {
-	        Some(true)
-	    }
-
-	    fn precision_step() -> Option<i32> {
-	        Some(128)
-	    }
+	    fn lat_lon() -> Option<bool> 				{ Some(true) }
 	}
 }
 

@@ -37,8 +37,7 @@ pub mod prelude {
 	pub use ::mappers::*;
 	pub use ::date::mapping::*;
 	pub use ::ip::mapping::*;
-	pub use ::geo::point::mapping::*;
-	pub use ::geo::shape::mapping::*;
+	pub use ::geo::mapping::*;
 	pub use ::string::mapping::*;
 	pub use ::number::mapping::*;
 	pub use ::boolean::mapping::*;
