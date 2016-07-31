@@ -231,7 +231,7 @@ fn serialise_mapping_type_as_nested() {
 				"type":"ip",
 				"boost":1.01,
 				"doc_values":true,
-				"index":"no",
+				"index":false,
 				"store":true,
 				"null_value":"127.0.0.1"
 			},

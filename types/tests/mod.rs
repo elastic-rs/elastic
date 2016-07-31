@@ -437,25 +437,15 @@ pub mod ip_fixtures {
 	#[derive(Default, Clone, ElasticIpMapping)]
 	pub struct MyIpMapping;
 	impl ElasticIpMapping for MyIpMapping {
-		fn boost() -> Option<f32> {
-			Some(1.01)
-		}
+		fn boost() -> Option<f32> 				{ Some(1.01) }
 
-		fn index() -> Option<IndexAnalysis> {
-			Some(IndexAnalysis::No)
-		}
+		fn index() -> Option<bool> 				{ Some(false) }
 
-		fn doc_values() -> Option<bool> {
-			Some(true)
-		}
+		fn doc_values() -> Option<bool> 		{ Some(true) }
 
-		fn store() -> Option<bool> {
-			Some(true)
-		}
+		fn store() -> Option<bool> 				{ Some(true) }
 
-		fn null_value() -> Option<Ipv4Addr> {
-			Some(Ipv4Addr::new(127, 0, 0, 1))
-		}
+		fn null_value() -> Option<Ipv4Addr> 	{ Some(Ipv4Addr::new(127, 0, 0, 1)) }
 	}
 }
 
