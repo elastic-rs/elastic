@@ -358,33 +358,19 @@ pub mod geo_shape_fixtures {
 	#[derive(Debug, Clone, Default, ElasticGeoShapeMapping)]
 	pub struct MyGeoShapeMapping;
 	impl ElasticGeoShapeMapping for MyGeoShapeMapping {
-		fn tree() -> Option<Tree> {
-			Some(Tree::Geohash)
-		}
+		fn tree() -> Option<Tree> { Some(Tree::Geohash) }
 
-		fn precision() -> Option<Distance> {
-			Some(Distance(50.0, DistanceUnit::Meters))
-		}
+		fn precision() -> Option<Distance> 			{ Some(Distance(50.0, DistanceUnit::Meters)) }
 
-		fn tree_levels() -> Option<i32> {
-			Some(8)
-		}
+		fn tree_levels() -> Option<i32> 			{ Some(8) }
 
-		fn strategy() -> Option<Strategy> {
-			Some(Strategy::Recursive)
-		}
+		fn strategy() -> Option<Strategy> 			{ Some(Strategy::Recursive) }
 
-		fn distance_error_pct() -> Option<f32> {
-			Some(0.5)
-		}
+		fn distance_error_pct() -> Option<f32> 		{ Some(0.5) }
 
-		fn orientation() -> Option<Orientation> {
-			Some(Orientation::Clockwise)
-		}
+		fn orientation() -> Option<Orientation> 	{ Some(Orientation::Clockwise) }
 
-		fn points_only() -> Option<bool> {
-			Some(false)
-		}
+		fn points_only() -> Option<bool> 			{ Some(false) }
 	}
 }
 
