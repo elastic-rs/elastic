@@ -13,9 +13,8 @@ crate_type = [ "dylib" ]
 plugin = true
 
 [features]
-nightly = []
-nightly-testing = [ "clippy" ]
+nightly = [ ]
+nightly-testing = [ ]
 
 [dependencies]
 chrono = { version = "~0.2.20" }
-clippy = { version = "^0.*", optional = true }

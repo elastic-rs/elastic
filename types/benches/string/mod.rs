@@ -12,9 +12,17 @@ use ::string_fixtures::*;
 use test::Bencher;
 
 #[bench]
-fn mapping(b: &mut Bencher) {
+fn keyword_mapping(b: &mut Bencher) {
 	b.iter(|| {
-		let mapping = MyStringMapping;
+		let mapping = MyKeywordMapping;
+		serde_json::to_string(&mapping).unwrap()
+	});
+}
+
+#[bench]
+fn text_mapping(b: &mut Bencher) {
+	b.iter(|| {
+		let mapping = MyTextMapping;
 		serde_json::to_string(&mapping).unwrap()
 	});
 }

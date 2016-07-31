@@ -9,173 +9,82 @@ use elastic_types::mapping::prelude::*;
 use ::string_fixtures::*;
 
 #[test]
-fn serialise_mapping_default() {
+fn serialise_string_mapping_default() {
 	let mapping = DefaultStringMapping::default();
 	let ser = serde_json::to_string(&mapping).unwrap();
 
 	let expected = json_str!({
-		"type": "string"
+		"type":"text",
+		"fields":{
+			"keyword":{
+				"type":"keyword",
+				"ignore_above":256
+			}
+		}
 	});
 
 	assert_eq!(expected, ser);
 }
 
 #[test]
-fn serialise_mapping_custom() {
-	let mapping = MyStringMapping;
+fn serialise_text_mapping_custom() {
+	let mapping = MyTextMapping;
 	let ser = serde_json::to_string(&mapping).unwrap();
 
 	let expected = json_str!({
-		"type": "string",
-		"boost": 1.01,
-		"doc_values": true,
-		"include_in_all": false,
-		"index": "no",
-		"store": true,
-		"analyzer": "my_analyzer",
-		"fields": {
-			"comp": {
-				"type": "completion"
+		"type":"text",
+		"boost":1.3,
+		"analyzer":"my_analyzer",
+		"eager_global_ordinals":false,
+		"fielddata":true,
+		"fielddata_frequency_filter":{
+			"min":0
+		},
+		"fields":{
+			"comp":{
+				"type":"completion"
 			},
-			"count": {
-				"type": "token_count"
+			"count":{
+				"type":"token_count"
 			},
-			"raw": {
-				"analyzer": "my_analyzer"
+			"raw":{
+				"type":"keyword",
+				"analyzer":"my_analyzer"
 			}
 		},
-		"fielddata": {
-			"format": "disabled"
-		},
-		"ignore_above": 50,
-		"index_options": "docs",
-		"norms": {
-			"enabled": false
-		},
-		"null_value": "my default value",
-		"position_increment_gap": 8,
-		"search_analyzer": "my_search_analyzer",
-		"search_quote_analyzer": "my_quote_search_analyzer",
-		"similarity": "my_similarity",
-		"term_vector": "no"
+		"include_in_all":true,
+		"ignore_above":512,
+		"index":false,
+		"index_options":"freqs",
+		"norms":true,
+		"position_increment_gap":1,
+		"store":true,
+		"search_analyzer":"my_analyzer",
+		"search_quote_analyzer":"my_analyzer",
+		"similarity":"BM25",
+		"term_vector":"yes"
 	});
 
 	assert_eq!(expected, ser);
-}
-
-#[test]
-fn serialise_mapping_field_data() {
-	let fd_opts: Vec<String> = vec![
-		FieldData::Disabled,
-		FieldData::PagedBytes(Some(FieldDataLoading::Lazy), None),
-		FieldData::PagedBytes(None, Some(FieldDataFilter::Regex(RegexFilter { pattern: ".*" }))),
-		FieldData::PagedBytes(Some(FieldDataLoading::Lazy), Some(FieldDataFilter::Regex(RegexFilter { pattern: ".*" }))),
-		FieldData::PagedBytes(None, None),
-	]
-	.iter()
-	.map(|i| serde_json::to_string(i).unwrap())
-	.collect();
-
-	let expected_opts = vec![
-		json_str!({ "format": "disabled" }),
-		json_str!({ "loading": "lazy" }),
-		json_str!({
-			"filter": {
-				"regex": {
-					"pattern": ".*"
-				}
-			}
-		}),
-		json_str!({
-			"loading": "lazy",
-			"filter": {
-				"regex": {
-					"pattern": ".*"
-				}
-			}
-		}),
-		String::new()
-	];
-
-	let mut success = true;
-	for i in 0..fd_opts.len() {
-		if expected_opts[i] != fd_opts[i] {
-			success = false;
-			break;
-		}
-	}
-
-	assert!(success);
-}
-
-#[test]
-fn serialise_mapping_field_data_loading() {
-	let fd_opts: Vec<String> = vec![
-		FieldDataLoading::Lazy,
-		FieldDataLoading::Eager,
-		FieldDataLoading::EagerGlobalOrdinals
-	]
-	.iter()
-	.map(|i| serde_json::to_string(i).unwrap())
-	.collect();
-
-	let expected_opts = vec![
-		r#""lazy""#,
-		r#""eager""#,
-		r#""eager_global_ordinals""#
-	];
-
-	let mut success = true;
-	for i in 0..fd_opts.len() {
-		if expected_opts[i] != fd_opts[i] {
-			success = false;
-			break;
-		}
-	}
-
-	assert!(success);
 }
 
 #[test]
 fn serialise_mapping_field_filter() {
-	let fd_opts: Vec<String> = vec![
-		FieldDataFilter::Frequency(FrequencyFilter {
-			min: 0.001,
-			max: 0.1,
-			min_segment_size: 500
-		}),
-		FieldDataFilter::Regex(RegexFilter {
-			pattern: "^#.*"
-		})
-	]
-	.iter()
-	.map(|i| serde_json::to_string(i).unwrap())
-	.collect();
+	let filter = FieldDataFrequencyFilter {
+		min: Some(0.001),
+		max: Some(0.1),
+		min_segment_size: Some(500)
+	};
 
-	let expected_opts = vec![
-		json_str!({
-			"frequency": {
-				"min": 0.001,
-				"max": 0.1,
-				"min_segment_size": 500
-			}
-		}),
-		json_str!({
-			"regex": {
-				"pattern": "^#.*"
-			}
-		})
-	];
+	let ser = serde_json::to_string(&filter).unwrap();
 
-	let mut success = true;
-	for i in 0..fd_opts.len() {
-		if expected_opts[i] != fd_opts[i] {
-			success = false;
-			break;
-		}
-	}
+	let expected = json_str!({
+		"min": 0.001,
+		"max": 0.1,
+		"min_segment_size": 500
+	});
 
-	assert!(success);
+	assert_eq!(expected, ser);
 }
 
 #[test]
@@ -200,60 +109,6 @@ fn serialise_mapping_index_options() {
 	let mut success = true;
 	for i in 0..io_opts.len() {
 		if expected_opts[i] != io_opts[i] {
-			success = false;
-			break;
-		}
-	}
-
-	assert!(success);
-}
-
-#[test]
-fn serialise_mapping_norms() {
-	let n_opts: Vec<String> = vec![
-		Norms::Enabled {
-			loading: NormsLoading::Eager
-		},
-		Norms::Disabled
-	]
-	.iter()
-	.map(|i| serde_json::to_string(i).unwrap())
-	.collect();
-
-	let expected_opts = vec![
-		json_str!({ "loading": "eager" }),
-		json_str!({ "enabled": false })
-	];
-
-	let mut success = true;
-	for i in 0..n_opts.len() {
-		if expected_opts[i] != n_opts[i] {
-			success = false;
-			break;
-		}
-	}
-
-	assert!(success);
-}
-
-#[test]
-fn serialise_mapping_norms_loading() {
-	let n_opts: Vec<String> = vec![
-		NormsLoading::Eager,
-		NormsLoading::Lazy
-	]
-	.iter()
-	.map(|i| serde_json::to_string(i).unwrap())
-	.collect();
-
-	let expected_opts = vec![
-		r#""eager""#,
-		r#""lazy""#
-	];
-
-	let mut success = true;
-	for i in 0..n_opts.len() {
-		if expected_opts[i] != n_opts[i] {
 			success = false;
 			break;
 		}
@@ -295,38 +150,88 @@ fn serialise_mapping_terms_vector() {
 }
 
 #[test]
-fn serialise_mapping_string_field() {
-	let mapping = ElasticStringField::String(
-		ElasticStringFieldMapping {
-			analyzer: Some("my_analyzer"),
-			fielddata: Some(FieldData::Disabled),
-			ignore_above: Some(1),
-			index_options: Some(IndexOptions::Docs),
-			norms: Some(Norms::Disabled),
-			position_increment_gap: Some(1),
-			search_analyzer: Some("my_analyzer"),
-			search_quote_analyzer: Some("my_analyzer"),
-			similarity: Some("my_similarity"),
-			term_vector: Some(TermVector::No)
+fn serialise_mapping_keyword_field() {
+	let mapping = ElasticStringField::Keyword(
+		ElasticKeywordFieldMapping {
+			analyzer: 				Some("my_analyzer"),
+			doc_values: 			Some(true),
+			eager_global_ordinals: 	Some(false),
+			include_in_all: 		Some(true),
+			ignore_above: 			Some(256),
+			index: 					Some(false),
+			index_options: 			Some(IndexOptions::Docs),
+			norms: 					Some(true),
+			store: 					Some(true),
+			search_analyzer: 		Some("my_analyzer"),
+			similarity: 			Some("my_analyzer")
 		}
 	);
 	let ser = serde_json::to_string(&mapping).unwrap();
 
 	let expected = json_str!({
-		"analyzer": "my_analyzer",
-		"fielddata": {
-			"format": "disabled"
+		"type":"keyword",
+		"analyzer":"my_analyzer",
+		"doc_values":true,
+		"eager_global_ordinals":false,
+		"include_in_all":true,
+		"ignore_above":256,
+		"index":false,
+		"index_options":"docs",
+		"norms":true,
+		"store":true,
+		"search_analyzer":"my_analyzer",
+		"similarity":"my_analyzer"
+	});
+
+	assert_eq!(expected, ser);
+}
+
+#[test]
+fn serialise_mapping_text_field() {
+	let mapping = ElasticStringField::Text(
+		ElasticTextFieldMapping {
+			fielddata_frequency_filter: Some(
+				FieldDataFrequencyFilter { 
+					min: Some(0.0), ..Default::default() 
+				}
+			),
+			analyzer: 				Some("my_analyzer"),
+			eager_global_ordinals: 	Some(true),
+			fielddata: 				Some(false),
+			include_in_all: 		Some(false),
+			ignore_above: 			Some(512),
+			index: 					Some(true),
+			index_options: 			Some(IndexOptions::Freqs),
+			norms: 					Some(true),
+			position_increment_gap: Some(1),
+			store: 					Some(false),
+			search_analyzer: 		Some("my_analyzer"),
+			search_quote_analyzer: 	Some("my_analyzer"),
+			similarity: 			Some("BM25"),
+			term_vector: 			Some(TermVector::No)
+		}
+	);
+	let ser = serde_json::to_string(&mapping).unwrap();
+
+	let expected = json_str!({
+		"type":"text",
+		"analyzer":"my_analyzer",
+		"eager_global_ordinals":true,
+		"fielddata":false,
+		"fielddata_frequency_filter":{
+			"min":0
 		},
-		"ignore_above": 1,
-		"index_options": "docs",
-		"norms": {
-			"enabled": false
-		},
-		"position_increment_gap": 1,
-		"search_analyzer": "my_analyzer",
-		"search_quote_analyzer": "my_analyzer",
-		"similarity": "my_similarity",
-		"term_vector": "no"
+		"include_in_all":false,
+		"ignore_above":512,
+		"index":true,
+		"index_options":"freqs",
+		"norms":true,
+		"position_increment_gap":1,
+		"store":false,
+		"search_analyzer":"my_analyzer",
+		"search_quote_analyzer":"my_analyzer",
+		"similarity":"BM25",
+		"term_vector":"no"
 	});
 
 	assert_eq!(expected, ser);
@@ -336,13 +241,13 @@ fn serialise_mapping_string_field() {
 fn serialise_mapping_token_count_field() {
 	let mapping = ElasticStringField::TokenCount(
 		ElasticTokenCountFieldMapping {
-			analyzer: Some("my_analyzer"),
-			boost: Some(1.3),
-			doc_values: Some(false),
-			index: Some(IndexAnalysis::No),
-			include_in_all: Some(true),
-			precision_step: Some(15),
-			store: Some(true)
+			analyzer: 			Some("my_analyzer"),
+			boost: 				Some(1.3),
+			doc_values: 		Some(false),
+			index: 				Some(IndexAnalysis::No),
+			include_in_all: 	Some(true),
+			precision_step: 	Some(15),
+			store: 				Some(true)
 		}
 	);
 	let ser = serde_json::to_string(&mapping).unwrap();
@@ -365,12 +270,12 @@ fn serialise_mapping_token_count_field() {
 fn serialise_mapping_completion_field() {
 	let mapping = ElasticStringField::Completion(
 		ElasticCompletionFieldMapping {
-			analyzer: Some("my_analyzer"),
-			search_analyzer: Some("my_analyzer"),
-			payloads: Some(true),
-			preserve_separators: Some(false),
-			preserve_position_increments: Some(true),
-			max_input_length: Some(512)
+			analyzer: 						Some("my_analyzer"),
+			search_analyzer: 				Some("my_analyzer"),
+			payloads: 						Some(true),
+			preserve_separators: 			Some(false),
+			preserve_position_increments: 	Some(true),
+			max_input_length: 				Some(512)
 		}
 	);
 	let ser = serde_json::to_string(&mapping).unwrap();

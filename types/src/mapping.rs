@@ -37,8 +37,7 @@ pub mod prelude {
 	pub use ::mappers::*;
 	pub use ::date::mapping::*;
 	pub use ::ip::mapping::*;
-	pub use ::geo::point::mapping::*;
-	pub use ::geo::shape::mapping::*;
+	pub use ::geo::mapping::*;
 	pub use ::string::mapping::*;
 	pub use ::number::mapping::*;
 	pub use ::boolean::mapping::*;
@@ -143,18 +142,6 @@ impl serde::ser::MapVisitor for DefaultMappingVisitor {
 	}
 }
 
-impl serde::Serialize for IndexAnalysis {
-	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
-		where S: serde::Serializer
-	{
-		serializer.serialize_str(match *self {
-			IndexAnalysis::Analyzed => "analyzed",
-			IndexAnalysis::NotAnalyzed => "not_analyzed",
-			IndexAnalysis::No => "no"
-		})
-	}
-}
-
 /// Should the field be searchable? Accepts `not_analyzed` (default) and `no`.
 #[derive(Debug, Clone, Copy)]
 pub enum IndexAnalysis {
@@ -171,6 +158,18 @@ pub enum IndexAnalysis {
 	NotAnalyzed,
 	/// Do not add this field value to the index. With this setting, the field will not be queryable.
 	No
+}
+
+impl serde::Serialize for IndexAnalysis {
+	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+		where S: serde::Serializer
+	{
+		serializer.serialize_str(match *self {
+			IndexAnalysis::Analyzed => "analyzed",
+			IndexAnalysis::NotAnalyzed => "not_analyzed",
+			IndexAnalysis::No => "no"
+		})
+	}
 }
 
 /// Mapping for a collection.

@@ -4,6 +4,7 @@ use serde::{ Error, Serialize, Serializer, Deserialize, Deserializer };
 use georust::{ Coordinate, Point };
 use geohash;
 use super::GeoPointFormat;
+use ::geo::mapping::Distance;
 
 /// Geo-point expressed as an object, with `lat` and `lon` keys.
 #[derive(Debug, Default, Clone, Copy)]
@@ -118,7 +119,7 @@ impl GeoPointFormat for GeoPointHash {
 	M: ::geo::point::mapping::ElasticGeoPointMapping<Self>,
 	S: Serializer {
 		let len = match M::geohash_precision() {
-			Some(l) => l as usize,
+			Some(Distance(l, _)) => l as usize,
 			None => 12usize
 		};
 

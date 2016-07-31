@@ -3,6 +3,7 @@
 use std::marker::PhantomData;
 use serde;
 use serde::{ Serialize, Serializer };
+use ::geo::mapping::Distance;
 use ::mapping::{ ElasticFieldMapping, ElasticTypeVisitor };
 
 /// Elasticsearch datatype name.
@@ -109,18 +110,14 @@ pub trait ElasticGeoShapeMapping where
 Self: ElasticFieldMapping<()> + Sized + Serialize {
     /// Name of the PrefixTree implementation to be used:
     /// `geohash` for `GeohashPrefixTree` and `quadtree` for `QuadPrefixTree`.
-    fn tree() -> Option<Tree> {
-        None
-    }
+    fn tree() -> Option<Tree> { None }
 
     /// This parameter may be used instead of `tree_levels` to set an appropriate value
     /// for the `tree_levels` parameter.
     /// The value specifies the desired precision and Elasticsearch will calculate the best
     /// `tree_levels` value to honor this precision.
     /// The value should be a number followed by an optional distance unit.
-    fn precision() -> Option<Distance> {
-        None
-    }
+    fn precision() -> Option<Distance> { None }
 
     /// Maximum number of layers to be used by the `PrefixTree`.
     /// This can be used to control the precision of shape representations and therefore
@@ -130,9 +127,7 @@ Self: ElasticFieldMapping<()> + Sized + Serialize {
     /// users may use the `precision` parameter instead.
     /// However, Elasticsearch only uses the `tree_levels` parameter internally and this is
     /// what is returned via the mapping API even if you use the `precision` parameter.
-    fn tree_levels() -> Option<i32> {
-        None
-    }
+    fn tree_levels() -> Option<i32> { None }
 
     /// The `strategy` parameter defines the approach for how to represent shapes at indexing and search time.
     /// It also influences the capabilities available so it is recommended to let Elasticsearch
@@ -140,9 +135,7 @@ Self: ElasticFieldMapping<()> + Sized + Serialize {
     /// There are two strategies available: `recursive` and `term`.
     /// Term strategy supports point types only (the `points_only` parameter will be automatically set to `true`)
     /// while `Recursive` strategy supports all shape types.
-    fn strategy() -> Option<Strategy> {
-        None
-    }
+    fn strategy() -> Option<Strategy> { None }
 
     /// Used as a hint to the `PrefixTree` about how precise it should be.
     /// Defaults to `0.025` (2.5%) with `0.5` as the maximum supported value.
@@ -154,16 +147,12 @@ Self: ElasticFieldMapping<()> + Sized + Serialize {
     /// To improve indexing performance (at the cost of query accuracy) explicitly define `tree_level`
     /// or `precision` along with a reasonable `distance_error_pct`,
     /// noting that large shapes will have greater false positives.
-    fn distance_error_pct() -> Option<f32> {
-        None
-    }
+    fn distance_error_pct() -> Option<f32> { None }
 
     /// Setting this parameter in the `geo_shape` mapping explicitly sets vertex order for
     /// the coordinate list of a `geo_shape` field but can be overridden in each individual
     /// GeoJSON document.
-    fn orientation() -> Option<Orientation> {
-        None
-    }
+    fn orientation() -> Option<Orientation> { None }
 
     /// Setting this option to `true` (defaults to `false`) configures the `geo_shape` field
     /// type for point shapes only (NOTE: Multi-Points are not yet supported).
@@ -172,9 +161,7 @@ Self: ElasticFieldMapping<()> + Sized + Serialize {
     /// At present `geo_shape` queries can not be executed on geo_point field types.
     /// This option bridges the gap by improving point performance on a `geo_shape` field
     /// so that geo_shape queries are optimal on a point only field.
-    fn points_only() -> Option<bool> {
-        None
-    }
+    fn points_only() -> Option<bool> { None }
 }
 
 /// Default mapping for `String`.
@@ -205,84 +192,15 @@ M: ElasticGeoShapeMapping {
     where S: Serializer {
         try!(serializer.serialize_struct_elt("type", M::data_type()));
 
-        if let Some(tree) = M::tree() {
-            try!(serializer.serialize_struct_elt("tree", tree));
-        }
-
-        if let Some(precision) = M::precision() {
-            try!(serializer.serialize_struct_elt("precision", precision));
-        }
-
-        if let Some(tree_levels) = M::tree_levels() {
-            try!(serializer.serialize_struct_elt("tree_levels", tree_levels));
-        }
-
-        if let Some(strategy) = M::strategy() {
-            try!(serializer.serialize_struct_elt("strategy", strategy));
-        }
-
-        if let Some(distance_error_pct) = M::distance_error_pct() {
-            try!(serializer.serialize_struct_elt("distance_error_pct", distance_error_pct));
-        }
-
-        if let Some(orientation) = M::orientation() {
-            try!(serializer.serialize_struct_elt("orientation", orientation));
-        }
-
-        if let Some(points_only) = M::points_only() {
-            try!(serializer.serialize_struct_elt("points_only", points_only));
-        }
+        ser_field!(serializer, M::tree(), "tree");
+        ser_field!(serializer, M::precision(), "precision");
+        ser_field!(serializer, M::tree_levels(), "tree_levels");
+        ser_field!(serializer, M::strategy(), "strategy");
+        ser_field!(serializer, M::distance_error_pct(), "distance_error_pct");
+        ser_field!(serializer, M::orientation(), "orientation");
+        ser_field!(serializer, M::points_only(), "points_only");
 
         Ok(None)
-    }
-}
-
-/// A unit of measure for distance.
-pub enum DistanceUnit {
-    /// For `in`.
-    Inches,
-    /// For `yd`.
-    Yards,
-    /// For `mi`.
-    Miles,
-    /// For `km`.
-    Kilometers,
-    /// For `m`.
-    Meters,
-    /// For `cm`.
-    Centimeters,
-    /// For `mm`.
-    Millimeters
-}
-
-/// A distance value paired with a unit of measure.
-pub struct Distance(pub f32, pub DistanceUnit);
-
-impl ToString for Distance {
-    fn to_string(&self) -> String {
-        let value = self.0.to_string();
-        let unit = match self.1 {
-            DistanceUnit::Inches => "in",
-            DistanceUnit::Yards => "yd",
-            DistanceUnit::Miles => "mi",
-            DistanceUnit::Kilometers => "km",
-            DistanceUnit::Meters => "m",
-            DistanceUnit::Centimeters => "cm",
-            DistanceUnit::Millimeters => "mm"
-        };
-
-        let mut s = String::with_capacity(value.len() + unit.len());
-        s.push_str(&value);
-        s.push_str(unit);
-
-        s
-    }
-}
-
-impl Serialize for Distance {
-    fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
-    where S: serde::Serializer {
-        serializer.serialize_str(&self.to_string())
     }
 }
 

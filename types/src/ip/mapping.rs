@@ -4,7 +4,7 @@ use std::marker::PhantomData;
 use std::net::Ipv4Addr;
 use serde;
 use serde::Serialize;
-use ::mapping::{ ElasticFieldMapping, ElasticTypeVisitor, IndexAnalysis };
+use ::mapping::{ ElasticFieldMapping, ElasticTypeVisitor };
 
 /// Elasticsearch datatype name.
 pub const IP_DATATYPE: &'static str = "ip";
@@ -109,33 +109,23 @@ pub const IP_DATATYPE: &'static str = "ip";
 pub trait ElasticIpMapping where
 Self: ElasticFieldMapping<()> + Sized + Serialize {
 	/// Field-level index time boosting. Accepts a floating point number, defaults to `1.0`.
-	fn boost() -> Option<f32> {
-		None
-	}
+	fn boost() -> Option<f32> { None }
 
 	/// Should the field be stored on disk in a column-stride fashion,
 	/// so that it can later be used for sorting, aggregations, or scripting?
 	/// Accepts `true` (default) or `false`.
-	fn doc_values() -> Option<bool> {
-		None
-	}
+	fn doc_values() -> Option<bool> { None }
 
 	/// Should the field be searchable? Accepts `not_analyzed` (default) and `no`.
-	fn index() -> Option<IndexAnalysis> {
-		None
-	}
+	fn index() -> Option<bool> { None }
 
 	/// Accepts a string value which is substituted for any explicit null values.
 	/// Defaults to `null`, which means the field is treated as missing.
-	fn null_value() -> Option<Ipv4Addr> {
-		None
-	}
+	fn null_value() -> Option<Ipv4Addr> { None }
 
 	/// Whether the field value should be stored and retrievable separately from the `_source` field.
 	/// Accepts `true` or `false` (default).
-	fn store() -> Option<bool> {
-		None
-	}
+	fn store() -> Option<bool> { None }
 }
 
 /// Default mapping for `ip`.
@@ -165,25 +155,11 @@ M: ElasticIpMapping {
 	where S: serde::Serializer {
 		try!(serializer.serialize_struct_elt("type", M::data_type()));
 
-		if let Some(boost) = M::boost() {
-			try!(serializer.serialize_struct_elt("boost", boost));
-		}
-
-		if let Some(doc_values) = M::doc_values() {
-			try!(serializer.serialize_struct_elt("doc_values", doc_values));
-		}
-
-		if let Some(index) = M::index() {
-			try!(serializer.serialize_struct_elt("index", index));
-		}
-
-		if let Some(store) = M::store() {
-			try!(serializer.serialize_struct_elt("store", store));
-		}
-
-		if let Some(null_value) = M::null_value() {
-			try!(serializer.serialize_struct_elt("null_value", null_value.to_string()));
-		}
+		ser_field!(serializer, M::boost(), "boost");
+		ser_field!(serializer, M::doc_values(), "doc_values");
+		ser_field!(serializer, M::index(), "index");
+		ser_field!(serializer, M::store(), "store");
+		ser_field!(serializer, M::null_value(), "null_value");
 
 		Ok(None)
 	}

@@ -8,6 +8,12 @@
 //! precious CPU cycles into.
 //!
 //! The entire API is generated from the official Elasticsearch spec, so it's always current.
+//! 
+//! # Supported Versions
+//! 
+//!  `elastic_types` | Elasticsearch
+//!  --------------- | -------------
+//!  `0.x`           | `5.x`
 //!
 //! # Usage
 //!

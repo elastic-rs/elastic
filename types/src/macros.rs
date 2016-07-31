@@ -6,13 +6,32 @@ macro_rules! impl_mapping {
 	)
 }
 
-macro_rules! impl_string_mapping {
+macro_rules! impl_text_mapping {
 	($t:ty) => (
 		impl $crate::mapping::ElasticFieldMapping<()> for $t {
-			type Visitor = $crate::string::mapping::ElasticStringMappingVisitor<$t>;
+			type Visitor = $crate::string::mapping::ElasticTextMappingVisitor<$t>;
 
 			fn data_type() -> &'static str {
-				$crate::string::mapping::STRING_DATATYPE
+				$crate::string::mapping::TEXT_DATATYPE
+			}
+		}
+
+		impl serde::Serialize for $t {
+			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+			where S: serde::Serializer {
+				serializer.serialize_struct("mapping", Self::get_visitor())
+			}
+		}
+	)
+}
+
+macro_rules! impl_keyword_mapping {
+	($t:ty) => (
+		impl $crate::mapping::ElasticFieldMapping<()> for $t {
+			type Visitor = $crate::string::mapping::ElasticKeywordMappingVisitor<$t>;
+
+			fn data_type() -> &'static str {
+				$crate::string::mapping::KEYWORD_DATATYPE
 			}
 		}
 

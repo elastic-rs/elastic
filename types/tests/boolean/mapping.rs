@@ -29,7 +29,7 @@ fn serialise_mapping_custom() {
 		"type": "boolean",
 		"boost": 1.01,
 		"doc_values": true,
-		"index": "no",
+		"index": false,
 		"store": true,
 		"null_value": false
 	});

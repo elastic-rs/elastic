@@ -4,6 +4,12 @@
 //!
 //! Provides `struct`s and `trait`s for defining Elasticsearch type mapping,
 //! where correctness is enforced by Rust's type system.
+//! 
+//! # Supported Versions
+//! 
+//!  `elastic_types` | Elasticsearch
+//!  --------------- | -------------
+//!  `0.x`           | `5.x`
 //!
 //! # Usage
 //!
@@ -56,7 +62,17 @@
 //! ## A Complete Example
 //! 
 //! Before digging in to the API, consider the following complete example for defining and mapping a
-//! type called `Article` on `nightly`:
+//! type called `Article` on `nightly`.
+//! 
+//! Our `Cargo.toml` specifies the dependencies as above:
+//! 
+//! ```ignore
+//! [dependencies]
+//! elastic_types = { version = "*", defeault-features = false, features = "nightly" }
+//! elastic_types_macros = "*"
+//! ```
+//! 
+//! And our `main.rs` contains the following:
 //! 
 //! ```
 //! #![feature(plugin, custom_derive)]
@@ -76,7 +92,7 @@
 //! struct Article {
 //! 	pub id: i32,
 //! 	pub title: String,
-//! 	pub content: ElasticString<ContentMapping>,
+//! 	pub content: ElasticText<ContentMapping>,
 //! 	pub timestamp: Option<ElasticDate<EpochMillis, TimestampMapping>>,
 //! 	pub geoip: GeoIp
 //! }
@@ -90,9 +106,9 @@
 //! 
 //! //Mappings for our datatype fields
 //! 
-//! #[derive(Default, Clone, ElasticStringMapping)]
+//! #[derive(Default, Clone, ElasticTextMapping)]
 //! struct ContentMapping;
-//! impl ElasticStringMapping for ContentMapping {
+//! impl ElasticTextMapping for ContentMapping {
 //! 	fn analyzer() -> Option<&'static str> {
 //! 		Some("content_text")
 //! 	}
@@ -109,17 +125,65 @@
 //! }
 //! 
 //! fn main() {
-//! 	println!("{}: {}", Article::name(), TypeMapper::to_string(Article::mapping()).unwrap());
+//! 	println!("\"{}\":{}", 
+//! 		Article::name(), 
+//! 		TypeMapper::to_string(Article::mapping()).unwrap()
+//! 	);
 //! }
 //! ```
 //! 
 //! The above example defines a `struct` called `Article` with a few fields:
 //! 
-//! - A default `integer` called `id`
-//! - A default `string` called `title`
-//! - A `string` with a custom analyser called `content`
-//! - A `date` with the `epoch_millis` format that defaults to `now` called `timestamp`
-//! - An object called `GeoIp` with default `ip` and `geo_point` fields.
+//! - A default `integer` field called `id`
+//! - A default `string` field called `title`
+//! - A `text` field with a custom analyser called `content`
+//! - A `date` field with the `epoch_millis` format that defaults to the time the index was created called `timestamp`
+//! - An object field called `GeoIp` with default `ip` and `geo_point` fields.
+//! 
+//! Go ahead and run that sample and see what it outputs.
+//! In case you're interested, it'll look something like this (minus the whitespace):
+//! 
+//! ```ignore
+//! "article": { 
+//! 	"properties": {
+//! 		"id":{
+//! 			"type": "integer"
+//! 		},
+//! 		"title": {
+//! 			"type":"text",
+//! 			"fields": {
+//! 				"keyword": {
+//! 					"type": "keyword",
+//! 					"ignore_above": 256
+//! 				}
+//! 			}
+//! 		},
+//! 		"content": {
+//! 			"type": "text",
+//! 			"analyzer": "content_text"
+//! 		},
+//! 		"timestamp": {
+//! 			"type": "date",
+//! 			"format": "epoch_millis",
+//! 			"null_value": "1435935302478"
+//! 		},
+//! 		"geoip": {
+//! 			"type": "nested",
+//! 			"properties": {
+//! 				"ip": {
+//! 					"type": "ip"
+//! 				},
+//! 				"loc": {
+//! 					"type": "geo_point"
+//! 				}
+//! 			}
+//! 		}
+//! 	}
+//! }
+//! ```
+//! 
+//! The mapping is constructed by inspecting the type parameters of the fields on `Article` and `GeoIp`
+//! and serialised by `serde`.
 //!
 //! ## Map Your Types
 //!
@@ -410,7 +474,8 @@
 //!  `byte`              | `i8`                        | `std`     | [`ElasticByte<M>`](number/mapping/trait.ElasticByteMapping.html)                 | `()`
 //!  `float`             | `f32`                       | `std`     | [`ElasticFloat<M>`](number/mapping/trait.ElasticFloatMapping.html)               | `()`
 //!  `double`            | `f64`                       | `std`     | [`ElasticDouble<M>`](number/mapping/trait.ElasticDoubleMapping.html)             | `()`
-//!  `string`            | `String`                    | `std`     | [`ElasticString<M>`](string/mapping/trait.ElasticStringMapping.html)             | `()`
+//!  `keyword`           | -                           | -         | [`ElasticKeyword<M>`](string/mapping/trait.ElasticKeywordMapping.html)           | `()`
+//!  `text`              | `String`                    | `std`     | [`ElasticText<M>`](string/mapping/trait.ElasticTextMapping.html)                 | `()`
 //!  `boolean`           | `bool`                      | `std`     | [`ElasticBoolean<M>`](boolean/mapping/trait.ElasticBooleanMapping.html)          | `()`
 //!  `ip`                | `Ipv4Addr`                  | `std`     | [`ElasticIp<M>`](ip/mapping/trait.ElasticIpMapping.html)                         | `()`
 //!  `date`              | `DateTime<UTC>`             | `chrono`  | [`ElasticDate<F, M>`](date/mapping/trait.ElasticDateMapping.html)                | `DateFormat`
@@ -449,7 +514,6 @@
 
 #![cfg_attr(feature = "nightly", feature(custom_derive, plugin, associated_type_defaults))]
 #![cfg_attr(feature = "nightly", plugin(serde_macros, elastic_date_macros))]
-#![cfg_attr(feature = "nightly-testing", plugin(clippy))]
 #![cfg_attr(feature = "nightly-testing", allow(identity_op))]
 
 #[cfg_attr(not(feature = "nightly"), macro_use)]
@@ -467,6 +531,14 @@ extern crate serde_json;
 #[macro_use]
 mod macros;
 pub mod mappers;
+
+macro_rules! ser_field {
+    ($s:ident, $f:expr, $n:expr) => (
+    	if let Some(f) = $f {
+			try!($s.serialize_struct_elt($n, f));
+		}
+    )
+}
 
 //Other type dependencies
 #[cfg(feature = "serde_macros")]

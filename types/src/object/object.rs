@@ -1,34 +1,26 @@
 use std::marker::PhantomData;
 use serde;
 use serde::{ Serialize, Serializer };
-use super::ElasticObjectProperties;
+use super::{ ElasticObjectProperties, OBJECT_DATATYPE, NESTED_DATATYPE };
 use ::mapping::{ ElasticFieldMapping, ElasticTypeVisitor };
 
 /// The base requirements for mapping an `object` type.
 pub trait ElasticObjectMapping where
 Self: ElasticFieldMapping<()> + Sized + Serialize + Default + Clone {
 	/// Get the type name for this mapping, like `object` or `nested`.
-	fn data_type() -> &'static str {
-		super::NESTED_DATATYPE
-	}
+	fn data_type() -> &'static str { NESTED_DATATYPE }
 
 	/// Whether or not new properties should be added dynamically to an existing object.
 	/// Accepts `true` (default), `false` and `strict`.
-	fn dynamic() -> Option<Dynamic> {
-		None
-	}
+	fn dynamic() -> Option<Dynamic> { None }
 
 	/// Whether the JSON value given for the object field should be parsed and indexed
 	/// (`true`, default) or completely ignored (`false`).
-	fn enabled() -> Option<bool> {
-		None
-	}
+	fn enabled() -> Option<bool> { None }
 
 	/// Sets the default `include_in_all` value for all the properties within the object.
 	/// The object itself is not added to the `_all` field.
-	fn include_in_all() -> Option<bool> {
-		None
-	}
+	fn include_in_all() -> Option<bool> { None }
 }
 
 /// The dynamic setting may be set at the mapping type level, and on each inner object.
@@ -80,19 +72,16 @@ M: ElasticObjectMapping,
 V: ElasticTypeVisitor {
 	fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
 	where S: Serializer {
-		try!(serializer.serialize_struct_elt("type", <M as ElasticFieldMapping<()>>::data_type()));
+		let ty = <M as ElasticFieldMapping<()>>::data_type();
 
-		if let Some(dynamic) = M::dynamic() {
-			try!(serializer.serialize_struct_elt("dynamic", dynamic));
-		};
+		try!(serializer.serialize_struct_elt("type", ty));
 
-		if let Some(enabled) = M::enabled() {
-			try!(serializer.serialize_struct_elt("enabled", enabled));
-		};
+		ser_field!(serializer, M::dynamic(), "dynamic");
+		ser_field!(serializer, M::include_in_all(), "include_in_all");
 
-		if let Some(include_in_all) = M::include_in_all() {
-			try!(serializer.serialize_struct_elt("include_in_all", include_in_all));
-		};
+		if ty == OBJECT_DATATYPE {
+			ser_field!(serializer, M::enabled(), "enabled");
+		}
 
 		try!(serializer.serialize_struct_elt("properties", ElasticObjectProperties::<V>::new()));
 
