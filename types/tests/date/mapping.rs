@@ -29,15 +29,14 @@ fn serialise_mapping_custom() {
 
 	let expected = json_str!({
 		"type": "date",
+		"format": "epoch_millis",
 		"boost": 1.01,
 		"doc_values": true,
 		"include_in_all": false,
-		"index": "no",
+		"index": true,
 		"store": true,
-		"format": "epoch_millis",
 		"ignore_malformed": true,
-		"null_value": "1426351513778",
-		"precision_step": 6
+		"null_value": "1426351513778"
 	});
 
 	assert_eq!(expected, ser);

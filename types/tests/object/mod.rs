@@ -25,15 +25,14 @@ fn serialise_mapping_type() {
 			},
 			"my_date3":{
 				"type":"date",
+				"format":"epoch_millis",
 				"boost":1.01,
 				"doc_values":true,
 				"include_in_all":false,
-				"index":"no",
+				"index":true,
 				"store":true,
-				"format":"epoch_millis",
 				"ignore_malformed":true,
-				"null_value":"1426351513778",
-				"precision_step":6
+				"null_value":"1426351513778"
 			},
 			"my_string1":{
 				"type":"text",
@@ -146,15 +145,14 @@ fn serialise_mapping_type_as_nested() {
 					},
 					"my_date3":{
 						"type":"date",
+						"format":"epoch_millis",
 						"boost":1.01,
 						"doc_values":true,
 						"include_in_all":false,
-						"index":"no",
+						"index":true,
 						"store":true,
-						"format":"epoch_millis",
 						"ignore_malformed":true,
-						"null_value":"1426351513778",
-						"precision_step":6
+						"null_value":"1426351513778"
 					},
 					"my_string1":{
 						"type":"text",
@@ -300,14 +298,13 @@ fn serialize_mapping_rses() {
 			"type" => "keyword"
 		}, 
 		"my_date3" => hashmap! {
-			"precision_step" => "6", 
 			"doc_values" => "true", 
 			"ignore_malformed" => "true", 
 			"store" => "true", 
 			"null_value" => "1426351513778", 
 			"format" => "epoch_millis", 
 			"type" => "date", 
-			"index" => "no", 
+			"index" => "true", 
 			"boost" => "1.01", 
 			"include_in_all" => "false"
 		}, 

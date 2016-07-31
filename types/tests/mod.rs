@@ -35,37 +35,21 @@ pub mod date_fixtures {
 		phantom: PhantomData<T>
 	}
 	impl <T: DateFormat> ElasticDateMapping<T> for MyDateMapping<T> {
-		fn boost() -> Option<f32> {
-			Some(1.01)
-		}
-
-		fn index() -> Option<IndexAnalysis> {
-			Some(IndexAnalysis::No)
-		}
-
-		fn doc_values() -> Option<bool> {
-			Some(true)
-		}
-
-		fn include_in_all() -> Option<bool> {
-			Some(false)
-		}
-
-		fn store() -> Option<bool> {
-			Some(true)
-		}
-
 		fn null_value() -> Option<ElasticDate<T, Self>> {
 			Some(ElasticDate::build(2015, 3, 14, 16, 45, 13, 778))
 		}
 
-		fn ignore_malformed() -> Option<bool> {
-			Some(true)
-		}
+		fn boost() -> Option<f32> 				{ Some(1.01) }
 
-		fn precision_step() -> Option<i32> {
-			Some(6)
-		}
+		fn index() -> Option<bool> 				{ Some(true) }
+
+		fn doc_values() -> Option<bool> 		{ Some(true) }
+
+		fn include_in_all() -> Option<bool> 	{ Some(false) }
+
+		fn store() -> Option<bool> 				{ Some(true) }
+
+		fn ignore_malformed() -> Option<bool> 	{ Some(true) }
 	}
 }
 
@@ -589,11 +573,11 @@ pub mod object_fixtures {
 	#[derive(Default, Clone)]
 	pub struct MyTypeMapping;
 	impl ElasticObjectMapping for MyTypeMapping {
-		fn dynamic() -> Option<Dynamic> { Some(Dynamic::True) }
+		fn dynamic() -> Option<Dynamic> 		{ Some(Dynamic::True) }
 
-		fn enabled() -> Option<bool> { Some(false) }
+		fn enabled() -> Option<bool> 			{ Some(false) }
 
-		fn include_in_all() -> Option<bool> { Some(true) }
+		fn include_in_all() -> Option<bool> 	{ Some(true) }
 	}
 
 	#[derive(Serialize, ElasticType)]
