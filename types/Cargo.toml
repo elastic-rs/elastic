@@ -19,7 +19,6 @@ default = [
 ]
 nightly-testing = [
   "nightly",
-  "clippy",
   "elastic_types_macros"
 ]
 
@@ -31,13 +30,12 @@ geo = "~0.0.7"
 geohash = "~0.2.7"
 geojson = { version = "~0.2.1", features = [ "with-serde" ] }
 
-clippy = { version = "^0.*", optional = true }
 serde_macros = { version = "~0.7.0", optional = true }
 elastic_date_macros = { version = "~0.3.2", optional = true }
 elastic_types_macros = { version = "*", optional = true, path = "../macros/types" }
 
 [build-dependencies]
-serde_codegen = { version = "^0.*", optional = true }
+serde_codegen = { version = "^0.7", optional = true }
 
 [dev-dependencies]
 json_str = "^0.*"

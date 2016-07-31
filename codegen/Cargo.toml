@@ -4,10 +4,9 @@ version = "0.1.0"
 authors = ["Ashley Mannix <ashleymannix@live.com.au>"]
 
 [features]
-nightly-testing = [ "clippy" ]
+nightly-testing = [ ]
 
 [dependencies]
 serde = "*"
 serde_json = "*"
 serde_macros = "*"
-clippy = { version = "*", optional = true }
