@@ -60,6 +60,8 @@ fn main() {
 	//Our codegen will probably wrap an initial call to `Message::verb`, taking the proper args
 	//From then, we can use a builder to add extra details
 	handle.push(conn::Message::post("/testindex/testtype/1", "{\"id\":1}".as_bytes()));
+	handle.push(conn::Message::post("/testindex/testtype/2", "{\"id\":2}".as_bytes()));
+	handle.push(conn::Message::post("/testindex/testtype/3", "{\"id\":3}".as_bytes()));
 
 	//Block
 	t.join().unwrap();

@@ -7,7 +7,7 @@ use rotor::{ Scope, Time };
 use rotor_http::client::{ Request, Requester, ResponseError, Head, RecvMode, Version };
 
 pub mod constant;
-pub mod sniffed;
+//pub mod sniffed;
 
 /// A request message.
 pub struct Message {
