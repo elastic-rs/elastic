@@ -107,16 +107,19 @@ impl <C> Requester for ApiRequest<C> {
 
 		unreachable!();
 	}
+	
 	fn response_end(self, _request: &mut Request, _scope: &mut Scope<Self::Context>) {
 		println!("requester: response_end");
 
 		unreachable!();
 	}
+
 	fn timeout(self, _request: &mut Request, scope: &mut Scope<Self::Context>) -> Option<(Self, Time)> {
 		println!("requester: timeout");
 
 		Some((self, scope.now() + Duration::new(1000, 0)))
 	}
+
 	fn wakeup(self, _request: &mut Request, _scope: &mut Scope<Self::Context>) -> Option<Self> {
 		println!("requester: wakeup");
 

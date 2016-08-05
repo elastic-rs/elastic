@@ -48,8 +48,12 @@ fn main() {
 			constant::connect_localhost(scope, &mut handle)
 		}).unwrap();
 
-		tx.send(handle).unwrap();
+		loop_inst.add_machine_with(|scope| {
+			constant::connect_localhost(scope, &mut handle)
+		}).unwrap();
 
+		//Send the constructed handle and start the loop
+		tx.send(handle).unwrap();
 		loop_inst.run().unwrap();
 	});
 
