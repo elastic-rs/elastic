@@ -63,9 +63,11 @@ fn main() {
 	//Assume you want a response channel by default, allow calls to `push_no_resp` or something
 	//Our codegen will probably wrap an initial call to `Message::verb`, taking the proper args
 	//From then, we can use a builder to add extra details
-	handle.push(conn::Message::post("/testindex/testtype/1", "{\"id\":1}".as_bytes()));
-	handle.push(conn::Message::post("/testindex/testtype/2", "{\"id\":2}".as_bytes()));
-	handle.push(conn::Message::post("/testindex/testtype/3", "{\"id\":3}".as_bytes()));
+	handle.push(conn::Message::post("/testindex/testtype/1?pretty", "{\"id\":1}".as_bytes()));
+	handle.push(conn::Message::post("/testindex/testtype/2?pretty", "{\"id\":2}".as_bytes()));
+	handle.push(conn::Message::post("/testindex/testtype/3?pretty", "{\"id\":3}".as_bytes()));
+
+	handle.push(conn::Message::get("/testindex/testtype/_search?pretty"));
 
 	//Block
 	t.join().unwrap();

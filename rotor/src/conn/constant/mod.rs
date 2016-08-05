@@ -83,7 +83,7 @@ impl <'a, C> Client for Fsm<'a, C> {
 	fn connection_idle(self, _conn: &Connection, scope: &mut Scope<C>) -> Task<Self> {
 		//Look for a message without blocking
 		if let Some(msg) = self.queue.try_pop() {
-			println!("client: connection_idle: message: '{}', '{}'", msg.get_url(), str::from_utf8(msg.get_body()).unwrap());
+			println!("client: connection_idle: message: '{}'", msg.get_url());
 
 			Task::Request(self, ApiRequest::for_msg(msg))
 		}

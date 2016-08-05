@@ -13,15 +13,24 @@ pub mod constant;
 pub struct Message {
 	url: String,
 	verb: &'static str,
-	body: Vec<u8>
+	body: Option<Vec<u8>>
 }
 impl Message {
+	/// Create a new GET request.
+	pub fn get<I: Into<String>>(url: I) -> Self {
+		Message {
+			url: url.into(),
+			verb: "GET",
+			body: None
+		}
+	}
+
 	/// Create a new POST request.
 	pub fn post<I: Into<String>>(url: I, body: &[u8]) -> Self {
 		Message {
 			url: url.into(),
 			verb: "POST",
-			body: body.to_vec()
+			body: Some(body.to_vec())
 		}
 	}
 
@@ -35,14 +44,12 @@ impl Message {
 		&self.verb
 	}
 
-	/// Get the length of the message body.
-	pub fn get_body_ln(&self) -> u64 {
-		self.body.len() as u64
-	}
-
 	/// Get the message body for this request.
-	pub fn get_body(&self) -> &[u8] {
-		&self.body
+	pub fn get_body(&self) -> Option<&[u8]> {
+		match self.body {
+			Some(ref b) => Some(b),
+			None => None
+		}
 	}
 }
 
@@ -71,12 +78,17 @@ impl <C> Requester for ApiRequest<C> {
 		println!("requester: prepare_request");
 
 		req.start(&self.msg.get_verb(), &self.msg.get_url(), Version::Http11);
-		req.add_length(self.msg.get_body_ln()).unwrap();
+		req.add_header("Content-Type", b"application/json").unwrap();
 
-        req.add_header("Content-Type", b"application/json").unwrap();
-        req.done_headers().unwrap();
-
-        req.write_body(&self.msg.get_body());
+		if let Some(body) = self.msg.get_body() {
+			req.add_length(body.len() as u64).unwrap();
+	        req.done_headers().unwrap();
+	        req.write_body(body);
+		}
+		else {
+	        req.done_headers().unwrap();
+		}
+		
         req.done();
 
         Some(self)
@@ -88,7 +100,7 @@ impl <C> Requester for ApiRequest<C> {
 		Some((self, RecvMode::Buffered(1 << 20), scope.now() + Duration::new(1000, 0)))
 	}
 
-	fn response_received(self, data: &[u8], _request: &mut Request, _scope: &mut Scope<Self::Context>) {
+	fn response_received(self, data: &[u8], _req: &mut Request, _scope: &mut Scope<Self::Context>) {
 		println!("requester: response_received");
 
 		//TODO: Write the response to the request's channel
@@ -102,25 +114,25 @@ impl <C> Requester for ApiRequest<C> {
 		unimplemented!();
 	}
 
-	fn response_chunk(self, _chunk: &[u8], _request: &mut Request, _scope: &mut Scope<Self::Context>) -> Option<Self> {
+	fn response_chunk(self, _chunk: &[u8], _req: &mut Request, _scope: &mut Scope<Self::Context>) -> Option<Self> {
 		println!("requester: response_chunk");
 
 		unreachable!();
 	}
-	
-	fn response_end(self, _request: &mut Request, _scope: &mut Scope<Self::Context>) {
+
+	fn response_end(self, _req: &mut Request, _scope: &mut Scope<Self::Context>) {
 		println!("requester: response_end");
 
 		unreachable!();
 	}
 
-	fn timeout(self, _request: &mut Request, scope: &mut Scope<Self::Context>) -> Option<(Self, Time)> {
+	fn timeout(self, _req: &mut Request, scope: &mut Scope<Self::Context>) -> Option<(Self, Time)> {
 		println!("requester: timeout");
 
 		Some((self, scope.now() + Duration::new(1000, 0)))
 	}
 
-	fn wakeup(self, _request: &mut Request, _scope: &mut Scope<Self::Context>) -> Option<Self> {
+	fn wakeup(self, _req: &mut Request, _scope: &mut Scope<Self::Context>) -> Option<Self> {
 		println!("requester: wakeup");
 
 		Some(self)
