@@ -17,7 +17,6 @@
 //! 
 //! The constant connection pool is fast to set up, but won't cope with node addresses that can change.
 
-use std::collections::BTreeSet;
 use std::marker::PhantomData;
 use std::net::{ SocketAddr, SocketAddrV4, Ipv4Addr };
 

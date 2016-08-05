@@ -53,7 +53,7 @@ impl <'a> Handle<'a> {
 		self.queue.push(msg);
 
 		for notifier in &self.notifiers {
-			notifier.wakeup();
+			notifier.wakeup().unwrap();
 		}
 	}
 }
@@ -71,7 +71,7 @@ impl <'a, C> Client for Fsm<'a, C> {
 	type Requester = ApiRequest<C>;
 	type Seed = &'a Queue;
 
-	fn create(seed: Self::Seed, scope: &mut Scope<<Self::Requester as Requester>::Context>) -> Self {
+	fn create(seed: Self::Seed, _scope: &mut Scope<<Self::Requester as Requester>::Context>) -> Self {
 		println!("client: create");
 
 		Fsm {
@@ -115,7 +115,7 @@ impl <'a, C> Client for Fsm<'a, C> {
 		}
 	}
 
-	fn connection_error(self, err: &ProtocolError, _scope: &mut Scope<C>) {
+	fn connection_error(self, _err: &ProtocolError, _scope: &mut Scope<C>) {
 		unimplemented!()
 	}
 }

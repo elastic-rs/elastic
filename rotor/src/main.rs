@@ -18,10 +18,12 @@ extern crate rotor_tools;
 extern crate lazy_static;
 
 mod conn;
-use std::time::Duration;
+
+
+//Test usage
+
 use std::sync::mpsc;
 use std::thread;
-use rotor_tools::loop_ext::LoopInstanceExt;
 
 use conn::constant;
 
@@ -57,7 +59,7 @@ fn main() {
 	//Assume you want a response channel by default, allow calls to `push_no_resp` or something
 	//Our codegen will probably wrap an initial call to `Message::verb`, taking the proper args
 	//From then, we can use a builder to add extra details
-	handle.push(conn::Message::post("/testindex/testtype/1", "{ my request }".as_bytes()));
+	handle.push(conn::Message::post("/testindex/testtype/1", "{\"id\":1}".as_bytes()));
 
 	//Block
 	t.join().unwrap();
