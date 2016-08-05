@@ -75,9 +75,8 @@ impl <C> Requester for ApiRequest<C> {
 	type Context = C;
 
 	fn prepare_request(self, req: &mut Request, _scope: &mut Scope<Self::Context>) -> Option<Self> {
-		println!("requester: prepare_request");
-
 		req.start(&self.msg.get_verb(), &self.msg.get_url(), Version::Http11);
+		
 		req.add_header("Content-Type", b"application/json").unwrap();
 
 		if let Some(body) = self.msg.get_body() {
@@ -95,46 +94,32 @@ impl <C> Requester for ApiRequest<C> {
 	}
 
 	fn headers_received(self, _head: Head, _req: &mut Request, scope: &mut Scope<Self::Context>) -> Option<(Self, RecvMode, Time)> {
-		println!("requester: headers_received");
-
 		Some((self, RecvMode::Buffered(1 << 20), scope.now() + Duration::new(1000, 0)))
 	}
 
 	fn response_received(self, data: &[u8], _req: &mut Request, _scope: &mut Scope<Self::Context>) {
-		println!("requester: response_received");
-
 		//TODO: Write the response to the request's channel
 		stdout().write_all(data).unwrap();
 		println!("");
 	}
 
 	fn bad_response(self, _err: &ResponseError, _scope: &mut Scope<Self::Context>) {
-		println!("requester: bad_response");
-
 		unimplemented!();
 	}
 
 	fn response_chunk(self, _chunk: &[u8], _req: &mut Request, _scope: &mut Scope<Self::Context>) -> Option<Self> {
-		println!("requester: response_chunk");
-
 		unreachable!();
 	}
 
 	fn response_end(self, _req: &mut Request, _scope: &mut Scope<Self::Context>) {
-		println!("requester: response_end");
-
 		unreachable!();
 	}
 
 	fn timeout(self, _req: &mut Request, scope: &mut Scope<Self::Context>) -> Option<(Self, Time)> {
-		println!("requester: timeout");
-
 		Some((self, scope.now() + Duration::new(1000, 0)))
 	}
 
 	fn wakeup(self, _req: &mut Request, _scope: &mut Scope<Self::Context>) -> Option<Self> {
-		println!("requester: wakeup");
-
 		Some(self)
 	}
 }

@@ -72,8 +72,6 @@ impl <'a, C> Client for Fsm<'a, C> {
 	type Seed = &'a Queue;
 
 	fn create(seed: Self::Seed, _scope: &mut Scope<<Self::Requester as Requester>::Context>) -> Self {
-		println!("client: create");
-
 		Fsm {
 			queue: seed,
 			_marker: PhantomData
@@ -83,34 +81,27 @@ impl <'a, C> Client for Fsm<'a, C> {
 	fn connection_idle(self, _conn: &Connection, scope: &mut Scope<C>) -> Task<Self> {
 		//Look for a message without blocking
 		if let Some(msg) = self.queue.try_pop() {
-			println!("client: connection_idle: message: '{}'", msg.get_url());
-
 			Task::Request(self, ApiRequest::for_msg(msg))
 		}
 		else {
-			println!("client: connection_idle: no message");
 			Task::Sleep(self, scope.now() + Duration::from_millis(2000))
 		}
 	}
 
 	fn wakeup(self, conn: &Connection, scope: &mut Scope<<Self::Requester as Requester>::Context>) -> Task<Self> {
 		if conn.is_idle() {
-			println!("client: wakeup: idle");
 			self.connection_idle(conn, scope)
 		}
 		else {
-			println!("client: wakeup: not idle");
 			Task::Sleep(self, scope.now() + Duration::from_millis(2000))
 		}
 	}
 
 	fn timeout(self, conn: &Connection, scope: &mut Scope<<Self::Requester as Requester>::Context>) -> Task<Self> {
 		if conn.is_idle() {
-			println!("client: timeout: idle");
 			self.connection_idle(conn, scope)
 		}
 		else {
-			println!("client: timeout: not idle");
 			Task::Sleep(self, scope.now() + Duration::from_millis(2000))
 		}
 	}
