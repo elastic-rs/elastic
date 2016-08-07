@@ -100,6 +100,7 @@ impl <C> Requester for ApiRequest<C> {
 	}
 
 	fn headers_received(self, _head: Head, _req: &mut Request, scope: &mut Scope<Self::Context>) -> Option<(Self, RecvMode, Time)> {
+		//NOTE: 404's will come through here too, so we can set a correct error response
 		Some((self, RecvMode::Buffered(1 << 20), scope.now() + Duration::new(1000, 0)))
 	}
 
