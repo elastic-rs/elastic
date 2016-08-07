@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 use std::time::Duration;
-use std::io::{ Write, stdout };
 
+use futures::Complete;
 use crossbeam::sync::MsQueue;
 use rotor::{ Scope, Time };
 use rotor_http::client::{ Request, Requester, ResponseError, Head, RecvMode, Version };
@@ -53,19 +53,24 @@ impl Message {
 	}
 }
 
+/// A common data format shared between producer and consumer.
+pub type Data = Result<Vec<u8>, &'static str>;
+
 /// A common message queue shared by multiple machines.
-pub type Queue = MsQueue<Message>;
+pub type Queue = MsQueue<(Message, Option<Complete<Data>>)>;
 
 /// A state machine for managing the HTTP component of an Elasticsearch connection.
 pub struct ApiRequest<C> {
 	msg: Message,
+	future: Option<Complete<Data>>,
 	_marker: PhantomData<C>
 }
 
 impl <C> ApiRequest<C> {
-	pub fn for_msg(msg: Message) -> Self {
+	pub fn for_msg(msg: Message, returns: Option<Complete<Data>>) -> Self {
 		ApiRequest {
 			msg: msg,
+			future: returns,
 			_marker: PhantomData
 		}
 	}
@@ -74,6 +79,7 @@ impl <C> ApiRequest<C> {
 impl <C> Requester for ApiRequest<C> {
 	type Context = C;
 
+	//TODO: return a failed completion insread of unwrapping
 	fn prepare_request(self, req: &mut Request, _scope: &mut Scope<Self::Context>) -> Option<Self> {
 		req.start(&self.msg.get_verb(), &self.msg.get_url(), Version::Http11);
 		
@@ -98,13 +104,15 @@ impl <C> Requester for ApiRequest<C> {
 	}
 
 	fn response_received(self, data: &[u8], _req: &mut Request, _scope: &mut Scope<Self::Context>) {
-		//TODO: Write the response to the request's channel
-		stdout().write_all(data).unwrap();
-		println!("");
+		if let Some(c) = self.future {
+			c.complete(Ok(data.to_vec()));
+		}
 	}
 
 	fn bad_response(self, _err: &ResponseError, _scope: &mut Scope<Self::Context>) {
-		unimplemented!();
+		if let Some(c) = self.future {
+			c.complete(Err("nah it's broke m8. should use a proper error type here."));
+		}
 	}
 
 	fn response_chunk(self, _chunk: &[u8], _req: &mut Request, _scope: &mut Scope<Self::Context>) -> Option<Self> {

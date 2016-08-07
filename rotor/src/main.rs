@@ -10,6 +10,7 @@
 //! Responses (if wanted) will be retrieved through a channel, which blocks when requesting data.
 
 extern crate crossbeam;
+extern crate futures;
 extern crate rotor;
 extern crate rotor_http;
 extern crate rotor_tools;
@@ -19,11 +20,12 @@ extern crate lazy_static;
 
 mod conn;
 
-
 //Test usage
-
+use std::str;
+use std::time::Duration;
 use std::sync::mpsc;
 use std::thread;
+use futures::Future;
 
 use conn::constant;
 
@@ -36,39 +38,58 @@ fn main() {
 	let (tx, rx) = mpsc::channel();
 
 	//Spawn an io thread
-	let t = thread::spawn(move || {
-		let mut handle = constant::Handle::new(&QUEUE);
+	//TODO: Make this a future too
+	let pool = {
+		thread::spawn(move || {
+			let mut handle = constant::Handle::new(&QUEUE);
 
-		//Build a loop
-		let creator = rotor::Loop::new(&rotor::Config::new()).unwrap();
-		let mut loop_inst = creator.instantiate(constant::Context);
+			//Build a loop
+			let creator = rotor::Loop::new(&rotor::Config::new()).unwrap();
+			let mut loop_inst = creator.instantiate(constant::Context);
 
-		//Add a state machine with a reference to our queue
-		loop_inst.add_machine_with(|scope| {
-			constant::connect_localhost(scope, &mut handle)
-		}).unwrap();
+			//Add a state machine with a reference to our queue
+			loop_inst.add_machine_with(|scope| {
+				constant::connect_localhost(scope, &mut handle)
+			}).unwrap();
 
-		loop_inst.add_machine_with(|scope| {
-			constant::connect_localhost(scope, &mut handle)
-		}).unwrap();
+			loop_inst.add_machine_with(|scope| {
+				constant::connect_localhost(scope, &mut handle)
+			}).unwrap();
 
-		//Send the constructed handle and start the loop
-		tx.send(handle).unwrap();
-		loop_inst.run().unwrap();
-	});
+			//Send the constructed handle and start the loop
+			//Using a future for this means we can avoid returning the value until the machines are connected
+			tx.send(handle).unwrap();
+			loop_inst.run().unwrap();
+		});
+		rx.recv().unwrap()
+	};
 
-	let handle = rx.recv().unwrap();
+	//Index some documents: don't wait for any success confirmation
+	for i in 0..20 {
+		pool.send(conn::Message::post(
+			format!("/testindex/testtype/{}", i), 
+			format!("{{\"id\":{}}}", i).as_bytes()
+		));
+	}
 
-	//TODO: This needs to handle pushing a response back to the caller
-	//Assume you want a response channel by default, allow calls to `push_no_resp` or something
-	//Our codegen will probably wrap an initial call to `Message::verb`, taking the proper args
-	//From then, we can use a builder to add extra details
-	handle.push(conn::Message::post("/testindex/testtype/1?pretty", "{\"id\":1}".as_bytes()));
-	handle.push(conn::Message::post("/testindex/testtype/2?pretty", "{\"id\":2}".as_bytes()));
-	handle.push(conn::Message::post("/testindex/testtype/3?pretty", "{\"id\":3}".as_bytes()));
+	//Search for documents
+	loop {
+		futures::Task::new().run(Box::new(
+			pool.req(conn::Message::get(
+				"/testindex/testtype/_search?pretty"
+			))
+			.then(|r| {
+				print_resp(r.unwrap());
+				futures::finished::<(), ()>(())
+			})
+		));
 
-	handle.push(conn::Message::get("/testindex/testtype/_search?pretty"));
+		thread::sleep(Duration::from_millis(2000));
+	}
+}
 
-	//Block
-	t.join().unwrap();
+fn print_resp(r: conn::Data) {
+	println!("{}", str::from_utf8(&r.unwrap()).unwrap());
+	println!("----------");
+	println!("");
 }

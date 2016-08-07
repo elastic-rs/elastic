@@ -6,6 +6,7 @@ authors = ["Ashley Mannix <ashleymannix@live.com.au>"]
 [dependencies]
 url = "*"
 rotor = "*"
+futures = "*"
 rotor-http = { version = "*", git = "https://github.com/KodrAus/rotor-http" }
 rotor-tools = "*"
 lazy_static = "*"
