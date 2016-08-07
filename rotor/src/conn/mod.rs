@@ -87,16 +87,16 @@ impl <C> Requester for ApiRequest<C> {
 
 		if let Some(body) = self.msg.get_body() {
 			req.add_length(body.len() as u64).unwrap();
-	        req.done_headers().unwrap();
-	        req.write_body(body);
+			req.done_headers().unwrap();
+			req.write_body(body);
 		}
 		else {
-	        req.done_headers().unwrap();
+			req.done_headers().unwrap();
 		}
 		
-        req.done();
+		req.done();
 
-        Some(self)
+		Some(self)
 	}
 
 	fn headers_received(self, _head: Head, _req: &mut Request, scope: &mut Scope<Self::Context>) -> Option<(Self, RecvMode, Time)> {
