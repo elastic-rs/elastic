@@ -1,6 +1,5 @@
 //! Mapping for the Elasticsearch `boolean` type.
 
-use std::marker::PhantomData;
 use serde;
 use serde::Serialize;
 use ::mapping::ElasticFieldMapping;
@@ -130,9 +129,7 @@ Self: ElasticFieldMapping<()> + Sized + Serialize {
 macro_rules! impl_boolean_mapping {
 	($t:ident) => (
 		impl $crate::mapping::ElasticFieldMapping<()> for $t {
-			fn data_type() -> &'static str {
-				$crate::boolean::mapping::BOOLEAN_DATATYPE
-			}
+			fn data_type() -> &'static str { $crate::boolean::mapping::BOOLEAN_DATATYPE }
 		}
 
 		impl serde::Serialize for $t {
@@ -140,7 +137,31 @@ macro_rules! impl_boolean_mapping {
 			where S: serde::Serializer {
 				let mut state = try!(serializer.serialize_struct("mapping", 6));
 
-				try!(serializer.serialize_struct_elt(&mut state, "type", M::data_type()));
+				try!(serializer.serialize_struct_elt(&mut state, "type", $t::data_type()));
+
+				ser_field!(serializer, &mut state, $t::BOOST, "boost");
+				ser_field!(serializer, &mut state, $t::DOC_VALUES, "doc_values");
+				ser_field!(serializer, &mut state, $t::INDEX, "index");
+				ser_field!(serializer, &mut state, $t::STORE, "store");
+				ser_field!(serializer, &mut state, $t::NULL_VALUE, "null_value");
+
+				serializer.serialize_struct_end(state)
+			}
+		}
+	);
+	($t:ident: $b:tt) => (
+		impl $crate::boolean::mapping::ElasticBooleanMapping for $t $b
+
+		impl $crate::mapping::ElasticFieldMapping<()> for $t {
+			fn data_type() -> &'static str { $crate::boolean::mapping::BOOLEAN_DATATYPE }
+		}
+
+		impl serde::Serialize for $t {
+			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+			where S: serde::Serializer {
+				let mut state = try!(serializer.serialize_struct("mapping", 6));
+
+				try!(serializer.serialize_struct_elt(&mut state, "type", $t::data_type()));
 
 				ser_field!(serializer, &mut state, $t::BOOST, "boost");
 				ser_field!(serializer, &mut state, $t::DOC_VALUES, "doc_values");
@@ -157,6 +178,4 @@ macro_rules! impl_boolean_mapping {
 /// Default mapping for `bool`.
 #[derive(Debug, Default, Clone, Copy)]
 pub struct DefaultBooleanMapping;
-impl ElasticBooleanMapping for DefaultBooleanMapping { }
-
-impl_boolean_mapping!(DefaultBooleanMapping);
+impl_boolean_mapping!(DefaultBooleanMapping: { });

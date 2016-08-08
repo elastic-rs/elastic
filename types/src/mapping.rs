@@ -63,10 +63,14 @@ pub trait ElasticType<T, F> where
 T: 'static + ElasticFieldMapping<F>,
 Self: serde::Serialize {
 	/// Get the type name for the given mapping.
-	const NAME: &'static str = T::NAME;
+	fn name() -> &'static str {
+		T::name()
+	}
 
 	/// Get the mapping for this type.
-	const MAPPING: T = T::default();
+	fn mapping() -> T {
+		T::default()
+	}
 }
 
 /// The base requirements for mapping an Elasticsearch data type.
@@ -77,10 +81,10 @@ Self: serde::Serialize {
 pub trait ElasticFieldMapping<F>
 where Self: 'static + Default + Clone + serde::Serialize {
 	/// Get the type name for this mapping, like `date` or `string`.
-	const DATA_TYPE: &'static str = "object";
+	fn data_type() -> &'static str { "object" }
 
 	#[doc(hidden)]
-	const NAME: &'static str = Self::DATA_TYPE;
+	fn name() -> &'static str { Self::data_type() }
 }
 
 /// Should the field be searchable? Accepts `not_analyzed` (default) and `no`.
@@ -113,6 +117,22 @@ impl serde::Serialize for IndexAnalysis {
 	}
 }
 
+/// A mapping implementation for a non-core type, or any where it's ok for Elasticsearch to infer the mapping at index-time.
+#[derive(Debug, PartialEq, Default, Clone)]
+pub struct DefaultMapping;
+impl ElasticFieldMapping<()> for DefaultMapping { }
+
+impl serde::Serialize for DefaultMapping {
+	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+	where S: serde::Serializer {
+		let mut state = try!(serializer.serialize_struct("mapping", 1));
+
+		try!(serializer.serialize_struct_elt(&mut state, "type", Self::data_type()));
+
+		serializer.serialize_struct_end(state)
+	}
+}
+
 /// Mapping for a collection.
 ///
 /// In Elasticsearch, arrays aren't a special type, anything can be indexed as an array.
@@ -128,7 +148,7 @@ F: 'static + Default + Clone {
 impl <M, F> ElasticFieldMapping<F> for ElasticArrayMapping<M, F> where
 M: 'static + ElasticFieldMapping<F>,
 F: 'static + Default + Clone {
-	const DATA_TYPE: &'static str = M::DATA_TYPE;
+	fn data_type() -> &'static str { M::data_type() }
 }
 
 impl <M, F> serde::Serialize for ElasticArrayMapping<M, F> where
@@ -136,7 +156,7 @@ M: 'static + ElasticFieldMapping<F>,
 F: 'static + Default + Clone {
 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
 	where S: serde::Serializer {
-		M::MAPPING.serialize(&mut serializer)
+		M::default().serialize(serializer)
 	}
 }
 
@@ -164,7 +184,7 @@ F: 'static + Default + Clone {
 impl <M, F> ElasticFieldMapping<F> for ElasticOptionMapping<M, F> where
 M: 'static + ElasticFieldMapping<F>,
 F: 'static + Default + Clone {
-	const DATA_TYPE: &'static str = M::DATA_TYPE;
+	fn data_type() -> &'static str { M::data_type() }
 }
 
 impl <M, F> serde::Serialize for ElasticOptionMapping<M, F> where
@@ -172,7 +192,7 @@ M: 'static + ElasticFieldMapping<F>,
 F: 'static + Default + Clone {
 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
 	where S: serde::Serializer {
-		M::MAPPING.serialize(&mut serializer)
+		M::default().serialize(serializer)
 	}
 }
 
