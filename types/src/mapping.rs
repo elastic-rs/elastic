@@ -28,18 +28,17 @@ pub mod prelude {
 	pub use super::{
 		ElasticType,
 		ElasticFieldMapping,
-		ElasticTypeVisitor,
 		DefaultMapping,
 		IndexAnalysis
 	};
 
-	pub use ::object::*;
-	pub use ::mappers::*;
-	pub use ::date::mapping::*;
-	pub use ::ip::mapping::*;
-	pub use ::geo::mapping::*;
-	pub use ::string::mapping::*;
-	pub use ::number::mapping::*;
+	//pub use ::object::*;
+	//pub use ::mappers::*;
+	//pub use ::date::mapping::*;
+	//pub use ::ip::mapping::*;
+	//pub use ::geo::mapping::*;
+	//pub use ::string::mapping::*;
+	//pub use ::number::mapping::*;
 	pub use ::boolean::mapping::*;
 }
 
@@ -61,17 +60,13 @@ use serde_json;
 ///
 /// - [Elasticsearch docs](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-types.html)
 pub trait ElasticType<T, F> where
-T: ElasticFieldMapping<F>,
+T: 'static + ElasticFieldMapping<F>,
 Self: serde::Serialize {
 	/// Get the type name for the given mapping.
-	fn name() -> &'static str {
-		T::name()
-	}
+	const NAME: &'static str = T::NAME;
 
 	/// Get the mapping for this type.
-	fn mapping() -> T {
-		T::default()
-	}
+	const MAPPING: T = T::default();
 }
 
 /// The base requirements for mapping an Elasticsearch data type.
@@ -80,66 +75,12 @@ Self: serde::Serialize {
 /// If you're building your own Elasticsearch types, see `ElasticUserTypeMapping`,
 /// which is a specialization of `ElasticFieldMapping<()>`.
 pub trait ElasticFieldMapping<F>
-where Self: Default + Clone + serde::Serialize {
-	#[doc(hidden)]
-	type Visitor: ElasticTypeVisitor;
-
-	#[doc(hidden)]
-	fn get_visitor() -> Self::Visitor {
-		Self::Visitor::new()
-	}
-
+where Self: 'static + Default + Clone + serde::Serialize {
 	/// Get the type name for this mapping, like `date` or `string`.
-	fn data_type() -> &'static str {
-		"object"
-	}
+	const DATA_TYPE: &'static str = "object";
 
 	#[doc(hidden)]
-	fn name() -> &'static str {
-		Self::data_type()
-	}
-}
-
-/// Base visitor for serialising a datatype.
-pub trait ElasticTypeVisitor where
-Self: serde::ser::MapVisitor {
-	/// Create a new instance of the visitor.
-	fn new() -> Self;
-}
-
-/// A mapping implementation for a non-core type, or any where it's ok for Elasticsearch to infer the mapping at index-time.
-#[derive(Debug, PartialEq, Default, Clone)]
-pub struct DefaultMapping;
-impl ElasticFieldMapping<()> for DefaultMapping {
-	type Visitor = DefaultMappingVisitor;
-
-	fn data_type() -> &'static str {
-		"object"
-	}
-}
-
-impl serde::Serialize for DefaultMapping {
-	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
-	where S: serde::Serializer {
-		serializer.serialize_struct("mapping", DefaultMappingVisitor::new())
-	}
-}
-
-/// A default empty visitor.
-#[derive(Debug, PartialEq)]
-pub struct DefaultMappingVisitor;
-impl ElasticTypeVisitor for DefaultMappingVisitor {
-	fn new() -> Self {
-		DefaultMappingVisitor
-	}
-}
-impl serde::ser::MapVisitor for DefaultMappingVisitor {
-	fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
-	where S: serde::Serializer {
-		try!(serializer.serialize_struct_elt("type", DefaultMapping::data_type()));
-
-		Ok(None)
-	}
+	const NAME: &'static str = Self::DATA_TYPE;
 }
 
 /// Should the field be searchable? Accepts `not_analyzed` (default) and `no`.
@@ -178,35 +119,31 @@ impl serde::Serialize for IndexAnalysis {
 /// So the mapping for an array is just the mapping for its members.
 #[derive(Debug, Default, Clone)]
 pub struct ElasticArrayMapping<M, F> where
-M: ElasticFieldMapping<F>,
-F: Default + Clone {
+M: 'static + ElasticFieldMapping<F>,
+F: 'static + Default + Clone {
 	phantom_m: PhantomData<M>,
 	phantom_f: PhantomData<F>
 }
 
 impl <M, F> ElasticFieldMapping<F> for ElasticArrayMapping<M, F> where
-M: ElasticFieldMapping<F>,
-F: Default + Clone {
-	type Visitor = M::Visitor;
-
-	fn data_type() -> &'static str {
-		M::data_type()
-	}
+M: 'static + ElasticFieldMapping<F>,
+F: 'static + Default + Clone {
+	const DATA_TYPE: &'static str = M::DATA_TYPE;
 }
 
 impl <M, F> serde::Serialize for ElasticArrayMapping<M, F> where
-M: ElasticFieldMapping<F>,
-F: Default + Clone {
+M: 'static + ElasticFieldMapping<F>,
+F: 'static + Default + Clone {
 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
 	where S: serde::Serializer {
-		serializer.serialize_struct("mapping", M::get_visitor())
+		M::MAPPING.serialize(&mut serializer)
 	}
 }
 
 impl <T, M, F> ElasticType<ElasticArrayMapping<M, F>, F> for Vec<T> where
-T: ElasticType<M, F>,
-M: ElasticFieldMapping<F>,
-F: Default + Clone {
+T: 'static + ElasticType<M, F>,
+M: 'static + ElasticFieldMapping<F>,
+F: 'static + Default + Clone {
 
 }
 
@@ -218,71 +155,31 @@ F: Default + Clone {
 /// This probably isn't necessary unless you have no control over the indexed data though.
 #[derive(Debug, Default, Clone)]
 pub struct ElasticOptionMapping<M, F> where
-M: ElasticFieldMapping<F>,
-F: Default + Clone {
+M: 'static + ElasticFieldMapping<F>,
+F: 'static + Default + Clone {
 	phantom_m: PhantomData<M>,
 	phantom_f: PhantomData<F>
 }
 
 impl <M, F> ElasticFieldMapping<F> for ElasticOptionMapping<M, F> where
-M: ElasticFieldMapping<F>,
-F: Default + Clone {
-	type Visitor = M::Visitor;
-
-	fn data_type() -> &'static str {
-		M::data_type()
-	}
+M: 'static + ElasticFieldMapping<F>,
+F: 'static + Default + Clone {
+	const DATA_TYPE: &'static str = M::DATA_TYPE;
 }
 
 impl <M, F> serde::Serialize for ElasticOptionMapping<M, F> where
-M: ElasticFieldMapping<F>,
-F: Default + Clone {
+M: 'static + ElasticFieldMapping<F>,
+F: 'static + Default + Clone {
 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
 	where S: serde::Serializer {
-		serializer.serialize_struct("mapping", M::get_visitor())
+		M::MAPPING.serialize(&mut serializer)
 	}
 }
 
 impl <T, M, F> ElasticType<ElasticOptionMapping<M, F>, F> for Option<T> where
-T: ElasticType<M, F>,
-M: ElasticFieldMapping<F>,
-F: Default + Clone {
-
-}
-
-/// Mapping for a borrowed type.
-#[derive(Debug, Default, Clone)]
-pub struct ElasticBorrowMapping<'a, M, F> where
-M: ElasticFieldMapping<F>,
-F: Default + Clone {
-	phantom_m: PhantomData<M>,
-	phantom_f: PhantomData<F>,
-	phantom_a: PhantomData<&'a ()>
-}
-
-impl <'a, M, F> ElasticFieldMapping<F> for ElasticBorrowMapping<'a, M, F> where
-M: ElasticFieldMapping<F>,
-F: Default + Clone {
-	type Visitor = M::Visitor;
-
-	fn data_type() -> &'static str {
-		M::data_type()
-	}
-}
-
-impl <'a, M, F> serde::Serialize for ElasticBorrowMapping<'a, M, F> where
-M: ElasticFieldMapping<F>,
-F: Default + Clone {
-	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
-	where S: serde::Serializer {
-		serializer.serialize_struct("mapping", M::get_visitor())
-	}
-}
-
-impl <'a, T, M, F> ElasticType<ElasticBorrowMapping<'a, M, F>, F> for &'a T where
-T: ElasticType<M, F>,
-M: ElasticFieldMapping<F>,
-F: Default + Clone {
+T: 'static + ElasticType<M, F>,
+M: 'static + ElasticFieldMapping<F>,
+F: 'static + Default + Clone {
 
 }
 

@@ -6,33 +6,21 @@ license = "Apache-2.0"
 description = "A strongly-typed implementation of Elasticsearch core types and Mapping API."
 documentation = "http://kodraus.github.io/rustdoc/elastic_types/"
 repository = "https://github.com/KodrAus/elasticsearch-rs"
-build = "build.rs"
 
 [features]
-nightly = [
-  "serde_macros",
-  "elastic_date_macros/nightly"
-]
-default = [
-  "serde_codegen",
-  "elastic_date_macros"
-]
-nightly-testing = [
-  "nightly",
-  "elastic_types_macros"
-]
+nightly-testing = []
 
 [dependencies]
-serde = "~0.7.0"
-serde_json = "~0.7.0"
+serde = "~0.8.0"
+serde_json = "~0.8.0"
 chrono = { version = "~0.2.20", features = [ "serde" ]}
 geo = "~0.0.7"
 geohash = "~0.2.7"
-geojson = { version = "~0.2.1", features = [ "with-serde" ] }
+geojson = { version = "*", features = [ "with-serde" ] }
 
-serde_macros = { version = "~0.7.0", optional = true }
-elastic_date_macros = { version = "~0.3.2", optional = true }
-elastic_types_macros = { version = "*", optional = true, path = "../macros/types" }
+serde_macros = { version = "~0.8.0" }
+elastic_date_macros = { version = "~0.3.2", features = [ "nightly" ] }
+elastic_types_macros = { version = "*", path = "../macros/types" }
 
 [build-dependencies]
 serde_codegen = { version = "^0.7", optional = true }

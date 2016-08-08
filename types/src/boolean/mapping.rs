@@ -3,7 +3,7 @@
 use std::marker::PhantomData;
 use serde;
 use serde::Serialize;
-use ::mapping::{ ElasticFieldMapping, ElasticTypeVisitor };
+use ::mapping::ElasticFieldMapping;
 
 /// Elasticsearch datatype name.
 pub const BOOLEAN_DATATYPE: &'static str = "boolean";
@@ -108,23 +108,50 @@ pub const BOOLEAN_DATATYPE: &'static str = "boolean";
 pub trait ElasticBooleanMapping where
 Self: ElasticFieldMapping<()> + Sized + Serialize {
 	/// Field-level index time boosting. Accepts a floating point number, defaults to `1.0`.
-	fn boost() -> Option<f32> { None }
+	const BOOST: Option<f32> = None;
 
 	/// Should the field be stored on disk in a column-stride fashion,
 	/// so that it can later be used for sorting, aggregations, or scripting?
 	/// Accepts `true` (default) or `false`.
-	fn doc_values() -> Option<bool> { None }
+	const DOC_VALUES: Option<bool> = None;
 
 	/// Should the field be searchable? Accepts `not_analyzed` (default) and `no`.
-	fn index() -> Option<bool> { None }
+	const INDEX: Option<bool> = None;
 
 	/// Accepts a string value which is substituted for any explicit null values.
 	/// Defaults to `null`, which means the field is treated as missing.
-	fn null_value() -> Option<bool> { None }
+	const NULL_VALUE: Option<bool> = None;
 
 	/// Whether the field value should be stored and retrievable separately from the `_source` field.
 	/// Accepts `true` or `false` (default).
-	fn store() -> Option<bool> { None }
+	const STORE: Option<bool> = None;
+}
+
+macro_rules! impl_boolean_mapping {
+	($t:ident) => (
+		impl $crate::mapping::ElasticFieldMapping<()> for $t {
+			fn data_type() -> &'static str {
+				$crate::boolean::mapping::BOOLEAN_DATATYPE
+			}
+		}
+
+		impl serde::Serialize for $t {
+			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+			where S: serde::Serializer {
+				let mut state = try!(serializer.serialize_struct("mapping", 6));
+
+				try!(serializer.serialize_struct_elt(&mut state, "type", M::data_type()));
+
+				ser_field!(serializer, &mut state, $t::BOOST, "boost");
+				ser_field!(serializer, &mut state, $t::DOC_VALUES, "doc_values");
+				ser_field!(serializer, &mut state, $t::INDEX, "index");
+				ser_field!(serializer, &mut state, $t::STORE, "store");
+				ser_field!(serializer, &mut state, $t::NULL_VALUE, "null_value");
+
+				serializer.serialize_struct_end(state)
+			}
+		}
+	)
 }
 
 /// Default mapping for `bool`.
@@ -133,33 +160,3 @@ pub struct DefaultBooleanMapping;
 impl ElasticBooleanMapping for DefaultBooleanMapping { }
 
 impl_boolean_mapping!(DefaultBooleanMapping);
-
-/// Base visitor for serialising boolean mappings.
-#[derive(Debug, PartialEq, Default)]
-pub struct ElasticBooleanMappingVisitor<M> where M: ElasticBooleanMapping {
-	phantom: PhantomData<M>
-}
-
-impl <M> ElasticTypeVisitor for ElasticBooleanMappingVisitor<M> where
-M: ElasticBooleanMapping {
-	fn new() -> Self {
-		ElasticBooleanMappingVisitor {
-			phantom: PhantomData
-		}
-	}
-}
-impl <M> serde::ser::MapVisitor for ElasticBooleanMappingVisitor<M> where
-M: ElasticBooleanMapping {
-	fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
-	where S: serde::Serializer {
-		try!(serializer.serialize_struct_elt("type", M::data_type()));
-
-		ser_field!(serializer, M::boost(), "boost");
-		ser_field!(serializer, M::doc_values(), "doc_values");
-		ser_field!(serializer, M::index(), "index");
-		ser_field!(serializer, M::store(), "store");
-		ser_field!(serializer, M::null_value(), "null_value");
-
-		Ok(None)
-	}
-}

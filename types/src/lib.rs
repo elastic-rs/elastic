@@ -512,13 +512,9 @@
 #![doc(html_root_url = "http://kodraus.github.io/rustdoc/elastic_types/")]
 #![deny(missing_docs)]
 
-#![cfg_attr(feature = "nightly", feature(custom_derive, plugin, associated_type_defaults))]
-#![cfg_attr(feature = "nightly", plugin(serde_macros, elastic_date_macros))]
+#![feature(custom_derive, plugin, associated_type_defaults, associated_consts)]
+#![plugin(serde_macros, elastic_date_macros)]
 #![cfg_attr(feature = "nightly-testing", allow(identity_op))]
-
-#[cfg_attr(not(feature = "nightly"), macro_use)]
-#[cfg(not(feature = "nightly"))]
-extern crate elastic_date_macros;
 
 pub extern crate chrono;
 pub extern crate geo as georust;
@@ -528,24 +524,28 @@ pub extern crate geojson;
 extern crate serde;
 extern crate serde_json;
 
-#[macro_use]
-mod macros;
-pub mod mappers;
+//#[macro_use]
+//pub mod macros;
 
 macro_rules! ser_field {
-    ($s:ident, $f:expr, $n:expr) => (
+    ($s:ident, $h:expr, $f:expr, $n:expr) => (
     	if let Some(f) = $f {
-			try!($s.serialize_struct_elt($n, f));
+			try!($s.serialize_struct_elt($h, $n, f));
 		}
     )
 }
 
-//Other type dependencies
-#[cfg(feature = "serde_macros")]
-include!("lib.rs.in");
+pub mod mapping;
+//pub mod mappers;
+//pub mod response;
+//pub mod object;
+//pub mod string;
+//pub mod number;
+pub mod boolean;
+//pub mod ip;
+//pub mod geo;
+//pub mod date;
 
-#[cfg(not(feature = "serde_macros"))]
-include!(concat!(env!("OUT_DIR"), "/lib.rs"));
 
 pub mod prelude {
 	//! Includes non-mapping types for all data types.
@@ -554,9 +554,9 @@ pub mod prelude {
 
 	pub use ::mapping::prelude::*;
 	pub use ::boolean::prelude::*;
-	pub use ::date::prelude::*;
-	pub use ::geo::prelude::*;
-	pub use ::ip::prelude::*;
-	pub use ::number::prelude::*;
-	pub use ::string::prelude::*;
+	//pub use ::date::prelude::*;
+	//pub use ::geo::prelude::*;
+	//pub use ::ip::prelude::*;
+	//pub use ::number::prelude::*;
+	//pub use ::string::prelude::*;
 }
