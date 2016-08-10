@@ -48,6 +48,7 @@ mod point;
 mod format;
 mod formats;
 
+#[macro_use]
 pub mod mapping;
 pub use self::point::*;
 pub use self::format::*;

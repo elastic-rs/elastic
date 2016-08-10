@@ -37,6 +37,7 @@
 
 mod boolean;
 
+#[macro_use]
 pub mod mapping;
 pub use self::boolean::*;
 

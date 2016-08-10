@@ -42,8 +42,10 @@
 
 mod shape;
 
-pub use self::shape::*;
+#[macro_use]
 pub mod mapping;
+
+pub use self::shape::*;
 
 pub mod prelude {
 	//! Includes non-mapping types for the `geo_shape` types.
