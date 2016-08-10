@@ -107,31 +107,28 @@ pub const BOOLEAN_DATATYPE: &'static str = "boolean";
 pub trait ElasticBooleanMapping where
 Self: ElasticFieldMapping<()> + Sized + Serialize {
 	/// Field-level index time boosting. Accepts a floating point number, defaults to `1.0`.
-	const BOOST: Option<f32> = None;
+	fn boost() -> Option<f32> { None }
 
 	/// Should the field be stored on disk in a column-stride fashion,
 	/// so that it can later be used for sorting, aggregations, or scripting?
 	/// Accepts `true` (default) or `false`.
-	const DOC_VALUES: Option<bool> = None;
+	fn doc_values() -> Option<bool> { None }
 
 	/// Should the field be searchable? Accepts `not_analyzed` (default) and `no`.
-	const INDEX: Option<bool> = None;
+	fn index() -> Option<bool> { None }
 
 	/// Accepts a string value which is substituted for any explicit null values.
 	/// Defaults to `null`, which means the field is treated as missing.
-	const NULL_VALUE: Option<bool> = None;
+	fn null_value() -> Option<bool> { None }
 
 	/// Whether the field value should be stored and retrievable separately from the `_source` field.
 	/// Accepts `true` or `false` (default).
-	const STORE: Option<bool> = None;
+	fn store() -> Option<bool> { None }
 }
 
-macro_rules! impl_boolean_mapping {
-	($t:ident) => (
-		impl $crate::mapping::ElasticFieldMapping<()> for $t {
-			fn data_type() -> &'static str { $crate::boolean::mapping::BOOLEAN_DATATYPE }
-		}
-
+/// Implement `serde` serialisation for a `boolean` mapping type.
+macro_rules! boolean_ser {
+    ($t:ident) => (
 		impl serde::Serialize for $t {
 			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
 			where S: serde::Serializer {
@@ -139,35 +136,11 @@ macro_rules! impl_boolean_mapping {
 
 				try!(serializer.serialize_struct_elt(&mut state, "type", $t::data_type()));
 
-				ser_field!(serializer, &mut state, $t::BOOST, "boost");
-				ser_field!(serializer, &mut state, $t::DOC_VALUES, "doc_values");
-				ser_field!(serializer, &mut state, $t::INDEX, "index");
-				ser_field!(serializer, &mut state, $t::STORE, "store");
-				ser_field!(serializer, &mut state, $t::NULL_VALUE, "null_value");
-
-				serializer.serialize_struct_end(state)
-			}
-		}
-	);
-	($t:ident: $b:tt) => (
-		impl $crate::boolean::mapping::ElasticBooleanMapping for $t $b
-
-		impl $crate::mapping::ElasticFieldMapping<()> for $t {
-			fn data_type() -> &'static str { $crate::boolean::mapping::BOOLEAN_DATATYPE }
-		}
-
-		impl serde::Serialize for $t {
-			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
-			where S: serde::Serializer {
-				let mut state = try!(serializer.serialize_struct("mapping", 6));
-
-				try!(serializer.serialize_struct_elt(&mut state, "type", $t::data_type()));
-
-				ser_field!(serializer, &mut state, $t::BOOST, "boost");
-				ser_field!(serializer, &mut state, $t::DOC_VALUES, "doc_values");
-				ser_field!(serializer, &mut state, $t::INDEX, "index");
-				ser_field!(serializer, &mut state, $t::STORE, "store");
-				ser_field!(serializer, &mut state, $t::NULL_VALUE, "null_value");
+				ser_field!(serializer, &mut state, $t::boost(), "boost");
+				ser_field!(serializer, &mut state, $t::doc_values(), "doc_values");
+				ser_field!(serializer, &mut state, $t::index(), "index");
+				ser_field!(serializer, &mut state, $t::store(), "store");
+				ser_field!(serializer, &mut state, $t::null_value(), "null_value");
 
 				serializer.serialize_struct_end(state)
 			}
@@ -175,7 +148,55 @@ macro_rules! impl_boolean_mapping {
 	)
 }
 
+/// Define a `boolean` mapping.
+/// 
+/// The easiest way to define a mapping type is to let the macro do it for you:
+/// 
+/// ```
+/// boolean_mapping!(MyMapping {
+/// 	fn null_value() -> Option<bool> { Some(true) }
+/// });
+/// ```
+/// 
+/// The above example will define a public struct for you and implement
+/// `ElasticFieldMapping` and `ElasticBooleanMapping`, along with a few default traits:
+/// 
+/// ```
+/// #[derive(Debug, Default, Clone, Copy)]
+/// pub struct MyMapping;
+/// ```
+/// 
+/// If you want to control the default implementations yourself, you can define your
+/// mapping type and just pass it the macro to implement `ElasticFieldMapping`:
+/// 
+/// ```
+/// #[derive(Debug, Default, Clone, Copy)]
+/// pub struct MyMapping;
+/// impl ElasticBooleanMapping for MyMapping { }
+/// 
+/// boolean_mapping!(MyMapping);
+/// ```
+macro_rules! boolean_mapping {
+	($t:ident) => (
+		impl $crate::mapping::ElasticFieldMapping<()> for $t {
+			fn data_type() -> &'static str { $crate::boolean::mapping::BOOLEAN_DATATYPE }
+		}
+
+		boolean_ser!($t);
+	);
+	($t:ident $b:tt) => (
+		#[derive(Debug, Default, Clone, Copy)]
+		pub struct $t;
+
+		impl $crate::boolean::mapping::ElasticBooleanMapping for $t $b
+
+		boolean_mapping!($t);
+	)
+}
+
 /// Default mapping for `bool`.
 #[derive(Debug, Default, Clone, Copy)]
 pub struct DefaultBooleanMapping;
-impl_boolean_mapping!(DefaultBooleanMapping: { });
+impl ElasticBooleanMapping for DefaultBooleanMapping { }
+
+boolean_mapping!(DefaultBooleanMapping);

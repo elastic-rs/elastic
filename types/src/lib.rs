@@ -544,7 +544,7 @@ pub mod mapping;
 pub mod boolean;
 //pub mod ip;
 //pub mod geo;
-//pub mod date;
+pub mod date;
 
 
 pub mod prelude {

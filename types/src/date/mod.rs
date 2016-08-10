@@ -100,11 +100,13 @@
 //! # Links
 //! - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/date.html)
 
+#[macro_use]
+pub mod mapping;
+
 mod format;
 mod formats;
 mod date;
 
-pub mod mapping;
 pub use self::format::*;
 pub use self::date::*;
 pub use self::formats::*;

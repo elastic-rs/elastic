@@ -11,9 +11,7 @@ use ::mapping::{ ElasticFieldMapping, ElasticType };
 
 pub use chrono::{ Datelike, Timelike };
 
-impl ElasticType<DefaultDateMapping<ChronoFormat>, ChronoFormat> for DT {
-
-}
+impl ElasticType<DefaultDateMapping<ChronoFormat>, ChronoFormat> for DT { }
 
 /// An Elasticsearch `date` type with a required `time` component.
 ///
