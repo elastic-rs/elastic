@@ -542,11 +542,12 @@ pub mod date;
 pub mod geo;
 #[macro_use]
 pub mod ip;
+#[macro_use]
+pub mod number;
 //pub mod mappers;
 //pub mod response;
 //pub mod object;
 //pub mod string;
-//pub mod number;
 
 pub mod prelude {
 	//! Includes non-mapping types for all data types.

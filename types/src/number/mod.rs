@@ -49,9 +49,10 @@
 //!
 //! - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/number.html)
 
-mod number;
-
+#[macro_use]
 pub mod mapping;
+
+mod number;
 pub use self::number::*;
 
 pub mod prelude {
