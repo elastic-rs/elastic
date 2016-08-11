@@ -544,10 +544,11 @@ pub mod geo;
 pub mod ip;
 #[macro_use]
 pub mod number;
+#[macro_use]
+pub mod string;
 //pub mod mappers;
 //pub mod response;
 //pub mod object;
-//pub mod string;
 
 pub mod prelude {
 	//! Includes non-mapping types for all data types.

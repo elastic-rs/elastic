@@ -156,20 +156,12 @@ macro_rules! impl_string_type {
     );
 }
 
-macro_rules! ser_sub_field {
-	($s:ident, $f:expr, $n:expr) => (
-		if let Some(f) = $f {
-			try!($s.serialize_struct_elt($n, f));
-		}
-	)
-}
+#[macro_use]
+pub mod keyword;
+#[macro_use]
+pub mod text;
 
 pub mod mapping;
-
-impl ::mapping::ElasticType<mapping::DefaultStringMapping, ()> for String { }
-
-mod keyword;
-mod text;
 
 pub use self::keyword::ElasticKeyword;
 pub use self::text::ElasticText;

@@ -1,9 +1,8 @@
 //! Mapping for the Elasticsearch `text` type.
 
 use std::collections::BTreeMap;
-use std::marker::PhantomData;
 use serde::{ self, Serializer, Serialize };
-use ::mapping::{ ElasticFieldMapping, ElasticTypeVisitor };
+use ::mapping::ElasticFieldMapping;
 use ::string::mapping::{ ElasticStringField, IndexOptions };
 
 /// Elasticsearch datatype name.
@@ -216,55 +215,101 @@ Self: ElasticFieldMapping<()> + Sized + Serialize {
 	fn term_vector() -> Option<TermVector> { None }
 }
 
-/// Base visitor for serialising string mappings.
-#[derive(Debug, PartialEq)]
-pub struct ElasticTextMappingVisitor<M> where M: ElasticTextMapping {
-	phantom: PhantomData<M>
-}
+/// Implement `serde` serialisation for a `keyword` mapping type.
+macro_rules! text_ser {
+    ($t:ident) => (
+		impl serde::Serialize for $t {
+			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+			where S: serde::Serializer {
+				let mut state = try!(serializer.serialize_struct("mapping", 18));
 
-impl <M> ElasticTypeVisitor for ElasticTextMappingVisitor<M> where
-M: ElasticTextMapping {
-	fn new() -> Self {
-		ElasticTextMappingVisitor {
-			phantom: PhantomData
+				try!(serializer.serialize_struct_elt(&mut state, "type", $t::data_type()));
+
+				ser_field!(serializer, &mut state, $t::boost(), "boost");
+				ser_field!(serializer, &mut state, $t::analyzer(), "analyzer");
+				ser_field!(serializer, &mut state, $t::eager_global_ordinals(), "eager_global_ordinals");
+				ser_field!(serializer, &mut state, $t::fielddata(), "fielddata");
+				ser_field!(serializer, &mut state, $t::fielddata_frequency_filter(), "fielddata_frequency_filter");
+				ser_field!(serializer, &mut state, $t::fields(), "fields");
+				ser_field!(serializer, &mut state, $t::include_in_all(), "include_in_all");
+				ser_field!(serializer, &mut state, $t::ignore_above(), "ignore_above");
+				ser_field!(serializer, &mut state, $t::index(), "index");
+				ser_field!(serializer, &mut state, $t::index_options(), "index_options");
+				ser_field!(serializer, &mut state, $t::norms(), "norms");
+				ser_field!(serializer, &mut state, $t::position_increment_gap(), "position_increment_gap");
+				ser_field!(serializer, &mut state, $t::store(), "store");
+				ser_field!(serializer, &mut state, $t::search_analyzer(), "search_analyzer");
+				ser_field!(serializer, &mut state, $t::search_quote_analyzer(), "search_quote_analyzer");
+				ser_field!(serializer, &mut state, $t::similarity(), "similarity");
+				ser_field!(serializer, &mut state, $t::term_vector(), "term_vector");
+
+				serializer.serialize_struct_end(state)
+			}
 		}
-	}
-}
-impl <M> serde::ser::MapVisitor for ElasticTextMappingVisitor<M> where
-M: ElasticTextMapping {
-	#[cfg_attr(feature = "nightly-testing", allow(cyclomatic_complexity))]
-	fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
-	where S: serde::Serializer {
-		try!(serializer.serialize_struct_elt("type", M::data_type()));
-
-		ser_field!(serializer, M::boost(), "boost");
-		ser_field!(serializer, M::analyzer(), "analyzer");
-		ser_field!(serializer, M::eager_global_ordinals(), "eager_global_ordinals");
-		ser_field!(serializer, M::fielddata(), "fielddata");
-		ser_field!(serializer, M::fielddata_frequency_filter(), "fielddata_frequency_filter");
-		ser_field!(serializer, M::fields(), "fields");
-		ser_field!(serializer, M::include_in_all(), "include_in_all");
-		ser_field!(serializer, M::ignore_above(), "ignore_above");
-		ser_field!(serializer, M::index(), "index");
-		ser_field!(serializer, M::index_options(), "index_options");
-		ser_field!(serializer, M::norms(), "norms");
-		ser_field!(serializer, M::position_increment_gap(), "position_increment_gap");
-		ser_field!(serializer, M::store(), "store");
-		ser_field!(serializer, M::search_analyzer(), "search_analyzer");
-		ser_field!(serializer, M::search_quote_analyzer(), "search_quote_analyzer");
-		ser_field!(serializer, M::similarity(), "similarity");
-		ser_field!(serializer, M::term_vector(), "term_vector");
-
-		Ok(None)
-	}
+	)
 }
 
-/// Default mapping for `text`.
+/// Define a `text` mapping.
+/// 
+/// # Examples
+/// 
+/// ## Define mapping struct inline
+/// 
+/// The easiest way to define a mapping type is to let the macro do it for you:
+/// 
+/// ```
+/// text_mapping!(MyMapping {
+/// 	fn boost() -> Option<f32> { Some(1.07) }
+/// });
+/// ```
+/// 
+/// The above example will define a public struct for you and implement
+/// `ElasticFieldMapping` and `ElasticTextMapping`, along with a few default traits:
+/// 
+/// ```
+/// #[derive(Debug, Default, Clone, Copy)]
+/// pub struct MyMapping;
+/// ```
+/// 
+/// ## Define mapping for existing struct
+/// 
+/// If you want to control the default implementations yourself, you can define your
+/// mapping type and just pass it the macro to implement `ElasticFieldMapping`:
+/// 
+/// ```
+/// #[derive(Debug, Default, Clone, Copy)]
+/// pub struct MyMapping;
+/// impl ElasticTextMapping for MyMapping { 
+/// 	fn boost() -> Option<f32> { Some(1.07) }
+/// }
+/// 
+/// text_mapping!(MyMapping);
+/// ```
+#[macro_export]
+macro_rules! text_mapping {
+	($t:ident) => (
+		impl $crate::mapping::ElasticFieldMapping<()> for $t {
+			fn data_type() -> &'static str { $crate::string::text::mapping::TEXT_DATATYPE }
+		}
+
+		text_ser!($t);
+	);
+	($t:ident $b:tt) => (
+		#[derive(Debug, Default, Clone, Copy)]
+		pub struct $t;
+
+		impl $crate::string::text::mapping::ElasticTextMapping for $t $b
+
+		text_mapping!($t);
+	)
+}
+
+/// Default mapping for `bool`.
 #[derive(Debug, Default, Clone, Copy)]
 pub struct DefaultTextMapping;
 impl ElasticTextMapping for DefaultTextMapping { }
 
-impl_text_mapping!(DefaultTextMapping);
+text_mapping!(DefaultTextMapping);
 
 /// Term vectors contain information about the terms produced by the analysis process.
 #[derive(Debug, Clone, Copy)]
@@ -307,33 +352,15 @@ pub struct FieldDataFrequencyFilter {
 }
 
 impl serde::Serialize for FieldDataFrequencyFilter {
-	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
-		where S: serde::Serializer
-	{
-		serializer.serialize_struct("", FieldDataFrequencyFilterVisitor { data: self })
-	}
-}
+	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where 
+	S: serde::Serializer {
+		let mut state = try!(serializer.serialize_struct("mapping", 3));
 
-#[derive(Debug, PartialEq)]
-struct FieldDataFrequencyFilterVisitor<'a> {
-	pub data: &'a FieldDataFrequencyFilter
-}
-impl <'a> serde::ser::MapVisitor for FieldDataFrequencyFilterVisitor<'a> {
-	fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
-	where S: serde::Serializer {
-		if let Some(min) = self.data.min {
-			try!(serializer.serialize_struct_elt("min", min));
-		}
+		ser_field!(serializer, &mut state, self.min, "min");
+		ser_field!(serializer, &mut state, self.max, "max");
+		ser_field!(serializer, &mut state, self.min_segment_size, "min_segment_size");
 
-		if let Some(max) = self.data.max {
-			try!(serializer.serialize_struct_elt("max", max));
-		}
-
-		if let Some(min_segment_size) = self.data.min_segment_size {
-			try!(serializer.serialize_struct_elt("min_segment_size", min_segment_size));
-		}
-
-		Ok(None)
+		serializer.serialize_struct_end(state)
 	}
 }
 
@@ -391,49 +418,28 @@ pub struct ElasticTextFieldMapping {
 }
 
 impl serde::Serialize for ElasticTextFieldMapping {
-	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
-	where S: Serializer
-	{
-		serializer.serialize_struct("fields", ElasticTextFieldMappingVisitor::new(&self))
-	}
-}
+	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where 
+	S: Serializer {
+		let mut state = try!(serializer.serialize_struct("mapping", 16));
 
-#[doc(hidden)]
-#[derive(Debug)]
-pub struct ElasticTextFieldMappingVisitor<'a> {
-	data: &'a ElasticTextFieldMapping
-}
-impl <'a> ElasticTextFieldMappingVisitor<'a> {
-	#[doc(hidden)]
-	pub fn new(field: &'a ElasticTextFieldMapping) -> Self {
-		ElasticTextFieldMappingVisitor {
-			data: field
-		}
-	}
-}
+		try!(serializer.serialize_struct_elt(&mut state, "type", TEXT_DATATYPE));
 
-impl <'a> serde::ser::MapVisitor for ElasticTextFieldMappingVisitor<'a> {
-	#[cfg_attr(feature = "nightly-testing", allow(cyclomatic_complexity))]
-	fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
-	where S: serde::Serializer {
-		try!(serializer.serialize_struct_elt("type", TEXT_DATATYPE));
+		ser_field!(serializer, &mut state, self.analyzer, "analyzer");
+		ser_field!(serializer, &mut state, self.eager_global_ordinals, "eager_global_ordinals");
+		ser_field!(serializer, &mut state, self.fielddata, "fielddata");
+		ser_field!(serializer, &mut state, self.fielddata_frequency_filter, "fielddata_frequency_filter");
+		ser_field!(serializer, &mut state, self.include_in_all, "include_in_all");
+		ser_field!(serializer, &mut state, self.ignore_above, "ignore_above");
+		ser_field!(serializer, &mut state, self.index, "index");
+		ser_field!(serializer, &mut state, self.index_options, "index_options");
+		ser_field!(serializer, &mut state, self.norms, "norms");
+		ser_field!(serializer, &mut state, self.position_increment_gap, "position_increment_gap");
+		ser_field!(serializer, &mut state, self.store, "store");
+		ser_field!(serializer, &mut state, self.search_analyzer, "search_analyzer");
+		ser_field!(serializer, &mut state, self.search_quote_analyzer, "search_quote_analyzer");
+		ser_field!(serializer, &mut state, self.similarity, "similarity");
+		ser_field!(serializer, &mut state, self.term_vector, "term_vector");
 
-		ser_sub_field!(serializer, self.data.analyzer, "analyzer");
-		ser_sub_field!(serializer, self.data.eager_global_ordinals, "eager_global_ordinals");
-		ser_sub_field!(serializer, self.data.fielddata, "fielddata");
-		ser_sub_field!(serializer, self.data.fielddata_frequency_filter, "fielddata_frequency_filter");
-		ser_sub_field!(serializer, self.data.include_in_all, "include_in_all");
-		ser_sub_field!(serializer, self.data.ignore_above, "ignore_above");
-		ser_sub_field!(serializer, self.data.index, "index");
-		ser_sub_field!(serializer, self.data.index_options, "index_options");
-		ser_sub_field!(serializer, self.data.norms, "norms");
-		ser_sub_field!(serializer, self.data.position_increment_gap, "position_increment_gap");
-		ser_sub_field!(serializer, self.data.store, "store");
-		ser_sub_field!(serializer, self.data.search_analyzer, "search_analyzer");
-		ser_sub_field!(serializer, self.data.search_quote_analyzer, "search_quote_analyzer");
-		ser_sub_field!(serializer, self.data.similarity, "similarity");
-		ser_sub_field!(serializer, self.data.term_vector, "term_vector");
-
-		Ok(None)
+		serializer.serialize_struct_end(state)
 	}
 }
