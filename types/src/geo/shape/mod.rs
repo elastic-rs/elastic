@@ -40,11 +40,10 @@
 //!
 //! - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/geo-shape.html)
 
-mod shape;
-
 #[macro_use]
 pub mod mapping;
 
+mod shape;
 pub use self::shape::*;
 
 pub mod prelude {

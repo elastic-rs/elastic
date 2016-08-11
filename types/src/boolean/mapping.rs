@@ -150,6 +150,10 @@ macro_rules! boolean_ser {
 
 /// Define a `boolean` mapping.
 /// 
+/// # Examples
+/// 
+/// ## Define mapping struct inline
+/// 
 /// The easiest way to define a mapping type is to let the macro do it for you:
 /// 
 /// ```
@@ -166,16 +170,21 @@ macro_rules! boolean_ser {
 /// pub struct MyMapping;
 /// ```
 /// 
+/// ## Define mapping for existing struct
+/// 
 /// If you want to control the default implementations yourself, you can define your
 /// mapping type and just pass it the macro to implement `ElasticFieldMapping`:
 /// 
 /// ```
 /// #[derive(Debug, Default, Clone, Copy)]
 /// pub struct MyMapping;
-/// impl ElasticBooleanMapping for MyMapping { }
+/// impl ElasticBooleanMapping for MyMapping { 
+/// 	fn null_value() -> Option<bool> { Some(true) }
+/// }
 /// 
 /// boolean_mapping!(MyMapping);
 /// ```
+#[macro_export]
 macro_rules! boolean_mapping {
 	($t:ident) => (
 		impl $crate::mapping::ElasticFieldMapping<()> for $t {

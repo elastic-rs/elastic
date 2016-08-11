@@ -35,10 +35,10 @@
 //!
 //! - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/boolean.html)
 
-mod boolean;
-
 #[macro_use]
 pub mod mapping;
+
+mod boolean;
 pub use self::boolean::*;
 
 pub mod prelude {

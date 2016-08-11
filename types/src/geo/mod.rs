@@ -5,8 +5,8 @@
 
 #[macro_use]
 pub mod point;
-//#[macro_use]
-//pub mod shape;
+#[macro_use]
+pub mod shape;
 
 pub mod mapping {
 	//! Common mapping for the Elasticsearch `geo` types.
@@ -64,7 +64,7 @@ pub mod mapping {
 	}
 
 	pub use super::point::mapping::*;
-	//pub use super::shape::mapping::*;
+	pub use super::shape::mapping::*;
 }
 
 pub mod prelude {
@@ -73,5 +73,5 @@ pub mod prelude {
 	//! This is a convenience module to make it easy to build mappings for multiple types without too many `use` statements.
 
     pub use super::point::prelude::*;
-    //pub use super::shape::prelude::*;
+    pub use super::shape::prelude::*;
 }

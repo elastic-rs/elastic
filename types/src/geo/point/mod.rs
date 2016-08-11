@@ -44,12 +44,13 @@
 //!
 //! - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/geo-point.html)
 
+#[macro_use]
+pub mod mapping;
+
 mod point;
 mod format;
 mod formats;
 
-#[macro_use]
-pub mod mapping;
 pub use self::point::*;
 pub use self::format::*;
 pub use self::formats::*;

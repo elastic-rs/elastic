@@ -226,6 +226,10 @@ macro_rules! date_ser {
 
 /// Define a `date` mapping for all formats.
 /// 
+/// # Examples
+/// 
+/// ## Define mapping struct inline
+/// 
 /// The easiest way to define a mapping type is to let the macro do it for you:
 /// 
 /// ```
@@ -239,10 +243,12 @@ macro_rules! date_ser {
 /// 
 /// ```
 /// #[derive(Debug, Default, Clone, Copy)]
-/// pub struct MyMapping<F: DateFormat> {
+/// pub struct MyMapping<F: 'static + DateFormat> {
 /// 	_marker: PhantomData<F>
 /// }
 /// ```
+/// 
+/// ## Define mapping for existing struct
 /// 
 /// If you want to control the default implementations yourself, you can define your
 /// mapping type and just pass it the macro to implement `ElasticFieldMapping<F>`:
@@ -252,9 +258,13 @@ macro_rules! date_ser {
 /// pub struct MyMapping<F: 'static + DateFormat> {
 /// 	_marker: PhantomData<F>
 /// }
-/// impl <F: 'static + DateFormat> ElasticDateMapping<F> for MyMapping<F> { }
-/// date_mapping_all!(MyMapping: F);
+/// impl <F: 'static + DateFormat> ElasticDateMapping<F> for MyMapping<F> { 
+/// 	fn boost() -> Option<f32> { Some(1.03) }
+/// }
+/// 
+/// date_mapping!(MyMapping: F);
 /// ```
+#[macro_export]
 macro_rules! date_mapping {
 	($t:ident: $f:ident) => (
 		impl <$f: 'static + $crate::date::DateFormat> $crate::mapping::ElasticFieldMapping<F> for $t<$f> {
@@ -281,12 +291,17 @@ macro_rules! date_mapping {
 
 /// Implement `DateFormat` for the given type.
 /// 
+/// # Examples
+///
 /// The macro takes 2 string literals; the format to parse and the name to use in Elasticsearch:
 /// 
 /// ```
 /// struct MyFormat;
 /// impl_date_fmt!(MyFormat, "yyyy-MM-ddTHH:mm:ssZ", "yyyy-MM-dd'T'HH:mm:ssZ");
 /// ```
+/// 
+/// You can then use `MyFormat` as the generic parameter in `ElasticDate`.
+#[macro_export]
 macro_rules! impl_date_fmt {
 	($t:ty, $f:tt, $n:expr) => (
 		impl $crate::date::DateFormat for $t {

@@ -211,37 +211,47 @@ macro_rules! geo_point_ser {
     )
 }
 
-/// Define a `date` mapping for all formats.
+/// Define a `geo_point` mapping for all formats.
+/// 
+/// # Examples
+/// 
+/// ## Define mapping struct inline
 /// 
 /// The easiest way to define a mapping type is to let the macro do it for you:
 /// 
 /// ```
-/// date_mapping!(MyMapping {
+/// geo_point_mapping!(MyMapping {
 ///     fn boost() -> Option<f32> { Some(1.03) }
 /// });
 /// ```
 /// 
 /// The above example will define a public struct for you and implement
-/// `ElasticFieldMapping<F: DateFormat>` and `ElasticDateMapping<F: DateFormat>`, along with a few default traits:
+/// `ElasticFieldMapping<F: GeoPointFormat>` and `ElasticGeoPointMapping<F: GeoPointFormat>`, along with a few default traits:
 /// 
 /// ```
 /// #[derive(Debug, Default, Clone, Copy)]
-/// pub struct MyMapping<F: DateFormat> {
+/// pub struct MyMapping<F: GeoPointFormat> {
 ///     _marker: PhantomData<F>
 /// }
 /// ```
+/// 
+/// ## Define mapping for existing struct
 /// 
 /// If you want to control the default implementations yourself, you can define your
 /// mapping type and just pass it the macro to implement `ElasticFieldMapping<F>`:
 /// 
 /// ```
 /// #[derive(Debug, Default, Clone, Copy)]
-/// pub struct MyMapping<F: 'static + DateFormat> {
+/// pub struct MyMapping<F: 'static + GeoPointFormat> {
 ///     _marker: PhantomData<F>
 /// }
-/// impl <F: 'static + DateFormat> ElasticDateMapping<F> for MyMapping<F> { }
-/// date_mapping_all!(MyMapping: F);
+/// impl <F: 'static + GeoPointFormat> ElasticGeoPointMapping<F> for MyMapping<F> { 
+///     fn boost() -> Option<f32> { Some(1.03) }
+/// }
+/// 
+/// geo_point_mapping!(MyMapping: F);
 /// ```
+#[macro_export]
 macro_rules! geo_point_mapping {
     ($t:ident: $f:ident) => (
         impl <$f: 'static + $crate::geo::point::GeoPointFormat> $crate::mapping::ElasticFieldMapping<F> for $t<$f> {

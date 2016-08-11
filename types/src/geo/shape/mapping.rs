@@ -1,10 +1,9 @@
 //! Mapping for Elasticsearch `geo_shape` types.
 
-use std::marker::PhantomData;
 use serde;
-use serde::{ Serialize, Serializer };
+use serde::Serialize;
 use ::geo::mapping::Distance;
-use ::mapping::{ ElasticFieldMapping, ElasticTypeVisitor };
+use ::mapping::ElasticFieldMapping;
 
 /// Elasticsearch datatype name.
 pub const GEOSHAPE_DATATYPE: &'static str = "geo_shape";
@@ -164,45 +163,91 @@ Self: ElasticFieldMapping<()> + Sized + Serialize {
     fn points_only() -> Option<bool> { None }
 }
 
-/// Default mapping for `String`.
+/// Implement `serde` serialisation for a `geo_shape` mapping type.
+macro_rules! geo_shape_ser {
+    ($t:ident) => (
+        impl serde::Serialize for $t {
+            fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+            where S: serde::Serializer {
+                let mut state = try!(serializer.serialize_struct("mapping", 6));
+
+                try!(serializer.serialize_struct_elt(&mut state, "type", $t::data_type()));
+
+                ser_field!(serializer, &mut state, $t::tree(), "tree");
+                ser_field!(serializer, &mut state, $t::precision(), "precision");
+                ser_field!(serializer, &mut state, $t::tree_levels(), "tree_levels");
+                ser_field!(serializer, &mut state, $t::strategy(), "strategy");
+                ser_field!(serializer, &mut state, $t::distance_error_pct(), "distance_error_pct");
+                ser_field!(serializer, &mut state, $t::orientation(), "orientation");
+                ser_field!(serializer, &mut state, $t::points_only(), "points_only");
+
+                serializer.serialize_struct_end(state)
+            }
+        }
+    )
+}
+
+/// Define a `geo_shape` mapping.
+/// 
+/// # Examples
+/// 
+/// ## Define mapping struct inline
+/// 
+/// The easiest way to define a mapping type is to let the macro do it for you:
+/// 
+/// ```
+/// geo_shape_mapping!(MyMapping {
+///     fn strategy() -> Option<Strategy> { Some(Strategy::Term) }
+/// });
+/// ```
+/// 
+/// The above example will define a public struct for you and implement
+/// `ElasticFieldMapping` and `ElasticGeoShapeMapping`, along with a few default traits:
+/// 
+/// ```
+/// #[derive(Debug, Default, Clone, Copy)]
+/// pub struct MyMapping;
+/// ```
+/// 
+/// ## Define mapping for existing struct
+/// 
+/// If you want to control the default implementations yourself, you can define your
+/// mapping type and just pass it the macro to implement `ElasticFieldMapping`:
+/// 
+/// ```
+/// #[derive(Debug, Default, Clone, Copy)]
+/// pub struct MyMapping;
+/// impl ElasticGeoShapeMapping for MyMapping { 
+///     fn strategy() -> Option<Strategy> { Some(Strategy::Term) }
+/// }
+/// 
+/// geo_shape_mapping!(MyMapping);
+/// ```
+#[macro_export]
+macro_rules! geo_shape_mapping {
+    ($t:ident) => (
+        impl $crate::mapping::ElasticFieldMapping<()> for $t {
+            fn data_type() -> &'static str { $crate::geo::shape::mapping::GEOSHAPE_DATATYPE }
+        }
+
+        geo_shape_ser!($t);
+    );
+    ($t:ident $b:tt) => (
+        #[derive(Debug, Default, Clone, Copy)]
+        pub struct $t;
+
+        impl $crate::boolean::mapping::ElasticBooleanMapping for $t $b
+
+        geo_shape_mapping!($t);
+    )
+}
+
+/// Default mapping for `geo_shape`.
 #[derive(Debug, Default, Clone, Copy)]
 pub struct DefaultGeoShapeMapping;
 impl ElasticGeoShapeMapping for DefaultGeoShapeMapping { }
 
-impl_geo_shape_mapping!(DefaultGeoShapeMapping);
-
-/// Visitor for a `geo_shape` field mapping.
-#[derive(Debug, PartialEq)]
-pub struct ElasticGeoShapeMappingVisitor<M> where
-M: ElasticGeoShapeMapping {
-    phantom: PhantomData<M>
-}
-
-impl <M> ElasticTypeVisitor for ElasticGeoShapeMappingVisitor<M> where
-M: ElasticGeoShapeMapping {
-    fn new() -> Self {
-        ElasticGeoShapeMappingVisitor {
-            phantom: PhantomData
-        }
-    }
-}
-impl <M> serde::ser::MapVisitor for ElasticGeoShapeMappingVisitor<M> where
-M: ElasticGeoShapeMapping {
-    fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
-    where S: Serializer {
-        try!(serializer.serialize_struct_elt("type", M::data_type()));
-
-        ser_field!(serializer, M::tree(), "tree");
-        ser_field!(serializer, M::precision(), "precision");
-        ser_field!(serializer, M::tree_levels(), "tree_levels");
-        ser_field!(serializer, M::strategy(), "strategy");
-        ser_field!(serializer, M::distance_error_pct(), "distance_error_pct");
-        ser_field!(serializer, M::orientation(), "orientation");
-        ser_field!(serializer, M::points_only(), "points_only");
-
-        Ok(None)
-    }
-}
+geo_shape_mapping!(DefaultGeoShapeMapping);
 
 /// Name of the `PrefixTree` implementation to be used.
 pub enum Tree {
