@@ -540,7 +540,8 @@ pub mod boolean;
 pub mod date;
 #[macro_use]
 pub mod geo;
-//pub mod ip;
+#[macro_use]
+pub mod ip;
 //pub mod mappers;
 //pub mod response;
 //pub mod object;

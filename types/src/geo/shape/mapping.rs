@@ -169,7 +169,7 @@ macro_rules! geo_shape_ser {
         impl serde::Serialize for $t {
             fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
             where S: serde::Serializer {
-                let mut state = try!(serializer.serialize_struct("mapping", 6));
+                let mut state = try!(serializer.serialize_struct("mapping", 8));
 
                 try!(serializer.serialize_struct_elt(&mut state, "type", $t::data_type()));
 
