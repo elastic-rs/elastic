@@ -216,6 +216,7 @@ Self: ElasticFieldMapping<()> + Sized + Serialize {
 }
 
 /// Implement `serde` serialisation for a `keyword` mapping type.
+#[macro_export]
 macro_rules! text_ser {
     ($t:ident) => (
 		impl serde::Serialize for $t {

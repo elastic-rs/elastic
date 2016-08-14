@@ -514,7 +514,6 @@
 
 #![feature(custom_derive, plugin, associated_type_defaults, associated_consts)]
 #![plugin(serde_macros, elastic_date_macros)]
-#![cfg_attr(feature = "nightly-testing", allow(identity_op))]
 
 pub extern crate chrono;
 pub extern crate geo as georust;
@@ -524,6 +523,7 @@ pub extern crate geojson;
 extern crate serde;
 extern crate serde_json;
 
+#[macro_export]
 macro_rules! ser_field {
     ($s:ident, $h:expr, $f:expr, $n:expr) => (
     	if let Some(f) = $f {
@@ -546,9 +546,10 @@ pub mod ip;
 pub mod number;
 #[macro_use]
 pub mod string;
+#[macro_use]
+pub mod object;
 //pub mod mappers;
 //pub mod response;
-//pub mod object;
 
 pub mod prelude {
 	//! Includes non-mapping types for all data types.
@@ -558,8 +559,8 @@ pub mod prelude {
 	pub use ::mapping::prelude::*;
 	pub use ::boolean::prelude::*;
 	pub use ::date::prelude::*;
-	//pub use ::geo::prelude::*;
-	//pub use ::ip::prelude::*;
-	//pub use ::number::prelude::*;
-	//pub use ::string::prelude::*;
+	pub use ::geo::prelude::*;
+	pub use ::ip::prelude::*;
+	pub use ::number::prelude::*;
+	pub use ::string::prelude::*;
 }

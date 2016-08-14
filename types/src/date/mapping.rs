@@ -201,6 +201,7 @@ Self: ElasticFieldMapping<F> + Sized + Serialize {
 }
 
 /// Implement `serde` serialisation for a `date` mapping type.
+#[macro_export]
 macro_rules! date_ser {
     ($t:ident: $f:ident) => (
 		impl <$f: $crate::date::DateFormat> serde::Serialize for $t<$f> {

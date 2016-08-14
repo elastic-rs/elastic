@@ -189,6 +189,7 @@ Self: ElasticFieldMapping<F> + Sized + Serialize {
 }
 
 /// Implement `serde` serialisation for a `date` mapping type.
+#[macro_export]
 macro_rules! geo_point_ser {
     ($t:ident: $f:ident) => (
         impl <$f: $crate::geo::point::GeoPointFormat> serde::Serialize for $t<$f> {

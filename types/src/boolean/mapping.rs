@@ -127,6 +127,7 @@ Self: ElasticFieldMapping<()> + Sized + Serialize {
 }
 
 /// Implement `serde` serialisation for a `boolean` mapping type.
+#[macro_export]
 macro_rules! boolean_ser {
     ($t:ident) => (
 		impl serde::Serialize for $t {

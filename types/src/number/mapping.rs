@@ -154,6 +154,7 @@ macro_rules! number_mapping {
 }
 
 /// Implement `serde` serialisation for a `geo_shape` mapping type.
+#[macro_export]
 macro_rules! number_ser {
     ($t:ident) => (
         impl serde::Serialize for $t {

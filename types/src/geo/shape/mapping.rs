@@ -164,6 +164,7 @@ Self: ElasticFieldMapping<()> + Sized + Serialize {
 }
 
 /// Implement `serde` serialisation for a `geo_shape` mapping type.
+#[macro_export]
 macro_rules! geo_shape_ser {
     ($t:ident) => (
         impl serde::Serialize for $t {
