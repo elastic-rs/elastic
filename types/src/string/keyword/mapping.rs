@@ -289,7 +289,7 @@ macro_rules! keyword_mapping {
 }
 
 /// Default mapping for `bool`.
-#[derive(Debug, Default, Clone, Copy)]
+#[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultKeywordMapping;
 impl ElasticKeywordMapping for DefaultKeywordMapping { }
 

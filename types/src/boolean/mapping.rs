@@ -204,7 +204,7 @@ macro_rules! boolean_mapping {
 }
 
 /// Default mapping for `bool`.
-#[derive(Debug, Default, Clone, Copy)]
+#[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultBooleanMapping;
 impl ElasticBooleanMapping for DefaultBooleanMapping { }
 

@@ -306,7 +306,7 @@ macro_rules! text_mapping {
 }
 
 /// Default mapping for `bool`.
-#[derive(Debug, Default, Clone, Copy)]
+#[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultTextMapping;
 impl ElasticTextMapping for DefaultTextMapping { }
 

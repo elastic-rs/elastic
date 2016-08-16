@@ -345,15 +345,43 @@ pub mod object_fixtures {
 	use serde;
 	use elastic_types::mapping::prelude::*;
 
-	#[derive(Default, Clone)]
-	pub struct MapForDefaultTypes;
+	#[derive(Serialize)]
+	pub struct SimpleType {
+		pub field1: String,
+		pub field2: SimpleNestedType
+	}
 
-	type_mapping!(default MapForDefaultTypes {
+	impl ElasticType<SimpleTypeMapping, ()> for SimpleType { }
+
+	#[derive(Default, Clone)]
+	pub struct SimpleTypeMapping;
+	type_mapping!(simple_type SimpleTypeMapping {
+		fn props_len() -> usize { 2 }
+		
+		fn serialize_props<S>(serializer: &mut S, state: &mut S::StructState) -> Result<(), S::Error>
+		where S: serde::Serializer {
+			try!(serializer.serialize_struct_elt(state, "field1", String::mapping()));
+			try!(serializer.serialize_struct_elt(state, "field2", SimpleNestedType::mapping()));
+
+			Ok(())
+		}
+	});
+
+	#[derive(Serialize)]
+	pub struct SimpleNestedType {
+		pub field: i32
+	}
+
+	impl ElasticType<SimpleNestedTypeMapping, ()> for SimpleNestedType { }
+
+	#[derive(Default, Clone)]
+	pub struct SimpleNestedTypeMapping;
+	type_mapping!(simple_nested_type SimpleNestedTypeMapping {
 		fn props_len() -> usize { 1 }
 		
 		fn serialize_props<S>(serializer: &mut S, state: &mut S::StructState) -> Result<(), S::Error>
 		where S: serde::Serializer {
-			try!(serializer.serialize_struct_elt(state, "string", String::mapping()));
+			try!(serializer.serialize_struct_elt(state, "field", i32::mapping()));
 
 			Ok(())
 		}
@@ -438,9 +466,10 @@ pub mod object_fixtures {
 		pub ip: Ipv4Addr
 	}
 }
-
+*/
 pub mod object;
-pub mod response;*/
+//pub mod object_pmacro;
+//pub mod response;
 pub mod geo_point;
 pub mod geo_shape;
 pub mod date;

@@ -533,6 +533,7 @@ macro_rules! ser_field {
 }
 
 pub mod mapping;
+pub mod mappers;
 
 #[macro_use]
 pub mod boolean;
@@ -548,8 +549,6 @@ pub mod number;
 pub mod string;
 #[macro_use]
 pub mod object;
-//pub mod mappers;
-//pub mod response;
 
 pub mod prelude {
 	//! Includes non-mapping types for all data types.

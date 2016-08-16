@@ -244,7 +244,7 @@ macro_rules! geo_shape_mapping {
 }
 
 /// Default mapping for `geo_shape`.
-#[derive(Debug, Default, Clone, Copy)]
+#[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultGeoShapeMapping;
 impl ElasticGeoShapeMapping for DefaultGeoShapeMapping { }
 

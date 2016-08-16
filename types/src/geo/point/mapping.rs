@@ -276,7 +276,7 @@ macro_rules! geo_point_mapping {
 }
 
 /// Default mapping for `geo_point`.
-#[derive(Debug, Default, Clone, Copy)]
+#[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultGeoPointMapping<F> where
 F: 'static + GeoPointFormat {
     _marker: PhantomData<F>

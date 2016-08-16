@@ -5,8 +5,14 @@ extern crate serde;
 extern crate serde_json;
 extern crate elastic_types;
 
+use std::net::Ipv4Addr;
 use elastic_types::mapping::prelude::*;
 use ::ip_fixtures::*;
+
+#[test]
+fn ipv4addr_has_default_mapping() {
+	assert_eq!(DefaultIpMapping, Ipv4Addr::mapping());
+}
 
 #[test]
 fn serialise_mapping_default() {

@@ -9,6 +9,11 @@ use elastic_types::mapping::prelude::*;
 use ::boolean_fixtures::*;
 
 #[test]
+fn bool_has_default_mapping() {
+	assert_eq!(DefaultBooleanMapping, bool::mapping());
+}
+
+#[test]
 fn serialise_mapping_default() {
 	let mapping = DefaultBooleanMapping::default();
 	let ser = serde_json::to_string(&mapping).unwrap();

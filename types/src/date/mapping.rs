@@ -316,7 +316,7 @@ macro_rules! impl_date_fmt {
 }
 
 /// Default mapping for `date`.
-#[derive(Debug, Default, Clone, Copy)]
+#[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultDateMapping<F> where
 F: 'static + DateFormat {
 	_marker: PhantomData<F>

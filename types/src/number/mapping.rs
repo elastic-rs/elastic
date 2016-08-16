@@ -526,14 +526,14 @@ number_mapping!(ElasticFloatMapping, ElasticFloatMappingVisitor, f32);
 number_mapping!(ElasticDoubleMapping, ElasticDoubleMappingVisitor, f64);
 
 /// Default mapping for an `integer` type.
-#[derive(Debug, Default, Clone, Copy)]
+#[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultIntegerMapping;
 impl ElasticIntegerMapping for DefaultIntegerMapping { }
 integer_mapping!(DefaultIntegerMapping);
 impl ElasticType<DefaultIntegerMapping, ()> for i32 { }
 
 /// Default mapping for a `long` type.
-#[derive(Debug, Default, Clone, Copy)]
+#[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultLongMapping;
 impl ElasticLongMapping for DefaultLongMapping { }
 long_mapping!(DefaultLongMapping);
@@ -541,28 +541,28 @@ impl ElasticType<DefaultLongMapping, ()> for i64 { }
 impl ElasticType<DefaultLongMapping, ()> for isize { }
 
 /// Default mapping for a `short` type.
-#[derive(Debug, Default, Clone, Copy)]
+#[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultShortMapping;
 impl ElasticShortMapping for DefaultShortMapping { }
 short_mapping!(DefaultShortMapping);
 impl ElasticType<DefaultShortMapping, ()> for i16 { }
 
 /// Default mapping for a `byte` type.
-#[derive(Debug, Default, Clone, Copy)]
+#[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultByteMapping;
 impl ElasticByteMapping for DefaultByteMapping { }
 byte_mapping!(DefaultByteMapping);
 impl ElasticType<DefaultByteMapping, ()> for i8 { }
 
 /// Default mapping for a `float` type.
-#[derive(Debug, Default, Clone, Copy)]
+#[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultFloatMapping;
 impl ElasticFloatMapping for DefaultFloatMapping { }
 float_mapping!(DefaultFloatMapping);
 impl ElasticType<DefaultFloatMapping, ()> for f32 { }
 
 /// Default mapping for a `double` type.
-#[derive(Debug, Default, Clone, Copy)]
+#[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultDoubleMapping;
 impl ElasticDoubleMapping for DefaultDoubleMapping { }
 double_mapping!(DefaultDoubleMapping);

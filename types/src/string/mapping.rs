@@ -13,7 +13,7 @@ pub const TOKENCOUNT_DATATYPE: &'static str = "token_count";
 pub const COMPLETION_DATATYPE: &'static str = "completion";
 
 /// Default mapping for `String`.
-#[derive(Debug, Default, Clone, Copy)]
+#[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultStringMapping;
 impl ElasticTextMapping for DefaultStringMapping {
 	fn fields() -> Option<BTreeMap<&'static str, ElasticStringField>> {

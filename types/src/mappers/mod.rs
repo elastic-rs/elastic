@@ -85,12 +85,7 @@ use std::marker::PhantomData;
 use serde;
 use serde::ser::Error as SerError;
 use serde_json;
-use ::mapping::{ ElasticFieldMapping, ElasticTypeVisitor };
 use ::object::ElasticUserTypeMapping;
-
-pub mod rs_es_map;
-
-pub use self::rs_es_map::{ RsesMapper, Serializer as RsesSerializer, Error as RsesError };
 
 /// Helper for mapping user-defined types.
 ///
@@ -141,10 +136,7 @@ M: ElasticUserTypeMapping {
 	/// ```
 	pub fn to_writer<S>(_: M, serializer: &mut S) -> Result<(), S::Error> where
 	S: serde::Serializer {
-		serializer.serialize_struct(
-			<M as ElasticFieldMapping<()>>::data_type(),
-			<M as ElasticUserTypeMapping>::Visitor::new()
-		)
+		M::serialize_type(serializer)
 	}
 
 	/// Map a user-defined type to a `String`.

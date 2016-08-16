@@ -32,7 +32,7 @@ pub mod prelude {
 		IndexAnalysis
 	};
 
-	//pub use ::mappers::*;
+	pub use ::mappers::*;
 	pub use ::object::*;
 	pub use ::date::mapping::*;
 	pub use ::ip::mapping::*;

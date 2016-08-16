@@ -4,7 +4,7 @@ use std::error::Error;
 use super::{ CustomDateFormat, ParseError };
 
 /// Format for default `chrono::DateTime`.
-#[derive(Debug, Default, Clone, Copy)]
+#[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct ChronoFormat;
 impl_date_fmt!(ChronoFormat, "yyyy-MM-ddTHH:mm:ssZ", "yyyy-MM-dd'T'HH:mm:ssZ");
 
@@ -12,7 +12,7 @@ impl_date_fmt!(ChronoFormat, "yyyy-MM-ddTHH:mm:ssZ", "yyyy-MM-dd'T'HH:mm:ssZ");
 ///
 /// # Links
 /// - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-date-format.html#built-in-date-formats)
-#[derive(Debug, Default, Clone, Copy)]
+#[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct BasicDateTimeNoMillis;
 impl_date_fmt!(BasicDateTimeNoMillis, "%Y%m%dT%H%M%SZ", "basic_date_time_no_millis");
 
@@ -20,7 +20,7 @@ impl_date_fmt!(BasicDateTimeNoMillis, "%Y%m%dT%H%M%SZ", "basic_date_time_no_mill
 ///
 /// # Links
 /// - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-date-format.html#built-in-date-formats)
-#[derive(Debug, Default, Clone, Copy)]
+#[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct BasicDateTime;
 impl_date_fmt!(BasicDateTime, "%Y%m%dT%H%M%S%.3fZ", "basic_date_time");
 
@@ -31,7 +31,7 @@ impl_date_fmt!(BasicDateTime, "%Y%m%dT%H%M%S%.3fZ", "basic_date_time");
 ///
 /// # Links
 /// - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-date-format.html#built-in-date-formats)
-#[derive(Debug, Default, Clone, Copy)]
+#[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct EpochMillis;
 impl CustomDateFormat for EpochMillis {
 	fn name() -> &'static str {

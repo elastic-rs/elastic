@@ -5,9 +5,15 @@ extern crate serde;
 extern crate serde_json;
 extern crate elastic_types;
 
+use chrono::{ DateTime, UTC };
 use elastic_types::mapping::prelude::*;
 use elastic_types::date::prelude::*;
 use ::date_fixtures::*;
+
+#[test]
+fn datetime_has_default_mapping() {
+	assert_eq!(DefaultDateMapping::<ChronoFormat>::default(), DateTime::<UTC>::mapping());
+}
 
 #[test]
 fn serialise_mapping_default() {

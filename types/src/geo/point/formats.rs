@@ -7,7 +7,7 @@ use super::GeoPointFormat;
 use ::geo::mapping::Distance;
 
 /// Geo-point expressed as an object, with `lat` and `lon` keys.
-#[derive(Debug, Default, Clone, Copy)]
+#[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct GeoPointObject;
 
 #[derive(Serialize, Deserialize)]
@@ -35,7 +35,7 @@ impl GeoPointFormat for GeoPointObject {
 }
 
 /// Geo-point expressed as a string with the format: `"lat,lon"`.
-#[derive(Debug, Default, Clone, Copy)]
+#[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct GeoPointString;
 impl GeoPointFormat for GeoPointString {
 	fn parse<D>(deserializer: &mut D) -> Result<Point, D::Error> where
@@ -90,7 +90,7 @@ impl GeoPointFormat for GeoPointString {
 }
 
 /// Geo-point expressed as a geohash.
-#[derive(Debug, Default, Clone, Copy)]
+#[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct GeoPointHash;
 impl GeoPointFormat for GeoPointHash {
 	fn parse<D>(deserializer: &mut D) -> Result<Point, D::Error> where
@@ -128,7 +128,7 @@ impl GeoPointFormat for GeoPointHash {
 }
 
 /// Geo-point expressed as an array with the format: `[lon, lat]`
-#[derive(Debug, Default, Clone, Copy)]
+#[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct GeoPointArray;
 impl GeoPointFormat for GeoPointArray {
 	fn parse<D>(deserializer: &mut D) -> Result<Point, D::Error> where

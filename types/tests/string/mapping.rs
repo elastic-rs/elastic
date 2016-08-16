@@ -9,6 +9,11 @@ use elastic_types::mapping::prelude::*;
 use ::string_fixtures::*;
 
 #[test]
+fn string_has_default_mapping() {
+	assert_eq!(DefaultStringMapping, String::mapping());
+}
+
+#[test]
 fn serialise_string_mapping_default() {
 	let mapping = DefaultStringMapping::default();
 	let ser = serde_json::to_string(&mapping).unwrap();
