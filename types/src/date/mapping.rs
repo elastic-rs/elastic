@@ -206,7 +206,7 @@ macro_rules! date_ser {
 		impl <$f: $crate::date::DateFormat> ::serde::Serialize for $t<$f> {
 			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where 
 			S: ::serde::Serializer {
-				let mut state = try!(serializer.serialize_struct("mapping", 8));
+				let mut state = try!(serializer.serialize_struct("mapping", 9));
 
 				try!(serializer.serialize_struct_elt(&mut state, "type", $t::<$f>::data_type()));
 				try!(serializer.serialize_struct_elt(&mut state, "format", $t::<$f>::format()));
@@ -215,6 +215,7 @@ macro_rules! date_ser {
 				ser_field!(serializer, &mut state, $t::<$f>::doc_values(), "doc_values");
 				ser_field!(serializer, &mut state, $t::<$f>::include_in_all(), "include_in_all");
 				ser_field!(serializer, &mut state, $t::<$f>::index(), "index");
+				ser_field!(serializer, &mut state, $t::<$f>::store(), "store");
 				ser_field!(serializer, &mut state, $t::<$f>::ignore_malformed(), "ignore_malformed");
 				ser_field!(serializer, &mut state, $t::<$f>::null_value(), "null_value");
 

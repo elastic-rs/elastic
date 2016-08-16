@@ -38,7 +38,7 @@ fn serialise_text_mapping_custom() {
 		"eager_global_ordinals":false,
 		"fielddata":true,
 		"fielddata_frequency_filter":{
-			"min":0
+			"min":0.0
 		},
 		"fields":{
 			"comp":{
@@ -219,7 +219,7 @@ fn serialise_mapping_text_field() {
 		"eager_global_ordinals":true,
 		"fielddata":false,
 		"fielddata_frequency_filter":{
-			"min":0
+			"min":0.0
 		},
 		"include_in_all":false,
 		"ignore_above":512,

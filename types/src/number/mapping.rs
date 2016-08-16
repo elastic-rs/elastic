@@ -272,7 +272,7 @@ macro_rules! integer_mapping {
 macro_rules! long_mapping {
     ($t:ident) => (
         impl $crate::mapping::ElasticFieldMapping<()> for $t {
-            fn data_type() -> &'static str { $crate::number::mapping::FLOAT_DATATYPE }
+            fn data_type() -> &'static str { $crate::number::mapping::LONG_DATATYPE }
         }
 
         number_ser!($t);
@@ -327,7 +327,7 @@ macro_rules! long_mapping {
 macro_rules! short_mapping {
     ($t:ident) => (
         impl $crate::mapping::ElasticFieldMapping<()> for $t {
-            fn data_type() -> &'static str { $crate::number::mapping::FLOAT_DATATYPE }
+            fn data_type() -> &'static str { $crate::number::mapping::SHORT_DATATYPE }
         }
 
         number_ser!($t);
@@ -382,7 +382,7 @@ macro_rules! short_mapping {
 macro_rules! byte_mapping {
     ($t:ident) => (
         impl $crate::mapping::ElasticFieldMapping<()> for $t {
-            fn data_type() -> &'static str { $crate::number::mapping::FLOAT_DATATYPE }
+            fn data_type() -> &'static str { $crate::number::mapping::BYTE_DATATYPE }
         }
 
         number_ser!($t);
@@ -492,7 +492,7 @@ macro_rules! float_mapping {
 macro_rules! double_mapping {
     ($t:ident) => (
         impl $crate::mapping::ElasticFieldMapping<()> for $t {
-            fn data_type() -> &'static str { $crate::number::mapping::FLOAT_DATATYPE }
+            fn data_type() -> &'static str { $crate::number::mapping::DOUBLE_DATATYPE }
         }
 
         number_ser!($t);

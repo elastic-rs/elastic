@@ -5,7 +5,7 @@ use elastic_types::geo::point::prelude::*;
 
 #[test]
 fn object() {
-    let point: ElasticGeoPoint<GeoPointObject> = serde_json::from_str(r#"{"lat":41,"lon":-71.34}"#).unwrap();
+    let point: ElasticGeoPoint<GeoPointObject> = serde_json::from_str(r#"{"lat":41.0,"lon":-71.34}"#).unwrap();
 
     //NOTE: There seems to be an issue where 41.12 is being deserialized as 41.120000000000005
     assert_eq!((-71.34, 41.0), (
@@ -15,7 +15,7 @@ fn object() {
 
     let ser = serde_json::to_string(&point).unwrap();
 
-	assert_eq!(r#"{"lat":41,"lon":-71.34}"#, ser);
+	assert_eq!(r#"{"lat":41.0,"lon":-71.34}"#, ser);
 }
 
 #[test]
@@ -71,7 +71,7 @@ fn array() {
 
     let ser = serde_json::to_string(&point).unwrap();
 
-	assert_eq!(r#"[-71.34,41]"#, ser);
+	assert_eq!(r#"[-71.34,41.0]"#, ser);
 }
 
 #[test]

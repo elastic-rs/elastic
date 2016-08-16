@@ -202,7 +202,6 @@ macro_rules! geo_point_ser {
                 ser_field!(serializer, &mut state, $t::<$f>::geohash_precision(), "geohash_precision");
                 ser_field!(serializer, &mut state, $t::<$f>::geohash_prefix(), "geohash_prefix");
                 ser_field!(serializer, &mut state, $t::<$f>::ignore_malformed(), "ignore_malformed");
-                ser_field!(serializer, &mut state, $t::<$f>::ignore_malformed(), "ignore_malformed");
                 ser_field!(serializer, &mut state, $t::<$f>::lat_lon(), "lat_lon");
 
                 serializer.serialize_struct_end(state)
