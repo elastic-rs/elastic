@@ -388,88 +388,26 @@ pub mod object_fixtures {
 	});
 }
 
-/*pub mod object_pmacro_fixtures {
-	use std::collections::BTreeMap;
-	use std::net::Ipv4Addr;
-	use serde_json;
-	use chrono::{ DateTime, UTC };
+/*pub mod object_macro_fixtures {
+	use serde;
 	use elastic_types::mapping::prelude::*;
-	use elastic_types::date::prelude::*;
-	use elastic_types::ip::prelude::*;
-	use elastic_types::number::prelude::*;
-	use elastic_types::string::prelude::*;
-	use elastic_types::boolean::prelude::*;
-	use elastic_types::geo::prelude::*;
-	use ::date_fixtures::*;
-	use ::number_fixtures::*;
-	use ::boolean_fixtures::*;
-	use ::geo_shape_fixtures::*;
-	use ::ip_fixtures::*;
-
-	#[derive(Serialize, Deserialize, ElasticType)]
-	#[elastic(ty="my_type", mapping="MyTypeMapping")]
-	pub struct MyType {
-		pub my_date1: 		DateTime<UTC>,
-		pub my_date2: 		ElasticDate<DefaultDateFormat>,
-		pub my_date3: 		ElasticDate<EpochMillis, MyDateMapping>,
-		pub my_string1: 	String,
-		pub my_string2: 	ElasticText<DefaultTextMapping>,
-		pub my_string3: 	ElasticKeyword<DefaultKeywordMapping>,
-		pub my_num1: 		i32,
-		pub my_num2: 		ElasticInteger<MyIntegerMapping>,
-		pub my_bool1: 		bool,
-		pub my_bool2: 		ElasticBoolean<MyBooleanMapping>,
-		pub my_geo: 		Option<ElasticGeoShape<MyGeoShapeMapping>>,
-		pub my_ips: 		Option<Vec<Ipv4Addr>>,
-		pub my_map1: 		BTreeMap<String, serde_json::Value>,
-		pub my_map2: 		BTreeMap<String, String>,
-		pub my_val: 		serde_json::Value
-	}
-
-	#[derive(Default, Clone)]
-	pub struct MyTypeMapping;
-	impl ElasticObjectMapping for MyTypeMapping {
-		fn dynamic() -> Option<Dynamic> 		{ Some(Dynamic::True) }
-
-		fn enabled() -> Option<bool> 			{ Some(false) }
-
-		fn include_in_all() -> Option<bool> 	{ Some(true) }
-	}
 
 	#[derive(Serialize, ElasticType)]
-	pub struct MyOtherType {
-		pub my_date: 		ElasticDate<DefaultDateFormat>,
-		#[serde(rename="my_renamed_type")]
-		pub my_type: 		MyType,
-		#[serde(skip_serializing)]
-		pub ignored: 		String,
-		pub my_num: 		i32,
-		pub my_point: 		ElasticGeoPoint<DefaultGeoPointFormat>,
-		pub my_shape: 		ElasticGeoShape<DefaultGeoShapeMapping>,
-		pub my_ip: 			ElasticIp<MyIpMapping>,
-		pub my_strings: 	Vec<String>,
-		pub my_dates: 		Vec<ElasticDate<DefaultDateFormat>>,
-		pub my_brw_ip: 		&'static Ipv4Addr,
-		pub my_brw_point: 	&'static ElasticGeoPoint<DefaultGeoPointFormat>
+	pub struct SimpleType {
+		pub field1: String,
+		pub field2: SimpleNestedType
 	}
 
-	#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, ElasticType)]
-	pub struct MyStruct {
-		pub id: 			i32,
-		pub title: 			String,
-		pub timestamp: 		DateTime<UTC>,
-		pub geo: 			GeoLocation
+	#[derive(Serialize, ElaticType)]
+	pub struct SimpleNestedType {
+		pub field: i32
 	}
 
-	#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, ElasticType)]
-	pub struct GeoLocation {
-		pub ip: Ipv4Addr
-	}
+	//TODO: Retest the serde replacements and type names
 }
 */
 pub mod object;
-//pub mod object_pmacro;
-//pub mod response;
+//pub mod object_macro;
 pub mod geo_point;
 pub mod geo_shape;
 pub mod date;
