@@ -25,11 +25,12 @@ extern crate geojson;
 extern crate elastic_types;
 
 pub mod date_fixtures {
+	use std::marker::PhantomData;
 	use elastic_types::mapping::prelude::*;
 	use elastic_types::date::prelude::*;
 
 	date_mapping!(MyDateMapping {
-		fn null_value() -> Option<ElasticDate<T, Self>> {
+		fn null_value() -> Option<ElasticDate<F, Self>> {
 			Some(ElasticDate::build(2015, 3, 14, 16, 45, 13, 778))
 		}
 
@@ -290,9 +291,7 @@ pub mod ip_fixtures {
 	use std::net::Ipv4Addr;
 	use elastic_types::mapping::prelude::*;
 
-	#[derive(Default, Clone, ElasticIpMapping)]
-	pub struct MyIpMapping;
-	impl ElasticIpMapping for MyIpMapping {
+	ip_mapping!(MyIpMapping {
 		fn boost() -> Option<f32> 				{ Some(1.01) }
 
 		fn index() -> Option<bool> 				{ Some(false) }
@@ -301,13 +300,13 @@ pub mod ip_fixtures {
 
 		fn store() -> Option<bool> 				{ Some(true) }
 
-		fn null_value() -> Option<Ipv4Addr> 	{ Some(Ipv4Addr::new(127, 0, 0, 1)) }
-	}
+		fn null_value() -> Option<Ipv4Addr> 	{ Some(Ipv4Addr::new(127, 0, 0, 1)) }		
+	});
 }
 
 pub mod geo_point_fixtures {
+	use std::marker::PhantomData;
 	use elastic_types::mapping::prelude::*;
-	use elastic_types::geo::point::prelude::*;
 
 	geo_point_mapping!(MyGeoPointMapping {
 		fn geohash() -> Option<bool> 				{ Some(false) }
@@ -342,7 +341,26 @@ pub mod geo_shape_fixtures {
 	});
 }
 
-/*pub mod object_fixtures {
+pub mod object_fixtures {
+	use serde;
+	use elastic_types::mapping::prelude::*;
+
+	#[derive(Default, Clone)]
+	pub struct MapForDefaultTypes;
+
+	type_mapping!(default MapForDefaultTypes {
+		fn props_len() -> usize { 1 }
+		
+		fn serialize_props<S>(serializer: &mut S, state: &mut S::StructState) -> Result<(), S::Error>
+		where S: serde::Serializer {
+			try!(serializer.serialize_struct_elt(state, "string", String::mapping()));
+
+			Ok(())
+		}
+	});
+}
+
+/*pub mod object_pmacro_fixtures {
 	use std::collections::BTreeMap;
 	use std::net::Ipv4Addr;
 	use serde_json;
@@ -421,8 +439,8 @@ pub mod geo_shape_fixtures {
 	}
 }
 
-pub mod object;*/
-pub mod response;
+pub mod object;
+pub mod response;*/
 pub mod geo_point;
 pub mod geo_shape;
 pub mod date;

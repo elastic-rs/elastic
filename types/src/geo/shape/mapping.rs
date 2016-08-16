@@ -167,9 +167,9 @@ Self: ElasticFieldMapping<()> + Sized + Serialize {
 #[macro_export]
 macro_rules! geo_shape_ser {
     ($t:ident) => (
-        impl serde::Serialize for $t {
+        impl ::serde::Serialize for $t {
             fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
-            where S: serde::Serializer {
+            where S: ::serde::Serializer {
                 let mut state = try!(serializer.serialize_struct("mapping", 8));
 
                 try!(serializer.serialize_struct_elt(&mut state, "type", $t::data_type()));
@@ -237,7 +237,7 @@ macro_rules! geo_shape_mapping {
         #[derive(Debug, Default, Clone, Copy)]
         pub struct $t;
 
-        impl $crate::boolean::mapping::ElasticBooleanMapping for $t $b
+        impl $crate::geo::shape::mapping::ElasticGeoShapeMapping for $t $b
 
         geo_shape_mapping!($t);
     )

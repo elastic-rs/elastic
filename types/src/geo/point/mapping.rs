@@ -1,7 +1,6 @@
 //! Mapping for the Elasticsearch `geo_point` type.
 
 use std::marker::PhantomData;
-use serde;
 use serde::Serialize;
 use super::GeoPointFormat;
 use ::geo::mapping::Distance;
@@ -192,9 +191,9 @@ Self: ElasticFieldMapping<F> + Sized + Serialize {
 #[macro_export]
 macro_rules! geo_point_ser {
     ($t:ident: $f:ident) => (
-        impl <$f: $crate::geo::point::GeoPointFormat> serde::Serialize for $t<$f> {
-            fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
-            where S: serde::Serializer {
+        impl <$f: $crate::geo::point::GeoPointFormat> ::serde::Serialize for $t<$f> {
+            fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where 
+            S: ::serde::Serializer {
                 let mut state = try!(serializer.serialize_struct("mapping", 7));
 
                 try!(serializer.serialize_struct_elt(&mut state, "type", $t::<$f>::data_type()));
@@ -268,7 +267,7 @@ macro_rules! geo_point_mapping {
         }
 
         impl <F: 'static + $crate::geo::point::GeoPointFormat> $crate::mapping::ElasticFieldMapping<F> for $t<F> {
-            fn data_type() -> &'static str { $crate::date::mapping::GEOPOINT_DATATYPE }
+            fn data_type() -> &'static str { $crate::geo::point::mapping::GEOPOINT_DATATYPE }
         }
 
         impl <F: 'static + $crate::geo::point::GeoPointFormat> $crate::geo::point::mapping::ElasticGeoPointMapping<F> for $t<F> $b

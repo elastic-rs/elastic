@@ -32,13 +32,13 @@ pub mod prelude {
 		IndexAnalysis
 	};
 
-	//pub use ::object::*;
 	//pub use ::mappers::*;
-	//pub use ::date::mapping::*;
-	//pub use ::ip::mapping::*;
-	//pub use ::geo::mapping::*;
-	//pub use ::string::mapping::*;
-	//pub use ::number::mapping::*;
+	pub use ::object::*;
+	pub use ::date::mapping::*;
+	pub use ::ip::mapping::*;
+	pub use ::geo::mapping::*;
+	pub use ::string::mapping::*;
+	pub use ::number::mapping::*;
 	pub use ::boolean::mapping::*;
 }
 

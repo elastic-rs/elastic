@@ -1,6 +1,5 @@
 //! Mapping for the Elasticsearch `boolean` type.
 
-use serde;
 use serde::Serialize;
 use ::mapping::ElasticFieldMapping;
 
@@ -130,9 +129,9 @@ Self: ElasticFieldMapping<()> + Sized + Serialize {
 #[macro_export]
 macro_rules! boolean_ser {
     ($t:ident) => (
-		impl serde::Serialize for $t {
+		impl ::serde::Serialize for $t {
 			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
-			where S: serde::Serializer {
+			where S: ::serde::Serializer {
 				let mut state = try!(serializer.serialize_struct("mapping", 6));
 
 				try!(serializer.serialize_struct_elt(&mut state, "type", $t::data_type()));

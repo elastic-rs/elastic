@@ -24,7 +24,7 @@ fn serialise_mapping_default() {
 
 #[test]
 fn serialise_mapping_custom() {
-	let mapping: MyDateMapping = MyDateMapping::default();
+	let mapping = MyDateMapping::<EpochMillis>::default();
 	let ser = serde_json::to_string(&mapping).unwrap();
 
 	let expected = json_str!({

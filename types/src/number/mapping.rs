@@ -96,6 +96,9 @@
 //! # }
 //! ```
 
+use serde::Serialize;
+use ::mapping::{ ElasticType, ElasticFieldMapping };
+
 /// Elasticsearch datatype name.
 pub const INTEGER_DATATYPE: &'static str = "integer";
 /// Elasticsearch datatype name.
@@ -108,10 +111,6 @@ pub const BYTE_DATATYPE: &'static str = "byte";
 pub const DOUBLE_DATATYPE: &'static str = "double";
 /// Elasticsearch datatype name.
 pub const FLOAT_DATATYPE: &'static str = "float";
-
-use serde;
-use serde::Serialize;
-use ::mapping::{ ElasticType, ElasticFieldMapping };
 
 macro_rules! number_mapping {
     ($m:ident, $v:ident, $n:ty) => (
@@ -157,9 +156,9 @@ macro_rules! number_mapping {
 #[macro_export]
 macro_rules! number_ser {
     ($t:ident) => (
-        impl serde::Serialize for $t {
+        impl ::serde::Serialize for $t {
             fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
-            where S: serde::Serializer {
+            where S: ::serde::Serializer {
                 let mut state = try!(serializer.serialize_struct("mapping", 8));
 
                 try!(serializer.serialize_struct_elt(&mut state, "type", $t::data_type()));
@@ -227,7 +226,7 @@ macro_rules! integer_mapping {
         #[derive(Debug, Default, Clone, Copy)]
         pub struct $t;
 
-        impl $crate::ip::mapping::ElasticIntegerMapping for $t $b
+        impl $crate::number::mapping::ElasticIntegerMapping for $t $b
 
         integer_mapping!($t);
     )
@@ -282,7 +281,7 @@ macro_rules! long_mapping {
         #[derive(Debug, Default, Clone, Copy)]
         pub struct $t;
 
-        impl $crate::ip::mapping::ElasticLongMapping for $t $b
+        impl $crate::number::mapping::ElasticLongMapping for $t $b
 
         long_mapping!($t);
     )
@@ -337,7 +336,7 @@ macro_rules! short_mapping {
         #[derive(Debug, Default, Clone, Copy)]
         pub struct $t;
 
-        impl $crate::ip::mapping::ElasticShortMapping for $t $b
+        impl $crate::number::mapping::ElasticShortMapping for $t $b
 
         short_mapping!($t);
     )
@@ -392,7 +391,7 @@ macro_rules! byte_mapping {
         #[derive(Debug, Default, Clone, Copy)]
         pub struct $t;
 
-        impl $crate::ip::mapping::ElasticByteMapping for $t $b
+        impl $crate::number::mapping::ElasticByteMapping for $t $b
 
         byte_mapping!($t);
     )
@@ -447,7 +446,7 @@ macro_rules! float_mapping {
         #[derive(Debug, Default, Clone, Copy)]
         pub struct $t;
 
-        impl $crate::ip::mapping::ElasticFloatMapping for $t $b
+        impl $crate::number::mapping::ElasticFloatMapping for $t $b
 
         float_mapping!($t);
     )
@@ -502,7 +501,7 @@ macro_rules! double_mapping {
         #[derive(Debug, Default, Clone, Copy)]
         pub struct $t;
 
-        impl $crate::ip::mapping::ElasticDoubleMapping for $t $b
+        impl $crate::number::mapping::ElasticDoubleMapping for $t $b
 
         double_mapping!($t);
     )

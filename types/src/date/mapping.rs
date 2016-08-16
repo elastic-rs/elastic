@@ -1,7 +1,6 @@
 //! Mapping for the Elasticsearch `date` type.
 
 use std::marker::PhantomData;
-use serde;
 use serde::Serialize;
 use super::{ DateFormat, ElasticDate };
 use ::mapping::ElasticFieldMapping;
@@ -204,9 +203,9 @@ Self: ElasticFieldMapping<F> + Sized + Serialize {
 #[macro_export]
 macro_rules! date_ser {
     ($t:ident: $f:ident) => (
-		impl <$f: $crate::date::DateFormat> serde::Serialize for $t<$f> {
-			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
-			where S: serde::Serializer {
+		impl <$f: $crate::date::DateFormat> ::serde::Serialize for $t<$f> {
+			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where 
+			S: ::serde::Serializer {
 				let mut state = try!(serializer.serialize_struct("mapping", 8));
 
 				try!(serializer.serialize_struct_elt(&mut state, "type", $t::<$f>::data_type()));

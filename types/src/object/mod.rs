@@ -332,9 +332,9 @@ Self: ElasticObjectMapping {
 macro_rules! props_ser {
     ($t:ident $p:ident) => (
     	struct $p;
-		impl serde::Serialize for $p {
+		impl ::serde::Serialize for $p {
 			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
-			where S: serde::Serializer {
+			where S: ::serde::Serializer {
 				let mut state = try!(serializer.serialize_struct("properties", $t::props_len()));
 				try!($t::serialize_props(serializer, &mut state));
 				serializer.serialize_struct_end(state)
@@ -346,9 +346,9 @@ macro_rules! props_ser {
 #[macro_export]
 macro_rules! object_ser {
     ($t:ident) => (
-		impl serde::Serialize for $t {
+		impl ::serde::Serialize for $t {
 			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
-			where S: serde::Serializer {
+			where S: ::serde::Serializer {
 				let mut state = try!(serializer.serialize_struct("mapping", 5));
 
 				let ty = <$t as ElasticFieldMapping<()>>::data_type();
@@ -373,22 +373,36 @@ macro_rules! object_ser {
 /// Define an `object` field mapping.
 #[macro_export]
 macro_rules! object_mapping {
-    ($t:ident) => (
+	($t:ident) => (
     	impl $crate::mapping::ElasticFieldMapping<()> for $t {
 			fn data_type() -> &'static str { <$t as ElasticObjectMapping>::data_type() }
 		}
 
 		object_ser!($t);
+    );
+    ($n:ident $t:ident) => (
+    	impl $crate::mapping::ElasticFieldMapping<()> for $t {
+			fn data_type() -> &'static str { <$t as ElasticObjectMapping>::data_type() }
+
+			fn name() -> &'static str { stringify!($n) }
+		}
+
+		object_ser!($t);
+    );
+    ($n:ident $t:ident $b:tt) => (
+    	impl $crate::object::ElasticObjectMapping for $t $b
+
+    	object_mapping!($n $t);
     )
 }
 
 /// Define an indexable `type` mapping.
 #[macro_export]
 macro_rules! type_mapping {
-    ($t:ident) => (
+    ($n:ident $t:ident $b:tt) => (
 		impl $crate::object::ElasticUserTypeMapping for $t {
 			fn serialize_type<S>(serializer: &mut S) -> Result<(), S::Error>
-			where S: serde::Serializer {
+			where S: ::serde::Serializer {
 				let mut state = try!(serializer.serialize_struct("mapping", 1));
 
 				props_ser!($t Properties);
@@ -398,7 +412,7 @@ macro_rules! type_mapping {
 			}
 		}
 
-		object_mapping!($t);
+		object_mapping!($n $t $b);
 	)
 }
 
