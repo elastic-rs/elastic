@@ -14,16 +14,6 @@ use chrono::offset::TimeZone;
 
 use elastic_types::date::prelude::*;
 
-#[derive(Default, Serialize, Deserialize)]
-struct MyType {
-	pub date: ElasticDate<DefaultDateFormat>
-}
-
-#[derive(Default, Serialize, Deserialize)]
-struct MyTypeFmtd {
-	pub date: ElasticDate<TestDateFormat1>
-}
-
 const MYTYPE_DATE_FMT_1: &'static str = "%Y/%m/%d %H:%M:%S";
 const MYTYPE_DATE_FMT_2: &'static str = "%d/%m/%Y %H:%M:%S";
 
