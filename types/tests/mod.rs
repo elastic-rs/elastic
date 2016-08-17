@@ -388,7 +388,7 @@ pub mod object_fixtures {
 	});
 }
 
-/*pub mod object_macro_fixtures {
+pub mod object_macro_fixtures {
 	use serde;
 	use elastic_types::mapping::prelude::*;
 
@@ -405,7 +405,7 @@ pub mod object_fixtures {
 
 	//TODO: Retest the serde replacements and type names
 }
-*/
+
 pub mod object;
 //pub mod object_macro;
 pub mod geo_point;
