@@ -22,9 +22,7 @@
 //! # fn main() {
 //! # use elastic_types::mapping::prelude::*;
 //! # use elastic_types::boolean::prelude::*;
-//! # #[derive(Debug, Clone, Default, ElasticBooleanMapping)]
-//! # pub struct MyBooleanMapping;
-//! # impl ElasticBooleanMapping for MyBooleanMapping { }
+//! # boolean_mapping!(MyBooleanMapping {});
 //! struct MyType {
 //! 	pub field: ElasticBoolean<MyBooleanMapping>
 //! }

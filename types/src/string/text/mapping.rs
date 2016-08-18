@@ -24,17 +24,12 @@ pub const TEXT_DATATYPE: &'static str = "text";
 /// # #[macro_use]
 /// # extern crate elastic_types;
 /// # extern crate serde;
-/// use elastic_types::mapping::prelude::*;
-/// use elastic_types::string::prelude::*;
-///
-/// #[derive(Debug, Clone, Default, ElasticTextMapping)]
-/// pub struct MyStringMapping;
-/// impl ElasticTextMapping for MyStringMapping {
+/// text_mapping!(ElasticTextMapping for MyStringMapping {
 /// 	//Overload the mapping functions here
 /// 	fn boost() -> Option<f32> {
 ///			Some(1.5)
 ///		}
-/// }
+/// });
 /// # fn main() {}
 /// ```
 ///
@@ -49,14 +44,12 @@ pub const TEXT_DATATYPE: &'static str = "text";
 /// # extern crate serde;
 /// # extern crate serde_json;
 /// # use elastic_types::mapping::prelude::*;
-/// # #[derive(Debug, Clone, Default, ElasticTextMapping)]
-/// # pub struct MyStringMapping;
-/// # impl ElasticTextMapping for MyStringMapping {
+/// # text_mapping!(ElasticTextMapping for MyStringMapping {
 /// # 	//Overload the mapping functions here
 /// # 	fn boost() -> Option<f32> {
 ///	# 		Some(1.5)
 ///	# 	}
-/// # }
+/// # });
 /// # fn main() {
 /// # let mapping = serde_json::to_string(&MyStringMapping).unwrap();
 /// # let json = json_str!(
@@ -145,9 +138,7 @@ Self: ElasticFieldMapping<()> + Sized + Serialize {
 	/// # use std::collections::BTreeMap;
 	/// # use elastic_types::mapping::prelude::*;
 	/// # use elastic_types::string::prelude::*;
-	/// # #[derive(Debug, Clone, Default, ElasticTextMapping)]
-	/// # pub struct MyStringMapping;
-	/// # impl ElasticTextMapping for MyStringMapping {
+	/// # text_mapping!(ElasticTextMapping for MyStringMapping {
 	/// fn fields() -> Option<BTreeMap<&'static str, ElasticStringField>> {
 	///		let mut fields = BTreeMap::new();
 	///
@@ -163,7 +154,7 @@ Self: ElasticFieldMapping<()> + Sized + Serialize {
 	///
 	/// 	Some(fields)
 	///	}
-	/// # }
+	/// # });
 	/// # fn main() {}
 	/// ```
 	fn fields() -> Option<BTreeMap<&'static str, ElasticStringField>> { None }

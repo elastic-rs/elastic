@@ -15,17 +15,12 @@
 //! # #[macro_use]
 //! # extern crate elastic_types;
 //! # extern crate serde;
-//! use elastic_types::mapping::prelude::*;
-//! use elastic_types::number::prelude::*;
-//!
-//! #[derive(Debug, Clone, Default, ElasticIntegerMapping)]
-//! pub struct MyIntegerMapping;
-//! impl ElasticIntegerMapping for MyIntegerMapping {
+//! integer_mapping!(MyIntegerMapping {
 //! 	//Overload the mapping functions here
 //! 	fn null_value() -> Option<i32> {
 //! 		Some(42)
 //! 	}
-//! }
+//! });
 //! # fn main() {}
 //! ```
 //!
@@ -41,14 +36,12 @@
 //! # extern crate serde_json;
 //! # use elastic_types::mapping::prelude::*;
 //! # use elastic_types::number::prelude::*;
-//! # #[derive(Debug, Clone, Default, ElasticIntegerMapping)]
-//! # pub struct MyIntegerMapping;
-//! # impl ElasticIntegerMapping for MyIntegerMapping {
+//! # integer_mapping!(MyIntegerMapping {
 //! # 	//Overload the mapping functions here
 //! # 	fn null_value() -> Option<i32> {
 //! # 		Some(42)
 //! # 	}
-//! # }
+//! # });
 //! # fn main() {
 //! # let mapping = serde_json::to_string(&MyIntegerMapping).unwrap();
 //! # let json = json_str!(
@@ -58,41 +51,6 @@
 //! }
 //! # );
 //! # assert_eq!(json, mapping);
-//! # }
-//! ```
-//!
-//! ## Manually
-//!
-//! ```
-//! # extern crate serde;
-//! # extern crate elastic_types;
-//! # fn main() {
-//! use elastic_types::mapping::prelude::*;
-//! use elastic_types::number::prelude::*;
-//!
-//! #[derive(Debug, Clone, Default)]
-//! pub struct MyIntegerMapping;
-//! impl ElasticIntegerMapping for MyIntegerMapping {
-//! 	//Overload the mapping functions here
-//! 	fn null_value() -> Option<i32> {
-//! 		Some(42)
-//! 	}
-//! }
-//!
-//! impl ElasticFieldMapping<()> for MyIntegerMapping {
-//! 	type Visitor = ElasticIntegerMappingVisitor<MyIntegerMapping>;
-//!
-//! 	fn data_type() -> &'static str {
-//! 		INTEGER_DATATYPE
-//! 	}
-//! }
-//!
-//! impl serde::Serialize for MyIntegerMapping {
-//! 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
-//! 	where S: serde::Serializer {
-//! 		serializer.serialize_struct("mapping", Self::get_visitor())
-//! 	}
-//! }
 //! # }
 //! ```
 
@@ -113,10 +71,10 @@ pub const DOUBLE_DATATYPE: &'static str = "double";
 pub const FLOAT_DATATYPE: &'static str = "float";
 
 macro_rules! number_mapping {
-    ($m:ident, $v:ident, $n:ty) => (
-    	/// Base `number` mapping.
-    	pub trait $m where
-        Self: ElasticFieldMapping<()> + Sized + Serialize {
+	($m:ident, $v:ident, $n:ty) => (
+		/// Base `number` mapping.
+		pub trait $m where
+		Self: ElasticFieldMapping<()> + Sized + Serialize {
 			/// Try to convert strings to numbers and truncate fractions for integers. Accepts `true` (default) and `false`.
 			fn coerce() -> Option<bool> { None }
 
@@ -149,32 +107,32 @@ macro_rules! number_mapping {
 			/// Accepts true or false (default).
 			fn store() -> Option<bool> { None }
 		}
-    )
+	)
 }
 
 /// Implement `serde` serialisation for a `geo_shape` mapping type.
 #[macro_export]
 macro_rules! number_ser {
-    ($t:ident) => (
-        impl ::serde::Serialize for $t {
-            fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
-            where S: ::serde::Serializer {
-                let mut state = try!(serializer.serialize_struct("mapping", 8));
+	($t:ident) => (
+		impl ::serde::Serialize for $t {
+			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+			where S: ::serde::Serializer {
+				let mut state = try!(serializer.serialize_struct("mapping", 8));
 
-                try!(serializer.serialize_struct_elt(&mut state, "type", $t::data_type()));
+				try!(serializer.serialize_struct_elt(&mut state, "type", $t::data_type()));
 
-                ser_field!(serializer, &mut state, $t::coerce(), "coerce");
-                ser_field!(serializer, &mut state, $t::boost(), "boost");
-                ser_field!(serializer, &mut state, $t::doc_values(), "doc_values");
-                ser_field!(serializer, &mut state, $t::ignore_malformed(), "ignore_malformed");
-                ser_field!(serializer, &mut state, $t::include_in_all(), "include_in_all");
-                ser_field!(serializer, &mut state, $t::null_value(), "null_value");
-                ser_field!(serializer, &mut state, $t::store(), "store");
+				ser_field!(serializer, &mut state, $t::coerce(), "coerce");
+				ser_field!(serializer, &mut state, $t::boost(), "boost");
+				ser_field!(serializer, &mut state, $t::doc_values(), "doc_values");
+				ser_field!(serializer, &mut state, $t::ignore_malformed(), "ignore_malformed");
+				ser_field!(serializer, &mut state, $t::include_in_all(), "include_in_all");
+				ser_field!(serializer, &mut state, $t::null_value(), "null_value");
+				ser_field!(serializer, &mut state, $t::store(), "store");
 
-                serializer.serialize_struct_end(state)
-            }
-        }
-    )
+				serializer.serialize_struct_end(state)
+			}
+		}
+	)
 }
 
 /// Define an `integer` mapping.
@@ -215,21 +173,21 @@ macro_rules! number_ser {
 /// ```
 #[macro_export]
 macro_rules! integer_mapping {
-    ($t:ident) => (
-        impl $crate::mapping::ElasticFieldMapping<()> for $t {
-            fn data_type() -> &'static str { $crate::number::mapping::INTEGER_DATATYPE }
-        }
+	($t:ident) => (
+		impl $crate::mapping::ElasticFieldMapping<()> for $t {
+			fn data_type() -> &'static str { $crate::number::mapping::INTEGER_DATATYPE }
+		}
 
-        number_ser!($t);
-    );
-    ($t:ident $b:tt) => (
-        #[derive(Debug, Default, Clone, Copy)]
-        pub struct $t;
+		number_ser!($t);
+	);
+	($t:ident $b:tt) => (
+		#[derive(Debug, Default, Clone, Copy)]
+		pub struct $t;
 
-        impl $crate::number::mapping::ElasticIntegerMapping for $t $b
+		impl $crate::number::mapping::ElasticIntegerMapping for $t $b
 
-        integer_mapping!($t);
-    )
+		integer_mapping!($t);
+	)
 }
 
 /// Define a `long` mapping.
@@ -270,21 +228,21 @@ macro_rules! integer_mapping {
 /// ```
 #[macro_export]
 macro_rules! long_mapping {
-    ($t:ident) => (
-        impl $crate::mapping::ElasticFieldMapping<()> for $t {
-            fn data_type() -> &'static str { $crate::number::mapping::LONG_DATATYPE }
-        }
+	($t:ident) => (
+		impl $crate::mapping::ElasticFieldMapping<()> for $t {
+			fn data_type() -> &'static str { $crate::number::mapping::LONG_DATATYPE }
+		}
 
-        number_ser!($t);
-    );
-    ($t:ident $b:tt) => (
-        #[derive(Debug, Default, Clone, Copy)]
-        pub struct $t;
+		number_ser!($t);
+	);
+	($t:ident $b:tt) => (
+		#[derive(Debug, Default, Clone, Copy)]
+		pub struct $t;
 
-        impl $crate::number::mapping::ElasticLongMapping for $t $b
+		impl $crate::number::mapping::ElasticLongMapping for $t $b
 
-        long_mapping!($t);
-    )
+		long_mapping!($t);
+	)
 }
 
 /// Define a `short` mapping.
@@ -325,21 +283,21 @@ macro_rules! long_mapping {
 /// ```
 #[macro_export]
 macro_rules! short_mapping {
-    ($t:ident) => (
-        impl $crate::mapping::ElasticFieldMapping<()> for $t {
-            fn data_type() -> &'static str { $crate::number::mapping::SHORT_DATATYPE }
-        }
+	($t:ident) => (
+		impl $crate::mapping::ElasticFieldMapping<()> for $t {
+			fn data_type() -> &'static str { $crate::number::mapping::SHORT_DATATYPE }
+		}
 
-        number_ser!($t);
-    );
-    ($t:ident $b:tt) => (
-        #[derive(Debug, Default, Clone, Copy)]
-        pub struct $t;
+		number_ser!($t);
+	);
+	($t:ident $b:tt) => (
+		#[derive(Debug, Default, Clone, Copy)]
+		pub struct $t;
 
-        impl $crate::number::mapping::ElasticShortMapping for $t $b
+		impl $crate::number::mapping::ElasticShortMapping for $t $b
 
-        short_mapping!($t);
-    )
+		short_mapping!($t);
+	)
 }
 
 /// Define a `byte` mapping.
@@ -380,21 +338,21 @@ macro_rules! short_mapping {
 /// ```
 #[macro_export]
 macro_rules! byte_mapping {
-    ($t:ident) => (
-        impl $crate::mapping::ElasticFieldMapping<()> for $t {
-            fn data_type() -> &'static str { $crate::number::mapping::BYTE_DATATYPE }
-        }
+	($t:ident) => (
+		impl $crate::mapping::ElasticFieldMapping<()> for $t {
+			fn data_type() -> &'static str { $crate::number::mapping::BYTE_DATATYPE }
+		}
 
-        number_ser!($t);
-    );
-    ($t:ident $b:tt) => (
-        #[derive(Debug, Default, Clone, Copy)]
-        pub struct $t;
+		number_ser!($t);
+	);
+	($t:ident $b:tt) => (
+		#[derive(Debug, Default, Clone, Copy)]
+		pub struct $t;
 
-        impl $crate::number::mapping::ElasticByteMapping for $t $b
+		impl $crate::number::mapping::ElasticByteMapping for $t $b
 
-        byte_mapping!($t);
-    )
+		byte_mapping!($t);
+	)
 }
 
 /// Define a `float` mapping.
@@ -435,21 +393,21 @@ macro_rules! byte_mapping {
 /// ```
 #[macro_export]
 macro_rules! float_mapping {
-    ($t:ident) => (
-        impl $crate::mapping::ElasticFieldMapping<()> for $t {
-            fn data_type() -> &'static str { $crate::number::mapping::FLOAT_DATATYPE }
-        }
+	($t:ident) => (
+		impl $crate::mapping::ElasticFieldMapping<()> for $t {
+			fn data_type() -> &'static str { $crate::number::mapping::FLOAT_DATATYPE }
+		}
 
-        number_ser!($t);
-    );
-    ($t:ident $b:tt) => (
-        #[derive(Debug, Default, Clone, Copy)]
-        pub struct $t;
+		number_ser!($t);
+	);
+	($t:ident $b:tt) => (
+		#[derive(Debug, Default, Clone, Copy)]
+		pub struct $t;
 
-        impl $crate::number::mapping::ElasticFloatMapping for $t $b
+		impl $crate::number::mapping::ElasticFloatMapping for $t $b
 
-        float_mapping!($t);
-    )
+		float_mapping!($t);
+	)
 }
 
 /// Define a `double` mapping.
@@ -490,21 +448,21 @@ macro_rules! float_mapping {
 /// ```
 #[macro_export]
 macro_rules! double_mapping {
-    ($t:ident) => (
-        impl $crate::mapping::ElasticFieldMapping<()> for $t {
-            fn data_type() -> &'static str { $crate::number::mapping::DOUBLE_DATATYPE }
-        }
+	($t:ident) => (
+		impl $crate::mapping::ElasticFieldMapping<()> for $t {
+			fn data_type() -> &'static str { $crate::number::mapping::DOUBLE_DATATYPE }
+		}
 
-        number_ser!($t);
-    );
-    ($t:ident $b:tt) => (
-        #[derive(Debug, Default, Clone, Copy)]
-        pub struct $t;
+		number_ser!($t);
+	);
+	($t:ident $b:tt) => (
+		#[derive(Debug, Default, Clone, Copy)]
+		pub struct $t;
 
-        impl $crate::number::mapping::ElasticDoubleMapping for $t $b
+		impl $crate::number::mapping::ElasticDoubleMapping for $t $b
 
-        double_mapping!($t);
-    )
+		double_mapping!($t);
+	)
 }
 
 /// Base mapping requirements for an `integer`.

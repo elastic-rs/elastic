@@ -24,24 +24,16 @@ pub const DATE_DATATYPE: &'static str = "date";
 /// # #[macro_use]
 /// # extern crate elastic_types;
 /// # extern crate serde;
-/// use std::marker::PhantomData;
-/// use elastic_types::mapping::prelude::*;
-/// use elastic_types::date::prelude::*;
-///
-/// #[derive(Default, Clone, Copy, ElasticDateMapping)]
-/// pub struct MyDateMapping<F: DateFormat> {
-/// 	phantom: PhantomData<F>
-/// }
-/// impl <F: DateFormat> ElasticDateMapping<F> for MyDateMapping<F> {
+/// date_mapping!(MyDateMapping {
 /// 	//Overload the mapping functions here
 /// 	fn boost() -> Option<f32> {
 ///			Some(1.5)
 ///		}
-/// }
+/// });
 /// # fn main() {}
 /// ```
 ///
-/// This will produce the following mapping:
+/// This will produce the following mapping when mapped with the `EpochMillis` format:
 ///
 /// ```
 /// # #![feature(plugin, custom_derive, custom_attribute)]
@@ -54,16 +46,12 @@ pub const DATE_DATATYPE: &'static str = "date";
 /// # use std::marker::PhantomData;
 /// # use elastic_types::mapping::prelude::*;
 /// # use elastic_types::date::prelude::*;
-/// # #[derive(Default, Clone, Copy, ElasticDateMapping)]
-/// # pub struct MyDateMapping<F: DateFormat = EpochMillis> {
-/// # 	phantom: PhantomData<F>
-/// # }
-/// # impl <F: DateFormat> ElasticDateMapping<F> for MyDateMapping<F> {
+/// # date_mapping!(MyDateMapping {
 /// # 	//Overload the mapping functions here
 /// # 	fn boost() -> Option<f32> {
 ///	# 		Some(1.5)
 ///	# 	}
-/// # }
+/// # });
 /// # fn main() {
 /// # let mapping = serde_json::to_string(&MyDateMapping::<EpochMillis>::default()).unwrap();
 /// # let json = json_str!(
@@ -82,87 +70,6 @@ pub const DATE_DATATYPE: &'static str = "date";
 /// Automatically deriving mapping has the following limitations:
 ///
 /// - Non-generic mappings aren't supported by auto deriving.
-/// So your date mapping must take generic parameter `<F: DateFormat>`.
-///
-/// The above limitation can be worked around by implementing the mapping manually.
-///
-/// ## Manually
-///
-/// Define a date mapping that's only valid for the `EpochMillis` format:
-///
-/// ```
-/// # extern crate serde;
-/// # extern crate elastic_types;
-/// # use std::marker::PhantomData;
-/// # fn main() {
-/// use elastic_types::mapping::prelude::*;
-/// use elastic_types::date::prelude::*;
-///
-/// #[derive(Default, Clone)]
-/// pub struct MyDateMapping;
-///
-/// impl ElasticFieldMapping<EpochMillis> for MyDateMapping {
-/// 	type Visitor = ElasticDateMappingVisitor<EpochMillis, MyDateMapping>;
-///
-/// 	fn data_type() -> &'static str {
-/// 		DATE_DATATYPE
-/// 	}
-/// }
-///
-/// impl ElasticDateMapping<EpochMillis> for MyDateMapping {
-/// 	//Overload the mapping functions here
-/// 	fn boost() -> Option<f32> {
-///			Some(1.5)
-///		}
-/// }
-///
-/// impl serde::Serialize for MyDateMapping {
-/// 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
-/// 	where S: serde::Serializer {
-/// 		serializer.serialize_struct("mapping", Self::get_visitor())
-/// 	}
-/// }
-/// # }
-/// ```
-///
-/// Define a date mapping that's valid for any `DateFormat` (equivalent to the auto derive example):
-///
-/// ```
-/// # extern crate serde;
-/// # extern crate elastic_types;
-/// # use std::marker::PhantomData;
-/// # fn main() {
-/// use elastic_types::mapping::prelude::*;
-/// use elastic_types::date::prelude::*;
-///
-/// #[derive(Default, Clone)]
-/// pub struct MyDateMapping<F: DateFormat> {
-/// 	phantom: PhantomData<F>
-/// }
-///
-/// impl <F: DateFormat> ElasticFieldMapping<F> for MyDateMapping<F> {
-/// 	type Visitor = ElasticDateMappingVisitor<F, MyDateMapping<F>>;
-///
-/// 	fn data_type() -> &'static str {
-/// 		DATE_DATATYPE
-/// 	}
-/// }
-///
-/// impl <F: DateFormat> ElasticDateMapping<F> for MyDateMapping<F> {
-/// 	//Overload the mapping functions here
-/// 	fn boost() -> Option<f32> {
-///			Some(1.5)
-///		}
-/// }
-///
-/// impl <F: DateFormat> serde::Serialize for MyDateMapping<F> {
-/// 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
-/// 	where S: serde::Serializer {
-/// 		serializer.serialize_struct("mapping", Self::get_visitor())
-/// 	}
-/// }
-/// # }
-/// ```
 pub trait ElasticDateMapping<F> where
 F: DateFormat,
 Self: ElasticFieldMapping<F> + Sized + Serialize {

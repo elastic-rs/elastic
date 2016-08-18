@@ -36,9 +36,7 @@
 //! # fn main() {
 //! # use elastic_types::mapping::prelude::*;
 //! # use elastic_types::number::prelude::*;
-//! # #[derive(Clone, Default, ElasticIntegerMapping)]
-//! # pub struct MyIntegerMapping;
-//! # impl ElasticIntegerMapping for MyIntegerMapping { }
+//! # integer_mapping!(MyIntegerMapping { });
 //! struct MyType {
 //! 	pub field: ElasticInteger<MyIntegerMapping>
 //! }

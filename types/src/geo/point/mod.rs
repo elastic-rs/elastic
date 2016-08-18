@@ -29,13 +29,9 @@
 //! # fn main() {
 //! # use elastic_types::mapping::prelude::*;
 //! # use elastic_types::geo::point::prelude::*;
-//! # #[derive(Default, Clone, ElasticGeoPointMapping)]
-//! # pub struct MyGeoPointMapping<T: GeoPointFormat = GeoPointString> {
-//! #	phantom: PhantomData<T>
-//! # }
-//! # impl <T: GeoPointFormat> ElasticGeoPointMapping<T> for MyGeoPointMapping<T> { }
+//! geo_point_mapping!(MyGeoPointMapping {});
 //! struct MyType {
-//! 	pub field: ElasticGeoPoint<GeoPointString, MyGeoPointMapping>
+//! 	pub field: ElasticGeoPoint<GeoPointString, MyGeoPointMapping<_>>
 //! }
 //! # }
 //! ```

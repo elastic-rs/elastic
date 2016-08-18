@@ -23,9 +23,7 @@
 //! # fn main() {
 //! # use elastic_types::mapping::prelude::*;
 //! # use elastic_types::ip::prelude::*;
-//! # #[derive(Debug, Clone, Default, ElasticIpMapping)]
-//! # pub struct MyIpMapping;
-//! # impl ElasticIpMapping for MyIpMapping { }
+//! # ip_mapping!(MyIpMapping {})
 //! struct MyType {
 //! 	pub field: ElasticIp<MyIpMapping>
 //! }

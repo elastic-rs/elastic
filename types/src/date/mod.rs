@@ -32,11 +32,7 @@
 //! # fn main() {
 //! # use elastic_types::mapping::prelude::*;
 //! # use elastic_types::date::prelude::*;
-//! # #[derive(Default, Clone, ElasticDateMapping)]
-//! # pub struct MyDateMapping<T: DateFormat = EpochMillis> {
-//! # 	phantom: PhantomData<T>
-//! # }
-//! # impl <T: DateFormat> ElasticDateMapping<T> for MyDateMapping<T> { }
+//! # date_mapping!(MyDateMapping {});
 //! struct MyType {
 //! 	pub field: ElasticDate<EpochMillis, MyDateMapping>
 //! }
@@ -58,13 +54,7 @@
 //! # fn main() {
 //! #[derive(Default, Clone)]
 //! struct MyFormat;
-//! impl DateFormat for MyFormat {
-//! 	fn fmt<'a>() -> Vec<chrono::format::Item<'a>> {
-//! 		date_fmt!("yyyy-MM-ddTHH:mm:ss")
-//! 	}
-//! 
-//! 	fn name() -> &'static str { "yyyy-MM-dd'T'HH:mm:ss" }
-//! }
+//! impl_date_fmt!(MyFormat, "yyyy-MM-ddTHH:mm:ss", "yyyy-MM-dd'T'HH:mm:ss");
 //! # }
 //! ```
 //! 

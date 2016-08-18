@@ -189,9 +189,9 @@
 //! Remember that Elasticsearch will automatically update mappings based on the objects it sees though,
 //! so if your 'un-mapped' field is serialised on `index`, then some mapping will be added for it.
 //!
-//! ## Manually
+//! ## Derive with Macros
 //!
-//! You can also build object mappings manually, although this requires a lot of boilerplate:
+//! You can also build object mappings on `stable` using the `type_mapping!` macro:
 //!
 //! ```
 //! # #![feature(custom_derive, custom_attribute, plugin)]
@@ -203,83 +203,40 @@
 //!
 //! #[derive(Serialize, Deserialize)]
 //! pub struct MyType {
-//!     pub my_date2: ElasticDate<DefaultDateFormat>,
-//!     pub my_string1: String,
-//!     pub my_num1: i32,
-//!     pub my_bool1: bool,
+//! 	pub my_date: ElasticDate<DefaultDateFormat>,
+//! 	pub my_string: String,
+//! 	pub my_num: i32
 //! }
 //!
-//! //Implement ElasticType for your type
+//! //Implement ElasticType for your type. This binds it to the mapping
 //! impl ElasticType<MyTypeMapping, ()> for MyType { }
-//!
-//! //Create a visitor for the field mappings. This is used when mapping as a custom type
-//! //or when mapping as a field on another type.
-//! #[derive(Default, Clone)]
-//! pub struct MyTypeObjectVisitor;
-//!
-//! impl ElasticTypeVisitor for MyTypeObjectVisitor {
-//!     fn new() -> Self {
-//!     	MyTypeObjectVisitor
-//!     }
-//! }
-//!
-//! impl serde::ser::MapVisitor for MyTypeObjectVisitor {
-//!     fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
-//!      where S: serde::Serializer {
-//! 			//List your fields to map here
-//! 			//All implementations of ElasticType have a static `::mapping()` method
-//!             try!(serializer.serialize_struct_elt("my_date2", ElasticDate::<DefaultDateFormat>::mapping()));
-//!             try!(serializer.serialize_struct_elt("my_string1", String::mapping()));
-//!             try!(serializer.serialize_struct_elt("my_num1", i32::mapping()));
-//!             try!(serializer.serialize_struct_elt("my_bool1", bool::mapping()));
-//!         Ok(None)
-//!     }
-//! }
-//!
+//! 
+//! //Define the type mapping for our type
 //! #[derive(Default, Clone)]
 //! pub struct MyTypeMapping;
-//!
-//! impl serde::Serialize for MyTypeMapping {
-//!     fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where
-//!     S: serde::Serializer {
-//!         serializer.serialize_struct("", Self::get_visitor())
-//!     }
-//! }
-//!
-//! //Our type can be mapped in one of two ways:
-//! // - As a custom type (used in the REST API)
-//! // - As a field on another type
-//!
-//! //Implement Object and Field mapping for mapping our type as a field
-//! impl ElasticObjectMapping for MyTypeMapping {
-//! 	//Overload the mapping functions here
-//! 	fn data_type() -> &'static str {
-//! 		DYNAMIC_DATATYPE
+//! type_mapping!(my_type MyTypeMapping {
+//! 	fn props_len() -> usize { 3 }
+//! 		
+//! 	fn serialize_props<S>(serializer: &mut S, state: &mut S::StructState) -> Result<(), S::Error>
+//! 	where S: serde::Serializer {
+//! 		try!(serializer.serialize_struct_elt(state, "my_date", ElasticDate::<DefaultDateFormat>::mapping()));
+//! 		try!(serializer.serialize_struct_elt(state, "my_string", String::mapping()));
+//! 		try!(serializer.serialize_struct_elt(state, "my_num", i32::mapping()));
+//! 
+//! 		Ok(())
 //! 	}
-//! }
-//! impl ElasticFieldMapping<()> for MyTypeMapping {
-//!     type Visitor = ElasticObjectMappingVisitor<MyTypeMapping, MyTypeObjectVisitor>;
-//!
-//!     fn data_type() -> &'static str {
-//!         <Self as ElasticObjectMapping>::data_type()
-//!     }
-//!
-//!     fn name() -> &'static str {
-//!     	"mytype"
-//!     }
-//! }
-//!
-//! //Implement User Type mapping for mapping our type as a custom type in an Elasticsearch index.
-//! impl ElasticUserTypeMapping for MyTypeMapping {
-//!     type Visitor = ElasticUserTypeMappingVisitor<MyTypeObjectVisitor>;
-//! }
+//! });
 //! # fn main() {
 //! # }
 //! ```
+//! 
+//! The first ident passsed to the `type_mapping!` macro is the name of the type to use in Elasticsearch.
+//! Property types can be mapped by calling their static `mapping()` method.
+//! Any type that implements `ElasticFieldMapping` can be mapped this way.
 //!
 //! # Links
 //!
-//! - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/2.3/_basic_concepts.html#_type)
+//! - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/master/_basic_concepts.html#_type)
 
 /// Elasticsearch datatype name.
 pub const OBJECT_DATATYPE: &'static str = "object";

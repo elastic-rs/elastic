@@ -24,17 +24,12 @@ pub const KEYWORD_DATATYPE: &'static str = "keyword";
 /// # #[macro_use]
 /// # extern crate elastic_types;
 /// # extern crate serde;
-/// use elastic_types::mapping::prelude::*;
-/// use elastic_types::string::prelude::*;
-///
-/// #[derive(Debug, Clone, Default, ElasticKeywordMapping)]
-/// pub struct MyStringMapping;
-/// impl ElasticKeywordMapping for MyStringMapping {
+/// keyword_mapping!(ElasticKeywordMapping for MyStringMapping {
 /// 	//Overload the mapping functions here
 /// 	fn boost() -> Option<f32> {
 ///			Some(1.5)
 ///		}
-/// }
+/// });
 /// # fn main() {}
 /// ```
 ///
@@ -49,14 +44,12 @@ pub const KEYWORD_DATATYPE: &'static str = "keyword";
 /// # extern crate serde;
 /// # extern crate serde_json;
 /// # use elastic_types::mapping::prelude::*;
-/// # #[derive(Debug, Clone, Default, ElasticKeywordMapping)]
-/// # pub struct MyStringMapping;
-/// # impl ElasticKeywordMapping for MyStringMapping {
+/// # keyword_mapping!(ElasticKeywordMapping for MyStringMapping {
 /// # 	//Overload the mapping functions here
 /// # 	fn boost() -> Option<f32> {
 ///	# 		Some(1.5)
 ///	# 	}
-/// # }
+/// # });
 /// # fn main() {
 /// # let mapping = serde_json::to_string(&MyStringMapping).unwrap();
 /// # let json = json_str!(
@@ -66,42 +59,6 @@ pub const KEYWORD_DATATYPE: &'static str = "keyword";
 /// }
 /// # );
 /// # assert_eq!(json, mapping);
-/// # }
-/// ```
-///
-/// ## Manually
-///
-/// ```
-/// # extern crate serde;
-/// # extern crate elastic_types;
-/// # fn main() {
-/// use elastic_types::mapping::prelude::*;
-/// use elastic_types::string::prelude::*;
-///
-/// #[derive(Debug, Clone, Default)]
-/// pub struct MyStringMapping;
-/// impl ElasticKeywordMapping for MyStringMapping {
-/// 	//Overload the mapping functions here
-/// 	fn boost() -> Option<f32> {
-///			Some(1.5)
-///		}
-/// }
-///
-/// //We also need to implement the base `ElasticFieldMapping` and `serde::Serialize` for our custom mapping type
-/// impl ElasticFieldMapping<()> for MyStringMapping {
-/// 	type Visitor = ElasticKeywordMappingVisitor<MyStringMapping>;
-///
-/// 	fn data_type() -> &'static str {
-/// 		KEYWORD_DATATYPE
-/// 	}
-/// }
-///
-/// impl serde::Serialize for MyStringMapping {
-/// 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
-/// 	where S: serde::Serializer {
-/// 		serializer.serialize_struct("mapping", Self::get_visitor())
-/// 	}
-/// }
 /// # }
 /// ```
 pub trait ElasticKeywordMapping where
@@ -142,9 +99,7 @@ Self: ElasticFieldMapping<()> + Sized + Serialize {
 	/// # use std::collections::BTreeMap;
 	/// # use elastic_types::mapping::prelude::*;
 	/// # use elastic_types::string::prelude::*;
-	/// # #[derive(Debug, Clone, Default, ElasticKeywordMapping)]
-	/// # pub struct MyStringMapping;
-	/// # impl ElasticKeywordMapping for MyStringMapping {
+	/// # keyword_mapping!(ElasticKeywordMapping for MyStringMapping {
 	/// fn fields() -> Option<BTreeMap<&'static str, ElasticStringField>> {
 	///		let mut fields = BTreeMap::new();
 	///
@@ -160,7 +115,7 @@ Self: ElasticFieldMapping<()> + Sized + Serialize {
 	///
 	/// 	Some(fields)
 	///	}
-	/// # }
+	/// # });
 	/// # fn main() {}
 	/// ```
 	fn fields() -> Option<BTreeMap<&'static str, ElasticStringField>> { None }

@@ -27,9 +27,7 @@
 //! # fn main() {
 //! # use elastic_types::mapping::prelude::*;
 //! # use elastic_types::geo::shape::prelude::*;
-//! # #[derive(Default, Clone, ElasticGeoShapeMapping)]
-//! # pub struct MyGeoShapeMapping;
-//! # impl ElasticGeoShapeMapping for MyGeoShapeMapping { }
+//! # geo_shape_mapping!(MyGeoShapeMapping {});
 //! struct MyType {
 //! 	pub field: ElasticGeoShape<MyGeoShapeMapping>
 //! }

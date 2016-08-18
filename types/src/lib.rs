@@ -93,7 +93,7 @@
 //! 	pub id: i32,
 //! 	pub title: String,
 //! 	pub content: ElasticText<ContentMapping>,
-//! 	pub timestamp: Option<ElasticDate<EpochMillis, TimestampMapping>>,
+//! 	pub timestamp: Option<ElasticDate<EpochMillis, TimestampMapping<_>>>,
 //! 	pub geoip: GeoIp
 //! }
 //! 
@@ -106,23 +106,17 @@
 //! 
 //! //Mappings for our datatype fields
 //! 
-//! #[derive(Default, Clone, ElasticTextMapping)]
-//! struct ContentMapping;
-//! impl ElasticTextMapping for ContentMapping {
+//! text_mapping!(ContentMapping {
 //! 	fn analyzer() -> Option<&'static str> {
 //! 		Some("content_text")
 //! 	}
-//! }
+//! });
 //! 
-//! #[derive(Default, Clone, ElasticDateMapping)]
-//! struct TimestampMapping<T: DateFormat = EpochMillis> {
-//! 	_marker: PhantomData<T>
-//! }
-//! impl <T: DateFormat> ElasticDateMapping<T> for TimestampMapping<T> {
-//! 	fn null_value() -> Option<ElasticDate<T, Self>> {
+//! date_mapping!(struct TimestampMapping {
+//! 	fn null_value() -> Option<ElasticDate<F, Self>> {
 //! 		Some(ElasticDate::now())
 //! 	}
-//! }
+//! });
 //! 
 //! fn main() {
 //! 	println!("\"{}\":{}", 
@@ -506,7 +500,7 @@
 //! # Links
 //!
 //! - [Elasticsearch Mapping Concepts](https://www.elastic.co/guide/en/elasticsearch/guide/current/mapping.html)
-//! - [Elasticsearch Type Concepts](https://www.elastic.co/guide/en/elasticsearch/reference/2.3/_basic_concepts.html#_type)
+//! - [Elasticsearch Type Concepts](https://www.elastic.co/guide/en/elasticsearch/reference/master/_basic_concepts.html#_type)
 //! - [Github](https://github.com/KodrAus/elasticsearch-rs)
 
 #![doc(html_root_url = "http://kodraus.github.io/rustdoc/elastic_types/")]
@@ -517,9 +511,9 @@
 
 pub extern crate chrono;
 pub extern crate geo as georust;
-extern crate geohash;
 pub extern crate geojson;
 
+extern crate geohash;
 extern crate serde;
 extern crate serde_json;
 

@@ -26,20 +26,12 @@ pub const GEOPOINT_DATATYPE: &'static str = "geo_point";
 /// # #[macro_use]
 /// # extern crate elastic_types;
 /// # extern crate serde;
-/// use std::marker::PhantomData;
-/// use elastic_types::mapping::prelude::*;
-/// use elastic_types::geo::point::prelude::*;
-///
-/// #[derive(Default, Clone, Copy, ElasticGeoPointMapping)]
-/// pub struct MyGeoPointMapping<F: GeoPointFormat> {
-/// 	phantom: PhantomData<F>
-/// }
-/// impl <F: GeoPointFormat> ElasticGeoPointMapping<F> for MyGeoPointMapping<F> {
-/// 	//Overload the mapping functions here
-/// 	fn geohash() -> Option<bool> {
+/// geo_point_mapping!(MyGeoPointMapping {
+///     //Overload the mapping functions here
+///     fn geohash() -> Option<bool> {
 ///			Some(true)
 ///		}
-/// }
+/// });
 /// # fn main() {}
 /// ```
 ///
@@ -56,17 +48,12 @@ pub const GEOPOINT_DATATYPE: &'static str = "geo_point";
 /// # use std::marker::PhantomData;
 /// # use elastic_types::mapping::prelude::*;
 /// # use elastic_types::geo::point::prelude::*;
-/// #
-/// # #[derive(Default, Clone, Copy, ElasticGeoPointMapping)]
-/// # pub struct MyGeoPointMapping<F: GeoPointFormat> {
-/// # 	phantom: PhantomData<F>
-/// # }
-/// # impl <F: GeoPointFormat> ElasticGeoPointMapping<F> for MyGeoPointMapping<F> {
+/// # geo_point_mapping!(MyGeoPointMapping {
 /// # 	//Overload the mapping functions here
 /// # 	fn geohash() -> Option<bool> {
-/// #			Some(true)
-/// #		}
-/// # }
+/// # 		Some(true)
+/// # 	}
+/// # });
 /// # fn main() {
 /// # let mapping = serde_json::to_string(&MyGeoPointMapping::<DefaultGeoPointFormat>::default()).unwrap();
 /// # let json = json_str!(
@@ -84,130 +71,49 @@ pub const GEOPOINT_DATATYPE: &'static str = "geo_point";
 /// Automatically deriving mapping has the following limitations:
 ///
 /// - Non-generic mappings aren't supported by auto deriving.
-/// So your date mapping must take generic parameter `<F: GeoPointFormat>`.
-///
-/// The above limitation can be worked around by implementing the mapping manually.
-///
-/// ## Manually
-///
-/// Define a geo point mapping that's only valid for the `GeoPointString` format:
-///
-/// ```
-/// # extern crate serde;
-/// # extern crate elastic_types;
-/// # use std::marker::PhantomData;
-/// # fn main() {
-/// use elastic_types::mapping::prelude::*;
-/// use elastic_types::geo::point::prelude::*;
-///
-/// #[derive(Default, Clone)]
-/// pub struct MyGeoPointMapping;
-///
-/// impl ElasticFieldMapping<GeoPointString> for MyGeoPointMapping {
-/// 	type Visitor = ElasticGeoPointMappingVisitor<GeoPointString, MyGeoPointMapping>;
-///
-/// 	fn data_type() -> &'static str {
-/// 		GEOPOINT_DATATYPE
-/// 	}
-/// }
-///
-/// impl ElasticGeoPointMapping<GeoPointString> for MyGeoPointMapping {
-/// 	//Overload the mapping functions here
-/// 	fn geohash() -> Option<bool> {
-///			Some(true)
-///		}
-/// }
-///
-/// impl serde::Serialize for MyGeoPointMapping {
-/// 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
-/// 	where S: serde::Serializer {
-/// 		serializer.serialize_struct("mapping", Self::get_visitor())
-/// 	}
-/// }
-/// # }
-/// ```
-///
-/// Define a date mapping that's valid for any `GeoPointFormat` (equivalent to the auto derive example):
-///
-/// ```
-/// # extern crate serde;
-/// # extern crate elastic_types;
-/// # use std::marker::PhantomData;
-/// # fn main() {
-/// use elastic_types::mapping::prelude::*;
-/// use elastic_types::geo::point::prelude::*;
-///
-/// #[derive(Default, Clone)]
-/// pub struct MyGeoPointMapping<F: GeoPointFormat> {
-///     phantom: PhantomData<F>
-/// }
-///
-/// impl <F: GeoPointFormat> ElasticFieldMapping<F> for MyGeoPointMapping<F> {
-/// 	type Visitor = ElasticGeoPointMappingVisitor<F, MyGeoPointMapping<F>>;
-///
-/// 	fn data_type() -> &'static str {
-/// 		GEOPOINT_DATATYPE
-/// 	}
-/// }
-///
-/// impl <F: GeoPointFormat> ElasticGeoPointMapping<F> for MyGeoPointMapping<F> {
-/// 	//Overload the mapping functions here
-/// 	fn geohash() -> Option<bool> {
-///			Some(true)
-///		}
-/// }
-///
-/// impl <F: GeoPointFormat> serde::Serialize for MyGeoPointMapping<F> {
-/// 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
-/// 	where S: serde::Serializer {
-/// 		serializer.serialize_struct("mapping", Self::get_visitor())
-/// 	}
-/// }
-/// # }
-/// ```
 pub trait ElasticGeoPointMapping<F> where
 F: GeoPointFormat,
 Self: ElasticFieldMapping<F> + Sized + Serialize {
-    /// Should the `geo-point` also be indexed as a geohash in the `.geohash` sub-field? Defaults to `false`,
-    /// unless `geohash_prefix` is `true`.
-    fn geohash() -> Option<bool> { None }
+	/// Should the `geo-point` also be indexed as a geohash in the `.geohash` sub-field? Defaults to `false`,
+	/// unless `geohash_prefix` is `true`.
+	fn geohash() -> Option<bool> { None }
 
-    /// The maximum length of the geohash to use for the geohash and `geohash_prefix` options.
-    fn geohash_precision() -> Option<Distance> { None }
+	/// The maximum length of the geohash to use for the geohash and `geohash_prefix` options.
+	fn geohash_precision() -> Option<Distance> { None }
 
-    /// Should the `geo-point` also be indexed as a geohash plus all its prefixes? Defaults to `false`.
-    fn geohash_prefix() -> Option<bool> { None }
+	/// Should the `geo-point` also be indexed as a geohash plus all its prefixes? Defaults to `false`.
+	fn geohash_prefix() -> Option<bool> { None }
 
-    /// If `true`, malformed `geo-points` are ignored.
-    /// If `false` (default), malformed `geo-points` throw an exception and reject the whole document.
-    fn ignore_malformed() -> Option<bool> { None }
+	/// If `true`, malformed `geo-points` are ignored.
+	/// If `false` (default), malformed `geo-points` throw an exception and reject the whole document.
+	fn ignore_malformed() -> Option<bool> { None }
 
-    /// Should the `geo-point` also be indexed as `.lat` and `.lon` sub-fields?
-    /// Accepts `true` and `false` (default).
-    fn lat_lon() -> Option<bool> { None }
+	/// Should the `geo-point` also be indexed as `.lat` and `.lon` sub-fields?
+	/// Accepts `true` and `false` (default).
+	fn lat_lon() -> Option<bool> { None }
 }
 
 /// Implement `serde` serialisation for a `date` mapping type.
 #[macro_export]
 macro_rules! geo_point_ser {
-    ($t:ident: $f:ident) => (
-        impl <$f: $crate::geo::point::GeoPointFormat> ::serde::Serialize for $t<$f> {
-            fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where 
-            S: ::serde::Serializer {
-                let mut state = try!(serializer.serialize_struct("mapping", 7));
+	($t:ident: $f:ident) => (
+		impl <$f: $crate::geo::point::GeoPointFormat> ::serde::Serialize for $t<$f> {
+			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where 
+			S: ::serde::Serializer {
+				let mut state = try!(serializer.serialize_struct("mapping", 7));
 
-                try!(serializer.serialize_struct_elt(&mut state, "type", $t::<$f>::data_type()));
+				try!(serializer.serialize_struct_elt(&mut state, "type", $t::<$f>::data_type()));
 
-                ser_field!(serializer, &mut state, $t::<$f>::geohash(), "geohash");
-                ser_field!(serializer, &mut state, $t::<$f>::geohash_precision(), "geohash_precision");
-                ser_field!(serializer, &mut state, $t::<$f>::geohash_prefix(), "geohash_prefix");
-                ser_field!(serializer, &mut state, $t::<$f>::ignore_malformed(), "ignore_malformed");
-                ser_field!(serializer, &mut state, $t::<$f>::lat_lon(), "lat_lon");
+				ser_field!(serializer, &mut state, $t::<$f>::geohash(), "geohash");
+				ser_field!(serializer, &mut state, $t::<$f>::geohash_precision(), "geohash_precision");
+				ser_field!(serializer, &mut state, $t::<$f>::geohash_prefix(), "geohash_prefix");
+				ser_field!(serializer, &mut state, $t::<$f>::ignore_malformed(), "ignore_malformed");
+				ser_field!(serializer, &mut state, $t::<$f>::lat_lon(), "lat_lon");
 
-                serializer.serialize_struct_end(state)
-            }
-        }
-    )
+				serializer.serialize_struct_end(state)
+			}
+		}
+	)
 }
 
 /// Define a `geo_point` mapping for all formats.
@@ -252,34 +158,34 @@ macro_rules! geo_point_ser {
 /// ```
 #[macro_export]
 macro_rules! geo_point_mapping {
-    ($t:ident: $f:ident) => (
-        impl <$f: 'static + $crate::geo::point::GeoPointFormat> $crate::mapping::ElasticFieldMapping<F> for $t<$f> {
-            fn data_type() -> &'static str { $crate::geo::point::mapping::GEOPOINT_DATATYPE }
-        }
+	($t:ident: $f:ident) => (
+		impl <$f: 'static + $crate::geo::point::GeoPointFormat> $crate::mapping::ElasticFieldMapping<F> for $t<$f> {
+			fn data_type() -> &'static str { $crate::geo::point::mapping::GEOPOINT_DATATYPE }
+		}
 
-        geo_point_ser!($t: $f);
-    );
-    ($t:ident $b:tt) => (
-        #[derive(Debug, Default, Clone, Copy)]
-        pub struct $t<F: 'static + $crate::geo::point::GeoPointFormat> {
-            _marker: PhantomData<F>
-        }
+		geo_point_ser!($t: $f);
+	);
+	($t:ident $b:tt) => (
+		#[derive(Debug, Default, Clone, Copy)]
+		pub struct $t<F: 'static + $crate::geo::point::GeoPointFormat> {
+			_marker: PhantomData<F>
+		}
 
-        impl <F: 'static + $crate::geo::point::GeoPointFormat> $crate::mapping::ElasticFieldMapping<F> for $t<F> {
-            fn data_type() -> &'static str { $crate::geo::point::mapping::GEOPOINT_DATATYPE }
-        }
+		impl <F: 'static + $crate::geo::point::GeoPointFormat> $crate::mapping::ElasticFieldMapping<F> for $t<F> {
+			fn data_type() -> &'static str { $crate::geo::point::mapping::GEOPOINT_DATATYPE }
+		}
 
-        impl <F: 'static + $crate::geo::point::GeoPointFormat> $crate::geo::point::mapping::ElasticGeoPointMapping<F> for $t<F> $b
+		impl <F: 'static + $crate::geo::point::GeoPointFormat> $crate::geo::point::mapping::ElasticGeoPointMapping<F> for $t<F> $b
 
-        geo_point_ser!($t: F);
-    )
+		geo_point_ser!($t: F);
+	)
 }
 
 /// Default mapping for `geo_point`.
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultGeoPointMapping<F> where
 F: 'static + GeoPointFormat {
-    _marker: PhantomData<F>
+	_marker: PhantomData<F>
 }
 impl <F: 'static + GeoPointFormat> ElasticGeoPointMapping<F> for DefaultGeoPointMapping<F> { }
 

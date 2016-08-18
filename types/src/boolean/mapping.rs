@@ -17,23 +17,16 @@ pub const BOOLEAN_DATATYPE: &'static str = "boolean";
 /// ## Derive Mapping
 ///
 /// ```
-/// # #![feature(plugin, custom_derive, custom_attribute)]
-/// # #![plugin(json_str, elastic_types_macros)]
-/// # #[macro_use]
-/// # extern crate elastic_types;
 /// # extern crate serde;
-/// use elastic_types::mapping::prelude::*;
-/// use elastic_types::boolean::prelude::*;
-///
-/// #[derive(Debug, Clone, Default, ElasticBooleanMapping)]
-/// pub struct MyBooleanMapping;
-/// impl ElasticBooleanMapping for MyBooleanMapping {
+/// # extern crate elastic_types;
+/// # fn main() {
+/// boolean_mapping!(MyBooleanMapping {
 /// 	//Overload the mapping functions here
 /// 	fn boost() -> Option<f32> {
 ///			Some(1.5)
 ///		}
-/// }
-/// # fn main() {}
+/// });
+/// # }
 /// ```
 ///
 /// This will produce the following mapping:
@@ -48,14 +41,13 @@ pub const BOOLEAN_DATATYPE: &'static str = "boolean";
 /// # extern crate serde_json;
 /// # use elastic_types::mapping::prelude::*;
 /// # use elastic_types::boolean::prelude::*;
-/// # #[derive(Debug, Clone, Default, ElasticBooleanMapping)]
-/// # pub struct MyBooleanMapping;
-/// # impl ElasticBooleanMapping for MyBooleanMapping {
-/// # 	//Overload the mapping functions here
+/// # extern crate serde;
+/// # extern crate elastic_types;
+/// # boolean_mapping!(MyBooleanMapping {
 /// # 	fn boost() -> Option<f32> {
 ///	# 		Some(1.5)
 ///	# 	}
-/// # }
+/// # });
 /// # fn main() {
 /// # let mapping = serde_json::to_string(&MyBooleanMapping).unwrap();
 /// # let json = json_str!(
@@ -65,42 +57,6 @@ pub const BOOLEAN_DATATYPE: &'static str = "boolean";
 /// }
 /// # );
 /// # assert_eq!(json, mapping);
-/// # }
-/// ```
-///
-/// ## Manually
-///
-/// ```
-/// # extern crate serde;
-/// # extern crate elastic_types;
-/// # fn main() {
-/// use elastic_types::mapping::prelude::*;
-/// use elastic_types::boolean::prelude::*;
-///
-/// #[derive(Debug, Clone, Default)]
-/// pub struct MyBooleanMapping;
-/// impl ElasticBooleanMapping for MyBooleanMapping {
-/// 	//Overload the mapping functions here
-/// 	fn boost() -> Option<f32> {
-///			Some(1.5)
-///		}
-/// }
-///
-/// //We also need to implement the base `ElasticFieldMapping` and `serde::Serialize` for our custom mapping type
-/// impl ElasticFieldMapping<()> for MyBooleanMapping {
-/// 	type Visitor = ElasticBooleanMappingVisitor<MyBooleanMapping>;
-///
-/// 	fn data_type() -> &'static str {
-/// 		BOOLEAN_DATATYPE
-/// 	}
-/// }
-///
-/// impl serde::Serialize for MyBooleanMapping {
-/// 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
-/// 	where S: serde::Serializer {
-/// 		serializer.serialize_struct("mapping", Self::get_visitor())
-/// 	}
-/// }
 /// # }
 /// ```
 pub trait ElasticBooleanMapping where
