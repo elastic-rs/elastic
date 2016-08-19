@@ -403,11 +403,19 @@ pub mod object_macro_fixtures {
 		pub field: i32
 	}
 
-	//TODO: Retest the serde replacements and type names
+	#[derive(Serialize, ElasticType)]
+	#[elastic(ty="renamed_type")]
+	pub struct CustomType {
+		pub field: i32,
+		#[serde(skip_serializing)]
+		pub ignored_field: i32,
+		#[serde(rename="renamed_field")]
+		pub field2: i32
+	}
 }
 
 pub mod object;
-//pub mod object_macro;
+pub mod object_macro;
 pub mod geo_point;
 pub mod geo_shape;
 pub mod date;

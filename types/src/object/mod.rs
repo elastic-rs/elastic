@@ -41,60 +41,6 @@
 //!
 //! It's also possible to adjust the mapping using the `elastic` attribute.
 //!
-//! ### Use a Custom Mapping
-//!
-//! Use `elastic(mapping="{TypeName}")` to associate a given mapping with your type:
-//!
-//! ```
-//! # #![feature(plugin, custom_derive, custom_attribute)]
-//! # #![plugin(json_str, elastic_types_macros)]
-//! # #[macro_use]
-//! # extern crate elastic_types;
-//! # extern crate serde;
-//! # use serde::{ Serialize, Deserialize };
-//! # use elastic_types::mapping::prelude::*;
-//! # use elastic_types::date::prelude::*;
-//! #[derive(Default, Clone, Serialize, Deserialize, ElasticType)]
-//! #[elastic(mapping="MyTypeMapping")]
-//! pub struct MyType {
-//! 	pub my_date: ElasticDate<DefaultDateFormat>,
-//! 	pub my_string: String,
-//! 	pub my_num: i32
-//! }
-//!
-//! #[derive(Default, Clone)]
-//! struct MyTypeMapping;
-//! impl ElasticObjectMapping for MyTypeMapping {
-//! 	fn data_type() -> &'static str {
-//! 		OBJECT_DATATYPE
-//! 	}
-//!
-//! 	fn dynamic() -> Option<Dynamic> {
-//! 		Some(Dynamic::True)
-//! 	}
-//!
-//! 	fn enabled() -> Option<bool> {
-//! 		Some(false)
-//! 	}
-//!
-//! 	fn include_in_all() -> Option<bool> {
-//! 		Some(true)
-//! 	}
-//! }
-//! # impl serde::Serialize for MyType {
-//! # 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where S: serde::Serializer {
-//! # 		unimplemented!()
-//! # 	}
-//! # }
-//! # impl serde::Deserialize for MyType {
-//! # 	 fn deserialize<D>(deserializer: &mut D) -> Result<Self, D::Error> where D: serde::Deserializer {
-//! # 		unimplemented!()
-//! # 	}
-//! # }
-//! # fn main() {
-//! # }
-//! ```
-//!
 //! ### Use a Custom Type Name
 //!
 //! By default, the Elasticsearch type name (the value of `_type`) is the lowercase variant of the Rust struct.

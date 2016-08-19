@@ -15,7 +15,6 @@ fn get_type_name() {
 
 #[test]
 fn serialise_mapping_type() {
-	//Define an instance of our mapping type
 	let ser = TypeMapper::to_string(SimpleTypeMapping).unwrap();
 
 	let expected = json_str!({
@@ -45,11 +44,8 @@ fn serialise_mapping_type() {
 
 #[test]
 fn serialise_mapping_as_value() {
-	//Define an instance of our mapping type
 	let value = TypeMapper::to_value(SimpleTypeMapping).unwrap();
 
-	//Serialise to a json value, and perform a lookup. Make sure the value is serialised properly
-	//There does seem to be some weird thing with f32 serialisation; 1.01 results in ~1.0999
 	let ser = serde_json::ser::to_string(&value.lookup("properties.field1.type").unwrap()).unwrap();
 
 	assert_eq!("\"text\"", &ser);
