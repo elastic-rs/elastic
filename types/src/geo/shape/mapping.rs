@@ -24,6 +24,7 @@ pub const GEOSHAPE_DATATYPE: &'static str = "geo_shape";
 /// # #[macro_use]
 /// # extern crate elastic_types;
 /// # extern crate serde;
+/// # use elastic_types::prelude::*;
 /// geo_shape_mapping!(MyGeoShapeMapping {
 /// 	//Overload the mapping functions here
 /// 	fn tree_levels() -> Option<i32> {
@@ -40,11 +41,11 @@ pub const GEOSHAPE_DATATYPE: &'static str = "geo_shape";
 /// # #![plugin(elastic_types_macros)]
 /// # #[macro_use]
 /// # extern crate json_str;
+/// # #[macro_use]
 /// # extern crate elastic_types;
 /// # extern crate serde;
 /// # extern crate serde_json;
-/// # use elastic_types::mapping::prelude::*;
-/// # use elastic_types::geo::shape::prelude::*;
+/// # use elastic_types::prelude::*;
 /// # geo_shape_mapping!(MyGeoShapeMapping {
 /// # 	//Overload the mapping functions here
 /// # 	fn tree_levels() -> Option<i32> {
@@ -154,6 +155,11 @@ macro_rules! geo_shape_ser {
 /// The easiest way to define a mapping type is to let the macro do it for you:
 /// 
 /// ```
+/// # #[macro_use]
+/// # extern crate elastic_types;
+/// # extern crate serde;
+/// # use elastic_types::prelude::*;
+/// # fn main() {}
 /// geo_shape_mapping!(MyMapping {
 ///     fn strategy() -> Option<Strategy> { Some(Strategy::Term) }
 /// });
@@ -173,6 +179,11 @@ macro_rules! geo_shape_ser {
 /// mapping type and just pass it the macro to implement `ElasticFieldMapping`:
 /// 
 /// ```
+/// # #[macro_use]
+/// # extern crate elastic_types;
+/// # extern crate serde;
+/// # use elastic_types::prelude::*;
+/// # fn main() {}
 /// #[derive(Debug, Default, Clone, Copy)]
 /// pub struct MyMapping;
 /// impl ElasticGeoShapeMapping for MyMapping { 

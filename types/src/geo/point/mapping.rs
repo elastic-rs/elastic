@@ -26,6 +26,8 @@ pub const GEOPOINT_DATATYPE: &'static str = "geo_point";
 /// # #[macro_use]
 /// # extern crate elastic_types;
 /// # extern crate serde;
+/// # use std::marker::PhantomData;
+/// # use elastic_types::prelude::*;
 /// geo_point_mapping!(MyGeoPointMapping {
 ///     //Overload the mapping functions here
 ///     fn geohash() -> Option<bool> {
@@ -42,12 +44,12 @@ pub const GEOPOINT_DATATYPE: &'static str = "geo_point";
 /// # #![plugin(elastic_types_macros)]
 /// # #[macro_use]
 /// # extern crate json_str;
+/// # #[macro_use]
 /// # extern crate elastic_types;
 /// # extern crate serde;
 /// # extern crate serde_json;
 /// # use std::marker::PhantomData;
-/// # use elastic_types::mapping::prelude::*;
-/// # use elastic_types::geo::point::prelude::*;
+/// # use elastic_types::prelude::*;
 /// # geo_point_mapping!(MyGeoPointMapping {
 /// # 	//Overload the mapping functions here
 /// # 	fn geohash() -> Option<bool> {
@@ -125,8 +127,15 @@ macro_rules! geo_point_ser {
 /// The easiest way to define a mapping type is to let the macro do it for you:
 /// 
 /// ```
+/// # #[macro_use]
+/// # extern crate elastic_types;
+/// # extern crate serde;
+/// # use elastic_types::prelude::*;
+/// # fn main() {}
+/// use std::marker::PhantomData;
+/// 
 /// geo_point_mapping!(MyMapping {
-///     fn boost() -> Option<f32> { Some(1.03) }
+///     fn geohash() -> Option<bool> { Some(true) }
 /// });
 /// ```
 /// 
@@ -134,7 +143,13 @@ macro_rules! geo_point_ser {
 /// `ElasticFieldMapping<F: GeoPointFormat>` and `ElasticGeoPointMapping<F: GeoPointFormat>`, along with a few default traits:
 /// 
 /// ```
-/// #[derive(Debug, Default, Clone, Copy)]
+/// # #[macro_use]
+/// # extern crate elastic_types;
+/// # extern crate serde;
+/// # use elastic_types::prelude::*;
+/// # fn main() {}
+/// # use std::marker::PhantomData;
+/// #[derive(Debug, Default, Clone)]
 /// pub struct MyMapping<F: GeoPointFormat> {
 ///     _marker: PhantomData<F>
 /// }
@@ -146,12 +161,19 @@ macro_rules! geo_point_ser {
 /// mapping type and just pass it the macro to implement `ElasticFieldMapping<F>`:
 /// 
 /// ```
+/// # #[macro_use]
+/// # extern crate elastic_types;
+/// # extern crate serde;
+/// # use elastic_types::prelude::*;
+/// # fn main() {}
+/// use std::marker::PhantomData;
+/// 
 /// #[derive(Debug, Default, Clone, Copy)]
 /// pub struct MyMapping<F: 'static + GeoPointFormat> {
 ///     _marker: PhantomData<F>
 /// }
 /// impl <F: 'static + GeoPointFormat> ElasticGeoPointMapping<F> for MyMapping<F> { 
-///     fn boost() -> Option<f32> { Some(1.03) }
+///     fn geohash() -> Option<bool> { Some(true) }
 /// }
 /// 
 /// geo_point_mapping!(MyMapping: F);
@@ -166,7 +188,7 @@ macro_rules! geo_point_mapping {
 		geo_point_ser!($t: $f);
 	);
 	($t:ident $b:tt) => (
-		#[derive(Debug, Default, Clone, Copy)]
+		#[derive(Debug, Default, Clone)]
 		pub struct $t<F: 'static + $crate::geo::point::GeoPointFormat> {
 			_marker: PhantomData<F>
 		}

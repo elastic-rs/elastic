@@ -24,7 +24,8 @@ pub const TEXT_DATATYPE: &'static str = "text";
 /// # #[macro_use]
 /// # extern crate elastic_types;
 /// # extern crate serde;
-/// text_mapping!(ElasticTextMapping for MyStringMapping {
+/// # use elastic_types::prelude::*;
+/// text_mapping!(MyStringMapping {
 /// 	//Overload the mapping functions here
 /// 	fn boost() -> Option<f32> {
 ///			Some(1.5)
@@ -40,11 +41,12 @@ pub const TEXT_DATATYPE: &'static str = "text";
 /// # #![plugin(elastic_types_macros)]
 /// # #[macro_use]
 /// # extern crate json_str;
+/// # #[macro_use]
 /// # extern crate elastic_types;
 /// # extern crate serde;
 /// # extern crate serde_json;
-/// # use elastic_types::mapping::prelude::*;
-/// # text_mapping!(ElasticTextMapping for MyStringMapping {
+/// # use elastic_types::prelude::*;
+/// # text_mapping!(MyStringMapping {
 /// # 	//Overload the mapping functions here
 /// # 	fn boost() -> Option<f32> {
 ///	# 		Some(1.5)
@@ -59,42 +61,6 @@ pub const TEXT_DATATYPE: &'static str = "text";
 /// }
 /// # );
 /// # assert_eq!(json, mapping);
-/// # }
-/// ```
-///
-/// ## Manually
-///
-/// ```
-/// # extern crate serde;
-/// # extern crate elastic_types;
-/// # fn main() {
-/// use elastic_types::mapping::prelude::*;
-/// use elastic_types::string::prelude::*;
-///
-/// #[derive(Debug, Clone, Default)]
-/// pub struct MyStringMapping;
-/// impl ElasticTextMapping for MyStringMapping {
-/// 	//Overload the mapping functions here
-/// 	fn boost() -> Option<f32> {
-///			Some(1.5)
-///		}
-/// }
-///
-/// //We also need to implement the base `ElasticFieldMapping` and `serde::Serialize` for our custom mapping type
-/// impl ElasticFieldMapping<()> for MyStringMapping {
-/// 	type Visitor = ElasticTextMappingVisitor<MyStringMapping>;
-///
-/// 	fn data_type() -> &'static str {
-/// 		TEXT_DATATYPE
-/// 	}
-/// }
-///
-/// impl serde::Serialize for MyStringMapping {
-/// 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
-/// 	where S: serde::Serializer {
-/// 		serializer.serialize_struct("mapping", Self::get_visitor())
-/// 	}
-/// }
 /// # }
 /// ```
 pub trait ElasticTextMapping where
@@ -136,9 +102,8 @@ Self: ElasticFieldMapping<()> + Sized + Serialize {
 	/// # extern crate elastic_types;
 	/// # extern crate serde;
 	/// # use std::collections::BTreeMap;
-	/// # use elastic_types::mapping::prelude::*;
-	/// # use elastic_types::string::prelude::*;
-	/// # text_mapping!(ElasticTextMapping for MyStringMapping {
+	/// # use elastic_types::prelude::*;
+	/// # text_mapping!(MyStringMapping {
 	/// fn fields() -> Option<BTreeMap<&'static str, ElasticStringField>> {
 	///		let mut fields = BTreeMap::new();
 	///
@@ -250,6 +215,11 @@ macro_rules! text_ser {
 /// The easiest way to define a mapping type is to let the macro do it for you:
 /// 
 /// ```
+/// # #[macro_use]
+/// # extern crate elastic_types;
+/// # extern crate serde;
+/// # use elastic_types::prelude::*;
+/// # fn main() {}
 /// text_mapping!(MyMapping {
 /// 	fn boost() -> Option<f32> { Some(1.07) }
 /// });
@@ -269,6 +239,11 @@ macro_rules! text_ser {
 /// mapping type and just pass it the macro to implement `ElasticFieldMapping`:
 /// 
 /// ```
+/// # #[macro_use]
+/// # extern crate elastic_types;
+/// # extern crate serde;
+/// # use elastic_types::prelude::*;
+/// # fn main() {}
 /// #[derive(Debug, Default, Clone, Copy)]
 /// pub struct MyMapping;
 /// impl ElasticTextMapping for MyMapping { 

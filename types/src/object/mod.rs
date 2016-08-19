@@ -16,8 +16,7 @@
 //! # extern crate elastic_types;
 //! # extern crate serde;
 //! # use serde::{ Serialize, Deserialize };
-//! use elastic_types::mapping::prelude::*;
-//! use elastic_types::date::prelude::*;
+//! use elastic_types::prelude::*;
 //!
 //! #[derive(Default, Clone, Serialize, Deserialize, ElasticType)]
 //! pub struct MyType {
@@ -54,8 +53,7 @@
 //! # extern crate elastic_types;
 //! # extern crate serde;
 //! # use serde::{ Serialize, Deserialize };
-//! # use elastic_types::mapping::prelude::*;
-//! # use elastic_types::date::prelude::*;
+//! # use elastic_types::prelude::*;
 //! #[derive(Default, Clone, Serialize, Deserialize, ElasticType)]
 //! #[elastic(ty="my_type")]
 //! pub struct MyType {
@@ -97,8 +95,7 @@
 //! # extern crate elastic_types;
 //! # extern crate serde;
 //! # use serde::{ Serialize, Deserialize };
-//! # use elastic_types::mapping::prelude::*;
-//! # use elastic_types::date::prelude::*;
+//! # use elastic_types::prelude::*;
 //! #[derive(Default, Clone, Serialize, Deserialize, ElasticType)]
 //! pub struct MyType {
 //! 	#[serde(rename="my_renamed_date")]
@@ -143,9 +140,9 @@
 //! # #![feature(custom_derive, custom_attribute, plugin)]
 //! # #![plugin(serde_macros, elastic_types_macros)]
 //! # extern crate serde;
+//! # #[macro_use]
 //! # extern crate elastic_types;
-//! use elastic_types::mapping::prelude::*;
-//! use elastic_types::date::prelude::*;
+//! use elastic_types::prelude::*;
 //!
 //! #[derive(Serialize, Deserialize)]
 //! pub struct MyType {

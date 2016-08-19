@@ -15,7 +15,7 @@
 //! Map with a default `date`:
 //!
 //! ```
-//! # use elastic_types::date::prelude::*;
+//! # use elastic_types::prelude::*;
 //! struct MyType {
 //! 	pub field: ElasticDate<DefaultDateFormat>
 //! }
@@ -27,14 +27,15 @@
 //! # #![feature(plugin, custom_derive)]
 //! # #![plugin(json_str, elastic_types_macros)]
 //! # extern crate serde;
+//! # #[macro_use]
 //! # extern crate elastic_types;
 //! # use std::marker::PhantomData;
+//! # use elastic_types::prelude::*;
 //! # fn main() {
-//! # use elastic_types::mapping::prelude::*;
-//! # use elastic_types::date::prelude::*;
+//! # use elastic_types::prelude::*;
 //! # date_mapping!(MyDateMapping {});
 //! struct MyType {
-//! 	pub field: ElasticDate<EpochMillis, MyDateMapping>
+//! 	pub field: ElasticDate<EpochMillis, MyDateMapping<EpochMillis>>
 //! }
 //! # }
 //! ```
@@ -48,9 +49,10 @@
 //! # #![feature(plugin)]
 //! # #![plugin(json_str, elastic_types_macros)]
 //! # #![plugin(elastic_date_macros)]
+//! # #[macro_use]
 //! # extern crate elastic_types;
 //! # extern crate chrono;
-//! # use elastic_types::date::DateFormat;
+//! # use elastic_types::prelude::*;
 //! # fn main() {
 //! #[derive(Default, Clone)]
 //! struct MyFormat;

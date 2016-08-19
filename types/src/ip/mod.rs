@@ -19,11 +19,11 @@
 //! # #![feature(plugin, custom_derive)]
 //! # #![plugin(json_str, elastic_types_macros)]
 //! # extern crate serde;
+//! #[macro_use]
 //! # extern crate elastic_types;
 //! # fn main() {
-//! # use elastic_types::mapping::prelude::*;
-//! # use elastic_types::ip::prelude::*;
-//! # ip_mapping!(MyIpMapping {})
+//! # use elastic_types::prelude::*;
+//! # ip_mapping!(MyIpMapping {});
 //! struct MyType {
 //! 	pub field: ElasticIp<MyIpMapping>
 //! }

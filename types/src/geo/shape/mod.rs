@@ -22,7 +22,9 @@
 //! # #![feature(plugin, custom_derive)]
 //! # #![plugin(json_str, elastic_types_macros)]
 //! # extern crate serde;
+//! # #[macro_use]
 //! # extern crate elastic_types;
+//! # use elastic_types::prelude::*;
 //! # use std::marker::PhantomData;
 //! # fn main() {
 //! # use elastic_types::mapping::prelude::*;

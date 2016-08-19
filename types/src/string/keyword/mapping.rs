@@ -24,7 +24,8 @@ pub const KEYWORD_DATATYPE: &'static str = "keyword";
 /// # #[macro_use]
 /// # extern crate elastic_types;
 /// # extern crate serde;
-/// keyword_mapping!(ElasticKeywordMapping for MyStringMapping {
+/// # use elastic_types::prelude::*;
+/// keyword_mapping!(MyStringMapping {
 /// 	//Overload the mapping functions here
 /// 	fn boost() -> Option<f32> {
 ///			Some(1.5)
@@ -40,11 +41,12 @@ pub const KEYWORD_DATATYPE: &'static str = "keyword";
 /// # #![plugin(elastic_types_macros)]
 /// # #[macro_use]
 /// # extern crate json_str;
+/// # #[macro_use]
 /// # extern crate elastic_types;
 /// # extern crate serde;
 /// # extern crate serde_json;
-/// # use elastic_types::mapping::prelude::*;
-/// # keyword_mapping!(ElasticKeywordMapping for MyStringMapping {
+/// # use elastic_types::prelude::*;
+/// # keyword_mapping!(MyStringMapping {
 /// # 	//Overload the mapping functions here
 /// # 	fn boost() -> Option<f32> {
 ///	# 		Some(1.5)
@@ -97,9 +99,8 @@ Self: ElasticFieldMapping<()> + Sized + Serialize {
 	/// # extern crate elastic_types;
 	/// # extern crate serde;
 	/// # use std::collections::BTreeMap;
-	/// # use elastic_types::mapping::prelude::*;
-	/// # use elastic_types::string::prelude::*;
-	/// # keyword_mapping!(ElasticKeywordMapping for MyStringMapping {
+	/// # use elastic_types::prelude::*;
+	/// # keyword_mapping!(MyStringMapping {
 	/// fn fields() -> Option<BTreeMap<&'static str, ElasticStringField>> {
 	///		let mut fields = BTreeMap::new();
 	///
@@ -197,6 +198,11 @@ macro_rules! keyword_ser {
 /// The easiest way to define a mapping type is to let the macro do it for you:
 /// 
 /// ```
+/// # #[macro_use]
+/// # extern crate elastic_types;
+/// # extern crate serde;
+/// # use elastic_types::prelude::*;
+/// # fn main() {}
 /// keyword_mapping!(MyMapping {
 /// 	fn boost() -> Option<f32> { Some(1.07) }
 /// });
@@ -216,6 +222,11 @@ macro_rules! keyword_ser {
 /// mapping type and just pass it the macro to implement `ElasticFieldMapping`:
 /// 
 /// ```
+/// # #[macro_use]
+/// # extern crate elastic_types;
+/// # extern crate serde;
+/// # use elastic_types::prelude::*;
+/// # fn main() {}
 /// #[derive(Debug, Default, Clone, Copy)]
 /// pub struct MyMapping;
 /// impl ElasticKeywordMapping for MyMapping { 

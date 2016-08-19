@@ -23,7 +23,7 @@ impl ElasticType<DefaultDateMapping<ChronoFormat>, ChronoFormat> for DT { }
 /// Defining a date using the default format:
 ///
 /// ```
-/// use elastic_types::date::{ ElasticDate, DefaultDateFormat };
+/// use elastic_types::prelude::*;
 ///
 /// let date: ElasticDate<DefaultDateFormat> = ElasticDate::now();
 /// ```
@@ -31,7 +31,7 @@ impl ElasticType<DefaultDateMapping<ChronoFormat>, ChronoFormat> for DT { }
 /// Defining a date using a named format:
 ///
 /// ```
-/// use elastic_types::date::{ ElasticDate, BasicDateTime };
+/// use elastic_types::prelude::*;
 ///
 /// let date = ElasticDate::<BasicDateTime>::now();
 /// ```
@@ -39,8 +39,7 @@ impl ElasticType<DefaultDateMapping<ChronoFormat>, ChronoFormat> for DT { }
 /// Defining a date using a custom mapping:
 ///
 /// ```
-/// use elastic_types::date::mapping::DefaultDateMapping;
-/// use elastic_types::date::{ ElasticDate, BasicDateTime };
+/// use elastic_types::prelude::*;
 ///
 /// let date: ElasticDate<BasicDateTime, DefaultDateMapping<_>> = ElasticDate::now();
 /// ```
@@ -48,7 +47,7 @@ impl ElasticType<DefaultDateMapping<ChronoFormat>, ChronoFormat> for DT { }
 /// Accessing the values of a date:
 ///
 /// ```
-/// use elastic_types::date::{ ElasticDate, Datelike, Timelike, BasicDateTime };
+/// use elastic_types::prelude::*;
 ///
 /// let date = ElasticDate::<BasicDateTime>::now();
 ///

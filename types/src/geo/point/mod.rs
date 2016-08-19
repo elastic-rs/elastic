@@ -24,14 +24,16 @@
 //! # #![feature(plugin, custom_derive)]
 //! # #![plugin(json_str, elastic_types_macros)]
 //! # extern crate serde;
+//! # #[macro_use]
 //! # extern crate elastic_types;
 //! # use std::marker::PhantomData;
+//! # use elastic_types::prelude::*;
 //! # fn main() {
 //! # use elastic_types::mapping::prelude::*;
 //! # use elastic_types::geo::point::prelude::*;
 //! geo_point_mapping!(MyGeoPointMapping {});
 //! struct MyType {
-//! 	pub field: ElasticGeoPoint<GeoPointString, MyGeoPointMapping<_>>
+//! 	pub field: ElasticGeoPoint<GeoPointString, MyGeoPointMapping<GeoPointString>>
 //! }
 //! # }
 //! ```

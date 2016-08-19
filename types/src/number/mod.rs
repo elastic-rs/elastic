@@ -32,10 +32,10 @@
 //! # #![feature(plugin, custom_derive)]
 //! # #![plugin(json_str, elastic_types_macros)]
 //! # extern crate serde;
+//! # #[macro_use]
 //! # extern crate elastic_types;
+//! # use elastic_types::prelude::*;
 //! # fn main() {
-//! # use elastic_types::mapping::prelude::*;
-//! # use elastic_types::number::prelude::*;
 //! # integer_mapping!(MyIntegerMapping { });
 //! struct MyType {
 //! 	pub field: ElasticInteger<MyIntegerMapping>

@@ -23,6 +23,7 @@ pub const IP_DATATYPE: &'static str = "ip";
 /// # #[macro_use]
 /// # extern crate elastic_types;
 /// # extern crate serde;
+/// # use elastic_types::prelude::*;
 /// ip_mapping!(MyIpMapping {
 /// 	//Overload the mapping functions here
 /// 	fn boost() -> Option<f32> {
@@ -39,11 +40,11 @@ pub const IP_DATATYPE: &'static str = "ip";
 /// # #![plugin(elastic_types_macros)]
 /// # #[macro_use]
 /// # extern crate json_str;
+/// # #[macro_use]
 /// # extern crate elastic_types;
 /// # extern crate serde;
 /// # extern crate serde_json;
-/// # use elastic_types::mapping::prelude::*;
-/// # use elastic_types::boolean::prelude::*;
+/// # use elastic_types::prelude::*;
 /// # ip_mapping!(MyIpMapping {
 /// # 	//Overload the mapping functions here
 /// # 	fn boost() -> Option<f32> {
@@ -115,6 +116,11 @@ macro_rules! ip_ser {
 /// The easiest way to define a mapping type is to let the macro do it for you:
 /// 
 /// ```
+/// # #[macro_use]
+/// # extern crate elastic_types;
+/// # extern crate serde;
+/// # use elastic_types::prelude::*;
+/// # fn main() {}
 /// ip_mapping!(MyMapping {
 ///     fn boost() -> Option<f32> { Some(1.03) }
 /// });
@@ -134,6 +140,11 @@ macro_rules! ip_ser {
 /// mapping type and just pass it the macro to implement `ElasticFieldMapping`:
 /// 
 /// ```
+/// # #[macro_use]
+/// # extern crate elastic_types;
+/// # extern crate serde;
+/// # use elastic_types::prelude::*;
+/// # fn main() {}
 /// #[derive(Debug, Default, Clone, Copy)]
 /// pub struct MyMapping;
 /// impl ElasticIpMapping for MyMapping { 

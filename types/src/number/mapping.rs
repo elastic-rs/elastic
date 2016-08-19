@@ -15,6 +15,7 @@
 //! # #[macro_use]
 //! # extern crate elastic_types;
 //! # extern crate serde;
+//! # use elastic_types::prelude::*;
 //! integer_mapping!(MyIntegerMapping {
 //! 	//Overload the mapping functions here
 //! 	fn null_value() -> Option<i32> {
@@ -31,11 +32,11 @@
 //! # #![plugin(elastic_types_macros)]
 //! # #[macro_use]
 //! # extern crate json_str;
+//! # #[macro_use]
 //! # extern crate elastic_types;
 //! # extern crate serde;
 //! # extern crate serde_json;
-//! # use elastic_types::mapping::prelude::*;
-//! # use elastic_types::number::prelude::*;
+//! # use elastic_types::prelude::*;
 //! # integer_mapping!(MyIntegerMapping {
 //! # 	//Overload the mapping functions here
 //! # 	fn null_value() -> Option<i32> {
@@ -144,6 +145,11 @@ macro_rules! number_ser {
 /// The easiest way to define a mapping type is to let the macro do it for you:
 /// 
 /// ```
+/// # #[macro_use]
+/// # extern crate elastic_types;
+/// # extern crate serde;
+/// # use elastic_types::prelude::*;
+/// # fn main() {}
 /// integer_mapping!(MyMapping {
 ///     fn boost() -> Option<f32> { Some(1.03) }
 /// });
@@ -163,6 +169,11 @@ macro_rules! number_ser {
 /// mapping type and just pass it the macro to implement `ElasticFieldMapping`:
 /// 
 /// ```
+/// # #[macro_use]
+/// # extern crate elastic_types;
+/// # extern crate serde;
+/// # use elastic_types::prelude::*;
+/// # fn main() {}
 /// #[derive(Debug, Default, Clone, Copy)]
 /// pub struct MyMapping;
 /// impl ElasticIntegerMapping for MyMapping { 
@@ -199,6 +210,11 @@ macro_rules! integer_mapping {
 /// The easiest way to define a mapping type is to let the macro do it for you:
 /// 
 /// ```
+/// # #[macro_use]
+/// # extern crate elastic_types;
+/// # extern crate serde;
+/// # use elastic_types::prelude::*;
+/// # fn main() {}
 /// long_mapping!(MyMapping {
 ///     fn boost() -> Option<f32> { Some(1.03) }
 /// });
@@ -218,6 +234,11 @@ macro_rules! integer_mapping {
 /// mapping type and just pass it the macro to implement `ElasticFieldMapping`:
 /// 
 /// ```
+/// # #[macro_use]
+/// # extern crate elastic_types;
+/// # extern crate serde;
+/// # use elastic_types::prelude::*;
+/// # fn main() {}
 /// #[derive(Debug, Default, Clone, Copy)]
 /// pub struct MyMapping;
 /// impl ElasticLongMapping for MyMapping { 
@@ -254,6 +275,11 @@ macro_rules! long_mapping {
 /// The easiest way to define a mapping type is to let the macro do it for you:
 /// 
 /// ```
+/// # #[macro_use]
+/// # extern crate elastic_types;
+/// # extern crate serde;
+/// # use elastic_types::prelude::*;
+/// # fn main() {}
 /// short_mapping!(MyMapping {
 ///     fn boost() -> Option<f32> { Some(1.03) }
 /// });
@@ -273,6 +299,11 @@ macro_rules! long_mapping {
 /// mapping type and just pass it the macro to implement `ElasticFieldMapping`:
 /// 
 /// ```
+/// # #[macro_use]
+/// # extern crate elastic_types;
+/// # extern crate serde;
+/// # use elastic_types::prelude::*;
+/// # fn main() {}
 /// #[derive(Debug, Default, Clone, Copy)]
 /// pub struct MyMapping;
 /// impl ElasticShortMapping for MyMapping { 
@@ -309,6 +340,11 @@ macro_rules! short_mapping {
 /// The easiest way to define a mapping type is to let the macro do it for you:
 /// 
 /// ```
+/// # #[macro_use]
+/// # extern crate elastic_types;
+/// # extern crate serde;
+/// # use elastic_types::prelude::*;
+/// # fn main() {}
 /// byte_mapping!(MyMapping {
 ///     fn boost() -> Option<f32> { Some(1.03) }
 /// });
@@ -328,6 +364,11 @@ macro_rules! short_mapping {
 /// mapping type and just pass it the macro to implement `ElasticFieldMapping`:
 /// 
 /// ```
+/// # #[macro_use]
+/// # extern crate elastic_types;
+/// # extern crate serde;
+/// # use elastic_types::prelude::*;
+/// # fn main() {}
 /// #[derive(Debug, Default, Clone, Copy)]
 /// pub struct MyMapping;
 /// impl ElasticByteMapping for MyMapping { 
@@ -364,6 +405,11 @@ macro_rules! byte_mapping {
 /// The easiest way to define a mapping type is to let the macro do it for you:
 /// 
 /// ```
+/// # #[macro_use]
+/// # extern crate elastic_types;
+/// # extern crate serde;
+/// # use elastic_types::prelude::*;
+/// # fn main() {}
 /// float_mapping!(MyMapping {
 ///     fn boost() -> Option<f32> { Some(1.03) }
 /// });
@@ -383,6 +429,11 @@ macro_rules! byte_mapping {
 /// mapping type and just pass it the macro to implement `ElasticFieldMapping`:
 /// 
 /// ```
+/// # #[macro_use]
+/// # extern crate elastic_types;
+/// # extern crate serde;
+/// # use elastic_types::prelude::*;
+/// # fn main() {}
 /// #[derive(Debug, Default, Clone, Copy)]
 /// pub struct MyMapping;
 /// impl ElasticFloatMapping for MyMapping { 
@@ -419,6 +470,11 @@ macro_rules! float_mapping {
 /// The easiest way to define a mapping type is to let the macro do it for you:
 /// 
 /// ```
+/// # #[macro_use]
+/// # extern crate elastic_types;
+/// # extern crate serde;
+/// # use elastic_types::prelude::*;
+/// # fn main() {}
 /// double_mapping!(MyMapping {
 ///     fn boost() -> Option<f32> { Some(1.03) }
 /// });
@@ -438,6 +494,11 @@ macro_rules! float_mapping {
 /// mapping type and just pass it the macro to implement `ElasticFieldMapping`:
 /// 
 /// ```
+/// # #[macro_use]
+/// # extern crate elastic_types;
+/// # extern crate serde;
+/// # use elastic_types::prelude::*;
+/// # fn main() {}
 /// #[derive(Debug, Default, Clone, Copy)]
 /// pub struct MyMapping;
 /// impl ElasticDoubleMapping for MyMapping { 

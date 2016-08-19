@@ -70,26 +70,12 @@ M: ElasticFieldMapping<()> + ElasticIpMapping {
 	///
 	/// ```
 	/// # extern crate serde;
+	/// # #[macro_use]
 	/// # extern crate elastic_types;
 	/// # fn main() {
     /// # use std::net::Ipv4Addr;
-	/// # use elastic_types::mapping::prelude::*;
-	/// # use elastic_types::ip::prelude::*;
-	/// # #[derive(Debug, Clone, Default)]
-	/// # pub struct MyIpMapping;
-	/// # impl ElasticIpMapping for MyIpMapping { }
-	/// # impl ElasticFieldMapping<()> for MyIpMapping {
-	/// # 	type Visitor = ElasticIpMappingVisitor<MyIpMapping>;
-	/// # 	fn data_type() -> &'static str {
-	/// # 		IP_DATATYPE
-	/// # 	}
-	/// # }
-	/// # impl serde::Serialize for MyIpMapping {
-	/// # 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
-	/// # 	where S: serde::Serializer {
-	/// # 		serializer.serialize_struct("mapping", Self::get_visitor())
-	/// # 	}
-	/// # }
+	/// # use elastic_types::prelude::*;
+	/// # ip_mapping!(MyIpMapping {});
 	/// let es_ip = ElasticIp::<DefaultIpMapping>::new(Ipv4Addr::new(127, 0, 0, 1));
 	///
 	/// let ip: ElasticIp<MyIpMapping> = es_ip.remap();

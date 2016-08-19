@@ -10,7 +10,7 @@ use ::object_fixtures::*;
 
 #[test]
 fn get_type_name() {
-	assert_eq!("simple_type", SimpleTypeMapping::name());
+	assert_eq!("simpletype", SimpleTypeMapping::name());
 }
 
 #[test]

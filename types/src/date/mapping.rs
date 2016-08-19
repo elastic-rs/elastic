@@ -24,6 +24,8 @@ pub const DATE_DATATYPE: &'static str = "date";
 /// # #[macro_use]
 /// # extern crate elastic_types;
 /// # extern crate serde;
+/// # use std::marker::PhantomData;
+/// # use elastic_types::prelude::*;
 /// date_mapping!(MyDateMapping {
 /// 	//Overload the mapping functions here
 /// 	fn boost() -> Option<f32> {
@@ -40,14 +42,13 @@ pub const DATE_DATATYPE: &'static str = "date";
 /// # #![plugin(elastic_types_macros)]
 /// # #[macro_use]
 /// # extern crate json_str;
+/// # #[macro_use]
 /// # extern crate elastic_types;
 /// # extern crate serde;
 /// # extern crate serde_json;
 /// # use std::marker::PhantomData;
-/// # use elastic_types::mapping::prelude::*;
-/// # use elastic_types::date::prelude::*;
+/// # use elastic_types::prelude::*;
 /// # date_mapping!(MyDateMapping {
-/// # 	//Overload the mapping functions here
 /// # 	fn boost() -> Option<f32> {
 ///	# 		Some(1.5)
 ///	# 	}
@@ -141,6 +142,13 @@ macro_rules! date_ser {
 /// The easiest way to define a mapping type is to let the macro do it for you:
 /// 
 /// ```
+/// # #[macro_use]
+/// # extern crate elastic_types;
+/// # extern crate serde;
+/// # use elastic_types::prelude::*;
+/// # fn main() {}
+/// use std::marker::PhantomData;
+/// 
 /// date_mapping!(MyMapping {
 /// 	fn boost() -> Option<f32> { Some(1.03) }
 /// });
@@ -150,7 +158,10 @@ macro_rules! date_ser {
 /// `ElasticFieldMapping<F: DateFormat>` and `ElasticDateMapping<F: DateFormat>`, along with a few default traits:
 /// 
 /// ```
-/// #[derive(Debug, Default, Clone, Copy)]
+/// # use elastic_types::prelude::*;
+/// use std::marker::PhantomData;
+/// 
+/// #[derive(Debug, Default, Clone)]
 /// pub struct MyMapping<F: 'static + DateFormat> {
 /// 	_marker: PhantomData<F>
 /// }
@@ -162,7 +173,14 @@ macro_rules! date_ser {
 /// mapping type and just pass it the macro to implement `ElasticFieldMapping<F>`:
 /// 
 /// ```
-/// #[derive(Debug, Default, Clone, Copy)]
+/// # #[macro_use]
+/// # extern crate elastic_types;
+/// # extern crate serde;
+/// # use elastic_types::prelude::*;
+/// # fn main() {}
+/// use std::marker::PhantomData;
+/// 	
+/// #[derive(Debug, Default, Clone)]
 /// pub struct MyMapping<F: 'static + DateFormat> {
 /// 	_marker: PhantomData<F>
 /// }
@@ -182,7 +200,7 @@ macro_rules! date_mapping {
 		date_ser!($t: $f);
 	);
 	($t:ident $b:tt) => (
-		#[derive(Debug, Default, Clone, Copy)]
+		#[derive(Debug, Default, Clone)]
 		pub struct $t<F: 'static + $crate::date::DateFormat> {
 			_marker: PhantomData<F>
 		}
@@ -204,6 +222,15 @@ macro_rules! date_mapping {
 /// The macro takes 2 string literals; the format to parse and the name to use in Elasticsearch:
 /// 
 /// ```
+/// # #![feature(plugin)]
+/// # #![plugin(elastic_date_macros)]
+/// # #[macro_use]
+/// # extern crate elastic_types;
+/// # extern crate chrono;
+/// # fn main() {}
+/// use std::marker::PhantomData;
+/// 
+/// #[derive(Default, Clone)]
 /// struct MyFormat;
 /// impl_date_fmt!(MyFormat, "yyyy-MM-ddTHH:mm:ssZ", "yyyy-MM-dd'T'HH:mm:ssZ");
 /// ```

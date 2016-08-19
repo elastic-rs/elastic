@@ -18,7 +18,9 @@ pub const BOOLEAN_DATATYPE: &'static str = "boolean";
 ///
 /// ```
 /// # extern crate serde;
+/// # #[macro_use]
 /// # extern crate elastic_types;
+/// # use elastic_types::prelude::*;
 /// # fn main() {
 /// boolean_mapping!(MyBooleanMapping {
 /// 	//Overload the mapping functions here
@@ -36,11 +38,11 @@ pub const BOOLEAN_DATATYPE: &'static str = "boolean";
 /// # #![plugin(elastic_types_macros)]
 /// # #[macro_use]
 /// # extern crate json_str;
+/// # #[macro_use]
 /// # extern crate elastic_types;
 /// # extern crate serde;
 /// # extern crate serde_json;
-/// # use elastic_types::mapping::prelude::*;
-/// # use elastic_types::boolean::prelude::*;
+/// # use elastic_types::prelude::*;
 /// # extern crate serde;
 /// # extern crate elastic_types;
 /// # boolean_mapping!(MyBooleanMapping {
@@ -113,6 +115,11 @@ macro_rules! boolean_ser {
 /// The easiest way to define a mapping type is to let the macro do it for you:
 /// 
 /// ```
+/// # #[macro_use]
+/// # extern crate elastic_types;
+/// # extern crate serde;
+/// # use elastic_types::prelude::*;
+/// # fn main() {}
 /// boolean_mapping!(MyMapping {
 /// 	fn null_value() -> Option<bool> { Some(true) }
 /// });
@@ -132,6 +139,11 @@ macro_rules! boolean_ser {
 /// mapping type and just pass it the macro to implement `ElasticFieldMapping`:
 /// 
 /// ```
+/// # #[macro_use]
+/// # extern crate elastic_types;
+/// # extern crate serde;
+/// # use elastic_types::prelude::*;
+/// # fn main() {}
 /// #[derive(Debug, Default, Clone, Copy)]
 /// pub struct MyMapping;
 /// impl ElasticBooleanMapping for MyMapping { 

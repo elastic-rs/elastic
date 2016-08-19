@@ -119,7 +119,7 @@
 //! });
 //! 
 //! fn main() {
-//! 	println!("\"{}\":{}", 
+//! 	println!("\"{}\":{{ {} }}", 
 //! 		Article::name(), 
 //! 		TypeMapper::to_string(Article::mapping()).unwrap()
 //! 	);
@@ -181,7 +181,7 @@
 //!
 //! ## Map Your Types
 //!
-//! _For mapping on `stable`, see [here](object/index.html#manually)._
+//! _For mapping on `stable`, see [here](object/index.html#derive-with-macros)._
 //!
 //! Derive `ElasticType` on your Elasticsearch-mappable types:
 //!
@@ -468,8 +468,8 @@
 //!  `byte`              | `i8`                        | `std`     | [`ElasticByte<M>`](number/mapping/trait.ElasticByteMapping.html)                 | `()`
 //!  `float`             | `f32`                       | `std`     | [`ElasticFloat<M>`](number/mapping/trait.ElasticFloatMapping.html)               | `()`
 //!  `double`            | `f64`                       | `std`     | [`ElasticDouble<M>`](number/mapping/trait.ElasticDoubleMapping.html)             | `()`
-//!  `keyword`           | -                           | -         | [`ElasticKeyword<M>`](string/mapping/trait.ElasticKeywordMapping.html)           | `()`
-//!  `text`              | `String`                    | `std`     | [`ElasticText<M>`](string/mapping/trait.ElasticTextMapping.html)                 | `()`
+//!  `keyword`           | -                           | -         | [`ElasticKeyword<M>`](string/keyword/mapping/trait.ElasticKeywordMapping.html)   | `()`
+//!  `text`              | `String`                    | `std`     | [`ElasticText<M>`](string/text/mapping/trait.ElasticTextMapping.html)            | `()`
 //!  `boolean`           | `bool`                      | `std`     | [`ElasticBoolean<M>`](boolean/mapping/trait.ElasticBooleanMapping.html)          | `()`
 //!  `ip`                | `Ipv4Addr`                  | `std`     | [`ElasticIp<M>`](ip/mapping/trait.ElasticIpMapping.html)                         | `()`
 //!  `date`              | `DateTime<UTC>`             | `chrono`  | [`ElasticDate<F, M>`](date/mapping/trait.ElasticDateMapping.html)                | `DateFormat`

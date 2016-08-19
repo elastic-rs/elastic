@@ -355,7 +355,7 @@ pub mod object_fixtures {
 
 	#[derive(Default, Clone)]
 	pub struct SimpleTypeMapping;
-	type_mapping!(simple_type SimpleTypeMapping {
+	type_mapping!(simpletype SimpleTypeMapping {
 		fn props_len() -> usize { 2 }
 		
 		fn serialize_props<S>(serializer: &mut S, state: &mut S::StructState) -> Result<(), S::Error>
@@ -376,7 +376,7 @@ pub mod object_fixtures {
 
 	#[derive(Default, Clone)]
 	pub struct SimpleNestedTypeMapping;
-	type_mapping!(simple_nested_type SimpleNestedTypeMapping {
+	type_mapping!(simplenestedtype SimpleNestedTypeMapping {
 		fn props_len() -> usize { 1 }
 		
 		fn serialize_props<S>(serializer: &mut S, state: &mut S::StructState) -> Result<(), S::Error>
