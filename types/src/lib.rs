@@ -76,7 +76,7 @@
 //! 
 //! ```
 //! #![feature(plugin, custom_derive)]
-//! #![plugin(serde_macros, elastic_types_macros, elastic_date_macros)]
+//! #![plugin(serde_macros, elastic_types_macros)]
 //! 
 //! extern crate serde;
 //! extern crate elastic_types;

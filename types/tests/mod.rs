@@ -398,7 +398,7 @@ pub mod object_macro_fixtures {
 		pub field2: SimpleNestedType
 	}
 
-	#[derive(Serialize, ElaticType)]
+	#[derive(Serialize, ElasticType)]
 	pub struct SimpleNestedType {
 		pub field: i32
 	}
