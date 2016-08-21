@@ -21,7 +21,7 @@ serde_json = "~0.8.0"
 chrono = { version = "~0.2.20", features = [ "serde" ]}
 geo = "~0.0.7"
 geohash = "~0.2.7"
-geojson = { version = "*", features = [ "with-serde" ] }
+geojson = { version = "~0.4.0", features = [ "with-serde" ] }
 
 serde_macros = { version = "~0.8.0", optional = true }
 elastic_date_macros = { version = "~0.4.0" }
