@@ -7,6 +7,6 @@ authors = ["Ashley Mannix <ashleymannix@live.com.au>"]
 nightly-testing = []
 
 [dependencies]
-elastic_hyper = "*"
+elastic_hyper = "~0.3.0"
 json_str = "*"
 hyper = "~0.9.0"
