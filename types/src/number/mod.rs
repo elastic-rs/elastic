@@ -32,13 +32,11 @@
 //! # #![feature(plugin, custom_derive)]
 //! # #![plugin(json_str, elastic_types_macros)]
 //! # extern crate serde;
+//! # #[macro_use]
 //! # extern crate elastic_types;
+//! # use elastic_types::prelude::*;
 //! # fn main() {
-//! # use elastic_types::mapping::prelude::*;
-//! # use elastic_types::number::prelude::*;
-//! # #[derive(Clone, Default, ElasticIntegerMapping)]
-//! # pub struct MyIntegerMapping;
-//! # impl ElasticIntegerMapping for MyIntegerMapping { }
+//! # integer_mapping!(MyIntegerMapping { });
 //! struct MyType {
 //! 	pub field: ElasticInteger<MyIntegerMapping>
 //! }
@@ -49,9 +47,10 @@
 //!
 //! - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/number.html)
 
-mod number;
-
+#[macro_use]
 pub mod mapping;
+
+mod number;
 pub use self::number::*;
 
 pub mod prelude {

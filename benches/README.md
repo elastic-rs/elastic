@@ -16,8 +16,7 @@ The test data is built with the following Sense script:
 ```
 PUT bench_index
 
-PUT bench_index/bench_doc/_mapping
-{
+PUT bench_index/bench_doc/_mapping {
   "properties": {
     "id": {
       "type": "integer"

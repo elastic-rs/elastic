@@ -13,7 +13,7 @@ pub const TOKENCOUNT_DATATYPE: &'static str = "token_count";
 pub const COMPLETION_DATATYPE: &'static str = "completion";
 
 /// Default mapping for `String`.
-#[derive(Debug, Default, Clone, Copy)]
+#[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultStringMapping;
 impl ElasticTextMapping for DefaultStringMapping {
 	fn fields() -> Option<BTreeMap<&'static str, ElasticStringField>> {
@@ -30,7 +30,9 @@ impl ElasticTextMapping for DefaultStringMapping {
 	}
 }
 
-impl_text_mapping!(DefaultStringMapping);
+text_mapping!(DefaultStringMapping);
+
+impl ::mapping::ElasticType<DefaultStringMapping, ()> for String { }
 
 /// The `index_options` parameter controls what information is added to the inverted index, for search and highlighting purposes.
 #[derive(Debug, Clone, Copy)]
@@ -120,38 +122,19 @@ pub struct ElasticTokenCountFieldMapping {
 impl serde::Serialize for ElasticTokenCountFieldMapping {
 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where
 	S: Serializer {
-		serializer.serialize_struct("fields", ElasticTokenCountFieldMappingVisitor::new(&self))
-	}
-}
+		let mut state = try!(serializer.serialize_struct("mapping", 8));
 
-#[doc(hidden)]
-#[derive(Debug)]
-pub struct ElasticTokenCountFieldMappingVisitor<'a> {
-	data: &'a ElasticTokenCountFieldMapping
-}
-impl <'a> ElasticTokenCountFieldMappingVisitor<'a> {
-	#[doc(hidden)]
-	pub fn new(field: &'a ElasticTokenCountFieldMapping) -> Self {
-		ElasticTokenCountFieldMappingVisitor {
-			data: field
-		}
-	}
-}
+		try!(serializer.serialize_struct_elt(&mut state, "type", TOKENCOUNT_DATATYPE));
 
-impl <'a> serde::ser::MapVisitor for ElasticTokenCountFieldMappingVisitor<'a> {
-	fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
-	where S: serde::Serializer {
-		try!(serializer.serialize_struct_elt("type", TOKENCOUNT_DATATYPE));
+		ser_field!(serializer, &mut state, self.analyzer, "analyzer");
+		ser_field!(serializer, &mut state, self.boost, "boost");
+		ser_field!(serializer, &mut state, self.doc_values, "doc_values");
+		ser_field!(serializer, &mut state, self.index, "index");
+		ser_field!(serializer, &mut state, self.include_in_all, "include_in_all");
+		ser_field!(serializer, &mut state, self.precision_step, "precision_step");
+		ser_field!(serializer, &mut state, self.store, "store");
 
-		ser_sub_field!(serializer, self.data.analyzer, "analyzer");
-		ser_sub_field!(serializer, self.data.boost, "boost");
-		ser_sub_field!(serializer, self.data.doc_values, "doc_values");
-		ser_sub_field!(serializer, self.data.index, "index");
-		ser_sub_field!(serializer, self.data.include_in_all, "include_in_all");
-		ser_sub_field!(serializer, self.data.precision_step, "precision_step");
-		ser_sub_field!(serializer, self.data.store, "store");
-
-		Ok(None)
+		serializer.serialize_struct_end(state)
 	}
 }
 
@@ -188,36 +171,17 @@ pub struct ElasticCompletionFieldMapping {
 impl serde::Serialize for ElasticCompletionFieldMapping {
 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where
 	S: Serializer {
-		serializer.serialize_struct("fields", ElasticCompletionFieldMappingVisitor::new(&self))
-	}
-}
+		let mut state = try!(serializer.serialize_struct("mapping", 7));
 
-#[doc(hidden)]
-#[derive(Debug)]
-pub struct ElasticCompletionFieldMappingVisitor<'a> {
-	data: &'a ElasticCompletionFieldMapping
-}
-impl <'a> ElasticCompletionFieldMappingVisitor<'a> {
-	#[doc(hidden)]
-	pub fn new(field: &'a ElasticCompletionFieldMapping) -> Self {
-		ElasticCompletionFieldMappingVisitor {
-			data: field
-		}
-	}
-}
+		try!(serializer.serialize_struct_elt(&mut state, "type", COMPLETION_DATATYPE));
 
-impl <'a> serde::ser::MapVisitor for ElasticCompletionFieldMappingVisitor<'a> {
-	fn visit<S>(&mut self, serializer: &mut S) -> Result<Option<()>, S::Error>
-	where S: serde::Serializer {
-		try!(serializer.serialize_struct_elt("type", COMPLETION_DATATYPE));
+		ser_field!(serializer, &mut state, self.analyzer, "analyzer");
+		ser_field!(serializer, &mut state, self.search_analyzer, "search_analyzer");
+		ser_field!(serializer, &mut state, self.payloads, "payloads");
+		ser_field!(serializer, &mut state, self.preserve_separators, "preserve_separators");
+		ser_field!(serializer, &mut state, self.preserve_position_increments, "preserve_position_increments");
+		ser_field!(serializer, &mut state, self.max_input_length, "max_input_length");
 
-		ser_sub_field!(serializer, self.data.analyzer, "analyzer");
-		ser_sub_field!(serializer, self.data.search_analyzer, "search_analyzer");
-		ser_sub_field!(serializer, self.data.payloads, "payloads");
-		ser_sub_field!(serializer, self.data.preserve_separators, "preserve_separators");
-		ser_sub_field!(serializer, self.data.preserve_position_increments, "preserve_position_increments");
-		ser_sub_field!(serializer, self.data.max_input_length, "max_input_length");
-
-		Ok(None)
+		serializer.serialize_struct_end(state)
 	}
 }

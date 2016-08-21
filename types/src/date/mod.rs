@@ -15,7 +15,7 @@
 //! Map with a default `date`:
 //!
 //! ```
-//! # use elastic_types::date::prelude::*;
+//! # use elastic_types::prelude::*;
 //! struct MyType {
 //! 	pub field: ElasticDate<DefaultDateFormat>
 //! }
@@ -27,18 +27,15 @@
 //! # #![feature(plugin, custom_derive)]
 //! # #![plugin(json_str, elastic_types_macros)]
 //! # extern crate serde;
+//! # #[macro_use]
 //! # extern crate elastic_types;
 //! # use std::marker::PhantomData;
+//! # use elastic_types::prelude::*;
 //! # fn main() {
-//! # use elastic_types::mapping::prelude::*;
-//! # use elastic_types::date::prelude::*;
-//! # #[derive(Default, Clone, ElasticDateMapping)]
-//! # pub struct MyDateMapping<T: DateFormat = EpochMillis> {
-//! # 	phantom: PhantomData<T>
-//! # }
-//! # impl <T: DateFormat> ElasticDateMapping<T> for MyDateMapping<T> { }
+//! # use elastic_types::prelude::*;
+//! # date_mapping!(MyDateMapping {});
 //! struct MyType {
-//! 	pub field: ElasticDate<EpochMillis, MyDateMapping>
+//! 	pub field: ElasticDate<EpochMillis, MyDateMapping<EpochMillis>>
 //! }
 //! # }
 //! ```
@@ -52,19 +49,14 @@
 //! # #![feature(plugin)]
 //! # #![plugin(json_str, elastic_types_macros)]
 //! # #![plugin(elastic_date_macros)]
+//! # #[macro_use]
 //! # extern crate elastic_types;
 //! # extern crate chrono;
-//! # use elastic_types::date::DateFormat;
+//! # use elastic_types::prelude::*;
 //! # fn main() {
 //! #[derive(Default, Clone)]
 //! struct MyFormat;
-//! impl DateFormat for MyFormat {
-//! 	fn fmt<'a>() -> Vec<chrono::format::Item<'a>> {
-//! 		date_fmt!("yyyy-MM-ddTHH:mm:ss")
-//! 	}
-//! 
-//! 	fn name() -> &'static str { "yyyy-MM-dd'T'HH:mm:ss" }
-//! }
+//! impl_date_fmt!(MyFormat, "yyyy-MM-ddTHH:mm:ss", "yyyy-MM-dd'T'HH:mm:ss");
 //! # }
 //! ```
 //! 
@@ -100,11 +92,12 @@
 //! # Links
 //! - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/date.html)
 
+#[macro_use]
+pub mod mapping;
+
 mod format;
 mod formats;
 mod date;
-
-pub mod mapping;
 pub use self::format::*;
 pub use self::date::*;
 pub use self::formats::*;

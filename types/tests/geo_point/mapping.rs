@@ -1,5 +1,5 @@
-#![cfg_attr(feature = "nightly", feature(custom_derive, custom_attribute, plugin))]
-#![cfg_attr(feature = "nightly", plugin(serde_macros, json_str, elastic_types_macros, elastic_date_macros))]
+#![feature(custom_derive, custom_attribute, plugin)]
+#![plugin(serde_macros, json_str, elastic_types_macros, elastic_date_macros)]
 
 extern crate serde;
 extern crate serde_json;

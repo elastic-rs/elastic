@@ -3,7 +3,9 @@
 //! For indexing simple geo points with an `x` and `y` coordinate, use `point::ElasticGeoPoint`.
 //! For indexing `geojson`, use `shape::ElasticGeoShape`.
 
+#[macro_use]
 pub mod point;
+#[macro_use]
 pub mod shape;
 
 pub mod mapping {

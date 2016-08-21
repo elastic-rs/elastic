@@ -22,14 +22,14 @@
 //! # #![feature(plugin, custom_derive)]
 //! # #![plugin(json_str, elastic_types_macros)]
 //! # extern crate serde;
+//! # #[macro_use]
 //! # extern crate elastic_types;
+//! # use elastic_types::prelude::*;
 //! # use std::marker::PhantomData;
 //! # fn main() {
 //! # use elastic_types::mapping::prelude::*;
 //! # use elastic_types::geo::shape::prelude::*;
-//! # #[derive(Default, Clone, ElasticGeoShapeMapping)]
-//! # pub struct MyGeoShapeMapping;
-//! # impl ElasticGeoShapeMapping for MyGeoShapeMapping { }
+//! # geo_shape_mapping!(MyGeoShapeMapping {});
 //! struct MyType {
 //! 	pub field: ElasticGeoShape<MyGeoShapeMapping>
 //! }
@@ -40,10 +40,11 @@
 //!
 //! - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/geo-shape.html)
 
-mod shape;
-
-pub use self::shape::*;
+#[macro_use]
 pub mod mapping;
+
+mod shape;
+pub use self::shape::*;
 
 pub mod prelude {
 	//! Includes non-mapping types for the `geo_shape` types.

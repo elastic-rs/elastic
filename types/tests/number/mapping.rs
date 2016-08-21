@@ -9,6 +9,36 @@ use elastic_types::mapping::prelude::*;
 use ::number_fixtures::*;
 
 #[test]
+fn i32_has_default_mapping() {
+	assert_eq!(DefaultIntegerMapping, i32::mapping());
+}
+
+#[test]
+fn i64_has_default_mapping() {
+	assert_eq!(DefaultLongMapping, i64::mapping());
+}
+
+#[test]
+fn i16_has_default_mapping() {
+	assert_eq!(DefaultShortMapping, i16::mapping());
+}
+
+#[test]
+fn i8_has_default_mapping() {
+	assert_eq!(DefaultByteMapping, i8::mapping());
+}
+
+#[test]
+fn f32_has_default_mapping() {
+	assert_eq!(DefaultFloatMapping, f32::mapping());
+}
+
+#[test]
+fn f64_has_default_mapping() {
+	assert_eq!(DefaultDoubleMapping, f64::mapping());
+}
+
+#[test]
 fn serialise_mapping_integer_default() {
 	let mapping = DefaultIntegerMapping::default();
 	let ser = serde_json::to_string(&mapping).unwrap();

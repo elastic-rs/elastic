@@ -9,6 +9,11 @@ use elastic_types::mapping::prelude::*;
 use ::string_fixtures::*;
 
 #[test]
+fn string_has_default_mapping() {
+	assert_eq!(DefaultStringMapping, String::mapping());
+}
+
+#[test]
 fn serialise_string_mapping_default() {
 	let mapping = DefaultStringMapping::default();
 	let ser = serde_json::to_string(&mapping).unwrap();
@@ -38,7 +43,7 @@ fn serialise_text_mapping_custom() {
 		"eager_global_ordinals":false,
 		"fielddata":true,
 		"fielddata_frequency_filter":{
-			"min":0
+			"min":0.0
 		},
 		"fields":{
 			"comp":{
@@ -219,7 +224,7 @@ fn serialise_mapping_text_field() {
 		"eager_global_ordinals":true,
 		"fielddata":false,
 		"fielddata_frequency_filter":{
-			"min":0
+			"min":0.0
 		},
 		"include_in_all":false,
 		"ignore_above":512,

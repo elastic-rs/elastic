@@ -9,9 +9,9 @@ nightly-testing = []
 [dependencies]
 elastic_hyper = "*"
 json_str = { version = "*", features = ["nightly"]}
-hyper = "~0.9.0"
-elastic_types = { version = "~0.2.1", features = ["nightly"], default-features = false }
-elastic_types_macros = "~0.3.1"
-serde = "0.7"
-serde_macros = "0.7"
-serde_json = "0.7"
+hyper = "*"
+elastic_types = { version = "*", features = ["nightly"], default-features = false }
+elastic_types_macros = "*"
+serde = "0.8"
+serde_macros = "0.8"
+serde_json = "0.8"

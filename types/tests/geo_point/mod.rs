@@ -1,5 +1,5 @@
-#![cfg_attr(feature = "nightly", feature(custom_derive, custom_attribute, plugin))]
-#![cfg_attr(feature = "nightly", plugin(serde_macros, json_str, elastic_types_macros, elastic_date_macros))]
+#![feature(custom_derive, custom_attribute, plugin)]
+#![plugin(serde_macros, json_str, elastic_types_macros, elastic_date_macros)]
 
 pub mod mapping;
 pub mod formats;
@@ -14,7 +14,7 @@ use ::geo_point_fixtures::*;
 
 #[test]
 fn can_change_point_mapping() {
-	fn takes_custom_mapping(_: ElasticGeoPoint<GeoPointObject, MyGeoPointMapping>) -> bool {
+	fn takes_custom_mapping(_: ElasticGeoPoint<GeoPointObject, MyGeoPointMapping<GeoPointObject>>) -> bool {
 		true
 	}
 

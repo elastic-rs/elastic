@@ -24,18 +24,16 @@
 //! # #![feature(plugin, custom_derive)]
 //! # #![plugin(json_str, elastic_types_macros)]
 //! # extern crate serde;
+//! # #[macro_use]
 //! # extern crate elastic_types;
 //! # use std::marker::PhantomData;
+//! # use elastic_types::prelude::*;
 //! # fn main() {
 //! # use elastic_types::mapping::prelude::*;
 //! # use elastic_types::geo::point::prelude::*;
-//! # #[derive(Default, Clone, ElasticGeoPointMapping)]
-//! # pub struct MyGeoPointMapping<T: GeoPointFormat = GeoPointString> {
-//! #	phantom: PhantomData<T>
-//! # }
-//! # impl <T: GeoPointFormat> ElasticGeoPointMapping<T> for MyGeoPointMapping<T> { }
+//! geo_point_mapping!(MyGeoPointMapping {});
 //! struct MyType {
-//! 	pub field: ElasticGeoPoint<GeoPointString, MyGeoPointMapping>
+//! 	pub field: ElasticGeoPoint<GeoPointString, MyGeoPointMapping<GeoPointString>>
 //! }
 //! # }
 //! ```
@@ -44,11 +42,13 @@
 //!
 //! - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/geo-point.html)
 
+#[macro_use]
+pub mod mapping;
+
 mod point;
 mod format;
 mod formats;
 
-pub mod mapping;
 pub use self::point::*;
 pub use self::format::*;
 pub use self::formats::*;

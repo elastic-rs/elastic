@@ -1,28 +1,18 @@
-#![cfg_attr(feature = "nightly", feature(custom_derive, custom_attribute, plugin))]
-#![cfg_attr(feature = "nightly", plugin(serde_macros, json_str, elastic_types_macros, elastic_date_macros))]
+#![feature(custom_derive, custom_attribute, plugin)]
+#![plugin(serde_macros, json_str, elastic_types_macros, elastic_date_macros)]
 
 pub mod mapping;
 pub mod formats;
 
 extern crate serde;
 extern crate serde_json;
-extern crate chrono;
+pub extern crate chrono;
 extern crate elastic_types;
 
 use chrono::format::Item;
 use chrono::offset::TimeZone;
 
 use elastic_types::date::prelude::*;
-
-#[derive(Default, Serialize, Deserialize)]
-struct MyType {
-	pub date: ElasticDate<DefaultDateFormat>
-}
-
-#[derive(Default, Serialize, Deserialize)]
-struct MyTypeFmtd {
-	pub date: ElasticDate<TestDateFormat1>
-}
 
 const MYTYPE_DATE_FMT_1: &'static str = "%Y/%m/%d %H:%M:%S";
 const MYTYPE_DATE_FMT_2: &'static str = "%d/%m/%Y %H:%M:%S";

@@ -40,7 +40,7 @@ fn serialise_elastic_geo_shape() {
 	let ser = serde_json::to_string(&shape).unwrap();
 
 	assert_eq!(json_str!({
-		"coordinates": [ 1, 1 ],
+		"coordinates": [ 1.0, 1.0 ],
 		"type": "Point"
 	}), ser);
 }

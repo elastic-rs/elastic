@@ -44,24 +44,7 @@ macro_rules! impl_keyword_mapping {
 	)
 }
 
-macro_rules! impl_boolean_mapping {
-	($t:ty) => (
-		impl $crate::mapping::ElasticFieldMapping<()> for $t {
-			type Visitor = $crate::boolean::mapping::ElasticBooleanMappingVisitor<$t>;
 
-			fn data_type() -> &'static str {
-				$crate::boolean::mapping::BOOLEAN_DATATYPE
-			}
-		}
-
-		impl serde::Serialize for $t {
-			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
-			where S: serde::Serializer {
-				serializer.serialize_struct("mapping", Self::get_visitor())
-			}
-		}
-	)
-}
 
 macro_rules! impl_integer_mapping {
 	($t:ty) => (

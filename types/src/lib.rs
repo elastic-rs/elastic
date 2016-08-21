@@ -38,6 +38,7 @@
 //! #![feature(plugin)]
 //! #![plugin(elastic_types_macros)]
 //!
+//! #[macro_use]
 //! extern crate elastic_types;
 //! ```
 //!
@@ -68,7 +69,7 @@
 //! 
 //! ```ignore
 //! [dependencies]
-//! elastic_types = { version = "*", defeault-features = false, features = "nightly" }
+//! elastic_types = { version = "*", features = "nightly" }
 //! elastic_types_macros = "*"
 //! ```
 //! 
@@ -76,10 +77,11 @@
 //! 
 //! ```
 //! #![feature(plugin, custom_derive)]
-//! #![plugin(serde_macros, elastic_types_macros, elastic_date_macros)]
+//! #![plugin(serde_macros, elastic_types_macros)]
 //! 
-//! extern crate serde;
+//! #[macro_use]
 //! extern crate elastic_types;
+//! extern crate serde;
 //! 
 //! use std::marker::PhantomData;
 //! 
@@ -93,7 +95,7 @@
 //! 	pub id: i32,
 //! 	pub title: String,
 //! 	pub content: ElasticText<ContentMapping>,
-//! 	pub timestamp: Option<ElasticDate<EpochMillis, TimestampMapping>>,
+//! 	pub timestamp: Option<ElasticDate<EpochMillis, TimestampMapping<EpochMillis>>>,
 //! 	pub geoip: GeoIp
 //! }
 //! 
@@ -106,26 +108,20 @@
 //! 
 //! //Mappings for our datatype fields
 //! 
-//! #[derive(Default, Clone, ElasticTextMapping)]
-//! struct ContentMapping;
-//! impl ElasticTextMapping for ContentMapping {
+//! text_mapping!(ContentMapping {
 //! 	fn analyzer() -> Option<&'static str> {
 //! 		Some("content_text")
 //! 	}
-//! }
+//! });
 //! 
-//! #[derive(Default, Clone, ElasticDateMapping)]
-//! struct TimestampMapping<T: DateFormat = EpochMillis> {
-//! 	_marker: PhantomData<T>
-//! }
-//! impl <T: DateFormat> ElasticDateMapping<T> for TimestampMapping<T> {
-//! 	fn null_value() -> Option<ElasticDate<T, Self>> {
+//! date_mapping!(TimestampMapping {
+//! 	fn null_value() -> Option<ElasticDate<F, Self>> {
 //! 		Some(ElasticDate::now())
 //! 	}
-//! }
+//! });
 //! 
 //! fn main() {
-//! 	println!("\"{}\":{}", 
+//! 	println!("\"{}\":{{ {} }}", 
 //! 		Article::name(), 
 //! 		TypeMapper::to_string(Article::mapping()).unwrap()
 //! 	);
@@ -187,7 +183,7 @@
 //!
 //! ## Map Your Types
 //!
-//! _For mapping on `stable`, see [here](object/index.html#manually)._
+//! _For mapping on `stable`, see [here](object/index.html#derive-with-macros)._
 //!
 //! Derive `ElasticType` on your Elasticsearch-mappable types:
 //!
@@ -261,6 +257,7 @@
 //! # #![plugin(elastic_types_macros)]
 //! # #[macro_use]
 //! # extern crate json_str;
+//! # #[macro_use]
 //! # extern crate elastic_types;
 //! # extern crate serde;
 //! # use serde::{ Serialize, Deserialize };
@@ -305,6 +302,7 @@
 //! ```
 //! # #![feature(plugin, custom_derive, custom_attribute)]
 //! # #![plugin(elastic_types_macros)]
+//! # #[macro_use]
 //! # extern crate elastic_types;
 //! # extern crate serde;
 //! # use serde::{ Serialize, Deserialize };
@@ -350,6 +348,7 @@
 //! # #![plugin(elastic_types_macros)]
 //! # #[macro_use]
 //! # extern crate json_str;
+//! # #[macro_use]
 //! # extern crate elastic_types;
 //! # extern crate serde;
 //! # use serde::{ Serialize, Deserialize };
@@ -474,8 +473,8 @@
 //!  `byte`              | `i8`                        | `std`     | [`ElasticByte<M>`](number/mapping/trait.ElasticByteMapping.html)                 | `()`
 //!  `float`             | `f32`                       | `std`     | [`ElasticFloat<M>`](number/mapping/trait.ElasticFloatMapping.html)               | `()`
 //!  `double`            | `f64`                       | `std`     | [`ElasticDouble<M>`](number/mapping/trait.ElasticDoubleMapping.html)             | `()`
-//!  `keyword`           | -                           | -         | [`ElasticKeyword<M>`](string/mapping/trait.ElasticKeywordMapping.html)           | `()`
-//!  `text`              | `String`                    | `std`     | [`ElasticText<M>`](string/mapping/trait.ElasticTextMapping.html)                 | `()`
+//!  `keyword`           | -                           | -         | [`ElasticKeyword<M>`](string/keyword/mapping/trait.ElasticKeywordMapping.html)   | `()`
+//!  `text`              | `String`                    | `std`     | [`ElasticText<M>`](string/text/mapping/trait.ElasticTextMapping.html)            | `()`
 //!  `boolean`           | `bool`                      | `std`     | [`ElasticBoolean<M>`](boolean/mapping/trait.ElasticBooleanMapping.html)          | `()`
 //!  `ip`                | `Ipv4Addr`                  | `std`     | [`ElasticIp<M>`](ip/mapping/trait.ElasticIpMapping.html)                         | `()`
 //!  `date`              | `DateTime<UTC>`             | `chrono`  | [`ElasticDate<F, M>`](date/mapping/trait.ElasticDateMapping.html)                | `DateFormat`
@@ -506,46 +505,53 @@
 //! # Links
 //!
 //! - [Elasticsearch Mapping Concepts](https://www.elastic.co/guide/en/elasticsearch/guide/current/mapping.html)
-//! - [Elasticsearch Type Concepts](https://www.elastic.co/guide/en/elasticsearch/reference/2.3/_basic_concepts.html#_type)
+//! - [Elasticsearch Type Concepts](https://www.elastic.co/guide/en/elasticsearch/reference/master/_basic_concepts.html#_type)
 //! - [Github](https://github.com/KodrAus/elasticsearch-rs)
 
 #![doc(html_root_url = "http://kodraus.github.io/rustdoc/elastic_types/")]
 #![deny(missing_docs)]
 
-#![cfg_attr(feature = "nightly", feature(custom_derive, plugin, associated_type_defaults))]
+#![cfg_attr(feature = "nightly", feature(custom_derive, plugin, associated_type_defaults, associated_consts))]
 #![cfg_attr(feature = "nightly", plugin(serde_macros, elastic_date_macros))]
-#![cfg_attr(feature = "nightly-testing", allow(identity_op))]
 
-#[cfg_attr(not(feature = "nightly"), macro_use)]
 #[cfg(not(feature = "nightly"))]
+#[cfg_attr(not(feature = "nightly"), macro_use)]
 extern crate elastic_date_macros;
 
 pub extern crate chrono;
 pub extern crate geo as georust;
-extern crate geohash;
 pub extern crate geojson;
 
+extern crate geohash;
 extern crate serde;
 extern crate serde_json;
 
-#[macro_use]
-mod macros;
-pub mod mappers;
-
+#[macro_export]
 macro_rules! ser_field {
-    ($s:ident, $f:expr, $n:expr) => (
+    ($s:ident, $h:expr, $f:expr, $n:expr) => (
     	if let Some(f) = $f {
-			try!($s.serialize_struct_elt($n, f));
+			try!($s.serialize_struct_elt($h, $n, f));
 		}
     )
 }
 
-//Other type dependencies
-#[cfg(feature = "serde_macros")]
-include!("lib.rs.in");
+pub mod mapping;
+pub mod mappers;
 
-#[cfg(not(feature = "serde_macros"))]
-include!(concat!(env!("OUT_DIR"), "/lib.rs"));
+#[macro_use]
+pub mod boolean;
+#[macro_use]
+pub mod date;
+#[macro_use]
+pub mod geo;
+#[macro_use]
+pub mod ip;
+#[macro_use]
+pub mod number;
+#[macro_use]
+pub mod string;
+#[macro_use]
+pub mod object;
 
 pub mod prelude {
 	//! Includes non-mapping types for all data types.

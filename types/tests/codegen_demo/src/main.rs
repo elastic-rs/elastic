@@ -11,12 +11,12 @@ extern crate elastic_types;
 use elastic_types::mapping::prelude::*;
 use elastic_types::date::prelude::*;
 
-#[derive(Serialize, Deserialize, ElasticType)]
+#[derive(Serialize, ElasticType)]
 pub struct MyType {
-    pub my_date2: ElasticDate<DefaultDateFormat>,
-    pub my_string1: String,
-    pub my_num1: i32,
-    pub my_bool1: bool
+    pub my_date: ElasticDate<DefaultDateFormat>,
+    pub my_string: String,
+    pub my_num: i32,
+    pub my_bool: bool
 }
 
 fn main() {}

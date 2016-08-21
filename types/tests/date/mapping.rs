@@ -1,13 +1,19 @@
-#![cfg_attr(feature = "nightly", feature(custom_derive, custom_attribute, plugin))]
-#![cfg_attr(feature = "nightly", plugin(serde_macros, json_str, elastic_types_macros, elastic_date_macros))]
+#![feature(custom_derive, custom_attribute, plugin)]
+#![plugin(serde_macros, json_str, elastic_types_macros, elastic_date_macros)]
 
 extern crate serde;
 extern crate serde_json;
 extern crate elastic_types;
 
+use chrono::{ DateTime, UTC };
 use elastic_types::mapping::prelude::*;
 use elastic_types::date::prelude::*;
 use ::date_fixtures::*;
+
+#[test]
+fn datetime_has_default_mapping() {
+	assert_eq!(DefaultDateMapping::<ChronoFormat>::default(), DateTime::<UTC>::mapping());
+}
 
 #[test]
 fn serialise_mapping_default() {
@@ -24,7 +30,7 @@ fn serialise_mapping_default() {
 
 #[test]
 fn serialise_mapping_custom() {
-	let mapping: MyDateMapping = MyDateMapping::default();
+	let mapping = MyDateMapping::<EpochMillis>::default();
 	let ser = serde_json::to_string(&mapping).unwrap();
 
 	let expected = json_str!({

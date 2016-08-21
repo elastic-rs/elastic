@@ -18,13 +18,11 @@
 //! # #![feature(plugin, custom_derive)]
 //! # #![plugin(json_str, elastic_types_macros)]
 //! # extern crate serde;
+//! # #[macro_use]
 //! # extern crate elastic_types;
 //! # fn main() {
-//! # use elastic_types::mapping::prelude::*;
-//! # use elastic_types::boolean::prelude::*;
-//! # #[derive(Debug, Clone, Default, ElasticBooleanMapping)]
-//! # pub struct MyBooleanMapping;
-//! # impl ElasticBooleanMapping for MyBooleanMapping { }
+//! # use elastic_types::prelude::*;
+//! # boolean_mapping!(MyBooleanMapping {});
 //! struct MyType {
 //! 	pub field: ElasticBoolean<MyBooleanMapping>
 //! }
@@ -35,9 +33,10 @@
 //!
 //! - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/boolean.html)
 
-mod boolean;
-
+#[macro_use]
 pub mod mapping;
+
+mod boolean;
 pub use self::boolean::*;
 
 pub mod prelude {

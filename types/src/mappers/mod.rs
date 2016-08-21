@@ -1,10 +1,7 @@
 //! Helper mappers for `ElasticType`.
 //!
 //! Mapping for types is inferred from the generic mapping parameters on `ElasticType`.
-//! There are two mappers provided:
-//!
-//! - `TypeMapper` for mapping user-defined types for the [Put Mapping API](https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-put-mapping.html).
-//! - `RsesMapper` for mapping with [`rs-es`](http://benashford.github.io/rs-es/rs_es/index.html).
+//! Currently, the only mapper is `TypeMapper`, for mapping user-defined types for the [Put Mapping API](https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-put-mapping.html).
 //!
 //! # Examples
 //!
@@ -20,9 +17,7 @@
 //! # extern crate serde;
 //! # extern crate serde_json;
 //! # use serde::{ Serialize, Deserialize };
-//! use elastic_types::mapping::prelude::*;
-//!
-//! # use elastic_types::date::prelude::*;
+//! # use elastic_types::prelude::*;
 //! # #[derive(Default, Clone, Serialize, Deserialize, ElasticType)]
 //! # pub struct MyType {
 //! # 	pub my_date: ElasticDate<DefaultDateFormat>,
@@ -43,54 +38,13 @@
 //! let ser = TypeMapper::to_string(MyTypeMapping).unwrap();
 //! # }
 //! ```
-//!
-//! ## Mapping to `rs-es`
-//!
-//! ```no_run
-//! # #![feature(plugin, custom_derive)]
-//! # #![plugin(json_str, elastic_types_macros)]
-//! # #[macro_use]
-//! # extern crate elastic_types;
-//! # extern crate serde;
-//! # use serde::{ Serialize, Deserialize };
-//! use elastic_types::mapping::prelude::*;
-//!
-//! # use elastic_types::date::prelude::*;
-//! # #[derive(Default, Clone, Serialize, Deserialize, ElasticType)]
-//! # pub struct MyType {
-//! # 	pub my_date: ElasticDate<DefaultDateFormat>,
-//! # 	pub my_string: String,
-//! # 	pub my_num: i32
-//! # }
-//! # impl serde::Serialize for MyType {
-//! # 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where S: serde::Serializer {
-//! # 		unimplemented!()
-//! # 	}
-//! # }
-//! # impl serde::Deserialize for MyType {
-//! # 	 fn deserialize<D>(deserializer: &mut D) -> Result<Self, D::Error> where D: serde::Deserializer {
-//! # 		unimplemented!()
-//! # 	}
-//! # }
-//! # fn main() {
-//! let mut writer = RsesSerializer::default();
-//! let mut ser = RsesMapper::to_value(MyTypeMapping, &mut writer);
-//!
-//! //Map `ser` with `rs_es::Client`
-//! # }
-//! ```
 
 use std::error::Error;
 use std::marker::PhantomData;
 use serde;
 use serde::ser::Error as SerError;
 use serde_json;
-use ::mapping::{ ElasticFieldMapping, ElasticTypeVisitor };
 use ::object::ElasticUserTypeMapping;
-
-pub mod rs_es_map;
-
-pub use self::rs_es_map::{ RsesMapper, Serializer as RsesSerializer, Error as RsesError };
 
 /// Helper for mapping user-defined types.
 ///
@@ -115,8 +69,7 @@ M: ElasticUserTypeMapping {
 	/// # extern crate serde;
 	/// # extern crate serde_json;
 	/// # use serde::{ Serialize, Deserialize };
-	/// # use elastic_types::mapping::prelude::*;
-	/// # use elastic_types::date::prelude::*;
+	/// # use elastic_types::prelude::*;
 	/// # #[derive(Default, Clone, Serialize, Deserialize, ElasticType)]
 	/// # pub struct MyType {
 	/// # 	pub my_date: ElasticDate<DefaultDateFormat>,
@@ -141,10 +94,7 @@ M: ElasticUserTypeMapping {
 	/// ```
 	pub fn to_writer<S>(_: M, serializer: &mut S) -> Result<(), S::Error> where
 	S: serde::Serializer {
-		serializer.serialize_struct(
-			<M as ElasticFieldMapping<()>>::data_type(),
-			<M as ElasticUserTypeMapping>::Visitor::new()
-		)
+		M::serialize_type(serializer)
 	}
 
 	/// Map a user-defined type to a `String`.
@@ -161,8 +111,7 @@ M: ElasticUserTypeMapping {
 	/// # extern crate serde;
 	/// # extern crate serde_json;
 	/// # use serde::{ Serialize, Deserialize };
-	/// # use elastic_types::mapping::prelude::*;
-	/// # use elastic_types::date::prelude::*;
+	/// # use elastic_types::prelude::*;
 	/// # #[derive(Default, Clone, Serialize, Deserialize, ElasticType)]
 	/// # pub struct MyType {
 	/// # 	pub my_date: ElasticDate<DefaultDateFormat>,
@@ -207,8 +156,7 @@ M: ElasticUserTypeMapping {
 	/// # extern crate serde;
 	/// # extern crate serde_json;
 	/// # use serde::{ Serialize, Deserialize };
-	/// # use elastic_types::mapping::prelude::*;
-	/// # use elastic_types::date::prelude::*;
+	/// # use elastic_types::prelude::*;
 	/// # #[derive(Default, Clone, Serialize, Deserialize, ElasticType)]
 	/// # pub struct MyType {
 	/// # 	pub my_date: ElasticDate<DefaultDateFormat>,
