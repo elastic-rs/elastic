@@ -24,8 +24,8 @@ geohash = "~0.2.7"
 geojson = { version = "*", features = [ "with-serde" ] }
 
 serde_macros = { version = "~0.8.0", optional = true }
-elastic_date_macros = { version = "*", path = "../macros/date" }
-elastic_types_macros = { version = "*", path = "../macros/types", optional = true }
+elastic_date_macros = { version = "~0.4.0" }
+elastic_types_macros = { version = "~0.4.0", optional = true }
 
 [dev-dependencies]
 json_str = "^0.*"
