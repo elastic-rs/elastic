@@ -17,7 +17,7 @@ extern crate elastic_date_macros;
 
 extern crate serde;
 extern crate serde_json;
-extern crate chrono;
+pub extern crate chrono;
 extern crate geo as georust;
 extern crate geojson;
 

@@ -38,6 +38,7 @@
 //! #![feature(plugin)]
 //! #![plugin(elastic_types_macros)]
 //!
+//! #[macro_use]
 //! extern crate elastic_types;
 //! ```
 //!
@@ -78,8 +79,9 @@
 //! #![feature(plugin, custom_derive)]
 //! #![plugin(serde_macros, elastic_types_macros)]
 //! 
-//! extern crate serde;
+//! #[macro_use]
 //! extern crate elastic_types;
+//! extern crate serde;
 //! 
 //! use std::marker::PhantomData;
 //! 
@@ -93,7 +95,7 @@
 //! 	pub id: i32,
 //! 	pub title: String,
 //! 	pub content: ElasticText<ContentMapping>,
-//! 	pub timestamp: Option<ElasticDate<EpochMillis, TimestampMapping<_>>>,
+//! 	pub timestamp: Option<ElasticDate<EpochMillis, TimestampMapping<EpochMillis>>>,
 //! 	pub geoip: GeoIp
 //! }
 //! 
@@ -112,7 +114,7 @@
 //! 	}
 //! });
 //! 
-//! date_mapping!(struct TimestampMapping {
+//! date_mapping!(TimestampMapping {
 //! 	fn null_value() -> Option<ElasticDate<F, Self>> {
 //! 		Some(ElasticDate::now())
 //! 	}
@@ -255,6 +257,7 @@
 //! # #![plugin(elastic_types_macros)]
 //! # #[macro_use]
 //! # extern crate json_str;
+//! # #[macro_use]
 //! # extern crate elastic_types;
 //! # extern crate serde;
 //! # use serde::{ Serialize, Deserialize };
@@ -299,6 +302,7 @@
 //! ```
 //! # #![feature(plugin, custom_derive, custom_attribute)]
 //! # #![plugin(elastic_types_macros)]
+//! # #[macro_use]
 //! # extern crate elastic_types;
 //! # extern crate serde;
 //! # use serde::{ Serialize, Deserialize };
@@ -344,6 +348,7 @@
 //! # #![plugin(elastic_types_macros)]
 //! # #[macro_use]
 //! # extern crate json_str;
+//! # #[macro_use]
 //! # extern crate elastic_types;
 //! # extern crate serde;
 //! # use serde::{ Serialize, Deserialize };

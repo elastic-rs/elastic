@@ -6,7 +6,6 @@ use rustc_plugin::Registry;
 use syntax::ast::Expr;
 use syntax::codemap::Span;
 use syntax::parse::token::{self};
-use syntax::print::pprust::expr_to_string;
 use syntax::tokenstream::TokenTree;
 use syntax::ptr::P;
 use syntax::ext::base::{ ExtCtxt, MacResult, DummyResult, MacEager };

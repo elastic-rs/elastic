@@ -73,22 +73,7 @@ pub fn expand_derive_type_mapping(cx: &mut ExtCtxt, span: Span, meta_item: &Meta
     	.map(|f| f.unwrap())
     	.collect();
 
-	let es_ty = object::get_type_name(cx, item);
-    let object_visitor = object::build_properties_visitor(cx, span, item, &fields, push);
-
-    //Get or build the mapping type
-	let field_mapping;
-    if let Some(mapping) = object::get_field_mapping(cx, item) {
-		field_mapping = mapping;
-	}
-	else {
-		field_mapping = object::build_field_mapping(cx, item, push);
-	}
-
-	object::impl_field_mapping(cx, span, &es_ty, &field_mapping, &object_visitor, push);
-	object::impl_type_mapping(cx, &field_mapping, &object_visitor, push);
-
-	object::impl_type(cx, item, &field_mapping, push);
+    object::build_mapping(cx, span, item, &fields, push);
 }
 
 macro_rules! expect_item {

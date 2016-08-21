@@ -6,7 +6,7 @@ pub mod formats;
 
 extern crate serde;
 extern crate serde_json;
-extern crate chrono;
+pub extern crate chrono;
 extern crate elastic_types;
 
 use chrono::format::Item;

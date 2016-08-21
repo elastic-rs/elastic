@@ -14,20 +14,20 @@ use test::Bencher;
 #[bench]
 fn mapping_sml(b: &mut Bencher) {
 	b.iter(|| {
-		TypeMapper::to_string(MySmlTypeMapping).unwrap()
+		TypeMapper::to_string(MySmlMapping).unwrap()
 	});
 }
 
 #[bench]
 fn mapping_med(b: &mut Bencher) {
 	b.iter(|| {
-		TypeMapper::to_string(MyMedTypeMapping).unwrap()
+		TypeMapper::to_string(MyMedMapping).unwrap()
 	});
 }
 
 #[bench]
 fn mapping_lrg(b: &mut Bencher) {
 	b.iter(|| {
-		TypeMapper::to_string(MyLrgTypeMapping).unwrap()
+		TypeMapper::to_string(MyLrgMapping).unwrap()
 	});
 }

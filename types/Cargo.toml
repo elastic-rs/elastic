@@ -19,7 +19,7 @@ geohash = "~0.2.7"
 geojson = { version = "*", features = [ "with-serde" ] }
 
 serde_macros = { version = "~0.8.0" }
-elastic_date_macros = { version = "~0.3.2", features = [ "nightly" ] }
+elastic_date_macros = { version = "*", path = "../macros/date", features = [ "nightly" ] }
 elastic_types_macros = { version = "*", path = "../macros/types" }
 
 [build-dependencies]

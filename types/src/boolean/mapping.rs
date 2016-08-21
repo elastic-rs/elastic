@@ -43,8 +43,6 @@ pub const BOOLEAN_DATATYPE: &'static str = "boolean";
 /// # extern crate serde;
 /// # extern crate serde_json;
 /// # use elastic_types::prelude::*;
-/// # extern crate serde;
-/// # extern crate elastic_types;
 /// # boolean_mapping!(MyBooleanMapping {
 /// # 	fn boost() -> Option<f32> {
 ///	# 		Some(1.5)

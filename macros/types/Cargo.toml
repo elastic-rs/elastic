@@ -16,7 +16,7 @@ plugin = true
 nightly-testing = [ ]
 
 [dependencies]
-serde = "~0.7.0"
-serde_json = "~0.7.0"
-serde_codegen_internals = { version = "~0.3.0", default-features = false }
-serde_macros = "~0.7.0"
+serde = "~0.8.0"
+serde_json = "~0.8.0"
+serde_codegen_internals = { version = "~0.4.0", default-features = false }
+serde_macros = "~0.8.0"

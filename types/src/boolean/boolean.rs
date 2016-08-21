@@ -65,29 +65,15 @@ M: ElasticFieldMapping<()> + ElasticBooleanMapping {
 	///
 	/// ```
 	/// # extern crate serde;
+	/// # #[macro_use]
 	/// # extern crate elastic_types;
 	/// # fn main() {
-	/// # use elastic_types::mapping::prelude::*;
-	/// # use elastic_types::boolean::prelude::*;
-	/// # #[derive(Debug, Clone, Default)]
-	/// # pub struct MyBooleanMapping;
-	/// # impl ElasticBooleanMapping for MyBooleanMapping {
+	/// # use elastic_types::prelude::*;
+	/// # boolean_mapping!(MyBooleanMapping {
 	/// # 	fn boost() -> Option<f32> {
-	/// #			Some(1.5)
-	/// #		}
-	/// # }
-	/// # impl ElasticFieldMapping<()> for MyBooleanMapping {
-	/// # 	type Visitor = ElasticBooleanMappingVisitor<MyBooleanMapping>;
-	/// # 	fn data_type() -> &'static str {
-	/// # 		BOOLEAN_DATATYPE
-	/// # 	}
-	/// # }
-	/// # impl serde::Serialize for MyBooleanMapping {
-	/// # 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
-	/// # 	where S: serde::Serializer {
-	/// # 		serializer.serialize_struct("mapping", Self::get_visitor())
-	/// # 	}
-	/// # }
+	///	# 		Some(1.5)
+	///	# 	}
+	/// # });
 	/// let es_boolean = ElasticBoolean::<DefaultBooleanMapping>::new(true);
 	///
 	/// let boolean: ElasticBoolean<MyBooleanMapping> = es_boolean.remap();
