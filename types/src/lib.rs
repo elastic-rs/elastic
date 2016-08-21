@@ -69,7 +69,7 @@
 //! 
 //! ```ignore
 //! [dependencies]
-//! elastic_types = { version = "*", defeault-features = false, features = "nightly" }
+//! elastic_types = { version = "*", features = "nightly" }
 //! elastic_types_macros = "*"
 //! ```
 //! 
@@ -511,8 +511,12 @@
 #![doc(html_root_url = "http://kodraus.github.io/rustdoc/elastic_types/")]
 #![deny(missing_docs)]
 
-#![feature(custom_derive, plugin, associated_type_defaults, associated_consts)]
-#![plugin(serde_macros, elastic_date_macros)]
+#![cfg_attr(feature = "nightly", feature(custom_derive, plugin, associated_type_defaults, associated_consts))]
+#![cfg_attr(feature = "nightly", plugin(serde_macros, elastic_date_macros))]
+
+#[cfg(not(feature = "nightly"))]
+#[cfg_attr(not(feature = "nightly"), macro_use)]
+extern crate elastic_date_macros;
 
 pub extern crate chrono;
 pub extern crate geo as georust;

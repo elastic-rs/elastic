@@ -8,7 +8,12 @@ documentation = "http://kodraus.github.io/rustdoc/elastic_types/"
 repository = "https://github.com/KodrAus/elasticsearch-rs"
 
 [features]
-nightly-testing = []
+nightly = [
+	"elastic_date_macros/nightly",
+	"elastic_types_macros",
+	"serde_macros"
+]
+nightly-testing = ["nightly"]
 
 [dependencies]
 serde = "~0.8.0"
@@ -18,12 +23,9 @@ geo = "~0.0.7"
 geohash = "~0.2.7"
 geojson = { version = "*", features = [ "with-serde" ] }
 
-serde_macros = { version = "~0.8.0" }
-elastic_date_macros = { version = "*", path = "../macros/date", features = [ "nightly" ] }
-elastic_types_macros = { version = "*", path = "../macros/types" }
-
-[build-dependencies]
-serde_codegen = { version = "^0.7", optional = true }
+serde_macros = { version = "~0.8.0", optional = true }
+elastic_date_macros = { version = "*", path = "../macros/date" }
+elastic_types_macros = { version = "*", path = "../macros/types", optional = true }
 
 [dev-dependencies]
 json_str = "^0.*"
