@@ -10,6 +10,7 @@
 
 extern crate serde;
 extern crate serde_json;
+#[macro_use]
 extern crate elastic_types;
 extern crate hyper;
 extern crate elastic_hyper as elastic;
@@ -18,10 +19,11 @@ use std::net::Ipv4Addr;
 use std::{ thread, time };
 use hyper::Client;
 use elastic::RequestParams;
-use elastic_types::mapping::prelude::*;
-use elastic_types::response::SearchResponse;
-use elastic_types::geo::prelude::*;
-use elastic_types::date::prelude::*;
+use elastic_types::prelude::*;
+
+mod response;
+
+use response::*;
 
 //The type we want to index in Elasticsearch
 #[derive(Clone, Debug, Serialize, Deserialize, ElasticType)]

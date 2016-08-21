@@ -10,7 +10,7 @@ nightly-testing = []
 elastic_hyper = "~0.3.0"
 json_str = { version = "*", features = ["nightly"]}
 hyper = "~0.9.0"
-elastic_types = { version = "~0.4.0", features = ["nightly"] }
+elastic_types = { version = "~0.4.0", features = ["nightly"]}
 elastic_types_macros = "~0.4.0"
 serde = "~0.8.0"
 serde_macros = "~0.8.0"
