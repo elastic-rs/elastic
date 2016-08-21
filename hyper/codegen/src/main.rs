@@ -34,10 +34,10 @@ error_chain! {
 	links { }
 
     foreign_links {
-		elastic_codegen::api::parse::ParseError, ApiParse, "failed to parse API source";
-		elastic_codegen::api::gen::rust::ApiGenError, GenParse, "failed to generate Rust source";
-		elastic_codegen::emit::EmitError, Emit, "failed to emit Rust source";
-		std::io::Error, Io, "failed to execute io op";
+		elastic_codegen::api::parse::ParseError, ApiParse;
+		elastic_codegen::api::gen::rust::ApiGenError, GenParse;
+		elastic_codegen::emit::EmitError, Emit;
+		std::io::Error, Io;
     }
 
     errors { }
