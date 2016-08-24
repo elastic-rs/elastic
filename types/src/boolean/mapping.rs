@@ -85,13 +85,15 @@ Self: Default {
 	fn store() -> Option<bool> { None }
 }
 
-impl <T: ElasticBooleanMapping> ElasticFieldMapping<ElasticBooleanFormat> for T { 
+impl <T> ElasticFieldMapping<ElasticBooleanFormat> for T where
+T: ElasticBooleanMapping { 
 	type SerType = ElasticFieldMappingWrapper<T, ElasticBooleanFormat>;
 
 	fn data_type() -> &'static str { BOOLEAN_DATATYPE }
 }
 
-impl <T: ElasticFieldMapping<ElasticBooleanFormat> + ElasticBooleanMapping> Serialize for ElasticFieldMappingWrapper<T, ElasticBooleanFormat> {
+impl <T> Serialize for ElasticFieldMappingWrapper<T, ElasticBooleanFormat> where
+T: ElasticFieldMapping<ElasticBooleanFormat> + ElasticBooleanMapping {
 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where 
 	S: Serializer {
 		let mut state = try!(serializer.serialize_struct("mapping", 6));
