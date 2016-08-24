@@ -9,7 +9,7 @@ extern crate chrono;
 
 #[test]
 fn can_generate_date_formats() {
-	let _ = date_fmt!("yyyyMMddTHHmmss.SSSZ");
+	let _ = date_fmt_to_tokens!("yyyyMMddTHHmmss.SSSZ");
 }
 
 #[test]

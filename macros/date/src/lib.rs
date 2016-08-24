@@ -87,7 +87,7 @@ include!("lib.rs.in");
 
 #[cfg_attr(not(feature = "nightly"), macro_export)]
 #[cfg(not(feature = "nightly"))]
-macro_rules! date_fmt {
+macro_rules! date_fmt_to_tokens {
 	($fmt:expr) => ({
 		$crate::to_tokens($fmt)
 	})

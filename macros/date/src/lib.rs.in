@@ -49,7 +49,7 @@ pub fn expand_date_fmt(cx: &mut ExtCtxt, sp: Span, args: &[TokenTree]) -> Box<Ma
 #[doc(hidden)]
 #[plugin_registrar]
 pub fn plugin_registrar(reg: &mut Registry) {
-	reg.register_macro("date_fmt", expand_date_fmt);
+	reg.register_macro("date_fmt_to_tokens", expand_date_fmt);
 }
 
 impl Formatter {
