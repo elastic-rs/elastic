@@ -33,9 +33,9 @@
 //! # use elastic_types::prelude::*;
 //! # fn main() {
 //! # use elastic_types::prelude::*;
-//! # date_mapping!(MyDateMapping {});
+//! # date_mapping!(MyDateMapping: EpochMillis {});
 //! struct MyType {
-//! 	pub field: ElasticDate<EpochMillis, MyDateMapping<EpochMillis>>
+//! 	pub field: ElasticDate<EpochMillis, MyDateMapping>
 //! }
 //! # }
 //! ```
@@ -102,11 +102,10 @@ pub use self::format::*;
 pub use self::date::*;
 pub use self::formats::*;
 
-use chrono;
-use chrono::UTC;
+use chrono::{ DateTime, UTC };
 
 /// A re-export of the `chrono::DateTime` struct with `UTC` timezone.
-pub type DT = chrono::DateTime<UTC>;
+pub type ChronoDateTime = DateTime<UTC>;
 
 /// The default `date` format (`BasicDateTime`).
 pub type DefaultDateFormat = BasicDateTime;

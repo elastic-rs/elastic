@@ -29,7 +29,7 @@ pub mod date_fixtures {
 	use elastic_types::mapping::prelude::*;
 	use elastic_types::date::prelude::*;
 
-	date_mapping!(MyDateMapping {
+	date_mapping!(MyDateMapping: EpochMillis {
 		fn null_value() -> Option<ElasticDate<F, Self>> {
 			Some(ElasticDate::build(2015, 3, 14, 16, 45, 13, 778))
 		}
@@ -308,7 +308,7 @@ pub mod geo_point_fixtures {
 	use std::marker::PhantomData;
 	use elastic_types::mapping::prelude::*;
 
-	geo_point_mapping!(MyGeoPointMapping {
+	geo_point_mapping!(MyGeoPointMapping: GeoPointArray {
 		fn geohash() -> Option<bool> 				{ Some(false) }
 
 		fn geohash_precision() -> Option<Distance> 	{ Some(Distance(50.0, DistanceUnit::Meters)) }
@@ -325,7 +325,7 @@ pub mod geo_shape_fixtures {
 	use elastic_types::mapping::prelude::*;
 
 	geo_shape_mapping!(MyGeoShapeMapping {
-		fn tree() -> Option<Tree> { Some(Tree::Geohash) }
+		fn tree() -> Option<Tree> 					{ Some(Tree::Geohash) }
 
 		fn precision() -> Option<Distance> 			{ Some(Distance(50.0, DistanceUnit::Meters)) }
 
