@@ -95,14 +95,14 @@
 //! 	pub id: i32,
 //! 	pub title: String,
 //! 	pub content: ElasticText<ContentMapping>,
-//! 	pub timestamp: Option<ElasticDate<EpochMillis, TimestampMapping<EpochMillis>>>,
+//! 	pub timestamp: Option<Date<EpochMillis, TimestampMapping<EpochMillis>>>,
 //! 	pub geoip: GeoIp
 //! }
 //! 
 //! #[derive(Serialize, Deserialize, ElasticType)]
 //! struct GeoIp {
 //! 	pub ip: std::net::Ipv4Addr,
-//! 	pub loc: ElasticGeoPoint<DefaultGeoPointFormat>
+//! 	pub loc: GeoPoint<DefaultGeoPointFormat>
 //! }
 //! 
 //! 
@@ -115,8 +115,8 @@
 //! });
 //! 
 //! date_mapping!(TimestampMapping {
-//! 	fn null_value() -> Option<ElasticDate<F, Self>> {
-//! 		Some(ElasticDate::now())
+//! 	fn null_value() -> Option<Date<F, Self>> {
+//! 		Some(Date::now())
 //! 	}
 //! });
 //! 
@@ -198,7 +198,7 @@
 //! # use elastic_types::date::prelude::*;
 //! #[derive(Serialize, Deserialize, ElasticType)]
 //! pub struct MyType {
-//! 	pub my_date: ElasticDate<DefaultDateFormat>,
+//! 	pub my_date: Date<DefaultDateFormat>,
 //! 	pub my_num: i32
 //! }
 //!
@@ -231,7 +231,7 @@
 //! # use elastic_types::date::prelude::*;
 //! # #[derive(Serialize, Deserialize, ElasticType)]
 //! # pub struct MyType {
-//! # 	pub my_date: ElasticDate<DefaultDateFormat>,
+//! # 	pub my_date: Date<DefaultDateFormat>,
 //! # 	pub my_string: String,
 //! # 	pub my_num: i32
 //! # }
@@ -265,7 +265,7 @@
 //! # use elastic_types::date::prelude::*;
 //! # #[derive(Serialize, Deserialize, ElasticType)]
 //! # pub struct MyType {
-//! # 	pub my_date: ElasticDate<DefaultDateFormat>,
+//! # 	pub my_date: Date<DefaultDateFormat>,
 //! # 	pub my_num: i32
 //! # }
 //! # impl serde::Serialize for MyType {
@@ -310,7 +310,7 @@
 //! # use elastic_types::date::prelude::*;
 //! # #[derive(Serialize, Deserialize, ElasticType)]
 //! # pub struct MyType {
-//! # 	pub my_date: ElasticDate<DefaultDateFormat>,
+//! # 	pub my_date: Date<DefaultDateFormat>,
 //! # 	pub my_num: i32
 //! # }
 //! # impl serde::Serialize for MyType {
@@ -356,7 +356,7 @@
 //! # use elastic_types::date::prelude::*;
 //! # #[derive(Serialize, Deserialize, ElasticType)]
 //! # pub struct MyType {
-//! # 	pub my_date: ElasticDate<DefaultDateFormat>,
+//! # 	pub my_date: Date<DefaultDateFormat>,
 //! # 	pub my_num: i32
 //! # }
 //! # impl Serialize for MyType {
@@ -421,7 +421,7 @@
 //! # use elastic_types::date::prelude::*;
 //! #[derive(Serialize, Deserialize, ElasticType)]
 //! pub struct MyType {
-//! 	pub my_date: Option<ElasticDate<DefaultDateFormat>>,
+//! 	pub my_date: Option<Date<DefaultDateFormat>>,
 //! 	pub my_num: Vec<i32>
 //! }
 //!
@@ -475,11 +475,11 @@
 //!  `double`            | `f64`                       | `std`     | [`ElasticDouble<M>`](number/mapping/trait.ElasticDoubleMapping.html)             | `()`
 //!  `keyword`           | -                           | -         | [`ElasticKeyword<M>`](string/keyword/mapping/trait.ElasticKeywordMapping.html)   | `()`
 //!  `text`              | `String`                    | `std`     | [`ElasticText<M>`](string/text/mapping/trait.ElasticTextMapping.html)            | `()`
-//!  `boolean`           | `bool`                      | `std`     | [`ElasticBoolean<M>`](boolean/mapping/trait.ElasticBooleanMapping.html)          | `()`
+//!  `boolean`           | `bool`                      | `std`     | [`Boolean<M>`](boolean/mapping/trait.BooleanMapping.html)          | `()`
 //!  `ip`                | `Ipv4Addr`                  | `std`     | [`ElasticIp<M>`](ip/mapping/trait.ElasticIpMapping.html)                         | `()`
-//!  `date`              | `DateTime<UTC>`             | `chrono`  | [`ElasticDate<F, M>`](date/mapping/trait.ElasticDateMapping.html)                | `DateFormat`
-//!  `geo_point`         | `Point`                     | `geo`     | [`ElasticGeoPoint<F, M>`](geo/point/mapping/trait.ElasticGeoPointMapping.html)   | `GeoPointFormat`
-//!  `geo_shape`         | -                           | `geojson` | [`ElasticGeoShape<M>`](geo/shape/mapping/trait.ElasticGeoShapeMapping.html)      | `()`
+//!  `date`              | `DateTime<UTC>`             | `chrono`  | [`Date<F, M>`](date/mapping/trait.DateMapping.html)                | `DateFormat`
+//!  `geo_point`         | `Point`                     | `geo`     | [`GeoPoint<F, M>`](geo/point/mapping/trait.GeoPointMapping.html)   | `GeoPointFormat`
+//!  `geo_shape`         | -                           | `geojson` | [`GeoShape<M>`](geo/shape/mapping/trait.GeoShapeMapping.html)      | `()`
 //!
 //! The following sections explain this table.
 //!
@@ -495,11 +495,11 @@
 //! that wraps the `std` type but also takes an explicit mapping (like `ElasticInteger` for `i32`).
 //!
 //! Where there isn't a `std` type available (like `date`), an external crate is used and an implementation of
-//! that type is provided (like `ElasticDate`, which implements `chrono::DateLike + chrono::TimeLike`).
+//! that type is provided (like `Date`, which implements `chrono::DateLike + chrono::TimeLike`).
 //!
 //! ## Formats
 //!
-//! For some types (like `ElasticDate`), it's helpful to have an extra generic parameter that describes the
+//! For some types (like `Date`), it's helpful to have an extra generic parameter that describes the
 //! `format` the data can take. For most types the format is `()`, because there aren't any alternative formats available.
 //!
 //! # Links
@@ -540,7 +540,7 @@ pub mod mapping;
 
 pub mod boolean;
 pub mod date;
-//pub mod geo;
+pub mod geo;
 //pub mod ip;
 //pub mod number;
 //pub mod string;

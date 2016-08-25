@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 use serde::{ Serialize, Deserialize, Serializer, Deserializer };
 use geojson::Geometry;
 use super::mapping::*;
-use ::mapping::{ ElasticType, ElasticFieldMapping };
+use ::mapping::ElasticType;
 
 /// Geo shape type with a given mapping.
 ///
@@ -14,9 +14,9 @@ use ::mapping::{ ElasticType, ElasticFieldMapping };
 /// use geojson::{ Geometry, Value };
 ///
 /// use elastic_types::geo::shape::mapping::DefaultGeoShapeMapping;
-/// use elastic_types::geo::shape::ElasticGeoShape;
+/// use elastic_types::geo::shape::GeoShape;
 /// # fn main() {
-/// let point: ElasticGeoShape<DefaultGeoShapeMapping> = ElasticGeoShape::new(
+/// let point: GeoShape<DefaultGeoShapeMapping> = GeoShape::new(
 ///     Geometry::new(
 ///         Value::Point(vec![ 1.0, 1.0 ])
 ///     )
@@ -24,16 +24,19 @@ use ::mapping::{ ElasticType, ElasticFieldMapping };
 /// # }
 /// ```
 #[derive(Debug, Clone, PartialEq)]
-pub struct ElasticGeoShape<M> where M: ElasticFieldMapping<()> + ElasticGeoShapeMapping {
+pub struct GeoShape<M> where 
+M: GeoShapeMapping {
     value: Geometry,
-    phantom: PhantomData<M>
+    _m: PhantomData<M>
 }
-impl <M> ElasticGeoShape<M> where M: ElasticFieldMapping<()> + ElasticGeoShapeMapping {
+
+impl <M> GeoShape<M> where 
+M: GeoShapeMapping {
     /// Creates a new geo shape with the given mapping.
-    pub fn new<I: Into<Geometry>>(geo: I) -> ElasticGeoShape<M> {
-        ElasticGeoShape {
+    pub fn new<I: Into<Geometry>>(geo: I) -> GeoShape<M> {
+        GeoShape {
             value: geo.into(),
-            phantom: PhantomData
+            _m: PhantomData
         }
     }
 
@@ -48,13 +51,13 @@ impl <M> ElasticGeoShape<M> where M: ElasticFieldMapping<()> + ElasticGeoShapeMa
     }
 
     /// Change the mapping of this geo shape.
-    pub fn remap<MInto: ElasticFieldMapping<()> + ElasticGeoShapeMapping>(self) -> ElasticGeoShape<MInto> {
-        ElasticGeoShape::<MInto>::new(self.value)
+    pub fn remap<MInto: GeoShapeMapping>(self) -> GeoShape<MInto> {
+        GeoShape::<MInto>::new(self.value)
     }
 }
 
-impl<'a, M> PartialEq<Geometry> for ElasticGeoShape<M> where
-M: ElasticFieldMapping<()> + ElasticGeoShapeMapping {
+impl<'a, M> PartialEq<Geometry> for GeoShape<M> where
+M: GeoShapeMapping {
 	fn eq(&self, other: &Geometry) -> bool {
 		PartialEq::eq(&self.value, other)
 	}
@@ -64,37 +67,41 @@ M: ElasticFieldMapping<()> + ElasticGeoShapeMapping {
 	}
 }
 
-impl<'a, M> PartialEq<ElasticGeoShape<M>> for Geometry where
-M: ElasticFieldMapping<()> + ElasticGeoShapeMapping {
-	fn eq(&self, other: &ElasticGeoShape<M>) -> bool {
+impl<'a, M> PartialEq<GeoShape<M>> for Geometry where
+M: GeoShapeMapping {
+	fn eq(&self, other: &GeoShape<M>) -> bool {
 		PartialEq::eq(self, &other.value)
 	}
 
-	fn ne(&self, other: &ElasticGeoShape<M>) -> bool {
+	fn ne(&self, other: &GeoShape<M>) -> bool {
 		PartialEq::ne(self, &other.value)
 	}
 }
 
-impl <M> ElasticType<M, ()> for ElasticGeoShape<M> where M: ElasticFieldMapping<()> + ElasticGeoShapeMapping { }
+impl <M> ElasticType<M, GeoShapeFormat> for GeoShape<M> where 
+M: GeoShapeMapping { }
 
-impl <M> From<Geometry> for ElasticGeoShape<M> where M: ElasticFieldMapping<()> + ElasticGeoShapeMapping {
+impl <M> From<Geometry> for GeoShape<M> where
+M: GeoShapeMapping {
     fn from(geo: Geometry) -> Self {
-        ElasticGeoShape::<M>::new(geo)
+        GeoShape::<M>::new(geo)
     }
 }
 
-impl <M> Serialize for ElasticGeoShape<M> where M: ElasticFieldMapping<()> + ElasticGeoShapeMapping {
+impl <M> Serialize for GeoShape<M> where 
+M: GeoShapeMapping {
     fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where
     S: Serializer {
         self.value.serialize(serializer)
     }
 }
 
-impl <M: ElasticFieldMapping<()> + ElasticGeoShapeMapping> Deserialize for ElasticGeoShape<M> {
-    fn deserialize<D>(deserializer: &mut D) -> Result<ElasticGeoShape<M>, D::Error> where
+impl <M> Deserialize for GeoShape<M> where
+M: GeoShapeMapping {
+    fn deserialize<D>(deserializer: &mut D) -> Result<GeoShape<M>, D::Error> where
     D: Deserializer {
         let t = try!(Geometry::deserialize(deserializer));
 
-        Ok(ElasticGeoShape::<M>::new(t))
+        Ok(GeoShape::<M>::new(t))
     }
 }

@@ -2,7 +2,7 @@
 
 use std::marker::PhantomData;
 use serde::{ Serialize, Serializer };
-use super::{ DateFormat, ElasticDate };
+use super::{ DateFormat, Date };
 use ::mapping::{ ElasticFieldMapping, ElasticFieldMappingWrapper };
 
 /// Elasticsearch datatype name.
@@ -19,7 +19,7 @@ F: DateFormat {
 ///
 /// # Examples
 ///
-/// Define a custom `ElasticDateMapping`:
+/// Define a custom `DateMapping`:
 ///
 /// ## Derive Mapping
 ///
@@ -78,12 +78,12 @@ F: DateFormat {
 /// Automatically deriving mapping has the following limitations:
 ///
 /// - Non-generic mappings aren't supported by auto deriving.
-pub trait ElasticDateMapping where
+pub trait DateMapping where
 Self: Default {
 	/// The date format bound to this mapping.
 	/// 
 	/// The value of `Format::name()` is what's sent to Elasticsearch as the format to use.
-	/// This is also used to serialise and deserialise formatted `ElasticDate`s.
+	/// This is also used to serialise and deserialise formatted `Date`s.
 	type Format: DateFormat;
 
 	/// Field-level index time boosting. Accepts a floating point number, defaults to `1.0`.
@@ -113,17 +113,19 @@ Self: Default {
 
 	/// Accepts a date value in one of the configured format's as the field which is substituted for any explicit null values.
 	/// Defaults to `null`, which means the field is treated as missing.
-	fn null_value() -> Option<ElasticDate<Self::Format, Self>> { None }
+	fn null_value() -> Option<Date<Self::Format, Self>> { None }
 }
 
 impl <T, F> ElasticFieldMapping<DateFormatWrapper<F>> for T where
-T: ElasticDateMapping<Format = F>,
+T: DateMapping<Format = F>,
 F: DateFormat {
 	type SerType = ElasticFieldMappingWrapper<T, DateFormatWrapper<F>>;
+
+	fn data_type() -> &'static str { DATE_DATATYPE }
 }
 
 impl <T, F> Serialize for ElasticFieldMappingWrapper<T, DateFormatWrapper<F>> where
-T: ElasticFieldMapping<DateFormatWrapper<F>> + ElasticDateMapping<Format = F>,
+T: ElasticFieldMapping<DateFormatWrapper<F>> + DateMapping<Format = F>,
 F: DateFormat {
 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where 
 	S: Serializer {
@@ -164,7 +166,7 @@ F: DateFormat {
 /// impl_date_fmt!(MyFormat, "yyyy-MM-ddTHH:mm:ssZ", "yyyy-MM-dd'T'HH:mm:ssZ");
 /// ```
 /// 
-/// You can then use `MyFormat` as the generic parameter in `ElasticDate`.
+/// You can then use `MyFormat` as the generic parameter in `Date`.
 #[macro_export]
 macro_rules! date_fmt {
 	($t:ty, $f:tt, $n:expr) => (
@@ -185,7 +187,7 @@ F: DateFormat {
 	_f: PhantomData<F>
 }
 
-impl <F> ElasticDateMapping for DefaultDateMapping<F> where
+impl <F> DateMapping for DefaultDateMapping<F> where
 F: DateFormat { 
 	type Format = F;
 }

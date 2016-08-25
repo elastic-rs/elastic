@@ -20,7 +20,7 @@
 //!
 //! #[derive(Default, Clone, Serialize, Deserialize, ElasticType)]
 //! pub struct MyType {
-//! 	pub my_date: ElasticDate<DefaultDateFormat>,
+//! 	pub my_date: Date<DefaultDateFormat>,
 //! 	pub my_string: String,
 //! 	pub my_num: i32
 //! }
@@ -57,7 +57,7 @@
 //! #[derive(Default, Clone, Serialize, Deserialize, ElasticType)]
 //! #[elastic(ty="my_type")]
 //! pub struct MyType {
-//! 	pub my_date: ElasticDate<DefaultDateFormat>,
+//! 	pub my_date: Date<DefaultDateFormat>,
 //! 	pub my_string: String,
 //! 	pub my_num: i32
 //! }
@@ -99,7 +99,7 @@
 //! #[derive(Default, Clone, Serialize, Deserialize, ElasticType)]
 //! pub struct MyType {
 //! 	#[serde(rename="my_renamed_date")]
-//! 	pub my_date: ElasticDate<DefaultDateFormat>,
+//! 	pub my_date: Date<DefaultDateFormat>,
 //! 	#[serde(skip_serializing)]
 //! 	pub my_string: String,
 //! 	pub my_num: i32
@@ -146,7 +146,7 @@
 //!
 //! #[derive(Serialize, Deserialize)]
 //! pub struct MyType {
-//! 	pub my_date: ElasticDate<DefaultDateFormat>,
+//! 	pub my_date: Date<DefaultDateFormat>,
 //! 	pub my_string: String,
 //! 	pub my_num: i32
 //! }
@@ -162,7 +162,7 @@
 //! 		
 //! 	fn serialize_props<S>(serializer: &mut S, state: &mut S::StructState) -> Result<(), S::Error>
 //! 	where S: serde::Serializer {
-//! 		try!(serializer.serialize_struct_elt(state, "my_date", ElasticDate::<DefaultDateFormat>::mapping()));
+//! 		try!(serializer.serialize_struct_elt(state, "my_date", Date::<DefaultDateFormat>::mapping()));
 //! 		try!(serializer.serialize_struct_elt(state, "my_string", String::mapping()));
 //! 		try!(serializer.serialize_struct_elt(state, "my_num", i32::mapping()));
 //! 

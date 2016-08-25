@@ -2,7 +2,7 @@
 //!
 //! # Examples
 //!
-//! For defining your own boolean mapping, see [mapping details](mapping/trait.ElasticBooleanMapping.html#derive-mapping).
+//! For defining your own boolean mapping, see [mapping details](mapping/trait.BooleanMapping.html#derive-mapping).
 //!
 //! Map with a default `boolean`:
 //!
@@ -24,7 +24,7 @@
 //! # use elastic_types::prelude::*;
 //! # boolean_mapping!(MyBooleanMapping {});
 //! struct MyType {
-//! 	pub field: ElasticBoolean<MyBooleanMapping>
+//! 	pub field: Boolean<MyBooleanMapping>
 //! }
 //! # }
 //! ```

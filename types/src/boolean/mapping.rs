@@ -8,15 +8,15 @@ pub const BOOLEAN_DATATYPE: &'static str = "boolean";
 
 #[doc(hidden)]
 #[derive(Default)]
-pub struct ElasticBooleanFormat;
+pub struct BooleanFormat;
 
 /// The base requirements for mapping a `boolean` type.
 ///
-/// Custom mappings can be defined by implementing `ElasticBooleanMapping`.
+/// Custom mappings can be defined by implementing `BooleanMapping`.
 ///
 /// # Examples
 ///
-/// Define a custom `ElasticBooleanMapping`:
+/// Define a custom `BooleanMapping`:
 ///
 /// ## Derive Mapping
 ///
@@ -63,7 +63,7 @@ pub struct ElasticBooleanFormat;
 /// # assert_eq!(json, mapping);
 /// # }
 /// ```
-pub trait ElasticBooleanMapping where
+pub trait BooleanMapping where
 Self: Default {
 	/// Field-level index time boosting. Accepts a floating point number, defaults to `1.0`.
 	fn boost() -> Option<f32> { None }
@@ -85,15 +85,15 @@ Self: Default {
 	fn store() -> Option<bool> { None }
 }
 
-impl <T> ElasticFieldMapping<ElasticBooleanFormat> for T where
-T: ElasticBooleanMapping { 
-	type SerType = ElasticFieldMappingWrapper<T, ElasticBooleanFormat>;
+impl <T> ElasticFieldMapping<BooleanFormat> for T where
+T: BooleanMapping { 
+	type SerType = ElasticFieldMappingWrapper<T, BooleanFormat>;
 
 	fn data_type() -> &'static str { BOOLEAN_DATATYPE }
 }
 
-impl <T> Serialize for ElasticFieldMappingWrapper<T, ElasticBooleanFormat> where
-T: ElasticFieldMapping<ElasticBooleanFormat> + ElasticBooleanMapping {
+impl <T> Serialize for ElasticFieldMappingWrapper<T, BooleanFormat> where
+T: ElasticFieldMapping<BooleanFormat> + BooleanMapping {
 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where 
 	S: Serializer {
 		let mut state = try!(serializer.serialize_struct("mapping", 6));
@@ -113,4 +113,4 @@ T: ElasticFieldMapping<ElasticBooleanFormat> + ElasticBooleanMapping {
 /// Default mapping for `bool`.
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultBooleanMapping;
-impl ElasticBooleanMapping for DefaultBooleanMapping { }
+impl BooleanMapping for DefaultBooleanMapping { }

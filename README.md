@@ -115,7 +115,7 @@ Define a custom Elasticsearch type called `mytype`:
 ```rust
 #[derive(Serialize, Deserialize, ElasticType)]
 pub struct MyType {
-	pub my_date: ElasticDate<EpochMillis>,
+	pub my_date: Date<EpochMillis>,
 	pub my_string: String,
 	pub my_num: i32
 }

@@ -31,8 +31,8 @@ pub mod date_fixtures {
 	use elastic_types::date::prelude::*;
 
 	date_mapping!(MyDateMapping {
-		fn null_value() -> Option<ElasticDate<F, Self>> {
-			Some(ElasticDate::build(2015, 3, 14, 16, 45, 13, 778))
+		fn null_value() -> Option<Date<F, Self>> {
+			Some(Date::build(2015, 3, 14, 16, 45, 13, 778))
 		}
 
 		fn boost() -> Option<f32> 				{ Some(1.01) }

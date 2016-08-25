@@ -30,14 +30,14 @@ use response::*;
 pub struct MyStruct {
 	pub id: i32,
 	pub title: String,
-	pub timestamp: ElasticDate<DefaultDateFormat>,
+	pub timestamp: Date<DefaultDateFormat>,
 	pub geo: GeoLocation
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, ElasticType)]
 pub struct GeoLocation {
 	pub ip: Ipv4Addr,
-	pub loc: ElasticGeoPoint<DefaultGeoPointFormat>
+	pub loc: GeoPoint<DefaultGeoPointFormat>
 }
 
 const INDEX: &'static str = "testidx";
@@ -86,19 +86,19 @@ fn get_data() -> Vec<MyStruct> {
 		MyStruct {
 			id: 1,
 			title: String::from("Some Title"),
-			timestamp: ElasticDate::now(),
+			timestamp: Date::now(),
 			geo: GeoLocation {
 				ip: Ipv4Addr::new(10, 0, 0, 1),
-				loc: ElasticGeoPoint::build(-71.34, 41.12)
+				loc: GeoPoint::build(-71.34, 41.12)
 			}
 		},
 		MyStruct {
 			id: 2,
 			title: String::from("Some Other Title"),
-			timestamp: ElasticDate::now(),
+			timestamp: Date::now(),
 			geo: GeoLocation {
 				ip: Ipv4Addr::new(10, 0, 0, 2),
-				loc: ElasticGeoPoint::build(-71.34, 41.12)
+				loc: GeoPoint::build(-71.34, 41.12)
 			}
 		}
 	]

@@ -54,7 +54,7 @@ use serde_json::Value;
 /// Each type has two generic arguments that help define its mapping:
 ///
 /// - A mapping type, which implements `ElasticFieldMapping`
-/// - A format type, which is usually `()`. Types with multiple formats, like `ElasticDate`, can use the format in the type definition.
+/// - A format type, which is usually `()`. Types with multiple formats, like `Date`, can use the format in the type definition.
 ///
 /// # Links
 ///

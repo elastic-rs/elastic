@@ -4,7 +4,7 @@
 //!
 //! # Examples
 //!
-//! For defining your own geo shape mapping, see [mapping details](mapping/trait.ElasticGeoShapeMapping.html#derive-mapping).
+//! For defining your own geo shape mapping, see [mapping details](mapping/trait.GeoShapeMapping.html#derive-mapping).
 //!
 //! Map with a default `geo_shape`:
 //!
@@ -12,7 +12,7 @@
 //! # use elastic_types::geo::shape::prelude::*;
 //! # use elastic_types::geo::shape::mapping::*;
 //! struct MyType {
-//! 	pub field: ElasticGeoShape<DefaultGeoShapeMapping>
+//! 	pub field: GeoShape<DefaultGeoShapeMapping>
 //! }
 //! ```
 //!
@@ -31,7 +31,7 @@
 //! # use elastic_types::geo::shape::prelude::*;
 //! # geo_shape_mapping!(MyGeoShapeMapping {});
 //! struct MyType {
-//! 	pub field: ElasticGeoShape<MyGeoShapeMapping>
+//! 	pub field: GeoShape<MyGeoShapeMapping>
 //! }
 //! # }
 //! ```

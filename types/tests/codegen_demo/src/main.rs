@@ -13,7 +13,7 @@ use elastic_types::date::prelude::*;
 
 #[derive(Serialize, ElasticType)]
 pub struct MyType {
-    pub my_date: ElasticDate<DefaultDateFormat>,
+    pub my_date: Date<DefaultDateFormat>,
     pub my_string: String,
     pub my_num: i32,
     pub my_bool: bool

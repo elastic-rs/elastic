@@ -1,20 +1,23 @@
 //! Mapping for Elasticsearch `geo_shape` types.
 
-use serde;
-use serde::Serialize;
+use serde::{ Serialize, Serializer };
+use ::mapping::{ ElasticFieldMapping, ElasticFieldMappingWrapper };
 use ::geo::mapping::Distance;
-use ::mapping::ElasticFieldMapping;
 
 /// Elasticsearch datatype name.
 pub const GEOSHAPE_DATATYPE: &'static str = "geo_shape";
 
+#[doc(hidden)]
+#[derive(Default)]
+pub struct GeoShapeFormat;
+
 /// The base requirements for mapping a `geo_shape` type.
 ///
-/// Custom mappings can be defined by implementing `ElasticGeoShapeMapping`.
+/// Custom mappings can be defined by implementing `GeoShapeMapping`.
 ///
 /// # Examples
 ///
-/// Define a custom `ElasticGeoShapeMapping`:
+/// Define a custom `GeoShapeMapping`:
 ///
 /// ## Derive Mapping
 ///
@@ -63,8 +66,8 @@ pub const GEOSHAPE_DATATYPE: &'static str = "geo_shape";
 /// # assert_eq!(json, mapping);
 /// # }
 /// ```
-pub trait ElasticGeoShapeMapping where
-Self: ElasticFieldMapping<()> + Sized + Serialize {
+pub trait GeoShapeMapping where
+Self: Default {
 	/// Name of the PrefixTree implementation to be used:
 	/// `geohash` for `GeohashPrefixTree` and `quadtree` for `QuadPrefixTree`.
 	fn tree() -> Option<Tree> { None }
@@ -121,37 +124,38 @@ Self: ElasticFieldMapping<()> + Sized + Serialize {
 	fn points_only() -> Option<bool> { None }
 }
 
-/// Implement `serde` serialisation for a `geo_shape` mapping type.
-#[macro_export]
-macro_rules! geo_shape_ser {
-	($t:ident) => (
-		impl ::serde::Serialize for $t {
-			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
-			where S: ::serde::Serializer {
-				let mut state = try!(serializer.serialize_struct("mapping", 8));
 
-				try!(serializer.serialize_struct_elt(&mut state, "type", $t::data_type()));
+impl <T> ElasticFieldMapping<GeoShapeFormat> for T where
+T: GeoShapeMapping { 
+	type SerType = ElasticFieldMappingWrapper<T, GeoShapeFormat>;
 
-				ser_field!(serializer, &mut state, $t::tree(), "tree");
-				ser_field!(serializer, &mut state, $t::precision(), "precision");
-				ser_field!(serializer, &mut state, $t::tree_levels(), "tree_levels");
-				ser_field!(serializer, &mut state, $t::strategy(), "strategy");
-				ser_field!(serializer, &mut state, $t::distance_error_pct(), "distance_error_pct");
-				ser_field!(serializer, &mut state, $t::orientation(), "orientation");
-				ser_field!(serializer, &mut state, $t::points_only(), "points_only");
+	fn data_type() -> &'static str { GEOSHAPE_DATATYPE }
+}
 
-				serializer.serialize_struct_end(state)
-			}
-		}
-	)
+impl <T> Serialize for ElasticFieldMappingWrapper<T, GeoShapeFormat> where
+T: ElasticFieldMapping<GeoShapeFormat> + GeoShapeMapping {
+	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where 
+	S: Serializer {
+		let mut state = try!(serializer.serialize_struct("mapping", 8));
+
+		try!(serializer.serialize_struct_elt(&mut state, "type", T::data_type()));
+
+		ser_field!(serializer, &mut state, T::tree(), "tree");
+		ser_field!(serializer, &mut state, T::precision(), "precision");
+		ser_field!(serializer, &mut state, T::tree_levels(), "tree_levels");
+		ser_field!(serializer, &mut state, T::strategy(), "strategy");
+		ser_field!(serializer, &mut state, T::distance_error_pct(), "distance_error_pct");
+		ser_field!(serializer, &mut state, T::orientation(), "orientation");
+		ser_field!(serializer, &mut state, T::points_only(), "points_only");
+
+		serializer.serialize_struct_end(state)
+	}
 }
 
 /// Default mapping for `geo_shape`.
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultGeoShapeMapping;
-impl ElasticGeoShapeMapping for DefaultGeoShapeMapping { }
-
-geo_shape_mapping!(DefaultGeoShapeMapping);
+impl GeoShapeMapping for DefaultGeoShapeMapping { }
 
 /// Name of the `PrefixTree` implementation to be used.
 pub enum Tree {
@@ -162,8 +166,8 @@ pub enum Tree {
 }
 
 impl Serialize for Tree {
-	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
-	where S: serde::Serializer {
+	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where 
+	S: Serializer {
 		serializer.serialize_str(match *self {
 			Tree::Geohash => "geohash",
 			Tree::QuadPrefix => "quadtree"
@@ -180,8 +184,8 @@ pub enum Strategy {
 }
 
 impl Serialize for Strategy {
-	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
-	where S: serde::Serializer {
+	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where 
+	S: Serializer {
 		serializer.serialize_str(match *self {
 			Strategy::Recursive => "recursive",
 			Strategy::Term => "term"
@@ -203,8 +207,8 @@ pub enum Orientation {
 }
 
 impl Serialize for Orientation {
-	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
-	where S: serde::Serializer {
+	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where 
+	S: Serializer {
 		serializer.serialize_str(match *self {
 			Orientation::Clockwise => "cw",
 			Orientation::CounterClockwise => "ccw"

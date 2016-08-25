@@ -6,18 +6,18 @@
 //! Where performance is paramount, the `EpochMillis` date format will parse and format dates the fastest,
 //! especially on the `stable` channel.
 //!
-//! Because date conversion needs to be done by the `caller`, the `Format` is a first-class citizen in the `ElasticDate` design.
+//! Because date conversion needs to be done by the `caller`, the `Format` is a first-class citizen in the `Date` design.
 //!
 //! # Examples
 //! 
-//! For defining your own date mapping, see [mapping details](mapping/trait.ElasticDateMapping.html#derive-mapping).
+//! For defining your own date mapping, see [mapping details](mapping/trait.DateMapping.html#derive-mapping).
 //!
 //! Map with a default `date`:
 //!
 //! ```
 //! # use elastic_types::prelude::*;
 //! struct MyType {
-//! 	pub field: ElasticDate<DefaultDateFormat>
+//! 	pub field: Date<DefaultDateFormat>
 //! }
 //! ```
 //!
@@ -35,7 +35,7 @@
 //! # use elastic_types::prelude::*;
 //! # date_mapping!(MyDateMapping: EpochMillis {});
 //! struct MyType {
-//! 	pub field: ElasticDate<EpochMillis, MyDateMapping>
+//! 	pub field: Date<EpochMillis, MyDateMapping>
 //! }
 //! # }
 //! ```

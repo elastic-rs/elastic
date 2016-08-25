@@ -163,7 +163,7 @@ macro_rules! impl_double_mapping {
 macro_rules! impl_date_mapping {
 	($t:ty, $f:ty) => (
 		impl $crate::mapping::ElasticFieldMapping<$f> for $t {
-			type Visitor = $crate::date::mapping::ElasticDateMappingVisitor<$f, $t>;
+			type Visitor = $crate::date::mapping::DateMappingVisitor<$f, $t>;
 
 			fn data_type() -> &'static str {
 				$crate::date::mapping::DATE_DATATYPE
@@ -179,7 +179,7 @@ macro_rules! impl_date_mapping {
 	);
 	($t:ty) => (
 		impl <F: $crate::date::DateFormat> $crate::mapping::ElasticFieldMapping<F> for $t {
-			type Visitor = $crate::date::mapping::ElasticDateMappingVisitor<F, $t>;
+			type Visitor = $crate::date::mapping::DateMappingVisitor<F, $t>;
 
 			fn data_type() -> &'static str {
 				$crate::date::mapping::DATE_DATATYPE
@@ -229,7 +229,7 @@ macro_rules! impl_ip_mapping {
 macro_rules! impl_geo_point_mapping {
 	($t:ty, $f:ty) => (
 		impl $crate::mapping::ElasticFieldMapping<$f> for $t {
-			type Visitor = $crate::geo::point::mapping::ElasticGeoPointMappingVisitor<$f, $t>;
+			type Visitor = $crate::geo::point::mapping::GeoPointMappingVisitor<$f, $t>;
 
 			fn data_type() -> &'static str {
 				$crate::geo::point::mapping::GEOPOINT_TYPE
@@ -245,7 +245,7 @@ macro_rules! impl_geo_point_mapping {
 	);
 	($t:ty) => (
 		impl <F: $crate::geo::point::GeoPointFormat> $crate::mapping::ElasticFieldMapping<F> for $t {
-			type Visitor = $crate::geo::point::mapping::ElasticGeoPointMappingVisitor<F, $t>;
+			type Visitor = $crate::geo::point::mapping::GeoPointMappingVisitor<F, $t>;
 
 			fn data_type() -> &'static str {
 				$crate::geo::point::mapping::GEOPOINT_DATATYPE
@@ -264,7 +264,7 @@ macro_rules! impl_geo_point_mapping {
 macro_rules! impl_geo_shape_mapping {
 	($t:ty) => (
 		impl $crate::mapping::ElasticFieldMapping<()> for $t {
-			type Visitor = $crate::geo::shape::mapping::ElasticGeoShapeMappingVisitor<$t>;
+			type Visitor = $crate::geo::shape::mapping::GeoShapeMappingVisitor<$t>;
 
 			fn data_type() -> &'static str {
 				$crate::geo::shape::mapping::GEOSHAPE_DATATYPE
