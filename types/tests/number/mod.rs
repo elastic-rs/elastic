@@ -13,11 +13,11 @@ use ::number_fixtures::*;
 
 #[test]
 fn can_change_number_mapping() {
-	fn takes_custom_mapping(_: ElasticInteger<MyIntegerMapping>) -> bool {
+	fn takes_custom_mapping(_: Integer<MyIntegerMapping>) -> bool {
 		true
 	}
 
-	let number: ElasticInteger<DefaultIntegerMapping> = ElasticInteger::new(1);
+	let number: Integer<DefaultIntegerMapping> = Integer::new(1);
 
 	assert!(takes_custom_mapping(number.remap()));
 }
@@ -26,27 +26,27 @@ fn can_change_number_mapping() {
 fn serialise_elastic_numbers() {
 	let ser = vec![
 		{
-			let num = ElasticInteger::<MyIntegerMapping>::new(1i32);
+			let num = Integer::<MyIntegerMapping>::new(1i32);
 			serde_json::to_string(&num).unwrap()
 		},
 		{
-			let num = ElasticLong::<MyLongMapping>::new(1i64);
+			let num = Long::<MyLongMapping>::new(1i64);
 			serde_json::to_string(&num).unwrap()
 		},
 		{
-			let num = ElasticShort::<MyShortMapping>::new(1i16);
+			let num = Short::<MyShortMapping>::new(1i16);
 			serde_json::to_string(&num).unwrap()
 		},
 		{
-			let num = ElasticByte::<MyByteMapping>::new(1i8);
+			let num = Byte::<MyByteMapping>::new(1i8);
 			serde_json::to_string(&num).unwrap()
 		},
 		{
-			let num = ElasticFloat::<MyFloatMapping>::new(1.01f32);
+			let num = Float::<MyFloatMapping>::new(1.01f32);
 			serde_json::to_string(&num).unwrap()
 		},
 		{
-			let num = ElasticDouble::<MyDoubleMapping>::new(1.01f64);
+			let num = Double::<MyDoubleMapping>::new(1.01f64);
 			serde_json::to_string(&num).unwrap()
 		}
 	];
@@ -73,12 +73,12 @@ fn serialise_elastic_numbers() {
 
 #[test]
 fn deserialise_elastic_numbers() {
-	let int_de: ElasticInteger<MyIntegerMapping> = serde_json::from_str("1").unwrap();
-	let long_de: ElasticLong<MyLongMapping> = serde_json::from_str("1").unwrap();
-	let short_de: ElasticShort<MyShortMapping> = serde_json::from_str("1").unwrap();
-	let byte_de: ElasticByte<MyByteMapping> = serde_json::from_str("1").unwrap();
-	let float_de: ElasticFloat<MyFloatMapping> = serde_json::from_str("1.01").unwrap();
-	let double_de: ElasticDouble<MyDoubleMapping> = serde_json::from_str("1.01").unwrap();
+	let int_de: Integer<MyIntegerMapping> = serde_json::from_str("1").unwrap();
+	let long_de: Long<MyLongMapping> = serde_json::from_str("1").unwrap();
+	let short_de: Short<MyShortMapping> = serde_json::from_str("1").unwrap();
+	let byte_de: Byte<MyByteMapping> = serde_json::from_str("1").unwrap();
+	let float_de: Float<MyFloatMapping> = serde_json::from_str("1.01").unwrap();
+	let double_de: Double<MyDoubleMapping> = serde_json::from_str("1.01").unwrap();
 
 	assert_eq!(
 		(1i32, 1i64, 1i16, 1i8, 1.01f32, 1.01f64),

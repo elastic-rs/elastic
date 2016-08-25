@@ -2,7 +2,7 @@
 //!
 //! # Examples
 //!
-//! For defining your own ip mapping, see [mapping details](mapping/trait.ElasticIpMapping.html#derive-mapping).
+//! For defining your own ip mapping, see [mapping details](mapping/trait.IpMapping.html#derive-mapping).
 //!
 //! Map with a default `ip`:
 //!
@@ -25,7 +25,7 @@
 //! # use elastic_types::prelude::*;
 //! # ip_mapping!(MyIpMapping {});
 //! struct MyType {
-//! 	pub field: ElasticIp<MyIpMapping>
+//! 	pub field: Ip<MyIpMapping>
 //! }
 //! # }
 //! ```

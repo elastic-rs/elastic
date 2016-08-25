@@ -5,7 +5,7 @@
 //!
 //! # Examples
 //!
-//! Define a custom `ElasticIntegerMapping`:
+//! Define a custom `IntegerMapping`:
 //!
 //! ## Derive Mapping
 //!
@@ -56,7 +56,7 @@
 //! ```
 
 use serde::Serialize;
-use ::mapping::{ ElasticType, ElasticFieldMapping };
+use ::mapping::{ ElasticType, ElasticFieldMapping, ElasticFieldMappingWrapper };
 
 /// Elasticsearch datatype name.
 pub const INTEGER_DATATYPE: &'static str = "integer";
@@ -72,10 +72,14 @@ pub const DOUBLE_DATATYPE: &'static str = "double";
 pub const FLOAT_DATATYPE: &'static str = "float";
 
 macro_rules! number_mapping {
-	($m:ident, $v:ident, $n:ty) => (
+	($m:ident, $f:ident, $cn:ident, $n:ty) => (
+		#[doc(hidden)]
+		#[derive(Default)]
+		pub struct $f;
+
 		/// Base `number` mapping.
 		pub trait $m where
-		Self: ElasticFieldMapping<()> + Sized + Serialize {
+		Self: Default {
 			/// Try to convert strings to numbers and truncate fractions for integers. Accepts `true` (default) and `false`.
 			fn coerce() -> Option<bool> { None }
 
@@ -108,27 +112,29 @@ macro_rules! number_mapping {
 			/// Accepts true or false (default).
 			fn store() -> Option<bool> { None }
 		}
-	)
-}
 
-/// Implement `serde` serialisation for a `geo_shape` mapping type.
-#[macro_export]
-macro_rules! number_ser {
-	($t:ident) => (
-		impl ::serde::Serialize for $t {
-			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
-			where S: ::serde::Serializer {
+		impl <T> ElasticFieldMapping<$f> for T where
+		T: $m { 
+			type SerType = ElasticFieldMappingWrapper<T, $f>;
+
+			fn data_type() -> &'static str { $cn }
+		}
+
+		impl <T> Serialize for ElasticFieldMappingWrapper<T, $f> where
+		T: ElasticFieldMapping<$f> + $m {
+			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where 
+			S: ::serde::Serializer {
 				let mut state = try!(serializer.serialize_struct("mapping", 8));
 
-				try!(serializer.serialize_struct_elt(&mut state, "type", $t::data_type()));
+				try!(serializer.serialize_struct_elt(&mut state, "type", T::data_type()));
 
-				ser_field!(serializer, &mut state, $t::coerce(), "coerce");
-				ser_field!(serializer, &mut state, $t::boost(), "boost");
-				ser_field!(serializer, &mut state, $t::doc_values(), "doc_values");
-				ser_field!(serializer, &mut state, $t::ignore_malformed(), "ignore_malformed");
-				ser_field!(serializer, &mut state, $t::include_in_all(), "include_in_all");
-				ser_field!(serializer, &mut state, $t::null_value(), "null_value");
-				ser_field!(serializer, &mut state, $t::store(), "store");
+				ser_field!(serializer, &mut state, T::coerce(), "coerce");
+				ser_field!(serializer, &mut state, T::boost(), "boost");
+				ser_field!(serializer, &mut state, T::doc_values(), "doc_values");
+				ser_field!(serializer, &mut state, T::ignore_malformed(), "ignore_malformed");
+				ser_field!(serializer, &mut state, T::include_in_all(), "include_in_all");
+				ser_field!(serializer, &mut state, T::null_value(), "null_value");
+				ser_field!(serializer, &mut state, T::store(), "store");
 
 				serializer.serialize_struct_end(state)
 			}
@@ -136,63 +142,46 @@ macro_rules! number_ser {
 	)
 }
 
-/// Base mapping requirements for an `integer`.
-number_mapping!(ElasticIntegerMapping, ElasticIntegerMappingVisitor, i32);
-
-/// Base mapping requirements for an `long`.
-number_mapping!(ElasticLongMapping, ElasticLongMappingVisitor, i64);
-
-/// Base mapping requirements for an `short`.
-number_mapping!(ElasticShortMapping, ElasticShortMappingVisitor, i16);
-
-/// Base mapping requirements for an `byte`.
-number_mapping!(ElasticByteMapping, ElasticByteMappingVisitor, i8);
-
-/// Base mapping requirements for an `float`.
-number_mapping!(ElasticFloatMapping, ElasticFloatMappingVisitor, f32);
-
-/// Base mapping requirements for an `double`.
-number_mapping!(ElasticDoubleMapping, ElasticDoubleMappingVisitor, f64);
+number_mapping!(IntegerMapping, IntegerFormat, INTEGER_DATATYPE, i32);
+number_mapping!(LongMapping, LongFormat, LONG_DATATYPE, i64);
+number_mapping!(ShortMapping, ShortFormat, SHORT_DATATYPE, i16);
+number_mapping!(ByteMapping, ByteFormat, BYTE_DATATYPE, i8);
+number_mapping!(FloatMapping, FloatFormat, FLOAT_DATATYPE, f32);
+number_mapping!(DoubleMapping, DoubleFormat, DOUBLE_DATATYPE, f64);
 
 /// Default mapping for an `integer` type.
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultIntegerMapping;
-impl ElasticIntegerMapping for DefaultIntegerMapping { }
-integer_mapping!(DefaultIntegerMapping);
-impl ElasticType<DefaultIntegerMapping, ()> for i32 { }
+impl IntegerMapping for DefaultIntegerMapping { }
+impl ElasticType<DefaultIntegerMapping, IntegerFormat> for i32 { }
 
 /// Default mapping for a `long` type.
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultLongMapping;
-impl ElasticLongMapping for DefaultLongMapping { }
-long_mapping!(DefaultLongMapping);
-impl ElasticType<DefaultLongMapping, ()> for i64 { }
-impl ElasticType<DefaultLongMapping, ()> for isize { }
+impl LongMapping for DefaultLongMapping { }
+impl ElasticType<DefaultLongMapping, LongFormat> for i64 { }
+impl ElasticType<DefaultLongMapping, LongFormat> for isize { }
 
 /// Default mapping for a `short` type.
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultShortMapping;
-impl ElasticShortMapping for DefaultShortMapping { }
-short_mapping!(DefaultShortMapping);
-impl ElasticType<DefaultShortMapping, ()> for i16 { }
+impl ShortMapping for DefaultShortMapping { }
+impl ElasticType<DefaultShortMapping, ShortFormat> for i16 { }
 
 /// Default mapping for a `byte` type.
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultByteMapping;
-impl ElasticByteMapping for DefaultByteMapping { }
-byte_mapping!(DefaultByteMapping);
-impl ElasticType<DefaultByteMapping, ()> for i8 { }
+impl ByteMapping for DefaultByteMapping { }
+impl ElasticType<DefaultByteMapping, ByteFormat> for i8 { }
 
 /// Default mapping for a `float` type.
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultFloatMapping;
-impl ElasticFloatMapping for DefaultFloatMapping { }
-float_mapping!(DefaultFloatMapping);
-impl ElasticType<DefaultFloatMapping, ()> for f32 { }
+impl FloatMapping for DefaultFloatMapping { }
+impl ElasticType<DefaultFloatMapping, FloatFormat> for f32 { }
 
 /// Default mapping for a `double` type.
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultDoubleMapping;
-impl ElasticDoubleMapping for DefaultDoubleMapping { }
-double_mapping!(DefaultDoubleMapping);
-impl ElasticType<DefaultDoubleMapping, ()> for f64 { }
+impl DoubleMapping for DefaultDoubleMapping { }
+impl ElasticType<DefaultDoubleMapping, DoubleFormat> for f64 { }

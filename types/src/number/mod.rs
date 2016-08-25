@@ -38,7 +38,7 @@
 //! # fn main() {
 //! # integer_mapping!(MyIntegerMapping { });
 //! struct MyType {
-//! 	pub field: ElasticInteger<MyIntegerMapping>
+//! 	pub field: Integer<MyIntegerMapping>
 //! }
 //! # }
 //! ```

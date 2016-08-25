@@ -467,16 +467,16 @@
 //!
 //!  Elasticsearch Type  | Rust Type (Default Mapping) | Crate     | Rust Type (Custom Mapping)                                                       | Format Type
 //!  ------------------- | --------------------------- | --------- | -------------------------------------------------------------------------------- | -----------
-//!  `integer`           | `i32`                       | `std`     | [`ElasticInteger<M>`](number/mapping/trait.ElasticIntegerMapping.html)           | `()`
-//!  `long`              | `i64`                       | `std`     | [`ElasticLong<M>`](number/mapping/trait.ElasticLongMapping.html)                 | `()`
-//!  `short`             | `i16`                       | `std`     | [`ElasticShort<M>`](number/mapping/trait.ElasticShortMapping.html)               | `()`
-//!  `byte`              | `i8`                        | `std`     | [`ElasticByte<M>`](number/mapping/trait.ElasticByteMapping.html)                 | `()`
-//!  `float`             | `f32`                       | `std`     | [`ElasticFloat<M>`](number/mapping/trait.ElasticFloatMapping.html)               | `()`
-//!  `double`            | `f64`                       | `std`     | [`ElasticDouble<M>`](number/mapping/trait.ElasticDoubleMapping.html)             | `()`
+//!  `integer`           | `i32`                       | `std`     | [`Integer<M>`](number/mapping/trait.IntegerMapping.html)           | `()`
+//!  `long`              | `i64`                       | `std`     | [`Long<M>`](number/mapping/trait.LongMapping.html)                 | `()`
+//!  `short`             | `i16`                       | `std`     | [`Short<M>`](number/mapping/trait.ShortMapping.html)               | `()`
+//!  `byte`              | `i8`                        | `std`     | [`Byte<M>`](number/mapping/trait.ByteMapping.html)                 | `()`
+//!  `float`             | `f32`                       | `std`     | [`Float<M>`](number/mapping/trait.FloatMapping.html)               | `()`
+//!  `double`            | `f64`                       | `std`     | [`Double<M>`](number/mapping/trait.DoubleMapping.html)             | `()`
 //!  `keyword`           | -                           | -         | [`ElasticKeyword<M>`](string/keyword/mapping/trait.ElasticKeywordMapping.html)   | `()`
 //!  `text`              | `String`                    | `std`     | [`ElasticText<M>`](string/text/mapping/trait.ElasticTextMapping.html)            | `()`
 //!  `boolean`           | `bool`                      | `std`     | [`Boolean<M>`](boolean/mapping/trait.BooleanMapping.html)          | `()`
-//!  `ip`                | `Ipv4Addr`                  | `std`     | [`ElasticIp<M>`](ip/mapping/trait.ElasticIpMapping.html)                         | `()`
+//!  `ip`                | `Ipv4Addr`                  | `std`     | [`Ip<M>`](ip/mapping/trait.IpMapping.html)                         | `()`
 //!  `date`              | `DateTime<UTC>`             | `chrono`  | [`Date<F, M>`](date/mapping/trait.DateMapping.html)                | `DateFormat`
 //!  `geo_point`         | `Point`                     | `geo`     | [`GeoPoint<F, M>`](geo/point/mapping/trait.GeoPointMapping.html)   | `GeoPointFormat`
 //!  `geo_shape`         | -                           | `geojson` | [`GeoShape<M>`](geo/shape/mapping/trait.GeoShapeMapping.html)      | `()`
@@ -492,7 +492,7 @@
 //! a default mapping is implemented for that type.
 //! That means you can use primitives in your structs and have them mapped to the correct type in Elasticsearch.
 //! If you want to provide your own mapping for a `std` type, there's also a struct provided by `elastic_types`
-//! that wraps the `std` type but also takes an explicit mapping (like `ElasticInteger` for `i32`).
+//! that wraps the `std` type but also takes an explicit mapping (like `Integer` for `i32`).
 //!
 //! Where there isn't a `std` type available (like `date`), an external crate is used and an implementation of
 //! that type is provided (like `Date`, which implements `chrono::DateLike + chrono::TimeLike`).
@@ -541,8 +541,8 @@ pub mod mapping;
 pub mod boolean;
 pub mod date;
 pub mod geo;
-//pub mod ip;
-//pub mod number;
+pub mod ip;
+pub mod number;
 //pub mod string;
 //pub mod object;
 
