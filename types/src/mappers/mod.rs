@@ -42,19 +42,57 @@
 use std::error::Error;
 use std::marker::PhantomData;
 use serde;
+use serde::Serialize;
 use serde::ser::Error as SerError;
 use serde_json;
-use ::object::ElasticUserTypeMapping;
+use ::object::ObjectMapping;
+use ::mapping::{ ElasticFieldMapping };
+
+/// Helper for mapping field types.
+pub struct FieldMapper<M, F> where
+M: ElasticFieldMapping<F>,
+F: Default {
+	_m: PhantomData<M>,
+	_f: PhantomData<F>
+}
+impl <M, F> FieldMapper<M, F> where
+M: ElasticFieldMapping<F>,
+F: Default {
+	/// Map a field type with a given `Serializer`.
+	pub fn to_writer<S>(_: M, serializer: &mut S) -> Result<(), S::Error> where
+	S: serde::Serializer {
+		M::ser().serialize(serializer)
+	}
+
+	/// Map a field type to a `String`.
+	pub fn to_string(t: M) -> Result<String, serde_json::Error> {
+		let mut writer = Vec::new();
+		{
+			let mut ser = serde_json::Serializer::new(&mut writer);
+			try!(Self::to_writer(t, &mut ser));
+		}
+
+		String::from_utf8(writer).map_err(|e| serde_json::Error::custom(e.description()))
+	}
+
+	/// Map a field type to a `serde_json::Value`.
+	pub fn to_value(t: M) -> Result<serde_json::Value, serde_json::Error> {
+		let mut ser = serde_json::value::Serializer::new();
+		try!(Self::to_writer(t, &mut ser));
+
+		Ok(ser.unwrap())
+	}
+}
 
 /// Helper for mapping user-defined types.
 ///
 /// This mapper is designed to take a given user-defined type and pass it around to various visitors to map fields.
 pub struct TypeMapper<M> where
-M: ElasticUserTypeMapping {
-	phantom_m: PhantomData<M>
+M: ObjectMapping {
+	_m: PhantomData<M>
 }
 impl <M> TypeMapper<M> where
-M: ElasticUserTypeMapping {
+M: ObjectMapping {
 	/// Map a user-defined type with a given `Serializer`.
 	///
 	/// The mapping is emitted as a json field, where the key is the name of the type, as defined by `M::data_type()`.

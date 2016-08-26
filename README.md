@@ -106,7 +106,7 @@ On `nightly`, add `elastic_types` to your `Cargo.toml`:
 
 ```
 [dependencies]
-elastic_types = { version = "*", default-features = false, features = "nightly" }
+elastic_types = { version = "*", features = "nightly" }
 elastic_types_macros = "*"
 ```
 

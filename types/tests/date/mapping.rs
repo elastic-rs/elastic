@@ -17,8 +17,7 @@ fn datetime_has_default_mapping() {
 
 #[test]
 fn serialise_mapping_default() {
-	let mapping = DefaultDateMapping::<BasicDateTime>::default();
-	let ser = serde_json::to_string(&mapping).unwrap();
+	let ser = FieldMapper::to_string(DefaultDateMapping::<BasicDateTime>::default()).unwrap();
 
 	let expected = json_str!({
 		"type": "date",
@@ -30,8 +29,7 @@ fn serialise_mapping_default() {
 
 #[test]
 fn serialise_mapping_custom() {
-	let mapping = MyDateMapping::<EpochMillis>::default();
-	let ser = serde_json::to_string(&mapping).unwrap();
+	let ser = FieldMapper::to_string(MyDateMapping).unwrap();
 
 	let expected = json_str!({
 		"type": "date",

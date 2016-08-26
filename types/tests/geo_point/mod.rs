@@ -14,7 +14,7 @@ use ::geo_point_fixtures::*;
 
 #[test]
 fn can_change_point_mapping() {
-	fn takes_custom_mapping(_: GeoPoint<GeoPointObject, MyGeoPointMapping<GeoPointObject>>) -> bool {
+	fn takes_custom_mapping(_: GeoPoint<GeoPointObject>) -> bool {
 		true
 	}
 

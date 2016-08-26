@@ -73,7 +73,7 @@ fn get_props_ser_stmts(cx: &mut ExtCtxt, span: Span, fields: &[(Ident, ast::Stru
 			let mut ty = ty.clone();
 
 			ty.segments.push(ast::PathSegment {
-                identifier: token::str_to_ident("mapping"),
+                identifier: token::str_to_ident("mapping_ser"),
                 parameters: ast::PathParameters::none()
             });
 

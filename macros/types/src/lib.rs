@@ -42,104 +42,76 @@ use serde_codegen_internals::attr as serde_attr;
 #[doc(hidden)]
 pub fn expand_derive_type_mapping(cx: &mut ExtCtxt, span: Span, meta_item: &MetaItem, annotatable: &Annotatable, push: &mut FnMut(Annotatable)) {
 	//Annotatable item for a struct with struct fields
-    let item = match *annotatable {
-        Annotatable::Item(ref item) => {
-        	match item.node {
-        		ast::ItemKind::Struct(ref data, ref generics) => {
-        			match *data {
-        				ast::VariantData::Struct(ref fields, _) => Some((item, fields, generics)),
-        				_ => None
-        			}
-        		},
-        		_ => None
-        	}
-        },
-        _ => None
-    };
+	let item = match *annotatable {
+		Annotatable::Item(ref item) => {
+			match item.node {
+				ast::ItemKind::Struct(ref data, ref generics) => {
+					match *data {
+						ast::VariantData::Struct(ref fields, _) => Some((item, fields, generics)),
+						_ => None
+					}
+				},
+				_ => None
+			}
+		},
+		_ => None
+	};
 
-    if item.is_none() {
-    	cx.span_err(
-            meta_item.span,
-            "`#[derive(ElasticType)]` may only be applied to structs");
-        return;
-    }
-    let (item, fields, _) = item.unwrap();
+	if item.is_none() {
+		cx.span_err(
+			meta_item.span,
+			"`#[derive(ElasticType)]` may only be applied to structs");
+		return;
+	}
+	let (item, fields, _) = item.unwrap();
 
 	//Get the serializable fields
-    let fields: Vec<(Ident, ast::StructField)> = fields
-    	.iter()
-    	.map(|f| get_ser_field(cx, f))
-    	.filter(|f| f.is_some())
-    	.map(|f| f.unwrap())
-    	.collect();
+	let fields: Vec<(Ident, ast::StructField)> = fields
+		.iter()
+		.map(|f| get_ser_field(cx, f))
+		.filter(|f| f.is_some())
+		.map(|f| f.unwrap())
+		.collect();
 
-    object::build_mapping(cx, span, item, &fields, push);
-}
-
-macro_rules! expect_item {
-	($cx:ident, $meta_item:ident, $annotatable:ident) => ({
-		let item = match *$annotatable {
-	        Annotatable::Item(ref item) => {
-	        	match item.node {
-	        		ast::ItemKind::Struct(ref data, _) => {
-	        			match *data {
-	        				ast::VariantData::Struct(_, _) => Some(item),
-							ast::VariantData::Unit(_) => Some(item),
-							_ => None
-	        			}
-	        		},
-	        		_ => None
-	        	}
-	        },
-	        _ => None
-	    };
-
-		if item.is_none() {
-	    	$cx.span_err(
-	            $meta_item.span,
-	            "`#[derive(Elastic	Mapping)]` may only be applied to structs");
-	        return;
-	    }
-	    item.unwrap()
-	})
+	object::build_mapping(cx, span, item, &fields, push);
 }
 
 //Helpers
 fn get_elastic_meta_items(attr: &ast::Attribute) -> Option<&[P<ast::MetaItem>]> {
-    match attr.node.value.node {
-    	//Get elastic meta items
-        ast::MetaItemKind::List(ref name, ref items) if name == &"elastic" => {
-            attr::mark_used(&attr);
-            Some(items)
-        },
-        _ => None
-    }
+	match attr.node.value.node {
+		//Get elastic meta items
+		ast::MetaItemKind::List(ref name, ref items) if name == &"elastic" => {
+			attr::mark_used(&attr);
+			Some(items)
+		},
+		_ => None
+	}
 }
 
 fn get_ser_field(cx: &mut ExtCtxt, field: &ast::StructField) -> Option<(Ident, ast::StructField)> {
-    let serde_field = serde_attr::Field::from_ast(cx, 0, field);
+	let serde_field = serde_attr::Field::from_ast(cx, 0, field);
 
-    //Get all fields on struct where there isn't `skip_serializing`
-    if serde_field.skip_serializing() {
-        return None;
-    }
+	//Get all fields on struct where there isn't `skip_serializing`
+	if serde_field.skip_serializing() {
+		return None;
+	}
 
-    Some((token::str_to_ident(serde_field.name().serialize_name().as_ref()), field.to_owned()))
+	Some((token::str_to_ident(serde_field.name().serialize_name().as_ref()), field.to_owned()))
 }
 
 fn get_ident_from_lit(cx: &ExtCtxt, name: &str, lit: &ast::Lit) -> Result<Ident, &'static str> {
-    match lit.node {
-        ast::LitKind::Str(ref s, _) => Ok(token::str_to_ident(s)),
-        _ => {
-            cx.span_err(
-                lit.span,
-                &format!("annotation `{}` must be a string, not `{}`",
-                         name,
-                         lit_to_string(lit)));
+	match lit.node {
+		ast::LitKind::Str(ref s, _) => Ok(token::str_to_ident(s)),
+		_ => {
+			cx.span_err(
+				lit.span,
+				&format!("annotation `{}` must be a string, not `{}`",
+						 name,
+						 lit_to_string(lit)));
 
-            return Err("Unable to get str from lit");
-        }
-    }
+			return Err("Unable to get str from lit");
+		}
+	}
 }
 
 #[doc(hidden)]

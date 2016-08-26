@@ -32,14 +32,14 @@ pub mod prelude {
 		IndexAnalysis
 	};
 
-	//pub use ::mappers::*;
-	//pub use ::object::*;
-	//pub use ::date::mapping::*;
-	//pub use ::ip::mapping::*;
-	//pub use ::geo::mapping::*;
-	//pub use ::string::mapping::*;
-	//pub use ::number::mapping::*;
-	//pub use ::boolean::mapping::*;
+	pub use ::mappers::*;
+	pub use ::object::*;
+	pub use ::date::mapping::*;
+	pub use ::ip::mapping::*;
+	pub use ::geo::mapping::*;
+	pub use ::string::mapping::*;
+	pub use ::number::mapping::*;
+	pub use ::boolean::mapping::*;
 }
 
 use std::collections::{ BTreeMap, HashMap };
@@ -47,6 +47,7 @@ use std::hash::Hash;
 use std::marker::PhantomData;
 use serde::{ Serialize, Serializer };
 use serde_json::Value;
+use ::object::ObjectFormat;
 
 /// The base representation of an Elasticsearch data type.
 ///
@@ -59,18 +60,18 @@ use serde_json::Value;
 /// # Links
 ///
 /// - [Elasticsearch docs](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-types.html)
-pub trait ElasticType<M, F> where
+pub trait ElasticType<M, F = ObjectFormat> where
 M: ElasticFieldMapping<F>,
 F: Default,
 Self: Serialize {
-	/// Get the type name for the given mapping.
-	fn name() -> &'static str {
-		M::name()
-	}
-
 	/// Get the mapping for this type.
 	fn mapping() -> M {
 		M::default()
+	}
+
+	/// Get the serialisable mapping for this type.
+	fn mapping_ser() -> M::SerType {
+		M::ser()
 	}
 }
 
@@ -85,15 +86,12 @@ F: Default {
 	#[doc(hidden)]
 	type SerType: Serialize + Default;
 	#[doc(hidden)]
-	fn ser_type() -> Self::SerType {
+	fn ser() -> Self::SerType {
 		Self::SerType::default()
 	}
 
 	/// Get the type name for this mapping, like `date` or `string`.
 	fn data_type() -> &'static str { "object" }
-
-	#[doc(hidden)]
-	fn name() -> &'static str { Self::data_type() }
 }
 
 #[doc(hidden)]

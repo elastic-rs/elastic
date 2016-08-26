@@ -536,7 +536,7 @@ macro_rules! ser_field {
 }
 
 pub mod mapping;
-//pub mod mappers;
+pub mod mappers;
 
 pub mod boolean;
 pub mod date;
@@ -544,9 +544,9 @@ pub mod geo;
 pub mod ip;
 pub mod number;
 pub mod string;
-//pub mod object;
+pub mod object;
 
-/*pub mod prelude {
+pub mod prelude {
 	//! Includes non-mapping types for all data types.
 	//!
 	//! This is a convenience module to make it easy to build mappings for multiple types without too many `use` statements.
@@ -558,4 +558,4 @@ pub mod string;
 	pub use ::ip::prelude::*;
 	pub use ::number::prelude::*;
 	pub use ::string::prelude::*;
-}*/
+}

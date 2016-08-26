@@ -17,37 +17,13 @@ use elastic_types::date::prelude::*;
 const MYTYPE_DATE_FMT_1: &'static str = "%Y/%m/%d %H:%M:%S";
 const MYTYPE_DATE_FMT_2: &'static str = "%d/%m/%Y %H:%M:%S";
 
-//A date format based on a chrono format string
-#[allow(non_camel_case_types)]
-#[derive(Default, Clone, Copy)]
+#[derive(Default, Clone)]
 pub struct TestDateFormat1;
-impl DateFormat for TestDateFormat1 {
-	fn fmt<'a>() -> Vec<Item<'a>> {
-		date_fmt!("%Y/%m/%d %H:%M:%S")
-			.iter()
-			.cloned()
-			.collect()
-	}
-	fn name() -> &'static str {
-		"test_date_1"
-	}
-}
+date_fmt!(TestDateFormat1, "%Y/%m/%d %H:%M:%S", "test_date_1");
 
-//A date format based on an elasticsearch formart string
-#[allow(non_camel_case_types)]
 #[derive(Default, Clone, Copy)]
 pub struct TestDateFormat2;
-impl DateFormat for TestDateFormat2 {
-	fn fmt<'a>() -> Vec<Item<'a>> {
-		date_fmt!("yyyyMMdd")
-			.iter()
-			.cloned()
-			.collect()
-	}
-	fn name() -> &'static str {
-		"test_date_2"
-	}
-}
+date_fmt!(TestDateFormat2, "yyyyMMdd", "test_date_2");
 
 #[test]
 fn dates_should_use_chrono_format() {

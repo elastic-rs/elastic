@@ -163,19 +163,19 @@ F: DateFormat {
 /// 
 /// #[derive(Default, Clone)]
 /// struct MyFormat;
-/// impl_date_fmt!(MyFormat, "yyyy-MM-ddTHH:mm:ssZ", "yyyy-MM-dd'T'HH:mm:ssZ");
+/// date_fmt!(MyFormat, "yyyy-MM-ddTHH:mm:ssZ", "yyyy-MM-dd'T'HH:mm:ssZ");
 /// ```
 /// 
 /// You can then use `MyFormat` as the generic parameter in `Date`.
 #[macro_export]
 macro_rules! date_fmt {
-	($t:ty, $f:tt, $n:expr) => (
-		impl $crate::date::DateFormat for $t {
-			fn fmt<'a>() -> Vec<chrono::format::Item<'a>> {
-				date_fmt_to_tokens!($f)
+	($format_ty:ty, $format_pat:tt, $es_format:expr) => (
+		impl $crate::date::DateFormat for $format_ty {
+			fn fmt<'a>() -> Vec<::chrono::format::Item<'a>> {
+				date_fmt_to_tokens!($format_pat)
 			}
 
-			fn name() -> &'static str { $n }
+			fn name() -> &'static str { $es_format }
 		}
 	)
 }

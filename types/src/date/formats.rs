@@ -1,4 +1,3 @@
-use chrono;
 use chrono::{ DateTime, NaiveDateTime, UTC, Timelike };
 use std::error::Error;
 use super::{ CustomDateFormat, ParseError };

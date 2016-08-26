@@ -181,6 +181,10 @@
 //!
 //! - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/master/_basic_concepts.html#_type)
 
+use std::marker::PhantomData;
+use serde::{ Serialize, Serializer };
+use ::mapping::{ ElasticType, ElasticFieldMapping, ElasticFieldMappingWrapper };
+
 /// Elasticsearch datatype name.
 pub const OBJECT_DATATYPE: &'static str = "object";
 /// Elasticsearch datatype name.
@@ -188,12 +192,24 @@ pub const DYNAMIC_DATATYPE: &'static str = "dynamic";
 /// Elasticsearch datatype name.
 pub const NESTED_DATATYPE: &'static str = "nested";
 
-use serde::{ self, Serialize, Serializer };
-use ::mapping::ElasticFieldMapping;
+/// Serialise a field mapping using the given serialiser.
+pub fn field_ser<S, M, F>(serializer: &mut S, state: &mut S::StructState, field: &'static str, _: M) -> Result<(), S::Error> where
+S: Serializer,
+M: ElasticFieldMapping<F>,
+F: Default {
+	serializer.serialize_struct_elt(state, field, &M::ser())
+}
+
+#[doc(hidden)]
+#[derive(Default)]
+pub struct ObjectFormat;
 
 /// The base requirements for mapping an `object` type.
-pub trait ElasticObjectMapping where
-Self: ElasticFieldMapping<()> + Sized + Serialize {
+pub trait ObjectMapping where
+Self: Default {
+	/// Get the indexed name for this mapping.
+	fn name() -> &'static str;
+
 	/// Get the type name for this mapping, like `object` or `nested`.
 	fn data_type() -> &'static str { NESTED_DATATYPE }
 
@@ -213,107 +229,78 @@ Self: ElasticFieldMapping<()> + Sized + Serialize {
 	fn props_len() -> usize;
 
 	/// Serialisation for the property fields on this mapping.
-	fn serialize_props<S>(serializer: &mut S, state: &mut S::StructState) -> Result<(), S::Error>
-	where S: serde::Serializer;
-}
+	fn serialize_props<S>(serializer: &mut S, state: &mut S::StructState) -> Result<(), S::Error> where 
+	S: Serializer;
 
-/// The base requirements for mapping a user-defined, indexable type.
-///
-/// User-defined type mappings are tied to `object` mappings.
-pub trait ElasticUserTypeMapping where
-Self: ElasticObjectMapping {
 	/// Serialise this mapping as an indexable type instead of as a field
 	/// on another type.
-	fn serialize_type<S>(serializer: &mut S) -> Result<(), S::Error>
-	where S: serde::Serializer;
+	fn serialize_type<S>(serializer: &mut S) -> Result<(), S::Error> where 
+	S: Serializer {
+		let mut state = try!(serializer.serialize_struct("mapping", 1));
+
+		try!(serializer.serialize_struct_elt(&mut state, "properties", &Properties::<Self>::default()));
+
+		serializer.serialize_struct_end(state)
+	}
 }
 
-#[macro_export]
-macro_rules! props_ser {
-    ($t:ident $p:ident) => (
-    	struct $p;
-		impl ::serde::Serialize for $p {
-			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
-			where S: ::serde::Serializer {
-				let mut state = try!(serializer.serialize_struct("properties", $t::props_len()));
-				try!($t::serialize_props(serializer, &mut state));
-				serializer.serialize_struct_end(state)
-			}
-		}
-    )
+/// The additional fields available to an indexable Elasticsearch type.
+pub trait ElasticUserType<M> where
+M: ObjectMapping,
+Self: Serialize {
+	/// Get the mapping for this type.
+	fn name() -> &'static str {
+		M::name()
+	}
 }
 
-#[macro_export]
-macro_rules! object_ser {
-    ($t:ident) => (
-		impl ::serde::Serialize for $t {
-			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
-			where S: ::serde::Serializer {
-				let mut state = try!(serializer.serialize_struct("mapping", 5));
+impl <T, M> ElasticUserType<M> for T where
+T: ElasticType<M, ObjectFormat>,
+M: ObjectMapping { }
 
-				let ty = <$t as ElasticFieldMapping<()>>::data_type();
-				try!(serializer.serialize_struct_elt(&mut state, "type", ty));
+impl <T> ElasticFieldMapping<ObjectFormat> for T where
+T: ObjectMapping { 
+	type SerType = ElasticFieldMappingWrapper<T, ObjectFormat>;
 
-				ser_field!(serializer, &mut state, $t::dynamic(), "dynamic");
-				ser_field!(serializer, &mut state, $t::include_in_all(), "include_in_all");
-
-				if ty == OBJECT_DATATYPE {
-					ser_field!(serializer, &mut state, $t::enabled(), "enabled");
-				}
-
-				props_ser!($t Properties);
-				try!(serializer.serialize_struct_elt(&mut state, "properties", &Properties));
-
-				serializer.serialize_struct_end(state)
-			}
-		}
-	)
+	fn data_type() -> &'static str { <Self as ObjectMapping>::data_type() }
 }
 
-/// Define an `object` field mapping.
-#[macro_export]
-macro_rules! object_mapping {
-	($t:ident) => (
-    	impl $crate::mapping::ElasticFieldMapping<()> for $t {
-			fn data_type() -> &'static str { <$t as ElasticObjectMapping>::data_type() }
+impl <T> Serialize for ElasticFieldMappingWrapper<T, ObjectFormat> where
+T: ElasticFieldMapping<ObjectFormat> + ObjectMapping {
+	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where 
+	S: Serializer {
+		let mut state = try!(serializer.serialize_struct("mapping", 5));
+
+		let ty = <T as ObjectMapping>::data_type();
+		try!(serializer.serialize_struct_elt(&mut state, "type", ty));
+
+		ser_field!(serializer, &mut state, T::dynamic(), "dynamic");
+		ser_field!(serializer, &mut state, T::include_in_all(), "include_in_all");
+
+		if ty == OBJECT_DATATYPE {
+			ser_field!(serializer, &mut state, T::enabled(), "enabled");
 		}
 
-		object_ser!($t);
-    );
-    ($n:ident $t:ident) => (
-    	impl $crate::mapping::ElasticFieldMapping<()> for $t {
-			fn data_type() -> &'static str { <$t as ElasticObjectMapping>::data_type() }
+		try!(serializer.serialize_struct_elt(&mut state, "properties", &Properties::<T>::default()));
 
-			fn name() -> &'static str { stringify!($n) }
-		}
-
-		object_ser!($t);
-    );
-    ($n:ident $t:ident $b:tt) => (
-    	impl $crate::object::ElasticObjectMapping for $t $b
-
-    	object_mapping!($n $t);
-    )
+		serializer.serialize_struct_end(state)
+	}
 }
 
-/// Define an indexable `type` mapping.
-#[macro_export]
-macro_rules! type_mapping {
-    ($n:ident $t:ident $b:tt) => (
-		impl $crate::object::ElasticUserTypeMapping for $t {
-			fn serialize_type<S>(serializer: &mut S) -> Result<(), S::Error>
-			where S: ::serde::Serializer {
-				let mut state = try!(serializer.serialize_struct("mapping", 1));
+#[derive(Default)]
+struct Properties<M> where
+M: ObjectMapping {
+	_m: PhantomData<M>
+}
 
-				props_ser!($t Properties);
-				try!(serializer.serialize_struct_elt(&mut state, "properties", &Properties));
-
-				serializer.serialize_struct_end(state)
-			}
-		}
-
-		object_mapping!($n $t $b);
-	)
+impl <M> Serialize for Properties<M> where
+M: ObjectMapping {
+	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+	where S: Serializer {
+		let mut state = try!(serializer.serialize_struct("properties", M::props_len()));
+		try!(M::serialize_props(serializer, &mut state));
+		serializer.serialize_struct_end(state)
+	}
 }
 
 /// The dynamic setting may be set at the mapping type level, and on each inner object.
@@ -328,10 +315,9 @@ pub enum Dynamic {
 	Strict
 }
 
-impl serde::Serialize for Dynamic {
-	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
-	where S: Serializer
-	{
+impl Serialize for Dynamic {
+	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where 
+	S: Serializer {
 		match *self {
 			Dynamic::True => serializer.serialize_bool(true),
 			Dynamic::False => serializer.serialize_bool(false),
