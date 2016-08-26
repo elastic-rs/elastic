@@ -9,7 +9,7 @@ macro_rules! impl_mapping {
 macro_rules! impl_text_mapping {
 	($t:ty) => (
 		impl $crate::mapping::ElasticFieldMapping<()> for $t {
-			type Visitor = $crate::string::mapping::ElasticTextMappingVisitor<$t>;
+			type Visitor = $crate::string::mapping::TextMappingVisitor<$t>;
 
 			fn data_type() -> &'static str {
 				$crate::string::mapping::TEXT_DATATYPE
@@ -28,7 +28,7 @@ macro_rules! impl_text_mapping {
 macro_rules! impl_keyword_mapping {
 	($t:ty) => (
 		impl $crate::mapping::ElasticFieldMapping<()> for $t {
-			type Visitor = $crate::string::mapping::ElasticKeywordMappingVisitor<$t>;
+			type Visitor = $crate::string::mapping::KeywordMappingVisitor<$t>;
 
 			fn data_type() -> &'static str {
 				$crate::string::mapping::KEYWORD_DATATYPE

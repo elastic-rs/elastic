@@ -157,7 +157,7 @@ fn serialise_mapping_terms_vector() {
 #[test]
 fn serialise_mapping_keyword_field() {
 	let mapping = ElasticStringField::Keyword(
-		ElasticKeywordFieldMapping {
+		KeywordFieldMapping {
 			analyzer: 				Some("my_analyzer"),
 			doc_values: 			Some(true),
 			eager_global_ordinals: 	Some(false),
@@ -194,7 +194,7 @@ fn serialise_mapping_keyword_field() {
 #[test]
 fn serialise_mapping_text_field() {
 	let mapping = ElasticStringField::Text(
-		ElasticTextFieldMapping {
+		TextFieldMapping {
 			fielddata_frequency_filter: Some(
 				FieldDataFrequencyFilter { 
 					min: Some(0.0), ..Default::default() 

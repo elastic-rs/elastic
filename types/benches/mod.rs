@@ -58,7 +58,7 @@ pub mod string_fixtures {
 			let mut fields = BTreeMap::new();
 
 			fields.insert("raw", ElasticStringField::Keyword(
-				ElasticKeywordFieldMapping {
+				KeywordFieldMapping {
 					analyzer: Some("my_analyzer"),
 					..Default::default()
 				})
@@ -115,7 +115,7 @@ pub mod string_fixtures {
 			let mut fields = BTreeMap::new();
 
 			fields.insert("text", ElasticStringField::Text(
-				ElasticTextFieldMapping {
+				TextFieldMapping {
 					analyzer: Some("my_analyzer"),
 					..Default::default()
 				})

@@ -94,7 +94,7 @@
 //! struct Article {
 //! 	pub id: i32,
 //! 	pub title: String,
-//! 	pub content: ElasticText<ContentMapping>,
+//! 	pub content: Text<ContentMapping>,
 //! 	pub timestamp: Option<Date<EpochMillis, TimestampMapping<EpochMillis>>>,
 //! 	pub geoip: GeoIp
 //! }
@@ -473,8 +473,8 @@
 //!  `byte`              | `i8`                        | `std`     | [`Byte<M>`](number/mapping/trait.ByteMapping.html)                 | -
 //!  `float`             | `f32`                       | `std`     | [`Float<M>`](number/mapping/trait.FloatMapping.html)               | -
 //!  `double`            | `f64`                       | `std`     | [`Double<M>`](number/mapping/trait.DoubleMapping.html)             | -
-//!  `keyword`           | -                           | -         | [`ElasticKeyword<M>`](string/keyword/mapping/trait.ElasticKeywordMapping.html)   | -
-//!  `text`              | `String`                    | `std`     | [`ElasticText<M>`](string/text/mapping/trait.ElasticTextMapping.html)            | -
+//!  `keyword`           | -                           | -         | [`Keyword<M>`](string/keyword/mapping/trait.KeywordMapping.html)   | -
+//!  `text`              | `String`                    | `std`     | [`Text<M>`](string/text/mapping/trait.TextMapping.html)            | -
 //!  `boolean`           | `bool`                      | `std`     | [`Boolean<M>`](boolean/mapping/trait.BooleanMapping.html)          | -
 //!  `ip`                | `Ipv4Addr`                  | `std`     | [`Ip<M>`](ip/mapping/trait.IpMapping.html)                         | -
 //!  `date`              | `DateTime<UTC>`             | `chrono`  | [`Date<F, M>`](date/mapping/trait.DateMapping.html)                | `DateFormat`
@@ -543,7 +543,7 @@ pub mod date;
 pub mod geo;
 pub mod ip;
 pub mod number;
-//pub mod string;
+pub mod string;
 //pub mod object;
 
 /*pub mod prelude {
