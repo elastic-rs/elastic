@@ -437,13 +437,19 @@ pub mod object_macro_fixtures {
 	}
 
 	#[derive(Serialize, ElasticType)]
-	#[elastic(ty="renamed_type")]
+	#[elastic(mapping="CustomTypeMapping")]
 	pub struct CustomType {
 		pub field: i32,
 		#[serde(skip_serializing)]
 		pub ignored_field: i32,
 		#[serde(rename="renamed_field")]
 		pub field2: i32
+	}
+
+	#[derive(Default)]
+	pub struct CustomTypeMapping;
+	impl ObjectMapping for CustomTypeMapping {
+		fn name() -> &'static str { "renamed_type" }
 	}
 }
 

@@ -1,31 +1,44 @@
 use syntax::codemap::Span;
 use syntax::parse::token::{ self, InternedString };
-use syntax::ast::{ self, Ident, Lit, LitKind, MetaItemKind };
+use syntax::ast::{ self, Ident, Item, Lit, LitKind, MetaItemKind };
 use syntax::attr::HasAttrs;
 use syntax::ext::base::{ ExtCtxt, Annotatable };
 use syntax::ext::build::AstBuilder;
 
 //Build a field mapping type and return the name
-pub fn build_mapping(cx: &mut ExtCtxt, span: Span, item: &ast::Item, fields: &[(Ident, ast::StructField)], push: &mut FnMut(Annotatable)) {
-	let name = token::str_to_ident(&format!("{}Mapping", item.ident));
+pub fn build_mapping(cx: &mut ExtCtxt, span: Span, item: &Item, fields: &[(Ident, ast::StructField)], push: &mut FnMut(Annotatable)) {
+	let es_ty = get_type_name(span, item);
+	let stmts = get_props_ser_stmts(cx, span, fields);
 
+	let name = {
+		//If a user supplies a mapping with `#[elastic(mapping="")]`, then use it.
+		//Otherwise, define the mapping struct and implement defaults for it.
+		if let Some(name) = get_mapping(cx, item) {
+			name
+		}
+		else {
+			let name = get_default_mapping(item);
+			define_mapping(cx, &name, push);
+			impl_object_mapping(cx, &name, &es_ty, push);
+
+			name
+		}
+	};
+	
 	impl_type(cx, item, &name, push);
+	impl_props_mapping(cx, span, &name, stmts, push);
+}
 
+fn define_mapping(cx: &mut ExtCtxt, name: &Ident, push: &mut FnMut(Annotatable)) {
 	push(Annotatable::Item(
 		quote_item!(cx,
 			#[derive(Default, Clone)]
 			pub struct $name;
 		).unwrap()
 	));
-
-	let es_ty = get_type_name(span, item);
-	let stmts = get_props_ser_stmts(cx, span, fields);
-
-	impl_type_mapping(cx, &name, &es_ty, push);
-	impl_props_mapping(cx, span, &name, stmts, push);
 }
 
-fn impl_type(cx: &mut ExtCtxt, item: &ast::Item, mapping: &Ident, push: &mut FnMut(Annotatable)) {
+fn impl_type(cx: &mut ExtCtxt, item: &Item, mapping: &Ident, push: &mut FnMut(Annotatable)) {
 	let ty = item.ident;
 
 	push(Annotatable::Item(
@@ -35,7 +48,7 @@ fn impl_type(cx: &mut ExtCtxt, item: &ast::Item, mapping: &Ident, push: &mut FnM
 	));
 }
 
-fn impl_type_mapping(cx: &mut ExtCtxt, mapping: &Ident, es_ty: &Lit, push: &mut FnMut(Annotatable)) {
+fn impl_object_mapping(cx: &mut ExtCtxt, mapping: &Ident, es_ty: &Lit, push: &mut FnMut(Annotatable)) {
 	push(Annotatable::Item(
 		quote_item!(cx,
 			impl ObjectMapping for $mapping {
@@ -105,24 +118,31 @@ fn get_props_ser_stmts(cx: &mut ExtCtxt, span: Span, fields: &[(Ident, ast::Stru
 	fields
 }
 
-pub fn get_type_name(span: Span, item: &ast::Item) -> Lit {
+pub fn get_mapping(cx: &mut ExtCtxt, item: &Item) -> Option<Ident> {
 	for meta_items in item.attrs().iter().filter_map(super::get_elastic_meta_items) {
 		for meta_item in meta_items {
 			match meta_item.node {
-				// Parse `#[elastic(ty="foo")]`
-				MetaItemKind::NameValue(ref name, ref lit) if name == &"ty" => {
-					return lit.to_owned();
+				// Parse `#[elastic(mapping="foo")]`
+				MetaItemKind::NameValue(ref name, ref lit) if name == &"mapping" => {
+					return Some(
+						super::get_ident_from_lit(cx, "mapping", lit)
+							.unwrap_or(get_default_mapping(item))
+					)
 				}
 				_ => ()
 			}
 		}
 	}
 
-	get_default_type_name(&item.ident, span)
+	None
 }
 
-pub fn get_default_type_name(name: &Ident, span: Span) -> Lit {
-	let name = token::str_to_ident(&format!("{}", name.name.as_str()).to_lowercase());
+pub fn get_default_mapping(item: &Item) -> Ident {
+	token::str_to_ident(&format!("{}Mapping", item.ident))
+}
+
+pub fn get_type_name(span: Span, item: &Item) -> Lit {
+	let name = token::str_to_ident(&format!("{}", item.ident.name.as_str()).to_lowercase());
 
 	Lit {
 		node: LitKind::Str(InternedString::new_from_name(name.name), ast::StrStyle::Cooked),
