@@ -15,8 +15,7 @@ fn string_has_default_mapping() {
 
 #[test]
 fn serialise_string_mapping_default() {
-	let mapping = DefaultStringMapping::default();
-	let ser = serde_json::to_string(&mapping).unwrap();
+	let ser = FieldMapper::to_string(DefaultStringMapping).unwrap();
 
 	let expected = json_str!({
 		"type":"text",
@@ -32,9 +31,19 @@ fn serialise_string_mapping_default() {
 }
 
 #[test]
+fn serialise_text_mapping_default() {
+	let ser = FieldMapper::to_string(DefaultTextMapping).unwrap();
+
+	let expected = json_str!({
+		"type": "text"
+	});
+
+	assert_eq!(expected, ser);
+}
+
+#[test]
 fn serialise_text_mapping_custom() {
-	let mapping = MyTextMapping;
-	let ser = serde_json::to_string(&mapping).unwrap();
+	let ser = FieldMapper::to_string(MyTextMapping).unwrap();
 
 	let expected = json_str!({
 		"type":"text",
@@ -68,6 +77,53 @@ fn serialise_text_mapping_custom() {
 		"search_quote_analyzer":"my_analyzer",
 		"similarity":"BM25",
 		"term_vector":"yes"
+	});
+
+	assert_eq!(expected, ser);
+}
+
+#[test]
+fn serialise_keyword_mapping_default() {
+	let ser = FieldMapper::to_string(DefaultKeywordMapping).unwrap();
+
+	let expected = json_str!({
+		"type": "keyword"
+	});
+
+	assert_eq!(expected, ser);
+}
+
+#[test]
+fn serialise_keyword_mapping_custom() {
+	let ser = FieldMapper::to_string(MyKeywordMapping).unwrap();
+
+	let expected = json_str!({
+		"type": "keyword",
+		"boost": 1.03,
+		"analyzer": "my_analyzer",
+		"doc_values": true,
+		"eager_global_ordinals": false,
+		"fields": {
+			"comp": {
+				"type": "completion"
+			},
+			"count": {
+				"type": "token_count"
+			},
+			"text": {
+				"type": "text",
+				"analyzer": "my_analyzer"
+			}
+		},
+		"include_in_all": false,
+		"ignore_above": 256,
+		"index": true,
+		"index_options": "docs",
+		"norms": false,
+		"null_value": "my string",
+		"store": false,
+		"search_analyzer": "my_analyzer",
+		"similarity": "classic"
 	});
 
 	assert_eq!(expected, ser);

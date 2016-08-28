@@ -392,7 +392,7 @@ pub mod object_fixtures {
 		fn serialize_props<S>(serializer: &mut S, state: &mut S::StructState) -> Result<(), S::Error>
 		where S: serde::Serializer {
 			try!(field_ser(serializer, state, "field1", Date::<EpochMillis>::mapping()));
-			try!(field_ser(serializer, state, "field2", String::mapping()));
+			try!(field_ser(serializer, state, "field2", SimpleNestedType::mapping()));
 
 			Ok(())
 		}

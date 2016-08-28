@@ -17,7 +17,7 @@ fn datetime_has_default_mapping() {
 
 #[test]
 fn serialise_mapping_default() {
-	let ser = FieldMapper::to_string(DefaultDateMapping::<BasicDateTime>::default()).unwrap();
+	let ser = FieldMapper::to_string(DefaultDateMapping::<DefaultDateFormat>::default()).unwrap();
 
 	let expected = json_str!({
 		"type": "date",

@@ -69,7 +69,7 @@ Self: Serialize {
 		M::default()
 	}
 
-	/// Get the serialisable mapping for this type.
+	#[doc(hidden)]
 	fn mapping_ser() -> M::SerType {
 		M::ser()
 	}
