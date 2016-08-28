@@ -206,7 +206,7 @@ pub struct ObjectFormat;
 
 /// The base requirements for mapping an `object` type.
 pub trait ObjectMapping where
-Self: Default {
+Self: PropertiesMapping + Default {
 	/// Get the indexed name for this mapping.
 	fn name() -> &'static str;
 
@@ -225,13 +225,6 @@ Self: Default {
 	/// The object itself is not added to the `_all` field.
 	fn include_in_all() -> Option<bool> { None }
 
-	/// The number of property fields on this mapping.
-	fn props_len() -> usize;
-
-	/// Serialisation for the property fields on this mapping.
-	fn serialize_props<S>(serializer: &mut S, state: &mut S::StructState) -> Result<(), S::Error> where 
-	S: Serializer;
-
 	/// Serialise this mapping as an indexable type instead of as a field
 	/// on another type.
 	fn serialize_type<S>(serializer: &mut S) -> Result<(), S::Error> where 
@@ -244,7 +237,20 @@ Self: Default {
 	}
 }
 
+/// Serialisation for the mapping of object properties.
+pub trait PropertiesMapping {
+	/// The number of property fields on this mapping.
+	fn props_len() -> usize;
+
+	/// Serialisation for the property fields on this mapping.
+	fn serialize_props<S>(serializer: &mut S, state: &mut S::StructState) -> Result<(), S::Error> where 
+	S: Serializer;
+}
+
 /// The additional fields available to an indexable Elasticsearch type.
+/// 
+/// This trait is implemented for the type being mapped, rather than the mapping
+/// type itself.
 pub trait ElasticUserType<M> where
 M: ObjectMapping,
 Self: Serialize {

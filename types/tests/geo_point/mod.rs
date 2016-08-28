@@ -10,7 +10,6 @@ extern crate serde_json;
 use georust::{ Geometry, ToGeo, Coordinate };
 
 use elastic_types::geo::point::prelude::*;
-use ::geo_point_fixtures::*;
 
 #[test]
 fn can_change_point_mapping() {

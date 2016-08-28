@@ -73,6 +73,8 @@ pub fn expand_derive_type_mapping(cx: &mut ExtCtxt, span: Span, meta_item: &Meta
 		.map(|f| f.unwrap())
 		.collect();
 
+	//TODO: get mapping type
+
 	object::build_mapping(cx, span, item, &fields, push);
 }
 
@@ -99,6 +101,7 @@ fn get_ser_field(cx: &mut ExtCtxt, field: &ast::StructField) -> Option<(Ident, a
 	Some((token::str_to_ident(serde_field.name().serialize_name().as_ref()), field.to_owned()))
 }
 
+#[allow(dead_code)]
 fn get_ident_from_lit(cx: &ExtCtxt, name: &str, lit: &ast::Lit) -> Result<Ident, &'static str> {
 	match lit.node {
 		ast::LitKind::Str(ref s, _) => Ok(token::str_to_ident(s)),

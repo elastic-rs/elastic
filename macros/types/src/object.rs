@@ -1,7 +1,6 @@
 use syntax::codemap::Span;
-use syntax::parse::token;
-use syntax::ast;
-use syntax::ast::Ident;
+use syntax::parse::token::{ self, InternedString };
+use syntax::ast::{ self, Ident, Lit, LitKind, MetaItemKind };
 use syntax::attr::HasAttrs;
 use syntax::ext::base::{ ExtCtxt, Annotatable };
 use syntax::ext::build::AstBuilder;
@@ -19,10 +18,11 @@ pub fn build_mapping(cx: &mut ExtCtxt, span: Span, item: &ast::Item, fields: &[(
 		).unwrap()
 	));
 
-	let es_ty = get_type_name(cx, item);
+	let es_ty = get_type_name(span, item);
 	let stmts = get_props_ser_stmts(cx, span, fields);
 
-	impl_type_mapping(cx, span, &name, &es_ty, stmts, push);
+	impl_type_mapping(cx, &name, &es_ty, push);
+	impl_props_mapping(cx, span, &name, stmts, push);
 }
 
 fn impl_type(cx: &mut ExtCtxt, item: &ast::Item, mapping: &Ident, push: &mut FnMut(Annotatable)) {
@@ -30,25 +30,35 @@ fn impl_type(cx: &mut ExtCtxt, item: &ast::Item, mapping: &Ident, push: &mut FnM
 
 	push(Annotatable::Item(
 		quote_item!(cx,
-			impl ::elastic_types::mapping::ElasticType<$mapping, ()> for $ty { }
+			impl ::elastic_types::mapping::ElasticType<$mapping> for $ty { }
 		).unwrap()
 	));
 }
 
-fn impl_type_mapping(cx: &mut ExtCtxt, span: Span, mapping: &Ident, es_ty: &Ident, prop_ser_stmts: Vec<ast::Stmt>, push: &mut FnMut(Annotatable)) {
+fn impl_type_mapping(cx: &mut ExtCtxt, mapping: &Ident, es_ty: &Lit, push: &mut FnMut(Annotatable)) {
+	push(Annotatable::Item(
+		quote_item!(cx,
+			impl ObjectMapping for $mapping {
+				fn name() -> &'static str { $es_ty }
+			}
+		).unwrap()
+	));
+}
+
+fn impl_props_mapping(cx: &mut ExtCtxt, span: Span, mapping: &Ident, prop_ser_stmts: Vec<ast::Stmt>, push: &mut FnMut(Annotatable)) {
 	let stmts_len = prop_ser_stmts.len();
 	let stmts_block = cx.expr_block(cx.block(span, prop_ser_stmts));
 
 	push(Annotatable::Item(
 		quote_item!(cx,
-			type_mapping!($es_ty $mapping {
+			impl ::elastic_types::object::PropertiesMapping for $mapping {
 				fn props_len() -> usize { $stmts_len }
 				
 				fn serialize_props<S>(serializer: &mut S, state: &mut S::StructState) -> Result<(), S::Error>
-				where S: serde::Serializer {
+				where S: ::serde::Serializer {
 					$stmts_block
 				}
-			});
+			}
 		).unwrap()
 	));
 }
@@ -73,9 +83,9 @@ fn get_props_ser_stmts(cx: &mut ExtCtxt, span: Span, fields: &[(Ident, ast::Stru
 			let mut ty = ty.clone();
 
 			ty.segments.push(ast::PathSegment {
-                identifier: token::str_to_ident("mapping_ser"),
-                parameters: ast::PathParameters::none()
-            });
+				identifier: token::str_to_ident("mapping_ser"),
+				parameters: ast::PathParameters::none()
+			});
 
 			let expr = cx.expr_call(span, cx.expr_path(ty), Vec::new());
 
@@ -95,24 +105,27 @@ fn get_props_ser_stmts(cx: &mut ExtCtxt, span: Span, fields: &[(Ident, ast::Stru
 	fields
 }
 
-pub fn get_type_name(cx: &ExtCtxt, item: &ast::Item) -> Ident {
+pub fn get_type_name(span: Span, item: &ast::Item) -> Lit {
 	for meta_items in item.attrs().iter().filter_map(super::get_elastic_meta_items) {
-        for meta_item in meta_items {
-            match meta_item.node {
-                // Parse `#[elastic(ty="foo")]`
-                ast::MetaItemKind::NameValue(ref name, ref lit) if name == &"ty" => {
-                    let s = super::get_ident_from_lit(cx, name, lit).unwrap_or(get_default_type_name(&item.ident));
+		for meta_item in meta_items {
+			match meta_item.node {
+				// Parse `#[elastic(ty="foo")]`
+				MetaItemKind::NameValue(ref name, ref lit) if name == &"ty" => {
+					return lit.to_owned();
+				}
+				_ => ()
+			}
+		}
+	}
 
-                    return s;
-                }
-                _ => ()
-            }
-        }
-    }
-
-    get_default_type_name(&item.ident)
+	get_default_type_name(&item.ident, span)
 }
 
-pub fn get_default_type_name(name: &Ident) -> Ident {
-	token::str_to_ident(&format!("{}", name.name.as_str()).to_lowercase())
+pub fn get_default_type_name(name: &Ident, span: Span) -> Lit {
+	let name = token::str_to_ident(&format!("{}", name.name.as_str()).to_lowercase());
+
+	Lit {
+		node: LitKind::Str(InternedString::new_from_name(name.name), ast::StrStyle::Cooked),
+		span: span
+	}
 }

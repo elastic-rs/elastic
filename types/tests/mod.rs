@@ -25,7 +25,6 @@ extern crate geojson;
 extern crate elastic_types;
 
 pub mod date_fixtures {
-	use std::marker::PhantomData;
 	use elastic_types::mapping::prelude::*;
 	use elastic_types::date::prelude::*;
 
@@ -371,7 +370,7 @@ pub mod geo_shape_fixtures {
 }
 
 pub mod object_fixtures {
-	use serde;
+	use serde::Serializer;
 	use elastic_types::prelude::*;
 
 	#[derive(Serialize)]
@@ -386,11 +385,12 @@ pub mod object_fixtures {
 	pub struct SimpleTypeMapping;
 	impl ObjectMapping for SimpleTypeMapping {
 		fn name() -> &'static str { "simpletype" }
-
+	}
+	impl PropertiesMapping for SimpleTypeMapping {
 		fn props_len() -> usize { 2 }
 		
 		fn serialize_props<S>(serializer: &mut S, state: &mut S::StructState) -> Result<(), S::Error>
-		where S: serde::Serializer {
+		where S: Serializer {
 			try!(field_ser(serializer, state, "field1", Date::<EpochMillis>::mapping()));
 			try!(field_ser(serializer, state, "field2", SimpleNestedType::mapping()));
 
@@ -409,11 +409,12 @@ pub mod object_fixtures {
 	pub struct SimpleNestedTypeMapping;
 	impl ObjectMapping for SimpleNestedTypeMapping {
 		fn name() -> &'static str { "simplenestedtype" }
-		
+	}
+	impl PropertiesMapping for SimpleNestedTypeMapping {
 		fn props_len() -> usize { 1 }
 		
 		fn serialize_props<S>(serializer: &mut S, state: &mut S::StructState) -> Result<(), S::Error>
-		where S: serde::Serializer {
+		where S: Serializer {
 			try!(field_ser(serializer, state, "field", i32::mapping()));
 
 			Ok(())
@@ -421,8 +422,7 @@ pub mod object_fixtures {
 	}
 }
 
-/*pub mod object_macro_fixtures {
-	use serde;
+pub mod object_macro_fixtures {
 	use elastic_types::prelude::*;
 
 	#[derive(Serialize, ElasticType)]
@@ -445,10 +445,10 @@ pub mod object_fixtures {
 		#[serde(rename="renamed_field")]
 		pub field2: i32
 	}
-}*/
+}
 
 pub mod object;
-//pub mod object_macro;
+pub mod object_macro;
 pub mod geo_point;
 pub mod geo_shape;
 pub mod date;

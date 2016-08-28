@@ -9,7 +9,6 @@ extern crate serde_json;
 pub extern crate chrono;
 extern crate elastic_types;
 
-use chrono::format::Item;
 use chrono::offset::TimeZone;
 
 use elastic_types::date::prelude::*;
