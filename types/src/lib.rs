@@ -183,7 +183,7 @@
 //!
 //! ## Map Your Types
 //!
-//! _For mapping on `stable`, see [here](object/index.html#derive-with-macros)._
+//! _For mapping on `stable`, see [here](object/index.html#manually-implement-mapping)._
 //!
 //! Derive `ElasticType` on your Elasticsearch-mappable types:
 //!

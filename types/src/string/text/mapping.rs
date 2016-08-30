@@ -29,12 +29,14 @@ pub struct TextFormat;
 /// # extern crate elastic_types;
 /// # extern crate serde;
 /// # use elastic_types::prelude::*;
-/// text_mapping!(MyStringMapping {
+/// #[derive(Default)]
+/// struct MyStringMapping;
+/// impl TextMapping for MyStringMapping {
 /// 	//Overload the mapping functions here
 /// 	fn boost() -> Option<f32> {
 ///			Some(1.5)
 ///		}
-/// });
+/// }
 /// # fn main() {}
 /// ```
 ///
@@ -50,14 +52,16 @@ pub struct TextFormat;
 /// # extern crate serde;
 /// # extern crate serde_json;
 /// # use elastic_types::prelude::*;
-/// # text_mapping!(MyStringMapping {
+/// # #[derive(Default)]
+/// # struct MyStringMapping;
+/// # impl TextMapping for MyStringMapping {
 /// # 	//Overload the mapping functions here
 /// # 	fn boost() -> Option<f32> {
 ///	# 		Some(1.5)
 ///	# 	}
-/// # });
+/// # }
 /// # fn main() {
-/// # let mapping = serde_json::to_string(&MyStringMapping).unwrap();
+/// # let mapping = FieldMapper::to_string(MyStringMapping).unwrap();
 /// # let json = json_str!(
 /// {
 ///     "type": "text",
@@ -107,7 +111,9 @@ Self: Default {
 	/// # extern crate serde;
 	/// # use std::collections::BTreeMap;
 	/// # use elastic_types::prelude::*;
-	/// # text_mapping!(MyStringMapping {
+	/// # #[derive(Default)]
+	/// # struct MyStringMapping;
+	/// # impl TextMapping for MyStringMapping {
 	/// fn fields() -> Option<BTreeMap<&'static str, ElasticStringField>> {
 	///		let mut fields = BTreeMap::new();
 	///
@@ -123,7 +129,7 @@ Self: Default {
 	///
 	/// 	Some(fields)
 	///	}
-	/// # });
+	/// # }
 	/// # fn main() {}
 	/// ```
 	fn fields() -> Option<BTreeMap<&'static str, ElasticStringField>> { None }

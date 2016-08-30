@@ -18,7 +18,7 @@
 //! # use serde::{ Serialize, Deserialize };
 //! use elastic_types::prelude::*;
 //!
-//! #[derive(Default, Clone, Serialize, Deserialize, ElasticType)]
+//! #[derive(Default, Serialize, Deserialize, ElasticType)]
 //! pub struct MyType {
 //! 	pub my_date: Date<DefaultDateFormat>,
 //! 	pub my_string: String,
@@ -37,14 +37,70 @@
 //! # fn main() {
 //! # }
 //! ```
+//! 
+//! This will produce the following mapping:
+//!
+//! ```
+//! # #![feature(plugin, custom_derive, custom_attribute)]
+//! # #![plugin(elastic_types_macros)]
+//! # #[macro_use]
+//! # extern crate json_str;
+//! # #[macro_use]
+//! # extern crate elastic_types;
+//! # extern crate serde;
+//! # extern crate serde_json;
+//! # use serde::{ Serialize, Deserialize };
+//! # use elastic_types::prelude::*;
+//! # #[derive(Default, Serialize, Deserialize, ElasticType)]
+//! # pub struct MyType {
+//! # 	pub my_date: Date<DefaultDateFormat>,
+//! # 	pub my_string: String,
+//! # 	pub my_num: i32
+//! # }
+//! # impl serde::Serialize for MyType {
+//! # 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where S: serde::Serializer {
+//! # 		unimplemented!()
+//! # 	}
+//! # }
+//! # impl serde::Deserialize for MyType {
+//! # 	 fn deserialize<D>(deserializer: &mut D) -> Result<Self, D::Error> where D: serde::Deserializer {
+//! # 		unimplemented!()
+//! # 	}
+//! # }
+//! # fn main() {
+//! # let mapping = FieldMapper::to_string(MyTypeMapping).unwrap();
+//! # let json = json_str!(
+//! {
+//!     "type": "nested",
+//! 	"properties": {
+//! 		"my_date": {
+//! 			"type": "date",
+//! 			"format": "basic_date_time"
+//! 		},
+//! 		"my_string": {
+//! 			"type": "text",
+//! 			"fields": {
+//! 				"keyword":{
+//! 					"type":"keyword",
+//! 					"ignore_above":256
+//! 				}
+//! 			}
+//! 		},
+//! 		"my_num": {
+//! 			"type": "integer"
+//! 		}
+//! 	}
+//! }
+//! # );
+//! # assert_eq!(json, mapping);
+//! # }
+//! ```
 //!
 //! It's also possible to adjust the mapping using the `elastic` attribute.
 //!
-//! ### Use a Custom Type Name
+//! ### Override Default Mapping Properties
 //!
-//! By default, the Elasticsearch type name (the value of `_type`) is the lowercase variant of the Rust struct.
-//! So `MyType` would become `mytype`.
-//! You can change this by providing `elastic(ty="{TypeName}")`:
+//! You can override the mapping meta properties for an object by providing your own mapping type with `elastic(mapping="{TypeName}")`:
 //!
 //! ```
 //! # #![feature(plugin, custom_derive, custom_attribute)]
@@ -54,12 +110,21 @@
 //! # extern crate serde;
 //! # use serde::{ Serialize, Deserialize };
 //! # use elastic_types::prelude::*;
-//! #[derive(Default, Clone, Serialize, Deserialize, ElasticType)]
-//! #[elastic(ty="my_type")]
+//! #[derive(Default, Serialize, Deserialize, ElasticType)]
+//! #[elastic(mapping="MyTypeMapping")]
 //! pub struct MyType {
 //! 	pub my_date: Date<DefaultDateFormat>,
 //! 	pub my_string: String,
 //! 	pub my_num: i32
+//! }
+//! 
+//! #[derive(Default)]
+//! struct MyTypeMapping;
+//! impl ObjectMapping for MyTypeMapping {
+//! 	//Give your own name to a type
+//! 	fn name() -> &'static str { "my_type" }
+//! 
+//! 	fn data_type() -> &'static str { OBJECT_DATATYPE }
 //! }
 //! # impl serde::Serialize for MyType {
 //! # 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where S: serde::Serializer {
@@ -72,6 +137,72 @@
 //! # 	}
 //! # }
 //! # fn main() {
+//! # }
+//! ```
+//! 
+//! This will produce the following mapping:
+//!
+//! ```
+//! # #![feature(plugin, custom_derive, custom_attribute)]
+//! # #![plugin(elastic_types_macros)]
+//! # #[macro_use]
+//! # extern crate json_str;
+//! # #[macro_use]
+//! # extern crate elastic_types;
+//! # extern crate serde;
+//! # extern crate serde_json;
+//! # use serde::{ Serialize, Deserialize };
+//! # use elastic_types::prelude::*;
+//! # #[derive(Default, Serialize, Deserialize, ElasticType)]
+//! # #[elastic(mapping="MyTypeMapping")]
+//! # pub struct MyType {
+//! # 	pub my_date: Date<DefaultDateFormat>,
+//! # 	pub my_string: String,
+//! # 	pub my_num: i32
+//! # }
+//! # 
+//! # #[derive(Default)]
+//! # struct MyTypeMapping;
+//! # impl ObjectMapping for MyTypeMapping {
+//! # 	fn name() -> &'static str { "my_type" }
+//! # 	fn data_type() -> &'static str { OBJECT_DATATYPE }
+//! # }
+//! # impl serde::Serialize for MyType {
+//! # 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where S: serde::Serializer {
+//! # 		unimplemented!()
+//! # 	}
+//! # }
+//! # impl serde::Deserialize for MyType {
+//! # 	 fn deserialize<D>(deserializer: &mut D) -> Result<Self, D::Error> where D: serde::Deserializer {
+//! # 		unimplemented!()
+//! # 	}
+//! # }
+//! # fn main() {
+//! # let mapping = FieldMapper::to_string(MyTypeMapping).unwrap();
+//! # let json = json_str!(
+//! {
+//!     "type": "object",
+//! 	"properties": {
+//! 		"my_date": {
+//! 			"type": "date",
+//! 			"format": "basic_date_time"
+//! 		},
+//! 		"my_string": {
+//! 			"type": "text",
+//! 			"fields": {
+//! 				"keyword":{
+//! 					"type":"keyword",
+//! 					"ignore_above":256
+//! 				}
+//! 			}
+//! 		},
+//! 		"my_num": {
+//! 			"type": "integer"
+//! 		}
+//! 	}
+//! }
+//! # );
+//! # assert_eq!(json, mapping);
 //! # }
 //! ```
 //!
@@ -132,9 +263,9 @@
 //! Remember that Elasticsearch will automatically update mappings based on the objects it sees though,
 //! so if your 'un-mapped' field is serialised on `index`, then some mapping will be added for it.
 //!
-//! ## Derive with Macros
+//! ## Manually Implement Mapping
 //!
-//! You can also build object mappings on `stable` using the `type_mapping!` macro:
+//! You can build object mappings on `stable` by manually implementing the `ObjectMapping` and `PropertiesMapping` traits:
 //!
 //! ```
 //! # #![feature(custom_derive, custom_attribute, plugin)]
@@ -152,30 +283,29 @@
 //! }
 //!
 //! //Implement ElasticType for your type. This binds it to the mapping
-//! impl ElasticType<MyTypeMapping, ()> for MyType { }
+//! impl ElasticType<MyTypeMapping, ObjectFormat> for MyType { }
 //! 
 //! //Define the type mapping for our type
-//! #[derive(Default, Clone)]
+//! #[derive(Default)]
 //! pub struct MyTypeMapping;
-//! type_mapping!(my_type MyTypeMapping {
+//! impl ObjectMapping for MyTypeMapping {
+//! 	fn name() -> &'static str { "my_type" }
+//! }
+//! impl PropertiesMapping for MyTypeMapping {
 //! 	fn props_len() -> usize { 3 }
 //! 		
 //! 	fn serialize_props<S>(serializer: &mut S, state: &mut S::StructState) -> Result<(), S::Error>
 //! 	where S: serde::Serializer {
-//! 		try!(serializer.serialize_struct_elt(state, "my_date", Date::<DefaultDateFormat>::mapping()));
-//! 		try!(serializer.serialize_struct_elt(state, "my_string", String::mapping()));
-//! 		try!(serializer.serialize_struct_elt(state, "my_num", i32::mapping()));
+//! 		try!(field_ser(serializer, state, "my_date", Date::<DefaultDateFormat>::mapping()));
+//! 		try!(field_ser(serializer, state, "my_string", String::mapping()));
+//! 		try!(field_ser(serializer, state, "my_num", i32::mapping()));
 //! 
 //! 		Ok(())
-//! 	}
-//! });
+//! 	}	
+//! }
 //! # fn main() {
 //! # }
 //! ```
-//! 
-//! The first ident passsed to the `type_mapping!` macro is the name of the type to use in Elasticsearch.
-//! Property types can be mapped by calling their static `mapping()` method.
-//! Any type that implements `ElasticFieldMapping` can be mapped this way.
 //!
 //! # Links
 //!
