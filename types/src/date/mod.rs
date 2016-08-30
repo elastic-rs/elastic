@@ -33,7 +33,9 @@
 //! # use elastic_types::prelude::*;
 //! # fn main() {
 //! # use elastic_types::prelude::*;
-//! # date_mapping!(MyDateMapping: EpochMillis {});
+//! # #[derive(Default)]
+//! # struct MyDateMapping;
+//! # impl DateMapping for MyDateMapping { type Format = EpochMillis; }
 //! struct MyType {
 //! 	pub field: Date<EpochMillis, MyDateMapping>
 //! }
@@ -42,8 +44,8 @@
 //!
 //! ## Creating Formats
 //! 
-//! To make it easier to build formats, use the `date_fmt!` macro 
-//! from [`elastic_date_macros`](http://kodraus.github.io/rustdoc/elastic_date_macros/index.html) to convert a string format to `Item`s.
+//! To make it easier to build your own date formats, use the `date_fmt!` macro.
+//! This will convert an Elasticsearch or `chrono` format string into a `Vec<Item>` for efficient parsing at runtime:
 //! 
 //! ```
 //! # #![feature(plugin)]
@@ -56,11 +58,11 @@
 //! # fn main() {
 //! #[derive(Default, Clone)]
 //! struct MyFormat;
-//! impl_date_fmt!(MyFormat, "yyyy-MM-ddTHH:mm:ss", "yyyy-MM-dd'T'HH:mm:ss");
+//! date_fmt!(MyFormat, "yyyy-MM-ddTHH:mm:ss", "yyyy-MM-dd'T'HH:mm:ss");
 //! # }
 //! ```
 //! 
-//! You can also avoid having to use `Item`s by implementing `CustomDateFormat` and handling formatting and parsing yourself:
+//! You can also implement `CustomDateFormat` yourself and write your own arbitrary format/parse logic:
 //!
 //! ```
 //! # #![feature(plugin)]

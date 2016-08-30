@@ -69,11 +69,9 @@ M: BooleanMapping {
 	/// # extern crate elastic_types;
 	/// # fn main() {
 	/// # use elastic_types::prelude::*;
-	/// # boolean_mapping!(MyBooleanMapping {
-	/// # 	fn boost() -> Option<f32> {
-	///	# 		Some(1.5)
-	///	# 	}
-	/// # });
+	/// # #[derive(Default)]
+	/// # struct MyBooleanMapping;
+	/// # impl BooleanMapping for MyBooleanMapping { }
 	/// let es_boolean = Boolean::<DefaultBooleanMapping>::new(true);
 	///
 	/// let boolean: Boolean<MyBooleanMapping> = es_boolean.remap();

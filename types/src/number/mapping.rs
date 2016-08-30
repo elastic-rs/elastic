@@ -16,12 +16,14 @@
 //! # extern crate elastic_types;
 //! # extern crate serde;
 //! # use elastic_types::prelude::*;
-//! integer_mapping!(MyIntegerMapping {
+//! #[derive(Default)]
+//! struct MyIntegerMapping;
+//! impl IntegerMapping for MyIntegerMapping {
 //! 	//Overload the mapping functions here
 //! 	fn null_value() -> Option<i32> {
 //! 		Some(42)
 //! 	}
-//! });
+//! }
 //! # fn main() {}
 //! ```
 //!
@@ -37,14 +39,16 @@
 //! # extern crate serde;
 //! # extern crate serde_json;
 //! # use elastic_types::prelude::*;
-//! # integer_mapping!(MyIntegerMapping {
+//! # #[derive(Default)]
+//! # struct MyIntegerMapping;
+//! # impl IntegerMapping for MyIntegerMapping {
 //! # 	//Overload the mapping functions here
 //! # 	fn null_value() -> Option<i32> {
 //! # 		Some(42)
 //! # 	}
-//! # });
+//! # }
 //! # fn main() {
-//! # let mapping = serde_json::to_string(&MyIntegerMapping).unwrap();
+//! # let mapping = FieldMapper::to_string(MyIntegerMapping).unwrap();
 //! # let json = json_str!(
 //! {
 //!     "type": "integer",

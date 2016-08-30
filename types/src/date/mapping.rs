@@ -33,12 +33,16 @@ F: DateFormat {
 /// # extern crate serde;
 /// # use std::marker::PhantomData;
 /// # use elastic_types::prelude::*;
-/// date_mapping!(MyDateMapping {
+/// #[derive(Default)]
+/// struct MyDateMapping;
+/// impl DateMapping for MyDateMapping {
+/// 	type Format = EpochMillis;
+/// 	
 /// 	//Overload the mapping functions here
 /// 	fn boost() -> Option<f32> {
 ///			Some(1.5)
 ///		}
-/// });
+/// }
 /// # fn main() {}
 /// ```
 ///
@@ -55,13 +59,16 @@ F: DateFormat {
 /// # extern crate serde_json;
 /// # use std::marker::PhantomData;
 /// # use elastic_types::prelude::*;
-/// # date_mapping!(MyDateMapping {
+/// # #[derive(Default)]
+/// # struct MyDateMapping;
+/// # impl DateMapping for MyDateMapping {
+/// # 	type Format = EpochMillis;
 /// # 	fn boost() -> Option<f32> {
 ///	# 		Some(1.5)
 ///	# 	}
-/// # });
+/// # }
 /// # fn main() {
-/// # let mapping = serde_json::to_string(&MyDateMapping::<EpochMillis>::default()).unwrap();
+/// # let mapping = FieldMapper::to_string(MyDateMapping).unwrap();
 /// # let json = json_str!(
 /// {
 ///     "type": "date",
@@ -73,11 +80,28 @@ F: DateFormat {
 /// # }
 /// ```
 ///
-/// ## Limitations
-///
-/// Automatically deriving mapping has the following limitations:
-///
-/// - Non-generic mappings aren't supported by auto deriving.
+/// ## Map with a generic Format
+/// 
+/// You can use a generic input parameter to make your `DateMapping` work for any kind of
+/// `DateFormat`:
+/// 
+/// ```
+/// # #![feature(plugin, custom_derive, custom_attribute)]
+/// # #![plugin(json_str, elastic_types_macros)]
+/// # #[macro_use]
+/// # extern crate elastic_types;
+/// # extern crate serde;
+/// # use std::marker::PhantomData;
+/// # use elastic_types::prelude::*;
+/// #[derive(Default)]
+/// struct MyDateMapping<F> {
+/// 	_marker: PhantomData<F>
+/// }
+/// impl <F: DateFormat> DateMapping for MyDateMapping<F> {
+/// 	type Format = F;
+/// }
+/// # fn main() {}
+/// ```
 pub trait DateMapping where
 Self: Default {
 	/// The date format bound to this mapping.

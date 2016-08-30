@@ -28,12 +28,14 @@ pub struct IpFormat;
 /// # extern crate elastic_types;
 /// # extern crate serde;
 /// # use elastic_types::prelude::*;
-/// ip_mapping!(MyIpMapping {
+/// #[derive(Default)]
+/// struct MyIpMapping;
+/// impl IpMapping for MyIpMapping {
 /// 	//Overload the mapping functions here
 /// 	fn boost() -> Option<f32> {
 ///			Some(1.5)
 ///		}
-/// });
+/// }
 /// # fn main() {}
 /// ```
 ///
@@ -49,14 +51,16 @@ pub struct IpFormat;
 /// # extern crate serde;
 /// # extern crate serde_json;
 /// # use elastic_types::prelude::*;
-/// # ip_mapping!(MyIpMapping {
+/// # #[derive(Default)]
+/// # struct MyIpMapping;
+/// # impl IpMapping for MyIpMapping {
 /// # 	//Overload the mapping functions here
 /// # 	fn boost() -> Option<f32> {
-/// # 		Some(1.5)
-/// # 	}
-/// # });
+///	# 		Some(1.5)
+///	# 	}
+/// # }
 /// # fn main() {
-/// # let mapping = serde_json::to_string(&MyIpMapping).unwrap();
+/// # let mapping = FieldMapper::to_string(MyIpMapping).unwrap();
 /// # let json = json_str!(
 /// {
 ///     "type": "ip",

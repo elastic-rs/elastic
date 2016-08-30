@@ -75,7 +75,9 @@ M: IpMapping {
 	/// # fn main() {
     /// # use std::net::Ipv4Addr;
 	/// # use elastic_types::prelude::*;
-	/// # ip_mapping!(MyIpMapping {});
+	/// # #[derive(Default)]
+	/// # struct MyIpMapping;
+	/// # impl IpMapping for MyIpMapping { }
 	/// let es_ip = Ip::<DefaultIpMapping>::new(Ipv4Addr::new(127, 0, 0, 1));
 	///
 	/// let ip: Ip<MyIpMapping> = es_ip.remap();

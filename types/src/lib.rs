@@ -83,42 +83,49 @@
 //! extern crate elastic_types;
 //! extern crate serde;
 //! 
-//! use std::marker::PhantomData;
-//! 
 //! use elastic_types::prelude::*;
 //! 
 //! 
-//! //Our main datatype, `article`
+//! // Our main datatype, `article`
 //! 
 //! #[derive(Serialize, Deserialize, ElasticType)]
 //! struct Article {
 //! 	pub id: i32,
 //! 	pub title: String,
 //! 	pub content: Text<ContentMapping>,
-//! 	pub timestamp: Option<Date<EpochMillis, TimestampMapping<EpochMillis>>>,
+//! 	pub timestamp: Option<Date<EpochMillis, TimestampMapping>>,
 //! 	pub geoip: GeoIp
 //! }
 //! 
+//! 
+//! // A second datatype, `geoip`
+//! 
 //! #[derive(Serialize, Deserialize, ElasticType)]
 //! struct GeoIp {
-//! 	pub ip: std::net::Ipv4Addr,
+//! 	pub ip: ::std::net::Ipv4Addr,
 //! 	pub loc: GeoPoint<DefaultGeoPointFormat>
 //! }
 //! 
 //! 
-//! //Mappings for our datatype fields
+//! // Mappings for our datatype fields
 //! 
-//! text_mapping!(ContentMapping {
+//! #[derive(Default)]
+//! struct ContentMapping;
+//! impl TextMapping for ContentMapping {
 //! 	fn analyzer() -> Option<&'static str> {
 //! 		Some("content_text")
 //! 	}
-//! });
+//! }
 //! 
-//! date_mapping!(TimestampMapping {
-//! 	fn null_value() -> Option<Date<F, Self>> {
+//! #[derive(Default)]
+//! struct TimestampMapping;
+//! impl DateMapping for TimestampMapping {
+//! 	type Format = EpochMillis;
+//! 	
+//! 	fn null_value() -> Option<Date<EpochMillis, Self>> {
 //! 		Some(Date::now())
 //! 	}
-//! });
+//! }
 //! 
 //! fn main() {
 //! 	println!("\"{}\":{{ {} }}", 

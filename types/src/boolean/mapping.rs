@@ -26,12 +26,14 @@ pub struct BooleanFormat;
 /// # extern crate elastic_types;
 /// # use elastic_types::prelude::*;
 /// # fn main() {
-/// boolean_mapping!(MyBooleanMapping {
+/// #[derive(Default)]
+/// struct MyBooleanMapping;
+/// impl BooleanMapping for MyBooleanMapping {
 /// 	//Overload the mapping functions here
 /// 	fn boost() -> Option<f32> {
 ///			Some(1.5)
 ///		}
-/// });
+/// }
 /// # }
 /// ```
 ///
@@ -47,13 +49,16 @@ pub struct BooleanFormat;
 /// # extern crate serde;
 /// # extern crate serde_json;
 /// # use elastic_types::prelude::*;
-/// # boolean_mapping!(MyBooleanMapping {
+/// # #[derive(Default)]
+/// # struct MyBooleanMapping;
+/// # impl BooleanMapping for MyBooleanMapping {
+/// # 	//Overload the mapping functions here
 /// # 	fn boost() -> Option<f32> {
 ///	# 		Some(1.5)
 ///	# 	}
-/// # });
+/// # }
 /// # fn main() {
-/// # let mapping = serde_json::to_string(&MyBooleanMapping).unwrap();
+/// # let mapping = FieldMapper::to_string(MyBooleanMapping).unwrap();
 /// # let json = json_str!(
 /// {
 ///     "type": "boolean",

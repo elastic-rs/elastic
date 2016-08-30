@@ -28,12 +28,14 @@ pub struct GeoShapeFormat;
 /// # extern crate elastic_types;
 /// # extern crate serde;
 /// # use elastic_types::prelude::*;
-/// geo_shape_mapping!(MyGeoShapeMapping {
+/// #[derive(Default)]
+/// struct MyGeoShapeMapping;
+/// impl GeoShapeMapping for MyGeoShapeMapping {
 /// 	//Overload the mapping functions here
 /// 	fn tree_levels() -> Option<i32> {
 ///			Some(2)
 ///		}
-/// });
+/// }
 /// # fn main() {}
 /// ```
 ///
@@ -49,14 +51,16 @@ pub struct GeoShapeFormat;
 /// # extern crate serde;
 /// # extern crate serde_json;
 /// # use elastic_types::prelude::*;
-/// # geo_shape_mapping!(MyGeoShapeMapping {
+/// #[derive(Default)]
+/// # struct MyGeoShapeMapping;
+/// # impl GeoShapeMapping for MyGeoShapeMapping {
 /// # 	//Overload the mapping functions here
 /// # 	fn tree_levels() -> Option<i32> {
-/// # 		Some(2)
-/// # 	}
-/// # });
+///	# 		Some(2)
+///	# 	}
+/// # }
 /// # fn main() {
-/// # let mapping = serde_json::to_string(&MyGeoShapeMapping).unwrap();
+/// # let mapping = FieldMapper::to_string(MyGeoShapeMapping).unwrap();
 /// # let json = json_str!(
 /// {
 ///     "type": "geo_shape",

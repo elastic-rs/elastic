@@ -25,7 +25,7 @@ F: GeoPointFormat {
 ///
 /// ## Derive Mapping
 ///
-/// Currently, deriving mapping only works for structs that take a generic `GeoPointFormat` parameter.
+/// Currently, deriving mapping only works for structs that take a `GeoPointFormat` as an associated type.
 ///
 /// ```
 /// # #![feature(plugin, custom_derive, custom_attribute)]
@@ -35,12 +35,16 @@ F: GeoPointFormat {
 /// # extern crate serde;
 /// # use std::marker::PhantomData;
 /// # use elastic_types::prelude::*;
-/// geo_point_mapping!(MyGeoPointMapping {
-///     //Overload the mapping functions here
-///     fn geohash() -> Option<bool> {
+/// #[derive(Default)]
+/// struct MyGeoPointMapping;
+/// impl GeoPointMapping for MyGeoPointMapping {
+/// 	type Format = GeoPointArray;
+/// 
+/// 	//Overload the mapping functions here
+/// 	fn geohash() -> Option<bool> {
 ///			Some(true)
-///		}
-/// });
+/// 	}
+/// }
 /// # fn main() {}
 /// ```
 ///
@@ -57,14 +61,16 @@ F: GeoPointFormat {
 /// # extern crate serde_json;
 /// # use std::marker::PhantomData;
 /// # use elastic_types::prelude::*;
-/// # geo_point_mapping!(MyGeoPointMapping {
-/// # 	//Overload the mapping functions here
+/// # #[derive(Default)]
+/// # struct MyGeoPointMapping;
+/// # impl GeoPointMapping for MyGeoPointMapping {
+/// # 	type Format = GeoPointArray;
 /// # 	fn geohash() -> Option<bool> {
-/// # 		Some(true)
-/// # 	}
-/// # });
+///	# 		Some(true)
+///	# 	}
+/// # }
 /// # fn main() {
-/// # let mapping = serde_json::to_string(&MyGeoPointMapping::<DefaultGeoPointFormat>::default()).unwrap();
+/// # let mapping = FieldMapper::to_string(MyGeoPointMapping).unwrap();
 /// # let json = json_str!(
 /// {
 ///     "type": "geo_point",
@@ -74,12 +80,30 @@ F: GeoPointFormat {
 /// # assert_eq!(json, mapping);
 /// # }
 /// ```
-///
-/// ## Limitations
-///
-/// Automatically deriving mapping has the following limitations:
-///
-/// - Non-generic mappings aren't supported by auto deriving.
+/// 
+/// ## Map with a generic Format
+/// 
+/// You can use a generic input parameter to make your `GeoPointMapping` work for any kind of
+/// `GeoPointFormat`:
+/// 
+/// ```
+/// # #![feature(plugin, custom_derive, custom_attribute)]
+/// # #![plugin(json_str, elastic_types_macros)]
+/// # #[macro_use]
+/// # extern crate elastic_types;
+/// # extern crate serde;
+/// # use std::marker::PhantomData;
+/// # use elastic_types::prelude::*;
+/// #[derive(Default)]
+/// struct MyGeoPointMapping<F> {
+/// 	_marker: PhantomData<F>
+/// }
+/// 
+/// impl <F: GeoPointFormat> GeoPointMapping for MyGeoPointMapping<F> {
+/// 	type Format = F;
+/// }
+/// # fn main() {}
+/// ```
 pub trait GeoPointMapping where
 Self: Default {
 	/// The format used to serialise and deserialise the geo point.

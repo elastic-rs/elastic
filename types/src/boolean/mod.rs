@@ -22,7 +22,9 @@
 //! # extern crate elastic_types;
 //! # fn main() {
 //! # use elastic_types::prelude::*;
-//! # boolean_mapping!(MyBooleanMapping {});
+//! # #[derive(Default)]
+//! # struct MyBooleanMapping;
+//! # impl BooleanMapping for MyBooleanMapping { }
 //! struct MyType {
 //! 	pub field: Boolean<MyBooleanMapping>
 //! }

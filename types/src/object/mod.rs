@@ -355,8 +355,9 @@ Self: PropertiesMapping + Default {
 	/// The object itself is not added to the `_all` field.
 	fn include_in_all() -> Option<bool> { None }
 
-	/// Serialise this mapping as an indexable type instead of as a field
+	/// Serialise this mapping as an indexed type instead of as a field
 	/// on another type.
+	/// This excludes all meta properties, like `type` and `enabled` from the json output.
 	fn serialize_type<S>(serializer: &mut S) -> Result<(), S::Error> where 
 	S: Serializer {
 		let mut state = try!(serializer.serialize_struct("mapping", 1));
@@ -368,11 +369,61 @@ Self: PropertiesMapping + Default {
 }
 
 /// Serialisation for the mapping of object properties.
+/// 
+/// # Examples
+/// 
+/// Say we have a mappable type with 3 fields and a mapping type called `MyTypeMapping`:
+/// 
+/// ```
+/// # use elastic_types::prelude::*;
+/// struct MyType {
+/// 	pub my_date: Date<DefaultDateFormat>,
+/// 	pub my_string: String,
+/// 	pub my_num: i32
+/// }
+/// 
+/// #[derive(Default)]
+/// struct MyTypeMapping;
+/// ```
+/// 
+/// To serialise the mapping of each of `MyType`s fields, we implement `PropertiesMapping` for `MyTypeMapping`,
+/// and use `serde` to serialise the mapping types for each field.
+/// 
+/// ```
+/// # #![feature(custom_derive, custom_attribute, plugin)]
+/// # #![plugin(serde_macros, elastic_types_macros)]
+/// # extern crate serde;
+/// # #[macro_use]
+/// # extern crate elastic_types;
+/// # use elastic_types::prelude::*;
+/// # pub struct MyTypeMapping;
+/// impl PropertiesMapping for MyTypeMapping {
+/// 	fn props_len() -> usize { 3 }
+/// 	
+/// 	fn serialize_props<S>(serializer: &mut S, state: &mut S::StructState) -> Result<(), S::Error>
+/// 	where S: serde::Serializer {
+/// 		try!(field_ser(serializer, state, "my_date", Date::<DefaultDateFormat>::mapping()));
+/// 		try!(field_ser(serializer, state, "my_string", String::mapping()));
+/// 		try!(field_ser(serializer, state, "my_num", i32::mapping()));
+/// 
+/// 		Ok(())
+/// 	}	
+/// }
+/// # fn main() {
+/// # }
+/// ```
+/// 
+/// It's easy to get an instance of the mapping for a given type by calling the static `mapping` function.
+/// This trait is automatically implemented for you when you [derive `ElasticType`](object/index.html#derive-mapping).
 pub trait PropertiesMapping {
-	/// The number of property fields on this mapping.
+	/// The number of mapped property fields for this type.
+	/// 
+	/// This number should be the same as the number of fields being serialised by `serialize_props`.
 	fn props_len() -> usize;
 
-	/// Serialisation for the property fields on this mapping.
+	/// Serialisation for the mapped property fields on this type.
+	/// 
+	/// You can use the `field_ser!` macro to simplify `serde` calls.
 	fn serialize_props<S>(serializer: &mut S, state: &mut S::StructState) -> Result<(), S::Error> where 
 	S: Serializer;
 }
@@ -385,6 +436,8 @@ pub trait ElasticUserType<M> where
 M: ObjectMapping,
 Self: Serialize {
 	/// Get the mapping for this type.
+	/// 
+	/// This is a convenience method that returns the `name` of the bound `ObjectMapping`.
 	fn name() -> &'static str {
 		M::name()
 	}

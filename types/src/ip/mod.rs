@@ -23,7 +23,9 @@
 //! # extern crate elastic_types;
 //! # fn main() {
 //! # use elastic_types::prelude::*;
-//! # ip_mapping!(MyIpMapping {});
+//! # #[derive(Default)]
+//! # struct MyIpMapping;
+//! # impl IpMapping for MyIpMapping {}
 //! struct MyType {
 //! 	pub field: Ip<MyIpMapping>
 //! }
