@@ -7,7 +7,7 @@ extern crate test;
 extern crate chrono;
 extern crate elastic_types;
 
-use elastic_types::date::prelude::*;
+use elastic_types::prelude::*;
 use ::date_fixtures::*;
 
 use test::Bencher;
@@ -47,7 +47,6 @@ fn fmt_epoch(b: &mut Bencher) {
 #[bench]
 fn mapping(b: &mut Bencher) {
 	b.iter(|| {
-		let mapping = MyDateMapping::<DefaultDateFormat>::default();
-		serde_json::to_string(&mapping).unwrap()
+		FieldMapper::to_string(MyDateMapping).unwrap()
 	});
 }

@@ -8,7 +8,7 @@ extern crate geo as georust;
 extern crate elastic_types;
 
 use georust::Coordinate;
-use elastic_types::geo::point::prelude::*;
+use elastic_types::prelude::*;
 use ::geo_point_fixtures::*;
 
 use test::Bencher;
@@ -88,7 +88,6 @@ fn fmt_array(b: &mut Bencher) {
 #[bench]
 fn mapping(b: &mut Bencher) {
 	b.iter(|| {
-		let mapping = MyGeoPointMapping::<DefaultGeoPointFormat>::default();
-		serde_json::to_string(&mapping).unwrap()
+		FieldMapper::to_string(MyGeoPointMapping).unwrap()
 	});
 }
