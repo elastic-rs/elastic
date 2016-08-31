@@ -20,7 +20,6 @@
 //!
 //! Builds on `nightly` benefit from compile-time codegen for better performance and easier
 //! mapping definitions.
-//! The story on `stable` will be improved over time so it won't be a second-class citizen forever.
 //!
 //! ## Nightly
 //!
@@ -28,7 +27,7 @@
 //!
 //! ```ignore
 //! [dependencies]
-//! elastic_types = { version = "*", defeault-features = false, features = "nightly" }
+//! elastic_types = { version = "*", features = "nightly" }
 //! elastic_types_macros = "*"
 //! ```
 //!
@@ -54,6 +53,7 @@
 //! And reference it in your crate root:
 //!
 //! ```ignore
+//! #[macro_use]
 //! extern crate elastic_types;
 //! ```
 //!
@@ -208,7 +208,6 @@
 //! 	pub my_date: Date<DefaultDateFormat>,
 //! 	pub my_num: i32
 //! }
-//!
 //! # impl serde::Serialize for MyType {
 //! # 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where S: serde::Serializer {
 //! # 		unimplemented!()
@@ -223,8 +222,6 @@
 //! # }
 //! ```
 //!
-//! This will generate a mapping type for you called `{TypeName}Mapping`,
-//! so in this case our mapping is called `MyTypeMapping`.
 //! You can then serialise the mapping as json:
 //!
 //! ```
@@ -253,7 +250,7 @@
 //! # 	}
 //! # }
 //! # fn main() {
-//! let mapping = TypeMapper::to_string(MyTypeMapping).unwrap();
+//! let mapping = TypeMapper::to_string(MyType::mapping()).unwrap();
 //! # }
 //! ```
 //!
@@ -470,30 +467,29 @@
 //! where `M` is the mapping and `F` is a type-specific format.
 //!
 //! The following table illustrates the types provided by `elastic_types`
-//! (links to the relevant mapping type):
+//! (with links to the relevant mapping type):
 //!
 //!  Elasticsearch Type  | Rust Type (Default Mapping) | Crate     | Rust Type (Custom Mapping)                                                       | Format Type
-//!  ------------------- | --------------------------- | --------- | -------------------------------------------------------------------------------- | -----------
-//!  `integer`           | `i32`                       | `std`     | [`Integer<M>`](number/mapping/trait.IntegerMapping.html)           | -
-//!  `long`              | `i64`                       | `std`     | [`Long<M>`](number/mapping/trait.LongMapping.html)                 | -
-//!  `short`             | `i16`                       | `std`     | [`Short<M>`](number/mapping/trait.ShortMapping.html)               | -
-//!  `byte`              | `i8`                        | `std`     | [`Byte<M>`](number/mapping/trait.ByteMapping.html)                 | -
-//!  `float`             | `f32`                       | `std`     | [`Float<M>`](number/mapping/trait.FloatMapping.html)               | -
-//!  `double`            | `f64`                       | `std`     | [`Double<M>`](number/mapping/trait.DoubleMapping.html)             | -
-//!  `keyword`           | -                           | -         | [`Keyword<M>`](string/keyword/mapping/trait.KeywordMapping.html)   | -
-//!  `text`              | `String`                    | `std`     | [`Text<M>`](string/text/mapping/trait.TextMapping.html)            | -
-//!  `boolean`           | `bool`                      | `std`     | [`Boolean<M>`](boolean/mapping/trait.BooleanMapping.html)          | -
-//!  `ip`                | `Ipv4Addr`                  | `std`     | [`Ip<M>`](ip/mapping/trait.IpMapping.html)                         | -
-//!  `date`              | `DateTime<UTC>`             | `chrono`  | [`Date<F, M>`](date/mapping/trait.DateMapping.html)                | `DateFormat`
-//!  `geo_point`         | `Point`                     | `geo`     | [`GeoPoint<F, M>`](geo/point/mapping/trait.GeoPointMapping.html)   | `GeoPointFormat`
-//!  `geo_shape`         | -                           | `geojson` | [`GeoShape<M>`](geo/shape/mapping/trait.GeoShapeMapping.html)      | -
-//!
-//! The following sections explain this table.
+//!  ------------------- | --------------------------- | --------- | -------------------------------------------------------------------------------- | -----------------
+//!  `object`            | -                           | -         | type implementing [`ElasticType<ObjectMapping>`](object/trait.ObjectMapping.html)| -
+//!  `integer`           | `i32`                       | `std`     | [`Integer<M>`](number/mapping/trait.IntegerMapping.html)                         | -
+//!  `long`              | `i64`                       | `std`     | [`Long<M>`](number/mapping/trait.LongMapping.html)                               | -
+//!  `short`             | `i16`                       | `std`     | [`Short<M>`](number/mapping/trait.ShortMapping.html)                             | -
+//!  `byte`              | `i8`                        | `std`     | [`Byte<M>`](number/mapping/trait.ByteMapping.html)                               | -
+//!  `float`             | `f32`                       | `std`     | [`Float<M>`](number/mapping/trait.FloatMapping.html)                             | -
+//!  `double`            | `f64`                       | `std`     | [`Double<M>`](number/mapping/trait.DoubleMapping.html)                           | -
+//!  `keyword`           | -                           | -         | [`Keyword<M>`](string/keyword/mapping/trait.KeywordMapping.html)                 | -
+//!  `text`              | `String`                    | `std`     | [`Text<M>`](string/text/mapping/trait.TextMapping.html)                          | -
+//!  `boolean`           | `bool`                      | `std`     | [`Boolean<M>`](boolean/mapping/trait.BooleanMapping.html)                        | -
+//!  `ip`                | `Ipv4Addr`                  | `std`     | [`Ip<M>`](ip/mapping/trait.IpMapping.html)                                       | -
+//!  `date`              | `DateTime<UTC>`             | `chrono`  | [`Date<F, M>`](date/mapping/trait.DateMapping.html)                              | `DateFormat`
+//!  `geo_point`         | `Point`                     | `geo`     | [`GeoPoint<F, M>`](geo/point/mapping/trait.GeoPointMapping.html)                 | `GeoPointFormat`
+//!  `geo_shape`         | -                           | `geojson` | [`GeoShape<M>`](geo/shape/mapping/trait.GeoShapeMapping.html)                    | -
 //!
 //! ## Mapping
 //!
-//! Having the mapping available at compile-time makes it easy to write efficient generic methods
-//! that use type mapping.
+//! Having the mapping available at compile-time captures the fact that a mapping is static and tied
+//! to the data type.
 //!
 //! Where there's a `std` type that's equivalent to an Elasticsearch type (like `i32` for `integer`),
 //! a default mapping is implemented for that type.
@@ -507,7 +503,7 @@
 //! ## Formats
 //!
 //! For some types (like `Date`), it's helpful to have an extra generic parameter that describes the
-//! `format` the data can take. For most types the format is `()`, because there aren't any alternative formats available.
+//! `format` the data can take. For most types the format isn't exposed, because there aren't any alternative formats available.
 //!
 //! # Links
 //!
