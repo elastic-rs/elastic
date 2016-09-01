@@ -1,8 +1,13 @@
 //! Helper mappers for `ElasticType`.
 //!
 //! Mapping for types is inferred from the generic mapping parameters on `ElasticType`.
-//! Currently, the only mapper is `TypeMapper`, for mapping user-defined types for the [Put Mapping API](https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-put-mapping.html).
-//!
+//! 
+//! `TypeMapper`, for mapping user-defined types for the [Put Mapping API](https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-put-mapping.html).
+//! 
+//! `FieldMapper`, for mapping any type as a field of a user-defined type.
+//! 
+//! `IndexTemplateMapper`, for creating an index template from a collection of user-defined types.
+//! 
 //! # Examples
 //!
 //! Any type that derives `ElasticType` can be mapped using one of the various mappers.

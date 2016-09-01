@@ -208,15 +208,6 @@
 //!
 //! ### Ignore or Rename Fields
 //!
-//! If you add the `serde_attrs` feature to `elastic_types_macros`,
-//! the mapping will respect standard `serde` attributes for renaming or ignoring fields.
-//!
-//! Use `elsatic_types_macros` in your `Cargo.toml` as follows:
-//!
-//! ```ignore
-//! elastic_types_macros = { version = "*", features = [ "serde-attrs" ] }
-//! ```
-//!
 //! You can then serialise type mappings with `serde` attributes:
 //!
 //! ```
@@ -265,7 +256,7 @@
 //!
 //! ## Manually Implement Mapping
 //!
-//! You can build object mappings on `stable` by manually implementing the `ObjectMapping` and `PropertiesMapping` traits:
+//! You can build object mappings on `stable` by manually implementing the [`ObjectMapping`](trait.ObjectMapping.html) and [`PropertiesMapping`](trait.PropertiesMapping.html) traits:
 //!
 //! ```
 //! # #![feature(custom_derive, custom_attribute, plugin)]
@@ -369,6 +360,8 @@ Self: PropertiesMapping + Default {
 }
 
 /// Serialisation for the mapping of object properties.
+/// 
+/// This trait is designed to be auto-derived, so it expects you to be familiar with how `serde` works.
 /// 
 /// # Examples
 /// 
