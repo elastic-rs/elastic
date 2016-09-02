@@ -18,9 +18,9 @@
 //! # use serde::{ Serialize, Deserialize };
 //! use elastic_types::prelude::*;
 //!
-//! #[derive(Default, Clone, Serialize, Deserialize, ElasticType)]
+//! #[derive(Default, Serialize, Deserialize, ElasticType)]
 //! pub struct MyType {
-//! 	pub my_date: ElasticDate<DefaultDateFormat>,
+//! 	pub my_date: Date<DefaultDateFormat>,
 //! 	pub my_string: String,
 //! 	pub my_num: i32
 //! }
@@ -37,14 +37,70 @@
 //! # fn main() {
 //! # }
 //! ```
+//! 
+//! This will produce the following mapping:
+//!
+//! ```
+//! # #![feature(plugin, custom_derive, custom_attribute)]
+//! # #![plugin(elastic_types_macros)]
+//! # #[macro_use]
+//! # extern crate json_str;
+//! # #[macro_use]
+//! # extern crate elastic_types;
+//! # extern crate serde;
+//! # extern crate serde_json;
+//! # use serde::{ Serialize, Deserialize };
+//! # use elastic_types::prelude::*;
+//! # #[derive(Default, Serialize, Deserialize, ElasticType)]
+//! # pub struct MyType {
+//! # 	pub my_date: Date<DefaultDateFormat>,
+//! # 	pub my_string: String,
+//! # 	pub my_num: i32
+//! # }
+//! # impl serde::Serialize for MyType {
+//! # 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where S: serde::Serializer {
+//! # 		unimplemented!()
+//! # 	}
+//! # }
+//! # impl serde::Deserialize for MyType {
+//! # 	 fn deserialize<D>(deserializer: &mut D) -> Result<Self, D::Error> where D: serde::Deserializer {
+//! # 		unimplemented!()
+//! # 	}
+//! # }
+//! # fn main() {
+//! # let mapping = FieldMapper::to_string(MyTypeMapping).unwrap();
+//! # let json = json_str!(
+//! {
+//!     "type": "nested",
+//! 	"properties": {
+//! 		"my_date": {
+//! 			"type": "date",
+//! 			"format": "basic_date_time"
+//! 		},
+//! 		"my_string": {
+//! 			"type": "text",
+//! 			"fields": {
+//! 				"keyword":{
+//! 					"type":"keyword",
+//! 					"ignore_above":256
+//! 				}
+//! 			}
+//! 		},
+//! 		"my_num": {
+//! 			"type": "integer"
+//! 		}
+//! 	}
+//! }
+//! # );
+//! # assert_eq!(json, mapping);
+//! # }
+//! ```
 //!
 //! It's also possible to adjust the mapping using the `elastic` attribute.
 //!
-//! ### Use a Custom Type Name
+//! ### Override Default Mapping Properties
 //!
-//! By default, the Elasticsearch type name (the value of `_type`) is the lowercase variant of the Rust struct.
-//! So `MyType` would become `mytype`.
-//! You can change this by providing `elastic(ty="{TypeName}")`:
+//! You can override the mapping meta properties for an object by providing your own mapping type with `elastic(mapping="{TypeName}")`:
 //!
 //! ```
 //! # #![feature(plugin, custom_derive, custom_attribute)]
@@ -54,12 +110,21 @@
 //! # extern crate serde;
 //! # use serde::{ Serialize, Deserialize };
 //! # use elastic_types::prelude::*;
-//! #[derive(Default, Clone, Serialize, Deserialize, ElasticType)]
-//! #[elastic(ty="my_type")]
+//! #[derive(Default, Serialize, Deserialize, ElasticType)]
+//! #[elastic(mapping="MyTypeMapping")]
 //! pub struct MyType {
-//! 	pub my_date: ElasticDate<DefaultDateFormat>,
+//! 	pub my_date: Date<DefaultDateFormat>,
 //! 	pub my_string: String,
 //! 	pub my_num: i32
+//! }
+//! 
+//! #[derive(Default)]
+//! struct MyTypeMapping;
+//! impl ObjectMapping for MyTypeMapping {
+//! 	//Give your own name to a type
+//! 	fn name() -> &'static str { "my_type" }
+//! 
+//! 	fn data_type() -> &'static str { OBJECT_DATATYPE }
 //! }
 //! # impl serde::Serialize for MyType {
 //! # 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where S: serde::Serializer {
@@ -74,17 +139,74 @@
 //! # fn main() {
 //! # }
 //! ```
+//! 
+//! This will produce the following mapping:
+//!
+//! ```
+//! # #![feature(plugin, custom_derive, custom_attribute)]
+//! # #![plugin(elastic_types_macros)]
+//! # #[macro_use]
+//! # extern crate json_str;
+//! # #[macro_use]
+//! # extern crate elastic_types;
+//! # extern crate serde;
+//! # extern crate serde_json;
+//! # use serde::{ Serialize, Deserialize };
+//! # use elastic_types::prelude::*;
+//! # #[derive(Default, Serialize, Deserialize, ElasticType)]
+//! # #[elastic(mapping="MyTypeMapping")]
+//! # pub struct MyType {
+//! # 	pub my_date: Date<DefaultDateFormat>,
+//! # 	pub my_string: String,
+//! # 	pub my_num: i32
+//! # }
+//! # 
+//! # #[derive(Default)]
+//! # struct MyTypeMapping;
+//! # impl ObjectMapping for MyTypeMapping {
+//! # 	fn name() -> &'static str { "my_type" }
+//! # 	fn data_type() -> &'static str { OBJECT_DATATYPE }
+//! # }
+//! # impl serde::Serialize for MyType {
+//! # 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where S: serde::Serializer {
+//! # 		unimplemented!()
+//! # 	}
+//! # }
+//! # impl serde::Deserialize for MyType {
+//! # 	 fn deserialize<D>(deserializer: &mut D) -> Result<Self, D::Error> where D: serde::Deserializer {
+//! # 		unimplemented!()
+//! # 	}
+//! # }
+//! # fn main() {
+//! # let mapping = FieldMapper::to_string(MyTypeMapping).unwrap();
+//! # let json = json_str!(
+//! {
+//!     "type": "object",
+//! 	"properties": {
+//! 		"my_date": {
+//! 			"type": "date",
+//! 			"format": "basic_date_time"
+//! 		},
+//! 		"my_string": {
+//! 			"type": "text",
+//! 			"fields": {
+//! 				"keyword":{
+//! 					"type":"keyword",
+//! 					"ignore_above":256
+//! 				}
+//! 			}
+//! 		},
+//! 		"my_num": {
+//! 			"type": "integer"
+//! 		}
+//! 	}
+//! }
+//! # );
+//! # assert_eq!(json, mapping);
+//! # }
+//! ```
 //!
 //! ### Ignore or Rename Fields
-//!
-//! If you add the `serde_attrs` feature to `elastic_types_macros`,
-//! the mapping will respect standard `serde` attributes for renaming or ignoring fields.
-//!
-//! Use `elsatic_types_macros` in your `Cargo.toml` as follows:
-//!
-//! ```ignore
-//! elastic_types_macros = { version = "*", features = [ "serde-attrs" ] }
-//! ```
 //!
 //! You can then serialise type mappings with `serde` attributes:
 //!
@@ -99,7 +221,7 @@
 //! #[derive(Default, Clone, Serialize, Deserialize, ElasticType)]
 //! pub struct MyType {
 //! 	#[serde(rename="my_renamed_date")]
-//! 	pub my_date: ElasticDate<DefaultDateFormat>,
+//! 	pub my_date: Date<DefaultDateFormat>,
 //! 	#[serde(skip_serializing)]
 //! 	pub my_string: String,
 //! 	pub my_num: i32
@@ -132,9 +254,9 @@
 //! Remember that Elasticsearch will automatically update mappings based on the objects it sees though,
 //! so if your 'un-mapped' field is serialised on `index`, then some mapping will be added for it.
 //!
-//! ## Derive with Macros
+//! ## Manually Implement Mapping
 //!
-//! You can also build object mappings on `stable` using the `type_mapping!` macro:
+//! You can build object mappings on `stable` by manually implementing the [`ObjectMapping`](trait.ObjectMapping.html) and [`PropertiesMapping`](trait.PropertiesMapping.html) traits:
 //!
 //! ```
 //! # #![feature(custom_derive, custom_attribute, plugin)]
@@ -146,40 +268,43 @@
 //!
 //! #[derive(Serialize, Deserialize)]
 //! pub struct MyType {
-//! 	pub my_date: ElasticDate<DefaultDateFormat>,
+//! 	pub my_date: Date<DefaultDateFormat>,
 //! 	pub my_string: String,
 //! 	pub my_num: i32
 //! }
 //!
 //! //Implement ElasticType for your type. This binds it to the mapping
-//! impl ElasticType<MyTypeMapping, ()> for MyType { }
+//! impl ElasticType<MyTypeMapping, ObjectFormat> for MyType { }
 //! 
 //! //Define the type mapping for our type
-//! #[derive(Default, Clone)]
+//! #[derive(Default)]
 //! pub struct MyTypeMapping;
-//! type_mapping!(my_type MyTypeMapping {
+//! impl ObjectMapping for MyTypeMapping {
+//! 	fn name() -> &'static str { "my_type" }
+//! }
+//! impl PropertiesMapping for MyTypeMapping {
 //! 	fn props_len() -> usize { 3 }
 //! 		
 //! 	fn serialize_props<S>(serializer: &mut S, state: &mut S::StructState) -> Result<(), S::Error>
 //! 	where S: serde::Serializer {
-//! 		try!(serializer.serialize_struct_elt(state, "my_date", ElasticDate::<DefaultDateFormat>::mapping()));
-//! 		try!(serializer.serialize_struct_elt(state, "my_string", String::mapping()));
-//! 		try!(serializer.serialize_struct_elt(state, "my_num", i32::mapping()));
+//! 		try!(field_ser(serializer, state, "my_date", Date::<DefaultDateFormat>::mapping()));
+//! 		try!(field_ser(serializer, state, "my_string", String::mapping()));
+//! 		try!(field_ser(serializer, state, "my_num", i32::mapping()));
 //! 
 //! 		Ok(())
-//! 	}
-//! });
+//! 	}	
+//! }
 //! # fn main() {
 //! # }
 //! ```
-//! 
-//! The first ident passsed to the `type_mapping!` macro is the name of the type to use in Elasticsearch.
-//! Property types can be mapped by calling their static `mapping()` method.
-//! Any type that implements `ElasticFieldMapping` can be mapped this way.
 //!
 //! # Links
 //!
 //! - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/master/_basic_concepts.html#_type)
+
+use std::marker::PhantomData;
+use serde::{ Serialize, Serializer };
+use ::mapping::{ ElasticType, ElasticFieldMapping, ElasticFieldMappingWrapper };
 
 /// Elasticsearch datatype name.
 pub const OBJECT_DATATYPE: &'static str = "object";
@@ -188,12 +313,24 @@ pub const DYNAMIC_DATATYPE: &'static str = "dynamic";
 /// Elasticsearch datatype name.
 pub const NESTED_DATATYPE: &'static str = "nested";
 
-use serde::{ self, Serialize, Serializer };
-use ::mapping::ElasticFieldMapping;
+/// Serialise a field mapping using the given serialiser.
+pub fn field_ser<S, M, F>(serializer: &mut S, state: &mut S::StructState, field: &'static str, _: M) -> Result<(), S::Error> where
+S: Serializer,
+M: ElasticFieldMapping<F>,
+F: Default {
+	serializer.serialize_struct_elt(state, field, &M::ser())
+}
+
+#[doc(hidden)]
+#[derive(Default)]
+pub struct ObjectFormat;
 
 /// The base requirements for mapping an `object` type.
-pub trait ElasticObjectMapping where
-Self: ElasticFieldMapping<()> + Sized + Serialize {
+pub trait ObjectMapping where
+Self: PropertiesMapping + Default {
+	/// Get the indexed name for this mapping.
+	fn name() -> &'static str;
+
 	/// Get the type name for this mapping, like `object` or `nested`.
 	fn data_type() -> &'static str { NESTED_DATATYPE }
 
@@ -209,111 +346,143 @@ Self: ElasticFieldMapping<()> + Sized + Serialize {
 	/// The object itself is not added to the `_all` field.
 	fn include_in_all() -> Option<bool> { None }
 
-	/// The number of property fields on this mapping.
+	/// Serialise this mapping as an indexed type instead of as a field
+	/// on another type.
+	/// This excludes all meta properties, like `type` and `enabled` from the json output.
+	fn serialize_type<S>(serializer: &mut S) -> Result<(), S::Error> where 
+	S: Serializer {
+		let mut state = try!(serializer.serialize_struct("mapping", 1));
+
+		try!(serializer.serialize_struct_elt(&mut state, "properties", &Properties::<Self>::default()));
+
+		serializer.serialize_struct_end(state)
+	}
+}
+
+/// Serialisation for the mapping of object properties.
+/// 
+/// This trait is designed to be auto-derived, so it expects you to be familiar with how `serde` works.
+/// 
+/// # Examples
+/// 
+/// Say we have a mappable type with 3 fields and a mapping type called `MyTypeMapping`:
+/// 
+/// ```
+/// # use elastic_types::prelude::*;
+/// struct MyType {
+/// 	pub my_date: Date<DefaultDateFormat>,
+/// 	pub my_string: String,
+/// 	pub my_num: i32
+/// }
+/// 
+/// #[derive(Default)]
+/// struct MyTypeMapping;
+/// ```
+/// 
+/// To serialise the mapping of each of `MyType`s fields, we implement `PropertiesMapping` for `MyTypeMapping`,
+/// and use `serde` to serialise the mapping types for each field.
+/// 
+/// ```
+/// # #![feature(custom_derive, custom_attribute, plugin)]
+/// # #![plugin(serde_macros, elastic_types_macros)]
+/// # extern crate serde;
+/// # #[macro_use]
+/// # extern crate elastic_types;
+/// # use elastic_types::prelude::*;
+/// # pub struct MyTypeMapping;
+/// impl PropertiesMapping for MyTypeMapping {
+/// 	fn props_len() -> usize { 3 }
+/// 	
+/// 	fn serialize_props<S>(serializer: &mut S, state: &mut S::StructState) -> Result<(), S::Error>
+/// 	where S: serde::Serializer {
+/// 		try!(field_ser(serializer, state, "my_date", Date::<DefaultDateFormat>::mapping()));
+/// 		try!(field_ser(serializer, state, "my_string", String::mapping()));
+/// 		try!(field_ser(serializer, state, "my_num", i32::mapping()));
+/// 
+/// 		Ok(())
+/// 	}	
+/// }
+/// # fn main() {
+/// # }
+/// ```
+/// 
+/// It's easy to get an instance of the mapping for a given type by calling the static `mapping` function.
+/// This trait is automatically implemented for you when you [derive `ElasticType`](object/index.html#derive-mapping).
+pub trait PropertiesMapping {
+	/// The number of mapped property fields for this type.
+	/// 
+	/// This number should be the same as the number of fields being serialised by `serialize_props`.
 	fn props_len() -> usize;
 
-	/// Serialisation for the property fields on this mapping.
-	fn serialize_props<S>(serializer: &mut S, state: &mut S::StructState) -> Result<(), S::Error>
-	where S: serde::Serializer;
+	/// Serialisation for the mapped property fields on this type.
+	/// 
+	/// You can use the `field_ser!` macro to simplify `serde` calls.
+	fn serialize_props<S>(serializer: &mut S, state: &mut S::StructState) -> Result<(), S::Error> where 
+	S: Serializer;
 }
 
-/// The base requirements for mapping a user-defined, indexable type.
-///
-/// User-defined type mappings are tied to `object` mappings.
-pub trait ElasticUserTypeMapping where
-Self: ElasticObjectMapping {
-	/// Serialise this mapping as an indexable type instead of as a field
-	/// on another type.
-	fn serialize_type<S>(serializer: &mut S) -> Result<(), S::Error>
-	where S: serde::Serializer;
+/// The additional fields available to an indexable Elasticsearch type.
+/// 
+/// This trait is implemented for the type being mapped, rather than the mapping
+/// type itself.
+pub trait ElasticUserType<M> where
+M: ObjectMapping,
+Self: Serialize {
+	/// Get the mapping for this type.
+	/// 
+	/// This is a convenience method that returns the `name` of the bound `ObjectMapping`.
+	fn name() -> &'static str {
+		M::name()
+	}
 }
 
-#[macro_export]
-macro_rules! props_ser {
-    ($t:ident $p:ident) => (
-    	struct $p;
-		impl ::serde::Serialize for $p {
-			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
-			where S: ::serde::Serializer {
-				let mut state = try!(serializer.serialize_struct("properties", $t::props_len()));
-				try!($t::serialize_props(serializer, &mut state));
-				serializer.serialize_struct_end(state)
-			}
-		}
-    )
+impl <T, M> ElasticUserType<M> for T where
+T: ElasticType<M, ObjectFormat>,
+M: ObjectMapping { }
+
+impl <T> ElasticFieldMapping<ObjectFormat> for T where
+T: ObjectMapping { 
+	type SerType = ElasticFieldMappingWrapper<T, ObjectFormat>;
+
+	fn data_type() -> &'static str { <Self as ObjectMapping>::data_type() }
 }
 
-#[macro_export]
-macro_rules! object_ser {
-    ($t:ident) => (
-		impl ::serde::Serialize for $t {
-			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
-			where S: ::serde::Serializer {
-				let mut state = try!(serializer.serialize_struct("mapping", 5));
+impl <T> Serialize for ElasticFieldMappingWrapper<T, ObjectFormat> where
+T: ElasticFieldMapping<ObjectFormat> + ObjectMapping {
+	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where 
+	S: Serializer {
+		let mut state = try!(serializer.serialize_struct("mapping", 5));
 
-				let ty = <$t as ElasticFieldMapping<()>>::data_type();
-				try!(serializer.serialize_struct_elt(&mut state, "type", ty));
+		let ty = <T as ObjectMapping>::data_type();
+		try!(serializer.serialize_struct_elt(&mut state, "type", ty));
 
-				ser_field!(serializer, &mut state, $t::dynamic(), "dynamic");
-				ser_field!(serializer, &mut state, $t::include_in_all(), "include_in_all");
+		ser_field!(serializer, &mut state, T::dynamic(), "dynamic");
+		ser_field!(serializer, &mut state, T::include_in_all(), "include_in_all");
 
-				if ty == OBJECT_DATATYPE {
-					ser_field!(serializer, &mut state, $t::enabled(), "enabled");
-				}
-
-				props_ser!($t Properties);
-				try!(serializer.serialize_struct_elt(&mut state, "properties", &Properties));
-
-				serializer.serialize_struct_end(state)
-			}
+		if ty == OBJECT_DATATYPE {
+			ser_field!(serializer, &mut state, T::enabled(), "enabled");
 		}
-	)
+
+		try!(serializer.serialize_struct_elt(&mut state, "properties", &Properties::<T>::default()));
+
+		serializer.serialize_struct_end(state)
+	}
 }
 
-/// Define an `object` field mapping.
-#[macro_export]
-macro_rules! object_mapping {
-	($t:ident) => (
-    	impl $crate::mapping::ElasticFieldMapping<()> for $t {
-			fn data_type() -> &'static str { <$t as ElasticObjectMapping>::data_type() }
-		}
-
-		object_ser!($t);
-    );
-    ($n:ident $t:ident) => (
-    	impl $crate::mapping::ElasticFieldMapping<()> for $t {
-			fn data_type() -> &'static str { <$t as ElasticObjectMapping>::data_type() }
-
-			fn name() -> &'static str { stringify!($n) }
-		}
-
-		object_ser!($t);
-    );
-    ($n:ident $t:ident $b:tt) => (
-    	impl $crate::object::ElasticObjectMapping for $t $b
-
-    	object_mapping!($n $t);
-    )
+#[derive(Default)]
+struct Properties<M> where
+M: ObjectMapping {
+	_m: PhantomData<M>
 }
 
-/// Define an indexable `type` mapping.
-#[macro_export]
-macro_rules! type_mapping {
-    ($n:ident $t:ident $b:tt) => (
-		impl $crate::object::ElasticUserTypeMapping for $t {
-			fn serialize_type<S>(serializer: &mut S) -> Result<(), S::Error>
-			where S: ::serde::Serializer {
-				let mut state = try!(serializer.serialize_struct("mapping", 1));
-
-				props_ser!($t Properties);
-				try!(serializer.serialize_struct_elt(&mut state, "properties", &Properties));
-
-				serializer.serialize_struct_end(state)
-			}
-		}
-
-		object_mapping!($n $t $b);
-	)
+impl <M> Serialize for Properties<M> where
+M: ObjectMapping {
+	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+	where S: Serializer {
+		let mut state = try!(serializer.serialize_struct("properties", M::props_len()));
+		try!(M::serialize_props(serializer, &mut state));
+		serializer.serialize_struct_end(state)
+	}
 }
 
 /// The dynamic setting may be set at the mapping type level, and on each inner object.
@@ -328,10 +497,9 @@ pub enum Dynamic {
 	Strict
 }
 
-impl serde::Serialize for Dynamic {
-	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
-	where S: Serializer
-	{
+impl Serialize for Dynamic {
+	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where 
+	S: Serializer {
 		match *self {
 			Dynamic::True => serializer.serialize_bool(true),
 			Dynamic::False => serializer.serialize_bool(false),

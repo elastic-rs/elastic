@@ -20,13 +20,8 @@ fn serialise_mapping_type() {
 	let expected = json_str!({
 		"properties":{
 			"field1": {
-				"type":"text",
-				"fields":{
-					"keyword":{
-						"type":"keyword",
-						"ignore_above":256
-					}
-				}
+				"type": "date",
+				"format": "epoch_millis"
 			},
 			"field2": {
 				"type": "nested",
@@ -48,7 +43,7 @@ fn serialise_mapping_as_value() {
 
 	let ser = serde_json::ser::to_string(&value.lookup("properties.field1.type").unwrap()).unwrap();
 
-	assert_eq!("\"text\"", &ser);
+	assert_eq!("\"date\"", &ser);
 }
 
 #[test]

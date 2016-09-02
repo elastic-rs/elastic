@@ -106,7 +106,7 @@ On `nightly`, add `elastic_types` to your `Cargo.toml`:
 
 ```
 [dependencies]
-elastic_types = { version = "*", default-features = false, features = "nightly" }
+elastic_types = { version = "*", features = "nightly" }
 elastic_types_macros = "*"
 ```
 
@@ -115,7 +115,7 @@ Define a custom Elasticsearch type called `mytype`:
 ```rust
 #[derive(Serialize, Deserialize, ElasticType)]
 pub struct MyType {
-	pub my_date: ElasticDate<EpochMillis>,
+	pub my_date: Date<EpochMillis>,
 	pub my_string: String,
 	pub my_num: i32
 }

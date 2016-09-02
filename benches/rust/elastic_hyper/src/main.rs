@@ -21,7 +21,7 @@ use elastic_types::date::prelude::*;
 struct BenchDoc {
     pub id: i32,
     pub title: String,
-    pub timestamp: ElasticDate<EpochMillis>
+    pub timestamp: Date<EpochMillis>
 }
 
 fn main() {

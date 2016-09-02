@@ -15,18 +15,18 @@ use ::ip_fixtures::*;
 
 #[test]
 fn can_change_ip_mapping() {
-	fn takes_custom_mapping(_: ElasticIp<MyIpMapping>) -> bool {
+	fn takes_custom_mapping(_: Ip<MyIpMapping>) -> bool {
 		true
 	}
 
-	let ip: ElasticIp<DefaultIpMapping> = ElasticIp::new(Ipv4Addr::new(127, 0, 0, 1));
+	let ip: Ip<DefaultIpMapping> = Ip::new(Ipv4Addr::new(127, 0, 0, 1));
 
 	assert!(takes_custom_mapping(ip.remap()));
 }
 
 #[test]
 fn serialise_elastic_ip() {
-	let ip: ElasticIp<DefaultIpMapping> = ElasticIp::new(Ipv4Addr::new(127, 0, 0, 1));
+	let ip: Ip<DefaultIpMapping> = Ip::new(Ipv4Addr::new(127, 0, 0, 1));
 
 	let ser = serde_json::to_string(&ip).unwrap();
 
@@ -35,7 +35,7 @@ fn serialise_elastic_ip() {
 
 #[test]
 fn deserialise_elastic_ip() {
-	let ip: ElasticIp<DefaultIpMapping> = serde_json::from_str(r#""127.0.0.1""#).unwrap();
+	let ip: Ip<DefaultIpMapping> = serde_json::from_str(r#""127.0.0.1""#).unwrap();
 
 	assert_eq!(Ipv4Addr::new(127, 0, 0, 1), ip);
 }

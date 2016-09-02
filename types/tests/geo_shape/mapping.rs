@@ -10,8 +10,7 @@ use ::geo_shape_fixtures::*;
 
 #[test]
 fn serialise_mapping_default() {
-	let mapping = DefaultGeoShapeMapping::default();
-	let ser = serde_json::to_string(&mapping).unwrap();
+	let ser = FieldMapper::to_string(DefaultGeoShapeMapping).unwrap();
 
 	let expected = json_str!({
 		"type": "geo_shape"
@@ -22,8 +21,7 @@ fn serialise_mapping_default() {
 
 #[test]
 fn serialise_mapping_custom() {
-	let mapping = MyGeoShapeMapping::default();
-	let ser = serde_json::to_string(&mapping).unwrap();
+	let ser = FieldMapper::to_string(MyGeoShapeMapping).unwrap();
 
 	let expected = json_str!({
 		"type": "geo_shape",

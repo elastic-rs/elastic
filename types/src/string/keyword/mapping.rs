@@ -1,20 +1,24 @@
 //! Mapping for the Elasticsearch `keyword` type.
 
 use std::collections::BTreeMap;
-use serde::{ self, Serialize, Serializer };
-use ::mapping::ElasticFieldMapping;
+use serde::{ Serialize, Serializer };
+use ::mapping::{ ElasticFieldMapping, ElasticFieldMappingWrapper };
 use ::string::mapping::{ ElasticStringField, IndexOptions };
 
 /// Elasticsearch datatype name.
 pub const KEYWORD_DATATYPE: &'static str = "keyword";
 
+#[doc(hidden)]
+#[derive(Default)]
+pub struct KeywordFormat;
+
 /// The base requirements for mapping a `string` type.
 ///
-/// Custom mappings can be defined by implementing `ElasticKeywordMapping`.
+/// Custom mappings can be defined by implementing `KeywordMapping`.
 ///
 /// # Examples
 ///
-/// Define a custom `ElasticKeywordMapping`:
+/// Define a custom `KeywordMapping`:
 ///
 /// ## Derive Mapping
 ///
@@ -25,12 +29,14 @@ pub const KEYWORD_DATATYPE: &'static str = "keyword";
 /// # extern crate elastic_types;
 /// # extern crate serde;
 /// # use elastic_types::prelude::*;
-/// keyword_mapping!(MyStringMapping {
+/// #[derive(Default)]
+/// struct MyStringMapping;
+/// impl KeywordMapping for MyStringMapping {
 /// 	//Overload the mapping functions here
 /// 	fn boost() -> Option<f32> {
 ///			Some(1.5)
 ///		}
-/// });
+/// }
 /// # fn main() {}
 /// ```
 ///
@@ -46,14 +52,16 @@ pub const KEYWORD_DATATYPE: &'static str = "keyword";
 /// # extern crate serde;
 /// # extern crate serde_json;
 /// # use elastic_types::prelude::*;
-/// # keyword_mapping!(MyStringMapping {
+/// # #[derive(Default)]
+/// # struct MyStringMapping;
+/// # impl KeywordMapping for MyStringMapping {
 /// # 	//Overload the mapping functions here
 /// # 	fn boost() -> Option<f32> {
 ///	# 		Some(1.5)
 ///	# 	}
-/// # });
+/// # }
 /// # fn main() {
-/// # let mapping = serde_json::to_string(&MyStringMapping).unwrap();
+/// # let mapping = FieldMapper::to_string(MyStringMapping).unwrap();
 /// # let json = json_str!(
 /// {
 ///     "type": "keyword",
@@ -63,8 +71,8 @@ pub const KEYWORD_DATATYPE: &'static str = "keyword";
 /// # assert_eq!(json, mapping);
 /// # }
 /// ```
-pub trait ElasticKeywordMapping where
-Self: ElasticFieldMapping<()> + Sized + Serialize {
+pub trait KeywordMapping where
+Self: Default {
 	/// The analyzer which should be used for analyzed string fields,
 	/// both at index-time and at search-time (unless overridden by the `search_analyzer`).
 	/// Defaults to the default index analyzer, or the `standard` analyzer.
@@ -100,7 +108,9 @@ Self: ElasticFieldMapping<()> + Sized + Serialize {
 	/// # extern crate serde;
 	/// # use std::collections::BTreeMap;
 	/// # use elastic_types::prelude::*;
-	/// # keyword_mapping!(MyStringMapping {
+	/// # #[derive(Default)]
+	/// # struct MyStringMapping;
+	/// # impl KeywordMapping for MyStringMapping {
 	/// fn fields() -> Option<BTreeMap<&'static str, ElasticStringField>> {
 	///		let mut fields = BTreeMap::new();
 	///
@@ -116,7 +126,7 @@ Self: ElasticFieldMapping<()> + Sized + Serialize {
 	///
 	/// 	Some(fields)
 	///	}
-	/// # });
+	/// # }
 	/// # fn main() {}
 	/// ```
 	fn fields() -> Option<BTreeMap<&'static str, ElasticStringField>> { None }
@@ -157,113 +167,48 @@ Self: ElasticFieldMapping<()> + Sized + Serialize {
 	fn similarity() -> Option<&'static str> { None }
 }
 
-/// Implement `serde` serialisation for a `keyword` mapping type.
-#[macro_export]
-macro_rules! keyword_ser {
-    ($t:ident) => (
-		impl ::serde::Serialize for $t {
-			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
-			where S: ::serde::Serializer {
-				let mut state = try!(serializer.serialize_struct("mapping", 15));
+impl <T> ElasticFieldMapping<KeywordFormat> for T where
+T: KeywordMapping { 
+	type SerType = ElasticFieldMappingWrapper<T, KeywordFormat>;
 
-				try!(serializer.serialize_struct_elt(&mut state, "type", $t::data_type()));
-
-				ser_field!(serializer, &mut state, $t::boost(), "boost");
-				ser_field!(serializer, &mut state, $t::analyzer(), "analyzer");
-				ser_field!(serializer, &mut state, $t::doc_values(), "doc_values");
-				ser_field!(serializer, &mut state, $t::eager_global_ordinals(), "eager_global_ordinals");
-				ser_field!(serializer, &mut state, $t::fields(), "fields");
-				ser_field!(serializer, &mut state, $t::include_in_all(), "include_in_all");
-				ser_field!(serializer, &mut state, $t::ignore_above(), "ignore_above");
-				ser_field!(serializer, &mut state, $t::index(), "index");
-				ser_field!(serializer, &mut state, $t::index_options(), "index_options");
-				ser_field!(serializer, &mut state, $t::norms(), "norms");
-				ser_field!(serializer, &mut state, $t::null_value(), "null_value");
-				ser_field!(serializer, &mut state, $t::store(), "store");
-				ser_field!(serializer, &mut state, $t::search_analyzer(), "search_analyzer");
-				ser_field!(serializer, &mut state, $t::similarity(), "similarity");
-
-				serializer.serialize_struct_end(state)
-			}
-		}
-	)
+	fn data_type() -> &'static str { KEYWORD_DATATYPE }
 }
 
-/// Define a `keyword` mapping.
-/// 
-/// # Examples
-/// 
-/// ## Define mapping struct inline
-/// 
-/// The easiest way to define a mapping type is to let the macro do it for you:
-/// 
-/// ```
-/// # #[macro_use]
-/// # extern crate elastic_types;
-/// # extern crate serde;
-/// # use elastic_types::prelude::*;
-/// # fn main() {}
-/// keyword_mapping!(MyMapping {
-/// 	fn boost() -> Option<f32> { Some(1.07) }
-/// });
-/// ```
-/// 
-/// The above example will define a public struct for you and implement
-/// `ElasticFieldMapping` and `ElasticKeywordMapping`, along with a few default traits:
-/// 
-/// ```
-/// #[derive(Debug, Default, Clone, Copy)]
-/// pub struct MyMapping;
-/// ```
-/// 
-/// ## Define mapping for existing struct
-/// 
-/// If you want to control the default implementations yourself, you can define your
-/// mapping type and just pass it the macro to implement `ElasticFieldMapping`:
-/// 
-/// ```
-/// # #[macro_use]
-/// # extern crate elastic_types;
-/// # extern crate serde;
-/// # use elastic_types::prelude::*;
-/// # fn main() {}
-/// #[derive(Debug, Default, Clone, Copy)]
-/// pub struct MyMapping;
-/// impl ElasticKeywordMapping for MyMapping { 
-/// 	fn boost() -> Option<f32> { Some(1.07) }
-/// }
-/// 
-/// keyword_mapping!(MyMapping);
-/// ```
-#[macro_export]
-macro_rules! keyword_mapping {
-	($t:ident) => (
-		impl $crate::mapping::ElasticFieldMapping<()> for $t {
-			fn data_type() -> &'static str { $crate::string::keyword::mapping::KEYWORD_DATATYPE }
-		}
+impl <T> Serialize for ElasticFieldMappingWrapper<T, KeywordFormat> where
+T: ElasticFieldMapping<KeywordFormat> + KeywordMapping {
+	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where 
+	S: Serializer {
+		let mut state = try!(serializer.serialize_struct("mapping", 15));
 
-		keyword_ser!($t);
-	);
-	($t:ident $b:tt) => (
-		#[derive(Debug, Default, Clone, Copy)]
-		pub struct $t;
+		try!(serializer.serialize_struct_elt(&mut state, "type", T::data_type()));
 
-		impl $crate::string::keyword::mapping::ElasticKeywordMapping for $t $b
+		ser_field!(serializer, &mut state, T::boost(), "boost");
+		ser_field!(serializer, &mut state, T::analyzer(), "analyzer");
+		ser_field!(serializer, &mut state, T::doc_values(), "doc_values");
+		ser_field!(serializer, &mut state, T::eager_global_ordinals(), "eager_global_ordinals");
+		ser_field!(serializer, &mut state, T::fields(), "fields");
+		ser_field!(serializer, &mut state, T::include_in_all(), "include_in_all");
+		ser_field!(serializer, &mut state, T::ignore_above(), "ignore_above");
+		ser_field!(serializer, &mut state, T::index(), "index");
+		ser_field!(serializer, &mut state, T::index_options(), "index_options");
+		ser_field!(serializer, &mut state, T::norms(), "norms");
+		ser_field!(serializer, &mut state, T::null_value(), "null_value");
+		ser_field!(serializer, &mut state, T::store(), "store");
+		ser_field!(serializer, &mut state, T::search_analyzer(), "search_analyzer");
+		ser_field!(serializer, &mut state, T::similarity(), "similarity");
 
-		keyword_mapping!($t);
-	)
+		serializer.serialize_struct_end(state)
+	}
 }
 
 /// Default mapping for `bool`.
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultKeywordMapping;
-impl ElasticKeywordMapping for DefaultKeywordMapping { }
-
-keyword_mapping!(DefaultKeywordMapping);
+impl KeywordMapping for DefaultKeywordMapping { }
 
 /// A multi-field string mapping.
 #[derive(Debug, Default, Clone, Copy)]
-pub struct ElasticKeywordFieldMapping {
+pub struct KeywordFieldMapping {
 	/// The analyzer which should be used for analyzed string fields,
 	/// both at index-time and at search-time (unless overridden by the `search_analyzer`).
 	/// Defaults to the default index analyzer, or the `standard` analyzer.
@@ -301,7 +246,7 @@ pub struct ElasticKeywordFieldMapping {
 	pub similarity: Option<&'static str>
 }
 
-impl serde::Serialize for ElasticKeywordFieldMapping {
+impl Serialize for KeywordFieldMapping {
 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where 
 	S: Serializer {
 		let mut state = try!(serializer.serialize_struct("mapping", 12));

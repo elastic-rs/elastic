@@ -7,6 +7,7 @@ extern crate serde;
 extern crate serde_json;
 extern crate elastic_types;
 
+use elastic_types::prelude::*;
 use ::string_fixtures::*;
 
 use test::Bencher;
@@ -14,15 +15,13 @@ use test::Bencher;
 #[bench]
 fn keyword_mapping(b: &mut Bencher) {
 	b.iter(|| {
-		let mapping = MyKeywordMapping;
-		serde_json::to_string(&mapping).unwrap()
+		FieldMapper::to_string(MyKeywordMapping).unwrap()
 	});
 }
 
 #[bench]
 fn text_mapping(b: &mut Bencher) {
 	b.iter(|| {
-		let mapping = MyTextMapping;
-		serde_json::to_string(&mapping).unwrap()
+		FieldMapper::to_string(MyTextMapping).unwrap()
 	});
 }

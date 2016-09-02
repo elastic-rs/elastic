@@ -1,9 +1,10 @@
 use serde::{ Serializer, Deserializer };
 use georust::Point;
+use super::mapping::GeoPointMapping;
 
 /// A format used for parsing and formatting geo points.
 pub trait GeoPointFormat
-where Self : Default + Copy {
+where Self: Default {
 	/// Parses a `geo::Point`.
 	///
 	/// This requires access to the full `serde` deserializer because geo points can be serialised as
@@ -19,6 +20,6 @@ where Self : Default + Copy {
 	/// Formatting also has access to the mapping type, which could be needed to build the structure
 	/// properly.
 	fn format<S, M>(point: &Point, serializer: &mut S) -> Result<(), S::Error> where
-	M: ::geo::point::mapping::ElasticGeoPointMapping<Self>,
+	M: GeoPointMapping<Format = Self>,
 	S: Serializer;
 }

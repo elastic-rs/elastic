@@ -1,18 +1,25 @@
 //! Mapping for the Elasticsearch `date` type.
 
 use std::marker::PhantomData;
-use serde::Serialize;
-use super::{ DateFormat, ElasticDate };
-use ::mapping::ElasticFieldMapping;
+use serde::{ Serialize, Serializer };
+use super::{ DateFormat, Date };
+use ::mapping::{ ElasticFieldMapping, ElasticFieldMappingWrapper };
 
 /// Elasticsearch datatype name.
 pub const DATE_DATATYPE: &'static str = "date";
+
+#[doc(hidden)]
+#[derive(Default)]
+pub struct DateFormatWrapper<F> where
+F: DateFormat {
+	_f: PhantomData<F>
+}
 
 /// The base requirements for mapping a `date` type.
 ///
 /// # Examples
 ///
-/// Define a custom `ElasticDateMapping`:
+/// Define a custom `DateMapping`:
 ///
 /// ## Derive Mapping
 ///
@@ -26,12 +33,16 @@ pub const DATE_DATATYPE: &'static str = "date";
 /// # extern crate serde;
 /// # use std::marker::PhantomData;
 /// # use elastic_types::prelude::*;
-/// date_mapping!(MyDateMapping {
+/// #[derive(Default)]
+/// struct MyDateMapping;
+/// impl DateMapping for MyDateMapping {
+/// 	type Format = EpochMillis;
+/// 	
 /// 	//Overload the mapping functions here
 /// 	fn boost() -> Option<f32> {
 ///			Some(1.5)
 ///		}
-/// });
+/// }
 /// # fn main() {}
 /// ```
 ///
@@ -48,13 +59,16 @@ pub const DATE_DATATYPE: &'static str = "date";
 /// # extern crate serde_json;
 /// # use std::marker::PhantomData;
 /// # use elastic_types::prelude::*;
-/// # date_mapping!(MyDateMapping {
+/// # #[derive(Default)]
+/// # struct MyDateMapping;
+/// # impl DateMapping for MyDateMapping {
+/// # 	type Format = EpochMillis;
 /// # 	fn boost() -> Option<f32> {
 ///	# 		Some(1.5)
 ///	# 	}
-/// # });
+/// # }
 /// # fn main() {
-/// # let mapping = serde_json::to_string(&MyDateMapping::<EpochMillis>::default()).unwrap();
+/// # let mapping = FieldMapper::to_string(MyDateMapping).unwrap();
 /// # let json = json_str!(
 /// {
 ///     "type": "date",
@@ -66,14 +80,36 @@ pub const DATE_DATATYPE: &'static str = "date";
 /// # }
 /// ```
 ///
-/// ## Limitations
-///
-/// Automatically deriving mapping has the following limitations:
-///
-/// - Non-generic mappings aren't supported by auto deriving.
-pub trait ElasticDateMapping<F> where
-F: DateFormat,
-Self: ElasticFieldMapping<F> + Sized + Serialize {
+/// ## Map with a generic Format
+/// 
+/// You can use a generic input parameter to make your `DateMapping` work for any kind of
+/// `DateFormat`:
+/// 
+/// ```
+/// # #![feature(plugin, custom_derive, custom_attribute)]
+/// # #![plugin(json_str, elastic_types_macros)]
+/// # #[macro_use]
+/// # extern crate elastic_types;
+/// # extern crate serde;
+/// # use std::marker::PhantomData;
+/// # use elastic_types::prelude::*;
+/// #[derive(Default)]
+/// struct MyDateMapping<F> {
+/// 	_marker: PhantomData<F>
+/// }
+/// impl <F: DateFormat> DateMapping for MyDateMapping<F> {
+/// 	type Format = F;
+/// }
+/// # fn main() {}
+/// ```
+pub trait DateMapping where
+Self: Default {
+	/// The date format bound to this mapping.
+	/// 
+	/// The value of `Format::name()` is what's sent to Elasticsearch as the format to use.
+	/// This is also used to serialise and deserialise formatted `Date`s.
+	type Format: DateFormat;
+
 	/// Field-level index time boosting. Accepts a floating point number, defaults to `1.0`.
 	fn boost() -> Option<f32> { None }
 
@@ -95,124 +131,43 @@ Self: ElasticFieldMapping<F> + Sized + Serialize {
 	/// Accepts `true` or `false` (default).
 	fn store() -> Option<bool> { None }
 
-	/// The date format(s) that can be parsed.
-	fn format() -> &'static str { F::name() }
-
 	/// If `true`, malformed numbers are ignored.
 	/// If `false` (default), malformed numbers throw an exception and reject the whole document.
 	fn ignore_malformed() -> Option<bool> { None }
 
 	/// Accepts a date value in one of the configured format's as the field which is substituted for any explicit null values.
 	/// Defaults to `null`, which means the field is treated as missing.
-	fn null_value() -> Option<ElasticDate<F, Self>> { None }
+	fn null_value() -> Option<Date<Self::Format, Self>> { None }
 }
 
-/// Implement `serde` serialisation for a `date` mapping type.
-#[macro_export]
-macro_rules! date_ser {
-    ($t:ident: $f:ident) => (
-		impl <$f: $crate::date::DateFormat> ::serde::Serialize for $t<$f> {
-			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where 
-			S: ::serde::Serializer {
-				let mut state = try!(serializer.serialize_struct("mapping", 9));
+impl <T, F> ElasticFieldMapping<DateFormatWrapper<F>> for T where
+T: DateMapping<Format = F>,
+F: DateFormat {
+	type SerType = ElasticFieldMappingWrapper<T, DateFormatWrapper<F>>;
 
-				try!(serializer.serialize_struct_elt(&mut state, "type", $t::<$f>::data_type()));
-				try!(serializer.serialize_struct_elt(&mut state, "format", $t::<$f>::format()));
-
-				ser_field!(serializer, &mut state, $t::<$f>::boost(), "boost");
-				ser_field!(serializer, &mut state, $t::<$f>::doc_values(), "doc_values");
-				ser_field!(serializer, &mut state, $t::<$f>::include_in_all(), "include_in_all");
-				ser_field!(serializer, &mut state, $t::<$f>::index(), "index");
-				ser_field!(serializer, &mut state, $t::<$f>::store(), "store");
-				ser_field!(serializer, &mut state, $t::<$f>::ignore_malformed(), "ignore_malformed");
-				ser_field!(serializer, &mut state, $t::<$f>::null_value(), "null_value");
-
-				serializer.serialize_struct_end(state)
-			}
-		}
-	)
+	fn data_type() -> &'static str { DATE_DATATYPE }
 }
 
-/// Define a `date` mapping for all formats.
-/// 
-/// # Examples
-/// 
-/// ## Define mapping struct inline
-/// 
-/// The easiest way to define a mapping type is to let the macro do it for you:
-/// 
-/// ```
-/// # #[macro_use]
-/// # extern crate elastic_types;
-/// # extern crate serde;
-/// # use elastic_types::prelude::*;
-/// # fn main() {}
-/// use std::marker::PhantomData;
-/// 
-/// date_mapping!(MyMapping {
-/// 	fn boost() -> Option<f32> { Some(1.03) }
-/// });
-/// ```
-/// 
-/// The above example will define a public struct for you and implement
-/// `ElasticFieldMapping<F: DateFormat>` and `ElasticDateMapping<F: DateFormat>`, along with a few default traits:
-/// 
-/// ```
-/// # use elastic_types::prelude::*;
-/// use std::marker::PhantomData;
-/// 
-/// #[derive(Debug, Default, Clone)]
-/// pub struct MyMapping<F: 'static + DateFormat> {
-/// 	_marker: PhantomData<F>
-/// }
-/// ```
-/// 
-/// ## Define mapping for existing struct
-/// 
-/// If you want to control the default implementations yourself, you can define your
-/// mapping type and just pass it the macro to implement `ElasticFieldMapping<F>`:
-/// 
-/// ```
-/// # #[macro_use]
-/// # extern crate elastic_types;
-/// # extern crate serde;
-/// # use elastic_types::prelude::*;
-/// # fn main() {}
-/// use std::marker::PhantomData;
-/// 	
-/// #[derive(Debug, Default, Clone)]
-/// pub struct MyMapping<F: 'static + DateFormat> {
-/// 	_marker: PhantomData<F>
-/// }
-/// impl <F: 'static + DateFormat> ElasticDateMapping<F> for MyMapping<F> { 
-/// 	fn boost() -> Option<f32> { Some(1.03) }
-/// }
-/// 
-/// date_mapping!(MyMapping: F);
-/// ```
-#[macro_export]
-macro_rules! date_mapping {
-	($t:ident: $f:ident) => (
-		impl <$f: 'static + $crate::date::DateFormat> $crate::mapping::ElasticFieldMapping<F> for $t<$f> {
-			fn data_type() -> &'static str { $crate::date::mapping::DATE_DATATYPE }
-		}
+impl <T, F> Serialize for ElasticFieldMappingWrapper<T, DateFormatWrapper<F>> where
+T: ElasticFieldMapping<DateFormatWrapper<F>> + DateMapping<Format = F>,
+F: DateFormat {
+	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where 
+	S: Serializer {
+		let mut state = try!(serializer.serialize_struct("mapping", 9));
 
-		date_ser!($t: $f);
-	);
-	($t:ident $b:tt) => (
-		#[derive(Debug, Default, Clone)]
-		pub struct $t<F: 'static + $crate::date::DateFormat> {
-			_marker: PhantomData<F>
-		}
+		try!(serializer.serialize_struct_elt(&mut state, "type", T::data_type()));
+		try!(serializer.serialize_struct_elt(&mut state, "format", T::Format::name()));
 
-		impl <F: 'static + $crate::date::DateFormat> $crate::mapping::ElasticFieldMapping<F> for $t<F> {
-			fn data_type() -> &'static str { $crate::date::mapping::DATE_DATATYPE }
-		}
+		ser_field!(serializer, &mut state, T::boost(), "boost");
+		ser_field!(serializer, &mut state, T::doc_values(), "doc_values");
+		ser_field!(serializer, &mut state, T::include_in_all(), "include_in_all");
+		ser_field!(serializer, &mut state, T::index(), "index");
+		ser_field!(serializer, &mut state, T::store(), "store");
+		ser_field!(serializer, &mut state, T::ignore_malformed(), "ignore_malformed");
+		ser_field!(serializer, &mut state, T::null_value(), "null_value");
 
-		impl <F: 'static + $crate::date::DateFormat> $crate::date::mapping::ElasticDateMapping<F> for $t<F> $b
-
-		date_ser!($t: F);
-	)
+		serializer.serialize_struct_end(state)
+	}
 }
 
 /// Implement `DateFormat` for the given type.
@@ -232,19 +187,19 @@ macro_rules! date_mapping {
 /// 
 /// #[derive(Default, Clone)]
 /// struct MyFormat;
-/// impl_date_fmt!(MyFormat, "yyyy-MM-ddTHH:mm:ssZ", "yyyy-MM-dd'T'HH:mm:ssZ");
+/// date_fmt!(MyFormat, "yyyy-MM-ddTHH:mm:ssZ", "yyyy-MM-dd'T'HH:mm:ssZ");
 /// ```
 /// 
-/// You can then use `MyFormat` as the generic parameter in `ElasticDate`.
+/// You can then use `MyFormat` as the generic parameter in `Date`.
 #[macro_export]
-macro_rules! impl_date_fmt {
-	($t:ty, $f:tt, $n:expr) => (
-		impl $crate::date::DateFormat for $t {
-			fn fmt<'a>() -> Vec<chrono::format::Item<'a>> {
-				date_fmt!($f)
+macro_rules! date_fmt {
+	($format_ty:ty, $format_pat:tt, $es_format:expr) => (
+		impl $crate::date::DateFormat for $format_ty {
+			fn fmt<'a>() -> Vec<::chrono::format::Item<'a>> {
+				date_fmt_to_tokens!($format_pat)
 			}
 
-			fn name() -> &'static str { $n }
+			fn name() -> &'static str { $es_format }
 		}
 	)
 }
@@ -252,9 +207,11 @@ macro_rules! impl_date_fmt {
 /// Default mapping for `date`.
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultDateMapping<F> where
-F: 'static + DateFormat {
-	_marker: PhantomData<F>
+F: DateFormat {
+	_f: PhantomData<F>
 }
-impl <F: 'static + DateFormat> ElasticDateMapping<F> for DefaultDateMapping<F> { }
 
-date_mapping!(DefaultDateMapping: F);
+impl <F> DateMapping for DefaultDateMapping<F> where
+F: DateFormat { 
+	type Format = F;
+}

@@ -36,9 +36,11 @@
 //! # extern crate elastic_types;
 //! # use elastic_types::prelude::*;
 //! # fn main() {
-//! # integer_mapping!(MyIntegerMapping { });
+//! # #[derive(Default)]
+//! # struct MyIntegerMapping;
+//! # impl IntegerMapping for MyIntegerMapping { }
 //! struct MyType {
-//! 	pub field: ElasticInteger<MyIntegerMapping>
+//! 	pub field: Integer<MyIntegerMapping>
 //! }
 //! # }
 //! ```

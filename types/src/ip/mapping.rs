@@ -1,19 +1,23 @@
 //! Mapping for the Elasticsearch `ip` type.
 
 use std::net::Ipv4Addr;
-use serde::Serialize;
-use ::mapping::ElasticFieldMapping;
+use serde::{ Serialize, Serializer };
+use ::mapping::{ ElasticFieldMapping, ElasticFieldMappingWrapper };
 
 /// Elasticsearch datatype name.
 pub const IP_DATATYPE: &'static str = "ip";
 
+#[doc(hidden)]
+#[derive(Default)]
+pub struct IpFormat;
+
 /// The base requirements for mapping a `ip` type.
 ///
-/// Custom mappings can be defined by implementing `ElasticIpMapping`.
+/// Custom mappings can be defined by implementing `IpMapping`.
 ///
 /// # Examples
 ///
-/// Define a custom `ElasticIpMapping`:
+/// Define a custom `IpMapping`:
 ///
 /// ## Derive Mapping
 ///
@@ -24,12 +28,14 @@ pub const IP_DATATYPE: &'static str = "ip";
 /// # extern crate elastic_types;
 /// # extern crate serde;
 /// # use elastic_types::prelude::*;
-/// ip_mapping!(MyIpMapping {
+/// #[derive(Default)]
+/// struct MyIpMapping;
+/// impl IpMapping for MyIpMapping {
 /// 	//Overload the mapping functions here
 /// 	fn boost() -> Option<f32> {
 ///			Some(1.5)
 ///		}
-/// });
+/// }
 /// # fn main() {}
 /// ```
 ///
@@ -45,14 +51,16 @@ pub const IP_DATATYPE: &'static str = "ip";
 /// # extern crate serde;
 /// # extern crate serde_json;
 /// # use elastic_types::prelude::*;
-/// # ip_mapping!(MyIpMapping {
+/// # #[derive(Default)]
+/// # struct MyIpMapping;
+/// # impl IpMapping for MyIpMapping {
 /// # 	//Overload the mapping functions here
 /// # 	fn boost() -> Option<f32> {
-/// # 		Some(1.5)
-/// # 	}
-/// # });
+///	# 		Some(1.5)
+///	# 	}
+/// # }
 /// # fn main() {
-/// # let mapping = serde_json::to_string(&MyIpMapping).unwrap();
+/// # let mapping = FieldMapper::to_string(MyIpMapping).unwrap();
 /// # let json = json_str!(
 /// {
 ///     "type": "ip",
@@ -62,8 +70,8 @@ pub const IP_DATATYPE: &'static str = "ip";
 /// # assert_eq!(json, mapping);
 /// # }
 /// ```
-pub trait ElasticIpMapping where
-Self: ElasticFieldMapping<()> + Sized + Serialize {
+pub trait IpMapping where
+Self: Default {
 	/// Field-level index time boosting. Accepts a floating point number, defaults to `1.0`.
 	fn boost() -> Option<f32> { None }
 
@@ -84,97 +92,32 @@ Self: ElasticFieldMapping<()> + Sized + Serialize {
 	fn store() -> Option<bool> { None }
 }
 
-/// Implement `serde` serialisation for a `geo_shape` mapping type.
-#[macro_export]
-macro_rules! ip_ser {
-	($t:ident) => (
-		impl ::serde::Serialize for $t {
-			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
-			where S: ::serde::Serializer {
-				let mut state = try!(serializer.serialize_struct("mapping", 6));
+impl <T> ElasticFieldMapping<IpFormat> for T where
+T: IpMapping { 
+	type SerType = ElasticFieldMappingWrapper<T, IpFormat>;
 
-				try!(serializer.serialize_struct_elt(&mut state, "type", $t::data_type()));
-
-				ser_field!(serializer, &mut state, $t::boost(), "boost");
-				ser_field!(serializer, &mut state, $t::doc_values(), "doc_values");
-				ser_field!(serializer, &mut state, $t::index(), "index");
-				ser_field!(serializer, &mut state, $t::store(), "store");
-				ser_field!(serializer, &mut state, $t::null_value(), "null_value");
-
-				serializer.serialize_struct_end(state)
-			}
-		}
-	)
+	fn data_type() -> &'static str { IP_DATATYPE }
 }
 
-/// Define an `ip` mapping.
-/// 
-/// # Examples
-/// 
-/// ## Define mapping struct inline
-/// 
-/// The easiest way to define a mapping type is to let the macro do it for you:
-/// 
-/// ```
-/// # #[macro_use]
-/// # extern crate elastic_types;
-/// # extern crate serde;
-/// # use elastic_types::prelude::*;
-/// # fn main() {}
-/// ip_mapping!(MyMapping {
-///     fn boost() -> Option<f32> { Some(1.03) }
-/// });
-/// ```
-/// 
-/// The above example will define a public struct for you and implement
-/// `ElasticFieldMapping` and `ElasticIpMapping`, along with a few default traits:
-/// 
-/// ```
-/// #[derive(Debug, Default, Clone, Copy)]
-/// pub struct MyMapping;
-/// ```
-/// 
-/// ## Define mapping for existing struct
-/// 
-/// If you want to control the default implementations yourself, you can define your
-/// mapping type and just pass it the macro to implement `ElasticFieldMapping`:
-/// 
-/// ```
-/// # #[macro_use]
-/// # extern crate elastic_types;
-/// # extern crate serde;
-/// # use elastic_types::prelude::*;
-/// # fn main() {}
-/// #[derive(Debug, Default, Clone, Copy)]
-/// pub struct MyMapping;
-/// impl ElasticIpMapping for MyMapping { 
-///     fn boost() -> Option<f32> { Some(1.03) }
-/// }
-/// 
-/// ip_mapping!(MyMapping);
-/// ```
-#[macro_export]
-macro_rules! ip_mapping {
-	($t:ident) => (
-		impl $crate::mapping::ElasticFieldMapping<()> for $t {
-			fn data_type() -> &'static str { $crate::ip::mapping::IP_DATATYPE }
-		}
+impl <T> Serialize for ElasticFieldMappingWrapper<T, IpFormat> where
+T: ElasticFieldMapping<IpFormat> + IpMapping {
+	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where 
+	S: Serializer {
+		let mut state = try!(serializer.serialize_struct("mapping", 6));
 
-		ip_ser!($t);
-	);
-	($t:ident $b:tt) => (
-		#[derive(Debug, Default, Clone, Copy)]
-		pub struct $t;
+		try!(serializer.serialize_struct_elt(&mut state, "type", T::data_type()));
 
-		impl $crate::ip::mapping::ElasticIpMapping for $t $b
+		ser_field!(serializer, &mut state, T::boost(), "boost");
+		ser_field!(serializer, &mut state, T::doc_values(), "doc_values");
+		ser_field!(serializer, &mut state, T::index(), "index");
+		ser_field!(serializer, &mut state, T::store(), "store");
+		ser_field!(serializer, &mut state, T::null_value(), "null_value");
 
-		ip_mapping!($t);
-	)
+		serializer.serialize_struct_end(state)
+	}
 }
 
 /// Default mapping for `geo_shape`.
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultIpMapping;
-impl ElasticIpMapping for DefaultIpMapping { }
-
-ip_mapping!(DefaultIpMapping);
+impl IpMapping for DefaultIpMapping { }

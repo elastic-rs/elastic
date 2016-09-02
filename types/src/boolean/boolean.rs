@@ -1,10 +1,10 @@
 use std::marker::PhantomData;
-use serde;
 use serde::{ Serialize, Deserialize, Serializer, Deserializer };
-use super::mapping::{ ElasticBooleanMapping, DefaultBooleanMapping };
-use ::mapping::{ ElasticFieldMapping, ElasticType };
+use serde::de::{ Visitor, Error };
+use super::mapping::{ BooleanMapping, DefaultBooleanMapping, BooleanFormat };
+use ::mapping::ElasticType;
 
-impl ElasticType<DefaultBooleanMapping, ()> for bool { }
+impl ElasticType<DefaultBooleanMapping, BooleanFormat> for bool { }
 
 /// An Elasticsearch `boolean` with a mapping.
 ///
@@ -16,34 +16,34 @@ impl ElasticType<DefaultBooleanMapping, ()> for bool { }
 ///
 /// ```
 /// use elastic_types::boolean::mapping::DefaultBooleanMapping;
-/// use elastic_types::boolean::ElasticBoolean;
+/// use elastic_types::boolean::Boolean;
 ///
-/// let boolean = ElasticBoolean::<DefaultBooleanMapping>::new(true);
+/// let boolean = Boolean::<DefaultBooleanMapping>::new(true);
 /// ```
 #[derive(Debug, Clone, Default, PartialEq)]
-pub struct ElasticBoolean<M> where
-M: ElasticFieldMapping<()> + ElasticBooleanMapping {
+pub struct Boolean<M> where
+M: BooleanMapping {
 	value: bool,
-	phantom: PhantomData<M>
+	_m: PhantomData<M>
 }
-impl <M> ElasticBoolean<M> where
-M: ElasticFieldMapping<()> + ElasticBooleanMapping {
-	/// Creates a new `ElasticBoolean` with the given mapping.
+impl <M> Boolean<M> where
+M: BooleanMapping {
+	/// Creates a new `Boolean` with the given mapping.
 	///
 	/// # Examples
 	///
-	/// Create a new `ElasticBoolean` from a `bool`:
+	/// Create a new `Boolean` from a `bool`:
 	///
 	/// ```
 	/// use elastic_types::boolean::mapping::DefaultBooleanMapping;
-	/// use elastic_types::boolean::ElasticBoolean;
+	/// use elastic_types::boolean::Boolean;
 	///
-	/// let boolean = ElasticBoolean::<DefaultBooleanMapping>::new(false);
+	/// let boolean = Boolean::<DefaultBooleanMapping>::new(false);
 	/// ```
-	pub fn new<I>(boolean: I) -> ElasticBoolean<M> where I: Into<bool> {
-		ElasticBoolean {
+	pub fn new<I>(boolean: I) -> Boolean<M> where I: Into<bool> {
+		Boolean {
 			value: boolean.into(),
-			phantom: PhantomData
+			_m: PhantomData
 		}
 	}
 
@@ -61,7 +61,7 @@ M: ElasticFieldMapping<()> + ElasticBooleanMapping {
 	///
 	/// # Examples
 	///
-	/// Change the mapping for a given `ElasticBoolean`:
+	/// Change the mapping for a given `Boolean`:
 	///
 	/// ```
 	/// # extern crate serde;
@@ -69,33 +69,31 @@ M: ElasticFieldMapping<()> + ElasticBooleanMapping {
 	/// # extern crate elastic_types;
 	/// # fn main() {
 	/// # use elastic_types::prelude::*;
-	/// # boolean_mapping!(MyBooleanMapping {
-	/// # 	fn boost() -> Option<f32> {
-	///	# 		Some(1.5)
-	///	# 	}
-	/// # });
-	/// let es_boolean = ElasticBoolean::<DefaultBooleanMapping>::new(true);
+	/// # #[derive(Default)]
+	/// # struct MyBooleanMapping;
+	/// # impl BooleanMapping for MyBooleanMapping { }
+	/// let es_boolean = Boolean::<DefaultBooleanMapping>::new(true);
 	///
-	/// let boolean: ElasticBoolean<MyBooleanMapping> = es_boolean.remap();
+	/// let boolean: Boolean<MyBooleanMapping> = es_boolean.remap();
 	/// # }
 	/// ```
-	pub fn remap<MInto>(self) -> ElasticBoolean<MInto> where
-	MInto: ElasticFieldMapping<()> + ElasticBooleanMapping {
-		ElasticBoolean::<MInto>::new(self.value)
+	pub fn remap<MInto>(self) -> Boolean<MInto> where
+	MInto: BooleanMapping {
+		Boolean::<MInto>::new(self.value)
 	}
 }
 
-impl <M> ElasticType<M, ()> for ElasticBoolean<M> where
-M: ElasticFieldMapping<()> + ElasticBooleanMapping { }
+impl <M> ElasticType<M, BooleanFormat> for Boolean<M> where
+M: BooleanMapping { }
 
-impl From<bool> for ElasticBoolean<DefaultBooleanMapping> {
+impl From<bool> for Boolean<DefaultBooleanMapping> {
 	fn from(boolean: bool) -> Self {
-		ElasticBoolean::new(boolean)
+		Boolean::new(boolean)
 	}
 }
 
-impl<'a, M> PartialEq<bool> for ElasticBoolean<M> where
-M: ElasticFieldMapping<()> + ElasticBooleanMapping {
+impl<'a, M> PartialEq<bool> for Boolean<M> where
+M: BooleanMapping {
 	fn eq(&self, other: &bool) -> bool {
 		PartialEq::eq(&self.value, other)
 	}
@@ -105,20 +103,20 @@ M: ElasticFieldMapping<()> + ElasticBooleanMapping {
 	}
 }
 
-impl<'a, M> PartialEq<ElasticBoolean<M>> for bool where
-M: ElasticFieldMapping<()> + ElasticBooleanMapping {
-	fn eq(&self, other: &ElasticBoolean<M>) -> bool {
+impl<'a, M> PartialEq<Boolean<M>> for bool where
+M: BooleanMapping {
+	fn eq(&self, other: &Boolean<M>) -> bool {
 		PartialEq::eq(self, &other.value)
 	}
 
-	fn ne(&self, other: &ElasticBoolean<M>) -> bool {
+	fn ne(&self, other: &Boolean<M>) -> bool {
 		PartialEq::ne(self, &other.value)
 	}
 }
 
 //Serialize elastic boolean
-impl <M> Serialize for ElasticBoolean<M> where
-M: ElasticFieldMapping<()> + ElasticBooleanMapping {
+impl <M> Serialize for Boolean<M> where
+M: BooleanMapping {
 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where
 	S: Serializer {
 		serializer.serialize_bool(self.value)
@@ -126,26 +124,26 @@ M: ElasticFieldMapping<()> + ElasticBooleanMapping {
 }
 
 //Deserialize elastic boolean
-impl <M> Deserialize for ElasticBoolean<M> where
-M: ElasticFieldMapping<()> + ElasticBooleanMapping {
-	fn deserialize<D>(deserializer: &mut D) -> Result<ElasticBoolean<M>, D::Error> where
+impl <M> Deserialize for Boolean<M> where
+M: BooleanMapping {
+	fn deserialize<D>(deserializer: &mut D) -> Result<Boolean<M>, D::Error> where
 	D: Deserializer {
 		#[derive(Default)]
-		struct ElasticBooleanVisitor<M> where
-		M: ElasticFieldMapping<()> + ElasticBooleanMapping {
-			phantom: PhantomData<M>
+		struct BooleanVisitor<M> where
+		M: BooleanMapping {
+			_m: PhantomData<M>
 		}
 
-		impl <M> serde::de::Visitor for ElasticBooleanVisitor<M> where
-		M: ElasticFieldMapping<()> + ElasticBooleanMapping {
-			type Value = ElasticBoolean<M>;
+		impl <M> Visitor for BooleanVisitor<M> where
+		M: BooleanMapping {
+			type Value = Boolean<M>;
 
-			fn visit_bool<E>(&mut self, v: bool) -> Result<ElasticBoolean<M>, E> where
-			E: serde::de::Error {
-				Ok(ElasticBoolean::<M>::new(v))
+			fn visit_bool<E>(&mut self, v: bool) -> Result<Boolean<M>, E> where
+			E: Error {
+				Ok(Boolean::<M>::new(v))
 			}
 		}
 
-		deserializer.deserialize(ElasticBooleanVisitor::<M>::default())
+		deserializer.deserialize(BooleanVisitor::<M>::default())
 	}
 }

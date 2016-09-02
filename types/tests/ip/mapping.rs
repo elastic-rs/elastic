@@ -16,8 +16,7 @@ fn ipv4addr_has_default_mapping() {
 
 #[test]
 fn serialise_mapping_default() {
-	let mapping = DefaultIpMapping::default();
-	let ser = serde_json::to_string(&mapping).unwrap();
+	let ser = FieldMapper::to_string(DefaultIpMapping).unwrap();
 
 	let expected = json_str!({
 		"type": "ip"
@@ -28,8 +27,7 @@ fn serialise_mapping_default() {
 
 #[test]
 fn serialise_mapping_custom() {
-	let mapping = MyIpMapping;
-	let ser = serde_json::to_string(&mapping).unwrap();
+	let ser = FieldMapper::to_string(MyIpMapping).unwrap();
 
 	let expected = json_str!({
 		"type": "ip",

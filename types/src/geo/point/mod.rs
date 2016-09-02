@@ -2,19 +2,19 @@
 //!
 //! Geo points are an Elasticsearch specific geospatial type with an `x` (`lon`) and `y` (`lat`)
 //! component.
-//! `ElasticGeoPoint` is a good choice for storing and analysing geospatial points where geojson
+//! `GeoPoint` is a good choice for storing and analysing geospatial points where geojson
 //! compatibility isn't needed.
 //!
 //! # Examples
 //!
-//! For defining your own geo point mapping, see [mapping details](mapping/trait.ElasticGeoPointMapping.html#derive-mapping).
+//! For defining your own geo point mapping, see [mapping details](mapping/trait.GeoPointMapping.html#derive-mapping).
 //!
 //! Map with a default `geo_point`:
 //!
 //! ```
 //! # use elastic_types::geo::point::prelude::*;
 //! struct MyType {
-//! 	pub field: ElasticGeoPoint<DefaultGeoPointFormat>
+//! 	pub field: GeoPoint<DefaultGeoPointFormat>
 //! }
 //! ```
 //!
@@ -31,9 +31,11 @@
 //! # fn main() {
 //! # use elastic_types::mapping::prelude::*;
 //! # use elastic_types::geo::point::prelude::*;
-//! geo_point_mapping!(MyGeoPointMapping {});
+//! # #[derive(Default)]
+//! # struct MyGeoPointMapping;
+//! # impl GeoPointMapping for MyGeoPointMapping { type Format = GeoPointString; }
 //! struct MyType {
-//! 	pub field: ElasticGeoPoint<GeoPointString, MyGeoPointMapping<GeoPointString>>
+//! 	pub field: GeoPoint<GeoPointString, MyGeoPointMapping>
 //! }
 //! # }
 //! ```
