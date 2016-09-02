@@ -22,7 +22,6 @@ use elastic::RequestParams;
 use elastic_types::prelude::*;
 
 mod response;
-
 use response::*;
 
 //The type we want to index in Elasticsearch
