@@ -1,0 +1,10 @@
+[package]
+name = "codegen_demo"
+version = "0.1.0"
+authors = ["Ashley Mannix <ashleymannix@live.com.au>"]
+
+[dependencies]
+serde = "~0.8.0"
+serde_macros = "~0.8.0"
+elastic_types = { version = "*", path = "../../" }
+elastic_types_macros = { version = "*", path = "../../../macros/types" }

@@ -1,0 +1,13 @@
+# Compiled files
+*.o
+*.so
+*.rlib
+*.dll
+*.rs.bk
+
+# Executables
+*.exe
+
+# Visual Studio
+*.user
+*.suo
