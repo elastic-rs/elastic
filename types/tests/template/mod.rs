@@ -24,15 +24,15 @@ fn get_template_pattern() {
 
 #[test]
 fn serialise_index_template() {
-	let mut template = IndexTemplate::new("test_template", "*", SimpleTypeMapping).unwrap();
+	let mut template = IndexTemplate::new("test_template", "data-*", SimpleTypeMapping).unwrap();
 	template.add_mapping(SimpleNestedTypeMapping).unwrap();
-	template.order = 0;
+	template.order = 3;
 
 	let ser = serde_json::to_string(&template).unwrap();
 
 	let expected = json_str!({
-		"template": "*",
-		"order": 0,
+		"template": "data-*",
+		"order": 3,
 		"mappings": {
 			"simplenestedtype": {
 				"properties": {

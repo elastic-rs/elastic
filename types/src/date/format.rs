@@ -109,6 +109,40 @@ impl <T: CustomDateFormat> DateFormat for T {
 	}
 }
 
+/// Implement `DateFormat` for the given type.
+/// 
+/// # Examples
+///
+/// The macro takes 2 string literals; the format to parse and the name to use in Elasticsearch:
+/// 
+/// ```
+/// # #![feature(plugin)]
+/// # #![plugin(elastic_date_macros)]
+/// # #[macro_use]
+/// # extern crate elastic_types;
+/// # extern crate chrono;
+/// # fn main() {}
+/// use std::marker::PhantomData;
+/// 
+/// #[derive(Default, Clone)]
+/// struct MyFormat;
+/// date_fmt!(MyFormat, "yyyy-MM-ddTHH:mm:ssZ", "yyyy-MM-dd'T'HH:mm:ssZ");
+/// ```
+/// 
+/// You can then use `MyFormat` as the generic parameter in `Date`.
+#[macro_export]
+macro_rules! date_fmt {
+	($format_ty:ty, $format_pat:tt, $es_format:expr) => (
+		impl $crate::date::DateFormat for $format_ty {
+			fn fmt<'a>() -> Vec<::chrono::format::Item<'a>> {
+				date_fmt_to_tokens!($format_pat)
+			}
+
+			fn name() -> &'static str { $es_format }
+		}
+	)
+}
+
 /// Represents an error encountered during parsing.
 #[derive(Debug)]
 pub struct ParseError {

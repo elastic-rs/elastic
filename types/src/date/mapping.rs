@@ -158,50 +158,16 @@ F: DateFormat {
 		try!(serializer.serialize_struct_elt(&mut state, "type", T::data_type()));
 		try!(serializer.serialize_struct_elt(&mut state, "format", T::Format::name()));
 
-		ser_field!(serializer, &mut state, T::boost(), "boost");
-		ser_field!(serializer, &mut state, T::doc_values(), "doc_values");
-		ser_field!(serializer, &mut state, T::include_in_all(), "include_in_all");
-		ser_field!(serializer, &mut state, T::index(), "index");
-		ser_field!(serializer, &mut state, T::store(), "store");
-		ser_field!(serializer, &mut state, T::ignore_malformed(), "ignore_malformed");
-		ser_field!(serializer, &mut state, T::null_value(), "null_value");
+		ser_field!(serializer, &mut state, "boost", T::boost());
+		ser_field!(serializer, &mut state, "doc_values", T::doc_values());
+		ser_field!(serializer, &mut state, "include_in_all", T::include_in_all());
+		ser_field!(serializer, &mut state, "index", T::index());
+		ser_field!(serializer, &mut state, "store", T::store());
+		ser_field!(serializer, &mut state, "ignore_malformed", T::ignore_malformed());
+		ser_field!(serializer, &mut state, "null_value", T::null_value());
 
 		serializer.serialize_struct_end(state)
 	}
-}
-
-/// Implement `DateFormat` for the given type.
-/// 
-/// # Examples
-///
-/// The macro takes 2 string literals; the format to parse and the name to use in Elasticsearch:
-/// 
-/// ```
-/// # #![feature(plugin)]
-/// # #![plugin(elastic_date_macros)]
-/// # #[macro_use]
-/// # extern crate elastic_types;
-/// # extern crate chrono;
-/// # fn main() {}
-/// use std::marker::PhantomData;
-/// 
-/// #[derive(Default, Clone)]
-/// struct MyFormat;
-/// date_fmt!(MyFormat, "yyyy-MM-ddTHH:mm:ssZ", "yyyy-MM-dd'T'HH:mm:ssZ");
-/// ```
-/// 
-/// You can then use `MyFormat` as the generic parameter in `Date`.
-#[macro_export]
-macro_rules! date_fmt {
-	($format_ty:ty, $format_pat:tt, $es_format:expr) => (
-		impl $crate::date::DateFormat for $format_ty {
-			fn fmt<'a>() -> Vec<::chrono::format::Item<'a>> {
-				date_fmt_to_tokens!($format_pat)
-			}
-
-			fn name() -> &'static str { $es_format }
-		}
-	)
 }
 
 /// Default mapping for `date`.

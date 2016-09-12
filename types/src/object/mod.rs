@@ -314,6 +314,7 @@ pub const DYNAMIC_DATATYPE: &'static str = "dynamic";
 pub const NESTED_DATATYPE: &'static str = "nested";
 
 /// Serialise a field mapping using the given serialiser.
+#[inline]
 pub fn field_ser<S, M, F>(serializer: &mut S, state: &mut S::StructState, field: &'static str, _: M) -> Result<(), S::Error> where
 S: Serializer,
 M: ElasticFieldMapping<F>,
@@ -456,11 +457,11 @@ T: ElasticFieldMapping<ObjectFormat> + ObjectMapping {
 		let ty = <T as ObjectMapping>::data_type();
 		try!(serializer.serialize_struct_elt(&mut state, "type", ty));
 
-		ser_field!(serializer, &mut state, T::dynamic(), "dynamic");
-		ser_field!(serializer, &mut state, T::include_in_all(), "include_in_all");
+		ser_field!(serializer, &mut state, "dynamic", T::dynamic());
+		ser_field!(serializer, &mut state, "include_in_all", T::include_in_all());
 
 		if ty == OBJECT_DATATYPE {
-			ser_field!(serializer, &mut state, T::enabled(), "enabled");
+			ser_field!(serializer, &mut state, "enabled", T::enabled());
 		}
 
 		try!(serializer.serialize_struct_elt(&mut state, "properties", &Properties::<T>::default()));

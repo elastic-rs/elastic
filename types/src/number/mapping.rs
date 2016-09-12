@@ -132,13 +132,13 @@ macro_rules! number_mapping {
 
 				try!(serializer.serialize_struct_elt(&mut state, "type", T::data_type()));
 
-				ser_field!(serializer, &mut state, T::coerce(), "coerce");
-				ser_field!(serializer, &mut state, T::boost(), "boost");
-				ser_field!(serializer, &mut state, T::doc_values(), "doc_values");
-				ser_field!(serializer, &mut state, T::ignore_malformed(), "ignore_malformed");
-				ser_field!(serializer, &mut state, T::include_in_all(), "include_in_all");
-				ser_field!(serializer, &mut state, T::null_value(), "null_value");
-				ser_field!(serializer, &mut state, T::store(), "store");
+				ser_field!(serializer, &mut state, "coerce", T::coerce());
+				ser_field!(serializer, &mut state, "boost", T::boost());
+				ser_field!(serializer, &mut state, "doc_values", T::doc_values());
+				ser_field!(serializer, &mut state, "ignore_malformed", T::ignore_malformed());
+				ser_field!(serializer, &mut state, "include_in_all", T::include_in_all());
+				ser_field!(serializer, &mut state, "null_value", T::null_value());
+				ser_field!(serializer, &mut state, "store", T::store());
 
 				serializer.serialize_struct_end(state)
 			}
