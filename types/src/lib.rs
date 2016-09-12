@@ -565,4 +565,5 @@ pub mod prelude {
 	pub use ::ip::prelude::*;
 	pub use ::number::prelude::*;
 	pub use ::string::prelude::*;
+	pub use ::template::*;
 }
