@@ -182,20 +182,20 @@ T: ElasticFieldMapping<KeywordFormat> + KeywordMapping {
 
 		try!(serializer.serialize_struct_elt(&mut state, "type", T::data_type()));
 
-		ser_field!(serializer, &mut state, T::boost(), "boost");
-		ser_field!(serializer, &mut state, T::analyzer(), "analyzer");
-		ser_field!(serializer, &mut state, T::doc_values(), "doc_values");
-		ser_field!(serializer, &mut state, T::eager_global_ordinals(), "eager_global_ordinals");
-		ser_field!(serializer, &mut state, T::fields(), "fields");
-		ser_field!(serializer, &mut state, T::include_in_all(), "include_in_all");
-		ser_field!(serializer, &mut state, T::ignore_above(), "ignore_above");
-		ser_field!(serializer, &mut state, T::index(), "index");
-		ser_field!(serializer, &mut state, T::index_options(), "index_options");
-		ser_field!(serializer, &mut state, T::norms(), "norms");
-		ser_field!(serializer, &mut state, T::null_value(), "null_value");
-		ser_field!(serializer, &mut state, T::store(), "store");
-		ser_field!(serializer, &mut state, T::search_analyzer(), "search_analyzer");
-		ser_field!(serializer, &mut state, T::similarity(), "similarity");
+		ser_field!(serializer, &mut state, "boost", T::boost());
+		ser_field!(serializer, &mut state, "analyzer", T::analyzer());
+		ser_field!(serializer, &mut state, "doc_values", T::doc_values());
+		ser_field!(serializer, &mut state, "eager_global_ordinals", T::eager_global_ordinals());
+		ser_field!(serializer, &mut state, "fields", T::fields());
+		ser_field!(serializer, &mut state, "include_in_all", T::include_in_all());
+		ser_field!(serializer, &mut state, "ignore_above", T::ignore_above());
+		ser_field!(serializer, &mut state, "index", T::index());
+		ser_field!(serializer, &mut state, "index_options", T::index_options());
+		ser_field!(serializer, &mut state, "norms", T::norms());
+		ser_field!(serializer, &mut state, "null_value", T::null_value());
+		ser_field!(serializer, &mut state, "store", T::store());
+		ser_field!(serializer, &mut state, "search_analyzer", T::search_analyzer());
+		ser_field!(serializer, &mut state, "similarity", T::similarity());
 
 		serializer.serialize_struct_end(state)
 	}
@@ -253,17 +253,17 @@ impl Serialize for KeywordFieldMapping {
 
 		try!(serializer.serialize_struct_elt(&mut state, "type", KEYWORD_DATATYPE));
 
-		ser_field!(serializer, &mut state, self.analyzer, "analyzer");
-		ser_field!(serializer, &mut state, self.doc_values, "doc_values");
-		ser_field!(serializer, &mut state, self.eager_global_ordinals, "eager_global_ordinals");
-		ser_field!(serializer, &mut state, self.include_in_all, "include_in_all");
-		ser_field!(serializer, &mut state, self.ignore_above, "ignore_above");
-		ser_field!(serializer, &mut state, self.index, "index");
-		ser_field!(serializer, &mut state, self.index_options, "index_options");
-		ser_field!(serializer, &mut state, self.norms, "norms");
-		ser_field!(serializer, &mut state, self.store, "store");
-		ser_field!(serializer, &mut state, self.search_analyzer, "search_analyzer");
-		ser_field!(serializer, &mut state, self.similarity, "similarity");
+		ser_field!(serializer, &mut state, "analyzer", self.analyzer);
+		ser_field!(serializer, &mut state, "doc_values", self.doc_values);
+		ser_field!(serializer, &mut state, "eager_global_ordinals", self.eager_global_ordinals);
+		ser_field!(serializer, &mut state, "include_in_all", self.include_in_all);
+		ser_field!(serializer, &mut state, "ignore_above", self.ignore_above);
+		ser_field!(serializer, &mut state, "index", self.index);
+		ser_field!(serializer, &mut state, "index_options", self.index_options);
+		ser_field!(serializer, &mut state, "norms", self.norms);
+		ser_field!(serializer, &mut state, "store", self.store);
+		ser_field!(serializer, &mut state, "search_analyzer", self.search_analyzer);
+		ser_field!(serializer, &mut state, "similarity", self.similarity);
 
 		serializer.serialize_struct_end(state)
 	}

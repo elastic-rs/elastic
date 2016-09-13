@@ -31,3 +31,24 @@ fn mapping_lrg(b: &mut Bencher) {
 		TypeMapper::to_string(MyLrgMapping).unwrap()
 	});
 }
+
+#[bench]
+fn mapping_value_sml(b: &mut Bencher) {
+	b.iter(|| {
+		TypeMapper::to_value(MySmlMapping).unwrap()
+	});
+}
+
+#[bench]
+fn mapping_value_med(b: &mut Bencher) {
+	b.iter(|| {
+		TypeMapper::to_value(MyMedMapping).unwrap()
+	});
+}
+
+#[bench]
+fn mapping_value_lrg(b: &mut Bencher) {
+	b.iter(|| {
+		TypeMapper::to_value(MyLrgMapping).unwrap()
+	});
+}

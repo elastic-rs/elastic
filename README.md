@@ -19,7 +19,7 @@ Windows  | Nightly | [![Build status](https://ci.appveyor.com/api/projects/statu
 Version  | Docs
 ------------- | -------------
 `master`  | [![Documentation](https://img.shields.io/badge/docs-rustdoc-orange.svg)](https://elastic-rs.github.io/elastic-types/elastic_types/)
-`0.5`  | [![Documentation](https://img.shields.io/badge/docs-rustdoc-orange.svg)](https://elastic-rs.github.io/elastic_types/0.5/elastic_types/)
+`current`  | [![Documentation](https://img.shields.io/badge/docs-rustdoc-orange.svg)](https://docs.rs/elastic_types/*/elastic_types/)
 
 ## Example
 
@@ -75,6 +75,34 @@ This will produce:
 ```
 
 The `stable` channel is also supported, see the [docs](#documentation) for details.
+
+Types that derive `ElasticType` are themselves serialisable, which can be very helpful when using 
+types like `date` with special formats.
+Take the following document:
+
+```json
+{
+  "id": 15,
+  "timestamp": 1435935302478,
+  "title": "my timestamped object"
+}
+```
+
+Using the `Date<EpochMillis>` type for the `timestamp`, we can correctly deserialise the document as a strongly typed
+object:
+
+```rust
+#[derive(Serialize, Deserialize, ElasticType)]
+struct MyType {
+  id: i32,
+  timestamp: Date<EpochMillis>,
+  title: String
+}
+
+let de: MyType = serde_json::from_str(json).unwrap();
+
+assert_eq!(2015, de.timestamp.year());
+```
 
 ## Macros
 

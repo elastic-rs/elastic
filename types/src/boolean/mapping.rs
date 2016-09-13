@@ -105,11 +105,11 @@ T: ElasticFieldMapping<BooleanFormat> + BooleanMapping {
 
 		try!(serializer.serialize_struct_elt(&mut state, "type", T::data_type()));
 
-		ser_field!(serializer, &mut state, T::boost(), "boost");
-		ser_field!(serializer, &mut state, T::doc_values(), "doc_values");
-		ser_field!(serializer, &mut state, T::index(), "index");
-		ser_field!(serializer, &mut state, T::store(), "store");
-		ser_field!(serializer, &mut state, T::null_value(), "null_value");
+		ser_field!(serializer, &mut state, "boost", T::boost());
+		ser_field!(serializer, &mut state, "doc_values", T::doc_values());
+		ser_field!(serializer, &mut state, "index", T::index());
+		ser_field!(serializer, &mut state, "store", T::store());
+		ser_field!(serializer, &mut state, "null_value", T::null_value());
 
 		serializer.serialize_struct_end(state)
 	}

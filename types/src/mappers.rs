@@ -2,7 +2,7 @@
 //!
 //! Mapping for types is inferred from the generic mapping parameters on `ElasticType`.
 //! 
-//! `TypeMapper`, for mapping user-defined types for the [Put Mapping API](https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-put-mapping.html).
+//! `TypeMapper`, for mapping user-defined types for the [Put Mapping API](https://www.elastic.co/guide/en/elasticsearch/reference/master/indices-put-mapping.html).
 //! 
 //! `FieldMapper`, for mapping any type as a field of a user-defined type.
 //! 
@@ -46,10 +46,10 @@
 
 use std::error::Error;
 use std::marker::PhantomData;
-use serde;
-use serde::Serialize;
+use serde::{ Serialize, Serializer };
 use serde::ser::Error as SerError;
-use serde_json;
+use serde_json::{ Error as JsonError, Serializer as JsonSerializer, Value };
+use serde_json::value::Serializer as ValueSerializer;
 use ::object::ObjectMapping;
 use ::mapping::{ ElasticFieldMapping };
 
@@ -65,24 +65,24 @@ M: ElasticFieldMapping<F>,
 F: Default {
 	/// Map a field type with a given `Serializer`.
 	pub fn to_writer<S>(_: M, serializer: &mut S) -> Result<(), S::Error> where
-	S: serde::Serializer {
+	S: Serializer {
 		M::ser().serialize(serializer)
 	}
 
 	/// Map a field type to a `String`.
-	pub fn to_string(t: M) -> Result<String, serde_json::Error> {
+	pub fn to_string(t: M) -> Result<String, JsonError> {
 		let mut writer = Vec::new();
 		{
-			let mut ser = serde_json::Serializer::new(&mut writer);
+			let mut ser = JsonSerializer::new(&mut writer);
 			try!(Self::to_writer(t, &mut ser));
 		}
 
-		String::from_utf8(writer).map_err(|e| serde_json::Error::custom(e.description()))
+		String::from_utf8(writer).map_err(|e| JsonError::custom(e.description()))
 	}
 
 	/// Map a field type to a `serde_json::Value`.
-	pub fn to_value(t: M) -> Result<serde_json::Value, serde_json::Error> {
-		let mut ser = serde_json::value::Serializer::new();
+	pub fn to_value(t: M) -> Result<Value, JsonError> {
+		let mut ser = ValueSerializer::new();
 		try!(Self::to_writer(t, &mut ser));
 
 		Ok(ser.unwrap())
@@ -136,7 +136,7 @@ M: ObjectMapping {
 	/// # }
 	/// ```
 	pub fn to_writer<S>(_: M, serializer: &mut S) -> Result<(), S::Error> where
-	S: serde::Serializer {
+	S: Serializer {
 		M::serialize_type(serializer)
 	}
 
@@ -175,14 +175,14 @@ M: ObjectMapping {
 	/// let ser = TypeMapper::to_string(MyTypeMapping).unwrap();
 	/// # }
 	/// ```
-	pub fn to_string(t: M) -> Result<String, serde_json::Error> {
+	pub fn to_string(t: M) -> Result<String, JsonError> {
 		let mut writer = Vec::new();
 		{
-			let mut ser = serde_json::Serializer::new(&mut writer);
+			let mut ser = JsonSerializer::new(&mut writer);
 			try!(Self::to_writer(t, &mut ser));
 		}
 
-		String::from_utf8(writer).map_err(|e| serde_json::Error::custom(e.description()))
+		String::from_utf8(writer).map_err(|e| JsonError::custom(e.description()))
 	}
 
 	/// Map a user-defined type to a `serde_json::Value`.
@@ -222,8 +222,8 @@ M: ObjectMapping {
 	/// let ty = val.lookup("properties.my_date.type");
 	/// # }
 	/// ```
-	pub fn to_value(t: M) -> Result<serde_json::Value, serde_json::Error> {
-		let mut ser = serde_json::value::Serializer::new();
+	pub fn to_value(t: M) -> Result<Value, JsonError> {
+		let mut ser = ValueSerializer::new();
 		try!(Self::to_writer(t, &mut ser));
 
 		Ok(ser.unwrap())

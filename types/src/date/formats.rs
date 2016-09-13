@@ -10,7 +10,7 @@ date_fmt!(ChronoFormat, "yyyy-MM-ddTHH:mm:ssZ", "yyyy-MM-dd'T'HH:mm:ssZ");
 /// Format for `basic_date_time_no_millis`.
 ///
 /// # Links
-/// - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-date-format.html#built-in-date-formats)
+/// - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/master/mapping-date-format.html#built-in-date-formats)
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct BasicDateTimeNoMillis;
 date_fmt!(BasicDateTimeNoMillis, "%Y%m%dT%H%M%SZ", "basic_date_time_no_millis");
@@ -18,7 +18,7 @@ date_fmt!(BasicDateTimeNoMillis, "%Y%m%dT%H%M%SZ", "basic_date_time_no_millis");
 /// Format for `basic_date_time`.
 ///
 /// # Links
-/// - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-date-format.html#built-in-date-formats)
+/// - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/master/mapping-date-format.html#built-in-date-formats)
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct BasicDateTime;
 date_fmt!(BasicDateTime, "%Y%m%dT%H%M%S%.3fZ", "basic_date_time");
@@ -29,7 +29,7 @@ date_fmt!(BasicDateTime, "%Y%m%dT%H%M%S%.3fZ", "basic_date_time");
 /// This is an efficient formatter, so is a good choice for storing timestamps.
 ///
 /// # Links
-/// - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-date-format.html#built-in-date-formats)
+/// - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/master/mapping-date-format.html#built-in-date-formats)
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct EpochMillis;
 impl CustomDateFormat for EpochMillis {

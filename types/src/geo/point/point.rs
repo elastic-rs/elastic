@@ -51,7 +51,7 @@ use super::GeoPointFormat;
 /// ```
 ///
 /// # Links
-/// - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/geo-point.html)
+/// - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/master/geo-point.html)
 #[derive(Debug, Clone, PartialEq)]
 pub struct GeoPoint<F, M = DefaultGeoPointMapping<F>> where
 F: GeoPointFormat,

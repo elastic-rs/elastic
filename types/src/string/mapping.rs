@@ -89,7 +89,7 @@ impl Serialize for ElasticStringField {
 	}
 }
 
-/// A multi-field string mapping for a [token count](https://www.elastic.co/guide/en/elasticsearch/reference/current/token-count.html).
+/// A multi-field string mapping for a [token count](https://www.elastic.co/guide/en/elasticsearch/reference/master/token-count.html).
 #[derive(Debug, Default, Clone, Copy)]
 pub struct ElasticTokenCountFieldMapping {
 	/// The analyzer which should be used for analyzed string fields,
@@ -124,19 +124,19 @@ impl Serialize for ElasticTokenCountFieldMapping {
 
 		try!(serializer.serialize_struct_elt(&mut state, "type", TOKENCOUNT_DATATYPE));
 
-		ser_field!(serializer, &mut state, self.analyzer, "analyzer");
-		ser_field!(serializer, &mut state, self.boost, "boost");
-		ser_field!(serializer, &mut state, self.doc_values, "doc_values");
-		ser_field!(serializer, &mut state, self.index, "index");
-		ser_field!(serializer, &mut state, self.include_in_all, "include_in_all");
-		ser_field!(serializer, &mut state, self.precision_step, "precision_step");
-		ser_field!(serializer, &mut state, self.store, "store");
+		ser_field!(serializer, &mut state, "analyzer", self.analyzer);
+		ser_field!(serializer, &mut state, "boost", self.boost);
+		ser_field!(serializer, &mut state, "doc_values", self.doc_values);
+		ser_field!(serializer, &mut state, "index", self.index);
+		ser_field!(serializer, &mut state, "include_in_all", self.include_in_all);
+		ser_field!(serializer, &mut state, "precision_step", self.precision_step);
+		ser_field!(serializer, &mut state, "store", self.store);
 
 		serializer.serialize_struct_end(state)
 	}
 }
 
-/// A multi-field string mapping for a [completion suggester](https://www.elastic.co/guide/en/elasticsearch/reference/current/search-suggesters-completion.html#search-suggesters-completion).
+/// A multi-field string mapping for a [completion suggester](https://www.elastic.co/guide/en/elasticsearch/reference/master/search-suggesters-completion.html#search-suggesters-completion).
 #[derive(Debug, Default, Clone, Copy)]
 pub struct ElasticCompletionFieldMapping {
 	/// The analyzer which should be used for analyzed string fields,
@@ -173,12 +173,12 @@ impl Serialize for ElasticCompletionFieldMapping {
 
 		try!(serializer.serialize_struct_elt(&mut state, "type", COMPLETION_DATATYPE));
 
-		ser_field!(serializer, &mut state, self.analyzer, "analyzer");
-		ser_field!(serializer, &mut state, self.search_analyzer, "search_analyzer");
-		ser_field!(serializer, &mut state, self.payloads, "payloads");
-		ser_field!(serializer, &mut state, self.preserve_separators, "preserve_separators");
-		ser_field!(serializer, &mut state, self.preserve_position_increments, "preserve_position_increments");
-		ser_field!(serializer, &mut state, self.max_input_length, "max_input_length");
+		ser_field!(serializer, &mut state, "analyzer", self.analyzer);
+		ser_field!(serializer, &mut state, "search_analyzer", self.search_analyzer);
+		ser_field!(serializer, &mut state, "payloads", self.payloads);
+		ser_field!(serializer, &mut state, "preserve_separators", self.preserve_separators);
+		ser_field!(serializer, &mut state, "preserve_position_increments", self.preserve_position_increments);
+		ser_field!(serializer, &mut state, "max_input_length", self.max_input_length);
 
 		serializer.serialize_struct_end(state)
 	}
