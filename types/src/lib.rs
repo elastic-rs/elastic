@@ -347,6 +347,49 @@
 //! 
 //! For more details about the supported core datatypes and how to use them, see [here](#types).
 //! 
+//! ## Serialise Your Types
+//! 
+//! Types that derive `ElasticType` are themselves serialisable, which can be very helpful when using 
+//! types like `date` with special formats.
+//! Take the following document:
+//! 
+//! ```ignore
+//! {
+//! 	"id": 15,
+//! 	"timestamp": 1435935302478,
+//! 	"title": "my timestamped object"
+//! }
+//! ```
+//! 
+//! Using the `Date<EpochMillis>` type for the `timestamp`, we can correctly deserialise the document as a strongly typed
+//! object:
+//! 
+//! ```
+//! # #![feature(plugin, custom_derive, custom_attribute)]
+//! # #![plugin(serde_macros, elastic_types_macros)]
+//! # #[macro_use]
+//! # extern crate json_str;
+//! # #[macro_use]
+//! # extern crate elastic_types;
+//! # extern crate serde;
+//! # extern crate serde_json;
+//! # use serde::{ Serialize, Deserialize };
+//! # use elastic_types::prelude::*;
+//! #[derive(Serialize, Deserialize, ElasticType)]
+//! struct MyType {
+//! 	id: i32,
+//! 	timestamp: Date<EpochMillis>,
+//! 	title: String
+//! }
+//! 
+//! # fn main() {
+//! # let json = "{\"id\": 15,\"timestamp\": 1435935302478,\"title\": \"my timestamped object\"}";
+//! let de: MyType = serde_json::from_str(json).unwrap();
+//! 
+//! assert_eq!(2015, de.timestamp.year());
+//! # }
+//! ```
+//! 
 //! ## A Complete Example
 //! 
 //! Before digging in to the API, consider the following complete example for defining and mapping a
