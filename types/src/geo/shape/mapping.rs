@@ -144,13 +144,13 @@ T: ElasticFieldMapping<GeoShapeFormat> + GeoShapeMapping {
 
 		try!(serializer.serialize_struct_elt(&mut state, "type", T::data_type()));
 
-		ser_field!(serializer, &mut state, T::tree(), "tree");
-		ser_field!(serializer, &mut state, T::precision(), "precision");
-		ser_field!(serializer, &mut state, T::tree_levels(), "tree_levels");
-		ser_field!(serializer, &mut state, T::strategy(), "strategy");
-		ser_field!(serializer, &mut state, T::distance_error_pct(), "distance_error_pct");
-		ser_field!(serializer, &mut state, T::orientation(), "orientation");
-		ser_field!(serializer, &mut state, T::points_only(), "points_only");
+		ser_field!(serializer, &mut state, "tree", T::tree());
+		ser_field!(serializer, &mut state, "precision", T::precision());
+		ser_field!(serializer, &mut state, "tree_levels", T::tree_levels());
+		ser_field!(serializer, &mut state, "strategy", T::strategy());
+		ser_field!(serializer, &mut state, "distance_error_pct", T::distance_error_pct());
+		ser_field!(serializer, &mut state, "orientation", T::orientation());
+		ser_field!(serializer, &mut state, "points_only", T::points_only());
 
 		serializer.serialize_struct_end(state)
 	}

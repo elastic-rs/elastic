@@ -196,23 +196,23 @@ T: ElasticFieldMapping<TextFormat> + TextMapping {
 
 		try!(serializer.serialize_struct_elt(&mut state, "type", T::data_type()));
 
-		ser_field!(serializer, &mut state, T::boost(), "boost");
-		ser_field!(serializer, &mut state, T::analyzer(), "analyzer");
-		ser_field!(serializer, &mut state, T::eager_global_ordinals(), "eager_global_ordinals");
-		ser_field!(serializer, &mut state, T::fielddata(), "fielddata");
-		ser_field!(serializer, &mut state, T::fielddata_frequency_filter(), "fielddata_frequency_filter");
-		ser_field!(serializer, &mut state, T::fields(), "fields");
-		ser_field!(serializer, &mut state, T::include_in_all(), "include_in_all");
-		ser_field!(serializer, &mut state, T::ignore_above(), "ignore_above");
-		ser_field!(serializer, &mut state, T::index(), "index");
-		ser_field!(serializer, &mut state, T::index_options(), "index_options");
-		ser_field!(serializer, &mut state, T::norms(), "norms");
-		ser_field!(serializer, &mut state, T::position_increment_gap(), "position_increment_gap");
-		ser_field!(serializer, &mut state, T::store(), "store");
-		ser_field!(serializer, &mut state, T::search_analyzer(), "search_analyzer");
-		ser_field!(serializer, &mut state, T::search_quote_analyzer(), "search_quote_analyzer");
-		ser_field!(serializer, &mut state, T::similarity(), "similarity");
-		ser_field!(serializer, &mut state, T::term_vector(), "term_vector");
+		ser_field!(serializer, &mut state, "boost", T::boost());
+		ser_field!(serializer, &mut state, "analyzer", T::analyzer());
+		ser_field!(serializer, &mut state, "eager_global_ordinals", T::eager_global_ordinals());
+		ser_field!(serializer, &mut state, "fielddata", T::fielddata());
+		ser_field!(serializer, &mut state, "fielddata_frequency_filter", T::fielddata_frequency_filter());
+		ser_field!(serializer, &mut state, "fields", T::fields());
+		ser_field!(serializer, &mut state, "include_in_all", T::include_in_all());
+		ser_field!(serializer, &mut state, "ignore_above", T::ignore_above());
+		ser_field!(serializer, &mut state, "index", T::index());
+		ser_field!(serializer, &mut state, "index_options", T::index_options());
+		ser_field!(serializer, &mut state, "norms", T::norms());
+		ser_field!(serializer, &mut state, "position_increment_gap", T::position_increment_gap());
+		ser_field!(serializer, &mut state, "store", T::store());
+		ser_field!(serializer, &mut state, "search_analyzer", T::search_analyzer());
+		ser_field!(serializer, &mut state, "search_quote_analyzer", T::search_quote_analyzer());
+		ser_field!(serializer, &mut state, "similarity", T::similarity());
+		ser_field!(serializer, &mut state, "term_vector", T::term_vector());
 
 		serializer.serialize_struct_end(state)
 	}
@@ -268,9 +268,9 @@ impl Serialize for FieldDataFrequencyFilter {
 	S: Serializer {
 		let mut state = try!(serializer.serialize_struct("mapping", 3));
 
-		ser_field!(serializer, &mut state, self.min, "min");
-		ser_field!(serializer, &mut state, self.max, "max");
-		ser_field!(serializer, &mut state, self.min_segment_size, "min_segment_size");
+		ser_field!(serializer, &mut state, "min", self.min);
+		ser_field!(serializer, &mut state, "max", self.max);
+		ser_field!(serializer, &mut state, "min_segment_size", self.min_segment_size);
 
 		serializer.serialize_struct_end(state)
 	}
@@ -336,21 +336,21 @@ impl Serialize for TextFieldMapping {
 
 		try!(serializer.serialize_struct_elt(&mut state, "type", TEXT_DATATYPE));
 
-		ser_field!(serializer, &mut state, self.analyzer, "analyzer");
-		ser_field!(serializer, &mut state, self.eager_global_ordinals, "eager_global_ordinals");
-		ser_field!(serializer, &mut state, self.fielddata, "fielddata");
-		ser_field!(serializer, &mut state, self.fielddata_frequency_filter, "fielddata_frequency_filter");
-		ser_field!(serializer, &mut state, self.include_in_all, "include_in_all");
-		ser_field!(serializer, &mut state, self.ignore_above, "ignore_above");
-		ser_field!(serializer, &mut state, self.index, "index");
-		ser_field!(serializer, &mut state, self.index_options, "index_options");
-		ser_field!(serializer, &mut state, self.norms, "norms");
-		ser_field!(serializer, &mut state, self.position_increment_gap, "position_increment_gap");
-		ser_field!(serializer, &mut state, self.store, "store");
-		ser_field!(serializer, &mut state, self.search_analyzer, "search_analyzer");
-		ser_field!(serializer, &mut state, self.search_quote_analyzer, "search_quote_analyzer");
-		ser_field!(serializer, &mut state, self.similarity, "similarity");
-		ser_field!(serializer, &mut state, self.term_vector, "term_vector");
+		ser_field!(serializer, &mut state, "analyzer", self.analyzer);
+		ser_field!(serializer, &mut state, "eager_global_ordinals", self.eager_global_ordinals);
+		ser_field!(serializer, &mut state, "fielddata", self.fielddata);
+		ser_field!(serializer, &mut state, "fielddata_frequency_filter", self.fielddata_frequency_filter);
+		ser_field!(serializer, &mut state, "include_in_all", self.include_in_all);
+		ser_field!(serializer, &mut state, "ignore_above", self.ignore_above);
+		ser_field!(serializer, &mut state, "index", self.index);
+		ser_field!(serializer, &mut state, "index_options", self.index_options);
+		ser_field!(serializer, &mut state, "norms", self.norms);
+		ser_field!(serializer, &mut state, "position_increment_gap", self.position_increment_gap);
+		ser_field!(serializer, &mut state, "store", self.store);
+		ser_field!(serializer, &mut state, "search_analyzer", self.search_analyzer);
+		ser_field!(serializer, &mut state, "search_quote_analyzer", self.search_quote_analyzer);
+		ser_field!(serializer, &mut state, "similarity", self.similarity);
+		ser_field!(serializer, &mut state, "term_vector", self.term_vector);
 
 		serializer.serialize_struct_end(state)
 	}

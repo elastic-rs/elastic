@@ -8,6 +8,8 @@
 # Executables
 *.exe
 
+Cargo.lock
+
 # Visual Studio
 *.user
 *.suo

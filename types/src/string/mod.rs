@@ -16,7 +16,7 @@
 //! - [keyword mapping details](mapping/trait.KeywordMapping.html#derive-mapping)
 //! - [text mapping details](mapping/trait.TextMapping.html#derive-mapping).
 //!
-//! Map with a default `string` (follows the [semantics](CHECK ME) for legacy `string` mapping:
+//! Map with a default `string` (follows the semantics for legacy `string` mapping):
 //!
 //! ```
 //! struct MyType {
@@ -58,7 +58,7 @@
 //! 
 //! # Links
 //!
-//! - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/string.html)
+//! - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/master/string.html)
 
 macro_rules! impl_string_type {
     ($t:ident, $m:ident, $f:ident, $d:ident) => (

@@ -439,3 +439,4 @@ pub mod date;
 pub mod string;
 pub mod number;
 pub mod boolean;
+pub mod template;

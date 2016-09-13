@@ -148,11 +148,11 @@ F: GeoPointFormat {
 
 		try!(serializer.serialize_struct_elt(&mut state, "type", T::data_type()));
 
-		ser_field!(serializer, &mut state, T::geohash(), "geohash");
-		ser_field!(serializer, &mut state, T::geohash_precision(), "geohash_precision");
-		ser_field!(serializer, &mut state, T::geohash_prefix(), "geohash_prefix");
-		ser_field!(serializer, &mut state, T::ignore_malformed(), "ignore_malformed");
-		ser_field!(serializer, &mut state, T::lat_lon(), "lat_lon");
+		ser_field!(serializer, &mut state, "geohash", T::geohash());
+		ser_field!(serializer, &mut state, "geohash_precision", T::geohash_precision());
+		ser_field!(serializer, &mut state, "geohash_prefix", T::geohash_prefix());
+		ser_field!(serializer, &mut state, "ignore_malformed", T::ignore_malformed());
+		ser_field!(serializer, &mut state, "lat_lon", T::lat_lon());
 
 		serializer.serialize_struct_end(state)
 	}
