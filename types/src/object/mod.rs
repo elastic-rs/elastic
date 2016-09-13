@@ -18,7 +18,7 @@
 //! # use serde::{ Serialize, Deserialize };
 //! use elastic_types::prelude::*;
 //!
-//! #[derive(Default, Serialize, Deserialize, ElasticType)]
+//! #[derive(Serialize, ElasticType)]
 //! pub struct MyType {
 //! 	pub my_date: Date<DefaultDateFormat>,
 //! 	pub my_string: String,
@@ -26,11 +26,6 @@
 //! }
 //! # impl serde::Serialize for MyType {
 //! # 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where S: serde::Serializer {
-//! # 		unimplemented!()
-//! # 	}
-//! # }
-//! # impl serde::Deserialize for MyType {
-//! # 	 fn deserialize<D>(deserializer: &mut D) -> Result<Self, D::Error> where D: serde::Deserializer {
 //! # 		unimplemented!()
 //! # 	}
 //! # }
@@ -51,7 +46,7 @@
 //! # extern crate serde_json;
 //! # use serde::{ Serialize, Deserialize };
 //! # use elastic_types::prelude::*;
-//! # #[derive(Default, Serialize, Deserialize, ElasticType)]
+//! # #[derive(Serialize, ElasticType)]
 //! # pub struct MyType {
 //! # 	pub my_date: Date<DefaultDateFormat>,
 //! # 	pub my_string: String,
@@ -59,11 +54,6 @@
 //! # }
 //! # impl serde::Serialize for MyType {
 //! # 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where S: serde::Serializer {
-//! # 		unimplemented!()
-//! # 	}
-//! # }
-//! # impl serde::Deserialize for MyType {
-//! # 	 fn deserialize<D>(deserializer: &mut D) -> Result<Self, D::Error> where D: serde::Deserializer {
 //! # 		unimplemented!()
 //! # 	}
 //! # }
@@ -110,7 +100,7 @@
 //! # extern crate serde;
 //! # use serde::{ Serialize, Deserialize };
 //! # use elastic_types::prelude::*;
-//! #[derive(Default, Serialize, Deserialize, ElasticType)]
+//! #[derive(Serialize, ElasticType)]
 //! #[elastic(mapping="MyTypeMapping")]
 //! pub struct MyType {
 //! 	pub my_date: Date<DefaultDateFormat>,
@@ -128,11 +118,6 @@
 //! }
 //! # impl serde::Serialize for MyType {
 //! # 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where S: serde::Serializer {
-//! # 		unimplemented!()
-//! # 	}
-//! # }
-//! # impl serde::Deserialize for MyType {
-//! # 	 fn deserialize<D>(deserializer: &mut D) -> Result<Self, D::Error> where D: serde::Deserializer {
 //! # 		unimplemented!()
 //! # 	}
 //! # }
@@ -169,11 +154,6 @@
 //! # }
 //! # impl serde::Serialize for MyType {
 //! # 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where S: serde::Serializer {
-//! # 		unimplemented!()
-//! # 	}
-//! # }
-//! # impl serde::Deserialize for MyType {
-//! # 	 fn deserialize<D>(deserializer: &mut D) -> Result<Self, D::Error> where D: serde::Deserializer {
 //! # 		unimplemented!()
 //! # 	}
 //! # }
@@ -218,12 +198,12 @@
 //! # extern crate serde;
 //! # use serde::{ Serialize, Deserialize };
 //! # use elastic_types::prelude::*;
-//! #[derive(Default, Clone, Serialize, Deserialize, ElasticType)]
+//! #[derive(Serialize, ElasticType)]
 //! pub struct MyType {
 //! 	#[serde(rename="my_renamed_date")]
 //! 	pub my_date: Date<DefaultDateFormat>,
 //! 	#[serde(skip_serializing)]
-//! 	pub my_string: String,
+//! 	pub ignored: String,
 //! 	pub my_num: i32
 //! }
 //! # impl serde::Serialize for MyType {
@@ -231,14 +211,12 @@
 //! # 		unimplemented!()
 //! # 	}
 //! # }
-//! # impl serde::Deserialize for MyType {
-//! # 	 fn deserialize<D>(deserializer: &mut D) -> Result<Self, D::Error> where D: serde::Deserializer {
-//! # 		unimplemented!()
-//! # 	}
-//! # }
 //! # fn main() {
 //! # }
 //! ```
+//! 
+//! > NOTE: Fields with a `#[serde(skip_deserializing)]` attribute will still be mapped, because they can
+//! still be indexed in Elasticsearch.
 //!
 //! ## Limitations
 //!
@@ -266,7 +244,7 @@
 //! # extern crate elastic_types;
 //! use elastic_types::prelude::*;
 //!
-//! #[derive(Serialize, Deserialize)]
+//! #[derive(Serialize)]
 //! pub struct MyType {
 //! 	pub my_date: Date<DefaultDateFormat>,
 //! 	pub my_string: String,
@@ -408,7 +386,7 @@ Self: PropertiesMapping + Default {
 /// ```
 /// 
 /// It's easy to get an instance of the mapping for a given type by calling the static `mapping` function.
-/// This trait is automatically implemented for you when you [derive `ElasticType`](object/index.html#derive-mapping).
+/// This trait is automatically implemented for you when you `#[derive(ElasticType)]`.
 pub trait PropertiesMapping {
 	/// The number of mapped property fields for this type.
 	/// 

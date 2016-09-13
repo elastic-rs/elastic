@@ -76,7 +76,7 @@
 //! # use serde::{ Serialize, Deserialize };
 //! # use elastic_types::mapping::prelude::*;
 //! # use elastic_types::date::prelude::*;
-//! #[derive(Serialize, Deserialize, ElasticType)]
+//! #[derive(Serialize, ElasticType)]
 //! pub struct MyType {
 //! 	pub my_date: Date<DefaultDateFormat>,
 //! 	pub my_num: i32
@@ -95,7 +95,7 @@
 //! # }
 //! ```
 //!
-//! You can then serialise the mapping as json:
+//! You can then serialise your mapping as json using the [`TypeMapper`](mappers/struct.TypeMapper.html):
 //!
 //! ```
 //! # #![feature(plugin, custom_derive, custom_attribute)]
@@ -323,6 +323,30 @@
 //! This produces the same mapping as before.
 //! See the [`object`](object/index.html) mod for more details.
 //! 
+//! ### Overloading default mapping
+//! 
+//! You can override the default mapping for Elasticsearch's core datatypes by implementing
+//! the appropriate trait. In the below example, we create a custom `boolean` mapping:
+//! 
+//! ```
+//! # #![feature(plugin, custom_derive)]
+//! # #![plugin(json_str, elastic_types_macros)]
+//! # #[macro_use]
+//! # extern crate elastic_types;
+//! # extern crate serde;
+//! # use serde::{ Serialize, Deserialize };
+//! # use elastic_types::prelude::*;
+//! #[derive(Default)]
+//! struct MyMapping;
+//! impl BooleanMapping for MyMapping {
+//! 	fn boost() -> Option<f32> { Some(1.04) }
+//! }
+//! # fn main() {
+//! # }
+//! ```
+//! 
+//! For more details about the supported core datatypes and how to use them, see [here](#types).
+//! 
 //! ## A Complete Example
 //! 
 //! Before digging in to the API, consider the following complete example for defining and mapping a
@@ -457,37 +481,36 @@
 //! The source is the data (like `42` or `"my string"`) and the mapping is metadata about how to
 //! interpret and use the data (like the format of a date string).
 //!
-//! The approach `elastic_types` takes to types is to bundle the mapping up as a _Zero Sized Type_.
-//! This mapping type is then bound to a field as a generic parameter. For example:
+//! The approach `elastic_types` takes to types is to bundle the mapping up as a _Zero Sized Type_,
+//! which is then bound to a field type as a generic parameter. For example:
 //!
 //! ```ignore
-//! ElasticString<DefaultStringMapping>
+//! ElasticBoolean<MyMapping>
 //! ```
 //!
-//! The source is a `string` and the mapping is `DefaultStringMapping`.
+//! The source type is `boolean` and the mapping is `MyMapping`.
 //!
 //! All Elasticsearch types implement the base `ElasticType<M: ElasticFieldMapping<F>, F>` trait
 //! where `M` is the mapping and `F` is a type-specific format.
 //!
-//! The following table illustrates the types provided by `elastic_types`
-//! (with links to the relevant mapping type):
+//! The following table illustrates the types provided by `elastic_types`:
 //!
 //!  Elasticsearch Type  | Rust Type (Default Mapping) | Crate     | Rust Type (Custom Mapping)                                                       | Format Type
 //!  ------------------- | --------------------------- | --------- | -------------------------------------------------------------------------------- | -----------------
-//!  `object`            | -                           | -         | type implementing [`ElasticType<ObjectMapping>`](object/trait.ObjectMapping.html)| -
-//!  `integer`           | `i32`                       | `std`     | [`Integer<M>`](number/mapping/trait.IntegerMapping.html)                         | -
-//!  `long`              | `i64`                       | `std`     | [`Long<M>`](number/mapping/trait.LongMapping.html)                               | -
-//!  `short`             | `i16`                       | `std`     | [`Short<M>`](number/mapping/trait.ShortMapping.html)                             | -
-//!  `byte`              | `i8`                        | `std`     | [`Byte<M>`](number/mapping/trait.ByteMapping.html)                               | -
-//!  `float`             | `f32`                       | `std`     | [`Float<M>`](number/mapping/trait.FloatMapping.html)                             | -
-//!  `double`            | `f64`                       | `std`     | [`Double<M>`](number/mapping/trait.DoubleMapping.html)                           | -
-//!  `keyword`           | -                           | -         | [`Keyword<M>`](string/keyword/mapping/trait.KeywordMapping.html)                 | -
-//!  `text`              | `String`                    | `std`     | [`Text<M>`](string/text/mapping/trait.TextMapping.html)                          | -
-//!  `boolean`           | `bool`                      | `std`     | [`Boolean<M>`](boolean/mapping/trait.BooleanMapping.html)                        | -
-//!  `ip`                | `Ipv4Addr`                  | `std`     | [`Ip<M>`](ip/mapping/trait.IpMapping.html)                                       | -
-//!  `date`              | `DateTime<UTC>`             | `chrono`  | [`Date<F, M>`](date/mapping/trait.DateMapping.html)                              | `DateFormat`
-//!  `geo_point`         | `Point`                     | `geo`     | [`GeoPoint<F, M>`](geo/point/mapping/trait.GeoPointMapping.html)                 | `GeoPointFormat`
-//!  `geo_shape`         | -                           | `geojson` | [`GeoShape<M>`](geo/shape/mapping/trait.GeoShapeMapping.html)                    | -
+//!  `object`            | -                           | -         | type implementing [`ElasticType<ObjectMapping>`](object/index.html)              | -
+//!  `integer`           | `i32`                       | `std`     | [`Integer<M>`](number/index.html)                                                | -
+//!  `long`              | `i64`                       | `std`     | [`Long<M>`](number/index.html)                                                   | -
+//!  `short`             | `i16`                       | `std`     | [`Short<M>`](number/index.html)                                                  | -
+//!  `byte`              | `i8`                        | `std`     | [`Byte<M>`](number/index.html)                                                   | -
+//!  `float`             | `f32`                       | `std`     | [`Float<M>`](number/index.html)                                                  | -
+//!  `double`            | `f64`                       | `std`     | [`Double<M>`](number/index.html)                                                 | -
+//!  `keyword`           | -                           | -         | [`Keyword<M>`](string/index.html)                                                | -
+//!  `text`              | `String`                    | `std`     | [`Text<M>`](string/index.html)                                                   | -
+//!  `boolean`           | `bool`                      | `std`     | [`Boolean<M>`](boolean/index.html)                                               | -
+//!  `ip`                | `Ipv4Addr`                  | `std`     | [`Ip<M>`](ip/index.html)                                                         | -
+//!  `date`              | `DateTime<UTC>`             | `chrono`  | [`Date<F, M>`](date/index.html)                                                  | `DateFormat`
+//!  `geo_point`         | `Point`                     | `geo`     | [`GeoPoint<F, M>`](geo/point/index.html)                                         | `GeoPointFormat`
+//!  `geo_shape`         | -                           | `geojson` | [`GeoShape<M>`](geo/shape/index.html)                                            | -
 //!
 //! ## Mapping
 //!
@@ -510,9 +533,9 @@
 //!
 //! # Links
 //!
-//! - [Elasticsearch Mapping Concepts](https://www.elastic.co/guide/en/elasticsearch/guide/current/mapping.html)
+//! - [Elasticsearch Mapping Concepts](https://www.elastic.co/guide/en/elasticsearch/guide/master/mapping.html)
 //! - [Elasticsearch Type Concepts](https://www.elastic.co/guide/en/elasticsearch/reference/master/_basic_concepts.html#_type)
-//! - [Github](https://github.com/KodrAus/elasticsearch-rs)
+//! - [Github](https://github.com/elastic-rs/elastic-types)
 
 #![doc(html_root_url = "http://kodraus.github.io/rustdoc/elastic_types/")]
 #![deny(missing_docs)]

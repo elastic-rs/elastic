@@ -9,8 +9,8 @@
 //! and treats the type as `nested` when used as a field itself.
 //!
 //! # Links
-//! - [Field Types](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-types.html)
-//! - [User-defined Types](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping.html)
+//! - [Field Types](https://www.elastic.co/guide/en/elasticsearch/reference/master/mapping-types.html)
+//! - [User-defined Types](https://www.elastic.co/guide/en/elasticsearch/reference/master/mapping.html)
 
 pub mod prelude {
 	//! Includes mapping types for all data types.
@@ -51,7 +51,7 @@ use ::object::ObjectFormat;
 ///
 /// # Links
 ///
-/// - [Elasticsearch docs](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-types.html)
+/// - [Elasticsearch docs](https://www.elastic.co/guide/en/elasticsearch/reference/master/mapping-types.html)
 pub trait ElasticType<M, F = ObjectFormat> where
 M: ElasticFieldMapping<F>,
 F: Default,
@@ -142,7 +142,7 @@ impl Serialize for ElasticFieldMappingWrapper<DefaultMapping, ()> {
 	}
 }
 
-/// Mapping for a wrapped value.
+/// Mapping for a wrapped value, like an array or optional type.
 ///
 /// In Elasticsearch, arrays and optional types aren't special, anything can be indexed as an array or null.
 /// So the mapping for an array or optional type is just the mapping for the type it contains.

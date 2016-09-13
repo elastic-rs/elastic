@@ -2,7 +2,7 @@
 //!
 //! Mapping for types is inferred from the generic mapping parameters on `ElasticType`.
 //! 
-//! `TypeMapper`, for mapping user-defined types for the [Put Mapping API](https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-put-mapping.html).
+//! `TypeMapper`, for mapping user-defined types for the [Put Mapping API](https://www.elastic.co/guide/en/elasticsearch/reference/master/indices-put-mapping.html).
 //! 
 //! `FieldMapper`, for mapping any type as a field of a user-defined type.
 //! 
