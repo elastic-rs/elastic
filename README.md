@@ -1,7 +1,7 @@
 # [`elastic_types`](http://kodraus.github.io/rustdoc/0-5-x/elastic_types/) [![Latest Version](https://img.shields.io/crates/v/elastic_types.svg)](https://crates.io/crates/elastic_types)
 
 `elastic_types` is a library for building Elasticsearch types in Rust. Define your Elasticsearch types as PORS (Plain Old Rust Structures) and generate an equivalent Elasticsearch mapping from them, where correctness is enforced by Rust's type system.
-It provides rust implementations of the core [Elasticsearch datatypes](https://www.elastic.co/guide/en/elasticsearch/reference/1.4/mapping-core-types.html) (like `date`, `geo_point`) and responses/errors.
+It provides rust implementations of the core [Elasticsearch datatypes](https://www.elastic.co/guide/en/elasticsearch/reference/master/mapping-types.html#_core_datatypes) (like `date`, `geo_point`).
 
 It's especially helpful for the `date` and `geo_point` types, where serialisation for the various formats is provided for you.
 
