@@ -9,11 +9,11 @@ use std::marker::PhantomData;
 use std::time::Duration;
 use std::net::{ SocketAddr, SocketAddrV4, Ipv4Addr };
 
-use futures::{ promise, Promise, Complete };
+use futures::oneshot;
 use rotor::{ Notifier, Scope, GenericScope, Response, Void };
 use rotor::mio::tcp::TcpStream;
 use rotor_http::client::{ Client, Requester, Persistent, Connection, ProtocolError, Task };
-use super::{ Queue, Data, Message, ApiRequest };
+use super::{ Queue, Message, ApiRequest, ReqFut };
 
 /// Connect a persistent state machine to a node running on `localhost:9200`.
 pub fn connect_localhost<S: GenericScope, C>(scope: &mut S, handle: &mut Handle<'static>) -> Response<Persistent<Fsm<'static, C>, TcpStream>, Void> {
@@ -43,31 +43,23 @@ impl <'a> Handle<'a> {
 	}
 
 	/// Add a machine as a listener on this handle's queue.
-	pub fn add_listener(&mut self, notifier: Notifier) -> &'a Queue {
+	fn add_listener(&mut self, notifier: Notifier) -> &'a Queue {
 		self.notifiers.push(notifier);
 		&self.queue
 	}
 
 	/// Push a message to the queue and return a promise representing the response.
-	pub fn req(&self, msg: Message) -> Promise<Data> {
-		let (c, p) = promise();
+	pub fn req(&self, msg: Message) -> ReqFut {
+		let (c, p) = oneshot();
 
-		self.post(msg, Some(c));
+		self.queue.push((msg, c));
 
-		p
-	}
-
-	/// Push a message to the queue without worrying about responses.
-	pub fn send(&self, msg: Message) {
-		self.post(msg, None);
-	}
-
-	fn post(&self, msg: Message, returns: Option<Complete<Data>>) {
-		self.queue.push((msg, returns));
-
+		//TODO: Come up with a better strategy for wakeups
 		for notifier in &self.notifiers {
 			notifier.wakeup().unwrap();
 		}
+
+		p
 	}
 }
 
@@ -93,8 +85,8 @@ impl <'a, C> Client for Fsm<'a, C> {
 
 	fn connection_idle(self, _conn: &Connection, scope: &mut Scope<C>) -> Task<Self> {
 		//Look for a message without blocking
-		if let Some((msg, returns)) = self.queue.try_pop() {
-			Task::Request(self, ApiRequest::for_msg(msg, returns))
+		if let Some((msg, future)) = self.queue.try_pop() {
+			Task::Request(self, ApiRequest::for_msg(msg, future))
 		}
 		else {
 			Task::Sleep(self, scope.now() + Duration::from_millis(2000))

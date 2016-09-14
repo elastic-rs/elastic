@@ -14,14 +14,16 @@ use std::env;
 use time::Duration;
 use stopwatch::Stopwatch;
 use hyper::header::Connection;
-use elastic_types::response::*;
 use elastic_types::date::prelude::*;
+
+mod response;
+use self::response::*;
 
 #[derive(Deserialize)]
 struct BenchDoc {
     pub id: i32,
     pub title: String,
-    pub timestamp: ElasticDate<EpochMillis>
+    pub timestamp: Date<EpochMillis>
 }
 
 fn main() {

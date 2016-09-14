@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 use std::time::Duration;
 
-use futures::Complete;
+use futures::{ Oneshot, Complete };
 use crossbeam::sync::MsQueue;
 use rotor::{ Scope, Time };
 use rotor_http::client::{ Request, Requester, ResponseError, Head, RecvMode, Version };
@@ -53,24 +53,30 @@ impl Message {
 	}
 }
 
+/// A request future.
+pub type ReqFut = Oneshot<Data>;
+
+/// The completion part of a request future.
+type ReqComp = Complete<Data>;
+
 /// A common data format shared between producer and consumer.
 pub type Data = Result<Vec<u8>, &'static str>;
 
 /// A common message queue shared by multiple machines.
-pub type Queue = MsQueue<(Message, Option<Complete<Data>>)>;
+pub type Queue = MsQueue<(Message, ReqComp)>;
 
 /// A state machine for managing the HTTP component of an Elasticsearch connection.
 pub struct ApiRequest<C> {
 	msg: Message,
-	future: Option<Complete<Data>>,
+	future: ReqComp,
 	_marker: PhantomData<C>
 }
 
 impl <C> ApiRequest<C> {
-	pub fn for_msg(msg: Message, returns: Option<Complete<Data>>) -> Self {
+	pub fn for_msg(msg: Message, future: ReqComp) -> Self {
 		ApiRequest {
 			msg: msg,
-			future: returns,
+			future: future,
 			_marker: PhantomData
 		}
 	}
@@ -105,15 +111,11 @@ impl <C> Requester for ApiRequest<C> {
 	}
 
 	fn response_received(self, data: &[u8], _req: &mut Request, _scope: &mut Scope<Self::Context>) {
-		if let Some(c) = self.future {
-			c.complete(Ok(data.to_vec()));
-		}
+		self.future.complete(Ok(data.to_vec()));
 	}
 
 	fn bad_response(self, _err: &ResponseError, _scope: &mut Scope<Self::Context>) {
-		if let Some(c) = self.future {
-			c.complete(Err("nah it's broke m8. should use a proper error type here."));
-		}
+		self.future.complete(Err("nah it's broke m8. should use a proper error type here."));
 	}
 
 	fn response_chunk(self, _chunk: &[u8], _req: &mut Request, _scope: &mut Scope<Self::Context>) -> Option<Self> {

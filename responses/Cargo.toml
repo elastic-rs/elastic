@@ -1,0 +1,15 @@
+[package]
+name = "elastic_responses"
+version = "0.1.0"
+authors = ["Ashley Mannix <ashleymannix@live.com.au>"]
+license = "Apache-2.0"
+description = "A strongly-typed implementation of Elasticsearch API responses and errors."
+documentation = "http://kodraus.github.io/rustdoc/elastic_responses/"
+repository = "https://github.com/KodrAus/elasticsearch-rs"
+
+[features]
+nightly-testing = []
+
+[dependencies]
+serde = "~0.8.0"
+serde_json = "~0.8.0"

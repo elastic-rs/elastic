@@ -9,6 +9,11 @@
 //! Communication to the loop is through a non-blocking `Queue`, wrapped in a `Handle`.
 //! Responses (if wanted) will be retrieved through a channel, which blocks when requesting data.
 
+extern crate time;
+extern crate stopwatch;
+use time::Duration;
+use stopwatch::Stopwatch;
+
 extern crate crossbeam;
 extern crate futures;
 extern crate rotor;
@@ -22,7 +27,6 @@ mod conn;
 
 //Test usage
 use std::str;
-use std::time::Duration;
 use std::sync::mpsc;
 use std::thread;
 use futures::Future;
@@ -38,8 +42,11 @@ fn main() {
 	let (tx, rx) = mpsc::channel();
 
 	//Spawn an io thread
-	//TODO: Make this a future too
-	let pool = {
+	//TODO: Make this a future too, and clean up the node addition
+	//TODO: Maybe this should expect an &'static Queue?
+	//let client = ClientBuilder::new(&QUEUE).add_node(addr).add_node(addr).build();
+	//client.then(|c| { ... })
+	let client = {
 		thread::spawn(move || {
 			let mut handle = constant::Handle::new(&QUEUE);
 
@@ -48,13 +55,11 @@ fn main() {
 			let mut loop_inst = creator.instantiate(constant::Context);
 
 			//Add a state machine with a reference to our queue
-			loop_inst.add_machine_with(|scope| {
-				constant::connect_localhost(scope, &mut handle)
-			}).unwrap();
-
-			loop_inst.add_machine_with(|scope| {
-				constant::connect_localhost(scope, &mut handle)
-			}).unwrap();
+			for _ in 0..3 {
+				loop_inst.add_machine_with(|scope| {
+					constant::connect_localhost(scope, &mut handle)
+				}).unwrap();
+			}
 
 			//Send the constructed handle and start the loop
 			//Using a future for this means we can avoid returning the value until the machines are connected
@@ -64,32 +69,17 @@ fn main() {
 		rx.recv().unwrap()
 	};
 
-	//Index some documents: don't wait for any success confirmation
-	for i in 0..20 {
-		pool.send(conn::Message::post(
-			format!("/testindex/testtype/{}", i), 
-			format!("{{\"id\":{}}}", i).as_bytes()
-		));
-	}
+	let sw = Stopwatch::start_new();
 
-	//Search for documents
-	loop {
-		futures::Task::new().run(Box::new(
-			pool.req(conn::Message::get(
-				"/testindex/testtype/_search?pretty"
-			))
-			.then(|r| {
-				print_resp(r.unwrap());
-				futures::finished::<(), ()>(())
-			})
-		));
+	let total_reqs = 100;
+	let reqs: Vec<conn::ReqFut> = (0..total_reqs).map(|_| {
+		client.req(conn::Message::get("/testindex/testtype/_search"))
+	}).collect();
 
-		thread::sleep(Duration::from_millis(2000));
-	}
-}
+	futures::collect(reqs).wait().unwrap();
 
-fn print_resp(r: conn::Data) {
-	println!("{}", str::from_utf8(&r.unwrap()).unwrap());
-	println!("----------");
-	println!("");
+	let elapsed = Duration::from_std(sw.elapsed()).unwrap();
+	let elapsed = elapsed.num_nanoseconds().unwrap();
+
+	println!("took {}ns ({}ns per req)", elapsed, elapsed / (total_reqs as i64));
 }

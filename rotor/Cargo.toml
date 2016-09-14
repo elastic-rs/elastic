@@ -3,6 +3,9 @@ name = "elastic_rotor"
 version = "0.0.1"
 authors = ["Ashley Mannix <ashleymannix@live.com.au>"]
 
+[profile.release]
+debug = true
+
 [dependencies]
 url = "*"
 rotor = "*"
@@ -11,3 +14,6 @@ rotor-http = { version = "*", git = "https://github.com/KodrAus/rotor-http" }
 rotor-tools = "*"
 lazy_static = "*"
 crossbeam = "*"
+
+time = "*"
+stopwatch = "*"
