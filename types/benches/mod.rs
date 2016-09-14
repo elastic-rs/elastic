@@ -26,13 +26,16 @@ extern crate test;
 extern crate elastic_types;
 
 pub mod date_fixtures {
-	use std::marker::PhantomData;
 	use elastic_types::mapping::prelude::*;
 	use elastic_types::date::prelude::*;
 
-	date_mapping!(MyDateMapping {
-		fn null_value() -> Option<ElasticDate<F, Self>> {
-			Some(ElasticDate::build(2015, 3, 14, 16, 45, 13, 778))
+	#[derive(Default, Clone)]
+	pub struct MyDateMapping;
+	impl DateMapping for MyDateMapping {
+		type Format = EpochMillis;
+
+		fn null_value() -> Option<Date<Self::Format, Self>> {
+			Some(Date::build(2015, 3, 14, 16, 45, 13, 778))
 		}
 
 		fn boost() -> Option<f32> 				{ Some(1.01) }
@@ -46,19 +49,21 @@ pub mod date_fixtures {
 		fn store() -> Option<bool> 				{ Some(true) }
 
 		fn ignore_malformed() -> Option<bool> 	{ Some(true) }
-	});
+	}
 }
 
 pub mod string_fixtures {
 	use std::collections::BTreeMap;
 	use elastic_types::mapping::prelude::*;
 
-	text_mapping!(MyTextMapping {
+	#[derive(Default, Clone)]
+	pub struct MyTextMapping;
+	impl TextMapping for MyTextMapping {
 		fn fields() -> Option<BTreeMap<&'static str, ElasticStringField>> {
 			let mut fields = BTreeMap::new();
 
 			fields.insert("raw", ElasticStringField::Keyword(
-				ElasticKeywordFieldMapping {
+				KeywordFieldMapping {
 					analyzer: Some("my_analyzer"),
 					..Default::default()
 				})
@@ -108,14 +113,16 @@ pub mod string_fixtures {
 		fn similarity() -> Option<&'static str> 			{ Some("BM25") }
 
 		fn term_vector() -> Option<TermVector> 				{ Some(TermVector::Yes) }
-	});
+	}
 
-	keyword_mapping!(MyKeywordMapping {
+	#[derive(Default, Clone)]
+	pub struct MyKeywordMapping;
+	impl KeywordMapping for MyKeywordMapping {
 		fn fields() -> Option<BTreeMap<&'static str, ElasticStringField>> {
 			let mut fields = BTreeMap::new();
 
 			fields.insert("text", ElasticStringField::Text(
-				ElasticTextFieldMapping {
+				TextFieldMapping {
 					analyzer: Some("my_analyzer"),
 					..Default::default()
 				})
@@ -157,13 +164,15 @@ pub mod string_fixtures {
 		fn search_analyzer() -> Option<&'static str> 	{ Some("my_analyzer") }
 
 		fn similarity() -> Option<&'static str> 		{ Some("classic") }
-	});
+	}
 }
 
 pub mod boolean_fixtures {
 	use elastic_types::mapping::prelude::*;
 
-	boolean_mapping!(MyBooleanMapping {
+	#[derive(Default, Clone)]
+	pub struct MyBooleanMapping;
+	impl BooleanMapping for MyBooleanMapping {
 		fn boost() -> Option<f32> 			{ Some(1.01) }
 
 		fn index() -> Option<bool> 			{ Some(false) }
@@ -173,13 +182,15 @@ pub mod boolean_fixtures {
 		fn store() -> Option<bool> 			{ Some(true) }
 
 		fn null_value() -> Option<bool> 	{ Some(false) }
-	});
+	}
 }
 
 pub mod number_fixtures {
 	use elastic_types::mapping::prelude::*;
 
-	integer_mapping!(MyIntegerMapping {
+	#[derive(Default, Clone)]
+	pub struct MyIntegerMapping;
+	impl IntegerMapping for MyIntegerMapping {
 		fn coerce() -> Option<bool> 			{ Some(true) }
 
 		fn boost() -> Option<f32> 				{ Some(1.1) }
@@ -195,9 +206,11 @@ pub mod number_fixtures {
 		fn store() -> Option<bool> 				{ Some(true) }
 
 		fn null_value() -> Option<i32> 			{ Some(42) }
-	});
+	}
 
-	long_mapping!(MyLongMapping {
+	#[derive(Default, Clone)]
+	pub struct MyLongMapping;
+	impl LongMapping for MyLongMapping {
 		fn coerce() -> Option<bool> 			{ Some(true) }
 
 		fn boost() -> Option<f32> 				{ Some(1.1) }
@@ -213,9 +226,11 @@ pub mod number_fixtures {
 		fn store() -> Option<bool> 				{ Some(true) }
 
 		fn null_value() -> Option<i64> 			{ Some(-42) }
-	});
+	}
 
-	short_mapping!(MyShortMapping {
+	#[derive(Default, Clone)]
+	pub struct MyShortMapping;
+	impl ShortMapping for MyShortMapping {
 		fn coerce() -> Option<bool> 			{ Some(true) }
 
 		fn boost() -> Option<f32> 				{ Some(1.1) }
@@ -231,9 +246,11 @@ pub mod number_fixtures {
 		fn store() -> Option<bool> 				{ Some(true) }
 
 		fn null_value() -> Option<i16> 			{ Some(42) }
-	});
+	}
 
-	byte_mapping!(MyByteMapping {
+	#[derive(Default, Clone)]
+	pub struct MyByteMapping;
+	impl ByteMapping for MyByteMapping {
 		fn coerce() -> Option<bool> 			{ Some(true) }
 
 		fn boost() -> Option<f32> 				{ Some(1.1) }
@@ -249,9 +266,11 @@ pub mod number_fixtures {
 		fn store() -> Option<bool> 				{ Some(true) }
 
 		fn null_value() -> Option<i8> 			{ Some(1) }
-	});
+	}
 
-	float_mapping!(MyFloatMapping {
+	#[derive(Default, Clone)]
+	pub struct MyFloatMapping;
+	impl FloatMapping for MyFloatMapping {
 		fn coerce() -> Option<bool> 			{ Some(true) }
 
 		fn boost() -> Option<f32> 				{ Some(1.1) }
@@ -267,9 +286,11 @@ pub mod number_fixtures {
 		fn store() -> Option<bool> 				{ Some(true) }
 
 		fn null_value() -> Option<f32> 			{ Some(1.04) }
-	});
+	}
 
-	double_mapping!(MyDoubleMapping {
+	#[derive(Default, Clone)]
+	pub struct MyDoubleMapping;
+	impl DoubleMapping for MyDoubleMapping {
 		fn coerce() -> Option<bool> 			{ Some(true) }
 
 		fn boost() -> Option<f32> 				{ Some(1.1) }
@@ -285,14 +306,16 @@ pub mod number_fixtures {
 		fn store() -> Option<bool> 				{ Some(true) }
 
 		fn null_value() -> Option<f64> 			{ Some(-0.00002) }
-	});
+	}
 }
 
 pub mod ip_fixtures {
 	use std::net::Ipv4Addr;
 	use elastic_types::mapping::prelude::*;
 
-	ip_mapping!(MyIpMapping {
+	#[derive(Default, Clone)]
+	pub struct MyIpMapping;
+	impl IpMapping for MyIpMapping {
 		fn boost() -> Option<f32> 				{ Some(1.01) }
 
 		fn index() -> Option<bool> 				{ Some(false) }
@@ -301,15 +324,18 @@ pub mod ip_fixtures {
 
 		fn store() -> Option<bool> 				{ Some(true) }
 
-		fn null_value() -> Option<Ipv4Addr> 	{ Some(Ipv4Addr::new(127, 0, 0, 1)) }		
-	});
+		fn null_value() -> Option<Ipv4Addr> 	{ Some(Ipv4Addr::new(127, 0, 0, 1)) }	
+	}
 }
 
 pub mod geo_point_fixtures {
-	use std::marker::PhantomData;
-	use elastic_types::mapping::prelude::*;
+	use elastic_types::prelude::*;
 
-	geo_point_mapping!(MyGeoPointMapping {
+	#[derive(Default, Clone)]
+	pub struct MyGeoPointMapping;
+	impl GeoPointMapping for MyGeoPointMapping {
+		type Format = GeoPointArray;
+
 		fn geohash() -> Option<bool> 				{ Some(false) }
 
 		fn geohash_precision() -> Option<Distance> 	{ Some(Distance(50.0, DistanceUnit::Meters)) }
@@ -319,14 +345,16 @@ pub mod geo_point_fixtures {
 		fn ignore_malformed() -> Option<bool> 		{ Some(true) }
 
 		fn lat_lon() -> Option<bool> 				{ Some(true) }
-	});
+	}
 }
 
 pub mod geo_shape_fixtures {
 	use elastic_types::mapping::prelude::*;
 
-	geo_shape_mapping!(MyGeoShapeMapping {
-		fn tree() -> Option<Tree> { Some(Tree::Geohash) }
+	#[derive(Default, Clone)]
+	pub struct MyGeoShapeMapping;
+	impl GeoShapeMapping for MyGeoShapeMapping {
+		fn tree() -> Option<Tree> 					{ Some(Tree::Geohash) }
 
 		fn precision() -> Option<Distance> 			{ Some(Distance(50.0, DistanceUnit::Meters)) }
 
@@ -339,7 +367,7 @@ pub mod geo_shape_fixtures {
 		fn orientation() -> Option<Orientation> 	{ Some(Orientation::Clockwise) }
 
 		fn points_only() -> Option<bool> 			{ Some(false) }
-	});
+	}
 }
 
 pub mod object_fixtures {
@@ -349,50 +377,59 @@ pub mod object_fixtures {
 
 	#[derive(Default, Clone)]
 	pub struct MySmlMapping;
-	type_mapping!(ty MySmlMapping {
+	impl ObjectMapping for MySmlMapping {
+		fn name() -> &'static str { "ty" }
+	}
+	impl PropertiesMapping for MySmlMapping {
 		fn props_len() -> usize { 3 }
 		
 		fn serialize_props<S>(serializer: &mut S, state: &mut S::StructState) -> Result<(), S::Error>
 		where S: serde::Serializer {
-			try!(serializer.serialize_struct_elt(state, "integer", i32::mapping()));
-			try!(serializer.serialize_struct_elt(state, "string", String::mapping()));
-			try!(serializer.serialize_struct_elt(state, "date", DateTime::<UTC>::mapping()));
+			try!(field_ser(serializer, state, "integer", i32::mapping()));
+			try!(field_ser(serializer, state, "string", String::mapping()));
+			try!(field_ser(serializer, state, "date", DateTime::<UTC>::mapping()));
 
 			Ok(())
 		}
-	});
+	}
 
 	#[derive(Default, Clone)]
 	pub struct MyMedMapping;
-	type_mapping!(ty MyMedMapping {
+	impl ObjectMapping for MyMedMapping {
+		fn name() -> &'static str { "ty" }
+	}
+	impl PropertiesMapping for MyMedMapping {
 		fn props_len() -> usize { 4 }
 		
 		fn serialize_props<S>(serializer: &mut S, state: &mut S::StructState) -> Result<(), S::Error>
 		where S: serde::Serializer {
-			try!(serializer.serialize_struct_elt(state, "integer", i32::mapping()));
-			try!(serializer.serialize_struct_elt(state, "string", String::mapping()));
-			try!(serializer.serialize_struct_elt(state, "date", DateTime::<UTC>::mapping()));
-			try!(serializer.serialize_struct_elt(state, "field", MySmlMapping));
+			try!(field_ser(serializer, state, "integer", i32::mapping()));
+			try!(field_ser(serializer, state, "string", String::mapping()));
+			try!(field_ser(serializer, state, "date", DateTime::<UTC>::mapping()));
+			try!(field_ser(serializer, state, "field", MySmlMapping));
 
 			Ok(())
 		}
-	});
+	}
 
 	#[derive(Default, Clone)]
 	pub struct MyLrgMapping;
-	type_mapping!(ty MyLrgMapping {
+	impl ObjectMapping for MyLrgMapping {
+		fn name() -> &'static str { "ty" }
+	}
+	impl PropertiesMapping for MyLrgMapping {
 		fn props_len() -> usize { 4 }
 		
 		fn serialize_props<S>(serializer: &mut S, state: &mut S::StructState) -> Result<(), S::Error>
 		where S: serde::Serializer {
-			try!(serializer.serialize_struct_elt(state, "integer", i32::mapping()));
-			try!(serializer.serialize_struct_elt(state, "string", String::mapping()));
-			try!(serializer.serialize_struct_elt(state, "date", DateTime::<UTC>::mapping()));
-			try!(serializer.serialize_struct_elt(state, "field", MyMedMapping));
+			try!(field_ser(serializer, state, "integer", i32::mapping()));
+			try!(field_ser(serializer, state, "string", String::mapping()));
+			try!(field_ser(serializer, state, "date", DateTime::<UTC>::mapping()));
+			try!(field_ser(serializer, state, "field", MyMedMapping));
 
 			Ok(())
 		}
-	});
+	}
 }
 
 pub mod object;

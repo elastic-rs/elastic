@@ -5,16 +5,8 @@
 //! requirements as generic parameters.
 //! Most of the work lives in the `ElasticFieldMapping`, which holds the serialisation requirements
 //! to convert a Rust type into an Elasticsearch mapping.
-//! User-defined types must also implement `ElasticUserTypeMapping`, which maps the fields of a struct as properties,
+//! User-defined types must also implement `ObjectMapping`, which maps the fields of a struct as properties,
 //! and treats the type as `nested` when used as a field itself.
-//!
-//! # Notes
-//!
-//! Currently, there's a lot of ceremony around the type mapping.
-//! The reason for doing this with types instead of simple hashmaps is to try and capture type mapping using types themselves.
-//! This means more boilerplate while certain Rust features haven't landed yet ([negative trait bounds](https://github.com/rust-lang/rfcs/issues/1053)),
-//! but it also constrains the shapes that Elasticsearch types can take by using the Rust type system.
-//! That seems like a nice property.
 //!
 //! # Links
 //! - [Field Types](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-types.html)
@@ -42,11 +34,12 @@ pub mod prelude {
 	pub use ::boolean::mapping::*;
 }
 
-use std::collections;
+use std::collections::{ BTreeMap, HashMap };
 use std::hash::Hash;
 use std::marker::PhantomData;
-use serde;
-use serde_json;
+use serde::{ Serialize, Serializer };
+use serde_json::Value;
+use ::object::ObjectFormat;
 
 /// The base representation of an Elasticsearch data type.
 ///
@@ -54,22 +47,23 @@ use serde_json;
 /// Each type has two generic arguments that help define its mapping:
 ///
 /// - A mapping type, which implements `ElasticFieldMapping`
-/// - A format type, which is usually `()`. Types with multiple formats, like `ElasticDate`, can use the format in the type definition.
+/// - A format type, which is usually `()`. Types with multiple formats, like `Date`, can use the format in the type definition.
 ///
 /// # Links
 ///
 /// - [Elasticsearch docs](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-types.html)
-pub trait ElasticType<T, F> where
-T: 'static + ElasticFieldMapping<F>,
-Self: serde::Serialize {
-	/// Get the type name for the given mapping.
-	fn name() -> &'static str {
-		T::name()
+pub trait ElasticType<M, F = ObjectFormat> where
+M: ElasticFieldMapping<F>,
+F: Default,
+Self: Serialize {
+	/// Get the mapping for this type.
+	fn mapping() -> M {
+		M::default()
 	}
 
-	/// Get the mapping for this type.
-	fn mapping() -> T {
-		T::default()
+	#[doc(hidden)]
+	fn mapping_ser() -> M::SerType {
+		M::ser()
 	}
 }
 
@@ -79,12 +73,26 @@ Self: serde::Serialize {
 /// If you're building your own Elasticsearch types, see `ElasticUserTypeMapping`,
 /// which is a specialization of `ElasticFieldMapping<()>`.
 pub trait ElasticFieldMapping<F>
-where Self: 'static + Default + Clone + serde::Serialize {
+where Self: Default,
+F: Default {
+	#[doc(hidden)]
+	type SerType: Serialize + Default;
+	#[doc(hidden)]
+	fn ser() -> Self::SerType {
+		Self::SerType::default()
+	}
+
 	/// Get the type name for this mapping, like `date` or `string`.
 	fn data_type() -> &'static str { "object" }
+}
 
-	#[doc(hidden)]
-	fn name() -> &'static str { Self::data_type() }
+#[doc(hidden)]
+#[derive(Default)]
+pub struct ElasticFieldMappingWrapper<M, F> where
+M: ElasticFieldMapping<F>,
+F: Default {
+	_m: PhantomData<M>,
+	_f: PhantomData<F>
 }
 
 /// Should the field be searchable? Accepts `not_analyzed` (default) and `no`.
@@ -105,10 +113,9 @@ pub enum IndexAnalysis {
 	No
 }
 
-impl serde::Serialize for IndexAnalysis {
-	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
-		where S: serde::Serializer
-	{
+impl Serialize for IndexAnalysis {
+	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where 
+	S: Serializer {
 		serializer.serialize_str(match *self {
 			IndexAnalysis::Analyzed => "analyzed",
 			IndexAnalysis::NotAnalyzed => "not_analyzed",
@@ -117,106 +124,63 @@ impl serde::Serialize for IndexAnalysis {
 	}
 }
 
-/// A mapping implementation for a non-core type, or any where it's ok for Elasticsearch to infer the mapping at index-time.
+/// A mapping implementation for a non-core type, or anywhere it's ok for Elasticsearch to infer the mapping at index-time.
 #[derive(Debug, PartialEq, Default, Clone)]
 pub struct DefaultMapping;
-impl ElasticFieldMapping<()> for DefaultMapping { }
+impl ElasticFieldMapping<()> for DefaultMapping { 
+	type SerType = ElasticFieldMappingWrapper<Self, ()>;
+}
 
-impl serde::Serialize for DefaultMapping {
-	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
-	where S: serde::Serializer {
+impl Serialize for ElasticFieldMappingWrapper<DefaultMapping, ()> {
+	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where 
+	S: Serializer {
 		let mut state = try!(serializer.serialize_struct("mapping", 1));
 
-		try!(serializer.serialize_struct_elt(&mut state, "type", Self::data_type()));
+		try!(serializer.serialize_struct_elt(&mut state, "type", DefaultMapping::data_type()));
 
 		serializer.serialize_struct_end(state)
 	}
 }
 
-/// Mapping for a collection.
+/// Mapping for a wrapped value.
 ///
-/// In Elasticsearch, arrays aren't a special type, anything can be indexed as an array.
-/// So the mapping for an array is just the mapping for its members.
+/// In Elasticsearch, arrays and optional types aren't special, anything can be indexed as an array or null.
+/// So the mapping for an array or optional type is just the mapping for the type it contains.
 #[derive(Debug, Default, Clone)]
-pub struct ElasticArrayMapping<M, F> where
-M: 'static + ElasticFieldMapping<F>,
-F: 'static + Default + Clone {
-	phantom_m: PhantomData<M>,
-	phantom_f: PhantomData<F>
+pub struct ElasticWrappedMapping<M, F> where
+M: ElasticFieldMapping<F>,
+F: Default {
+	_m: PhantomData<M>,
+	_f: PhantomData<F>
 }
 
-impl <M, F> ElasticFieldMapping<F> for ElasticArrayMapping<M, F> where
-M: 'static + ElasticFieldMapping<F>,
-F: 'static + Default + Clone {
+impl <M, F> ElasticFieldMapping<F> for ElasticWrappedMapping<M, F> where
+M: ElasticFieldMapping<F>,
+F: Default {
+	type SerType = M::SerType;
+
 	fn data_type() -> &'static str { M::data_type() }
 }
 
-impl <M, F> serde::Serialize for ElasticArrayMapping<M, F> where
-M: 'static + ElasticFieldMapping<F>,
-F: 'static + Default + Clone {
-	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
-	where S: serde::Serializer {
-		M::default().serialize(serializer)
-	}
-}
+/// Mapping implementation for a `serde_json::Value`.
+impl ElasticType<DefaultMapping, ()> for Value { }
 
-impl <T, M, F> ElasticType<ElasticArrayMapping<M, F>, F> for Vec<T> where
-T: 'static + ElasticType<M, F>,
-M: 'static + ElasticFieldMapping<F>,
-F: 'static + Default + Clone {
+/// Mapping implementation for a standard binary tree map.
+impl <K, V> ElasticType<DefaultMapping, ()> for BTreeMap<K, V> where
+K: AsRef<str> + Ord + Serialize,
+V: Serialize { }
 
-}
+/// Mapping implementation for a standard hash map.
+impl <K, V> ElasticType<DefaultMapping, ()> for HashMap<K, V> where
+K: AsRef<str> + Eq + Hash + Serialize,
+V: Serialize { }
 
-/// Mapping for an optional type.
-///
-/// Elasticsearch doesn't differentiate between properties that are nullable or not.
-/// That means the only _really_ safe way to map your fields is to make them all `Option<T>`
-/// instead of `T`.
-/// This probably isn't necessary unless you have no control over the indexed data though.
-#[derive(Debug, Default, Clone)]
-pub struct ElasticOptionMapping<M, F> where
-M: 'static + ElasticFieldMapping<F>,
-F: 'static + Default + Clone {
-	phantom_m: PhantomData<M>,
-	phantom_f: PhantomData<F>
-}
+impl <T, M, F> ElasticType<ElasticWrappedMapping<M, F>, F> for Vec<T> where
+T: ElasticType<M, F>,
+M: ElasticFieldMapping<F>,
+F: Default { }
 
-impl <M, F> ElasticFieldMapping<F> for ElasticOptionMapping<M, F> where
-M: 'static + ElasticFieldMapping<F>,
-F: 'static + Default + Clone {
-	fn data_type() -> &'static str { M::data_type() }
-}
-
-impl <M, F> serde::Serialize for ElasticOptionMapping<M, F> where
-M: 'static + ElasticFieldMapping<F>,
-F: 'static + Default + Clone {
-	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
-	where S: serde::Serializer {
-		M::default().serialize(serializer)
-	}
-}
-
-impl <T, M, F> ElasticType<ElasticOptionMapping<M, F>, F> for Option<T> where
-T: 'static + ElasticType<M, F>,
-M: 'static + ElasticFieldMapping<F>,
-F: 'static + Default + Clone {
-
-}
-
-//It's not possible to know at compile-time exactly what type Value can take.
-//The only way to map it as as a default object.
-impl ElasticType<DefaultMapping, ()> for serde_json::Value {
-
-}
-
-impl <K, V> ElasticType<DefaultMapping, ()> for collections::BTreeMap<K, V> where
-K: AsRef<str> + Ord + serde::Serialize,
-V: serde::Serialize {
-
-}
-
-impl <K, V> ElasticType<DefaultMapping, ()> for collections::HashMap<K, V> where
-K: AsRef<str> + Eq + Hash + serde::Serialize,
-V: serde::Serialize {
-
-}
+impl <T, M, F> ElasticType<ElasticWrappedMapping<M, F>, F> for Option<T> where
+T: ElasticType<M, F>,
+M: ElasticFieldMapping<F>,
+F: Default { }

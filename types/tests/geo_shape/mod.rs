@@ -16,11 +16,11 @@ use ::geo_shape_fixtures::*;
 
 #[test]
 fn can_change_geo_shape_mapping() {
-	fn takes_custom_mapping(_: ElasticGeoShape<MyGeoShapeMapping>) -> bool {
+	fn takes_custom_mapping(_: GeoShape<MyGeoShapeMapping>) -> bool {
 		true
 	}
 
-	let point: ElasticGeoShape<DefaultGeoShapeMapping> = ElasticGeoShape::new(
+	let point: GeoShape<DefaultGeoShapeMapping> = GeoShape::new(
 		Geometry::new(
 			Value::Point(vec![ 1.0, 1.0 ])
 		)
@@ -31,7 +31,7 @@ fn can_change_geo_shape_mapping() {
 
 #[test]
 fn serialise_elastic_geo_shape() {
-	let shape = ElasticGeoShape::<DefaultGeoShapeMapping>::new(
+	let shape = GeoShape::<DefaultGeoShapeMapping>::new(
 		Geometry::new(
 			Value::Point(vec![ 1.0, 1.0 ])
 		)
@@ -47,7 +47,7 @@ fn serialise_elastic_geo_shape() {
 
 #[test]
 fn deserialise_elastic_geo_shape() {
-	let shape: ElasticGeoShape<DefaultGeoShapeMapping> = serde_json::from_str(&json_str!({
+	let shape: GeoShape<DefaultGeoShapeMapping> = serde_json::from_str(&json_str!({
 		"coordinates": [ 1, 1 ],
 		"type": "Point"
 	})).unwrap();

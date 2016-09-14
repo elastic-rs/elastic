@@ -6,18 +6,18 @@
 //! Where performance is paramount, the `EpochMillis` date format will parse and format dates the fastest,
 //! especially on the `stable` channel.
 //!
-//! Because date conversion needs to be done by the `caller`, the `Format` is a first-class citizen in the `ElasticDate` design.
+//! Because date conversion needs to be done by the `caller`, the `Format` is a first-class citizen in the `Date` design.
 //!
 //! # Examples
 //! 
-//! For defining your own date mapping, see [mapping details](mapping/trait.ElasticDateMapping.html#derive-mapping).
+//! For defining your own date mapping, see [mapping details](mapping/trait.DateMapping.html#derive-mapping).
 //!
 //! Map with a default `date`:
 //!
 //! ```
 //! # use elastic_types::prelude::*;
 //! struct MyType {
-//! 	pub field: ElasticDate<DefaultDateFormat>
+//! 	pub field: Date<DefaultDateFormat>
 //! }
 //! ```
 //!
@@ -33,17 +33,19 @@
 //! # use elastic_types::prelude::*;
 //! # fn main() {
 //! # use elastic_types::prelude::*;
-//! # date_mapping!(MyDateMapping {});
+//! # #[derive(Default)]
+//! # struct MyDateMapping;
+//! # impl DateMapping for MyDateMapping { type Format = EpochMillis; }
 //! struct MyType {
-//! 	pub field: ElasticDate<EpochMillis, MyDateMapping<EpochMillis>>
+//! 	pub field: Date<EpochMillis, MyDateMapping>
 //! }
 //! # }
 //! ```
 //!
 //! ## Creating Formats
 //! 
-//! To make it easier to build formats, use the `date_fmt!` macro 
-//! from [`elastic_date_macros`](http://kodraus.github.io/rustdoc/elastic_date_macros/index.html) to convert a string format to `Item`s.
+//! To make it easier to build your own date formats, use the `date_fmt!` macro.
+//! This will convert an Elasticsearch or `chrono` format string into a `Vec<Item>` for efficient parsing at runtime:
 //! 
 //! ```
 //! # #![feature(plugin)]
@@ -56,11 +58,11 @@
 //! # fn main() {
 //! #[derive(Default, Clone)]
 //! struct MyFormat;
-//! impl_date_fmt!(MyFormat, "yyyy-MM-ddTHH:mm:ss", "yyyy-MM-dd'T'HH:mm:ss");
+//! date_fmt!(MyFormat, "yyyy-MM-ddTHH:mm:ss", "yyyy-MM-dd'T'HH:mm:ss");
 //! # }
 //! ```
 //! 
-//! You can also avoid having to use `Item`s by implementing `CustomDateFormat` and handling formatting and parsing yourself:
+//! You can also implement `CustomDateFormat` yourself and write your own arbitrary format/parse logic:
 //!
 //! ```
 //! # #![feature(plugin)]
@@ -102,11 +104,10 @@ pub use self::format::*;
 pub use self::date::*;
 pub use self::formats::*;
 
-use chrono;
-use chrono::UTC;
+use chrono::{ DateTime, UTC };
 
 /// A re-export of the `chrono::DateTime` struct with `UTC` timezone.
-pub type DT = chrono::DateTime<UTC>;
+pub type ChronoDateTime = DateTime<UTC>;
 
 /// The default `date` format (`BasicDateTime`).
 pub type DefaultDateFormat = BasicDateTime;

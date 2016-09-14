@@ -15,8 +15,7 @@ fn bool_has_default_mapping() {
 
 #[test]
 fn serialise_mapping_default() {
-	let mapping = DefaultBooleanMapping::default();
-	let ser = serde_json::to_string(&mapping).unwrap();
+	let ser = FieldMapper::to_string(DefaultBooleanMapping).unwrap();
 
 	let expected = json_str!({
 		"type": "boolean"
@@ -27,8 +26,7 @@ fn serialise_mapping_default() {
 
 #[test]
 fn serialise_mapping_custom() {
-	let mapping = MyBooleanMapping;
-	let ser = serde_json::to_string(&mapping).unwrap();
+	let ser = FieldMapper::to_string(MyBooleanMapping).unwrap();
 
 	let expected = json_str!({
 		"type": "boolean",

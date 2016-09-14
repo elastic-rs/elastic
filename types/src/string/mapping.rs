@@ -1,8 +1,8 @@
 //! Common mapping for the Elasticsearch `string` types.
 
 use std::collections::BTreeMap;
-use serde::{ self, Serializer };
-use ::mapping::{ ElasticFieldMapping, IndexAnalysis };
+use serde::{ Serialize, Serializer };
+use ::mapping::{ IndexAnalysis, ElasticType };
 
 pub use super::keyword::mapping::*;
 pub use super::text::mapping::*;
@@ -15,12 +15,12 @@ pub const COMPLETION_DATATYPE: &'static str = "completion";
 /// Default mapping for `String`.
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultStringMapping;
-impl ElasticTextMapping for DefaultStringMapping {
+impl TextMapping for DefaultStringMapping {
 	fn fields() -> Option<BTreeMap<&'static str, ElasticStringField>> {
 		let mut fields = BTreeMap::new();
 
 		fields.insert("keyword", ElasticStringField::Keyword(
-			ElasticKeywordFieldMapping {
+			KeywordFieldMapping {
 				ignore_above: Some(256),
 				..Default::default()
 			})
@@ -30,9 +30,7 @@ impl ElasticTextMapping for DefaultStringMapping {
 	}
 }
 
-text_mapping!(DefaultStringMapping);
-
-impl ::mapping::ElasticType<DefaultStringMapping, ()> for String { }
+impl ElasticType<DefaultStringMapping, TextFormat> for String { }
 
 /// The `index_options` parameter controls what information is added to the inverted index, for search and highlighting purposes.
 #[derive(Debug, Clone, Copy)]
@@ -51,7 +49,7 @@ pub enum IndexOptions {
 	Offsets
 }
 
-impl serde::Serialize for IndexOptions {
+impl Serialize for IndexOptions {
 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
 	where S: Serializer
 	{
@@ -74,12 +72,12 @@ pub enum ElasticStringField {
 	/// A `completion` suggester sub field.
 	Completion(ElasticCompletionFieldMapping),
 	/// A `keyword` sub field.
-	Keyword(ElasticKeywordFieldMapping),
+	Keyword(KeywordFieldMapping),
 	/// A `text` sub field.
-	Text(ElasticTextFieldMapping)
+	Text(TextFieldMapping)
 }
 
-impl serde::Serialize for ElasticStringField {
+impl Serialize for ElasticStringField {
 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where
 	S: Serializer {
 		match *self {
@@ -119,7 +117,7 @@ pub struct ElasticTokenCountFieldMapping {
 	pub store: Option<bool>
 }
 
-impl serde::Serialize for ElasticTokenCountFieldMapping {
+impl Serialize for ElasticTokenCountFieldMapping {
 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where
 	S: Serializer {
 		let mut state = try!(serializer.serialize_struct("mapping", 8));
@@ -168,7 +166,7 @@ pub struct ElasticCompletionFieldMapping {
 	pub max_input_length: Option<u32>
 }
 
-impl serde::Serialize for ElasticCompletionFieldMapping {
+impl Serialize for ElasticCompletionFieldMapping {
 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where
 	S: Serializer {
 		let mut state = try!(serializer.serialize_struct("mapping", 7));

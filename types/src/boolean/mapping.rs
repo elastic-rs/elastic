@@ -1,18 +1,22 @@
 //! Mapping for the Elasticsearch `boolean` type.
 
-use serde::Serialize;
-use ::mapping::ElasticFieldMapping;
+use serde::{ Serialize, Serializer };
+use ::mapping::{ ElasticFieldMapping, ElasticFieldMappingWrapper };
 
 /// Elasticsearch datatype name.
 pub const BOOLEAN_DATATYPE: &'static str = "boolean";
 
+#[doc(hidden)]
+#[derive(Default)]
+pub struct BooleanFormat;
+
 /// The base requirements for mapping a `boolean` type.
 ///
-/// Custom mappings can be defined by implementing `ElasticBooleanMapping`.
+/// Custom mappings can be defined by implementing `BooleanMapping`.
 ///
 /// # Examples
 ///
-/// Define a custom `ElasticBooleanMapping`:
+/// Define a custom `BooleanMapping`:
 ///
 /// ## Derive Mapping
 ///
@@ -22,12 +26,14 @@ pub const BOOLEAN_DATATYPE: &'static str = "boolean";
 /// # extern crate elastic_types;
 /// # use elastic_types::prelude::*;
 /// # fn main() {
-/// boolean_mapping!(MyBooleanMapping {
+/// #[derive(Default)]
+/// struct MyBooleanMapping;
+/// impl BooleanMapping for MyBooleanMapping {
 /// 	//Overload the mapping functions here
 /// 	fn boost() -> Option<f32> {
 ///			Some(1.5)
 ///		}
-/// });
+/// }
 /// # }
 /// ```
 ///
@@ -43,13 +49,16 @@ pub const BOOLEAN_DATATYPE: &'static str = "boolean";
 /// # extern crate serde;
 /// # extern crate serde_json;
 /// # use elastic_types::prelude::*;
-/// # boolean_mapping!(MyBooleanMapping {
+/// # #[derive(Default)]
+/// # struct MyBooleanMapping;
+/// # impl BooleanMapping for MyBooleanMapping {
+/// # 	//Overload the mapping functions here
 /// # 	fn boost() -> Option<f32> {
 ///	# 		Some(1.5)
 ///	# 	}
-/// # });
+/// # }
 /// # fn main() {
-/// # let mapping = serde_json::to_string(&MyBooleanMapping).unwrap();
+/// # let mapping = FieldMapper::to_string(MyBooleanMapping).unwrap();
 /// # let json = json_str!(
 /// {
 ///     "type": "boolean",
@@ -59,8 +68,8 @@ pub const BOOLEAN_DATATYPE: &'static str = "boolean";
 /// # assert_eq!(json, mapping);
 /// # }
 /// ```
-pub trait ElasticBooleanMapping where
-Self: ElasticFieldMapping<()> + Sized + Serialize {
+pub trait BooleanMapping where
+Self: Default {
 	/// Field-level index time boosting. Accepts a floating point number, defaults to `1.0`.
 	fn boost() -> Option<f32> { None }
 
@@ -81,97 +90,32 @@ Self: ElasticFieldMapping<()> + Sized + Serialize {
 	fn store() -> Option<bool> { None }
 }
 
-/// Implement `serde` serialisation for a `boolean` mapping type.
-#[macro_export]
-macro_rules! boolean_ser {
-    ($t:ident) => (
-		impl ::serde::Serialize for $t {
-			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
-			where S: ::serde::Serializer {
-				let mut state = try!(serializer.serialize_struct("mapping", 6));
+impl <T> ElasticFieldMapping<BooleanFormat> for T where
+T: BooleanMapping { 
+	type SerType = ElasticFieldMappingWrapper<T, BooleanFormat>;
 
-				try!(serializer.serialize_struct_elt(&mut state, "type", $t::data_type()));
-
-				ser_field!(serializer, &mut state, $t::boost(), "boost");
-				ser_field!(serializer, &mut state, $t::doc_values(), "doc_values");
-				ser_field!(serializer, &mut state, $t::index(), "index");
-				ser_field!(serializer, &mut state, $t::store(), "store");
-				ser_field!(serializer, &mut state, $t::null_value(), "null_value");
-
-				serializer.serialize_struct_end(state)
-			}
-		}
-	)
+	fn data_type() -> &'static str { BOOLEAN_DATATYPE }
 }
 
-/// Define a `boolean` mapping.
-/// 
-/// # Examples
-/// 
-/// ## Define mapping struct inline
-/// 
-/// The easiest way to define a mapping type is to let the macro do it for you:
-/// 
-/// ```
-/// # #[macro_use]
-/// # extern crate elastic_types;
-/// # extern crate serde;
-/// # use elastic_types::prelude::*;
-/// # fn main() {}
-/// boolean_mapping!(MyMapping {
-/// 	fn null_value() -> Option<bool> { Some(true) }
-/// });
-/// ```
-/// 
-/// The above example will define a public struct for you and implement
-/// `ElasticFieldMapping` and `ElasticBooleanMapping`, along with a few default traits:
-/// 
-/// ```
-/// #[derive(Debug, Default, Clone, Copy)]
-/// pub struct MyMapping;
-/// ```
-/// 
-/// ## Define mapping for existing struct
-/// 
-/// If you want to control the default implementations yourself, you can define your
-/// mapping type and just pass it the macro to implement `ElasticFieldMapping`:
-/// 
-/// ```
-/// # #[macro_use]
-/// # extern crate elastic_types;
-/// # extern crate serde;
-/// # use elastic_types::prelude::*;
-/// # fn main() {}
-/// #[derive(Debug, Default, Clone, Copy)]
-/// pub struct MyMapping;
-/// impl ElasticBooleanMapping for MyMapping { 
-/// 	fn null_value() -> Option<bool> { Some(true) }
-/// }
-/// 
-/// boolean_mapping!(MyMapping);
-/// ```
-#[macro_export]
-macro_rules! boolean_mapping {
-	($t:ident) => (
-		impl $crate::mapping::ElasticFieldMapping<()> for $t {
-			fn data_type() -> &'static str { $crate::boolean::mapping::BOOLEAN_DATATYPE }
-		}
+impl <T> Serialize for ElasticFieldMappingWrapper<T, BooleanFormat> where
+T: ElasticFieldMapping<BooleanFormat> + BooleanMapping {
+	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where 
+	S: Serializer {
+		let mut state = try!(serializer.serialize_struct("mapping", 6));
 
-		boolean_ser!($t);
-	);
-	($t:ident $b:tt) => (
-		#[derive(Debug, Default, Clone, Copy)]
-		pub struct $t;
+		try!(serializer.serialize_struct_elt(&mut state, "type", T::data_type()));
 
-		impl $crate::boolean::mapping::ElasticBooleanMapping for $t $b
+		ser_field!(serializer, &mut state, T::boost(), "boost");
+		ser_field!(serializer, &mut state, T::doc_values(), "doc_values");
+		ser_field!(serializer, &mut state, T::index(), "index");
+		ser_field!(serializer, &mut state, T::store(), "store");
+		ser_field!(serializer, &mut state, T::null_value(), "null_value");
 
-		boolean_mapping!($t);
-	)
+		serializer.serialize_struct_end(state)
+	}
 }
 
 /// Default mapping for `bool`.
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultBooleanMapping;
-impl ElasticBooleanMapping for DefaultBooleanMapping { }
-
-boolean_mapping!(DefaultBooleanMapping);
+impl BooleanMapping for DefaultBooleanMapping { }

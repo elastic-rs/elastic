@@ -1,13 +1,13 @@
 use std::marker::PhantomData;
 use std::net::Ipv4Addr;
 use std::str::FromStr;
-use std::error::Error;
-use serde;
+use std::error::Error as StdError;
 use serde::{ Serialize, Deserialize, Serializer, Deserializer };
-use super::mapping::{ ElasticIpMapping, DefaultIpMapping };
-use ::mapping::{ ElasticFieldMapping, ElasticType };
+use serde::de::{ Visitor, Error };
+use super::mapping::{ IpMapping, DefaultIpMapping, IpFormat };
+use ::mapping::ElasticType;
 
-impl ElasticType<DefaultIpMapping, ()> for Ipv4Addr { }
+impl ElasticType<DefaultIpMapping, IpFormat> for Ipv4Addr { }
 
 /// An Elasticsearch `ip` with a mapping.
 ///
@@ -20,35 +20,35 @@ impl ElasticType<DefaultIpMapping, ()> for Ipv4Addr { }
 /// ```
 /// use std::net::Ipv4Addr;
 /// use elastic_types::ip::mapping::DefaultIpMapping;
-/// use elastic_types::ip::ElasticIp;
+/// use elastic_types::ip::Ip;
 ///
-/// let ip = ElasticIp::<DefaultIpMapping>::new(Ipv4Addr::new(127, 0, 0, 1));
+/// let ip = Ip::<DefaultIpMapping>::new(Ipv4Addr::new(127, 0, 0, 1));
 /// ```
 #[derive(Debug, Clone, PartialEq)]
-pub struct ElasticIp<M> where
-M: ElasticFieldMapping<()> + ElasticIpMapping {
+pub struct Ip<M> where
+M: IpMapping {
 	value: Ipv4Addr,
-	phantom: PhantomData<M>
+	_m: PhantomData<M>
 }
-impl <M> ElasticIp<M> where
-M: ElasticFieldMapping<()> + ElasticIpMapping {
-	/// Creates a new `ElasticIp` with the given mapping.
+impl <M> Ip<M> where
+M: IpMapping {
+	/// Creates a new `Ip` with the given mapping.
 	///
 	/// # Examples
 	///
-	/// Create a new `ElasticIp` from a `Ip4vAddr`:
+	/// Create a new `Ip` from a `Ip4vAddr`:
 	///
 	/// ```
     /// use std::net::Ipv4Addr;
 	/// use elastic_types::ip::mapping::DefaultIpMapping;
-	/// use elastic_types::ip::ElasticIp;
+	/// use elastic_types::ip::Ip;
 	///
-	/// let ip = ElasticIp::<DefaultIpMapping>::new(Ipv4Addr::new(127, 0, 0, 1));
+	/// let ip = Ip::<DefaultIpMapping>::new(Ipv4Addr::new(127, 0, 0, 1));
 	/// ```
-	pub fn new<I>(ip: I) -> ElasticIp<M> where I: Into<Ipv4Addr> {
-		ElasticIp {
+	pub fn new<I>(ip: I) -> Ip<M> where I: Into<Ipv4Addr> {
+		Ip {
 			value: ip.into(),
-			phantom: PhantomData
+			_m: PhantomData
 		}
 	}
 
@@ -66,7 +66,7 @@ M: ElasticFieldMapping<()> + ElasticIpMapping {
 	///
 	/// # Examples
 	///
-	/// Change the mapping for a given `ElasticIp`:
+	/// Change the mapping for a given `Ip`:
 	///
 	/// ```
 	/// # extern crate serde;
@@ -75,29 +75,31 @@ M: ElasticFieldMapping<()> + ElasticIpMapping {
 	/// # fn main() {
     /// # use std::net::Ipv4Addr;
 	/// # use elastic_types::prelude::*;
-	/// # ip_mapping!(MyIpMapping {});
-	/// let es_ip = ElasticIp::<DefaultIpMapping>::new(Ipv4Addr::new(127, 0, 0, 1));
+	/// # #[derive(Default)]
+	/// # struct MyIpMapping;
+	/// # impl IpMapping for MyIpMapping { }
+	/// let es_ip = Ip::<DefaultIpMapping>::new(Ipv4Addr::new(127, 0, 0, 1));
 	///
-	/// let ip: ElasticIp<MyIpMapping> = es_ip.remap();
+	/// let ip: Ip<MyIpMapping> = es_ip.remap();
 	/// # }
 	/// ```
-	pub fn remap<MInto>(self) -> ElasticIp<MInto> where
-	MInto: ElasticFieldMapping<()> + ElasticIpMapping {
-		ElasticIp::<MInto>::new(self.value)
+	pub fn remap<MInto>(self) -> Ip<MInto> where
+	MInto: IpMapping {
+		Ip::<MInto>::new(self.value)
 	}
 }
 
-impl <M> ElasticType<M, ()> for ElasticIp<M> where
-M: ElasticFieldMapping<()> + ElasticIpMapping { }
+impl <M> ElasticType<M, IpFormat> for Ip<M> where
+M: IpMapping { }
 
-impl From<Ipv4Addr> for ElasticIp<DefaultIpMapping> {
+impl From<Ipv4Addr> for Ip<DefaultIpMapping> {
 	fn from(ip: Ipv4Addr) -> Self {
-		ElasticIp::new(ip)
+		Ip::new(ip)
 	}
 }
 
-impl<'a, M> PartialEq<Ipv4Addr> for ElasticIp<M> where
-M: ElasticFieldMapping<()> + ElasticIpMapping {
+impl<'a, M> PartialEq<Ipv4Addr> for Ip<M> where
+M: IpMapping {
 	fn eq(&self, other: &Ipv4Addr) -> bool {
 		PartialEq::eq(&self.value, other)
 	}
@@ -107,20 +109,20 @@ M: ElasticFieldMapping<()> + ElasticIpMapping {
 	}
 }
 
-impl<'a, M> PartialEq<ElasticIp<M>> for Ipv4Addr where
-M: ElasticFieldMapping<()> + ElasticIpMapping {
-	fn eq(&self, other: &ElasticIp<M>) -> bool {
+impl<'a, M> PartialEq<Ip<M>> for Ipv4Addr where
+M: IpMapping {
+	fn eq(&self, other: &Ip<M>) -> bool {
 		PartialEq::eq(self, &other.value)
 	}
 
-	fn ne(&self, other: &ElasticIp<M>) -> bool {
+	fn ne(&self, other: &Ip<M>) -> bool {
 		PartialEq::ne(self, &other.value)
 	}
 }
 
 //Serialize elastic ip
-impl <M> Serialize for ElasticIp<M> where
-M: ElasticFieldMapping<()> + ElasticIpMapping {
+impl <M> Serialize for Ip<M> where
+M: IpMapping {
 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where
 	S: Serializer {
 		serializer.serialize_str(&self.value.to_string())
@@ -128,35 +130,35 @@ M: ElasticFieldMapping<()> + ElasticIpMapping {
 }
 
 //Deserialize elastic ip
-impl <M> Deserialize for ElasticIp<M> where
-M: ElasticFieldMapping<()> + ElasticIpMapping {
-	fn deserialize<D>(deserializer: &mut D) -> Result<ElasticIp<M>, D::Error> where
+impl <M> Deserialize for Ip<M> where
+M: IpMapping {
+	fn deserialize<D>(deserializer: &mut D) -> Result<Ip<M>, D::Error> where
 	D: Deserializer {
 		#[derive(Default)]
-		struct ElasticIpVisitor<M> where
-		M: ElasticFieldMapping<()> + ElasticIpMapping {
-			phantom: PhantomData<M>
+		struct IpVisitor<M> where
+		M: IpMapping {
+			_m: PhantomData<M>
 		}
 
-		impl <M> serde::de::Visitor for ElasticIpVisitor<M> where
-		M: ElasticFieldMapping<()> + ElasticIpMapping {
-			type Value = ElasticIp<M>;
+		impl <M> Visitor for IpVisitor<M> where
+		M: IpMapping {
+			type Value = Ip<M>;
 
-			fn visit_string<E>(&mut self, v: String) -> Result<ElasticIp<M>, E> where
-			E: serde::de::Error {
+			fn visit_string<E>(&mut self, v: String) -> Result<Ip<M>, E> where
+			E: Error {
 				let de = try!(Ipv4Addr::from_str(&v).map_err(|e| E::custom(e.description().to_string())));
 
-				Ok(ElasticIp::<M>::new(de))
+				Ok(Ip::<M>::new(de))
 			}
 
-            fn visit_str<E>(&mut self, v: &str) -> Result<ElasticIp<M>, E> where
-			E: serde::de::Error {
+            fn visit_str<E>(&mut self, v: &str) -> Result<Ip<M>, E> where
+			E: Error {
 				let de = try!(Ipv4Addr::from_str(v).map_err(|e| E::custom(e.description().to_string())));
 
-				Ok(ElasticIp::<M>::new(de))
+				Ok(Ip::<M>::new(de))
 			}
 		}
 
-		deserializer.deserialize(ElasticIpVisitor::<M>::default())
+		deserializer.deserialize(IpVisitor::<M>::default())
 	}
 }

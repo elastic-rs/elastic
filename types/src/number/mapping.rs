@@ -5,7 +5,7 @@
 //!
 //! # Examples
 //!
-//! Define a custom `ElasticIntegerMapping`:
+//! Define a custom `IntegerMapping`:
 //!
 //! ## Derive Mapping
 //!
@@ -16,12 +16,14 @@
 //! # extern crate elastic_types;
 //! # extern crate serde;
 //! # use elastic_types::prelude::*;
-//! integer_mapping!(MyIntegerMapping {
+//! #[derive(Default)]
+//! struct MyIntegerMapping;
+//! impl IntegerMapping for MyIntegerMapping {
 //! 	//Overload the mapping functions here
 //! 	fn null_value() -> Option<i32> {
 //! 		Some(42)
 //! 	}
-//! });
+//! }
 //! # fn main() {}
 //! ```
 //!
@@ -37,14 +39,16 @@
 //! # extern crate serde;
 //! # extern crate serde_json;
 //! # use elastic_types::prelude::*;
-//! # integer_mapping!(MyIntegerMapping {
+//! # #[derive(Default)]
+//! # struct MyIntegerMapping;
+//! # impl IntegerMapping for MyIntegerMapping {
 //! # 	//Overload the mapping functions here
 //! # 	fn null_value() -> Option<i32> {
 //! # 		Some(42)
 //! # 	}
-//! # });
+//! # }
 //! # fn main() {
-//! # let mapping = serde_json::to_string(&MyIntegerMapping).unwrap();
+//! # let mapping = FieldMapper::to_string(MyIntegerMapping).unwrap();
 //! # let json = json_str!(
 //! {
 //!     "type": "integer",
@@ -56,7 +60,7 @@
 //! ```
 
 use serde::Serialize;
-use ::mapping::{ ElasticType, ElasticFieldMapping };
+use ::mapping::{ ElasticType, ElasticFieldMapping, ElasticFieldMappingWrapper };
 
 /// Elasticsearch datatype name.
 pub const INTEGER_DATATYPE: &'static str = "integer";
@@ -72,10 +76,14 @@ pub const DOUBLE_DATATYPE: &'static str = "double";
 pub const FLOAT_DATATYPE: &'static str = "float";
 
 macro_rules! number_mapping {
-	($m:ident, $v:ident, $n:ty) => (
+	($m:ident, $f:ident, $cn:ident, $n:ty) => (
+		#[doc(hidden)]
+		#[derive(Default)]
+		pub struct $f;
+
 		/// Base `number` mapping.
 		pub trait $m where
-		Self: ElasticFieldMapping<()> + Sized + Serialize {
+		Self: Default {
 			/// Try to convert strings to numbers and truncate fractions for integers. Accepts `true` (default) and `false`.
 			fn coerce() -> Option<bool> { None }
 
@@ -108,27 +116,29 @@ macro_rules! number_mapping {
 			/// Accepts true or false (default).
 			fn store() -> Option<bool> { None }
 		}
-	)
-}
 
-/// Implement `serde` serialisation for a `geo_shape` mapping type.
-#[macro_export]
-macro_rules! number_ser {
-	($t:ident) => (
-		impl ::serde::Serialize for $t {
-			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
-			where S: ::serde::Serializer {
+		impl <T> ElasticFieldMapping<$f> for T where
+		T: $m { 
+			type SerType = ElasticFieldMappingWrapper<T, $f>;
+
+			fn data_type() -> &'static str { $cn }
+		}
+
+		impl <T> Serialize for ElasticFieldMappingWrapper<T, $f> where
+		T: ElasticFieldMapping<$f> + $m {
+			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where 
+			S: ::serde::Serializer {
 				let mut state = try!(serializer.serialize_struct("mapping", 8));
 
-				try!(serializer.serialize_struct_elt(&mut state, "type", $t::data_type()));
+				try!(serializer.serialize_struct_elt(&mut state, "type", T::data_type()));
 
-				ser_field!(serializer, &mut state, $t::coerce(), "coerce");
-				ser_field!(serializer, &mut state, $t::boost(), "boost");
-				ser_field!(serializer, &mut state, $t::doc_values(), "doc_values");
-				ser_field!(serializer, &mut state, $t::ignore_malformed(), "ignore_malformed");
-				ser_field!(serializer, &mut state, $t::include_in_all(), "include_in_all");
-				ser_field!(serializer, &mut state, $t::null_value(), "null_value");
-				ser_field!(serializer, &mut state, $t::store(), "store");
+				ser_field!(serializer, &mut state, T::coerce(), "coerce");
+				ser_field!(serializer, &mut state, T::boost(), "boost");
+				ser_field!(serializer, &mut state, T::doc_values(), "doc_values");
+				ser_field!(serializer, &mut state, T::ignore_malformed(), "ignore_malformed");
+				ser_field!(serializer, &mut state, T::include_in_all(), "include_in_all");
+				ser_field!(serializer, &mut state, T::null_value(), "null_value");
+				ser_field!(serializer, &mut state, T::store(), "store");
 
 				serializer.serialize_struct_end(state)
 			}
@@ -136,453 +146,46 @@ macro_rules! number_ser {
 	)
 }
 
-/// Define an `integer` mapping.
-/// 
-/// # Examples
-/// 
-/// ## Define mapping struct inline
-/// 
-/// The easiest way to define a mapping type is to let the macro do it for you:
-/// 
-/// ```
-/// # #[macro_use]
-/// # extern crate elastic_types;
-/// # extern crate serde;
-/// # use elastic_types::prelude::*;
-/// # fn main() {}
-/// integer_mapping!(MyMapping {
-///     fn boost() -> Option<f32> { Some(1.03) }
-/// });
-/// ```
-/// 
-/// The above example will define a public struct for you and implement
-/// `ElasticFieldMapping` and `ElasticIntegerMapping`, along with a few default traits:
-/// 
-/// ```
-/// #[derive(Debug, Default, Clone, Copy)]
-/// pub struct MyMapping;
-/// ```
-/// 
-/// ## Define mapping for existing struct
-/// 
-/// If you want to control the default implementations yourself, you can define your
-/// mapping type and just pass it the macro to implement `ElasticFieldMapping`:
-/// 
-/// ```
-/// # #[macro_use]
-/// # extern crate elastic_types;
-/// # extern crate serde;
-/// # use elastic_types::prelude::*;
-/// # fn main() {}
-/// #[derive(Debug, Default, Clone, Copy)]
-/// pub struct MyMapping;
-/// impl ElasticIntegerMapping for MyMapping { 
-///     fn boost() -> Option<f32> { Some(1.03) }
-/// }
-/// 
-/// integer_mapping!(MyMapping);
-/// ```
-#[macro_export]
-macro_rules! integer_mapping {
-	($t:ident) => (
-		impl $crate::mapping::ElasticFieldMapping<()> for $t {
-			fn data_type() -> &'static str { $crate::number::mapping::INTEGER_DATATYPE }
-		}
-
-		number_ser!($t);
-	);
-	($t:ident $b:tt) => (
-		#[derive(Debug, Default, Clone, Copy)]
-		pub struct $t;
-
-		impl $crate::number::mapping::ElasticIntegerMapping for $t $b
-
-		integer_mapping!($t);
-	)
-}
-
-/// Define a `long` mapping.
-/// 
-/// # Examples
-/// 
-/// ## Define mapping struct inline
-/// 
-/// The easiest way to define a mapping type is to let the macro do it for you:
-/// 
-/// ```
-/// # #[macro_use]
-/// # extern crate elastic_types;
-/// # extern crate serde;
-/// # use elastic_types::prelude::*;
-/// # fn main() {}
-/// long_mapping!(MyMapping {
-///     fn boost() -> Option<f32> { Some(1.03) }
-/// });
-/// ```
-/// 
-/// The above example will define a public struct for you and implement
-/// `ElasticFieldMapping` and `ElasticLongMapping`, along with a few default traits:
-/// 
-/// ```
-/// #[derive(Debug, Default, Clone, Copy)]
-/// pub struct MyMapping;
-/// ```
-/// 
-/// ## Define mapping for existing struct
-/// 
-/// If you want to control the default implementations yourself, you can define your
-/// mapping type and just pass it the macro to implement `ElasticFieldMapping`:
-/// 
-/// ```
-/// # #[macro_use]
-/// # extern crate elastic_types;
-/// # extern crate serde;
-/// # use elastic_types::prelude::*;
-/// # fn main() {}
-/// #[derive(Debug, Default, Clone, Copy)]
-/// pub struct MyMapping;
-/// impl ElasticLongMapping for MyMapping { 
-///     fn boost() -> Option<f32> { Some(1.03) }
-/// }
-/// 
-/// long_mapping!(MyMapping);
-/// ```
-#[macro_export]
-macro_rules! long_mapping {
-	($t:ident) => (
-		impl $crate::mapping::ElasticFieldMapping<()> for $t {
-			fn data_type() -> &'static str { $crate::number::mapping::LONG_DATATYPE }
-		}
-
-		number_ser!($t);
-	);
-	($t:ident $b:tt) => (
-		#[derive(Debug, Default, Clone, Copy)]
-		pub struct $t;
-
-		impl $crate::number::mapping::ElasticLongMapping for $t $b
-
-		long_mapping!($t);
-	)
-}
-
-/// Define a `short` mapping.
-/// 
-/// # Examples
-/// 
-/// ## Define mapping struct inline
-/// 
-/// The easiest way to define a mapping type is to let the macro do it for you:
-/// 
-/// ```
-/// # #[macro_use]
-/// # extern crate elastic_types;
-/// # extern crate serde;
-/// # use elastic_types::prelude::*;
-/// # fn main() {}
-/// short_mapping!(MyMapping {
-///     fn boost() -> Option<f32> { Some(1.03) }
-/// });
-/// ```
-/// 
-/// The above example will define a public struct for you and implement
-/// `ElasticFieldMapping` and `ElasticShortMapping`, along with a few default traits:
-/// 
-/// ```
-/// #[derive(Debug, Default, Clone, Copy)]
-/// pub struct MyMapping;
-/// ```
-/// 
-/// ## Define mapping for existing struct
-/// 
-/// If you want to control the default implementations yourself, you can define your
-/// mapping type and just pass it the macro to implement `ElasticFieldMapping`:
-/// 
-/// ```
-/// # #[macro_use]
-/// # extern crate elastic_types;
-/// # extern crate serde;
-/// # use elastic_types::prelude::*;
-/// # fn main() {}
-/// #[derive(Debug, Default, Clone, Copy)]
-/// pub struct MyMapping;
-/// impl ElasticShortMapping for MyMapping { 
-///     fn boost() -> Option<f32> { Some(1.03) }
-/// }
-/// 
-/// short_mapping!(MyMapping);
-/// ```
-#[macro_export]
-macro_rules! short_mapping {
-	($t:ident) => (
-		impl $crate::mapping::ElasticFieldMapping<()> for $t {
-			fn data_type() -> &'static str { $crate::number::mapping::SHORT_DATATYPE }
-		}
-
-		number_ser!($t);
-	);
-	($t:ident $b:tt) => (
-		#[derive(Debug, Default, Clone, Copy)]
-		pub struct $t;
-
-		impl $crate::number::mapping::ElasticShortMapping for $t $b
-
-		short_mapping!($t);
-	)
-}
-
-/// Define a `byte` mapping.
-/// 
-/// # Examples
-/// 
-/// ## Define mapping struct inline
-/// 
-/// The easiest way to define a mapping type is to let the macro do it for you:
-/// 
-/// ```
-/// # #[macro_use]
-/// # extern crate elastic_types;
-/// # extern crate serde;
-/// # use elastic_types::prelude::*;
-/// # fn main() {}
-/// byte_mapping!(MyMapping {
-///     fn boost() -> Option<f32> { Some(1.03) }
-/// });
-/// ```
-/// 
-/// The above example will define a public struct for you and implement
-/// `ElasticFieldMapping` and `ElasticByteMapping`, along with a few default traits:
-/// 
-/// ```
-/// #[derive(Debug, Default, Clone, Copy)]
-/// pub struct MyMapping;
-/// ```
-/// 
-/// ## Define mapping for existing struct
-/// 
-/// If you want to control the default implementations yourself, you can define your
-/// mapping type and just pass it the macro to implement `ElasticFieldMapping`:
-/// 
-/// ```
-/// # #[macro_use]
-/// # extern crate elastic_types;
-/// # extern crate serde;
-/// # use elastic_types::prelude::*;
-/// # fn main() {}
-/// #[derive(Debug, Default, Clone, Copy)]
-/// pub struct MyMapping;
-/// impl ElasticByteMapping for MyMapping { 
-///     fn boost() -> Option<f32> { Some(1.03) }
-/// }
-/// 
-/// byte_mapping!(MyMapping);
-/// ```
-#[macro_export]
-macro_rules! byte_mapping {
-	($t:ident) => (
-		impl $crate::mapping::ElasticFieldMapping<()> for $t {
-			fn data_type() -> &'static str { $crate::number::mapping::BYTE_DATATYPE }
-		}
-
-		number_ser!($t);
-	);
-	($t:ident $b:tt) => (
-		#[derive(Debug, Default, Clone, Copy)]
-		pub struct $t;
-
-		impl $crate::number::mapping::ElasticByteMapping for $t $b
-
-		byte_mapping!($t);
-	)
-}
-
-/// Define a `float` mapping.
-/// 
-/// # Examples
-/// 
-/// ## Define mapping struct inline
-/// 
-/// The easiest way to define a mapping type is to let the macro do it for you:
-/// 
-/// ```
-/// # #[macro_use]
-/// # extern crate elastic_types;
-/// # extern crate serde;
-/// # use elastic_types::prelude::*;
-/// # fn main() {}
-/// float_mapping!(MyMapping {
-///     fn boost() -> Option<f32> { Some(1.03) }
-/// });
-/// ```
-/// 
-/// The above example will define a public struct for you and implement
-/// `ElasticFieldMapping` and `ElasticFloatMapping`, along with a few default traits:
-/// 
-/// ```
-/// #[derive(Debug, Default, Clone, Copy)]
-/// pub struct MyMapping;
-/// ```
-/// 
-/// ## Define mapping for existing struct
-/// 
-/// If you want to control the default implementations yourself, you can define your
-/// mapping type and just pass it the macro to implement `ElasticFieldMapping`:
-/// 
-/// ```
-/// # #[macro_use]
-/// # extern crate elastic_types;
-/// # extern crate serde;
-/// # use elastic_types::prelude::*;
-/// # fn main() {}
-/// #[derive(Debug, Default, Clone, Copy)]
-/// pub struct MyMapping;
-/// impl ElasticFloatMapping for MyMapping { 
-///     fn boost() -> Option<f32> { Some(1.03) }
-/// }
-/// 
-/// float_mapping!(MyMapping);
-/// ```
-#[macro_export]
-macro_rules! float_mapping {
-	($t:ident) => (
-		impl $crate::mapping::ElasticFieldMapping<()> for $t {
-			fn data_type() -> &'static str { $crate::number::mapping::FLOAT_DATATYPE }
-		}
-
-		number_ser!($t);
-	);
-	($t:ident $b:tt) => (
-		#[derive(Debug, Default, Clone, Copy)]
-		pub struct $t;
-
-		impl $crate::number::mapping::ElasticFloatMapping for $t $b
-
-		float_mapping!($t);
-	)
-}
-
-/// Define a `double` mapping.
-/// 
-/// # Examples
-/// 
-/// ## Define mapping struct inline
-/// 
-/// The easiest way to define a mapping type is to let the macro do it for you:
-/// 
-/// ```
-/// # #[macro_use]
-/// # extern crate elastic_types;
-/// # extern crate serde;
-/// # use elastic_types::prelude::*;
-/// # fn main() {}
-/// double_mapping!(MyMapping {
-///     fn boost() -> Option<f32> { Some(1.03) }
-/// });
-/// ```
-/// 
-/// The above example will define a public struct for you and implement
-/// `ElasticFieldMapping` and `ElasticDoubleMapping`, along with a few default traits:
-/// 
-/// ```
-/// #[derive(Debug, Default, Clone, Copy)]
-/// pub struct MyMapping;
-/// ```
-/// 
-/// ## Define mapping for existing struct
-/// 
-/// If you want to control the default implementations yourself, you can define your
-/// mapping type and just pass it the macro to implement `ElasticFieldMapping`:
-/// 
-/// ```
-/// # #[macro_use]
-/// # extern crate elastic_types;
-/// # extern crate serde;
-/// # use elastic_types::prelude::*;
-/// # fn main() {}
-/// #[derive(Debug, Default, Clone, Copy)]
-/// pub struct MyMapping;
-/// impl ElasticDoubleMapping for MyMapping { 
-///     fn boost() -> Option<f32> { Some(1.03) }
-/// }
-/// 
-/// double_mapping!(MyMapping);
-/// ```
-#[macro_export]
-macro_rules! double_mapping {
-	($t:ident) => (
-		impl $crate::mapping::ElasticFieldMapping<()> for $t {
-			fn data_type() -> &'static str { $crate::number::mapping::DOUBLE_DATATYPE }
-		}
-
-		number_ser!($t);
-	);
-	($t:ident $b:tt) => (
-		#[derive(Debug, Default, Clone, Copy)]
-		pub struct $t;
-
-		impl $crate::number::mapping::ElasticDoubleMapping for $t $b
-
-		double_mapping!($t);
-	)
-}
-
-/// Base mapping requirements for an `integer`.
-number_mapping!(ElasticIntegerMapping, ElasticIntegerMappingVisitor, i32);
-
-/// Base mapping requirements for an `long`.
-number_mapping!(ElasticLongMapping, ElasticLongMappingVisitor, i64);
-
-/// Base mapping requirements for an `short`.
-number_mapping!(ElasticShortMapping, ElasticShortMappingVisitor, i16);
-
-/// Base mapping requirements for an `byte`.
-number_mapping!(ElasticByteMapping, ElasticByteMappingVisitor, i8);
-
-/// Base mapping requirements for an `float`.
-number_mapping!(ElasticFloatMapping, ElasticFloatMappingVisitor, f32);
-
-/// Base mapping requirements for an `double`.
-number_mapping!(ElasticDoubleMapping, ElasticDoubleMappingVisitor, f64);
+number_mapping!(IntegerMapping, IntegerFormat, INTEGER_DATATYPE, i32);
+number_mapping!(LongMapping, LongFormat, LONG_DATATYPE, i64);
+number_mapping!(ShortMapping, ShortFormat, SHORT_DATATYPE, i16);
+number_mapping!(ByteMapping, ByteFormat, BYTE_DATATYPE, i8);
+number_mapping!(FloatMapping, FloatFormat, FLOAT_DATATYPE, f32);
+number_mapping!(DoubleMapping, DoubleFormat, DOUBLE_DATATYPE, f64);
 
 /// Default mapping for an `integer` type.
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultIntegerMapping;
-impl ElasticIntegerMapping for DefaultIntegerMapping { }
-integer_mapping!(DefaultIntegerMapping);
-impl ElasticType<DefaultIntegerMapping, ()> for i32 { }
+impl IntegerMapping for DefaultIntegerMapping { }
+impl ElasticType<DefaultIntegerMapping, IntegerFormat> for i32 { }
 
 /// Default mapping for a `long` type.
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultLongMapping;
-impl ElasticLongMapping for DefaultLongMapping { }
-long_mapping!(DefaultLongMapping);
-impl ElasticType<DefaultLongMapping, ()> for i64 { }
-impl ElasticType<DefaultLongMapping, ()> for isize { }
+impl LongMapping for DefaultLongMapping { }
+impl ElasticType<DefaultLongMapping, LongFormat> for i64 { }
+impl ElasticType<DefaultLongMapping, LongFormat> for isize { }
 
 /// Default mapping for a `short` type.
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultShortMapping;
-impl ElasticShortMapping for DefaultShortMapping { }
-short_mapping!(DefaultShortMapping);
-impl ElasticType<DefaultShortMapping, ()> for i16 { }
+impl ShortMapping for DefaultShortMapping { }
+impl ElasticType<DefaultShortMapping, ShortFormat> for i16 { }
 
 /// Default mapping for a `byte` type.
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultByteMapping;
-impl ElasticByteMapping for DefaultByteMapping { }
-byte_mapping!(DefaultByteMapping);
-impl ElasticType<DefaultByteMapping, ()> for i8 { }
+impl ByteMapping for DefaultByteMapping { }
+impl ElasticType<DefaultByteMapping, ByteFormat> for i8 { }
 
 /// Default mapping for a `float` type.
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultFloatMapping;
-impl ElasticFloatMapping for DefaultFloatMapping { }
-float_mapping!(DefaultFloatMapping);
-impl ElasticType<DefaultFloatMapping, ()> for f32 { }
+impl FloatMapping for DefaultFloatMapping { }
+impl ElasticType<DefaultFloatMapping, FloatFormat> for f32 { }
 
 /// Default mapping for a `double` type.
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultDoubleMapping;
-impl ElasticDoubleMapping for DefaultDoubleMapping { }
-double_mapping!(DefaultDoubleMapping);
-impl ElasticType<DefaultDoubleMapping, ()> for f64 { }
+impl DoubleMapping for DefaultDoubleMapping { }
+impl ElasticType<DefaultDoubleMapping, DoubleFormat> for f64 { }

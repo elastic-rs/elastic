@@ -1,8 +1,8 @@
 use std::marker::PhantomData;
-use serde;
 use serde::{ Serialize, Deserialize, Serializer, Deserializer };
-use super::mapping::{ ElasticKeywordMapping, DefaultKeywordMapping };
-use ::mapping::{ ElasticFieldMapping, ElasticType };
+use serde::de::{ Visitor, Error };
+use super::mapping::{ KeywordMapping, DefaultKeywordMapping, KeywordFormat };
+use ::mapping::ElasticType;
 
 /// An Elasticsearch `keyword` with a mapping.
 ///
@@ -14,34 +14,34 @@ use ::mapping::{ ElasticFieldMapping, ElasticType };
 ///
 /// ```
 /// use elastic_types::string::mapping::DefaultKeywordMapping;
-/// use elastic_types::string::ElasticKeyword;
+/// use elastic_types::string::Keyword;
 ///
-/// let string = ElasticKeyword::<DefaultKeywordMapping>::new("my string value");
+/// let string = Keyword::<DefaultKeywordMapping>::new("my string value");
 /// ```
 #[derive(Debug, Clone, Default, PartialEq)]
-pub struct ElasticKeyword<M> where
-M: ElasticFieldMapping<()> + ElasticKeywordMapping {
+pub struct Keyword<M> where
+M: KeywordMapping {
 	value: String,
-	phantom: PhantomData<M>
+	_m: PhantomData<M>
 }
-impl <M> ElasticKeyword<M> where
-M: ElasticFieldMapping<()> + ElasticKeywordMapping {
-	/// Creates a new `ElasticKeyword` with the given mapping.
+impl <M> Keyword<M> where
+M: KeywordMapping {
+	/// Creates a new `Keyword` with the given mapping.
 	///
 	/// # Examples
 	///
-	/// Create a new `ElasticKeyword` from a `String`:
+	/// Create a new `Keyword` from a `String`:
 	///
 	/// ```
 	/// use elastic_types::string::mapping::DefaultKeywordMapping;
-	/// use elastic_types::string::ElasticKeyword;
+	/// use elastic_types::string::Keyword;
 	///
-	/// let string = ElasticKeyword::<DefaultKeywordMapping>::new("my string");
+	/// let string = Keyword::<DefaultKeywordMapping>::new("my string");
 	/// ```
-	pub fn new<I>(string: I) -> ElasticKeyword<M> where I: Into<String> {
-		ElasticKeyword {
+	pub fn new<I>(string: I) -> Keyword<M> where I: Into<String> {
+		Keyword {
 			value: string.into(),
-			phantom: PhantomData
+			_m: PhantomData
 		}
 	}
 
@@ -56,10 +56,10 @@ M: ElasticFieldMapping<()> + ElasticKeywordMapping {
 	}
 
 	/// Change the mapping of this string.
-	pub fn remap<MInto>(self) -> ElasticKeyword<MInto> where
-	MInto: ElasticFieldMapping<()> + ElasticKeywordMapping {
-		ElasticKeyword::<MInto>::new(self.value)
+	pub fn remap<MInto>(self) -> Keyword<MInto> where
+	MInto: KeywordMapping {
+		Keyword::<MInto>::new(self.value)
 	}
 }
 
-impl_string_type!(ElasticKeyword, ElasticKeywordMapping, DefaultKeywordMapping);
+impl_string_type!(Keyword, KeywordMapping, KeywordFormat, DefaultKeywordMapping);

@@ -9,7 +9,6 @@ extern crate serde_json;
 pub extern crate chrono;
 extern crate elastic_types;
 
-use chrono::format::Item;
 use chrono::offset::TimeZone;
 
 use elastic_types::date::prelude::*;
@@ -17,44 +16,20 @@ use elastic_types::date::prelude::*;
 const MYTYPE_DATE_FMT_1: &'static str = "%Y/%m/%d %H:%M:%S";
 const MYTYPE_DATE_FMT_2: &'static str = "%d/%m/%Y %H:%M:%S";
 
-//A date format based on a chrono format string
-#[allow(non_camel_case_types)]
-#[derive(Default, Clone, Copy)]
+#[derive(Default, Clone)]
 pub struct TestDateFormat1;
-impl DateFormat for TestDateFormat1 {
-	fn fmt<'a>() -> Vec<Item<'a>> {
-		date_fmt!("%Y/%m/%d %H:%M:%S")
-			.iter()
-			.cloned()
-			.collect()
-	}
-	fn name() -> &'static str {
-		"test_date_1"
-	}
-}
+date_fmt!(TestDateFormat1, "%Y/%m/%d %H:%M:%S", "test_date_1");
 
-//A date format based on an elasticsearch formart string
-#[allow(non_camel_case_types)]
 #[derive(Default, Clone, Copy)]
 pub struct TestDateFormat2;
-impl DateFormat for TestDateFormat2 {
-	fn fmt<'a>() -> Vec<Item<'a>> {
-		date_fmt!("yyyyMMdd")
-			.iter()
-			.cloned()
-			.collect()
-	}
-	fn name() -> &'static str {
-		"test_date_2"
-	}
-}
+date_fmt!(TestDateFormat2, "yyyyMMdd", "test_date_2");
 
 #[test]
 fn dates_should_use_chrono_format() {
 	let _dt = chrono::UTC.datetime_from_str("13/05/2015 00:00:00", "%d/%m/%Y %H:%M:%S").unwrap();
 	let expected = _dt.format(MYTYPE_DATE_FMT_1).to_string();
 
-	let dt = ElasticDate::<TestDateFormat1>::new(_dt.clone());
+	let dt = Date::<TestDateFormat1>::new(_dt.clone());
 	let actual = dt.format();
 
 	assert_eq!(expected, actual);
@@ -65,7 +40,7 @@ fn dates_should_use_es_format() {
 	let _dt = chrono::UTC.datetime_from_str("13/05/2015 00:00:00", "%d/%m/%Y %H:%M:%S").unwrap();
 	let expected = "20150513".to_string();
 
-	let dt = ElasticDate::<TestDateFormat2>::new(_dt.clone());
+	let dt = Date::<TestDateFormat2>::new(_dt.clone());
 	let actual = dt.format();
 
 	assert_eq!(expected, actual);
@@ -73,18 +48,18 @@ fn dates_should_use_es_format() {
 
 #[test]
 fn can_change_date_mapping() {
-	fn takes_epoch_millis(_: ElasticDate<EpochMillis>) -> bool {
+	fn takes_epoch_millis(_: Date<EpochMillis>) -> bool {
 		true
 	}
 
-	let date: ElasticDate<BasicDateTime> = ElasticDate::now();
+	let date: Date<BasicDateTime> = Date::now();
 
 	assert!(takes_epoch_millis(date.remap()));
 }
 
 #[test]
 fn can_build_date_from_chrono() {
-	let date: ElasticDate<DefaultDateFormat> = ElasticDate::new(
+	let date: Date<DefaultDateFormat> = Date::new(
 		chrono::UTC.datetime_from_str("13/05/2015 00:00:00", "%d/%m/%Y %H:%M:%S").unwrap()
 	);
 
@@ -100,7 +75,7 @@ fn can_build_date_from_chrono() {
 
 #[test]
 fn can_build_date_from_prim() {
-	let date: ElasticDate<DefaultDateFormat> = ElasticDate::build(
+	let date: Date<DefaultDateFormat> = Date::build(
 		2015, 5, 13, 0, 0, 0, 0
 	);
 
@@ -116,7 +91,7 @@ fn can_build_date_from_prim() {
 
 #[test]
 fn serialise_elastic_date() {
-	let date = ElasticDate::<BasicDateTime>::new(
+	let date = Date::<BasicDateTime>::new(
 		chrono::UTC.datetime_from_str(
 			"13/05/2015 00:00:00", MYTYPE_DATE_FMT_2
 		).unwrap()
@@ -129,7 +104,7 @@ fn serialise_elastic_date() {
 
 #[test]
 fn deserialise_elastic_date() {
-	let date: ElasticDate<BasicDateTime> = serde_json::from_str(r#""20150513T000000.000Z""#).unwrap();
+	let date: Date<BasicDateTime> = serde_json::from_str(r#""20150513T000000.000Z""#).unwrap();
 
 	assert_eq!((2015, 5, 13), (
 		date.year(),
@@ -144,7 +119,7 @@ fn serialise_elastic_date_brw() {
 		"13/05/2015 00:00:00", MYTYPE_DATE_FMT_2
 	).unwrap();
 
-	let date = ElasticDateBrw::<BasicDateTime>::new(&chrono_date);
+	let date = DateBrw::<BasicDateTime>::new(&chrono_date);
 
 	let ser = serde_json::to_string(&date).unwrap();
 

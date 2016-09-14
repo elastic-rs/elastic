@@ -10,8 +10,7 @@ use ::geo_point_fixtures::*;
 
 #[test]
 fn serialise_mapping_default() {
-	let mapping = DefaultGeoPointMapping::<DefaultGeoPointFormat>::default();
-	let ser = serde_json::to_string(&mapping).unwrap();
+	let ser = FieldMapper::to_string(DefaultGeoPointMapping::<DefaultGeoPointFormat>::default()).unwrap();
 
 	let expected = json_str!({
 		"type": "geo_point"
@@ -22,8 +21,7 @@ fn serialise_mapping_default() {
 
 #[test]
 fn serialise_mapping_custom() {
-	let mapping = MyGeoPointMapping::<DefaultGeoPointFormat>::default();
-	let ser = serde_json::to_string(&mapping).unwrap();
+	let ser = FieldMapper::to_string(MyGeoPointMapping).unwrap();
 
 	let expected = json_str!({
 		"type": "geo_point",

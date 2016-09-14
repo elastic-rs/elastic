@@ -13,8 +13,8 @@
 //!
 //! For defining your own string mapping, see: 
 //! 
-//! - [keyword mapping details](mapping/trait.ElasticKeywordMapping.html#derive-mapping)
-//! - [text mapping details](mapping/trait.ElasticTextMapping.html#derive-mapping).
+//! - [keyword mapping details](mapping/trait.KeywordMapping.html#derive-mapping)
+//! - [text mapping details](mapping/trait.TextMapping.html#derive-mapping).
 //!
 //! Map with a default `string` (follows the [semantics](CHECK ME) for legacy `string` mapping:
 //!
@@ -35,7 +35,7 @@
 //! # use elastic_types::mapping::prelude::*;
 //! # use elastic_types::string::prelude::*;
 //! struct MyType {
-//! 	pub field: ElasticKeyword<DefaultKeywordMapping>
+//! 	pub field: Keyword<DefaultKeywordMapping>
 //! }
 //! # }
 //! ```
@@ -51,7 +51,7 @@
 //! # use elastic_types::mapping::prelude::*;
 //! # use elastic_types::string::prelude::*;
 //! struct MyType {
-//! 	pub field: ElasticText<DefaultTextMapping>
+//! 	pub field: Text<DefaultTextMapping>
 //! }
 //! # }
 //! ```
@@ -61,9 +61,9 @@
 //! - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/string.html)
 
 macro_rules! impl_string_type {
-    ($t:ident, $m:ident, $d:ident) => (
-    	impl <M> ElasticType<M, ()> for $t<M> where
-		M: ElasticFieldMapping<()> + $m { }
+    ($t:ident, $m:ident, $f:ident, $d:ident) => (
+    	impl <M> ElasticType<M, $f> for $t<M> where
+		M: $m { }
 
 		impl From<String> for $t<$d> {
 			fn from(string: String) -> Self {
@@ -72,14 +72,14 @@ macro_rules! impl_string_type {
 		}
 
 		impl <M> AsRef<str> for $t<M> where
-		M: ElasticFieldMapping<()> + $m {
+		M: $m {
 			fn as_ref(&self) -> &str {
 				&self.value
 			}
 		}
 
 		impl<'a, M> PartialEq<String> for $t<M> where
-		M: ElasticFieldMapping<()> + $m {
+		M: $m {
 			fn eq(&self, other: &String) -> bool {
 				PartialEq::eq(&self.value, other)
 			}
@@ -90,7 +90,7 @@ macro_rules! impl_string_type {
 		}
 
 		impl<'a, M> PartialEq<$t<M>> for String where
-		M: ElasticFieldMapping<()> + $m {
+		M: $m {
 			fn eq(&self, other: &$t<M>) -> bool {
 				PartialEq::eq(self, &other.value)
 			}
@@ -101,7 +101,7 @@ macro_rules! impl_string_type {
 		}
 
 		impl<'a, M> PartialEq<&'a str> for $t<M> where
-		M: ElasticFieldMapping<()> + $m {
+		M: $m {
 			fn eq(&self, other: & &'a str) -> bool {
 				PartialEq::eq(&self.value, *other)
 			}
@@ -112,7 +112,7 @@ macro_rules! impl_string_type {
 		}
 
 		impl<'a, M> PartialEq<$t<M>> for &'a str where
-		M: ElasticFieldMapping<()> + $m {
+		M: $m {
 			fn eq(&self, other: &$t<M>) -> bool {
 				PartialEq::eq(*self, &other.value)
 			}
@@ -123,7 +123,7 @@ macro_rules! impl_string_type {
 		}
 
 		impl <M> Serialize for $t<M> where
-		M: ElasticFieldMapping<()> + $m {
+		M: $m {
 			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where
 			S: Serializer {
 				serializer.serialize_str(&self.value)
@@ -131,21 +131,21 @@ macro_rules! impl_string_type {
 		}
 
 		impl <M> Deserialize for $t<M> where
-		M: ElasticFieldMapping<()> + $m {
+		M: $m {
 			fn deserialize<D>(deserializer: &mut D) -> Result<$t<M>, D::Error> where
 			D: Deserializer {
 				#[derive(Default)]
 				struct StringVisitor<M> where
-				M: ElasticFieldMapping<()> + $m {
-					phantom: PhantomData<M>
+				M: $m {
+					_m: PhantomData<M>
 				}
 
-				impl <M> serde::de::Visitor for StringVisitor<M> where
-				M: ElasticFieldMapping<()> + $m {
+				impl <M> Visitor for StringVisitor<M> where
+				M: $m {
 					type Value = $t<M>;
 
 					fn visit_str<E>(&mut self, v: &str) -> Result<$t<M>, E> where
-					E: serde::de::Error {
+					E: Error {
 						Ok($t::<M>::new(v))
 					}
 				}
@@ -163,8 +163,8 @@ pub mod text;
 
 pub mod mapping;
 
-pub use self::keyword::ElasticKeyword;
-pub use self::text::ElasticText;
+pub use self::keyword::Keyword;
+pub use self::text::Text;
 
 
 pub mod prelude {
@@ -172,6 +172,6 @@ pub mod prelude {
 	//!
 	//! This is a convenience module to make it easy to build mappings for multiple types without too many `use` statements.
 
-	pub use super::keyword::ElasticKeyword;
-	pub use super::text::ElasticText;
+	pub use super::keyword::Keyword;
+	pub use super::text::Text;
 }
