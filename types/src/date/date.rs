@@ -1,5 +1,6 @@
 use std::marker::PhantomData;
-use chrono::{ UTC, Weekday, NaiveDateTime, NaiveDate, NaiveTime };
+use std::ops::Deref;
+use chrono::{ UTC, NaiveDateTime, NaiveDate, NaiveTime };
 use serde::{ Serialize, Deserialize, Serializer, Deserializer };
 use serde::de::{ Visitor, Error };
 use super::ChronoDateTime;
@@ -255,103 +256,13 @@ M: DateMapping<Format = F> {
 	}
 }
 
-impl <F, M> Datelike for Date<F, M> where
+impl <F, M> Deref for Date<F, M> where
 F: DateFormat,
 M: DateMapping<Format = F> {
-	fn year(&self) -> i32 							{ self.value.year() }
-	fn month(&self) -> u32 							{ self.value.month() }
-	fn month0(&self) -> u32 						{ self.value.month0() }
-	fn day(&self) -> u32 							{ self.value.day() }
-	fn day0(&self) -> u32 							{ self.value.day0() }
-	fn ordinal(&self) -> u32 						{ self.value.ordinal() }
-	fn ordinal0(&self) -> u32 						{ self.value.ordinal0() }
-	fn weekday(&self) -> Weekday 					{ self.value.weekday() }
-	fn isoweekdate(&self) -> (i32, u32, Weekday) 	{ self.value.isoweekdate() }
+	type Target = ChronoDateTime;
 
-	fn with_year(&self, year: i32) -> Option<Date<F, M>> {
-		match self.value.with_year(year) {
-			Some(dt) => Some(Date::new(dt)),
-			None => None
-		}
-	}
-
-	fn with_month(&self, month: u32) -> Option<Date<F, M>> {
-		match self.value.with_month(month) {
-			Some(dt) => Some(Date::new(dt)),
-			None => None
-		}
-	}
-
-	fn with_month0(&self, month0: u32) -> Option<Date<F, M>> {
-		match self.value.with_month0(month0) {
-			Some(dt) => Some(Date::new(dt)),
-			None => None
-		}
-	}
-
-	fn with_day(&self, day: u32) -> Option<Date<F, M>> {
-		match self.value.with_day(day) {
-			Some(dt) => Some(Date::new(dt)),
-			None => None
-		}
-	}
-
-	fn with_day0(&self, day0: u32) -> Option<Date<F, M>> {
-		match self.value.with_day0(day0) {
-			Some(dt) => Some(Date::new(dt)),
-			None => None
-		}
-	}
-
-	fn with_ordinal(&self, ordinal: u32) -> Option<Date<F, M>> {
-		match self.value.with_ordinal(ordinal) {
-			Some(dt) => Some(Date::new(dt)),
-			None => None
-		}
-	}
-
-	fn with_ordinal0(&self, ordinal0: u32) -> Option<Date<F, M>> {
-		match self.value.with_ordinal0(ordinal0) {
-			Some(dt) => Some(Date::new(dt)),
-			None => None
-		}
-	}
-}
-
-impl <F, M> Timelike for Date<F, M> where
-F: DateFormat,
-M: DateMapping<Format = F> {
-	fn hour(&self) -> u32 			{ self.value.hour() }
-	fn minute(&self) -> u32 		{ self.value.minute() }
-	fn second(&self) -> u32 		{ self.value.second() }
-	fn nanosecond(&self) -> u32 	{ self.value.nanosecond() }
-
-	fn with_hour(&self, hour: u32) -> Option<Date<F, M>> {
-		match self.value.with_hour(hour) {
-			Some(dt) => Some(Date::new(dt)),
-			None => None
-		}
-	}
-
-	fn with_minute(&self, min: u32) -> Option<Date<F, M>> {
-		match self.value.with_minute(min) {
-			Some(dt) => Some(Date::new(dt)),
-			None => None
-		}
-	}
-
-	fn with_second(&self, sec: u32) -> Option<Date<F, M>> {
-		match self.value.with_second(sec) {
-			Some(dt) => Some(Date::new(dt)),
-			None => None
-		}
-	}
-
-	fn with_nanosecond(&self, nano: u32) -> Option<Date<F, M>> {
-		match self.value.with_nanosecond(nano) {
-			Some(dt) => Some(Date::new(dt)),
-			None => None
-		}
+	fn deref(&self) -> &ChronoDateTime {
+		&self.value
 	}
 }
 

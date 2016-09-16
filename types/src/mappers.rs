@@ -6,8 +6,6 @@
 //! 
 //! `FieldMapper`, for mapping any type as a field of a user-defined type.
 //! 
-//! `IndexTemplateMapper`, for creating an index template from a collection of user-defined types.
-//! 
 //! # Examples
 //!
 //! Any type that derives `ElasticType` can be mapped using one of the various mappers.

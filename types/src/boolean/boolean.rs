@@ -1,4 +1,5 @@
 use std::marker::PhantomData;
+use std::ops::Deref;
 use serde::{ Serialize, Deserialize, Serializer, Deserializer };
 use serde::de::{ Visitor, Error };
 use super::mapping::{ BooleanMapping, DefaultBooleanMapping, BooleanFormat };
@@ -92,7 +93,7 @@ impl From<bool> for Boolean<DefaultBooleanMapping> {
 	}
 }
 
-impl<'a, M> PartialEq<bool> for Boolean<M> where
+impl<M> PartialEq<bool> for Boolean<M> where
 M: BooleanMapping {
 	fn eq(&self, other: &bool) -> bool {
 		PartialEq::eq(&self.value, other)
@@ -103,7 +104,7 @@ M: BooleanMapping {
 	}
 }
 
-impl<'a, M> PartialEq<Boolean<M>> for bool where
+impl<M> PartialEq<Boolean<M>> for bool where
 M: BooleanMapping {
 	fn eq(&self, other: &Boolean<M>) -> bool {
 		PartialEq::eq(self, &other.value)
@@ -114,7 +115,15 @@ M: BooleanMapping {
 	}
 }
 
-//Serialize elastic boolean
+impl <M> Deref for Boolean<M> where
+M: BooleanMapping {
+	type Target = bool;
+	
+	fn deref(&self) -> &bool {
+		&self.value
+	}
+}
+
 impl <M> Serialize for Boolean<M> where
 M: BooleanMapping {
 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where
@@ -123,7 +132,6 @@ M: BooleanMapping {
 	}
 }
 
-//Deserialize elastic boolean
 impl <M> Deserialize for Boolean<M> where
 M: BooleanMapping {
 	fn deserialize<D>(deserializer: &mut D) -> Result<Boolean<M>, D::Error> where

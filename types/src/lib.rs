@@ -564,10 +564,10 @@
 //! a default mapping is implemented for that type.
 //! That means you can use primitives in your structs and have them mapped to the correct type in Elasticsearch.
 //! If you want to provide your own mapping for a `std` type, there's also a struct provided by `elastic_types`
-//! that wraps the `std` type but also takes an explicit mapping (like `Integer` for `i32`).
+//! that wraps the `std` type but also takes an explicit mapping (like `Integer` which implements `Deref<Target = i32>`).
 //!
 //! Where there isn't a `std` type available (like `date`), an external crate is used and an implementation of
-//! that type is provided (like `Date`, which implements `chrono::DateLike + chrono::TimeLike`).
+//! that type is provided (like `Date`, which implements `Deref<Target = chrono::DateTime<UTC>>`).
 //!
 //! ## Formats
 //!
@@ -580,7 +580,6 @@
 //! - [Elasticsearch Type Concepts](https://www.elastic.co/guide/en/elasticsearch/reference/master/_basic_concepts.html#_type)
 //! - [Github](https://github.com/elastic-rs/elastic-types)
 
-#![doc(html_root_url = "http://kodraus.github.io/rustdoc/elastic_types/")]
 #![deny(missing_docs)]
 
 #![cfg_attr(feature = "nightly", feature(custom_derive, plugin, associated_type_defaults, associated_consts))]
@@ -620,7 +619,7 @@ pub mod object;
 pub mod template;
 
 pub mod prelude {
-	//! Includes non-mapping types for all data types.
+	//! Includes all data types.
 	//!
 	//! This is a convenience module to make it easy to build mappings for multiple types without too many `use` statements.
 

@@ -122,6 +122,15 @@ macro_rules! impl_string_type {
 			}
 		}
 
+		impl <M> ::std::ops::Deref for $t<M> where
+		M: $m {
+			type Target = String;
+			
+			fn deref(&self) -> &String {
+				&self.value
+			}
+		}
+
 		impl <M> Serialize for $t<M> where
 		M: $m {
 			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where

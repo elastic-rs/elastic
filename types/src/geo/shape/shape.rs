@@ -1,4 +1,5 @@
 use std::marker::PhantomData;
+use std::ops::Deref;
 use serde::{ Serialize, Deserialize, Serializer, Deserializer };
 use geojson::Geometry;
 use super::mapping::*;
@@ -26,37 +27,37 @@ use ::mapping::ElasticType;
 #[derive(Debug, Clone, PartialEq)]
 pub struct GeoShape<M> where 
 M: GeoShapeMapping {
-    value: Geometry,
-    _m: PhantomData<M>
+	value: Geometry,
+	_m: PhantomData<M>
 }
 
 impl <M> GeoShape<M> where 
 M: GeoShapeMapping {
-    /// Creates a new geo shape with the given mapping.
-    pub fn new<I: Into<Geometry>>(geo: I) -> GeoShape<M> {
-        GeoShape {
-            value: geo.into(),
-            _m: PhantomData
-        }
-    }
+	/// Creates a new geo shape with the given mapping.
+	pub fn new<I: Into<Geometry>>(geo: I) -> GeoShape<M> {
+		GeoShape {
+			value: geo.into(),
+			_m: PhantomData
+		}
+	}
 
-    /// Get the value of the geo shape.
-    pub fn get(&self) -> &Geometry {
-        &self.value
-    }
+	/// Get the value of the geo shape.
+	pub fn get(&self) -> &Geometry {
+		&self.value
+	}
 
-    /// Set the value of the geo shape.
-    pub fn set<I: Into<Geometry>>(&mut self, geo: I) {
-        self.value = geo.into()
-    }
+	/// Set the value of the geo shape.
+	pub fn set<I: Into<Geometry>>(&mut self, geo: I) {
+		self.value = geo.into()
+	}
 
-    /// Change the mapping of this geo shape.
-    pub fn remap<MInto: GeoShapeMapping>(self) -> GeoShape<MInto> {
-        GeoShape::<MInto>::new(self.value)
-    }
+	/// Change the mapping of this geo shape.
+	pub fn remap<MInto: GeoShapeMapping>(self) -> GeoShape<MInto> {
+		GeoShape::<MInto>::new(self.value)
+	}
 }
 
-impl<'a, M> PartialEq<Geometry> for GeoShape<M> where
+impl<M> PartialEq<Geometry> for GeoShape<M> where
 M: GeoShapeMapping {
 	fn eq(&self, other: &Geometry) -> bool {
 		PartialEq::eq(&self.value, other)
@@ -67,7 +68,7 @@ M: GeoShapeMapping {
 	}
 }
 
-impl<'a, M> PartialEq<GeoShape<M>> for Geometry where
+impl<M> PartialEq<GeoShape<M>> for Geometry where
 M: GeoShapeMapping {
 	fn eq(&self, other: &GeoShape<M>) -> bool {
 		PartialEq::eq(self, &other.value)
@@ -83,25 +84,34 @@ M: GeoShapeMapping { }
 
 impl <M> From<Geometry> for GeoShape<M> where
 M: GeoShapeMapping {
-    fn from(geo: Geometry) -> Self {
-        GeoShape::<M>::new(geo)
-    }
+	fn from(geo: Geometry) -> Self {
+		GeoShape::<M>::new(geo)
+	}
+}
+
+impl <M> Deref for GeoShape<M> where
+M: GeoShapeMapping {
+	type Target = Geometry;
+	
+	fn deref(&self) -> &Geometry {
+		&self.value
+	}
 }
 
 impl <M> Serialize for GeoShape<M> where 
 M: GeoShapeMapping {
-    fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where
-    S: Serializer {
-        self.value.serialize(serializer)
-    }
+	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where
+	S: Serializer {
+		self.value.serialize(serializer)
+	}
 }
 
 impl <M> Deserialize for GeoShape<M> where
 M: GeoShapeMapping {
-    fn deserialize<D>(deserializer: &mut D) -> Result<GeoShape<M>, D::Error> where
-    D: Deserializer {
-        let t = try!(Geometry::deserialize(deserializer));
+	fn deserialize<D>(deserializer: &mut D) -> Result<GeoShape<M>, D::Error> where
+	D: Deserializer {
+		let t = try!(Geometry::deserialize(deserializer));
 
-        Ok(GeoShape::<M>::new(t))
-    }
+		Ok(GeoShape::<M>::new(t))
+	}
 }
