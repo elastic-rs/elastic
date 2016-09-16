@@ -86,68 +86,11 @@ let response = elastic::search::post(
 ).unwrap();
 ```
 
-### [`elastic_types`](http://kodraus.github.io/rustdoc/elastic_types/)
-
-[![Latest Version](https://img.shields.io/crates/v/elastic_types.svg)](https://crates.io/crates/elastic_types)
-
-[Docs](http://kodraus.github.io/rustdoc/elastic_types/) |
-[Issues](https://github.com/KodrAus/elasticsearch-rs/labels/types)
+### [`elastic_types`](https://github.com/elastic-rs/elastic-types)
 
 `elastic_types` is a library for building Elasticsearch types in Rust. Define your Elasticsearch types as PORS (Plain Old Rust Structures) and generate an equivalent Elasticsearch mapping from them, where correctness is enforced by Rust's type system.
-It provides rust implementations of the core [Elasticsearch datatypes](https://www.elastic.co/guide/en/elasticsearch/reference/1.4/mapping-core-types.html) (like `date`, `geo_point`) and responses/errors.
 
-Supports both the [`elastic_hyper`](#elastic_hyper) and [`rs-es`](https://github.com/benashford/rs-es) clients.
-
-The `elastic_types` crate tries not to reinvent the wheel wherever possible and relies on some common dependencies for types, such as [`chrono`](https://github.com/lifthrasiir/rust-chrono) for dates and [`rust-geo`](https://github.com/georust/rust-geo) for geometry.
-
-#### Example
-
-On `nightly`, add `elastic_types` to your `Cargo.toml`:
-
-```
-[dependencies]
-elastic_types = { version = "*", features = "nightly" }
-elastic_types_macros = "*"
-```
-
-Define a custom Elasticsearch type called `mytype`:
-
-```rust
-#[derive(Serialize, Deserialize, ElasticType)]
-pub struct MyType {
-	pub my_date: Date<EpochMillis>,
-	pub my_string: String,
-	pub my_num: i32
-}
-```
-
-This will create a struct for you called `ElasticTypeMapping`.
-You can then get the mapping for your type:
-
-```rust
-let mapping = TypeMapper::to_string(MyTypeMapping).unwrap();
-```
-
-This will return:
-
-```json
-{
-  "properties": {
-    "my_date": {
-      "type": "date",
-      "format": "epoch_millis"
-    },
-    "my_string": {
-      "type": "string"
-    },
-    "my_num": {
-      "type": "integer"
-    }
-  }
-}
-```
-
-The `stable` channel is also supported, see the [docs](http://kodraus.github.io/rustdoc/elastic_types/) for details.
+This crate lives in the [`elastic_types` repo](https://github.com/elastic-rs/elastic-types).
 
 ### `elastic_rotor`
 
@@ -167,34 +110,6 @@ The crate will allow you to use connections in two ways; add connections as stat
 Provides code generation for the Elasticsearch REST API from the official [spec](https://github.com/elastic/elasticsearch/tree/master/rest-api-spec) and generic helpers for rust source and integration tests. The goal is to keep this package fairly agnostic, so the same `ast` can be used to generate other kinds of output.
 
 Right now, it's used by `elastic_hyper` to build the client, but could also be used to generate other implementations, like `elastic_rotor` for an asynchronous client.
-
-### Macros
-
-#### [`elastic_types_macros`](http://kodraus.github.io/rustdoc/elastic_types_macros/)
-
-[![Latest Version](https://img.shields.io/crates/v/elastic_types_macros.svg)](https://crates.io/crates/elastic_types_macros)
-
-[Docs](http://kodraus.github.io/rustdoc/elastic_types_macros/) |
-[Issues](https://github.com/KodrAus/elasticsearch-rs/labels/macros)
-
-Provides custom derive plugins for Elasticsearch datatypes and mappings in [elastic_types](#elastic_types).
-
-#### [`elastic_date_macros`](http://kodraus.github.io/rustdoc/elastic_date_macros/)
-
-[![Latest Version](https://img.shields.io/crates/v/elastic_date_macros.svg)](https://crates.io/crates/elastic_date_macros)
-
-[Docs](http://kodraus.github.io/rustdoc/elastic_date_macros/) |
-[Issues](https://github.com/KodrAus/elasticsearch-rs/labels/macros)
-
-Provides date-specific plugins for the date datatype in [elastic_types](#elastic_types).
-
-## Design
-
-<p align="center">
-  <img src="http://kodraus.github.io/es_arch.svg" />
-</p>
-
-The client is divided into a few crates by utility. These will probably be moved into their own repositories to tidy up build/test, but for now it's conventient to develop them together.
 
 ## Goals
 
