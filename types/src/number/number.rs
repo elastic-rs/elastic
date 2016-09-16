@@ -1,4 +1,5 @@
 use std::marker::PhantomData;
+use std::ops::Deref;
 use serde::{ Serialize, Deserialize, Serializer, Deserializer };
 use super::mapping::*;
 use ::mapping::ElasticType;
@@ -44,7 +45,7 @@ macro_rules! number_type {
 			}
 		}
 
-        impl<'a, M> PartialEq<$n> for $t<M> where
+        impl<M> PartialEq<$n> for $t<M> where
         M: $m {
         	fn eq(&self, other: &$n) -> bool {
         		PartialEq::eq(&self.value, other)
@@ -55,7 +56,7 @@ macro_rules! number_type {
         	}
         }
 
-        impl<'a, M> PartialEq<$t<M>> for $n where
+        impl<M> PartialEq<$t<M>> for $n where
         M: $m {
         	fn eq(&self, other: &$t<M>) -> bool {
         		PartialEq::eq(self, &other.value)
@@ -65,6 +66,15 @@ macro_rules! number_type {
         		PartialEq::ne(self, &other.value)
         	}
         }
+
+        impl <M> Deref for $t<M> where
+		M: $m {
+			type Target = $n;
+			
+			fn deref(&self) -> &$n {
+				&self.value
+			}
+		}
 
 		//Serialize elastic number.
 		impl <M> Serialize for $t<M> where M: $m {

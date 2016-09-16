@@ -19,6 +19,8 @@ use ::object::ObjectMapping;
 use ::mappers::TypeMapper;
 
 /// A structure for predefining mappings with an index template.
+/// 
+/// > NOTE: This structure is quite slow to serialise, so you should use it sparingly.
 ///
 /// # Examples
 /// 

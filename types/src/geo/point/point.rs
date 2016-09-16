@@ -1,4 +1,5 @@
 use std::marker::PhantomData;
+use std::ops::Deref;
 use serde::{ Serialize, Deserialize, Serializer, Deserializer };
 use georust::{ Coordinate, Point, ToGeo, Geometry };
 use ::mapping::{ ElasticFieldMapping, ElasticType };
@@ -56,8 +57,8 @@ use super::GeoPointFormat;
 pub struct GeoPoint<F, M = DefaultGeoPointMapping<F>> where
 F: GeoPointFormat,
 M: GeoPointMapping<Format = F> {
-    /// The `x` and `y` coordinate for the point.
-    value: Point,
+	/// The `x` and `y` coordinate for the point.
+	value: Point,
 	_f: PhantomData<F>,
 	_t: PhantomData<M>
 }
@@ -65,7 +66,7 @@ M: GeoPointMapping<Format = F> {
 impl <F, M> GeoPoint<F, M> where
 F: GeoPointFormat,
 M: GeoPointMapping<Format = F> {
-    /// Creates a new `GeoPoint` from the given coordinate.
+	/// Creates a new `GeoPoint` from the given coordinate.
 	///
 	/// This function will consume the provided `Coordinate`.
 	///
@@ -87,47 +88,37 @@ M: GeoPointMapping<Format = F> {
 	/// let point: GeoPoint<DefaultGeoPointFormat> = GeoPoint::new(coord);
 	/// # }
 	/// ```
-    pub fn new(point: Coordinate) -> GeoPoint<F, M> {
-        GeoPoint {
-            value: Point(point),
-            _f: PhantomData,
-            _t: PhantomData
-        }
-    }
+	pub fn new(point: Coordinate) -> GeoPoint<F, M> {
+		GeoPoint {
+			value: Point(point),
+			_f: PhantomData,
+			_t: PhantomData
+		}
+	}
 
-    /// Creates an `GeoPoint` from the given `x` and `y` primitives:
+	/// Creates an `GeoPoint` from the given `x` and `y` primitives:
 	///
 	/// ```
 	/// use elastic_types::geo::point::{ GeoPoint, DefaultGeoPointFormat };
 	///
 	/// let point: GeoPoint<DefaultGeoPointFormat> = GeoPoint::build(1.0, 1.0);
 	/// ```
-    pub fn build(x: f64, y: f64) -> GeoPoint<F, M> {
-        GeoPoint::<F, M>::new(Coordinate { x: x, y: y })
-    }
+	pub fn build(x: f64, y: f64) -> GeoPoint<F, M> {
+		GeoPoint::<F, M>::new(Coordinate { x: x, y: y })
+	}
 
-    /// Get the underlying `Point` coordinate.
-    pub fn get(&self) -> &Point {
-        &self.value
-    }
+	/// Get the `x` coordinate for this point.
+	pub fn x(&self) -> f64 {
+		self.value.x()
+	}
 
-    /// Set the underlying `Point` coordinate.
-    pub fn set(&mut self, point: Coordinate) {
-        self.value = Point(point);
-    }
+	/// Get the `y` coordinate for this point.
+	pub fn y(&self) -> f64 {
+		self.value.y()
+	}
 
-    /// Get the `x` part of the coordinate.
-    pub fn x(&self) -> f64 {
-        self.value.x()
-    }
-
-    /// Get the `y` part of the coordinate.
-    pub fn y(&self) -> f64 {
-        self.value.y()
-    }
-
-    /// Change the format/mapping of this geo point.
-    ///
+	/// Change the format/mapping of this geo point.
+	///
 	/// # Examples
 	///
 	/// ```
@@ -171,12 +162,12 @@ M: GeoPointMapping<Format = F> {
 impl <F, M> ToGeo for GeoPoint<F, M> where
 F: GeoPointFormat,
 M: GeoPointMapping<Format = F> {
-    fn to_geo(&self) -> Geometry {
-        Geometry::Point(self.value.clone())
-    }
+	fn to_geo(&self) -> Geometry {
+		Geometry::Point(self.value.clone())
+	}
 }
 
-impl<'a, F, M> PartialEq<Point> for GeoPoint<F, M> where
+impl<F, M> PartialEq<Point> for GeoPoint<F, M> where
 F: GeoPointFormat,
 M: ElasticFieldMapping<()> + GeoPointMapping<Format = F> {
 	fn eq(&self, other: &Point) -> bool {
@@ -188,7 +179,7 @@ M: ElasticFieldMapping<()> + GeoPointMapping<Format = F> {
 	}
 }
 
-impl<'a, F, M> PartialEq<GeoPoint<F, M>> for Point where
+impl<F, M> PartialEq<GeoPoint<F, M>> for Point where
 F: GeoPointFormat,
 M: ElasticFieldMapping<()> + GeoPointMapping<Format = F> {
 	fn eq(&self, other: &GeoPoint<F, M>) -> bool {
@@ -197,6 +188,16 @@ M: ElasticFieldMapping<()> + GeoPointMapping<Format = F> {
 
 	fn ne(&self, other: &GeoPoint<F, M>) -> bool {
 		PartialEq::ne(self, &other.value)
+	}
+}
+
+impl<F, M> Deref for GeoPoint<F, M> where
+F: GeoPointFormat,
+M: ElasticFieldMapping<()> + GeoPointMapping<Format = F> {
+	type Target = Point;
+	
+	fn deref(&self) -> &Point {
+		&self.value
 	}
 }
 
@@ -214,8 +215,8 @@ F: GeoPointFormat,
 M: GeoPointMapping<Format = F> {
 	fn deserialize<D>(deserializer: &mut D) -> Result<GeoPoint<F, M>, D::Error> where
 	D: Deserializer {
-        let point = try!(F::parse(deserializer));
+		let point = try!(F::parse(deserializer));
 
-        Ok(point.into())
-    }
+		Ok(point.into())
+	}
 }
