@@ -1,13 +1,10 @@
 # Elastic
 
-Platform  | Channel | Status
-------------- | ------------- | -------------
-Linux / OSX  | Stable / Nightly | [![Build Status](https://travis-ci.org/KodrAus/elasticsearch-rs.svg?branch=master)](https://travis-ci.org/KodrAus/elasticsearch-rs)
-Windows  | Nightly | [![Build status](https://ci.appveyor.com/api/projects/status/s0yo6i7sr4kc5sd5?svg=true)](https://ci.appveyor.com/project/KodrAus/elasticsearch-rs)
-
 `elastic_*` is an ecosystem of crates for interacting with Elasticsearch from Rust.
 The API is targeting the `5.x` branch of Elasticsearch, which is currently in alpha.
 This means the library is in a fairly inconsistent state, but will be stabilised along with Elasticsearch.
+
+> NOTE: The libraries here are in the process of being migrated to the [`elastic-rs` organisation](https://github.com/elastic-rs).
 
 Crate functionality covers:
 
