@@ -22,13 +22,12 @@ extern crate rotor_tools;
 #[macro_use]
 extern crate lazy_static;
 
-mod conn;
+mod client;
+pub use client::*;
 
 //Test usage
 use std::str;
 use futures::Future;
-
-use conn::constant;
 
 /*
 Define a global queue structure that will be shared by all producers / consumers
@@ -44,23 +43,29 @@ TODO: Refactor the modules around. They're a mess right now. We probably won't n
 sniffed conn pool once the constance one is able to maintain health from a static list
 */
 lazy_static! {
-	static ref QUEUE: conn::Queue = conn::Queue::new();
+	static ref QUEUE: Queue = Queue::new();
 }
 
 fn main() {
 	//Build a client
-	//NOTE: The same addr can be added multiple times
-	let builder = constant::ClientBuilder::new(&QUEUE)
-		.add_localhost();
+	let builder = ClientBuilder::new(&QUEUE)
+		.connect_localhost();
 
-	let client = builder.build().wait().unwrap();
+	let cli = builder.build().wait().unwrap();
+
+	let post_res = cli.req(Request::post("/testindex/testtype/1", b"{\"id\":1}"))
+		.wait()
+		.unwrap()
+		.unwrap();
+	
+	println!("Index: {}", str::from_utf8(&post_res).unwrap());
 
 	let sw = Stopwatch::start_new();
 
 	//Run some requests asynchronously
 	let total_reqs = 100;
-	let reqs: Vec<conn::ReqFut> = (0..total_reqs).map(|_| {
-		client.req(conn::Message::get("/testindex/testtype/_search"))
+	let reqs: Vec<ResponseFuture> = (0..total_reqs).map(|_| {
+		cli.req(Request::get("/testindex/testtype/_search"))
 	}).collect();
 
 	futures::collect(reqs).wait().unwrap();
@@ -68,5 +73,5 @@ fn main() {
 	let elapsed = Duration::from_std(sw.elapsed()).unwrap();
 	let elapsed = elapsed.num_nanoseconds().unwrap();
 
-	println!("took {}ns ({}ns per req)", elapsed, elapsed / (total_reqs as i64));
+	println!("Search: took {}ns ({}ns per req)", elapsed, elapsed / (total_reqs as i64));
 }
