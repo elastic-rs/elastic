@@ -1,8 +1,7 @@
 use std::marker::PhantomData;
 use std::time::Duration;
-
-use futures::{ Oneshot, Complete };
 use crossbeam::sync::MsQueue;
+use futures::{ Oneshot, Complete };
 use rotor::{ Scope, Time };
 use rotor_http::client::{ Request, Requester, ResponseError, Head, RecvMode, Version };
 
@@ -10,6 +9,8 @@ pub mod constant;
 //pub mod sniffed;
 
 /// A request message.
+/// 
+/// This is what you supply to kick off a request.
 pub struct Message {
 	url: String,
 	verb: &'static str,
@@ -33,25 +34,10 @@ impl Message {
 			body: Some(body.to_vec())
 		}
 	}
-
-	/// Get the url for this request.
-	pub fn get_url(&self) -> &str {
-		&self.url
-	}
-
-	/// Get the verb for this request.
-	pub fn get_verb(&self) -> &str {
-		&self.verb
-	}
-
-	/// Get the message body for this request.
-	pub fn get_body(&self) -> Option<&[u8]> {
-		match self.body {
-			Some(ref b) => Some(b),
-			None => None
-		}
-	}
 }
+
+/// A common data format shared between producer and consumer.
+pub type Data = Result<Vec<u8>, &'static str>;
 
 /// A request future.
 pub type ReqFut = Oneshot<Data>;
@@ -59,11 +45,27 @@ pub type ReqFut = Oneshot<Data>;
 /// The completion part of a request future.
 type ReqComp = Complete<Data>;
 
-/// A common data format shared between producer and consumer.
-pub type Data = Result<Vec<u8>, &'static str>;
+const DEFAULT_TIMEOUT: u64 = 1000;
 
-/// A common message queue shared by multiple machines.
-pub type Queue = MsQueue<(Message, ReqComp)>;
+/// A queue to link a client with a connection pool.
+/// 
+/// This is essentially just a wrapped `MsQueue`.
+/// Messages can't be put onto this queue directly, you need to use the
+/// appropriate `Client` structure.
+pub struct Queue(MsQueue<(Message, ReqComp)>);
+impl Queue {
+	pub fn new() -> Self {
+		Queue(MsQueue::new())
+	}
+
+	fn push(&self, msg: (Message, ReqComp)) {
+		self.0.push(msg);
+	}
+
+	fn try_pop(&self) -> Option<(Message, ReqComp)> {
+		self.0.try_pop()
+	}
+}
 
 /// A state machine for managing the HTTP component of an Elasticsearch connection.
 pub struct ApiRequest<C> {
@@ -85,13 +87,12 @@ impl <C> ApiRequest<C> {
 impl <C> Requester for ApiRequest<C> {
 	type Context = C;
 
-	//TODO: return a failed completion insread of unwrapping
 	fn prepare_request(self, req: &mut Request, _scope: &mut Scope<Self::Context>) -> Option<Self> {
-		req.start(&self.msg.get_verb(), &self.msg.get_url(), Version::Http11);
+		req.start(&self.msg.verb, &self.msg.url, Version::Http11);
 		
 		req.add_header("Content-Type", b"application/json").unwrap();
 
-		if let Some(body) = self.msg.get_body() {
+		if let Some(ref body) = self.msg.body {
 			req.add_length(body.len() as u64).unwrap();
 			req.done_headers().unwrap();
 			req.write_body(body);
@@ -107,7 +108,7 @@ impl <C> Requester for ApiRequest<C> {
 
 	fn headers_received(self, _head: Head, _req: &mut Request, scope: &mut Scope<Self::Context>) -> Option<(Self, RecvMode, Time)> {
 		//NOTE: 404's will come through here too, so we can set a correct error response
-		Some((self, RecvMode::Buffered(1 << 20), scope.now() + Duration::new(1000, 0)))
+		Some((self, RecvMode::Buffered(1 << 20), scope.now() + Duration::new(DEFAULT_TIMEOUT, 0)))
 	}
 
 	fn response_received(self, data: &[u8], _req: &mut Request, _scope: &mut Scope<Self::Context>) {
@@ -127,10 +128,12 @@ impl <C> Requester for ApiRequest<C> {
 	}
 
 	fn timeout(self, _req: &mut Request, scope: &mut Scope<Self::Context>) -> Option<(Self, Time)> {
-		Some((self, scope.now() + Duration::new(1000, 0)))
+		//TODO: Check for cancellation
+		Some((self, scope.now() + Duration::new(DEFAULT_TIMEOUT, 0)))
 	}
 
 	fn wakeup(self, _req: &mut Request, _scope: &mut Scope<Self::Context>) -> Option<Self> {
+		//TODO: Check for cancellation
 		Some(self)
 	}
 }

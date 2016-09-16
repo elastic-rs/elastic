@@ -2,12 +2,11 @@
 //! 
 //! A WIP implementation of an asynchronous http client for Elasticsearch.
 //! 
-//! Doesn't work... But will follow the following design:
+//! Only _sort of_ works... But will follow the following design:
 //! - Provide a simple, fast constant connection pool
-//! - Provide a more complex sniffed connection pool
+//! - Provide a more complex, but robust, sniffed connection pool
 //! 
 //! Communication to the loop is through a non-blocking `Queue`, wrapped in a `Handle`.
-//! Responses (if wanted) will be retrieved through a channel, which blocks when requesting data.
 
 extern crate time;
 extern crate stopwatch;
@@ -27,50 +26,39 @@ mod conn;
 
 //Test usage
 use std::str;
-use std::sync::mpsc;
-use std::thread;
 use futures::Future;
 
 use conn::constant;
 
-//Define a global queue structure that will be shared by all producers / consumers
+/*
+Define a global queue structure that will be shared by all producers / consumers
+We need to be clear that any messages on this queue may be handled, but putting a message
+on the queue doesn't guarantee that it'll get handled now
+
+TODO: Wrap this up so you don't have to build your own future type? Sounds good
+impl Deref<Target = MsQueue<...>> for struct Queue(MsQueue<...>)
+
+TODO: Also look into providing input to client pool as a futures Stream
+
+TODO: Refactor the modules around. They're a mess right now. We probably won't need a separate
+sniffed conn pool once the constance one is able to maintain health from a static list
+*/
 lazy_static! {
 	static ref QUEUE: conn::Queue = conn::Queue::new();
 }
 
 fn main() {
-	let (tx, rx) = mpsc::channel();
+	//Build a client
+	//NOTE: The same addr can be added multiple times
+	let builder = constant::ClientBuilder::new(&QUEUE)
+		.add_localhost()
+		.add_localhost();
 
-	//Spawn an io thread
-	//TODO: Make this a future too, and clean up the node addition
-	//TODO: Maybe this should expect an &'static Queue?
-	//let client = ClientBuilder::new(&QUEUE).add_node(addr).add_node(addr).build();
-	//client.then(|c| { ... })
-	let client = {
-		thread::spawn(move || {
-			let mut handle = constant::Handle::new(&QUEUE);
-
-			//Build a loop
-			let creator = rotor::Loop::new(&rotor::Config::new()).unwrap();
-			let mut loop_inst = creator.instantiate(constant::Context);
-
-			//Add a state machine with a reference to our queue
-			for _ in 0..3 {
-				loop_inst.add_machine_with(|scope| {
-					constant::connect_localhost(scope, &mut handle)
-				}).unwrap();
-			}
-
-			//Send the constructed handle and start the loop
-			//Using a future for this means we can avoid returning the value until the machines are connected
-			tx.send(handle).unwrap();
-			loop_inst.run().unwrap();
-		});
-		rx.recv().unwrap()
-	};
+	let client = builder.build().wait().unwrap();
 
 	let sw = Stopwatch::start_new();
 
+	//Run some requests asynchronously
 	let total_reqs = 100;
 	let reqs: Vec<conn::ReqFut> = (0..total_reqs).map(|_| {
 		client.req(conn::Message::get("/testindex/testtype/_search"))
