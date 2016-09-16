@@ -165,12 +165,7 @@ impl <'a, C> FsmClient for Fsm<'a, C> {
 	}
 
 	fn wakeup(self, conn: &Connection, scope: &mut Scope<<Self::Requester as Requester>::Context>) -> Task<Self> {
-		if conn.is_idle() {
-			self.connection_idle(conn, scope)
-		}
-		else {
-			Task::Sleep(self, scope.now() + Duration::from_millis(DEFAULT_TIMEOUT))
-		}
+		self.connection_idle(conn, scope)
 	}
 
 	fn timeout(self, conn: &Connection, scope: &mut Scope<<Self::Requester as Requester>::Context>) -> Task<Self> {

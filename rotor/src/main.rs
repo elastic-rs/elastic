@@ -51,7 +51,6 @@ fn main() {
 	//Build a client
 	//NOTE: The same addr can be added multiple times
 	let builder = constant::ClientBuilder::new(&QUEUE)
-		.add_localhost()
 		.add_localhost();
 
 	let client = builder.build().wait().unwrap();
