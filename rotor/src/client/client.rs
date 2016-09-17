@@ -10,6 +10,7 @@ use super::{ Request, Queue, ResponseFuture };
 use super::fsm::{ Fsm, Context };
 
 /// A client-side handle to send request messages to a running loop.
+#[derive(Clone)]
 pub struct Client<'a> {
 	q: &'a Queue,
 	notifiers: Vec<Notifier>

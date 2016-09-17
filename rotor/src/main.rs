@@ -6,12 +6,9 @@
 //! - Provide a simple, fast constant connection pool
 //! - Provide a more complex, but robust, sniffed connection pool
 //! 
-//! Communication to the loop is through a non-blocking `Queue`, wrapped in a `Handle`.
+//! Communication to the loop is through a non-blocking `Queue`, wrapped in a `Client`.
 
 extern crate time;
-extern crate stopwatch;
-use time::Duration;
-use stopwatch::Stopwatch;
 
 extern crate crossbeam;
 extern crate futures;
@@ -26,7 +23,6 @@ mod client;
 pub use client::*;
 
 //Test usage
-use std::str;
 use futures::Future;
 
 lazy_static! {
@@ -40,12 +36,13 @@ fn main() {
 
 	let cli = builder.build().wait().unwrap();
 
-	let post_res = cli.req(Request::post("/testindex/testtype/1", b"{\"id\":1}"))
+	//Run a post request asynchronously
+	cli.req(Request::post("/testindex/testtype/1", b"{\"id\":1}"))
 		.wait()
 		.unwrap()
 		.unwrap();
 
-	//Run some requests asynchronously
+	//Run some search requests asynchronously
 	let total_reqs = 100;
 	let search_reqs: Vec<ResponseFuture> = (0..total_reqs).map(|_| {
 		cli.req(Request::get("/testindex/testtype/_search"))
