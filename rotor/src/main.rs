@@ -29,19 +29,6 @@ pub use client::*;
 use std::str;
 use futures::Future;
 
-/*
-Define a global queue structure that will be shared by all producers / consumers
-We need to be clear that any messages on this queue may be handled, but putting a message
-on the queue doesn't guarantee that it'll get handled now
-
-TODO: Wrap this up so you don't have to build your own future type? Sounds good
-impl Deref<Target = MsQueue<...>> for struct Queue(MsQueue<...>)
-
-TODO: Also look into providing input to client pool as a futures Stream
-
-TODO: Refactor the modules around. They're a mess right now. We probably won't need a separate
-sniffed conn pool once the constance one is able to maintain health from a static list
-*/
 lazy_static! {
 	static ref QUEUE: Queue = Queue::new();
 }
@@ -57,21 +44,12 @@ fn main() {
 		.wait()
 		.unwrap()
 		.unwrap();
-	
-	println!("Index: {}", str::from_utf8(&post_res).unwrap());
-
-	let sw = Stopwatch::start_new();
 
 	//Run some requests asynchronously
 	let total_reqs = 100;
-	let reqs: Vec<ResponseFuture> = (0..total_reqs).map(|_| {
+	let search_reqs: Vec<ResponseFuture> = (0..total_reqs).map(|_| {
 		cli.req(Request::get("/testindex/testtype/_search"))
 	}).collect();
 
-	futures::collect(reqs).wait().unwrap();
-
-	let elapsed = Duration::from_std(sw.elapsed()).unwrap();
-	let elapsed = elapsed.num_nanoseconds().unwrap();
-
-	println!("Search: took {}ns ({}ns per req)", elapsed, elapsed / (total_reqs as i64));
+	futures::collect(search_reqs).wait().unwrap();
 }
