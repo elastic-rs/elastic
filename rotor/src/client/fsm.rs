@@ -11,7 +11,7 @@ const DEFAULT_TIMEOUT: u64 = 500;
 
 /*
 TODO: We should probably have a single 'wakeup' machine that uses the `Context` to wake the other machines up
-This way, when a machine dies and is reborn, we don't have to try and change anything client side
+This way, when a connection needs to be respawned, we don't have to try and change anything client side
 So it'll be more like the sniffed pool, just without an external source of truth
 This means the only notifier the Handler has is one to the wakeup machine.
 It also opens the door for only waking up machines that aren't currently busy or for doing other match logic
