@@ -1,3 +1,0 @@
-# `elastic_hyper` samples
-
-This repo contains a few samples for the `elastic_hyper` crate.
