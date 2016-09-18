@@ -21,67 +21,11 @@ Quick reference:
 
 ## Crates
 
-### [`elastic_hyper`](http://kodraus.github.io/rustdoc/elastic_hyper/)
+### [`elastic_hyper`](https://github.com/elastic-rs/elastic-hyper)
 
-[![Latest Version](https://img.shields.io/crates/v/elastic_hyper.svg)](https://crates.io/crates/elastic_hyper)
+`elastic_hyper` provides a synchronous [`hyper`](https://github.com/hyperium/hyper) implementation of the Elasticsearch REST API.
 
-[Docs](http://kodraus.github.io/rustdoc/elastic_hyper/) |
-[Issues](https://github.com/KodrAus/elasticsearch-rs/labels/hyper) |
-[Samples](https://github.com/KodrAus/elasticsearch-rs/tree/master/hyper/samples)
-
-Provides a synchronous [`hyper`](https://github.com/hyperium/hyper) implementation of the Elasticsearch REST API. The `hyper` client is simple to use; there's basically no setup needed besides creating a `hyper::Client` object to use for requests. The `hyper` client is general-purpose, and suitable for any scenario where on-demand requests are sufficient.
-
-If you'd prefer to call Elasticsearch using a Query DSL builder, see [`rs-es`](https://github.com/benashford/rs-es).
-
-#### Example
-
-The `elastic_hyper` client is a thin layer over `hyper`; it just maps functions to routes. It's up to the caller to serialise and deserialise HTTP content.
-- For query serialisation, the [`json_str`](http://kodraus.github.io/rustdoc/json_str/) crate provides the `json_str!` macro for serialising abitrary rust-like code to json.
-- For type serialisation / deserialisation, see [`elastic_types`](http://kodraus.github.io/rustdoc/elastic_types/).
-
-Currently targeting the `master` Elasticsearch branch, aiming for `5.x`.
-This will be stabilised through features in the future.
-
-Add `elastic_hyper` and `json_str` to your `Cargo.toml`:
-
-```
-[dependencies]
-elastic_hyper = "*"
-json_str = "*"
-```
-
-Ping the availability of your cluster:
-
-```rust
-#[macro_use]
-extern crate json_str;
-extern crate elastic_hyper as elastic;
-
-let (mut client, params) = elastic::default();
-
-elastic::ping::head(&mut client, &params).unwrap();
-```
-
-A simple `query_string` query:
-
-```rust
-#[macro_use]
-extern crate json_str;
-extern crate elastic_hyper as elastic;
-
-let (mut client, params) = elastic::default();
-
-let response = elastic::search::post(
-	&mut client, &params,
-	&json_str!({
-		query: {
-			query_string: {
-				query: "*"
-			}
-		}
-	})
-).unwrap();
-```
+This crate lives in the [`elastic_hyper` repo](https://github.com/elastic-rs/elastic-hyper).
 
 ### [`elastic_types`](https://github.com/elastic-rs/elastic-types)
 
