@@ -92,7 +92,7 @@ Using the `Date<EpochMillis>` type for the `timestamp`, we can correctly deseria
 object:
 
 ```rust
-#[derive(Serialize, Deserialize, ElasticType)]
+#[derive(Deserialize)]
 struct MyType {
   id: i32,
   timestamp: Date<EpochMillis>,
