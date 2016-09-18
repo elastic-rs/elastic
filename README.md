@@ -1,4 +1,4 @@
-# [`elastic_hyper`](https://docs.rs/elastic_hyper/*/elastic_hyper/) [![Latest Version](https://img.shields.io/crates/v/elastic_types.svg)](https://crates.io/crates/elastic_hyper)
+# [`elastic_hyper`](https://docs.rs/elastic_hyper/*/elastic_hyper/) [![Latest Version](https://img.shields.io/crates/v/elastic_hyper.svg)](https://crates.io/crates/elastic_hyper)
 
 Provides a synchronous [`hyper`](https://github.com/hyperium/hyper) implementation of the Elasticsearch REST API. The `hyper` client is simple to use; there's basically no setup needed besides creating a `hyper::Client` object to use for requests. The `hyper` client is general-purpose, and suitable for any scenario where on-demand requests are sufficient.
 
@@ -7,15 +7,15 @@ If you'd prefer to call Elasticsearch using a strongly-typed Query DSL builder, 
 ## Build Status
 Platform  | Channel | Status
 ------------- | ------------- | -------------
-Linux / OSX  | Stable / Nightly | [![Build Status](https://travis-ci.org/elastic-rs/elastic-types.svg?branch=master)](https://travis-ci.org/elastic-rs/elastic-types)
-Windows  | Nightly | [![Build status](https://ci.appveyor.com/api/projects/status/2x2cmfi6hku72nmk?svg=true)](https://ci.appveyor.com/project/KodrAus/elastic-types)
+Linux / OSX  | Stable / Nightly | [![Build Status](https://travis-ci.org/elastic-rs/elastic-hyper.svg?branch=master)](https://travis-ci.org/elastic-rs/elastic-hyper)
+Windows  | Nightly | [![Build status](https://ci.appveyor.com/api/projects/status/yvsqsyt4ioxa11g8?svg=true)](https://ci.appveyor.com/project/KodrAus/elastic-hyper)
 
 ## Documentation
 
 Version  | Docs
 ------------- | -------------
-`master`  | [![Documentation](https://img.shields.io/badge/docs-rustdoc-orange.svg)](https://elastic-rs.github.io/elastic-types/elastic_types/)
-`current`  | [![Documentation](https://img.shields.io/badge/docs-rustdoc-orange.svg)](https://docs.rs/elastic_types/*/elastic_types/)
+`master`  | [![Documentation](https://img.shields.io/badge/docs-rustdoc-orange.svg)](https://elastic-rs.github.io/elastic-hyper/elastic_hyper/)
+`current`  | [![Documentation](https://img.shields.io/badge/docs-rustdoc-orange.svg)](https://docs.rs/elastic_hyper/*/elastic_hyper/)
 
 ## Example
 
