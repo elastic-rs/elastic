@@ -344,7 +344,7 @@ Self: PropertiesMapping + Default {
 /// 
 /// # Examples
 /// 
-/// Say we have a mappable type with 3 fields and a mapping type called `MyTypeMapping`:
+/// Say we have a mappable type with 3 fields called `MyType` and a mapping type called `MyTypeMapping`:
 /// 
 /// ```
 /// # use elastic_types::prelude::*;

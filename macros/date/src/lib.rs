@@ -4,7 +4,7 @@
 //!
 //! # Usage
 //!
-//! This crate is on [crates.io](https://crates.io/crates/json_str).
+//! This crate is on [crates.io](https://crates.io/crates/elastic_date_macros).
 //!
 //! There are two ways to reference `elastic_date_macros` in your projects, depending on whether you're on
 //! the `stable`/`beta` or `nightly` channels.

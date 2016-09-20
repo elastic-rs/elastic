@@ -6,7 +6,7 @@ use std::fmt;
 
 /// A format used for parsing and formatting dates.
 ///
-/// The format is specified as two functions; `parse` and `format`, which are backed by `chrono::format::Item`s.
+/// The format is specified as two functions: `parse` and `format`, which are backed by `chrono::format::Item`s.
 /// Not all formats use the `Item`s though, for example `EpochMillis`, which is more efficient than other formats.
 pub trait DateFormat where 
 Self: Default {
