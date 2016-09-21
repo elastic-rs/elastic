@@ -13,9 +13,8 @@ use ::mapping::ElasticType;
 /// # extern crate elastic_types;
 /// extern crate geojson;
 /// use geojson::{ Geometry, Value };
-///
-/// use elastic_types::geo::shape::mapping::DefaultGeoShapeMapping;
-/// use elastic_types::geo::shape::GeoShape;
+/// 
+/// # use elastic_types::prelude::*;
 /// # fn main() {
 /// let point: GeoShape<DefaultGeoShapeMapping> = GeoShape::new(
 ///     Geometry::new(
@@ -25,7 +24,7 @@ use ::mapping::ElasticType;
 /// # }
 /// ```
 #[derive(Debug, Clone, PartialEq)]
-pub struct GeoShape<M> where 
+pub struct GeoShape<M = DefaultGeoShapeMapping> where 
 M: GeoShapeMapping {
 	value: Geometry,
 	_m: PhantomData<M>
@@ -33,22 +32,31 @@ M: GeoShapeMapping {
 
 impl <M> GeoShape<M> where 
 M: GeoShapeMapping {
-	/// Creates a new geo shape with the given mapping.
+	/// Creates a new `GeoShape` from the given `Geometry`.
+	/// 
+	/// This function will consume the provided `Geometry`.
+	/// 
+	/// # Examples
+	/// 
+	/// ```
+	/// # extern crate elastic_types;
+	/// # extern crate geojson;
+	/// use geojson::{ Geometry, Value };
+	/// 
+	/// # use elastic_types::prelude::*;
+	/// # fn main() {
+	/// let point: GeoShape = GeoShape::new(
+	///     Geometry::new(
+	///         Value::Point(vec![ 1.0, 1.0 ])
+	///     )
+	/// );
+	/// # }
+	/// ```
 	pub fn new<I: Into<Geometry>>(geo: I) -> GeoShape<M> {
 		GeoShape {
 			value: geo.into(),
 			_m: PhantomData
 		}
-	}
-
-	/// Get the value of the geo shape.
-	pub fn get(&self) -> &Geometry {
-		&self.value
-	}
-
-	/// Set the value of the geo shape.
-	pub fn set<I: Into<Geometry>>(&mut self, geo: I) {
-		self.value = geo.into()
 	}
 
 	/// Change the mapping of this geo shape.

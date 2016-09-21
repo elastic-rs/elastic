@@ -86,11 +86,11 @@
 //! # }
 //! ```
 //!
-//! It's also possible to adjust the mapping using the `elastic` attribute.
+//! It's also possible to adjust the mapping using the `#[elastic]` attribute.
 //!
 //! ### Override Default Mapping Properties
 //!
-//! You can override the mapping meta properties for an object by providing your own mapping type with `elastic(mapping="{TypeName}")`:
+//! You can override the mapping meta properties for an object by providing your own mapping type with `#[elastic(mapping="{TypeName}")]`:
 //!
 //! ```
 //! # #![feature(plugin, custom_derive, custom_attribute)]
@@ -188,7 +188,7 @@
 //!
 //! ### Ignore or Rename Fields
 //!
-//! You can then serialise type mappings with `serde` attributes:
+//! You can then serialise type mappings with `#[serde]` attributes:
 //!
 //! ```
 //! # #![feature(plugin, custom_derive, custom_attribute)]

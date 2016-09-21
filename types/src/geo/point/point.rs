@@ -15,24 +15,22 @@ use super::GeoPointFormat;
 /// Defining a geo point using the default format:
 ///
 /// ```
-/// use elastic_types::geo::point::{ GeoPoint, DefaultGeoPointFormat };
-///
+/// # use elastic_types::geo::point::{ GeoPoint, DefaultGeoPointFormat };
 /// let point: GeoPoint<DefaultGeoPointFormat> = GeoPoint::build(1.0, 1.0);
 /// ```
 ///
 /// Defining a geo point using a named format:
 ///
 /// ```
-/// use elastic_types::geo::point::{ GeoPoint, GeoPointString };
-///
+/// # use elastic_types::geo::point::{ GeoPoint, GeoPointString };
 /// let point: GeoPoint<GeoPointString> = GeoPoint::build(1.0, 1.0);
 /// ```
 ///
 /// Defining a geo point using a custom mapping:
 ///
 /// ```
-/// use elastic_types::geo::point::mapping::DefaultGeoPointMapping;
-/// use elastic_types::geo::point::{ GeoPoint, GeoPointString };
+/// # use elastic_types::geo::point::mapping::DefaultGeoPointMapping;
+/// # use elastic_types::geo::point::{ GeoPoint, GeoPointString };
 ///
 /// let point: GeoPoint<GeoPointString, DefaultGeoPointMapping<_>> = GeoPoint::build(1.0, 1.0);
 /// ```
@@ -40,8 +38,7 @@ use super::GeoPointFormat;
 /// Accessing the values of a geo point:
 ///
 /// ```
-/// use elastic_types::geo::point::{ GeoPoint, DefaultGeoPointFormat };
-///
+/// # use elastic_types::geo::point::{ GeoPoint, DefaultGeoPointFormat };
 /// let point: GeoPoint<DefaultGeoPointFormat> = GeoPoint::build(1.0, 1.0);
 ///
 /// //eg: (1.0,1.0)
@@ -72,8 +69,6 @@ M: GeoPointMapping<Format = F> {
 	///
 	/// # Examples
 	///
-	/// Create an `GeoPoint` from the given `geo::Coordinate`:
-	///
 	/// ```
 	/// # extern crate elastic_types;
 	/// # extern crate geo;
@@ -99,8 +94,7 @@ M: GeoPointMapping<Format = F> {
 	/// Creates an `GeoPoint` from the given `x` and `y` primitives:
 	///
 	/// ```
-	/// use elastic_types::geo::point::{ GeoPoint, DefaultGeoPointFormat };
-	///
+	/// # use elastic_types::geo::point::{ GeoPoint, DefaultGeoPointFormat };
 	/// let point: GeoPoint<DefaultGeoPointFormat> = GeoPoint::build(1.0, 1.0);
 	/// ```
 	pub fn build(x: f64, y: f64) -> GeoPoint<F, M> {
@@ -122,8 +116,7 @@ M: GeoPointMapping<Format = F> {
 	/// # Examples
 	///
 	/// ```
-	/// use elastic_types::geo::point::{ GeoPoint, GeoPointString, GeoPointObject };
-	///
+	/// # use elastic_types::geo::point::{ GeoPoint, GeoPointString, GeoPointObject };
 	/// //Get a point formatted as a string
 	/// let point: GeoPoint<GeoPointString> = GeoPoint::build(1.0, 1.0);
 	///

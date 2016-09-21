@@ -1,6 +1,6 @@
 //! Requirements for creating an index template for predefined mapping types.
 //! 
-//! The `IndexTemplate` struct allows you to build a request to the [Put Index Template API](https://www.elastic.co/guide/en/elasticsearch/reference/master/indices-templates.html),
+//! The [`IndexTemplate`](struct.IndexTemplate.html) struct allows you to build a request to the [Put Index Template API](https://www.elastic.co/guide/en/elasticsearch/reference/master/indices-templates.html),
 //! using strongly typed `ObjectMapping`s.
 //! 
 //! > NOTE: Only the `mappings` property on the index template is supported here, 

@@ -53,8 +53,8 @@ fn deserialise_elastic_geo_shape() {
 	})).unwrap();
 
 	assert_eq!(
-		&Geometry::new(
+		Geometry::new(
 			Value::Point(vec![ 1.0, 1.0 ])),
-		shape.get()
+		*shape
 	);
 }

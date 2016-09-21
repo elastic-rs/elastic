@@ -1,7 +1,8 @@
 //! Implementation of the Elasticsearch `geo` types.
 //!
-//! For indexing simple geo points with an `x` and `y` coordinate, use `point::GeoPoint`.
-//! For indexing `geojson`, use `shape::GeoShape`.
+//! Use [`point::GeoPoint`](point/struct.GeoPoint.html) for indexing simple geo points with an `x` and `y` coordinate.
+//! 
+//! Use [`shape::GeoShape`](shape/struct.GeoShape.html) for indexing `geojson`.
 
 #[macro_use]
 pub mod point;
