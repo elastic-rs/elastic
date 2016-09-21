@@ -1,10 +1,10 @@
 [package]
 name = "elastic_types"
-version = "0.5.0"
+version = "0.5.1"
 authors = ["Ashley Mannix <ashleymannix@live.com.au>"]
 license = "Apache-2.0"
 description = "A strongly-typed implementation of Elasticsearch core types and Mapping API."
-documentation = "https://docs.rs/elastic_types/0.5.0/elastic_types/"
+documentation = "https://docs.rs/elastic_types/0.5.1/elastic_types/"
 repository = "https://github.com/elastic-rs/elastic-types"
 
 [features]
@@ -24,8 +24,8 @@ geohash = "~0.2.7"
 geojson = { version = "~0.4.0", features = [ "with-serde" ] }
 
 serde_macros = { version = "~0.8.0", optional = true }
-elastic_date_macros = "~0.5.0"
-elastic_types_macros = { version = "~0.5.0", path = "../macros/types", optional = true }
+elastic_date_macros = "~0.5.1"
+elastic_types_macros = { version = "~0.5.1", optional = true }
 
 [dev-dependencies]
 json_str = "^0.*"
