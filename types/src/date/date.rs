@@ -23,32 +23,28 @@ impl ElasticType<DefaultDateMapping<ChronoFormat>, DateFormatWrapper<ChronoForma
 /// Defining a date using the default format:
 ///
 /// ```
-/// use elastic_types::prelude::*;
-///
+/// # use elastic_types::prelude::*;
 /// let date: Date<DefaultDateFormat> = Date::now();
 /// ```
 ///
 /// Defining a date using a named format:
 ///
 /// ```
-/// use elastic_types::prelude::*;
-///
+/// # use elastic_types::prelude::*;
 /// let date = Date::<BasicDateTime>::now();
 /// ```
 ///
 /// Defining a date using a custom mapping:
 ///
 /// ```
-/// use elastic_types::prelude::*;
-///
+/// # use elastic_types::prelude::*;
 /// let date: Date<BasicDateTime, DefaultDateMapping<_>> = Date::now();
 /// ```
 ///
 /// Accessing the values of a date:
 ///
 /// ```
-/// use elastic_types::prelude::*;
-///
+/// # use elastic_types::prelude::*;
 /// let date = Date::<BasicDateTime>::now();
 ///
 /// //eg: 2010/04/30 13:56:59.372
@@ -111,8 +107,7 @@ M: DateMapping<Format = F> {
 	/// Creates an `Date` from the given UTC primitives:
 	///
 	/// ```
-	/// use elastic_types::date::{ Date, DefaultDateFormat };
-	///
+	/// # use elastic_types::prelude::*;
 	/// let esDate: Date<DefaultDateFormat> = Date::build(
 	/// 	2015,
 	/// 	5,
@@ -142,8 +137,7 @@ M: DateMapping<Format = F> {
 	/// # Examples
 	///
 	/// ```
-	/// use elastic_types::date::{ Date, DefaultDateFormat };
-	///
+	/// # use elastic_types::prelude::*;
 	/// let date: Date<DefaultDateFormat> = Date::now();
 	/// ```
 	pub fn now() -> Date<F, M> {
@@ -163,8 +157,7 @@ M: DateMapping<Format = F> {
 	/// Parsing from a specified `DateFormat`.
 	///
 	/// ```
-	/// use elastic_types::date::{ Date, BasicDateTime };
-	///
+	/// # use elastic_types::prelude::*;
 	/// let date = Date::<BasicDateTime>::parse("20151126T145543.778Z").unwrap();
 	/// ```
 	pub fn parse(date: &str) -> Result<Date<F, M>, ParseError> {
@@ -178,8 +171,7 @@ M: DateMapping<Format = F> {
 	/// # Examples
 	///
 	/// ```
-	/// use elastic_types::date::{ Date, BasicDateTime };
-	///
+	/// # use elastic_types::prelude::*;
 	/// let date: Date<BasicDateTime> = Date::now();
 	/// let fmt = date.format();
 	///
@@ -195,8 +187,7 @@ M: DateMapping<Format = F> {
 	/// # Examples
 	///
 	/// ```
-	/// use elastic_types::date::{ Date, BasicDateTime, EpochMillis };
-	///
+	/// # use elastic_types::prelude::*;
 	/// //Get the current datetime formatted as basic_date_time
 	/// let date: Date<BasicDateTime> = Date::now();
 	///

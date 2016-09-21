@@ -16,9 +16,7 @@ impl ElasticType<DefaultBooleanMapping, BooleanFormat> for bool { }
 /// Defining a `bool` with a mapping:
 ///
 /// ```
-/// use elastic_types::boolean::mapping::DefaultBooleanMapping;
-/// use elastic_types::boolean::Boolean;
-///
+/// # use elastic_types::prelude::*;
 /// let boolean = Boolean::<DefaultBooleanMapping>::new(true);
 /// ```
 #[derive(Debug, Clone, Default, PartialEq)]
@@ -36,9 +34,7 @@ M: BooleanMapping {
 	/// Create a new `Boolean` from a `bool`:
 	///
 	/// ```
-	/// use elastic_types::boolean::mapping::DefaultBooleanMapping;
-	/// use elastic_types::boolean::Boolean;
-	///
+	/// # use elastic_types::prelude::*;
 	/// let boolean = Boolean::<DefaultBooleanMapping>::new(false);
 	/// ```
 	pub fn new<I>(boolean: I) -> Boolean<M> where I: Into<bool> {

@@ -4,7 +4,7 @@
 //!
 //! Provides `struct`s and `trait`s for defining Elasticsearch type mapping,
 //! where correctness is enforced by Rust's type system.
-//! The mapping implementation is essentially _zero-cost_.
+//! The act of annotating your types with mapping metadata is _zero-cost_.
 //! 
 //! # Supported Versions
 //! 
@@ -58,12 +58,10 @@
 //! extern crate elastic_types;
 //! ```
 //!
-//! Any code examples that aren't compatible with both `nightly` and `stable`, like deriving mappings,
-//! have alternatives depending on the channel you're targeting.
-//!
 //! ## Map Your Types
 //!
-//! _For mapping on `stable`, see [here](object/index.html#manually-implement-mapping)._
+//! This section shows you how to add mapping metadata on the `nightly` channel.
+//! For mapping on `stable`, see [here](object/index.html#manually-implement-mapping).
 //!
 //! Derive `ElasticType` on your Elasticsearch-mappable types:
 //!
@@ -176,7 +174,7 @@
 //!
 //! ### Mapping structs as fields
 //! 
-//! Of course, structs that derive `ElasticType` can also be used as fields on other Elasticsearch types:
+//! Of course, structs that derive `ElasticType` can also be used as fields in other Elasticsearch types:
 //!
 //! ```
 //! # #![feature(plugin, custom_derive, custom_attribute)]
@@ -515,8 +513,8 @@
 //! }
 //! ```
 //! 
-//! The mapping is constructed by inspecting the type parameters of the fields on `Article` and `GeoIp`
-//! and serialised by `serde`.
+//! The mapping is constructed by inspecting the type parameters of the fields on `Article` and `GeoIp`.
+//! This mapping is then serialised by [`serde`](https://serde.rs).
 //!
 //! # Types
 //!
@@ -572,7 +570,8 @@
 //! ## Formats
 //!
 //! For some types (like `Date`), it's helpful to have an extra generic parameter that describes the
-//! `format` the data can take. For most types the format isn't exposed, because there aren't any alternative formats available.
+//! way the data can be interpreted. For most types the format isn't exposed, because there aren't any alternative formats available.
+//! This is a particularly helpful feature for serialisation.
 //!
 //! # Links
 //!

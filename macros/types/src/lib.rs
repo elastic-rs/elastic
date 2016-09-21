@@ -1,10 +1,10 @@
 //! Elasticsearch Core Types Codegen
 //!
 //! Compile-time code generation for Elasticsearch type implementations.
-//! This crate provides custom `derive` attributes for data types in the [elastic_types](http://kodraus.github.io/rustdoc/elastic_types/) crate.
+//! This crate provides custom `derive` attributes for data types in the [elastic_types](https://github.com/elastic-rs/elastic-types) crate.
 //!
 //! # Links
-//! - [Github](https://github.com/KodrAus/elasticsearch-rs)
+//! - [Github](https://github.com/elastic-rs/elastic-types)
 
 #![doc(html_root_url = "http://kodraus.github.io/rustdoc/elastic_types_macros/")]
 
