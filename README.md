@@ -33,15 +33,9 @@ This crate lives in the [`elastic_hyper` repo](https://github.com/elastic-rs/ela
 
 This crate lives in the [`elastic_types` repo](https://github.com/elastic-rs/elastic-types).
 
-### `elastic_rotor`
+### [`elastic_rotor`](https://github.com/elastic-rs/elastic-rotor)
 
-[Issues](https://github.com/KodrAus/elasticsearch-rs/labels/rotor)
-
-_In Progress_
-
-Will provide an asynchronous [rotor-http](https://github.com/tailhook/rotor-http) implementation of the Elasticsearch REST API. This client is an active work in progress, as is `rotor` itself so things will change a lot. It'll be best suited to streaming scenarios, or where Elasticsearch connections will be used heavily.
-
-The crate will allow you to use connections in two ways; add connections as state machines to your own `mio` loop, or use an out-of-the-box connection pool.
+`elastic_rotor` is an experimental REST API client that handles a single specific usecase: high throughput.
 
 ### `elastic_codegen`
 
