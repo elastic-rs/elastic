@@ -120,21 +120,21 @@
 //!
 //! # See Also
 //!
-//! ## [`rs-es`](http://benashford.github.io/rs-es/rs_es/index.html)
+//! ## [`rs-es`](https://github.com/benashford/rs-es)
 //!
 //! An alternative Elasticsearch client for Rust that provides an implementation of the Query DSL.
 //!
-//! ## [`elastic_types`](http://kodraus.github.io/rustdoc/elastic_types/)
+//! ## [`elastic_types`](https://github.com/elastic-rs/elastic-types)
 //!
 //! A library that implements the core datatypes in Elasticsearch documents and automatically generates
 //! a json mapping from your Rust structures.
 //!
-//! ## [`json_str`](http://kodraus.github.io/rustdoc/json_str/)
+//! ## [`json_str`](https://github.com/KodrAus/json_str)
 //!
 //! A library for generating minified json strings from Rust syntax.
 //!
 //! # Links
-//! - [Elasticsearch Docs](https://www.elastic.co/guide/en/elasticsearch/reference/current/index.html)
+//! - [Elasticsearch Docs](https://www.elastic.co/guide/en/elasticsearch/reference/master/index.html)
 //! - [Github](https://github.com/elastic-rs/elastic-hyper)
 
 extern crate hyper;
