@@ -52,3 +52,7 @@ This crate lives in the [`elastic_types` repo](https://github.com/elastic-rs/ela
 Provides code generation for the Elasticsearch REST API from the official [spec](https://github.com/elastic/elasticsearch/tree/master/rest-api-spec) and generic helpers for rust source and integration tests. The goal is to keep this package fairly agnostic, so the same `ast` can be used to generate other kinds of output.
 
 Right now, it's used by `elastic_hyper` to build the client, but could also be used to generate other implementations.
+
+## Alternatives
+
+If you'd like to use a strongly-typed Query DSL builder see [`rs-es`](https://github.com/benashford/rs-es). This client does the hard work of providing an idiomatic Rust API for interacting with Elasticsearch.
