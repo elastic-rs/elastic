@@ -8,10 +8,9 @@
 
 #![doc(html_root_url = "http://kodraus.github.io/rustdoc/elastic_types_macros/")]
 
-#![feature(rustc_macro, rustc_macro_lib)]
-#![cfg(not(test))]
+#![feature(proc_macro, proc_macro_lib)]
 
-extern crate rustc_macro;
+extern crate proc_macro;
 
 extern crate syn;
 #[macro_use]
@@ -21,25 +20,23 @@ extern crate serde;
 extern crate serde_json;
 extern crate serde_codegen_internals;
 
-use rustc_macro::TokenStream;
-
-use syntax::codemap::{ Span, Spanned };
-use syn::HasAttrs;
-use syn::{ Ident, Item, Lit, LitKind, MetaItem, MetaItemKind, NestedMetaItemKind };
-
+use proc_macro::TokenStream;
 use serde_codegen_internals::attr as serde_attr;
 
-#[rustc_macro_derive(ElasticType)]
+#[proc_macro_derive(ElasticType)]
 pub fn derive_type_mapping(input: TokenStream) -> TokenStream {
     let source = input.to_string();
     let ast = syn::parse_macro_input(&source).unwrap();
 
+    // Match the AST with an iteam we can annotate
+    // Expand the derives and impls
+    // Write back to a TokenStream
 
     expanded.to_string().parse().unwrap()
 }
 
 #[doc(hidden)]
-pub fn expand_derive_type_mapping(cx: &mut ExtCtxt, span: Span, meta_item: &MetaItem, annotatable: &Annotatable, push: &mut FnMut(Annotatable)) {
+fn expand_derive_type_mapping(span: Span, meta_item: &MetaItem, annotatable: &Annotatable, push: &mut FnMut(Annotatable)) {
 	//Annotatable item for a struct with struct fields
 	let item = match *annotatable {
 		Annotatable::Item(ref item) => {
@@ -76,7 +73,7 @@ pub fn expand_derive_type_mapping(cx: &mut ExtCtxt, span: Span, meta_item: &Meta
 }
 
 //Build a field mapping type and return the name
-pub fn build_mapping(cx: &mut ExtCtxt, span: Span, item: &Item, fields: &[(Ident, syn::Field)], push: &mut FnMut(Annotatable)) {
+fn build_mapping(span: Span, item: &Item, fields: &[(Ident, syn::Field)], push: &mut FnMut(Annotatable)) {
 	let name = {
 		//If a user supplies a mapping with `#[elastic(mapping="")]`, then use it.
 		//Otherwise, define the mapping struct and implement defaults for it.
@@ -101,7 +98,7 @@ pub fn build_mapping(cx: &mut ExtCtxt, span: Span, item: &Item, fields: &[(Ident
 }
 
 //Define a struct for the mapping with a few defaults
-fn define_mapping(cx: &mut ExtCtxt, name: &Ident, push: &mut FnMut(Annotatable)) {
+fn define_mapping(name: &Ident, push: &mut FnMut(Annotatable)) {
 	push(Annotatable::Item(
 		quote!(
 			#[derive(Default, Clone, Copy, Debug)]
@@ -111,7 +108,7 @@ fn define_mapping(cx: &mut ExtCtxt, name: &Ident, push: &mut FnMut(Annotatable))
 }
 
 //Implement ElasticType for the type being derived with the mapping
-fn impl_type(cx: &mut ExtCtxt, item: &Item, mapping: &Ident, push: &mut FnMut(Annotatable)) {
+fn impl_type(item: &Item, mapping: &Ident, push: &mut FnMut(Annotatable)) {
 	let ty = item.ident;
 
 	push(Annotatable::Item(
@@ -122,7 +119,7 @@ fn impl_type(cx: &mut ExtCtxt, item: &Item, mapping: &Ident, push: &mut FnMut(An
 }
 
 //Implement ObjectMapping for the mapping
-fn impl_object_mapping(cx: &mut ExtCtxt, mapping: &Ident, es_ty: &Lit, push: &mut FnMut(Annotatable)) {
+fn impl_object_mapping(mapping: &Ident, es_ty: &Lit, push: &mut FnMut(Annotatable)) {
 	push(Annotatable::Item(
 		quote!(
 			impl ObjectMapping for #mapping {
@@ -133,7 +130,7 @@ fn impl_object_mapping(cx: &mut ExtCtxt, mapping: &Ident, es_ty: &Lit, push: &mu
 }
 
 //Implement PropertiesMapping for the mapping
-fn impl_props_mapping(cx: &mut ExtCtxt, span: Span, mapping: &Ident, prop_ser_stmts: Vec<syn::Stmt>, push: &mut FnMut(Annotatable)) {
+fn impl_props_mapping(span: Span, mapping: &Ident, prop_ser_stmts: Vec<syn::Stmt>, push: &mut FnMut(Annotatable)) {
 	let stmts_len = prop_ser_stmts.len();
 	let stmts_block = cx.expr_block(cx.block(span, prop_ser_stmts));
 
@@ -152,7 +149,7 @@ fn impl_props_mapping(cx: &mut ExtCtxt, span: Span, mapping: &Ident, prop_ser_st
 }
 
 //Get the serde serialisation statements for each of the fields on the type being derived
-fn get_props_ser_stmts(cx: &mut ExtCtxt, span: Span, fields: &[(Ident, syn::Field)]) -> Vec<syn::Stmt> {
+fn get_props_ser_stmts(span: Span, fields: &[(Ident, syn::Field)]) -> Vec<syn::Stmt> {
 	let mut fields: Vec<syn::Stmt> = fields.iter().cloned().map(|(name, field)| {
 		let lit = cx.expr_str(span, name.name.as_str());
 		let ty = match field.ty.node {
@@ -195,7 +192,7 @@ fn get_props_ser_stmts(cx: &mut ExtCtxt, span: Span, fields: &[(Ident, syn::Fiel
 }
 
 //Get the mapping ident supplied by an #[elastic()] attribute or create a default one
-pub fn get_mapping(cx: &mut ExtCtxt, item: &Item) -> Option<Ident> {
+fn get_mapping(item: &Item) -> Option<Ident> {
 	for meta_items in item.attrs().iter().filter_map(get_elastic_meta_items) {
 		for meta_item in meta_items {
 			match meta_item.node {
@@ -220,12 +217,12 @@ pub fn get_mapping(cx: &mut ExtCtxt, item: &Item) -> Option<Ident> {
 }
 
 //Get the default mapping name
-pub fn get_default_mapping(item: &Item) -> Ident {
+fn get_default_mapping(item: &Item) -> Ident {
 	token::str_to_ident(&format!("{}Mapping", item.ident))
 }
 
 //Get the default name for the indexed elasticsearch type name
-pub fn get_elastic_type_name(span: Span, item: &Item) -> Lit {
+fn get_elastic_type_name(span: Span, item: &Item) -> Lit {
 	let name = token::str_to_ident(&format!("{}", item.ident.name.as_str()).to_lowercase());
 
 	Lit {
@@ -246,7 +243,7 @@ fn get_elastic_meta_items(attr: &syn::Attribute) -> Option<&[Spanned<syn::Nested
 	}
 }
 
-fn get_ser_field(cx: &mut ExtCtxt, field: &syn::Field) -> Option<(Ident, syn::Field)> {
+fn get_ser_field(field: &syn::Field) -> Option<(Ident, syn::Field)> {
 	let serde_field = serde_attr::Field::from_ast(cx, 0, field);
 
 	//Get all fields on struct where there isn't `skip_serializing`

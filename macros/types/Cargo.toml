@@ -8,8 +8,7 @@ repository = "https://github.com/elastic-rs/elastic-types"
 
 [lib]
 name = "elastic_types_macros"
-crate_type = [ "dylib" ]
-plugin = true
+proc-macro = true
 
 [features]
 nightly-testing = [ ]
