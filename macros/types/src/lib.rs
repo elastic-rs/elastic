@@ -8,28 +8,35 @@
 
 #![doc(html_root_url = "http://kodraus.github.io/rustdoc/elastic_types_macros/")]
 
-#![crate_type="dylib"]
-#![feature(plugin_registrar, rustc_private, quote, plugin, stmt_expr_attributes)]
-#![plugin(serde_macros)]
+#![feature(rustc_macro, rustc_macro_lib)]
+#![cfg(not(test))]
 
-extern crate syntax;
-extern crate rustc;
-extern crate rustc_plugin;
+extern crate rustc_macro;
+
+extern crate syn;
+#[macro_use]
+extern crate quote;
+
 extern crate serde;
-extern crate serde_codegen_internals;
 extern crate serde_json;
+extern crate serde_codegen_internals;
 
-use rustc_plugin::Registry;
+use rustc_macro::TokenStream;
 
 use syntax::codemap::{ Span, Spanned };
-use syntax::attr::{ self, HasAttrs };
-use syntax::ast::{ self, Ident, Item, Lit, LitKind, MetaItem, MetaItemKind, NestedMetaItemKind };
-use syntax::ext::base::{ ExtCtxt, Annotatable };
-use syntax::ext::build::AstBuilder;
-use syntax::print::pprust::lit_to_string;
-use syntax::parse::token::{ self, InternedString };
+use syn::HasAttrs;
+use syn::{ Ident, Item, Lit, LitKind, MetaItem, MetaItemKind, NestedMetaItemKind };
 
 use serde_codegen_internals::attr as serde_attr;
+
+#[rustc_macro_derive(ElasticType)]
+pub fn derive_type_mapping(input: TokenStream) -> TokenStream {
+    let source = input.to_string();
+    let ast = syn::parse_macro_input(&source).unwrap();
+
+
+    expanded.to_string().parse().unwrap()
+}
 
 #[doc(hidden)]
 pub fn expand_derive_type_mapping(cx: &mut ExtCtxt, span: Span, meta_item: &MetaItem, annotatable: &Annotatable, push: &mut FnMut(Annotatable)) {
@@ -37,9 +44,9 @@ pub fn expand_derive_type_mapping(cx: &mut ExtCtxt, span: Span, meta_item: &Meta
 	let item = match *annotatable {
 		Annotatable::Item(ref item) => {
 			match item.node {
-				ast::ItemKind::Struct(ref data, ref generics) => {
+				syn::ItemKind::Struct(ref data, ref generics) => {
 					match *data {
-						ast::VariantData::Struct(ref fields, _) => Some((item, fields, generics)),
+						syn::VariantData::Struct(ref fields, _) => Some((item, fields, generics)),
 						_ => None
 					}
 				},
@@ -58,7 +65,7 @@ pub fn expand_derive_type_mapping(cx: &mut ExtCtxt, span: Span, meta_item: &Meta
 	let (item, fields, _) = item.unwrap();
 
 	//Get the serializable fields
-	let fields: Vec<(Ident, ast::StructField)> = fields
+	let fields: Vec<(Ident, syn::Field)> = fields
 		.iter()
 		.map(|f| get_ser_field(cx, f))
 		.filter(|f| f.is_some())
@@ -69,7 +76,7 @@ pub fn expand_derive_type_mapping(cx: &mut ExtCtxt, span: Span, meta_item: &Meta
 }
 
 //Build a field mapping type and return the name
-pub fn build_mapping(cx: &mut ExtCtxt, span: Span, item: &Item, fields: &[(Ident, ast::StructField)], push: &mut FnMut(Annotatable)) {
+pub fn build_mapping(cx: &mut ExtCtxt, span: Span, item: &Item, fields: &[(Ident, syn::Field)], push: &mut FnMut(Annotatable)) {
 	let name = {
 		//If a user supplies a mapping with `#[elastic(mapping="")]`, then use it.
 		//Otherwise, define the mapping struct and implement defaults for it.
@@ -96,9 +103,9 @@ pub fn build_mapping(cx: &mut ExtCtxt, span: Span, item: &Item, fields: &[(Ident
 //Define a struct for the mapping with a few defaults
 fn define_mapping(cx: &mut ExtCtxt, name: &Ident, push: &mut FnMut(Annotatable)) {
 	push(Annotatable::Item(
-		quote_item!(cx,
+		quote!(
 			#[derive(Default, Clone, Copy, Debug)]
-			pub struct $name;
+			pub struct #name;
 		).unwrap()
 	));
 }
@@ -108,8 +115,8 @@ fn impl_type(cx: &mut ExtCtxt, item: &Item, mapping: &Ident, push: &mut FnMut(An
 	let ty = item.ident;
 
 	push(Annotatable::Item(
-		quote_item!(cx,
-			impl ::elastic_types::mapping::ElasticType<$mapping> for $ty { }
+		quote!(
+			impl ::elastic_types::mapping::ElasticType<#mapping> for #ty { }
 		).unwrap()
 	));
 }
@@ -117,27 +124,27 @@ fn impl_type(cx: &mut ExtCtxt, item: &Item, mapping: &Ident, push: &mut FnMut(An
 //Implement ObjectMapping for the mapping
 fn impl_object_mapping(cx: &mut ExtCtxt, mapping: &Ident, es_ty: &Lit, push: &mut FnMut(Annotatable)) {
 	push(Annotatable::Item(
-		quote_item!(cx,
-			impl ObjectMapping for $mapping {
-				fn name() -> &'static str { $es_ty }
+		quote!(
+			impl ObjectMapping for #mapping {
+				fn name() -> &'static str { #es_ty }
 			}
 		).unwrap()
 	));
 }
 
 //Implement PropertiesMapping for the mapping
-fn impl_props_mapping(cx: &mut ExtCtxt, span: Span, mapping: &Ident, prop_ser_stmts: Vec<ast::Stmt>, push: &mut FnMut(Annotatable)) {
+fn impl_props_mapping(cx: &mut ExtCtxt, span: Span, mapping: &Ident, prop_ser_stmts: Vec<syn::Stmt>, push: &mut FnMut(Annotatable)) {
 	let stmts_len = prop_ser_stmts.len();
 	let stmts_block = cx.expr_block(cx.block(span, prop_ser_stmts));
 
 	push(Annotatable::Item(
-		quote_item!(cx,
-			impl ::elastic_types::object::PropertiesMapping for $mapping {
-				fn props_len() -> usize { $stmts_len }
+		quote!(
+			impl ::elastic_types::object::PropertiesMapping for #mapping {
+				fn props_len() -> usize { #stmts_len }
 				
 				fn serialize_props<S>(serializer: &mut S, state: &mut S::StructState) -> Result<(), S::Error>
 				where S: ::serde::Serializer {
-					$stmts_block
+					#stmts_block
 				}
 			}
 		).unwrap()
@@ -145,16 +152,16 @@ fn impl_props_mapping(cx: &mut ExtCtxt, span: Span, mapping: &Ident, prop_ser_st
 }
 
 //Get the serde serialisation statements for each of the fields on the type being derived
-fn get_props_ser_stmts(cx: &mut ExtCtxt, span: Span, fields: &[(Ident, ast::StructField)]) -> Vec<ast::Stmt> {
-	let mut fields: Vec<ast::Stmt> = fields.iter().cloned().map(|(name, field)| {
+fn get_props_ser_stmts(cx: &mut ExtCtxt, span: Span, fields: &[(Ident, syn::Field)]) -> Vec<syn::Stmt> {
+	let mut fields: Vec<syn::Stmt> = fields.iter().cloned().map(|(name, field)| {
 		let lit = cx.expr_str(span, name.name.as_str());
 		let ty = match field.ty.node {
 			//Standard type path
-			ast::TyKind::Path(_, ref p) => Some(p),
+			syn::TyKind::Path(_, ref p) => Some(p),
 			//Borrowed type
-			ast::TyKind::Rptr(_, ref t) => {
+			syn::TyKind::Rptr(_, ref t) => {
 				match t.ty.node {
-					ast::TyKind::Path(_, ref p) => Some(p),
+					syn::TyKind::Path(_, ref p) => Some(p),
 					_ => None
 				}
 			},
@@ -164,15 +171,15 @@ fn get_props_ser_stmts(cx: &mut ExtCtxt, span: Span, fields: &[(Ident, ast::Stru
 		if let Some(ty) = ty {
 			let mut ty = ty.clone();
 
-			ty.segments.push(ast::PathSegment {
+			ty.segments.push(syn::PathSegment {
 				identifier: token::str_to_ident("mapping_ser"),
-				parameters: ast::PathParameters::none()
+				parameters: syn::PathParameters::none()
 			});
 
 			let expr = cx.expr_call(span, cx.expr_path(ty), Vec::new());
 
-			Some(quote_stmt!(cx,
-				try!(serializer.serialize_struct_elt(state, $lit, $expr));
+			Some(quote!(
+				try!(serializer.serialize_struct_elt(state, #lit, #expr));
 			).unwrap())
 		}
 		else {
@@ -182,7 +189,7 @@ fn get_props_ser_stmts(cx: &mut ExtCtxt, span: Span, fields: &[(Ident, ast::Stru
 	.filter_map(|stmt| stmt)
 	.collect();
 
-	fields.push(quote_stmt!(cx, Ok(())).unwrap());
+	fields.push(quote!(Ok(())).unwrap());
 
 	fields
 }
@@ -222,16 +229,16 @@ pub fn get_elastic_type_name(span: Span, item: &Item) -> Lit {
 	let name = token::str_to_ident(&format!("{}", item.ident.name.as_str()).to_lowercase());
 
 	Lit {
-		node: LitKind::Str(InternedString::new_from_name(name.name), ast::StrStyle::Cooked),
+		node: LitKind::Str(InternedString::new_from_name(name.name), syn::StrStyle::Cooked),
 		span: span
 	}
 }
 
 //Helpers
-fn get_elastic_meta_items(attr: &ast::Attribute) -> Option<&[Spanned<ast::NestedMetaItemKind>]> {
+fn get_elastic_meta_items(attr: &syn::Attribute) -> Option<&[Spanned<syn::NestedMetaItemKind>]> {
 	match attr.node.value.node {
 		//Get elastic meta items
-		ast::MetaItemKind::List(ref name, ref items) if name == &"elastic" => {
+		syn::MetaItemKind::List(ref name, ref items) if name == &"elastic" => {
 			attr::mark_used(&attr);
 			Some(items)
 		},
@@ -239,7 +246,7 @@ fn get_elastic_meta_items(attr: &ast::Attribute) -> Option<&[Spanned<ast::Nested
 	}
 }
 
-fn get_ser_field(cx: &mut ExtCtxt, field: &ast::StructField) -> Option<(Ident, ast::StructField)> {
+fn get_ser_field(cx: &mut ExtCtxt, field: &syn::Field) -> Option<(Ident, syn::Field)> {
 	let serde_field = serde_attr::Field::from_ast(cx, 0, field);
 
 	//Get all fields on struct where there isn't `skip_serializing`
@@ -250,9 +257,9 @@ fn get_ser_field(cx: &mut ExtCtxt, field: &ast::StructField) -> Option<(Ident, a
 	Some((token::str_to_ident(serde_field.name().serialize_name().as_ref()), field.to_owned()))
 }
 
-fn get_ident_from_lit(cx: &ExtCtxt, name: &str, lit: &ast::Lit) -> Result<Ident, &'static str> {
+fn get_ident_from_lit(cx: &ExtCtxt, name: &str, lit: &syn::Lit) -> Result<Ident, &'static str> {
 	match lit.node {
-		ast::LitKind::Str(ref s, _) => Ok(token::str_to_ident(s)),
+		syn::LitKind::Str(ref s, _) => Ok(token::str_to_ident(s)),
 		_ => {
 			cx.span_err(
 				lit.span,
@@ -263,14 +270,4 @@ fn get_ident_from_lit(cx: &ExtCtxt, name: &str, lit: &ast::Lit) -> Result<Ident,
 			return Err("Unable to get str from lit");
 		}
 	}
-}
-
-#[doc(hidden)]
-#[plugin_registrar]
-pub fn plugin_registrar(reg: &mut Registry) {
-	reg.register_syntax_extension(
-		syntax::parse::token::intern("derive_ElasticType"),
-		syntax::ext::base::MultiDecorator(
-			Box::new(expand_derive_type_mapping))
-	);
 }
