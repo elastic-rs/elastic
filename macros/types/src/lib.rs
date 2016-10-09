@@ -163,14 +163,17 @@ fn get_props_ser_stmts(fields: &[(syn::Ident, syn::Field)]) -> Vec<syn::Stmt> {
 			});
 
 			let expr = syn::Expr::Call(
-				Box::new(
-					syn::Expr::Path(None, ty)), 
+				Box::new(syn::Expr::Path(None, ty)), 
 				Vec::new()
 			);
 
-			Some(quote!(
-				try!(serializer.serialize_struct_elt(state, #lit, #expr));
-			))
+			let expr = syn::parse_expr(
+				quote!(try!(serializer.serialize_struct_elt(state, #lit, #expr));)
+					.to_string()
+					.as_ref()
+			).unwrap();
+
+			Some(syn::Stmt::Semi(Box::new(expr)))
 		}
 		else {
 			None
