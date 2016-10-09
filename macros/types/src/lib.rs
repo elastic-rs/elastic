@@ -208,18 +208,13 @@ fn get_mapping(item: &syn::MacroInput) -> Option<syn::Ident> {
 }
 
 //Get the default mapping name
-fn get_default_mapping(item: &Item) -> Ident {
-	token::str_to_ident(&format!("{}Mapping", item.ident))
+fn get_default_mapping(item: &syn::MacroInput) -> syn::Ident {
+	syn::Ident::from(format!("{}Mapping", item.ident))
 }
 
 //Get the default name for the indexed elasticsearch type name
-fn get_elastic_type_name(item: &Item) -> Lit {
-	let name = token::str_to_ident(&format!("{}", item.ident.name.as_str()).to_lowercase());
-
-	Lit {
-		node: LitKind::Str(InternedString::new_from_name(name.name), syn::StrStyle::Cooked),
-		span: span
-	}
+fn get_elastic_type_name(item: &syn::Item) -> syn::Lit {
+	syn::Lit::Str(format!("{}", item.ident).to_lowercase(), syn::StrStyle::Cooked)
 }
 
 //Helpers
@@ -233,15 +228,16 @@ fn get_elastic_meta_items(attr: &syn::Attribute) -> Option<&[syn::MetaItem]> {
 	}
 }
 
-fn get_ser_field(field: &syn::Field) -> Option<(syn::Ident, syn::Field)> {
-	let serde_field = serde_attr::Field::from_ast(cx, 0, field);
+fn get_ser_field(field: &syn::Field) -> Option<(syn::Ident, &syn::Field)> {
+	let ctxt = serde_codegen_internals::Ctxt::new();
+	let serde_field = serde_attr::Field::from_ast(&ctxt, 0, field);
 
 	//Get all fields on struct where there isn't `skip_serializing`
 	if serde_field.skip_serializing() {
 		return None;
 	}
 
-	Some((token::str_to_ident(serde_field.name().serialize_name().as_ref()), field.to_owned()))
+	Some((syn::Ident::from(serde_field.name().serialize_name().as_ref()), field))
 }
 
 fn get_ident_from_lit(name: &str, lit: &syn::Lit) -> Result<syn::Ident, &'static str> {
