@@ -54,7 +54,7 @@ fn expand_derive_type_mapping(input: &syn::MacroInput) {
 	let fields = fields.unwrap();
 
 	//Get the serializable fields
-	let fields: Vec<(syn::Ident, syn::Field)> = fields
+	let fields: Vec<(syn::Ident, &syn::Field)> = fields
 		.iter()
 		.map(|f| get_ser_field(f))
 		.filter(|f| f.is_some())
@@ -65,7 +65,7 @@ fn expand_derive_type_mapping(input: &syn::MacroInput) {
 }
 
 //Build a field mapping type and return the name
-fn build_mapping(input: &syn::MacroInput, fields: &[(syn::Ident, syn::Field)]) {
+fn build_mapping(input: &syn::MacroInput, fields: &[(syn::Ident, &syn::Field)]) {
 	let name = {
 		//If a user supplies a mapping with `#[elastic(mapping="")]`, then use it.
 		//Otherwise, define the mapping struct and implement defaults for it.
@@ -73,30 +73,28 @@ fn build_mapping(input: &syn::MacroInput, fields: &[(syn::Ident, syn::Field)]) {
 			name
 		}
 		else {
-			let name = get_default_mapping(item);
-			let es_ty = get_elastic_type_name(span, item);
+			let name = get_default_mapping(input);
+			let es_ty = get_elastic_type_name(input);
 
-			define_mapping(cx, &name, push);
-			impl_object_mapping(cx, &name, &es_ty, push);
+			define_mapping(&name);
+			impl_object_mapping(&name, &es_ty);
 
 			name
 		}
 	};
 	
-	impl_type(cx, item, &name, push);
+	impl_type(input, &name);
 
-	let stmts = get_props_ser_stmts(cx, span, fields);
-	impl_props_mapping(cx, span, &name, stmts, push);
+	let stmts = get_props_ser_stmts(fields);
+	impl_props_mapping(&name, stmts);
 }
 
 //Define a struct for the mapping with a few defaults
-fn define_mapping(name: &Ident, push: &mut FnMut(Annotatable)) {
-	push(Annotatable::Item(
-		quote!(
-			#[derive(Default, Clone, Copy, Debug)]
-			pub struct #name;
-		).unwrap()
-	));
+fn define_mapping(name: &syn::Ident) {
+	quote!(
+		#[derive(Default, Clone, Copy, Debug)]
+		pub struct #name;
+	);
 }
 
 //Implement ElasticType for the type being derived with the mapping
@@ -138,7 +136,7 @@ fn impl_props_mapping(mapping: &syn::Ident, prop_ser_stmts: Vec<syn::Stmt>) {
 }
 
 //Get the serde serialisation statements for each of the fields on the type being derived
-fn get_props_ser_stmts(fields: &[(syn::Ident, syn::Field)]) -> Vec<syn::Stmt> {
+fn get_props_ser_stmts(fields: &[(syn::Ident, &syn::Field)]) -> Vec<syn::Stmt> {
 	let mut fields: Vec<syn::Stmt> = fields.iter().cloned().map(|(name, field)| {
 		let lit = syn::Lit::Str(name.as_ref().to_string(), syn::StrStyle::Cooked);
 		let ty = match field.ty {
@@ -213,7 +211,7 @@ fn get_default_mapping(item: &syn::MacroInput) -> syn::Ident {
 }
 
 //Get the default name for the indexed elasticsearch type name
-fn get_elastic_type_name(item: &syn::Item) -> syn::Lit {
+fn get_elastic_type_name(item: &syn::MacroInput) -> syn::Lit {
 	syn::Lit::Str(format!("{}", item.ident).to_lowercase(), syn::StrStyle::Cooked)
 }
 
