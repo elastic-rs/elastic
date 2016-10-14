@@ -456,6 +456,8 @@ pub mod object_macro_fixtures {
 	}
 }
 
+use elastic_types::prelude::*;
+
 pub mod object;
 pub mod object_macro;
 pub mod geo_point;
