@@ -25,6 +25,7 @@ use serde_codegen_internals::attr as serde_attr;
 #[proc_macro_derive(ElasticType)]
 pub fn derive(input: TokenStream) -> TokenStream {
     let source = input.to_string();
+
     let ast = syn::parse_macro_input(&source).unwrap();
     let genned = expand_derive_type_mapping(&ast);
 
@@ -32,6 +33,8 @@ pub fn derive(input: TokenStream) -> TokenStream {
 
     expanded.append(&source);
     expanded.append_all(genned);
+
+    println!("{}", expanded);
 
     expanded.to_string().parse().unwrap()
 }
