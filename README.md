@@ -28,7 +28,7 @@ On `nightly`, add `elastic_types` to your `Cargo.toml`:
 ```
 [dependencies]
 elastic_types = { version = "*", features = "nightly" }
-elastic_types_macros = "*"
+elastic_types_derive = "*"
 ```
 
 Define a custom Elasticsearch type called `mytype`:
@@ -106,7 +106,7 @@ assert_eq!(2015, de.timestamp.year());
 
 ## Macros
 
-### `elastic_types_macros`
+### `elastic_types_derive`
 
 Provides custom derive plugins for Elasticsearch datatypes and mappings in `elastic_types`.
 

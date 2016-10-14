@@ -1,8 +1,11 @@
 #![allow(unused_attributes)]
-#![feature(custom_derive)]
+#![feature(custom_attribute, proc_macro, plugin)]
+#![plugin(json_str, elastic_date_macros)]
 
-#![feature(custom_derive, custom_attribute, plugin)]
-#![plugin(serde_macros, json_str, elastic_types_macros, elastic_date_macros)]
+#[macro_use]
+extern crate serde_derive;
+#[macro_use]
+extern crate elastic_types_derive;
 
 #[allow(plugin_as_library)]
 #[macro_use]

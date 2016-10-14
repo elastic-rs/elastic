@@ -1,9 +1,9 @@
-//! An example that uses `elastic_types_macros` to generate mapping boilerplate.
+//! An example that uses `elastic_types_derive` to generate mapping boilerplate.
 //! 
 //! Build with `--pretty=expanded` to see the results of the compiler plugin.
 
 #![feature(custom_derive, custom_attribute, plugin)]
-#![plugin(serde_macros, elastic_types_macros)]
+#![plugin(serde_macros, elastic_types_derive)]
 
 extern crate serde;
 extern crate elastic_types;

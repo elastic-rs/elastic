@@ -24,19 +24,19 @@
 //!
 //! ## Nightly
 //!
-//! To get started, add `elastic_types` and `elastic_types_macros` to your `Cargo.toml`:
+//! To get started, add `elastic_types` and `elastic_types_derive` to your `Cargo.toml`:
 //!
 //! ```ignore
 //! [dependencies]
 //! elastic_types = { version = "*", features = "nightly" }
-//! elastic_types_macros = "*"
+//! elastic_types_derive = "*"
 //! ```
 //!
 //! And reference it in your crate root:
 //!
 //! ```ignore
 //! #![feature(plugin, custom_derive)]
-//! #![plugin(elastic_types_macros)]
+//! #![plugin(elastic_types_derive)]
 //!
 //! #[macro_use]
 //! extern crate elastic_types;
@@ -67,7 +67,7 @@
 //!
 //! ```
 //! # #![feature(plugin, custom_derive)]
-//! # #![plugin(json_str, elastic_types_macros)]
+//! # #![plugin(json_str, elastic_types_derive)]
 //! # #[macro_use]
 //! # extern crate elastic_types;
 //! # extern crate serde;
@@ -97,7 +97,7 @@
 //!
 //! ```
 //! # #![feature(plugin, custom_derive, custom_attribute)]
-//! # #![plugin(json_str, elastic_types_macros)]
+//! # #![plugin(json_str, elastic_types_derive)]
 //! # #[macro_use]
 //! # extern crate elastic_types;
 //! # extern crate serde;
@@ -129,7 +129,7 @@
 //!
 //! ```
 //! # #![feature(plugin, custom_derive, custom_attribute)]
-//! # #![plugin(elastic_types_macros)]
+//! # #![plugin(elastic_types_derive)]
 //! # #[macro_use]
 //! # extern crate json_str;
 //! # #[macro_use]
@@ -178,7 +178,7 @@
 //!
 //! ```
 //! # #![feature(plugin, custom_derive, custom_attribute)]
-//! # #![plugin(elastic_types_macros)]
+//! # #![plugin(elastic_types_derive)]
 //! # #[macro_use]
 //! # extern crate elastic_types;
 //! # extern crate serde;
@@ -222,7 +222,7 @@
 //!
 //! ```
 //! # #![feature(plugin, custom_derive, custom_attribute)]
-//! # #![plugin(elastic_types_macros)]
+//! # #![plugin(elastic_types_derive)]
 //! # #[macro_use]
 //! # extern crate json_str;
 //! # #[macro_use]
@@ -291,7 +291,7 @@
 //!
 //! ```
 //! # #![feature(plugin, custom_derive)]
-//! # #![plugin(json_str, elastic_types_macros)]
+//! # #![plugin(json_str, elastic_types_derive)]
 //! # #[macro_use]
 //! # extern crate elastic_types;
 //! # extern crate serde;
@@ -328,7 +328,7 @@
 //! 
 //! ```
 //! # #![feature(plugin, custom_derive)]
-//! # #![plugin(json_str, elastic_types_macros)]
+//! # #![plugin(json_str, elastic_types_derive)]
 //! # #[macro_use]
 //! # extern crate elastic_types;
 //! # extern crate serde;
@@ -364,7 +364,7 @@
 //! 
 //! ```
 //! # #![feature(plugin, custom_derive, custom_attribute)]
-//! # #![plugin(serde_macros, elastic_types_macros)]
+//! # #![plugin(serde_macros, elastic_types_derive)]
 //! # #[macro_use]
 //! # extern crate json_str;
 //! # #[macro_use]
@@ -398,14 +398,14 @@
 //! ```ignore
 //! [dependencies]
 //! elastic_types = { version = "*", features = "nightly" }
-//! elastic_types_macros = "*"
+//! elastic_types_derive = "*"
 //! ```
 //! 
 //! And our `main.rs` contains the following:
 //! 
 //! ```
 //! #![feature(plugin, custom_derive)]
-//! #![plugin(serde_macros, elastic_types_macros)]
+//! #![plugin(serde_macros, elastic_types_derive)]
 //! 
 //! #[macro_use]
 //! extern crate elastic_types;
@@ -582,7 +582,7 @@
 #![deny(missing_docs)]
 
 #![cfg_attr(feature = "nightly", feature(custom_derive, plugin, associated_type_defaults, associated_consts))]
-#![cfg_attr(feature = "nightly", plugin(serde_macros, elastic_date_macros))]
+#![cfg_attr(feature = "nightly", plugin(elastic_date_macros))]
 
 #[cfg(not(feature = "nightly"))]
 #[cfg_attr(not(feature = "nightly"), macro_use)]

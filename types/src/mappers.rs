@@ -14,7 +14,7 @@
 //!
 //! ```
 //! # #![feature(plugin, custom_derive)]
-//! # #![plugin(json_str, elastic_types_macros)]
+//! # #![plugin(json_str, elastic_types_derive)]
 //! # #[macro_use]
 //! # extern crate elastic_types;
 //! # extern crate serde;
@@ -104,7 +104,7 @@ M: ObjectMapping {
 	///
 	/// ```
 	/// # #![feature(plugin, custom_derive)]
-	/// # #![plugin(json_str, elastic_types_macros)]
+	/// # #![plugin(json_str, elastic_types_derive)]
 	/// # #[macro_use]
 	/// # extern crate elastic_types;
 	/// # extern crate serde;
@@ -146,7 +146,7 @@ M: ObjectMapping {
 	///
 	/// ```
 	/// # #![feature(plugin, custom_derive)]
-	/// # #![plugin(json_str, elastic_types_macros)]
+	/// # #![plugin(json_str, elastic_types_derive)]
 	/// # #[macro_use]
 	/// # extern crate elastic_types;
 	/// # extern crate serde;
@@ -191,7 +191,7 @@ M: ObjectMapping {
 	///
 	/// ```
 	/// # #![feature(plugin, custom_derive)]
-	/// # #![plugin(json_str, elastic_types_macros)]
+	/// # #![plugin(json_str, elastic_types_derive)]
 	/// # #[macro_use]
 	/// # extern crate elastic_types;
 	/// # extern crate serde;

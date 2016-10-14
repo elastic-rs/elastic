@@ -2,7 +2,7 @@
 #![feature(custom_derive)]
 
 #![feature(custom_derive, custom_attribute, plugin, test)]
-#![plugin(serde_macros, json_str, elastic_types_macros, elastic_date_macros)]
+#![plugin(serde_macros, json_str, elastic_types_derive, elastic_date_macros)]
 
 #[allow(plugin_as_library)]
 #[macro_use]

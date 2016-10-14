@@ -24,7 +24,7 @@ pub struct TextFormat;
 ///
 /// ```
 /// # #![feature(plugin, custom_derive, custom_attribute)]
-/// # #![plugin(json_str, elastic_types_macros)]
+/// # #![plugin(json_str, elastic_types_derive)]
 /// # #[macro_use]
 /// # extern crate elastic_types;
 /// # extern crate serde;
@@ -44,7 +44,7 @@ pub struct TextFormat;
 ///
 /// ```
 /// # #![feature(plugin, custom_derive, custom_attribute)]
-/// # #![plugin(elastic_types_macros)]
+/// # #![plugin(elastic_types_derive)]
 /// # #[macro_use]
 /// # extern crate json_str;
 /// # #[macro_use]
@@ -105,7 +105,7 @@ Self: Default {
 	///
 	/// ```
 	/// # #![feature(plugin, custom_derive, custom_attribute)]
-	/// # #![plugin(json_str, elastic_types_macros)]
+	/// # #![plugin(json_str, elastic_types_derive)]
 	/// # #[macro_use]
 	/// # extern crate elastic_types;
 	/// # extern crate serde;

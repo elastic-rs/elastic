@@ -1,5 +1,5 @@
 #![cfg_attr(feature = "nightly", feature(custom_derive, custom_attribute, plugin))]
-#![cfg_attr(feature = "nightly", plugin(serde_macros, json_str, elastic_types_macros, elastic_date_macros))]
+#![cfg_attr(feature = "nightly", plugin(serde_macros, json_str, elastic_types_derive, elastic_date_macros))]
 
 pub mod mapping;
 
