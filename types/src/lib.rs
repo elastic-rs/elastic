@@ -342,7 +342,7 @@
 //!     "id": 1,
 //!     "title": "An article",
 //!     "content": "Some prose for this article.",
-//!     "timstamp": 1435935302478,
+//!     "timestamp": 1435935302478,
 //!     "geoip": {
 //!         "ip": "10.0.0.1",
 //!         "loc": [ -71.34, 41.12 ]
