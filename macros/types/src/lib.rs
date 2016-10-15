@@ -8,6 +8,7 @@
 
 #![feature(proc_macro, proc_macro_lib)]
 #![crate_type = "proc-macro"]
+#![cfg(not(test))]
 
 extern crate proc_macro;
 
