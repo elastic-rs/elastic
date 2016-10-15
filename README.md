@@ -31,6 +31,17 @@ elastic_types = { version = "*", features = "nightly" }
 elastic_types_derive = "*"
 ```
 
+And reference it in your crate root:
+
+```rust
+#![feature(proc_macro)]
+
+#[macro_use]
+extern crate elastic_types_derive;
+#[macro_use]
+extern crate elastic_types;
+```
+
 Define a custom Elasticsearch type called `mytype`:
 
 ```rust
@@ -42,14 +53,11 @@ pub struct MyType {
 }
 ```
 
-This will create a struct for you called `ElasticTypeMapping`.
-You can then get the mapping for your type:
+You can then get the mapping for your type as `json`:
 
 ```rust
-let mapping = TypeMapper::to_string(MyTypeMapping).unwrap();
+let mapping = TypeMapper::to_string(MyType::mapping()).unwrap();
 ```
-
-This will produce:
 
 ```json
 {
@@ -77,7 +85,7 @@ This will produce:
 The `stable` channel is also supported, see the [docs](#documentation) for details.
 
 Types that derive `ElasticType` are themselves serialisable, which can be very helpful when using 
-types like `date` with special formats.
+types with special formats, like `date`.
 Take the following document:
 
 ```json
