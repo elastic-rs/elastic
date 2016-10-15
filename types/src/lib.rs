@@ -335,6 +335,20 @@
 //! 
 //! Before digging in to the API, consider the following complete example for defining and mapping a
 //! type called `Article` on `nightly`.
+//! As `json`, the `Article` type should look something like this:
+//!
+//! ```ignore
+//! {
+//!     "id": 1,
+//!     "title": "An article",
+//!     "content": "Some prose for this article.",
+//!     "timstamp": 1435935302478,
+//!     "geoip": {
+//!         "ip": "10.0.0.1",
+//!         "loc": [ -71.34, 41.12 ]
+//!     }
+//! }
+//! ```
 //! 
 //! Our `Cargo.toml` specifies the dependencies as above:
 //! 
@@ -543,11 +557,11 @@ extern crate serde;
 extern crate serde_json;
 
 macro_rules! ser_field {
-    ($serializer:ident, $state:expr, $field:expr, $val_opt:expr) => (
-    	if let Some(f) = $val_opt {
+	($serializer:ident, $state:expr, $field:expr, $val_opt:expr) => (
+		if let Some(f) = $val_opt {
 			try!($serializer.serialize_struct_elt($state, $field, f));
 		}
-    )
+	)
 }
 
 pub mod mapping;

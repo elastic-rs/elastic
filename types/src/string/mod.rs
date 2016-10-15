@@ -13,8 +13,8 @@
 //!
 //! For defining your own string mapping, see: 
 //! 
-//! - [keyword mapping details](mapping/trait.KeywordMapping.html#derive-mapping)
-//! - [text mapping details](mapping/trait.TextMapping.html#derive-mapping).
+//! - [keyword mapping details](keyword/mapping/trait.KeywordMapping.html#derive-mapping)
+//! - [text mapping details](text/mapping/trait.TextMapping.html#derive-mapping).
 //!
 //! Map with a default `string` (follows the semantics for legacy `string` mapping):
 //!
