@@ -1,5 +1,4 @@
-#![allow(unused_attributes)]
-#![feature(custom_attribute, proc_macro, plugin)]
+#![feature(proc_macro, plugin)]
 #![plugin(json_str, elastic_date_macros)]
 
 #[macro_use]
@@ -439,7 +438,9 @@ pub mod object_macro_fixtures {
 		pub field: i32
 	}
 
-	#[derive(Serialize, ElasticType)]
+	//NOTE: We have to swap the derive order to preserve serde attributes
+	//See: https://github.com/serde-rs/serde/issues/585
+	#[derive(ElasticType, Serialize)]
 	#[elastic(mapping="CustomTypeMapping")]
 	pub struct CustomType {
 		pub field: i32,
@@ -455,8 +456,6 @@ pub mod object_macro_fixtures {
 		fn name() -> &'static str { "renamed_type" }
 	}
 }
-
-use elastic_types::prelude::*;
 
 pub mod object;
 pub mod object_macro;

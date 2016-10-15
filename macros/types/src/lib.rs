@@ -34,8 +34,6 @@ pub fn derive(input: TokenStream) -> TokenStream {
     expanded.append(&source);
     expanded.append_all(genned);
 
-    println!("{}", expanded);
-
     expanded.to_string().parse().unwrap()
 }
 
@@ -83,51 +81,51 @@ fn build_mapping(input: &syn::MacroInput, fields: &[(syn::Ident, &syn::Field)], 
 			let name = get_default_mapping(input);
 			let es_ty = get_elastic_type_name(input);
 
-			define_mapping(&name, genned);
-			impl_object_mapping(&name, &es_ty, genned);
+			genned.push(define_mapping(&name));
+			genned.push(impl_object_mapping(&name, &es_ty));
 
 			name
 		}
 	};
 	
-	impl_type(input, &name, genned);
+	genned.push(impl_type(input, &name));
 
 	let stmts = get_props_ser_stmts(fields);
-	impl_props_mapping(&name, stmts, genned);
+	genned.push(impl_props_mapping(&name, stmts));
 }
 
 //Define a struct for the mapping with a few defaults
-fn define_mapping(name: &syn::Ident, genned: &mut Vec<quote::Tokens>) {
-	genned.push(quote!(
+fn define_mapping(name: &syn::Ident) -> quote::Tokens {
+	quote!(
 		#[derive(Default, Clone, Copy, Debug)]
 		pub struct #name;
-	));
+	)
 }
 
 //Implement ElasticType for the type being derived with the mapping
-fn impl_type(item: &syn::MacroInput, mapping: &syn::Ident, genned: &mut Vec<quote::Tokens>) {
+fn impl_type(item: &syn::MacroInput, mapping: &syn::Ident) -> quote::Tokens {
 	let ty = &item.ident;
 
-	genned.push(quote!(
+	quote!(
 		impl ::elastic_types::mapping::ElasticType<#mapping> for #ty { }
-	));
+	)
 }
 
 //Implement ObjectMapping for the mapping
-fn impl_object_mapping(mapping: &syn::Ident, es_ty: &syn::Lit, genned: &mut Vec<quote::Tokens>) {
-	genned.push(quote!(
+fn impl_object_mapping(mapping: &syn::Ident, es_ty: &syn::Lit) -> quote::Tokens {
+	quote!(
 		impl ::elastic_types::object::ObjectMapping for #mapping {
 			fn name() -> &'static str { #es_ty }
 		}
-	));
+	)
 }
 
 //Implement PropertiesMapping for the mapping
-fn impl_props_mapping(mapping: &syn::Ident, prop_ser_stmts: Vec<quote::Tokens>, genned: &mut Vec<quote::Tokens>) {
+fn impl_props_mapping(mapping: &syn::Ident, prop_ser_stmts: Vec<quote::Tokens>) -> quote::Tokens {
 	let stmts_len = prop_ser_stmts.len();
 	let stmts = prop_ser_stmts;
 
-	genned.push(quote!(
+	quote!(
 		impl ::elastic_types::object::PropertiesMapping for #mapping {
 			fn props_len() -> usize { #stmts_len }
 			
@@ -137,7 +135,7 @@ fn impl_props_mapping(mapping: &syn::Ident, prop_ser_stmts: Vec<quote::Tokens>, 
 				Ok(())
 			}
 		}
-	));
+	)
 }
 
 //Get the serde serialisation statements for each of the fields on the type being derived
