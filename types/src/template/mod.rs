@@ -28,41 +28,25 @@ use ::mappers::TypeMapper;
 /// In this example we have two mapping types: `MyTypeMapping` and `MyOtherTypeMapping`:
 ///
 /// ```
-/// # #![feature(plugin, custom_derive, custom_attribute)]
-/// # #![plugin(json_str, elastic_types_macros)]
+/// # #![feature(proc_macro)]
+/// # #[macro_use]
+/// # extern crate json_str;
+/// # #[macro_use]
+/// # extern crate serde_derive;
+/// # #[macro_use]
+/// # extern crate elastic_types_derive;
 /// # #[macro_use]
 /// # extern crate elastic_types;
 /// # extern crate serde;
 /// # extern crate serde_json;
-/// # use serde::{ Serialize, Deserialize };
 /// # use elastic_types::prelude::*;
-/// # #[derive(Default, Serialize, Deserialize, ElasticType)]
+/// # #[derive(Serialize, Deserialize, ElasticType)]
 /// # pub struct MyType {
 /// # 	pub my_date: Date<DefaultDateFormat>
 /// # }
-/// # impl serde::Serialize for MyType {
-/// # 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where S: serde::Serializer {
-/// # 		unimplemented!()
-/// # 	}
-/// # }
-/// # impl serde::Deserialize for MyType {
-/// # 	 fn deserialize<D>(deserializer: &mut D) -> Result<Self, D::Error> where D: serde::Deserializer {
-/// # 		unimplemented!()
-/// # 	}
-/// # }
-/// # #[derive(Default, Serialize, Deserialize, ElasticType)]
+/// # #[derive(Serialize, Deserialize, ElasticType)]
 /// # pub struct MyOtherType {
 /// # 	pub my_num: i32
-/// # }
-/// # impl serde::Serialize for MyOtherType {
-/// # 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where S: serde::Serializer {
-/// # 		unimplemented!()
-/// # 	}
-/// # }
-/// # impl serde::Deserialize for MyOtherType {
-/// # 	 fn deserialize<D>(deserializer: &mut D) -> Result<Self, D::Error> where D: serde::Deserializer {
-/// # 		unimplemented!()
-/// # 	}
 /// # }
 /// # fn main() {
 /// let mut template = IndexTemplate::new("template_name", "data-*", MyTypeMapping).unwrap();
@@ -76,43 +60,25 @@ use ::mappers::TypeMapper;
 /// Which will produce the following result:
 /// 
 /// ```
-/// # #![feature(plugin, custom_derive, custom_attribute)]
-/// # #![plugin( elastic_types_macros)]
+/// # #![feature(proc_macro)]
 /// # #[macro_use]
 /// # extern crate json_str;
+/// # #[macro_use]
+/// # extern crate serde_derive;
+/// # #[macro_use]
+/// # extern crate elastic_types_derive;
 /// # #[macro_use]
 /// # extern crate elastic_types;
 /// # extern crate serde;
 /// # extern crate serde_json;
-/// # use serde::{ Serialize, Deserialize };
 /// # use elastic_types::prelude::*;
-/// # #[derive(Default, Serialize, Deserialize, ElasticType)]
+/// # #[derive(Serialize, Deserialize, ElasticType)]
 /// # pub struct MyType {
 /// # 	pub my_date: Date<DefaultDateFormat>
 /// # }
-/// # impl serde::Serialize for MyType {
-/// # 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where S: serde::Serializer {
-/// # 		unimplemented!()
-/// # 	}
-/// # }
-/// # impl serde::Deserialize for MyType {
-/// # 	 fn deserialize<D>(deserializer: &mut D) -> Result<Self, D::Error> where D: serde::Deserializer {
-/// # 		unimplemented!()
-/// # 	}
-/// # }
-/// # #[derive(Default, Serialize, Deserialize, ElasticType)]
+/// # #[derive(Serialize, Deserialize, ElasticType)]
 /// # pub struct MyOtherType {
 /// # 	pub my_num: i32
-/// # }
-/// # impl serde::Serialize for MyOtherType {
-/// # 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where S: serde::Serializer {
-/// # 		unimplemented!()
-/// # 	}
-/// # }
-/// # impl serde::Deserialize for MyOtherType {
-/// # 	 fn deserialize<D>(deserializer: &mut D) -> Result<Self, D::Error> where D: serde::Deserializer {
-/// # 		unimplemented!()
-/// # 	}
 /// # }
 /// # fn main() {
 /// # let mut template = IndexTemplate::new("template_name", "data-*", MyTypeMapping).unwrap();

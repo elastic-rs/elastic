@@ -1,8 +1,10 @@
-#![allow(unused_attributes)]
-#![feature(custom_derive)]
+#![feature(proc_macro, plugin, test)]
+#![plugin(json_str, elastic_date_macros)]
 
-#![feature(custom_derive, custom_attribute, plugin, test)]
-#![plugin(serde_macros, json_str, elastic_types_macros, elastic_date_macros)]
+#[macro_use]
+extern crate serde_derive;
+#[macro_use]
+extern crate elastic_types_derive;
 
 #[allow(plugin_as_library)]
 #[macro_use]
@@ -10,10 +12,6 @@ extern crate json_str;
 
 #[macro_use]
 extern crate maplit;
-
-#[allow(plugin_as_library)]
-#[macro_use]
-extern crate elastic_date_macros;
 
 extern crate serde;
 extern crate serde_json;

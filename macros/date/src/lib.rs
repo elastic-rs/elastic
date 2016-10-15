@@ -1,4 +1,4 @@
-//! Elasticsearch Core Types Codegen
+//! Elasticsearch Date Format Codegen
 //!
 //! Compile-time code generation for Elasticsearch type implementations.
 //!
@@ -67,9 +67,7 @@
 //! ```
 //!
 //! # Links
-//! - [Github](https://github.com/KodrAus/elasticsearch-rs)
-
-#![doc(html_root_url = "http://kodraus.github.io/rustdoc/json_str/")]
+//! - [Github](https://github.com/elastic-rs/elastic-types)
 
 #![cfg_attr(feature = "nightly", crate_type="dylib")]
 #![cfg_attr(feature = "nightly", feature(plugin_registrar, rustc_private, quote, stmt_expr_attributes))]

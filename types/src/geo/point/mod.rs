@@ -22,7 +22,7 @@
 //!
 //! ```
 //! # #![feature(plugin, custom_derive)]
-//! # #![plugin(json_str, elastic_types_macros)]
+//! # #![plugin(json_str, elastic_types_derive)]
 //! # extern crate serde;
 //! # #[macro_use]
 //! # extern crate elastic_types;

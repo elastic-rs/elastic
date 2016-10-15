@@ -41,7 +41,7 @@ pub struct BooleanFormat;
 ///
 /// ```
 /// # #![feature(plugin, custom_derive, custom_attribute)]
-/// # #![plugin(elastic_types_macros)]
+/// # #![plugin(elastic_types_derive)]
 /// # #[macro_use]
 /// # extern crate json_str;
 /// # #[macro_use]

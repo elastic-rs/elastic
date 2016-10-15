@@ -13,29 +13,22 @@
 //! ## Mapping to a json string
 //!
 //! ```
-//! # #![feature(plugin, custom_derive)]
-//! # #![plugin(json_str, elastic_types_macros)]
+//! # #![feature(proc_macro)]
+//! # #[macro_use]
+//! # extern crate json_str;
+//! # #[macro_use]
+//! # extern crate serde_derive;
+//! # #[macro_use]
+//! # extern crate elastic_types_derive;
 //! # #[macro_use]
 //! # extern crate elastic_types;
 //! # extern crate serde;
-//! # extern crate serde_json;
-//! # use serde::{ Serialize, Deserialize };
 //! # use elastic_types::prelude::*;
-//! # #[derive(Default, Clone, Serialize, Deserialize, ElasticType)]
+//! # #[derive(Serialize, Deserialize, ElasticType)]
 //! # pub struct MyType {
 //! # 	pub my_date: Date<DefaultDateFormat>,
 //! # 	pub my_string: String,
 //! # 	pub my_num: i32
-//! # }
-//! # impl serde::Serialize for MyType {
-//! # 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where S: serde::Serializer {
-//! # 		unimplemented!()
-//! # 	}
-//! # }
-//! # impl serde::Deserialize for MyType {
-//! # 	 fn deserialize<D>(deserializer: &mut D) -> Result<Self, D::Error> where D: serde::Deserializer {
-//! # 		unimplemented!()
-//! # 	}
 //! # }
 //! # fn main() {
 //! let ser = TypeMapper::to_string(MyTypeMapping).unwrap();
@@ -103,29 +96,23 @@ M: ObjectMapping {
 	/// # Examples
 	///
 	/// ```
-	/// # #![feature(plugin, custom_derive)]
-	/// # #![plugin(json_str, elastic_types_macros)]
+	/// # #![feature(proc_macro)]
+	/// # #[macro_use]
+	/// # extern crate json_str;
+	/// # #[macro_use]
+	/// # extern crate serde_derive;
+	/// # #[macro_use]
+	/// # extern crate elastic_types_derive;
 	/// # #[macro_use]
 	/// # extern crate elastic_types;
 	/// # extern crate serde;
 	/// # extern crate serde_json;
-	/// # use serde::{ Serialize, Deserialize };
 	/// # use elastic_types::prelude::*;
-	/// # #[derive(Default, Clone, Serialize, Deserialize, ElasticType)]
+	/// # #[derive(Serialize, Deserialize, ElasticType)]
 	/// # pub struct MyType {
 	/// # 	pub my_date: Date<DefaultDateFormat>,
 	/// # 	pub my_string: String,
 	/// # 	pub my_num: i32
-	/// # }
-	/// # impl serde::Serialize for MyType {
-	/// # 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where S: serde::Serializer {
-	/// # 		unimplemented!()
-	/// # 	}
-	/// # }
-	/// # impl serde::Deserialize for MyType {
-	/// # 	 fn deserialize<D>(deserializer: &mut D) -> Result<Self, D::Error> where D: serde::Deserializer {
-	/// # 		unimplemented!()
-	/// # 	}
 	/// # }
 	/// # fn main() {
 	/// let mut writer = Vec::new();
@@ -145,29 +132,22 @@ M: ObjectMapping {
 	/// # Examples
 	///
 	/// ```
-	/// # #![feature(plugin, custom_derive)]
-	/// # #![plugin(json_str, elastic_types_macros)]
+	/// # #![feature(proc_macro)]
+	/// # #[macro_use]
+	/// # extern crate json_str;
+	/// # #[macro_use]
+	/// # extern crate serde_derive;
+	/// # #[macro_use]
+	/// # extern crate elastic_types_derive;
 	/// # #[macro_use]
 	/// # extern crate elastic_types;
 	/// # extern crate serde;
-	/// # extern crate serde_json;
-	/// # use serde::{ Serialize, Deserialize };
 	/// # use elastic_types::prelude::*;
-	/// # #[derive(Default, Clone, Serialize, Deserialize, ElasticType)]
+	/// # #[derive(Serialize, Deserialize, ElasticType)]
 	/// # pub struct MyType {
 	/// # 	pub my_date: Date<DefaultDateFormat>,
 	/// # 	pub my_string: String,
 	/// # 	pub my_num: i32
-	/// # }
-	/// # impl serde::Serialize for MyType {
-	/// # 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where S: serde::Serializer {
-	/// # 		unimplemented!()
-	/// # 	}
-	/// # }
-	/// # impl serde::Deserialize for MyType {
-	/// # 	 fn deserialize<D>(deserializer: &mut D) -> Result<Self, D::Error> where D: serde::Deserializer {
-	/// # 		unimplemented!()
-	/// # 	}
 	/// # }
 	/// # fn main() {
 	/// let ser = TypeMapper::to_string(MyTypeMapping).unwrap();
@@ -190,29 +170,22 @@ M: ObjectMapping {
 	/// # Examples
 	///
 	/// ```
-	/// # #![feature(plugin, custom_derive)]
-	/// # #![plugin(json_str, elastic_types_macros)]
+	/// # #![feature(proc_macro)]
+	/// # #[macro_use]
+	/// # extern crate json_str;
+	/// # #[macro_use]
+	/// # extern crate serde_derive;
+	/// # #[macro_use]
+	/// # extern crate elastic_types_derive;
 	/// # #[macro_use]
 	/// # extern crate elastic_types;
 	/// # extern crate serde;
-	/// # extern crate serde_json;
-	/// # use serde::{ Serialize, Deserialize };
 	/// # use elastic_types::prelude::*;
-	/// # #[derive(Default, Clone, Serialize, Deserialize, ElasticType)]
+	/// # #[derive(Serialize, Deserialize, ElasticType)]
 	/// # pub struct MyType {
 	/// # 	pub my_date: Date<DefaultDateFormat>,
 	/// # 	pub my_string: String,
 	/// # 	pub my_num: i32
-	/// # }
-	/// # impl serde::Serialize for MyType {
-	/// # 	fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where S: serde::Serializer {
-	/// # 		unimplemented!()
-	/// # 	}
-	/// # }
-	/// # impl serde::Deserialize for MyType {
-	/// # 	 fn deserialize<D>(deserializer: &mut D) -> Result<Self, D::Error> where D: serde::Deserializer {
-	/// # 		unimplemented!()
-	/// # 	}
 	/// # }
 	/// # fn main() {
 	/// let val = TypeMapper::to_value(MyTypeMapping).unwrap();

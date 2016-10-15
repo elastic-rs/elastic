@@ -23,7 +23,7 @@
 //!
 //! ```
 //! # #![feature(plugin, custom_derive)]
-//! # #![plugin(json_str, elastic_types_macros)]
+//! # #![plugin(json_str, elastic_types_derive)]
 //! # extern crate serde;
 //! # #[macro_use]
 //! # extern crate elastic_types;
@@ -47,7 +47,7 @@
 //! 
 //! ```
 //! # #![feature(plugin)]
-//! # #![plugin(json_str, elastic_types_macros)]
+//! # #![plugin(json_str, elastic_types_derive)]
 //! # #![plugin(elastic_date_macros)]
 //! # #[macro_use]
 //! # extern crate elastic_types;
@@ -64,7 +64,7 @@
 //!
 //! ```
 //! # #![feature(plugin)]
-//! # #![plugin(json_str, elastic_types_macros)]
+//! # #![plugin(json_str, elastic_types_derive)]
 //! # #![plugin(elastic_date_macros)]
 //! # extern crate elastic_types;
 //! # extern crate chrono;

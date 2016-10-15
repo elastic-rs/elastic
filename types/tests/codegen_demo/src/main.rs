@@ -1,15 +1,19 @@
-//! An example that uses `elastic_types_macros` to generate mapping boilerplate.
+//! An example that uses `elastic_types_derive` to generate mapping boilerplate.
 //! 
 //! Build with `--pretty=expanded` to see the results of the compiler plugin.
 
-#![feature(custom_derive, custom_attribute, plugin)]
-#![plugin(serde_macros, elastic_types_macros)]
+#![feature(proc_macro)]
+#![deny(warnings)]
+
+#[macro_use]
+extern crate serde_derive;
+#[macro_use]
+extern crate elastic_types_derive;
 
 extern crate serde;
 extern crate elastic_types;
 
-use elastic_types::mapping::prelude::*;
-use elastic_types::date::prelude::*;
+use elastic_types::prelude::*;
 
 #[derive(Serialize, ElasticType)]
 pub struct MyType {
