@@ -1,6 +1,6 @@
 [package]
 name = "elastic_types"
-version = "0.6.1"
+version = "0.6.2"
 authors = ["Ashley Mannix <ashleymannix@live.com.au>"]
 license = "Apache-2.0"
 description = "A strongly-typed implementation of Elasticsearch core types and Mapping API."
@@ -23,8 +23,8 @@ geo = "~0.0.7"
 geohash = "~0.2.7"
 geojson = { version = "~0.4.0", features = [ "with-serde" ] }
 
-serde_derive = { version = "~0.8.0", optional = true }
-elastic_types_derive = { version = "~0.6.0", optional = true }
+serde_derive = { git = "https://github.com/serde-rs/serde.git", branch="post", version = "~0.8.0", optional = true }
+elastic_types_derive = { path = "../macros/types", version = "~0.6.0", optional = true }
 elastic_date_macros = "~0.5.1"
 
 [dev-dependencies]

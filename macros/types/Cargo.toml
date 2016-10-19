@@ -1,6 +1,6 @@
 [package]
 name = "elastic_types_derive"
-version = "0.6.0"
+version = "0.6.1"
 authors = ["Ashley Mannix <ashleymannix@live.com.au>"]
 license = "Apache-2.0"
 description = "Compile-time code generation for Elasticsearch type implementations."
@@ -18,4 +18,5 @@ serde = "~0.8.0"
 serde_json = "~0.8.0"
 syn = { version = "0.9", features = ["aster", "visit", "parsing", "full"] }
 quote = "0.3"
-serde_codegen_internals = { version = "~0.10.0", default-features = false }
+post-expansion = "0.0.2"
+serde_codegen_internals = { git="https://github.com/serde-rs/serde.git", branch="post", version = "~0.10.0", default-features = false }

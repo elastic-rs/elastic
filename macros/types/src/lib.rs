@@ -15,6 +15,8 @@ extern crate proc_macro;
 #[macro_use]
 extern crate quote;
 extern crate syn;
+#[macro_use]
+extern crate post_expansion;
 
 extern crate serde;
 extern crate serde_json;
@@ -23,24 +25,24 @@ extern crate serde_codegen_internals;
 use proc_macro::TokenStream;
 use serde_codegen_internals::attr as serde_attr;
 
+register_post_expansion!(PostExpansion_elastic_types);
+
 #[proc_macro_derive(ElasticType)]
 pub fn derive(input: TokenStream) -> TokenStream {
-    let source = input.to_string();
+	let mut expanded = quote::Tokens::new();
+    let ast = syn::parse_macro_input(&input.to_string()).unwrap();
 
-    let ast = syn::parse_macro_input(&source).unwrap();
     let genned = expand_derive_type_mapping(&ast);
 
-    let mut expanded = quote::Tokens::new();
+    let ast = post_expansion::strip_attrs_later(ast, &["elastic"], "elastic_types");
+    expanded.append(&quote!(#ast).to_string());
 
-    expanded.append(&source);
     expanded.append_all(genned);
 
     expanded.to_string().parse().unwrap()
 }
 
 fn expand_derive_type_mapping(input: &syn::MacroInput) -> Vec<quote::Tokens> {
-	let mut genned = Vec::new();
-
 	//Annotatable item for a struct with struct fields
 	let fields = match input.body {
 		syn::Body::Struct(ref data) => {
@@ -53,7 +55,7 @@ fn expand_derive_type_mapping(input: &syn::MacroInput) -> Vec<quote::Tokens> {
 	};
 
 	if fields.is_none() {
-		panic!("proper error for non struct derives");
+		panic!("derive(ElasticType) is only valid for structs");
 	}
 	let fields = fields.unwrap();
 
@@ -65,34 +67,29 @@ fn expand_derive_type_mapping(input: &syn::MacroInput) -> Vec<quote::Tokens> {
 		.map(|f| f.unwrap())
 		.collect();
 
-	build_mapping(input, &fields, &mut genned);
-
-	genned
-}
-
-//Build a field mapping type and return the name
-fn build_mapping(input: &syn::MacroInput, fields: &[(syn::Ident, &syn::Field)], genned: &mut Vec<quote::Tokens>) {
-	let name = {
+	let mut genned = Vec::new();
+	
+	let mapping_ty = {
 		//If a user supplies a mapping with `#[elastic(mapping="")]`, then use it.
 		//Otherwise, define the mapping struct and implement defaults for it.
-		if let Some(name) = get_mapping(input) {
-			name
+		if let Some(mapping_ty) = get_mapping_from_attr(input) {
+			mapping_ty
 		}
 		else {
-			let name = get_default_mapping(input);
+			let mapping_ty = get_default_mapping(input);
 			let es_ty = get_elastic_type_name(input);
 
-			genned.push(define_mapping(&name));
-			genned.push(impl_object_mapping(&name, &es_ty));
+			genned.push(define_mapping(&mapping_ty));
+			genned.push(impl_object_mapping(&mapping_ty, &es_ty));
 
-			name
+			mapping_ty
 		}
 	};
 	
-	genned.push(impl_type(input, &name));
+	genned.push(impl_elastic_type(input, &mapping_ty));
+	genned.push(impl_props_mapping(&name, get_props_ser_stmts(fields)));
 
-	let stmts = get_props_ser_stmts(fields);
-	genned.push(impl_props_mapping(&name, stmts));
+	genned
 }
 
 //Define a struct for the mapping with a few defaults
@@ -104,7 +101,7 @@ fn define_mapping(name: &syn::Ident) -> quote::Tokens {
 }
 
 //Implement ElasticType for the type being derived with the mapping
-fn impl_type(item: &syn::MacroInput, mapping: &syn::Ident) -> quote::Tokens {
+fn impl_elastic_type(item: &syn::MacroInput, mapping: &syn::Ident) -> quote::Tokens {
 	let ty = &item.ident;
 
 	quote!(
@@ -157,8 +154,6 @@ fn get_props_ser_stmts(fields: &[(syn::Ident, &syn::Field)]) -> Vec<quote::Token
 		};
 
 		if let Some(ty) = ty {
-			//Unpack the type segments manually
-			//TODO: Use quote! when syn::Expr::Call is supported
 			let mut segments = Vec::new();
 
 			for seg in &ty.segments {
@@ -188,7 +183,7 @@ fn get_props_ser_stmts(fields: &[(syn::Ident, &syn::Field)]) -> Vec<quote::Token
 }
 
 //Get the mapping ident supplied by an #[elastic()] attribute or create a default one
-fn get_mapping(item: &syn::MacroInput) -> Option<syn::Ident> {
+fn get_mapping_from_attr(item: &syn::MacroInput) -> Option<syn::Ident> {
 	for meta_items in item.attrs.iter().filter_map(get_elastic_meta_items) {
 		for meta_item in meta_items {
 			match *meta_item {

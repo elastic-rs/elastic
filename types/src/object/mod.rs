@@ -207,9 +207,6 @@
 //! 
 //! > NOTE: Fields with a `#[serde(skip_deserializing)]` attribute will still be mapped, because they can
 //! still be indexed in Elasticsearch.
-//! 
-//! > NOTE: `ElasticType` needs to be derived before `Serialize` or the attributes won't be picked up.
-//! This is a bug in the Macros 1.1 implementation and should be fixed in the future.
 //!
 //! ## Limitations
 //!
