@@ -87,7 +87,7 @@ fn expand_derive_type_mapping(input: &syn::MacroInput) -> Vec<quote::Tokens> {
 	};
 	
 	genned.push(impl_elastic_type(input, &mapping_ty));
-	genned.push(impl_props_mapping(&name, get_props_ser_stmts(fields)));
+	genned.push(impl_props_mapping(&mapping_ty, get_props_ser_stmts(&fields)));
 
 	genned
 }
