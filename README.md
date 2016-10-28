@@ -1,8 +1,7 @@
 # Elastic
 
 `elastic_*` is an ecosystem of crates for interacting with Elasticsearch from Rust.
-The API is targeting the `5.x` branch of Elasticsearch, which is currently in alpha.
-This means the library is in a fairly inconsistent state, but will be stabilised along with Elasticsearch.
+The API is targetting Elastic `5.x`.
 
 Crate functionality covers:
 
