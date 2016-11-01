@@ -1,8 +1,11 @@
 # Client Micro-benchmark Tests
 
-This repo is an unscientific attempt to benchmark the performance of a few Elasticsearch clients.
+This repo is an **unscientific** attempt to benchmark the performance of a few Elasticsearch clients.
 Results are really just an indication of the amount of work a particular client on a particular
 platform needs to do to send a single search request to Elasticsearch and deserialise the results into some native form.
+
+Take results with a grain of salt. I'll probably remove these results rather than keep them up to date. 
+You're best off benchmarking your own solution on your own hardware for relevant results.
 
 This is only benchmarking the time it takes to send a single request with `keep_alive` enabled.
 
