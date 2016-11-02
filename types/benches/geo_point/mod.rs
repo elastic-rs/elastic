@@ -7,7 +7,7 @@ extern crate test;
 extern crate geo as georust;
 extern crate elastic_types;
 
-use georust::Coordinate;
+use georust::{ Point, Coordinate };
 use elastic_types::prelude::*;
 use ::geo_point_fixtures::*;
 
@@ -24,7 +24,7 @@ fn parse_string(b: &mut Bencher) {
 
 #[bench]
 fn fmt_string(b: &mut Bencher) {
-    let point = GeoPoint::<GeoPointString>::new(Coordinate { x: -71.34, y: 41.12 });
+    let point = GeoPoint::<GeoPointString>::new(Point(Coordinate { x: -71.34, y: 41.12 }));
 
 	b.iter(|| {
     	serde_json::to_string(&point).unwrap()
@@ -42,7 +42,7 @@ fn parse_object(b: &mut Bencher) {
 
 #[bench]
 fn fmt_object(b: &mut Bencher) {
-    let point = GeoPoint::<GeoPointObject>::new(Coordinate { x: -71.34, y: 41.12 });
+    let point = GeoPoint::<GeoPointObject>::new(Point(Coordinate { x: -71.34, y: 41.12 }));
 
 	b.iter(|| {
     	serde_json::to_string(&point).unwrap()
@@ -60,7 +60,7 @@ fn parse_hash(b: &mut Bencher) {
 
 #[bench]
 fn fmt_hash(b: &mut Bencher) {
-    let point = GeoPoint::<GeoPointHash>::new(Coordinate { x: -71.34, y: 41.12 });
+    let point = GeoPoint::<GeoPointHash>::new(Point(Coordinate { x: -71.34, y: 41.12 }));
 
 	b.iter(|| {
     	serde_json::to_string(&point).unwrap()
@@ -78,7 +78,7 @@ fn parse_array(b: &mut Bencher) {
 
 #[bench]
 fn fmt_array(b: &mut Bencher) {
-    let point = GeoPoint::<GeoPointArray>::new(Coordinate { x: -71.34, y: 41.12 });
+    let point = GeoPoint::<GeoPointArray>::new(Point(Coordinate { x: -71.34, y: 41.12 }));
 
 	b.iter(|| {
     	serde_json::to_string(&point).unwrap()
