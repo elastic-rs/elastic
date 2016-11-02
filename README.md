@@ -1,6 +1,6 @@
 # Elastic
 
-`elastic_*` is an ecosystem of crates for interacting with Elasticsearch from Rust.
+`elastic_*` is an ecosystem of community crates for interacting with [Elasticsearch](https://github.com/elastic/elasticsearch) from [Rust](https://www.rust-lang.org).
 The API is targetting Elastic `5.x`.
 
 Crate functionality covers:
@@ -13,8 +13,6 @@ Quick reference:
 
 - [crates](#crates)
 - [samples](https://github.com/elastic-rs/elastic-hyper/tree/master/samples)
-- [benchmarks](https://github.com/elastic-rs/index/tree/master/benches)
-- [fluff](#design)
 
 ## Goals
 
@@ -27,6 +25,11 @@ This means you don't need to learn another API for interacting with Elasticsearc
 The core focus of this project is on strong typing over the core types and responses in Elasticsearch, rather than trying to map the entire Query DSL.
 
 Support for Elastic's plugin products, like `watcher` and `graph` could be added as feature-gated modules in the `elastic_hyper` and `elastic_rotor` clients and `elastic_types` as necessary.
+
+## Development
+
+Development is active, but because functionality is split across crates it can be hard to track where the effort is going.
+There is a [GitHub Project](https://github.com/orgs/elastic-rs/projects/1) to easily track priorities at the crate-level.
 
 ## Crates
 
