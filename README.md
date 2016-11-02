@@ -49,7 +49,7 @@ This crate lives in the [`elastic_types` repo](https://github.com/elastic-rs/ela
 
 `elastic_rotor` is an experimental REST API client that handles a single specific usecase: high throughput.
 
-### `elastic_codegen`
+### [`elastic_codegen`](https://github.com/elastic-rs/elastic-codegen)
 
 Provides code generation for the Elasticsearch REST API from the official [spec](https://github.com/elastic/elasticsearch/tree/master/rest-api-spec) and generic helpers for rust source and integration tests. The goal is to keep this package fairly agnostic, so the same `ast` can be used to generate other kinds of output.
 
