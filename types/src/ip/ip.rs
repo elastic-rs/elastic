@@ -1,5 +1,4 @@
 use std::marker::PhantomData;
-use std::ops::Deref;
 use std::net::Ipv4Addr;
 use std::str::FromStr;
 use std::error::Error as StdError;
@@ -93,42 +92,7 @@ M: IpMapping {
 impl <M> ElasticType<M, IpFormat> for Ip<M> where
 M: IpMapping { }
 
-impl From<Ipv4Addr> for Ip<DefaultIpMapping> {
-	fn from(ip: Ipv4Addr) -> Self {
-		Ip::new(ip)
-	}
-}
-
-impl<M> PartialEq<Ipv4Addr> for Ip<M> where
-M: IpMapping {
-	fn eq(&self, other: &Ipv4Addr) -> bool {
-		PartialEq::eq(&self.value, other)
-	}
-
-	fn ne(&self, other: &Ipv4Addr) -> bool {
-		PartialEq::ne(&self.value, other)
-	}
-}
-
-impl<M> PartialEq<Ip<M>> for Ipv4Addr where
-M: IpMapping {
-	fn eq(&self, other: &Ip<M>) -> bool {
-		PartialEq::eq(self, &other.value)
-	}
-
-	fn ne(&self, other: &Ip<M>) -> bool {
-		PartialEq::ne(self, &other.value)
-	}
-}
-
-impl <M> Deref for Ip<M> where
-M: IpMapping {
-	type Target = Ipv4Addr;
-	
-	fn deref(&self) -> &Ipv4Addr {
-		&self.value
-	}
-}
+impl_mapping_type!(Ipv4Addr, Ip, IpMapping);
 
 //Serialize elastic ip
 impl <M> Serialize for Ip<M> where

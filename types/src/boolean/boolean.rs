@@ -1,5 +1,4 @@
 use std::marker::PhantomData;
-use std::ops::Deref;
 use serde::{ Serialize, Deserialize, Serializer, Deserializer };
 use serde::de::{ Visitor, Error };
 use super::mapping::{ BooleanMapping, DefaultBooleanMapping, BooleanFormat };
@@ -83,42 +82,7 @@ M: BooleanMapping {
 impl <M> ElasticType<M, BooleanFormat> for Boolean<M> where
 M: BooleanMapping { }
 
-impl From<bool> for Boolean<DefaultBooleanMapping> {
-	fn from(boolean: bool) -> Self {
-		Boolean::new(boolean)
-	}
-}
-
-impl<M> PartialEq<bool> for Boolean<M> where
-M: BooleanMapping {
-	fn eq(&self, other: &bool) -> bool {
-		PartialEq::eq(&self.value, other)
-	}
-
-	fn ne(&self, other: &bool) -> bool {
-		PartialEq::ne(&self.value, other)
-	}
-}
-
-impl<M> PartialEq<Boolean<M>> for bool where
-M: BooleanMapping {
-	fn eq(&self, other: &Boolean<M>) -> bool {
-		PartialEq::eq(self, &other.value)
-	}
-
-	fn ne(&self, other: &Boolean<M>) -> bool {
-		PartialEq::ne(self, &other.value)
-	}
-}
-
-impl <M> Deref for Boolean<M> where
-M: BooleanMapping {
-	type Target = bool;
-	
-	fn deref(&self) -> &bool {
-		&self.value
-	}
-}
+impl_mapping_type!(bool, Boolean, BooleanMapping);
 
 impl <M> Serialize for Boolean<M> where
 M: BooleanMapping {

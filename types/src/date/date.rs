@@ -1,5 +1,4 @@
 use std::marker::PhantomData;
-use std::ops::Deref;
 use chrono::{ UTC, NaiveDateTime, NaiveDate, NaiveTime };
 use serde::{ Serialize, Deserialize, Serializer, Deserializer };
 use serde::de::{ Visitor, Error };
@@ -201,59 +200,19 @@ M: DateMapping<Format = F> {
 	}
 }
 
-impl<'a, F, M> PartialEq<ChronoDateTime> for Date<F, M> where
-F: DateFormat,
-M: DateMapping<Format = F> {
-	fn eq(&self, other: &ChronoDateTime) -> bool {
-		PartialEq::eq(&self.value, other)
-	}
-
-	fn ne(&self, other: &ChronoDateTime) -> bool {
-		PartialEq::ne(&self.value, other)
-	}
-}
-
-impl<'a, F, M> PartialEq<Date<F, M>> for ChronoDateTime where
-F: DateFormat,
-M: DateMapping<Format = F> {
-	fn eq(&self, other: &Date<F, M>) -> bool {
-		PartialEq::eq(self, &other.value)
-	}
-
-	fn ne(&self, other: &Date<F, M>) -> bool {
-		PartialEq::ne(self, &other.value)
-	}
-}
-
 impl <F, M> ElasticType<M, DateFormatWrapper<F>> for Date<F, M> where
 F: DateFormat,
 M: DateMapping<Format = F> {
 
 }
 
+impl_mapping_type!(ChronoDateTime, Date, DateMapping, DateFormat);
+
 impl <F, M> Default for Date<F, M> where
 F: DateFormat,
 M: DateMapping<Format = F> {
 	fn default() -> Date<F, M> {
 		Date::<F, M>::now()
-	}
-}
-
-impl <F, M> From<ChronoDateTime> for Date<F, M> where
-F: DateFormat,
-M: DateMapping<Format = F> {
-	fn from(dt: ChronoDateTime) -> Date<F, M> {
-		Date::<F, M>::new(dt)
-	}
-}
-
-impl <F, M> Deref for Date<F, M> where
-F: DateFormat,
-M: DateMapping<Format = F> {
-	type Target = ChronoDateTime;
-
-	fn deref(&self) -> &ChronoDateTime {
-		&self.value
 	}
 }
 

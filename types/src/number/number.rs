@@ -1,83 +1,47 @@
 use std::marker::PhantomData;
-use std::ops::Deref;
 use serde::{ Serialize, Deserialize, Serializer, Deserializer };
 use super::mapping::*;
 use ::mapping::ElasticType;
 
 macro_rules! number_type {
-    ($t:ident, $m:ident, $f:ident, $n:ident) => (
+    ($wrapper_ty:ident, $mapping_ty:ident, $format_ty:ident, $std_ty:ident) => (
     	/// Number type with a given mapping.
     	#[derive(Debug, Default, Clone, PartialEq)]
-		pub struct $t<M> where M: $m {
-			value: $n,
+		pub struct $wrapper_ty<M> where M: $mapping_ty {
+			value: $std_ty,
 			_m: PhantomData<M>
 		}
-		impl <M> $t<M> where M: $m {
+		impl <M> $wrapper_ty<M> where M: $mapping_ty {
 			/// Creates a new number with the given mapping.
-			pub fn new<I: Into<$n>>(num: I) -> $t<M> {
-				$t {
+			pub fn new<I: Into<$std_ty>>(num: I) -> $wrapper_ty<M> {
+				$wrapper_ty {
 					value: num.into(),
 					_m: PhantomData
 				}
 			}
 
 			/// Get the value of the number.
-			pub fn get(&self) -> $n {
+			pub fn get(&self) -> $std_ty {
 				self.value
 			}
 
 			/// Set the value of the number.
-			pub fn set<I: Into<$n>>(&mut self, num: I) {
+			pub fn set<I: Into<$std_ty>>(&mut self, num: I) {
 				self.value = num.into()
 			}
 
 			/// Change the mapping of this number.
-			pub fn remap<MInto: $m>(self) -> $t<MInto> {
-				$t::<MInto>::new(self.value)
+			pub fn remap<MInto: $mapping_ty>(self) -> $wrapper_ty<MInto> {
+				$wrapper_ty::<MInto>::new(self.value)
 			}
 		}
 
-		impl <M> ElasticType<M, $f> for $t<M> where M: $m { }
+		impl <M> ElasticType<M, $format_ty> for $wrapper_ty<M> where M: $mapping_ty { }
 
-		impl <M> From<$n> for $t<M> where M: $m {
-			fn from(num: $n) -> Self {
-				$t::<M>::new(num)
-			}
-		}
-
-        impl<M> PartialEq<$n> for $t<M> where
-        M: $m {
-        	fn eq(&self, other: &$n) -> bool {
-        		PartialEq::eq(&self.value, other)
-        	}
-
-        	fn ne(&self, other: &$n) -> bool {
-        		PartialEq::ne(&self.value, other)
-        	}
-        }
-
-        impl<M> PartialEq<$t<M>> for $n where
-        M: $m {
-        	fn eq(&self, other: &$t<M>) -> bool {
-        		PartialEq::eq(self, &other.value)
-        	}
-
-        	fn ne(&self, other: &$t<M>) -> bool {
-        		PartialEq::ne(self, &other.value)
-        	}
-        }
-
-        impl <M> Deref for $t<M> where
-		M: $m {
-			type Target = $n;
-			
-			fn deref(&self) -> &$n {
-				&self.value
-			}
-		}
+		impl_mapping_type!($std_ty, $wrapper_ty, $mapping_ty);
 
 		//Serialize elastic number.
-		impl <M> Serialize for $t<M> where M: $m {
+		impl <M> Serialize for $wrapper_ty<M> where M: $mapping_ty {
 			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where
             S: Serializer {
 				self.value.serialize(serializer)
@@ -85,12 +49,12 @@ macro_rules! number_type {
 		}
 
 		//Deserialize elastic number.
-		impl <M: $m> Deserialize for $t<M> {
-			fn deserialize<D>(deserializer: &mut D) -> Result<$t<M>, D::Error> where
+		impl <M: $mapping_ty> Deserialize for $wrapper_ty<M> {
+			fn deserialize<D>(deserializer: &mut D) -> Result<$wrapper_ty<M>, D::Error> where
             D: Deserializer {
-				let t = try!($n::deserialize(deserializer));
+				let t = try!($std_ty::deserialize(deserializer));
 
-				Ok($t::<M>::new(t))
+				Ok($wrapper_ty::<M>::new(t))
 			}
 		}
     )
