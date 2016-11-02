@@ -1,5 +1,4 @@
 use std::marker::PhantomData;
-use std::ops::Deref;
 use serde::{ Serialize, Deserialize, Serializer, Deserializer };
 use geojson::Geometry;
 use super::mapping::*;
@@ -52,7 +51,7 @@ M: GeoShapeMapping {
 	/// );
 	/// # }
 	/// ```
-	pub fn new<I: Into<Geometry>>(geo: I) -> GeoShape<M> {
+	pub fn new<I>(geo: I) -> GeoShape<M> where I: Into<Geometry> {
 		GeoShape {
 			value: geo.into(),
 			_m: PhantomData
@@ -65,46 +64,10 @@ M: GeoShapeMapping {
 	}
 }
 
-impl<M> PartialEq<Geometry> for GeoShape<M> where
-M: GeoShapeMapping {
-	fn eq(&self, other: &Geometry) -> bool {
-		PartialEq::eq(&self.value, other)
-	}
-
-	fn ne(&self, other: &Geometry) -> bool {
-		PartialEq::ne(&self.value, other)
-	}
-}
-
-impl<M> PartialEq<GeoShape<M>> for Geometry where
-M: GeoShapeMapping {
-	fn eq(&self, other: &GeoShape<M>) -> bool {
-		PartialEq::eq(self, &other.value)
-	}
-
-	fn ne(&self, other: &GeoShape<M>) -> bool {
-		PartialEq::ne(self, &other.value)
-	}
-}
-
 impl <M> ElasticType<M, GeoShapeFormat> for GeoShape<M> where 
 M: GeoShapeMapping { }
 
-impl <M> From<Geometry> for GeoShape<M> where
-M: GeoShapeMapping {
-	fn from(geo: Geometry) -> Self {
-		GeoShape::<M>::new(geo)
-	}
-}
-
-impl <M> Deref for GeoShape<M> where
-M: GeoShapeMapping {
-	type Target = Geometry;
-	
-	fn deref(&self) -> &Geometry {
-		&self.value
-	}
-}
+impl_mapping_type!(Geometry, GeoShape, GeoShapeMapping);
 
 impl <M> Serialize for GeoShape<M> where 
 M: GeoShapeMapping {

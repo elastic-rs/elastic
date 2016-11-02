@@ -7,7 +7,7 @@ pub mod formats;
 extern crate serde;
 extern crate serde_json;
 
-use georust::{ Geometry, ToGeo, Coordinate };
+use georust::{ Geometry, ToGeo, Point, Coordinate };
 
 use elastic_types::geo::point::prelude::*;
 
@@ -17,7 +17,7 @@ fn can_change_point_mapping() {
 		true
 	}
 
-	let point: GeoPoint<GeoPointString> = GeoPoint::new(Coordinate { x: 1.0, y: 1.0 });
+	let point: GeoPoint<GeoPointString> = GeoPoint::new(Point(Coordinate { x: 1.0, y: 1.0 }));
 
 	assert!(takes_custom_mapping(point.remap()));
 }
@@ -26,7 +26,7 @@ fn can_change_point_mapping() {
 fn can_build_point_from_geo() {
 	let coord = Coordinate { x: 1.0, y: 1.0 };
 
-	let point = GeoPoint::<DefaultGeoPointFormat>::new(coord.clone());
+	let point = GeoPoint::<DefaultGeoPointFormat>::new(Point(coord.clone()));
 
 	assert_eq!(
 		(coord.x, coord.y),
@@ -36,7 +36,7 @@ fn can_build_point_from_geo() {
 
 #[test]
 fn can_convert_point_to_geo() {
-	let point = GeoPoint::<DefaultGeoPointFormat>::new(Coordinate { x: 1.0, y: 1.0 });
+	let point = GeoPoint::<DefaultGeoPointFormat>::new(Point(Coordinate { x: 1.0, y: 1.0 }));
 	let geo = point.to_geo();
 
 	match geo {

@@ -1,8 +1,7 @@
 use std::marker::PhantomData;
-use std::ops::Deref;
 use serde::{ Serialize, Deserialize, Serializer, Deserializer };
 use georust::{ Coordinate, Point, ToGeo, Geometry };
-use ::mapping::{ ElasticFieldMapping, ElasticType };
+use ::mapping::ElasticType;
 use super::mapping::{ GeoPointMapping, DefaultGeoPointMapping, GeoPointFormatWrapper };
 use super::GeoPointFormat;
 
@@ -73,19 +72,19 @@ M: GeoPointMapping<Format = F> {
 	/// # extern crate elastic_types;
 	/// # extern crate geo;
 	/// # fn main() {
-	/// use geo::Coordinate;
+	/// use geo::{ Point, Coordinate };
 	/// use elastic_types::geo::point::{ GeoPoint, DefaultGeoPointFormat };
 	///
 	/// //Create a geo Coordinate struct
 	/// let coord = Coordinate { x: 1.0, y: 1.0 };
 	///
 	/// //Give it to the GeoPoint struct
-	/// let point: GeoPoint<DefaultGeoPointFormat> = GeoPoint::new(coord);
+	/// let point: GeoPoint<DefaultGeoPointFormat> = GeoPoint::new(Point(coord));
 	/// # }
 	/// ```
-	pub fn new(point: Coordinate) -> GeoPoint<F, M> {
+	pub fn new<I>(point: I) -> GeoPoint<F, M> where I: Into<Point> {
 		GeoPoint {
-			value: Point(point),
+			value: point.into(),
 			_f: PhantomData,
 			_t: PhantomData
 		}
@@ -98,7 +97,7 @@ M: GeoPointMapping<Format = F> {
 	/// let point: GeoPoint<DefaultGeoPointFormat> = GeoPoint::build(1.0, 1.0);
 	/// ```
 	pub fn build(x: f64, y: f64) -> GeoPoint<F, M> {
-		GeoPoint::<F, M>::new(Coordinate { x: x, y: y })
+		GeoPoint::<F, M>::new(Point(Coordinate { x: x, y: y }))
 	}
 
 	/// Get the `x` coordinate for this point.
@@ -126,7 +125,7 @@ M: GeoPointMapping<Format = F> {
 	pub fn remap<FInto, MInto>(self) -> GeoPoint<FInto, MInto> where
 	FInto: GeoPointFormat,
 	MInto: GeoPointMapping<Format = FInto> {
-		GeoPoint::<FInto, MInto>::new(self.value.0)
+		GeoPoint::<FInto, MInto>::new(self.value)
 	}
 }
 
@@ -136,19 +135,13 @@ M: GeoPointMapping<Format = F> {
 
 }
 
+impl_mapping_type!(Point, GeoPoint, GeoPointMapping, GeoPointFormat);
+
 impl <F, M> From<Coordinate> for GeoPoint<F, M> where
 F: GeoPointFormat,
 M: GeoPointMapping<Format = F> {
 	fn from(point: Coordinate) -> GeoPoint<F, M> {
-		GeoPoint::<F, M>::new(point)
-	}
-}
-
-impl <F, M> From<Point> for GeoPoint<F, M> where
-F: GeoPointFormat,
-M: GeoPointMapping<Format = F> {
-	fn from(point: Point) -> GeoPoint<F, M> {
-		GeoPoint::<F, M>::new(point.0)
+		GeoPoint::<F, M>::new(Point(point))
 	}
 }
 
@@ -157,40 +150,6 @@ F: GeoPointFormat,
 M: GeoPointMapping<Format = F> {
 	fn to_geo(&self) -> Geometry {
 		Geometry::Point(self.value.clone())
-	}
-}
-
-impl<F, M> PartialEq<Point> for GeoPoint<F, M> where
-F: GeoPointFormat,
-M: ElasticFieldMapping<()> + GeoPointMapping<Format = F> {
-	fn eq(&self, other: &Point) -> bool {
-		PartialEq::eq(&self.value, other)
-	}
-
-	fn ne(&self, other: &Point) -> bool {
-		PartialEq::ne(&self.value, other)
-	}
-}
-
-impl<F, M> PartialEq<GeoPoint<F, M>> for Point where
-F: GeoPointFormat,
-M: ElasticFieldMapping<()> + GeoPointMapping<Format = F> {
-	fn eq(&self, other: &GeoPoint<F, M>) -> bool {
-		PartialEq::eq(self, &other.value)
-	}
-
-	fn ne(&self, other: &GeoPoint<F, M>) -> bool {
-		PartialEq::ne(self, &other.value)
-	}
-}
-
-impl<F, M> Deref for GeoPoint<F, M> where
-F: GeoPointFormat,
-M: ElasticFieldMapping<()> + GeoPointMapping<Format = F> {
-	type Target = Point;
-	
-	fn deref(&self) -> &Point {
-		&self.value
 	}
 }
 

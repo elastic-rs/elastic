@@ -1,7 +1,3 @@
-#![feature(test, plugin)]
-#![plugin(serde_macros)]
-#![plugin(json_str)]
-
 extern crate test;
 extern crate serde;
 extern crate serde_json;

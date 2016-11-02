@@ -61,47 +61,21 @@
 //! - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/master/string.html)
 
 macro_rules! impl_string_type {
-    ($t:ident, $m:ident, $f:ident, $d:ident) => (
-    	impl <M> ElasticType<M, $f> for $t<M> where
-		M: $m { }
+	($wrapper_ty:ident, $mapping_ty:ident, $format_ty:ident) => (
+		impl <M> ElasticType<M, $format_ty> for $wrapper_ty<M> where
+		M: $mapping_ty { }
 
-		impl From<String> for $t<$d> {
-			fn from(string: String) -> Self {
-				$t::new(string)
-			}
-		}
+		impl_mapping_type!(String, $wrapper_ty, $mapping_ty);
 
-		impl <M> AsRef<str> for $t<M> where
-		M: $m {
+		impl <M> AsRef<str> for $wrapper_ty<M> where
+		M: $mapping_ty {
 			fn as_ref(&self) -> &str {
 				&self.value
 			}
 		}
 
-		impl<'a, M> PartialEq<String> for $t<M> where
-		M: $m {
-			fn eq(&self, other: &String) -> bool {
-				PartialEq::eq(&self.value, other)
-			}
-
-			fn ne(&self, other: &String) -> bool {
-				PartialEq::ne(&self.value, other)
-			}
-		}
-
-		impl<'a, M> PartialEq<$t<M>> for String where
-		M: $m {
-			fn eq(&self, other: &$t<M>) -> bool {
-				PartialEq::eq(self, &other.value)
-			}
-
-			fn ne(&self, other: &$t<M>) -> bool {
-				PartialEq::ne(self, &other.value)
-			}
-		}
-
-		impl<'a, M> PartialEq<&'a str> for $t<M> where
-		M: $m {
+		impl<'a, M> PartialEq<&'a str> for $wrapper_ty<M> where
+		M: $mapping_ty {
 			fn eq(&self, other: & &'a str) -> bool {
 				PartialEq::eq(&self.value, *other)
 			}
@@ -111,58 +85,49 @@ macro_rules! impl_string_type {
 			}
 		}
 
-		impl<'a, M> PartialEq<$t<M>> for &'a str where
-		M: $m {
-			fn eq(&self, other: &$t<M>) -> bool {
+		impl<'a, M> PartialEq<$wrapper_ty<M>> for &'a str where
+		M: $mapping_ty {
+			fn eq(&self, other: &$wrapper_ty<M>) -> bool {
 				PartialEq::eq(*self, &other.value)
 			}
 
-			fn ne(&self, other: &$t<M>) -> bool {
+			fn ne(&self, other: &$wrapper_ty<M>) -> bool {
 				PartialEq::ne(*self, &other.value)
 			}
 		}
 
-		impl <M> ::std::ops::Deref for $t<M> where
-		M: $m {
-			type Target = String;
-			
-			fn deref(&self) -> &String {
-				&self.value
-			}
-		}
-
-		impl <M> Serialize for $t<M> where
-		M: $m {
+		impl <M> Serialize for $wrapper_ty<M> where
+		M: $mapping_ty {
 			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where
 			S: Serializer {
 				serializer.serialize_str(&self.value)
 			}
 		}
 
-		impl <M> Deserialize for $t<M> where
-		M: $m {
-			fn deserialize<D>(deserializer: &mut D) -> Result<$t<M>, D::Error> where
+		impl <M> Deserialize for $wrapper_ty<M> where
+		M: $mapping_ty {
+			fn deserialize<D>(deserializer: &mut D) -> Result<$wrapper_ty<M>, D::Error> where
 			D: Deserializer {
 				#[derive(Default)]
 				struct StringVisitor<M> where
-				M: $m {
+				M: $mapping_ty {
 					_m: PhantomData<M>
 				}
 
 				impl <M> Visitor for StringVisitor<M> where
-				M: $m {
-					type Value = $t<M>;
+				M: $mapping_ty {
+					type Value = $wrapper_ty<M>;
 
-					fn visit_str<E>(&mut self, v: &str) -> Result<$t<M>, E> where
+					fn visit_str<E>(&mut self, v: &str) -> Result<$wrapper_ty<M>, E> where
 					E: Error {
-						Ok($t::<M>::new(v))
+						Ok($wrapper_ty::<M>::new(v))
 					}
 				}
 
 				deserializer.deserialize(StringVisitor::<M>::default())
 			}
 		}
-    );
+	);
 }
 
 #[macro_use]

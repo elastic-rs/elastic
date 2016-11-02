@@ -556,13 +556,8 @@ extern crate geohash;
 extern crate serde;
 extern crate serde_json;
 
-macro_rules! ser_field {
-	($serializer:ident, $state:expr, $field:expr, $val_opt:expr) => (
-		if let Some(f) = $val_opt {
-			try!($serializer.serialize_struct_elt($state, $field, f));
-		}
-	)
-}
+#[macro_use]
+mod macros;
 
 pub mod mapping;
 pub mod mappers;
