@@ -541,7 +541,7 @@
 
 #![deny(missing_docs)]
 
-#![cfg_attr(feature = "nightly", feature(custom_derive, plugin, associated_type_defaults, associated_consts))]
+#![cfg_attr(feature = "nightly", feature(custom_derive, plugin))]
 #![cfg_attr(feature = "nightly", plugin(elastic_date_macros))]
 
 #[cfg(not(feature = "nightly"))]
