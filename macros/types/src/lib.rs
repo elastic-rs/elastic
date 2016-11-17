@@ -29,7 +29,9 @@ pub fn derive(input: TokenStream) -> TokenStream {
 
     let genned = expand_derive_type_mapping(&ast);
 
-    genned.to_string().parse().unwrap()
+	expanded.append_all(genned);
+
+    expanded.to_string().parse().unwrap()
 }
 
 fn expand_derive_type_mapping(input: &syn::MacroInput) -> Vec<quote::Tokens> {
