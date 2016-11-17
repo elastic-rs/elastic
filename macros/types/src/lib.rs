@@ -7,7 +7,6 @@
 //! - [Github](https://github.com/elastic-rs/elastic-types)
 
 #![feature(proc_macro, proc_macro_lib)]
-#![crate_type = "proc-macro"]
 #![cfg(not(test))]
 
 extern crate proc_macro;
@@ -15,8 +14,6 @@ extern crate proc_macro;
 #[macro_use]
 extern crate quote;
 extern crate syn;
-#[macro_use]
-extern crate post_expansion;
 
 extern crate serde;
 extern crate serde_json;
@@ -25,21 +22,14 @@ extern crate serde_codegen_internals;
 use proc_macro::TokenStream;
 use serde_codegen_internals::attr as serde_attr;
 
-register_post_expansion!(PostExpansion_elastic_types);
-
-#[proc_macro_derive(ElasticType)]
+#[proc_macro_derive(ElasticType, attributes(elastic))]
 pub fn derive(input: TokenStream) -> TokenStream {
 	let mut expanded = quote::Tokens::new();
     let ast = syn::parse_macro_input(&input.to_string()).unwrap();
 
     let genned = expand_derive_type_mapping(&ast);
 
-    let ast = post_expansion::strip_attrs_later(ast, &["elastic"], "elastic_types");
-    expanded.append(&quote!(#ast).to_string());
-
-    expanded.append_all(genned);
-
-    expanded.to_string().parse().unwrap()
+    genned.to_string().parse().unwrap()
 }
 
 fn expand_derive_type_mapping(input: &syn::MacroInput) -> Vec<quote::Tokens> {
