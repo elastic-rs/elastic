@@ -438,8 +438,6 @@ pub mod object_macro_fixtures {
 		pub field: i32
 	}
 
-	//NOTE: We have to swap the derive order to preserve serde attributes
-	//See: https://github.com/serde-rs/serde/issues/585
 	#[derive(Serialize, ElasticType)]
 	#[elastic(mapping="CustomTypeMapping")]
 	pub struct CustomType {
