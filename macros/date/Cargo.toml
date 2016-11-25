@@ -1,6 +1,6 @@
 [package]
 name = "elastic_date_macros"
-version = "0.5.1"
+version = "0.5.2"
 authors = ["Ashley Mannix <ashleymannix@live.com.au>"]
 license = "Apache-2.0"
 description = "Compile-time code generation for chrono date formats."

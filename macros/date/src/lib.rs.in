@@ -3,9 +3,9 @@ extern crate rustc;
 extern crate rustc_plugin;
 
 use rustc_plugin::Registry;
-use syntax::ast::Expr;
+use syntax::ast::{ Ident, Expr };
 use syntax::codemap::Span;
-use syntax::parse::token::{self};
+use syntax::parse::token;
 use syntax::tokenstream::TokenTree;
 use syntax::ptr::P;
 use syntax::ext::base::{ ExtCtxt, MacResult, DummyResult, MacEager };
@@ -30,7 +30,7 @@ pub fn expand_date_fmt(cx: &mut ExtCtxt, sp: Span, args: &[TokenTree]) -> Box<Ma
 	//Build up the token tree
 	let tokens = to_tokens(&fmt);
 
-	let ident = token::str_to_ident("items");
+	let ident = Ident::from_str("items");
 	let c = tokens.len();
 
 	let mut stmts = vec![quote_stmt!(cx, let mut $ident = Vec::with_capacity($c);).unwrap()];
