@@ -59,12 +59,12 @@ pub use self::formats::*;
 pub type DefaultGeoPointFormat = GeoPointArray;
 
 pub mod prelude {
-	//! Includes non-mapping types for the `geo_point` type.
-	//!
-	//! This is a convenience module to make it easy to build mappings for multiple types without too many `use` statements.
+    //! Includes non-mapping types for the `geo_point` type.
+    //!
+    //! This is a convenience module to make it easy to build mappings for multiple types without too many `use` statements.
 
-	pub use super::DefaultGeoPointFormat;
-	pub use super::format::*;
-	pub use super::point::*;
-	pub use super::formats::*;
+    pub use super::DefaultGeoPointFormat;
+    pub use super::format::*;
+    pub use super::point::*;
+    pub use super::formats::*;
 }

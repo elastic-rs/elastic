@@ -5,9 +5,9 @@
 //! Provides `struct`s and `trait`s for defining Elasticsearch type mapping,
 //! where correctness is enforced by Rust's type system.
 //! The act of annotating your types with mapping metadata is _zero-cost_.
-//! 
+//!
 //! # Supported Versions
-//! 
+//!
 //!  `elastic_types` | Elasticsearch
 //!  --------------- | -------------
 //!  `0.x`           | `5.x`
@@ -63,7 +63,7 @@
 //!
 //! This section shows you how to add mapping metadata on the `nightly` channel.
 //! For mapping on `stable`, see [here](object/index.html#manually-implement-mapping).
-//! 
+//!
 //! > NOTE: Once [Macros 1.1](https://github.com/rust-lang/rfcs/blob/master/text/1681-macros-1.1.md)
 //! is stabilised, you'll be able to use `elastic_types_derive` on the `stable` channel.
 //!
@@ -154,7 +154,7 @@
 //! ```
 //!
 //! ### Mapping structs as fields
-//! 
+//!
 //! Of course, structs that derive `ElasticType` can also be used as fields in other Elasticsearch types:
 //!
 //! ```
@@ -230,7 +230,7 @@
 //! ```
 //!
 //! ### Mapping `Option` and `Vec`
-//! 
+//!
 //! Elasticsearch doesn't differentiate between nullable types or collections, so it's also possible
 //! to derive mapping from `Option` or `Vec` types:
 //!
@@ -257,12 +257,12 @@
 //!
 //! This produces the same mapping as before.
 //! See the [`object`](object/index.html) mod for more details.
-//! 
+//!
 //! ### Overloading default mapping
-//! 
+//!
 //! You can override the default mapping for Elasticsearch's core datatypes by implementing
 //! the appropriate trait. In the below example, we create a custom `boolean` mapping:
-//! 
+//!
 //! ```
 //! # #![feature(proc_macro)]
 //! # #[macro_use]
@@ -283,15 +283,15 @@
 //! # fn main() {
 //! # }
 //! ```
-//! 
+//!
 //! For more details about the supported core datatypes and how to use them, see [here](#types).
-//! 
+//!
 //! ## Serialise Your Types
-//! 
-//! Types that derive `ElasticType` are themselves serialisable, which can be very helpful when using 
+//!
+//! Types that derive `ElasticType` are themselves serialisable, which can be very helpful when using
 //! types like `date` with special formats.
 //! Take the following document:
-//! 
+//!
 //! ```ignore
 //! {
 //! 	"id": 15,
@@ -299,10 +299,10 @@
 //! 	"title": "my timestamped object"
 //! }
 //! ```
-//! 
+//!
 //! Using the `Date<EpochMillis>` type for the `timestamp`, we can correctly deserialise the document as a strongly typed
 //! object:
-//! 
+//!
 //! ```
 //! # #![feature(proc_macro)]
 //! # #[macro_use]
@@ -322,17 +322,17 @@
 //! 	timestamp: Date<EpochMillis>,
 //! 	title: String
 //! }
-//! 
+//!
 //! # fn main() {
 //! # let json = "{\"id\": 15,\"timestamp\": 1435935302478,\"title\": \"my timestamped object\"}";
 //! let de: MyType = serde_json::from_str(json).unwrap();
-//! 
+//!
 //! assert_eq!(2015, de.timestamp.year());
 //! # }
 //! ```
-//! 
+//!
 //! ## A Complete Example
-//! 
+//!
 //! Before digging in to the API, consider the following complete example for defining and mapping a
 //! type called `Article` on `nightly`.
 //! As `json`, the `Article` type should look something like this:
@@ -349,33 +349,33 @@
 //!     }
 //! }
 //! ```
-//! 
+//!
 //! Our `Cargo.toml` specifies the dependencies as above:
-//! 
+//!
 //! ```ignore
 //! [dependencies]
 //! elastic_types = { version = "*", features = "nightly" }
 //! elastic_types_derive = "*"
 //! ```
-//! 
+//!
 //! And our `main.rs` contains the following:
-//! 
+//!
 //! ```
 //! # #![feature(proc_macro)]
-//! 
+//!
 //! #[macro_use]
 //! extern crate serde_derive;
 //! extern crate serde;
-//! 
+//!
 //! #[macro_use]
 //! extern crate elastic_types_derive;
 //! #[macro_use]
 //! extern crate elastic_types;
-//! 
+//!
 //! use elastic_types::prelude::*;
-//! 
+//!
 //! // Our main datatype, `article`
-//! 
+//!
 //! #[derive(Serialize, Deserialize, ElasticType)]
 //! struct Article {
 //! 	pub id: i32,
@@ -384,19 +384,19 @@
 //! 	pub timestamp: Option<Date<EpochMillis, TimestampMapping>>,
 //! 	pub geoip: GeoIp
 //! }
-//! 
-//! 
+//!
+//!
 //! // A second datatype, `geoip`
-//! 
+//!
 //! #[derive(Serialize, Deserialize, ElasticType)]
 //! struct GeoIp {
 //! 	pub ip: ::std::net::Ipv4Addr,
 //! 	pub loc: GeoPoint<DefaultGeoPointFormat>
 //! }
-//! 
-//! 
+//!
+//!
 //! // Mappings for our datatype fields
-//! 
+//!
 //! #[derive(Default)]
 //! struct ContentMapping;
 //! impl TextMapping for ContentMapping {
@@ -404,38 +404,38 @@
 //! 		Some("content_text")
 //! 	}
 //! }
-//! 
+//!
 //! #[derive(Default)]
 //! struct TimestampMapping;
 //! impl DateMapping for TimestampMapping {
 //! 	type Format = EpochMillis;
-//! 	
+//!
 //! 	fn null_value() -> Option<Date<EpochMillis, Self>> {
 //! 		Some(Date::now())
 //! 	}
 //! }
-//! 
+//!
 //! fn main() {
-//! 	println!("\"{}\":{{ {} }}", 
-//! 		Article::name(), 
+//! 	println!("\"{}\":{{ {} }}",
+//! 		Article::name(),
 //! 		TypeMapper::to_string(Article::mapping()).unwrap()
 //! 	);
 //! }
 //! ```
-//! 
+//!
 //! The above example defines a `struct` called `Article` with a few fields:
-//! 
+//!
 //! - A default `integer` field called `id`
 //! - A default `string` field called `title`
 //! - A `text` field with a custom analyser called `content`
 //! - A `date` field with the `epoch_millis` format that defaults to the time the index was created called `timestamp`
 //! - An object field called `GeoIp` with default `ip` and `geo_point` fields.
-//! 
+//!
 //! Go ahead and run that sample and see what it outputs.
 //! In case you're interested, it'll look something like this (minus the whitespace):
-//! 
+//!
 //! ```ignore
-//! "article": { 
+//! "article": {
 //! 	"properties": {
 //! 		"id":{
 //! 			"type": "integer"
@@ -472,7 +472,7 @@
 //! 	}
 //! }
 //! ```
-//! 
+//!
 //! The mapping is constructed by inspecting the type parameters of the fields on `Article` and `GeoIp`.
 //! This mapping is then serialised by [`serde`](https://serde.rs).
 //!
@@ -573,16 +573,16 @@ pub mod object;
 pub mod template;
 
 pub mod prelude {
-	//! Includes all data types.
-	//!
-	//! This is a convenience module to make it easy to build mappings for multiple types without too many `use` statements.
+    //! Includes all data types.
+    //!
+    //! This is a convenience module to make it easy to build mappings for multiple types without too many `use` statements.
 
-	pub use ::mapping::prelude::*;
-	pub use ::boolean::prelude::*;
-	pub use ::date::prelude::*;
-	pub use ::geo::prelude::*;
-	pub use ::ip::prelude::*;
-	pub use ::number::prelude::*;
-	pub use ::string::prelude::*;
-	pub use ::template::*;
+    pub use ::mapping::prelude::*;
+    pub use ::boolean::prelude::*;
+    pub use ::date::prelude::*;
+    pub use ::geo::prelude::*;
+    pub use ::ip::prelude::*;
+    pub use ::number::prelude::*;
+    pub use ::string::prelude::*;
+    pub use ::template::*;
 }

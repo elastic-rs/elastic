@@ -82,6 +82,6 @@ fn deserialise_elastic_numbers() {
 
 	assert_eq!(
 		(1i32, 1i64, 1i16, 1i8, 1.01f32, 1.01f64),
-		(int_de.get(), long_de.get(), short_de.get(), byte_de.get(), float_de.get(), double_de.get())
+		(*int_de, *long_de, *short_de, *byte_de, *float_de, *double_de)
 	);
 }

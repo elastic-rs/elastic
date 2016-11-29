@@ -49,9 +49,9 @@ mod shape;
 pub use self::shape::*;
 
 pub mod prelude {
-	//! Includes non-mapping types for the `geo_shape` types.
-	//!
-	//! This is a convenience module to make it easy to build mappings for multiple types without too many `use` statements.
+    //! Includes non-mapping types for the `geo_shape` types.
+    //!
+    //! This is a convenience module to make it easy to build mappings for multiple types without too many `use` statements.
 
-	pub use super::shape::*;
+    pub use super::shape::*;
 }

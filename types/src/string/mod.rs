@@ -3,16 +3,16 @@
 //! Keyword fields are stored as a raw string of tokens, and aren't analysed when querying.
 //! They're useful for data that only has meaning when considered as a whole, like an id
 //! or single word.
-//! 
+//!
 //! Text fields are stored as a sequence of tokens, constructed based on the given `analyzer`.
 //! They're useful for blobs of content that can be sliced in various ways, like prose.
 //!
 //! As far as serialisation is concerned, `keyword` and `text` are equivalent.
-//! 
+//!
 //! # Examples
 //!
-//! For defining your own string mapping, see: 
-//! 
+//! For defining your own string mapping, see:
+//!
 //! - [keyword mapping details](keyword/mapping/trait.KeywordMapping.html#derive-mapping)
 //! - [text mapping details](text/mapping/trait.TextMapping.html#derive-mapping).
 //!
@@ -39,7 +39,7 @@
 //! }
 //! # }
 //! ```
-//! 
+//!
 //! Map `text`:
 //!
 //! ```
@@ -55,7 +55,7 @@
 //! }
 //! # }
 //! ```
-//! 
+//!
 //! # Links
 //!
 //! - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/master/string.html)
@@ -142,10 +142,10 @@ pub use self::text::Text;
 
 
 pub mod prelude {
-	//! Includes non-mapping types for the `string` types.
-	//!
-	//! This is a convenience module to make it easy to build mappings for multiple types without too many `use` statements.
+    //! Includes non-mapping types for the `string` types.
+    //!
+    //! This is a convenience module to make it easy to build mappings for multiple types without too many `use` statements.
 
-	pub use super::keyword::Keyword;
-	pub use super::text::Text;
+    pub use super::keyword::Keyword;
+    pub use super::text::Text;
 }

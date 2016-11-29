@@ -7,7 +7,7 @@
 //! The difference is especially obvious on the `stable` channel, where date formats can't be parsed at compile time.
 //!
 //! # Examples
-//! 
+//!
 //! For defining your own date mapping, see [mapping details](mapping/trait.DateMapping.html#derive-mapping).
 //!
 //! Map with a default `date`:
@@ -41,10 +41,10 @@
 //! ```
 //!
 //! ## Creating Formats
-//! 
+//!
 //! To make it easier to build your own date formats, use the `date_fmt!` macro.
 //! This will convert an Elasticsearch or `chrono` format string into a `Vec<Item>` for efficient parsing at runtime:
-//! 
+//!
 //! ```
 //! # #![feature(plugin)]
 //! # #![plugin(json_str, elastic_types_derive)]
@@ -59,7 +59,7 @@
 //! date_fmt!(MyFormat, "yyyy-MM-ddTHH:mm:ss", "yyyy-MM-dd'T'HH:mm:ss");
 //! # }
 //! ```
-//! 
+//!
 //! You can also implement `CustomDateFormat` yourself and write your own arbitrary format/parse logic:
 //!
 //! ```
@@ -75,17 +75,17 @@
 //! struct MyCustomFormat;
 //! impl CustomDateFormat for MyCustomFormat {
 //! 	fn name() -> &'static str { "yyyy-MM-dd'T'HH:mm:ssZ" }
-//! 
+//!
 //! 	fn format(date: &DateTime<UTC>) -> String {
 //! 		date.to_rfc3339()
 //! 	}
-//! 	
+//!
 //! 	fn parse(date: &str) -> Result<DateTime<UTC>, ParseError> {
 //! 		let date = try!(DateTime::parse_from_rfc3339(date).map_err(|e| ParseError::from(e)));
-//! 
-//!			Ok(DateTime::from_utc(date.naive_local(), UTC))
-//!		}
-//!	}
+//!
+//! 			Ok(DateTime::from_utc(date.naive_local(), UTC))
+//! 		}
+//! 	}
 //! # }
 //! ```
 //!
@@ -102,7 +102,7 @@ pub use self::format::*;
 pub use self::date::*;
 pub use self::formats::*;
 
-use chrono::{ DateTime, UTC };
+use chrono::{DateTime, UTC};
 
 /// A re-export of the `chrono::DateTime` struct with `UTC` timezone.
 pub type ChronoDateTime = DateTime<UTC>;
@@ -111,12 +111,12 @@ pub type ChronoDateTime = DateTime<UTC>;
 pub type DefaultDateFormat = BasicDateTime;
 
 pub mod prelude {
-	//! Includes non-mapping types for the `date` type.
-	//!
-	//! This is a convenience module to make it easy to build mappings for multiple types without too many `use` statements.
+    //! Includes non-mapping types for the `date` type.
+    //!
+    //! This is a convenience module to make it easy to build mappings for multiple types without too many `use` statements.
 
-	pub use super::DefaultDateFormat;
-	pub use super::format::*;
-	pub use super::date::*;
-	pub use super::formats::*;
+    pub use super::DefaultDateFormat;
+    pub use super::format::*;
+    pub use super::date::*;
+    pub use super::formats::*;
 }
