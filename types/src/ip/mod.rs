@@ -42,9 +42,9 @@ pub mod mapping;
 pub use self::ip::*;
 
 pub mod prelude {
-	//! Includes non-mapping types for the `ip` type.
-	//!
-	//! This is a convenience module to make it easy to build mappings for multiple types without too many `use` statements.
+    //! Includes non-mapping types for the `ip` type.
+    //!
+    //! This is a convenience module to make it easy to build mappings for multiple types without too many `use` statements.
 
-	pub use super::ip::*;
+    pub use super::ip::*;
 }

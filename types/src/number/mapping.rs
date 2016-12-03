@@ -60,7 +60,7 @@
 //! ```
 
 use serde::Serialize;
-use ::mapping::{ ElasticType, ElasticFieldMapping, ElasticFieldMappingWrapper };
+use ::mapping::{ElasticType, ElasticFieldMapping, ElasticFieldMappingWrapper};
 
 /// Elasticsearch datatype name.
 pub const INTEGER_DATATYPE: &'static str = "integer";
@@ -81,44 +81,44 @@ macro_rules! number_mapping {
 		#[derive(Default)]
 		pub struct $f;
 
-		/// Base `number` mapping.
+/// Base `number` mapping.
 		pub trait $m where
 		Self: Default {
-			/// Try to convert strings to numbers and truncate fractions for integers. Accepts `true` (default) and `false`.
+/// Try to convert strings to numbers and truncate fractions for integers. Accepts `true` (default) and `false`.
 			fn coerce() -> Option<bool> { None }
 
-			/// Field-level index time boosting. Accepts a floating point number, defaults to `1.0`.
+/// Field-level index time boosting. Accepts a floating point number, defaults to `1.0`.
 			fn boost() -> Option<f32> { None }
 
-			/// Should the field be stored on disk in a column-stride fashion,
-			/// so that it can later be used for sorting, aggregations, or scripting?
-			/// Accepts `true` (default) or `false`.
+/// Should the field be stored on disk in a column-stride fashion,
+/// so that it can later be used for sorting, aggregations, or scripting?
+/// Accepts `true` (default) or `false`.
 			fn doc_values() -> Option<bool> { None }
 
-			/// If `true`, malformed numbers are ignored. If `false` (default),
-			/// malformed numbers throw an exception and reject the whole document.
+/// If `true`, malformed numbers are ignored. If `false` (default),
+/// malformed numbers throw an exception and reject the whole document.
 			fn ignore_malformed() -> Option<bool> { None }
 
-			/// Whether or not the field value should be included in the `_all` field?
-			/// Accepts `true` or `false`. Defaults to false if index is set to no,
-			/// or if a parent object field sets `include_in_all` to false.
-			/// Otherwise defaults to `true`.
+/// Whether or not the field value should be included in the `_all` field?
+/// Accepts `true` or `false`. Defaults to false if index is set to no,
+/// or if a parent object field sets `include_in_all` to false.
+/// Otherwise defaults to `true`.
 			fn include_in_all() -> Option<bool> { None }
 
-			/// Should the field be searchable? Accepts `not_analyzed` (default) and `no`.
+/// Should the field be searchable? Accepts `not_analyzed` (default) and `no`.
 			fn index() -> Option<bool> { None }
 
-			/// Accepts a numeric value of the same type as the field which is substituted for any explicit null values.
-			/// Defaults to `null`, which means the field is treated as missing.
+/// Accepts a numeric value of the same type as the field which is substituted for any explicit null values.
+/// Defaults to `null`, which means the field is treated as missing.
 			fn null_value() -> Option<$n> { None }
 
-			/// Whether the field value should be stored and retrievable separately from the `_source` field.
-			/// Accepts true or false (default).
+/// Whether the field value should be stored and retrievable separately from the `_source` field.
+/// Accepts true or false (default).
 			fn store() -> Option<bool> { None }
 		}
 
 		impl <T> ElasticFieldMapping<$f> for T where
-		T: $m { 
+		T: $m {
 			type SerType = ElasticFieldMappingWrapper<T, $f>;
 
 			fn data_type() -> &'static str { $cn }
@@ -126,7 +126,7 @@ macro_rules! number_mapping {
 
 		impl <T> Serialize for ElasticFieldMappingWrapper<T, $f> where
 		T: ElasticFieldMapping<$f> + $m {
-			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where 
+			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where
 			S: ::serde::Serializer {
 				let mut state = try!(serializer.serialize_struct("mapping", 8));
 
@@ -156,36 +156,36 @@ number_mapping!(DoubleMapping, DoubleFormat, DOUBLE_DATATYPE, f64);
 /// Default mapping for an `integer` type.
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultIntegerMapping;
-impl IntegerMapping for DefaultIntegerMapping { }
-impl ElasticType<DefaultIntegerMapping, IntegerFormat> for i32 { }
+impl IntegerMapping for DefaultIntegerMapping {}
+impl ElasticType<DefaultIntegerMapping, IntegerFormat> for i32 {}
 
 /// Default mapping for a `long` type.
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultLongMapping;
-impl LongMapping for DefaultLongMapping { }
-impl ElasticType<DefaultLongMapping, LongFormat> for i64 { }
-impl ElasticType<DefaultLongMapping, LongFormat> for isize { }
+impl LongMapping for DefaultLongMapping {}
+impl ElasticType<DefaultLongMapping, LongFormat> for i64 {}
+impl ElasticType<DefaultLongMapping, LongFormat> for isize {}
 
 /// Default mapping for a `short` type.
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultShortMapping;
-impl ShortMapping for DefaultShortMapping { }
-impl ElasticType<DefaultShortMapping, ShortFormat> for i16 { }
+impl ShortMapping for DefaultShortMapping {}
+impl ElasticType<DefaultShortMapping, ShortFormat> for i16 {}
 
 /// Default mapping for a `byte` type.
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultByteMapping;
-impl ByteMapping for DefaultByteMapping { }
-impl ElasticType<DefaultByteMapping, ByteFormat> for i8 { }
+impl ByteMapping for DefaultByteMapping {}
+impl ElasticType<DefaultByteMapping, ByteFormat> for i8 {}
 
 /// Default mapping for a `float` type.
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultFloatMapping;
-impl FloatMapping for DefaultFloatMapping { }
-impl ElasticType<DefaultFloatMapping, FloatFormat> for f32 { }
+impl FloatMapping for DefaultFloatMapping {}
+impl ElasticType<DefaultFloatMapping, FloatFormat> for f32 {}
 
 /// Default mapping for a `double` type.
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultDoubleMapping;
-impl DoubleMapping for DefaultDoubleMapping { }
-impl ElasticType<DefaultDoubleMapping, DoubleFormat> for f64 { }
+impl DoubleMapping for DefaultDoubleMapping {}
+impl ElasticType<DefaultDoubleMapping, DoubleFormat> for f64 {}

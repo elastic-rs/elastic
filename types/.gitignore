@@ -1,2 +1,4 @@
+*.bk
+
 /target/
 /obj/

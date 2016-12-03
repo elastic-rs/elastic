@@ -47,7 +47,6 @@ macro_rules! impl_mapping_type {
 		impl <M> ::std::ops::Deref for $wrapper_ty<M> where
 		M: $mapping_ty {
 			type Target = $std_ty;
-			
 			fn deref(&self) -> &$std_ty {
 				&self.value
 			}
@@ -98,7 +97,6 @@ macro_rules! impl_mapping_type {
 		F: $format_ty,
 		M: $mapping_ty<Format = F> {
 			type Target = $std_ty;
-			
 			fn deref(&self) -> &$std_ty {
 				&self.value
 			}

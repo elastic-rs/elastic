@@ -1,5 +1,5 @@
 use std::marker::PhantomData;
-use serde::{ Serialize, Deserialize, Serializer, Deserializer };
+use serde::{Serialize, Deserialize, Serializer, Deserializer};
 use super::mapping::*;
 use ::mapping::ElasticType;
 
@@ -18,16 +18,6 @@ macro_rules! number_type {
 					value: num.into(),
 					_m: PhantomData
 				}
-			}
-
-			/// Get the value of the number.
-			pub fn get(&self) -> $std_ty {
-				self.value
-			}
-
-			/// Set the value of the number.
-			pub fn set<I: Into<$std_ty>>(&mut self, num: I) {
-				self.value = num.into()
 			}
 
 			/// Change the mapping of this number.
