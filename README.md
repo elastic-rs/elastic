@@ -7,7 +7,9 @@ A structure is generated for each REST endpoint, that generate url paths from th
 There's also a more general `HttpRequest` structure that represents a typical request.
 All request types implement `Into<HttpRequest>`, so you can work with an arbitrary request through this type bound.
 
+Right now, the codegen is tested by emitting to a module in the codegen crate source:
+
 ```
 $ cd codegen
-$ cargo run > out.rs
+$ cargo run > src/out.rs && cargo fmt
 ```
