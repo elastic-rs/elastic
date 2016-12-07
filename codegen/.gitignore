@@ -15,5 +15,6 @@ Cargo.lock
 *.user
 *.suo
 
-./target/
-./obj/
+out.rs
+target/
+obj/

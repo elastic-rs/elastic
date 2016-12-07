@@ -4,4 +4,7 @@ version = "0.1.0"
 authors = ["Ashley Mannix <ashleymannix@live.com.au>"]
 
 [dependencies]
+serde_json = "*"
+syn = { version = "*", features = ["full"] }
+quote = "*"
 elastic_codegen = { version = "*", git = "https://github.com/elastic-rs/elastic-codegen" }
