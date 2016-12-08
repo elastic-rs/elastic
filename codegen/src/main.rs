@@ -4,8 +4,6 @@ extern crate quote;
 extern crate syn;
 extern crate serde_json;
 
-pub mod out;
-
 use std::collections::{HashSet, BTreeMap};
 use std::io::{stdout, Read, Write};
 use std::fs::{File, read_dir};
@@ -69,21 +67,20 @@ fn strip_verbs(endpoint: (String, Endpoint)) -> (String, Endpoint) {
     (name, endpoint)
 }
 
-fn rename_types(endpoint: (String, Endpoint)) -> (String, Endpoint) {
+fn dedup_urls(endpoint: (String, Endpoint)) -> (String, Endpoint) {
     let (name, mut endpoint) = endpoint;
 
-    let mut new_params = BTreeMap::new();
+    let mut deduped_paths = BTreeMap::new();
 
-    for (k, v) in endpoint.url.parts {
-        let new_key = match (k.as_ref(), &v.ty) {
-            ("index", &TypeKind::List) => String::from("indices"),
-            _ => k,
-        };
+    for path in endpoint.url.paths {
+        let key = path.params().join("");
 
-        new_params.insert(new_key, v);
+        deduped_paths.insert(key, path);
     }
 
-    endpoint.url.parts = new_params;
+    endpoint.url.paths = deduped_paths.into_iter()
+        .map(|(_, p)| p)
+        .collect();
 
     (name, endpoint)
 }
@@ -102,6 +99,8 @@ fn main() {
     let mut tokens = quote::Tokens::new();
 
     let uses = quote!(
+    	use std::marker::PhantomData;
+    	use std::ops::Deref;
     	use std::borrow::Cow;
     );
 
@@ -119,13 +118,11 @@ fn main() {
     ]);
     tokens.append("\n\n");
 
-    let mut emitted_endpoints = HashSet::new();
     let endpoints: Vec<(String, Endpoint)> = from_dir(dir)
         .expect("Couldn't parse the REST API spec")
         .into_iter()
-        .filter(|&(ref name, _)| emitted_endpoints.insert(name.to_owned()))
         .map(|e| strip_verbs(e))
-        .map(|e| rename_types(e))
+        .map(|e| dedup_urls(e))
         .collect();
 
 
