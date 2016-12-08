@@ -1,14 +1,28 @@
-extern crate elastic_codegen;
+#![feature(proc_macro)]
+
+#[cfg(test)]
 #[macro_use]
-extern crate quote;
-extern crate syn;
+extern crate json_str;
+
+#[macro_use]
+extern crate serde_derive;
+extern crate serde;
 extern crate serde_json;
 
-use std::collections::{HashSet, BTreeMap};
+extern crate syn;
+#[macro_use]
+extern crate quote;
+
+extern crate inflector;
+
+pub mod parse;
+pub mod gen;
+
+use std::collections::BTreeMap;
 use std::io::{stdout, Read, Write};
 use std::fs::{File, read_dir};
-use elastic_codegen::gen;
-use elastic_codegen::parse::*;
+
+use parse::*;
 
 fn start_comment_block_for_logging() {
     stdout().write(b"/*").unwrap();

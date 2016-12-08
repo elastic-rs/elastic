@@ -1,0 +1,526 @@
+use std::collections::BTreeMap;
+use serde_json::Value;
+
+mod parse;
+
+pub trait ApiEndpoint {
+    fn endpoint(self) -> (String, Endpoint);
+}
+
+impl ApiEndpoint for BTreeMap<String, Endpoint> {
+    fn endpoint(self) -> (String, Endpoint) {
+        self.into_iter().next().unwrap()
+    }
+}
+
+#[derive(Debug, PartialEq, Deserialize)]
+pub struct Endpoint {
+    pub documentation: String,
+    pub methods: Vec<HttpMethod>,
+    pub url: Url,
+    pub body: Option<Body>,
+}
+
+#[derive(Debug, PartialEq, Deserialize)]
+pub enum HttpMethod {
+    #[serde(rename = "HEAD")]
+    Head,
+    #[serde(rename = "GET")]
+    Get,
+    #[serde(rename = "POST")]
+    Post,
+    #[serde(rename = "PUT")]
+    Put,
+    #[serde(rename = "PATCH")]
+    Patch,
+    #[serde(rename = "DELETE")]
+    Delete,
+}
+
+#[derive(Debug, PartialEq, Deserialize)]
+pub struct Url {
+    pub path: Path,
+    pub paths: Vec<Path>,
+    #[serde(default = "BTreeMap::new")]
+    pub parts: BTreeMap<String, Type>,
+    #[serde(default = "BTreeMap::new")]
+    pub params: BTreeMap<String, Type>,
+}
+
+impl Url {
+    pub fn get_type<'a>(&'a self, name: &str) -> Option<&'a Type> {
+        self.parts.get(name).or(self.params.get(name))
+    }
+}
+
+#[derive(Debug, PartialEq, Deserialize)]
+pub struct Type {
+    #[serde(rename = "type", default)]
+    pub ty: TypeKind,
+    pub description: String,
+    #[serde(default = "Vec::new")]
+    pub options: Vec<Value>,
+    #[serde(default)]
+    pub default: Option<Value>,
+}
+
+#[derive(Debug, PartialEq, Deserialize)]
+pub enum TypeKind {
+    None,
+    #[serde(rename = "list")]
+    List,
+    #[serde(rename = "enum")]
+    Enum,
+    #[serde(rename = "string")]
+    String,
+    #[serde(rename = "text")]
+    Text,
+    #[serde(rename = "boolean")]
+    Boolean,
+    #[serde(rename = "number")]
+    Number,
+    #[serde(rename = "float")]
+    Float,
+    #[serde(rename = "integer")]
+    Integer,
+    #[serde(rename = "time")]
+    Time,
+    #[serde(rename = "duration")]
+    Duration,
+}
+
+impl Default for TypeKind {
+    fn default() -> Self {
+        TypeKind::None
+    }
+}
+
+#[derive(Debug, PartialEq, Deserialize)]
+pub struct Path(pub String);
+
+impl Path {
+    pub fn split<'a>(&'a self) -> Vec<PathPart<'a>> {
+        Path::parse(self.0.as_bytes(), PathParseState::Literal, Vec::new())
+    }
+
+    pub fn params<'a>(&'a self) -> Vec<&'a str> {
+        self.split()
+            .iter()
+            .filter_map(|p| {
+                match *p {
+                    PathPart::Param(p) => Some(p),
+                    _ => None,
+                }
+            })
+            .collect()
+    }
+
+    fn parse<'a>(i: &'a [u8], state: PathParseState, r: Vec<PathPart<'a>>) -> Vec<PathPart<'a>> {
+        if i.len() == 0 {
+            return r;
+        }
+
+        let mut r = r;
+
+        match state {
+            PathParseState::Literal => {
+                let (rest, part) = Path::parse_literal(i);
+
+                if part.len() > 0 {
+                    r.push(PathPart::Literal(part));
+                }
+
+                Path::parse(rest, PathParseState::Param, r)
+            }
+            PathParseState::Param => {
+                let (rest, part) = Path::parse_param(i);
+
+                if part.len() > 0 {
+                    r.push(PathPart::Param(part));
+                }
+
+                Path::parse(rest, PathParseState::Literal, r)
+            }
+        }
+    }
+
+    fn parse_literal<'a>(i: &'a [u8]) -> (&'a [u8], &'a str) {
+        if i[0] == b'}' {
+            let i = parse::shift(i, 1);
+            parse::take_while(i, |c| c != b'{')
+        } else {
+            parse::take_while(i, |c| c != b'{')
+        }
+    }
+
+    fn parse_param<'a>(i: &'a [u8]) -> (&'a [u8], &'a str) {
+        if i[0] == b'{' {
+            let i = parse::shift(i, 1);
+            parse::take_while(i, |c| c != b'}')
+        } else {
+            parse::take_while(i, |c| c != b'}')
+        }
+    }
+}
+
+enum PathParseState {
+    Literal,
+    Param,
+}
+
+#[derive(Debug, PartialEq)]
+pub enum PathPart<'a> {
+    Literal(&'a str),
+    Param(&'a str),
+}
+
+pub trait PathParams<'a> {
+    fn params(&'a self) -> Vec<&'a str>;
+}
+
+impl<'a> PathParams<'a> for Vec<PathPart<'a>> {
+    fn params(&'a self) -> Vec<&'a str> {
+        self.iter()
+            .filter_map(|p| {
+                match *p {
+                    PathPart::Param(p) => Some(p),
+                    _ => None,
+                }
+            })
+            .collect()
+    }
+}
+
+#[derive(Debug, PartialEq, Deserialize)]
+pub struct Body {
+    pub description: String,
+}
+
+#[cfg(test)]
+pub fn get_url() -> Url {
+    Url {
+        path: Path("/_search".to_string()),
+        paths: vec![Path("/_search".to_string()), Path("/{index}/_search".to_string()), Path("/{index}/{type}/_search".to_string())],
+        parts: {
+            let mut map = BTreeMap::new();
+
+            map.insert("index".to_string(),
+                       Type {
+                           ty: TypeKind::List,
+                           description: "A comma-separated list of index names to search".to_string(),
+                           options: vec![],
+                           default: None,
+                       });
+
+            map.insert("type".to_string(),
+                       Type {
+                           ty: TypeKind::List,
+                           description: "A comma-separated list of document types to search".to_string(),
+                           options: vec![],
+                           default: None,
+                       });
+
+            map
+        },
+        params: {
+            let mut map = BTreeMap::new();
+
+            map.insert("analyzer".to_string(),
+                       Type {
+                           ty: TypeKind::String,
+                           description: "The analyzer to use for the query string".to_string(),
+                           options: vec![],
+                           default: None,
+                       });
+
+            map
+        },
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    mod path {
+        use ::parse::{Path, PathPart};
+
+        #[test]
+        fn parse_param_only() {
+            let path = Path("{index}".to_string());
+
+            let expected = vec![PathPart::Param("index")];
+
+            assert_eq!(expected, path.split());
+        }
+
+        #[test]
+        fn parse_param_first() {
+            let path = Path("{index}/{type}".to_string());
+
+            let expected = vec![PathPart::Param("index"), PathPart::Literal("/"), PathPart::Param("type")];
+
+            assert_eq!(expected, path.split());
+        }
+
+        #[test]
+        fn parse_params_and_literals() {
+            let path = Path("/{index}/part/{type}".to_string());
+
+            let expected = vec![PathPart::Literal("/"), PathPart::Param("index"), PathPart::Literal("/part/"), PathPart::Param("type")];
+
+            assert_eq!(expected, path.split());
+        }
+
+        #[test]
+        fn parse_literal_only() {
+            let path = Path("/part".to_string());
+
+            let expected = vec![PathPart::Literal("/part")];
+
+            assert_eq!(expected, path.split());
+        }
+
+        #[test]
+        fn get_params() {
+            let path = Path("/{index}/part/{type}".to_string());
+
+            let expected = vec!["index", "type"];
+
+            assert_eq!(expected, path.params());
+        }
+    }
+
+    mod url {
+        use ::parse::*;
+
+        #[test]
+        fn lookup_param_type_in_part() {
+            let url = get_url();
+
+            let expected = Type {
+                ty: TypeKind::List,
+                description: "A comma-separated list of index names to search".to_string(),
+                options: vec![],
+                default: None,
+            };
+
+            let ty = url.get_type("index").unwrap();
+
+            assert_eq!(expected, *ty);
+        }
+
+        #[test]
+        fn lookup_param_type_in_param() {
+            let url = get_url();
+
+            let expected = Type {
+                ty: TypeKind::String,
+                description: "The analyzer to use for the query string".to_string(),
+                options: vec![],
+                default: None,
+            };
+
+            let ty = url.get_type("analyzer").unwrap();
+
+            assert_eq!(expected, *ty);
+        }
+    }
+
+    mod ser {
+        use std::collections::BTreeMap;
+        use serde_json;
+        use serde_json::value::to_value;
+        use ::parse::*;
+
+        fn http_eq(expected: HttpMethod, ser: &'static str) {
+            assert_eq!(expected, serde_json::from_str::<HttpMethod>(ser).unwrap());
+        }
+
+        #[test]
+        fn deserialise_http_method() {
+            http_eq(HttpMethod::Head, "\"HEAD\"");
+            http_eq(HttpMethod::Get, "\"GET\"");
+            http_eq(HttpMethod::Put, "\"PUT\"");
+            http_eq(HttpMethod::Post, "\"POST\"");
+            http_eq(HttpMethod::Patch, "\"PATCH\"");
+            http_eq(HttpMethod::Delete, "\"DELETE\"");
+        }
+
+        fn type_kind_eq(expected: TypeKind, ser: &'static str) {
+            assert_eq!(expected, serde_json::from_str::<TypeKind>(ser).unwrap());
+        }
+
+        #[test]
+        fn deserialise_type_kind_method() {
+            type_kind_eq(TypeKind::List, "\"list\"");
+            type_kind_eq(TypeKind::Enum, "\"enum\"");
+            type_kind_eq(TypeKind::String, "\"string\"");
+            type_kind_eq(TypeKind::Text, "\"text\"");
+            type_kind_eq(TypeKind::Boolean, "\"boolean\"");
+            type_kind_eq(TypeKind::Number, "\"number\"");
+            type_kind_eq(TypeKind::Float, "\"float\"");
+            type_kind_eq(TypeKind::Integer, "\"integer\"");
+            type_kind_eq(TypeKind::Time, "\"time\"");
+            type_kind_eq(TypeKind::Duration, "\"duration\"");
+        }
+
+        #[test]
+        fn deserialise_part_as_type() {
+            let ser = json_str!({
+                "type" : "list",
+                "description" : "A comma-separated list of index names to search"
+            });
+
+            let expected = Type {
+                ty: TypeKind::List,
+                description: "A comma-separated list of index names to search".to_string(),
+                options: vec![],
+                default: None,
+            };
+
+            assert_eq!(expected, serde_json::from_str::<Type>(&ser).unwrap());
+        }
+
+        #[test]
+        fn deserialise_param_as_type() {
+            let ser = json_str!({
+                "type" : "enum",
+                "options" : [ "AND","OR" ],
+                "default" : "OR",
+                "description" : "The default operator for query string query (AND or OR)"
+            });
+
+            let expected = Type {
+                ty: TypeKind::Enum,
+                description: "The default operator for query string query (AND or OR)".to_string(),
+                options: vec![ to_value("AND"), to_value("OR") ],
+                default: Some(to_value("OR")),
+            };
+
+            assert_eq!(expected, serde_json::from_str::<Type>(&ser).unwrap());
+        }
+
+        #[test]
+        fn deserialise_body_some() {
+            let ser = json_str!({
+                "description": "The search definition using the Query DSL"
+            });
+
+            let expected = Some(Body { description: "The search definition using the Query DSL".to_string() });
+
+            assert_eq!(expected, serde_json::from_str::<Option<Body>>(&ser).unwrap());
+        }
+
+        #[test]
+        fn deserialise_body_none() {
+            let expected: Option<Body> = None;
+
+            assert_eq!(expected, serde_json::from_str::<Option<Body>>("null").unwrap());
+        }
+
+        #[test]
+        fn deserialise_url() {
+            let ser = json_str!({
+                "path": "/_search",
+                "paths": ["/_search", "/{index}/_search", "/{index}/{type}/_search"],
+                "parts": {
+                    "index": {
+                        "type" : "list",
+                        "description" : "A comma-separated list of index names to search"
+                    },
+                    "type": {
+                        "type" : "list",
+                        "description" : "A comma-separated list of document types to search"
+                    }
+                },
+                "params": {
+                    "analyzer": {
+                        "type" : "string",
+                        "description" : "The analyzer to use for the query string"
+                    }
+                }
+            });
+
+            let expected = Url {
+                path: Path("/_search".to_string()),
+                paths: vec![
+                    Path("/_search".to_string()),
+                    Path("/{index}/_search".to_string()),
+                    Path("/{index}/{type}/_search".to_string())
+                ],
+                parts: {
+                    let mut map = BTreeMap::new();
+
+                    map.insert("index".to_string(),
+                               Type {
+                                   ty: TypeKind::List,
+                                   description: "A comma-separated list of index names to search".to_string(),
+                                   options: vec![],
+                                   default: None,
+                               });
+
+                    map.insert("type".to_string(),
+                               Type {
+                                   ty: TypeKind::List,
+                                   description: "A comma-separated list of document types to search".to_string(),
+                                   options: vec![],
+                                   default: None,
+                               });
+
+                    map
+                },
+                params: {
+                    let mut map = BTreeMap::new();
+
+                    map.insert("analyzer".to_string(),
+                               Type {
+                                   ty: TypeKind::String,
+                                   description: "The analyzer to use for the query string".to_string(),
+                                   options: vec![],
+                                   default: None,
+                               });
+
+                    map
+                },
+            };
+
+            assert_eq!(expected, serde_json::from_str::<Url>(&ser).unwrap());
+        }
+
+        #[test]
+        fn deserialise_endpoint() {
+            let ser = json_str!({
+                "search": {
+                    "documentation": "http://www.elastic.co/guide/en/elasticsearch/reference/master/search-search.html",
+                    "methods": ["GET", "POST"],
+                    "url": {
+                        "path": "/_search",
+                        "paths": [],
+                        "parts": { },
+                        "params": { }
+                    },
+                    "body": {
+                        "description": "The search definition using the Query DSL"
+                    }
+                }
+            });
+
+            let mut expected = BTreeMap::new();
+            expected.insert("search".to_string(),
+                            Endpoint {
+                                documentation: "http://www.elastic.co/guide/en/elasticsearch/reference/master/search-search.html".to_string(),
+                                methods: vec![ HttpMethod::Get, HttpMethod::Post ],
+                                url: Url {
+                                    path: Path("/_search".to_string()),
+                                    paths: vec![],
+                                    parts: BTreeMap::new(),
+                                    params: BTreeMap::new(),
+                                },
+                                body: Some(Body { description: "The search definition using the Query DSL".to_string() }),
+                            });
+
+            let de: BTreeMap<String, Endpoint> = serde_json::from_str(&ser).unwrap();
+
+            assert_eq!(expected.endpoint(), de.endpoint());
+        }
+    }
+}

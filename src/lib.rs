@@ -8,10 +8,11 @@ mod tests {
 
     #[test]
     pub fn it_works() {
-        let req = SearchRequestParams::index_ty("test_index", "test_ty", vec![]);
+        let req =
+            SearchRequestParams::index_ty("test_index", "test_ty", "{'query': { 'match_all': {}}}");
 
-        fn http<'a, I: Into<HttpRequest<'a>>>(_: I) {}
+        fn do_something_with_request<'a, I: Into<HttpRequest<'a>>>(_: I) {}
 
-        http(&req);
+        do_something_with_request(&req);
     }
 }
