@@ -8,6 +8,59 @@ pub mod types {
     /// Type and declarations for the `Body` type.
     ///
     /// This type is an alias for a borrowed slice of bytes.
+    pub mod url {
+        use syn;
+        use quote;
+        use ::gen::helpers;
+
+        pub fn ty() -> syn::Ty {
+            helpers::ty_a("Url")
+        }
+
+        pub fn tokens() -> quote::Tokens {
+            let url = ty();
+
+            let from_str = quote!(
+                impl <'a> From<&'a str> for #url {
+                    fn from(value: &'a str) -> #url {
+                        Url(value.as_bytes().into())
+                    }
+                }
+            );
+
+            let from_string = quote!(
+                impl <'a> From<String> for #url {
+                    fn from(value: String) -> #url {
+                        Url(Cow::Owned(value.into()))
+                    }
+                }
+            );
+
+            let deref = quote!(
+                impl <'a> Deref for #url {
+                    type Target = Cow<'a, [u8]>;
+
+                    fn deref(&self) -> &Cow<'a, [u8]> {
+                        &self.0
+                    }
+                }
+            );
+
+            quote!(
+                pub struct #url(Cow<'a, [u8]>);
+
+                #from_str
+                
+                #from_string
+
+                #deref
+            )
+        }
+    }
+
+    /// Type and declarations for the `Body` type.
+    ///
+    /// This type is an alias for a borrowed slice of bytes.
     pub mod body {
         use syn;
         use quote;
@@ -82,7 +135,7 @@ pub mod types {
     ///
     /// This type is a simple, standard wrapper for a HTTP request.
     pub mod request {
-        use super::body;
+        use super::{ body, url };
         use syn;
         use ::gen::helpers;
 
@@ -103,7 +156,8 @@ pub mod types {
                     Get,
                     Post,
                     Put,
-                    Delete
+                    Delete,
+                    Patch
                 }
             ))
         }
@@ -111,13 +165,14 @@ pub mod types {
         pub fn method_item() -> syn::Item {
             let r_ty = req_ty();
             let m_ty = method_ty();
+            let u_ty = url::ty();
             let b_ty = body::ty();
 
             helpers::parse_item(quote!(
                 pub struct #m_ty {
-                    pub url: Cow<'a, str>,
+                    pub url: Cow<'a, #u_ty>,
                     pub method: #r_ty,
-                    pub body: Option<&'a #b_ty>
+                    pub body: Option< Cow<'a, #b_ty> >
                 }
             ))
         }
@@ -138,6 +193,7 @@ pub mod types {
                         Post,
                         Put,
                         Delete,
+                        Patch,
                     }
                 );
 
@@ -150,9 +206,9 @@ pub mod types {
 
                 let expected = quote!(
                     pub struct HttpRequest<'a> {
-                        pub url: Cow<'a, str>,
+                        pub url: Cow<'a, Url<'a> >,
                         pub method: HttpMethod,
-                        pub body: Option< Body<'a> >
+                        pub body: Option< Cow<'a, Body<'a> > >
                     }
                 );
 
@@ -288,7 +344,7 @@ pub mod helpers {
     }
 
     /// Generics with a standard `'a` lifetime.
-    pub fn generics() -> syn::Generics {
+    pub fn generics_a() -> syn::Generics {
         syn::Generics {
             lifetimes: vec![
                 syn::LifetimeDef {
@@ -297,6 +353,15 @@ pub mod helpers {
                     bounds: vec![]
                 }
             ],
+            ty_params: vec![],
+            where_clause: syn::WhereClause::none(),
+        }
+    }
+
+    /// Generics with no parameters.
+    pub fn generics() -> syn::Generics {
+        syn::Generics {
+            lifetimes: vec![],
             ty_params: vec![],
             where_clause: syn::WhereClause::none(),
         }
@@ -428,6 +493,19 @@ pub mod helpers {
     impl<T: GetPath> GetIdent for T {
         fn get_ident(&self) -> &syn::Ident {
             &self.get_path().segments[0].ident
+        }
+    }
+
+    pub trait HasLifetime {
+        fn has_lifetime(&self) -> bool;
+    }
+
+    impl <T: GetPath> HasLifetime for T {
+        fn has_lifetime(&self) -> bool {
+            match &self.get_path().segments[0].parameters {
+                &syn::PathParameters::AngleBracketed(ref params) => params.lifetimes.len() > 0,
+                _ => false
+            }
         }
     }
 

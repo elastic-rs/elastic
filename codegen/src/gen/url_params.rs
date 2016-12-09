@@ -86,16 +86,10 @@ impl UrlParamBuilder {
 
         let (ty, generics) = {
             if self.has_lifetime {
-                (ty_a(self.name.as_ref()), generics())
+                (ty_a(self.name.as_ref()), generics_a())
             }
             else {
-                let generics = syn::Generics {
-                    lifetimes: vec![],
-                    ty_params: vec![],
-                    where_clause: syn::WhereClause::none(),
-                };
-
-                (ty(self.name.as_ref()), generics)
+                (ty(self.name.as_ref()), generics())
             }
         };
 

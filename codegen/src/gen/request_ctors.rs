@@ -172,18 +172,16 @@ impl RequestParamsCtorBuilder {
             parameters: syn::PathParameters::none(),
         });
 
+        let params_expr = match ctor.params_fields.len() {
+            0 => syn::ExprKind::Path(None, params_ty).into(),
+            _ => syn::ExprKind::Call(Box::new(syn::ExprKind::Path(None, params_ty).into()),
+                                    ctor.params_fields.iter().map(|&(ref f, _)| Self::expr_into(f)).collect())
+                 .into()
+        };
+
         let mut fields = vec![syn::FieldValue {
-                                  ident: ident("url_params"),
-                                  expr: {
-                                      match ctor.params_fields.len() {
-                                          0 => syn::ExprKind::Path(None, params_ty).into(),
-                                          _ => {
-                                              syn::ExprKind::Call(Box::new(syn::ExprKind::Path(None, params_ty).into()),
-                                                                  ctor.params_fields.iter().map(|&(ref f, _)| Self::expr_into(f)).collect())
-                                                  .into()
-                                          }
-                                      }
-                                  },
+                                  ident: ident("url"),
+                                  expr: syn::ExprKind::MethodCall(ident("url"), vec![], vec![params_expr]).into(),
                                   is_shorthand: false,
                               }];
 
@@ -195,22 +193,13 @@ impl RequestParamsCtorBuilder {
             });
         }
 
-        fields.push(syn::FieldValue {
-            ident: ident("_a"),
-            expr: path("PhantomData").into_expr(),
-            is_shorthand: false,
-        });
-
         let stmt = syn::Stmt::Expr(Box::new(syn::ExprKind::Struct(req_ty, fields, None).into()));
 
         syn::Block { stmts: vec![stmt] }
     }
 
     fn expr_into(field: &syn::Ident) -> syn::Expr {
-        syn::ExprKind::MethodCall(ident("into"),
-                                  vec![],
-                                  vec![syn::ExprKind::Path(None, path(&field.to_string())).into()])
-            .into()
+        method("into", vec![field.to_string().as_ref()])
     }
 
     /// Build the function header for the constructor.
@@ -281,7 +270,7 @@ impl RequestParamsCtorBuilder {
             attrs: vec![],
             node: syn::ItemKind::Impl(syn::Unsafety::Normal,
                                       syn::ImplPolarity::Positive,
-                                      generics(),
+                                      generics_a(),
                                       None,
                                       Box::new(self.req_ty),
                                       ctors),
@@ -334,8 +323,7 @@ pub mod tests {
             impl <'a> RequestParams<'a> {
                 pub fn new() -> RequestParams<'a> {
                     RequestParams {
-                        url_params: UrlParams::None,
-                        _a: PhantomData
+                        url: UrlParams::None.url()
                     }
                 }
             }
@@ -356,8 +344,7 @@ pub mod tests {
 
         let body = quote!(
             RequestParams {
-                url_params: UrlParams::IndexTypeId(index.into(), ty.into(), id.into()),
-                _a: PhantomData
+                url: UrlParams::IndexTypeId(index.into(), ty.into(), id.into()).url()
             }
         );
 
@@ -382,9 +369,8 @@ pub mod tests {
             impl <'a> RequestParams<'a> {
                 pub fn new<IBody: Into<Body<'a> > >(body: IBody) -> RequestParams<'a> {
                     RequestParams {
-                        url_params: UrlParams::None,
-                        body: body.into(),
-                        _a: PhantomData
+                        url: UrlParams::None.url(),
+                        body: body.into()
                     }
                 }
             }
@@ -405,9 +391,8 @@ pub mod tests {
 
         let body = quote!(
             RequestParams {
-                url_params: UrlParams::IndexTypeId(index.into(), ty.into(), id.into()),
-                body: body.into(),
-                _a: PhantomData
+                url: UrlParams::IndexTypeId(index.into(), ty.into(), id.into()).url(),
+                body: body.into()
             }
         );
 
@@ -447,9 +432,8 @@ pub mod tests {
         let ctor_new = quote!(
             pub fn new < IBody : Into < Body < 'a > > > ( body : IBody ) -> IndicesExistsAliasRequestParams < 'a > { 
                 IndicesExistsAliasRequestParams { 
-                    url_params : IndicesExistsAliasUrlParams :: None,
-                    body: body.into(),
-                    _a: PhantomData
+                    url : IndicesExistsAliasUrlParams::None.url(),
+                    body: body.into()
                 }
             }
         );
@@ -457,9 +441,8 @@ pub mod tests {
         let ctor_index = quote!(
             pub fn index < IIndex : Into < Index < 'a > >, IBody : Into < Body < 'a > > > ( index : IIndex, body : IBody ) -> IndicesExistsAliasRequestParams < 'a > { 
                 IndicesExistsAliasRequestParams { 
-                    url_params : IndicesExistsAliasUrlParams :: Index ( index . into ( ) ),
-                    body: body.into(),
-                    _a: PhantomData
+                    url : IndicesExistsAliasUrlParams::Index(index.into()).url(),
+                    body: body.into()
                 }
             }
         );
@@ -467,9 +450,8 @@ pub mod tests {
         let ctor_index_ty = quote!(
             pub fn index_ty < IIndex : Into < Index < 'a > > , IType : Into < Type < 'a > >, IBody : Into < Body < 'a > > > ( index : IIndex , ty : IType , body: IBody ) -> IndicesExistsAliasRequestParams < 'a > { 
                 IndicesExistsAliasRequestParams { 
-                    url_params : IndicesExistsAliasUrlParams :: IndexType ( index . into ( ) , ty . into ( ) ),
-                    body: body.into(),
-                    _a: PhantomData
+                    url : IndicesExistsAliasUrlParams::IndexType(index.into(), ty.into()).url(),
+                    body: body.into()
                 }
             }
         );

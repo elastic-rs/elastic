@@ -1,9 +1,27 @@
 // This code is automatically generated
 //
-use std::marker::PhantomData;
 use std::ops::Deref;
 use std::borrow::Cow;
 
+#[derive(Debug, PartialEq, Clone)]
+pub struct Url<'a>(Cow<'a, [u8]>);
+impl<'a> From<&'a str> for Url<'a> {
+    fn from(value: &'a str) -> Url<'a> {
+        Url(value.as_bytes().into())
+    }
+}
+impl<'a> From<String> for Url<'a> {
+    fn from(value: String) -> Url<'a> {
+        Url(Cow::Owned(value.into()))
+    }
+}
+impl<'a> Deref for Url<'a> {
+    type Target = Cow<'a, [u8]>;
+    fn deref(&self) -> &Cow<'a, [u8]> {
+        &self.0
+    }
+}
+#[derive(Debug, PartialEq, Clone)]
 pub struct Body<'a>(Cow<'a, [u8]>);
 impl<'a> From<Vec<u8>> for Body<'a> {
     fn from(value: Vec<u8>) -> Body<'a> {
@@ -31,43 +49,44 @@ impl<'a> Deref for Body<'a> {
         &self.0
     }
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct HttpRequest<'a> {
-    pub url: Cow<'a, str>,
+    pub url: Cow<'a, Url<'a>>,
     pub method: HttpMethod,
-    pub body: Option<&'a Body<'a>>,
+    pub body: Option<Cow<'a, Body<'a>>>,
 }
+#[derive(Debug, PartialEq, Clone)]
 pub enum HttpMethod {
     Head,
     Get,
     Post,
     Put,
     Delete,
+    Patch,
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum IndicesCloseUrlParams<'a> {
     Index(Index<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct IndicesCloseRequestParams<'a> {
-    pub url_params: IndicesCloseUrlParams<'a>,
-    _a: PhantomData<&'a ()>,
+    pub url: Url<'a>,
 }
 impl<'a> IndicesCloseRequestParams<'a> {
     pub fn index<IIndex: Into<Index<'a>>>(index: IIndex) -> IndicesCloseRequestParams<'a> {
-        IndicesCloseRequestParams {
-            url_params: IndicesCloseUrlParams::Index(index.into()),
-            _a: PhantomData,
-        }
+        IndicesCloseRequestParams { url: IndicesCloseUrlParams::Index(index.into()).url() }
     }
 }
-impl<'a> IndicesCloseRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
+impl<'a> IndicesCloseUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
             IndicesCloseUrlParams::Index(ref index) => {
                 let mut url = String::with_capacity(8usize + index.len());
                 url.push_str("/");
                 url.push_str(index.as_ref());
                 url.push_str("/_close");
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -75,40 +94,49 @@ impl<'a> IndicesCloseRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IndicesCloseRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Post,
+            body: None,
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for IndicesCloseRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
             method: HttpMethod::Post,
             body: None,
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum DeleteScriptUrlParams<'a> {
     LangId(Lang<'a>, Id<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct DeleteScriptRequestParams<'a> {
-    pub url_params: DeleteScriptUrlParams<'a>,
-    _a: PhantomData<&'a ()>,
+    pub url: Url<'a>,
 }
 impl<'a> DeleteScriptRequestParams<'a> {
     pub fn lang_id<ILang: Into<Lang<'a>>, IId: Into<Id<'a>>>(lang: ILang,
                                                              id: IId)
                                                              -> DeleteScriptRequestParams<'a> {
         DeleteScriptRequestParams {
-            url_params: DeleteScriptUrlParams::LangId(lang.into(), id.into()),
-            _a: PhantomData,
+            url: DeleteScriptUrlParams::LangId(lang.into(), id.into()).url(),
         }
     }
 }
-impl<'a> DeleteScriptRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
+impl<'a> DeleteScriptUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
             DeleteScriptUrlParams::LangId(ref lang, ref id) => {
                 let mut url = String::with_capacity(11usize + lang.len() + id.len());
                 url.push_str("/_scripts/");
                 url.push_str(lang.as_ref());
                 url.push_str("/");
                 url.push_str(id.as_ref());
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -116,21 +144,31 @@ impl<'a> DeleteScriptRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a DeleteScriptRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
-            method: HttpMethod::Post,
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Delete,
+            body: None,
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for DeleteScriptRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Delete,
             body: None,
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum TermvectorsUrlParams<'a> {
     IndexType(Index<'a>, Type<'a>),
     IndexTypeId(Index<'a>, Type<'a>, Id<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct TermvectorsRequestParams<'a> {
-    pub url_params: TermvectorsUrlParams<'a>,
+    pub url: Url<'a>,
     pub body: Body<'a>,
-    _a: PhantomData<&'a ()>,
 }
 impl<'a> TermvectorsRequestParams<'a> {
     pub fn index_ty<IIndex: Into<Index<'a>>, IType: Into<Type<'a>>, IBody: Into<Body<'a>>>
@@ -139,9 +177,8 @@ impl<'a> TermvectorsRequestParams<'a> {
          body: IBody)
          -> TermvectorsRequestParams<'a> {
         TermvectorsRequestParams {
-            url_params: TermvectorsUrlParams::IndexType(index.into(), ty.into()),
+            url: TermvectorsUrlParams::IndexType(index.into(), ty.into()).url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
     pub fn index_ty_id<IIndex: Into<Index<'a>>,
@@ -154,15 +191,14 @@ impl<'a> TermvectorsRequestParams<'a> {
          body: IBody)
          -> TermvectorsRequestParams<'a> {
         TermvectorsRequestParams {
-            url_params: TermvectorsUrlParams::IndexTypeId(index.into(), ty.into(), id.into()),
+            url: TermvectorsUrlParams::IndexTypeId(index.into(), ty.into(), id.into()).url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
 }
-impl<'a> TermvectorsRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
+impl<'a> TermvectorsUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
             TermvectorsUrlParams::IndexType(ref index, ref ty) => {
                 let mut url = String::with_capacity(15usize + index.len() + ty.len());
                 url.push_str("/");
@@ -170,7 +206,7 @@ impl<'a> TermvectorsRequestParams<'a> {
                 url.push_str("/");
                 url.push_str(ty.as_ref());
                 url.push_str("/_termvectors");
-                Cow::Owned(url)
+                Url::from(url)
             }
             TermvectorsUrlParams::IndexTypeId(ref index, ref ty, ref id) => {
                 let mut url = String::with_capacity(16usize + index.len() + ty.len() + id.len());
@@ -181,7 +217,7 @@ impl<'a> TermvectorsRequestParams<'a> {
                 url.push_str("/");
                 url.push_str(id.as_ref());
                 url.push_str("/_termvectors");
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -189,50 +225,58 @@ impl<'a> TermvectorsRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a TermvectorsRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
+            url: Cow::Borrowed(&self.url),
             method: HttpMethod::Post,
-            body: Some(&self.body),
+            body: Some(Cow::Borrowed(&self.body)),
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for TermvectorsRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Post,
+            body: Some(Cow::Owned(self.body)),
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum FieldStatsUrlParams<'a> {
     None,
     Index(Index<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct FieldStatsRequestParams<'a> {
-    pub url_params: FieldStatsUrlParams<'a>,
+    pub url: Url<'a>,
     pub body: Body<'a>,
-    _a: PhantomData<&'a ()>,
 }
 impl<'a> FieldStatsRequestParams<'a> {
     pub fn new<IBody: Into<Body<'a>>>(body: IBody) -> FieldStatsRequestParams<'a> {
         FieldStatsRequestParams {
-            url_params: FieldStatsUrlParams::None,
+            url: FieldStatsUrlParams::None.url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
     pub fn index<IIndex: Into<Index<'a>>, IBody: Into<Body<'a>>>(index: IIndex,
                                                                  body: IBody)
                                                                  -> FieldStatsRequestParams<'a> {
         FieldStatsRequestParams {
-            url_params: FieldStatsUrlParams::Index(index.into()),
+            url: FieldStatsUrlParams::Index(index.into()).url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
 }
-impl<'a> FieldStatsRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
-            FieldStatsUrlParams::None => Cow::Borrowed("/_field_stats"),
+impl<'a> FieldStatsUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
+            FieldStatsUrlParams::None => Url::from("/_field_stats"),
             FieldStatsUrlParams::Index(ref index) => {
                 let mut url = String::with_capacity(14usize + index.len());
                 url.push_str("/");
                 url.push_str(index.as_ref());
                 url.push_str("/_field_stats");
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -240,46 +284,52 @@ impl<'a> FieldStatsRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a FieldStatsRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
+            url: Cow::Borrowed(&self.url),
             method: HttpMethod::Post,
-            body: Some(&self.body),
+            body: Some(Cow::Borrowed(&self.body)),
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for FieldStatsRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Post,
+            body: Some(Cow::Owned(self.body)),
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum CatThreadPoolUrlParams<'a> {
     None,
     ThreadPoolPatterns(ThreadPoolPatterns<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct CatThreadPoolRequestParams<'a> {
-    pub url_params: CatThreadPoolUrlParams<'a>,
-    _a: PhantomData<&'a ()>,
+    pub url: Url<'a>,
 }
 impl<'a> CatThreadPoolRequestParams<'a> {
     pub fn new() -> CatThreadPoolRequestParams<'a> {
-        CatThreadPoolRequestParams {
-            url_params: CatThreadPoolUrlParams::None,
-            _a: PhantomData,
-        }
+        CatThreadPoolRequestParams { url: CatThreadPoolUrlParams::None.url() }
     }
     pub fn thread_pool_patterns<IThreadPoolPatterns: Into<ThreadPoolPatterns<'a>>>
         (thread_pool_patterns: IThreadPoolPatterns)
          -> CatThreadPoolRequestParams<'a> {
         CatThreadPoolRequestParams {
-            url_params: CatThreadPoolUrlParams::ThreadPoolPatterns(thread_pool_patterns.into()),
-            _a: PhantomData,
+            url: CatThreadPoolUrlParams::ThreadPoolPatterns(thread_pool_patterns.into()).url(),
         }
     }
 }
-impl<'a> CatThreadPoolRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
-            CatThreadPoolUrlParams::None => Cow::Borrowed("/_cat/thread_pool"),
+impl<'a> CatThreadPoolUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
+            CatThreadPoolUrlParams::None => Url::from("/_cat/thread_pool"),
             CatThreadPoolUrlParams::ThreadPoolPatterns(ref thread_pool_patterns) => {
                 let mut url = String::with_capacity(18usize + thread_pool_patterns.len());
                 url.push_str("/_cat/thread_pool/");
                 url.push_str(thread_pool_patterns.as_ref());
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -287,19 +337,29 @@ impl<'a> CatThreadPoolRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a CatThreadPoolRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
-            method: HttpMethod::Post,
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Get,
+            body: None,
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for CatThreadPoolRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Get,
             body: None,
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum SnapshotDeleteUrlParams<'a> {
     RepositorySnapshot(Repository<'a>, Snapshot<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct SnapshotDeleteRequestParams<'a> {
-    pub url_params: SnapshotDeleteUrlParams<'a>,
-    _a: PhantomData<&'a ()>,
+    pub url: Url<'a>,
 }
 impl<'a> SnapshotDeleteRequestParams<'a> {
     pub fn repository_snapshot<IRepository: Into<Repository<'a>>, ISnapshot: Into<Snapshot<'a>>>
@@ -307,22 +367,21 @@ impl<'a> SnapshotDeleteRequestParams<'a> {
          snapshot: ISnapshot)
          -> SnapshotDeleteRequestParams<'a> {
         SnapshotDeleteRequestParams {
-            url_params: SnapshotDeleteUrlParams::RepositorySnapshot(repository.into(),
-                                                                    snapshot.into()),
-            _a: PhantomData,
+            url: SnapshotDeleteUrlParams::RepositorySnapshot(repository.into(), snapshot.into())
+                .url(),
         }
     }
 }
-impl<'a> SnapshotDeleteRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
+impl<'a> SnapshotDeleteUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
             SnapshotDeleteUrlParams::RepositorySnapshot(ref repository, ref snapshot) => {
                 let mut url = String::with_capacity(12usize + repository.len() + snapshot.len());
                 url.push_str("/_snapshot/");
                 url.push_str(repository.as_ref());
                 url.push_str("/");
                 url.push_str(snapshot.as_ref());
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -330,34 +389,40 @@ impl<'a> SnapshotDeleteRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a SnapshotDeleteRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
-            method: HttpMethod::Post,
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Delete,
+            body: None,
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for SnapshotDeleteRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Delete,
             body: None,
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum IndicesGetSettingsUrlParams<'a> {
     None,
     Index(Index<'a>),
     IndexName(Index<'a>, Name<'a>),
     Name(Name<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct IndicesGetSettingsRequestParams<'a> {
-    pub url_params: IndicesGetSettingsUrlParams<'a>,
-    _a: PhantomData<&'a ()>,
+    pub url: Url<'a>,
 }
 impl<'a> IndicesGetSettingsRequestParams<'a> {
     pub fn new() -> IndicesGetSettingsRequestParams<'a> {
-        IndicesGetSettingsRequestParams {
-            url_params: IndicesGetSettingsUrlParams::None,
-            _a: PhantomData,
-        }
+        IndicesGetSettingsRequestParams { url: IndicesGetSettingsUrlParams::None.url() }
     }
     pub fn index<IIndex: Into<Index<'a>>>(index: IIndex) -> IndicesGetSettingsRequestParams<'a> {
         IndicesGetSettingsRequestParams {
-            url_params: IndicesGetSettingsUrlParams::Index(index.into()),
-            _a: PhantomData,
+            url: IndicesGetSettingsUrlParams::Index(index.into()).url(),
         }
     }
     pub fn index_name<IIndex: Into<Index<'a>>, IName: Into<Name<'a>>>
@@ -365,27 +430,25 @@ impl<'a> IndicesGetSettingsRequestParams<'a> {
          name: IName)
          -> IndicesGetSettingsRequestParams<'a> {
         IndicesGetSettingsRequestParams {
-            url_params: IndicesGetSettingsUrlParams::IndexName(index.into(), name.into()),
-            _a: PhantomData,
+            url: IndicesGetSettingsUrlParams::IndexName(index.into(), name.into()).url(),
         }
     }
     pub fn name<IName: Into<Name<'a>>>(name: IName) -> IndicesGetSettingsRequestParams<'a> {
         IndicesGetSettingsRequestParams {
-            url_params: IndicesGetSettingsUrlParams::Name(name.into()),
-            _a: PhantomData,
+            url: IndicesGetSettingsUrlParams::Name(name.into()).url(),
         }
     }
 }
-impl<'a> IndicesGetSettingsRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
-            IndicesGetSettingsUrlParams::None => Cow::Borrowed("/_settings"),
+impl<'a> IndicesGetSettingsUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
+            IndicesGetSettingsUrlParams::None => Url::from("/_settings"),
             IndicesGetSettingsUrlParams::Index(ref index) => {
                 let mut url = String::with_capacity(11usize + index.len());
                 url.push_str("/");
                 url.push_str(index.as_ref());
                 url.push_str("/_settings");
-                Cow::Owned(url)
+                Url::from(url)
             }
             IndicesGetSettingsUrlParams::IndexName(ref index, ref name) => {
                 let mut url = String::with_capacity(12usize + index.len() + name.len());
@@ -393,13 +456,13 @@ impl<'a> IndicesGetSettingsRequestParams<'a> {
                 url.push_str(index.as_ref());
                 url.push_str("/_settings/");
                 url.push_str(name.as_ref());
-                Cow::Owned(url)
+                Url::from(url)
             }
             IndicesGetSettingsUrlParams::Name(ref name) => {
                 let mut url = String::with_capacity(11usize + name.len());
                 url.push_str("/_settings/");
                 url.push_str(name.as_ref());
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -407,20 +470,30 @@ impl<'a> IndicesGetSettingsRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IndicesGetSettingsRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
-            method: HttpMethod::Post,
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Get,
+            body: None,
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for IndicesGetSettingsRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Get,
             body: None,
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum CreateUrlParams<'a> {
     IndexTypeId(Index<'a>, Type<'a>, Id<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct CreateRequestParams<'a> {
-    pub url_params: CreateUrlParams<'a>,
+    pub url: Url<'a>,
     pub body: Body<'a>,
-    _a: PhantomData<&'a ()>,
 }
 impl<'a> CreateRequestParams<'a> {
     pub fn index_ty_id<IIndex: Into<Index<'a>>,
@@ -433,15 +506,14 @@ impl<'a> CreateRequestParams<'a> {
          body: IBody)
          -> CreateRequestParams<'a> {
         CreateRequestParams {
-            url_params: CreateUrlParams::IndexTypeId(index.into(), ty.into(), id.into()),
+            url: CreateUrlParams::IndexTypeId(index.into(), ty.into(), id.into()).url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
 }
-impl<'a> CreateRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
+impl<'a> CreateUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
             CreateUrlParams::IndexTypeId(ref index, ref ty, ref id) => {
                 let mut url = String::with_capacity(11usize + index.len() + ty.len() + id.len());
                 url.push_str("/");
@@ -451,7 +523,7 @@ impl<'a> CreateRequestParams<'a> {
                 url.push_str("/");
                 url.push_str(id.as_ref());
                 url.push_str("/_create");
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -459,38 +531,47 @@ impl<'a> CreateRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a CreateRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
+            url: Cow::Borrowed(&self.url),
             method: HttpMethod::Post,
-            body: Some(&self.body),
+            body: Some(Cow::Borrowed(&self.body)),
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for CreateRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Post,
+            body: Some(Cow::Owned(self.body)),
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum SnapshotDeleteRepositoryUrlParams<'a> {
     Repository(Repository<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct SnapshotDeleteRepositoryRequestParams<'a> {
-    pub url_params: SnapshotDeleteRepositoryUrlParams<'a>,
-    _a: PhantomData<&'a ()>,
+    pub url: Url<'a>,
 }
 impl<'a> SnapshotDeleteRepositoryRequestParams<'a> {
     pub fn repository<IRepository: Into<Repository<'a>>>
         (repository: IRepository)
          -> SnapshotDeleteRepositoryRequestParams<'a> {
         SnapshotDeleteRepositoryRequestParams {
-            url_params: SnapshotDeleteRepositoryUrlParams::Repository(repository.into()),
-            _a: PhantomData,
+            url: SnapshotDeleteRepositoryUrlParams::Repository(repository.into()).url(),
         }
     }
 }
-impl<'a> SnapshotDeleteRepositoryRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
+impl<'a> SnapshotDeleteRepositoryUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
             SnapshotDeleteRepositoryUrlParams::Repository(ref repository) => {
                 let mut url = String::with_capacity(11usize + repository.len());
                 url.push_str("/_snapshot/");
                 url.push_str(repository.as_ref());
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -498,54 +579,73 @@ impl<'a> SnapshotDeleteRepositoryRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a SnapshotDeleteRepositoryRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
-            method: HttpMethod::Post,
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Delete,
+            body: None,
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for SnapshotDeleteRepositoryRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Delete,
             body: None,
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum ClusterAllocationExplainUrlParams {
     None,
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct ClusterAllocationExplainRequestParams<'a> {
-    pub url_params: ClusterAllocationExplainUrlParams,
+    pub url: Url<'a>,
     pub body: Body<'a>,
-    _a: PhantomData<&'a ()>,
 }
 impl<'a> ClusterAllocationExplainRequestParams<'a> {
     pub fn new<IBody: Into<Body<'a>>>(body: IBody) -> ClusterAllocationExplainRequestParams<'a> {
         ClusterAllocationExplainRequestParams {
-            url_params: ClusterAllocationExplainUrlParams::None,
+            url: ClusterAllocationExplainUrlParams::None.url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
 }
-impl<'a> ClusterAllocationExplainRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
-            ClusterAllocationExplainUrlParams::None => Cow::Borrowed("/_cluster/allocation/explain"),
+impl ClusterAllocationExplainUrlParams {
+    pub fn url<'a>(self) -> Url<'a> {
+        match self {
+            ClusterAllocationExplainUrlParams::None => Url::from("/_cluster/allocation/explain"),
         }
     }
 }
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a ClusterAllocationExplainRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
+            url: Cow::Borrowed(&self.url),
             method: HttpMethod::Post,
-            body: Some(&self.body),
+            body: Some(Cow::Borrowed(&self.body)),
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for ClusterAllocationExplainRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Post,
+            body: Some(Cow::Owned(self.body)),
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum IndicesPutTemplateUrlParams<'a> {
     Name(Name<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct IndicesPutTemplateRequestParams<'a> {
-    pub url_params: IndicesPutTemplateUrlParams<'a>,
+    pub url: Url<'a>,
     pub body: Body<'a>,
-    _a: PhantomData<&'a ()>,
 }
 impl<'a> IndicesPutTemplateRequestParams<'a> {
     pub fn name<IName: Into<Name<'a>>, IBody: Into<Body<'a>>>
@@ -553,20 +653,19 @@ impl<'a> IndicesPutTemplateRequestParams<'a> {
          body: IBody)
          -> IndicesPutTemplateRequestParams<'a> {
         IndicesPutTemplateRequestParams {
-            url_params: IndicesPutTemplateUrlParams::Name(name.into()),
+            url: IndicesPutTemplateUrlParams::Name(name.into()).url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
 }
-impl<'a> IndicesPutTemplateRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
+impl<'a> IndicesPutTemplateUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
             IndicesPutTemplateUrlParams::Name(ref name) => {
                 let mut url = String::with_capacity(11usize + name.len());
                 url.push_str("/_template/");
                 url.push_str(name.as_ref());
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -574,44 +673,50 @@ impl<'a> IndicesPutTemplateRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IndicesPutTemplateRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
+            url: Cow::Borrowed(&self.url),
             method: HttpMethod::Post,
-            body: Some(&self.body),
+            body: Some(Cow::Borrowed(&self.body)),
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for IndicesPutTemplateRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Post,
+            body: Some(Cow::Owned(self.body)),
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum IndicesGetTemplateUrlParams<'a> {
     None,
     Name(Name<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct IndicesGetTemplateRequestParams<'a> {
-    pub url_params: IndicesGetTemplateUrlParams<'a>,
-    _a: PhantomData<&'a ()>,
+    pub url: Url<'a>,
 }
 impl<'a> IndicesGetTemplateRequestParams<'a> {
     pub fn new() -> IndicesGetTemplateRequestParams<'a> {
-        IndicesGetTemplateRequestParams {
-            url_params: IndicesGetTemplateUrlParams::None,
-            _a: PhantomData,
-        }
+        IndicesGetTemplateRequestParams { url: IndicesGetTemplateUrlParams::None.url() }
     }
     pub fn name<IName: Into<Name<'a>>>(name: IName) -> IndicesGetTemplateRequestParams<'a> {
         IndicesGetTemplateRequestParams {
-            url_params: IndicesGetTemplateUrlParams::Name(name.into()),
-            _a: PhantomData,
+            url: IndicesGetTemplateUrlParams::Name(name.into()).url(),
         }
     }
 }
-impl<'a> IndicesGetTemplateRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
-            IndicesGetTemplateUrlParams::None => Cow::Borrowed("/_template"),
+impl<'a> IndicesGetTemplateUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
+            IndicesGetTemplateUrlParams::None => Url::from("/_template"),
             IndicesGetTemplateUrlParams::Name(ref name) => {
                 let mut url = String::with_capacity(11usize + name.len());
                 url.push_str("/_template/");
                 url.push_str(name.as_ref());
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -619,54 +724,57 @@ impl<'a> IndicesGetTemplateRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IndicesGetTemplateRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
-            method: HttpMethod::Post,
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Get,
+            body: None,
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for IndicesGetTemplateRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Get,
             body: None,
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum ClusterStateUrlParams<'a> {
     None,
     Metric(Metric<'a>),
     MetricIndex(Metric<'a>, Index<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct ClusterStateRequestParams<'a> {
-    pub url_params: ClusterStateUrlParams<'a>,
-    _a: PhantomData<&'a ()>,
+    pub url: Url<'a>,
 }
 impl<'a> ClusterStateRequestParams<'a> {
     pub fn new() -> ClusterStateRequestParams<'a> {
-        ClusterStateRequestParams {
-            url_params: ClusterStateUrlParams::None,
-            _a: PhantomData,
-        }
+        ClusterStateRequestParams { url: ClusterStateUrlParams::None.url() }
     }
     pub fn metric<IMetric: Into<Metric<'a>>>(metric: IMetric) -> ClusterStateRequestParams<'a> {
-        ClusterStateRequestParams {
-            url_params: ClusterStateUrlParams::Metric(metric.into()),
-            _a: PhantomData,
-        }
+        ClusterStateRequestParams { url: ClusterStateUrlParams::Metric(metric.into()).url() }
     }
     pub fn metric_index<IMetric: Into<Metric<'a>>, IIndex: Into<Index<'a>>>
         (metric: IMetric,
          index: IIndex)
          -> ClusterStateRequestParams<'a> {
         ClusterStateRequestParams {
-            url_params: ClusterStateUrlParams::MetricIndex(metric.into(), index.into()),
-            _a: PhantomData,
+            url: ClusterStateUrlParams::MetricIndex(metric.into(), index.into()).url(),
         }
     }
 }
-impl<'a> ClusterStateRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
-            ClusterStateUrlParams::None => Cow::Borrowed("/_cluster/state"),
+impl<'a> ClusterStateUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
+            ClusterStateUrlParams::None => Url::from("/_cluster/state"),
             ClusterStateUrlParams::Metric(ref metric) => {
                 let mut url = String::with_capacity(16usize + metric.len());
                 url.push_str("/_cluster/state/");
                 url.push_str(metric.as_ref());
-                Cow::Owned(url)
+                Url::from(url)
             }
             ClusterStateUrlParams::MetricIndex(ref metric, ref index) => {
                 let mut url = String::with_capacity(17usize + metric.len() + index.len());
@@ -674,7 +782,7 @@ impl<'a> ClusterStateRequestParams<'a> {
                 url.push_str(metric.as_ref());
                 url.push_str("/");
                 url.push_str(index.as_ref());
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -682,29 +790,38 @@ impl<'a> ClusterStateRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a ClusterStateRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
-            method: HttpMethod::Post,
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Get,
+            body: None,
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for ClusterStateRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Get,
             body: None,
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum MsearchTemplateUrlParams<'a> {
     None,
     Index(Index<'a>),
     IndexType(Index<'a>, Type<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct MsearchTemplateRequestParams<'a> {
-    pub url_params: MsearchTemplateUrlParams<'a>,
+    pub url: Url<'a>,
     pub body: Body<'a>,
-    _a: PhantomData<&'a ()>,
 }
 impl<'a> MsearchTemplateRequestParams<'a> {
     pub fn new<IBody: Into<Body<'a>>>(body: IBody) -> MsearchTemplateRequestParams<'a> {
         MsearchTemplateRequestParams {
-            url_params: MsearchTemplateUrlParams::None,
+            url: MsearchTemplateUrlParams::None.url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
     pub fn index<IIndex: Into<Index<'a>>, IBody: Into<Body<'a>>>
@@ -712,9 +829,8 @@ impl<'a> MsearchTemplateRequestParams<'a> {
          body: IBody)
          -> MsearchTemplateRequestParams<'a> {
         MsearchTemplateRequestParams {
-            url_params: MsearchTemplateUrlParams::Index(index.into()),
+            url: MsearchTemplateUrlParams::Index(index.into()).url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
     pub fn index_ty<IIndex: Into<Index<'a>>, IType: Into<Type<'a>>, IBody: Into<Body<'a>>>
@@ -723,22 +839,21 @@ impl<'a> MsearchTemplateRequestParams<'a> {
          body: IBody)
          -> MsearchTemplateRequestParams<'a> {
         MsearchTemplateRequestParams {
-            url_params: MsearchTemplateUrlParams::IndexType(index.into(), ty.into()),
+            url: MsearchTemplateUrlParams::IndexType(index.into(), ty.into()).url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
 }
-impl<'a> MsearchTemplateRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
-            MsearchTemplateUrlParams::None => Cow::Borrowed("/_msearch/template"),
+impl<'a> MsearchTemplateUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
+            MsearchTemplateUrlParams::None => Url::from("/_msearch/template"),
             MsearchTemplateUrlParams::Index(ref index) => {
                 let mut url = String::with_capacity(19usize + index.len());
                 url.push_str("/");
                 url.push_str(index.as_ref());
                 url.push_str("/_msearch/template");
-                Cow::Owned(url)
+                Url::from(url)
             }
             MsearchTemplateUrlParams::IndexType(ref index, ref ty) => {
                 let mut url = String::with_capacity(20usize + index.len() + ty.len());
@@ -747,7 +862,7 @@ impl<'a> MsearchTemplateRequestParams<'a> {
                 url.push_str("/");
                 url.push_str(ty.as_ref());
                 url.push_str("/_msearch/template");
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -755,38 +870,46 @@ impl<'a> MsearchTemplateRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a MsearchTemplateRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
+            url: Cow::Borrowed(&self.url),
             method: HttpMethod::Post,
-            body: Some(&self.body),
+            body: Some(Cow::Borrowed(&self.body)),
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for MsearchTemplateRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Post,
+            body: Some(Cow::Owned(self.body)),
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum BulkUrlParams<'a> {
     None,
     Index(Index<'a>),
     IndexType(Index<'a>, Type<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct BulkRequestParams<'a> {
-    pub url_params: BulkUrlParams<'a>,
+    pub url: Url<'a>,
     pub body: Body<'a>,
-    _a: PhantomData<&'a ()>,
 }
 impl<'a> BulkRequestParams<'a> {
     pub fn new<IBody: Into<Body<'a>>>(body: IBody) -> BulkRequestParams<'a> {
         BulkRequestParams {
-            url_params: BulkUrlParams::None,
+            url: BulkUrlParams::None.url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
     pub fn index<IIndex: Into<Index<'a>>, IBody: Into<Body<'a>>>(index: IIndex,
                                                                  body: IBody)
                                                                  -> BulkRequestParams<'a> {
         BulkRequestParams {
-            url_params: BulkUrlParams::Index(index.into()),
+            url: BulkUrlParams::Index(index.into()).url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
     pub fn index_ty<IIndex: Into<Index<'a>>, IType: Into<Type<'a>>, IBody: Into<Body<'a>>>
@@ -795,22 +918,21 @@ impl<'a> BulkRequestParams<'a> {
          body: IBody)
          -> BulkRequestParams<'a> {
         BulkRequestParams {
-            url_params: BulkUrlParams::IndexType(index.into(), ty.into()),
+            url: BulkUrlParams::IndexType(index.into(), ty.into()).url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
 }
-impl<'a> BulkRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
-            BulkUrlParams::None => Cow::Borrowed("/_bulk"),
+impl<'a> BulkUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
+            BulkUrlParams::None => Url::from("/_bulk"),
             BulkUrlParams::Index(ref index) => {
                 let mut url = String::with_capacity(7usize + index.len());
                 url.push_str("/");
                 url.push_str(index.as_ref());
                 url.push_str("/_bulk");
-                Cow::Owned(url)
+                Url::from(url)
             }
             BulkUrlParams::IndexType(ref index, ref ty) => {
                 let mut url = String::with_capacity(8usize + index.len() + ty.len());
@@ -819,7 +941,7 @@ impl<'a> BulkRequestParams<'a> {
                 url.push_str("/");
                 url.push_str(ty.as_ref());
                 url.push_str("/_bulk");
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -827,20 +949,30 @@ impl<'a> BulkRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a BulkRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
+            url: Cow::Borrowed(&self.url),
             method: HttpMethod::Post,
-            body: Some(&self.body),
+            body: Some(Cow::Borrowed(&self.body)),
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for BulkRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Post,
+            body: Some(Cow::Owned(self.body)),
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum ExplainUrlParams<'a> {
     IndexTypeId(Index<'a>, Type<'a>, Id<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct ExplainRequestParams<'a> {
-    pub url_params: ExplainUrlParams<'a>,
+    pub url: Url<'a>,
     pub body: Body<'a>,
-    _a: PhantomData<&'a ()>,
 }
 impl<'a> ExplainRequestParams<'a> {
     pub fn index_ty_id<IIndex: Into<Index<'a>>,
@@ -853,15 +985,14 @@ impl<'a> ExplainRequestParams<'a> {
          body: IBody)
          -> ExplainRequestParams<'a> {
         ExplainRequestParams {
-            url_params: ExplainUrlParams::IndexTypeId(index.into(), ty.into(), id.into()),
+            url: ExplainUrlParams::IndexTypeId(index.into(), ty.into(), id.into()).url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
 }
-impl<'a> ExplainRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
+impl<'a> ExplainUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
             ExplainUrlParams::IndexTypeId(ref index, ref ty, ref id) => {
                 let mut url = String::with_capacity(12usize + index.len() + ty.len() + id.len());
                 url.push_str("/");
@@ -871,7 +1002,7 @@ impl<'a> ExplainRequestParams<'a> {
                 url.push_str("/");
                 url.push_str(id.as_ref());
                 url.push_str("/_explain");
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -879,50 +1010,58 @@ impl<'a> ExplainRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a ExplainRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
+            url: Cow::Borrowed(&self.url),
             method: HttpMethod::Post,
-            body: Some(&self.body),
+            body: Some(Cow::Borrowed(&self.body)),
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for ExplainRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Post,
+            body: Some(Cow::Owned(self.body)),
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum SuggestUrlParams<'a> {
     None,
     Index(Index<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct SuggestRequestParams<'a> {
-    pub url_params: SuggestUrlParams<'a>,
+    pub url: Url<'a>,
     pub body: Body<'a>,
-    _a: PhantomData<&'a ()>,
 }
 impl<'a> SuggestRequestParams<'a> {
     pub fn new<IBody: Into<Body<'a>>>(body: IBody) -> SuggestRequestParams<'a> {
         SuggestRequestParams {
-            url_params: SuggestUrlParams::None,
+            url: SuggestUrlParams::None.url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
     pub fn index<IIndex: Into<Index<'a>>, IBody: Into<Body<'a>>>(index: IIndex,
                                                                  body: IBody)
                                                                  -> SuggestRequestParams<'a> {
         SuggestRequestParams {
-            url_params: SuggestUrlParams::Index(index.into()),
+            url: SuggestUrlParams::Index(index.into()).url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
 }
-impl<'a> SuggestRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
-            SuggestUrlParams::None => Cow::Borrowed("/_suggest"),
+impl<'a> SuggestUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
+            SuggestUrlParams::None => Url::from("/_suggest"),
             SuggestUrlParams::Index(ref index) => {
                 let mut url = String::with_capacity(10usize + index.len());
                 url.push_str("/");
                 url.push_str(index.as_ref());
                 url.push_str("/_suggest");
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -930,46 +1069,52 @@ impl<'a> SuggestRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a SuggestRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
+            url: Cow::Borrowed(&self.url),
             method: HttpMethod::Post,
-            body: Some(&self.body),
+            body: Some(Cow::Borrowed(&self.body)),
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for SuggestRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Post,
+            body: Some(Cow::Owned(self.body)),
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum SnapshotGetRepositoryUrlParams<'a> {
     None,
     Repository(Repository<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct SnapshotGetRepositoryRequestParams<'a> {
-    pub url_params: SnapshotGetRepositoryUrlParams<'a>,
-    _a: PhantomData<&'a ()>,
+    pub url: Url<'a>,
 }
 impl<'a> SnapshotGetRepositoryRequestParams<'a> {
     pub fn new() -> SnapshotGetRepositoryRequestParams<'a> {
-        SnapshotGetRepositoryRequestParams {
-            url_params: SnapshotGetRepositoryUrlParams::None,
-            _a: PhantomData,
-        }
+        SnapshotGetRepositoryRequestParams { url: SnapshotGetRepositoryUrlParams::None.url() }
     }
     pub fn repository<IRepository: Into<Repository<'a>>>
         (repository: IRepository)
          -> SnapshotGetRepositoryRequestParams<'a> {
         SnapshotGetRepositoryRequestParams {
-            url_params: SnapshotGetRepositoryUrlParams::Repository(repository.into()),
-            _a: PhantomData,
+            url: SnapshotGetRepositoryUrlParams::Repository(repository.into()).url(),
         }
     }
 }
-impl<'a> SnapshotGetRepositoryRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
-            SnapshotGetRepositoryUrlParams::None => Cow::Borrowed("/_snapshot"),
+impl<'a> SnapshotGetRepositoryUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
+            SnapshotGetRepositoryUrlParams::None => Url::from("/_snapshot"),
             SnapshotGetRepositoryUrlParams::Repository(ref repository) => {
                 let mut url = String::with_capacity(11usize + repository.len());
                 url.push_str("/_snapshot/");
                 url.push_str(repository.as_ref());
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -977,28 +1122,37 @@ impl<'a> SnapshotGetRepositoryRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a SnapshotGetRepositoryRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
-            method: HttpMethod::Post,
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Get,
+            body: None,
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for SnapshotGetRepositoryRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Get,
             body: None,
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum RenderSearchTemplateUrlParams<'a> {
     None,
     Id(Id<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct RenderSearchTemplateRequestParams<'a> {
-    pub url_params: RenderSearchTemplateUrlParams<'a>,
+    pub url: Url<'a>,
     pub body: Body<'a>,
-    _a: PhantomData<&'a ()>,
 }
 impl<'a> RenderSearchTemplateRequestParams<'a> {
     pub fn new<IBody: Into<Body<'a>>>(body: IBody) -> RenderSearchTemplateRequestParams<'a> {
         RenderSearchTemplateRequestParams {
-            url_params: RenderSearchTemplateUrlParams::None,
+            url: RenderSearchTemplateUrlParams::None.url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
     pub fn id<IId: Into<Id<'a>>, IBody: Into<Body<'a>>>
@@ -1006,21 +1160,20 @@ impl<'a> RenderSearchTemplateRequestParams<'a> {
          body: IBody)
          -> RenderSearchTemplateRequestParams<'a> {
         RenderSearchTemplateRequestParams {
-            url_params: RenderSearchTemplateUrlParams::Id(id.into()),
+            url: RenderSearchTemplateUrlParams::Id(id.into()).url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
 }
-impl<'a> RenderSearchTemplateRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
-            RenderSearchTemplateUrlParams::None => Cow::Borrowed("/_render/template"),
+impl<'a> RenderSearchTemplateUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
+            RenderSearchTemplateUrlParams::None => Url::from("/_render/template"),
             RenderSearchTemplateUrlParams::Id(ref id) => {
                 let mut url = String::with_capacity(18usize + id.len());
                 url.push_str("/_render/template/");
                 url.push_str(id.as_ref());
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -1028,62 +1181,62 @@ impl<'a> RenderSearchTemplateRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a RenderSearchTemplateRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
+            url: Cow::Borrowed(&self.url),
             method: HttpMethod::Post,
-            body: Some(&self.body),
+            body: Some(Cow::Borrowed(&self.body)),
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for RenderSearchTemplateRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Post,
+            body: Some(Cow::Owned(self.body)),
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum IndicesStatsUrlParams<'a> {
     None,
     Index(Index<'a>),
     IndexMetric(Index<'a>, Metric<'a>),
     Metric(Metric<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct IndicesStatsRequestParams<'a> {
-    pub url_params: IndicesStatsUrlParams<'a>,
-    _a: PhantomData<&'a ()>,
+    pub url: Url<'a>,
 }
 impl<'a> IndicesStatsRequestParams<'a> {
     pub fn new() -> IndicesStatsRequestParams<'a> {
-        IndicesStatsRequestParams {
-            url_params: IndicesStatsUrlParams::None,
-            _a: PhantomData,
-        }
+        IndicesStatsRequestParams { url: IndicesStatsUrlParams::None.url() }
     }
     pub fn index<IIndex: Into<Index<'a>>>(index: IIndex) -> IndicesStatsRequestParams<'a> {
-        IndicesStatsRequestParams {
-            url_params: IndicesStatsUrlParams::Index(index.into()),
-            _a: PhantomData,
-        }
+        IndicesStatsRequestParams { url: IndicesStatsUrlParams::Index(index.into()).url() }
     }
     pub fn index_metric<IIndex: Into<Index<'a>>, IMetric: Into<Metric<'a>>>
         (index: IIndex,
          metric: IMetric)
          -> IndicesStatsRequestParams<'a> {
         IndicesStatsRequestParams {
-            url_params: IndicesStatsUrlParams::IndexMetric(index.into(), metric.into()),
-            _a: PhantomData,
+            url: IndicesStatsUrlParams::IndexMetric(index.into(), metric.into()).url(),
         }
     }
     pub fn metric<IMetric: Into<Metric<'a>>>(metric: IMetric) -> IndicesStatsRequestParams<'a> {
-        IndicesStatsRequestParams {
-            url_params: IndicesStatsUrlParams::Metric(metric.into()),
-            _a: PhantomData,
-        }
+        IndicesStatsRequestParams { url: IndicesStatsUrlParams::Metric(metric.into()).url() }
     }
 }
-impl<'a> IndicesStatsRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
-            IndicesStatsUrlParams::None => Cow::Borrowed("/_stats"),
+impl<'a> IndicesStatsUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
+            IndicesStatsUrlParams::None => Url::from("/_stats"),
             IndicesStatsUrlParams::Index(ref index) => {
                 let mut url = String::with_capacity(8usize + index.len());
                 url.push_str("/");
                 url.push_str(index.as_ref());
                 url.push_str("/_stats");
-                Cow::Owned(url)
+                Url::from(url)
             }
             IndicesStatsUrlParams::IndexMetric(ref index, ref metric) => {
                 let mut url = String::with_capacity(9usize + index.len() + metric.len());
@@ -1091,13 +1244,13 @@ impl<'a> IndicesStatsRequestParams<'a> {
                 url.push_str(index.as_ref());
                 url.push_str("/_stats/");
                 url.push_str(metric.as_ref());
-                Cow::Owned(url)
+                Url::from(url)
             }
             IndicesStatsUrlParams::Metric(ref metric) => {
                 let mut url = String::with_capacity(8usize + metric.len());
                 url.push_str("/_stats/");
                 url.push_str(metric.as_ref());
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -1105,77 +1258,90 @@ impl<'a> IndicesStatsRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IndicesStatsRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
-            method: HttpMethod::Post,
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Get,
+            body: None,
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for IndicesStatsRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Get,
             body: None,
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum CatRepositoriesUrlParams {
     None,
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct CatRepositoriesRequestParams<'a> {
-    pub url_params: CatRepositoriesUrlParams,
-    _a: PhantomData<&'a ()>,
+    pub url: Url<'a>,
 }
 impl<'a> CatRepositoriesRequestParams<'a> {
     pub fn new() -> CatRepositoriesRequestParams<'a> {
-        CatRepositoriesRequestParams {
-            url_params: CatRepositoriesUrlParams::None,
-            _a: PhantomData,
-        }
+        CatRepositoriesRequestParams { url: CatRepositoriesUrlParams::None.url() }
     }
 }
-impl<'a> CatRepositoriesRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
-            CatRepositoriesUrlParams::None => Cow::Borrowed("/_cat/repositories"),
+impl CatRepositoriesUrlParams {
+    pub fn url<'a>(self) -> Url<'a> {
+        match self {
+            CatRepositoriesUrlParams::None => Url::from("/_cat/repositories"),
         }
     }
 }
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a CatRepositoriesRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
-            method: HttpMethod::Post,
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Get,
+            body: None,
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for CatRepositoriesRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Get,
             body: None,
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum IndicesForcemergeUrlParams<'a> {
     None,
     Index(Index<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct IndicesForcemergeRequestParams<'a> {
-    pub url_params: IndicesForcemergeUrlParams<'a>,
-    _a: PhantomData<&'a ()>,
+    pub url: Url<'a>,
 }
 impl<'a> IndicesForcemergeRequestParams<'a> {
     pub fn new() -> IndicesForcemergeRequestParams<'a> {
-        IndicesForcemergeRequestParams {
-            url_params: IndicesForcemergeUrlParams::None,
-            _a: PhantomData,
-        }
+        IndicesForcemergeRequestParams { url: IndicesForcemergeUrlParams::None.url() }
     }
     pub fn index<IIndex: Into<Index<'a>>>(index: IIndex) -> IndicesForcemergeRequestParams<'a> {
         IndicesForcemergeRequestParams {
-            url_params: IndicesForcemergeUrlParams::Index(index.into()),
-            _a: PhantomData,
+            url: IndicesForcemergeUrlParams::Index(index.into()).url(),
         }
     }
 }
-impl<'a> IndicesForcemergeRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
-            IndicesForcemergeUrlParams::None => Cow::Borrowed("/_forcemerge"),
+impl<'a> IndicesForcemergeUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
+            IndicesForcemergeUrlParams::None => Url::from("/_forcemerge"),
             IndicesForcemergeUrlParams::Index(ref index) => {
                 let mut url = String::with_capacity(13usize + index.len());
                 url.push_str("/");
                 url.push_str(index.as_ref());
                 url.push_str("/_forcemerge");
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -1183,68 +1349,82 @@ impl<'a> IndicesForcemergeRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IndicesForcemergeRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Post,
+            body: None,
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for IndicesForcemergeRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
             method: HttpMethod::Post,
             body: None,
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum PingUrlParams {
     None,
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct PingRequestParams<'a> {
-    pub url_params: PingUrlParams,
-    _a: PhantomData<&'a ()>,
+    pub url: Url<'a>,
 }
 impl<'a> PingRequestParams<'a> {
     pub fn new() -> PingRequestParams<'a> {
-        PingRequestParams {
-            url_params: PingUrlParams::None,
-            _a: PhantomData,
-        }
+        PingRequestParams { url: PingUrlParams::None.url() }
     }
 }
-impl<'a> PingRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
-            PingUrlParams::None => Cow::Borrowed("/"),
+impl PingUrlParams {
+    pub fn url<'a>(self) -> Url<'a> {
+        match self {
+            PingUrlParams::None => Url::from("/"),
         }
     }
 }
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a PingRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
-            method: HttpMethod::Post,
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Head,
+            body: None,
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for PingRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Head,
             body: None,
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum TasksGetUrlParams<'a> {
     TaskId(TaskId<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct TasksGetRequestParams<'a> {
-    pub url_params: TasksGetUrlParams<'a>,
-    _a: PhantomData<&'a ()>,
+    pub url: Url<'a>,
 }
 impl<'a> TasksGetRequestParams<'a> {
     pub fn task_id<ITaskId: Into<TaskId<'a>>>(task_id: ITaskId) -> TasksGetRequestParams<'a> {
-        TasksGetRequestParams {
-            url_params: TasksGetUrlParams::TaskId(task_id.into()),
-            _a: PhantomData,
-        }
+        TasksGetRequestParams { url: TasksGetUrlParams::TaskId(task_id.into()).url() }
     }
 }
-impl<'a> TasksGetRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
+impl<'a> TasksGetUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
             TasksGetUrlParams::TaskId(ref task_id) => {
                 let mut url = String::with_capacity(8usize + task_id.len());
                 url.push_str("/_tasks/");
                 url.push_str(task_id.as_ref());
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -1252,36 +1432,43 @@ impl<'a> TasksGetRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a TasksGetRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
-            method: HttpMethod::Post,
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Get,
+            body: None,
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for TasksGetRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Get,
             body: None,
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum IndicesExistsUrlParams<'a> {
     Index(Index<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct IndicesExistsRequestParams<'a> {
-    pub url_params: IndicesExistsUrlParams<'a>,
-    _a: PhantomData<&'a ()>,
+    pub url: Url<'a>,
 }
 impl<'a> IndicesExistsRequestParams<'a> {
     pub fn index<IIndex: Into<Index<'a>>>(index: IIndex) -> IndicesExistsRequestParams<'a> {
-        IndicesExistsRequestParams {
-            url_params: IndicesExistsUrlParams::Index(index.into()),
-            _a: PhantomData,
-        }
+        IndicesExistsRequestParams { url: IndicesExistsUrlParams::Index(index.into()).url() }
     }
 }
-impl<'a> IndicesExistsRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
+impl<'a> IndicesExistsUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
             IndicesExistsUrlParams::Index(ref index) => {
                 let mut url = String::with_capacity(1usize + index.len());
                 url.push_str("/");
                 url.push_str(index.as_ref());
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -1289,45 +1476,51 @@ impl<'a> IndicesExistsRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IndicesExistsRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
-            method: HttpMethod::Post,
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Head,
+            body: None,
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for IndicesExistsRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Head,
             body: None,
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum IndicesFlushSyncedUrlParams<'a> {
     None,
     Index(Index<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct IndicesFlushSyncedRequestParams<'a> {
-    pub url_params: IndicesFlushSyncedUrlParams<'a>,
-    _a: PhantomData<&'a ()>,
+    pub url: Url<'a>,
 }
 impl<'a> IndicesFlushSyncedRequestParams<'a> {
     pub fn new() -> IndicesFlushSyncedRequestParams<'a> {
-        IndicesFlushSyncedRequestParams {
-            url_params: IndicesFlushSyncedUrlParams::None,
-            _a: PhantomData,
-        }
+        IndicesFlushSyncedRequestParams { url: IndicesFlushSyncedUrlParams::None.url() }
     }
     pub fn index<IIndex: Into<Index<'a>>>(index: IIndex) -> IndicesFlushSyncedRequestParams<'a> {
         IndicesFlushSyncedRequestParams {
-            url_params: IndicesFlushSyncedUrlParams::Index(index.into()),
-            _a: PhantomData,
+            url: IndicesFlushSyncedUrlParams::Index(index.into()).url(),
         }
     }
 }
-impl<'a> IndicesFlushSyncedRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
-            IndicesFlushSyncedUrlParams::None => Cow::Borrowed("/_flush/synced"),
+impl<'a> IndicesFlushSyncedUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
+            IndicesFlushSyncedUrlParams::None => Url::from("/_flush/synced"),
             IndicesFlushSyncedUrlParams::Index(ref index) => {
                 let mut url = String::with_capacity(15usize + index.len());
                 url.push_str("/");
                 url.push_str(index.as_ref());
                 url.push_str("/_flush/synced");
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -1335,38 +1528,46 @@ impl<'a> IndicesFlushSyncedRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IndicesFlushSyncedRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Post,
+            body: None,
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for IndicesFlushSyncedRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
             method: HttpMethod::Post,
             body: None,
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum MsearchUrlParams<'a> {
     None,
     Index(Index<'a>),
     IndexType(Index<'a>, Type<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct MsearchRequestParams<'a> {
-    pub url_params: MsearchUrlParams<'a>,
+    pub url: Url<'a>,
     pub body: Body<'a>,
-    _a: PhantomData<&'a ()>,
 }
 impl<'a> MsearchRequestParams<'a> {
     pub fn new<IBody: Into<Body<'a>>>(body: IBody) -> MsearchRequestParams<'a> {
         MsearchRequestParams {
-            url_params: MsearchUrlParams::None,
+            url: MsearchUrlParams::None.url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
     pub fn index<IIndex: Into<Index<'a>>, IBody: Into<Body<'a>>>(index: IIndex,
                                                                  body: IBody)
                                                                  -> MsearchRequestParams<'a> {
         MsearchRequestParams {
-            url_params: MsearchUrlParams::Index(index.into()),
+            url: MsearchUrlParams::Index(index.into()).url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
     pub fn index_ty<IIndex: Into<Index<'a>>, IType: Into<Type<'a>>, IBody: Into<Body<'a>>>
@@ -1375,22 +1576,21 @@ impl<'a> MsearchRequestParams<'a> {
          body: IBody)
          -> MsearchRequestParams<'a> {
         MsearchRequestParams {
-            url_params: MsearchUrlParams::IndexType(index.into(), ty.into()),
+            url: MsearchUrlParams::IndexType(index.into(), ty.into()).url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
 }
-impl<'a> MsearchRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
-            MsearchUrlParams::None => Cow::Borrowed("/_msearch"),
+impl<'a> MsearchUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
+            MsearchUrlParams::None => Url::from("/_msearch"),
             MsearchUrlParams::Index(ref index) => {
                 let mut url = String::with_capacity(10usize + index.len());
                 url.push_str("/");
                 url.push_str(index.as_ref());
                 url.push_str("/_msearch");
-                Cow::Owned(url)
+                Url::from(url)
             }
             MsearchUrlParams::IndexType(ref index, ref ty) => {
                 let mut url = String::with_capacity(11usize + index.len() + ty.len());
@@ -1399,7 +1599,7 @@ impl<'a> MsearchRequestParams<'a> {
                 url.push_str("/");
                 url.push_str(ty.as_ref());
                 url.push_str("/_msearch");
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -1407,61 +1607,77 @@ impl<'a> MsearchRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a MsearchRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
+            url: Cow::Borrowed(&self.url),
             method: HttpMethod::Post,
-            body: Some(&self.body),
+            body: Some(Cow::Borrowed(&self.body)),
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for MsearchRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Post,
+            body: Some(Cow::Owned(self.body)),
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum InfoUrlParams {
     None,
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct InfoRequestParams<'a> {
-    pub url_params: InfoUrlParams,
-    _a: PhantomData<&'a ()>,
+    pub url: Url<'a>,
 }
 impl<'a> InfoRequestParams<'a> {
     pub fn new() -> InfoRequestParams<'a> {
-        InfoRequestParams {
-            url_params: InfoUrlParams::None,
-            _a: PhantomData,
-        }
+        InfoRequestParams { url: InfoUrlParams::None.url() }
     }
 }
-impl<'a> InfoRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
-            InfoUrlParams::None => Cow::Borrowed("/"),
+impl InfoUrlParams {
+    pub fn url<'a>(self) -> Url<'a> {
+        match self {
+            InfoUrlParams::None => Url::from("/"),
         }
     }
 }
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a InfoRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
-            method: HttpMethod::Post,
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Get,
+            body: None,
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for InfoRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Get,
             body: None,
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum SearchTemplateUrlParams<'a> {
     None,
     Index(Index<'a>),
     IndexType(Index<'a>, Type<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct SearchTemplateRequestParams<'a> {
-    pub url_params: SearchTemplateUrlParams<'a>,
+    pub url: Url<'a>,
     pub body: Body<'a>,
-    _a: PhantomData<&'a ()>,
 }
 impl<'a> SearchTemplateRequestParams<'a> {
     pub fn new<IBody: Into<Body<'a>>>(body: IBody) -> SearchTemplateRequestParams<'a> {
         SearchTemplateRequestParams {
-            url_params: SearchTemplateUrlParams::None,
+            url: SearchTemplateUrlParams::None.url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
     pub fn index<IIndex: Into<Index<'a>>, IBody: Into<Body<'a>>>
@@ -1469,9 +1685,8 @@ impl<'a> SearchTemplateRequestParams<'a> {
          body: IBody)
          -> SearchTemplateRequestParams<'a> {
         SearchTemplateRequestParams {
-            url_params: SearchTemplateUrlParams::Index(index.into()),
+            url: SearchTemplateUrlParams::Index(index.into()).url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
     pub fn index_ty<IIndex: Into<Index<'a>>, IType: Into<Type<'a>>, IBody: Into<Body<'a>>>
@@ -1480,22 +1695,21 @@ impl<'a> SearchTemplateRequestParams<'a> {
          body: IBody)
          -> SearchTemplateRequestParams<'a> {
         SearchTemplateRequestParams {
-            url_params: SearchTemplateUrlParams::IndexType(index.into(), ty.into()),
+            url: SearchTemplateUrlParams::IndexType(index.into(), ty.into()).url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
 }
-impl<'a> SearchTemplateRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
-            SearchTemplateUrlParams::None => Cow::Borrowed("/_search/template"),
+impl<'a> SearchTemplateUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
+            SearchTemplateUrlParams::None => Url::from("/_search/template"),
             SearchTemplateUrlParams::Index(ref index) => {
                 let mut url = String::with_capacity(18usize + index.len());
                 url.push_str("/");
                 url.push_str(index.as_ref());
                 url.push_str("/_search/template");
-                Cow::Owned(url)
+                Url::from(url)
             }
             SearchTemplateUrlParams::IndexType(ref index, ref ty) => {
                 let mut url = String::with_capacity(19usize + index.len() + ty.len());
@@ -1504,7 +1718,7 @@ impl<'a> SearchTemplateRequestParams<'a> {
                 url.push_str("/");
                 url.push_str(ty.as_ref());
                 url.push_str("/_search/template");
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -1512,36 +1726,43 @@ impl<'a> SearchTemplateRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a SearchTemplateRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
+            url: Cow::Borrowed(&self.url),
             method: HttpMethod::Post,
-            body: Some(&self.body),
+            body: Some(Cow::Borrowed(&self.body)),
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for SearchTemplateRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Post,
+            body: Some(Cow::Owned(self.body)),
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum IndicesDeleteUrlParams<'a> {
     Index(Index<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct IndicesDeleteRequestParams<'a> {
-    pub url_params: IndicesDeleteUrlParams<'a>,
-    _a: PhantomData<&'a ()>,
+    pub url: Url<'a>,
 }
 impl<'a> IndicesDeleteRequestParams<'a> {
     pub fn index<IIndex: Into<Index<'a>>>(index: IIndex) -> IndicesDeleteRequestParams<'a> {
-        IndicesDeleteRequestParams {
-            url_params: IndicesDeleteUrlParams::Index(index.into()),
-            _a: PhantomData,
-        }
+        IndicesDeleteRequestParams { url: IndicesDeleteUrlParams::Index(index.into()).url() }
     }
 }
-impl<'a> IndicesDeleteRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
+impl<'a> IndicesDeleteUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
             IndicesDeleteUrlParams::Index(ref index) => {
                 let mut url = String::with_capacity(1usize + index.len());
                 url.push_str("/");
                 url.push_str(index.as_ref());
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -1549,21 +1770,31 @@ impl<'a> IndicesDeleteRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IndicesDeleteRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
-            method: HttpMethod::Post,
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Delete,
+            body: None,
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for IndicesDeleteRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Delete,
             body: None,
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum DeleteByQueryUrlParams<'a> {
     Index(Index<'a>),
     IndexType(Index<'a>, Type<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct DeleteByQueryRequestParams<'a> {
-    pub url_params: DeleteByQueryUrlParams<'a>,
+    pub url: Url<'a>,
     pub body: Body<'a>,
-    _a: PhantomData<&'a ()>,
 }
 impl<'a> DeleteByQueryRequestParams<'a> {
     pub fn index<IIndex: Into<Index<'a>>, IBody: Into<Body<'a>>>
@@ -1571,9 +1802,8 @@ impl<'a> DeleteByQueryRequestParams<'a> {
          body: IBody)
          -> DeleteByQueryRequestParams<'a> {
         DeleteByQueryRequestParams {
-            url_params: DeleteByQueryUrlParams::Index(index.into()),
+            url: DeleteByQueryUrlParams::Index(index.into()).url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
     pub fn index_ty<IIndex: Into<Index<'a>>, IType: Into<Type<'a>>, IBody: Into<Body<'a>>>
@@ -1582,21 +1812,20 @@ impl<'a> DeleteByQueryRequestParams<'a> {
          body: IBody)
          -> DeleteByQueryRequestParams<'a> {
         DeleteByQueryRequestParams {
-            url_params: DeleteByQueryUrlParams::IndexType(index.into(), ty.into()),
+            url: DeleteByQueryUrlParams::IndexType(index.into(), ty.into()).url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
 }
-impl<'a> DeleteByQueryRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
+impl<'a> DeleteByQueryUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
             DeleteByQueryUrlParams::Index(ref index) => {
                 let mut url = String::with_capacity(18usize + index.len());
                 url.push_str("/");
                 url.push_str(index.as_ref());
                 url.push_str("/_delete_by_query");
-                Cow::Owned(url)
+                Url::from(url)
             }
             DeleteByQueryUrlParams::IndexType(ref index, ref ty) => {
                 let mut url = String::with_capacity(19usize + index.len() + ty.len());
@@ -1605,7 +1834,7 @@ impl<'a> DeleteByQueryRequestParams<'a> {
                 url.push_str("/");
                 url.push_str(ty.as_ref());
                 url.push_str("/_delete_by_query");
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -1613,36 +1842,43 @@ impl<'a> DeleteByQueryRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a DeleteByQueryRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
+            url: Cow::Borrowed(&self.url),
             method: HttpMethod::Post,
-            body: Some(&self.body),
+            body: Some(Cow::Borrowed(&self.body)),
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for DeleteByQueryRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Post,
+            body: Some(Cow::Owned(self.body)),
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum DeleteTemplateUrlParams<'a> {
     Id(Id<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct DeleteTemplateRequestParams<'a> {
-    pub url_params: DeleteTemplateUrlParams<'a>,
-    _a: PhantomData<&'a ()>,
+    pub url: Url<'a>,
 }
 impl<'a> DeleteTemplateRequestParams<'a> {
     pub fn id<IId: Into<Id<'a>>>(id: IId) -> DeleteTemplateRequestParams<'a> {
-        DeleteTemplateRequestParams {
-            url_params: DeleteTemplateUrlParams::Id(id.into()),
-            _a: PhantomData,
-        }
+        DeleteTemplateRequestParams { url: DeleteTemplateUrlParams::Id(id.into()).url() }
     }
 }
-impl<'a> DeleteTemplateRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
+impl<'a> DeleteTemplateUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
             DeleteTemplateUrlParams::Id(ref id) => {
                 let mut url = String::with_capacity(18usize + id.len());
                 url.push_str("/_search/template/");
                 url.push_str(id.as_ref());
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -1650,20 +1886,30 @@ impl<'a> DeleteTemplateRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a DeleteTemplateRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
-            method: HttpMethod::Post,
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Delete,
+            body: None,
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for DeleteTemplateRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Delete,
             body: None,
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum IndicesCreateUrlParams<'a> {
     Index(Index<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct IndicesCreateRequestParams<'a> {
-    pub url_params: IndicesCreateUrlParams<'a>,
+    pub url: Url<'a>,
     pub body: Body<'a>,
-    _a: PhantomData<&'a ()>,
 }
 impl<'a> IndicesCreateRequestParams<'a> {
     pub fn index<IIndex: Into<Index<'a>>, IBody: Into<Body<'a>>>
@@ -1671,20 +1917,19 @@ impl<'a> IndicesCreateRequestParams<'a> {
          body: IBody)
          -> IndicesCreateRequestParams<'a> {
         IndicesCreateRequestParams {
-            url_params: IndicesCreateUrlParams::Index(index.into()),
+            url: IndicesCreateUrlParams::Index(index.into()).url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
 }
-impl<'a> IndicesCreateRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
+impl<'a> IndicesCreateUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
             IndicesCreateUrlParams::Index(ref index) => {
                 let mut url = String::with_capacity(1usize + index.len());
                 url.push_str("/");
                 url.push_str(index.as_ref());
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -1692,21 +1937,31 @@ impl<'a> IndicesCreateRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IndicesCreateRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
-            method: HttpMethod::Post,
-            body: Some(&self.body),
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Put,
+            body: Some(Cow::Borrowed(&self.body)),
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for IndicesCreateRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Put,
+            body: Some(Cow::Owned(self.body)),
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum PercolateUrlParams<'a> {
     IndexType(Index<'a>, Type<'a>),
     IndexTypeId(Index<'a>, Type<'a>, Id<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct PercolateRequestParams<'a> {
-    pub url_params: PercolateUrlParams<'a>,
+    pub url: Url<'a>,
     pub body: Body<'a>,
-    _a: PhantomData<&'a ()>,
 }
 impl<'a> PercolateRequestParams<'a> {
     pub fn index_ty<IIndex: Into<Index<'a>>, IType: Into<Type<'a>>, IBody: Into<Body<'a>>>
@@ -1715,9 +1970,8 @@ impl<'a> PercolateRequestParams<'a> {
          body: IBody)
          -> PercolateRequestParams<'a> {
         PercolateRequestParams {
-            url_params: PercolateUrlParams::IndexType(index.into(), ty.into()),
+            url: PercolateUrlParams::IndexType(index.into(), ty.into()).url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
     pub fn index_ty_id<IIndex: Into<Index<'a>>,
@@ -1730,15 +1984,14 @@ impl<'a> PercolateRequestParams<'a> {
          body: IBody)
          -> PercolateRequestParams<'a> {
         PercolateRequestParams {
-            url_params: PercolateUrlParams::IndexTypeId(index.into(), ty.into(), id.into()),
+            url: PercolateUrlParams::IndexTypeId(index.into(), ty.into(), id.into()).url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
 }
-impl<'a> PercolateRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
+impl<'a> PercolateUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
             PercolateUrlParams::IndexType(ref index, ref ty) => {
                 let mut url = String::with_capacity(13usize + index.len() + ty.len());
                 url.push_str("/");
@@ -1746,7 +1999,7 @@ impl<'a> PercolateRequestParams<'a> {
                 url.push_str("/");
                 url.push_str(ty.as_ref());
                 url.push_str("/_percolate");
-                Cow::Owned(url)
+                Url::from(url)
             }
             PercolateUrlParams::IndexTypeId(ref index, ref ty, ref id) => {
                 let mut url = String::with_capacity(14usize + index.len() + ty.len() + id.len());
@@ -1757,7 +2010,7 @@ impl<'a> PercolateRequestParams<'a> {
                 url.push_str("/");
                 url.push_str(id.as_ref());
                 url.push_str("/_percolate");
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -1765,38 +2018,46 @@ impl<'a> PercolateRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a PercolateRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
+            url: Cow::Borrowed(&self.url),
             method: HttpMethod::Post,
-            body: Some(&self.body),
+            body: Some(Cow::Borrowed(&self.body)),
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for PercolateRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Post,
+            body: Some(Cow::Owned(self.body)),
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum SearchUrlParams<'a> {
     None,
     Index(Index<'a>),
     IndexType(Index<'a>, Type<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct SearchRequestParams<'a> {
-    pub url_params: SearchUrlParams<'a>,
+    pub url: Url<'a>,
     pub body: Body<'a>,
-    _a: PhantomData<&'a ()>,
 }
 impl<'a> SearchRequestParams<'a> {
     pub fn new<IBody: Into<Body<'a>>>(body: IBody) -> SearchRequestParams<'a> {
         SearchRequestParams {
-            url_params: SearchUrlParams::None,
+            url: SearchUrlParams::None.url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
     pub fn index<IIndex: Into<Index<'a>>, IBody: Into<Body<'a>>>(index: IIndex,
                                                                  body: IBody)
                                                                  -> SearchRequestParams<'a> {
         SearchRequestParams {
-            url_params: SearchUrlParams::Index(index.into()),
+            url: SearchUrlParams::Index(index.into()).url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
     pub fn index_ty<IIndex: Into<Index<'a>>, IType: Into<Type<'a>>, IBody: Into<Body<'a>>>
@@ -1805,22 +2066,21 @@ impl<'a> SearchRequestParams<'a> {
          body: IBody)
          -> SearchRequestParams<'a> {
         SearchRequestParams {
-            url_params: SearchUrlParams::IndexType(index.into(), ty.into()),
+            url: SearchUrlParams::IndexType(index.into(), ty.into()).url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
 }
-impl<'a> SearchRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
-            SearchUrlParams::None => Cow::Borrowed("/_search"),
+impl<'a> SearchUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
+            SearchUrlParams::None => Url::from("/_search"),
             SearchUrlParams::Index(ref index) => {
                 let mut url = String::with_capacity(9usize + index.len());
                 url.push_str("/");
                 url.push_str(index.as_ref());
                 url.push_str("/_search");
-                Cow::Owned(url)
+                Url::from(url)
             }
             SearchUrlParams::IndexType(ref index, ref ty) => {
                 let mut url = String::with_capacity(10usize + index.len() + ty.len());
@@ -1829,7 +2089,7 @@ impl<'a> SearchRequestParams<'a> {
                 url.push_str("/");
                 url.push_str(ty.as_ref());
                 url.push_str("/_search");
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -1837,71 +2097,87 @@ impl<'a> SearchRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a SearchRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
+            url: Cow::Borrowed(&self.url),
             method: HttpMethod::Post,
-            body: Some(&self.body),
+            body: Some(Cow::Borrowed(&self.body)),
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for SearchRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Post,
+            body: Some(Cow::Owned(self.body)),
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum CatNodeattrsUrlParams {
     None,
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct CatNodeattrsRequestParams<'a> {
-    pub url_params: CatNodeattrsUrlParams,
-    _a: PhantomData<&'a ()>,
+    pub url: Url<'a>,
 }
 impl<'a> CatNodeattrsRequestParams<'a> {
     pub fn new() -> CatNodeattrsRequestParams<'a> {
-        CatNodeattrsRequestParams {
-            url_params: CatNodeattrsUrlParams::None,
-            _a: PhantomData,
-        }
+        CatNodeattrsRequestParams { url: CatNodeattrsUrlParams::None.url() }
     }
 }
-impl<'a> CatNodeattrsRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
-            CatNodeattrsUrlParams::None => Cow::Borrowed("/_cat/nodeattrs"),
+impl CatNodeattrsUrlParams {
+    pub fn url<'a>(self) -> Url<'a> {
+        match self {
+            CatNodeattrsUrlParams::None => Url::from("/_cat/nodeattrs"),
         }
     }
 }
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a CatNodeattrsRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
-            method: HttpMethod::Post,
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Get,
+            body: None,
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for CatNodeattrsRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Get,
             body: None,
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum SnapshotVerifyRepositoryUrlParams<'a> {
     Repository(Repository<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct SnapshotVerifyRepositoryRequestParams<'a> {
-    pub url_params: SnapshotVerifyRepositoryUrlParams<'a>,
-    _a: PhantomData<&'a ()>,
+    pub url: Url<'a>,
 }
 impl<'a> SnapshotVerifyRepositoryRequestParams<'a> {
     pub fn repository<IRepository: Into<Repository<'a>>>
         (repository: IRepository)
          -> SnapshotVerifyRepositoryRequestParams<'a> {
         SnapshotVerifyRepositoryRequestParams {
-            url_params: SnapshotVerifyRepositoryUrlParams::Repository(repository.into()),
-            _a: PhantomData,
+            url: SnapshotVerifyRepositoryUrlParams::Repository(repository.into()).url(),
         }
     }
 }
-impl<'a> SnapshotVerifyRepositoryRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
+impl<'a> SnapshotVerifyRepositoryUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
             SnapshotVerifyRepositoryUrlParams::Repository(ref repository) => {
                 let mut url = String::with_capacity(19usize + repository.len());
                 url.push_str("/_snapshot/");
                 url.push_str(repository.as_ref());
                 url.push_str("/_verify");
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -1909,38 +2185,46 @@ impl<'a> SnapshotVerifyRepositoryRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a SnapshotVerifyRepositoryRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Post,
+            body: None,
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for SnapshotVerifyRepositoryRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
             method: HttpMethod::Post,
             body: None,
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum CountUrlParams<'a> {
     None,
     Index(Index<'a>),
     IndexType(Index<'a>, Type<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct CountRequestParams<'a> {
-    pub url_params: CountUrlParams<'a>,
+    pub url: Url<'a>,
     pub body: Body<'a>,
-    _a: PhantomData<&'a ()>,
 }
 impl<'a> CountRequestParams<'a> {
     pub fn new<IBody: Into<Body<'a>>>(body: IBody) -> CountRequestParams<'a> {
         CountRequestParams {
-            url_params: CountUrlParams::None,
+            url: CountUrlParams::None.url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
     pub fn index<IIndex: Into<Index<'a>>, IBody: Into<Body<'a>>>(index: IIndex,
                                                                  body: IBody)
                                                                  -> CountRequestParams<'a> {
         CountRequestParams {
-            url_params: CountUrlParams::Index(index.into()),
+            url: CountUrlParams::Index(index.into()).url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
     pub fn index_ty<IIndex: Into<Index<'a>>, IType: Into<Type<'a>>, IBody: Into<Body<'a>>>
@@ -1949,22 +2233,21 @@ impl<'a> CountRequestParams<'a> {
          body: IBody)
          -> CountRequestParams<'a> {
         CountRequestParams {
-            url_params: CountUrlParams::IndexType(index.into(), ty.into()),
+            url: CountUrlParams::IndexType(index.into(), ty.into()).url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
 }
-impl<'a> CountRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
-            CountUrlParams::None => Cow::Borrowed("/_count"),
+impl<'a> CountUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
+            CountUrlParams::None => Url::from("/_count"),
             CountUrlParams::Index(ref index) => {
                 let mut url = String::with_capacity(8usize + index.len());
                 url.push_str("/");
                 url.push_str(index.as_ref());
                 url.push_str("/_count");
-                Cow::Owned(url)
+                Url::from(url)
             }
             CountUrlParams::IndexType(ref index, ref ty) => {
                 let mut url = String::with_capacity(9usize + index.len() + ty.len());
@@ -1973,7 +2256,7 @@ impl<'a> CountRequestParams<'a> {
                 url.push_str("/");
                 url.push_str(ty.as_ref());
                 url.push_str("/_count");
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -1981,44 +2264,48 @@ impl<'a> CountRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a CountRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
+            url: Cow::Borrowed(&self.url),
             method: HttpMethod::Post,
-            body: Some(&self.body),
+            body: Some(Cow::Borrowed(&self.body)),
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for CountRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Post,
+            body: Some(Cow::Owned(self.body)),
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum CatAllocationUrlParams<'a> {
     None,
     NodeId(NodeId<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct CatAllocationRequestParams<'a> {
-    pub url_params: CatAllocationUrlParams<'a>,
-    _a: PhantomData<&'a ()>,
+    pub url: Url<'a>,
 }
 impl<'a> CatAllocationRequestParams<'a> {
     pub fn new() -> CatAllocationRequestParams<'a> {
-        CatAllocationRequestParams {
-            url_params: CatAllocationUrlParams::None,
-            _a: PhantomData,
-        }
+        CatAllocationRequestParams { url: CatAllocationUrlParams::None.url() }
     }
     pub fn node_id<INodeId: Into<NodeId<'a>>>(node_id: INodeId) -> CatAllocationRequestParams<'a> {
-        CatAllocationRequestParams {
-            url_params: CatAllocationUrlParams::NodeId(node_id.into()),
-            _a: PhantomData,
-        }
+        CatAllocationRequestParams { url: CatAllocationUrlParams::NodeId(node_id.into()).url() }
     }
 }
-impl<'a> CatAllocationRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
-            CatAllocationUrlParams::None => Cow::Borrowed("/_cat/allocation"),
+impl<'a> CatAllocationUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
+            CatAllocationUrlParams::None => Url::from("/_cat/allocation"),
             CatAllocationUrlParams::NodeId(ref node_id) => {
                 let mut url = String::with_capacity(17usize + node_id.len());
                 url.push_str("/_cat/allocation/");
                 url.push_str(node_id.as_ref());
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -2026,45 +2313,49 @@ impl<'a> CatAllocationRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a CatAllocationRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
-            method: HttpMethod::Post,
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Get,
+            body: None,
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for CatAllocationRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Get,
             body: None,
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum IndicesFlushUrlParams<'a> {
     None,
     Index(Index<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct IndicesFlushRequestParams<'a> {
-    pub url_params: IndicesFlushUrlParams<'a>,
-    _a: PhantomData<&'a ()>,
+    pub url: Url<'a>,
 }
 impl<'a> IndicesFlushRequestParams<'a> {
     pub fn new() -> IndicesFlushRequestParams<'a> {
-        IndicesFlushRequestParams {
-            url_params: IndicesFlushUrlParams::None,
-            _a: PhantomData,
-        }
+        IndicesFlushRequestParams { url: IndicesFlushUrlParams::None.url() }
     }
     pub fn index<IIndex: Into<Index<'a>>>(index: IIndex) -> IndicesFlushRequestParams<'a> {
-        IndicesFlushRequestParams {
-            url_params: IndicesFlushUrlParams::Index(index.into()),
-            _a: PhantomData,
-        }
+        IndicesFlushRequestParams { url: IndicesFlushUrlParams::Index(index.into()).url() }
     }
 }
-impl<'a> IndicesFlushRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
-            IndicesFlushUrlParams::None => Cow::Borrowed("/_flush"),
+impl<'a> IndicesFlushUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
+            IndicesFlushUrlParams::None => Url::from("/_flush"),
             IndicesFlushUrlParams::Index(ref index) => {
                 let mut url = String::with_capacity(8usize + index.len());
                 url.push_str("/");
                 url.push_str(index.as_ref());
                 url.push_str("/_flush");
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -2072,45 +2363,49 @@ impl<'a> IndicesFlushRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IndicesFlushRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Post,
+            body: None,
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for IndicesFlushRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
             method: HttpMethod::Post,
             body: None,
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum IndicesRefreshUrlParams<'a> {
     None,
     Index(Index<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct IndicesRefreshRequestParams<'a> {
-    pub url_params: IndicesRefreshUrlParams<'a>,
-    _a: PhantomData<&'a ()>,
+    pub url: Url<'a>,
 }
 impl<'a> IndicesRefreshRequestParams<'a> {
     pub fn new() -> IndicesRefreshRequestParams<'a> {
-        IndicesRefreshRequestParams {
-            url_params: IndicesRefreshUrlParams::None,
-            _a: PhantomData,
-        }
+        IndicesRefreshRequestParams { url: IndicesRefreshUrlParams::None.url() }
     }
     pub fn index<IIndex: Into<Index<'a>>>(index: IIndex) -> IndicesRefreshRequestParams<'a> {
-        IndicesRefreshRequestParams {
-            url_params: IndicesRefreshUrlParams::Index(index.into()),
-            _a: PhantomData,
-        }
+        IndicesRefreshRequestParams { url: IndicesRefreshUrlParams::Index(index.into()).url() }
     }
 }
-impl<'a> IndicesRefreshRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
-            IndicesRefreshUrlParams::None => Cow::Borrowed("/_refresh"),
+impl<'a> IndicesRefreshUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
+            IndicesRefreshUrlParams::None => Url::from("/_refresh"),
             IndicesRefreshUrlParams::Index(ref index) => {
                 let mut url = String::with_capacity(10usize + index.len());
                 url.push_str("/");
                 url.push_str(index.as_ref());
                 url.push_str("/_refresh");
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -2118,77 +2413,88 @@ impl<'a> IndicesRefreshRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IndicesRefreshRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Post,
+            body: None,
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for IndicesRefreshRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
             method: HttpMethod::Post,
             body: None,
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum CatHelpUrlParams {
     None,
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct CatHelpRequestParams<'a> {
-    pub url_params: CatHelpUrlParams,
-    _a: PhantomData<&'a ()>,
+    pub url: Url<'a>,
 }
 impl<'a> CatHelpRequestParams<'a> {
     pub fn new() -> CatHelpRequestParams<'a> {
-        CatHelpRequestParams {
-            url_params: CatHelpUrlParams::None,
-            _a: PhantomData,
-        }
+        CatHelpRequestParams { url: CatHelpUrlParams::None.url() }
     }
 }
-impl<'a> CatHelpRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
-            CatHelpUrlParams::None => Cow::Borrowed("/_cat"),
+impl CatHelpUrlParams {
+    pub fn url<'a>(self) -> Url<'a> {
+        match self {
+            CatHelpUrlParams::None => Url::from("/_cat"),
         }
     }
 }
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a CatHelpRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
-            method: HttpMethod::Post,
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Get,
+            body: None,
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for CatHelpRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Get,
             body: None,
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum SearchShardsUrlParams<'a> {
     None,
     Index(Index<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct SearchShardsRequestParams<'a> {
-    pub url_params: SearchShardsUrlParams<'a>,
-    _a: PhantomData<&'a ()>,
+    pub url: Url<'a>,
 }
 impl<'a> SearchShardsRequestParams<'a> {
     pub fn new() -> SearchShardsRequestParams<'a> {
-        SearchShardsRequestParams {
-            url_params: SearchShardsUrlParams::None,
-            _a: PhantomData,
-        }
+        SearchShardsRequestParams { url: SearchShardsUrlParams::None.url() }
     }
     pub fn index<IIndex: Into<Index<'a>>>(index: IIndex) -> SearchShardsRequestParams<'a> {
-        SearchShardsRequestParams {
-            url_params: SearchShardsUrlParams::Index(index.into()),
-            _a: PhantomData,
-        }
+        SearchShardsRequestParams { url: SearchShardsUrlParams::Index(index.into()).url() }
     }
 }
-impl<'a> SearchShardsRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
-            SearchShardsUrlParams::None => Cow::Borrowed("/_search_shards"),
+impl<'a> SearchShardsUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
+            SearchShardsUrlParams::None => Url::from("/_search_shards"),
             SearchShardsUrlParams::Index(ref index) => {
                 let mut url = String::with_capacity(16usize + index.len());
                 url.push_str("/");
                 url.push_str(index.as_ref());
                 url.push_str("/_search_shards");
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -2196,44 +2502,48 @@ impl<'a> SearchShardsRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a SearchShardsRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Post,
+            body: None,
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for SearchShardsRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
             method: HttpMethod::Post,
             body: None,
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum ClusterHealthUrlParams<'a> {
     None,
     Index(Index<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct ClusterHealthRequestParams<'a> {
-    pub url_params: ClusterHealthUrlParams<'a>,
-    _a: PhantomData<&'a ()>,
+    pub url: Url<'a>,
 }
 impl<'a> ClusterHealthRequestParams<'a> {
     pub fn new() -> ClusterHealthRequestParams<'a> {
-        ClusterHealthRequestParams {
-            url_params: ClusterHealthUrlParams::None,
-            _a: PhantomData,
-        }
+        ClusterHealthRequestParams { url: ClusterHealthUrlParams::None.url() }
     }
     pub fn index<IIndex: Into<Index<'a>>>(index: IIndex) -> ClusterHealthRequestParams<'a> {
-        ClusterHealthRequestParams {
-            url_params: ClusterHealthUrlParams::Index(index.into()),
-            _a: PhantomData,
-        }
+        ClusterHealthRequestParams { url: ClusterHealthUrlParams::Index(index.into()).url() }
     }
 }
-impl<'a> ClusterHealthRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
-            ClusterHealthUrlParams::None => Cow::Borrowed("/_cluster/health"),
+impl<'a> ClusterHealthUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
+            ClusterHealthUrlParams::None => Url::from("/_cluster/health"),
             ClusterHealthUrlParams::Index(ref index) => {
                 let mut url = String::with_capacity(17usize + index.len());
                 url.push_str("/_cluster/health/");
                 url.push_str(index.as_ref());
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -2241,27 +2551,36 @@ impl<'a> ClusterHealthRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a ClusterHealthRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
-            method: HttpMethod::Post,
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Get,
+            body: None,
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for ClusterHealthRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Get,
             body: None,
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum IndicesExistsAliasUrlParams<'a> {
     Index(Index<'a>),
     IndexName(Index<'a>, Name<'a>),
     Name(Name<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct IndicesExistsAliasRequestParams<'a> {
-    pub url_params: IndicesExistsAliasUrlParams<'a>,
-    _a: PhantomData<&'a ()>,
+    pub url: Url<'a>,
 }
 impl<'a> IndicesExistsAliasRequestParams<'a> {
     pub fn index<IIndex: Into<Index<'a>>>(index: IIndex) -> IndicesExistsAliasRequestParams<'a> {
         IndicesExistsAliasRequestParams {
-            url_params: IndicesExistsAliasUrlParams::Index(index.into()),
-            _a: PhantomData,
+            url: IndicesExistsAliasUrlParams::Index(index.into()).url(),
         }
     }
     pub fn index_name<IIndex: Into<Index<'a>>, IName: Into<Name<'a>>>
@@ -2269,26 +2588,24 @@ impl<'a> IndicesExistsAliasRequestParams<'a> {
          name: IName)
          -> IndicesExistsAliasRequestParams<'a> {
         IndicesExistsAliasRequestParams {
-            url_params: IndicesExistsAliasUrlParams::IndexName(index.into(), name.into()),
-            _a: PhantomData,
+            url: IndicesExistsAliasUrlParams::IndexName(index.into(), name.into()).url(),
         }
     }
     pub fn name<IName: Into<Name<'a>>>(name: IName) -> IndicesExistsAliasRequestParams<'a> {
         IndicesExistsAliasRequestParams {
-            url_params: IndicesExistsAliasUrlParams::Name(name.into()),
-            _a: PhantomData,
+            url: IndicesExistsAliasUrlParams::Name(name.into()).url(),
         }
     }
 }
-impl<'a> IndicesExistsAliasRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
+impl<'a> IndicesExistsAliasUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
             IndicesExistsAliasUrlParams::Index(ref index) => {
                 let mut url = String::with_capacity(8usize + index.len());
                 url.push_str("/");
                 url.push_str(index.as_ref());
                 url.push_str("/_alias");
-                Cow::Owned(url)
+                Url::from(url)
             }
             IndicesExistsAliasUrlParams::IndexName(ref index, ref name) => {
                 let mut url = String::with_capacity(9usize + index.len() + name.len());
@@ -2296,13 +2613,13 @@ impl<'a> IndicesExistsAliasRequestParams<'a> {
                 url.push_str(index.as_ref());
                 url.push_str("/_alias/");
                 url.push_str(name.as_ref());
-                Cow::Owned(url)
+                Url::from(url)
             }
             IndicesExistsAliasUrlParams::Name(ref name) => {
                 let mut url = String::with_capacity(8usize + name.len());
                 url.push_str("/_alias/");
                 url.push_str(name.as_ref());
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -2310,29 +2627,38 @@ impl<'a> IndicesExistsAliasRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IndicesExistsAliasRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
-            method: HttpMethod::Post,
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Head,
+            body: None,
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for IndicesExistsAliasRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Head,
             body: None,
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum IndicesGetFieldMappingUrlParams<'a> {
     Fields(Fields<'a>),
     IndexFields(Index<'a>, Fields<'a>),
     IndexTypeFields(Index<'a>, Type<'a>, Fields<'a>),
     TypeFields(Type<'a>, Fields<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct IndicesGetFieldMappingRequestParams<'a> {
-    pub url_params: IndicesGetFieldMappingUrlParams<'a>,
-    _a: PhantomData<&'a ()>,
+    pub url: Url<'a>,
 }
 impl<'a> IndicesGetFieldMappingRequestParams<'a> {
     pub fn fields<IFields: Into<Fields<'a>>>(fields: IFields)
                                              -> IndicesGetFieldMappingRequestParams<'a> {
         IndicesGetFieldMappingRequestParams {
-            url_params: IndicesGetFieldMappingUrlParams::Fields(fields.into()),
-            _a: PhantomData,
+            url: IndicesGetFieldMappingUrlParams::Fields(fields.into()).url(),
         }
     }
     pub fn index_fields<IIndex: Into<Index<'a>>, IFields: Into<Fields<'a>>>
@@ -2340,8 +2666,7 @@ impl<'a> IndicesGetFieldMappingRequestParams<'a> {
          fields: IFields)
          -> IndicesGetFieldMappingRequestParams<'a> {
         IndicesGetFieldMappingRequestParams {
-            url_params: IndicesGetFieldMappingUrlParams::IndexFields(index.into(), fields.into()),
-            _a: PhantomData,
+            url: IndicesGetFieldMappingUrlParams::IndexFields(index.into(), fields.into()).url(),
         }
     }
     pub fn index_ty_fields<IIndex: Into<Index<'a>>,
@@ -2352,10 +2677,10 @@ impl<'a> IndicesGetFieldMappingRequestParams<'a> {
          fields: IFields)
          -> IndicesGetFieldMappingRequestParams<'a> {
         IndicesGetFieldMappingRequestParams {
-            url_params: IndicesGetFieldMappingUrlParams::IndexTypeFields(index.into(),
-                                                                         ty.into(),
-                                                                         fields.into()),
-            _a: PhantomData,
+            url: IndicesGetFieldMappingUrlParams::IndexTypeFields(index.into(),
+                                                                  ty.into(),
+                                                                  fields.into())
+                .url(),
         }
     }
     pub fn ty_fields<IType: Into<Type<'a>>, IFields: Into<Fields<'a>>>
@@ -2363,19 +2688,18 @@ impl<'a> IndicesGetFieldMappingRequestParams<'a> {
          fields: IFields)
          -> IndicesGetFieldMappingRequestParams<'a> {
         IndicesGetFieldMappingRequestParams {
-            url_params: IndicesGetFieldMappingUrlParams::TypeFields(ty.into(), fields.into()),
-            _a: PhantomData,
+            url: IndicesGetFieldMappingUrlParams::TypeFields(ty.into(), fields.into()).url(),
         }
     }
 }
-impl<'a> IndicesGetFieldMappingRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
+impl<'a> IndicesGetFieldMappingUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
             IndicesGetFieldMappingUrlParams::Fields(ref fields) => {
                 let mut url = String::with_capacity(16usize + fields.len());
                 url.push_str("/_mapping/field/");
                 url.push_str(fields.as_ref());
-                Cow::Owned(url)
+                Url::from(url)
             }
             IndicesGetFieldMappingUrlParams::IndexFields(ref index, ref fields) => {
                 let mut url = String::with_capacity(17usize + index.len() + fields.len());
@@ -2383,7 +2707,7 @@ impl<'a> IndicesGetFieldMappingRequestParams<'a> {
                 url.push_str(index.as_ref());
                 url.push_str("/_mapping/field/");
                 url.push_str(fields.as_ref());
-                Cow::Owned(url)
+                Url::from(url)
             }
             IndicesGetFieldMappingUrlParams::IndexTypeFields(ref index, ref ty, ref fields) => {
                 let mut url = String::with_capacity(18usize + index.len() + ty.len() +
@@ -2394,7 +2718,7 @@ impl<'a> IndicesGetFieldMappingRequestParams<'a> {
                 url.push_str(ty.as_ref());
                 url.push_str("/field/");
                 url.push_str(fields.as_ref());
-                Cow::Owned(url)
+                Url::from(url)
             }
             IndicesGetFieldMappingUrlParams::TypeFields(ref ty, ref fields) => {
                 let mut url = String::with_capacity(17usize + ty.len() + fields.len());
@@ -2402,7 +2726,7 @@ impl<'a> IndicesGetFieldMappingRequestParams<'a> {
                 url.push_str(ty.as_ref());
                 url.push_str("/field/");
                 url.push_str(fields.as_ref());
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -2410,40 +2734,49 @@ impl<'a> IndicesGetFieldMappingRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IndicesGetFieldMappingRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
-            method: HttpMethod::Post,
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Get,
+            body: None,
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for IndicesGetFieldMappingRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Get,
             body: None,
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum IngestPutPipelineUrlParams<'a> {
     Id(Id<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct IngestPutPipelineRequestParams<'a> {
-    pub url_params: IngestPutPipelineUrlParams<'a>,
+    pub url: Url<'a>,
     pub body: Body<'a>,
-    _a: PhantomData<&'a ()>,
 }
 impl<'a> IngestPutPipelineRequestParams<'a> {
     pub fn id<IId: Into<Id<'a>>, IBody: Into<Body<'a>>>(id: IId,
                                                         body: IBody)
                                                         -> IngestPutPipelineRequestParams<'a> {
         IngestPutPipelineRequestParams {
-            url_params: IngestPutPipelineUrlParams::Id(id.into()),
+            url: IngestPutPipelineUrlParams::Id(id.into()).url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
 }
-impl<'a> IngestPutPipelineRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
+impl<'a> IngestPutPipelineUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
             IngestPutPipelineUrlParams::Id(ref id) => {
                 let mut url = String::with_capacity(18usize + id.len());
                 url.push_str("/_ingest/pipeline/");
                 url.push_str(id.as_ref());
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -2451,82 +2784,97 @@ impl<'a> IngestPutPipelineRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IngestPutPipelineRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
-            method: HttpMethod::Post,
-            body: Some(&self.body),
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Put,
+            body: Some(Cow::Borrowed(&self.body)),
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for IngestPutPipelineRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Put,
+            body: Some(Cow::Owned(self.body)),
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum ClusterPendingTasksUrlParams {
     None,
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct ClusterPendingTasksRequestParams<'a> {
-    pub url_params: ClusterPendingTasksUrlParams,
-    _a: PhantomData<&'a ()>,
+    pub url: Url<'a>,
 }
 impl<'a> ClusterPendingTasksRequestParams<'a> {
     pub fn new() -> ClusterPendingTasksRequestParams<'a> {
-        ClusterPendingTasksRequestParams {
-            url_params: ClusterPendingTasksUrlParams::None,
-            _a: PhantomData,
-        }
+        ClusterPendingTasksRequestParams { url: ClusterPendingTasksUrlParams::None.url() }
     }
 }
-impl<'a> ClusterPendingTasksRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
-            ClusterPendingTasksUrlParams::None => Cow::Borrowed("/_cluster/pending_tasks"),
+impl ClusterPendingTasksUrlParams {
+    pub fn url<'a>(self) -> Url<'a> {
+        match self {
+            ClusterPendingTasksUrlParams::None => Url::from("/_cluster/pending_tasks"),
         }
     }
 }
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a ClusterPendingTasksRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
-            method: HttpMethod::Post,
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Get,
+            body: None,
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for ClusterPendingTasksRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Get,
             body: None,
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum IngestSimulateUrlParams<'a> {
     None,
     Id(Id<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct IngestSimulateRequestParams<'a> {
-    pub url_params: IngestSimulateUrlParams<'a>,
+    pub url: Url<'a>,
     pub body: Body<'a>,
-    _a: PhantomData<&'a ()>,
 }
 impl<'a> IngestSimulateRequestParams<'a> {
     pub fn new<IBody: Into<Body<'a>>>(body: IBody) -> IngestSimulateRequestParams<'a> {
         IngestSimulateRequestParams {
-            url_params: IngestSimulateUrlParams::None,
+            url: IngestSimulateUrlParams::None.url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
     pub fn id<IId: Into<Id<'a>>, IBody: Into<Body<'a>>>(id: IId,
                                                         body: IBody)
                                                         -> IngestSimulateRequestParams<'a> {
         IngestSimulateRequestParams {
-            url_params: IngestSimulateUrlParams::Id(id.into()),
+            url: IngestSimulateUrlParams::Id(id.into()).url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
 }
-impl<'a> IngestSimulateRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
-            IngestSimulateUrlParams::None => Cow::Borrowed("/_ingest/pipeline/_simulate"),
+impl<'a> IngestSimulateUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
+            IngestSimulateUrlParams::None => Url::from("/_ingest/pipeline/_simulate"),
             IngestSimulateUrlParams::Id(ref id) => {
                 let mut url = String::with_capacity(28usize + id.len());
                 url.push_str("/_ingest/pipeline/");
                 url.push_str(id.as_ref());
                 url.push_str("/_simulate");
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -2534,62 +2882,62 @@ impl<'a> IngestSimulateRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IngestSimulateRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
+            url: Cow::Borrowed(&self.url),
             method: HttpMethod::Post,
-            body: Some(&self.body),
+            body: Some(Cow::Borrowed(&self.body)),
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for IngestSimulateRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Post,
+            body: Some(Cow::Owned(self.body)),
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum IndicesGetAliasUrlParams<'a> {
     None,
     Index(Index<'a>),
     IndexName(Index<'a>, Name<'a>),
     Name(Name<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct IndicesGetAliasRequestParams<'a> {
-    pub url_params: IndicesGetAliasUrlParams<'a>,
-    _a: PhantomData<&'a ()>,
+    pub url: Url<'a>,
 }
 impl<'a> IndicesGetAliasRequestParams<'a> {
     pub fn new() -> IndicesGetAliasRequestParams<'a> {
-        IndicesGetAliasRequestParams {
-            url_params: IndicesGetAliasUrlParams::None,
-            _a: PhantomData,
-        }
+        IndicesGetAliasRequestParams { url: IndicesGetAliasUrlParams::None.url() }
     }
     pub fn index<IIndex: Into<Index<'a>>>(index: IIndex) -> IndicesGetAliasRequestParams<'a> {
-        IndicesGetAliasRequestParams {
-            url_params: IndicesGetAliasUrlParams::Index(index.into()),
-            _a: PhantomData,
-        }
+        IndicesGetAliasRequestParams { url: IndicesGetAliasUrlParams::Index(index.into()).url() }
     }
     pub fn index_name<IIndex: Into<Index<'a>>, IName: Into<Name<'a>>>
         (index: IIndex,
          name: IName)
          -> IndicesGetAliasRequestParams<'a> {
         IndicesGetAliasRequestParams {
-            url_params: IndicesGetAliasUrlParams::IndexName(index.into(), name.into()),
-            _a: PhantomData,
+            url: IndicesGetAliasUrlParams::IndexName(index.into(), name.into()).url(),
         }
     }
     pub fn name<IName: Into<Name<'a>>>(name: IName) -> IndicesGetAliasRequestParams<'a> {
-        IndicesGetAliasRequestParams {
-            url_params: IndicesGetAliasUrlParams::Name(name.into()),
-            _a: PhantomData,
-        }
+        IndicesGetAliasRequestParams { url: IndicesGetAliasUrlParams::Name(name.into()).url() }
     }
 }
-impl<'a> IndicesGetAliasRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
-            IndicesGetAliasUrlParams::None => Cow::Borrowed("/_alias"),
+impl<'a> IndicesGetAliasUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
+            IndicesGetAliasUrlParams::None => Url::from("/_alias"),
             IndicesGetAliasUrlParams::Index(ref index) => {
                 let mut url = String::with_capacity(8usize + index.len());
                 url.push_str("/");
                 url.push_str(index.as_ref());
                 url.push_str("/_alias");
-                Cow::Owned(url)
+                Url::from(url)
             }
             IndicesGetAliasUrlParams::IndexName(ref index, ref name) => {
                 let mut url = String::with_capacity(9usize + index.len() + name.len());
@@ -2597,13 +2945,13 @@ impl<'a> IndicesGetAliasRequestParams<'a> {
                 url.push_str(index.as_ref());
                 url.push_str("/_alias/");
                 url.push_str(name.as_ref());
-                Cow::Owned(url)
+                Url::from(url)
             }
             IndicesGetAliasUrlParams::Name(ref name) => {
                 let mut url = String::with_capacity(8usize + name.len());
                 url.push_str("/_alias/");
                 url.push_str(name.as_ref());
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -2611,40 +2959,47 @@ impl<'a> IndicesGetAliasRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IndicesGetAliasRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
-            method: HttpMethod::Post,
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Get,
+            body: None,
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for IndicesGetAliasRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Get,
             body: None,
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum GetScriptUrlParams<'a> {
     LangId(Lang<'a>, Id<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct GetScriptRequestParams<'a> {
-    pub url_params: GetScriptUrlParams<'a>,
-    _a: PhantomData<&'a ()>,
+    pub url: Url<'a>,
 }
 impl<'a> GetScriptRequestParams<'a> {
     pub fn lang_id<ILang: Into<Lang<'a>>, IId: Into<Id<'a>>>(lang: ILang,
                                                              id: IId)
                                                              -> GetScriptRequestParams<'a> {
-        GetScriptRequestParams {
-            url_params: GetScriptUrlParams::LangId(lang.into(), id.into()),
-            _a: PhantomData,
-        }
+        GetScriptRequestParams { url: GetScriptUrlParams::LangId(lang.into(), id.into()).url() }
     }
 }
-impl<'a> GetScriptRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
+impl<'a> GetScriptUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
             GetScriptUrlParams::LangId(ref lang, ref id) => {
                 let mut url = String::with_capacity(11usize + lang.len() + id.len());
                 url.push_str("/_scripts/");
                 url.push_str(lang.as_ref());
                 url.push_str("/");
                 url.push_str(id.as_ref());
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -2652,45 +3007,49 @@ impl<'a> GetScriptRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a GetScriptRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
-            method: HttpMethod::Post,
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Get,
+            body: None,
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for GetScriptRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Get,
             body: None,
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum IndicesRecoveryUrlParams<'a> {
     None,
     Index(Index<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct IndicesRecoveryRequestParams<'a> {
-    pub url_params: IndicesRecoveryUrlParams<'a>,
-    _a: PhantomData<&'a ()>,
+    pub url: Url<'a>,
 }
 impl<'a> IndicesRecoveryRequestParams<'a> {
     pub fn new() -> IndicesRecoveryRequestParams<'a> {
-        IndicesRecoveryRequestParams {
-            url_params: IndicesRecoveryUrlParams::None,
-            _a: PhantomData,
-        }
+        IndicesRecoveryRequestParams { url: IndicesRecoveryUrlParams::None.url() }
     }
     pub fn index<IIndex: Into<Index<'a>>>(index: IIndex) -> IndicesRecoveryRequestParams<'a> {
-        IndicesRecoveryRequestParams {
-            url_params: IndicesRecoveryUrlParams::Index(index.into()),
-            _a: PhantomData,
-        }
+        IndicesRecoveryRequestParams { url: IndicesRecoveryUrlParams::Index(index.into()).url() }
     }
 }
-impl<'a> IndicesRecoveryRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
-            IndicesRecoveryUrlParams::None => Cow::Borrowed("/_recovery"),
+impl<'a> IndicesRecoveryUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
+            IndicesRecoveryUrlParams::None => Url::from("/_recovery"),
             IndicesRecoveryUrlParams::Index(ref index) => {
                 let mut url = String::with_capacity(11usize + index.len());
                 url.push_str("/");
                 url.push_str(index.as_ref());
                 url.push_str("/_recovery");
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -2698,36 +3057,45 @@ impl<'a> IndicesRecoveryRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IndicesRecoveryRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
-            method: HttpMethod::Post,
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Get,
+            body: None,
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for IndicesRecoveryRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Get,
             body: None,
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum IngestDeletePipelineUrlParams<'a> {
     Id(Id<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct IngestDeletePipelineRequestParams<'a> {
-    pub url_params: IngestDeletePipelineUrlParams<'a>,
-    _a: PhantomData<&'a ()>,
+    pub url: Url<'a>,
 }
 impl<'a> IngestDeletePipelineRequestParams<'a> {
     pub fn id<IId: Into<Id<'a>>>(id: IId) -> IngestDeletePipelineRequestParams<'a> {
         IngestDeletePipelineRequestParams {
-            url_params: IngestDeletePipelineUrlParams::Id(id.into()),
-            _a: PhantomData,
+            url: IngestDeletePipelineUrlParams::Id(id.into()).url(),
         }
     }
 }
-impl<'a> IngestDeletePipelineRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
+impl<'a> IngestDeletePipelineUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
             IngestDeletePipelineUrlParams::Id(ref id) => {
                 let mut url = String::with_capacity(18usize + id.len());
                 url.push_str("/_ingest/pipeline/");
                 url.push_str(id.as_ref());
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -2735,45 +3103,49 @@ impl<'a> IngestDeletePipelineRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IngestDeletePipelineRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
-            method: HttpMethod::Post,
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Delete,
+            body: None,
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for IngestDeletePipelineRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Delete,
             body: None,
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum TasksCancelUrlParams<'a> {
     None,
     TaskId(TaskId<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct TasksCancelRequestParams<'a> {
-    pub url_params: TasksCancelUrlParams<'a>,
-    _a: PhantomData<&'a ()>,
+    pub url: Url<'a>,
 }
 impl<'a> TasksCancelRequestParams<'a> {
     pub fn new() -> TasksCancelRequestParams<'a> {
-        TasksCancelRequestParams {
-            url_params: TasksCancelUrlParams::None,
-            _a: PhantomData,
-        }
+        TasksCancelRequestParams { url: TasksCancelUrlParams::None.url() }
     }
     pub fn task_id<ITaskId: Into<TaskId<'a>>>(task_id: ITaskId) -> TasksCancelRequestParams<'a> {
-        TasksCancelRequestParams {
-            url_params: TasksCancelUrlParams::TaskId(task_id.into()),
-            _a: PhantomData,
-        }
+        TasksCancelRequestParams { url: TasksCancelUrlParams::TaskId(task_id.into()).url() }
     }
 }
-impl<'a> TasksCancelRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
-            TasksCancelUrlParams::None => Cow::Borrowed("/_tasks/_cancel"),
+impl<'a> TasksCancelUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
+            TasksCancelUrlParams::None => Url::from("/_tasks/_cancel"),
             TasksCancelUrlParams::TaskId(ref task_id) => {
                 let mut url = String::with_capacity(16usize + task_id.len());
                 url.push_str("/_tasks/");
                 url.push_str(task_id.as_ref());
                 url.push_str("/_cancel");
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -2781,45 +3153,51 @@ impl<'a> TasksCancelRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a TasksCancelRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Post,
+            body: None,
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for TasksCancelRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
             method: HttpMethod::Post,
             body: None,
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum IndicesClearCacheUrlParams<'a> {
     None,
     Index(Index<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct IndicesClearCacheRequestParams<'a> {
-    pub url_params: IndicesClearCacheUrlParams<'a>,
-    _a: PhantomData<&'a ()>,
+    pub url: Url<'a>,
 }
 impl<'a> IndicesClearCacheRequestParams<'a> {
     pub fn new() -> IndicesClearCacheRequestParams<'a> {
-        IndicesClearCacheRequestParams {
-            url_params: IndicesClearCacheUrlParams::None,
-            _a: PhantomData,
-        }
+        IndicesClearCacheRequestParams { url: IndicesClearCacheUrlParams::None.url() }
     }
     pub fn index<IIndex: Into<Index<'a>>>(index: IIndex) -> IndicesClearCacheRequestParams<'a> {
         IndicesClearCacheRequestParams {
-            url_params: IndicesClearCacheUrlParams::Index(index.into()),
-            _a: PhantomData,
+            url: IndicesClearCacheUrlParams::Index(index.into()).url(),
         }
     }
 }
-impl<'a> IndicesClearCacheRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
-            IndicesClearCacheUrlParams::None => Cow::Borrowed("/_cache/clear"),
+impl<'a> IndicesClearCacheUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
+            IndicesClearCacheUrlParams::None => Url::from("/_cache/clear"),
             IndicesClearCacheUrlParams::Index(ref index) => {
                 let mut url = String::with_capacity(14usize + index.len());
                 url.push_str("/");
                 url.push_str(index.as_ref());
                 url.push_str("/_cache/clear");
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -2827,19 +3205,29 @@ impl<'a> IndicesClearCacheRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IndicesClearCacheRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Post,
+            body: None,
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for IndicesClearCacheRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
             method: HttpMethod::Post,
             body: None,
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum DeleteUrlParams<'a> {
     IndexTypeId(Index<'a>, Type<'a>, Id<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct DeleteRequestParams<'a> {
-    pub url_params: DeleteUrlParams<'a>,
-    _a: PhantomData<&'a ()>,
+    pub url: Url<'a>,
 }
 impl<'a> DeleteRequestParams<'a> {
     pub fn index_ty_id<IIndex: Into<Index<'a>>, IType: Into<Type<'a>>, IId: Into<Id<'a>>>
@@ -2848,14 +3236,13 @@ impl<'a> DeleteRequestParams<'a> {
          id: IId)
          -> DeleteRequestParams<'a> {
         DeleteRequestParams {
-            url_params: DeleteUrlParams::IndexTypeId(index.into(), ty.into(), id.into()),
-            _a: PhantomData,
+            url: DeleteUrlParams::IndexTypeId(index.into(), ty.into(), id.into()).url(),
         }
     }
 }
-impl<'a> DeleteRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
+impl<'a> DeleteUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
             DeleteUrlParams::IndexTypeId(ref index, ref ty, ref id) => {
                 let mut url = String::with_capacity(3usize + index.len() + ty.len() + id.len());
                 url.push_str("/");
@@ -2864,7 +3251,7 @@ impl<'a> DeleteRequestParams<'a> {
                 url.push_str(ty.as_ref());
                 url.push_str("/");
                 url.push_str(id.as_ref());
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -2872,21 +3259,31 @@ impl<'a> DeleteRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a DeleteRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
-            method: HttpMethod::Post,
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Delete,
+            body: None,
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for DeleteRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Delete,
             body: None,
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum IndicesPutMappingUrlParams<'a> {
     IndexType(Index<'a>, Type<'a>),
     Type(Type<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct IndicesPutMappingRequestParams<'a> {
-    pub url_params: IndicesPutMappingUrlParams<'a>,
+    pub url: Url<'a>,
     pub body: Body<'a>,
-    _a: PhantomData<&'a ()>,
 }
 impl<'a> IndicesPutMappingRequestParams<'a> {
     pub fn index_ty<IIndex: Into<Index<'a>>, IType: Into<Type<'a>>, IBody: Into<Body<'a>>>
@@ -2895,9 +3292,8 @@ impl<'a> IndicesPutMappingRequestParams<'a> {
          body: IBody)
          -> IndicesPutMappingRequestParams<'a> {
         IndicesPutMappingRequestParams {
-            url_params: IndicesPutMappingUrlParams::IndexType(index.into(), ty.into()),
+            url: IndicesPutMappingUrlParams::IndexType(index.into(), ty.into()).url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
     pub fn ty<IType: Into<Type<'a>>, IBody: Into<Body<'a>>>
@@ -2905,28 +3301,27 @@ impl<'a> IndicesPutMappingRequestParams<'a> {
          body: IBody)
          -> IndicesPutMappingRequestParams<'a> {
         IndicesPutMappingRequestParams {
-            url_params: IndicesPutMappingUrlParams::Type(ty.into()),
+            url: IndicesPutMappingUrlParams::Type(ty.into()).url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
 }
-impl<'a> IndicesPutMappingRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
+impl<'a> IndicesPutMappingUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
             IndicesPutMappingUrlParams::IndexType(ref index, ref ty) => {
                 let mut url = String::with_capacity(12usize + index.len() + ty.len());
                 url.push_str("/");
                 url.push_str(index.as_ref());
                 url.push_str("/_mappings/");
                 url.push_str(ty.as_ref());
-                Cow::Owned(url)
+                Url::from(url)
             }
             IndicesPutMappingUrlParams::Type(ref ty) => {
                 let mut url = String::with_capacity(11usize + ty.len());
                 url.push_str("/_mappings/");
                 url.push_str(ty.as_ref());
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -2934,44 +3329,48 @@ impl<'a> IndicesPutMappingRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IndicesPutMappingRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
+            url: Cow::Borrowed(&self.url),
             method: HttpMethod::Post,
-            body: Some(&self.body),
+            body: Some(Cow::Borrowed(&self.body)),
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for IndicesPutMappingRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Post,
+            body: Some(Cow::Owned(self.body)),
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum CatAliasesUrlParams<'a> {
     None,
     Name(Name<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct CatAliasesRequestParams<'a> {
-    pub url_params: CatAliasesUrlParams<'a>,
-    _a: PhantomData<&'a ()>,
+    pub url: Url<'a>,
 }
 impl<'a> CatAliasesRequestParams<'a> {
     pub fn new() -> CatAliasesRequestParams<'a> {
-        CatAliasesRequestParams {
-            url_params: CatAliasesUrlParams::None,
-            _a: PhantomData,
-        }
+        CatAliasesRequestParams { url: CatAliasesUrlParams::None.url() }
     }
     pub fn name<IName: Into<Name<'a>>>(name: IName) -> CatAliasesRequestParams<'a> {
-        CatAliasesRequestParams {
-            url_params: CatAliasesUrlParams::Name(name.into()),
-            _a: PhantomData,
-        }
+        CatAliasesRequestParams { url: CatAliasesUrlParams::Name(name.into()).url() }
     }
 }
-impl<'a> CatAliasesRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
-            CatAliasesUrlParams::None => Cow::Borrowed("/_cat/aliases"),
+impl<'a> CatAliasesUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
+            CatAliasesUrlParams::None => Url::from("/_cat/aliases"),
             CatAliasesUrlParams::Name(ref name) => {
                 let mut url = String::with_capacity(14usize + name.len());
                 url.push_str("/_cat/aliases/");
                 url.push_str(name.as_ref());
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -2979,44 +3378,48 @@ impl<'a> CatAliasesRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a CatAliasesRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
-            method: HttpMethod::Post,
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Get,
+            body: None,
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for CatAliasesRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Get,
             body: None,
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum ClusterStatsUrlParams<'a> {
     None,
     NodeId(NodeId<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct ClusterStatsRequestParams<'a> {
-    pub url_params: ClusterStatsUrlParams<'a>,
-    _a: PhantomData<&'a ()>,
+    pub url: Url<'a>,
 }
 impl<'a> ClusterStatsRequestParams<'a> {
     pub fn new() -> ClusterStatsRequestParams<'a> {
-        ClusterStatsRequestParams {
-            url_params: ClusterStatsUrlParams::None,
-            _a: PhantomData,
-        }
+        ClusterStatsRequestParams { url: ClusterStatsUrlParams::None.url() }
     }
     pub fn node_id<INodeId: Into<NodeId<'a>>>(node_id: INodeId) -> ClusterStatsRequestParams<'a> {
-        ClusterStatsRequestParams {
-            url_params: ClusterStatsUrlParams::NodeId(node_id.into()),
-            _a: PhantomData,
-        }
+        ClusterStatsRequestParams { url: ClusterStatsUrlParams::NodeId(node_id.into()).url() }
     }
 }
-impl<'a> ClusterStatsRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
-            ClusterStatsUrlParams::None => Cow::Borrowed("/_cluster/stats"),
+impl<'a> ClusterStatsUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
+            ClusterStatsUrlParams::None => Url::from("/_cluster/stats"),
             ClusterStatsUrlParams::NodeId(ref node_id) => {
                 let mut url = String::with_capacity(22usize + node_id.len());
                 url.push_str("/_cluster/stats/nodes/");
                 url.push_str(node_id.as_ref());
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -3024,29 +3427,38 @@ impl<'a> ClusterStatsRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a ClusterStatsRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
-            method: HttpMethod::Post,
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Get,
+            body: None,
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for ClusterStatsRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Get,
             body: None,
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum IndicesValidateQueryUrlParams<'a> {
     None,
     Index(Index<'a>),
     IndexType(Index<'a>, Type<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct IndicesValidateQueryRequestParams<'a> {
-    pub url_params: IndicesValidateQueryUrlParams<'a>,
+    pub url: Url<'a>,
     pub body: Body<'a>,
-    _a: PhantomData<&'a ()>,
 }
 impl<'a> IndicesValidateQueryRequestParams<'a> {
     pub fn new<IBody: Into<Body<'a>>>(body: IBody) -> IndicesValidateQueryRequestParams<'a> {
         IndicesValidateQueryRequestParams {
-            url_params: IndicesValidateQueryUrlParams::None,
+            url: IndicesValidateQueryUrlParams::None.url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
     pub fn index<IIndex: Into<Index<'a>>, IBody: Into<Body<'a>>>
@@ -3054,9 +3466,8 @@ impl<'a> IndicesValidateQueryRequestParams<'a> {
          body: IBody)
          -> IndicesValidateQueryRequestParams<'a> {
         IndicesValidateQueryRequestParams {
-            url_params: IndicesValidateQueryUrlParams::Index(index.into()),
+            url: IndicesValidateQueryUrlParams::Index(index.into()).url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
     pub fn index_ty<IIndex: Into<Index<'a>>, IType: Into<Type<'a>>, IBody: Into<Body<'a>>>
@@ -3065,22 +3476,21 @@ impl<'a> IndicesValidateQueryRequestParams<'a> {
          body: IBody)
          -> IndicesValidateQueryRequestParams<'a> {
         IndicesValidateQueryRequestParams {
-            url_params: IndicesValidateQueryUrlParams::IndexType(index.into(), ty.into()),
+            url: IndicesValidateQueryUrlParams::IndexType(index.into(), ty.into()).url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
 }
-impl<'a> IndicesValidateQueryRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
-            IndicesValidateQueryUrlParams::None => Cow::Borrowed("/_validate/query"),
+impl<'a> IndicesValidateQueryUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
+            IndicesValidateQueryUrlParams::None => Url::from("/_validate/query"),
             IndicesValidateQueryUrlParams::Index(ref index) => {
                 let mut url = String::with_capacity(17usize + index.len());
                 url.push_str("/");
                 url.push_str(index.as_ref());
                 url.push_str("/_validate/query");
-                Cow::Owned(url)
+                Url::from(url)
             }
             IndicesValidateQueryUrlParams::IndexType(ref index, ref ty) => {
                 let mut url = String::with_capacity(18usize + index.len() + ty.len());
@@ -3089,7 +3499,7 @@ impl<'a> IndicesValidateQueryRequestParams<'a> {
                 url.push_str("/");
                 url.push_str(ty.as_ref());
                 url.push_str("/_validate/query");
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -3097,60 +3507,76 @@ impl<'a> IndicesValidateQueryRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IndicesValidateQueryRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
+            url: Cow::Borrowed(&self.url),
             method: HttpMethod::Post,
-            body: Some(&self.body),
+            body: Some(Cow::Borrowed(&self.body)),
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for IndicesValidateQueryRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Post,
+            body: Some(Cow::Owned(self.body)),
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum CatPendingTasksUrlParams {
     None,
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct CatPendingTasksRequestParams<'a> {
-    pub url_params: CatPendingTasksUrlParams,
-    _a: PhantomData<&'a ()>,
+    pub url: Url<'a>,
 }
 impl<'a> CatPendingTasksRequestParams<'a> {
     pub fn new() -> CatPendingTasksRequestParams<'a> {
-        CatPendingTasksRequestParams {
-            url_params: CatPendingTasksUrlParams::None,
-            _a: PhantomData,
-        }
+        CatPendingTasksRequestParams { url: CatPendingTasksUrlParams::None.url() }
     }
 }
-impl<'a> CatPendingTasksRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
-            CatPendingTasksUrlParams::None => Cow::Borrowed("/_cat/pending_tasks"),
+impl CatPendingTasksUrlParams {
+    pub fn url<'a>(self) -> Url<'a> {
+        match self {
+            CatPendingTasksUrlParams::None => Url::from("/_cat/pending_tasks"),
         }
     }
 }
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a CatPendingTasksRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
-            method: HttpMethod::Post,
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Get,
+            body: None,
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for CatPendingTasksRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Get,
             body: None,
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum ClearScrollUrlParams<'a> {
     None,
     ScrollId(ScrollId<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct ClearScrollRequestParams<'a> {
-    pub url_params: ClearScrollUrlParams<'a>,
+    pub url: Url<'a>,
     pub body: Body<'a>,
-    _a: PhantomData<&'a ()>,
 }
 impl<'a> ClearScrollRequestParams<'a> {
     pub fn new<IBody: Into<Body<'a>>>(body: IBody) -> ClearScrollRequestParams<'a> {
         ClearScrollRequestParams {
-            url_params: ClearScrollUrlParams::None,
+            url: ClearScrollUrlParams::None.url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
     pub fn scroll_id<IScrollId: Into<ScrollId<'a>>, IBody: Into<Body<'a>>>
@@ -3158,21 +3584,20 @@ impl<'a> ClearScrollRequestParams<'a> {
          body: IBody)
          -> ClearScrollRequestParams<'a> {
         ClearScrollRequestParams {
-            url_params: ClearScrollUrlParams::ScrollId(scroll_id.into()),
+            url: ClearScrollUrlParams::ScrollId(scroll_id.into()).url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
 }
-impl<'a> ClearScrollRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
-            ClearScrollUrlParams::None => Cow::Borrowed("/_search/scroll"),
+impl<'a> ClearScrollUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
+            ClearScrollUrlParams::None => Url::from("/_search/scroll"),
             ClearScrollUrlParams::ScrollId(ref scroll_id) => {
                 let mut url = String::with_capacity(16usize + scroll_id.len());
                 url.push_str("/_search/scroll/");
                 url.push_str(scroll_id.as_ref());
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -3180,44 +3605,48 @@ impl<'a> ClearScrollRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a ClearScrollRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
-            method: HttpMethod::Post,
-            body: Some(&self.body),
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Delete,
+            body: Some(Cow::Borrowed(&self.body)),
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for ClearScrollRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Delete,
+            body: Some(Cow::Owned(self.body)),
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum CatShardsUrlParams<'a> {
     None,
     Index(Index<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct CatShardsRequestParams<'a> {
-    pub url_params: CatShardsUrlParams<'a>,
-    _a: PhantomData<&'a ()>,
+    pub url: Url<'a>,
 }
 impl<'a> CatShardsRequestParams<'a> {
     pub fn new() -> CatShardsRequestParams<'a> {
-        CatShardsRequestParams {
-            url_params: CatShardsUrlParams::None,
-            _a: PhantomData,
-        }
+        CatShardsRequestParams { url: CatShardsUrlParams::None.url() }
     }
     pub fn index<IIndex: Into<Index<'a>>>(index: IIndex) -> CatShardsRequestParams<'a> {
-        CatShardsRequestParams {
-            url_params: CatShardsUrlParams::Index(index.into()),
-            _a: PhantomData,
-        }
+        CatShardsRequestParams { url: CatShardsUrlParams::Index(index.into()).url() }
     }
 }
-impl<'a> CatShardsRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
-            CatShardsUrlParams::None => Cow::Borrowed("/_cat/shards"),
+impl<'a> CatShardsUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
+            CatShardsUrlParams::None => Url::from("/_cat/shards"),
             CatShardsUrlParams::Index(ref index) => {
                 let mut url = String::with_capacity(13usize + index.len());
                 url.push_str("/_cat/shards/");
                 url.push_str(index.as_ref());
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -3225,45 +3654,51 @@ impl<'a> CatShardsRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a CatShardsRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
-            method: HttpMethod::Post,
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Get,
+            body: None,
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for CatShardsRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Get,
             body: None,
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum IndicesShardStoresUrlParams<'a> {
     None,
     Index(Index<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct IndicesShardStoresRequestParams<'a> {
-    pub url_params: IndicesShardStoresUrlParams<'a>,
-    _a: PhantomData<&'a ()>,
+    pub url: Url<'a>,
 }
 impl<'a> IndicesShardStoresRequestParams<'a> {
     pub fn new() -> IndicesShardStoresRequestParams<'a> {
-        IndicesShardStoresRequestParams {
-            url_params: IndicesShardStoresUrlParams::None,
-            _a: PhantomData,
-        }
+        IndicesShardStoresRequestParams { url: IndicesShardStoresUrlParams::None.url() }
     }
     pub fn index<IIndex: Into<Index<'a>>>(index: IIndex) -> IndicesShardStoresRequestParams<'a> {
         IndicesShardStoresRequestParams {
-            url_params: IndicesShardStoresUrlParams::Index(index.into()),
-            _a: PhantomData,
+            url: IndicesShardStoresUrlParams::Index(index.into()).url(),
         }
     }
 }
-impl<'a> IndicesShardStoresRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
-            IndicesShardStoresUrlParams::None => Cow::Borrowed("/_shard_stores"),
+impl<'a> IndicesShardStoresUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
+            IndicesShardStoresUrlParams::None => Url::from("/_shard_stores"),
             IndicesShardStoresUrlParams::Index(ref index) => {
                 let mut url = String::with_capacity(15usize + index.len());
                 url.push_str("/");
                 url.push_str(index.as_ref());
                 url.push_str("/_shard_stores");
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -3271,78 +3706,91 @@ impl<'a> IndicesShardStoresRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IndicesShardStoresRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
-            method: HttpMethod::Post,
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Get,
+            body: None,
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for IndicesShardStoresRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Get,
             body: None,
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum IndicesUpdateAliasesUrlParams {
     None,
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct IndicesUpdateAliasesRequestParams<'a> {
-    pub url_params: IndicesUpdateAliasesUrlParams,
+    pub url: Url<'a>,
     pub body: Body<'a>,
-    _a: PhantomData<&'a ()>,
 }
 impl<'a> IndicesUpdateAliasesRequestParams<'a> {
     pub fn new<IBody: Into<Body<'a>>>(body: IBody) -> IndicesUpdateAliasesRequestParams<'a> {
         IndicesUpdateAliasesRequestParams {
-            url_params: IndicesUpdateAliasesUrlParams::None,
+            url: IndicesUpdateAliasesUrlParams::None.url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
 }
-impl<'a> IndicesUpdateAliasesRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
-            IndicesUpdateAliasesUrlParams::None => Cow::Borrowed("/_aliases"),
+impl IndicesUpdateAliasesUrlParams {
+    pub fn url<'a>(self) -> Url<'a> {
+        match self {
+            IndicesUpdateAliasesUrlParams::None => Url::from("/_aliases"),
         }
     }
 }
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IndicesUpdateAliasesRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
+            url: Cow::Borrowed(&self.url),
             method: HttpMethod::Post,
-            body: Some(&self.body),
+            body: Some(Cow::Borrowed(&self.body)),
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for IndicesUpdateAliasesRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Post,
+            body: Some(Cow::Owned(self.body)),
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum CatSegmentsUrlParams<'a> {
     None,
     Index(Index<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct CatSegmentsRequestParams<'a> {
-    pub url_params: CatSegmentsUrlParams<'a>,
-    _a: PhantomData<&'a ()>,
+    pub url: Url<'a>,
 }
 impl<'a> CatSegmentsRequestParams<'a> {
     pub fn new() -> CatSegmentsRequestParams<'a> {
-        CatSegmentsRequestParams {
-            url_params: CatSegmentsUrlParams::None,
-            _a: PhantomData,
-        }
+        CatSegmentsRequestParams { url: CatSegmentsUrlParams::None.url() }
     }
     pub fn index<IIndex: Into<Index<'a>>>(index: IIndex) -> CatSegmentsRequestParams<'a> {
-        CatSegmentsRequestParams {
-            url_params: CatSegmentsUrlParams::Index(index.into()),
-            _a: PhantomData,
-        }
+        CatSegmentsRequestParams { url: CatSegmentsUrlParams::Index(index.into()).url() }
     }
 }
-impl<'a> CatSegmentsRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
-            CatSegmentsUrlParams::None => Cow::Borrowed("/_cat/segments"),
+impl<'a> CatSegmentsUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
+            CatSegmentsUrlParams::None => Url::from("/_cat/segments"),
             CatSegmentsUrlParams::Index(ref index) => {
                 let mut url = String::with_capacity(15usize + index.len());
                 url.push_str("/_cat/segments/");
                 url.push_str(index.as_ref());
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -3350,38 +3798,46 @@ impl<'a> CatSegmentsRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a CatSegmentsRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
-            method: HttpMethod::Post,
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Get,
+            body: None,
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for CatSegmentsRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Get,
             body: None,
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum MpercolateUrlParams<'a> {
     None,
     Index(Index<'a>),
     IndexType(Index<'a>, Type<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct MpercolateRequestParams<'a> {
-    pub url_params: MpercolateUrlParams<'a>,
+    pub url: Url<'a>,
     pub body: Body<'a>,
-    _a: PhantomData<&'a ()>,
 }
 impl<'a> MpercolateRequestParams<'a> {
     pub fn new<IBody: Into<Body<'a>>>(body: IBody) -> MpercolateRequestParams<'a> {
         MpercolateRequestParams {
-            url_params: MpercolateUrlParams::None,
+            url: MpercolateUrlParams::None.url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
     pub fn index<IIndex: Into<Index<'a>>, IBody: Into<Body<'a>>>(index: IIndex,
                                                                  body: IBody)
                                                                  -> MpercolateRequestParams<'a> {
         MpercolateRequestParams {
-            url_params: MpercolateUrlParams::Index(index.into()),
+            url: MpercolateUrlParams::Index(index.into()).url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
     pub fn index_ty<IIndex: Into<Index<'a>>, IType: Into<Type<'a>>, IBody: Into<Body<'a>>>
@@ -3390,22 +3846,21 @@ impl<'a> MpercolateRequestParams<'a> {
          body: IBody)
          -> MpercolateRequestParams<'a> {
         MpercolateRequestParams {
-            url_params: MpercolateUrlParams::IndexType(index.into(), ty.into()),
+            url: MpercolateUrlParams::IndexType(index.into(), ty.into()).url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
 }
-impl<'a> MpercolateRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
-            MpercolateUrlParams::None => Cow::Borrowed("/_mpercolate"),
+impl<'a> MpercolateUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
+            MpercolateUrlParams::None => Url::from("/_mpercolate"),
             MpercolateUrlParams::Index(ref index) => {
                 let mut url = String::with_capacity(13usize + index.len());
                 url.push_str("/");
                 url.push_str(index.as_ref());
                 url.push_str("/_mpercolate");
-                Cow::Owned(url)
+                Url::from(url)
             }
             MpercolateUrlParams::IndexType(ref index, ref ty) => {
                 let mut url = String::with_capacity(14usize + index.len() + ty.len());
@@ -3414,7 +3869,7 @@ impl<'a> MpercolateRequestParams<'a> {
                 url.push_str("/");
                 url.push_str(ty.as_ref());
                 url.push_str("/_mpercolate");
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -3422,37 +3877,44 @@ impl<'a> MpercolateRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a MpercolateRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
+            url: Cow::Borrowed(&self.url),
             method: HttpMethod::Post,
-            body: Some(&self.body),
+            body: Some(Cow::Borrowed(&self.body)),
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for MpercolateRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Post,
+            body: Some(Cow::Owned(self.body)),
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum IndicesOpenUrlParams<'a> {
     Index(Index<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct IndicesOpenRequestParams<'a> {
-    pub url_params: IndicesOpenUrlParams<'a>,
-    _a: PhantomData<&'a ()>,
+    pub url: Url<'a>,
 }
 impl<'a> IndicesOpenRequestParams<'a> {
     pub fn index<IIndex: Into<Index<'a>>>(index: IIndex) -> IndicesOpenRequestParams<'a> {
-        IndicesOpenRequestParams {
-            url_params: IndicesOpenUrlParams::Index(index.into()),
-            _a: PhantomData,
-        }
+        IndicesOpenRequestParams { url: IndicesOpenUrlParams::Index(index.into()).url() }
     }
 }
-impl<'a> IndicesOpenRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
+impl<'a> IndicesOpenUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
             IndicesOpenUrlParams::Index(ref index) => {
                 let mut url = String::with_capacity(7usize + index.len());
                 url.push_str("/");
                 url.push_str(index.as_ref());
                 url.push_str("/_open");
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -3460,19 +3922,29 @@ impl<'a> IndicesOpenRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IndicesOpenRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Post,
+            body: None,
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for IndicesOpenRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
             method: HttpMethod::Post,
             body: None,
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum GetUrlParams<'a> {
     IndexTypeId(Index<'a>, Type<'a>, Id<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct GetRequestParams<'a> {
-    pub url_params: GetUrlParams<'a>,
-    _a: PhantomData<&'a ()>,
+    pub url: Url<'a>,
 }
 impl<'a> GetRequestParams<'a> {
     pub fn index_ty_id<IIndex: Into<Index<'a>>, IType: Into<Type<'a>>, IId: Into<Id<'a>>>
@@ -3481,14 +3953,13 @@ impl<'a> GetRequestParams<'a> {
          id: IId)
          -> GetRequestParams<'a> {
         GetRequestParams {
-            url_params: GetUrlParams::IndexTypeId(index.into(), ty.into(), id.into()),
-            _a: PhantomData,
+            url: GetUrlParams::IndexTypeId(index.into(), ty.into(), id.into()).url(),
         }
     }
 }
-impl<'a> GetRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
+impl<'a> GetUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
             GetUrlParams::IndexTypeId(ref index, ref ty, ref id) => {
                 let mut url = String::with_capacity(3usize + index.len() + ty.len() + id.len());
                 url.push_str("/");
@@ -3497,7 +3968,7 @@ impl<'a> GetRequestParams<'a> {
                 url.push_str(ty.as_ref());
                 url.push_str("/");
                 url.push_str(id.as_ref());
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -3505,21 +3976,31 @@ impl<'a> GetRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a GetRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
-            method: HttpMethod::Post,
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Get,
+            body: None,
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for GetRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Get,
             body: None,
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum UpdateByQueryUrlParams<'a> {
     Index(Index<'a>),
     IndexType(Index<'a>, Type<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct UpdateByQueryRequestParams<'a> {
-    pub url_params: UpdateByQueryUrlParams<'a>,
+    pub url: Url<'a>,
     pub body: Body<'a>,
-    _a: PhantomData<&'a ()>,
 }
 impl<'a> UpdateByQueryRequestParams<'a> {
     pub fn index<IIndex: Into<Index<'a>>, IBody: Into<Body<'a>>>
@@ -3527,9 +4008,8 @@ impl<'a> UpdateByQueryRequestParams<'a> {
          body: IBody)
          -> UpdateByQueryRequestParams<'a> {
         UpdateByQueryRequestParams {
-            url_params: UpdateByQueryUrlParams::Index(index.into()),
+            url: UpdateByQueryUrlParams::Index(index.into()).url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
     pub fn index_ty<IIndex: Into<Index<'a>>, IType: Into<Type<'a>>, IBody: Into<Body<'a>>>
@@ -3538,21 +4018,20 @@ impl<'a> UpdateByQueryRequestParams<'a> {
          body: IBody)
          -> UpdateByQueryRequestParams<'a> {
         UpdateByQueryRequestParams {
-            url_params: UpdateByQueryUrlParams::IndexType(index.into(), ty.into()),
+            url: UpdateByQueryUrlParams::IndexType(index.into(), ty.into()).url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
 }
-impl<'a> UpdateByQueryRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
+impl<'a> UpdateByQueryUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
             UpdateByQueryUrlParams::Index(ref index) => {
                 let mut url = String::with_capacity(18usize + index.len());
                 url.push_str("/");
                 url.push_str(index.as_ref());
                 url.push_str("/_update_by_query");
-                Cow::Owned(url)
+                Url::from(url)
             }
             UpdateByQueryUrlParams::IndexType(ref index, ref ty) => {
                 let mut url = String::with_capacity(19usize + index.len() + ty.len());
@@ -3561,7 +4040,7 @@ impl<'a> UpdateByQueryRequestParams<'a> {
                 url.push_str("/");
                 url.push_str(ty.as_ref());
                 url.push_str("/_update_by_query");
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -3569,29 +4048,38 @@ impl<'a> UpdateByQueryRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a UpdateByQueryRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
+            url: Cow::Borrowed(&self.url),
             method: HttpMethod::Post,
-            body: Some(&self.body),
+            body: Some(Cow::Borrowed(&self.body)),
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for UpdateByQueryRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Post,
+            body: Some(Cow::Owned(self.body)),
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum MtermvectorsUrlParams<'a> {
     None,
     Index(Index<'a>),
     IndexType(Index<'a>, Type<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct MtermvectorsRequestParams<'a> {
-    pub url_params: MtermvectorsUrlParams<'a>,
+    pub url: Url<'a>,
     pub body: Body<'a>,
-    _a: PhantomData<&'a ()>,
 }
 impl<'a> MtermvectorsRequestParams<'a> {
     pub fn new<IBody: Into<Body<'a>>>(body: IBody) -> MtermvectorsRequestParams<'a> {
         MtermvectorsRequestParams {
-            url_params: MtermvectorsUrlParams::None,
+            url: MtermvectorsUrlParams::None.url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
     pub fn index<IIndex: Into<Index<'a>>, IBody: Into<Body<'a>>>
@@ -3599,9 +4087,8 @@ impl<'a> MtermvectorsRequestParams<'a> {
          body: IBody)
          -> MtermvectorsRequestParams<'a> {
         MtermvectorsRequestParams {
-            url_params: MtermvectorsUrlParams::Index(index.into()),
+            url: MtermvectorsUrlParams::Index(index.into()).url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
     pub fn index_ty<IIndex: Into<Index<'a>>, IType: Into<Type<'a>>, IBody: Into<Body<'a>>>
@@ -3610,22 +4097,21 @@ impl<'a> MtermvectorsRequestParams<'a> {
          body: IBody)
          -> MtermvectorsRequestParams<'a> {
         MtermvectorsRequestParams {
-            url_params: MtermvectorsUrlParams::IndexType(index.into(), ty.into()),
+            url: MtermvectorsUrlParams::IndexType(index.into(), ty.into()).url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
 }
-impl<'a> MtermvectorsRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
-            MtermvectorsUrlParams::None => Cow::Borrowed("/_mtermvectors"),
+impl<'a> MtermvectorsUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
+            MtermvectorsUrlParams::None => Url::from("/_mtermvectors"),
             MtermvectorsUrlParams::Index(ref index) => {
                 let mut url = String::with_capacity(15usize + index.len());
                 url.push_str("/");
                 url.push_str(index.as_ref());
                 url.push_str("/_mtermvectors");
-                Cow::Owned(url)
+                Url::from(url)
             }
             MtermvectorsUrlParams::IndexType(ref index, ref ty) => {
                 let mut url = String::with_capacity(16usize + index.len() + ty.len());
@@ -3634,7 +4120,7 @@ impl<'a> MtermvectorsRequestParams<'a> {
                 url.push_str("/");
                 url.push_str(ty.as_ref());
                 url.push_str("/_mtermvectors");
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -3642,44 +4128,48 @@ impl<'a> MtermvectorsRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a MtermvectorsRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
+            url: Cow::Borrowed(&self.url),
             method: HttpMethod::Post,
-            body: Some(&self.body),
+            body: Some(Cow::Borrowed(&self.body)),
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for MtermvectorsRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Post,
+            body: Some(Cow::Owned(self.body)),
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum CatRecoveryUrlParams<'a> {
     None,
     Index(Index<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct CatRecoveryRequestParams<'a> {
-    pub url_params: CatRecoveryUrlParams<'a>,
-    _a: PhantomData<&'a ()>,
+    pub url: Url<'a>,
 }
 impl<'a> CatRecoveryRequestParams<'a> {
     pub fn new() -> CatRecoveryRequestParams<'a> {
-        CatRecoveryRequestParams {
-            url_params: CatRecoveryUrlParams::None,
-            _a: PhantomData,
-        }
+        CatRecoveryRequestParams { url: CatRecoveryUrlParams::None.url() }
     }
     pub fn index<IIndex: Into<Index<'a>>>(index: IIndex) -> CatRecoveryRequestParams<'a> {
-        CatRecoveryRequestParams {
-            url_params: CatRecoveryUrlParams::Index(index.into()),
-            _a: PhantomData,
-        }
+        CatRecoveryRequestParams { url: CatRecoveryUrlParams::Index(index.into()).url() }
     }
 }
-impl<'a> CatRecoveryRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
-            CatRecoveryUrlParams::None => Cow::Borrowed("/_cat/recovery"),
+impl<'a> CatRecoveryUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
+            CatRecoveryUrlParams::None => Url::from("/_cat/recovery"),
             CatRecoveryUrlParams::Index(ref index) => {
                 let mut url = String::with_capacity(15usize + index.len());
                 url.push_str("/_cat/recovery/");
                 url.push_str(index.as_ref());
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -3687,20 +4177,30 @@ impl<'a> CatRecoveryRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a CatRecoveryRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
-            method: HttpMethod::Post,
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Get,
+            body: None,
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for CatRecoveryRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Get,
             body: None,
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum SnapshotRestoreUrlParams<'a> {
     RepositorySnapshot(Repository<'a>, Snapshot<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct SnapshotRestoreRequestParams<'a> {
-    pub url_params: SnapshotRestoreUrlParams<'a>,
+    pub url: Url<'a>,
     pub body: Body<'a>,
-    _a: PhantomData<&'a ()>,
 }
 impl<'a> SnapshotRestoreRequestParams<'a> {
     pub fn repository_snapshot<IRepository: Into<Repository<'a>>,
@@ -3711,16 +4211,15 @@ impl<'a> SnapshotRestoreRequestParams<'a> {
          body: IBody)
          -> SnapshotRestoreRequestParams<'a> {
         SnapshotRestoreRequestParams {
-            url_params: SnapshotRestoreUrlParams::RepositorySnapshot(repository.into(),
-                                                                     snapshot.into()),
+            url: SnapshotRestoreUrlParams::RepositorySnapshot(repository.into(), snapshot.into())
+                .url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
 }
-impl<'a> SnapshotRestoreRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
+impl<'a> SnapshotRestoreUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
             SnapshotRestoreUrlParams::RepositorySnapshot(ref repository, ref snapshot) => {
                 let mut url = String::with_capacity(21usize + repository.len() + snapshot.len());
                 url.push_str("/_snapshot/");
@@ -3728,7 +4227,7 @@ impl<'a> SnapshotRestoreRequestParams<'a> {
                 url.push_str("/");
                 url.push_str(snapshot.as_ref());
                 url.push_str("/_restore");
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -3736,110 +4235,130 @@ impl<'a> SnapshotRestoreRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a SnapshotRestoreRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
+            url: Cow::Borrowed(&self.url),
             method: HttpMethod::Post,
-            body: Some(&self.body),
+            body: Some(Cow::Borrowed(&self.body)),
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for SnapshotRestoreRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Post,
+            body: Some(Cow::Owned(self.body)),
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum ReindexUrlParams {
     None,
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct ReindexRequestParams<'a> {
-    pub url_params: ReindexUrlParams,
+    pub url: Url<'a>,
     pub body: Body<'a>,
-    _a: PhantomData<&'a ()>,
 }
 impl<'a> ReindexRequestParams<'a> {
     pub fn new<IBody: Into<Body<'a>>>(body: IBody) -> ReindexRequestParams<'a> {
         ReindexRequestParams {
-            url_params: ReindexUrlParams::None,
+            url: ReindexUrlParams::None.url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
 }
-impl<'a> ReindexRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
-            ReindexUrlParams::None => Cow::Borrowed("/_reindex"),
+impl ReindexUrlParams {
+    pub fn url<'a>(self) -> Url<'a> {
+        match self {
+            ReindexUrlParams::None => Url::from("/_reindex"),
         }
     }
 }
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a ReindexRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
+            url: Cow::Borrowed(&self.url),
             method: HttpMethod::Post,
-            body: Some(&self.body),
+            body: Some(Cow::Borrowed(&self.body)),
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for ReindexRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Post,
+            body: Some(Cow::Owned(self.body)),
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum CatHealthUrlParams {
     None,
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct CatHealthRequestParams<'a> {
-    pub url_params: CatHealthUrlParams,
-    _a: PhantomData<&'a ()>,
+    pub url: Url<'a>,
 }
 impl<'a> CatHealthRequestParams<'a> {
     pub fn new() -> CatHealthRequestParams<'a> {
-        CatHealthRequestParams {
-            url_params: CatHealthUrlParams::None,
-            _a: PhantomData,
-        }
+        CatHealthRequestParams { url: CatHealthUrlParams::None.url() }
     }
 }
-impl<'a> CatHealthRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
-            CatHealthUrlParams::None => Cow::Borrowed("/_cat/health"),
+impl CatHealthUrlParams {
+    pub fn url<'a>(self) -> Url<'a> {
+        match self {
+            CatHealthUrlParams::None => Url::from("/_cat/health"),
         }
     }
 }
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a CatHealthRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
-            method: HttpMethod::Post,
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Get,
+            body: None,
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for CatHealthRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Get,
             body: None,
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum CatCountUrlParams<'a> {
     None,
     Index(Index<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct CatCountRequestParams<'a> {
-    pub url_params: CatCountUrlParams<'a>,
-    _a: PhantomData<&'a ()>,
+    pub url: Url<'a>,
 }
 impl<'a> CatCountRequestParams<'a> {
     pub fn new() -> CatCountRequestParams<'a> {
-        CatCountRequestParams {
-            url_params: CatCountUrlParams::None,
-            _a: PhantomData,
-        }
+        CatCountRequestParams { url: CatCountUrlParams::None.url() }
     }
     pub fn index<IIndex: Into<Index<'a>>>(index: IIndex) -> CatCountRequestParams<'a> {
-        CatCountRequestParams {
-            url_params: CatCountUrlParams::Index(index.into()),
-            _a: PhantomData,
-        }
+        CatCountRequestParams { url: CatCountUrlParams::Index(index.into()).url() }
     }
 }
-impl<'a> CatCountRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
-            CatCountUrlParams::None => Cow::Borrowed("/_cat/count"),
+impl<'a> CatCountUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
+            CatCountUrlParams::None => Url::from("/_cat/count"),
             CatCountUrlParams::Index(ref index) => {
                 let mut url = String::with_capacity(12usize + index.len());
                 url.push_str("/_cat/count/");
                 url.push_str(index.as_ref());
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -3847,45 +4366,51 @@ impl<'a> CatCountRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a CatCountRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
-            method: HttpMethod::Post,
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Get,
+            body: None,
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for CatCountRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Get,
             body: None,
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum CatSnapshotsUrlParams<'a> {
     None,
     Repository(Repository<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct CatSnapshotsRequestParams<'a> {
-    pub url_params: CatSnapshotsUrlParams<'a>,
-    _a: PhantomData<&'a ()>,
+    pub url: Url<'a>,
 }
 impl<'a> CatSnapshotsRequestParams<'a> {
     pub fn new() -> CatSnapshotsRequestParams<'a> {
-        CatSnapshotsRequestParams {
-            url_params: CatSnapshotsUrlParams::None,
-            _a: PhantomData,
-        }
+        CatSnapshotsRequestParams { url: CatSnapshotsUrlParams::None.url() }
     }
     pub fn repository<IRepository: Into<Repository<'a>>>(repository: IRepository)
                                                          -> CatSnapshotsRequestParams<'a> {
         CatSnapshotsRequestParams {
-            url_params: CatSnapshotsUrlParams::Repository(repository.into()),
-            _a: PhantomData,
+            url: CatSnapshotsUrlParams::Repository(repository.into()).url(),
         }
     }
 }
-impl<'a> CatSnapshotsRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
-            CatSnapshotsUrlParams::None => Cow::Borrowed("/_cat/snapshots"),
+impl<'a> CatSnapshotsUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
+            CatSnapshotsUrlParams::None => Url::from("/_cat/snapshots"),
             CatSnapshotsUrlParams::Repository(ref repository) => {
                 let mut url = String::with_capacity(16usize + repository.len());
                 url.push_str("/_cat/snapshots/");
                 url.push_str(repository.as_ref());
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -3893,34 +4418,40 @@ impl<'a> CatSnapshotsRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a CatSnapshotsRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
-            method: HttpMethod::Post,
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Get,
+            body: None,
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for CatSnapshotsRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Get,
             body: None,
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum IndicesGetMappingUrlParams<'a> {
     None,
     Index(Index<'a>),
     IndexType(Index<'a>, Type<'a>),
     Type(Type<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct IndicesGetMappingRequestParams<'a> {
-    pub url_params: IndicesGetMappingUrlParams<'a>,
-    _a: PhantomData<&'a ()>,
+    pub url: Url<'a>,
 }
 impl<'a> IndicesGetMappingRequestParams<'a> {
     pub fn new() -> IndicesGetMappingRequestParams<'a> {
-        IndicesGetMappingRequestParams {
-            url_params: IndicesGetMappingUrlParams::None,
-            _a: PhantomData,
-        }
+        IndicesGetMappingRequestParams { url: IndicesGetMappingUrlParams::None.url() }
     }
     pub fn index<IIndex: Into<Index<'a>>>(index: IIndex) -> IndicesGetMappingRequestParams<'a> {
         IndicesGetMappingRequestParams {
-            url_params: IndicesGetMappingUrlParams::Index(index.into()),
-            _a: PhantomData,
+            url: IndicesGetMappingUrlParams::Index(index.into()).url(),
         }
     }
     pub fn index_ty<IIndex: Into<Index<'a>>, IType: Into<Type<'a>>>
@@ -3928,27 +4459,23 @@ impl<'a> IndicesGetMappingRequestParams<'a> {
          ty: IType)
          -> IndicesGetMappingRequestParams<'a> {
         IndicesGetMappingRequestParams {
-            url_params: IndicesGetMappingUrlParams::IndexType(index.into(), ty.into()),
-            _a: PhantomData,
+            url: IndicesGetMappingUrlParams::IndexType(index.into(), ty.into()).url(),
         }
     }
     pub fn ty<IType: Into<Type<'a>>>(ty: IType) -> IndicesGetMappingRequestParams<'a> {
-        IndicesGetMappingRequestParams {
-            url_params: IndicesGetMappingUrlParams::Type(ty.into()),
-            _a: PhantomData,
-        }
+        IndicesGetMappingRequestParams { url: IndicesGetMappingUrlParams::Type(ty.into()).url() }
     }
 }
-impl<'a> IndicesGetMappingRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
-            IndicesGetMappingUrlParams::None => Cow::Borrowed("/_mapping"),
+impl<'a> IndicesGetMappingUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
+            IndicesGetMappingUrlParams::None => Url::from("/_mapping"),
             IndicesGetMappingUrlParams::Index(ref index) => {
                 let mut url = String::with_capacity(10usize + index.len());
                 url.push_str("/");
                 url.push_str(index.as_ref());
                 url.push_str("/_mapping");
-                Cow::Owned(url)
+                Url::from(url)
             }
             IndicesGetMappingUrlParams::IndexType(ref index, ref ty) => {
                 let mut url = String::with_capacity(11usize + index.len() + ty.len());
@@ -3956,13 +4483,13 @@ impl<'a> IndicesGetMappingRequestParams<'a> {
                 url.push_str(index.as_ref());
                 url.push_str("/_mapping/");
                 url.push_str(ty.as_ref());
-                Cow::Owned(url)
+                Url::from(url)
             }
             IndicesGetMappingUrlParams::Type(ref ty) => {
                 let mut url = String::with_capacity(10usize + ty.len());
                 url.push_str("/_mapping/");
                 url.push_str(ty.as_ref());
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -3970,19 +4497,29 @@ impl<'a> IndicesGetMappingRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IndicesGetMappingRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
-            method: HttpMethod::Post,
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Get,
+            body: None,
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for IndicesGetMappingRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Get,
             body: None,
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum SnapshotGetUrlParams<'a> {
     RepositorySnapshot(Repository<'a>, Snapshot<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct SnapshotGetRequestParams<'a> {
-    pub url_params: SnapshotGetUrlParams<'a>,
-    _a: PhantomData<&'a ()>,
+    pub url: Url<'a>,
 }
 impl<'a> SnapshotGetRequestParams<'a> {
     pub fn repository_snapshot<IRepository: Into<Repository<'a>>, ISnapshot: Into<Snapshot<'a>>>
@@ -3990,22 +4527,20 @@ impl<'a> SnapshotGetRequestParams<'a> {
          snapshot: ISnapshot)
          -> SnapshotGetRequestParams<'a> {
         SnapshotGetRequestParams {
-            url_params: SnapshotGetUrlParams::RepositorySnapshot(repository.into(),
-                                                                 snapshot.into()),
-            _a: PhantomData,
+            url: SnapshotGetUrlParams::RepositorySnapshot(repository.into(), snapshot.into()).url(),
         }
     }
 }
-impl<'a> SnapshotGetRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
+impl<'a> SnapshotGetUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
             SnapshotGetUrlParams::RepositorySnapshot(ref repository, ref snapshot) => {
                 let mut url = String::with_capacity(12usize + repository.len() + snapshot.len());
                 url.push_str("/_snapshot/");
                 url.push_str(repository.as_ref());
                 url.push_str("/");
                 url.push_str(snapshot.as_ref());
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -4013,51 +4548,68 @@ impl<'a> SnapshotGetRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a SnapshotGetRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
-            method: HttpMethod::Post,
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Get,
+            body: None,
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for SnapshotGetRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Get,
             body: None,
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum CatNodesUrlParams {
     None,
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct CatNodesRequestParams<'a> {
-    pub url_params: CatNodesUrlParams,
-    _a: PhantomData<&'a ()>,
+    pub url: Url<'a>,
 }
 impl<'a> CatNodesRequestParams<'a> {
     pub fn new() -> CatNodesRequestParams<'a> {
-        CatNodesRequestParams {
-            url_params: CatNodesUrlParams::None,
-            _a: PhantomData,
-        }
+        CatNodesRequestParams { url: CatNodesUrlParams::None.url() }
     }
 }
-impl<'a> CatNodesRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
-            CatNodesUrlParams::None => Cow::Borrowed("/_cat/nodes"),
+impl CatNodesUrlParams {
+    pub fn url<'a>(self) -> Url<'a> {
+        match self {
+            CatNodesUrlParams::None => Url::from("/_cat/nodes"),
         }
     }
 }
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a CatNodesRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
-            method: HttpMethod::Post,
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Get,
+            body: None,
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for CatNodesRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Get,
             body: None,
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum ExistsUrlParams<'a> {
     IndexTypeId(Index<'a>, Type<'a>, Id<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct ExistsRequestParams<'a> {
-    pub url_params: ExistsUrlParams<'a>,
-    _a: PhantomData<&'a ()>,
+    pub url: Url<'a>,
 }
 impl<'a> ExistsRequestParams<'a> {
     pub fn index_ty_id<IIndex: Into<Index<'a>>, IType: Into<Type<'a>>, IId: Into<Id<'a>>>
@@ -4066,14 +4618,13 @@ impl<'a> ExistsRequestParams<'a> {
          id: IId)
          -> ExistsRequestParams<'a> {
         ExistsRequestParams {
-            url_params: ExistsUrlParams::IndexTypeId(index.into(), ty.into(), id.into()),
-            _a: PhantomData,
+            url: ExistsUrlParams::IndexTypeId(index.into(), ty.into(), id.into()).url(),
         }
     }
 }
-impl<'a> ExistsRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
+impl<'a> ExistsUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
             ExistsUrlParams::IndexTypeId(ref index, ref ty, ref id) => {
                 let mut url = String::with_capacity(3usize + index.len() + ty.len() + id.len());
                 url.push_str("/");
@@ -4082,7 +4633,7 @@ impl<'a> ExistsRequestParams<'a> {
                 url.push_str(ty.as_ref());
                 url.push_str("/");
                 url.push_str(id.as_ref());
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -4090,80 +4641,93 @@ impl<'a> ExistsRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a ExistsRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
-            method: HttpMethod::Post,
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Head,
+            body: None,
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for ExistsRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Head,
             body: None,
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum ClusterRerouteUrlParams {
     None,
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct ClusterRerouteRequestParams<'a> {
-    pub url_params: ClusterRerouteUrlParams,
+    pub url: Url<'a>,
     pub body: Body<'a>,
-    _a: PhantomData<&'a ()>,
 }
 impl<'a> ClusterRerouteRequestParams<'a> {
     pub fn new<IBody: Into<Body<'a>>>(body: IBody) -> ClusterRerouteRequestParams<'a> {
         ClusterRerouteRequestParams {
-            url_params: ClusterRerouteUrlParams::None,
+            url: ClusterRerouteUrlParams::None.url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
 }
-impl<'a> ClusterRerouteRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
-            ClusterRerouteUrlParams::None => Cow::Borrowed("/_cluster/reroute"),
+impl ClusterRerouteUrlParams {
+    pub fn url<'a>(self) -> Url<'a> {
+        match self {
+            ClusterRerouteUrlParams::None => Url::from("/_cluster/reroute"),
         }
     }
 }
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a ClusterRerouteRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
+            url: Cow::Borrowed(&self.url),
             method: HttpMethod::Post,
-            body: Some(&self.body),
+            body: Some(Cow::Borrowed(&self.body)),
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for ClusterRerouteRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Post,
+            body: Some(Cow::Owned(self.body)),
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum NodesHotThreadsUrlParams<'a> {
     None,
     NodeId(NodeId<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct NodesHotThreadsRequestParams<'a> {
-    pub url_params: NodesHotThreadsUrlParams<'a>,
-    _a: PhantomData<&'a ()>,
+    pub url: Url<'a>,
 }
 impl<'a> NodesHotThreadsRequestParams<'a> {
     pub fn new() -> NodesHotThreadsRequestParams<'a> {
-        NodesHotThreadsRequestParams {
-            url_params: NodesHotThreadsUrlParams::None,
-            _a: PhantomData,
-        }
+        NodesHotThreadsRequestParams { url: NodesHotThreadsUrlParams::None.url() }
     }
     pub fn node_id<INodeId: Into<NodeId<'a>>>(node_id: INodeId)
                                               -> NodesHotThreadsRequestParams<'a> {
-        NodesHotThreadsRequestParams {
-            url_params: NodesHotThreadsUrlParams::NodeId(node_id.into()),
-            _a: PhantomData,
-        }
+        NodesHotThreadsRequestParams { url: NodesHotThreadsUrlParams::NodeId(node_id.into()).url() }
     }
 }
-impl<'a> NodesHotThreadsRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
-            NodesHotThreadsUrlParams::None => Cow::Borrowed("/_nodes/hot_threads"),
+impl<'a> NodesHotThreadsUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
+            NodesHotThreadsUrlParams::None => Url::from("/_nodes/hot_threads"),
             NodesHotThreadsUrlParams::NodeId(ref node_id) => {
                 let mut url = String::with_capacity(20usize + node_id.len());
                 url.push_str("/_nodes/");
                 url.push_str(node_id.as_ref());
                 url.push_str("/hot_threads");
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -4171,13 +4735,23 @@ impl<'a> NodesHotThreadsRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a NodesHotThreadsRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
-            method: HttpMethod::Post,
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Get,
+            body: None,
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for NodesHotThreadsRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Get,
             body: None,
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum NodesStatsUrlParams<'a> {
     None,
     Metric(Metric<'a>),
@@ -4186,45 +4760,34 @@ pub enum NodesStatsUrlParams<'a> {
     NodeIdMetric(NodeId<'a>, Metric<'a>),
     NodeIdMetricIndexMetric(NodeId<'a>, Metric<'a>, IndexMetric<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct NodesStatsRequestParams<'a> {
-    pub url_params: NodesStatsUrlParams<'a>,
-    _a: PhantomData<&'a ()>,
+    pub url: Url<'a>,
 }
 impl<'a> NodesStatsRequestParams<'a> {
     pub fn new() -> NodesStatsRequestParams<'a> {
-        NodesStatsRequestParams {
-            url_params: NodesStatsUrlParams::None,
-            _a: PhantomData,
-        }
+        NodesStatsRequestParams { url: NodesStatsUrlParams::None.url() }
     }
     pub fn metric<IMetric: Into<Metric<'a>>>(metric: IMetric) -> NodesStatsRequestParams<'a> {
-        NodesStatsRequestParams {
-            url_params: NodesStatsUrlParams::Metric(metric.into()),
-            _a: PhantomData,
-        }
+        NodesStatsRequestParams { url: NodesStatsUrlParams::Metric(metric.into()).url() }
     }
     pub fn metric_index_metric<IMetric: Into<Metric<'a>>, IIndexMetric: Into<IndexMetric<'a>>>
         (metric: IMetric,
          index_metric: IIndexMetric)
          -> NodesStatsRequestParams<'a> {
         NodesStatsRequestParams {
-            url_params: NodesStatsUrlParams::MetricIndexMetric(metric.into(), index_metric.into()),
-            _a: PhantomData,
+            url: NodesStatsUrlParams::MetricIndexMetric(metric.into(), index_metric.into()).url(),
         }
     }
     pub fn node_id<INodeId: Into<NodeId<'a>>>(node_id: INodeId) -> NodesStatsRequestParams<'a> {
-        NodesStatsRequestParams {
-            url_params: NodesStatsUrlParams::NodeId(node_id.into()),
-            _a: PhantomData,
-        }
+        NodesStatsRequestParams { url: NodesStatsUrlParams::NodeId(node_id.into()).url() }
     }
     pub fn node_id_metric<INodeId: Into<NodeId<'a>>, IMetric: Into<Metric<'a>>>
         (node_id: INodeId,
          metric: IMetric)
          -> NodesStatsRequestParams<'a> {
         NodesStatsRequestParams {
-            url_params: NodesStatsUrlParams::NodeIdMetric(node_id.into(), metric.into()),
-            _a: PhantomData,
+            url: NodesStatsUrlParams::NodeIdMetric(node_id.into(), metric.into()).url(),
         }
     }
     pub fn node_id_metric_index_metric<INodeId: Into<NodeId<'a>>,
@@ -4235,22 +4798,22 @@ impl<'a> NodesStatsRequestParams<'a> {
          index_metric: IIndexMetric)
          -> NodesStatsRequestParams<'a> {
         NodesStatsRequestParams {
-            url_params: NodesStatsUrlParams::NodeIdMetricIndexMetric(node_id.into(),
-                                                                     metric.into(),
-                                                                     index_metric.into()),
-            _a: PhantomData,
+            url: NodesStatsUrlParams::NodeIdMetricIndexMetric(node_id.into(),
+                                                              metric.into(),
+                                                              index_metric.into())
+                .url(),
         }
     }
 }
-impl<'a> NodesStatsRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
-            NodesStatsUrlParams::None => Cow::Borrowed("/_nodes/stats"),
+impl<'a> NodesStatsUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
+            NodesStatsUrlParams::None => Url::from("/_nodes/stats"),
             NodesStatsUrlParams::Metric(ref metric) => {
                 let mut url = String::with_capacity(14usize + metric.len());
                 url.push_str("/_nodes/stats/");
                 url.push_str(metric.as_ref());
-                Cow::Owned(url)
+                Url::from(url)
             }
             NodesStatsUrlParams::MetricIndexMetric(ref metric, ref index_metric) => {
                 let mut url = String::with_capacity(15usize + metric.len() + index_metric.len());
@@ -4258,14 +4821,14 @@ impl<'a> NodesStatsRequestParams<'a> {
                 url.push_str(metric.as_ref());
                 url.push_str("/");
                 url.push_str(index_metric.as_ref());
-                Cow::Owned(url)
+                Url::from(url)
             }
             NodesStatsUrlParams::NodeId(ref node_id) => {
                 let mut url = String::with_capacity(14usize + node_id.len());
                 url.push_str("/_nodes/");
                 url.push_str(node_id.as_ref());
                 url.push_str("/stats");
-                Cow::Owned(url)
+                Url::from(url)
             }
             NodesStatsUrlParams::NodeIdMetric(ref node_id, ref metric) => {
                 let mut url = String::with_capacity(15usize + node_id.len() + metric.len());
@@ -4273,7 +4836,7 @@ impl<'a> NodesStatsRequestParams<'a> {
                 url.push_str(node_id.as_ref());
                 url.push_str("/stats/");
                 url.push_str(metric.as_ref());
-                Cow::Owned(url)
+                Url::from(url)
             }
             NodesStatsUrlParams::NodeIdMetricIndexMetric(ref node_id,
                                                          ref metric,
@@ -4286,7 +4849,7 @@ impl<'a> NodesStatsRequestParams<'a> {
                 url.push_str(metric.as_ref());
                 url.push_str("/");
                 url.push_str(index_metric.as_ref());
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -4294,44 +4857,48 @@ impl<'a> NodesStatsRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a NodesStatsRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
-            method: HttpMethod::Post,
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Get,
+            body: None,
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for NodesStatsRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Get,
             body: None,
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum IngestGetPipelineUrlParams<'a> {
     None,
     Id(Id<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct IngestGetPipelineRequestParams<'a> {
-    pub url_params: IngestGetPipelineUrlParams<'a>,
-    _a: PhantomData<&'a ()>,
+    pub url: Url<'a>,
 }
 impl<'a> IngestGetPipelineRequestParams<'a> {
     pub fn new() -> IngestGetPipelineRequestParams<'a> {
-        IngestGetPipelineRequestParams {
-            url_params: IngestGetPipelineUrlParams::None,
-            _a: PhantomData,
-        }
+        IngestGetPipelineRequestParams { url: IngestGetPipelineUrlParams::None.url() }
     }
     pub fn id<IId: Into<Id<'a>>>(id: IId) -> IngestGetPipelineRequestParams<'a> {
-        IngestGetPipelineRequestParams {
-            url_params: IngestGetPipelineUrlParams::Id(id.into()),
-            _a: PhantomData,
-        }
+        IngestGetPipelineRequestParams { url: IngestGetPipelineUrlParams::Id(id.into()).url() }
     }
 }
-impl<'a> IngestGetPipelineRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
-            IngestGetPipelineUrlParams::None => Cow::Borrowed("/_ingest/pipeline"),
+impl<'a> IngestGetPipelineUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
+            IngestGetPipelineUrlParams::None => Url::from("/_ingest/pipeline"),
             IngestGetPipelineUrlParams::Id(ref id) => {
                 let mut url = String::with_capacity(18usize + id.len());
                 url.push_str("/_ingest/pipeline/");
                 url.push_str(id.as_ref());
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -4339,40 +4906,49 @@ impl<'a> IngestGetPipelineRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IngestGetPipelineRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
-            method: HttpMethod::Post,
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Get,
+            body: None,
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for IngestGetPipelineRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Get,
             body: None,
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum PutTemplateUrlParams<'a> {
     Id(Id<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct PutTemplateRequestParams<'a> {
-    pub url_params: PutTemplateUrlParams<'a>,
+    pub url: Url<'a>,
     pub body: Body<'a>,
-    _a: PhantomData<&'a ()>,
 }
 impl<'a> PutTemplateRequestParams<'a> {
     pub fn id<IId: Into<Id<'a>>, IBody: Into<Body<'a>>>(id: IId,
                                                         body: IBody)
                                                         -> PutTemplateRequestParams<'a> {
         PutTemplateRequestParams {
-            url_params: PutTemplateUrlParams::Id(id.into()),
+            url: PutTemplateUrlParams::Id(id.into()).url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
 }
-impl<'a> PutTemplateRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
+impl<'a> PutTemplateUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
             PutTemplateUrlParams::Id(ref id) => {
                 let mut url = String::with_capacity(18usize + id.len());
                 url.push_str("/_search/template/");
                 url.push_str(id.as_ref());
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -4380,19 +4956,29 @@ impl<'a> PutTemplateRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a PutTemplateRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
+            url: Cow::Borrowed(&self.url),
             method: HttpMethod::Post,
-            body: Some(&self.body),
+            body: Some(Cow::Borrowed(&self.body)),
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for PutTemplateRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Post,
+            body: Some(Cow::Owned(self.body)),
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum GetSourceUrlParams<'a> {
     IndexTypeId(Index<'a>, Type<'a>, Id<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct GetSourceRequestParams<'a> {
-    pub url_params: GetSourceUrlParams<'a>,
-    _a: PhantomData<&'a ()>,
+    pub url: Url<'a>,
 }
 impl<'a> GetSourceRequestParams<'a> {
     pub fn index_ty_id<IIndex: Into<Index<'a>>, IType: Into<Type<'a>>, IId: Into<Id<'a>>>
@@ -4401,14 +4987,13 @@ impl<'a> GetSourceRequestParams<'a> {
          id: IId)
          -> GetSourceRequestParams<'a> {
         GetSourceRequestParams {
-            url_params: GetSourceUrlParams::IndexTypeId(index.into(), ty.into(), id.into()),
-            _a: PhantomData,
+            url: GetSourceUrlParams::IndexTypeId(index.into(), ty.into(), id.into()).url(),
         }
     }
 }
-impl<'a> GetSourceRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
+impl<'a> GetSourceUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
             GetSourceUrlParams::IndexTypeId(ref index, ref ty, ref id) => {
                 let mut url = String::with_capacity(11usize + index.len() + ty.len() + id.len());
                 url.push_str("/");
@@ -4418,7 +5003,7 @@ impl<'a> GetSourceRequestParams<'a> {
                 url.push_str("/");
                 url.push_str(id.as_ref());
                 url.push_str("/_source");
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -4426,20 +5011,30 @@ impl<'a> GetSourceRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a GetSourceRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
-            method: HttpMethod::Post,
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Get,
+            body: None,
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for GetSourceRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Get,
             body: None,
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum SnapshotCreateUrlParams<'a> {
     RepositorySnapshot(Repository<'a>, Snapshot<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct SnapshotCreateRequestParams<'a> {
-    pub url_params: SnapshotCreateUrlParams<'a>,
+    pub url: Url<'a>,
     pub body: Body<'a>,
-    _a: PhantomData<&'a ()>,
 }
 impl<'a> SnapshotCreateRequestParams<'a> {
     pub fn repository_snapshot<IRepository: Into<Repository<'a>>,
@@ -4450,23 +5045,22 @@ impl<'a> SnapshotCreateRequestParams<'a> {
          body: IBody)
          -> SnapshotCreateRequestParams<'a> {
         SnapshotCreateRequestParams {
-            url_params: SnapshotCreateUrlParams::RepositorySnapshot(repository.into(),
-                                                                    snapshot.into()),
+            url: SnapshotCreateUrlParams::RepositorySnapshot(repository.into(), snapshot.into())
+                .url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
 }
-impl<'a> SnapshotCreateRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
+impl<'a> SnapshotCreateUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
             SnapshotCreateUrlParams::RepositorySnapshot(ref repository, ref snapshot) => {
                 let mut url = String::with_capacity(12usize + repository.len() + snapshot.len());
                 url.push_str("/_snapshot/");
                 url.push_str(repository.as_ref());
                 url.push_str("/");
                 url.push_str(snapshot.as_ref());
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -4474,28 +5068,37 @@ impl<'a> SnapshotCreateRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a SnapshotCreateRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
+            url: Cow::Borrowed(&self.url),
             method: HttpMethod::Post,
-            body: Some(&self.body),
+            body: Some(Cow::Borrowed(&self.body)),
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for SnapshotCreateRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Post,
+            body: Some(Cow::Owned(self.body)),
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum ScrollUrlParams<'a> {
     None,
     ScrollId(ScrollId<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct ScrollRequestParams<'a> {
-    pub url_params: ScrollUrlParams<'a>,
+    pub url: Url<'a>,
     pub body: Body<'a>,
-    _a: PhantomData<&'a ()>,
 }
 impl<'a> ScrollRequestParams<'a> {
     pub fn new<IBody: Into<Body<'a>>>(body: IBody) -> ScrollRequestParams<'a> {
         ScrollRequestParams {
-            url_params: ScrollUrlParams::None,
+            url: ScrollUrlParams::None.url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
     pub fn scroll_id<IScrollId: Into<ScrollId<'a>>, IBody: Into<Body<'a>>>
@@ -4503,21 +5106,20 @@ impl<'a> ScrollRequestParams<'a> {
          body: IBody)
          -> ScrollRequestParams<'a> {
         ScrollRequestParams {
-            url_params: ScrollUrlParams::ScrollId(scroll_id.into()),
+            url: ScrollUrlParams::ScrollId(scroll_id.into()).url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
 }
-impl<'a> ScrollRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
-            ScrollUrlParams::None => Cow::Borrowed("/_search/scroll"),
+impl<'a> ScrollUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
+            ScrollUrlParams::None => Url::from("/_search/scroll"),
             ScrollUrlParams::ScrollId(ref scroll_id) => {
                 let mut url = String::with_capacity(16usize + scroll_id.len());
                 url.push_str("/_search/scroll/");
                 url.push_str(scroll_id.as_ref());
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -4525,34 +5127,40 @@ impl<'a> ScrollRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a ScrollRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
+            url: Cow::Borrowed(&self.url),
             method: HttpMethod::Post,
-            body: Some(&self.body),
+            body: Some(Cow::Borrowed(&self.body)),
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for ScrollRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Post,
+            body: Some(Cow::Owned(self.body)),
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum SnapshotStatusUrlParams<'a> {
     None,
     Repository(Repository<'a>),
     RepositorySnapshot(Repository<'a>, Snapshot<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct SnapshotStatusRequestParams<'a> {
-    pub url_params: SnapshotStatusUrlParams<'a>,
-    _a: PhantomData<&'a ()>,
+    pub url: Url<'a>,
 }
 impl<'a> SnapshotStatusRequestParams<'a> {
     pub fn new() -> SnapshotStatusRequestParams<'a> {
-        SnapshotStatusRequestParams {
-            url_params: SnapshotStatusUrlParams::None,
-            _a: PhantomData,
-        }
+        SnapshotStatusRequestParams { url: SnapshotStatusUrlParams::None.url() }
     }
     pub fn repository<IRepository: Into<Repository<'a>>>(repository: IRepository)
                                                          -> SnapshotStatusRequestParams<'a> {
         SnapshotStatusRequestParams {
-            url_params: SnapshotStatusUrlParams::Repository(repository.into()),
-            _a: PhantomData,
+            url: SnapshotStatusUrlParams::Repository(repository.into()).url(),
         }
     }
     pub fn repository_snapshot<IRepository: Into<Repository<'a>>, ISnapshot: Into<Snapshot<'a>>>
@@ -4560,22 +5168,21 @@ impl<'a> SnapshotStatusRequestParams<'a> {
          snapshot: ISnapshot)
          -> SnapshotStatusRequestParams<'a> {
         SnapshotStatusRequestParams {
-            url_params: SnapshotStatusUrlParams::RepositorySnapshot(repository.into(),
-                                                                    snapshot.into()),
-            _a: PhantomData,
+            url: SnapshotStatusUrlParams::RepositorySnapshot(repository.into(), snapshot.into())
+                .url(),
         }
     }
 }
-impl<'a> SnapshotStatusRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
-            SnapshotStatusUrlParams::None => Cow::Borrowed("/_snapshot/_status"),
+impl<'a> SnapshotStatusUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
+            SnapshotStatusUrlParams::None => Url::from("/_snapshot/_status"),
             SnapshotStatusUrlParams::Repository(ref repository) => {
                 let mut url = String::with_capacity(19usize + repository.len());
                 url.push_str("/_snapshot/");
                 url.push_str(repository.as_ref());
                 url.push_str("/_status");
-                Cow::Owned(url)
+                Url::from(url)
             }
             SnapshotStatusUrlParams::RepositorySnapshot(ref repository, ref snapshot) => {
                 let mut url = String::with_capacity(20usize + repository.len() + snapshot.len());
@@ -4584,7 +5191,7 @@ impl<'a> SnapshotStatusRequestParams<'a> {
                 url.push_str("/");
                 url.push_str(snapshot.as_ref());
                 url.push_str("/_status");
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -4592,38 +5199,46 @@ impl<'a> SnapshotStatusRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a SnapshotStatusRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
-            method: HttpMethod::Post,
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Get,
+            body: None,
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for SnapshotStatusRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Get,
             body: None,
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum MgetUrlParams<'a> {
     None,
     Index(Index<'a>),
     IndexType(Index<'a>, Type<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct MgetRequestParams<'a> {
-    pub url_params: MgetUrlParams<'a>,
+    pub url: Url<'a>,
     pub body: Body<'a>,
-    _a: PhantomData<&'a ()>,
 }
 impl<'a> MgetRequestParams<'a> {
     pub fn new<IBody: Into<Body<'a>>>(body: IBody) -> MgetRequestParams<'a> {
         MgetRequestParams {
-            url_params: MgetUrlParams::None,
+            url: MgetUrlParams::None.url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
     pub fn index<IIndex: Into<Index<'a>>, IBody: Into<Body<'a>>>(index: IIndex,
                                                                  body: IBody)
                                                                  -> MgetRequestParams<'a> {
         MgetRequestParams {
-            url_params: MgetUrlParams::Index(index.into()),
+            url: MgetUrlParams::Index(index.into()).url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
     pub fn index_ty<IIndex: Into<Index<'a>>, IType: Into<Type<'a>>, IBody: Into<Body<'a>>>
@@ -4632,22 +5247,21 @@ impl<'a> MgetRequestParams<'a> {
          body: IBody)
          -> MgetRequestParams<'a> {
         MgetRequestParams {
-            url_params: MgetUrlParams::IndexType(index.into(), ty.into()),
+            url: MgetUrlParams::IndexType(index.into(), ty.into()).url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
 }
-impl<'a> MgetRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
-            MgetUrlParams::None => Cow::Borrowed("/_mget"),
+impl<'a> MgetUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
+            MgetUrlParams::None => Url::from("/_mget"),
             MgetUrlParams::Index(ref index) => {
                 let mut url = String::with_capacity(7usize + index.len());
                 url.push_str("/");
                 url.push_str(index.as_ref());
                 url.push_str("/_mget");
-                Cow::Owned(url)
+                Url::from(url)
             }
             MgetUrlParams::IndexType(ref index, ref ty) => {
                 let mut url = String::with_capacity(8usize + index.len() + ty.len());
@@ -4656,7 +5270,7 @@ impl<'a> MgetRequestParams<'a> {
                 url.push_str("/");
                 url.push_str(ty.as_ref());
                 url.push_str("/_mget");
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -4664,36 +5278,45 @@ impl<'a> MgetRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a MgetRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
+            url: Cow::Borrowed(&self.url),
             method: HttpMethod::Post,
-            body: Some(&self.body),
+            body: Some(Cow::Borrowed(&self.body)),
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for MgetRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Post,
+            body: Some(Cow::Owned(self.body)),
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum IndicesExistsTemplateUrlParams<'a> {
     Name(Name<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct IndicesExistsTemplateRequestParams<'a> {
-    pub url_params: IndicesExistsTemplateUrlParams<'a>,
-    _a: PhantomData<&'a ()>,
+    pub url: Url<'a>,
 }
 impl<'a> IndicesExistsTemplateRequestParams<'a> {
     pub fn name<IName: Into<Name<'a>>>(name: IName) -> IndicesExistsTemplateRequestParams<'a> {
         IndicesExistsTemplateRequestParams {
-            url_params: IndicesExistsTemplateUrlParams::Name(name.into()),
-            _a: PhantomData,
+            url: IndicesExistsTemplateUrlParams::Name(name.into()).url(),
         }
     }
 }
-impl<'a> IndicesExistsTemplateRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
+impl<'a> IndicesExistsTemplateUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
             IndicesExistsTemplateUrlParams::Name(ref name) => {
                 let mut url = String::with_capacity(11usize + name.len());
                 url.push_str("/_template/");
                 url.push_str(name.as_ref());
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -4701,45 +5324,51 @@ impl<'a> IndicesExistsTemplateRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IndicesExistsTemplateRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
-            method: HttpMethod::Post,
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Head,
+            body: None,
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for IndicesExistsTemplateRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Head,
             body: None,
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum IndicesGetUpgradeUrlParams<'a> {
     None,
     Index(Index<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct IndicesGetUpgradeRequestParams<'a> {
-    pub url_params: IndicesGetUpgradeUrlParams<'a>,
-    _a: PhantomData<&'a ()>,
+    pub url: Url<'a>,
 }
 impl<'a> IndicesGetUpgradeRequestParams<'a> {
     pub fn new() -> IndicesGetUpgradeRequestParams<'a> {
-        IndicesGetUpgradeRequestParams {
-            url_params: IndicesGetUpgradeUrlParams::None,
-            _a: PhantomData,
-        }
+        IndicesGetUpgradeRequestParams { url: IndicesGetUpgradeUrlParams::None.url() }
     }
     pub fn index<IIndex: Into<Index<'a>>>(index: IIndex) -> IndicesGetUpgradeRequestParams<'a> {
         IndicesGetUpgradeRequestParams {
-            url_params: IndicesGetUpgradeUrlParams::Index(index.into()),
-            _a: PhantomData,
+            url: IndicesGetUpgradeUrlParams::Index(index.into()).url(),
         }
     }
 }
-impl<'a> IndicesGetUpgradeRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
-            IndicesGetUpgradeUrlParams::None => Cow::Borrowed("/_upgrade"),
+impl<'a> IndicesGetUpgradeUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
+            IndicesGetUpgradeUrlParams::None => Url::from("/_upgrade"),
             IndicesGetUpgradeUrlParams::Index(ref index) => {
                 let mut url = String::with_capacity(10usize + index.len());
                 url.push_str("/");
                 url.push_str(index.as_ref());
                 url.push_str("/_upgrade");
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -4747,20 +5376,30 @@ impl<'a> IndicesGetUpgradeRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IndicesGetUpgradeRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
-            method: HttpMethod::Post,
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Get,
+            body: None,
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for IndicesGetUpgradeRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Get,
             body: None,
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum PutScriptUrlParams<'a> {
     LangId(Lang<'a>, Id<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct PutScriptRequestParams<'a> {
-    pub url_params: PutScriptUrlParams<'a>,
+    pub url: Url<'a>,
     pub body: Body<'a>,
-    _a: PhantomData<&'a ()>,
 }
 impl<'a> PutScriptRequestParams<'a> {
     pub fn lang_id<ILang: Into<Lang<'a>>, IId: Into<Id<'a>>, IBody: Into<Body<'a>>>
@@ -4769,22 +5408,21 @@ impl<'a> PutScriptRequestParams<'a> {
          body: IBody)
          -> PutScriptRequestParams<'a> {
         PutScriptRequestParams {
-            url_params: PutScriptUrlParams::LangId(lang.into(), id.into()),
+            url: PutScriptUrlParams::LangId(lang.into(), id.into()).url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
 }
-impl<'a> PutScriptRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
+impl<'a> PutScriptUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
             PutScriptUrlParams::LangId(ref lang, ref id) => {
                 let mut url = String::with_capacity(11usize + lang.len() + id.len());
                 url.push_str("/_scripts/");
                 url.push_str(lang.as_ref());
                 url.push_str("/");
                 url.push_str(id.as_ref());
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -4792,36 +5430,43 @@ impl<'a> PutScriptRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a PutScriptRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
+            url: Cow::Borrowed(&self.url),
             method: HttpMethod::Post,
-            body: Some(&self.body),
+            body: Some(Cow::Borrowed(&self.body)),
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for PutScriptRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Post,
+            body: Some(Cow::Owned(self.body)),
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum GetTemplateUrlParams<'a> {
     Id(Id<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct GetTemplateRequestParams<'a> {
-    pub url_params: GetTemplateUrlParams<'a>,
-    _a: PhantomData<&'a ()>,
+    pub url: Url<'a>,
 }
 impl<'a> GetTemplateRequestParams<'a> {
     pub fn id<IId: Into<Id<'a>>>(id: IId) -> GetTemplateRequestParams<'a> {
-        GetTemplateRequestParams {
-            url_params: GetTemplateUrlParams::Id(id.into()),
-            _a: PhantomData,
-        }
+        GetTemplateRequestParams { url: GetTemplateUrlParams::Id(id.into()).url() }
     }
 }
-impl<'a> GetTemplateRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
+impl<'a> GetTemplateUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
             GetTemplateUrlParams::Id(ref id) => {
                 let mut url = String::with_capacity(18usize + id.len());
                 url.push_str("/_search/template/");
                 url.push_str(id.as_ref());
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -4829,36 +5474,45 @@ impl<'a> GetTemplateRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a GetTemplateRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
-            method: HttpMethod::Post,
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Get,
+            body: None,
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for GetTemplateRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Get,
             body: None,
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum IndicesDeleteTemplateUrlParams<'a> {
     Name(Name<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct IndicesDeleteTemplateRequestParams<'a> {
-    pub url_params: IndicesDeleteTemplateUrlParams<'a>,
-    _a: PhantomData<&'a ()>,
+    pub url: Url<'a>,
 }
 impl<'a> IndicesDeleteTemplateRequestParams<'a> {
     pub fn name<IName: Into<Name<'a>>>(name: IName) -> IndicesDeleteTemplateRequestParams<'a> {
         IndicesDeleteTemplateRequestParams {
-            url_params: IndicesDeleteTemplateUrlParams::Name(name.into()),
-            _a: PhantomData,
+            url: IndicesDeleteTemplateUrlParams::Name(name.into()).url(),
         }
     }
 }
-impl<'a> IndicesDeleteTemplateRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
+impl<'a> IndicesDeleteTemplateUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
             IndicesDeleteTemplateUrlParams::Name(ref name) => {
                 let mut url = String::with_capacity(11usize + name.len());
                 url.push_str("/_template/");
                 url.push_str(name.as_ref());
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -4866,21 +5520,31 @@ impl<'a> IndicesDeleteTemplateRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IndicesDeleteTemplateRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
-            method: HttpMethod::Post,
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Delete,
+            body: None,
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for IndicesDeleteTemplateRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Delete,
             body: None,
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum IndexUrlParams<'a> {
     IndexType(Index<'a>, Type<'a>),
     IndexTypeId(Index<'a>, Type<'a>, Id<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct IndexRequestParams<'a> {
-    pub url_params: IndexUrlParams<'a>,
+    pub url: Url<'a>,
     pub body: Body<'a>,
-    _a: PhantomData<&'a ()>,
 }
 impl<'a> IndexRequestParams<'a> {
     pub fn index_ty<IIndex: Into<Index<'a>>, IType: Into<Type<'a>>, IBody: Into<Body<'a>>>
@@ -4889,9 +5553,8 @@ impl<'a> IndexRequestParams<'a> {
          body: IBody)
          -> IndexRequestParams<'a> {
         IndexRequestParams {
-            url_params: IndexUrlParams::IndexType(index.into(), ty.into()),
+            url: IndexUrlParams::IndexType(index.into(), ty.into()).url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
     pub fn index_ty_id<IIndex: Into<Index<'a>>,
@@ -4904,22 +5567,21 @@ impl<'a> IndexRequestParams<'a> {
          body: IBody)
          -> IndexRequestParams<'a> {
         IndexRequestParams {
-            url_params: IndexUrlParams::IndexTypeId(index.into(), ty.into(), id.into()),
+            url: IndexUrlParams::IndexTypeId(index.into(), ty.into(), id.into()).url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
 }
-impl<'a> IndexRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
+impl<'a> IndexUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
             IndexUrlParams::IndexType(ref index, ref ty) => {
                 let mut url = String::with_capacity(2usize + index.len() + ty.len());
                 url.push_str("/");
                 url.push_str(index.as_ref());
                 url.push_str("/");
                 url.push_str(ty.as_ref());
-                Cow::Owned(url)
+                Url::from(url)
             }
             IndexUrlParams::IndexTypeId(ref index, ref ty, ref id) => {
                 let mut url = String::with_capacity(3usize + index.len() + ty.len() + id.len());
@@ -4929,7 +5591,7 @@ impl<'a> IndexRequestParams<'a> {
                 url.push_str(ty.as_ref());
                 url.push_str("/");
                 url.push_str(id.as_ref());
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -4937,28 +5599,37 @@ impl<'a> IndexRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IndexRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
+            url: Cow::Borrowed(&self.url),
             method: HttpMethod::Post,
-            body: Some(&self.body),
+            body: Some(Cow::Borrowed(&self.body)),
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for IndexRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Post,
+            body: Some(Cow::Owned(self.body)),
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum IndicesPutSettingsUrlParams<'a> {
     None,
     Index(Index<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct IndicesPutSettingsRequestParams<'a> {
-    pub url_params: IndicesPutSettingsUrlParams<'a>,
+    pub url: Url<'a>,
     pub body: Body<'a>,
-    _a: PhantomData<&'a ()>,
 }
 impl<'a> IndicesPutSettingsRequestParams<'a> {
     pub fn new<IBody: Into<Body<'a>>>(body: IBody) -> IndicesPutSettingsRequestParams<'a> {
         IndicesPutSettingsRequestParams {
-            url_params: IndicesPutSettingsUrlParams::None,
+            url: IndicesPutSettingsUrlParams::None.url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
     pub fn index<IIndex: Into<Index<'a>>, IBody: Into<Body<'a>>>
@@ -4966,22 +5637,21 @@ impl<'a> IndicesPutSettingsRequestParams<'a> {
          body: IBody)
          -> IndicesPutSettingsRequestParams<'a> {
         IndicesPutSettingsRequestParams {
-            url_params: IndicesPutSettingsUrlParams::Index(index.into()),
+            url: IndicesPutSettingsUrlParams::Index(index.into()).url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
 }
-impl<'a> IndicesPutSettingsRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
-            IndicesPutSettingsUrlParams::None => Cow::Borrowed("/_settings"),
+impl<'a> IndicesPutSettingsUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
+            IndicesPutSettingsUrlParams::None => Url::from("/_settings"),
             IndicesPutSettingsUrlParams::Index(ref index) => {
                 let mut url = String::with_capacity(11usize + index.len());
                 url.push_str("/");
                 url.push_str(index.as_ref());
                 url.push_str("/_settings");
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -4989,44 +5659,48 @@ impl<'a> IndicesPutSettingsRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IndicesPutSettingsRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
-            method: HttpMethod::Post,
-            body: Some(&self.body),
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Put,
+            body: Some(Cow::Borrowed(&self.body)),
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for IndicesPutSettingsRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Put,
+            body: Some(Cow::Owned(self.body)),
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum CatTemplatesUrlParams<'a> {
     None,
     Name(Name<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct CatTemplatesRequestParams<'a> {
-    pub url_params: CatTemplatesUrlParams<'a>,
-    _a: PhantomData<&'a ()>,
+    pub url: Url<'a>,
 }
 impl<'a> CatTemplatesRequestParams<'a> {
     pub fn new() -> CatTemplatesRequestParams<'a> {
-        CatTemplatesRequestParams {
-            url_params: CatTemplatesUrlParams::None,
-            _a: PhantomData,
-        }
+        CatTemplatesRequestParams { url: CatTemplatesUrlParams::None.url() }
     }
     pub fn name<IName: Into<Name<'a>>>(name: IName) -> CatTemplatesRequestParams<'a> {
-        CatTemplatesRequestParams {
-            url_params: CatTemplatesUrlParams::Name(name.into()),
-            _a: PhantomData,
-        }
+        CatTemplatesRequestParams { url: CatTemplatesUrlParams::Name(name.into()).url() }
     }
 }
-impl<'a> CatTemplatesRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
-            CatTemplatesUrlParams::None => Cow::Borrowed("/_cat/templates"),
+impl<'a> CatTemplatesUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
+            CatTemplatesUrlParams::None => Url::from("/_cat/templates"),
             CatTemplatesUrlParams::Name(ref name) => {
                 let mut url = String::with_capacity(16usize + name.len());
                 url.push_str("/_cat/templates/");
                 url.push_str(name.as_ref());
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -5034,44 +5708,48 @@ impl<'a> CatTemplatesRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a CatTemplatesRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
-            method: HttpMethod::Post,
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Get,
+            body: None,
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for CatTemplatesRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Get,
             body: None,
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum CatIndicesUrlParams<'a> {
     None,
     Index(Index<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct CatIndicesRequestParams<'a> {
-    pub url_params: CatIndicesUrlParams<'a>,
-    _a: PhantomData<&'a ()>,
+    pub url: Url<'a>,
 }
 impl<'a> CatIndicesRequestParams<'a> {
     pub fn new() -> CatIndicesRequestParams<'a> {
-        CatIndicesRequestParams {
-            url_params: CatIndicesUrlParams::None,
-            _a: PhantomData,
-        }
+        CatIndicesRequestParams { url: CatIndicesUrlParams::None.url() }
     }
     pub fn index<IIndex: Into<Index<'a>>>(index: IIndex) -> CatIndicesRequestParams<'a> {
-        CatIndicesRequestParams {
-            url_params: CatIndicesUrlParams::Index(index.into()),
-            _a: PhantomData,
-        }
+        CatIndicesRequestParams { url: CatIndicesUrlParams::Index(index.into()).url() }
     }
 }
-impl<'a> CatIndicesRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
-            CatIndicesUrlParams::None => Cow::Borrowed("/_cat/indices"),
+impl<'a> CatIndicesUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
+            CatIndicesUrlParams::None => Url::from("/_cat/indices"),
             CatIndicesUrlParams::Index(ref index) => {
                 let mut url = String::with_capacity(14usize + index.len());
                 url.push_str("/_cat/indices/");
                 url.push_str(index.as_ref());
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -5079,54 +5757,73 @@ impl<'a> CatIndicesRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a CatIndicesRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
-            method: HttpMethod::Post,
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Get,
+            body: None,
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for CatIndicesRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Get,
             body: None,
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum ClusterPutSettingsUrlParams {
     None,
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct ClusterPutSettingsRequestParams<'a> {
-    pub url_params: ClusterPutSettingsUrlParams,
+    pub url: Url<'a>,
     pub body: Body<'a>,
-    _a: PhantomData<&'a ()>,
 }
 impl<'a> ClusterPutSettingsRequestParams<'a> {
     pub fn new<IBody: Into<Body<'a>>>(body: IBody) -> ClusterPutSettingsRequestParams<'a> {
         ClusterPutSettingsRequestParams {
-            url_params: ClusterPutSettingsUrlParams::None,
+            url: ClusterPutSettingsUrlParams::None.url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
 }
-impl<'a> ClusterPutSettingsRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
-            ClusterPutSettingsUrlParams::None => Cow::Borrowed("/_cluster/settings"),
+impl ClusterPutSettingsUrlParams {
+    pub fn url<'a>(self) -> Url<'a> {
+        match self {
+            ClusterPutSettingsUrlParams::None => Url::from("/_cluster/settings"),
         }
     }
 }
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a ClusterPutSettingsRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
-            method: HttpMethod::Post,
-            body: Some(&self.body),
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Put,
+            body: Some(Cow::Borrowed(&self.body)),
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for ClusterPutSettingsRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Put,
+            body: Some(Cow::Owned(self.body)),
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum UpdateUrlParams<'a> {
     IndexTypeId(Index<'a>, Type<'a>, Id<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct UpdateRequestParams<'a> {
-    pub url_params: UpdateUrlParams<'a>,
+    pub url: Url<'a>,
     pub body: Body<'a>,
-    _a: PhantomData<&'a ()>,
 }
 impl<'a> UpdateRequestParams<'a> {
     pub fn index_ty_id<IIndex: Into<Index<'a>>,
@@ -5139,15 +5836,14 @@ impl<'a> UpdateRequestParams<'a> {
          body: IBody)
          -> UpdateRequestParams<'a> {
         UpdateRequestParams {
-            url_params: UpdateUrlParams::IndexTypeId(index.into(), ty.into(), id.into()),
+            url: UpdateUrlParams::IndexTypeId(index.into(), ty.into(), id.into()).url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
 }
-impl<'a> UpdateRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
+impl<'a> UpdateUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
             UpdateUrlParams::IndexTypeId(ref index, ref ty, ref id) => {
                 let mut url = String::with_capacity(11usize + index.len() + ty.len() + id.len());
                 url.push_str("/");
@@ -5157,7 +5853,7 @@ impl<'a> UpdateRequestParams<'a> {
                 url.push_str("/");
                 url.push_str(id.as_ref());
                 url.push_str("/_update");
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -5165,20 +5861,30 @@ impl<'a> UpdateRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a UpdateRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
+            url: Cow::Borrowed(&self.url),
             method: HttpMethod::Post,
-            body: Some(&self.body),
+            body: Some(Cow::Borrowed(&self.body)),
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for UpdateRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Post,
+            body: Some(Cow::Owned(self.body)),
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum IndicesPutAliasUrlParams<'a> {
     IndexName(Index<'a>, Name<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct IndicesPutAliasRequestParams<'a> {
-    pub url_params: IndicesPutAliasUrlParams<'a>,
+    pub url: Url<'a>,
     pub body: Body<'a>,
-    _a: PhantomData<&'a ()>,
 }
 impl<'a> IndicesPutAliasRequestParams<'a> {
     pub fn index_name<IIndex: Into<Index<'a>>, IName: Into<Name<'a>>, IBody: Into<Body<'a>>>
@@ -5187,22 +5893,21 @@ impl<'a> IndicesPutAliasRequestParams<'a> {
          body: IBody)
          -> IndicesPutAliasRequestParams<'a> {
         IndicesPutAliasRequestParams {
-            url_params: IndicesPutAliasUrlParams::IndexName(index.into(), name.into()),
+            url: IndicesPutAliasUrlParams::IndexName(index.into(), name.into()).url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
 }
-impl<'a> IndicesPutAliasRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
+impl<'a> IndicesPutAliasUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
             IndicesPutAliasUrlParams::IndexName(ref index, ref name) => {
                 let mut url = String::with_capacity(11usize + index.len() + name.len());
                 url.push_str("/");
                 url.push_str(index.as_ref());
                 url.push_str("/_aliases/");
                 url.push_str(name.as_ref());
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -5210,53 +5915,70 @@ impl<'a> IndicesPutAliasRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IndicesPutAliasRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
+            url: Cow::Borrowed(&self.url),
             method: HttpMethod::Post,
-            body: Some(&self.body),
+            body: Some(Cow::Borrowed(&self.body)),
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for IndicesPutAliasRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Post,
+            body: Some(Cow::Owned(self.body)),
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum CatPluginsUrlParams {
     None,
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct CatPluginsRequestParams<'a> {
-    pub url_params: CatPluginsUrlParams,
-    _a: PhantomData<&'a ()>,
+    pub url: Url<'a>,
 }
 impl<'a> CatPluginsRequestParams<'a> {
     pub fn new() -> CatPluginsRequestParams<'a> {
-        CatPluginsRequestParams {
-            url_params: CatPluginsUrlParams::None,
-            _a: PhantomData,
-        }
+        CatPluginsRequestParams { url: CatPluginsUrlParams::None.url() }
     }
 }
-impl<'a> CatPluginsRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
-            CatPluginsUrlParams::None => Cow::Borrowed("/_cat/plugins"),
+impl CatPluginsUrlParams {
+    pub fn url<'a>(self) -> Url<'a> {
+        match self {
+            CatPluginsUrlParams::None => Url::from("/_cat/plugins"),
         }
     }
 }
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a CatPluginsRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
-            method: HttpMethod::Post,
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Get,
+            body: None,
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for CatPluginsRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Get,
             body: None,
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum CountPercolateUrlParams<'a> {
     IndexType(Index<'a>, Type<'a>),
     IndexTypeId(Index<'a>, Type<'a>, Id<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct CountPercolateRequestParams<'a> {
-    pub url_params: CountPercolateUrlParams<'a>,
+    pub url: Url<'a>,
     pub body: Body<'a>,
-    _a: PhantomData<&'a ()>,
 }
 impl<'a> CountPercolateRequestParams<'a> {
     pub fn index_ty<IIndex: Into<Index<'a>>, IType: Into<Type<'a>>, IBody: Into<Body<'a>>>
@@ -5265,9 +5987,8 @@ impl<'a> CountPercolateRequestParams<'a> {
          body: IBody)
          -> CountPercolateRequestParams<'a> {
         CountPercolateRequestParams {
-            url_params: CountPercolateUrlParams::IndexType(index.into(), ty.into()),
+            url: CountPercolateUrlParams::IndexType(index.into(), ty.into()).url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
     pub fn index_ty_id<IIndex: Into<Index<'a>>,
@@ -5280,15 +6001,14 @@ impl<'a> CountPercolateRequestParams<'a> {
          body: IBody)
          -> CountPercolateRequestParams<'a> {
         CountPercolateRequestParams {
-            url_params: CountPercolateUrlParams::IndexTypeId(index.into(), ty.into(), id.into()),
+            url: CountPercolateUrlParams::IndexTypeId(index.into(), ty.into(), id.into()).url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
 }
-impl<'a> CountPercolateRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
+impl<'a> CountPercolateUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
             CountPercolateUrlParams::IndexType(ref index, ref ty) => {
                 let mut url = String::with_capacity(19usize + index.len() + ty.len());
                 url.push_str("/");
@@ -5296,7 +6016,7 @@ impl<'a> CountPercolateRequestParams<'a> {
                 url.push_str("/");
                 url.push_str(ty.as_ref());
                 url.push_str("/_percolate/count");
-                Cow::Owned(url)
+                Url::from(url)
             }
             CountPercolateUrlParams::IndexTypeId(ref index, ref ty, ref id) => {
                 let mut url = String::with_capacity(20usize + index.len() + ty.len() + id.len());
@@ -5307,7 +6027,7 @@ impl<'a> CountPercolateRequestParams<'a> {
                 url.push_str("/");
                 url.push_str(id.as_ref());
                 url.push_str("/_percolate/count");
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -5315,45 +6035,49 @@ impl<'a> CountPercolateRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a CountPercolateRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
+            url: Cow::Borrowed(&self.url),
             method: HttpMethod::Post,
-            body: Some(&self.body),
+            body: Some(Cow::Borrowed(&self.body)),
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for CountPercolateRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Post,
+            body: Some(Cow::Owned(self.body)),
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum IndicesUpgradeUrlParams<'a> {
     None,
     Index(Index<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct IndicesUpgradeRequestParams<'a> {
-    pub url_params: IndicesUpgradeUrlParams<'a>,
-    _a: PhantomData<&'a ()>,
+    pub url: Url<'a>,
 }
 impl<'a> IndicesUpgradeRequestParams<'a> {
     pub fn new() -> IndicesUpgradeRequestParams<'a> {
-        IndicesUpgradeRequestParams {
-            url_params: IndicesUpgradeUrlParams::None,
-            _a: PhantomData,
-        }
+        IndicesUpgradeRequestParams { url: IndicesUpgradeUrlParams::None.url() }
     }
     pub fn index<IIndex: Into<Index<'a>>>(index: IIndex) -> IndicesUpgradeRequestParams<'a> {
-        IndicesUpgradeRequestParams {
-            url_params: IndicesUpgradeUrlParams::Index(index.into()),
-            _a: PhantomData,
-        }
+        IndicesUpgradeRequestParams { url: IndicesUpgradeUrlParams::Index(index.into()).url() }
     }
 }
-impl<'a> IndicesUpgradeRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
-            IndicesUpgradeUrlParams::None => Cow::Borrowed("/_upgrade"),
+impl<'a> IndicesUpgradeUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
+            IndicesUpgradeUrlParams::None => Url::from("/_upgrade"),
             IndicesUpgradeUrlParams::Index(ref index) => {
                 let mut url = String::with_capacity(10usize + index.len());
                 url.push_str("/");
                 url.push_str(index.as_ref());
                 url.push_str("/_upgrade");
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -5361,19 +6085,29 @@ impl<'a> IndicesUpgradeRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IndicesUpgradeRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Post,
+            body: None,
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for IndicesUpgradeRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
             method: HttpMethod::Post,
             body: None,
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum IndicesDeleteAliasUrlParams<'a> {
     IndexName(Index<'a>, Name<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct IndicesDeleteAliasRequestParams<'a> {
-    pub url_params: IndicesDeleteAliasUrlParams<'a>,
-    _a: PhantomData<&'a ()>,
+    pub url: Url<'a>,
 }
 impl<'a> IndicesDeleteAliasRequestParams<'a> {
     pub fn index_name<IIndex: Into<Index<'a>>, IName: Into<Name<'a>>>
@@ -5381,21 +6115,20 @@ impl<'a> IndicesDeleteAliasRequestParams<'a> {
          name: IName)
          -> IndicesDeleteAliasRequestParams<'a> {
         IndicesDeleteAliasRequestParams {
-            url_params: IndicesDeleteAliasUrlParams::IndexName(index.into(), name.into()),
-            _a: PhantomData,
+            url: IndicesDeleteAliasUrlParams::IndexName(index.into(), name.into()).url(),
         }
     }
 }
-impl<'a> IndicesDeleteAliasRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
+impl<'a> IndicesDeleteAliasUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
             IndicesDeleteAliasUrlParams::IndexName(ref index, ref name) => {
                 let mut url = String::with_capacity(11usize + index.len() + name.len());
                 url.push_str("/");
                 url.push_str(index.as_ref());
                 url.push_str("/_aliases/");
                 url.push_str(name.as_ref());
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -5403,53 +6136,70 @@ impl<'a> IndicesDeleteAliasRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IndicesDeleteAliasRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
-            method: HttpMethod::Post,
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Delete,
+            body: None,
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for IndicesDeleteAliasRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Delete,
             body: None,
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum CatTasksUrlParams {
     None,
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct CatTasksRequestParams<'a> {
-    pub url_params: CatTasksUrlParams,
-    _a: PhantomData<&'a ()>,
+    pub url: Url<'a>,
 }
 impl<'a> CatTasksRequestParams<'a> {
     pub fn new() -> CatTasksRequestParams<'a> {
-        CatTasksRequestParams {
-            url_params: CatTasksUrlParams::None,
-            _a: PhantomData,
-        }
+        CatTasksRequestParams { url: CatTasksUrlParams::None.url() }
     }
 }
-impl<'a> CatTasksRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
-            CatTasksUrlParams::None => Cow::Borrowed("/_cat/tasks"),
+impl CatTasksUrlParams {
+    pub fn url<'a>(self) -> Url<'a> {
+        match self {
+            CatTasksUrlParams::None => Url::from("/_cat/tasks"),
         }
     }
 }
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a CatTasksRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
-            method: HttpMethod::Post,
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Get,
+            body: None,
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for CatTasksRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Get,
             body: None,
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum IndicesRolloverUrlParams<'a> {
     Alias(Alias<'a>),
     AliasNewIndex(Alias<'a>, NewIndex<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct IndicesRolloverRequestParams<'a> {
-    pub url_params: IndicesRolloverUrlParams<'a>,
+    pub url: Url<'a>,
     pub body: Body<'a>,
-    _a: PhantomData<&'a ()>,
 }
 impl<'a> IndicesRolloverRequestParams<'a> {
     pub fn alias<IAlias: Into<Alias<'a>>, IBody: Into<Body<'a>>>
@@ -5457,9 +6207,8 @@ impl<'a> IndicesRolloverRequestParams<'a> {
          body: IBody)
          -> IndicesRolloverRequestParams<'a> {
         IndicesRolloverRequestParams {
-            url_params: IndicesRolloverUrlParams::Alias(alias.into()),
+            url: IndicesRolloverUrlParams::Alias(alias.into()).url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
     pub fn alias_new_index<IAlias: Into<Alias<'a>>,
@@ -5470,21 +6219,20 @@ impl<'a> IndicesRolloverRequestParams<'a> {
          body: IBody)
          -> IndicesRolloverRequestParams<'a> {
         IndicesRolloverRequestParams {
-            url_params: IndicesRolloverUrlParams::AliasNewIndex(alias.into(), new_index.into()),
+            url: IndicesRolloverUrlParams::AliasNewIndex(alias.into(), new_index.into()).url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
 }
-impl<'a> IndicesRolloverRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
+impl<'a> IndicesRolloverUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
             IndicesRolloverUrlParams::Alias(ref alias) => {
                 let mut url = String::with_capacity(11usize + alias.len());
                 url.push_str("/");
                 url.push_str(alias.as_ref());
                 url.push_str("/_rollover");
-                Cow::Owned(url)
+                Url::from(url)
             }
             IndicesRolloverUrlParams::AliasNewIndex(ref alias, ref new_index) => {
                 let mut url = String::with_capacity(12usize + alias.len() + new_index.len());
@@ -5492,7 +6240,7 @@ impl<'a> IndicesRolloverRequestParams<'a> {
                 url.push_str(alias.as_ref());
                 url.push_str("/_rollover/");
                 url.push_str(new_index.as_ref());
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -5500,38 +6248,47 @@ impl<'a> IndicesRolloverRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IndicesRolloverRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
+            url: Cow::Borrowed(&self.url),
             method: HttpMethod::Post,
-            body: Some(&self.body),
+            body: Some(Cow::Borrowed(&self.body)),
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for IndicesRolloverRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Post,
+            body: Some(Cow::Owned(self.body)),
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum ReindexRethrottleUrlParams<'a> {
     TaskId(TaskId<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct ReindexRethrottleRequestParams<'a> {
-    pub url_params: ReindexRethrottleUrlParams<'a>,
-    _a: PhantomData<&'a ()>,
+    pub url: Url<'a>,
 }
 impl<'a> ReindexRethrottleRequestParams<'a> {
     pub fn task_id<ITaskId: Into<TaskId<'a>>>(task_id: ITaskId)
                                               -> ReindexRethrottleRequestParams<'a> {
         ReindexRethrottleRequestParams {
-            url_params: ReindexRethrottleUrlParams::TaskId(task_id.into()),
-            _a: PhantomData,
+            url: ReindexRethrottleUrlParams::TaskId(task_id.into()).url(),
         }
     }
 }
-impl<'a> ReindexRethrottleRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
+impl<'a> ReindexRethrottleUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
             ReindexRethrottleUrlParams::TaskId(ref task_id) => {
                 let mut url = String::with_capacity(30usize + task_id.len());
                 url.push_str("/_delete_by_query/");
                 url.push_str(task_id.as_ref());
                 url.push_str("/_rethrottle");
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -5539,20 +6296,30 @@ impl<'a> ReindexRethrottleRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a ReindexRethrottleRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Post,
+            body: None,
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for ReindexRethrottleRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
             method: HttpMethod::Post,
             body: None,
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum SnapshotCreateRepositoryUrlParams<'a> {
     Repository(Repository<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct SnapshotCreateRepositoryRequestParams<'a> {
-    pub url_params: SnapshotCreateRepositoryUrlParams<'a>,
+    pub url: Url<'a>,
     pub body: Body<'a>,
-    _a: PhantomData<&'a ()>,
 }
 impl<'a> SnapshotCreateRepositoryRequestParams<'a> {
     pub fn repository<IRepository: Into<Repository<'a>>, IBody: Into<Body<'a>>>
@@ -5560,20 +6327,19 @@ impl<'a> SnapshotCreateRepositoryRequestParams<'a> {
          body: IBody)
          -> SnapshotCreateRepositoryRequestParams<'a> {
         SnapshotCreateRepositoryRequestParams {
-            url_params: SnapshotCreateRepositoryUrlParams::Repository(repository.into()),
+            url: SnapshotCreateRepositoryUrlParams::Repository(repository.into()).url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
 }
-impl<'a> SnapshotCreateRepositoryRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
+impl<'a> SnapshotCreateRepositoryUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
             SnapshotCreateRepositoryUrlParams::Repository(ref repository) => {
                 let mut url = String::with_capacity(11usize + repository.len());
                 url.push_str("/_snapshot/");
                 url.push_str(repository.as_ref());
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -5581,46 +6347,52 @@ impl<'a> SnapshotCreateRepositoryRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a SnapshotCreateRepositoryRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
+            url: Cow::Borrowed(&self.url),
             method: HttpMethod::Post,
-            body: Some(&self.body),
+            body: Some(Cow::Borrowed(&self.body)),
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for SnapshotCreateRepositoryRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Post,
+            body: Some(Cow::Owned(self.body)),
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum IndicesGetUrlParams<'a> {
     Index(Index<'a>),
     IndexFeature(Index<'a>, Feature<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct IndicesGetRequestParams<'a> {
-    pub url_params: IndicesGetUrlParams<'a>,
-    _a: PhantomData<&'a ()>,
+    pub url: Url<'a>,
 }
 impl<'a> IndicesGetRequestParams<'a> {
     pub fn index<IIndex: Into<Index<'a>>>(index: IIndex) -> IndicesGetRequestParams<'a> {
-        IndicesGetRequestParams {
-            url_params: IndicesGetUrlParams::Index(index.into()),
-            _a: PhantomData,
-        }
+        IndicesGetRequestParams { url: IndicesGetUrlParams::Index(index.into()).url() }
     }
     pub fn index_feature<IIndex: Into<Index<'a>>, IFeature: Into<Feature<'a>>>
         (index: IIndex,
          feature: IFeature)
          -> IndicesGetRequestParams<'a> {
         IndicesGetRequestParams {
-            url_params: IndicesGetUrlParams::IndexFeature(index.into(), feature.into()),
-            _a: PhantomData,
+            url: IndicesGetUrlParams::IndexFeature(index.into(), feature.into()).url(),
         }
     }
 }
-impl<'a> IndicesGetRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
+impl<'a> IndicesGetUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
             IndicesGetUrlParams::Index(ref index) => {
                 let mut url = String::with_capacity(1usize + index.len());
                 url.push_str("/");
                 url.push_str(index.as_ref());
-                Cow::Owned(url)
+                Url::from(url)
             }
             IndicesGetUrlParams::IndexFeature(ref index, ref feature) => {
                 let mut url = String::with_capacity(2usize + index.len() + feature.len());
@@ -5628,7 +6400,7 @@ impl<'a> IndicesGetRequestParams<'a> {
                 url.push_str(index.as_ref());
                 url.push_str("/");
                 url.push_str(feature.as_ref());
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -5636,28 +6408,37 @@ impl<'a> IndicesGetRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IndicesGetRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
-            method: HttpMethod::Post,
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Get,
+            body: None,
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for IndicesGetRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Get,
             body: None,
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum IndicesAnalyzeUrlParams<'a> {
     None,
     Index(Index<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct IndicesAnalyzeRequestParams<'a> {
-    pub url_params: IndicesAnalyzeUrlParams<'a>,
+    pub url: Url<'a>,
     pub body: Body<'a>,
-    _a: PhantomData<&'a ()>,
 }
 impl<'a> IndicesAnalyzeRequestParams<'a> {
     pub fn new<IBody: Into<Body<'a>>>(body: IBody) -> IndicesAnalyzeRequestParams<'a> {
         IndicesAnalyzeRequestParams {
-            url_params: IndicesAnalyzeUrlParams::None,
+            url: IndicesAnalyzeUrlParams::None.url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
     pub fn index<IIndex: Into<Index<'a>>, IBody: Into<Body<'a>>>
@@ -5665,22 +6446,21 @@ impl<'a> IndicesAnalyzeRequestParams<'a> {
          body: IBody)
          -> IndicesAnalyzeRequestParams<'a> {
         IndicesAnalyzeRequestParams {
-            url_params: IndicesAnalyzeUrlParams::Index(index.into()),
+            url: IndicesAnalyzeUrlParams::Index(index.into()).url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
 }
-impl<'a> IndicesAnalyzeRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
-            IndicesAnalyzeUrlParams::None => Cow::Borrowed("/_analyze"),
+impl<'a> IndicesAnalyzeUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
+            IndicesAnalyzeUrlParams::None => Url::from("/_analyze"),
             IndicesAnalyzeUrlParams::Index(ref index) => {
                 let mut url = String::with_capacity(10usize + index.len());
                 url.push_str("/");
                 url.push_str(index.as_ref());
                 url.push_str("/_analyze");
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -5688,44 +6468,48 @@ impl<'a> IndicesAnalyzeRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IndicesAnalyzeRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
+            url: Cow::Borrowed(&self.url),
             method: HttpMethod::Post,
-            body: Some(&self.body),
+            body: Some(Cow::Borrowed(&self.body)),
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for IndicesAnalyzeRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Post,
+            body: Some(Cow::Owned(self.body)),
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum CatFielddataUrlParams<'a> {
     None,
     Fields(Fields<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct CatFielddataRequestParams<'a> {
-    pub url_params: CatFielddataUrlParams<'a>,
-    _a: PhantomData<&'a ()>,
+    pub url: Url<'a>,
 }
 impl<'a> CatFielddataRequestParams<'a> {
     pub fn new() -> CatFielddataRequestParams<'a> {
-        CatFielddataRequestParams {
-            url_params: CatFielddataUrlParams::None,
-            _a: PhantomData,
-        }
+        CatFielddataRequestParams { url: CatFielddataUrlParams::None.url() }
     }
     pub fn fields<IFields: Into<Fields<'a>>>(fields: IFields) -> CatFielddataRequestParams<'a> {
-        CatFielddataRequestParams {
-            url_params: CatFielddataUrlParams::Fields(fields.into()),
-            _a: PhantomData,
-        }
+        CatFielddataRequestParams { url: CatFielddataUrlParams::Fields(fields.into()).url() }
     }
 }
-impl<'a> CatFielddataRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
-            CatFielddataUrlParams::None => Cow::Borrowed("/_cat/fielddata"),
+impl<'a> CatFielddataUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
+            CatFielddataUrlParams::None => Url::from("/_cat/fielddata"),
             CatFielddataUrlParams::Fields(ref fields) => {
                 let mut url = String::with_capacity(16usize + fields.len());
                 url.push_str("/_cat/fielddata/");
                 url.push_str(fields.as_ref());
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -5733,45 +6517,49 @@ impl<'a> CatFielddataRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a CatFielddataRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
-            method: HttpMethod::Post,
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Get,
+            body: None,
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for CatFielddataRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Get,
             body: None,
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum IndicesSegmentsUrlParams<'a> {
     None,
     Index(Index<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct IndicesSegmentsRequestParams<'a> {
-    pub url_params: IndicesSegmentsUrlParams<'a>,
-    _a: PhantomData<&'a ()>,
+    pub url: Url<'a>,
 }
 impl<'a> IndicesSegmentsRequestParams<'a> {
     pub fn new() -> IndicesSegmentsRequestParams<'a> {
-        IndicesSegmentsRequestParams {
-            url_params: IndicesSegmentsUrlParams::None,
-            _a: PhantomData,
-        }
+        IndicesSegmentsRequestParams { url: IndicesSegmentsUrlParams::None.url() }
     }
     pub fn index<IIndex: Into<Index<'a>>>(index: IIndex) -> IndicesSegmentsRequestParams<'a> {
-        IndicesSegmentsRequestParams {
-            url_params: IndicesSegmentsUrlParams::Index(index.into()),
-            _a: PhantomData,
-        }
+        IndicesSegmentsRequestParams { url: IndicesSegmentsUrlParams::Index(index.into()).url() }
     }
 }
-impl<'a> IndicesSegmentsRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
-            IndicesSegmentsUrlParams::None => Cow::Borrowed("/_segments"),
+impl<'a> IndicesSegmentsUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
+            IndicesSegmentsUrlParams::None => Url::from("/_segments"),
             IndicesSegmentsUrlParams::Index(ref index) => {
                 let mut url = String::with_capacity(11usize + index.len());
                 url.push_str("/");
                 url.push_str(index.as_ref());
                 url.push_str("/_segments");
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -5779,20 +6567,30 @@ impl<'a> IndicesSegmentsRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IndicesSegmentsRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
-            method: HttpMethod::Post,
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Get,
+            body: None,
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for IndicesSegmentsRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Get,
             body: None,
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum IndicesShrinkUrlParams<'a> {
     IndexTarget(Index<'a>, Target<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct IndicesShrinkRequestParams<'a> {
-    pub url_params: IndicesShrinkUrlParams<'a>,
+    pub url: Url<'a>,
     pub body: Body<'a>,
-    _a: PhantomData<&'a ()>,
 }
 impl<'a> IndicesShrinkRequestParams<'a> {
     pub fn index_target<IIndex: Into<Index<'a>>, ITarget: Into<Target<'a>>, IBody: Into<Body<'a>>>
@@ -5801,22 +6599,21 @@ impl<'a> IndicesShrinkRequestParams<'a> {
          body: IBody)
          -> IndicesShrinkRequestParams<'a> {
         IndicesShrinkRequestParams {
-            url_params: IndicesShrinkUrlParams::IndexTarget(index.into(), target.into()),
+            url: IndicesShrinkUrlParams::IndexTarget(index.into(), target.into()).url(),
             body: body.into(),
-            _a: PhantomData,
         }
     }
 }
-impl<'a> IndicesShrinkRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
+impl<'a> IndicesShrinkUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
             IndicesShrinkUrlParams::IndexTarget(ref index, ref target) => {
                 let mut url = String::with_capacity(10usize + index.len() + target.len());
                 url.push_str("/");
                 url.push_str(index.as_ref());
                 url.push_str("/_shrink/");
                 url.push_str(target.as_ref());
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -5824,83 +6621,107 @@ impl<'a> IndicesShrinkRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IndicesShrinkRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
+            url: Cow::Borrowed(&self.url),
             method: HttpMethod::Post,
-            body: Some(&self.body),
+            body: Some(Cow::Borrowed(&self.body)),
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for IndicesShrinkRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Post,
+            body: Some(Cow::Owned(self.body)),
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum TasksListUrlParams {
     None,
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct TasksListRequestParams<'a> {
-    pub url_params: TasksListUrlParams,
-    _a: PhantomData<&'a ()>,
+    pub url: Url<'a>,
 }
 impl<'a> TasksListRequestParams<'a> {
     pub fn new() -> TasksListRequestParams<'a> {
-        TasksListRequestParams {
-            url_params: TasksListUrlParams::None,
-            _a: PhantomData,
-        }
+        TasksListRequestParams { url: TasksListUrlParams::None.url() }
     }
 }
-impl<'a> TasksListRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
-            TasksListUrlParams::None => Cow::Borrowed("/_tasks"),
+impl TasksListUrlParams {
+    pub fn url<'a>(self) -> Url<'a> {
+        match self {
+            TasksListUrlParams::None => Url::from("/_tasks"),
         }
     }
 }
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a TasksListRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
-            method: HttpMethod::Post,
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Get,
+            body: None,
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for TasksListRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Get,
             body: None,
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum CatMasterUrlParams {
     None,
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct CatMasterRequestParams<'a> {
-    pub url_params: CatMasterUrlParams,
-    _a: PhantomData<&'a ()>,
+    pub url: Url<'a>,
 }
 impl<'a> CatMasterRequestParams<'a> {
     pub fn new() -> CatMasterRequestParams<'a> {
-        CatMasterRequestParams {
-            url_params: CatMasterUrlParams::None,
-            _a: PhantomData,
-        }
+        CatMasterRequestParams { url: CatMasterUrlParams::None.url() }
     }
 }
-impl<'a> CatMasterRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
-            CatMasterUrlParams::None => Cow::Borrowed("/_cat/master"),
+impl CatMasterUrlParams {
+    pub fn url<'a>(self) -> Url<'a> {
+        match self {
+            CatMasterUrlParams::None => Url::from("/_cat/master"),
         }
     }
 }
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a CatMasterRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
-            method: HttpMethod::Post,
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Get,
+            body: None,
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for CatMasterRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Get,
             body: None,
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum IndicesExistsTypeUrlParams<'a> {
     IndexType(Index<'a>, Type<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct IndicesExistsTypeRequestParams<'a> {
-    pub url_params: IndicesExistsTypeUrlParams<'a>,
-    _a: PhantomData<&'a ()>,
+    pub url: Url<'a>,
 }
 impl<'a> IndicesExistsTypeRequestParams<'a> {
     pub fn index_ty<IIndex: Into<Index<'a>>, IType: Into<Type<'a>>>
@@ -5908,21 +6729,20 @@ impl<'a> IndicesExistsTypeRequestParams<'a> {
          ty: IType)
          -> IndicesExistsTypeRequestParams<'a> {
         IndicesExistsTypeRequestParams {
-            url_params: IndicesExistsTypeUrlParams::IndexType(index.into(), ty.into()),
-            _a: PhantomData,
+            url: IndicesExistsTypeUrlParams::IndexType(index.into(), ty.into()).url(),
         }
     }
 }
-impl<'a> IndicesExistsTypeRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
+impl<'a> IndicesExistsTypeUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
             IndicesExistsTypeUrlParams::IndexType(ref index, ref ty) => {
                 let mut url = String::with_capacity(11usize + index.len() + ty.len());
                 url.push_str("/");
                 url.push_str(index.as_ref());
                 url.push_str("/_mapping/");
                 url.push_str(ty.as_ref());
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -5930,99 +6750,106 @@ impl<'a> IndicesExistsTypeRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IndicesExistsTypeRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
-            method: HttpMethod::Post,
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Head,
+            body: None,
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for IndicesExistsTypeRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Head,
             body: None,
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum ClusterGetSettingsUrlParams {
     None,
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct ClusterGetSettingsRequestParams<'a> {
-    pub url_params: ClusterGetSettingsUrlParams,
-    _a: PhantomData<&'a ()>,
+    pub url: Url<'a>,
 }
 impl<'a> ClusterGetSettingsRequestParams<'a> {
     pub fn new() -> ClusterGetSettingsRequestParams<'a> {
-        ClusterGetSettingsRequestParams {
-            url_params: ClusterGetSettingsUrlParams::None,
-            _a: PhantomData,
-        }
+        ClusterGetSettingsRequestParams { url: ClusterGetSettingsUrlParams::None.url() }
     }
 }
-impl<'a> ClusterGetSettingsRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
-            ClusterGetSettingsUrlParams::None => Cow::Borrowed("/_cluster/settings"),
+impl ClusterGetSettingsUrlParams {
+    pub fn url<'a>(self) -> Url<'a> {
+        match self {
+            ClusterGetSettingsUrlParams::None => Url::from("/_cluster/settings"),
         }
     }
 }
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a ClusterGetSettingsRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
-            method: HttpMethod::Post,
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Get,
+            body: None,
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for ClusterGetSettingsRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Get,
             body: None,
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum NodesInfoUrlParams<'a> {
     None,
     Metric(Metric<'a>),
     NodeId(NodeId<'a>),
     NodeIdMetric(NodeId<'a>, Metric<'a>),
 }
+#[derive(Debug, PartialEq, Clone)]
 pub struct NodesInfoRequestParams<'a> {
-    pub url_params: NodesInfoUrlParams<'a>,
-    _a: PhantomData<&'a ()>,
+    pub url: Url<'a>,
 }
 impl<'a> NodesInfoRequestParams<'a> {
     pub fn new() -> NodesInfoRequestParams<'a> {
-        NodesInfoRequestParams {
-            url_params: NodesInfoUrlParams::None,
-            _a: PhantomData,
-        }
+        NodesInfoRequestParams { url: NodesInfoUrlParams::None.url() }
     }
     pub fn metric<IMetric: Into<Metric<'a>>>(metric: IMetric) -> NodesInfoRequestParams<'a> {
-        NodesInfoRequestParams {
-            url_params: NodesInfoUrlParams::Metric(metric.into()),
-            _a: PhantomData,
-        }
+        NodesInfoRequestParams { url: NodesInfoUrlParams::Metric(metric.into()).url() }
     }
     pub fn node_id<INodeId: Into<NodeId<'a>>>(node_id: INodeId) -> NodesInfoRequestParams<'a> {
-        NodesInfoRequestParams {
-            url_params: NodesInfoUrlParams::NodeId(node_id.into()),
-            _a: PhantomData,
-        }
+        NodesInfoRequestParams { url: NodesInfoUrlParams::NodeId(node_id.into()).url() }
     }
     pub fn node_id_metric<INodeId: Into<NodeId<'a>>, IMetric: Into<Metric<'a>>>
         (node_id: INodeId,
          metric: IMetric)
          -> NodesInfoRequestParams<'a> {
         NodesInfoRequestParams {
-            url_params: NodesInfoUrlParams::NodeIdMetric(node_id.into(), metric.into()),
-            _a: PhantomData,
+            url: NodesInfoUrlParams::NodeIdMetric(node_id.into(), metric.into()).url(),
         }
     }
 }
-impl<'a> NodesInfoRequestParams<'a> {
-    pub fn url(&'a self) -> Cow<'a, str> {
-        match self.url_params {
-            NodesInfoUrlParams::None => Cow::Borrowed("/_nodes"),
+impl<'a> NodesInfoUrlParams<'a> {
+    pub fn url(self) -> Url<'a> {
+        match self {
+            NodesInfoUrlParams::None => Url::from("/_nodes"),
             NodesInfoUrlParams::Metric(ref metric) => {
                 let mut url = String::with_capacity(8usize + metric.len());
                 url.push_str("/_nodes/");
                 url.push_str(metric.as_ref());
-                Cow::Owned(url)
+                Url::from(url)
             }
             NodesInfoUrlParams::NodeId(ref node_id) => {
                 let mut url = String::with_capacity(8usize + node_id.len());
                 url.push_str("/_nodes/");
                 url.push_str(node_id.as_ref());
-                Cow::Owned(url)
+                Url::from(url)
             }
             NodesInfoUrlParams::NodeIdMetric(ref node_id, ref metric) => {
                 let mut url = String::with_capacity(9usize + node_id.len() + metric.len());
@@ -6030,7 +6857,7 @@ impl<'a> NodesInfoRequestParams<'a> {
                 url.push_str(node_id.as_ref());
                 url.push_str("/");
                 url.push_str(metric.as_ref());
-                Cow::Owned(url)
+                Url::from(url)
             }
         }
     }
@@ -6038,13 +6865,23 @@ impl<'a> NodesInfoRequestParams<'a> {
 impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a NodesInfoRequestParams<'b> {
     fn into(self) -> HttpRequest<'a> {
         HttpRequest {
-            url: self.url(),
-            method: HttpMethod::Post,
+            url: Cow::Borrowed(&self.url),
+            method: HttpMethod::Get,
+            body: None,
+        }
+    }
+}
+impl<'a> Into<HttpRequest<'a>> for NodesInfoRequestParams<'a> {
+    fn into(self) -> HttpRequest<'a> {
+        HttpRequest {
+            url: Cow::Owned(self.url),
+            method: HttpMethod::Get,
             body: None,
         }
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub struct Alias<'a>(pub Cow<'a, str>);
 impl<'a> From<&'a str> for Alias<'a> {
     fn from(value: &'a str) -> Alias<'a> {
@@ -6063,6 +6900,7 @@ impl<'a> ::std::ops::Deref for Alias<'a> {
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub struct Feature<'a>(pub Cow<'a, str>);
 impl<'a> From<&'a str> for Feature<'a> {
     fn from(value: &'a str) -> Feature<'a> {
@@ -6081,6 +6919,7 @@ impl<'a> ::std::ops::Deref for Feature<'a> {
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub struct Fields<'a>(pub Cow<'a, str>);
 impl<'a> From<&'a str> for Fields<'a> {
     fn from(value: &'a str) -> Fields<'a> {
@@ -6099,6 +6938,7 @@ impl<'a> ::std::ops::Deref for Fields<'a> {
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub struct Id<'a>(pub Cow<'a, str>);
 impl<'a> From<&'a str> for Id<'a> {
     fn from(value: &'a str) -> Id<'a> {
@@ -6117,6 +6957,7 @@ impl<'a> ::std::ops::Deref for Id<'a> {
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub struct Index<'a>(pub Cow<'a, str>);
 impl<'a> From<&'a str> for Index<'a> {
     fn from(value: &'a str) -> Index<'a> {
@@ -6135,6 +6976,7 @@ impl<'a> ::std::ops::Deref for Index<'a> {
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub struct IndexMetric<'a>(pub Cow<'a, str>);
 impl<'a> From<&'a str> for IndexMetric<'a> {
     fn from(value: &'a str) -> IndexMetric<'a> {
@@ -6153,6 +6995,7 @@ impl<'a> ::std::ops::Deref for IndexMetric<'a> {
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub struct Lang<'a>(pub Cow<'a, str>);
 impl<'a> From<&'a str> for Lang<'a> {
     fn from(value: &'a str) -> Lang<'a> {
@@ -6171,6 +7014,7 @@ impl<'a> ::std::ops::Deref for Lang<'a> {
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub struct Metric<'a>(pub Cow<'a, str>);
 impl<'a> From<&'a str> for Metric<'a> {
     fn from(value: &'a str) -> Metric<'a> {
@@ -6189,6 +7033,7 @@ impl<'a> ::std::ops::Deref for Metric<'a> {
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub struct Name<'a>(pub Cow<'a, str>);
 impl<'a> From<&'a str> for Name<'a> {
     fn from(value: &'a str) -> Name<'a> {
@@ -6207,6 +7052,7 @@ impl<'a> ::std::ops::Deref for Name<'a> {
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub struct NewIndex<'a>(pub Cow<'a, str>);
 impl<'a> From<&'a str> for NewIndex<'a> {
     fn from(value: &'a str) -> NewIndex<'a> {
@@ -6225,6 +7071,7 @@ impl<'a> ::std::ops::Deref for NewIndex<'a> {
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub struct NodeId<'a>(pub Cow<'a, str>);
 impl<'a> From<&'a str> for NodeId<'a> {
     fn from(value: &'a str) -> NodeId<'a> {
@@ -6243,6 +7090,7 @@ impl<'a> ::std::ops::Deref for NodeId<'a> {
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub struct Repository<'a>(pub Cow<'a, str>);
 impl<'a> From<&'a str> for Repository<'a> {
     fn from(value: &'a str) -> Repository<'a> {
@@ -6261,6 +7109,7 @@ impl<'a> ::std::ops::Deref for Repository<'a> {
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub struct ScrollId<'a>(pub Cow<'a, str>);
 impl<'a> From<&'a str> for ScrollId<'a> {
     fn from(value: &'a str) -> ScrollId<'a> {
@@ -6279,6 +7128,7 @@ impl<'a> ::std::ops::Deref for ScrollId<'a> {
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub struct Snapshot<'a>(pub Cow<'a, str>);
 impl<'a> From<&'a str> for Snapshot<'a> {
     fn from(value: &'a str) -> Snapshot<'a> {
@@ -6297,6 +7147,7 @@ impl<'a> ::std::ops::Deref for Snapshot<'a> {
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub struct Target<'a>(pub Cow<'a, str>);
 impl<'a> From<&'a str> for Target<'a> {
     fn from(value: &'a str) -> Target<'a> {
@@ -6315,6 +7166,7 @@ impl<'a> ::std::ops::Deref for Target<'a> {
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub struct TaskId<'a>(pub Cow<'a, str>);
 impl<'a> From<&'a str> for TaskId<'a> {
     fn from(value: &'a str) -> TaskId<'a> {
@@ -6333,6 +7185,7 @@ impl<'a> ::std::ops::Deref for TaskId<'a> {
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub struct ThreadPoolPatterns<'a>(pub Cow<'a, str>);
 impl<'a> From<&'a str> for ThreadPoolPatterns<'a> {
     fn from(value: &'a str) -> ThreadPoolPatterns<'a> {
@@ -6351,6 +7204,7 @@ impl<'a> ::std::ops::Deref for ThreadPoolPatterns<'a> {
     }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub struct Type<'a>(pub Cow<'a, str>);
 impl<'a> From<&'a str> for Type<'a> {
     fn from(value: &'a str) -> Type<'a> {

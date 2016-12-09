@@ -6,15 +6,13 @@ use super::helpers::*;
 /// Builder for request parameters enum.
 pub struct RequestParamBuilder {
     name: syn::Ident,
-    url_params: syn::Ty,
     has_body: bool,
 }
 
 impl RequestParamBuilder {
-    pub fn new(name: &str, url_params: syn::Ty) -> Self {
+    pub fn new(name: &str) -> Self {
         RequestParamBuilder {
             name: ident(name),
-            url_params: url_params,
             has_body: false,
         }
     }
@@ -27,10 +25,10 @@ impl RequestParamBuilder {
 
     pub fn build(self) -> (syn::Item, syn::Ty) {
         let mut fields = vec![syn::Field {
-            ident: Some(ident("url_params")),
+            ident: Some(ident("url")),
             vis: syn::Visibility::Public,
             attrs: vec![],
-            ty: self.url_params
+            ty: types::url::ty()
         }];
 
         if self.has_body {
@@ -42,22 +40,6 @@ impl RequestParamBuilder {
             });
         }
 
-        let marker_ty = syn::Ty::Rptr(
-            Some(lifetime()), 
-            Box::new(
-                syn::MutTy {
-                    ty: ty("( )"),
-                    mutability: syn::Mutability::Immutable
-                }
-            ));
-
-        fields.push(syn::Field {
-            ident: Some(ident("_a")),
-            vis: syn::Visibility::Inherited,
-            attrs: vec![],
-            ty: ty_path("PhantomData", vec![], vec![marker_ty])
-        });
-
         let fields = syn::VariantData::Struct(fields);
 
         let ty = ty_a(self.name.as_ref());
@@ -66,20 +48,20 @@ impl RequestParamBuilder {
             ident: self.name,
             vis: syn::Visibility::Public,
             attrs: vec![],
-            node: syn::ItemKind::Struct(fields, generics()),
+            node: syn::ItemKind::Struct(fields, generics_a()),
         };
 
         (item, ty)
     }
 }
 
-impl<'a> From<(&'a (String, parse::Endpoint), &'a syn::Ty)> for RequestParamBuilder {
-    fn from(value: (&'a (String, parse::Endpoint), &'a syn::Ty)) -> Self {
-        let (&(ref endpoint_name, ref endpoint), ref params_ty) = value;
+impl<'a> From<&'a (String, parse::Endpoint)> for RequestParamBuilder {
+    fn from(value: &'a (String, parse::Endpoint)) -> Self {
+        let &(ref endpoint_name, ref endpoint) = value;
 
         let name = format!("{}RequestParams", endpoint_name.into_rust_type());
 
-        let builder = RequestParamBuilder::new(&name, (*params_ty).to_owned()).has_body(endpoint.body.is_some());
+        let builder = RequestParamBuilder::new(&name).has_body(endpoint.body.is_some());
 
         builder
     }
@@ -91,7 +73,7 @@ mod tests {
 
     #[test]
     fn gen_request_params_ty() {
-        let (_, result) = RequestParamBuilder::new("RequestParams", ty_a("UrlParams")).build();
+        let (_, result) = RequestParamBuilder::new("RequestParams").build();
 
         let expected = quote!(RequestParams<'a>);
 
@@ -100,12 +82,11 @@ mod tests {
 
     #[test]
     fn gen_request_params() {
-        let (result, _) = RequestParamBuilder::new("RequestParams", ty_a("UrlParams")).build();
+        let (result, _) = RequestParamBuilder::new("RequestParams").build();
 
         let expected = quote!(
             pub struct RequestParams<'a> {
-                pub url_params: UrlParams<'a>,
-                _a: PhantomData<&'a ()>
+                pub url: Url<'a>
             }
         );
 
@@ -124,13 +105,12 @@ mod tests {
             body: Some(Body { description: String::new() }),
         });
 
-        let (result, _) = RequestParamBuilder::from((&endpoint, &ty_a("IndicesExistsAliasUrlParams"))).build();
+        let (result, _) = RequestParamBuilder::from(&endpoint).build();
 
         let expected = quote!(
             pub struct IndicesExistsAliasRequestParams<'a> {
-                pub url_params: IndicesExistsAliasUrlParams<'a>,
-                pub body: Body<'a>,
-                _a: PhantomData<&'a ()>
+                pub url: Url<'a>,
+                pub body: Body<'a>
             }
         );
 

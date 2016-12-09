@@ -21,7 +21,7 @@ pub struct Endpoint {
     pub body: Option<Body>,
 }
 
-#[derive(Debug, PartialEq, Deserialize)]
+#[derive(Debug, PartialEq, Deserialize, Clone, Copy)]
 pub enum HttpMethod {
     #[serde(rename = "HEAD")]
     Head,

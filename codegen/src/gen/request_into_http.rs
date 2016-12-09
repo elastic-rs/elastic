@@ -1,46 +1,76 @@
 use syn;
-use ::parse::Endpoint;
+use quote;
+use ::parse::{Endpoint, HttpMethod};
 use super::helpers::*;
 
 pub struct RequestIntoHttpRequestBuilder {
     req_ty: syn::Ty,
     has_body: bool,
+    http_verb: HttpMethod,
 }
 
 impl RequestIntoHttpRequestBuilder {
-    pub fn new(has_body: bool, request_ty: syn::Ty) -> Self {
+    pub fn new(http_verb: HttpMethod, has_body: bool, request_ty: syn::Ty) -> Self {
         RequestIntoHttpRequestBuilder {
             req_ty: request_ty,
             has_body: has_body,
+            http_verb: http_verb,
         }
     }
 
-    pub fn build(self) -> syn::Item {
+    pub fn build(self) -> quote::Tokens {
         let req_ty = {
             let mut path = self.req_ty.get_path().to_owned();
             path.segments[0].parameters = syn::PathParameters::none();
             path.into_ty()
         };
 
-        let body = {
+        let (brw_body, owned_body) = {
             if self.has_body {
-                quote!(Some(&self.body))
+                (quote!(Some(Cow::Borrowed(&self.body))), quote!(Some(Cow::Owned(self.body))))
             } else {
-                quote!(None)
+                (quote!(None), quote!(None))
             }
         };
 
-        parse_item(quote!(
-            impl <'a, 'b: 'a> Into<HttpRequest<'a>> for &'a #req_ty<'b> {
+        let method = match self.http_verb {
+            HttpMethod::Get => quote!(HttpMethod::Get),
+            HttpMethod::Post => quote!(HttpMethod::Post),
+            HttpMethod::Put => quote!(HttpMethod::Put),
+            HttpMethod::Delete => quote!(HttpMethod::Delete),
+            HttpMethod::Head => quote!(HttpMethod::Head),
+            HttpMethod::Patch => quote!(HttpMethod::Patch),
+        };
+
+        let brw_item = quote!(
+            impl <'a, 'b: 'a> Into<HttpRequest<'a> > for &'a #req_ty<'b> {
                 fn into(self) -> HttpRequest<'a> {
                     HttpRequest {
-                        url: self.url(),
-                        method: HttpMethod::Post,
-                        body: #body
+                        url: Cow::Borrowed(&self.url),
+                        method: #method,
+                        body: #brw_body
                     }
                 }
             }
-        ))
+        );
+
+        let owned_item = quote!(
+            impl <'a> Into<HttpRequest<'a> > for #req_ty<'a> {
+                fn into(self) -> HttpRequest<'a> {
+                    HttpRequest {
+                        url: Cow::Owned(self.url),
+                        method: #method,
+                        body: #owned_body
+                    }
+                }
+            }
+        );
+
+        quote!(
+            #brw_item
+
+            #owned_item
+        )
     }
 }
 
@@ -49,8 +79,9 @@ impl<'a> From<(&'a (String, Endpoint), &'a syn::Ty)> for RequestIntoHttpRequestB
         let (&(_, ref endpoint), ref req_ty) = value;
 
         let has_body = endpoint.body.is_some();
+        let verb = endpoint.methods[0];
 
-        RequestIntoHttpRequestBuilder::new(has_body, (*req_ty).to_owned())
+        RequestIntoHttpRequestBuilder::new(verb, has_body, (*req_ty).to_owned())
     }
 }
 
@@ -73,16 +104,34 @@ mod tests {
 
         let result = RequestIntoHttpRequestBuilder::from((&endpoint, &req_ty)).build();
 
-        let expected = quote!(
+        let brw_item = quote!(
             impl <'a, 'b: 'a> Into<HttpRequest<'a> > for &'a IndicesExistsAliasRequestParams<'b> {
                 fn into(self) -> HttpRequest<'a> {
                     HttpRequest {
-                        url: self.url(),
-                        method: HttpMethod::Post,
-                        body: Some(&self.body)
+                        url: Cow::Borrowed(&self.url),
+                        method: HttpMethod::Get,
+                        body: Some(Cow::Borrowed(&self.body))
                     }
                 }
             }
+        );
+
+        let owned_item = quote!(
+            impl <'a> Into<HttpRequest<'a> > for IndicesExistsAliasRequestParams<'a> {
+                fn into(self) -> HttpRequest<'a> {
+                    HttpRequest {
+                        url: Cow::Owned(self.url),
+                        method: HttpMethod::Get,
+                        body: Some(Cow::Owned(self.body))
+                    }
+                }
+            }
+        );
+
+        let expected = quote!(
+            #brw_item
+
+            #owned_item
         );
 
         ast_eq(expected, result);

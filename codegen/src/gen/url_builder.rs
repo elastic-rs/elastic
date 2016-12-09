@@ -1,5 +1,6 @@
 use syn;
 use ::parse::{Endpoint, PathPart};
+use super::types;
 use super::helpers::*;
 
 /// Builder for match statements over a request parameters enum.
@@ -75,7 +76,7 @@ impl UrlParamMatchBuilder {
     }
 
     pub fn build(self) -> syn::Expr {
-        let to_match = field("self", "url_params");
+        let to_match = path("self").into_expr();
 
         syn::ExprKind::Match(Box::new(to_match), self.arms).into()
     }
@@ -102,7 +103,7 @@ impl<'a> From<(&'a (syn::Item, syn::Ty), Vec<syn::Block>)> for UrlParamMatchBuil
 
 /// Builder for an efficient url value replacer.
 ///
-/// The inputs are expected to be `AsRef<str>` and the output is a `Cow<'a, str>`.
+/// The inputs are expected to be `AsRef<str>` and the output is a `Url<'a>`.
 pub struct UrlReplaceBuilder<'a> {
     url: Vec<PathPart<'a>>,
 }
@@ -129,7 +130,7 @@ impl<'a> UrlReplaceBuilder<'a> {
 
         let mut push_stmts = Self::push_part_stmts(url_ident.clone(), &self.url);
 
-        let return_expr = syn::Stmt::Expr(Box::new(parse_expr(quote!(Cow::Owned(#url_ident)))));
+        let return_expr = syn::Stmt::Expr(Box::new(parse_expr(quote!(Url::from(#url_ident)))));
 
         let mut stmts = vec![
             let_stmt
@@ -156,7 +157,7 @@ impl<'a> UrlReplaceBuilder<'a> {
 
         let lit = syn::Lit::Str(path, syn::StrStyle::Cooked);
 
-        let expr = parse_expr(quote!(Cow::Borrowed(#lit)));
+        let expr = parse_expr(quote!(Url::from(#lit)));
 
         syn::Block { stmts: vec![syn::Stmt::Expr(Box::new(expr))] }
     }
@@ -266,31 +267,34 @@ impl<'a, I: IntoIterator<Item = PathPart<'a>>> From<I> for UrlReplaceBuilder<'a>
 }
 
 pub struct UrlMethodBuilder {
-    req_ty: syn::Ty,
+    params_ty: syn::Ty,
     body: syn::Expr,
 }
 
 impl UrlMethodBuilder {
-    pub fn new(request_ty: syn::Ty, body: syn::Expr) -> Self {
+    pub fn new(url_params_ty: syn::Ty, body: syn::Expr) -> Self {
         UrlMethodBuilder {
-            req_ty: request_ty,
+            params_ty: url_params_ty,
             body: body,
         }
     }
 
     pub fn build(self) -> syn::Item {
-        let ret_ty = ty_path("Cow", vec![lifetime()], vec![ty("str")]);
+        let ret_ty = types::url::ty();
 
         let fndecl = syn::FnDecl {
-            inputs: vec![syn::FnArg::SelfRef(Some(lifetime()), syn::Mutability::Immutable)],
+            inputs: vec![syn::FnArg::SelfValue(syn::Mutability::Immutable)],
             output: syn::FunctionRetTy::Ty(ret_ty),
             variadic: false,
         };
 
-        let fngenerics = syn::Generics {
-            lifetimes: vec![],
-            ty_params: vec![],
-            where_clause: syn::WhereClause::none(),
+        let (generics, fngenerics) = {
+            if self.params_ty.has_lifetime() {
+                (generics_a(), generics())
+            }
+            else {
+                (generics(), generics_a())
+            }
         };
 
         let item = syn::ImplItem {
@@ -314,17 +318,18 @@ impl UrlMethodBuilder {
             attrs: vec![],
             node: syn::ItemKind::Impl(syn::Unsafety::Normal,
                                       syn::ImplPolarity::Positive,
-                                      generics(),
+                                      generics,
                                       None,
-                                      Box::new(self.req_ty),
+                                      Box::new(self.params_ty),
                                       vec![item]),
         }
     }
 }
 
-impl<'a> From<(&'a (String, Endpoint), &'a syn::Ty, &'a (syn::Item, syn::Ty))> for UrlMethodBuilder {
-    fn from(value: (&'a (String, Endpoint), &'a syn::Ty, &'a (syn::Item, syn::Ty))) -> Self {
-        let (&(_, ref endpoint), ref req_ty, params) = value;
+impl<'a> From<(&'a (String, Endpoint), &'a (syn::Item, syn::Ty))> for UrlMethodBuilder {
+    fn from(value: (&'a (String, Endpoint), &'a (syn::Item, syn::Ty))) -> Self {
+        let (&(_, ref endpoint), params) = value;
+        let &(_, ref params_ty) = params;
 
         let bodies: Vec<syn::Block> = endpoint.url
             .paths
@@ -334,7 +339,7 @@ impl<'a> From<(&'a (String, Endpoint), &'a syn::Ty, &'a (syn::Item, syn::Ty))> f
 
         let match_expr = UrlParamMatchBuilder::from((params, bodies)).build();
 
-        UrlMethodBuilder::new((*req_ty).to_owned(), match_expr)
+        UrlMethodBuilder::new((*params_ty).to_owned(), match_expr)
     }
 }
 
@@ -362,7 +367,7 @@ mod tests {
         let result = UrlParamMatchBuilder::from((&params, bodies)).build();
 
         let expected = quote!(
-            match self.url_params {
+            match self {
                 RequestParams::None => {}
                 RequestParams::Index(ref index) => {}
                 RequestParams::IndexTypeId(ref index, ref ty, ref id) => {}
@@ -376,7 +381,7 @@ mod tests {
         let result = UrlReplaceBuilder::from(vec![PathPart::Literal("/_search")]).build();
 
         let expected = quote!({
-            Cow::Borrowed("/_search")
+            Url::from("/_search")
         });
 
         ast_eq(expected, result);
@@ -399,8 +404,27 @@ mod tests {
             url.push_str("/_search/");
             url.push_str(ty.as_ref());
 
-            Cow::Owned(url)
+            Url::from(url)
         });
+
+        ast_eq(expected, result);
+    }
+
+    #[test]
+    fn gen_url_method_no_params() {
+        use syn;
+        use ::parse::*;
+        use ::gen::url_params::*;
+
+        let result = UrlMethodBuilder::new(ty("UrlParams"), syn::Block { stmts: vec![] }.into_expr()).build();
+
+        let expected = quote!(
+            impl UrlParams {
+                pub fn url<'a>(self) -> Url<'a> { 
+                    { }
+                }
+            }
+        );
 
         ast_eq(expected, result);
     }
@@ -418,13 +442,12 @@ mod tests {
             body: Some(Body { description: String::new() }),
         });
         let params = UrlParamBuilder::from(&endpoint).build();
-        let req_ty = ty_a("IndicesExistsAliasRequestParams");
 
-        let result = UrlMethodBuilder::from((&endpoint, &req_ty, &params)).build();
+        let result = UrlMethodBuilder::from((&endpoint, &params)).build();
 
         let none_arm = quote!(
             IndicesExistsAliasUrlParams::None => {
-                Cow::Borrowed("/_search")
+                Url::from("/_search")
             }
         );
         let index_arm = quote!(
@@ -434,7 +457,7 @@ mod tests {
                 url.push_str(index.as_ref());
                 url.push_str("/_search");
     
-                Cow::Owned(url)
+                Url::from(url)
             }
         );
         let index_ty_arm = quote!(
@@ -446,13 +469,13 @@ mod tests {
                 url.push_str(ty.as_ref());
                 url.push_str("/_search");
     
-                Cow::Owned(url)
+                Url::from(url)
             }
         );
         let expected = quote!(
-            impl <'a> IndicesExistsAliasRequestParams<'a> {
-                pub fn url(&'a self) -> Cow<'a, str> {
-                    match self.url_params {
+            impl <'a> IndicesExistsAliasUrlParams<'a> {
+                pub fn url(self) -> Url<'a> {
+                    match self {
                         #none_arm
                         #index_arm
                         #index_ty_arm
