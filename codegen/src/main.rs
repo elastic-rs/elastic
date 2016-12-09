@@ -164,7 +164,7 @@ fn main() {
             gen::request_ctors::RequestParamsCtorBuilder::from((&e, &req_params_ty, &url_params))
                 .build();
 
-        let req_url_method_item =
+        let url_method_item =
             gen::url_builder::UrlMethodBuilder::from((&e, &url_params)).build();
 
         let req_into_http_item =
@@ -174,10 +174,10 @@ fn main() {
         tokens.append_all(vec![
             derives.clone(),
             quote!(#url_params_item),
+            quote!(#url_method_item),
             derives.clone(),
             quote!(#req_params_item),
             quote!(#req_ctors_item),
-            quote!(#req_url_method_item),
             quote!(#req_into_http_item)
         ]);
         tokens.append("\n\n");
