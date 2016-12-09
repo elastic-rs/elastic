@@ -23,7 +23,7 @@ pub mod types {
             let from_str = quote!(
                 impl <'a> From<&'a str> for #url {
                     fn from(value: &'a str) -> #url {
-                        Url(value.as_bytes().into())
+                        Url(Cow::Borrowed(value))
                     }
                 }
             );
@@ -31,23 +31,23 @@ pub mod types {
             let from_string = quote!(
                 impl <'a> From<String> for #url {
                     fn from(value: String) -> #url {
-                        Url(Cow::Owned(value.into()))
+                        Url(Cow::Owned(value))
                     }
                 }
             );
 
             let deref = quote!(
                 impl <'a> Deref for #url {
-                    type Target = Cow<'a, [u8]>;
+                    type Target = Cow<'a, str>;
 
-                    fn deref(&self) -> &Cow<'a, [u8]> {
+                    fn deref(&self) -> &Cow<'a, str> {
                         &self.0
                     }
                 }
             );
 
             quote!(
-                pub struct #url(Cow<'a, [u8]>);
+                pub struct #url(Cow<'a, str>);
 
                 #from_str
                 

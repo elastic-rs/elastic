@@ -34,7 +34,7 @@ let req = elastic::SearchRequest::index_ty(
 	})
 );
 
-assert_eq!("/test_index/test_ty/_search", req.url());
+assert_eq!("/myindex/mytype/_search", *req.url);
 ```
 
 Parameters can be supplied as owned or borrowed strings and the body as an owned or borrowed byte array:

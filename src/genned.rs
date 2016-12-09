@@ -4,20 +4,20 @@ use std::ops::Deref;
 use std::borrow::Cow;
 
 #[derive(Debug, PartialEq, Clone)]
-pub struct Url<'a>(Cow<'a, [u8]>);
+pub struct Url<'a>(Cow<'a, str>);
 impl<'a> From<&'a str> for Url<'a> {
     fn from(value: &'a str) -> Url<'a> {
-        Url(value.as_bytes().into())
+        Url(Cow::Borrowed(value))
     }
 }
 impl<'a> From<String> for Url<'a> {
     fn from(value: String) -> Url<'a> {
-        Url(Cow::Owned(value.into()))
+        Url(Cow::Owned(value))
     }
 }
 impl<'a> Deref for Url<'a> {
-    type Target = Cow<'a, [u8]>;
-    fn deref(&self) -> &Cow<'a, [u8]> {
+    type Target = Cow<'a, str>;
+    fn deref(&self) -> &Cow<'a, str> {
         &self.0
     }
 }
