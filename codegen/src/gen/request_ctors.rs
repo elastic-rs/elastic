@@ -282,9 +282,7 @@ impl<'a> From<(&'a (String, Endpoint), &'a syn::Ty, &'a (syn::Item, syn::Ty))> f
     fn from(value: (&'a (String, Endpoint), &'a syn::Ty, &'a (syn::Item, syn::Ty))) -> Self {
         let (&(_, ref endpoint), ref req_ty, &(ref params, ref params_ty)) = value;
 
-        let has_body = endpoint.body.is_some();
-
-        let mut builder = RequestParamsCtorBuilder::new(has_body, (*req_ty).to_owned(), (*params_ty).to_owned());
+        let mut builder = RequestParamsCtorBuilder::new(endpoint.has_body(), (*req_ty).to_owned(), (*params_ty).to_owned());
 
         let ctors: Vec<Vec<String>> = match params.node {
             syn::ItemKind::Enum(ref variants, _) => {
@@ -315,14 +313,14 @@ pub mod tests {
 
     #[test]
     fn gen_request_ctor_none() {
-        let result = RequestParamsCtorBuilder::new(false, ty_a("RequestParams"), ty_a("UrlParams"))
+        let result = RequestParamsCtorBuilder::new(false, ty_a("Request"), ty_a("UrlParams"))
             .with_constructor(vec![])
             .build();
 
         let expected = quote!(
-            impl <'a> RequestParams<'a> {
-                pub fn new() -> RequestParams<'a> {
-                    RequestParams {
+            impl <'a> Request<'a> {
+                pub fn new() -> Request<'a> {
+                    Request {
                         url: UrlParams::None.url()
                     }
                 }
@@ -334,7 +332,7 @@ pub mod tests {
 
     #[test]
     fn gen_request_ctor_params() {
-        let result = RequestParamsCtorBuilder::new(false, ty_a("RequestParams"), ty_a("UrlParams"))
+        let result = RequestParamsCtorBuilder::new(false, ty_a("Request"), ty_a("UrlParams"))
             .with_constructor(vec![
                 "Index".into(),
                 "Type".into(),
@@ -343,14 +341,14 @@ pub mod tests {
             .build();
 
         let body = quote!(
-            RequestParams {
+            Request {
                 url: UrlParams::IndexTypeId(index.into(), ty.into(), id.into()).url()
             }
         );
 
         let expected = quote!(
-            impl <'a> RequestParams<'a> {
-                pub fn index_ty_id<IIndex: Into<Index<'a> >, IType: Into<Type<'a> >, IId: Into<Id<'a> > >(index: IIndex, ty: IType, id: IId) -> RequestParams<'a> {
+            impl <'a> Request<'a> {
+                pub fn index_ty_id<IIndex: Into<Index<'a> >, IType: Into<Type<'a> >, IId: Into<Id<'a> > >(index: IIndex, ty: IType, id: IId) -> Request<'a> {
                     #body
                 }
             }
@@ -361,14 +359,14 @@ pub mod tests {
 
     #[test]
     fn gen_request_ctor_body() {
-        let result = RequestParamsCtorBuilder::new(true, ty_a("RequestParams"), ty_a("UrlParams"))
+        let result = RequestParamsCtorBuilder::new(true, ty_a("Request"), ty_a("UrlParams"))
             .with_constructor(vec![])
             .build();
 
         let expected = quote!(
-            impl <'a> RequestParams<'a> {
-                pub fn new<IBody: Into<Body<'a> > >(body: IBody) -> RequestParams<'a> {
-                    RequestParams {
+            impl <'a> Request<'a> {
+                pub fn new<IBody: Into<Body<'a> > >(body: IBody) -> Request<'a> {
+                    Request {
                         url: UrlParams::None.url(),
                         body: body.into()
                     }
@@ -381,7 +379,7 @@ pub mod tests {
 
     #[test]
     fn gen_request_ctor_params_body() {
-        let result = RequestParamsCtorBuilder::new(true, ty_a("RequestParams"), ty_a("UrlParams"))
+        let result = RequestParamsCtorBuilder::new(true, ty_a("Request"), ty_a("UrlParams"))
             .with_constructor(vec![
                 "Index".into(),
                 "Type".into(),
@@ -390,7 +388,7 @@ pub mod tests {
             .build();
 
         let body = quote!(
-            RequestParams {
+            Request {
                 url: UrlParams::IndexTypeId(index.into(), ty.into(), id.into()).url(),
                 body: body.into()
             }
@@ -401,8 +399,8 @@ pub mod tests {
         );
 
         let expected = quote!(
-            impl <'a> RequestParams<'a> {
-                pub fn index_ty_id #generics (index: IIndex, ty: IType, id: IId, body: IBody) -> RequestParams<'a> {
+            impl <'a> Request<'a> {
+                pub fn index_ty_id #generics (index: IIndex, ty: IType, id: IId, body: IBody) -> Request<'a> {
                     #body
                 }
             }
@@ -424,14 +422,14 @@ pub mod tests {
             body: Some(Body { description: String::new() }),
         });
 
-        let req_ty = ty_a("IndicesExistsAliasRequestParams");
+        let req_ty = ty_a("IndicesExistsAliasRequest");
         let url_params = UrlParamBuilder::from(&endpoint).build();
 
         let result = RequestParamsCtorBuilder::from((&endpoint, &req_ty, &url_params)).build();
 
         let ctor_new = quote!(
-            pub fn new < IBody : Into < Body < 'a > > > ( body : IBody ) -> IndicesExistsAliasRequestParams < 'a > { 
-                IndicesExistsAliasRequestParams { 
+            pub fn new < IBody : Into < Body < 'a > > > ( body : IBody ) -> IndicesExistsAliasRequest < 'a > { 
+                IndicesExistsAliasRequest { 
                     url : IndicesExistsAliasUrlParams::None.url(),
                     body: body.into()
                 }
@@ -439,8 +437,8 @@ pub mod tests {
         );
 
         let ctor_index = quote!(
-            pub fn index < IIndex : Into < Index < 'a > >, IBody : Into < Body < 'a > > > ( index : IIndex, body : IBody ) -> IndicesExistsAliasRequestParams < 'a > { 
-                IndicesExistsAliasRequestParams { 
+            pub fn index < IIndex : Into < Index < 'a > >, IBody : Into < Body < 'a > > > ( index : IIndex, body : IBody ) -> IndicesExistsAliasRequest < 'a > { 
+                IndicesExistsAliasRequest { 
                     url : IndicesExistsAliasUrlParams::Index(index.into()).url(),
                     body: body.into()
                 }
@@ -448,8 +446,8 @@ pub mod tests {
         );
 
         let ctor_index_ty = quote!(
-            pub fn index_ty < IIndex : Into < Index < 'a > > , IType : Into < Type < 'a > >, IBody : Into < Body < 'a > > > ( index : IIndex , ty : IType , body: IBody ) -> IndicesExistsAliasRequestParams < 'a > { 
-                IndicesExistsAliasRequestParams { 
+            pub fn index_ty < IIndex : Into < Index < 'a > > , IType : Into < Type < 'a > >, IBody : Into < Body < 'a > > > ( index : IIndex , ty : IType , body: IBody ) -> IndicesExistsAliasRequest < 'a > { 
+                IndicesExistsAliasRequest { 
                     url : IndicesExistsAliasUrlParams::IndexType(index.into(), ty.into()).url(),
                     body: body.into()
                 }
@@ -457,7 +455,7 @@ pub mod tests {
         );
 
         let expected = quote!(
-            impl < 'a > IndicesExistsAliasRequestParams < 'a > { 
+            impl < 'a > IndicesExistsAliasRequest < 'a > { 
                 #ctor_new
 
                 #ctor_index

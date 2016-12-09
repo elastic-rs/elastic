@@ -413,8 +413,6 @@ mod tests {
     #[test]
     fn gen_url_method_no_params() {
         use syn;
-        use ::parse::*;
-        use ::gen::url_params::*;
 
         let result = UrlMethodBuilder::new(ty("UrlParams"), syn::Block { stmts: vec![] }.into_expr()).build();
 

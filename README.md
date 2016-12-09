@@ -25,7 +25,7 @@ extern crate elastic_requests as elastic;
 There's a request type for each REST API endpoint with constructor functions for each valid set of parameters:
 
 ```rust
-let req = elastic::SearchRequestParams::index_ty(
+let req = elastic::SearchRequest::index_ty(
 	"myindex", "mytype", 
 	json_str!({
 		query: { 
@@ -42,19 +42,23 @@ Parameters can be supplied as owned or borrowed strings and the body as an owned
 ```rust
 let index_suffix = get_a_suffix();
 
-let req = elastic::SearchRequestParams::index_ty(
+let req = elastic::SearchRequest::index_ty(
 	format!("index-{}", index_suffix), "mytype", 
 	"{ 'query': { 'match_all': { } } }"
 );
 ```
 
 There's also a more general `HttpRequest` structure that represents a typical request.
-All request types implement `Into<HttpRequest>` for _borrowed references_, so you can work with an arbitrary request through this type bound:
+All request types implement `Into<HttpRequest>` for owned or borrowed references, so you can work with an arbitrary request through this type bound:
 
 ```rust
 fn do_something_with_a_request<'a, I: Into<HttpRequest<'a>>>(req: I) {}
 
+// Use a borrowed request
 do_something_with_a_request(&req);
+
+// Take ownership of the request
+do_something_with_a_request(req);
 ```
 
 ## Codegen

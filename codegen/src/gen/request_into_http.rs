@@ -100,12 +100,12 @@ mod tests {
             url: get_url(),
             body: Some(Body { description: String::new() }),
         });
-        let req_ty = ty_a("IndicesExistsAliasRequestParams");
+        let req_ty = ty_a("IndicesExistsAliasRequest");
 
         let result = RequestIntoHttpRequestBuilder::from((&endpoint, &req_ty)).build();
 
         let brw_item = quote!(
-            impl <'a, 'b: 'a> Into<HttpRequest<'a> > for &'a IndicesExistsAliasRequestParams<'b> {
+            impl <'a, 'b: 'a> Into<HttpRequest<'a> > for &'a IndicesExistsAliasRequest<'b> {
                 fn into(self) -> HttpRequest<'a> {
                     HttpRequest {
                         url: Cow::Borrowed(&self.url),
@@ -117,7 +117,7 @@ mod tests {
         );
 
         let owned_item = quote!(
-            impl <'a> Into<HttpRequest<'a> > for IndicesExistsAliasRequestParams<'a> {
+            impl <'a> Into<HttpRequest<'a> > for IndicesExistsAliasRequest<'a> {
                 fn into(self) -> HttpRequest<'a> {
                     HttpRequest {
                         url: Cow::Owned(self.url),

@@ -21,6 +21,12 @@ pub struct Endpoint {
     pub body: Option<Body>,
 }
 
+impl Endpoint {
+    pub fn has_body(&self) -> bool {
+        self.body.is_some() || self.methods.iter().any(|m| m == &HttpMethod::Post || m == &HttpMethod::Put)
+    }
+}
+
 #[derive(Debug, PartialEq, Deserialize, Clone, Copy)]
 pub enum HttpMethod {
     #[serde(rename = "HEAD")]
@@ -286,6 +292,58 @@ mod tests {
             let expected = vec!["index", "type"];
 
             assert_eq!(expected, path.params());
+        }
+    }
+
+    mod endpoint {
+        use ::parse::*;
+
+        #[test]
+        fn has_body_if_body_is_some() {
+            let endpoint = Endpoint {
+                documentation: String::new(),
+                methods: vec![HttpMethod::Get],
+                url: get_url(),
+                body: Some(Body { description: String::new() }),
+            };
+
+            assert!(endpoint.has_body());
+        }
+
+        #[test]
+        fn has_body_if_method_is_put() {
+            let endpoint = Endpoint {
+                documentation: String::new(),
+                methods: vec![HttpMethod::Get, HttpMethod::Put],
+                url: get_url(),
+                body: None,
+            };
+
+            assert!(endpoint.has_body());
+        }
+
+        #[test]
+        fn has_body_if_method_is_post() {
+            let endpoint = Endpoint {
+                documentation: String::new(),
+                methods: vec![HttpMethod::Get, HttpMethod::Post],
+                url: get_url(),
+                body: None,
+            };
+
+            assert!(endpoint.has_body());
+        }
+
+        #[test]
+        fn has_no_body_if_none_and_not_put_or_post() {
+            let endpoint = Endpoint {
+                documentation: String::new(),
+                methods: vec![HttpMethod::Get, HttpMethod::Delete],
+                url: get_url(),
+                body: None,
+            };
+
+            assert!(!endpoint.has_body());
         }
     }
 

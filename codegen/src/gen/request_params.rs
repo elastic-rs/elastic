@@ -59,9 +59,9 @@ impl<'a> From<&'a (String, parse::Endpoint)> for RequestParamBuilder {
     fn from(value: &'a (String, parse::Endpoint)) -> Self {
         let &(ref endpoint_name, ref endpoint) = value;
 
-        let name = format!("{}RequestParams", endpoint_name.into_rust_type());
+        let name = format!("{}Request", endpoint_name.into_rust_type());
 
-        let builder = RequestParamBuilder::new(&name).has_body(endpoint.body.is_some());
+        let builder = RequestParamBuilder::new(&name).has_body(endpoint.has_body());
 
         builder
     }
@@ -73,19 +73,19 @@ mod tests {
 
     #[test]
     fn gen_request_params_ty() {
-        let (_, result) = RequestParamBuilder::new("RequestParams").build();
+        let (_, result) = RequestParamBuilder::new("Request").build();
 
-        let expected = quote!(RequestParams<'a>);
+        let expected = quote!(Request<'a>);
 
         ast_eq(expected, result);
     }
 
     #[test]
     fn gen_request_params() {
-        let (result, _) = RequestParamBuilder::new("RequestParams").build();
+        let (result, _) = RequestParamBuilder::new("Request").build();
 
         let expected = quote!(
-            pub struct RequestParams<'a> {
+            pub struct Request<'a> {
                 pub url: Url<'a>
             }
         );
@@ -108,7 +108,7 @@ mod tests {
         let (result, _) = RequestParamBuilder::from(&endpoint).build();
 
         let expected = quote!(
-            pub struct IndicesExistsAliasRequestParams<'a> {
+            pub struct IndicesExistsAliasRequest<'a> {
                 pub url: Url<'a>,
                 pub body: Body<'a>
             }

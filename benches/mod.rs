@@ -9,7 +9,7 @@ use elastic_requests::*;
 #[bench]
 fn new_req(b: &mut Bencher) {
 	b.iter(|| {
-		let req = IndicesCloseRequestParams::index("test_index");
+		let req = SearchRequest::index_ty("test_index", "test_ty", "{'query': { 'match_all': {}}}");
 
 		test::black_box(req)
 	});
@@ -17,7 +17,7 @@ fn new_req(b: &mut Bencher) {
 
 #[bench]
 fn ref_req_into_http_req(b: &mut Bencher) {
-	let req = IndicesCloseRequestParams::index("test_index");
+	let req = SearchRequest::index_ty("test_index", "test_ty", "{'query': { 'match_all': {}}}");
 
 	b.iter(|| {
 		let http_req: HttpRequest = (&req).into();
@@ -29,7 +29,7 @@ fn ref_req_into_http_req(b: &mut Bencher) {
 #[bench]
 fn owned_req_into_http_req(b: &mut Bencher) {
 	b.iter(|| {
-		let req = IndicesCloseRequestParams::index("test_index");
+		let req = SearchRequest::index_ty("test_index", "test_ty", "{'query': { 'match_all': {}}}");
 
 		let http_req: HttpRequest = (req).into();
 

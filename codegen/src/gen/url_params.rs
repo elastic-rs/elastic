@@ -95,7 +95,7 @@ impl UrlParamBuilder {
 
         let item = syn::Item {
             ident: self.name,
-            vis: syn::Visibility::Public,
+            vis: syn::Visibility::Inherited,
             attrs: vec![],
             node: syn::ItemKind::Enum(variants, generics),
         };
@@ -131,7 +131,7 @@ mod tests {
         let (result, _) = UrlParamBuilder::new("RequestParams").build();
 
         let expected = quote!(
-            pub enum RequestParams { 
+            enum RequestParams { 
                 None, 
             }
         );
@@ -148,7 +148,7 @@ mod tests {
             .build();
 
         let expected = quote!(
-            pub enum RequestParams<'a> { 
+            enum RequestParams<'a> { 
                 None, 
                 Index(Index<'a>), 
                 IndexTypeId(Index<'a>, Type<'a>, Id<'a>), 
@@ -173,7 +173,7 @@ mod tests {
         let (result, _) = UrlParamBuilder::from(&endpoint).build();
 
         let expected = quote!(
-            pub enum IndicesExistsAliasUrlParams<'a> { 
+            enum IndicesExistsAliasUrlParams<'a> { 
                 None,
                 Index(Index<'a>), 
                 IndexType(Index<'a>, Type<'a>), 
