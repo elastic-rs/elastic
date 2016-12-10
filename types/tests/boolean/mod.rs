@@ -1,11 +1,4 @@
-#![feature(custom_derive, custom_attribute, plugin)]
-#![plugin(serde_macros, json_str, elastic_types_derive, elastic_date_macros)]
-
-pub mod mapping;
-
-extern crate serde;
-extern crate serde_json;
-extern crate elastic_types;
+use serde_json;
 
 use elastic_types::mapping::prelude::*;
 use elastic_types::boolean::prelude::*;

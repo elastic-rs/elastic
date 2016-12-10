@@ -1,9 +1,3 @@
-#![feature(custom_derive, custom_attribute, plugin)]
-#![plugin(serde_macros, json_str, elastic_types_derive, elastic_date_macros)]
-
-extern crate serde;
-extern crate serde_json;
-
 use elastic_types::mapping::prelude::*;
 use elastic_types::geo::point::prelude::*;
 use ::geo_point_fixtures::*;

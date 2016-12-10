@@ -1,6 +1,3 @@
-pub extern crate chrono;
-extern crate elastic_types;
-
 use chrono::{ DateTime, UTC };
 use elastic_types::date::prelude::*;
 

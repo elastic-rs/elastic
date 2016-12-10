@@ -1,13 +1,5 @@
-#![feature(custom_derive, custom_attribute, plugin)]
-#![plugin(serde_macros, json_str, elastic_types_derive, elastic_date_macros)]
-
-pub mod mapping;
-pub mod formats;
-
-extern crate serde;
-extern crate serde_json;
-pub extern crate chrono;
-extern crate elastic_types;
+use serde_json;
+use chrono;
 
 use chrono::offset::TimeZone;
 

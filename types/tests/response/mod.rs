@@ -1,10 +1,7 @@
-#![cfg_attr(feature = "nightly", feature(custom_derive, custom_attribute, plugin))]
-#![plugin(serde_macros, json_str, elastic_types_derive, elastic_date_macros)]
-
-extern crate serde;
-extern crate serde_json;
-extern crate chrono;
-extern crate elastic_types;
+use serde;
+use serde_json;
+use chrono;
+use elastic_types;
 
 use std::net::Ipv4Addr;
 use chrono::offset::TimeZone;
