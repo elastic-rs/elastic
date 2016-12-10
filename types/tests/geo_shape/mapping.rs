@@ -1,10 +1,3 @@
-#![cfg_attr(feature = "nightly", feature(custom_derive, custom_attribute, plugin))]
-#![cfg_attr(feature = "nightly", plugin(serde_macros, json_str, elastic_types_derive, elastic_date_macros))]
-
-extern crate serde;
-extern crate serde_json;
-extern crate elastic_types;
-
 use elastic_types::mapping::prelude::*;
 use ::geo_shape_fixtures::*;
 

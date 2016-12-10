@@ -1,11 +1,5 @@
-#![feature(custom_derive, custom_attribute, plugin)]
-#![plugin(serde_macros, json_str, elastic_types_derive, elastic_date_macros)]
-
 pub mod mapping;
 pub mod formats;
-
-extern crate serde;
-extern crate serde_json;
 
 use georust::{ Geometry, ToGeo, Point, Coordinate };
 

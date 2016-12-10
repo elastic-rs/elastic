@@ -1,9 +1,6 @@
-#![feature(custom_derive, custom_attribute, plugin)]
-#![plugin(serde_macros, json_str, elastic_types_derive, elastic_date_macros)]
-
-extern crate serde;
-extern crate serde_json;
-extern crate elastic_types;
+use serde;
+use serde_json;
+use elastic_types;
 
 use chrono::{ DateTime, UTC };
 use elastic_types::mapping::prelude::*;

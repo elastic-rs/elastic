@@ -1,11 +1,8 @@
-#![cfg_attr(feature = "nightly", feature(custom_derive, custom_attribute, plugin))]
-#![cfg_attr(feature = "nightly", plugin(serde_macros, json_str, elastic_types_derive, elastic_date_macros))]
+use serde;
+use serde_json;
+use elastic_types;
 
 pub mod mapping;
-
-extern crate serde;
-extern crate serde_json;
-extern crate elastic_types;
 
 use std::net::Ipv4Addr;
 

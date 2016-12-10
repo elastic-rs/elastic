@@ -1,5 +1,4 @@
-extern crate serde;
-extern crate serde_json;
+use serde_json;
 
 use elastic_types::geo::point::prelude::*;
 
