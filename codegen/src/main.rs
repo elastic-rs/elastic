@@ -127,7 +127,7 @@ fn main() {
     let url_tokens = gen::types::url::tokens();
     let body_tokens = gen::types::body::tokens();
     let http_method_item = gen::types::request::method_item();
-    let http_req_item = gen::types::request::req_item();
+    let http_req_item = gen::types::request::req_tokens();
 
     tokens.append_all(vec![
         derives.clone(),
@@ -135,9 +135,9 @@ fn main() {
         derives.clone(),
         body_tokens, 
         derives.clone(),
-        quote!(#http_method_item), 
+        http_req_item, 
         derives.clone(),
-        quote!(#http_req_item)
+        quote!(#http_method_item)
     ]);
     tokens.append("\n\n");
 

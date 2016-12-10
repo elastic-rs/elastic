@@ -13,8 +13,12 @@ pub mod types {
         use quote;
         use ::gen::helpers;
 
+        pub fn ident() -> &'static str {
+            "Url"
+        }
+
         pub fn ty() -> syn::Ty {
-            helpers::ty_a("Url")
+            helpers::ty_a(ident())
         }
 
         pub fn tokens() -> quote::Tokens {
@@ -66,8 +70,12 @@ pub mod types {
         use quote;
         use ::gen::helpers;
 
+        pub fn ident() -> &'static str {
+            "Body"
+        }
+
         pub fn ty() -> syn::Ty {
-            helpers::ty_a("Body")
+            helpers::ty_a(ident())
         }
 
         pub fn tokens() -> quote::Tokens {
@@ -136,22 +144,27 @@ pub mod types {
     /// This type is a simple, standard wrapper for a HTTP request.
     pub mod request {
         use super::{ body, url };
+        use quote;
         use syn;
         use ::gen::helpers;
 
-        pub fn req_ty() -> syn::Ty {
+        pub fn method_ty() -> syn::Ty {
             helpers::ty("HttpMethod")
         }
 
-        pub fn method_ty() -> syn::Ty {
-            helpers::ty_a("HttpRequest")
+        pub fn req_ident() -> &'static str {
+            "HttpRequest"
         }
 
-        pub fn req_item() -> syn::Item {
-            let r_ty = req_ty();
+        pub fn req_ty() -> syn::Ty {
+            helpers::ty_a(req_ident())
+        }
+
+        pub fn method_item() -> syn::Item {
+            let m_ty = method_ty();
 
             helpers::parse_item(quote!(
-                pub enum #r_ty {
+                pub enum #m_ty {
                     Head,
                     Get,
                     Post,
@@ -162,19 +175,47 @@ pub mod types {
             ))
         }
 
-        pub fn method_item() -> syn::Item {
-            let r_ty = req_ty();
+        pub fn req_tokens() -> quote::Tokens {
             let m_ty = method_ty();
-            let u_ty = url::ty();
-            let b_ty = body::ty();
 
-            helpers::parse_item(quote!(
-                pub struct #m_ty {
-                    pub url: Cow<'a, #u_ty>,
-                    pub method: #r_ty,
-                    pub body: Option< Cow<'a, #b_ty> >
+            let r_ty = helpers::ty(req_ident());
+
+            let u_ty_a = url::ty();
+            let b_ty_a = body::ty();
+
+            let u_ty = helpers::ty(url::ident());
+            let b_ty = helpers::ty(body::ident());
+
+            let static_body = quote!(
+                let url = self.url.to_string();
+                let body = self.body.map(|b| b.to_vec());
+
+                #r_ty {
+                    url: Cow::Owned(#u_ty::from(url)),
+                    method: self.method,
+                    body: body.map(|b| Cow::Owned(#b_ty::from(b)))
                 }
-            ))
+            );
+
+            let impl_item = quote!(
+                impl <'a> #r_ty<'a> where 'static: 'a {
+                    pub fn into_static(self) -> #r_ty<'static> {
+                        #static_body
+                    }
+                }
+            );
+
+            quote!(
+                pub struct #r_ty<'a> {
+                    pub url: Cow<'a, #u_ty_a>,
+                    pub method: #m_ty,
+                    pub body: Option< Cow<'a, #b_ty_a> >
+                }
+
+                unsafe impl Send for #r_ty<'static> {}
+
+                #impl_item
+            )
         }
 
         #[cfg(test)]
@@ -183,8 +224,8 @@ pub mod types {
             use ::gen::helpers::*;
 
             #[test]
-            fn get_request_item() {
-                let result = req_item();
+            fn get_method_item() {
+                let result = method_item();
 
                 let expected = quote!(
                     pub enum HttpMethod {
@@ -201,8 +242,27 @@ pub mod types {
             }
 
             #[test]
-            fn get_method_item() {
-                let result = method_item();
+            fn get_req_item() {
+                let result = req_tokens();
+
+                let static_body = quote!(
+                    let url = self.url.to_string();
+                    let body = self.body.map(|b| b.to_vec());
+
+                    HttpRequest {
+                        url: Cow::Owned(Url::from(url)),
+                        method: self.method,
+                        body: body.map(|b| Cow::Owned(Body::from(b)))
+                    }
+                );
+
+                let impl_item = quote!(
+                    impl <'a> HttpRequest<'a> where 'static: 'a {
+                        fn into_static(self) -> HttpRequest<'static> {
+                            #static_body
+                        }
+                    }
+                );
 
                 let expected = quote!(
                     pub struct HttpRequest<'a> {
@@ -210,6 +270,10 @@ pub mod types {
                         pub method: HttpMethod,
                         pub body: Option< Cow<'a, Body<'a> > >
                     }
+
+                    unsafe impl Send for HttpRequest<'static> {}
+
+                    #impl_item
                 );
 
                 ast_eq(expected, result);
