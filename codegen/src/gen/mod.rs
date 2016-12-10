@@ -84,7 +84,7 @@ pub mod types {
             let from_vec = quote!(
                 impl <'a> From<Vec<u8>> for #body {
                     fn from(value: Vec<u8>) -> #body {
-                        Body(value.into())
+                        Body(Cow::Owned(value))
                     }
                 }
             );
@@ -92,7 +92,7 @@ pub mod types {
             let from_slice = quote!(
                 impl <'a> From<&'a [u8]> for #body {
                     fn from(value: &'a [u8]) -> #body {
-                        Body(value.into())
+                        Body(Cow::Borrowed(value))
                     }
                 }
             );
@@ -100,7 +100,7 @@ pub mod types {
             let from_str = quote!(
                 impl <'a> From<&'a str> for #body {
                     fn from(value: &'a str) -> #body {
-                        Body(value.as_bytes().into())
+                        Body(Cow::Borrowed(value.as_bytes()))
                     }
                 }
             );

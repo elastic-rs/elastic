@@ -25,17 +25,17 @@ impl<'a> Deref for Url<'a> {
 pub struct Body<'a>(Cow<'a, [u8]>);
 impl<'a> From<Vec<u8>> for Body<'a> {
     fn from(value: Vec<u8>) -> Body<'a> {
-        Body(value.into())
+        Body(Cow::Owned(value))
     }
 }
 impl<'a> From<&'a [u8]> for Body<'a> {
     fn from(value: &'a [u8]) -> Body<'a> {
-        Body(value.into())
+        Body(Cow::Borrowed(value))
     }
 }
 impl<'a> From<&'a str> for Body<'a> {
     fn from(value: &'a str) -> Body<'a> {
-        Body(value.as_bytes().into())
+        Body(Cow::Borrowed(value.as_bytes()))
     }
 }
 impl<'a> From<String> for Body<'a> {
