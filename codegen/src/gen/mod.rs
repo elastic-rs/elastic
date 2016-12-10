@@ -258,7 +258,7 @@ pub mod types {
 
                 let impl_item = quote!(
                     impl <'a> HttpRequest<'a> where 'static: 'a {
-                        fn into_static(self) -> HttpRequest<'static> {
+                        pub fn into_static(self) -> HttpRequest<'static> {
                             #static_body
                         }
                     }
