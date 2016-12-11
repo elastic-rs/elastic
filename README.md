@@ -61,6 +61,8 @@ do_something_with_a_request(&req);
 do_something_with_a_request(req);
 ```
 
+`HttpRequest<'static>` implements `Send` so it can be shared across threads.
+
 ## Codegen
 
 The types in this library are generated from the [Elasticsearch REST API spec](https://github.com/elastic/elasticsearch/tree/master/rest-api-spec).

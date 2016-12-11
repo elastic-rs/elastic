@@ -1,3 +1,59 @@
+//! Elasticsearch Request Types
+//!
+//! An implementation of the Elasticsearch REST API using strong types for endpoints.
+//! 
+//! The source is automatically generated from the official spec.
+//! A `struct` is provided for each endpoint that works with borrowed or owned data.
+//! There's also a more general `HttpRequest` type that all requests can be converted into.
+//!
+//! # Supported Versions
+//!
+//!  `elastic_requests` | Elasticsearch
+//!  ------------------ | -------------
+//!  `0.x`              | `5.x`
+//! 
+//! # Usage
+//! 
+//! All request types provide constructor functions of the form 
+//! `param_1_param_2_param_n`:
+//! 
+//! ```
+//! # use elastic_requests::*;
+//! let req = SearchRequest::index_ty(
+//!     "test_index", 
+//!     "test_ty", 
+//!     "{'query': { 'match_all': {}}}"
+//! );
+//! 
+//! assert_eq!("/test_index/test_ty/_search", req.url.as_ref());
+//! ```
+//! 
+//! Or `new` if the endpoint takes no parameters: 
+//! 
+//! ```
+//! # use elastic_requests::*;
+//! let req = PingRequest::new();
+//! 
+//! assert_eq!("/", req.url.as_ref());
+//! ```
+//! 
+//! Parameters can be borrowed or owned string values:
+//! 
+//! ```
+//! # use elastic_requests::*;
+//! let req = SearchRequest::index(
+//!     "test_index".to_string(),
+//!     "{'query': { 'match_all': {}}}"
+//! );
+//! 
+//! assert_eq!("/test_index/_search", req.url.as_ref());
+//! ```
+//!
+//! # Why are these docs useless?
+//!
+//! This library is automatically generated, so there's a lot more work to do
+//! to get the documentation up to scratch.
+
 mod genned;
 
 pub use genned::*;
@@ -18,15 +74,6 @@ mod tests {
         })
     }
 
-    fn do_something_with_into_static_request<'a, I: Into<HttpRequest<'a>>>
-        (req: I)
-         -> thread::JoinHandle<()> {
-        let req = req.into().into_static();
-        thread::spawn(move || {
-            assert_eq!("/test_index/test_ty/_search", **req.url);
-        })
-    }
-
     #[test]
     fn it_works() {
         let req = SearchRequest::index_ty("test_index", "test_ty", "{'query': { 'match_all': {}}}");
@@ -39,17 +86,8 @@ mod tests {
 
     #[test]
     fn it_works_static() {
-        let req = SearchRequest::index_ty("test_index", "test_ty", "{'query': { 'match_all': {}}}");
+        let req = SearchRequest::index_ty(String::from("test_index"), "test_ty", "{'query': { 'match_all': {}}}");
 
         do_something_with_static_request(req).join().unwrap();
-    }
-
-    #[test]
-    fn it_works_into_static() {
-        let idx = String::from("test_index");
-
-        let req = SearchRequest::index_ty(idx, "test_ty", "{'query': { 'match_all': {}}}");
-
-        do_something_with_into_static_request(req).join().unwrap();
     }
 }

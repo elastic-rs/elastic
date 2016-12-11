@@ -55,20 +55,6 @@ pub struct HttpRequest<'a> {
     pub method: HttpMethod,
     pub body: Option<Cow<'a, Body<'a>>>,
 }
-unsafe impl Send for HttpRequest<'static> {}
-impl<'a> HttpRequest<'a>
-    where 'static: 'a
-{
-    pub fn into_static(self) -> HttpRequest<'static> {
-        let url = self.url.to_string();
-        let body = self.body.map(|b| b.to_vec());
-        HttpRequest {
-            url: Cow::Owned(Url::from(url)),
-            method: self.method,
-            body: body.map(|b| Cow::Owned(Body::from(b))),
-        }
-    }
-}
 #[derive(Debug, PartialEq, Clone)]
 pub enum HttpMethod {
     Head,
