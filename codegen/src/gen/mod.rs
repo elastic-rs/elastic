@@ -123,6 +123,14 @@ pub mod types {
                 }
             );
 
+            let none = quote!(
+                impl <'a> #body {
+                    pub fn none() -> Self {
+                        Body(Cow::Borrowed(&[]))
+                    }
+                }
+            );
+
             quote!(
                 pub struct #body(Cow<'a, [u8]>);
 
@@ -135,6 +143,8 @@ pub mod types {
                 #from_string
 
                 #deref
+
+                #none
             )
         }
     }

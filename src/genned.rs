@@ -49,6 +49,11 @@ impl<'a> Deref for Body<'a> {
         &self.0
     }
 }
+impl<'a> Body<'a> {
+    pub fn none() -> Self {
+        Body(Cow::Borrowed(&[]))
+    }
+}
 #[derive(Debug, PartialEq, Clone)]
 pub struct HttpRequest<'a> {
     pub url: Cow<'a, Url<'a>>,
