@@ -3,14 +3,15 @@
 //! A lightweight implementation of the Elasticsearch API based on the
 //! [`hyper`](http://hyper.rs/hyper/) HTTP client.
 //!
-//! Each API endpoint is represented as its own function, so each possible http route gets its own function.
+//! Each API endpoint is represented as its own function,
+//! so each possible http route gets its own function.
 //! This library makes very few assumptions, leaving it up to you to decide what to invest your
 //! precious CPU cycles into.
 //!
 //! The entire API is generated from the official Elasticsearch spec, so it's always current.
-//! 
+//!
 //! # Supported Versions
-//! 
+//!
 //!  `elastic_types` | Elasticsearch
 //!  --------------- | -------------
 //!  `0.x`           | `5.x`
@@ -69,10 +70,10 @@
 //! # fn main() {
 //! let mut client = hyper::Client::new();
 //! let mut params = elastic::RequestParams::default()
-//! 	.url_params(vec![
-//! 		("q", "'my string'".to_owned()),
-//! 		("pretty", "true".to_owned())
-//! 	]);
+//!     .url_params(vec![
+//!         ("q", "'my string'".to_owned()),
+//!         ("pretty", "true".to_owned())
+//!     ]);
 //!
 //! elastic::search::get_index_type(&mut client, &params, "myindex", "mytype").unwrap();
 //! # }
@@ -94,24 +95,24 @@
 //! let (mut client, params) = elastic::default();
 //!
 //! elastic::search::post_index_type(&mut client, &params,
-//! 	"myindex", "mytype", &json_str!({
-//! 		"query": {
-//! 			"filtered": {
-//! 				"query": {
-//! 					"match_all": {}
-//! 				},
-//! 				"filter": {
-//! 					"geo_distance": {
-//! 						"distance": "20km",
-//! 						"location": {
-//! 							"lat": 37.776,
-//! 							"lon": -122.41
-//! 						}
-//! 					}
-//! 				}
-//! 			}
-//! 		}
-//! 	})
+//!     "myindex", "mytype", &json_str!({
+//!         "query": {
+//!             "filtered": {
+//!                 "query": {
+//!                     "match_all": {}
+//!                 },
+//!                 "filter": {
+//!                     "geo_distance": {
+//!                         "distance": "20km",
+//!                         "location": {
+//!                             "lat": 37.776,
+//!                             "lon": -122.41
+//!                         }
+//!                     }
+//!                 }
+//!             }
+//!         }
+//!     })
 //! ).unwrap();
 //! # }
 //! ```
@@ -126,8 +127,8 @@
 //!
 //! ## [`elastic_types`](https://github.com/elastic-rs/elastic-types)
 //!
-//! A library that implements the core datatypes in Elasticsearch documents and automatically generates
-//! a json mapping from your Rust structures.
+//! A library that implements the core datatypes in Elasticsearch
+//! documents and automatically generates a json mapping from your Rust structures.
 //!
 //! ## [`json_str`](https://github.com/KodrAus/json_str)
 //!
@@ -137,12 +138,17 @@
 //! - [Elasticsearch Docs](https://www.elastic.co/guide/en/elasticsearch/reference/master/index.html)
 //! - [Github](https://github.com/elastic-rs/elastic-hyper)
 
+extern crate elastic_requests;
 extern crate hyper;
 extern crate url;
 
+use std::io::Cursor;
+use std::borrow::Borrow;
 use std::collections::BTreeMap;
-use hyper::header::Headers;
-use hyper::header::ContentType;
+use elastic_requests::*;
+use hyper::error::Result;
+use hyper::client::Response;
+use hyper::header::{Headers, ContentType};
 use url::form_urlencoded::Serializer;
 
 /// Misc parameters for any request.
@@ -181,10 +187,10 @@ use url::form_urlencoded::Serializer;
 /// extern crate elastic_hyper as elastic;
 ///
 /// let params = elastic::RequestParams::default()
-/// 		.url_params(vec![
-/// 			("pretty", "true".to_owned()),
-/// 			("q", "*".to_owned())
-/// 		]);
+///         .url_params(vec![
+///             ("pretty", "true".to_owned()),
+///             ("q", "*".to_owned())
+///         ]);
 /// ```
 ///
 /// With a custom base url:
@@ -197,69 +203,107 @@ use url::form_urlencoded::Serializer;
 /// ```
 #[derive(Debug, Clone)]
 pub struct RequestParams {
-	/// Base url for Elasticsearch
-	pub base_url: String,
-	/// Simple key-value store for url query params.
-	pub url_params: BTreeMap<&'static str, String>,
-	/// The complete set of headers that will be sent with the request.
-	pub headers: Headers
+    /// Base url for Elasticsearch
+    pub base_url: String,
+    /// Simple key-value store for url query params.
+    pub url_params: BTreeMap<&'static str, String>,
+    /// The complete set of headers that will be sent with the request.
+    pub headers: Headers,
 }
 
 impl RequestParams {
-	/// Create a new container for request parameters.
-	///
-	/// Attempts to add `ContentType::json` to the passed in `headers` param.
-	pub fn new<T: Into<String>>(base: T, mut headers: Headers) -> Self {
-		headers.set(ContentType::json());
+    /// Create a new container for request parameters.
+    ///
+    /// Attempts to add `ContentType::json` to the passed in `headers` param.
+    pub fn new<T: Into<String>>(base: T, mut headers: Headers) -> Self {
+        headers.set(ContentType::json());
 
-		RequestParams {
-			base_url: base.into(),
-			headers: headers,
-			url_params: BTreeMap::new()
-		}
-	}
+        RequestParams {
+            base_url: base.into(),
+            headers: headers,
+            url_params: BTreeMap::new(),
+        }
+    }
 
-	/// Add a collection of url params.
-	pub fn url_params<I>(mut self, url_params: I) -> Self
-	where I: IntoIterator<Item=(&'static str, String)> {
-		for (k, v) in url_params {
-			self.url_params.insert(k, v);
-		}
+    /// Add a collection of url params.
+    pub fn url_params<I>(mut self, url_params: I) -> Self
+        where I: IntoIterator<Item = (&'static str, String)>
+    {
+        for (k, v) in url_params {
+            self.url_params.insert(k, v);
+        }
 
-		self
-	}
+        self
+    }
 
-	/// Get the url params as a formatted string.
-	///
-	/// Follows the `application/x-www-form-urlencoded` format.
-	pub fn get_url_qry(&self) -> String {
-		if self.url_params.len() > 0 {
-			let qry: String = Serializer::new(String::new())
-				.extend_pairs(self.url_params.iter())
-				.finish();
-			let mut url_qry = String::with_capacity(qry.len() + 1);
+    /// Get the url params as a formatted string.
+    ///
+    /// Follows the `application/x-www-form-urlencoded` format.
+    pub fn get_url_qry(&self) -> String {
+        if self.url_params.len() > 0 {
+            let qry: String = Serializer::new(String::new())
+                .extend_pairs(self.url_params.iter())
+                .finish();
+            let mut url_qry = String::with_capacity(qry.len() + 1);
 
-			url_qry.push('?');
-			url_qry.push_str(&qry);
+            url_qry.push('?');
+            url_qry.push_str(&qry);
 
-			url_qry
-		}
-		else {
-			String::with_capacity(0)
-		}
-	}
+            url_qry
+        } else {
+            String::with_capacity(0)
+        }
+    }
 }
 
 impl Default for RequestParams {
-	fn default() -> Self {
-		RequestParams::new("http://localhost:9200", Headers::new())
-	}
+    fn default() -> Self {
+        RequestParams::new("http://localhost:9200", Headers::new())
+    }
 }
-
-mod api;
-pub use api::*;
 
 /// Get a default `Client` and `RequestParams`.
 pub fn default() -> (hyper::Client, RequestParams) {
-	(hyper::Client::new(), RequestParams::default())
+    (hyper::Client::new(), RequestParams::default())
+}
+
+macro_rules! req_with_body {
+    ($client:ident, $url:ident, $req:ident, $params:ident, $method:ident) => ({
+        let body = $req.body.expect("Expected this request to have a body. This is a bug, please file an issue on GitHub.");
+        let body: &[u8] = (*body).borrow();
+        let mut cursor = Cursor::new(body);
+
+        $client.$method(&$url).headers($params.headers.to_owned()).body(&mut cursor).send()
+    })
+}
+
+/// Represents a client that can send Elasticsearch requests.
+pub trait ElasticClient {
+    /// Send a request and get a response.
+    fn request<'a, I>(&self, params: &RequestParams, req: I) -> Result<Response> where I: Into<HttpRequest<'a>>;
+}
+
+impl ElasticClient for hyper::Client {
+    fn request<'a, I>(&self, params: &RequestParams, req: I) -> Result<Response>
+        where I: Into<HttpRequest<'a>>
+    {
+        let req = req.into();
+
+        let qry = &params.get_url_qry();
+
+        let mut url = String::with_capacity(params.base_url.len() + req.url.len() + qry.len());
+
+        url.push_str(&params.base_url);
+        url.push_str(&req.url);
+        url.push_str(qry);
+
+        match req.method {
+            HttpMethod::Get => self.get(&url).headers(params.headers.to_owned()).send(),
+            HttpMethod::Post => req_with_body!(self, url, req, params, post),
+            HttpMethod::Head => self.head(&url).headers(params.headers.to_owned()).send(),
+            HttpMethod::Delete => self.delete(&url).headers(params.headers.to_owned()).send(),
+            HttpMethod::Put => req_with_body!(self, url, req, params, put),
+            HttpMethod::Patch => req_with_body!(self, url, req, params, patch),
+        }
+    }
 }
