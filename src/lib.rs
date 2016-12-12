@@ -70,10 +70,10 @@
 //! # fn main() {
 //! let mut client = hyper::Client::new();
 //! let mut params = elastic::RequestParams::default()
-//!     .url_params(vec![
-//!         ("q", "'my string'".to_owned()),
-//!         ("pretty", "true".to_owned())
-//!     ]);
+//! 	.url_params(vec![
+//! 		("q", "'my string'".to_owned()),
+//! 		("pretty", "true".to_owned())
+//! 	]);
 //!
 //! elastic::search::get_index_type(&mut client, &params, "myindex", "mytype").unwrap();
 //! # }
@@ -95,24 +95,24 @@
 //! let (mut client, params) = elastic::default();
 //!
 //! elastic::search::post_index_type(&mut client, &params,
-//!     "myindex", "mytype", &json_str!({
-//!         "query": {
-//!             "filtered": {
-//!                 "query": {
-//!                     "match_all": {}
-//!                 },
-//!                 "filter": {
-//!                     "geo_distance": {
-//!                         "distance": "20km",
-//!                         "location": {
-//!                             "lat": 37.776,
-//!                             "lon": -122.41
-//!                         }
-//!                     }
-//!                 }
-//!             }
-//!         }
-//!     })
+//! 	"myindex", "mytype", &json_str!({
+//! 		"query": {
+//! 			"filtered": {
+//! 				"query": {
+//! 					"match_all": {}
+//! 				},
+//! 				"filter": {
+//! 					"geo_distance": {
+//! 						"distance": "20km",
+//! 						"location": {
+//! 							"lat": 37.776,
+//! 							"lon": -122.41
+//! 						}
+//! 					}
+//! 				}
+//! 			}
+//! 		}
+//! 	})
 //! ).unwrap();
 //! # }
 //! ```
@@ -187,10 +187,10 @@ use url::form_urlencoded::Serializer;
 /// extern crate elastic_hyper as elastic;
 ///
 /// let params = elastic::RequestParams::default()
-///         .url_params(vec![
-///             ("pretty", "true".to_owned()),
-///             ("q", "*".to_owned())
-///         ]);
+/// 		.url_params(vec![
+/// 			("pretty", "true".to_owned()),
+/// 			("q", "*".to_owned())
+/// 		]);
 /// ```
 ///
 /// With a custom base url:
@@ -269,22 +269,24 @@ pub fn default() -> (hyper::Client, RequestParams) {
 
 macro_rules! req_with_body {
     ($client:ident, $url:ident, $req:ident, $params:ident, $method:ident) => ({
-        let body = $req.body.expect("Expected this request to have a body. This is a bug, please file an issue on GitHub.");
-        let body: &[u8] = (*body).borrow();
-        let mut cursor = Cursor::new(body);
+    	let body = $req.body.expect("Expected this request to have a body. This is a bug, please file an issue on GitHub.");
 
-        $client.$method(&$url).headers($params.headers.to_owned()).body(&mut cursor).send()
-    })
+		let body: &[u8] = (*body).borrow();
+		let mut cursor = Cursor::new(body);
+
+		$client.$method(&$url).headers($params.headers.to_owned()).body(&mut cursor).send()
+	})
 }
 
 /// Represents a client that can send Elasticsearch requests.
 pub trait ElasticClient {
     /// Send a request and get a response.
-    fn request<'a, I>(&self, params: &RequestParams, req: I) -> Result<Response> where I: Into<HttpRequest<'a>>;
+    fn elastic_req<'a, I>(&self, params: &RequestParams, req: I) -> Result<Response>
+        where I: Into<HttpRequest<'a>>;
 }
 
 impl ElasticClient for hyper::Client {
-    fn request<'a, I>(&self, params: &RequestParams, req: I) -> Result<Response>
+    fn elastic_req<'a, I>(&self, params: &RequestParams, req: I) -> Result<Response>
         where I: Into<HttpRequest<'a>>
     {
         let req = req.into();
