@@ -23,6 +23,7 @@
 //!
 //! ```ignore
 //! [dependencies]
+//! elastic_requests = "*"
 //! elastic_hyper = "*"
 //! hyper = "*"
 //! ```
@@ -31,6 +32,7 @@
 //!
 //! ```ignore
 //! [dependencies]
+//! elastic_requests = "*"
 //! elastic_hyper = { version = "*", default-features = false }
 //! hyper = { version = "*", default-features = false }
 //! ```
@@ -38,7 +40,8 @@
 //! Then reference in your crate root:
 //!
 //! ```ignore
-//! extern crate elastic_hyper as elastic;
+//! extern crate elastic_requests as req;
+//! extern crate elastic_hyper as cli;
 //! extern crate hyper;
 //! ```
 //!
@@ -50,11 +53,15 @@
 //! //HTTP HEAD /
 //!
 //! # extern crate hyper;
-//! # extern crate elastic_hyper as elastic;
+//! # extern crate elastic_requests as req;
+//! # extern crate elastic_hyper as cli;
+//! use cli::ElasticClient;
+//! use req::PingRequest;
+//! 
 //! # fn main() {
-//! let (mut client, params) = elastic::default();
+//! let (client, params) = cli::default();
 //!
-//! elastic::ping::head(&mut client, &params).unwrap();
+//! client.elastic_req(&params, PingRequest::new()).unwrap();
 //! # }
 //! ```
 //!
@@ -66,16 +73,25 @@
 //! //HTTP GET /myindex/mytype/_search?q='my string'
 //!
 //! # extern crate hyper;
-//! # extern crate elastic_hyper as elastic;
+//! # extern crate elastic_requests as req;
+//! # extern crate elastic_hyper as cli;
+//! use cli::{ ElasticClient, RequestParams };
+//! use req::SimpleSearchRequest;
+//! 
 //! # fn main() {
-//! let mut client = hyper::Client::new();
-//! let mut params = elastic::RequestParams::default()
+//! let client = hyper::Client::new();
+//! 
+//! let params = RequestParams::default()
 //! 	.url_params(vec![
 //! 		("q", "'my string'".to_owned()),
 //! 		("pretty", "true".to_owned())
 //! 	]);
 //!
-//! elastic::search::get_index_type(&mut client, &params, "myindex", "mytype").unwrap();
+//! let search = SimpleSearchRequest::for_index_ty(
+//!     "myindex", "mytype"
+//! );
+//! 
+//! client.elastic_req(&params, search).unwrap();
 //! # }
 //! ```
 //!
@@ -90,30 +106,38 @@
 //! # #[macro_use]
 //! # extern crate json_str;
 //! # extern crate hyper;
-//! # extern crate elastic_hyper as elastic;
+//! # extern crate elastic_requests as req;
+//! # extern crate elastic_hyper as cli;
+//! use cli::ElasticClient;
+//! use req::SearchRequest;
+//! 
 //! # fn main() {
-//! let (mut client, params) = elastic::default();
+//! let (client, params) = cli::default();
 //!
-//! elastic::search::post_index_type(&mut client, &params,
-//! 	"myindex", "mytype", &json_str!({
-//! 		"query": {
-//! 			"filtered": {
-//! 				"query": {
-//! 					"match_all": {}
-//! 				},
-//! 				"filter": {
-//! 					"geo_distance": {
-//! 						"distance": "20km",
-//! 						"location": {
-//! 							"lat": 37.776,
-//! 							"lon": -122.41
-//! 						}
-//! 					}
-//! 				}
-//! 			}
-//! 		}
-//! 	})
-//! ).unwrap();
+//!
+//! let search = SearchRequest::for_index_ty(
+//!     "myindex", "mytype", 
+//!     json_str!({
+//!         query: {
+//!             filtered: {
+//!                 query: {
+//!                     match_all: {}
+//!                 },
+//!                 filter: {
+//!                     geo_distance: {
+//!                         distance: "20km",
+//!                         location: {
+//!                             lat: 37.776,
+//!                             lon: -122.41
+//!                         }
+//!                     }
+//!                 }
+//!             }
+//!         }
+//!     })
+//! );
+//! 
+//! client.elastic_req(&params, search).unwrap();
 //! # }
 //! ```
 //!
