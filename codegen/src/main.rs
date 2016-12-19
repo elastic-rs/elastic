@@ -100,6 +100,24 @@ fn dedup_urls(endpoint: (String, Endpoint)) -> (String, Endpoint) {
     (name, endpoint)
 }
 
+fn add_simple_search(endpoints: &mut Vec<(String, Endpoint)>) {
+    let mut endpoint = {
+        let &(_, ref endpoint) = endpoints
+            .iter()
+            .find(|ref endpoint| endpoint.0 == "search")
+            .unwrap();
+
+        endpoint.clone()
+    };
+
+    let name = String::from("simple_search");
+
+    endpoint.methods = vec![HttpMethod::Get];
+    endpoint.body = None;
+
+    endpoints.push((name, endpoint));
+}
+
 fn main() {
     start_comment_block_for_logging();
 
@@ -141,13 +159,16 @@ fn main() {
     ]);
     tokens.append("\n\n");
 
-    let endpoints: Vec<(String, Endpoint)> = from_dir(dir)
-        .expect("Couldn't parse the REST API spec")
+    let mut endpoints: Vec<(String, Endpoint)> = from_dir(dir)
+        .expect("Couldn't parse the REST API spec");
+
+    add_simple_search(&mut endpoints);
+
+    endpoints = endpoints    
         .into_iter()
         .map(|e| strip_verbs(e))
         .map(|e| dedup_urls(e))
-        .collect();
-
+        .collect();    
 
     for e in endpoints {
         for (ty, _) in &e.1.url.parts {

@@ -47,7 +47,7 @@ impl RequestParamsCtorBuilder {
             0 => Self::ctor_none(self.has_body),
             _ => {
                 let name: Vec<String> = params.iter().map(|i| i.into_rust_var()).collect();
-                let name = name.join("_");
+                let name = format!("for_{}", name.join("_"));
 
                 let cased: Vec<String> = params.iter()
                     .map(|i| i.into_rust_type())
@@ -348,7 +348,7 @@ pub mod tests {
 
         let expected = quote!(
             impl <'a> Request<'a> {
-                pub fn index_ty_id<IIndex: Into<Index<'a> >, IType: Into<Type<'a> >, IId: Into<Id<'a> > >(index: IIndex, ty: IType, id: IId) -> Request<'a> {
+                pub fn for_index_ty_id<IIndex: Into<Index<'a> >, IType: Into<Type<'a> >, IId: Into<Id<'a> > >(index: IIndex, ty: IType, id: IId) -> Request<'a> {
                     #body
                 }
             }
@@ -400,7 +400,7 @@ pub mod tests {
 
         let expected = quote!(
             impl <'a> Request<'a> {
-                pub fn index_ty_id #generics (index: IIndex, ty: IType, id: IId, body: IBody) -> Request<'a> {
+                pub fn for_index_ty_id #generics (index: IIndex, ty: IType, id: IId, body: IBody) -> Request<'a> {
                     #body
                 }
             }
@@ -437,7 +437,7 @@ pub mod tests {
         );
 
         let ctor_index = quote!(
-            pub fn index < IIndex : Into < Index < 'a > >, IBody : Into < Body < 'a > > > ( index : IIndex, body : IBody ) -> IndicesExistsAliasRequest < 'a > { 
+            pub fn for_index < IIndex : Into < Index < 'a > >, IBody : Into < Body < 'a > > > ( index : IIndex, body : IBody ) -> IndicesExistsAliasRequest < 'a > { 
                 IndicesExistsAliasRequest { 
                     url : IndicesExistsAliasUrlParams::Index(index.into()).url(),
                     body: body.into()
@@ -446,7 +446,7 @@ pub mod tests {
         );
 
         let ctor_index_ty = quote!(
-            pub fn index_ty < IIndex : Into < Index < 'a > > , IType : Into < Type < 'a > >, IBody : Into < Body < 'a > > > ( index : IIndex , ty : IType , body: IBody ) -> IndicesExistsAliasRequest < 'a > { 
+            pub fn for_index_ty < IIndex : Into < Index < 'a > > , IType : Into < Type < 'a > >, IBody : Into < Body < 'a > > > ( index : IIndex , ty : IType , body: IBody ) -> IndicesExistsAliasRequest < 'a > { 
                 IndicesExistsAliasRequest { 
                     url : IndicesExistsAliasUrlParams::IndexType(index.into(), ty.into()).url(),
                     body: body.into()

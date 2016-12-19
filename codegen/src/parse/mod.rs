@@ -13,7 +13,7 @@ impl ApiEndpoint for BTreeMap<String, Endpoint> {
     }
 }
 
-#[derive(Debug, PartialEq, Deserialize)]
+#[derive(Debug, PartialEq, Deserialize, Clone)]
 pub struct Endpoint {
     pub documentation: String,
     pub methods: Vec<HttpMethod>,
@@ -43,7 +43,7 @@ pub enum HttpMethod {
     Delete,
 }
 
-#[derive(Debug, PartialEq, Deserialize)]
+#[derive(Debug, PartialEq, Deserialize, Clone)]
 pub struct Url {
     pub path: Path,
     pub paths: Vec<Path>,
@@ -59,7 +59,7 @@ impl Url {
     }
 }
 
-#[derive(Debug, PartialEq, Deserialize)]
+#[derive(Debug, PartialEq, Deserialize, Clone)]
 pub struct Type {
     #[serde(rename = "type", default)]
     pub ty: TypeKind,
@@ -70,7 +70,7 @@ pub struct Type {
     pub default: Option<Value>,
 }
 
-#[derive(Debug, PartialEq, Deserialize)]
+#[derive(Debug, PartialEq, Deserialize, Clone)]
 pub enum TypeKind {
     None,
     #[serde(rename = "list")]
@@ -101,7 +101,7 @@ impl Default for TypeKind {
     }
 }
 
-#[derive(Debug, PartialEq, Deserialize)]
+#[derive(Debug, PartialEq, Deserialize, Clone)]
 pub struct Path(pub String);
 
 impl Path {
@@ -197,7 +197,7 @@ impl<'a> PathParams<'a> for Vec<PathPart<'a>> {
     }
 }
 
-#[derive(Debug, PartialEq, Deserialize)]
+#[derive(Debug, PartialEq, Deserialize, Clone)]
 pub struct Body {
     pub description: String,
 }

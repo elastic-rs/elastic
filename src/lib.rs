@@ -19,7 +19,7 @@
 //!
 //! ```
 //! # use elastic_requests::*;
-//! let req = SearchRequest::index_ty(
+//! let req = SearchRequest::for_index_ty(
 //!     "test_index",
 //!     "test_ty",
 //!     "{'query': { 'match_all': {}}}"
@@ -41,7 +41,7 @@
 //!
 //! ```
 //! # use elastic_requests::*;
-//! let req = SearchRequest::index(
+//! let req = SearchRequest::for_index(
 //!     "test_index".to_string(),
 //!     "{'query': { 'match_all': {}}}"
 //! );
@@ -76,7 +76,7 @@ mod tests {
 
     #[test]
     fn it_works() {
-        let req = SearchRequest::index_ty("test_index", "test_ty", "{'query': { 'match_all': {}}}");
+        let req = SearchRequest::for_index_ty("test_index", "test_ty", "{'query': { 'match_all': {}}}");
 
         assert_eq!("/test_index/test_ty/_search", *req.url);
 
@@ -86,7 +86,7 @@ mod tests {
 
     #[test]
     fn it_works_static() {
-        let req = SearchRequest::index_ty(String::from("test_index"), "test_ty", Body::none());
+        let req = SearchRequest::for_index_ty(String::from("test_index"), "test_ty", Body::none());
 
         do_something_with_static_request(req).join().unwrap();
     }
