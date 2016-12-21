@@ -86,7 +86,7 @@ pub trait ElasticFieldMapping<F>
     }
 }
 
-#[doc(hidden)]
+/// A wrapper type for serialising fields.
 #[derive(Default)]
 pub struct Field<M, F>
     where M: ElasticFieldMapping<F>,
