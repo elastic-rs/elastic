@@ -53,6 +53,11 @@
 //!
 //! This library is automatically generated, so there's a lot more work to do
 //! to get the documentation up to scratch.
+//! 
+//! # Links
+//!
+//! - [`elastic_hyper`](https://github.com/elastic-rs/elastic-hyper)
+//! - [Github](https://github.com/elastic-rs/elastic-requests)
 
 mod genned;
 
