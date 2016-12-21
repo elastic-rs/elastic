@@ -60,7 +60,7 @@
 //! ```
 
 use serde::Serialize;
-use ::mapping::{ElasticType, ElasticFieldMapping, ElasticFieldMappingWrapper};
+use ::mapping::{ElasticType, ElasticFieldMapping, Field};
 
 /// Elasticsearch datatype name.
 pub const INTEGER_DATATYPE: &'static str = "integer";
@@ -119,12 +119,12 @@ macro_rules! number_mapping {
 
 		impl <T> ElasticFieldMapping<$f> for T where
 		T: $m {
-			type SerType = ElasticFieldMappingWrapper<T, $f>;
+			type FieldSerType = Field<T, $f>;
 
 			fn data_type() -> &'static str { $cn }
 		}
 
-		impl <T> Serialize for ElasticFieldMappingWrapper<T, $f> where
+		impl <T> Serialize for Field<T, $f> where
 		T: ElasticFieldMapping<$f> + $m {
 			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where
 			S: ::serde::Serializer {

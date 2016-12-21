@@ -9,7 +9,7 @@ fn get_type_name() {
 }
 
 #[test]
-fn serialise_mapping_type() {
+fn serialise_mapping_type_with_mapper() {
 	let ser = TypeMapper::to_string(SimpleTypeMapping).unwrap();
 
 	let expected = json_str!({
@@ -28,6 +28,14 @@ fn serialise_mapping_type() {
 			}
 		}
 	});
+
+	assert_eq!(expected, ser);
+}
+
+#[test]
+fn serialise_mapping_type() {
+	let ser = serde_json::to_string(&SimpleTypeMapping::type_ser()).unwrap();
+	let expected = TypeMapper::to_string(SimpleTypeMapping).unwrap();
 
 	assert_eq!(expected, ser);
 }

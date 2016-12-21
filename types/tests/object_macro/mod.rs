@@ -1,3 +1,4 @@
+use serde_json;
 use elastic_types::mapping::prelude::*;
 use ::object_fixtures as expected_types;
 use ::object_macro_fixtures::*;
@@ -32,6 +33,34 @@ fn serialise_custom_mapping_type() {
 			},
 			"renamed_field": {
 				"type":"integer"
+			}
+		}
+	});
+
+	assert_eq!(expected, ser);
+}
+
+#[test]
+fn serialise_index_mapping() {
+	let ser = serde_json::to_string(&Index::default()).unwrap();
+
+	let expected = json_str!({
+		"mappings": {
+			"simpletype": {
+				"properties": {
+					"field1": {
+						"type": "date",
+						"format": "epoch_millis"
+					},
+					"field2": {
+						"type": "nested",
+						"properties": {
+							"field": {
+								"type": "integer"
+							}
+						}
+					}
+				}
 			}
 		}
 	});

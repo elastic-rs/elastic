@@ -160,7 +160,7 @@ fn get_props_ser_stmts(fields: &[(syn::Ident, &syn::Field)]) -> Vec<quote::Token
 				}
 			}
 
-			let expr = quote!(#(#segments)::*::mapping_ser());
+			let expr = quote!(#(#segments)::*::field_ser());
 
 			Some(quote!(try!(serializer.serialize_struct_elt(state, #lit, #expr));))
 		}

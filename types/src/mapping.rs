@@ -58,7 +58,7 @@ pub trait ElasticType<M, F = ObjectFormat>
     }
 
     #[doc(hidden)]
-    fn mapping_ser() -> M::SerType {
+    fn field_ser() -> M::FieldSerType {
         M::ser()
     }
 }
@@ -73,10 +73,11 @@ pub trait ElasticFieldMapping<F>
           F: Default
 {
     #[doc(hidden)]
-    type SerType: Serialize + Default;
+    type FieldSerType: Serialize + Default;
+
     #[doc(hidden)]
-    fn ser() -> Self::SerType {
-        Self::SerType::default()
+    fn ser() -> Self::FieldSerType {
+        Self::FieldSerType::default()
     }
 
     /// Get the type name for this mapping, like `date` or `string`.
@@ -87,12 +88,21 @@ pub trait ElasticFieldMapping<F>
 
 #[doc(hidden)]
 #[derive(Default)]
-pub struct ElasticFieldMappingWrapper<M, F>
+pub struct Field<M, F>
     where M: ElasticFieldMapping<F>,
           F: Default
 {
     _m: PhantomData<M>,
     _f: PhantomData<F>,
+}
+
+impl<M, F> From<M> for Field<M, F>
+    where M: ElasticFieldMapping<F>,
+          F: Default
+{
+    fn from(_: M) -> Self {
+        Field::<M, F>::default()
+    }
 }
 
 /// Should the field be searchable? Accepts `not_analyzed` (default) and `no`.
@@ -129,10 +139,10 @@ impl Serialize for IndexAnalysis {
 #[derive(Debug, PartialEq, Default, Clone)]
 pub struct DefaultMapping;
 impl ElasticFieldMapping<()> for DefaultMapping {
-    type SerType = ElasticFieldMappingWrapper<Self, ()>;
+    type FieldSerType = Field<Self, ()>;
 }
 
-impl Serialize for ElasticFieldMappingWrapper<DefaultMapping, ()> {
+impl Serialize for Field<DefaultMapping, ()> {
     fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
         where S: Serializer
     {
@@ -161,7 +171,7 @@ impl<M, F> ElasticFieldMapping<F> for ElasticWrappedMapping<M, F>
     where M: ElasticFieldMapping<F>,
           F: Default
 {
-    type SerType = M::SerType;
+    type FieldSerType = M::FieldSerType;
 
     fn data_type() -> &'static str {
         M::data_type()

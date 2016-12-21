@@ -276,7 +276,7 @@
 
 use std::marker::PhantomData;
 use serde::{Serialize, Serializer};
-use ::mapping::{ElasticType, ElasticFieldMapping, ElasticFieldMappingWrapper};
+use ::mapping::{ElasticType, ElasticFieldMapping, Field};
 
 /// Elasticsearch datatype name.
 pub const OBJECT_DATATYPE: &'static str = "object";
@@ -327,6 +327,11 @@ pub trait ObjectMapping
     /// The object itself is not added to the `_all` field.
     fn include_in_all() -> Option<bool> {
         None
+    }
+
+    /// Get a serialisable mapping for this type.
+    fn type_ser() -> Type<Self> {
+        Type::<Self>::default()
     }
 
     /// Serialise this mapping as an indexed type instead of as a field
@@ -423,6 +428,37 @@ pub trait ElasticUserType<M>
     fn name() -> &'static str {
         M::name()
     }
+
+    /// Get a serialisable mapping for this type.
+    fn type_ser() -> Type<M> {
+        M::type_ser()
+    }
+}
+
+/// A wrapper type for serialising user types.
+#[derive(Default)]
+pub struct Type<M>
+    where M: ElasticFieldMapping<ObjectFormat>
+{
+    _m: PhantomData<M>,
+}
+
+impl<M> From<M> for Type<M>
+    where M: ObjectMapping
+{
+    fn from(_: M) -> Self {
+        Type::<M>::default()
+    }
+}
+
+impl<M> Serialize for Type<M>
+    where M: ObjectMapping
+{
+    fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+        where S: Serializer
+    {
+        M::serialize_type(serializer)
+    }
 }
 
 impl<T, M> ElasticUserType<M> for T
@@ -434,14 +470,14 @@ impl<T, M> ElasticUserType<M> for T
 impl<T> ElasticFieldMapping<ObjectFormat> for T
     where T: ObjectMapping
 {
-    type SerType = ElasticFieldMappingWrapper<T, ObjectFormat>;
+    type FieldSerType = Field<T, ObjectFormat>;
 
     fn data_type() -> &'static str {
         <Self as ObjectMapping>::data_type()
     }
 }
 
-impl<T> Serialize for ElasticFieldMappingWrapper<T, ObjectFormat>
+impl<T> Serialize for Field<T, ObjectFormat>
     where T: ElasticFieldMapping<ObjectFormat> + ObjectMapping
 {
     fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>

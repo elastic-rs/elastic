@@ -453,6 +453,16 @@ pub mod object_macro_fixtures {
 	impl ObjectMapping for CustomTypeMapping {
 		fn name() -> &'static str { "renamed_type" }
 	}
+
+	#[derive(Default, Serialize)]
+	pub struct Index {
+		mappings: Mappings
+	}
+
+	#[derive(Default, Serialize)]
+	pub struct Mappings {
+		simpletype: Type<SimpleTypeMapping>
+	}
 }
 
 pub mod object;
