@@ -1,5 +1,5 @@
 use std::net::Ipv4Addr;
-use serde::Serializer;
+use serde::ser::{Serializer, Error};
 use elastic_types::prelude::*;
 
 // The type we want to index in Elasticsearch
@@ -27,5 +27,11 @@ pub struct Index {
 fn serialise_mappings<S>(_: &(), serializer: &mut S) -> Result<(), S::Error>
     where S: Serializer
 {
-    TypeMapper::to_writer(MyStruct::mapping(), serializer)
+    let mut state = serializer.serialize_struct("mappings", 1)?;
+
+    let mapping = TypeMapper::to_value(MyStruct::mapping()).map_err(|e| S::Error::custom("failed to build mapping"))?;
+
+    serializer.serialize_struct_elt(&mut state, MyStruct::name(), mapping)?;
+    
+    serializer.serialize_struct_end(state)
 }
