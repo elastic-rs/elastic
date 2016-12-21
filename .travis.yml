@@ -29,7 +29,7 @@ script:
       cd samples/basic &&
       travis-cargo build &&
       cd ../typed &&
-      travis-cargo build &&
+      travis-cargo --only nightly build &&
       cd ../../ &&
       travis-cargo --only stable doc
 after_success:
