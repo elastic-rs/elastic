@@ -8,6 +8,6 @@ nightly-testing = []
 
 [dependencies]
 elastic_hyper = { version = "*", path = "../../" }
-elastic_requests = { version = "*", git = "https://github.com/elastic-rs/elastic-requests" }
+elastic_requests = "*"
 json_str = "*"
 hyper = "~0.9.0"

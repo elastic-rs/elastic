@@ -1,11 +1,12 @@
-//NOTE: This module lives here until we have a proper crate for Elasticsearch responses
+// NOTE: This module lives here until we have a proper crate for Elasticsearch responses
 
 use serde::Deserialize;
 
 /// A successful response from a Query DSL query.
 #[derive(Debug, Deserialize)]
-pub struct SearchResponse<T> where
-T: Deserialize {
+pub struct SearchResponse<T>
+    where T: Deserialize
+{
     /// The time taken to complete a query in ms.
     pub took: u64,
     /// Whether or not the query timed out.
@@ -14,7 +15,7 @@ T: Deserialize {
     #[serde(rename="_shards")]
     pub shards: Shards,
     /// Document results.
-    pub hits: SearchHits<T>
+    pub hits: SearchHits<T>,
 }
 
 /// Metadata on shard activity for a Query DSL query.
@@ -25,23 +26,25 @@ pub struct Shards {
     /// The total number of shards that successfully executed the query.
     pub successful: u64,
     /// The total number of shards that failed to execute the query.
-    pub failed: u64
+    pub failed: u64,
 }
 
 /// A collection of hits for a Query DSL query.
 #[derive(Debug, Deserialize)]
-pub struct SearchHits<T> where
-T: Deserialize {
+pub struct SearchHits<T>
+    where T: Deserialize
+{
     /// The total number of hits.
     pub total: u64,
     /// Document results.
-    pub hits:  Vec<Hit<T>>
+    pub hits: Vec<Hit<T>>,
 }
 
 /// An individual hit for a Query DSL query.
 #[derive(Debug, Deserialize)]
-pub struct Hit<T> where
-T: Deserialize {
+pub struct Hit<T>
+    where T: Deserialize
+{
     /// The index of the hit.
     #[serde(rename="_index")]
     pub index: String,
@@ -62,5 +65,5 @@ T: Deserialize {
     pub timestamp: Option<f64>,
     /// The routing value of the hit.
     #[serde(rename="_routing")]
-    pub routing: Option<String>
+    pub routing: Option<String>,
 }
