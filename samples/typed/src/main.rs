@@ -23,31 +23,15 @@ extern crate elastic_hyper;
 extern crate elastic_requests;
 
 use std::net::Ipv4Addr;
-
-use serde_json::{Value, Map};
-
 use hyper::Client;
 use elastic_hyper::{ElasticClient, RequestParams};
 use elastic_requests::{IndicesCreateRequest, IndexRequest, SearchRequest};
 use elastic_types::prelude::*;
 
+mod data;
+use data::*;
 mod response;
 use response::*;
-
-// The type we want to index in Elasticsearch
-#[derive(Clone, Debug, Serialize, Deserialize, ElasticType)]
-pub struct MyStruct {
-    pub id: i32,
-    pub title: String,
-    pub timestamp: Date<DefaultDateFormat>,
-    pub geo: GeoLocation,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize, ElasticType)]
-pub struct GeoLocation {
-    pub ip: Ipv4Addr,
-    pub loc: GeoPoint<DefaultGeoPointFormat>,
-}
 
 const INDEX: &'static str = "testidx";
 
@@ -84,20 +68,7 @@ fn main() {
 }
 
 fn create_index(client: &Client, params: &RequestParams) {
-    // Create a dynamic structure for the mappings body
-    let mut body = Map::new();
-    body.insert(String::from("mappings"), {
-        let mut mappings = Map::new();
-
-        mappings.insert(String::from(MyStruct::name()),
-                        TypeMapper::to_value(MyStruct::mapping()).unwrap());
-
-        Value::Object(mappings)
-    });
-
-    let body = Value::Object(body);
-
-    let req = IndicesCreateRequest::for_index(INDEX, serde_json::to_string(&body).unwrap());
+    let req = IndicesCreateRequest::for_index(INDEX, serde_json::to_string(&Index::default()).unwrap());
 
     // Create index
     client.elastic_req(&params, req).unwrap();
@@ -137,12 +108,12 @@ fn query(client: &Client, params: &RequestParams) -> SearchResponse<MyStruct> {
     let req = SearchRequest::for_index_ty(INDEX,
                                           MyStruct::name(),
                                           json_lit!({
-			query: {
-				query_string: {
-					query: "*"
-				}
-			}
-		}));
+                                                query: {
+                                                    query_string: {
+                                                        query: "*"
+                                                    }
+                                                }
+                                          }));
 
     let res = client.elastic_req(&params, req).unwrap();
 
