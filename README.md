@@ -19,13 +19,13 @@ elastic_requests = "*"
 And reference it in your crate root:
 
 ```rust
-extern crate elastic_requests as elastic;
+extern crate elastic_requests as requests;
 ```
 
 There's a request type for each REST API endpoint with constructor functions for each valid set of parameters:
 
 ```rust
-let req = elastic::SearchRequest::index_ty(
+let req = requests::SearchRequest::index_ty(
 	"myindex", "mytype", 
 	json_str!({
 		query: { 
@@ -42,7 +42,7 @@ Parameters can be supplied as owned or borrowed strings and the body as an owned
 ```rust
 let index_suffix = get_a_suffix();
 
-let req = elastic::SearchRequest::index_ty(
+let req = requests::SearchRequest::index_ty(
 	format!("index-{}", index_suffix), "mytype", 
 	"{ 'query': { 'match_all': { } } }"
 );
