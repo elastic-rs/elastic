@@ -114,7 +114,6 @@
 //! # fn main() {
 //! let (client, params) = cli::default();
 //!
-//!
 //! let search = SearchRequest::for_index_ty(
 //!     "myindex", "mytype", 
 //!     json_str!({

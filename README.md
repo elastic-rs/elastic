@@ -30,39 +30,64 @@ Add `elastic_hyper` and `json_str` to your `Cargo.toml`:
 
 ```
 [dependencies]
+elastic_requests = "*"
 elastic_hyper = "*"
+hyper = "*"
+
+# Optional
 json_str = "*"
 ```
 
 Ping the availability of your cluster:
 
 ```rust
-#[macro_use]
-extern crate json_str;
-extern crate elastic_hyper as elastic;
+extern crate elastic_requests as req;
+extern crate elastic_hyper as cli;
+extern crate hyper;
 
-let (mut client, params) = elastic::default();
+use cli::ElasticClient;
+use req::PingRequest;
 
-elastic::ping::head(&mut client, &params).unwrap();
+let (client, params) = cli::default();
+
+client.elastic_req(&params, PingRequest::new()).unwrap();
 ```
 
-A simple `query_string` query:
+A query DSL query:
 
 ```rust
 #[macro_use]
 extern crate json_str;
-extern crate elastic_hyper as elastic;
+extern crate elastic_requests as req;
+extern crate elastic_hyper as cli;
+extern crate hyper;
 
-let (mut client, params) = elastic::default();
+use cli::ElasticClient;
+use req::SearchRequest;
+ 
+let (client, params) = cli::default();
 
-let response = elastic::search::post(
-  &mut client, &params,
-  &json_str!({
-    query: {
-      query_string: {
-        query: "*"
-      }
-    }
-  })
-).unwrap();
+let search = SearchRequest::for_index_ty(
+    "myindex", "mytype", 
+    json_str!({
+        query: {
+            filtered: {
+                query: {
+                    match_all: {}
+                },
+                filter: {
+                    geo_distance: {
+                        distance: "20km",
+                        location: {
+                            lat: 37.776,
+                            lon: -122.41
+                        }
+                    }
+                }
+            }
+        }
+    })
+);
+
+client.elastic_req(&params, search).unwrap();
 ```
