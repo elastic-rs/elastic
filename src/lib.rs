@@ -263,7 +263,7 @@ impl RequestParams {
     /// Get the url params as a formatted string.
     ///
     /// Follows the `application/x-www-form-urlencoded` format.
-    pub fn get_url_qry(&self) -> String {
+    pub fn get_url_qry(&self) -> (usize, Option<String>) {
         if self.url_params.len() > 0 {
             let qry: String = Serializer::new(String::new())
                 .extend_pairs(self.url_params.iter())
@@ -273,9 +273,9 @@ impl RequestParams {
             url_qry.push('?');
             url_qry.push_str(&qry);
 
-            url_qry
+            (url_qry.len(), Some(url_qry))
         } else {
-            String::with_capacity(0)
+            (0, None)
         }
     }
 }
@@ -315,13 +315,16 @@ impl ElasticClient for hyper::Client {
     {
         let req = req.into();
 
-        let qry = &params.get_url_qry();
+        let (qry_len, qry) = params.get_url_qry();
 
-        let mut url = String::with_capacity(params.base_url.len() + req.url.len() + qry.len());
+        let mut url = String::with_capacity(params.base_url.len() + req.url.len() + qry_len);
 
         url.push_str(&params.base_url);
         url.push_str(&req.url);
-        url.push_str(qry);
+
+        if let Some(qry) = qry {
+            url.push_str(&qry);
+        }
 
         match req.method {
             HttpMethod::Get => self.get(&url).headers(params.headers.to_owned()).send(),

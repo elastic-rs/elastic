@@ -27,12 +27,12 @@ fn request_params_has_url_query() {
 			("q", "*".to_owned())
 		]);
 
-	assert_eq!("?pretty=true&q=*", &req.get_url_qry());
+	assert_eq!((16, Some(String::from("?pretty=true&q=*"))), req.get_url_qry());
 }
 
 #[test]
 fn empty_request_params_returns_empty_string() {
 	let req = RequestParams::default();
 
-	assert_eq!("", &req.get_url_qry());
+	assert_eq!((0, None), req.get_url_qry());
 }
