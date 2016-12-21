@@ -7,11 +7,12 @@ authors = ["Ashley Mannix <ashleymannix@live.com.au>"]
 nightly-testing = []
 
 [dependencies]
-elastic_hyper = { version = "*", path = "../../" }
-json_str = { version = "*", features = ["nightly"]}
 hyper = "~0.9.0"
-elastic_types = { version = "*", path = "../../../types", features = ["nightly"]}
-elastic_types_macros = { version = "*", path = "../../../macros/types" }
+elastic_hyper = { version = "*", path = "../../" }
+elastic_requests = "*"
+elastic_types = { version = "*", features = ["nightly"]}
+elastic_types_derive = "*"
+json_str = { version = "*", features = ["nightly"]}
 serde = "~0.8.0"
-serde_macros = "~0.8.0"
+serde_derive = "~0.8.0"
 serde_json = "~0.8.0"
