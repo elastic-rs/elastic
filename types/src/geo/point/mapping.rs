@@ -147,7 +147,7 @@ impl<T, F> ElasticFieldMapping<GeoPointFormatWrapper<F>> for T
     where T: GeoPointMapping<Format = F>,
           F: GeoPointFormat
 {
-    type FieldSerType = Field<T, GeoPointFormatWrapper<F>>;
+    type SerType = Field<T, GeoPointFormatWrapper<F>>;
 
     fn data_type() -> &'static str {
         GEOPOINT_DATATYPE

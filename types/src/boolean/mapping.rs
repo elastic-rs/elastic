@@ -104,7 +104,7 @@ pub trait BooleanMapping
 impl<T> ElasticFieldMapping<BooleanFormat> for T
     where T: BooleanMapping
 {
-    type FieldSerType = Field<T, BooleanFormat>;
+    type SerType = Field<T, BooleanFormat>;
 
     fn data_type() -> &'static str {
         BOOLEAN_DATATYPE

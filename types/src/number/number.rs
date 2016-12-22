@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 use serde::{Serialize, Deserialize, Serializer, Deserializer};
 use super::mapping::*;
-use ::mapping::ElasticType;
+use ::mapping::ElasticFieldType;
 
 macro_rules! number_type {
     ($wrapper_ty:ident, $mapping_ty:ident, $format_ty:ident, $std_ty:ident) => (
@@ -26,7 +26,7 @@ macro_rules! number_type {
 			}
 		}
 
-		impl <M> ElasticType<M, $format_ty> for $wrapper_ty<M> where M: $mapping_ty { }
+		impl <M> ElasticFieldType<M, $format_ty> for $wrapper_ty<M> where M: $mapping_ty { }
 
 		impl_mapping_type!($std_ty, $wrapper_ty, $mapping_ty);
 

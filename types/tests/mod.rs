@@ -381,7 +381,7 @@ pub mod object_fixtures {
 		pub field2: SimpleNestedType
 	}
 
-	impl ElasticType<SimpleTypeMapping> for SimpleType { }
+	impl ElasticUserType<SimpleTypeMapping> for SimpleType { }
 
 	#[derive(Default, Clone)]
 	pub struct SimpleTypeMapping;
@@ -405,7 +405,7 @@ pub mod object_fixtures {
 		pub field: i32
 	}
 
-	impl ElasticType<SimpleNestedTypeMapping> for SimpleNestedType { }
+	impl ElasticUserType<SimpleNestedTypeMapping> for SimpleNestedType { }
 
 	#[derive(Default, Clone)]
 	pub struct SimpleNestedTypeMapping;

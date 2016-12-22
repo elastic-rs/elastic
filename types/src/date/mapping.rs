@@ -160,7 +160,7 @@ impl<T, F> ElasticFieldMapping<DateFormatWrapper<F>> for T
     where T: DateMapping<Format = F>,
           F: DateFormat
 {
-    type FieldSerType = Field<T, DateFormatWrapper<F>>;
+    type SerType = Field<T, DateFormatWrapper<F>>;
 
     fn data_type() -> &'static str {
         DATE_DATATYPE

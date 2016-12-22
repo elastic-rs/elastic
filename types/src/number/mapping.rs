@@ -60,7 +60,7 @@
 //! ```
 
 use serde::Serialize;
-use ::mapping::{ElasticType, ElasticFieldMapping, Field};
+use ::mapping::{ElasticFieldType, ElasticFieldMapping, Field};
 
 /// Elasticsearch datatype name.
 pub const INTEGER_DATATYPE: &'static str = "integer";
@@ -119,7 +119,7 @@ macro_rules! number_mapping {
 
 		impl <T> ElasticFieldMapping<$f> for T where
 		T: $m {
-			type FieldSerType = Field<T, $f>;
+			type SerType = Field<T, $f>;
 
 			fn data_type() -> &'static str { $cn }
 		}
@@ -157,35 +157,35 @@ number_mapping!(DoubleMapping, DoubleFormat, DOUBLE_DATATYPE, f64);
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultIntegerMapping;
 impl IntegerMapping for DefaultIntegerMapping {}
-impl ElasticType<DefaultIntegerMapping, IntegerFormat> for i32 {}
+impl ElasticFieldType<DefaultIntegerMapping, IntegerFormat> for i32 {}
 
 /// Default mapping for a `long` type.
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultLongMapping;
 impl LongMapping for DefaultLongMapping {}
-impl ElasticType<DefaultLongMapping, LongFormat> for i64 {}
-impl ElasticType<DefaultLongMapping, LongFormat> for isize {}
+impl ElasticFieldType<DefaultLongMapping, LongFormat> for i64 {}
+impl ElasticFieldType<DefaultLongMapping, LongFormat> for isize {}
 
 /// Default mapping for a `short` type.
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultShortMapping;
 impl ShortMapping for DefaultShortMapping {}
-impl ElasticType<DefaultShortMapping, ShortFormat> for i16 {}
+impl ElasticFieldType<DefaultShortMapping, ShortFormat> for i16 {}
 
 /// Default mapping for a `byte` type.
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultByteMapping;
 impl ByteMapping for DefaultByteMapping {}
-impl ElasticType<DefaultByteMapping, ByteFormat> for i8 {}
+impl ElasticFieldType<DefaultByteMapping, ByteFormat> for i8 {}
 
 /// Default mapping for a `float` type.
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultFloatMapping;
 impl FloatMapping for DefaultFloatMapping {}
-impl ElasticType<DefaultFloatMapping, FloatFormat> for f32 {}
+impl ElasticFieldType<DefaultFloatMapping, FloatFormat> for f32 {}
 
 /// Default mapping for a `double` type.
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultDoubleMapping;
 impl DoubleMapping for DefaultDoubleMapping {}
-impl ElasticType<DefaultDoubleMapping, DoubleFormat> for f64 {}
+impl ElasticFieldType<DefaultDoubleMapping, DoubleFormat> for f64 {}

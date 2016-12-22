@@ -147,7 +147,7 @@ pub trait GeoShapeMapping
 impl<T> ElasticFieldMapping<GeoShapeFormat> for T
     where T: GeoShapeMapping
 {
-    type FieldSerType = Field<T, GeoShapeFormat>;
+    type SerType = Field<T, GeoShapeFormat>;
 
     fn data_type() -> &'static str {
         GEOSHAPE_DATATYPE

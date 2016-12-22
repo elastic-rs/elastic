@@ -1,7 +1,7 @@
 //! Base requirements for type mappings.
 //!
 //! There are two kinds of types we can map in Elasticsearch; `field`/`data` types and `user-defined` types.
-//! Either kind of type must implement `ElasticType`, which captures the mapping and possible formatting
+//! Either kind of type must implement `ElasticFieldType`, which captures the mapping and possible formatting
 //! requirements as generic parameters.
 //! Most of the work lives in the `ElasticFieldMapping`, which holds the serialisation requirements
 //! to convert a Rust type into an Elasticsearch mapping.
@@ -17,7 +17,7 @@ pub mod prelude {
     //!
     //! This is a convenience module to make it easy to build mappings for multiple types without too many `use` statements.
 
-    pub use super::{ElasticType, ElasticFieldMapping, DefaultMapping, IndexAnalysis};
+    pub use super::{ElasticFieldType, ElasticFieldMapping, DefaultMapping, IndexAnalysis};
 
     pub use ::mappers::*;
     pub use ::object::*;
@@ -38,7 +38,7 @@ use ::object::ObjectFormat;
 
 /// The base representation of an Elasticsearch data type.
 ///
-/// `ElasticType` is the main `trait` you need to care about when building your own Elasticsearch types.
+/// `ElasticFieldType` is the main `trait` you need to care about when building your own Elasticsearch types.
 /// Each type has two generic arguments that help define its mapping:
 ///
 /// - A mapping type, which implements `ElasticFieldMapping`
@@ -47,7 +47,7 @@ use ::object::ObjectFormat;
 /// # Links
 ///
 /// - [Elasticsearch docs](https://www.elastic.co/guide/en/elasticsearch/reference/master/mapping-types.html)
-pub trait ElasticType<M, F = ObjectFormat>
+pub trait ElasticFieldType<M, F = ObjectFormat>
     where M: ElasticFieldMapping<F>,
           F: Default,
           Self: Serialize
@@ -58,7 +58,7 @@ pub trait ElasticType<M, F = ObjectFormat>
     }
 
     #[doc(hidden)]
-    fn field_ser() -> M::FieldSerType {
+    fn field_ser() -> M::SerType {
         M::ser()
     }
 }
@@ -73,11 +73,11 @@ pub trait ElasticFieldMapping<F>
           F: Default
 {
     #[doc(hidden)]
-    type FieldSerType: Serialize + Default;
+    type SerType: Serialize + Default;
 
     #[doc(hidden)]
-    fn ser() -> Self::FieldSerType {
-        Self::FieldSerType::default()
+    fn ser() -> Self::SerType {
+        Self::SerType::default()
     }
 
     /// Get the type name for this mapping, like `date` or `string`.
@@ -139,7 +139,7 @@ impl Serialize for IndexAnalysis {
 #[derive(Debug, PartialEq, Default, Clone)]
 pub struct DefaultMapping;
 impl ElasticFieldMapping<()> for DefaultMapping {
-    type FieldSerType = Field<Self, ()>;
+    type SerType = Field<Self, ()>;
 }
 
 impl Serialize for Field<DefaultMapping, ()> {
@@ -171,7 +171,7 @@ impl<M, F> ElasticFieldMapping<F> for ElasticWrappedMapping<M, F>
     where M: ElasticFieldMapping<F>,
           F: Default
 {
-    type FieldSerType = M::FieldSerType;
+    type SerType = M::SerType;
 
     fn data_type() -> &'static str {
         M::data_type()
@@ -179,31 +179,31 @@ impl<M, F> ElasticFieldMapping<F> for ElasticWrappedMapping<M, F>
 }
 
 /// Mapping implementation for a `serde_json::Value`.
-impl ElasticType<DefaultMapping, ()> for Value {}
+impl ElasticFieldType<DefaultMapping, ()> for Value {}
 
 /// Mapping implementation for a standard binary tree map.
-impl<K, V> ElasticType<DefaultMapping, ()> for BTreeMap<K, V>
+impl<K, V> ElasticFieldType<DefaultMapping, ()> for BTreeMap<K, V>
     where K: AsRef<str> + Ord + Serialize,
           V: Serialize
 {
 }
 
 /// Mapping implementation for a standard hash map.
-impl<K, V> ElasticType<DefaultMapping, ()> for HashMap<K, V>
+impl<K, V> ElasticFieldType<DefaultMapping, ()> for HashMap<K, V>
     where K: AsRef<str> + Eq + Hash + Serialize,
           V: Serialize
 {
 }
 
-impl<T, M, F> ElasticType<ElasticWrappedMapping<M, F>, F> for Vec<T>
-    where T: ElasticType<M, F>,
+impl<T, M, F> ElasticFieldType<ElasticWrappedMapping<M, F>, F> for Vec<T>
+    where T: ElasticFieldType<M, F>,
           M: ElasticFieldMapping<F>,
           F: Default
 {
 }
 
-impl<T, M, F> ElasticType<ElasticWrappedMapping<M, F>, F> for Option<T>
-    where T: ElasticType<M, F>,
+impl<T, M, F> ElasticFieldType<ElasticWrappedMapping<M, F>, F> for Option<T>
+    where T: ElasticFieldType<M, F>,
           M: ElasticFieldMapping<F>,
           F: Default
 {

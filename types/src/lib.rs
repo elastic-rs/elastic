@@ -67,7 +67,7 @@
 //! > NOTE: Once [Macros 1.1](https://github.com/rust-lang/rfcs/blob/master/text/1681-macros-1.1.md)
 //! is stabilised, you'll be able to use `elastic_types_derive` on the `stable` channel.
 //!
-//! Derive `ElasticType` on your Elasticsearch-mappable types:
+//! Derive `ElasticFieldType` on your Elasticsearch-mappable types:
 //!
 //! ```
 //! # #![feature(proc_macro)]
@@ -155,7 +155,7 @@
 //!
 //! ### Mapping structs as fields
 //!
-//! Of course, structs that derive `ElasticType` can also be used as fields in other Elasticsearch types:
+//! Of course, structs that derive `ElasticFieldType` can also be used as fields in other Elasticsearch types:
 //!
 //! ```
 //! # #![feature(proc_macro)]
@@ -288,7 +288,7 @@
 //!
 //! ## Serialise Your Types
 //!
-//! Types that derive `ElasticType` are themselves serialisable, which can be very helpful when using
+//! Types that derive `ElasticFieldType` are themselves serialisable, which can be very helpful when using
 //! types like `date` with special formats.
 //! Take the following document:
 //!
@@ -491,14 +491,14 @@
 //!
 //! The source type is `boolean` and the mapping is `MyMapping`.
 //!
-//! All Elasticsearch types implement the base `ElasticType<M: ElasticFieldMapping<F>, F>` trait
+//! All Elasticsearch types implement the base `ElasticFieldType<M: ElasticFieldMapping<F>, F>` trait
 //! where `M` is the mapping and `F` is a type-specific format.
 //!
 //! The following table illustrates the types provided by `elastic_types`:
 //!
 //!  Elasticsearch Type  | Rust Type (Default Mapping) | Crate     | Rust Type (Custom Mapping)                                                       | Format Type
 //!  ------------------- | --------------------------- | --------- | -------------------------------------------------------------------------------- | -----------------
-//!  `object`            | -                           | -         | type implementing [`ElasticType<ObjectMapping>`](object/index.html)              | -
+//!  `object`            | -                           | -         | type implementing [`ElasticFieldType<ObjectMapping>`](object/index.html)              | -
 //!  `integer`           | `i32`                       | `std`     | [`Integer<M>`](number/index.html)                                                | -
 //!  `long`              | `i64`                       | `std`     | [`Long<M>`](number/index.html)                                                   | -
 //!  `short`             | `i16`                       | `std`     | [`Short<M>`](number/index.html)                                                  | -

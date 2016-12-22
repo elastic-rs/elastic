@@ -219,7 +219,7 @@ pub trait TextMapping
 impl<T> ElasticFieldMapping<TextFormat> for T
     where T: TextMapping
 {
-    type FieldSerType = Field<T, TextFormat>;
+    type SerType = Field<T, TextFormat>;
 
     fn data_type() -> &'static str {
         TEXT_DATATYPE

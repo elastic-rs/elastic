@@ -6,11 +6,11 @@ use super::ChronoDateTime;
 use super::format::{DateFormat, ParseError};
 use super::formats::ChronoFormat;
 use super::mapping::{DateMapping, DefaultDateMapping, DateFormatWrapper};
-use ::mapping::ElasticType;
+use ::mapping::ElasticFieldType;
 
 pub use chrono::{Datelike, Timelike};
 
-impl ElasticType<DefaultDateMapping<ChronoFormat>, DateFormatWrapper<ChronoFormat>> for ChronoDateTime {}
+impl ElasticFieldType<DefaultDateMapping<ChronoFormat>, DateFormatWrapper<ChronoFormat>> for ChronoDateTime {}
 
 /// An Elasticsearch `date` type with a required `time` component.
 ///
@@ -199,7 +199,7 @@ impl<F, M> Date<F, M>
     }
 }
 
-impl<F, M> ElasticType<M, DateFormatWrapper<F>> for Date<F, M>
+impl<F, M> ElasticFieldType<M, DateFormatWrapper<F>> for Date<F, M>
     where F: DateFormat,
           M: DateMapping<Format = F>
 {
@@ -305,7 +305,7 @@ impl<'a, F, M> DateBrw<'a, F, M>
     }
 }
 
-impl<'a, F, M> ElasticType<M, DateFormatWrapper<F>> for DateBrw<'a, F, M>
+impl<'a, F, M> ElasticFieldType<M, DateFormatWrapper<F>> for DateBrw<'a, F, M>
     where F: DateFormat,
           M: DateMapping<Format = F>
 {

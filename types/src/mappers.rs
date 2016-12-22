@@ -1,6 +1,6 @@
-//! Helper mappers for `ElasticType`.
+//! Helper mappers for `ElasticFieldType`.
 //!
-//! Mapping for types is inferred from the generic mapping parameters on `ElasticType`.
+//! Mapping for types is inferred from the generic mapping parameters on `ElasticFieldType`.
 //!
 //! `TypeMapper`, for mapping user-defined types for the [Put Mapping API](https://www.elastic.co/guide/en/elasticsearch/reference/master/indices-put-mapping.html).
 //!
@@ -8,7 +8,7 @@
 //!
 //! # Examples
 //!
-//! Any type that derives `ElasticType` can be mapped using one of the various mappers.
+//! Any type that derives `ElasticFieldType` can be mapped using one of the various mappers.
 //!
 //! ## Mapping to a json string
 //!
