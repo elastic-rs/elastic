@@ -569,7 +569,6 @@ pub mod geo;
 pub mod ip;
 pub mod number;
 pub mod string;
-pub mod object;
 pub mod template;
 
 pub mod prelude {

@@ -276,7 +276,7 @@
 
 use std::marker::PhantomData;
 use serde::{Serialize, Serializer};
-use ::mapping::{ElasticFieldType, ElasticFieldMapping, Field};
+use super::field::{ElasticFieldType, ElasticFieldMapping, FieldMapping};
 
 /// Elasticsearch datatype name.
 pub const OBJECT_DATATYPE: &'static str = "object";
@@ -301,28 +301,28 @@ pub trait ElasticUserType<M>
     }
 
     /// Get a serialisable mapping for this type.
-    fn type_ser() -> Type<M> {
+    fn type_ser() -> TypeMapping<M> {
         M::type_ser()
     }
 }
 
 /// A wrapper type for serialising user types.
 #[derive(Default)]
-pub struct Type<M>
+pub struct TypeMapping<M>
     where M: ElasticFieldMapping<ObjectFormat>
 {
     _m: PhantomData<M>,
 }
 
-impl<M> From<M> for Type<M>
+impl<M> From<M> for TypeMapping<M>
     where M: ObjectMapping
 {
     fn from(_: M) -> Self {
-        Type::<M>::default()
+        TypeMapping::<M>::default()
     }
 }
 
-impl<M> Serialize for Type<M>
+impl<M> Serialize for TypeMapping<M>
     where M: ObjectMapping
 {
     fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
@@ -377,8 +377,8 @@ pub trait ObjectMapping
     }
 
     /// Get a serialisable mapping for this type.
-    fn type_ser() -> Type<Self> {
-        Type::<Self>::default()
+    fn type_ser() -> TypeMapping<Self> {
+        TypeMapping::<Self>::default()
     }
 
     /// Serialise this mapping as an indexed type instead of as a field
@@ -470,14 +470,14 @@ impl<T, M> ElasticFieldType<M, ObjectFormat> for T
 impl<T> ElasticFieldMapping<ObjectFormat> for T
     where T: ObjectMapping
 {
-    type SerType = Field<T, ObjectFormat>;
+    type SerType = FieldMapping<T, ObjectFormat>;
 
     fn data_type() -> &'static str {
         <Self as ObjectMapping>::data_type()
     }
 }
 
-impl<T> Serialize for Field<T, ObjectFormat>
+impl<T> Serialize for FieldMapping<T, ObjectFormat>
     where T: ElasticFieldMapping<ObjectFormat> + ObjectMapping
 {
     fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>

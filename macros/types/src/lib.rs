@@ -92,19 +92,19 @@ fn define_mapping(name: &syn::Ident) -> quote::Tokens {
 	)
 }
 
-//Implement ElasticType for the type being derived with the mapping
+//Implement ElasticFieldType for the type being derived with the mapping
 fn impl_elastic_type(item: &syn::MacroInput, mapping: &syn::Ident) -> quote::Tokens {
 	let ty = &item.ident;
 
 	quote!(
-		impl ::elastic_types::mapping::ElasticType<#mapping> for #ty { }
+		impl ::elastic_types::mapping::ElasticUserType<#mapping> for #ty { }
 	)
 }
 
 //Implement ObjectMapping for the mapping
 fn impl_object_mapping(mapping: &syn::Ident, es_ty: &syn::Lit) -> quote::Tokens {
 	quote!(
-		impl ::elastic_types::object::ObjectMapping for #mapping {
+		impl ::elastic_types::mapping::ObjectMapping for #mapping {
 			fn name() -> &'static str { #es_ty }
 		}
 	)
@@ -116,7 +116,7 @@ fn impl_props_mapping(mapping: &syn::Ident, prop_ser_stmts: Vec<quote::Tokens>) 
 	let stmts = prop_ser_stmts;
 
 	quote!(
-		impl ::elastic_types::object::PropertiesMapping for #mapping {
+		impl ::elastic_types::mapping::PropertiesMapping for #mapping {
 			fn props_len() -> usize { #stmts_len }
 			
 			fn serialize_props<S>(serializer: &mut S, state: &mut S::StructState) -> Result<(), S::Error>

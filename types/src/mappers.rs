@@ -41,8 +41,7 @@ use serde::{Serialize, Serializer};
 use serde::ser::Error as SerError;
 use serde_json::{Error as JsonError, Serializer as JsonSerializer, Value};
 use serde_json::value::Serializer as ValueSerializer;
-use ::object::ObjectMapping;
-use ::mapping::ElasticFieldMapping;
+use ::mapping::{ElasticFieldMapping, ObjectMapping};
 
 /// Helper for mapping field types.
 pub struct FieldMapper<M, F>

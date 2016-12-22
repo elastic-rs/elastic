@@ -3,7 +3,7 @@
 use std::marker::PhantomData;
 use serde::{Serialize, Serializer};
 use super::{DateFormat, Date};
-use ::mapping::{ElasticFieldMapping, Field};
+use ::mapping::{ElasticFieldMapping, FieldMapping};
 
 /// Elasticsearch datatype name.
 pub const DATE_DATATYPE: &'static str = "date";
@@ -160,14 +160,14 @@ impl<T, F> ElasticFieldMapping<DateFormatWrapper<F>> for T
     where T: DateMapping<Format = F>,
           F: DateFormat
 {
-    type SerType = Field<T, DateFormatWrapper<F>>;
+    type SerType = FieldMapping<T, DateFormatWrapper<F>>;
 
     fn data_type() -> &'static str {
         DATE_DATATYPE
     }
 }
 
-impl<T, F> Serialize for Field<T, DateFormatWrapper<F>>
+impl<T, F> Serialize for FieldMapping<T, DateFormatWrapper<F>>
     where T: ElasticFieldMapping<DateFormatWrapper<F>> + DateMapping<Format = F>,
           F: DateFormat
 {

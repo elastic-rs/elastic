@@ -15,7 +15,7 @@
 use std::collections::BTreeMap;
 use serde::{Serialize, Serializer};
 use serde_json::{Value, Error};
-use ::object::ObjectMapping;
+use ::mapping::ObjectMapping;
 use ::mappers::TypeMapper;
 
 /// A structure for predefining mappings with an index template.

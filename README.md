@@ -42,6 +42,8 @@ extern crate elastic_types_derive;
 extern crate elastic_types;
 ```
 
+## Defining indexable types
+
 Define a custom Elasticsearch type called `mytype`:
 
 ```rust
@@ -83,6 +85,8 @@ let mapping = TypeMapper::to_string(MyType::mapping()).unwrap();
 ```
 
 The `stable` channel is also supported, see the [docs](#documentation) for details.
+
+## Deserialising indexed types
 
 Types that derive `ElasticType` are themselves serialisable, which can be very helpful when using 
 types with special formats, like `date`.

@@ -461,12 +461,12 @@ pub mod object_macro_fixtures {
 
 	#[derive(Default, Serialize)]
 	pub struct Mappings {
-		simpletype: Type<SimpleTypeMapping>
+		simpletype: TypeMapping<SimpleTypeMapping>
 	}
 }
 
 pub mod object;
-pub mod object_macro;
+//pub mod object_macro;
 pub mod geo_point;
 pub mod geo_shape;
 pub mod date;

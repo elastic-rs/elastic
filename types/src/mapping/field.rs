@@ -1,40 +1,10 @@
-//! Base requirements for type mappings.
-//!
-//! There are two kinds of types we can map in Elasticsearch; `field`/`data` types and `user-defined` types.
-//! Either kind of type must implement `ElasticFieldType`, which captures the mapping and possible formatting
-//! requirements as generic parameters.
-//! Most of the work lives in the `ElasticFieldMapping`, which holds the serialisation requirements
-//! to convert a Rust type into an Elasticsearch mapping.
-//! User-defined types must also implement `ObjectMapping`, which maps the fields of a struct as properties,
-//! and treats the type as `nested` when used as a field itself.
-//!
-//! # Links
-//! - [Field Types](https://www.elastic.co/guide/en/elasticsearch/reference/master/mapping-types.html)
-//! - [User-defined Types](https://www.elastic.co/guide/en/elasticsearch/reference/master/mapping.html)
-
-pub mod prelude {
-    //! Includes mapping types for all data types.
-    //!
-    //! This is a convenience module to make it easy to build mappings for multiple types without too many `use` statements.
-
-    pub use super::{ElasticFieldType, ElasticFieldMapping, DefaultMapping, IndexAnalysis};
-
-    pub use ::mappers::*;
-    pub use ::object::*;
-    pub use ::date::mapping::*;
-    pub use ::ip::mapping::*;
-    pub use ::geo::mapping::*;
-    pub use ::string::mapping::*;
-    pub use ::number::mapping::*;
-    pub use ::boolean::mapping::*;
-}
-
 use std::collections::{BTreeMap, HashMap};
 use std::hash::Hash;
 use std::marker::PhantomData;
 use serde::{Serialize, Serializer};
 use serde_json::Value;
-use ::object::ObjectFormat;
+
+use super::object::ObjectFormat;
 
 /// The base representation of an Elasticsearch data type.
 ///
@@ -88,7 +58,7 @@ pub trait ElasticFieldMapping<F>
 
 /// A wrapper type for serialising fields.
 #[derive(Default)]
-pub struct Field<M, F>
+pub struct FieldMapping<M, F>
     where M: ElasticFieldMapping<F>,
           F: Default
 {
@@ -96,12 +66,12 @@ pub struct Field<M, F>
     _f: PhantomData<F>,
 }
 
-impl<M, F> From<M> for Field<M, F>
+impl<M, F> From<M> for FieldMapping<M, F>
     where M: ElasticFieldMapping<F>,
           F: Default
 {
     fn from(_: M) -> Self {
-        Field::<M, F>::default()
+        FieldMapping::<M, F>::default()
     }
 }
 
@@ -139,10 +109,10 @@ impl Serialize for IndexAnalysis {
 #[derive(Debug, PartialEq, Default, Clone)]
 pub struct DefaultMapping;
 impl ElasticFieldMapping<()> for DefaultMapping {
-    type SerType = Field<Self, ()>;
+    type SerType = FieldMapping<Self, ()>;
 }
 
-impl Serialize for Field<DefaultMapping, ()> {
+impl Serialize for FieldMapping<DefaultMapping, ()> {
     fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
         where S: Serializer
     {

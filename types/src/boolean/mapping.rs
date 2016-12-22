@@ -1,7 +1,7 @@
 //! Mapping for the Elasticsearch `boolean` type.
 
 use serde::{Serialize, Serializer};
-use ::mapping::{ElasticFieldMapping, Field};
+use ::mapping::{ElasticFieldMapping, FieldMapping};
 
 /// Elasticsearch datatype name.
 pub const BOOLEAN_DATATYPE: &'static str = "boolean";
@@ -104,14 +104,14 @@ pub trait BooleanMapping
 impl<T> ElasticFieldMapping<BooleanFormat> for T
     where T: BooleanMapping
 {
-    type SerType = Field<T, BooleanFormat>;
+    type SerType = FieldMapping<T, BooleanFormat>;
 
     fn data_type() -> &'static str {
         BOOLEAN_DATATYPE
     }
 }
 
-impl<T> Serialize for Field<T, BooleanFormat>
+impl<T> Serialize for FieldMapping<T, BooleanFormat>
     where T: ElasticFieldMapping<BooleanFormat> + BooleanMapping
 {
     fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
