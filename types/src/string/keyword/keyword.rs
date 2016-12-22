@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 use serde::{Serialize, Deserialize, Serializer, Deserializer};
 use serde::de::{Visitor, Error};
 use super::mapping::{KeywordMapping, KeywordFormat};
-use ::mapping::ElasticFieldType;
+use ::mapping::FieldType;
 
 /// An Elasticsearch `keyword` with a mapping.
 ///

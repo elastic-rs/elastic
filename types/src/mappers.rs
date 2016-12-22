@@ -1,6 +1,6 @@
-//! Helper mappers for `ElasticFieldType`.
+//! Helper mappers for `FieldType`.
 //!
-//! Mapping for types is inferred from the generic mapping parameters on `ElasticFieldType`.
+//! Mapping for types is inferred from the generic mapping parameters on `FieldType`.
 //!
 //! `TypeMapper`, for mapping user-defined types for the [Put Mapping API](https://www.elastic.co/guide/en/elasticsearch/reference/master/indices-put-mapping.html).
 //!
@@ -8,7 +8,7 @@
 //!
 //! # Examples
 //!
-//! Any type that derives `ElasticFieldType` can be mapped using one of the various mappers.
+//! Any type that derives `FieldType` can be mapped using one of the various mappers.
 //!
 //! ## Mapping to a json string
 //!
@@ -41,18 +41,18 @@ use serde::{Serialize, Serializer};
 use serde::ser::Error as SerError;
 use serde_json::{Error as JsonError, Serializer as JsonSerializer, Value};
 use serde_json::value::Serializer as ValueSerializer;
-use ::mapping::{ElasticFieldMapping, ObjectMapping};
+use ::mapping::{FieldMapping, ObjectMapping};
 
 /// Helper for mapping field types.
 pub struct FieldMapper<M, F>
-    where M: ElasticFieldMapping<F>,
+    where M: FieldMapping<F>,
           F: Default
 {
     _m: PhantomData<M>,
     _f: PhantomData<F>,
 }
 impl<M, F> FieldMapper<M, F>
-    where M: ElasticFieldMapping<F>,
+    where M: FieldMapping<F>,
           F: Default
 {
     /// Map a field type with a given `Serializer`.

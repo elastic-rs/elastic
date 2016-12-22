@@ -1,7 +1,7 @@
 //! Mapping for Elasticsearch `geo_shape` types.
 
 use serde::{Serialize, Serializer};
-use ::mapping::{ElasticFieldMapping, FieldMapping};
+use ::mapping::{FieldMapping, Field};
 use ::geo::mapping::Distance;
 
 /// Elasticsearch datatype name.
@@ -144,18 +144,18 @@ pub trait GeoShapeMapping
 }
 
 
-impl<T> ElasticFieldMapping<GeoShapeFormat> for T
+impl<T> FieldMapping<GeoShapeFormat> for T
     where T: GeoShapeMapping
 {
-    type SerType = FieldMapping<T, GeoShapeFormat>;
+    type SerType = Field<T, GeoShapeFormat>;
 
     fn data_type() -> &'static str {
         GEOSHAPE_DATATYPE
     }
 }
 
-impl<T> Serialize for FieldMapping<T, GeoShapeFormat>
-    where T: ElasticFieldMapping<GeoShapeFormat> + GeoShapeMapping
+impl<T> Serialize for Field<T, GeoShapeFormat>
+    where T: FieldMapping<GeoShapeFormat> + GeoShapeMapping
 {
     fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
         where S: Serializer

@@ -34,7 +34,7 @@ fn serialise_mapping_type_with_mapper() {
 
 #[test]
 fn serialise_mapping_type() {
-	let ser = serde_json::to_string(&SimpleTypeMapping::type_ser()).unwrap();
+	let ser = serde_json::to_string(&Document::from(SimpleTypeMapping)).unwrap();
 	let expected = TypeMapper::to_string(SimpleTypeMapping).unwrap();
 
 	assert_eq!(expected, ser);

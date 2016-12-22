@@ -62,7 +62,7 @@
 
 macro_rules! impl_string_type {
 	($wrapper_ty:ident, $mapping_ty:ident, $format_ty:ident) => (
-		impl <M> ElasticFieldType<M, $format_ty> for $wrapper_ty<M> where
+		impl <M> FieldType<M, $format_ty> for $wrapper_ty<M> where
 		M: $mapping_ty { }
 
 		impl_mapping_type!(String, $wrapper_ty, $mapping_ty);

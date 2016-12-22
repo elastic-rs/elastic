@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 use serde::{Serialize, Deserialize, Serializer, Deserializer};
 use georust::{Coordinate, Point, ToGeo, Geometry};
-use ::mapping::ElasticFieldType;
+use ::mapping::FieldType;
 use super::mapping::{GeoPointMapping, DefaultGeoPointMapping, GeoPointFormatWrapper};
 use super::GeoPointFormat;
 
@@ -124,7 +124,7 @@ impl<F, M> GeoPoint<F, M>
     }
 }
 
-impl<F, M> ElasticFieldType<M, GeoPointFormatWrapper<F>> for GeoPoint<F, M>
+impl<F, M> FieldType<M, GeoPointFormatWrapper<F>> for GeoPoint<F, M>
     where F: GeoPointFormat,
           M: GeoPointMapping<Format = F>
 {

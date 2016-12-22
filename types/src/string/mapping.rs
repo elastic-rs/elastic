@@ -2,7 +2,7 @@
 
 use std::collections::BTreeMap;
 use serde::{Serialize, Serializer};
-use ::mapping::{IndexAnalysis, ElasticFieldType};
+use ::mapping::{IndexAnalysis, FieldType};
 
 pub use super::keyword::mapping::*;
 pub use super::text::mapping::*;
@@ -26,7 +26,7 @@ impl TextMapping for DefaultStringMapping {
     }
 }
 
-impl ElasticFieldType<DefaultStringMapping, TextFormat> for String {}
+impl FieldType<DefaultStringMapping, TextFormat> for String {}
 
 /// The `index_options` parameter controls what information is added to the inverted index, for search and highlighting purposes.
 #[derive(Debug, Clone, Copy)]
