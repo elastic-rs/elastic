@@ -20,18 +20,10 @@ pub struct GeoLocation {
 // An index request type with mappings bundled in
 #[derive(Default, Serialize)]
 pub struct Index {
-    #[serde(serialize_with = "serialise_mappings")]
-    mappings: (),
+    mappings: Mappings,
 }
 
-fn serialise_mappings<S>(_: &(), serializer: &mut S) -> Result<(), S::Error>
-    where S: Serializer
-{
-    let mut state = serializer.serialize_struct("mappings", 1)?;
-
-    let mapping = TypeMapper::to_value(MyStruct::mapping()).map_err(|e| S::Error::custom("failed to build mapping"))?;
-
-    serializer.serialize_struct_elt(&mut state, MyStruct::name(), mapping)?;
-    
-    serializer.serialize_struct_end(state)
+#[derive(Default, Serialize)]
+struct Mappings {
+    mystruct: Type<MyStructMapping>
 }
