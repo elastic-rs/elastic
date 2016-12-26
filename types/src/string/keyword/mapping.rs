@@ -199,7 +199,7 @@ pub trait KeywordMapping
 impl<T> FieldMapping<KeywordFormat> for T
     where T: KeywordMapping
 {
-    type SerType = Field<T, KeywordFormat>;
+    type Field = Field<T, KeywordFormat>;
 
     fn data_type() -> &'static str {
         KEYWORD_DATATYPE

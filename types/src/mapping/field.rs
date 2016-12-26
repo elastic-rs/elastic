@@ -26,11 +26,6 @@ pub trait FieldType<M, F = ObjectFormat>
     fn mapping() -> M {
         M::default()
     }
-
-    #[doc(hidden)]
-    fn field_ser() -> M::SerType {
-        M::ser()
-    }
 }
 
 /// The base requirements for mapping an Elasticsearch data type.
@@ -43,12 +38,7 @@ pub trait FieldMapping<F>
           F: Default
 {
     #[doc(hidden)]
-    type SerType: Serialize + Default;
-
-    #[doc(hidden)]
-    fn ser() -> Self::SerType {
-        Self::SerType::default()
-    }
+    type Field: Serialize + Default;
 
     /// Get the type name for this mapping, like `date` or `string`.
     fn data_type() -> &'static str {
@@ -62,8 +52,7 @@ pub struct Field<M, F>
     where M: FieldMapping<F>,
           F: Default
 {
-    _m: PhantomData<M>,
-    _f: PhantomData<F>,
+    _m: PhantomData<(M, F)>,
 }
 
 impl<M, F> From<M> for Field<M, F>
@@ -109,7 +98,7 @@ impl Serialize for IndexAnalysis {
 #[derive(Debug, PartialEq, Default, Clone)]
 pub struct DefaultMapping;
 impl FieldMapping<()> for DefaultMapping {
-    type SerType = Field<Self, ()>;
+    type Field = Field<Self, ()>;
 }
 
 impl Serialize for Field<DefaultMapping, ()> {
@@ -141,7 +130,7 @@ impl<M, F> FieldMapping<F> for WrappedMapping<M, F>
     where M: FieldMapping<F>,
           F: Default
 {
-    type SerType = M::SerType;
+    type Field = M::Field;
 
     fn data_type() -> &'static str {
         M::data_type()

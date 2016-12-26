@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 use serde::{Serialize, Serializer};
-use super::field::{FieldType, FieldMapping, Field};
+use super::field::{FieldMapping, Field};
 
 /// Elasticsearch datatype name.
 pub const OBJECT_DATATYPE: &'static str = "object";
@@ -16,7 +16,7 @@ pub fn field_ser<S, M, F>(serializer: &mut S, state: &mut S::StructState, field:
           M: FieldMapping<F>,
           F: Default
 {
-    serializer.serialize_struct_elt(state, field, &M::ser())
+    serializer.serialize_struct_elt(state, field, &M::Field ::default())
 }
 
 #[doc(hidden)]
@@ -136,7 +136,7 @@ pub trait PropertiesMapping {
 impl<T> FieldMapping<ObjectFormat> for T
     where T: ObjectMapping
 {
-    type SerType = Field<T, ObjectFormat>;
+    type Field = Field<T, ObjectFormat>;
 
     fn data_type() -> &'static str {
         <Self as ObjectMapping>::data_type()

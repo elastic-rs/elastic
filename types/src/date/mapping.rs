@@ -160,7 +160,7 @@ impl<T, F> FieldMapping<DateFormatWrapper<F>> for T
     where T: DateMapping<Format = F>,
           F: DateFormat
 {
-    type SerType = Field<T, DateFormatWrapper<F>>;
+    type Field = Field<T, DateFormatWrapper<F>>;
 
     fn data_type() -> &'static str {
         DATE_DATATYPE

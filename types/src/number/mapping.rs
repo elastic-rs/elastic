@@ -119,7 +119,7 @@ macro_rules! number_mapping {
 
 		impl <T> FieldMapping<$f> for T where
 		T: $m {
-			type SerType = Field<T, $f>;
+			type Field = Field<T, $f>;
 
 			fn data_type() -> &'static str { $cn }
 		}

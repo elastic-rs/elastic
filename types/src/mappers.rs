@@ -59,7 +59,7 @@ impl<M, F> FieldMapper<M, F>
     pub fn to_writer<S>(_: M, serializer: &mut S) -> Result<(), S::Error>
         where S: Serializer
     {
-        M::ser().serialize(serializer)
+        M::Field ::default().serialize(serializer)
     }
 
     /// Map a field type to a `String`.

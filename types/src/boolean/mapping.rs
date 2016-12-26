@@ -104,7 +104,7 @@ pub trait BooleanMapping
 impl<T> FieldMapping<BooleanFormat> for T
     where T: BooleanMapping
 {
-    type SerType = Field<T, BooleanFormat>;
+    type Field = Field<T, BooleanFormat>;
 
     fn data_type() -> &'static str {
         BOOLEAN_DATATYPE

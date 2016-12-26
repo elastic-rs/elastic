@@ -106,7 +106,7 @@ pub trait IpMapping
 impl<T> FieldMapping<IpFormat> for T
     where T: IpMapping
 {
-    type SerType = Field<T, IpFormat>;
+    type Field = Field<T, IpFormat>;
 
     fn data_type() -> &'static str {
         IP_DATATYPE

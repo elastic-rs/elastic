@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 use serde::{Serialize, Serializer};
 use super::object::{ObjectMapping, ObjectFormat};
-use super::field::{FieldType, FieldMapping, Field};
+use super::field::FieldType;
 
 /// The additional fields available to an indexable Elasticsearch type.
 ///
@@ -16,11 +16,6 @@ pub trait DocumentType<M>
     /// This is a convenience method that returns the `name` of the bound `ObjectMapping`.
     fn name() -> &'static str {
         M::name()
-    }
-
-    /// Get a serialisable mapping for this type.
-    fn doc_ser() -> Document<M> {
-        Document::<M>::default()
     }
 }
 
