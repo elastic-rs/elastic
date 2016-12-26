@@ -16,7 +16,7 @@ pub fn field_ser<S, M, F>(serializer: &mut S, state: &mut S::StructState, field:
           M: FieldMapping<F>,
           F: Default
 {
-    serializer.serialize_struct_elt(state, field, &M::Field ::default())
+    serializer.serialize_struct_elt(state, field, &M::Field::default())
 }
 
 #[doc(hidden)]

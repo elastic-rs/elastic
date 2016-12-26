@@ -37,7 +37,7 @@ pub trait FieldMapping<F>
     where Self: Default,
           F: Default
 {
-    #[doc(hidden)]
+    /// A type that when serialised will produce the mapping for this field.
     type Field: Serialize + Default;
 
     /// Get the type name for this mapping, like `date` or `string`.
