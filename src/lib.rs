@@ -1,7 +1,7 @@
 //! Elasticsearch REST API Client
 //!
 //! A lightweight implementation of the Elasticsearch API based on the
-//! [`hyper`](http://hyper.rs/hyper/) HTTP client.
+//! [`reqwest`](https://github.com/seanmonstar/reqwest/) HTTP client.
 //!
 //! Each API endpoint is represented as its own function,
 //! so each possible http route gets its own function.
@@ -18,14 +18,14 @@
 //!
 //! # Usage
 //!
-//! This crate is on [crates.io](https://crates.io/crates/elastic_hyper).
-//! To get started, add `elastic_hyper` and `hyper` to your `Cargo.toml`:
+//! This crate is on [crates.io](https://crates.io/crates/reqwest).
+//! To get started, add `elastic_reqwest` and `reqwest` to your `Cargo.toml`:
 //!
 //! ```ignore
 //! [dependencies]
 //! elastic_requests = "*"
-//! elastic_hyper = "*"
-//! hyper = "*"
+//! elastic_reqwest = "*"
+//! reqwest = "*"
 //! ```
 //!
 //! For `Windows`, you may need to exclude `openssl` or the build can fail:
@@ -33,28 +33,25 @@
 //! ```ignore
 //! [dependencies]
 //! elastic_requests = "*"
-//! elastic_hyper = { version = "*", default-features = false }
-//! hyper = { version = "*", default-features = false }
+//! elastic_reqwest = { version = "*", default-features = false }
 //! ```
 //!
 //! Then reference in your crate root:
 //!
-//! ```ignore
+//! ```
 //! extern crate elastic_requests as req;
-//! extern crate elastic_hyper as cli;
-//! extern crate hyper;
+//! extern crate elastic_reqwest as cli;
 //! ```
 //!
 //! ## Minimal Example
 //!
 //! Ping the availability of your cluster:
 //!
-//! ```no_run
+//! ```
 //! //HTTP HEAD /
 //!
-//! # extern crate hyper;
 //! # extern crate elastic_requests as req;
-//! # extern crate elastic_hyper as cli;
+//! # extern crate elastic_reqwest as cli;
 //! use cli::ElasticClient;
 //! use req::PingRequest;
 //! 
@@ -69,17 +66,17 @@
 //!
 //! Execute a search query with a url parameter:
 //!
-//! ```no_run
+//! ```
 //! //HTTP GET /myindex/mytype/_search?q='my string'
 //!
-//! # extern crate hyper;
-//! # extern crate elastic_requests as req;
-//! # extern crate elastic_hyper as cli;
+//! extern crate reqwest;
+//! extern crate elastic_requests as req;
+//! extern crate elastic_reqwest as cli;
 //! use cli::{ ElasticClient, RequestParams };
 //! use req::SimpleSearchRequest;
 //! 
 //! # fn main() {
-//! let client = hyper::Client::new();
+//! let (client, _) = cli::default();
 //! 
 //! let params = RequestParams::default()
 //! 	.url_params(vec![
@@ -100,14 +97,14 @@
 //! Using the [`json_str`](http://kodraus.github.io/rustdoc/json_str/) crate, you can execute
 //! queries using pure json:
 //!
-//! ```no_run
+//! ```
 //! //HTTP POST /myindex/mytype/_search
 //!
-//! # #[macro_use]
-//! # extern crate json_str;
-//! # extern crate hyper;
-//! # extern crate elastic_requests as req;
-//! # extern crate elastic_hyper as cli;
+//! #
+//! #[macro_use]
+//! extern crate json_str;
+//! extern crate elastic_requests as req;
+//! extern crate elastic_reqwest as cli;
 //! use cli::ElasticClient;
 //! use req::SearchRequest;
 //! 
@@ -162,16 +159,14 @@
 //! - [Github](https://github.com/elastic-rs/elastic-hyper)
 
 extern crate elastic_requests;
-extern crate hyper;
+extern crate reqwest;
 extern crate url;
 
-use std::io::Cursor;
-use std::borrow::Borrow;
 use std::collections::BTreeMap;
 use elastic_requests::*;
-use hyper::error::Result;
-use hyper::client::Response;
-use hyper::header::{Headers, ContentType};
+use reqwest::Response;
+use std::str;
+use reqwest::header::{Headers,ContentType};
 use url::form_urlencoded::Serializer;
 
 /// Misc parameters for any request.
@@ -185,8 +180,7 @@ use url::form_urlencoded::Serializer;
 /// With default query parameters:
 ///
 /// ```
-/// extern crate hyper;
-/// extern crate elastic_hyper as elastic;
+/// extern crate elastic_reqwest as elastic;
 ///
 /// let params = elastic::RequestParams::default();
 /// ```
@@ -194,20 +188,19 @@ use url::form_urlencoded::Serializer;
 /// With custom headers:
 ///
 /// ```
-/// extern crate hyper;
-/// extern crate elastic_hyper as elastic;
+/// extern crate reqwest;
+/// extern crate elastic_reqwest as elastic;
 ///
 /// let mut params = elastic::RequestParams::default();
 ///
 /// //Add your own headers
-/// params.headers.set(hyper::header::Authorization("let me in".to_owned()));
+/// params.headers.set(reqwest::header::Authorization("let me in".to_owned()));
 /// ```
 ///
 /// Add url query parameters to the request:
 ///
 /// ```
-/// extern crate hyper;
-/// extern crate elastic_hyper as elastic;
+/// extern crate elastic_reqwest as elastic;
 ///
 /// let params = elastic::RequestParams::default()
 /// 		.url_params(vec![
@@ -219,10 +212,10 @@ use url::form_urlencoded::Serializer;
 /// With a custom base url:
 ///
 /// ```
-/// extern crate hyper;
-/// extern crate elastic_hyper as elastic;
+/// extern crate reqwest;
+/// extern crate elastic_reqwest as elastic;
 ///
-/// let params = elastic::RequestParams::new("http://mybaseurl:9200", hyper::header::Headers::new());
+/// let params = elastic::RequestParams::new("http://mybaseurl:9200", reqwest::header::Headers::new());
 /// ```
 #[derive(Debug, Clone)]
 pub struct RequestParams {
@@ -286,30 +279,21 @@ impl Default for RequestParams {
 }
 
 /// Get a default `Client` and `RequestParams`.
-pub fn default() -> (hyper::Client, RequestParams) {
-    (hyper::Client::new(), RequestParams::default())
-}
-
-macro_rules! req_with_body {
-    ($client:ident, $url:ident, $req:ident, $params:ident, $method:ident) => ({
-    	let body = $req.body.expect("Expected this request to have a body. This is a bug, please file an issue on GitHub.");
-
-		let body: &[u8] = (*body).borrow();
-		let mut cursor = Cursor::new(body);
-
-		$client.$method(&$url).headers($params.headers.to_owned()).body(&mut cursor).send()
-	})
+pub fn default() -> (reqwest::Client, RequestParams) {
+    //FIXME: Bad in libs
+    let client = reqwest::Client::new().unwrap();
+    (client, RequestParams::default())
 }
 
 /// Represents a client that can send Elasticsearch requests.
 pub trait ElasticClient {
     /// Send a request and get a response.
-    fn elastic_req<'a, I>(&self, params: &RequestParams, req: I) -> Result<Response>
+    fn elastic_req<'a, I>(&self, params: &RequestParams, req: I) -> Result<Response,reqwest::Error>
         where I: Into<HttpRequest<'a>>;
 }
 
-impl ElasticClient for hyper::Client {
-    fn elastic_req<'a, I>(&self, params: &RequestParams, req: I) -> Result<Response>
+impl ElasticClient for reqwest::Client {
+    fn elastic_req<'a, I>(&self, params: &RequestParams, req: I) -> Result<Response,reqwest::Error>
         where I: Into<HttpRequest<'a>>
     {
         let req = req.into();
@@ -327,11 +311,11 @@ impl ElasticClient for hyper::Client {
 
         match req.method {
             HttpMethod::Get => self.get(&url).headers(params.headers.to_owned()).send(),
-            HttpMethod::Post => req_with_body!(self, url, req, params, post),
+            HttpMethod::Post => self.post(&url).headers(params.headers.to_owned()).body(&**req.body.unwrap().into_owned()).send(),
             HttpMethod::Head => self.head(&url).headers(params.headers.to_owned()).send(),
-            HttpMethod::Delete => self.delete(&url).headers(params.headers.to_owned()).send(),
-            HttpMethod::Put => req_with_body!(self, url, req, params, put),
-            HttpMethod::Patch => req_with_body!(self, url, req, params, patch),
+            HttpMethod::Delete => self.request(reqwest::Method::Delete, &url).headers(params.headers.to_owned()).send(),
+            HttpMethod::Put => self.request(reqwest::Method::Put, &url).headers(params.headers.to_owned()).body(&**req.body.unwrap().into_owned()).send(),
+            HttpMethod::Patch => self.request(reqwest::Method::Patch, &url).headers(params.headers.to_owned()).body(&**req.body.unwrap().into_owned()).send(),
         }
     }
 }
