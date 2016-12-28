@@ -9,40 +9,42 @@ extern crate serde_json;
 
 pub mod definition;
 
+use serde_json::Value;
+
 #[derive(Deserialize, Debug)]
 pub struct Response {
     took: u64,
     timed_out: bool,
     _shards: Shards,
     hits: Hits,
-//    aggregations: Option<serde_json::Value>,
-    aggregations: Aggregations,
+    aggregations: Option<Aggregations>,
     status: Option<u16>
 }
 
 #[derive(Deserialize, Debug)]
-struct Aggregations(Option<serde_json::Value>);
+pub struct Aggregations(Value);
 
-// and we'll implement IntoIterator
+
 impl IntoIterator for Aggregations {
-    type Item = serde_json::Value;
+    type Item = Value;
     type IntoIter = AggregationIterator;
 
     fn into_iter(self) -> Self::IntoIter {
-//        self.0.into_iter()
         AggregationIterator::new(self)
     }
 }
 
-struct AggregationIterator {
-    count: usize,
+#[derive(Debug)]
+pub struct AggregationIterator {
+    start_at: Option<Value>,
+    count: u64,
     aggregations: Aggregations
 }
 
 impl AggregationIterator {
-    //FIXME: right name?
     fn new(a: Aggregations) -> AggregationIterator {
         AggregationIterator {
+            start_at: None,
             count: 0,
             aggregations: a
         }
@@ -50,23 +52,32 @@ impl AggregationIterator {
 }
 
 impl Iterator for AggregationIterator {
-    // we will be counting with usize
-    type Item = serde_json::Value;
+    type Item = Value;
 
-    // next() is the only required method
-    fn next(&mut self) -> Option<serde_json::Value> {
-        // increment our count. This is why we started at zero.
-//        self.count += 1;
+    fn next(&mut self) -> Option<Value> {
+        let v = match self.aggregations {
+            Aggregations(ref v) => v
+        };
 
-        // check to see if we've finished counting or not.
-//        if self.count < 6 {
-//            Some(self.count)
-//        } else {
-//            None
-//        }
-        None
+        match self.start_at {
+            None => {
+                self.start_at = Some(*v);
+            },
+            Some(ref mut x) => {
+                self.start_at = Some(*x)
+            }
+        };
+//
+//        println!("{:#?}", current);
+
+        println!("{:#?}", v);
+
+        if self.count < 6 {
+            Some(Value::U64(0))
+        } else {
+            None
+        }
     }
-
 }
 
 
@@ -81,17 +92,22 @@ struct Shards {
 pub struct Hits {
     total: u64,
     max_score: u64,
-    hits: Vec<serde_json::Value>
+    hits: Vec<Value>
 }
 
 impl Response {
-    pub fn hits(&self) -> &Vec<serde_json::Value> {
+    pub fn hits(&self) -> &Vec<Value> {
         &self.hits.hits()
+    }
+
+    pub fn aggs(self) -> std::option::Option<Aggregations> {
+        //        self.aggregations.unwrap().into_iter()
+        self.aggregations
     }
 }
 
 impl Hits {
-    pub fn hits(&self) -> &Vec<serde_json::Value> {
+    pub fn hits(&self) -> &Vec<Value> {
         &self.hits
     }
 }
@@ -104,6 +120,5 @@ struct Hit {
 #[cfg(test)]
 mod tests {
     #[test]
-    fn it_works() {
-    }
+    fn it_works() {}
 }

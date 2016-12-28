@@ -37,7 +37,10 @@ fn test_parse_simple_aggs() {
     f.read_to_string(&mut s).unwrap();
 
     let deserialized: Response = serde_json::from_str(&s).unwrap();
-    println!("Got {:#?}", deserialized);
+
+    for i in deserialized.aggs().unwrap().into_iter().take(5) {
+        println!("{}", i);
+    }
 
     panic!("done");
 }
