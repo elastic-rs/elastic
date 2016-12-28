@@ -162,11 +162,13 @@ extern crate elastic_requests;
 extern crate reqwest;
 extern crate url;
 
-use std::collections::BTreeMap;
 use elastic_requests::*;
-use reqwest::Response;
+use std::borrow::Borrow;
+use std::collections::BTreeMap;
+//use std::io::Cursor;
 use std::str;
 use reqwest::header::{Headers,ContentType};
+use reqwest::Response;
 use url::form_urlencoded::Serializer;
 
 /// Misc parameters for any request.
@@ -285,6 +287,18 @@ pub fn default() -> (reqwest::Client, RequestParams) {
     (client, RequestParams::default())
 }
 
+macro_rules! req_with_body {
+    ($client:ident, $url:ident, $req:ident, $params:ident, $method:ident) => ({
+    	let body = $req.body.expect("Expected this request to have a body. This is a bug, please file an issue on GitHub.");
+
+		let body: &[u8] = (*body).borrow();
+//FIXME: My current understanding of copying, etc. doesn't get me far enough to grok this
+//	    let mut cursor = Cursor::new(body);
+
+		$client.request(reqwest::Method::$method, &$url).headers($params.headers.to_owned()).body(&*body).send()
+	})
+}
+
 /// Represents a client that can send Elasticsearch requests.
 pub trait ElasticClient {
     /// Send a request and get a response.
@@ -311,11 +325,11 @@ impl ElasticClient for reqwest::Client {
 
         match req.method {
             HttpMethod::Get => self.get(&url).headers(params.headers.to_owned()).send(),
-            HttpMethod::Post => self.post(&url).headers(params.headers.to_owned()).body(&**req.body.unwrap().into_owned()).send(),
+            HttpMethod::Post => req_with_body!(self, url, req, params, Post),
             HttpMethod::Head => self.head(&url).headers(params.headers.to_owned()).send(),
             HttpMethod::Delete => self.request(reqwest::Method::Delete, &url).headers(params.headers.to_owned()).send(),
-            HttpMethod::Put => self.request(reqwest::Method::Put, &url).headers(params.headers.to_owned()).body(&**req.body.unwrap().into_owned()).send(),
-            HttpMethod::Patch => self.request(reqwest::Method::Patch, &url).headers(params.headers.to_owned()).body(&**req.body.unwrap().into_owned()).send(),
+            HttpMethod::Put => req_with_body!(self, url, req, params, Put),
+            HttpMethod::Patch => req_with_body!(self, url, req, params, Patch),
         }
     }
 }
