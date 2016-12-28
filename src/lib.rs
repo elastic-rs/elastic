@@ -59,18 +59,18 @@ impl Iterator for AggregationIterator {
             Aggregations(ref v) => v
         };
 
-        match self.start_at {
-            None => {
-                self.start_at = Some(*v);
-            },
-            Some(ref mut x) => {
-                self.start_at = Some(*x)
-            }
-        };
-//
+//        match self.start_at {
+//            None => {
+//                self.start_at = Some(*v);
+//            },
+//            Some(ref mut x) => {
+//                self.start_at = Some(*x)
+//            }
+//        };
+////
 //        println!("{:#?}", current);
 
-        println!("{:#?}", v);
+//        println!("{:#?}", v);
 
         if self.count < 6 {
             Some(Value::U64(0))
@@ -101,7 +101,6 @@ impl Response {
     }
 
     pub fn aggs(self) -> std::option::Option<Aggregations> {
-        //        self.aggregations.unwrap().into_iter()
         self.aggregations
     }
 }
