@@ -10,4 +10,4 @@ nightly-testing = []
 elastic_reqwest = { version = "*", path = "../../" }
 elastic_requests = "*"
 json_str = "*"
-hyper = "~0.9.0"
+

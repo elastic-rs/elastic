@@ -47,7 +47,7 @@
 //!
 //! Ping the availability of your cluster:
 //!
-//! ```
+//! ```no_run
 //! //HTTP HEAD /
 //!
 //! # extern crate elastic_requests as req;
@@ -66,7 +66,7 @@
 //!
 //! Execute a search query with a url parameter:
 //!
-//! ```
+//! ```no_run
 //! //HTTP GET /myindex/mytype/_search?q='my string'
 //!
 //! extern crate reqwest;
@@ -97,7 +97,7 @@
 //! Using the [`json_str`](http://kodraus.github.io/rustdoc/json_str/) crate, you can execute
 //! queries using pure json:
 //!
-//! ```
+//! ```no_run
 //! //HTTP POST /myindex/mytype/_search
 //!
 //! #
