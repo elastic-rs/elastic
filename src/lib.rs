@@ -25,11 +25,11 @@ pub struct Response {
 pub struct Aggregations(Value);
 
 
-impl<'a> IntoIterator for Aggregations {
-    type Item = Value;
+impl<'a> IntoIterator for &'a Aggregations {
+    type Item = &'a Value;
     type IntoIter = AggregationIterator<'a>;
 
-    fn into_iter(self) -> Self::IntoIter {
+    fn into_iter(self) -> AggregationIterator<'a> {
         AggregationIterator::new(self)
     }
 }
@@ -38,15 +38,17 @@ impl<'a> IntoIterator for Aggregations {
 pub struct AggregationIterator<'a> {
     start_at: Option<&'a Value>,
     count: u64,
-    aggregations: Aggregations
+    aggregations: &'a Aggregations
 }
 
 impl<'a> AggregationIterator<'a> {
-    fn new(a: Aggregations) -> AggregationIterator<'a> {
+    fn new(a: &'a Aggregations) -> AggregationIterator<'a> {
 
-        let v : &Value = match a {
-            Aggregations(v) => v
+        let v = match a {
+            &Aggregations(ref v) => v
         };
+
+//        println!("{:#?}", v);
 
         AggregationIterator {
             start_at: Some(v),
@@ -57,12 +59,12 @@ impl<'a> AggregationIterator<'a> {
 }
 
 impl<'a> Iterator for AggregationIterator<'a> {
-    type Item = Value;
+    type Item = &'a Value;
 
-    fn next(&mut self) -> Option<Value> {
+    fn next(&mut self) -> Option<&'a Value> {
 
         if self.count < 6 {
-            Some(Value::U64(0))
+            Some(self.start_at.unwrap())
         } else {
             None
         }
