@@ -16,7 +16,7 @@ use std::io::Read;
 
 fn main() {
 
-    let (client, _) = elastic_reqwest::default();
+    let (client, _) = elastic_reqwest::default().unwrap();
 
     let params = RequestParams::default().url_params(vec![("pretty", String::from("true"))]);
 

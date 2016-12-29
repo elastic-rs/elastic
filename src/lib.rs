@@ -54,7 +54,7 @@
 //! # extern crate elastic_reqwest as cli;
 //! use cli::ElasticClient;
 //! use req::PingRequest;
-//! 
+//!
 //! # fn main() {
 //! let (client, params) = cli::default();
 //!
@@ -74,20 +74,20 @@
 //! extern crate elastic_reqwest as cli;
 //! use cli::{ ElasticClient, RequestParams };
 //! use req::SimpleSearchRequest;
-//! 
+//!
 //! # fn main() {
 //! let (client, _) = cli::default();
-//! 
+//!
 //! let params = RequestParams::default()
-//! 	.url_params(vec![
-//! 		("q", "'my string'".to_owned()),
-//! 		("pretty", "true".to_owned())
-//! 	]);
+//!     .url_params(vec![
+//!         ("q", "'my string'".to_owned()),
+//!         ("pretty", "true".to_owned())
+//!     ]);
 //!
 //! let search = SimpleSearchRequest::for_index_ty(
 //!     "myindex", "mytype"
 //! );
-//! 
+//!
 //! client.elastic_req(&params, search).unwrap();
 //! # }
 //! ```
@@ -107,12 +107,12 @@
 //! extern crate elastic_reqwest as cli;
 //! use cli::ElasticClient;
 //! use req::SearchRequest;
-//! 
+//!
 //! # fn main() {
 //! let (client, params) = cli::default();
 //!
 //! let search = SearchRequest::for_index_ty(
-//!     "myindex", "mytype", 
+//!     "myindex", "mytype",
 //!     json_str!({
 //!         query: {
 //!             filtered: {
@@ -132,7 +132,7 @@
 //!         }
 //!     })
 //! );
-//! 
+//!
 //! client.elastic_req(&params, search).unwrap();
 //! # }
 //! ```
@@ -163,11 +163,11 @@ extern crate reqwest;
 extern crate url;
 
 use elastic_requests::*;
-use std::borrow::Borrow;
+use std::borrow::Cow;
 use std::collections::BTreeMap;
-//use std::io::Cursor;
+use std::io::Cursor;
 use std::str;
-use reqwest::header::{Headers,ContentType};
+use reqwest::header::{Headers, ContentType};
 use reqwest::Response;
 use url::form_urlencoded::Serializer;
 
@@ -205,10 +205,10 @@ use url::form_urlencoded::Serializer;
 /// extern crate elastic_reqwest as elastic;
 ///
 /// let params = elastic::RequestParams::default()
-/// 		.url_params(vec![
-/// 			("pretty", "true".to_owned()),
-/// 			("q", "*".to_owned())
-/// 		]);
+///         .url_params(vec![
+///             ("pretty", "true".to_owned()),
+///             ("q", "*".to_owned())
+///         ]);
 /// ```
 ///
 /// With a custom base url:
@@ -281,34 +281,37 @@ impl Default for RequestParams {
 }
 
 /// Get a default `Client` and `RequestParams`.
-pub fn default() -> (reqwest::Client, RequestParams) {
-    //FIXME: Bad in libs
-    let client = reqwest::Client::new().unwrap();
-    (client, RequestParams::default())
+pub fn default() -> Result<(reqwest::Client, RequestParams), reqwest::Error> {
+    reqwest::Client::new().map(|cli| (cli, RequestParams::default()))
 }
 
 macro_rules! req_with_body {
     ($client:ident, $url:ident, $req:ident, $params:ident, $method:ident) => ({
-    	let body = $req.body.expect("Expected this request to have a body. This is a bug, please file an issue on GitHub.");
+        let body = $req.body.expect("Expected this request to have a body. This is a bug, please file an issue on GitHub.");
 
-		let body: &[u8] = (*body).borrow();
-//FIXME: My current understanding of copying, etc. doesn't get me far enough to grok this
-//	    let mut cursor = Cursor::new(body);
+        let body = match **body {
+            Cow::Borrowed(ref body) => reqwest::Body::new(Cursor::new(*body)),
+            Cow::Owned(ref body) => (*body).to_owned().into()
+        };
 
-		$client.request(reqwest::Method::$method, &$url).headers($params.headers.to_owned()).body(&*body).send()
-	})
+        $client
+            .request(reqwest::Method::$method, &$url)
+            .headers($params.headers.to_owned())
+            .body(body)
+            .send()
+    })
 }
 
 /// Represents a client that can send Elasticsearch requests.
 pub trait ElasticClient {
     /// Send a request and get a response.
-    fn elastic_req<'a, I>(&self, params: &RequestParams, req: I) -> Result<Response,reqwest::Error>
-        where I: Into<HttpRequest<'a>>;
+    fn elastic_req<I>(&self, params: &RequestParams, req: I) -> Result<Response, reqwest::Error> 
+        where I: Into<HttpRequest<'static>>;
 }
 
 impl ElasticClient for reqwest::Client {
-    fn elastic_req<'a, I>(&self, params: &RequestParams, req: I) -> Result<Response,reqwest::Error>
-        where I: Into<HttpRequest<'a>>
+    fn elastic_req<I>(&self, params: &RequestParams, req: I) -> Result<Response, reqwest::Error>
+        where I: Into<HttpRequest<'static>>
     {
         let req = req.into();
 
