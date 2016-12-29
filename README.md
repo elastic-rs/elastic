@@ -1,6 +1,6 @@
 # [`elastic_reqwest`](https://docs.rs/elastic_reqwest/*/elastic_reqwest/) [![Latest Version](https://img.shields.io/crates/v/elastic_reqwest.svg)](https://crates.io/crates/elastic_reqwest)
 
-Provides a synchronous [`reqwest`](https://github.com/reqwestium/reqwest) implementation of the Elasticsearch REST API. The `reqwest` client is simple to use; there's basically no setup needed besides creating a `reqwest::Client` object to use for requests. The `reqwest` client is general-purpose, and suitable for any scenario where on-demand requests are sufficient.
+Provides a synchronous [`reqwest`](https://github.com/seanmonstar/reqwest) implementation of the Elasticsearch REST API. The `reqwest` client is simple to use; there's basically no setup needed besides creating a `reqwest::Client` object to use for requests. The `reqwest` client is general-purpose, and suitable for any scenario where on-demand requests are sufficient.
 
 If you'd prefer to call Elasticsearch using a strongly-typed Query DSL builder, see [`rs-es`](https://github.com/benashford/rs-es).
 
