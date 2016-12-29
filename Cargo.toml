@@ -11,7 +11,7 @@ exclude = [ "samples" ]
 [dependencies]
 elastic_requests = "~0.1.0"
 reqwest = "~0.2.0"
-url = "~1.1.0"
+url = "~1.1"
 
 [dev-dependencies]
 json_str = "*"
