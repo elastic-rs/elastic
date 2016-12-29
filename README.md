@@ -1,21 +1,21 @@
-# [`elastic_reqwest`](https://docs.rs/elastic_hyper/*/elastic_hyper/) [![Latest Version](https://img.shields.io/crates/v/elastic_hyper.svg)](https://crates.io/crates/elastic_hyper)
+# [`elastic_reqwest`](https://docs.rs/elastic_reqwest/*/elastic_reqwest/) [![Latest Version](https://img.shields.io/crates/v/elastic_reqwest.svg)](https://crates.io/crates/elastic_reqwest)
 
-Provides a synchronous [`reqwest`](https://github.com/seanmonstar/reqwest/) implementation of the Elasticsearch REST API. The `reqwest` client is simple to use; there's basically no setup needed besides creating a `elastic_reqwest::ElasticClient` object to use for requests. The `reqwest` client is general-purpose, and suitable for any scenario where on-demand requests are sufficient.
+Provides a synchronous [`reqwest`](https://github.com/seanmonstar/reqwest) implementation of the Elasticsearch REST API. The `reqwest` client is simple to use; there's basically no setup needed besides creating a `reqwest::Client` object to use for requests. The `reqwest` client is general-purpose, and suitable for any scenario where on-demand requests are sufficient.
 
 If you'd prefer to call Elasticsearch using a strongly-typed Query DSL builder, see [`rs-es`](https://github.com/benashford/rs-es).
 
 ## Build Status
 Platform  | Channel | Status
 ------------- | ------------- | -------------
-Linux / OSX  | Stable / Nightly | [![Build Status](https://travis-ci.org/elastic-rs/elastic-hyper.svg?branch=master)](https://travis-ci.org/elastic-rs/elastic-hyper)
-Windows  | Nightly | [![Build status](https://ci.appveyor.com/api/projects/status/yvsqsyt4ioxa11g8?svg=true)](https://ci.appveyor.com/project/KodrAus/elastic-hyper)
+Linux / OSX  | Stable / Nightly | [![Build Status](https://travis-ci.org/elastic-rs/elastic-reqwest.svg?branch=master)](https://travis-ci.org/elastic-rs/elastic-reqwest)
+Windows  | Nightly | [![Build status](https://ci.appveyor.com/api/projects/status/yvsqsyt4ioxa11g8?svg=true)](https://ci.appveyor.com/project/KodrAus/elastic-reqwest)
 
 ## Documentation
 
 Version  | Docs
 ------------- | -------------
-`master`  | [![Documentation](https://img.shields.io/badge/docs-rustdoc-orange.svg)](https://elastic-rs.github.io/elastic-hyper/elastic_hyper/)
-`current`  | [![Documentation](https://img.shields.io/badge/docs-rustdoc-orange.svg)](https://docs.rs/elastic_hyper/*/elastic_hyper/)
+`master`  | [![Documentation](https://img.shields.io/badge/docs-rustdoc-orange.svg)](https://elastic-rs.github.io/elastic-reqwest/elastic_reqwest/)
+`current`  | [![Documentation](https://img.shields.io/badge/docs-rustdoc-orange.svg)](https://docs.rs/elastic_reqwest/*/elastic_reqwest/)
 
 ## Example
 
@@ -48,7 +48,7 @@ extern crate reqwest;
 use cli::ElasticClient;
 use req::PingRequest;
 
-let (client, params) = cli::default();
+let (client, params) = cli::default().unwrap();
 
 client.elastic_req(&params, PingRequest::new()).unwrap();
 ```
@@ -65,7 +65,7 @@ extern crate reqwest;
 use cli::ElasticClient;
 use req::SearchRequest;
  
-let (client, params) = cli::default();
+let (client, params) = cli::default().unwrap();
 
 let search = SearchRequest::for_index_ty(
     "myindex", "mytype", 

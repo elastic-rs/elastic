@@ -37,7 +37,7 @@ const INDEX: &'static str = "testidx";
 
 fn main() {
     // Create a new client
-    let (client, _) = elastic_reqwest::default();
+    let (client, _) = elastic_reqwest::default().unwrap();
 
     // Default request parameters
     let params = RequestParams::default();
