@@ -92,7 +92,7 @@ fn define_mapping(name: &syn::Ident) -> quote::Tokens {
 	)
 }
 
-//Implement FieldType for the type being derived with the mapping
+//Implement DocumentType for the type being derived with the mapping
 fn impl_elastic_type(item: &syn::MacroInput, mapping: &syn::Ident) -> quote::Tokens {
 	let ty = &item.ident;
 

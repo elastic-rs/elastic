@@ -11,7 +11,7 @@ pub trait DocumentType<M>
     where M: ObjectMapping,
           Self: Serialize
 {
-    /// Get the mapping for this type.
+    /// Get the name for this type.
     ///
     /// This is a convenience method that returns the `name` of the bound `ObjectMapping`.
     fn name() -> &'static str {

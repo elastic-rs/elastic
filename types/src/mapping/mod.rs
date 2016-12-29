@@ -1,13 +1,13 @@
 //! Base requirements for type mappings.
 //!
-//! There are two kinds of types we can map in Elasticsearch; `field`/`data` types and `user-defined` types:
+//! There are two kinds of types we can map in Elasticsearch; `field`/`data` types and `document` types:
 //! 
 //! - `FieldType` for types that can be mapped as fields on another type
 //! - `DocumentType + FieldType` for types that can be indexed as documents.
 //! 
 //! Most of the work lives in the `FieldMapping`, which holds the serialisation requirements
 //! to convert a Rust type into an Elasticsearch mapping.
-//! User-defined types must also implement `ObjectMapping`, which maps the fields of a struct as properties,
+//! Document types must also implement `ObjectMapping`, which maps the fields of a struct as properties,
 //! and treats the type as `nested` when used as a field itself.
 //! 
 //! # Examples
@@ -275,6 +275,45 @@
 //!
 //!         Ok(())
 //!     }
+//! }
+//! # fn main() {
+//! # }
+//! ```
+//! 
+//! ## Using the `Document` type
+//! 
+//! To serialise a document mapping, you can use its mapping type as a generic parameter in `Document<M>`.
+//! For example, we can define an index type for the 
+//! [Create Index API](https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-create-index.html#mappings) 
+//! that includes the mapping for `MyType`:
+//! 
+//! ```
+//! # #![feature(proc_macro)]
+//! # #[macro_use]
+//! # extern crate json_str;
+//! # #[macro_use]
+//! # extern crate serde_derive;
+//! # #[macro_use]
+//! # extern crate elastic_types_derive;
+//! # #[macro_use]
+//! # extern crate elastic_types;
+//! # extern crate serde;
+//! # use elastic_types::prelude::*;
+//! #[derive(Serialize, ElasticType)]
+//! pub struct MyType {
+//!     pub my_date: Date<DefaultDateFormat>,
+//!     pub my_string: String,
+//!     pub my_num: i32
+//! }
+//! 
+//! #[derive(Serialize)]
+//! pub struct MyIndex {
+//!     pub mappings: Mappings
+//! }
+//! 
+//! #[derive(Serialize)]
+//! pub struct Mappings {
+//!     pub mytype: Document<MyTypeMapping>
 //! }
 //! # fn main() {
 //! # }
