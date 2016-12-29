@@ -163,7 +163,7 @@ extern crate reqwest;
 extern crate url;
 
 use elastic_requests::*;
-use std::borrow::{Cow, Borrow};
+use std::borrow::Cow;
 use std::collections::BTreeMap;
 use std::io::Cursor;
 use std::str;
