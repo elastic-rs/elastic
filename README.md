@@ -7,8 +7,8 @@ If you'd prefer to call Elasticsearch using a strongly-typed Query DSL builder, 
 ## Build Status
 Platform  | Channel | Status
 ------------- | ------------- | -------------
-Linux / OSX  | Stable / Nightly | [![Build Status](https://travis-ci.org/elastic-rs/elastic-reqwest.svg?branch=master)](https://travis-ci.org/elastic-rs/elastic-reqwest)
-Windows  | Nightly | [![Build status](https://ci.appveyor.com/api/projects/status/yvsqsyt4ioxa11g8?svg=true)](https://ci.appveyor.com/project/KodrAus/elastic-reqwest)
+Linux / OSX  | Stable / Nightly | [![Build Status](https://travis-ci.org/elastic-rs/elastic-hyper.svg?branch=master)](https://travis-ci.org/elastic-rs/elastic-hyper)
+Windows  | Nightly | [![Build status](https://ci.appveyor.com/api/projects/status/yvsqsyt4ioxa11g8?svg=true)](https://ci.appveyor.com/project/KodrAus/elastic-hyper)
 
 ## Documentation
 
