@@ -49,6 +49,11 @@ impl<'a> Deref for Body<'a> {
         &self.0
     }
 }
+impl<'a> Into<Cow<'a, [u8]>> for Body<'a> {
+    fn into(self) -> Cow<'a, [u8]> {
+        self.0
+    }
+}
 impl<'a> Body<'a> {
     pub fn none() -> Self {
         Body(Cow::Borrowed(&[]))

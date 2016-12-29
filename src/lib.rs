@@ -53,7 +53,7 @@
 //!
 //! This library is automatically generated, so there's a lot more work to do
 //! to get the documentation up to scratch.
-//! 
+//!
 //! # Links
 //!
 //! - [`elastic_hyper`](https://github.com/elastic-rs/elastic-hyper)
@@ -81,7 +81,8 @@ mod tests {
 
     #[test]
     fn it_works() {
-        let req = SearchRequest::for_index_ty("test_index", "test_ty", "{'query': { 'match_all': {}}}");
+        let req =
+            SearchRequest::for_index_ty("test_index", "test_ty", "{'query': { 'match_all': {}}}");
 
         assert_eq!("/test_index/test_ty/_search", *req.url);
 
