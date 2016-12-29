@@ -14,4 +14,4 @@ reqwest = "~0.2.0"
 url = "~1"
 
 [dev-dependencies]
-json_str = "*"
+json_str = "~0.3"
