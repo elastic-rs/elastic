@@ -53,6 +53,13 @@ let (client, params) = cli::default().unwrap();
 client.elastic_req(&params, PingRequest::new()).unwrap();
 ```
 
+Customise the location of the Elasticsearch cluster:
+ 
+ ```rust
+ let (mut client, mut params) = elastic::default();
+ params.base_url = String::from("http://eshost:9200");
+ ```
+
 A query DSL query:
 
 ```rust
