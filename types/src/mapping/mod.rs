@@ -318,6 +318,67 @@
 //! # fn main() {
 //! # }
 //! ```
+//! 
+//! Serialising `MyIndex` will produce the following json:
+//!
+//! ```
+//! # #![feature(proc_macro)]
+//! # #[macro_use]
+//! # extern crate json_str;
+//! # #[macro_use]
+//! # extern crate serde_derive;
+//! # #[macro_use]
+//! # extern crate elastic_types_derive;
+//! # #[macro_use]
+//! # extern crate elastic_types;
+//! # extern crate serde;
+//! # use elastic_types::prelude::*;
+//! # #[derive(Serialize, ElasticType)]
+//! # pub struct MyType {
+//! #     pub my_date: Date<DefaultDateFormat>,
+//! #     pub my_string: String,
+//! #     pub my_num: i32
+//! # }
+//! # #[derive(Serialize)]
+//! # pub struct MyIndex {
+//! #     pub mappings: Mappings
+//! # }
+//! # #[derive(Serialize)]
+//! # pub struct Mappings {
+//! #     pub mytype: Document<MyTypeMapping>
+//! # }
+//! # fn main() {
+//! # let index = serde_json::to_string(MyIndex).unwrap();
+//! # let json = json_str!(
+//! {
+//!     "mappings": {
+//!         "mytype": {
+//!             "type": "object",
+//!             "properties": {
+//!                 "my_date": {
+//!                     "type": "date",
+//!                     "format": "basic_date_time"
+//!                 },
+//!                 "my_string": {
+//!                     "type": "text",
+//!                     "fields": {
+//!                         "keyword":{
+//!                             "type":"keyword",
+//!                             "ignore_above":256
+//!                         }
+//!                     }
+//!                 },
+//!                 "my_num": {
+//!                     "type": "integer"
+//!                 }
+//!             }
+//!         }
+//!     }
+//! }
+//! # );
+//! # assert_eq!(json, index);
+//! # }
+//! ```
 //!
 //! # Links
 //! - [Field Types](https://www.elastic.co/guide/en/elasticsearch/reference/master/mapping-types.html)
