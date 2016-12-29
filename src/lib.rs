@@ -286,12 +286,12 @@ pub fn default() -> Result<(reqwest::Client, RequestParams), reqwest::Error> {
 }
 
 macro_rules! req_with_body {
-    ($client:ident, $url:ident, $req:ident, $params:ident, $method:ident) => ({
-        let body = $req.body.expect("Expected this request to have a body. This is a bug, please file an issue on GitHub.");
+    ($client:ident, $url:ident, $body:ident, $params:ident, $method:ident) => ({
+        let body = $body.expect("Expected this request to have a body. This is a bug, please file an issue on GitHub.");
 
-        let body = match **body {
-            Cow::Borrowed(ref body) => reqwest::Body::new(Cursor::new(*body)),
-            Cow::Owned(ref body) => (*body).to_owned().into()
+        let body = match body.into_owned().into() {
+            Cow::Borrowed(b) => reqwest::Body::new(Cursor::new(b)),
+            Cow::Owned(b) => b.into()
         };
 
         $client
@@ -326,13 +326,21 @@ impl ElasticClient for reqwest::Client {
             url.push_str(&qry);
         }
 
-        match req.method {
+        let method = req.method;
+        let body = req.body;
+
+        match method {
             HttpMethod::Get => self.get(&url).headers(params.headers.to_owned()).send(),
-            HttpMethod::Post => req_with_body!(self, url, req, params, Post),
+
+            HttpMethod::Post => req_with_body!(self, url, body, params, Post),
+
             HttpMethod::Head => self.head(&url).headers(params.headers.to_owned()).send(),
+
             HttpMethod::Delete => self.request(reqwest::Method::Delete, &url).headers(params.headers.to_owned()).send(),
-            HttpMethod::Put => req_with_body!(self, url, req, params, Put),
-            HttpMethod::Patch => req_with_body!(self, url, req, params, Patch),
+            
+            HttpMethod::Put => req_with_body!(self, url, body, params, Put),
+            
+            HttpMethod::Patch => req_with_body!(self, url, body, params, Patch),
         }
     }
 }
