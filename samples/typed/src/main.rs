@@ -10,7 +10,6 @@
 
 extern crate serde;
 extern crate serde_json;
-extern crate reqwest;
 
 #[macro_use]
 extern crate serde_derive;
@@ -37,10 +36,7 @@ const INDEX: &'static str = "testidx";
 
 fn main() {
     // Create a new client
-    let (client, _) = elastic_reqwest::default().unwrap();
-
-    // Default request parameters
-    let params = RequestParams::default();
+    let (client, params) = elastic_reqwest::default().unwrap();
 
     // Wait for refresh when indexing data.
     // Normally this isn't a good idea, but is ok for this example.

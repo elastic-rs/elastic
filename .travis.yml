@@ -28,6 +28,8 @@ script:
       travis-cargo bench &&
       cd samples/basic &&
       travis-cargo build &&
+      cd ../bulk &&
+      travis-cargo build &&
       cd ../typed &&
       travis-cargo --only nightly build &&
       cd ../../ &&

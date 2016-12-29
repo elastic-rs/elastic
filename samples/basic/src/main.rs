@@ -15,11 +15,14 @@ use elastic_requests::SearchRequest;
 use std::io::Read;
 
 fn main() {
-
+    // Get a new default client.
     let (client, _) = elastic_reqwest::default().unwrap();
 
-    let params = RequestParams::default().url_params(vec![("pretty", String::from("true"))]);
+    // Create a new set of params with pretty printing.
+    let params = RequestParams::default().
+        url_params(vec![("pretty", String::from("true"))]);
 
+    // Create a query DSL request body.
     let body = json_str!({
         query: {
             query_string: {
@@ -28,6 +31,7 @@ fn main() {
         }
     });
 
+    // Send the request and read the response.
     let mut res = client.elastic_req(&params, SearchRequest::for_index("_all", body)).unwrap();
 
     let mut message = String::new();
