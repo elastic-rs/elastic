@@ -10,7 +10,7 @@
 
 extern crate serde;
 extern crate serde_json;
-extern crate hyper;
+extern crate reqwest;
 
 #[macro_use]
 extern crate serde_derive;
@@ -19,12 +19,12 @@ extern crate elastic_types_derive;
 
 #[macro_use]
 extern crate elastic_types;
-extern crate elastic_hyper;
+extern crate elastic_reqwest;
 extern crate elastic_requests;
 
 use std::net::Ipv4Addr;
-use hyper::Client;
-use elastic_hyper::{ElasticClient, RequestParams};
+use reqwest::Client;
+use elastic_reqwest::{ElasticClient, RequestParams};
 use elastic_requests::{IndicesCreateRequest, IndexRequest, SearchRequest};
 use elastic_types::prelude::*;
 
@@ -36,8 +36,8 @@ use response::*;
 const INDEX: &'static str = "testidx";
 
 fn main() {
-    // Create a hyper client
-    let client = Client::new();
+    // Create a new client
+    let (client, _) = elastic_reqwest::default();
 
     // Default request parameters
     let params = RequestParams::default();

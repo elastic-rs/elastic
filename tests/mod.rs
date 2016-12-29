@@ -1,14 +1,13 @@
-extern crate hyper;
+extern crate reqwest;
 extern crate url;
-extern crate elastic_hyper;
+extern crate elastic_reqwest;
 
-use hyper::header::*;
-use elastic_hyper::RequestParams;
+use reqwest::header::*;
+use elastic_reqwest::RequestParams;
 
 #[test]
 fn request_params_has_default_content_type() {
 	let req = RequestParams::default();
-
 	assert_eq!(Some(&ContentType::json()), req.headers.get::<ContentType>());
 }
 
