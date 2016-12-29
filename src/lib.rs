@@ -285,13 +285,25 @@ pub fn default() -> Result<(reqwest::Client, RequestParams), reqwest::Error> {
     reqwest::Client::new().map(|cli| (cli, RequestParams::default()))
 }
 
+use std::borrow::Borrow;
+
 macro_rules! req_with_body {
     ($client:ident, $url:ident, $body:ident, $params:ident, $method:ident) => ({
         let body = $body.expect("Expected this request to have a body. This is a bug, please file an issue on GitHub.");
 
-        let body = match body.into_owned().into() {
-            Cow::Borrowed(b) => reqwest::Body::new(Cursor::new(b)),
-            Cow::Owned(b) => b.into()
+        let body = match body {
+            Cow::Borrowed(b) => {
+                match **b {
+                    Cow::Borrowed(b) => reqwest::Body::new(Cursor::new(b)),
+                    Cow::Owned(ref b) => reqwest::Body::new(Cursor::new(b))
+                }
+            },
+            Cow::Owned(b) => {
+                match b.into() {
+                    Cow::Borrowed(b) => reqwest::Body::new(Cursor::new(b)),
+                    Cow::Owned(b) => b.into()
+                }
+            }
         };
 
         $client
