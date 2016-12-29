@@ -38,9 +38,14 @@ fn test_parse_simple_aggs() {
 
     let deserialized: Response = serde_json::from_str(&s).unwrap();
 
-    for i in deserialized.aggs().unwrap().into_iter().take(5) {
+    for i in deserialized.aggs().unwrap().into_iter().take(1) {
         println!("{}", i);
     }
+
+    //FIXME: Shouldn't be a move above
+//    for i in deserialized.aggs().unwrap().into_iter().take(1) {
+//        println!("{}", i);
+//    }
 
     panic!("done");
 }

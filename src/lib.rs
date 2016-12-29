@@ -58,16 +58,25 @@ impl<'a> AggregationIterator<'a> {
     }
 }
 
+enum IterationState {
+    AtNameNode { node: &Value },
+    AtBuckets,
+    AtValue,
+    AtStats,
+    AtExStats,
+    Rowdone
+}
+
 impl<'a> Iterator for AggregationIterator<'a> {
     type Item = &'a Value;
 
     fn next(&mut self) -> Option<&'a Value> {
 
-        if self.count < 6 {
-            Some(self.start_at.unwrap())
-        } else {
-            None
+        match self.start_at {
+            Some(x) => Some(x),
+            None => None
         }
+
     }
 }
 
