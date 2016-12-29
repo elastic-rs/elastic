@@ -163,7 +163,7 @@ extern crate reqwest;
 extern crate url;
 
 use elastic_requests::*;
-use std::borrow::Cow;
+use std::borrow::{Cow, Borrow};
 use std::collections::BTreeMap;
 use std::io::Cursor;
 use std::str;
@@ -284,8 +284,6 @@ impl Default for RequestParams {
 pub fn default() -> Result<(reqwest::Client, RequestParams), reqwest::Error> {
     reqwest::Client::new().map(|cli| (cli, RequestParams::default()))
 }
-
-use std::borrow::Borrow;
 
 macro_rules! req_with_body {
     ($client:ident, $url:ident, $body:ident, $params:ident, $method:ident) => ({
