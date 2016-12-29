@@ -56,7 +56,7 @@
 //! use req::PingRequest;
 //!
 //! # fn main() {
-//! let (client, params) = cli::default();
+//! let (client, params) = cli::default().unwrap();
 //!
 //! client.elastic_req(&params, PingRequest::new()).unwrap();
 //! # }
@@ -76,7 +76,7 @@
 //! use req::SimpleSearchRequest;
 //!
 //! # fn main() {
-//! let (client, _) = cli::default();
+//! let (client, _) = cli::default().unwrap();
 //!
 //! let params = RequestParams::default()
 //!     .url_params(vec![
@@ -109,7 +109,7 @@
 //! use req::SearchRequest;
 //!
 //! # fn main() {
-//! let (client, params) = cli::default();
+//! let (client, params) = cli::default().unwrap();
 //!
 //! let search = SearchRequest::for_index_ty(
 //!     "myindex", "mytype",
