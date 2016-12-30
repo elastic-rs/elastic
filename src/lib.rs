@@ -28,7 +28,6 @@ pub struct Aggregations(Value);
 
 
 impl<'a> IntoIterator for &'a Aggregations {
-//    type Item = &'a Value;
     type Item = BTreeMap<&'a String, &'a Value>;
     type IntoIter = AggregationIterator<'a>;
 
@@ -38,7 +37,16 @@ impl<'a> IntoIterator for &'a Aggregations {
 }
 
 #[derive(Debug)]
+enum AggStates {
+    AtRoot,
+    AtName,
+    InBuckets,
+    AtValues
+}
+
+#[derive(Debug)]
 pub struct AggregationIterator<'a> {
+    state: AggStates,
     start_at: Option<&'a Value>,
     current_name: Option<&'a String>,
     currect_buckets: Option<&'a Value>,
@@ -58,6 +66,7 @@ impl<'a> AggregationIterator<'a> {
         };
 
         AggregationIterator {
+            state: AggStates::AtRoot,
             start_at: Some(v),
             current_name: None,
             currect_buckets: None,
@@ -72,10 +81,9 @@ impl<'a> AggregationIterator<'a> {
 }
 
 impl<'a> Iterator for AggregationIterator<'a> {
-//    type Item = &'a Value;
+
     type Item = BTreeMap<&'a String, &'a Value>;
 
-//    fn next(&mut self) -> Option<&'a Value> {
     fn next(&mut self) -> Option<BTreeMap<&'a String, &'a Value>> {
 
         match self.current_row {
@@ -136,14 +144,11 @@ impl<'a> Iterator for AggregationIterator<'a> {
 
         }
 
-//        let r = Some(BTreeMap::new());
         match self.current_row {
             //FIXME: Refactor to avoid this
             Some(ref x) => Some(x.clone()),
             None => None
         }
-//        r
-
     }
 }
 

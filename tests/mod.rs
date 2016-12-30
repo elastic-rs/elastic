@@ -38,7 +38,6 @@ fn test_parse_simple_aggs() {
 
     let deserialized: Response = serde_json::from_str(&s).unwrap();
 
-    //    for i in deserialized.aggs().unwrap().into_iter().take(3) {
     for i in deserialized.aggs().unwrap().into_iter().take(50) {
         println!("Got a record:\n {:#?}", i);
     }
@@ -49,4 +48,22 @@ fn test_parse_simple_aggs() {
     //    }
 
     panic!("done");
+}
+
+#[test]
+fn test_parse_simple_aggs_no_empty_first_record() {
+    let mut f = File::open("tests/samples/aggregation.json").unwrap();
+    let mut s = String::new();
+    f.read_to_string(&mut s).unwrap();
+
+    let deserialized: Response = serde_json::from_str(&s).unwrap();
+
+    let s = String::from("timechart");
+    let mut first = true;
+    for i in deserialized.aggs().unwrap().into_iter().take(50) {
+        if first {
+            assert!(i.contains_key(&s));
+            first = false;
+        }
+    }
 }
