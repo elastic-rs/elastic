@@ -10,6 +10,8 @@ extern crate serde_json;
 //pub mod reference;
 
 use serde_json::Value;
+use std::slice::Iter;
+use std::collections::BTreeMap;
 
 #[derive(Deserialize, Debug)]
 pub struct Response {
@@ -26,7 +28,8 @@ pub struct Aggregations(Value);
 
 
 impl<'a> IntoIterator for &'a Aggregations {
-    type Item = &'a Value;
+//    type Item = &'a Value;
+    type Item = BTreeMap<&'a String, &'a Value>;
     type IntoIter = AggregationIterator<'a>;
 
     fn into_iter(self) -> AggregationIterator<'a> {
@@ -37,6 +40,12 @@ impl<'a> IntoIterator for &'a Aggregations {
 #[derive(Debug)]
 pub struct AggregationIterator<'a> {
     start_at: Option<&'a Value>,
+    current_name: Option<&'a String>,
+    currect_buckets: Option<&'a Value>,
+    currect_buckets_iter: Option<Iter<'a, Value>>,
+    current_row: Option<BTreeMap<&'a String, &'a Value>>,
+    call_stack: Option<Vec<&'a Value>>,
+    parent_node: Option<&'a Value>,
     count: u64,
     aggregations: &'a Aggregations
 }
@@ -48,38 +57,71 @@ impl<'a> AggregationIterator<'a> {
             &Aggregations(ref v) => v
         };
 
-//        println!("{:#?}", v);
-
         AggregationIterator {
             start_at: Some(v),
+            current_name: None,
+            currect_buckets: None,
+            currect_buckets_iter: None,
+            current_row: None,
+            call_stack: None,
+            parent_node: None,
             count: 0,
             aggregations: a
         }
     }
 }
 
-enum IterationState {
-    AtNameNode { node: &Value },
-    AtBuckets,
-    AtValue,
-    AtStats,
-    AtExStats,
-    Rowdone
-}
-
 impl<'a> Iterator for AggregationIterator<'a> {
-    type Item = &'a Value;
+//    type Item = &'a Value;
+    type Item = BTreeMap<&'a String, &'a Value>;
 
-    fn next(&mut self) -> Option<&'a Value> {
+//    fn next(&mut self) -> Option<&'a Value> {
+    fn next(&mut self) -> Option<BTreeMap<&'a String, &'a Value>> {
 
-        match self.start_at {
-            Some(x) => Some(x),
-            None => None
+        let v = self.start_at.unwrap();
+
+        match self.currect_buckets_iter {
+            None => {
+
+
+                match *v {
+                    Value::Object(ref o) => {
+                        for (key, child) in o {
+                            println!("{}", key);
+                            println!("{}", child);
+                            if let Value::Object(ref c) = *child {
+                                if c.contains_key("buckets") {
+//                                    println!("Matched {:?}!", c["buckets"]);
+                                    self.currect_buckets = Some(&c["buckets"]);
+                                    if let Value::Array(ref a) = *self.currect_buckets.unwrap() {
+//                                        println!("Got array");
+                                        self.currect_buckets_iter = Some(a.iter());
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    _ => {
+                        //FIXME: do something sensible here
+                        panic!("Not implemented");
+                    }
+                };
+            },
+            Some(ref mut i) => {
+                println!("ITER: {:#?}", i.next());
+            }
+
         }
+
+        let r = Some(BTreeMap::new());
+//        match self.start_at {
+//            Some(x) => Some(x),
+//            None => None
+//        }
+        r
 
     }
 }
-
 
 #[derive(Deserialize, Debug)]
 struct Shards {
