@@ -36,23 +36,24 @@ impl<'a> IntoIterator for &'a Aggregations {
     }
 }
 
-#[derive(Debug)]
-enum AggStates {
-    AtRoot,
-    AtName,
-    InBuckets,
-    AtValues
-}
+//#[derive(Debug)]
+//enum AggStates {
+//    AtRoot,
+//    AtName,
+//    InBuckets,
+//    AtValues,
+//    RowFinished
+//}
 
 #[derive(Debug)]
 pub struct AggregationIterator<'a> {
-    state: AggStates,
+//    state: AggStates,
     start_at: Option<&'a Value>,
     current_name: Option<&'a String>,
     currect_buckets: Option<&'a Value>,
     currect_buckets_iter: Option<Iter<'a, Value>>,
     current_row: Option<BTreeMap<&'a String, &'a Value>>,
-    call_stack: Option<Vec<&'a Value>>,
+    iter_stack: Vec<Iter<'a, Value>>,
     parent_node: Option<&'a Value>,
     count: u64,
     aggregations: &'a Aggregations
@@ -65,20 +66,26 @@ impl<'a> AggregationIterator<'a> {
             &Aggregations(ref v) => v
         };
 
+        let s: Vec<Iter<Value>> = Vec::new();
+
         AggregationIterator {
-            state: AggStates::AtRoot,
+//            state: AggStates::AtRoot,
             start_at: Some(v),
             current_name: None,
             currect_buckets: None,
             currect_buckets_iter: None,
             current_row: None,
-            call_stack: None,
+            iter_stack: s,
             parent_node: None,
             count: 0,
             aggregations: a
         }
     }
 }
+
+//fn has_child_aggs() {
+//
+//}
 
 impl<'a> Iterator for AggregationIterator<'a> {
 
@@ -94,54 +101,88 @@ impl<'a> Iterator for AggregationIterator<'a> {
             Some(_) => ()
         };
 
-        match self.currect_buckets_iter {
-            None => {
-                let v = self.start_at.unwrap();
-                match *v {
-                    Value::Object(ref o) => {
-                        for (key, child) in o {
+        let v = self.start_at.unwrap();
+        match *v {
+            Value::Object(ref o) => {
+                for (key, child) in o {
+                    if let Value::Object(ref c) = *child {
+                        if c.contains_key("buckets") {
                             self.current_name = Some(&key);
-                            if let Value::Object(ref c) = *child {
-                                if c.contains_key("buckets") {
-                                    self.currect_buckets = Some(&c["buckets"]);
-                                    if let Value::Array(ref a) = *self.currect_buckets.unwrap() {
-                                        self.currect_buckets_iter = Some(a.iter());
-                                    }
-                                }
+                            self.currect_buckets = Some(&c["buckets"]);
+                            if let Value::Array(ref a) = *self.currect_buckets.unwrap() {
+                                let i = a.iter();
+                                self.iter_stack.push(i);
                             }
                         }
-                    },
-                    _ => {
-                        //FIXME: do something sensible here
-                        panic!("Not implemented, only caters for bucket objects");
-                    }
-                };
-            },
-            Some(ref mut i) => {
-                let n = i.next();
-                //FIXME: Move this, to be able to process first line too
-                match n {
-                    None => {
-                        //FIXME: Done with the children, unwind
-                        panic!("Reached end of current iterator");
-                    },
-                    Some(n) => {
-                        let o = match *n {
-                            Value::Object(ref o) => o,
-                            _ => panic!("Shouldn't get here!")
-                        };
-                        match self.current_row {
-                            Some(ref mut r) => {
-                                let row = r;
-                                row.insert(self.current_name.unwrap(), &o["key"]);
-                            },
-                            _ => ()
-                        }
-//                        println!("ITER: KEY: {}, {:#?}", self.current_name.unwrap(),  o);
                     }
                 }
+            },
+            _ => {
+                //FIXME: do something sensible here
+                panic!("Not implemented, only caters for bucket objects");
             }
+        };
 
+        loop {
+            println!("{}", self.iter_stack.len());
+
+            match self.iter_stack.pop() {
+                None => {
+                    println!("Done!");
+                    break;
+                },
+                Some(mut i) => {
+                    let n = i.next();
+                    self.iter_stack.push(i);
+                    //FIXME: Move this, to be able to process first line too
+                    match n {
+                        None => {
+                            //Was nothing here, exit
+                            println!("Exit!");
+                            self.iter_stack.pop();
+                            break;
+                        },
+                        Some(n) => {
+                            let o = match *n {
+                                Value::Object(ref o) => o,
+                                _ => panic!("Shouldn't get here!")
+                            };
+                            for (key, value) in o {
+                                if (key == "key") {
+                                    println!("GOT {} {}", self.current_name.unwrap(), value);
+                                }
+
+                                match *value {
+                                    Value::Object(ref c) => {
+                                        if c.contains_key("buckets") {
+                                            self.current_name = Some(&key);
+                                            self.currect_buckets = Some(&c["buckets"]);
+                                            if let Value::Array(ref a) = *self.currect_buckets.unwrap() {
+                                                let i = a.iter();
+                                                self.iter_stack.push(i);
+                                                println!("Dive!");
+                                                continue;
+                                            }
+                                        }
+                                    },
+                                    _ => ()
+                                }
+
+                            }
+                            match self.current_row {
+                                Some(ref mut r) => {
+                                    let row = r;
+                                    println!("Insert!");
+                                    row.insert(self.current_name.unwrap(), &o["key"]);
+                                },
+                                _ => ()
+                            }
+    //                        println!("ITER: KEY: {}, {:#?}", self.current_name.unwrap(),  o);
+                        }
+                    }
+                }
+
+            }
         }
 
         match self.current_row {

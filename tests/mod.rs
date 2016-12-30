@@ -17,17 +17,13 @@ use std::io::Read;
 use std::fs::File;
 
 #[test]
-fn test_parse_simple() {
+fn test_parse_hits_simple() {
     let mut f = File::open("tests/samples/simple.json").unwrap();
     let mut s = String::new();
     f.read_to_string(&mut s).unwrap();
 
     let deserialized: Response = serde_json::from_str(&s).unwrap();
-
-    for i in deserialized.hits() {
-        println!("Got {:#?}", i);
-    }
-    panic!("done");
+    assert_eq!(deserialized.hits().into_iter().count(), 5);
 }
 
 #[test]
@@ -38,8 +34,10 @@ fn test_parse_simple_aggs() {
 
     let deserialized: Response = serde_json::from_str(&s).unwrap();
 
+    let mut index = 0;
     for i in deserialized.aggs().unwrap().into_iter().take(50) {
-        println!("Got a record:\n {:#?}", i);
+        index+= 1;
+        println!("Got a record {}:\n {:#?}", index, i);
     }
 
     //FIXME: Shouldn't be a move above
