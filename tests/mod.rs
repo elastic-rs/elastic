@@ -35,9 +35,10 @@ fn test_parse_simple_aggs() {
     let deserialized: Response = serde_json::from_str(&s).unwrap();
 
     let mut index = 0;
-    for i in deserialized.aggs().unwrap().into_iter().take(50) {
+
+    for i in deserialized.aggs().unwrap().into_iter().take(50000) {
         index+= 1;
-        println!("Got a record {}:\n {:#?}", index, i);
+        println!("Got record {}:\n {:#?}", index, i);
     }
 
     //FIXME: Shouldn't be a move above
