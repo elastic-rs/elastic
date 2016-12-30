@@ -58,7 +58,7 @@
 //!
 //! # Links
 //!
-//! - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/master/string.html)
+//! - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/string.html)
 
 macro_rules! impl_string_type {
 	($wrapper_ty:ident, $mapping_ty:ident, $format_ty:ident) => (

@@ -381,8 +381,8 @@
 //! ```
 //!
 //! # Links
-//! - [Field Types](https://www.elastic.co/guide/en/elasticsearch/reference/master/mapping-types.html)
-//! - [Document Types](https://www.elastic.co/guide/en/elasticsearch/reference/master/mapping.html)
+//! - [Field Types](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-types.html)
+//! - [Document Types](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping.html)
 
 use std::marker::PhantomData;
 use serde::{Serialize, Serializer};
@@ -411,6 +411,11 @@ impl<T, M> FieldType<M, DocumentFormat> for T
 }
 
 /// A wrapper type for serialising user types.
+/// 
+/// Serialising `Document` will produce the mapping for the given type,
+/// suitable as the mapping for 
+/// [Put Mapping](https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-put-mapping.html) 
+/// or [Create Index](https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-create-index.html).
 #[derive(Default)]
 pub struct Document<M>
     where M: DocumentMapping

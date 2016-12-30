@@ -64,7 +64,7 @@
 //! This section shows you how to add mapping metadata on the `nightly` channel.
 //! For mapping on `stable`, see [here](object/index.html#manually-implement-mapping).
 //!
-//! > NOTE: Once [Macros 1.1](https://github.com/rust-lang/rfcs/blob/master/text/1681-macros-1.1.md)
+//! > NOTE: Once [Macros 1.1](https://github.com/rust-lang/rfcs/blob/current/text/1681-macros-1.1.md)
 //! is stabilised, you'll be able to use `elastic_types_derive` on the `stable` channel.
 //!
 //! Derive `ElasticType` on your Elasticsearch-mappable types:
@@ -535,8 +535,8 @@
 //!
 //! # Links
 //!
-//! - [Elasticsearch Mapping Concepts](https://www.elastic.co/guide/en/elasticsearch/guide/master/mapping.html)
-//! - [Elasticsearch Type Concepts](https://www.elastic.co/guide/en/elasticsearch/reference/master/_basic_concepts.html#_type)
+//! - [Elasticsearch Mapping Concepts](https://www.elastic.co/guide/en/elasticsearch/guide/current/mapping.html)
+//! - [Elasticsearch Type Concepts](https://www.elastic.co/guide/en/elasticsearch/reference/current/_basic_concepts.html#_type)
 //! - [Github](https://github.com/elastic-rs/elastic-types)
 
 #![deny(missing_docs)]

@@ -60,7 +60,7 @@ impl FieldType<DefaultDateMapping<ChronoFormat>, DateFormatWrapper<ChronoFormat>
 ///
 /// # Links
 ///
-/// - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/master/date.html)
+/// - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/date.html)
 #[derive(Debug, Clone, PartialEq)]
 pub struct Date<F, M = DefaultDateMapping<F>>
     where F: DateFormat,
