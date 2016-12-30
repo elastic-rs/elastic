@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 use serde::{Serialize, Deserialize, Serializer, Deserializer};
 use super::mapping::*;
-use ::mapping::FieldType;
+use ::field::FieldType;
 
 macro_rules! number_type {
     ($wrapper_ty:ident, $mapping_ty:ident, $format_ty:ident, $std_ty:ident) => (

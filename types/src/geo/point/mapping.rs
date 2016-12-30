@@ -4,7 +4,7 @@ use std::marker::PhantomData;
 use serde::{Serialize, Serializer};
 use super::GeoPointFormat;
 use ::geo::mapping::Distance;
-use ::mapping::{FieldMapping, Field};
+use ::field::{FieldMapping, FieldSerWrapper};
 
 
 /// Elasticsearch datatype name.
@@ -147,14 +147,14 @@ impl<T, F> FieldMapping<GeoPointFormatWrapper<F>> for T
     where T: GeoPointMapping<Format = F>,
           F: GeoPointFormat
 {
-    type Field = Field<T, GeoPointFormatWrapper<F>>;
+    type Field = FieldSerWrapper<T, GeoPointFormatWrapper<F>>;
 
     fn data_type() -> &'static str {
         GEOPOINT_DATATYPE
     }
 }
 
-impl<T, F> Serialize for Field<T, GeoPointFormatWrapper<F>>
+impl<T, F> Serialize for FieldSerWrapper<T, GeoPointFormatWrapper<F>>
     where T: FieldMapping<GeoPointFormatWrapper<F>> + GeoPointMapping<Format = F>,
           F: GeoPointFormat
 {

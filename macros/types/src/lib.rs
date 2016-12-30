@@ -101,10 +101,10 @@ fn impl_elastic_type(item: &syn::MacroInput, mapping: &syn::Ident) -> quote::Tok
 	)
 }
 
-//Implement ObjectMapping for the mapping
+//Implement DocumentMapping for the mapping
 fn impl_object_mapping(mapping: &syn::Ident, es_ty: &syn::Lit) -> quote::Tokens {
 	quote!(
-		impl ::elastic_types::mapping::ObjectMapping for #mapping {
+		impl ::elastic_types::mapping::DocumentMapping for #mapping {
 			fn name() -> &'static str { #es_ty }
 		}
 	)

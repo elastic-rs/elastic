@@ -385,7 +385,7 @@ pub mod object_fixtures {
 
     #[derive(Default, Clone)]
     pub struct SimpleTypeMapping;
-    impl ObjectMapping for SimpleTypeMapping {
+    impl DocumentMapping for SimpleTypeMapping {
         fn name() -> &'static str { "simpletype" }
     }
     impl PropertiesMapping for SimpleTypeMapping {
@@ -409,7 +409,7 @@ pub mod object_fixtures {
 
     #[derive(Default, Clone)]
     pub struct SimpleNestedTypeMapping;
-    impl ObjectMapping for SimpleNestedTypeMapping {
+    impl DocumentMapping for SimpleNestedTypeMapping {
         fn name() -> &'static str { "simplenestedtype" }
     }
     impl PropertiesMapping for SimpleNestedTypeMapping {
@@ -450,7 +450,7 @@ pub mod object_macro_fixtures {
 
     #[derive(Default)]
     pub struct CustomTypeMapping;
-    impl ObjectMapping for CustomTypeMapping {
+    impl DocumentMapping for CustomTypeMapping {
         fn name() -> &'static str { "renamed_type" }
     }
 
@@ -473,4 +473,3 @@ pub mod date;
 pub mod string;
 pub mod number;
 pub mod boolean;
-pub mod template;

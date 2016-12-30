@@ -5,7 +5,7 @@ use std::error::Error as StdError;
 use serde::{Serialize, Deserialize, Serializer, Deserializer};
 use serde::de::{Visitor, Error};
 use super::mapping::{IpMapping, DefaultIpMapping, IpFormat};
-use ::mapping::FieldType;
+use ::field::FieldType;
 
 impl FieldType<DefaultIpMapping, IpFormat> for Ipv4Addr {}
 

@@ -6,7 +6,7 @@ use super::ChronoDateTime;
 use super::format::{DateFormat, ParseError};
 use super::formats::ChronoFormat;
 use super::mapping::{DateMapping, DefaultDateMapping, DateFormatWrapper};
-use ::mapping::FieldType;
+use ::field::FieldType;
 
 pub use chrono::{Datelike, Timelike};
 

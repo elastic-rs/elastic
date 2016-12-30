@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 use serde::{Serialize, Deserialize, Serializer, Deserializer};
 use geojson::Geometry;
 use super::mapping::*;
-use ::mapping::FieldType;
+use ::field::FieldType;
 
 /// Geo shape type with a given mapping.
 ///

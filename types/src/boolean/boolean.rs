@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 use serde::{Serialize, Deserialize, Serializer, Deserializer};
 use serde::de::{Visitor, Error};
 use super::mapping::{BooleanMapping, DefaultBooleanMapping, BooleanFormat};
-use ::mapping::FieldType;
+use ::field::FieldType;
 
 impl FieldType<DefaultBooleanMapping, BooleanFormat> for bool {}
 

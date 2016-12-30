@@ -142,10 +142,10 @@ pub use self::text::Text;
 
 
 pub mod prelude {
-    //! Includes non-mapping types for the `string` types.
+    //! Includes all types for the `string` types.
     //!
     //! This is a convenience module to make it easy to build mappings for multiple types without too many `use` statements.
 
-    pub use super::keyword::Keyword;
-    pub use super::text::Text;
+    pub use super::keyword::prelude::*;
+    pub use super::text::prelude::*;
 }

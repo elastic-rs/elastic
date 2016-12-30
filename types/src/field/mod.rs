@@ -1,10 +1,22 @@
+//! Base requirements for type mappings.
+//!
+//! There are two kinds of types we can map in Elasticsearch; `field`/`data` types and `document` types:
+//! 
+//! - `FieldType` for types that can be mapped as fields on another type
+//! - `DocumentType + FieldType` for types that can be indexed as documents.
+//! 
+//! Most of the work lives in the `FieldMapping`, which holds the serialisation requirements
+//! to convert a Rust type into an Elasticsearch mapping.
+//! Document types must also implement `DocumentMapping`, which maps the fields of a struct as properties,
+//! and treats the type as `nested` when used as a field itself.
+
 use std::collections::{BTreeMap, HashMap};
 use std::hash::Hash;
 use std::marker::PhantomData;
 use serde::{Serialize, Serializer};
 use serde_json::Value;
 
-use super::object::ObjectFormat;
+use super::document::DocumentFormat;
 
 /// The base representation of an Elasticsearch data type.
 ///
@@ -17,7 +29,7 @@ use super::object::ObjectFormat;
 /// # Links
 ///
 /// - [Elasticsearch docs](https://www.elastic.co/guide/en/elasticsearch/reference/master/mapping-types.html)
-pub trait FieldType<M, F = ObjectFormat>
+pub trait FieldType<M, F = DocumentFormat>
     where M: FieldMapping<F>,
           F: Default,
           Self: Serialize
@@ -38,6 +50,9 @@ pub trait FieldMapping<F>
           F: Default
 {
     /// A type that when serialised will produce the mapping for this field.
+    /// 
+    /// Using an associated type for `FieldSerWrapper` saves having to know
+    /// the type for the format when deriving serialisation.
     type Field: Serialize + Default;
 
     /// Get the type name for this mapping, like `date` or `string`.
@@ -46,22 +61,15 @@ pub trait FieldMapping<F>
     }
 }
 
-/// A wrapper type for serialising fields.
+/// A wrapper type used to work around conflicting implementations of `Serialize`
+/// for the various mapping traits.
+#[doc(hidden)]
 #[derive(Default)]
-pub struct Field<M, F>
+pub struct FieldSerWrapper<M, F>
     where M: FieldMapping<F>,
           F: Default
 {
     _m: PhantomData<(M, F)>,
-}
-
-impl<M, F> From<M> for Field<M, F>
-    where M: FieldMapping<F>,
-          F: Default
-{
-    fn from(_: M) -> Self {
-        Field::<M, F>::default()
-    }
 }
 
 /// Should the field be searchable? Accepts `not_analyzed` (default) and `no`.
@@ -98,10 +106,10 @@ impl Serialize for IndexAnalysis {
 #[derive(Debug, PartialEq, Default, Clone)]
 pub struct DefaultMapping;
 impl FieldMapping<()> for DefaultMapping {
-    type Field = Field<Self, ()>;
+    type Field = FieldSerWrapper<Self, ()>;
 }
 
-impl Serialize for Field<DefaultMapping, ()> {
+impl Serialize for FieldSerWrapper<DefaultMapping, ()> {
     fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
         where S: Serializer
     {

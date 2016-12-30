@@ -559,29 +559,29 @@ extern crate serde_json;
 #[macro_use]
 mod macros;
 
-pub mod mapping;
-pub mod mappers;
+pub mod field;
+pub mod document;
 
-pub mod boolean;
 #[macro_use]
 pub mod date;
+pub mod boolean;
 pub mod geo;
 pub mod ip;
 pub mod number;
 pub mod string;
-pub mod template;
 
 pub mod prelude {
     //! Includes all data types.
     //!
     //! This is a convenience module to make it easy to build mappings for multiple types without too many `use` statements.
 
-    pub use ::mapping::prelude::*;
+    pub use ::document::*;
+    pub use ::field::*;
+
     pub use ::boolean::prelude::*;
     pub use ::date::prelude::*;
     pub use ::geo::prelude::*;
     pub use ::ip::prelude::*;
     pub use ::number::prelude::*;
     pub use ::string::prelude::*;
-    pub use ::template::*;
 }

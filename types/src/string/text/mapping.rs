@@ -2,7 +2,7 @@
 
 use std::collections::BTreeMap;
 use serde::{Serialize, Serializer};
-use ::mapping::{FieldMapping, Field};
+use ::field::{FieldMapping, FieldSerWrapper};
 use ::string::mapping::{ElasticStringField, IndexOptions};
 
 /// Elasticsearch datatype name.
@@ -219,14 +219,14 @@ pub trait TextMapping
 impl<T> FieldMapping<TextFormat> for T
     where T: TextMapping
 {
-    type Field = Field<T, TextFormat>;
+    type Field = FieldSerWrapper<T, TextFormat>;
 
     fn data_type() -> &'static str {
         TEXT_DATATYPE
     }
 }
 
-impl<T> Serialize for Field<T, TextFormat>
+impl<T> Serialize for FieldSerWrapper<T, TextFormat>
     where T: FieldMapping<TextFormat> + TextMapping
 {
     fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>

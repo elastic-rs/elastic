@@ -2,7 +2,7 @@
 
 use std::collections::BTreeMap;
 use serde::{Serialize, Serializer};
-use ::mapping::{IndexAnalysis, FieldType};
+use ::field::{IndexAnalysis, FieldType};
 
 pub use super::keyword::mapping::*;
 pub use super::text::mapping::*;

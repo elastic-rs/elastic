@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 use serde::{Serialize, Deserialize, Serializer, Deserializer};
 use georust::{Coordinate, Point, ToGeo, Geometry};
-use ::mapping::FieldType;
+use ::field::FieldType;
 use super::mapping::{GeoPointMapping, DefaultGeoPointMapping, GeoPointFormatWrapper};
 use super::GeoPointFormat;
 
