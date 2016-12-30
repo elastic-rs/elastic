@@ -78,23 +78,25 @@ impl<'a> Iterator for AggregationIterator<'a> {
 //    fn next(&mut self) -> Option<&'a Value> {
     fn next(&mut self) -> Option<BTreeMap<&'a String, &'a Value>> {
 
-        let v = self.start_at.unwrap();
+        match self.current_row {
+            None => {
+                //New row
+                self.current_row = Some(BTreeMap::new())
+            },
+            Some(_) => ()
+        };
 
         match self.currect_buckets_iter {
             None => {
-
-
+                let v = self.start_at.unwrap();
                 match *v {
                     Value::Object(ref o) => {
                         for (key, child) in o {
-                            println!("{}", key);
-                            println!("{}", child);
+                            self.current_name = Some(&key);
                             if let Value::Object(ref c) = *child {
                                 if c.contains_key("buckets") {
-//                                    println!("Matched {:?}!", c["buckets"]);
                                     self.currect_buckets = Some(&c["buckets"]);
                                     if let Value::Array(ref a) = *self.currect_buckets.unwrap() {
-//                                        println!("Got array");
                                         self.currect_buckets_iter = Some(a.iter());
                                     }
                                 }
@@ -103,22 +105,44 @@ impl<'a> Iterator for AggregationIterator<'a> {
                     },
                     _ => {
                         //FIXME: do something sensible here
-                        panic!("Not implemented");
+                        panic!("Not implemented, only caters for bucket objects");
                     }
                 };
             },
             Some(ref mut i) => {
-                println!("ITER: {:#?}", i.next());
+                let n = i.next();
+                //FIXME: Move this, to be able to process first line too
+                match n {
+                    None => {
+                        //FIXME: Done with the children, unwind
+                        panic!("Reached end of current iterator");
+                    },
+                    Some(n) => {
+                        let o = match *n {
+                            Value::Object(ref o) => o,
+                            _ => panic!("Shouldn't get here!")
+                        };
+                        match self.current_row {
+                            Some(ref mut r) => {
+                                let row = r;
+                                row.insert(self.current_name.unwrap(), &o["key"]);
+                            },
+                            _ => ()
+                        }
+//                        println!("ITER: KEY: {}, {:#?}", self.current_name.unwrap(),  o);
+                    }
+                }
             }
 
         }
 
-        let r = Some(BTreeMap::new());
-//        match self.start_at {
-//            Some(x) => Some(x),
-//            None => None
-//        }
-        r
+//        let r = Some(BTreeMap::new());
+        match self.current_row {
+            //FIXME: Refactor to avoid this
+            Some(ref x) => Some(x.clone()),
+            None => None
+        }
+//        r
 
     }
 }

@@ -40,7 +40,7 @@ fn test_parse_simple_aggs() {
 
     //    for i in deserialized.aggs().unwrap().into_iter().take(3) {
     for i in deserialized.aggs().unwrap().into_iter().take(50) {
-        println!("Got a record");
+        println!("Got a record:\n {:#?}", i);
     }
 
     //FIXME: Shouldn't be a move above
