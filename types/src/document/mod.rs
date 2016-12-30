@@ -1,4 +1,4 @@
-//! Base requirements for type mappings.
+//! Base requirements for indexable document mappings.
 //!
 //! There are two kinds of types we can map in Elasticsearch; `field`/`data` types and `document` types:
 //! 
@@ -63,7 +63,7 @@
 //! #   pub my_num: i32
 //! # }
 //! # fn main() {
-//! # let mapping = FieldMapper::to_string(MyTypeMapping).unwrap();
+//! # let mapping = serde_json::to_string(&MyTypeMapping).unwrap();
 //! # let json = json_str!(
 //! {
 //!     "type": "nested",
@@ -159,7 +159,7 @@
 //! #   fn data_type() -> &'static str { OBJECT_DATATYPE }
 //! # }
 //! # fn main() {
-//! # let mapping = FieldMapper::to_string(MyTypeMapping).unwrap();
+//! # let mapping = serde_json::to_string(&MyTypeMapping).unwrap();
 //! # let json = json_str!(
 //! {
 //!     "type": "object",
@@ -386,7 +386,7 @@
 
 use std::marker::PhantomData;
 use serde::{Serialize, Serializer};
-use ::field::{FieldType, FieldMapping, FieldSerWrapper};
+use ::field::{FieldType, FieldMapping, Field};
 
 /// The additional fields available to an indexable Elasticsearch type.
 ///
@@ -551,14 +551,14 @@ pub trait PropertiesMapping {
 impl<T> FieldMapping<DocumentFormat> for T
     where T: DocumentMapping
 {
-    type Field = FieldSerWrapper<T, DocumentFormat>;
+    type Field = Field<T, DocumentFormat>;
 
     fn data_type() -> &'static str {
         <Self as DocumentMapping>::data_type()
     }
 }
 
-impl<T> Serialize for FieldSerWrapper<T, DocumentFormat>
+impl<T> Serialize for Field<T, DocumentFormat>
     where T: FieldMapping<DocumentFormat> + DocumentMapping
 {
     fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>

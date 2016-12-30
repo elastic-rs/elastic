@@ -2,7 +2,7 @@ use serde;
 use serde_json;
 use elastic_types;
 
-use elastic_types::mapping::prelude::*;
+use elastic_types::prelude::*;
 use ::boolean_fixtures::*;
 
 #[test]
@@ -12,7 +12,7 @@ fn bool_has_default_mapping() {
 
 #[test]
 fn serialise_mapping_default() {
-    let ser = FieldMapper::to_string(DefaultBooleanMapping).unwrap();
+    let ser = serde_json::to_string(&Field::from(DefaultBooleanMapping)).unwrap();
 
     let expected = json_str!({
         "type": "boolean"
@@ -23,7 +23,7 @@ fn serialise_mapping_default() {
 
 #[test]
 fn serialise_mapping_custom() {
-    let ser = FieldMapper::to_string(MyBooleanMapping).unwrap();
+    let ser = serde_json::to_string(&Field::from(MyBooleanMapping)).unwrap();
 
     let expected = json_str!({
         "type": "boolean",

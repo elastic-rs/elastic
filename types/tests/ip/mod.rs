@@ -6,7 +6,7 @@ pub mod mapping;
 
 use std::net::Ipv4Addr;
 
-use elastic_types::mapping::prelude::*;
+use elastic_types::prelude::*;
 use elastic_types::ip::prelude::*;
 use ::ip_fixtures::*;
 

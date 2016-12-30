@@ -1,6 +1,6 @@
 use serde_json;
 
-use elastic_types::mapping::prelude::*;
+use elastic_types::prelude::*;
 use ::string_fixtures::*;
 
 #[test]
@@ -10,7 +10,7 @@ fn string_has_default_mapping() {
 
 #[test]
 fn serialise_string_mapping_default() {
-    let ser = FieldMapper::to_string(DefaultStringMapping).unwrap();
+    let ser = serde_json::to_string(&Field::from(DefaultStringMapping)).unwrap();
 
     let expected = json_str!({
         "type":"text",
@@ -27,7 +27,7 @@ fn serialise_string_mapping_default() {
 
 #[test]
 fn serialise_text_mapping_default() {
-    let ser = FieldMapper::to_string(DefaultTextMapping).unwrap();
+    let ser = serde_json::to_string(&Field::from(DefaultTextMapping)).unwrap();
 
     let expected = json_str!({
         "type": "text"
@@ -38,7 +38,7 @@ fn serialise_text_mapping_default() {
 
 #[test]
 fn serialise_text_mapping_custom() {
-    let ser = FieldMapper::to_string(MyTextMapping).unwrap();
+    let ser = serde_json::to_string(&Field::from(MyTextMapping)).unwrap();
 
     let expected = json_str!({
         "type":"text",
@@ -79,7 +79,7 @@ fn serialise_text_mapping_custom() {
 
 #[test]
 fn serialise_keyword_mapping_default() {
-    let ser = FieldMapper::to_string(DefaultKeywordMapping).unwrap();
+    let ser = serde_json::to_string(&Field::from(DefaultKeywordMapping)).unwrap();
 
     let expected = json_str!({
         "type": "keyword"
@@ -90,7 +90,7 @@ fn serialise_keyword_mapping_default() {
 
 #[test]
 fn serialise_keyword_mapping_custom() {
-    let ser = FieldMapper::to_string(MyKeywordMapping).unwrap();
+    let ser = serde_json::to_string(&Field::from(MyKeywordMapping)).unwrap();
 
     let expected = json_str!({
         "type": "keyword",

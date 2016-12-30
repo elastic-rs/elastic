@@ -76,4 +76,5 @@ pub mod prelude {
 
     pub use super::point::prelude::*;
     pub use super::shape::prelude::*;
+    pub use super::mapping::*;
 }

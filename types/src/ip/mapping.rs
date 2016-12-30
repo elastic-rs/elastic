@@ -2,7 +2,7 @@
 
 use std::net::Ipv4Addr;
 use serde::{Serialize, Serializer};
-use ::field::{FieldMapping, FieldSerWrapper};
+use ::field::{FieldMapping, Field};
 
 /// Elasticsearch datatype name.
 pub const IP_DATATYPE: &'static str = "ip";
@@ -60,7 +60,7 @@ pub struct IpFormat;
 /// 	# 	}
 /// # }
 /// # fn main() {
-/// # let mapping = FieldMapper::to_string(MyIpMapping).unwrap();
+/// # let mapping = serde_json::to_string(&MyIpMapping).unwrap();
 /// # let json = json_str!(
 /// {
 ///     "type": "ip",
@@ -106,14 +106,14 @@ pub trait IpMapping
 impl<T> FieldMapping<IpFormat> for T
     where T: IpMapping
 {
-    type Field = FieldSerWrapper<T, IpFormat>;
+    type Field = Field<T, IpFormat>;
 
     fn data_type() -> &'static str {
         IP_DATATYPE
     }
 }
 
-impl<T> Serialize for FieldSerWrapper<T, IpFormat>
+impl<T> Serialize for Field<T, IpFormat>
     where T: FieldMapping<IpFormat> + IpMapping
 {
     fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>

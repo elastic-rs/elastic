@@ -24,7 +24,7 @@ extern crate test;
 extern crate elastic_types;
 
 pub mod date_fixtures {
-	use elastic_types::mapping::prelude::*;
+	use elastic_types::prelude::*;
 	use elastic_types::date::prelude::*;
 
 	#[derive(Default, Clone)]
@@ -52,7 +52,7 @@ pub mod date_fixtures {
 
 pub mod string_fixtures {
 	use std::collections::BTreeMap;
-	use elastic_types::mapping::prelude::*;
+	use elastic_types::prelude::*;
 
 	#[derive(Default, Clone)]
 	pub struct MyTextMapping;
@@ -166,7 +166,7 @@ pub mod string_fixtures {
 }
 
 pub mod boolean_fixtures {
-	use elastic_types::mapping::prelude::*;
+	use elastic_types::prelude::*;
 
 	#[derive(Default, Clone)]
 	pub struct MyBooleanMapping;
@@ -184,7 +184,7 @@ pub mod boolean_fixtures {
 }
 
 pub mod number_fixtures {
-	use elastic_types::mapping::prelude::*;
+	use elastic_types::prelude::*;
 
 	#[derive(Default, Clone)]
 	pub struct MyIntegerMapping;
@@ -309,7 +309,7 @@ pub mod number_fixtures {
 
 pub mod ip_fixtures {
 	use std::net::Ipv4Addr;
-	use elastic_types::mapping::prelude::*;
+	use elastic_types::prelude::*;
 
 	#[derive(Default, Clone)]
 	pub struct MyIpMapping;
@@ -347,7 +347,7 @@ pub mod geo_point_fixtures {
 }
 
 pub mod geo_shape_fixtures {
-	use elastic_types::mapping::prelude::*;
+	use elastic_types::prelude::*;
 
 	#[derive(Default, Clone)]
 	pub struct MyGeoShapeMapping;

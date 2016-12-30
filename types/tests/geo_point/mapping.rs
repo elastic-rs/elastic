@@ -1,10 +1,10 @@
-use elastic_types::mapping::prelude::*;
-use elastic_types::geo::point::prelude::*;
+use serde_json;
+use elastic_types::prelude::*;
 use ::geo_point_fixtures::*;
 
 #[test]
 fn serialise_mapping_default() {
-    let ser = FieldMapper::to_string(DefaultGeoPointMapping::<DefaultGeoPointFormat>::default()).unwrap();
+    let ser = serde_json::to_string(&Field::from(DefaultGeoPointMapping::<DefaultGeoPointFormat>::default())).unwrap();
 
     let expected = json_str!({
         "type": "geo_point"
@@ -15,7 +15,7 @@ fn serialise_mapping_default() {
 
 #[test]
 fn serialise_mapping_custom() {
-    let ser = FieldMapper::to_string(MyGeoPointMapping).unwrap();
+    let ser = serde_json::to_string(&Field::from(MyGeoPointMapping)).unwrap();
 
     let expected = json_str!({
         "type": "geo_point",

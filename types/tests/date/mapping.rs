@@ -3,7 +3,7 @@ use serde_json;
 use elastic_types;
 
 use chrono::{ DateTime, UTC };
-use elastic_types::mapping::prelude::*;
+use elastic_types::prelude::*;
 use elastic_types::date::prelude::*;
 use ::date_fixtures::*;
 
@@ -14,7 +14,7 @@ fn datetime_has_default_mapping() {
 
 #[test]
 fn serialise_mapping_default() {
-    let ser = FieldMapper::to_string(DefaultDateMapping::<DefaultDateFormat>::default()).unwrap();
+    let ser = serde_json::to_string(&Field::from(DefaultDateMapping::<DefaultDateFormat>::default())).unwrap();
 
     let expected = json_str!({
         "type": "date",
@@ -26,7 +26,7 @@ fn serialise_mapping_default() {
 
 #[test]
 fn serialise_mapping_custom() {
-    let ser = FieldMapper::to_string(MyDateMapping).unwrap();
+    let ser = serde_json::to_string(&Field::from(MyDateMapping)).unwrap();
 
     let expected = json_str!({
         "type": "date",

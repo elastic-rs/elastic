@@ -51,7 +51,7 @@ pub trait FieldMapping<F>
 {
     /// A type that when serialised will produce the mapping for this field.
     /// 
-    /// Using an associated type for `FieldSerWrapper` saves having to know
+    /// Using an associated type for `Field` saves having to know
     /// the type for the format when deriving serialisation.
     type Field: Serialize + Default;
 
@@ -63,13 +63,21 @@ pub trait FieldMapping<F>
 
 /// A wrapper type used to work around conflicting implementations of `Serialize`
 /// for the various mapping traits.
-#[doc(hidden)]
 #[derive(Default)]
-pub struct FieldSerWrapper<M, F>
+pub struct Field<M, F>
     where M: FieldMapping<F>,
           F: Default
 {
     _m: PhantomData<(M, F)>,
+}
+
+impl<M, F> From<M> for Field<M, F>
+    where M: FieldMapping<F>,
+          F: Default
+{
+    fn from(_: M) -> Self {
+        Field::<M, F>::default()
+    }
 }
 
 /// Should the field be searchable? Accepts `not_analyzed` (default) and `no`.
@@ -106,10 +114,10 @@ impl Serialize for IndexAnalysis {
 #[derive(Debug, PartialEq, Default, Clone)]
 pub struct DefaultMapping;
 impl FieldMapping<()> for DefaultMapping {
-    type Field = FieldSerWrapper<Self, ()>;
+    type Field = Field<Self, ()>;
 }
 
-impl Serialize for FieldSerWrapper<DefaultMapping, ()> {
+impl Serialize for Field<DefaultMapping, ()> {
     fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
         where S: Serializer
     {

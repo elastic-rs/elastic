@@ -48,7 +48,7 @@
 //! # 	}
 //! # }
 //! # fn main() {
-//! # let mapping = FieldMapper::to_string(MyIntegerMapping).unwrap();
+//! # let mapping = serde_json::to_string(&MyIntegerMapping).unwrap();
 //! # let json = json_str!(
 //! {
 //!     "type": "integer",
@@ -60,7 +60,7 @@
 //! ```
 
 use serde::Serialize;
-use ::field::{FieldType, FieldMapping, FieldSerWrapper};
+use ::field::{FieldType, FieldMapping, Field};
 
 /// Elasticsearch datatype name.
 pub const INTEGER_DATATYPE: &'static str = "integer";
@@ -119,12 +119,12 @@ macro_rules! number_mapping {
 
 		impl <T> FieldMapping<$f> for T where
 		T: $m {
-			type Field = FieldSerWrapper<T, $f>;
+			type Field = Field<T, $f>;
 
 			fn data_type() -> &'static str { $cn }
 		}
 
-		impl <T> Serialize for FieldSerWrapper<T, $f> where
+		impl <T> Serialize for Field<T, $f> where
 		T: FieldMapping<$f> + $m {
 			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where
 			S: ::serde::Serializer {

@@ -1,5 +1,5 @@
 use serde_json;
-use elastic_types::mapping::prelude::*;
+use elastic_types::prelude::*;
 use ::object_fixtures as expected_types;
 use ::object_macro_fixtures::*;
 
@@ -15,16 +15,16 @@ fn get_custom_type_name() {
 
 #[test]
 fn serialise_mapping_type() {
-    let ser = TypeMapper::to_string(SimpleTypeMapping).unwrap();
+    let ser = serde_json::to_string(&Document::from(SimpleTypeMapping)).unwrap();
 
-    let expected = TypeMapper::to_string(expected_types::SimpleTypeMapping).unwrap();
+    let expected = serde_json::to_string(&Document::from(expected_types::SimpleTypeMapping)).unwrap();
 
     assert_eq!(expected, ser);
 }
 
 #[test]
 fn serialise_custom_mapping_type() {
-    let ser = TypeMapper::to_string(CustomTypeMapping).unwrap();
+    let ser = serde_json::to_string(&Document::from(CustomTypeMapping)).unwrap();
 
     let expected = json_str!({
         "properties":{

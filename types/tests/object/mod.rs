@@ -1,6 +1,6 @@
 use serde_json;
 
-use elastic_types::mapping::prelude::*;
+use elastic_types::prelude::*;
 use ::object_fixtures::*;
 
 #[test]
@@ -10,7 +10,7 @@ fn get_type_name() {
 
 #[test]
 fn serialise_mapping_type_with_mapper() {
-    let ser = TypeMapper::to_string(SimpleTypeMapping).unwrap();
+    let ser = serde_json::to_string(&Document::from(SimpleTypeMapping)).unwrap();
 
     let expected = json_str!({
         "properties":{
@@ -35,14 +35,14 @@ fn serialise_mapping_type_with_mapper() {
 #[test]
 fn serialise_mapping_type() {
     let ser = serde_json::to_string(&Document::from(SimpleTypeMapping)).unwrap();
-    let expected = TypeMapper::to_string(SimpleTypeMapping).unwrap();
+    let expected = serde_json::to_string(&Document::from(SimpleTypeMapping)).unwrap();
 
     assert_eq!(expected, ser);
 }
 
 #[test]
 fn serialise_mapping_as_value() {
-    let value = TypeMapper::to_value(SimpleTypeMapping).unwrap();
+    let value = serde_json::to_value(&Document::from(SimpleTypeMapping));
 
     let ser = serde_json::ser::to_string(&value.lookup("properties.field1.type").unwrap()).unwrap();
 

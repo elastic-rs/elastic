@@ -1,7 +1,6 @@
 use serde_json;
 
-use elastic_types::mapping::prelude::*;
-use elastic_types::boolean::prelude::*;
+use elastic_types::prelude::*;
 use ::boolean_fixtures::*;
 
 #[test]

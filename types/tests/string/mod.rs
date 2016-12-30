@@ -2,8 +2,7 @@ use serde_json;
 
 pub mod mapping;
 
-use elastic_types::mapping::prelude::*;
-use elastic_types::string::prelude::*;
+use elastic_types::prelude::*;
 use ::string_fixtures::*;
 
 #[test]

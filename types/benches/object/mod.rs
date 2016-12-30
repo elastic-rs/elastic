@@ -3,7 +3,7 @@ extern crate serde;
 extern crate serde_json;
 extern crate elastic_types;
 
-use elastic_types::mapping::prelude::*;
+use elastic_types::prelude::*;
 use ::object_fixtures::*;
 use test::Bencher;
 

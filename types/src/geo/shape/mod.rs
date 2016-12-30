@@ -27,7 +27,7 @@
 //! # use elastic_types::prelude::*;
 //! # use std::marker::PhantomData;
 //! # fn main() {
-//! # use elastic_types::mapping::prelude::*;
+//! # use elastic_types::prelude::*;
 //! # use elastic_types::geo::shape::prelude::*;
 //! # #[derive(Default)]
 //! # struct MyGeoShapeMapping;

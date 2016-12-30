@@ -3,8 +3,7 @@ pub mod mapping;
 use serde_json;
 
 use geojson::{ Geometry, Value };
-use elastic_types::mapping::prelude::*;
-use elastic_types::geo::shape::prelude::*;
+use elastic_types::prelude::*;
 use ::geo_shape_fixtures::*;
 
 #[test]

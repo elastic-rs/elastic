@@ -15,6 +15,6 @@ use test::Bencher;
 #[bench]
 fn mapping(b: &mut Bencher) {
 	b.iter(|| {
-		FieldMapper::to_string(MyIpMapping).unwrap()
+		serde_json::to_string(&MyIpMapping).unwrap()
 	});
 }

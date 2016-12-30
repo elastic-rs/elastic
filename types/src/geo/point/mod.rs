@@ -29,7 +29,7 @@
 //! # use std::marker::PhantomData;
 //! # use elastic_types::prelude::*;
 //! # fn main() {
-//! # use elastic_types::mapping::prelude::*;
+//! # use elastic_types::prelude::*;
 //! # use elastic_types::geo::point::prelude::*;
 //! # #[derive(Default)]
 //! # struct MyGeoPointMapping;

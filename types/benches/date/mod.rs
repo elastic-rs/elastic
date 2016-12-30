@@ -47,6 +47,6 @@ fn fmt_epoch(b: &mut Bencher) {
 #[bench]
 fn mapping(b: &mut Bencher) {
 	b.iter(|| {
-		FieldMapper::to_string(MyDateMapping).unwrap()
+		serde_json::to_string(&MyDateMapping).unwrap()
 	});
 }

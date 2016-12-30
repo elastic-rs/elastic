@@ -3,7 +3,7 @@ use serde_json;
 use elastic_types;
 
 use std::net::Ipv4Addr;
-use elastic_types::mapping::prelude::*;
+use elastic_types::prelude::*;
 use ::ip_fixtures::*;
 
 #[test]
@@ -13,7 +13,7 @@ fn ipv4addr_has_default_mapping() {
 
 #[test]
 fn serialise_mapping_default() {
-    let ser = FieldMapper::to_string(DefaultIpMapping).unwrap();
+    let ser = serde_json::to_string(&Field::from(DefaultIpMapping)).unwrap();
 
     let expected = json_str!({
         "type": "ip"
@@ -24,7 +24,7 @@ fn serialise_mapping_default() {
 
 #[test]
 fn serialise_mapping_custom() {
-    let ser = FieldMapper::to_string(MyIpMapping).unwrap();
+    let ser = serde_json::to_string(&Field::from(MyIpMapping)).unwrap();
 
     let expected = json_str!({
         "type": "ip",

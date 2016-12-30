@@ -32,7 +32,7 @@
 //! # extern crate serde;
 //! # extern crate elastic_types;
 //! # fn main() {
-//! # use elastic_types::mapping::prelude::*;
+//! # use elastic_types::prelude::*;
 //! # use elastic_types::string::prelude::*;
 //! struct MyType {
 //! 	pub field: Keyword<DefaultKeywordMapping>
@@ -48,7 +48,7 @@
 //! # extern crate serde;
 //! # extern crate elastic_types;
 //! # fn main() {
-//! # use elastic_types::mapping::prelude::*;
+//! # use elastic_types::prelude::*;
 //! # use elastic_types::string::prelude::*;
 //! struct MyType {
 //! 	pub field: Text<DefaultTextMapping>
@@ -140,7 +140,6 @@ pub mod mapping;
 pub use self::keyword::Keyword;
 pub use self::text::Text;
 
-
 pub mod prelude {
     //! Includes all types for the `string` types.
     //!
@@ -148,4 +147,5 @@ pub mod prelude {
 
     pub use super::keyword::prelude::*;
     pub use super::text::prelude::*;
+    pub use super::mapping::*;
 }

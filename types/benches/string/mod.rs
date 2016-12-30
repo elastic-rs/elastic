@@ -15,13 +15,13 @@ use test::Bencher;
 #[bench]
 fn keyword_mapping(b: &mut Bencher) {
 	b.iter(|| {
-		FieldMapper::to_string(MyKeywordMapping).unwrap()
+		serde_json::to_string(&MyKeywordMapping).unwrap()
 	});
 }
 
 #[bench]
 fn text_mapping(b: &mut Bencher) {
 	b.iter(|| {
-		FieldMapper::to_string(MyTextMapping).unwrap()
+		serde_json::to_string(&MyTextMapping).unwrap()
 	});
 }

@@ -97,14 +97,14 @@ fn impl_elastic_type(item: &syn::MacroInput, mapping: &syn::Ident) -> quote::Tok
 	let ty = &item.ident;
 
 	quote!(
-		impl ::elastic_types::mapping::DocumentType<#mapping> for #ty { }
+		impl ::elastic_types::document::DocumentType<#mapping> for #ty { }
 	)
 }
 
 //Implement DocumentMapping for the mapping
 fn impl_object_mapping(mapping: &syn::Ident, es_ty: &syn::Lit) -> quote::Tokens {
 	quote!(
-		impl ::elastic_types::mapping::DocumentMapping for #mapping {
+		impl ::elastic_types::document::DocumentMapping for #mapping {
 			fn name() -> &'static str { #es_ty }
 		}
 	)
@@ -116,7 +116,7 @@ fn impl_props_mapping(mapping: &syn::Ident, prop_ser_stmts: Vec<quote::Tokens>) 
 	let stmts = prop_ser_stmts;
 
 	quote!(
-		impl ::elastic_types::mapping::PropertiesMapping for #mapping {
+		impl ::elastic_types::document::PropertiesMapping for #mapping {
 			fn props_len() -> usize { #stmts_len }
 			
 			fn serialize_props<S>(serializer: &mut S, state: &mut S::StructState) -> Result<(), S::Error>
@@ -162,7 +162,7 @@ fn get_props_ser_stmts(fields: &[(syn::Ident, &syn::Field)]) -> Vec<quote::Token
 
 			let expr = quote!(#(#segments)::*::mapping());
 
-			Some(quote!(try!(::elastic_types::mapping::field_ser(serializer, state, #lit, #expr));))
+			Some(quote!(try!(::elastic_types::document::field_ser(serializer, state, #lit, #expr));))
 		}
 		else {
 			None

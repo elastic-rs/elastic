@@ -1,4 +1,5 @@
-use elastic_types::mapping::prelude::*;
+use serde_json;
+use elastic_types::prelude::*;
 use ::number_fixtures::*;
 
 #[test]
@@ -33,7 +34,7 @@ fn f64_has_default_mapping() {
 
 #[test]
 fn serialise_mapping_integer_default() {
-    let ser = FieldMapper::to_string(DefaultIntegerMapping).unwrap();
+    let ser = serde_json::to_string(&Field::from(DefaultIntegerMapping)).unwrap();
 
     let expected = json_str!({
         "type": "integer"
@@ -44,7 +45,7 @@ fn serialise_mapping_integer_default() {
 
 #[test]
 fn serialise_mapping_integer_custom() {
-    let ser = FieldMapper::to_string(MyIntegerMapping).unwrap();
+    let ser = serde_json::to_string(&Field::from(MyIntegerMapping)).unwrap();
 
     let expected = json_str!({
         "type": "integer",
@@ -62,7 +63,7 @@ fn serialise_mapping_integer_custom() {
 
 #[test]
 fn serialise_mapping_long_default() {
-    let ser = FieldMapper::to_string(DefaultLongMapping).unwrap();
+    let ser = serde_json::to_string(&Field::from(DefaultLongMapping)).unwrap();
 
     let expected = json_str!({
         "type": "long"
@@ -73,7 +74,7 @@ fn serialise_mapping_long_default() {
 
 #[test]
 fn serialise_mapping_long_custom() {
-    let ser = FieldMapper::to_string(MyLongMapping).unwrap();
+    let ser = serde_json::to_string(&Field::from(MyLongMapping)).unwrap();
 
     let expected = json_str!({
         "type": "long",
@@ -91,7 +92,7 @@ fn serialise_mapping_long_custom() {
 
 #[test]
 fn serialise_mapping_short_default() {
-    let ser = FieldMapper::to_string(DefaultShortMapping).unwrap();
+    let ser = serde_json::to_string(&Field::from(DefaultShortMapping)).unwrap();
 
     let expected = json_str!({
         "type": "short"
@@ -102,7 +103,7 @@ fn serialise_mapping_short_default() {
 
 #[test]
 fn serialise_mapping_short_custom() {
-    let ser = FieldMapper::to_string(MyShortMapping).unwrap();
+    let ser = serde_json::to_string(&Field::from(MyShortMapping)).unwrap();
 
     let expected = json_str!({
         "type": "short",
@@ -120,7 +121,7 @@ fn serialise_mapping_short_custom() {
 
 #[test]
 fn serialise_mapping_byte_default() {
-    let ser = FieldMapper::to_string(DefaultByteMapping).unwrap();
+    let ser = serde_json::to_string(&Field::from(DefaultByteMapping)).unwrap();
 
     let expected = json_str!({
         "type": "byte"
@@ -131,7 +132,7 @@ fn serialise_mapping_byte_default() {
 
 #[test]
 fn serialise_mapping_byte_custom() {
-    let ser = FieldMapper::to_string(MyByteMapping).unwrap();
+    let ser = serde_json::to_string(&Field::from(MyByteMapping)).unwrap();
 
     let expected = json_str!({
         "type": "byte",
@@ -149,7 +150,7 @@ fn serialise_mapping_byte_custom() {
 
 #[test]
 fn serialise_mapping_double_default() {
-    let ser = FieldMapper::to_string(DefaultDoubleMapping).unwrap();
+    let ser = serde_json::to_string(&Field::from(DefaultDoubleMapping)).unwrap();
 
     let expected = json_str!({
         "type": "double"
@@ -160,7 +161,7 @@ fn serialise_mapping_double_default() {
 
 #[test]
 fn serialise_mapping_double_custom() {
-    let ser = FieldMapper::to_string(MyDoubleMapping).unwrap();
+    let ser = serde_json::to_string(&Field::from(MyDoubleMapping)).unwrap();
 
     let expected = json_str!({
         "type": "double",
@@ -178,7 +179,7 @@ fn serialise_mapping_double_custom() {
 
 #[test]
 fn serialise_mapping_float_default() {
-    let ser = FieldMapper::to_string(DefaultFloatMapping).unwrap();
+    let ser = serde_json::to_string(&Field::from(DefaultFloatMapping)).unwrap();
 
     let expected = json_str!({
         "type": "float"
@@ -189,7 +190,7 @@ fn serialise_mapping_float_default() {
 
 #[test]
 fn serialise_mapping_float_custom() {
-    let ser = FieldMapper::to_string(MyFloatMapping).unwrap();
+    let ser = serde_json::to_string(&Field::from(MyFloatMapping)).unwrap();
 
     let expected = json_str!({
         "type": "float",

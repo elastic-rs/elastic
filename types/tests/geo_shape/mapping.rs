@@ -1,9 +1,10 @@
-use elastic_types::mapping::prelude::*;
+use serde_json;
+use elastic_types::prelude::*;
 use ::geo_shape_fixtures::*;
 
 #[test]
 fn serialise_mapping_default() {
-    let ser = FieldMapper::to_string(DefaultGeoShapeMapping).unwrap();
+    let ser = serde_json::to_string(&Field::from(DefaultGeoShapeMapping)).unwrap();
 
     let expected = json_str!({
         "type": "geo_shape"
@@ -14,7 +15,7 @@ fn serialise_mapping_default() {
 
 #[test]
 fn serialise_mapping_custom() {
-    let ser = FieldMapper::to_string(MyGeoShapeMapping).unwrap();
+    let ser = serde_json::to_string(&Field::from(MyGeoShapeMapping)).unwrap();
 
     let expected = json_str!({
         "type": "geo_shape",
