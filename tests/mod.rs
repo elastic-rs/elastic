@@ -38,7 +38,8 @@ fn test_parse_simple_aggs() {
 
     for i in deserialized.aggs().unwrap().into_iter().take(50000) {
         index+= 1;
-        println!("Got record {}:\n {:#?}", index, i);
+//        println!("Got record {}:\n {:#?}", index, i);
+        println!("{:?}", i);
     }
 
     //FIXME: Shouldn't be a move above

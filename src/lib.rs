@@ -140,7 +140,10 @@ impl<'a> Iterator for AggregationIterator<'a> {
                     //                    println!("N: {:?}", n);
                     let active_name = &i.0.unwrap();
 //                    println!("Active Name! {}", active_name);
+
+                    //Iterate down?
                     let mut has_buckets = false;
+                    //Save
                     self.iter_stack.push(i);
 
 //                    println!("Loop {:?} {}", active_name, self.iter_stack.len());
@@ -154,8 +157,8 @@ impl<'a> Iterator for AggregationIterator<'a> {
                         },
                         Some(n) => {
                             match self.current_row {
-                                Some(ref mut r) => {
-                                    let row = r;
+                                Some(ref mut row) => {
+//                                    let row = r;
                                     //                                    println!("Insert! {} {:?}", active_name, value);
                                     //                                    row.insert(active_name, value);
 
@@ -199,7 +202,7 @@ impl<'a> Iterator for AggregationIterator<'a> {
 
                     if !has_buckets {
 //                        println!("Bucketless!");
-                        self.iter_stack.pop();
+//                        self.iter_stack.pop();
                         break;
                     } else {
 //                        println!("Dive!");
