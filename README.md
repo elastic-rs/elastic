@@ -1,25 +1,25 @@
 # [`elastic_types`](https://docs.rs/elastic_types/*/elastic_types/) [![Latest Version](https://img.shields.io/crates/v/elastic_types.svg)](https://crates.io/crates/elastic_types)
 
-`elastic_types` is a library for building Elasticsearch types in Rust. Define your Elasticsearch types as PORS (Plain Old Rust Structures) and generate an equivalent Elasticsearch mapping from them, where correctness is enforced by Rust's type system.
-It provides rust implementations of the core [Elasticsearch datatypes](https://www.elastic.co/guide/en/elasticsearch/reference/master/mapping-types.html#_core_datatypes) (like `date`, `geo_point`).
+`elastic_types` is a library for statically-defined document mappings for Rust. It provides tools to define, encode and decode document types efficiently, however they're stored in Elasticsearch.
+
+Define your Elasticsearch types as PORS (Plain Old Rust Structures) and generate an equivalent Elasticsearch mapping from them, where correctness is enforced by Rust's type system. It provides rust implementations of the core [Elasticsearch datatypes](https://www.elastic.co/guide/en/elasticsearch/reference/master/mapping-types.html#_core_datatypes) (like `date`, `geo_point`).
 
 It's especially helpful for the `date` and `geo_point` types, where serialisation for the various formats is provided for you.
 
-This library makes heavy use of [`serde`](https://serde.rs/).
-We also try not to reinvent the wheel wherever possible and rely on some common dependencies for types, such as [`chrono`](https://github.com/lifthrasiir/rust-chrono) for dates and [`rust-geo`](https://github.com/georust/rust-geo) for geometry.
+This library makes heavy use of [`serde`](https://serde.rs/) for serialisation. We also try not to reinvent the wheel wherever possible and rely on some common dependencies for types, such as [`chrono`](https://github.com/lifthrasiir/rust-chrono) for dates and [`rust-geo`](https://github.com/georust/rust-geo) for geometry.
 
 ## Build Status
 Platform  | Channel | Status
-------------- | ------------- | -------------
-Linux / OSX  | Stable / Nightly | [![Build Status](https://travis-ci.org/elastic-rs/elastic-types.svg?branch=master)](https://travis-ci.org/elastic-rs/elastic-types)
-Windows  | Nightly | [![Build status](https://ci.appveyor.com/api/projects/status/2x2cmfi6hku72nmk?svg=true)](https://ci.appveyor.com/project/KodrAus/elastic-types)
+------------- | ---------------- | -------------
+Linux / OSX   | Stable / Nightly | [![Build Status](https://travis-ci.org/elastic-rs/elastic-types.svg?branch=master)](https://travis-ci.org/elastic-rs/elastic-types)
+Windows       | Nightly          | [![Build status](https://ci.appveyor.com/api/projects/status/2x2cmfi6hku72nmk?svg=true)](https://ci.appveyor.com/project/KodrAus/elastic-types)
 
 ## Documentation
 
-Version  | Docs
-------------- | -------------
+Version   | Docs
+--------- | -------------
 `master`  | [![Documentation](https://img.shields.io/badge/docs-rustdoc-orange.svg)](https://elastic-rs.github.io/elastic-types/elastic_types/)
-`current`  | [![Documentation](https://img.shields.io/badge/docs-rustdoc-orange.svg)](https://docs.rs/elastic_types/*/elastic_types/)
+`current` | [![Documentation](https://img.shields.io/badge/docs-rustdoc-orange.svg)](https://docs.rs/elastic_types/*/elastic_types/)
 
 ## Example
 
@@ -58,8 +58,10 @@ pub struct MyType {
 You can then get the mapping for your type as `json`:
 
 ```rust
-let mapping = TypeMapper::to_string(MyType::mapping()).unwrap();
+let mapping = serde_json::to_string(Document::from(MyType::mapping())).unwrap();
 ```
+
+Which looks like:
 
 ```json
 {
@@ -86,11 +88,11 @@ let mapping = TypeMapper::to_string(MyType::mapping()).unwrap();
 
 The `stable` channel is also supported, see the [docs](#documentation) for details.
 
+> Macros 1.1 is currently being stabilised. Once this is done everything will work the same between `stable` and `nightly`.
+
 ## Deserialising indexed types
 
-Types that derive `ElasticType` are themselves serialisable, which can be very helpful when using 
-types with special formats, like `date`.
-Take the following document:
+Types that derive `ElasticType` are themselves serialisable, which can be very helpful when using types with special formats, like `date`. Take the following document:
 
 ```json
 {
@@ -100,8 +102,7 @@ Take the following document:
 }
 ```
 
-Using the `Date<EpochMillis>` type for the `timestamp`, we can correctly deserialise the document as a strongly typed
-object:
+Using the `Date<EpochMillis>` type for the `timestamp`, we can correctly deserialise the document as a strongly typed object:
 
 ```rust
 #[derive(Deserialize)]
