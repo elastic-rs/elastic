@@ -147,8 +147,6 @@ pub trait GeoShapeMapping
 impl<T> FieldMapping<GeoShapeFormat> for T
     where T: GeoShapeMapping
 {
-    type Field = Field<T, GeoShapeFormat>;
-
     fn data_type() -> &'static str {
         GEOSHAPE_DATATYPE
     }

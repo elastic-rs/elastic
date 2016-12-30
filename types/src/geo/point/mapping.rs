@@ -147,8 +147,6 @@ impl<T, F> FieldMapping<GeoPointFormatWrapper<F>> for T
     where T: GeoPointMapping<Format = F>,
           F: GeoPointFormat
 {
-    type Field = Field<T, GeoPointFormatWrapper<F>>;
-
     fn data_type() -> &'static str {
         GEOPOINT_DATATYPE
     }

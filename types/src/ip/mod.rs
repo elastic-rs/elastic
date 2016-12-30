@@ -1,4 +1,4 @@
-//! Implementation of the Elasticsearch `boolean` type.
+//! Implementation of the Elasticsearch `ip` type.
 //!
 //! # Examples
 //!

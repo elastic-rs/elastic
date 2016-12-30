@@ -556,8 +556,6 @@ pub trait PropertiesMapping {
 impl<T> FieldMapping<DocumentFormat> for T
     where T: DocumentMapping
 {
-    type Field = Field<T, DocumentFormat>;
-
     fn data_type() -> &'static str {
         <Self as DocumentMapping>::data_type()
     }
@@ -638,9 +636,10 @@ impl Serialize for Dynamic {
 pub fn field_ser<S, M, F>(serializer: &mut S, state: &mut S::StructState, field: &'static str, _: M) -> Result<(), S::Error>
     where S: Serializer,
           M: FieldMapping<F>,
-          F: Default
+          F: Default,
+          Field<M, F>: Serialize
 {
-    serializer.serialize_struct_elt(state, field, &M::Field::default())
+    serializer.serialize_struct_elt(state, field, &Field::from(M::default()))
 }
 
 /// Serialise a document mapping using the given serialiser.

@@ -1,4 +1,4 @@
-//! Base requirements for type mappings.
+//! Base requirements for datatype mappings.
 //!
 //! There are two kinds of types we can map in Elasticsearch; `field`/`data` types and `document` types:
 //! 
@@ -49,12 +49,6 @@ pub trait FieldMapping<F>
     where Self: Default,
           F: Default
 {
-    /// A type that when serialised will produce the mapping for this field.
-    /// 
-    /// Using an associated type for `Field` saves having to know
-    /// the type for the format when deriving serialisation.
-    type Field: Serialize + Default;
-
     /// Get the type name for this mapping, like `date` or `string`.
     fn data_type() -> &'static str {
         "object"
@@ -116,9 +110,7 @@ impl Serialize for IndexAnalysis {
 /// A mapping implementation for a non-core type, or anywhere it's ok for Elasticsearch to infer the mapping at index-time.
 #[derive(Debug, PartialEq, Default, Clone)]
 pub struct DefaultMapping;
-impl FieldMapping<()> for DefaultMapping {
-    type Field = Field<Self, ()>;
-}
+impl FieldMapping<()> for DefaultMapping { }
 
 impl Serialize for Field<DefaultMapping, ()> {
     fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
@@ -149,8 +141,6 @@ impl<M, F> FieldMapping<F> for WrappedMapping<M, F>
     where M: FieldMapping<F>,
           F: Default
 {
-    type Field = M::Field;
-
     fn data_type() -> &'static str {
         M::data_type()
     }

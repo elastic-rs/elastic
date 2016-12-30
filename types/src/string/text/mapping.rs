@@ -219,8 +219,6 @@ pub trait TextMapping
 impl<T> FieldMapping<TextFormat> for T
     where T: TextMapping
 {
-    type Field = Field<T, TextFormat>;
-
     fn data_type() -> &'static str {
         TEXT_DATATYPE
     }
