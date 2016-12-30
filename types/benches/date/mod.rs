@@ -1,12 +1,4 @@
-#![feature(test, plugin)]
-#![plugin(json_str)]
-
-extern crate serde;
-extern crate serde_json;
-extern crate test;
-extern crate chrono;
-extern crate elastic_types;
-
+use serde_json;
 use elastic_types::prelude::*;
 use ::date_fixtures::*;
 
@@ -47,6 +39,6 @@ fn fmt_epoch(b: &mut Bencher) {
 #[bench]
 fn mapping(b: &mut Bencher) {
 	b.iter(|| {
-		serde_json::to_string(&MyDateMapping).unwrap()
+		serde_json::to_string(&Field::from(MyDateMapping)).unwrap()
 	});
 }

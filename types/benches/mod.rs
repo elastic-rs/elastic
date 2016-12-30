@@ -25,7 +25,6 @@ extern crate elastic_types;
 
 pub mod date_fixtures {
 	use elastic_types::prelude::*;
-	use elastic_types::date::prelude::*;
 
 	#[derive(Default, Clone)]
 	pub struct MyDateMapping;
@@ -437,4 +436,3 @@ pub mod date;
 pub mod string;
 pub mod number;
 pub mod boolean;
-pub mod template;
