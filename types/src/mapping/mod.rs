@@ -306,12 +306,12 @@
 //!     pub my_num: i32
 //! }
 //! 
-//! #[derive(Serialize)]
+//! #[derive(Default, Serialize)]
 //! pub struct MyIndex {
 //!     pub mappings: Mappings
 //! }
 //! 
-//! #[derive(Serialize)]
+//! #[derive(Default, Serialize)]
 //! pub struct Mappings {
 //!     pub mytype: Document<MyTypeMapping>
 //! }
@@ -332,6 +332,7 @@
 //! # #[macro_use]
 //! # extern crate elastic_types;
 //! # extern crate serde;
+//! # extern crate serde_json;
 //! # use elastic_types::prelude::*;
 //! # #[derive(Serialize, ElasticType)]
 //! # pub struct MyType {
@@ -339,21 +340,20 @@
 //! #     pub my_string: String,
 //! #     pub my_num: i32
 //! # }
-//! # #[derive(Serialize)]
+//! # #[derive(Default, Serialize)]
 //! # pub struct MyIndex {
 //! #     pub mappings: Mappings
 //! # }
-//! # #[derive(Serialize)]
+//! # #[derive(Default, Serialize)]
 //! # pub struct Mappings {
 //! #     pub mytype: Document<MyTypeMapping>
 //! # }
 //! # fn main() {
-//! # let index = serde_json::to_string(MyIndex).unwrap();
+//! # let index = serde_json::to_string(&MyIndex::default()).unwrap();
 //! # let json = json_str!(
 //! {
 //!     "mappings": {
 //!         "mytype": {
-//!             "type": "object",
 //!             "properties": {
 //!                 "my_date": {
 //!                     "type": "date",
