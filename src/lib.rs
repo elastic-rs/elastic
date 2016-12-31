@@ -37,7 +37,6 @@ pub struct Aggregations(Value);
 //          Mental model for this?
 //          Below works thanks to `misdreavus` on IRC, but I don't quite know why
 impl<'a> IntoIterator for &'a Aggregations {
-    //    type Item = BTreeMap<&'a String, &'a Value>;
     type Item = BTreeMap<Cow<'a, String>, &'a Value>;
     type IntoIter = AggregationIterator<'a>;
 
