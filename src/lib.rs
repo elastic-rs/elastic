@@ -65,6 +65,11 @@ pub use genned::*;
 
 use std::borrow::Cow;
 
+/// Get a borrowed or owned slice of bytes.
+/// 
+/// This trait can be used to get the contents of a `HttpRequest`
+/// body without worrying about whether the request itself is
+/// borrowed or owned.
 pub trait RawBody<'a> {
     fn into_raw(self) -> Cow<'a, [u8]>;
 }
@@ -79,7 +84,7 @@ impl<'a> RawBody<'a> for Cow<'a, Body<'a>> {
                 }
             }
             Cow::Owned(b) => {
-                match b.into() {
+                match b.into_raw() {
                     Cow::Borrowed(b) => Cow::Borrowed(b),
                     Cow::Owned(b) => Cow::Owned(b),
                 }
