@@ -37,7 +37,7 @@ pub struct Aggregations(Value);
 //          Mental model for this?
 //          Below works thanks to `misdreavus` on IRC, but I don't quite know why
 impl<'a> IntoIterator for &'a Aggregations {
-    type Item = BTreeMap<Cow<'a, String>, &'a Value>;
+    type Item = BTreeMap<Cow<'a, String>, &'a Value>; // JPG - str?
     type IntoIter = AggregationIterator<'a>;
 
     fn into_iter(self) -> AggregationIterator<'a> {
@@ -68,15 +68,16 @@ impl<'a> AggregationIterator<'a> {
     fn new(a: &'a Aggregations) -> AggregationIterator<'a> {
         let v = match a {
             &Aggregations(ref v) => v
-        };
+        }; // JPG if let, destructure, direct
 
+        // JPG: inference?
         let mut s: Vec<(Option<&String>, Iter<Value>)> = Vec::new();
 
         match *v {
             Value::Object(ref o) => {
                 for (key, child) in o {
                     if let Value::Object(ref c) = *child {
-                        if c.contains_key("buckets") {
+                        if c.contains_key("buckets") { // JPG: entry
                             if let Value::Array(ref a) = c["buckets"] {
                                 let i = a.iter();
                                 s.push((Some(&key), i));
@@ -88,7 +89,7 @@ impl<'a> AggregationIterator<'a> {
             _ => {
                 //FIXME: Bad for lib
                 panic!("Not implemented, we only cater for bucket objects");
-            }
+            } // quick-error
         };
 
         AggregationIterator {
@@ -112,7 +113,7 @@ macro_rules! insert_value {
 }
 
 impl<'a> Iterator for AggregationIterator<'a> {
-    type Item = BTreeMap<Cow<'a, String>, &'a Value>;
+    type Item = BTreeMap<Cow<'a, String>, &'a Value>; // JPG type alias?
 
     fn next(&mut self) -> Option<BTreeMap<Cow<'a, String>, &'a Value>> {
         match self.current_row {
@@ -120,14 +121,14 @@ impl<'a> Iterator for AggregationIterator<'a> {
                 //New row
                 self.current_row = Some(BTreeMap::new())
             },
-            Some(_) => ()
+            Some(_) => () // JPG if let
         };
 
         loop {
             match self.iter_stack.pop() {
                 None => {
-                    debug! ("ITER: Done!");
-                    match self.current_row {
+                    debug! ("ITER: Done!"); // JPG: no space on macro invocation
+                    match self.current_row { // JPG always set to None.
                         Some(_) => {
                             self.current_row = None
                         },
@@ -136,7 +137,7 @@ impl<'a> Iterator for AggregationIterator<'a> {
                     break;
                 },
                 Some(mut i) => {
-                    let n = i.1.next();
+                    let n = i.1.next(); // JPG tuples used like this are hard to follow
                     //FIXME: can this fail?
                     let active_name = &i.0.unwrap();
 
@@ -160,7 +161,7 @@ impl<'a> Iterator for AggregationIterator<'a> {
                                 Some(ref mut row) => {
                                     debug! ("ITER: Row: {:?}", row);
 
-                                    let o = match *n {
+                                    let o = match *n { // JPG as_object
                                         Value::Object(ref o) => o,
                                         _ => panic!("Shouldn't get here!")
                                     };
@@ -265,6 +266,7 @@ pub struct Hits {
     hits: Vec<Value>
 }
 
+// JPG place impls closer to defns
 impl Response {
     pub fn hits(&self) -> &Vec<Value> {
         &self.hits.hits()
@@ -276,14 +278,14 @@ impl Response {
 }
 
 impl Hits {
-    pub fn hits(&self) -> &Vec<Value> {
+    pub fn hits(&self) -> &Vec<Value> { // JPG http://stackoverflow.com/q/40006219/155423
         &self.hits
     }
 }
 
 #[derive(Deserialize, Debug)]
 struct Hit {
-    _index: String
+    _index: String // JPG suspicious
 }
 
 #[cfg(test)]
