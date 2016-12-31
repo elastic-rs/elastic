@@ -149,7 +149,7 @@ impl<'a> Iterator for AggregationIterator<'a> {
                             continue;
                         },
                         Some(n) => {
-                            //QUESTION: Destructuring/matching
+                            //QUESTION: Destructuring/matching to this extent the right strategy?
                             match self.current_row {
                                 Some(ref mut row) => {
                                     debug!("ITER: Row: {:?}", row);

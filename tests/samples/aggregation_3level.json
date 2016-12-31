@@ -1,0 +1,2927 @@
+{
+  "took": 22,
+  "timed_out": false,
+  "_shards": {
+    "total": 81,
+    "successful": 81,
+    "failed": 0
+  },
+  "hits": {
+    "total": 15731,
+    "max_score": 0,
+    "hits": []
+  },
+  "aggregations": {
+    "timechart": {
+      "buckets": [
+        {
+          "key_as_string": "2016-12-31T10:07:00.000+02:00",
+          "key": 1483171620000,
+          "doc_count": 56,
+          "hosts": {
+            "doc_count_error_upper_bound": 0,
+            "sum_other_doc_count": 0,
+            "buckets": [
+              {
+                "key": "0060e063505c",
+                "doc_count": 33,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": [
+                    {
+                      "key": "192.168.101.132",
+                      "doc_count": 2,
+                      "avg_ack_pkts_sent": {
+                        "value": 7
+                      }
+                    },
+                    {
+                      "key": "192.168.101.120",
+                      "doc_count": 1,
+                      "avg_ack_pkts_sent": {
+                        "value": 1
+                      }
+                    },
+                    {
+                      "key": "192.168.40.10",
+                      "doc_count": 1,
+                      "avg_ack_pkts_sent": {
+                        "value": 3
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "key": "0060e0634ff8",
+                "doc_count": 23,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "key_as_string": "2016-12-31T10:07:30.000+02:00",
+          "key": 1483171650000,
+          "doc_count": 486,
+          "hosts": {
+            "doc_count_error_upper_bound": 0,
+            "sum_other_doc_count": 0,
+            "buckets": [
+              {
+                "key": "0060e063505c",
+                "doc_count": 255,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 6,
+                  "buckets": [
+                    {
+                      "key": "192.168.101.103",
+                      "doc_count": 10,
+                      "avg_ack_pkts_sent": {
+                        "value": 25.6
+                      }
+                    },
+                    {
+                      "key": "192.168.101.121",
+                      "doc_count": 6,
+                      "avg_ack_pkts_sent": {
+                        "value": 3.8333333333333335
+                      }
+                    },
+                    {
+                      "key": "192.168.101.132",
+                      "doc_count": 5,
+                      "avg_ack_pkts_sent": {
+                        "value": 3.8
+                      }
+                    },
+                    {
+                      "key": "121.78.144.42",
+                      "doc_count": 4,
+                      "avg_ack_pkts_sent": {
+                        "value": 2
+                      }
+                    },
+                    {
+                      "key": "192.168.101.104",
+                      "doc_count": 3,
+                      "avg_ack_pkts_sent": {
+                        "value": 1.3333333333333333
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "key": "0060e0634ff8",
+                "doc_count": 154,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": [
+                    {
+                      "key": "192.168.85.103",
+                      "doc_count": 8,
+                      "avg_ack_pkts_sent": {
+                        "value": 2.625
+                      }
+                    },
+                    {
+                      "key": "46.101.215.170",
+                      "doc_count": 1,
+                      "avg_ack_pkts_sent": {
+                        "value": 25
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "key": "b827ebb95199",
+                "doc_count": 40,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": []
+                }
+              },
+              {
+                "key": "b827ebdd0999",
+                "doc_count": 37,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "key_as_string": "2016-12-31T10:08:00.000+02:00",
+          "key": 1483171680000,
+          "doc_count": 442,
+          "hosts": {
+            "doc_count_error_upper_bound": 0,
+            "sum_other_doc_count": 0,
+            "buckets": [
+              {
+                "key": "0060e0634ff8",
+                "doc_count": 271,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": [
+                    {
+                      "key": "192.168.85.103",
+                      "doc_count": 2,
+                      "avg_ack_pkts_sent": {
+                        "value": 8
+                      }
+                    },
+                    {
+                      "key": "46.101.215.170",
+                      "doc_count": 1,
+                      "avg_ack_pkts_sent": {
+                        "value": 1
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "key": "0060e063505c",
+                "doc_count": 139,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 11,
+                  "buckets": [
+                    {
+                      "key": "192.168.101.104",
+                      "doc_count": 10,
+                      "avg_ack_pkts_sent": {
+                        "value": 6.1
+                      }
+                    },
+                    {
+                      "key": "192.168.101.121",
+                      "doc_count": 4,
+                      "avg_ack_pkts_sent": {
+                        "value": 3
+                      }
+                    },
+                    {
+                      "key": "192.168.101.103",
+                      "doc_count": 3,
+                      "avg_ack_pkts_sent": {
+                        "value": 62.666666666666664
+                      }
+                    },
+                    {
+                      "key": "192.168.101.125",
+                      "doc_count": 2,
+                      "avg_ack_pkts_sent": {
+                        "value": 1
+                      }
+                    },
+                    {
+                      "key": "192.168.101.132",
+                      "doc_count": 2,
+                      "avg_ack_pkts_sent": {
+                        "value": 5.5
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "key": "b827ebb95199",
+                "doc_count": 16,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": []
+                }
+              },
+              {
+                "key": "b827ebdd0999",
+                "doc_count": 16,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "key_as_string": "2016-12-31T10:08:30.000+02:00",
+          "key": 1483171710000,
+          "doc_count": 538,
+          "hosts": {
+            "doc_count_error_upper_bound": 0,
+            "sum_other_doc_count": 0,
+            "buckets": [
+              {
+                "key": "0060e063505c",
+                "doc_count": 232,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 3,
+                  "buckets": [
+                    {
+                      "key": "192.168.101.121",
+                      "doc_count": 12,
+                      "avg_ack_pkts_sent": {
+                        "value": 6.583333333333333
+                      }
+                    },
+                    {
+                      "key": "192.168.101.103",
+                      "doc_count": 7,
+                      "avg_ack_pkts_sent": {
+                        "value": 10.142857142857142
+                      }
+                    },
+                    {
+                      "key": "192.168.101.132",
+                      "doc_count": 6,
+                      "avg_ack_pkts_sent": {
+                        "value": 9
+                      }
+                    },
+                    {
+                      "key": "192.168.101.104",
+                      "doc_count": 4,
+                      "avg_ack_pkts_sent": {
+                        "value": 4.75
+                      }
+                    },
+                    {
+                      "key": "192.168.40.10",
+                      "doc_count": 1,
+                      "avg_ack_pkts_sent": {
+                        "value": 3
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "key": "0060e0634ff8",
+                "doc_count": 197,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": [
+                    {
+                      "key": "192.168.85.103",
+                      "doc_count": 4,
+                      "avg_ack_pkts_sent": {
+                        "value": 4.25
+                      }
+                    },
+                    {
+                      "key": "46.101.215.170",
+                      "doc_count": 1,
+                      "avg_ack_pkts_sent": {
+                        "value": 47
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "key": "b827ebb95199",
+                "doc_count": 67,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": []
+                }
+              },
+              {
+                "key": "b827ebdd0999",
+                "doc_count": 42,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "key_as_string": "2016-12-31T10:09:00.000+02:00",
+          "key": 1483171740000,
+          "doc_count": 375,
+          "hosts": {
+            "doc_count_error_upper_bound": 0,
+            "sum_other_doc_count": 0,
+            "buckets": [
+              {
+                "key": "0060e0634ff8",
+                "doc_count": 179,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": [
+                    {
+                      "key": "192.168.85.103",
+                      "doc_count": 5,
+                      "avg_ack_pkts_sent": {
+                        "value": 26.8
+                      }
+                    },
+                    {
+                      "key": "46.101.215.170",
+                      "doc_count": 1,
+                      "avg_ack_pkts_sent": {
+                        "value": 1
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "key": "0060e063505c",
+                "doc_count": 151,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 11,
+                  "buckets": [
+                    {
+                      "key": "192.168.101.104",
+                      "doc_count": 8,
+                      "avg_ack_pkts_sent": {
+                        "value": 3.375
+                      }
+                    },
+                    {
+                      "key": "192.168.101.121",
+                      "doc_count": 6,
+                      "avg_ack_pkts_sent": {
+                        "value": 2.1666666666666665
+                      }
+                    },
+                    {
+                      "key": "192.168.101.132",
+                      "doc_count": 6,
+                      "avg_ack_pkts_sent": {
+                        "value": 5.833333333333333
+                      }
+                    },
+                    {
+                      "key": "192.168.101.103",
+                      "doc_count": 3,
+                      "avg_ack_pkts_sent": {
+                        "value": 40
+                      }
+                    },
+                    {
+                      "key": "192.168.101.125",
+                      "doc_count": 2,
+                      "avg_ack_pkts_sent": {
+                        "value": 1.5
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "key": "b827ebb95199",
+                "doc_count": 29,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": []
+                }
+              },
+              {
+                "key": "b827ebdd0999",
+                "doc_count": 16,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "key_as_string": "2016-12-31T10:09:30.000+02:00",
+          "key": 1483171770000,
+          "doc_count": 475,
+          "hosts": {
+            "doc_count_error_upper_bound": 0,
+            "sum_other_doc_count": 0,
+            "buckets": [
+              {
+                "key": "0060e063505c",
+                "doc_count": 258,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 5,
+                  "buckets": [
+                    {
+                      "key": "192.168.101.121",
+                      "doc_count": 10,
+                      "avg_ack_pkts_sent": {
+                        "value": 4.1
+                      }
+                    },
+                    {
+                      "key": "192.168.101.104",
+                      "doc_count": 9,
+                      "avg_ack_pkts_sent": {
+                        "value": 3.111111111111111
+                      }
+                    },
+                    {
+                      "key": "192.168.101.103",
+                      "doc_count": 7,
+                      "avg_ack_pkts_sent": {
+                        "value": 3.142857142857143
+                      }
+                    },
+                    {
+                      "key": "192.168.101.125",
+                      "doc_count": 3,
+                      "avg_ack_pkts_sent": {
+                        "value": 10.333333333333334
+                      }
+                    },
+                    {
+                      "key": "192.168.101.131",
+                      "doc_count": 2,
+                      "avg_ack_pkts_sent": {
+                        "value": 12
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "key": "0060e0634ff8",
+                "doc_count": 140,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": [
+                    {
+                      "key": "192.168.85.103",
+                      "doc_count": 3,
+                      "avg_ack_pkts_sent": {
+                        "value": 48.666666666666664
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "key": "b827ebb95199",
+                "doc_count": 40,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": []
+                }
+              },
+              {
+                "key": "b827ebdd0999",
+                "doc_count": 37,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "key_as_string": "2016-12-31T10:10:00.000+02:00",
+          "key": 1483171800000,
+          "doc_count": 564,
+          "hosts": {
+            "doc_count_error_upper_bound": 0,
+            "sum_other_doc_count": 0,
+            "buckets": [
+              {
+                "key": "0060e0634ff8",
+                "doc_count": 362,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": [
+                    {
+                      "key": "192.168.85.103",
+                      "doc_count": 8,
+                      "avg_ack_pkts_sent": {
+                        "value": 12.75
+                      }
+                    },
+                    {
+                      "key": "46.101.215.170",
+                      "doc_count": 2,
+                      "avg_ack_pkts_sent": {
+                        "value": 1
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "key": "0060e063505c",
+                "doc_count": 150,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 9,
+                  "buckets": [
+                    {
+                      "key": "192.168.101.132",
+                      "doc_count": 7,
+                      "avg_ack_pkts_sent": {
+                        "value": 470.7142857142857
+                      }
+                    },
+                    {
+                      "key": "192.168.101.104",
+                      "doc_count": 6,
+                      "avg_ack_pkts_sent": {
+                        "value": 6
+                      }
+                    },
+                    {
+                      "key": "192.168.101.121",
+                      "doc_count": 6,
+                      "avg_ack_pkts_sent": {
+                        "value": 1
+                      }
+                    },
+                    {
+                      "key": "192.168.101.103",
+                      "doc_count": 4,
+                      "avg_ack_pkts_sent": {
+                        "value": 37.25
+                      }
+                    },
+                    {
+                      "key": "192.168.101.125",
+                      "doc_count": 2,
+                      "avg_ack_pkts_sent": {
+                        "value": 1
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "key": "b827ebb95199",
+                "doc_count": 38,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": []
+                }
+              },
+              {
+                "key": "b827ebdd0999",
+                "doc_count": 14,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "key_as_string": "2016-12-31T10:10:30.000+02:00",
+          "key": 1483171830000,
+          "doc_count": 728,
+          "hosts": {
+            "doc_count_error_upper_bound": 0,
+            "sum_other_doc_count": 0,
+            "buckets": [
+              {
+                "key": "0060e063505c",
+                "doc_count": 316,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 6,
+                  "buckets": [
+                    {
+                      "key": "192.168.101.131",
+                      "doc_count": 12,
+                      "avg_ack_pkts_sent": {
+                        "value": 7.416666666666667
+                      }
+                    },
+                    {
+                      "key": "192.168.101.103",
+                      "doc_count": 7,
+                      "avg_ack_pkts_sent": {
+                        "value": 13.285714285714286
+                      }
+                    },
+                    {
+                      "key": "192.168.101.104",
+                      "doc_count": 6,
+                      "avg_ack_pkts_sent": {
+                        "value": 4.5
+                      }
+                    },
+                    {
+                      "key": "192.168.101.121",
+                      "doc_count": 5,
+                      "avg_ack_pkts_sent": {
+                        "value": 1.4
+                      }
+                    },
+                    {
+                      "key": "157.240.1.13",
+                      "doc_count": 1,
+                      "avg_ack_pkts_sent": {
+                        "value": 6
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "key": "0060e0634ff8",
+                "doc_count": 300,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": [
+                    {
+                      "key": "192.168.85.103",
+                      "doc_count": 4,
+                      "avg_ack_pkts_sent": {
+                        "value": 14.5
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "key": "b827ebb95199",
+                "doc_count": 70,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": []
+                }
+              },
+              {
+                "key": "b827ebdd0999",
+                "doc_count": 42,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "key_as_string": "2016-12-31T10:11:00.000+02:00",
+          "key": 1483171860000,
+          "doc_count": 497,
+          "hosts": {
+            "doc_count_error_upper_bound": 0,
+            "sum_other_doc_count": 0,
+            "buckets": [
+              {
+                "key": "0060e0634ff8",
+                "doc_count": 271,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": [
+                    {
+                      "key": "192.168.85.103",
+                      "doc_count": 7,
+                      "avg_ack_pkts_sent": {
+                        "value": 9.142857142857142
+                      }
+                    },
+                    {
+                      "key": "46.101.215.170",
+                      "doc_count": 1,
+                      "avg_ack_pkts_sent": {
+                        "value": 1
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "key": "0060e063505c",
+                "doc_count": 194,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 12,
+                  "buckets": [
+                    {
+                      "key": "192.168.101.121",
+                      "doc_count": 10,
+                      "avg_ack_pkts_sent": {
+                        "value": 4.8
+                      }
+                    },
+                    {
+                      "key": "192.168.101.104",
+                      "doc_count": 7,
+                      "avg_ack_pkts_sent": {
+                        "value": 4.714285714285714
+                      }
+                    },
+                    {
+                      "key": "192.168.101.125",
+                      "doc_count": 6,
+                      "avg_ack_pkts_sent": {
+                        "value": 6.333333333333333
+                      }
+                    },
+                    {
+                      "key": "192.168.101.131",
+                      "doc_count": 6,
+                      "avg_ack_pkts_sent": {
+                        "value": 11
+                      }
+                    },
+                    {
+                      "key": "192.168.101.103",
+                      "doc_count": 3,
+                      "avg_ack_pkts_sent": {
+                        "value": 33.666666666666664
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "key": "b827ebb95199",
+                "doc_count": 17,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": []
+                }
+              },
+              {
+                "key": "b827ebdd0999",
+                "doc_count": 15,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "key_as_string": "2016-12-31T10:11:30.000+02:00",
+          "key": 1483171890000,
+          "doc_count": 853,
+          "hosts": {
+            "doc_count_error_upper_bound": 0,
+            "sum_other_doc_count": 0,
+            "buckets": [
+              {
+                "key": "0060e063505c",
+                "doc_count": 513,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 12,
+                  "buckets": [
+                    {
+                      "key": "192.168.101.121",
+                      "doc_count": 19,
+                      "avg_ack_pkts_sent": {
+                        "value": 10.789473684210526
+                      }
+                    },
+                    {
+                      "key": "192.168.101.132",
+                      "doc_count": 12,
+                      "avg_ack_pkts_sent": {
+                        "value": 25.75
+                      }
+                    },
+                    {
+                      "key": "192.168.101.104",
+                      "doc_count": 9,
+                      "avg_ack_pkts_sent": {
+                        "value": 7
+                      }
+                    },
+                    {
+                      "key": "192.168.101.103",
+                      "doc_count": 7,
+                      "avg_ack_pkts_sent": {
+                        "value": 12
+                      }
+                    },
+                    {
+                      "key": "192.168.101.131",
+                      "doc_count": 7,
+                      "avg_ack_pkts_sent": {
+                        "value": 8.857142857142858
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "key": "0060e0634ff8",
+                "doc_count": 236,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": [
+                    {
+                      "key": "192.168.85.103",
+                      "doc_count": 3,
+                      "avg_ack_pkts_sent": {
+                        "value": 7.666666666666667
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "key": "b827ebdd0999",
+                "doc_count": 53,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": []
+                }
+              },
+              {
+                "key": "b827ebb95199",
+                "doc_count": 51,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "key_as_string": "2016-12-31T10:12:00.000+02:00",
+          "key": 1483171920000,
+          "doc_count": 687,
+          "hosts": {
+            "doc_count_error_upper_bound": 0,
+            "sum_other_doc_count": 0,
+            "buckets": [
+              {
+                "key": "0060e0634ff8",
+                "doc_count": 334,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": [
+                    {
+                      "key": "192.168.85.103",
+                      "doc_count": 5,
+                      "avg_ack_pkts_sent": {
+                        "value": 1.6
+                      }
+                    },
+                    {
+                      "key": "46.101.215.170",
+                      "doc_count": 2,
+                      "avg_ack_pkts_sent": {
+                        "value": 88
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "key": "0060e063505c",
+                "doc_count": 299,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 10,
+                  "buckets": [
+                    {
+                      "key": "192.168.101.121",
+                      "doc_count": 30,
+                      "avg_ack_pkts_sent": {
+                        "value": 12.9
+                      }
+                    },
+                    {
+                      "key": "192.168.101.104",
+                      "doc_count": 8,
+                      "avg_ack_pkts_sent": {
+                        "value": 3.5
+                      }
+                    },
+                    {
+                      "key": "192.168.101.132",
+                      "doc_count": 4,
+                      "avg_ack_pkts_sent": {
+                        "value": 5.75
+                      }
+                    },
+                    {
+                      "key": "192.168.101.103",
+                      "doc_count": 3,
+                      "avg_ack_pkts_sent": {
+                        "value": 47.333333333333336
+                      }
+                    },
+                    {
+                      "key": "192.168.101.112",
+                      "doc_count": 2,
+                      "avg_ack_pkts_sent": {
+                        "value": 3.5
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "key": "b827ebb95199",
+                "doc_count": 36,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": []
+                }
+              },
+              {
+                "key": "b827ebdd0999",
+                "doc_count": 18,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "key_as_string": "2016-12-31T10:12:30.000+02:00",
+          "key": 1483171950000,
+          "doc_count": 672,
+          "hosts": {
+            "doc_count_error_upper_bound": 0,
+            "sum_other_doc_count": 0,
+            "buckets": [
+              {
+                "key": "0060e063505c",
+                "doc_count": 388,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 15,
+                  "buckets": [
+                    {
+                      "key": "192.168.101.131",
+                      "doc_count": 21,
+                      "avg_ack_pkts_sent": {
+                        "value": 8.523809523809524
+                      }
+                    },
+                    {
+                      "key": "192.168.101.121",
+                      "doc_count": 11,
+                      "avg_ack_pkts_sent": {
+                        "value": 5.2727272727272725
+                      }
+                    },
+                    {
+                      "key": "192.168.101.104",
+                      "doc_count": 9,
+                      "avg_ack_pkts_sent": {
+                        "value": 4.222222222222222
+                      }
+                    },
+                    {
+                      "key": "192.168.101.103",
+                      "doc_count": 6,
+                      "avg_ack_pkts_sent": {
+                        "value": 2.8333333333333335
+                      }
+                    },
+                    {
+                      "key": "192.168.101.125",
+                      "doc_count": 6,
+                      "avg_ack_pkts_sent": {
+                        "value": 1
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "key": "0060e0634ff8",
+                "doc_count": 200,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": [
+                    {
+                      "key": "192.168.85.103",
+                      "doc_count": 3,
+                      "avg_ack_pkts_sent": {
+                        "value": 42.666666666666664
+                      }
+                    },
+                    {
+                      "key": "46.101.215.170",
+                      "doc_count": 1,
+                      "avg_ack_pkts_sent": {
+                        "value": 8
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "key": "b827ebb95199",
+                "doc_count": 45,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": []
+                }
+              },
+              {
+                "key": "b827ebdd0999",
+                "doc_count": 39,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "key_as_string": "2016-12-31T10:13:00.000+02:00",
+          "key": 1483171980000,
+          "doc_count": 680,
+          "hosts": {
+            "doc_count_error_upper_bound": 0,
+            "sum_other_doc_count": 0,
+            "buckets": [
+              {
+                "key": "0060e063505c",
+                "doc_count": 430,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 13,
+                  "buckets": [
+                    {
+                      "key": "192.168.101.104",
+                      "doc_count": 34,
+                      "avg_ack_pkts_sent": {
+                        "value": 8.441176470588236
+                      }
+                    },
+                    {
+                      "key": "192.168.101.132",
+                      "doc_count": 10,
+                      "avg_ack_pkts_sent": {
+                        "value": 11.9
+                      }
+                    },
+                    {
+                      "key": "192.168.101.121",
+                      "doc_count": 7,
+                      "avg_ack_pkts_sent": {
+                        "value": 1
+                      }
+                    },
+                    {
+                      "key": "192.168.101.125",
+                      "doc_count": 3,
+                      "avg_ack_pkts_sent": {
+                        "value": 1
+                      }
+                    },
+                    {
+                      "key": "192.168.101.103",
+                      "doc_count": 2,
+                      "avg_ack_pkts_sent": {
+                        "value": 8.5
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "key": "0060e0634ff8",
+                "doc_count": 196,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": [
+                    {
+                      "key": "192.168.85.103",
+                      "doc_count": 7,
+                      "avg_ack_pkts_sent": {
+                        "value": 25.857142857142858
+                      }
+                    },
+                    {
+                      "key": "46.101.215.170",
+                      "doc_count": 1,
+                      "avg_ack_pkts_sent": {
+                        "value": 1
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "key": "b827ebb95199",
+                "doc_count": 33,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": []
+                }
+              },
+              {
+                "key": "b827ebdd0999",
+                "doc_count": 21,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "key_as_string": "2016-12-31T10:13:30.000+02:00",
+          "key": 1483172010000,
+          "doc_count": 450,
+          "hosts": {
+            "doc_count_error_upper_bound": 0,
+            "sum_other_doc_count": 0,
+            "buckets": [
+              {
+                "key": "0060e063505c",
+                "doc_count": 258,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 10,
+                  "buckets": [
+                    {
+                      "key": "192.168.101.104",
+                      "doc_count": 9,
+                      "avg_ack_pkts_sent": {
+                        "value": 3.888888888888889
+                      }
+                    },
+                    {
+                      "key": "192.168.101.103",
+                      "doc_count": 8,
+                      "avg_ack_pkts_sent": {
+                        "value": 22.25
+                      }
+                    },
+                    {
+                      "key": "192.168.101.132",
+                      "doc_count": 8,
+                      "avg_ack_pkts_sent": {
+                        "value": 268.875
+                      }
+                    },
+                    {
+                      "key": "192.168.101.121",
+                      "doc_count": 3,
+                      "avg_ack_pkts_sent": {
+                        "value": 8
+                      }
+                    },
+                    {
+                      "key": "192.168.101.125",
+                      "doc_count": 3,
+                      "avg_ack_pkts_sent": {
+                        "value": 1.3333333333333333
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "key": "0060e0634ff8",
+                "doc_count": 121,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": [
+                    {
+                      "key": "192.168.85.103",
+                      "doc_count": 4,
+                      "avg_ack_pkts_sent": {
+                        "value": 14.5
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "key": "b827ebb95199",
+                "doc_count": 38,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": []
+                }
+              },
+              {
+                "key": "b827ebdd0999",
+                "doc_count": 33,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "key_as_string": "2016-12-31T10:14:00.000+02:00",
+          "key": 1483172040000,
+          "doc_count": 525,
+          "hosts": {
+            "doc_count_error_upper_bound": 0,
+            "sum_other_doc_count": 0,
+            "buckets": [
+              {
+                "key": "0060e0634ff8",
+                "doc_count": 386,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": [
+                    {
+                      "key": "192.168.85.103",
+                      "doc_count": 6,
+                      "avg_ack_pkts_sent": {
+                        "value": 2.8333333333333335
+                      }
+                    },
+                    {
+                      "key": "46.101.215.170",
+                      "doc_count": 2,
+                      "avg_ack_pkts_sent": {
+                        "value": 26.5
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "key": "0060e063505c",
+                "doc_count": 99,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 7,
+                  "buckets": [
+                    {
+                      "key": "192.168.101.104",
+                      "doc_count": 16,
+                      "avg_ack_pkts_sent": {
+                        "value": 325.1875
+                      }
+                    },
+                    {
+                      "key": "192.168.101.125",
+                      "doc_count": 4,
+                      "avg_ack_pkts_sent": {
+                        "value": 2.75
+                      }
+                    },
+                    {
+                      "key": "192.168.101.103",
+                      "doc_count": 3,
+                      "avg_ack_pkts_sent": {
+                        "value": 63
+                      }
+                    },
+                    {
+                      "key": "192.168.101.145",
+                      "doc_count": 2,
+                      "avg_ack_pkts_sent": {
+                        "value": 0
+                      }
+                    },
+                    {
+                      "key": "192.168.40.10",
+                      "doc_count": 2,
+                      "avg_ack_pkts_sent": {
+                        "value": 16
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "key": "b827ebb95199",
+                "doc_count": 22,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": []
+                }
+              },
+              {
+                "key": "b827ebdd0999",
+                "doc_count": 18,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "key_as_string": "2016-12-31T10:14:30.000+02:00",
+          "key": 1483172070000,
+          "doc_count": 518,
+          "hosts": {
+            "doc_count_error_upper_bound": 0,
+            "sum_other_doc_count": 0,
+            "buckets": [
+              {
+                "key": "0060e063505c",
+                "doc_count": 250,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 1,
+                  "buckets": [
+                    {
+                      "key": "192.168.101.121",
+                      "doc_count": 14,
+                      "avg_ack_pkts_sent": {
+                        "value": 16.928571428571427
+                      }
+                    },
+                    {
+                      "key": "192.168.101.104",
+                      "doc_count": 11,
+                      "avg_ack_pkts_sent": {
+                        "value": 3.090909090909091
+                      }
+                    },
+                    {
+                      "key": "192.168.101.103",
+                      "doc_count": 8,
+                      "avg_ack_pkts_sent": {
+                        "value": 11.75
+                      }
+                    },
+                    {
+                      "key": "192.168.101.112",
+                      "doc_count": 1,
+                      "avg_ack_pkts_sent": {
+                        "value": 2
+                      }
+                    },
+                    {
+                      "key": "192.168.101.125",
+                      "doc_count": 1,
+                      "avg_ack_pkts_sent": {
+                        "value": 1
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "key": "0060e0634ff8",
+                "doc_count": 168,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": [
+                    {
+                      "key": "192.168.85.103",
+                      "doc_count": 3,
+                      "avg_ack_pkts_sent": {
+                        "value": 33
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "key": "b827ebb95199",
+                "doc_count": 62,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": []
+                }
+              },
+              {
+                "key": "b827ebdd0999",
+                "doc_count": 38,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "key_as_string": "2016-12-31T10:15:00.000+02:00",
+          "key": 1483172100000,
+          "doc_count": 398,
+          "hosts": {
+            "doc_count_error_upper_bound": 0,
+            "sum_other_doc_count": 0,
+            "buckets": [
+              {
+                "key": "0060e0634ff8",
+                "doc_count": 209,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": [
+                    {
+                      "key": "192.168.85.103",
+                      "doc_count": 6,
+                      "avg_ack_pkts_sent": {
+                        "value": 2.6666666666666665
+                      }
+                    },
+                    {
+                      "key": "46.101.215.170",
+                      "doc_count": 1,
+                      "avg_ack_pkts_sent": {
+                        "value": 1
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "key": "0060e063505c",
+                "doc_count": 140,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 6,
+                  "buckets": [
+                    {
+                      "key": "192.168.101.104",
+                      "doc_count": 17,
+                      "avg_ack_pkts_sent": {
+                        "value": 2.2941176470588234
+                      }
+                    },
+                    {
+                      "key": "192.168.101.125",
+                      "doc_count": 3,
+                      "avg_ack_pkts_sent": {
+                        "value": 2
+                      }
+                    },
+                    {
+                      "key": "192.168.101.103",
+                      "doc_count": 2,
+                      "avg_ack_pkts_sent": {
+                        "value": 8.5
+                      }
+                    },
+                    {
+                      "key": "54.230.197.253",
+                      "doc_count": 2,
+                      "avg_ack_pkts_sent": {
+                        "value": 3
+                      }
+                    },
+                    {
+                      "key": "192.168.101.120",
+                      "doc_count": 1,
+                      "avg_ack_pkts_sent": {
+                        "value": 1
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "key": "b827ebb95199",
+                "doc_count": 30,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": []
+                }
+              },
+              {
+                "key": "b827ebdd0999",
+                "doc_count": 19,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "key_as_string": "2016-12-31T10:15:30.000+02:00",
+          "key": 1483172130000,
+          "doc_count": 487,
+          "hosts": {
+            "doc_count_error_upper_bound": 0,
+            "sum_other_doc_count": 0,
+            "buckets": [
+              {
+                "key": "0060e063505c",
+                "doc_count": 217,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 8,
+                  "buckets": [
+                    {
+                      "key": "192.168.101.104",
+                      "doc_count": 17,
+                      "avg_ack_pkts_sent": {
+                        "value": 2.176470588235294
+                      }
+                    },
+                    {
+                      "key": "192.168.101.103",
+                      "doc_count": 7,
+                      "avg_ack_pkts_sent": {
+                        "value": 12.857142857142858
+                      }
+                    },
+                    {
+                      "key": "192.168.101.121",
+                      "doc_count": 3,
+                      "avg_ack_pkts_sent": {
+                        "value": 4
+                      }
+                    },
+                    {
+                      "key": "192.168.101.132",
+                      "doc_count": 3,
+                      "avg_ack_pkts_sent": {
+                        "value": 11.333333333333334
+                      }
+                    },
+                    {
+                      "key": "216.58.223.1",
+                      "doc_count": 3,
+                      "avg_ack_pkts_sent": {
+                        "value": 1
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "key": "0060e0634ff8",
+                "doc_count": 179,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": [
+                    {
+                      "key": "192.168.85.103",
+                      "doc_count": 3,
+                      "avg_ack_pkts_sent": {
+                        "value": 54.333333333333336
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "key": "b827ebb95199",
+                "doc_count": 57,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": []
+                }
+              },
+              {
+                "key": "b827ebdd0999",
+                "doc_count": 34,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "key_as_string": "2016-12-31T10:16:00.000+02:00",
+          "key": 1483172160000,
+          "doc_count": 511,
+          "hosts": {
+            "doc_count_error_upper_bound": 0,
+            "sum_other_doc_count": 0,
+            "buckets": [
+              {
+                "key": "0060e0634ff8",
+                "doc_count": 388,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": [
+                    {
+                      "key": "192.168.85.103",
+                      "doc_count": 7,
+                      "avg_ack_pkts_sent": {
+                        "value": 4.857142857142857
+                      }
+                    },
+                    {
+                      "key": "46.101.215.170",
+                      "doc_count": 1,
+                      "avg_ack_pkts_sent": {
+                        "value": 1
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "key": "0060e063505c",
+                "doc_count": 68,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 1,
+                  "buckets": [
+                    {
+                      "key": "192.168.101.104",
+                      "doc_count": 8,
+                      "avg_ack_pkts_sent": {
+                        "value": 1.375
+                      }
+                    },
+                    {
+                      "key": "192.168.101.103",
+                      "doc_count": 3,
+                      "avg_ack_pkts_sent": {
+                        "value": 51.666666666666664
+                      }
+                    },
+                    {
+                      "key": "192.168.101.120",
+                      "doc_count": 1,
+                      "avg_ack_pkts_sent": {
+                        "value": 1
+                      }
+                    },
+                    {
+                      "key": "192.168.101.125",
+                      "doc_count": 1,
+                      "avg_ack_pkts_sent": {
+                        "value": 1
+                      }
+                    },
+                    {
+                      "key": "192.168.101.145",
+                      "doc_count": 1,
+                      "avg_ack_pkts_sent": {
+                        "value": 0
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "key": "b827ebb95199",
+                "doc_count": 37,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": []
+                }
+              },
+              {
+                "key": "b827ebdd0999",
+                "doc_count": 18,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "key_as_string": "2016-12-31T10:16:30.000+02:00",
+          "key": 1483172190000,
+          "doc_count": 548,
+          "hosts": {
+            "doc_count_error_upper_bound": 0,
+            "sum_other_doc_count": 0,
+            "buckets": [
+              {
+                "key": "0060e0634ff8",
+                "doc_count": 278,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": [
+                    {
+                      "key": "192.168.85.103",
+                      "doc_count": 5,
+                      "avg_ack_pkts_sent": {
+                        "value": 31.6
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "key": "0060e063505c",
+                "doc_count": 185,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 4,
+                  "buckets": [
+                    {
+                      "key": "192.168.101.104",
+                      "doc_count": 8,
+                      "avg_ack_pkts_sent": {
+                        "value": 4.75
+                      }
+                    },
+                    {
+                      "key": "192.168.101.103",
+                      "doc_count": 5,
+                      "avg_ack_pkts_sent": {
+                        "value": 21.6
+                      }
+                    },
+                    {
+                      "key": "192.168.101.123",
+                      "doc_count": 3,
+                      "avg_ack_pkts_sent": {
+                        "value": 5.333333333333333
+                      }
+                    },
+                    {
+                      "key": "192.168.101.112",
+                      "doc_count": 2,
+                      "avg_ack_pkts_sent": {
+                        "value": 6.5
+                      }
+                    },
+                    {
+                      "key": "192.168.101.117",
+                      "doc_count": 1,
+                      "avg_ack_pkts_sent": {
+                        "value": 1
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "key": "b827ebb95199",
+                "doc_count": 47,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": []
+                }
+              },
+              {
+                "key": "b827ebdd0999",
+                "doc_count": 38,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "key_as_string": "2016-12-31T10:17:00.000+02:00",
+          "key": 1483172220000,
+          "doc_count": 480,
+          "hosts": {
+            "doc_count_error_upper_bound": 0,
+            "sum_other_doc_count": 0,
+            "buckets": [
+              {
+                "key": "0060e0634ff8",
+                "doc_count": 327,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": [
+                    {
+                      "key": "192.168.85.103",
+                      "doc_count": 7,
+                      "avg_ack_pkts_sent": {
+                        "value": 7.285714285714286
+                      }
+                    },
+                    {
+                      "key": "46.101.215.170",
+                      "doc_count": 1,
+                      "avg_ack_pkts_sent": {
+                        "value": 1
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "key": "0060e063505c",
+                "doc_count": 84,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 3,
+                  "buckets": [
+                    {
+                      "key": "192.168.101.104",
+                      "doc_count": 7,
+                      "avg_ack_pkts_sent": {
+                        "value": 3
+                      }
+                    },
+                    {
+                      "key": "192.168.101.103",
+                      "doc_count": 6,
+                      "avg_ack_pkts_sent": {
+                        "value": 17.833333333333332
+                      }
+                    },
+                    {
+                      "key": "192.168.101.125",
+                      "doc_count": 2,
+                      "avg_ack_pkts_sent": {
+                        "value": 4.5
+                      }
+                    },
+                    {
+                      "key": "192.168.101.145",
+                      "doc_count": 2,
+                      "avg_ack_pkts_sent": {
+                        "value": 0.5
+                      }
+                    },
+                    {
+                      "key": "216.58.223.14",
+                      "doc_count": 2,
+                      "avg_ack_pkts_sent": {
+                        "value": 3
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "key": "b827ebdd0999",
+                "doc_count": 39,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": []
+                }
+              },
+              {
+                "key": "b827ebb95199",
+                "doc_count": 30,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "key_as_string": "2016-12-31T10:17:30.000+02:00",
+          "key": 1483172250000,
+          "doc_count": 332,
+          "hosts": {
+            "doc_count_error_upper_bound": 0,
+            "sum_other_doc_count": 0,
+            "buckets": [
+              {
+                "key": "0060e063505c",
+                "doc_count": 132,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 1,
+                  "buckets": [
+                    {
+                      "key": "192.168.101.104",
+                      "doc_count": 6,
+                      "avg_ack_pkts_sent": {
+                        "value": 3.3333333333333335
+                      }
+                    },
+                    {
+                      "key": "192.168.101.103",
+                      "doc_count": 3,
+                      "avg_ack_pkts_sent": {
+                        "value": 26
+                      }
+                    },
+                    {
+                      "key": "192.168.101.112",
+                      "doc_count": 1,
+                      "avg_ack_pkts_sent": {
+                        "value": 2
+                      }
+                    },
+                    {
+                      "key": "192.168.101.125",
+                      "doc_count": 1,
+                      "avg_ack_pkts_sent": {
+                        "value": 1
+                      }
+                    },
+                    {
+                      "key": "52.214.66.57",
+                      "doc_count": 1,
+                      "avg_ack_pkts_sent": {
+                        "value": 9
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "key": "0060e0634ff8",
+                "doc_count": 108,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": [
+                    {
+                      "key": "192.168.85.103",
+                      "doc_count": 3,
+                      "avg_ack_pkts_sent": {
+                        "value": 56
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "key": "b827ebb95199",
+                "doc_count": 59,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": []
+                }
+              },
+              {
+                "key": "b827ebdd0999",
+                "doc_count": 33,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "key_as_string": "2016-12-31T10:18:00.000+02:00",
+          "key": 1483172280000,
+          "doc_count": 453,
+          "hosts": {
+            "doc_count_error_upper_bound": 0,
+            "sum_other_doc_count": 0,
+            "buckets": [
+              {
+                "key": "0060e0634ff8",
+                "doc_count": 306,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": [
+                    {
+                      "key": "192.168.85.103",
+                      "doc_count": 7,
+                      "avg_ack_pkts_sent": {
+                        "value": 5
+                      }
+                    },
+                    {
+                      "key": "46.101.215.170",
+                      "doc_count": 2,
+                      "avg_ack_pkts_sent": {
+                        "value": 4
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "key": "0060e063505c",
+                "doc_count": 95,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 2,
+                  "buckets": [
+                    {
+                      "key": "192.168.101.104",
+                      "doc_count": 11,
+                      "avg_ack_pkts_sent": {
+                        "value": 3
+                      }
+                    },
+                    {
+                      "key": "192.168.101.103",
+                      "doc_count": 7,
+                      "avg_ack_pkts_sent": {
+                        "value": 6.285714285714286
+                      }
+                    },
+                    {
+                      "key": "192.168.101.125",
+                      "doc_count": 2,
+                      "avg_ack_pkts_sent": {
+                        "value": 5.5
+                      }
+                    },
+                    {
+                      "key": "192.168.101.120",
+                      "doc_count": 1,
+                      "avg_ack_pkts_sent": {
+                        "value": 1
+                      }
+                    },
+                    {
+                      "key": "192.168.101.145",
+                      "doc_count": 1,
+                      "avg_ack_pkts_sent": {
+                        "value": 0
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "key": "b827ebb95199",
+                "doc_count": 34,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": []
+                }
+              },
+              {
+                "key": "b827ebdd0999",
+                "doc_count": 18,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "key_as_string": "2016-12-31T10:18:30.000+02:00",
+          "key": 1483172310000,
+          "doc_count": 416,
+          "hosts": {
+            "doc_count_error_upper_bound": 0,
+            "sum_other_doc_count": 0,
+            "buckets": [
+              {
+                "key": "0060e0634ff8",
+                "doc_count": 169,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": [
+                    {
+                      "key": "192.168.85.103",
+                      "doc_count": 2,
+                      "avg_ack_pkts_sent": {
+                        "value": 8.5
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "key": "0060e063505c",
+                "doc_count": 159,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 1,
+                  "buckets": [
+                    {
+                      "key": "192.168.101.104",
+                      "doc_count": 6,
+                      "avg_ack_pkts_sent": {
+                        "value": 7.5
+                      }
+                    },
+                    {
+                      "key": "192.168.101.125",
+                      "doc_count": 3,
+                      "avg_ack_pkts_sent": {
+                        "value": 1
+                      }
+                    },
+                    {
+                      "key": "192.168.101.103",
+                      "doc_count": 1,
+                      "avg_ack_pkts_sent": {
+                        "value": 9
+                      }
+                    },
+                    {
+                      "key": "192.168.101.112",
+                      "doc_count": 1,
+                      "avg_ack_pkts_sent": {
+                        "value": 2
+                      }
+                    },
+                    {
+                      "key": "192.168.101.145",
+                      "doc_count": 1,
+                      "avg_ack_pkts_sent": {
+                        "value": 0
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "key": "b827ebdd0999",
+                "doc_count": 46,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": []
+                }
+              },
+              {
+                "key": "b827ebb95199",
+                "doc_count": 42,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "key_as_string": "2016-12-31T10:19:00.000+02:00",
+          "key": 1483172340000,
+          "doc_count": 475,
+          "hosts": {
+            "doc_count_error_upper_bound": 0,
+            "sum_other_doc_count": 0,
+            "buckets": [
+              {
+                "key": "0060e0634ff8",
+                "doc_count": 235,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": [
+                    {
+                      "key": "192.168.85.103",
+                      "doc_count": 7,
+                      "avg_ack_pkts_sent": {
+                        "value": 24
+                      }
+                    },
+                    {
+                      "key": "46.101.215.170",
+                      "doc_count": 1,
+                      "avg_ack_pkts_sent": {
+                        "value": 1
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "key": "0060e063505c",
+                "doc_count": 168,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 6,
+                  "buckets": [
+                    {
+                      "key": "192.168.101.103",
+                      "doc_count": 15,
+                      "avg_ack_pkts_sent": {
+                        "value": 8
+                      }
+                    },
+                    {
+                      "key": "192.168.101.104",
+                      "doc_count": 9,
+                      "avg_ack_pkts_sent": {
+                        "value": 3.4444444444444446
+                      }
+                    },
+                    {
+                      "key": "216.58.223.1",
+                      "doc_count": 5,
+                      "avg_ack_pkts_sent": {
+                        "value": 5
+                      }
+                    },
+                    {
+                      "key": "192.168.101.132",
+                      "doc_count": 4,
+                      "avg_ack_pkts_sent": {
+                        "value": 4.75
+                      }
+                    },
+                    {
+                      "key": "192.168.101.125",
+                      "doc_count": 2,
+                      "avg_ack_pkts_sent": {
+                        "value": 5
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "key": "b827ebb95199",
+                "doc_count": 38,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": []
+                }
+              },
+              {
+                "key": "b827ebdd0999",
+                "doc_count": 34,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "key_as_string": "2016-12-31T10:19:30.000+02:00",
+          "key": 1483172370000,
+          "doc_count": 430,
+          "hosts": {
+            "doc_count_error_upper_bound": 0,
+            "sum_other_doc_count": 0,
+            "buckets": [
+              {
+                "key": "0060e063505c",
+                "doc_count": 183,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 4,
+                  "buckets": [
+                    {
+                      "key": "192.168.101.104",
+                      "doc_count": 7,
+                      "avg_ack_pkts_sent": {
+                        "value": 3.4285714285714284
+                      }
+                    },
+                    {
+                      "key": "192.168.101.103",
+                      "doc_count": 4,
+                      "avg_ack_pkts_sent": {
+                        "value": 3
+                      }
+                    },
+                    {
+                      "key": "192.168.101.125",
+                      "doc_count": 3,
+                      "avg_ack_pkts_sent": {
+                        "value": 1
+                      }
+                    },
+                    {
+                      "key": "46.101.215.170",
+                      "doc_count": 2,
+                      "avg_ack_pkts_sent": {
+                        "value": 32
+                      }
+                    },
+                    {
+                      "key": "192.168.101.112",
+                      "doc_count": 1,
+                      "avg_ack_pkts_sent": {
+                        "value": 2
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "key": "0060e0634ff8",
+                "doc_count": 171,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": [
+                    {
+                      "key": "192.168.85.103",
+                      "doc_count": 4,
+                      "avg_ack_pkts_sent": {
+                        "value": 35
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "key": "b827ebb95199",
+                "doc_count": 38,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": []
+                }
+              },
+              {
+                "key": "b827ebdd0999",
+                "doc_count": 38,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "key_as_string": "2016-12-31T10:20:00.000+02:00",
+          "key": 1483172400000,
+          "doc_count": 529,
+          "hosts": {
+            "doc_count_error_upper_bound": 0,
+            "sum_other_doc_count": 0,
+            "buckets": [
+              {
+                "key": "0060e0634ff8",
+                "doc_count": 352,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": [
+                    {
+                      "key": "192.168.85.103",
+                      "doc_count": 11,
+                      "avg_ack_pkts_sent": {
+                        "value": 28.90909090909091
+                      }
+                    },
+                    {
+                      "key": "46.101.215.170",
+                      "doc_count": 2,
+                      "avg_ack_pkts_sent": {
+                        "value": 1
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "key": "0060e063505c",
+                "doc_count": 141,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 4,
+                  "buckets": [
+                    {
+                      "key": "192.168.101.103",
+                      "doc_count": 10,
+                      "avg_ack_pkts_sent": {
+                        "value": 12.1
+                      }
+                    },
+                    {
+                      "key": "192.168.101.104",
+                      "doc_count": 6,
+                      "avg_ack_pkts_sent": {
+                        "value": 3.5
+                      }
+                    },
+                    {
+                      "key": "192.168.101.132",
+                      "doc_count": 5,
+                      "avg_ack_pkts_sent": {
+                        "value": 2
+                      }
+                    },
+                    {
+                      "key": "192.168.101.125",
+                      "doc_count": 3,
+                      "avg_ack_pkts_sent": {
+                        "value": 1
+                      }
+                    },
+                    {
+                      "key": "46.101.215.170",
+                      "doc_count": 2,
+                      "avg_ack_pkts_sent": {
+                        "value": 1
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "key": "b827ebb95199",
+                "doc_count": 18,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": []
+                }
+              },
+              {
+                "key": "b827ebdd0999",
+                "doc_count": 18,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "key_as_string": "2016-12-31T10:20:30.000+02:00",
+          "key": 1483172430000,
+          "doc_count": 704,
+          "hosts": {
+            "doc_count_error_upper_bound": 0,
+            "sum_other_doc_count": 0,
+            "buckets": [
+              {
+                "key": "0060e0634ff8",
+                "doc_count": 330,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": [
+                    {
+                      "key": "192.168.85.103",
+                      "doc_count": 4,
+                      "avg_ack_pkts_sent": {
+                        "value": 41
+                      }
+                    },
+                    {
+                      "key": "46.101.215.170",
+                      "doc_count": 1,
+                      "avg_ack_pkts_sent": {
+                        "value": 228
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "key": "0060e063505c",
+                "doc_count": 253,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 3,
+                  "buckets": [
+                    {
+                      "key": "192.168.101.132",
+                      "doc_count": 10,
+                      "avg_ack_pkts_sent": {
+                        "value": 70.3
+                      }
+                    },
+                    {
+                      "key": "192.168.101.104",
+                      "doc_count": 9,
+                      "avg_ack_pkts_sent": {
+                        "value": 3
+                      }
+                    },
+                    {
+                      "key": "192.168.101.103",
+                      "doc_count": 3,
+                      "avg_ack_pkts_sent": {
+                        "value": 31.666666666666668
+                      }
+                    },
+                    {
+                      "key": "192.168.101.125",
+                      "doc_count": 3,
+                      "avg_ack_pkts_sent": {
+                        "value": 7.666666666666667
+                      }
+                    },
+                    {
+                      "key": "192.168.101.145",
+                      "doc_count": 2,
+                      "avg_ack_pkts_sent": {
+                        "value": 3
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "key": "b827ebb95199",
+                "doc_count": 83,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": []
+                }
+              },
+              {
+                "key": "b827ebdd0999",
+                "doc_count": 38,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "key_as_string": "2016-12-31T10:21:00.000+02:00",
+          "key": 1483172460000,
+          "doc_count": 545,
+          "hosts": {
+            "doc_count_error_upper_bound": 0,
+            "sum_other_doc_count": 0,
+            "buckets": [
+              {
+                "key": "0060e0634ff8",
+                "doc_count": 337,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": [
+                    {
+                      "key": "192.168.85.103",
+                      "doc_count": 4,
+                      "avg_ack_pkts_sent": {
+                        "value": 17
+                      }
+                    },
+                    {
+                      "key": "46.101.215.170",
+                      "doc_count": 1,
+                      "avg_ack_pkts_sent": {
+                        "value": 1
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "key": "0060e063505c",
+                "doc_count": 160,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 2,
+                  "buckets": [
+                    {
+                      "key": "192.168.101.104",
+                      "doc_count": 10,
+                      "avg_ack_pkts_sent": {
+                        "value": 2.8
+                      }
+                    },
+                    {
+                      "key": "192.168.101.125",
+                      "doc_count": 7,
+                      "avg_ack_pkts_sent": {
+                        "value": 2.5714285714285716
+                      }
+                    },
+                    {
+                      "key": "192.168.101.132",
+                      "doc_count": 7,
+                      "avg_ack_pkts_sent": {
+                        "value": 507
+                      }
+                    },
+                    {
+                      "key": "192.168.101.103",
+                      "doc_count": 6,
+                      "avg_ack_pkts_sent": {
+                        "value": 2.8333333333333335
+                      }
+                    },
+                    {
+                      "key": "192.168.101.145",
+                      "doc_count": 2,
+                      "avg_ack_pkts_sent": {
+                        "value": 2.5
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "key": "b827ebb95199",
+                "doc_count": 33,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": []
+                }
+              },
+              {
+                "key": "b827ebdd0999",
+                "doc_count": 15,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "key_as_string": "2016-12-31T10:21:30.000+02:00",
+          "key": 1483172490000,
+          "doc_count": 413,
+          "hosts": {
+            "doc_count_error_upper_bound": 0,
+            "sum_other_doc_count": 0,
+            "buckets": [
+              {
+                "key": "0060e063505c",
+                "doc_count": 177,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 6,
+                  "buckets": [
+                    {
+                      "key": "192.168.101.132",
+                      "doc_count": 7,
+                      "avg_ack_pkts_sent": {
+                        "value": 237.28571428571428
+                      }
+                    },
+                    {
+                      "key": "192.168.101.104",
+                      "doc_count": 6,
+                      "avg_ack_pkts_sent": {
+                        "value": 3
+                      }
+                    },
+                    {
+                      "key": "192.168.101.103",
+                      "doc_count": 4,
+                      "avg_ack_pkts_sent": {
+                        "value": 11.5
+                      }
+                    },
+                    {
+                      "key": "192.168.101.123",
+                      "doc_count": 3,
+                      "avg_ack_pkts_sent": {
+                        "value": 5.333333333333333
+                      }
+                    },
+                    {
+                      "key": "192.168.101.125",
+                      "doc_count": 2,
+                      "avg_ack_pkts_sent": {
+                        "value": 1
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "key": "0060e0634ff8",
+                "doc_count": 160,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": [
+                    {
+                      "key": "192.168.85.103",
+                      "doc_count": 7,
+                      "avg_ack_pkts_sent": {
+                        "value": 21.571428571428573
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "key": "b827ebdd0999",
+                "doc_count": 40,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": []
+                }
+              },
+              {
+                "key": "b827ebb95199",
+                "doc_count": 36,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "key_as_string": "2016-12-31T10:22:00.000+02:00",
+          "key": 1483172520000,
+          "doc_count": 464,
+          "hosts": {
+            "doc_count_error_upper_bound": 0,
+            "sum_other_doc_count": 0,
+            "buckets": [
+              {
+                "key": "0060e0634ff8",
+                "doc_count": 218,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": [
+                    {
+                      "key": "192.168.85.103",
+                      "doc_count": 1,
+                      "avg_ack_pkts_sent": {
+                        "value": 8
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "key": "0060e063505c",
+                "doc_count": 181,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 2,
+                  "buckets": [
+                    {
+                      "key": "192.168.101.103",
+                      "doc_count": 8,
+                      "avg_ack_pkts_sent": {
+                        "value": 26.375
+                      }
+                    },
+                    {
+                      "key": "192.168.101.123",
+                      "doc_count": 8,
+                      "avg_ack_pkts_sent": {
+                        "value": 5
+                      }
+                    },
+                    {
+                      "key": "192.168.101.104",
+                      "doc_count": 6,
+                      "avg_ack_pkts_sent": {
+                        "value": 1.1666666666666667
+                      }
+                    },
+                    {
+                      "key": "192.168.101.125",
+                      "doc_count": 4,
+                      "avg_ack_pkts_sent": {
+                        "value": 1
+                      }
+                    },
+                    {
+                      "key": "192.168.101.132",
+                      "doc_count": 1,
+                      "avg_ack_pkts_sent": {
+                        "value": 2
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "key": "b827ebdd0999",
+                "doc_count": 34,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": []
+                }
+              },
+              {
+                "key": "b827ebb95199",
+                "doc_count": 31,
+                "sourceAddresses": {
+                  "doc_count_error_upper_bound": 0,
+                  "sum_other_doc_count": 0,
+                  "buckets": []
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}
