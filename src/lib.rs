@@ -37,7 +37,7 @@ pub struct Aggregations(Value);
 //          Mental model for this?
 //          Below works thanks to `misdreavus` on IRC, but I don't quite know why
 impl<'a> IntoIterator for &'a Aggregations {
-//    type Item = BTreeMap<&'a String, &'a Value>;
+    //    type Item = BTreeMap<&'a String, &'a Value>;
     type Item = BTreeMap<Cow<'a, String>, &'a Value>;
     type IntoIter = AggregationIterator<'a>;
 
@@ -62,7 +62,6 @@ pub struct AggregationIterator<'a> {
     current_row_finished: bool,
     //QUESTION: Tracking traversal usng a stack of Iterators make sense? Is Vec right for this?
     iter_stack: Vec<(Option<&'a String>, Iter<'a, Value>)>,
-//    field_names_owned: Vec<String>,
     aggregations: &'a Aggregations
 }
 
@@ -96,18 +95,26 @@ impl<'a> AggregationIterator<'a> {
         AggregationIterator {
             current_row: None,
             current_row_finished: false,
-//            field_names_owned: n,
             iter_stack: s,
             aggregations: a
         }
     }
 }
 
+macro_rules! insert_value {
+    ($fieldname:expr, $json_object:ident, $keyname:ident, $rowdata:ident) => ({
+      if $json_object.contains_key($fieldname) {
+          let v = $json_object.get($fieldname);
+          let field_name = format!("{}_{}", $keyname, $fieldname);
+          debug! ("ITER: Insert value! {} {:?}", field_name, v.unwrap());
+          $rowdata.insert(Cow::Owned(field_name), v.unwrap());
+       }
+	})
+}
+
 impl<'a> Iterator for AggregationIterator<'a> {
     type Item = BTreeMap<Cow<'a, String>, &'a Value>;
-//    type Item = BTreeMap<&'a String, &'a Value>;
 
-//    fn next(&mut self) -> Option<BTreeMap<&'a String, &'a Value>> {
     fn next(&mut self) -> Option<BTreeMap<Cow<'a, String>, &'a Value>> {
         match self.current_row {
             None => {
@@ -120,7 +127,7 @@ impl<'a> Iterator for AggregationIterator<'a> {
         loop {
             match self.iter_stack.pop() {
                 None => {
-                    debug!("ITER: Done!");
+                    debug! ("ITER: Done!");
                     match self.current_row {
                         Some(_) => {
                             self.current_row = None
@@ -139,12 +146,12 @@ impl<'a> Iterator for AggregationIterator<'a> {
                     //Save
                     self.iter_stack.push(i);
 
-                    debug!("ITER: Depth {}", self.iter_stack.len());
+                    debug! ("ITER: Depth {}", self.iter_stack.len());
                     //FIXME: Move this, to be able to process first line too
                     match n {
                         None => {
                             //Was nothing here, exit
-                            debug!("ITER: Exit!");
+                            debug! ("ITER: Exit!");
                             self.iter_stack.pop();
                             continue;
                         },
@@ -152,7 +159,7 @@ impl<'a> Iterator for AggregationIterator<'a> {
                             //QUESTION: Destructuring/matching to this extent the right strategy?
                             match self.current_row {
                                 Some(ref mut row) => {
-                                    debug!("ITER: Row: {:?}", row);
+                                    debug! ("ITER: Row: {:?}", row);
 
                                     let o = match *n {
                                         Value::Object(ref o) => o,
@@ -168,26 +175,51 @@ impl<'a> Iterator for AggregationIterator<'a> {
                                                         let i = a.iter();
                                                         self.iter_stack.push((Some(key), i));
                                                     }
+                                                    continue;
                                                 }
                                                 //Simple Value Aggregation Name
                                                 if c.contains_key("value") {
                                                     let v = c.get("value");
                                                     //FIXME: Can this fail?
-                                                    debug!("ITER: Insert value! {} {:?}", key, v.unwrap());
+                                                    debug! ("ITER: Insert value! {} {:?}", key, v.unwrap());
                                                     //QUESTION: Cow right for this use-case? See below
                                                     row.insert(Cow::Borrowed(key), v.unwrap());
+                                                    continue;
                                                 }
+                                                //Stats
+                                                //FIXME: Can be done in loop?
+
+                                                //Stats fields
+                                                insert_value!("count",c,key,row);
+                                                insert_value!("min",c,key,row);
+                                                insert_value!("max",c,key,row);
+                                                insert_value!("avg",c,key,row);
+                                                insert_value!("sum",c,key,row);
+                                                insert_value!("sum_of_squares",c,key,row);
+                                                insert_value!("variance",c,key,row);
+                                                insert_value!("std_deviation",c,key,row);
+
+                                                //TODO: std_deviation_bounds
+//                                                if c.contains_key("std_deviation_bounds") {
+//                                                    let u = c.get("std_deviation_bounds").unwrap().get("upper");
+//                                                    let l = c.get("std_deviation_bounds").unwrap().get("lower");
+//                                                    let un = format!("{}_std_deviation_bounds_upper", key);
+//                                                    let ln = format!("{}_std_deviation_bounds_lower", key);
+//                                                    debug! ("ITER: Insert std_dev_bounds! {} {} u: {:?} l: {:?}", un, ln, u.unwrap(), l.unwrap());
+//                                                    row.insert(Cow::Owned(un), u.unwrap());
+//                                                    row.insert(Cow::Owned(ln), l.unwrap());
+//                                                }
                                             },
                                             _ => ()
                                         }
                                         //Bucket Aggregation Name
                                         if key == "key" {
-                                            debug!("ITER: Insert bucket! {} {:?}", active_name, value);
+                                            debug! ("ITER: Insert bucket! {} {:?}", active_name, value);
                                             row.insert(Cow::Borrowed(active_name), value);
                                         }
                                         //Bucket Aggregation Count
                                         if key == "doc_count" {
-                                            debug!("ITER: Insert bucket count! {} {:?}", active_name, value);
+                                            debug! ("ITER: Insert bucket count! {} {:?}", active_name, value);
                                             let field_name = format!("{}_doc_count", active_name);
                                             row.insert(Cow::Owned(field_name), value);
                                         }
@@ -203,10 +235,10 @@ impl<'a> Iterator for AggregationIterator<'a> {
                     }
 
                     if !has_buckets {
-                        debug!("ITER: Bucketless!");
+                        debug! ("ITER: Bucketless!");
                         break;
                     } else {
-                        debug!("ITER: Dive!");
+                        debug! ("ITER: Dive!");
                     }
                 }
             };

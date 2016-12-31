@@ -92,6 +92,32 @@ fn test_parse_3level_multichild_aggs() {
 }
 
 #[test]
+fn test_parse_3level_multistats_aggs() {
+    let mut f = File::open("tests/samples/aggregation_3level_multistats.json").unwrap();
+    let mut s = String::new();
+    f.read_to_string(&mut s).unwrap();
+
+    let deserialized: Response = serde_json::from_str(&s).unwrap();
+
+    let min = String::from("extstats_ack_pkts_sent_min");
+    let avg = String::from("stats_ack_pkts_sent_avg");
+    let max = String::from("extstats_ack_pkts_sent_max");
+    let mut first = true;
+    let mut count = 0;
+    for i in deserialized.aggs().unwrap().into_iter().take(500000) {
+        count += 1;
+        if first {
+            assert!(i.contains_key(&min));
+            assert!(i.contains_key(&max));
+            assert!(i.contains_key(&avg));
+            first = false;
+        }
+    }
+    assert_eq!(count, 61);
+
+}
+
+#[test]
 fn test_parse_simple_aggs_no_empty_first_record() {
 
     let mut f = File::open("tests/samples/aggregation_simple.json").unwrap();
