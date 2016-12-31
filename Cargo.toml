@@ -1,13 +1,19 @@
 [package]
+authors = ["Stephan Buys <stephan.buys@panoptix.co.za>"]
 name = "elastic_responses"
 version = "0.1.0"
-authors = ["Stephan Buys <stephan.buys@panoptix.co.za>"]
-
 [dependencies]
-json_str = "*"
 elastic_requests = "*"
-elastic_reqwest = { version = "*", path = "../elastic-hyper" }
+json_str = "*"
 reqwest = "*"
 serde = "0.8"
 serde_derive = "0.8"
 serde_json = "^0.8"
+log = "*"
+slog = "*"
+slog-envlogger = "*"
+slog-stdlog = "*"
+
+[dependencies.elastic_reqwest]
+path = "../elastic-hyper"
+version = "*"

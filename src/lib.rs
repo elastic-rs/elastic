@@ -2,11 +2,18 @@
 #![feature(proc_macro)]
 
 #[macro_use]
+extern crate log;
+
+#[macro_use]
 extern crate serde_derive;
 
 extern crate serde;
 extern crate serde_json;
 
+extern crate slog_stdlog;
+extern crate slog_envlogger;
+
+//FIXME: Delete reference.rs
 //pub mod reference;
 
 use serde_json::Value;
@@ -27,6 +34,10 @@ pub struct Response {
 pub struct Aggregations(Value);
 
 
+//QUESTION: Why do lifetimes go where they go, what am I missing?
+//          What happens when lifetimes shadow each other?
+//          Mental model for this?
+//          Below works thanks to `misdreavus` on IRC, but I don't quite know why
 impl<'a> IntoIterator for &'a Aggregations {
     type Item = BTreeMap<&'a String, &'a Value>;
     type IntoIter = AggregationIterator<'a>;
@@ -36,6 +47,7 @@ impl<'a> IntoIterator for &'a Aggregations {
     }
 }
 
+//FIXME: can this be run as a state-machine (ala https://hoverbear.org/2016/10/12/rust-state-machine-pattern/)
 //#[derive(Debug)]
 //enum AggStates {
 //    AtRoot,
@@ -47,15 +59,9 @@ impl<'a> IntoIterator for &'a Aggregations {
 
 #[derive(Debug)]
 pub struct AggregationIterator<'a> {
-    //    state: AggStates,
-    //    start_at: Option<&'a Value>,
-//    current_name: Option<&'a String>,
-//    currect_buckets: Option<&'a Value>,
-//    currect_buckets_iter: Option<Iter<'a, Value>>,
     current_row: Option<BTreeMap<&'a String, &'a Value>>,
+    //QUESTION: Tracking traversal usng a stack of Iterators make sense? Is Vec right for this?
     iter_stack: Vec<(Option<&'a String>, Iter<'a, Value>)>,
-//    parent_node: Option<&'a Value>,
-//    count: u64,
     aggregations: &'a Aggregations
 }
 
@@ -81,29 +87,18 @@ impl<'a> AggregationIterator<'a> {
                 }
             },
             _ => {
-                //FIXME: do something sensible here
-                panic!("Not implemented, only caters for bucket objects");
+                //FIXME: Bad for lib
+                panic!("Not implemented, we only cater for bucket objects");
             }
         };
 
         AggregationIterator {
-            //            state: AggStates::AtRoot,
-            //            start_at: Some(v),
-//            current_name: None,
-//            currect_buckets: None,
-//            currect_buckets_iter: None,
             current_row: None,
             iter_stack: s,
-//            parent_node: None,
-//            count: 0,
             aggregations: a
         }
     }
 }
-
-//fn has_child_aggs() {
-//
-//}
 
 impl<'a> Iterator for AggregationIterator<'a> {
     type Item = BTreeMap<&'a String, &'a Value>;
@@ -120,13 +115,8 @@ impl<'a> Iterator for AggregationIterator<'a> {
         loop {
             match self.iter_stack.pop() {
                 None => {
-//                    println!("Done!");
-//                    return None;
+                    debug!("ITER: Done!");
                     match self.current_row {
-//                        None => {
-//                            //New row
-//                            self.current_row = Some(BTreeMap::new())
-//                        },
                         Some(_) => {
                             self.current_row = None
                         },
@@ -135,39 +125,33 @@ impl<'a> Iterator for AggregationIterator<'a> {
                     break;
                 },
                 Some(mut i) => {
-                    //                    println!("ITER: {:#?}", i);
                     let n = i.1.next();
-                    //                    println!("N: {:?}", n);
+                    //FIXME: can this fail?
                     let active_name = &i.0.unwrap();
-//                    println!("Active Name! {}", active_name);
 
                     //Iterate down?
                     let mut has_buckets = false;
                     //Save
                     self.iter_stack.push(i);
 
-//                    println!("Loop {:?} {}", active_name, self.iter_stack.len());
+                    debug!("ITER: Depth {}", self.iter_stack.len());
                     //FIXME: Move this, to be able to process first line too
                     match n {
                         None => {
                             //Was nothing here, exit
-//                            println!("Exit!");
+                            debug!("ITER: Exit!");
                             self.iter_stack.pop();
                             break;
                         },
                         Some(n) => {
+                            //QUESTION: Destructuring/matching
                             match self.current_row {
                                 Some(ref mut row) => {
-//                                    let row = r;
-                                    //                                    println!("Insert! {} {:?}", active_name, value);
-                                    //                                    row.insert(active_name, value);
-
                                     let o = match *n {
                                         Value::Object(ref o) => o,
                                         _ => panic!("Shouldn't get here!")
                                     };
                                     for (key, value) in o {
-//                                        println!("KEY: {:?}, VALUE: {:?}", key, value);
                                         match *value {
                                             Value::Object(ref c) => {
                                                 //Child Aggregation
@@ -182,7 +166,7 @@ impl<'a> Iterator for AggregationIterator<'a> {
                                                 //Simple Value Aggregation Name
                                                 if c.contains_key("value") {
                                                     let v = c.get("value");
-//                                                    println!("Insert! {} {:?}", key, v.unwrap());
+                                                    //FIXME: Can this fail?
                                                     row.insert(key, v.unwrap());
                                                 }
                                             },
@@ -190,7 +174,7 @@ impl<'a> Iterator for AggregationIterator<'a> {
                                         }
                                         //Bucket Aggregation Name
                                         if key == "key" {
-//                                            println!("Insert! {} {:?}", key, value);
+                                            debug!("ITER: Insert! {} {:?}", key, value);
                                             row.insert(active_name, value);
                                         }
                                     }
@@ -201,11 +185,11 @@ impl<'a> Iterator for AggregationIterator<'a> {
                     }
 
                     if !has_buckets {
-//                        println!("Bucketless!");
+                        debug!("ITER: Bucketless!");
 //                        self.iter_stack.pop();
                         break;
                     } else {
-//                        println!("Dive!");
+                        debug!("ITER: Dive!");
 //                        continue;
                     }
                 }
@@ -213,7 +197,7 @@ impl<'a> Iterator for AggregationIterator<'a> {
         }
 
         match self.current_row {
-            //FIXME: Refactor to avoid this
+            //FIXME: Refactor to avoid this clone()
             Some(ref x) => Some(x.clone()),
             None => None
         }
