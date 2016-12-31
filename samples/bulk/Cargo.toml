@@ -1,10 +1,13 @@
 [package]
-name = "basic"
+name = "bulk"
 version = "0.1.0"
 authors = ["Ashley Mannix <ashleymannix@live.com.au>"]
+
+[features]
+profiling = []
 
 [dependencies]
 elastic_reqwest = { version = "*", path = "../../" }
 elastic_requests = "*"
 
-json_str = "*"
+lazy_static = { version = "*", optional = true }
