@@ -63,6 +63,37 @@ mod genned;
 
 pub use genned::*;
 
+use std::borrow::Cow;
+
+pub trait RawBody<'a> {
+    fn into_raw(self) -> Cow<'a, [u8]>;
+}
+
+impl<'a> RawBody<'a> for Cow<'a, Body<'a>> {
+    fn into_raw(self) -> Cow<'a, [u8]> {
+        match self {
+            Cow::Borrowed(b) => {
+                match **b {
+                    Cow::Borrowed(b) => Cow::Borrowed(b),
+                    Cow::Owned(ref b) => Cow::Borrowed(b),
+                }
+            }
+            Cow::Owned(b) => {
+                match b.into() {
+                    Cow::Borrowed(b) => Cow::Borrowed(b),
+                    Cow::Owned(b) => Cow::Owned(b),
+                }
+            }
+        }
+    }
+}
+
+impl<'a> RawBody<'a> for Body<'a> {
+    fn into_raw(self) -> Cow<'a, [u8]> {
+        self.into()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use std::thread;
