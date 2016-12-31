@@ -31,19 +31,33 @@ pub struct Response {
 #[derive(Deserialize, Debug)]
 pub struct Aggregations(Value);
 
-
 //QUESTION: Why do lifetimes go where they go, what am I missing?
 //          What happens when lifetimes shadow each other?
 //          Mental model for this?
 //          Below works thanks to `misdreavus` on IRC, but I don't quite know why
 impl<'a> IntoIterator for &'a Aggregations {
-    type Item = BTreeMap<Cow<'a, String>, &'a Value>; // JPG - str?
+    type Item = RowData<'a>; // JPG - str?
     type IntoIter = AggregationIterator<'a>;
 
     fn into_iter(self) -> AggregationIterator<'a> {
         AggregationIterator::new(self)
     }
 }
+
+// struct Foo<'a>(&'a String);
+
+// fn foo() {
+//     let a = String::from("a"); // a
+//     let b = String::from("b"); // |  b
+//                                // |  |
+//     Foo(&b);                   // |  |
+//                                // |  |
+//     let c = a;                 //    |  c
+//                                //    |  |
+// }
+
+
+
 
 //FIXME: can this be run as a state-machine (ala https://hoverbear.org/2016/10/12/rust-state-machine-pattern/)
 //#[derive(Debug)]
@@ -55,9 +69,30 @@ impl<'a> IntoIterator for &'a Aggregations {
 //    RowFinished
 //}
 
+// Why we might want multiple lifetimes.
+// #[derive(Copy)]
+// struct Cache<'c, 's> {
+//     thing: &'c BTreeMap<usize, &'s str>,
+//     position: usize,
+// }
+
+// fn foo<'c, 's>(cache: Cache<'c, 's>) -> &'s str {
+//     unimplemented!()
+// }
+
+// fn main() {
+//     let many_strings = "foo";                           // 0 |
+//     let z = {                                           // 1 |
+//         let map = BTreeMap! { 0 => many_strings };      // 2 | |
+//         let cache = Cache { thing: &map, position: 0 }; // 3 | |
+//         foo(cache);                                     // 4 | |
+//     };                                                  // 5 |
+//     println!("{}", z);                                  // 6 |
+// }
+
 #[derive(Debug)]
 pub struct AggregationIterator<'a> {
-    current_row: Option<BTreeMap<Cow<'a, String>, &'a Value>>,
+    current_row: Option<RowData<'a>>,
     current_row_finished: bool,
     //QUESTION: Tracking traversal usng a stack of Iterators make sense? Is Vec right for this?
     iter_stack: Vec<(Option<&'a String>, Iter<'a, Value>)>,
@@ -66,31 +101,16 @@ pub struct AggregationIterator<'a> {
 
 impl<'a> AggregationIterator<'a> {
     fn new(a: &'a Aggregations) -> AggregationIterator<'a> {
-        let v = match a {
-            &Aggregations(ref v) => v
-        }; // JPG if let, destructure, direct
+        let o = a.0.as_object()
+            .expect("Not implemented, we only cater for bucket objects");
+        //FIXME: Bad for lib // JPG: quick-error
 
-        // JPG: inference?
-        let mut s: Vec<(Option<&String>, Iter<Value>)> = Vec::new();
-
-        match *v {
-            Value::Object(ref o) => {
-                for (key, child) in o {
-                    if let Value::Object(ref c) = *child {
-                        if c.contains_key("buckets") { // JPG: entry
-                            if let Value::Array(ref a) = c["buckets"] {
-                                let i = a.iter();
-                                s.push((Some(&key), i));
-                            }
-                        }
-                    }
-                }
-            },
-            _ => {
-                //FIXME: Bad for lib
-                panic!("Not implemented, we only cater for bucket objects");
-            } // quick-error
-        };
+        let s = o.into_iter().filter_map(|(key, child)| {
+            child.as_object()
+                .and_then(|child| child.get("buckets"))
+                .and_then(Value::as_array)
+                .map(|array| (Some(key), array.iter()))
+        }).collect();
 
         AggregationIterator {
             current_row: None,
@@ -101,39 +121,31 @@ impl<'a> AggregationIterator<'a> {
     }
 }
 
-macro_rules! insert_value {
-    ($fieldname:expr, $json_object:ident, $keyname:ident, $rowdata:ident) => ({
-      if $json_object.contains_key($fieldname) {
-          let v = $json_object.get($fieldname);
-          let field_name = format!("{}_{}", $keyname, $fieldname);
-          debug! ("ITER: Insert value! {} {:?}", field_name, v.unwrap());
-          $rowdata.insert(Cow::Owned(field_name), v.unwrap());
-       }
-	})
+type Object = BTreeMap<String, Value>;
+type RowData<'a> = BTreeMap<Cow<'a, str>, &'a Value>;
+
+fn insert_value<'a>(fieldname: &str, json_object: &'a Object, keyname: &str, rowdata: &mut RowData<'a>) {
+    if let Some(v) = json_object.get(fieldname) {
+        let field_name = format!("{}_{}", keyname, fieldname);
+        debug! ("ITER: Insert value! {} {:?}", field_name, v);
+        rowdata.insert(Cow::Owned(field_name), v);
+    }
 }
 
 impl<'a> Iterator for AggregationIterator<'a> {
-    type Item = BTreeMap<Cow<'a, String>, &'a Value>; // JPG type alias?
+    type Item = RowData<'a>; // JPG type alias?
 
-    fn next(&mut self) -> Option<BTreeMap<Cow<'a, String>, &'a Value>> {
-        match self.current_row {
-            None => {
-                //New row
-                self.current_row = Some(BTreeMap::new())
-            },
-            Some(_) => () // JPG if let
-        };
+    fn next(&mut self) -> Option<RowData<'a>> {
+        if self.current_row.is_none() {
+            //New row
+            self.current_row = Some(BTreeMap::new())
+        }
 
         loop {
             match self.iter_stack.pop() {
                 None => {
                     debug! ("ITER: Done!"); // JPG: no space on macro invocation
-                    match self.current_row { // JPG always set to None.
-                        Some(_) => {
-                            self.current_row = None
-                        },
-                        _ => ()
-                    };
+                    self.current_row = None;
                     break;
                 },
                 Some(mut i) => {
@@ -161,43 +173,38 @@ impl<'a> Iterator for AggregationIterator<'a> {
                                 Some(ref mut row) => {
                                     debug! ("ITER: Row: {:?}", row);
 
-                                    let o = match *n { // JPG as_object
-                                        Value::Object(ref o) => o,
-                                        _ => panic!("Shouldn't get here!")
-                                    };
+                                    let o = n.as_object().expect("Shouldn't get here!");
                                     for (key, value) in o {
                                         match *value {
                                             Value::Object(ref c) => {
                                                 //Child Aggregation
-                                                if c.contains_key("buckets") {
+                                                if let Some(buckets) = c.get("buckets") {
                                                     has_buckets = true;
-                                                    if let Value::Array(ref a) = c["buckets"] {
+                                                    if let Value::Array(ref a) = *buckets {
                                                         let i = a.iter();
                                                         self.iter_stack.push((Some(key), i));
                                                     }
                                                     continue;
                                                 }
                                                 //Simple Value Aggregation Name
-                                                if c.contains_key("value") {
-                                                    let v = c.get("value");
-                                                    //FIXME: Can this fail?
-                                                    debug! ("ITER: Insert value! {} {:?}", key, v.unwrap());
+                                                if let Some(v) = c.get("value") {
+                                                    debug! ("ITER: Insert value! {} {:?}", key, v);
                                                     //QUESTION: Cow right for this use-case? See below
-                                                    row.insert(Cow::Borrowed(key), v.unwrap());
+                                                    row.insert(Cow::Borrowed(key), v);
                                                     continue;
                                                 }
                                                 //Stats
                                                 //FIXME: Can be done in loop?
 
                                                 //Stats fields
-                                                insert_value!("count",c,key,row);
-                                                insert_value!("min",c,key,row);
-                                                insert_value!("max",c,key,row);
-                                                insert_value!("avg",c,key,row);
-                                                insert_value!("sum",c,key,row);
-                                                insert_value!("sum_of_squares",c,key,row);
-                                                insert_value!("variance",c,key,row);
-                                                insert_value!("std_deviation",c,key,row);
+                                                insert_value("count",c,key,row);
+                                                insert_value("min",c,key,row);
+                                                insert_value("max",c,key,row);
+                                                insert_value("avg",c,key,row);
+                                                insert_value("sum",c,key,row);
+                                                insert_value("sum_of_squares",c,key,row);
+                                                insert_value("variance",c,key,row);
+                                                insert_value("std_deviation",c,key,row);
 
                                                 //TODO: std_deviation_bounds
 //                                                if c.contains_key("std_deviation_bounds") {
@@ -272,8 +279,8 @@ impl Response {
         &self.hits.hits()
     }
 
-    pub fn aggs(self) -> std::option::Option<Aggregations> {
-        self.aggregations
+    pub fn aggs(&self) -> Option<&Aggregations> {
+        self.aggregations.as_ref()
     }
 }
 

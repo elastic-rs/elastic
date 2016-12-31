@@ -42,16 +42,19 @@ fn test_parse_simple_aggs() {
 
     let deserialized: Response = serde_json::from_str(&s).unwrap();
 
-    //FIXME: take all?
-//    for i in deserialized.aggs().unwrap().into_iter().take(50000) {
-//        println!("Got record {:?}", i);
-//    }
+    // let mut i = deserialized.aggs().unwrap().into_iter();
+
+    // for x in i.by_ref().take(3) { println!("1") };
+    // for x in i.take(4) { println!("2") };
+
+    for i in deserialized.aggs().unwrap() {
+        println!("Got record {:?}", i);
+    }
     assert_eq!(deserialized.aggs().unwrap().into_iter().count(), 124);
 
-    //FIXME: Shouldn't be a move above
-    //    for i in deserialized.aggs().unwrap().into_iter().take(1) {
-    //        println!("{}", i);
-    //    }
+    for i in deserialized.aggs().unwrap().into_iter().take(1) {
+        println!("{:?}", i);
+    }
 }
 
 #[test]
@@ -73,17 +76,17 @@ fn test_parse_3level_multichild_aggs() {
 
     let deserialized: Response = serde_json::from_str(&s).unwrap();
 
-    let min = String::from("min_ack_pkts_sent");
-    let avg = String::from("avg_ack_pkts_sent");
-    let max = String::from("max_ack_pkts_sent");
+    let min = "min_ack_pkts_sent";
+    let avg = "avg_ack_pkts_sent";
+    let max = "max_ack_pkts_sent";
     let mut first = true;
     let mut count = 0;
     for i in deserialized.aggs().unwrap().into_iter().take(500000) {
         count += 1;
         if first {
-            assert!(i.contains_key(&min));
-            assert!(i.contains_key(&max));
-            assert!(i.contains_key(&avg));
+            assert!(i.contains_key(min));
+            assert!(i.contains_key(max));
+            assert!(i.contains_key(avg));
             first = false;
         }
     }
@@ -99,17 +102,17 @@ fn test_parse_3level_multistats_aggs() {
 
     let deserialized: Response = serde_json::from_str(&s).unwrap();
 
-    let min = String::from("extstats_ack_pkts_sent_min");
-    let avg = String::from("stats_ack_pkts_sent_avg");
-    let max = String::from("extstats_ack_pkts_sent_max");
+    let min = "extstats_ack_pkts_sent_min";
+    let avg = "stats_ack_pkts_sent_avg";
+    let max = "extstats_ack_pkts_sent_max";
     let mut first = true;
     let mut count = 0;
     for i in deserialized.aggs().unwrap().into_iter().take(500000) {
         count += 1;
         if first {
-            assert!(i.contains_key(&min));
-            assert!(i.contains_key(&max));
-            assert!(i.contains_key(&avg));
+            assert!(i.contains_key(min));
+            assert!(i.contains_key(max));
+            assert!(i.contains_key(avg));
             first = false;
         }
     }
@@ -126,11 +129,11 @@ fn test_parse_simple_aggs_no_empty_first_record() {
 
     let deserialized: Response = serde_json::from_str(&s).unwrap();
 
-    let s = String::from("timechart");
+    let s = "timechart";
     let mut first = true;
     for i in deserialized.aggs().unwrap().into_iter().take(50) {
         if first {
-            assert!(i.contains_key(&s));
+            assert!(i.contains_key(s));
             first = false;
         }
     }
