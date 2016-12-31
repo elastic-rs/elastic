@@ -13,12 +13,10 @@ extern crate serde_json;
 extern crate slog_stdlog;
 extern crate slog_envlogger;
 
-//FIXME: Delete reference.rs
-//pub mod reference;
-
 use serde_json::Value;
-use std::slice::Iter;
+use std::borrow::Cow;
 use std::collections::BTreeMap;
+use std::slice::Iter;
 
 #[derive(Deserialize, Debug)]
 pub struct Response {
@@ -39,7 +37,8 @@ pub struct Aggregations(Value);
 //          Mental model for this?
 //          Below works thanks to `misdreavus` on IRC, but I don't quite know why
 impl<'a> IntoIterator for &'a Aggregations {
-    type Item = BTreeMap<&'a String, &'a Value>;
+//    type Item = BTreeMap<&'a String, &'a Value>;
+    type Item = BTreeMap<Cow<'a, String>, &'a Value>;
     type IntoIter = AggregationIterator<'a>;
 
     fn into_iter(self) -> AggregationIterator<'a> {
@@ -59,9 +58,11 @@ impl<'a> IntoIterator for &'a Aggregations {
 
 #[derive(Debug)]
 pub struct AggregationIterator<'a> {
-    current_row: Option<BTreeMap<&'a String, &'a Value>>,
+    current_row: Option<BTreeMap<Cow<'a, String>, &'a Value>>,
+    current_row_finished: bool,
     //QUESTION: Tracking traversal usng a stack of Iterators make sense? Is Vec right for this?
     iter_stack: Vec<(Option<&'a String>, Iter<'a, Value>)>,
+//    field_names_owned: Vec<String>,
     aggregations: &'a Aggregations
 }
 
@@ -94,6 +95,8 @@ impl<'a> AggregationIterator<'a> {
 
         AggregationIterator {
             current_row: None,
+            current_row_finished: false,
+//            field_names_owned: n,
             iter_stack: s,
             aggregations: a
         }
@@ -101,9 +104,11 @@ impl<'a> AggregationIterator<'a> {
 }
 
 impl<'a> Iterator for AggregationIterator<'a> {
-    type Item = BTreeMap<&'a String, &'a Value>;
+    type Item = BTreeMap<Cow<'a, String>, &'a Value>;
+//    type Item = BTreeMap<&'a String, &'a Value>;
 
-    fn next(&mut self) -> Option<BTreeMap<&'a String, &'a Value>> {
+//    fn next(&mut self) -> Option<BTreeMap<&'a String, &'a Value>> {
+    fn next(&mut self) -> Option<BTreeMap<Cow<'a, String>, &'a Value>> {
         match self.current_row {
             None => {
                 //New row
@@ -141,12 +146,14 @@ impl<'a> Iterator for AggregationIterator<'a> {
                             //Was nothing here, exit
                             debug!("ITER: Exit!");
                             self.iter_stack.pop();
-                            break;
+                            continue;
                         },
                         Some(n) => {
                             //QUESTION: Destructuring/matching
                             match self.current_row {
                                 Some(ref mut row) => {
+                                    debug!("ITER: Row: {:?}", row);
+
                                     let o = match *n {
                                         Value::Object(ref o) => o,
                                         _ => panic!("Shouldn't get here!")
@@ -158,7 +165,6 @@ impl<'a> Iterator for AggregationIterator<'a> {
                                                 if c.contains_key("buckets") {
                                                     has_buckets = true;
                                                     if let Value::Array(ref a) = c["buckets"] {
-//                                                        println!("Current Colection: {}", key);
                                                         let i = a.iter();
                                                         self.iter_stack.push((Some(key), i));
                                                     }
@@ -167,16 +173,28 @@ impl<'a> Iterator for AggregationIterator<'a> {
                                                 if c.contains_key("value") {
                                                     let v = c.get("value");
                                                     //FIXME: Can this fail?
-                                                    row.insert(key, v.unwrap());
+                                                    debug!("ITER: Insert value! {} {:?}", key, v.unwrap());
+                                                    //QUESTION: Cow right for this use-case? See below
+                                                    row.insert(Cow::Borrowed(key), v.unwrap());
                                                 }
                                             },
                                             _ => ()
                                         }
                                         //Bucket Aggregation Name
                                         if key == "key" {
-                                            debug!("ITER: Insert! {} {:?}", key, value);
-                                            row.insert(active_name, value);
+                                            debug!("ITER: Insert bucket! {} {:?}", active_name, value);
+                                            row.insert(Cow::Borrowed(active_name), value);
                                         }
+                                        //Bucket Aggregation Count
+                                        if key == "doc_count" {
+                                            debug!("ITER: Insert bucket count! {} {:?}", active_name, value);
+                                            let field_name = format!("{}_doc_count", active_name);
+                                            row.insert(Cow::Owned(field_name), value);
+                                        }
+                                    }
+                                    //Return here?
+                                    if !has_buckets {
+                                        return Some(row.clone());
                                     }
                                 },
                                 _ => ()
@@ -186,11 +204,9 @@ impl<'a> Iterator for AggregationIterator<'a> {
 
                     if !has_buckets {
                         debug!("ITER: Bucketless!");
-//                        self.iter_stack.pop();
                         break;
                     } else {
                         debug!("ITER: Dive!");
-//                        continue;
                     }
                 }
             };
