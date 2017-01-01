@@ -18,6 +18,16 @@ use std::borrow::Cow;
 use std::collections::BTreeMap;
 use std::slice::Iter;
 
+impl Response {
+    pub fn hits(&self) -> &Vec<Value> {
+        &self.hits.hits()
+    }
+
+    pub fn aggs(&self) -> Option<&Aggregations> {
+        self.aggregations.as_ref()
+    }
+}
+
 #[derive(Deserialize, Debug)]
 pub struct Response {
     took: u64,
@@ -31,33 +41,14 @@ pub struct Response {
 #[derive(Deserialize, Debug)]
 pub struct Aggregations(Value);
 
-//QUESTION: Why do lifetimes go where they go, what am I missing?
-//          What happens when lifetimes shadow each other?
-//          Mental model for this?
-//          Below works thanks to `misdreavus` on IRC, but I don't quite know why
 impl<'a> IntoIterator for &'a Aggregations {
-    type Item = RowData<'a>; // JPG - str?
+    type Item = RowData<'a>;
     type IntoIter = AggregationIterator<'a>;
 
     fn into_iter(self) -> AggregationIterator<'a> {
         AggregationIterator::new(self)
     }
 }
-
-// struct Foo<'a>(&'a String);
-
-// fn foo() {
-//     let a = String::from("a"); // a
-//     let b = String::from("b"); // |  b
-//                                // |  |
-//     Foo(&b);                   // |  |
-//                                // |  |
-//     let c = a;                 //    |  c
-//                                //    |  |
-// }
-
-
-
 
 //FIXME: can this be run as a state-machine (ala https://hoverbear.org/2016/10/12/rust-state-machine-pattern/)
 //#[derive(Debug)]
@@ -69,32 +60,10 @@ impl<'a> IntoIterator for &'a Aggregations {
 //    RowFinished
 //}
 
-// Why we might want multiple lifetimes.
-// #[derive(Copy)]
-// struct Cache<'c, 's> {
-//     thing: &'c BTreeMap<usize, &'s str>,
-//     position: usize,
-// }
-
-// fn foo<'c, 's>(cache: Cache<'c, 's>) -> &'s str {
-//     unimplemented!()
-// }
-
-// fn main() {
-//     let many_strings = "foo";                           // 0 |
-//     let z = {                                           // 1 |
-//         let map = BTreeMap! { 0 => many_strings };      // 2 | |
-//         let cache = Cache { thing: &map, position: 0 }; // 3 | |
-//         foo(cache);                                     // 4 | |
-//     };                                                  // 5 |
-//     println!("{}", z);                                  // 6 |
-// }
-
 #[derive(Debug)]
 pub struct AggregationIterator<'a> {
     current_row: Option<RowData<'a>>,
     current_row_finished: bool,
-    //QUESTION: Tracking traversal usng a stack of Iterators make sense? Is Vec right for this?
     iter_stack: Vec<(Option<&'a String>, Iter<'a, Value>)>,
     aggregations: &'a Aggregations
 }
@@ -133,7 +102,7 @@ fn insert_value<'a>(fieldname: &str, json_object: &'a Object, keyname: &str, row
 }
 
 impl<'a> Iterator for AggregationIterator<'a> {
-    type Item = RowData<'a>; // JPG type alias?
+    type Item = RowData<'a>;
 
     fn next(&mut self) -> Option<RowData<'a>> {
         if self.current_row.is_none() {
@@ -144,12 +113,12 @@ impl<'a> Iterator for AggregationIterator<'a> {
         loop {
             match self.iter_stack.pop() {
                 None => {
-                    debug! ("ITER: Done!"); // JPG: no space on macro invocation
+                    debug! ("ITER: Done!");
                     self.current_row = None;
                     break;
                 },
                 Some(mut i) => {
-                    let n = i.1.next(); // JPG tuples used like this are hard to follow
+                    let n = i.1.next();
                     //FIXME: can this fail?
                     let active_name = &i.0.unwrap();
 
@@ -168,7 +137,6 @@ impl<'a> Iterator for AggregationIterator<'a> {
                             continue;
                         },
                         Some(n) => {
-                            //QUESTION: Destructuring/matching to this extent the right strategy?
                             match self.current_row {
                                 Some(ref mut row) => {
                                     debug! ("ITER: Row: {:?}", row);
@@ -273,17 +241,6 @@ pub struct Hits {
     hits: Vec<Value>
 }
 
-// JPG place impls closer to defns
-impl Response {
-    pub fn hits(&self) -> &Vec<Value> {
-        &self.hits.hits()
-    }
-
-    pub fn aggs(&self) -> Option<&Aggregations> {
-        self.aggregations.as_ref()
-    }
-}
-
 impl Hits {
     pub fn hits(&self) -> &Vec<Value> { // JPG http://stackoverflow.com/q/40006219/155423
         &self.hits
@@ -292,11 +249,5 @@ impl Hits {
 
 #[derive(Deserialize, Debug)]
 struct Hit {
-    _index: String // JPG suspicious
-}
-
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {}
+    _index: String
 }
