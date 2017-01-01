@@ -1,6 +1,6 @@
 //! Elasticsearch Core Types
 //!
-//! An implementation of the core types in Elasticsearch documents.
+//! An implementation of Elasticsearch data types and document mapping.
 //!
 //! Provides `struct`s and `trait`s for defining Elasticsearch type mapping,
 //! where correctness is enforced by Rust's type system.
@@ -102,6 +102,7 @@
 //! # extern crate elastic_types_derive;
 //! # #[macro_use]
 //! # extern crate elastic_types;
+//! # extern crate serde_json;
 //! # extern crate serde;
 //! # use elastic_types::prelude::*;
 //! # #[derive(Serialize, Deserialize, ElasticType)]
@@ -111,7 +112,7 @@
 //! # 	pub my_num: i32
 //! # }
 //! # fn main() {
-//! let mapping = TypeMapper::to_string(MyType::mapping()).unwrap();
+//! let mapping = serde_json::to_string(&Document::from(MyType::mapping())).unwrap();
 //! # }
 //! ```
 //!
@@ -127,6 +128,7 @@
 //! # extern crate elastic_types_derive;
 //! # #[macro_use]
 //! # extern crate elastic_types;
+//! # extern crate serde_json;
 //! # extern crate serde;
 //! # use elastic_types::prelude::*;
 //! # #[derive(Serialize, Deserialize, ElasticType)]
@@ -135,7 +137,7 @@
 //! # 	pub my_num: i32
 //! # }
 //! # fn main() {
-//! # let mapping = TypeMapper::to_string(MyType::mapping()).unwrap();
+//! # let mapping = serde_json::to_string(&Document::from(MyType::mapping())).unwrap();
 //! # let json = json_str!(
 //! {
 //!     "properties": {
@@ -194,6 +196,7 @@
 //! # extern crate elastic_types_derive;
 //! # #[macro_use]
 //! # extern crate elastic_types;
+//! # extern crate serde_json;
 //! # extern crate serde;
 //! # use elastic_types::prelude::*;
 //! # #[derive(Serialize, Deserialize, ElasticType)]
@@ -206,7 +209,7 @@
 //! # 	pub my_type: MyType
 //! # }
 //! # fn main() {
-//! # let mapping = TypeMapper::to_string(MyOtherType::mapping()).unwrap();
+//! # let mapping = serde_json::to_string(&Document::from(MyOtherType::mapping())).unwrap();
 //! # let json = json_str!(
 //! {
 //!     "properties": {
