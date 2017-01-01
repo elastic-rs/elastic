@@ -18,6 +18,19 @@ use std::borrow::Cow;
 use std::collections::BTreeMap;
 use std::slice::Iter;
 
+//let mut i = deserialized.aggs().unwrap().into_iter();
+//
+//for x in i.by_ref().take(3) { println!("1") };
+//for x in i.take(4) { println!("2") };
+//
+//for i in deserialized.aggs().unwrap() {
+//    println!("Got record {:?}", i);
+//}
+//
+//for i in deserialized.aggs().unwrap().into_iter().take(1) {
+//    println!("{:?}", i);
+//}
+
 impl Response {
     pub fn hits(&self) -> &Vec<Value> {
         &self.hits.hits()
@@ -49,16 +62,6 @@ impl<'a> IntoIterator for &'a Aggregations {
         AggregationIterator::new(self)
     }
 }
-
-//FIXME: can this be run as a state-machine (ala https://hoverbear.org/2016/10/12/rust-state-machine-pattern/)
-//#[derive(Debug)]
-//enum AggStates {
-//    AtRoot,
-//    AtName,
-//    InBuckets,
-//    AtValues,
-//    RowFinished
-//}
 
 #[derive(Debug)]
 pub struct AggregationIterator<'a> {
@@ -111,111 +114,91 @@ impl<'a> Iterator for AggregationIterator<'a> {
         }
 
         loop {
-            match self.iter_stack.pop() {
-                None => {
-                    debug! ("ITER: Done!");
-                    self.current_row = None;
-                    break;
-                },
-                Some(mut i) => {
-                    let n = i.1.next();
-                    //FIXME: can this fail?
-                    let active_name = &i.0.unwrap();
+            if let Some(mut i) = self.iter_stack.pop() {
+                let n = i.1.next();
 
-                    //Iterate down?
-                    let mut has_buckets = false;
-                    //Save
-                    self.iter_stack.push(i);
+                //FIXME: can this fail?
+                let active_name = &i.0.unwrap();
 
-                    debug! ("ITER: Depth {}", self.iter_stack.len());
-                    //FIXME: Move this, to be able to process first line too
-                    match n {
-                        None => {
-                            //Was nothing here, exit
-                            debug! ("ITER: Exit!");
-                            self.iter_stack.pop();
-                            continue;
-                        },
-                        Some(n) => {
-                            match self.current_row {
-                                Some(ref mut row) => {
-                                    debug! ("ITER: Row: {:?}", row);
+                //Iterate down?
+                let mut has_buckets = false;
+                //Save
+                self.iter_stack.push(i);
 
-                                    let o = n.as_object().expect("Shouldn't get here!");
-                                    for (key, value) in o {
-                                        match *value {
-                                            Value::Object(ref c) => {
-                                                //Child Aggregation
-                                                if let Some(buckets) = c.get("buckets") {
-                                                    has_buckets = true;
-                                                    if let Value::Array(ref a) = *buckets {
-                                                        let i = a.iter();
-                                                        self.iter_stack.push((Some(key), i));
-                                                    }
-                                                    continue;
-                                                }
-                                                //Simple Value Aggregation Name
-                                                if let Some(v) = c.get("value") {
-                                                    debug! ("ITER: Insert value! {} {:?}", key, v);
-                                                    //QUESTION: Cow right for this use-case? See below
-                                                    row.insert(Cow::Borrowed(key), v);
-                                                    continue;
-                                                }
-                                                //Stats
-                                                //FIXME: Can be done in loop?
+                debug! ("ITER: Depth {}", self.iter_stack.len());
+                //FIXME: Move this, to be able to process first line too
+                if let Some(n) = n {
+                    if let Some(ref mut row) = self.current_row {
+                        debug! ("ITER: Row: {:?}", row);
 
-                                                //Stats fields
-                                                insert_value("count",c,key,row);
-                                                insert_value("min",c,key,row);
-                                                insert_value("max",c,key,row);
-                                                insert_value("avg",c,key,row);
-                                                insert_value("sum",c,key,row);
-                                                insert_value("sum_of_squares",c,key,row);
-                                                insert_value("variance",c,key,row);
-                                                insert_value("std_deviation",c,key,row);
-
-                                                //TODO: std_deviation_bounds
-//                                                if c.contains_key("std_deviation_bounds") {
-//                                                    let u = c.get("std_deviation_bounds").unwrap().get("upper");
-//                                                    let l = c.get("std_deviation_bounds").unwrap().get("lower");
-//                                                    let un = format!("{}_std_deviation_bounds_upper", key);
-//                                                    let ln = format!("{}_std_deviation_bounds_lower", key);
-//                                                    debug! ("ITER: Insert std_dev_bounds! {} {} u: {:?} l: {:?}", un, ln, u.unwrap(), l.unwrap());
-//                                                    row.insert(Cow::Owned(un), u.unwrap());
-//                                                    row.insert(Cow::Owned(ln), l.unwrap());
-//                                                }
-                                            },
-                                            _ => ()
-                                        }
-                                        //Bucket Aggregation Name
-                                        if key == "key" {
-                                            debug! ("ITER: Insert bucket! {} {:?}", active_name, value);
-                                            row.insert(Cow::Borrowed(active_name), value);
-                                        }
-                                        //Bucket Aggregation Count
-                                        if key == "doc_count" {
-                                            debug! ("ITER: Insert bucket count! {} {:?}", active_name, value);
-                                            let field_name = format!("{}_doc_count", active_name);
-                                            row.insert(Cow::Owned(field_name), value);
-                                        }
+                        for (key, value) in n.as_object().expect("Shouldn't get here!") {
+                            if let Some(c) = value.as_object() {
+                                //Child Aggregation
+                                if let Some(buckets) = c.get("buckets") {
+                                    has_buckets = true;
+                                    if let Value::Array(ref a) = *buckets {
+                                        self.iter_stack.push((Some(key), a.iter()));
                                     }
-                                    //Return here?
-                                    if !has_buckets {
-                                        return Some(row.clone());
+                                    continue;
+                                }
+                                //Simple Value Aggregation Name
+                                if let Some(v) = c.get("value") {
+                                    debug! ("ITER: Insert value! {} {:?}", key, v);
+                                    row.insert(Cow::Borrowed(key), v);
+                                    continue;
+                                }
+                                //Stats fields
+                                insert_value("count", c, key, row);
+                                insert_value("min", c, key, row);
+                                insert_value("max", c, key, row);
+                                insert_value("avg", c, key, row);
+                                insert_value("sum", c, key, row);
+                                insert_value("sum_of_squares", c, key, row);
+                                insert_value("variance", c, key, row);
+                                insert_value("std_deviation", c, key, row);
+
+                                if c.contains_key("std_deviation_bounds") {
+                                    if let Some(child_values) = c.get("std_deviation_bounds").unwrap().as_object() {
+                                        let u = child_values.get("upper");
+                                        let l = child_values.get("lower");
+                                        let un = format!("{}_std_deviation_bounds_upper", key);
+                                        let ln = format!("{}_std_deviation_bounds_lower", key);
+                                        debug! ("ITER: Insert std_dev_bounds! {} {} u: {:?} l: {:?}", un, ln, u.unwrap(), l.unwrap());
+                                        row.insert(Cow::Owned(un), u.unwrap());
+                                        row.insert(Cow::Owned(ln), l.unwrap());
                                     }
-                                },
-                                _ => ()
+                                }
+                            }
+
+                            if key == "key" {
+                                //Bucket Aggregation Name
+                                debug! ("ITER: Insert bucket! {} {:?}", active_name, value);
+                                row.insert(Cow::Borrowed(active_name), value);
+                            } else if key == "doc_count" {
+                                //Bucket Aggregation Count
+                                debug! ("ITER: Insert bucket count! {} {:?}", active_name, value);
+                                let field_name = format!("{}_doc_count", active_name);
+                                row.insert(Cow::Owned(field_name), value);
                             }
                         }
                     }
-
-                    if !has_buckets {
-                        debug! ("ITER: Bucketless!");
-                        break;
-                    } else {
-                        debug! ("ITER: Dive!");
-                    }
+                } else {
+                    //Was nothing here, exit
+                    debug! ("ITER: Exit!");
+                    self.iter_stack.pop();
+                    continue;
                 }
+
+                if !has_buckets {
+                    debug! ("ITER: Bucketless!");
+                    break;
+                } else {
+                    debug! ("ITER: Dive!");
+                }
+            } else {
+                debug! ("ITER: Done!");
+                self.current_row = None;
+                break;
             };
         }
 
@@ -242,7 +225,8 @@ pub struct Hits {
 }
 
 impl Hits {
-    pub fn hits(&self) -> &Vec<Value> { // JPG http://stackoverflow.com/q/40006219/155423
+    pub fn hits(&self) -> &Vec<Value> {
+        // JPG http://stackoverflow.com/q/40006219/155423
         &self.hits
     }
 }
