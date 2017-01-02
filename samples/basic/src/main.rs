@@ -9,7 +9,6 @@ extern crate json_str;
 extern crate elastic_reqwest;
 extern crate elastic_requests;
 extern crate elastic_responses;
-extern crate reqwest;
 
 #[macro_use]
 extern crate serde_derive;
