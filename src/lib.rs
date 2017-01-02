@@ -36,8 +36,9 @@ impl Response {
         &self.hits.hits()
     }
 
-    pub fn aggs(&self) -> Option<&Aggregations> {
-        self.aggregations.as_ref()
+    pub fn aggs(&self) -> &Aggregations {
+        //FIXME: Create empty aggregation, remove unwrap()
+        self.aggregations.as_ref().unwrap()
     }
 }
 

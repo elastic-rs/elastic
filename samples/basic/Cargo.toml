@@ -1,0 +1,16 @@
+[package]
+name = "basic"
+version = "0.1.0"
+authors = ["Stephan Buys <stephan.buys@panoptix.co.za>"]
+
+[dependencies]
+json_str = "*"
+elastic_reqwest = "*"
+elastic_requests = "*"
+elastic_responses = { version = "*", path = "../../" }
+reqwest = "*"
+serde = "~0.8"
+serde_derive = "~0.8"
+serde_json = "~0.8"
+
+
