@@ -1,14 +1,4 @@
-//! Base requirements for datatype mappings.
-//!
-//! There are two kinds of types we can map in Elasticsearch; `field`/`data` types and `document` types:
-//! 
-//! - `FieldType` for types that can be mapped as fields on another type
-//! - `DocumentType + FieldType` for types that can be indexed as documents.
-//! 
-//! Most of the work lives in the `FieldMapping`, which holds the serialisation requirements
-//! to convert a Rust type into an Elasticsearch mapping.
-//! Document types must also implement `DocumentMapping`, which maps the fields of a struct as properties,
-//! and treats the type as `nested` when used as a field itself.
+#![doc(hidden)]
 
 use std::collections::{BTreeMap, HashMap};
 use std::hash::Hash;
@@ -40,9 +30,12 @@ pub trait FieldType<M, F = DocumentFormat>
     }
 }
 
-#[doc(hidden)]
+/// A serialisable variant of the field mapping.
 pub trait SerializeField<F> {
-    type Field: Serialize + Default;
+  /// The serialisable field.
+  /// 
+  /// It's expected that this type will be `Field<Self, F>`.
+  type Field: Serialize + Default;
 }
 
 /// The base requirements for mapping an Elasticsearch data type.

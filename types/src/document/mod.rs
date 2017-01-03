@@ -643,9 +643,8 @@ pub fn field_ser<S, M, F>(serializer: &mut S, state: &mut S::StructState, field:
     where S: Serializer,
           M: FieldMapping<F>,
           F: Default,
-          Field<M, F>: Serialize
 {
-    serializer.serialize_struct_elt(state, field, &Field::from(M::default()))
+    serializer.serialize_struct_elt(state, field, &M::Field::default())
 }
 
 /// Serialise a document mapping using the given serialiser.

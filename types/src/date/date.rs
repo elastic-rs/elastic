@@ -67,8 +67,7 @@ pub struct Date<F, M = DefaultDateMapping<F>>
           M: DateMapping<Format = F>
 {
     value: ChronoDateTime,
-    _f: PhantomData<F>,
-    _t: PhantomData<M>,
+    _t: PhantomData<(M, F)>,
 }
 
 impl<F, M> Date<F, M>
@@ -100,7 +99,6 @@ impl<F, M> Date<F, M>
     pub fn new(date: ChronoDateTime) -> Date<F, M> {
         Date {
             value: date,
-            _f: PhantomData,
             _t: PhantomData,
         }
     }
@@ -124,7 +122,6 @@ impl<F, M> Date<F, M>
             value: ChronoDateTime::from_utc(NaiveDateTime::new(NaiveDate::from_ymd(year, month, day),
                                                                NaiveTime::from_hms_milli(hour, minute, second, milli)),
                                             UTC),
-            _f: PhantomData,
             _t: PhantomData,
         }
     }
@@ -140,7 +137,6 @@ impl<F, M> Date<F, M>
     pub fn now() -> Date<F, M> {
         Date {
             value: UTC::now(),
-            _f: PhantomData,
             _t: PhantomData,
         }
     }
@@ -239,8 +235,7 @@ impl<F, M> Deserialize for Date<F, M>
             where F: DateFormat,
                   M: DateMapping<Format = F>
         {
-            _f: PhantomData<F>,
-            _t: PhantomData<M>,
+            _t: PhantomData<(M, F)>,
         }
 
         impl<F, M> Visitor for DateTimeVisitor<F, M>
@@ -282,8 +277,7 @@ pub struct DateBrw<'a, F, M = DefaultDateMapping<F>>
           M: DateMapping<Format = F>
 {
     value: &'a ChronoDateTime,
-    _f: PhantomData<F>,
-    _t: PhantomData<M>,
+    _t: PhantomData<(M, F)>,
 }
 
 impl<'a, F, M> DateBrw<'a, F, M>
@@ -294,7 +288,6 @@ impl<'a, F, M> DateBrw<'a, F, M>
     pub fn new(date: &'a ChronoDateTime) -> DateBrw<'a, F, M> {
         DateBrw {
             value: date,
-            _f: PhantomData,
             _t: PhantomData,
         }
     }

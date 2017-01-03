@@ -56,8 +56,7 @@ pub struct GeoPoint<F, M = DefaultGeoPointMapping<F>>
 {
     /// The `x` and `y` coordinate for the point.
     value: Point,
-    _f: PhantomData<F>,
-    _t: PhantomData<M>,
+    _t: PhantomData<(M, F)>,
 }
 
 impl<F, M> GeoPoint<F, M>
@@ -89,7 +88,6 @@ impl<F, M> GeoPoint<F, M>
     {
         GeoPoint {
             value: point.into(),
-            _f: PhantomData,
             _t: PhantomData,
         }
     }
