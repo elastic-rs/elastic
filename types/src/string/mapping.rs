@@ -3,9 +3,8 @@
 use std::collections::BTreeMap;
 use serde::{Serialize, Serializer};
 use ::field::{IndexAnalysis, FieldType};
-
-pub use super::keyword::mapping::*;
-pub use super::text::mapping::*;
+use super::text::mapping::{TextMapping, TextFieldMapping, TextFormat};
+use super::keyword::mapping::KeywordFieldMapping;
 
 /// Elasticsearch datatype name.
 pub const TOKENCOUNT_DATATYPE: &'static str = "token_count";

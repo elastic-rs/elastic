@@ -64,9 +64,6 @@ pub mod mapping {
             serializer.serialize_str(&self.to_string())
         }
     }
-
-    pub use super::point::mapping::*;
-    pub use super::shape::mapping::*;
 }
 
 pub mod prelude {
