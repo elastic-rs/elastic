@@ -13,8 +13,8 @@ use ::field::FieldType;
 /// Defining a `text` field with a mapping:
 ///
 /// ```
-/// use elastic_types::string::mapping::DefaultTextMapping;
-/// use elastic_types::string::Text;
+/// use elastic_types::string::text::mapping::DefaultTextMapping;
+/// use elastic_types::string::text::Text;
 ///
 /// let string = Text::<DefaultTextMapping>::new("my string value");
 /// ```
@@ -35,8 +35,8 @@ impl<M> Text<M>
     /// Create a new `Text` from a `String`:
     ///
     /// ```
-    /// use elastic_types::string::mapping::DefaultTextMapping;
-    /// use elastic_types::string::Text;
+    /// use elastic_types::string::text::mapping::DefaultTextMapping;
+    /// use elastic_types::string::text::Text;
     ///
     /// let string = Text::<DefaultTextMapping>::new("my string");
     /// ```
