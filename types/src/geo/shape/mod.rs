@@ -12,7 +12,7 @@
 //! # use elastic_types::geo::shape::prelude::*;
 //! # use elastic_types::geo::shape::mapping::*;
 //! struct MyType {
-//! 	pub field: GeoShape<DefaultGeoShapeMapping>
+//!     pub field: GeoShape<DefaultGeoShapeMapping>
 //! }
 //! ```
 //!
@@ -33,7 +33,7 @@
 //! # struct MyGeoShapeMapping;
 //! # impl GeoShapeMapping for MyGeoShapeMapping {}
 //! struct MyType {
-//! 	pub field: GeoShape<MyGeoShapeMapping>
+//!     pub field: GeoShape<MyGeoShapeMapping>
 //! }
 //! # }
 //! ```

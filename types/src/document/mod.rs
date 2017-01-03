@@ -41,7 +41,7 @@
 //! # }
 //! ```
 //!
-//! This will produce the following mapping:
+//! This will produce the following field mapping:
 //!
 //! ```
 //! # #![feature(proc_macro)]
@@ -63,7 +63,7 @@
 //! #   pub my_num: i32
 //! # }
 //! # fn main() {
-//! # let mapping = serde_json::to_string(&MyTypeMapping).unwrap();
+//! # let mapping = serde_json::to_string(&Field::from(MyTypeMapping)).unwrap();
 //! # let json = json_str!(
 //! {
 //!     "type": "nested",
@@ -129,7 +129,7 @@
 //! # }
 //! ```
 //!
-//! This will produce the following mapping:
+//! This will produce the following field mapping:
 //!
 //! ```
 //! # #![feature(proc_macro)]
@@ -159,7 +159,7 @@
 //! #   fn data_type() -> &'static str { OBJECT_DATATYPE }
 //! # }
 //! # fn main() {
-//! # let mapping = serde_json::to_string(&MyTypeMapping).unwrap();
+//! # let mapping = serde_json::to_string(&Field::from(MyTypeMapping)).unwrap();
 //! # let json = json_str!(
 //! {
 //!     "type": "object",
@@ -386,7 +386,7 @@
 
 use std::marker::PhantomData;
 use serde::{Serialize, Serializer};
-use ::field::{FieldType, FieldMapping, Field};
+use ::field::{FieldType, FieldMapping, SerializeField, Field};
 
 /// The additional fields available to an indexable Elasticsearch type.
 ///
@@ -559,6 +559,12 @@ impl<T> FieldMapping<DocumentFormat> for T
     fn data_type() -> &'static str {
         <Self as DocumentMapping>::data_type()
     }
+}
+
+impl<T> SerializeField<DocumentFormat> for T
+    where T: DocumentMapping
+{
+    type Field = Field<T, DocumentFormat>;
 }
 
 impl<T> Serialize for Field<T, DocumentFormat>

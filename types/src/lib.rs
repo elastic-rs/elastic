@@ -83,14 +83,15 @@
 //! # use elastic_types::prelude::*;
 //! #[derive(Serialize, ElasticType)]
 //! pub struct MyType {
-//! 	pub my_date: Date<DefaultDateFormat>,
-//! 	pub my_num: i32
+//!     pub my_date: Date<DefaultDateFormat>,
+//!     pub my_num: i32
 //! }
 //! # fn main() {
 //! # }
 //! ```
 //!
-//! You can then serialise your mapping as json using the [`TypeMapper`](mappers/struct.TypeMapper.html):
+//! You can then serialise your mapping as json using a [`Document`](document/struct.Document.html)
+//! wrapper:
 //!
 //! ```
 //! # #![feature(proc_macro)]
@@ -107,9 +108,9 @@
 //! # use elastic_types::prelude::*;
 //! # #[derive(Serialize, Deserialize, ElasticType)]
 //! # pub struct MyType {
-//! # 	pub my_date: Date<DefaultDateFormat>,
-//! # 	pub my_string: String,
-//! # 	pub my_num: i32
+//! #     pub my_date: Date<DefaultDateFormat>,
+//! #     pub my_string: String,
+//! #     pub my_num: i32
 //! # }
 //! # fn main() {
 //! let mapping = serde_json::to_string(&Document::from(MyType::mapping())).unwrap();
@@ -133,8 +134,8 @@
 //! # use elastic_types::prelude::*;
 //! # #[derive(Serialize, Deserialize, ElasticType)]
 //! # pub struct MyType {
-//! # 	pub my_date: Date<DefaultDateFormat>,
-//! # 	pub my_num: i32
+//! #     pub my_date: Date<DefaultDateFormat>,
+//! #     pub my_num: i32
 //! # }
 //! # fn main() {
 //! # let mapping = serde_json::to_string(&Document::from(MyType::mapping())).unwrap();
@@ -173,12 +174,12 @@
 //! # use elastic_types::prelude::*;
 //! # #[derive(Serialize, Deserialize, ElasticType)]
 //! # pub struct MyType {
-//! # 	pub my_date: Date<DefaultDateFormat>,
-//! # 	pub my_num: i32
+//! #     pub my_date: Date<DefaultDateFormat>,
+//! #     pub my_num: i32
 //! # }
 //! #[derive(Serialize, Deserialize, ElasticType)]
 //! pub struct MyOtherType {
-//! 	pub my_type: MyType
+//!     pub my_type: MyType
 //! }
 //! # fn main() {
 //! # }
@@ -201,12 +202,12 @@
 //! # use elastic_types::prelude::*;
 //! # #[derive(Serialize, Deserialize, ElasticType)]
 //! # pub struct MyType {
-//! # 	pub my_date: Date<DefaultDateFormat>,
-//! # 	pub my_num: i32
+//! #     pub my_date: Date<DefaultDateFormat>,
+//! #     pub my_num: i32
 //! # }
 //! # #[derive(Serialize, Deserialize, ElasticType)]
 //! # pub struct MyOtherType {
-//! # 	pub my_type: MyType
+//! #     pub my_type: MyType
 //! # }
 //! # fn main() {
 //! # let mapping = serde_json::to_string(&Document::from(MyOtherType::mapping())).unwrap();
@@ -251,8 +252,8 @@
 //! # use elastic_types::prelude::*;
 //! #[derive(Serialize, Deserialize, ElasticType)]
 //! pub struct MyType {
-//! 	pub my_date: Option<Date<DefaultDateFormat>>,
-//! 	pub my_num: Vec<i32>
+//!     pub my_date: Option<Date<DefaultDateFormat>>,
+//!     pub my_num: Vec<i32>
 //! }
 //! # fn main() {
 //! # }
@@ -281,7 +282,7 @@
 //! #[derive(Default)]
 //! struct MyMapping;
 //! impl BooleanMapping for MyMapping {
-//! 	fn boost() -> Option<f32> { Some(1.04) }
+//!     fn boost() -> Option<f32> { Some(1.04) }
 //! }
 //! # fn main() {
 //! # }
@@ -297,9 +298,9 @@
 //!
 //! ```ignore
 //! {
-//! 	"id": 15,
-//! 	"timestamp": 1435935302478,
-//! 	"title": "my timestamped object"
+//!     "id": 15,
+//!     "timestamp": 1435935302478,
+//!     "title": "my timestamped object"
 //! }
 //! ```
 //!
@@ -321,9 +322,9 @@
 //! # use elastic_types::prelude::*;
 //! #[derive(Serialize, Deserialize, ElasticType)]
 //! struct MyType {
-//! 	id: i32,
-//! 	timestamp: Date<EpochMillis>,
-//! 	title: String
+//!     id: i32,
+//!     timestamp: Date<EpochMillis>,
+//!     title: String
 //! }
 //!
 //! # fn main() {
@@ -364,10 +365,11 @@
 //! And our `main.rs` contains the following:
 //!
 //! ```
-//! # #![feature(proc_macro)]
+//! #![feature(proc_macro)]
 //!
 //! #[macro_use]
 //! extern crate serde_derive;
+//! extern crate serde_json;
 //! extern crate serde;
 //!
 //! #[macro_use]
@@ -381,11 +383,11 @@
 //!
 //! #[derive(Serialize, Deserialize, ElasticType)]
 //! struct Article {
-//! 	pub id: i32,
-//! 	pub title: String,
-//! 	pub content: Text<ContentMapping>,
-//! 	pub timestamp: Option<Date<EpochMillis, TimestampMapping>>,
-//! 	pub geoip: GeoIp
+//!     pub id: i32,
+//!     pub title: String,
+//!     pub content: Text<ContentMapping>,
+//!     pub timestamp: Option<Date<EpochMillis, TimestampMapping>>,
+//!     pub geoip: GeoIp
 //! }
 //!
 //!
@@ -393,8 +395,8 @@
 //!
 //! #[derive(Serialize, Deserialize, ElasticType)]
 //! struct GeoIp {
-//! 	pub ip: ::std::net::Ipv4Addr,
-//! 	pub loc: GeoPoint<DefaultGeoPointFormat>
+//!     pub ip: ::std::net::Ipv4Addr,
+//!     pub loc: GeoPoint<DefaultGeoPointFormat>
 //! }
 //!
 //!
@@ -403,26 +405,26 @@
 //! #[derive(Default)]
 //! struct ContentMapping;
 //! impl TextMapping for ContentMapping {
-//! 	fn analyzer() -> Option<&'static str> {
-//! 		Some("content_text")
-//! 	}
+//!     fn analyzer() -> Option<&'static str> {
+//!         Some("content_text")
+//!     }
 //! }
 //!
 //! #[derive(Default)]
 //! struct TimestampMapping;
 //! impl DateMapping for TimestampMapping {
-//! 	type Format = EpochMillis;
+//!     type Format = EpochMillis;
 //!
-//! 	fn null_value() -> Option<Date<EpochMillis, Self>> {
-//! 		Some(Date::now())
-//! 	}
+//!     fn null_value() -> Option<Date<EpochMillis, Self>> {
+//!         Some(Date::now())
+//!     }
 //! }
 //!
 //! fn main() {
-//! 	println!("\"{}\":{{ {} }}",
-//! 		Article::name(),
-//! 		TypeMapper::to_string(Article::mapping()).unwrap()
-//! 	);
+//!     println!("\"{}\":{{ {} }}",
+//!         Article::name(),
+//!         serde_json::to_string(&Document::from(Article::mapping())).unwrap()
+//!     );
 //! }
 //! ```
 //!
@@ -439,40 +441,40 @@
 //!
 //! ```ignore
 //! "article": {
-//! 	"properties": {
-//! 		"id":{
-//! 			"type": "integer"
-//! 		},
-//! 		"title": {
-//! 			"type":"text",
-//! 			"fields": {
-//! 				"keyword": {
-//! 					"type": "keyword",
-//! 					"ignore_above": 256
-//! 				}
-//! 			}
-//! 		},
-//! 		"content": {
-//! 			"type": "text",
-//! 			"analyzer": "content_text"
-//! 		},
-//! 		"timestamp": {
-//! 			"type": "date",
-//! 			"format": "epoch_millis",
-//! 			"null_value": "1435935302478"
-//! 		},
-//! 		"geoip": {
-//! 			"type": "nested",
-//! 			"properties": {
-//! 				"ip": {
-//! 					"type": "ip"
-//! 				},
-//! 				"loc": {
-//! 					"type": "geo_point"
-//! 				}
-//! 			}
-//! 		}
-//! 	}
+//!     "properties": {
+//!         "id":{
+//!             "type": "integer"
+//!         },
+//!         "title": {
+//!             "type":"text",
+//!             "fields": {
+//!                 "keyword": {
+//!                     "type": "keyword",
+//!                     "ignore_above": 256
+//!                 }
+//!             }
+//!         },
+//!         "content": {
+//!             "type": "text",
+//!             "analyzer": "content_text"
+//!         },
+//!         "timestamp": {
+//!             "type": "date",
+//!             "format": "epoch_millis",
+//!             "null_value": "1435935302478"
+//!         },
+//!         "geoip": {
+//!             "type": "nested",
+//!             "properties": {
+//!                 "ip": {
+//!                     "type": "ip"
+//!                 },
+//!                 "loc": {
+//!                     "type": "geo_point"
+//!                 }
+//!             }
+//!         }
+//!     }
 //! }
 //! ```
 //!

@@ -14,7 +14,7 @@
 //! ```
 //! # use elastic_types::geo::point::prelude::*;
 //! struct MyType {
-//! 	pub field: GeoPoint<DefaultGeoPointFormat>
+//!     pub field: GeoPoint<DefaultGeoPointFormat>
 //! }
 //! ```
 //!
@@ -35,7 +35,7 @@
 //! # struct MyGeoPointMapping;
 //! # impl GeoPointMapping for MyGeoPointMapping { type Format = GeoPointString; }
 //! struct MyType {
-//! 	pub field: GeoPoint<GeoPointString, MyGeoPointMapping>
+//!     pub field: GeoPoint<GeoPointString, MyGeoPointMapping>
 //! }
 //! # }
 //! ```

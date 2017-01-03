@@ -22,7 +22,7 @@
 //!
 //! ```
 //! struct MyType {
-//! 	pub field: i32
+//!     pub field: i32
 //! }
 //! ```
 //!
@@ -40,7 +40,7 @@
 //! # struct MyIntegerMapping;
 //! # impl IntegerMapping for MyIntegerMapping { }
 //! struct MyType {
-//! 	pub field: Integer<MyIntegerMapping>
+//!     pub field: Integer<MyIntegerMapping>
 //! }
 //! # }
 //! ```

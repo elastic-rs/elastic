@@ -48,13 +48,13 @@ impl FieldType<DefaultDateMapping<ChronoFormat>, DateFormatWrapper<ChronoFormat>
 ///
 /// //eg: 2010/04/30 13:56:59.372
 /// println!("{}/{}/{} {}:{}:{}.{}",
-/// 		date.year(),
-/// 	date.month(),
-/// 	date.day(),
-/// 	date.hour(),
-/// 	date.minute(),
-/// 	date.second(),
-/// 	date.nanosecond() / 1000000
+///         date.year(),
+///     date.month(),
+///     date.day(),
+///     date.hour(),
+///     date.minute(),
+///     date.second(),
+///     date.nanosecond() / 1000000
 /// );
 /// ```
 ///
@@ -110,13 +110,13 @@ impl<F, M> Date<F, M>
     /// ```
     /// # use elastic_types::prelude::*;
     /// let esDate: Date<DefaultDateFormat> = Date::build(
-    /// 	2015,
-    /// 	5,
-    /// 	14,
-    /// 	16,
-    /// 	45,
-    /// 	8,
-    /// 	886
+    ///     2015,
+    ///     5,
+    ///     14,
+    ///     16,
+    ///     45,
+    ///     8,
+    ///     886
     /// );
     /// ```
     pub fn build(year: i32, month: u32, day: u32, hour: u32, minute: u32, second: u32, milli: u32) -> Date<F, M> {

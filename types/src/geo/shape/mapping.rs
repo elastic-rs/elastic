@@ -1,7 +1,7 @@
 //! Mapping for Elasticsearch `geo_shape` types.
 
 use serde::{Serialize, Serializer};
-use ::field::{FieldMapping, Field};
+use ::field::{FieldMapping, SerializeField, Field};
 use ::geo::mapping::Distance;
 
 /// Elasticsearch datatype name.
@@ -31,10 +31,10 @@ pub struct GeoShapeFormat;
 /// #[derive(Default)]
 /// struct MyGeoShapeMapping;
 /// impl GeoShapeMapping for MyGeoShapeMapping {
-/// 	//Overload the mapping functions here
-/// 	fn tree_levels() -> Option<i32> {
-/// 			Some(2)
-/// 		}
+///     //Overload the mapping functions here
+///     fn tree_levels() -> Option<i32> {
+///         Some(2)
+///     }
 /// }
 /// # fn main() {}
 /// ```
@@ -54,17 +54,17 @@ pub struct GeoShapeFormat;
 /// #[derive(Default)]
 /// # struct MyGeoShapeMapping;
 /// # impl GeoShapeMapping for MyGeoShapeMapping {
-/// # 	//Overload the mapping functions here
-/// # 	fn tree_levels() -> Option<i32> {
-/// 	# 		Some(2)
-/// 	# 	}
+/// #     //Overload the mapping functions here
+/// #     fn tree_levels() -> Option<i32> {
+/// #         Some(2)
+/// #     }
 /// # }
 /// # fn main() {
-/// # let mapping = serde_json::to_string(&MyGeoShapeMapping).unwrap();
+/// # let mapping = serde_json::to_string(&Field::from(MyGeoShapeMapping)).unwrap();
 /// # let json = json_str!(
 /// {
 ///     "type": "geo_shape",
-/// 	"tree_levels": 2
+///     "tree_levels": 2
 /// }
 /// # );
 /// # assert_eq!(json, mapping);
@@ -150,6 +150,12 @@ impl<T> FieldMapping<GeoShapeFormat> for T
     fn data_type() -> &'static str {
         GEOSHAPE_DATATYPE
     }
+}
+
+impl<T> SerializeField<GeoShapeFormat> for T
+    where T: GeoShapeMapping
+{
+    type Field = Field<T, GeoShapeFormat>;
 }
 
 impl<T> Serialize for Field<T, GeoShapeFormat>

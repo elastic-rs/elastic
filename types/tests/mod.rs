@@ -59,21 +59,21 @@ pub mod string_fixtures {
     #[derive(Default, Clone)]
     pub struct MyTextMapping;
     impl TextMapping for MyTextMapping {
-        fn fields() -> Option<BTreeMap<&'static str, ElasticStringField>> {
+        fn fields() -> Option<BTreeMap<&'static str, StringField>> {
             let mut fields = BTreeMap::new();
 
-            fields.insert("raw", ElasticStringField::Keyword(
+            fields.insert("raw", StringField::Keyword(
                 KeywordFieldMapping {
                     analyzer: Some("my_analyzer"),
                     ..Default::default()
                 })
             );
 
-            fields.insert("count", ElasticStringField::TokenCount(
+            fields.insert("count", StringField::TokenCount(
                 ElasticTokenCountFieldMapping::default())
             );
 
-            fields.insert("comp", ElasticStringField::Completion(
+            fields.insert("comp", StringField::Completion(
                 ElasticCompletionFieldMapping::default())
             );
 
@@ -118,21 +118,21 @@ pub mod string_fixtures {
     #[derive(Default, Clone)]
     pub struct MyKeywordMapping;
     impl KeywordMapping for MyKeywordMapping {
-        fn fields() -> Option<BTreeMap<&'static str, ElasticStringField>> {
+        fn fields() -> Option<BTreeMap<&'static str, StringField>> {
             let mut fields = BTreeMap::new();
 
-            fields.insert("text", ElasticStringField::Text(
+            fields.insert("text", StringField::Text(
                 TextFieldMapping {
                     analyzer: Some("my_analyzer"),
                     ..Default::default()
                 })
             );
 
-            fields.insert("count", ElasticStringField::TokenCount(
+            fields.insert("count", StringField::TokenCount(
                 ElasticTokenCountFieldMapping::default())
             );
 
-            fields.insert("comp", ElasticStringField::Completion(
+            fields.insert("comp", StringField::Completion(
                 ElasticCompletionFieldMapping::default())
             );
 
@@ -451,6 +451,12 @@ pub mod object_macro_fixtures {
     pub struct CustomTypeMapping;
     impl DocumentMapping for CustomTypeMapping {
         fn name() -> &'static str { "renamed_type" }
+    }
+
+    #[derive(Serialize, ElasticType)]
+    pub struct Wrapped {
+        pub field1: Vec<i32>,
+        pub field2: Option<bool>
     }
 
     #[derive(Default, Serialize)]

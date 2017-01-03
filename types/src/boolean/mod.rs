@@ -8,7 +8,7 @@
 //!
 //! ```
 //! struct MyType {
-//! 	pub field: bool
+//!     pub field: bool
 //! }
 //! ```
 //!
@@ -26,7 +26,7 @@
 //! # struct MyBooleanMapping;
 //! # impl BooleanMapping for MyBooleanMapping { }
 //! struct MyType {
-//! 	pub field: Boolean<MyBooleanMapping>
+//!     pub field: Boolean<MyBooleanMapping>
 //! }
 //! # }
 //! ```

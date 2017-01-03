@@ -40,13 +40,18 @@ pub trait FieldType<M, F = DocumentFormat>
     }
 }
 
+#[doc(hidden)]
+pub trait SerializeField<F> {
+    type Field: Serialize + Default;
+}
+
 /// The base requirements for mapping an Elasticsearch data type.
 ///
 /// Each type has its own implementing structures with extra type-specific mapping parameters.
 /// If you're building your own Elasticsearch types, see `DocumentTypeMapping`,
 /// which is a specialization of `FieldMapping<()>`.
 pub trait FieldMapping<F>
-    where Self: Default,
+    where Self: Default + SerializeField<F>,
           F: Default
 {
     /// Get the type name for this mapping, like `date` or `string`.
@@ -112,6 +117,11 @@ impl Serialize for IndexAnalysis {
 pub struct DefaultMapping;
 impl FieldMapping<()> for DefaultMapping { }
 
+impl SerializeField<()> for DefaultMapping
+{
+    type Field = Field<Self, ()>;
+}
+
 impl Serialize for Field<DefaultMapping, ()> {
     fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
         where S: Serializer
@@ -133,8 +143,7 @@ pub struct WrappedMapping<M, F>
     where M: FieldMapping<F>,
           F: Default
 {
-    _m: PhantomData<M>,
-    _f: PhantomData<F>,
+    _m: PhantomData<(M, F)>,
 }
 
 impl<M, F> FieldMapping<F> for WrappedMapping<M, F>
@@ -145,6 +154,25 @@ impl<M, F> FieldMapping<F> for WrappedMapping<M, F>
         M::data_type()
     }
 }
+
+impl<M, F> SerializeField<F> for WrappedMapping<M, F>
+    where M: FieldMapping<F>,
+          F: Default
+{
+    type Field = M::Field;
+}
+
+impl<M, F> Serialize for Field<WrappedMapping<M, F>, F>
+    where M: FieldMapping<F>,
+          F: Default,
+{
+    fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+        where S: Serializer
+    {
+        M::Field::default().serialize(serializer)
+    }
+}
+
 
 /// Mapping implementation for a `serde_json::Value`.
 impl FieldType<DefaultMapping, ()> for Value {}
@@ -166,13 +194,15 @@ impl<K, V> FieldType<DefaultMapping, ()> for HashMap<K, V>
 impl<T, M, F> FieldType<WrappedMapping<M, F>, F> for Vec<T>
     where T: FieldType<M, F>,
           M: FieldMapping<F>,
-          F: Default
+          F: Default,
+          Field<M, F>: Serialize
 {
 }
 
 impl<T, M, F> FieldType<WrappedMapping<M, F>, F> for Option<T>
     where T: FieldType<M, F>,
           M: FieldMapping<F>,
-          F: Default
+          F: Default,
+          Field<M, F>: Serialize
 {
 }

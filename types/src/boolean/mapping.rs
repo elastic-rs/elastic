@@ -1,7 +1,7 @@
 //! Mapping for the Elasticsearch `boolean` type.
 
 use serde::{Serialize, Serializer};
-use ::field::{FieldMapping, Field};
+use ::field::{FieldMapping, SerializeField, Field};
 
 /// Elasticsearch datatype name.
 pub const BOOLEAN_DATATYPE: &'static str = "boolean";
@@ -29,10 +29,10 @@ pub struct BooleanFormat;
 /// #[derive(Default)]
 /// struct MyBooleanMapping;
 /// impl BooleanMapping for MyBooleanMapping {
-/// 	//Overload the mapping functions here
-/// 	fn boost() -> Option<f32> {
-/// 			Some(1.5)
-/// 		}
+///     //Overload the mapping functions here
+///     fn boost() -> Option<f32> {
+///         Some(1.5)
+///     }
 /// }
 /// # }
 /// ```
@@ -52,17 +52,17 @@ pub struct BooleanFormat;
 /// # #[derive(Default)]
 /// # struct MyBooleanMapping;
 /// # impl BooleanMapping for MyBooleanMapping {
-/// # 	//Overload the mapping functions here
-/// # 	fn boost() -> Option<f32> {
-/// 	# 		Some(1.5)
-/// 	# 	}
+/// #     //Overload the mapping functions here
+/// #     fn boost() -> Option<f32> {
+/// #         Some(1.5)
+/// #     }
 /// # }
 /// # fn main() {
-/// # let mapping = serde_json::to_string(&MyBooleanMapping).unwrap();
+/// # let mapping = serde_json::to_string(&Field::from(MyBooleanMapping)).unwrap();
 /// # let json = json_str!(
 /// {
 ///     "type": "boolean",
-/// 	"boost": 1.5
+///     "boost": 1.5
 /// }
 /// # );
 /// # assert_eq!(json, mapping);
@@ -107,6 +107,12 @@ impl<T> FieldMapping<BooleanFormat> for T
     fn data_type() -> &'static str {
         BOOLEAN_DATATYPE
     }
+}
+
+impl<T> SerializeField<BooleanFormat> for T
+    where T: BooleanMapping
+{
+    type Field = Field<T, BooleanFormat>;
 }
 
 impl<T> Serialize for Field<T, BooleanFormat>

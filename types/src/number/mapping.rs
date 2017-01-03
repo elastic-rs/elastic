@@ -48,7 +48,7 @@
 //! #   }
 //! # }
 //! # fn main() {
-//! # let mapping = serde_json::to_string(&MyIntegerMapping).unwrap();
+//! # let mapping = serde_json::to_string(&Field::from(MyIntegerMapping)).unwrap();
 //! # let json = json_str!(
 //! {
 //!     "type": "integer",
@@ -60,7 +60,7 @@
 //! ```
 
 use serde::Serialize;
-use ::field::{FieldType, FieldMapping, Field};
+use ::field::{FieldType, FieldMapping, SerializeField, Field};
 
 /// Elasticsearch datatype name.
 pub const INTEGER_DATATYPE: &'static str = "integer";
@@ -81,39 +81,39 @@ macro_rules! number_mapping {
         #[derive(Default)]
         pub struct $f;
 
-/// Base `number` mapping.
+        /// Base `number` mapping.
         pub trait $m where
         Self: Default {
-/// Try to convert strings to numbers and truncate fractions for integers. Accepts `true` (default) and `false`.
+            /// Try to convert strings to numbers and truncate fractions for integers. Accepts `true` (default) and `false`.
             fn coerce() -> Option<bool> { None }
 
-/// Field-level index time boosting. Accepts a floating point number, defaults to `1.0`.
+            /// Field-level index time boosting. Accepts a floating point number, defaults to `1.0`.
             fn boost() -> Option<f32> { None }
 
-/// Should the field be stored on disk in a column-stride fashion,
-/// so that it can later be used for sorting, aggregations, or scripting?
-/// Accepts `true` (default) or `false`.
+            /// Should the field be stored on disk in a column-stride fashion,
+            /// so that it can later be used for sorting, aggregations, or scripting?
+            /// Accepts `true` (default) or `false`.
             fn doc_values() -> Option<bool> { None }
 
-/// If `true`, malformed numbers are ignored. If `false` (default),
-/// malformed numbers throw an exception and reject the whole document.
+            /// If `true`, malformed numbers are ignored. If `false` (default),
+            /// malformed numbers throw an exception and reject the whole document.
             fn ignore_malformed() -> Option<bool> { None }
 
-/// Whether or not the field value should be included in the `_all` field?
-/// Accepts `true` or `false`. Defaults to false if index is set to no,
-/// or if a parent object field sets `include_in_all` to false.
-/// Otherwise defaults to `true`.
+            /// Whether or not the field value should be included in the `_all` field?
+            /// Accepts `true` or `false`. Defaults to false if index is set to no,
+            /// or if a parent object field sets `include_in_all` to false.
+            /// Otherwise defaults to `true`.
             fn include_in_all() -> Option<bool> { None }
 
-/// Should the field be searchable? Accepts `not_analyzed` (default) and `no`.
+            /// Should the field be searchable? Accepts `not_analyzed` (default) and `no`.
             fn index() -> Option<bool> { None }
 
-/// Accepts a numeric value of the same type as the field which is substituted for any explicit null values.
-/// Defaults to `null`, which means the field is treated as missing.
+            /// Accepts a numeric value of the same type as the field which is substituted for any explicit null values.
+            /// Defaults to `null`, which means the field is treated as missing.
             fn null_value() -> Option<$n> { None }
 
-/// Whether the field value should be stored and retrievable separately from the `_source` field.
-/// Accepts true or false (default).
+            /// Whether the field value should be stored and retrievable separately from the `_source` field.
+            /// Accepts true or false (default).
             fn store() -> Option<bool> { None }
         }
 
@@ -121,6 +121,12 @@ macro_rules! number_mapping {
             where T: $m 
         {
             fn data_type() -> &'static str { $cn }
+        }
+
+        impl<T> SerializeField<$f> for T
+            where T: $m
+        {
+            type Field = Field<T, $f>;
         }
 
         impl <T> Serialize for Field<T, $f> where

@@ -9,7 +9,7 @@
 //! ```
 //! # use std::net::Ipv4Addr;
 //! struct MyType {
-//! 	pub field: std::net::Ipv4Addr
+//!     pub field: std::net::Ipv4Addr
 //! }
 //! ```
 //!
@@ -27,7 +27,7 @@
 //! # struct MyIpMapping;
 //! # impl IpMapping for MyIpMapping {}
 //! struct MyType {
-//! 	pub field: Ip<MyIpMapping>
+//!     pub field: Ip<MyIpMapping>
 //! }
 //! # }
 //! ```

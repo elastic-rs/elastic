@@ -11,7 +11,7 @@ mod keyword;
 pub use self::keyword::*;
 
 pub mod prelude {
-	//! Includes all types for the `keyword` type.
+    //! Includes all types for the `keyword` type.
     //!
     //! This is a convenience module to make it easy to build mappings for multiple types without too many `use` statements.
 

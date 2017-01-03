@@ -20,7 +20,7 @@
 //!
 //! ```
 //! struct MyType {
-//! 	pub field: String
+//!     pub field: String
 //! }
 //! ```
 //!
@@ -35,7 +35,7 @@
 //! # use elastic_types::prelude::*;
 //! # use elastic_types::string::prelude::*;
 //! struct MyType {
-//! 	pub field: Keyword<DefaultKeywordMapping>
+//!     pub field: Keyword<DefaultKeywordMapping>
 //! }
 //! # }
 //! ```
@@ -51,7 +51,7 @@
 //! # use elastic_types::prelude::*;
 //! # use elastic_types::string::prelude::*;
 //! struct MyType {
-//! 	pub field: Text<DefaultTextMapping>
+//!     pub field: Text<DefaultTextMapping>
 //! }
 //! # }
 //! ```
@@ -61,73 +61,73 @@
 //! - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/string.html)
 
 macro_rules! impl_string_type {
-	($wrapper_ty:ident, $mapping_ty:ident, $format_ty:ident) => (
-		impl <M> FieldType<M, $format_ty> for $wrapper_ty<M> where
-		M: $mapping_ty { }
+    ($wrapper_ty:ident, $mapping_ty:ident, $format_ty:ident) => (
+        impl <M> FieldType<M, $format_ty> for $wrapper_ty<M> where
+        M: $mapping_ty { }
 
-		impl_mapping_type!(String, $wrapper_ty, $mapping_ty);
+        impl_mapping_type!(String, $wrapper_ty, $mapping_ty);
 
-		impl <M> AsRef<str> for $wrapper_ty<M> where
-		M: $mapping_ty {
-			fn as_ref(&self) -> &str {
-				&self.value
-			}
-		}
+        impl <M> AsRef<str> for $wrapper_ty<M> where
+        M: $mapping_ty {
+            fn as_ref(&self) -> &str {
+                &self.value
+            }
+        }
 
-		impl<'a, M> PartialEq<&'a str> for $wrapper_ty<M> where
-		M: $mapping_ty {
-			fn eq(&self, other: & &'a str) -> bool {
-				PartialEq::eq(&self.value, *other)
-			}
+        impl<'a, M> PartialEq<&'a str> for $wrapper_ty<M> where
+        M: $mapping_ty {
+            fn eq(&self, other: & &'a str) -> bool {
+                PartialEq::eq(&self.value, *other)
+            }
 
-			fn ne(&self, other: & &'a str) -> bool {
-				PartialEq::ne(&self.value, *other)
-			}
-		}
+            fn ne(&self, other: & &'a str) -> bool {
+                PartialEq::ne(&self.value, *other)
+            }
+        }
 
-		impl<'a, M> PartialEq<$wrapper_ty<M>> for &'a str where
-		M: $mapping_ty {
-			fn eq(&self, other: &$wrapper_ty<M>) -> bool {
-				PartialEq::eq(*self, &other.value)
-			}
+        impl<'a, M> PartialEq<$wrapper_ty<M>> for &'a str where
+        M: $mapping_ty {
+            fn eq(&self, other: &$wrapper_ty<M>) -> bool {
+                PartialEq::eq(*self, &other.value)
+            }
 
-			fn ne(&self, other: &$wrapper_ty<M>) -> bool {
-				PartialEq::ne(*self, &other.value)
-			}
-		}
+            fn ne(&self, other: &$wrapper_ty<M>) -> bool {
+                PartialEq::ne(*self, &other.value)
+            }
+        }
 
-		impl <M> Serialize for $wrapper_ty<M> where
-		M: $mapping_ty {
-			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where
-			S: Serializer {
-				serializer.serialize_str(&self.value)
-			}
-		}
+        impl <M> Serialize for $wrapper_ty<M> where
+        M: $mapping_ty {
+            fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where
+            S: Serializer {
+                serializer.serialize_str(&self.value)
+            }
+        }
 
-		impl <M> Deserialize for $wrapper_ty<M> where
-		M: $mapping_ty {
-			fn deserialize<D>(deserializer: &mut D) -> Result<$wrapper_ty<M>, D::Error> where
-			D: Deserializer {
-				#[derive(Default)]
-				struct StringVisitor<M> where
-				M: $mapping_ty {
-					_m: PhantomData<M>
-				}
+        impl <M> Deserialize for $wrapper_ty<M> where
+        M: $mapping_ty {
+            fn deserialize<D>(deserializer: &mut D) -> Result<$wrapper_ty<M>, D::Error> where
+            D: Deserializer {
+                #[derive(Default)]
+                struct StringVisitor<M> where
+                M: $mapping_ty {
+                    _m: PhantomData<M>
+                }
 
-				impl <M> Visitor for StringVisitor<M> where
-				M: $mapping_ty {
-					type Value = $wrapper_ty<M>;
+                impl <M> Visitor for StringVisitor<M> where
+                M: $mapping_ty {
+                    type Value = $wrapper_ty<M>;
 
-					fn visit_str<E>(&mut self, v: &str) -> Result<$wrapper_ty<M>, E> where
-					E: Error {
-						Ok($wrapper_ty::<M>::new(v))
-					}
-				}
+                    fn visit_str<E>(&mut self, v: &str) -> Result<$wrapper_ty<M>, E> where
+                    E: Error {
+                        Ok($wrapper_ty::<M>::new(v))
+                    }
+                }
 
-				deserializer.deserialize(StringVisitor::<M>::default())
-			}
-		}
-	);
+                deserializer.deserialize(StringVisitor::<M>::default())
+            }
+        }
+    );
 }
 
 #[macro_use]

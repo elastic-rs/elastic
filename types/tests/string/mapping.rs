@@ -207,7 +207,7 @@ fn serialise_mapping_terms_vector() {
 
 #[test]
 fn serialise_mapping_keyword_field() {
-    let mapping = ElasticStringField::Keyword(
+    let mapping = StringField::Keyword(
         KeywordFieldMapping {
             analyzer:               Some("my_analyzer"),
             doc_values:             Some(true),
@@ -244,7 +244,7 @@ fn serialise_mapping_keyword_field() {
 
 #[test]
 fn serialise_mapping_text_field() {
-    let mapping = ElasticStringField::Text(
+    let mapping = StringField::Text(
         TextFieldMapping {
             fielddata_frequency_filter: Some(
                 FieldDataFrequencyFilter { 
@@ -295,7 +295,7 @@ fn serialise_mapping_text_field() {
 
 #[test]
 fn serialise_mapping_token_count_field() {
-    let mapping = ElasticStringField::TokenCount(
+    let mapping = StringField::TokenCount(
         ElasticTokenCountFieldMapping {
             analyzer:           Some("my_analyzer"),
             boost:              Some(1.3),
@@ -324,7 +324,7 @@ fn serialise_mapping_token_count_field() {
 
 #[test]
 fn serialise_mapping_completion_field() {
-    let mapping = ElasticStringField::Completion(
+    let mapping = StringField::Completion(
         ElasticCompletionFieldMapping {
             analyzer:                       Some("my_analyzer"),
             search_analyzer:                Some("my_analyzer"),
