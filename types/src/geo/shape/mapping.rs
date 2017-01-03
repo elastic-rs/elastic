@@ -1,7 +1,7 @@
 //! Mapping for Elasticsearch `geo_shape` types.
 
 use serde::{Serialize, Serializer};
-use ::mapping::{ElasticFieldMapping, ElasticFieldMappingWrapper};
+use ::field::{FieldMapping, SerializeField, Field};
 use ::geo::mapping::Distance;
 
 /// Elasticsearch datatype name.
@@ -31,10 +31,10 @@ pub struct GeoShapeFormat;
 /// #[derive(Default)]
 /// struct MyGeoShapeMapping;
 /// impl GeoShapeMapping for MyGeoShapeMapping {
-/// 	//Overload the mapping functions here
-/// 	fn tree_levels() -> Option<i32> {
-/// 			Some(2)
-/// 		}
+///     //Overload the mapping functions here
+///     fn tree_levels() -> Option<i32> {
+///         Some(2)
+///     }
 /// }
 /// # fn main() {}
 /// ```
@@ -54,17 +54,17 @@ pub struct GeoShapeFormat;
 /// #[derive(Default)]
 /// # struct MyGeoShapeMapping;
 /// # impl GeoShapeMapping for MyGeoShapeMapping {
-/// # 	//Overload the mapping functions here
-/// # 	fn tree_levels() -> Option<i32> {
-/// 	# 		Some(2)
-/// 	# 	}
+/// #     //Overload the mapping functions here
+/// #     fn tree_levels() -> Option<i32> {
+/// #         Some(2)
+/// #     }
 /// # }
 /// # fn main() {
-/// # let mapping = FieldMapper::to_string(MyGeoShapeMapping).unwrap();
+/// # let mapping = serde_json::to_string(&Field::from(MyGeoShapeMapping)).unwrap();
 /// # let json = json_str!(
 /// {
 ///     "type": "geo_shape",
-/// 	"tree_levels": 2
+///     "tree_levels": 2
 /// }
 /// # );
 /// # assert_eq!(json, mapping);
@@ -144,18 +144,22 @@ pub trait GeoShapeMapping
 }
 
 
-impl<T> ElasticFieldMapping<GeoShapeFormat> for T
+impl<T> FieldMapping<GeoShapeFormat> for T
     where T: GeoShapeMapping
 {
-    type SerType = ElasticFieldMappingWrapper<T, GeoShapeFormat>;
-
     fn data_type() -> &'static str {
         GEOSHAPE_DATATYPE
     }
 }
 
-impl<T> Serialize for ElasticFieldMappingWrapper<T, GeoShapeFormat>
-    where T: ElasticFieldMapping<GeoShapeFormat> + GeoShapeMapping
+impl<T> SerializeField<GeoShapeFormat> for T
+    where T: GeoShapeMapping
+{
+    type Field = Field<T, GeoShapeFormat>;
+}
+
+impl<T> Serialize for Field<T, GeoShapeFormat>
+    where T: FieldMapping<GeoShapeFormat> + GeoShapeMapping
 {
     fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
         where S: Serializer

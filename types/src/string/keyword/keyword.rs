@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 use serde::{Serialize, Deserialize, Serializer, Deserializer};
 use serde::de::{Visitor, Error};
 use super::mapping::{KeywordMapping, KeywordFormat};
-use ::mapping::ElasticType;
+use ::field::FieldType;
 
 /// An Elasticsearch `keyword` with a mapping.
 ///
@@ -13,8 +13,8 @@ use ::mapping::ElasticType;
 /// Defining a `keyword` with a mapping:
 ///
 /// ```
-/// use elastic_types::string::mapping::DefaultKeywordMapping;
-/// use elastic_types::string::Keyword;
+/// use elastic_types::string::keyword::mapping::DefaultKeywordMapping;
+/// use elastic_types::string::keyword::Keyword;
 ///
 /// let string = Keyword::<DefaultKeywordMapping>::new("my string value");
 /// ```
@@ -35,8 +35,8 @@ impl<M> Keyword<M>
     /// Create a new `Keyword` from a `String`:
     ///
     /// ```
-    /// use elastic_types::string::mapping::DefaultKeywordMapping;
-    /// use elastic_types::string::Keyword;
+    /// use elastic_types::string::keyword::mapping::DefaultKeywordMapping;
+    /// use elastic_types::string::keyword::Keyword;
     ///
     /// let string = Keyword::<DefaultKeywordMapping>::new("my string");
     /// ```

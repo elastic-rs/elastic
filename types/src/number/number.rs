@@ -1,52 +1,52 @@
 use std::marker::PhantomData;
 use serde::{Serialize, Deserialize, Serializer, Deserializer};
 use super::mapping::*;
-use ::mapping::ElasticType;
+use ::field::FieldType;
 
 macro_rules! number_type {
     ($wrapper_ty:ident, $mapping_ty:ident, $format_ty:ident, $std_ty:ident) => (
-    	/// Number type with a given mapping.
-    	#[derive(Debug, Default, Clone, PartialEq)]
-		pub struct $wrapper_ty<M> where M: $mapping_ty {
-			value: $std_ty,
-			_m: PhantomData<M>
-		}
-		impl <M> $wrapper_ty<M> where M: $mapping_ty {
-			/// Creates a new number with the given mapping.
-			pub fn new<I: Into<$std_ty>>(num: I) -> $wrapper_ty<M> {
-				$wrapper_ty {
-					value: num.into(),
-					_m: PhantomData
-				}
-			}
+        /// Number type with a given mapping.
+        #[derive(Debug, Default, Clone, PartialEq)]
+        pub struct $wrapper_ty<M> where M: $mapping_ty {
+            value: $std_ty,
+            _m: PhantomData<M>
+        }
+        impl <M> $wrapper_ty<M> where M: $mapping_ty {
+            /// Creates a new number with the given mapping.
+            pub fn new<I: Into<$std_ty>>(num: I) -> $wrapper_ty<M> {
+                $wrapper_ty {
+                    value: num.into(),
+                    _m: PhantomData
+                }
+            }
 
-			/// Change the mapping of this number.
-			pub fn remap<MInto: $mapping_ty>(self) -> $wrapper_ty<MInto> {
-				$wrapper_ty::<MInto>::new(self.value)
-			}
-		}
+            /// Change the mapping of this number.
+            pub fn remap<MInto: $mapping_ty>(self) -> $wrapper_ty<MInto> {
+                $wrapper_ty::<MInto>::new(self.value)
+            }
+        }
 
-		impl <M> ElasticType<M, $format_ty> for $wrapper_ty<M> where M: $mapping_ty { }
+        impl <M> FieldType<M, $format_ty> for $wrapper_ty<M> where M: $mapping_ty { }
 
-		impl_mapping_type!($std_ty, $wrapper_ty, $mapping_ty);
+        impl_mapping_type!($std_ty, $wrapper_ty, $mapping_ty);
 
-		//Serialize elastic number.
-		impl <M> Serialize for $wrapper_ty<M> where M: $mapping_ty {
-			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where
+        //Serialize elastic number.
+        impl <M> Serialize for $wrapper_ty<M> where M: $mapping_ty {
+            fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where
             S: Serializer {
-				self.value.serialize(serializer)
-			}
-		}
+                self.value.serialize(serializer)
+            }
+        }
 
-		//Deserialize elastic number.
-		impl <M: $mapping_ty> Deserialize for $wrapper_ty<M> {
-			fn deserialize<D>(deserializer: &mut D) -> Result<$wrapper_ty<M>, D::Error> where
+        //Deserialize elastic number.
+        impl <M: $mapping_ty> Deserialize for $wrapper_ty<M> {
+            fn deserialize<D>(deserializer: &mut D) -> Result<$wrapper_ty<M>, D::Error> where
             D: Deserializer {
-				let t = try!($std_ty::deserialize(deserializer));
+                let t = try!($std_ty::deserialize(deserializer));
 
-				Ok($wrapper_ty::<M>::new(t))
-			}
-		}
+                Ok($wrapper_ty::<M>::new(t))
+            }
+        }
     )
 }
 

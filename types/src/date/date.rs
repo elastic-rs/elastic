@@ -6,11 +6,11 @@ use super::ChronoDateTime;
 use super::format::{DateFormat, ParseError};
 use super::formats::ChronoFormat;
 use super::mapping::{DateMapping, DefaultDateMapping, DateFormatWrapper};
-use ::mapping::ElasticType;
+use ::field::FieldType;
 
 pub use chrono::{Datelike, Timelike};
 
-impl ElasticType<DefaultDateMapping<ChronoFormat>, DateFormatWrapper<ChronoFormat>> for ChronoDateTime {}
+impl FieldType<DefaultDateMapping<ChronoFormat>, DateFormatWrapper<ChronoFormat>> for ChronoDateTime {}
 
 /// An Elasticsearch `date` type with a required `time` component.
 ///
@@ -48,27 +48,26 @@ impl ElasticType<DefaultDateMapping<ChronoFormat>, DateFormatWrapper<ChronoForma
 ///
 /// //eg: 2010/04/30 13:56:59.372
 /// println!("{}/{}/{} {}:{}:{}.{}",
-/// 		date.year(),
-/// 	date.month(),
-/// 	date.day(),
-/// 	date.hour(),
-/// 	date.minute(),
-/// 	date.second(),
-/// 	date.nanosecond() / 1000000
+///         date.year(),
+///     date.month(),
+///     date.day(),
+///     date.hour(),
+///     date.minute(),
+///     date.second(),
+///     date.nanosecond() / 1000000
 /// );
 /// ```
 ///
 /// # Links
 ///
-/// - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/master/date.html)
+/// - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/date.html)
 #[derive(Debug, Clone, PartialEq)]
 pub struct Date<F, M = DefaultDateMapping<F>>
     where F: DateFormat,
           M: DateMapping<Format = F>
 {
     value: ChronoDateTime,
-    _f: PhantomData<F>,
-    _t: PhantomData<M>,
+    _t: PhantomData<(M, F)>,
 }
 
 impl<F, M> Date<F, M>
@@ -100,7 +99,6 @@ impl<F, M> Date<F, M>
     pub fn new(date: ChronoDateTime) -> Date<F, M> {
         Date {
             value: date,
-            _f: PhantomData,
             _t: PhantomData,
         }
     }
@@ -110,13 +108,13 @@ impl<F, M> Date<F, M>
     /// ```
     /// # use elastic_types::prelude::*;
     /// let esDate: Date<DefaultDateFormat> = Date::build(
-    /// 	2015,
-    /// 	5,
-    /// 	14,
-    /// 	16,
-    /// 	45,
-    /// 	8,
-    /// 	886
+    ///     2015,
+    ///     5,
+    ///     14,
+    ///     16,
+    ///     45,
+    ///     8,
+    ///     886
     /// );
     /// ```
     pub fn build(year: i32, month: u32, day: u32, hour: u32, minute: u32, second: u32, milli: u32) -> Date<F, M> {
@@ -124,7 +122,6 @@ impl<F, M> Date<F, M>
             value: ChronoDateTime::from_utc(NaiveDateTime::new(NaiveDate::from_ymd(year, month, day),
                                                                NaiveTime::from_hms_milli(hour, minute, second, milli)),
                                             UTC),
-            _f: PhantomData,
             _t: PhantomData,
         }
     }
@@ -140,7 +137,6 @@ impl<F, M> Date<F, M>
     pub fn now() -> Date<F, M> {
         Date {
             value: UTC::now(),
-            _f: PhantomData,
             _t: PhantomData,
         }
     }
@@ -199,7 +195,7 @@ impl<F, M> Date<F, M>
     }
 }
 
-impl<F, M> ElasticType<M, DateFormatWrapper<F>> for Date<F, M>
+impl<F, M> FieldType<M, DateFormatWrapper<F>> for Date<F, M>
     where F: DateFormat,
           M: DateMapping<Format = F>
 {
@@ -239,8 +235,7 @@ impl<F, M> Deserialize for Date<F, M>
             where F: DateFormat,
                   M: DateMapping<Format = F>
         {
-            _f: PhantomData<F>,
-            _t: PhantomData<M>,
+            _t: PhantomData<(M, F)>,
         }
 
         impl<F, M> Visitor for DateTimeVisitor<F, M>
@@ -282,8 +277,7 @@ pub struct DateBrw<'a, F, M = DefaultDateMapping<F>>
           M: DateMapping<Format = F>
 {
     value: &'a ChronoDateTime,
-    _f: PhantomData<F>,
-    _t: PhantomData<M>,
+    _t: PhantomData<(M, F)>,
 }
 
 impl<'a, F, M> DateBrw<'a, F, M>
@@ -294,7 +288,6 @@ impl<'a, F, M> DateBrw<'a, F, M>
     pub fn new(date: &'a ChronoDateTime) -> DateBrw<'a, F, M> {
         DateBrw {
             value: date,
-            _f: PhantomData,
             _t: PhantomData,
         }
     }
@@ -305,7 +298,7 @@ impl<'a, F, M> DateBrw<'a, F, M>
     }
 }
 
-impl<'a, F, M> ElasticType<M, DateFormatWrapper<F>> for DateBrw<'a, F, M>
+impl<'a, F, M> FieldType<M, DateFormatWrapper<F>> for DateBrw<'a, F, M>
     where F: DateFormat,
           M: DateMapping<Format = F>
 {

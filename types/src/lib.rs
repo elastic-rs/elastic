@@ -1,6 +1,6 @@
 //! Elasticsearch Core Types
 //!
-//! An implementation of the core types in Elasticsearch documents.
+//! An implementation of Elasticsearch data types and document mapping.
 //!
 //! Provides `struct`s and `trait`s for defining Elasticsearch type mapping,
 //! where correctness is enforced by Rust's type system.
@@ -64,7 +64,7 @@
 //! This section shows you how to add mapping metadata on the `nightly` channel.
 //! For mapping on `stable`, see [here](object/index.html#manually-implement-mapping).
 //!
-//! > NOTE: Once [Macros 1.1](https://github.com/rust-lang/rfcs/blob/master/text/1681-macros-1.1.md)
+//! > NOTE: Once [Macros 1.1](https://github.com/rust-lang/rfcs/blob/current/text/1681-macros-1.1.md)
 //! is stabilised, you'll be able to use `elastic_types_derive` on the `stable` channel.
 //!
 //! Derive `ElasticType` on your Elasticsearch-mappable types:
@@ -83,14 +83,15 @@
 //! # use elastic_types::prelude::*;
 //! #[derive(Serialize, ElasticType)]
 //! pub struct MyType {
-//! 	pub my_date: Date<DefaultDateFormat>,
-//! 	pub my_num: i32
+//!     pub my_date: Date<DefaultDateFormat>,
+//!     pub my_num: i32
 //! }
 //! # fn main() {
 //! # }
 //! ```
 //!
-//! You can then serialise your mapping as json using the [`TypeMapper`](mappers/struct.TypeMapper.html):
+//! You can then serialise your mapping as json using a [`Document`](document/struct.Document.html)
+//! wrapper:
 //!
 //! ```
 //! # #![feature(proc_macro)]
@@ -102,16 +103,17 @@
 //! # extern crate elastic_types_derive;
 //! # #[macro_use]
 //! # extern crate elastic_types;
+//! # extern crate serde_json;
 //! # extern crate serde;
 //! # use elastic_types::prelude::*;
 //! # #[derive(Serialize, Deserialize, ElasticType)]
 //! # pub struct MyType {
-//! # 	pub my_date: Date<DefaultDateFormat>,
-//! # 	pub my_string: String,
-//! # 	pub my_num: i32
+//! #     pub my_date: Date<DefaultDateFormat>,
+//! #     pub my_string: String,
+//! #     pub my_num: i32
 //! # }
 //! # fn main() {
-//! let mapping = TypeMapper::to_string(MyType::mapping()).unwrap();
+//! let mapping = serde_json::to_string(&Document::from(MyType::mapping())).unwrap();
 //! # }
 //! ```
 //!
@@ -127,15 +129,16 @@
 //! # extern crate elastic_types_derive;
 //! # #[macro_use]
 //! # extern crate elastic_types;
+//! # extern crate serde_json;
 //! # extern crate serde;
 //! # use elastic_types::prelude::*;
 //! # #[derive(Serialize, Deserialize, ElasticType)]
 //! # pub struct MyType {
-//! # 	pub my_date: Date<DefaultDateFormat>,
-//! # 	pub my_num: i32
+//! #     pub my_date: Date<DefaultDateFormat>,
+//! #     pub my_num: i32
 //! # }
 //! # fn main() {
-//! # let mapping = TypeMapper::to_string(MyType::mapping()).unwrap();
+//! # let mapping = serde_json::to_string(&Document::from(MyType::mapping())).unwrap();
 //! # let json = json_str!(
 //! {
 //!     "properties": {
@@ -171,12 +174,12 @@
 //! # use elastic_types::prelude::*;
 //! # #[derive(Serialize, Deserialize, ElasticType)]
 //! # pub struct MyType {
-//! # 	pub my_date: Date<DefaultDateFormat>,
-//! # 	pub my_num: i32
+//! #     pub my_date: Date<DefaultDateFormat>,
+//! #     pub my_num: i32
 //! # }
 //! #[derive(Serialize, Deserialize, ElasticType)]
 //! pub struct MyOtherType {
-//! 	pub my_type: MyType
+//!     pub my_type: MyType
 //! }
 //! # fn main() {
 //! # }
@@ -194,19 +197,20 @@
 //! # extern crate elastic_types_derive;
 //! # #[macro_use]
 //! # extern crate elastic_types;
+//! # extern crate serde_json;
 //! # extern crate serde;
 //! # use elastic_types::prelude::*;
 //! # #[derive(Serialize, Deserialize, ElasticType)]
 //! # pub struct MyType {
-//! # 	pub my_date: Date<DefaultDateFormat>,
-//! # 	pub my_num: i32
+//! #     pub my_date: Date<DefaultDateFormat>,
+//! #     pub my_num: i32
 //! # }
 //! # #[derive(Serialize, Deserialize, ElasticType)]
 //! # pub struct MyOtherType {
-//! # 	pub my_type: MyType
+//! #     pub my_type: MyType
 //! # }
 //! # fn main() {
-//! # let mapping = TypeMapper::to_string(MyOtherType::mapping()).unwrap();
+//! # let mapping = serde_json::to_string(&Document::from(MyOtherType::mapping())).unwrap();
 //! # let json = json_str!(
 //! {
 //!     "properties": {
@@ -248,8 +252,8 @@
 //! # use elastic_types::prelude::*;
 //! #[derive(Serialize, Deserialize, ElasticType)]
 //! pub struct MyType {
-//! 	pub my_date: Option<Date<DefaultDateFormat>>,
-//! 	pub my_num: Vec<i32>
+//!     pub my_date: Option<Date<DefaultDateFormat>>,
+//!     pub my_num: Vec<i32>
 //! }
 //! # fn main() {
 //! # }
@@ -278,7 +282,7 @@
 //! #[derive(Default)]
 //! struct MyMapping;
 //! impl BooleanMapping for MyMapping {
-//! 	fn boost() -> Option<f32> { Some(1.04) }
+//!     fn boost() -> Option<f32> { Some(1.04) }
 //! }
 //! # fn main() {
 //! # }
@@ -294,9 +298,9 @@
 //!
 //! ```ignore
 //! {
-//! 	"id": 15,
-//! 	"timestamp": 1435935302478,
-//! 	"title": "my timestamped object"
+//!     "id": 15,
+//!     "timestamp": 1435935302478,
+//!     "title": "my timestamped object"
 //! }
 //! ```
 //!
@@ -318,9 +322,9 @@
 //! # use elastic_types::prelude::*;
 //! #[derive(Serialize, Deserialize, ElasticType)]
 //! struct MyType {
-//! 	id: i32,
-//! 	timestamp: Date<EpochMillis>,
-//! 	title: String
+//!     id: i32,
+//!     timestamp: Date<EpochMillis>,
+//!     title: String
 //! }
 //!
 //! # fn main() {
@@ -361,10 +365,11 @@
 //! And our `main.rs` contains the following:
 //!
 //! ```
-//! # #![feature(proc_macro)]
+//! #![feature(proc_macro)]
 //!
 //! #[macro_use]
 //! extern crate serde_derive;
+//! extern crate serde_json;
 //! extern crate serde;
 //!
 //! #[macro_use]
@@ -378,11 +383,11 @@
 //!
 //! #[derive(Serialize, Deserialize, ElasticType)]
 //! struct Article {
-//! 	pub id: i32,
-//! 	pub title: String,
-//! 	pub content: Text<ContentMapping>,
-//! 	pub timestamp: Option<Date<EpochMillis, TimestampMapping>>,
-//! 	pub geoip: GeoIp
+//!     pub id: i32,
+//!     pub title: String,
+//!     pub content: Text<ContentMapping>,
+//!     pub timestamp: Option<Date<EpochMillis, TimestampMapping>>,
+//!     pub geoip: GeoIp
 //! }
 //!
 //!
@@ -390,8 +395,8 @@
 //!
 //! #[derive(Serialize, Deserialize, ElasticType)]
 //! struct GeoIp {
-//! 	pub ip: ::std::net::Ipv4Addr,
-//! 	pub loc: GeoPoint<DefaultGeoPointFormat>
+//!     pub ip: ::std::net::Ipv4Addr,
+//!     pub loc: GeoPoint<DefaultGeoPointFormat>
 //! }
 //!
 //!
@@ -400,26 +405,26 @@
 //! #[derive(Default)]
 //! struct ContentMapping;
 //! impl TextMapping for ContentMapping {
-//! 	fn analyzer() -> Option<&'static str> {
-//! 		Some("content_text")
-//! 	}
+//!     fn analyzer() -> Option<&'static str> {
+//!         Some("content_text")
+//!     }
 //! }
 //!
 //! #[derive(Default)]
 //! struct TimestampMapping;
 //! impl DateMapping for TimestampMapping {
-//! 	type Format = EpochMillis;
+//!     type Format = EpochMillis;
 //!
-//! 	fn null_value() -> Option<Date<EpochMillis, Self>> {
-//! 		Some(Date::now())
-//! 	}
+//!     fn null_value() -> Option<Date<EpochMillis, Self>> {
+//!         Some(Date::now())
+//!     }
 //! }
 //!
 //! fn main() {
-//! 	println!("\"{}\":{{ {} }}",
-//! 		Article::name(),
-//! 		TypeMapper::to_string(Article::mapping()).unwrap()
-//! 	);
+//!     println!("\"{}\":{{ {} }}",
+//!         Article::name(),
+//!         serde_json::to_string(&Document::from(Article::mapping())).unwrap()
+//!     );
 //! }
 //! ```
 //!
@@ -436,40 +441,40 @@
 //!
 //! ```ignore
 //! "article": {
-//! 	"properties": {
-//! 		"id":{
-//! 			"type": "integer"
-//! 		},
-//! 		"title": {
-//! 			"type":"text",
-//! 			"fields": {
-//! 				"keyword": {
-//! 					"type": "keyword",
-//! 					"ignore_above": 256
-//! 				}
-//! 			}
-//! 		},
-//! 		"content": {
-//! 			"type": "text",
-//! 			"analyzer": "content_text"
-//! 		},
-//! 		"timestamp": {
-//! 			"type": "date",
-//! 			"format": "epoch_millis",
-//! 			"null_value": "1435935302478"
-//! 		},
-//! 		"geoip": {
-//! 			"type": "nested",
-//! 			"properties": {
-//! 				"ip": {
-//! 					"type": "ip"
-//! 				},
-//! 				"loc": {
-//! 					"type": "geo_point"
-//! 				}
-//! 			}
-//! 		}
-//! 	}
+//!     "properties": {
+//!         "id":{
+//!             "type": "integer"
+//!         },
+//!         "title": {
+//!             "type":"text",
+//!             "fields": {
+//!                 "keyword": {
+//!                     "type": "keyword",
+//!                     "ignore_above": 256
+//!                 }
+//!             }
+//!         },
+//!         "content": {
+//!             "type": "text",
+//!             "analyzer": "content_text"
+//!         },
+//!         "timestamp": {
+//!             "type": "date",
+//!             "format": "epoch_millis",
+//!             "null_value": "1435935302478"
+//!         },
+//!         "geoip": {
+//!             "type": "nested",
+//!             "properties": {
+//!                 "ip": {
+//!                     "type": "ip"
+//!                 },
+//!                 "loc": {
+//!                     "type": "geo_point"
+//!                 }
+//!             }
+//!         }
+//!     }
 //! }
 //! ```
 //!
@@ -486,19 +491,19 @@
 //! which is then bound to a field type as a generic parameter. For example:
 //!
 //! ```ignore
-//! ElasticBoolean<MyMapping>
+//! Boolean<MyMapping>
 //! ```
 //!
 //! The source type is `boolean` and the mapping is `MyMapping`.
 //!
-//! All Elasticsearch types implement the base `ElasticType<M: ElasticFieldMapping<F>, F>` trait
+//! All Elasticsearch types implement the base `FieldType<M: FieldMapping<F>, F>` trait
 //! where `M` is the mapping and `F` is a type-specific format.
 //!
 //! The following table illustrates the types provided by `elastic_types`:
 //!
 //!  Elasticsearch Type  | Rust Type (Default Mapping) | Crate     | Rust Type (Custom Mapping)                                                       | Format Type
 //!  ------------------- | --------------------------- | --------- | -------------------------------------------------------------------------------- | -----------------
-//!  `object`            | -                           | -         | type implementing [`ElasticType<ObjectMapping>`](object/index.html)              | -
+//!  `object`            | -                           | -         | type implementing [`DocumentType<M>`](mapping/index.html)                        | -
 //!  `integer`           | `i32`                       | `std`     | [`Integer<M>`](number/index.html)                                                | -
 //!  `long`              | `i64`                       | `std`     | [`Long<M>`](number/index.html)                                                   | -
 //!  `short`             | `i16`                       | `std`     | [`Short<M>`](number/index.html)                                                  | -
@@ -535,8 +540,8 @@
 //!
 //! # Links
 //!
-//! - [Elasticsearch Mapping Concepts](https://www.elastic.co/guide/en/elasticsearch/guide/master/mapping.html)
-//! - [Elasticsearch Type Concepts](https://www.elastic.co/guide/en/elasticsearch/reference/master/_basic_concepts.html#_type)
+//! - [Elasticsearch Mapping Concepts](https://www.elastic.co/guide/en/elasticsearch/guide/current/mapping.html)
+//! - [Elasticsearch Type Concepts](https://www.elastic.co/guide/en/elasticsearch/reference/current/_basic_concepts.html#_type)
 //! - [Github](https://github.com/elastic-rs/elastic-types)
 
 #![deny(missing_docs)]
@@ -559,30 +564,29 @@ extern crate serde_json;
 #[macro_use]
 mod macros;
 
-pub mod mapping;
-pub mod mappers;
+pub mod field;
+pub mod document;
 
-pub mod boolean;
 #[macro_use]
 pub mod date;
+pub mod boolean;
 pub mod geo;
 pub mod ip;
 pub mod number;
 pub mod string;
-pub mod object;
-pub mod template;
 
 pub mod prelude {
     //! Includes all data types.
     //!
     //! This is a convenience module to make it easy to build mappings for multiple types without too many `use` statements.
 
-    pub use ::mapping::prelude::*;
+    pub use ::document::*;
+    pub use ::field::*;
+
     pub use ::boolean::prelude::*;
     pub use ::date::prelude::*;
     pub use ::geo::prelude::*;
     pub use ::ip::prelude::*;
     pub use ::number::prelude::*;
     pub use ::string::prelude::*;
-    pub use ::template::*;
 }

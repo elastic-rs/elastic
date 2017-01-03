@@ -22,7 +22,7 @@
 //!
 //! ```
 //! struct MyType {
-//! 	pub field: i32
+//!     pub field: i32
 //! }
 //! ```
 //!
@@ -40,14 +40,14 @@
 //! # struct MyIntegerMapping;
 //! # impl IntegerMapping for MyIntegerMapping { }
 //! struct MyType {
-//! 	pub field: Integer<MyIntegerMapping>
+//!     pub field: Integer<MyIntegerMapping>
 //! }
 //! # }
 //! ```
 //!
 //! # Links
 //!
-//! - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/master/number.html)
+//! - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/number.html)
 
 #[macro_use]
 pub mod mapping;
@@ -56,9 +56,10 @@ mod number;
 pub use self::number::*;
 
 pub mod prelude {
-    //! Includes non-mapping types for the `number` type.
+    //! Includes all types for the `number` type.
     //!
     //! This is a convenience module to make it easy to build mappings for multiple types without too many `use` statements.
 
     pub use super::number::*;
+    pub use super::mapping::*;
 }

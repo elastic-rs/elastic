@@ -2,8 +2,8 @@
 
 use std::collections::BTreeMap;
 use serde::{Serialize, Serializer};
-use ::mapping::{ElasticFieldMapping, ElasticFieldMappingWrapper};
-use ::string::mapping::{ElasticStringField, IndexOptions};
+use ::field::{FieldMapping, SerializeField, Field};
+use ::string::mapping::{StringField, IndexOptions};
 
 /// Elasticsearch datatype name.
 pub const TEXT_DATATYPE: &'static str = "text";
@@ -32,10 +32,10 @@ pub struct TextFormat;
 /// #[derive(Default)]
 /// struct MyStringMapping;
 /// impl TextMapping for MyStringMapping {
-/// 	//Overload the mapping functions here
-/// 	fn boost() -> Option<f32> {
-/// 			Some(1.5)
-/// 		}
+///     //Overload the mapping functions here
+///     fn boost() -> Option<f32> {
+///         Some(1.5)
+///     }
 /// }
 /// # fn main() {}
 /// ```
@@ -55,17 +55,17 @@ pub struct TextFormat;
 /// # #[derive(Default)]
 /// # struct MyStringMapping;
 /// # impl TextMapping for MyStringMapping {
-/// # 	//Overload the mapping functions here
-/// # 	fn boost() -> Option<f32> {
-/// 	# 		Some(1.5)
-/// 	# 	}
+/// #     //Overload the mapping functions here
+/// #     fn boost() -> Option<f32> {
+/// #         Some(1.5)
+/// #     }
 /// # }
 /// # fn main() {
-/// # let mapping = FieldMapper::to_string(MyStringMapping).unwrap();
+/// # let mapping = serde_json::to_string(&Field::from(MyStringMapping)).unwrap();
 /// # let json = json_str!(
 /// {
 ///     "type": "text",
-/// 	"boost": 1.5
+///     "boost": 1.5
 /// }
 /// # );
 /// # assert_eq!(json, mapping);
@@ -125,25 +125,25 @@ pub trait TextMapping
     /// # #[derive(Default)]
     /// # struct MyStringMapping;
     /// # impl TextMapping for MyStringMapping {
-    /// fn fields() -> Option<BTreeMap<&'static str, ElasticStringField>> {
-    /// 		let mut fields = BTreeMap::new();
+    /// fn fields() -> Option<BTreeMap<&'static str, StringField>> {
+    ///     let mut fields = BTreeMap::new();
     ///
-    /// 	//Add a `token_count` as a sub field
-    /// 	fields.insert("count", ElasticStringField::TokenCount(
-    /// 		ElasticTokenCountFieldMapping::default())
-    /// 	);
+    ///     //Add a `token_count` as a sub field
+    ///     fields.insert("count", StringField::TokenCount(
+    ///         ElasticTokenCountFieldMapping::default())
+    ///     );
     ///
-    /// 	//Add a `completion` suggester as a sub field
-    /// 	fields.insert("comp", ElasticStringField::Completion(
-    /// 		ElasticCompletionFieldMapping::default())
-    /// 	);
+    ///     //Add a `completion` suggester as a sub field
+    ///     fields.insert("comp", StringField::Completion(
+    ///         ElasticCompletionFieldMapping::default())
+    ///     );
     ///
-    /// 	Some(fields)
-    /// 	}
+    ///     Some(fields)
+    /// }
     /// # }
     /// # fn main() {}
     /// ```
-    fn fields() -> Option<BTreeMap<&'static str, ElasticStringField>> {
+    fn fields() -> Option<BTreeMap<&'static str, StringField>> {
         None
     }
 
@@ -216,18 +216,22 @@ pub trait TextMapping
     }
 }
 
-impl<T> ElasticFieldMapping<TextFormat> for T
+impl<T> FieldMapping<TextFormat> for T
     where T: TextMapping
 {
-    type SerType = ElasticFieldMappingWrapper<T, TextFormat>;
-
     fn data_type() -> &'static str {
         TEXT_DATATYPE
     }
 }
 
-impl<T> Serialize for ElasticFieldMappingWrapper<T, TextFormat>
-    where T: ElasticFieldMapping<TextFormat> + TextMapping
+impl<T> SerializeField<TextFormat> for T
+    where T: TextMapping
+{
+    type Field = Field<T, TextFormat>;
+}
+
+impl<T> Serialize for Field<T, TextFormat>
+    where T: FieldMapping<TextFormat> + TextMapping
 {
     fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
         where S: Serializer

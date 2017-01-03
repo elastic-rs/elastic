@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 use serde::{Serialize, Deserialize, Serializer, Deserializer};
 use georust::{Coordinate, Point, ToGeo, Geometry};
-use ::mapping::ElasticType;
+use ::field::FieldType;
 use super::mapping::{GeoPointMapping, DefaultGeoPointMapping, GeoPointFormatWrapper};
 use super::GeoPointFormat;
 
@@ -42,13 +42,13 @@ use super::GeoPointFormat;
 ///
 /// //eg: (1.0,1.0)
 /// println!("({},{})",
-/// 		point.x(),
+///         point.x(),
 ///     point.y()
 /// );
 /// ```
 ///
 /// # Links
-/// - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/master/geo-point.html)
+/// - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/geo-point.html)
 #[derive(Debug, Clone, PartialEq)]
 pub struct GeoPoint<F, M = DefaultGeoPointMapping<F>>
     where F: GeoPointFormat,
@@ -56,8 +56,7 @@ pub struct GeoPoint<F, M = DefaultGeoPointMapping<F>>
 {
     /// The `x` and `y` coordinate for the point.
     value: Point,
-    _f: PhantomData<F>,
-    _t: PhantomData<M>,
+    _t: PhantomData<(M, F)>,
 }
 
 impl<F, M> GeoPoint<F, M>
@@ -89,7 +88,6 @@ impl<F, M> GeoPoint<F, M>
     {
         GeoPoint {
             value: point.into(),
-            _f: PhantomData,
             _t: PhantomData,
         }
     }
@@ -124,7 +122,7 @@ impl<F, M> GeoPoint<F, M>
     }
 }
 
-impl<F, M> ElasticType<M, GeoPointFormatWrapper<F>> for GeoPoint<F, M>
+impl<F, M> FieldType<M, GeoPointFormatWrapper<F>> for GeoPoint<F, M>
     where F: GeoPointFormat,
           M: GeoPointMapping<Format = F>
 {

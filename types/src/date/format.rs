@@ -134,15 +134,15 @@ impl<T: CustomDateFormat> DateFormat for T {
 /// You can then use `MyFormat` as the generic parameter in `Date`.
 #[macro_export]
 macro_rules! date_fmt {
-	($format_ty:ty, $format_pat:tt, $es_format:expr) => (
-		impl $crate::date::DateFormat for $format_ty {
-			fn fmt<'a>() -> Vec<::chrono::format::Item<'a>> {
-				date_fmt_to_tokens!($format_pat)
-			}
+    ($format_ty:ty, $format_pat:tt, $es_format:expr) => (
+        impl $crate::date::DateFormat for $format_ty {
+            fn fmt<'a>() -> Vec<::chrono::format::Item<'a>> {
+                date_fmt_to_tokens!($format_pat)
+            }
 
-			fn name() -> &'static str { $es_format }
-		}
-	)
+            fn name() -> &'static str { $es_format }
+        }
+    )
 }
 
 /// Represents an error encountered during parsing.

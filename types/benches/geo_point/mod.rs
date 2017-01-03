@@ -1,12 +1,4 @@
-#![feature(test, plugin)]
-#![plugin(json_str)]
-
-extern crate serde;
-extern crate serde_json;
-extern crate test;
-extern crate geo as georust;
-extern crate elastic_types;
-
+use serde_json;
 use georust::{ Point, Coordinate };
 use elastic_types::prelude::*;
 use ::geo_point_fixtures::*;
@@ -19,16 +11,16 @@ fn parse_string(b: &mut Bencher) {
     b.iter(|| {
         let point: GeoPoint<GeoPointString> = serde_json::from_str(ser).unwrap();
         point
-	});
+    });
 }
 
 #[bench]
 fn fmt_string(b: &mut Bencher) {
     let point = GeoPoint::<GeoPointString>::new(Point(Coordinate { x: -71.34, y: 41.12 }));
 
-	b.iter(|| {
-    	serde_json::to_string(&point).unwrap()
-	});
+    b.iter(|| {
+        serde_json::to_string(&point).unwrap()
+    });
 }
 
 #[bench]
@@ -37,16 +29,16 @@ fn parse_object(b: &mut Bencher) {
     b.iter(|| {
         let point: GeoPoint<GeoPointObject> = serde_json::from_str(ser).unwrap();
         point
-	});
+    });
 }
 
 #[bench]
 fn fmt_object(b: &mut Bencher) {
     let point = GeoPoint::<GeoPointObject>::new(Point(Coordinate { x: -71.34, y: 41.12 }));
 
-	b.iter(|| {
-    	serde_json::to_string(&point).unwrap()
-	});
+    b.iter(|| {
+        serde_json::to_string(&point).unwrap()
+    });
 }
 
 #[bench]
@@ -55,16 +47,16 @@ fn parse_hash(b: &mut Bencher) {
     b.iter(|| {
         let point: GeoPoint<GeoPointHash> = serde_json::from_str(ser).unwrap();
         point
-	});
+    });
 }
 
 #[bench]
 fn fmt_hash(b: &mut Bencher) {
     let point = GeoPoint::<GeoPointHash>::new(Point(Coordinate { x: -71.34, y: 41.12 }));
 
-	b.iter(|| {
-    	serde_json::to_string(&point).unwrap()
-	});
+    b.iter(|| {
+        serde_json::to_string(&point).unwrap()
+    });
 }
 
 #[bench]
@@ -73,21 +65,21 @@ fn parse_array(b: &mut Bencher) {
     b.iter(|| {
         let point: GeoPoint<GeoPointArray> = serde_json::from_str(ser).unwrap();
         point
-	});
+    });
 }
 
 #[bench]
 fn fmt_array(b: &mut Bencher) {
     let point = GeoPoint::<GeoPointArray>::new(Point(Coordinate { x: -71.34, y: 41.12 }));
 
-	b.iter(|| {
-    	serde_json::to_string(&point).unwrap()
-	});
+    b.iter(|| {
+        serde_json::to_string(&point).unwrap()
+    });
 }
 
 #[bench]
 fn mapping(b: &mut Bencher) {
-	b.iter(|| {
-		FieldMapper::to_string(MyGeoPointMapping).unwrap()
-	});
+    b.iter(|| {
+        serde_json::to_string(&Field::from(MyGeoPointMapping)).unwrap()
+    });
 }

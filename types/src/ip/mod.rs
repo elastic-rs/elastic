@@ -1,4 +1,4 @@
-//! Implementation of the Elasticsearch `boolean` type.
+//! Implementation of the Elasticsearch `ip` type.
 //!
 //! # Examples
 //!
@@ -9,7 +9,7 @@
 //! ```
 //! # use std::net::Ipv4Addr;
 //! struct MyType {
-//! 	pub field: std::net::Ipv4Addr
+//!     pub field: std::net::Ipv4Addr
 //! }
 //! ```
 //!
@@ -27,14 +27,14 @@
 //! # struct MyIpMapping;
 //! # impl IpMapping for MyIpMapping {}
 //! struct MyType {
-//! 	pub field: Ip<MyIpMapping>
+//!     pub field: Ip<MyIpMapping>
 //! }
 //! # }
 //! ```
 //!
 //! # Links
 //!
-//! - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/master/ip.html)
+//! - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/ip.html)
 
 mod ip;
 
@@ -42,9 +42,10 @@ pub mod mapping;
 pub use self::ip::*;
 
 pub mod prelude {
-    //! Includes non-mapping types for the `ip` type.
+    //! Includes all types for the `ip` type.
     //!
     //! This is a convenience module to make it easy to build mappings for multiple types without too many `use` statements.
 
     pub use super::ip::*;
+    pub use super::mapping::*;
 }

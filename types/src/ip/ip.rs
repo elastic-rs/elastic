@@ -5,9 +5,9 @@ use std::error::Error as StdError;
 use serde::{Serialize, Deserialize, Serializer, Deserializer};
 use serde::de::{Visitor, Error};
 use super::mapping::{IpMapping, DefaultIpMapping, IpFormat};
-use ::mapping::ElasticType;
+use ::field::FieldType;
 
-impl ElasticType<DefaultIpMapping, IpFormat> for Ipv4Addr {}
+impl FieldType<DefaultIpMapping, IpFormat> for Ipv4Addr {}
 
 /// An Elasticsearch `ip` with a mapping.
 ///
@@ -84,7 +84,7 @@ impl<M> Ip<M>
     }
 }
 
-impl<M> ElasticType<M, IpFormat> for Ip<M> where M: IpMapping {}
+impl<M> FieldType<M, IpFormat> for Ip<M> where M: IpMapping {}
 
 impl_mapping_type!(Ipv4Addr, Ip, IpMapping);
 

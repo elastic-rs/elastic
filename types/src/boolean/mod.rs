@@ -8,7 +8,7 @@
 //!
 //! ```
 //! struct MyType {
-//! 	pub field: bool
+//!     pub field: bool
 //! }
 //! ```
 //!
@@ -26,14 +26,14 @@
 //! # struct MyBooleanMapping;
 //! # impl BooleanMapping for MyBooleanMapping { }
 //! struct MyType {
-//! 	pub field: Boolean<MyBooleanMapping>
+//!     pub field: Boolean<MyBooleanMapping>
 //! }
 //! # }
 //! ```
 //!
 //! # Links
 //!
-//! - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/master/boolean.html)
+//! - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/boolean.html)
 
 #[macro_use]
 pub mod mapping;
@@ -42,9 +42,10 @@ mod boolean;
 pub use self::boolean::*;
 
 pub mod prelude {
-    //! Includes non-mapping types for the `boolean` type.
+    //! Includes all types for the `boolean` type.
     //!
     //! This is a convenience module to make it easy to build mappings for multiple types without too many `use` statements.
 
     pub use super::boolean::*;
+    pub use super::mapping::*;
 }

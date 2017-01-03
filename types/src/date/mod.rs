@@ -15,7 +15,7 @@
 //! ```
 //! # use elastic_types::prelude::*;
 //! struct MyType {
-//! 	pub field: Date<DefaultDateFormat>
+//!     pub field: Date<DefaultDateFormat>
 //! }
 //! ```
 //!
@@ -35,7 +35,7 @@
 //! # struct MyDateMapping;
 //! # impl DateMapping for MyDateMapping { type Format = EpochMillis; }
 //! struct MyType {
-//! 	pub field: Date<EpochMillis, MyDateMapping>
+//!     pub field: Date<EpochMillis, MyDateMapping>
 //! }
 //! # }
 //! ```
@@ -74,23 +74,23 @@
 //! #[derive(Default, Clone)]
 //! struct MyCustomFormat;
 //! impl CustomDateFormat for MyCustomFormat {
-//! 	fn name() -> &'static str { "yyyy-MM-dd'T'HH:mm:ssZ" }
+//!     fn name() -> &'static str { "yyyy-MM-dd'T'HH:mm:ssZ" }
 //!
-//! 	fn format(date: &DateTime<UTC>) -> String {
-//! 		date.to_rfc3339()
-//! 	}
+//!     fn format(date: &DateTime<UTC>) -> String {
+//!         date.to_rfc3339()
+//!     }
 //!
-//! 	fn parse(date: &str) -> Result<DateTime<UTC>, ParseError> {
-//! 		let date = try!(DateTime::parse_from_rfc3339(date).map_err(|e| ParseError::from(e)));
+//!     fn parse(date: &str) -> Result<DateTime<UTC>, ParseError> {
+//!         let date = try!(DateTime::parse_from_rfc3339(date).map_err(|e| ParseError::from(e)));
 //!
-//! 			Ok(DateTime::from_utc(date.naive_local(), UTC))
-//! 		}
-//! 	}
+//!             Ok(DateTime::from_utc(date.naive_local(), UTC))
+//!         }
+//!     }
 //! # }
 //! ```
 //!
 //! # Links
-//! - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/master/date.html)
+//! - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/date.html)
 
 pub mod mapping;
 
@@ -111,7 +111,7 @@ pub type ChronoDateTime = DateTime<UTC>;
 pub type DefaultDateFormat = BasicDateTime;
 
 pub mod prelude {
-    //! Includes non-mapping types for the `date` type.
+    //! Includes all types for the `date` type.
     //!
     //! This is a convenience module to make it easy to build mappings for multiple types without too many `use` statements.
 
@@ -119,4 +119,5 @@ pub mod prelude {
     pub use super::format::*;
     pub use super::date::*;
     pub use super::formats::*;
+    pub use super::mapping::*;
 }

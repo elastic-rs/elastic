@@ -2,10 +2,9 @@
 
 use std::collections::BTreeMap;
 use serde::{Serialize, Serializer};
-use ::mapping::{IndexAnalysis, ElasticType};
-
-pub use super::keyword::mapping::*;
-pub use super::text::mapping::*;
+use ::field::{IndexAnalysis, FieldType};
+use super::text::mapping::{TextMapping, TextFieldMapping, TextFormat};
+use super::keyword::mapping::KeywordFieldMapping;
 
 /// Elasticsearch datatype name.
 pub const TOKENCOUNT_DATATYPE: &'static str = "token_count";
@@ -16,17 +15,17 @@ pub const COMPLETION_DATATYPE: &'static str = "completion";
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultStringMapping;
 impl TextMapping for DefaultStringMapping {
-    fn fields() -> Option<BTreeMap<&'static str, ElasticStringField>> {
+    fn fields() -> Option<BTreeMap<&'static str, StringField>> {
         let mut fields = BTreeMap::new();
 
         fields.insert("keyword",
-                      ElasticStringField::Keyword(KeywordFieldMapping { ignore_above: Some(256), ..Default::default() }));
+                      StringField::Keyword(KeywordFieldMapping { ignore_above: Some(256), ..Default::default() }));
 
         Some(fields)
     }
 }
 
-impl ElasticType<DefaultStringMapping, TextFormat> for String {}
+impl FieldType<DefaultStringMapping, TextFormat> for String {}
 
 /// The `index_options` parameter controls what information is added to the inverted index, for search and highlighting purposes.
 #[derive(Debug, Clone, Copy)]
@@ -62,7 +61,7 @@ impl Serialize for IndexOptions {
 ///
 /// String types can have a number of alternative field representations for different purposes.
 #[derive(Debug, Clone, Copy)]
-pub enum ElasticStringField {
+pub enum StringField {
     /// A `token_count` sub field.
     TokenCount(ElasticTokenCountFieldMapping),
     /// A `completion` suggester sub field.
@@ -73,20 +72,20 @@ pub enum ElasticStringField {
     Text(TextFieldMapping),
 }
 
-impl Serialize for ElasticStringField {
+impl Serialize for StringField {
     fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
         where S: Serializer
     {
         match *self {
-            ElasticStringField::TokenCount(m) => m.serialize(serializer),
-            ElasticStringField::Completion(m) => m.serialize(serializer),
-            ElasticStringField::Keyword(m) => m.serialize(serializer),
-            ElasticStringField::Text(m) => m.serialize(serializer),
+            StringField::TokenCount(m) => m.serialize(serializer),
+            StringField::Completion(m) => m.serialize(serializer),
+            StringField::Keyword(m) => m.serialize(serializer),
+            StringField::Text(m) => m.serialize(serializer),
         }
     }
 }
 
-/// A multi-field string mapping for a [token count](https://www.elastic.co/guide/en/elasticsearch/reference/master/token-count.html).
+/// A multi-field string mapping for a [token count](https://www.elastic.co/guide/en/elasticsearch/reference/current/token-count.html).
 #[derive(Debug, Default, Clone, Copy)]
 pub struct ElasticTokenCountFieldMapping {
     /// The analyzer which should be used for analyzed string fields,
@@ -140,7 +139,7 @@ impl Serialize for ElasticTokenCountFieldMapping {
     }
 }
 
-/// A multi-field string mapping for a [completion suggester](https://www.elastic.co/guide/en/elasticsearch/reference/master/search-suggesters-completion.html#search-suggesters-completion).
+/// A multi-field string mapping for a [completion suggester](https://www.elastic.co/guide/en/elasticsearch/reference/current/search-suggesters-completion.html#search-suggesters-completion).
 #[derive(Debug, Default, Clone, Copy)]
 pub struct ElasticCompletionFieldMapping {
     /// The analyzer which should be used for analyzed string fields,

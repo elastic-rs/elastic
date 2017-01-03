@@ -2,9 +2,9 @@ use std::marker::PhantomData;
 use serde::{Serialize, Deserialize, Serializer, Deserializer};
 use serde::de::{Visitor, Error};
 use super::mapping::{BooleanMapping, DefaultBooleanMapping, BooleanFormat};
-use ::mapping::ElasticType;
+use ::field::FieldType;
 
-impl ElasticType<DefaultBooleanMapping, BooleanFormat> for bool {}
+impl FieldType<DefaultBooleanMapping, BooleanFormat> for bool {}
 
 /// An Elasticsearch `boolean` with a mapping.
 ///
@@ -74,7 +74,7 @@ impl<M> Boolean<M>
     }
 }
 
-impl<M> ElasticType<M, BooleanFormat> for Boolean<M> where M: BooleanMapping {}
+impl<M> FieldType<M, BooleanFormat> for Boolean<M> where M: BooleanMapping {}
 
 impl_mapping_type!(bool, Boolean, BooleanMapping);
 

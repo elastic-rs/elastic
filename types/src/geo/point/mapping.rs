@@ -4,7 +4,7 @@ use std::marker::PhantomData;
 use serde::{Serialize, Serializer};
 use super::GeoPointFormat;
 use ::geo::mapping::Distance;
-use ::mapping::{ElasticFieldMapping, ElasticFieldMappingWrapper};
+use ::field::{FieldMapping, SerializeField, Field};
 
 
 /// Elasticsearch datatype name.
@@ -39,12 +39,12 @@ pub struct GeoPointFormatWrapper<F>
 /// #[derive(Default)]
 /// struct MyGeoPointMapping;
 /// impl GeoPointMapping for MyGeoPointMapping {
-/// 	type Format = GeoPointArray;
+///     type Format = GeoPointArray;
 ///
-/// 	//Overload the mapping functions here
-/// 	fn geohash() -> Option<bool> {
-/// 			Some(true)
-/// 	}
+///     //Overload the mapping functions here
+///     fn geohash() -> Option<bool> {
+///         Some(true)
+///     }
 /// }
 /// # fn main() {}
 /// ```
@@ -65,13 +65,13 @@ pub struct GeoPointFormatWrapper<F>
 /// # #[derive(Default)]
 /// # struct MyGeoPointMapping;
 /// # impl GeoPointMapping for MyGeoPointMapping {
-/// # 	type Format = GeoPointArray;
-/// # 	fn geohash() -> Option<bool> {
-/// 	# 		Some(true)
-/// 	# 	}
+/// #     type Format = GeoPointArray;
+/// #     fn geohash() -> Option<bool> {
+/// #         Some(true)
+/// #     }
 /// # }
 /// # fn main() {
-/// # let mapping = FieldMapper::to_string(MyGeoPointMapping).unwrap();
+/// # let mapping = serde_json::to_string(&Field::from(MyGeoPointMapping)).unwrap();
 /// # let json = json_str!(
 /// {
 ///     "type": "geo_point",
@@ -97,11 +97,11 @@ pub struct GeoPointFormatWrapper<F>
 /// # use elastic_types::prelude::*;
 /// #[derive(Default)]
 /// struct MyGeoPointMapping<F> {
-/// 	_marker: PhantomData<F>
+///     _marker: PhantomData<F>
 /// }
 ///
 /// impl <F: GeoPointFormat> GeoPointMapping for MyGeoPointMapping<F> {
-/// 	type Format = F;
+///     type Format = F;
 /// }
 /// # fn main() {}
 /// ```
@@ -143,19 +143,24 @@ pub trait GeoPointMapping
     }
 }
 
-impl<T, F> ElasticFieldMapping<GeoPointFormatWrapper<F>> for T
+impl<T, F> FieldMapping<GeoPointFormatWrapper<F>> for T
     where T: GeoPointMapping<Format = F>,
           F: GeoPointFormat
 {
-    type SerType = ElasticFieldMappingWrapper<T, GeoPointFormatWrapper<F>>;
-
     fn data_type() -> &'static str {
         GEOPOINT_DATATYPE
     }
 }
 
-impl<T, F> Serialize for ElasticFieldMappingWrapper<T, GeoPointFormatWrapper<F>>
-    where T: ElasticFieldMapping<GeoPointFormatWrapper<F>> + GeoPointMapping<Format = F>,
+impl<T, F> SerializeField<GeoPointFormatWrapper<F>> for T
+    where T: GeoPointMapping<Format = F>,
+          F: GeoPointFormat
+{
+    type Field = Field<T, GeoPointFormatWrapper<F>>;
+}
+
+impl<T, F> Serialize for Field<T, GeoPointFormatWrapper<F>>
+    where T: FieldMapping<GeoPointFormatWrapper<F>> + GeoPointMapping<Format = F>,
           F: GeoPointFormat
 {
     fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>

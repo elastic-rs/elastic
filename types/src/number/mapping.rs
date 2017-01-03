@@ -19,10 +19,10 @@
 //! #[derive(Default)]
 //! struct MyIntegerMapping;
 //! impl IntegerMapping for MyIntegerMapping {
-//! 	//Overload the mapping functions here
-//! 	fn null_value() -> Option<i32> {
-//! 		Some(42)
-//! 	}
+//!     //Overload the mapping functions here
+//!     fn null_value() -> Option<i32> {
+//!         Some(42)
+//!     }
 //! }
 //! # fn main() {}
 //! ```
@@ -42,17 +42,17 @@
 //! # #[derive(Default)]
 //! # struct MyIntegerMapping;
 //! # impl IntegerMapping for MyIntegerMapping {
-//! # 	//Overload the mapping functions here
-//! # 	fn null_value() -> Option<i32> {
-//! # 		Some(42)
-//! # 	}
+//! #   //Overload the mapping functions here
+//! #   fn null_value() -> Option<i32> {
+//! #       Some(42)
+//! #   }
 //! # }
 //! # fn main() {
-//! # let mapping = FieldMapper::to_string(MyIntegerMapping).unwrap();
+//! # let mapping = serde_json::to_string(&Field::from(MyIntegerMapping)).unwrap();
 //! # let json = json_str!(
 //! {
 //!     "type": "integer",
-//! 	"null_value": 42
+//!     "null_value": 42
 //! }
 //! # );
 //! # assert_eq!(json, mapping);
@@ -60,7 +60,7 @@
 //! ```
 
 use serde::Serialize;
-use ::mapping::{ElasticType, ElasticFieldMapping, ElasticFieldMappingWrapper};
+use ::field::{FieldType, FieldMapping, SerializeField, Field};
 
 /// Elasticsearch datatype name.
 pub const INTEGER_DATATYPE: &'static str = "integer";
@@ -76,74 +76,79 @@ pub const DOUBLE_DATATYPE: &'static str = "double";
 pub const FLOAT_DATATYPE: &'static str = "float";
 
 macro_rules! number_mapping {
-	($m:ident, $f:ident, $cn:ident, $n:ty) => (
-		#[doc(hidden)]
-		#[derive(Default)]
-		pub struct $f;
+    ($m:ident, $f:ident, $cn:ident, $n:ty) => (
+        #[doc(hidden)]
+        #[derive(Default)]
+        pub struct $f;
 
-/// Base `number` mapping.
-		pub trait $m where
-		Self: Default {
-/// Try to convert strings to numbers and truncate fractions for integers. Accepts `true` (default) and `false`.
-			fn coerce() -> Option<bool> { None }
+        /// Base `number` mapping.
+        pub trait $m where
+        Self: Default {
+            /// Try to convert strings to numbers and truncate fractions for integers. Accepts `true` (default) and `false`.
+            fn coerce() -> Option<bool> { None }
 
-/// Field-level index time boosting. Accepts a floating point number, defaults to `1.0`.
-			fn boost() -> Option<f32> { None }
+            /// Field-level index time boosting. Accepts a floating point number, defaults to `1.0`.
+            fn boost() -> Option<f32> { None }
 
-/// Should the field be stored on disk in a column-stride fashion,
-/// so that it can later be used for sorting, aggregations, or scripting?
-/// Accepts `true` (default) or `false`.
-			fn doc_values() -> Option<bool> { None }
+            /// Should the field be stored on disk in a column-stride fashion,
+            /// so that it can later be used for sorting, aggregations, or scripting?
+            /// Accepts `true` (default) or `false`.
+            fn doc_values() -> Option<bool> { None }
 
-/// If `true`, malformed numbers are ignored. If `false` (default),
-/// malformed numbers throw an exception and reject the whole document.
-			fn ignore_malformed() -> Option<bool> { None }
+            /// If `true`, malformed numbers are ignored. If `false` (default),
+            /// malformed numbers throw an exception and reject the whole document.
+            fn ignore_malformed() -> Option<bool> { None }
 
-/// Whether or not the field value should be included in the `_all` field?
-/// Accepts `true` or `false`. Defaults to false if index is set to no,
-/// or if a parent object field sets `include_in_all` to false.
-/// Otherwise defaults to `true`.
-			fn include_in_all() -> Option<bool> { None }
+            /// Whether or not the field value should be included in the `_all` field?
+            /// Accepts `true` or `false`. Defaults to false if index is set to no,
+            /// or if a parent object field sets `include_in_all` to false.
+            /// Otherwise defaults to `true`.
+            fn include_in_all() -> Option<bool> { None }
 
-/// Should the field be searchable? Accepts `not_analyzed` (default) and `no`.
-			fn index() -> Option<bool> { None }
+            /// Should the field be searchable? Accepts `not_analyzed` (default) and `no`.
+            fn index() -> Option<bool> { None }
 
-/// Accepts a numeric value of the same type as the field which is substituted for any explicit null values.
-/// Defaults to `null`, which means the field is treated as missing.
-			fn null_value() -> Option<$n> { None }
+            /// Accepts a numeric value of the same type as the field which is substituted for any explicit null values.
+            /// Defaults to `null`, which means the field is treated as missing.
+            fn null_value() -> Option<$n> { None }
 
-/// Whether the field value should be stored and retrievable separately from the `_source` field.
-/// Accepts true or false (default).
-			fn store() -> Option<bool> { None }
-		}
+            /// Whether the field value should be stored and retrievable separately from the `_source` field.
+            /// Accepts true or false (default).
+            fn store() -> Option<bool> { None }
+        }
 
-		impl <T> ElasticFieldMapping<$f> for T where
-		T: $m {
-			type SerType = ElasticFieldMappingWrapper<T, $f>;
+        impl <T> FieldMapping<$f> for T 
+            where T: $m 
+        {
+            fn data_type() -> &'static str { $cn }
+        }
 
-			fn data_type() -> &'static str { $cn }
-		}
+        impl<T> SerializeField<$f> for T
+            where T: $m
+        {
+            type Field = Field<T, $f>;
+        }
 
-		impl <T> Serialize for ElasticFieldMappingWrapper<T, $f> where
-		T: ElasticFieldMapping<$f> + $m {
-			fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where
-			S: ::serde::Serializer {
-				let mut state = try!(serializer.serialize_struct("mapping", 8));
+        impl <T> Serialize for Field<T, $f> where
+        T: FieldMapping<$f> + $m {
+            fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where
+            S: ::serde::Serializer {
+                let mut state = try!(serializer.serialize_struct("mapping", 8));
 
-				try!(serializer.serialize_struct_elt(&mut state, "type", T::data_type()));
+                try!(serializer.serialize_struct_elt(&mut state, "type", T::data_type()));
 
-				ser_field!(serializer, &mut state, "coerce", T::coerce());
-				ser_field!(serializer, &mut state, "boost", T::boost());
-				ser_field!(serializer, &mut state, "doc_values", T::doc_values());
-				ser_field!(serializer, &mut state, "ignore_malformed", T::ignore_malformed());
-				ser_field!(serializer, &mut state, "include_in_all", T::include_in_all());
-				ser_field!(serializer, &mut state, "null_value", T::null_value());
-				ser_field!(serializer, &mut state, "store", T::store());
+                ser_field!(serializer, &mut state, "coerce", T::coerce());
+                ser_field!(serializer, &mut state, "boost", T::boost());
+                ser_field!(serializer, &mut state, "doc_values", T::doc_values());
+                ser_field!(serializer, &mut state, "ignore_malformed", T::ignore_malformed());
+                ser_field!(serializer, &mut state, "include_in_all", T::include_in_all());
+                ser_field!(serializer, &mut state, "null_value", T::null_value());
+                ser_field!(serializer, &mut state, "store", T::store());
 
-				serializer.serialize_struct_end(state)
-			}
-		}
-	)
+                serializer.serialize_struct_end(state)
+            }
+        }
+    )
 }
 
 number_mapping!(IntegerMapping, IntegerFormat, INTEGER_DATATYPE, i32);
@@ -157,35 +162,35 @@ number_mapping!(DoubleMapping, DoubleFormat, DOUBLE_DATATYPE, f64);
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultIntegerMapping;
 impl IntegerMapping for DefaultIntegerMapping {}
-impl ElasticType<DefaultIntegerMapping, IntegerFormat> for i32 {}
+impl FieldType<DefaultIntegerMapping, IntegerFormat> for i32 {}
 
 /// Default mapping for a `long` type.
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultLongMapping;
 impl LongMapping for DefaultLongMapping {}
-impl ElasticType<DefaultLongMapping, LongFormat> for i64 {}
-impl ElasticType<DefaultLongMapping, LongFormat> for isize {}
+impl FieldType<DefaultLongMapping, LongFormat> for i64 {}
+impl FieldType<DefaultLongMapping, LongFormat> for isize {}
 
 /// Default mapping for a `short` type.
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultShortMapping;
 impl ShortMapping for DefaultShortMapping {}
-impl ElasticType<DefaultShortMapping, ShortFormat> for i16 {}
+impl FieldType<DefaultShortMapping, ShortFormat> for i16 {}
 
 /// Default mapping for a `byte` type.
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultByteMapping;
 impl ByteMapping for DefaultByteMapping {}
-impl ElasticType<DefaultByteMapping, ByteFormat> for i8 {}
+impl FieldType<DefaultByteMapping, ByteFormat> for i8 {}
 
 /// Default mapping for a `float` type.
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultFloatMapping;
 impl FloatMapping for DefaultFloatMapping {}
-impl ElasticType<DefaultFloatMapping, FloatFormat> for f32 {}
+impl FieldType<DefaultFloatMapping, FloatFormat> for f32 {}
 
 /// Default mapping for a `double` type.
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultDoubleMapping;
 impl DoubleMapping for DefaultDoubleMapping {}
-impl ElasticType<DefaultDoubleMapping, DoubleFormat> for f64 {}
+impl FieldType<DefaultDoubleMapping, DoubleFormat> for f64 {}

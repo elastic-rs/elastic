@@ -3,7 +3,7 @@
 use std::marker::PhantomData;
 use serde::{Serialize, Serializer};
 use super::{DateFormat, Date};
-use ::mapping::{ElasticFieldMapping, ElasticFieldMappingWrapper};
+use ::field::{FieldMapping, SerializeField, Field};
 
 /// Elasticsearch datatype name.
 pub const DATE_DATATYPE: &'static str = "date";
@@ -37,12 +37,12 @@ pub struct DateFormatWrapper<F>
 /// #[derive(Default)]
 /// struct MyDateMapping;
 /// impl DateMapping for MyDateMapping {
-/// 	type Format = EpochMillis;
+///     type Format = EpochMillis;
 ///
-/// 	//Overload the mapping functions here
-/// 	fn boost() -> Option<f32> {
-/// 			Some(1.5)
-/// 		}
+///     //Overload the mapping functions here
+///     fn boost() -> Option<f32> {
+///         Some(1.5)
+///     }
 /// }
 /// # fn main() {}
 /// ```
@@ -63,18 +63,18 @@ pub struct DateFormatWrapper<F>
 /// # #[derive(Default)]
 /// # struct MyDateMapping;
 /// # impl DateMapping for MyDateMapping {
-/// # 	type Format = EpochMillis;
-/// # 	fn boost() -> Option<f32> {
-/// 	# 		Some(1.5)
-/// 	# 	}
+/// #     type Format = EpochMillis;
+/// #     fn boost() -> Option<f32> {
+/// #         Some(1.5)
+/// #     }
 /// # }
 /// # fn main() {
-/// # let mapping = FieldMapper::to_string(MyDateMapping).unwrap();
+/// # let mapping = serde_json::to_string(&Field::from(MyDateMapping)).unwrap();
 /// # let json = json_str!(
 /// {
 ///     "type": "date",
-/// 	"format": "epoch_millis",
-/// 	"boost": 1.5
+///     "format": "epoch_millis",
+///     "boost": 1.5
 /// }
 /// # );
 /// # assert_eq!(json, mapping);
@@ -96,10 +96,10 @@ pub struct DateFormatWrapper<F>
 /// # use elastic_types::prelude::*;
 /// #[derive(Default)]
 /// struct MyDateMapping<F> {
-/// 	_marker: PhantomData<F>
+///     _marker: PhantomData<F>
 /// }
 /// impl <F: DateFormat> DateMapping for MyDateMapping<F> {
-/// 	type Format = F;
+///     type Format = F;
 /// }
 /// # fn main() {}
 /// ```
@@ -156,19 +156,24 @@ pub trait DateMapping
     }
 }
 
-impl<T, F> ElasticFieldMapping<DateFormatWrapper<F>> for T
+impl<T, F> FieldMapping<DateFormatWrapper<F>> for T
     where T: DateMapping<Format = F>,
           F: DateFormat
 {
-    type SerType = ElasticFieldMappingWrapper<T, DateFormatWrapper<F>>;
-
     fn data_type() -> &'static str {
         DATE_DATATYPE
     }
 }
 
-impl<T, F> Serialize for ElasticFieldMappingWrapper<T, DateFormatWrapper<F>>
-    where T: ElasticFieldMapping<DateFormatWrapper<F>> + DateMapping<Format = F>,
+impl<T, F> SerializeField<DateFormatWrapper<F>> for T
+    where T: DateMapping<Format = F>,
+          F: DateFormat
+{
+    type Field = Field<T, DateFormatWrapper<F>>;
+}
+
+impl<T, F> Serialize for Field<T, DateFormatWrapper<F>>
+    where T: FieldMapping<DateFormatWrapper<F>> + DateMapping<Format = F>,
           F: DateFormat
 {
     fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>

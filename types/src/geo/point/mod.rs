@@ -14,7 +14,7 @@
 //! ```
 //! # use elastic_types::geo::point::prelude::*;
 //! struct MyType {
-//! 	pub field: GeoPoint<DefaultGeoPointFormat>
+//!     pub field: GeoPoint<DefaultGeoPointFormat>
 //! }
 //! ```
 //!
@@ -29,20 +29,20 @@
 //! # use std::marker::PhantomData;
 //! # use elastic_types::prelude::*;
 //! # fn main() {
-//! # use elastic_types::mapping::prelude::*;
+//! # use elastic_types::prelude::*;
 //! # use elastic_types::geo::point::prelude::*;
 //! # #[derive(Default)]
 //! # struct MyGeoPointMapping;
 //! # impl GeoPointMapping for MyGeoPointMapping { type Format = GeoPointString; }
 //! struct MyType {
-//! 	pub field: GeoPoint<GeoPointString, MyGeoPointMapping>
+//!     pub field: GeoPoint<GeoPointString, MyGeoPointMapping>
 //! }
 //! # }
 //! ```
 //!
 //! # Links
 //!
-//! - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/master/geo-point.html)
+//! - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/geo-point.html)
 
 #[macro_use]
 pub mod mapping;
@@ -59,7 +59,7 @@ pub use self::formats::*;
 pub type DefaultGeoPointFormat = GeoPointArray;
 
 pub mod prelude {
-    //! Includes non-mapping types for the `geo_point` type.
+    //! Includes all types for the `geo_point` type.
     //!
     //! This is a convenience module to make it easy to build mappings for multiple types without too many `use` statements.
 
@@ -67,4 +67,5 @@ pub mod prelude {
     pub use super::format::*;
     pub use super::point::*;
     pub use super::formats::*;
+    pub use super::mapping::*;
 }

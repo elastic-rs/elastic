@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 use serde::{Serialize, Deserialize, Serializer, Deserializer};
 use geojson::Geometry;
 use super::mapping::*;
-use ::mapping::ElasticType;
+use ::field::FieldType;
 
 /// Geo shape type with a given mapping.
 ///
@@ -68,7 +68,7 @@ impl<M> GeoShape<M>
     }
 }
 
-impl<M> ElasticType<M, GeoShapeFormat> for GeoShape<M> where M: GeoShapeMapping {}
+impl<M> FieldType<M, GeoShapeFormat> for GeoShape<M> where M: GeoShapeMapping {}
 
 impl_mapping_type!(Geometry, GeoShape, GeoShapeMapping);
 

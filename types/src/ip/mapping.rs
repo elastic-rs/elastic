@@ -2,7 +2,7 @@
 
 use std::net::Ipv4Addr;
 use serde::{Serialize, Serializer};
-use ::mapping::{ElasticFieldMapping, ElasticFieldMappingWrapper};
+use ::field::{FieldMapping, SerializeField, Field};
 
 /// Elasticsearch datatype name.
 pub const IP_DATATYPE: &'static str = "ip";
@@ -31,10 +31,10 @@ pub struct IpFormat;
 /// #[derive(Default)]
 /// struct MyIpMapping;
 /// impl IpMapping for MyIpMapping {
-/// 	//Overload the mapping functions here
-/// 	fn boost() -> Option<f32> {
-/// 			Some(1.5)
-/// 		}
+///     //Overload the mapping functions here
+///     fn boost() -> Option<f32> {
+///         Some(1.5)
+///     }
 /// }
 /// # fn main() {}
 /// ```
@@ -54,17 +54,17 @@ pub struct IpFormat;
 /// # #[derive(Default)]
 /// # struct MyIpMapping;
 /// # impl IpMapping for MyIpMapping {
-/// # 	//Overload the mapping functions here
-/// # 	fn boost() -> Option<f32> {
-/// 	# 		Some(1.5)
-/// 	# 	}
+/// #     //Overload the mapping functions here
+/// #     fn boost() -> Option<f32> {
+/// #         Some(1.5)
+/// #     }
 /// # }
 /// # fn main() {
-/// # let mapping = FieldMapper::to_string(MyIpMapping).unwrap();
+/// # let mapping = serde_json::to_string(&Field::from(MyIpMapping)).unwrap();
 /// # let json = json_str!(
 /// {
 ///     "type": "ip",
-/// 	"boost": 1.5
+///     "boost": 1.5
 /// }
 /// # );
 /// # assert_eq!(json, mapping);
@@ -103,18 +103,22 @@ pub trait IpMapping
     }
 }
 
-impl<T> ElasticFieldMapping<IpFormat> for T
+impl<T> FieldMapping<IpFormat> for T
     where T: IpMapping
 {
-    type SerType = ElasticFieldMappingWrapper<T, IpFormat>;
-
     fn data_type() -> &'static str {
         IP_DATATYPE
     }
 }
 
-impl<T> Serialize for ElasticFieldMappingWrapper<T, IpFormat>
-    where T: ElasticFieldMapping<IpFormat> + IpMapping
+impl<T> SerializeField<IpFormat> for T
+    where T: IpMapping
+{
+    type Field = Field<T, IpFormat>;
+}
+
+impl<T> Serialize for Field<T, IpFormat>
+    where T: FieldMapping<IpFormat> + IpMapping
 {
     fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
         where S: Serializer

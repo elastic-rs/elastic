@@ -12,7 +12,7 @@
 //! # use elastic_types::geo::shape::prelude::*;
 //! # use elastic_types::geo::shape::mapping::*;
 //! struct MyType {
-//! 	pub field: GeoShape<DefaultGeoShapeMapping>
+//!     pub field: GeoShape<DefaultGeoShapeMapping>
 //! }
 //! ```
 //!
@@ -27,20 +27,20 @@
 //! # use elastic_types::prelude::*;
 //! # use std::marker::PhantomData;
 //! # fn main() {
-//! # use elastic_types::mapping::prelude::*;
+//! # use elastic_types::prelude::*;
 //! # use elastic_types::geo::shape::prelude::*;
 //! # #[derive(Default)]
 //! # struct MyGeoShapeMapping;
 //! # impl GeoShapeMapping for MyGeoShapeMapping {}
 //! struct MyType {
-//! 	pub field: GeoShape<MyGeoShapeMapping>
+//!     pub field: GeoShape<MyGeoShapeMapping>
 //! }
 //! # }
 //! ```
 //!
 //! # Links
 //!
-//! - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/master/geo-shape.html)
+//! - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/geo-shape.html)
 
 #[macro_use]
 pub mod mapping;
@@ -49,9 +49,10 @@ mod shape;
 pub use self::shape::*;
 
 pub mod prelude {
-    //! Includes non-mapping types for the `geo_shape` types.
+    //! Includes all types for the `geo_shape` types.
     //!
     //! This is a convenience module to make it easy to build mappings for multiple types without too many `use` statements.
 
     pub use super::shape::*;
+    pub use super::mapping::*;
 }
