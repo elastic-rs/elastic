@@ -58,7 +58,7 @@ pub struct MyType {
 You can then get the mapping for your type as `json`:
 
 ```rust
-let mapping = serde_json::to_string(Document::from(MyType::mapping())).unwrap();
+let mapping = serde_json::to_string(&Document::from(MyType::mapping())).unwrap();
 ```
 
 Which looks like:

@@ -1,19 +1,14 @@
 //! Base requirements for indexable document mappings.
 //!
-//! There are two kinds of types we can map in Elasticsearch; `field`/`data` types and `document` types:
+//! Structures that can be indexed in Elasticsearch should implement `DocumentType`.
+//! The `DocumentType` is composed of typical mapping metadata, as well as the mapping
+//! for each of its properties.
 //! 
-//! - `FieldType` for types that can be mapped as fields on another type
-//! - `DocumentType + FieldType` for types that can be indexed as documents.
-//! 
-//! Most of the work lives in the `FieldMapping`, which holds the serialisation requirements
-//! to convert a Rust type into an Elasticsearch mapping.
-//! Document types must also implement `DocumentMapping`, which maps the fields of a struct as properties,
-//! and treats the type as `nested` when used as a field itself.
+//! Documents can be mapped as indexable types, or as an object field on another type.
 //! 
 //! # Examples
 //!
 //! Define your Elasticsearch types using _Plain Old Rust Structures_.
-//! Your types should at least derive `Default`, `Clone` and `serde::Serialize`.
 //!
 //! ## Derive Mapping
 //!
@@ -230,7 +225,7 @@
 //! All of the above limitations can be worked around by implementing the mapping manually.
 //!
 //! Remember that Elasticsearch will automatically update mappings based on the objects it sees though,
-//! so if your 'un-mapped' field is serialised on `index`, then some mapping will be added for it.
+//! so if your 'un-mapped' field is serialised, then an inferred mapping will be added for it.
 //!
 //! ## Manually Implement Mapping
 //!
@@ -279,106 +274,6 @@
 //! # fn main() {
 //! # }
 //! ```
-//! 
-//! ## Using the `Document` type
-//! 
-//! To serialise a document mapping, you can use its mapping type as a generic parameter in `Document<M>`.
-//! For example, we can define an index type for the 
-//! [Create Index API](https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-create-index.html#mappings) 
-//! that includes the mapping for `MyType`:
-//! 
-//! ```
-//! # #![feature(proc_macro)]
-//! # #[macro_use]
-//! # extern crate json_str;
-//! # #[macro_use]
-//! # extern crate serde_derive;
-//! # #[macro_use]
-//! # extern crate elastic_types_derive;
-//! # #[macro_use]
-//! # extern crate elastic_types;
-//! # extern crate serde;
-//! # use elastic_types::prelude::*;
-//! #[derive(Serialize, ElasticType)]
-//! pub struct MyType {
-//!     pub my_date: Date<DefaultDateFormat>,
-//!     pub my_string: String,
-//!     pub my_num: i32
-//! }
-//! 
-//! #[derive(Default, Serialize)]
-//! pub struct MyIndex {
-//!     pub mappings: Mappings
-//! }
-//! 
-//! #[derive(Default, Serialize)]
-//! pub struct Mappings {
-//!     pub mytype: Document<MyTypeMapping>
-//! }
-//! # fn main() {
-//! # }
-//! ```
-//! 
-//! Serialising `MyIndex` will produce the following json:
-//!
-//! ```
-//! # #![feature(proc_macro)]
-//! # #[macro_use]
-//! # extern crate json_str;
-//! # #[macro_use]
-//! # extern crate serde_derive;
-//! # #[macro_use]
-//! # extern crate elastic_types_derive;
-//! # #[macro_use]
-//! # extern crate elastic_types;
-//! # extern crate serde;
-//! # extern crate serde_json;
-//! # use elastic_types::prelude::*;
-//! # #[derive(Serialize, ElasticType)]
-//! # pub struct MyType {
-//! #     pub my_date: Date<DefaultDateFormat>,
-//! #     pub my_string: String,
-//! #     pub my_num: i32
-//! # }
-//! # #[derive(Default, Serialize)]
-//! # pub struct MyIndex {
-//! #     pub mappings: Mappings
-//! # }
-//! # #[derive(Default, Serialize)]
-//! # pub struct Mappings {
-//! #     pub mytype: Document<MyTypeMapping>
-//! # }
-//! # fn main() {
-//! # let index = serde_json::to_string(&MyIndex::default()).unwrap();
-//! # let json = json_str!(
-//! {
-//!     "mappings": {
-//!         "mytype": {
-//!             "properties": {
-//!                 "my_date": {
-//!                     "type": "date",
-//!                     "format": "basic_date_time"
-//!                 },
-//!                 "my_string": {
-//!                     "type": "text",
-//!                     "fields": {
-//!                         "keyword":{
-//!                             "type":"keyword",
-//!                             "ignore_above":256
-//!                         }
-//!                     }
-//!                 },
-//!                 "my_num": {
-//!                     "type": "integer"
-//!                 }
-//!             }
-//!         }
-//!     }
-//! }
-//! # );
-//! # assert_eq!(json, index);
-//! # }
-//! ```
 //!
 //! # Links
 //! - [Field Types](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-types.html)
@@ -416,6 +311,175 @@ impl<T, M> FieldType<M, DocumentFormat> for T
 /// suitable as the mapping for 
 /// [Put Mapping](https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-put-mapping.html) 
 /// or [Create Index](https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-create-index.html).
+///
+/// # Examples
+/// 
+/// To serialise a document mapping, you can use its mapping type as a generic parameter in `Document<M>`.
+/// For example, we can define an index type for the Create Index API that includes the mapping for `MyType`:
+/// 
+/// ```
+/// # #![feature(proc_macro)]
+/// # #[macro_use]
+/// # extern crate json_str;
+/// # #[macro_use]
+/// # extern crate serde_derive;
+/// # #[macro_use]
+/// # extern crate elastic_types_derive;
+/// # #[macro_use]
+/// # extern crate elastic_types;
+/// # extern crate serde;
+/// # use elastic_types::prelude::*;
+/// #[derive(Serialize, ElasticType)]
+/// pub struct MyType {
+///     pub my_date: Date<DefaultDateFormat>,
+///     pub my_string: String,
+///     pub my_num: i32
+/// }
+/// 
+/// #[derive(Default, Serialize)]
+/// pub struct MyIndex {
+///     pub mappings: Mappings
+/// }
+/// 
+/// #[derive(Default, Serialize)]
+/// pub struct Mappings {
+///     pub mytype: Document<MyTypeMapping>
+/// }
+/// # fn main() {
+/// # }
+/// ```
+/// 
+/// Serialising `MyIndex` will produce the following json:
+///
+/// ```
+/// # #![feature(proc_macro)]
+/// # #[macro_use]
+/// # extern crate json_str;
+/// # #[macro_use]
+/// # extern crate serde_derive;
+/// # #[macro_use]
+/// # extern crate elastic_types_derive;
+/// # #[macro_use]
+/// # extern crate elastic_types;
+/// # extern crate serde;
+/// # extern crate serde_json;
+/// # use elastic_types::prelude::*;
+/// # #[derive(Serialize, ElasticType)]
+/// # pub struct MyType {
+/// #     pub my_date: Date<DefaultDateFormat>,
+/// #     pub my_string: String,
+/// #     pub my_num: i32
+/// # }
+/// # #[derive(Default, Serialize)]
+/// # pub struct MyIndex {
+/// #     pub mappings: Mappings
+/// # }
+/// # #[derive(Default, Serialize)]
+/// # pub struct Mappings {
+/// #     pub mytype: Document<MyTypeMapping>
+/// # }
+/// # fn main() {
+/// # let index = serde_json::to_string(&MyIndex::default()).unwrap();
+/// # let json = json_str!(
+/// {
+///     "mappings": {
+///         "mytype": {
+///             "properties": {
+///                 "my_date": {
+///                     "type": "date",
+///                     "format": "basic_date_time"
+///                 },
+///                 "my_string": {
+///                     "type": "text",
+///                     "fields": {
+///                         "keyword":{
+///                             "type":"keyword",
+///                             "ignore_above":256
+///                         }
+///                     }
+///                 },
+///                 "my_num": {
+///                     "type": "integer"
+///                 }
+///             }
+///         }
+///     }
+/// }
+/// # );
+/// # assert_eq!(json, index);
+/// # }
+/// ```
+/// 
+/// Alternatively, you can implement serialisation manually for `MyIndex` and avoid having
+/// to keep field names up to date if the document type name changes:
+/// 
+/// ```
+/// # #![feature(proc_macro)]
+/// # #[macro_use]
+/// # extern crate json_str;
+/// # #[macro_use]
+/// # extern crate serde_derive;
+/// # #[macro_use]
+/// # extern crate elastic_types_derive;
+/// # #[macro_use]
+/// # extern crate elastic_types;
+/// # extern crate serde;
+/// # extern crate serde_json;
+/// # use serde::{Serialize, Serializer};
+/// # use elastic_types::prelude::*;
+/// #[derive(Serialize, ElasticType)]
+/// # pub struct MyType {
+/// #     pub my_date: Date<DefaultDateFormat>,
+/// #     pub my_string: String,
+/// #     pub my_num: i32
+/// # }
+/// #[derive(Default, Serialize)]
+/// pub struct MyIndex {
+///     mappings: Mappings
+/// }
+/// 
+/// #[derive(Default)]
+/// struct Mappings;
+/// impl Serialize for Mappings {
+///     fn serialize<S: Serializer>(&self, serializer: &mut S) -> Result<(), S::Error> {
+///         let mut state = try!(serializer.serialize_struct("mappings", 1));
+///         
+///         try!(serializer.serialize_struct_elt(&mut state, MyType::name(), &Document::from(MyType::mapping())));
+///         
+///         serializer.serialize_struct_end(state)
+///     }
+/// }
+/// # fn main() {
+/// # let index = serde_json::to_string(&MyIndex::default()).unwrap();
+/// # let json = json_str!(
+/// # {
+/// #     "mappings": {
+/// #         "mytype": {
+/// #             "properties": {
+/// #                 "my_date": {
+/// #                     "type": "date",
+/// #                     "format": "basic_date_time"
+/// #                 },
+/// #                 "my_string": {
+/// #                     "type": "text",
+/// #                     "fields": {
+/// #                         "keyword":{
+/// #                             "type":"keyword",
+/// #                             "ignore_above":256
+/// #                         }
+/// #                     }
+/// #                 },
+/// #                 "my_num": {
+/// #                     "type": "integer"
+/// #                 }
+/// #             }
+/// #         }
+/// #     }
+/// # }
+/// # );
+/// # assert_eq!(json, index);
+/// # }
+/// ```
 #[derive(Default)]
 pub struct Document<M>
     where M: DocumentMapping
