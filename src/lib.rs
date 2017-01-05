@@ -13,6 +13,7 @@ extern crate serde_json;
 extern crate slog_stdlog;
 extern crate slog_envlogger;
 
+use serde::Deserialize;
 use serde_json::Value;
 use std::borrow::Cow;
 use std::collections::BTreeMap;
@@ -31,8 +32,8 @@ use std::slice::Iter;
 //    println!("{:?}", i);
 //}
 
-impl Response {
-    pub fn hits(&self) -> &Vec<Value> {
+impl<T: Deserialize> ResponseOf<T> {
+    pub fn hits(&self) -> &Vec<T> {
         &self.hits.hits()
     }
 
@@ -42,12 +43,14 @@ impl Response {
     }
 }
 
+pub type Response = ResponseOf<Value>;
+
 #[derive(Deserialize, Debug)]
-pub struct Response {
+pub struct ResponseOf<T: Deserialize> {
     took: u64,
     timed_out: bool,
     _shards: Shards,
-    hits: Hits,
+    hits: Hits<T>,
     aggregations: Option<Aggregations>,
     status: Option<u16>
 }
@@ -219,14 +222,14 @@ struct Shards {
 }
 
 #[derive(Deserialize, Debug)]
-pub struct Hits {
+pub struct Hits<T: Deserialize> {
     total: u64,
     max_score: u64,
-    hits: Vec<Value>
+    hits: Vec<T>
 }
 
-impl Hits {
-    pub fn hits(&self) -> &Vec<Value> {
+impl<T: Deserialize> Hits<T> {
+    pub fn hits(&self) -> &Vec<T> {
         // JPG http://stackoverflow.com/q/40006219/155423
         &self.hits
     }
