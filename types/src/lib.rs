@@ -2,9 +2,12 @@
 //!
 //! An implementation of Elasticsearch data types and document mapping.
 //!
-//! Provides `struct`s and `trait`s for defining Elasticsearch type mapping,
+//! This library provides tools for defining and using Elasticsearch type mappings,
 //! where correctness is enforced by Rust's type system.
-//! The act of annotating your types with mapping metadata is _zero-cost_.
+//! The mapping information is then used when serialising and deserialising your types.
+//! Annotating type fields with mapping metadata has no impact at runtime.
+//! 
+//! This library makes extensive use of [`serde`](https://serde.rs/).
 //!
 //! # Supported Versions
 //!
@@ -478,8 +481,8 @@
 //! }
 //! ```
 //!
-//! The mapping is constructed by inspecting the type parameters of the fields on `Article` and `GeoIp`.
-//! This mapping is then serialised by [`serde`](https://serde.rs).
+//! The mapping is constructed by inspecting the type parameters of the fields on `Article` and `GeoIp` at compile-time.
+//! This mapping is then serialised by [`serde`](https://serde.rs) at runtime.
 //!
 //! # Types
 //!
@@ -503,7 +506,7 @@
 //!
 //!  Elasticsearch Type  | Rust Type (Default Mapping) | Crate     | Rust Type (Custom Mapping)                                                       | Format Type
 //!  ------------------- | --------------------------- | --------- | -------------------------------------------------------------------------------- | -----------------
-//!  `object`            | -                           | -         | type implementing [`DocumentType<M>`](mapping/index.html)                        | -
+//!  `object`            | -                           | -         | type implementing [`DocumentType<M>`](document/index.html)                       | -
 //!  `integer`           | `i32`                       | `std`     | [`Integer<M>`](number/index.html)                                                | -
 //!  `long`              | `i64`                       | `std`     | [`Long<M>`](number/index.html)                                                   | -
 //!  `short`             | `i16`                       | `std`     | [`Short<M>`](number/index.html)                                                  | -
