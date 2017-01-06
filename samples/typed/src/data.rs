@@ -1,5 +1,4 @@
 use std::net::Ipv4Addr;
-use serde::ser::{Serializer, Error};
 use elastic_types::prelude::*;
 
 // The type we want to index in Elasticsearch
@@ -25,5 +24,5 @@ pub struct Index {
 
 #[derive(Default, Serialize)]
 struct Mappings {
-    mystruct: TypeMapping<MyStructMapping>
+    mystruct: Document<MyStructMapping>
 }
