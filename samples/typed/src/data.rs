@@ -1,5 +1,4 @@
 use std::net::Ipv4Addr;
-use serde::Serializer;
 use elastic_types::prelude::*;
 
 // The type we want to index in Elasticsearch
@@ -20,12 +19,10 @@ pub struct GeoLocation {
 // An index request type with mappings bundled in
 #[derive(Default, Serialize)]
 pub struct Index {
-    #[serde(serialize_with = "serialise_mappings")]
-    mappings: (),
+    mappings: Mappings,
 }
 
-fn serialise_mappings<S>(_: &(), serializer: &mut S) -> Result<(), S::Error>
-    where S: Serializer
-{
-    TypeMapper::to_writer(MyStruct::mapping(), serializer)
+#[derive(Default, Serialize)]
+struct Mappings {
+    mystruct: Document<MyStructMapping>
 }
