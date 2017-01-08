@@ -1,10 +1,10 @@
- Elasticsearch Response Iterators
+# Elasticsearch Response Iterators
 
- A crate to handle parsing and handling Elasticsearch search results which provides
- convenient iterators to step through the results returned. It is designed to work
- with [`elastic-reqwest`](https://github.com/elastic-rs/elastic-hyper/).
+A crate to handle parsing and handling Elasticsearch search results which provides
+convenient iterators to step through the results returned. It is designed to work
+with [`elastic-reqwest`](https://github.com/elastic-rs/elastic-hyper/).
 
- ## Usage
+## Usage
  
 `Cargo.toml`
 ```
@@ -14,7 +14,7 @@ elastic_requests = "*"
 elastic_responses = "*" 
 ```
 
- Query your Elasticsearch Cluster, then iterate through the results
+Query your Elasticsearch Cluster, then iterate through the results
 
  ```rust
  // Send a request (omitted, see `samples/basic`, and read the response.
@@ -35,10 +35,10 @@ elastic_responses = "*"
  }
  ```
  
- ## License
+## License
  
- Licensed under either of
+Licensed under either of
  
- - Apache License, Version 2.0 ([LICENSE-APACHE](LICENSE-APACHE) or http://apache.org/licenses/LICENSE-2.0)
- - MIT license ([LICENSE-MIT](LICENSE-MIT) or http://opensource.org/licenses/MIT)
+- Apache License, Version 2.0 ([LICENSE-APACHE](LICENSE-APACHE) or http://apache.org/licenses/LICENSE-2.0)
+- MIT license ([LICENSE-MIT](LICENSE-MIT) or http://opensource.org/licenses/MIT)
  
