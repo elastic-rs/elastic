@@ -1,5 +1,4 @@
 #![feature(custom_derive)]
-#![feature(proc_macro)]
 
 #[macro_use]
 extern crate log;

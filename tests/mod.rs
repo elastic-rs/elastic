@@ -1,4 +1,3 @@
-#![feature(proc_macro)]
 
 extern crate elastic_responses;
 
