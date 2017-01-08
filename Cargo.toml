@@ -1,7 +1,12 @@
 [package]
 authors = ["Stephan Buys <stephan.buys@panoptix.co.za>"]
 name = "elastic_responses"
-version = "0.1.0"
+version = "0.2.0"
+license = "MIT/Apache-2.0"
+description = "Parses search results from Elasticsearch and presents results using convenient iterators."
+documentation = "https://docs.rs/elastic_responses/0.2.0/elastic_responses/"
+repository = "https://github.com/stephanbuys/elastic_responses"
+exclude = [ "samples" ]
 
 [dependencies]
 json_str = "*"
