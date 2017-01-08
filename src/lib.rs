@@ -9,6 +9,7 @@
 //! Query your Elasticsearch Cluster, then iterate through the results
 //!
 //! ```no_run
+//!
 //! // Send a request (omitted, see `samples/basic`, and read the response.
 //! let mut res = client.elastic_req(&params, SearchRequest::for_index("_all", body)).unwrap();
 //!
