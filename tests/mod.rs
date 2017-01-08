@@ -41,7 +41,7 @@ fn test_parse_simple_aggs() {
     let s = load_file("tests/samples/aggregation_simple.json");
     let deserialized: Response = serde_json::from_str(&s).unwrap();
 
-    assert_eq!(deserialized.aggs().unwrap().into_iter().count(), 124);
+    assert_eq!(deserialized.aggs().into_iter().count(), 124);
 }
 
 #[test]
@@ -49,7 +49,7 @@ fn test_parse_3level_aggs() {
     let s = load_file("tests/samples/aggregation_3level.json");
     let deserialized: Response = serde_json::from_str(&s).unwrap();
 
-    assert_eq!(deserialized.aggs().unwrap().into_iter().count(), 201);
+    assert_eq!(deserialized.aggs().into_iter().count(), 201);
 }
 
 #[test]
@@ -62,7 +62,7 @@ fn test_parse_3level_multichild_aggs() {
     let max = "max_ack_pkts_sent";
     let mut first = true;
     let mut count = 0;
-    for i in deserialized.aggs().unwrap().into_iter().take(500000) {
+    for i in deserialized.aggs().into_iter().take(500000) {
         count += 1;
         if first {
             assert!(i.contains_key(min));
@@ -85,7 +85,7 @@ fn test_parse_3level_multistats_aggs() {
     let stddevu = "extstats_ack_pkts_sent_std_deviation_bounds_upper";
     let mut first = true;
     let mut count = 0;
-    for i in deserialized.aggs().unwrap().into_iter().take(500000) {
+    for i in deserialized.aggs().into_iter().take(500000) {
         count += 1;
         if first {
             assert!(i.contains_key(min));
@@ -105,7 +105,7 @@ fn test_parse_simple_aggs_no_empty_first_record() {
 
     let s = "timechart";
     let mut first = true;
-    for i in deserialized.aggs().unwrap().into_iter().take(50) {
+    for i in deserialized.aggs().into_iter().take(50) {
         if first {
             assert!(i.contains_key(s));
             first = false;
