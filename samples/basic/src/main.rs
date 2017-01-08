@@ -10,13 +10,6 @@ extern crate elastic_reqwest;
 extern crate elastic_requests;
 extern crate elastic_responses;
 
-#[macro_use]
-extern crate serde_derive;
-
-extern crate serde;
-extern crate serde_json;
-
-
 use elastic_reqwest::{ElasticClient};
 use elastic_requests::SearchRequest;
 use elastic_responses::Response as EsResponse;

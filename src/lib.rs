@@ -1,3 +1,33 @@
+//! Elasticsearch Response Iterators
+//!
+//! A crate to handle parsing and handling Elasticsearch search results which provides
+//! convenient iterators to step through the results returned. It is designed to work
+//! with [`elastic-reqwest`](https://github.com/elastic-rs/elastic-hyper/).
+//!
+//! ## Usage
+//!
+//! Query your Elasticsearch Cluster, then iterate through the results
+//!
+//! ```no_run
+//! // Send a request (omitted, see `samples/basic`, and read the response.
+//! let mut res = client.elastic_req(&params, SearchRequest::for_index("_all", body)).unwrap();
+//!
+//! //Parse body to JSON as an elastic_responses::Response object
+//! let body_as_json: EsResponse = res.json().unwrap();
+//!
+//! //Use hits() or aggs() iterators
+//! //Hits
+//! for i in body_as_json.hits() {
+//!   println!("{:?}",i);
+//! }
+//!
+//! //Agregations
+//! for i in body_as_json.aggs() {
+//!   println!("{:?}",i);
+//! }
+//! ```
+
+
 #![feature(custom_derive)]
 
 #[macro_use]
@@ -31,19 +61,35 @@ use std::slice::Iter;
 //    println!("{:?}", i);
 //}
 
-impl<T: Deserialize> ResponseOf<T> {
-    pub fn hits(&self) -> &Vec<T> {
-        &self.hits.hits()
-    }
 
-    pub fn aggs(&self) -> &Aggregations {
-        //FIXME: Create empty aggregation, remove unwrap()
-        self.aggregations.as_ref().unwrap()
+#[derive(Deserialize, Debug)]
+struct Shards {
+    total: u32,
+    successful: u32,
+    failed: u32
+}
+
+/// Struct to hold the search's Hits, serializable to type `T` or `serde_json::Value`
+#[derive(Deserialize, Debug)]
+pub struct Hits<T: Deserialize> {
+    total: u64,
+    max_score: u64,
+    hits: Vec<T>
+}
+
+impl<T: Deserialize> Hits<T> {
+    fn hits(&self) -> &Vec<T> {
+        // JPG http://stackoverflow.com/q/40006219/155423
+        &self.hits
     }
 }
 
-pub type Response = ResponseOf<Value>;
+#[derive(Deserialize, Debug)]
+struct Hit {
+    _index: String
+}
 
+/// Main `struct` of the crate, provides access to the `hits` and `aggs` iterators.
 #[derive(Deserialize, Debug)]
 pub struct ResponseOf<T: Deserialize> {
     took: u64,
@@ -54,6 +100,24 @@ pub struct ResponseOf<T: Deserialize> {
     status: Option<u16>
 }
 
+pub type Response = ResponseOf<Value>;
+
+impl<T: Deserialize> ResponseOf<T> {
+    /// Returns an Iterator to the search results or hits of the response.
+    pub fn hits(&self) -> &Vec<T> {
+        &self.hits.hits()
+    }
+
+    /// Returns an Iterator to the search results or aggregations part of the response.
+    ///
+    /// This Iterator transforms the tree-like JSON object into a row/table based format for use with standard iterator adaptors.
+    pub fn aggs(&self) -> &Aggregations {
+        //FIXME: Create empty aggregation, remove unwrap()
+        self.aggregations.as_ref().unwrap()
+    }
+}
+
+/// Type Struct to hold a generic `serde_json::Value` tree of the Aggregation results.
 #[derive(Deserialize, Debug)]
 pub struct Aggregations(Value);
 
@@ -66,6 +130,8 @@ impl<'a> IntoIterator for &'a Aggregations {
     }
 }
 
+/// Aggregator that traverses the results from Elasticsearch's Aggregations and returns a result
+/// row by row in a table-styled fashion.
 #[derive(Debug)]
 pub struct AggregationIterator<'a> {
     current_row: Option<RowData<'a>>,
@@ -211,30 +277,4 @@ impl<'a> Iterator for AggregationIterator<'a> {
             None => None
         }
     }
-}
-
-#[derive(Deserialize, Debug)]
-struct Shards {
-    total: u32,
-    successful: u32,
-    failed: u32
-}
-
-#[derive(Deserialize, Debug)]
-pub struct Hits<T: Deserialize> {
-    total: u64,
-    max_score: u64,
-    hits: Vec<T>
-}
-
-impl<T: Deserialize> Hits<T> {
-    pub fn hits(&self) -> &Vec<T> {
-        // JPG http://stackoverflow.com/q/40006219/155423
-        &self.hits
-    }
-}
-
-#[derive(Deserialize, Debug)]
-struct Hit {
-    _index: String
 }
