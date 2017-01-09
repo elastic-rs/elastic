@@ -6,9 +6,6 @@
 //! # Links
 //! - [Github](https://github.com/elastic-rs/elastic-types)
 
-#![feature(proc_macro, proc_macro_lib)]
-#![cfg(not(test))]
-
 extern crate proc_macro;
 
 #[macro_use]
