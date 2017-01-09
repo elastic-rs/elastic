@@ -17,17 +17,67 @@ Quick reference:
 
 To provide a strongly-typed, full-featured and efficient Elasticsearch client for Rust over (eventually) asynchronous io. Rust gives us a lot of tools for building super-performant but highly accessible libraries, which we aim to continue.
 
-The REST API is provided by an [inline JSON macro](https://github.com/KodrAus/json_str) so it's efficient and always in line with whatever version of Elasticsearch you're targeting.
+The REST API is provided by an [inline JSON macro](https://github.com/KodrAus/json_str) so it's efficient and always in line with whatever version of Elasticsearch you're targeting. This means you don't need to learn another API for interacting with Elasticsearch; queries mocked in [Sense](https://www.elastic.co/blog/found-sense-a-cool-json-aware-interface-to-elasticsearch) can just be copy+pasted into your Rust code.
 
-This means you don't need to learn another API for interacting with Elasticsearch; queries mocked in [Sense](https://www.elastic.co/blog/found-sense-a-cool-json-aware-interface-to-elasticsearch) can literally just be copy+pasted into your Rust code.
-
-The core focus of this project is on strong typing over the core types and responses in Elasticsearch, rather than trying to map the entire Query DSL.
+The core focus of this project is on strong typing over your document types and query responses in Elasticsearch, rather than trying to map the entire Query DSL.
 
 Support for Elastic's plugin products, like `watcher` and `graph` could be added as feature-gated modules in the `elastic_hyper` and `elastic_rotor` clients and `elastic_types` as necessary.
 
 ## Alternatives
 
-If you'd like to use a strongly-typed Query DSL builder see [`rs-es`](https://github.com/benashford/rs-es). This client does the hard work of providing an idiomatic Rust API for interacting with Elasticsearch.
+If you'd like to use a strongly-typed Query DSL builder see [`rs-es`](https://github.com/benashford/rs-es). This client does the hard work of providing an idiomatic Rust API for interacting with Elasticsearch. It has the advantage of letting you know your queries will parse at compile-time instead of runtime.
+
+## Example
+
+See the [examples](https://github.com/elastic-rs/elastic/tree/master/examples) folder.
+
+Add `elastic` and `json_str` to your `Cargo.toml`:
+
+```toml
+[dependencies]
+elastic = "*"
+
+# Optional for request bodies
+json_str = "*"
+```
+
+Get a client instance and request parameters:
+
+```rust
+#[macro_use]
+extern crate json_str;
+extern crate elastic;
+
+use elastic::client;
+
+let (client, params) = client::default().unwrap();
+```
+
+Create a search request:
+
+```rust
+let body = json_str!({
+    query: {
+        query_string: {
+            query: "*"
+        }
+    }
+});
+
+let req = client::SearchRequest::for_index("_all", body);
+```
+
+Send the request and iterate through the returned hits:
+
+```rust
+let res: client::Response = client
+    .elastic_req(&params, req).unwrap()
+    .json().unwrap();
+
+for hit in res.hits() {
+    println!("{:?}", hit);
+}
+```
 
 ## Development
 
@@ -36,7 +86,7 @@ There is a [GitHub Project](https://github.com/orgs/elastic-rs/projects/1) to ea
 
 ## Crates
 
-### [`elastic_hyper`](https://github.com/elastic-rs/elastic-hyper)
+### [`elastic_reqwest`](https://github.com/elastic-rs/elastic-hyper)
 
 `elastic_hyper` provides a synchronous [`hyper`](https://github.com/hyperium/hyper) implementation of the Elasticsearch REST API.
 
