@@ -1,4 +1,4 @@
-#![feature(proc_macro, plugin)]
+#![feature(plugin)]
 #![plugin(json_str, elastic_date_macros)]
 
 #[macro_use]
