@@ -9,15 +9,15 @@ extern crate elastic;
 use elastic::client::{self, ElasticClient};
 
 fn main() {
-	// A reqwest HTTP client
-	let client = client::Client::new().unwrap();
+    // A reqwest HTTP client
+    let client = client::Client::new().unwrap();
 
-	// Default parameters.
-	// This includes the base node url (http://localhost:9200).
-	let params = client::RequestParams::default()
-		.url_params(vec![("pretty", String::from("true"))]);
+    // Default parameters.
+    // This includes the base node url (http://localhost:9200).
+    let params = client::RequestParams::default()
+        .url_params(vec![("pretty", String::from("true"))]);
 
-	// A freeform JSON request body.
+    // A freeform JSON request body.
     let body = json_str!({
         query: {
             query_string: {
@@ -31,11 +31,11 @@ fn main() {
 
     // Send the request and process the response.
     let res: client::Response = client
-    	.elastic_req(&params, req).unwrap()
-    	.json().unwrap();
+        .elastic_req(&params, req).unwrap()
+        .json().unwrap();
 
     // Iterate through the hits in the response.
     for hit in res.hits() {
         println!("{:?}", hit);
-	}
+    }
 }
