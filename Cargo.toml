@@ -4,6 +4,7 @@ version = "0.2.0"
 authors = ["Ashley Mannix <ashleymannix@live.com.au>"]
 license = "Apache-2.0"
 description = "A client for the Elassticsearch REST API."
+documentation = "https://docs.rs/elastic/"
 repository = "https://github.com/elastic-rs/elastic"
 
 [dependencies]

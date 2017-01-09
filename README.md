@@ -5,13 +5,26 @@ The API is targetting Elastic `5.x`.
 
 Crate functionality covers:
 
-- [http client](#elastic_hyper)
+- [http client](#elastic_reqwest)
 - [type mapping](#elastic_types)
 
 Quick reference:
 
 - [crates](#crates)
-- [samples](https://github.com/elastic-rs/elastic-hyper/tree/master/samples)
+- [samples](https://github.com/elastic-rs/elastic/tree/master/examples)
+
+## Build Status
+Platform  | Channel | Status
+------------- | ------------- | -------------
+Linux / OSX  | Nightly | [![Build Status](https://travis-ci.org/elastic-rs/elastic.svg?branch=master)](https://travis-ci.org/elastic-rs/elastic)
+Windows  | Nightly | [![Build status](https://ci.appveyor.com/api/projects/status/t71058ht2qp732eh?svg=true)](https://ci.appveyor.com/project/KodrAus/elastic)
+
+## Documentation
+
+Version  | Docs
+------------- | -------------
+`master`  | [![Documentation](https://img.shields.io/badge/docs-rustdoc-orange.svg)](https://elastic-rs.github.io/elastic/elastic/)
+`current`  | [![Documentation](https://img.shields.io/badge/docs-rustdoc-orange.svg)](https://docs.rs/elastic/*/elastic/)
 
 ## Goals
 
@@ -86,17 +99,23 @@ There is a [GitHub Project](https://github.com/orgs/elastic-rs/projects/1) to ea
 
 ## Crates
 
+`elastic` bundles up a couple of crates into a single client. If you want to pick and choose functionality, you can work with these crates independently.
+
 ### [`elastic_reqwest`](https://github.com/elastic-rs/elastic-hyper)
 
-`elastic_hyper` provides a synchronous [`hyper`](https://github.com/hyperium/hyper) implementation of the Elasticsearch REST API.
+`elastic_hyper` provides a synchronous [`reqwest`](https://github.com/seanmonstar/reqwest) implementation of the Elasticsearch REST API.
 
-This crate lives in the [`elastic_hyper` repo](https://github.com/elastic-rs/elastic-hyper).
+### [`elastic_requests`](https://github.com/elastic-rs/elastic-requests)
+
+`elastic_requests` provides zero-copy request types for the REST API endpoints. These are automatically generated from the official spec.
+
+### [`elastic_responses`](https://github.com/stephanbuys/elastic-responses)
+
+`elastic_responses` provides idiomatic support for inspecting Elasticsearch responses and iterating over hits.
 
 ### [`elastic_types`](https://github.com/elastic-rs/elastic-types)
 
 `elastic_types` is a library for building Elasticsearch types in Rust. Define your Elasticsearch types as PORS (Plain Old Rust Structures) and generate an equivalent Elasticsearch mapping from them, where correctness is enforced by Rust's type system.
-
-This crate lives in the [`elastic_types` repo](https://github.com/elastic-rs/elastic-types).
 
 ### [`elastic_rotor`](https://github.com/elastic-rs/elastic-rotor)
 
