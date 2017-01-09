@@ -1,4 +1,4 @@
-# Elastic
+# [`elastic`](https://docs.rs/elastic/*/elastic/) [![Latest Version](https://img.shields.io/crates/v/elastic.svg)](https://crates.io/crates/elastic)
 
 `elastic_*` is an ecosystem of community crates for interacting with [Elasticsearch](https://github.com/elastic/elasticsearch) from [Rust](https://www.rust-lang.org).
 The API is targetting Elastic `5.x`.
@@ -103,20 +103,20 @@ There is a [GitHub Project](https://github.com/orgs/elastic-rs/projects/1) to ea
 
 ### [`elastic_reqwest`](https://github.com/elastic-rs/elastic-hyper)
 
-`elastic_hyper` provides a synchronous [`reqwest`](https://github.com/seanmonstar/reqwest) implementation of the Elasticsearch REST API.
+A synchronous [`reqwest`](https://github.com/seanmonstar/reqwest) implementation of the Elasticsearch REST API.
 
 ### [`elastic_requests`](https://github.com/elastic-rs/elastic-requests)
 
-`elastic_requests` provides zero-copy request types for the REST API endpoints. These are automatically generated from the official spec.
+Zero-copy request types for the REST API endpoints. These are automatically generated from the official spec.
 
 ### [`elastic_responses`](https://github.com/stephanbuys/elastic-responses)
 
-`elastic_responses` provides idiomatic support for inspecting Elasticsearch responses and iterating over hits.
+Idiomatic support for inspecting Elasticsearch responses and iterating over hits.
 
 ### [`elastic_types`](https://github.com/elastic-rs/elastic-types)
 
-`elastic_types` is a library for building Elasticsearch types in Rust. Define your Elasticsearch types as PORS (Plain Old Rust Structures) and generate an equivalent Elasticsearch mapping from them, where correctness is enforced by Rust's type system.
+A library for building Elasticsearch types in Rust. Define your Elasticsearch types as PORS (Plain Old Rust Structures) and generate an equivalent Elasticsearch mapping from them, where correctness is enforced by Rust's type system.
 
 ### [`elastic_rotor`](https://github.com/elastic-rs/elastic-rotor)
 
-`elastic_rotor` is an experimental REST API client that handles a single specific usecase: high throughput.
+An experimental REST API client that handles a single specific usecase: high throughput.
