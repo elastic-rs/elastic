@@ -25,6 +25,10 @@ The core focus of this project is on strong typing over the core types and respo
 
 Support for Elastic's plugin products, like `watcher` and `graph` could be added as feature-gated modules in the `elastic_hyper` and `elastic_rotor` clients and `elastic_types` as necessary.
 
+## Alternatives
+
+If you'd like to use a strongly-typed Query DSL builder see [`rs-es`](https://github.com/benashford/rs-es). This client does the hard work of providing an idiomatic Rust API for interacting with Elasticsearch.
+
 ## Development
 
 Development is active, but because functionality is split across crates it can be hard to track where the effort is going.
@@ -47,7 +51,3 @@ This crate lives in the [`elastic_types` repo](https://github.com/elastic-rs/ela
 ### [`elastic_rotor`](https://github.com/elastic-rs/elastic-rotor)
 
 `elastic_rotor` is an experimental REST API client that handles a single specific usecase: high throughput.
-
-## Alternatives
-
-If you'd like to use a strongly-typed Query DSL builder see [`rs-es`](https://github.com/benashford/rs-es). This client does the hard work of providing an idiomatic Rust API for interacting with Elasticsearch.
