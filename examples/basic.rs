@@ -9,13 +9,9 @@ extern crate elastic;
 use elastic::client::{self, ElasticClient};
 
 fn main() {
-    // A reqwest HTTP client
-    let client = client::Client::new().unwrap();
-
-    // Default parameters.
-    // This includes the base node url (http://localhost:9200).
-    let params = client::RequestParams::default()
-        .url_params(vec![("pretty", String::from("true"))]);
+    // A reqwest HTTP client and default parameters.
+    // The `params` includes the base node url (http://localhost:9200).
+    let (client, params) = client::default().unwrap();
 
     // A freeform JSON request body.
     let body = json_str!({
