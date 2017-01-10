@@ -75,6 +75,18 @@ impl<M, F> From<M> for Field<M, F>
     }
 }
 
+/// Get the mapping for a field.
+/// 
+/// This lets `#[derive(ElasticType)]` get a mapping without requiring the
+/// `FieldType` trait to be in scope.
+pub fn mapping<T, M, F>() -> M
+  where T: FieldType<M, F>,
+        M: FieldMapping<F>,
+        F: Default
+{
+    T::mapping()
+}
+
 /// Should the field be searchable? Accepts `not_analyzed` (default) and `no`.
 #[derive(Debug, Clone, Copy)]
 pub enum IndexAnalysis {

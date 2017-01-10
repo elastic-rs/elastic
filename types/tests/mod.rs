@@ -426,6 +426,14 @@ pub mod object_fixtures {
 pub mod object_macro_fixtures {
     use elastic_types::prelude::*;
 
+    // Make sure we can derive `ElasticType` with no `uses`.
+    pub mod no_prelude {
+        #[derive(Serialize, ElasticType)]
+        pub struct TypeWithNoPath {
+            id: i32
+        }
+    }
+
     #[derive(Serialize, ElasticType)]
     pub struct SimpleType {
         pub field1: Date<EpochMillis>,
