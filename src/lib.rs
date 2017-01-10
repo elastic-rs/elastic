@@ -79,7 +79,7 @@
 //! let (client, _) = cli::default().unwrap();
 //!
 //! let params = RequestParams::default()
-//!     .url_param("pretty", "true")
+//!     .url_param("pretty", true)
 //!     .url_param("q", "*");
 //!
 //! let search = SimpleSearchRequest::for_index_ty(
@@ -215,7 +215,7 @@ use url::form_urlencoded::Serializer;
 ///
 /// # fn main() {
 /// let params = elastic::RequestParams::default()
-///     .url_param("pretty", "true")
+///     .url_param("pretty", true)
 ///     .url_param("q", "*");
 /// # }
 /// ```
@@ -243,14 +243,14 @@ impl RequestParams {
     }
 
     /// Set a url param value.
-    pub fn url_param<T: Into<String>>(mut self, key: &'static str, value: T) -> Self
+    pub fn url_param<T: ToString>(mut self, key: &'static str, value: T) -> Self
     {
         if self.url_params.contains_key(key) {
             let mut entry = self.url_params.get_mut(key).unwrap();
-            *entry = value.into();
+            *entry = value.to_string();
         }
         else {
-            self.url_params.insert(key, value.into());
+            self.url_params.insert(key, value.to_string());
         }
 
         self

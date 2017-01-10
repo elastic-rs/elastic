@@ -42,7 +42,7 @@ fn main() {
     // Wait for refresh when indexing data.
     // Normally this isn't a good idea, but is ok for this example.
     let index_params = RequestParams::default()
-        .url_params(params![refresh: true]);
+        .url_param(refresh, true);
 
     // Create an index and map our type
     create_index(&client, &params);

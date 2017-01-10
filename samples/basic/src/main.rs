@@ -21,7 +21,7 @@ fn main() {
 
     // Create a new set of params with pretty printing.
     let params = RequestParams::default()
-        .url_params(params![pretty: true]);
+        .url_param("pretty", true);
 
     // Create a query DSL request body.
     let body = json_str!({
