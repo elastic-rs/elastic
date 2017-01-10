@@ -79,10 +79,8 @@
 //! let (client, _) = cli::default().unwrap();
 //!
 //! let params = RequestParams::default()
-//!     .url_params(vec![
-//!         ("q", "'my string'".to_owned()),
-//!         ("pretty", "true".to_owned())
-//!     ]);
+//!     .url_param("pretty", "true")
+//!     .url_param("q", "*");
 //!
 //! let search = SimpleSearchRequest::for_index_ty(
 //!     "myindex", "mytype"
@@ -171,13 +169,6 @@ use reqwest::header::{Header, HeaderFormat, Headers, ContentType};
 use reqwest::Response;
 use url::form_urlencoded::Serializer;
 
-#[macro_export]
-macro_rules! params {
-    ($($name:ident : $value:expr),*) => (
-        vec![$((stringify!($name), $value.to_string()),)*]
-    )
-}
-
 /// Misc parameters for any request.
 ///
 /// The `RequestParams` struct allows you to set headers and url parameters for your requests.
@@ -220,29 +211,12 @@ macro_rules! params {
 /// With url query parameters:
 ///
 /// ```
-/// #[macro_use]
 /// extern crate elastic_reqwest as elastic;
 ///
 /// # fn main() {
 /// let params = elastic::RequestParams::default()
-///     .url_params(params![
-///         pretty: true, 
-///         q: "*"
-///     ]);
-/// # }
-/// ```
-///
-/// Url query parameters can also be added without using macros:
-///
-/// ```
-/// extern crate elastic_reqwest as elastic;
-///
-/// # fn main() {
-/// let params = elastic::RequestParams::default()
-///     .url_params(vec![
-///         ("pretty", String::from("true")), 
-///         ("q", String::from("*"))
-///     ]);
+///     .url_param("pretty", "true")
+///     .url_param("q", "*");
 /// # }
 /// ```
 #[derive(Debug, Clone)]
@@ -268,12 +242,15 @@ impl RequestParams {
         }
     }
 
-    /// Add a collection of url params.
-    pub fn url_params<I>(mut self, url_params: I) -> Self
-        where I: IntoIterator<Item = (&'static str, String)>
+    /// Set a url param value.
+    pub fn url_param<T: Into<String>>(mut self, key: &'static str, value: T) -> Self
     {
-        for (k, v) in url_params {
-            self.url_params.insert(k, v);
+        if self.url_params.contains_key(key) {
+            let mut entry = self.url_params.get_mut(key).unwrap();
+            *entry = value.into();
+        }
+        else {
+            self.url_params.insert(key, value.into());
         }
 
         self
