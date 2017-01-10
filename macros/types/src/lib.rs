@@ -147,7 +147,9 @@ fn get_props_ser_stmts(fields: &[(syn::Ident, &syn::Field)]) -> Vec<quote::Token
         let lit = syn::Lit::Str(name.as_ref().to_string(), syn::StrStyle::Cooked);
         let ty = &field.ty;
 
-        let expr = quote!(<#ty>::mapping());
+        let root = crate_root();
+
+        let expr = quote!(#root::field::mapping::<#ty, _, _>());
 
         let root = crate_root();
 
