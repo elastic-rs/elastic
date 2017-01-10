@@ -6,7 +6,6 @@ extern crate serde;
 extern crate elastic;
 
 use elastic::client::{self, FromDoc};
-use elastic::types::prelude::*;
 
 #[derive(Serialize, ElasticType)]
 struct MyType {
@@ -23,7 +22,7 @@ fn index_request_from_doc() {
 
     let index = client::Index::from("test_index");
 
-    let req = client::IndexRequest::from_doc((index, &doc));
+    let req = client::IndexRequest::try_for_doc((index, &doc));
 
     assert!(req.is_ok());
 }

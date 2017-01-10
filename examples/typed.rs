@@ -21,19 +21,24 @@ struct MyType {
 }
 
 fn main() {
-    // A reqwest HTTP client and default parameters.
-    // The `params` includes the base node url (http://localhost:9200).
-    let (client, params) = client::default().unwrap();
+    // A reqwest HTTP client.
+    let client = client::Client::new().unwrap();
 
+    // The `params` includes the base node url (http://localhost:9200).
+    let params = client::RequestParams::default()
+        .url_params(vec![("refresh", String::from("true"))]);
+
+    // The document to index
     let doc = MyType {
         id: 1,
         title: String::from("A title")
     };
 
     let index = client::Index::from("typed_sample_index");
+    let id = client::Id::from(doc.id.to_string());
 
     // An index request
-    let req = client::IndexRequest::from_doc((index.clone(), &doc)).unwrap();
+    let req = client::IndexRequest::try_for_doc((index.clone(), id, &doc)).unwrap();
 
     // Response from the index
     client.elastic_req(&params, req).unwrap();
