@@ -21,10 +21,9 @@ fn request_params_has_default_base_url() {
 #[test]
 fn request_params_has_url_query() {
 	let req = RequestParams::default()
-		.url_params(vec![
-			("pretty", "true".to_owned()),
-			("q", "*".to_owned())
-		]);
+		.url_param("pretty", false)
+		.url_param("pretty", true)
+		.url_param("q", "*");
 
 	assert_eq!((16, Some(String::from("?pretty=true&q=*"))), req.get_url_qry());
 }

@@ -19,8 +19,8 @@ fn main() {
     let (client, _) = elastic_reqwest::default().unwrap();
 
     // Create a new set of params with pretty printing.
-    let params = RequestParams::default().
-        url_params(vec![("pretty", String::from("true"))]);
+    let params = RequestParams::default()
+        .url_param("pretty", true);
 
     // Create a query DSL request body.
     let body = json_str!({
