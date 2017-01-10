@@ -19,6 +19,16 @@ extern crate serde_codegen_internals;
 use proc_macro::TokenStream;
 use serde_codegen_internals::attr as serde_attr;
 
+#[cfg(not(feature = "elastic"))]
+fn crate_root() -> quote::Tokens {
+    quote!(::elastic_types)
+}
+
+#[cfg(feature = "elastic")]
+fn crate_root() -> quote::Tokens {
+    quote!(::elastic)
+}
+
 #[proc_macro_derive(ElasticType, attributes(elastic))]
 pub fn derive(input: TokenStream) -> TokenStream {
     let mut expanded = quote::Tokens::new();
@@ -93,15 +103,19 @@ fn define_mapping(name: &syn::Ident) -> quote::Tokens {
 fn impl_elastic_type(item: &syn::MacroInput, mapping: &syn::Ident) -> quote::Tokens {
     let ty = &item.ident;
 
+    let root = crate_root();
+
     quote!(
-        impl ::elastic_types::document::DocumentType<#mapping> for #ty { }
+        impl #root::document::DocumentType<#mapping> for #ty { }
     )
 }
 
 //Implement DocumentMapping for the mapping
 fn impl_object_mapping(mapping: &syn::Ident, es_ty: &syn::Lit) -> quote::Tokens {
+    let root = crate_root();
+
     quote!(
-        impl ::elastic_types::document::DocumentMapping for #mapping {
+        impl #root::document::DocumentMapping for #mapping {
             fn name() -> &'static str { #es_ty }
         }
     )
@@ -112,8 +126,10 @@ fn impl_props_mapping(mapping: &syn::Ident, prop_ser_stmts: Vec<quote::Tokens>) 
     let stmts_len = prop_ser_stmts.len();
     let stmts = prop_ser_stmts;
 
+    let root = crate_root();
+
     quote!(
-        impl ::elastic_types::document::PropertiesMapping for #mapping {
+        impl #root::document::PropertiesMapping for #mapping {
             fn props_len() -> usize { #stmts_len }
             
             fn serialize_props<S>(serializer: &mut S, state: &mut S::StructState) -> Result<(), S::Error>
@@ -159,7 +175,9 @@ fn get_props_ser_stmts(fields: &[(syn::Ident, &syn::Field)]) -> Vec<quote::Token
 
             let expr = quote!(#(#segments)::*::mapping());
 
-            Some(quote!(try!(::elastic_types::document::field_ser(serializer, state, #lit, #expr));))
+            let root = crate_root();
+
+            Some(quote!(try!(#root::document::field_ser(serializer, state, #lit, #expr));))
         }
         else {
             None
