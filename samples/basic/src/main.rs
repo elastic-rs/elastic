@@ -7,7 +7,6 @@
 
 #[macro_use]
 extern crate json_str;
-#[macro_use]
 extern crate elastic_reqwest;
 extern crate elastic_requests;
 

@@ -1,6 +1,5 @@
 extern crate reqwest;
 extern crate url;
-#[macro_use]
 extern crate elastic_reqwest;
 
 use reqwest::header::*;

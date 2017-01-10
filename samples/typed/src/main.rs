@@ -18,7 +18,6 @@ extern crate serde_derive;
 extern crate elastic_types;
 #[macro_use]
 extern crate elastic_types_derive;
-#[macro_use]
 extern crate elastic_reqwest;
 extern crate elastic_requests;
 
