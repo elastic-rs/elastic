@@ -26,7 +26,7 @@ fn crate_root() -> quote::Tokens {
 
 #[cfg(feature = "elastic")]
 fn crate_root() -> quote::Tokens {
-    quote!(::elastic)
+    quote!(::elastic::types)
 }
 
 #[proc_macro_derive(ElasticType, attributes(elastic))]
@@ -145,45 +145,14 @@ fn impl_props_mapping(mapping: &syn::Ident, prop_ser_stmts: Vec<quote::Tokens>) 
 fn get_props_ser_stmts(fields: &[(syn::Ident, &syn::Field)]) -> Vec<quote::Tokens> {
     let fields: Vec<quote::Tokens> = fields.iter().cloned().map(|(name, field)| {
         let lit = syn::Lit::Str(name.as_ref().to_string(), syn::StrStyle::Cooked);
-        let ty = match field.ty {
-            //Standard type path
-            syn::Ty::Path(_, ref p) => Some(p),
-            //Borrowed type
-            syn::Ty::Rptr(_, ref t) => {
-                match t.ty {
-                    syn::Ty::Path(_, ref p) => Some(p),
-                    _ => None
-                }
-            },
-            _ => None
-        };
+        let ty = &field.ty;
 
-        if let Some(ty) = ty {
-            let mut segments = Vec::new();
+        let expr = quote!(<#ty>::mapping());
 
-            for seg in &ty.segments {
-                let id = &seg.ident;
-                segments.push(quote!(#id));
+        let root = crate_root();
 
-                if seg.parameters != syn::PathParameters::none() {
-                    match seg.parameters {
-                        syn::PathParameters::AngleBracketed(ref p) => segments.push(quote!(#p)),
-                        _ => ()
-                    }
-                }
-            }
-
-            let expr = quote!(#(#segments)::*::mapping());
-
-            let root = crate_root();
-
-            Some(quote!(try!(#root::document::field_ser(serializer, state, #lit, #expr));))
-        }
-        else {
-            None
-        }
+        quote!(try!(#root::document::field_ser(serializer, state, #lit, #expr));)
     })
-    .filter_map(|stmt| stmt)
     .collect();
 
     fields

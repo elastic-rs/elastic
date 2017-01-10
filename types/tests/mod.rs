@@ -456,7 +456,8 @@ pub mod object_macro_fixtures {
     #[derive(Serialize, ElasticType)]
     pub struct Wrapped {
         pub field1: Vec<i32>,
-        pub field2: Option<bool>
+        pub field2: Option<bool>,
+        pub field3: &'static str
     }
 
     #[derive(Default, Serialize)]

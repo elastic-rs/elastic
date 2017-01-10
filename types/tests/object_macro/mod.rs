@@ -47,10 +47,19 @@ fn serialise_mapping_with_wrapped_types() {
     let expected = json_str!({
         "properties":{
             "field1": {
-                "type":"integer"
+                "type": "integer"
             },
             "field2": {
-                "type":"boolean"
+                "type": "boolean"
+            },
+            "field3": {
+                "type":"text",
+                "fields":{
+                    "keyword":{
+                        "type":"keyword",
+                        "ignore_above":256
+                    }
+                }
             }
         }
     });
