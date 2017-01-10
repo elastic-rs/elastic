@@ -25,5 +25,5 @@ fn index_request_from_doc() {
 
     let req = client::IndexRequest::from_doc((index, &doc));
 
-    //assert!(req.is_ok());
+    assert!(req.is_ok());
 }

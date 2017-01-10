@@ -3,6 +3,8 @@
 //! This crate is a meta-package that makes it easy to work
 //! with the Elasticsearch REST API.
 
+#[macro_use]
+extern crate error_chain;
 extern crate serde;
 extern crate serde_json;
 extern crate reqwest;
@@ -10,6 +12,8 @@ extern crate elastic_reqwest;
 extern crate elastic_requests;
 extern crate elastic_types;
 extern crate elastic_responses;
+
+pub mod errors;
 
 pub mod client {
     //! HTTP client, requests and responses.
@@ -30,35 +34,37 @@ pub mod client {
 
     use serde_json;
     use serde::Serialize;
+
+    use super::errors::*;
     use super::types::prelude::{FieldType, Document, DocumentType, DocumentMapping};
 
     /// A trait for converting a serialisable type into a request.
-    pub trait FromType<T> {
+    pub trait FromType<T>: Sized {
         // TODO: Support an Id
         //      May need to use builders for this
         // TODO: Return Result<Self, Error>
-        fn from_ty(ty: T) -> Self;
+        fn from_ty(ty: T) -> Result<Self>;
     }
 
     /// A trait for converting a document into a request.
-    pub trait FromDoc<T, M> {
+    pub trait FromDoc<T, M>: Sized {
         // TODO: Return Result<Self, Error>
-        fn from_doc(doc: T) -> Self;
+        fn from_doc(doc: T) -> Result<Self>;
     }
 
     /// A trait for converting a document mapping into a request.
-    pub trait FromMapping<M> {
+    pub trait FromMapping<M>: Sized {
         // TODO: Return Result<Self, Error>
-        fn from_mapping(mapping: M) -> Self;
+        fn from_mapping(mapping: M) -> Result<Self>;
     }
 
     impl<'a, 'b, IDoc> FromType<(Index<'a>, Type<'a>, &'b IDoc)> for IndexRequest<'a>
         where IDoc: Serialize
     {
-        fn from_ty((index, ty, doc): (Index<'a>, Type<'a>, &'b IDoc)) -> Self {
-            let doc = serde_json::to_string(&doc).unwrap();
+        fn from_ty((index, ty, doc): (Index<'a>, Type<'a>, &'b IDoc)) -> Result<Self> {
+            let doc = serde_json::to_string(&doc)?;
 
-            Self::for_index_ty(index, ty, doc)
+            Ok(Self::for_index_ty(index, ty, doc))
         }
     }
 
@@ -66,7 +72,7 @@ pub mod client {
         where IDoc: DocumentType<IMapping>,
               IMapping: DocumentMapping
     {
-        fn from_doc((index, doc): (Index<'a>, &'b IDoc)) -> Self {
+        fn from_doc((index, doc): (Index<'a>, &'b IDoc)) -> Result<Self> {
             let ty = IDoc::name();
 
             Self::from_ty((index, Type::from(ty), doc))
@@ -76,10 +82,10 @@ pub mod client {
     impl<'a, IMapping> FromMapping<(Index<'a>, IMapping)> for IndicesPutMappingRequest<'a>
         where IMapping: DocumentMapping
     {
-        fn from_mapping((index, mapping): (Index<'a>, IMapping)) -> Self {
-            let mapping = serde_json::to_string(&Document::from(mapping)).unwrap();
+        fn from_mapping((index, mapping): (Index<'a>, IMapping)) -> Result<Self> {
+            let mapping = serde_json::to_string(&Document::from(mapping))?;
 
-            Self::for_index_ty(index, IMapping::name(), mapping)
+            Ok(Self::for_index_ty(index, IMapping::name(), mapping))
         }
     }
 
@@ -87,7 +93,7 @@ pub mod client {
         where IDoc: DocumentType<IMapping>,
               IMapping: DocumentMapping
     {
-        fn from_doc((index, _): (Index<'a>, &'b IDoc)) -> Self
+        fn from_doc((index, _): (Index<'a>, &'b IDoc)) -> Result<Self>
         {
             Self::from_mapping((index, IDoc::mapping()))
         }

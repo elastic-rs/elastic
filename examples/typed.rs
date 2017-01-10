@@ -12,7 +12,6 @@ extern crate serde;
 
 extern crate elastic;
 
-use elastic::types::prelude::FieldType;
 use elastic::client::{self, ElasticClient, FromDoc};
 
 #[derive(Debug, Serialize, Deserialize, ElasticType)]
@@ -34,7 +33,7 @@ fn main() {
     let index = client::Index::from("typed_sample_index");
 
     // An index request
-    let req = client::IndexRequest::from_doc((index.clone(), &doc));
+    let req = client::IndexRequest::from_doc((index.clone(), &doc)).unwrap();
 
     // Response from the index
     client.elastic_req(&params, req).unwrap();
