@@ -2,14 +2,11 @@
 extern crate elastic_types_derive;
 #[macro_use]
 extern crate serde_derive;
-#[macro_use]
-extern crate json_str;
 
 extern crate serde;
-extern crate serde_json;
 extern crate elastic;
 
-use elastic::client::*;
+use elastic::client::{self, FromDoc};
 use elastic::types::prelude::*;
 
 #[derive(Serialize, ElasticType)]
@@ -25,7 +22,7 @@ fn index_request_from_doc() {
         title: "A title"
     };
 
-    let index = Index::from("test_index");
+    let index = client::Index::from("test_index");
 
-    let req = IndexRequest::from_doc((index, &doc));
+    let req = client::IndexRequest::from_doc((index, &doc));
 }
