@@ -10,29 +10,18 @@ extern crate elastic_types_derive;
 extern crate serde_derive;
 extern crate serde;
 extern crate serde_json;
-extern crate reqwest;
 
 extern crate elastic;
 
-use elastic::types::prelude::*;
-use elastic::client::*;
+use elastic::prelude::*;
 
 const INDEX: &'static str = "typed_sample_index";
 
 #[derive(Debug, Serialize, Deserialize, ElasticType)]
 struct MyType {
     id: i32,
-    title: String
-}
-
-#[derive(Default, Serialize)]
-struct MyIndex {
-    mappings: Mappings
-}
-
-#[derive(Default, Serialize)]
-struct Mappings {
-    mytype: Document<MyTypeMapping>
+    title: String,
+    timestamp: Date<DefaultDateFormat>
 }
 
 fn index_exists() -> IndicesExistsRequest<'static> {
@@ -44,14 +33,20 @@ fn index_exists() -> IndicesExistsRequest<'static> {
 fn put_index() -> IndicesCreateRequest<'static> {
     let index = Index::from(INDEX);
 
-    IndicesCreateRequest::try_for_doc((index, MyIndex::default())).unwrap()
+    IndicesCreateRequest::for_index(index, Body::none())
 }
 
-fn put_doc(doc: MyType) -> IndexRequest<'static> {
+fn map_doc(doc: &MyType) -> IndicesPutMappingRequest<'static> {
+    let index = Index::from(INDEX);
+
+    IndicesPutMappingRequest::try_for_doc((index, doc)).unwrap()
+}
+
+fn put_doc(doc: &MyType) -> IndexRequest<'static> {
     let index = Index::from(INDEX);
     let id = Id::from(doc.id.to_string());
 
-    IndexRequest::try_for_doc((index, id, &doc)).unwrap()
+    IndexRequest::try_for_doc((index, id, doc)).unwrap()
 }
 
 fn search() -> SearchRequest<'static> {
@@ -82,18 +77,23 @@ fn main() {
 
     let doc = MyType {
         id: 1,
-        title: String::from("A title")
+        title: String::from("A title"),
+        timestamp: Date::now()
     };
 
+    // Create the index if it doesn't already exist
     match client.elastic_req(&params, index_exists()).unwrap().status() {
-        &reqwest::StatusCode::NotFound => {
+        &StatusCode::NotFound => {
             client.elastic_req(&params, put_index()).unwrap();
         },
         _ => ()
     }
 
-    client.elastic_req(&index_params, put_doc(doc)).unwrap();
+    // Update the document mapping and index our document
+    client.elastic_req(&params, map_doc(&doc)).unwrap();
+    client.elastic_req(&index_params, put_doc(&doc)).unwrap();
 
+    // Search for documents in the index
     let res: serde_json::Value = client
         .elastic_req(&params, search()).unwrap()
         .json().unwrap();

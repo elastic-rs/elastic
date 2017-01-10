@@ -21,7 +21,7 @@ pub mod client {
     //! This module contains the core `ElasticClient` trait, as well
     //! as request and response types.
 
-    pub use reqwest::Client;
+    pub use reqwest::{Client, Response as HttpResponse, StatusCode};
 
     /// A client wrapper over [`reqwest`](https://github.com/seanmonstar/reqwest).
     pub use elastic_reqwest::*;
@@ -76,13 +76,13 @@ pub mod client {
         }
     }
 
-    impl<'a, T> TryForDoc<(Index<'a>, T), ()> for IndicesCreateRequest<'a>
+    impl<'a, 'b, T> TryForDoc<&'b T, ()> for Body<'a>
         where T: Serialize
     {
-        fn try_for_doc((index, doc): (Index<'a>, T)) -> Result<Self> {
+        fn try_for_doc(doc: &T) -> Result<Self> {
             let doc = serde_json::to_string(&doc)?;
 
-            Ok(Self::for_index(index, doc))
+            Ok(Self::from(doc))
         }
     }
 
@@ -113,4 +113,9 @@ pub mod types {
     //! document types.
 
     pub use elastic_types::*;
+}
+
+pub mod prelude {
+    pub use super::client::*;
+    pub use super::types::prelude::*;
 }
