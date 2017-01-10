@@ -34,7 +34,7 @@ elastic_requests = "*"
 elastic_reqwest = "*"
 reqwest = "*"
 
-# Optional
+# Optional for request bodies
 json_str = "*"
 ```
 
