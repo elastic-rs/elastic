@@ -151,8 +151,6 @@ fn get_props_ser_stmts(fields: &[(syn::Ident, &syn::Field)]) -> Vec<quote::Token
 
         let expr = quote!(#root::field::mapping::<#ty, _, _>());
 
-        let root = crate_root();
-
         quote!(try!(#root::document::field_ser(serializer, state, #lit, #expr));)
     })
     .collect();
