@@ -1,5 +1,6 @@
 extern crate reqwest;
 extern crate url;
+#[macro_use]
 extern crate elastic_reqwest;
 
 use reqwest::header::*;
@@ -21,9 +22,9 @@ fn request_params_has_default_base_url() {
 #[test]
 fn request_params_has_url_query() {
 	let req = RequestParams::default()
-		.url_params(vec![
-			("pretty", "true".to_owned()),
-			("q", "*".to_owned())
+		.url_params(params![
+			pretty: true,
+			q: "*"
 		]);
 
 	assert_eq!((16, Some(String::from("?pretty=true&q=*"))), req.get_url_qry());

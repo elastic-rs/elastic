@@ -167,9 +167,16 @@ use std::borrow::Cow;
 use std::collections::BTreeMap;
 use std::io::Cursor;
 use std::str;
-use reqwest::header::{Headers, ContentType};
+use reqwest::header::{Header, HeaderFormat, Headers, ContentType};
 use reqwest::Response;
 use url::form_urlencoded::Serializer;
+
+#[macro_export]
+macro_rules! params {
+    ($($name:ident : $value:expr),*) => (
+        vec![$((stringify!($name), $value.to_string()),)*]
+    )
+}
 
 /// Misc parameters for any request.
 ///
@@ -187,37 +194,56 @@ use url::form_urlencoded::Serializer;
 /// let params = elastic::RequestParams::default();
 /// ```
 ///
-/// With custom headers:
-///
-/// ```
-/// extern crate reqwest;
-/// extern crate elastic_reqwest as elastic;
-///
-/// let mut params = elastic::RequestParams::default();
-///
-/// //Add your own headers
-/// params.headers.set(reqwest::header::Authorization("let me in".to_owned()));
-/// ```
-///
-/// Add url query parameters to the request:
-///
-/// ```
-/// extern crate elastic_reqwest as elastic;
-///
-/// let params = elastic::RequestParams::default()
-///         .url_params(vec![
-///             ("pretty", "true".to_owned()),
-///             ("q", "*".to_owned())
-///         ]);
-/// ```
-///
 /// With a custom base url:
 ///
 /// ```
 /// extern crate reqwest;
 /// extern crate elastic_reqwest as elastic;
 ///
-/// let params = elastic::RequestParams::new("http://mybaseurl:9200", reqwest::header::Headers::new());
+/// let params = elastic::RequestParams::new("http://mybaseurl:9200");
+/// ```
+///
+/// With custom headers:
+///
+/// ```
+/// extern crate reqwest;
+/// extern crate elastic_reqwest as elastic;
+///
+/// use reqwest::header::Authorization;
+///
+/// # fn main() {
+/// let params = elastic::RequestParams::default()
+///     .header(Authorization("let me in".to_owned()));
+/// # }
+/// ```
+///
+/// With url query parameters:
+///
+/// ```
+/// #[macro_use]
+/// extern crate elastic_reqwest as elastic;
+///
+/// # fn main() {
+/// let params = elastic::RequestParams::default()
+///     .url_params(params![
+///         pretty: true, 
+///         q: "*"
+///     ]);
+/// # }
+/// ```
+///
+/// Url query parameters can also be added without using macros:
+///
+/// ```
+/// extern crate elastic_reqwest as elastic;
+///
+/// # fn main() {
+/// let params = elastic::RequestParams::default()
+///     .url_params(vec![
+///         ("pretty", String::from("true")), 
+///         ("q", String::from("*"))
+///     ]);
+/// # }
 /// ```
 #[derive(Debug, Clone)]
 pub struct RequestParams {
@@ -231,9 +257,8 @@ pub struct RequestParams {
 
 impl RequestParams {
     /// Create a new container for request parameters.
-    ///
-    /// Attempts to add `ContentType::json` to the passed in `headers` param.
-    pub fn new<T: Into<String>>(base: T, mut headers: Headers) -> Self {
+    pub fn new<T: Into<String>>(base: T) -> Self {
+        let mut headers = Headers::new();
         headers.set(ContentType::json());
 
         RequestParams {
@@ -250,6 +275,15 @@ impl RequestParams {
         for (k, v) in url_params {
             self.url_params.insert(k, v);
         }
+
+        self
+    }
+
+    /// Set a header value on the params.
+    pub fn header<H>(mut self, header: H) -> Self
+        where H: Header + HeaderFormat
+    {
+        self.headers.set(header);
 
         self
     }
@@ -276,7 +310,7 @@ impl RequestParams {
 
 impl Default for RequestParams {
     fn default() -> Self {
-        RequestParams::new("http://localhost:9200", Headers::new())
+        RequestParams::new("http://localhost:9200")
     }
 }
 
