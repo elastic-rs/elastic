@@ -32,6 +32,7 @@ pub mod client {
     /// Response types for the Elasticsearch REST API.
     pub use elastic_responses::*;
 
+    use serde::Serialize;
     use serde_json;
 
     use super::errors::*;
@@ -72,6 +73,16 @@ pub mod client {
             let doc = serde_json::to_string(&doc)?;
 
             Ok(Self::for_index_ty_id(index, ty, id, doc))
+        }
+    }
+
+    impl<'a, T> TryForDoc<(Index<'a>, T), ()> for IndicesCreateRequest<'a>
+        where T: Serialize
+    {
+        fn try_for_doc((index, doc): (Index<'a>, T)) -> Result<Self> {
+            let doc = serde_json::to_string(&doc)?;
+
+            Ok(Self::for_index(index, doc))
         }
     }
 
