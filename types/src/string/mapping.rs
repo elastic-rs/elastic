@@ -26,6 +26,7 @@ impl TextMapping for DefaultStringMapping {
 }
 
 impl FieldType<DefaultStringMapping, TextFormat> for String {}
+impl FieldType<DefaultStringMapping, TextFormat> for &'static str {}
 
 /// The `index_options` parameter controls what information is added to the inverted index, for search and highlighting purposes.
 #[derive(Debug, Clone, Copy)]
