@@ -5,7 +5,7 @@ extern crate serde_derive;
 extern crate serde;
 extern crate elastic;
 
-use elastic::client::{self, FromDoc};
+use elastic::client::{self, TryForDoc};
 
 #[derive(Serialize, ElasticType)]
 struct MyType {

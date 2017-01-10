@@ -12,7 +12,18 @@ extern crate serde;
 
 extern crate elastic;
 
-use elastic::client::{self, ElasticClient, FromDoc};
+use elastic::client::{
+    self, 
+    ElasticClient, 
+    ResponseOf, 
+    IndexRequest, 
+    SearchRequest, 
+    Index, 
+    Id, 
+    TryForDoc
+};
+
+const INDEX: &'static str = "typed_sample_index";
 
 #[derive(Debug, Serialize, Deserialize, ElasticType)]
 struct MyType {
@@ -20,48 +31,49 @@ struct MyType {
     title: String
 }
 
+fn index_req(doc: MyType) -> IndexRequest<'static> {
+    let index = Index::from(INDEX);
+    let id = Id::from(doc.id.to_string());
+
+    IndexRequest::try_for_doc((index, id, &doc)).unwrap()
+}
+
+fn search_req() -> SearchRequest<'static> {
+    let index = Index::from(INDEX);
+
+    let body = json_str!({
+        query: {
+            query_string: {
+                query: "title"
+            }
+        }
+    });
+
+    SearchRequest::for_index(index, body)
+}
+
 fn main() {
     // A reqwest HTTP client.
     let client = client::Client::new().unwrap();
 
     // The `params` includes the base node url (http://localhost:9200).
+    // Wait for refresh when indexing data.
+    // Normally this isn't a good idea, but is ok for this example.
     let params = client::RequestParams::default()
-        .url_params(vec![("refresh", String::from("true"))]);
+        .url_param("refresh", true);
 
-    // The document to index
     let doc = MyType {
         id: 1,
         title: String::from("A title")
     };
 
-    let index = client::Index::from("typed_sample_index");
-    let id = client::Id::from(doc.id.to_string());
+    client.elastic_req(&params, index_req(doc)).unwrap();
 
-    // An index request
-    let req = client::IndexRequest::try_for_doc((index.clone(), id, &doc)).unwrap();
-
-    // Response from the index
-    client.elastic_req(&params, req).unwrap();
-
-    // A freeform JSON request body.
-    let body = json_str!({
-        query: {
-            query_string: {
-                query: "*"
-            }
-        }
-    });
-
-    // A search request from the body.
-    let req = client::SearchRequest::for_index(index, body);
-
-    // Send the request and process the response.
-    let res: client::ResponseOf<MyType> = client
-        .elastic_req(&params, req).unwrap()
+    let search_response: ResponseOf<MyType> = client
+        .elastic_req(&params, search_req()).unwrap()
         .json().unwrap();
 
-    // Iterate through the hits in the response.
-    for hit in res.hits() {
+    for hit in search_response.hits() {
         println!("{:?}", hit);
     }
 }
