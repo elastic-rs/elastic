@@ -2,7 +2,6 @@
 extern crate elastic_types_derive;
 #[macro_use]
 extern crate serde_derive;
-
 extern crate serde;
 extern crate elastic;
 
@@ -25,4 +24,6 @@ fn index_request_from_doc() {
     let index = client::Index::from("test_index");
 
     let req = client::IndexRequest::from_doc((index, &doc));
+
+    //assert!(req.is_ok());
 }
