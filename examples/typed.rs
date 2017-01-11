@@ -24,31 +24,79 @@ struct MyType {
     timestamp: Date<DefaultDateFormat>
 }
 
-fn index_exists() -> IndicesExistsRequest<'static> {
+fn main() {
+    // A HTTP client and request parameters
+    let client = Client::new().unwrap();
+    let params = RequestParams::default();
+
+    // Create a document to index
+    let doc = MyType {
+        id: 1,
+        title: String::from("A title"),
+        timestamp: Date::now()
+    };
+
+    create_index_if_new(&client, &params);
+
+    index_doc(&client, &params, doc);
+
+    let res = search_docs(&client, &params);
+
+    println!("{:?}", res);
+}
+
+// Create the index if it doesn't already exist
+fn index_exists_request() -> IndicesExistsRequest<'static> {
     let index = Index::from(INDEX);
 
     IndicesExistsRequest::for_index(index)
 }
 
-fn put_index() -> IndicesCreateRequest<'static> {
+fn put_index_request() -> IndicesCreateRequest<'static> {
     let index = Index::from(INDEX);
 
     IndicesCreateRequest::for_index(index, Body::none())
 }
 
-fn map_doc(doc: &MyType) -> IndicesPutMappingRequest<'static> {
+fn create_index_if_new(client: &Client, params: &RequestParams) {
+    let exists = client.request(&params, index_exists_request())
+        .and_then(|res| {
+            match *res.raw().status() {
+                StatusCode::NotFound => Ok(false),
+                _ => Ok(true)
+            }
+        })
+        .unwrap();
+
+    if !exists {
+        client.request(&params, put_index_request()).unwrap();
+    }
+}
+
+// Update the document mapping and index our document
+fn map_doc_request(doc: &MyType) -> IndicesPutMappingRequest<'static> {
     let index = Index::from(INDEX);
 
     IndicesPutMappingRequest::try_for_doc((index, doc)).unwrap()
 }
 
-fn put_doc(doc: &MyType) -> IndexRequest<'static> {
+fn put_doc_request(doc: &MyType) -> IndexRequest<'static> {
     let index = Index::from(INDEX);
     let id = Id::from(doc.id.to_string());
 
     IndexRequest::try_for_doc((index, id, doc)).unwrap()
 }
 
+fn index_doc(client: &Client, params: &RequestParams, doc: MyType) {
+    client.request(&params, map_doc_request(&doc)).unwrap();
+
+    // Wait for refresh when indexing so we can search right away
+    let params = params.clone().url_param("refresh", true);
+
+    client.request(&params, put_doc_request(&doc)).unwrap();
+}
+
+// Search for documents in the index
 fn search() -> SearchRequest<'static> {
     let index = Index::from(INDEX);
 
@@ -63,40 +111,6 @@ fn search() -> SearchRequest<'static> {
     SearchRequest::for_index(index, body)
 }
 
-fn main() {
-    // A reqwest HTTP client.
-    let client = Client::new().unwrap();
-
-    // The `params` includes the base node url (http://localhost:9200).
-    let params = RequestParams::default();
-
-    // Wait for refresh when indexing data.
-    // Normally this isn't a good idea, but is ok for this example.
-    let index_params = RequestParams::default()
-        .url_param("refresh", true);
-
-    let doc = MyType {
-        id: 1,
-        title: String::from("A title"),
-        timestamp: Date::now()
-    };
-
-    // Create the index if it doesn't already exist
-    match client.elastic_req(&params, index_exists()).unwrap().status() {
-        &StatusCode::NotFound => {
-            client.elastic_req(&params, put_index()).unwrap();
-        },
-        _ => ()
-    }
-
-    // Update the document mapping and index our document
-    client.elastic_req(&params, map_doc(&doc)).unwrap();
-    client.elastic_req(&index_params, put_doc(&doc)).unwrap();
-
-    // Search for documents in the index
-    let res: serde_json::Value = client
-        .elastic_req(&params, search()).unwrap()
-        .json().unwrap();
-
-    println!("{:?}", res);
+fn search_docs(client: &Client, params: &RequestParams) -> serde_json::Value {
+    client.request(&params, search()).and_then(|res| res.json()).unwrap()
 }
