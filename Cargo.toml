@@ -18,7 +18,7 @@ serde = "~0.8.0"
 serde_json = "~0.8.0"
 reqwest = "~0.2.0"
 
-elastic_reqwest = { version = "~0.2.0", path = "../elastic-hyper" }
+elastic_reqwest = "~0.2.0"
 elastic_requests = "~0.1.0"
 elastic_responses = "~0.2.0"
 elastic_types = "~0.10.1"
