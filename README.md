@@ -100,6 +100,8 @@ for hit in res.hits() {
 Development is active, but because functionality is split across crates it can be hard to track where the effort is going.
 There is a [GitHub Project](https://github.com/orgs/elastic-rs/projects/1) to easily track priorities at the crate-level.
 
+The `elastic` crate brings these independent units together into a cohesive API. It aims to provide the glue between them and offer some typical defaults. If you have a more specialised use-case, you can pick and choose the crates that will best support it.
+
 ## Crates
 
 `elastic` bundles up a couple of crates into a single client. If you want to pick and choose functionality, you can work with these crates independently.
