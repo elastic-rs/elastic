@@ -13,6 +13,9 @@ Quick reference:
 - [crates](#crates)
 - [samples](https://github.com/elastic-rs/elastic/tree/master/examples)
 
+> NOTE: This client is under active churn right now while the pieces are tied together.
+The documentation will improve shortly.
+
 ## Build Status
 Platform  | Channel | Status
 ------------- | ------------- | -------------
