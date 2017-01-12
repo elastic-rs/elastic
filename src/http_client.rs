@@ -28,8 +28,8 @@ pub struct RequestBuilder<'a, I> {
 impl<'a, I> RequestBuilder<'a, I> {
     /// Manually construct a `RequestBuilder`.
     /// 
-    /// If the `params` are `None`, then the `RequestParams` from the
-    /// `client` are used.
+    /// If the `RequestParams` are `None`, then the parameters from the
+    /// `Client` are used.
     pub fn new(client: &'a Client, params: Option<RequestParams>, req: I) -> Self {
         RequestBuilder {
             client: client,
@@ -44,7 +44,8 @@ impl<'a, I> RequestBuilder<'a, I>
 {
     /// Override the parameters for this request.
     /// 
-    /// This method will clone the `RequestParams` on the `Client`.
+    /// This method will clone the `RequestParams` on the `Client` and pass
+    /// them to the closure.
     pub fn params<F>(mut self, builder: F) -> Self 
         where F: Fn(RequestParams) -> RequestParams
     {
@@ -65,6 +66,10 @@ impl<'a, I> RequestBuilder<'a, I>
 
 impl Client {
     /// Create a new client for the given parameters.
+    /// 
+    /// The parameters given here are used as the defaults for any
+    /// request made by this client, but can be overriden on a
+    /// per-request basis.
     pub fn new(params: RequestParams) -> Result<Self> {
         let client = HttpClient::new()?;
 

@@ -57,7 +57,7 @@ elastic = "*"
 json_str = "*"
 ```
 
-Get a client instance and request parameters:
+And reference in your crate root:
 
 ```rust
 #[macro_use]
@@ -65,8 +65,12 @@ extern crate json_str;
 extern crate elastic;
 
 use elastic::client;
+```
 
-let (client, params) = client::default().unwrap();
+Get a client instance:
+
+```rust
+let client = Client::new(RequestParams::default()).unwrap();
 ```
 
 Create a search request:
@@ -87,8 +91,10 @@ Send the request and iterate through the returned hits:
 
 ```rust
 let res: client::Response = client
-    .elastic_req(&params, req).unwrap()
-    .json().unwrap();
+    .request(req)
+    .send()
+    .and_then(|res| res.json())
+    .unwrap();
 
 for hit in res.hits() {
     println!("{:?}", hit);
