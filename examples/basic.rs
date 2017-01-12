@@ -11,8 +11,7 @@ use elastic::prelude::*;
 fn main() {
     // A reqwest HTTP client and default parameters.
     // The `params` includes the base node url (http://localhost:9200).
-    let client = Client::new().unwrap();
-    let params = RequestParams::default();
+    let client = Client::new(RequestParams::default()).unwrap();
 
     // A freeform JSON request body.
     let body = json_str!({
@@ -28,7 +27,8 @@ fn main() {
 
     // Send the request and process the response.
     let res: Response = client
-        .request(&params, req)
+        .request(req)
+        .send()
         .and_then(|res| res.json())
         .unwrap();
 

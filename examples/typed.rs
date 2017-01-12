@@ -26,8 +26,7 @@ struct MyType {
 
 fn main() {
     // A HTTP client and request parameters
-    let client = Client::new().unwrap();
-    let params = RequestParams::default();
+    let client = Client::new(RequestParams::default()).unwrap();
 
     // Create a document to index
     let doc = MyType {
@@ -36,11 +35,11 @@ fn main() {
         timestamp: Date::now()
     };
 
-    create_index_if_new(&client, &params);
+    create_index_if_new(&client);
 
-    index_doc(&client, &params, doc);
+    index_doc(&client, doc);
 
-    let res = search_docs(&client, &params);
+    let res = search_docs(&client);
 
     println!("{:?}", res);
 }
@@ -58,8 +57,9 @@ fn put_index_request() -> IndicesCreateRequest<'static> {
     IndicesCreateRequest::for_index(index, Body::none())
 }
 
-fn create_index_if_new(client: &Client, params: &RequestParams) {
-    let exists = client.request(&params, index_exists_request())
+fn create_index_if_new(client: &Client) {
+    let exists = client.request(index_exists_request())
+        .send()
         .and_then(|res| {
             match *res.raw().status() {
                 StatusCode::NotFound => Ok(false),
@@ -69,7 +69,7 @@ fn create_index_if_new(client: &Client, params: &RequestParams) {
         .unwrap();
 
     if !exists {
-        client.request(&params, put_index_request()).unwrap();
+        client.request(put_index_request()).send().unwrap();
     }
 }
 
@@ -87,13 +87,14 @@ fn put_doc_request(doc: &MyType) -> IndexRequest<'static> {
     IndexRequest::try_for_doc((index, id, doc)).unwrap()
 }
 
-fn index_doc(client: &Client, params: &RequestParams, doc: MyType) {
-    client.request(&params, map_doc_request(&doc)).unwrap();
+fn index_doc(client: &Client, doc: MyType) {
+    client.request(map_doc_request(&doc)).send().unwrap();
 
     // Wait for refresh when indexing so we can search right away
-    let params = params.clone().url_param("refresh", true);
-
-    client.request(&params, put_doc_request(&doc)).unwrap();
+    client.request(put_doc_request(&doc))
+        .params(|params| params.url_param("refresh", true))
+        .send()
+        .unwrap();
 }
 
 // Search for documents in the index
@@ -111,6 +112,6 @@ fn search() -> SearchRequest<'static> {
     SearchRequest::for_index(index, body)
 }
 
-fn search_docs(client: &Client, params: &RequestParams) -> serde_json::Value {
-    client.request(&params, search()).and_then(|res| res.json()).unwrap()
+fn search_docs(client: &Client) -> serde_json::Value {
+    client.request(search()).send().and_then(|res| res.json()).unwrap()
 }
