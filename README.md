@@ -2,7 +2,7 @@
 
 Provides a synchronous [`reqwest`](https://github.com/seanmonstar/reqwest) implementation of the Elasticsearch REST API. The `reqwest` client is simple to use; there's basically no setup needed besides creating a `reqwest::Client` object to use for requests. The `reqwest` client is general-purpose, and suitable for any scenario where on-demand requests are sufficient.
 
-If you'd prefer to call Elasticsearch using a strongly-typed Query DSL builder, see [`rs-es`](https://github.com/benashford/rs-es).
+This library is the HTTP backend for the higher-level [`elastic`](https://github.com/elastic-rs/elastic) client.
 
 ## Build Status
 Platform  | Channel | Status
@@ -16,6 +16,10 @@ Version  | Docs
 ------------- | -------------
 `master`  | [![Documentation](https://img.shields.io/badge/docs-rustdoc-orange.svg)](https://elastic-rs.github.io/elastic-hyper/elastic_reqwest/)
 `current`  | [![Documentation](https://img.shields.io/badge/docs-rustdoc-orange.svg)](https://docs.rs/elastic_reqwest/*/elastic_reqwest/)
+
+## Alternatives
+
+If you'd prefer to call Elasticsearch using a strongly-typed Query DSL builder, see [`rs-es`](https://github.com/benashford/rs-es).
 
 ## Example
 
