@@ -9,23 +9,25 @@
 //! Query your Elasticsearch Cluster, then iterate through the results
 //!
 //! ```no_run
+//! # extern crate elastic_responses;
+//! # use elastic_responses::Response;
+//! # fn do_request() -> Response { unimplemented!() }
+//! # fn main() {
+//! // Send a request (omitted, see `samples/basic`), and read the response.
+//! // Parse body to JSON as an elastic_responses::Response object
+//! let body_as_json: Response = do_request();
 //!
-//! // Send a request (omitted, see `samples/basic`, and read the response.
-//! let mut res = client.elastic_req(&params, SearchRequest::for_index("_all", body)).unwrap();
-//!
-//! //Parse body to JSON as an elastic_responses::Response object
-//! let body_as_json: EsResponse = res.json().unwrap();
-//!
-//! //Use hits() or aggs() iterators
-//! //Hits
+//! // Use hits() or aggs() iterators
+//! // Hits
 //! for i in body_as_json.hits() {
 //!   println!("{:?}",i);
 //! }
 //!
-//! //Agregations
+//! // Agregations
 //! for i in body_as_json.aggs() {
 //!   println!("{:?}",i);
 //! }
+//! # }
 //! ```
 
 
