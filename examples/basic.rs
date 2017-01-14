@@ -6,12 +6,12 @@
 extern crate json_str;
 extern crate elastic;
 
-use elastic::client::{self, ElasticClient};
+use elastic::prelude::*;
 
 fn main() {
     // A reqwest HTTP client and default parameters.
     // The `params` includes the base node url (http://localhost:9200).
-    let (client, params) = client::default().unwrap();
+    let client = Client::new(RequestParams::default()).unwrap();
 
     // A freeform JSON request body.
     let body = json_str!({
@@ -23,12 +23,14 @@ fn main() {
     });
 
     // A search request from the body.
-    let req = client::SearchRequest::for_index("_all", body);
+    let req = SearchRequest::for_index("_all", body);
 
     // Send the request and process the response.
-    let res: client::Response = client
-        .elastic_req(&params, req).unwrap()
-        .json().unwrap();
+    let res: Response = client
+        .request(req)
+        .send()
+        .and_then(|res| res.json())
+        .unwrap();
 
     // Iterate through the hits in the response.
     for hit in res.hits() {

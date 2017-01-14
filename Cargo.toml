@@ -3,7 +3,7 @@ name = "elastic"
 version = "0.3.0"
 authors = ["Ashley Mannix <ashleymannix@live.com.au>"]
 license = "Apache-2.0"
-description = "A client for the Elassticsearch REST API."
+description = "A client for the Elasticsearch REST API."
 documentation = "https://docs.rs/elastic/"
 repository = "https://github.com/elastic-rs/elastic"
 
@@ -24,6 +24,6 @@ elastic_responses = "~0.2.0"
 elastic_types = "~0.10.1"
 
 [dev-dependencies]
-json_str = "~0.3.0"
+json_str = "^0.*"
 serde_derive = "~0.8.0"
 elastic_types_derive = { version = "~0.10.0", features = ["elastic"] }
