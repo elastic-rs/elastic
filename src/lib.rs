@@ -21,7 +21,7 @@ pub mod errors;
 pub mod client {
     //! HTTP client, requests and responses.
     //!
-    //! This module contains the core `ElasticClient` trait, as well
+    //! This module contains the HTTP client, as well
     //! as request and response types.
 
     pub use super::http_client::*;

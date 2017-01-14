@@ -49,7 +49,7 @@ impl<'a, I> RequestBuilder<'a, I>
     pub fn params<F>(mut self, builder: F) -> Self 
         where F: Fn(RequestParams) -> RequestParams
     {
-        self.params = Some(builder(self.client.params.clone()));
+        self.params = Some(builder(self.params.unwrap_or(self.client.params.clone())));
 
         self
     }
@@ -101,5 +101,26 @@ impl HttpResponse {
         where T: Deserialize
     {
         self.0.json().map_err(|e| e.into())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn request_builder_params() {
+        let client = Client::new(RequestParams::new("http://eshost:9200")).unwrap();
+
+        let req = RequestBuilder::new(&client, None, PingRequest::new())
+            .params(|p| p.url_param("pretty", true))
+            .params(|p| p.url_param("refresh", true));
+
+        let params = &req.params.unwrap();
+
+        let (_, query) = params.get_url_qry();
+
+        assert_eq!("http://eshost:9200", &params.base_url);
+        assert_eq!("?pretty=true&refresh=true", query.unwrap());
     }
 }
