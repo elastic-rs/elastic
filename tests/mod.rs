@@ -19,7 +19,15 @@ fn request_params_has_default_base_url() {
 }
 
 #[test]
-fn request_params_has_url_query() {
+fn request_params_can_set_base_url() {
+	let req = RequestParams::default()
+		.base_url("http://eshost:9200");
+
+	assert_eq!("http://eshost:9200", req.base_url);
+}
+
+#[test]
+fn request_params_can_set_url_query() {
 	let req = RequestParams::default()
 		.url_param("pretty", false)
 		.url_param("pretty", true)
