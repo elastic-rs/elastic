@@ -120,7 +120,7 @@ A synchronous [`reqwest`](https://github.com/seanmonstar/reqwest) implementation
 
 Zero-copy request types for the REST API endpoints. These are automatically generated from the official spec.
 
-### [`elastic_responses`](https://github.com/stephanbuys/elastic-responses)
+### [`elastic_responses`](https://github.com/elastic-rs/elastic-responses)
 
 Idiomatic support for inspecting Elasticsearch responses and iterating over hits.
 
