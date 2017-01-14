@@ -242,6 +242,13 @@ impl RequestParams {
         }
     }
 
+    /// Set the base url for the node.
+    pub fn base_url<T: Into<String>>(mut self, base: T) -> Self {
+        self.base_url = base.into();
+
+        self
+    }
+
     /// Set a url param value.
     pub fn url_param<T: ToString>(mut self, key: &'static str, value: T) -> Self
     {
