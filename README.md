@@ -8,6 +8,8 @@ It's especially helpful for the `date` and `geo_point` types, where serialisatio
 
 This library makes heavy use of [`serde`](https://serde.rs/) for serialisation. We also try not to reinvent the wheel wherever possible and rely on some common dependencies for types, such as [`chrono`](https://github.com/lifthrasiir/rust-chrono) for dates and [`rust-geo`](https://github.com/georust/rust-geo) for geometry.
 
+This library is the document serialisation provider for the higher-level [`elastic`](https://github.com/elastic-rs/elastic) client.
+
 ## Build Status
 Platform  | Channel | Status
 ------------- | ---------------- | -------------
