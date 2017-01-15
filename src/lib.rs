@@ -139,15 +139,14 @@
 //!
 //! # See Also
 //!
+//! ## [`elastic`](https://github.com/elastic-rs/elastic)
+//! 
+//! A higher-level Elasticsearch client that uses `elastic_reqwest` as its HTTP layer.
+//! 
 //! ## [`rs-es`](https://github.com/benashford/rs-es)
 //!
 //! An alternative Elasticsearch client for Rust that provides an implementation of the Query DSL.
-//!
-//! ## [`elastic_types`](https://github.com/elastic-rs/elastic-types)
-//!
-//! A library that implements the core datatypes in Elasticsearch
-//! documents and automatically generates a json mapping from your Rust structures.
-//!
+//! 
 //! ## [`json_str`](https://github.com/KodrAus/json_str)
 //!
 //! A library for generating minified json strings from Rust syntax.
