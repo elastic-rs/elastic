@@ -108,6 +108,13 @@ There is a [GitHub Project](https://github.com/orgs/elastic-rs/projects/1) to ea
 
 The `elastic` crate brings these independent units together into a cohesive API. It aims to provide the glue between them and offer some typical defaults. If you have a more specialised use-case, you can pick and choose the crates that will best support it.
 
+`elastic` sits on a stack with hard dependencies on the following libraries:
+
+- `reqwest`/`hyper` for HTTP
+- `serde` for serialisation
+
+There hasn't been much effort put into abstracting these dependencies at this stage.
+
 ## Crates
 
 `elastic` bundles up a couple of crates into a single client. If you want to pick and choose functionality, you can work with these crates independently.
