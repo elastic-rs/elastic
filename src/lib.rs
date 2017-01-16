@@ -1,21 +1,22 @@
 //! Elasticsearch API Client
 //!
-//! A client for Elasticsearch.
-//! It's mostly a meta-package for a number of smaller pieces including:
-//! 
-//! - [`elastic_reqwest`] HTTP client
-//! - [`elastic_requests`] API request builders
-//! - [`elastic_responses`] API response parser
-//! - [`elastic_types`] tools for document and mapping APIs
-//! 
-//! This crate glues these libraries together with some simple assumptions
-//! about how they're going to be used.
+//! An efficient native client for the Elasticsearch REST API.
 //! 
 //! # Supported Versions
 //!
 //!  `elastic`       | Elasticsearch
 //!  --------------- | -------------
 //!  `0.x`           | `5.x`
+//! 
+//! This crate is mostly a meta-package composed of a number of smaller pieces including:
+//! 
+//! - `elastic_reqwest` HTTP transport
+//! - `elastic_requests` API request builders
+//! - `elastic_responses` API response parser
+//! - `elastic_types` tools for document and mapping APIs
+//! 
+//! This crate glues these libraries together with some simple assumptions
+//! about how they're going to be used.
 //! 
 //! # Usage
 //! 
@@ -41,6 +42,15 @@
 //!
 //! ```
 //! extern crate elastic;
+//! 
+//! extern crate serde;
+//! #[macro_use]
+//! extern crate serde_derive;
+//! #[macro_use]
+//! extern crate elastic_types_derive;
+//! #[macro_use]
+//! extern crate json_str;
+//! # fn main() {}
 //! ```
 //! 
 //! # Examples
@@ -87,14 +97,13 @@
 //! Derive `Serialize`, `Deserialize` and `ElasticType` on your document types:
 //! 
 //! ```no_run
-//! extern crate serde;
-//! #[macro_use]
-//! extern crate serde_derive;
-//! #[macro_use]
-//! extern crate elastic_types_derive;
+//! # extern crate serde;
+//! # #[macro_use]
+//! # extern crate serde_derive;
+//! # #[macro_use]
+//! # extern crate elastic_types_derive;
 //! # extern crate elastic;
 //! # use elastic::prelude::*;
-//! 
 //! # fn main() {
 //! #[derive(Serialize, Deserialize, ElasticType)]
 //! struct MyType {
