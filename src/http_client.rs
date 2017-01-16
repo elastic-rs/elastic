@@ -4,6 +4,7 @@ use elastic_reqwest::ElasticClient;
 use super::errors::*;
 
 pub use reqwest::StatusCode;
+pub use reqwest::header;
 pub use elastic_reqwest::RequestParams;
 
 /// Request types the Elasticsearch REST API.

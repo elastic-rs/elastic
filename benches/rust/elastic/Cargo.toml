@@ -1,0 +1,15 @@
+[package]
+name = "elastic_bench"
+version = "0.1.0"
+authors = ["Ashley Mannix <ashleymannix@live.com.au>"]
+
+[dependencies]
+serde = "*"
+serde_derive = "*"
+json_str = { version = "*", features = ["nightly"]}
+
+elastic = { version = "*", path = "../../../", features = ["nightly"] }
+
+lazy_static = "*"
+time = "*"
+stopwatch = "*"

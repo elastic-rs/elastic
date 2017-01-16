@@ -25,6 +25,16 @@
 //! ```ignore
 //! [dependencies]
 //! elastic = "*"
+//! 
+//! # Optional for deriving ElasticType
+//! elastic_types_derive = { version = "*", features = ["elastic"] }
+//! 
+//! # Optional for request bodies
+//! json_str = "*"
+//! 
+//! # Optional for deriving serialisation
+//! serde = "*"
+//! serde_derive = "*"
 //! ```
 //! 
 //! Then reference in your crate root:
@@ -179,5 +189,7 @@ pub mod types {
 
 pub mod prelude {
     pub use super::client::*;
+    pub use super::client::header;
+    
     pub use super::types::prelude::*;
 }
