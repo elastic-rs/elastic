@@ -1,100 +1,0 @@
-!<arch>
-__.PKGDEF       0           0     0     644     9088      `
-go object darwin amd64 go1.6 X:none
-build id "3818c781123df411029a8881093a5cc211f4a713"
-
-$$
-package stopwatch
-	import time "time"
-	type @"time".zone struct { @"time".name string; @"time".offset int; @"time".isDST bool }
-	type @"time".zoneTrans struct { @"time".when int64; @"time".index uint8; @"time".isstd bool; @"time".isutc bool }
-	type @"time".Location struct { @"time".name string; @"time".zone []@"time".zone; @"time".tx []@"time".zoneTrans; @"time".cacheStart int64; @"time".cacheEnd int64; @"time".cacheZone *@"time".zone }
-	func (@"time".lÂ·2 *@"time".Location "esc:0x22") String () (? string)
-	func (@"time".lÂ·2 *@"time".Location "esc:0x1") @"time".firstZoneUsed () (? bool)
-	func (@"time".lÂ·2 *@"time".Location "esc:0x12") @"time".get () (? *@"time".Location)
-	func (@"time".lÂ·6 *@"time".Location "esc:0x32") @"time".lookup (@"time".secÂ·7 int64) (@"time".nameÂ·1 string, @"time".offsetÂ·2 int, @"time".isDSTÂ·3 bool, @"time".startÂ·4 int64, @"time".endÂ·5 int64)
-	func (@"time".lÂ·2 *@"time".Location "esc:0x1") @"time".lookupFirstZone () (? int)
-	func (@"time".lÂ·4 *@"time".Location "esc:0x1") @"time".lookupName (@"time".nameÂ·5 string "esc:0x1", @"time".unixÂ·6 int64) (@"time".offsetÂ·1 int, @"time".isDSTÂ·2 bool, @"time".okÂ·3 bool)
-	type @"time".Duration int64
-	func (@"time".dÂ·2 @"time".Duration) Hours () (? float64) { var @"time".hourÂ·3 @"time".Duration; ; @"time".hourÂ·3 = @"time".dÂ·2 / @"time".Duration(0x34630b8a000); var @"time".nsecÂ·4 @"time".Duration; ; @"time".nsecÂ·4 = @"time".dÂ·2 % @"time".Duration(0x34630b8a000); return float64(@"time".hourÂ·3) + float64(@"time".nsecÂ·4) * float64(8190022623310637111963488201822504381538623676021880892417778544696899264837610290203272971060556344039023584360473938041055625214280336402169897364226048p-553) }
-	func (@"time".dÂ·2 @"time".Duration) Minutes () (? float64) { var @"time".minÂ·3 @"time".Duration; ; @"time".minÂ·3 = @"time".dÂ·2 / @"time".Duration(0xdf8475800); var @"time".nsecÂ·4 @"time".Duration; ; @"time".nsecÂ·4 = @"time".dÂ·2 % @"time".Duration(0xdf8475800); return float64(@"time".minÂ·3) + float64(@"time".nsecÂ·4) * float64(7678146209353722106395056769533233877065564876941352542109479049699919628723768656821910653339403201031675627614471533358284117434246264392176261853609984p-547) }
-	func (@"time".dÂ·2 @"time".Duration) Nanoseconds () (? int64) { return int64(@"time".dÂ·2) }
-	func (@"time".dÂ·2 @"time".Duration) Seconds () (? float64) { var @"time".secÂ·3 @"time".Duration; ; @"time".secÂ·3 = @"time".dÂ·2 / @"time".Duration(0x3b9aca00); var @"time".nsecÂ·4 @"time".Duration; ; @"time".nsecÂ·4 = @"time".dÂ·2 % @"time".Duration(0x3b9aca00); return float64(@"time".secÂ·3) + float64(@"time".nsecÂ·4) * float64(7198262071269114660816079141112770740375861891461678802759824945047098083990024106014198994535558872472104883612039846078596891298747423852523262413111296p-541) }
-	func (@"time".dÂ·2 @"time".Duration) String () (? string)
-	type @"time".Month int
-	func (@"time".mÂ·2 @"time".Month) String () (? string) { return @"time".months[@"time".mÂ·2 - @"time".Month(0x1)] }
-	type @"time".Weekday int
-	func (@"time".dÂ·2 @"time".Weekday) String () (? string) { return @"time".days[@"time".dÂ·2] }
-	type @"time".Time struct { @"time".sec int64; @"time".nsec int32; @"time".loc *@"time".Location }
-	func (@"time".tÂ·2 @"time".Time "esc:0x12") Add (@"time".dÂ·3 @"time".Duration) (? @"time".Time) { @"time".tÂ·2.@"time".sec += int64(@"time".dÂ·3 / @"time".Duration(0x3b9aca00)); var @"time".nsecÂ·4 int32; ; @"time".nsecÂ·4 = int32(@"time".tÂ·2.@"time".nsec) + int32(@"time".dÂ·3 % @"time".Duration(0x3b9aca00)); if @"time".nsecÂ·4 >= int32(0x3b9aca00) { @"time".tÂ·2.@"time".sec++; @"time".nsecÂ·4 -= int32(0x3b9aca00) } else { if @"time".nsecÂ·4 < int32(0x0) { @"time".tÂ·2.@"time".sec--; @"time".nsecÂ·4 += int32(0x3b9aca00) } }; @"time".tÂ·2.@"time".nsec = @"time".nsecÂ·4; return @"time".tÂ·2 }
-	func (@"time".tÂ·2 @"time".Time "esc:0x12") AddDate (@"time".yearsÂ·3 int, @"time".monthsÂ·4 int, @"time".daysÂ·5 int) (? @"time".Time)
-	func (@"time".tÂ·2 @"time".Time "esc:0x1") After (@"time".uÂ·3 @"time".Time "esc:0x1") (? bool) { return @"time".tÂ·2.@"time".sec > @"time".uÂ·3.@"time".sec || @"time".tÂ·2.@"time".sec == @"time".uÂ·3.@"time".sec && @"time".tÂ·2.@"time".nsec > @"time".uÂ·3.@"time".nsec }
-	func (@"time".tÂ·2 @"time".Time "esc:0x9") AppendFormat (@"time".bÂ·3 []byte "esc:0x1a", @"time".layoutÂ·4 string "esc:0x9") (? []byte)
-	func (@"time".tÂ·2 @"time".Time "esc:0x1") Before (@"time".uÂ·3 @"time".Time "esc:0x1") (? bool) { return @"time".tÂ·2.@"time".sec < @"time".uÂ·3.@"time".sec || @"time".tÂ·2.@"time".sec == @"time".uÂ·3.@"time".sec && @"time".tÂ·2.@"time".nsec < @"time".uÂ·3.@"time".nsec }
-	func (@"time".tÂ·4 @"time".Time "esc:0x1") Clock () (@"time".hourÂ·1 int, @"time".minÂ·2 int, @"time".secÂ·3 int)
-	func (@"time".tÂ·4 @"time".Time "esc:0x1") Date () (@"time".yearÂ·1 int, @"time".monthÂ·2 @"time".Month, @"time".dayÂ·3 int)
-	func (@"time".tÂ·2 @"time".Time "esc:0x1") Day () (? int)
-	func (@"time".tÂ·2 @"time".Time "esc:0x1") Equal (@"time".uÂ·3 @"time".Time "esc:0x1") (? bool) { return @"time".tÂ·2.@"time".sec == @"time".uÂ·3.@"time".sec && @"time".tÂ·2.@"time".nsec == @"time".uÂ·3.@"time".nsec }
-	func (@"time".tÂ·2 @"time".Time "esc:0x9") Format (@"time".layoutÂ·3 string "esc:0x9") (? string)
-	func (@"time".tÂ·2 *@"time".Time "esc:0x1") GobDecode (@"time".dataÂ·3 []byte "esc:0x1") (? error)
-	func (@"time".tÂ·3 @"time".Time "esc:0x1") GobEncode () (? []byte, ? error)
-	func (@"time".tÂ·2 @"time".Time "esc:0x1") Hour () (? int)
-	func (@"time".tÂ·3 @"time".Time "esc:0x1") ISOWeek () (@"time".yearÂ·1 int, @"time".weekÂ·2 int)
-	func (@"time".tÂ·2 @"time".Time "esc:0x12") In (@"time".locÂ·3 *@"time".Location "esc:0x12") (? @"time".Time)
-	func (@"time".tÂ·2 @"time".Time "esc:0x1") IsZero () (? bool) { return @"time".tÂ·2.@"time".sec == int64(0x0) && @"time".tÂ·2.@"time".nsec == int32(0x0) }
-	func (@"time".tÂ·2 @"time".Time "esc:0x12") Local () (? @"time".Time) { @"time".tÂ·2.@"time".loc = @"time".Local; return @"time".tÂ·2 }
-	func (@"time".tÂ·2 @"time".Time "esc:0x12") Location () (? *@"time".Location) { var @"time".lÂ·3 *@"time".Location; ; @"time".lÂ·3 = @"time".tÂ·2.@"time".loc; if @"time".lÂ·3 == nil { @"time".lÂ·3 = @"time".UTC }; return @"time".lÂ·3 }
-	func (@"time".tÂ·3 @"time".Time "esc:0x1") MarshalBinary () (? []byte, ? error)
-	func (@"time".tÂ·3 @"time".Time "esc:0x9") MarshalJSON () (? []byte, ? error)
-	func (@"time".tÂ·3 @"time".Time "esc:0x9") MarshalText () (? []byte, ? error)
-	func (@"time".tÂ·2 @"time".Time "esc:0x1") Minute () (? int)
-	func (@"time".tÂ·2 @"time".Time "esc:0x1") Month () (? @"time".Month)
-	func (@"time".tÂ·2 @"time".Time "esc:0x1") Nanosecond () (? int) { return int(@"time".tÂ·2.@"time".nsec) }
-	func (@"time".tÂ·2 @"time".Time "esc:0x12") Round (@"time".dÂ·3 @"time".Duration) (? @"time".Time)
-	func (@"time".tÂ·2 @"time".Time "esc:0x1") Second () (? int)
-	func (@"time".tÂ·2 @"time".Time "esc:0x9") String () (? string)
-	func (@"time".tÂ·2 @"time".Time "esc:0x1") Sub (@"time".uÂ·3 @"time".Time "esc:0x1") (? @"time".Duration)
-	func (@"time".tÂ·2 @"time".Time "esc:0x12") Truncate (@"time".dÂ·3 @"time".Duration) (? @"time".Time)
-	func (@"time".tÂ·2 @"time".Time "esc:0x12") UTC () (? @"time".Time) { @"time".tÂ·2.@"time".loc = @"time".UTC; return @"time".tÂ·2 }
-	func (@"time".tÂ·2 @"time".Time "esc:0x1") Unix () (? int64) { return @"time".tÂ·2.@"time".sec + int64(-0xe7791f700) }
-	func (@"time".tÂ·2 @"time".Time "esc:0x1") UnixNano () (? int64) { return (@"time".tÂ·2.@"time".sec + int64(-0xe7791f700)) * int64(0x3b9aca00) + int64(@"time".tÂ·2.@"time".nsec) }
-	func (@"time".tÂ·2 *@"time".Time "esc:0x1") UnmarshalBinary (@"time".dataÂ·3 []byte "esc:0x1") (? error)
-	func (@"time".tÂ·2 *@"time".Time "esc:0x1") UnmarshalJSON (@"time".dataÂ·3 []byte "esc:0x1") (@"time".errÂ·1 error)
-	func (@"time".tÂ·2 *@"time".Time "esc:0x1") UnmarshalText (@"time".dataÂ·3 []byte "esc:0x1") (@"time".errÂ·1 error)
-	func (@"time".tÂ·2 @"time".Time "esc:0x1") Weekday () (? @"time".Weekday)
-	func (@"time".tÂ·2 @"time".Time "esc:0x1") Year () (? int)
-	func (@"time".tÂ·2 @"time".Time "esc:0x1") YearDay () (? int)
-	func (@"time".tÂ·3 @"time".Time "esc:0x32") Zone () (@"time".nameÂ·1 string, @"time".offsetÂ·2 int)
-	func (@"time".tÂ·2 @"time".Time "esc:0x1") @"time".abs () (? uint64)
-	func (@"time".tÂ·5 @"time".Time "esc:0x1") @"time".date (@"time".fullÂ·6 bool) (@"time".yearÂ·1 int, @"time".monthÂ·2 @"time".Month, @"time".dayÂ·3 int, @"time".ydayÂ·4 int)
-	func (@"time".tÂ·4 @"time".Time "esc:0x32") @"time".locabs () (@"time".nameÂ·1 string, @"time".offsetÂ·2 int, @"time".absÂ·3 uint64)
-	func @"".Start () (? @"time".Time)
-	type @"".StopWatch struct { @"".start @"time".Time; @"".stop @"time".Time }
-	func (@"".selfÂ·2 *@"".StopWatch "esc:0x1") Milliseconds () (? uint32)
-	func @"".Stop (@"".startÂ·2 @"time".Time) (? *@"".StopWatch)
-	func @"".init ()
-	var @"time".months [12]string
-	var @"time".days [7]string
-	var @"time".Local *@"time".Location
-	var @"time".UTC *@"time".Location
-
-$$
-_go_.o          0           0     0     644     8804      `
-go object darwin amd64 go1.6 X:none
-
-!
-  go13ldtime.a þ"".Start      eH‹%    H;av9Hƒì1ÛH‰\$ ‰\$(H‰\$0è    H‹$‹L$H‹D$H‰T$ ‰L$(H‰D$0HƒÄÃè    ë±Ì
-      H  time.Now   ’  0runtime.morestack_noctxt   00  "".~r0  type.time.Time 04/	 P #% 
- #- TgclocalsÂ·790e5cc5051fc0affc980ade09e929ec TgclocalsÂ·33cdeccccebe80329f1fdbee7f5874cb   ²/Volumes/Data/src/elasticsearch-rs/benches/golang/src/github.com/bradhe/stopwatch/main.goþ"".Stop  À  ÀeH‹%    H;a†¿   HƒìhH    H‰$è    H‹\$H‰\$è    H‹$‹L$H‹D$1ÛH‰\$8‰\$@H‰\$HH‰\$P‰\$XH‰\$`H‹\$pH‰\$8‹\$x‰\$@H‹œ$€   H‰\$HH‰T$ H‰T$P‰L$(‰L$XH‰D$0H‰D$`H‹\$Hl$8H‰\$H‰l$H-    H‰,$è    H‹\$H‰œ$ˆ   HƒÄhÃè    é$ÿÿÿÌÌÌÌ
-      4  "type."".StopWatch   F  "runtime.newobject   d  time.Now   æ  "type."".StopWatch   ø  (runtime.typedmemmove   ¦  0runtime.morestack_noctxt   @Ð  
-"".autotmp_0003 _"type."".StopWatch "".autotmp_0002 type.time.Time "".&watch Ÿ$type.*"".StopWatch "".~r1 0$type.*"".StopWatch "".start  type.time.Time ÐºÏ à ©  "¯ TgclocalsÂ·734d53873353bd527d9adc73d57777ea TgclocalsÂ·488efd5564b22aec1294e68943e642b4   ²/Volumes/Data/src/elasticsearch-rs/benches/golang/src/github.com/bradhe/stopwatch/main.goþ8"".(*StopWatch).Milliseconds  À  ÀeH‹%    H;av~Hƒì8H‹D$@Hƒø tkHXH‹H‰$H‹KH‰L$H‹KH‰L$H|$H‹H‰H‹HH‰OH‹HH‰Oè    H‹\$0I¸Û4¶×‚ÞCH‰ØI÷èH‰ÕHÁýHÁû?H)Ý‰ë‰\$HHƒÄ8Ã‰ ë‘è    éiÿÿÿÌÌÌÌÌÌÌÌÌ
-      ®  time.Time.Sub   œ  0runtime.morestack_noctxt    p  "".~r0 type.uint32 "".self  $type.*"".StopWatch puopo   u 
- VJ TgclocalsÂ·3f5c1f818fa7055d0400cecd34057162 TgclocalsÂ·33cdeccccebe80329f1fdbee7f5874cb   ¾/Volumes/Data/src/elasticsearch-rs/benches/golang/src/github.com/bradhe/stopwatch/stop_watch.goþ"".init      eH‹%    H;av4¶    €û t¶    €ûuÃè    Æ    è    Æ    Ãè    ë¶ÌÌÌÌÌÌ
-      $  "".initdoneÂ·   <  "".initdoneÂ·   R  "runtime.throwinit   b "".initdoneÂ·   n  time.init   z "".initdoneÂ·   ˆ  0runtime.morestack_noctxt        P P P 
- (( TgclocalsÂ·33cdeccccebe80329f1fdbee7f5874cb TgclocalsÂ·33cdeccccebe80329f1fdbee7f5874cb   ¾/Volumes/Data/src/elasticsearch-rs/benches/golang/src/github.com/bradhe/stopwatch/stop_watch.goþ.type..hash."".StopWatch     eH‹%    H;avmHƒìH‹\$ H‰$Hƒ<$ tPH‹\$(H‰\$è    H‹D$H‹\$ H‰$Hƒ<$ t#Hƒ$H‰D$(H‰D$è    H‹\$H‰\$0HƒÄÃ‰%    ëÔ‰%    ë§è    ézÿÿÿÌÌÌÌÌÌÌÌÌÌ
-      \  (type..hash.time.Time   ®  (type..hash.time.Time   ú  0runtime.morestack_noctxt   00  "".~r2  type.uintptr "".h type.uintptr "".p  $type.*"".StopWatch 0V/0/   
- -c TgclocalsÂ·0b86ef39f3fed835f14ba5f4d7c62fa2 TgclocalsÂ·33cdeccccebe80329f1fdbee7f5874cb   ²/Volumes/Data/src/elasticsearch-rs/benches/golang/src/github.com/bradhe/stopwatch/main.goþ*type..eq."".StopWatch     H‹t$H‹T$Hƒþ tnHƒú tdH‹H‹*H9ëuS‹^‹j9ëuIH‹^H‹jH9ëu<H‰ðHƒÀH‰ÑHƒÁH‹H‹)H9ëu‹X‹i9ëuH‹XH‹iH9ëuÆD$ÃÆD$ ÃÆD$ Ã‰ë˜‰ëŽÌÌÌÌÌÌÌÌÌÌÌÌÌÌ 0   
-"".autotmp_0008  type.*time.Time "".autotmp_0007  type.*time.Time "".~r2  type.bool "".q $type.*"".StopWatch "".p  $type.*"".StopWatch     TgclocalsÂ·3bb21ca8fe1d99a3e492463bd711418a TgclocalsÂ·33cdeccccebe80329f1fdbee7f5874cb   ²/Volumes/Data/src/elasticsearch-rs/benches/golang/src/github.com/bradhe/stopwatch/main.goþTgclocalsÂ·33cdeccccebe80329f1fdbee7f5874cb           þTgclocalsÂ·790e5cc5051fc0affc980ade09e929ec              þTgclocalsÂ·488efd5564b22aec1294e68943e642b4        
-           þTgclocalsÂ·734d53873353bd527d9adc73d57777ea                  þTgclocalsÂ·33cdeccccebe80329f1fdbee7f5874cb           þTgclocalsÂ·3f5c1f818fa7055d0400cecd34057162             þTgclocalsÂ·33cdeccccebe80329f1fdbee7f5874cb           þTgclocalsÂ·33cdeccccebe80329f1fdbee7f5874cb           þ>"".initdoneÂ·  type.uint8   þ"".StartÂ·f              "".Start   þ"".StopÂ·f              "".Stop   þ>"".(*StopWatch).MillisecondsÂ·f              8"".(*StopWatch).Milliseconds   þ"".initÂ·f              "".init   þTgclocalsÂ·33cdeccccebe80329f1fdbee7f5874cb           þTgclocalsÂ·0b86ef39f3fed835f14ba5f4d7c62fa2             þTgclocalsÂ·33cdeccccebe80329f1fdbee7f5874cb           þTgclocalsÂ·3bb21ca8fe1d99a3e492463bd711418a             þ6type..hashfunc."".StopWatch              .type..hash."".StopWatch   þ2type..eqfunc."".StopWatch              *type..eq."".StopWatch   þ,type..alg."".StopWatch                        6type..hashfunc."".StopWatch     2type..eqfunc."".StopWatch   þ"runtime.gcbits.24   $ þFgo.string.hdr."stopwatch.StopWatch"                       >go.string."stopwatch.StopWatch"   þ>go.string."stopwatch.StopWatch" 0  (stopwatch.StopWatch  þ*go.string.hdr."start"                       "go.string."start"   þ"go.string."start"   start  þVgo.string.hdr."github.com/bradhe/stopwatch"                       Ngo.string."github.com/bradhe/stopwatch"   þNgo.string."github.com/bradhe/stopwatch" @  8github.com/bradhe/stopwatch  þ"go.importpath."".                       Ngo.string."github.com/bradhe/stopwatch"   þ(go.string.hdr."stop"                        go.string."stop"   þ go.string."stop"   
-stop  þ2go.string.hdr."StopWatch"             	          *go.string."StopWatch"   þ*go.string."StopWatch"    StopWatch  þ"type."".StopWatch      0       0       kÀÁÈ                                                                                                                                                                                      0  ,type..alg."".StopWatch   @  "runtime.gcbits.24   P  Fgo.string.hdr."stopwatch.StopWatch"   p  $type.*"".StopWatch   €° "type."".StopWatch   °  *go.string.hdr."start"   À  "go.importpath."".   Ð  type.time.Time   €  (go.string.hdr."stop"     "go.importpath."".      type.time.Time   `Ð "type."".StopWatch   Ð  2go.string.hdr."StopWatch"   à  "go.importpath."".   ð  "type."".StopWatch   þ"runtime.gcbits.01    þHgo.string.hdr."*stopwatch.StopWatch"                       @go.string."*stopwatch.StopWatch"   þ@go.string."*stopwatch.StopWatch" 0  **stopwatch.StopWatch  þbgo.string.hdr."func(*stopwatch.StopWatch) uint32"             !          Zgo.string."func(*stopwatch.StopWatch) uint32"   þZgo.string."func(*stopwatch.StopWatch) uint32" P  Dfunc(*stopwatch.StopWatch) uint32  þ>type.func(*"".StopWatch) uint32                 2Êí  3                                                                                                            0€  runtime.algarray   @  "runtime.gcbits.01   P  bgo.string.hdr."func(*stopwatch.StopWatch) uint32"   p  Pgo.weak.type.*func(*"".StopWatch) uint32   ð >type.func(*"".StopWatch) uint32   À€ >type.func(*"".StopWatch) uint32   ð  $type.*"".StopWatch   €  type.uint32   þgo.typelink.func(*stopwatch.StopWatch) uint32	func(*"".StopWatch) uint32              >type.func(*"".StopWatch) uint32   þ8go.string.hdr."Milliseconds"                       0go.string."Milliseconds"   þ0go.string."Milliseconds"    Milliseconds  þ:go.string.hdr."func() uint32"                       2go.string."func() uint32"   þ2go.string."func() uint32"    func() uint32  þ$type.func() uint32 €  €              ºêLÆ 3                                                                                                      0€  runtime.algarray   @  "runtime.gcbits.01   P  :go.string.hdr."func() uint32"   p  6go.weak.type.*func() uint32   ð $type.func() uint32   Àð $type.func() uint32   ð  type.uint32   þNgo.typelink.func() uint32	func() uint32              $type.func() uint32   þ$type.*"".StopWatch  À  À              „'0Q 6                                                                                                                                      0   runtime.algarray   @  "runtime.gcbits.01   P  Hgo.string.hdr."*stopwatch.StopWatch"   p  6go.weak.type.**"".StopWatch   €  "type."".StopWatch   ` $type.*"".StopWatch   °à $type.*"".StopWatch   à  8go.string.hdr."Milliseconds"   €  $type.func() uint32     >type.func(*"".StopWatch) uint32      8"".(*StopWatch).Milliseconds   °  8"".(*StopWatch).Milliseconds   þ(go.string.hdr."time"                        go.string."time"   þ go.string."time"   
-time  þ&go.importpath.time.                        go.string."time"   þ4type..hash."".StopWatchÂ·f              .type..hash."".StopWatch   þ0type..eq."".StopWatchÂ·f              *type..eq."".StopWatch   ÿÿgo13ld

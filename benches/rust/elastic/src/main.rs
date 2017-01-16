@@ -17,6 +17,7 @@ use std::env;
 use time::Duration;
 use stopwatch::Stopwatch;
 
+use elastic::http;
 use elastic::prelude::*;
 
 // TODO: Replace with elastic_responses

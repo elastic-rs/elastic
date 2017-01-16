@@ -1,3 +1,4 @@
 *.bk
+perf.*
 /target/
 /obj/
