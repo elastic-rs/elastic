@@ -1,6 +1,6 @@
 use serde::Serialize;
 use serde_json;
-use super::client::{Index, Id, Body, IndexRequest, IndicesPutMappingRequest};
+use super::client::requests::{Index, Id, Body, IndexRequest, IndicesPutMappingRequest};
 use super::types::prelude::*;
 
 use super::errors::*;

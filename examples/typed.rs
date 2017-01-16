@@ -1,6 +1,14 @@
 //! A basic typed example.
 //! 
 //! NOTE: This sample expects you have a node running on `localhost:9200`.
+//! 
+//! This sample does the following:
+//! 
+//! - Check if a particular index exists
+//! - Create the index if it doesn't
+//! - Put the mapping for a document type
+//! - Index a document
+//! - Search the index and iterate over hits
 
 #[macro_use]
 extern crate json_str;
@@ -13,6 +21,7 @@ extern crate serde_json;
 
 extern crate elastic;
 
+use elastic::http;
 use elastic::prelude::*;
 
 const INDEX: &'static str = "typed_sample_index";
@@ -62,7 +71,7 @@ fn create_index_if_new(client: &Client) {
         .send()
         .and_then(|res| {
             match *res.raw().status() {
-                StatusCode::NotFound => Ok(false),
+                http::StatusCode::NotFound => Ok(false),
                 _ => Ok(true)
             }
         })

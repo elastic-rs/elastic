@@ -64,7 +64,7 @@ And reference in your crate root:
 extern crate json_str;
 extern crate elastic;
 
-use elastic::client;
+use elastic::prelude::*;
 ```
 
 Get a client instance:
@@ -84,13 +84,13 @@ let body = json_str!({
     }
 });
 
-let req = client::SearchRequest::for_index("_all", body);
+let req = SearchRequest::for_index("_all", body);
 ```
 
 Send the request and iterate through the returned hits:
 
 ```rust
-let res: client::Response = client
+let res: Response = client
     .request(req)
     .send()
     .and_then(|res| res.json())
@@ -107,6 +107,13 @@ Development is active, but because functionality is split across crates it can b
 There is a [GitHub Project](https://github.com/orgs/elastic-rs/projects/1) to easily track priorities at the crate-level.
 
 The `elastic` crate brings these independent units together into a cohesive API. It aims to provide the glue between them and offer some typical defaults. If you have a more specialised use-case, you can pick and choose the crates that will best support it.
+
+`elastic` sits on a stack with hard dependencies on the following libraries:
+
+- `reqwest`/`hyper` for HTTP
+- `serde` for serialisation
+
+There hasn't been much effort put into abstracting these dependencies at this stage.
 
 ## Crates
 
