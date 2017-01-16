@@ -23,17 +23,16 @@
 //! This crate is on [crates.io](https://crates.io/crates/elastic).
 //! To get stated, add `elastic` to your `Cargo.toml`:
 //! 
-//! ```text
+//! ```ignore
 //! [dependencies]
 //! elastic = "*"
+//! ```
 //! 
-//! # Optional for deriving ElasticType
+//! The following optional dependencies may also be useful:
+//! 
+//! ```ignore
 //! elastic_types_derive = { version = "*", features = ["elastic"] }
-//! 
-//! # Optional for request bodies
 //! json_str = "*"
-//! 
-//! # Optional for deriving serialisation
 //! serde = "*"
 //! serde_derive = "*"
 //! ```
@@ -43,6 +42,7 @@
 //! ```
 //! extern crate elastic;
 //! 
+//! // Optional
 //! extern crate serde;
 //! #[macro_use]
 //! extern crate serde_derive;
@@ -137,7 +137,10 @@
 //!     timestamp: Date::now()
 //! };
 //! 
-//! let req = IndexRequest::try_for_doc((Index::from("index"), Id::from(doc.id.to_string()), &doc)).unwrap();
+//! let index = Index::from("index");
+//! let id = Id::from(doc.id.to_string());
+//! 
+//! let req = IndexRequest::try_for_doc((index, id, &doc)).unwrap();
 //! # }
 //! ```
 //! 
@@ -158,7 +161,10 @@
 //! #     pub title: String,
 //! #     pub timestamp: Date<DefaultDateFormat>
 //! # }
-//! let req = IndicesPutMappingRequest::try_for_mapping((Index::from("index"), MyType::mapping())).unwrap();
+//! let index = Index::from("index");
+//! let mapping = MyType::mapping();
+//! 
+//! let req = IndicesPutMappingRequest::try_for_mapping((index, mapping)).unwrap();
 //! # }
 //! ```
 
