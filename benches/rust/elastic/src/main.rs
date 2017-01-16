@@ -56,7 +56,7 @@ fn main() {
         }
     };
 
-    let params = RequestParams::default().header(header::Connection::keep_alive());
+    let params = RequestParams::default().header(http::header::Connection::keep_alive());
     let client = Client::new(params).unwrap();
 
     let mut results = Vec::<i64>::with_capacity(runs as usize);

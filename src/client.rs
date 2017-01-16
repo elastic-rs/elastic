@@ -1,22 +1,77 @@
-use serde::Deserialize;
-use reqwest::{self, Client as HttpClient};
 use elastic_reqwest::ElasticClient;
-use super::errors::*;
-
-pub use reqwest::StatusCode;
-pub use reqwest::header;
-pub use elastic_reqwest::RequestParams;
+use errors::*;
+use reqwest::Client as HttpClient;
 
 /// Request types the Elasticsearch REST API.
-pub use elastic_requests::*;
+pub mod requests {
+    pub use elastic_requests::*;
+    pub use impls::*;
+}
 
 /// Response types for the Elasticsearch REST API.
-pub use elastic_responses::*;
+pub mod responses {
+    use serde::Deserialize;
+    use errors::*;
+    use reqwest::Response as RawResponse;
+
+    pub use elastic_responses::*;
+
+    /// A raw HTTP response.
+    pub struct HttpResponse(RawResponse);
+
+    impl From<RawResponse> for HttpResponse {
+        fn from(value: RawResponse) -> Self {
+            HttpResponse(value)
+        }
+    }
+
+    impl HttpResponse {
+        /// Get the raw HTTP response.
+        pub fn raw(self) -> RawResponse {
+            self.0
+        }
+
+        /// Get the response body as JSON.
+        pub fn json<T>(mut self) -> Result<T>
+            where T: Deserialize
+        {
+            self.0.json().map_err(|e| e.into())
+        }
+    }
+}
+
+pub use elastic_reqwest::RequestParams;
+
+use self::requests::HttpRequest;
+use self::responses::HttpResponse;
 
 /// A HTTP client for the Elasticsearch REST API.
 pub struct Client {
     http: HttpClient,
     params: RequestParams,
+}
+
+impl Client {
+    /// Create a new client for the given parameters.
+    /// 
+    /// The parameters given here are used as the defaults for any
+    /// request made by this client, but can be overriden on a
+    /// per-request basis.
+    pub fn new(params: RequestParams) -> Result<Self> {
+        let client = HttpClient::new()?;
+
+        Ok(Client {
+            http: client,
+            params: params,
+        })
+    }
+
+    /// Create a `RequestBuilder` that can be configured before sending.
+    pub fn request<'a, I>(&'a self, req: I) -> RequestBuilder<'a, I>
+        where I: Into<HttpRequest<'static>>
+    {
+        RequestBuilder::new(&self, None, req)
+    }
 }
 
 /// A builder for a request.
@@ -56,52 +111,12 @@ impl<'a, I> RequestBuilder<'a, I>
     }
 
     /// Send this request and return the response.
-    pub fn send(self) -> Result<HttpResponse> {
+    pub fn send(self) -> Result<responses::HttpResponse> {
         let params = self.params.as_ref().unwrap_or(&self.client.params);
 
         let res = self.client.http.elastic_req(params, self.req)?;
 
-        Ok(HttpResponse(res))
-    }
-}
-
-impl Client {
-    /// Create a new client for the given parameters.
-    /// 
-    /// The parameters given here are used as the defaults for any
-    /// request made by this client, but can be overriden on a
-    /// per-request basis.
-    pub fn new(params: RequestParams) -> Result<Self> {
-        let client = HttpClient::new()?;
-
-        Ok(Client {
-            http: client,
-            params: params,
-        })
-    }
-
-    /// Create a `RequestBuilder` that can be configured before sending.
-    pub fn request<'a, I>(&'a self, req: I) -> RequestBuilder<'a, I>
-        where I: Into<HttpRequest<'static>>
-    {
-        RequestBuilder::new(&self, None, req)
-    }
-}
-
-/// A raw HTTP response.
-pub struct HttpResponse(reqwest::Response);
-
-impl HttpResponse {
-    /// Get the `reqwest` response.
-    pub fn raw(self) -> reqwest::Response {
-        self.0
-    }
-
-    /// Get the response body as JSON.
-    pub fn json<T>(mut self) -> Result<T>
-        where T: Deserialize
-    {
-        self.0.json().map_err(|e| e.into())
+        Ok(HttpResponse::from(res))
     }
 }
 
@@ -113,7 +128,7 @@ mod tests {
     fn request_builder_params() {
         let client = Client::new(RequestParams::new("http://eshost:9200")).unwrap();
 
-        let req = RequestBuilder::new(&client, None, PingRequest::new())
+        let req = RequestBuilder::new(&client, None, requests::PingRequest::new())
             .params(|p| p.url_param("pretty", true))
             .params(|p| p.url_param("refresh", true));
 

@@ -22,7 +22,7 @@
 //! This crate is on [crates.io](https://crates.io/crates/elastic).
 //! To get stated, add `elastic` to your `Cargo.toml`:
 //! 
-//! ```ignore
+//! ```text
 //! [dependencies]
 //! elastic = "*"
 //! 
@@ -160,36 +160,39 @@ extern crate serde_json;
 extern crate reqwest;
 extern crate elastic_reqwest;
 extern crate elastic_requests;
+#[macro_use]
 extern crate elastic_types;
 extern crate elastic_responses;
 
-mod http_client;
 mod impls;
 
+/// Client-side error types.
 pub mod errors;
 
-pub mod client {
-    //! HTTP client, requests and responses.
-    //!
-    //! This module contains the HTTP client, as well
-    //! as request and response types.
-
-    pub use super::http_client::*;
-    pub use super::impls::*;
+/// HTTP headers and status codes.
+pub mod http {
+    pub use reqwest::{StatusCode, header};
 }
 
-pub mod types {
-    //! Indexable documents and type mapping.
-    //!
-    //! This module contains tools for defining Elasticsearch-compatible
-    //! document types.
+/// HTTP client, requests and responses.
+///
+/// This module contains the HTTP client, as well
+/// as request and response types.
+pub mod client;
 
+/// Indexable documents and type mapping.
+///
+/// This module contains tools for defining Elasticsearch-compatible
+/// document types.
+pub mod types {
     pub use elastic_types::*;
 }
 
+/// A glob import for convenience.
 pub mod prelude {
-    pub use super::client::*;
-    pub use super::client::header;
-    
+    pub use super::client::{Client, RequestParams, RequestBuilder};
+    pub use super::client::requests::*;
+    pub use super::client::responses::*;
+
     pub use super::types::prelude::*;
 }

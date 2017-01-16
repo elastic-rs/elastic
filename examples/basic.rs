@@ -14,16 +14,16 @@ fn main() {
     let client = Client::new(RequestParams::default()).unwrap();
 
     // A freeform JSON request body.
-    let body = json_str!({
+    let get_query = json_fn!(|qry| {
         query: {
             query_string: {
-                query: "*"
+                query: $qry
             }
         }
     });
 
     // A search request from the body.
-    let req = SearchRequest::for_index("_all", body);
+    let req = SearchRequest::for_index("_all", get_query(r#""string value""#));
 
     // Send the request and process the response.
     let res: Response = client
