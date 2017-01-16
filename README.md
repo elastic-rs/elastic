@@ -64,7 +64,7 @@ And reference in your crate root:
 extern crate json_str;
 extern crate elastic;
 
-use elastic::client;
+use elastic::prelude::*;
 ```
 
 Get a client instance:
@@ -84,13 +84,13 @@ let body = json_str!({
     }
 });
 
-let req = client::SearchRequest::for_index("_all", body);
+let req = SearchRequest::for_index("_all", body);
 ```
 
 Send the request and iterate through the returned hits:
 
 ```rust
-let res: client::Response = client
+let res: Response = client
     .request(req)
     .send()
     .and_then(|res| res.json())
