@@ -53,12 +53,12 @@ pub mod responses {
         /// 
         /// This method takes an `is_ok` closure that determines
         /// whether the result is successful.
-        pub fn response<T, F>(mut self, is_ok: F) -> Result<T>
+        pub fn response<T, F>(self, is_ok: F) -> Result<T>
             where T: Deserialize,
                   F: Fn(&RawResponse) -> bool
         {
             match is_ok(&self.0) {
-                true => self.0.json().map_err(|e| e.into()),
+                true => serde_json::from_reader(self.0).map_err(|e| e.into()),
                 false => {
                     let err: ApiError = serde_json::from_reader(self.0)?;
                     Err(ErrorKind::Api(err).into())
