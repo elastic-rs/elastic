@@ -3,7 +3,7 @@ use serde_json;
 use super::client::requests::{Index, Id, Body, IndexRequest, IndicesPutMappingRequest};
 use super::types::prelude::*;
 
-use super::errors::*;
+use super::error::*;
 
 /// A trait for converting a document into a request.
 pub trait TryForDoc<T, M>: Sized {

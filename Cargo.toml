@@ -20,7 +20,7 @@ reqwest = "~0.2.0"
 
 elastic_reqwest = "~0.2.0"
 elastic_requests = "~0.1.0"
-elastic_responses = "~0.2.0"
+elastic_responses = { version = "*", path = "../elastic-responses" }
 elastic_types = "~0.10.1"
 
 [dev-dependencies]

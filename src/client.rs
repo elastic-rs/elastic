@@ -1,5 +1,5 @@
 use elastic_reqwest::ElasticClient;
-use errors::*;
+use error::*;
 use reqwest::Client as HttpClient;
 
 /// Request types the Elasticsearch REST API.
@@ -11,8 +11,9 @@ pub mod requests {
 /// Response types for the Elasticsearch REST API.
 pub mod responses {
     use serde::Deserialize;
-    use errors::*;
-    use reqwest::Response as RawResponse;
+    use serde_json;
+    use reqwest::{Response as RawResponse, StatusCode};
+    use error::*;
 
     pub use elastic_responses::*;
 
@@ -25,17 +26,69 @@ pub mod responses {
         }
     }
 
+    pub trait IntoQueryResponse<T> 
+        where T: Deserialize
+    {
+        fn query_response(self) -> Result<QueryResponseOf<Hit<T>>>;
+    }
+
+    pub trait IntoGetDocResponse<T: Deserialize>
+        where T: Deserialize
+    {
+        fn doc_response(self) -> Result<GetDocResponseOf<T>>;
+    }
+
     impl HttpResponse {
+        /// Get the status code for the response.
+        pub fn status(&self) -> &StatusCode {
+            self.0.status()
+        }
+
         /// Get the raw HTTP response.
         pub fn raw(self) -> RawResponse {
             self.0
         }
 
-        /// Get the response body as JSON.
-        pub fn json<T>(mut self) -> Result<T>
+        /// Get the response body from JSON.
+        /// 
+        /// This method takes an `is_ok` closure that determines
+        /// whether the result is successful.
+        pub fn response<T, F>(mut self, is_ok: F) -> Result<T>
+            where T: Deserialize,
+                  F: Fn(&RawResponse) -> bool
+        {
+            match is_ok(&self.0) {
+                true => self.0.json().map_err(|e| e.into()),
+                false => {
+                    let err: ApiError = serde_json::from_reader(self.0)?;
+                    Err(ErrorKind::Api(err).into())
+                }
+            }
+        }
+
+        /// Deserialise as a Query DSL response.
+        pub fn query_response<T>(self) -> Result<QueryResponseOf<Hit<T>>>
             where T: Deserialize
         {
-            self.0.json().map_err(|e| e.into())
+            self.response(|res| {
+                match *res.status() {
+                    StatusCode::Ok => true,
+                    _ => false
+                }
+            })
+        }
+
+        /// Deserialise as a get document response.
+        pub fn doc_response<T>(self) -> Result<GetDocResponseOf<T>>
+            where T: Deserialize
+        {
+            self.response(|res| {
+                match *res.status() {
+                    StatusCode::Ok |
+                    StatusCode::NotFound => true,
+                    _ => false
+                }
+            })
         }
     }
 }

@@ -182,7 +182,7 @@ extern crate elastic_responses;
 mod impls;
 
 /// Client-side error types.
-pub mod errors;
+pub mod error;
 
 /// HTTP headers and status codes.
 pub mod http {

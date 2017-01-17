@@ -70,7 +70,7 @@ fn create_index_if_new(client: &Client) {
     let exists = client.request(index_exists_request())
         .send()
         .and_then(|res| {
-            match *res.raw().status() {
+            match *res.status() {
                 http::StatusCode::NotFound => Ok(false),
                 _ => Ok(true)
             }
@@ -121,6 +121,6 @@ fn search() -> SearchRequest<'static> {
     SearchRequest::for_index(index, body)
 }
 
-fn search_docs(client: &Client) -> serde_json::Value {
-    client.request(search()).send().and_then(|res| res.json()).unwrap()
+fn search_docs(client: &Client) -> QueryResponseOf<Hit<MyType>> {
+    client.request(search()).send().and_then(|res| res.query_response()).unwrap()
 }

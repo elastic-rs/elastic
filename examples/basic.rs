@@ -23,14 +23,13 @@ fn main() {
     });
 
     // A search request from the body.
-    let req = SearchRequest::for_index("_all", get_query(r#""string value""#));
+    let req = SearchRequest::for_index("_all", get_query(r#""*""#));
 
     // Send the request and process the response.
-    let res: Response = client
-        .request(req)
-        .send()
-        .and_then(|res| res.json())
-        .unwrap();
+    let res: QueryResponse = client.request(req)
+                                   .send()
+                                   .and_then(|res| res.query_response())
+                                   .unwrap();
 
     // Iterate through the hits in the response.
     for hit in res.hits() {
