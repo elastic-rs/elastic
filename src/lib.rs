@@ -120,8 +120,8 @@ pub struct ApiError {
 }
 
 impl ApiError {
-    pub fn error<'a>(&'a self) -> ErrorKind<'a> {
-        ErrorKind::from(&self.error_value)
+    pub fn error<'a>(&'a self) -> ApiErrorKind<'a> {
+        ApiErrorKind::from(&self.error_value)
     }
 }
 

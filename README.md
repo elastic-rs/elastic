@@ -21,7 +21,7 @@ Query your Elasticsearch Cluster, then iterate through the results:
  let mut res = client.elastic_req(&params, SearchRequest::for_index("_all", body)).unwrap();
 
  // Parse body to JSON as an elastic_responses::Response object
- let body_as_json: EsResponse = res.json().unwrap();
+ let body_as_json: QueryResponse = res.json().unwrap();
 
  // Use hits() or aggs() iterators
  // Hits
