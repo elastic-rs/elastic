@@ -101,14 +101,15 @@ fn index_doc(client: &Client, doc: MyType) {
 
     // Wait for refresh when indexing so we can search right away
     client.request(put_doc_request(&doc))
-        .params(|params| params.url_param("refresh", true))
-        .send()
-        .unwrap();
+          .params(|params| params.url_param("refresh", true))
+          .send()
+          .unwrap();
 }
 
 // Search for documents in the index
 fn search() -> SearchRequest<'static> {
     let index = Index::from(INDEX);
+    let ty = Type::from(MyType::name());
 
     let body = json_str!({
         query: {
@@ -118,7 +119,7 @@ fn search() -> SearchRequest<'static> {
         }
     });
 
-    SearchRequest::for_index(index, body)
+    SearchRequest::for_index_ty(index, ty, body)
 }
 
 fn search_docs(client: &Client) -> QueryResponseOf<Hit<MyType>> {
