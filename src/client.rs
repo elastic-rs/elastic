@@ -26,18 +26,6 @@ pub mod responses {
         }
     }
 
-    pub trait IntoQueryResponse<T> 
-        where T: Deserialize
-    {
-        fn query_response(self) -> Result<QueryResponseOf<Hit<T>>>;
-    }
-
-    pub trait IntoGetDocResponse<T: Deserialize>
-        where T: Deserialize
-    {
-        fn doc_response(self) -> Result<GetDocResponseOf<T>>;
-    }
-
     impl HttpResponse {
         /// Get the status code for the response.
         pub fn status(&self) -> &StatusCode {
