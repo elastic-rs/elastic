@@ -174,9 +174,9 @@ fn test_parse_other_error() {
 
     let reason = match deserialized {
         ApiError::Other(ref err) => err.as_object()
-                                           .and_then(|err| err.get("reason"))
-                                           .and_then(|reason| reason.as_str())
-                                           .map(|reason| reason.to_owned()),
+                                       .and_then(|err| err.get("reason"))
+                                       .and_then(|reason| reason.as_str())
+                                       .map(|reason| reason.to_owned()),
         _ => None
     };
 

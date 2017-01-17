@@ -60,8 +60,8 @@ impl From<Value> for ApiError {
 
         let ty = {
             let ty = obj.get("type")
-                .and_then(|v| v.as_str())
-                .map(|v| v.to_owned());
+                        .and_then(|v| v.as_str())
+                        .map(|v| v.to_owned());
 
             match ty {
                 Some(ty) => ty,
