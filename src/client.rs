@@ -15,7 +15,17 @@ pub mod responses {
     use reqwest::{Response as RawResponse, StatusCode};
     use error::*;
 
-    pub use elastic_responses::*;
+    pub use elastic_responses::{
+        AggregationIterator, 
+        Aggregations, 
+        GetDocResponseOf, 
+        GetDocResponse,
+        Hit, 
+        Hits, 
+        QueryResponseOf,
+        QueryResponse,
+        Shards
+    };
 
     /// A raw HTTP response.
     pub struct HttpResponse(RawResponse);
