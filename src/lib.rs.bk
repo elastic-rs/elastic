@@ -10,12 +10,12 @@
 //!
 //! ```no_run
 //! # extern crate elastic_responses;
-//! # use elastic_responses::QueryResponse;
-//! # fn do_request() -> QueryResponse { unimplemented!() }
+//! # use elastic_responses::Response;
+//! # fn do_request() -> Response { unimplemented!() }
 //! # fn main() {
 //! // Send a request (omitted, see `samples/basic`), and read the response.
-//! // Parse body to JSON as an elastic_responses::QueryResponse object
-//! let body_as_json: QueryResponse = do_request();
+//! // Parse body to JSON as an elastic_responses::Response object
+//! let body_as_json: Response = do_request();
 //!
 //! // Use hits() or aggs() iterators
 //! // Hits
@@ -31,7 +31,7 @@
 //! ```
 
 
-#![feature(custom_derive, custom_attribute)]
+#![feature(custom_derive)]
 
 #[macro_use]
 extern crate log;
@@ -64,70 +64,15 @@ use std::slice::Iter;
 //    println!("{:?}", i);
 // }
 
-/// A specific error from Elasticsearch.
-#[derive(Debug, PartialEq)]
-pub enum ErrorKind<'a> {
-    /// No such index.
-    IndexNotFound { index: &'a str },
-    /// Failed to parse the query input.
-    Parsing { line: u64, col: u64, reason: &'a str },
-    /// Any other kind of error.
-    Other(&'a Value)
-}
-
-macro_rules! error_key {
-    ($value:ident, $obj:ident [ $key:ident ] : |$cast:ident| $cast_expr:expr) => (
-        match $obj.get(stringify!($key)).and_then(|$cast| $cast_expr) {
-            Some(v) => v,
-            _ => return ErrorKind::Other($value)
-        }
-    )
-}
-
-impl<'a> From<&'a Value> for ErrorKind<'a> {
-    fn from(value: &'a Value) -> Self {
-        let obj = match value.as_object() {
-            Some(obj) => obj,
-            _ => return ErrorKind::Other(value)
-        };
-
-        let ty = obj.get("type").and_then(|v| v.as_str());
-
-        match ty {
-            Some("index_not_found_exception") => {
-                let index = error_key!(value, obj[index]: |v| v.as_str());
-
-                ErrorKind::IndexNotFound { index: index }
-            },
-            Some("parsing_exception") => {
-                let line = error_key!(value, obj[line]: |v| v.as_u64());
-                let col = error_key!(value, obj[col]: |v| v.as_u64());
-                let reason = error_key!(value, obj[reason]: |v| v.as_str());
-
-                ErrorKind::Parsing { line: line, col: col, reason: reason }
-            },
-            _ => ErrorKind::Other(value),
-        }
-    }
-}
-
 /// A generic error from Elasticsearch.
-#[derive(Deserialize, Debug)]
 pub struct Error {
-    #[serde(rename = "error")]
-    error_value: Value,
+    pub error: Value,
     pub status: u16,
-}
-
-impl Error {
-    pub fn error<'a>(&'a self) -> ErrorKind<'a> {
-        ErrorKind::from(&self.error_value)
-    }
 }
 
 /// Response for a get document request.
 #[derive(Deserialize, Debug)]
-pub struct GetDocResponseOf<T: Deserialize> {
+struct GetDocResponse<T: Deserialize> {
     #[serde(rename = "_index")]
     pub index: String,
     #[serde(rename = "_type")]
@@ -141,8 +86,6 @@ pub struct GetDocResponseOf<T: Deserialize> {
     pub routing: Option<String>,
 }
 
-pub type GetDocResponse = GetDocResponseOf<Value>;
-
 /// Main `struct` of the crate, provides access to the `hits` and `aggs` iterators.
 #[derive(Deserialize, Debug)]
 pub struct QueryResponseOf<T: Deserialize> {
@@ -150,22 +93,22 @@ pub struct QueryResponseOf<T: Deserialize> {
     pub timed_out: bool,
     #[serde(rename = "_shards")]
     pub shards: Shards,
-    pub hits: Hits<T>,
+    pub hits: QueryHits<T>,
     pub aggregations: Option<Aggregations>,
     pub status: Option<u16>,
 }
 
-pub type QueryResponse = QueryResponseOf<Hit<Value>>;
+pub type QueryResponse = QueryResponseOf<Value>;
 
 impl<T: Deserialize> QueryResponseOf<T> {
     /// Returns an Iterator to the search results or hits of the response.
-    pub fn hits(&self) -> &[T] {
+    pub fn hits(&self) -> &Vec<T> {
         &self.hits.hits()
     }
 
     /// Returns an Iterator to the search results or aggregations part of the response.
     ///
-    /// This Iterator transforms the tree-like JSON object into a row/table
+    /// This Iterator transforms the tree-like JSON object into a row/table 
     /// based format for use with standard iterator adaptors.
     pub fn aggs(&self) -> &Aggregations {
         // FIXME: Create empty aggregation, remove unwrap()
@@ -174,7 +117,7 @@ impl<T: Deserialize> QueryResponseOf<T> {
 }
 
 #[derive(Deserialize, Debug)]
-pub struct Shards {
+struct Shards {
     pub total: u32,
     pub successful: u32,
     pub failed: u32,
@@ -182,20 +125,20 @@ pub struct Shards {
 
 /// Struct to hold the search's Hits, serializable to type `T` or `serde_json::Value`
 #[derive(Deserialize, Debug)]
-pub struct Hits<T: Deserialize> {
+pub struct QueryHits<T: Deserialize> {
     pub total: u64,
     pub max_score: u64,
-    pub hits: Vec<T>,
+    pub hits: Vec<Hit<T>>,
 }
 
-impl<T: Deserialize> Hits<T> {
-    fn hits(&self) -> &[T] {
+impl<T: Deserialize> QueryHits<T> {
+    fn hits(&self) -> &[QueryHit<T>] {
         &self.hits
     }
 }
 
 #[derive(Deserialize, Debug)]
-pub struct Hit<T: Deserialize> {
+struct QueryHit<T: Deserialize> {
     #[serde(rename = "_index")]
     pub index: String,
     #[serde(rename = "_type")]

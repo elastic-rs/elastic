@@ -1,0 +1,13 @@
+{
+  "error": {
+    "root_cause": [
+      {
+        "type": "parsing_exception",
+        "reason": "An error that we don't know about."
+      }
+    ],
+    "type": "parsing_exception",
+    "reason": "An error that we don't know about."
+  },
+  "status": 500
+}
