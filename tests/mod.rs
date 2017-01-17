@@ -17,6 +17,7 @@ extern crate slog_stdlog;
 extern crate slog_envlogger;
 
 use elastic_responses::*;
+use elastic_responses::error::ApiError;
 use std::fs::File;
 use std::io::Read;
 
@@ -143,10 +144,13 @@ fn test_parse_index_not_found_error() {
     let s = load_file("tests/samples/error_index_not_found.json");
     let deserialized: ApiError = serde_json::from_str(&s).unwrap();
 
-    let error = deserialized.error();
+    let valid = match deserialized {
+        ApiError::IndexNotFound { ref index }
+        if index == "carrots" => true,
+        _ => false
+    };
 
-    assert_eq!(404, deserialized.status);
-    assert_eq!(ApiErrorKind::IndexNotFound { index: "carrots" }, error);
+    assert!(valid);
 }
 
 #[test]
@@ -154,10 +158,13 @@ fn test_parse_parsing_error() {
     let s = load_file("tests/samples/error_parsing.json");
     let deserialized: ApiError = serde_json::from_str(&s).unwrap();
 
-    let error = deserialized.error();
+    let valid = match deserialized {
+        ApiError::Parsing { line: 2, col: 9, ref reason } 
+        if reason == "Unknown key for a START_OBJECT in [qry]." => true,
+        _ => false
+    };
 
-    assert_eq!(400, deserialized.status);
-    assert_eq!(ApiErrorKind::Parsing { line: 2, col: 9, reason: "Unknown key for a START_OBJECT in [qry]." }, error);
+    assert!(valid);
 }
 
 #[test]
@@ -165,15 +172,13 @@ fn test_parse_other_error() {
     let s = load_file("tests/samples/error_other.json");
     let deserialized: ApiError = serde_json::from_str(&s).unwrap();
 
-    let error = deserialized.error();
-
-    let reason = match error {
-        ApiErrorKind::Other(err) => err.as_object()
-                                    .and_then(|err| err.get("reason"))
-                                    .and_then(|reason| reason.as_str()),
+    let reason = match deserialized {
+        ApiError::Other(ref err) => err.as_object()
+                                           .and_then(|err| err.get("reason"))
+                                           .and_then(|reason| reason.as_str())
+                                           .map(|reason| reason.to_owned()),
         _ => None
     };
 
-    assert_eq!(500, deserialized.status);
-    assert_eq!(Some("An error that we don't know about."), reason);
+    assert_eq!(Some(String::from("An error that we don't know about.")), reason);
 }

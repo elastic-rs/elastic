@@ -39,6 +39,9 @@ extern crate log;
 #[macro_use]
 extern crate serde_derive;
 
+#[macro_use]
+extern crate quick_error;
+
 extern crate serde;
 extern crate serde_json;
 
@@ -50,6 +53,9 @@ use serde_json::Value;
 use std::borrow::Cow;
 use std::collections::BTreeMap;
 use std::slice::Iter;
+
+/// Error types from Elasticsearch
+pub mod error;
 
 // let mut i = deserialized.aggs().unwrap().into_iter();
 //
@@ -63,67 +69,6 @@ use std::slice::Iter;
 // for i in deserialized.aggs().unwrap().into_iter().take(1) {
 //    println!("{:?}", i);
 // }
-
-/// A specific error from Elasticsearch.
-#[derive(Debug, PartialEq)]
-pub enum ApiErrorKind<'a> {
-    /// No such index.
-    IndexNotFound { index: &'a str },
-    /// Failed to parse the query input.
-    Parsing { line: u64, col: u64, reason: &'a str },
-    /// Any other kind of error.
-    Other(&'a Value)
-}
-
-macro_rules! error_key {
-    ($value:ident, $obj:ident [ $key:ident ] : |$cast:ident| $cast_expr:expr) => (
-        match $obj.get(stringify!($key)).and_then(|$cast| $cast_expr) {
-            Some(v) => v,
-            _ => return ApiErrorKind::Other($value)
-        }
-    )
-}
-
-impl<'a> From<&'a Value> for ApiErrorKind<'a> {
-    fn from(value: &'a Value) -> Self {
-        let obj = match value.as_object() {
-            Some(obj) => obj,
-            _ => return ApiErrorKind::Other(value)
-        };
-
-        let ty = obj.get("type").and_then(|v| v.as_str());
-
-        match ty {
-            Some("index_not_found_exception") => {
-                let index = error_key!(value, obj[index]: |v| v.as_str());
-
-                ApiErrorKind::IndexNotFound { index: index }
-            },
-            Some("parsing_exception") => {
-                let line = error_key!(value, obj[line]: |v| v.as_u64());
-                let col = error_key!(value, obj[col]: |v| v.as_u64());
-                let reason = error_key!(value, obj[reason]: |v| v.as_str());
-
-                ApiErrorKind::Parsing { line: line, col: col, reason: reason }
-            },
-            _ => ApiErrorKind::Other(value),
-        }
-    }
-}
-
-/// A generic error from Elasticsearch.
-#[derive(Deserialize, Debug)]
-pub struct ApiError {
-    #[serde(rename = "error")]
-    error_value: Value,
-    pub status: u16,
-}
-
-impl ApiError {
-    pub fn error<'a>(&'a self) -> ApiErrorKind<'a> {
-        ApiErrorKind::from(&self.error_value)
-    }
-}
 
 /// Response for a get document request.
 #[derive(Deserialize, Debug)]
