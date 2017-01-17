@@ -141,34 +141,34 @@ fn test_parse_not_found_doc_response() {
 #[test]
 fn test_parse_index_not_found_error() {
     let s = load_file("tests/samples/error_index_not_found.json");
-    let deserialized: Error = serde_json::from_str(&s).unwrap();
+    let deserialized: ApiError = serde_json::from_str(&s).unwrap();
 
     let error = deserialized.error();
 
     assert_eq!(404, deserialized.status);
-    assert_eq!(ErrorKind::IndexNotFound { index: "carrots" }, error);
+    assert_eq!(ApiErrorKind::IndexNotFound { index: "carrots" }, error);
 }
 
 #[test]
 fn test_parse_parsing_error() {
     let s = load_file("tests/samples/error_parsing.json");
-    let deserialized: Error = serde_json::from_str(&s).unwrap();
+    let deserialized: ApiError = serde_json::from_str(&s).unwrap();
 
     let error = deserialized.error();
 
     assert_eq!(400, deserialized.status);
-    assert_eq!(ErrorKind::Parsing { line: 2, col: 9, reason: "Unknown key for a START_OBJECT in [qry]." }, error);
+    assert_eq!(ApiErrorKind::Parsing { line: 2, col: 9, reason: "Unknown key for a START_OBJECT in [qry]." }, error);
 }
 
 #[test]
 fn test_parse_other_error() {
     let s = load_file("tests/samples/error_other.json");
-    let deserialized: Error = serde_json::from_str(&s).unwrap();
+    let deserialized: ApiError = serde_json::from_str(&s).unwrap();
 
     let error = deserialized.error();
 
     let reason = match error {
-        ErrorKind::Other(err) => err.as_object()
+        ApiErrorKind::Other(err) => err.as_object()
                                     .and_then(|err| err.get("reason"))
                                     .and_then(|reason| reason.as_str()),
         _ => None

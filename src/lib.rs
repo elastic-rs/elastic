@@ -66,7 +66,7 @@ use std::slice::Iter;
 
 /// A specific error from Elasticsearch.
 #[derive(Debug, PartialEq)]
-pub enum ErrorKind<'a> {
+pub enum ApiErrorKind<'a> {
     /// No such index.
     IndexNotFound { index: &'a str },
     /// Failed to parse the query input.
@@ -79,16 +79,16 @@ macro_rules! error_key {
     ($value:ident, $obj:ident [ $key:ident ] : |$cast:ident| $cast_expr:expr) => (
         match $obj.get(stringify!($key)).and_then(|$cast| $cast_expr) {
             Some(v) => v,
-            _ => return ErrorKind::Other($value)
+            _ => return ApiErrorKind::Other($value)
         }
     )
 }
 
-impl<'a> From<&'a Value> for ErrorKind<'a> {
+impl<'a> From<&'a Value> for ApiErrorKind<'a> {
     fn from(value: &'a Value) -> Self {
         let obj = match value.as_object() {
             Some(obj) => obj,
-            _ => return ErrorKind::Other(value)
+            _ => return ApiErrorKind::Other(value)
         };
 
         let ty = obj.get("type").and_then(|v| v.as_str());
@@ -97,29 +97,29 @@ impl<'a> From<&'a Value> for ErrorKind<'a> {
             Some("index_not_found_exception") => {
                 let index = error_key!(value, obj[index]: |v| v.as_str());
 
-                ErrorKind::IndexNotFound { index: index }
+                ApiErrorKind::IndexNotFound { index: index }
             },
             Some("parsing_exception") => {
                 let line = error_key!(value, obj[line]: |v| v.as_u64());
                 let col = error_key!(value, obj[col]: |v| v.as_u64());
                 let reason = error_key!(value, obj[reason]: |v| v.as_str());
 
-                ErrorKind::Parsing { line: line, col: col, reason: reason }
+                ApiErrorKind::Parsing { line: line, col: col, reason: reason }
             },
-            _ => ErrorKind::Other(value),
+            _ => ApiErrorKind::Other(value),
         }
     }
 }
 
 /// A generic error from Elasticsearch.
 #[derive(Deserialize, Debug)]
-pub struct Error {
+pub struct ApiError {
     #[serde(rename = "error")]
     error_value: Value,
     pub status: u16,
 }
 
-impl Error {
+impl ApiError {
     pub fn error<'a>(&'a self) -> ErrorKind<'a> {
         ErrorKind::from(&self.error_value)
     }
