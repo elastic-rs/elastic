@@ -10,12 +10,12 @@
 //!
 //! ```no_run
 //! # extern crate elastic_responses;
-//! # use elastic_responses::QueryResponse;
-//! # fn do_request() -> QueryResponse { unimplemented!() }
+//! # use elastic_responses::SearchResponse;
+//! # fn do_request() -> SearchResponse { unimplemented!() }
 //! # fn main() {
 //! // Send a request (omitted, see `samples/basic`), and read the response.
-//! // Parse body to JSON as an elastic_responses::QueryResponse object
-//! let body_as_json: QueryResponse = do_request();
+//! // Parse body to JSON as an elastic_responses::SearchResponse object
+//! let body_as_json: SearchResponse = do_request();
 //!
 //! // Use hits() or aggs() iterators
 //! // Hits
@@ -72,7 +72,7 @@ pub mod error;
 
 /// Response for a get document request.
 #[derive(Deserialize, Debug)]
-pub struct GetDocResponseOf<T: Deserialize> {
+pub struct GetResponseOf<T: Deserialize> {
     #[serde(rename = "_index")]
     pub index: String,
     #[serde(rename = "_type")]
@@ -86,11 +86,11 @@ pub struct GetDocResponseOf<T: Deserialize> {
     pub routing: Option<String>,
 }
 
-pub type GetDocResponse = GetDocResponseOf<Value>;
+pub type GetResponse = GetResponseOf<Value>;
 
 /// Main `struct` of the crate, provides access to the `hits` and `aggs` iterators.
 #[derive(Deserialize, Debug)]
-pub struct QueryResponseOf<T: Deserialize> {
+pub struct SearchResponseOf<T: Deserialize> {
     pub took: u64,
     pub timed_out: bool,
     #[serde(rename = "_shards")]
@@ -100,9 +100,9 @@ pub struct QueryResponseOf<T: Deserialize> {
     pub status: Option<u16>,
 }
 
-pub type QueryResponse = QueryResponseOf<Hit<Value>>;
+pub type SearchResponse = SearchResponseOf<Hit<Value>>;
 
-impl<T: Deserialize> QueryResponseOf<T> {
+impl<T: Deserialize> SearchResponseOf<T> {
     /// Returns an Iterator to the search results or hits of the response.
     pub fn hits(&self) -> &[T] {
         &self.hits.hits()

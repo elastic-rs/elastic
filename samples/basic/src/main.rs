@@ -12,7 +12,7 @@ extern crate elastic_responses;
 
 use elastic_reqwest::{ElasticClient};
 use elastic_requests::SearchRequest;
-use elastic_responses::QueryResponse as EsResponse;
+use elastic_responses::SearchResponse as EsResponse;
 
 fn main() {
 

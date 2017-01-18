@@ -31,7 +31,7 @@ fn load_file(p :&str) -> String {
 #[test]
 fn test_parse_hits_simple() {
     let s = load_file("tests/samples/hits_only.json");
-    let deserialized: QueryResponse = serde_json::from_str(&s).unwrap();
+    let deserialized: SearchResponse = serde_json::from_str(&s).unwrap();
 
     assert_eq!(deserialized.hits().into_iter().count(), 5);
 }
@@ -39,7 +39,7 @@ fn test_parse_hits_simple() {
 #[test]
 fn test_parse_simple_aggs() {
     let s = load_file("tests/samples/aggregation_simple.json");
-    let deserialized: QueryResponse = serde_json::from_str(&s).unwrap();
+    let deserialized: SearchResponse = serde_json::from_str(&s).unwrap();
 
     assert_eq!(deserialized.aggs().into_iter().count(), 124);
 }
@@ -47,7 +47,7 @@ fn test_parse_simple_aggs() {
 #[test]
 fn test_parse_3level_aggs() {
     let s = load_file("tests/samples/aggregation_3level.json");
-    let deserialized: QueryResponse = serde_json::from_str(&s).unwrap();
+    let deserialized: SearchResponse = serde_json::from_str(&s).unwrap();
 
     assert_eq!(deserialized.aggs().into_iter().count(), 201);
 }
@@ -55,7 +55,7 @@ fn test_parse_3level_aggs() {
 #[test]
 fn test_parse_3level_multichild_aggs() {
     let s = load_file("tests/samples/aggregation_3level_multichild.json");
-    let deserialized: QueryResponse = serde_json::from_str(&s).unwrap();
+    let deserialized: SearchResponse = serde_json::from_str(&s).unwrap();
 
     let min = "min_ack_pkts_sent";
     let avg = "avg_ack_pkts_sent";
@@ -77,7 +77,7 @@ fn test_parse_3level_multichild_aggs() {
 #[test]
 fn test_parse_3level_multistats_aggs() {
     let s = load_file("tests/samples/aggregation_3level_multistats.json");
-    let deserialized: QueryResponse = serde_json::from_str(&s).unwrap();
+    let deserialized: SearchResponse = serde_json::from_str(&s).unwrap();
 
     let min = "extstats_ack_pkts_sent_min";
     let avg = "stats_ack_pkts_sent_avg";
@@ -101,7 +101,7 @@ fn test_parse_3level_multistats_aggs() {
 #[test]
 fn test_parse_simple_aggs_no_empty_first_record() {
     let s = load_file("tests/samples/aggregation_simple.json");
-    let deserialized: QueryResponse = serde_json::from_str(&s).unwrap();
+    let deserialized: SearchResponse = serde_json::from_str(&s).unwrap();
 
     let s = "timechart";
     let mut first = true;
@@ -116,7 +116,7 @@ fn test_parse_simple_aggs_no_empty_first_record() {
 #[test]
 fn test_parse_found_doc_response() {
     let s = load_file("tests/samples/get_found.json");
-    let deserialized: GetDocResponse = serde_json::from_str(&s).unwrap();
+    let deserialized: GetResponse = serde_json::from_str(&s).unwrap();
 
     let id = deserialized.source
         .unwrap()
@@ -134,7 +134,7 @@ fn test_parse_found_doc_response() {
 #[test]
 fn test_parse_not_found_doc_response() {
     let s = load_file("tests/samples/get_not_found.json");
-    let deserialized: GetDocResponse = serde_json::from_str(&s).unwrap();
+    let deserialized: GetResponse = serde_json::from_str(&s).unwrap();
 
     assert!(!deserialized.found);
 }
