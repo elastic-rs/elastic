@@ -57,7 +57,7 @@ fn ensure_indexed(client: &Client, doc: MyType) {
 
     let get_res = client.request(req)
                         .send()
-                        .and_then(|res| res.doc_response::<MyType>());
+                        .and_then(|res| res.get_response::<MyType>());
 
     match get_res {
         // The doc was found: no need to index
@@ -68,13 +68,14 @@ fn ensure_indexed(client: &Client, doc: MyType) {
         Ok(_) => {
             println!("indexing doc");
 
-            unimplemented!();
+            put_doc(doc);
         },
         // No index: create it, then map and index
         Err(Error(ErrorKind::Api(ApiError::IndexNotFound { .. }), _)) => {
             println!("creating index");
 
-            unimplemented!();
+            put_index();
+            put_doc(doc);
         },
         // Something went wrong: panic
         Err(e) => panic!(e)
@@ -93,6 +94,6 @@ fn search(client: &Client) -> SearchResponse<MyType> {
     let req = SearchRequest::for_index(INDEX, body);
 
     client.request(req).send()
-                       .and_then(|res| res.query_response())
+                       .and_then(|res| res.search_response())
                        .unwrap()
 }

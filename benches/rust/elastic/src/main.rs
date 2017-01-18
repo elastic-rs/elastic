@@ -20,10 +20,6 @@ use stopwatch::Stopwatch;
 use elastic::http;
 use elastic::prelude::*;
 
-// TODO: Replace with elastic_responses
-mod response;
-use self::response::*;
-
 #[derive(Debug, Deserialize)]
 struct BenchDoc {
     pub id: i32,
@@ -65,7 +61,10 @@ fn main() {
         let mut sw = Stopwatch::start_new();
 
         let req: &SearchRequest<'static> = &REQ;
-        let res: SearchResponse<BenchDoc> = client.request(req).send().unwrap().json().unwrap();
+        let res: SearchResponse<BenchDoc> = client.request(req)
+                                                  .send()
+                                                  .and_then(|res| res.search_response())
+                                                  .unwrap();
 
         sw.stop();
 

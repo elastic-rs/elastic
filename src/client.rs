@@ -74,6 +74,9 @@ pub mod responses {
 
         /// Buffer the response body into a `serde_json::Value` and return
         /// a `BufferedResponse`.
+        /// 
+        /// This is _expensive_ so you should avoid using it if it's not
+        /// necessary.
         pub fn body(mut self) -> Result<(Value, BufferedResponse)> {
             let status = self.status();
 
@@ -157,7 +160,7 @@ pub mod responses {
         }
 
         /// Deserialise as a Query DSL response.
-        pub fn query_response<T>(self) -> Result<SearchResponse<T>>
+        pub fn search_response<T>(self) -> Result<SearchResponse<T>>
             where T: Deserialize
         {
             self.response(|res| {
@@ -173,7 +176,7 @@ pub mod responses {
         /// If the response status is `NotFound` then the response body
         /// will be buffered multiple times to work out whether it's an error
         /// or not.
-        pub fn doc_response<T>(self) -> Result<GetResponse<T>>
+        pub fn get_response<T>(self) -> Result<GetResponse<T>>
             where T: Deserialize
         {
             self.response(|res| {
