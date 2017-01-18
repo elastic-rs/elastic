@@ -132,7 +132,7 @@ fn impl_props_mapping(mapping: &syn::Ident, prop_ser_stmts: Vec<quote::Tokens>) 
         impl #root::document::PropertiesMapping for #mapping {
             fn props_len() -> usize { #stmts_len }
             
-            fn serialize_props<S>(serializer: &mut S, state: &mut S::StructState) -> Result<(), S::Error>
+            fn serialize_props<S>(serializer: &mut S, state: &mut S::StructState) -> ::std::result::Result<(), S::Error>
             where S: ::serde::Serializer {
                 #(#stmts)*
                 Ok(())
