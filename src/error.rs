@@ -4,8 +4,8 @@ pub use elastic_responses::error::ApiError;
 
 error_chain! {
     foreign_links {
+    	Api(ApiError);
         Json(JsonError);
         Http(HttpError);
-        Api(ApiError);
     }
 }

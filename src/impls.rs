@@ -11,7 +11,7 @@ pub trait TryForDoc<T, M>: Sized {
 }
 
 /// A trait for converting a document mapping into a request.
-pub trait TryForMapping<M> 
+pub trait TryForMapping<M>
     where Self: Sized
 {
     fn try_for_mapping(mapping: M) -> Result<Self>;
@@ -63,7 +63,7 @@ impl<'a, M> TryForMapping<(Index<'a>, M)> for IndicesPutMappingRequest<'a>
     }
 }
 
-impl <'a, 'b, T, M> TryForDoc<(Index<'a>, &'b T), M> for IndicesPutMappingRequest<'a>
+impl<'a, 'b, T, M> TryForDoc<(Index<'a>, &'b T), M> for IndicesPutMappingRequest<'a>
     where T: DocumentType<M>,
           M: DocumentMapping
 {

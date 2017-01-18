@@ -10,22 +10,28 @@ pub mod requests {
 
 /// Response types for the Elasticsearch REST API.
 pub mod responses {
+    use std::io::{Cursor, Read};
     use serde::Deserialize;
-    use serde_json;
+    use serde_json::{self, Value};
     use reqwest::{Response as RawResponse, StatusCode};
     use error::*;
 
-    pub use elastic_responses::{
-        AggregationIterator, 
-        Aggregations, 
-        GetDocResponseOf, 
-        GetDocResponse,
-        Hit, 
-        Hits, 
-        QueryResponseOf,
-        QueryResponse,
-        Shards
-    };
+    pub use elastic_responses::{AggregationIterator, Aggregations, GetDocResponseOf,
+                                GetDocResponse, Hit, Hits, QueryResponseOf, QueryResponse, Shards};
+
+    pub struct MaybeOkResponse {
+        pub ok: bool,
+        pub body: Option<Vec<u8>>,
+    }
+
+    impl From<bool> for MaybeOkResponse {
+        fn from(value: bool) -> Self {
+            MaybeOkResponse {
+                ok: value,
+                body: None,
+            }
+        }
+    }
 
     /// A raw HTTP response.
     pub struct HttpResponse(RawResponse);
@@ -34,6 +40,17 @@ pub mod responses {
         fn from(value: RawResponse) -> Self {
             HttpResponse(value)
         }
+    }
+
+    macro_rules! read_ok {
+        ($buf:expr) => (serde_json::from_reader($buf).map_err(|e| e.into()))
+    }
+
+    macro_rules! read_err {
+        ($buf:expr) => ({
+            let err: ApiError = serde_json::from_reader($buf)?;
+            Err(ErrorKind::Api(err).into())
+        })
     }
 
     impl HttpResponse {
@@ -48,18 +65,27 @@ pub mod responses {
         }
 
         /// Get the response body from JSON.
-        /// 
+        ///
         /// This method takes an `is_ok` closure that determines
         /// whether the result is successful.
-        pub fn response<T, F>(self, is_ok: F) -> Result<T>
+        pub fn response<T, F>(mut self, is_ok: F) -> Result<T>
             where T: Deserialize,
-                  F: Fn(&RawResponse) -> bool
+                  F: Fn(&mut RawResponse) -> Result<MaybeOkResponse>
         {
-            match is_ok(&self.0) {
-                true => serde_json::from_reader(self.0).map_err(|e| e.into()),
+            let maybe = is_ok(&mut self.0)?;
+
+            match maybe.ok {
+                true => {
+                    match maybe.body {
+                        Some(b) => read_ok!(Cursor::new(b)),
+                        None => read_ok!(self.0),
+                    }
+                }
                 false => {
-                    let err: ApiError = serde_json::from_reader(self.0)?;
-                    Err(ErrorKind::Api(err).into())
+                    match maybe.body {
+                        Some(b) => read_err!(Cursor::new(b)),
+                        None => read_err!(self.0),
+                    }
                 }
             }
         }
@@ -70,21 +96,43 @@ pub mod responses {
         {
             self.response(|res| {
                 match *res.status() {
-                    StatusCode::Ok => true,
-                    _ => false
+                    StatusCode::Ok => Ok(true.into()),
+                    _ => Ok(false.into()),
                 }
             })
         }
 
         /// Deserialise as a get document response.
+        ///
+        /// If the response status is `NotFound` then the response body
+        /// will be buffered multiple times to work out whether it's an error
+        /// or not.
         pub fn doc_response<T>(self) -> Result<GetDocResponseOf<T>>
             where T: Deserialize
         {
-            self.response(|res| {
-                match *res.status() {
-                    StatusCode::Ok |
-                    StatusCode::NotFound => true,
-                    _ => false
+            self.response(|ref mut res| {
+                let status = res.status().to_owned();
+                match status {
+                    StatusCode::Ok => Ok(true.into()),
+                    StatusCode::NotFound => {
+                        // If we get a 404, it could be an IndexNotFound error or ok
+                        // Check if the response contains a root 'error' node
+
+                        let mut buf = Vec::new();
+                        res.read_to_end(&mut buf).map_err(|e| ErrorKind::Json(e.into()))?;
+
+                        let body: Value = serde_json::from_reader(Cursor::new(&buf))?;
+
+                        let is_err = body.as_object()
+                            .and_then(|body| body.get("error"))
+                            .is_some();
+
+                        Ok(MaybeOkResponse {
+                            ok: !is_err,
+                            body: Some(buf),
+                        })
+                    }
+                    _ => Ok(false.into()),
                 }
             })
         }
@@ -104,7 +152,7 @@ pub struct Client {
 
 impl Client {
     /// Create a new client for the given parameters.
-    /// 
+    ///
     /// The parameters given here are used as the defaults for any
     /// request made by this client, but can be overriden on a
     /// per-request basis.
@@ -134,14 +182,14 @@ pub struct RequestBuilder<'a, I> {
 
 impl<'a, I> RequestBuilder<'a, I> {
     /// Manually construct a `RequestBuilder`.
-    /// 
+    ///
     /// If the `RequestParams` are `None`, then the parameters from the
     /// `Client` are used.
     pub fn new(client: &'a Client, params: Option<RequestParams>, req: I) -> Self {
         RequestBuilder {
             client: client,
             params: params,
-            req: req
+            req: req,
         }
     }
 }
@@ -150,10 +198,10 @@ impl<'a, I> RequestBuilder<'a, I>
     where I: Into<HttpRequest<'static>>
 {
     /// Override the parameters for this request.
-    /// 
+    ///
     /// This method will clone the `RequestParams` on the `Client` and pass
     /// them to the closure.
-    pub fn params<F>(mut self, builder: F) -> Self 
+    pub fn params<F>(mut self, builder: F) -> Self
         where F: Fn(RequestParams) -> RequestParams
     {
         self.params = Some(builder(self.params.unwrap_or(self.client.params.clone())));

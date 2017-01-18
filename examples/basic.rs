@@ -35,4 +35,6 @@ fn main() {
     for hit in res.hits() {
         println!("{:?}", hit);
     }
+
+    println!("{:?}", res);
 }
