@@ -61,8 +61,8 @@ fn ensure_indexed(client: &Client, doc: MyType) {
 
     match get_res {
         // The doc was found: no need to index
-        Ok(ref doc) if doc.found => {
-            println!("document already indexed: {:?}", doc.source);
+        Ok(GetDocResponseOf { source: Some(doc), .. }) => {
+            println!("document already indexed: {:?}", doc);
         },
         // The index exists, but the doc wasn't found: map and index
         Ok(_) => {

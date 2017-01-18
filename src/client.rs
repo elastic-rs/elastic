@@ -16,20 +16,83 @@ pub mod responses {
     use reqwest::{Response as RawResponse, StatusCode};
     use error::*;
 
-    pub use elastic_responses::{AggregationIterator, Aggregations, GetDocResponseOf,
-                                GetDocResponse, Hit, Hits, QueryResponseOf, QueryResponse, Shards};
+    pub use elastic_responses::{AggregationIterator, Aggregations, Hit, Hits, Shards};
 
+    use elastic_responses::{QueryResponseOf, GetDocResponseOf};
+
+    pub type QueryResponse<T> = QueryResponseOf<Hit<T>>;
+    pub type GetDocResponse<T> = GetDocResponseOf<T>;
+
+    /// A response that might be successful or an `ApiError`.
     pub struct MaybeOkResponse {
-        pub ok: bool,
-        pub body: Option<Vec<u8>>,
+        ok: bool,
+        res: MaybeBufferedResponse,
     }
 
-    impl From<bool> for MaybeOkResponse {
-        fn from(value: bool) -> Self {
+    impl MaybeOkResponse {
+        /// Create a new response that indicates where or not the
+        /// body is successful or an `ApiError`.
+        pub fn new<I>(ok: bool, res: I) -> Self
+            where I: Into<MaybeBufferedResponse>
+        {
             MaybeOkResponse {
-                ok: value,
-                body: None,
+                ok: ok,
+                res: res.into(),
             }
+        }
+    }
+
+    /// A response body that may or may not have been buffered.
+    /// 
+    /// This type makes it possible to inspect the response body for
+    /// an error type before passing it along to be deserialised properly.
+    pub enum MaybeBufferedResponse {
+        Unbuffered(UnbufferedResponse),
+        Buffered(BufferedResponse)
+    }
+
+    impl From<UnbufferedResponse> for MaybeBufferedResponse {
+        fn from(value: UnbufferedResponse) -> Self {
+            MaybeBufferedResponse::Unbuffered(value)
+        }
+    }
+
+    impl From<BufferedResponse> for MaybeBufferedResponse {
+        fn from(value: BufferedResponse) -> Self {
+            MaybeBufferedResponse::Buffered(value)
+        }
+    }
+
+    /// An untouched response body.
+    pub struct UnbufferedResponse(RawResponse);
+
+    impl UnbufferedResponse {
+        /// Get the HTTP status code for the response.
+        pub fn status(&self) -> StatusCode {
+            self.0.status().to_owned()
+        }
+
+        /// Buffer the response body into a `serde_json::Value` and return
+        /// a `BufferedResponse`.
+        pub fn body(mut self) -> Result<(Value, BufferedResponse)> {
+            let status = self.status();
+
+            let mut buf = Vec::new();
+            self.0.read_to_end(&mut buf).map_err(|e| ErrorKind::Json(e.into()))?;
+
+            let body: Value = serde_json::from_reader(Cursor::new(&buf))?;
+
+            Ok((body, BufferedResponse(status, buf)))
+        }
+    }
+
+    /// A previously buffered response body.
+    pub struct BufferedResponse(StatusCode, Vec<u8>);
+
+    impl BufferedResponse {
+        /// Get the HTTP status code for the response.
+        pub fn status(&self) -> StatusCode {
+            self.0.to_owned()
         }
     }
 
@@ -66,38 +129,41 @@ pub mod responses {
 
         /// Get the response body from JSON.
         ///
-        /// This method takes an `is_ok` closure that determines
+        /// This method takes a closure that determines
         /// whether the result is successful.
-        pub fn response<T, F>(mut self, is_ok: F) -> Result<T>
+        pub fn response<T, F>(self, is_ok: F) -> Result<T>
             where T: Deserialize,
-                  F: Fn(&mut RawResponse) -> Result<MaybeOkResponse>
+                  F: Fn(UnbufferedResponse) -> Result<MaybeOkResponse>
         {
-            let maybe = is_ok(&mut self.0)?;
+            let maybe = is_ok(UnbufferedResponse(self.0))?;
 
-            match maybe.ok {
+            let ok = maybe.ok;
+            let res = maybe.res;
+
+            match ok {
                 true => {
-                    match maybe.body {
-                        Some(b) => read_ok!(Cursor::new(b)),
-                        None => read_ok!(self.0),
+                    match res {
+                        MaybeBufferedResponse::Buffered(b) => read_ok!(Cursor::new(b.1)),
+                        MaybeBufferedResponse::Unbuffered(b) => read_ok!(b.0),
                     }
                 }
                 false => {
-                    match maybe.body {
-                        Some(b) => read_err!(Cursor::new(b)),
-                        None => read_err!(self.0),
+                    match res {
+                        MaybeBufferedResponse::Buffered(b) => read_err!(Cursor::new(b.1)),
+                        MaybeBufferedResponse::Unbuffered(b) => read_err!(b.0),
                     }
                 }
             }
         }
 
         /// Deserialise as a Query DSL response.
-        pub fn query_response<T>(self) -> Result<QueryResponseOf<Hit<T>>>
+        pub fn query_response<T>(self) -> Result<QueryResponse<T>>
             where T: Deserialize
         {
             self.response(|res| {
-                match *res.status() {
-                    StatusCode::Ok => Ok(true.into()),
-                    _ => Ok(false.into()),
+                match res.status() {
+                    StatusCode::Ok => Ok(MaybeOkResponse::new(true, res)),
+                    _ => Ok(MaybeOkResponse::new(false, res)),
                 }
             })
         }
@@ -107,32 +173,24 @@ pub mod responses {
         /// If the response status is `NotFound` then the response body
         /// will be buffered multiple times to work out whether it's an error
         /// or not.
-        pub fn doc_response<T>(self) -> Result<GetDocResponseOf<T>>
+        pub fn doc_response<T>(self) -> Result<GetDocResponse<T>>
             where T: Deserialize
         {
-            self.response(|ref mut res| {
-                let status = res.status().to_owned();
-                match status {
-                    StatusCode::Ok => Ok(true.into()),
+            self.response(|res| {
+                match res.status() {
+                    StatusCode::Ok => Ok(MaybeOkResponse::new(true, res)),
                     StatusCode::NotFound => {
                         // If we get a 404, it could be an IndexNotFound error or ok
                         // Check if the response contains a root 'error' node
-
-                        let mut buf = Vec::new();
-                        res.read_to_end(&mut buf).map_err(|e| ErrorKind::Json(e.into()))?;
-
-                        let body: Value = serde_json::from_reader(Cursor::new(&buf))?;
+                        let (body, res) = res.body()?;
 
                         let is_err = body.as_object()
                             .and_then(|body| body.get("error"))
                             .is_some();
 
-                        Ok(MaybeOkResponse {
-                            ok: !is_err,
-                            body: Some(buf),
-                        })
+                        Ok(MaybeOkResponse::new(!is_err, res))
                     }
-                    _ => Ok(false.into()),
+                    _ => Ok(MaybeOkResponse::new(false, res)),
                 }
             })
         }
