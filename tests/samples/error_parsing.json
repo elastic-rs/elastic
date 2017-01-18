@@ -1,0 +1,17 @@
+{
+  "error": {
+    "root_cause": [
+      {
+        "type": "parsing_exception",
+        "reason": "Unknown key for a START_OBJECT in [qry].",
+        "line": 2,
+        "col": 9
+      }
+    ],
+    "type": "parsing_exception",
+    "reason": "Unknown key for a START_OBJECT in [qry].",
+    "line": 2,
+    "col": 9
+  },
+  "status": 400
+}
