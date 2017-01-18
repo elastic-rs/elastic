@@ -81,7 +81,7 @@ fn ensure_indexed(client: &Client, doc: MyType) {
     }
 }
 
-fn search(client: &Client) -> SearchResponseOf<Hit<MyType>> {
+fn search(client: &Client) -> SearchResponse<MyType> {
     let body = json_str!({
         query: {
             query_string: {

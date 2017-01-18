@@ -118,8 +118,8 @@ pub mod responses {
 
     impl HttpResponse {
         /// Get the status code for the response.
-        pub fn status(&self) -> &StatusCode {
-            self.0.status()
+        pub fn status(&self) -> StatusCode {
+            self.0.status().to_owned()
         }
 
         /// Get the raw HTTP response.
