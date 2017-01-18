@@ -184,11 +184,11 @@ pub mod responses {
                         // Check if the response contains a root 'error' node
                         let (body, res) = res.body()?;
 
-                        let is_err = body.as_object()
+                        let is_ok = body.as_object()
                             .and_then(|body| body.get("error"))
-                            .is_some();
+                            .is_none();
 
-                        Ok(MaybeOkResponse::new(!is_err, res))
+                        Ok(MaybeOkResponse::new(is_ok, res))
                     }
                     _ => Ok(MaybeOkResponse::new(false, res)),
                 }
