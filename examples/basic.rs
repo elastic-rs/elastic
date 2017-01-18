@@ -26,7 +26,7 @@ fn main() {
     let req = SearchRequest::for_index("_all", get_query(r#""*""#));
 
     // Send the request and process the response.
-    let res: QueryResponse = client.request(req)
+    let res: SearchResponse = client.request(req)
                                    .send()
                                    .and_then(|res| res.query_response())
                                    .unwrap();

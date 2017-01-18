@@ -61,7 +61,7 @@ fn ensure_indexed(client: &Client, doc: MyType) {
 
     match get_res {
         // The doc was found: no need to index
-        Ok(GetDocResponseOf { source: Some(doc), .. }) => {
+        Ok(GetResponse { source: Some(doc), .. }) => {
             println!("document already indexed: {:?}", doc);
         },
         // The index exists, but the doc wasn't found: map and index
@@ -81,7 +81,7 @@ fn ensure_indexed(client: &Client, doc: MyType) {
     }
 }
 
-fn search(client: &Client) -> QueryResponseOf<Hit<MyType>> {
+fn search(client: &Client) -> SearchResponseOf<Hit<MyType>> {
     let body = json_str!({
         query: {
             query_string: {

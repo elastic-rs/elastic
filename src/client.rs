@@ -18,10 +18,10 @@ pub mod responses {
 
     pub use elastic_responses::{AggregationIterator, Aggregations, Hit, Hits, Shards};
 
-    use elastic_responses::{QueryResponseOf, GetDocResponseOf};
+    use elastic_responses::{SearchResponseOf, GetResponseOf};
 
-    pub type QueryResponse<T> = QueryResponseOf<Hit<T>>;
-    pub type GetDocResponse<T> = GetDocResponseOf<T>;
+    pub type SearchResponse<T> = SearchResponseOf<Hit<T>>;
+    pub type GetResponse<T> = GetResponseOf<T>;
 
     /// A response that might be successful or an `ApiError`.
     pub struct MaybeOkResponse {
@@ -157,7 +157,7 @@ pub mod responses {
         }
 
         /// Deserialise as a Query DSL response.
-        pub fn query_response<T>(self) -> Result<QueryResponse<T>>
+        pub fn query_response<T>(self) -> Result<SearchResponse<T>>
             where T: Deserialize
         {
             self.response(|res| {
@@ -173,7 +173,7 @@ pub mod responses {
         /// If the response status is `NotFound` then the response body
         /// will be buffered multiple times to work out whether it's an error
         /// or not.
-        pub fn doc_response<T>(self) -> Result<GetDocResponse<T>>
+        pub fn doc_response<T>(self) -> Result<GetResponse<T>>
             where T: Deserialize
         {
             self.response(|res| {
