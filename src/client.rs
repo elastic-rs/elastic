@@ -1,209 +1,11 @@
 use elastic_reqwest::ElasticClient;
 use error::*;
-use reqwest::Client as HttpClient;
-
-/// Request types the Elasticsearch REST API.
-pub mod requests {
-    pub use elastic_requests::*;
-    pub use impls::*;
-}
-
-/// Response types for the Elasticsearch REST API.
-pub mod responses {
-    use std::io::{Cursor, Read};
-    use serde::Deserialize;
-    use serde_json::{self, Value};
-    use reqwest::{Response as RawResponse, StatusCode};
-    use error::*;
-
-    pub use elastic_responses::{AggregationIterator, Aggregations, Hit, Hits, Shards};
-
-    use elastic_responses::{SearchResponseOf, GetResponseOf};
-
-    pub type SearchResponse<T> = SearchResponseOf<Hit<T>>;
-    pub type GetResponse<T> = GetResponseOf<T>;
-
-    /// A response that might be successful or an `ApiError`.
-    pub struct MaybeOkResponse {
-        ok: bool,
-        res: MaybeBufferedResponse,
-    }
-
-    impl MaybeOkResponse {
-        /// Create a new response that indicates where or not the
-        /// body is successful or an `ApiError`.
-        pub fn new<I>(ok: bool, res: I) -> Self
-            where I: Into<MaybeBufferedResponse>
-        {
-            MaybeOkResponse {
-                ok: ok,
-                res: res.into(),
-            }
-        }
-    }
-
-    /// A response body that may or may not have been buffered.
-    /// 
-    /// This type makes it possible to inspect the response body for
-    /// an error type before passing it along to be deserialised properly.
-    pub enum MaybeBufferedResponse {
-        Unbuffered(UnbufferedResponse),
-        Buffered(BufferedResponse)
-    }
-
-    impl From<UnbufferedResponse> for MaybeBufferedResponse {
-        fn from(value: UnbufferedResponse) -> Self {
-            MaybeBufferedResponse::Unbuffered(value)
-        }
-    }
-
-    impl From<BufferedResponse> for MaybeBufferedResponse {
-        fn from(value: BufferedResponse) -> Self {
-            MaybeBufferedResponse::Buffered(value)
-        }
-    }
-
-    /// An untouched response body.
-    pub struct UnbufferedResponse(RawResponse);
-
-    impl UnbufferedResponse {
-        /// Get the HTTP status code for the response.
-        pub fn status(&self) -> StatusCode {
-            self.0.status().to_owned()
-        }
-
-        /// Buffer the response body into a `serde_json::Value` and return
-        /// a `BufferedResponse`.
-        /// 
-        /// This is _expensive_ so you should avoid using it if it's not
-        /// necessary.
-        pub fn body(mut self) -> Result<(Value, BufferedResponse)> {
-            let status = self.status();
-
-            let mut buf = Vec::new();
-            self.0.read_to_end(&mut buf).map_err(|e| ErrorKind::Json(e.into()))?;
-
-            let body: Value = serde_json::from_reader(Cursor::new(&buf))?;
-
-            Ok((body, BufferedResponse(status, buf)))
-        }
-    }
-
-    /// A previously buffered response body.
-    pub struct BufferedResponse(StatusCode, Vec<u8>);
-
-    impl BufferedResponse {
-        /// Get the HTTP status code for the response.
-        pub fn status(&self) -> StatusCode {
-            self.0.to_owned()
-        }
-    }
-
-    /// A raw HTTP response.
-    pub struct HttpResponse(RawResponse);
-
-    impl From<RawResponse> for HttpResponse {
-        fn from(value: RawResponse) -> Self {
-            HttpResponse(value)
-        }
-    }
-
-    macro_rules! read_ok {
-        ($buf:expr) => (serde_json::from_reader($buf).map_err(|e| e.into()))
-    }
-
-    macro_rules! read_err {
-        ($buf:expr) => ({
-            let err: ApiError = serde_json::from_reader($buf)?;
-            Err(ErrorKind::Api(err).into())
-        })
-    }
-
-    impl HttpResponse {
-        /// Get the status code for the response.
-        pub fn status(&self) -> StatusCode {
-            self.0.status().to_owned()
-        }
-
-        /// Get the raw HTTP response.
-        pub fn raw(self) -> RawResponse {
-            self.0
-        }
-
-        /// Get the response body from JSON.
-        ///
-        /// This method takes a closure that determines
-        /// whether the result is successful.
-        pub fn response<T, F>(self, is_ok: F) -> Result<T>
-            where T: Deserialize,
-                  F: Fn(UnbufferedResponse) -> Result<MaybeOkResponse>
-        {
-            let maybe = is_ok(UnbufferedResponse(self.0))?;
-
-            let ok = maybe.ok;
-            let res = maybe.res;
-
-            match ok {
-                true => {
-                    match res {
-                        MaybeBufferedResponse::Buffered(b) => read_ok!(Cursor::new(b.1)),
-                        MaybeBufferedResponse::Unbuffered(b) => read_ok!(b.0),
-                    }
-                }
-                false => {
-                    match res {
-                        MaybeBufferedResponse::Buffered(b) => read_err!(Cursor::new(b.1)),
-                        MaybeBufferedResponse::Unbuffered(b) => read_err!(b.0),
-                    }
-                }
-            }
-        }
-
-        /// Deserialise as a Query DSL response.
-        pub fn search_response<T>(self) -> Result<SearchResponse<T>>
-            where T: Deserialize
-        {
-            self.response(|res| {
-                match res.status() {
-                    StatusCode::Ok => Ok(MaybeOkResponse::new(true, res)),
-                    _ => Ok(MaybeOkResponse::new(false, res)),
-                }
-            })
-        }
-
-        /// Deserialise as a get document response.
-        ///
-        /// If the response status is `NotFound` then the response body
-        /// will be buffered multiple times to work out whether it's an error
-        /// or not.
-        pub fn get_response<T>(self) -> Result<GetResponse<T>>
-            where T: Deserialize
-        {
-            self.response(|res| {
-                match res.status() {
-                    StatusCode::Ok => Ok(MaybeOkResponse::new(true, res)),
-                    StatusCode::NotFound => {
-                        // If we get a 404, it could be an IndexNotFound error or ok
-                        // Check if the response contains a root 'error' node
-                        let (body, res) = res.body()?;
-
-                        let is_ok = body.as_object()
-                            .and_then(|body| body.get("error"))
-                            .is_none();
-
-                        Ok(MaybeOkResponse::new(is_ok, res))
-                    }
-                    _ => Ok(MaybeOkResponse::new(false, res)),
-                }
-            })
-        }
-    }
-}
-
-pub use elastic_reqwest::RequestParams;
+use reqwest::{Client as HttpClient, Response as RawResponse};
 
 use self::requests::HttpRequest;
-use self::responses::HttpResponse;
+use self::responses::{HttpResponse, FromResponse};
+
+pub use elastic_reqwest::RequestParams;
 
 /// A HTTP client for the Elasticsearch REST API.
 pub struct Client {
@@ -271,13 +73,63 @@ impl<'a, I> RequestBuilder<'a, I>
     }
 
     /// Send this request and return the response.
-    pub fn send(self) -> Result<responses::HttpResponse> {
+    pub fn send(self) -> Result<ResponseBuilder> {
         let params = self.params.as_ref().unwrap_or(&self.client.params);
 
         let res = self.client.http.elastic_req(params, self.req)?;
 
-        Ok(HttpResponse::from(res))
+        Ok(ResponseBuilder::from(res))
     }
+}
+
+pub struct ResponseBuilder(RawResponse);
+
+impl From<RawResponse> for ResponseBuilder {
+    fn from(value: RawResponse) -> Self {
+        ResponseBuilder(value)
+    }
+}
+
+impl Into<HttpResponse<RawResponse>> for ResponseBuilder {
+    fn into(self) -> HttpResponse<RawResponse> {
+        let status = self.0.status().to_u16();
+
+        HttpResponse::new(status, self.0)
+    }
+}
+
+impl ResponseBuilder {
+    /// Get the raw HTTP response.
+    pub fn raw(self) -> RawResponse {
+        self.0
+    }
+
+    /// Get the response body from JSON.
+    ///
+    /// This method takes a closure that determines
+    /// whether the result is successful.
+    pub fn response<T>(self) -> Result<T>
+        where T: FromResponse
+    {
+        T::from_response(self).map_err(|e| e.into())
+    }
+}
+
+/// Request types the Elasticsearch REST API.
+pub mod requests {
+    pub use elastic_requests::*;
+    pub use impls::*;
+}
+
+/// Response types for the Elasticsearch REST API.
+pub mod responses {
+    pub use elastic_responses::{HttpResponse, FromResponse, AggregationIterator, Aggregations,
+                                Hit, Hits, Shards};
+
+    use elastic_responses::{SearchResponseOf, GetResponseOf};
+
+    pub type SearchResponse<T> = SearchResponseOf<Hit<T>>;
+    pub type GetResponse<T> = GetResponseOf<T>;
 }
 
 #[cfg(test)]

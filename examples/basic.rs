@@ -30,7 +30,7 @@ fn main() {
     // Send the request and process the response.
     let res: SearchResponse<Value> = client.request(req)
                                            .send()
-                                           .and_then(|res| res.search_response())
+                                           .and_then(|res| res.response())
                                            .unwrap();
 
     // Iterate through the hits in the response.

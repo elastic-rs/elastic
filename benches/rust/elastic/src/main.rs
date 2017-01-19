@@ -63,7 +63,7 @@ fn main() {
         let req: &SearchRequest<'static> = &REQ;
         let res: SearchResponse<BenchDoc> = client.request(req)
                                                   .send()
-                                                  .and_then(|res| res.search_response())
+                                                  .and_then(|res| res.response())
                                                   .unwrap();
 
         sw.stop();
