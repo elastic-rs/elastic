@@ -1,5 +1,18 @@
 use serde::{Deserialize, Deserializer};
-use serde_json::Value;
+use serde_json::{Value, Error as JsonError};
+
+quick_error! {
+    /// An error parsing a REST API response to a success value.
+    #[derive(Debug)]
+    pub enum ResponseError {
+        Api(err: ApiError) {
+            from()
+        }
+        Json(err: JsonError) {
+            from()
+        }
+    }
+}
 
 quick_error! {
     /// A REST API error response.
@@ -60,8 +73,8 @@ impl From<Value> for ApiError {
 
         let ty = {
             let ty = obj.get("type")
-                        .and_then(|v| v.as_str())
-                        .map(|v| v.to_owned());
+                .and_then(|v| v.as_str())
+                .map(|v| v.to_owned());
 
             match ty {
                 Some(ty) => ty,
