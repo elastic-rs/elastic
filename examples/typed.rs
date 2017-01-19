@@ -21,7 +21,6 @@ extern crate serde_json;
 
 extern crate elastic;
 
-use elastic::http;
 use elastic::error::*;
 use elastic::prelude::*;
 
@@ -53,7 +52,9 @@ fn main() {
 }
 
 fn ensure_indexed(client: &Client, doc: MyType) {
-    let req = GetRequest::for_index_ty_id(INDEX, MyType::name(), doc.id.to_string());
+    let req = GetRequest::for_index_ty_id(INDEX, 
+                                          MyType::name(), 
+                                          doc.id.to_string());
 
     let get_res = client.request(req)
                         .send()
@@ -68,18 +69,34 @@ fn ensure_indexed(client: &Client, doc: MyType) {
         Ok(_) => {
             println!("indexing doc");
 
-            put_doc(doc);
+            put_doc(client, doc);
         },
         // No index: create it, then map and index
         Err(Error(ErrorKind::Api(ApiError::IndexNotFound { .. }), _)) => {
-            println!("creating index");
+            println!("creating index and doc");
 
-            put_index();
-            put_doc(doc);
+            put_index(client);
+            put_doc(client, doc);
         },
         // Something went wrong: panic
         Err(e) => panic!(e)
     }
+}
+
+fn put_index(client: &Client) {
+    let req = IndicesCreateRequest::for_index(INDEX, Body::none());
+
+    client.request(req).send().unwrap();
+
+    let req = IndicesPutMappingRequest::try_for_mapping((Index::from(INDEX), MyType::mapping())).unwrap();
+
+    client.request(req).send().unwrap();
+}
+
+fn put_doc(client: &Client, doc: MyType) {
+    let req = IndexRequest::try_for_doc((Index::from(INDEX), Id::from(doc.id.to_string()), &doc)).unwrap();
+
+    client.request(req).params(|params| params.url_param("refresh", true)).send().unwrap();
 }
 
 fn search(client: &Client) -> SearchResponse<MyType> {
