@@ -307,11 +307,10 @@ macro_rules! req_with_body {
             Cow::Owned(b) => b.into()
         };
 
-        $client
-            .request(reqwest::Method::$method, &$url)
-            .headers($params.headers.to_owned())
-            .body(body)
-            .send()
+        $client.request(reqwest::Method::$method, &$url)
+               .headers($params.headers.to_owned())
+               .body(body)
+               .send()
     })
 }
 
