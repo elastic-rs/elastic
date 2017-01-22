@@ -54,9 +54,10 @@ fn main() {
 }
 
 fn ensure_indexed(client: &Client, doc: MyType) {
-    let req = GetRequest::for_index_ty_id(INDEX, 
-                                          MyType::name(), 
-                                          doc.id.to_string());
+    let index = Index::from(INDEX);
+    let ty = MyType::name();
+    let id = doc.id.to_string();
+    let req = GetRequest::for_index_ty_id(index, ty, id);
 
     let get_res = client.request(req)
                         .send()
@@ -87,7 +88,7 @@ fn ensure_indexed(client: &Client, doc: MyType) {
 
 fn put_index(client: &Client) {
     let req = IndicesCreateRequest::for_index(INDEX, Body::none());
-    
+
     client.request(req).send().unwrap();
 
     let index = Index::from(INDEX);
