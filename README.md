@@ -53,7 +53,8 @@ Add `elastic` and `json_str` to your `Cargo.toml`:
 [dependencies]
 elastic = "*"
 
-# Optional for request bodies
+# Optional
+serde_json = "*"
 json_str = "*"
 ```
 
@@ -62,8 +63,10 @@ And reference in your crate root:
 ```rust
 #[macro_use]
 extern crate json_str;
+extern crate serde_json;
 extern crate elastic;
 
+use serde_json::Value;
 use elastic::prelude::*;
 ```
 
@@ -90,11 +93,10 @@ let req = SearchRequest::for_index("_all", body);
 Send the request and iterate through the returned hits:
 
 ```rust
-let res: Response = client
-    .request(req)
-    .send()
-    .and_then(|res| res.json())
-    .unwrap();
+let res: SearchResponse<Value> = client.request(req)
+                                       .send()
+                                       .and_then(|res| res.response())
+                                       .unwrap();
 
 for hit in res.hits() {
     println!("{:?}", hit);
