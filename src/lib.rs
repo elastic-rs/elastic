@@ -139,15 +139,14 @@
 //!
 //! # See Also
 //!
+//! ## [`elastic`](https://github.com/elastic-rs/elastic)
+//! 
+//! A higher-level Elasticsearch client that uses `elastic_reqwest` as its HTTP layer.
+//! 
 //! ## [`rs-es`](https://github.com/benashford/rs-es)
 //!
 //! An alternative Elasticsearch client for Rust that provides an implementation of the Query DSL.
-//!
-//! ## [`elastic_types`](https://github.com/elastic-rs/elastic-types)
-//!
-//! A library that implements the core datatypes in Elasticsearch
-//! documents and automatically generates a json mapping from your Rust structures.
-//!
+//! 
 //! ## [`json_str`](https://github.com/KodrAus/json_str)
 //!
 //! A library for generating minified json strings from Rust syntax.
@@ -277,15 +276,11 @@ impl RequestParams {
     /// Follows the `application/x-www-form-urlencoded` format.
     pub fn get_url_qry(&self) -> (usize, Option<String>) {
         if self.url_params.len() > 0 {
-            let qry: String = Serializer::new(String::new())
+            let qry: String = Serializer::for_suffix(String::from("?"), 1)
                 .extend_pairs(self.url_params.iter())
                 .finish();
-            let mut url_qry = String::with_capacity(qry.len() + 1);
 
-            url_qry.push('?');
-            url_qry.push_str(&qry);
-
-            (url_qry.len(), Some(url_qry))
+            (qry.len(), Some(qry))
         } else {
             (0, None)
         }
@@ -312,11 +307,10 @@ macro_rules! req_with_body {
             Cow::Owned(b) => b.into()
         };
 
-        $client
-            .request(reqwest::Method::$method, &$url)
-            .headers($params.headers.to_owned())
-            .body(body)
-            .send()
+        $client.request(reqwest::Method::$method, &$url)
+               .headers($params.headers.to_owned())
+               .body(body)
+               .send()
     })
 }
 
