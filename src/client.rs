@@ -5,6 +5,7 @@ use reqwest::{Client as HttpClient, Response as RawResponse};
 use self::requests::HttpRequest;
 use self::responses::{HttpResponse, FromResponse};
 
+pub use reqwest::StatusCode;
 pub use elastic_reqwest::RequestParams;
 
 /// A HTTP client for the Elasticsearch REST API.
@@ -102,6 +103,11 @@ impl ResponseBuilder {
     /// Get the raw HTTP response.
     pub fn raw(self) -> RawResponse {
         self.0
+    }
+
+    /// Get the status for the response.
+    pub fn status(&self) -> StatusCode {
+        self.0.status().to_owned()
     }
 
     /// Get the response body from JSON.

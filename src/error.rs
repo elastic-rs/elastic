@@ -6,7 +6,7 @@ use elastic_responses::error::ResponseError;
 
 error_chain! {
     foreign_links {
-    	Api(ApiError);
+        Api(ApiError);
         Json(JsonError);
         Http(HttpError);
     }
