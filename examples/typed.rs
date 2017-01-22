@@ -44,8 +44,10 @@ fn main() {
         timestamp: Date::now()
     };
 
+    // Check if the doc exists and index if it doesn't
     ensure_indexed(&client, doc);
 
+    // Do a search request
     let res = search(&client);
 
     println!("{:?}", res);
@@ -85,18 +87,25 @@ fn ensure_indexed(client: &Client, doc: MyType) {
 
 fn put_index(client: &Client) {
     let req = IndicesCreateRequest::for_index(INDEX, Body::none());
-
+    
     client.request(req).send().unwrap();
 
-    let req = IndicesPutMappingRequest::try_for_mapping((Index::from(INDEX), MyType::mapping())).unwrap();
+    let index = Index::from(INDEX);
+    let mapping = MyType::mapping();
+    let req = IndicesPutMappingRequest::try_for_mapping((index, mapping)).unwrap();
 
     client.request(req).send().unwrap();
 }
 
 fn put_doc(client: &Client, doc: MyType) {
-    let req = IndexRequest::try_for_doc((Index::from(INDEX), Id::from(doc.id.to_string()), &doc)).unwrap();
+    let index = Index::from(INDEX);
+    let id = Id::from(doc.id.to_string());
+    let req = IndexRequest::try_for_doc((index, id, &doc)).unwrap();
 
-    client.request(req).params(|params| params.url_param("refresh", true)).send().unwrap();
+    client.request(req)
+          .params(|params| params.url_param("refresh", true))
+          .send()
+          .unwrap();
 }
 
 fn search(client: &Client) -> SearchResponse<MyType> {
