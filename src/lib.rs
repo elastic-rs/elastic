@@ -83,12 +83,7 @@ impl<'a> RawBody<'a> for Cow<'a, Body<'a>> {
                     Cow::Owned(ref b) => Cow::Borrowed(b),
                 }
             }
-            Cow::Owned(b) => {
-                match b.into_raw() {
-                    Cow::Borrowed(b) => Cow::Borrowed(b),
-                    Cow::Owned(b) => Cow::Owned(b),
-                }
-            }
+            Cow::Owned(b) => b.into_raw()
         }
     }
 }
