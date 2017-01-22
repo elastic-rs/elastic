@@ -2,30 +2,21 @@
 #![plugin(json_str)]
 
 #[macro_use]
-extern crate serde_derive;
-#[macro_use]
 extern crate lazy_static;
 
 extern crate stopwatch;
 extern crate time;
 extern crate test;
 
-extern crate serde;
 extern crate elastic;
 
+use std::io::Read;
 use std::env;
 use time::Duration;
 use stopwatch::Stopwatch;
 
 use elastic::http;
 use elastic::prelude::*;
-
-#[derive(Debug, Deserialize)]
-struct BenchDoc {
-    pub id: i32,
-    pub title: String,
-    pub timestamp: Date<EpochMillis>,
-}
 
 lazy_static!(
     static ref REQ: SearchRequest<'static> = {
@@ -61,14 +52,14 @@ fn main() {
         let mut sw = Stopwatch::start_new();
 
         let req: &SearchRequest<'static> = &REQ;
-        let res: SearchResponse<BenchDoc> = client.request(req)
-                                                  .send()
-                                                  .and_then(|res| res.response())
-                                                  .unwrap();
+        let mut res = client.request(req).send().unwrap().raw();
+
+        let mut buf = Vec::new();
+        res.read_to_end(&mut buf).unwrap();
 
         sw.stop();
 
-        test::black_box(res);
+        test::black_box(buf);
 
         let elapsed = Duration::from_std(sw.elapsed()).unwrap();
         results.push(elapsed.num_nanoseconds().unwrap());

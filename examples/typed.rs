@@ -21,7 +21,7 @@ extern crate serde_json;
 
 extern crate elastic;
 
-use elastic::http;
+use elastic::error::*;
 use elastic::prelude::*;
 
 const INDEX: &'static str = "typed_sample_index";
@@ -44,72 +44,62 @@ fn main() {
         timestamp: Date::now()
     };
 
-    create_index_if_new(&client);
+    ensure_indexed(&client, doc);
 
-    index_doc(&client, doc);
-
-    let res = search_docs(&client);
+    let res = search(&client);
 
     println!("{:?}", res);
 }
 
-// Create the index if it doesn't already exist
-fn index_exists_request() -> IndicesExistsRequest<'static> {
-    let index = Index::from(INDEX);
+fn ensure_indexed(client: &Client, doc: MyType) {
+    let req = GetRequest::for_index_ty_id(INDEX, 
+                                          MyType::name(), 
+                                          doc.id.to_string());
 
-    IndicesExistsRequest::for_index(index)
-}
+    let get_res = client.request(req)
+                        .send()
+                        .and_then(|res| res.response::<GetResponse<MyType>>());
 
-fn put_index_request() -> IndicesCreateRequest<'static> {
-    let index = Index::from(INDEX);
+    match get_res {
+        // The doc was found: no need to index
+        Ok(GetResponse { source: Some(doc), .. }) => {
+            println!("document already indexed: {:?}", doc);
+        },
+        // The index exists, but the doc wasn't found: map and index
+        Ok(_) => {
+            println!("indexing doc");
 
-    IndicesCreateRequest::for_index(index, Body::none())
-}
+            put_doc(client, doc);
+        },
+        // No index: create it, then map and index
+        Err(Error(ErrorKind::Api(ApiError::IndexNotFound { .. }), _)) => {
+            println!("creating index and doc");
 
-fn create_index_if_new(client: &Client) {
-    let exists = client.request(index_exists_request())
-        .send()
-        .and_then(|res| {
-            match *res.raw().status() {
-                http::StatusCode::NotFound => Ok(false),
-                _ => Ok(true)
-            }
-        })
-        .unwrap();
-
-    if !exists {
-        client.request(put_index_request()).send().unwrap();
+            put_index(client);
+            put_doc(client, doc);
+        },
+        // Something went wrong: panic
+        Err(e) => panic!(e)
     }
 }
 
-// Update the document mapping and index our document
-fn map_doc_request(doc: &MyType) -> IndicesPutMappingRequest<'static> {
-    let index = Index::from(INDEX);
+fn put_index(client: &Client) {
+    let req = IndicesCreateRequest::for_index(INDEX, Body::none());
 
-    IndicesPutMappingRequest::try_for_doc((index, doc)).unwrap()
+    client.request(req).send().unwrap();
+
+    let req = IndicesPutMappingRequest::try_for_mapping((Index::from(INDEX), MyType::mapping())).unwrap();
+
+    client.request(req).send().unwrap();
 }
 
-fn put_doc_request(doc: &MyType) -> IndexRequest<'static> {
-    let index = Index::from(INDEX);
-    let id = Id::from(doc.id.to_string());
+fn put_doc(client: &Client, doc: MyType) {
+    let req = IndexRequest::try_for_doc((Index::from(INDEX), Id::from(doc.id.to_string()), &doc)).unwrap();
 
-    IndexRequest::try_for_doc((index, id, doc)).unwrap()
+    client.request(req).params(|params| params.url_param("refresh", true)).send().unwrap();
 }
 
-fn index_doc(client: &Client, doc: MyType) {
-    client.request(map_doc_request(&doc)).send().unwrap();
-
-    // Wait for refresh when indexing so we can search right away
-    client.request(put_doc_request(&doc))
-        .params(|params| params.url_param("refresh", true))
-        .send()
-        .unwrap();
-}
-
-// Search for documents in the index
-fn search() -> SearchRequest<'static> {
-    let index = Index::from(INDEX);
-
+fn search(client: &Client) -> SearchResponse<MyType> {
     let body = json_str!({
         query: {
             query_string: {
@@ -118,9 +108,9 @@ fn search() -> SearchRequest<'static> {
         }
     });
 
-    SearchRequest::for_index(index, body)
-}
+    let req = SearchRequest::for_index(INDEX, body);
 
-fn search_docs(client: &Client) -> serde_json::Value {
-    client.request(search()).send().and_then(|res| res.json()).unwrap()
+    client.request(req).send()
+                       .and_then(|res| res.response())
+                       .unwrap()
 }

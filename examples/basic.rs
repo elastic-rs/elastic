@@ -4,8 +4,10 @@
 
 #[macro_use]
 extern crate json_str;
+extern crate serde_json;
 extern crate elastic;
 
+use serde_json::Value;
 use elastic::prelude::*;
 
 fn main() {
@@ -23,17 +25,18 @@ fn main() {
     });
 
     // A search request from the body.
-    let req = SearchRequest::for_index("_all", get_query(r#""string value""#));
+    let req = SearchRequest::for_index("_all", get_query(r#""*""#));
 
     // Send the request and process the response.
-    let res: Response = client
-        .request(req)
-        .send()
-        .and_then(|res| res.json())
-        .unwrap();
+    let res: SearchResponse<Value> = client.request(req)
+                                           .send()
+                                           .and_then(|res| res.response())
+                                           .unwrap();
 
     // Iterate through the hits in the response.
     for hit in res.hits() {
         println!("{:?}", hit);
     }
+
+    println!("{:?}", res);
 }

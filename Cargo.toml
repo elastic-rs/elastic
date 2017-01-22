@@ -1,6 +1,6 @@
 [package]
 name = "elastic"
-version = "0.5.0"
+version = "0.6.0"
 authors = ["Ashley Mannix <ashleymannix@live.com.au>"]
 license = "Apache-2.0"
 description = "A client for the Elasticsearch REST API."
@@ -20,10 +20,10 @@ reqwest = "~0.2.0"
 
 elastic_reqwest = "~0.2.0"
 elastic_requests = "~0.1.0"
-elastic_responses = "~0.2.0"
-elastic_types = "~0.10.1"
+elastic_responses = "~0.4.0"
+elastic_types = "~0.10.2"
 
 [dev-dependencies]
 json_str = "^0.*"
 serde_derive = "~0.8.0"
-elastic_types_derive = { version = "~0.10.0", features = ["elastic"] }
+elastic_types_derive = { version = "~0.10.1", features = ["elastic"] }

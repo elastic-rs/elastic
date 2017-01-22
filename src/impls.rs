@@ -3,7 +3,7 @@ use serde_json;
 use super::client::requests::{Index, Id, Body, IndexRequest, IndicesPutMappingRequest};
 use super::types::prelude::*;
 
-use super::errors::*;
+use super::error::*;
 
 /// A trait for converting a document into a request.
 pub trait TryForDoc<T, M>: Sized {
@@ -11,7 +11,7 @@ pub trait TryForDoc<T, M>: Sized {
 }
 
 /// A trait for converting a document mapping into a request.
-pub trait TryForMapping<M> 
+pub trait TryForMapping<M>
     where Self: Sized
 {
     fn try_for_mapping(mapping: M) -> Result<Self>;
@@ -63,7 +63,7 @@ impl<'a, M> TryForMapping<(Index<'a>, M)> for IndicesPutMappingRequest<'a>
     }
 }
 
-impl <'a, 'b, T, M> TryForDoc<(Index<'a>, &'b T), M> for IndicesPutMappingRequest<'a>
+impl<'a, 'b, T, M> TryForDoc<(Index<'a>, &'b T), M> for IndicesPutMappingRequest<'a>
     where T: DocumentType<M>,
           M: DocumentMapping
 {
