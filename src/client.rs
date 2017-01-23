@@ -1,11 +1,10 @@
 use elastic_reqwest::ElasticClient;
 use error::*;
-use reqwest::{Client as HttpClient, Response as RawResponse};
+use reqwest::{StatusCode, Client as HttpClient, Response as RawResponse};
 
 use self::requests::HttpRequest;
 use self::responses::{HttpResponse, FromResponse};
 
-pub use reqwest::StatusCode;
 pub use elastic_reqwest::RequestParams;
 
 /// A HTTP client for the Elasticsearch REST API.

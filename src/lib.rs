@@ -82,8 +82,7 @@
 //!
 //! ```no_run
 //! # use elastic::prelude::*;
-//! # let params = RequestParams::new("http://es_host:9200")
-//! #     .url_param("pretty", true);
+//! # let params = RequestParams::new("http://es_host:9200");
 //! # let client = Client::new(params).unwrap();
 //! # let req = PingRequest::new();
 //! let response = client.request(req)
@@ -167,6 +166,60 @@
 //! let req = IndicesPutMappingRequest::try_for_mapping((index, mapping)).unwrap();
 //! # }
 //! ```
+//! 
+//! For more details on document types, see 
+//! [`elastic_types`](https://docs.rs/elastic_types/*/elastic_types/#map-your-types).
+//! 
+//! ## Getting Responses
+//! 
+//! Call `response` on a sent request to get a `SearchResponse` or `GetResponse`:
+//! 
+//! ```no_run
+//! # extern crate serde;
+//! # #[macro_use]
+//! # extern crate serde_derive;
+//! # #[macro_use]
+//! # extern crate elastic_types_derive;
+//! # extern crate elastic;
+//! # use elastic::prelude::*;
+//! # fn main() {
+//! # #[derive(Serialize, Deserialize, ElasticType)]
+//! # struct MyType {
+//! #     pub id: i32,
+//! #     pub title: String,
+//! #     pub timestamp: Date<DefaultDateFormat>
+//! # }
+//! # let params = RequestParams::new("http://es_host:9200");
+//! # let client = Client::new(params).unwrap();
+//! # let req = PingRequest::new();
+//! let response = client.request(req)
+//!     .send()
+//!     .and_then(|res| res.response::<SearchResponse<MyType>>());
+//! # }
+//! ```
+//! 
+//! Call `raw` on a sent request to get a raw `reqwest::Response`:
+//! 
+//! ```no_run
+//! # extern crate serde;
+//! # #[macro_use]
+//! # extern crate serde_derive;
+//! # #[macro_use]
+//! # extern crate elastic_types_derive;
+//! # extern crate elastic;
+//! # use elastic::prelude::*;
+//! # fn main() {
+//! # let params = RequestParams::new("http://es_host:9200");
+//! # let client = Client::new(params).unwrap();
+//! # let req = PingRequest::new();
+//! let response = client.request(req)
+//!     .send()
+//!     .map(|res| res.raw());
+//! # }
+//! ```
+//! 
+//! You should avoid depending on `raw` too much, because it's
+//! a leaky abstraction that may be removed in the future.
 
 #[macro_use]
 extern crate error_chain;
@@ -205,7 +258,7 @@ pub mod types {
 
 /// A glob import for convenience.
 pub mod prelude {
-    pub use super::client::{Client, RequestParams, RequestBuilder};
+    pub use super::client::{Client, RequestParams, RequestBuilder, ResponseBuilder};
     pub use super::client::requests::*;
     pub use super::client::responses::*;
 
