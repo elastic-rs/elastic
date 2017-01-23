@@ -38,8 +38,6 @@
 //! And reference it in your crate root:
 //!
 //! ```ignore
-//! #![feature(proc_macro)]
-//!
 //! #[macro_use]
 //! extern crate elastic_types_derive;
 //! #[macro_use]
@@ -73,7 +71,6 @@
 //! Derive `ElasticType` on your Elasticsearch-mappable types:
 //!
 //! ```
-//! # #![feature(proc_macro)]
 //! # #[macro_use]
 //! # extern crate json_str;
 //! # #[macro_use]
@@ -97,7 +94,6 @@
 //! wrapper:
 //!
 //! ```
-//! # #![feature(proc_macro)]
 //! # #[macro_use]
 //! # extern crate json_str;
 //! # #[macro_use]
@@ -123,7 +119,6 @@
 //! This will produce the following result:
 //!
 //! ```
-//! # #![feature(proc_macro)]
 //! # #[macro_use]
 //! # extern crate json_str;
 //! # #[macro_use]
@@ -164,7 +159,6 @@
 //! Of course, structs that derive `ElasticType` can also be used as fields in other Elasticsearch types:
 //!
 //! ```
-//! # #![feature(proc_macro)]
 //! # #[macro_use]
 //! # extern crate json_str;
 //! # #[macro_use]
@@ -191,7 +185,6 @@
 //! Our mapping for `MyOtherType` then looks like:
 //!
 //! ```
-//! # #![feature(proc_macro)]
 //! # #[macro_use]
 //! # extern crate json_str;
 //! # #[macro_use]
@@ -242,7 +235,6 @@
 //! to derive mapping from `Option` or `Vec` types:
 //!
 //! ```
-//! # #![feature(proc_macro)]
 //! # #[macro_use]
 //! # extern crate json_str;
 //! # #[macro_use]
@@ -271,7 +263,6 @@
 //! the appropriate trait. In the below example, we create a custom `boolean` mapping:
 //!
 //! ```
-//! # #![feature(proc_macro)]
 //! # #[macro_use]
 //! # extern crate json_str;
 //! # #[macro_use]
@@ -311,7 +302,6 @@
 //! object:
 //!
 //! ```
-//! # #![feature(proc_macro)]
 //! # #[macro_use]
 //! # extern crate json_str;
 //! # #[macro_use]
