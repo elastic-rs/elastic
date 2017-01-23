@@ -167,6 +167,9 @@
 //! # }
 //! ```
 //! 
+//! For more details on document types, see 
+//! [`elastic_types`](https://docs.rs/elastic_types/*/elastic_types/#map-your-types).
+//! 
 //! ## Getting Responses
 //! 
 //! Call `response` on a sent request to get a `SearchResponse` or `GetResponse`:
