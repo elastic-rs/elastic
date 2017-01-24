@@ -22,38 +22,37 @@ use std::str;
 use std::io::Read;
 use std::borrow::Cow;
 
-use req::RawBody;
+use req::{RawBody, SearchRequest};
 
+use tokio_core::reactor::Core;
 use futures::{Future, Stream};
+use futures_cpupool::CpuPool;
 
-use hyper::{Body, Method};
+use hyper::{Client, Body, Method};
 use hyper::client::Request;
 
 fn main() {
     let url = "http://localhost:9200";
 
-    let mut core = tokio_core::reactor::Core::new().unwrap();
-    let handle = core.handle();
+    let mut core = Core::new().unwrap();
 
-    let client = hyper::Client::new(&handle);
-    let pool = futures_cpupool::CpuPool::new(4);
+    let client = Client::new(&core.handle());
+    let pool = CpuPool::new(4);
 
-    let req = req::SearchRequest::for_index("_all", r#"{ "query": { "match_all": { } } }"#);
-    
+    let req = SearchRequest::for_index("_all", r#"{ "query": { "match_all": { } } }"#);
+
     let req = client.request(hyper_req(&url, req))
         .and_then(|res| {
-            res.body().fold(Vec::new(), |mut buf, chunk| {
-                chunk.as_ref()
-                     .read_to_end(&mut buf)
-                     .map(|_| buf)
-            })
-            .and_then(|buf| {
-                // TODO: Deserialize the response on the cpu pool
+            res.body()
+                .fold(Vec::new(),
+                      |mut buf, chunk| chunk.as_ref().read_to_end(&mut buf).map(|_| buf))
+                .and_then(|buf| {
+                    // TODO: Deserialize the response on the cpu pool
 
-                println!("{:?}", str::from_utf8(&buf).unwrap());
+                    println!("{:?}", str::from_utf8(&buf).unwrap());
 
-                futures::finished(())
-            })
+                    futures::finished(())
+                })
         });
 
     core.run(req).unwrap();
@@ -75,23 +74,23 @@ fn hyper_req<I>(base_url: &str, req: I) -> Request
     let body = req.body;
 
     match method {
-        req::HttpMethod::Get => {
-            Request::new(Method::Get, url)
-        },
+        req::HttpMethod::Get => Request::new(Method::Get, url),
         req::HttpMethod::Post => {
-            let body = body.unwrap()
-                           .into_raw();
-
-            let body: Body = match body {
-                Cow::Borrowed(b) => Body::from(b),
-                Cow::Owned(b) => Body::from(b)
-            };
-
             let mut req = Request::new(Method::Post, url);
-            req.set_body(body);
+
+            if let Some(body) = body {
+                let body = body.into_raw();
+
+                let body: Body = match body {
+                    Cow::Borrowed(b) => Body::from(b),
+                    Cow::Owned(b) => Body::from(b),
+                };
+                
+                req.set_body(body);
+            }
 
             req
-        },
-        _ => unimplemented!()
+        }
+        _ => unimplemented!(),
     }
 }
