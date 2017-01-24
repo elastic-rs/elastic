@@ -42,18 +42,21 @@ fn main() {
     let req = SearchRequest::for_index("_all", r#"{ "query": { "match_all": { } } }"#);
 
     let req = client.request(hyper_req(&url, req))
-        .and_then(|res| {
-            res.body()
-                .fold(Vec::new(),
-                      |mut buf, chunk| chunk.as_ref().read_to_end(&mut buf).map(|_| buf))
-                .and_then(|buf| {
-                    // TODO: Deserialize the response on the cpu pool
+                    .and_then(|res| {
+                        res.body()
+                           .fold(Vec::new(), |mut buf, chunk| {
+                                chunk.as_ref()
+                                     .read_to_end(&mut buf)
+                                     .map(|_| buf)
+                            })
+                           .and_then(|buf| {
+                                // TODO: Deserialize the response on the cpu pool
 
-                    println!("{:?}", str::from_utf8(&buf).unwrap());
+                                println!("{:?}", str::from_utf8(&buf).unwrap());
 
-                    futures::finished(())
-                })
-        });
+                                futures::finished(())
+                           })
+                    });
 
     core.run(req).unwrap();
 }
@@ -74,7 +77,9 @@ fn hyper_req<I>(base_url: &str, req: I) -> Request
     let body = req.body;
 
     match method {
-        req::HttpMethod::Get => Request::new(Method::Get, url),
+        req::HttpMethod::Get => {
+            Request::new(Method::Get, url)
+        },
         req::HttpMethod::Post => {
             let mut req = Request::new(Method::Post, url);
 
