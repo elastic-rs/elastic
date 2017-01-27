@@ -546,7 +546,7 @@ pub mod helpers {
 
     impl IntoExpr for syn::Block {
         fn into_expr(self) -> syn::Expr {
-            syn::ExprKind::Block(syn::BlockCheckMode::Default, self).into()
+            syn::ExprKind::Block(syn::Unsafety::Normal, self).into()
         }
     }
 
