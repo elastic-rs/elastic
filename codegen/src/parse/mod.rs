@@ -450,8 +450,8 @@ mod tests {
             let expected = Type {
                 ty: TypeKind::Enum,
                 description: "The default operator for query string query (AND or OR)".to_string(),
-                options: vec![ to_value("AND"), to_value("OR") ],
-                default: Some(to_value("OR")),
+                options: vec![ to_value("AND").unwrap(), to_value("OR").unwrap() ],
+                default: Some(to_value("OR").unwrap()),
             };
 
             assert_eq!(expected, serde_json::from_str::<Type>(&ser).unwrap());

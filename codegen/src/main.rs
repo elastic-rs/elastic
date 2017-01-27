@@ -1,5 +1,3 @@
-#![feature(proc_macro)]
-
 #[cfg(test)]
 #[macro_use]
 extern crate json_str;
