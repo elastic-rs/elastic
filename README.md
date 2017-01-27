@@ -34,7 +34,6 @@ Add `elastic_reqwest` and `json_str` to your `Cargo.toml`:
 
 ```
 [dependencies]
-elastic_requests = "*"
 elastic_reqwest = "*"
 reqwest = "*"
 
@@ -45,12 +44,11 @@ json_str = "*"
 Ping the availability of your cluster:
 
 ```rust
-extern crate elastic_requests as req;
 extern crate elastic_reqwest as cli;
 extern crate reqwest;
 
 use cli::ElasticClient;
-use req::PingRequest;
+use cli::req::PingRequest;
 
 let (client, params) = cli::default().unwrap();
 
@@ -69,12 +67,11 @@ A query DSL query:
 ```rust
 #[macro_use]
 extern crate json_str;
-extern crate elastic_requests as req;
 extern crate elastic_reqwest as cli;
 extern crate reqwest;
 
 use cli::ElasticClient;
-use req::SearchRequest;
+use cli::req::SearchRequest;
  
 let (client, params) = cli::default().unwrap();
 

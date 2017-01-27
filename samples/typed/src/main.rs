@@ -14,17 +14,15 @@ extern crate reqwest;
 #[macro_use]
 extern crate serde_derive;
 
-#[macro_use]
 extern crate elastic_types;
 #[macro_use]
 extern crate elastic_types_derive;
-extern crate elastic_reqwest;
-extern crate elastic_requests;
+extern crate elastic_reqwest as cli;
 
 use std::net::Ipv4Addr;
 use reqwest::Client;
-use elastic_reqwest::{ElasticClient, RequestParams};
-use elastic_requests::{IndicesCreateRequest, IndexRequest, SearchRequest};
+use cli::{ElasticClient, RequestParams};
+use cli::req::{IndicesCreateRequest, IndexRequest, SearchRequest};
 use elastic_types::prelude::*;
 
 mod data;
@@ -36,7 +34,7 @@ const INDEX: &'static str = "testidx";
 
 fn main() {
     // Create a new client
-    let (client, params) = elastic_reqwest::default().unwrap();
+    let (client, params) = cli::default().unwrap();
 
     // Wait for refresh when indexing data.
     // Normally this isn't a good idea, but is ok for this example.
