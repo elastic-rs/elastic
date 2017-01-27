@@ -23,23 +23,13 @@
 //!
 //! ```ignore
 //! [dependencies]
-//! elastic_requests = "*"
 //! elastic_reqwest = "*"
 //! reqwest = "*"
-//! ```
-//!
-//! For `Windows`, you may need to exclude `openssl` or the build can fail:
-//!
-//! ```ignore
-//! [dependencies]
-//! elastic_requests = "*"
-//! elastic_reqwest = { version = "*", default-features = false }
 //! ```
 //!
 //! Then reference in your crate root:
 //!
 //! ```
-//! extern crate elastic_requests as req;
 //! extern crate elastic_reqwest as cli;
 //! ```
 //!
@@ -50,10 +40,9 @@
 //! ```no_run
 //! //HTTP HEAD /
 //!
-//! # extern crate elastic_requests as req;
 //! # extern crate elastic_reqwest as cli;
 //! use cli::ElasticClient;
-//! use req::PingRequest;
+//! use cli::req::PingRequest;
 //!
 //! # fn main() {
 //! let (client, params) = cli::default().unwrap();
@@ -70,10 +59,9 @@
 //! //HTTP GET /myindex/mytype/_search?q='my string'
 //!
 //! extern crate reqwest;
-//! extern crate elastic_requests as req;
 //! extern crate elastic_reqwest as cli;
 //! use cli::{ ElasticClient, RequestParams };
-//! use req::SimpleSearchRequest;
+//! use cli::req::SimpleSearchRequest;
 //!
 //! # fn main() {
 //! let (client, _) = cli::default().unwrap();
@@ -101,10 +89,9 @@
 //! #
 //! #[macro_use]
 //! extern crate json_str;
-//! extern crate elastic_requests as req;
 //! extern crate elastic_reqwest as cli;
 //! use cli::ElasticClient;
-//! use req::SearchRequest;
+//! use cli::req::SearchRequest;
 //!
 //! # fn main() {
 //! let (client, params) = cli::default().unwrap();
@@ -159,7 +146,6 @@ extern crate elastic_requests;
 extern crate reqwest;
 extern crate url;
 
-use elastic_requests::*;
 use std::borrow::Cow;
 use std::collections::BTreeMap;
 use std::io::Cursor;
@@ -167,6 +153,15 @@ use std::str;
 use reqwest::header::{Header, HeaderFormat, Headers, ContentType};
 use reqwest::Response;
 use url::form_urlencoded::Serializer;
+
+/// Request types.
+/// 
+/// These are re-exported from `elastic_requests` for convenience.
+pub mod req {
+    pub use elastic_requests::*;
+}
+
+use self::req::{HttpRequest, HttpMethod, RawBody};
 
 /// Misc parameters for any request.
 ///

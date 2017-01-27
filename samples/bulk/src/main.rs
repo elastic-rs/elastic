@@ -20,11 +20,10 @@ extern crate alloc_system;
 #[cfg_attr(feature = "lazy_static", macro_use)]
 extern crate lazy_static;
 
-extern crate elastic_requests;
-extern crate elastic_reqwest;
+extern crate elastic_reqwest as cli;
 
-use elastic_reqwest::ElasticClient;
-use elastic_requests::BulkRequest;
+use cli::ElasticClient;
+use cli::req::BulkRequest;
 
 // Create a bulk request to index a bunch of docs.
 macro_rules! bulk_req {
@@ -63,7 +62,7 @@ fn get_req() -> &'static BulkRequest<'static> {
 
 fn main() {
     // Get a new default client.
-    let (client, params) = elastic_reqwest::default().unwrap();
+    let (client, params) = cli::default().unwrap();
 
     // Send the bulk request.
     let res = client.elastic_req(&params, get_req()).unwrap();

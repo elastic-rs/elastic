@@ -7,16 +7,15 @@
 
 #[macro_use]
 extern crate json_str;
-extern crate elastic_reqwest;
-extern crate elastic_requests;
+extern crate elastic_reqwest as cli;
 
-use elastic_reqwest::{ElasticClient, RequestParams};
-use elastic_requests::SearchRequest;
+use cli::{ElasticClient, RequestParams};
+use cli::req::SearchRequest;
 use std::io::Read;
 
 fn main() {
     // Get a new default client.
-    let (client, _) = elastic_reqwest::default().unwrap();
+    let (client, _) = cli::default().unwrap();
 
     // Create a new set of params with pretty printing.
     let params = RequestParams::default()

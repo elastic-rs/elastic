@@ -8,6 +8,5 @@ profiling = []
 
 [dependencies]
 elastic_reqwest = { version = "*", path = "../../" }
-elastic_requests = "*"
 
 lazy_static = { version = "*", optional = true }
