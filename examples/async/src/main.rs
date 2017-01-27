@@ -48,7 +48,7 @@ fn main() {
                                 chunk.as_ref()
                                      .read_to_end(&mut buf)
                                      .map(|_| buf)
-                            })
+                           })
                            .and_then(|buf| {
                                 // TODO: Deserialize the response on the cpu pool
 
