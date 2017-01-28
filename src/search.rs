@@ -1,5 +1,5 @@
 use serde::Deserialize;
-use serde_json::Value;
+use serde_json::{Map, Value};
 
 use parse::MaybeOkResponse;
 use super::{HttpResponse, FromResponse, ApiResult};
@@ -137,7 +137,7 @@ impl<'a> AggregationIterator<'a> {
     }
 }
 
-type Object = BTreeMap<String, Value>;
+type Object = Map<String, Value>;
 type RowData<'a> = BTreeMap<Cow<'a, str>, &'a Value>;
 
 fn insert_value<'a>(fieldname: &str,

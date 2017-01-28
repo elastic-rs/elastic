@@ -175,8 +175,7 @@ fn test_parse_other_error() {
     let deserialized = SearchResponse::from_response(s).unwrap_err();
 
     let reason = match deserialized {
-        ResponseError::Api(ApiError::Other(ref err)) => err.as_object()
-                                       .and_then(|err| err.get("reason"))
+        ResponseError::Api(ApiError::Other(ref err)) => err.get("reason")
                                        .and_then(|reason| reason.as_str())
                                        .map(|reason| reason.to_owned()),
         _ => None
