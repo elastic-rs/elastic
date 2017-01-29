@@ -1,19 +1,7 @@
-use serde::{
-    Serialize, 
-    Serializer, 
-    Deserialize, 
-    Deserializer
-};
+use serde::{Serialize, Serializer, Deserialize, Deserializer};
 use serde::de::{Visitor, Error as DeError};
-use elastic::types::prelude::{
-    FieldType, 
-    Text, 
-    DefaultTextMapping, 
-    TextMapping, 
-    Keyword, 
-    DefaultKeywordMapping, 
-    KeywordFormat
-};
+use elastic::types::prelude::{FieldType, Text, DefaultTextMapping, TextMapping, Keyword,
+                              DefaultKeywordMapping, KeywordFormat};
 
 #[derive(Serialize, Deserialize, ElasticType)]
 pub struct Account {
@@ -43,31 +31,31 @@ pub enum Gender {
 }
 
 impl Serialize for Gender {
-    fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> 
+    fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
         where S: Serializer
     {
         match *self {
             Gender::Female => serializer.serialize_str("F"),
-            Gender::Male => serializer.serialize_str("M")
+            Gender::Male => serializer.serialize_str("M"),
         }
     }
 }
 
 impl Deserialize for Gender {
-    fn deserialize<D>(deserializer: &mut D) -> Result<Self, D::Error> 
+    fn deserialize<D>(deserializer: &mut D) -> Result<Self, D::Error>
         where D: Deserializer
     {
         struct GenderVisitor;
         impl Visitor for GenderVisitor {
             type Value = Gender;
 
-            fn visit_str<E>(&mut self, v: &str) -> Result<Self::Value, E> 
-                where E: DeError 
+            fn visit_str<E>(&mut self, v: &str) -> Result<Self::Value, E>
+                where E: DeError
             {
                 match v {
-                    "f"|"F" => Ok(Gender::Female),
-                    "m"|"M" => Ok(Gender::Male),
-                    _ => Err(E::custom("expected 'F' or 'M'"))
+                    "f" | "F" => Ok(Gender::Female),
+                    "m" | "M" => Ok(Gender::Male),
+                    _ => Err(E::custom("expected 'F' or 'M'")),
                 }
             }
         }
@@ -76,14 +64,16 @@ impl Deserialize for Gender {
     }
 }
 
-impl FieldType<DefaultKeywordMapping, KeywordFormat> for Gender { }
+impl FieldType<DefaultKeywordMapping, KeywordFormat> for Gender {}
 
 pub type Email = Text<EmailMapping>;
 
 #[derive(Default)]
 pub struct EmailMapping;
 impl TextMapping for EmailMapping {
-    fn analyzer() -> Option<&'static str> { Some("email") }
+    fn analyzer() -> Option<&'static str> {
+        Some("email")
+    }
 }
 
 #[cfg(test)]
