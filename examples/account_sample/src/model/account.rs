@@ -8,7 +8,7 @@
 use serde::{Serialize, Serializer, Deserialize, Deserializer};
 use serde::de::{Visitor, Error as DeError};
 use elastic::types::prelude::{FieldType, Text, DefaultTextMapping, TextMapping, Keyword,
-                              DefaultKeywordMapping, KeywordFormat};
+                              DefaultKeywordMapping, KeywordFormat, DocumentType};
 
 /// Our main model; an account in the bank.
 #[derive(Serialize, Deserialize, ElasticType)]
@@ -26,6 +26,15 @@ pub struct Account {
     pub state: State,
 }
 
+/// Get the indexed document type name.
+pub fn name() -> &'static str {
+    Account::name()
+}
+
+/// Get the strongly typed document mapping.
+pub fn mapping() -> AccountMapping {
+    Account::mapping()
+}
 
 // We're using type aliases to make the `Account` definition more ergonomic.
 
@@ -100,8 +109,8 @@ impl TextMapping for EmailMapping {
 #[cfg(test)]
 mod tests {
     use serde_json;
-    use elastic::types::prelude::{Document, FieldType};
-    use super::Account;
+    use elastic::types::prelude::Document;
+    use super::{mapping, Account};
 
     #[test]
     fn deserialize() {
@@ -125,8 +134,8 @@ mod tests {
     }
 
     #[test]
-    fn mapping() {
-        let ser = serde_json::to_string(&Document::from(Account::mapping())).unwrap();
+    fn serialise_mapping() {
+        let ser = serde_json::to_string(&Document::from(mapping())).unwrap();
 
         let expected = json_str!({
             "properties":{

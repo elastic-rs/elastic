@@ -14,6 +14,7 @@ extern crate serde_json;
 extern crate elastic;
 
 pub mod model;
+pub mod bulk;
 
 fn main() {
     println!("Hello, world!");

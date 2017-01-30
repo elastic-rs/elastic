@@ -5,9 +5,9 @@
 //! analysers, filters and mapping for `Account`s.
 
 use elastic::client::requests::{Index, IndicesExistsRequest, IndicesCreateRequest};
-use elastic::types::prelude::{Document, DocumentType, FieldType};
+use elastic::types::prelude::{Document, FieldType};
 use serde_json;
-use super::account::Account;
+use super::account::{self, Account};
 
 /// Get the name of the bank index.
 pub fn name() -> Index<'static> {
@@ -25,7 +25,7 @@ pub fn put() -> IndicesCreateRequest<'static> {
 }
 
 fn bank_index() -> String {
-    let account_name = format!("\"{}\"", Account::name());
+    let account_name = format!("\"{}\"", account::name());
     let account_mapping = serde_json::to_string(&Document::from(Account::mapping())).expect("get Account mapping");
     let filters = bank_filters();
     let analysers = bank_analysers();
