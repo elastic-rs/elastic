@@ -1,3 +1,7 @@
+//! This sample is a more fleshed out application using `elastic`.
+//! 
+//! It expects you have an Elasticsearch node running on `localhost:9200`.
+
 #[macro_use]
 extern crate serde_derive;
 #[macro_use]

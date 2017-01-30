@@ -1,8 +1,16 @@
+//! The `Account` model.
+//! 
+//! This module defines our document type along with its fields
+//! and their mapping.
+//! Field serialisation and mapping is all handled in the same place
+//! so it's always in sync.
+
 use serde::{Serialize, Serializer, Deserialize, Deserializer};
 use serde::de::{Visitor, Error as DeError};
 use elastic::types::prelude::{FieldType, Text, DefaultTextMapping, TextMapping, Keyword,
                               DefaultKeywordMapping, KeywordFormat};
 
+/// Our main model; an account in the bank.
 #[derive(Serialize, Deserialize, ElasticType)]
 pub struct Account {
     pub account_number: i32,
@@ -18,6 +26,9 @@ pub struct Account {
     pub state: State,
 }
 
+
+// We're using type aliases to make the `Account` definition more ergonomic.
+
 pub type Address = Text<DefaultTextMapping>;
 pub type City = Keyword<DefaultKeywordMapping>;
 pub type Employer = Keyword<DefaultKeywordMapping>;
@@ -25,10 +36,19 @@ pub type FirstName = Keyword<DefaultKeywordMapping>;
 pub type LastName = Keyword<DefaultKeywordMapping>;
 pub type State = Keyword<DefaultKeywordMapping>;
 
+
+// You can implement your own field types as well as document types.
+// The below `Gender` type is mapped as a `Keyword` in Elasticsearch,
+// but is a strongly typed enum in Rust.
+// This is done by implementing the `FieldType` trait using a `KeywordMapping`
+// and a `KeywordFormat`.
+
 pub enum Gender {
     Female,
     Male,
 }
+
+impl FieldType<DefaultKeywordMapping, KeywordFormat> for Gender {}
 
 impl Serialize for Gender {
     fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
@@ -64,7 +84,8 @@ impl Deserialize for Gender {
     }
 }
 
-impl FieldType<DefaultKeywordMapping, KeywordFormat> for Gender {}
+// The `Email` type uses a custom analyser so it has its own
+// mapping type instead of using `DefaultKeywordMapping`.
 
 pub type Email = Text<EmailMapping>;
 

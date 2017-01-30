@@ -1,17 +1,28 @@
-use elastic::client::requests::IndicesCreateRequest;
+//! Commands for managing the bank index.
+//! 
+//! The public API for this module just gives us a few REST API requests
+//! for checking whether the bank index exists and creating it along with
+//! analysers, filters and mapping for `Account`s.
+
+use elastic::client::requests::{Index, IndicesExistsRequest, IndicesCreateRequest};
 use elastic::types::prelude::{Document, DocumentType, FieldType};
 use serde_json;
 use super::account::Account;
 
-pub fn name() -> &'static str {
-    INDEX
+/// Get the name of the bank index.
+pub fn name() -> Index<'static> {
+    "bank-sample".into()
 }
 
-pub fn request() -> IndicesCreateRequest<'static> {
+/// Get a request to check if the bank index exists.
+pub fn exists() -> IndicesExistsRequest<'static> {
+    IndicesExistsRequest::for_index(name())
+}
+
+/// Get a request to create the bank index.
+pub fn put() -> IndicesCreateRequest<'static> {
     IndicesCreateRequest::for_index(name(), bank_index())
 }
-
-const INDEX: &'static str = "bank-sample";
 
 fn bank_index() -> String {
     let account_name = format!("\"{}\"", Account::name());
@@ -69,15 +80,15 @@ mod tests {
     use super::*;
 
     #[test]
-    fn request_url() {
-        let req = request();
+    fn put_request_url() {
+        let req = put();
 
         assert_eq!("/bank-sample", req.url.as_ref());
     }
 
     #[test]
-    fn request_body() {
-        let req = request();
+    fn put_request_body() {
+        let req = put();
 
         let body = req.body.into_raw();
         let body = str::from_utf8(&body).unwrap();
