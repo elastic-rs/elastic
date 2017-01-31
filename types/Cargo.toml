@@ -1,6 +1,6 @@
 [package]
 name = "elastic_types"
-version = "0.10.3"
+version = "0.10.4"
 authors = ["Ashley Mannix <ashleymannix@live.com.au>"]
 license = "Apache-2.0"
 description = "A strongly-typed implementation of Elasticsearch core types and Mapping API."
@@ -9,11 +9,8 @@ repository = "https://github.com/elastic-rs/elastic-types"
 
 [features]
 nightly = [
-	"elastic_date_macros/nightly",
-	"elastic_types_derive",
-	"serde_derive"
+	"elastic_date_macros/nightly"
 ]
-nightly-testing = ["nightly"]
 
 [dependencies]
 serde = "~0.8.0"
@@ -22,11 +19,10 @@ chrono = { version = "~0.2.20", features = [ "serde" ]}
 geo = "~0.0.7"
 geohash = "~0.2.7"
 geojson = { version = "~0.4.0", features = [ "with-serde" ] }
-
-serde_derive = { version = "~0.8.0", optional = true }
-elastic_types_derive = { version = "~0.10.1", optional = true }
-elastic_date_macros = "~0.5.1"
+elastic_date_macros = { version = "~0.5.3", path = "../macros/date" }
 
 [dev-dependencies]
 json_str = "^0.*"
 maplit = "^0.*"
+elastic_types_derive = "~0.10.1"
+serde_derive = "~0.8.0"
