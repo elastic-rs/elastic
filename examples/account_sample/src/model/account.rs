@@ -1,5 +1,5 @@
 //! The `Account` model.
-//! 
+//!
 //! This module defines our document type along with its fields
 //! and their mapping.
 //! Field serialisation and mapping is all handled in the same place

@@ -1,5 +1,5 @@
 //! Commands for managing the bank index.
-//! 
+//!
 //! The public API for this module just gives us a few REST API requests
 //! for checking whether the bank index exists and creating it along with
 //! analysers, filters and mapping for `Account`s.
@@ -26,22 +26,23 @@ pub fn put() -> IndicesCreateRequest<'static> {
 
 fn bank_index() -> String {
     let account_name = format!("\"{}\"", account::name());
-    let account_mapping = serde_json::to_string(&Document::from(Account::mapping())).expect("get Account mapping");
+    let account_mapping = serde_json::to_string(&Document::from(Account::mapping()))
+        .expect("get Account mapping");
     let filters = bank_filters();
     let analysers = bank_analysers();
 
     let get_index = json_fn!(|filters, analysers, account_name, account_mapping| {
-       "settings" : {
-          "analysis" : {
+        "settings" : {
+            "analysis" : {
                 "filter" : $filters,
                 "analyzer" : $analysers
-          },
-          "mappings": {
+            }
+        },
+        "mappings": {
             $account_name: $account_mapping
-          }
-       }
+        }
     });
-    
+
     get_index(&filters, &analysers, &account_name, &account_mapping)
 }
 
@@ -118,44 +119,44 @@ mod tests {
                             ]
                         }
                     }
-                },
-                "mappings":{
-                    "account":{
-                        "properties":{
-                            "account_number":{
-                                "type":"integer"
-                            },
-                            "balance":{
-                                "type":"integer"
-                            },
-                            "firstname":{
-                                "type":"keyword"
-                            },
-                            "lastname":{
-                                "type":"keyword"
-                            },
-                            "age":{
-                                "type":"byte"
-                            },
-                            "gender":{
-                                "type":"keyword"
-                            },
-                            "address":{
-                                "type":"text"
-                            },
-                            "employer":{
-                                "type":"keyword"
-                            },
-                            "email":{
-                                "type":"text",
-                                "analyzer":"email"
-                            },
-                            "city":{
-                                "type":"keyword"
-                            },
-                            "state":{
-                                "type":"keyword"
-                            }
+                }
+            },
+            "mappings":{
+                "account":{
+                    "properties":{
+                        "account_number":{
+                            "type":"integer"
+                        },
+                        "balance":{
+                            "type":"integer"
+                        },
+                        "firstname":{
+                            "type":"keyword"
+                        },
+                        "lastname":{
+                            "type":"keyword"
+                        },
+                        "age":{
+                            "type":"byte"
+                        },
+                        "gender":{
+                            "type":"keyword"
+                        },
+                        "address":{
+                            "type":"text"
+                        },
+                        "employer":{
+                            "type":"keyword"
+                        },
+                        "email":{
+                            "type":"text",
+                            "analyzer":"email"
+                        },
+                        "city":{
+                            "type":"keyword"
+                        },
+                        "state":{
+                            "type":"keyword"
                         }
                     }
                 }

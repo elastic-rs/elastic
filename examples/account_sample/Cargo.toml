@@ -3,8 +3,13 @@ name = "account-sample"
 version = "0.1.0"
 authors = ["Ashley Mannix <ashleymannix@live.com.au>"]
 
+[features]
+nightly = [
+	"elastic/nightly"
+]
+
 [dependencies]
-elastic = "*"
+elastic = { version = "*", path = "../../" }
 elastic_types_derive = { version = "*", features = ["elastic"]}
 
 serde = "0.8"
