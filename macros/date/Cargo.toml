@@ -14,7 +14,6 @@ plugin = true
 
 [features]
 nightly = [ ]
-nightly-testing = [ ]
 
 [dependencies]
 chrono = { version = "~0.2.20" }
