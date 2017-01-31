@@ -45,7 +45,6 @@ pub type FirstName = Keyword<DefaultKeywordMapping>;
 pub type LastName = Keyword<DefaultKeywordMapping>;
 pub type State = Keyword<DefaultKeywordMapping>;
 
-
 // You can implement your own field types as well as document types.
 // The below `Gender` type is mapped as a `Keyword` in Elasticsearch,
 // but is a strongly typed enum in Rust.

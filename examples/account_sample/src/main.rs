@@ -14,47 +14,19 @@ extern crate serde_json;
 extern crate elastic;
 
 pub mod model;
-pub mod bulk;
+pub mod commands;
 
-use std::io::Read;
 use elastic::client::{Client, RequestParams};
-use elastic::http::StatusCode;
+use commands::{EnsureBankIndexExists, PutBulkAccounts};
 
 fn main() {
     let client = Client::new(RequestParams::default()).unwrap();
 
     println!("checking index");
 
-    let exists = client.request(model::index::exists()).send().unwrap();
-    match exists.status() {
-        StatusCode::NotFound => {
-            println!("creating the index");
-
-            let res = client.request(model::index::put()).send().unwrap();
-            let success = res.status().is_success();
-
-            if !success {
-                let mut body = String::new();
-                res.raw().read_to_string(&mut body).unwrap();
-
-                panic!("{}", body);
-            }
-        }
-        x if x.is_success() => println!("index already exists"),
-        _ => panic!("failed to check whether index exists"),
-    }
+    client.ensure_bank_index_exists().unwrap();
 
     println!("updating docs");
 
-    let res = client.request(bulk::put("data/accounts.json").unwrap()).send().unwrap();
-
-    let success = res.status().is_success();
-    if !success {
-        let mut body = String::new();
-        res.raw().read_to_string(&mut body).unwrap();
-
-        panic!("{}", body);
-    }
-
-    println!("done");
+    client.put_bulk_accounts("data/accounts.json").unwrap();
 }

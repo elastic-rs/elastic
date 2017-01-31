@@ -14,20 +14,10 @@ pub fn name() -> Index<'static> {
     "bank-sample".into()
 }
 
-/// Get a request to check if the bank index exists.
-pub fn exists() -> IndicesExistsRequest<'static> {
-    IndicesExistsRequest::for_index(name())
-}
-
-/// Get a request to create the bank index.
-pub fn put() -> IndicesCreateRequest<'static> {
-    IndicesCreateRequest::for_index(name(), bank_index())
-}
-
-fn bank_index() -> String {
+/// Get the settings and mappings for the index.
+pub fn body() -> Result<String, JsonError> {
     let account_name = format!("\"{}\"", account::name());
-    let account_mapping = serde_json::to_string(&Document::from(Account::mapping()))
-        .expect("get Account mapping");
+    let account_mapping = serde_json::to_string(&Document::from(Account::mapping()))?;
     let filters = bank_filters();
     let analysers = bank_analysers();
 
@@ -43,7 +33,7 @@ fn bank_index() -> String {
         }
     });
 
-    get_index(&filters, &analysers, &account_name, &account_mapping)
+    Ok(get_index(&filters, &analysers, &account_name, &account_mapping))
 }
 
 fn bank_filters() -> String {
@@ -76,23 +66,9 @@ fn bank_analysers() -> String {
 
 #[cfg(test)]
 mod tests {
-    use std::str;
-    use elastic::client::requests::RawBody;
-    use super::*;
-
     #[test]
-    fn put_request_url() {
-        let req = put();
-
-        assert_eq!("/bank-sample", req.url.as_ref());
-    }
-
-    #[test]
-    fn put_request_body() {
-        let req = put();
-
-        let body = req.body.into_raw();
-        let body = str::from_utf8(&body).unwrap();
+    fn index_settings() {
+        let body = body().unwrap();
 
         let expected = json_str!({
             "settings":{

@@ -9,7 +9,7 @@ repository = "https://github.com/elastic-rs/elastic"
 
 [features]
 nightly = [
-	"elastic_types/nightly"
+	"elastic_types/nightly" 
 ]
 
 [dependencies]
