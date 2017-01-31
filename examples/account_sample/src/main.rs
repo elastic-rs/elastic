@@ -8,6 +8,8 @@ extern crate serde_derive;
 extern crate elastic_types_derive;
 #[macro_use]
 extern crate json_str;
+#[macro_use]
+extern crate quick_error;
 
 extern crate serde;
 extern crate serde_json;
