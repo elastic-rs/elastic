@@ -52,8 +52,8 @@ pub struct GeoPointFormatWrapper<F>
 /// This will produce the following mapping:
 ///
 /// ```
-/// # #![feature(plugin, custom_derive, custom_attribute)]
-/// # #![plugin(elastic_types_derive)]
+/// # #[macro_use]
+/// # extern crate elastic_types_derive;
 /// # #[macro_use]
 /// # extern crate json_str;
 /// # #[macro_use]

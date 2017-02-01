@@ -118,13 +118,15 @@ impl<T: CustomDateFormat> DateFormat for T {
 /// The macro takes 2 string literals; the format to parse and the name to use in Elasticsearch:
 ///
 /// ```
-/// # #![feature(plugin)]
-/// # #![plugin(elastic_date_macros)]
+/// # #![cfg_attr(feature = "nightly", feature(plugin))]
+/// # #![cfg_attr(feature = "nightly", plugin(elastic_date_macros))]
+/// # #[cfg(not(feature = "nightly"))]
+/// #[macro_use]
+/// extern crate elastic_date_macros;
 /// # #[macro_use]
 /// # extern crate elastic_types;
 /// # extern crate chrono;
 /// # fn main() {}
-/// use std::marker::PhantomData;
 ///
 /// #[derive(Default, Clone)]
 /// struct MyFormat;
@@ -132,6 +134,9 @@ impl<T: CustomDateFormat> DateFormat for T {
 /// ```
 ///
 /// You can then use `MyFormat` as the generic parameter in `Date`.
+/// 
+/// > NOTE: The `date_fmt` macro expects you to have the `elastic_date_macros`
+/// crate imported.
 #[macro_export]
 macro_rules! date_fmt {
     ($format_ty:ty, $format_pat:tt, $es_format:expr) => (

@@ -537,11 +537,11 @@
 
 #![deny(missing_docs)]
 
-#![cfg_attr(feature = "nightly", feature(custom_derive, plugin))]
+#![cfg_attr(feature = "nightly", feature(plugin))]
 #![cfg_attr(feature = "nightly", plugin(elastic_date_macros))]
 
 #[cfg(not(feature = "nightly"))]
-#[cfg_attr(not(feature = "nightly"), macro_use)]
+#[macro_use]
 extern crate elastic_date_macros;
 
 pub extern crate chrono;

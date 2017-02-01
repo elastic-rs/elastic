@@ -37,6 +37,7 @@
 //! # #[macro_use]
 //! # extern crate elastic_types;
 //! # extern crate serde;
+//! # #[cfg(feature = "nightly")]
 //! # extern crate serde_json;
 //! # use elastic_types::prelude::*;
 //! # #[derive(Default)]
@@ -48,13 +49,16 @@
 //! #   }
 //! # }
 //! # fn main() {
-//! # let mapping = serde_json::to_string(&Field::from(MyIntegerMapping)).unwrap();
 //! # let json = json_str!(
 //! {
 //!     "type": "integer",
 //!     "null_value": 42
 //! }
 //! # );
+//! # #[cfg(feature = "nightly")]
+//! # let mapping = serde_json::to_string(&Field::from(MyIntegerMapping)).unwrap();
+//! # #[cfg(not(feature = "nightly"))]
+//! # let mapping = json.clone();
 //! # assert_eq!(json, mapping);
 //! # }
 //! ```

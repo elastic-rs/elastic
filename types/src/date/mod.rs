@@ -46,14 +46,17 @@
 //! This will convert an Elasticsearch or `chrono` format string into a `Vec<Item>` for efficient parsing at runtime:
 //!
 //! ```
-//! # #![feature(plugin)]
-//! # #![plugin(json_str, elastic_types_derive)]
-//! # #![plugin(elastic_date_macros)]
+//! # #![cfg_attr(feature = "nightly", feature(plugin))]
+//! # #![cfg_attr(feature = "nightly", plugin(elastic_date_macros))]
+//! # #[cfg(not(feature = "nightly"))]
+//! #[macro_use]
+//! extern crate elastic_date_macros;
 //! # #[macro_use]
 //! # extern crate elastic_types;
 //! # extern crate chrono;
 //! # use elastic_types::prelude::*;
 //! # fn main() {
+//! 
 //! #[derive(Default, Clone)]
 //! struct MyFormat;
 //! date_fmt!(MyFormat, "yyyy-MM-ddTHH:mm:ss", "yyyy-MM-dd'T'HH:mm:ss");

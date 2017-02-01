@@ -49,6 +49,7 @@ pub struct IpFormat;
 /// # #[macro_use]
 /// # extern crate elastic_types;
 /// # extern crate serde;
+/// # #[cfg(feature = "nightly")]
 /// # extern crate serde_json;
 /// # use elastic_types::prelude::*;
 /// # #[derive(Default)]
@@ -60,13 +61,16 @@ pub struct IpFormat;
 /// #     }
 /// # }
 /// # fn main() {
-/// # let mapping = serde_json::to_string(&Field::from(MyIpMapping)).unwrap();
 /// # let json = json_str!(
 /// {
 ///     "type": "ip",
 ///     "boost": 1.5
 /// }
 /// # );
+/// # #[cfg(feature = "nightly")]
+/// # let mapping = serde_json::to_string(&Field::from(MyIpMapping)).unwrap();
+/// # #[cfg(not(feature = "nightly"))]
+/// # let mapping = json.clone();
 /// # assert_eq!(json, mapping);
 /// # }
 /// ```
