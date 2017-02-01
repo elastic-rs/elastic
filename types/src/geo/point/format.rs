@@ -1,5 +1,5 @@
 use serde::{Serializer, Deserializer};
-use georust::Point;
+use super::Point;
 use super::mapping::GeoPointMapping;
 
 /// A format used for parsing and formatting geo points.
@@ -10,7 +10,7 @@ pub trait GeoPointFormat
     ///
     /// This requires access to the full `serde` deserializer because geo points can be serialised as
     /// different kinds of complex objects.
-    fn parse<D>(deserializer: &mut D) -> Result<Point, D::Error> where D: Deserializer;
+    fn parse<D>(deserializer: D) -> Result<Point, D::Error> where D: Deserializer;
 
     /// Formats a `geo::Point`.
     ///
@@ -19,7 +19,7 @@ pub trait GeoPointFormat
     ///
     /// Formatting also has access to the mapping type, which could be needed to build the structure
     /// properly.
-    fn format<S, M>(point: &Point, serializer: &mut S) -> Result<(), S::Error>
+    fn format<S, M>(point: &Point, serializer: S) -> Result<S::Ok, S::Error>
         where M: GeoPointMapping<Format = Self>,
               S: Serializer;
 }

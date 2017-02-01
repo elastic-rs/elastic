@@ -2,6 +2,7 @@
 
 use std::marker::PhantomData;
 use serde::{Serialize, Serializer};
+use serde::ser::SerializeStruct;
 use super::{DateFormat, Date};
 use ::field::{FieldMapping, SerializeField, Field};
 
@@ -176,29 +177,23 @@ impl<T, F> Serialize for Field<T, DateFormatWrapper<F>>
     where T: FieldMapping<DateFormatWrapper<F>> + DateMapping<Format = F>,
           F: DateFormat
 {
-    fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
         where S: Serializer
     {
         let mut state = try!(serializer.serialize_struct("mapping", 9));
 
-        try!(serializer.serialize_struct_elt(&mut state, "type", T::data_type()));
-        try!(serializer.serialize_struct_elt(&mut state, "format", T::Format::name()));
+        try!(state.serialize_field( "type", T::data_type()));
+        try!(state.serialize_field( "format", T::Format::name()));
 
-        ser_field!(serializer, &mut state, "boost", T::boost());
-        ser_field!(serializer, &mut state, "doc_values", T::doc_values());
-        ser_field!(serializer,
-                   &mut state,
-                   "include_in_all",
-                   T::include_in_all());
-        ser_field!(serializer, &mut state, "index", T::index());
-        ser_field!(serializer, &mut state, "store", T::store());
-        ser_field!(serializer,
-                   &mut state,
-                   "ignore_malformed",
-                   T::ignore_malformed());
-        ser_field!(serializer, &mut state, "null_value", T::null_value());
+        ser_field!(state, "boost", T::boost());
+        ser_field!(state, "doc_values", T::doc_values());
+        ser_field!(state, "include_in_all", T::include_in_all());
+        ser_field!(state, "index", T::index());
+        ser_field!(state, "store", T::store());
+        ser_field!(state, "ignore_malformed", T::ignore_malformed());
+        ser_field!(state, "null_value", T::null_value());
 
-        serializer.serialize_struct_end(state)
+        state.end()
     }
 }
 

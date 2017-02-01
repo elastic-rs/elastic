@@ -390,7 +390,7 @@ pub mod object_fixtures {
     impl PropertiesMapping for SimpleTypeMapping {
         fn props_len() -> usize { 2 }
         
-        fn serialize_props<S>(serializer: &mut S, state: &mut S::StructState) -> Result<(), S::Error>
+        fn serialize_props<S>(serializer: S, state: &mut S::StructState) -> Result<S::Ok, S::Error>
         where S: Serializer {
             try!(field_ser(serializer, state, "field1", Date::<EpochMillis>::mapping()));
             try!(field_ser(serializer, state, "field2", SimpleNestedType::mapping()));
@@ -414,7 +414,7 @@ pub mod object_fixtures {
     impl PropertiesMapping for SimpleNestedTypeMapping {
         fn props_len() -> usize { 1 }
         
-        fn serialize_props<S>(serializer: &mut S, state: &mut S::StructState) -> Result<(), S::Error>
+        fn serialize_props<S>(serializer: S, state: &mut S::StructState) -> Result<S::Ok, S::Error>
         where S: Serializer {
             try!(field_ser(serializer, state, "field", i32::mapping()));
 

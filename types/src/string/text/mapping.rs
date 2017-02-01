@@ -2,6 +2,7 @@
 
 use std::collections::BTreeMap;
 use serde::{Serialize, Serializer};
+use serde::ser::SerializeStruct;
 use ::field::{FieldMapping, SerializeField, Field};
 use ::string::mapping::{StringField, IndexOptions};
 
@@ -233,50 +234,32 @@ impl<T> SerializeField<TextFormat> for T
 impl<T> Serialize for Field<T, TextFormat>
     where T: FieldMapping<TextFormat> + TextMapping
 {
-    fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
         where S: Serializer
     {
         let mut state = try!(serializer.serialize_struct("mapping", 18));
 
-        try!(serializer.serialize_struct_elt(&mut state, "type", T::data_type()));
+        try!(state.serialize_field( "type", T::data_type()));
 
-        ser_field!(serializer, &mut state, "boost", T::boost());
-        ser_field!(serializer, &mut state, "analyzer", T::analyzer());
-        ser_field!(serializer,
-                   &mut state,
-                   "eager_global_ordinals",
-                   T::eager_global_ordinals());
-        ser_field!(serializer, &mut state, "fielddata", T::fielddata());
-        ser_field!(serializer,
-                   &mut state,
-                   "fielddata_frequency_filter",
-                   T::fielddata_frequency_filter());
-        ser_field!(serializer, &mut state, "fields", T::fields());
-        ser_field!(serializer,
-                   &mut state,
-                   "include_in_all",
-                   T::include_in_all());
-        ser_field!(serializer, &mut state, "ignore_above", T::ignore_above());
-        ser_field!(serializer, &mut state, "index", T::index());
-        ser_field!(serializer, &mut state, "index_options", T::index_options());
-        ser_field!(serializer, &mut state, "norms", T::norms());
-        ser_field!(serializer,
-                   &mut state,
-                   "position_increment_gap",
-                   T::position_increment_gap());
-        ser_field!(serializer, &mut state, "store", T::store());
-        ser_field!(serializer,
-                   &mut state,
-                   "search_analyzer",
-                   T::search_analyzer());
-        ser_field!(serializer,
-                   &mut state,
-                   "search_quote_analyzer",
-                   T::search_quote_analyzer());
-        ser_field!(serializer, &mut state, "similarity", T::similarity());
-        ser_field!(serializer, &mut state, "term_vector", T::term_vector());
+        ser_field!(state, "boost", T::boost());
+        ser_field!(state, "analyzer", T::analyzer());
+        ser_field!(state, "eager_global_ordinals", T::eager_global_ordinals());
+        ser_field!(state, "fielddata", T::fielddata());
+        ser_field!(state, "fielddata_frequency_filter", T::fielddata_frequency_filter());
+        ser_field!(state, "fields", T::fields());
+        ser_field!(state, "include_in_all", T::include_in_all());
+        ser_field!(state, "ignore_above", T::ignore_above());
+        ser_field!(state, "index", T::index());
+        ser_field!(state, "index_options", T::index_options());
+        ser_field!(state, "norms", T::norms());
+        ser_field!(state, "position_increment_gap", T::position_increment_gap());
+        ser_field!(state, "store", T::store());
+        ser_field!(state, "search_analyzer", T::search_analyzer());
+        ser_field!(state, "search_quote_analyzer", T::search_quote_analyzer());
+        ser_field!(state, "similarity", T::similarity());
+        ser_field!(state, "term_vector", T::term_vector());
 
-        serializer.serialize_struct_end(state)
+        state.end()
     }
 }
 
@@ -301,7 +284,7 @@ pub enum TermVector {
 }
 
 impl Serialize for TermVector {
-    fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
         where S: Serializer
     {
         serializer.serialize_str(match *self {
@@ -326,19 +309,16 @@ pub struct FieldDataFrequencyFilter {
 }
 
 impl Serialize for FieldDataFrequencyFilter {
-    fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
         where S: Serializer
     {
         let mut state = try!(serializer.serialize_struct("mapping", 3));
 
-        ser_field!(serializer, &mut state, "min", self.min);
-        ser_field!(serializer, &mut state, "max", self.max);
-        ser_field!(serializer,
-                   &mut state,
-                   "min_segment_size",
-                   self.min_segment_size);
+        ser_field!(state, "min", self.min);
+        ser_field!(state, "max", self.max);
+        ser_field!(state, "min_segment_size", self.min_segment_size);
 
-        serializer.serialize_struct_end(state)
+        state.end()
     }
 }
 
@@ -396,47 +376,29 @@ pub struct TextFieldMapping {
 }
 
 impl Serialize for TextFieldMapping {
-    fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
         where S: Serializer
     {
         let mut state = try!(serializer.serialize_struct("mapping", 16));
 
-        try!(serializer.serialize_struct_elt(&mut state, "type", TEXT_DATATYPE));
+        try!(state.serialize_field( "type", TEXT_DATATYPE));
 
-        ser_field!(serializer, &mut state, "analyzer", self.analyzer);
-        ser_field!(serializer,
-                   &mut state,
-                   "eager_global_ordinals",
-                   self.eager_global_ordinals);
-        ser_field!(serializer, &mut state, "fielddata", self.fielddata);
-        ser_field!(serializer,
-                   &mut state,
-                   "fielddata_frequency_filter",
-                   self.fielddata_frequency_filter);
-        ser_field!(serializer,
-                   &mut state,
-                   "include_in_all",
-                   self.include_in_all);
-        ser_field!(serializer, &mut state, "ignore_above", self.ignore_above);
-        ser_field!(serializer, &mut state, "index", self.index);
-        ser_field!(serializer, &mut state, "index_options", self.index_options);
-        ser_field!(serializer, &mut state, "norms", self.norms);
-        ser_field!(serializer,
-                   &mut state,
-                   "position_increment_gap",
-                   self.position_increment_gap);
-        ser_field!(serializer, &mut state, "store", self.store);
-        ser_field!(serializer,
-                   &mut state,
-                   "search_analyzer",
-                   self.search_analyzer);
-        ser_field!(serializer,
-                   &mut state,
-                   "search_quote_analyzer",
-                   self.search_quote_analyzer);
-        ser_field!(serializer, &mut state, "similarity", self.similarity);
-        ser_field!(serializer, &mut state, "term_vector", self.term_vector);
+        ser_field!(state, "analyzer", self.analyzer);
+        ser_field!(state, "eager_global_ordinals", self.eager_global_ordinals);
+        ser_field!(state, "fielddata", self.fielddata);
+        ser_field!(state, "fielddata_frequency_filter", self.fielddata_frequency_filter);
+        ser_field!(state, "include_in_all", self.include_in_all);
+        ser_field!(state, "ignore_above", self.ignore_above);
+        ser_field!(state, "index", self.index);
+        ser_field!(state, "index_options", self.index_options);
+        ser_field!(state, "norms", self.norms);
+        ser_field!(state, "position_increment_gap", self.position_increment_gap);
+        ser_field!(state, "store", self.store);
+        ser_field!(state, "search_analyzer", self.search_analyzer);
+        ser_field!(state, "search_quote_analyzer", self.search_quote_analyzer);
+        ser_field!(state, "similarity", self.similarity);
+        ser_field!(state, "term_vector", self.term_vector);
 
-        serializer.serialize_struct_end(state)
+        state.end()
     }
 }

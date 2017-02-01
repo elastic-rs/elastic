@@ -81,7 +81,7 @@ impl_mapping_type!(bool, Boolean, BooleanMapping);
 impl<M> Serialize for Boolean<M>
     where M: BooleanMapping
 {
-    fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
         where S: Serializer
     {
         serializer.serialize_bool(self.value)
@@ -91,7 +91,7 @@ impl<M> Serialize for Boolean<M>
 impl<M> Deserialize for Boolean<M>
     where M: BooleanMapping
 {
-    fn deserialize<D>(deserializer: &mut D) -> Result<Boolean<M>, D::Error>
+    fn deserialize<D>(deserializer: D) -> Result<Boolean<M>, D::Error>
         where D: Deserializer
     {
         #[derive(Default)]
@@ -106,7 +106,12 @@ impl<M> Deserialize for Boolean<M>
         {
             type Value = Boolean<M>;
 
-            fn visit_bool<E>(&mut self, v: bool) -> Result<Boolean<M>, E>
+            fn expecting(&self, formatter: &mut ::std::fmt::Formatter) -> ::std::fmt::Result 
+            {
+                write!(formatter, "a json boolean")
+            }
+
+            fn visit_bool<E>(self, v: bool) -> Result<Boolean<M>, E>
                 where E: Error
             {
                 Ok(Boolean::<M>::new(v))

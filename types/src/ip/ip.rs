@@ -92,7 +92,7 @@ impl_mapping_type!(Ipv4Addr, Ip, IpMapping);
 impl<M> Serialize for Ip<M>
     where M: IpMapping
 {
-    fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
         where S: Serializer
     {
         serializer.serialize_str(&self.value.to_string())
@@ -103,7 +103,7 @@ impl<M> Serialize for Ip<M>
 impl<M> Deserialize for Ip<M>
     where M: IpMapping
 {
-    fn deserialize<D>(deserializer: &mut D) -> Result<Ip<M>, D::Error>
+    fn deserialize<D>(deserializer: D) -> Result<Ip<M>, D::Error>
         where D: Deserializer
     {
         #[derive(Default)]
@@ -118,7 +118,12 @@ impl<M> Deserialize for Ip<M>
         {
             type Value = Ip<M>;
 
-            fn visit_string<E>(&mut self, v: String) -> Result<Ip<M>, E>
+            fn expecting(&self, formatter: &mut ::std::fmt::Formatter) -> ::std::fmt::Result 
+            {
+                write!(formatter, "a json string containing an IpV4 address")
+            }
+
+            fn visit_string<E>(self, v: String) -> Result<Ip<M>, E>
                 where E: Error
             {
                 let de = try!(Ipv4Addr::from_str(&v).map_err(|e| E::custom(e.description().to_string())));
@@ -126,7 +131,7 @@ impl<M> Deserialize for Ip<M>
                 Ok(Ip::<M>::new(de))
             }
 
-            fn visit_str<E>(&mut self, v: &str) -> Result<Ip<M>, E>
+            fn visit_str<E>(self, v: &str) -> Result<Ip<M>, E>
                 where E: Error
             {
                 let de = try!(Ipv4Addr::from_str(v).map_err(|e| E::custom(e.description().to_string())));

@@ -32,7 +32,7 @@ macro_rules! number_type {
 
         //Serialize elastic number.
         impl <M> Serialize for $wrapper_ty<M> where M: $mapping_ty {
-            fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where
+            fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where
             S: Serializer {
                 self.value.serialize(serializer)
             }
@@ -40,7 +40,7 @@ macro_rules! number_type {
 
         //Deserialize elastic number.
         impl <M: $mapping_ty> Deserialize for $wrapper_ty<M> {
-            fn deserialize<D>(deserializer: &mut D) -> Result<$wrapper_ty<M>, D::Error> where
+            fn deserialize<D>(deserializer: D) -> Result<$wrapper_ty<M>, D::Error> where
             D: Deserializer {
                 let t = try!($std_ty::deserialize(deserializer));
 

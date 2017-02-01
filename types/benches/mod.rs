@@ -380,7 +380,7 @@ pub mod object_fixtures {
     impl PropertiesMapping for MySmlMapping {
         fn props_len() -> usize { 3 }
         
-        fn serialize_props<S>(serializer: &mut S, state: &mut S::StructState) -> Result<(), S::Error>
+        fn serialize_props<S>(serializer: S, state: &mut S::StructState) -> Result<S::Ok, S::Error>
         where S: serde::Serializer {
             try!(field_ser(serializer, state, "integer", i32::mapping()));
             try!(field_ser(serializer, state, "string", String::mapping()));
@@ -398,7 +398,7 @@ pub mod object_fixtures {
     impl PropertiesMapping for MyMedMapping {
         fn props_len() -> usize { 4 }
         
-        fn serialize_props<S>(serializer: &mut S, state: &mut S::StructState) -> Result<(), S::Error>
+        fn serialize_props<S>(serializer: S, state: &mut S::StructState) -> Result<S::Ok, S::Error>
         where S: serde::Serializer {
             try!(field_ser(serializer, state, "integer", i32::mapping()));
             try!(field_ser(serializer, state, "string", String::mapping()));
@@ -417,7 +417,7 @@ pub mod object_fixtures {
     impl PropertiesMapping for MyLrgMapping {
         fn props_len() -> usize { 4 }
         
-        fn serialize_props<S>(serializer: &mut S, state: &mut S::StructState) -> Result<(), S::Error>
+        fn serialize_props<S>(serializer: S, state: &mut S::StructState) -> Result<S::Ok, S::Error>
         where S: serde::Serializer {
             try!(field_ser(serializer, state, "integer", i32::mapping()));
             try!(field_ser(serializer, state, "string", String::mapping()));

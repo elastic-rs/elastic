@@ -1,9 +1,9 @@
 use std::marker::PhantomData;
 use serde::{Serialize, Deserialize, Serializer, Deserializer};
-use georust::{Coordinate, Point, ToGeo, Geometry};
+use georust::{ToGeo, Geometry as GeoEnum};
 use ::field::FieldType;
 use super::mapping::{GeoPointMapping, DefaultGeoPointMapping, GeoPointFormatWrapper};
-use super::GeoPointFormat;
+use super::{Coordinate, Point, Geometry, GeoPointFormat};
 
 /// An Elasticsearch `geo_point` type with a format.
 ///
@@ -99,7 +99,7 @@ impl<F, M> GeoPoint<F, M>
     /// let point: GeoPoint<DefaultGeoPointFormat> = GeoPoint::build(1.0, 1.0);
     /// ```
     pub fn build(x: f64, y: f64) -> GeoPoint<F, M> {
-        GeoPoint::<F, M>::new(Point(Coordinate { x: x, y: y }))
+        GeoPoint::<F, M>::new(Point::new(x, y))
     }
 
     /// Change the format/mapping of this geo point.
@@ -135,16 +135,16 @@ impl<F, M> From<Coordinate> for GeoPoint<F, M>
           M: GeoPointMapping<Format = F>
 {
     fn from(point: Coordinate) -> GeoPoint<F, M> {
-        GeoPoint::<F, M>::new(Point(point))
+        GeoPoint::<F, M>::new(Point::new(point.x, point.y))
     }
 }
 
-impl<F, M> ToGeo for GeoPoint<F, M>
+impl<F, M> ToGeo<f64> for GeoPoint<F, M>
     where F: GeoPointFormat,
           M: GeoPointMapping<Format = F>
 {
     fn to_geo(&self) -> Geometry {
-        Geometry::Point(self.value.clone())
+        GeoEnum::Point(self.value.clone())
     }
 }
 
@@ -152,7 +152,7 @@ impl<F, M> Serialize for GeoPoint<F, M>
     where F: GeoPointFormat,
           M: GeoPointMapping<Format = F>
 {
-    fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
         where S: Serializer
     {
         F::format::<S, M>(&self.value, serializer)
@@ -163,7 +163,7 @@ impl<F, M> Deserialize for GeoPoint<F, M>
     where F: GeoPointFormat,
           M: GeoPointMapping<Format = F>
 {
-    fn deserialize<D>(deserializer: &mut D) -> Result<GeoPoint<F, M>, D::Error>
+    fn deserialize<D>(deserializer: D) -> Result<GeoPoint<F, M>, D::Error>
         where D: Deserializer
     {
         let point = try!(F::parse(deserializer));

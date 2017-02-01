@@ -547,8 +547,10 @@ extern crate elastic_date_macros;
 pub extern crate chrono;
 pub extern crate geo as georust;
 pub extern crate geojson;
-
 extern crate geohash;
+
+#[macro_use]
+extern crate serde_derive;
 extern crate serde;
 extern crate serde_json;
 

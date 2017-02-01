@@ -1,6 +1,7 @@
 //! Mapping for the Elasticsearch `boolean` type.
 
 use serde::{Serialize, Serializer};
+use serde::ser::SerializeStruct;
 use ::field::{FieldMapping, SerializeField, Field};
 
 /// Elasticsearch datatype name.
@@ -118,20 +119,20 @@ impl<T> SerializeField<BooleanFormat> for T
 impl<T> Serialize for Field<T, BooleanFormat>
     where T: FieldMapping<BooleanFormat> + BooleanMapping
 {
-    fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
         where S: Serializer
     {
         let mut state = try!(serializer.serialize_struct("mapping", 6));
 
-        try!(serializer.serialize_struct_elt(&mut state, "type", T::data_type()));
+        try!(state.serialize_field( "type", T::data_type()));
 
-        ser_field!(serializer, &mut state, "boost", T::boost());
-        ser_field!(serializer, &mut state, "doc_values", T::doc_values());
-        ser_field!(serializer, &mut state, "index", T::index());
-        ser_field!(serializer, &mut state, "store", T::store());
-        ser_field!(serializer, &mut state, "null_value", T::null_value());
+        ser_field!(state, "boost", T::boost());
+        ser_field!(state, "doc_values", T::doc_values());
+        ser_field!(state, "index", T::index());
+        ser_field!(state, "store", T::store());
+        ser_field!(state, "null_value", T::null_value());
 
-        serializer.serialize_struct_end(state)
+        state.end()
     }
 }
 

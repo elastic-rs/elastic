@@ -216,7 +216,7 @@ impl<F, M> Serialize for Date<F, M>
     where F: DateFormat,
           M: DateMapping<Format = F>
 {
-    fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
         where S: Serializer
     {
         serializer.serialize_str(&self.format())
@@ -227,7 +227,7 @@ impl<F, M> Deserialize for Date<F, M>
     where F: DateFormat,
           M: DateMapping<Format = F>
 {
-    fn deserialize<D>(deserializer: &mut D) -> Result<Date<F, M>, D::Error>
+    fn deserialize<D>(deserializer: D) -> Result<Date<F, M>, D::Error>
         where D: Deserializer
     {
         #[derive(Default)]
@@ -244,21 +244,26 @@ impl<F, M> Deserialize for Date<F, M>
         {
             type Value = Date<F, M>;
 
-            fn visit_str<E>(&mut self, v: &str) -> Result<Date<F, M>, E>
+            fn expecting(&self, formatter: &mut ::std::fmt::Formatter) -> ::std::fmt::Result 
+            {
+                write!(formatter, "a json string or number containing a formatted date")
+            }
+
+            fn visit_str<E>(self, v: &str) -> Result<Date<F, M>, E>
                 where E: Error
             {
                 let result = Date::<F, M>::parse(v);
                 result.map_err(|err| Error::custom(format!("{}", err)))
             }
 
-            fn visit_i64<E>(&mut self, v: i64) -> Result<Date<F, M>, E>
+            fn visit_i64<E>(self, v: i64) -> Result<Date<F, M>, E>
                 where E: Error
             {
                 let result = Date::<F, M>::parse(&v.to_string());
                 result.map_err(|err| Error::custom(format!("{}", err)))
             }
 
-            fn visit_u64<E>(&mut self, v: u64) -> Result<Date<F, M>, E>
+            fn visit_u64<E>(self, v: u64) -> Result<Date<F, M>, E>
                 where E: Error
             {
                 let result = Date::<F, M>::parse(&v.to_string());
@@ -308,7 +313,7 @@ impl<'a, F, M> Serialize for DateBrw<'a, F, M>
     where F: DateFormat,
           M: DateMapping<Format = F>
 {
-    fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
         where S: Serializer
     {
         serializer.serialize_str(&self.format())

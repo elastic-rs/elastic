@@ -10,22 +10,21 @@ repository = "https://github.com/elastic-rs/elastic-types"
 [features]
 nightly = [
 	"elastic_date_macros/nightly",
-	"elastic_types_derive",
-	"serde_derive"
+	"elastic_types_derive"
 ]
 nightly-testing = ["nightly"]
 
 [dependencies]
 serde = "~0.9.0"
 serde_json = "~0.9.0"
-chrono = { version = "~0.2.20", features = [ "serde" ]}
+chrono = { version = "*", git = "https://github.com/KodrAus/rust-chrono.git", branch = "chore/serde-0.9", features = [ "serde" ]}
 geo = "~0.3.0"
-geohash = "~0.2.7"
-geojson = { version = "~0.4.0", features = [ "with-serde" ] }
+geohash = { version = "0.2.8-pre", git = "https://github.com/KodrAus/rust-geohash.git", branch = "chore/geo-0.3" }
+geojson = { version = "*", git = "https://github.com/KodrAus/rust-geojson.git", branch = "chore/serde-0.9", features = [ "with-serde" ] }
 
-serde_derive = { version = "~0.9.0", optional = true }
-elastic_types_derive = { version = "~0.11.0", path = "../macros/types", optional = true }
-elastic_date_macros = "~0.5.1"
+serde_derive = "~0.9.0"
+elastic_types_derive = { version = "*", path = "../macros/types", optional = true }
+elastic_date_macros = { version = "*", path = "../macros/date" }
 
 [dev-dependencies]
 json_str = "^0.*"

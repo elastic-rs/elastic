@@ -44,6 +44,12 @@
 //!
 //! - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/geo-point.html)
 
+use georust::{Coordinate as C, Point as P, Geometry as G};
+
+type Coordinate = C<f64>;
+type Point = P<f64>;
+type Geometry = G<f64>;
+
 #[macro_use]
 pub mod mapping;
 

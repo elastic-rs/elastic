@@ -2,6 +2,7 @@
 
 use std::collections::BTreeMap;
 use serde::{Serialize, Serializer};
+use serde::ser::SerializeStruct;
 use ::field::{IndexAnalysis, FieldType};
 use super::text::mapping::{TextMapping, TextFieldMapping, TextFormat};
 use super::keyword::mapping::KeywordFieldMapping;
@@ -46,7 +47,7 @@ pub enum IndexOptions {
 }
 
 impl Serialize for IndexOptions {
-    fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
         where S: Serializer
     {
         serializer.serialize_str(match *self {
@@ -74,7 +75,7 @@ pub enum StringField {
 }
 
 impl Serialize for StringField {
-    fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
         where S: Serializer
     {
         match *self {
@@ -115,28 +116,22 @@ pub struct ElasticTokenCountFieldMapping {
 }
 
 impl Serialize for ElasticTokenCountFieldMapping {
-    fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
         where S: Serializer
     {
         let mut state = try!(serializer.serialize_struct("mapping", 8));
 
-        try!(serializer.serialize_struct_elt(&mut state, "type", TOKENCOUNT_DATATYPE));
+        try!(state.serialize_field( "type", TOKENCOUNT_DATATYPE));
 
-        ser_field!(serializer, &mut state, "analyzer", self.analyzer);
-        ser_field!(serializer, &mut state, "boost", self.boost);
-        ser_field!(serializer, &mut state, "doc_values", self.doc_values);
-        ser_field!(serializer, &mut state, "index", self.index);
-        ser_field!(serializer,
-                   &mut state,
-                   "include_in_all",
-                   self.include_in_all);
-        ser_field!(serializer,
-                   &mut state,
-                   "precision_step",
-                   self.precision_step);
-        ser_field!(serializer, &mut state, "store", self.store);
+        ser_field!(state, "analyzer", self.analyzer);
+        ser_field!(state, "boost", self.boost);
+        ser_field!(state, "doc_values", self.doc_values);
+        ser_field!(state, "index", self.index);
+        ser_field!(state, "include_in_all", self.include_in_all);
+        ser_field!(state, "precision_step", self.precision_step);
+        ser_field!(state, "store", self.store);
 
-        serializer.serialize_struct_end(state)
+        state.end()
     }
 }
 
@@ -171,32 +166,20 @@ pub struct ElasticCompletionFieldMapping {
 }
 
 impl Serialize for ElasticCompletionFieldMapping {
-    fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
         where S: Serializer
     {
         let mut state = try!(serializer.serialize_struct("mapping", 7));
 
-        try!(serializer.serialize_struct_elt(&mut state, "type", COMPLETION_DATATYPE));
+        try!(state.serialize_field("type", COMPLETION_DATATYPE));
 
-        ser_field!(serializer, &mut state, "analyzer", self.analyzer);
-        ser_field!(serializer,
-                   &mut state,
-                   "search_analyzer",
-                   self.search_analyzer);
-        ser_field!(serializer, &mut state, "payloads", self.payloads);
-        ser_field!(serializer,
-                   &mut state,
-                   "preserve_separators",
-                   self.preserve_separators);
-        ser_field!(serializer,
-                   &mut state,
-                   "preserve_position_increments",
-                   self.preserve_position_increments);
-        ser_field!(serializer,
-                   &mut state,
-                   "max_input_length",
-                   self.max_input_length);
+        ser_field!(state, "analyzer", self.analyzer);
+        ser_field!(state, "search_analyzer", self.search_analyzer);
+        ser_field!(state, "payloads", self.payloads);
+        ser_field!(state, "preserve_separators", self.preserve_separators);
+        ser_field!(state, "preserve_position_increments", self.preserve_position_increments);
+        ser_field!(state, "max_input_length", self.max_input_length);
 
-        serializer.serialize_struct_end(state)
+        state.end()
     }
 }
