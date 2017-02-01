@@ -1,5 +1,5 @@
 use serde::{Deserialize, Deserializer};
-use serde_json::{Value, Error as JsonError};
+use serde_json::{Map, Value, Error as JsonError};
 
 quick_error! {
     /// An error parsing a REST API response to a success value.
@@ -26,9 +26,9 @@ quick_error! {
             description("request parse error")
             display("request parse error: '{}' on line: {}, col: {}", reason, line, col)
         }
-        Other(v: Value) {
+        Other(v: Map<String, Value>) {
             description("error response from Elasticsearch")
-            display("error response from Elasticsearch: {}", v)
+            display("error response from Elasticsearch: {:?}", v)
         }
     }
 }
@@ -41,33 +41,28 @@ macro_rules! error_key {
 
             match key {
                 Some(v) => v,
-                _ => return ApiError::Other(Value::Object($obj)).into()
+                _ => return ApiError::Other($obj).into()
             }
         }
     )
 }
 
 impl Deserialize for ApiError {
-    fn deserialize<D>(deserializer: &mut D) -> Result<Self, D::Error>
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
         where D: Deserializer
     {
-        let value = Value::deserialize(deserializer)?;
+        let value = Map::deserialize(deserializer)?;
 
         Ok(value.into())
     }
 }
 
-impl From<Value> for ApiError {
-    fn from(value: Value) -> Self {
+impl From<Map<String, Value>> for ApiError {
+    fn from(mut value: Map<String, Value>) -> Self {
         let obj = {
-            let mut obj = match value {
-                Value::Object(obj) => obj,
+            match value.remove("error") {
+                Some(Value::Object(value)) => value,
                 _ => return ApiError::Other(value),
-            };
-
-            match obj.remove("error") {
-                Some(Value::Object(obj)) => obj,
-                _ => return ApiError::Other(Value::Object(obj)),
             }
         };
 
@@ -78,7 +73,7 @@ impl From<Value> for ApiError {
 
             match ty {
                 Some(ty) => ty,
-                _ => return ApiError::Other(Value::Object(obj)),
+                _ => return ApiError::Other(obj),
             }
         };
 
@@ -99,7 +94,7 @@ impl From<Value> for ApiError {
                     reason: reason.into(),
                 }
             }
-            _ => ApiError::Other(Value::Object(obj)),
+            _ => ApiError::Other(obj),
         }
     }
 }
