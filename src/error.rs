@@ -1,8 +1,6 @@
 pub use serde_json::Error as JsonError;
 pub use reqwest::Error as HttpError;
-pub use elastic_responses::error::ApiError;
-
-use elastic_responses::error::ResponseError;
+pub use elastic_responses::error::{ApiError, ResponseError};
 
 error_chain! {
     foreign_links {

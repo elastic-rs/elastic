@@ -4,9 +4,9 @@
 //! for checking whether the bank index exists and creating it along with
 //! analysers, filters and mapping for `Account`s.
 
-use elastic::client::requests::{Index, IndicesExistsRequest, IndicesCreateRequest};
+use elastic::client::requests::Index;
 use elastic::types::prelude::{Document, FieldType};
-use serde_json;
+use serde_json::{self, Error as JsonError};
 use super::account::{self, Account};
 
 /// Get the name of the bank index.

@@ -1,8 +1,13 @@
+use elastic::client::Client;
+use std::io::Error as IoError;
+use serde_json::{Value, Error as JsonError};
+use elastic::client::requests::{Body, IndicesExistsRequest, IndicesCreateRequest};
+use elastic::error::Error as ResponseError;
+
 use model;
-use super::EnsureSuccess;
 
 pub trait EnsureBankIndexExists {
-    fn ensure_index_existsensure_bank_index_exists(&self) -> Result<(), EnsureBankIndexExistsError>;
+    fn ensure_bank_index_exists(&self) -> Result<(), EnsureBankIndexExistsError>;
 }
 
 impl EnsureBankIndexExists for Client {
@@ -10,17 +15,23 @@ impl EnsureBankIndexExists for Client {
         let exists = self.request(exists()).send()?;
 
         match exists.status() {
-            StatusCode::NotFound => {
+            // Success, do nothing
+            200 => (),
+            // Not found, create the index
+            404 => {
                 let body = model::index::body()?;
 
-                let res = self.request(put(body)).send()?;
-
-                res.ensure_success()?
+                self.request(put(body))
+                    .send()
+                    .and_then(|res| res.response::<Value>())?;
+            },
+            // Some other response, deserialise
+            _ => {
+                exists.response::<Value>()?;
             }
-            _ => (),
         }
 
-        exists.ensure_success()?
+        Ok(())
     }
 }
 
@@ -31,7 +42,25 @@ fn exists() -> IndicesExistsRequest<'static> {
 fn put<B>(body: B) -> IndicesCreateRequest<'static>
     where B: Into<Body<'static>>
 {
-    Ok(IndicesCreateRequest::for_index(model::index::name(), body))
+    IndicesCreateRequest::for_index(model::index::name(), body)
+}
+
+quick_error!{
+    #[derive(Debug)]
+    pub enum EnsureBankIndexExistsError {
+        Io(err: IoError) {
+            from()
+            display("failed to ensure index exists: {}", err)
+        }
+        Json(err: JsonError) {
+            from()
+            display("failed to ensure index exists: {}", err)
+        }
+        Response(err: ResponseError) {
+            from()
+            display("failed to ensure index exists: {}", err)
+        }
+    }
 }
 
 #[cfg(test)]

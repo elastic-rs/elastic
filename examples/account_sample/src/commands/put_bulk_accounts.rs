@@ -1,10 +1,12 @@
-use std::io::{Read, Result as IoResult};
+use std::io::{Read, Result as IoResult, Error as IoError};
 use std::fs::File;
 use std::path::Path;
-use elastic::client::requests::BulkRequest;
+use serde_json::Value;
+use elastic::client::Client;
+use elastic::client::requests::{Body, BulkRequest};
+use elastic::error::Error as ResponseError;
 
 use model;
-use super::EnsureSuccess;
 
 pub trait PutBulkAccounts {
     fn put_bulk_accounts<P>(&self, path: P) -> Result<(), PutBulkAccountsError> where P: AsRef<Path>;
@@ -15,9 +17,12 @@ impl PutBulkAccounts for Client {
         where P: AsRef<Path>
     {
         let body = bulk_body(path)?;
-        let res = client.request(put(body)).send()?;
 
-        res.ensure_success()?
+        self.request(put(body))
+            .send()
+            .and_then(|res| res.response::<Value>())?;
+
+        Ok(())
     }
 }
 
@@ -36,6 +41,20 @@ fn bulk_body<P>(path: P) -> IoResult<Vec<u8>>
     body.read_to_end(&mut buf)?;
 
     Ok(buf)
+}
+
+quick_error!{
+    #[derive(Debug)]
+    pub enum PutBulkAccountsError {
+        Io(err: IoError) {
+            from()
+            display("failed to put bulk accounts: {}", err)
+        }
+        Response(err: ResponseError) {
+            from()
+            display("failed to put bulk accounts: {}", err)
+        }
+    }
 }
 
 #[cfg(test)]

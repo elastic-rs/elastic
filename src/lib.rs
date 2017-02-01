@@ -239,7 +239,7 @@ pub mod error;
 
 /// HTTP headers and status codes.
 pub mod http {
-    pub use reqwest::{StatusCode, header};
+    pub use reqwest::header;
 }
 
 /// HTTP client, requests and responses.
