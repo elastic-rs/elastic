@@ -37,7 +37,7 @@ The REST API is provided by an [inline JSON macro](https://github.com/KodrAus/js
 
 The core focus of this project is on strong typing over your document types and query responses in Elasticsearch, rather than trying to map the entire Query DSL.
 
-Support for Elastic's plugin products, like `watcher` and `graph` could be added as feature-gated modules in the `elastic_hyper` and `elastic_rotor` clients and `elastic_types` as necessary.
+Support for Elastic's plugin products, like `watcher` and `graph` could be added as feature-gated modules in the `elastic_reqwest` and `elastic_rotor` clients and `elastic_types` as necessary.
 
 ## Alternatives
 
@@ -121,7 +121,7 @@ There hasn't been much effort put into abstracting these dependencies at this st
 
 `elastic` bundles up a couple of crates into a single client. If you want to pick and choose functionality, you can work with these crates independently.
 
-### [`elastic_reqwest`](https://github.com/elastic-rs/elastic-hyper)
+### [`elastic_reqwest`](https://github.com/elastic-rs/elastic-reqwest)
 
 A synchronous [`reqwest`](https://github.com/seanmonstar/reqwest) implementation of the Elasticsearch REST API.
 
