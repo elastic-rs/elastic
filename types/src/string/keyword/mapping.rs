@@ -219,7 +219,7 @@ impl<T> Serialize for Field<T, KeywordFormat>
     {
         let mut state = try!(serializer.serialize_struct("mapping", 15));
 
-        try!(state.serialize_field( "type", T::data_type()));
+        try!(state.serialize_field("type", T::data_type()));
 
         ser_field!(state, "boost", T::boost());
         ser_field!(state, "analyzer", T::analyzer());
@@ -291,7 +291,7 @@ impl Serialize for KeywordFieldMapping {
     {
         let mut state = try!(serializer.serialize_struct("mapping", 12));
 
-        try!(state.serialize_field( "type", KEYWORD_DATATYPE));
+        try!(state.serialize_field("type", KEYWORD_DATATYPE));
 
         ser_field!(state, "analyzer", self.analyzer);
         ser_field!(state, "doc_values", self.doc_values);

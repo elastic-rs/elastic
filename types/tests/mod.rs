@@ -372,6 +372,7 @@ pub mod geo_shape_fixtures {
 
 pub mod object_fixtures {
     use serde::Serializer;
+    use serde::ser::SerializeStruct;
     use elastic_types::prelude::*;
 
     #[derive(Serialize)]
@@ -390,10 +391,11 @@ pub mod object_fixtures {
     impl PropertiesMapping for SimpleTypeMapping {
         fn props_len() -> usize { 2 }
         
-        fn serialize_props<S>(serializer: S, state: &mut S::StructState) -> Result<S::Ok, S::Error>
-        where S: Serializer {
-            try!(field_ser(serializer, state, "field1", Date::<EpochMillis>::mapping()));
-            try!(field_ser(serializer, state, "field2", SimpleNestedType::mapping()));
+        fn serialize_props<S>(state: &mut S) -> Result<(), S::Error> 
+            where S: SerializeStruct
+        {
+            try!(field_ser(state, "field1", Date::<EpochMillis>::mapping()));
+            try!(field_ser(state, "field2", SimpleNestedType::mapping()));
 
             Ok(())
         }
@@ -414,9 +416,10 @@ pub mod object_fixtures {
     impl PropertiesMapping for SimpleNestedTypeMapping {
         fn props_len() -> usize { 1 }
         
-        fn serialize_props<S>(serializer: S, state: &mut S::StructState) -> Result<S::Ok, S::Error>
-        where S: Serializer {
-            try!(field_ser(serializer, state, "field", i32::mapping()));
+        fn serialize_props<S>(state: &mut S) -> Result<(), S::Error> 
+            where S: SerializeStruct
+        {
+            try!(field_ser(state, "field", i32::mapping()));
 
             Ok(())
         }

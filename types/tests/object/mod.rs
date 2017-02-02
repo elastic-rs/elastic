@@ -1,4 +1,4 @@
-use serde_json;
+use serde_json::{self, Value, Map};
 
 use elastic_types::prelude::*;
 use ::object_fixtures::*;
@@ -42,9 +42,14 @@ fn serialise_mapping_type() {
 
 #[test]
 fn serialise_mapping_as_value() {
-    let value = serde_json::to_value(&Document::from(SimpleTypeMapping));
+    let value = match serde_json::to_value(&Document::from(SimpleTypeMapping)) {
+        Ok(Value::Object(value)) => value,
+        _ => panic!("expected Ok(Value::Map)")
+    };
 
-    let ser = serde_json::ser::to_string(&value.lookup("properties.field1.type").unwrap()).unwrap();
+    let field1_type = &value["properties"]["field1"]["type"];
+
+    let ser = serde_json::ser::to_string(&field1_type).unwrap();
 
     assert_eq!("\"date\"", &ser);
 }

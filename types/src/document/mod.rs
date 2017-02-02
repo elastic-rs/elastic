@@ -257,7 +257,7 @@
 //! impl PropertiesMapping for MyTypeMapping {
 //!     fn props_len() -> usize { 3 }
 //!
-//!     fn serialize_props<S>(state: &mut S) -> Result<S::Ok, S::Error>
+//!     fn serialize_props<S>(state: &mut S) -> Result<(), S::Error>
 //!     where S: serde::ser::SerializeStruct {
 //!         try!(field_ser(serializer, state, "my_date", Date::<DefaultDateFormat>::mapping()));
 //!         try!(field_ser(serializer, state, "my_string", String::mapping()));
@@ -437,7 +437,7 @@ impl<T, M> FieldType<M, DocumentFormat> for T
 ///     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
 ///         let mut state = try!(serializer.serialize_struct("mappings", 1));
 ///         
-///         try!(state.serialize_field( MyType::name(), &Document::from(MyType::mapping())));
+///         try!(state.serialize_field(MyType::name(), &Document::from(MyType::mapping())));
 ///         
 ///         state.end()
 ///     }
@@ -496,7 +496,7 @@ impl<M> Serialize for Document<M>
     {
         let mut state = try!(serializer.serialize_struct("mapping", 1));
 
-        try!(state.serialize_field( "properties", &Properties::<M>::default()));
+        try!(state.serialize_field("properties", &Properties::<M>::default()));
 
         state.end()
     }
@@ -606,7 +606,7 @@ pub trait PropertiesMapping {
     /// Serialisation for the mapped property fields on this type.
     ///
     /// You can use the `field_ser!` macro to simplify `serde` calls.
-    fn serialize_props<S>(state: &mut S) -> Result<S::Ok, S::Error> where S: SerializeStruct;
+    fn serialize_props<S>(state: &mut S) -> Result<(), S::Error> where S: SerializeStruct;
 }
 
 impl<T> FieldMapping<DocumentFormat> for T
@@ -632,7 +632,7 @@ impl<T> Serialize for Field<T, DocumentFormat>
         let mut state = try!(serializer.serialize_struct("mapping", 5));
 
         let ty = <T as DocumentMapping>::data_type();
-        try!(state.serialize_field( "type", ty));
+        try!(state.serialize_field("type", ty));
 
         ser_field!(state, "dynamic", T::dynamic());
         ser_field!(state, "include_in_all", T::include_in_all());
@@ -641,7 +641,7 @@ impl<T> Serialize for Field<T, DocumentFormat>
             ser_field!(state, "enabled", T::enabled());
         }
 
-        try!(state.serialize_field( "properties", &Properties::<T>::default()));
+        try!(state.serialize_field("properties", &Properties::<T>::default()));
 
         state.end()
     }
@@ -692,8 +692,8 @@ impl Serialize for Dynamic {
 
 /// Serialise a field mapping using the given serialiser.
 #[inline]
-pub fn field_ser<S, M, F>(serializer: S, state: &mut S::SerializeStruct, field: &'static str, _: M) -> Result<(), S::Error>
-    where S: Serializer,
+pub fn field_ser<S, M, F>(state: &mut S, field: &'static str, _: M) -> Result<(), S::Error>
+    where S: SerializeStruct,
           M: FieldMapping<F>,
           F: Default,
 {
@@ -704,8 +704,8 @@ pub fn field_ser<S, M, F>(serializer: S, state: &mut S::SerializeStruct, field: 
 
 /// Serialise a document mapping using the given serialiser.
 #[inline]
-pub fn doc_ser<S, M>(serializer: S, state: &mut S::SerializeStruct, field: &'static str, _: M) -> Result<(), S::Error>
-    where S: Serializer,
+pub fn doc_ser<S, M>(state: &mut S, field: &'static str, _: M) -> Result<(), S::Error>
+    where S: SerializeStruct,
           M: DocumentMapping
 {
     use serde::ser::SerializeStruct;

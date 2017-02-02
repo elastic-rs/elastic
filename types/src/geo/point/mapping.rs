@@ -169,7 +169,7 @@ impl<T, F> Serialize for Field<T, GeoPointFormatWrapper<F>>
     {
         let mut state = try!(serializer.serialize_struct("mapping", 6));
 
-        try!(state.serialize_field( "type", T::data_type()));
+        try!(state.serialize_field("type", T::data_type()));
 
         ser_field!(state, "geohash", T::geohash());
         ser_field!(state, "geohash_precision", T::geohash_precision());

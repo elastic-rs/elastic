@@ -17,4 +17,4 @@ nightly = [ ]
 nightly-testing = [ ]
 
 [dependencies]
-chrono = { version = "~0.2.20" }
+chrono = { version = "*", git = "https://github.com/KodrAus/rust-chrono.git", branch = "chore/serde-0.9" }

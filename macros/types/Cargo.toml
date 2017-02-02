@@ -19,4 +19,4 @@ serde = "~0.9.0"
 serde_json = "~0.9.0"
 syn = { version = "~0.11.0", features = ["aster", "visit", "parsing", "full"] }
 quote = "~0.3.0"
-serde_codegen_internals = { version = "~0.11.0", default-features = false }
+serde_codegen_internals = { version = "~0.12.0", default-features = false }

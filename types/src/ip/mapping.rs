@@ -126,7 +126,7 @@ impl<T> Serialize for Field<T, IpFormat>
     {
         let mut state = try!(serializer.serialize_struct("mapping", 6));
 
-        try!(state.serialize_field( "type", T::data_type()));
+        try!(state.serialize_field("type", T::data_type()));
 
         ser_field!(state, "boost", T::boost());
         ser_field!(state, "doc_values", T::doc_values());

@@ -121,7 +121,7 @@ impl Serialize for ElasticTokenCountFieldMapping {
     {
         let mut state = try!(serializer.serialize_struct("mapping", 8));
 
-        try!(state.serialize_field( "type", TOKENCOUNT_DATATYPE));
+        try!(state.serialize_field("type", TOKENCOUNT_DATATYPE));
 
         ser_field!(state, "analyzer", self.analyzer);
         ser_field!(state, "boost", self.boost);

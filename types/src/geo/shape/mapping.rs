@@ -167,7 +167,7 @@ impl<T> Serialize for Field<T, GeoShapeFormat>
     {
         let mut state = try!(serializer.serialize_struct("mapping", 8));
 
-        try!(state.serialize_field( "type", T::data_type()));
+        try!(state.serialize_field("type", T::data_type()));
 
         ser_field!(state, "tree", T::tree());
         ser_field!(state, "precision", T::precision());

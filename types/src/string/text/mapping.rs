@@ -239,7 +239,7 @@ impl<T> Serialize for Field<T, TextFormat>
     {
         let mut state = try!(serializer.serialize_struct("mapping", 18));
 
-        try!(state.serialize_field( "type", T::data_type()));
+        try!(state.serialize_field("type", T::data_type()));
 
         ser_field!(state, "boost", T::boost());
         ser_field!(state, "analyzer", T::analyzer());
@@ -381,7 +381,7 @@ impl Serialize for TextFieldMapping {
     {
         let mut state = try!(serializer.serialize_struct("mapping", 16));
 
-        try!(state.serialize_field( "type", TEXT_DATATYPE));
+        try!(state.serialize_field("type", TEXT_DATATYPE));
 
         ser_field!(state, "analyzer", self.analyzer);
         ser_field!(state, "eager_global_ordinals", self.eager_global_ordinals);
