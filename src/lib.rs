@@ -18,7 +18,7 @@
 //! `param_1_param_2_param_n`:
 //!
 //! ```
-//! # use elastic_requests::*;
+//! # use elastic_requests::prelude::*;
 //! let req = SearchRequest::for_index_ty(
 //!     "test_index",
 //!     "test_ty",
@@ -31,7 +31,7 @@
 //! Or `new` if the endpoint takes no parameters:
 //!
 //! ```
-//! # use elastic_requests::*;
+//! # use elastic_requests::prelude::*;
 //! let req = PingRequest::new();
 //!
 //! assert_eq!("/", req.url.as_ref());
@@ -40,7 +40,7 @@
 //! Parameters can be borrowed or owned string values:
 //!
 //! ```
-//! # use elastic_requests::*;
+//! # use elastic_requests::prelude::*;
 //! let req = SearchRequest::for_index(
 //!     "test_index".to_string(),
 //!     "{'query': { 'match_all': {}}}"
@@ -61,12 +61,20 @@
 
 mod genned;
 
-pub use genned::*;
+pub mod prelude {
+    pub use genned::params::*;
+    pub use genned::requests::*;
+    pub use RawBody;
+}
 
+pub use genned::params;
+pub use genned::requests;
+
+use params::Body;
 use std::borrow::Cow;
 
 /// Get a borrowed or owned slice of bytes.
-/// 
+///
 /// This trait can be used to get the contents of a `HttpRequest`
 /// body without worrying about whether the request itself is
 /// borrowed or owned.
@@ -83,7 +91,7 @@ impl<'a> RawBody<'a> for Cow<'a, Body<'a>> {
                     Cow::Owned(ref b) => Cow::Borrowed(b),
                 }
             }
-            Cow::Owned(b) => b.into_raw()
+            Cow::Owned(b) => b.into_raw(),
         }
     }
 }
@@ -97,7 +105,7 @@ impl<'a> RawBody<'a> for Body<'a> {
 #[cfg(test)]
 mod tests {
     use std::thread;
-    use super::*;
+    use super::prelude::*;
 
     fn do_something_with_request<'a, I: Into<HttpRequest<'a>>>(_: I) {}
 

@@ -4,7 +4,7 @@ extern crate test;
 extern crate elastic_requests;
 
 use test::Bencher;
-use elastic_requests::*;
+use elastic_requests::prelude::*;
 
 #[bench]
 fn new_req(b: &mut Bencher) {

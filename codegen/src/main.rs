@@ -129,35 +129,10 @@ fn main() {
     let mut params_to_emit = BTreeMap::new();
     params_to_emit.insert(String::from("vertices"), false);
 
-    let mut tokens = quote::Tokens::new();
-
-    let uses = quote!(
-        use std::ops::Deref;
-        use std::borrow::Cow;
-    );
-
-    tokens.append(uses.to_string().as_ref());
-    tokens.append("\n\n");
-
     let mut derives = Tokens::new();
     derives.append("#[derive(Debug, PartialEq, Clone)]");
 
-    let url_tokens = gen::types::url::tokens();
-    let body_tokens = gen::types::body::tokens();
-    let http_method_item = gen::types::request::method_item();
-    let http_req_item = gen::types::request::req_tokens();
-
-    tokens.append_all(vec![
-        derives.clone(),
-        url_tokens, 
-        derives.clone(),
-        body_tokens, 
-        derives.clone(),
-        http_req_item, 
-        derives.clone(),
-        quote!(#http_method_item)
-    ]);
-    tokens.append("\n\n");
+    let mut tokens = quote::Tokens::new();
 
     let mut endpoints: Vec<(String, Endpoint)> = from_dir(dir)
         .expect("Couldn't parse the REST API spec");
@@ -168,55 +143,96 @@ fn main() {
         .into_iter()
         .map(|e| strip_verbs(e))
         .map(|e| dedup_urls(e))
-        .collect();    
+        .collect();
 
-    for e in endpoints {
-        for (ty, _) in &e.1.url.parts {
-            params_to_emit.insert(ty.to_owned(), true);
+    tokens.append("pub mod requests {");
+
+        let uses = quote!(
+            use super::params::*;
+            use std::borrow::Cow;
+        );
+
+        tokens.append(uses.to_string().as_ref());
+        tokens.append("\n\n");
+
+        for e in endpoints {
+            for (ty, _) in &e.1.url.parts {
+                params_to_emit.insert(ty.to_owned(), true);
+            }
+
+            let url_params = gen::url_params::UrlParamBuilder::from(&e).build();
+            let (ref url_params_item, _) = url_params;
+
+            let (req_params_item, req_params_ty) =
+                gen::request_params::RequestParamBuilder::from(&e).build();
+
+            let req_ctors_item =
+                gen::request_ctors::RequestParamsCtorBuilder::from((&e, &req_params_ty, &url_params))
+                    .build();
+
+            let url_method_item =
+                gen::url_builder::UrlMethodBuilder::from((&e, &url_params)).build();
+
+            let req_into_http_item =
+                gen::request_into_http::RequestIntoHttpRequestBuilder::from((&e, &req_params_ty))
+                    .build();
+
+            tokens.append_all(vec![
+                derives.clone(),
+                quote!(#url_params_item),
+                quote!(#url_method_item),
+                derives.clone(),
+                quote!(#req_params_item),
+                quote!(#req_ctors_item),
+                quote!(#req_into_http_item)
+            ]);
         }
 
-        let url_params = gen::url_params::UrlParamBuilder::from(&e).build();
-        let (ref url_params_item, _) = url_params;
+    tokens.append("}");
 
-        let (req_params_item, req_params_ty) =
-            gen::request_params::RequestParamBuilder::from(&e).build();
+    tokens.append("\n\n");
 
-        let req_ctors_item =
-            gen::request_ctors::RequestParamsCtorBuilder::from((&e, &req_params_ty, &url_params))
-                .build();
+    tokens.append("pub mod params {");
 
-        let url_method_item =
-            gen::url_builder::UrlMethodBuilder::from((&e, &url_params)).build();
+        let uses = quote!(
+            use std::ops::Deref;
+            use std::borrow::Cow;
+        );
 
-        let req_into_http_item =
-            gen::request_into_http::RequestIntoHttpRequestBuilder::from((&e, &req_params_ty))
-                .build();
+        tokens.append(uses.to_string().as_ref());
+        tokens.append("\n\n");
+
+        let url_tokens = gen::types::url::tokens();
+        let body_tokens = gen::types::body::tokens();
+        let http_method_item = gen::types::request::method_item();
+        let http_req_item = gen::types::request::req_tokens();
 
         tokens.append_all(vec![
             derives.clone(),
-            quote!(#url_params_item),
-            quote!(#url_method_item),
+            url_tokens, 
             derives.clone(),
-            quote!(#req_params_item),
-            quote!(#req_ctors_item),
-            quote!(#req_into_http_item)
-        ]);
-        tokens.append("\n\n");
-    }
-
-    let params_to_emit = params_to_emit.iter()
-        .filter(|&(_, is_emitted)| *is_emitted);
-
-    for (ty, _) in params_to_emit {
-        let ty_item = gen::types::wrapped_ty::item(ty);
-
-        tokens.append_all(vec![
+            body_tokens, 
             derives.clone(),
-            quote!(#ty_item)
+            http_req_item, 
+            derives.clone(),
+            quote!(#http_method_item)
         ]);
 
-        tokens.append("\n\n");
-    }
+        let params_to_emit = params_to_emit.iter()
+            .filter(|&(_, is_emitted)| *is_emitted);
+
+        for (ty, _) in params_to_emit {
+            let ty_item = gen::types::wrapped_ty::item(ty);
+
+            tokens.append_all(vec![
+                derives.clone(),
+                quote!(#ty_item)
+            ]);
+
+            tokens.append("\n\n");
+        }
+
+    tokens.append("}");
 
     end_comment_block_for_logging();
 
