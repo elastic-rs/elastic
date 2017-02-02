@@ -148,6 +148,7 @@ fn main() {
     tokens.append("pub mod requests {");
 
         let uses = quote!(
+            use super::http::*;
             use super::params::*;
             use std::borrow::Cow;
         );
@@ -192,7 +193,12 @@ fn main() {
 
     tokens.append("\n\n");
 
-    tokens.append("pub mod params {");
+    tokens.append("pub mod http {");
+
+        let url_tokens = gen::types::url::tokens();
+        let body_tokens = gen::types::body::tokens();
+        let http_method_item = gen::types::request::method_item();
+        let http_req_item = gen::types::request::req_tokens();
 
         let uses = quote!(
             use std::ops::Deref;
@@ -200,12 +206,8 @@ fn main() {
         );
 
         tokens.append(uses.to_string().as_ref());
-        tokens.append("\n\n");
 
-        let url_tokens = gen::types::url::tokens();
-        let body_tokens = gen::types::body::tokens();
-        let http_method_item = gen::types::request::method_item();
-        let http_req_item = gen::types::request::req_tokens();
+        tokens.append("\n\n");
 
         tokens.append_all(vec![
             derives.clone(),
@@ -217,6 +219,19 @@ fn main() {
             derives.clone(),
             quote!(#http_method_item)
         ]);
+
+    tokens.append("}");
+
+    tokens.append("\n\n");
+
+    tokens.append("pub mod params {");
+
+        let uses = quote!(
+            use std::borrow::Cow;
+        );
+
+        tokens.append(uses.to_string().as_ref());
+        tokens.append("\n\n");
 
         let params_to_emit = params_to_emit.iter()
             .filter(|&(_, is_emitted)| *is_emitted);

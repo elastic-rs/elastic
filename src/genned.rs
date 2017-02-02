@@ -1,6 +1,7 @@
 // This code is automatically generated
 //
 pub mod requests {
+    use super :: http :: * ;
     use super :: params :: * ;
     use std::borrow::Cow;
 
@@ -6874,7 +6875,7 @@ pub mod requests {
     }
 }
 
-pub mod params {
+pub mod http {
     use std::ops::Deref;
     use std::borrow::Cow;
 
@@ -6949,6 +6950,11 @@ pub mod params {
         Delete,
         Patch,
     }
+}
+
+pub mod params {
+    use std::borrow::Cow;
+
     #[derive(Debug, PartialEq, Clone)]
     pub struct Alias<'a>(pub Cow<'a, str>);
     impl<'a> From<&'a str> for Alias<'a> {

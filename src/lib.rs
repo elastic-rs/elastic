@@ -64,13 +64,14 @@ mod genned;
 pub mod prelude {
     pub use genned::params::*;
     pub use genned::requests::*;
+    pub use genned::http::*;
     pub use RawBody;
 }
 
 pub use genned::params;
 pub use genned::requests;
+pub use genned::http::*;
 
-use params::Body;
 use std::borrow::Cow;
 
 /// Get a borrowed or owned slice of bytes.
