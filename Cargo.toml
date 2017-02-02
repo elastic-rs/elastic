@@ -9,7 +9,7 @@ repository = "https://github.com/elastic-rs/elastic-hyper"
 exclude = [ "samples" ]
 
 [dependencies]
-elastic_requests = "~0.1.3"
+elastic_requests = { version = "~0.2", git = "https://github.com/elastic-rs/elastic-requests.git", branch = "feat/modules" }
 reqwest = "~0.3.0"
 url = "~1"
 
