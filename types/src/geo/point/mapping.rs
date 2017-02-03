@@ -29,8 +29,6 @@ pub struct GeoPointFormatWrapper<F>
 /// Currently, deriving mapping only works for structs that take a `GeoPointFormat` as an associated type.
 ///
 /// ```
-/// # #![feature(plugin, custom_derive, custom_attribute)]
-/// # #![plugin(json_str, elastic_types_derive)]
 /// # #[macro_use]
 /// # extern crate elastic_types;
 /// # extern crate serde;
@@ -88,8 +86,6 @@ pub struct GeoPointFormatWrapper<F>
 /// `GeoPointFormat`:
 ///
 /// ```
-/// # #![feature(plugin, custom_derive, custom_attribute)]
-/// # #![plugin(json_str, elastic_types_derive)]
 /// # #[macro_use]
 /// # extern crate elastic_types;
 /// # extern crate serde;

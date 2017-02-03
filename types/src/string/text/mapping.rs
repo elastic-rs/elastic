@@ -23,8 +23,6 @@ pub struct TextFormat;
 /// ## Derive Mapping
 ///
 /// ```
-/// # #![feature(plugin, custom_derive, custom_attribute)]
-/// # #![plugin(json_str, elastic_types_derive)]
 /// # #[macro_use]
 /// # extern crate elastic_types;
 /// # extern crate serde;
@@ -117,8 +115,6 @@ pub trait TextMapping
     /// to map them:
     ///
     /// ```
-    /// # #![feature(plugin, custom_derive, custom_attribute)]
-    /// # #![plugin(json_str, elastic_types_derive)]
     /// # #[macro_use]
     /// # extern crate elastic_types;
     /// # extern crate serde;

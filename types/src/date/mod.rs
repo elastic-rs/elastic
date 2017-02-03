@@ -64,9 +64,6 @@
 //! You can also implement `CustomDateFormat` yourself and write your own arbitrary format/parse logic:
 //!
 //! ```
-//! # #![feature(plugin)]
-//! # #![plugin(json_str, elastic_types_derive)]
-//! # #![plugin(elastic_date_macros)]
 //! # extern crate elastic_types;
 //! # extern crate chrono;
 //! # use chrono::{ DateTime, UTC };
