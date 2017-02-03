@@ -368,7 +368,7 @@ pub mod geo_shape_fixtures {
 }
 
 pub mod object_fixtures {
-    use serde;
+    use serde::ser::SerializeStruct;
     use chrono::{ DateTime, UTC };
     use elastic_types::prelude::*;
 
@@ -380,11 +380,11 @@ pub mod object_fixtures {
     impl PropertiesMapping for MySmlMapping {
         fn props_len() -> usize { 3 }
         
-        fn serialize_props<S>(serializer: S, state: &mut S::StructState) -> Result<S::Ok, S::Error>
-        where S: serde::Serializer {
-            try!(field_ser(serializer, state, "integer", i32::mapping()));
-            try!(field_ser(serializer, state, "string", String::mapping()));
-            try!(field_ser(serializer, state, "date", DateTime::<UTC>::mapping()));
+        fn serialize_props<S>(state: &mut S) -> Result<(), S::Error>
+        where S: SerializeStruct {
+            try!(field_ser(state, "integer", i32::mapping()));
+            try!(field_ser(state, "string", String::mapping()));
+            try!(field_ser(state, "date", DateTime::<UTC>::mapping()));
 
             Ok(())
         }
@@ -398,12 +398,12 @@ pub mod object_fixtures {
     impl PropertiesMapping for MyMedMapping {
         fn props_len() -> usize { 4 }
         
-        fn serialize_props<S>(serializer: S, state: &mut S::StructState) -> Result<S::Ok, S::Error>
-        where S: serde::Serializer {
-            try!(field_ser(serializer, state, "integer", i32::mapping()));
-            try!(field_ser(serializer, state, "string", String::mapping()));
-            try!(field_ser(serializer, state, "date", DateTime::<UTC>::mapping()));
-            try!(field_ser(serializer, state, "field", MySmlMapping));
+        fn serialize_props<S>(state: &mut S) -> Result<(), S::Error>
+        where S: SerializeStruct {
+            try!(field_ser(state, "integer", i32::mapping()));
+            try!(field_ser(state, "string", String::mapping()));
+            try!(field_ser(state, "date", DateTime::<UTC>::mapping()));
+            try!(field_ser(state, "field", MySmlMapping));
 
             Ok(())
         }
@@ -417,12 +417,12 @@ pub mod object_fixtures {
     impl PropertiesMapping for MyLrgMapping {
         fn props_len() -> usize { 4 }
         
-        fn serialize_props<S>(serializer: S, state: &mut S::StructState) -> Result<S::Ok, S::Error>
-        where S: serde::Serializer {
-            try!(field_ser(serializer, state, "integer", i32::mapping()));
-            try!(field_ser(serializer, state, "string", String::mapping()));
-            try!(field_ser(serializer, state, "date", DateTime::<UTC>::mapping()));
-            try!(field_ser(serializer, state, "field", MyMedMapping));
+        fn serialize_props<S>(state: &mut S) -> Result<(), S::Error>
+        where S: SerializeStruct {
+            try!(field_ser(state, "integer", i32::mapping()));
+            try!(field_ser(state, "string", String::mapping()));
+            try!(field_ser(state, "date", DateTime::<UTC>::mapping()));
+            try!(field_ser(state, "field", MyMedMapping));
 
             Ok(())
         }
