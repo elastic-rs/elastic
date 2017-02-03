@@ -19,19 +19,11 @@
 //!
 //! This crate is on [crates.io](https://crates.io/crates/elastic_types).
 //!
-//! There are two ways to reference `elastic_types` in your projects, depending on whether you're on
-//! the `stable`/`beta` or `nightly` channels.
-//!
-//! Builds on `nightly` benefit from compile-time codegen for better performance and easier
-//! mapping definitions.
-//!
-//! ## Nightly
-//!
 //! To get started, add `elastic_types` and `elastic_types_derive` to your `Cargo.toml`:
 //!
 //! ```ignore
 //! [dependencies]
-//! elastic_types = { version = "*", features = "nightly" }
+//! elastic_types = version = "*"
 //! elastic_types_derive = "*"
 //! ```
 //!
@@ -44,29 +36,7 @@
 //! extern crate elastic_types;
 //! ```
 //!
-//! ## Stable
-//!
-//! To get started, add `elastic_types` to your `Cargo.toml`:
-//!
-//! ```ignore
-//! [dependencies]
-//! elastic_types = "*"
-//! ```
-//!
-//! And reference it in your crate root:
-//!
-//! ```ignore
-//! #[macro_use]
-//! extern crate elastic_types;
-//! ```
-//!
 //! ## Map Your Types
-//!
-//! This section shows you how to add mapping metadata on the `nightly` channel.
-//! For mapping on `stable`, see [here](object/index.html#manually-implement-mapping).
-//!
-//! > NOTE: Once [Macros 1.1](https://github.com/rust-lang/rfcs/blob/current/text/1681-macros-1.1.md)
-//! is stabilised, you'll be able to use `elastic_types_derive` on the `stable` channel.
 //!
 //! Derive `ElasticType` on your Elasticsearch-mappable types:
 //!

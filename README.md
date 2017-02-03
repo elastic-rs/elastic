@@ -25,19 +25,17 @@ Version   | Docs
 
 ## Example
 
-On `nightly`, add `elastic_types` to your `Cargo.toml`:
+Add `elastic_types` to your `Cargo.toml`:
 
 ```
 [dependencies]
-elastic_types = { version = "*", features = "nightly" }
+elastic_types = version = "*"
 elastic_types_derive = "*"
 ```
 
 And reference it in your crate root:
 
 ```rust
-#![feature(proc_macro)]
-
 #[macro_use]
 extern crate elastic_types_derive;
 #[macro_use]
@@ -87,10 +85,6 @@ Which looks like:
   }
 }
 ```
-
-The `stable` channel is also supported, see the [docs](#documentation) for details.
-
-> Macros 1.1 is currently being stabilised. Once this is done everything will work the same between `stable` and `nightly`.
 
 ## Deserialising indexed types
 

@@ -225,7 +225,7 @@
 //!
 //! ## Manually Implement Mapping
 //!
-//! You can build object mappings on `stable` by manually implementing the [`DocumentMapping`](trait.DocumentMapping.html) and [`PropertiesMapping`](trait.PropertiesMapping.html) traits:
+//! You can build object mappings by manually implementing the [`DocumentMapping`](trait.DocumentMapping.html) and [`PropertiesMapping`](trait.PropertiesMapping.html) traits:
 //!
 //! ```
 //! # #[macro_use]
