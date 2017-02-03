@@ -14,8 +14,8 @@ build: false
 test_script:
   - ps: cd macros
   - ps: cd types
-  - cargo test --verbose --features nightly-testing --no-default-features
+  - cargo test --verbose --features nightly --no-default-features
   - ps: cd ../date
-  - cargo test --verbose --features nightly-testing --no-default-features
+  - cargo test --verbose --features nightly --no-default-features
   - ps: cd ../../types
-  - cargo test --verbose --features nightly-testing --no-default-features
+  - cargo test --verbose --features nightly --no-default-features

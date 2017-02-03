@@ -1,18 +1,16 @@
 [package]
 name = "elastic_types"
-version = "0.10.3"
+version = "0.10.4"
 authors = ["Ashley Mannix <ashleymannix@live.com.au>"]
 license = "Apache-2.0"
 description = "A strongly-typed implementation of Elasticsearch core types and Mapping API."
-documentation = "https://docs.rs/elastic_types/0.10.1/elastic_types/"
+documentation = "https://docs.rs/elastic_types/0.10.4/elastic_types/"
 repository = "https://github.com/elastic-rs/elastic-types"
 
 [features]
 nightly = [
-	"elastic_date_macros/nightly",
-	"elastic_types_derive"
+	"elastic_date_macros/nightly"
 ]
-nightly-testing = ["nightly"]
 
 [dependencies]
 serde = "~0.9.0"
@@ -20,12 +18,11 @@ serde_json = "~0.9.0"
 chrono = { version = "*", git = "https://github.com/KodrAus/rust-chrono.git", branch = "chore/serde-0.9", features = [ "serde" ]}
 geo = "~0.3.0"
 geohash = { version = "0.2.8-pre", git = "https://github.com/KodrAus/rust-geohash.git", branch = "chore/geo-0.3" }
-geojson = { version = "*", git = "https://github.com/KodrAus/rust-geojson.git", branch = "chore/serde-0.9", features = [ "with-serde" ] }
-
+geojson = { version = "*", git = "https://github.com/KodrAus/rust-geojson.git", branch = "chore/serde-0.9" }
 serde_derive = "~0.9.0"
-elastic_types_derive = { version = "*", path = "../macros/types", optional = true }
 elastic_date_macros = { version = "*", path = "../macros/date" }
 
 [dev-dependencies]
 json_str = "^0.*"
 maplit = "^0.*"
+elastic_types_derive = { version = "*", path = "../macros/types" }

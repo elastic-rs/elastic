@@ -1,21 +1,20 @@
-#![feature(plugin)]
-#![plugin(json_str, elastic_date_macros)]
+#![cfg_attr(feature = "nightly", feature(plugin))]
+#![cfg_attr(feature = "nightly", plugin(elastic_date_macros))]
+
+#[cfg(not(feature = "nightly"))]
+#[macro_use]
+extern crate elastic_date_macros;
+
+#[macro_use]
+extern crate json_str;
 
 #[macro_use]
 extern crate serde_derive;
 #[macro_use]
 extern crate elastic_types_derive;
 
-#[allow(plugin_as_library)]
-#[macro_use]
-extern crate json_str;
-
 #[macro_use]
 extern crate maplit;
-
-#[allow(plugin_as_library)]
-#[macro_use]
-extern crate elastic_date_macros;
 
 extern crate serde;
 extern crate serde_json;

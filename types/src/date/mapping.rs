@@ -28,8 +28,6 @@ pub struct DateFormatWrapper<F>
 /// Currently, deriving mapping only works for structs that take a generic `DateFormat` parameter.
 ///
 /// ```
-/// # #![feature(plugin, custom_derive, custom_attribute)]
-/// # #![plugin(json_str, elastic_types_derive)]
 /// # #[macro_use]
 /// # extern crate elastic_types;
 /// # extern crate serde;
@@ -51,8 +49,6 @@ pub struct DateFormatWrapper<F>
 /// This will produce the following mapping when mapped with the `EpochMillis` format:
 ///
 /// ```
-/// # #![feature(plugin, custom_derive, custom_attribute)]
-/// # #![plugin(elastic_types_derive)]
 /// # #[macro_use]
 /// # extern crate json_str;
 /// # #[macro_use]
@@ -88,8 +84,6 @@ pub struct DateFormatWrapper<F>
 /// `DateFormat`:
 ///
 /// ```
-/// # #![feature(plugin, custom_derive, custom_attribute)]
-/// # #![plugin(json_str, elastic_types_derive)]
 /// # #[macro_use]
 /// # extern crate elastic_types;
 /// # extern crate serde;

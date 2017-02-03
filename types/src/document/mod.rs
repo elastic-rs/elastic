@@ -225,7 +225,7 @@
 //!
 //! ## Manually Implement Mapping
 //!
-//! You can build object mappings on `stable` by manually implementing the [`DocumentMapping`](trait.DocumentMapping.html) and [`PropertiesMapping`](trait.PropertiesMapping.html) traits:
+//! You can build object mappings by manually implementing the [`DocumentMapping`](trait.DocumentMapping.html) and [`PropertiesMapping`](trait.PropertiesMapping.html) traits:
 //!
 //! ```
 //! # #[macro_use]
@@ -259,9 +259,9 @@
 //!
 //!     fn serialize_props<S>(state: &mut S) -> Result<(), S::Error>
 //!     where S: serde::ser::SerializeStruct {
-//!         try!(field_ser(serializer, state, "my_date", Date::<DefaultDateFormat>::mapping()));
-//!         try!(field_ser(serializer, state, "my_string", String::mapping()));
-//!         try!(field_ser(serializer, state, "my_num", i32::mapping()));
+//!         try!(field_ser(state, "my_date", Date::<DefaultDateFormat>::mapping()));
+//!         try!(field_ser(state, "my_string", String::mapping()));
+//!         try!(field_ser(state, "my_num", i32::mapping()));
 //!
 //!         Ok(())
 //!     }
@@ -419,6 +419,7 @@ impl<T, M> FieldType<M, DocumentFormat> for T
 /// # extern crate serde;
 /// # extern crate serde_json;
 /// # use serde::{Serialize, Serializer};
+/// # use serde::ser::SerializeStruct;
 /// # use elastic_types::prelude::*;
 /// #[derive(Serialize, ElasticType)]
 /// # pub struct MyType {
@@ -577,16 +578,17 @@ pub trait DocumentMapping
 /// # #[macro_use]
 /// # extern crate elastic_types;
 /// # extern crate serde;
+/// # use serde::ser::SerializeStruct;
 /// # use elastic_types::prelude::*;
 /// # pub struct MyTypeMapping;
 /// impl PropertiesMapping for MyTypeMapping {
 ///     fn props_len() -> usize { 3 }
 ///
-///     fn serialize_props<S>(serializer: S, state: &mut SerializeStruct) -> Result<S::Ok, S::Error>
-///     where S: serde::SerializeStruct {
-///         try!(field_ser(serializer, state, "my_date", Date::<DefaultDateFormat>::mapping()));
-///         try!(field_ser(serializer, state, "my_string", String::mapping()));
-///         try!(field_ser(serializer, state, "my_num", i32::mapping()));
+///     fn serialize_props<S>(state: &mut S) -> Result<(), S::Error>
+///     where S: SerializeStruct {
+///         try!(field_ser(state, "my_date", Date::<DefaultDateFormat>::mapping()));
+///         try!(field_ser(state, "my_string", String::mapping()));
+///         try!(field_ser(state, "my_num", i32::mapping()));
 ///
 ///         Ok(())
 ///     }

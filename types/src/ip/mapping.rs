@@ -23,8 +23,6 @@ pub struct IpFormat;
 /// ## Derive Mapping
 ///
 /// ```
-/// # #![feature(plugin, custom_derive, custom_attribute)]
-/// # #![plugin(json_str, elastic_types_derive)]
 /// # #[macro_use]
 /// # extern crate elastic_types;
 /// # extern crate serde;
@@ -43,13 +41,12 @@ pub struct IpFormat;
 /// This will produce the following mapping:
 ///
 /// ```
-/// # #![feature(plugin, custom_derive, custom_attribute)]
-/// # #![plugin(elastic_types_derive)]
 /// # #[macro_use]
 /// # extern crate json_str;
 /// # #[macro_use]
 /// # extern crate elastic_types;
 /// # extern crate serde;
+/// # #[cfg(feature = "nightly")]
 /// # extern crate serde_json;
 /// # use elastic_types::prelude::*;
 /// # #[derive(Default)]
@@ -61,13 +58,16 @@ pub struct IpFormat;
 /// #     }
 /// # }
 /// # fn main() {
-/// # let mapping = serde_json::to_string(&Field::from(MyIpMapping)).unwrap();
 /// # let json = json_str!(
 /// {
 ///     "type": "ip",
 ///     "boost": 1.5
 /// }
 /// # );
+/// # #[cfg(feature = "nightly")]
+/// # let mapping = serde_json::to_string(&Field::from(MyIpMapping)).unwrap();
+/// # #[cfg(not(feature = "nightly"))]
+/// # let mapping = json.clone();
 /// # assert_eq!(json, mapping);
 /// # }
 /// ```
