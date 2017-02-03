@@ -4,7 +4,7 @@ version = "0.10.4"
 authors = ["Ashley Mannix <ashleymannix@live.com.au>"]
 license = "Apache-2.0"
 description = "A strongly-typed implementation of Elasticsearch core types and Mapping API."
-documentation = "https://docs.rs/elastic_types/0.10.1/elastic_types/"
+documentation = "https://docs.rs/elastic_types/0.10.4/elastic_types/"
 repository = "https://github.com/elastic-rs/elastic-types"
 
 [features]
@@ -19,10 +19,10 @@ chrono = { version = "~0.2.20", features = [ "serde" ]}
 geo = "~0.0.7"
 geohash = "~0.2.7"
 geojson = { version = "~0.4.0", features = [ "with-serde" ] }
-elastic_date_macros = { version = "*", path = "../macros/date" }
+elastic_date_macros = "~0.5.3"
 
 [dev-dependencies]
 json_str = "^0.*"
 maplit = "^0.*"
-elastic_types_derive = { version = "*", path = "../macros/types" }
+elastic_types_derive = "~0.10.2"
 serde_derive = "~0.8.0"
