@@ -180,6 +180,7 @@ impl RequestParamsCtorBuilder {
         };
 
         let mut fields = vec![syn::FieldValue {
+                                  attrs: vec![],
                                   ident: ident("url"),
                                   expr: syn::ExprKind::MethodCall(ident("url"), vec![], vec![params_expr]).into(),
                                   is_shorthand: false,
@@ -187,6 +188,7 @@ impl RequestParamsCtorBuilder {
 
         if let &Some((ref body_ident, _)) = &ctor.body_field {
             fields.push(syn::FieldValue {
+                attrs: vec![],
                 ident: ident("body"),
                 expr: Self::expr_into(body_ident),
                 is_shorthand: false,

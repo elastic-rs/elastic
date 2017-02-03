@@ -5,7 +5,7 @@ pub mod endpoints {
     use super :: params :: * ;
     use std::borrow::Cow;
 
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum IndicesCloseUrlParams<'a> {
         Index(Index<'a>),
     }
@@ -22,7 +22,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct IndicesCloseRequest<'a> {
         pub url: Url<'a>,
         pub body: Body<'a>,
@@ -56,7 +56,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum DeleteScriptUrlParams<'a> {
         LangId(Lang<'a>, Id<'a>),
     }
@@ -74,7 +74,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct DeleteScriptRequest<'a> {
         pub url: Url<'a>,
     }
@@ -103,7 +103,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum TermvectorsUrlParams<'a> {
         IndexType(Index<'a>, Type<'a>),
         IndexTypeId(Index<'a>, Type<'a>, Id<'a>),
@@ -135,7 +135,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct TermvectorsRequest<'a> {
         pub url: Url<'a>,
         pub body: Body<'a>,
@@ -184,7 +184,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum FieldStatsUrlParams<'a> {
         None,
         Index(Index<'a>),
@@ -203,7 +203,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct FieldStatsRequest<'a> {
         pub url: Url<'a>,
         pub body: Body<'a>,
@@ -243,7 +243,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum CatThreadPoolUrlParams<'a> {
         None,
         ThreadPoolPatterns(ThreadPoolPatterns<'a>),
@@ -261,7 +261,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct CatThreadPoolRequest<'a> {
         pub url: Url<'a>,
     }
@@ -295,7 +295,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum SnapshotDeleteUrlParams<'a> {
         RepositorySnapshot(Repository<'a>, Snapshot<'a>),
     }
@@ -314,7 +314,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct SnapshotDeleteRequest<'a> {
         pub url: Url<'a>,
     }
@@ -349,7 +349,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum IndicesGetSettingsUrlParams<'a> {
         None,
         Index(Index<'a>),
@@ -384,7 +384,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct IndicesGetSettingsRequest<'a> {
         pub url: Url<'a>,
     }
@@ -427,7 +427,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum CreateUrlParams<'a> {
         IndexTypeId(Index<'a>, Type<'a>, Id<'a>),
     }
@@ -449,7 +449,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct CreateRequest<'a> {
         pub url: Url<'a>,
         pub body: Body<'a>,
@@ -488,7 +488,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum SnapshotDeleteRepositoryUrlParams<'a> {
         Repository(Repository<'a>),
     }
@@ -504,7 +504,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct SnapshotDeleteRepositoryRequest<'a> {
         pub url: Url<'a>,
     }
@@ -535,7 +535,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum ClusterAllocationExplainUrlParams {
         None,
     }
@@ -546,7 +546,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct ClusterAllocationExplainRequest<'a> {
         pub url: Url<'a>,
         pub body: Body<'a>,
@@ -577,7 +577,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum IndicesPutTemplateUrlParams<'a> {
         Name(Name<'a>),
     }
@@ -593,7 +593,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct IndicesPutTemplateRequest<'a> {
         pub url: Url<'a>,
         pub body: Body<'a>,
@@ -627,7 +627,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum IndicesGetTemplateUrlParams<'a> {
         None,
         Name(Name<'a>),
@@ -645,7 +645,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct IndicesGetTemplateRequest<'a> {
         pub url: Url<'a>,
     }
@@ -675,7 +675,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum ClusterStateUrlParams<'a> {
         None,
         Metric(Metric<'a>),
@@ -702,7 +702,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct ClusterStateRequest<'a> {
         pub url: Url<'a>,
     }
@@ -740,7 +740,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum MsearchTemplateUrlParams<'a> {
         None,
         Index(Index<'a>),
@@ -769,7 +769,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct MsearchTemplateRequest<'a> {
         pub url: Url<'a>,
         pub body: Body<'a>,
@@ -819,7 +819,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum BulkUrlParams<'a> {
         None,
         Index(Index<'a>),
@@ -848,7 +848,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct BulkRequest<'a> {
         pub url: Url<'a>,
         pub body: Body<'a>,
@@ -897,7 +897,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum ExplainUrlParams<'a> {
         IndexTypeId(Index<'a>, Type<'a>, Id<'a>),
     }
@@ -919,7 +919,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct ExplainRequest<'a> {
         pub url: Url<'a>,
         pub body: Body<'a>,
@@ -958,7 +958,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum SuggestUrlParams<'a> {
         None,
         Index(Index<'a>),
@@ -977,7 +977,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct SuggestRequest<'a> {
         pub url: Url<'a>,
         pub body: Body<'a>,
@@ -1016,7 +1016,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum SnapshotGetRepositoryUrlParams<'a> {
         None,
         Repository(Repository<'a>),
@@ -1034,7 +1034,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct SnapshotGetRepositoryRequest<'a> {
         pub url: Url<'a>,
     }
@@ -1068,7 +1068,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum RenderSearchTemplateUrlParams<'a> {
         None,
         Id(Id<'a>),
@@ -1086,7 +1086,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct RenderSearchTemplateRequest<'a> {
         pub url: Url<'a>,
         pub body: Body<'a>,
@@ -1126,7 +1126,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum IndicesStatsUrlParams<'a> {
         None,
         Index(Index<'a>),
@@ -1161,7 +1161,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct IndicesStatsRequest<'a> {
         pub url: Url<'a>,
     }
@@ -1202,7 +1202,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum CatRepositoriesUrlParams {
         None,
     }
@@ -1213,7 +1213,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct CatRepositoriesRequest<'a> {
         pub url: Url<'a>,
     }
@@ -1240,7 +1240,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum IndicesForcemergeUrlParams<'a> {
         None,
         Index(Index<'a>),
@@ -1259,7 +1259,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct IndicesForcemergeRequest<'a> {
         pub url: Url<'a>,
         pub body: Body<'a>,
@@ -1299,7 +1299,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum PingUrlParams {
         None,
     }
@@ -1310,7 +1310,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct PingRequest<'a> {
         pub url: Url<'a>,
     }
@@ -1337,7 +1337,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum TasksGetUrlParams<'a> {
         TaskId(TaskId<'a>),
     }
@@ -1353,7 +1353,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct TasksGetRequest<'a> {
         pub url: Url<'a>,
     }
@@ -1380,7 +1380,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum IndicesExistsUrlParams<'a> {
         Index(Index<'a>),
     }
@@ -1396,7 +1396,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct IndicesExistsRequest<'a> {
         pub url: Url<'a>,
     }
@@ -1423,7 +1423,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum IndicesFlushSyncedUrlParams<'a> {
         None,
         Index(Index<'a>),
@@ -1442,7 +1442,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct IndicesFlushSyncedRequest<'a> {
         pub url: Url<'a>,
         pub body: Body<'a>,
@@ -1482,7 +1482,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum MsearchUrlParams<'a> {
         None,
         Index(Index<'a>),
@@ -1511,7 +1511,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct MsearchRequest<'a> {
         pub url: Url<'a>,
         pub body: Body<'a>,
@@ -1560,7 +1560,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum InfoUrlParams {
         None,
     }
@@ -1571,7 +1571,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct InfoRequest<'a> {
         pub url: Url<'a>,
     }
@@ -1598,7 +1598,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum SearchTemplateUrlParams<'a> {
         None,
         Index(Index<'a>),
@@ -1627,7 +1627,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct SearchTemplateRequest<'a> {
         pub url: Url<'a>,
         pub body: Body<'a>,
@@ -1677,7 +1677,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum IndicesDeleteUrlParams<'a> {
         Index(Index<'a>),
     }
@@ -1693,7 +1693,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct IndicesDeleteRequest<'a> {
         pub url: Url<'a>,
     }
@@ -1720,7 +1720,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum DeleteByQueryUrlParams<'a> {
         Index(Index<'a>),
         IndexType(Index<'a>, Type<'a>),
@@ -1747,7 +1747,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct DeleteByQueryRequest<'a> {
         pub url: Url<'a>,
         pub body: Body<'a>,
@@ -1791,7 +1791,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum DeleteTemplateUrlParams<'a> {
         Id(Id<'a>),
     }
@@ -1807,7 +1807,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct DeleteTemplateRequest<'a> {
         pub url: Url<'a>,
     }
@@ -1834,7 +1834,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum IndicesCreateUrlParams<'a> {
         Index(Index<'a>),
     }
@@ -1850,7 +1850,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct IndicesCreateRequest<'a> {
         pub url: Url<'a>,
         pub body: Body<'a>,
@@ -1884,7 +1884,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum PercolateUrlParams<'a> {
         IndexType(Index<'a>, Type<'a>),
         IndexTypeId(Index<'a>, Type<'a>, Id<'a>),
@@ -1916,7 +1916,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct PercolateRequest<'a> {
         pub url: Url<'a>,
         pub body: Body<'a>,
@@ -1965,7 +1965,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum SearchUrlParams<'a> {
         None,
         Index(Index<'a>),
@@ -1994,7 +1994,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct SearchRequest<'a> {
         pub url: Url<'a>,
         pub body: Body<'a>,
@@ -2043,7 +2043,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum CatNodeattrsUrlParams {
         None,
     }
@@ -2054,7 +2054,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct CatNodeattrsRequest<'a> {
         pub url: Url<'a>,
     }
@@ -2081,7 +2081,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum SnapshotVerifyRepositoryUrlParams<'a> {
         Repository(Repository<'a>),
     }
@@ -2098,7 +2098,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct SnapshotVerifyRepositoryRequest<'a> {
         pub url: Url<'a>,
         pub body: Body<'a>,
@@ -2132,7 +2132,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum CountUrlParams<'a> {
         None,
         Index(Index<'a>),
@@ -2161,7 +2161,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct CountRequest<'a> {
         pub url: Url<'a>,
         pub body: Body<'a>,
@@ -2210,7 +2210,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum CatAllocationUrlParams<'a> {
         None,
         NodeId(NodeId<'a>),
@@ -2228,7 +2228,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct CatAllocationRequest<'a> {
         pub url: Url<'a>,
     }
@@ -2259,7 +2259,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum IndicesFlushUrlParams<'a> {
         None,
         Index(Index<'a>),
@@ -2278,7 +2278,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct IndicesFlushRequest<'a> {
         pub url: Url<'a>,
         pub body: Body<'a>,
@@ -2318,7 +2318,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum IndicesRefreshUrlParams<'a> {
         None,
         Index(Index<'a>),
@@ -2337,7 +2337,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct IndicesRefreshRequest<'a> {
         pub url: Url<'a>,
         pub body: Body<'a>,
@@ -2377,7 +2377,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum CatHelpUrlParams {
         None,
     }
@@ -2388,7 +2388,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct CatHelpRequest<'a> {
         pub url: Url<'a>,
     }
@@ -2415,7 +2415,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum SearchShardsUrlParams<'a> {
         None,
         Index(Index<'a>),
@@ -2434,7 +2434,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct SearchShardsRequest<'a> {
         pub url: Url<'a>,
         pub body: Body<'a>,
@@ -2474,7 +2474,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum ClusterHealthUrlParams<'a> {
         None,
         Index(Index<'a>),
@@ -2492,7 +2492,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct ClusterHealthRequest<'a> {
         pub url: Url<'a>,
     }
@@ -2522,7 +2522,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum IndicesExistsAliasUrlParams<'a> {
         Index(Index<'a>),
         IndexName(Index<'a>, Name<'a>),
@@ -2555,7 +2555,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct IndicesExistsAliasRequest<'a> {
         pub url: Url<'a>,
     }
@@ -2595,7 +2595,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum IndicesGetFieldMappingUrlParams<'a> {
         Fields(Fields<'a>),
         IndexFields(Index<'a>, Fields<'a>),
@@ -2641,7 +2641,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct IndicesGetFieldMappingRequest<'a> {
         pub url: Url<'a>,
     }
@@ -2702,7 +2702,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum IngestPutPipelineUrlParams<'a> {
         Id(Id<'a>),
     }
@@ -2718,7 +2718,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct IngestPutPipelineRequest<'a> {
         pub url: Url<'a>,
         pub body: Body<'a>,
@@ -2751,7 +2751,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum ClusterPendingTasksUrlParams {
         None,
     }
@@ -2762,7 +2762,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct ClusterPendingTasksRequest<'a> {
         pub url: Url<'a>,
     }
@@ -2789,7 +2789,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum IngestSimulateUrlParams<'a> {
         None,
         Id(Id<'a>),
@@ -2808,7 +2808,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct IngestSimulateRequest<'a> {
         pub url: Url<'a>,
         pub body: Body<'a>,
@@ -2847,7 +2847,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum IndicesGetAliasUrlParams<'a> {
         None,
         Index(Index<'a>),
@@ -2882,7 +2882,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct IndicesGetAliasRequest<'a> {
         pub url: Url<'a>,
     }
@@ -2923,7 +2923,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum GetScriptUrlParams<'a> {
         LangId(Lang<'a>, Id<'a>),
     }
@@ -2941,7 +2941,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct GetScriptRequest<'a> {
         pub url: Url<'a>,
     }
@@ -2970,7 +2970,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum IndicesRecoveryUrlParams<'a> {
         None,
         Index(Index<'a>),
@@ -2989,7 +2989,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct IndicesRecoveryRequest<'a> {
         pub url: Url<'a>,
     }
@@ -3019,7 +3019,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum IngestDeletePipelineUrlParams<'a> {
         Id(Id<'a>),
     }
@@ -3035,7 +3035,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct IngestDeletePipelineRequest<'a> {
         pub url: Url<'a>,
     }
@@ -3062,7 +3062,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum TasksCancelUrlParams<'a> {
         None,
         TaskId(TaskId<'a>),
@@ -3081,7 +3081,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct TasksCancelRequest<'a> {
         pub url: Url<'a>,
         pub body: Body<'a>,
@@ -3121,7 +3121,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum IndicesClearCacheUrlParams<'a> {
         None,
         Index(Index<'a>),
@@ -3140,7 +3140,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct IndicesClearCacheRequest<'a> {
         pub url: Url<'a>,
         pub body: Body<'a>,
@@ -3180,7 +3180,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum DeleteUrlParams<'a> {
         IndexTypeId(Index<'a>, Type<'a>, Id<'a>),
     }
@@ -3200,7 +3200,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct DeleteRequest<'a> {
         pub url: Url<'a>,
     }
@@ -3233,7 +3233,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum IndicesPutMappingUrlParams<'a> {
         IndexType(Index<'a>, Type<'a>),
         Type(Type<'a>),
@@ -3258,7 +3258,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct IndicesPutMappingRequest<'a> {
         pub url: Url<'a>,
         pub body: Body<'a>,
@@ -3302,7 +3302,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum CatAliasesUrlParams<'a> {
         None,
         Name(Name<'a>),
@@ -3320,7 +3320,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct CatAliasesRequest<'a> {
         pub url: Url<'a>,
     }
@@ -3350,7 +3350,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum ClusterStatsUrlParams<'a> {
         None,
         NodeId(NodeId<'a>),
@@ -3368,7 +3368,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct ClusterStatsRequest<'a> {
         pub url: Url<'a>,
     }
@@ -3398,7 +3398,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum IndicesValidateQueryUrlParams<'a> {
         None,
         Index(Index<'a>),
@@ -3427,7 +3427,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct IndicesValidateQueryRequest<'a> {
         pub url: Url<'a>,
         pub body: Body<'a>,
@@ -3477,7 +3477,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum CatPendingTasksUrlParams {
         None,
     }
@@ -3488,7 +3488,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct CatPendingTasksRequest<'a> {
         pub url: Url<'a>,
     }
@@ -3515,7 +3515,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum ClearScrollUrlParams<'a> {
         None,
         ScrollId(ScrollId<'a>),
@@ -3533,7 +3533,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct ClearScrollRequest<'a> {
         pub url: Url<'a>,
         pub body: Body<'a>,
@@ -3573,7 +3573,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum CatShardsUrlParams<'a> {
         None,
         Index(Index<'a>),
@@ -3591,7 +3591,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct CatShardsRequest<'a> {
         pub url: Url<'a>,
     }
@@ -3621,7 +3621,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum IndicesShardStoresUrlParams<'a> {
         None,
         Index(Index<'a>),
@@ -3640,7 +3640,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct IndicesShardStoresRequest<'a> {
         pub url: Url<'a>,
     }
@@ -3672,7 +3672,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum IndicesUpdateAliasesUrlParams {
         None,
     }
@@ -3683,7 +3683,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct IndicesUpdateAliasesRequest<'a> {
         pub url: Url<'a>,
         pub body: Body<'a>,
@@ -3714,7 +3714,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum CatSegmentsUrlParams<'a> {
         None,
         Index(Index<'a>),
@@ -3732,7 +3732,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct CatSegmentsRequest<'a> {
         pub url: Url<'a>,
     }
@@ -3762,7 +3762,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum MpercolateUrlParams<'a> {
         None,
         Index(Index<'a>),
@@ -3791,7 +3791,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct MpercolateRequest<'a> {
         pub url: Url<'a>,
         pub body: Body<'a>,
@@ -3841,7 +3841,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum IndicesOpenUrlParams<'a> {
         Index(Index<'a>),
     }
@@ -3858,7 +3858,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct IndicesOpenRequest<'a> {
         pub url: Url<'a>,
         pub body: Body<'a>,
@@ -3892,7 +3892,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum GetUrlParams<'a> {
         IndexTypeId(Index<'a>, Type<'a>, Id<'a>),
     }
@@ -3912,7 +3912,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct GetRequest<'a> {
         pub url: Url<'a>,
     }
@@ -3943,7 +3943,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum UpdateByQueryUrlParams<'a> {
         Index(Index<'a>),
         IndexType(Index<'a>, Type<'a>),
@@ -3970,7 +3970,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct UpdateByQueryRequest<'a> {
         pub url: Url<'a>,
         pub body: Body<'a>,
@@ -4014,7 +4014,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum MtermvectorsUrlParams<'a> {
         None,
         Index(Index<'a>),
@@ -4043,7 +4043,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct MtermvectorsRequest<'a> {
         pub url: Url<'a>,
         pub body: Body<'a>,
@@ -4093,7 +4093,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum CatRecoveryUrlParams<'a> {
         None,
         Index(Index<'a>),
@@ -4111,7 +4111,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct CatRecoveryRequest<'a> {
         pub url: Url<'a>,
     }
@@ -4141,7 +4141,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum SnapshotRestoreUrlParams<'a> {
         RepositorySnapshot(Repository<'a>, Snapshot<'a>),
     }
@@ -4161,7 +4161,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct SnapshotRestoreRequest<'a> {
         pub url: Url<'a>,
         pub body: Body<'a>,
@@ -4200,7 +4200,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum ReindexUrlParams {
         None,
     }
@@ -4211,7 +4211,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct ReindexRequest<'a> {
         pub url: Url<'a>,
         pub body: Body<'a>,
@@ -4242,7 +4242,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum CatHealthUrlParams {
         None,
     }
@@ -4253,7 +4253,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct CatHealthRequest<'a> {
         pub url: Url<'a>,
     }
@@ -4280,7 +4280,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum CatCountUrlParams<'a> {
         None,
         Index(Index<'a>),
@@ -4298,7 +4298,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct CatCountRequest<'a> {
         pub url: Url<'a>,
     }
@@ -4328,7 +4328,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum CatSnapshotsUrlParams<'a> {
         None,
         Repository(Repository<'a>),
@@ -4346,7 +4346,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct CatSnapshotsRequest<'a> {
         pub url: Url<'a>,
     }
@@ -4377,7 +4377,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum IndicesGetMappingUrlParams<'a> {
         None,
         Index(Index<'a>),
@@ -4412,7 +4412,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct IndicesGetMappingRequest<'a> {
         pub url: Url<'a>,
     }
@@ -4453,7 +4453,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum SnapshotGetUrlParams<'a> {
         RepositorySnapshot(Repository<'a>, Snapshot<'a>),
     }
@@ -4472,7 +4472,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct SnapshotGetRequest<'a> {
         pub url: Url<'a>,
     }
@@ -4506,7 +4506,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum CatNodesUrlParams {
         None,
     }
@@ -4517,7 +4517,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct CatNodesRequest<'a> {
         pub url: Url<'a>,
     }
@@ -4544,7 +4544,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum ExistsUrlParams<'a> {
         IndexTypeId(Index<'a>, Type<'a>, Id<'a>),
     }
@@ -4564,7 +4564,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct ExistsRequest<'a> {
         pub url: Url<'a>,
     }
@@ -4597,7 +4597,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum ClusterRerouteUrlParams {
         None,
     }
@@ -4608,7 +4608,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct ClusterRerouteRequest<'a> {
         pub url: Url<'a>,
         pub body: Body<'a>,
@@ -4639,7 +4639,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum NodesHotThreadsUrlParams<'a> {
         None,
         NodeId(NodeId<'a>),
@@ -4658,7 +4658,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct NodesHotThreadsRequest<'a> {
         pub url: Url<'a>,
     }
@@ -4689,7 +4689,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum NodesStatsUrlParams<'a> {
         None,
         Metric(Metric<'a>),
@@ -4748,7 +4748,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct NodesStatsRequest<'a> {
         pub url: Url<'a>,
     }
@@ -4813,7 +4813,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum IngestGetPipelineUrlParams<'a> {
         None,
         Id(Id<'a>),
@@ -4831,7 +4831,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct IngestGetPipelineRequest<'a> {
         pub url: Url<'a>,
     }
@@ -4861,7 +4861,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum PutTemplateUrlParams<'a> {
         Id(Id<'a>),
     }
@@ -4877,7 +4877,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct PutTemplateRequest<'a> {
         pub url: Url<'a>,
         pub body: Body<'a>,
@@ -4910,7 +4910,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum GetSourceUrlParams<'a> {
         IndexTypeId(Index<'a>, Type<'a>, Id<'a>),
     }
@@ -4932,7 +4932,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct GetSourceRequest<'a> {
         pub url: Url<'a>,
     }
@@ -4965,7 +4965,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum SnapshotCreateUrlParams<'a> {
         RepositorySnapshot(Repository<'a>, Snapshot<'a>),
     }
@@ -4984,7 +4984,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct SnapshotCreateRequest<'a> {
         pub url: Url<'a>,
         pub body: Body<'a>,
@@ -5023,7 +5023,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum ScrollUrlParams<'a> {
         None,
         ScrollId(ScrollId<'a>),
@@ -5041,7 +5041,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct ScrollRequest<'a> {
         pub url: Url<'a>,
         pub body: Body<'a>,
@@ -5081,7 +5081,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum SnapshotStatusUrlParams<'a> {
         None,
         Repository(Repository<'a>),
@@ -5111,7 +5111,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct SnapshotStatusRequest<'a> {
         pub url: Url<'a>,
     }
@@ -5155,7 +5155,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum MgetUrlParams<'a> {
         None,
         Index(Index<'a>),
@@ -5184,7 +5184,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct MgetRequest<'a> {
         pub url: Url<'a>,
         pub body: Body<'a>,
@@ -5233,7 +5233,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum IndicesExistsTemplateUrlParams<'a> {
         Name(Name<'a>),
     }
@@ -5249,7 +5249,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct IndicesExistsTemplateRequest<'a> {
         pub url: Url<'a>,
     }
@@ -5278,7 +5278,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum IndicesGetUpgradeUrlParams<'a> {
         None,
         Index(Index<'a>),
@@ -5297,7 +5297,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct IndicesGetUpgradeRequest<'a> {
         pub url: Url<'a>,
     }
@@ -5327,7 +5327,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum PutScriptUrlParams<'a> {
         LangId(Lang<'a>, Id<'a>),
     }
@@ -5345,7 +5345,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct PutScriptRequest<'a> {
         pub url: Url<'a>,
         pub body: Body<'a>,
@@ -5380,7 +5380,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum GetTemplateUrlParams<'a> {
         Id(Id<'a>),
     }
@@ -5396,7 +5396,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct GetTemplateRequest<'a> {
         pub url: Url<'a>,
     }
@@ -5423,7 +5423,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum IndicesDeleteTemplateUrlParams<'a> {
         Name(Name<'a>),
     }
@@ -5439,7 +5439,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct IndicesDeleteTemplateRequest<'a> {
         pub url: Url<'a>,
     }
@@ -5468,7 +5468,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum IndexUrlParams<'a> {
         IndexType(Index<'a>, Type<'a>),
         IndexTypeId(Index<'a>, Type<'a>, Id<'a>),
@@ -5497,7 +5497,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct IndexRequest<'a> {
         pub url: Url<'a>,
         pub body: Body<'a>,
@@ -5546,7 +5546,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum IndicesPutSettingsUrlParams<'a> {
         None,
         Index(Index<'a>),
@@ -5565,7 +5565,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct IndicesPutSettingsRequest<'a> {
         pub url: Url<'a>,
         pub body: Body<'a>,
@@ -5605,7 +5605,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum CatTemplatesUrlParams<'a> {
         None,
         Name(Name<'a>),
@@ -5623,7 +5623,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct CatTemplatesRequest<'a> {
         pub url: Url<'a>,
     }
@@ -5653,7 +5653,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum CatIndicesUrlParams<'a> {
         None,
         Index(Index<'a>),
@@ -5671,7 +5671,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct CatIndicesRequest<'a> {
         pub url: Url<'a>,
     }
@@ -5701,7 +5701,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum ClusterPutSettingsUrlParams {
         None,
     }
@@ -5712,7 +5712,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct ClusterPutSettingsRequest<'a> {
         pub url: Url<'a>,
         pub body: Body<'a>,
@@ -5743,7 +5743,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum UpdateUrlParams<'a> {
         IndexTypeId(Index<'a>, Type<'a>, Id<'a>),
     }
@@ -5765,7 +5765,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct UpdateRequest<'a> {
         pub url: Url<'a>,
         pub body: Body<'a>,
@@ -5804,7 +5804,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum IndicesPutAliasUrlParams<'a> {
         IndexName(Index<'a>, Name<'a>),
     }
@@ -5822,7 +5822,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct IndicesPutAliasRequest<'a> {
         pub url: Url<'a>,
         pub body: Body<'a>,
@@ -5857,7 +5857,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum CatPluginsUrlParams {
         None,
     }
@@ -5868,7 +5868,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct CatPluginsRequest<'a> {
         pub url: Url<'a>,
     }
@@ -5895,7 +5895,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum CountPercolateUrlParams<'a> {
         IndexType(Index<'a>, Type<'a>),
         IndexTypeId(Index<'a>, Type<'a>, Id<'a>),
@@ -5927,7 +5927,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct CountPercolateRequest<'a> {
         pub url: Url<'a>,
         pub body: Body<'a>,
@@ -5976,7 +5976,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum IndicesUpgradeUrlParams<'a> {
         None,
         Index(Index<'a>),
@@ -5995,7 +5995,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct IndicesUpgradeRequest<'a> {
         pub url: Url<'a>,
         pub body: Body<'a>,
@@ -6035,7 +6035,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum IndicesDeleteAliasUrlParams<'a> {
         IndexName(Index<'a>, Name<'a>),
     }
@@ -6053,7 +6053,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct IndicesDeleteAliasRequest<'a> {
         pub url: Url<'a>,
     }
@@ -6085,7 +6085,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum CatTasksUrlParams {
         None,
     }
@@ -6096,7 +6096,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct CatTasksRequest<'a> {
         pub url: Url<'a>,
     }
@@ -6123,7 +6123,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum IndicesRolloverUrlParams<'a> {
         Alias(Alias<'a>),
         AliasNewIndex(Alias<'a>, NewIndex<'a>),
@@ -6149,7 +6149,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct IndicesRolloverRequest<'a> {
         pub url: Url<'a>,
         pub body: Body<'a>,
@@ -6195,7 +6195,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum ReindexRethrottleUrlParams<'a> {
         TaskId(TaskId<'a>),
     }
@@ -6212,7 +6212,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct ReindexRethrottleRequest<'a> {
         pub url: Url<'a>,
         pub body: Body<'a>,
@@ -6246,7 +6246,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum SnapshotCreateRepositoryUrlParams<'a> {
         Repository(Repository<'a>),
     }
@@ -6262,7 +6262,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct SnapshotCreateRepositoryRequest<'a> {
         pub url: Url<'a>,
         pub body: Body<'a>,
@@ -6296,7 +6296,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum IndicesGetUrlParams<'a> {
         Index(Index<'a>),
         IndexFeature(Index<'a>, Feature<'a>),
@@ -6321,7 +6321,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct IndicesGetRequest<'a> {
         pub url: Url<'a>,
     }
@@ -6356,7 +6356,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum IndicesAnalyzeUrlParams<'a> {
         None,
         Index(Index<'a>),
@@ -6375,7 +6375,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct IndicesAnalyzeRequest<'a> {
         pub url: Url<'a>,
         pub body: Body<'a>,
@@ -6415,7 +6415,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum CatFielddataUrlParams<'a> {
         None,
         Fields(Fields<'a>),
@@ -6433,7 +6433,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct CatFielddataRequest<'a> {
         pub url: Url<'a>,
     }
@@ -6463,7 +6463,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum IndicesSegmentsUrlParams<'a> {
         None,
         Index(Index<'a>),
@@ -6482,7 +6482,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct IndicesSegmentsRequest<'a> {
         pub url: Url<'a>,
     }
@@ -6512,7 +6512,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum IndicesShrinkUrlParams<'a> {
         IndexTarget(Index<'a>, Target<'a>),
     }
@@ -6530,7 +6530,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct IndicesShrinkRequest<'a> {
         pub url: Url<'a>,
         pub body: Body<'a>,
@@ -6567,7 +6567,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum TasksListUrlParams {
         None,
     }
@@ -6578,7 +6578,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct TasksListRequest<'a> {
         pub url: Url<'a>,
     }
@@ -6605,7 +6605,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum CatMasterUrlParams {
         None,
     }
@@ -6616,7 +6616,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct CatMasterRequest<'a> {
         pub url: Url<'a>,
     }
@@ -6643,7 +6643,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum IndicesExistsTypeUrlParams<'a> {
         IndexType(Index<'a>, Type<'a>),
     }
@@ -6661,7 +6661,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct IndicesExistsTypeRequest<'a> {
         pub url: Url<'a>,
     }
@@ -6693,7 +6693,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum ClusterGetSettingsUrlParams {
         None,
     }
@@ -6704,7 +6704,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct ClusterGetSettingsRequest<'a> {
         pub url: Url<'a>,
     }
@@ -6731,7 +6731,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum NodesInfoUrlParams<'a> {
         None,
         Metric(Metric<'a>),
@@ -6765,7 +6765,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct NodesInfoRequest<'a> {
         pub url: Url<'a>,
     }
@@ -6806,7 +6806,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     enum SimpleSearchUrlParams<'a> {
         None,
         Index(Index<'a>),
@@ -6835,7 +6835,7 @@ pub mod endpoints {
             }
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct SimpleSearchRequest<'a> {
         pub url: Url<'a>,
     }
@@ -6879,7 +6879,7 @@ pub mod http {
     use std::ops::Deref;
     use std::borrow::Cow;
 
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct Url<'a>(Cow<'a, str>);
     impl<'a> From<&'a str> for Url<'a> {
         fn from(value: &'a str) -> Url<'a> {
@@ -6897,7 +6897,7 @@ pub mod http {
             &self.0
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct Body<'a>(Cow<'a, [u8]>);
     impl<'a> From<Vec<u8>> for Body<'a> {
         fn from(value: Vec<u8>) -> Body<'a> {
@@ -6935,13 +6935,13 @@ pub mod http {
             Body(Cow::Borrowed(&[]))
         }
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct HttpRequest<'a> {
         pub url: Cow<'a, Url<'a>>,
         pub method: HttpMethod,
         pub body: Option<Cow<'a, Body<'a>>>,
     }
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub enum HttpMethod {
         Head,
         Get,
@@ -6955,7 +6955,7 @@ pub mod http {
 pub mod params {
     use std::borrow::Cow;
 
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct Alias<'a>(pub Cow<'a, str>);
     impl<'a> From<&'a str> for Alias<'a> {
         fn from(value: &'a str) -> Alias<'a> {
@@ -6974,7 +6974,7 @@ pub mod params {
         }
     }
 
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct Feature<'a>(pub Cow<'a, str>);
     impl<'a> From<&'a str> for Feature<'a> {
         fn from(value: &'a str) -> Feature<'a> {
@@ -6993,7 +6993,7 @@ pub mod params {
         }
     }
 
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct Fields<'a>(pub Cow<'a, str>);
     impl<'a> From<&'a str> for Fields<'a> {
         fn from(value: &'a str) -> Fields<'a> {
@@ -7012,7 +7012,7 @@ pub mod params {
         }
     }
 
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct Id<'a>(pub Cow<'a, str>);
     impl<'a> From<&'a str> for Id<'a> {
         fn from(value: &'a str) -> Id<'a> {
@@ -7031,7 +7031,7 @@ pub mod params {
         }
     }
 
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct Index<'a>(pub Cow<'a, str>);
     impl<'a> From<&'a str> for Index<'a> {
         fn from(value: &'a str) -> Index<'a> {
@@ -7050,7 +7050,7 @@ pub mod params {
         }
     }
 
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct IndexMetric<'a>(pub Cow<'a, str>);
     impl<'a> From<&'a str> for IndexMetric<'a> {
         fn from(value: &'a str) -> IndexMetric<'a> {
@@ -7069,7 +7069,7 @@ pub mod params {
         }
     }
 
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct Lang<'a>(pub Cow<'a, str>);
     impl<'a> From<&'a str> for Lang<'a> {
         fn from(value: &'a str) -> Lang<'a> {
@@ -7088,7 +7088,7 @@ pub mod params {
         }
     }
 
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct Metric<'a>(pub Cow<'a, str>);
     impl<'a> From<&'a str> for Metric<'a> {
         fn from(value: &'a str) -> Metric<'a> {
@@ -7107,7 +7107,7 @@ pub mod params {
         }
     }
 
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct Name<'a>(pub Cow<'a, str>);
     impl<'a> From<&'a str> for Name<'a> {
         fn from(value: &'a str) -> Name<'a> {
@@ -7126,7 +7126,7 @@ pub mod params {
         }
     }
 
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct NewIndex<'a>(pub Cow<'a, str>);
     impl<'a> From<&'a str> for NewIndex<'a> {
         fn from(value: &'a str) -> NewIndex<'a> {
@@ -7145,7 +7145,7 @@ pub mod params {
         }
     }
 
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct NodeId<'a>(pub Cow<'a, str>);
     impl<'a> From<&'a str> for NodeId<'a> {
         fn from(value: &'a str) -> NodeId<'a> {
@@ -7164,7 +7164,7 @@ pub mod params {
         }
     }
 
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct Repository<'a>(pub Cow<'a, str>);
     impl<'a> From<&'a str> for Repository<'a> {
         fn from(value: &'a str) -> Repository<'a> {
@@ -7183,7 +7183,7 @@ pub mod params {
         }
     }
 
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct ScrollId<'a>(pub Cow<'a, str>);
     impl<'a> From<&'a str> for ScrollId<'a> {
         fn from(value: &'a str) -> ScrollId<'a> {
@@ -7202,7 +7202,7 @@ pub mod params {
         }
     }
 
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct Snapshot<'a>(pub Cow<'a, str>);
     impl<'a> From<&'a str> for Snapshot<'a> {
         fn from(value: &'a str) -> Snapshot<'a> {
@@ -7221,7 +7221,7 @@ pub mod params {
         }
     }
 
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct Target<'a>(pub Cow<'a, str>);
     impl<'a> From<&'a str> for Target<'a> {
         fn from(value: &'a str) -> Target<'a> {
@@ -7240,7 +7240,7 @@ pub mod params {
         }
     }
 
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct TaskId<'a>(pub Cow<'a, str>);
     impl<'a> From<&'a str> for TaskId<'a> {
         fn from(value: &'a str) -> TaskId<'a> {
@@ -7259,7 +7259,7 @@ pub mod params {
         }
     }
 
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct ThreadPoolPatterns<'a>(pub Cow<'a, str>);
     impl<'a> From<&'a str> for ThreadPoolPatterns<'a> {
         fn from(value: &'a str) -> ThreadPoolPatterns<'a> {
@@ -7278,7 +7278,7 @@ pub mod params {
         }
     }
 
-    #[derive(Debug, PartialEq, Clone)]
+    # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct Type<'a>(pub Cow<'a, str>);
     impl<'a> From<&'a str> for Type<'a> {
         fn from(value: &'a str) -> Type<'a> {
