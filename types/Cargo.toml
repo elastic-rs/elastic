@@ -17,7 +17,7 @@ serde = "~0.9.0"
 serde_json = "~0.9.0"
 chrono = { version = "*", git = "https://github.com/KodrAus/rust-chrono.git", branch = "chore/serde-0.9", features = [ "serde" ]}
 geo = "~0.3.0"
-geohash = { version = "0.2.8-pre", git = "https://github.com/KodrAus/rust-geohash.git", branch = "chore/geo-0.3" }
+geohash = "~0.3.0"
 geojson = { version = "*", git = "https://github.com/KodrAus/rust-geojson.git", branch = "chore/serde-0.9" }
 serde_derive = "~0.9.0"
 elastic_date_macros = { version = "*", path = "../macros/date" }
