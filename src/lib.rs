@@ -158,7 +158,7 @@ use url::form_urlencoded::Serializer;
 /// 
 /// These are re-exported from `elastic_requests` for convenience.
 pub mod req {
-    pub use elastic_requests::prelude::*;
+    pub use elastic_requests::*;
 }
 
 use self::req::{HttpRequest, HttpMethod, RawBody};
