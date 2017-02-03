@@ -27,8 +27,6 @@
 //! Map a `keyword`:
 //!
 //! ```
-//! # #![feature(plugin, custom_derive)]
-//! # #![plugin(json_str, elastic_types_derive)]
 //! # extern crate serde;
 //! # extern crate elastic_types;
 //! # fn main() {
@@ -43,8 +41,6 @@
 //! Map `text`:
 //!
 //! ```
-//! # #![feature(plugin, custom_derive)]
-//! # #![plugin(json_str, elastic_types_derive)]
 //! # extern crate serde;
 //! # extern crate elastic_types;
 //! # fn main() {

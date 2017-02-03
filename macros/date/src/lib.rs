@@ -48,22 +48,14 @@
 //! This crate provides the utility macro `date_fmt` which can be used to build a `Vec<chrono::Item>`
 //! from either an elasticsearch or chrono date format.
 //!
-//! ```
-//! # #![feature(plugin)]
-//! # #![plugin(elastic_date_macros)]
-//! # fn main() {
+//! ```ignore
 //! //A chrono-based format
 //! let items = date_fmt!("%Y%m%dT%H%M%S%.3fZ");
-//! # }
 //! ```
 //!
-//! ```
-//! # #![feature(plugin)]
-//! # #![plugin(elastic_date_macros)]
-//! # fn main() {
+//! ```ignore
 //! //An elasticsearch-based format
 //! let items = date_fmt!("yyyyMMddTHHmmss.SSSZ");
-//! # }
 //! ```
 //!
 //! # Links

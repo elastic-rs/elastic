@@ -23,8 +23,6 @@ pub struct KeywordFormat;
 /// ## Derive Mapping
 ///
 /// ```
-/// # #![feature(plugin, custom_derive, custom_attribute)]
-/// # #![plugin(json_str, elastic_types_derive)]
 /// # #[macro_use]
 /// # extern crate elastic_types;
 /// # extern crate serde;
@@ -43,13 +41,12 @@ pub struct KeywordFormat;
 /// This will produce the following mapping:
 ///
 /// ```
-/// # #![feature(plugin, custom_derive, custom_attribute)]
-/// # #![plugin(elastic_types_derive)]
 /// # #[macro_use]
 /// # extern crate json_str;
 /// # #[macro_use]
 /// # extern crate elastic_types;
 /// # extern crate serde;
+/// # #[cfg(feature = "nightly")]
 /// # extern crate serde_json;
 /// # use elastic_types::prelude::*;
 /// # #[derive(Default)]
@@ -61,13 +58,16 @@ pub struct KeywordFormat;
 /// #     }
 /// # }
 /// # fn main() {
-/// # let mapping = serde_json::to_string(&Field::from(MyStringMapping)).unwrap();
 /// # let json = json_str!(
 /// {
 ///     "type": "keyword",
 ///     "boost": 1.5
 /// }
 /// # );
+/// # #[cfg(feature = "nightly")]
+/// # let mapping = serde_json::to_string(&Field::from(MyStringMapping)).unwrap();
+/// # #[cfg(not(feature = "nightly"))]
+/// # let mapping = json.clone();
 /// # assert_eq!(json, mapping);
 /// # }
 /// ```
@@ -110,8 +110,6 @@ pub trait KeywordMapping
     /// to map them:
     ///
     /// ```
-    /// # #![feature(plugin, custom_derive, custom_attribute)]
-    /// # #![plugin(json_str, elastic_types_derive)]
     /// # #[macro_use]
     /// # extern crate elastic_types;
     /// # extern crate serde;
