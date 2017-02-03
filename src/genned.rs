@@ -1,6 +1,6 @@
 // This code is automatically generated
 //
-pub mod requests {
+pub mod endpoints {
     use super :: http :: * ;
     use super :: params :: * ;
     use std::borrow::Cow;

@@ -18,7 +18,7 @@
 //! `param_1_param_2_param_n`:
 //!
 //! ```
-//! # use elastic_requests::prelude::*;
+//! # use elastic_requests::*;
 //! let req = SearchRequest::for_index_ty(
 //!     "test_index",
 //!     "test_ty",
@@ -31,7 +31,7 @@
 //! Or `new` if the endpoint takes no parameters:
 //!
 //! ```
-//! # use elastic_requests::prelude::*;
+//! # use elastic_requests::*;
 //! let req = PingRequest::new();
 //!
 //! assert_eq!("/", req.url.as_ref());
@@ -40,7 +40,7 @@
 //! Parameters can be borrowed or owned string values:
 //!
 //! ```
-//! # use elastic_requests::prelude::*;
+//! # use elastic_requests::*;
 //! let req = SearchRequest::for_index(
 //!     "test_index".to_string(),
 //!     "{'query': { 'match_all': {}}}"
@@ -61,16 +61,19 @@
 
 mod genned;
 
-pub mod prelude {
+/// Common url params like `Id` and `Index`.
+pub mod params {
     pub use genned::params::*;
-    pub use genned::requests::*;
-    pub use genned::http::*;
-    pub use RawBody;
 }
 
-pub use genned::params;
-pub use genned::requests;
+/// REST API endpoints.
+pub mod endpoints {
+    pub use genned::endpoints::*;
+}
+
 pub use genned::http::*;
+pub use self::params::*;
+pub use self::endpoints::*;
 
 use std::borrow::Cow;
 
@@ -106,7 +109,7 @@ impl<'a> RawBody<'a> for Body<'a> {
 #[cfg(test)]
 mod tests {
     use std::thread;
-    use super::prelude::*;
+    use super::*;
 
     fn do_something_with_request<'a, I: Into<HttpRequest<'a>>>(_: I) {}
 

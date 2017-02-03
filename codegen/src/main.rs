@@ -145,7 +145,7 @@ fn main() {
         .map(|e| dedup_urls(e))
         .collect();
 
-    tokens.append("pub mod requests {");
+    tokens.append("pub mod endpoints {");
 
         let uses = quote!(
             use super::http::*;
