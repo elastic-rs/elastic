@@ -253,7 +253,7 @@ pub mod client;
 /// This module contains tools for defining Elasticsearch-compatible
 /// document types.
 pub mod types {
-    pub use elastic_types::*;
+    pub use elastic_types::{document, field, boolean, date, geo, ip, number, string, prelude};
 }
 
 /// A glob import for convenience.
@@ -261,6 +261,5 @@ pub mod prelude {
     pub use super::client::{Client, RequestParams, RequestBuilder, ResponseBuilder};
     pub use super::client::requests::*;
     pub use super::client::responses::*;
-
     pub use super::types::prelude::*;
 }

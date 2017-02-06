@@ -120,7 +120,12 @@ impl ResponseBuilder {
 
 /// Request types the Elasticsearch REST API.
 pub mod requests {
-    pub use elastic_requests::*;
+    pub use elastic_requests::{HttpRequest, HttpMethod, Body, Url};
+    pub use elastic_requests::params;
+    pub use elastic_requests::endpoints;
+
+    pub use self::params::*;
+    pub use self::endpoints::*;
     pub use impls::*;
 }
 
