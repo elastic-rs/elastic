@@ -48,6 +48,20 @@
 //!
 //! assert_eq!("/test_index/_search", req.url.as_ref());
 //! ```
+//! 
+//! All request types can be converted into a more general `HttpRequest`:
+//! 
+//! ```
+//! # use elastic_requests::*;
+//! fn takes_req<'a, I: Into<HttpRequest<'a>>>(req: I) {
+//!     let req = req.into();
+//!     
+//!     // do something with the HttpRequest
+//! }
+//! 
+//! takes_req(PingRequest::new());
+//! takes_req(SearchRequest::for_index("test_index", Body::none()));
+//! ```
 //!
 //! # Why are these docs useless?
 //!
@@ -56,17 +70,50 @@
 //!
 //! # Links
 //!
-//! - [`elastic_hyper`](https://github.com/elastic-rs/elastic-hyper)
+//! - [`elastic_reqwest`](https://github.com/elastic-rs/elastic-reqwest)
 //! - [Github](https://github.com/elastic-rs/elastic-requests)
 
 mod genned;
 
-pub use genned::*;
+/// Common url params like `Id` and `Index`.
+/// 
+/// The parameter types are basically just a wrapper around a maybe
+/// owned string.
+/// They can all be constructed from a `String` or an `&str`, but some
+/// parameters may have other implementations in the future.
+pub mod params {
+    pub use genned::params::*;
+}
+
+/// REST API endpoints.
+/// 
+/// Each type corresponds to a single HTTP method on a single endpoint.
+/// Request types have constructor functions that take the form
+/// `for_param_1_param_2_param_n`, and accept a `Body` parameter if the underlying
+/// method is a `POST` or `PUT`.
+/// Other request parameters accept any type that can be converted into the
+/// parameter type, usually a `String` or `&str`.
+/// 
+/// Request types don't take ownership of their inputs unless you pass in owned
+/// data.
+/// That means if some function expects a `SearchRequest<'static>` then you can
+/// either use a `SearchRequest` with owned `String` inputs, or one that uses only
+/// `'static` inputs.
+pub mod endpoints {
+    pub use genned::endpoints::*;
+}
+
+pub use genned::http::*;
+pub use self::params::*;
+pub use self::endpoints::*;
 
 use std::borrow::Cow;
 
+
+// TODO: RawBody shouldn't be needed when `Body` is simplified
+
 /// Get a borrowed or owned slice of bytes.
-/// 
+///
 /// This trait can be used to get the contents of a `HttpRequest`
 /// body without worrying about whether the request itself is
 /// borrowed or owned.
@@ -83,7 +130,7 @@ impl<'a> RawBody<'a> for Cow<'a, Body<'a>> {
                     Cow::Owned(ref b) => Cow::Borrowed(b),
                 }
             }
-            Cow::Owned(b) => b.into_raw()
+            Cow::Owned(b) => b.into_raw(),
         }
     }
 }
