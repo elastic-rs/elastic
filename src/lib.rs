@@ -142,6 +142,9 @@
 //! - [Elasticsearch Docs](https://www.elastic.co/guide/en/elasticsearch/reference/master/index.html)
 //! - [Github](https://github.com/elastic-rs/elastic-hyper)
 
+#![deny(warnings)]
+#![deny(missing_docs)]
+
 extern crate elastic_requests;
 extern crate reqwest;
 extern crate url;
