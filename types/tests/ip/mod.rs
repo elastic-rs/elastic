@@ -1,8 +1,8 @@
+pub mod mapping;
+
 use serde;
 use serde_json;
 use elastic_types;
-
-pub mod mapping;
 
 use std::net::Ipv4Addr;
 

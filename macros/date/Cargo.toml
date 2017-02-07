@@ -16,4 +16,4 @@ plugin = true
 nightly = [ ]
 
 [dependencies]
-chrono = { version = "*", git = "https://github.com/KodrAus/rust-chrono.git", branch = "chore/serde-0.9" }
+chrono = "~0.3.0"

@@ -1,3 +1,5 @@
+pub mod mapping;
+
 use serde_json;
 
 use elastic_types::prelude::*;

@@ -44,18 +44,20 @@ impl CustomDateFormat for EpochMillis {
     fn parse(date: &str) -> Result<DateTime<UTC>, ParseError> {
         let millis = try!(date.parse::<i64>().map_err(|e| e.description().to_string()));
 
-        // For positive timestamps:
-        // Extract the millis straight off the timestamp (how many millis since the last second?)
-        let (s, m) = if millis >= 0 {
-            ((millis / 1000), (millis % 1000))
-        }
-                     // For negative timestamps:
-                     // The millis need to be inverted (how many millis before the next second?)
-                     else {
-            ((millis / 1000) - 1, (1000 + (millis % 1000)))
+        let (s, m) = {
+            // For positive timestamps:
+            // Extract the millis straight off the timestamp (how many millis since the last second?)
+            if millis >= 0 {
+                ((millis / 1000), (millis % 1000))
+            }
+            // For negative timestamps:
+            // The millis need to be inverted (how many millis before the next second?)
+            else {
+                ((millis / 1000) - 1, (1000 + (millis % 1000)))
+            }
         };
 
-        Ok(DateTime::from_utc(NaiveDateTime::from_num_seconds_from_unix_epoch(s, m as u32 * 1000000),
+        Ok(DateTime::from_utc(NaiveDateTime::from_timestamp(s, m as u32 * 1000000),
                               UTC))
     }
 
