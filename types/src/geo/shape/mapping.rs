@@ -1,6 +1,7 @@
 //! Mapping for Elasticsearch `geo_shape` types.
 
 use serde::{Serialize, Serializer};
+use serde::ser::SerializeStruct;
 use ::field::{FieldMapping, SerializeField, Field};
 use ::geo::mapping::Distance;
 
@@ -157,25 +158,22 @@ impl<T> SerializeField<GeoShapeFormat> for T
 impl<T> Serialize for Field<T, GeoShapeFormat>
     where T: FieldMapping<GeoShapeFormat> + GeoShapeMapping
 {
-    fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
         where S: Serializer
     {
         let mut state = try!(serializer.serialize_struct("mapping", 8));
 
-        try!(serializer.serialize_struct_elt(&mut state, "type", T::data_type()));
+        try!(state.serialize_field("type", T::data_type()));
 
-        ser_field!(serializer, &mut state, "tree", T::tree());
-        ser_field!(serializer, &mut state, "precision", T::precision());
-        ser_field!(serializer, &mut state, "tree_levels", T::tree_levels());
-        ser_field!(serializer, &mut state, "strategy", T::strategy());
-        ser_field!(serializer,
-                   &mut state,
-                   "distance_error_pct",
-                   T::distance_error_pct());
-        ser_field!(serializer, &mut state, "orientation", T::orientation());
-        ser_field!(serializer, &mut state, "points_only", T::points_only());
+        ser_field!(state, "tree", T::tree());
+        ser_field!(state, "precision", T::precision());
+        ser_field!(state, "tree_levels", T::tree_levels());
+        ser_field!(state, "strategy", T::strategy());
+        ser_field!(state, "distance_error_pct", T::distance_error_pct());
+        ser_field!(state, "orientation", T::orientation());
+        ser_field!(state, "points_only", T::points_only());
 
-        serializer.serialize_struct_end(state)
+        state.end()
     }
 }
 
@@ -193,7 +191,7 @@ pub enum Tree {
 }
 
 impl Serialize for Tree {
-    fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
         where S: Serializer
     {
         serializer.serialize_str(match *self {
@@ -212,7 +210,7 @@ pub enum Strategy {
 }
 
 impl Serialize for Strategy {
-    fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
         where S: Serializer
     {
         serializer.serialize_str(match *self {
@@ -236,7 +234,7 @@ pub enum Orientation {
 }
 
 impl Serialize for Orientation {
-    fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
         where S: Serializer
     {
         serializer.serialize_str(match *self {

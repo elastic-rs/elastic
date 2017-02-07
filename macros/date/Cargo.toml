@@ -16,4 +16,4 @@ plugin = true
 nightly = [ ]
 
 [dependencies]
-chrono = { version = "~0.2.20" }
+chrono = "~0.3.0"

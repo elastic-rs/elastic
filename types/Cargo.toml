@@ -13,16 +13,16 @@ nightly = [
 ]
 
 [dependencies]
-serde = "~0.8.0"
-serde_json = "~0.8.0"
-chrono = { version = "~0.2.20", features = [ "serde" ]}
-geo = "~0.0.7"
-geohash = "~0.2.7"
-geojson = { version = "~0.4.0", features = [ "with-serde" ] }
-elastic_date_macros = "~0.5.3"
+serde = "~0.9.0"
+serde_json = "~0.9.0"
+chrono = { version = "~0.3.0", features = [ "serde" ]}
+geo = "~0.3.0"
+geohash = "~0.3.0"
+geojson = "~0.5.0"
+serde_derive = "~0.9.0"
+elastic_date_macros = { version = "*", path = "../macros/date" }
 
 [dev-dependencies]
 json_str = "^0.*"
 maplit = "^0.*"
-elastic_types_derive = "~0.10.2"
-serde_derive = "~0.8.0"
+elastic_types_derive = { version = "*", path = "../macros/types" }

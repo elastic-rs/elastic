@@ -231,6 +231,27 @@ fn epoch_millis_short_minus() {
 }
 
 #[test]
+fn epoch_millis_zero() {
+    let date = Date::<EpochMillis>::parse("0").unwrap();
+
+    assert_eq!(
+        (1970i32, 1u32, 1u32, 0u32, 0u32, 0u32, 0u32),
+        (
+            date.year(),
+            date.month(),
+            date.day(),
+            date.hour(),
+            date.minute(),
+            date.second(),
+            date.nanosecond() / 1000000
+        )
+    );
+
+    let fmtd = date.format();
+    assert_eq!("0", &fmtd);
+}
+
+#[test]
 fn custom_format() {
     struct MyCustomFormat;
     impl CustomDateFormat for MyCustomFormat {

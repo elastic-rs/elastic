@@ -1,6 +1,6 @@
-use serde_json;
-
 pub mod mapping;
+
+use serde_json;
 
 use elastic_types::prelude::*;
 use ::string_fixtures::*;

@@ -4,6 +4,7 @@ use std::collections::{BTreeMap, HashMap};
 use std::hash::Hash;
 use std::marker::PhantomData;
 use serde::{Serialize, Serializer};
+use serde::ser::SerializeStruct;  
 use serde_json::Value;
 
 use super::document::DocumentFormat;
@@ -106,7 +107,7 @@ pub enum IndexAnalysis {
 }
 
 impl Serialize for IndexAnalysis {
-    fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
         where S: Serializer
     {
         serializer.serialize_str(match *self {
@@ -128,14 +129,14 @@ impl SerializeField<()> for DefaultMapping
 }
 
 impl Serialize for Field<DefaultMapping, ()> {
-    fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
         where S: Serializer
     {
         let mut state = try!(serializer.serialize_struct("mapping", 1));
 
-        try!(serializer.serialize_struct_elt(&mut state, "type", DefaultMapping::data_type()));
+        try!(state.serialize_field("type", DefaultMapping::data_type()));
 
-        serializer.serialize_struct_end(state)
+        state.end()
     }
 }
 
@@ -171,7 +172,7 @@ impl<M, F> Serialize for Field<WrappedMapping<M, F>, F>
     where M: FieldMapping<F>,
           F: Default,
 {
-    fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
         where S: Serializer
     {
         M::Field::default().serialize(serializer)

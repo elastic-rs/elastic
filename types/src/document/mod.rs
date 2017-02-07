@@ -257,11 +257,11 @@
 //! impl PropertiesMapping for MyTypeMapping {
 //!     fn props_len() -> usize { 3 }
 //!
-//!     fn serialize_props<S>(serializer: &mut S, state: &mut S::StructState) -> Result<(), S::Error>
-//!     where S: serde::Serializer {
-//!         try!(field_ser(serializer, state, "my_date", Date::<DefaultDateFormat>::mapping()));
-//!         try!(field_ser(serializer, state, "my_string", String::mapping()));
-//!         try!(field_ser(serializer, state, "my_num", i32::mapping()));
+//!     fn serialize_props<S>(state: &mut S) -> Result<(), S::Error>
+//!     where S: serde::ser::SerializeStruct {
+//!         try!(field_ser(state, "my_date", Date::<DefaultDateFormat>::mapping()));
+//!         try!(field_ser(state, "my_string", String::mapping()));
+//!         try!(field_ser(state, "my_num", i32::mapping()));
 //!
 //!         Ok(())
 //!     }
@@ -276,6 +276,7 @@
 
 use std::marker::PhantomData;
 use serde::{Serialize, Serializer};
+use serde::ser::SerializeStruct;
 use ::field::{FieldType, FieldMapping, SerializeField, Field};
 
 /// The additional fields available to an indexable Elasticsearch type.
@@ -418,6 +419,7 @@ impl<T, M> FieldType<M, DocumentFormat> for T
 /// # extern crate serde;
 /// # extern crate serde_json;
 /// # use serde::{Serialize, Serializer};
+/// # use serde::ser::SerializeStruct;
 /// # use elastic_types::prelude::*;
 /// #[derive(Serialize, ElasticType)]
 /// # pub struct MyType {
@@ -433,12 +435,12 @@ impl<T, M> FieldType<M, DocumentFormat> for T
 /// #[derive(Default)]
 /// struct Mappings;
 /// impl Serialize for Mappings {
-///     fn serialize<S: Serializer>(&self, serializer: &mut S) -> Result<(), S::Error> {
+///     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
 ///         let mut state = try!(serializer.serialize_struct("mappings", 1));
 ///         
-///         try!(serializer.serialize_struct_elt(&mut state, MyType::name(), &Document::from(MyType::mapping())));
+///         try!(state.serialize_field(MyType::name(), &Document::from(MyType::mapping())));
 ///         
-///         serializer.serialize_struct_end(state)
+///         state.end()
 ///     }
 /// }
 /// # fn main() {
@@ -490,14 +492,14 @@ impl<M> From<M> for Document<M>
 impl<M> Serialize for Document<M>
     where M: DocumentMapping
 {
-    fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
         where S: Serializer
     {
         let mut state = try!(serializer.serialize_struct("mapping", 1));
 
-        try!(serializer.serialize_struct_elt(&mut state, "properties", &Properties::<M>::default()));
+        try!(state.serialize_field("properties", &Properties::<M>::default()));
 
-        serializer.serialize_struct_end(state)
+        state.end()
     }
 }
 
@@ -576,16 +578,17 @@ pub trait DocumentMapping
 /// # #[macro_use]
 /// # extern crate elastic_types;
 /// # extern crate serde;
+/// # use serde::ser::SerializeStruct;
 /// # use elastic_types::prelude::*;
 /// # pub struct MyTypeMapping;
 /// impl PropertiesMapping for MyTypeMapping {
 ///     fn props_len() -> usize { 3 }
 ///
-///     fn serialize_props<S>(serializer: &mut S, state: &mut S::StructState) -> Result<(), S::Error>
-///     where S: serde::Serializer {
-///         try!(field_ser(serializer, state, "my_date", Date::<DefaultDateFormat>::mapping()));
-///         try!(field_ser(serializer, state, "my_string", String::mapping()));
-///         try!(field_ser(serializer, state, "my_num", i32::mapping()));
+///     fn serialize_props<S>(state: &mut S) -> Result<(), S::Error>
+///     where S: SerializeStruct {
+///         try!(field_ser(state, "my_date", Date::<DefaultDateFormat>::mapping()));
+///         try!(field_ser(state, "my_string", String::mapping()));
+///         try!(field_ser(state, "my_num", i32::mapping()));
 ///
 ///         Ok(())
 ///     }
@@ -605,7 +608,7 @@ pub trait PropertiesMapping {
     /// Serialisation for the mapped property fields on this type.
     ///
     /// You can use the `field_ser!` macro to simplify `serde` calls.
-    fn serialize_props<S>(serializer: &mut S, state: &mut S::StructState) -> Result<(), S::Error> where S: Serializer;
+    fn serialize_props<S>(state: &mut S) -> Result<(), S::Error> where S: SerializeStruct;
 }
 
 impl<T> FieldMapping<DocumentFormat> for T
@@ -625,27 +628,24 @@ impl<T> SerializeField<DocumentFormat> for T
 impl<T> Serialize for Field<T, DocumentFormat>
     where T: FieldMapping<DocumentFormat> + DocumentMapping
 {
-    fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
         where S: Serializer
     {
         let mut state = try!(serializer.serialize_struct("mapping", 5));
 
         let ty = <T as DocumentMapping>::data_type();
-        try!(serializer.serialize_struct_elt(&mut state, "type", ty));
+        try!(state.serialize_field("type", ty));
 
-        ser_field!(serializer, &mut state, "dynamic", T::dynamic());
-        ser_field!(serializer,
-                   &mut state,
-                   "include_in_all",
-                   T::include_in_all());
+        ser_field!(state, "dynamic", T::dynamic());
+        ser_field!(state, "include_in_all", T::include_in_all());
 
         if ty == OBJECT_DATATYPE {
-            ser_field!(serializer, &mut state, "enabled", T::enabled());
+            ser_field!(state, "enabled", T::enabled());
         }
 
-        try!(serializer.serialize_struct_elt(&mut state, "properties", &Properties::<T>::default()));
+        try!(state.serialize_field("properties", &Properties::<T>::default()));
 
-        serializer.serialize_struct_end(state)
+        state.end()
     }
 }
 
@@ -659,12 +659,12 @@ struct Properties<M>
 impl<M> Serialize for Properties<M>
     where M: DocumentMapping
 {
-    fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
         where S: Serializer
     {
         let mut state = try!(serializer.serialize_struct("properties", M::props_len()));
-        try!(M::serialize_props(serializer, &mut state));
-        serializer.serialize_struct_end(state)
+        try!(M::serialize_props(&mut state));
+        state.end()
     }
 }
 
@@ -681,7 +681,7 @@ pub enum Dynamic {
 }
 
 impl Serialize for Dynamic {
-    fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
         where S: Serializer
     {
         match *self {
@@ -694,19 +694,23 @@ impl Serialize for Dynamic {
 
 /// Serialise a field mapping using the given serialiser.
 #[inline]
-pub fn field_ser<S, M, F>(serializer: &mut S, state: &mut S::StructState, field: &'static str, _: M) -> Result<(), S::Error>
-    where S: Serializer,
+pub fn field_ser<S, M, F>(state: &mut S, field: &'static str, _: M) -> Result<(), S::Error>
+    where S: SerializeStruct,
           M: FieldMapping<F>,
           F: Default,
 {
-    serializer.serialize_struct_elt(state, field, &M::Field::default())
+    use serde::ser::SerializeStruct;
+
+    state.serialize_field(field, &M::Field::default())
 }
 
 /// Serialise a document mapping using the given serialiser.
 #[inline]
-pub fn doc_ser<S, M>(serializer: &mut S, state: &mut S::StructState, field: &'static str, _: M) -> Result<(), S::Error>
-    where S: Serializer,
+pub fn doc_ser<S, M>(state: &mut S, field: &'static str, _: M) -> Result<(), S::Error>
+    where S: SerializeStruct,
           M: DocumentMapping
 {
-    serializer.serialize_struct_elt(state, field, &Document::<M>::default())
+    use serde::ser::SerializeStruct;
+
+    state.serialize_field(field, &Document::<M>::default())
 }

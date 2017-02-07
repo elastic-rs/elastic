@@ -2,6 +2,7 @@
 
 use std::marker::PhantomData;
 use serde::{Serialize, Serializer};
+use serde::ser::SerializeStruct;
 use super::GeoPointFormat;
 use ::geo::mapping::Distance;
 use ::field::{FieldMapping, SerializeField, Field};
@@ -159,29 +160,20 @@ impl<T, F> Serialize for Field<T, GeoPointFormatWrapper<F>>
     where T: FieldMapping<GeoPointFormatWrapper<F>> + GeoPointMapping<Format = F>,
           F: GeoPointFormat
 {
-    fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
         where S: Serializer
     {
         let mut state = try!(serializer.serialize_struct("mapping", 6));
 
-        try!(serializer.serialize_struct_elt(&mut state, "type", T::data_type()));
+        try!(state.serialize_field("type", T::data_type()));
 
-        ser_field!(serializer, &mut state, "geohash", T::geohash());
-        ser_field!(serializer,
-                   &mut state,
-                   "geohash_precision",
-                   T::geohash_precision());
-        ser_field!(serializer,
-                   &mut state,
-                   "geohash_prefix",
-                   T::geohash_prefix());
-        ser_field!(serializer,
-                   &mut state,
-                   "ignore_malformed",
-                   T::ignore_malformed());
-        ser_field!(serializer, &mut state, "lat_lon", T::lat_lon());
+        ser_field!(state, "geohash", T::geohash());
+        ser_field!(state, "geohash_precision", T::geohash_precision());
+        ser_field!(state, "geohash_prefix", T::geohash_prefix());
+        ser_field!(state, "ignore_malformed", T::ignore_malformed());
+        ser_field!(state, "lat_lon", T::lat_lon());
 
-        serializer.serialize_struct_end(state)
+        state.end()
     }
 }
 

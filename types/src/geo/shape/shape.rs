@@ -75,7 +75,7 @@ impl_mapping_type!(Geometry, GeoShape, GeoShapeMapping);
 impl<M> Serialize for GeoShape<M>
     where M: GeoShapeMapping
 {
-    fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
         where S: Serializer
     {
         self.value.serialize(serializer)
@@ -85,7 +85,7 @@ impl<M> Serialize for GeoShape<M>
 impl<M> Deserialize for GeoShape<M>
     where M: GeoShapeMapping
 {
-    fn deserialize<D>(deserializer: &mut D) -> Result<GeoShape<M>, D::Error>
+    fn deserialize<D>(deserializer: D) -> Result<GeoShape<M>, D::Error>
         where D: Deserializer
     {
         let t = try!(Geometry::deserialize(deserializer));

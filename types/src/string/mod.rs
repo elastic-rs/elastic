@@ -94,7 +94,7 @@ macro_rules! impl_string_type {
 
         impl <M> Serialize for $wrapper_ty<M> where
         M: $mapping_ty {
-            fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error> where
+            fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where
             S: Serializer {
                 serializer.serialize_str(&self.value)
             }
@@ -102,7 +102,7 @@ macro_rules! impl_string_type {
 
         impl <M> Deserialize for $wrapper_ty<M> where
         M: $mapping_ty {
-            fn deserialize<D>(deserializer: &mut D) -> Result<$wrapper_ty<M>, D::Error> where
+            fn deserialize<D>(deserializer: D) -> Result<$wrapper_ty<M>, D::Error> where
             D: Deserializer {
                 #[derive(Default)]
                 struct StringVisitor<M> where
@@ -114,7 +114,12 @@ macro_rules! impl_string_type {
                 M: $mapping_ty {
                     type Value = $wrapper_ty<M>;
 
-                    fn visit_str<E>(&mut self, v: &str) -> Result<$wrapper_ty<M>, E> where
+                    fn expecting(&self, formatter: &mut ::std::fmt::Formatter) -> ::std::fmt::Result 
+                    {
+                        write!(formatter, "a json string")
+                    }
+
+                    fn visit_str<E>(self, v: &str) -> Result<$wrapper_ty<M>, E> where
                     E: Error {
                         Ok($wrapper_ty::<M>::new(v))
                     }

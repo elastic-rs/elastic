@@ -131,9 +131,9 @@ fn impl_props_mapping(mapping: &syn::Ident, prop_ser_stmts: Vec<quote::Tokens>) 
     quote!(
         impl #root::document::PropertiesMapping for #mapping {
             fn props_len() -> usize { #stmts_len }
-            
-            fn serialize_props<S>(serializer: &mut S, state: &mut S::StructState) -> ::std::result::Result<(), S::Error>
-            where S: ::serde::Serializer {
+
+            fn serialize_props<S>(state: &mut S) -> ::std::result::Result<(), S::Error> 
+                where S: ::serde::ser::SerializeStruct {
                 #(#stmts)*
                 Ok(())
             }
@@ -151,7 +151,7 @@ fn get_props_ser_stmts(fields: &[(syn::Ident, &syn::Field)]) -> Vec<quote::Token
 
         let expr = quote!(#root::field::mapping::<#ty, _, _>());
 
-        quote!(try!(#root::document::field_ser(serializer, state, #lit, #expr));)
+        quote!(try!(#root::document::field_ser(state, #lit, #expr));)
     })
     .collect();
 
@@ -164,7 +164,7 @@ fn get_mapping_from_attr(item: &syn::MacroInput) -> Option<syn::Ident> {
         for meta_item in meta_items {
             match *meta_item {
                 // Parse `#[elastic(mapping="foo")]`
-                syn::MetaItem::NameValue(ref name, ref lit) if name == &"mapping" => {
+                syn::NestedMetaItem::MetaItem(syn::MetaItem::NameValue(ref name, ref lit)) if name == &"mapping" => {
                     return Some(
                         get_ident_from_lit(lit)
                             .unwrap_or(get_default_mapping(item))
@@ -198,7 +198,7 @@ fn get_elastic_type_name(item: &syn::MacroInput) -> syn::Lit {
 }
 
 //Helpers
-fn get_elastic_meta_items(attr: &syn::Attribute) -> Option<&[syn::MetaItem]> {
+fn get_elastic_meta_items(attr: &syn::Attribute) -> Option<&[syn::NestedMetaItem]> {
     match attr.value {
         //Get elastic meta items
         syn::MetaItem::List(ref name, ref items) if name == &"elastic" => {
