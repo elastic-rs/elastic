@@ -370,7 +370,6 @@ pub mod geo_shape_fixtures {
 }
 
 pub mod object_fixtures {
-    use serde::Serializer;
     use serde::ser::SerializeStruct;
     use elastic_types::prelude::*;
 

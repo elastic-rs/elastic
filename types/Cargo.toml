@@ -1,6 +1,6 @@
 [package]
 name = "elastic_types"
-version = "0.11.0"
+version = "0.11.1"
 authors = ["Ashley Mannix <ashleymannix@live.com.au>"]
 license = "Apache-2.0"
 description = "A strongly-typed implementation of Elasticsearch core types and Mapping API."

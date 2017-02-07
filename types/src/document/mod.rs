@@ -699,8 +699,6 @@ pub fn field_ser<S, M, F>(state: &mut S, field: &'static str, _: M) -> Result<()
           M: FieldMapping<F>,
           F: Default,
 {
-    use serde::ser::SerializeStruct;
-
     state.serialize_field(field, &M::Field::default())
 }
 
@@ -710,7 +708,5 @@ pub fn doc_ser<S, M>(state: &mut S, field: &'static str, _: M) -> Result<(), S::
     where S: SerializeStruct,
           M: DocumentMapping
 {
-    use serde::ser::SerializeStruct;
-
     state.serialize_field(field, &Document::<M>::default())
 }

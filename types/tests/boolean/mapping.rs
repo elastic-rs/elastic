@@ -1,6 +1,4 @@
-use serde;
 use serde_json;
-use elastic_types;
 
 use elastic_types::prelude::*;
 use ::boolean_fixtures::*;

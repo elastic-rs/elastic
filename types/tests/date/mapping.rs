@@ -1,10 +1,7 @@
-use serde;
 use serde_json;
-use elastic_types;
 
 use chrono::{ DateTime, UTC };
 use elastic_types::prelude::*;
-use elastic_types::date::prelude::*;
 use ::date_fixtures::*;
 
 #[test]

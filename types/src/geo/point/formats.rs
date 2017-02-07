@@ -1,8 +1,6 @@
 use std::str::FromStr;
 use serde::{Serialize, Serializer, Deserialize, Deserializer};
-use serde::error::Error as SerdeError;
-use serde::ser::{SerializeStruct, SerializeMap};
-use serde::de::{Error, Unexpected, Visitor, MapVisitor};
+use serde::de::{Error, Unexpected, Visitor};
 use serde::de::impls::VecVisitor;
 use geohash;
 use super::{Coordinate, Point, GeoPointFormat};
