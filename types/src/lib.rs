@@ -505,6 +505,7 @@
 //! - [Elasticsearch Type Concepts](https://www.elastic.co/guide/en/elasticsearch/reference/current/_basic_concepts.html#_type)
 //! - [Github](https://github.com/elastic-rs/elastic-types)
 
+#![deny(warnings)]
 #![deny(missing_docs)]
 
 #![cfg_attr(feature = "nightly", feature(plugin))]
