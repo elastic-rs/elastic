@@ -117,6 +117,36 @@ The `elastic` crate brings these independent units together into a cohesive API.
 
 There hasn't been much effort put into abstracting these dependencies at this stage.
 
+### Methodology
+
+The following is a simple set of guidelines that the codebase should follow.
+
+#### Usability
+
+- Make it difficult for callers to mess up invariants
+- Avoid duplicating effort between crates
+- Keep caller code obvious and auditable
+- Avoid unnecessary dependencies so callers don't end up depending on stuff they don't want to
+- Avoid panicking
+
+#### Performance
+
+- Minimise heap allocations and copies where possible while staying ergonomic
+- Cover features with micro-benchmarks to support performance investigation and catch unexpected regressions
+
+#### Testing
+
+- Try cover the whole public API surface so breaking changes result in broken tests/examples
+- Features should fail to compile if used incorrectly rather than having lots of usecases that need testing
+
+#### Documentation
+
+- Types should have detailed docs with general examples
+- Type methods should have examples and document any panics/error cases
+- Modules should have general guidance for the types they contain
+- `elastic` should link back to the underlying crate when it re-exports a feature
+- Crates should link to `elastic` when it re-exports that feature
+
 ## Crates
 
 `elastic` bundles up a couple of crates into a single client. If you want to pick and choose functionality, you can work with these crates independently.
