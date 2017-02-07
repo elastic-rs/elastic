@@ -18,6 +18,7 @@ extern crate slog_envlogger;
 
 use elastic_responses::*;
 use elastic_responses::error::*;
+use serde_json::Value;
 use std::fs::File;
 use std::io::{Read, Cursor};
 
@@ -27,6 +28,18 @@ fn load_file_as_response(status: u16, p: &str) -> HttpResponse<Cursor<Vec<u8>>> 
     f.read_to_end(&mut s).unwrap();
     
     HttpResponse::new(status, Cursor::new(s))
+}
+
+#[test]
+fn test_read_response() {
+    let mut res = HttpResponse::new(200, Cursor::new(vec![1, 2, 3]));
+
+    let mut actual = Vec::new();
+    res.read_to_end(&mut actual).unwrap();
+
+    let expected = vec![1, 2, 3];
+
+    assert_eq!(expected, actual);
 }
 
 #[test]
@@ -113,6 +126,15 @@ fn test_parse_simple_aggs_no_empty_first_record() {
             first = false;
         }
     }
+}
+
+#[test]
+fn test_parse_hits_simple_as_value() {
+    let s = load_file_as_response(200, "tests/samples/hits_only.json");
+
+    let deserialized = Value::from_response(s).unwrap();
+
+    assert_eq!(deserialized["_shards"]["total"].as_u64().unwrap(), 5);
 }
 
 #[test]
