@@ -73,6 +73,8 @@
 //! - [`elastic_reqwest`](https://github.com/elastic-rs/elastic-reqwest)
 //! - [Github](https://github.com/elastic-rs/elastic-requests)
 
+#![deny(warnings)]
+
 mod genned;
 
 /// Common url params like `Id` and `Index`.
