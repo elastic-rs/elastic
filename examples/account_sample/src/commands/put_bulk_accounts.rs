@@ -59,10 +59,12 @@ quick_error!{
 
 #[cfg(test)]
 mod tests {
+    use super::*;
+    
     #[test]
     fn put_request_url() {
         let req = put(vec![]);
 
-        assert_eq!("/bank-sample/account", req.url.as_ref());
+        assert_eq!("/bank-sample/account/_bulk", req.url.as_ref());
     }
 }

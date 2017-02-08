@@ -59,7 +59,7 @@ pub enum Gender {
 impl FieldType<DefaultKeywordMapping, KeywordFormat> for Gender {}
 
 impl Serialize for Gender {
-    fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
         where S: Serializer
     {
         match *self {
@@ -70,14 +70,19 @@ impl Serialize for Gender {
 }
 
 impl Deserialize for Gender {
-    fn deserialize<D>(deserializer: &mut D) -> Result<Self, D::Error>
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
         where D: Deserializer
     {
         struct GenderVisitor;
         impl Visitor for GenderVisitor {
             type Value = Gender;
 
-            fn visit_str<E>(&mut self, v: &str) -> Result<Self::Value, E>
+            fn expecting(&self, formatter: &mut ::std::fmt::Formatter) -> ::std::fmt::Result 
+            {
+                write!(formatter, "a string of 'M' or 'F'")
+            }
+
+            fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
                 where E: DeError
             {
                 match v {

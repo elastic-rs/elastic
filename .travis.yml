@@ -23,6 +23,9 @@ before_script:
 script:
   - |
       travis-cargo test &&
+      cd examples/account_sample &&
+      travis-cargo test &&
+      cd ../../ &&
       travis-cargo doc
 after_success:
   - travis-cargo doc-upload

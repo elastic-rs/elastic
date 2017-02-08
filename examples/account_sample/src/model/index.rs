@@ -66,6 +66,8 @@ fn bank_analysers() -> String {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
+    
     #[test]
     fn index_settings() {
         let body = body().unwrap();

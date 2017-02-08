@@ -65,6 +65,8 @@ quick_error!{
 
 #[cfg(test)]
 mod tests {
+    use super::*;
+    
     #[test]
     fn put_request_url() {
         let req = put(vec![]);

@@ -13,8 +13,8 @@ elastic = { version = "*", path = "../../" }
 elastic_types_derive = { version = "*", features = ["elastic"]}
 
 quick-error = "*"
-serde = "0.8"
-serde_json = "0.8"
-serde_derive = "0.8"
+serde = "0.9"
+serde_json = "0.9"
+serde_derive = "0.9"
 
 json_str = "*"
