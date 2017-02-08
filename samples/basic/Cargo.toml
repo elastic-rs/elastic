@@ -8,8 +8,6 @@ json_str = "*"
 elastic_reqwest = "*"
 elastic_requests = "*"
 elastic_responses = { version = "*", path = "../../" }
-serde = "~0.8"
-serde_derive = "~0.8"
-serde_json = "~0.8"
-
-
+serde = "~0.9"
+serde_derive = "~0.9"
+serde_json = "~0.9"
