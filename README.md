@@ -7,14 +7,14 @@ This library is the HTTP backend for the higher-level [`elastic`](https://github
 ## Build Status
 Platform  | Channel | Status
 ------------- | ------------- | -------------
-Linux / OSX  | Stable / Nightly | [![Build Status](https://travis-ci.org/elastic-rs/elastic-hyper.svg?branch=master)](https://travis-ci.org/elastic-rs/elastic-hyper)
+Linux / OSX  | Stable / Nightly | [![Build Status](https://travis-ci.org/elastic-rs/elastic-reqwest.svg?branch=master)](https://travis-ci.org/elastic-rs/elastic-reqwest)
 Windows  | Nightly | [![Build status](https://ci.appveyor.com/api/projects/status/yvsqsyt4ioxa11g8?svg=true)](https://ci.appveyor.com/project/KodrAus/elastic-hyper)
 
 ## Documentation
 
 Version  | Docs
 ------------- | -------------
-`master`  | [![Documentation](https://img.shields.io/badge/docs-rustdoc-orange.svg)](https://elastic-rs.github.io/elastic-hyper/elastic_reqwest/)
+`master`  | [![Documentation](https://img.shields.io/badge/docs-rustdoc-orange.svg)](https://elastic-rs.github.io/elastic-reqwest/elastic_reqwest/)
 `current`  | [![Documentation](https://img.shields.io/badge/docs-rustdoc-orange.svg)](https://docs.rs/elastic_reqwest/*/elastic_reqwest/)
 
 ## Alternatives
