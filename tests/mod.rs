@@ -2,19 +2,9 @@
 extern crate elastic_responses;
 
 #[macro_use]
-extern crate log;
-
-#[macro_use]
 extern crate json_str;
 
-#[macro_use]
-extern crate serde_derive;
-
-extern crate serde;
 extern crate serde_json;
-
-extern crate slog_stdlog;
-extern crate slog_envlogger;
 
 use elastic_responses::*;
 use elastic_responses::error::*;

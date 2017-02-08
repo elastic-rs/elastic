@@ -30,9 +30,6 @@
 //! # }
 //! ```
 
-
-#![feature(custom_derive, custom_attribute)]
-
 #[macro_use]
 extern crate log;
 
