@@ -58,6 +58,8 @@ pub use self::get::*;
 pub use self::search::*;
 
 use std::io::Read;
+use serde_json::Value;
+use self::parse::MaybeOkResponse;
 
 use error::*;
 
@@ -92,4 +94,17 @@ pub trait FromResponse
     where Self: Sized
 {
     fn from_response<I: Into<HttpResponse<R>>, R: Read>(res: I) -> ApiResult<Self>;
+}
+
+impl FromResponse for Value {
+    fn from_response<I: Into<HttpResponse<R>>, R: Read>(res: I) -> ApiResult<Self> {
+        let res = res.into();
+
+        res.response(|res| {
+            match res.status() {
+                200...299 => Ok(MaybeOkResponse::new(true, res)),
+                _ => Ok(MaybeOkResponse::new(false, res)),
+            }
+        })
+    }
 }

@@ -1,7 +1,7 @@
 use serde::Deserialize;
 use serde_json::{self, Value, Error as JsonError};
 
-use std::io::{Cursor, Read};
+use std::io::{Cursor, Read, Result as IoResult};
 
 use error::*;
 use super::{HttpResponse, ApiResult};
@@ -15,6 +15,12 @@ macro_rules! read_err {
         let err: ApiError = serde_json::from_reader($buf)?;
         Err(err.into())
     })
+}
+
+impl<R: Read> Read for HttpResponse<R> {
+    fn read(&mut self, buf: &mut [u8]) -> IoResult<usize> {
+        self.body.read(buf)
+    }
 }
 
 impl<R: Read> HttpResponse<R> {
