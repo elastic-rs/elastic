@@ -228,7 +228,6 @@ extern crate serde_json;
 extern crate reqwest;
 extern crate elastic_reqwest;
 extern crate elastic_requests;
-#[macro_use]
 extern crate elastic_types;
 extern crate elastic_responses;
 
