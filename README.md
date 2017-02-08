@@ -22,6 +22,8 @@ Platform  | Channel | Status
 Linux / OSX  | Nightly | [![Build Status](https://travis-ci.org/elastic-rs/elastic.svg?branch=master)](https://travis-ci.org/elastic-rs/elastic)
 Windows  | Nightly | [![Build status](https://ci.appveyor.com/api/projects/status/t71058ht2qp732eh?svg=true)](https://ci.appveyor.com/project/KodrAus/elastic)
 
+[View the status of all `elastic` crates](https://travis-ci.org/elastic-rs)
+
 ## Documentation
 
 Version  | Docs
