@@ -2,7 +2,7 @@ use std::io::{Read, Result as IoResult, Error as IoError};
 use std::fs::File;
 use std::path::Path;
 use serde_json::Value;
-use elastic::client::Client;
+use ops::Client;
 use elastic::client::requests::{Body, BulkRequest};
 use elastic::error::Error as ResponseError;
 
@@ -18,7 +18,7 @@ impl PutBulkAccounts for Client {
     {
         let body = bulk_body(path)?;
 
-        self.request(put(body))
+        self.io.request(put(body))
             .send()
             .and_then(|res| res.response::<Value>())?;
 

@@ -11,7 +11,7 @@ use elastic::types::prelude::{FieldType, Text, DefaultTextMapping, TextMapping, 
                               DefaultKeywordMapping, KeywordFormat, DocumentType};
 
 /// Our main model; an account in the bank.
-#[derive(Serialize, Deserialize, ElasticType)]
+#[derive(Debug, Serialize, Deserialize, ElasticType)]
 pub struct Account {
     pub account_number: i32,
     pub balance: i32,
@@ -51,6 +51,7 @@ pub type State = Keyword<DefaultKeywordMapping>;
 // This is done by implementing the `FieldType` trait using a `KeywordMapping`
 // and a `KeywordFormat`.
 
+#[derive(Debug)]
 pub enum Gender {
     Female,
     Male,
@@ -102,7 +103,7 @@ impl Deserialize for Gender {
 
 pub type Email = Text<EmailMapping>;
 
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct EmailMapping;
 impl TextMapping for EmailMapping {
     fn analyzer() -> Option<&'static str> {

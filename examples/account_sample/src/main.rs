@@ -16,10 +16,12 @@ extern crate serde_json;
 extern crate elastic;
 
 pub mod model;
-pub mod commands;
+pub mod ops;
 
-use elastic::client::{Client, RequestParams};
-use commands::{EnsureBankIndexExists, PutBulkAccounts};
+use elastic::client::RequestParams;
+use ops::Client;
+use ops::commands::{EnsureBankIndexExists, PutBulkAccounts};
+use ops::queries::SimpleSearchQuery;
 
 fn main() {
     let client = Client::new(RequestParams::default()).unwrap();
@@ -31,4 +33,10 @@ fn main() {
     println!("updating docs");
 
     client.put_bulk_accounts("data/accounts.json").unwrap();
+
+    let accounts = client.simple_search_query("Bruce Coffey").unwrap();
+
+    for account in accounts.hits() {
+    	println!("{:?}", account);
+    }
 }

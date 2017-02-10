@@ -1,4 +1,4 @@
-use elastic::client::Client;
+use ops::Client;
 use std::io::Error as IoError;
 use serde_json::{Value, Error as JsonError};
 use elastic::client::requests::{Body, IndicesExistsRequest, IndicesCreateRequest};
@@ -12,7 +12,7 @@ pub trait EnsureBankIndexExists {
 
 impl EnsureBankIndexExists for Client {
     fn ensure_bank_index_exists(&self) -> Result<(), EnsureBankIndexExistsError> {
-        let exists = self.request(exists()).send()?;
+        let exists = self.io.request(exists()).send()?;
 
         match exists.status() {
             // Success, do nothing
@@ -21,7 +21,7 @@ impl EnsureBankIndexExists for Client {
             404 => {
                 let body = model::index::body()?;
 
-                self.request(put(body))
+                self.io.request(put(body))
                     .send()
                     .and_then(|res| res.response::<Value>())?;
             },
