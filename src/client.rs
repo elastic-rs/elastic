@@ -1,9 +1,10 @@
 use elastic_reqwest::ElasticClient;
 use error::*;
-use reqwest::{StatusCode, Client as HttpClient, Response as RawResponse};
+use reqwest::{Client as HttpClient, Response as RawResponse};
 
 use self::requests::HttpRequest;
-use self::responses::{HttpResponse, FromResponse};
+use self::responses::HttpResponse;
+use self::responses::parse::FromResponse;
 
 pub use elastic_reqwest::RequestParams;
 
@@ -100,19 +101,16 @@ impl Into<HttpResponse<RawResponse>> for ResponseBuilder {
 
 impl ResponseBuilder {
     /// Get the raw HTTP response.
-    pub fn raw(self) -> RawResponse {
-        self.0
+    pub fn raw(self) -> HttpResponse<RawResponse> {
+        HttpResponse::new(self.0.status().to_u16(), self.0)
     }
 
     /// Get the status for the response.
-    pub fn status(&self) -> StatusCode {
-        self.0.status().to_owned()
+    pub fn status(&self) -> u16 {
+        self.0.status().to_u16()
     }
 
     /// Get the response body from JSON.
-    ///
-    /// This method takes a closure that determines
-    /// whether the result is successful.
     pub fn response<T>(self) -> Result<T>
         where T: FromResponse
     {
@@ -122,14 +120,24 @@ impl ResponseBuilder {
 
 /// Request types the Elasticsearch REST API.
 pub mod requests {
-    pub use elastic_requests::*;
+    pub use elastic_requests::{HttpRequest, HttpMethod, Body, Url};
+    pub use elastic_requests::params;
+    pub use elastic_requests::endpoints;
+
+    pub use self::params::*;
+    pub use self::endpoints::*;
     pub use impls::*;
 }
 
 /// Response types for the Elasticsearch REST API.
 pub mod responses {
-    pub use elastic_responses::{HttpResponse, FromResponse, AggregationIterator, Aggregations,
+    pub use elastic_responses::{HttpResponse, AggregationIterator, Aggregations,
                                 Hit, Hits, Shards};
+
+    pub mod parse {
+        pub use elastic_responses::FromResponse;
+        pub use elastic_responses::parse::{MaybeOkResponse, MaybeBufferedResponse, UnbufferedResponse, BufferedResponse};
+    }
 
     use elastic_responses::{SearchResponseOf, GetResponseOf};
 
