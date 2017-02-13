@@ -149,7 +149,7 @@ use std::collections::BTreeMap;
 use std::io::Cursor;
 use std::str;
 use reqwest::header::{Header, HeaderFormat, Headers, ContentType};
-use reqwest::Response;
+use reqwest::{RequestBuilder, Response};
 use url::form_urlencoded::Serializer;
 
 /// Request types.
@@ -190,7 +190,6 @@ use self::req::{HttpRequest, HttpMethod, RawBody};
 /// # extern crate elastic_reqwest;
 /// # use elastic_reqwest::RequestParams;
 /// # use reqwest::header::Authorization;
-///
 /// # fn main() {
 /// let params = RequestParams::default()
 ///     .header(Authorization("let me in".to_owned()));
@@ -297,6 +296,13 @@ pub fn default() -> Result<(reqwest::Client, RequestParams), reqwest::Error> {
     reqwest::Client::new().map(|cli| (cli, RequestParams::default()))
 }
 
+/// Represents a client that can send Elasticsearch requests.
+pub trait ElasticClient {
+    /// Send a request and get a response.
+    fn elastic_req<I>(&self, params: &RequestParams, req: I) -> Result<Response, reqwest::Error> 
+        where I: Into<HttpRequest<'static>>;
+}
+
 macro_rules! req_with_body {
     ($client:ident, $url:ident, $body:ident, $params:ident, $method:ident) => ({
         let body = $body.expect("Expected this request to have a body. This is a bug, please file an issue on GitHub.");
@@ -309,49 +315,172 @@ macro_rules! req_with_body {
         $client.request(reqwest::Method::$method, &$url)
                .headers($params.headers.to_owned())
                .body(body)
-               .send()
     })
 }
 
-/// Represents a client that can send Elasticsearch requests.
-pub trait ElasticClient {
-    /// Send a request and get a response.
-    fn elastic_req<I>(&self, params: &RequestParams, req: I) -> Result<Response, reqwest::Error> 
-        where I: Into<HttpRequest<'static>>;
+fn build_req<I>(client: &reqwest::Client, params: &RequestParams, req: I) -> RequestBuilder 
+    where I: Into<HttpRequest<'static>>
+{
+    let req = req.into();
+
+    let (qry_len, qry) = params.get_url_qry();
+
+    let mut url = String::with_capacity(params.base_url.len() + req.url.len() + qry_len);
+
+    url.push_str(&params.base_url);
+    url.push_str(&req.url);
+
+    if let Some(qry) = qry {
+        url.push_str(&qry);
+    }
+
+    let method = req.method;
+    let body = req.body;
+
+    match method {
+        HttpMethod::Get => client.get(&url).headers(params.headers.to_owned()),
+
+        HttpMethod::Post => req_with_body!(client, url, body, params, Post),
+
+        HttpMethod::Head => client.head(&url).headers(params.headers.to_owned()),
+
+        HttpMethod::Delete => client.request(reqwest::Method::Delete, &url).headers(params.headers.to_owned()),
+        
+        HttpMethod::Put => req_with_body!(client, url, body, params, Put),
+        
+        HttpMethod::Patch => req_with_body!(client, url, body, params, Patch),
+    }
 }
 
 impl ElasticClient for reqwest::Client {
     fn elastic_req<I>(&self, params: &RequestParams, req: I) -> Result<Response, reqwest::Error>
         where I: Into<HttpRequest<'static>>
     {
-        let req = req.into();
+        build_req(&self, params, req).send()
+    }
+}
 
-        let (qry_len, qry) = params.get_url_qry();
+#[cfg(test)]
+mod tests {
+    use reqwest::{Client, RequestBuilder, Method};
+    use super::*;
+    use super::req::*;
 
-        let mut url = String::with_capacity(params.base_url.len() + req.url.len() + qry_len);
+    fn params() -> RequestParams {
+        RequestParams::new("eshost:9200/path")
+            .url_param("pretty", true)
+            .url_param("q", "*")
+    }
 
-        url.push_str(&params.base_url);
-        url.push_str(&req.url);
+    fn expected_req(cli: &Client, method: Method, url: &str, body: Option<Vec<u8>>) -> RequestBuilder {
+        let req = cli.request(method, url)
+                         .header(ContentType::json());
 
-        if let Some(qry) = qry {
-            url.push_str(&qry);
+        match body {
+            Some(body) => req.body(body),
+            None => req
         }
+    }
 
-        let method = req.method;
-        let body = req.body;
+    fn assert_req(expected: RequestBuilder, actual: RequestBuilder) {
+        assert_eq!(format!("{:?}", expected), format!("{:?}", actual));
+    }
 
-        match method {
-            HttpMethod::Get => self.get(&url).headers(params.headers.to_owned()).send(),
+    #[test]
+    fn head_req() {
+        let cli = Client::new().unwrap();
+        let req = build_req(&cli, &params(), PingRequest::new());
 
-            HttpMethod::Post => req_with_body!(self, url, body, params, Post),
+        let url = "eshost:9200/path/?pretty=true&q=*";
 
-            HttpMethod::Head => self.head(&url).headers(params.headers.to_owned()).send(),
+        let expected = expected_req(&cli, Method::Head, url, None);
 
-            HttpMethod::Delete => self.request(reqwest::Method::Delete, &url).headers(params.headers.to_owned()).send(),
-            
-            HttpMethod::Put => req_with_body!(self, url, body, params, Put),
-            
-            HttpMethod::Patch => req_with_body!(self, url, body, params, Patch),
-        }
+        assert_req(expected, req);
+    }
+
+    #[test]
+    fn get_req() {
+        let cli = Client::new().unwrap();
+        let req = build_req(&cli, &params(), SimpleSearchRequest::new());
+
+        let url = "eshost:9200/path/_search?pretty=true&q=*";
+
+        let expected = expected_req(&cli, Method::Get, url, None);
+
+        assert_req(expected, req);
+    }
+
+    #[test]
+    fn post_req() {
+        let cli = Client::new().unwrap();
+        let req = build_req(&cli, &params(), PercolateRequest::for_index_ty("idx", "ty", vec![]));
+
+        let url = "eshost:9200/path/idx/ty/_percolate?pretty=true&q=*";
+
+        let expected = expected_req(&cli, Method::Post, url, Some(vec![]));
+
+        assert_req(expected, req);
+    }
+
+    #[test]
+    fn put_req() {
+        let cli = Client::new().unwrap();
+        let req = build_req(&cli, &params(), IndicesCreateRequest::for_index("idx", vec![]));
+
+        let url = "eshost:9200/path/idx?pretty=true&q=*";
+
+        let expected = expected_req(&cli, Method::Put, url, Some(vec![]));
+
+        assert_req(expected, req);
+    }
+
+    #[test]
+    fn delete_req() {
+        let cli = Client::new().unwrap();
+        let req = build_req(&cli, &params(), IndicesDeleteRequest::for_index("idx"));
+
+        let url = "eshost:9200/path/idx?pretty=true&q=*";
+
+        let expected = expected_req(&cli, Method::Delete, url, None);
+
+        assert_req(expected, req);
+    }
+
+    #[test]
+    fn request_params_has_default_content_type() {
+        let req = RequestParams::default();
+        assert_eq!(Some(&ContentType::json()), req.headers.get::<ContentType>());
+    }
+
+    #[test]
+    fn request_params_has_default_base_url() {
+        let req = RequestParams::default();
+
+        assert_eq!("http://localhost:9200", req.base_url);
+    }
+
+    #[test]
+    fn request_params_can_set_base_url() {
+        let req = RequestParams::default()
+            .base_url("http://eshost:9200");
+
+        assert_eq!("http://eshost:9200", req.base_url);
+    }
+
+    #[test]
+    fn request_params_can_set_url_query() {
+        let req = RequestParams::default()
+            .url_param("pretty", false)
+            .url_param("pretty", true)
+            .url_param("q", "*");
+
+        assert_eq!((16, Some(String::from("?pretty=true&q=*"))), req.get_url_qry());
+    }
+
+    #[test]
+    fn empty_request_params_returns_empty_string() {
+        let req = RequestParams::default();
+
+        assert_eq!((0, None), req.get_url_qry());
     }
 }
