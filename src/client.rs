@@ -80,6 +80,7 @@ pub use elastic_reqwest::RequestParams;
 /// A HTTP client for the Elasticsearch REST API.
 /// 
 /// The `Client` is a structure that lets you create and send `RequestBuilder`s.
+/// It's mostly a thin wrapper over a `reqwest::Client`.
 pub struct Client {
     http: HttpClient,
     params: RequestParams,
@@ -91,6 +92,26 @@ impl Client {
     /// The parameters given here are used as the defaults for any
     /// request made by this client, but can be overriden on a
     /// per-request basis.
+    /// This method can return a `HttpError` if the underlying `reqwest::Client`
+    /// fails to create.
+    /// 
+    /// # Examples
+    /// 
+    /// Create a `Client` with default parameters:
+    /// 
+    /// ```
+    /// # use elastic::prelude::*;
+    /// let client = Client::new(RequestParams::default()).unwrap();
+    /// ```
+    /// 
+    /// Create a `Client` for a specific node:
+    /// 
+    /// ```
+    /// # use elastic::prelude::*;
+    /// let client = Client::new(RequestParams::new("http://eshost:9200")).unwrap();
+    /// ```
+    /// 
+    /// See [`RequestParams`](struct.RequestParams.html) for more configuration options.
     pub fn new(params: RequestParams) -> Result<Self> {
         let client = HttpClient::new()?;
 
