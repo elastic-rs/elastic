@@ -126,21 +126,16 @@
 //!
 //! # See Also
 //!
-//! ## [`elastic`](https://github.com/elastic-rs/elastic)
-//! 
+//! - [`elastic`](https://github.com/elastic-rs/elastic). 
 //! A higher-level Elasticsearch client that uses `elastic_reqwest` as its HTTP layer.
-//! 
-//! ## [`rs-es`](https://github.com/benashford/rs-es)
-//!
+//! - [`rs-es`](https://github.com/benashford/rs-es).
 //! An alternative Elasticsearch client for Rust that provides an implementation of the Query DSL.
-//! 
-//! ## [`json_str`](https://github.com/KodrAus/json_str)
-//!
+//! - [`json_str`](https://github.com/KodrAus/json_str)
 //! A library for generating minified json strings from Rust syntax.
 //!
 //! # Links
 //! - [Elasticsearch Docs](https://www.elastic.co/guide/en/elasticsearch/reference/master/index.html)
-//! - [Github](https://github.com/elastic-rs/elastic-hyper)
+//! - [Github](https://github.com/elastic-rs/elastic-reqwest)
 
 #![deny(warnings)]
 #![deny(missing_docs)]
@@ -177,30 +172,27 @@ use self::req::{HttpRequest, HttpMethod, RawBody};
 /// With default query parameters:
 ///
 /// ```
-/// extern crate elastic_reqwest as elastic;
-///
-/// let params = elastic::RequestParams::default();
+/// # use elastic_reqwest::RequestParams;
+/// let params = RequestParams::default();
 /// ```
 ///
 /// With a custom base url:
 ///
 /// ```
-/// extern crate reqwest;
-/// extern crate elastic_reqwest as elastic;
-///
-/// let params = elastic::RequestParams::new("http://mybaseurl:9200");
+/// # use elastic_reqwest::RequestParams;
+/// let params = RequestParams::new("http://mybaseurl:9200");
 /// ```
 ///
 /// With custom headers:
 ///
 /// ```
-/// extern crate reqwest;
-/// extern crate elastic_reqwest as elastic;
-///
-/// use reqwest::header::Authorization;
+/// # extern crate reqwest;
+/// # extern crate elastic_reqwest;
+/// # use elastic_reqwest::RequestParams;
+/// # use reqwest::header::Authorization;
 ///
 /// # fn main() {
-/// let params = elastic::RequestParams::default()
+/// let params = RequestParams::default()
 ///     .header(Authorization("let me in".to_owned()));
 /// # }
 /// ```
@@ -208,17 +200,17 @@ use self::req::{HttpRequest, HttpMethod, RawBody};
 /// With url query parameters:
 ///
 /// ```
-/// extern crate elastic_reqwest as elastic;
-///
+/// # extern crate elastic_reqwest;
+/// # use elastic_reqwest::RequestParams;
 /// # fn main() {
-/// let params = elastic::RequestParams::default()
+/// let params = RequestParams::default()
 ///     .url_param("pretty", true)
 ///     .url_param("q", "*");
 /// # }
 /// ```
 #[derive(Debug, Clone)]
 pub struct RequestParams {
-    /// Base url for Elasticsearch
+    /// Base url for Elasticsearch.
     pub base_url: String,
     /// Simple key-value store for url query params.
     pub url_params: BTreeMap<&'static str, String>,
@@ -228,6 +220,10 @@ pub struct RequestParams {
 
 impl RequestParams {
     /// Create a new container for request parameters.
+    /// 
+    /// This method takes a fully-qualified url for the Elasticsearch
+    /// node.
+    /// It will also set the `Content-Type` header to `application/json`.
     pub fn new<T: Into<String>>(base: T) -> Self {
         let mut headers = Headers::new();
         headers.set(ContentType::json());
@@ -239,7 +235,7 @@ impl RequestParams {
         }
     }
 
-    /// Set the base url for the node.
+    /// Set the base url for the Elasticsearch node.
     pub fn base_url<T: Into<String>>(mut self, base: T) -> Self {
         self.base_url = base.into();
 
@@ -247,6 +243,8 @@ impl RequestParams {
     }
 
     /// Set a url param value.
+    /// 
+    /// These parameters are added as query parameters to request urls.
     pub fn url_param<T: ToString>(mut self, key: &'static str, value: T) -> Self
     {
         if self.url_params.contains_key(key) {
@@ -269,9 +267,12 @@ impl RequestParams {
         self
     }
 
-    /// Get the url params as a formatted string.
+    /// Get the url query params as a formatted string.
     ///
     /// Follows the `application/x-www-form-urlencoded` format.
+    /// This method returns the length of the query string and an optional
+    /// value.
+    /// If the value is `None`, then the length will be `0`.
     pub fn get_url_qry(&self) -> (usize, Option<String>) {
         if self.url_params.len() > 0 {
             let qry: String = Serializer::for_suffix(String::from("?"), 1)
