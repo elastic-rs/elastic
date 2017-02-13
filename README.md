@@ -77,9 +77,8 @@ use cli::req::SearchRequest;
  
 let (client, params) = cli::default().unwrap();
 
-let search = SearchRequest::for_index_ty(
-    "myindex", "mytype", 
-    json_str!({
+let search = {
+    let body = json_str!({
         query: {
             filtered: {
                 query: {
@@ -96,8 +95,10 @@ let search = SearchRequest::for_index_ty(
                 }
             }
         }
-    })
-);
+    });
+    
+    SearchRequest::for_index_ty("myindex", "mytype", body)
+};
 
 client.elastic_req(&params, search).unwrap();
 ```
