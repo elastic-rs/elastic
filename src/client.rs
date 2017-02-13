@@ -1,3 +1,72 @@
+//! HTTP client, requests and responses.
+//!
+//! This module contains the HTTP client, as well
+//! as request and response types.
+//! 
+//! # The request process
+//! 
+//! The pieces involved in sending a request and parsing the response are modular,
+//! and expose Rust traits you can implement to support your own logic.
+//! If you just want to send search/get requests and parse a search/get response then
+//! you won't need to worry about this so much.
+//! 
+//! The basic flow from request to response is:
+//! 
+//! **1)** Turn a concrete [request type](requests/endpoints/index.html) into a [`RequestBuilder`]():
+//! 
+//! ```text
+//! [RequestType] ----------------> [Client.request()] -> [RequestBuilder]
+//! ```
+//! 
+//! **2)** Send the [`RequestBuilder`]() and get a [`ResponseBuilder`]():
+//! 
+//! ```text
+//! [RequestBuilder.send()] ------> [ResponseBuilder] 
+//! ```
+//! 
+//! **3)** Parse the [`ResponseBuilder`]() to a [response type](responses/parse/trait.FromResponse.html#Implementors):
+//! 
+//! ```text
+//! [ResponseBuilder.response()] -> [ResponseType]
+//! ```
+//! 
+//! The example below shows how these pieces fit together in code.
+//! 
+//! # Examples
+//! 
+//! This example sends a simple `SearchRequest`, with the steps in the above
+//! process labelled:
+//! 
+//! ```no_run
+//! # use elastic::prelude::*;
+//! // Create a `Client`
+//! let client = Client::new(RequestParams::default()).unwrap();
+//! 
+//! // Create a `SearchRequest` for all indices
+//! let req = {
+//!     let body = json_str!({
+//!         query: {
+//!             query_string: {
+//!                 query: "*"
+//!             }
+//!         }
+//!     });
+//!     
+//!     SearchRequest::for_index("_all", body)
+//! }
+//! 
+//! // Send the request and read the response as a `SearchResponse`
+//! let res = client.request(req) // 1
+//!                 .send() // 2
+//!                 .and_then(|res| res.response::<SearchResponse<Value>>()) // 3
+//!                 .unwrap();
+//! 
+//! // Iterate through the response hits
+//! for hit in res.hits() {
+//!     println!("{:?}", hit);
+//! }
+//! ```
+
 use elastic_reqwest::ElasticClient;
 use error::*;
 use reqwest::{Client as HttpClient, Response as RawResponse};
@@ -9,6 +78,8 @@ use self::responses::parse::FromResponse;
 pub use elastic_reqwest::RequestParams;
 
 /// A HTTP client for the Elasticsearch REST API.
+/// 
+/// The `Client` is a structure that lets you create and send `RequestBuilder`s.
 pub struct Client {
     http: HttpClient,
     params: RequestParams,
@@ -38,6 +109,9 @@ impl Client {
 }
 
 /// A builder for a request.
+/// 
+/// This structure wraps up a concrete REST API request type
+/// and lets you adjust parameters before sending it.
 pub struct RequestBuilder<'a, I> {
     client: &'a Client,
     params: Option<RequestParams>,
@@ -49,7 +123,7 @@ impl<'a, I> RequestBuilder<'a, I> {
     ///
     /// If the `RequestParams` are `None`, then the parameters from the
     /// `Client` are used.
-    pub fn new(client: &'a Client, params: Option<RequestParams>, req: I) -> Self {
+    fn new(client: &'a Client, params: Option<RequestParams>, req: I) -> Self {
         RequestBuilder {
             client: client,
             params: params,
@@ -74,6 +148,9 @@ impl<'a, I> RequestBuilder<'a, I>
     }
 
     /// Send this request and return the response.
+    /// 
+    /// This method consumes the `RequestBuilder` and returns a `ResponseBuilder`
+    /// that can be used to parse the response.
     pub fn send(self) -> Result<ResponseBuilder> {
         let params = self.params.as_ref().unwrap_or(&self.client.params);
 
@@ -83,6 +160,10 @@ impl<'a, I> RequestBuilder<'a, I>
     }
 }
 
+/// A builder for a response.
+/// 
+/// This structure wraps the completed HTTP response but gives you
+/// options for converting it into a concrete type.
 pub struct ResponseBuilder(RawResponse);
 
 impl From<RawResponse> for ResponseBuilder {
@@ -101,16 +182,26 @@ impl Into<HttpResponse<RawResponse>> for ResponseBuilder {
 
 impl ResponseBuilder {
     /// Get the raw HTTP response.
+    /// 
+    /// This will consume the `ResponseBuilder` and return a raw
+    /// `HttpResponse` that can be read as a byte buffer.
     pub fn raw(self) -> HttpResponse<RawResponse> {
         HttpResponse::new(self.0.status().to_u16(), self.0)
     }
 
-    /// Get the status for the response.
+    /// Get the HTTP status for the response.
     pub fn status(&self) -> u16 {
         self.0.status().to_u16()
     }
 
     /// Get the response body from JSON.
+    /// 
+    /// This will consume the `ResponseBuilder` and return a
+    /// concrete response type or an error.
+    ///
+    /// The response is parsed according to the `FromResponse`
+    /// implementation for `T` that will inspect the response and
+    /// either return an `Ok(T)` or an `Err(ApiError)`.
     pub fn response<T>(self) -> Result<T>
         where T: FromResponse
     {
@@ -118,8 +209,9 @@ impl ResponseBuilder {
     }
 }
 
-/// Request types the Elasticsearch REST API.
 pub mod requests {
+    //! Request types the Elasticsearch REST API.
+
     pub use elastic_requests::{HttpRequest, HttpMethod, Body, Url};
     pub use elastic_requests::params;
     pub use elastic_requests::endpoints;
@@ -129,14 +221,15 @@ pub mod requests {
     pub use impls::*;
 }
 
-/// Response types for the Elasticsearch REST API.
 pub mod responses {
-    pub use elastic_responses::{HttpResponse, AggregationIterator, Aggregations,
-                                Hit, Hits, Shards};
+    //! Response types for the Elasticsearch REST API.
+
+    pub use elastic_responses::{HttpResponse, AggregationIterator, Aggregations, Hit, Hits, Shards};
 
     pub mod parse {
         pub use elastic_responses::FromResponse;
-        pub use elastic_responses::parse::{MaybeOkResponse, MaybeBufferedResponse, UnbufferedResponse, BufferedResponse};
+        pub use elastic_responses::parse::{MaybeOkResponse, MaybeBufferedResponse,
+                                           UnbufferedResponse, BufferedResponse};
     }
 
     use elastic_responses::{SearchResponseOf, GetResponseOf};
