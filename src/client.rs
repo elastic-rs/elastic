@@ -12,19 +12,19 @@
 //! 
 //! The basic flow from request to response is:
 //! 
-//! **1)** Turn a concrete [request type](requests/endpoints/index.html) into a [`RequestBuilder`]():
+//! **1)** Turn a concrete [request type](requests/endpoints/index.html) into a [`RequestBuilder`](struct.RequestBuilder.html):
 //! 
 //! ```text
 //! [RequestType] ----------------> [Client.request()] -> [RequestBuilder]
 //! ```
 //! 
-//! **2)** Send the [`RequestBuilder`]() and get a [`ResponseBuilder`]():
+//! **2)** Send the [`RequestBuilder`](struct.RequestBuilder.html) and get a [`ResponseBuilder`](struct.ResponseBuilder.html):
 //! 
 //! ```text
 //! [RequestBuilder.send()] ------> [ResponseBuilder] 
 //! ```
 //! 
-//! **3)** Parse the [`ResponseBuilder`]() to a [response type](responses/parse/trait.FromResponse.html#Implementors):
+//! **3)** Parse the [`ResponseBuilder`](struct.ResponseBuilder.html) to a [response type](responses/parse/trait.FromResponse.html#Implementors):
 //! 
 //! ```text
 //! [ResponseBuilder.response()] -> [ResponseType]
@@ -122,6 +122,27 @@ impl Client {
     }
 
     /// Create a `RequestBuilder` that can be configured before sending.
+    /// 
+    /// The `request` method accepts any type that can be converted into
+    /// a [`HttpRequest<'static>`](requests/struct.HttpRequest.html), 
+    /// which includes the endpoint types in the [`requests`](requests/endpoints/index.html) module.
+    ///
+    /// # Examples
+    /// 
+    /// Turn a concrete request into a `RequestBuilder`:
+    /// 
+    /// ```
+    /// # use elastic::prelude::*;
+    /// # let client = Client::new(RequestParams::default()).unwrap();
+    /// // `PingRequest` implements `Into<HttpRequest>`
+    /// let req = PingRequest::new();
+    /// 
+    /// // Turn the `PingRequest` into a `RequestBuilder`
+    /// let builder = client.request(req);
+    /// 
+    /// // Send the `RequestBuilder`
+    /// let res = builder.send().unwrap();
+    /// ```
     pub fn request<'a, I>(&'a self, req: I) -> RequestBuilder<'a, I>
         where I: Into<HttpRequest<'static>>
     {
@@ -248,6 +269,8 @@ pub mod responses {
     pub use elastic_responses::{HttpResponse, AggregationIterator, Aggregations, Hit, Hits, Shards};
 
     pub mod parse {
+        //! Utility types for response parsing.
+
         pub use elastic_responses::FromResponse;
         pub use elastic_responses::parse::{MaybeOkResponse, MaybeBufferedResponse,
                                            UnbufferedResponse, BufferedResponse};
