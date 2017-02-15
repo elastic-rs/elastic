@@ -5,8 +5,8 @@
 //! 
 //! # The request process
 //! 
-//! The pieces involved in sending a request and parsing the response are modular,
-//! and expose Rust traits you can implement to support your own logic.
+//! The pieces involved in sending a request and parsing the response are modular.
+//! Each one exposes Rust traits you can implement to support your own logic.
 //! If you just want to send search/get requests and parse a search/get response then
 //! you won't need to worry about this so much.
 //! 
@@ -15,19 +15,19 @@
 //! **1)** Turn a concrete [request type](requests/endpoints/index.html) into a [`RequestBuilder`](struct.RequestBuilder.html):
 //! 
 //! ```text
-//! [RequestType] ----------------> [Client.request()] -> [RequestBuilder]
+//! [RequestType] ---> [Client.request()] ---> [RequestBuilder]
 //! ```
 //! 
 //! **2)** Send the [`RequestBuilder`](struct.RequestBuilder.html) and get a [`ResponseBuilder`](struct.ResponseBuilder.html):
 //! 
 //! ```text
-//! [RequestBuilder.send()] ------> [ResponseBuilder] 
+//! [RequestBuilder.send()] ---> [ResponseBuilder] 
 //! ```
 //! 
 //! **3)** Parse the [`ResponseBuilder`](struct.ResponseBuilder.html) to a [response type](responses/parse/trait.FromResponse.html#Implementors):
 //! 
 //! ```text
-//! [ResponseBuilder.response()] -> [ResponseType]
+//! [ResponseBuilder.response()] ---> [ResponseType]
 //! ```
 //! 
 //! The example below shows how these pieces fit together in code.
@@ -58,12 +58,25 @@
 //! // Send the request and read the response as a `SearchResponse`
 //! let res = client.request(req) // 1
 //!                 .send() // 2
-//!                 .and_then(|res| res.response::<SearchResponse<Value>>()) // 3
-//!                 .unwrap();
+//!                 .and_then(|res| res.response::<SearchResponse<Value>>()); // 3
 //! 
-//! // Iterate through the response hits
-//! for hit in res.hits() {
-//!     println!("{:?}", hit);
+//! match response {
+//!     Ok(response) => {
+//!         // Iterate through the response hits
+//!         for hit in res.hits() {
+//!             println!("{:?}", hit);
+//!         }
+//!     },
+//!     Err(e) => {
+//!         match *e.kind() {
+//!             ErrorKind::Api(e) => {
+//!                 // handle a REST API error
+//!             },
+//!             e => {
+//!                 // handle a HTTP or JSON error
+//!             }
+//!         }
+//!     }
 //! }
 //! ```
 
@@ -244,6 +257,47 @@ impl ResponseBuilder {
     /// The response is parsed according to the `FromResponse`
     /// implementation for `T` that will inspect the response and
     /// either return an `Ok(T)` or an `Err(ApiError)`.
+    ///
+    /// # Examples
+    /// 
+    /// Get a strongly typed `SearchResponse`:
+    /// 
+    /// ```no_run
+    /// # extern crate serde;
+    /// # #[macro_use]
+    /// # extern crate serde_derive;
+    /// # #[macro_use]
+    /// # extern crate elastic_types_derive;
+    /// # extern crate elastic;
+    /// # use elastic::prelude::*;
+    /// # fn main() {
+    /// # #[derive(Serialize, Deserialize, ElasticType)]
+    /// # struct MyType {
+    /// #     pub id: i32,
+    /// #     pub title: String,
+    /// #     pub timestamp: Date<DefaultDateFormat>
+    /// # }
+    /// # let params = RequestParams::new("http://es_host:9200");
+    /// # let client = Client::new(params).unwrap();
+    /// # let req = PingRequest::new();
+    /// let response = client.request(req)
+    ///                      .send()
+    ///                      .and_then(|res| res.response::<SearchResponse<MyType>>());
+    /// # }
+    /// ```
+    /// 
+    /// You can also read a response as a `serde_json::Value`, which will be `Ok(Value)`
+    /// if the HTTP status code is `Ok` or `Err(ApiError)` otherwise:
+    /// 
+    /// ```no_run
+    /// # use elastic::prelude::*;
+    /// # let params = RequestParams::default();
+    /// # let client = Client::new(params).unwrap();
+    /// # let req = PingRequest::new();
+    /// let response = client.request(req)
+    ///                      .send()
+    ///                      .and_then(|res| res.response::<Value>());
+    /// ```
     pub fn response<T>(self) -> Result<T>
         where T: FromResponse
     {
@@ -252,7 +306,7 @@ impl ResponseBuilder {
 }
 
 pub mod requests {
-    //! Request types the Elasticsearch REST API.
+    //! Request types for the Elasticsearch REST API.
 
     pub use elastic_requests::{HttpRequest, HttpMethod, Body, Url};
     pub use elastic_requests::params;
@@ -270,6 +324,49 @@ pub mod responses {
 
     pub mod parse {
         //! Utility types for response parsing.
+        //! 
+        //! # Examples
+        //! 
+        //! Implement `FromResponse` for a deserialisable type that converts
+        //! a http response into a concrete type.
+        //! This example defines a search response that, for whatever reason, 
+        //! only includes the `took` field:
+        //! 
+        //! ```
+        //! # extern crate serde;
+        //! # #[macro_use]
+        //! # extern crate serde_derive;
+        //! # extern crate elastic;
+        //! # use std::io::Read;
+        //! # use elastic::prelude::*;
+        //! # use elastic::error::*;
+        //! # use elastic::client::responses::parse::*;
+        //! #[derive(Deserialize)]
+        //! struct MyResponse {
+        //!     took: u64
+        //! }
+        //! 
+        //! impl FromResponse for MyResponse {
+        //!     fn from_response<I, R>(res: I) -> Result<Self, ResponseError> 
+        //!         where I: Into<HttpResponse<R>>, R: Read 
+        //!     {
+        //!         // HttpResponse.response() lets you inspect a response for success
+        //!         res.into().response(|http_res| {
+        //!             match http_res.status() {
+        //!                 // If the status is 2xx then parse as MyResponse
+        //!                 200...299 => Ok(MaybeOkResponse::new(true, http_res)),
+        //!                 // Otherwise parse as ApiError
+        //!                 _ => Ok(MaybeOkResponse::new(false, http_res))
+        //!             }
+        //!         })
+        //!     }
+        //! }
+        //! ```
+        //! 
+        //! You can also parse the response body into a temporary `serde_json::Value`
+        //! if the status code isn't enough to determine if it's ok.
+        //! This will consume the `UnbufferedResponse` and return a `BufferedResponse`
+        //! instead that keeps the response body private for later handlers to use.
 
         pub use elastic_responses::FromResponse;
         pub use elastic_responses::parse::{MaybeOkResponse, MaybeBufferedResponse,
@@ -278,7 +375,18 @@ pub mod responses {
 
     use elastic_responses::{SearchResponseOf, GetResponseOf};
 
+    /// A generic Search API response.
+    /// 
+    /// For responses that contain multiple document types, use
+    /// `SearchResponse<serde_json::Value>`.
+    /// 
+    /// This type won't parse if you've applied any [response filters]().
+    /// If you need to tweak the shape of the search response you can
+    /// define your own response type and implement `FromResponse` for it.
+    /// See the [`parse`](parse/index.html) mod for more details.
     pub type SearchResponse<T> = SearchResponseOf<Hit<T>>;
+
+    /// A generic Get Document API response.
     pub type GetResponse<T> = GetResponseOf<T>;
 }
 

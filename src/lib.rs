@@ -74,8 +74,7 @@
 //!
 //! ```no_run
 //! # use elastic::prelude::*;
-//! let params = RequestParams::new("http://es_host:9200")
-//!     .url_param("pretty", true);
+//! let params = RequestParams::new("http://es_host:9200").url_param("pretty", true);
 //!
 //! let client = Client::new(params).unwrap();
 //! ```
@@ -88,16 +87,16 @@
 //! # let client = Client::new(params).unwrap();
 //! # let req = PingRequest::new();
 //! let response = client.request(req)
-//!     .params(|p| p.url_param("pretty", false))
-//!     .send()
-//!     .unwrap();
+//!                      .params(|p| p.url_param("pretty", false))
+//!                      .send()
+//!                      .unwrap();
 //! ```
 //! 
 //! For more details, see the [`client`](client/index.html) and [`requests`](client/requests/index.html) modules.
 //! 
 //! ## Getting Responses
 //!
-//! Call `response` on a sent request to get a `SearchResponse` or `GetResponse`:
+//! Call `response` on a sent request to get a strongly typed `SearchResponse` or `GetResponse`:
 //!
 //! ```no_run
 //! # extern crate serde;
@@ -118,8 +117,8 @@
 //! # let client = Client::new(params).unwrap();
 //! # let req = PingRequest::new();
 //! let response = client.request(req)
-//!     .send()
-//!     .and_then(|res| res.response::<SearchResponse<MyType>>());
+//!                      .send()
+//!                      .and_then(|res| res.response::<SearchResponse<MyType>>());
 //! # }
 //! ```
 //!
@@ -138,8 +137,8 @@
 //! # let client = Client::new(params).unwrap();
 //! # let req = PingRequest::new();
 //! let response = client.request(req)
-//!     .send()
-//!     .map(|res| res.raw());
+//!                      .send()
+//!                      .map(|res| res.raw());
 //! # }
 //! ```
 //!
