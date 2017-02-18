@@ -12,8 +12,8 @@
 //! way you use it.
 //! It depends heavily on the following crates:
 //! 
-//! - [`reqwest`/`hyper`]() as the default HTTP layer
-//! - [`serde`/`serde_json`]() for serialisation.
+//! - [`reqwest`/`hyper`](https://github.com/seanmonstar/reqwest) as the default HTTP layer
+//! - [`serde`/`serde_json`](https://serde.rs/) for serialisation.
 //!
 //! # Usage
 //!
@@ -63,9 +63,13 @@
 //! ```no_run
 //! use elastic::prelude::*;
 //!
+//! // Create a client with default params (host: 'http://localhost:9200')
 //! let client = Client::new(RequestParams::default()).unwrap();
 //!
+//! // A ping request (HEAD '/')
 //! let req = PingRequest::new();
+//! 
+//! // Send the ping request and unwrap the response
 //! let response = client.request(req).send().unwrap();
 //! ```
 //!
@@ -145,7 +149,7 @@
 //! The `HttpResponse` implements `Read` so you can buffer out the raw
 //! response data.
 //! 
-//! For more details see the [`responses`](client/responses/index.html) module.
+//! For more details see the [`client`](client/index.html) and [`responses`](client/responses/index.html) module.
 //!
 //! ## Defining document types
 //!
@@ -196,6 +200,7 @@
 //! let index = Index::from("index");
 //! let id = Id::from(doc.id.to_string());
 //!
+//! // A tuple of (Index, Id, MyType) can be converted into an IndexRequest
 //! let req = IndexRequest::try_for_doc((index, id, &doc)).unwrap();
 //! # }
 //! ```
@@ -220,6 +225,7 @@
 //! let index = Index::from("index");
 //! let mapping = MyType::mapping();
 //!
+//! // A tuple of (Index, MyTypeMapping) can be converted into a MappingRequest
 //! let req = IndicesPutMappingRequest::try_for_mapping((index, mapping)).unwrap();
 //! # }
 //! ```
@@ -232,7 +238,7 @@
 //!
 //! - `elastic_reqwest` HTTP transport
 //! - `elastic_requests` API request builders
-//! - `elastic_responses` API response parser
+//! - `elastic_responses` API response parsers
 //! - `elastic_types` tools for document and mapping APIs
 //!
 //! This crate glues these libraries together with some simple assumptions
@@ -369,7 +375,7 @@ pub mod types {
     //!     id: i32,
     //!     // Mapped as a `text` field with a `keyword` subfield
     //!     title: String,
-    //!     // Mapped as a `date` with an `epoch_millis` format
+    //!     // Mapped as a `date` field with an `epoch_millis` format
     //!     timestamp: Date<EpochMillis>
     //! }
     //! # }
@@ -449,7 +455,9 @@ pub mod types {
     //! ## Define custom field data types
     //!
     //! Use traits to define your own field types and have them mapped as one of the
-    //! core datatypes:
+    //! core datatypes.
+    //! In the below example, variants of `MyEnum` will be serialised as a string,
+    //! which we map as a non-analysed `keyword` in Elasticsearch:
     //!
     //! ```
     //! # extern crate elastic;
@@ -527,6 +535,63 @@ pub mod types {
     //! # assert_eq!(expected, mapping);
     //! # }
     //! ```
+    //! 
+    //! ## Convert documents into requests
+    //! 
+    //! Documents and their mappings can be converted into index and
+    //! mapping REST API requests.
+    //! 
+    //! Convert a document and index type into an index request:
+    //! 
+    //! ```
+    //! # extern crate elastic;
+    //! # #[macro_use]
+    //! # extern crate elastic_types_derive;
+    //! # extern crate serde;
+    //! # extern crate serde_json;
+    //! # #[macro_use]
+    //! # extern crate serde_derive;
+    //! # use elastic::prelude::*;
+    //! # fn main() {
+    //! # #[derive(Serialize, Deserialize, ElasticType)]
+    //! # struct MyType {}
+    //! # fn get_doc() -> MyType { MyType {} }
+    //! // Get an `Index` and an instance of some `ElasticType`
+    //! let index = Index::from("my_index");
+    //! let doc = get_doc();
+    //! 
+    //! // Convert the index and document into an index request
+    //! let req = IndexRequest::try_for_doc((index, &doc)).unwrap();
+    //! # }
+    //! ```
+    //! 
+    //! Convert a document and index type into a mapping request:
+    //! 
+    //! ```
+    //! # extern crate elastic;
+    //! # #[macro_use]
+    //! # extern crate elastic_types_derive;
+    //! # extern crate serde;
+    //! # extern crate serde_json;
+    //! # #[macro_use]
+    //! # extern crate serde_derive;
+    //! # use elastic::prelude::*;
+    //! # fn main() {
+    //! # #[derive(Serialize, Deserialize, ElasticType)]
+    //! # struct MyType {}
+    //! # fn get_doc() -> MyType { MyType {} }
+    //! // Get an `Index` and an instance of some `ElasticType`
+    //! let index = Index::from("my_index");
+    //! let doc = get_doc();
+    //! 
+    //! // Convert the index and document into an index request
+    //! let req = IndicesPutMappingRequest::try_for_doc((index, &doc)).unwrap();
+    //! # }
+    //! ```
+    //! 
+    //! For more conversions between documents and requests, 
+    //! see the [`TryForDoc`](../client/requests/trait.TryForDoc.html) and 
+    //! [`TryForMapping`](../client/requests/trait.TryForMapping.html) traits.
 
     pub use elastic_types::{document, field, boolean, date, geo, ip, number, string, prelude};
 }

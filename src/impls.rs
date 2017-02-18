@@ -13,13 +13,15 @@ use super::types::prelude::*;
 
 use super::error::*;
 
-/// A trait for converting a document into a request.
+/// A trait for converting a [document](../../types/document/index.html)
+/// into a [request](endpoints/index.html).
 pub trait TryForDoc<T, M>: Sized {
     /// Try convert a document into a request type.
     fn try_for_doc(doc: T) -> Result<Self>;
 }
 
-/// A trait for converting a document mapping into a request.
+/// A trait for converting a [document mapping](../../types/document/trait.DocumentMapping.html) 
+/// mapping into a [request](endpoints/index.html).
 pub trait TryForMapping<M>
     where Self: Sized
 {
