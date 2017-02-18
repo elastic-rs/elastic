@@ -38,7 +38,14 @@
 //! process labelled:
 //! 
 //! ```no_run
+//! # extern crate elastic;
+//! # #[macro_use]
+//! # extern crate json_str;
+//! # extern crate serde_json;
 //! # use elastic::prelude::*;
+//! # use elastic::error::*;
+//! # use serde_json::Value;
+//! # fn main() {
 //! // Create a `Client`
 //! let client = Client::new(RequestParams::default()).unwrap();
 //! 
@@ -53,31 +60,32 @@
 //!     });
 //!     
 //!     SearchRequest::for_index("_all", body)
-//! }
+//! };
 //! 
 //! // Send the request and read the response as a `SearchResponse`
 //! let res = client.request(req) // 1
 //!                 .send() // 2
 //!                 .and_then(|res| res.response::<SearchResponse<Value>>()); // 3
 //! 
-//! match response {
+//! match res {
 //!     Ok(response) => {
 //!         // Iterate through the response hits
-//!         for hit in res.hits() {
+//!         for hit in response.hits() {
 //!             println!("{:?}", hit);
 //!         }
 //!     },
 //!     Err(e) => {
 //!         match *e.kind() {
-//!             ErrorKind::Api(e) => {
+//!             ErrorKind::Api(ref e) => {
 //!                 // handle a REST API error
 //!             },
-//!             e => {
+//!             ref e => {
 //!                 // handle a HTTP or JSON error
 //!             }
 //!         }
 //!     }
 //! }
+//! # }
 //! ```
 
 use elastic_reqwest::ElasticClient;
@@ -144,7 +152,7 @@ impl Client {
     /// 
     /// Turn a concrete request into a `RequestBuilder`:
     /// 
-    /// ```
+    /// ```no_run
     /// # use elastic::prelude::*;
     /// # let client = Client::new(RequestParams::default()).unwrap();
     /// // `PingRequest` implements `Into<HttpRequest>`
@@ -290,13 +298,18 @@ impl ResponseBuilder {
     /// if the HTTP status code is `Ok` or `Err(ApiError)` otherwise:
     /// 
     /// ```no_run
+    /// # extern crate elastic;
+    /// # extern crate serde_json;
+    /// # use serde_json::Value;
     /// # use elastic::prelude::*;
+    /// # fn main() {
     /// # let params = RequestParams::default();
     /// # let client = Client::new(params).unwrap();
     /// # let req = PingRequest::new();
     /// let response = client.request(req)
     ///                      .send()
     ///                      .and_then(|res| res.response::<Value>());
+    /// # }
     /// ```
     pub fn response<T>(self) -> Result<T>
         where T: FromResponse
@@ -339,7 +352,7 @@ pub mod responses {
         //! # extern crate elastic;
         //! # use std::io::Read;
         //! # use elastic::prelude::*;
-        //! # use elastic::error::*;
+        //! # use elastic::error::ResponseError;
         //! # use elastic::client::responses::parse::*;
         //! #[derive(Deserialize)]
         //! struct MyResponse {
@@ -353,14 +366,17 @@ pub mod responses {
         //!         // HttpResponse.response() lets you inspect a response for success
         //!         res.into().response(|http_res| {
         //!             match http_res.status() {
-        //!                 // If the status is 2xx then parse as MyResponse
+        //!                 // If the status is 2xx then return the response with `ok: true`
+        //!                 // The body will be parsed as a `MyResponse`.
         //!                 200...299 => Ok(MaybeOkResponse::new(true, http_res)),
-        //!                 // Otherwise parse as ApiError
+        //!                 // Otherwise return the response with `ok: false`
+        //!                 // The body will be parsed as an `ApiError`.
         //!                 _ => Ok(MaybeOkResponse::new(false, http_res))
         //!             }
         //!         })
         //!     }
         //! }
+        //! # fn main() {}
         //! ```
         //! 
         //! You can also parse the response body into a temporary `serde_json::Value`

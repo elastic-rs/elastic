@@ -1,3 +1,11 @@
+//! Glue traits for documents and requests.
+//! 
+//! The `TryForDoc` and `TryForMapping` traits are functionally equivalent
+//! but are used to support different conversions.
+//! They are implemented for tuples of a document and additional parameters,
+//! this may be different in a future where indices only support a single
+//! document type.
+
 use serde::Serialize;
 use serde_json;
 use super::client::requests::{Index, Id, Body, IndexRequest, IndicesPutMappingRequest};
@@ -7,6 +15,7 @@ use super::error::*;
 
 /// A trait for converting a document into a request.
 pub trait TryForDoc<T, M>: Sized {
+    /// Try convert a document into a request type.
     fn try_for_doc(doc: T) -> Result<Self>;
 }
 
@@ -14,6 +23,7 @@ pub trait TryForDoc<T, M>: Sized {
 pub trait TryForMapping<M>
     where Self: Sized
 {
+    /// Try convert a document mapping into a request.
     fn try_for_mapping(mapping: M) -> Result<Self>;
 }
 

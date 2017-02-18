@@ -42,7 +42,7 @@
 //!
 //! // Optional
 //! extern crate serde;
-//! extern crate sede_json;
+//! extern crate serde_json;
 //! #[macro_use]
 //! extern crate serde_derive;
 //! #[macro_use]
@@ -355,6 +355,14 @@ pub mod types {
     //! document field mappings:
     //!
     //! ```
+    //! # extern crate elastic;
+    //! # #[macro_use]
+    //! # extern crate elastic_types_derive;
+    //! # extern crate serde;
+    //! # #[macro_use]
+    //! # extern crate serde_derive;
+    //! # use elastic::prelude::*;
+    //! # fn main() {
     //! #[derive(Serialize, Deserialize, ElasticType)]
     //! struct MyType {
     //!     // Mapped as an `integer` field
@@ -364,20 +372,51 @@ pub mod types {
     //!     // Mapped as a `date` with an `epoch_millis` format
     //!     timestamp: Date<EpochMillis>
     //! }
+    //! # }
     //! ```
     //!
     //! You can use the `Document` type wrapper to serialise the mapping for your
     //! document types:
     //!
     //! ```
+    //! # extern crate elastic;
+    //! # #[macro_use]
+    //! # extern crate elastic_types_derive;
+    //! # extern crate serde;
+    //! # extern crate serde_json;
+    //! # #[macro_use]
+    //! # extern crate serde_derive;
+    //! # use elastic::prelude::*;
+    //! # fn main() {
+    //! # #[derive(Serialize, Deserialize, ElasticType)]
+    //! # struct MyType {}
     //! let doc = Document::from(MyType::mapping());
     //!
     //! let mapping = serde_json::to_string(&doc).unwrap();
+    //! # }
     //! ```
     //!
     //! This will produce the following JSON:
     //!
     //! ```
+    //! # extern crate elastic;
+    //! # #[macro_use]
+    //! # extern crate elastic_types_derive;
+    //! # extern crate serde;
+    //! # extern crate serde_json;
+    //! # #[macro_use]
+    //! # extern crate serde_derive;
+    //! # #[macro_use]
+    //! # extern crate json_str;
+    //! # use elastic::prelude::*;
+    //! # fn main() {
+    //! # #[derive(Serialize, Deserialize, ElasticType)]
+    //! # struct MyType {
+    //! #     id: i32,
+    //! #     title: String,
+    //! #     timestamp: Date<EpochMillis>
+    //! # }
+    //! # let mapping = serde_json::to_string(&Document::from(MyType::mapping())).unwrap();
     //! # let expected = json_str!(
     //! {
     //!     "properties": {
@@ -400,6 +439,8 @@ pub mod types {
     //!     }
     //! }
     //! # );
+    //! # assert_eq!(expected, mapping);
+    //! # }
     //! ```
     //! 
     //! See the table above for a list of all supported datatypes and how to work
@@ -411,7 +452,15 @@ pub mod types {
     //! core datatypes:
     //!
     //! ```
-    //! # #[derive(Default, Serialize, Deserialize)]
+    //! # extern crate elastic;
+    //! # #[macro_use]
+    //! # extern crate elastic_types_derive;
+    //! # extern crate serde;
+    //! # #[macro_use]
+    //! # extern crate serde_derive;
+    //! # use elastic::prelude::*;
+    //! # fn main() {
+    //! # #[derive(Serialize, Deserialize)]
     //! enum MyEnum {
     //!     OptionA,
     //!     OptionB,
@@ -420,20 +469,52 @@ pub mod types {
     //!
     //! // Map `MyEnum` as a `keyword` in Elasticsearch, but treat it as an enum in Rust
     //! impl FieldType<DefaultKeywordMapping, KeywordFormat> for MyEnum {}
+    //! # }
     //! ```
     //! 
     //! You can then use `MyEnum` on any document type:
     //! 
     //! ```
+    //! # extern crate elastic;
+    //! # #[macro_use]
+    //! # extern crate elastic_types_derive;
+    //! # extern crate serde;
+    //! # #[macro_use]
+    //! # extern crate serde_derive;
+    //! # use elastic::prelude::*;
+    //! # fn main() {
+    //! # #[derive(Serialize, Deserialize)]
+    //! # enum MyEnum {}
+    //! # impl FieldType<DefaultKeywordMapping, KeywordFormat> for MyEnum {}
     //! #[derive(Serialize, Deserialize, ElasticType)]
     //! struct MyType {
     //!     value: MyEnum
     //! }
+    //! # }
     //! ```
     //! 
     //! Serialising `MyType`s mapping will produce the following json:
     //! 
     //! ```
+    //! # extern crate elastic;
+    //! # #[macro_use]
+    //! # extern crate elastic_types_derive;
+    //! # extern crate serde;
+    //! # #[macro_use]
+    //! # extern crate serde_derive;
+    //! # extern crate serde_json;
+    //! # #[macro_use]
+    //! # extern crate json_str;
+    //! # use elastic::prelude::*;
+    //! # #[derive(Serialize, Deserialize)]
+    //! # enum MyEnum {}
+    //! # impl FieldType<DefaultKeywordMapping, KeywordFormat> for MyEnum {}
+    //! # #[derive(Serialize, Deserialize, ElasticType)]
+    //! # struct MyType {
+    //! #     value: MyEnum
+    //! # }
+    //! # fn main() {
+    //! # let mapping = serde_json::to_string(&Document::from(MyType::mapping())).unwrap();
     //! # let expected = json_str!(
     //! {
     //!     "properties": {
@@ -443,6 +524,8 @@ pub mod types {
     //!     }
     //! }
     //! # );
+    //! # assert_eq!(expected, mapping);
+    //! # }
     //! ```
 
     pub use elastic_types::{document, field, boolean, date, geo, ip, number, string, prelude};
