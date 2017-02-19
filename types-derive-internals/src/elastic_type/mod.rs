@@ -1,47 +1,9 @@
-//! Elasticsearch Core Types Codegen
-//!
-//! Compile-time code generation for Elasticsearch type implementations.
-//! This crate provides custom `derive` attributes for data types in the [elastic_types](https://github.com/elastic-rs/elastic-types) crate.
-//!
-//! # Links
-//! - [Github](https://github.com/elastic-rs/elastic-types)
+use quote::Tokens;
+use syn;
+use serde_codegen_internals::{self, attr as serde_attr};
+use super::get_elastic_meta_items;
 
-extern crate proc_macro;
-
-#[macro_use]
-extern crate quote;
-extern crate syn;
-
-extern crate serde;
-extern crate serde_json;
-extern crate serde_codegen_internals;
-
-use proc_macro::TokenStream;
-use serde_codegen_internals::attr as serde_attr;
-
-#[cfg(not(feature = "elastic"))]
-fn crate_root() -> quote::Tokens {
-    quote!(::elastic_types)
-}
-
-#[cfg(feature = "elastic")]
-fn crate_root() -> quote::Tokens {
-    quote!(::elastic::types)
-}
-
-#[proc_macro_derive(ElasticType, attributes(elastic))]
-pub fn derive(input: TokenStream) -> TokenStream {
-    let mut expanded = quote::Tokens::new();
-    let ast = syn::parse_macro_input(&input.to_string()).unwrap();
-
-    let genned = expand_derive_type_mapping(&ast);
-
-    expanded.append_all(genned);
-
-    expanded.to_string().parse().unwrap()
-}
-
-fn expand_derive_type_mapping(input: &syn::MacroInput) -> Vec<quote::Tokens> {
+pub fn expand_derive(crate_root: Tokens, input: &syn::MacroInput) -> Vec<Tokens> {
     //Annotatable item for a struct with struct fields
     let fields = match input.body {
         syn::Body::Struct(ref data) => {
@@ -79,20 +41,20 @@ fn expand_derive_type_mapping(input: &syn::MacroInput) -> Vec<quote::Tokens> {
             let es_ty = get_elastic_type_name(input);
 
             genned.push(define_mapping(&mapping_ty));
-            genned.push(impl_object_mapping(&mapping_ty, &es_ty));
+            genned.push(impl_object_mapping(crate_root.clone(), &mapping_ty, &es_ty));
 
             mapping_ty
         }
     };
     
-    genned.push(impl_elastic_type(input, &mapping_ty));
-    genned.push(impl_props_mapping(&mapping_ty, get_props_ser_stmts(&fields)));
+    genned.push(impl_elastic_type(crate_root.clone(), input, &mapping_ty));
+    genned.push(impl_props_mapping(crate_root.clone(), &mapping_ty, get_props_ser_stmts(crate_root.clone(), &fields)));
 
     genned
 }
 
 //Define a struct for the mapping with a few defaults
-fn define_mapping(name: &syn::Ident) -> quote::Tokens {
+fn define_mapping(name: &syn::Ident) -> Tokens {
     quote!(
         #[derive(Default, Clone, Copy, Debug)]
         pub struct #name;
@@ -100,36 +62,30 @@ fn define_mapping(name: &syn::Ident) -> quote::Tokens {
 }
 
 //Implement DocumentType for the type being derived with the mapping
-fn impl_elastic_type(item: &syn::MacroInput, mapping: &syn::Ident) -> quote::Tokens {
+fn impl_elastic_type(crate_root: Tokens, item: &syn::MacroInput, mapping: &syn::Ident) -> Tokens {
     let ty = &item.ident;
 
-    let root = crate_root();
-
     quote!(
-        impl #root::document::DocumentType<#mapping> for #ty { }
+        impl #crate_root::document::DocumentType<#mapping> for #ty { }
     )
 }
 
 //Implement DocumentMapping for the mapping
-fn impl_object_mapping(mapping: &syn::Ident, es_ty: &syn::Lit) -> quote::Tokens {
-    let root = crate_root();
-
+fn impl_object_mapping(crate_root: Tokens, mapping: &syn::Ident, es_ty: &syn::Lit) -> Tokens {
     quote!(
-        impl #root::document::DocumentMapping for #mapping {
+        impl #crate_root::document::DocumentMapping for #mapping {
             fn name() -> &'static str { #es_ty }
         }
     )
 }
 
 //Implement PropertiesMapping for the mapping
-fn impl_props_mapping(mapping: &syn::Ident, prop_ser_stmts: Vec<quote::Tokens>) -> quote::Tokens {
+fn impl_props_mapping(crate_root: Tokens, mapping: &syn::Ident, prop_ser_stmts: Vec<Tokens>) -> Tokens {
     let stmts_len = prop_ser_stmts.len();
     let stmts = prop_ser_stmts;
 
-    let root = crate_root();
-
     quote!(
-        impl #root::document::PropertiesMapping for #mapping {
+        impl #crate_root::document::PropertiesMapping for #mapping {
             fn props_len() -> usize { #stmts_len }
 
             fn serialize_props<S>(state: &mut S) -> ::std::result::Result<(), S::Error> 
@@ -142,16 +98,14 @@ fn impl_props_mapping(mapping: &syn::Ident, prop_ser_stmts: Vec<quote::Tokens>) 
 }
 
 //Get the serde serialisation statements for each of the fields on the type being derived
-fn get_props_ser_stmts(fields: &[(syn::Ident, &syn::Field)]) -> Vec<quote::Tokens> {
-    let fields: Vec<quote::Tokens> = fields.iter().cloned().map(|(name, field)| {
+fn get_props_ser_stmts(crate_root: Tokens, fields: &[(syn::Ident, &syn::Field)]) -> Vec<Tokens> {
+    let fields: Vec<Tokens> = fields.iter().cloned().map(|(name, field)| {
         let lit = syn::Lit::Str(name.as_ref().to_string(), syn::StrStyle::Cooked);
         let ty = &field.ty;
 
-        let root = crate_root();
+        let expr = quote!(#crate_root::field::mapping::<#ty, _, _>());
 
-        let expr = quote!(#root::field::mapping::<#ty, _, _>());
-
-        quote!(try!(#root::document::field_ser(state, #lit, #expr));)
+        quote!(try!(#crate_root::document::field_ser(state, #lit, #expr));)
     })
     .collect();
 
@@ -195,17 +149,6 @@ fn get_ident_from_lit(lit: &syn::Lit) -> Result<syn::Ident, &'static str> {
 //Get the default name for the indexed elasticsearch type name
 fn get_elastic_type_name(item: &syn::MacroInput) -> syn::Lit {
     syn::Lit::Str(format!("{}", item.ident).to_lowercase(), syn::StrStyle::Cooked)
-}
-
-//Helpers
-fn get_elastic_meta_items(attr: &syn::Attribute) -> Option<&[syn::NestedMetaItem]> {
-    match attr.value {
-        //Get elastic meta items
-        syn::MetaItem::List(ref name, ref items) if name == &"elastic" => {
-            Some(items)
-        },
-        _ => None
-    }
 }
 
 fn get_ser_field(field: &syn::Field) -> Option<(syn::Ident, &syn::Field)> {

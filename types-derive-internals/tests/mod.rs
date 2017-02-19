@@ -1,17 +1,3 @@
-#![cfg_attr(feature = "nightly", feature(plugin, custom_derive))]
-#![cfg_attr(feature = "nightly", plugin(elastic_date_macros))]
-
-#[cfg_attr(feature = "nightly", allow(plugin_as_library))]
-#[macro_use]
-extern crate elastic_date_macros;
-
-extern crate chrono;
-
-#[test]
-fn can_generate_date_formats() {
-    let _ = date_fmt_to_tokens!("yyyyMMddTHHmmss.SSSZ");
-}
-
 #[test]
 fn can_parse_es_date_format_to_chrono() {
     let parse_result = elastic_date_macros::to_tokens("yyyyMMddTHHmmss.SSSZ");
