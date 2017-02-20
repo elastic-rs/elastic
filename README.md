@@ -8,7 +8,7 @@ The API is targetting Elastic `5.x`.
 Quick reference:
 
 - [crates](#crates)
-- [examples](https://github.com/elastic-rs/elastic/tree/master/examples)
+- [examples](https://github.com/elastic-rs/elastic/tree/master/elastic/examples)
 
 ## Build Status
 Platform  | Channel | Status
@@ -25,7 +25,7 @@ Version  | Docs
 
 ## Example
 
-See the [examples](https://github.com/elastic-rs/elastic/tree/master/examples) folder for complete samples.
+See the [examples](https://github.com/elastic-rs/elastic/tree/master/elastic/examples) folder for complete samples.
 
 Add `elastic` to your `Cargo.toml`:
 

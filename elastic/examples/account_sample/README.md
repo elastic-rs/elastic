@@ -6,6 +6,6 @@ The code contains inline tests to show you what the result of some operations li
 
 Some of the key pieces include:
 
-- The [`Account` document type](src/model.account.rs)
+- The [`Account` document type](src/model/account.rs)
 - The [command to create the index](src/ops/commands/ensure_bank_index_exists.rs)
 - The [query to search `Account`s](src/ops/queries/simple_search.rs)
