@@ -33,7 +33,6 @@ Add `elastic` to your `Cargo.toml`:
 [dependencies]
 elastic = "*"
 
-
 # Optional
 
 elastic_derive = "*"
