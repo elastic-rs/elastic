@@ -19,24 +19,23 @@ pub mod date_format;
 
 fn get_elastic_meta_items(attr: &syn::Attribute) -> Option<&[syn::NestedMetaItem]> {
     match attr.value {
-        //Get elastic meta items
-        syn::MetaItem::List(ref name, ref items) if name == &"elastic" => {
-            Some(items)
-        },
-        _ => None
+        // Get elastic meta items
+        syn::MetaItem::List(ref name, ref items) if name == &"elastic" => Some(items),
+        _ => None,
     }
 }
 
-//Get the mapping ident supplied by an #[elastic()] attribute or create a default one
+// Get the mapping ident supplied by an #[elastic()] attribute or create a default one
 fn get_elastic_attr_name_value<'a>(name: &str, item: &'a syn::MacroInput) -> Option<&'a syn::Lit> {
     for meta_items in item.attrs.iter().filter_map(get_elastic_meta_items) {
         for meta_item in meta_items {
             match *meta_item {
                 // Parse `#[elastic({name}="foo")]`
-                syn::NestedMetaItem::MetaItem(syn::MetaItem::NameValue(ref key, ref lit)) if key == name => {
+                syn::NestedMetaItem::MetaItem(syn::MetaItem::NameValue(ref key, ref lit))
+                    if key == name => {
                     return Some(lit);
-                },
-                _ => ()
+                }
+                _ => (),
             }
         }
     }

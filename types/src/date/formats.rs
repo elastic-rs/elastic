@@ -54,8 +54,7 @@ impl DateFormat for EpochMillis {
             }
         };
 
-        Ok(DateTime::from_utc(NaiveDateTime::from_timestamp(s, m as u32 * 1000000),
-                              UTC))
+        Ok(DateTime::from_utc(NaiveDateTime::from_timestamp(s, m as u32 * 1000000), UTC))
     }
 
     fn format(date: &DateTime<UTC>) -> String {

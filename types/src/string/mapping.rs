@@ -177,7 +177,9 @@ impl Serialize for ElasticCompletionFieldMapping {
         ser_field!(state, "search_analyzer", self.search_analyzer);
         ser_field!(state, "payloads", self.payloads);
         ser_field!(state, "preserve_separators", self.preserve_separators);
-        ser_field!(state, "preserve_position_increments", self.preserve_position_increments);
+        ser_field!(state,
+                   "preserve_position_increments",
+                   self.preserve_position_increments);
         ser_field!(state, "max_input_length", self.max_input_length);
 
         state.end()

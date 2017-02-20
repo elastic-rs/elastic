@@ -54,7 +54,7 @@
 //! # extern crate chrono;
 //! # use elastic_types::prelude::*;
 //! # fn main() {
-//! 
+//!
 //! #[derive(Default, Clone)]
 //! struct MyFormat;
 //! date_fmt!(MyFormat, "yyyy-MM-ddTHH:mm:ss", "yyyy-MM-dd'T'HH:mm:ss");

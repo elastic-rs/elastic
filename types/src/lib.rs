@@ -6,7 +6,7 @@
 //! where correctness is enforced by Rust's type system.
 //! The mapping information is then used when serialising and deserialising your types.
 //! Annotating type fields with mapping metadata has no impact at runtime.
-//! 
+//!
 //! This library makes extensive use of [`serde`](https://serde.rs/).
 //!
 //! # Supported Versions
@@ -535,10 +535,6 @@ pub mod ip;
 pub mod number;
 pub mod string;
 
-mod elastic_types {
-	pub use ::date;
-}
-
 pub mod prelude {
     //! Includes all data types.
     //!
@@ -553,4 +549,9 @@ pub mod prelude {
     pub use ::ip::prelude::*;
     pub use ::number::prelude::*;
     pub use ::string::prelude::*;
+}
+
+// This is a simple workaround for paths needed by `elastic_types_derive`.
+mod elastic_types {
+    pub use ::date;
 }

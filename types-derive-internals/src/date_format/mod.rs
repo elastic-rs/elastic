@@ -5,23 +5,26 @@ mod parse;
 
 use super::{get_elastic_attr_name_value, get_str_from_lit};
 
-pub fn expand_derive(crate_root: Tokens, input: &syn::MacroInput) -> Result<Vec<Tokens>, DeriveDateFormatError> {
-    //Annotatable item for a unit struct
+pub fn expand_derive(crate_root: Tokens,
+                     input: &syn::MacroInput)
+                     -> Result<Vec<Tokens>, DeriveDateFormatError> {
+    // Annotatable item for a unit struct
     match input.body {
         syn::Body::Struct(ref data) => {
             match *data {
                 syn::VariantData::Unit => Ok(()),
-                _ => Err(DeriveDateFormatError::InvalidInput)
+                _ => Err(DeriveDateFormatError::InvalidInput),
             }
-        },
-        _ => Err(DeriveDateFormatError::InvalidInput)
+        }
+        _ => Err(DeriveDateFormatError::InvalidInput),
     }?;
 
     let format = get_format_from_attr(input).ok_or(DeriveDateFormatError::MissingFormat)?;
 
     let name = get_name_from_attr(input).unwrap_or(format);
 
-    let tokens: Vec<Tokens> = parse::to_tokens(format)?
+    let tokens: Vec<Tokens> = parse::to_tokens(format)
+        ?
         .into_iter()
         .map(|t| t.into())
         .collect();
@@ -31,8 +34,12 @@ pub fn expand_derive(crate_root: Tokens, input: &syn::MacroInput) -> Result<Vec<
     Ok(vec![derived])
 }
 
-//Implement DateFormat for the type being derived with the mapping
-fn impl_date_format(crate_root: Tokens, item: &syn::MacroInput, name: &str, format: &[Tokens]) -> Tokens {
+// Implement DateFormat for the type being derived with the mapping
+fn impl_date_format(crate_root: Tokens,
+                    item: &syn::MacroInput,
+                    name: &str,
+                    format: &[Tokens])
+                    -> Tokens {
     let ty = &item.ident;
 
     let parse_fn = quote!(
@@ -68,14 +75,14 @@ fn impl_date_format(crate_root: Tokens, item: &syn::MacroInput, name: &str, form
     )
 }
 
-//Get the format string supplied by an #[elastic()] attribute
+// Get the format string supplied by an #[elastic()] attribute
 fn get_format_from_attr<'a>(item: &'a syn::MacroInput) -> Option<&'a str> {
     let val = get_elastic_attr_name_value("date_format", item);
 
     val.and_then(|v| get_str_from_lit(v).ok())
 }
 
-//Get the name string supplied by an #[elastic()] attribute
+// Get the name string supplied by an #[elastic()] attribute
 fn get_name_from_attr<'a>(item: &'a syn::MacroInput) -> Option<&'a str> {
     let val = get_elastic_attr_name_value("date_format_name", item);
 
@@ -94,10 +101,12 @@ impl<'a> Into<Tokens> for parse::DateFormatToken<'a> {
             Hour => quote!(::chrono::format::Item::Numeric(::chrono::format::Numeric::Hour, ::chrono::format::Pad::Zero)),
             Minute => quote!(::chrono::format::Item::Numeric(::chrono::format::Numeric::Minute, ::chrono::format::Pad::Zero)),
             Second => quote!(::chrono::format::Item::Numeric(::chrono::format::Numeric::Second, ::chrono::format::Pad::Zero)),
-            Millisecond => quote!(::chrono::format::Item::Fixed(::chrono::format::Fixed::Nanosecond3)),
+            Millisecond => {
+                quote!(::chrono::format::Item::Fixed(::chrono::format::Fixed::Nanosecond3))
+            }
             Utc => quote!(::chrono::format::Item::Literal("Z")),
             Delim(s) => quote!(::chrono::format::Item::Literal(#s)),
-            Escaped(s) => quote!(::chrono::format::Item::Literal(#s))
+            Escaped(s) => quote!(::chrono::format::Item::Literal(#s)),
         }
     }
 }

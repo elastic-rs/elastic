@@ -243,7 +243,9 @@ impl<T> Serialize for Field<T, TextFormat>
         ser_field!(state, "analyzer", T::analyzer());
         ser_field!(state, "eager_global_ordinals", T::eager_global_ordinals());
         ser_field!(state, "fielddata", T::fielddata());
-        ser_field!(state, "fielddata_frequency_filter", T::fielddata_frequency_filter());
+        ser_field!(state,
+                   "fielddata_frequency_filter",
+                   T::fielddata_frequency_filter());
         ser_field!(state, "fields", T::fields());
         ser_field!(state, "include_in_all", T::include_in_all());
         ser_field!(state, "ignore_above", T::ignore_above());
@@ -384,7 +386,9 @@ impl Serialize for TextFieldMapping {
         ser_field!(state, "analyzer", self.analyzer);
         ser_field!(state, "eager_global_ordinals", self.eager_global_ordinals);
         ser_field!(state, "fielddata", self.fielddata);
-        ser_field!(state, "fielddata_frequency_filter", self.fielddata_frequency_filter);
+        ser_field!(state,
+                   "fielddata_frequency_filter",
+                   self.fielddata_frequency_filter);
         ser_field!(state, "include_in_all", self.include_in_all);
         ser_field!(state, "ignore_above", self.ignore_above);
         ser_field!(state, "index", self.index);

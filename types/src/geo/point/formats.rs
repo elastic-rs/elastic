@@ -50,8 +50,7 @@ impl GeoPointFormat for GeoPointString {
         impl Visitor for PointVisitor {
             type Value = String;
 
-            fn expecting(&self, formatter: &mut ::std::fmt::Formatter) -> ::std::fmt::Result 
-            {
+            fn expecting(&self, formatter: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
                 write!(formatter, "a json string formatted as 'y,x'")
             }
 
@@ -72,7 +71,8 @@ impl GeoPointFormat for GeoPointString {
 
         let xy: Vec<&str> = fmtd.split(",").collect();
         if xy.len() != 2 {
-            return Err(D::Error::invalid_value(Unexpected::Str(&fmtd), &"point must be formatted as `'y,x'`"));
+            return Err(D::Error::invalid_value(Unexpected::Str(&fmtd),
+                                               &"point must be formatted as `'y,x'`"));
         }
 
         let x = match f64::from_str(xy[1]) {
@@ -114,8 +114,7 @@ impl GeoPointFormat for GeoPointHash {
         impl Visitor for PointVisitor {
             type Value = String;
 
-            fn expecting(&self, formatter: &mut ::std::fmt::Formatter) -> ::std::fmt::Result 
-            {
+            fn expecting(&self, formatter: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
                 write!(formatter, "a json string containing a geohash")
             }
 
