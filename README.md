@@ -38,7 +38,6 @@ And reference it in your crate root:
 ```rust
 #[macro_use]
 extern crate elastic_types_derive;
-#[macro_use]
 extern crate elastic_types;
 ```
 
