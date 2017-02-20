@@ -26,7 +26,7 @@ pub fn derive_elastic_type(input: proc_macro::TokenStream) -> proc_macro::TokenS
 
             expanded.to_string().parse().unwrap()
         },
-        Err(e) => panic!(e)
+        Err(e) => panic!("{}", e)
     }
 }
 
@@ -41,6 +41,6 @@ pub fn derive_date_format(input: proc_macro::TokenStream) -> proc_macro::TokenSt
 
             expanded.to_string().parse().unwrap()
         },
-        Err(e) => panic!(e)
+        Err(e) => panic!("{}", e)
     }
 }

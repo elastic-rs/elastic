@@ -90,7 +90,7 @@ quick_error!{
         }
         MissingFormat
         InvalidFormat(err: parse::Error) {
-            display("error parsing date format: {}", err)
+            display("error parsing date format")
             from()
         }
     }
