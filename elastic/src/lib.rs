@@ -28,7 +28,7 @@
 //! The following optional dependencies may also be useful:
 //!
 //! ```ignore
-//! elastic_types_derive = { version = "*", features = ["elastic"] }
+//! elastic_derive = "*"
 //! json_str = "*"
 //! serde = "*"
 //! serde_json = "*"
@@ -46,7 +46,7 @@
 //! #[macro_use]
 //! extern crate serde_derive;
 //! #[macro_use]
-//! extern crate elastic_types_derive;
+//! extern crate elastic_derive;
 //! #[macro_use]
 //! extern crate json_str;
 //! # fn main() {}
@@ -107,7 +107,7 @@
 //! # #[macro_use]
 //! # extern crate serde_derive;
 //! # #[macro_use]
-//! # extern crate elastic_types_derive;
+//! # extern crate elastic_derive;
 //! # extern crate elastic;
 //! # use elastic::prelude::*;
 //! # fn main() {
@@ -133,7 +133,7 @@
 //! # #[macro_use]
 //! # extern crate serde_derive;
 //! # #[macro_use]
-//! # extern crate elastic_types_derive;
+//! # extern crate elastic_derive;
 //! # extern crate elastic;
 //! # use elastic::prelude::*;
 //! # fn main() {
@@ -161,7 +161,7 @@
 //! # #[macro_use]
 //! # extern crate serde_derive;
 //! # #[macro_use]
-//! # extern crate elastic_types_derive;
+//! # extern crate elastic_derive;
 //! # extern crate elastic;
 //! # use elastic::prelude::*;
 //! # fn main() {
@@ -181,7 +181,7 @@
 //! # #[macro_use]
 //! # extern crate serde_derive;
 //! # #[macro_use]
-//! # extern crate elastic_types_derive;
+//! # extern crate elastic_derive;
 //! # extern crate elastic;
 //! # use elastic::prelude::*;
 //! # fn main() {
@@ -212,7 +212,7 @@
 //! # #[macro_use]
 //! # extern crate serde_derive;
 //! # #[macro_use]
-//! # extern crate elastic_types_derive;
+//! # extern crate elastic_derive;
 //! # extern crate elastic;
 //! # use elastic::prelude::*;
 //! # fn main() {
@@ -363,7 +363,7 @@ pub mod types {
     //! ```
     //! # extern crate elastic;
     //! # #[macro_use]
-    //! # extern crate elastic_types_derive;
+    //! # extern crate elastic_derive;
     //! # extern crate serde;
     //! # #[macro_use]
     //! # extern crate serde_derive;
@@ -387,7 +387,7 @@ pub mod types {
     //! ```
     //! # extern crate elastic;
     //! # #[macro_use]
-    //! # extern crate elastic_types_derive;
+    //! # extern crate elastic_derive;
     //! # extern crate serde;
     //! # extern crate serde_json;
     //! # #[macro_use]
@@ -407,7 +407,7 @@ pub mod types {
     //! ```
     //! # extern crate elastic;
     //! # #[macro_use]
-    //! # extern crate elastic_types_derive;
+    //! # extern crate elastic_derive;
     //! # extern crate serde;
     //! # extern crate serde_json;
     //! # #[macro_use]
@@ -462,7 +462,7 @@ pub mod types {
     //! ```
     //! # extern crate elastic;
     //! # #[macro_use]
-    //! # extern crate elastic_types_derive;
+    //! # extern crate elastic_derive;
     //! # extern crate serde;
     //! # #[macro_use]
     //! # extern crate serde_derive;
@@ -485,7 +485,7 @@ pub mod types {
     //! ```
     //! # extern crate elastic;
     //! # #[macro_use]
-    //! # extern crate elastic_types_derive;
+    //! # extern crate elastic_derive;
     //! # extern crate serde;
     //! # #[macro_use]
     //! # extern crate serde_derive;
@@ -506,7 +506,7 @@ pub mod types {
     //! ```
     //! # extern crate elastic;
     //! # #[macro_use]
-    //! # extern crate elastic_types_derive;
+    //! # extern crate elastic_derive;
     //! # extern crate serde;
     //! # #[macro_use]
     //! # extern crate serde_derive;
@@ -546,7 +546,7 @@ pub mod types {
     //! ```
     //! # extern crate elastic;
     //! # #[macro_use]
-    //! # extern crate elastic_types_derive;
+    //! # extern crate elastic_derive;
     //! # extern crate serde;
     //! # extern crate serde_json;
     //! # #[macro_use]
@@ -570,7 +570,7 @@ pub mod types {
     //! ```
     //! # extern crate elastic;
     //! # #[macro_use]
-    //! # extern crate elastic_types_derive;
+    //! # extern crate elastic_derive;
     //! # extern crate serde;
     //! # extern crate serde_json;
     //! # #[macro_use]

@@ -53,6 +53,7 @@ Add `elastic` and `json_str` to your `Cargo.toml`:
 elastic = "*"
 
 # Optional
+elastic_derive = "*"
 serde_json = "*"
 json_str = "*"
 ```

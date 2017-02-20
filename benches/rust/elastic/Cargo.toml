@@ -8,7 +8,7 @@ serde = "*"
 serde_derive = "*"
 json_str = { version = "*", features = ["nightly"]}
 
-elastic = { version = "*", path = "../../../", features = ["nightly"] }
+elastic = { version = "*", path = "../../../elastic" }
 
 lazy_static = "*"
 time = "*"

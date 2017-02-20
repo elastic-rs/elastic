@@ -1,16 +1,11 @@
 [package]
 name = "elastic"
-version = "0.8.0"
+version = "0.9.0"
 authors = ["Ashley Mannix <ashleymannix@live.com.au>"]
 license = "Apache-2.0"
 description = "A client for the Elasticsearch REST API."
 documentation = "https://docs.rs/elastic/"
 repository = "https://github.com/elastic-rs/elastic"
-
-[features]
-nightly = [
-	"elastic_types/nightly" 
-]
 
 [dependencies]
 error-chain = "~0.7.0"
@@ -21,9 +16,9 @@ reqwest = "~0.4.0"
 elastic_reqwest = "~0.4.0"
 elastic_requests = "~0.1.7"
 elastic_responses = "~0.5.0"
-elastic_types = "~0.11.1"
+elastic_types = "~0.13.0"
 
 [dev-dependencies]
 json_str = "^0.*"
 serde_derive = "~0.9.0"
-elastic_types_derive = { version = "~0.12.0", features = ["elastic"] }
+elastic_derive = { version = "*", path = "../derive" }
