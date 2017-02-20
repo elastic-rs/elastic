@@ -8,23 +8,30 @@ use chrono::offset::TimeZone;
 
 use elastic_types::date::prelude::*;
 
-const MYTYPE_DATE_FMT_1: &'static str = "%Y/%m/%d %H:%M:%S";
-const MYTYPE_DATE_FMT_2: &'static str = "%d/%m/%Y %H:%M:%S";
+#[derive(ElasticDateFormat, Default, Clone)]
+#[elastic(date_format="yyyy/MM/dd HH:mm:ss", date_format_name="test_date_1")]
+pub struct NamedDateFormat;
 
-#[derive(Default, Clone)]
-pub struct TestDateFormat1;
-date_fmt!(TestDateFormat1, "%Y/%m/%d %H:%M:%S", "test_date_1");
+#[derive(ElasticDateFormat, Default, Clone, Copy)]
+#[elastic(date_format="yyyyMMdd")]
+pub struct UnNamedDateFormat;
 
-#[derive(Default, Clone, Copy)]
-pub struct TestDateFormat2;
-date_fmt!(TestDateFormat2, "yyyyMMdd", "test_date_2");
+#[test]
+fn date_format_uses_name_if_supplied() {
+    assert_eq!("test_date_1", NamedDateFormat::name());
+}
+
+#[test]
+fn date_format_uses_format_if_name_not_supplied() {
+    assert_eq!("yyyyMMdd", UnNamedDateFormat::name());
+}
 
 #[test]
 fn dates_should_use_chrono_format() {
-    let _dt = chrono::UTC.datetime_from_str("13/05/2015 00:00:00", "%d/%m/%Y %H:%M:%S").unwrap();
-    let expected = _dt.format(MYTYPE_DATE_FMT_1).to_string();
+    let dt = chrono::UTC.datetime_from_str("13/05/2015 00:00:00", "%d/%m/%Y %H:%M:%S").unwrap();
+    let expected = dt.format("%Y/%m/%d %H:%M:%S").to_string();
 
-    let dt = Date::<TestDateFormat1>::new(_dt.clone());
+    let dt = Date::<NamedDateFormat>::new(dt.clone());
     let actual = dt.format();
 
     assert_eq!(expected, actual);
@@ -32,10 +39,10 @@ fn dates_should_use_chrono_format() {
 
 #[test]
 fn dates_should_use_es_format() {
-    let _dt = chrono::UTC.datetime_from_str("13/05/2015 00:00:00", "%d/%m/%Y %H:%M:%S").unwrap();
+    let dt = chrono::UTC.datetime_from_str("13/05/2015 00:00:00", "%d/%m/%Y %H:%M:%S").unwrap();
     let expected = "20150513".to_string();
 
-    let dt = Date::<TestDateFormat2>::new(_dt.clone());
+    let dt = Date::<UnNamedDateFormat>::new(dt.clone());
     let actual = dt.format();
 
     assert_eq!(expected, actual);
@@ -88,7 +95,7 @@ fn can_build_date_from_prim() {
 fn serialise_elastic_date() {
     let date = Date::<BasicDateTime>::new(
         chrono::UTC.datetime_from_str(
-            "13/05/2015 00:00:00", MYTYPE_DATE_FMT_2
+            "13/05/2015 00:00:00", "%d/%m/%Y %H:%M:%S"
         ).unwrap()
     );
 
@@ -111,7 +118,7 @@ fn deserialise_elastic_date() {
 #[test]
 fn serialise_elastic_date_brw() {
     let chrono_date = chrono::UTC.datetime_from_str(
-        "13/05/2015 00:00:00", MYTYPE_DATE_FMT_2
+        "13/05/2015 00:00:00", "%d/%m/%Y %H:%M:%S"
     ).unwrap();
 
     let date = DateBrw::<BasicDateTime>::new(&chrono_date);

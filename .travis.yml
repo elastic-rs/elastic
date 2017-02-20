@@ -12,16 +12,19 @@ matrix:
   include:
     - rust: stable
       env:
-        - CRATE="macros/date"
+        - CRATE="types-derive"
+    - rust: stable
+      env:
+        - CRATE="types-derive-internals"
     - rust: stable
       env:
         - CRATE="types"
     - rust: nightly
       env:
-        - CRATE="macros/date"
+        - CRATE="types-derive"
     - rust: nightly
       env:
-        - CRATE="macros/types"
+        - CRATE="types-derive-internals"
     - rust: nightly
       env:
         - CRATE="types"
@@ -38,7 +41,6 @@ script:
   - |
       cd $CRATE &&
       travis-cargo test &&
-      travis-cargo --only nightly test -- --features nightly --no-default-features &&
-      travis-cargo --only nightly bench -- --features nightly --no-default-features &&
+      travis-cargo --only nightly bench &&
       travis-cargo --only nightly doc &&
       if [ $DOC_UPLOAD ]; then travis-cargo --only nightly doc-upload; fi

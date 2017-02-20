@@ -6,7 +6,7 @@
 //! where correctness is enforced by Rust's type system.
 //! The mapping information is then used when serialising and deserialising your types.
 //! Annotating type fields with mapping metadata has no impact at runtime.
-//! 
+//!
 //! This library makes extensive use of [`serde`](https://serde.rs/).
 //!
 //! # Supported Versions
@@ -508,13 +508,6 @@
 #![deny(warnings)]
 #![deny(missing_docs)]
 
-#![cfg_attr(feature = "nightly", feature(plugin))]
-#![cfg_attr(feature = "nightly", plugin(elastic_date_macros))]
-
-#[cfg(not(feature = "nightly"))]
-#[macro_use]
-extern crate elastic_date_macros;
-
 pub extern crate chrono;
 pub extern crate geo as georust;
 pub extern crate geojson;
@@ -524,6 +517,9 @@ extern crate geohash;
 extern crate serde_derive;
 extern crate serde;
 extern crate serde_json;
+
+#[macro_use]
+extern crate elastic_types_derive;
 
 #[macro_use]
 mod macros;
@@ -553,4 +549,9 @@ pub mod prelude {
     pub use ::ip::prelude::*;
     pub use ::number::prelude::*;
     pub use ::string::prelude::*;
+}
+
+// This is a simple workaround for paths needed by `elastic_types_derive`.
+mod elastic_types {
+    pub use ::date;
 }

@@ -1,6 +1,6 @@
 [package]
 name = "elastic_types_derive"
-version = "0.12.0"
+version = "0.13.0"
 authors = ["Ashley Mannix <ashleymannix@live.com.au>"]
 license = "Apache-2.0"
 description = "Compile-time code generation for Elasticsearch type implementations."
@@ -11,12 +11,8 @@ name = "elastic_types_derive"
 proc-macro = true
 
 [features]
-elastic = [ ]
-nightly = [ ]
 
 [dependencies]
-serde = "~0.9.0"
-serde_json = "~0.9.0"
+elastic_types_derive_internals = { version = "*", path = "../types-derive-internals" }
 syn = { version = "~0.11.0", features = ["aster", "visit", "parsing", "full"] }
 quote = "~0.3.0"
-serde_codegen_internals = { version = "~0.12.0", default-features = false }

@@ -3,9 +3,9 @@
 //! Structures that can be indexed in Elasticsearch should implement `DocumentType`.
 //! The `DocumentType` is composed of typical mapping metadata, as well as the mapping
 //! for each of its properties.
-//! 
+//!
 //! Documents can be mapped as indexable types, or as an object field on another type.
-//! 
+//!
 //! # Examples
 //!
 //! Define your Elasticsearch types using _Plain Old Rust Structures_.
@@ -302,17 +302,17 @@ impl<T, M> FieldType<M, DocumentFormat> for T
 }
 
 /// A wrapper type for serialising user types.
-/// 
+///
 /// Serialising `Document` will produce the mapping for the given type,
-/// suitable as the mapping for 
-/// [Put Mapping](https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-put-mapping.html) 
+/// suitable as the mapping for
+/// [Put Mapping](https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-put-mapping.html)
 /// or [Create Index](https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-create-index.html).
 ///
 /// # Examples
-/// 
+///
 /// To serialise a document mapping, you can use its mapping type as a generic parameter in `Document<M>`.
 /// For example, we can define an index type for the Create Index API that includes the mapping for `MyType`:
-/// 
+///
 /// ```
 /// # #[macro_use]
 /// # extern crate json_str;
@@ -330,12 +330,12 @@ impl<T, M> FieldType<M, DocumentFormat> for T
 ///     pub my_string: String,
 ///     pub my_num: i32
 /// }
-/// 
+///
 /// #[derive(Default, Serialize)]
 /// pub struct MyIndex {
 ///     pub mappings: Mappings
 /// }
-/// 
+///
 /// #[derive(Default, Serialize)]
 /// pub struct Mappings {
 ///     pub mytype: Document<MyTypeMapping>
@@ -343,7 +343,7 @@ impl<T, M> FieldType<M, DocumentFormat> for T
 /// # fn main() {
 /// # }
 /// ```
-/// 
+///
 /// Serialising `MyIndex` will produce the following json:
 ///
 /// ```
@@ -403,10 +403,10 @@ impl<T, M> FieldType<M, DocumentFormat> for T
 /// # assert_eq!(json, index);
 /// # }
 /// ```
-/// 
+///
 /// Alternatively, you can implement serialisation manually for `MyIndex` and avoid having
 /// to keep field names up to date if the document type name changes:
-/// 
+///
 /// ```
 /// # #[macro_use]
 /// # extern crate json_str;
@@ -431,15 +431,15 @@ impl<T, M> FieldType<M, DocumentFormat> for T
 /// pub struct MyIndex {
 ///     mappings: Mappings
 /// }
-/// 
+///
 /// #[derive(Default)]
 /// struct Mappings;
 /// impl Serialize for Mappings {
 ///     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
 ///         let mut state = try!(serializer.serialize_struct("mappings", 1));
-///         
+///
 ///         try!(state.serialize_field(MyType::name(), &Document::from(MyType::mapping())));
-///         
+///
 ///         state.end()
 ///     }
 /// }
@@ -697,7 +697,7 @@ impl Serialize for Dynamic {
 pub fn field_ser<S, M, F>(state: &mut S, field: &'static str, _: M) -> Result<(), S::Error>
     where S: SerializeStruct,
           M: FieldMapping<F>,
-          F: Default,
+          F: Default
 {
     state.serialize_field(field, &M::Field::default())
 }

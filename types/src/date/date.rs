@@ -244,9 +244,9 @@ impl<F, M> Deserialize for Date<F, M>
         {
             type Value = Date<F, M>;
 
-            fn expecting(&self, formatter: &mut ::std::fmt::Formatter) -> ::std::fmt::Result 
-            {
-                write!(formatter, "a json string or number containing a formatted date")
+            fn expecting(&self, formatter: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+                write!(formatter,
+                       "a json string or number containing a formatted date")
             }
 
             fn visit_str<E>(self, v: &str) -> Result<Date<F, M>, E>

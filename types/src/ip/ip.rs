@@ -118,8 +118,7 @@ impl<M> Deserialize for Ip<M>
         {
             type Value = Ip<M>;
 
-            fn expecting(&self, formatter: &mut ::std::fmt::Formatter) -> ::std::fmt::Result 
-            {
+            fn expecting(&self, formatter: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
                 write!(formatter, "a json string containing an IpV4 address")
             }
 

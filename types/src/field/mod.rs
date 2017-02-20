@@ -4,7 +4,7 @@ use std::collections::{BTreeMap, HashMap};
 use std::hash::Hash;
 use std::marker::PhantomData;
 use serde::{Serialize, Serializer};
-use serde::ser::SerializeStruct;  
+use serde::ser::SerializeStruct;
 use serde_json::Value;
 
 use super::document::DocumentFormat;
@@ -33,10 +33,10 @@ pub trait FieldType<M, F = DocumentFormat>
 
 /// A serialisable variant of the field mapping.
 pub trait SerializeField<F> {
-  /// The serialisable field.
-  /// 
-  /// It's expected that this type will be `Field<Self, F>`.
-  type Field: Serialize + Default;
+    /// The serialisable field.
+    ///
+    /// It's expected that this type will be `Field<Self, F>`.
+    type Field: Serialize + Default;
 }
 
 /// The base requirements for mapping an Elasticsearch data type.
@@ -56,7 +56,7 @@ pub trait FieldMapping<F>
 
 /// A wrapper type used to work around conflicting implementations of `Serialize`
 /// for the various mapping traits.
-/// 
+///
 /// Serialising `Field` will produce the mapping for the given type,
 /// suitable as the mapping of a field for a document.
 #[derive(Default)]
@@ -77,13 +77,13 @@ impl<M, F> From<M> for Field<M, F>
 }
 
 /// Get the mapping for a field.
-/// 
+///
 /// This lets `#[derive(ElasticType)]` get a mapping without requiring the
 /// `FieldType` trait to be in scope.
 pub fn mapping<T, M, F>() -> M
-  where T: FieldType<M, F>,
-        M: FieldMapping<F>,
-        F: Default
+    where T: FieldType<M, F>,
+          M: FieldMapping<F>,
+          F: Default
 {
     T::mapping()
 }
@@ -121,10 +121,9 @@ impl Serialize for IndexAnalysis {
 /// A mapping implementation for a non-core type, or anywhere it's ok for Elasticsearch to infer the mapping at index-time.
 #[derive(Debug, PartialEq, Default, Clone)]
 pub struct DefaultMapping;
-impl FieldMapping<()> for DefaultMapping { }
+impl FieldMapping<()> for DefaultMapping {}
 
-impl SerializeField<()> for DefaultMapping
-{
+impl SerializeField<()> for DefaultMapping {
     type Field = Field<Self, ()>;
 }
 
@@ -170,7 +169,7 @@ impl<M, F> SerializeField<F> for WrappedMapping<M, F>
 
 impl<M, F> Serialize for Field<WrappedMapping<M, F>, F>
     where M: FieldMapping<F>,
-          F: Default,
+          F: Default
 {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
         where S: Serializer

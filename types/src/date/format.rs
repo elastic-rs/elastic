@@ -6,62 +6,49 @@ use std::fmt;
 
 /// A format used for parsing and formatting dates.
 ///
-/// The format is specified as two functions: `parse` and `format`, which are backed by `chrono::format::Item`s.
-/// Not all formats use the `Item`s though, for example `EpochMillis`, which is more efficient than other formats.
+/// The format is specified as two functions: `parse` and `format`.
+/// 
+/// # Examples
+/// 
+/// The easiest way to implement `DateFormat` is to derive `ElasticDateFormat`
+/// on a unit struct:
+///
+/// ```
+/// # #[macro_use]
+/// # extern crate elastic_types;
+/// # #[macro_use]
+/// # extern crate elastic_types_derive;
+/// # extern crate chrono;
+/// # use elastic_types::prelude::*;
+/// # fn main() {
+/// #[derive(Default, ElasticDateFormat)]
+/// #[elastic(date_format="yyyy-MM-dd'T'HH:mm:ss")]
+/// struct MyFormat;
+/// # }
+/// ```
+/// 
+/// The `#[elastic(date_format)]` attribute is required, 
+/// and must contain a valid [format string](http://www.joda.org/joda-time/apidocs/org/joda/time/format/DateTimeFormat.html).
+/// 
+/// > NOTE: Only a small subset of the Joda time format is supported.
+/// 
+/// You can customise the indexed format name by adding an `#[elastic(date_format_name)]` attribute:
+/// 
+/// ```
+/// # #[macro_use]
+/// # extern crate elastic_types;
+/// # #[macro_use]
+/// # extern crate elastic_types_derive;
+/// # extern crate chrono;
+/// # use elastic_types::prelude::*;
+/// # fn main() {
+/// #[derive(Default, ElasticDateFormat)]
+/// #[elastic(date_format="yyyyMMdd'T'HHmmssZ", date_format_name="basic_date_time_no_millis")]
+/// struct MyFormat;
+/// # }
+/// ```
 pub trait DateFormat
     where Self: Default
-{
-    /// Parses a date string to a `chrono::DateTime<UTC>` result.
-    ///
-    /// The date string must match the format specified by `fmt()`.
-    fn parse(date: &str) -> Result<DateTime<UTC>, ParseError> {
-        let fmt = Self::fmt();
-
-        let mut parsed = Parsed::new();
-        match chrono::format::parse(&mut parsed, date, fmt.iter().cloned()) {
-            Ok(_) => {
-                // If the parsed result doesn't contain any time, set it to the default
-                if parsed.hour_mod_12.is_none() {
-                    let _ = parsed.set_hour(0);
-                    let _ = parsed.set_minute(0);
-                }
-
-                // Set the DateTime result
-                let dt = try!(parsed.to_naive_datetime_with_offset(0));
-                Ok(chrono::DateTime::from_utc(dt, chrono::UTC))
-            }
-            Err(e) => Err(e.into()),
-        }
-    }
-
-    /// Formats a given `chrono::DateTime<UTC>` as a string.
-    ///
-    /// The resulting string is based off the format specified by `fmt()`.
-    fn format(date: &DateTime<UTC>) -> String {
-        let fmt = Self::fmt();
-
-        date.format_with_items(fmt.iter().cloned()).to_string()
-    }
-
-    /// The format used for parsing and formatting dates.
-    ///
-    /// This is specified as a collection of `chrono::format::Item`s for efficiency.
-    fn fmt<'a>() -> Vec<Item<'a>>;
-
-    /// The name of the format.
-    ///
-    /// This is the string used when defining the format in the field mapping.
-    ///
-    /// It's important to remember that Elasticsearch expects non-symbolic literals in date formats to be escaped,
-    /// so `yyyy-MM-ddTHH:mm` needs to be represented as `yyyy-MM-dd'T'HH:mm`.
-    fn name() -> &'static str;
-}
-
-/// A format used for parsing and formatting dates.
-///
-/// This trait implements `DateFormat` for you, but requires you parse and format dates yourself.
-pub trait CustomDateFormat
-    where Self: DateFormat
 {
     /// Parses a date string to a `chrono::DateTime<UTC>` result.
     fn parse(date: &str) -> Result<DateTime<UTC>, ParseError>;
@@ -72,82 +59,31 @@ pub trait CustomDateFormat
     /// The name of the format.
     ///
     /// This is the string used when defining the format in the field mapping.
-    ///
-    /// It's important to remember that Elasticsearch expects non-symbolic literals in date formats to be escaped,
-    /// so `yyyy-MM-ddTHH:mm` needs to be represented as `yyyy-MM-dd'T'HH:mm`.
     fn name() -> &'static str;
 }
 
-impl<T: CustomDateFormat> DateFormat for T {
-    /// Parses a date string to a `chrono::DateTime<UTC>` result.
-    ///
-    /// The date string must match the format specified by `fmt()`.
-    fn parse(date: &str) -> Result<DateTime<UTC>, ParseError> {
-        <Self as CustomDateFormat>::parse(date)
-    }
+/// Parse a date string using an owned slice of items.
+pub fn parse_from_tokens<'a>(date: &str, fmt: Vec<Item<'a>>) -> Result<DateTime<UTC>, ParseError> {
+    let mut parsed = Parsed::new();
+    match chrono::format::parse(&mut parsed, date, fmt.into_iter()) {
+        Ok(_) => {
+            // If the parsed result doesn't contain any time, set it to the default
+            if parsed.hour_mod_12.is_none() {
+                let _ = parsed.set_hour(0);
+                let _ = parsed.set_minute(0);
+            }
 
-    /// Formats a given `chrono::DateTime<UTC>` as a string.
-    ///
-    /// The resulting string is based off the format specified by `fmt()`.
-    fn format(date: &DateTime<UTC>) -> String {
-        <Self as CustomDateFormat>::format(date)
-    }
-
-    /// The format used for parsing and formatting dates.
-    ///
-    /// This is specified as a collection of `chrono::format::Item`s for efficiency.
-    fn fmt<'a>() -> Vec<Item<'a>> {
-        Vec::new()
-    }
-
-    /// The name of the format.
-    ///
-    /// This is the string used when defining the format in the field mapping.
-    ///
-    /// It's important to remember that Elasticsearch expects non-symbolic literals in date formats to be escaped,
-    /// so `yyyy-MM-ddTHH:mm` needs to be represented as `yyyy-MM-dd'T'HH:mm`.
-    fn name() -> &'static str {
-        <Self as CustomDateFormat>::name()
+            // Set the DateTime result
+            let dt = try!(parsed.to_naive_datetime_with_offset(0));
+            Ok(chrono::DateTime::from_utc(dt, chrono::UTC))
+        }
+        Err(e) => Err(e.into()),
     }
 }
 
-/// Implement `DateFormat` for the given type.
-///
-/// # Examples
-///
-/// The macro takes 2 string literals; the format to parse and the name to use in Elasticsearch:
-///
-/// ```
-/// # #![cfg_attr(feature = "nightly", feature(plugin))]
-/// # #![cfg_attr(feature = "nightly", plugin(elastic_date_macros))]
-/// # #[cfg(not(feature = "nightly"))]
-/// #[macro_use]
-/// extern crate elastic_date_macros;
-/// # #[macro_use]
-/// # extern crate elastic_types;
-/// # extern crate chrono;
-/// # fn main() {}
-///
-/// #[derive(Default, Clone)]
-/// struct MyFormat;
-/// date_fmt!(MyFormat, "yyyy-MM-ddTHH:mm:ssZ", "yyyy-MM-dd'T'HH:mm:ssZ");
-/// ```
-///
-/// You can then use `MyFormat` as the generic parameter in `Date`.
-/// 
-/// > NOTE: The `date_fmt` macro expects you to have the `elastic_date_macros`
-/// crate imported.
-#[macro_export]
-macro_rules! date_fmt {
-    ($format_ty:ty, $format_pat:tt, $es_format:expr) => (
-        impl $crate::date::DateFormat for $format_ty {
-            fn fmt<'a>() -> Vec<::chrono::format::Item<'a>> {
-                date_fmt_to_tokens!($format_pat)
-            }
-
-            fn name() -> &'static str { $es_format }
-        }
-    )
+/// Format a date string using an owned slice of items.
+pub fn format_with_tokens<'a>(date: &DateTime<UTC>, fmt: Vec<Item<'a>>) -> String {
+    date.format_with_items(fmt.into_iter()).to_string()
 }
 
 /// Represents an error encountered during parsing.

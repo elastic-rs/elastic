@@ -1,10 +1,3 @@
-#![cfg_attr(feature = "nightly", feature(plugin))]
-#![cfg_attr(feature = "nightly", plugin(elastic_date_macros))]
-
-#[cfg(not(feature = "nightly"))]
-#[macro_use]
-extern crate elastic_date_macros;
-
 #[macro_use]
 extern crate json_str;
 
@@ -13,16 +6,12 @@ extern crate serde_derive;
 #[macro_use]
 extern crate elastic_types_derive;
 
-#[macro_use]
-extern crate maplit;
-
 extern crate serde;
 extern crate serde_json;
 pub extern crate chrono;
 extern crate geo as georust;
 extern crate geojson;
 
-#[macro_use]
 extern crate elastic_types;
 
 pub mod date_fixtures {
@@ -427,12 +416,16 @@ pub mod object_fixtures {
 pub mod object_macro_fixtures {
     use elastic_types::prelude::*;
 
-    // Make sure we can derive `ElasticType` with no `uses`.
+    // Make sure we can derive with no `uses`.
     pub mod no_prelude {
         #[derive(Serialize, ElasticType)]
         pub struct TypeWithNoPath {
             id: i32
         }
+
+        #[derive(Default, ElasticDateFormat)]
+        #[elastic(date_format="yyyy")]
+        pub struct DateFormatWithNoPath;
     }
 
     #[derive(Serialize, ElasticType)]
@@ -447,7 +440,7 @@ pub mod object_macro_fixtures {
     }
 
     #[derive(Serialize, ElasticType)]
-    #[elastic(mapping="CustomTypeMapping")]
+    #[elastic(mapping="ManualCustomTypeMapping")]
     pub struct CustomType {
         pub field: i32,
         #[serde(skip_serializing)]
@@ -456,9 +449,9 @@ pub mod object_macro_fixtures {
         pub field2: i32
     }
 
-    #[derive(Default)]
-    pub struct CustomTypeMapping;
-    impl DocumentMapping for CustomTypeMapping {
+    #[derive(PartialEq, Debug, Default)]
+    pub struct ManualCustomTypeMapping;
+    impl DocumentMapping for ManualCustomTypeMapping {
         fn name() -> &'static str { "renamed_type" }
     }
 

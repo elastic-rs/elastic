@@ -253,8 +253,9 @@ fn epoch_millis_zero() {
 
 #[test]
 fn custom_format() {
+    #[derive(Default)]
     struct MyCustomFormat;
-    impl CustomDateFormat for MyCustomFormat {
+    impl DateFormat for MyCustomFormat {
         fn name() -> &'static str { "yyyy-MM-dd'T'HH:mm:ssZ" }
     
         fn format(date: &DateTime<UTC>) -> String {

@@ -12,10 +12,9 @@ install:
   - cargo -vV
 build: false
 test_script:
-  - ps: cd macros
-  - ps: cd types
-  - cargo test --verbose --features nightly --no-default-features
-  - ps: cd ../date
-  - cargo test --verbose --features nightly --no-default-features
-  - ps: cd ../../types
-  - cargo test --verbose --features nightly --no-default-features
+  - ps: cd types-derive
+  - cargo test --verbose
+  - ps: cd ../types-derive-internals
+  - cargo test --verbose
+  - ps: cd ../types
+  - cargo test --verbose

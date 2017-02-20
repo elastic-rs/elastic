@@ -40,38 +40,35 @@
 //!
 //! ## Creating Formats
 //!
-//! To make it easier to build your own date formats, use the `date_fmt!` macro.
-//! This will convert an Elasticsearch or `chrono` format string into a `Vec<Item>` for efficient parsing at runtime:
+//! To make it easier to build your own date formats, derive `ElasticDateFormat` on a unit struct.
+//! This will convert an Elasticsearch format string into a `Vec<chrono::format::Item>` for efficient parsing at runtime:
 //!
 //! ```
-//! # #![cfg_attr(feature = "nightly", feature(plugin))]
-//! # #![cfg_attr(feature = "nightly", plugin(elastic_date_macros))]
-//! # #[cfg(not(feature = "nightly"))]
-//! #[macro_use]
-//! extern crate elastic_date_macros;
 //! # #[macro_use]
+//! # extern crate elastic_types;
+//! # #[macro_use]
+//! # extern crate elastic_types_derive;
+//! # extern crate chrono;
+//! # use elastic_types::prelude::*;
+//! # fn main() {
+//! #[derive(Default, ElasticDateFormat)]
+//! #[elastic(date_format="yyyy-MM-dd'T'HH:mm:ss")]
+//! struct MyFormat;
+//! # }
+//! ```
+//!
+//! You can also manually implement `DateFormat` and write your own arbitrary format/parse logic:
+//!
+//! ```
 //! # extern crate elastic_types;
 //! # extern crate chrono;
 //! # use elastic_types::prelude::*;
 //! # fn main() {
+//! use chrono::{DateTime, UTC};
 //! 
 //! #[derive(Default, Clone)]
-//! struct MyFormat;
-//! date_fmt!(MyFormat, "yyyy-MM-ddTHH:mm:ss", "yyyy-MM-dd'T'HH:mm:ss");
-//! # }
-//! ```
-//!
-//! You can also implement `CustomDateFormat` yourself and write your own arbitrary format/parse logic:
-//!
-//! ```
-//! # extern crate elastic_types;
-//! # extern crate chrono;
-//! # use chrono::{ DateTime, UTC };
-//! # use elastic_types::date::{ CustomDateFormat, ParseError };
-//! # fn main() {
-//! #[derive(Default, Clone)]
 //! struct MyCustomFormat;
-//! impl CustomDateFormat for MyCustomFormat {
+//! impl DateFormat for MyCustomFormat {
 //!     fn name() -> &'static str { "yyyy-MM-dd'T'HH:mm:ssZ" }
 //!
 //!     fn format(date: &DateTime<UTC>) -> String {

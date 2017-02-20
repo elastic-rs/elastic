@@ -106,8 +106,7 @@ impl<M> Deserialize for Boolean<M>
         {
             type Value = Boolean<M>;
 
-            fn expecting(&self, formatter: &mut ::std::fmt::Formatter) -> ::std::fmt::Result 
-            {
+            fn expecting(&self, formatter: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
                 write!(formatter, "a json boolean")
             }
 
