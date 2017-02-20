@@ -28,10 +28,10 @@ fn date_format_uses_format_if_name_not_supplied() {
 
 #[test]
 fn dates_should_use_chrono_format() {
-    let _dt = chrono::UTC.datetime_from_str("13/05/2015 00:00:00", "%d/%m/%Y %H:%M:%S").unwrap();
-    let expected = _dt.format("%Y/%m/%d %H:%M:%S").to_string();
+    let dt = chrono::UTC.datetime_from_str("13/05/2015 00:00:00", "%d/%m/%Y %H:%M:%S").unwrap();
+    let expected = dt.format("%Y/%m/%d %H:%M:%S").to_string();
 
-    let dt = Date::<NamedDateFormat>::new(_dt.clone());
+    let dt = Date::<NamedDateFormat>::new(dt.clone());
     let actual = dt.format();
 
     assert_eq!(expected, actual);
@@ -39,10 +39,10 @@ fn dates_should_use_chrono_format() {
 
 #[test]
 fn dates_should_use_es_format() {
-    let _dt = chrono::UTC.datetime_from_str("13/05/2015 00:00:00", "%d/%m/%Y %H:%M:%S").unwrap();
+    let dt = chrono::UTC.datetime_from_str("13/05/2015 00:00:00", "%d/%m/%Y %H:%M:%S").unwrap();
     let expected = "20150513".to_string();
 
-    let dt = Date::<UnNamedDateFormat>::new(_dt.clone());
+    let dt = Date::<UnNamedDateFormat>::new(dt.clone());
     let actual = dt.format();
 
     assert_eq!(expected, actual);

@@ -46,77 +46,74 @@ named!(tokens(&[u8]) -> Vec<DateFormatToken>,
 
 /// Parse `yyyy` as a 4 digit year.
 named!(year(&[u8]) -> DateFormatToken,
-    map!(
-        count!(char!('y'), 4),
-        |r| DateFormatToken::Year
+    do_parse!(
+        count!(char!('y'), 4) >>
+        (DateFormatToken::Year)
     )
 );
 
 /// Parse `MM` as a 2 digit month of year.
 named!(month(&[u8]) -> DateFormatToken,
-    map!(
-        count!(char!('M'), 2),
-        |r| DateFormatToken::Month
+    do_parse!(
+        count!(char!('M'), 2) >>
+        (DateFormatToken::Month)
     )
 );
 
 /// Parse `dd` as a 2 digit day of month.
 named!(day_of_month(&[u8]) -> DateFormatToken,
-    map!(
-        count!(char!('d'), 2),
-        |r| DateFormatToken::DayOfMonth
+    do_parse!(
+        count!(char!('d'), 2) >>
+        (DateFormatToken::DayOfMonth)
     )
 );
 
 /// Parse `DDD` as a 3 digit day of year.
 named!(day_of_year(&[u8]) -> DateFormatToken,
-    map!(
-        count!(char!('D'), 3),
-        |r| DateFormatToken::DayOfYear
+    do_parse!(
+        count!(char!('D'), 3) >>
+        (DateFormatToken::DayOfYear)
     )
 );
 
 /// Parse `HH` as a 2 digit hour of day (24hr).
 named!(hour(&[u8]) -> DateFormatToken,
-    map!(
-        count!(char!('H'), 2),
-        |r| DateFormatToken::Hour
+    do_parse!(
+        count!(char!('H'), 2) >>
+        (DateFormatToken::Hour)
     )
 );
 
 /// Parse `mm` as a 2 digit minute of hour.
 named!(minute(&[u8]) -> DateFormatToken,
-    map!(
-        count!(char!('m'), 2),
-        |r| DateFormatToken::Minute
+    do_parse!(
+        count!(char!('m'), 2) >>
+        (DateFormatToken::Minute)
     )
 );
 
 /// Parse `ss` as a 2 digit second of minute.
 named!(second(&[u8]) -> DateFormatToken,
-    map!(
-        count!(char!('s'), 2),
-        |r| DateFormatToken::Second
+    do_parse!(
+        count!(char!('s'), 2) >>
+        (DateFormatToken::Second)
     )
 );
 
 /// Parse `.SSS` as a 3 digit millisecond of second.
 named!(millisecond(&[u8]) -> DateFormatToken,
-    map!(
-        do_parse!(
-            tag!(".") >>
-            count!(char!('S'), 3) >>
-            ()
-        ),
-        |r| DateFormatToken::Millisecond
+    do_parse!(
+        tag!(".") >>
+        count!(char!('S'), 3) >>
+        (DateFormatToken::Millisecond)
     )
 );
 
 /// Parse `Z` as a UTC timezone
 named!(utc(&[u8]) -> DateFormatToken,
-    map!(
-        char!('Z'),
-        |r| DateFormatToken::Utc
+    do_parse!(
+        char!('Z') >>
+        (DateFormatToken::Utc)
     )
 );
 
@@ -126,17 +123,17 @@ fn is_delim(i: u8) -> bool {
 
 /// Parse a stream of `.`, `-`, `/`, `:` or ` ` as delimiters.
 named!(delim(&[u8]) -> DateFormatToken,
-    map!(
-        take_while1!(is_delim),
-        |r| DateFormatToken::Delim(str::from_utf8(r).unwrap())
+    do_parse!(
+        i: take_while1!(is_delim) >>
+        (DateFormatToken::Delim(str::from_utf8(i).unwrap()))
     )
 );
 
 /// Parse a stream of characters between `'`.
 named!(escaped(&[u8]) -> DateFormatToken,
-    map!(
-        delimited!(char!('\''), is_not!("'"), char!('\'')),
-        |r| DateFormatToken::Escaped(str::from_utf8(r).unwrap())
+    do_parse!(
+        i: delimited!(char!('\''), is_not!("'"), char!('\'')) >>
+        (DateFormatToken::Escaped(str::from_utf8(i).unwrap()))
     )
 );
 
