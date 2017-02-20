@@ -1,14 +1,10 @@
 #![feature(plugin, test)]
-#![plugin(json_str, elastic_date_macros)]
+#![plugin(json_str)]
 
 #[macro_use]
 extern crate serde_derive;
 #[macro_use]
 extern crate elastic_types_derive;
-
-#[allow(plugin_as_library)]
-#[macro_use]
-extern crate json_str;
 
 extern crate serde;
 extern crate serde_json;
@@ -17,7 +13,6 @@ extern crate geo as georust;
 extern crate geojson;
 extern crate test;
 
-#[macro_use]
 extern crate elastic_types;
 
 pub mod date_fixtures {

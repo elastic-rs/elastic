@@ -19,4 +19,3 @@ elastic_types_derive = { version = "*", path = "../types-derive" }
 
 [dev-dependencies]
 json_str = "^0.*"
-maplit = "^0.*"
