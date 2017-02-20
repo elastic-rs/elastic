@@ -275,7 +275,7 @@ impl ResponseBuilder {
     /// # #[macro_use]
     /// # extern crate serde_derive;
     /// # #[macro_use]
-    /// # extern crate elastic_types_derive;
+    /// # extern crate elastic_derive;
     /// # extern crate elastic;
     /// # use elastic::prelude::*;
     /// # fn main() {
