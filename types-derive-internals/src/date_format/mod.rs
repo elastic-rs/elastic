@@ -5,6 +5,12 @@ mod parse;
 
 use super::{get_elastic_attr_name_value, get_str_from_lit};
 
+/// Derive `DateFormat` for the given input.
+/// 
+/// The input must satisfy the following rules:
+/// 
+/// - It must be a unit struct.
+/// - It must have an `#[elastic(date_format="<value>")]` attribute.
 pub fn expand_derive(crate_root: Tokens,
                      input: &syn::MacroInput)
                      -> Result<Vec<Tokens>, DeriveDateFormatError> {

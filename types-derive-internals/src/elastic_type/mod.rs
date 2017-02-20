@@ -3,6 +3,14 @@ use syn;
 use serde_codegen_internals::{self, attr as serde_attr};
 use super::{get_elastic_attr_name_value, get_ident_from_lit};
 
+/// Derive `DocumentType` for the given input.
+/// 
+/// The input must satisfy the following rules:
+/// 
+/// - It must be a struct.
+/// - The structs field types must implement `FieldType` (or be ignored).
+/// - A mapping type supplied by `#[elastic(mapping="<ident>")]` must implement `DocumentMapping`,
+/// but not `PropertiesMapping`.
 pub fn expand_derive(crate_root: Tokens,
                      input: &syn::MacroInput)
                      -> Result<Vec<Tokens>, DeriveElasticTypeError> {
