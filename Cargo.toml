@@ -16,7 +16,7 @@ reqwest = "~0.4.0"
 elastic_reqwest = "~0.4.0"
 elastic_requests = "~0.1.7"
 elastic_responses = "~0.5.0"
-elastic_types = { version = "*", path = "../elastic-types/types" }
+elastic_types = "~0.13.0"
 
 [dev-dependencies]
 json_str = "^0.*"
