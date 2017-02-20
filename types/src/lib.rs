@@ -508,13 +508,6 @@
 #![deny(warnings)]
 #![deny(missing_docs)]
 
-#![cfg_attr(feature = "nightly", feature(plugin))]
-#![cfg_attr(feature = "nightly", plugin(elastic_date_macros))]
-
-#[cfg(not(feature = "nightly"))]
-#[macro_use]
-extern crate elastic_date_macros;
-
 pub extern crate chrono;
 pub extern crate geo as georust;
 pub extern crate geojson;
@@ -524,6 +517,9 @@ extern crate geohash;
 extern crate serde_derive;
 extern crate serde;
 extern crate serde_json;
+
+#[macro_use]
+extern crate elastic_types_derive;
 
 #[macro_use]
 mod macros;
@@ -538,6 +534,10 @@ pub mod geo;
 pub mod ip;
 pub mod number;
 pub mod string;
+
+mod elastic_types {
+	pub use ::date;
+}
 
 pub mod prelude {
     //! Includes all data types.

@@ -5,12 +5,12 @@ use ::object_macro_fixtures::*;
 
 #[test]
 fn get_default_type_name() {
-    assert_eq!("simpletype", SimpleTypeMapping::name());
+    assert_eq!("simpletype", SimpleType::name());
 }
 
 #[test]
 fn get_custom_type_name() {
-    assert_eq!("renamed_type", CustomTypeMapping::name());
+    assert_eq!("renamed_type", CustomType::name());
 }
 
 #[test]

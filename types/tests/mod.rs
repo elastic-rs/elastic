@@ -1,10 +1,3 @@
-#![cfg_attr(feature = "nightly", feature(plugin))]
-#![cfg_attr(feature = "nightly", plugin(elastic_date_macros))]
-
-#[cfg(not(feature = "nightly"))]
-#[macro_use]
-extern crate elastic_date_macros;
-
 #[macro_use]
 extern crate json_str;
 
@@ -13,16 +6,12 @@ extern crate serde_derive;
 #[macro_use]
 extern crate elastic_types_derive;
 
-#[macro_use]
-extern crate maplit;
-
 extern crate serde;
 extern crate serde_json;
 pub extern crate chrono;
 extern crate geo as georust;
 extern crate geojson;
 
-#[macro_use]
 extern crate elastic_types;
 
 pub mod date_fixtures {

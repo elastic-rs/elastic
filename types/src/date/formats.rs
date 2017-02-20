@@ -3,29 +3,25 @@ use std::error::Error;
 use super::{CustomDateFormat, ParseError};
 
 /// Format for default `chrono::DateTime`.
-#[derive(PartialEq, Debug, Default, Clone, Copy)]
+#[derive(ElasticDateFormat, PartialEq, Debug, Default, Clone, Copy)]
+#[elastic(date_format="yyyy-MM-dd'T'HH:mm:ssZ")]
 pub struct ChronoFormat;
-date_fmt!(ChronoFormat,
-          "yyyy-MM-ddTHH:mm:ssZ",
-          "yyyy-MM-dd'T'HH:mm:ssZ");
 
 /// Format for `basic_date_time_no_millis`.
 ///
 /// # Links
 /// - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-date-format.html#built-in-date-formats)
-#[derive(PartialEq, Debug, Default, Clone, Copy)]
+#[derive(ElasticDateFormat, PartialEq, Debug, Default, Clone, Copy)]
+#[elastic(date_format="yyyyMMdd'T'HHmmssZ", date_format_name="basic_date_time_no_millis")]
 pub struct BasicDateTimeNoMillis;
-date_fmt!(BasicDateTimeNoMillis,
-          "%Y%m%dT%H%M%SZ",
-          "basic_date_time_no_millis");
 
 /// Format for `basic_date_time`.
 ///
 /// # Links
 /// - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-date-format.html#built-in-date-formats)
-#[derive(PartialEq, Debug, Default, Clone, Copy)]
+#[derive(ElasticDateFormat, PartialEq, Debug, Default, Clone, Copy)]
+#[elastic(date_format="yyyyMMdd'T'HHmmss.SSSZ", date_format_name="basic_date_time")]
 pub struct BasicDateTime;
-date_fmt!(BasicDateTime, "%Y%m%dT%H%M%S%.3fZ", "basic_date_time");
 
 /// Format for `epoch_millis`.
 ///
@@ -36,6 +32,7 @@ date_fmt!(BasicDateTime, "%Y%m%dT%H%M%S%.3fZ", "basic_date_time");
 /// - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-date-format.html#built-in-date-formats)
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct EpochMillis;
+
 impl CustomDateFormat for EpochMillis {
     fn name() -> &'static str {
         "epoch_millis"

@@ -1,9 +1,10 @@
+use std::error::Error;
 use quote::Tokens;
 use syn;
 use serde_codegen_internals::{self, attr as serde_attr};
-use super::get_elastic_meta_items;
+use super::{get_elastic_attr_name_value, get_ident_from_lit};
 
-pub fn expand_derive(crate_root: Tokens, input: &syn::MacroInput) -> Vec<Tokens> {
+pub fn expand_derive(crate_root: Tokens, input: &syn::MacroInput) -> Result<Vec<Tokens>, DeriveElasticTypeError> {
     //Annotatable item for a struct with struct fields
     let fields = match input.body {
         syn::Body::Struct(ref data) => {
@@ -15,10 +16,7 @@ pub fn expand_derive(crate_root: Tokens, input: &syn::MacroInput) -> Vec<Tokens>
         _ => None
     };
 
-    if fields.is_none() {
-        panic!("derive(ElasticType) is only valid for structs");
-    }
-    let fields = fields.unwrap();
+    let fields = fields.ok_or(DeriveElasticTypeError::InvalidInput)?;
 
     //Get the serializable fields
     let fields: Vec<(syn::Ident, &syn::Field)> = fields
@@ -50,7 +48,7 @@ pub fn expand_derive(crate_root: Tokens, input: &syn::MacroInput) -> Vec<Tokens>
     genned.push(impl_elastic_type(crate_root.clone(), input, &mapping_ty));
     genned.push(impl_props_mapping(crate_root.clone(), &mapping_ty, get_props_ser_stmts(crate_root.clone(), &fields)));
 
-    genned
+    Ok(genned)
 }
 
 //Define a struct for the mapping with a few defaults
@@ -114,36 +112,14 @@ fn get_props_ser_stmts(crate_root: Tokens, fields: &[(syn::Ident, &syn::Field)])
 
 //Get the mapping ident supplied by an #[elastic()] attribute or create a default one
 fn get_mapping_from_attr(item: &syn::MacroInput) -> Option<syn::Ident> {
-    for meta_items in item.attrs.iter().filter_map(get_elastic_meta_items) {
-        for meta_item in meta_items {
-            match *meta_item {
-                // Parse `#[elastic(mapping="foo")]`
-                syn::NestedMetaItem::MetaItem(syn::MetaItem::NameValue(ref name, ref lit)) if name == &"mapping" => {
-                    return Some(
-                        get_ident_from_lit(lit)
-                            .unwrap_or(get_default_mapping(item))
-                    )
-                },
-                _ => ()
-            }
-        }
-    }
+    let val = get_elastic_attr_name_value("mapping", item);
 
-    None
+    val.and_then(|v| get_ident_from_lit(v).ok())
 }
 
 //Get the default mapping name
 fn get_default_mapping(item: &syn::MacroInput) -> syn::Ident {
     syn::Ident::from(format!("{}Mapping", item.ident))
-}
-
-fn get_ident_from_lit(lit: &syn::Lit) -> Result<syn::Ident, &'static str> {
-    match *lit {
-        syn::Lit::Str(ref s, _) => Ok(syn::Ident::from(s.as_str())),
-        _ => {
-            return Err("Unable to get str from lit");
-        }
-    }
 }
 
 //Get the default name for the indexed elasticsearch type name
@@ -155,8 +131,9 @@ fn get_ser_field(field: &syn::Field) -> Option<(syn::Ident, &syn::Field)> {
     let ctxt = serde_codegen_internals::Ctxt::new();
     let serde_field = serde_attr::Field::from_ast(&ctxt, 0, field);
 
+    //If the `serde` parse fails, return `None` and let `serde` panic later
     match ctxt.check() {
-        Err(e) => panic!(e),
+        Err(e) => return None,
         _ => ()
     };
 
@@ -166,4 +143,13 @@ fn get_ser_field(field: &syn::Field) -> Option<(syn::Ident, &syn::Field)> {
     }
 
     Some((syn::Ident::from(serde_field.name().serialize_name().as_ref()), field))
+}
+
+quick_error! {
+    #[derive(Debug)]
+    pub enum DeriveElasticTypeError {
+        InvalidInput {
+            display("deriving a document type is only valid for structs")
+        }
+    }
 }
