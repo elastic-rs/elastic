@@ -14,6 +14,11 @@ fn get_custom_type_name() {
 }
 
 #[test]
+fn derive_custom_type_mapping() {
+    assert_eq!(ManualCustomTypeMapping, CustomType::mapping());
+}
+
+#[test]
 fn serialise_mapping_type() {
     let ser = serde_json::to_string(&Document::from(SimpleTypeMapping)).unwrap();
 
@@ -24,7 +29,7 @@ fn serialise_mapping_type() {
 
 #[test]
 fn serialise_custom_mapping_type() {
-    let ser = serde_json::to_string(&Document::from(CustomTypeMapping)).unwrap();
+    let ser = serde_json::to_string(&Document::from(ManualCustomTypeMapping)).unwrap();
 
     let expected = json_str!({
         "properties":{

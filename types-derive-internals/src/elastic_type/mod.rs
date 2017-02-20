@@ -1,4 +1,3 @@
-use std::error::Error;
 use quote::Tokens;
 use syn;
 use serde_codegen_internals::{self, attr as serde_attr};
@@ -133,7 +132,7 @@ fn get_ser_field(field: &syn::Field) -> Option<(syn::Ident, &syn::Field)> {
 
     //If the `serde` parse fails, return `None` and let `serde` panic later
     match ctxt.check() {
-        Err(e) => return None,
+        Err(_) => return None,
         _ => ()
     };
 
