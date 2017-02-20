@@ -26,24 +26,44 @@ pub fn expand_derive(crate_root: Tokens, input: &syn::MacroInput) -> Result<Vec<
         .map(|t| t.into())
         .collect();
 
-    let derived = impl_date_format(crate_root, input, name, tokens);
+    let derived = impl_date_format(crate_root, input, name, &tokens);
 
     Ok(vec![derived])
 }
 
 //Implement DateFormat for the type being derived with the mapping
-fn impl_date_format(crate_root: Tokens, item: &syn::MacroInput, name: &str, format: Vec<Tokens>) -> Tokens {
+fn impl_date_format(crate_root: Tokens, item: &syn::MacroInput, name: &str, format: &[Tokens]) -> Tokens {
     let ty = &item.ident;
+
+    let parse_fn = quote!(
+        fn parse(date: &str) -> ::std::result::Result<::chrono::DateTime<::chrono::UTC>, #crate_root::date::ParseError> {
+            let fmt = vec![ #(#format),* ];
+
+            #crate_root::date::parse_from_tokens(date, fmt)
+        }
+    );
+
+    let format_fn = quote!(
+        fn format(date: &::chrono::DateTime<::chrono::UTC>) -> String {
+            let fmt = vec![ #(#format),* ];
+
+            #crate_root::date::format_with_tokens(date, fmt)
+        }
+    );
+
+    let name_fn = quote!(
+        fn name() -> &'static str {
+            #name
+        }
+    );
 
     quote!(
         impl #crate_root::date::DateFormat for #ty {
-            fn fmt<'a>() -> Vec<::chrono::format::Item<'a>> {
-                vec![ #(#format),* ]
-            }
+            #parse_fn
 
-            fn name() -> &'static str {
-                #name
-            }
+            #format_fn
+
+            #name_fn
         }
     )
 }
@@ -88,7 +108,9 @@ quick_error!{
         InvalidInput {
             display("deriving a date format is only valid for unit structs")
         }
-        MissingFormat
+        MissingFormat {
+            display("missing date format. Add a `#[elastic(date_format=\"<format here>\")]`")
+        }
         InvalidFormat(err: parse::Error) {
             display("error parsing date format")
             from()

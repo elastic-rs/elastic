@@ -1,6 +1,6 @@
 use chrono::{DateTime, NaiveDateTime, UTC, Timelike};
 use std::error::Error;
-use super::{CustomDateFormat, ParseError};
+use super::{DateFormat, ParseError};
 
 /// Format for default `chrono::DateTime`.
 #[derive(ElasticDateFormat, PartialEq, Debug, Default, Clone, Copy)]
@@ -33,7 +33,7 @@ pub struct BasicDateTime;
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct EpochMillis;
 
-impl CustomDateFormat for EpochMillis {
+impl DateFormat for EpochMillis {
     fn name() -> &'static str {
         "epoch_millis"
     }
