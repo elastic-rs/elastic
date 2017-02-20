@@ -1,4 +1,4 @@
 *.bk
 perf.*
-/target/
-/obj/
+target/
+obj/
