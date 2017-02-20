@@ -10,9 +10,6 @@ extern crate elastic_types_derive;
 #[macro_use]
 extern crate json_str;
 
-#[macro_use]
-extern crate maplit;
-
 extern crate serde;
 extern crate serde_json;
 pub extern crate chrono;
