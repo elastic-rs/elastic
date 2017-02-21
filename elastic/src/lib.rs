@@ -230,7 +230,7 @@
 //! # }
 //! ```
 //!
-//! For more details on document types, see the [`types`](types) module.
+//! For more details on document types, see the [`types`](types/index.html) module.
 //! 
 //! # Crate design
 //! 
@@ -243,6 +243,11 @@
 //!
 //! This crate glues these libraries together with some simple assumptions
 //! about how they're going to be used.
+//! 
+//! # Links
+//! 
+//! - [Elasticsearch Docs](https://www.elastic.co/guide/en/elasticsearch/reference/master/index.html)
+//! - [Github](https://github.com/elastic-rs/elastic)
 
 #![deny(warnings)]
 #![deny(missing_docs)]
