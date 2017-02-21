@@ -7,7 +7,7 @@ authors = ["Ashley Mannix <ashleymannix@live.com.au>"]
 serde = "*"
 serde_derive = "*"
 
-rs-es = { version = "*", default-features = false, features = [ "nightly" ] }
+rs-es = { version = "*", default-features = false }
 
 stopwatch = "*"
 time = "*"
