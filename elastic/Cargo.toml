@@ -3,7 +3,8 @@ name = "elastic"
 version = "0.9.1"
 authors = ["Ashley Mannix <ashleymannix@live.com.au>"]
 license = "Apache-2.0"
-description = "A client for the Elasticsearch REST API."
+keywords = ["elasticsearch", "search"]
+description = "A modular client for the Elasticsearch REST API."
 documentation = "https://docs.rs/elastic/"
 repository = "https://github.com/elastic-rs/elastic"
 
