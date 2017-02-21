@@ -22,12 +22,6 @@ matrix:
 
     - rust: nightly
       env:
-        - CRATE="derive"
-    - rust: nightly
-      env:
-        - CRATE="elastic/examples/account_sample"
-    - rust: nightly
-      env:
         - CRATE="benches/rust/elastic"
     - rust: nightly
       env:
