@@ -3,6 +3,12 @@ name = "elastic_bench"
 version = "0.1.0"
 authors = ["Ashley Mannix <ashleymannix@live.com.au>"]
 
+[profile.release]
+debug = true
+
+[features]
+ssl = ["rs-es/ssl"]
+
 [dependencies]
 serde = "*"
 serde_derive = "*"
