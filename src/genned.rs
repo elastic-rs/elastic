@@ -3,7 +3,6 @@
 pub mod endpoints {
     use super :: http :: * ;
     use super :: params :: * ;
-    use std::borrow::Cow;
 
     # [ derive ( Debug , PartialEq , Clone ) ]
     enum IndicesCloseUrlParams<'a> {
@@ -41,7 +40,7 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IndicesCloseRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Post,
                 body: None,
             }
@@ -50,7 +49,7 @@ pub mod endpoints {
     impl<'a> Into<HttpRequest<'a>> for IndicesCloseRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Post,
                 body: None,
             }
@@ -88,7 +87,7 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a DeleteScriptRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Delete,
                 body: None,
             }
@@ -97,7 +96,7 @@ pub mod endpoints {
     impl<'a> Into<HttpRequest<'a>> for DeleteScriptRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Delete,
                 body: None,
             }
@@ -169,18 +168,18 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a TermvectorsRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Post,
-                body: Some(Cow::Borrowed(&self.body)),
+                body: Some(self.body.as_ref().into()),
             }
         }
     }
     impl<'a> Into<HttpRequest<'a>> for TermvectorsRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Post,
-                body: Some(Cow::Owned(self.body)),
+                body: Some(self.body),
             }
         }
     }
@@ -228,18 +227,18 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a FieldStatsRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Post,
-                body: Some(Cow::Borrowed(&self.body)),
+                body: Some(self.body.as_ref().into()),
             }
         }
     }
     impl<'a> Into<HttpRequest<'a>> for FieldStatsRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Post,
-                body: Some(Cow::Owned(self.body)),
+                body: Some(self.body),
             }
         }
     }
@@ -280,7 +279,7 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a CatThreadPoolRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -289,7 +288,7 @@ pub mod endpoints {
     impl<'a> Into<HttpRequest<'a>> for CatThreadPoolRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -334,7 +333,7 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a SnapshotDeleteRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Delete,
                 body: None,
             }
@@ -343,7 +342,7 @@ pub mod endpoints {
     impl<'a> Into<HttpRequest<'a>> for SnapshotDeleteRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Delete,
                 body: None,
             }
@@ -412,7 +411,7 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IndicesGetSettingsRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -421,7 +420,7 @@ pub mod endpoints {
     impl<'a> Into<HttpRequest<'a>> for IndicesGetSettingsRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -473,18 +472,18 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a CreateRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Post,
-                body: Some(Cow::Borrowed(&self.body)),
+                body: Some(self.body.as_ref().into()),
             }
         }
     }
     impl<'a> Into<HttpRequest<'a>> for CreateRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Post,
-                body: Some(Cow::Owned(self.body)),
+                body: Some(self.body),
             }
         }
     }
@@ -520,7 +519,7 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a SnapshotDeleteRepositoryRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Delete,
                 body: None,
             }
@@ -529,7 +528,7 @@ pub mod endpoints {
     impl<'a> Into<HttpRequest<'a>> for SnapshotDeleteRepositoryRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Delete,
                 body: None,
             }
@@ -562,18 +561,18 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a ClusterAllocationExplainRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Post,
-                body: Some(Cow::Borrowed(&self.body)),
+                body: Some(self.body.as_ref().into()),
             }
         }
     }
     impl<'a> Into<HttpRequest<'a>> for ClusterAllocationExplainRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Post,
-                body: Some(Cow::Owned(self.body)),
+                body: Some(self.body),
             }
         }
     }
@@ -612,18 +611,18 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IndicesPutTemplateRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Post,
-                body: Some(Cow::Borrowed(&self.body)),
+                body: Some(self.body.as_ref().into()),
             }
         }
     }
     impl<'a> Into<HttpRequest<'a>> for IndicesPutTemplateRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Post,
-                body: Some(Cow::Owned(self.body)),
+                body: Some(self.body),
             }
         }
     }
@@ -660,7 +659,7 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IndicesGetTemplateRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -669,7 +668,7 @@ pub mod endpoints {
     impl<'a> Into<HttpRequest<'a>> for IndicesGetTemplateRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -725,7 +724,7 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a ClusterStateRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -734,7 +733,7 @@ pub mod endpoints {
     impl<'a> Into<HttpRequest<'a>> for ClusterStateRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -804,18 +803,18 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a MsearchTemplateRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Post,
-                body: Some(Cow::Borrowed(&self.body)),
+                body: Some(self.body.as_ref().into()),
             }
         }
     }
     impl<'a> Into<HttpRequest<'a>> for MsearchTemplateRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Post,
-                body: Some(Cow::Owned(self.body)),
+                body: Some(self.body),
             }
         }
     }
@@ -882,18 +881,18 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a BulkRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Post,
-                body: Some(Cow::Borrowed(&self.body)),
+                body: Some(self.body.as_ref().into()),
             }
         }
     }
     impl<'a> Into<HttpRequest<'a>> for BulkRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Post,
-                body: Some(Cow::Owned(self.body)),
+                body: Some(self.body),
             }
         }
     }
@@ -943,18 +942,18 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a ExplainRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Post,
-                body: Some(Cow::Borrowed(&self.body)),
+                body: Some(self.body.as_ref().into()),
             }
         }
     }
     impl<'a> Into<HttpRequest<'a>> for ExplainRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Post,
-                body: Some(Cow::Owned(self.body)),
+                body: Some(self.body),
             }
         }
     }
@@ -1001,18 +1000,18 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a SuggestRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Post,
-                body: Some(Cow::Borrowed(&self.body)),
+                body: Some(self.body.as_ref().into()),
             }
         }
     }
     impl<'a> Into<HttpRequest<'a>> for SuggestRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Post,
-                body: Some(Cow::Owned(self.body)),
+                body: Some(self.body),
             }
         }
     }
@@ -1053,7 +1052,7 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a SnapshotGetRepositoryRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -1062,7 +1061,7 @@ pub mod endpoints {
     impl<'a> Into<HttpRequest<'a>> for SnapshotGetRepositoryRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -1111,18 +1110,18 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a RenderSearchTemplateRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Post,
-                body: Some(Cow::Borrowed(&self.body)),
+                body: Some(self.body.as_ref().into()),
             }
         }
     }
     impl<'a> Into<HttpRequest<'a>> for RenderSearchTemplateRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Post,
-                body: Some(Cow::Owned(self.body)),
+                body: Some(self.body),
             }
         }
     }
@@ -1187,7 +1186,7 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IndicesStatsRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -1196,7 +1195,7 @@ pub mod endpoints {
     impl<'a> Into<HttpRequest<'a>> for IndicesStatsRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -1225,7 +1224,7 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a CatRepositoriesRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -1234,7 +1233,7 @@ pub mod endpoints {
     impl<'a> Into<HttpRequest<'a>> for CatRepositoriesRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -1284,7 +1283,7 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IndicesForcemergeRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Post,
                 body: None,
             }
@@ -1293,7 +1292,7 @@ pub mod endpoints {
     impl<'a> Into<HttpRequest<'a>> for IndicesForcemergeRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Post,
                 body: None,
             }
@@ -1322,7 +1321,7 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a PingRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Head,
                 body: None,
             }
@@ -1331,7 +1330,7 @@ pub mod endpoints {
     impl<'a> Into<HttpRequest<'a>> for PingRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Head,
                 body: None,
             }
@@ -1365,7 +1364,7 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a TasksGetRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -1374,7 +1373,7 @@ pub mod endpoints {
     impl<'a> Into<HttpRequest<'a>> for TasksGetRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -1408,7 +1407,7 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IndicesExistsRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Head,
                 body: None,
             }
@@ -1417,7 +1416,7 @@ pub mod endpoints {
     impl<'a> Into<HttpRequest<'a>> for IndicesExistsRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Head,
                 body: None,
             }
@@ -1467,7 +1466,7 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IndicesFlushSyncedRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Post,
                 body: None,
             }
@@ -1476,7 +1475,7 @@ pub mod endpoints {
     impl<'a> Into<HttpRequest<'a>> for IndicesFlushSyncedRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Post,
                 body: None,
             }
@@ -1545,18 +1544,18 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a MsearchRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Post,
-                body: Some(Cow::Borrowed(&self.body)),
+                body: Some(self.body.as_ref().into()),
             }
         }
     }
     impl<'a> Into<HttpRequest<'a>> for MsearchRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Post,
-                body: Some(Cow::Owned(self.body)),
+                body: Some(self.body),
             }
         }
     }
@@ -1583,7 +1582,7 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a InfoRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -1592,7 +1591,7 @@ pub mod endpoints {
     impl<'a> Into<HttpRequest<'a>> for InfoRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -1662,18 +1661,18 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a SearchTemplateRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Post,
-                body: Some(Cow::Borrowed(&self.body)),
+                body: Some(self.body.as_ref().into()),
             }
         }
     }
     impl<'a> Into<HttpRequest<'a>> for SearchTemplateRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Post,
-                body: Some(Cow::Owned(self.body)),
+                body: Some(self.body),
             }
         }
     }
@@ -1705,7 +1704,7 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IndicesDeleteRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Delete,
                 body: None,
             }
@@ -1714,7 +1713,7 @@ pub mod endpoints {
     impl<'a> Into<HttpRequest<'a>> for IndicesDeleteRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Delete,
                 body: None,
             }
@@ -1776,18 +1775,18 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a DeleteByQueryRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Post,
-                body: Some(Cow::Borrowed(&self.body)),
+                body: Some(self.body.as_ref().into()),
             }
         }
     }
     impl<'a> Into<HttpRequest<'a>> for DeleteByQueryRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Post,
-                body: Some(Cow::Owned(self.body)),
+                body: Some(self.body),
             }
         }
     }
@@ -1819,7 +1818,7 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a DeleteTemplateRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Delete,
                 body: None,
             }
@@ -1828,7 +1827,7 @@ pub mod endpoints {
     impl<'a> Into<HttpRequest<'a>> for DeleteTemplateRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Delete,
                 body: None,
             }
@@ -1869,18 +1868,18 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IndicesCreateRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Put,
-                body: Some(Cow::Borrowed(&self.body)),
+                body: Some(self.body.as_ref().into()),
             }
         }
     }
     impl<'a> Into<HttpRequest<'a>> for IndicesCreateRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Put,
-                body: Some(Cow::Owned(self.body)),
+                body: Some(self.body),
             }
         }
     }
@@ -1950,18 +1949,18 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a PercolateRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Post,
-                body: Some(Cow::Borrowed(&self.body)),
+                body: Some(self.body.as_ref().into()),
             }
         }
     }
     impl<'a> Into<HttpRequest<'a>> for PercolateRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Post,
-                body: Some(Cow::Owned(self.body)),
+                body: Some(self.body),
             }
         }
     }
@@ -2028,18 +2027,18 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a SearchRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Post,
-                body: Some(Cow::Borrowed(&self.body)),
+                body: Some(self.body.as_ref().into()),
             }
         }
     }
     impl<'a> Into<HttpRequest<'a>> for SearchRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Post,
-                body: Some(Cow::Owned(self.body)),
+                body: Some(self.body),
             }
         }
     }
@@ -2066,7 +2065,7 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a CatNodeattrsRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -2075,7 +2074,7 @@ pub mod endpoints {
     impl<'a> Into<HttpRequest<'a>> for CatNodeattrsRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -2117,7 +2116,7 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a SnapshotVerifyRepositoryRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Post,
                 body: None,
             }
@@ -2126,7 +2125,7 @@ pub mod endpoints {
     impl<'a> Into<HttpRequest<'a>> for SnapshotVerifyRepositoryRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Post,
                 body: None,
             }
@@ -2195,18 +2194,18 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a CountRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Post,
-                body: Some(Cow::Borrowed(&self.body)),
+                body: Some(self.body.as_ref().into()),
             }
         }
     }
     impl<'a> Into<HttpRequest<'a>> for CountRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Post,
-                body: Some(Cow::Owned(self.body)),
+                body: Some(self.body),
             }
         }
     }
@@ -2244,7 +2243,7 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a CatAllocationRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -2253,7 +2252,7 @@ pub mod endpoints {
     impl<'a> Into<HttpRequest<'a>> for CatAllocationRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -2303,7 +2302,7 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IndicesFlushRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Post,
                 body: None,
             }
@@ -2312,7 +2311,7 @@ pub mod endpoints {
     impl<'a> Into<HttpRequest<'a>> for IndicesFlushRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Post,
                 body: None,
             }
@@ -2362,7 +2361,7 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IndicesRefreshRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Post,
                 body: None,
             }
@@ -2371,7 +2370,7 @@ pub mod endpoints {
     impl<'a> Into<HttpRequest<'a>> for IndicesRefreshRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Post,
                 body: None,
             }
@@ -2400,7 +2399,7 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a CatHelpRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -2409,7 +2408,7 @@ pub mod endpoints {
     impl<'a> Into<HttpRequest<'a>> for CatHelpRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -2459,7 +2458,7 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a SearchShardsRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Post,
                 body: None,
             }
@@ -2468,7 +2467,7 @@ pub mod endpoints {
     impl<'a> Into<HttpRequest<'a>> for SearchShardsRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Post,
                 body: None,
             }
@@ -2507,7 +2506,7 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a ClusterHealthRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -2516,7 +2515,7 @@ pub mod endpoints {
     impl<'a> Into<HttpRequest<'a>> for ClusterHealthRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -2580,7 +2579,7 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IndicesExistsAliasRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Head,
                 body: None,
             }
@@ -2589,7 +2588,7 @@ pub mod endpoints {
     impl<'a> Into<HttpRequest<'a>> for IndicesExistsAliasRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Head,
                 body: None,
             }
@@ -2687,7 +2686,7 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IndicesGetFieldMappingRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -2696,7 +2695,7 @@ pub mod endpoints {
     impl<'a> Into<HttpRequest<'a>> for IndicesGetFieldMappingRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -2736,18 +2735,18 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IngestPutPipelineRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Put,
-                body: Some(Cow::Borrowed(&self.body)),
+                body: Some(self.body.as_ref().into()),
             }
         }
     }
     impl<'a> Into<HttpRequest<'a>> for IngestPutPipelineRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Put,
-                body: Some(Cow::Owned(self.body)),
+                body: Some(self.body),
             }
         }
     }
@@ -2774,7 +2773,7 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a ClusterPendingTasksRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -2783,7 +2782,7 @@ pub mod endpoints {
     impl<'a> Into<HttpRequest<'a>> for ClusterPendingTasksRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -2832,18 +2831,18 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IngestSimulateRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Post,
-                body: Some(Cow::Borrowed(&self.body)),
+                body: Some(self.body.as_ref().into()),
             }
         }
     }
     impl<'a> Into<HttpRequest<'a>> for IngestSimulateRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Post,
-                body: Some(Cow::Owned(self.body)),
+                body: Some(self.body),
             }
         }
     }
@@ -2908,7 +2907,7 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IndicesGetAliasRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -2917,7 +2916,7 @@ pub mod endpoints {
     impl<'a> Into<HttpRequest<'a>> for IndicesGetAliasRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -2955,7 +2954,7 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a GetScriptRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -2964,7 +2963,7 @@ pub mod endpoints {
     impl<'a> Into<HttpRequest<'a>> for GetScriptRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -3004,7 +3003,7 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IndicesRecoveryRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -3013,7 +3012,7 @@ pub mod endpoints {
     impl<'a> Into<HttpRequest<'a>> for IndicesRecoveryRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -3047,7 +3046,7 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IngestDeletePipelineRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Delete,
                 body: None,
             }
@@ -3056,7 +3055,7 @@ pub mod endpoints {
     impl<'a> Into<HttpRequest<'a>> for IngestDeletePipelineRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Delete,
                 body: None,
             }
@@ -3106,7 +3105,7 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a TasksCancelRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Post,
                 body: None,
             }
@@ -3115,7 +3114,7 @@ pub mod endpoints {
     impl<'a> Into<HttpRequest<'a>> for TasksCancelRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Post,
                 body: None,
             }
@@ -3165,7 +3164,7 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IndicesClearCacheRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Post,
                 body: None,
             }
@@ -3174,7 +3173,7 @@ pub mod endpoints {
     impl<'a> Into<HttpRequest<'a>> for IndicesClearCacheRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Post,
                 body: None,
             }
@@ -3218,7 +3217,7 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a DeleteRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Delete,
                 body: None,
             }
@@ -3227,7 +3226,7 @@ pub mod endpoints {
     impl<'a> Into<HttpRequest<'a>> for DeleteRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Delete,
                 body: None,
             }
@@ -3287,18 +3286,18 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IndicesPutMappingRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Post,
-                body: Some(Cow::Borrowed(&self.body)),
+                body: Some(self.body.as_ref().into()),
             }
         }
     }
     impl<'a> Into<HttpRequest<'a>> for IndicesPutMappingRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Post,
-                body: Some(Cow::Owned(self.body)),
+                body: Some(self.body),
             }
         }
     }
@@ -3335,7 +3334,7 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a CatAliasesRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -3344,7 +3343,7 @@ pub mod endpoints {
     impl<'a> Into<HttpRequest<'a>> for CatAliasesRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -3383,7 +3382,7 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a ClusterStatsRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -3392,7 +3391,7 @@ pub mod endpoints {
     impl<'a> Into<HttpRequest<'a>> for ClusterStatsRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -3462,18 +3461,18 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IndicesValidateQueryRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Post,
-                body: Some(Cow::Borrowed(&self.body)),
+                body: Some(self.body.as_ref().into()),
             }
         }
     }
     impl<'a> Into<HttpRequest<'a>> for IndicesValidateQueryRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Post,
-                body: Some(Cow::Owned(self.body)),
+                body: Some(self.body),
             }
         }
     }
@@ -3500,7 +3499,7 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a CatPendingTasksRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -3509,7 +3508,7 @@ pub mod endpoints {
     impl<'a> Into<HttpRequest<'a>> for CatPendingTasksRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -3558,18 +3557,18 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a ClearScrollRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Delete,
-                body: Some(Cow::Borrowed(&self.body)),
+                body: Some(self.body.as_ref().into()),
             }
         }
     }
     impl<'a> Into<HttpRequest<'a>> for ClearScrollRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Delete,
-                body: Some(Cow::Owned(self.body)),
+                body: Some(self.body),
             }
         }
     }
@@ -3606,7 +3605,7 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a CatShardsRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -3615,7 +3614,7 @@ pub mod endpoints {
     impl<'a> Into<HttpRequest<'a>> for CatShardsRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -3657,7 +3656,7 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IndicesShardStoresRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -3666,7 +3665,7 @@ pub mod endpoints {
     impl<'a> Into<HttpRequest<'a>> for IndicesShardStoresRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -3699,18 +3698,18 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IndicesUpdateAliasesRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Post,
-                body: Some(Cow::Borrowed(&self.body)),
+                body: Some(self.body.as_ref().into()),
             }
         }
     }
     impl<'a> Into<HttpRequest<'a>> for IndicesUpdateAliasesRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Post,
-                body: Some(Cow::Owned(self.body)),
+                body: Some(self.body),
             }
         }
     }
@@ -3747,7 +3746,7 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a CatSegmentsRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -3756,7 +3755,7 @@ pub mod endpoints {
     impl<'a> Into<HttpRequest<'a>> for CatSegmentsRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -3826,18 +3825,18 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a MpercolateRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Post,
-                body: Some(Cow::Borrowed(&self.body)),
+                body: Some(self.body.as_ref().into()),
             }
         }
     }
     impl<'a> Into<HttpRequest<'a>> for MpercolateRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Post,
-                body: Some(Cow::Owned(self.body)),
+                body: Some(self.body),
             }
         }
     }
@@ -3877,7 +3876,7 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IndicesOpenRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Post,
                 body: None,
             }
@@ -3886,7 +3885,7 @@ pub mod endpoints {
     impl<'a> Into<HttpRequest<'a>> for IndicesOpenRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Post,
                 body: None,
             }
@@ -3928,7 +3927,7 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a GetRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -3937,7 +3936,7 @@ pub mod endpoints {
     impl<'a> Into<HttpRequest<'a>> for GetRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -3999,18 +3998,18 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a UpdateByQueryRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Post,
-                body: Some(Cow::Borrowed(&self.body)),
+                body: Some(self.body.as_ref().into()),
             }
         }
     }
     impl<'a> Into<HttpRequest<'a>> for UpdateByQueryRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Post,
-                body: Some(Cow::Owned(self.body)),
+                body: Some(self.body),
             }
         }
     }
@@ -4078,18 +4077,18 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a MtermvectorsRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Post,
-                body: Some(Cow::Borrowed(&self.body)),
+                body: Some(self.body.as_ref().into()),
             }
         }
     }
     impl<'a> Into<HttpRequest<'a>> for MtermvectorsRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Post,
-                body: Some(Cow::Owned(self.body)),
+                body: Some(self.body),
             }
         }
     }
@@ -4126,7 +4125,7 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a CatRecoveryRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -4135,7 +4134,7 @@ pub mod endpoints {
     impl<'a> Into<HttpRequest<'a>> for CatRecoveryRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -4185,18 +4184,18 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a SnapshotRestoreRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Post,
-                body: Some(Cow::Borrowed(&self.body)),
+                body: Some(self.body.as_ref().into()),
             }
         }
     }
     impl<'a> Into<HttpRequest<'a>> for SnapshotRestoreRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Post,
-                body: Some(Cow::Owned(self.body)),
+                body: Some(self.body),
             }
         }
     }
@@ -4227,18 +4226,18 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a ReindexRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Post,
-                body: Some(Cow::Borrowed(&self.body)),
+                body: Some(self.body.as_ref().into()),
             }
         }
     }
     impl<'a> Into<HttpRequest<'a>> for ReindexRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Post,
-                body: Some(Cow::Owned(self.body)),
+                body: Some(self.body),
             }
         }
     }
@@ -4265,7 +4264,7 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a CatHealthRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -4274,7 +4273,7 @@ pub mod endpoints {
     impl<'a> Into<HttpRequest<'a>> for CatHealthRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -4313,7 +4312,7 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a CatCountRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -4322,7 +4321,7 @@ pub mod endpoints {
     impl<'a> Into<HttpRequest<'a>> for CatCountRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -4362,7 +4361,7 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a CatSnapshotsRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -4371,7 +4370,7 @@ pub mod endpoints {
     impl<'a> Into<HttpRequest<'a>> for CatSnapshotsRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -4438,7 +4437,7 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IndicesGetMappingRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -4447,7 +4446,7 @@ pub mod endpoints {
     impl<'a> Into<HttpRequest<'a>> for IndicesGetMappingRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -4491,7 +4490,7 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a SnapshotGetRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -4500,7 +4499,7 @@ pub mod endpoints {
     impl<'a> Into<HttpRequest<'a>> for SnapshotGetRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -4529,7 +4528,7 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a CatNodesRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -4538,7 +4537,7 @@ pub mod endpoints {
     impl<'a> Into<HttpRequest<'a>> for CatNodesRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -4582,7 +4581,7 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a ExistsRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Head,
                 body: None,
             }
@@ -4591,7 +4590,7 @@ pub mod endpoints {
     impl<'a> Into<HttpRequest<'a>> for ExistsRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Head,
                 body: None,
             }
@@ -4624,18 +4623,18 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a ClusterRerouteRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Post,
-                body: Some(Cow::Borrowed(&self.body)),
+                body: Some(self.body.as_ref().into()),
             }
         }
     }
     impl<'a> Into<HttpRequest<'a>> for ClusterRerouteRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Post,
-                body: Some(Cow::Owned(self.body)),
+                body: Some(self.body),
             }
         }
     }
@@ -4674,7 +4673,7 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a NodesHotThreadsRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -4683,7 +4682,7 @@ pub mod endpoints {
     impl<'a> Into<HttpRequest<'a>> for NodesHotThreadsRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -4798,7 +4797,7 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a NodesStatsRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -4807,7 +4806,7 @@ pub mod endpoints {
     impl<'a> Into<HttpRequest<'a>> for NodesStatsRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -4846,7 +4845,7 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IngestGetPipelineRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -4855,7 +4854,7 @@ pub mod endpoints {
     impl<'a> Into<HttpRequest<'a>> for IngestGetPipelineRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -4895,18 +4894,18 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a PutTemplateRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Post,
-                body: Some(Cow::Borrowed(&self.body)),
+                body: Some(self.body.as_ref().into()),
             }
         }
     }
     impl<'a> Into<HttpRequest<'a>> for PutTemplateRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Post,
-                body: Some(Cow::Owned(self.body)),
+                body: Some(self.body),
             }
         }
     }
@@ -4950,7 +4949,7 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a GetSourceRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -4959,7 +4958,7 @@ pub mod endpoints {
     impl<'a> Into<HttpRequest<'a>> for GetSourceRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -5008,18 +5007,18 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a SnapshotCreateRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Post,
-                body: Some(Cow::Borrowed(&self.body)),
+                body: Some(self.body.as_ref().into()),
             }
         }
     }
     impl<'a> Into<HttpRequest<'a>> for SnapshotCreateRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Post,
-                body: Some(Cow::Owned(self.body)),
+                body: Some(self.body),
             }
         }
     }
@@ -5066,18 +5065,18 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a ScrollRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Post,
-                body: Some(Cow::Borrowed(&self.body)),
+                body: Some(self.body.as_ref().into()),
             }
         }
     }
     impl<'a> Into<HttpRequest<'a>> for ScrollRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Post,
-                body: Some(Cow::Owned(self.body)),
+                body: Some(self.body),
             }
         }
     }
@@ -5140,7 +5139,7 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a SnapshotStatusRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -5149,7 +5148,7 @@ pub mod endpoints {
     impl<'a> Into<HttpRequest<'a>> for SnapshotStatusRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -5218,18 +5217,18 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a MgetRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Post,
-                body: Some(Cow::Borrowed(&self.body)),
+                body: Some(self.body.as_ref().into()),
             }
         }
     }
     impl<'a> Into<HttpRequest<'a>> for MgetRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Post,
-                body: Some(Cow::Owned(self.body)),
+                body: Some(self.body),
             }
         }
     }
@@ -5263,7 +5262,7 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IndicesExistsTemplateRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Head,
                 body: None,
             }
@@ -5272,7 +5271,7 @@ pub mod endpoints {
     impl<'a> Into<HttpRequest<'a>> for IndicesExistsTemplateRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Head,
                 body: None,
             }
@@ -5312,7 +5311,7 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IndicesGetUpgradeRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -5321,7 +5320,7 @@ pub mod endpoints {
     impl<'a> Into<HttpRequest<'a>> for IndicesGetUpgradeRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -5365,18 +5364,18 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a PutScriptRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Post,
-                body: Some(Cow::Borrowed(&self.body)),
+                body: Some(self.body.as_ref().into()),
             }
         }
     }
     impl<'a> Into<HttpRequest<'a>> for PutScriptRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Post,
-                body: Some(Cow::Owned(self.body)),
+                body: Some(self.body),
             }
         }
     }
@@ -5408,7 +5407,7 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a GetTemplateRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -5417,7 +5416,7 @@ pub mod endpoints {
     impl<'a> Into<HttpRequest<'a>> for GetTemplateRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -5453,7 +5452,7 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IndicesDeleteTemplateRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Delete,
                 body: None,
             }
@@ -5462,7 +5461,7 @@ pub mod endpoints {
     impl<'a> Into<HttpRequest<'a>> for IndicesDeleteTemplateRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Delete,
                 body: None,
             }
@@ -5531,18 +5530,18 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IndexRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Post,
-                body: Some(Cow::Borrowed(&self.body)),
+                body: Some(self.body.as_ref().into()),
             }
         }
     }
     impl<'a> Into<HttpRequest<'a>> for IndexRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Post,
-                body: Some(Cow::Owned(self.body)),
+                body: Some(self.body),
             }
         }
     }
@@ -5590,18 +5589,18 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IndicesPutSettingsRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Put,
-                body: Some(Cow::Borrowed(&self.body)),
+                body: Some(self.body.as_ref().into()),
             }
         }
     }
     impl<'a> Into<HttpRequest<'a>> for IndicesPutSettingsRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Put,
-                body: Some(Cow::Owned(self.body)),
+                body: Some(self.body),
             }
         }
     }
@@ -5638,7 +5637,7 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a CatTemplatesRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -5647,7 +5646,7 @@ pub mod endpoints {
     impl<'a> Into<HttpRequest<'a>> for CatTemplatesRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -5686,7 +5685,7 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a CatIndicesRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -5695,7 +5694,7 @@ pub mod endpoints {
     impl<'a> Into<HttpRequest<'a>> for CatIndicesRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -5728,18 +5727,18 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a ClusterPutSettingsRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Put,
-                body: Some(Cow::Borrowed(&self.body)),
+                body: Some(self.body.as_ref().into()),
             }
         }
     }
     impl<'a> Into<HttpRequest<'a>> for ClusterPutSettingsRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Put,
-                body: Some(Cow::Owned(self.body)),
+                body: Some(self.body),
             }
         }
     }
@@ -5789,18 +5788,18 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a UpdateRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Post,
-                body: Some(Cow::Borrowed(&self.body)),
+                body: Some(self.body.as_ref().into()),
             }
         }
     }
     impl<'a> Into<HttpRequest<'a>> for UpdateRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Post,
-                body: Some(Cow::Owned(self.body)),
+                body: Some(self.body),
             }
         }
     }
@@ -5842,18 +5841,18 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IndicesPutAliasRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Post,
-                body: Some(Cow::Borrowed(&self.body)),
+                body: Some(self.body.as_ref().into()),
             }
         }
     }
     impl<'a> Into<HttpRequest<'a>> for IndicesPutAliasRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Post,
-                body: Some(Cow::Owned(self.body)),
+                body: Some(self.body),
             }
         }
     }
@@ -5880,7 +5879,7 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a CatPluginsRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -5889,7 +5888,7 @@ pub mod endpoints {
     impl<'a> Into<HttpRequest<'a>> for CatPluginsRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -5961,18 +5960,18 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a CountPercolateRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Post,
-                body: Some(Cow::Borrowed(&self.body)),
+                body: Some(self.body.as_ref().into()),
             }
         }
     }
     impl<'a> Into<HttpRequest<'a>> for CountPercolateRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Post,
-                body: Some(Cow::Owned(self.body)),
+                body: Some(self.body),
             }
         }
     }
@@ -6020,7 +6019,7 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IndicesUpgradeRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Post,
                 body: None,
             }
@@ -6029,7 +6028,7 @@ pub mod endpoints {
     impl<'a> Into<HttpRequest<'a>> for IndicesUpgradeRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Post,
                 body: None,
             }
@@ -6070,7 +6069,7 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IndicesDeleteAliasRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Delete,
                 body: None,
             }
@@ -6079,7 +6078,7 @@ pub mod endpoints {
     impl<'a> Into<HttpRequest<'a>> for IndicesDeleteAliasRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Delete,
                 body: None,
             }
@@ -6108,7 +6107,7 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a CatTasksRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -6117,7 +6116,7 @@ pub mod endpoints {
     impl<'a> Into<HttpRequest<'a>> for CatTasksRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -6180,18 +6179,18 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IndicesRolloverRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Post,
-                body: Some(Cow::Borrowed(&self.body)),
+                body: Some(self.body.as_ref().into()),
             }
         }
     }
     impl<'a> Into<HttpRequest<'a>> for IndicesRolloverRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Post,
-                body: Some(Cow::Owned(self.body)),
+                body: Some(self.body),
             }
         }
     }
@@ -6231,7 +6230,7 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a ReindexRethrottleRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Post,
                 body: None,
             }
@@ -6240,7 +6239,7 @@ pub mod endpoints {
     impl<'a> Into<HttpRequest<'a>> for ReindexRethrottleRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Post,
                 body: None,
             }
@@ -6281,18 +6280,18 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a SnapshotCreateRepositoryRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Post,
-                body: Some(Cow::Borrowed(&self.body)),
+                body: Some(self.body.as_ref().into()),
             }
         }
     }
     impl<'a> Into<HttpRequest<'a>> for SnapshotCreateRepositoryRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Post,
-                body: Some(Cow::Owned(self.body)),
+                body: Some(self.body),
             }
         }
     }
@@ -6341,7 +6340,7 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IndicesGetRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -6350,7 +6349,7 @@ pub mod endpoints {
     impl<'a> Into<HttpRequest<'a>> for IndicesGetRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -6400,18 +6399,18 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IndicesAnalyzeRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Post,
-                body: Some(Cow::Borrowed(&self.body)),
+                body: Some(self.body.as_ref().into()),
             }
         }
     }
     impl<'a> Into<HttpRequest<'a>> for IndicesAnalyzeRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Post,
-                body: Some(Cow::Owned(self.body)),
+                body: Some(self.body),
             }
         }
     }
@@ -6448,7 +6447,7 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a CatFielddataRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -6457,7 +6456,7 @@ pub mod endpoints {
     impl<'a> Into<HttpRequest<'a>> for CatFielddataRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -6497,7 +6496,7 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IndicesSegmentsRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -6506,7 +6505,7 @@ pub mod endpoints {
     impl<'a> Into<HttpRequest<'a>> for IndicesSegmentsRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -6552,18 +6551,18 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IndicesShrinkRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Post,
-                body: Some(Cow::Borrowed(&self.body)),
+                body: Some(self.body.as_ref().into()),
             }
         }
     }
     impl<'a> Into<HttpRequest<'a>> for IndicesShrinkRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Post,
-                body: Some(Cow::Owned(self.body)),
+                body: Some(self.body),
             }
         }
     }
@@ -6590,7 +6589,7 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a TasksListRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -6599,7 +6598,7 @@ pub mod endpoints {
     impl<'a> Into<HttpRequest<'a>> for TasksListRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -6628,7 +6627,7 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a CatMasterRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -6637,7 +6636,7 @@ pub mod endpoints {
     impl<'a> Into<HttpRequest<'a>> for CatMasterRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -6678,7 +6677,7 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a IndicesExistsTypeRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Head,
                 body: None,
             }
@@ -6687,7 +6686,7 @@ pub mod endpoints {
     impl<'a> Into<HttpRequest<'a>> for IndicesExistsTypeRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Head,
                 body: None,
             }
@@ -6716,7 +6715,7 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a ClusterGetSettingsRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -6725,7 +6724,7 @@ pub mod endpoints {
     impl<'a> Into<HttpRequest<'a>> for ClusterGetSettingsRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -6791,7 +6790,7 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a NodesInfoRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -6800,7 +6799,7 @@ pub mod endpoints {
     impl<'a> Into<HttpRequest<'a>> for NodesInfoRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -6858,7 +6857,7 @@ pub mod endpoints {
     impl<'a, 'b: 'a> Into<HttpRequest<'a>> for &'a SimpleSearchRequest<'b> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Borrowed(&self.url),
+                url: self.url.as_ref().into(),
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -6867,7 +6866,7 @@ pub mod endpoints {
     impl<'a> Into<HttpRequest<'a>> for SimpleSearchRequest<'a> {
         fn into(self) -> HttpRequest<'a> {
             HttpRequest {
-                url: Cow::Owned(self.url),
+                url: self.url,
                 method: HttpMethod::Get,
                 body: None,
             }
@@ -6876,8 +6875,8 @@ pub mod endpoints {
 }
 
 pub mod http {
-    use std::ops::Deref;
     use std::borrow::Cow;
+    use std::ops::Deref;
 
     # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct Url<'a>(Cow<'a, str>);
@@ -6937,9 +6936,9 @@ pub mod http {
     }
     # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct HttpRequest<'a> {
-        pub url: Cow<'a, Url<'a>>,
+        pub url: Url<'a>,
         pub method: HttpMethod,
-        pub body: Option<Cow<'a, Body<'a>>>,
+        pub body: Option<Body<'a>>,
     }
     # [ derive ( Debug , PartialEq , Clone ) ]
     pub enum HttpMethod {

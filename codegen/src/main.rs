@@ -1,7 +1,3 @@
-#[cfg(test)]
-#[macro_use]
-extern crate json_str;
-
 #[macro_use]
 extern crate serde_derive;
 extern crate serde;
@@ -175,7 +171,6 @@ fn endpoints_mod(tokens: &mut Tokens, derives: Tokens, http_mod: &'static str, e
     let uses = quote!(
         use super:: #http_mod_tokens ::*;
         use super::params::*;
-        use std::borrow::Cow;
     );
 
     tokens.append(uses.to_string().as_ref());
@@ -222,8 +217,8 @@ fn http_mod(tokens: &mut Tokens, derives: Tokens) {
     let http_req_item = gen::types::request::req_tokens();
 
     let uses = quote!(
-        use std::ops::Deref;
         use std::borrow::Cow;
+        use std::ops::Deref;
     );
 
     tokens.append(uses.to_string().as_ref());

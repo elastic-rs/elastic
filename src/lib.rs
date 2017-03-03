@@ -48,17 +48,17 @@
 //!
 //! assert_eq!("/test_index/_search", req.url.as_ref());
 //! ```
-//! 
+//!
 //! All request types can be converted into a more general `HttpRequest`:
-//! 
+//!
 //! ```
 //! # use elastic_requests::*;
 //! fn takes_req<'a, I: Into<HttpRequest<'a>>>(req: I) {
 //!     let req = req.into();
-//!     
+//!
 //!     // do something with the HttpRequest
 //! }
-//! 
+//!
 //! takes_req(PingRequest::new());
 //! takes_req(SearchRequest::for_index("test_index", Body::none()));
 //! ```
@@ -78,7 +78,7 @@
 mod genned;
 
 /// Common url params like `Id` and `Index`.
-/// 
+///
 /// The parameter types are basically just a wrapper around a maybe
 /// owned string.
 /// They can all be constructed from a `String` or an `&str`, but some
@@ -88,14 +88,14 @@ pub mod params {
 }
 
 /// REST API endpoints.
-/// 
+///
 /// Each type corresponds to a single HTTP method on a single endpoint.
 /// Request types have constructor functions that take the form
 /// `for_param_1_param_2_param_n`, and accept a `Body` parameter if the underlying
 /// method is a `POST` or `PUT`.
 /// Other request parameters accept any type that can be converted into the
 /// parameter type, usually a `String` or `&str`.
-/// 
+///
 /// Request types don't take ownership of their inputs unless you pass in owned
 /// data.
 /// That means if some function expects a `SearchRequest<'static>` then you can
@@ -109,40 +109,6 @@ pub use genned::http::*;
 pub use self::params::*;
 pub use self::endpoints::*;
 
-use std::borrow::Cow;
-
-
-// TODO: RawBody shouldn't be needed when `Body` is simplified
-
-/// Get a borrowed or owned slice of bytes.
-///
-/// This trait can be used to get the contents of a `HttpRequest`
-/// body without worrying about whether the request itself is
-/// borrowed or owned.
-pub trait RawBody<'a> {
-    fn into_raw(self) -> Cow<'a, [u8]>;
-}
-
-impl<'a> RawBody<'a> for Cow<'a, Body<'a>> {
-    fn into_raw(self) -> Cow<'a, [u8]> {
-        match self {
-            Cow::Borrowed(b) => {
-                match **b {
-                    Cow::Borrowed(b) => Cow::Borrowed(b),
-                    Cow::Owned(ref b) => Cow::Borrowed(b),
-                }
-            }
-            Cow::Owned(b) => b.into_raw(),
-        }
-    }
-}
-
-impl<'a> RawBody<'a> for Body<'a> {
-    fn into_raw(self) -> Cow<'a, [u8]> {
-        self.into()
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use std::thread;
@@ -155,7 +121,7 @@ mod tests {
          -> thread::JoinHandle<()> {
         let req = req.into();
         thread::spawn(move || {
-            assert_eq!("/test_index/test_ty/_search", **req.url);
+            assert_eq!("/test_index/test_ty/_search", *req.url);
         })
     }
 

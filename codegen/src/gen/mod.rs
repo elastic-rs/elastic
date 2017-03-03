@@ -205,9 +205,9 @@ pub mod types {
 
             quote!(
                 pub struct #r_ty<'a> {
-                    pub url: Cow<'a, #u_ty_a>,
+                    pub url: #u_ty_a,
                     pub method: #m_ty,
-                    pub body: Option< Cow<'a, #b_ty_a> >
+                    pub body: Option<#b_ty_a>
                 }
             )
         }
@@ -261,56 +261,6 @@ pub mod types {
                     #from_string
                     #deref
                 )
-        }
-
-        #[cfg(test)]
-        pub mod tests {
-            use super::item;
-            use ::gen::helpers::*;
-
-            #[test]
-            fn gen_item() {
-                let result = item("index");
-
-                let decl = quote!(
-                    pub struct Index<'a>(pub Cow<'a, str>)
-                );
-
-                let from_str = quote!(
-                    impl <'a> From<&'a str> for Index<'a> {
-                        fn from(value: &'a str) -> Index<'a> {
-                            Index(Cow::Borrowed(value))
-                        }
-                    }
-                );
-
-                let from_string = quote!(
-                    impl <'a> From<String> for Index<'a> {
-                        fn from(value: String) -> Index<'a> {
-                            Index(Cow::Owned(value))
-                        }
-                    }
-                );
-
-                let deref = quote!(
-                    impl <'a> ::std::ops::Deref for Index<'a> {
-                        type Target = str;
-                        
-                        fn deref(&self) -> &str {
-                            &self.0
-                        }
-                    }
-                );
-
-                let expected = quote!(
-                    #decl;
-                    #from_str
-                    #from_string
-                    #deref
-                );
-
-                ast_eq(expected, result);
-            }
         }
     }
 }
