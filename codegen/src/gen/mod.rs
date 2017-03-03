@@ -124,8 +124,8 @@ pub mod types {
             );
 
             let into_cow = quote!(
-                impl<'a> Into<Cow<'a, [u8]>> for Body<'a> {
-                    fn into(self) -> Cow<'a, [u8]> {
+                impl<'a> Body<'a> {
+                    pub fn into_inner(self) -> Cow<'a, [u8]> {
                         self.0
                     }
                 }
