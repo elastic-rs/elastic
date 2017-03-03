@@ -306,8 +306,8 @@ pub trait ElasticClient {
 macro_rules! req_with_body {
     ($client:ident, $url:ident, $body:ident, $params:ident, $method:ident) => ({
         let body = $body.expect("Expected this request to have a body. This is a bug, please file an issue on GitHub.");
-        let body_cow = body.into();
-        
+        let body_cow = body.into_inner();
+
         let body = match body_cow {
             Cow::Borrowed(b) => reqwest::Body::new(Cursor::new(b)),
             Cow::Owned(b) => b.into()
