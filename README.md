@@ -13,7 +13,7 @@ Quick reference:
 ## Build Status
 Platform  | Channel | Status
 ------------- | ------------- | -------------
-Linux / OSX  | Nightly | [![Build Status](https://travis-ci.org/elastic-rs/elastic.svg?branch=master)](https://travis-ci.org/elastic-rs/elastic)
+Linux / OSX  | Stable/Nightly | [![Build Status](https://travis-ci.org/elastic-rs/elastic.svg?branch=master)](https://travis-ci.org/elastic-rs/elastic)
 Windows  | Nightly | [![Build status](https://ci.appveyor.com/api/projects/status/t71058ht2qp732eh?svg=true)](https://ci.appveyor.com/project/KodrAus/elastic)
 
 ## Documentation
@@ -114,7 +114,8 @@ struct MyDocument {
 You can then serialise the document mapping as json:
 
 ```rust
-let mapping = serde_json::to_string(&Document::from(MyDocument::mapping())).unwrap();
+let doc = Document::from(MyDocument::mapping());
+let mapping = serde_json::to_string(&doc).unwrap();
 ```
 
 See the [docs](https://elastic-rs.github.io/elastic/elastic/types/index.html) for more details.
