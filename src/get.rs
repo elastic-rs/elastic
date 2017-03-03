@@ -42,7 +42,7 @@ impl<T: Deserialize> FromResponse for GetResponseOf<T> {
 
                     Ok(MaybeOkResponse::new(is_ok, res))
                 }
-                _ => Ok(MaybeOkResponse::new(false, res)),
+                _ => Ok(MaybeOkResponse::err(res)),
             }
         })
     }

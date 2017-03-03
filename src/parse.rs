@@ -64,6 +64,20 @@ impl<R> MaybeOkResponse<R> {
             res: res.into(),
         }
     }
+
+    /// Create a response where the body is successful.
+    pub fn ok<I>(res: I) -> Self
+        where I: Into<MaybeBufferedResponse<R>>
+    {
+        Self::new(true, res)
+    }
+
+    /// Create a resposne where the body is an error.
+    pub fn err<I>(res: I) -> Self
+        where I: Into<MaybeBufferedResponse<R>>
+    {
+        Self::new(false, res)
+    }
 }
 
 /// A response body that may or may not have been buffered.
