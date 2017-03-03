@@ -1,3 +1,5 @@
+#![recursion_limit="200"]
+
 #[cfg(test)]
 #[macro_use]
 extern crate json_str;
