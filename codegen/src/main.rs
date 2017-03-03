@@ -1,3 +1,7 @@
+#[cfg(test)]
+#[macro_use]
+extern crate json_str;
+
 #[macro_use]
 extern crate serde_derive;
 extern crate serde;
