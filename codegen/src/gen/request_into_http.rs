@@ -27,7 +27,7 @@ impl RequestIntoHttpRequestBuilder {
 
         let (brw_body, owned_body) = {
             if self.has_body {
-                (quote!(Some(Cow::Borrowed(&self.body))), quote!(Some(Cow::Owned(self.body))))
+                (quote!(Some(self.body.as_ref().into())), quote!(Some(self.body)))
             } else {
                 (quote!(None), quote!(None))
             }
@@ -46,7 +46,7 @@ impl RequestIntoHttpRequestBuilder {
             impl <'a, 'b: 'a> Into<HttpRequest<'a> > for &'a #req_ty<'b> {
                 fn into(self) -> HttpRequest<'a> {
                     HttpRequest {
-                        url: Cow::Borrowed(&self.url),
+                        url: self.url.as_ref().into(),
                         method: #method,
                         body: #brw_body
                     }
@@ -58,7 +58,7 @@ impl RequestIntoHttpRequestBuilder {
             impl <'a> Into<HttpRequest<'a> > for #req_ty<'a> {
                 fn into(self) -> HttpRequest<'a> {
                     HttpRequest {
-                        url: Cow::Owned(self.url),
+                        url: self.url,
                         method: #method,
                         body: #owned_body
                     }
@@ -108,9 +108,9 @@ mod tests {
             impl <'a, 'b: 'a> Into<HttpRequest<'a> > for &'a IndicesExistsAliasRequest<'b> {
                 fn into(self) -> HttpRequest<'a> {
                     HttpRequest {
-                        url: Cow::Borrowed(&self.url),
+                        url: self.url.as_ref().into(),
                         method: HttpMethod::Get,
-                        body: Some(Cow::Borrowed(&self.body))
+                        body: Some(self.body.as_ref().into())
                     }
                 }
             }
@@ -120,9 +120,9 @@ mod tests {
             impl <'a> Into<HttpRequest<'a> > for IndicesExistsAliasRequest<'a> {
                 fn into(self) -> HttpRequest<'a> {
                     HttpRequest {
-                        url: Cow::Owned(self.url),
+                        url: self.url,
                         method: HttpMethod::Get,
-                        body: Some(Cow::Owned(self.body))
+                        body: Some(self.body)
                     }
                 }
             }
