@@ -29,8 +29,8 @@ impl<T: Deserialize> FromResponse for SearchResponseOf<T> {
 
         res.response(|res| {
             match res.status() {
-                200...299 => Ok(MaybeOkResponse::new(true, res)),
-                _ => Ok(MaybeOkResponse::new(false, res)),
+                200...299 => Ok(MaybeOkResponse::ok(res)),
+                _ => Ok(MaybeOkResponse::err(res)),
             }
         })
     }
