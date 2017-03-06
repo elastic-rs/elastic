@@ -179,7 +179,7 @@ fn endpoints_mod(tokens: &mut Tokens, derives: Tokens, http_mod: &'static str, e
         use super::params::*;
     );
 
-    tokens.append(uses.to_string().as_ref());
+    tokens.append(uses.to_string());
     tokens.append("\n\n");
 
     for e in endpoints {
@@ -227,7 +227,7 @@ fn http_mod(tokens: &mut Tokens, derives: Tokens) {
         use std::ops::Deref;
     );
 
-    tokens.append(uses.to_string().as_ref());
+    tokens.append(uses.to_string());
 
     tokens.append("\n\n");
 
@@ -248,7 +248,7 @@ fn params_mod(tokens: &mut Tokens, derives: Tokens, params_to_emit: BTreeMap<Str
         use std::borrow::Cow;
     );
 
-    tokens.append(uses.to_string().as_ref());
+    tokens.append(uses.to_string());
     tokens.append("\n\n");
 
     let params_to_emit = params_to_emit.iter()
