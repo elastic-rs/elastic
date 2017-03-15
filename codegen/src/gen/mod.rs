@@ -62,12 +62,16 @@ pub mod types {
             "Body"
         }
 
+        pub fn generic_ident() -> &'static str {
+            "R"
+        }
+
         pub fn ty(body_generic: syn::Ty) -> syn::Ty {
             helpers::ty_path(ident(), vec![], vec![body_generic])
         }
 
         pub fn tokens() -> quote::Tokens {
-            let body_generic = helpers::ty("R");
+            let body_generic = helpers::ty(generic_ident());
             let body = ty(body_generic.clone());
             let body_no_generic = helpers::ty(ident());
 
@@ -140,7 +144,7 @@ pub mod types {
 
             let url_ty = url::ty();
 
-            let body_generic_ty = helpers::ty("R");
+            let body_generic_ty = helpers::ty(body::generic_ident());
             let body_ty = body::ty(body_generic_ty.clone());
 
             quote!(
@@ -218,24 +222,26 @@ pub mod helpers {
 
     /// Generics with a standard `'a` lifetime.
     pub fn generics_a() -> syn::Generics {
-        syn::Generics {
-            lifetimes: vec![
-                syn::LifetimeDef {
-                    attrs: vec![],
-                    lifetime: lifetime(),
-                    bounds: vec![]
-                }
-            ],
-            ty_params: vec![],
-            where_clause: syn::WhereClause::none(),
-        }
+        generics(vec![lifetime()], vec![])
     }
 
     /// Generics with no parameters.
-    pub fn generics() -> syn::Generics {
+    pub fn generics_none() -> syn::Generics {
+        generics(vec![], vec![])
+    }
+
+    /// Generics with the given lifetimes and type bounds.
+    pub fn generics(lifetimes: Vec<syn::Lifetime>, types: Vec<syn::TyParam>) -> syn::Generics {
         syn::Generics {
-            lifetimes: vec![],
-            ty_params: vec![],
+            lifetimes: lifetimes
+                .into_iter()
+                .map(|l| syn::LifetimeDef {
+                    attrs: vec![],
+                    lifetime: l,
+                    bounds: vec![]
+                })
+                .collect(),
+            ty_params: types,
             where_clause: syn::WhereClause::none(),
         }
     }
@@ -250,31 +256,51 @@ pub mod helpers {
         ty_path(ty, vec![], vec![])
     }
 
+    /// AST for a simple type param.
+    pub fn ty_param(ty: &str, bounds: Vec<syn::TyParamBound>) -> syn::TyParam {
+        syn::TyParam {
+            attrs: vec![],
+            ident: ident(ty),
+            bounds: bounds,
+            default: None
+        }
+    }
+
+    /// AST for a generic type param bound.
+    pub fn ty_bound(trait_ref: syn::Path) -> syn::TyParamBound {
+        syn::TyParamBound::Trait(syn::PolyTraitRef {
+              bound_lifetimes: vec![],
+              trait_ref: trait_ref,
+          },
+          syn::TraitBoundModifier::None)
+    }
+
     /// AST for a path type with lifetimes and type parameters.
     pub fn ty_path(ty: &str, lifetimes: Vec<syn::Lifetime>, types: Vec<syn::Ty>) -> syn::Ty {
-        syn::Ty::Path(None,
-                      syn::Path {
-                          global: false,
-                          segments: vec![
-                                syn::PathSegment {
-                                    ident: syn::Ident::new(ty),
-                                    parameters: syn::PathParameters::AngleBracketed(
-                                        syn::AngleBracketedParameterData {
-                                            lifetimes: lifetimes,
-                                            types: types,
-                                            bindings: vec![]
-                                        }
-                                    )
-                                }
-                            ],
-                      })
+        syn::Ty::Path(None, path(ty, lifetimes, types))
     }
 
     /// AST for a simple path variable.
-    pub fn path(path: &str) -> syn::Path {
+    pub fn path_none(path_ident: &str) -> syn::Path {
+        path(path_ident, vec![], vec![])
+    }
+
+    /// AST for a path variable.
+    pub fn path(path: &str, lifetimes: Vec<syn::Lifetime>, types: Vec<syn::Ty>) -> syn::Path {
         syn::Path {
-            global: false,
-            segments: vec![syn::PathSegment::from(sanitise_ident(path))],
+          global: false,
+          segments: vec![
+                syn::PathSegment {
+                    ident: syn::Ident::new(sanitise_ident(path)),
+                    parameters: syn::PathParameters::AngleBracketed(
+                        syn::AngleBracketedParameterData {
+                            lifetimes: lifetimes,
+                            types: types,
+                            bindings: vec![]
+                        }
+                    )
+                }
+            ],
         }
     }
 
@@ -282,13 +308,13 @@ pub mod helpers {
     pub fn method(method: &str, args: Vec<&str>) -> syn::Expr {
         syn::ExprKind::MethodCall(ident(method),
                                   vec![],
-                                  args.iter().map(|a| path(a).into_expr()).collect())
+                                  args.iter().map(|a| path_none(a).into_expr()).collect())
             .into()
     }
 
     /// AST for a simple field access.
     pub fn field(obj: &str, field: &str) -> syn::Expr {
-        syn::ExprKind::Field(Box::new(path(obj).into_expr()), ident(field)).into()
+        syn::ExprKind::Field(Box::new(path_none(obj).into_expr()), ident(field)).into()
     }
 
     /// Parse quoted tokens to an item.

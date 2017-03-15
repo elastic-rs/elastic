@@ -36,11 +36,13 @@ impl RequestParamBuilder {
                 ident: Some(ident("body")),
                 vis: syn::Visibility::Public,
                 attrs: vec![],
-                ty: types::body::ty(),
+                ty: types::body::ty(ty(types::body::generic_ident())),
             });
         }
 
         let fields = syn::VariantData::Struct(fields);
+
+        let generics = generics(vec![lifetime()], vec![ty_param(types::body::generic_ident(), vec![])]);
 
         let ty = ty_a(self.name.as_ref());
 
@@ -48,7 +50,7 @@ impl RequestParamBuilder {
             ident: self.name,
             vis: syn::Visibility::Public,
             attrs: vec![],
-            node: syn::ItemKind::Struct(fields, generics_a()),
+            node: syn::ItemKind::Struct(fields, generics),
         };
 
         (item, ty)
@@ -75,7 +77,7 @@ mod tests {
     fn gen_request_params_ty() {
         let (_, result) = RequestParamBuilder::new("Request").build();
 
-        let expected = quote!(Request<'a>);
+        let expected = quote!(Request<'a, R>);
 
         ast_eq(expected, result);
     }
@@ -85,7 +87,7 @@ mod tests {
         let (result, _) = RequestParamBuilder::new("Request").build();
 
         let expected = quote!(
-            pub struct Request<'a> {
+            pub struct Request<'a, R> {
                 pub url: Url<'a>
             }
         );
@@ -108,9 +110,9 @@ mod tests {
         let (result, _) = RequestParamBuilder::from(&endpoint).build();
 
         let expected = quote!(
-            pub struct IndicesExistsAliasRequest<'a> {
+            pub struct IndicesExistsAliasRequest<'a, R> {
                 pub url: Url<'a>,
-                pub body: Body<'a>
+                pub body: Body<R>
             }
         );
 

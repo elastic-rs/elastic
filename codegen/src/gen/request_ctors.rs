@@ -96,7 +96,7 @@ impl RequestParamsCtorBuilder {
     /// a body field.
     fn body_field(has_body: bool) -> Option<(syn::Ident, syn::Ty)> {
         if has_body {
-            Some((ident("body"), types::body::ty()))
+            Some((ident("body"), types::body::ty(ty(types::body::generic_ident()))))
         } else {
             None
         }
@@ -115,40 +115,23 @@ impl RequestParamsCtorBuilder {
     fn ctor_field_generic(field: &syn::Ty) -> syn::TyParam {
         let generic_ident = Self::field_generic_ty(field);
 
-        syn::TyParam {
-            attrs: vec![],
-            ident: ident(generic_ident),
-            bounds: vec![],
-            default: None,
-        }
+        ty_param(&generic_ident, vec![])
     }
 
     /// Build the `IT: Into<T>` generic where bound.
     fn ctor_field_generic_where_bound(field: &syn::Ty) -> syn::WherePredicate {
         let generic_ident = Self::field_generic_ty(field);
 
+        let into_bound = path("Into", vec![], vec![field.clone()]);
+
         syn::WherePredicate::BoundPredicate(syn::WhereBoundPredicate {
             bound_lifetimes: vec![],
             bounded_ty: ty(&generic_ident),
-            bounds: vec![syn::TyParamBound::Trait(syn::PolyTraitRef {
-                                                      bound_lifetimes: vec![],
-                                                      trait_ref: syn::Path {
-                                                          global: false,
-                                                          segments: vec![syn::PathSegment {
-                                                                             ident: ident("Into"),
-                                                                             parameters: syn::PathParameters::AngleBracketed(syn::AngleBracketedParameterData {
-                                                                                 lifetimes: vec![],
-                                                                                 types: vec![field.clone()],
-                                                                                 bindings: vec![],
-                                                                             }),
-                                                                         }],
-                                                      },
-                                                  },
-                                                  syn::TraitBoundModifier::None)],
+            bounds: vec![ty_bound(into_bound)],
         })
     }
 
-    /// Build the `T { url_params: UrlParams::ABC(a.into(), b.into(), c.into()), body: body.into() }` body.
+    /// Build the `T { url_params: UrlParams::ABC(a.into(), b.into(), c.into()), body: Body::new(body) }` body.
     fn ctor_body(req_ty: syn::Ty, params_ty: syn::Ty, ctor: &Constructor) -> syn::Block {
         let req_ty = {
             let mut path = req_ty.get_path().to_owned();
@@ -224,7 +207,7 @@ impl RequestParamsCtorBuilder {
 
                 let ty = ty(&Self::field_generic_ty(field));
 
-                syn::FnArg::Captured(syn::Pat::Path(None, path(&name.to_string())), ty)
+                syn::FnArg::Captured(syn::Pat::Path(None, path_none(&name.to_string())), ty)
             })
             .collect();
 
