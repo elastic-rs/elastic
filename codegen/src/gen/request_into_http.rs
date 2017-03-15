@@ -104,7 +104,7 @@ mod tests {
 
         let result = RequestIntoHttpRequestBuilder::from((&endpoint, &req_ty)).build();
 
-        let brw_item = quote!(
+        let expected = quote!(
             impl <'a, 'b: 'a> Into<HttpRequest<'a> > for &'a IndicesExistsAliasRequest<'b> {
                 fn into(self) -> HttpRequest<'a> {
                     HttpRequest {
@@ -114,9 +114,7 @@ mod tests {
                     }
                 }
             }
-        );
 
-        let owned_item = quote!(
             impl <'a> Into<HttpRequest<'a> > for IndicesExistsAliasRequest<'a> {
                 fn into(self) -> HttpRequest<'a> {
                     HttpRequest {
@@ -126,12 +124,6 @@ mod tests {
                     }
                 }
             }
-        );
-
-        let expected = quote!(
-            #brw_item
-
-            #owned_item
         );
 
         ast_eq(expected, result);

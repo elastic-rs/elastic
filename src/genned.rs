@@ -27,10 +27,10 @@ pub mod endpoints {
         pub body: Body<'a>,
     }
     impl<'a> IndicesCloseRequest<'a> {
-        pub fn for_index<IIndex: Into<Index<'a>>, IBody: Into<Body<'a>>>
-            (index: IIndex,
-             body: IBody)
-             -> IndicesCloseRequest<'a> {
+        pub fn for_index<IIndex, IBody>(index: IIndex, body: IBody) -> IndicesCloseRequest<'a>
+            where IIndex: Into<Index<'a>>,
+                  IBody: Into<Body<'a>>
+        {
             IndicesCloseRequest {
                 url: IndicesCloseUrlParams::Index(index.into()).url(),
                 body: body.into(),
@@ -78,9 +78,10 @@ pub mod endpoints {
         pub url: Url<'a>,
     }
     impl<'a> DeleteScriptRequest<'a> {
-        pub fn for_lang_id<ILang: Into<Lang<'a>>, IId: Into<Id<'a>>>(lang: ILang,
-                                                                     id: IId)
-                                                                     -> DeleteScriptRequest<'a> {
+        pub fn for_lang_id<ILang, IId>(lang: ILang, id: IId) -> DeleteScriptRequest<'a>
+            where ILang: Into<Lang<'a>>,
+                  IId: Into<Id<'a>>
+        {
             DeleteScriptRequest { url: DeleteScriptUrlParams::LangId(lang.into(), id.into()).url() }
         }
     }
@@ -140,25 +141,29 @@ pub mod endpoints {
         pub body: Body<'a>,
     }
     impl<'a> TermvectorsRequest<'a> {
-        pub fn for_index_ty<IIndex: Into<Index<'a>>, IType: Into<Type<'a>>, IBody: Into<Body<'a>>>
-            (index: IIndex,
-             ty: IType,
-             body: IBody)
-             -> TermvectorsRequest<'a> {
+        pub fn for_index_ty<IIndex, IType, IBody>(index: IIndex,
+                                                  ty: IType,
+                                                  body: IBody)
+                                                  -> TermvectorsRequest<'a>
+            where IIndex: Into<Index<'a>>,
+                  IType: Into<Type<'a>>,
+                  IBody: Into<Body<'a>>
+        {
             TermvectorsRequest {
                 url: TermvectorsUrlParams::IndexType(index.into(), ty.into()).url(),
                 body: body.into(),
             }
         }
-        pub fn for_index_ty_id<IIndex: Into<Index<'a>>,
-                               IType: Into<Type<'a>>,
-                               IId: Into<Id<'a>>,
-                               IBody: Into<Body<'a>>>
-            (index: IIndex,
-             ty: IType,
-             id: IId,
-             body: IBody)
-             -> TermvectorsRequest<'a> {
+        pub fn for_index_ty_id<IIndex, IType, IId, IBody>(index: IIndex,
+                                                          ty: IType,
+                                                          id: IId,
+                                                          body: IBody)
+                                                          -> TermvectorsRequest<'a>
+            where IIndex: Into<Index<'a>>,
+                  IType: Into<Type<'a>>,
+                  IId: Into<Id<'a>>,
+                  IBody: Into<Body<'a>>
+        {
             TermvectorsRequest {
                 url: TermvectorsUrlParams::IndexTypeId(index.into(), ty.into(), id.into()).url(),
                 body: body.into(),
@@ -208,16 +213,18 @@ pub mod endpoints {
         pub body: Body<'a>,
     }
     impl<'a> FieldStatsRequest<'a> {
-        pub fn new<IBody: Into<Body<'a>>>(body: IBody) -> FieldStatsRequest<'a> {
+        pub fn new<IBody>(body: IBody) -> FieldStatsRequest<'a>
+            where IBody: Into<Body<'a>>
+        {
             FieldStatsRequest {
                 url: FieldStatsUrlParams::None.url(),
                 body: body.into(),
             }
         }
-        pub fn for_index<IIndex: Into<Index<'a>>, IBody: Into<Body<'a>>>
-            (index: IIndex,
-             body: IBody)
-             -> FieldStatsRequest<'a> {
+        pub fn for_index<IIndex, IBody>(index: IIndex, body: IBody) -> FieldStatsRequest<'a>
+            where IIndex: Into<Index<'a>>,
+                  IBody: Into<Body<'a>>
+        {
             FieldStatsRequest {
                 url: FieldStatsUrlParams::Index(index.into()).url(),
                 body: body.into(),
@@ -267,10 +274,7 @@ pub mod endpoints {
     impl<'a> CatThreadPoolRequest<'a> {
         pub fn new() -> CatThreadPoolRequest<'a> {
             CatThreadPoolRequest { url: CatThreadPoolUrlParams::None.url() }
-        }
-        pub fn for_thread_pool_patterns<IThreadPoolPatterns: Into<ThreadPoolPatterns<'a>>>
-            (thread_pool_patterns: IThreadPoolPatterns)
-             -> CatThreadPoolRequest<'a> {
+        } pub fn for_thread_pool_patterns < IThreadPoolPatterns > ( thread_pool_patterns : IThreadPoolPatterns ) -> CatThreadPoolRequest < 'a > where IThreadPoolPatterns : Into < ThreadPoolPatterns < 'a > > {
             CatThreadPoolRequest {
                 url: CatThreadPoolUrlParams::ThreadPoolPatterns(thread_pool_patterns.into()).url(),
             }
@@ -318,11 +322,12 @@ pub mod endpoints {
         pub url: Url<'a>,
     }
     impl<'a> SnapshotDeleteRequest<'a> {
-        pub fn for_repository_snapshot<IRepository: Into<Repository<'a>>,
-                                       ISnapshot: Into<Snapshot<'a>>>
-            (repository: IRepository,
-             snapshot: ISnapshot)
-             -> SnapshotDeleteRequest<'a> {
+        pub fn for_repository_snapshot<IRepository, ISnapshot>(repository: IRepository,
+                                                               snapshot: ISnapshot)
+                                                               -> SnapshotDeleteRequest<'a>
+            where IRepository: Into<Repository<'a>>,
+                  ISnapshot: Into<Snapshot<'a>>
+        {
             SnapshotDeleteRequest {
                 url: SnapshotDeleteUrlParams::RepositorySnapshot(repository.into(),
                                                                  snapshot.into())
@@ -391,20 +396,26 @@ pub mod endpoints {
         pub fn new() -> IndicesGetSettingsRequest<'a> {
             IndicesGetSettingsRequest { url: IndicesGetSettingsUrlParams::None.url() }
         }
-        pub fn for_index<IIndex: Into<Index<'a>>>(index: IIndex) -> IndicesGetSettingsRequest<'a> {
+        pub fn for_index<IIndex>(index: IIndex) -> IndicesGetSettingsRequest<'a>
+            where IIndex: Into<Index<'a>>
+        {
             IndicesGetSettingsRequest {
                 url: IndicesGetSettingsUrlParams::Index(index.into()).url(),
             }
         }
-        pub fn for_index_name<IIndex: Into<Index<'a>>, IName: Into<Name<'a>>>
-            (index: IIndex,
-             name: IName)
-             -> IndicesGetSettingsRequest<'a> {
+        pub fn for_index_name<IIndex, IName>(index: IIndex,
+                                             name: IName)
+                                             -> IndicesGetSettingsRequest<'a>
+            where IIndex: Into<Index<'a>>,
+                  IName: Into<Name<'a>>
+        {
             IndicesGetSettingsRequest {
                 url: IndicesGetSettingsUrlParams::IndexName(index.into(), name.into()).url(),
             }
         }
-        pub fn for_name<IName: Into<Name<'a>>>(name: IName) -> IndicesGetSettingsRequest<'a> {
+        pub fn for_name<IName>(name: IName) -> IndicesGetSettingsRequest<'a>
+            where IName: Into<Name<'a>>
+        {
             IndicesGetSettingsRequest { url: IndicesGetSettingsUrlParams::Name(name.into()).url() }
         }
     }
@@ -454,15 +465,16 @@ pub mod endpoints {
         pub body: Body<'a>,
     }
     impl<'a> CreateRequest<'a> {
-        pub fn for_index_ty_id<IIndex: Into<Index<'a>>,
-                               IType: Into<Type<'a>>,
-                               IId: Into<Id<'a>>,
-                               IBody: Into<Body<'a>>>
-            (index: IIndex,
-             ty: IType,
-             id: IId,
-             body: IBody)
-             -> CreateRequest<'a> {
+        pub fn for_index_ty_id<IIndex, IType, IId, IBody>(index: IIndex,
+                                                          ty: IType,
+                                                          id: IId,
+                                                          body: IBody)
+                                                          -> CreateRequest<'a>
+            where IIndex: Into<Index<'a>>,
+                  IType: Into<Type<'a>>,
+                  IId: Into<Id<'a>>,
+                  IBody: Into<Body<'a>>
+        {
             CreateRequest {
                 url: CreateUrlParams::IndexTypeId(index.into(), ty.into(), id.into()).url(),
                 body: body.into(),
@@ -508,9 +520,10 @@ pub mod endpoints {
         pub url: Url<'a>,
     }
     impl<'a> SnapshotDeleteRepositoryRequest<'a> {
-        pub fn for_repository<IRepository: Into<Repository<'a>>>
-            (repository: IRepository)
-             -> SnapshotDeleteRepositoryRequest<'a> {
+        pub fn for_repository<IRepository>(repository: IRepository)
+                                           -> SnapshotDeleteRepositoryRequest<'a>
+            where IRepository: Into<Repository<'a>>
+        {
             SnapshotDeleteRepositoryRequest {
                 url: SnapshotDeleteRepositoryUrlParams::Repository(repository.into()).url(),
             }
@@ -551,7 +564,9 @@ pub mod endpoints {
         pub body: Body<'a>,
     }
     impl<'a> ClusterAllocationExplainRequest<'a> {
-        pub fn new<IBody: Into<Body<'a>>>(body: IBody) -> ClusterAllocationExplainRequest<'a> {
+        pub fn new<IBody>(body: IBody) -> ClusterAllocationExplainRequest<'a>
+            where IBody: Into<Body<'a>>
+        {
             ClusterAllocationExplainRequest {
                 url: ClusterAllocationExplainUrlParams::None.url(),
                 body: body.into(),
@@ -598,10 +613,10 @@ pub mod endpoints {
         pub body: Body<'a>,
     }
     impl<'a> IndicesPutTemplateRequest<'a> {
-        pub fn for_name<IName: Into<Name<'a>>, IBody: Into<Body<'a>>>
-            (name: IName,
-             body: IBody)
-             -> IndicesPutTemplateRequest<'a> {
+        pub fn for_name<IName, IBody>(name: IName, body: IBody) -> IndicesPutTemplateRequest<'a>
+            where IName: Into<Name<'a>>,
+                  IBody: Into<Body<'a>>
+        {
             IndicesPutTemplateRequest {
                 url: IndicesPutTemplateUrlParams::Name(name.into()).url(),
                 body: body.into(),
@@ -652,7 +667,9 @@ pub mod endpoints {
         pub fn new() -> IndicesGetTemplateRequest<'a> {
             IndicesGetTemplateRequest { url: IndicesGetTemplateUrlParams::None.url() }
         }
-        pub fn for_name<IName: Into<Name<'a>>>(name: IName) -> IndicesGetTemplateRequest<'a> {
+        pub fn for_name<IName>(name: IName) -> IndicesGetTemplateRequest<'a>
+            where IName: Into<Name<'a>>
+        {
             IndicesGetTemplateRequest { url: IndicesGetTemplateUrlParams::Name(name.into()).url() }
         }
     }
@@ -709,13 +726,17 @@ pub mod endpoints {
         pub fn new() -> ClusterStateRequest<'a> {
             ClusterStateRequest { url: ClusterStateUrlParams::None.url() }
         }
-        pub fn for_metric<IMetric: Into<Metric<'a>>>(metric: IMetric) -> ClusterStateRequest<'a> {
+        pub fn for_metric<IMetric>(metric: IMetric) -> ClusterStateRequest<'a>
+            where IMetric: Into<Metric<'a>>
+        {
             ClusterStateRequest { url: ClusterStateUrlParams::Metric(metric.into()).url() }
         }
-        pub fn for_metric_index<IMetric: Into<Metric<'a>>, IIndex: Into<Index<'a>>>
-            (metric: IMetric,
-             index: IIndex)
-             -> ClusterStateRequest<'a> {
+        pub fn for_metric_index<IMetric, IIndex>(metric: IMetric,
+                                                 index: IIndex)
+                                                 -> ClusterStateRequest<'a>
+            where IMetric: Into<Metric<'a>>,
+                  IIndex: Into<Index<'a>>
+        {
             ClusterStateRequest {
                 url: ClusterStateUrlParams::MetricIndex(metric.into(), index.into()).url(),
             }
@@ -774,26 +795,31 @@ pub mod endpoints {
         pub body: Body<'a>,
     }
     impl<'a> MsearchTemplateRequest<'a> {
-        pub fn new<IBody: Into<Body<'a>>>(body: IBody) -> MsearchTemplateRequest<'a> {
+        pub fn new<IBody>(body: IBody) -> MsearchTemplateRequest<'a>
+            where IBody: Into<Body<'a>>
+        {
             MsearchTemplateRequest {
                 url: MsearchTemplateUrlParams::None.url(),
                 body: body.into(),
             }
         }
-        pub fn for_index<IIndex: Into<Index<'a>>, IBody: Into<Body<'a>>>
-            (index: IIndex,
-             body: IBody)
-             -> MsearchTemplateRequest<'a> {
+        pub fn for_index<IIndex, IBody>(index: IIndex, body: IBody) -> MsearchTemplateRequest<'a>
+            where IIndex: Into<Index<'a>>,
+                  IBody: Into<Body<'a>>
+        {
             MsearchTemplateRequest {
                 url: MsearchTemplateUrlParams::Index(index.into()).url(),
                 body: body.into(),
             }
         }
-        pub fn for_index_ty<IIndex: Into<Index<'a>>, IType: Into<Type<'a>>, IBody: Into<Body<'a>>>
-            (index: IIndex,
-             ty: IType,
-             body: IBody)
-             -> MsearchTemplateRequest<'a> {
+        pub fn for_index_ty<IIndex, IType, IBody>(index: IIndex,
+                                                  ty: IType,
+                                                  body: IBody)
+                                                  -> MsearchTemplateRequest<'a>
+            where IIndex: Into<Index<'a>>,
+                  IType: Into<Type<'a>>,
+                  IBody: Into<Body<'a>>
+        {
             MsearchTemplateRequest {
                 url: MsearchTemplateUrlParams::IndexType(index.into(), ty.into()).url(),
                 body: body.into(),
@@ -853,25 +879,31 @@ pub mod endpoints {
         pub body: Body<'a>,
     }
     impl<'a> BulkRequest<'a> {
-        pub fn new<IBody: Into<Body<'a>>>(body: IBody) -> BulkRequest<'a> {
+        pub fn new<IBody>(body: IBody) -> BulkRequest<'a>
+            where IBody: Into<Body<'a>>
+        {
             BulkRequest {
                 url: BulkUrlParams::None.url(),
                 body: body.into(),
             }
         }
-        pub fn for_index<IIndex: Into<Index<'a>>, IBody: Into<Body<'a>>>(index: IIndex,
-                                                                         body: IBody)
-                                                                         -> BulkRequest<'a> {
+        pub fn for_index<IIndex, IBody>(index: IIndex, body: IBody) -> BulkRequest<'a>
+            where IIndex: Into<Index<'a>>,
+                  IBody: Into<Body<'a>>
+        {
             BulkRequest {
                 url: BulkUrlParams::Index(index.into()).url(),
                 body: body.into(),
             }
         }
-        pub fn for_index_ty<IIndex: Into<Index<'a>>, IType: Into<Type<'a>>, IBody: Into<Body<'a>>>
-            (index: IIndex,
-             ty: IType,
-             body: IBody)
-             -> BulkRequest<'a> {
+        pub fn for_index_ty<IIndex, IType, IBody>(index: IIndex,
+                                                  ty: IType,
+                                                  body: IBody)
+                                                  -> BulkRequest<'a>
+            where IIndex: Into<Index<'a>>,
+                  IType: Into<Type<'a>>,
+                  IBody: Into<Body<'a>>
+        {
             BulkRequest {
                 url: BulkUrlParams::IndexType(index.into(), ty.into()).url(),
                 body: body.into(),
@@ -924,15 +956,16 @@ pub mod endpoints {
         pub body: Body<'a>,
     }
     impl<'a> ExplainRequest<'a> {
-        pub fn for_index_ty_id<IIndex: Into<Index<'a>>,
-                               IType: Into<Type<'a>>,
-                               IId: Into<Id<'a>>,
-                               IBody: Into<Body<'a>>>
-            (index: IIndex,
-             ty: IType,
-             id: IId,
-             body: IBody)
-             -> ExplainRequest<'a> {
+        pub fn for_index_ty_id<IIndex, IType, IId, IBody>(index: IIndex,
+                                                          ty: IType,
+                                                          id: IId,
+                                                          body: IBody)
+                                                          -> ExplainRequest<'a>
+            where IIndex: Into<Index<'a>>,
+                  IType: Into<Type<'a>>,
+                  IId: Into<Id<'a>>,
+                  IBody: Into<Body<'a>>
+        {
             ExplainRequest {
                 url: ExplainUrlParams::IndexTypeId(index.into(), ty.into(), id.into()).url(),
                 body: body.into(),
@@ -982,15 +1015,18 @@ pub mod endpoints {
         pub body: Body<'a>,
     }
     impl<'a> SuggestRequest<'a> {
-        pub fn new<IBody: Into<Body<'a>>>(body: IBody) -> SuggestRequest<'a> {
+        pub fn new<IBody>(body: IBody) -> SuggestRequest<'a>
+            where IBody: Into<Body<'a>>
+        {
             SuggestRequest {
                 url: SuggestUrlParams::None.url(),
                 body: body.into(),
             }
         }
-        pub fn for_index<IIndex: Into<Index<'a>>, IBody: Into<Body<'a>>>(index: IIndex,
-                                                                         body: IBody)
-                                                                         -> SuggestRequest<'a> {
+        pub fn for_index<IIndex, IBody>(index: IIndex, body: IBody) -> SuggestRequest<'a>
+            where IIndex: Into<Index<'a>>,
+                  IBody: Into<Body<'a>>
+        {
             SuggestRequest {
                 url: SuggestUrlParams::Index(index.into()).url(),
                 body: body.into(),
@@ -1041,9 +1077,10 @@ pub mod endpoints {
         pub fn new() -> SnapshotGetRepositoryRequest<'a> {
             SnapshotGetRepositoryRequest { url: SnapshotGetRepositoryUrlParams::None.url() }
         }
-        pub fn for_repository<IRepository: Into<Repository<'a>>>
-            (repository: IRepository)
-             -> SnapshotGetRepositoryRequest<'a> {
+        pub fn for_repository<IRepository>(repository: IRepository)
+                                           -> SnapshotGetRepositoryRequest<'a>
+            where IRepository: Into<Repository<'a>>
+        {
             SnapshotGetRepositoryRequest {
                 url: SnapshotGetRepositoryUrlParams::Repository(repository.into()).url(),
             }
@@ -1091,16 +1128,18 @@ pub mod endpoints {
         pub body: Body<'a>,
     }
     impl<'a> RenderSearchTemplateRequest<'a> {
-        pub fn new<IBody: Into<Body<'a>>>(body: IBody) -> RenderSearchTemplateRequest<'a> {
+        pub fn new<IBody>(body: IBody) -> RenderSearchTemplateRequest<'a>
+            where IBody: Into<Body<'a>>
+        {
             RenderSearchTemplateRequest {
                 url: RenderSearchTemplateUrlParams::None.url(),
                 body: body.into(),
             }
         }
-        pub fn for_id<IId: Into<Id<'a>>, IBody: Into<Body<'a>>>
-            (id: IId,
-             body: IBody)
-             -> RenderSearchTemplateRequest<'a> {
+        pub fn for_id<IId, IBody>(id: IId, body: IBody) -> RenderSearchTemplateRequest<'a>
+            where IId: Into<Id<'a>>,
+                  IBody: Into<Body<'a>>
+        {
             RenderSearchTemplateRequest {
                 url: RenderSearchTemplateUrlParams::Id(id.into()).url(),
                 body: body.into(),
@@ -1168,18 +1207,24 @@ pub mod endpoints {
         pub fn new() -> IndicesStatsRequest<'a> {
             IndicesStatsRequest { url: IndicesStatsUrlParams::None.url() }
         }
-        pub fn for_index<IIndex: Into<Index<'a>>>(index: IIndex) -> IndicesStatsRequest<'a> {
+        pub fn for_index<IIndex>(index: IIndex) -> IndicesStatsRequest<'a>
+            where IIndex: Into<Index<'a>>
+        {
             IndicesStatsRequest { url: IndicesStatsUrlParams::Index(index.into()).url() }
         }
-        pub fn for_index_metric<IIndex: Into<Index<'a>>, IMetric: Into<Metric<'a>>>
-            (index: IIndex,
-             metric: IMetric)
-             -> IndicesStatsRequest<'a> {
+        pub fn for_index_metric<IIndex, IMetric>(index: IIndex,
+                                                 metric: IMetric)
+                                                 -> IndicesStatsRequest<'a>
+            where IIndex: Into<Index<'a>>,
+                  IMetric: Into<Metric<'a>>
+        {
             IndicesStatsRequest {
                 url: IndicesStatsUrlParams::IndexMetric(index.into(), metric.into()).url(),
             }
         }
-        pub fn for_metric<IMetric: Into<Metric<'a>>>(metric: IMetric) -> IndicesStatsRequest<'a> {
+        pub fn for_metric<IMetric>(metric: IMetric) -> IndicesStatsRequest<'a>
+            where IMetric: Into<Metric<'a>>
+        {
             IndicesStatsRequest { url: IndicesStatsUrlParams::Metric(metric.into()).url() }
         }
     }
@@ -1264,16 +1309,18 @@ pub mod endpoints {
         pub body: Body<'a>,
     }
     impl<'a> IndicesForcemergeRequest<'a> {
-        pub fn new<IBody: Into<Body<'a>>>(body: IBody) -> IndicesForcemergeRequest<'a> {
+        pub fn new<IBody>(body: IBody) -> IndicesForcemergeRequest<'a>
+            where IBody: Into<Body<'a>>
+        {
             IndicesForcemergeRequest {
                 url: IndicesForcemergeUrlParams::None.url(),
                 body: body.into(),
             }
         }
-        pub fn for_index<IIndex: Into<Index<'a>>, IBody: Into<Body<'a>>>
-            (index: IIndex,
-             body: IBody)
-             -> IndicesForcemergeRequest<'a> {
+        pub fn for_index<IIndex, IBody>(index: IIndex, body: IBody) -> IndicesForcemergeRequest<'a>
+            where IIndex: Into<Index<'a>>,
+                  IBody: Into<Body<'a>>
+        {
             IndicesForcemergeRequest {
                 url: IndicesForcemergeUrlParams::Index(index.into()).url(),
                 body: body.into(),
@@ -1357,7 +1404,9 @@ pub mod endpoints {
         pub url: Url<'a>,
     }
     impl<'a> TasksGetRequest<'a> {
-        pub fn for_task_id<ITaskId: Into<TaskId<'a>>>(task_id: ITaskId) -> TasksGetRequest<'a> {
+        pub fn for_task_id<ITaskId>(task_id: ITaskId) -> TasksGetRequest<'a>
+            where ITaskId: Into<TaskId<'a>>
+        {
             TasksGetRequest { url: TasksGetUrlParams::TaskId(task_id.into()).url() }
         }
     }
@@ -1400,7 +1449,9 @@ pub mod endpoints {
         pub url: Url<'a>,
     }
     impl<'a> IndicesExistsRequest<'a> {
-        pub fn for_index<IIndex: Into<Index<'a>>>(index: IIndex) -> IndicesExistsRequest<'a> {
+        pub fn for_index<IIndex>(index: IIndex) -> IndicesExistsRequest<'a>
+            where IIndex: Into<Index<'a>>
+        {
             IndicesExistsRequest { url: IndicesExistsUrlParams::Index(index.into()).url() }
         }
     }
@@ -1447,16 +1498,18 @@ pub mod endpoints {
         pub body: Body<'a>,
     }
     impl<'a> IndicesFlushSyncedRequest<'a> {
-        pub fn new<IBody: Into<Body<'a>>>(body: IBody) -> IndicesFlushSyncedRequest<'a> {
+        pub fn new<IBody>(body: IBody) -> IndicesFlushSyncedRequest<'a>
+            where IBody: Into<Body<'a>>
+        {
             IndicesFlushSyncedRequest {
                 url: IndicesFlushSyncedUrlParams::None.url(),
                 body: body.into(),
             }
         }
-        pub fn for_index<IIndex: Into<Index<'a>>, IBody: Into<Body<'a>>>
-            (index: IIndex,
-             body: IBody)
-             -> IndicesFlushSyncedRequest<'a> {
+        pub fn for_index<IIndex, IBody>(index: IIndex, body: IBody) -> IndicesFlushSyncedRequest<'a>
+            where IIndex: Into<Index<'a>>,
+                  IBody: Into<Body<'a>>
+        {
             IndicesFlushSyncedRequest {
                 url: IndicesFlushSyncedUrlParams::Index(index.into()).url(),
                 body: body.into(),
@@ -1516,25 +1569,31 @@ pub mod endpoints {
         pub body: Body<'a>,
     }
     impl<'a> MsearchRequest<'a> {
-        pub fn new<IBody: Into<Body<'a>>>(body: IBody) -> MsearchRequest<'a> {
+        pub fn new<IBody>(body: IBody) -> MsearchRequest<'a>
+            where IBody: Into<Body<'a>>
+        {
             MsearchRequest {
                 url: MsearchUrlParams::None.url(),
                 body: body.into(),
             }
         }
-        pub fn for_index<IIndex: Into<Index<'a>>, IBody: Into<Body<'a>>>(index: IIndex,
-                                                                         body: IBody)
-                                                                         -> MsearchRequest<'a> {
+        pub fn for_index<IIndex, IBody>(index: IIndex, body: IBody) -> MsearchRequest<'a>
+            where IIndex: Into<Index<'a>>,
+                  IBody: Into<Body<'a>>
+        {
             MsearchRequest {
                 url: MsearchUrlParams::Index(index.into()).url(),
                 body: body.into(),
             }
         }
-        pub fn for_index_ty<IIndex: Into<Index<'a>>, IType: Into<Type<'a>>, IBody: Into<Body<'a>>>
-            (index: IIndex,
-             ty: IType,
-             body: IBody)
-             -> MsearchRequest<'a> {
+        pub fn for_index_ty<IIndex, IType, IBody>(index: IIndex,
+                                                  ty: IType,
+                                                  body: IBody)
+                                                  -> MsearchRequest<'a>
+            where IIndex: Into<Index<'a>>,
+                  IType: Into<Type<'a>>,
+                  IBody: Into<Body<'a>>
+        {
             MsearchRequest {
                 url: MsearchUrlParams::IndexType(index.into(), ty.into()).url(),
                 body: body.into(),
@@ -1632,26 +1691,31 @@ pub mod endpoints {
         pub body: Body<'a>,
     }
     impl<'a> SearchTemplateRequest<'a> {
-        pub fn new<IBody: Into<Body<'a>>>(body: IBody) -> SearchTemplateRequest<'a> {
+        pub fn new<IBody>(body: IBody) -> SearchTemplateRequest<'a>
+            where IBody: Into<Body<'a>>
+        {
             SearchTemplateRequest {
                 url: SearchTemplateUrlParams::None.url(),
                 body: body.into(),
             }
         }
-        pub fn for_index<IIndex: Into<Index<'a>>, IBody: Into<Body<'a>>>
-            (index: IIndex,
-             body: IBody)
-             -> SearchTemplateRequest<'a> {
+        pub fn for_index<IIndex, IBody>(index: IIndex, body: IBody) -> SearchTemplateRequest<'a>
+            where IIndex: Into<Index<'a>>,
+                  IBody: Into<Body<'a>>
+        {
             SearchTemplateRequest {
                 url: SearchTemplateUrlParams::Index(index.into()).url(),
                 body: body.into(),
             }
         }
-        pub fn for_index_ty<IIndex: Into<Index<'a>>, IType: Into<Type<'a>>, IBody: Into<Body<'a>>>
-            (index: IIndex,
-             ty: IType,
-             body: IBody)
-             -> SearchTemplateRequest<'a> {
+        pub fn for_index_ty<IIndex, IType, IBody>(index: IIndex,
+                                                  ty: IType,
+                                                  body: IBody)
+                                                  -> SearchTemplateRequest<'a>
+            where IIndex: Into<Index<'a>>,
+                  IType: Into<Type<'a>>,
+                  IBody: Into<Body<'a>>
+        {
             SearchTemplateRequest {
                 url: SearchTemplateUrlParams::IndexType(index.into(), ty.into()).url(),
                 body: body.into(),
@@ -1697,7 +1761,9 @@ pub mod endpoints {
         pub url: Url<'a>,
     }
     impl<'a> IndicesDeleteRequest<'a> {
-        pub fn for_index<IIndex: Into<Index<'a>>>(index: IIndex) -> IndicesDeleteRequest<'a> {
+        pub fn for_index<IIndex>(index: IIndex) -> IndicesDeleteRequest<'a>
+            where IIndex: Into<Index<'a>>
+        {
             IndicesDeleteRequest { url: IndicesDeleteUrlParams::Index(index.into()).url() }
         }
     }
@@ -1752,20 +1818,23 @@ pub mod endpoints {
         pub body: Body<'a>,
     }
     impl<'a> DeleteByQueryRequest<'a> {
-        pub fn for_index<IIndex: Into<Index<'a>>, IBody: Into<Body<'a>>>
-            (index: IIndex,
-             body: IBody)
-             -> DeleteByQueryRequest<'a> {
+        pub fn for_index<IIndex, IBody>(index: IIndex, body: IBody) -> DeleteByQueryRequest<'a>
+            where IIndex: Into<Index<'a>>,
+                  IBody: Into<Body<'a>>
+        {
             DeleteByQueryRequest {
                 url: DeleteByQueryUrlParams::Index(index.into()).url(),
                 body: body.into(),
             }
         }
-        pub fn for_index_ty<IIndex: Into<Index<'a>>, IType: Into<Type<'a>>, IBody: Into<Body<'a>>>
-            (index: IIndex,
-             ty: IType,
-             body: IBody)
-             -> DeleteByQueryRequest<'a> {
+        pub fn for_index_ty<IIndex, IType, IBody>(index: IIndex,
+                                                  ty: IType,
+                                                  body: IBody)
+                                                  -> DeleteByQueryRequest<'a>
+            where IIndex: Into<Index<'a>>,
+                  IType: Into<Type<'a>>,
+                  IBody: Into<Body<'a>>
+        {
             DeleteByQueryRequest {
                 url: DeleteByQueryUrlParams::IndexType(index.into(), ty.into()).url(),
                 body: body.into(),
@@ -1811,7 +1880,9 @@ pub mod endpoints {
         pub url: Url<'a>,
     }
     impl<'a> DeleteTemplateRequest<'a> {
-        pub fn for_id<IId: Into<Id<'a>>>(id: IId) -> DeleteTemplateRequest<'a> {
+        pub fn for_id<IId>(id: IId) -> DeleteTemplateRequest<'a>
+            where IId: Into<Id<'a>>
+        {
             DeleteTemplateRequest { url: DeleteTemplateUrlParams::Id(id.into()).url() }
         }
     }
@@ -1855,10 +1926,10 @@ pub mod endpoints {
         pub body: Body<'a>,
     }
     impl<'a> IndicesCreateRequest<'a> {
-        pub fn for_index<IIndex: Into<Index<'a>>, IBody: Into<Body<'a>>>
-            (index: IIndex,
-             body: IBody)
-             -> IndicesCreateRequest<'a> {
+        pub fn for_index<IIndex, IBody>(index: IIndex, body: IBody) -> IndicesCreateRequest<'a>
+            where IIndex: Into<Index<'a>>,
+                  IBody: Into<Body<'a>>
+        {
             IndicesCreateRequest {
                 url: IndicesCreateUrlParams::Index(index.into()).url(),
                 body: body.into(),
@@ -1921,25 +1992,29 @@ pub mod endpoints {
         pub body: Body<'a>,
     }
     impl<'a> PercolateRequest<'a> {
-        pub fn for_index_ty<IIndex: Into<Index<'a>>, IType: Into<Type<'a>>, IBody: Into<Body<'a>>>
-            (index: IIndex,
-             ty: IType,
-             body: IBody)
-             -> PercolateRequest<'a> {
+        pub fn for_index_ty<IIndex, IType, IBody>(index: IIndex,
+                                                  ty: IType,
+                                                  body: IBody)
+                                                  -> PercolateRequest<'a>
+            where IIndex: Into<Index<'a>>,
+                  IType: Into<Type<'a>>,
+                  IBody: Into<Body<'a>>
+        {
             PercolateRequest {
                 url: PercolateUrlParams::IndexType(index.into(), ty.into()).url(),
                 body: body.into(),
             }
         }
-        pub fn for_index_ty_id<IIndex: Into<Index<'a>>,
-                               IType: Into<Type<'a>>,
-                               IId: Into<Id<'a>>,
-                               IBody: Into<Body<'a>>>
-            (index: IIndex,
-             ty: IType,
-             id: IId,
-             body: IBody)
-             -> PercolateRequest<'a> {
+        pub fn for_index_ty_id<IIndex, IType, IId, IBody>(index: IIndex,
+                                                          ty: IType,
+                                                          id: IId,
+                                                          body: IBody)
+                                                          -> PercolateRequest<'a>
+            where IIndex: Into<Index<'a>>,
+                  IType: Into<Type<'a>>,
+                  IId: Into<Id<'a>>,
+                  IBody: Into<Body<'a>>
+        {
             PercolateRequest {
                 url: PercolateUrlParams::IndexTypeId(index.into(), ty.into(), id.into()).url(),
                 body: body.into(),
@@ -1999,25 +2074,31 @@ pub mod endpoints {
         pub body: Body<'a>,
     }
     impl<'a> SearchRequest<'a> {
-        pub fn new<IBody: Into<Body<'a>>>(body: IBody) -> SearchRequest<'a> {
+        pub fn new<IBody>(body: IBody) -> SearchRequest<'a>
+            where IBody: Into<Body<'a>>
+        {
             SearchRequest {
                 url: SearchUrlParams::None.url(),
                 body: body.into(),
             }
         }
-        pub fn for_index<IIndex: Into<Index<'a>>, IBody: Into<Body<'a>>>(index: IIndex,
-                                                                         body: IBody)
-                                                                         -> SearchRequest<'a> {
+        pub fn for_index<IIndex, IBody>(index: IIndex, body: IBody) -> SearchRequest<'a>
+            where IIndex: Into<Index<'a>>,
+                  IBody: Into<Body<'a>>
+        {
             SearchRequest {
                 url: SearchUrlParams::Index(index.into()).url(),
                 body: body.into(),
             }
         }
-        pub fn for_index_ty<IIndex: Into<Index<'a>>, IType: Into<Type<'a>>, IBody: Into<Body<'a>>>
-            (index: IIndex,
-             ty: IType,
-             body: IBody)
-             -> SearchRequest<'a> {
+        pub fn for_index_ty<IIndex, IType, IBody>(index: IIndex,
+                                                  ty: IType,
+                                                  body: IBody)
+                                                  -> SearchRequest<'a>
+            where IIndex: Into<Index<'a>>,
+                  IType: Into<Type<'a>>,
+                  IBody: Into<Body<'a>>
+        {
             SearchRequest {
                 url: SearchUrlParams::IndexType(index.into(), ty.into()).url(),
                 body: body.into(),
@@ -2103,10 +2184,12 @@ pub mod endpoints {
         pub body: Body<'a>,
     }
     impl<'a> SnapshotVerifyRepositoryRequest<'a> {
-        pub fn for_repository<IRepository: Into<Repository<'a>>, IBody: Into<Body<'a>>>
-            (repository: IRepository,
-             body: IBody)
-             -> SnapshotVerifyRepositoryRequest<'a> {
+        pub fn for_repository<IRepository, IBody>(repository: IRepository,
+                                                  body: IBody)
+                                                  -> SnapshotVerifyRepositoryRequest<'a>
+            where IRepository: Into<Repository<'a>>,
+                  IBody: Into<Body<'a>>
+        {
             SnapshotVerifyRepositoryRequest {
                 url: SnapshotVerifyRepositoryUrlParams::Repository(repository.into()).url(),
                 body: body.into(),
@@ -2166,25 +2249,31 @@ pub mod endpoints {
         pub body: Body<'a>,
     }
     impl<'a> CountRequest<'a> {
-        pub fn new<IBody: Into<Body<'a>>>(body: IBody) -> CountRequest<'a> {
+        pub fn new<IBody>(body: IBody) -> CountRequest<'a>
+            where IBody: Into<Body<'a>>
+        {
             CountRequest {
                 url: CountUrlParams::None.url(),
                 body: body.into(),
             }
         }
-        pub fn for_index<IIndex: Into<Index<'a>>, IBody: Into<Body<'a>>>(index: IIndex,
-                                                                         body: IBody)
-                                                                         -> CountRequest<'a> {
+        pub fn for_index<IIndex, IBody>(index: IIndex, body: IBody) -> CountRequest<'a>
+            where IIndex: Into<Index<'a>>,
+                  IBody: Into<Body<'a>>
+        {
             CountRequest {
                 url: CountUrlParams::Index(index.into()).url(),
                 body: body.into(),
             }
         }
-        pub fn for_index_ty<IIndex: Into<Index<'a>>, IType: Into<Type<'a>>, IBody: Into<Body<'a>>>
-            (index: IIndex,
-             ty: IType,
-             body: IBody)
-             -> CountRequest<'a> {
+        pub fn for_index_ty<IIndex, IType, IBody>(index: IIndex,
+                                                  ty: IType,
+                                                  body: IBody)
+                                                  -> CountRequest<'a>
+            where IIndex: Into<Index<'a>>,
+                  IType: Into<Type<'a>>,
+                  IBody: Into<Body<'a>>
+        {
             CountRequest {
                 url: CountUrlParams::IndexType(index.into(), ty.into()).url(),
                 body: body.into(),
@@ -2235,8 +2324,9 @@ pub mod endpoints {
         pub fn new() -> CatAllocationRequest<'a> {
             CatAllocationRequest { url: CatAllocationUrlParams::None.url() }
         }
-        pub fn for_node_id<INodeId: Into<NodeId<'a>>>(node_id: INodeId)
-                                                      -> CatAllocationRequest<'a> {
+        pub fn for_node_id<INodeId>(node_id: INodeId) -> CatAllocationRequest<'a>
+            where INodeId: Into<NodeId<'a>>
+        {
             CatAllocationRequest { url: CatAllocationUrlParams::NodeId(node_id.into()).url() }
         }
     }
@@ -2283,16 +2373,18 @@ pub mod endpoints {
         pub body: Body<'a>,
     }
     impl<'a> IndicesFlushRequest<'a> {
-        pub fn new<IBody: Into<Body<'a>>>(body: IBody) -> IndicesFlushRequest<'a> {
+        pub fn new<IBody>(body: IBody) -> IndicesFlushRequest<'a>
+            where IBody: Into<Body<'a>>
+        {
             IndicesFlushRequest {
                 url: IndicesFlushUrlParams::None.url(),
                 body: body.into(),
             }
         }
-        pub fn for_index<IIndex: Into<Index<'a>>, IBody: Into<Body<'a>>>
-            (index: IIndex,
-             body: IBody)
-             -> IndicesFlushRequest<'a> {
+        pub fn for_index<IIndex, IBody>(index: IIndex, body: IBody) -> IndicesFlushRequest<'a>
+            where IIndex: Into<Index<'a>>,
+                  IBody: Into<Body<'a>>
+        {
             IndicesFlushRequest {
                 url: IndicesFlushUrlParams::Index(index.into()).url(),
                 body: body.into(),
@@ -2342,16 +2434,18 @@ pub mod endpoints {
         pub body: Body<'a>,
     }
     impl<'a> IndicesRefreshRequest<'a> {
-        pub fn new<IBody: Into<Body<'a>>>(body: IBody) -> IndicesRefreshRequest<'a> {
+        pub fn new<IBody>(body: IBody) -> IndicesRefreshRequest<'a>
+            where IBody: Into<Body<'a>>
+        {
             IndicesRefreshRequest {
                 url: IndicesRefreshUrlParams::None.url(),
                 body: body.into(),
             }
         }
-        pub fn for_index<IIndex: Into<Index<'a>>, IBody: Into<Body<'a>>>
-            (index: IIndex,
-             body: IBody)
-             -> IndicesRefreshRequest<'a> {
+        pub fn for_index<IIndex, IBody>(index: IIndex, body: IBody) -> IndicesRefreshRequest<'a>
+            where IIndex: Into<Index<'a>>,
+                  IBody: Into<Body<'a>>
+        {
             IndicesRefreshRequest {
                 url: IndicesRefreshUrlParams::Index(index.into()).url(),
                 body: body.into(),
@@ -2439,16 +2533,18 @@ pub mod endpoints {
         pub body: Body<'a>,
     }
     impl<'a> SearchShardsRequest<'a> {
-        pub fn new<IBody: Into<Body<'a>>>(body: IBody) -> SearchShardsRequest<'a> {
+        pub fn new<IBody>(body: IBody) -> SearchShardsRequest<'a>
+            where IBody: Into<Body<'a>>
+        {
             SearchShardsRequest {
                 url: SearchShardsUrlParams::None.url(),
                 body: body.into(),
             }
         }
-        pub fn for_index<IIndex: Into<Index<'a>>, IBody: Into<Body<'a>>>
-            (index: IIndex,
-             body: IBody)
-             -> SearchShardsRequest<'a> {
+        pub fn for_index<IIndex, IBody>(index: IIndex, body: IBody) -> SearchShardsRequest<'a>
+            where IIndex: Into<Index<'a>>,
+                  IBody: Into<Body<'a>>
+        {
             SearchShardsRequest {
                 url: SearchShardsUrlParams::Index(index.into()).url(),
                 body: body.into(),
@@ -2499,7 +2595,9 @@ pub mod endpoints {
         pub fn new() -> ClusterHealthRequest<'a> {
             ClusterHealthRequest { url: ClusterHealthUrlParams::None.url() }
         }
-        pub fn for_index<IIndex: Into<Index<'a>>>(index: IIndex) -> ClusterHealthRequest<'a> {
+        pub fn for_index<IIndex>(index: IIndex) -> ClusterHealthRequest<'a>
+            where IIndex: Into<Index<'a>>
+        {
             ClusterHealthRequest { url: ClusterHealthUrlParams::Index(index.into()).url() }
         }
     }
@@ -2559,20 +2657,26 @@ pub mod endpoints {
         pub url: Url<'a>,
     }
     impl<'a> IndicesExistsAliasRequest<'a> {
-        pub fn for_index<IIndex: Into<Index<'a>>>(index: IIndex) -> IndicesExistsAliasRequest<'a> {
+        pub fn for_index<IIndex>(index: IIndex) -> IndicesExistsAliasRequest<'a>
+            where IIndex: Into<Index<'a>>
+        {
             IndicesExistsAliasRequest {
                 url: IndicesExistsAliasUrlParams::Index(index.into()).url(),
             }
         }
-        pub fn for_index_name<IIndex: Into<Index<'a>>, IName: Into<Name<'a>>>
-            (index: IIndex,
-             name: IName)
-             -> IndicesExistsAliasRequest<'a> {
+        pub fn for_index_name<IIndex, IName>(index: IIndex,
+                                             name: IName)
+                                             -> IndicesExistsAliasRequest<'a>
+            where IIndex: Into<Index<'a>>,
+                  IName: Into<Name<'a>>
+        {
             IndicesExistsAliasRequest {
                 url: IndicesExistsAliasUrlParams::IndexName(index.into(), name.into()).url(),
             }
         }
-        pub fn for_name<IName: Into<Name<'a>>>(name: IName) -> IndicesExistsAliasRequest<'a> {
+        pub fn for_name<IName>(name: IName) -> IndicesExistsAliasRequest<'a>
+            where IName: Into<Name<'a>>
+        {
             IndicesExistsAliasRequest { url: IndicesExistsAliasUrlParams::Name(name.into()).url() }
         }
     }
@@ -2645,28 +2749,32 @@ pub mod endpoints {
         pub url: Url<'a>,
     }
     impl<'a> IndicesGetFieldMappingRequest<'a> {
-        pub fn for_fields<IFields: Into<Fields<'a>>>(fields: IFields)
-                                                     -> IndicesGetFieldMappingRequest<'a> {
+        pub fn for_fields<IFields>(fields: IFields) -> IndicesGetFieldMappingRequest<'a>
+            where IFields: Into<Fields<'a>>
+        {
             IndicesGetFieldMappingRequest {
                 url: IndicesGetFieldMappingUrlParams::Fields(fields.into()).url(),
             }
         }
-        pub fn for_index_fields<IIndex: Into<Index<'a>>, IFields: Into<Fields<'a>>>
-            (index: IIndex,
-             fields: IFields)
-             -> IndicesGetFieldMappingRequest<'a> {
+        pub fn for_index_fields<IIndex, IFields>(index: IIndex,
+                                                 fields: IFields)
+                                                 -> IndicesGetFieldMappingRequest<'a>
+            where IIndex: Into<Index<'a>>,
+                  IFields: Into<Fields<'a>>
+        {
             IndicesGetFieldMappingRequest {
                 url: IndicesGetFieldMappingUrlParams::IndexFields(index.into(), fields.into())
                     .url(),
             }
         }
-        pub fn for_index_ty_fields<IIndex: Into<Index<'a>>,
-                                   IType: Into<Type<'a>>,
-                                   IFields: Into<Fields<'a>>>
-            (index: IIndex,
-             ty: IType,
-             fields: IFields)
-             -> IndicesGetFieldMappingRequest<'a> {
+        pub fn for_index_ty_fields<IIndex, IType, IFields>(index: IIndex,
+                                                           ty: IType,
+                                                           fields: IFields)
+                                                           -> IndicesGetFieldMappingRequest<'a>
+            where IIndex: Into<Index<'a>>,
+                  IType: Into<Type<'a>>,
+                  IFields: Into<Fields<'a>>
+        {
             IndicesGetFieldMappingRequest {
                 url: IndicesGetFieldMappingUrlParams::IndexTypeFields(index.into(),
                                                                       ty.into(),
@@ -2674,10 +2782,12 @@ pub mod endpoints {
                     .url(),
             }
         }
-        pub fn for_ty_fields<IType: Into<Type<'a>>, IFields: Into<Fields<'a>>>
-            (ty: IType,
-             fields: IFields)
-             -> IndicesGetFieldMappingRequest<'a> {
+        pub fn for_ty_fields<IType, IFields>(ty: IType,
+                                             fields: IFields)
+                                             -> IndicesGetFieldMappingRequest<'a>
+            where IType: Into<Type<'a>>,
+                  IFields: Into<Fields<'a>>
+        {
             IndicesGetFieldMappingRequest {
                 url: IndicesGetFieldMappingUrlParams::TypeFields(ty.into(), fields.into()).url(),
             }
@@ -2723,9 +2833,10 @@ pub mod endpoints {
         pub body: Body<'a>,
     }
     impl<'a> IngestPutPipelineRequest<'a> {
-        pub fn for_id<IId: Into<Id<'a>>, IBody: Into<Body<'a>>>(id: IId,
-                                                                body: IBody)
-                                                                -> IngestPutPipelineRequest<'a> {
+        pub fn for_id<IId, IBody>(id: IId, body: IBody) -> IngestPutPipelineRequest<'a>
+            where IId: Into<Id<'a>>,
+                  IBody: Into<Body<'a>>
+        {
             IngestPutPipelineRequest {
                 url: IngestPutPipelineUrlParams::Id(id.into()).url(),
                 body: body.into(),
@@ -2813,15 +2924,18 @@ pub mod endpoints {
         pub body: Body<'a>,
     }
     impl<'a> IngestSimulateRequest<'a> {
-        pub fn new<IBody: Into<Body<'a>>>(body: IBody) -> IngestSimulateRequest<'a> {
+        pub fn new<IBody>(body: IBody) -> IngestSimulateRequest<'a>
+            where IBody: Into<Body<'a>>
+        {
             IngestSimulateRequest {
                 url: IngestSimulateUrlParams::None.url(),
                 body: body.into(),
             }
         }
-        pub fn for_id<IId: Into<Id<'a>>, IBody: Into<Body<'a>>>(id: IId,
-                                                                body: IBody)
-                                                                -> IngestSimulateRequest<'a> {
+        pub fn for_id<IId, IBody>(id: IId, body: IBody) -> IngestSimulateRequest<'a>
+            where IId: Into<Id<'a>>,
+                  IBody: Into<Body<'a>>
+        {
             IngestSimulateRequest {
                 url: IngestSimulateUrlParams::Id(id.into()).url(),
                 body: body.into(),
@@ -2889,18 +3003,24 @@ pub mod endpoints {
         pub fn new() -> IndicesGetAliasRequest<'a> {
             IndicesGetAliasRequest { url: IndicesGetAliasUrlParams::None.url() }
         }
-        pub fn for_index<IIndex: Into<Index<'a>>>(index: IIndex) -> IndicesGetAliasRequest<'a> {
+        pub fn for_index<IIndex>(index: IIndex) -> IndicesGetAliasRequest<'a>
+            where IIndex: Into<Index<'a>>
+        {
             IndicesGetAliasRequest { url: IndicesGetAliasUrlParams::Index(index.into()).url() }
         }
-        pub fn for_index_name<IIndex: Into<Index<'a>>, IName: Into<Name<'a>>>
-            (index: IIndex,
-             name: IName)
-             -> IndicesGetAliasRequest<'a> {
+        pub fn for_index_name<IIndex, IName>(index: IIndex,
+                                             name: IName)
+                                             -> IndicesGetAliasRequest<'a>
+            where IIndex: Into<Index<'a>>,
+                  IName: Into<Name<'a>>
+        {
             IndicesGetAliasRequest {
                 url: IndicesGetAliasUrlParams::IndexName(index.into(), name.into()).url(),
             }
         }
-        pub fn for_name<IName: Into<Name<'a>>>(name: IName) -> IndicesGetAliasRequest<'a> {
+        pub fn for_name<IName>(name: IName) -> IndicesGetAliasRequest<'a>
+            where IName: Into<Name<'a>>
+        {
             IndicesGetAliasRequest { url: IndicesGetAliasUrlParams::Name(name.into()).url() }
         }
     }
@@ -2945,9 +3065,10 @@ pub mod endpoints {
         pub url: Url<'a>,
     }
     impl<'a> GetScriptRequest<'a> {
-        pub fn for_lang_id<ILang: Into<Lang<'a>>, IId: Into<Id<'a>>>(lang: ILang,
-                                                                     id: IId)
-                                                                     -> GetScriptRequest<'a> {
+        pub fn for_lang_id<ILang, IId>(lang: ILang, id: IId) -> GetScriptRequest<'a>
+            where ILang: Into<Lang<'a>>,
+                  IId: Into<Id<'a>>
+        {
             GetScriptRequest { url: GetScriptUrlParams::LangId(lang.into(), id.into()).url() }
         }
     }
@@ -2996,7 +3117,9 @@ pub mod endpoints {
         pub fn new() -> IndicesRecoveryRequest<'a> {
             IndicesRecoveryRequest { url: IndicesRecoveryUrlParams::None.url() }
         }
-        pub fn for_index<IIndex: Into<Index<'a>>>(index: IIndex) -> IndicesRecoveryRequest<'a> {
+        pub fn for_index<IIndex>(index: IIndex) -> IndicesRecoveryRequest<'a>
+            where IIndex: Into<Index<'a>>
+        {
             IndicesRecoveryRequest { url: IndicesRecoveryUrlParams::Index(index.into()).url() }
         }
     }
@@ -3039,7 +3162,9 @@ pub mod endpoints {
         pub url: Url<'a>,
     }
     impl<'a> IngestDeletePipelineRequest<'a> {
-        pub fn for_id<IId: Into<Id<'a>>>(id: IId) -> IngestDeletePipelineRequest<'a> {
+        pub fn for_id<IId>(id: IId) -> IngestDeletePipelineRequest<'a>
+            where IId: Into<Id<'a>>
+        {
             IngestDeletePipelineRequest { url: IngestDeletePipelineUrlParams::Id(id.into()).url() }
         }
     }
@@ -3086,16 +3211,18 @@ pub mod endpoints {
         pub body: Body<'a>,
     }
     impl<'a> TasksCancelRequest<'a> {
-        pub fn new<IBody: Into<Body<'a>>>(body: IBody) -> TasksCancelRequest<'a> {
+        pub fn new<IBody>(body: IBody) -> TasksCancelRequest<'a>
+            where IBody: Into<Body<'a>>
+        {
             TasksCancelRequest {
                 url: TasksCancelUrlParams::None.url(),
                 body: body.into(),
             }
         }
-        pub fn for_task_id<ITaskId: Into<TaskId<'a>>, IBody: Into<Body<'a>>>
-            (task_id: ITaskId,
-             body: IBody)
-             -> TasksCancelRequest<'a> {
+        pub fn for_task_id<ITaskId, IBody>(task_id: ITaskId, body: IBody) -> TasksCancelRequest<'a>
+            where ITaskId: Into<TaskId<'a>>,
+                  IBody: Into<Body<'a>>
+        {
             TasksCancelRequest {
                 url: TasksCancelUrlParams::TaskId(task_id.into()).url(),
                 body: body.into(),
@@ -3145,16 +3272,18 @@ pub mod endpoints {
         pub body: Body<'a>,
     }
     impl<'a> IndicesClearCacheRequest<'a> {
-        pub fn new<IBody: Into<Body<'a>>>(body: IBody) -> IndicesClearCacheRequest<'a> {
+        pub fn new<IBody>(body: IBody) -> IndicesClearCacheRequest<'a>
+            where IBody: Into<Body<'a>>
+        {
             IndicesClearCacheRequest {
                 url: IndicesClearCacheUrlParams::None.url(),
                 body: body.into(),
             }
         }
-        pub fn for_index<IIndex: Into<Index<'a>>, IBody: Into<Body<'a>>>
-            (index: IIndex,
-             body: IBody)
-             -> IndicesClearCacheRequest<'a> {
+        pub fn for_index<IIndex, IBody>(index: IIndex, body: IBody) -> IndicesClearCacheRequest<'a>
+            where IIndex: Into<Index<'a>>,
+                  IBody: Into<Body<'a>>
+        {
             IndicesClearCacheRequest {
                 url: IndicesClearCacheUrlParams::Index(index.into()).url(),
                 body: body.into(),
@@ -3204,11 +3333,14 @@ pub mod endpoints {
         pub url: Url<'a>,
     }
     impl<'a> DeleteRequest<'a> {
-        pub fn for_index_ty_id<IIndex: Into<Index<'a>>, IType: Into<Type<'a>>, IId: Into<Id<'a>>>
-            (index: IIndex,
-             ty: IType,
-             id: IId)
-             -> DeleteRequest<'a> {
+        pub fn for_index_ty_id<IIndex, IType, IId>(index: IIndex,
+                                                   ty: IType,
+                                                   id: IId)
+                                                   -> DeleteRequest<'a>
+            where IIndex: Into<Index<'a>>,
+                  IType: Into<Type<'a>>,
+                  IId: Into<Id<'a>>
+        {
             DeleteRequest {
                 url: DeleteUrlParams::IndexTypeId(index.into(), ty.into(), id.into()).url(),
             }
@@ -3263,20 +3395,23 @@ pub mod endpoints {
         pub body: Body<'a>,
     }
     impl<'a> IndicesPutMappingRequest<'a> {
-        pub fn for_index_ty<IIndex: Into<Index<'a>>, IType: Into<Type<'a>>, IBody: Into<Body<'a>>>
-            (index: IIndex,
-             ty: IType,
-             body: IBody)
-             -> IndicesPutMappingRequest<'a> {
+        pub fn for_index_ty<IIndex, IType, IBody>(index: IIndex,
+                                                  ty: IType,
+                                                  body: IBody)
+                                                  -> IndicesPutMappingRequest<'a>
+            where IIndex: Into<Index<'a>>,
+                  IType: Into<Type<'a>>,
+                  IBody: Into<Body<'a>>
+        {
             IndicesPutMappingRequest {
                 url: IndicesPutMappingUrlParams::IndexType(index.into(), ty.into()).url(),
                 body: body.into(),
             }
         }
-        pub fn for_ty<IType: Into<Type<'a>>, IBody: Into<Body<'a>>>
-            (ty: IType,
-             body: IBody)
-             -> IndicesPutMappingRequest<'a> {
+        pub fn for_ty<IType, IBody>(ty: IType, body: IBody) -> IndicesPutMappingRequest<'a>
+            where IType: Into<Type<'a>>,
+                  IBody: Into<Body<'a>>
+        {
             IndicesPutMappingRequest {
                 url: IndicesPutMappingUrlParams::Type(ty.into()).url(),
                 body: body.into(),
@@ -3327,7 +3462,9 @@ pub mod endpoints {
         pub fn new() -> CatAliasesRequest<'a> {
             CatAliasesRequest { url: CatAliasesUrlParams::None.url() }
         }
-        pub fn for_name<IName: Into<Name<'a>>>(name: IName) -> CatAliasesRequest<'a> {
+        pub fn for_name<IName>(name: IName) -> CatAliasesRequest<'a>
+            where IName: Into<Name<'a>>
+        {
             CatAliasesRequest { url: CatAliasesUrlParams::Name(name.into()).url() }
         }
     }
@@ -3375,7 +3512,9 @@ pub mod endpoints {
         pub fn new() -> ClusterStatsRequest<'a> {
             ClusterStatsRequest { url: ClusterStatsUrlParams::None.url() }
         }
-        pub fn for_node_id<INodeId: Into<NodeId<'a>>>(node_id: INodeId) -> ClusterStatsRequest<'a> {
+        pub fn for_node_id<INodeId>(node_id: INodeId) -> ClusterStatsRequest<'a>
+            where INodeId: Into<NodeId<'a>>
+        {
             ClusterStatsRequest { url: ClusterStatsUrlParams::NodeId(node_id.into()).url() }
         }
     }
@@ -3432,26 +3571,33 @@ pub mod endpoints {
         pub body: Body<'a>,
     }
     impl<'a> IndicesValidateQueryRequest<'a> {
-        pub fn new<IBody: Into<Body<'a>>>(body: IBody) -> IndicesValidateQueryRequest<'a> {
+        pub fn new<IBody>(body: IBody) -> IndicesValidateQueryRequest<'a>
+            where IBody: Into<Body<'a>>
+        {
             IndicesValidateQueryRequest {
                 url: IndicesValidateQueryUrlParams::None.url(),
                 body: body.into(),
             }
         }
-        pub fn for_index<IIndex: Into<Index<'a>>, IBody: Into<Body<'a>>>
-            (index: IIndex,
-             body: IBody)
-             -> IndicesValidateQueryRequest<'a> {
+        pub fn for_index<IIndex, IBody>(index: IIndex,
+                                        body: IBody)
+                                        -> IndicesValidateQueryRequest<'a>
+            where IIndex: Into<Index<'a>>,
+                  IBody: Into<Body<'a>>
+        {
             IndicesValidateQueryRequest {
                 url: IndicesValidateQueryUrlParams::Index(index.into()).url(),
                 body: body.into(),
             }
         }
-        pub fn for_index_ty<IIndex: Into<Index<'a>>, IType: Into<Type<'a>>, IBody: Into<Body<'a>>>
-            (index: IIndex,
-             ty: IType,
-             body: IBody)
-             -> IndicesValidateQueryRequest<'a> {
+        pub fn for_index_ty<IIndex, IType, IBody>(index: IIndex,
+                                                  ty: IType,
+                                                  body: IBody)
+                                                  -> IndicesValidateQueryRequest<'a>
+            where IIndex: Into<Index<'a>>,
+                  IType: Into<Type<'a>>,
+                  IBody: Into<Body<'a>>
+        {
             IndicesValidateQueryRequest {
                 url: IndicesValidateQueryUrlParams::IndexType(index.into(), ty.into()).url(),
                 body: body.into(),
@@ -3538,16 +3684,20 @@ pub mod endpoints {
         pub body: Body<'a>,
     }
     impl<'a> ClearScrollRequest<'a> {
-        pub fn new<IBody: Into<Body<'a>>>(body: IBody) -> ClearScrollRequest<'a> {
+        pub fn new<IBody>(body: IBody) -> ClearScrollRequest<'a>
+            where IBody: Into<Body<'a>>
+        {
             ClearScrollRequest {
                 url: ClearScrollUrlParams::None.url(),
                 body: body.into(),
             }
         }
-        pub fn for_scroll_id<IScrollId: Into<ScrollId<'a>>, IBody: Into<Body<'a>>>
-            (scroll_id: IScrollId,
-             body: IBody)
-             -> ClearScrollRequest<'a> {
+        pub fn for_scroll_id<IScrollId, IBody>(scroll_id: IScrollId,
+                                               body: IBody)
+                                               -> ClearScrollRequest<'a>
+            where IScrollId: Into<ScrollId<'a>>,
+                  IBody: Into<Body<'a>>
+        {
             ClearScrollRequest {
                 url: ClearScrollUrlParams::ScrollId(scroll_id.into()).url(),
                 body: body.into(),
@@ -3598,7 +3748,9 @@ pub mod endpoints {
         pub fn new() -> CatShardsRequest<'a> {
             CatShardsRequest { url: CatShardsUrlParams::None.url() }
         }
-        pub fn for_index<IIndex: Into<Index<'a>>>(index: IIndex) -> CatShardsRequest<'a> {
+        pub fn for_index<IIndex>(index: IIndex) -> CatShardsRequest<'a>
+            where IIndex: Into<Index<'a>>
+        {
             CatShardsRequest { url: CatShardsUrlParams::Index(index.into()).url() }
         }
     }
@@ -3647,7 +3799,9 @@ pub mod endpoints {
         pub fn new() -> IndicesShardStoresRequest<'a> {
             IndicesShardStoresRequest { url: IndicesShardStoresUrlParams::None.url() }
         }
-        pub fn for_index<IIndex: Into<Index<'a>>>(index: IIndex) -> IndicesShardStoresRequest<'a> {
+        pub fn for_index<IIndex>(index: IIndex) -> IndicesShardStoresRequest<'a>
+            where IIndex: Into<Index<'a>>
+        {
             IndicesShardStoresRequest {
                 url: IndicesShardStoresUrlParams::Index(index.into()).url(),
             }
@@ -3688,7 +3842,9 @@ pub mod endpoints {
         pub body: Body<'a>,
     }
     impl<'a> IndicesUpdateAliasesRequest<'a> {
-        pub fn new<IBody: Into<Body<'a>>>(body: IBody) -> IndicesUpdateAliasesRequest<'a> {
+        pub fn new<IBody>(body: IBody) -> IndicesUpdateAliasesRequest<'a>
+            where IBody: Into<Body<'a>>
+        {
             IndicesUpdateAliasesRequest {
                 url: IndicesUpdateAliasesUrlParams::None.url(),
                 body: body.into(),
@@ -3739,7 +3895,9 @@ pub mod endpoints {
         pub fn new() -> CatSegmentsRequest<'a> {
             CatSegmentsRequest { url: CatSegmentsUrlParams::None.url() }
         }
-        pub fn for_index<IIndex: Into<Index<'a>>>(index: IIndex) -> CatSegmentsRequest<'a> {
+        pub fn for_index<IIndex>(index: IIndex) -> CatSegmentsRequest<'a>
+            where IIndex: Into<Index<'a>>
+        {
             CatSegmentsRequest { url: CatSegmentsUrlParams::Index(index.into()).url() }
         }
     }
@@ -3796,26 +3954,31 @@ pub mod endpoints {
         pub body: Body<'a>,
     }
     impl<'a> MpercolateRequest<'a> {
-        pub fn new<IBody: Into<Body<'a>>>(body: IBody) -> MpercolateRequest<'a> {
+        pub fn new<IBody>(body: IBody) -> MpercolateRequest<'a>
+            where IBody: Into<Body<'a>>
+        {
             MpercolateRequest {
                 url: MpercolateUrlParams::None.url(),
                 body: body.into(),
             }
         }
-        pub fn for_index<IIndex: Into<Index<'a>>, IBody: Into<Body<'a>>>
-            (index: IIndex,
-             body: IBody)
-             -> MpercolateRequest<'a> {
+        pub fn for_index<IIndex, IBody>(index: IIndex, body: IBody) -> MpercolateRequest<'a>
+            where IIndex: Into<Index<'a>>,
+                  IBody: Into<Body<'a>>
+        {
             MpercolateRequest {
                 url: MpercolateUrlParams::Index(index.into()).url(),
                 body: body.into(),
             }
         }
-        pub fn for_index_ty<IIndex: Into<Index<'a>>, IType: Into<Type<'a>>, IBody: Into<Body<'a>>>
-            (index: IIndex,
-             ty: IType,
-             body: IBody)
-             -> MpercolateRequest<'a> {
+        pub fn for_index_ty<IIndex, IType, IBody>(index: IIndex,
+                                                  ty: IType,
+                                                  body: IBody)
+                                                  -> MpercolateRequest<'a>
+            where IIndex: Into<Index<'a>>,
+                  IType: Into<Type<'a>>,
+                  IBody: Into<Body<'a>>
+        {
             MpercolateRequest {
                 url: MpercolateUrlParams::IndexType(index.into(), ty.into()).url(),
                 body: body.into(),
@@ -3863,10 +4026,10 @@ pub mod endpoints {
         pub body: Body<'a>,
     }
     impl<'a> IndicesOpenRequest<'a> {
-        pub fn for_index<IIndex: Into<Index<'a>>, IBody: Into<Body<'a>>>
-            (index: IIndex,
-             body: IBody)
-             -> IndicesOpenRequest<'a> {
+        pub fn for_index<IIndex, IBody>(index: IIndex, body: IBody) -> IndicesOpenRequest<'a>
+            where IIndex: Into<Index<'a>>,
+                  IBody: Into<Body<'a>>
+        {
             IndicesOpenRequest {
                 url: IndicesOpenUrlParams::Index(index.into()).url(),
                 body: body.into(),
@@ -3916,11 +4079,14 @@ pub mod endpoints {
         pub url: Url<'a>,
     }
     impl<'a> GetRequest<'a> {
-        pub fn for_index_ty_id<IIndex: Into<Index<'a>>, IType: Into<Type<'a>>, IId: Into<Id<'a>>>
-            (index: IIndex,
-             ty: IType,
-             id: IId)
-             -> GetRequest<'a> {
+        pub fn for_index_ty_id<IIndex, IType, IId>(index: IIndex,
+                                                   ty: IType,
+                                                   id: IId)
+                                                   -> GetRequest<'a>
+            where IIndex: Into<Index<'a>>,
+                  IType: Into<Type<'a>>,
+                  IId: Into<Id<'a>>
+        {
             GetRequest { url: GetUrlParams::IndexTypeId(index.into(), ty.into(), id.into()).url() }
         }
     }
@@ -3975,20 +4141,23 @@ pub mod endpoints {
         pub body: Body<'a>,
     }
     impl<'a> UpdateByQueryRequest<'a> {
-        pub fn for_index<IIndex: Into<Index<'a>>, IBody: Into<Body<'a>>>
-            (index: IIndex,
-             body: IBody)
-             -> UpdateByQueryRequest<'a> {
+        pub fn for_index<IIndex, IBody>(index: IIndex, body: IBody) -> UpdateByQueryRequest<'a>
+            where IIndex: Into<Index<'a>>,
+                  IBody: Into<Body<'a>>
+        {
             UpdateByQueryRequest {
                 url: UpdateByQueryUrlParams::Index(index.into()).url(),
                 body: body.into(),
             }
         }
-        pub fn for_index_ty<IIndex: Into<Index<'a>>, IType: Into<Type<'a>>, IBody: Into<Body<'a>>>
-            (index: IIndex,
-             ty: IType,
-             body: IBody)
-             -> UpdateByQueryRequest<'a> {
+        pub fn for_index_ty<IIndex, IType, IBody>(index: IIndex,
+                                                  ty: IType,
+                                                  body: IBody)
+                                                  -> UpdateByQueryRequest<'a>
+            where IIndex: Into<Index<'a>>,
+                  IType: Into<Type<'a>>,
+                  IBody: Into<Body<'a>>
+        {
             UpdateByQueryRequest {
                 url: UpdateByQueryUrlParams::IndexType(index.into(), ty.into()).url(),
                 body: body.into(),
@@ -4048,26 +4217,31 @@ pub mod endpoints {
         pub body: Body<'a>,
     }
     impl<'a> MtermvectorsRequest<'a> {
-        pub fn new<IBody: Into<Body<'a>>>(body: IBody) -> MtermvectorsRequest<'a> {
+        pub fn new<IBody>(body: IBody) -> MtermvectorsRequest<'a>
+            where IBody: Into<Body<'a>>
+        {
             MtermvectorsRequest {
                 url: MtermvectorsUrlParams::None.url(),
                 body: body.into(),
             }
         }
-        pub fn for_index<IIndex: Into<Index<'a>>, IBody: Into<Body<'a>>>
-            (index: IIndex,
-             body: IBody)
-             -> MtermvectorsRequest<'a> {
+        pub fn for_index<IIndex, IBody>(index: IIndex, body: IBody) -> MtermvectorsRequest<'a>
+            where IIndex: Into<Index<'a>>,
+                  IBody: Into<Body<'a>>
+        {
             MtermvectorsRequest {
                 url: MtermvectorsUrlParams::Index(index.into()).url(),
                 body: body.into(),
             }
         }
-        pub fn for_index_ty<IIndex: Into<Index<'a>>, IType: Into<Type<'a>>, IBody: Into<Body<'a>>>
-            (index: IIndex,
-             ty: IType,
-             body: IBody)
-             -> MtermvectorsRequest<'a> {
+        pub fn for_index_ty<IIndex, IType, IBody>(index: IIndex,
+                                                  ty: IType,
+                                                  body: IBody)
+                                                  -> MtermvectorsRequest<'a>
+            where IIndex: Into<Index<'a>>,
+                  IType: Into<Type<'a>>,
+                  IBody: Into<Body<'a>>
+        {
             MtermvectorsRequest {
                 url: MtermvectorsUrlParams::IndexType(index.into(), ty.into()).url(),
                 body: body.into(),
@@ -4118,7 +4292,9 @@ pub mod endpoints {
         pub fn new() -> CatRecoveryRequest<'a> {
             CatRecoveryRequest { url: CatRecoveryUrlParams::None.url() }
         }
-        pub fn for_index<IIndex: Into<Index<'a>>>(index: IIndex) -> CatRecoveryRequest<'a> {
+        pub fn for_index<IIndex>(index: IIndex) -> CatRecoveryRequest<'a>
+            where IIndex: Into<Index<'a>>
+        {
             CatRecoveryRequest { url: CatRecoveryUrlParams::Index(index.into()).url() }
         }
     }
@@ -4166,13 +4342,15 @@ pub mod endpoints {
         pub body: Body<'a>,
     }
     impl<'a> SnapshotRestoreRequest<'a> {
-        pub fn for_repository_snapshot<IRepository: Into<Repository<'a>>,
-                                       ISnapshot: Into<Snapshot<'a>>,
-                                       IBody: Into<Body<'a>>>
+        pub fn for_repository_snapshot<IRepository, ISnapshot, IBody>
             (repository: IRepository,
              snapshot: ISnapshot,
              body: IBody)
-             -> SnapshotRestoreRequest<'a> {
+             -> SnapshotRestoreRequest<'a>
+            where IRepository: Into<Repository<'a>>,
+                  ISnapshot: Into<Snapshot<'a>>,
+                  IBody: Into<Body<'a>>
+        {
             SnapshotRestoreRequest {
                 url: SnapshotRestoreUrlParams::RepositorySnapshot(repository.into(),
                                                                   snapshot.into())
@@ -4216,7 +4394,9 @@ pub mod endpoints {
         pub body: Body<'a>,
     }
     impl<'a> ReindexRequest<'a> {
-        pub fn new<IBody: Into<Body<'a>>>(body: IBody) -> ReindexRequest<'a> {
+        pub fn new<IBody>(body: IBody) -> ReindexRequest<'a>
+            where IBody: Into<Body<'a>>
+        {
             ReindexRequest {
                 url: ReindexUrlParams::None.url(),
                 body: body.into(),
@@ -4305,7 +4485,9 @@ pub mod endpoints {
         pub fn new() -> CatCountRequest<'a> {
             CatCountRequest { url: CatCountUrlParams::None.url() }
         }
-        pub fn for_index<IIndex: Into<Index<'a>>>(index: IIndex) -> CatCountRequest<'a> {
+        pub fn for_index<IIndex>(index: IIndex) -> CatCountRequest<'a>
+            where IIndex: Into<Index<'a>>
+        {
             CatCountRequest { url: CatCountUrlParams::Index(index.into()).url() }
         }
     }
@@ -4353,8 +4535,9 @@ pub mod endpoints {
         pub fn new() -> CatSnapshotsRequest<'a> {
             CatSnapshotsRequest { url: CatSnapshotsUrlParams::None.url() }
         }
-        pub fn for_repository<IRepository: Into<Repository<'a>>>(repository: IRepository)
-                                                                 -> CatSnapshotsRequest<'a> {
+        pub fn for_repository<IRepository>(repository: IRepository) -> CatSnapshotsRequest<'a>
+            where IRepository: Into<Repository<'a>>
+        {
             CatSnapshotsRequest { url: CatSnapshotsUrlParams::Repository(repository.into()).url() }
         }
     }
@@ -4419,18 +4602,22 @@ pub mod endpoints {
         pub fn new() -> IndicesGetMappingRequest<'a> {
             IndicesGetMappingRequest { url: IndicesGetMappingUrlParams::None.url() }
         }
-        pub fn for_index<IIndex: Into<Index<'a>>>(index: IIndex) -> IndicesGetMappingRequest<'a> {
+        pub fn for_index<IIndex>(index: IIndex) -> IndicesGetMappingRequest<'a>
+            where IIndex: Into<Index<'a>>
+        {
             IndicesGetMappingRequest { url: IndicesGetMappingUrlParams::Index(index.into()).url() }
         }
-        pub fn for_index_ty<IIndex: Into<Index<'a>>, IType: Into<Type<'a>>>
-            (index: IIndex,
-             ty: IType)
-             -> IndicesGetMappingRequest<'a> {
+        pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType) -> IndicesGetMappingRequest<'a>
+            where IIndex: Into<Index<'a>>,
+                  IType: Into<Type<'a>>
+        {
             IndicesGetMappingRequest {
                 url: IndicesGetMappingUrlParams::IndexType(index.into(), ty.into()).url(),
             }
         }
-        pub fn for_ty<IType: Into<Type<'a>>>(ty: IType) -> IndicesGetMappingRequest<'a> {
+        pub fn for_ty<IType>(ty: IType) -> IndicesGetMappingRequest<'a>
+            where IType: Into<Type<'a>>
+        {
             IndicesGetMappingRequest { url: IndicesGetMappingUrlParams::Type(ty.into()).url() }
         }
     }
@@ -4476,11 +4663,12 @@ pub mod endpoints {
         pub url: Url<'a>,
     }
     impl<'a> SnapshotGetRequest<'a> {
-        pub fn for_repository_snapshot<IRepository: Into<Repository<'a>>,
-                                       ISnapshot: Into<Snapshot<'a>>>
-            (repository: IRepository,
-             snapshot: ISnapshot)
-             -> SnapshotGetRequest<'a> {
+        pub fn for_repository_snapshot<IRepository, ISnapshot>(repository: IRepository,
+                                                               snapshot: ISnapshot)
+                                                               -> SnapshotGetRequest<'a>
+            where IRepository: Into<Repository<'a>>,
+                  ISnapshot: Into<Snapshot<'a>>
+        {
             SnapshotGetRequest {
                 url: SnapshotGetUrlParams::RepositorySnapshot(repository.into(), snapshot.into())
                     .url(),
@@ -4568,11 +4756,14 @@ pub mod endpoints {
         pub url: Url<'a>,
     }
     impl<'a> ExistsRequest<'a> {
-        pub fn for_index_ty_id<IIndex: Into<Index<'a>>, IType: Into<Type<'a>>, IId: Into<Id<'a>>>
-            (index: IIndex,
-             ty: IType,
-             id: IId)
-             -> ExistsRequest<'a> {
+        pub fn for_index_ty_id<IIndex, IType, IId>(index: IIndex,
+                                                   ty: IType,
+                                                   id: IId)
+                                                   -> ExistsRequest<'a>
+            where IIndex: Into<Index<'a>>,
+                  IType: Into<Type<'a>>,
+                  IId: Into<Id<'a>>
+        {
             ExistsRequest {
                 url: ExistsUrlParams::IndexTypeId(index.into(), ty.into(), id.into()).url(),
             }
@@ -4613,7 +4804,9 @@ pub mod endpoints {
         pub body: Body<'a>,
     }
     impl<'a> ClusterRerouteRequest<'a> {
-        pub fn new<IBody: Into<Body<'a>>>(body: IBody) -> ClusterRerouteRequest<'a> {
+        pub fn new<IBody>(body: IBody) -> ClusterRerouteRequest<'a>
+            where IBody: Into<Body<'a>>
+        {
             ClusterRerouteRequest {
                 url: ClusterRerouteUrlParams::None.url(),
                 body: body.into(),
@@ -4665,8 +4858,9 @@ pub mod endpoints {
         pub fn new() -> NodesHotThreadsRequest<'a> {
             NodesHotThreadsRequest { url: NodesHotThreadsUrlParams::None.url() }
         }
-        pub fn for_node_id<INodeId: Into<NodeId<'a>>>(node_id: INodeId)
-                                                      -> NodesHotThreadsRequest<'a> {
+        pub fn for_node_id<INodeId>(node_id: INodeId) -> NodesHotThreadsRequest<'a>
+            where INodeId: Into<NodeId<'a>>
+        {
             NodesHotThreadsRequest { url: NodesHotThreadsUrlParams::NodeId(node_id.into()).url() }
         }
     }
@@ -4755,37 +4949,46 @@ pub mod endpoints {
         pub fn new() -> NodesStatsRequest<'a> {
             NodesStatsRequest { url: NodesStatsUrlParams::None.url() }
         }
-        pub fn for_metric<IMetric: Into<Metric<'a>>>(metric: IMetric) -> NodesStatsRequest<'a> {
+        pub fn for_metric<IMetric>(metric: IMetric) -> NodesStatsRequest<'a>
+            where IMetric: Into<Metric<'a>>
+        {
             NodesStatsRequest { url: NodesStatsUrlParams::Metric(metric.into()).url() }
         }
-        pub fn for_metric_index_metric<IMetric: Into<Metric<'a>>,
-                                       IIndexMetric: Into<IndexMetric<'a>>>
-            (metric: IMetric,
-             index_metric: IIndexMetric)
-             -> NodesStatsRequest<'a> {
+        pub fn for_metric_index_metric<IMetric, IIndexMetric>(metric: IMetric,
+                                                              index_metric: IIndexMetric)
+                                                              -> NodesStatsRequest<'a>
+            where IMetric: Into<Metric<'a>>,
+                  IIndexMetric: Into<IndexMetric<'a>>
+        {
             NodesStatsRequest {
                 url: NodesStatsUrlParams::MetricIndexMetric(metric.into(), index_metric.into())
                     .url(),
             }
         }
-        pub fn for_node_id<INodeId: Into<NodeId<'a>>>(node_id: INodeId) -> NodesStatsRequest<'a> {
+        pub fn for_node_id<INodeId>(node_id: INodeId) -> NodesStatsRequest<'a>
+            where INodeId: Into<NodeId<'a>>
+        {
             NodesStatsRequest { url: NodesStatsUrlParams::NodeId(node_id.into()).url() }
         }
-        pub fn for_node_id_metric<INodeId: Into<NodeId<'a>>, IMetric: Into<Metric<'a>>>
-            (node_id: INodeId,
-             metric: IMetric)
-             -> NodesStatsRequest<'a> {
+        pub fn for_node_id_metric<INodeId, IMetric>(node_id: INodeId,
+                                                    metric: IMetric)
+                                                    -> NodesStatsRequest<'a>
+            where INodeId: Into<NodeId<'a>>,
+                  IMetric: Into<Metric<'a>>
+        {
             NodesStatsRequest {
                 url: NodesStatsUrlParams::NodeIdMetric(node_id.into(), metric.into()).url(),
             }
         }
-        pub fn for_node_id_metric_index_metric<INodeId: Into<NodeId<'a>>,
-                                               IMetric: Into<Metric<'a>>,
-                                               IIndexMetric: Into<IndexMetric<'a>>>
+        pub fn for_node_id_metric_index_metric<INodeId, IMetric, IIndexMetric>
             (node_id: INodeId,
              metric: IMetric,
              index_metric: IIndexMetric)
-             -> NodesStatsRequest<'a> {
+             -> NodesStatsRequest<'a>
+            where INodeId: Into<NodeId<'a>>,
+                  IMetric: Into<Metric<'a>>,
+                  IIndexMetric: Into<IndexMetric<'a>>
+        {
             NodesStatsRequest {
                 url: NodesStatsUrlParams::NodeIdMetricIndexMetric(node_id.into(),
                                                                   metric.into(),
@@ -4838,7 +5041,9 @@ pub mod endpoints {
         pub fn new() -> IngestGetPipelineRequest<'a> {
             IngestGetPipelineRequest { url: IngestGetPipelineUrlParams::None.url() }
         }
-        pub fn for_id<IId: Into<Id<'a>>>(id: IId) -> IngestGetPipelineRequest<'a> {
+        pub fn for_id<IId>(id: IId) -> IngestGetPipelineRequest<'a>
+            where IId: Into<Id<'a>>
+        {
             IngestGetPipelineRequest { url: IngestGetPipelineUrlParams::Id(id.into()).url() }
         }
     }
@@ -4882,9 +5087,10 @@ pub mod endpoints {
         pub body: Body<'a>,
     }
     impl<'a> PutTemplateRequest<'a> {
-        pub fn for_id<IId: Into<Id<'a>>, IBody: Into<Body<'a>>>(id: IId,
-                                                                body: IBody)
-                                                                -> PutTemplateRequest<'a> {
+        pub fn for_id<IId, IBody>(id: IId, body: IBody) -> PutTemplateRequest<'a>
+            where IId: Into<Id<'a>>,
+                  IBody: Into<Body<'a>>
+        {
             PutTemplateRequest {
                 url: PutTemplateUrlParams::Id(id.into()).url(),
                 body: body.into(),
@@ -4936,11 +5142,14 @@ pub mod endpoints {
         pub url: Url<'a>,
     }
     impl<'a> GetSourceRequest<'a> {
-        pub fn for_index_ty_id<IIndex: Into<Index<'a>>, IType: Into<Type<'a>>, IId: Into<Id<'a>>>
-            (index: IIndex,
-             ty: IType,
-             id: IId)
-             -> GetSourceRequest<'a> {
+        pub fn for_index_ty_id<IIndex, IType, IId>(index: IIndex,
+                                                   ty: IType,
+                                                   id: IId)
+                                                   -> GetSourceRequest<'a>
+            where IIndex: Into<Index<'a>>,
+                  IType: Into<Type<'a>>,
+                  IId: Into<Id<'a>>
+        {
             GetSourceRequest {
                 url: GetSourceUrlParams::IndexTypeId(index.into(), ty.into(), id.into()).url(),
             }
@@ -4989,13 +5198,15 @@ pub mod endpoints {
         pub body: Body<'a>,
     }
     impl<'a> SnapshotCreateRequest<'a> {
-        pub fn for_repository_snapshot<IRepository: Into<Repository<'a>>,
-                                       ISnapshot: Into<Snapshot<'a>>,
-                                       IBody: Into<Body<'a>>>
+        pub fn for_repository_snapshot<IRepository, ISnapshot, IBody>
             (repository: IRepository,
              snapshot: ISnapshot,
              body: IBody)
-             -> SnapshotCreateRequest<'a> {
+             -> SnapshotCreateRequest<'a>
+            where IRepository: Into<Repository<'a>>,
+                  ISnapshot: Into<Snapshot<'a>>,
+                  IBody: Into<Body<'a>>
+        {
             SnapshotCreateRequest {
                 url: SnapshotCreateUrlParams::RepositorySnapshot(repository.into(),
                                                                  snapshot.into())
@@ -5046,16 +5257,20 @@ pub mod endpoints {
         pub body: Body<'a>,
     }
     impl<'a> ScrollRequest<'a> {
-        pub fn new<IBody: Into<Body<'a>>>(body: IBody) -> ScrollRequest<'a> {
+        pub fn new<IBody>(body: IBody) -> ScrollRequest<'a>
+            where IBody: Into<Body<'a>>
+        {
             ScrollRequest {
                 url: ScrollUrlParams::None.url(),
                 body: body.into(),
             }
         }
-        pub fn for_scroll_id<IScrollId: Into<ScrollId<'a>>, IBody: Into<Body<'a>>>
-            (scroll_id: IScrollId,
-             body: IBody)
-             -> ScrollRequest<'a> {
+        pub fn for_scroll_id<IScrollId, IBody>(scroll_id: IScrollId,
+                                               body: IBody)
+                                               -> ScrollRequest<'a>
+            where IScrollId: Into<ScrollId<'a>>,
+                  IBody: Into<Body<'a>>
+        {
             ScrollRequest {
                 url: ScrollUrlParams::ScrollId(scroll_id.into()).url(),
                 body: body.into(),
@@ -5118,17 +5333,19 @@ pub mod endpoints {
         pub fn new() -> SnapshotStatusRequest<'a> {
             SnapshotStatusRequest { url: SnapshotStatusUrlParams::None.url() }
         }
-        pub fn for_repository<IRepository: Into<Repository<'a>>>(repository: IRepository)
-                                                                 -> SnapshotStatusRequest<'a> {
+        pub fn for_repository<IRepository>(repository: IRepository) -> SnapshotStatusRequest<'a>
+            where IRepository: Into<Repository<'a>>
+        {
             SnapshotStatusRequest {
                 url: SnapshotStatusUrlParams::Repository(repository.into()).url(),
             }
         }
-        pub fn for_repository_snapshot<IRepository: Into<Repository<'a>>,
-                                       ISnapshot: Into<Snapshot<'a>>>
-            (repository: IRepository,
-             snapshot: ISnapshot)
-             -> SnapshotStatusRequest<'a> {
+        pub fn for_repository_snapshot<IRepository, ISnapshot>(repository: IRepository,
+                                                               snapshot: ISnapshot)
+                                                               -> SnapshotStatusRequest<'a>
+            where IRepository: Into<Repository<'a>>,
+                  ISnapshot: Into<Snapshot<'a>>
+        {
             SnapshotStatusRequest {
                 url: SnapshotStatusUrlParams::RepositorySnapshot(repository.into(),
                                                                  snapshot.into())
@@ -5189,25 +5406,31 @@ pub mod endpoints {
         pub body: Body<'a>,
     }
     impl<'a> MgetRequest<'a> {
-        pub fn new<IBody: Into<Body<'a>>>(body: IBody) -> MgetRequest<'a> {
+        pub fn new<IBody>(body: IBody) -> MgetRequest<'a>
+            where IBody: Into<Body<'a>>
+        {
             MgetRequest {
                 url: MgetUrlParams::None.url(),
                 body: body.into(),
             }
         }
-        pub fn for_index<IIndex: Into<Index<'a>>, IBody: Into<Body<'a>>>(index: IIndex,
-                                                                         body: IBody)
-                                                                         -> MgetRequest<'a> {
+        pub fn for_index<IIndex, IBody>(index: IIndex, body: IBody) -> MgetRequest<'a>
+            where IIndex: Into<Index<'a>>,
+                  IBody: Into<Body<'a>>
+        {
             MgetRequest {
                 url: MgetUrlParams::Index(index.into()).url(),
                 body: body.into(),
             }
         }
-        pub fn for_index_ty<IIndex: Into<Index<'a>>, IType: Into<Type<'a>>, IBody: Into<Body<'a>>>
-            (index: IIndex,
-             ty: IType,
-             body: IBody)
-             -> MgetRequest<'a> {
+        pub fn for_index_ty<IIndex, IType, IBody>(index: IIndex,
+                                                  ty: IType,
+                                                  body: IBody)
+                                                  -> MgetRequest<'a>
+            where IIndex: Into<Index<'a>>,
+                  IType: Into<Type<'a>>,
+                  IBody: Into<Body<'a>>
+        {
             MgetRequest {
                 url: MgetUrlParams::IndexType(index.into(), ty.into()).url(),
                 body: body.into(),
@@ -5253,7 +5476,9 @@ pub mod endpoints {
         pub url: Url<'a>,
     }
     impl<'a> IndicesExistsTemplateRequest<'a> {
-        pub fn for_name<IName: Into<Name<'a>>>(name: IName) -> IndicesExistsTemplateRequest<'a> {
+        pub fn for_name<IName>(name: IName) -> IndicesExistsTemplateRequest<'a>
+            where IName: Into<Name<'a>>
+        {
             IndicesExistsTemplateRequest {
                 url: IndicesExistsTemplateUrlParams::Name(name.into()).url(),
             }
@@ -5304,7 +5529,9 @@ pub mod endpoints {
         pub fn new() -> IndicesGetUpgradeRequest<'a> {
             IndicesGetUpgradeRequest { url: IndicesGetUpgradeUrlParams::None.url() }
         }
-        pub fn for_index<IIndex: Into<Index<'a>>>(index: IIndex) -> IndicesGetUpgradeRequest<'a> {
+        pub fn for_index<IIndex>(index: IIndex) -> IndicesGetUpgradeRequest<'a>
+            where IIndex: Into<Index<'a>>
+        {
             IndicesGetUpgradeRequest { url: IndicesGetUpgradeUrlParams::Index(index.into()).url() }
         }
     }
@@ -5350,11 +5577,14 @@ pub mod endpoints {
         pub body: Body<'a>,
     }
     impl<'a> PutScriptRequest<'a> {
-        pub fn for_lang_id<ILang: Into<Lang<'a>>, IId: Into<Id<'a>>, IBody: Into<Body<'a>>>
-            (lang: ILang,
-             id: IId,
-             body: IBody)
-             -> PutScriptRequest<'a> {
+        pub fn for_lang_id<ILang, IId, IBody>(lang: ILang,
+                                              id: IId,
+                                              body: IBody)
+                                              -> PutScriptRequest<'a>
+            where ILang: Into<Lang<'a>>,
+                  IId: Into<Id<'a>>,
+                  IBody: Into<Body<'a>>
+        {
             PutScriptRequest {
                 url: PutScriptUrlParams::LangId(lang.into(), id.into()).url(),
                 body: body.into(),
@@ -5400,7 +5630,9 @@ pub mod endpoints {
         pub url: Url<'a>,
     }
     impl<'a> GetTemplateRequest<'a> {
-        pub fn for_id<IId: Into<Id<'a>>>(id: IId) -> GetTemplateRequest<'a> {
+        pub fn for_id<IId>(id: IId) -> GetTemplateRequest<'a>
+            where IId: Into<Id<'a>>
+        {
             GetTemplateRequest { url: GetTemplateUrlParams::Id(id.into()).url() }
         }
     }
@@ -5443,7 +5675,9 @@ pub mod endpoints {
         pub url: Url<'a>,
     }
     impl<'a> IndicesDeleteTemplateRequest<'a> {
-        pub fn for_name<IName: Into<Name<'a>>>(name: IName) -> IndicesDeleteTemplateRequest<'a> {
+        pub fn for_name<IName>(name: IName) -> IndicesDeleteTemplateRequest<'a>
+            where IName: Into<Name<'a>>
+        {
             IndicesDeleteTemplateRequest {
                 url: IndicesDeleteTemplateUrlParams::Name(name.into()).url(),
             }
@@ -5502,25 +5736,29 @@ pub mod endpoints {
         pub body: Body<'a>,
     }
     impl<'a> IndexRequest<'a> {
-        pub fn for_index_ty<IIndex: Into<Index<'a>>, IType: Into<Type<'a>>, IBody: Into<Body<'a>>>
-            (index: IIndex,
-             ty: IType,
-             body: IBody)
-             -> IndexRequest<'a> {
+        pub fn for_index_ty<IIndex, IType, IBody>(index: IIndex,
+                                                  ty: IType,
+                                                  body: IBody)
+                                                  -> IndexRequest<'a>
+            where IIndex: Into<Index<'a>>,
+                  IType: Into<Type<'a>>,
+                  IBody: Into<Body<'a>>
+        {
             IndexRequest {
                 url: IndexUrlParams::IndexType(index.into(), ty.into()).url(),
                 body: body.into(),
             }
         }
-        pub fn for_index_ty_id<IIndex: Into<Index<'a>>,
-                               IType: Into<Type<'a>>,
-                               IId: Into<Id<'a>>,
-                               IBody: Into<Body<'a>>>
-            (index: IIndex,
-             ty: IType,
-             id: IId,
-             body: IBody)
-             -> IndexRequest<'a> {
+        pub fn for_index_ty_id<IIndex, IType, IId, IBody>(index: IIndex,
+                                                          ty: IType,
+                                                          id: IId,
+                                                          body: IBody)
+                                                          -> IndexRequest<'a>
+            where IIndex: Into<Index<'a>>,
+                  IType: Into<Type<'a>>,
+                  IId: Into<Id<'a>>,
+                  IBody: Into<Body<'a>>
+        {
             IndexRequest {
                 url: IndexUrlParams::IndexTypeId(index.into(), ty.into(), id.into()).url(),
                 body: body.into(),
@@ -5570,16 +5808,18 @@ pub mod endpoints {
         pub body: Body<'a>,
     }
     impl<'a> IndicesPutSettingsRequest<'a> {
-        pub fn new<IBody: Into<Body<'a>>>(body: IBody) -> IndicesPutSettingsRequest<'a> {
+        pub fn new<IBody>(body: IBody) -> IndicesPutSettingsRequest<'a>
+            where IBody: Into<Body<'a>>
+        {
             IndicesPutSettingsRequest {
                 url: IndicesPutSettingsUrlParams::None.url(),
                 body: body.into(),
             }
         }
-        pub fn for_index<IIndex: Into<Index<'a>>, IBody: Into<Body<'a>>>
-            (index: IIndex,
-             body: IBody)
-             -> IndicesPutSettingsRequest<'a> {
+        pub fn for_index<IIndex, IBody>(index: IIndex, body: IBody) -> IndicesPutSettingsRequest<'a>
+            where IIndex: Into<Index<'a>>,
+                  IBody: Into<Body<'a>>
+        {
             IndicesPutSettingsRequest {
                 url: IndicesPutSettingsUrlParams::Index(index.into()).url(),
                 body: body.into(),
@@ -5630,7 +5870,9 @@ pub mod endpoints {
         pub fn new() -> CatTemplatesRequest<'a> {
             CatTemplatesRequest { url: CatTemplatesUrlParams::None.url() }
         }
-        pub fn for_name<IName: Into<Name<'a>>>(name: IName) -> CatTemplatesRequest<'a> {
+        pub fn for_name<IName>(name: IName) -> CatTemplatesRequest<'a>
+            where IName: Into<Name<'a>>
+        {
             CatTemplatesRequest { url: CatTemplatesUrlParams::Name(name.into()).url() }
         }
     }
@@ -5678,7 +5920,9 @@ pub mod endpoints {
         pub fn new() -> CatIndicesRequest<'a> {
             CatIndicesRequest { url: CatIndicesUrlParams::None.url() }
         }
-        pub fn for_index<IIndex: Into<Index<'a>>>(index: IIndex) -> CatIndicesRequest<'a> {
+        pub fn for_index<IIndex>(index: IIndex) -> CatIndicesRequest<'a>
+            where IIndex: Into<Index<'a>>
+        {
             CatIndicesRequest { url: CatIndicesUrlParams::Index(index.into()).url() }
         }
     }
@@ -5717,7 +5961,9 @@ pub mod endpoints {
         pub body: Body<'a>,
     }
     impl<'a> ClusterPutSettingsRequest<'a> {
-        pub fn new<IBody: Into<Body<'a>>>(body: IBody) -> ClusterPutSettingsRequest<'a> {
+        pub fn new<IBody>(body: IBody) -> ClusterPutSettingsRequest<'a>
+            where IBody: Into<Body<'a>>
+        {
             ClusterPutSettingsRequest {
                 url: ClusterPutSettingsUrlParams::None.url(),
                 body: body.into(),
@@ -5770,15 +6016,16 @@ pub mod endpoints {
         pub body: Body<'a>,
     }
     impl<'a> UpdateRequest<'a> {
-        pub fn for_index_ty_id<IIndex: Into<Index<'a>>,
-                               IType: Into<Type<'a>>,
-                               IId: Into<Id<'a>>,
-                               IBody: Into<Body<'a>>>
-            (index: IIndex,
-             ty: IType,
-             id: IId,
-             body: IBody)
-             -> UpdateRequest<'a> {
+        pub fn for_index_ty_id<IIndex, IType, IId, IBody>(index: IIndex,
+                                                          ty: IType,
+                                                          id: IId,
+                                                          body: IBody)
+                                                          -> UpdateRequest<'a>
+            where IIndex: Into<Index<'a>>,
+                  IType: Into<Type<'a>>,
+                  IId: Into<Id<'a>>,
+                  IBody: Into<Body<'a>>
+        {
             UpdateRequest {
                 url: UpdateUrlParams::IndexTypeId(index.into(), ty.into(), id.into()).url(),
                 body: body.into(),
@@ -5827,11 +6074,14 @@ pub mod endpoints {
         pub body: Body<'a>,
     }
     impl<'a> IndicesPutAliasRequest<'a> {
-        pub fn for_index_name<IIndex: Into<Index<'a>>, IName: Into<Name<'a>>, IBody: Into<Body<'a>>>
-            (index: IIndex,
-             name: IName,
-             body: IBody)
-             -> IndicesPutAliasRequest<'a> {
+        pub fn for_index_name<IIndex, IName, IBody>(index: IIndex,
+                                                    name: IName,
+                                                    body: IBody)
+                                                    -> IndicesPutAliasRequest<'a>
+            where IIndex: Into<Index<'a>>,
+                  IName: Into<Name<'a>>,
+                  IBody: Into<Body<'a>>
+        {
             IndicesPutAliasRequest {
                 url: IndicesPutAliasUrlParams::IndexName(index.into(), name.into()).url(),
                 body: body.into(),
@@ -5932,25 +6182,29 @@ pub mod endpoints {
         pub body: Body<'a>,
     }
     impl<'a> CountPercolateRequest<'a> {
-        pub fn for_index_ty<IIndex: Into<Index<'a>>, IType: Into<Type<'a>>, IBody: Into<Body<'a>>>
-            (index: IIndex,
-             ty: IType,
-             body: IBody)
-             -> CountPercolateRequest<'a> {
+        pub fn for_index_ty<IIndex, IType, IBody>(index: IIndex,
+                                                  ty: IType,
+                                                  body: IBody)
+                                                  -> CountPercolateRequest<'a>
+            where IIndex: Into<Index<'a>>,
+                  IType: Into<Type<'a>>,
+                  IBody: Into<Body<'a>>
+        {
             CountPercolateRequest {
                 url: CountPercolateUrlParams::IndexType(index.into(), ty.into()).url(),
                 body: body.into(),
             }
         }
-        pub fn for_index_ty_id<IIndex: Into<Index<'a>>,
-                               IType: Into<Type<'a>>,
-                               IId: Into<Id<'a>>,
-                               IBody: Into<Body<'a>>>
-            (index: IIndex,
-             ty: IType,
-             id: IId,
-             body: IBody)
-             -> CountPercolateRequest<'a> {
+        pub fn for_index_ty_id<IIndex, IType, IId, IBody>(index: IIndex,
+                                                          ty: IType,
+                                                          id: IId,
+                                                          body: IBody)
+                                                          -> CountPercolateRequest<'a>
+            where IIndex: Into<Index<'a>>,
+                  IType: Into<Type<'a>>,
+                  IId: Into<Id<'a>>,
+                  IBody: Into<Body<'a>>
+        {
             CountPercolateRequest {
                 url: CountPercolateUrlParams::IndexTypeId(index.into(), ty.into(), id.into()).url(),
                 body: body.into(),
@@ -6000,16 +6254,18 @@ pub mod endpoints {
         pub body: Body<'a>,
     }
     impl<'a> IndicesUpgradeRequest<'a> {
-        pub fn new<IBody: Into<Body<'a>>>(body: IBody) -> IndicesUpgradeRequest<'a> {
+        pub fn new<IBody>(body: IBody) -> IndicesUpgradeRequest<'a>
+            where IBody: Into<Body<'a>>
+        {
             IndicesUpgradeRequest {
                 url: IndicesUpgradeUrlParams::None.url(),
                 body: body.into(),
             }
         }
-        pub fn for_index<IIndex: Into<Index<'a>>, IBody: Into<Body<'a>>>
-            (index: IIndex,
-             body: IBody)
-             -> IndicesUpgradeRequest<'a> {
+        pub fn for_index<IIndex, IBody>(index: IIndex, body: IBody) -> IndicesUpgradeRequest<'a>
+            where IIndex: Into<Index<'a>>,
+                  IBody: Into<Body<'a>>
+        {
             IndicesUpgradeRequest {
                 url: IndicesUpgradeUrlParams::Index(index.into()).url(),
                 body: body.into(),
@@ -6057,10 +6313,12 @@ pub mod endpoints {
         pub url: Url<'a>,
     }
     impl<'a> IndicesDeleteAliasRequest<'a> {
-        pub fn for_index_name<IIndex: Into<Index<'a>>, IName: Into<Name<'a>>>
-            (index: IIndex,
-             name: IName)
-             -> IndicesDeleteAliasRequest<'a> {
+        pub fn for_index_name<IIndex, IName>(index: IIndex,
+                                             name: IName)
+                                             -> IndicesDeleteAliasRequest<'a>
+            where IIndex: Into<Index<'a>>,
+                  IName: Into<Name<'a>>
+        {
             IndicesDeleteAliasRequest {
                 url: IndicesDeleteAliasUrlParams::IndexName(index.into(), name.into()).url(),
             }
@@ -6154,22 +6412,23 @@ pub mod endpoints {
         pub body: Body<'a>,
     }
     impl<'a> IndicesRolloverRequest<'a> {
-        pub fn for_alias<IAlias: Into<Alias<'a>>, IBody: Into<Body<'a>>>
-            (alias: IAlias,
-             body: IBody)
-             -> IndicesRolloverRequest<'a> {
+        pub fn for_alias<IAlias, IBody>(alias: IAlias, body: IBody) -> IndicesRolloverRequest<'a>
+            where IAlias: Into<Alias<'a>>,
+                  IBody: Into<Body<'a>>
+        {
             IndicesRolloverRequest {
                 url: IndicesRolloverUrlParams::Alias(alias.into()).url(),
                 body: body.into(),
             }
         }
-        pub fn for_alias_new_index<IAlias: Into<Alias<'a>>,
-                                   INewIndex: Into<NewIndex<'a>>,
-                                   IBody: Into<Body<'a>>>
-            (alias: IAlias,
-             new_index: INewIndex,
-             body: IBody)
-             -> IndicesRolloverRequest<'a> {
+        pub fn for_alias_new_index<IAlias, INewIndex, IBody>(alias: IAlias,
+                                                             new_index: INewIndex,
+                                                             body: IBody)
+                                                             -> IndicesRolloverRequest<'a>
+            where IAlias: Into<Alias<'a>>,
+                  INewIndex: Into<NewIndex<'a>>,
+                  IBody: Into<Body<'a>>
+        {
             IndicesRolloverRequest {
                 url: IndicesRolloverUrlParams::AliasNewIndex(alias.into(), new_index.into()).url(),
                 body: body.into(),
@@ -6217,10 +6476,12 @@ pub mod endpoints {
         pub body: Body<'a>,
     }
     impl<'a> ReindexRethrottleRequest<'a> {
-        pub fn for_task_id<ITaskId: Into<TaskId<'a>>, IBody: Into<Body<'a>>>
-            (task_id: ITaskId,
-             body: IBody)
-             -> ReindexRethrottleRequest<'a> {
+        pub fn for_task_id<ITaskId, IBody>(task_id: ITaskId,
+                                           body: IBody)
+                                           -> ReindexRethrottleRequest<'a>
+            where ITaskId: Into<TaskId<'a>>,
+                  IBody: Into<Body<'a>>
+        {
             ReindexRethrottleRequest {
                 url: ReindexRethrottleUrlParams::TaskId(task_id.into()).url(),
                 body: body.into(),
@@ -6267,10 +6528,12 @@ pub mod endpoints {
         pub body: Body<'a>,
     }
     impl<'a> SnapshotCreateRepositoryRequest<'a> {
-        pub fn for_repository<IRepository: Into<Repository<'a>>, IBody: Into<Body<'a>>>
-            (repository: IRepository,
-             body: IBody)
-             -> SnapshotCreateRepositoryRequest<'a> {
+        pub fn for_repository<IRepository, IBody>(repository: IRepository,
+                                                  body: IBody)
+                                                  -> SnapshotCreateRepositoryRequest<'a>
+            where IRepository: Into<Repository<'a>>,
+                  IBody: Into<Body<'a>>
+        {
             SnapshotCreateRepositoryRequest {
                 url: SnapshotCreateRepositoryUrlParams::Repository(repository.into()).url(),
                 body: body.into(),
@@ -6325,13 +6588,17 @@ pub mod endpoints {
         pub url: Url<'a>,
     }
     impl<'a> IndicesGetRequest<'a> {
-        pub fn for_index<IIndex: Into<Index<'a>>>(index: IIndex) -> IndicesGetRequest<'a> {
+        pub fn for_index<IIndex>(index: IIndex) -> IndicesGetRequest<'a>
+            where IIndex: Into<Index<'a>>
+        {
             IndicesGetRequest { url: IndicesGetUrlParams::Index(index.into()).url() }
         }
-        pub fn for_index_feature<IIndex: Into<Index<'a>>, IFeature: Into<Feature<'a>>>
-            (index: IIndex,
-             feature: IFeature)
-             -> IndicesGetRequest<'a> {
+        pub fn for_index_feature<IIndex, IFeature>(index: IIndex,
+                                                   feature: IFeature)
+                                                   -> IndicesGetRequest<'a>
+            where IIndex: Into<Index<'a>>,
+                  IFeature: Into<Feature<'a>>
+        {
             IndicesGetRequest {
                 url: IndicesGetUrlParams::IndexFeature(index.into(), feature.into()).url(),
             }
@@ -6380,16 +6647,18 @@ pub mod endpoints {
         pub body: Body<'a>,
     }
     impl<'a> IndicesAnalyzeRequest<'a> {
-        pub fn new<IBody: Into<Body<'a>>>(body: IBody) -> IndicesAnalyzeRequest<'a> {
+        pub fn new<IBody>(body: IBody) -> IndicesAnalyzeRequest<'a>
+            where IBody: Into<Body<'a>>
+        {
             IndicesAnalyzeRequest {
                 url: IndicesAnalyzeUrlParams::None.url(),
                 body: body.into(),
             }
         }
-        pub fn for_index<IIndex: Into<Index<'a>>, IBody: Into<Body<'a>>>
-            (index: IIndex,
-             body: IBody)
-             -> IndicesAnalyzeRequest<'a> {
+        pub fn for_index<IIndex, IBody>(index: IIndex, body: IBody) -> IndicesAnalyzeRequest<'a>
+            where IIndex: Into<Index<'a>>,
+                  IBody: Into<Body<'a>>
+        {
             IndicesAnalyzeRequest {
                 url: IndicesAnalyzeUrlParams::Index(index.into()).url(),
                 body: body.into(),
@@ -6440,7 +6709,9 @@ pub mod endpoints {
         pub fn new() -> CatFielddataRequest<'a> {
             CatFielddataRequest { url: CatFielddataUrlParams::None.url() }
         }
-        pub fn for_fields<IFields: Into<Fields<'a>>>(fields: IFields) -> CatFielddataRequest<'a> {
+        pub fn for_fields<IFields>(fields: IFields) -> CatFielddataRequest<'a>
+            where IFields: Into<Fields<'a>>
+        {
             CatFielddataRequest { url: CatFielddataUrlParams::Fields(fields.into()).url() }
         }
     }
@@ -6489,7 +6760,9 @@ pub mod endpoints {
         pub fn new() -> IndicesSegmentsRequest<'a> {
             IndicesSegmentsRequest { url: IndicesSegmentsUrlParams::None.url() }
         }
-        pub fn for_index<IIndex: Into<Index<'a>>>(index: IIndex) -> IndicesSegmentsRequest<'a> {
+        pub fn for_index<IIndex>(index: IIndex) -> IndicesSegmentsRequest<'a>
+            where IIndex: Into<Index<'a>>
+        {
             IndicesSegmentsRequest { url: IndicesSegmentsUrlParams::Index(index.into()).url() }
         }
     }
@@ -6535,13 +6808,14 @@ pub mod endpoints {
         pub body: Body<'a>,
     }
     impl<'a> IndicesShrinkRequest<'a> {
-        pub fn for_index_target<IIndex: Into<Index<'a>>,
-                                ITarget: Into<Target<'a>>,
-                                IBody: Into<Body<'a>>>
-            (index: IIndex,
-             target: ITarget,
-             body: IBody)
-             -> IndicesShrinkRequest<'a> {
+        pub fn for_index_target<IIndex, ITarget, IBody>(index: IIndex,
+                                                        target: ITarget,
+                                                        body: IBody)
+                                                        -> IndicesShrinkRequest<'a>
+            where IIndex: Into<Index<'a>>,
+                  ITarget: Into<Target<'a>>,
+                  IBody: Into<Body<'a>>
+        {
             IndicesShrinkRequest {
                 url: IndicesShrinkUrlParams::IndexTarget(index.into(), target.into()).url(),
                 body: body.into(),
@@ -6665,10 +6939,10 @@ pub mod endpoints {
         pub url: Url<'a>,
     }
     impl<'a> IndicesExistsTypeRequest<'a> {
-        pub fn for_index_ty<IIndex: Into<Index<'a>>, IType: Into<Type<'a>>>
-            (index: IIndex,
-             ty: IType)
-             -> IndicesExistsTypeRequest<'a> {
+        pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType) -> IndicesExistsTypeRequest<'a>
+            where IIndex: Into<Index<'a>>,
+                  IType: Into<Type<'a>>
+        {
             IndicesExistsTypeRequest {
                 url: IndicesExistsTypeUrlParams::IndexType(index.into(), ty.into()).url(),
             }
@@ -6772,16 +7046,22 @@ pub mod endpoints {
         pub fn new() -> NodesInfoRequest<'a> {
             NodesInfoRequest { url: NodesInfoUrlParams::None.url() }
         }
-        pub fn for_metric<IMetric: Into<Metric<'a>>>(metric: IMetric) -> NodesInfoRequest<'a> {
+        pub fn for_metric<IMetric>(metric: IMetric) -> NodesInfoRequest<'a>
+            where IMetric: Into<Metric<'a>>
+        {
             NodesInfoRequest { url: NodesInfoUrlParams::Metric(metric.into()).url() }
         }
-        pub fn for_node_id<INodeId: Into<NodeId<'a>>>(node_id: INodeId) -> NodesInfoRequest<'a> {
+        pub fn for_node_id<INodeId>(node_id: INodeId) -> NodesInfoRequest<'a>
+            where INodeId: Into<NodeId<'a>>
+        {
             NodesInfoRequest { url: NodesInfoUrlParams::NodeId(node_id.into()).url() }
         }
-        pub fn for_node_id_metric<INodeId: Into<NodeId<'a>>, IMetric: Into<Metric<'a>>>
-            (node_id: INodeId,
-             metric: IMetric)
-             -> NodesInfoRequest<'a> {
+        pub fn for_node_id_metric<INodeId, IMetric>(node_id: INodeId,
+                                                    metric: IMetric)
+                                                    -> NodesInfoRequest<'a>
+            where INodeId: Into<NodeId<'a>>,
+                  IMetric: Into<Metric<'a>>
+        {
             NodesInfoRequest {
                 url: NodesInfoUrlParams::NodeIdMetric(node_id.into(), metric.into()).url(),
             }
@@ -6842,13 +7122,15 @@ pub mod endpoints {
         pub fn new() -> SimpleSearchRequest<'a> {
             SimpleSearchRequest { url: SimpleSearchUrlParams::None.url() }
         }
-        pub fn for_index<IIndex: Into<Index<'a>>>(index: IIndex) -> SimpleSearchRequest<'a> {
+        pub fn for_index<IIndex>(index: IIndex) -> SimpleSearchRequest<'a>
+            where IIndex: Into<Index<'a>>
+        {
             SimpleSearchRequest { url: SimpleSearchUrlParams::Index(index.into()).url() }
         }
-        pub fn for_index_ty<IIndex: Into<Index<'a>>, IType: Into<Type<'a>>>
-            (index: IIndex,
-             ty: IType)
-             -> SimpleSearchRequest<'a> {
+        pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType) -> SimpleSearchRequest<'a>
+            where IIndex: Into<Index<'a>>,
+                  IType: Into<Type<'a>>
+        {
             SimpleSearchRequest {
                 url: SimpleSearchUrlParams::IndexType(index.into(), ty.into()).url(),
             }

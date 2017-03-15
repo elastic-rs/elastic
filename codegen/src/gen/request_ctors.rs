@@ -111,13 +111,25 @@ impl RequestParamsCtorBuilder {
         format!("I{}", generic_ident)
     }
 
-    /// Build the `IT: Into<T>` generic type.
+    /// Build the `IT` generic type.
     fn ctor_field_generic(field: &syn::Ty) -> syn::TyParam {
         let generic_ident = Self::field_generic_ty(field);
 
         syn::TyParam {
             attrs: vec![],
             ident: ident(generic_ident),
+            bounds: vec![],
+            default: None,
+        }
+    }
+
+    /// Build the `IT: Into<T>` generic where bound.
+    fn ctor_field_generic_where_bound(field: &syn::Ty) -> syn::WherePredicate {
+        let generic_ident = Self::field_generic_ty(field);
+
+        syn::WherePredicate::BoundPredicate(syn::WhereBoundPredicate {
+            bound_lifetimes: vec![],
+            bounded_ty: ty(&generic_ident),
             bounds: vec![syn::TyParamBound::Trait(syn::PolyTraitRef {
                                                       bound_lifetimes: vec![],
                                                       trait_ref: syn::Path {
@@ -133,8 +145,7 @@ impl RequestParamsCtorBuilder {
                                                       },
                                                   },
                                                   syn::TraitBoundModifier::None)],
-            default: None,
-        }
+        })
     }
 
     /// Build the `T { url_params: UrlParams::ABC(a.into(), b.into(), c.into()), body: body.into() }` body.
@@ -226,18 +237,32 @@ impl RequestParamsCtorBuilder {
 
     /// Build a self implementation for the request parameter constructors.
     fn ctor_item(req_ty: syn::Ty, params_ty: syn::Ty, ctor: &Constructor) -> syn::ImplItem {
-        let field_generics: Vec<syn::TyParam> = ctor.fields()
+        let fields: Vec<&syn::Ty> = ctor.fields()
             .iter()
             .map(|&f| {
                 let (_, ref ty) = *f;
+                ty
+            })
+            .collect();
+
+        let field_tys: Vec<syn::TyParam> = fields
+            .iter()
+            .map(|ty| {
                 Self::ctor_field_generic(ty)
+            })
+            .collect();
+
+        let field_where_tys: Vec<syn::WherePredicate> = fields
+            .iter()
+            .map(|ty| {
+                Self::ctor_field_generic_where_bound(ty)
             })
             .collect();
 
         let generics = syn::Generics {
             lifetimes: vec![],
-            ty_params: field_generics,
-            where_clause: syn::WhereClause { predicates: vec![] },
+            ty_params: field_tys,
+            where_clause: syn::WhereClause { predicates: field_where_tys },
         };
 
         let fndecl = Self::ctor_decl(req_ty.clone(), &ctor);
@@ -342,16 +367,16 @@ pub mod tests {
             ])
             .build();
 
-        let body = quote!(
-            Request {
-                url: UrlParams::IndexTypeId(index.into(), ty.into(), id.into()).url()
-            }
-        );
-
         let expected = quote!(
             impl <'a> Request<'a> {
-                pub fn for_index_ty_id<IIndex: Into<Index<'a> >, IType: Into<Type<'a> >, IId: Into<Id<'a> > >(index: IIndex, ty: IType, id: IId) -> Request<'a> {
-                    #body
+                pub fn for_index_ty_id<IIndex, IType, IId>(index: IIndex, ty: IType, id: IId) -> Request<'a> 
+                    where IIndex: Into<Index<'a> >,
+                          IType: Into<Type<'a> >,
+                          IId: Into<Id<'a> >
+                {
+                    Request {
+                        url: UrlParams::IndexTypeId(index.into(), ty.into(), id.into()).url()
+                    }
                 }
             }
         );
@@ -367,7 +392,9 @@ pub mod tests {
 
         let expected = quote!(
             impl <'a> Request<'a> {
-                pub fn new<IBody: Into<Body<'a> > >(body: IBody) -> Request<'a> {
+                pub fn new<IBody>(body: IBody) -> Request<'a> 
+                    where IBody: Into<Body<'a> >
+                {
                     Request {
                         url: UrlParams::None.url(),
                         body: body.into()
@@ -389,21 +416,18 @@ pub mod tests {
             ])
             .build();
 
-        let body = quote!(
-            Request {
-                url: UrlParams::IndexTypeId(index.into(), ty.into(), id.into()).url(),
-                body: body.into()
-            }
-        );
-
-        let generics = quote!(
-            <IIndex: Into<Index<'a> >, IType: Into<Type<'a> >, IId: Into<Id<'a> >, IBody: Into<Body<'a> > >
-        );
-
         let expected = quote!(
             impl <'a> Request<'a> {
-                pub fn for_index_ty_id #generics (index: IIndex, ty: IType, id: IId, body: IBody) -> Request<'a> {
-                    #body
+                pub fn for_index_ty_id<IIndex, IType, IId, IBody>(index: IIndex, ty: IType, id: IId, body: IBody) -> Request<'a> 
+                    where IIndex: Into<Index<'a> >,
+                          IType: Into<Type<'a> >,
+                          IId: Into<Id<'a> >,
+                          IBody: Into<Body<'a> >
+                {
+                    Request {
+                        url: UrlParams::IndexTypeId(index.into(), ty.into(), id.into()).url(),
+                        body: body.into()
+                    }
                 }
             }
         );
@@ -429,40 +453,37 @@ pub mod tests {
 
         let result = RequestParamsCtorBuilder::from((&endpoint, &req_ty, &url_params)).build();
 
-        let ctor_new = quote!(
-            pub fn new < IBody : Into < Body < 'a > > > ( body : IBody ) -> IndicesExistsAliasRequest < 'a > { 
-                IndicesExistsAliasRequest { 
-                    url : IndicesExistsAliasUrlParams::None.url(),
-                    body: body.into()
-                }
-            }
-        );
-
-        let ctor_index = quote!(
-            pub fn for_index < IIndex : Into < Index < 'a > >, IBody : Into < Body < 'a > > > ( index : IIndex, body : IBody ) -> IndicesExistsAliasRequest < 'a > { 
-                IndicesExistsAliasRequest { 
-                    url : IndicesExistsAliasUrlParams::Index(index.into()).url(),
-                    body: body.into()
-                }
-            }
-        );
-
-        let ctor_index_ty = quote!(
-            pub fn for_index_ty < IIndex : Into < Index < 'a > > , IType : Into < Type < 'a > >, IBody : Into < Body < 'a > > > ( index : IIndex , ty : IType , body: IBody ) -> IndicesExistsAliasRequest < 'a > { 
-                IndicesExistsAliasRequest { 
-                    url : IndicesExistsAliasUrlParams::IndexType(index.into(), ty.into()).url(),
-                    body: body.into()
-                }
-            }
-        );
-
         let expected = quote!(
-            impl < 'a > IndicesExistsAliasRequest < 'a > { 
-                #ctor_new
+            impl <'a> IndicesExistsAliasRequest <'a> { 
+                pub fn new<IBody>(body: IBody) -> IndicesExistsAliasRequest<'a> 
+                    where IBody: Into<Body<'a> >
+                { 
+                    IndicesExistsAliasRequest { 
+                        url : IndicesExistsAliasUrlParams::None.url(),
+                        body: body.into()
+                    }
+                }
 
-                #ctor_index
+                pub fn for_index<IIndex, IBody>(index: IIndex, body: IBody) -> IndicesExistsAliasRequest<'a> 
+                    where IIndex: Into<Index<'a> >,
+                          IBody: Into<Body<'a> >
+                { 
+                    IndicesExistsAliasRequest { 
+                        url : IndicesExistsAliasUrlParams::Index(index.into()).url(),
+                        body: body.into()
+                    }
+                }
 
-                #ctor_index_ty
+                pub fn for_index_ty<IIndex, IType, IBody>(index: IIndex, ty: IType, body: IBody) -> IndicesExistsAliasRequest<'a> 
+                    where IIndex: Into<Index<'a> >,
+                          IType: Into<Type<'a> >,
+                          IBody: Into<Body<'a> >
+                { 
+                    IndicesExistsAliasRequest { 
+                        url : IndicesExistsAliasUrlParams::IndexType(index.into(), ty.into()).url(),
+                        body: body.into()
+                    }
+                }
             }
         );
 
