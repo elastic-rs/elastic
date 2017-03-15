@@ -391,13 +391,11 @@ pub mod tests {
             .build();
 
         let expected = quote!(
-            impl <'a> Request<'a> {
-                pub fn new<IBody>(body: IBody) -> Request<'a> 
-                    where IBody: Into<Body<'a> >
-                {
+            impl <'a, R> Request<'a, R> {
+                pub fn new(body: R) -> Self {
                     Request {
                         url: UrlParams::None.url(),
-                        body: body.into()
+                        body: Body::new(body)
                     }
                 }
             }
@@ -417,16 +415,15 @@ pub mod tests {
             .build();
 
         let expected = quote!(
-            impl <'a> Request<'a> {
-                pub fn for_index_ty_id<IIndex, IType, IId, IBody>(index: IIndex, ty: IType, id: IId, body: IBody) -> Request<'a> 
+            impl <'a, R> Request<'a, R> {
+                pub fn for_index_ty_id<IIndex, IType, IId>(index: IIndex, ty: IType, id: IId, body: R) -> Self 
                     where IIndex: Into<Index<'a> >,
                           IType: Into<Type<'a> >,
-                          IId: Into<Id<'a> >,
-                          IBody: Into<Body<'a> >
+                          IId: Into<Id<'a> >
                 {
                     Request {
                         url: UrlParams::IndexTypeId(index.into(), ty.into(), id.into()).url(),
-                        body: body.into()
+                        body: Body::new(body)
                     }
                 }
             }
@@ -454,34 +451,30 @@ pub mod tests {
         let result = RequestParamsCtorBuilder::from((&endpoint, &req_ty, &url_params)).build();
 
         let expected = quote!(
-            impl <'a> IndicesExistsAliasRequest <'a> { 
-                pub fn new<IBody>(body: IBody) -> IndicesExistsAliasRequest<'a> 
-                    where IBody: Into<Body<'a> >
-                { 
+            impl <'a, R> IndicesExistsAliasRequest <'a, R> { 
+                pub fn new(body: R) -> Self { 
                     IndicesExistsAliasRequest { 
                         url : IndicesExistsAliasUrlParams::None.url(),
-                        body: body.into()
+                        body: Body::new(body)
                     }
                 }
 
-                pub fn for_index<IIndex, IBody>(index: IIndex, body: IBody) -> IndicesExistsAliasRequest<'a> 
-                    where IIndex: Into<Index<'a> >,
-                          IBody: Into<Body<'a> >
+                pub fn for_index<IIndex>(index: IIndex, body: R) -> Self
+                    where IIndex: Into<Index<'a> >
                 { 
                     IndicesExistsAliasRequest { 
                         url : IndicesExistsAliasUrlParams::Index(index.into()).url(),
-                        body: body.into()
+                        body: Body::new(body)
                     }
                 }
 
-                pub fn for_index_ty<IIndex, IType, IBody>(index: IIndex, ty: IType, body: IBody) -> IndicesExistsAliasRequest<'a> 
+                pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: R) -> Self
                     where IIndex: Into<Index<'a> >,
-                          IType: Into<Type<'a> >,
-                          IBody: Into<Body<'a> >
+                          IType: Into<Type<'a> >
                 { 
                     IndicesExistsAliasRequest { 
                         url : IndicesExistsAliasUrlParams::IndexType(index.into(), ty.into()).url(),
-                        body: body.into()
+                        body: Body::new(body)
                     }
                 }
             }

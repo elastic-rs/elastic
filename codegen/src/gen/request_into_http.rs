@@ -105,18 +105,8 @@ mod tests {
         let result = RequestIntoHttpRequestBuilder::from((&endpoint, &req_ty)).build();
 
         let expected = quote!(
-            impl <'a, 'b: 'a> Into<HttpRequest<'a> > for &'a IndicesExistsAliasRequest<'b> {
-                fn into(self) -> HttpRequest<'a> {
-                    HttpRequest {
-                        url: self.url.as_ref().into(),
-                        method: HttpMethod::Get,
-                        body: Some(self.body.as_ref().into())
-                    }
-                }
-            }
-
-            impl <'a> Into<HttpRequest<'a> > for IndicesExistsAliasRequest<'a> {
-                fn into(self) -> HttpRequest<'a> {
+            impl <'a, R> Into<HttpRequest<'a, R> > for IndicesExistsAliasRequest<'a, R> {
+                fn into(self) -> HttpRequest<'a, R> {
                     HttpRequest {
                         url: self.url,
                         method: HttpMethod::Get,

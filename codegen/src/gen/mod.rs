@@ -24,23 +24,21 @@ pub mod types {
         pub fn tokens() -> quote::Tokens {
             let url = ty();
 
-            let from_str = quote!(
+            quote!(
+                pub struct #url(Cow<'a, str>);
+
                 impl <'a> From<&'a str> for #url {
                     fn from(value: &'a str) -> #url {
                         Url(Cow::Borrowed(value))
                     }
                 }
-            );
-
-            let from_string = quote!(
+                
                 impl <'a> From<String> for #url {
                     fn from(value: String) -> #url {
                         Url(Cow::Owned(value))
                     }
                 }
-            );
 
-            let deref = quote!(
                 impl <'a> Deref for #url {
                     type Target = Cow<'a, str>;
 
@@ -48,16 +46,6 @@ pub mod types {
                         &self.0
                     }
                 }
-            );
-
-            quote!(
-                pub struct #url(Cow<'a, str>);
-
-                #from_str
-                
-                #from_string
-
-                #deref
             )
         }
     }
@@ -74,87 +62,33 @@ pub mod types {
             "Body"
         }
 
-        pub fn ty() -> syn::Ty {
-            helpers::ty_a(ident())
+        pub fn ty(body_generic: syn::Ty) -> syn::Ty {
+            helpers::ty_path(ident(), vec![], vec![body_generic])
         }
 
         pub fn tokens() -> quote::Tokens {
-            let body = ty();
+            let body_generic = helpers::ty("R");
+            let body = ty(body_generic.clone());
+            let body_no_generic = helpers::ty(ident());
 
-            let from_vec = quote!(
-                impl <'a> From<Vec<u8>> for #body {
-                    fn from(value: Vec<u8>) -> #body {
-                        Body(Cow::Owned(value))
+            quote!(
+                pub struct #body(#body_generic);
+
+                impl<#body_generic> #body {
+                    pub fn new(inner: #body_generic) -> Self {
+                        #body(inner)
                     }
-                }
-            );
 
-            let from_slice = quote!(
-                impl <'a> From<&'a [u8]> for #body {
-                    fn from(value: &'a [u8]) -> #body {
-                        Body(Cow::Borrowed(value))
-                    }
-                }
-            );
-
-            let from_str = quote!(
-                impl <'a> From<&'a str> for #body {
-                    fn from(value: &'a str) -> #body {
-                        Body(Cow::Borrowed(value.as_bytes()))
-                    }
-                }
-            );
-
-            let from_string = quote!(
-                impl <'a> From<String> for #body {
-                    fn from(value: String) -> #body {
-                        Body(Cow::Owned(value.into()))
-                    }
-                }
-            );
-
-            let deref = quote!(
-                impl <'a> Deref for #body {
-                    type Target = Cow<'a, [u8]>;
-
-                    fn deref(&self) -> &Cow<'a, [u8]> {
-                        &self.0
-                    }
-                }
-            );
-
-            let into_cow = quote!(
-                impl<'a> Body<'a> {
-                    pub fn into_inner(self) -> Cow<'a, [u8]> {
+                    pub fn into_inner(self) -> #body_generic {
                         self.0
                     }
                 }
-            );
 
-            let none = quote!(
-                impl <'a> #body {
+                impl #body_no_generic<&'static [u8]> {
                     pub fn none() -> Self {
-                        Body(Cow::Borrowed(&[]))
+                        Body(&[])
                     }
                 }
-            );
-
-            quote!(
-                pub struct #body(Cow<'a, [u8]>);
-
-                #from_vec
-                
-                #from_slice
-                
-                #from_str
-                
-                #from_string
-
-                #deref
-
-                #into_cow
-
-                #none
             )
         }
     }
@@ -168,23 +102,19 @@ pub mod types {
         use syn;
         use ::gen::helpers;
 
+        pub fn method_ident() -> &'static str {
+            "HttpMethod"
+        }
+
         pub fn method_ty() -> syn::Ty {
-            helpers::ty("HttpMethod")
-        }
-
-        pub fn req_ident() -> &'static str {
-            "HttpRequest"
-        }
-
-        pub fn req_ty() -> syn::Ty {
-            helpers::ty_a(req_ident())
+            helpers::ty(method_ident())
         }
 
         pub fn method_item() -> syn::Item {
-            let m_ty = method_ty();
+            let method_ty = method_ty();
 
             helpers::parse_item(quote!(
-                pub enum #m_ty {
+                pub enum #method_ty {
                     Head,
                     Get,
                     Post,
@@ -195,19 +125,29 @@ pub mod types {
             ))
         }
 
+        pub fn req_ident() -> &'static str {
+            "HttpRequest"
+        }
+
+        pub fn req_ty() -> syn::Ty {
+            helpers::ty_a(req_ident())
+        }
+
         pub fn req_tokens() -> quote::Tokens {
-            let m_ty = method_ty();
+            let method_ty = method_ty();
 
-            let r_ty = helpers::ty(req_ident());
+            let request_ty = helpers::ty(req_ident());
 
-            let u_ty_a = url::ty();
-            let b_ty_a = body::ty();
+            let url_ty = url::ty();
+
+            let body_generic_ty = helpers::ty("R");
+            let body_ty = body::ty(body_generic_ty.clone());
 
             quote!(
-                pub struct #r_ty<'a> {
-                    pub url: #u_ty_a,
-                    pub method: #m_ty,
-                    pub body: Option<#b_ty_a>
+                pub struct #request_ty<#body_generic_ty> {
+                    pub url: #url_ty,
+                    pub method: #method_ty,
+                    pub body: Option<#body_ty>
                 }
             )
         }
@@ -225,42 +165,29 @@ pub mod types {
             let ident = helpers::ty(&ty);
             let ty = helpers::ty_a(&ty);
 
-            let decl = quote!(
-                    pub struct #ty(pub Cow<'a, str>)
-                );
-
-            let from_str = quote!(
-                    impl <'a> From<&'a str> for #ty {
-                        fn from(value: &'a str) -> #ty {
-                            #ident(Cow::Borrowed(value))
-                        }
-                    }
-                );
-
-            let from_string = quote!(
-                    impl <'a> From<String> for #ty {
-                        fn from(value: String) -> #ty {
-                            #ident(Cow::Owned(value))
-                        }
-                    }
-                );
-
-            let deref = quote!(
-                    impl <'a> ::std::ops::Deref for #ty {
-                        type Target = str;
-                        
-                        fn deref(&self) -> &str {
-                            &self.0
-                        }
-                    }
-                );
-
             quote!(
-                    #decl;
-                    #from_str
-                    #from_string
-                    #deref
-                )
+                pub struct #ty(pub Cow<'a, str>);
+
+                impl <'a> From<&'a str> for #ty {
+                    fn from(value: &'a str) -> #ty {
+                        #ident(Cow::Borrowed(value))
+                    }
+                }
+
+                impl <'a> From<String> for #ty {
+                    fn from(value: String) -> #ty {
+                        #ident(Cow::Owned(value))
+                    }
+                }
+
+                impl <'a> ::std::ops::Deref for #ty {
+                    type Target = str;
+                    
+                    fn deref(&self) -> &str {
+                        &self.0
+                    }
+                }
+            )
         }
     }
 }
