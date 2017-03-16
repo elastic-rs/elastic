@@ -74,8 +74,30 @@ mod tests {
     use super::*;
 
     #[test]
-    fn gen_request_params_ty() {
+    fn gen_request_params_ty_no_body() {
         let (_, result) = RequestParamBuilder::new("Request").build();
+
+        let expected = quote!(Request<'a>);
+
+        ast_eq(expected, result);
+    }
+
+    #[test]
+    fn gen_request_params_no_body() {
+        let (result, _) = RequestParamBuilder::new("Request").build();
+
+        let expected = quote!(
+            pub struct Request<'a> {
+                pub url: Url<'a>
+            }
+        );
+
+        ast_eq(expected, result.into_stmt());
+    }
+
+    #[test]
+    fn gen_request_params_ty_with_body() {
+        let (_, result) = RequestParamBuilder::new("Request").has_body(true).build();
 
         let expected = quote!(Request<'a, R>);
 
@@ -83,12 +105,13 @@ mod tests {
     }
 
     #[test]
-    fn gen_request_params() {
-        let (result, _) = RequestParamBuilder::new("Request").build();
+    fn gen_request_params_with_body() {
+        let (result, _) = RequestParamBuilder::new("Request").has_body(true).build();
 
         let expected = quote!(
             pub struct Request<'a, R> {
-                pub url: Url<'a>
+                pub url: Url<'a>,
+                pub body: Body<R>,
             }
         );
 

@@ -331,7 +331,7 @@ pub mod tests {
 
     #[test]
     fn gen_request_ctor_none() {
-        let req_ty = ty_path("Request", vec![lifetime()], vec![ty(types::body::generic_ident())]);
+        let req_ty = ty_a("Request");
         let result = RequestParamsCtorBuilder::new(false, req_ty, ty_a("UrlParams"))
             .with_constructor(vec![])
             .build();
@@ -351,7 +351,7 @@ pub mod tests {
 
     #[test]
     fn gen_request_ctor_params() {
-        let req_ty = ty_path("Request", vec![lifetime()], vec![ty(types::body::generic_ident())]);
+        let req_ty = ty_a("Request");
         let result = RequestParamsCtorBuilder::new(false, req_ty, ty_a("UrlParams"))
             .with_constructor(vec![
                 "Index".into(),
