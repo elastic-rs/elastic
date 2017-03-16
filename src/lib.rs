@@ -53,7 +53,7 @@
 //!
 //! ```
 //! # use elastic_requests::*;
-//! fn takes_req<'a, I: Into<HttpRequest<'a>>>(req: I) {
+//! fn takes_req<'a, I: Into<HttpRequest<'a, B>>, B: AsRef<[u8]>>(req: I) {
 //!     let req = req.into();
 //!
 //!     // do something with the HttpRequest
@@ -114,9 +114,9 @@ mod tests {
     use std::thread;
     use super::*;
 
-    fn do_something_with_request<'a, I: Into<HttpRequest<'a>>>(_: I) {}
+    fn do_something_with_request<'a, I: Into<HttpRequest<'a, B>>, B>(_: I) {}
 
-    fn do_something_with_static_request<I: Into<HttpRequest<'static>>>
+    fn do_something_with_static_request<I: Into<HttpRequest<'static, B>>, B: 'static + Send>
         (req: I)
          -> thread::JoinHandle<()> {
         let req = req.into();

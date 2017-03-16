@@ -83,11 +83,11 @@ pub mod types {
             quote!(
                 pub struct #body(#body_generic);
 
-                pub #default_body = &'static [u8];
+                pub type #default_body = &'static [u8];
 
                 impl<#body_generic> #body {
                     pub fn new(inner: #body_generic) -> Self {
-                        #body(inner)
+                        #body_no_generic(inner)
                     }
 
                     pub fn into_inner(self) -> #body_generic {
@@ -95,9 +95,17 @@ pub mod types {
                     }
                 }
 
-                impl #body_no_generic<&'static [u8]> {
+                impl #body_no_generic<#default_body> {
                     pub fn none() -> Self {
                         Body(&[])
+                    }
+                }
+
+                impl <#body_generic> AsRef<[u8]> for #body 
+                    where #body_generic: AsRef<[u8]>
+                {
+                    fn as_ref(&self) -> &[u8] {
+                        self.0.as_ref()
                     }
                 }
             )
@@ -155,7 +163,7 @@ pub mod types {
             let body_ty = body::ty(body_generic_ty.clone());
 
             quote!(
-                pub struct #request_ty<#body_generic_ty> {
+                pub struct #request_ty<'a, #body_generic_ty> {
                     pub url: #url_ty,
                     pub method: #method_ty,
                     pub body: Option<#body_ty>

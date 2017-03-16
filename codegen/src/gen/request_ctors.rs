@@ -282,13 +282,32 @@ impl RequestParamsCtorBuilder {
             .map(|c| Self::ctor_item(self.req_ty.clone(), self.params_ty.clone(), c))
             .collect();
 
+        let generics = {
+            let segment = self.req_ty
+                .get_path()
+                .to_owned()
+                .segments
+                .into_iter()
+                .next()
+                .unwrap();
+            
+            match segment.parameters {
+                syn::PathParameters::AngleBracketed(data) => {
+                    let types = data.types.iter().map(|t| ty_param(t.get_ident().as_ref(), vec![])).collect();
+
+                    generics(data.lifetimes, types)
+                },
+                _ => panic!("Only angle bracketed generics are supported.")
+            }
+        };
+
         syn::Item {
             ident: ident(""),
             vis: syn::Visibility::Public,
             attrs: vec![],
             node: syn::ItemKind::Impl(syn::Unsafety::Normal,
                                       syn::ImplPolarity::Positive,
-                                      generics(vec![lifetime()], vec![ty_param(types::body::generic_ident(), vec![])]),
+                                      generics,
                                       None,
                                       Box::new(self.req_ty),
                                       ctors),
@@ -338,7 +357,7 @@ pub mod tests {
 
         let expected = quote!(
             impl <'a> Request<'a> {
-                pub fn new() -> Request<'a> {
+                pub fn new() -> Self {
                     Request {
                         url: UrlParams::None.url()
                     }
@@ -362,7 +381,7 @@ pub mod tests {
 
         let expected = quote!(
             impl <'a> Request<'a> {
-                pub fn for_index_ty_id<IIndex, IType, IId>(index: IIndex, ty: IType, id: IId) -> Request<'a> 
+                pub fn for_index_ty_id<IIndex, IType, IId>(index: IIndex, ty: IType, id: IId) -> Self
                     where IIndex: Into<Index<'a> >,
                           IType: Into<Type<'a> >,
                           IId: Into<Id<'a> >

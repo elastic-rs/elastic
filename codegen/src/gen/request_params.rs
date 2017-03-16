@@ -31,6 +31,8 @@ impl RequestParamBuilder {
             ty: types::url::ty()
         }];
 
+        let mut generics = generics(vec![lifetime()], vec![]);
+
         if self.has_body {
             fields.push(syn::Field {
                 ident: Some(ident("body")),
@@ -38,13 +40,21 @@ impl RequestParamBuilder {
                 attrs: vec![],
                 ty: types::body::ty(ty(types::body::generic_ident())),
             });
+
+            generics.ty_params.push(ty_param(types::body::generic_ident(), vec![]));
         }
 
         let fields = syn::VariantData::Struct(fields);
 
-        let generics = generics(vec![lifetime()], vec![ty_param(types::body::generic_ident(), vec![])]);
-
-        let ty = ty_a(self.name.as_ref());
+        let ty = ty_path(self.name.as_ref(), 
+                         generics.lifetimes
+                                 .iter()
+                                 .map(|l| l.lifetime.to_owned())
+                                 .collect(), 
+                         generics.ty_params
+                                 .iter()
+                                 .map(|t| ty(t.ident.as_ref()))
+                                 .collect());
 
         let item = syn::Item {
             ident: self.name,
@@ -111,7 +121,7 @@ mod tests {
         let expected = quote!(
             pub struct Request<'a, R> {
                 pub url: Url<'a>,
-                pub body: Body<R>,
+                pub body: Body<R>
             }
         );
 
