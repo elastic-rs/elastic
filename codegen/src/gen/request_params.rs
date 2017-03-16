@@ -38,10 +38,10 @@ impl RequestParamBuilder {
                 ident: Some(ident("body")),
                 vis: syn::Visibility::Public,
                 attrs: vec![],
-                ty: types::body::ty(ty(types::body::generic_ident())),
+                ty: types::body::ty(),
             });
 
-            generics.ty_params.push(ty_param(types::body::generic_ident(), vec![]));
+            generics.ty_params.push(ty_param(types::body::ident(), vec![]));
         }
 
         let fields = syn::VariantData::Struct(fields);
@@ -109,7 +109,7 @@ mod tests {
     fn gen_request_params_ty_with_body() {
         let (_, result) = RequestParamBuilder::new("Request").has_body(true).build();
 
-        let expected = quote!(Request<'a, R>);
+        let expected = quote!(Request<'a, B>);
 
         ast_eq(expected, result);
     }
@@ -119,9 +119,9 @@ mod tests {
         let (result, _) = RequestParamBuilder::new("Request").has_body(true).build();
 
         let expected = quote!(
-            pub struct Request<'a, R> {
+            pub struct Request<'a, B> {
                 pub url: Url<'a>,
-                pub body: Body<R>
+                pub body: B
             }
         );
 
@@ -143,9 +143,9 @@ mod tests {
         let (result, _) = RequestParamBuilder::from(&endpoint).build();
 
         let expected = quote!(
-            pub struct IndicesExistsAliasRequest<'a, R> {
+            pub struct IndicesExistsAliasRequest<'a, B> {
                 pub url: Url<'a>,
-                pub body: Body<R>
+                pub body: B
             }
         );
 

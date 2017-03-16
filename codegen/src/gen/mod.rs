@@ -25,6 +25,7 @@ pub mod types {
             let url = ty();
 
             quote!(
+                /// A wrapper around an owned or borrowed url.
                 pub struct #url(Cow<'a, str>);
 
                 impl <'a> From<&'a str> for #url {
@@ -59,54 +60,28 @@ pub mod types {
         use ::gen::helpers;
 
         pub fn ident() -> &'static str {
-            "Body"
-        }
-
-        pub fn generic_ident() -> &'static str {
-            "R"
+            "B"
         }
 
         pub fn default_ident() -> &'static str {
             "DefaultBody"
         }
 
-        pub fn ty(body_generic: syn::Ty) -> syn::Ty {
-            helpers::ty_path(ident(), vec![], vec![body_generic])
+        pub fn ty() -> syn::Ty {
+            helpers::ty(ident())
         }
 
         pub fn tokens() -> quote::Tokens {
-            let body_generic = helpers::ty(generic_ident());
-            let body = ty(body_generic.clone());
-            let body_no_generic = helpers::ty(ident());
             let default_body = helpers::ident(default_ident());
 
             quote!(
-                pub struct #body(#body_generic);
-
+                /// A default body type.
                 pub type #default_body = &'static [u8];
 
-                impl<#body_generic> #body {
-                    pub fn new(inner: #body_generic) -> Self {
-                        #body_no_generic(inner)
-                    }
-
-                    pub fn into_inner(self) -> #body_generic {
-                        self.0
-                    }
-                }
-
-                impl #body_no_generic<#default_body> {
-                    pub fn none() -> Self {
-                        Body(&[])
-                    }
-                }
-
-                impl <#body_generic> AsRef<[u8]> for #body 
-                    where #body_generic: AsRef<[u8]>
-                {
-                    fn as_ref(&self) -> &[u8] {
-                        self.0.as_ref()
-                    }
+                /// A convenience method for a default, empty body.
+                /// This method doesn't allocate.
+                pub fn empty_body() -> #default_body {
+                    &[]
                 }
             )
         }
@@ -133,6 +108,7 @@ pub mod types {
             let method_ty = method_ty();
 
             helpers::parse_item(quote!(
+                /// A standard HTTP verb.
                 pub enum #method_ty {
                     Head,
                     Get,
@@ -159,11 +135,11 @@ pub mod types {
 
             let url_ty = url::ty();
 
-            let body_generic_ty = helpers::ty(body::generic_ident());
-            let body_ty = body::ty(body_generic_ty.clone());
+            let body_ty = body::ty();
 
             quote!(
-                pub struct #request_ty<'a, #body_generic_ty> {
+                /// A general request type that all endpoints can be converted into.
+                pub struct #request_ty<'a, #body_ty> {
                     pub url: #url_ty,
                     pub method: #method_ty,
                     pub body: Option<#body_ty>

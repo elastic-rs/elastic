@@ -90,7 +90,7 @@ impl RequestParamsCtorBuilder {
     /// a body field.
     fn body_field(has_body: bool) -> Option<(syn::Ident, syn::Ty)> {
         if has_body {
-            Some((ident("body"), types::body::ty(ty(types::body::generic_ident()))))
+            Some((ident("body"), types::body::ty()))
         } else {
             None
         }
@@ -180,9 +180,7 @@ impl RequestParamsCtorBuilder {
             fields.push(syn::FieldValue {
                 attrs: vec![],
                 ident: ident("body"),
-                expr: syn::ExprKind::Call(Box::new(syn::ExprKind::Path(None, path_segments(vec![(types::body::ident(), vec![], vec![]), 
-                                                                                                ("new", vec![], vec![])])).into()), 
-                                          vec![syn::ExprKind::Path(None, path_none(body_ident.as_ref())).into()]).into(),
+                expr: syn::ExprKind::Path(None, path_none(body_ident.as_ref())).into(),
                 is_shorthand: false,
             });
         }
@@ -210,12 +208,12 @@ impl RequestParamsCtorBuilder {
             })
             .collect();
 
-        // Body arg: `body: R`.
+        // Body arg: `body: B`.
         if let Some(ref body) = ctor.body_field {
             args.push({
                 let (ref name, _) = *body;
 
-                syn::FnArg::Captured(syn::Pat::Path(None, path_none(&name.to_string())), ty(types::body::generic_ident()))
+                syn::FnArg::Captured(syn::Pat::Path(None, path_none(&name.to_string())), types::body::ty())
             });
         }
 
@@ -398,17 +396,17 @@ pub mod tests {
 
     #[test]
     fn gen_request_ctor_body() {
-        let req_ty = ty_path("Request", vec![lifetime()], vec![ty(types::body::generic_ident())]);
+        let req_ty = ty_path("Request", vec![lifetime()], vec![types::body::ty()]);
         let result = RequestParamsCtorBuilder::new(true, req_ty, ty_a("UrlParams"))
             .with_constructor(vec![])
             .build();
 
         let expected = quote!(
-            impl <'a, R> Request<'a, R> {
-                pub fn new(body: R) -> Self {
+            impl <'a, B> Request<'a, B> {
+                pub fn new(body: B) -> Self {
                     Request {
                         url: UrlParams::None.url(),
-                        body: Body::new(body)
+                        body: body
                     }
                 }
             }
@@ -419,7 +417,7 @@ pub mod tests {
 
     #[test]
     fn gen_request_ctor_params_body() {
-        let req_ty = ty_path("Request", vec![lifetime()], vec![ty(types::body::generic_ident())]);
+        let req_ty = ty_path("Request", vec![lifetime()], vec![types::body::ty()]);
         let result = RequestParamsCtorBuilder::new(true, req_ty, ty_a("UrlParams"))
             .with_constructor(vec![
                 "Index".into(),
@@ -429,15 +427,15 @@ pub mod tests {
             .build();
 
         let expected = quote!(
-            impl <'a, R> Request<'a, R> {
-                pub fn for_index_ty_id<IIndex, IType, IId>(index: IIndex, ty: IType, id: IId, body: R) -> Self 
+            impl <'a, B> Request<'a, B> {
+                pub fn for_index_ty_id<IIndex, IType, IId>(index: IIndex, ty: IType, id: IId, body: B) -> Self 
                     where IIndex: Into<Index<'a> >,
                           IType: Into<Type<'a> >,
                           IId: Into<Id<'a> >
                 {
                     Request {
                         url: UrlParams::IndexTypeId(index.into(), ty.into(), id.into()).url(),
-                        body: Body::new(body)
+                        body: body
                     }
                 }
             }
@@ -459,36 +457,36 @@ pub mod tests {
             body: Some(Body { description: String::new() }),
         });
 
-        let req_ty = ty_path("IndicesExistsAliasRequest", vec![lifetime()], vec![ty(types::body::generic_ident())]);
+        let req_ty = ty_path("IndicesExistsAliasRequest", vec![lifetime()], vec![types::body::ty()]);
         let url_params = UrlParamBuilder::from(&endpoint).build();
 
         let result = RequestParamsCtorBuilder::from((&endpoint, &req_ty, &url_params)).build();
 
         let expected = quote!(
-            impl <'a, R> IndicesExistsAliasRequest <'a, R> { 
-                pub fn new(body: R) -> Self { 
+            impl <'a, B> IndicesExistsAliasRequest <'a, B> { 
+                pub fn new(body: B) -> Self { 
                     IndicesExistsAliasRequest { 
                         url : IndicesExistsAliasUrlParams::None.url(),
-                        body: Body::new(body)
+                        body: body
                     }
                 }
 
-                pub fn for_index<IIndex>(index: IIndex, body: R) -> Self
+                pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
                     where IIndex: Into<Index<'a> >
                 { 
                     IndicesExistsAliasRequest { 
                         url : IndicesExistsAliasUrlParams::Index(index.into()).url(),
-                        body: Body::new(body)
+                        body: body
                     }
                 }
 
-                pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: R) -> Self
+                pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: B) -> Self
                     where IIndex: Into<Index<'a> >,
                           IType: Into<Type<'a> >
                 { 
                     IndicesExistsAliasRequest { 
                         url : IndicesExistsAliasUrlParams::IndexType(index.into(), ty.into()).url(),
-                        body: Body::new(body)
+                        body: body
                     }
                 }
             }

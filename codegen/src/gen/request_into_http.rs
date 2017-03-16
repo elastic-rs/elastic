@@ -32,7 +32,7 @@ impl RequestIntoHttpRequestBuilder {
         };
 
         if self.has_body {
-            let generic_body = ident(types::body::generic_ident());
+            let generic_body = ident(types::body::ident());
             quote!(
                 impl <'a, #generic_body> Into<HttpRequest<'a, #generic_body> > for #req_ty {
                     fn into(self) -> HttpRequest<'a, #generic_body> {
@@ -88,13 +88,13 @@ mod tests {
             url: get_url(),
             body: Some(Body { description: String::new() }),
         });
-        let req_ty = ty_path("Request", vec![lifetime()], vec![ty(::gen::types::body::generic_ident())]);
+        let req_ty = ty_path("Request", vec![lifetime()], vec![types::body::ty()]);
 
         let result = RequestIntoHttpRequestBuilder::from((&endpoint, &req_ty)).build();
 
         let expected = quote!(
-            impl <'a, R> Into<HttpRequest<'a, R> > for Request<'a, R> {
-                fn into(self) -> HttpRequest<'a, R> {
+            impl <'a, B> Into<HttpRequest<'a, B> > for Request<'a, B> {
+                fn into(self) -> HttpRequest<'a, B> {
                     HttpRequest {
                         url: self.url,
                         method: HttpMethod::Get,

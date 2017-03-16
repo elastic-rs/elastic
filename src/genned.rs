@@ -22,22 +22,22 @@ pub mod endpoints {
         }
     }
     # [ derive ( Debug , PartialEq , Clone ) ]
-    pub struct IndicesCloseRequest<'a, R> {
+    pub struct IndicesCloseRequest<'a, B> {
         pub url: Url<'a>,
-        pub body: Body<R>,
+        pub body: B,
     }
-    impl<'a, R> IndicesCloseRequest<'a, R> {
-        pub fn for_index<IIndex>(index: IIndex, body: R) -> Self
+    impl<'a, B> IndicesCloseRequest<'a, B> {
+        pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
             where IIndex: Into<Index<'a>>
         {
             IndicesCloseRequest {
                 url: IndicesCloseUrlParams::Index(index.into()).url(),
-                body: Body::new(body),
+                body: body,
             }
         }
     }
-    impl<'a, R> Into<HttpRequest<'a, R>> for IndicesCloseRequest<'a, R> {
-        fn into(self) -> HttpRequest<'a, R> {
+    impl<'a, B> Into<HttpRequest<'a, B>> for IndicesCloseRequest<'a, B> {
+        fn into(self) -> HttpRequest<'a, B> {
             HttpRequest {
                 url: self.url,
                 method: HttpMethod::Post,
@@ -117,24 +117,24 @@ pub mod endpoints {
         }
     }
     # [ derive ( Debug , PartialEq , Clone ) ]
-    pub struct TermvectorsRequest<'a, R> {
+    pub struct TermvectorsRequest<'a, B> {
         pub url: Url<'a>,
-        pub body: Body<R>,
+        pub body: B,
     }
-    impl<'a, R> TermvectorsRequest<'a, R> {
-        pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: R) -> Self
+    impl<'a, B> TermvectorsRequest<'a, B> {
+        pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: B) -> Self
             where IIndex: Into<Index<'a>>,
                   IType: Into<Type<'a>>
         {
             TermvectorsRequest {
                 url: TermvectorsUrlParams::IndexType(index.into(), ty.into()).url(),
-                body: Body::new(body),
+                body: body,
             }
         }
         pub fn for_index_ty_id<IIndex, IType, IId>(index: IIndex,
                                                    ty: IType,
                                                    id: IId,
-                                                   body: R)
+                                                   body: B)
                                                    -> Self
             where IIndex: Into<Index<'a>>,
                   IType: Into<Type<'a>>,
@@ -142,12 +142,12 @@ pub mod endpoints {
         {
             TermvectorsRequest {
                 url: TermvectorsUrlParams::IndexTypeId(index.into(), ty.into(), id.into()).url(),
-                body: Body::new(body),
+                body: body,
             }
         }
     }
-    impl<'a, R> Into<HttpRequest<'a, R>> for TermvectorsRequest<'a, R> {
-        fn into(self) -> HttpRequest<'a, R> {
+    impl<'a, B> Into<HttpRequest<'a, B>> for TermvectorsRequest<'a, B> {
+        fn into(self) -> HttpRequest<'a, B> {
             HttpRequest {
                 url: self.url,
                 method: HttpMethod::Post,
@@ -175,28 +175,28 @@ pub mod endpoints {
         }
     }
     # [ derive ( Debug , PartialEq , Clone ) ]
-    pub struct FieldStatsRequest<'a, R> {
+    pub struct FieldStatsRequest<'a, B> {
         pub url: Url<'a>,
-        pub body: Body<R>,
+        pub body: B,
     }
-    impl<'a, R> FieldStatsRequest<'a, R> {
-        pub fn new(body: R) -> Self {
+    impl<'a, B> FieldStatsRequest<'a, B> {
+        pub fn new(body: B) -> Self {
             FieldStatsRequest {
                 url: FieldStatsUrlParams::None.url(),
-                body: Body::new(body),
+                body: body,
             }
         }
-        pub fn for_index<IIndex>(index: IIndex, body: R) -> Self
+        pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
             where IIndex: Into<Index<'a>>
         {
             FieldStatsRequest {
                 url: FieldStatsUrlParams::Index(index.into()).url(),
-                body: Body::new(body),
+                body: body,
             }
         }
     }
-    impl<'a, R> Into<HttpRequest<'a, R>> for FieldStatsRequest<'a, R> {
-        fn into(self) -> HttpRequest<'a, R> {
+    impl<'a, B> Into<HttpRequest<'a, B>> for FieldStatsRequest<'a, B> {
+        fn into(self) -> HttpRequest<'a, B> {
             HttpRequest {
                 url: self.url,
                 method: HttpMethod::Post,
@@ -386,15 +386,15 @@ pub mod endpoints {
         }
     }
     # [ derive ( Debug , PartialEq , Clone ) ]
-    pub struct CreateRequest<'a, R> {
+    pub struct CreateRequest<'a, B> {
         pub url: Url<'a>,
-        pub body: Body<R>,
+        pub body: B,
     }
-    impl<'a, R> CreateRequest<'a, R> {
+    impl<'a, B> CreateRequest<'a, B> {
         pub fn for_index_ty_id<IIndex, IType, IId>(index: IIndex,
                                                    ty: IType,
                                                    id: IId,
-                                                   body: R)
+                                                   body: B)
                                                    -> Self
             where IIndex: Into<Index<'a>>,
                   IType: Into<Type<'a>>,
@@ -402,12 +402,12 @@ pub mod endpoints {
         {
             CreateRequest {
                 url: CreateUrlParams::IndexTypeId(index.into(), ty.into(), id.into()).url(),
-                body: Body::new(body),
+                body: body,
             }
         }
     }
-    impl<'a, R> Into<HttpRequest<'a, R>> for CreateRequest<'a, R> {
-        fn into(self) -> HttpRequest<'a, R> {
+    impl<'a, B> Into<HttpRequest<'a, B>> for CreateRequest<'a, B> {
+        fn into(self) -> HttpRequest<'a, B> {
             HttpRequest {
                 url: self.url,
                 method: HttpMethod::Post,
@@ -465,20 +465,20 @@ pub mod endpoints {
         }
     }
     # [ derive ( Debug , PartialEq , Clone ) ]
-    pub struct ClusterAllocationExplainRequest<'a, R> {
+    pub struct ClusterAllocationExplainRequest<'a, B> {
         pub url: Url<'a>,
-        pub body: Body<R>,
+        pub body: B,
     }
-    impl<'a, R> ClusterAllocationExplainRequest<'a, R> {
-        pub fn new(body: R) -> Self {
+    impl<'a, B> ClusterAllocationExplainRequest<'a, B> {
+        pub fn new(body: B) -> Self {
             ClusterAllocationExplainRequest {
                 url: ClusterAllocationExplainUrlParams::None.url(),
-                body: Body::new(body),
+                body: body,
             }
         }
     }
-    impl<'a, R> Into<HttpRequest<'a, R>> for ClusterAllocationExplainRequest<'a, R> {
-        fn into(self) -> HttpRequest<'a, R> {
+    impl<'a, B> Into<HttpRequest<'a, B>> for ClusterAllocationExplainRequest<'a, B> {
+        fn into(self) -> HttpRequest<'a, B> {
             HttpRequest {
                 url: self.url,
                 method: HttpMethod::Post,
@@ -503,22 +503,22 @@ pub mod endpoints {
         }
     }
     # [ derive ( Debug , PartialEq , Clone ) ]
-    pub struct IndicesPutTemplateRequest<'a, R> {
+    pub struct IndicesPutTemplateRequest<'a, B> {
         pub url: Url<'a>,
-        pub body: Body<R>,
+        pub body: B,
     }
-    impl<'a, R> IndicesPutTemplateRequest<'a, R> {
-        pub fn for_name<IName>(name: IName, body: R) -> Self
+    impl<'a, B> IndicesPutTemplateRequest<'a, B> {
+        pub fn for_name<IName>(name: IName, body: B) -> Self
             where IName: Into<Name<'a>>
         {
             IndicesPutTemplateRequest {
                 url: IndicesPutTemplateUrlParams::Name(name.into()).url(),
-                body: Body::new(body),
+                body: body,
             }
         }
     }
-    impl<'a, R> Into<HttpRequest<'a, R>> for IndicesPutTemplateRequest<'a, R> {
-        fn into(self) -> HttpRequest<'a, R> {
+    impl<'a, B> Into<HttpRequest<'a, B>> for IndicesPutTemplateRequest<'a, B> {
+        fn into(self) -> HttpRequest<'a, B> {
             HttpRequest {
                 url: self.url,
                 method: HttpMethod::Post,
@@ -655,37 +655,37 @@ pub mod endpoints {
         }
     }
     # [ derive ( Debug , PartialEq , Clone ) ]
-    pub struct MsearchTemplateRequest<'a, R> {
+    pub struct MsearchTemplateRequest<'a, B> {
         pub url: Url<'a>,
-        pub body: Body<R>,
+        pub body: B,
     }
-    impl<'a, R> MsearchTemplateRequest<'a, R> {
-        pub fn new(body: R) -> Self {
+    impl<'a, B> MsearchTemplateRequest<'a, B> {
+        pub fn new(body: B) -> Self {
             MsearchTemplateRequest {
                 url: MsearchTemplateUrlParams::None.url(),
-                body: Body::new(body),
+                body: body,
             }
         }
-        pub fn for_index<IIndex>(index: IIndex, body: R) -> Self
+        pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
             where IIndex: Into<Index<'a>>
         {
             MsearchTemplateRequest {
                 url: MsearchTemplateUrlParams::Index(index.into()).url(),
-                body: Body::new(body),
+                body: body,
             }
         }
-        pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: R) -> Self
+        pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: B) -> Self
             where IIndex: Into<Index<'a>>,
                   IType: Into<Type<'a>>
         {
             MsearchTemplateRequest {
                 url: MsearchTemplateUrlParams::IndexType(index.into(), ty.into()).url(),
-                body: Body::new(body),
+                body: body,
             }
         }
     }
-    impl<'a, R> Into<HttpRequest<'a, R>> for MsearchTemplateRequest<'a, R> {
-        fn into(self) -> HttpRequest<'a, R> {
+    impl<'a, B> Into<HttpRequest<'a, B>> for MsearchTemplateRequest<'a, B> {
+        fn into(self) -> HttpRequest<'a, B> {
             HttpRequest {
                 url: self.url,
                 method: HttpMethod::Post,
@@ -723,37 +723,37 @@ pub mod endpoints {
         }
     }
     # [ derive ( Debug , PartialEq , Clone ) ]
-    pub struct BulkRequest<'a, R> {
+    pub struct BulkRequest<'a, B> {
         pub url: Url<'a>,
-        pub body: Body<R>,
+        pub body: B,
     }
-    impl<'a, R> BulkRequest<'a, R> {
-        pub fn new(body: R) -> Self {
+    impl<'a, B> BulkRequest<'a, B> {
+        pub fn new(body: B) -> Self {
             BulkRequest {
                 url: BulkUrlParams::None.url(),
-                body: Body::new(body),
+                body: body,
             }
         }
-        pub fn for_index<IIndex>(index: IIndex, body: R) -> Self
+        pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
             where IIndex: Into<Index<'a>>
         {
             BulkRequest {
                 url: BulkUrlParams::Index(index.into()).url(),
-                body: Body::new(body),
+                body: body,
             }
         }
-        pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: R) -> Self
+        pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: B) -> Self
             where IIndex: Into<Index<'a>>,
                   IType: Into<Type<'a>>
         {
             BulkRequest {
                 url: BulkUrlParams::IndexType(index.into(), ty.into()).url(),
-                body: Body::new(body),
+                body: body,
             }
         }
     }
-    impl<'a, R> Into<HttpRequest<'a, R>> for BulkRequest<'a, R> {
-        fn into(self) -> HttpRequest<'a, R> {
+    impl<'a, B> Into<HttpRequest<'a, B>> for BulkRequest<'a, B> {
+        fn into(self) -> HttpRequest<'a, B> {
             HttpRequest {
                 url: self.url,
                 method: HttpMethod::Post,
@@ -784,15 +784,15 @@ pub mod endpoints {
         }
     }
     # [ derive ( Debug , PartialEq , Clone ) ]
-    pub struct ExplainRequest<'a, R> {
+    pub struct ExplainRequest<'a, B> {
         pub url: Url<'a>,
-        pub body: Body<R>,
+        pub body: B,
     }
-    impl<'a, R> ExplainRequest<'a, R> {
+    impl<'a, B> ExplainRequest<'a, B> {
         pub fn for_index_ty_id<IIndex, IType, IId>(index: IIndex,
                                                    ty: IType,
                                                    id: IId,
-                                                   body: R)
+                                                   body: B)
                                                    -> Self
             where IIndex: Into<Index<'a>>,
                   IType: Into<Type<'a>>,
@@ -800,12 +800,12 @@ pub mod endpoints {
         {
             ExplainRequest {
                 url: ExplainUrlParams::IndexTypeId(index.into(), ty.into(), id.into()).url(),
-                body: Body::new(body),
+                body: body,
             }
         }
     }
-    impl<'a, R> Into<HttpRequest<'a, R>> for ExplainRequest<'a, R> {
-        fn into(self) -> HttpRequest<'a, R> {
+    impl<'a, B> Into<HttpRequest<'a, B>> for ExplainRequest<'a, B> {
+        fn into(self) -> HttpRequest<'a, B> {
             HttpRequest {
                 url: self.url,
                 method: HttpMethod::Post,
@@ -833,28 +833,28 @@ pub mod endpoints {
         }
     }
     # [ derive ( Debug , PartialEq , Clone ) ]
-    pub struct SuggestRequest<'a, R> {
+    pub struct SuggestRequest<'a, B> {
         pub url: Url<'a>,
-        pub body: Body<R>,
+        pub body: B,
     }
-    impl<'a, R> SuggestRequest<'a, R> {
-        pub fn new(body: R) -> Self {
+    impl<'a, B> SuggestRequest<'a, B> {
+        pub fn new(body: B) -> Self {
             SuggestRequest {
                 url: SuggestUrlParams::None.url(),
-                body: Body::new(body),
+                body: body,
             }
         }
-        pub fn for_index<IIndex>(index: IIndex, body: R) -> Self
+        pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
             where IIndex: Into<Index<'a>>
         {
             SuggestRequest {
                 url: SuggestUrlParams::Index(index.into()).url(),
-                body: Body::new(body),
+                body: body,
             }
         }
     }
-    impl<'a, R> Into<HttpRequest<'a, R>> for SuggestRequest<'a, R> {
-        fn into(self) -> HttpRequest<'a, R> {
+    impl<'a, B> Into<HttpRequest<'a, B>> for SuggestRequest<'a, B> {
+        fn into(self) -> HttpRequest<'a, B> {
             HttpRequest {
                 url: self.url,
                 method: HttpMethod::Post,
@@ -924,28 +924,28 @@ pub mod endpoints {
         }
     }
     # [ derive ( Debug , PartialEq , Clone ) ]
-    pub struct RenderSearchTemplateRequest<'a, R> {
+    pub struct RenderSearchTemplateRequest<'a, B> {
         pub url: Url<'a>,
-        pub body: Body<R>,
+        pub body: B,
     }
-    impl<'a, R> RenderSearchTemplateRequest<'a, R> {
-        pub fn new(body: R) -> Self {
+    impl<'a, B> RenderSearchTemplateRequest<'a, B> {
+        pub fn new(body: B) -> Self {
             RenderSearchTemplateRequest {
                 url: RenderSearchTemplateUrlParams::None.url(),
-                body: Body::new(body),
+                body: body,
             }
         }
-        pub fn for_id<IId>(id: IId, body: R) -> Self
+        pub fn for_id<IId>(id: IId, body: B) -> Self
             where IId: Into<Id<'a>>
         {
             RenderSearchTemplateRequest {
                 url: RenderSearchTemplateUrlParams::Id(id.into()).url(),
-                body: Body::new(body),
+                body: body,
             }
         }
     }
-    impl<'a, R> Into<HttpRequest<'a, R>> for RenderSearchTemplateRequest<'a, R> {
-        fn into(self) -> HttpRequest<'a, R> {
+    impl<'a, B> Into<HttpRequest<'a, B>> for RenderSearchTemplateRequest<'a, B> {
+        fn into(self) -> HttpRequest<'a, B> {
             HttpRequest {
                 url: self.url,
                 method: HttpMethod::Post,
@@ -1073,28 +1073,28 @@ pub mod endpoints {
         }
     }
     # [ derive ( Debug , PartialEq , Clone ) ]
-    pub struct IndicesForcemergeRequest<'a, R> {
+    pub struct IndicesForcemergeRequest<'a, B> {
         pub url: Url<'a>,
-        pub body: Body<R>,
+        pub body: B,
     }
-    impl<'a, R> IndicesForcemergeRequest<'a, R> {
-        pub fn new(body: R) -> Self {
+    impl<'a, B> IndicesForcemergeRequest<'a, B> {
+        pub fn new(body: B) -> Self {
             IndicesForcemergeRequest {
                 url: IndicesForcemergeUrlParams::None.url(),
-                body: Body::new(body),
+                body: body,
             }
         }
-        pub fn for_index<IIndex>(index: IIndex, body: R) -> Self
+        pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
             where IIndex: Into<Index<'a>>
         {
             IndicesForcemergeRequest {
                 url: IndicesForcemergeUrlParams::Index(index.into()).url(),
-                body: Body::new(body),
+                body: body,
             }
         }
     }
-    impl<'a, R> Into<HttpRequest<'a, R>> for IndicesForcemergeRequest<'a, R> {
-        fn into(self) -> HttpRequest<'a, R> {
+    impl<'a, B> Into<HttpRequest<'a, B>> for IndicesForcemergeRequest<'a, B> {
+        fn into(self) -> HttpRequest<'a, B> {
             HttpRequest {
                 url: self.url,
                 method: HttpMethod::Post,
@@ -1223,28 +1223,28 @@ pub mod endpoints {
         }
     }
     # [ derive ( Debug , PartialEq , Clone ) ]
-    pub struct IndicesFlushSyncedRequest<'a, R> {
+    pub struct IndicesFlushSyncedRequest<'a, B> {
         pub url: Url<'a>,
-        pub body: Body<R>,
+        pub body: B,
     }
-    impl<'a, R> IndicesFlushSyncedRequest<'a, R> {
-        pub fn new(body: R) -> Self {
+    impl<'a, B> IndicesFlushSyncedRequest<'a, B> {
+        pub fn new(body: B) -> Self {
             IndicesFlushSyncedRequest {
                 url: IndicesFlushSyncedUrlParams::None.url(),
-                body: Body::new(body),
+                body: body,
             }
         }
-        pub fn for_index<IIndex>(index: IIndex, body: R) -> Self
+        pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
             where IIndex: Into<Index<'a>>
         {
             IndicesFlushSyncedRequest {
                 url: IndicesFlushSyncedUrlParams::Index(index.into()).url(),
-                body: Body::new(body),
+                body: body,
             }
         }
     }
-    impl<'a, R> Into<HttpRequest<'a, R>> for IndicesFlushSyncedRequest<'a, R> {
-        fn into(self) -> HttpRequest<'a, R> {
+    impl<'a, B> Into<HttpRequest<'a, B>> for IndicesFlushSyncedRequest<'a, B> {
+        fn into(self) -> HttpRequest<'a, B> {
             HttpRequest {
                 url: self.url,
                 method: HttpMethod::Post,
@@ -1282,37 +1282,37 @@ pub mod endpoints {
         }
     }
     # [ derive ( Debug , PartialEq , Clone ) ]
-    pub struct MsearchRequest<'a, R> {
+    pub struct MsearchRequest<'a, B> {
         pub url: Url<'a>,
-        pub body: Body<R>,
+        pub body: B,
     }
-    impl<'a, R> MsearchRequest<'a, R> {
-        pub fn new(body: R) -> Self {
+    impl<'a, B> MsearchRequest<'a, B> {
+        pub fn new(body: B) -> Self {
             MsearchRequest {
                 url: MsearchUrlParams::None.url(),
-                body: Body::new(body),
+                body: body,
             }
         }
-        pub fn for_index<IIndex>(index: IIndex, body: R) -> Self
+        pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
             where IIndex: Into<Index<'a>>
         {
             MsearchRequest {
                 url: MsearchUrlParams::Index(index.into()).url(),
-                body: Body::new(body),
+                body: body,
             }
         }
-        pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: R) -> Self
+        pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: B) -> Self
             where IIndex: Into<Index<'a>>,
                   IType: Into<Type<'a>>
         {
             MsearchRequest {
                 url: MsearchUrlParams::IndexType(index.into(), ty.into()).url(),
-                body: Body::new(body),
+                body: body,
             }
         }
     }
-    impl<'a, R> Into<HttpRequest<'a, R>> for MsearchRequest<'a, R> {
-        fn into(self) -> HttpRequest<'a, R> {
+    impl<'a, B> Into<HttpRequest<'a, B>> for MsearchRequest<'a, B> {
+        fn into(self) -> HttpRequest<'a, B> {
             HttpRequest {
                 url: self.url,
                 method: HttpMethod::Post,
@@ -1379,37 +1379,37 @@ pub mod endpoints {
         }
     }
     # [ derive ( Debug , PartialEq , Clone ) ]
-    pub struct SearchTemplateRequest<'a, R> {
+    pub struct SearchTemplateRequest<'a, B> {
         pub url: Url<'a>,
-        pub body: Body<R>,
+        pub body: B,
     }
-    impl<'a, R> SearchTemplateRequest<'a, R> {
-        pub fn new(body: R) -> Self {
+    impl<'a, B> SearchTemplateRequest<'a, B> {
+        pub fn new(body: B) -> Self {
             SearchTemplateRequest {
                 url: SearchTemplateUrlParams::None.url(),
-                body: Body::new(body),
+                body: body,
             }
         }
-        pub fn for_index<IIndex>(index: IIndex, body: R) -> Self
+        pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
             where IIndex: Into<Index<'a>>
         {
             SearchTemplateRequest {
                 url: SearchTemplateUrlParams::Index(index.into()).url(),
-                body: Body::new(body),
+                body: body,
             }
         }
-        pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: R) -> Self
+        pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: B) -> Self
             where IIndex: Into<Index<'a>>,
                   IType: Into<Type<'a>>
         {
             SearchTemplateRequest {
                 url: SearchTemplateUrlParams::IndexType(index.into(), ty.into()).url(),
-                body: Body::new(body),
+                body: body,
             }
         }
     }
-    impl<'a, R> Into<HttpRequest<'a, R>> for SearchTemplateRequest<'a, R> {
-        fn into(self) -> HttpRequest<'a, R> {
+    impl<'a, B> Into<HttpRequest<'a, B>> for SearchTemplateRequest<'a, B> {
+        fn into(self) -> HttpRequest<'a, B> {
             HttpRequest {
                 url: self.url,
                 method: HttpMethod::Post,
@@ -1481,31 +1481,31 @@ pub mod endpoints {
         }
     }
     # [ derive ( Debug , PartialEq , Clone ) ]
-    pub struct DeleteByQueryRequest<'a, R> {
+    pub struct DeleteByQueryRequest<'a, B> {
         pub url: Url<'a>,
-        pub body: Body<R>,
+        pub body: B,
     }
-    impl<'a, R> DeleteByQueryRequest<'a, R> {
-        pub fn for_index<IIndex>(index: IIndex, body: R) -> Self
+    impl<'a, B> DeleteByQueryRequest<'a, B> {
+        pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
             where IIndex: Into<Index<'a>>
         {
             DeleteByQueryRequest {
                 url: DeleteByQueryUrlParams::Index(index.into()).url(),
-                body: Body::new(body),
+                body: body,
             }
         }
-        pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: R) -> Self
+        pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: B) -> Self
             where IIndex: Into<Index<'a>>,
                   IType: Into<Type<'a>>
         {
             DeleteByQueryRequest {
                 url: DeleteByQueryUrlParams::IndexType(index.into(), ty.into()).url(),
-                body: Body::new(body),
+                body: body,
             }
         }
     }
-    impl<'a, R> Into<HttpRequest<'a, R>> for DeleteByQueryRequest<'a, R> {
-        fn into(self) -> HttpRequest<'a, R> {
+    impl<'a, B> Into<HttpRequest<'a, B>> for DeleteByQueryRequest<'a, B> {
+        fn into(self) -> HttpRequest<'a, B> {
             HttpRequest {
                 url: self.url,
                 method: HttpMethod::Post,
@@ -1566,22 +1566,22 @@ pub mod endpoints {
         }
     }
     # [ derive ( Debug , PartialEq , Clone ) ]
-    pub struct IndicesCreateRequest<'a, R> {
+    pub struct IndicesCreateRequest<'a, B> {
         pub url: Url<'a>,
-        pub body: Body<R>,
+        pub body: B,
     }
-    impl<'a, R> IndicesCreateRequest<'a, R> {
-        pub fn for_index<IIndex>(index: IIndex, body: R) -> Self
+    impl<'a, B> IndicesCreateRequest<'a, B> {
+        pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
             where IIndex: Into<Index<'a>>
         {
             IndicesCreateRequest {
                 url: IndicesCreateUrlParams::Index(index.into()).url(),
-                body: Body::new(body),
+                body: body,
             }
         }
     }
-    impl<'a, R> Into<HttpRequest<'a, R>> for IndicesCreateRequest<'a, R> {
-        fn into(self) -> HttpRequest<'a, R> {
+    impl<'a, B> Into<HttpRequest<'a, B>> for IndicesCreateRequest<'a, B> {
+        fn into(self) -> HttpRequest<'a, B> {
             HttpRequest {
                 url: self.url,
                 method: HttpMethod::Put,
@@ -1622,24 +1622,24 @@ pub mod endpoints {
         }
     }
     # [ derive ( Debug , PartialEq , Clone ) ]
-    pub struct PercolateRequest<'a, R> {
+    pub struct PercolateRequest<'a, B> {
         pub url: Url<'a>,
-        pub body: Body<R>,
+        pub body: B,
     }
-    impl<'a, R> PercolateRequest<'a, R> {
-        pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: R) -> Self
+    impl<'a, B> PercolateRequest<'a, B> {
+        pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: B) -> Self
             where IIndex: Into<Index<'a>>,
                   IType: Into<Type<'a>>
         {
             PercolateRequest {
                 url: PercolateUrlParams::IndexType(index.into(), ty.into()).url(),
-                body: Body::new(body),
+                body: body,
             }
         }
         pub fn for_index_ty_id<IIndex, IType, IId>(index: IIndex,
                                                    ty: IType,
                                                    id: IId,
-                                                   body: R)
+                                                   body: B)
                                                    -> Self
             where IIndex: Into<Index<'a>>,
                   IType: Into<Type<'a>>,
@@ -1647,12 +1647,12 @@ pub mod endpoints {
         {
             PercolateRequest {
                 url: PercolateUrlParams::IndexTypeId(index.into(), ty.into(), id.into()).url(),
-                body: Body::new(body),
+                body: body,
             }
         }
     }
-    impl<'a, R> Into<HttpRequest<'a, R>> for PercolateRequest<'a, R> {
-        fn into(self) -> HttpRequest<'a, R> {
+    impl<'a, B> Into<HttpRequest<'a, B>> for PercolateRequest<'a, B> {
+        fn into(self) -> HttpRequest<'a, B> {
             HttpRequest {
                 url: self.url,
                 method: HttpMethod::Post,
@@ -1690,37 +1690,37 @@ pub mod endpoints {
         }
     }
     # [ derive ( Debug , PartialEq , Clone ) ]
-    pub struct SearchRequest<'a, R> {
+    pub struct SearchRequest<'a, B> {
         pub url: Url<'a>,
-        pub body: Body<R>,
+        pub body: B,
     }
-    impl<'a, R> SearchRequest<'a, R> {
-        pub fn new(body: R) -> Self {
+    impl<'a, B> SearchRequest<'a, B> {
+        pub fn new(body: B) -> Self {
             SearchRequest {
                 url: SearchUrlParams::None.url(),
-                body: Body::new(body),
+                body: body,
             }
         }
-        pub fn for_index<IIndex>(index: IIndex, body: R) -> Self
+        pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
             where IIndex: Into<Index<'a>>
         {
             SearchRequest {
                 url: SearchUrlParams::Index(index.into()).url(),
-                body: Body::new(body),
+                body: body,
             }
         }
-        pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: R) -> Self
+        pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: B) -> Self
             where IIndex: Into<Index<'a>>,
                   IType: Into<Type<'a>>
         {
             SearchRequest {
                 url: SearchUrlParams::IndexType(index.into(), ty.into()).url(),
-                body: Body::new(body),
+                body: body,
             }
         }
     }
-    impl<'a, R> Into<HttpRequest<'a, R>> for SearchRequest<'a, R> {
-        fn into(self) -> HttpRequest<'a, R> {
+    impl<'a, B> Into<HttpRequest<'a, B>> for SearchRequest<'a, B> {
+        fn into(self) -> HttpRequest<'a, B> {
             HttpRequest {
                 url: self.url,
                 method: HttpMethod::Post,
@@ -1775,22 +1775,22 @@ pub mod endpoints {
         }
     }
     # [ derive ( Debug , PartialEq , Clone ) ]
-    pub struct SnapshotVerifyRepositoryRequest<'a, R> {
+    pub struct SnapshotVerifyRepositoryRequest<'a, B> {
         pub url: Url<'a>,
-        pub body: Body<R>,
+        pub body: B,
     }
-    impl<'a, R> SnapshotVerifyRepositoryRequest<'a, R> {
-        pub fn for_repository<IRepository>(repository: IRepository, body: R) -> Self
+    impl<'a, B> SnapshotVerifyRepositoryRequest<'a, B> {
+        pub fn for_repository<IRepository>(repository: IRepository, body: B) -> Self
             where IRepository: Into<Repository<'a>>
         {
             SnapshotVerifyRepositoryRequest {
                 url: SnapshotVerifyRepositoryUrlParams::Repository(repository.into()).url(),
-                body: Body::new(body),
+                body: body,
             }
         }
     }
-    impl<'a, R> Into<HttpRequest<'a, R>> for SnapshotVerifyRepositoryRequest<'a, R> {
-        fn into(self) -> HttpRequest<'a, R> {
+    impl<'a, B> Into<HttpRequest<'a, B>> for SnapshotVerifyRepositoryRequest<'a, B> {
+        fn into(self) -> HttpRequest<'a, B> {
             HttpRequest {
                 url: self.url,
                 method: HttpMethod::Post,
@@ -1828,37 +1828,37 @@ pub mod endpoints {
         }
     }
     # [ derive ( Debug , PartialEq , Clone ) ]
-    pub struct CountRequest<'a, R> {
+    pub struct CountRequest<'a, B> {
         pub url: Url<'a>,
-        pub body: Body<R>,
+        pub body: B,
     }
-    impl<'a, R> CountRequest<'a, R> {
-        pub fn new(body: R) -> Self {
+    impl<'a, B> CountRequest<'a, B> {
+        pub fn new(body: B) -> Self {
             CountRequest {
                 url: CountUrlParams::None.url(),
-                body: Body::new(body),
+                body: body,
             }
         }
-        pub fn for_index<IIndex>(index: IIndex, body: R) -> Self
+        pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
             where IIndex: Into<Index<'a>>
         {
             CountRequest {
                 url: CountUrlParams::Index(index.into()).url(),
-                body: Body::new(body),
+                body: body,
             }
         }
-        pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: R) -> Self
+        pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: B) -> Self
             where IIndex: Into<Index<'a>>,
                   IType: Into<Type<'a>>
         {
             CountRequest {
                 url: CountUrlParams::IndexType(index.into(), ty.into()).url(),
-                body: Body::new(body),
+                body: body,
             }
         }
     }
-    impl<'a, R> Into<HttpRequest<'a, R>> for CountRequest<'a, R> {
-        fn into(self) -> HttpRequest<'a, R> {
+    impl<'a, B> Into<HttpRequest<'a, B>> for CountRequest<'a, B> {
+        fn into(self) -> HttpRequest<'a, B> {
             HttpRequest {
                 url: self.url,
                 method: HttpMethod::Post,
@@ -1927,28 +1927,28 @@ pub mod endpoints {
         }
     }
     # [ derive ( Debug , PartialEq , Clone ) ]
-    pub struct IndicesFlushRequest<'a, R> {
+    pub struct IndicesFlushRequest<'a, B> {
         pub url: Url<'a>,
-        pub body: Body<R>,
+        pub body: B,
     }
-    impl<'a, R> IndicesFlushRequest<'a, R> {
-        pub fn new(body: R) -> Self {
+    impl<'a, B> IndicesFlushRequest<'a, B> {
+        pub fn new(body: B) -> Self {
             IndicesFlushRequest {
                 url: IndicesFlushUrlParams::None.url(),
-                body: Body::new(body),
+                body: body,
             }
         }
-        pub fn for_index<IIndex>(index: IIndex, body: R) -> Self
+        pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
             where IIndex: Into<Index<'a>>
         {
             IndicesFlushRequest {
                 url: IndicesFlushUrlParams::Index(index.into()).url(),
-                body: Body::new(body),
+                body: body,
             }
         }
     }
-    impl<'a, R> Into<HttpRequest<'a, R>> for IndicesFlushRequest<'a, R> {
-        fn into(self) -> HttpRequest<'a, R> {
+    impl<'a, B> Into<HttpRequest<'a, B>> for IndicesFlushRequest<'a, B> {
+        fn into(self) -> HttpRequest<'a, B> {
             HttpRequest {
                 url: self.url,
                 method: HttpMethod::Post,
@@ -1976,28 +1976,28 @@ pub mod endpoints {
         }
     }
     # [ derive ( Debug , PartialEq , Clone ) ]
-    pub struct IndicesRefreshRequest<'a, R> {
+    pub struct IndicesRefreshRequest<'a, B> {
         pub url: Url<'a>,
-        pub body: Body<R>,
+        pub body: B,
     }
-    impl<'a, R> IndicesRefreshRequest<'a, R> {
-        pub fn new(body: R) -> Self {
+    impl<'a, B> IndicesRefreshRequest<'a, B> {
+        pub fn new(body: B) -> Self {
             IndicesRefreshRequest {
                 url: IndicesRefreshUrlParams::None.url(),
-                body: Body::new(body),
+                body: body,
             }
         }
-        pub fn for_index<IIndex>(index: IIndex, body: R) -> Self
+        pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
             where IIndex: Into<Index<'a>>
         {
             IndicesRefreshRequest {
                 url: IndicesRefreshUrlParams::Index(index.into()).url(),
-                body: Body::new(body),
+                body: body,
             }
         }
     }
-    impl<'a, R> Into<HttpRequest<'a, R>> for IndicesRefreshRequest<'a, R> {
-        fn into(self) -> HttpRequest<'a, R> {
+    impl<'a, B> Into<HttpRequest<'a, B>> for IndicesRefreshRequest<'a, B> {
+        fn into(self) -> HttpRequest<'a, B> {
             HttpRequest {
                 url: self.url,
                 method: HttpMethod::Post,
@@ -2054,28 +2054,28 @@ pub mod endpoints {
         }
     }
     # [ derive ( Debug , PartialEq , Clone ) ]
-    pub struct SearchShardsRequest<'a, R> {
+    pub struct SearchShardsRequest<'a, B> {
         pub url: Url<'a>,
-        pub body: Body<R>,
+        pub body: B,
     }
-    impl<'a, R> SearchShardsRequest<'a, R> {
-        pub fn new(body: R) -> Self {
+    impl<'a, B> SearchShardsRequest<'a, B> {
+        pub fn new(body: B) -> Self {
             SearchShardsRequest {
                 url: SearchShardsUrlParams::None.url(),
-                body: Body::new(body),
+                body: body,
             }
         }
-        pub fn for_index<IIndex>(index: IIndex, body: R) -> Self
+        pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
             where IIndex: Into<Index<'a>>
         {
             SearchShardsRequest {
                 url: SearchShardsUrlParams::Index(index.into()).url(),
-                body: Body::new(body),
+                body: body,
             }
         }
     }
-    impl<'a, R> Into<HttpRequest<'a, R>> for SearchShardsRequest<'a, R> {
-        fn into(self) -> HttpRequest<'a, R> {
+    impl<'a, B> Into<HttpRequest<'a, B>> for SearchShardsRequest<'a, B> {
+        fn into(self) -> HttpRequest<'a, B> {
             HttpRequest {
                 url: self.url,
                 method: HttpMethod::Post,
@@ -2309,22 +2309,22 @@ pub mod endpoints {
         }
     }
     # [ derive ( Debug , PartialEq , Clone ) ]
-    pub struct IngestPutPipelineRequest<'a, R> {
+    pub struct IngestPutPipelineRequest<'a, B> {
         pub url: Url<'a>,
-        pub body: Body<R>,
+        pub body: B,
     }
-    impl<'a, R> IngestPutPipelineRequest<'a, R> {
-        pub fn for_id<IId>(id: IId, body: R) -> Self
+    impl<'a, B> IngestPutPipelineRequest<'a, B> {
+        pub fn for_id<IId>(id: IId, body: B) -> Self
             where IId: Into<Id<'a>>
         {
             IngestPutPipelineRequest {
                 url: IngestPutPipelineUrlParams::Id(id.into()).url(),
-                body: Body::new(body),
+                body: body,
             }
         }
     }
-    impl<'a, R> Into<HttpRequest<'a, R>> for IngestPutPipelineRequest<'a, R> {
-        fn into(self) -> HttpRequest<'a, R> {
+    impl<'a, B> Into<HttpRequest<'a, B>> for IngestPutPipelineRequest<'a, B> {
+        fn into(self) -> HttpRequest<'a, B> {
             HttpRequest {
                 url: self.url,
                 method: HttpMethod::Put,
@@ -2381,28 +2381,28 @@ pub mod endpoints {
         }
     }
     # [ derive ( Debug , PartialEq , Clone ) ]
-    pub struct IngestSimulateRequest<'a, R> {
+    pub struct IngestSimulateRequest<'a, B> {
         pub url: Url<'a>,
-        pub body: Body<R>,
+        pub body: B,
     }
-    impl<'a, R> IngestSimulateRequest<'a, R> {
-        pub fn new(body: R) -> Self {
+    impl<'a, B> IngestSimulateRequest<'a, B> {
+        pub fn new(body: B) -> Self {
             IngestSimulateRequest {
                 url: IngestSimulateUrlParams::None.url(),
-                body: Body::new(body),
+                body: body,
             }
         }
-        pub fn for_id<IId>(id: IId, body: R) -> Self
+        pub fn for_id<IId>(id: IId, body: B) -> Self
             where IId: Into<Id<'a>>
         {
             IngestSimulateRequest {
                 url: IngestSimulateUrlParams::Id(id.into()).url(),
-                body: Body::new(body),
+                body: body,
             }
         }
     }
-    impl<'a, R> Into<HttpRequest<'a, R>> for IngestSimulateRequest<'a, R> {
-        fn into(self) -> HttpRequest<'a, R> {
+    impl<'a, B> Into<HttpRequest<'a, B>> for IngestSimulateRequest<'a, B> {
+        fn into(self) -> HttpRequest<'a, B> {
             HttpRequest {
                 url: self.url,
                 method: HttpMethod::Post,
@@ -2618,28 +2618,28 @@ pub mod endpoints {
         }
     }
     # [ derive ( Debug , PartialEq , Clone ) ]
-    pub struct TasksCancelRequest<'a, R> {
+    pub struct TasksCancelRequest<'a, B> {
         pub url: Url<'a>,
-        pub body: Body<R>,
+        pub body: B,
     }
-    impl<'a, R> TasksCancelRequest<'a, R> {
-        pub fn new(body: R) -> Self {
+    impl<'a, B> TasksCancelRequest<'a, B> {
+        pub fn new(body: B) -> Self {
             TasksCancelRequest {
                 url: TasksCancelUrlParams::None.url(),
-                body: Body::new(body),
+                body: body,
             }
         }
-        pub fn for_task_id<ITaskId>(task_id: ITaskId, body: R) -> Self
+        pub fn for_task_id<ITaskId>(task_id: ITaskId, body: B) -> Self
             where ITaskId: Into<TaskId<'a>>
         {
             TasksCancelRequest {
                 url: TasksCancelUrlParams::TaskId(task_id.into()).url(),
-                body: Body::new(body),
+                body: body,
             }
         }
     }
-    impl<'a, R> Into<HttpRequest<'a, R>> for TasksCancelRequest<'a, R> {
-        fn into(self) -> HttpRequest<'a, R> {
+    impl<'a, B> Into<HttpRequest<'a, B>> for TasksCancelRequest<'a, B> {
+        fn into(self) -> HttpRequest<'a, B> {
             HttpRequest {
                 url: self.url,
                 method: HttpMethod::Post,
@@ -2667,28 +2667,28 @@ pub mod endpoints {
         }
     }
     # [ derive ( Debug , PartialEq , Clone ) ]
-    pub struct IndicesClearCacheRequest<'a, R> {
+    pub struct IndicesClearCacheRequest<'a, B> {
         pub url: Url<'a>,
-        pub body: Body<R>,
+        pub body: B,
     }
-    impl<'a, R> IndicesClearCacheRequest<'a, R> {
-        pub fn new(body: R) -> Self {
+    impl<'a, B> IndicesClearCacheRequest<'a, B> {
+        pub fn new(body: B) -> Self {
             IndicesClearCacheRequest {
                 url: IndicesClearCacheUrlParams::None.url(),
-                body: Body::new(body),
+                body: body,
             }
         }
-        pub fn for_index<IIndex>(index: IIndex, body: R) -> Self
+        pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
             where IIndex: Into<Index<'a>>
         {
             IndicesClearCacheRequest {
                 url: IndicesClearCacheUrlParams::Index(index.into()).url(),
-                body: Body::new(body),
+                body: body,
             }
         }
     }
-    impl<'a, R> Into<HttpRequest<'a, R>> for IndicesClearCacheRequest<'a, R> {
-        fn into(self) -> HttpRequest<'a, R> {
+    impl<'a, B> Into<HttpRequest<'a, B>> for IndicesClearCacheRequest<'a, B> {
+        fn into(self) -> HttpRequest<'a, B> {
             HttpRequest {
                 url: self.url,
                 method: HttpMethod::Post,
@@ -2766,31 +2766,31 @@ pub mod endpoints {
         }
     }
     # [ derive ( Debug , PartialEq , Clone ) ]
-    pub struct IndicesPutMappingRequest<'a, R> {
+    pub struct IndicesPutMappingRequest<'a, B> {
         pub url: Url<'a>,
-        pub body: Body<R>,
+        pub body: B,
     }
-    impl<'a, R> IndicesPutMappingRequest<'a, R> {
-        pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: R) -> Self
+    impl<'a, B> IndicesPutMappingRequest<'a, B> {
+        pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: B) -> Self
             where IIndex: Into<Index<'a>>,
                   IType: Into<Type<'a>>
         {
             IndicesPutMappingRequest {
                 url: IndicesPutMappingUrlParams::IndexType(index.into(), ty.into()).url(),
-                body: Body::new(body),
+                body: body,
             }
         }
-        pub fn for_ty<IType>(ty: IType, body: R) -> Self
+        pub fn for_ty<IType>(ty: IType, body: B) -> Self
             where IType: Into<Type<'a>>
         {
             IndicesPutMappingRequest {
                 url: IndicesPutMappingUrlParams::Type(ty.into()).url(),
-                body: Body::new(body),
+                body: body,
             }
         }
     }
-    impl<'a, R> Into<HttpRequest<'a, R>> for IndicesPutMappingRequest<'a, R> {
-        fn into(self) -> HttpRequest<'a, R> {
+    impl<'a, B> Into<HttpRequest<'a, B>> for IndicesPutMappingRequest<'a, B> {
+        fn into(self) -> HttpRequest<'a, B> {
             HttpRequest {
                 url: self.url,
                 method: HttpMethod::Post,
@@ -2910,37 +2910,37 @@ pub mod endpoints {
         }
     }
     # [ derive ( Debug , PartialEq , Clone ) ]
-    pub struct IndicesValidateQueryRequest<'a, R> {
+    pub struct IndicesValidateQueryRequest<'a, B> {
         pub url: Url<'a>,
-        pub body: Body<R>,
+        pub body: B,
     }
-    impl<'a, R> IndicesValidateQueryRequest<'a, R> {
-        pub fn new(body: R) -> Self {
+    impl<'a, B> IndicesValidateQueryRequest<'a, B> {
+        pub fn new(body: B) -> Self {
             IndicesValidateQueryRequest {
                 url: IndicesValidateQueryUrlParams::None.url(),
-                body: Body::new(body),
+                body: body,
             }
         }
-        pub fn for_index<IIndex>(index: IIndex, body: R) -> Self
+        pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
             where IIndex: Into<Index<'a>>
         {
             IndicesValidateQueryRequest {
                 url: IndicesValidateQueryUrlParams::Index(index.into()).url(),
-                body: Body::new(body),
+                body: body,
             }
         }
-        pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: R) -> Self
+        pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: B) -> Self
             where IIndex: Into<Index<'a>>,
                   IType: Into<Type<'a>>
         {
             IndicesValidateQueryRequest {
                 url: IndicesValidateQueryUrlParams::IndexType(index.into(), ty.into()).url(),
-                body: Body::new(body),
+                body: body,
             }
         }
     }
-    impl<'a, R> Into<HttpRequest<'a, R>> for IndicesValidateQueryRequest<'a, R> {
-        fn into(self) -> HttpRequest<'a, R> {
+    impl<'a, B> Into<HttpRequest<'a, B>> for IndicesValidateQueryRequest<'a, B> {
+        fn into(self) -> HttpRequest<'a, B> {
             HttpRequest {
                 url: self.url,
                 method: HttpMethod::Post,
@@ -2996,28 +2996,28 @@ pub mod endpoints {
         }
     }
     # [ derive ( Debug , PartialEq , Clone ) ]
-    pub struct ClearScrollRequest<'a, R> {
+    pub struct ClearScrollRequest<'a, B> {
         pub url: Url<'a>,
-        pub body: Body<R>,
+        pub body: B,
     }
-    impl<'a, R> ClearScrollRequest<'a, R> {
-        pub fn new(body: R) -> Self {
+    impl<'a, B> ClearScrollRequest<'a, B> {
+        pub fn new(body: B) -> Self {
             ClearScrollRequest {
                 url: ClearScrollUrlParams::None.url(),
-                body: Body::new(body),
+                body: body,
             }
         }
-        pub fn for_scroll_id<IScrollId>(scroll_id: IScrollId, body: R) -> Self
+        pub fn for_scroll_id<IScrollId>(scroll_id: IScrollId, body: B) -> Self
             where IScrollId: Into<ScrollId<'a>>
         {
             ClearScrollRequest {
                 url: ClearScrollUrlParams::ScrollId(scroll_id.into()).url(),
-                body: Body::new(body),
+                body: body,
             }
         }
     }
-    impl<'a, R> Into<HttpRequest<'a, R>> for ClearScrollRequest<'a, R> {
-        fn into(self) -> HttpRequest<'a, R> {
+    impl<'a, B> Into<HttpRequest<'a, B>> for ClearScrollRequest<'a, B> {
+        fn into(self) -> HttpRequest<'a, B> {
             HttpRequest {
                 url: self.url,
                 method: HttpMethod::Delete,
@@ -3122,20 +3122,20 @@ pub mod endpoints {
         }
     }
     # [ derive ( Debug , PartialEq , Clone ) ]
-    pub struct IndicesUpdateAliasesRequest<'a, R> {
+    pub struct IndicesUpdateAliasesRequest<'a, B> {
         pub url: Url<'a>,
-        pub body: Body<R>,
+        pub body: B,
     }
-    impl<'a, R> IndicesUpdateAliasesRequest<'a, R> {
-        pub fn new(body: R) -> Self {
+    impl<'a, B> IndicesUpdateAliasesRequest<'a, B> {
+        pub fn new(body: B) -> Self {
             IndicesUpdateAliasesRequest {
                 url: IndicesUpdateAliasesUrlParams::None.url(),
-                body: Body::new(body),
+                body: body,
             }
         }
     }
-    impl<'a, R> Into<HttpRequest<'a, R>> for IndicesUpdateAliasesRequest<'a, R> {
-        fn into(self) -> HttpRequest<'a, R> {
+    impl<'a, B> Into<HttpRequest<'a, B>> for IndicesUpdateAliasesRequest<'a, B> {
+        fn into(self) -> HttpRequest<'a, B> {
             HttpRequest {
                 url: self.url,
                 method: HttpMethod::Post,
@@ -3214,37 +3214,37 @@ pub mod endpoints {
         }
     }
     # [ derive ( Debug , PartialEq , Clone ) ]
-    pub struct MpercolateRequest<'a, R> {
+    pub struct MpercolateRequest<'a, B> {
         pub url: Url<'a>,
-        pub body: Body<R>,
+        pub body: B,
     }
-    impl<'a, R> MpercolateRequest<'a, R> {
-        pub fn new(body: R) -> Self {
+    impl<'a, B> MpercolateRequest<'a, B> {
+        pub fn new(body: B) -> Self {
             MpercolateRequest {
                 url: MpercolateUrlParams::None.url(),
-                body: Body::new(body),
+                body: body,
             }
         }
-        pub fn for_index<IIndex>(index: IIndex, body: R) -> Self
+        pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
             where IIndex: Into<Index<'a>>
         {
             MpercolateRequest {
                 url: MpercolateUrlParams::Index(index.into()).url(),
-                body: Body::new(body),
+                body: body,
             }
         }
-        pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: R) -> Self
+        pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: B) -> Self
             where IIndex: Into<Index<'a>>,
                   IType: Into<Type<'a>>
         {
             MpercolateRequest {
                 url: MpercolateUrlParams::IndexType(index.into(), ty.into()).url(),
-                body: Body::new(body),
+                body: body,
             }
         }
     }
-    impl<'a, R> Into<HttpRequest<'a, R>> for MpercolateRequest<'a, R> {
-        fn into(self) -> HttpRequest<'a, R> {
+    impl<'a, B> Into<HttpRequest<'a, B>> for MpercolateRequest<'a, B> {
+        fn into(self) -> HttpRequest<'a, B> {
             HttpRequest {
                 url: self.url,
                 method: HttpMethod::Post,
@@ -3270,22 +3270,22 @@ pub mod endpoints {
         }
     }
     # [ derive ( Debug , PartialEq , Clone ) ]
-    pub struct IndicesOpenRequest<'a, R> {
+    pub struct IndicesOpenRequest<'a, B> {
         pub url: Url<'a>,
-        pub body: Body<R>,
+        pub body: B,
     }
-    impl<'a, R> IndicesOpenRequest<'a, R> {
-        pub fn for_index<IIndex>(index: IIndex, body: R) -> Self
+    impl<'a, B> IndicesOpenRequest<'a, B> {
+        pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
             where IIndex: Into<Index<'a>>
         {
             IndicesOpenRequest {
                 url: IndicesOpenUrlParams::Index(index.into()).url(),
-                body: Body::new(body),
+                body: body,
             }
         }
     }
-    impl<'a, R> Into<HttpRequest<'a, R>> for IndicesOpenRequest<'a, R> {
-        fn into(self) -> HttpRequest<'a, R> {
+    impl<'a, B> Into<HttpRequest<'a, B>> for IndicesOpenRequest<'a, B> {
+        fn into(self) -> HttpRequest<'a, B> {
             HttpRequest {
                 url: self.url,
                 method: HttpMethod::Post,
@@ -3363,31 +3363,31 @@ pub mod endpoints {
         }
     }
     # [ derive ( Debug , PartialEq , Clone ) ]
-    pub struct UpdateByQueryRequest<'a, R> {
+    pub struct UpdateByQueryRequest<'a, B> {
         pub url: Url<'a>,
-        pub body: Body<R>,
+        pub body: B,
     }
-    impl<'a, R> UpdateByQueryRequest<'a, R> {
-        pub fn for_index<IIndex>(index: IIndex, body: R) -> Self
+    impl<'a, B> UpdateByQueryRequest<'a, B> {
+        pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
             where IIndex: Into<Index<'a>>
         {
             UpdateByQueryRequest {
                 url: UpdateByQueryUrlParams::Index(index.into()).url(),
-                body: Body::new(body),
+                body: body,
             }
         }
-        pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: R) -> Self
+        pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: B) -> Self
             where IIndex: Into<Index<'a>>,
                   IType: Into<Type<'a>>
         {
             UpdateByQueryRequest {
                 url: UpdateByQueryUrlParams::IndexType(index.into(), ty.into()).url(),
-                body: Body::new(body),
+                body: body,
             }
         }
     }
-    impl<'a, R> Into<HttpRequest<'a, R>> for UpdateByQueryRequest<'a, R> {
-        fn into(self) -> HttpRequest<'a, R> {
+    impl<'a, B> Into<HttpRequest<'a, B>> for UpdateByQueryRequest<'a, B> {
+        fn into(self) -> HttpRequest<'a, B> {
             HttpRequest {
                 url: self.url,
                 method: HttpMethod::Post,
@@ -3425,37 +3425,37 @@ pub mod endpoints {
         }
     }
     # [ derive ( Debug , PartialEq , Clone ) ]
-    pub struct MtermvectorsRequest<'a, R> {
+    pub struct MtermvectorsRequest<'a, B> {
         pub url: Url<'a>,
-        pub body: Body<R>,
+        pub body: B,
     }
-    impl<'a, R> MtermvectorsRequest<'a, R> {
-        pub fn new(body: R) -> Self {
+    impl<'a, B> MtermvectorsRequest<'a, B> {
+        pub fn new(body: B) -> Self {
             MtermvectorsRequest {
                 url: MtermvectorsUrlParams::None.url(),
-                body: Body::new(body),
+                body: body,
             }
         }
-        pub fn for_index<IIndex>(index: IIndex, body: R) -> Self
+        pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
             where IIndex: Into<Index<'a>>
         {
             MtermvectorsRequest {
                 url: MtermvectorsUrlParams::Index(index.into()).url(),
-                body: Body::new(body),
+                body: body,
             }
         }
-        pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: R) -> Self
+        pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: B) -> Self
             where IIndex: Into<Index<'a>>,
                   IType: Into<Type<'a>>
         {
             MtermvectorsRequest {
                 url: MtermvectorsUrlParams::IndexType(index.into(), ty.into()).url(),
-                body: Body::new(body),
+                body: body,
             }
         }
     }
-    impl<'a, R> Into<HttpRequest<'a, R>> for MtermvectorsRequest<'a, R> {
-        fn into(self) -> HttpRequest<'a, R> {
+    impl<'a, B> Into<HttpRequest<'a, B>> for MtermvectorsRequest<'a, B> {
+        fn into(self) -> HttpRequest<'a, B> {
             HttpRequest {
                 url: self.url,
                 method: HttpMethod::Post,
@@ -3525,14 +3525,14 @@ pub mod endpoints {
         }
     }
     # [ derive ( Debug , PartialEq , Clone ) ]
-    pub struct SnapshotRestoreRequest<'a, R> {
+    pub struct SnapshotRestoreRequest<'a, B> {
         pub url: Url<'a>,
-        pub body: Body<R>,
+        pub body: B,
     }
-    impl<'a, R> SnapshotRestoreRequest<'a, R> {
+    impl<'a, B> SnapshotRestoreRequest<'a, B> {
         pub fn for_repository_snapshot<IRepository, ISnapshot>(repository: IRepository,
                                                                snapshot: ISnapshot,
-                                                               body: R)
+                                                               body: B)
                                                                -> Self
             where IRepository: Into<Repository<'a>>,
                   ISnapshot: Into<Snapshot<'a>>
@@ -3541,12 +3541,12 @@ pub mod endpoints {
                 url: SnapshotRestoreUrlParams::RepositorySnapshot(repository.into(),
                                                                   snapshot.into())
                     .url(),
-                body: Body::new(body),
+                body: body,
             }
         }
     }
-    impl<'a, R> Into<HttpRequest<'a, R>> for SnapshotRestoreRequest<'a, R> {
-        fn into(self) -> HttpRequest<'a, R> {
+    impl<'a, B> Into<HttpRequest<'a, B>> for SnapshotRestoreRequest<'a, B> {
+        fn into(self) -> HttpRequest<'a, B> {
             HttpRequest {
                 url: self.url,
                 method: HttpMethod::Post,
@@ -3566,20 +3566,20 @@ pub mod endpoints {
         }
     }
     # [ derive ( Debug , PartialEq , Clone ) ]
-    pub struct ReindexRequest<'a, R> {
+    pub struct ReindexRequest<'a, B> {
         pub url: Url<'a>,
-        pub body: Body<R>,
+        pub body: B,
     }
-    impl<'a, R> ReindexRequest<'a, R> {
-        pub fn new(body: R) -> Self {
+    impl<'a, B> ReindexRequest<'a, B> {
+        pub fn new(body: B) -> Self {
             ReindexRequest {
                 url: ReindexUrlParams::None.url(),
-                body: Body::new(body),
+                body: body,
             }
         }
     }
-    impl<'a, R> Into<HttpRequest<'a, R>> for ReindexRequest<'a, R> {
-        fn into(self) -> HttpRequest<'a, R> {
+    impl<'a, B> Into<HttpRequest<'a, B>> for ReindexRequest<'a, B> {
+        fn into(self) -> HttpRequest<'a, B> {
             HttpRequest {
                 url: self.url,
                 method: HttpMethod::Post,
@@ -3899,20 +3899,20 @@ pub mod endpoints {
         }
     }
     # [ derive ( Debug , PartialEq , Clone ) ]
-    pub struct ClusterRerouteRequest<'a, R> {
+    pub struct ClusterRerouteRequest<'a, B> {
         pub url: Url<'a>,
-        pub body: Body<R>,
+        pub body: B,
     }
-    impl<'a, R> ClusterRerouteRequest<'a, R> {
-        pub fn new(body: R) -> Self {
+    impl<'a, B> ClusterRerouteRequest<'a, B> {
+        pub fn new(body: B) -> Self {
             ClusterRerouteRequest {
                 url: ClusterRerouteUrlParams::None.url(),
-                body: Body::new(body),
+                body: body,
             }
         }
     }
-    impl<'a, R> Into<HttpRequest<'a, R>> for ClusterRerouteRequest<'a, R> {
-        fn into(self) -> HttpRequest<'a, R> {
+    impl<'a, B> Into<HttpRequest<'a, B>> for ClusterRerouteRequest<'a, B> {
+        fn into(self) -> HttpRequest<'a, B> {
             HttpRequest {
                 url: self.url,
                 method: HttpMethod::Post,
@@ -4133,22 +4133,22 @@ pub mod endpoints {
         }
     }
     # [ derive ( Debug , PartialEq , Clone ) ]
-    pub struct PutTemplateRequest<'a, R> {
+    pub struct PutTemplateRequest<'a, B> {
         pub url: Url<'a>,
-        pub body: Body<R>,
+        pub body: B,
     }
-    impl<'a, R> PutTemplateRequest<'a, R> {
-        pub fn for_id<IId>(id: IId, body: R) -> Self
+    impl<'a, B> PutTemplateRequest<'a, B> {
+        pub fn for_id<IId>(id: IId, body: B) -> Self
             where IId: Into<Id<'a>>
         {
             PutTemplateRequest {
                 url: PutTemplateUrlParams::Id(id.into()).url(),
-                body: Body::new(body),
+                body: body,
             }
         }
     }
-    impl<'a, R> Into<HttpRequest<'a, R>> for PutTemplateRequest<'a, R> {
-        fn into(self) -> HttpRequest<'a, R> {
+    impl<'a, B> Into<HttpRequest<'a, B>> for PutTemplateRequest<'a, B> {
+        fn into(self) -> HttpRequest<'a, B> {
             HttpRequest {
                 url: self.url,
                 method: HttpMethod::Post,
@@ -4222,14 +4222,14 @@ pub mod endpoints {
         }
     }
     # [ derive ( Debug , PartialEq , Clone ) ]
-    pub struct SnapshotCreateRequest<'a, R> {
+    pub struct SnapshotCreateRequest<'a, B> {
         pub url: Url<'a>,
-        pub body: Body<R>,
+        pub body: B,
     }
-    impl<'a, R> SnapshotCreateRequest<'a, R> {
+    impl<'a, B> SnapshotCreateRequest<'a, B> {
         pub fn for_repository_snapshot<IRepository, ISnapshot>(repository: IRepository,
                                                                snapshot: ISnapshot,
-                                                               body: R)
+                                                               body: B)
                                                                -> Self
             where IRepository: Into<Repository<'a>>,
                   ISnapshot: Into<Snapshot<'a>>
@@ -4238,12 +4238,12 @@ pub mod endpoints {
                 url: SnapshotCreateUrlParams::RepositorySnapshot(repository.into(),
                                                                  snapshot.into())
                     .url(),
-                body: Body::new(body),
+                body: body,
             }
         }
     }
-    impl<'a, R> Into<HttpRequest<'a, R>> for SnapshotCreateRequest<'a, R> {
-        fn into(self) -> HttpRequest<'a, R> {
+    impl<'a, B> Into<HttpRequest<'a, B>> for SnapshotCreateRequest<'a, B> {
+        fn into(self) -> HttpRequest<'a, B> {
             HttpRequest {
                 url: self.url,
                 method: HttpMethod::Post,
@@ -4270,28 +4270,28 @@ pub mod endpoints {
         }
     }
     # [ derive ( Debug , PartialEq , Clone ) ]
-    pub struct ScrollRequest<'a, R> {
+    pub struct ScrollRequest<'a, B> {
         pub url: Url<'a>,
-        pub body: Body<R>,
+        pub body: B,
     }
-    impl<'a, R> ScrollRequest<'a, R> {
-        pub fn new(body: R) -> Self {
+    impl<'a, B> ScrollRequest<'a, B> {
+        pub fn new(body: B) -> Self {
             ScrollRequest {
                 url: ScrollUrlParams::None.url(),
-                body: Body::new(body),
+                body: body,
             }
         }
-        pub fn for_scroll_id<IScrollId>(scroll_id: IScrollId, body: R) -> Self
+        pub fn for_scroll_id<IScrollId>(scroll_id: IScrollId, body: B) -> Self
             where IScrollId: Into<ScrollId<'a>>
         {
             ScrollRequest {
                 url: ScrollUrlParams::ScrollId(scroll_id.into()).url(),
-                body: Body::new(body),
+                body: body,
             }
         }
     }
-    impl<'a, R> Into<HttpRequest<'a, R>> for ScrollRequest<'a, R> {
-        fn into(self) -> HttpRequest<'a, R> {
+    impl<'a, B> Into<HttpRequest<'a, B>> for ScrollRequest<'a, B> {
+        fn into(self) -> HttpRequest<'a, B> {
             HttpRequest {
                 url: self.url,
                 method: HttpMethod::Post,
@@ -4396,37 +4396,37 @@ pub mod endpoints {
         }
     }
     # [ derive ( Debug , PartialEq , Clone ) ]
-    pub struct MgetRequest<'a, R> {
+    pub struct MgetRequest<'a, B> {
         pub url: Url<'a>,
-        pub body: Body<R>,
+        pub body: B,
     }
-    impl<'a, R> MgetRequest<'a, R> {
-        pub fn new(body: R) -> Self {
+    impl<'a, B> MgetRequest<'a, B> {
+        pub fn new(body: B) -> Self {
             MgetRequest {
                 url: MgetUrlParams::None.url(),
-                body: Body::new(body),
+                body: body,
             }
         }
-        pub fn for_index<IIndex>(index: IIndex, body: R) -> Self
+        pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
             where IIndex: Into<Index<'a>>
         {
             MgetRequest {
                 url: MgetUrlParams::Index(index.into()).url(),
-                body: Body::new(body),
+                body: body,
             }
         }
-        pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: R) -> Self
+        pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: B) -> Self
             where IIndex: Into<Index<'a>>,
                   IType: Into<Type<'a>>
         {
             MgetRequest {
                 url: MgetUrlParams::IndexType(index.into(), ty.into()).url(),
-                body: Body::new(body),
+                body: body,
             }
         }
     }
-    impl<'a, R> Into<HttpRequest<'a, R>> for MgetRequest<'a, R> {
-        fn into(self) -> HttpRequest<'a, R> {
+    impl<'a, B> Into<HttpRequest<'a, B>> for MgetRequest<'a, B> {
+        fn into(self) -> HttpRequest<'a, B> {
             HttpRequest {
                 url: self.url,
                 method: HttpMethod::Post,
@@ -4533,23 +4533,23 @@ pub mod endpoints {
         }
     }
     # [ derive ( Debug , PartialEq , Clone ) ]
-    pub struct PutScriptRequest<'a, R> {
+    pub struct PutScriptRequest<'a, B> {
         pub url: Url<'a>,
-        pub body: Body<R>,
+        pub body: B,
     }
-    impl<'a, R> PutScriptRequest<'a, R> {
-        pub fn for_lang_id<ILang, IId>(lang: ILang, id: IId, body: R) -> Self
+    impl<'a, B> PutScriptRequest<'a, B> {
+        pub fn for_lang_id<ILang, IId>(lang: ILang, id: IId, body: B) -> Self
             where ILang: Into<Lang<'a>>,
                   IId: Into<Id<'a>>
         {
             PutScriptRequest {
                 url: PutScriptUrlParams::LangId(lang.into(), id.into()).url(),
-                body: Body::new(body),
+                body: body,
             }
         }
     }
-    impl<'a, R> Into<HttpRequest<'a, R>> for PutScriptRequest<'a, R> {
-        fn into(self) -> HttpRequest<'a, R> {
+    impl<'a, B> Into<HttpRequest<'a, B>> for PutScriptRequest<'a, B> {
+        fn into(self) -> HttpRequest<'a, B> {
             HttpRequest {
                 url: self.url,
                 method: HttpMethod::Post,
@@ -4661,24 +4661,24 @@ pub mod endpoints {
         }
     }
     # [ derive ( Debug , PartialEq , Clone ) ]
-    pub struct IndexRequest<'a, R> {
+    pub struct IndexRequest<'a, B> {
         pub url: Url<'a>,
-        pub body: Body<R>,
+        pub body: B,
     }
-    impl<'a, R> IndexRequest<'a, R> {
-        pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: R) -> Self
+    impl<'a, B> IndexRequest<'a, B> {
+        pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: B) -> Self
             where IIndex: Into<Index<'a>>,
                   IType: Into<Type<'a>>
         {
             IndexRequest {
                 url: IndexUrlParams::IndexType(index.into(), ty.into()).url(),
-                body: Body::new(body),
+                body: body,
             }
         }
         pub fn for_index_ty_id<IIndex, IType, IId>(index: IIndex,
                                                    ty: IType,
                                                    id: IId,
-                                                   body: R)
+                                                   body: B)
                                                    -> Self
             where IIndex: Into<Index<'a>>,
                   IType: Into<Type<'a>>,
@@ -4686,12 +4686,12 @@ pub mod endpoints {
         {
             IndexRequest {
                 url: IndexUrlParams::IndexTypeId(index.into(), ty.into(), id.into()).url(),
-                body: Body::new(body),
+                body: body,
             }
         }
     }
-    impl<'a, R> Into<HttpRequest<'a, R>> for IndexRequest<'a, R> {
-        fn into(self) -> HttpRequest<'a, R> {
+    impl<'a, B> Into<HttpRequest<'a, B>> for IndexRequest<'a, B> {
+        fn into(self) -> HttpRequest<'a, B> {
             HttpRequest {
                 url: self.url,
                 method: HttpMethod::Post,
@@ -4719,28 +4719,28 @@ pub mod endpoints {
         }
     }
     # [ derive ( Debug , PartialEq , Clone ) ]
-    pub struct IndicesPutSettingsRequest<'a, R> {
+    pub struct IndicesPutSettingsRequest<'a, B> {
         pub url: Url<'a>,
-        pub body: Body<R>,
+        pub body: B,
     }
-    impl<'a, R> IndicesPutSettingsRequest<'a, R> {
-        pub fn new(body: R) -> Self {
+    impl<'a, B> IndicesPutSettingsRequest<'a, B> {
+        pub fn new(body: B) -> Self {
             IndicesPutSettingsRequest {
                 url: IndicesPutSettingsUrlParams::None.url(),
-                body: Body::new(body),
+                body: body,
             }
         }
-        pub fn for_index<IIndex>(index: IIndex, body: R) -> Self
+        pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
             where IIndex: Into<Index<'a>>
         {
             IndicesPutSettingsRequest {
                 url: IndicesPutSettingsUrlParams::Index(index.into()).url(),
-                body: Body::new(body),
+                body: body,
             }
         }
     }
-    impl<'a, R> Into<HttpRequest<'a, R>> for IndicesPutSettingsRequest<'a, R> {
-        fn into(self) -> HttpRequest<'a, R> {
+    impl<'a, B> Into<HttpRequest<'a, B>> for IndicesPutSettingsRequest<'a, B> {
+        fn into(self) -> HttpRequest<'a, B> {
             HttpRequest {
                 url: self.url,
                 method: HttpMethod::Put,
@@ -4842,20 +4842,20 @@ pub mod endpoints {
         }
     }
     # [ derive ( Debug , PartialEq , Clone ) ]
-    pub struct ClusterPutSettingsRequest<'a, R> {
+    pub struct ClusterPutSettingsRequest<'a, B> {
         pub url: Url<'a>,
-        pub body: Body<R>,
+        pub body: B,
     }
-    impl<'a, R> ClusterPutSettingsRequest<'a, R> {
-        pub fn new(body: R) -> Self {
+    impl<'a, B> ClusterPutSettingsRequest<'a, B> {
+        pub fn new(body: B) -> Self {
             ClusterPutSettingsRequest {
                 url: ClusterPutSettingsUrlParams::None.url(),
-                body: Body::new(body),
+                body: body,
             }
         }
     }
-    impl<'a, R> Into<HttpRequest<'a, R>> for ClusterPutSettingsRequest<'a, R> {
-        fn into(self) -> HttpRequest<'a, R> {
+    impl<'a, B> Into<HttpRequest<'a, B>> for ClusterPutSettingsRequest<'a, B> {
+        fn into(self) -> HttpRequest<'a, B> {
             HttpRequest {
                 url: self.url,
                 method: HttpMethod::Put,
@@ -4886,15 +4886,15 @@ pub mod endpoints {
         }
     }
     # [ derive ( Debug , PartialEq , Clone ) ]
-    pub struct UpdateRequest<'a, R> {
+    pub struct UpdateRequest<'a, B> {
         pub url: Url<'a>,
-        pub body: Body<R>,
+        pub body: B,
     }
-    impl<'a, R> UpdateRequest<'a, R> {
+    impl<'a, B> UpdateRequest<'a, B> {
         pub fn for_index_ty_id<IIndex, IType, IId>(index: IIndex,
                                                    ty: IType,
                                                    id: IId,
-                                                   body: R)
+                                                   body: B)
                                                    -> Self
             where IIndex: Into<Index<'a>>,
                   IType: Into<Type<'a>>,
@@ -4902,12 +4902,12 @@ pub mod endpoints {
         {
             UpdateRequest {
                 url: UpdateUrlParams::IndexTypeId(index.into(), ty.into(), id.into()).url(),
-                body: Body::new(body),
+                body: body,
             }
         }
     }
-    impl<'a, R> Into<HttpRequest<'a, R>> for UpdateRequest<'a, R> {
-        fn into(self) -> HttpRequest<'a, R> {
+    impl<'a, B> Into<HttpRequest<'a, B>> for UpdateRequest<'a, B> {
+        fn into(self) -> HttpRequest<'a, B> {
             HttpRequest {
                 url: self.url,
                 method: HttpMethod::Post,
@@ -4934,23 +4934,23 @@ pub mod endpoints {
         }
     }
     # [ derive ( Debug , PartialEq , Clone ) ]
-    pub struct IndicesPutAliasRequest<'a, R> {
+    pub struct IndicesPutAliasRequest<'a, B> {
         pub url: Url<'a>,
-        pub body: Body<R>,
+        pub body: B,
     }
-    impl<'a, R> IndicesPutAliasRequest<'a, R> {
-        pub fn for_index_name<IIndex, IName>(index: IIndex, name: IName, body: R) -> Self
+    impl<'a, B> IndicesPutAliasRequest<'a, B> {
+        pub fn for_index_name<IIndex, IName>(index: IIndex, name: IName, body: B) -> Self
             where IIndex: Into<Index<'a>>,
                   IName: Into<Name<'a>>
         {
             IndicesPutAliasRequest {
                 url: IndicesPutAliasUrlParams::IndexName(index.into(), name.into()).url(),
-                body: Body::new(body),
+                body: body,
             }
         }
     }
-    impl<'a, R> Into<HttpRequest<'a, R>> for IndicesPutAliasRequest<'a, R> {
-        fn into(self) -> HttpRequest<'a, R> {
+    impl<'a, B> Into<HttpRequest<'a, B>> for IndicesPutAliasRequest<'a, B> {
+        fn into(self) -> HttpRequest<'a, B> {
             HttpRequest {
                 url: self.url,
                 method: HttpMethod::Post,
@@ -5020,24 +5020,24 @@ pub mod endpoints {
         }
     }
     # [ derive ( Debug , PartialEq , Clone ) ]
-    pub struct CountPercolateRequest<'a, R> {
+    pub struct CountPercolateRequest<'a, B> {
         pub url: Url<'a>,
-        pub body: Body<R>,
+        pub body: B,
     }
-    impl<'a, R> CountPercolateRequest<'a, R> {
-        pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: R) -> Self
+    impl<'a, B> CountPercolateRequest<'a, B> {
+        pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: B) -> Self
             where IIndex: Into<Index<'a>>,
                   IType: Into<Type<'a>>
         {
             CountPercolateRequest {
                 url: CountPercolateUrlParams::IndexType(index.into(), ty.into()).url(),
-                body: Body::new(body),
+                body: body,
             }
         }
         pub fn for_index_ty_id<IIndex, IType, IId>(index: IIndex,
                                                    ty: IType,
                                                    id: IId,
-                                                   body: R)
+                                                   body: B)
                                                    -> Self
             where IIndex: Into<Index<'a>>,
                   IType: Into<Type<'a>>,
@@ -5045,12 +5045,12 @@ pub mod endpoints {
         {
             CountPercolateRequest {
                 url: CountPercolateUrlParams::IndexTypeId(index.into(), ty.into(), id.into()).url(),
-                body: Body::new(body),
+                body: body,
             }
         }
     }
-    impl<'a, R> Into<HttpRequest<'a, R>> for CountPercolateRequest<'a, R> {
-        fn into(self) -> HttpRequest<'a, R> {
+    impl<'a, B> Into<HttpRequest<'a, B>> for CountPercolateRequest<'a, B> {
+        fn into(self) -> HttpRequest<'a, B> {
             HttpRequest {
                 url: self.url,
                 method: HttpMethod::Post,
@@ -5078,28 +5078,28 @@ pub mod endpoints {
         }
     }
     # [ derive ( Debug , PartialEq , Clone ) ]
-    pub struct IndicesUpgradeRequest<'a, R> {
+    pub struct IndicesUpgradeRequest<'a, B> {
         pub url: Url<'a>,
-        pub body: Body<R>,
+        pub body: B,
     }
-    impl<'a, R> IndicesUpgradeRequest<'a, R> {
-        pub fn new(body: R) -> Self {
+    impl<'a, B> IndicesUpgradeRequest<'a, B> {
+        pub fn new(body: B) -> Self {
             IndicesUpgradeRequest {
                 url: IndicesUpgradeUrlParams::None.url(),
-                body: Body::new(body),
+                body: body,
             }
         }
-        pub fn for_index<IIndex>(index: IIndex, body: R) -> Self
+        pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
             where IIndex: Into<Index<'a>>
         {
             IndicesUpgradeRequest {
                 url: IndicesUpgradeUrlParams::Index(index.into()).url(),
-                body: Body::new(body),
+                body: body,
             }
         }
     }
-    impl<'a, R> Into<HttpRequest<'a, R>> for IndicesUpgradeRequest<'a, R> {
-        fn into(self) -> HttpRequest<'a, R> {
+    impl<'a, B> Into<HttpRequest<'a, B>> for IndicesUpgradeRequest<'a, B> {
+        fn into(self) -> HttpRequest<'a, B> {
             HttpRequest {
                 url: self.url,
                 method: HttpMethod::Post,
@@ -5204,34 +5204,34 @@ pub mod endpoints {
         }
     }
     # [ derive ( Debug , PartialEq , Clone ) ]
-    pub struct IndicesRolloverRequest<'a, R> {
+    pub struct IndicesRolloverRequest<'a, B> {
         pub url: Url<'a>,
-        pub body: Body<R>,
+        pub body: B,
     }
-    impl<'a, R> IndicesRolloverRequest<'a, R> {
-        pub fn for_alias<IAlias>(alias: IAlias, body: R) -> Self
+    impl<'a, B> IndicesRolloverRequest<'a, B> {
+        pub fn for_alias<IAlias>(alias: IAlias, body: B) -> Self
             where IAlias: Into<Alias<'a>>
         {
             IndicesRolloverRequest {
                 url: IndicesRolloverUrlParams::Alias(alias.into()).url(),
-                body: Body::new(body),
+                body: body,
             }
         }
         pub fn for_alias_new_index<IAlias, INewIndex>(alias: IAlias,
                                                       new_index: INewIndex,
-                                                      body: R)
+                                                      body: B)
                                                       -> Self
             where IAlias: Into<Alias<'a>>,
                   INewIndex: Into<NewIndex<'a>>
         {
             IndicesRolloverRequest {
                 url: IndicesRolloverUrlParams::AliasNewIndex(alias.into(), new_index.into()).url(),
-                body: Body::new(body),
+                body: body,
             }
         }
     }
-    impl<'a, R> Into<HttpRequest<'a, R>> for IndicesRolloverRequest<'a, R> {
-        fn into(self) -> HttpRequest<'a, R> {
+    impl<'a, B> Into<HttpRequest<'a, B>> for IndicesRolloverRequest<'a, B> {
+        fn into(self) -> HttpRequest<'a, B> {
             HttpRequest {
                 url: self.url,
                 method: HttpMethod::Post,
@@ -5257,22 +5257,22 @@ pub mod endpoints {
         }
     }
     # [ derive ( Debug , PartialEq , Clone ) ]
-    pub struct ReindexRethrottleRequest<'a, R> {
+    pub struct ReindexRethrottleRequest<'a, B> {
         pub url: Url<'a>,
-        pub body: Body<R>,
+        pub body: B,
     }
-    impl<'a, R> ReindexRethrottleRequest<'a, R> {
-        pub fn for_task_id<ITaskId>(task_id: ITaskId, body: R) -> Self
+    impl<'a, B> ReindexRethrottleRequest<'a, B> {
+        pub fn for_task_id<ITaskId>(task_id: ITaskId, body: B) -> Self
             where ITaskId: Into<TaskId<'a>>
         {
             ReindexRethrottleRequest {
                 url: ReindexRethrottleUrlParams::TaskId(task_id.into()).url(),
-                body: Body::new(body),
+                body: body,
             }
         }
     }
-    impl<'a, R> Into<HttpRequest<'a, R>> for ReindexRethrottleRequest<'a, R> {
-        fn into(self) -> HttpRequest<'a, R> {
+    impl<'a, B> Into<HttpRequest<'a, B>> for ReindexRethrottleRequest<'a, B> {
+        fn into(self) -> HttpRequest<'a, B> {
             HttpRequest {
                 url: self.url,
                 method: HttpMethod::Post,
@@ -5297,22 +5297,22 @@ pub mod endpoints {
         }
     }
     # [ derive ( Debug , PartialEq , Clone ) ]
-    pub struct SnapshotCreateRepositoryRequest<'a, R> {
+    pub struct SnapshotCreateRepositoryRequest<'a, B> {
         pub url: Url<'a>,
-        pub body: Body<R>,
+        pub body: B,
     }
-    impl<'a, R> SnapshotCreateRepositoryRequest<'a, R> {
-        pub fn for_repository<IRepository>(repository: IRepository, body: R) -> Self
+    impl<'a, B> SnapshotCreateRepositoryRequest<'a, B> {
+        pub fn for_repository<IRepository>(repository: IRepository, body: B) -> Self
             where IRepository: Into<Repository<'a>>
         {
             SnapshotCreateRepositoryRequest {
                 url: SnapshotCreateRepositoryUrlParams::Repository(repository.into()).url(),
-                body: Body::new(body),
+                body: body,
             }
         }
     }
-    impl<'a, R> Into<HttpRequest<'a, R>> for SnapshotCreateRepositoryRequest<'a, R> {
-        fn into(self) -> HttpRequest<'a, R> {
+    impl<'a, B> Into<HttpRequest<'a, B>> for SnapshotCreateRepositoryRequest<'a, B> {
+        fn into(self) -> HttpRequest<'a, B> {
             HttpRequest {
                 url: self.url,
                 method: HttpMethod::Post,
@@ -5393,28 +5393,28 @@ pub mod endpoints {
         }
     }
     # [ derive ( Debug , PartialEq , Clone ) ]
-    pub struct IndicesAnalyzeRequest<'a, R> {
+    pub struct IndicesAnalyzeRequest<'a, B> {
         pub url: Url<'a>,
-        pub body: Body<R>,
+        pub body: B,
     }
-    impl<'a, R> IndicesAnalyzeRequest<'a, R> {
-        pub fn new(body: R) -> Self {
+    impl<'a, B> IndicesAnalyzeRequest<'a, B> {
+        pub fn new(body: B) -> Self {
             IndicesAnalyzeRequest {
                 url: IndicesAnalyzeUrlParams::None.url(),
-                body: Body::new(body),
+                body: body,
             }
         }
-        pub fn for_index<IIndex>(index: IIndex, body: R) -> Self
+        pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
             where IIndex: Into<Index<'a>>
         {
             IndicesAnalyzeRequest {
                 url: IndicesAnalyzeUrlParams::Index(index.into()).url(),
-                body: Body::new(body),
+                body: body,
             }
         }
     }
-    impl<'a, R> Into<HttpRequest<'a, R>> for IndicesAnalyzeRequest<'a, R> {
-        fn into(self) -> HttpRequest<'a, R> {
+    impl<'a, B> Into<HttpRequest<'a, B>> for IndicesAnalyzeRequest<'a, B> {
+        fn into(self) -> HttpRequest<'a, B> {
             HttpRequest {
                 url: self.url,
                 method: HttpMethod::Post,
@@ -5524,23 +5524,23 @@ pub mod endpoints {
         }
     }
     # [ derive ( Debug , PartialEq , Clone ) ]
-    pub struct IndicesShrinkRequest<'a, R> {
+    pub struct IndicesShrinkRequest<'a, B> {
         pub url: Url<'a>,
-        pub body: Body<R>,
+        pub body: B,
     }
-    impl<'a, R> IndicesShrinkRequest<'a, R> {
-        pub fn for_index_target<IIndex, ITarget>(index: IIndex, target: ITarget, body: R) -> Self
+    impl<'a, B> IndicesShrinkRequest<'a, B> {
+        pub fn for_index_target<IIndex, ITarget>(index: IIndex, target: ITarget, body: B) -> Self
             where IIndex: Into<Index<'a>>,
                   ITarget: Into<Target<'a>>
         {
             IndicesShrinkRequest {
                 url: IndicesShrinkUrlParams::IndexTarget(index.into(), target.into()).url(),
-                body: Body::new(body),
+                body: body,
             }
         }
     }
-    impl<'a, R> Into<HttpRequest<'a, R>> for IndicesShrinkRequest<'a, R> {
-        fn into(self) -> HttpRequest<'a, R> {
+    impl<'a, B> Into<HttpRequest<'a, B>> for IndicesShrinkRequest<'a, B> {
+        fn into(self) -> HttpRequest<'a, B> {
             HttpRequest {
                 url: self.url,
                 method: HttpMethod::Post,
@@ -5813,6 +5813,7 @@ pub mod http {
     use std::ops::Deref;
 
     # [ derive ( Debug , PartialEq , Clone ) ]
+    # [ doc = r" A wrapper around an owned or borrowed url." ]
     pub struct Url<'a>(Cow<'a, str>);
     impl<'a> From<&'a str> for Url<'a> {
         fn from(value: &'a str) -> Url<'a> {
@@ -5830,36 +5831,22 @@ pub mod http {
             &self.0
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
-    pub struct Body<R>(R);
+    # [ doc = r" A default body type." ]
     pub type DefaultBody = &'static [u8];
-    impl<R> Body<R> {
-        pub fn new(inner: R) -> Self {
-            Body(inner)
-        }
-        pub fn into_inner(self) -> R {
-            self.0
-        }
-    }
-    impl Body<DefaultBody> {
-        pub fn none() -> Self {
-            Body(&[])
-        }
-    }
-    impl<R> AsRef<[u8]> for Body<R>
-        where R: AsRef<[u8]>
-    {
-        fn as_ref(&self) -> &[u8] {
-            self.0.as_ref()
-        }
+    # [ doc = r" A convenience method for a default, empty body." ]
+    # [ doc = r" This method doesn't allocate." ]
+    pub fn empty_body() -> DefaultBody {
+        &[]
     }
     # [ derive ( Debug , PartialEq , Clone ) ]
-    pub struct HttpRequest<'a, R> {
+    # [ doc = r" A general request type that all endpoints can be converted into." ]
+    pub struct HttpRequest<'a, B> {
         pub url: Url<'a>,
         pub method: HttpMethod,
-        pub body: Option<Body<R>>,
+        pub body: Option<B>,
     }
     # [ derive ( Debug , PartialEq , Clone ) ]
+    # [ doc = r" A standard HTTP verb." ]
     pub enum HttpMethod {
         Head,
         Get,

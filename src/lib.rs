@@ -6,6 +6,10 @@
 //! A `struct` is provided for each endpoint that works with borrowed or owned data.
 //! There's also a more general `HttpRequest` type that all requests can be converted into.
 //!
+//! Request types are generic over the body buffer, `B`.
+//! This gives clients a lot of flexibility when designing APIs,
+//! but you should be careful to ensure the `B` is bound appropriately.
+//! 
 //! # Supported Versions
 //!
 //!  `elastic_requests` | Elasticsearch
@@ -49,18 +53,21 @@
 //! assert_eq!("/test_index/_search", req.url.as_ref());
 //! ```
 //!
-//! All request types can be converted into a more general `HttpRequest`:
+//! All request types can be converted into a more general `HttpRequest`.
+//! In this example, `takes_req` accepts anything that can be converted into
+//! a `HttpRequest` where the body buffer is `AsRef<[u8]>`:
 //!
 //! ```
 //! # use elastic_requests::*;
 //! fn takes_req<'a, I: Into<HttpRequest<'a, B>>, B: AsRef<[u8]>>(req: I) {
 //!     let req = req.into();
+//!     let body = req.body.as_ref();
 //!
-//!     // do something with the HttpRequest
+//!     // do something with the request
 //! }
 //!
 //! takes_req(PingRequest::new());
-//! takes_req(SearchRequest::for_index("test_index", Body::none()));
+//! takes_req(SearchRequest::for_index("test_index", empty_body()));
 //! ```
 //!
 //! # Why are these docs useless?
@@ -144,7 +151,7 @@ mod tests {
 
     #[test]
     fn it_works_static() {
-        let req = SearchRequest::for_index_ty(String::from("test_index"), "test_ty", Body::none());
+        let req = SearchRequest::for_index_ty(String::from("test_index"), "test_ty", empty_body());
 
         do_something_with_static_request(req).join().unwrap();
     }
