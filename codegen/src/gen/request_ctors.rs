@@ -12,15 +12,9 @@ struct Constructor {
 
 impl Constructor {
     pub fn fields(&self) -> Vec<&(syn::Ident, syn::Ty)> {
-        let mut fields: Vec<&(syn::Ident, syn::Ty)> = self.params_fields
+        self.params_fields
             .iter()
-            .collect();
-
-        if let Some(ref body_field) = self.body_field {
-            fields.push(body_field);
-        }
-
-        fields
+            .collect()
     }
 }
 
@@ -173,6 +167,7 @@ impl RequestParamsCtorBuilder {
                  .into()
         };
 
+        // AST to set the url field: `url: UrlParams::SomeVariant(a, b).url()`
         let mut fields = vec![syn::FieldValue {
                                   attrs: vec![],
                                   ident: ident("url"),
@@ -180,11 +175,14 @@ impl RequestParamsCtorBuilder {
                                   is_shorthand: false,
                               }];
 
+        // AST to set the body field, if present: `body: Body::new(body)`
         if let &Some((ref body_ident, _)) = &ctor.body_field {
             fields.push(syn::FieldValue {
                 attrs: vec![],
                 ident: ident("body"),
-                expr: Self::expr_into(body_ident),
+                expr: syn::ExprKind::Call(Box::new(syn::ExprKind::Path(None, path_segments(vec![(types::body::ident(), vec![], vec![]), 
+                                                                                                ("new", vec![], vec![])])).into()), 
+                                          vec![syn::ExprKind::Path(None, path_none(body_ident.as_ref())).into()]).into(),
                 is_shorthand: false,
             });
         }
@@ -199,8 +197,9 @@ impl RequestParamsCtorBuilder {
     }
 
     /// Build the function header for the constructor.
-    fn ctor_decl(req_ty: syn::Ty, ctor: &Constructor) -> syn::FnDecl {
-        let args: Vec<syn::FnArg> = ctor.fields()
+    fn ctor_decl(ctor: &Constructor) -> syn::FnDecl {
+        // Generic field args: `index: IIndex`.
+        let mut args: Vec<syn::FnArg> = ctor.fields()
             .iter()
             .map(|&f| {
                 let (ref name, ref field) = *f;
@@ -211,16 +210,25 @@ impl RequestParamsCtorBuilder {
             })
             .collect();
 
+        // Body arg: `body: R`.
+        if let Some(ref body) = ctor.body_field {
+            args.push({
+                let (ref name, _) = *body;
+
+                syn::FnArg::Captured(syn::Pat::Path(None, path_none(&name.to_string())), ty(types::body::generic_ident()))
+            });
+        }
+
         syn::FnDecl {
             inputs: args,
-            output: syn::FunctionRetTy::Ty(req_ty),
+            output: syn::FunctionRetTy::Ty(ty("Self")),
             variadic: false,
         }
     }
 
     /// Build a self implementation for the request parameter constructors.
     fn ctor_item(req_ty: syn::Ty, params_ty: syn::Ty, ctor: &Constructor) -> syn::ImplItem {
-        let fields: Vec<&syn::Ty> = ctor.fields()
+        let generic_fields: Vec<&syn::Ty> = ctor.fields()
             .iter()
             .map(|&f| {
                 let (_, ref ty) = *f;
@@ -228,14 +236,14 @@ impl RequestParamsCtorBuilder {
             })
             .collect();
 
-        let field_tys: Vec<syn::TyParam> = fields
+        let generic_field_tys: Vec<syn::TyParam> = generic_fields
             .iter()
             .map(|ty| {
                 Self::ctor_field_generic(ty)
             })
             .collect();
 
-        let field_where_tys: Vec<syn::WherePredicate> = fields
+        let generic_field_where_tys: Vec<syn::WherePredicate> = generic_fields
             .iter()
             .map(|ty| {
                 Self::ctor_field_generic_where_bound(ty)
@@ -244,11 +252,11 @@ impl RequestParamsCtorBuilder {
 
         let generics = syn::Generics {
             lifetimes: vec![],
-            ty_params: field_tys,
-            where_clause: syn::WhereClause { predicates: field_where_tys },
+            ty_params: generic_field_tys,
+            where_clause: syn::WhereClause { predicates: generic_field_where_tys },
         };
 
-        let fndecl = Self::ctor_decl(req_ty.clone(), &ctor);
+        let fndecl = Self::ctor_decl(&ctor);
 
         let body = Self::ctor_body(req_ty.clone(), params_ty, &ctor);
 
@@ -280,7 +288,7 @@ impl RequestParamsCtorBuilder {
             attrs: vec![],
             node: syn::ItemKind::Impl(syn::Unsafety::Normal,
                                       syn::ImplPolarity::Positive,
-                                      generics_a(),
+                                      generics(vec![lifetime()], vec![ty_param(types::body::generic_ident(), vec![])]),
                                       None,
                                       Box::new(self.req_ty),
                                       ctors),
@@ -323,7 +331,8 @@ pub mod tests {
 
     #[test]
     fn gen_request_ctor_none() {
-        let result = RequestParamsCtorBuilder::new(false, ty_a("Request"), ty_a("UrlParams"))
+        let req_ty = ty_path("Request", vec![lifetime()], vec![ty(types::body::generic_ident())]);
+        let result = RequestParamsCtorBuilder::new(false, req_ty, ty_a("UrlParams"))
             .with_constructor(vec![])
             .build();
 
@@ -342,7 +351,8 @@ pub mod tests {
 
     #[test]
     fn gen_request_ctor_params() {
-        let result = RequestParamsCtorBuilder::new(false, ty_a("Request"), ty_a("UrlParams"))
+        let req_ty = ty_path("Request", vec![lifetime()], vec![ty(types::body::generic_ident())]);
+        let result = RequestParamsCtorBuilder::new(false, req_ty, ty_a("UrlParams"))
             .with_constructor(vec![
                 "Index".into(),
                 "Type".into(),
@@ -369,7 +379,8 @@ pub mod tests {
 
     #[test]
     fn gen_request_ctor_body() {
-        let result = RequestParamsCtorBuilder::new(true, ty_a("Request"), ty_a("UrlParams"))
+        let req_ty = ty_path("Request", vec![lifetime()], vec![ty(types::body::generic_ident())]);
+        let result = RequestParamsCtorBuilder::new(true, req_ty, ty_a("UrlParams"))
             .with_constructor(vec![])
             .build();
 
@@ -389,7 +400,8 @@ pub mod tests {
 
     #[test]
     fn gen_request_ctor_params_body() {
-        let result = RequestParamsCtorBuilder::new(true, ty_a("Request"), ty_a("UrlParams"))
+        let req_ty = ty_path("Request", vec![lifetime()], vec![ty(types::body::generic_ident())]);
+        let result = RequestParamsCtorBuilder::new(true, req_ty, ty_a("UrlParams"))
             .with_constructor(vec![
                 "Index".into(),
                 "Type".into(),
@@ -428,7 +440,7 @@ pub mod tests {
             body: Some(Body { description: String::new() }),
         });
 
-        let req_ty = ty_a("IndicesExistsAliasRequest");
+        let req_ty = ty_path("IndicesExistsAliasRequest", vec![lifetime()], vec![ty(types::body::generic_ident())]);
         let url_params = UrlParamBuilder::from(&endpoint).build();
 
         let result = RequestParamsCtorBuilder::from((&endpoint, &req_ty, &url_params)).build();

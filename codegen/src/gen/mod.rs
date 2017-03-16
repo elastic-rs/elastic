@@ -66,6 +66,10 @@ pub mod types {
             "R"
         }
 
+        pub fn default_ident() -> &'static str {
+            "DefaultBody"
+        }
+
         pub fn ty(body_generic: syn::Ty) -> syn::Ty {
             helpers::ty_path(ident(), vec![], vec![body_generic])
         }
@@ -74,9 +78,12 @@ pub mod types {
             let body_generic = helpers::ty(generic_ident());
             let body = ty(body_generic.clone());
             let body_no_generic = helpers::ty(ident());
+            let default_body = helpers::ident(default_ident());
 
             quote!(
                 pub struct #body(#body_generic);
+
+                pub #default_body = &'static [u8];
 
                 impl<#body_generic> #body {
                     pub fn new(inner: #body_generic) -> Self {
@@ -133,8 +140,8 @@ pub mod types {
             "HttpRequest"
         }
 
-        pub fn req_ty() -> syn::Ty {
-            helpers::ty_a(req_ident())
+        pub fn req_ty(body_generic: syn::Ty) -> syn::Ty {
+            helpers::ty_path(req_ident(), vec![helpers::lifetime()], vec![body_generic])
         }
 
         pub fn req_tokens() -> quote::Tokens {
@@ -287,20 +294,27 @@ pub mod helpers {
 
     /// AST for a path variable.
     pub fn path(path: &str, lifetimes: Vec<syn::Lifetime>, types: Vec<syn::Ty>) -> syn::Path {
+        path_segments(vec![(path, lifetimes, types)])
+    }
+
+    /// AST for a path variable.
+    pub fn path_segments(paths: Vec<(&str, Vec<syn::Lifetime>, Vec<syn::Ty>)>) -> syn::Path {
         syn::Path {
           global: false,
-          segments: vec![
-                syn::PathSegment {
-                    ident: syn::Ident::new(sanitise_ident(path)),
-                    parameters: syn::PathParameters::AngleBracketed(
-                        syn::AngleBracketedParameterData {
-                            lifetimes: lifetimes,
-                            types: types,
-                            bindings: vec![]
-                        }
-                    )
-                }
-            ],
+          segments: paths.into_iter()
+                         .map(|(path, lifetimes, types)| {
+                                syn::PathSegment {
+                                    ident: syn::Ident::new(sanitise_ident(path)),
+                                    parameters: syn::PathParameters::AngleBracketed(
+                                        syn::AngleBracketedParameterData {
+                                            lifetimes: lifetimes,
+                                            types: types,
+                                            bindings: vec![]
+                                        }
+                                    )
+                                }
+                           })
+                          .collect(),
         }
     }
 

@@ -132,7 +132,13 @@ mod tests {
 
         assert_eq!("/test_index/test_ty/_search", *req.url);
 
-        do_something_with_request(&req);
+        do_something_with_request(req);
+    }
+
+    #[test]
+    fn it_works_no_body() {
+        let req = PingRequest::new();
+
         do_something_with_request(req);
     }
 

@@ -87,12 +87,11 @@ impl<'a> From<(&'a (String, Endpoint), &'a syn::Ty)> for RequestIntoHttpRequestB
 
 #[cfg(test)]
 mod tests {
+    use ::parse::*;
     use super::*;
 
     #[test]
-    fn gen_into_http_req() {
-        use ::parse::*;
-
+    fn gen_into_http_req_with_body() {
         let endpoint = ("indices.exists_alias".to_string(),
                         Endpoint {
             documentation: String::new(),
@@ -100,17 +99,45 @@ mod tests {
             url: get_url(),
             body: Some(Body { description: String::new() }),
         });
-        let req_ty = ty_a("IndicesExistsAliasRequest");
+        let req_ty = ty_path("Request", vec![lifetime()], vec![ty(::gen::types::body::generic_ident())]);
 
         let result = RequestIntoHttpRequestBuilder::from((&endpoint, &req_ty)).build();
 
         let expected = quote!(
-            impl <'a, R> Into<HttpRequest<'a, R> > for IndicesExistsAliasRequest<'a, R> {
+            impl <'a, R> Into<HttpRequest<'a, R> > for Request<'a, R> {
                 fn into(self) -> HttpRequest<'a, R> {
                     HttpRequest {
                         url: self.url,
                         method: HttpMethod::Get,
                         body: Some(self.body)
+                    }
+                }
+            }
+        );
+
+        ast_eq(expected, result);
+    }
+
+    #[test]
+    fn gen_into_http_req_no_body() {
+        let endpoint = ("indices.exists_alias".to_string(),
+                        Endpoint {
+            documentation: String::new(),
+            methods: vec![HttpMethod::Get],
+            url: get_url(),
+            body: None,
+        });
+        let req_ty = ty_a("Request");
+
+        let result = RequestIntoHttpRequestBuilder::from((&endpoint, &req_ty)).build();
+
+        let expected = quote!(
+            impl <'a> Into<HttpRequest<'a, DefaultBody> > for Request<'a> {
+                fn into(self) -> HttpRequest<'a, DefaultBody> {
+                    HttpRequest {
+                        url: self.url,
+                        method: HttpMethod::Get,
+                        body: None
                     }
                 }
             }
