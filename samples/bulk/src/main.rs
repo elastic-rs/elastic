@@ -39,24 +39,22 @@ macro_rules! bulk_req {
             bulk.push('\n');
         }
 
-        BulkRequest::new(bulk)
+        bulk
     })
 }
 
 #[cfg(feature="lazy_static")]
 lazy_static! {
-    static ref REQUEST: BulkRequest<'static> = {
-        bulk_req!()
-    };
+    static ref REQUEST: String = bulk_req!();
 }
 
 #[cfg(not(feature="lazy_static"))]
-fn get_req() -> BulkRequest<'static> {
+fn get_req() -> String {
     bulk_req!()
 }
 
 #[cfg(feature="lazy_static")]
-fn get_req() -> &'static BulkRequest<'static> {
+fn get_req() -> &'static str {
     &REQUEST
 }
 
@@ -65,7 +63,7 @@ fn main() {
     let (client, params) = cli::default().unwrap();
 
     // Send the bulk request.
-    let res = client.elastic_req(&params, get_req()).unwrap();
+    let res = client.elastic_req(&params, BulkRequest::new(get_req())).unwrap();
 
     println!("{:?}", res);
 }
