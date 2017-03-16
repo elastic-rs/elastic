@@ -144,9 +144,7 @@ extern crate elastic_requests;
 extern crate reqwest;
 extern crate url;
 
-use std::borrow::Cow;
 use std::collections::BTreeMap;
-use std::io::Cursor;
 use std::str;
 use reqwest::header::{Header, HeaderFormat, Headers, ContentType};
 use reqwest::{RequestBuilder, Response};
@@ -299,28 +297,24 @@ pub fn default() -> Result<(reqwest::Client, RequestParams), reqwest::Error> {
 /// Represents a client that can send Elasticsearch requests.
 pub trait ElasticClient {
     /// Send a request and get a response.
-    fn elastic_req<I>(&self, params: &RequestParams, req: I) -> Result<Response, reqwest::Error> 
-        where I: Into<HttpRequest<'static>>;
+    fn elastic_req<I, B>(&self, params: &RequestParams, req: I) -> Result<Response, reqwest::Error> 
+        where I: Into<HttpRequest<'static, B>>,
+              B: Into<reqwest::Body>;
 }
 
 macro_rules! req_with_body {
     ($client:ident, $url:ident, $body:ident, $params:ident, $method:ident) => ({
         let body = $body.expect("Expected this request to have a body. This is a bug, please file an issue on GitHub.");
-        let body_cow = body.into_inner();
-
-        let body = match body_cow {
-            Cow::Borrowed(b) => reqwest::Body::new(Cursor::new(b)),
-            Cow::Owned(b) => b.into()
-        };
 
         $client.request(reqwest::Method::$method, &$url)
                .headers($params.headers.to_owned())
-               .body(body)
+               .body(body.into())
     })
 }
 
-fn build_req<I>(client: &reqwest::Client, params: &RequestParams, req: I) -> RequestBuilder 
-    where I: Into<HttpRequest<'static>>
+fn build_req<I, B>(client: &reqwest::Client, params: &RequestParams, req: I) -> RequestBuilder 
+    where I: Into<HttpRequest<'static, B>>,
+          B: Into<reqwest::Body>
 {
     let req = req.into();
 
@@ -354,8 +348,9 @@ fn build_req<I>(client: &reqwest::Client, params: &RequestParams, req: I) -> Req
 }
 
 impl ElasticClient for reqwest::Client {
-    fn elastic_req<I>(&self, params: &RequestParams, req: I) -> Result<Response, reqwest::Error>
-        where I: Into<HttpRequest<'static>>
+    fn elastic_req<I, B>(&self, params: &RequestParams, req: I) -> Result<Response, reqwest::Error>
+        where I: Into<HttpRequest<'static, B>>,
+              B: Into<reqwest::Body>
     {
         build_req(&self, params, req).send()
     }
