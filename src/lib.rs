@@ -26,6 +26,15 @@
 //! elastic_reqwest = "*"
 //! reqwest = "*"
 //! ```
+//! 
+//! On the `nightly` channel, you can use the `nightly` feature
+//! to avoid copying borrowed body buffers:
+//! 
+//! ```ignore
+//! [dependencies]
+//! elastic_reqwest = { version = "*", features = ["nightly"] }
+//! reqwest = "*"
+//! ```
 //!
 //! Then reference in your crate root:
 //!
@@ -137,6 +146,8 @@
 //! - [Elasticsearch Docs](https://www.elastic.co/guide/en/elasticsearch/reference/master/index.html)
 //! - [Github](https://github.com/elastic-rs/elastic-reqwest)
 
+#![cfg_attr(feature = "nightly", feature(specialization))]
+
 #![deny(warnings)]
 #![deny(missing_docs)]
 
@@ -144,6 +155,8 @@ extern crate elastic_requests;
 extern crate reqwest;
 extern crate url;
 
+#[cfg(feature = "nightly")]
+use std::io::Cursor;
 use std::collections::BTreeMap;
 use std::str;
 use reqwest::header::{Header, HeaderFormat, Headers, ContentType};
@@ -294,12 +307,44 @@ pub fn default() -> Result<(reqwest::Client, RequestParams), reqwest::Error> {
     reqwest::Client::new().map(|cli| (cli, RequestParams::default()))
 }
 
+/// A type that can be converted into a `reqwest::Body`.
+pub trait IntoReqwestBody {
+    /// Convert self into a body.
+    fn into_body(self) -> reqwest::Body;
+}
+
+impl<B: Into<reqwest::Body>> IntoReqwestBody for B {
+    #[cfg(feature = "nightly")]
+    default fn into_body(self) -> reqwest::Body {
+        self.into()
+    }
+
+    #[cfg(not(feature = "nightly"))]
+    fn into_body(self) -> reqwest::Body {
+        self.into()
+    }
+}
+
+#[cfg(feature = "nightly")]
+impl IntoReqwestBody for &'static [u8] {
+    fn into_body(self) -> reqwest::Body {
+        reqwest::Body::new(Cursor::new(self))
+    }
+}
+
+#[cfg(feature = "nightly")]
+impl IntoReqwestBody for &'static str {
+    fn into_body(self) -> reqwest::Body {
+        reqwest::Body::new(Cursor::new(self))
+    }
+}
+
 /// Represents a client that can send Elasticsearch requests.
 pub trait ElasticClient {
     /// Send a request and get a response.
     fn elastic_req<I, B>(&self, params: &RequestParams, req: I) -> Result<Response, reqwest::Error> 
         where I: Into<HttpRequest<'static, B>>,
-              B: Into<reqwest::Body>;
+              B: IntoReqwestBody;
 }
 
 macro_rules! req_with_body {
@@ -308,13 +353,13 @@ macro_rules! req_with_body {
 
         $client.request(reqwest::Method::$method, &$url)
                .headers($params.headers.to_owned())
-               .body(body.into())
+               .body(body.into_body())
     })
 }
 
 fn build_req<I, B>(client: &reqwest::Client, params: &RequestParams, req: I) -> RequestBuilder 
     where I: Into<HttpRequest<'static, B>>,
-          B: Into<reqwest::Body>
+          B: IntoReqwestBody
 {
     let req = req.into();
 
@@ -350,7 +395,7 @@ fn build_req<I, B>(client: &reqwest::Client, params: &RequestParams, req: I) -> 
 impl ElasticClient for reqwest::Client {
     fn elastic_req<I, B>(&self, params: &RequestParams, req: I) -> Result<Response, reqwest::Error>
         where I: Into<HttpRequest<'static, B>>,
-              B: Into<reqwest::Body>
+              B: IntoReqwestBody
     {
         build_req(&self, params, req).send()
     }

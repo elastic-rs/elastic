@@ -8,6 +8,9 @@ documentation = "https://docs.rs/elastic_reqwest/*/elastic_reqwest/"
 repository = "https://github.com/elastic-rs/elastic-hyper"
 exclude = [ "samples" ]
 
+[features]
+nightly = []
+
 [dependencies]
 elastic_requests = { version = "~0.3.0", git = "https://github.com/elastic-rs/elastic-requests.git", branch = "feat/generic-body" }
 reqwest = "~0.4.0"
