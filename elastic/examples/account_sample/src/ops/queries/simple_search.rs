@@ -1,5 +1,5 @@
 use ops::Client;
-use elastic::client::requests::{SearchRequest, Body};
+use elastic::client::requests::{SearchRequest, IntoBody};
 use elastic::client::responses::SearchResponse;
 use elastic::error::Result;
 
@@ -20,8 +20,8 @@ impl SimpleSearchQuery for Client {
     }
 }
 
-fn search<B>(body: B) -> SearchRequest<'static>
-    where B: Into<Body<'static>>
+fn search<B>(body: B) -> SearchRequest<'static, B>
+    where B: IntoBody
 {
     SearchRequest::for_index_ty(model::index::name(), model::account::name(), body)
 }

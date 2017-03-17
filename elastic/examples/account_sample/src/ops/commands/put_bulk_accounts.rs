@@ -3,7 +3,7 @@ use std::fs::File;
 use std::path::Path;
 use serde_json::Value;
 use ops::Client;
-use elastic::client::requests::{Body, BulkRequest};
+use elastic::client::requests::{IntoBody, BulkRequest};
 use elastic::error::Error as ResponseError;
 
 use model;
@@ -26,8 +26,8 @@ impl PutBulkAccounts for Client {
     }
 }
 
-fn put<B>(body: B) -> BulkRequest<'static>
-    where B: Into<Body<'static>>
+fn put<B>(body: B) -> BulkRequest<'static, B>
+    where B: IntoBody
 {
     BulkRequest::for_index_ty(model::index::name(), model::account::name(), body)
 }

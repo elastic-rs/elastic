@@ -87,7 +87,7 @@ fn ensure_indexed(client: &Client, doc: MyType) {
 }
 
 fn put_index(client: &Client) {
-    let req = IndicesCreateRequest::for_index(INDEX, Body::none());
+    let req = IndicesCreateRequest::for_index(INDEX, empty_body());
 
     client.request(req).send().unwrap();
 
