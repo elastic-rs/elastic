@@ -23,8 +23,7 @@ before_script:
 
 script:
   - |
-      travis-cargo --only nightly build -- --features nightly &&
-      travis-cargo build &&
+      travis-cargo --only nightly test -- --features nightly &&
       travis-cargo test &&
       travis-cargo bench &&
       cd samples/basic &&

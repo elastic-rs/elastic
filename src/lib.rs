@@ -488,6 +488,28 @@ mod tests {
     }
 
     #[test]
+    fn owned_string_into_body() {
+        String::new().into_body();
+    }
+
+    #[test]
+    fn borrowed_string_into_body() {
+        "abc".into_body();
+    }
+
+    #[test]
+    fn owned_vec_into_body() {
+        Vec::new().into_body();
+    }
+
+    #[test]
+    fn borrowed_vec_into_body() {
+        static BODY: &'static [u8] = &[0, 1, 2];
+
+        (&BODY).into_body();
+    }
+
+    #[test]
     fn request_params_has_default_content_type() {
         let req = RequestParams::default();
         assert_eq!(Some(&ContentType::json()), req.headers.get::<ContentType>());
