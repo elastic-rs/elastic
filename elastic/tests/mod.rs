@@ -64,15 +64,3 @@ fn mapping_request_from_mapping() {
 
 	assert!(req.is_ok());
 }
-
-#[test]
-fn body_from_doc() {
-	let doc = MyType {
-		id: 1,
-		title: "A title"
-	};
-
-	let body = Body::try_for_doc(&doc);
-
-	assert!(body.is_ok());
-}

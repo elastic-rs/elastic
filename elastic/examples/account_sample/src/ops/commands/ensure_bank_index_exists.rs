@@ -1,7 +1,7 @@
 use ops::Client;
 use std::io::Error as IoError;
 use serde_json::{Value, Error as JsonError};
-use elastic::client::requests::{Body, IndicesExistsRequest, IndicesCreateRequest};
+use elastic::client::requests::{IntoBody, IndicesExistsRequest, IndicesCreateRequest};
 use elastic::error::Error as ResponseError;
 
 use model;
@@ -39,8 +39,8 @@ fn exists() -> IndicesExistsRequest<'static> {
     IndicesExistsRequest::for_index(model::index::name())
 }
 
-fn put<B>(body: B) -> IndicesCreateRequest<'static>
-    where B: Into<Body<'static>>
+fn put<B>(body: B) -> IndicesCreateRequest<'static, B>
+    where B: IntoBody
 {
     IndicesCreateRequest::for_index(model::index::name(), body)
 }

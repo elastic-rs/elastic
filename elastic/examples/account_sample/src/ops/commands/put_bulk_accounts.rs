@@ -1,9 +1,9 @@
-use std::io::{Read, Result as IoResult, Error as IoError};
+use std::io::{Result as IoResult, Error as IoError};
 use std::fs::File;
 use std::path::Path;
 use serde_json::Value;
 use ops::Client;
-use elastic::client::requests::{Body, BulkRequest};
+use elastic::client::requests::{IntoBody, BulkRequest};
 use elastic::error::Error as ResponseError;
 
 use model;
@@ -19,6 +19,7 @@ impl PutBulkAccounts for Client {
         let body = bulk_body(path)?;
 
         self.io.request(put(body))
+            .params(|params| params.url_param("refresh", true))
             .send()
             .and_then(|res| res.response::<Value>())?;
 
@@ -26,21 +27,16 @@ impl PutBulkAccounts for Client {
     }
 }
 
-fn put<B>(body: B) -> BulkRequest<'static>
-    where B: Into<Body<'static>>
+fn put<B>(body: B) -> BulkRequest<'static, B>
+    where B: IntoBody
 {
     BulkRequest::for_index_ty(model::index::name(), model::account::name(), body)
 }
 
-fn bulk_body<P>(path: P) -> IoResult<Vec<u8>>
+fn bulk_body<P>(path: P) -> IoResult<File>
     where P: AsRef<Path>
 {
-    let mut body = File::open(path)?;
-
-    let mut buf = Vec::new();
-    body.read_to_end(&mut buf)?;
-
-    Ok(buf)
+    File::open(path)
 }
 
 quick_error!{

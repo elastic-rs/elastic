@@ -9,8 +9,7 @@ debug = true
 [dependencies]
 json_str = { version = "*", features = ["nightly"]}
 
-elastic = { version = "*", path = "../../../elastic" }
+elastic = { version = "*", path = "../../../elastic", features = ["nightly"] }
 
-lazy_static = "*"
 time = "*"
 stopwatch = "*"

@@ -6,9 +6,8 @@
 //! this may be different in a future where indices only support a single
 //! document type.
 
-use serde::Serialize;
 use serde_json;
-use super::client::requests::{Index, Id, Body, IndexRequest, IndicesPutMappingRequest};
+use super::client::requests::{Index, Id, IndexRequest, IndicesPutMappingRequest};
 use super::types::prelude::*;
 
 use super::error::*;
@@ -29,7 +28,7 @@ pub trait TryForMapping<M>
     fn try_for_mapping(mapping: M) -> Result<Self>;
 }
 
-impl<'a, 'b, T, M> TryForDoc<(Index<'a>, &'b T), M> for IndexRequest<'a>
+impl<'a, 'b, T, M> TryForDoc<(Index<'a>, &'b T), M> for IndexRequest<'a, String>
     where T: DocumentType<M>,
           M: DocumentMapping
 {
@@ -42,7 +41,7 @@ impl<'a, 'b, T, M> TryForDoc<(Index<'a>, &'b T), M> for IndexRequest<'a>
     }
 }
 
-impl<'a, 'b, T, M> TryForDoc<(Index<'a>, Id<'a>, &'b T), M> for IndexRequest<'a>
+impl<'a, 'b, T, M> TryForDoc<(Index<'a>, Id<'a>, &'b T), M> for IndexRequest<'a, String>
     where T: DocumentType<M>,
           M: DocumentMapping
 {
@@ -55,17 +54,7 @@ impl<'a, 'b, T, M> TryForDoc<(Index<'a>, Id<'a>, &'b T), M> for IndexRequest<'a>
     }
 }
 
-impl<'a, 'b, T> TryForDoc<&'b T, ()> for Body<'a>
-    where T: Serialize
-{
-    fn try_for_doc(doc: &T) -> Result<Self> {
-        let doc = serde_json::to_string(&doc)?;
-
-        Ok(Self::from(doc))
-    }
-}
-
-impl<'a, M> TryForMapping<(Index<'a>, M)> for IndicesPutMappingRequest<'a>
+impl<'a, M> TryForMapping<(Index<'a>, M)> for IndicesPutMappingRequest<'a, String>
     where M: DocumentMapping
 {
     fn try_for_mapping((index, mapping): (Index<'a>, M)) -> Result<Self> {
@@ -75,7 +64,7 @@ impl<'a, M> TryForMapping<(Index<'a>, M)> for IndicesPutMappingRequest<'a>
     }
 }
 
-impl<'a, 'b, T, M> TryForDoc<(Index<'a>, &'b T), M> for IndicesPutMappingRequest<'a>
+impl<'a, 'b, T, M> TryForDoc<(Index<'a>, &'b T), M> for IndicesPutMappingRequest<'a, String>
     where T: DocumentType<M>,
           M: DocumentMapping
 {

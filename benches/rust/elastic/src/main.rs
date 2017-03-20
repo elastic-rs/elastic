@@ -3,8 +3,6 @@
 
 #[macro_use]
 extern crate serde_derive;
-#[macro_use]
-extern crate lazy_static;
 
 extern crate stopwatch;
 extern crate time;
@@ -27,19 +25,15 @@ struct BenchDoc {
     pub timestamp: Date<EpochMillis>,
 }
 
-lazy_static!(
-    static ref REQ: SearchRequest<'static> = {
-        SearchRequest::for_index_ty(
-            "bench_index", "bench_doc",
-            json_lit!({
-                query: {
-                    query_string: {
-                        query: "*"
-                    }
-                },
-                size: 10
-            }))
-        };
+static BODY: &'static str = json_lit!(
+    {
+        query: {
+            query_string: {
+                query: "*"
+            }
+        },
+        size: 10
+    }
 );
 
 fn main() {
@@ -60,7 +54,7 @@ fn main() {
     for _ in 0..runs {
         let mut sw = Stopwatch::start_new();
 
-        let req: &SearchRequest<'static> = &REQ;
+        let req = SearchRequest::for_index_ty("bench_index", "bench_doc", BODY);
         let res: SearchResponse<BenchDoc> = client.request(req)
                                                   .send()
                                                   .and_then(|res| res.response())

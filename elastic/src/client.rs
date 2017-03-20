@@ -88,11 +88,13 @@
 //! # }
 //! ```
 
+use std::marker::PhantomData;
+
 use elastic_reqwest::ElasticClient;
 use error::*;
 use reqwest::{Client as HttpClient, Response as RawResponse};
 
-use self::requests::HttpRequest;
+use self::requests::{IntoBody, HttpRequest};
 use self::responses::HttpResponse;
 use self::responses::parse::FromResponse;
 
@@ -164,8 +166,9 @@ impl Client {
     /// // Send the `RequestBuilder`
     /// let res = builder.send().unwrap();
     /// ```
-    pub fn request<'a, I>(&'a self, req: I) -> RequestBuilder<'a, I>
-        where I: Into<HttpRequest<'static>>
+    pub fn request<'a, I, B>(&'a self, req: I) -> RequestBuilder<'a, I, B>
+        where I: Into<HttpRequest<'static, B>>,
+              B: IntoBody
     {
         RequestBuilder::new(&self, None, req)
     }
@@ -175,13 +178,14 @@ impl Client {
 /// 
 /// This structure wraps up a concrete REST API request type
 /// and lets you adjust parameters before sending it.
-pub struct RequestBuilder<'a, I> {
+pub struct RequestBuilder<'a, I, B> {
     client: &'a Client,
     params: Option<RequestParams>,
     req: I,
+    _body: PhantomData<B>,
 }
 
-impl<'a, I> RequestBuilder<'a, I> {
+impl<'a, I, B> RequestBuilder<'a, I, B> {
     /// Manually construct a `RequestBuilder`.
     ///
     /// If the `RequestParams` are `None`, then the parameters from the
@@ -191,17 +195,33 @@ impl<'a, I> RequestBuilder<'a, I> {
             client: client,
             params: params,
             req: req,
+            _body: PhantomData,
         }
     }
 }
 
-impl<'a, I> RequestBuilder<'a, I>
-    where I: Into<HttpRequest<'static>>
+impl<'a, I, B> RequestBuilder<'a, I, B>
+    where I: Into<HttpRequest<'static, B>>,
+          B: IntoBody
 {
     /// Override the parameters for this request.
     ///
     /// This method will clone the `RequestParams` on the `Client` and pass
     /// them to the closure.
+    /// 
+    /// # Examples
+    /// 
+    /// Add a url param to force an index refresh:
+    /// 
+    /// ```no_run
+    /// # use elastic::prelude::*;
+    /// # let client = Client::new(RequestParams::default()).unwrap();
+    /// # fn get_req() -> PingRequest<'static> { PingRequest::new() }
+    /// client.request(get_req())
+    ///       .params(|params| params.url_param("refresh", true))
+    ///       .send()
+    ///       .unwrap();
+    /// ```
     pub fn params<F>(mut self, builder: F) -> Self
         where F: Fn(RequestParams) -> RequestParams
     {
@@ -321,7 +341,8 @@ impl ResponseBuilder {
 pub mod requests {
     //! Request types for the Elasticsearch REST API.
 
-    pub use elastic_requests::{HttpRequest, HttpMethod, Body, Url};
+    pub use elastic_reqwest::IntoReqwestBody as IntoBody;
+    pub use elastic_requests::{HttpRequest, HttpMethod, empty_body, Url};
     pub use elastic_requests::params;
     pub use elastic_requests::endpoints;
 
