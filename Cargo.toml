@@ -12,7 +12,7 @@ exclude = [ "samples" ]
 nightly = []
 
 [dependencies]
-elastic_requests = { version = "~0.3.0", git = "https://github.com/elastic-rs/elastic-requests.git", branch = "feat/generic-body" }
+elastic_requests = "~0.3.0"
 reqwest = "~0.4.0"
 url = "~1"
 
