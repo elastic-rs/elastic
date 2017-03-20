@@ -12,15 +12,9 @@ struct Constructor {
 
 impl Constructor {
     pub fn fields(&self) -> Vec<&(syn::Ident, syn::Ty)> {
-        let mut fields: Vec<&(syn::Ident, syn::Ty)> = self.params_fields
+        self.params_fields
             .iter()
-            .collect();
-
-        if let Some(ref body_field) = self.body_field {
-            fields.push(body_field);
-        }
-
-        fields
+            .collect()
     }
 }
 
@@ -115,40 +109,23 @@ impl RequestParamsCtorBuilder {
     fn ctor_field_generic(field: &syn::Ty) -> syn::TyParam {
         let generic_ident = Self::field_generic_ty(field);
 
-        syn::TyParam {
-            attrs: vec![],
-            ident: ident(generic_ident),
-            bounds: vec![],
-            default: None,
-        }
+        ty_param(&generic_ident, vec![])
     }
 
     /// Build the `IT: Into<T>` generic where bound.
     fn ctor_field_generic_where_bound(field: &syn::Ty) -> syn::WherePredicate {
         let generic_ident = Self::field_generic_ty(field);
 
+        let into_bound = path("Into", vec![], vec![field.clone()]);
+
         syn::WherePredicate::BoundPredicate(syn::WhereBoundPredicate {
             bound_lifetimes: vec![],
             bounded_ty: ty(&generic_ident),
-            bounds: vec![syn::TyParamBound::Trait(syn::PolyTraitRef {
-                                                      bound_lifetimes: vec![],
-                                                      trait_ref: syn::Path {
-                                                          global: false,
-                                                          segments: vec![syn::PathSegment {
-                                                                             ident: ident("Into"),
-                                                                             parameters: syn::PathParameters::AngleBracketed(syn::AngleBracketedParameterData {
-                                                                                 lifetimes: vec![],
-                                                                                 types: vec![field.clone()],
-                                                                                 bindings: vec![],
-                                                                             }),
-                                                                         }],
-                                                      },
-                                                  },
-                                                  syn::TraitBoundModifier::None)],
+            bounds: vec![ty_bound(into_bound)],
         })
     }
 
-    /// Build the `T { url_params: UrlParams::ABC(a.into(), b.into(), c.into()), body: body.into() }` body.
+    /// Build the `T { url_params: UrlParams::ABC(a.into(), b.into(), c.into()), body: Body::new(body) }` body.
     fn ctor_body(req_ty: syn::Ty, params_ty: syn::Ty, ctor: &Constructor) -> syn::Block {
         let req_ty = {
             let mut path = req_ty.get_path().to_owned();
@@ -190,6 +167,7 @@ impl RequestParamsCtorBuilder {
                  .into()
         };
 
+        // AST to set the url field: `url: UrlParams::SomeVariant(a, b).url()`
         let mut fields = vec![syn::FieldValue {
                                   attrs: vec![],
                                   ident: ident("url"),
@@ -197,11 +175,12 @@ impl RequestParamsCtorBuilder {
                                   is_shorthand: false,
                               }];
 
+        // AST to set the body field, if present: `body: Body::new(body)`
         if let &Some((ref body_ident, _)) = &ctor.body_field {
             fields.push(syn::FieldValue {
                 attrs: vec![],
                 ident: ident("body"),
-                expr: Self::expr_into(body_ident),
+                expr: syn::ExprKind::Path(None, path_none(body_ident.as_ref())).into(),
                 is_shorthand: false,
             });
         }
@@ -216,28 +195,38 @@ impl RequestParamsCtorBuilder {
     }
 
     /// Build the function header for the constructor.
-    fn ctor_decl(req_ty: syn::Ty, ctor: &Constructor) -> syn::FnDecl {
-        let args: Vec<syn::FnArg> = ctor.fields()
+    fn ctor_decl(ctor: &Constructor) -> syn::FnDecl {
+        // Generic field args: `index: IIndex`.
+        let mut args: Vec<syn::FnArg> = ctor.fields()
             .iter()
             .map(|&f| {
                 let (ref name, ref field) = *f;
 
                 let ty = ty(&Self::field_generic_ty(field));
 
-                syn::FnArg::Captured(syn::Pat::Path(None, path(&name.to_string())), ty)
+                syn::FnArg::Captured(syn::Pat::Path(None, path_none(&name.to_string())), ty)
             })
             .collect();
 
+        // Body arg: `body: B`.
+        if let Some(ref body) = ctor.body_field {
+            args.push({
+                let (ref name, _) = *body;
+
+                syn::FnArg::Captured(syn::Pat::Path(None, path_none(&name.to_string())), types::body::ty())
+            });
+        }
+
         syn::FnDecl {
             inputs: args,
-            output: syn::FunctionRetTy::Ty(req_ty),
+            output: syn::FunctionRetTy::Ty(ty("Self")),
             variadic: false,
         }
     }
 
     /// Build a self implementation for the request parameter constructors.
     fn ctor_item(req_ty: syn::Ty, params_ty: syn::Ty, ctor: &Constructor) -> syn::ImplItem {
-        let fields: Vec<&syn::Ty> = ctor.fields()
+        let generic_fields: Vec<&syn::Ty> = ctor.fields()
             .iter()
             .map(|&f| {
                 let (_, ref ty) = *f;
@@ -245,14 +234,14 @@ impl RequestParamsCtorBuilder {
             })
             .collect();
 
-        let field_tys: Vec<syn::TyParam> = fields
+        let generic_field_tys: Vec<syn::TyParam> = generic_fields
             .iter()
             .map(|ty| {
                 Self::ctor_field_generic(ty)
             })
             .collect();
 
-        let field_where_tys: Vec<syn::WherePredicate> = fields
+        let generic_field_where_tys: Vec<syn::WherePredicate> = generic_fields
             .iter()
             .map(|ty| {
                 Self::ctor_field_generic_where_bound(ty)
@@ -261,11 +250,11 @@ impl RequestParamsCtorBuilder {
 
         let generics = syn::Generics {
             lifetimes: vec![],
-            ty_params: field_tys,
-            where_clause: syn::WhereClause { predicates: field_where_tys },
+            ty_params: generic_field_tys,
+            where_clause: syn::WhereClause { predicates: generic_field_where_tys },
         };
 
-        let fndecl = Self::ctor_decl(req_ty.clone(), &ctor);
+        let fndecl = Self::ctor_decl(&ctor);
 
         let body = Self::ctor_body(req_ty.clone(), params_ty, &ctor);
 
@@ -291,13 +280,32 @@ impl RequestParamsCtorBuilder {
             .map(|c| Self::ctor_item(self.req_ty.clone(), self.params_ty.clone(), c))
             .collect();
 
+        let generics = {
+            let segment = self.req_ty
+                .get_path()
+                .to_owned()
+                .segments
+                .into_iter()
+                .next()
+                .unwrap();
+            
+            match segment.parameters {
+                syn::PathParameters::AngleBracketed(data) => {
+                    let types = data.types.iter().map(|t| ty_param(t.get_ident().as_ref(), vec![])).collect();
+
+                    generics(data.lifetimes, types)
+                },
+                _ => panic!("Only angle bracketed generics are supported.")
+            }
+        };
+
         syn::Item {
             ident: ident(""),
             vis: syn::Visibility::Public,
             attrs: vec![],
             node: syn::ItemKind::Impl(syn::Unsafety::Normal,
                                       syn::ImplPolarity::Positive,
-                                      generics_a(),
+                                      generics,
                                       None,
                                       Box::new(self.req_ty),
                                       ctors),
@@ -340,13 +348,14 @@ pub mod tests {
 
     #[test]
     fn gen_request_ctor_none() {
-        let result = RequestParamsCtorBuilder::new(false, ty_a("Request"), ty_a("UrlParams"))
+        let req_ty = ty_a("Request");
+        let result = RequestParamsCtorBuilder::new(false, req_ty, ty_a("UrlParams"))
             .with_constructor(vec![])
             .build();
 
         let expected = quote!(
             impl <'a> Request<'a> {
-                pub fn new() -> Request<'a> {
+                pub fn new() -> Self {
                     Request {
                         url: UrlParams::None.url()
                     }
@@ -359,7 +368,8 @@ pub mod tests {
 
     #[test]
     fn gen_request_ctor_params() {
-        let result = RequestParamsCtorBuilder::new(false, ty_a("Request"), ty_a("UrlParams"))
+        let req_ty = ty_a("Request");
+        let result = RequestParamsCtorBuilder::new(false, req_ty, ty_a("UrlParams"))
             .with_constructor(vec![
                 "Index".into(),
                 "Type".into(),
@@ -369,7 +379,7 @@ pub mod tests {
 
         let expected = quote!(
             impl <'a> Request<'a> {
-                pub fn for_index_ty_id<IIndex, IType, IId>(index: IIndex, ty: IType, id: IId) -> Request<'a> 
+                pub fn for_index_ty_id<IIndex, IType, IId>(index: IIndex, ty: IType, id: IId) -> Self
                     where IIndex: Into<Index<'a> >,
                           IType: Into<Type<'a> >,
                           IId: Into<Id<'a> >
@@ -386,18 +396,17 @@ pub mod tests {
 
     #[test]
     fn gen_request_ctor_body() {
-        let result = RequestParamsCtorBuilder::new(true, ty_a("Request"), ty_a("UrlParams"))
+        let req_ty = ty_path("Request", vec![lifetime()], vec![types::body::ty()]);
+        let result = RequestParamsCtorBuilder::new(true, req_ty, ty_a("UrlParams"))
             .with_constructor(vec![])
             .build();
 
         let expected = quote!(
-            impl <'a> Request<'a> {
-                pub fn new<IBody>(body: IBody) -> Request<'a> 
-                    where IBody: Into<Body<'a> >
-                {
+            impl <'a, B> Request<'a, B> {
+                pub fn new(body: B) -> Self {
                     Request {
                         url: UrlParams::None.url(),
-                        body: body.into()
+                        body: body
                     }
                 }
             }
@@ -408,7 +417,8 @@ pub mod tests {
 
     #[test]
     fn gen_request_ctor_params_body() {
-        let result = RequestParamsCtorBuilder::new(true, ty_a("Request"), ty_a("UrlParams"))
+        let req_ty = ty_path("Request", vec![lifetime()], vec![types::body::ty()]);
+        let result = RequestParamsCtorBuilder::new(true, req_ty, ty_a("UrlParams"))
             .with_constructor(vec![
                 "Index".into(),
                 "Type".into(),
@@ -417,16 +427,15 @@ pub mod tests {
             .build();
 
         let expected = quote!(
-            impl <'a> Request<'a> {
-                pub fn for_index_ty_id<IIndex, IType, IId, IBody>(index: IIndex, ty: IType, id: IId, body: IBody) -> Request<'a> 
+            impl <'a, B> Request<'a, B> {
+                pub fn for_index_ty_id<IIndex, IType, IId>(index: IIndex, ty: IType, id: IId, body: B) -> Self 
                     where IIndex: Into<Index<'a> >,
                           IType: Into<Type<'a> >,
-                          IId: Into<Id<'a> >,
-                          IBody: Into<Body<'a> >
+                          IId: Into<Id<'a> >
                 {
                     Request {
                         url: UrlParams::IndexTypeId(index.into(), ty.into(), id.into()).url(),
-                        body: body.into()
+                        body: body
                     }
                 }
             }
@@ -448,40 +457,36 @@ pub mod tests {
             body: Some(Body { description: String::new() }),
         });
 
-        let req_ty = ty_a("IndicesExistsAliasRequest");
+        let req_ty = ty_path("IndicesExistsAliasRequest", vec![lifetime()], vec![types::body::ty()]);
         let url_params = UrlParamBuilder::from(&endpoint).build();
 
         let result = RequestParamsCtorBuilder::from((&endpoint, &req_ty, &url_params)).build();
 
         let expected = quote!(
-            impl <'a> IndicesExistsAliasRequest <'a> { 
-                pub fn new<IBody>(body: IBody) -> IndicesExistsAliasRequest<'a> 
-                    where IBody: Into<Body<'a> >
-                { 
+            impl <'a, B> IndicesExistsAliasRequest <'a, B> { 
+                pub fn new(body: B) -> Self { 
                     IndicesExistsAliasRequest { 
                         url : IndicesExistsAliasUrlParams::None.url(),
-                        body: body.into()
+                        body: body
                     }
                 }
 
-                pub fn for_index<IIndex, IBody>(index: IIndex, body: IBody) -> IndicesExistsAliasRequest<'a> 
-                    where IIndex: Into<Index<'a> >,
-                          IBody: Into<Body<'a> >
+                pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
+                    where IIndex: Into<Index<'a> >
                 { 
                     IndicesExistsAliasRequest { 
                         url : IndicesExistsAliasUrlParams::Index(index.into()).url(),
-                        body: body.into()
+                        body: body
                     }
                 }
 
-                pub fn for_index_ty<IIndex, IType, IBody>(index: IIndex, ty: IType, body: IBody) -> IndicesExistsAliasRequest<'a> 
+                pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: B) -> Self
                     where IIndex: Into<Index<'a> >,
-                          IType: Into<Type<'a> >,
-                          IBody: Into<Body<'a> >
+                          IType: Into<Type<'a> >
                 { 
                     IndicesExistsAliasRequest { 
                         url : IndicesExistsAliasUrlParams::IndexType(index.into(), ty.into()).url(),
-                        body: body.into()
+                        body: body
                     }
                 }
             }

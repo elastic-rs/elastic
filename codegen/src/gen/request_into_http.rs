@@ -1,6 +1,7 @@
 use syn;
 use quote;
 use ::parse::{Endpoint, HttpMethod};
+use super::types;
 use super::helpers::*;
 
 pub struct RequestIntoHttpRequestBuilder {
@@ -19,19 +20,7 @@ impl RequestIntoHttpRequestBuilder {
     }
 
     pub fn build(self) -> quote::Tokens {
-        let req_ty = {
-            let mut path = self.req_ty.get_path().to_owned();
-            path.segments[0].parameters = syn::PathParameters::none();
-            path.into_ty()
-        };
-
-        let (brw_body, owned_body) = {
-            if self.has_body {
-                (quote!(Some(self.body.as_ref().into())), quote!(Some(self.body)))
-            } else {
-                (quote!(None), quote!(None))
-            }
-        };
+        let req_ty = self.req_ty;
 
         let method = match self.http_verb {
             HttpMethod::Get => quote!(HttpMethod::Get),
@@ -42,35 +31,35 @@ impl RequestIntoHttpRequestBuilder {
             HttpMethod::Patch => quote!(HttpMethod::Patch),
         };
 
-        let brw_item = quote!(
-            impl <'a, 'b: 'a> Into<HttpRequest<'a> > for &'a #req_ty<'b> {
-                fn into(self) -> HttpRequest<'a> {
-                    HttpRequest {
-                        url: self.url.as_ref().into(),
-                        method: #method,
-                        body: #brw_body
+        if self.has_body {
+            let generic_body = ident(types::body::ident());
+            quote!(
+                impl <'a, #generic_body> Into<HttpRequest<'a, #generic_body> > for #req_ty {
+                    fn into(self) -> HttpRequest<'a, #generic_body> {
+                        HttpRequest {
+                            url: self.url,
+                            method: #method,
+                            body: Some(self.body)
+                        }
                     }
                 }
-            }
-        );
+            )
+        }
+        else {
+            let default_body = ident(types::body::default_ident());
 
-        let owned_item = quote!(
-            impl <'a> Into<HttpRequest<'a> > for #req_ty<'a> {
-                fn into(self) -> HttpRequest<'a> {
-                    HttpRequest {
-                        url: self.url,
-                        method: #method,
-                        body: #owned_body
+            quote!(
+                impl <'a> Into<HttpRequest<'a, #default_body> > for #req_ty {
+                    fn into(self) -> HttpRequest<'a, #default_body> {
+                        HttpRequest {
+                            url: self.url,
+                            method: #method,
+                            body: None
+                        }
                     }
                 }
-            }
-        );
-
-        quote!(
-            #brw_item
-
-            #owned_item
-        )
+            )
+        }
     }
 }
 
@@ -78,7 +67,7 @@ impl<'a> From<(&'a (String, Endpoint), &'a syn::Ty)> for RequestIntoHttpRequestB
     fn from(value: (&'a (String, Endpoint), &'a syn::Ty)) -> Self {
         let (&(_, ref endpoint), ref req_ty) = value;
 
-        let has_body = endpoint.body.is_some();
+        let has_body = endpoint.has_body();
         let verb = endpoint.methods[0];
 
         RequestIntoHttpRequestBuilder::new(verb, has_body, (*req_ty).to_owned())
@@ -87,12 +76,11 @@ impl<'a> From<(&'a (String, Endpoint), &'a syn::Ty)> for RequestIntoHttpRequestB
 
 #[cfg(test)]
 mod tests {
+    use ::parse::*;
     use super::*;
 
     #[test]
-    fn gen_into_http_req() {
-        use ::parse::*;
-
+    fn gen_into_http_req_with_body() {
         let endpoint = ("indices.exists_alias".to_string(),
                         Endpoint {
             documentation: String::new(),
@@ -100,27 +88,45 @@ mod tests {
             url: get_url(),
             body: Some(Body { description: String::new() }),
         });
-        let req_ty = ty_a("IndicesExistsAliasRequest");
+        let req_ty = ty_path("Request", vec![lifetime()], vec![types::body::ty()]);
 
         let result = RequestIntoHttpRequestBuilder::from((&endpoint, &req_ty)).build();
 
         let expected = quote!(
-            impl <'a, 'b: 'a> Into<HttpRequest<'a> > for &'a IndicesExistsAliasRequest<'b> {
-                fn into(self) -> HttpRequest<'a> {
-                    HttpRequest {
-                        url: self.url.as_ref().into(),
-                        method: HttpMethod::Get,
-                        body: Some(self.body.as_ref().into())
-                    }
-                }
-            }
-
-            impl <'a> Into<HttpRequest<'a> > for IndicesExistsAliasRequest<'a> {
-                fn into(self) -> HttpRequest<'a> {
+            impl <'a, B> Into<HttpRequest<'a, B> > for Request<'a, B> {
+                fn into(self) -> HttpRequest<'a, B> {
                     HttpRequest {
                         url: self.url,
                         method: HttpMethod::Get,
                         body: Some(self.body)
+                    }
+                }
+            }
+        );
+
+        ast_eq(expected, result);
+    }
+
+    #[test]
+    fn gen_into_http_req_no_body() {
+        let endpoint = ("indices.exists_alias".to_string(),
+                        Endpoint {
+            documentation: String::new(),
+            methods: vec![HttpMethod::Get],
+            url: get_url(),
+            body: None,
+        });
+        let req_ty = ty_a("Request");
+
+        let result = RequestIntoHttpRequestBuilder::from((&endpoint, &req_ty)).build();
+
+        let expected = quote!(
+            impl <'a> Into<HttpRequest<'a, DefaultBody> > for Request<'a> {
+                fn into(self) -> HttpRequest<'a, DefaultBody> {
+                    HttpRequest {
+                        url: self.url,
+                        method: HttpMethod::Get,
+                        body: None
                     }
                 }
             }

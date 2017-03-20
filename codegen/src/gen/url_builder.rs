@@ -76,7 +76,7 @@ impl UrlParamMatchBuilder {
     }
 
     pub fn build(self) -> syn::Expr {
-        let to_match = path("self").into_expr();
+        let to_match = path_none("self").into_expr();
 
         syn::ExprKind::Match(Box::new(to_match), self.arms).into()
     }
@@ -181,7 +181,7 @@ impl<'a> UrlReplaceBuilder<'a> {
                 PathPart::Param(p) => {
                     Some(syn::ExprKind::MethodCall(ident("len"),
                                                    vec![],
-                                                   vec![syn::ExprKind::Path(None, path(p)).into()])
+                                                   vec![syn::ExprKind::Path(None, path_none(p)).into()])
                         .into())
                 }
                 _ => None,
@@ -208,7 +208,7 @@ impl<'a> UrlReplaceBuilder<'a> {
     /// Get a statement to build a `String` with a capacity of the given expression.
     fn let_url_stmt(url_ident: syn::Ident, len_expr: syn::Expr) -> syn::Stmt {
         let string_with_capacity = syn::ExprKind::Call(Box::new(syn::ExprKind::Path(None, {
-                                                               let mut method = path("String");
+                                                               let mut method = path_none("String");
                                                                method.segments.push(syn::PathSegment::from("with_capacity"));
                                                                method
                                                            })
@@ -290,10 +290,10 @@ impl UrlMethodBuilder {
 
         let (generics, fngenerics) = {
             if self.params_ty.has_lifetime() {
-                (generics_a(), generics())
+                (generics_a(), generics_none())
             }
             else {
-                (generics(), generics_a())
+                (generics_none(), generics_a())
             }
         };
 

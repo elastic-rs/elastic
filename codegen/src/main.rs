@@ -218,6 +218,7 @@ fn endpoints_mod(tokens: &mut Tokens, derives: Tokens, http_mod: &'static str, e
 
 fn http_mod(tokens: &mut Tokens, derives: Tokens) {
     let url_tokens = gen::types::url::tokens();
+
     let body_tokens = gen::types::body::tokens();
     let http_method_item = gen::types::request::method_item();
     let http_req_item = gen::types::request::req_tokens();
@@ -233,8 +234,7 @@ fn http_mod(tokens: &mut Tokens, derives: Tokens) {
 
     tokens.append_all(vec![
         derives.clone(),
-        url_tokens, 
-        derives.clone(),
+        url_tokens,
         body_tokens, 
         derives.clone(),
         http_req_item, 

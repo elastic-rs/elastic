@@ -89,7 +89,7 @@ impl UrlParamBuilder {
                 (ty_a(self.name.as_ref()), generics_a())
             }
             else {
-                (ty(self.name.as_ref()), generics())
+                (ty(self.name.as_ref()), generics_none())
             }
         };
 
