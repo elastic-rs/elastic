@@ -208,6 +208,20 @@ impl<'a, I, B> RequestBuilder<'a, I, B>
     ///
     /// This method will clone the `RequestParams` on the `Client` and pass
     /// them to the closure.
+    /// 
+    /// # Examples
+    /// 
+    /// Add a url param to force an index refresh:
+    /// 
+    /// ```no_run
+    /// # use elastic::prelude::*;
+    /// # let client = Client::new(RequestParams::default()).unwrap();
+    /// # fn get_req() -> PingRequest<'static> { PingRequest::new() }
+    /// client.request(get_req())
+    ///       .params(|params| params.url_param("refresh", true))
+    ///       .send()
+    ///       .unwrap();
+    /// ```
     pub fn params<F>(mut self, builder: F) -> Self
         where F: Fn(RequestParams) -> RequestParams
     {
