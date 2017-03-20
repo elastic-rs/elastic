@@ -1,6 +1,6 @@
 [package]
 name = "elastic_reqwest"
-version = "0.5.0"
+version = "0.6.0"
 authors = ["Ashley Mannix <ashleymannix@live.com.au>", "Stephan Buys <stephan.buys@gmail.com>"]
 license = "Apache-2.0"
 description = "A lightweight implementation of the Elasticsearch API based on reqwest."
@@ -8,8 +8,11 @@ documentation = "https://docs.rs/elastic_reqwest/*/elastic_reqwest/"
 repository = "https://github.com/elastic-rs/elastic-hyper"
 exclude = [ "samples" ]
 
+[features]
+nightly = []
+
 [dependencies]
-elastic_requests = "~0.2.0"
+elastic_requests = "~0.3.0"
 reqwest = "~0.4.0"
 url = "~1"
 

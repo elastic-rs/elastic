@@ -26,6 +26,15 @@
 //! elastic_reqwest = "*"
 //! reqwest = "*"
 //! ```
+//! 
+//! On the `nightly` channel, you can use the `nightly` feature
+//! to avoid copying borrowed body buffers:
+//! 
+//! ```ignore
+//! [dependencies]
+//! elastic_reqwest = { version = "*", features = ["nightly"] }
+//! reqwest = "*"
+//! ```
 //!
 //! Then reference in your crate root:
 //!
@@ -137,6 +146,8 @@
 //! - [Elasticsearch Docs](https://www.elastic.co/guide/en/elasticsearch/reference/master/index.html)
 //! - [Github](https://github.com/elastic-rs/elastic-reqwest)
 
+#![cfg_attr(feature = "nightly", feature(specialization))]
+
 #![deny(warnings)]
 #![deny(missing_docs)]
 
@@ -144,9 +155,9 @@ extern crate elastic_requests;
 extern crate reqwest;
 extern crate url;
 
-use std::borrow::Cow;
-use std::collections::BTreeMap;
+#[cfg(feature = "nightly")]
 use std::io::Cursor;
+use std::collections::BTreeMap;
 use std::str;
 use reqwest::header::{Header, HeaderFormat, Headers, ContentType};
 use reqwest::{RequestBuilder, Response};
@@ -296,31 +307,59 @@ pub fn default() -> Result<(reqwest::Client, RequestParams), reqwest::Error> {
     reqwest::Client::new().map(|cli| (cli, RequestParams::default()))
 }
 
+/// A type that can be converted into a `reqwest::Body`.
+pub trait IntoReqwestBody {
+    /// Convert self into a body.
+    fn into_body(self) -> reqwest::Body;
+}
+
+impl<B: Into<reqwest::Body>> IntoReqwestBody for B {
+    #[cfg(feature = "nightly")]
+    default fn into_body(self) -> reqwest::Body {
+        self.into()
+    }
+
+    #[cfg(not(feature = "nightly"))]
+    fn into_body(self) -> reqwest::Body {
+        self.into()
+    }
+}
+
+#[cfg(feature = "nightly")]
+impl IntoReqwestBody for &'static [u8] {
+    fn into_body(self) -> reqwest::Body {
+        reqwest::Body::new(Cursor::new(self))
+    }
+}
+
+#[cfg(feature = "nightly")]
+impl IntoReqwestBody for &'static str {
+    fn into_body(self) -> reqwest::Body {
+        reqwest::Body::new(Cursor::new(self))
+    }
+}
+
 /// Represents a client that can send Elasticsearch requests.
 pub trait ElasticClient {
     /// Send a request and get a response.
-    fn elastic_req<I>(&self, params: &RequestParams, req: I) -> Result<Response, reqwest::Error> 
-        where I: Into<HttpRequest<'static>>;
+    fn elastic_req<I, B>(&self, params: &RequestParams, req: I) -> Result<Response, reqwest::Error> 
+        where I: Into<HttpRequest<'static, B>>,
+              B: IntoReqwestBody;
 }
 
 macro_rules! req_with_body {
     ($client:ident, $url:ident, $body:ident, $params:ident, $method:ident) => ({
         let body = $body.expect("Expected this request to have a body. This is a bug, please file an issue on GitHub.");
-        let body_cow = body.into_inner();
-
-        let body = match body_cow {
-            Cow::Borrowed(b) => reqwest::Body::new(Cursor::new(b)),
-            Cow::Owned(b) => b.into()
-        };
 
         $client.request(reqwest::Method::$method, &$url)
                .headers($params.headers.to_owned())
-               .body(body)
+               .body(body.into_body())
     })
 }
 
-fn build_req<I>(client: &reqwest::Client, params: &RequestParams, req: I) -> RequestBuilder 
-    where I: Into<HttpRequest<'static>>
+fn build_req<I, B>(client: &reqwest::Client, params: &RequestParams, req: I) -> RequestBuilder 
+    where I: Into<HttpRequest<'static, B>>,
+          B: IntoReqwestBody
 {
     let req = req.into();
 
@@ -354,8 +393,9 @@ fn build_req<I>(client: &reqwest::Client, params: &RequestParams, req: I) -> Req
 }
 
 impl ElasticClient for reqwest::Client {
-    fn elastic_req<I>(&self, params: &RequestParams, req: I) -> Result<Response, reqwest::Error>
-        where I: Into<HttpRequest<'static>>
+    fn elastic_req<I, B>(&self, params: &RequestParams, req: I) -> Result<Response, reqwest::Error>
+        where I: Into<HttpRequest<'static, B>>,
+              B: IntoReqwestBody
     {
         build_req(&self, params, req).send()
     }
@@ -445,6 +485,28 @@ mod tests {
         let expected = expected_req(&cli, Method::Delete, url, None);
 
         assert_req(expected, req);
+    }
+
+    #[test]
+    fn owned_string_into_body() {
+        String::new().into_body();
+    }
+
+    #[test]
+    fn borrowed_string_into_body() {
+        "abc".into_body();
+    }
+
+    #[test]
+    fn owned_vec_into_body() {
+        Vec::new().into_body();
+    }
+
+    #[test]
+    fn borrowed_vec_into_body() {
+        static BODY: &'static [u8] = &[0, 1, 2];
+
+        (&BODY).into_body();
     }
 
     #[test]
