@@ -1,5 +1,5 @@
 #[macro_use]
-extern crate elastic_types_derive;
+extern crate elastic_derive;
 #[macro_use]
 extern crate serde_derive;
 extern crate serde;
@@ -63,16 +63,4 @@ fn mapping_request_from_mapping() {
 	let req = IndicesPutMappingRequest::try_for_mapping((index, MyType::mapping()));
 
 	assert!(req.is_ok());
-}
-
-#[test]
-fn body_from_doc() {
-	let doc = MyType {
-		id: 1,
-		title: "A title"
-	};
-
-	let body = Body::try_for_doc(&doc);
-
-	assert!(body.is_ok());
 }

@@ -8,8 +8,28 @@ addons:
       - libdw-dev
       - binutils-dev # optional: only required for the --verify flag of coveralls
 
-rust:
-  - nightly
+matrix:
+  include:
+    - rust: stable
+      env:
+        - CRATE="derive"
+    - rust: stable
+      env:
+        - CRATE="elastic/examples/account_sample"
+    - rust: stable
+      env:
+        - CRATE="elastic/examples/async_sample"
+    - rust: stable
+      env:
+        - CRATE="elastic"
+
+    - rust: nightly
+      env:
+        - CRATE="benches/rust/elastic"
+    - rust: nightly
+      env:
+        - CRATE="elastic"
+        - DOC_UPLOAD=true
 
 env:
   global:
@@ -22,7 +42,8 @@ before_script:
 
 script:
   - |
-      cargo test --features nightly &&
-      travis-cargo doc
-after_success:
-  - travis-cargo doc-upload
+      cd $CRATE &&
+      travis-cargo test &&
+      travis-cargo --only nightly bench &&
+      travis-cargo --only nightly doc &&
+      if [ $DOC_UPLOAD ]; then travis-cargo --only nightly doc-upload; fi

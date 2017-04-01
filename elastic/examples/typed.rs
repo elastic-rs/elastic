@@ -13,7 +13,7 @@
 #[macro_use]
 extern crate json_str;
 #[macro_use]
-extern crate elastic_types_derive;
+extern crate elastic_derive;
 #[macro_use]
 extern crate serde_derive;
 extern crate serde;
@@ -87,7 +87,7 @@ fn ensure_indexed(client: &Client, doc: MyType) {
 }
 
 fn put_index(client: &Client) {
-    let req = IndicesCreateRequest::for_index(INDEX, Body::none());
+    let req = IndicesCreateRequest::for_index(INDEX, empty_body());
 
     client.request(req).send().unwrap();
 

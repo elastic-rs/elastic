@@ -23,9 +23,9 @@ fn main() {
                         .unwrap();
 
     // Check if the response is in the 200 range
-    let status = res.status().to_owned();
-    if !status.is_success() {
-        panic!("error: {:?}", status);
+    match res.status() {
+        200...299 => (),
+        status => panic!("error: {:?}", status)
     }
 
     // Read the response body to a string

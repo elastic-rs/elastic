@@ -1,0 +1,18 @@
+[package]
+name = "account-sample"
+version = "0.1.0"
+authors = ["Ashley Mannix <ashleymannix@live.com.au>"]
+
+[features]
+nightly = ["elastic/nightly"]
+
+[dependencies]
+elastic = { version = "*", path = "../../" }
+elastic_derive = "~0.1.0"
+
+quick-error = "*"
+serde = "0.9"
+serde_json = "0.9"
+serde_derive = "0.9"
+
+json_str = "*"
