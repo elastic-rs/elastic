@@ -121,8 +121,6 @@ impl Stream for ChunkStream {
     type Error = SendError<ChunkResult>;
 
     fn poll(&mut self) -> Poll<Option<Self::Item>, Self::Error> {
-        println!("streaming");
-
         if let Some(slice) = self.0.pop() {
             Ok(Async::Ready(Some(slice)))
         } else {
@@ -169,10 +167,14 @@ fn map_file_to_chunks<P>(path: P) -> FutureResult<Vec<ChunkResult>, RequestError
 
     let total_len = file.len();
 
+    if total_len == 0 {
+        return ok(vec![])
+    }
+
     let slice_size = total_len;
     // TODO: Chunked has issues deriving xcontent?
     // Looks like it needs to be aware of doc boundaries
-    // let slice_size = 16000;
+    // let slice_size = 16384;
 
     let num_slices = (total_len as f32 / slice_size as f32).ceil() as usize;
 
