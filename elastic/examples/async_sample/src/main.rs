@@ -23,6 +23,7 @@ extern crate futures_cpupool;
 #[macro_use]
 extern crate quick_error;
 
+use std::collections::VecDeque;
 use std::path::Path;
 use std::str::{self, FromStr};
 use std::io::{Read, Error as IoError};
@@ -98,11 +99,6 @@ fn main() {
     core.run(req_future).unwrap();
 }
 
-// - Get a mapped file
-// - Split by chunk size
-// - For each chunk, stream
-//
-
 struct Chunk(MmapViewSync);
 
 impl AsRef<[u8]> for Chunk {
@@ -114,14 +110,14 @@ impl AsRef<[u8]> for Chunk {
 type MappedFileBody = Body<Chunk, HyperError>;
 type ChunkResult = Result<Chunk, HyperError>;
 
-struct ChunkStream(Vec<ChunkResult>);
+struct ChunkStream(VecDeque<ChunkResult>);
 
 impl Stream for ChunkStream {
     type Item = ChunkResult;
     type Error = SendError<ChunkResult>;
 
     fn poll(&mut self) -> Poll<Option<Self::Item>, Self::Error> {
-        if let Some(slice) = self.0.pop() {
+        if let Some(slice) = self.0.pop_front() {
             Ok(Async::Ready(Some(slice)))
         } else {
             Ok(Async::Ready(None))
@@ -155,7 +151,7 @@ fn mapped_file<P>
     Ok((tx_future.boxed(), rx))
 }
 
-fn map_file_to_chunks<P>(path: P) -> FutureResult<Vec<ChunkResult>, RequestError>
+fn map_file_to_chunks<P>(path: P) -> FutureResult<VecDeque<ChunkResult>, RequestError>
     where P: AsRef<Path>
 {
     let file = match Mmap::open_path(path, Protection::Read) {
@@ -168,41 +164,41 @@ fn map_file_to_chunks<P>(path: P) -> FutureResult<Vec<ChunkResult>, RequestError
     let total_len = file.len();
 
     if total_len == 0 {
-        return ok(vec![])
+        return ok(VecDeque::new())
     }
 
-    let slice_size = total_len;
-    // TODO: Chunked has issues deriving xcontent?
-    // Looks like it needs to be aware of doc boundaries
-    // let slice_size = 16384;
+    let slice_size = 1024 * 16;
 
     let num_slices = (total_len as f32 / slice_size as f32).ceil() as usize;
 
-    let mut slices: Vec<ChunkResult> = Vec::with_capacity(num_slices);
+    let mut slices = VecDeque::with_capacity(num_slices);
 
     let mut next = Some(file);
     while let Some(rest) = next {
-        let (slice, rest) = match rest.split_at(slice_size) {
-            Ok(split) => split,
-            Err(e) => return err(e.into()),
-        };
-
-        slices.push(Ok(Chunk(slice)));
-
         next = match rest.len() {
-            // >1 remaining chunk, continue loop
-            len if len > slice_size => Some(rest),
-            // EOF, break
-            0 => None,
-            // Last chunk, push and break
+            // >1 chunk size left
+            len if len > slice_size => {
+                let (slice, rest) = match rest.split_at(slice_size) {
+                    Ok(split) => split,
+                    Err(e) => return err(e.into()),
+                };
+
+                slices.push_back(Ok(Chunk(slice)));
+
+                Some(rest)
+            },
+            // EOF
+            0 => {
+                None
+            },
+            // Last chunk
             _ => {
-                slices.push(Ok(Chunk(rest)));
+                slices.push_back(Ok(Chunk(rest)));
+
                 None
             }
-        }
+        };
     }
-
-    println!("len: {}, slices: {}", total_len, slices.len());
 
     ok(slices)
 }
@@ -243,8 +239,6 @@ fn hyper_req<I, B>(base_url: &str, req: I) -> Request<B>
         let mut headers = req.headers_mut();
         headers.set(ContentType::json())
     }
-
-    println!("built req");
 
     req
 }
