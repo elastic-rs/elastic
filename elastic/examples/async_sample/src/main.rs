@@ -1,8 +1,4 @@
 extern crate elastic_requests as req;
-extern crate elastic_types;
-
-extern crate serde;
-extern crate serde_json;
 
 extern crate futures;
 extern crate tokio_proto;
@@ -46,7 +42,7 @@ fn main() {
     let buffer_future = pool.spawn(buffer_future);
 
     // Get a future to send a bulk request
-    let req = BulkRequest::new(body);
+    let req = BulkRequest::for_index_ty("bulk-test", "bulk-ty", body);
     let req_future = client.request(hyper_req::build(&url, req))
         .and_then(|res| {
             res.body()

@@ -23,7 +23,7 @@ impl AsRef<[u8]> for Chunk {
     }
 }
 
-type ChunkResult = Result<Chunk, HyperError>;
+pub type ChunkResult = Result<Chunk, HyperError>;
 
 struct ChunkStream(VecDeque<ChunkResult>);
 
