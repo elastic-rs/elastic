@@ -430,7 +430,7 @@ mod tests {
     #[test]
     fn head_req() {
         let cli = Client::new().unwrap();
-        let req = build_req(&cli, &params(), PingRequest::new());
+        let req = build_req(&cli, &params(), PingHeadRequest::new());
 
         let url = "eshost:9200/path/?pretty=true&q=*";
 
