@@ -9,7 +9,9 @@ use std::borrow::Cow;
 use std::collections::BTreeMap;
 use std::slice::Iter;
 
-/// Main `struct` of the crate, provides access to the `hits` and `aggs` iterators.
+/// Response for a [search request](https://www.elastic.co/guide/en/elasticsearch/reference/current/search-search.html).
+/// 
+/// This is the main `struct` of the crate, provides access to the `hits` and `aggs` iterators.
 #[derive(Deserialize, Debug)]
 pub struct SearchResponseOf<T: Deserialize> {
     pub took: u64,
@@ -63,7 +65,7 @@ pub struct Shards {
 #[derive(Deserialize, Debug)]
 pub struct Hits<T: Deserialize> {
     pub total: u64,
-    pub max_score: u64,
+    pub max_score: Option<u64>,
     pub hits: Vec<T>,
 }
 
@@ -73,6 +75,7 @@ impl<T: Deserialize> Hits<T> {
     }
 }
 
+/// Full metadata and source for a single hit.
 #[derive(Deserialize, Debug)]
 pub struct Hit<T: Deserialize> {
     #[serde(rename = "_index")]

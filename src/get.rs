@@ -6,7 +6,7 @@ use super::{HttpResponse, FromResponse, ApiResult};
 
 use std::io::Read;
 
-/// Response for a get document request.
+/// Response for a [get document request](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-get.html).
 #[derive(Deserialize, Debug)]
 pub struct GetResponseOf<T: Deserialize> {
     #[serde(rename = "_index")]
