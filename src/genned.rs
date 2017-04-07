@@ -1719,41 +1719,33 @@ pub mod endpoints {
         }
     }
     # [ derive ( Debug , PartialEq , Clone ) ]
-    pub struct SimpleSearchRequest<'a, B> {
+    pub struct SimpleSearchRequest<'a> {
         pub url: Url<'a>,
-        pub body: B,
     }
-    impl<'a, B> SimpleSearchRequest<'a, B> {
-        pub fn new(body: B) -> Self {
-            SimpleSearchRequest {
-                url: SimpleSearchUrlParams::None.url(),
-                body: body,
-            }
+    impl<'a> SimpleSearchRequest<'a> {
+        pub fn new() -> Self {
+            SimpleSearchRequest { url: SimpleSearchUrlParams::None.url() }
         }
-        pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
+        pub fn for_index<IIndex>(index: IIndex) -> Self
             where IIndex: Into<Index<'a>>
         {
-            SimpleSearchRequest {
-                url: SimpleSearchUrlParams::Index(index.into()).url(),
-                body: body,
-            }
+            SimpleSearchRequest { url: SimpleSearchUrlParams::Index(index.into()).url() }
         }
-        pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: B) -> Self
+        pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType) -> Self
             where IIndex: Into<Index<'a>>,
                   IType: Into<Type<'a>>
         {
             SimpleSearchRequest {
                 url: SimpleSearchUrlParams::IndexType(index.into(), ty.into()).url(),
-                body: body,
             }
         }
     }
-    impl<'a, B> Into<HttpRequest<'a, B>> for SimpleSearchRequest<'a, B> {
-        fn into(self) -> HttpRequest<'a, B> {
+    impl<'a> Into<HttpRequest<'a, DefaultBody>> for SimpleSearchRequest<'a> {
+        fn into(self) -> HttpRequest<'a, DefaultBody> {
             HttpRequest {
                 url: self.url,
                 method: HttpMethod::Get,
-                body: Some(self.body),
+                body: None,
             }
         }
     }

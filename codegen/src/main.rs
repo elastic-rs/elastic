@@ -158,6 +158,7 @@ impl CustomEndpoints for Vec<(String, Endpoint)> {
                     "search" => {
                         let mut simple_search_endpoint = endpoint.clone();
                         simple_search_endpoint.methods = vec![HttpMethod::Get];
+                        simple_search_endpoint.body = None;
 
                         endpoints.push((String::from("simple_search"), simple_search_endpoint));
                         endpoints.push((String::from("search"), endpoint));
