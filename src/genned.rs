@@ -1126,6 +1126,35 @@ pub mod endpoints {
         fn into(self) -> HttpRequest<'a, DefaultBody> {
             HttpRequest {
                 url: self.url,
+                method: HttpMethod::Get,
+                body: None,
+            }
+        }
+    }
+    # [ derive ( Debug , PartialEq , Clone ) ]
+    enum PingHeadUrlParams {
+        None,
+    }
+    impl PingHeadUrlParams {
+        pub fn url<'a>(self) -> Url<'a> {
+            match self {
+                PingHeadUrlParams::None => Url::from("/"),
+            }
+        }
+    }
+    # [ derive ( Debug , PartialEq , Clone ) ]
+    pub struct PingHeadRequest<'a> {
+        pub url: Url<'a>,
+    }
+    impl<'a> PingHeadRequest<'a> {
+        pub fn new() -> Self {
+            PingHeadRequest { url: PingHeadUrlParams::None.url() }
+        }
+    }
+    impl<'a> Into<HttpRequest<'a, DefaultBody>> for PingHeadRequest<'a> {
+        fn into(self) -> HttpRequest<'a, DefaultBody> {
+            HttpRequest {
+                url: self.url,
                 method: HttpMethod::Head,
                 body: None,
             }
@@ -1656,6 +1685,74 @@ pub mod endpoints {
             HttpRequest {
                 url: self.url,
                 method: HttpMethod::Post,
+                body: Some(self.body),
+            }
+        }
+    }
+    # [ derive ( Debug , PartialEq , Clone ) ]
+    enum SimpleSearchUrlParams<'a> {
+        None,
+        Index(Index<'a>),
+        IndexType(Index<'a>, Type<'a>),
+    }
+    impl<'a> SimpleSearchUrlParams<'a> {
+        pub fn url(self) -> Url<'a> {
+            match self {
+                SimpleSearchUrlParams::None => Url::from("/_search"),
+                SimpleSearchUrlParams::Index(ref index) => {
+                    let mut url = String::with_capacity(9usize + index.len());
+                    url.push_str("/");
+                    url.push_str(index.as_ref());
+                    url.push_str("/_search");
+                    Url::from(url)
+                }
+                SimpleSearchUrlParams::IndexType(ref index, ref ty) => {
+                    let mut url = String::with_capacity(10usize + index.len() + ty.len());
+                    url.push_str("/");
+                    url.push_str(index.as_ref());
+                    url.push_str("/");
+                    url.push_str(ty.as_ref());
+                    url.push_str("/_search");
+                    Url::from(url)
+                }
+            }
+        }
+    }
+    # [ derive ( Debug , PartialEq , Clone ) ]
+    pub struct SimpleSearchRequest<'a, B> {
+        pub url: Url<'a>,
+        pub body: B,
+    }
+    impl<'a, B> SimpleSearchRequest<'a, B> {
+        pub fn new(body: B) -> Self {
+            SimpleSearchRequest {
+                url: SimpleSearchUrlParams::None.url(),
+                body: body,
+            }
+        }
+        pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
+            where IIndex: Into<Index<'a>>
+        {
+            SimpleSearchRequest {
+                url: SimpleSearchUrlParams::Index(index.into()).url(),
+                body: body,
+            }
+        }
+        pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: B) -> Self
+            where IIndex: Into<Index<'a>>,
+                  IType: Into<Type<'a>>
+        {
+            SimpleSearchRequest {
+                url: SimpleSearchUrlParams::IndexType(index.into(), ty.into()).url(),
+                body: body,
+            }
+        }
+    }
+    impl<'a, B> Into<HttpRequest<'a, B>> for SimpleSearchRequest<'a, B> {
+        fn into(self) -> HttpRequest<'a, B> {
+            HttpRequest {
+                url: self.url,
+                method: HttpMethod::Get,
                 body: Some(self.body),
             }
         }
@@ -5738,66 +5835,6 @@ pub mod endpoints {
         }
     }
     impl<'a> Into<HttpRequest<'a, DefaultBody>> for NodesInfoRequest<'a> {
-        fn into(self) -> HttpRequest<'a, DefaultBody> {
-            HttpRequest {
-                url: self.url,
-                method: HttpMethod::Get,
-                body: None,
-            }
-        }
-    }
-    # [ derive ( Debug , PartialEq , Clone ) ]
-    enum SimpleSearchUrlParams<'a> {
-        None,
-        Index(Index<'a>),
-        IndexType(Index<'a>, Type<'a>),
-    }
-    impl<'a> SimpleSearchUrlParams<'a> {
-        pub fn url(self) -> Url<'a> {
-            match self {
-                SimpleSearchUrlParams::None => Url::from("/_search"),
-                SimpleSearchUrlParams::Index(ref index) => {
-                    let mut url = String::with_capacity(9usize + index.len());
-                    url.push_str("/");
-                    url.push_str(index.as_ref());
-                    url.push_str("/_search");
-                    Url::from(url)
-                }
-                SimpleSearchUrlParams::IndexType(ref index, ref ty) => {
-                    let mut url = String::with_capacity(10usize + index.len() + ty.len());
-                    url.push_str("/");
-                    url.push_str(index.as_ref());
-                    url.push_str("/");
-                    url.push_str(ty.as_ref());
-                    url.push_str("/_search");
-                    Url::from(url)
-                }
-            }
-        }
-    }
-    # [ derive ( Debug , PartialEq , Clone ) ]
-    pub struct SimpleSearchRequest<'a> {
-        pub url: Url<'a>,
-    }
-    impl<'a> SimpleSearchRequest<'a> {
-        pub fn new() -> Self {
-            SimpleSearchRequest { url: SimpleSearchUrlParams::None.url() }
-        }
-        pub fn for_index<IIndex>(index: IIndex) -> Self
-            where IIndex: Into<Index<'a>>
-        {
-            SimpleSearchRequest { url: SimpleSearchUrlParams::Index(index.into()).url() }
-        }
-        pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType) -> Self
-            where IIndex: Into<Index<'a>>,
-                  IType: Into<Type<'a>>
-        {
-            SimpleSearchRequest {
-                url: SimpleSearchUrlParams::IndexType(index.into(), ty.into()).url(),
-            }
-        }
-    }
-    impl<'a> Into<HttpRequest<'a, DefaultBody>> for SimpleSearchRequest<'a> {
         fn into(self) -> HttpRequest<'a, DefaultBody> {
             HttpRequest {
                 url: self.url,
