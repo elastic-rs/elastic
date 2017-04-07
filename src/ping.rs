@@ -12,6 +12,7 @@ pub struct PingResponse {
     pub version: ClusterVersion,
 }
 
+#[doc(hidden)]
 #[derive(Deserialize, Debug)]
 pub struct ClusterVersion {
     pub number: String,
