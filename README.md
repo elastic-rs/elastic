@@ -116,8 +116,4 @@ assert_eq!(2015, de.timestamp.year());
 
 ### `elastic_types_derive`
 
-Provides custom derive plugins for Elasticsearch datatypes and mappings in `elastic_types`.
-
-### `elastic_date_macros`
-
-Provides date-specific plugins for the date datatype in `elastic_types`.
+Provides custom derive plugins for Elasticsearch datatypes and mappings in `elastic_types` and date-specific plugins for the date datatype.
