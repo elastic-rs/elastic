@@ -63,7 +63,7 @@ pub struct Shards {
 #[derive(Deserialize, Debug)]
 pub struct Hits<T: Deserialize> {
     pub total: u64,
-    pub max_score: u64,
+    pub max_score: Option<u64>,
     pub hits: Vec<T>,
 }
 

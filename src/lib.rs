@@ -51,9 +51,11 @@ pub mod error;
 /// Response type parsing.
 pub mod parse;
 
+mod ping;
 mod get;
 mod search;
 
+pub use self::ping::*;
 pub use self::get::*;
 pub use self::search::*;
 
