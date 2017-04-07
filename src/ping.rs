@@ -28,7 +28,7 @@ impl FromResponse for PingResponse {
 
         res.response(|res| {
             match res.status() {
-                200...299 => Ok(MaybeOkResponse::new(true, res)),
+                200...299 => Ok(MaybeOkResponse::ok(res)),
                 _ => Ok(MaybeOkResponse::err(res)),
             }
         })
