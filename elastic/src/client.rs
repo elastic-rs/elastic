@@ -412,6 +412,8 @@ pub mod responses {
 
     use elastic_responses::{SearchResponseOf, GetResponseOf};
 
+    pub use elastic_responses::PingResponse;
+
     /// A generic Search API response.
     /// 
     /// For responses that contain multiple document types, use
