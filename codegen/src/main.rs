@@ -42,7 +42,8 @@ fn main() {
 
     let mut endpoints = from_dir(dir)
         .expect("Couldn't parse the REST API spec")
-        .add_simple_search();
+        .add_simple_search()
+        .add_get_ping_req();
 
     endpoints = endpoints    
         .into_iter()
@@ -144,29 +145,47 @@ fn dedup_urls(endpoint: (String, Endpoint)) -> (String, Endpoint) {
     (name, endpoint)
 }
 
-trait AddSimpleSearch {
+trait CustomEndpoints {
     fn add_simple_search(self) -> Self;
+    fn add_get_ping_req(self) -> Self;
 }
 
-impl AddSimpleSearch for Vec<(String, Endpoint)> {
-    fn add_simple_search(mut self) -> Vec<(String, Endpoint)> {
-        let mut endpoint = {
-            let &(_, ref endpoint) = self
-                .iter()
-                .find(|ref endpoint| endpoint.0 == "search")
-                .unwrap();
+impl CustomEndpoints for Vec<(String, Endpoint)> {
+    fn add_simple_search(self) -> Vec<(String, Endpoint)> {
+        self.into_iter()
+            .fold(vec![], |mut endpoints, (name, endpoint)| {
+                match name.as_ref() {
+                    "search" => {
+                        let mut simple_search_endpoint = endpoint.clone();
+                        simple_search_endpoint.methods = vec![HttpMethod::Get];
+                        simple_search_endpoint.body = None;
 
-            endpoint.clone()
-        };
+                        endpoints.push((String::from("simple_search"), simple_search_endpoint));
+                        endpoints.push((String::from("search"), endpoint));
+                    },
+                    _ => endpoints.push((name, endpoint))
+                }
 
-        let name = String::from("simple_search");
+                endpoints
+            })
+    }
 
-        endpoint.methods = vec![HttpMethod::Get];
-        endpoint.body = None;
+    fn add_get_ping_req(self) -> Vec<(String, Endpoint)> {
+        self.into_iter()
+            .fold(vec![], |mut endpoints, (name, endpoint)| {
+                match name.as_ref() {
+                    "ping" => {
+                        let mut get_endpoint = endpoint.clone();
+                        get_endpoint.methods = vec![HttpMethod::Get];
 
-        self.push((name, endpoint));
+                        endpoints.push((String::from("ping"), get_endpoint));
+                        endpoints.push((String::from("ping_head"), endpoint));
+                    },
+                    _ => endpoints.push((name, endpoint))
+                }
 
-        self
+                endpoints
+            })
     }
 }
 

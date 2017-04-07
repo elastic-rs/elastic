@@ -9,7 +9,7 @@
 //! Request types are generic over the body buffer, `B`.
 //! This gives you a lot of flexibility when designing APIs,
 //! but you should be careful to ensure the `B` is bound appropriately.
-//! 
+//!
 //! # Supported Versions
 //!
 //!  `elastic_requests` | Elasticsearch
@@ -123,7 +123,8 @@ mod tests {
 
     fn do_something_with_request<'a, I: Into<HttpRequest<'a, B>>, B: AsRef<[u8]>>(_: I) {}
 
-    fn do_something_with_static_request<I: Into<HttpRequest<'static, B>>, B: 'static + AsRef<[u8]> + Send>
+    fn do_something_with_static_request<I: Into<HttpRequest<'static, B>>,
+                                        B: 'static + AsRef<[u8]> + Send>
         (req: I)
          -> thread::JoinHandle<()> {
         let req = req.into();
