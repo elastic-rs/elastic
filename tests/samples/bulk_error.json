@@ -1,0 +1,36 @@
+{
+    "took":11,
+    "errors":true,
+    "items":[
+        {
+            "create":{
+                "_index":"bulk-test",
+                "_type":"bulk-ty",
+                "_id":"1",
+                "status":409,
+                "error":{
+                    "type":"version_conflict_engine_exception",
+                    "reason":"[bulk-ty][1]: version conflict, document already exists (current version [9])",
+                    "index_uuid":"RgRnxNJPQH2OLnfwFpoOBQ",
+                    "shard":"3",
+                    "index":"bulk-test"
+                }
+            }
+        },
+        {
+            "index":{
+                "_index":"bulk-test",
+                "_type":"bulk-ty",
+                "_id":"6",
+                "_version":7,
+                "_shards":{
+                    "total":2,
+                    "successful":1,
+                    "failed":0
+                },
+                "created":false,
+                "status":200
+            }
+        }
+    ]
+}
