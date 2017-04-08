@@ -51,13 +51,17 @@ pub mod error;
 /// Response type parsing.
 pub mod parse;
 
+mod common;
 mod ping;
 mod get;
 mod search;
+mod bulk;
 
+pub use self::common::*;
 pub use self::ping::*;
 pub use self::get::*;
 pub use self::search::*;
+pub use self::bulk::*;
 
 use std::io::Read;
 use serde_json::Value;

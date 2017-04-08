@@ -2,6 +2,7 @@ use serde::Deserialize;
 use serde_json::{Map, Value};
 
 use parse::MaybeOkResponse;
+use common::Shards;
 use super::{HttpResponse, FromResponse, ApiResult};
 
 use std::io::Read;
@@ -52,13 +53,6 @@ impl<T: Deserialize> SearchResponseOf<T> {
         // FIXME: Create empty aggregation, remove unwrap()
         self.aggregations.as_ref().unwrap()
     }
-}
-
-#[derive(Deserialize, Debug)]
-pub struct Shards {
-    pub total: u32,
-    pub successful: u32,
-    pub failed: u32,
 }
 
 /// Struct to hold the search's Hits, serializable to type `T` or `serde_json::Value`
