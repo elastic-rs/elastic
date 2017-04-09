@@ -17,6 +17,15 @@ fn success_parse_index_ops() {
 }
 
 #[test]
+fn success_parse_index_ops_errors_only() {
+    let s = load_file_as_response(200, "tests/samples/bulk_index.json");
+    let deserialized = BulkErrorsResponse::from_response(s).unwrap();
+
+    assert!(deserialized.is_ok());
+    assert_eq!(0, deserialized.items.len());
+}
+
+#[test]
 fn success_parse_multi_ops() {
     let s = load_file_as_response(200, "tests/samples/bulk_multiple_ops.json");
     let deserialized = BulkResponse::from_response(s).unwrap();
@@ -41,6 +50,15 @@ fn success_parse_multi_ops() {
 }
 
 #[test]
+fn success_parse_multi_ops_errors_only() {
+    let s = load_file_as_response(200, "tests/samples/bulk_multiple_ops.json");
+    let deserialized = BulkErrorsResponse::from_response(s).unwrap();
+
+    assert!(deserialized.is_ok());
+    assert_eq!(0, deserialized.items.len());
+}
+
+#[test]
 fn success_parse_with_errors() {
     let s = load_file_as_response(200, "tests/samples/bulk_error.json");
     let deserialized = BulkResponse::from_response(s).unwrap();
@@ -52,9 +70,33 @@ fn success_parse_with_errors() {
 }
 
 #[test]
+fn success_parse_with_errors_errors_only() {
+    let s = load_file_as_response(200, "tests/samples/bulk_error.json");
+    let deserialized = BulkErrorsResponse::from_response(s).unwrap();
+
+    assert!(deserialized.is_err());
+
+    assert_eq!(1, deserialized.items.len());
+}
+
+#[test]
 fn error_parse_action_request_validation() {
     let s = load_file_as_response(400, "tests/samples/error_action_request_validation.json");
     let deserialized = BulkResponse::from_response(s).unwrap_err();
+
+    let valid = match deserialized {
+        ResponseError::Api(ApiError::ActionRequestValidation { ref reason })
+        if reason == "Validation Failed: 1: index is missing;2: type is missing;" => true,
+        _ => false
+    };
+
+    assert!(valid);
+}
+
+#[test]
+fn error_parse_action_request_validation_errors_only() {
+    let s = load_file_as_response(400, "tests/samples/error_action_request_validation.json");
+    let deserialized = BulkErrorsResponse::from_response(s).unwrap_err();
 
     let valid = match deserialized {
         ResponseError::Api(ApiError::ActionRequestValidation { ref reason })
