@@ -28,3 +28,4 @@ fn test_read_response() {
 pub mod ping;
 pub mod get;
 pub mod search;
+pub mod bulk;
