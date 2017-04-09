@@ -412,7 +412,7 @@ pub mod responses {
 
     use elastic_responses::{SearchResponseOf, GetResponseOf};
 
-    pub use elastic_responses::PingResponse;
+    pub use elastic_responses::{PingResponse, BulkResponse, BulkErrorsResponse};
 
     /// A generic Search API response.
     /// 
