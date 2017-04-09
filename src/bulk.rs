@@ -19,6 +19,16 @@ pub struct BulkResponse {
     pub items: BulkItems,
 }
 
+impl BulkResponse {
+    pub fn is_ok(&self) -> bool {
+        !self.errors
+    }
+
+    pub fn is_err(&self) -> bool {
+        self.errors
+    }
+}
+
 /// A successful bulk response item.
 #[derive(Debug, Clone)]
 pub struct BulkItem {
@@ -71,11 +81,12 @@ impl Deserialize for BulkItems {
     {
         struct BulkItemDe {
             action: BulkAction,
-            inner: BulkItemInner,
+            inner: BulkItemDeInner,
         }
 
+        // TODO: Make this BulkItemDeInner<'a> once `serde` 1.0
         #[derive(Deserialize, Debug, Clone)]
-        struct BulkItemInner {
+        struct BulkItemDeInner {
             #[serde(rename = "_index")]
             pub index: String,
             #[serde(rename = "_type")]
