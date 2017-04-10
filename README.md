@@ -14,7 +14,7 @@ This library is the document serialisation provider for the higher-level [`elast
 Platform  | Channel | Status
 ------------- | ---------------- | -------------
 Linux / OSX   | Stable / Nightly | [![Build Status](https://travis-ci.org/elastic-rs/elastic-types.svg?branch=master)](https://travis-ci.org/elastic-rs/elastic-types)
-Windows       | Nightly          | [![Build status](https://ci.appveyor.com/api/projects/status/2x2cmfi6hku72nmk?svg=true)](https://ci.appveyor.com/project/KodrAus/elastic-types)
+Windows       | Nightly          | [![Build status](https://ci.appveyor.com/api/projects/status/0fk6ogm3inh3wip2?svg=true)](https://ci.appveyor.com/project/KodrAus/elastic-types-42k4g)
 
 ## Documentation
 
