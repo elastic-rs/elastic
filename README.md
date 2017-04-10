@@ -14,7 +14,7 @@ Quick reference:
 Platform  | Channel | Status
 ------------- | ------------- | -------------
 Linux / OSX  | Stable/Nightly | [![Build Status](https://travis-ci.org/elastic-rs/elastic.svg?branch=master)](https://travis-ci.org/elastic-rs/elastic)
-Windows  | Nightly | [![Build status](https://ci.appveyor.com/api/projects/status/t71058ht2qp732eh?svg=true)](https://ci.appveyor.com/project/KodrAus/elastic)
+Windows  | Nightly | [![Build status](https://ci.appveyor.com/api/projects/status/csa78tcumdpnbur2?svg=true)](https://ci.appveyor.com/project/KodrAus/elastic)
 
 ## Documentation
 
