@@ -101,11 +101,15 @@ pub struct BulkItems {
 }
 
 /// The bulk action being performed.
-#[derive(Debug, Clone)]
+#[derive(Deserialize, Debug, Clone)]
 pub enum BulkAction {
+    #[serde(rename = "index")]
     Index,
+    #[serde(rename = "create")]
     Create,
+    #[serde(rename = "update")]
     Update,
+    #[serde(rename = "delete")]
     Delete,
 }
 
@@ -136,36 +140,6 @@ impl FromResponse for BulkErrorsResponse {
 }
 
 // Deserialisation
-
-impl Deserialize for BulkAction {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-        where D: Deserializer 
-    {
-        struct BulkActionVisitor;
-
-        impl Visitor for BulkActionVisitor {
-            type Value = BulkAction;
-
-            fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-                formatter.write_str("a string")
-            }
-
-            fn visit_str<E>(self, value: &str) -> Result<BulkAction, E>
-                where E: DeError
-            {
-                match value {
-                    "index" => Ok(BulkAction::Index),
-                    "create" => Ok(BulkAction::Create),
-                    "update" => Ok(BulkAction::Update),
-                    "delete" => Ok(BulkAction::Delete),
-                    _ => Err(E::custom("unexpected bulk action")),
-                }
-            }
-        }
-
-        deserializer.deserialize_str(BulkActionVisitor)
-    }
-}
 
 struct BulkItemDe {
     action: BulkAction,
