@@ -1,0 +1,10 @@
+[workspace]
+members = [
+    "elastic",
+    "derive",
+    "elastic/examples/account_sample",
+    "elastic/examples/async_sample",
+    "benches/rust/elastic",
+    "benches/rust/elastic_raw",
+    "benches/rust/rs-es",
+]
