@@ -5,11 +5,10 @@
 #[macro_use]
 extern crate json_str;
 extern crate elastic_reqwest;
-extern crate elastic_requests;
 extern crate elastic_responses;
 
 use elastic_reqwest::{ElasticClient};
-use elastic_requests::SearchRequest;
+use elastic_reqwest::req::SearchRequest;
 use elastic_responses::SearchResponse;
 
 fn main() {
