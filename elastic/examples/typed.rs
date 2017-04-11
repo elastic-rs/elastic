@@ -36,15 +36,7 @@ struct MyType {
 fn main() {
     // A HTTP client and request parameters
     let client = Client::new(RequestParams::default()).unwrap();
-
-    // Ping the cluster
-    let ping: PingResponse = client.request(PingRequest::new())
-                                   .send()
-                                   .and_then(|res| res.response())
-                                   .unwrap();
-
-    println!("{:?}", ping);
-
+    
     // Create a document to index
     let doc = MyType {
         id: 1,
