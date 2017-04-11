@@ -1,6 +1,5 @@
 [workspace]
 members = [
 	"search",
-	"bulk",
-	"bulk-errors"
+	"bulk"
 ]
