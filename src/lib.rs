@@ -2,7 +2,7 @@
 //!
 //! A crate to handle parsing and handling Elasticsearch search results which provides
 //! convenient iterators to step through the results returned. It is designed to work
-//! with [`elastic-reqwest`](https://github.com/elastic-rs/elastic-hyper/).
+//! with [`elastic-reqwest`](https://github.com/elastic-rs/elastic-reqwest/).
 //!
 //! ## Usage
 //!
