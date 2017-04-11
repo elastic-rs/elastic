@@ -2,4 +2,3 @@ target
 Cargo.lock
 .idea/
 *.bk
-samples/basic/Cargo.lock

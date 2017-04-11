@@ -32,7 +32,13 @@ type BulkError = Value;
 /// // Do something with successful operations
 /// for op in body_as_json.items.ok {
 ///     match op.action {
-///         BulkAction::Create => println!("created index: {}, type: {}, id: {}", op.index, op.ty, op.id),
+///         BulkAction::Create => {
+///             println!("created index: {}, type: {}, id: {}", 
+///                 op.index, 
+///                 op.ty, 
+///                 op.id
+///             );
+///         },
 ///         _ => ()
 ///     }
 /// }
