@@ -2,6 +2,7 @@ use serde::Deserialize;
 use serde_json::{Map, Value};
 
 use parse::MaybeOkResponse;
+use common::Shards;
 use super::{HttpResponse, FromResponse, ApiResult};
 
 use std::io::Read;
@@ -12,6 +13,30 @@ use std::slice::Iter;
 /// Response for a [search request](https://www.elastic.co/guide/en/elasticsearch/reference/current/search-search.html).
 /// 
 /// This is the main `struct` of the crate, provides access to the `hits` and `aggs` iterators.
+/// 
+/// # Examples
+/// 
+/// ```no_run
+/// # extern crate elastic_responses;
+/// # use elastic_responses::SearchResponse;
+/// # fn do_request() -> SearchResponse { unimplemented!() }
+/// # fn main() {
+/// // Send a request (omitted, see `samples/basic`), and read the response.
+/// // Parse body to JSON as an elastic_responses::SearchResponse object
+/// let body_as_json: SearchResponse = do_request();
+///
+/// // Use hits() or aggs() iterators
+/// // Hits
+/// for i in body_as_json.hits() {
+///   println!("{:?}",i);
+/// }
+///
+/// // Agregations
+/// for i in body_as_json.aggs() {
+///   println!("{:?}",i);
+/// }
+/// # }
+/// ```
 #[derive(Deserialize, Debug)]
 pub struct SearchResponseOf<T: Deserialize> {
     pub took: u64,
@@ -52,13 +77,6 @@ impl<T: Deserialize> SearchResponseOf<T> {
         // FIXME: Create empty aggregation, remove unwrap()
         self.aggregations.as_ref().unwrap()
     }
-}
-
-#[derive(Deserialize, Debug)]
-pub struct Shards {
-    pub total: u32,
-    pub successful: u32,
-    pub failed: u32,
 }
 
 /// Struct to hold the search's Hits, serializable to type `T` or `serde_json::Value`

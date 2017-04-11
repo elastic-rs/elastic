@@ -2,7 +2,7 @@
 //!
 //! A crate to handle parsing and handling Elasticsearch search results which provides
 //! convenient iterators to step through the results returned. It is designed to work
-//! with [`elastic-reqwest`](https://github.com/elastic-rs/elastic-hyper/).
+//! with [`elastic-reqwest`](https://github.com/elastic-rs/elastic-reqwest/).
 //!
 //! ## Usage
 //!
@@ -13,7 +13,7 @@
 //! # use elastic_responses::SearchResponse;
 //! # fn do_request() -> SearchResponse { unimplemented!() }
 //! # fn main() {
-//! // Send a request (omitted, see `samples/basic`), and read the response.
+//! // Send a request (omitted, see `samples/search`), and read the response.
 //! // Parse body to JSON as an elastic_responses::SearchResponse object
 //! let body_as_json: SearchResponse = do_request();
 //!
@@ -51,13 +51,17 @@ pub mod error;
 /// Response type parsing.
 pub mod parse;
 
+mod common;
 mod ping;
 mod get;
 mod search;
+mod bulk;
 
+pub use self::common::*;
 pub use self::ping::*;
 pub use self::get::*;
 pub use self::search::*;
+pub use self::bulk::*;
 
 use std::io::Read;
 use serde_json::Value;

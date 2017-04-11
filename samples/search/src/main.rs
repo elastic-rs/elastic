@@ -1,18 +1,15 @@
 //! Elasticsearch Reqwest Client Integration Example
 //!
 //! This sample assumes you have a node running on `localhost`.
-//!
-//! Derived from https://github.com/elastic-rs/elastic-hyper/tree/master/samples/basic
 
 #[macro_use]
 extern crate json_str;
 extern crate elastic_reqwest;
-extern crate elastic_requests;
 extern crate elastic_responses;
 
 use elastic_reqwest::{ElasticClient};
-use elastic_requests::SearchRequest;
-use elastic_responses::SearchResponse as EsResponse;
+use elastic_reqwest::req::SearchRequest;
+use elastic_responses::SearchResponse;
 
 fn main() {
 
@@ -72,8 +69,8 @@ fn main() {
     // Send the request and read the response.
     let mut res = client.elastic_req(&params, SearchRequest::for_index("_all", body)).unwrap();
 
-    //Parse body to JSON as an elastic_responses::Response object
-    let body_as_json: EsResponse = res.json().unwrap();
+    //Parse body to JSON
+    let body_as_json: SearchResponse = res.json().unwrap();
 
     //Use hits() or aggs() iterators
     //Hits

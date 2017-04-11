@@ -20,30 +20,53 @@ Version  | Docs
 ```
 [dependencies]
 elastic_reqwest = "*"
-elastic_requests = "*"
 elastic_responses = "*" 
 ```
 
+### Search
+
 Query your Elasticsearch Cluster, then iterate through the results:
 
- ```rust
- // Send a request (omitted, see `samples/basic`, and read the response.
- let mut res = client.elastic_req(&params, SearchRequest::for_index("_all", body)).unwrap();
+```rust
+// Send a request (omitted, see `samples/basic`, and read the response.
+let mut res = client.elastic_req(&params, SearchRequest::for_index("_all", body)).unwrap();
 
- // Parse body to JSON as an elastic_responses::Response object
- let body_as_json: SearchResponse = res.json().unwrap();
+// Parse body to JSON
+let body_as_json: SearchResponse = res.json().unwrap();
 
- // Use hits() or aggs() iterators
- // Hits
- for hit in body_as_json.hits() {
-     println!("{:?}", hit);
- }
+// Use hits() or aggs() iterators
+// Hits
+for hit in body_as_json.hits() {
+    println!("{:?}", hit);
+}
 
- // Agregations
- for agg in body_as_json.aggs() {
-     println!("{:?}", agg);
- }
- ```
+// Agregations
+for agg in body_as_json.aggs() {
+    println!("{:?}", agg);
+}
+```
+
+### Bulk
+
+Bulk response operations are split by whether they succeeded or failed:
+
+```rust
+// Send a request (omitted, see `samples/bulk`, and read the response.
+let mut res = client.elastic_req(&params, BulkRequest::new(body)).unwrap();
+
+// Parse body to JSON
+let body_as_json: BulkResponse = res.json().unwrap();
+
+// Do something with successful operations
+for op in body_as_json.items.ok {
+    println!("{:?}", op);
+}
+
+// Do something with failed operations
+for op in body_as_json.items.err {
+    println!("{:?}", op);
+}
+```
  
 ## License
 

@@ -26,6 +26,7 @@ quick_error! {
             description("request parse error")
             display("request parse error: '{}' on line: {}, col: {}", reason, line, col)
         }
+        ActionRequestValidation { reason: String }
         Other(v: Map<String, Value>) {
             description("error response from Elasticsearch")
             display("error response from Elasticsearch: {:?}", v)
@@ -91,6 +92,13 @@ impl From<Map<String, Value>> for ApiError {
                 ApiError::Parsing {
                     line: line,
                     col: col,
+                    reason: reason.into(),
+                }
+            }
+            "action_request_validation_exception" => {
+                let reason = error_key!(obj[reason]: |v| v.as_str());
+
+                ApiError::ActionRequestValidation {
                     reason: reason.into(),
                 }
             }
