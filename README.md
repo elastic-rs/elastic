@@ -20,7 +20,6 @@ Version  | Docs
 ```
 [dependencies]
 elastic_reqwest = "*"
-elastic_requests = "*"
 elastic_responses = "*" 
 ```
 
