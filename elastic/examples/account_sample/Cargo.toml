@@ -8,7 +8,7 @@ nightly = ["elastic/nightly"]
 
 [dependencies]
 elastic = { version = "*", path = "../../" }
-elastic_derive = { version = "*", path = "../../.../derive" }
+elastic_derive = { version = "*", path = "../../../derive" }
 
 quick-error = "*"
 serde = "0.9"
