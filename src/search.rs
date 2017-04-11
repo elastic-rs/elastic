@@ -13,6 +13,30 @@ use std::slice::Iter;
 /// Response for a [search request](https://www.elastic.co/guide/en/elasticsearch/reference/current/search-search.html).
 /// 
 /// This is the main `struct` of the crate, provides access to the `hits` and `aggs` iterators.
+/// 
+/// # Examples
+/// 
+/// ```no_run
+/// # extern crate elastic_responses;
+/// # use elastic_responses::SearchResponse;
+/// # fn do_request() -> SearchResponse { unimplemented!() }
+/// # fn main() {
+/// // Send a request (omitted, see `samples/basic`), and read the response.
+/// // Parse body to JSON as an elastic_responses::SearchResponse object
+/// let body_as_json: SearchResponse = do_request();
+///
+/// // Use hits() or aggs() iterators
+/// // Hits
+/// for i in body_as_json.hits() {
+///   println!("{:?}",i);
+/// }
+///
+/// // Agregations
+/// for i in body_as_json.aggs() {
+///   println!("{:?}",i);
+/// }
+/// # }
+/// ```
 #[derive(Deserialize, Debug)]
 pub struct SearchResponseOf<T: Deserialize> {
     pub took: u64,

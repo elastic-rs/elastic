@@ -24,7 +24,9 @@ script:
   - |
       travis-cargo test &&
       travis-cargo bench &&
-      cd samples/basic &&
+      cd samples/search &&
+      travis-cargo build &&
+      cd ../bulk &&
       travis-cargo build &&
       cd ../../ &&
       travis-cargo --only stable doc

@@ -13,7 +13,7 @@
 //! # use elastic_responses::SearchResponse;
 //! # fn do_request() -> SearchResponse { unimplemented!() }
 //! # fn main() {
-//! // Send a request (omitted, see `samples/basic`), and read the response.
+//! // Send a request (omitted, see `samples/search`), and read the response.
 //! // Parse body to JSON as an elastic_responses::SearchResponse object
 //! let body_as_json: SearchResponse = do_request();
 //!

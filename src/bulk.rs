@@ -15,6 +15,37 @@ type BulkError = Value;
 /// 
 /// This type splits successful and failed bulk operations so it's easier
 /// to handle errors in bulk requests.
+/// 
+/// # Examples
+/// 
+/// Send a bulk request and iterate through the results:
+/// 
+/// ```no_run
+/// # extern crate elastic_responses;
+/// # use elastic_responses::*;
+/// # fn do_request() -> BulkResponse { unimplemented!() }
+/// # fn main() {
+/// // Send a request (omitted, see `samples/bulk`), and read the response.
+/// // Parse body to JSON as an elastic_responses::BulkResponse object
+/// let body_as_json: BulkResponse = do_request();
+///
+/// // Do something with successful operations
+/// for op in body_as_json.items.ok {
+///     match op.action {
+///         BulkAction::Create => println!("created index: {}, type: {}, id: {}", op.index, op.ty, op.id),
+///         _ => ()
+///     }
+/// }
+///
+/// // Do something with failed operations
+/// for op in body_as_json.items.err {
+///     match op.action {
+///         BulkAction::Delete => (), // Ignore failed deletes
+///         _ => println!("bulk op failed: {:?}", op) 
+///     }
+/// }
+/// # }
+/// ```
 #[derive(Deserialize, Debug, Clone)]
 pub struct BulkResponse {
     pub took: u64,
@@ -36,6 +67,29 @@ impl BulkResponse {
 /// 
 /// This type only accumulates bulk operations that failed.
 /// It can be more efficient if you only care about errors.
+/// 
+/// # Examples
+/// 
+/// Send a bulk request and iterate through the errors:
+/// 
+/// ```no_run
+/// # extern crate elastic_responses;
+/// # use elastic_responses::*;
+/// # fn do_request() -> BulkErrorsResponse { unimplemented!() }
+/// # fn main() {
+/// // Send a request (omitted, see `samples/bulk`), and read the response.
+/// // Parse body to JSON as an elastic_responses::BulkErrorsResponse object
+/// let body_as_json: BulkErrorsResponse = do_request();
+/// 
+/// // Do something with failed operations
+/// for op in body_as_json.items {
+///     match op.action {
+///         BulkAction::Delete => (), // Ignore failed deletes
+///         _ => println!("bulk op failed: {:?}", op) 
+///     }
+/// }
+/// # }
+/// ```
 #[derive(Deserialize, Debug, Clone)]
 pub struct BulkErrorsResponse {
     pub took: u64,

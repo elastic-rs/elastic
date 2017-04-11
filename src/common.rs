@@ -1,3 +1,4 @@
+/// Returned hits metadata.
 #[derive(Deserialize, Debug, Clone)]
 pub struct Shards {
     pub total: u32,
