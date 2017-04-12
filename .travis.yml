@@ -42,8 +42,9 @@ before_script:
 
 script:
   - |
+      export SRC_ROOT=$(pwd) &&
       cd $CRATE &&
       travis-cargo test &&
       travis-cargo --only nightly bench &&
       travis-cargo --only nightly doc &&
-      if [ $DOC_UPLOAD ]; then travis-cargo --only nightly doc-upload; fi
+      if [ $DOC_UPLOAD ]; then cd $SRC_ROOT && travis-cargo --only nightly doc-upload; fi
