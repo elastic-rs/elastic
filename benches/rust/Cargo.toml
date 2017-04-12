@@ -1,0 +1,9 @@
+[workspace]
+members = [
+	"elastic",
+    "elastic_raw",
+    "rs-es",
+]
+
+[profile.release]
+debug = true

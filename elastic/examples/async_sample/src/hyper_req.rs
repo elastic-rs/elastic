@@ -6,7 +6,7 @@ use hyper::{Method, Uri, Error as HyperError};
 use hyper::header::ContentType;
 use hyper::client::Request;
 
-use req::{HttpRequest, HttpMethod};
+use elastic_requests::{HttpRequest, HttpMethod};
 
 /// Build a `hyper` request from an `elastic` request.
 pub fn build<I, B>(base_url: &str, req: I) -> Request<B>

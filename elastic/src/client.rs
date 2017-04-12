@@ -340,6 +340,14 @@ impl ResponseBuilder {
 
 pub mod requests {
     //! Request types for the Elasticsearch REST API.
+    //! 
+    //! Key request types include:
+    //! 
+    //! - [`SearchRequest`](endpoints/struct.SearchRequest.html) for the [Query DSL](http://www.elastic.co/guide/en/elasticsearch/reference/master/search-search.html)
+    //! - [`GetRequest`](endpoints/struct.GetRequest.html) for the [Document API](http://www.elastic.co/guide/en/elasticsearch/reference/master/docs-get.html)
+    //! - [`IndexRequest`](endpoints/struct.IndexRequest.html) for the [Document API](http://www.elastic.co/guide/en/elasticsearch/reference/master/docs-index_.html)
+    //! - [`IndicesPutMappingRequest`](endpoints/struct.IndicesPutMappingRequest.html) for the [Mapping API](http://www.elastic.co/guide/en/elasticsearch/reference/master/indices-put-mapping.html)
+    //! - [`BulkRequest`](endpoints/struct.BulkRequest.html) for the [Bulk API](http://www.elastic.co/guide/en/elasticsearch/reference/master/docs-bulk.html)
 
     pub use elastic_reqwest::IntoReqwestBody as IntoBody;
     pub use elastic_requests::{HttpRequest, HttpMethod, empty_body, Url};
@@ -353,6 +361,12 @@ pub mod requests {
 
 pub mod responses {
     //! Response types for the Elasticsearch REST API.
+    //! 
+    //! Key response types include:
+    //! 
+    //! - [`SearchResponse`](type.SearchResponse.html) for the [Query DSL](http://www.elastic.co/guide/en/elasticsearch/reference/master/search-search.html)
+    //! - [`GetResponse`](type.GetResponse.html) for the [Document API](http://www.elastic.co/guide/en/elasticsearch/reference/master/docs-get.html)
+    //! - [`BulkResponse`](struct.BulkResponse.html) for the [Bulk API](http://www.elastic.co/guide/en/elasticsearch/reference/master/docs-bulk.html)
 
     pub use elastic_responses::{HttpResponse, AggregationIterator, Aggregations, Hit, Hits, Shards};
 
@@ -389,10 +403,10 @@ pub mod responses {
         //!             match http_res.status() {
         //!                 // If the status is 2xx then return the response with `ok: true`
         //!                 // The body will be parsed as a `MyResponse`.
-        //!                 200...299 => Ok(MaybeOkResponse::new(true, http_res)),
+        //!                 200...299 => Ok(MaybeOkResponse::ok(http_res)),
         //!                 // Otherwise return the response with `ok: false`
         //!                 // The body will be parsed as an `ApiError`.
-        //!                 _ => Ok(MaybeOkResponse::new(false, http_res))
+        //!                 _ => Ok(MaybeOkResponse::err(http_res))
         //!             }
         //!         })
         //!     }
@@ -411,6 +425,8 @@ pub mod responses {
     }
 
     use elastic_responses::{SearchResponseOf, GetResponseOf};
+
+    pub use elastic_responses::{PingResponse, BulkResponse, BulkErrorsResponse};
 
     /// A generic Search API response.
     /// 

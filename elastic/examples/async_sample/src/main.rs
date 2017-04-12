@@ -1,4 +1,7 @@
-extern crate elastic_requests as req;
+extern crate elastic_requests;
+extern crate elastic_responses;
+
+extern crate serde_json;
 
 extern crate futures;
 extern crate tokio_proto;
@@ -14,7 +17,8 @@ extern crate quick_error;
 use std::str;
 use std::io::Read;
 
-use req::BulkRequest;
+use elastic_requests::BulkRequest;
+use elastic_responses::BulkErrorsResponse;
 
 use tokio_core::reactor::Core;
 use futures::{Future, Stream};
@@ -45,6 +49,7 @@ fn main() {
     let req = BulkRequest::for_index_ty("bulk-test", "bulk-ty", body);
     let req_future = client.request(hyper_req::build(&url, req))
         .and_then(|res| {
+            // Buffer the response and parse as a bulk response
             res.body()
                 .fold(Vec::new(), |mut buf, chunk| {
                     chunk.as_ref()
@@ -52,10 +57,13 @@ fn main() {
                         .map(|_| buf)
                 })
                 .and_then(|buf| {
-                    // Write the response to `stdout`
-                    println!("{:?}", str::from_utf8(&buf).unwrap());
+                    // Do the deserialisation on the CPU pool
+                    pool.spawn_fn(move || {
+                        let res: BulkErrorsResponse = serde_json::from_slice(&buf).unwrap();
+                        println!("{:?}", res);
 
-                    ok(())
+                        ok(())
+                    })
                 })
         })
         .map_err(|e| e.into());

@@ -3,9 +3,6 @@ name = "elastic_bench_raw"
 version = "0.1.0"
 authors = ["Ashley Mannix <ashleymannix@live.com.au>"]
 
-[profile.release]
-debug = true
-
 [dependencies]
 json_str = { version = "*", features = ["nightly"]}
 

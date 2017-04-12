@@ -5,6 +5,10 @@ authors = ["Ashley Mannix <ashleymannix@live.com.au>"]
 
 [dependencies]
 elastic_requests = "*"
+elastic_responses = "*"
+
+serde = "*"
+serde_json = "*"
 
 tokio-core = "*"
 tokio-proto = "*"

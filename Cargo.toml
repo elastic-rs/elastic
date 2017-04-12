@@ -1,0 +1,7 @@
+[workspace]
+members = [
+    "elastic",
+    "derive",
+    "elastic/examples/account_sample",
+    "elastic/examples/async_sample"
+]
