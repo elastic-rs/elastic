@@ -1,8 +1,8 @@
 [workspace]
 members = [
-	"benches/rust/elastic",
-    "benches/rust/elastic_raw",
-    "benches/rust/rs-es",
+	"elastic",
+    "elastic_raw",
+    "rs-es",
 ]
 
 [profile.release]
