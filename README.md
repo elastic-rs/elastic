@@ -94,7 +94,7 @@ for hit in res.hits() {
 }
 ```
 
-See the [docs](https://elastic-rs.github.io/elastic/elastic/client/index.html) for more details.
+See the [docs](https://docs.rs/elastic/*/elastic/) for more details.
 
 ### Building documents
 
