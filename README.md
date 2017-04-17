@@ -29,7 +29,7 @@ Add `elastic_types` to your `Cargo.toml`:
 
 ```
 [dependencies]
-elastic_types = version = "*"
+elastic_types = "*"
 elastic_types_derive = "*"
 ```
 
