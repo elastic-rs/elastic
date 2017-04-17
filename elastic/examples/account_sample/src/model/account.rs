@@ -5,8 +5,6 @@
 //! Field serialisation and mapping is all handled in the same place
 //! so it's always in sync.
 
-use serde::{Serialize, Serializer, Deserialize, Deserializer};
-use serde::de::{Visitor, Error as DeError};
 use elastic::types::prelude::{FieldType, Text, DefaultTextMapping, TextMapping, Keyword,
                               DefaultKeywordMapping, KeywordFormat, DocumentType};
 
@@ -51,52 +49,15 @@ pub type State = Keyword<DefaultKeywordMapping>;
 // This is done by implementing the `FieldType` trait using a `KeywordMapping`
 // and a `KeywordFormat`.
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum Gender {
+    #[serde(rename = "F")]
     Female,
+    #[serde(rename = "M")]
     Male,
 }
 
 impl FieldType<DefaultKeywordMapping, KeywordFormat> for Gender {}
-
-impl Serialize for Gender {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where S: Serializer
-    {
-        match *self {
-            Gender::Female => serializer.serialize_str("F"),
-            Gender::Male => serializer.serialize_str("M"),
-        }
-    }
-}
-
-impl Deserialize for Gender {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-        where D: Deserializer
-    {
-        struct GenderVisitor;
-        impl Visitor for GenderVisitor {
-            type Value = Gender;
-
-            fn expecting(&self, formatter: &mut ::std::fmt::Formatter) -> ::std::fmt::Result 
-            {
-                write!(formatter, "a string of 'M' or 'F'")
-            }
-
-            fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
-                where E: DeError
-            {
-                match v {
-                    "f" | "F" => Ok(Gender::Female),
-                    "m" | "M" => Ok(Gender::Male),
-                    _ => Err(E::custom("expected 'F' or 'M'")),
-                }
-            }
-        }
-
-        deserializer.deserialize_str(GenderVisitor)
-    }
-}
 
 // The `Email` type uses a custom analyser so it has its own
 // mapping type instead of using `DefaultKeywordMapping`.
