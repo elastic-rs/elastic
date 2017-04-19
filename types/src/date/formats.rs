@@ -1,6 +1,6 @@
 use chrono::{DateTime, NaiveDateTime, UTC, Timelike};
 use std::error::Error;
-use super::{DateFormat, ParseError};
+use super::{DateFormat, FormattedDate, ParseError};
 
 /// Format for default `chrono::DateTime`.
 #[derive(ElasticDateFormat, PartialEq, Debug, Default, Clone, Copy)]
@@ -57,12 +57,8 @@ impl DateFormat for EpochMillis {
         Ok(DateTime::from_utc(NaiveDateTime::from_timestamp(s, m as u32 * 1000000), UTC))
     }
 
-    fn format(date: &DateTime<UTC>) -> String {
-        let mut fmtd = String::new();
-
-        let msec = ((date.timestamp() * 1000) + (date.nanosecond() as i64 / 1000000)).to_string();
-        fmtd.push_str(&msec);
-
-        fmtd
+    fn format<'a>(date: &DateTime<UTC>) -> FormattedDate<'a> {
+        let msec = (date.timestamp() * 1000) + (date.nanosecond() as i64 / 1000000);
+        (msec as i64).into()
     }
 }

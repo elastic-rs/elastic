@@ -1,8 +1,9 @@
 use chrono;
 use chrono::{DateTime, UTC};
-use chrono::format::{Parsed, Item};
+use chrono::format::{Parsed, Item, DelayedFormat};
 use std::error::Error;
-use std::fmt;
+use std::fmt::{Display, Result as FmtResult, Formatter};
+use std::vec::IntoIter;
 
 /// A format used for parsing and formatting dates.
 ///
@@ -54,7 +55,7 @@ pub trait DateFormat
     fn parse(date: &str) -> Result<DateTime<UTC>, ParseError>;
 
     /// Formats a given `chrono::DateTime<UTC>` as a string.
-    fn format(date: &DateTime<UTC>) -> String;
+    fn format<'a>(date: &DateTime<UTC>) -> FormattedDate<'a>;
 
     /// The name of the format.
     ///
@@ -82,8 +83,67 @@ pub fn parse_from_tokens<'a>(date: &str, fmt: Vec<Item<'a>>) -> Result<DateTime<
 }
 
 /// Format a date string using an owned slice of items.
-pub fn format_with_tokens<'a>(date: &DateTime<UTC>, fmt: Vec<Item<'a>>) -> String {
-    date.format_with_items(fmt.into_iter()).to_string()
+pub fn format_with_tokens<'a>(date: &DateTime<UTC>, fmt: Vec<Item<'a>>) -> FormattedDate<'a> {
+    date.format_with_items(fmt.into_iter()).into()
+}
+
+enum FormattedDateInner<'a> {
+    Delayed(DelayedFormat<IntoIter<Item<'a>>>),
+    Buffered(String),
+    Number(i64),
+}
+
+impl<'a> Display for FormattedDateInner<'a> {
+    fn fmt(&self, f: &mut Formatter) -> FmtResult {
+        fn fmt<T>(inner: &T, f: &mut Formatter) -> FmtResult 
+            where T: Display
+        {
+            inner.fmt(f)
+        }
+
+        match *self {
+            FormattedDateInner::Delayed(ref inner) => fmt(inner, f),
+            FormattedDateInner::Buffered(ref inner) => fmt(inner, f),
+            FormattedDateInner::Number(ref inner) => fmt(inner, f),
+        }
+    }
+}
+
+/// A formatted date.
+/// 
+/// This type can avoid allocating strings for date formats.
+pub struct FormattedDate<'a> {
+    inner: FormattedDateInner<'a>
+}
+
+impl<'a> Display for FormattedDate<'a> {
+    fn fmt(&self, f: &mut Formatter) -> FmtResult {
+        self.inner.fmt(f)
+    }
+}
+
+impl<'a> From<DelayedFormat<IntoIter<Item<'a>>>> for FormattedDate<'a> {
+    fn from(formatted: DelayedFormat<IntoIter<Item<'a>>>) -> Self {
+        FormattedDate {
+            inner: FormattedDateInner::Delayed(formatted)
+        }
+    }
+}
+
+impl<'a> From<String> for FormattedDate<'a> {
+    fn from(formatted: String) -> Self {
+        FormattedDate {
+            inner: FormattedDateInner::Buffered(formatted)
+        }
+    }
+}
+
+impl<'a> From<i64> for FormattedDate<'a> {
+    fn from(formatted: i64) -> Self {
+        FormattedDate {
+            inner: FormattedDateInner::Number(formatted)
+        }
+    }
 }
 
 /// Represents an error encountered during parsing.
@@ -98,8 +158,8 @@ enum ParseErrorKind {
     Other(String),
 }
 
-impl fmt::Display for ParseError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl Display for ParseError {
+    fn fmt(&self, f: &mut Formatter) -> FmtResult {
         match self.kind {
             ParseErrorKind::Chrono(ref err) => write!(f, "Chrono error: {}", err),
             ParseErrorKind::Other(ref err) => write!(f, "Error: {}", err),

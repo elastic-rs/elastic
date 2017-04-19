@@ -1,4 +1,5 @@
 use std::marker::PhantomData;
+use std::fmt::{Display, Result as FmtResult, Formatter};
 use chrono::{UTC, NaiveDateTime, NaiveDate, NaiveTime};
 use serde::{Serialize, Deserialize, Serializer, Deserializer};
 use serde::de::{Visitor, Error};
@@ -172,7 +173,7 @@ impl<F, M> Date<F, M>
     /// println!("{}", fmt);
     /// ```
     pub fn format(&self) -> String {
-        F::format(&self.value)
+        F::format(&self.value).to_string()
     }
 
     /// Change the format/mapping of this date.
@@ -212,6 +213,15 @@ impl<F, M> Default for Date<F, M>
     }
 }
 
+impl<F, M> Display for Date<F, M> 
+    where F: DateFormat,
+          M: DateMapping<Format = F>
+{
+    fn fmt(&self, f: &mut Formatter) -> FmtResult {
+        write!(f, "{}", F::format(&self.value))
+    }
+}
+
 impl<F, M> Serialize for Date<F, M>
     where F: DateFormat,
           M: DateMapping<Format = F>
@@ -219,7 +229,7 @@ impl<F, M> Serialize for Date<F, M>
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
         where S: Serializer
     {
-        serializer.serialize_str(&self.format())
+        serializer.collect_str(&F::format(&self.value))
     }
 }
 
@@ -299,7 +309,16 @@ impl<'a, F, M> DateBrw<'a, F, M>
 
     #[doc(hidden)]
     pub fn format(&self) -> String {
-        F::format(&self.value)
+        F::format(&self.value).to_string()
+    }
+}
+
+impl<'a, F, M> Display for DateBrw<'a, F, M> 
+    where F: DateFormat,
+          M: DateMapping<Format = F>
+{
+    fn fmt(&self, f: &mut Formatter) -> FmtResult {
+        write!(f, "{}", F::format(&self.value))
     }
 }
 
@@ -316,6 +335,6 @@ impl<'a, F, M> Serialize for DateBrw<'a, F, M>
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
         where S: Serializer
     {
-        serializer.serialize_str(&self.format())
+        serializer.collect_str(&F::format(&self.value))
     }
 }
