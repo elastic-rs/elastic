@@ -57,7 +57,7 @@ fn impl_date_format(crate_root: Tokens,
     );
 
     let format_fn = quote!(
-        fn format(date: &::chrono::DateTime<::chrono::UTC>) -> String {
+        fn format<'a>(date: &::chrono::DateTime<::chrono::UTC>) -> #crate_root::date::FormattedDate<'a> {
             let fmt = vec![ #(#format),* ];
 
             #crate_root::date::format_with_tokens(date, fmt)
