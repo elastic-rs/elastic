@@ -1,4 +1,4 @@
-use serde::de::{Deserialize, Deserializer, Visitor, Error as DeError, SeqVisitor, MapVisitor};
+use serde::de::{Deserialize, Deserializer, Visitor, Error as DeError, SeqAccess, MapAccess};
 use serde_json::Value;
 use parse::MaybeOkResponse;
 use common::Shards;
@@ -8,6 +8,7 @@ use std::cmp;
 use std::fmt;
 use std::io::Read;
 use std::error::Error;
+use std::borrow::Cow;
 
 type BulkError = Value;
 
@@ -201,21 +202,19 @@ impl FromResponse for BulkErrorsResponse {
 
 // Deserialisation
 
-struct BulkItemDe {
+struct BulkItemDe<'de> {
     action: BulkAction,
-    inner: BulkItemDeInner,
+    inner: BulkItemDeInner<'de>,
 }
 
-// TODO: Make this BulkItemDeInner<'a> after `serde` 1.0
-// That way we can avoid allocating for ignored bulk ops.
 #[derive(Deserialize, Debug, Clone)]
-struct BulkItemDeInner {
-    #[serde(rename = "_index")]
-    pub index: String,
-    #[serde(rename = "_type")]
-    pub ty: String,
-    #[serde(rename = "_id")]
-    pub id: String,
+struct BulkItemDeInner<'a> {
+    #[serde(rename = "_index", borrow)]
+    pub index: Cow<'a, str>,
+    #[serde(rename = "_type", borrow)]
+    pub ty: Cow<'a, str>,
+    #[serde(rename = "_id", borrow)]
+    pub id: Cow<'a, str>,
     #[serde(rename = "_version")]
     pub version: Option<u32>,
     #[serde(rename = "_shards")]
@@ -226,21 +225,34 @@ struct BulkItemDeInner {
     error: Option<BulkError>,
 }
 
-impl BulkItemDe {
+impl<'de> BulkItemDe<'de> {
+    fn into_err(self) -> Option<BulkItemError> {
+        match self.inner.error {
+            Some(err) => Some(BulkItemError {
+                action: self.action,
+                index: self.inner.index.into_owned(),
+                ty: self.inner.ty.into_owned(),
+                id: self.inner.id.into_owned(),
+                err: err
+            }),
+            None => None
+        }
+    }
+
     fn into_result(self) -> Result<BulkItem, BulkItemError> {
         match self.inner.error {
             Some(err) => Err(BulkItemError {
                 action: self.action,
-                index: self.inner.index,
-                ty: self.inner.ty,
-                id: self.inner.id,
+                index: self.inner.index.into_owned(),
+                ty: self.inner.ty.into_owned(),
+                id: self.inner.id.into_owned(),
                 err: err
             }),
             None => Ok(BulkItem {
                 action: self.action,
-                index: self.inner.index,
-                ty: self.inner.ty,
-                id: self.inner.id,
+                index: self.inner.index.into_owned(),
+                ty: self.inner.ty.into_owned(),
+                id: self.inner.id.into_owned(),
                 version: self.inner.version,
                 shards: self.inner.shards,
                 created: self.inner.created,
@@ -250,23 +262,23 @@ impl BulkItemDe {
     }
 }
 
-impl Deserialize for BulkItemDe {
-    fn deserialize<D>(deserializer: D) -> Result<BulkItemDe, D::Error>
-        where D: Deserializer 
+impl<'de> Deserialize<'de> for BulkItemDe<'de> {
+    fn deserialize<D>(deserializer: D) -> Result<BulkItemDe<'de>, D::Error>
+        where D: Deserializer<'de> 
     {
         struct BulkItemDeVisitor;
 
-        impl Visitor for BulkItemDeVisitor {
-            type Value = BulkItemDe;
+        impl<'de> Visitor<'de> for BulkItemDeVisitor {
+            type Value = BulkItemDe<'de>;
 
             fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
                 formatter.write_str("a bulk item")
             }
 
             fn visit_map<V>(self, mut visitor: V) -> Result<Self::Value, V::Error>
-                where V: MapVisitor 
+                where V: MapAccess<'de>
             {
-                let (action, inner) = visitor.visit()?.ok_or(V::Error::custom("expected at least one field"))?;
+                let (action, inner) = visitor.next_entry()?.ok_or(V::Error::custom("expected at least one field"))?;
 
                 let result = BulkItemDe {
                     action: action,
@@ -277,17 +289,17 @@ impl Deserialize for BulkItemDe {
             }
         }
 
-        deserializer.deserialize(BulkItemDeVisitor)
+        deserializer.deserialize_any(BulkItemDeVisitor)
     }
 }
 
-impl Deserialize for BulkItems {
+impl<'de> Deserialize<'de> for BulkItems {
     fn deserialize<D>(deserializer: D) -> Result<BulkItems, D::Error>
-        where D: Deserializer 
+        where D: Deserializer<'de>
     {
         struct BulkItemsVisitor;
 
-        impl Visitor for BulkItemsVisitor {
+        impl<'de> Visitor<'de> for BulkItemsVisitor {
             type Value = BulkItems;
 
             fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
@@ -303,14 +315,14 @@ impl Deserialize for BulkItems {
 
             #[inline]
             fn visit_seq<V>(self, mut visitor: V) -> Result<BulkItems, V::Error>
-                where V: SeqVisitor,
+                where V: SeqAccess<'de>,
             {
                 let mut values = BulkItems {
-                    ok: Vec::with_capacity(cmp::min(visitor.size_hint().0, 4096)),
-                    err: Vec::with_capacity(cmp::min(visitor.size_hint().0, 512))
+                    ok: Vec::with_capacity(cmp::min(visitor.size_hint().unwrap_or(0), 4096)),
+                    err: Vec::with_capacity(cmp::min(visitor.size_hint().unwrap_or(0), 512))
                 };
 
-                while let Some(value) = visitor.visit::<BulkItemDe>()? {
+                while let Some(value) = visitor.next_element::<BulkItemDe>()? {
                     match value.into_result() {
                         Ok(item) => values.ok.push(item),
                         Err(item) => values.err.push(item)
@@ -321,16 +333,16 @@ impl Deserialize for BulkItems {
             }
         }
 
-        deserializer.deserialize(BulkItemsVisitor)
+        deserializer.deserialize_any(BulkItemsVisitor)
     }
 }
 
-fn deserialize_bulk_item_errors<D>(deserializer: D) -> Result<Vec<BulkItemError>, D::Error>
-    where D: Deserializer 
+fn deserialize_bulk_item_errors<'de, D>(deserializer: D) -> Result<Vec<BulkItemError>, D::Error>
+    where D: Deserializer <'de>
 {
     struct BulkErrorItemsVisitor;
 
-        impl Visitor for BulkErrorItemsVisitor {
+        impl<'de> Visitor<'de> for BulkErrorItemsVisitor {
             type Value = Vec<BulkItemError>;
 
             fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
@@ -346,14 +358,13 @@ fn deserialize_bulk_item_errors<D>(deserializer: D) -> Result<Vec<BulkItemError>
 
             #[inline]
             fn visit_seq<V>(self, mut visitor: V) -> Result<Vec<BulkItemError>, V::Error>
-                where V: SeqVisitor,
+                where V: SeqAccess<'de>,
             {
-                let mut values = Vec::with_capacity(cmp::min(visitor.size_hint().0, 4096));
+                let mut values = Vec::with_capacity(cmp::min(visitor.size_hint().unwrap_or(0), 4096));
 
-                while let Some(value) = visitor.visit::<BulkItemDe>()? {
-                    match value.into_result() {
-                        Err(item) => values.push(item),
-                        _ => ()
+                while let Some(value) = visitor.next_element::<BulkItemDe>()? {
+                    if let Some(value) = value.into_err() {
+                        values.push(value);
                     }
                 }
 
@@ -361,5 +372,5 @@ fn deserialize_bulk_item_errors<D>(deserializer: D) -> Result<Vec<BulkItemError>
             }
         }
 
-        deserializer.deserialize(BulkErrorItemsVisitor)
+        deserializer.deserialize_any(BulkErrorItemsVisitor)
 }

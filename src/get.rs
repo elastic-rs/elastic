@@ -1,4 +1,5 @@
 use serde::Deserialize;
+use serde::de::DeserializeOwned;
 use serde_json::Value;
 
 use parse::MaybeOkResponse;
@@ -8,7 +9,7 @@ use std::io::Read;
 
 /// Response for a [get document request](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-get.html).
 #[derive(Deserialize, Debug)]
-pub struct GetResponseOf<T: Deserialize> {
+pub struct GetResponseOf<T> {
     #[serde(rename = "_index")]
     pub index: String,
     #[serde(rename = "_type")]
@@ -24,13 +25,13 @@ pub struct GetResponseOf<T: Deserialize> {
 
 pub type GetResponse = GetResponseOf<Value>;
 
-impl<T: Deserialize> FromResponse for GetResponseOf<T> {
+impl<T: DeserializeOwned> FromResponse for GetResponseOf<T> {
     fn from_response<I: Into<HttpResponse<R>>, R: Read>(res: I) -> ApiResult<Self> {
         let res = res.into();
 
         res.response(|res| {
             match res.status() {
-                200...299 => Ok(MaybeOkResponse::new(true, res)),
+                200...299 => Ok(MaybeOkResponse::ok(res)),
                 404 => {
                     // If we get a 404, it could be an IndexNotFound error or ok
                     // Check if the response contains a root 'error' node

@@ -1,5 +1,6 @@
 use serde::Deserialize;
-use serde_json::{self, Value, Error as JsonError};
+use serde::de::DeserializeOwned;
+use serde_json::{self, Value};
 
 use std::io::{Cursor, Read, Result as IoResult};
 
@@ -7,12 +8,14 @@ use error::*;
 use super::{HttpResponse, ApiResult};
 
 macro_rules! read_ok {
-    ($buf:expr) => (serde_json::from_reader($buf).map_err(|e| e.into()))
+    ($buf:expr) => (
+        serde_json::from_reader($buf).map_err(|e| ParseResponseError::from(e).into())
+    )
 }
 
 macro_rules! read_err {
     ($buf:expr) => ({
-        let err: ApiError = serde_json::from_reader($buf)?;
+        let err: ApiError = serde_json::from_reader($buf).map_err(|e| ParseResponseError::from(e))?;
         Err(err.into())
     })
 }
@@ -20,6 +23,12 @@ macro_rules! read_err {
 impl<R: Read> Read for HttpResponse<R> {
     fn read(&mut self, buf: &mut [u8]) -> IoResult<usize> {
         self.body.read(buf)
+    }
+}
+
+impl<R: AsRef<[u8]>> AsRef<[u8]> for HttpResponse<R> {
+    fn as_ref(&self) -> &[u8] {
+        self.body.as_ref()
     }
 }
 
@@ -31,8 +40,8 @@ impl<R: Read> HttpResponse<R> {
     /// If the `MaybeOkResponse` is ok, then the body will be returned as `Ok(T)`.
     /// Otherwise the body will be returned as `Err(ApiError)`.
     pub fn response<T, F>(self, is_ok: F) -> ApiResult<T>
-        where T: Deserialize,
-              F: Fn(UnbufferedResponse<R>) -> Result<MaybeOkResponse<R>, JsonError>
+        where T: DeserializeOwned,
+              F: Fn(UnbufferedResponse<R>) -> Result<MaybeOkResponse<R>, ParseResponseError>
     {
         let maybe = is_ok(UnbufferedResponse(self))?;
 
@@ -121,7 +130,7 @@ impl<R: Read> UnbufferedResponse<R> {
     ///
     /// This is _expensive_ so you should avoid using it if it's not
     /// necessary.
-    pub fn body(mut self) -> Result<(Value, BufferedResponse), JsonError> {
+    pub fn body(mut self) -> Result<(Value, BufferedResponse), ParseResponseError> {
         let status = self.status();
 
         let mut buf = Vec::new();
