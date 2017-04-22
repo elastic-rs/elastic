@@ -94,6 +94,11 @@ impl<R> HttpResponse<R> {
 
 type ApiResult<T> = Result<T, ResponseError>;
 
+// TODO: Figure out response traits such that duplication between Read and AsRef<[u8]> is minimised
+// Maybe we need a Body trait, which has a few concrete impls:
+// ReadBody -> serde_json::from_reader
+// SliceBody -> serde_json::from_slice
+
 /// Convert a response message into a either a success
 /// or failure result.
 pub trait FromResponse
