@@ -1,0 +1,30 @@
+{
+  "took": 2,
+  "timed_out": false,
+  "_shards": {
+    "total": 6,
+    "successful": 6,
+    "failed": 0
+  },
+  "hits": {
+    "total": 65,
+    "max_score": null,
+    "hits": [
+      {
+        "_index": "someindex",
+        "_type": "sometype",
+        "_id": "AVuP5kyDpiSd7FlbjnkH",
+        "_score": null,
+        "_source": {
+          "a": "A",
+          "b": "B",
+          "c": "C",
+          "timestamp": "20170421T094446.439Z"
+        },
+        "sort": [
+          1492767886439
+        ]
+      }
+    ]
+  }
+}
