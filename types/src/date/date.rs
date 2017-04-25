@@ -173,7 +173,7 @@ impl<F, M> Date<F, M>
     /// println!("{}", fmt);
     /// ```
     pub fn format(&self) -> String {
-        F::format(&self.value).to_string()
+        F::format(&self.value).into()
     }
 
     /// Change the format/mapping of this date.
@@ -309,7 +309,7 @@ impl<'a, F, M> DateBrw<'a, F, M>
 
     #[doc(hidden)]
     pub fn format(&self) -> String {
-        F::format(&self.value).to_string()
+        F::format(&self.value).into()
     }
 }
 

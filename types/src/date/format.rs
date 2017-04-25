@@ -122,6 +122,16 @@ impl<'a> Display for FormattedDate<'a> {
     }
 }
 
+impl<'a> Into<String> for FormattedDate<'a> {
+    fn into(self) -> String {
+        match self.inner {
+            FormattedDateInner::Delayed(inner) => inner.to_string(),
+            FormattedDateInner::Buffered(inner) => inner,
+            FormattedDateInner::Number(inner) => inner.to_string()
+        }
+    }
+}
+
 impl<'a> From<DelayedFormat<IntoIter<Item<'a>>>> for FormattedDate<'a> {
     fn from(formatted: DelayedFormat<IntoIter<Item<'a>>>) -> Self {
         FormattedDate {
