@@ -59,6 +59,6 @@ impl DateFormat for EpochMillis {
 
     fn format<'a>(date: &DateTime<UTC>) -> FormattedDate<'a> {
         let msec = (date.timestamp() * 1000) + (date.nanosecond() as i64 / 1000000);
-        (msec as i64).into()
+        msec.into()
     }
 }
