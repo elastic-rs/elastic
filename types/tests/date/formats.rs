@@ -22,6 +22,11 @@ fn chrono() {
 }
 
 #[test]
+fn chrono_name() {
+    assert_eq!("yyyy-MM-dd'T'HH:mm:ssZ", ChronoFormat::name());
+}
+
+#[test]
 fn basic_datetime_no_millis() {
     let date = Date::<BasicDateTimeNoMillis>::parse("20150703T145502Z").unwrap();
 
@@ -39,6 +44,11 @@ fn basic_datetime_no_millis() {
 
     let fmtd = date.format();
     assert_eq!("20150703T145502Z", &fmtd);
+}
+
+#[test]
+fn basic_datetime_no_millis_name() {
+    assert_eq!("basic_date_time_no_millis", BasicDateTimeNoMillis::name());
 }
 
 #[test]
@@ -63,6 +73,11 @@ fn basic_date_time() {
 }
 
 #[test]
+fn basic_date_time_name() {
+    assert_eq!("basic_date_time", BasicDateTime::name());
+}
+
+#[test]
 fn epoch_millis() {
     let date = Date::<EpochMillis>::parse("1435935302478").unwrap();
 
@@ -81,6 +96,11 @@ fn epoch_millis() {
 
     let fmtd = date.format();
     assert_eq!("1435935302478", &fmtd);
+}
+
+#[test]
+fn epoch_millis_name() {
+    assert_eq!("epoch_millis", EpochMillis::name());
 }
 
 #[test]
