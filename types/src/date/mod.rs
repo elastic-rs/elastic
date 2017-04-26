@@ -71,8 +71,8 @@
 //! impl DateFormat for MyCustomFormat {
 //!     fn name() -> &'static str { "yyyy-MM-dd'T'HH:mm:ssZ" }
 //!
-//!     fn format(date: &DateTime<UTC>) -> String {
-//!         date.to_rfc3339()
+//!     fn format<'a>(date: &DateTime<UTC>) -> FormattedDate<'a> {
+//!         date.to_rfc3339().into()
 //!     }
 //!
 //!     fn parse(date: &str) -> Result<DateTime<UTC>, ParseError> {
