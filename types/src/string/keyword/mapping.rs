@@ -3,15 +3,21 @@
 use std::collections::BTreeMap;
 use serde::{Serialize, Serializer};
 use serde::ser::SerializeStruct;
-use ::field::{FieldMapping, SerializeField, Field};
-use ::string::mapping::{StringField, IndexOptions};
+use string::mapping::{StringField, IndexOptions};
+use private::field::{FieldMapping, SerializeField};
+use document::{Field, FieldType};
 
-/// Elasticsearch datatype name.
-pub const KEYWORD_DATATYPE: &'static str = "keyword";
+/// A field that will be mapped as a `keyword`.
+pub trait KeywordFieldType<M> where M: KeywordMapping {}
 
-#[doc(hidden)]
+impl<T, M> FieldType<M, KeywordFormat> for T
+    where M: KeywordMapping,
+          T: KeywordFieldType<M> + Serialize
+{
+}
+
 #[derive(Default)]
-pub struct KeywordFormat;
+struct KeywordFormat;
 
 /// The base requirements for mapping a `string` type.
 ///
@@ -199,7 +205,7 @@ impl<T> FieldMapping<KeywordFormat> for T
     where T: KeywordMapping
 {
     fn data_type() -> &'static str {
-        KEYWORD_DATATYPE
+        "keyword"
     }
 }
 
@@ -289,7 +295,7 @@ impl Serialize for KeywordFieldMapping {
     {
         let mut state = try!(serializer.serialize_struct("mapping", 12));
 
-        try!(state.serialize_field("type", KEYWORD_DATATYPE));
+        try!(state.serialize_field("type", DefaultKeywordMapping::data_type()));
 
         ser_field!(state, "analyzer", self.analyzer);
         ser_field!(state, "doc_values", self.doc_values);

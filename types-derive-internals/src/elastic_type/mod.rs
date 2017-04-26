@@ -80,7 +80,7 @@ fn impl_elastic_type(crate_root: Tokens, item: &syn::MacroInput, mapping: &syn::
 // Implement DocumentMapping for the mapping
 fn impl_object_mapping(crate_root: Tokens, mapping: &syn::Ident, es_ty: &syn::Lit) -> Tokens {
     quote!(
-        impl #crate_root::document::DocumentMapping for #mapping {
+        impl #crate_root::document::prelude::DocumentMapping for #mapping {
             fn name() -> &'static str { #es_ty }
         }
     )
@@ -95,7 +95,7 @@ fn impl_props_mapping(crate_root: Tokens,
     let stmts = prop_ser_stmts;
 
     quote!(
-        impl #crate_root::document::PropertiesMapping for #mapping {
+        impl #crate_root::document::mapping::PropertiesMapping for #mapping {
             fn props_len() -> usize { #stmts_len }
 
             fn serialize_props<S>(state: &mut S) -> ::std::result::Result<(), S::Error> 
@@ -115,7 +115,7 @@ fn get_props_ser_stmts(crate_root: Tokens, fields: &[(syn::Ident, &syn::Field)])
             let lit = syn::Lit::Str(name.as_ref().to_string(), syn::StrStyle::Cooked);
             let ty = &field.ty;
 
-            let expr = quote!(#crate_root::field::mapping::<#ty, _, _>());
+            let expr = quote!(#crate_root::document::mapping::<#ty, _, _>());
 
             quote!(try!(#crate_root::document::field_ser(state, #lit, #expr));)
         })

@@ -89,12 +89,11 @@
 
 pub mod mapping;
 
-#[macro_use]
 mod format;
 mod formats;
-mod date;
+mod impls;
 pub use self::format::*;
-pub use self::date::*;
+pub use self::impls::*;
 pub use self::formats::*;
 
 use chrono::{DateTime, UTC};
@@ -112,7 +111,7 @@ pub mod prelude {
 
     pub use super::DefaultDateFormat;
     pub use super::format::*;
-    pub use super::date::*;
+    pub use super::impls::*;
     pub use super::formats::*;
     pub use super::mapping::*;
 }

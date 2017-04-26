@@ -48,7 +48,7 @@ impl DateFieldType<DefaultDateMapping<ChronoFormat>, ChronoFormat> for ChronoDat
 ///
 /// //eg: 2010/04/30 13:56:59.372
 /// println!("{}/{}/{} {}:{}:{}.{}",
-///         date.year(),
+///     date.year(),
 ///     date.month(),
 ///     date.day(),
 ///     date.hour(),

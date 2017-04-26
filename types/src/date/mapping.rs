@@ -4,10 +4,8 @@ use std::marker::PhantomData;
 use serde::{Serialize, Serializer};
 use serde::ser::SerializeStruct;
 use super::{DateFormat, Date};
-use ::field::{FieldType, FieldMapping, SerializeField, Field};
-
-/// Elasticsearch datatype name.
-pub const DATE_DATATYPE: &'static str = "date";
+use private::field::{FieldMapping, SerializeField};
+use document::{Field, FieldType};
 
 /// A field that will be mapped as a `date`.
 pub trait DateFieldType<M, F>
@@ -169,7 +167,7 @@ impl<T, F> FieldMapping<DateFormatWrapper<F>> for T
           F: DateFormat
 {
     fn data_type() -> &'static str {
-        DATE_DATATYPE
+        "date"
     }
 }
 

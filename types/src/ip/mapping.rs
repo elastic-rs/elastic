@@ -3,10 +3,8 @@
 use std::net::Ipv4Addr;
 use serde::{Serialize, Serializer};
 use serde::ser::SerializeStruct;
-use ::field::{FieldType, FieldMapping, SerializeField, Field};
-
-/// Elasticsearch datatype name.
-pub const IP_DATATYPE: &'static str = "ip";
+use private::field::{FieldMapping, SerializeField};
+use document::{Field, FieldType};
 
 /// A field that will be mapped as an `ip`.
 pub trait IpFieldType<M> where M: IpMapping {}
@@ -116,7 +114,7 @@ impl<T> FieldMapping<IpFormat> for T
     where T: IpMapping
 {
     fn data_type() -> &'static str {
-        IP_DATATYPE
+        "ip"
     }
 }
 

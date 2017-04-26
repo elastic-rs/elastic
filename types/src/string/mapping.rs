@@ -3,14 +3,8 @@
 use std::collections::BTreeMap;
 use serde::{Serialize, Serializer};
 use serde::ser::SerializeStruct;
-use ::field::{IndexAnalysis, FieldType};
-use super::text::mapping::{TextMapping, TextFieldMapping, TextFormat};
+use super::text::mapping::{TextMapping, TextFieldMapping};
 use super::keyword::mapping::KeywordFieldMapping;
-
-/// Elasticsearch datatype name.
-pub const TOKENCOUNT_DATATYPE: &'static str = "token_count";
-/// Elasticsearch datatype name.
-pub const COMPLETION_DATATYPE: &'static str = "completion";
 
 /// Default mapping for `String`.
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
@@ -25,9 +19,6 @@ impl TextMapping for DefaultStringMapping {
         Some(fields)
     }
 }
-
-impl FieldType<DefaultStringMapping, TextFormat> for String {}
-impl FieldType<DefaultStringMapping, TextFormat> for &'static str {}
 
 /// The `index_options` parameter controls what information is added to the inverted index, for search and highlighting purposes.
 #[derive(Debug, Clone, Copy)]
@@ -121,7 +112,7 @@ impl Serialize for ElasticTokenCountFieldMapping {
     {
         let mut state = try!(serializer.serialize_struct("mapping", 8));
 
-        try!(state.serialize_field("type", TOKENCOUNT_DATATYPE));
+        try!(state.serialize_field("type", "token_count"));
 
         ser_field!(state, "analyzer", self.analyzer);
         ser_field!(state, "boost", self.boost);
@@ -171,7 +162,7 @@ impl Serialize for ElasticCompletionFieldMapping {
     {
         let mut state = try!(serializer.serialize_struct("mapping", 7));
 
-        try!(state.serialize_field("type", COMPLETION_DATATYPE));
+        try!(state.serialize_field("type", "completion"));
 
         ser_field!(state, "analyzer", self.analyzer);
         ser_field!(state, "search_analyzer", self.search_analyzer);
@@ -183,5 +174,35 @@ impl Serialize for ElasticCompletionFieldMapping {
         ser_field!(state, "max_input_length", self.max_input_length);
 
         state.end()
+    }
+}
+
+/// Should the field be searchable? Accepts `not_analyzed` (default) and `no`.
+#[derive(Debug, Clone, Copy)]
+pub enum IndexAnalysis {
+    /// This option applies only to string fields, for which it is the default.
+    /// The string field value is first analyzed to convert the string into terms
+    /// (e.g. a list of individual words), which are then indexed.
+    /// At search time, the query string is passed through (usually) the same analyzer
+    /// to generate terms in the same format as those in the index.
+    /// It is this process that enables full text search.
+    Analyzed,
+    /// Add the field value to the index unchanged, as a single term.
+    /// This is the default for all fields that support this option except for string fields.
+    /// `not_analyzed` fields are usually used with term-level queries for structured search.
+    NotAnalyzed,
+    /// Do not add this field value to the index. With this setting, the field will not be queryable.
+    No,
+}
+
+impl Serialize for IndexAnalysis {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+        where S: Serializer
+    {
+        serializer.serialize_str(match *self {
+            IndexAnalysis::Analyzed => "analyzed",
+            IndexAnalysis::NotAnalyzed => "not_analyzed",
+            IndexAnalysis::No => "no",
+        })
     }
 }

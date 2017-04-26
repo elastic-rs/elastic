@@ -508,26 +508,23 @@
 #![deny(warnings)]
 #![deny(missing_docs)]
 
-pub extern crate chrono;
-pub extern crate geo as georust;
-pub extern crate geojson;
 extern crate geohash;
 
 #[macro_use]
 extern crate serde_derive;
 extern crate serde;
 extern crate serde_json;
-
 #[macro_use]
 extern crate elastic_types_derive;
 
-#[macro_use]
-mod macros;
+pub extern crate chrono;
+pub extern crate geo as georust;
+pub extern crate geojson;
 
-pub mod field;
+#[macro_use]
+mod private;
+
 pub mod document;
-
-#[macro_use]
 pub mod date;
 pub mod boolean;
 pub mod geo;
@@ -540,18 +537,17 @@ pub mod prelude {
     //!
     //! This is a convenience module to make it easy to build mappings for multiple types without too many `use` statements.
 
-    pub use ::document::*;
-    pub use ::field::*;
+    pub use document::prelude::*;
 
-    pub use ::boolean::prelude::*;
-    pub use ::date::prelude::*;
-    pub use ::geo::prelude::*;
-    pub use ::ip::prelude::*;
-    pub use ::number::prelude::*;
-    pub use ::string::prelude::*;
+    pub use boolean::prelude::*;
+    pub use date::prelude::*;
+    pub use geo::prelude::*;
+    pub use ip::prelude::*;
+    pub use number::prelude::*;
+    pub use string::prelude::*;
 }
 
 // This is a simple workaround for paths needed by `elastic_types_derive`.
 mod elastic_types {
-    pub use ::date;
+    pub use date;
 }

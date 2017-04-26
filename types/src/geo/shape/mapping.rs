@@ -2,15 +2,21 @@
 
 use serde::{Serialize, Serializer};
 use serde::ser::SerializeStruct;
-use ::field::{FieldMapping, SerializeField, Field};
-use ::geo::mapping::Distance;
+use geo::mapping::Distance;
+use private::field::{FieldMapping, SerializeField};
+use document::{Field, FieldType};
 
-/// Elasticsearch datatype name.
-pub const GEOSHAPE_DATATYPE: &'static str = "geo_shape";
+/// A field that will be mapped as a `geo_shape`.
+pub trait GeoShapeFieldType<M> where M: GeoShapeMapping {}
 
-#[doc(hidden)]
+impl<T, M> FieldType<M, GeoShapeFormat> for T
+    where M: GeoShapeMapping,
+          T: GeoShapeFieldType<M> + Serialize
+{
+}
+
 #[derive(Default)]
-pub struct GeoShapeFormat;
+struct GeoShapeFormat;
 
 /// The base requirements for mapping a `geo_shape` type.
 ///
@@ -145,7 +151,7 @@ impl<T> FieldMapping<GeoShapeFormat> for T
     where T: GeoShapeMapping
 {
     fn data_type() -> &'static str {
-        GEOSHAPE_DATATYPE
+        "geo_shape"
     }
 }
 

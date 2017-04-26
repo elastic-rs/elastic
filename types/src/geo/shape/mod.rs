@@ -40,17 +40,16 @@
 //!
 //! - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/geo-shape.html)
 
-#[macro_use]
 pub mod mapping;
 
-mod shape;
-pub use self::shape::*;
+mod impls;
+pub use self::impls::*;
 
 pub mod prelude {
     //! Includes all types for the `geo_shape` types.
     //!
     //! This is a convenience module to make it easy to build mappings for multiple types without too many `use` statements.
 
-    pub use super::shape::*;
+    pub use super::impls::*;
     pub use super::mapping::*;
 }

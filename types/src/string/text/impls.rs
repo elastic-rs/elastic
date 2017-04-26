@@ -1,8 +1,11 @@
 use std::marker::PhantomData;
 use serde::{Serialize, Deserialize, Serializer, Deserializer};
 use serde::de::{Visitor, Error};
-use super::mapping::{TextMapping, TextFormat};
-use ::field::FieldType;
+use super::mapping::{TextFieldType, TextMapping};
+use string::mapping::DefaultStringMapping;
+
+impl TextFieldType<DefaultStringMapping> for String {}
+impl TextFieldType<DefaultStringMapping> for &'static str {}
 
 /// An Elasticsearch `text` field with a mapping.
 ///
@@ -57,4 +60,4 @@ impl<M> Text<M>
     }
 }
 
-impl_string_type!(Text, TextMapping, TextFormat);
+impl_string_type!(Text, TextMapping, TextFieldType);
