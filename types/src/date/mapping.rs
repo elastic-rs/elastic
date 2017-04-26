@@ -4,14 +4,27 @@ use std::marker::PhantomData;
 use serde::{Serialize, Serializer};
 use serde::ser::SerializeStruct;
 use super::{DateFormat, Date};
-use ::field::{FieldMapping, SerializeField, Field};
+use ::field::{FieldType, FieldMapping, SerializeField, Field};
 
 /// Elasticsearch datatype name.
 pub const DATE_DATATYPE: &'static str = "date";
 
-#[doc(hidden)]
+/// A field that will be mapped as a `date`.
+pub trait DateFieldType<M, F>
+    where M: DateMapping<Format = F>,
+          F: DateFormat
+{
+}
+
+impl<T, F, M> FieldType<M, DateFormatWrapper<F>> for T
+    where F: DateFormat,
+          M: DateMapping<Format = F>,
+          T: DateFieldType<M, F> + Serialize
+{
+}
+
 #[derive(Default)]
-pub struct DateFormatWrapper<F>
+struct DateFormatWrapper<F>
     where F: DateFormat
 {
     _f: PhantomData<F>,
