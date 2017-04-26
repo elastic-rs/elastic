@@ -252,16 +252,6 @@ impl<M, F> From<M> for Field<M, F>
     }
 }
 
-/// Get the mapping for a field.
-#[inline]
-pub fn mapping<T, M, F>() -> M
-    where T: FieldType<M, F>,
-          M: FieldMapping<F>,
-          F: Default
-{
-    T::mapping()
-}
-
 /// Serialise a field mapping using the given serialiser.
 #[inline]
 pub fn field_ser<S, M, F>(state: &mut S, field: &'static str, _: M) -> Result<(), S::Error>

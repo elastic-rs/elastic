@@ -532,6 +532,9 @@ pub mod ip;
 pub mod number;
 pub mod string;
 
+#[doc(hidden)]
+pub mod derive;
+
 pub mod prelude {
     //! Includes all data types.
     //!
@@ -549,5 +552,5 @@ pub mod prelude {
 
 // This is a simple workaround for paths needed by `elastic_types_derive`.
 mod elastic_types {
-    pub use date;
+    pub use derive;
 }
