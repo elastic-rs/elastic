@@ -29,12 +29,10 @@ fn main() {
     };
 
     // Send the request and process the response.
-    let res: SearchResponse<Value> = {
-        client.request(req)
-              .send()
-              .and_then(into_response)
-              .unwrap()
-    };
+    let res = client.search::<Value>()
+                    .request(req)
+                    .send()
+                    .unwrap();
 
     // Iterate through the hits in the response.
     for hit in res.hits() {

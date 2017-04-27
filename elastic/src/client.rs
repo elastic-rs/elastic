@@ -89,13 +89,16 @@
 //! ```
 
 use std::marker::PhantomData;
+use serde::Deserialize;
 
 use elastic_reqwest::ElasticClient;
 use error::*;
 use reqwest::{Client as HttpClient, Response as RawResponse};
 
-use self::requests::{IntoBody, HttpRequest};
-use self::responses::{HttpResponse, FromResponse};
+use self::requests::{IntoBody, HttpRequest, SearchRequest};
+use self::responses::{HttpResponse, FromResponse, SearchResponse};
+
+type DefaultResponse = ResponseBuilder;
 
 pub use elastic_reqwest::RequestParams;
 
@@ -165,11 +168,39 @@ impl Client {
     /// // Send the `RequestBuilder`
     /// let res = builder.send().unwrap();
     /// ```
-    pub fn request<'a, I, B>(&'a self, req: I) -> RequestBuilder<'a, I, B>
+    pub fn request<'a, I, B>(&'a self, req: I) -> RequestBuilder<'a, I, B, DefaultResponse>
         where I: Into<HttpRequest<'static, B>>,
               B: IntoBody
     {
         RequestBuilder::new(&self, None, req)
+    }
+
+    /// Create a `RequestBuilder` for a search request.
+    pub fn search<'a, TDocument>(&'a self) -> SearchRequestBuilder<'a, TDocument>
+        where TDocument: Deserialize
+    {
+        SearchRequestBuilder {
+            client: &self,
+            _marker: PhantomData,
+        }
+    }
+}
+
+/// A builder for a search request.
+pub struct SearchRequestBuilder<'a, TDocument> {
+    client: &'a Client,
+    _marker: PhantomData<TDocument>,
+}
+
+impl<'a, TDocument> SearchRequestBuilder<'a, TDocument>
+    where TDocument: Deserialize
+{
+    /// Add parameters to this search request.
+    pub fn request<I, B>(self, req: I) -> RequestBuilder<'a, I, B, SearchResponse<TDocument>>
+        where I: Into<SearchRequest<'static, B>>,
+              B: IntoBody
+    {
+        RequestBuilder::new(self.client, None, req)
     }
 }
 
@@ -177,14 +208,14 @@ impl Client {
 /// 
 /// This structure wraps up a concrete REST API request type
 /// and lets you adjust parameters before sending it.
-pub struct RequestBuilder<'a, I, B> {
+pub struct RequestBuilder<'a, I, B, TResponse = DefaultResponse> {
     client: &'a Client,
     params: Option<RequestParams>,
     req: I,
-    _body: PhantomData<B>,
+    _marker: PhantomData<(B, TResponse)>,
 }
 
-impl<'a, I, B> RequestBuilder<'a, I, B> {
+impl<'a, I, B, TResponse> RequestBuilder<'a, I, B, TResponse> {
     /// Manually construct a `RequestBuilder`.
     ///
     /// If the `RequestParams` are `None`, then the parameters from the
@@ -194,12 +225,12 @@ impl<'a, I, B> RequestBuilder<'a, I, B> {
             client: client,
             params: params,
             req: req,
-            _body: PhantomData,
+            _marker: PhantomData,
         }
     }
 }
 
-impl<'a, I, B> RequestBuilder<'a, I, B>
+impl<'a, I, B, TResponse> RequestBuilder<'a, I, B, TResponse>
     where I: Into<HttpRequest<'static, B>>,
           B: IntoBody
 {
@@ -229,16 +260,41 @@ impl<'a, I, B> RequestBuilder<'a, I, B>
         self
     }
 
-    /// Send this request and return the response.
-    /// 
-    /// This method consumes the `RequestBuilder` and returns a `ResponseBuilder`
-    /// that can be used to parse the response.
-    pub fn send(self) -> Result<ResponseBuilder> {
+    fn send_raw(self) -> Result<ResponseBuilder> {
         let params = self.params.as_ref().unwrap_or(&self.client.params);
 
         let res = self.client.http.elastic_req(params, self.req)?;
 
         Ok(ResponseBuilder::from(res))
+    }
+}
+
+impl<'a, I, B> RequestBuilder<'a, I, B, ResponseBuilder>
+    where I: Into<HttpRequest<'static, B>>,
+          B: IntoBody
+{
+    /// Send this request and return the response.
+    /// 
+    /// This method consumes the `RequestBuilder` and returns a `ResponseBuilder`
+    /// that can be used to parse the response.
+    pub fn send(self) -> Result<ResponseBuilder> {
+        self.send_raw()
+    }
+}
+
+impl<'a, I, B, TResponse> RequestBuilder<'a, I, B, TResponse>
+    where I: Into<HttpRequest<'static, B>>,
+          TResponse: FromResponse,
+          B: IntoBody
+{
+    /// Send this request and return the response.
+    /// 
+    /// This method consumes the `RequestBuilder` and returns a `ResponseBuilder`
+    /// that can be used to parse the response.
+    pub fn send(self) -> Result<TResponse> {
+        let res = self.send_raw()?;
+
+        res.into_response()
     }
 }
 
@@ -460,7 +516,7 @@ mod tests {
     fn request_builder_params() {
         let client = Client::new(RequestParams::new("http://eshost:9200")).unwrap();
 
-        let req = RequestBuilder::new(&client, None, requests::PingRequest::new())
+        let req = RequestBuilder::<_, _, ()>::new(&client, None, requests::PingRequest::new())
             .params(|p| p.url_param("pretty", true))
             .params(|p| p.url_param("refresh", true));
 
