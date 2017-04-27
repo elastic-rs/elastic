@@ -61,29 +61,25 @@
 
 use serde::Serialize;
 use serde::ser::SerializeStruct;
-use ::field::{FieldType, FieldMapping, SerializeField, Field};
-
-/// Elasticsearch datatype name.
-pub const INTEGER_DATATYPE: &'static str = "integer";
-/// Elasticsearch datatype name.
-pub const LONG_DATATYPE: &'static str = "long";
-/// Elasticsearch datatype name.
-pub const SHORT_DATATYPE: &'static str = "short";
-/// Elasticsearch datatype name.
-pub const BYTE_DATATYPE: &'static str = "byte";
-/// Elasticsearch datatype name.
-pub const DOUBLE_DATATYPE: &'static str = "double";
-/// Elasticsearch datatype name.
-pub const FLOAT_DATATYPE: &'static str = "float";
+use private::field::{FieldMapping, SerializeField};
+use document::{Field, FieldType};
 
 macro_rules! number_mapping {
-    ($m:ident, $f:ident, $cn:ident, $n:ty) => (
-        #[doc(hidden)]
+    ($mapping:ident, $format:ident, $field_trait:ident, $datatype_name:expr, $std_ty:ty) => (
         #[derive(Default)]
-        pub struct $f;
+        struct $format;
+
+        /// A field that will be mapped as a number.
+        pub trait $field_trait<M> where M: $mapping {}
+
+        impl<T, M> FieldType<M, $format> for T
+            where M: $mapping,
+                T: $field_trait<M> + Serialize
+        {
+        }
 
         /// Base `number` mapping.
-        pub trait $m where
+        pub trait $mapping where
         Self: Default {
             /// Try to convert strings to numbers and truncate fractions for integers. Accepts `true` (default) and `false`.
             fn coerce() -> Option<bool> { None }
@@ -111,27 +107,27 @@ macro_rules! number_mapping {
 
             /// Accepts a numeric value of the same type as the field which is substituted for any explicit null values.
             /// Defaults to `null`, which means the field is treated as missing.
-            fn null_value() -> Option<$n> { None }
+            fn null_value() -> Option<$std_ty> { None }
 
             /// Whether the field value should be stored and retrievable separately from the `_source` field.
             /// Accepts true or false (default).
             fn store() -> Option<bool> { None }
         }
 
-        impl <T> FieldMapping<$f> for T 
-            where T: $m 
+        impl <T> FieldMapping<$format> for T 
+            where T: $mapping 
         {
-            fn data_type() -> &'static str { $cn }
+            fn data_type() -> &'static str { $datatype_name }
         }
 
-        impl<T> SerializeField<$f> for T
-            where T: $m
+        impl<T> SerializeField<$format> for T
+            where T: $mapping
         {
-            type Field = Field<T, $f>;
+            type Field = Field<T, $format>;
         }
 
-        impl <T> Serialize for Field<T, $f> where
-        T: FieldMapping<$f> + $m {
+        impl <T> Serialize for Field<T, $format> where
+        T: FieldMapping<$format> + $mapping {
             fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where
             S: ::serde::Serializer {
                 let mut state = try!(serializer.serialize_struct("mapping", 8));
@@ -152,46 +148,46 @@ macro_rules! number_mapping {
     )
 }
 
-number_mapping!(IntegerMapping, IntegerFormat, INTEGER_DATATYPE, i32);
-number_mapping!(LongMapping, LongFormat, LONG_DATATYPE, i64);
-number_mapping!(ShortMapping, ShortFormat, SHORT_DATATYPE, i16);
-number_mapping!(ByteMapping, ByteFormat, BYTE_DATATYPE, i8);
-number_mapping!(FloatMapping, FloatFormat, FLOAT_DATATYPE, f32);
-number_mapping!(DoubleMapping, DoubleFormat, DOUBLE_DATATYPE, f64);
+number_mapping!(IntegerMapping, IntegerFormat, IntegerFieldType, "integer", i32);
+number_mapping!(LongMapping, LongFormat, LongFieldType, "long", i64);
+number_mapping!(ShortMapping, ShortFormat, ShortFieldType, "short", i16);
+number_mapping!(ByteMapping, ByteFormat, ByteFieldType, "byte", i8);
+number_mapping!(FloatMapping, FloatFormat, FloatFieldType, "float", f32);
+number_mapping!(DoubleMapping, DoubleFormat, DoubleFieldType, "double", f64);
 
 /// Default mapping for an `integer` type.
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultIntegerMapping;
 impl IntegerMapping for DefaultIntegerMapping {}
-impl FieldType<DefaultIntegerMapping, IntegerFormat> for i32 {}
+impl IntegerFieldType<DefaultIntegerMapping> for i32 {}
 
 /// Default mapping for a `long` type.
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultLongMapping;
 impl LongMapping for DefaultLongMapping {}
-impl FieldType<DefaultLongMapping, LongFormat> for i64 {}
-impl FieldType<DefaultLongMapping, LongFormat> for isize {}
+impl LongFieldType<DefaultLongMapping> for i64 {}
+impl LongFieldType<DefaultLongMapping> for isize {}
 
 /// Default mapping for a `short` type.
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultShortMapping;
 impl ShortMapping for DefaultShortMapping {}
-impl FieldType<DefaultShortMapping, ShortFormat> for i16 {}
+impl ShortFieldType<DefaultShortMapping> for i16 {}
 
 /// Default mapping for a `byte` type.
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultByteMapping;
 impl ByteMapping for DefaultByteMapping {}
-impl FieldType<DefaultByteMapping, ByteFormat> for i8 {}
+impl ByteFieldType<DefaultByteMapping> for i8 {}
 
 /// Default mapping for a `float` type.
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultFloatMapping;
 impl FloatMapping for DefaultFloatMapping {}
-impl FieldType<DefaultFloatMapping, FloatFormat> for f32 {}
+impl FloatFieldType<DefaultFloatMapping> for f32 {}
 
 /// Default mapping for a `double` type.
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultDoubleMapping;
 impl DoubleMapping for DefaultDoubleMapping {}
-impl FieldType<DefaultDoubleMapping, DoubleFormat> for f64 {}
+impl DoubleFieldType<DefaultDoubleMapping> for f64 {}

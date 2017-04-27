@@ -5,7 +5,7 @@ use serde::de::impls::VecVisitor;
 use geohash;
 use super::{Coordinate, Point, GeoPointFormat};
 use super::mapping::GeoPointMapping;
-use ::geo::mapping::Distance;
+use geo::mapping::Distance;
 
 /// Geo-point expressed as an object, with `lat` and `lon` keys.
 #[derive(PartialEq, Debug, Default, Clone, Copy)]

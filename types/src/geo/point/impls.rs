@@ -1,8 +1,7 @@
 use std::marker::PhantomData;
 use serde::{Serialize, Deserialize, Serializer, Deserializer};
 use georust::{ToGeo, Geometry as GeoEnum};
-use ::field::FieldType;
-use super::mapping::{GeoPointMapping, DefaultGeoPointMapping, GeoPointFormatWrapper};
+use super::mapping::{GeoPointFieldType, GeoPointMapping, DefaultGeoPointMapping};
 use super::{Coordinate, Point, Geometry, GeoPointFormat};
 
 /// An Elasticsearch `geo_point` type with a format.
@@ -122,7 +121,7 @@ impl<F, M> GeoPoint<F, M>
     }
 }
 
-impl<F, M> FieldType<M, GeoPointFormatWrapper<F>> for GeoPoint<F, M>
+impl<F, M> GeoPointFieldType<M, F> for GeoPoint<F, M>
     where F: GeoPointFormat,
           M: GeoPointMapping<Format = F>
 {

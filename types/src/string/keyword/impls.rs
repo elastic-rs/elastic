@@ -1,8 +1,7 @@
 use std::marker::PhantomData;
 use serde::{Serialize, Deserialize, Serializer, Deserializer};
 use serde::de::{Visitor, Error};
-use super::mapping::{KeywordMapping, KeywordFormat};
-use ::field::FieldType;
+use super::mapping::{KeywordFieldType, KeywordMapping};
 
 /// An Elasticsearch `keyword` with a mapping.
 ///
@@ -57,4 +56,4 @@ impl<M> Keyword<M>
     }
 }
 
-impl_string_type!(Keyword, KeywordMapping, KeywordFormat);
+impl_string_type!(Keyword, KeywordMapping, KeywordFieldType);

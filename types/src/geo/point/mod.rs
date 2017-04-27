@@ -48,14 +48,13 @@ type Coordinate = C<f64>;
 type Point = P<f64>;
 type Geometry = G<f64>;
 
-#[macro_use]
 pub mod mapping;
 
-mod point;
+mod impls;
 mod format;
 mod formats;
 
-pub use self::point::*;
+pub use self::impls::*;
 pub use self::format::*;
 pub use self::formats::*;
 
@@ -69,7 +68,7 @@ pub mod prelude {
 
     pub use super::DefaultGeoPointFormat;
     pub use super::format::*;
-    pub use super::point::*;
+    pub use super::impls::*;
     pub use super::formats::*;
     pub use super::mapping::*;
 }

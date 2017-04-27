@@ -6,12 +6,11 @@ use serde::de::{Visitor, Error};
 use super::ChronoDateTime;
 use super::format::{DateFormat, ParseError};
 use super::formats::ChronoFormat;
-use super::mapping::{DateMapping, DefaultDateMapping, DateFormatWrapper};
-use ::field::FieldType;
+use super::mapping::{DateFieldType, DateMapping, DefaultDateMapping};
 
 pub use chrono::{Datelike, Timelike};
 
-impl FieldType<DefaultDateMapping<ChronoFormat>, DateFormatWrapper<ChronoFormat>> for ChronoDateTime {}
+impl DateFieldType<DefaultDateMapping<ChronoFormat>, ChronoFormat> for ChronoDateTime {}
 
 /// An Elasticsearch `date` type with a required `time` component.
 ///
@@ -49,7 +48,7 @@ impl FieldType<DefaultDateMapping<ChronoFormat>, DateFormatWrapper<ChronoFormat>
 ///
 /// //eg: 2010/04/30 13:56:59.372
 /// println!("{}/{}/{} {}:{}:{}.{}",
-///         date.year(),
+///     date.year(),
 ///     date.month(),
 ///     date.day(),
 ///     date.hour(),
@@ -196,7 +195,7 @@ impl<F, M> Date<F, M>
     }
 }
 
-impl<F, M> FieldType<M, DateFormatWrapper<F>> for Date<F, M>
+impl<F, M> DateFieldType<M, F> for Date<F, M>
     where F: DateFormat,
           M: DateMapping<Format = F>
 {
@@ -322,7 +321,7 @@ impl<'a, F, M> Display for DateBrw<'a, F, M>
     }
 }
 
-impl<'a, F, M> FieldType<M, DateFormatWrapper<F>> for DateBrw<'a, F, M>
+impl<'a, F, M> DateFieldType<M, F> for DateBrw<'a, F, M>
     where F: DateFormat,
           M: DateMapping<Format = F>
 {

@@ -49,18 +49,18 @@ fn impl_date_format(crate_root: Tokens,
     let ty = &item.ident;
 
     let parse_fn = quote!(
-        fn parse(date: &str) -> ::std::result::Result<::chrono::DateTime<::chrono::UTC>, #crate_root::date::ParseError> {
+        fn parse(date: &str) -> ::std::result::Result<::chrono::DateTime<::chrono::UTC>, #crate_root::derive::ParseError> {
             let fmt = vec![ #(#format),* ];
 
-            #crate_root::date::parse_from_tokens(date, fmt)
+            #crate_root::derive::parse_from_tokens(date, fmt)
         }
     );
 
     let format_fn = quote!(
-        fn format<'a>(date: &::chrono::DateTime<::chrono::UTC>) -> #crate_root::date::FormattedDate<'a> {
+        fn format<'a>(date: &::chrono::DateTime<::chrono::UTC>) -> #crate_root::derive::FormattedDate<'a> {
             let fmt = vec![ #(#format),* ];
 
-            #crate_root::date::format_with_tokens(date, fmt)
+            #crate_root::derive::format_with_tokens(date, fmt)
         }
     );
 
@@ -71,7 +71,7 @@ fn impl_date_format(crate_root: Tokens,
     );
 
     quote!(
-        impl #crate_root::date::DateFormat for #ty {
+        impl #crate_root::derive::DateFormat for #ty {
             #parse_fn
 
             #format_fn

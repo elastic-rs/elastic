@@ -3,15 +3,21 @@
 use std::collections::BTreeMap;
 use serde::{Serialize, Serializer};
 use serde::ser::SerializeStruct;
-use ::field::{FieldMapping, SerializeField, Field};
-use ::string::mapping::{StringField, IndexOptions};
+use string::mapping::{StringField, IndexOptions};
+use private::field::{FieldMapping, SerializeField};
+use document::{Field, FieldType};
 
-/// Elasticsearch datatype name.
-pub const TEXT_DATATYPE: &'static str = "text";
+/// A field that will be mapped as `text`.
+pub trait TextFieldType<M> where M: TextMapping {}
 
-#[doc(hidden)]
+impl<T, M> FieldType<M, TextFormat> for T
+    where M: TextMapping,
+          T: TextFieldType<M> + Serialize
+{
+}
+
 #[derive(Default)]
-pub struct TextFormat;
+struct TextFormat;
 
 /// The base requirements for mapping a `string` type.
 ///
@@ -219,7 +225,7 @@ impl<T> FieldMapping<TextFormat> for T
     where T: TextMapping
 {
     fn data_type() -> &'static str {
-        TEXT_DATATYPE
+        "text"
     }
 }
 
@@ -263,7 +269,7 @@ impl<T> Serialize for Field<T, TextFormat>
     }
 }
 
-/// Default mapping for `bool`.
+/// Default mapping for `text`.
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultTextMapping;
 impl TextMapping for DefaultTextMapping {}
@@ -381,7 +387,7 @@ impl Serialize for TextFieldMapping {
     {
         let mut state = try!(serializer.serialize_struct("mapping", 16));
 
-        try!(state.serialize_field("type", TEXT_DATATYPE));
+        try!(state.serialize_field("type", DefaultTextMapping::data_type()));
 
         ser_field!(state, "analyzer", self.analyzer);
         ser_field!(state, "eager_global_ordinals", self.eager_global_ordinals);

@@ -1,10 +1,9 @@
 use std::marker::PhantomData;
 use serde::{Serialize, Deserialize, Serializer, Deserializer};
 use super::mapping::*;
-use ::field::FieldType;
 
 macro_rules! number_type {
-    ($wrapper_ty:ident, $mapping_ty:ident, $format_ty:ident, $std_ty:ident) => (
+    ($wrapper_ty:ident, $mapping_ty:ident, $field_trait:ident, $std_ty:ident) => (
         /// Number type with a given mapping.
         #[derive(Debug, Default, Clone, PartialEq)]
         pub struct $wrapper_ty<M> where M: $mapping_ty {
@@ -26,7 +25,7 @@ macro_rules! number_type {
             }
         }
 
-        impl <M> FieldType<M, $format_ty> for $wrapper_ty<M> where M: $mapping_ty { }
+        impl <M> $field_trait<M> for $wrapper_ty<M> where M: $mapping_ty { }
 
         impl_mapping_type!($std_ty, $wrapper_ty, $mapping_ty);
 
@@ -50,9 +49,9 @@ macro_rules! number_type {
     )
 }
 
-number_type!(Integer, IntegerMapping, IntegerFormat, i32);
-number_type!(Long, LongMapping, LongFormat, i64);
-number_type!(Short, ShortMapping, ShortFormat, i16);
-number_type!(Byte, ByteMapping, ByteFormat, i8);
-number_type!(Float, FloatMapping, FloatFormat, f32);
-number_type!(Double, DoubleMapping, DoubleFormat, f64);
+number_type!(Integer, IntegerMapping, IntegerFieldType, i32);
+number_type!(Long, LongMapping, LongFieldType, i64);
+number_type!(Short, ShortMapping, ShortFieldType, i16);
+number_type!(Byte, ByteMapping, ByteFieldType, i8);
+number_type!(Float, FloatMapping, FloatFieldType, f32);
+number_type!(Double, DoubleMapping, DoubleFieldType, f64);
