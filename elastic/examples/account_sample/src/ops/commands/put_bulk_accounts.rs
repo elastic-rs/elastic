@@ -3,6 +3,7 @@ use std::fs::File;
 use std::path::Path;
 use serde_json::Value;
 use ops::Client;
+use elastic::client::into_response;
 use elastic::client::requests::{IntoBody, BulkRequest};
 use elastic::error::Error as ResponseError;
 
@@ -21,7 +22,7 @@ impl PutBulkAccounts for Client {
         self.io.request(put(body))
             .params(|params| params.url_param("refresh", true))
             .send()
-            .and_then(|res| res.response::<Value>())?;
+            .and_then(into_response::<Value>)?;
 
         Ok(())
     }

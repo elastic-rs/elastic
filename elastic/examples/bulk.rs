@@ -9,7 +9,7 @@ fn main() {
     // Execute a bulk request
     let bulk: BulkResponse = client.request(BulkRequest::new(get_req()))
                                    .send()
-                                   .and_then(|res| res.response())
+                                   .and_then(into_response)
                                    .unwrap();
 
     println!("Successful operations");

@@ -15,23 +15,26 @@ fn main() {
     // The `params` includes the base node url (http://localhost:9200).
     let client = Client::new(RequestParams::default()).unwrap();
 
-    // A freeform JSON request body.
-    let get_query = json_fn!(|qry| {
-        query: {
-            query_string: {
-                query: $qry
+    // A search request with a freeform body.
+    let req = {
+        let get_query = json_fn!(|qry| {
+            query: {
+                query_string: {
+                    query: $qry
+                }
             }
-        }
-    });
+        });
 
-    // A search request from the body.
-    let req = SearchRequest::for_index("_all", get_query(r#""*""#));
+        SearchRequest::for_index("_all", get_query(r#""*""#))
+    };
 
     // Send the request and process the response.
-    let res: SearchResponse<Value> = client.request(req)
-                                           .send()
-                                           .and_then(|res| res.response())
-                                           .unwrap();
+    let res: SearchResponse<Value> = {
+        client.request(req)
+              .send()
+              .and_then(into_response)
+              .unwrap()
+    };
 
     // Iterate through the hits in the response.
     for hit in res.hits() {

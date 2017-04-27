@@ -18,7 +18,7 @@ use std::str;
 use std::io::Read;
 
 use elastic_requests::BulkRequest;
-use elastic_responses::BulkErrorsResponse;
+use elastic_responses::BulkResponse;
 
 use tokio_core::reactor::Core;
 use futures::{Future, Stream};
@@ -46,7 +46,7 @@ fn main() {
     let buffer_future = pool.spawn(buffer_future);
 
     // Get a future to send a bulk request
-    let req = BulkRequest::for_index_ty("bulk-test", "bulk-ty", body);
+    let req = BulkRequest::for_index_ty("bulk-current", "bulk-ty", body);
     let req_future = client.request(hyper_req::build(&url, req))
         .and_then(|res| {
             // Buffer the response and parse as a bulk response
@@ -59,7 +59,7 @@ fn main() {
                 .and_then(|buf| {
                     // Do the deserialisation on the CPU pool
                     pool.spawn_fn(move || {
-                        let res: BulkErrorsResponse = serde_json::from_slice(&buf).unwrap();
+                        let res: BulkResponse = serde_json::from_slice(&buf).unwrap();
                         println!("{:?}", res);
 
                         ok(())

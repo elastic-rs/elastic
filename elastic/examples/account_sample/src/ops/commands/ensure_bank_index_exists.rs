@@ -1,6 +1,7 @@
 use ops::Client;
 use std::io::Error as IoError;
 use serde_json::{Value, Error as JsonError};
+use elastic::client::into_response;
 use elastic::client::requests::{IntoBody, IndicesExistsRequest, IndicesCreateRequest};
 use elastic::error::Error as ResponseError;
 
@@ -23,11 +24,11 @@ impl EnsureBankIndexExists for Client {
 
                 self.io.request(put(body))
                     .send()
-                    .and_then(|res| res.response::<Value>())?;
+                    .and_then(into_response::<Value>)?;
             },
             // Some other response, deserialise
             _ => {
-                exists.response::<Value>()?;
+                exists.into_response::<Value>()?;
             }
         }
 

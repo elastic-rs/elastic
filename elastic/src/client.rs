@@ -95,8 +95,7 @@ use error::*;
 use reqwest::{Client as HttpClient, Response as RawResponse};
 
 use self::requests::{IntoBody, HttpRequest};
-use self::responses::HttpResponse;
-use self::responses::parse::FromResponse;
+use self::responses::{HttpResponse, FromResponse};
 
 pub use elastic_reqwest::RequestParams;
 
@@ -268,7 +267,7 @@ impl ResponseBuilder {
     /// 
     /// This will consume the `ResponseBuilder` and return a raw
     /// `HttpResponse` that can be read as a byte buffer.
-    pub fn raw(self) -> HttpResponse<RawResponse> {
+    pub fn into_raw(self) -> HttpResponse<RawResponse> {
         HttpResponse::new(self.0.status().to_u16(), self.0)
     }
 
@@ -331,11 +330,24 @@ impl ResponseBuilder {
     ///                      .and_then(|res| res.response::<Value>());
     /// # }
     /// ```
-    pub fn response<T>(self) -> Result<T>
+    pub fn into_response<T>(self) -> Result<T>
         where T: FromResponse
     {
         T::from_response(self).map_err(|e| e.into())
     }
+}
+
+/// Try convert a `ResponseBuilder` into a concrete response type.
+pub fn into_response<T>(res: ResponseBuilder) -> Result<T> 
+    where T: FromResponse
+{
+    res.into_response()
+}
+
+/// Try convert a `ResponseBuilder` into a raw response type.
+pub fn into_raw(res: ResponseBuilder) -> Result<HttpResponse<RawResponse>>
+{
+    Ok(res.into_raw())
 }
 
 pub mod requests {
@@ -368,7 +380,23 @@ pub mod responses {
     //! - [`GetResponse`](type.GetResponse.html) for the [Document API](http://www.elastic.co/guide/en/elasticsearch/reference/master/docs-get.html)
     //! - [`BulkResponse`](struct.BulkResponse.html) for the [Bulk API](http://www.elastic.co/guide/en/elasticsearch/reference/master/docs-bulk.html)
 
-    pub use elastic_responses::{HttpResponse, AggregationIterator, Aggregations, Hit, Hits, Shards};
+    use elastic_responses::{SearchResponseOf, GetResponseOf};
+
+    pub use elastic_responses::{FromResponse, HttpResponse, AggregationIterator, Aggregations, Hit, Hits, Shards, PingResponse, BulkResponse, BulkErrorsResponse};
+
+    /// A generic Search API response.
+    /// 
+    /// For responses that contain multiple document types, use
+    /// `SearchResponse<serde_json::Value>`.
+    /// 
+    /// This type won't parse if you've applied any [response filters]().
+    /// If you need to tweak the shape of the search response you can
+    /// define your own response type and implement `FromResponse` for it.
+    /// See the [`parse`](parse/index.html) mod for more details.
+    pub type SearchResponse<T> = SearchResponseOf<Hit<T>>;
+
+    /// A generic Get Document API response.
+    pub type GetResponse<T> = GetResponseOf<T>;
 
     pub mod parse {
         //! Utility types for response parsing.
@@ -419,28 +447,9 @@ pub mod responses {
         //! This will consume the `UnbufferedResponse` and return a `BufferedResponse`
         //! instead that keeps the response body private for later handlers to use.
 
-        pub use elastic_responses::FromResponse;
         pub use elastic_responses::parse::{MaybeOkResponse, MaybeBufferedResponse,
                                            UnbufferedResponse, BufferedResponse};
     }
-
-    use elastic_responses::{SearchResponseOf, GetResponseOf};
-
-    pub use elastic_responses::{PingResponse, BulkResponse, BulkErrorsResponse};
-
-    /// A generic Search API response.
-    /// 
-    /// For responses that contain multiple document types, use
-    /// `SearchResponse<serde_json::Value>`.
-    /// 
-    /// This type won't parse if you've applied any [response filters]().
-    /// If you need to tweak the shape of the search response you can
-    /// define your own response type and implement `FromResponse` for it.
-    /// See the [`parse`](parse/index.html) mod for more details.
-    pub type SearchResponse<T> = SearchResponseOf<Hit<T>>;
-
-    /// A generic Get Document API response.
-    pub type GetResponse<T> = GetResponseOf<T>;
 }
 
 #[cfg(test)]

@@ -24,6 +24,46 @@ Version  | Docs
 
 ## Example
 
+```rust
+#[macro_use]
+extern crate json_str;
+extern crate elastic;
+
+use elastic::prelude::*;
+
+// A reqwest HTTP client and default parameters.
+// The `params` includes the base node url (http://localhost:9200).
+let client = Client::new(RequestParams::default()).unwrap();
+
+// A search request with a freeform body.
+let req = {
+    let body = json_str!({
+        query: {
+            query_string: {
+                query: "*"
+            }
+        }
+    });
+
+    SearchRequest::for_index("_all", body)
+};
+
+// Send the request and process the response.
+let res: SearchResponse<Value> = {
+    client.request(req)
+          .send()
+          .and_then(into_response)
+          .unwrap()
+};
+
+// Iterate through the hits in the response.
+for hit in res.hits() {
+    println!("{:?}", hit);
+}
+
+println!("{:?}", res);
+```
+
 See the [examples](https://github.com/elastic-rs/elastic/tree/master/elastic/examples) folder for complete samples.
 
 Add `elastic` to your `Cargo.toml`:

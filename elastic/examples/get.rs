@@ -14,11 +14,11 @@ fn main() {
 
     let req = GetRequest::for_index_ty_id("typed_sample_index", "mytype", "1");
 
-    let get_res = client.request(req)
-                        .send()
-                        .and_then(|res| res.response::<GetResponse<Value>>());
+    let res = client.request(req)
+                    .send()
+                    .and_then(into_response::<GetResponse<Value>>);
 
-    match get_res {
+    match res {
         // The doc was found: no need to index
         Ok(GetResponse { source: Some(doc), .. }) => {
             println!("document found: {:?}", doc);

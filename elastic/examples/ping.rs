@@ -9,7 +9,7 @@ fn main() {
     // Ping the cluster
     let ping: PingResponse = client.request(PingRequest::new())
                                    .send()
-                                   .and_then(|res| res.response())
+                                   .and_then(into_response)
                                    .unwrap();
 
     println!("{:?}", ping);

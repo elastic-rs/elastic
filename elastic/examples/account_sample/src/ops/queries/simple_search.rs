@@ -1,4 +1,5 @@
 use ops::Client;
+use elastic::client::into_response;
 use elastic::client::requests::{SearchRequest, IntoBody};
 use elastic::client::responses::SearchResponse;
 use elastic::error::Result;
@@ -16,7 +17,7 @@ impl SimpleSearchQuery for Client {
 
         self.io.request(search(search_body(&qry)))
             .send()
-            .and_then(|res| res.response())
+            .and_then(into_response)
     }
 }
 

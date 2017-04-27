@@ -60,7 +60,7 @@ fn ensure_indexed(client: &Client, doc: MyType) {
 
     let get_res = client.request(req)
                         .send()
-                        .and_then(|res| res.response::<GetResponse<MyType>>());
+                        .and_then(into_response::<GetResponse<MyType>>);
 
     match get_res {
         // The doc was found: no need to index
@@ -92,6 +92,7 @@ fn put_index(client: &Client) {
 
     let index = Index::from(INDEX);
     let mapping = MyType::mapping();
+
     let req = IndicesPutMappingRequest::try_for_mapping((index, mapping)).unwrap();
 
     client.request(req).send().unwrap();
@@ -100,6 +101,7 @@ fn put_index(client: &Client) {
 fn put_doc(client: &Client, doc: MyType) {
     let index = Index::from(INDEX);
     let id = Id::from(doc.id.to_string());
+
     let req = IndexRequest::try_for_doc((index, id, &doc)).unwrap();
 
     client.request(req)
@@ -109,17 +111,20 @@ fn put_doc(client: &Client, doc: MyType) {
 }
 
 fn search(client: &Client) -> SearchResponse<MyType> {
-    let body = json_str!({
-        query: {
-            query_string: {
-                query: "title"
+    let req = {
+        let body = json_str!({
+            query: {
+                query_string: {
+                    query: "title"
+                }
             }
-        }
-    });
+        });
 
-    let req = SearchRequest::for_index(INDEX, body);
+        SearchRequest::for_index(INDEX, body)
+    };
 
-    client.request(req).send()
-                       .and_then(|res| res.response())
-                       .unwrap()
+    client.request(req)
+          .send()
+          .and_then(into_response)
+          .unwrap()
 }

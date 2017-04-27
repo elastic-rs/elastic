@@ -19,7 +19,7 @@ fn main() {
     // Send the request and process the response.
     let mut res = client.request(req)
                         .send()
-                        .map(|res| res.raw())
+                        .and_then(into_raw)
                         .unwrap();
 
     // Check if the response is in the 200 range
