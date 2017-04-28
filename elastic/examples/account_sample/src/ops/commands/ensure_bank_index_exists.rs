@@ -21,8 +21,9 @@ impl EnsureBankIndexExists for Client {
             // Not found, create the index
             404 => {
                 let body = model::index::body()?;
+                let req = put(body);
 
-                self.io.request(put(body))
+                self.io.request(req)
                     .send()
                     .and_then(into_response::<Value>)?;
             },

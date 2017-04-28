@@ -2,41 +2,41 @@
 //!
 //! This module contains the HTTP client, as well
 //! as request and response types.
-//! 
+//!
 //! # The request process
-//! 
+//!
 //! The pieces involved in sending a request and parsing the response are modular.
 //! Each one exposes Rust traits you can implement to support your own logic.
 //! If you just want to send search/get requests and parse a search/get response then
 //! you won't need to worry about this so much.
-//! 
+//!
 //! The basic flow from request to response is:
-//! 
+//!
 //! **1)** Turn a concrete [request type](requests/endpoints/index.html) into a [`RequestBuilder`](struct.RequestBuilder.html):
-//! 
+//!
 //! ```text
 //! [RequestType] ---> [Client.request()] ---> [RequestBuilder]
 //! ```
-//! 
+//!
 //! **2)** Send the [`RequestBuilder`](struct.RequestBuilder.html) and get a [`ResponseBuilder`](struct.ResponseBuilder.html):
-//! 
+//!
 //! ```text
-//! [RequestBuilder.send()] ---> [ResponseBuilder] 
+//! [RequestBuilder.send()] ---> [ResponseBuilder]
 //! ```
-//! 
+//!
 //! **3)** Parse the [`ResponseBuilder`](struct.ResponseBuilder.html) to a [response type](responses/parse/trait.FromResponse.html#Implementors):
-//! 
+//!
 //! ```text
 //! [ResponseBuilder.response()] ---> [ResponseType]
 //! ```
-//! 
+//!
 //! The example below shows how these pieces fit together in code.
-//! 
+//!
 //! # Examples
-//! 
+//!
 //! This example sends a simple `SearchRequest`, with the steps in the above
 //! process labelled:
-//! 
+//!
 //! ```no_run
 //! # extern crate elastic;
 //! # #[macro_use]
@@ -48,7 +48,7 @@
 //! # fn main() {
 //! // Create a `Client`
 //! let client = Client::new(RequestParams::default()).unwrap();
-//! 
+//!
 //! // Create a `SearchRequest` for all indices
 //! let req = {
 //!     let body = json_str!({
@@ -58,15 +58,15 @@
 //!             }
 //!         }
 //!     });
-//!     
+//!
 //!     SearchRequest::for_index("_all", body)
 //! };
-//! 
+//!
 //! // Send the request and read the response as a `SearchResponse`
 //! let res = client.request(req) // 1
 //!                 .send() // 2
 //!                 .and_then(|res| res.response::<SearchResponse<Value>>()); // 3
-//! 
+//!
 //! match res {
 //!     Ok(response) => {
 //!         // Iterate through the response hits
@@ -92,18 +92,19 @@ use std::marker::PhantomData;
 use serde::Deserialize;
 
 use elastic_reqwest::ElasticClient;
+use elastic_reqwest::req::DefaultBody;
 use error::*;
 use reqwest::{Client as HttpClient, Response as RawResponse};
 
-use self::requests::{IntoBody, HttpRequest, SearchRequest};
-use self::responses::{HttpResponse, FromResponse, SearchResponse};
+use self::requests::{IntoBody, HttpRequest, SearchRequest, GetRequest};
+use self::responses::{HttpResponse, FromResponse, SearchResponse, GetResponse};
 
 type DefaultResponse = ResponseBuilder;
 
 pub use elastic_reqwest::RequestParams;
 
 /// A HTTP client for the Elasticsearch REST API.
-/// 
+///
 /// The `Client` is a structure that lets you create and send `RequestBuilder`s.
 /// It's mostly a thin wrapper over a `reqwest::Client`.
 pub struct Client {
@@ -119,23 +120,23 @@ impl Client {
     /// per-request basis.
     /// This method can return a `HttpError` if the underlying `reqwest::Client`
     /// fails to create.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// Create a `Client` with default parameters:
-    /// 
+    ///
     /// ```
     /// # use elastic::prelude::*;
     /// let client = Client::new(RequestParams::default()).unwrap();
     /// ```
-    /// 
+    ///
     /// Create a `Client` for a specific node:
-    /// 
+    ///
     /// ```
     /// # use elastic::prelude::*;
     /// let client = Client::new(RequestParams::new("http://eshost:9200")).unwrap();
     /// ```
-    /// 
+    ///
     /// See [`RequestParams`](struct.RequestParams.html) for more configuration options.
     pub fn new(params: RequestParams) -> Result<Self> {
         let client = HttpClient::new()?;
@@ -147,24 +148,24 @@ impl Client {
     }
 
     /// Create a `RequestBuilder` that can be configured before sending.
-    /// 
+    ///
     /// The `request` method accepts any type that can be converted into
-    /// a [`HttpRequest<'static>`](requests/struct.HttpRequest.html), 
+    /// a [`HttpRequest<'static>`](requests/struct.HttpRequest.html),
     /// which includes the endpoint types in the [`requests`](requests/endpoints/index.html) module.
     ///
     /// # Examples
-    /// 
+    ///
     /// Turn a concrete request into a `RequestBuilder`:
-    /// 
+    ///
     /// ```no_run
     /// # use elastic::prelude::*;
     /// # let client = Client::new(RequestParams::default()).unwrap();
     /// // `PingRequest` implements `Into<HttpRequest>`
     /// let req = PingRequest::new();
-    /// 
+    ///
     /// // Turn the `PingRequest` into a `RequestBuilder`
     /// let builder = client.request(req);
-    /// 
+    ///
     /// // Send the `RequestBuilder`
     /// let res = builder.send().unwrap();
     /// ```
@@ -173,16 +174,6 @@ impl Client {
               B: IntoBody
     {
         RequestBuilder::new(&self, None, req)
-    }
-
-    /// Create a `RequestBuilder` for a search request.
-    pub fn search<'a, TDocument>(&'a self) -> SearchRequestBuilder<'a, TDocument>
-        where TDocument: Deserialize
-    {
-        SearchRequestBuilder {
-            client: &self,
-            _marker: PhantomData,
-        }
     }
 }
 
@@ -204,8 +195,49 @@ impl<'a, TDocument> SearchRequestBuilder<'a, TDocument>
     }
 }
 
+impl Client {
+    /// Create a `RequestBuilder` for a search request.
+    pub fn search<'a, TDocument>(&'a self) -> SearchRequestBuilder<'a, TDocument>
+        where TDocument: Deserialize
+    {
+        SearchRequestBuilder {
+            client: &self,
+            _marker: PhantomData,
+        }
+    }
+}
+
+/// A builder for a get document request.
+pub struct GetRequestBuilder<'a, TDocument> {
+    client: &'a Client,
+    _marker: PhantomData<TDocument>,
+}
+
+impl<'a, TDocument> GetRequestBuilder<'a, TDocument>
+    where TDocument: Deserialize
+{
+    /// Add parameters to this search request.
+    pub fn request<I>(self, req: I) -> RequestBuilder<'a, I, DefaultBody, GetResponse<TDocument>>
+        where I: Into<GetRequest<'static>>
+    {
+        RequestBuilder::new(self.client, None, req)
+    }
+}
+
+impl Client {
+    /// Create a `RequestBuilder` for a search request.
+    pub fn get<'a, TDocument>(&'a self) -> GetRequestBuilder<'a, TDocument>
+        where TDocument: Deserialize
+    {
+        GetRequestBuilder {
+            client: &self,
+            _marker: PhantomData,
+        }
+    }
+}
+
 /// A builder for a request.
-/// 
+///
 /// This structure wraps up a concrete REST API request type
 /// and lets you adjust parameters before sending it.
 pub struct RequestBuilder<'a, I, B, TResponse = DefaultResponse> {
@@ -238,11 +270,11 @@ impl<'a, I, B, TResponse> RequestBuilder<'a, I, B, TResponse>
     ///
     /// This method will clone the `RequestParams` on the `Client` and pass
     /// them to the closure.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// Add a url param to force an index refresh:
-    /// 
+    ///
     /// ```no_run
     /// # use elastic::prelude::*;
     /// # let client = Client::new(RequestParams::default()).unwrap();
@@ -274,7 +306,7 @@ impl<'a, I, B> RequestBuilder<'a, I, B, ResponseBuilder>
           B: IntoBody
 {
     /// Send this request and return the response.
-    /// 
+    ///
     /// This method consumes the `RequestBuilder` and returns a `ResponseBuilder`
     /// that can be used to parse the response.
     pub fn send(self) -> Result<ResponseBuilder> {
@@ -288,7 +320,7 @@ impl<'a, I, B, TResponse> RequestBuilder<'a, I, B, TResponse>
           B: IntoBody
 {
     /// Send this request and return the response.
-    /// 
+    ///
     /// This method consumes the `RequestBuilder` and returns a `ResponseBuilder`
     /// that can be used to parse the response.
     pub fn send(self) -> Result<TResponse> {
@@ -299,7 +331,7 @@ impl<'a, I, B, TResponse> RequestBuilder<'a, I, B, TResponse>
 }
 
 /// A builder for a response.
-/// 
+///
 /// This structure wraps the completed HTTP response but gives you
 /// options for converting it into a concrete type.
 pub struct ResponseBuilder(RawResponse);
@@ -320,7 +352,7 @@ impl Into<HttpResponse<RawResponse>> for ResponseBuilder {
 
 impl ResponseBuilder {
     /// Get the raw HTTP response.
-    /// 
+    ///
     /// This will consume the `ResponseBuilder` and return a raw
     /// `HttpResponse` that can be read as a byte buffer.
     pub fn into_raw(self) -> HttpResponse<RawResponse> {
@@ -333,7 +365,7 @@ impl ResponseBuilder {
     }
 
     /// Get the response body from JSON.
-    /// 
+    ///
     /// This will consume the `ResponseBuilder` and return a
     /// concrete response type or an error.
     ///
@@ -342,9 +374,9 @@ impl ResponseBuilder {
     /// either return an `Ok(T)` or an `Err(ApiError)`.
     ///
     /// # Examples
-    /// 
+    ///
     /// Get a strongly typed `SearchResponse`:
-    /// 
+    ///
     /// ```no_run
     /// # extern crate serde;
     /// # #[macro_use]
@@ -368,10 +400,10 @@ impl ResponseBuilder {
     ///                      .and_then(|res| res.response::<SearchResponse<MyType>>());
     /// # }
     /// ```
-    /// 
+    ///
     /// You can also read a response as a `serde_json::Value`, which will be `Ok(Value)`
     /// if the HTTP status code is `Ok` or `Err(ApiError)` otherwise:
-    /// 
+    ///
     /// ```no_run
     /// # extern crate elastic;
     /// # extern crate serde_json;
@@ -394,23 +426,22 @@ impl ResponseBuilder {
 }
 
 /// Try convert a `ResponseBuilder` into a concrete response type.
-pub fn into_response<T>(res: ResponseBuilder) -> Result<T> 
+pub fn into_response<T>(res: ResponseBuilder) -> Result<T>
     where T: FromResponse
 {
     res.into_response()
 }
 
 /// Try convert a `ResponseBuilder` into a raw response type.
-pub fn into_raw(res: ResponseBuilder) -> Result<HttpResponse<RawResponse>>
-{
+pub fn into_raw(res: ResponseBuilder) -> Result<HttpResponse<RawResponse>> {
     Ok(res.into_raw())
 }
 
 pub mod requests {
     //! Request types for the Elasticsearch REST API.
-    //! 
+    //!
     //! Key request types include:
-    //! 
+    //!
     //! - [`SearchRequest`](endpoints/struct.SearchRequest.html) for the [Query DSL](http://www.elastic.co/guide/en/elasticsearch/reference/master/search-search.html)
     //! - [`GetRequest`](endpoints/struct.GetRequest.html) for the [Document API](http://www.elastic.co/guide/en/elasticsearch/reference/master/docs-get.html)
     //! - [`IndexRequest`](endpoints/struct.IndexRequest.html) for the [Document API](http://www.elastic.co/guide/en/elasticsearch/reference/master/docs-index_.html)
@@ -418,9 +449,9 @@ pub mod requests {
     //! - [`BulkRequest`](endpoints/struct.BulkRequest.html) for the [Bulk API](http://www.elastic.co/guide/en/elasticsearch/reference/master/docs-bulk.html)
 
     pub use elastic_reqwest::IntoReqwestBody as IntoBody;
-    pub use elastic_requests::{HttpRequest, HttpMethod, empty_body, Url};
-    pub use elastic_requests::params;
-    pub use elastic_requests::endpoints;
+    pub use elastic_reqwest::req::{HttpRequest, HttpMethod, empty_body, Url};
+    pub use elastic_reqwest::req::params;
+    pub use elastic_reqwest::req::endpoints;
 
     pub use self::params::*;
     pub use self::endpoints::*;
@@ -429,22 +460,23 @@ pub mod requests {
 
 pub mod responses {
     //! Response types for the Elasticsearch REST API.
-    //! 
+    //!
     //! Key response types include:
-    //! 
+    //!
     //! - [`SearchResponse`](type.SearchResponse.html) for the [Query DSL](http://www.elastic.co/guide/en/elasticsearch/reference/master/search-search.html)
     //! - [`GetResponse`](type.GetResponse.html) for the [Document API](http://www.elastic.co/guide/en/elasticsearch/reference/master/docs-get.html)
     //! - [`BulkResponse`](struct.BulkResponse.html) for the [Bulk API](http://www.elastic.co/guide/en/elasticsearch/reference/master/docs-bulk.html)
 
     use elastic_responses::{SearchResponseOf, GetResponseOf};
 
-    pub use elastic_responses::{FromResponse, HttpResponse, AggregationIterator, Aggregations, Hit, Hits, Shards, PingResponse, BulkResponse, BulkErrorsResponse};
+    pub use elastic_responses::{FromResponse, HttpResponse, AggregationIterator, Aggregations,
+                                Hit, Hits, Shards, PingResponse, BulkResponse, BulkErrorsResponse};
 
     /// A generic Search API response.
-    /// 
+    ///
     /// For responses that contain multiple document types, use
     /// `SearchResponse<serde_json::Value>`.
-    /// 
+    ///
     /// This type won't parse if you've applied any [response filters]().
     /// If you need to tweak the shape of the search response you can
     /// define your own response type and implement `FromResponse` for it.
@@ -456,14 +488,14 @@ pub mod responses {
 
     pub mod parse {
         //! Utility types for response parsing.
-        //! 
+        //!
         //! # Examples
-        //! 
+        //!
         //! Implement `FromResponse` for a deserialisable type that converts
         //! a http response into a concrete type.
-        //! This example defines a search response that, for whatever reason, 
+        //! This example defines a search response that, for whatever reason,
         //! only includes the `took` field:
-        //! 
+        //!
         //! ```
         //! # extern crate serde;
         //! # #[macro_use]
@@ -477,10 +509,10 @@ pub mod responses {
         //! struct MyResponse {
         //!     took: u64
         //! }
-        //! 
+        //!
         //! impl FromResponse for MyResponse {
-        //!     fn from_response<I, R>(res: I) -> Result<Self, ResponseError> 
-        //!         where I: Into<HttpResponse<R>>, R: Read 
+        //!     fn from_response<I, R>(res: I) -> Result<Self, ResponseError>
+        //!         where I: Into<HttpResponse<R>>, R: Read
         //!     {
         //!         // HttpResponse.response() lets you inspect a response for success
         //!         res.into().response(|http_res| {
@@ -497,7 +529,7 @@ pub mod responses {
         //! }
         //! # fn main() {}
         //! ```
-        //! 
+        //!
         //! You can also parse the response body into a temporary `serde_json::Value`
         //! if the status code isn't enough to determine if it's ok.
         //! This will consume the `UnbufferedResponse` and return a `BufferedResponse`

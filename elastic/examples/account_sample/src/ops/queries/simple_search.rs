@@ -14,10 +14,9 @@ pub trait SimpleSearchQuery {
 impl SimpleSearchQuery for Client {
     fn simple_search_query(&self, qry: &str) -> Result<SearchResponse<Account>> {
         let qry = format!("\"{}\"", qry);
-
-        self.io.request(search(search_body(&qry)))
-            .send()
-            .and_then(into_response)
+        let req = search(search_body(&qry));
+        
+        self.io.search().request(req).send()
     }
 }
 

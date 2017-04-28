@@ -14,9 +14,7 @@ fn main() {
 
     let req = GetRequest::for_index_ty_id("typed_sample_index", "mytype", "1");
 
-    let res = client.request(req)
-                    .send()
-                    .and_then(into_response::<GetResponse<Value>>);
+    let res = client.get::<Value>().request(req).send();
 
     match res {
         // The doc was found: no need to index

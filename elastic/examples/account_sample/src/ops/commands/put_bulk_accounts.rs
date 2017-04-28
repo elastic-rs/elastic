@@ -18,8 +18,9 @@ impl PutBulkAccounts for Client {
         where P: AsRef<Path>
     {
         let body = bulk_body(path)?;
+        let req = put(body);
 
-        self.io.request(put(body))
+        self.io.request(req)
             .params(|params| params.url_param("refresh", true))
             .send()
             .and_then(into_response::<Value>)?;

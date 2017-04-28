@@ -3,7 +3,6 @@
 //! NOTE: This sample expects you have a node running on `localhost:9200`.
 
 #[macro_use]
-extern crate json_str;
 extern crate serde_json;
 extern crate elastic;
 
@@ -17,15 +16,15 @@ fn main() {
 
     // A search request with a freeform body.
     let req = {
-        let get_query = json_fn!(|qry| {
-            query: {
-                query_string: {
-                    query: $qry
+        let query = json!({
+            "query": {
+                "query_string": {
+                    "query": "*"
                 }
             }
         });
 
-        SearchRequest::for_index("_all", get_query(r#""*""#))
+        SearchRequest::for_index("_all", query.to_string())
     };
 
     // Send the request and process the response.

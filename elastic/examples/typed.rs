@@ -58,9 +58,9 @@ fn ensure_indexed(client: &Client, doc: MyType) {
     let id = doc.id.to_string();
     let req = GetRequest::for_index_ty_id(index, ty, id);
 
-    let get_res = client.request(req)
-                        .send()
-                        .and_then(into_response::<GetResponse<MyType>>);
+    let get_res = client.get::<MyType>()
+                        .request(req)
+                        .send();
 
     match get_res {
         // The doc was found: no need to index
@@ -123,8 +123,5 @@ fn search(client: &Client) -> SearchResponse<MyType> {
         SearchRequest::for_index(INDEX, body)
     };
 
-    client.request(req)
-          .send()
-          .and_then(into_response)
-          .unwrap()
+    client.search().request(req).send().unwrap()
 }

@@ -26,9 +26,10 @@ Version  | Docs
 
 ```rust
 #[macro_use]
-extern crate json_str;
+extern crate serde_json;
 extern crate elastic;
 
+use serde_json::Value;
 use elastic::prelude::*;
 
 // A reqwest HTTP client and default parameters.
@@ -37,24 +38,22 @@ let client = Client::new(RequestParams::default()).unwrap();
 
 // A search request with a freeform body.
 let req = {
-    let body = json_str!({
-        query: {
-            query_string: {
-                query: "*"
+    let query = json!({
+        "query": {
+            "query_string": {
+                "query": "*"
             }
         }
     });
 
-    SearchRequest::for_index("_all", body)
+    SearchRequest::for_index("_all", query.to_string())
 };
 
 // Send the request and process the response.
-let res: SearchResponse<Value> = {
-    client.request(req)
-          .send()
-          .and_then(into_response)
-          .unwrap()
-};
+let res = client.search::<Value>()
+                .request(req)
+                .send()
+                .unwrap();
 
 // Iterate through the hits in the response.
 for hit in res.hits() {

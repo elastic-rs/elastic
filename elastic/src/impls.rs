@@ -1,5 +1,5 @@
 //! Glue traits for documents and requests.
-//! 
+//!
 //! The `TryForDoc` and `TryForMapping` traits are functionally equivalent
 //! but are used to support different conversions.
 //! They are implemented for tuples of a document and additional parameters,
@@ -19,7 +19,7 @@ pub trait TryForDoc<T, M>: Sized {
     fn try_for_doc(doc: T) -> Result<Self>;
 }
 
-/// A trait for converting a [document mapping](../../types/document/trait.DocumentMapping.html) 
+/// A trait for converting a [document mapping](../../types/document/trait.DocumentMapping.html)
 /// mapping into a [request](endpoints/index.html).
 pub trait TryForMapping<M>
     where Self: Sized

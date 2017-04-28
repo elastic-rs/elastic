@@ -11,7 +11,7 @@
 //! The client provides a flexible API with a default happy-path so you can customise the
 //! way you use it.
 //! It depends heavily on the following crates:
-//! 
+//!
 //! - [`reqwest`/`hyper`](https://github.com/seanmonstar/reqwest) as the default HTTP layer
 //! - [`serde`/`serde_json`](https://serde.rs/) for serialisation.
 //!
@@ -55,7 +55,7 @@
 //! # Examples
 //!
 //! ## Making requests
-//! 
+//!
 //! Each endpoint in the Elasticsearch REST API is provided as a strongly-typed
 //! structure.
 //! Use a `Client` instance to send one of these requests and read the response:
@@ -68,7 +68,7 @@
 //!
 //! // A ping request (HEAD '/')
 //! let req = PingRequest::new();
-//! 
+//!
 //! // Send the ping request and unwrap the response
 //! let response = client.request(req).send().unwrap();
 //! ```
@@ -95,9 +95,9 @@
 //!                      .send()
 //!                      .unwrap();
 //! ```
-//! 
+//!
 //! For more details, see the [`client`](client/index.html) and [`requests`](client/requests/index.html) modules.
-//! 
+//!
 //! ## Getting Responses
 //!
 //! Call `response` on a sent request to get a strongly typed `SearchResponse` or `GetResponse`:
@@ -148,7 +148,7 @@
 //!
 //! The `HttpResponse` implements `Read` so you can buffer out the raw
 //! response data.
-//! 
+//!
 //! For more details see the [`client`](client/index.html) and [`responses`](client/responses/index.html) module.
 //!
 //! ## Defining document types
@@ -231,9 +231,9 @@
 //! ```
 //!
 //! For more details on document types, see the [`types`](types/index.html) module.
-//! 
+//!
 //! # Crate design
-//! 
+//!
 //! This crate is mostly a meta-package composed of a number of smaller pieces including:
 //!
 //! - `elastic_reqwest` HTTP transport
@@ -243,9 +243,9 @@
 //!
 //! This crate glues these libraries together with some simple assumptions
 //! about how they're going to be used.
-//! 
+//!
 //! # Links
-//! 
+//!
 //! - [Elasticsearch Docs](https://www.elastic.co/guide/en/elasticsearch/reference/master/index.html)
 //! - [Github](https://github.com/elastic-rs/elastic)
 
@@ -258,7 +258,6 @@ extern crate serde;
 extern crate serde_json;
 extern crate reqwest;
 extern crate elastic_reqwest;
-extern crate elastic_requests;
 extern crate elastic_types;
 extern crate elastic_responses;
 
@@ -287,7 +286,7 @@ pub mod types {
     //! There's no extra mapping function to maintain.
     //! - Mapping is immutable and zero-cost. You don't pay anything at runtime
     //! for having mapping metadata available.
-    //! 
+    //!
     //! # Document and data types
     //!
     //! Types in Elasticsearch are a combination of _source_ and _mapping_.
@@ -302,14 +301,14 @@ pub mod types {
     //! ```
     //!
     //! The source type is `boolean` and the mapping is `MyMapping`.
-    //! 
+    //!
     //! Most datatypes also implement a default mapping for a common Rust type if you don't
     //! need to customise how a field is mapped:
-    //! 
+    //!
     //! ```ignore
     //! some_field: bool
     //! ```
-    //! 
+    //!
     //! See the table below for a complete list of supported datatypes and their default
     //! implementations.
     //!
@@ -317,7 +316,7 @@ pub mod types {
     //! where `M` is the mapping and `F` is a type-specific format.
     //!
     //! ## Supported datatypes
-    //! 
+    //!
     //! The following table illustrates the types provided by `elastic`:
     //!
     //!  Elasticsearch Type  | Rust Type (Default Mapping) | Crate     | Rust Type (Custom Mapping)                                                       | Format Type
@@ -453,7 +452,7 @@ pub mod types {
     //! # assert_eq!(expected, mapping);
     //! # }
     //! ```
-    //! 
+    //!
     //! See the table above for a list of all supported datatypes and how to work
     //! with them.
     //!
@@ -484,9 +483,9 @@ pub mod types {
     //! impl FieldType<DefaultKeywordMapping, KeywordFormat> for MyEnum {}
     //! # }
     //! ```
-    //! 
+    //!
     //! You can then use `MyEnum` on any document type:
-    //! 
+    //!
     //! ```
     //! # extern crate elastic;
     //! # #[macro_use]
@@ -505,9 +504,9 @@ pub mod types {
     //! }
     //! # }
     //! ```
-    //! 
+    //!
     //! Serialising `MyType`s mapping will produce the following json:
-    //! 
+    //!
     //! ```
     //! # extern crate elastic;
     //! # #[macro_use]
@@ -540,14 +539,14 @@ pub mod types {
     //! # assert_eq!(expected, mapping);
     //! # }
     //! ```
-    //! 
+    //!
     //! ## Convert documents into requests
-    //! 
+    //!
     //! Documents and their mappings can be converted into index and
     //! mapping REST API requests.
-    //! 
+    //!
     //! Convert a document and index type into an index request:
-    //! 
+    //!
     //! ```
     //! # extern crate elastic;
     //! # #[macro_use]
@@ -564,14 +563,14 @@ pub mod types {
     //! // Get an `Index` and an instance of some `ElasticType`
     //! let index = Index::from("my_index");
     //! let doc = get_doc();
-    //! 
+    //!
     //! // Convert the index and document into an index request
     //! let req = IndexRequest::try_for_doc((index, &doc)).unwrap();
     //! # }
     //! ```
-    //! 
+    //!
     //! Convert a document and index type into a mapping request:
-    //! 
+    //!
     //! ```
     //! # extern crate elastic;
     //! # #[macro_use]
@@ -588,14 +587,14 @@ pub mod types {
     //! // Get an `Index` and an instance of some `ElasticType`
     //! let index = Index::from("my_index");
     //! let doc = get_doc();
-    //! 
+    //!
     //! // Convert the index and document into an index request
     //! let req = IndicesPutMappingRequest::try_for_doc((index, &doc)).unwrap();
     //! # }
     //! ```
-    //! 
-    //! For more conversions between documents and requests, 
-    //! see the [`TryForDoc`](../client/requests/trait.TryForDoc.html) and 
+    //!
+    //! For more conversions between documents and requests,
+    //! see the [`TryForDoc`](../client/requests/trait.TryForDoc.html) and
     //! [`TryForMapping`](../client/requests/trait.TryForMapping.html) traits.
 
     pub use elastic_types::{document, field, boolean, date, geo, ip, number, string, prelude};
@@ -604,7 +603,8 @@ pub mod types {
 pub mod prelude {
     //! A glob import for convenience.
 
-    pub use super::client::{Client, RequestParams, RequestBuilder, SearchRequestBuilder, ResponseBuilder, into_response, into_raw};
+    pub use super::client::{Client, RequestParams, RequestBuilder, SearchRequestBuilder,
+                            ResponseBuilder, into_response, into_raw};
     pub use super::client::requests::*;
     pub use super::client::responses::*;
     pub use super::types::prelude::*;
