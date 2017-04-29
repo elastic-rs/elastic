@@ -96,7 +96,7 @@ use elastic_reqwest::req::DefaultBody;
 use error::*;
 use reqwest::{Client as HttpClient, Response as RawResponse};
 
-use self::requests::{IntoBody, HttpRequest, SearchRequest, GetRequest};
+use self::requests::{IntoBody, empty_body, HttpRequest, SearchRequest, GetRequest, Index, Type};
 use self::responses::{HttpResponse, FromResponse, SearchResponse, GetResponse};
 
 type DefaultResponse = ResponseBuilder;
@@ -177,35 +177,111 @@ impl Client {
     }
 }
 
+
+//////////////////////////////////////////////////
+
 /// A builder for a search request.
-pub struct SearchRequestBuilder<'a, TDocument> {
+pub struct PreSearchRequestBuilder<'a, TDocument> {
     client: &'a Client,
     _marker: PhantomData<TDocument>,
 }
 
-impl<'a, TDocument> SearchRequestBuilder<'a, TDocument>
+/// A builder for a search request.
+pub struct SearchRequestBuilder<TDocument, TBody> {
+    index: Option<Index<'static>>,
+    ty: Option<Type<'static>>,
+    body: TBody,
+    _marker: PhantomData<TDocument>,
+}
+
+impl<TDocument> SearchRequestBuilder<TDocument, DefaultBody> {
+    fn new() -> Self {
+        SearchRequestBuilder {
+            index: None,
+            ty: None,
+            body: empty_body(),
+            _marker: PhantomData,
+        }
+    }
+}
+
+impl<TDocument, TBody> SearchRequestBuilder<TDocument, TBody> {
+    /// Set the indices for the search request.
+    /// 
+    /// If no index is specified then `_all` will be used.
+    pub fn index<I>(mut self, index: I) -> Self
+        where I: Into<Index<'static>>
+    {
+        self.index = Some(index.into());
+        self
+    }
+
+    /// Set the types for the search request.
+    pub fn ty<I>(mut self, ty: Option<I>) -> Self
+        where I: Into<Type<'static>>
+    {
+        self.ty = ty.map(Into::into);
+        self
+    }
+
+    /// Set the body for the search request.
+    /// 
+    /// If no body is specified then an empty query will be used.
+    pub fn body<B>(self, body: B) -> SearchRequestBuilder<TDocument, B>
+        where B: IntoBody
+    {
+        SearchRequestBuilder {
+            body: body,
+            index: self.index,
+            ty: self.ty,
+            _marker: PhantomData,
+        }
+    }
+}
+
+impl<TDocument, TBody> Into<HttpRequest<'static, TBody>> for SearchRequestBuilder<TDocument, TBody> 
+    where TBody: IntoBody
+{
+    fn into(self) -> HttpRequest<'static, TBody> {
+        let index = self.index.unwrap_or("_all".into());
+
+        let req = match self.ty {
+            Some(ty) => SearchRequest::for_index_ty(index, ty, self.body),
+            None => SearchRequest::for_index(index, self.body)
+        };
+
+        req.into()
+    }
+}
+
+impl<'a, TDocument> PreSearchRequestBuilder<'a, TDocument>
     where TDocument: Deserialize
 {
     /// Add parameters to this search request.
-    pub fn request<I, B>(self, req: I) -> RequestBuilder<'a, I, B, SearchResponse<TDocument>>
-        where I: Into<SearchRequest<'static, B>>,
+    pub fn request<F, B>(self, builder: F) -> RequestBuilder<'a, SearchRequestBuilder<TDocument, B>, B, SearchResponse<TDocument>>
+        where F: Fn(SearchRequestBuilder<TDocument, DefaultBody>) -> SearchRequestBuilder<TDocument, B>,
               B: IntoBody
     {
+        let req = builder(SearchRequestBuilder::new());
+
         RequestBuilder::new(self.client, None, req)
     }
 }
 
 impl Client {
     /// Create a `RequestBuilder` for a search request.
-    pub fn search<'a, TDocument>(&'a self) -> SearchRequestBuilder<'a, TDocument>
+    pub fn search<'a, TDocument>(&'a self) -> PreSearchRequestBuilder<'a, TDocument>
         where TDocument: Deserialize
     {
-        SearchRequestBuilder {
+        PreSearchRequestBuilder {
             client: &self,
             _marker: PhantomData,
         }
     }
 }
+
+
+//////////////////////////////////////////////////
 
 /// A builder for a get document request.
 pub struct GetRequestBuilder<'a, TDocument> {
