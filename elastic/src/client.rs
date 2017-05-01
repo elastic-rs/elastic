@@ -167,7 +167,9 @@ impl Client {
     /// // Send the `RequestBuilder`
     /// let res = builder.send().unwrap();
     /// ```
-    pub fn request<'a, TRequest, TBody>(&'a self, req: TRequest) -> RequestBuilder<'a, TRequest, TBody>
+    pub fn request<'a, TRequest, TBody>(&'a self,
+                                        req: TRequest)
+                                        -> RequestBuilder<'a, TRequest, TBody>
         where TRequest: Into<HttpRequest<'static, TBody>>,
               TBody: IntoBody
     {
@@ -176,11 +178,13 @@ impl Client {
 }
 
 
-//////////////////////////////////////////////////
+/// ///////////////////////////////////////////////
 
 impl Client {
     /// Create a `RequestBuilder` for a search request.
-    pub fn search<'a, TDocument>(&'a self) -> RequestBuilder<'a, SearchRequestBuilder<TDocument, DefaultBody>, DefaultBody>
+    pub fn search<'a, TDocument>
+        (&'a self)
+         -> RequestBuilder<'a, SearchRequestBuilder<TDocument, DefaultBody>, DefaultBody>
         where TDocument: Deserialize
     {
         RequestBuilder::new(&self, None, SearchRequestBuilder::new())
@@ -211,7 +215,7 @@ impl<'a, TDocument, TBody> RequestBuilder<'a, SearchRequestBuilder<TDocument, TB
           TBody: IntoBody
 {
     /// Set the indices for the search request.
-    /// 
+    ///
     /// If no index is specified then `_all` will be used.
     pub fn index<I>(mut self, index: I) -> Self
         where I: Into<Index<'static>>
@@ -229,17 +233,22 @@ impl<'a, TDocument, TBody> RequestBuilder<'a, SearchRequestBuilder<TDocument, TB
     }
 
     /// Set the body for the search request.
-    /// 
+    ///
     /// If no body is specified then an empty query will be used.
-    pub fn body<TNewBody>(self, body: TNewBody) -> RequestBuilder<'a, SearchRequestBuilder<TDocument, TNewBody>, TNewBody>
+    pub fn body<TNewBody>
+        (self,
+         body: TNewBody)
+         -> RequestBuilder<'a, SearchRequestBuilder<TDocument, TNewBody>, TNewBody>
         where TNewBody: IntoBody
     {
-        RequestBuilder::new(self.client, self.params, SearchRequestBuilder {
-            body: body,
-            index: self.req.index,
-            ty: self.req.ty,
-            _marker: PhantomData,
-        })
+        RequestBuilder::new(self.client,
+                            self.params,
+                            SearchRequestBuilder {
+                                body: body,
+                                index: self.req.index,
+                                ty: self.req.ty,
+                                _marker: PhantomData,
+                            })
     }
 
     /// Send the search request.
@@ -250,7 +259,7 @@ impl<'a, TDocument, TBody> RequestBuilder<'a, SearchRequestBuilder<TDocument, TB
 
         let req = match req.ty {
             Some(ty) => SearchRequest::for_index_ty(index, ty, req.body),
-            None => SearchRequest::for_index(index, req.body)
+            None => SearchRequest::for_index(index, req.body),
         };
 
         RequestBuilder::new(self.client, self.params, req).send_raw().and_then(into_response)
@@ -269,10 +278,6 @@ pub struct RequestBuilder<'a, TRequest, TBody> {
 }
 
 impl<'a, TRequest, TBody> RequestBuilder<'a, TRequest, TBody> {
-    /// Manually construct a `RequestBuilder`.
-    ///
-    /// If the `RequestParams` are `None`, then the parameters from the
-    /// `Client` are used.
     fn new(client: &'a Client, params: Option<RequestParams>, req: TRequest) -> Self {
         RequestBuilder {
             client: client,

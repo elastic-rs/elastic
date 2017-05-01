@@ -261,8 +261,6 @@ extern crate elastic_reqwest;
 extern crate elastic_types;
 extern crate elastic_responses;
 
-mod impls;
-
 pub mod error;
 
 pub mod http {
