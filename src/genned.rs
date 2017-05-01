@@ -5891,6 +5891,11 @@ pub mod params {
 
     # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct Alias<'a>(pub Cow<'a, str>);
+    pub fn alias<'a, I>(value: I) -> Alias<'a>
+        where I: Into<Alias<'a>>
+    {
+        value.into()
+    }
     impl<'a> From<&'a str> for Alias<'a> {
         fn from(value: &'a str) -> Alias<'a> {
             Alias(Cow::Borrowed(value))
@@ -5910,6 +5915,11 @@ pub mod params {
 
     # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct Feature<'a>(pub Cow<'a, str>);
+    pub fn feature<'a, I>(value: I) -> Feature<'a>
+        where I: Into<Feature<'a>>
+    {
+        value.into()
+    }
     impl<'a> From<&'a str> for Feature<'a> {
         fn from(value: &'a str) -> Feature<'a> {
             Feature(Cow::Borrowed(value))
@@ -5929,6 +5939,11 @@ pub mod params {
 
     # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct Fields<'a>(pub Cow<'a, str>);
+    pub fn fields<'a, I>(value: I) -> Fields<'a>
+        where I: Into<Fields<'a>>
+    {
+        value.into()
+    }
     impl<'a> From<&'a str> for Fields<'a> {
         fn from(value: &'a str) -> Fields<'a> {
             Fields(Cow::Borrowed(value))
@@ -5948,6 +5963,11 @@ pub mod params {
 
     # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct Id<'a>(pub Cow<'a, str>);
+    pub fn id<'a, I>(value: I) -> Id<'a>
+        where I: Into<Id<'a>>
+    {
+        value.into()
+    }
     impl<'a> From<&'a str> for Id<'a> {
         fn from(value: &'a str) -> Id<'a> {
             Id(Cow::Borrowed(value))
@@ -5967,6 +5987,11 @@ pub mod params {
 
     # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct Index<'a>(pub Cow<'a, str>);
+    pub fn index<'a, I>(value: I) -> Index<'a>
+        where I: Into<Index<'a>>
+    {
+        value.into()
+    }
     impl<'a> From<&'a str> for Index<'a> {
         fn from(value: &'a str) -> Index<'a> {
             Index(Cow::Borrowed(value))
@@ -5986,6 +6011,11 @@ pub mod params {
 
     # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct IndexMetric<'a>(pub Cow<'a, str>);
+    pub fn index_metric<'a, I>(value: I) -> IndexMetric<'a>
+        where I: Into<IndexMetric<'a>>
+    {
+        value.into()
+    }
     impl<'a> From<&'a str> for IndexMetric<'a> {
         fn from(value: &'a str) -> IndexMetric<'a> {
             IndexMetric(Cow::Borrowed(value))
@@ -6005,6 +6035,11 @@ pub mod params {
 
     # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct Lang<'a>(pub Cow<'a, str>);
+    pub fn lang<'a, I>(value: I) -> Lang<'a>
+        where I: Into<Lang<'a>>
+    {
+        value.into()
+    }
     impl<'a> From<&'a str> for Lang<'a> {
         fn from(value: &'a str) -> Lang<'a> {
             Lang(Cow::Borrowed(value))
@@ -6024,6 +6059,11 @@ pub mod params {
 
     # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct Metric<'a>(pub Cow<'a, str>);
+    pub fn metric<'a, I>(value: I) -> Metric<'a>
+        where I: Into<Metric<'a>>
+    {
+        value.into()
+    }
     impl<'a> From<&'a str> for Metric<'a> {
         fn from(value: &'a str) -> Metric<'a> {
             Metric(Cow::Borrowed(value))
@@ -6043,6 +6083,11 @@ pub mod params {
 
     # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct Name<'a>(pub Cow<'a, str>);
+    pub fn name<'a, I>(value: I) -> Name<'a>
+        where I: Into<Name<'a>>
+    {
+        value.into()
+    }
     impl<'a> From<&'a str> for Name<'a> {
         fn from(value: &'a str) -> Name<'a> {
             Name(Cow::Borrowed(value))
@@ -6062,6 +6107,11 @@ pub mod params {
 
     # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct NewIndex<'a>(pub Cow<'a, str>);
+    pub fn new_index<'a, I>(value: I) -> NewIndex<'a>
+        where I: Into<NewIndex<'a>>
+    {
+        value.into()
+    }
     impl<'a> From<&'a str> for NewIndex<'a> {
         fn from(value: &'a str) -> NewIndex<'a> {
             NewIndex(Cow::Borrowed(value))
@@ -6081,6 +6131,11 @@ pub mod params {
 
     # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct NodeId<'a>(pub Cow<'a, str>);
+    pub fn node_id<'a, I>(value: I) -> NodeId<'a>
+        where I: Into<NodeId<'a>>
+    {
+        value.into()
+    }
     impl<'a> From<&'a str> for NodeId<'a> {
         fn from(value: &'a str) -> NodeId<'a> {
             NodeId(Cow::Borrowed(value))
@@ -6100,6 +6155,11 @@ pub mod params {
 
     # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct Repository<'a>(pub Cow<'a, str>);
+    pub fn repository<'a, I>(value: I) -> Repository<'a>
+        where I: Into<Repository<'a>>
+    {
+        value.into()
+    }
     impl<'a> From<&'a str> for Repository<'a> {
         fn from(value: &'a str) -> Repository<'a> {
             Repository(Cow::Borrowed(value))
@@ -6119,6 +6179,11 @@ pub mod params {
 
     # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct ScrollId<'a>(pub Cow<'a, str>);
+    pub fn scroll_id<'a, I>(value: I) -> ScrollId<'a>
+        where I: Into<ScrollId<'a>>
+    {
+        value.into()
+    }
     impl<'a> From<&'a str> for ScrollId<'a> {
         fn from(value: &'a str) -> ScrollId<'a> {
             ScrollId(Cow::Borrowed(value))
@@ -6138,6 +6203,11 @@ pub mod params {
 
     # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct Snapshot<'a>(pub Cow<'a, str>);
+    pub fn snapshot<'a, I>(value: I) -> Snapshot<'a>
+        where I: Into<Snapshot<'a>>
+    {
+        value.into()
+    }
     impl<'a> From<&'a str> for Snapshot<'a> {
         fn from(value: &'a str) -> Snapshot<'a> {
             Snapshot(Cow::Borrowed(value))
@@ -6157,6 +6227,11 @@ pub mod params {
 
     # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct Target<'a>(pub Cow<'a, str>);
+    pub fn target<'a, I>(value: I) -> Target<'a>
+        where I: Into<Target<'a>>
+    {
+        value.into()
+    }
     impl<'a> From<&'a str> for Target<'a> {
         fn from(value: &'a str) -> Target<'a> {
             Target(Cow::Borrowed(value))
@@ -6176,6 +6251,11 @@ pub mod params {
 
     # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct TaskId<'a>(pub Cow<'a, str>);
+    pub fn task_id<'a, I>(value: I) -> TaskId<'a>
+        where I: Into<TaskId<'a>>
+    {
+        value.into()
+    }
     impl<'a> From<&'a str> for TaskId<'a> {
         fn from(value: &'a str) -> TaskId<'a> {
             TaskId(Cow::Borrowed(value))
@@ -6195,6 +6275,11 @@ pub mod params {
 
     # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct ThreadPoolPatterns<'a>(pub Cow<'a, str>);
+    pub fn thread_pool_patterns<'a, I>(value: I) -> ThreadPoolPatterns<'a>
+        where I: Into<ThreadPoolPatterns<'a>>
+    {
+        value.into()
+    }
     impl<'a> From<&'a str> for ThreadPoolPatterns<'a> {
         fn from(value: &'a str) -> ThreadPoolPatterns<'a> {
             ThreadPoolPatterns(Cow::Borrowed(value))
@@ -6214,6 +6299,11 @@ pub mod params {
 
     # [ derive ( Debug , PartialEq , Clone ) ]
     pub struct Type<'a>(pub Cow<'a, str>);
+    pub fn ty<'a, I>(value: I) -> Type<'a>
+        where I: Into<Type<'a>>
+    {
+        value.into()
+    }
     impl<'a> From<&'a str> for Type<'a> {
         fn from(value: &'a str) -> Type<'a> {
             Type(Cow::Borrowed(value))
