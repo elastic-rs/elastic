@@ -156,12 +156,18 @@ pub mod types {
 
         pub fn item(ty: &str) -> quote::Tokens {
             let ty = ty.to_pascal_case();
+            let ty_fn = ty.to_snake_case();
 
             let ident = helpers::ty(&ty);
             let ty = helpers::ty_a(&ty);
+            let ty_fn = helpers::ident(ty_fn);
 
             quote!(
                 pub struct #ty(pub Cow<'a, str>);
+
+                pub fn #ty_fn<'a, I>(value: I) -> #ty where I: Into<#ty> {
+                    value.into()
+                }
 
                 impl <'a> From<&'a str> for #ty {
                     fn from(value: &'a str) -> #ty {
