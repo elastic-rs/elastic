@@ -96,10 +96,8 @@ use elastic_reqwest::req::DefaultBody;
 use error::*;
 use reqwest::{Client as HttpClient, Response as RawResponse};
 
-use self::requests::{IntoBody, empty_body, HttpRequest, SearchRequest, GetRequest, Index, Type};
-use self::responses::{HttpResponse, FromResponse, SearchResponse, GetResponse};
-
-type DefaultResponse = ResponseBuilder;
+use self::requests::{IntoBody, empty_body, HttpRequest, SearchRequest, Index, Type};
+use self::responses::{HttpResponse, FromResponse, SearchResponse};
 
 pub use elastic_reqwest::RequestParams;
 
@@ -169,9 +167,9 @@ impl Client {
     /// // Send the `RequestBuilder`
     /// let res = builder.send().unwrap();
     /// ```
-    pub fn request<'a, I, B>(&'a self, req: I) -> RequestBuilder<'a, I, B, DefaultResponse>
-        where I: Into<HttpRequest<'static, B>>,
-              B: IntoBody
+    pub fn request<'a, TRequest, TBody>(&'a self, req: TRequest) -> RequestBuilder<'a, TRequest, TBody>
+        where TRequest: Into<HttpRequest<'static, TBody>>,
+              TBody: IntoBody
     {
         RequestBuilder::new(&self, None, req)
     }
@@ -180,10 +178,13 @@ impl Client {
 
 //////////////////////////////////////////////////
 
-/// A builder for a search request.
-pub struct PreSearchRequestBuilder<'a, TDocument> {
-    client: &'a Client,
-    _marker: PhantomData<TDocument>,
+impl Client {
+    /// Create a `RequestBuilder` for a search request.
+    pub fn search<'a, TDocument>(&'a self) -> RequestBuilder<'a, SearchRequestBuilder<TDocument, DefaultBody>, DefaultBody>
+        where TDocument: Deserialize
+    {
+        RequestBuilder::new(&self, None, SearchRequestBuilder::new())
+    }
 }
 
 /// A builder for a search request.
@@ -205,14 +206,17 @@ impl<TDocument> SearchRequestBuilder<TDocument, DefaultBody> {
     }
 }
 
-impl<TDocument, TBody> SearchRequestBuilder<TDocument, TBody> {
+impl<'a, TDocument, TBody> RequestBuilder<'a, SearchRequestBuilder<TDocument, TBody>, TBody>
+    where TDocument: Deserialize,
+          TBody: IntoBody
+{
     /// Set the indices for the search request.
     /// 
     /// If no index is specified then `_all` will be used.
     pub fn index<I>(mut self, index: I) -> Self
         where I: Into<Index<'static>>
     {
-        self.index = Some(index.into());
+        self.req.index = Some(index.into());
         self
     }
 
@@ -220,95 +224,36 @@ impl<TDocument, TBody> SearchRequestBuilder<TDocument, TBody> {
     pub fn ty<I>(mut self, ty: Option<I>) -> Self
         where I: Into<Type<'static>>
     {
-        self.ty = ty.map(Into::into);
+        self.req.ty = ty.map(Into::into);
         self
     }
 
     /// Set the body for the search request.
     /// 
     /// If no body is specified then an empty query will be used.
-    pub fn body<B>(self, body: B) -> SearchRequestBuilder<TDocument, B>
-        where B: IntoBody
+    pub fn body<TNewBody>(self, body: TNewBody) -> RequestBuilder<'a, SearchRequestBuilder<TDocument, TNewBody>, TNewBody>
+        where TNewBody: IntoBody
     {
-        SearchRequestBuilder {
+        RequestBuilder::new(self.client, self.params, SearchRequestBuilder {
             body: body,
-            index: self.index,
-            ty: self.ty,
+            index: self.req.index,
+            ty: self.req.ty,
             _marker: PhantomData,
-        }
+        })
     }
-}
 
-impl<TDocument, TBody> Into<HttpRequest<'static, TBody>> for SearchRequestBuilder<TDocument, TBody> 
-    where TBody: IntoBody
-{
-    fn into(self) -> HttpRequest<'static, TBody> {
-        let index = self.index.unwrap_or("_all".into());
+    /// Send the search request.
+    pub fn send(self) -> Result<SearchResponse<TDocument>> {
+        let req = self.req;
 
-        let req = match self.ty {
-            Some(ty) => SearchRequest::for_index_ty(index, ty, self.body),
-            None => SearchRequest::for_index(index, self.body)
+        let index = req.index.unwrap_or("_all".into());
+
+        let req = match req.ty {
+            Some(ty) => SearchRequest::for_index_ty(index, ty, req.body),
+            None => SearchRequest::for_index(index, req.body)
         };
 
-        req.into()
-    }
-}
-
-impl<'a, TDocument> PreSearchRequestBuilder<'a, TDocument>
-    where TDocument: Deserialize
-{
-    /// Add parameters to this search request.
-    pub fn request<F, B>(self, builder: F) -> RequestBuilder<'a, SearchRequestBuilder<TDocument, B>, B, SearchResponse<TDocument>>
-        where F: Fn(SearchRequestBuilder<TDocument, DefaultBody>) -> SearchRequestBuilder<TDocument, B>,
-              B: IntoBody
-    {
-        let req = builder(SearchRequestBuilder::new());
-
-        RequestBuilder::new(self.client, None, req)
-    }
-}
-
-impl Client {
-    /// Create a `RequestBuilder` for a search request.
-    pub fn search<'a, TDocument>(&'a self) -> PreSearchRequestBuilder<'a, TDocument>
-        where TDocument: Deserialize
-    {
-        PreSearchRequestBuilder {
-            client: &self,
-            _marker: PhantomData,
-        }
-    }
-}
-
-
-//////////////////////////////////////////////////
-
-/// A builder for a get document request.
-pub struct GetRequestBuilder<'a, TDocument> {
-    client: &'a Client,
-    _marker: PhantomData<TDocument>,
-}
-
-impl<'a, TDocument> GetRequestBuilder<'a, TDocument>
-    where TDocument: Deserialize
-{
-    /// Add parameters to this search request.
-    pub fn request<I>(self, req: I) -> RequestBuilder<'a, I, DefaultBody, GetResponse<TDocument>>
-        where I: Into<GetRequest<'static>>
-    {
-        RequestBuilder::new(self.client, None, req)
-    }
-}
-
-impl Client {
-    /// Create a `RequestBuilder` for a search request.
-    pub fn get<'a, TDocument>(&'a self) -> GetRequestBuilder<'a, TDocument>
-        where TDocument: Deserialize
-    {
-        GetRequestBuilder {
-            client: &self,
-            _marker: PhantomData,
-        }
+        RequestBuilder::new(self.client, self.params, req).send_raw().and_then(into_response)
     }
 }
 
@@ -316,19 +261,19 @@ impl Client {
 ///
 /// This structure wraps up a concrete REST API request type
 /// and lets you adjust parameters before sending it.
-pub struct RequestBuilder<'a, I, B, TResponse = DefaultResponse> {
+pub struct RequestBuilder<'a, TRequest, TBody> {
     client: &'a Client,
     params: Option<RequestParams>,
-    req: I,
-    _marker: PhantomData<(B, TResponse)>,
+    req: TRequest,
+    _marker: PhantomData<TBody>,
 }
 
-impl<'a, I, B, TResponse> RequestBuilder<'a, I, B, TResponse> {
+impl<'a, TRequest, TBody> RequestBuilder<'a, TRequest, TBody> {
     /// Manually construct a `RequestBuilder`.
     ///
     /// If the `RequestParams` are `None`, then the parameters from the
     /// `Client` are used.
-    fn new(client: &'a Client, params: Option<RequestParams>, req: I) -> Self {
+    fn new(client: &'a Client, params: Option<RequestParams>, req: TRequest) -> Self {
         RequestBuilder {
             client: client,
             params: params,
@@ -336,12 +281,7 @@ impl<'a, I, B, TResponse> RequestBuilder<'a, I, B, TResponse> {
             _marker: PhantomData,
         }
     }
-}
 
-impl<'a, I, B, TResponse> RequestBuilder<'a, I, B, TResponse>
-    where I: Into<HttpRequest<'static, B>>,
-          B: IntoBody
-{
     /// Override the parameters for this request.
     ///
     /// This method will clone the `RequestParams` on the `Client` and pass
@@ -367,7 +307,12 @@ impl<'a, I, B, TResponse> RequestBuilder<'a, I, B, TResponse>
 
         self
     }
+}
 
+impl<'a, TRequest, TBody> RequestBuilder<'a, TRequest, TBody>
+    where TRequest: Into<HttpRequest<'static, TBody>>,
+          TBody: IntoBody
+{
     fn send_raw(self) -> Result<ResponseBuilder> {
         let params = self.params.as_ref().unwrap_or(&self.client.params);
 
@@ -377,9 +322,9 @@ impl<'a, I, B, TResponse> RequestBuilder<'a, I, B, TResponse>
     }
 }
 
-impl<'a, I, B> RequestBuilder<'a, I, B, ResponseBuilder>
-    where I: Into<HttpRequest<'static, B>>,
-          B: IntoBody
+impl<'a, TRequest, TBody> RequestBuilder<'a, TRequest, TBody>
+    where TRequest: Into<HttpRequest<'static, TBody>>,
+          TBody: IntoBody
 {
     /// Send this request and return the response.
     ///
@@ -387,22 +332,6 @@ impl<'a, I, B> RequestBuilder<'a, I, B, ResponseBuilder>
     /// that can be used to parse the response.
     pub fn send(self) -> Result<ResponseBuilder> {
         self.send_raw()
-    }
-}
-
-impl<'a, I, B, TResponse> RequestBuilder<'a, I, B, TResponse>
-    where I: Into<HttpRequest<'static, B>>,
-          TResponse: FromResponse,
-          B: IntoBody
-{
-    /// Send this request and return the response.
-    ///
-    /// This method consumes the `RequestBuilder` and returns a `ResponseBuilder`
-    /// that can be used to parse the response.
-    pub fn send(self) -> Result<TResponse> {
-        let res = self.send_raw()?;
-
-        res.into_response()
     }
 }
 

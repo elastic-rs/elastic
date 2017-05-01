@@ -16,19 +16,17 @@ fn main() {
 
     // Send the request and process the response.
     let res = client.search::<Value>()
-                    .request(|req| req
-                        .index("_all")
-                        .body({
-                            json!({
-                                "query": {
-                                    "query_string": {
-                                        "query": "*"
-                                    }
+                    .index("_all")
+                    .body({
+                        json!({
+                            "query": {
+                                "query_string": {
+                                    "query": "*"
                                 }
-                            })
-                            .to_string()
+                            }
                         })
-                    )
+                        .to_string()
+                    })
                     .send()
                     .unwrap();
 
