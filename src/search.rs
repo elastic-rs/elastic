@@ -2,9 +2,9 @@ use serde::Deserialize;
 use serde::de::DeserializeOwned;
 use serde_json::{Map, Value};
 
-use parse::MaybeOkResponse;
 use common::Shards;
-use super::{HttpResponse, FromResponse, ApiResult};
+use parse::{HttpResponseHead, IsOk, ResponseBody, MaybeOkResponse, ApiResult};
+use error::*;
 
 use std::io::Read;
 use std::borrow::Cow;
@@ -51,16 +51,12 @@ pub struct SearchResponseOf<T> {
 
 pub type SearchResponse = SearchResponseOf<Hit<Value>>;
 
-impl<T: DeserializeOwned> FromResponse for SearchResponseOf<T> {
-    fn from_response<I: Into<HttpResponse<R>>, R: Read>(res: I) -> ApiResult<Self> {
-        let res = res.into();
-
-        res.response(|res| {
-            match res.status() {
-                200...299 => Ok(MaybeOkResponse::ok(res)),
-                _ => Ok(MaybeOkResponse::err(res)),
-            }
-        })
+impl<T: DeserializeOwned> IsOk for SearchResponseOf<T> {
+    fn is_ok<B: ResponseBody>(head: HttpResponseHead, body: B) -> Result<MaybeOkResponse<B>, ParseResponseError> {
+        match head.status() {
+            200...299 => Ok(MaybeOkResponse::ok(body)),
+            _ => Ok(MaybeOkResponse::err(body)),
+        }
     }
 }
 

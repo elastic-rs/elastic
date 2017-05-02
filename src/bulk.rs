@@ -1,8 +1,9 @@
 use serde::de::{Deserialize, Deserializer, Visitor, Error as DeError, SeqAccess, MapAccess};
 use serde_json::Value;
-use parse::MaybeOkResponse;
 use common::Shards;
-use super::{HttpResponse, FromResponse, ApiResult};
+
+use parse::{HttpResponseHead, IsOk, ResponseBody, MaybeOkResponse, ApiResult};
+use error::*;
 
 use std::cmp;
 use std::fmt;
@@ -174,29 +175,21 @@ pub enum BulkAction {
     Delete,
 }
 
-impl FromResponse for BulkResponse {
-    fn from_response<I: Into<HttpResponse<R>>, R: Read>(res: I) -> ApiResult<Self> {
-        let res = res.into();
-
-        res.response(|res| {
-            match res.status() {
-                200...299 => Ok(MaybeOkResponse::ok(res)),
-                _ => Ok(MaybeOkResponse::err(res)),
-            }
-        })
+impl IsOk for BulkResponse {
+    fn is_ok<B: ResponseBody>(head: HttpResponseHead, body: B) -> Result<MaybeOkResponse<B>, ParseResponseError> {
+        match head.status() {
+            200...299 => Ok(MaybeOkResponse::ok(body)),
+            _ => Ok(MaybeOkResponse::err(body)),
+        }
     }
 }
 
-impl FromResponse for BulkErrorsResponse {
-    fn from_response<I: Into<HttpResponse<R>>, R: Read>(res: I) -> ApiResult<Self> {
-        let res = res.into();
-
-        res.response(|res| {
-            match res.status() {
-                200...299 => Ok(MaybeOkResponse::ok(res)),
-                _ => Ok(MaybeOkResponse::err(res)),
-            }
-        })
+impl IsOk for BulkErrorsResponse {
+    fn is_ok<B: ResponseBody>(head: HttpResponseHead, body: B) -> Result<MaybeOkResponse<B>, ParseResponseError> {
+        match head.status() {
+            200...299 => Ok(MaybeOkResponse::ok(body)),
+            _ => Ok(MaybeOkResponse::err(body)),
+        }
     }
 }
 

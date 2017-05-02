@@ -2,8 +2,8 @@ use serde::Deserialize;
 use serde::de::DeserializeOwned;
 use serde_json::Value;
 
-use parse::MaybeOkResponse;
-use super::{HttpResponse, FromResponse, ApiResult};
+use parse::{HttpResponseHead, IsOk, ResponseBody, MaybeOkResponse, ApiResult};
+use error::*;
 
 use std::io::Read;
 
@@ -25,26 +25,22 @@ pub struct GetResponseOf<T> {
 
 pub type GetResponse = GetResponseOf<Value>;
 
-impl<T: DeserializeOwned> FromResponse for GetResponseOf<T> {
-    fn from_response<I: Into<HttpResponse<R>>, R: Read>(res: I) -> ApiResult<Self> {
-        let res = res.into();
+impl<T: DeserializeOwned> IsOk for GetResponseOf<T> {
+    fn is_ok<B: ResponseBody>(head: HttpResponseHead, body: B) -> Result<MaybeOkResponse<B>, ParseResponseError> {
+        match head.status() {
+            200...299 => Ok(MaybeOkResponse::ok(body)),
+            404 => {
+                // If we get a 404, it could be an IndexNotFound error or ok
+                // Check if the response contains a root 'error' node
+                let (maybe_err, body) = body.body()?;
 
-        res.response(|res| {
-            match res.status() {
-                200...299 => Ok(MaybeOkResponse::ok(res)),
-                404 => {
-                    // If we get a 404, it could be an IndexNotFound error or ok
-                    // Check if the response contains a root 'error' node
-                    let (body, res) = res.body()?;
+                let is_ok = maybe_err.as_object()
+                    .and_then(|maybe_err| maybe_err.get("error"))
+                    .is_none();
 
-                    let is_ok = body.as_object()
-                        .and_then(|body| body.get("error"))
-                        .is_none();
-
-                    Ok(MaybeOkResponse::new(is_ok, res))
-                }
-                _ => Ok(MaybeOkResponse::err(res)),
+                Ok(MaybeOkResponse::new(is_ok, body))
             }
-        })
+            _ => Ok(MaybeOkResponse::err(body)),
+        }
     }
 }
