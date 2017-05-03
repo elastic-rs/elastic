@@ -64,7 +64,6 @@ pub use self::search::*;
 pub use self::bulk::*;
 
 use std::io::{Read, Result as IoResult};
-use error::ResponseError;
 
 /// The non-body component of the http response.
 pub struct HttpResponseHead {
@@ -78,10 +77,10 @@ impl HttpResponseHead {
 }
 
 /// A http response body that implements `Read`.
-struct ReadBody<B>(B);
+pub struct ReadBody<B>(B);
 
 /// A http response body that implements `AsRef<[u8]>`
-struct SliceBody<B>(B);
+pub struct SliceBody<B>(B);
 
 /// A raw HTTP response with enough information to parse
 /// a concrete type from it.
@@ -108,15 +107,15 @@ impl<B> HttpResponse<B> {
     }
 }
 
-impl<B: AsRef<[u8]>> AsRef<[u8]> for HttpResponse<B> {
+impl<B: AsRef<[u8]>> AsRef<[u8]> for HttpResponse<SliceBody<B>> {
     fn as_ref(&self) -> &[u8] {
-        self.body.as_ref()
+        self.body.0.as_ref()
     }
 }
 
-impl<B: Read> Read for HttpResponse<B> {
+impl<B: Read> Read for HttpResponse<ReadBody<B>> {
     fn read(&mut self, buf: &mut [u8]) -> IoResult<usize> {
-        self.body.read(buf)
+        self.body.0.read(buf)
     }
 }
 
@@ -133,3 +132,6 @@ impl<B: Read> HttpResponse<ReadBody<B>> {
         Self::new(status, ReadBody(body))
     }
 }
+
+pub type HttpResponseRead<T> = HttpResponse<ReadBody<T>>;
+pub type HttpResponseSlice<T> = HttpResponse<SliceBody<T>>;

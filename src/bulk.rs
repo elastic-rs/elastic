@@ -8,8 +8,8 @@ use error::*;
 
 use std::cmp;
 use std::fmt;
+use std::marker::PhantomData;
 use std::error::Error;
-use std::borrow::Cow;
 
 type BulkError = Value;
 
@@ -55,13 +55,13 @@ type BulkError = Value;
 /// # }
 /// ```
 #[derive(Deserialize, Debug, Clone)]
-pub struct BulkResponse {
+pub struct BulkResponse<TIndex = String, TType = String, TId = String> {
     pub took: u64,
     errors: bool,
-    pub items: BulkItems,
+    pub items: BulkItems<TIndex, TType, TId>,
 }
 
-impl BulkResponse {
+impl<TIndex, TType, TId> BulkResponse<TIndex, TType, TId> {
     pub fn is_ok(&self) -> bool {
         !self.errors
     }
@@ -99,14 +99,15 @@ impl BulkResponse {
 /// # }
 /// ```
 #[derive(Deserialize, Debug, Clone)]
-pub struct BulkErrorsResponse {
+#[serde(bound(deserialize = "TIndex: Deserialize<'de>, TType: Deserialize<'de>, TId: Deserialize<'de>"))]
+pub struct BulkErrorsResponse<TIndex = String, TType = String, TId = String> {
     pub took: u64,
     errors: bool,
     #[serde(deserialize_with = "deserialize_bulk_item_errors")]
-    pub items: Vec<BulkItemError>,
+    pub items: Vec<BulkItemError<TIndex, TType, TId>>,
 }
 
-impl BulkErrorsResponse {
+impl<TIndex, TType, TId> BulkErrorsResponse<TIndex, TType, TId> {
     pub fn is_ok(&self) -> bool {
         !self.errors
     }
@@ -118,11 +119,11 @@ impl BulkErrorsResponse {
 
 /// A successful bulk response item.
 #[derive(Debug, Clone)]
-pub struct BulkItem {
+pub struct BulkItem<TIndex, TType, TId> {
     pub action: BulkAction,
-    pub index: String,
-    pub ty: String,
-    pub id: String,
+    pub index: TIndex,
+    pub ty: TType,
+    pub id: TId,
     pub version: Option<u32>,
     pub shards: Option<Shards>,
     pub created: Option<bool>,
@@ -131,21 +132,29 @@ pub struct BulkItem {
 
 /// A failed bulk response item.
 #[derive(Debug, Clone)]
-pub struct BulkItemError {
+pub struct BulkItemError<TIndex, TType, TId> {
     pub action: BulkAction,
-    pub index: String,
-    pub ty: String,
-    pub id: String,
+    pub index: TIndex,
+    pub ty: TType,
+    pub id: TId,
     pub err: BulkError
 }
 
-impl fmt::Display for BulkItemError {
+impl<TIndex, TType, TId> fmt::Display for BulkItemError<TIndex, TType, TId>
+    where TIndex: fmt::Display + fmt::Debug,
+          TType: fmt::Display + fmt::Debug,
+          TId: fmt::Display + fmt::Debug
+{
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{:?}", self)
     }
 }
 
-impl Error for BulkItemError {
+impl<TIndex, TType, TId> Error for BulkItemError<TIndex, TType, TId> 
+    where TIndex: fmt::Display + fmt::Debug,
+          TType: fmt::Display + fmt::Debug,
+          TId: fmt::Display + fmt::Debug
+{
     fn description(&self) -> &str {
         "Bulk operation failed"
     }
@@ -157,9 +166,9 @@ impl Error for BulkItemError {
 
 /// Bulk items split by success or failure.
 #[derive(Debug, Clone)]
-pub struct BulkItems {
-    pub ok: Vec<BulkItem>,
-    pub err: Vec<BulkItemError>,
+pub struct BulkItems<TIndex, TType, TId> {
+    pub ok: Vec<BulkItem<TIndex, TType, TId>>,
+    pub err: Vec<BulkItemError<TIndex, TType, TId>>,
 }
 
 /// The bulk action being performed.
@@ -175,7 +184,7 @@ pub enum BulkAction {
     Delete,
 }
 
-impl IsOk for BulkResponse {
+impl<TIndex, TType, TId> IsOk for BulkResponse<TIndex, TType, TId> {
     fn is_ok<B: ResponseBody>(head: HttpResponseHead, body: Unbuffered<B>) -> Result<MaybeOkResponse<B>, ParseResponseError> {
         match head.status() {
             200...299 => Ok(MaybeOkResponse::ok(body)),
@@ -184,7 +193,7 @@ impl IsOk for BulkResponse {
     }
 }
 
-impl IsOk for BulkErrorsResponse {
+impl<TIndex, TType, TId> IsOk for BulkErrorsResponse<TIndex, TType, TId> {
     fn is_ok<B: ResponseBody>(head: HttpResponseHead, body: Unbuffered<B>) -> Result<MaybeOkResponse<B>, ParseResponseError> {
         match head.status() {
             200...299 => Ok(MaybeOkResponse::ok(body)),
@@ -195,19 +204,19 @@ impl IsOk for BulkErrorsResponse {
 
 // Deserialisation
 
-struct BulkItemDe<'de> {
+struct BulkItemDe<TIndex, TType, TId> {
     action: BulkAction,
-    inner: BulkItemDeInner<'de>,
+    inner: BulkItemDeInner<TIndex, TType, TId>,
 }
 
 #[derive(Deserialize, Debug, Clone)]
-struct BulkItemDeInner<'a> {
-    #[serde(rename = "_index", borrow)]
-    pub index: Cow<'a, str>,
-    #[serde(rename = "_type", borrow)]
-    pub ty: Cow<'a, str>,
-    #[serde(rename = "_id", borrow)]
-    pub id: Cow<'a, str>,
+struct BulkItemDeInner<TIndex, TType, TId> {
+    #[serde(rename = "_index")]
+    pub index: TIndex,
+    #[serde(rename = "_type")]
+    pub ty: TType,
+    #[serde(rename = "_id")]
+    pub id: TId,
     #[serde(rename = "_version")]
     pub version: Option<u32>,
     #[serde(rename = "_shards")]
@@ -218,34 +227,34 @@ struct BulkItemDeInner<'a> {
     error: Option<BulkError>,
 }
 
-impl<'de> BulkItemDe<'de> {
-    fn into_err(self) -> Option<BulkItemError> {
+impl<TIndex, TType, TId> BulkItemDe<TIndex, TType, TId> {
+    fn into_err(self) -> Option<BulkItemError<TIndex, TType, TId>> {
         match self.inner.error {
             Some(err) => Some(BulkItemError {
                 action: self.action,
-                index: self.inner.index.into_owned(),
-                ty: self.inner.ty.into_owned(),
-                id: self.inner.id.into_owned(),
-                err: err
+                index: self.inner.index,
+                ty: self.inner.ty,
+                id: self.inner.id,
+                err: err,
             }),
             None => None
         }
     }
 
-    fn into_result(self) -> Result<BulkItem, BulkItemError> {
+    fn into_result(self) -> Result<BulkItem<TIndex, TType, TId>, BulkItemError<TIndex, TType, TId>> {
         match self.inner.error {
             Some(err) => Err(BulkItemError {
                 action: self.action,
-                index: self.inner.index.into_owned(),
-                ty: self.inner.ty.into_owned(),
-                id: self.inner.id.into_owned(),
+                index: self.inner.index,
+                ty: self.inner.ty,
+                id: self.inner.id,
                 err: err
             }),
             None => Ok(BulkItem {
                 action: self.action,
-                index: self.inner.index.into_owned(),
-                ty: self.inner.ty.into_owned(),
-                id: self.inner.id.into_owned(),
+                index: self.inner.index,
+                ty: self.inner.ty,
+                id: self.inner.id,
                 version: self.inner.version,
                 shards: self.inner.shards,
                 created: self.inner.created,
@@ -255,14 +264,24 @@ impl<'de> BulkItemDe<'de> {
     }
 }
 
-impl<'de> Deserialize<'de> for BulkItemDe<'de> {
-    fn deserialize<D>(deserializer: D) -> Result<BulkItemDe<'de>, D::Error>
+impl<'de, TIndex, TType, TId> Deserialize<'de> for BulkItemDe<TIndex, TType, TId> 
+    where TIndex: Deserialize<'de>,
+          TType: Deserialize<'de>,
+          TId: Deserialize<'de>
+{
+    fn deserialize<D>(deserializer: D) -> Result<BulkItemDe<TIndex, TType, TId>, D::Error>
         where D: Deserializer<'de> 
     {
-        struct BulkItemDeVisitor;
+        struct BulkItemDeVisitor<TIndex, TType, TId> {
+            _marker: PhantomData<(TIndex, TType, TId)>,
+        }
 
-        impl<'de> Visitor<'de> for BulkItemDeVisitor {
-            type Value = BulkItemDe<'de>;
+        impl<'de, TIndex, TType, TId> Visitor<'de> for BulkItemDeVisitor<TIndex, TType, TId> 
+            where TIndex: Deserialize<'de>,
+                  TType: Deserialize<'de>,
+                  TId: Deserialize<'de>
+        {
+            type Value = BulkItemDe<TIndex, TType, TId>;
 
             fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
                 formatter.write_str("a bulk item")
@@ -282,32 +301,42 @@ impl<'de> Deserialize<'de> for BulkItemDe<'de> {
             }
         }
 
-        deserializer.deserialize_any(BulkItemDeVisitor)
+        deserializer.deserialize_any(BulkItemDeVisitor { _marker: PhantomData })
     }
 }
 
-impl<'de> Deserialize<'de> for BulkItems {
-    fn deserialize<D>(deserializer: D) -> Result<BulkItems, D::Error>
+impl<'de, TIndex, TType, TId> Deserialize<'de> for BulkItems<TIndex, TType, TId> 
+    where TIndex: Deserialize<'de>,
+          TType: Deserialize<'de>,
+          TId: Deserialize<'de>
+{
+    fn deserialize<D>(deserializer: D) -> Result<BulkItems<TIndex, TType, TId>, D::Error>
         where D: Deserializer<'de>
     {
-        struct BulkItemsVisitor;
+        struct BulkItemsVisitor<TIndex, TType, TId> {
+            _marker: PhantomData<(TIndex, TType, TId)>,
+        }
 
-        impl<'de> Visitor<'de> for BulkItemsVisitor {
-            type Value = BulkItems;
+        impl<'de, TIndex, TType, TId> Visitor<'de> for BulkItemsVisitor<TIndex, TType, TId> 
+            where TIndex: Deserialize<'de>,
+                  TType: Deserialize<'de>,
+                  TId: Deserialize<'de>
+        {
+            type Value = BulkItems<TIndex, TType, TId>;
 
             fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
                 formatter.write_str("a sequence")
             }
 
             #[inline]
-            fn visit_unit<E>(self) -> Result<BulkItems, E>
+            fn visit_unit<E>(self) -> Result<BulkItems<TIndex, TType, TId>, E>
                 where E: DeError,
             {
                 Ok(BulkItems { ok: vec![], err: vec![] })
             }
 
             #[inline]
-            fn visit_seq<V>(self, mut visitor: V) -> Result<BulkItems, V::Error>
+            fn visit_seq<V>(self, mut visitor: V) -> Result<BulkItems<TIndex, TType, TId>, V::Error>
                 where V: SeqAccess<'de>,
             {
                 let mut values = BulkItems {
@@ -315,7 +344,7 @@ impl<'de> Deserialize<'de> for BulkItems {
                     err: Vec::with_capacity(cmp::min(visitor.size_hint().unwrap_or(0), 512))
                 };
 
-                while let Some(value) = visitor.next_element::<BulkItemDe>()? {
+                while let Some(value) = visitor.next_element::<BulkItemDe<TIndex, TType, TId>>()? {
                     match value.into_result() {
                         Ok(item) => values.ok.push(item),
                         Err(item) => values.err.push(item)
@@ -326,36 +355,45 @@ impl<'de> Deserialize<'de> for BulkItems {
             }
         }
 
-        deserializer.deserialize_any(BulkItemsVisitor)
+        deserializer.deserialize_any(BulkItemsVisitor { _marker: PhantomData })
     }
 }
 
-fn deserialize_bulk_item_errors<'de, D>(deserializer: D) -> Result<Vec<BulkItemError>, D::Error>
-    where D: Deserializer <'de>
+fn deserialize_bulk_item_errors<'de, D, TIndex, TType, TId>(deserializer: D) -> Result<Vec<BulkItemError<TIndex, TType, TId>>, D::Error>
+    where D: Deserializer <'de>,
+          TIndex: Deserialize<'de>,
+          TType: Deserialize<'de>,
+          TId: Deserialize<'de>
 {
-    struct BulkErrorItemsVisitor;
+    struct BulkErrorItemsVisitor<TIndex, TType, TId> {
+            _marker: PhantomData<(TIndex, TType, TId)>,
+        }
 
-        impl<'de> Visitor<'de> for BulkErrorItemsVisitor {
-            type Value = Vec<BulkItemError>;
+        impl<'de, TIndex, TType, TId> Visitor<'de> for BulkErrorItemsVisitor<TIndex, TType, TId> 
+            where TIndex: Deserialize<'de>,
+                  TType: Deserialize<'de>,
+                  TId: Deserialize<'de>
+        {
+            type Value = Vec<BulkItemError<TIndex, TType, TId>>;
 
             fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
                 formatter.write_str("a sequence")
             }
 
             #[inline]
-            fn visit_unit<E>(self) -> Result<Vec<BulkItemError>, E>
+            fn visit_unit<E>(self) -> Result<Vec<BulkItemError<TIndex, TType, TId>>, E>
                 where E: DeError,
             {
                 Ok(vec![])
             }
 
             #[inline]
-            fn visit_seq<V>(self, mut visitor: V) -> Result<Vec<BulkItemError>, V::Error>
+            fn visit_seq<V>(self, mut visitor: V) -> Result<Vec<BulkItemError<TIndex, TType, TId>>, V::Error>
                 where V: SeqAccess<'de>,
             {
                 let mut values = Vec::with_capacity(cmp::min(visitor.size_hint().unwrap_or(0), 4096));
 
-                while let Some(value) = visitor.next_element::<BulkItemDe>()? {
+                while let Some(value) = visitor.next_element::<BulkItemDe<TIndex, TType, TId>>()? {
                     if let Some(value) = value.into_err() {
                         values.push(value);
                     }
@@ -365,5 +403,5 @@ fn deserialize_bulk_item_errors<'de, D>(deserializer: D) -> Result<Vec<BulkItemE
             }
         }
 
-        deserializer.deserialize_any(BulkErrorItemsVisitor)
+        deserializer.deserialize_any(BulkErrorItemsVisitor { _marker: PhantomData })
 }
