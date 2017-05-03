@@ -25,8 +25,7 @@ fn success_parse_hits_simple() {
 #[test]
 fn success_parse_hits_no_score() {
     let s = load_file_as_response(200, "tests/samples/search_null_score.json");
-
-    let deserialized = SearchResponse::from_response(s).unwrap();
+    let deserialized = s.into_response::<SearchResponse>().unwrap();
 
     assert_eq!(deserialized.hits().into_iter().count(), 1);
 }
