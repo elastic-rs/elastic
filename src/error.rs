@@ -1,3 +1,5 @@
+//! Error types from Elasticsearch
+
 use serde::{Deserialize, Deserializer};
 use serde_json::{Map, Value, Error as JsonError};
 use std::io::Error as IoError;

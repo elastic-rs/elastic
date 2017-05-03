@@ -9,7 +9,7 @@ extern crate elastic_responses;
 
 use elastic_reqwest::{ElasticClient};
 use elastic_reqwest::req::SearchRequest;
-use elastic_responses::SearchResponse;
+use elastic_responses::{HttpResponse, SearchResponse};
 
 fn main() {
 
@@ -67,10 +67,13 @@ fn main() {
     });
 
     // Send the request and read the response.
-    let mut res = client.elastic_req(&params, SearchRequest::for_index("_all", body)).unwrap();
+    let http_res = {
+        let res = client.elastic_req(&params, SearchRequest::for_index("_all", body)).unwrap();
+        HttpResponse::from_read(res.status().to_u16(), res)
+    };
 
     //Parse body to JSON
-    let body_as_json: SearchResponse = res.json().unwrap();
+    let body_as_json: SearchResponse = http_res.into_response().unwrap();
 
     //Use hits() or aggs() iterators
     //Hits

@@ -1,3 +1,5 @@
+//! Response type parsing.
+
 use serde::de::DeserializeOwned;
 use serde_json::{self, Value};
 
@@ -8,6 +10,37 @@ use error::*;
 
 impl<B: ResponseBody> HttpResponse<B> {
     /// Convert this http response into either `Ok(T)` or an `Err(ApiError)`.
+    /// 
+    /// # Examples
+    /// 
+    /// Any type that implements `IsOk` can be parsed into a concrete response or an `ApiError`:
+    /// 
+    /// ```no_run
+    /// # extern crate serde_json;
+    /// # extern crate elastic_responses;
+    /// # use serde_json::*;
+    /// # use elastic_responses::*;
+    /// # use elastic_responses::error::*;
+    /// # fn do_request() -> HttpResponseSlice<Vec<u8>> { unimplemented!() }
+    /// # fn main() {
+    /// // Send a request and read as a HttpResponse
+    /// let http_response = do_request();
+    ///
+    /// let search_response = http_response.into_response::<GetResponseOf<Value>>();
+    /// 
+    /// match search_response {
+    ///     Ok(res) => {
+    ///         // Do something with the SearchResponse
+    ///     }
+    ///     Err(ResponseError::Api(ApiError::IndexNotFound { index })) => {
+    ///         // Do something with the missing index error
+    ///     }
+    ///     _ => {
+    ///         // Some other error
+    ///     }
+    /// }
+    /// # }
+    /// ```
     pub fn into_response<T: IsOk + DeserializeOwned>(self) -> Result<T, ResponseError> {
         let maybe = T::is_ok(self.head, Unbuffered(self.body))?;
 
