@@ -98,7 +98,7 @@ pub struct Hit<T> {
     #[serde(rename = "_version")]
     pub version: Option<u32>,
     #[serde(rename = "_score")]
-    pub score: f32,
+    pub score: Option<f32>,
     #[serde(rename = "_source")]
     pub source: Option<T>,
     #[serde(rename="_routing")]
