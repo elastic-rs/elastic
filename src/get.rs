@@ -1,14 +1,13 @@
-use serde::Deserialize;
+use serde::de::DeserializeOwned;
 use serde_json::Value;
 
-use parse::MaybeOkResponse;
-use super::{HttpResponse, FromResponse, ApiResult};
-
-use std::io::Read;
+use super::HttpResponseHead;
+use parse::{IsOk, ResponseBody, Unbuffered, MaybeOkResponse};
+use error::*;
 
 /// Response for a [get document request](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-get.html).
 #[derive(Deserialize, Debug)]
-pub struct GetResponseOf<T: Deserialize> {
+pub struct GetResponseOf<T> {
     #[serde(rename = "_index")]
     pub index: String,
     #[serde(rename = "_type")]
@@ -24,26 +23,22 @@ pub struct GetResponseOf<T: Deserialize> {
 
 pub type GetResponse = GetResponseOf<Value>;
 
-impl<T: Deserialize> FromResponse for GetResponseOf<T> {
-    fn from_response<I: Into<HttpResponse<R>>, R: Read>(res: I) -> ApiResult<Self> {
-        let res = res.into();
+impl<T: DeserializeOwned> IsOk for GetResponseOf<T> {
+    fn is_ok<B: ResponseBody>(head: HttpResponseHead, body: Unbuffered<B>) -> Result<MaybeOkResponse<B>, ParseResponseError> {
+        match head.status() {
+            200...299 => Ok(MaybeOkResponse::ok(body)),
+            404 => {
+                // If we get a 404, it could be an IndexNotFound error or ok
+                // Check if the response contains a root 'error' node
+                let (maybe_err, body) = body.body()?;
 
-        res.response(|res| {
-            match res.status() {
-                200...299 => Ok(MaybeOkResponse::new(true, res)),
-                404 => {
-                    // If we get a 404, it could be an IndexNotFound error or ok
-                    // Check if the response contains a root 'error' node
-                    let (body, res) = res.body()?;
+                let is_ok = maybe_err.as_object()
+                    .and_then(|maybe_err| maybe_err.get("error"))
+                    .is_none();
 
-                    let is_ok = body.as_object()
-                        .and_then(|body| body.get("error"))
-                        .is_none();
-
-                    Ok(MaybeOkResponse::new(is_ok, res))
-                }
-                _ => Ok(MaybeOkResponse::err(res)),
+                Ok(MaybeOkResponse::new(is_ok, body))
             }
-        })
+            _ => Ok(MaybeOkResponse::err(body)),
+        }
     }
 }

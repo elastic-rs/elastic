@@ -1,69 +1,150 @@
-use serde::Deserialize;
-use serde_json::{self, Value, Error as JsonError};
+//! Response type parsing.
 
-use std::io::{Cursor, Read, Result as IoResult};
+use serde::de::DeserializeOwned;
+use serde_json::{self, Value};
 
+use std::io::{Cursor, Read};
+
+use super::{HttpResponse, HttpResponseHead, SliceBody, ReadBody};
 use error::*;
-use super::{HttpResponse, ApiResult};
 
-macro_rules! read_ok {
-    ($buf:expr) => (serde_json::from_reader($buf).map_err(|e| e.into()))
-}
-
-macro_rules! read_err {
-    ($buf:expr) => ({
-        let err: ApiError = serde_json::from_reader($buf)?;
-        Err(err.into())
-    })
-}
-
-impl<R: Read> Read for HttpResponse<R> {
-    fn read(&mut self, buf: &mut [u8]) -> IoResult<usize> {
-        self.body.read(buf)
-    }
-}
-
-impl<R: Read> HttpResponse<R> {
-    /// Get the response body from JSON.
+impl<B: ResponseBody> HttpResponse<B> {
+    /// Convert this http response into either `Ok(T)` or an `Err(ApiError)`.
+    /// 
+    /// # Examples
+    /// 
+    /// Any type that implements `IsOk` can be parsed into a concrete response or an `ApiError`:
+    /// 
+    /// ```no_run
+    /// # extern crate serde_json;
+    /// # extern crate elastic_responses;
+    /// # use serde_json::*;
+    /// # use elastic_responses::*;
+    /// # use elastic_responses::error::*;
+    /// # fn do_request() -> HttpResponseSlice<Vec<u8>> { unimplemented!() }
+    /// # fn main() {
+    /// // Send a request and read as a HttpResponse
+    /// let http_response = do_request();
     ///
-    /// This method takes a closure that determines
-    /// whether the result is successful.
-    /// If the `MaybeOkResponse` is ok, then the body will be returned as `Ok(T)`.
-    /// Otherwise the body will be returned as `Err(ApiError)`.
-    pub fn response<T, F>(self, is_ok: F) -> ApiResult<T>
-        where T: Deserialize,
-              F: Fn(UnbufferedResponse<R>) -> Result<MaybeOkResponse<R>, JsonError>
-    {
-        let maybe = is_ok(UnbufferedResponse(self))?;
+    /// let search_response = http_response.into_response::<GetResponseOf<Value>>();
+    /// 
+    /// match search_response {
+    ///     Ok(res) => {
+    ///         // Do something with the SearchResponse
+    ///     }
+    ///     Err(ResponseError::Api(ApiError::IndexNotFound { index })) => {
+    ///         // Do something with the missing index error
+    ///     }
+    ///     _ => {
+    ///         // Some other error
+    ///     }
+    /// }
+    /// # }
+    /// ```
+    pub fn into_response<T: IsOk + DeserializeOwned>(self) -> Result<T, ResponseError> {
+        let maybe = T::is_ok(self.head, Unbuffered(self.body))?;
 
         match maybe.ok {
             true => {
-                match maybe.res {
-                    MaybeBufferedResponse::Buffered(b) => read_ok!(b.0.body),
-                    MaybeBufferedResponse::Unbuffered(b) => read_ok!(b.0.body),
-                }
+                let ok = maybe.res.parse_ok()?;
+                Ok(ok)
             }
             false => {
-                match maybe.res {
-                    MaybeBufferedResponse::Buffered(b) => read_err!(b.0.body),
-                    MaybeBufferedResponse::Unbuffered(b) => read_err!(b.0.body),
-                }
+                let err = maybe.res.parse_err()?;
+                Err(ResponseError::Api(err))
             }
         }
     }
 }
 
-/// A response that might be successful or an `ApiError`.
-pub struct MaybeOkResponse<R> {
-    ok: bool,
-    res: MaybeBufferedResponse<R>,
+/// A http response body that can be buffered into a json value.
+pub trait ResponseBody where Self: Sized
+{
+    /// The type of a buffered response body.
+    type Buffered: ResponseBody;
+
+    /// Buffer the response body to a json value and return a new buffered representation.
+    fn body(self) -> Result<(Value, Self::Buffered), ParseResponseError>;
+
+    /// Parse the body as a success result.
+    fn parse_ok<T: DeserializeOwned>(self) -> Result<T, ParseResponseError>;
+
+    /// Parse the body as an API error.
+    fn parse_err(self) -> Result<ApiError, ParseResponseError>;
 }
 
-impl<R> MaybeOkResponse<R> {
+impl<B: Read> ResponseBody for ReadBody<B> {
+    type Buffered = ReadBody<Cursor<Vec<u8>>>;
+
+    fn body(mut self) -> Result<(Value, Self::Buffered), ParseResponseError> {
+        let mut buf = Vec::new();
+        self.0.read_to_end(&mut buf)?;
+
+        let body: Value = serde_json::from_reader(Cursor::new(&buf))?;
+
+        Ok((body, ReadBody(Cursor::new(buf))))
+    }
+
+    fn parse_ok<T: DeserializeOwned>(self) -> Result<T, ParseResponseError> {
+        serde_json::from_reader(self.0).map_err(|e| e.into())
+    }
+
+    fn parse_err(self) -> Result<ApiError, ParseResponseError> {
+        serde_json::from_reader(self.0).map_err(|e| e.into())
+    }
+}
+
+impl<B: AsRef<[u8]>> ResponseBody for SliceBody<B> {
+    type Buffered = Self;
+
+    fn body(self) -> Result<(Value, Self::Buffered), ParseResponseError> {
+        let buf = self.0;
+
+        let body: Value = serde_json::from_slice(buf.as_ref())?;
+
+        Ok((body, SliceBody(buf)))
+    }
+
+    fn parse_ok<T: DeserializeOwned>(self) -> Result<T, ParseResponseError> {
+        serde_json::from_slice(self.0.as_ref()).map_err(|e| e.into())
+    }
+
+    fn parse_err(self) -> Result<ApiError, ParseResponseError> {
+        serde_json::from_slice(self.0.as_ref()).map_err(|e| e.into())
+    }
+}
+
+/// Convert a response message into a either a success
+/// or failure result.
+pub trait IsOk
+{
+    /// Inspect the http response to determine whether or not it succeeded.
+    fn is_ok<B: ResponseBody>(head: HttpResponseHead, body: Unbuffered<B>) -> Result<MaybeOkResponse<B>, ParseResponseError>;
+}
+
+impl IsOk for Value {
+    fn is_ok<B: ResponseBody>(head: HttpResponseHead, body: Unbuffered<B>) -> Result<MaybeOkResponse<B>, ParseResponseError> {
+        match head.status() {
+            200...299 => Ok(MaybeOkResponse::ok(body)),
+            _ => Ok(MaybeOkResponse::err(body)),
+        }
+    }
+}
+
+/// A response that might be successful or an `ApiError`.
+pub struct MaybeOkResponse<B> 
+    where B: ResponseBody
+{
+    ok: bool,
+    res: MaybeBufferedResponse<B>,
+}
+
+impl<B> MaybeOkResponse<B> where B: ResponseBody
+{
     /// Create a new response that indicates where or not the
     /// body is successful or an `ApiError`.
     pub fn new<I>(ok: bool, res: I) -> Self
-        where I: Into<MaybeBufferedResponse<R>>
+        where I: Into<MaybeBufferedResponse<B>>
     {
         MaybeOkResponse {
             ok: ok,
@@ -73,72 +154,71 @@ impl<R> MaybeOkResponse<R> {
 
     /// Create a response where the body is successful.
     pub fn ok<I>(res: I) -> Self
-        where I: Into<MaybeBufferedResponse<R>>
+        where I: Into<MaybeBufferedResponse<B>>
     {
         Self::new(true, res)
     }
 
     /// Create a resposne where the body is an error.
     pub fn err<I>(res: I) -> Self
-        where I: Into<MaybeBufferedResponse<R>>
+        where I: Into<MaybeBufferedResponse<B>>
     {
         Self::new(false, res)
     }
 }
 
+pub struct Unbuffered<B>(B);
+
+impl<B: ResponseBody> Unbuffered<B> {
+    /// Buffer the response body to a json value and return a new buffered representation.
+    pub fn body(self) -> Result<(Value, Buffered<B>), ParseResponseError> {
+        self.0.body().map(|(value, body)| (value, Buffered(body)))
+    }
+}
+
+pub struct Buffered<B: ResponseBody>(B::Buffered);
+
 /// A response body that may or may not have been buffered.
 ///
 /// This type makes it possible to inspect the response body for
 /// an error type before passing it along to be deserialised properly.
-pub enum MaybeBufferedResponse<R> {
-    Unbuffered(UnbufferedResponse<R>),
-    Buffered(BufferedResponse),
+pub enum MaybeBufferedResponse<B>
+    where B: ResponseBody
+{
+    Unbuffered(B),
+    Buffered(B::Buffered),
 }
 
-impl<R> From<UnbufferedResponse<R>> for MaybeBufferedResponse<R> {
-    fn from(value: UnbufferedResponse<R>) -> Self {
-        MaybeBufferedResponse::Unbuffered(value)
+impl<B> MaybeBufferedResponse<B>
+    where B: ResponseBody
+{
+    fn parse_ok<T: DeserializeOwned>(self) -> Result<T, ParseResponseError> {
+        match self {
+            MaybeBufferedResponse::Unbuffered(b) => b.parse_ok(),
+            MaybeBufferedResponse::Buffered(b) => b.parse_ok()
+        }
+    }
+
+    fn parse_err(self) -> Result<ApiError, ParseResponseError> {
+        match self {
+            MaybeBufferedResponse::Unbuffered(b) => b.parse_err(),
+            MaybeBufferedResponse::Buffered(b) => b.parse_err()
+        }
     }
 }
 
-impl<R> From<BufferedResponse> for MaybeBufferedResponse<R> {
-    fn from(value: BufferedResponse) -> Self {
-        MaybeBufferedResponse::Buffered(value)
+impl<B> From<Unbuffered<B>> for MaybeBufferedResponse<B>
+    where B: ResponseBody
+{
+    fn from(value: Unbuffered<B>) -> Self {
+        MaybeBufferedResponse::Unbuffered(value.0)
     }
 }
 
-/// An untouched response body.
-pub struct UnbufferedResponse<R>(HttpResponse<R>);
-
-impl<R: Read> UnbufferedResponse<R> {
-    /// Get the HTTP status code for the response.
-    pub fn status(&self) -> u16 {
-        self.0.status()
-    }
-
-    /// Buffer the response body into a `serde_json::Value` and return
-    /// a `BufferedResponse`.
-    ///
-    /// This is _expensive_ so you should avoid using it if it's not
-    /// necessary.
-    pub fn body(mut self) -> Result<(Value, BufferedResponse), JsonError> {
-        let status = self.status();
-
-        let mut buf = Vec::new();
-        self.0.body.read_to_end(&mut buf)?;
-
-        let body: Value = serde_json::from_reader(Cursor::new(&buf))?;
-
-        Ok((body, BufferedResponse(HttpResponse::new(status, Cursor::new(buf)))))
-    }
-}
-
-/// A previously buffered response body.
-pub struct BufferedResponse(HttpResponse<Cursor<Vec<u8>>>);
-
-impl BufferedResponse {
-    /// Get the HTTP status code for the response.
-    pub fn status(&self) -> u16 {
-        self.0.status()
+impl<B> From<Buffered<B>> for MaybeBufferedResponse<B>
+    where B: ResponseBody
+{
+    fn from(value: Buffered<B>) -> Self {
+        MaybeBufferedResponse::Buffered(value.0)
     }
 }

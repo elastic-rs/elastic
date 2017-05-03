@@ -1,7 +1,6 @@
-use parse::MaybeOkResponse;
-use super::{HttpResponse, FromResponse, ApiResult};
-
-use std::io::Read;
+use super::HttpResponseHead;
+use parse::{IsOk, ResponseBody, Unbuffered, MaybeOkResponse};
+use error::*;
 
 /// Response for a cluster ping request.
 #[derive(Deserialize, Debug)]
@@ -22,15 +21,11 @@ pub struct ClusterVersion {
     pub lucene_version: String
 }
 
-impl FromResponse for PingResponse {
-    fn from_response<I: Into<HttpResponse<R>>, R: Read>(res: I) -> ApiResult<Self> {
-        let res = res.into();
-
-        res.response(|res| {
-            match res.status() {
-                200...299 => Ok(MaybeOkResponse::ok(res)),
-                _ => Ok(MaybeOkResponse::err(res)),
-            }
-        })
+impl IsOk for PingResponse {
+    fn is_ok<B: ResponseBody>(head: HttpResponseHead, body: Unbuffered<B>) -> Result<MaybeOkResponse<B>, ParseResponseError> {
+        match head.status() {
+            200...299 => Ok(MaybeOkResponse::ok(body)),
+            _ => Ok(MaybeOkResponse::err(body)),
+        }
     }
 }

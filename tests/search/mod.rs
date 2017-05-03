@@ -9,8 +9,7 @@ use ::load_file_as_response;
 #[test]
 fn success_parse_empty() {
     let s = load_file_as_response(200, "tests/samples/search_empty.json");
-
-    let deserialized = SearchResponse::from_response(s).unwrap();
+    let deserialized = s.into_response::<SearchResponse>().unwrap();
 
     assert_eq!(deserialized.hits().into_iter().count(), 0);
 }
@@ -18,8 +17,7 @@ fn success_parse_empty() {
 #[test]
 fn success_parse_hits_simple() {
     let s = load_file_as_response(200, "tests/samples/search_hits_only.json");
-
-    let deserialized = SearchResponse::from_response(s).unwrap();
+    let deserialized = s.into_response::<SearchResponse>().unwrap();
 
     assert_eq!(deserialized.hits().into_iter().count(), 5);
 }
@@ -27,8 +25,7 @@ fn success_parse_hits_simple() {
 #[test]
 fn success_parse_hits_no_score() {
     let s = load_file_as_response(200, "tests/samples/search_null_score.json");
-
-    let deserialized = SearchResponse::from_response(s).unwrap();
+    let deserialized = s.into_response::<SearchResponse>().unwrap();
 
     assert_eq!(deserialized.hits().into_iter().count(), 1);
 }
@@ -36,7 +33,7 @@ fn success_parse_hits_no_score() {
 #[test]
 fn success_parse_simple_aggs() {
     let s = load_file_as_response(200, "tests/samples/search_aggregation_simple.json");
-    let deserialized = SearchResponse::from_response(s).unwrap();
+    let deserialized = s.into_response::<SearchResponse>().unwrap();
 
     assert_eq!(deserialized.aggs().into_iter().count(), 124);
 }
@@ -44,7 +41,7 @@ fn success_parse_simple_aggs() {
 #[test]
 fn success_parse_3level_aggs() {
     let s = load_file_as_response(200, "tests/samples/search_aggregation_3level.json");
-    let deserialized = SearchResponse::from_response(s).unwrap();
+    let deserialized = s.into_response::<SearchResponse>().unwrap();
 
     assert_eq!(deserialized.aggs().into_iter().count(), 201);
 }
@@ -52,7 +49,7 @@ fn success_parse_3level_aggs() {
 #[test]
 fn success_parse_3level_multichild_aggs() {
     let s = load_file_as_response(200, "tests/samples/search_aggregation_3level_multichild.json");
-    let deserialized = SearchResponse::from_response(s).unwrap();
+    let deserialized = s.into_response::<SearchResponse>().unwrap();
 
     let min = "min_ack_pkts_sent";
     let avg = "avg_ack_pkts_sent";
@@ -74,7 +71,7 @@ fn success_parse_3level_multichild_aggs() {
 #[test]
 fn success_parse_3level_multistats_aggs() {
     let s = load_file_as_response(200, "tests/samples/search_aggregation_3level_multistats.json");
-    let deserialized = SearchResponse::from_response(s).unwrap();
+    let deserialized = s.into_response::<SearchResponse>().unwrap();
 
     let min = "extstats_ack_pkts_sent_min";
     let avg = "stats_ack_pkts_sent_avg";
@@ -98,7 +95,7 @@ fn success_parse_3level_multistats_aggs() {
 #[test]
 fn success_parse_simple_aggs_no_empty_first_record() {
     let s = load_file_as_response(200, "tests/samples/search_aggregation_simple.json");
-    let deserialized = SearchResponse::from_response(s).unwrap();
+    let deserialized = s.into_response::<SearchResponse>().unwrap();
 
     let s = "timechart";
     let mut first = true;
@@ -113,8 +110,7 @@ fn success_parse_simple_aggs_no_empty_first_record() {
 #[test]
 fn success_parse_hits_simple_as_value() {
     let s = load_file_as_response(200, "tests/samples/search_hits_only.json");
-
-    let deserialized = Value::from_response(s).unwrap();
+    let deserialized = s.into_response::<Value>().unwrap();
 
     assert_eq!(deserialized["_shards"]["total"].as_u64().unwrap(), 5);
 }
@@ -122,7 +118,7 @@ fn success_parse_hits_simple_as_value() {
 #[test]
 fn error_parse_index_not_found() {
     let s = load_file_as_response(404, "tests/samples/error_index_not_found.json");
-    let deserialized = SearchResponse::from_response(s).unwrap_err();
+    let deserialized = s.into_response::<SearchResponse>().unwrap_err();
 
     let valid = match deserialized {
         ResponseError::Api(ApiError::IndexNotFound { ref index })
@@ -136,7 +132,7 @@ fn error_parse_index_not_found() {
 #[test]
 fn error_parse_parsing() {
     let s = load_file_as_response(400, "tests/samples/error_parsing.json");
-    let deserialized = SearchResponse::from_response(s).unwrap_err();
+    let deserialized = s.into_response::<SearchResponse>().unwrap_err();
 
     let valid = match deserialized {
         ResponseError::Api(ApiError::Parsing { line: 2, col: 9, ref reason })
@@ -150,7 +146,7 @@ fn error_parse_parsing() {
 #[test]
 fn error_parse_other() {
     let s = load_file_as_response(500, "tests/samples/error_other.json");
-    let deserialized = SearchResponse::from_response(s).unwrap_err();
+    let deserialized = s.into_response::<SearchResponse>().unwrap_err();
 
     let reason = match deserialized {
         ResponseError::Api(ApiError::Other(ref err)) => err.get("reason")

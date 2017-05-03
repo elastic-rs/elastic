@@ -1,11 +1,10 @@
-use serde::Deserialize;
+use serde::de::DeserializeOwned;
 use serde_json::{Map, Value};
 
-use parse::MaybeOkResponse;
-use common::Shards;
-use super::{HttpResponse, FromResponse, ApiResult};
+use super::{Shards, HttpResponseHead};
+use parse::{IsOk, ResponseBody, Unbuffered, MaybeOkResponse};
+use error::*;
 
-use std::io::Read;
 use std::borrow::Cow;
 use std::collections::BTreeMap;
 use std::slice::Iter;
@@ -38,7 +37,7 @@ use std::slice::Iter;
 /// # }
 /// ```
 #[derive(Deserialize, Debug)]
-pub struct SearchResponseOf<T: Deserialize> {
+pub struct SearchResponseOf<T> {
     pub took: u64,
     pub timed_out: bool,
     #[serde(rename = "_shards")]
@@ -50,20 +49,16 @@ pub struct SearchResponseOf<T: Deserialize> {
 
 pub type SearchResponse = SearchResponseOf<Hit<Value>>;
 
-impl<T: Deserialize> FromResponse for SearchResponseOf<T> {
-    fn from_response<I: Into<HttpResponse<R>>, R: Read>(res: I) -> ApiResult<Self> {
-        let res = res.into();
-
-        res.response(|res| {
-            match res.status() {
-                200...299 => Ok(MaybeOkResponse::ok(res)),
-                _ => Ok(MaybeOkResponse::err(res)),
-            }
-        })
+impl<T: DeserializeOwned> IsOk for SearchResponseOf<T> {
+    fn is_ok<B: ResponseBody>(head: HttpResponseHead, body: Unbuffered<B>) -> Result<MaybeOkResponse<B>, ParseResponseError> {
+        match head.status() {
+            200...299 => Ok(MaybeOkResponse::ok(body)),
+            _ => Ok(MaybeOkResponse::err(body)),
+        }
     }
 }
 
-impl<T: Deserialize> SearchResponseOf<T> {
+impl<T> SearchResponseOf<T> {
     /// Returns an Iterator to the search results or hits of the response.
     pub fn hits(&self) -> &[T] {
         &self.hits.hits()
@@ -81,13 +76,13 @@ impl<T: Deserialize> SearchResponseOf<T> {
 
 /// Struct to hold the search's Hits, serializable to type `T` or `serde_json::Value`
 #[derive(Deserialize, Debug)]
-pub struct Hits<T: Deserialize> {
+pub struct Hits<T> {
     pub total: u64,
     pub max_score: Option<u64>,
     pub hits: Vec<T>,
 }
 
-impl<T: Deserialize> Hits<T> {
+impl<T> Hits<T> {
     fn hits(&self) -> &[T] {
         &self.hits
     }
@@ -95,7 +90,7 @@ impl<T: Deserialize> Hits<T> {
 
 /// Full metadata and source for a single hit.
 #[derive(Deserialize, Debug)]
-pub struct Hit<T: Deserialize> {
+pub struct Hit<T> {
     #[serde(rename = "_index")]
     pub index: String,
     #[serde(rename = "_type")]

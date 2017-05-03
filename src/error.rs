@@ -1,5 +1,21 @@
+//! Error types from Elasticsearch
+
 use serde::{Deserialize, Deserializer};
 use serde_json::{Map, Value, Error as JsonError};
+use std::io::Error as IoError;
+
+quick_error! {
+    /// An error parsing a response stream.
+    #[derive(Debug)]
+    pub enum ParseResponseError {
+        Json(err: JsonError) {
+            from()
+        }
+        Io(err: IoError) {
+            from()
+        }
+    }
+}
 
 quick_error! {
     /// An error parsing a REST API response to a success value.
@@ -8,7 +24,7 @@ quick_error! {
         Api(err: ApiError) {
             from()
         }
-        Json(err: JsonError) {
+        Parse(err: ParseResponseError) {
             from()
         }
     }
@@ -48,9 +64,9 @@ macro_rules! error_key {
     )
 }
 
-impl Deserialize for ApiError {
+impl<'de> Deserialize<'de> for ApiError {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-        where D: Deserializer
+        where D: Deserializer<'de>
     {
         let value = Map::deserialize(deserializer)?;
 

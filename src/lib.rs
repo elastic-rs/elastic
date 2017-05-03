@@ -3,6 +3,9 @@
 //! A crate to handle parsing and handling Elasticsearch search results which provides
 //! convenient iterators to step through the results returned. It is designed to work
 //! with [`elastic-reqwest`](https://github.com/elastic-rs/elastic-reqwest/).
+//! 
+//! This crate provides a generic `HttpResponse` that can be parsed into a concrete response
+//! type, or an `ApiError`.
 //!
 //! ## Usage
 //!
@@ -10,12 +13,15 @@
 //!
 //! ```no_run
 //! # extern crate elastic_responses;
-//! # use elastic_responses::SearchResponse;
-//! # fn do_request() -> SearchResponse { unimplemented!() }
+//! # use elastic_responses::*;
+//! # fn do_request() -> HttpResponseSlice<Vec<u8>> { unimplemented!() }
 //! # fn main() {
-//! // Send a request (omitted, see `samples/search`), and read the response.
+//! // Send a request (omitted, see `samples/search`)
+//! let http_response = do_request();
+//! 
 //! // Parse body to JSON as an elastic_responses::SearchResponse object
-//! let body_as_json: SearchResponse = do_request();
+//! // If the response is an API error then it'll be parsed into a friendly Rust error
+//! let body_as_json: SearchResponse = http_response.into_response().unwrap();
 //!
 //! // Use hits() or aggs() iterators
 //! // Hits
@@ -45,10 +51,7 @@ extern crate serde_json;
 extern crate slog_stdlog;
 extern crate slog_envlogger;
 
-/// Error types from Elasticsearch
 pub mod error;
-
-/// Response type parsing.
 pub mod parse;
 
 mod common;
@@ -63,54 +66,82 @@ pub use self::get::*;
 pub use self::search::*;
 pub use self::bulk::*;
 
-use std::io::Read;
-use serde_json::Value;
-use self::parse::MaybeOkResponse;
+use std::io::{Read, Result as IoResult};
 
-use error::*;
-
-/// A raw HTTP response with enough information to parse
-/// a concrete type from it.
-pub struct HttpResponse<R> {
+/// The non-body component of the HTTP response.
+pub struct HttpResponseHead {
     code: u16,
-    body: R,
 }
 
-impl<R> HttpResponse<R> {
-    /// Create a new HTTP response from the given status code
-    /// and body.
-    pub fn new(status: u16, body: R) -> Self {
-        HttpResponse {
-            code: status,
-            body: body,
-        }
-    }
-
+impl HttpResponseHead {
     /// Get the status code.
     pub fn status(&self) -> u16 {
         self.code
     }
 }
 
-type ApiResult<T> = Result<T, ResponseError>;
+/// A HTTP response body that implements `Read`.
+pub struct ReadBody<B>(B);
 
-/// Convert a response message into a either a success
-/// or failure result.
-pub trait FromResponse
-    where Self: Sized
-{
-    fn from_response<I: Into<HttpResponse<R>>, R: Read>(res: I) -> ApiResult<Self>;
+/// A HTTP response body that implements `AsRef<[u8]>`
+pub struct SliceBody<B>(B);
+
+/// A raw HTTP response with enough information to parse
+/// a concrete type from it.
+/// 
+/// `HttpResponse`s are generic over the body kind, which can be either
+/// an IO buffer or contiguous slice of bytes.
+pub struct HttpResponse<B> {
+    head: HttpResponseHead,
+    body: B,
 }
 
-impl FromResponse for Value {
-    fn from_response<I: Into<HttpResponse<R>>, R: Read>(res: I) -> ApiResult<Self> {
-        let res = res.into();
+impl<B> HttpResponse<B> {
+    /// Create a new HTTP response from the given status code
+    /// and body.
+    fn new(status: u16, body: B) -> Self {
+        HttpResponse {
+            head: HttpResponseHead {
+                code: status,
+            },
+            body: body,
+        }
+    }
 
-        res.response(|res| {
-            match res.status() {
-                200...299 => Ok(MaybeOkResponse::new(true, res)),
-                _ => Ok(MaybeOkResponse::new(false, res)),
-            }
-        })
+    /// Get the status code.
+    pub fn status(&self) -> u16 {
+        self.head.code
     }
 }
+
+impl<B: AsRef<[u8]>> AsRef<[u8]> for HttpResponse<SliceBody<B>> {
+    fn as_ref(&self) -> &[u8] {
+        self.body.0.as_ref()
+    }
+}
+
+impl<B: Read> Read for HttpResponse<ReadBody<B>> {
+    fn read(&mut self, buf: &mut [u8]) -> IoResult<usize> {
+        self.body.0.read(buf)
+    }
+}
+
+impl<B: AsRef<[u8]>> HttpResponse<SliceBody<B>> {
+    /// Build a HTTP response from a contiguous slice.
+    pub fn from_slice(status: u16, body: B) -> Self {
+        Self::new(status, SliceBody(body))
+    }
+}
+
+impl<B: Read> HttpResponse<ReadBody<B>> {
+    /// Build a HTTP response from a byte reader.
+    /// 
+    /// # Examples
+    /// 
+    pub fn from_read(status: u16, body: B) -> Self {
+        Self::new(status, ReadBody(body))
+    }
+}
+
+pub type HttpResponseRead<T> = HttpResponse<ReadBody<T>>;
+pub type HttpResponseSlice<T> = HttpResponse<SliceBody<T>>;
