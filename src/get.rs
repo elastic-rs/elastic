@@ -1,11 +1,9 @@
-use serde::Deserialize;
 use serde::de::DeserializeOwned;
 use serde_json::Value;
 
-use parse::{HttpResponseHead, IsOk, ResponseBody, MaybeOkResponse, ApiResult};
+use super::HttpResponseHead;
+use parse::{IsOk, ResponseBody, Unbuffered, MaybeOkResponse};
 use error::*;
-
-use std::io::Read;
 
 /// Response for a [get document request](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-get.html).
 #[derive(Deserialize, Debug)]
@@ -26,7 +24,7 @@ pub struct GetResponseOf<T> {
 pub type GetResponse = GetResponseOf<Value>;
 
 impl<T: DeserializeOwned> IsOk for GetResponseOf<T> {
-    fn is_ok<B: ResponseBody>(head: HttpResponseHead, body: B) -> Result<MaybeOkResponse<B>, ParseResponseError> {
+    fn is_ok<B: ResponseBody>(head: HttpResponseHead, body: Unbuffered<B>) -> Result<MaybeOkResponse<B>, ParseResponseError> {
         match head.status() {
             200...299 => Ok(MaybeOkResponse::ok(body)),
             404 => {

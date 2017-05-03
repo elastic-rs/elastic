@@ -1,7 +1,6 @@
-use parse::{HttpResponseHead, IsOk, ResponseBody, MaybeOkResponse, ApiResult};
+use super::HttpResponseHead;
+use parse::{IsOk, ResponseBody, Unbuffered, MaybeOkResponse};
 use error::*;
-
-use std::io::Read;
 
 /// Response for a cluster ping request.
 #[derive(Deserialize, Debug)]
@@ -23,7 +22,7 @@ pub struct ClusterVersion {
 }
 
 impl IsOk for PingResponse {
-    fn is_ok<B: ResponseBody>(head: HttpResponseHead, body: B) -> Result<MaybeOkResponse<B>, ParseResponseError> {
+    fn is_ok<B: ResponseBody>(head: HttpResponseHead, body: Unbuffered<B>) -> Result<MaybeOkResponse<B>, ParseResponseError> {
         match head.status() {
             200...299 => Ok(MaybeOkResponse::ok(body)),
             _ => Ok(MaybeOkResponse::err(body)),

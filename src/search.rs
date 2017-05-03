@@ -1,12 +1,10 @@
-use serde::Deserialize;
 use serde::de::DeserializeOwned;
 use serde_json::{Map, Value};
 
-use common::Shards;
-use parse::{HttpResponseHead, IsOk, ResponseBody, MaybeOkResponse, ApiResult};
+use super::{Shards, HttpResponseHead};
+use parse::{IsOk, ResponseBody, Unbuffered, MaybeOkResponse};
 use error::*;
 
-use std::io::Read;
 use std::borrow::Cow;
 use std::collections::BTreeMap;
 use std::slice::Iter;
@@ -52,7 +50,7 @@ pub struct SearchResponseOf<T> {
 pub type SearchResponse = SearchResponseOf<Hit<Value>>;
 
 impl<T: DeserializeOwned> IsOk for SearchResponseOf<T> {
-    fn is_ok<B: ResponseBody>(head: HttpResponseHead, body: B) -> Result<MaybeOkResponse<B>, ParseResponseError> {
+    fn is_ok<B: ResponseBody>(head: HttpResponseHead, body: Unbuffered<B>) -> Result<MaybeOkResponse<B>, ParseResponseError> {
         match head.status() {
             200...299 => Ok(MaybeOkResponse::ok(body)),
             _ => Ok(MaybeOkResponse::err(body)),

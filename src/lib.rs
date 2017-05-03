@@ -62,3 +62,74 @@ pub use self::ping::*;
 pub use self::get::*;
 pub use self::search::*;
 pub use self::bulk::*;
+
+use std::io::{Read, Result as IoResult};
+use error::ResponseError;
+
+/// The non-body component of the http response.
+pub struct HttpResponseHead {
+    code: u16,
+}
+
+impl HttpResponseHead {
+    pub fn status(&self) -> u16 {
+        self.code
+    }
+}
+
+/// A http response body that implements `Read`.
+struct ReadBody<B>(B);
+
+/// A http response body that implements `AsRef<[u8]>`
+struct SliceBody<B>(B);
+
+/// A raw HTTP response with enough information to parse
+/// a concrete type from it.
+pub struct HttpResponse<B> {
+    head: HttpResponseHead,
+    body: B,
+}
+
+impl<B> HttpResponse<B> {
+    /// Create a new HTTP response from the given status code
+    /// and body.
+    fn new(status: u16, body: B) -> Self {
+        HttpResponse {
+            head: HttpResponseHead {
+                code: status,
+            },
+            body: body,
+        }
+    }
+
+    /// Get the status code.
+    pub fn status(&self) -> u16 {
+        self.head.code
+    }
+}
+
+impl<B: AsRef<[u8]>> AsRef<[u8]> for HttpResponse<B> {
+    fn as_ref(&self) -> &[u8] {
+        self.body.as_ref()
+    }
+}
+
+impl<B: Read> Read for HttpResponse<B> {
+    fn read(&mut self, buf: &mut [u8]) -> IoResult<usize> {
+        self.body.read(buf)
+    }
+}
+
+impl<B: AsRef<[u8]>> HttpResponse<SliceBody<B>> {
+    /// Build a http response from a contiguous slice.
+    pub fn from_slice(status: u16, body: B) -> Self {
+        Self::new(status, SliceBody(body))
+    }
+}
+
+impl<B: Read> HttpResponse<ReadBody<B>> {
+    /// Build a http response from a byte reader.
+    pub fn from_read(status: u16, body: B) -> Self {
+        Self::new(status, ReadBody(body))
+    }
+}

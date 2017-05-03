@@ -2,12 +2,12 @@ use serde::de::{Deserialize, Deserializer, Visitor, Error as DeError, SeqAccess,
 use serde_json::Value;
 use common::Shards;
 
-use parse::{HttpResponseHead, IsOk, ResponseBody, MaybeOkResponse, ApiResult};
+use super::HttpResponseHead;
+use parse::{IsOk, ResponseBody, Unbuffered, MaybeOkResponse};
 use error::*;
 
 use std::cmp;
 use std::fmt;
-use std::io::Read;
 use std::error::Error;
 use std::borrow::Cow;
 
@@ -176,7 +176,7 @@ pub enum BulkAction {
 }
 
 impl IsOk for BulkResponse {
-    fn is_ok<B: ResponseBody>(head: HttpResponseHead, body: B) -> Result<MaybeOkResponse<B>, ParseResponseError> {
+    fn is_ok<B: ResponseBody>(head: HttpResponseHead, body: Unbuffered<B>) -> Result<MaybeOkResponse<B>, ParseResponseError> {
         match head.status() {
             200...299 => Ok(MaybeOkResponse::ok(body)),
             _ => Ok(MaybeOkResponse::err(body)),
@@ -185,7 +185,7 @@ impl IsOk for BulkResponse {
 }
 
 impl IsOk for BulkErrorsResponse {
-    fn is_ok<B: ResponseBody>(head: HttpResponseHead, body: B) -> Result<MaybeOkResponse<B>, ParseResponseError> {
+    fn is_ok<B: ResponseBody>(head: HttpResponseHead, body: Unbuffered<B>) -> Result<MaybeOkResponse<B>, ParseResponseError> {
         match head.status() {
             200...299 => Ok(MaybeOkResponse::ok(body)),
             _ => Ok(MaybeOkResponse::err(body)),
