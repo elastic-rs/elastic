@@ -1,7 +1,6 @@
 use std::str::FromStr;
 use serde::{Serialize, Serializer, Deserialize, Deserializer};
-use serde::de::{Error, Unexpected, Visitor};
-use serde::de::impls::VecVisitor;
+use serde::de::{Error, Unexpected, Visitor, SeqAccess};
 use geohash;
 use super::{Coordinate, Point, GeoPointFormat};
 use super::mapping::GeoPointMapping;
@@ -18,8 +17,8 @@ struct GeoPointObjectType {
 }
 
 impl GeoPointFormat for GeoPointObject {
-    fn parse<D>(deserializer: D) -> Result<Point, D::Error>
-        where D: Deserializer
+    fn parse<'de, D>(deserializer: D) -> Result<Point, D::Error>
+        where D: Deserializer<'de>
     {
         let point = try!(GeoPointObjectType::deserialize(deserializer));
 
@@ -42,12 +41,12 @@ impl GeoPointFormat for GeoPointObject {
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct GeoPointString;
 impl GeoPointFormat for GeoPointString {
-    fn parse<D>(deserializer: D) -> Result<Point, D::Error>
-        where D: Deserializer
+    fn parse<'de, D>(deserializer: D) -> Result<Point, D::Error>
+        where D: Deserializer<'de>
     {
         struct PointVisitor;
 
-        impl Visitor for PointVisitor {
+        impl<'de> Visitor<'de> for PointVisitor {
             type Value = String;
 
             fn expecting(&self, formatter: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
@@ -107,11 +106,11 @@ impl GeoPointFormat for GeoPointString {
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct GeoPointHash;
 impl GeoPointFormat for GeoPointHash {
-    fn parse<D>(deserializer: D) -> Result<Point, D::Error>
-        where D: Deserializer
+    fn parse<'de, D>(deserializer: D) -> Result<Point, D::Error>
+        where D: Deserializer<'de>
     {
         struct PointVisitor;
-        impl Visitor for PointVisitor {
+        impl<'de> Visitor<'de> for PointVisitor {
             type Value = String;
 
             fn expecting(&self, formatter: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
@@ -158,16 +157,39 @@ impl GeoPointFormat for GeoPointHash {
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct GeoPointArray;
 impl GeoPointFormat for GeoPointArray {
-    fn parse<D>(deserializer: D) -> Result<Point, D::Error>
-        where D: Deserializer
+    fn parse<'de, D>(deserializer: D) -> Result<Point, D::Error>
+        where D: Deserializer<'de>
     {
-        let point = try!(deserializer.deserialize_seq(VecVisitor::<f64>::new()));
+        struct PointVisitor;
+        impl<'de> Visitor<'de> for PointVisitor {
+            type Value = Point;
 
-        if point.len() != 2 {
-            return Err(D::Error::invalid_value(Unexpected::Seq, &"a json array with 2 values"));
+            fn expecting(&self, formatter: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+                write!(formatter, "an array with 2 numbers")
+            }
+
+            fn visit_seq<S>(self, mut visitor: S) -> Result<Self::Value, S::Error>
+                where S: SeqAccess<'de>
+            {
+                let mut values = Vec::with_capacity(2);
+
+                while let Some(value) = visitor.next_element()? {
+                    if values.len() == 2 {
+                        Err(S::Error::invalid_value(Unexpected::Seq, &"a json array with 2 values"))?;
+                    }
+
+                    values.push(value);
+                }
+
+                if values.len() != 2 {
+                    Err(S::Error::invalid_value(Unexpected::Seq, &"a json array with 2 values"))?;
+                }
+
+                Ok(Point::new(values[0], values[1]))
+            }
         }
 
-        Ok(Point::new(point[0], point[1]))
+        deserializer.deserialize_any(PointVisitor)
     }
 
     fn format<S, M>(point: &Point, serializer: S) -> Result<S::Ok, S::Error>

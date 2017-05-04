@@ -158,12 +158,12 @@ impl<F, M> Serialize for GeoPoint<F, M>
     }
 }
 
-impl<F, M> Deserialize for GeoPoint<F, M>
+impl<'de, F, M> Deserialize<'de> for GeoPoint<F, M>
     where F: GeoPointFormat,
           M: GeoPointMapping<Format = F>
 {
     fn deserialize<D>(deserializer: D) -> Result<GeoPoint<F, M>, D::Error>
-        where D: Deserializer
+        where D: Deserializer<'de>
     {
         let point = try!(F::parse(deserializer));
 

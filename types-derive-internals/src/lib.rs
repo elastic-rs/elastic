@@ -14,7 +14,7 @@ extern crate nom;
 
 extern crate serde;
 extern crate serde_json;
-extern crate serde_codegen_internals;
+extern crate serde_derive_internals;
 
 extern crate chrono;
 

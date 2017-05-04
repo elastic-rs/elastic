@@ -99,11 +99,11 @@ impl<M> Serialize for Ip<M>
 }
 
 // Deserialize elastic ip
-impl<M> Deserialize for Ip<M>
+impl<'de, M> Deserialize<'de> for Ip<M>
     where M: IpMapping
 {
     fn deserialize<D>(deserializer: D) -> Result<Ip<M>, D::Error>
-        where D: Deserializer
+        where D: Deserializer<'de>
     {
         #[derive(Default)]
         struct IpVisitor<M>
@@ -112,7 +112,7 @@ impl<M> Deserialize for Ip<M>
             _m: PhantomData<M>,
         }
 
-        impl<M> Visitor for IpVisitor<M>
+        impl<'de, M> Visitor<'de> for IpVisitor<M>
             where M: IpMapping
         {
             type Value = Ip<M>;
@@ -138,6 +138,6 @@ impl<M> Deserialize for Ip<M>
             }
         }
 
-        deserializer.deserialize(IpVisitor::<M>::default())
+        deserializer.deserialize_any(IpVisitor::<M>::default())
     }
 }

@@ -38,9 +38,9 @@ macro_rules! number_type {
         }
 
         //Deserialize elastic number.
-        impl <M: $mapping_ty> Deserialize for $wrapper_ty<M> {
+        impl <'de, M: $mapping_ty> Deserialize<'de> for $wrapper_ty<M> {
             fn deserialize<D>(deserializer: D) -> Result<$wrapper_ty<M>, D::Error> where
-            D: Deserializer {
+            D: Deserializer<'de> {
                 let t = try!($std_ty::deserialize(deserializer));
 
                 Ok($wrapper_ty::<M>::new(t))

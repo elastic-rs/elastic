@@ -1,11 +1,6 @@
 #![feature(plugin, test)]
 #![plugin(json_str)]
 
-#[macro_use]
-extern crate serde_derive;
-#[macro_use]
-extern crate elastic_types_derive;
-
 extern crate serde;
 extern crate serde_json;
 pub extern crate chrono;
