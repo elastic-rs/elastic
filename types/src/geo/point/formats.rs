@@ -172,15 +172,17 @@ impl GeoPointFormat for GeoPointArray {
                 where S: SeqAccess<'de>
             {
                 let mut values = Vec::with_capacity(2);
-                let mut ctr = 0;
 
                 while let Some(value) = visitor.next_element()? {
-                    if ctr > 1 {
+                    if values.len() == 2 {
                         Err(S::Error::invalid_value(Unexpected::Seq, &"a json array with 2 values"))?;
                     }
 
                     values.push(value);
-                    ctr += 1;
+                }
+
+                if values.len() != 2 {
+                    Err(S::Error::invalid_value(Unexpected::Seq, &"a json array with 2 values"))?;
                 }
 
                 Ok(Point::new(values[0], values[1]))
