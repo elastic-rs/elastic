@@ -87,11 +87,11 @@ impl<M> Serialize for Boolean<M>
     }
 }
 
-impl<M> Deserialize for Boolean<M>
+impl<'de, M> Deserialize<'de> for Boolean<M>
     where M: BooleanMapping
 {
     fn deserialize<D>(deserializer: D) -> Result<Boolean<M>, D::Error>
-        where D: Deserializer
+        where D: Deserializer<'de>
     {
         #[derive(Default)]
         struct BooleanVisitor<M>
@@ -100,7 +100,7 @@ impl<M> Deserialize for Boolean<M>
             _m: PhantomData<M>,
         }
 
-        impl<M> Visitor for BooleanVisitor<M>
+        impl<'de, M> Visitor<'de> for BooleanVisitor<M>
             where M: BooleanMapping
         {
             type Value = Boolean<M>;
@@ -116,6 +116,6 @@ impl<M> Deserialize for Boolean<M>
             }
         }
 
-        deserializer.deserialize(BooleanVisitor::<M>::default())
+        deserializer.deserialize_any(BooleanVisitor::<M>::default())
     }
 }

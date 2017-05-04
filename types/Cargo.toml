@@ -8,13 +8,13 @@ documentation = "https://docs.rs/elastic_types/*/elastic_types/"
 repository = "https://github.com/elastic-rs/elastic-types"
 
 [dependencies]
-serde = "~0.9.14"
-serde_json = "~0.9.0"
-chrono = { version = "~0.3.0", features = [ "serde" ]}
+serde = "~1"
+serde_json = "~1"
+chrono = { version = "~0.3.1", features = [ "serde" ]}
 geo = "~0.3.0"
 geohash = "~0.3.0"
 geojson = "~0.5.0"
-serde_derive = "~0.9.0"
+serde_derive = "~1"
 elastic_types_derive = { version = "~0.15.0", path = "../types-derive" }
 
 [dev-dependencies]

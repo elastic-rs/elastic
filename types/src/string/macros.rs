@@ -43,17 +43,17 @@ macro_rules! impl_string_type {
             }
         }
 
-        impl <M> Deserialize for $wrapper_ty<M> where
+        impl <'de, M> Deserialize<'de> for $wrapper_ty<M> where
         M: $mapping_ty {
             fn deserialize<D>(deserializer: D) -> Result<$wrapper_ty<M>, D::Error> where
-            D: Deserializer {
+            D: Deserializer<'de> {
                 #[derive(Default)]
                 struct StringVisitor<M> where
                 M: $mapping_ty {
                     _m: PhantomData<M>
                 }
 
-                impl <M> Visitor for StringVisitor<M> where
+                impl <'de, M> Visitor<'de> for StringVisitor<M> where
                 M: $mapping_ty {
                     type Value = $wrapper_ty<M>;
 
@@ -68,7 +68,7 @@ macro_rules! impl_string_type {
                     }
                 }
 
-                deserializer.deserialize(StringVisitor::<M>::default())
+                deserializer.deserialize_any(StringVisitor::<M>::default())
             }
         }
     );

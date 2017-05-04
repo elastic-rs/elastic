@@ -81,11 +81,11 @@ impl<M> Serialize for GeoShape<M>
     }
 }
 
-impl<M> Deserialize for GeoShape<M>
+impl<'de, M> Deserialize<'de> for GeoShape<M>
     where M: GeoShapeMapping
 {
     fn deserialize<D>(deserializer: D) -> Result<GeoShape<M>, D::Error>
-        where D: Deserializer
+        where D: Deserializer<'de>
     {
         let t = try!(Geometry::deserialize(deserializer));
 

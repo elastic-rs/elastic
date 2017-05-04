@@ -10,7 +10,7 @@ pub trait GeoPointFormat
     ///
     /// This requires access to the full `serde` deserializer because geo points can be serialised as
     /// different kinds of complex objects.
-    fn parse<D>(deserializer: D) -> Result<Point, D::Error> where D: Deserializer;
+    fn parse<'de, D>(deserializer: D) -> Result<Point, D::Error> where D: Deserializer<'de>;
 
     /// Formats a `geo::Point`.
     ///

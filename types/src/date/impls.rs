@@ -232,12 +232,12 @@ impl<F, M> Serialize for Date<F, M>
     }
 }
 
-impl<F, M> Deserialize for Date<F, M>
+impl<'de, F, M> Deserialize<'de> for Date<F, M>
     where F: DateFormat,
           M: DateMapping<Format = F>
 {
     fn deserialize<D>(deserializer: D) -> Result<Date<F, M>, D::Error>
-        where D: Deserializer
+        where D: Deserializer<'de>
     {
         #[derive(Default)]
         struct DateTimeVisitor<F, M>
@@ -247,7 +247,7 @@ impl<F, M> Deserialize for Date<F, M>
             _t: PhantomData<(M, F)>,
         }
 
-        impl<F, M> Visitor for DateTimeVisitor<F, M>
+        impl<'de, F, M> Visitor<'de> for DateTimeVisitor<F, M>
             where F: DateFormat,
                   M: DateMapping<Format = F>
         {
@@ -280,7 +280,7 @@ impl<F, M> Deserialize for Date<F, M>
             }
         }
 
-        deserializer.deserialize(DateTimeVisitor::<F, M>::default())
+        deserializer.deserialize_any(DateTimeVisitor::<F, M>::default())
     }
 }
 

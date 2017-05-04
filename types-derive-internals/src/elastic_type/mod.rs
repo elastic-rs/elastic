@@ -1,6 +1,6 @@
 use quote::Tokens;
 use syn;
-use serde_codegen_internals::{self, attr as serde_attr};
+use serde_derive_internals::{self, attr as serde_attr};
 use super::{get_elastic_attr_name_value, get_ident_from_lit};
 
 /// Derive `DocumentType` for the given input.
@@ -143,7 +143,7 @@ fn get_elastic_type_name(item: &syn::MacroInput) -> syn::Lit {
 }
 
 fn get_ser_field(field: &syn::Field) -> Option<(syn::Ident, &syn::Field)> {
-    let ctxt = serde_codegen_internals::Ctxt::new();
+    let ctxt = serde_derive_internals::Ctxt::new();
     let serde_field = serde_attr::Field::from_ast(&ctxt, 0, field);
 
     // If the `serde` parse fails, return `None` and let `serde` panic later
