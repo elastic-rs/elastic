@@ -78,7 +78,7 @@ impl<T> SearchResponseOf<T> {
 #[derive(Deserialize, Debug)]
 pub struct Hits<T> {
     pub total: u64,
-    pub max_score: Option<u64>,
+    pub max_score: Option<f32>,
     pub hits: Vec<T>,
 }
 
