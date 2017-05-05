@@ -15,7 +15,7 @@ geo = "~0.4.0"
 geohash = "~0.4.0"
 geojson = "~0.8.0"
 serde_derive = "~1"
-elastic_types_derive = { version = "~0.15.0", path = "../types-derive" }
+elastic_types_derive = "~0.15.0"
 
 [dev-dependencies]
 json_str = "^0.*"
