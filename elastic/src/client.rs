@@ -92,11 +92,13 @@ use std::marker::PhantomData;
 
 use elastic_reqwest::ElasticClient;
 use error::*;
+
+use serde::de::DeserializeOwned;
 use reqwest::{Client as HttpClient, Response as RawResponse};
 
 use self::requests::{IntoBody, HttpRequest};
 use self::responses::HttpResponse;
-use self::responses::parse::FromResponse;
+use self::responses::parse::IsOk;
 
 pub use elastic_reqwest::RequestParams;
 
@@ -259,7 +261,7 @@ impl Into<HttpResponse<RawResponse>> for ResponseBuilder {
     fn into(self) -> HttpResponse<RawResponse> {
         let status = self.0.status().to_u16();
 
-        HttpResponse::new(status, self.0)
+        HttpResponse::from_read(status, self.0)
     }
 }
 
@@ -269,7 +271,7 @@ impl ResponseBuilder {
     /// This will consume the `ResponseBuilder` and return a raw
     /// `HttpResponse` that can be read as a byte buffer.
     pub fn raw(self) -> HttpResponse<RawResponse> {
-        HttpResponse::new(self.0.status().to_u16(), self.0)
+        HttpResponse::from_read(self.0.status().to_u16(), self.0)
     }
 
     /// Get the HTTP status for the response.
@@ -332,9 +334,10 @@ impl ResponseBuilder {
     /// # }
     /// ```
     pub fn response<T>(self) -> Result<T>
-        where T: FromResponse
+        where T: IsOk + DeserializeOwned
     {
-        T::from_response(self).map_err(|e| e.into())
+        let http_response: HttpResponse<RawResponse> = self.into();
+        http_response.into_response().map_err(|e| e.into())
     }
 }
 
@@ -368,7 +371,9 @@ pub mod responses {
     //! - [`GetResponse`](type.GetResponse.html) for the [Document API](http://www.elastic.co/guide/en/elasticsearch/reference/master/docs-get.html)
     //! - [`BulkResponse`](struct.BulkResponse.html) for the [Bulk API](http://www.elastic.co/guide/en/elasticsearch/reference/master/docs-bulk.html)
 
-    pub use elastic_responses::{HttpResponse, AggregationIterator, Aggregations, Hit, Hits, Shards};
+    use elastic_responses::{HttpResponse as HttpResponseOf, ReadBody};
+    
+    pub use elastic_responses::{AggregationIterator, Aggregations, Hit, Hits, Shards};
 
     pub mod parse {
         //! Utility types for response parsing.
@@ -419,9 +424,8 @@ pub mod responses {
         //! This will consume the `UnbufferedResponse` and return a `BufferedResponse`
         //! instead that keeps the response body private for later handlers to use.
 
-        pub use elastic_responses::FromResponse;
-        pub use elastic_responses::parse::{MaybeOkResponse, MaybeBufferedResponse,
-                                           UnbufferedResponse, BufferedResponse};
+        pub use elastic_responses::parse::{IsOk, MaybeOkResponse, MaybeBufferedResponse,
+                                           Unbuffered, Buffered};
     }
 
     use elastic_responses::{SearchResponseOf, GetResponseOf};
@@ -441,6 +445,9 @@ pub mod responses {
 
     /// A generic Get Document API response.
     pub type GetResponse<T> = GetResponseOf<T>;
+
+    /// A generic HTTP response with a readable body buffer.
+    pub type HttpResponse<T> = HttpResponseOf<ReadBody<T>>;
 }
 
 #[cfg(test)]

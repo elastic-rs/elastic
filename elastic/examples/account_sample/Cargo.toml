@@ -11,8 +11,8 @@ elastic = { version = "*", path = "../../" }
 elastic_derive = { version = "*", path = "../../../derive" }
 
 quick-error = "*"
-serde = "0.9"
-serde_json = "0.9"
-serde_derive = "0.9"
+serde = "*"
+serde_json = "*"
+serde_derive = "*"
 
 json_str = "*"

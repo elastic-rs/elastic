@@ -598,7 +598,7 @@ pub mod types {
     //! see the [`TryForDoc`](../client/requests/trait.TryForDoc.html) and 
     //! [`TryForMapping`](../client/requests/trait.TryForMapping.html) traits.
 
-    pub use elastic_types::{document, field, boolean, date, geo, ip, number, string, prelude};
+    pub use elastic_types::{document, boolean, date, geo, ip, number, string, prelude};
 }
 
 pub mod prelude {
