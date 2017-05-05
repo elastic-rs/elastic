@@ -8,7 +8,7 @@
   },
   "hits": {
     "total": 93315,
-    "max_score": 1,
+    "max_score": 0.688,
     "hits": [
       {
         "_index": "logstash-cee-2016.09.25",
