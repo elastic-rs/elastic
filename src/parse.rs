@@ -23,14 +23,14 @@ impl<B: ResponseBody> HttpResponse<B> {
     /// # use elastic_responses::error::*;
     /// # fn do_request() -> HttpResponseSlice<Vec<u8>> { unimplemented!() }
     /// # fn main() {
-    /// // Send a request and read as a HttpResponse
+    /// // Send a document get request and read as a generic HttpResponse
     /// let http_response = do_request();
     ///
-    /// let search_response = http_response.into_response::<GetResponseOf<Value>>();
+    /// let get_response = http_response.into_response::<GetResponseOf<Value>>();
     /// 
-    /// match search_response {
+    /// match get_response {
     ///     Ok(res) => {
-    ///         // Do something with the SearchResponse
+    ///         // Do something with the GetResponse
     ///     }
     ///     Err(ResponseError::Api(ApiError::IndexNotFound { index })) => {
     ///         // Do something with the missing index error
@@ -74,7 +74,7 @@ pub trait ResponseBody where Self: Sized
 }
 
 impl<B: Read> ResponseBody for ReadBody<B> {
-    type Buffered = ReadBody<Cursor<Vec<u8>>>;
+    type Buffered = SliceBody<Vec<u8>>;
 
     fn body(mut self) -> Result<(Value, Self::Buffered), ParseResponseError> {
         let mut buf = Vec::new();
@@ -82,7 +82,7 @@ impl<B: Read> ResponseBody for ReadBody<B> {
 
         let body: Value = serde_json::from_reader(Cursor::new(&buf))?;
 
-        Ok((body, ReadBody(Cursor::new(buf))))
+        Ok((body, SliceBody(buf)))
     }
 
     fn parse_ok<T: DeserializeOwned>(self) -> Result<T, ParseResponseError> {
