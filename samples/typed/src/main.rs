@@ -17,6 +17,7 @@ extern crate serde_derive;
 extern crate elastic_types;
 #[macro_use]
 extern crate elastic_types_derive;
+extern crate elastic_responses;
 extern crate elastic_reqwest as cli;
 
 use std::net::Ipv4Addr;
@@ -24,11 +25,10 @@ use reqwest::Client;
 use cli::{ElasticClient, RequestParams};
 use cli::req::{IndicesCreateRequest, IndexRequest, SearchRequest};
 use elastic_types::prelude::*;
+use elastic_responses::{HttpResponse, SearchResponseOf, Hit};
 
 mod data;
 use data::*;
-mod response;
-use response::*;
 
 const INDEX: &'static str = "testidx";
 
@@ -38,8 +38,7 @@ fn main() {
 
     // Wait for refresh when indexing data.
     // Normally this isn't a good idea, but is ok for this example.
-    let index_params = RequestParams::default()
-        .url_param("refresh", true);
+    let index_params = RequestParams::default().url_param("refresh", true);
 
     // Create an index and map our type
     create_index(&client, &params);
@@ -55,10 +54,8 @@ fn main() {
 
     println!("results: {}", res.hits.total);
 
-    for hit in res.hits.hits {
-        if let Some(hit) = hit.source {
-            println!("hit: {:?}", hit);
-        }
+    for hit in res.hits() {
+        println!("hit: {:?}", hit);
     }
 }
 
@@ -99,7 +96,7 @@ fn index_datum(client: &Client, params: &RequestParams, datum: &MyStruct) {
     client.elastic_req(&params, req).unwrap();
 }
 
-fn query(client: &Client, params: &RequestParams) -> SearchResponse<MyStruct> {
+fn query(client: &Client, params: &RequestParams) -> SearchResponseOf<Hit<MyStruct>> {
     let req = SearchRequest::for_index_ty(INDEX,
                                           MyStruct::name(),
                                           json_lit!({
@@ -110,7 +107,10 @@ fn query(client: &Client, params: &RequestParams) -> SearchResponse<MyStruct> {
                                                 }
                                           }));
 
-    let res = client.elastic_req(&params, req).unwrap();
+    let res = {
+        let res = client.elastic_req(&params, req).unwrap();
+        HttpResponse::from_read(res.status().to_u16(), res)
+    };
 
-    serde_json::de::from_reader(res).unwrap()
+    res.into_response().unwrap()
 }
