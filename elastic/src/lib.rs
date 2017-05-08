@@ -599,6 +599,9 @@ pub mod types {
     //! [`TryForMapping`](../client/requests/trait.TryForMapping.html) traits.
 
     pub use elastic_types::{document, boolean, date, geo, ip, number, string, prelude};
+
+    #[doc(hidden)]
+    pub use elastic_types::derive;
 }
 
 pub mod prelude {

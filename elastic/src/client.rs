@@ -91,11 +91,11 @@
 use std::marker::PhantomData;
 
 use elastic_reqwest::ElasticClient;
-use error::*;
-
+use elastic_responses::{HttpResponse as HttpResponseParser};
 use serde::de::DeserializeOwned;
-use reqwest::{Client as HttpClient, Response as RawResponse};
+use reqwest::{Client as HttpClient};
 
+use error::*;
 use self::requests::{IntoBody, HttpRequest};
 use self::responses::HttpResponse;
 use self::responses::parse::IsOk;
@@ -239,9 +239,9 @@ impl<'a, I, B> RequestBuilder<'a, I, B>
     pub fn send(self) -> Result<ResponseBuilder> {
         let params = self.params.as_ref().unwrap_or(&self.client.params);
 
-        let res = self.client.http.elastic_req(params, self.req)?;
+        let res = self.client.http.elastic_req(params, self.req)?.into();
 
-        Ok(ResponseBuilder::from(res))
+        Ok(ResponseBuilder(res))
     }
 }
 
@@ -249,37 +249,21 @@ impl<'a, I, B> RequestBuilder<'a, I, B>
 /// 
 /// This structure wraps the completed HTTP response but gives you
 /// options for converting it into a concrete type.
-pub struct ResponseBuilder(RawResponse);
-
-impl From<RawResponse> for ResponseBuilder {
-    fn from(value: RawResponse) -> Self {
-        ResponseBuilder(value)
-    }
-}
-
-impl Into<HttpResponse<RawResponse>> for ResponseBuilder {
-    fn into(self) -> HttpResponse<RawResponse> {
-        let status = self.0.status().to_u16();
-
-        HttpResponse::from_read(status, self.0)
-    }
-}
+/// You can also `Read` directly from the response body.
+pub struct ResponseBuilder(HttpResponse);
 
 impl ResponseBuilder {
-    /// Get the raw HTTP response.
-    /// 
-    /// This will consume the `ResponseBuilder` and return a raw
-    /// `HttpResponse` that can be read as a byte buffer.
-    pub fn raw(self) -> HttpResponse<RawResponse> {
-        HttpResponse::from_read(self.0.status().to_u16(), self.0)
-    }
-
     /// Get the HTTP status for the response.
     pub fn status(&self) -> u16 {
-        self.0.status().to_u16()
+        self.0.status()
     }
 
-    /// Get the response body from JSON.
+    /// Convert the builder into a raw HTTP response that implements `Read`.
+    pub fn raw(self) -> HttpResponse {
+        self.0
+    }
+
+    /// Parse an API response type from the HTTP body.
     /// 
     /// This will consume the `ResponseBuilder` and return a
     /// concrete response type or an error.
@@ -336,8 +320,10 @@ impl ResponseBuilder {
     pub fn response<T>(self) -> Result<T>
         where T: IsOk + DeserializeOwned
     {
-        let http_response: HttpResponse<RawResponse> = self.into();
-        http_response.into_response().map_err(|e| e.into())
+        let (status, body) = (self.0.status(), self.0);
+
+        let parser = HttpResponseParser::from_read(status, body);
+        parser.into_response().map_err(|e| e.into())
     }
 }
 
@@ -371,8 +357,11 @@ pub mod responses {
     //! - [`GetResponse`](type.GetResponse.html) for the [Document API](http://www.elastic.co/guide/en/elasticsearch/reference/master/docs-get.html)
     //! - [`BulkResponse`](struct.BulkResponse.html) for the [Bulk API](http://www.elastic.co/guide/en/elasticsearch/reference/master/docs-bulk.html)
 
-    use elastic_responses::{HttpResponse as HttpResponseOf, ReadBody};
-    
+    use std::io::{Read, Result as IoResult};
+
+    use elastic_responses::{SearchResponseOf, GetResponseOf};
+    use reqwest::Response as RawResponse;
+
     pub use elastic_responses::{AggregationIterator, Aggregations, Hit, Hits, Shards};
 
     pub mod parse {
@@ -428,8 +417,6 @@ pub mod responses {
                                            Unbuffered, Buffered};
     }
 
-    use elastic_responses::{SearchResponseOf, GetResponseOf};
-
     pub use elastic_responses::{PingResponse, BulkResponse, BulkErrorsResponse};
 
     /// A generic Search API response.
@@ -446,8 +433,27 @@ pub mod responses {
     /// A generic Get Document API response.
     pub type GetResponse<T> = GetResponseOf<T>;
 
-    /// A generic HTTP response with a readable body buffer.
-    pub type HttpResponse<T> = HttpResponseOf<ReadBody<T>>;
+    /// A raw HTTP response that can be buffered.
+    pub struct HttpResponse(RawResponse);
+
+    impl From<RawResponse> for HttpResponse {
+        fn from(value: RawResponse) -> HttpResponse {
+            HttpResponse(value)
+        }
+    }
+
+    impl HttpResponse {
+        /// Get the HTTP status for the response.
+        pub fn status(&self) -> u16 {
+            self.0.status().to_u16()
+        }
+    }
+
+    impl Read for HttpResponse {
+        fn read(&mut self, buf: &mut [u8]) -> IoResult<usize> {
+            self.0.read(buf)
+        }
+    }
 }
 
 #[cfg(test)]
