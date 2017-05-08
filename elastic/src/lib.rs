@@ -481,7 +481,7 @@ pub mod types {
     //! }
     //!
     //! // Map `MyEnum` as a `keyword` in Elasticsearch, but treat it as an enum in Rust
-    //! impl FieldType<DefaultKeywordMapping, KeywordFormat> for MyEnum {}
+    //! impl KeywordFieldType<DefaultKeywordMapping> for MyEnum {}
     //! # }
     //! ```
     //! 
@@ -498,7 +498,7 @@ pub mod types {
     //! # fn main() {
     //! # #[derive(Serialize, Deserialize)]
     //! # enum MyEnum {}
-    //! # impl FieldType<DefaultKeywordMapping, KeywordFormat> for MyEnum {}
+    //! # impl KeywordFieldType<DefaultKeywordMapping> for MyEnum {}
     //! #[derive(Serialize, Deserialize, ElasticType)]
     //! struct MyType {
     //!     value: MyEnum
@@ -521,7 +521,7 @@ pub mod types {
     //! # use elastic::prelude::*;
     //! # #[derive(Serialize, Deserialize)]
     //! # enum MyEnum {}
-    //! # impl FieldType<DefaultKeywordMapping, KeywordFormat> for MyEnum {}
+    //! # impl KeywordFieldType<DefaultKeywordMapping> for MyEnum {}
     //! # #[derive(Serialize, Deserialize, ElasticType)]
     //! # struct MyType {
     //! #     value: MyEnum

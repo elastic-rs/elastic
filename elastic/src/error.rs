@@ -50,8 +50,8 @@ use std::error::Error as StdError;
 
 use serde_json::Error as JsonError;
 use reqwest::Error as HttpError;
-use elastic_responses::error::{ResponseError, ParseResponseError};
-pub use elastic_responses::error::ApiError;
+use elastic_responses::error::ResponseError;
+pub use elastic_responses::error::{ApiError, ParseResponseError};
 
 pub struct SerdeError(Box<StdError>);
 
