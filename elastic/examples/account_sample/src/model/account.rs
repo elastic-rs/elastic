@@ -5,8 +5,8 @@
 //! Field serialisation and mapping is all handled in the same place
 //! so it's always in sync.
 
-use elastic::types::prelude::{FieldType, Text, DefaultTextMapping, TextMapping, Keyword,
-                              DefaultKeywordMapping, KeywordFormat, DocumentType};
+use elastic::types::prelude::{FieldType, KeywordFieldType, Text, DefaultTextMapping, TextMapping, Keyword,
+                              DefaultKeywordMapping, DocumentType};
 
 /// Our main model; an account in the bank.
 #[derive(Debug, Serialize, Deserialize, ElasticType)]
@@ -57,7 +57,7 @@ pub enum Gender {
     Male,
 }
 
-impl FieldType<DefaultKeywordMapping, KeywordFormat> for Gender {}
+impl KeywordFieldType<DefaultKeywordMapping> for Gender {}
 
 // The `Email` type uses a custom analyser so it has its own
 // mapping type instead of using `DefaultKeywordMapping`.
