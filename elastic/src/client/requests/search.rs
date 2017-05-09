@@ -2,9 +2,17 @@ use std::marker::PhantomData;
 use serde::de::DeserializeOwned;
 
 use error::*;
-use client::{into_response, Client, SearchRequestBuilder};
+use client::{into_response, Client};
 use client::requests::{empty_body, DefaultBody, IntoBody, Index, Type, SearchRequest, RequestBuilder};
 use client::responses::SearchResponse;
+
+/// A builder for a search request.
+pub struct SearchRequestBuilder<TDocument, TBody> {
+    index: Option<Index<'static>>,
+    ty: Option<Type<'static>>,
+    body: TBody,
+    _marker: PhantomData<TDocument>,
+}
 
 impl Client {
     /// Create a `RequestBuilder` for a search request.

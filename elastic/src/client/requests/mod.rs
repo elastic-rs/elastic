@@ -10,10 +10,12 @@
 
 mod search;
 
+use std::marker::PhantomData;
 use elastic_reqwest::ElasticClient;
 
 use error::*;
-use client::{RequestParams, RequestBuilder, ResponseBuilder};
+use client::{Client, RequestParams, IntoResponse};
+use client::responses::ResponseBuilder;
 
 pub use elastic_reqwest::IntoReqwestBody as IntoBody;
 pub use elastic_reqwest::req::{HttpRequest, HttpMethod, empty_body, Url, DefaultBody};
@@ -23,6 +25,61 @@ pub use elastic_reqwest::req::endpoints;
 pub use self::params::*;
 pub use self::endpoints::*;
 pub use self::search::*;
+
+/// A builder for a request.
+///
+/// This structure wraps up a concrete REST API request type
+/// and lets you adjust parameters before sending it.
+pub struct RequestBuilder<'a, TRequest, TBody> {
+    client: &'a Client,
+    params: Option<RequestParams>,
+    req: TRequest,
+    _marker: PhantomData<TBody>,
+}
+
+impl Client {
+    /// Create a `RequestBuilder` that can be configured before sending.
+    ///
+    /// The `request` method accepts any type that can be converted into
+    /// a [`HttpRequest<'static>`](requests/struct.HttpRequest.html),
+    /// which includes the endpoint types in the [`requests`](requests/endpoints/index.html) module.
+    ///
+    /// # Examples
+    ///
+    /// Turn a concrete request into a `RequestBuilder`:
+    ///
+    /// ```no_run
+    /// # use elastic::prelude::*;
+    /// # let client = Client::new(RequestParams::default()).unwrap();
+    /// // `PingRequest` implements `Into<HttpRequest>`
+    /// let req = PingRequest::new();
+    ///
+    /// // Turn the `PingRequest` into a `RequestBuilder`
+    /// let builder = client.request(req);
+    ///
+    /// // Send the `RequestBuilder`
+    /// let res = builder.send().unwrap();
+    /// ```
+    pub fn request<'a, TRequest, TBody>(&'a self,
+                                        req: TRequest)
+                                        -> RequestBuilder<'a, TRequest, TBody>
+        where TRequest: Into<HttpRequest<'static, TBody>>,
+              TBody: IntoBody
+    {
+        RequestBuilder::new(&self, None, req)
+    }
+}
+
+impl<'a, TRequest, TBody> RequestBuilder<'a, TRequest, TBody> {
+    fn new(client: &'a Client, params: Option<RequestParams>, req: TRequest) -> Self {
+        RequestBuilder {
+            client: client,
+            params: params,
+            req: req,
+            _marker: PhantomData,
+        }
+    }
+}
 
 impl<'a, TRequest, TBody> RequestBuilder<'a, TRequest, TBody> {
     /// Override the parameters for this request.
@@ -59,9 +116,9 @@ impl<'a, TRequest, TBody> RequestBuilder<'a, TRequest, TBody>
     fn send_raw(self) -> Result<ResponseBuilder> {
         let params = self.params.as_ref().unwrap_or(&self.client.params);
 
-        let res = self.client.http.elastic_req(params, self.req)?.into();
+        let res = self.client.http.elastic_req(params, self.req)?;
 
-        Ok(ResponseBuilder(res))
+        Ok(IntoResponse(res).into())
     }
 }
 

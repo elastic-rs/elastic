@@ -91,13 +91,11 @@
 pub mod requests;
 pub mod responses;
 
-use std::marker::PhantomData;
-
 use serde::de::DeserializeOwned;
-use reqwest::{Client as HttpClient};
+use reqwest::{Client as HttpClient, Response as RawResponse};
 
 use error::*;
-use self::requests::{IntoBody, HttpRequest, Index, Type};
+use self::responses::ResponseBuilder;
 use self::responses::HttpResponse;
 use self::responses::parse::IsOk;
 
@@ -146,37 +144,6 @@ impl Client {
             params: params,
         })
     }
-
-    /// Create a `RequestBuilder` that can be configured before sending.
-    ///
-    /// The `request` method accepts any type that can be converted into
-    /// a [`HttpRequest<'static>`](requests/struct.HttpRequest.html),
-    /// which includes the endpoint types in the [`requests`](requests/endpoints/index.html) module.
-    ///
-    /// # Examples
-    ///
-    /// Turn a concrete request into a `RequestBuilder`:
-    ///
-    /// ```no_run
-    /// # use elastic::prelude::*;
-    /// # let client = Client::new(RequestParams::default()).unwrap();
-    /// // `PingRequest` implements `Into<HttpRequest>`
-    /// let req = PingRequest::new();
-    ///
-    /// // Turn the `PingRequest` into a `RequestBuilder`
-    /// let builder = client.request(req);
-    ///
-    /// // Send the `RequestBuilder`
-    /// let res = builder.send().unwrap();
-    /// ```
-    pub fn request<'a, TRequest, TBody>(&'a self,
-                                        req: TRequest)
-                                        -> RequestBuilder<'a, TRequest, TBody>
-        where TRequest: Into<HttpRequest<'static, TBody>>,
-              TBody: IntoBody
-    {
-        RequestBuilder::new(&self, None, req)
-    }
 }
 
 /// Try convert a `ResponseBuilder` into a concrete response type.
@@ -191,42 +158,7 @@ pub fn into_raw(res: ResponseBuilder) -> Result<HttpResponse> {
     Ok(res.raw())
 }
 
-/// A builder for a request.
-///
-/// This structure wraps up a concrete REST API request type
-/// and lets you adjust parameters before sending it.
-pub struct RequestBuilder<'a, TRequest, TBody> {
-    client: &'a Client,
-    params: Option<RequestParams>,
-    req: TRequest,
-    _marker: PhantomData<TBody>,
-}
-
-impl<'a, TRequest, TBody> RequestBuilder<'a, TRequest, TBody> {
-    fn new(client: &'a Client, params: Option<RequestParams>, req: TRequest) -> Self {
-        RequestBuilder {
-            client: client,
-            params: params,
-            req: req,
-            _marker: PhantomData,
-        }
-    }
-}
-
-/// A builder for a search request.
-pub struct SearchRequestBuilder<TDocument, TBody> {
-    index: Option<Index<'static>>,
-    ty: Option<Type<'static>>,
-    body: TBody,
-    _marker: PhantomData<TDocument>,
-}
-
-/// A builder for a response.
-///
-/// This structure wraps the completed HTTP response but gives you
-/// options for converting it into a concrete type.
-/// You can also `Read` directly from the response body.
-pub struct ResponseBuilder(HttpResponse);
+struct IntoResponse(RawResponse);
 
 #[cfg(test)]
 mod tests {

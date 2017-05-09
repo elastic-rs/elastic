@@ -14,11 +14,18 @@ use elastic_responses::{HttpResponse as HttpResponseParser, SearchResponseOf, Ge
 use reqwest::Response as RawResponse;
 
 use error::*;
-use client::ResponseBuilder;
+use client::IntoResponse;
 use self::parse::IsOk;
 
 pub use elastic_responses::{AggregationIterator, Aggregations, Hit, Hits, Shards};
 pub use elastic_responses::{PingResponse, BulkResponse, BulkErrorsResponse};
+
+/// A builder for a response.
+///
+/// This structure wraps the completed HTTP response but gives you
+/// options for converting it into a concrete type.
+/// You can also `Read` directly from the response body.
+pub struct ResponseBuilder(HttpResponse);
 
 impl ResponseBuilder {
     /// Get the HTTP status for the response.
@@ -114,12 +121,6 @@ pub type GetResponse<T> = GetResponseOf<T>;
 /// A raw HTTP response that can be buffered.
 pub struct HttpResponse(RawResponse);
 
-impl From<RawResponse> for HttpResponse {
-    fn from(value: RawResponse) -> HttpResponse {
-        HttpResponse(value)
-    }
-}
-
 impl HttpResponse {
     /// Get the HTTP status for the response.
     pub fn status(&self) -> u16 {
@@ -130,5 +131,17 @@ impl HttpResponse {
 impl Read for HttpResponse {
     fn read(&mut self, buf: &mut [u8]) -> IoResult<usize> {
         self.0.read(buf)
+    }
+}
+
+impl Into<HttpResponse> for IntoResponse {
+    fn into(self) -> HttpResponse {
+        HttpResponse(self.0)
+    }
+}
+
+impl Into<ResponseBuilder> for IntoResponse {
+    fn into(self) -> ResponseBuilder {
+        ResponseBuilder(self.into())
     }
 }
