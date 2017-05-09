@@ -1,0 +1,134 @@
+//! Response types for the Elasticsearch REST API.
+//!
+//! Key response types include:
+//!
+//! - [`SearchResponse`](type.SearchResponse.html) for the [Query DSL](http://www.elastic.co/guide/en/elasticsearch/reference/master/search-search.html)
+//! - [`GetResponse`](type.GetResponse.html) for the [Document API](http://www.elastic.co/guide/en/elasticsearch/reference/master/docs-get.html)
+//! - [`BulkResponse`](struct.BulkResponse.html) for the [Bulk API](http://www.elastic.co/guide/en/elasticsearch/reference/master/docs-bulk.html)
+
+pub mod parse;
+
+use std::io::{Read, Result as IoResult};
+use serde::de::DeserializeOwned;
+use elastic_responses::{HttpResponse as HttpResponseParser, SearchResponseOf, GetResponseOf};
+use reqwest::Response as RawResponse;
+
+use error::*;
+use client::ResponseBuilder;
+use self::parse::IsOk;
+
+pub use elastic_responses::{AggregationIterator, Aggregations, Hit, Hits, Shards};
+pub use elastic_responses::{PingResponse, BulkResponse, BulkErrorsResponse};
+
+impl ResponseBuilder {
+    /// Get the HTTP status for the response.
+    pub fn status(&self) -> u16 {
+        self.0.status()
+    }
+
+    /// Get the response body from JSON.
+    ///
+    /// Convert the builder into a raw HTTP response that implements `Read`.
+    pub fn raw(self) -> HttpResponse {
+        self.0
+    }
+
+    /// Parse an API response type from the HTTP body.
+    /// 
+    /// This will consume the `ResponseBuilder` and return a
+    /// concrete response type or an error.
+    ///
+    /// The response is parsed according to the `FromResponse`
+    /// implementation for `T` that will inspect the response and
+    /// either return an `Ok(T)` or an `Err(ApiError)`.
+    ///
+    /// # Examples
+    ///
+    /// Get a strongly typed `SearchResponse`:
+    ///
+    /// ```no_run
+    /// # extern crate serde;
+    /// # #[macro_use]
+    /// # extern crate serde_derive;
+    /// # #[macro_use]
+    /// # extern crate elastic_derive;
+    /// # extern crate elastic;
+    /// # use elastic::prelude::*;
+    /// # fn main() {
+    /// # #[derive(Serialize, Deserialize, ElasticType)]
+    /// # struct MyType {
+    /// #     pub id: i32,
+    /// #     pub title: String,
+    /// #     pub timestamp: Date<DefaultDateFormat>
+    /// # }
+    /// # let params = RequestParams::new("http://es_host:9200");
+    /// # let client = Client::new(params).unwrap();
+    /// # let req = PingRequest::new();
+    /// let response = client.request(req)
+    ///                      .send()
+    ///                      .and_then(|res| res.response::<SearchResponse<MyType>>());
+    /// # }
+    /// ```
+    ///
+    /// You can also read a response as a `serde_json::Value`, which will be `Ok(Value)`
+    /// if the HTTP status code is `Ok` or `Err(ApiError)` otherwise:
+    ///
+    /// ```no_run
+    /// # extern crate elastic;
+    /// # extern crate serde_json;
+    /// # use serde_json::Value;
+    /// # use elastic::prelude::*;
+    /// # fn main() {
+    /// # let params = RequestParams::default();
+    /// # let client = Client::new(params).unwrap();
+    /// # let req = PingRequest::new();
+    /// let response = client.request(req)
+    ///                      .send()
+    ///                      .and_then(|res| res.response::<Value>());
+    /// # }
+    /// ```
+    pub fn response<T>(self) -> Result<T>
+        where T: IsOk + DeserializeOwned
+    {
+        let (status, body) = (self.0.status(), self.0);
+
+        let parser = HttpResponseParser::from_read(status, body);
+        parser.into_response().map_err(|e| e.into())
+    }
+}
+
+/// A generic Search API response.
+/// 
+/// For responses that contain multiple document types, use
+/// `SearchResponse<serde_json::Value>`.
+/// 
+/// This type won't parse if you've applied any [response filters]().
+/// If you need to tweak the shape of the search response you can
+/// define your own response type and implement `FromResponse` for it.
+/// See the [`parse`](parse/index.html) mod for more details.
+pub type SearchResponse<T> = SearchResponseOf<Hit<T>>;
+
+/// A generic Get Document API response.
+pub type GetResponse<T> = GetResponseOf<T>;
+
+/// A raw HTTP response that can be buffered.
+pub struct HttpResponse(RawResponse);
+
+impl From<RawResponse> for HttpResponse {
+    fn from(value: RawResponse) -> HttpResponse {
+        HttpResponse(value)
+    }
+}
+
+impl HttpResponse {
+    /// Get the HTTP status for the response.
+    pub fn status(&self) -> u16 {
+        self.0.status().to_u16()
+    }
+}
+
+impl Read for HttpResponse {
+    fn read(&mut self, buf: &mut [u8]) -> IoResult<usize> {
+        self.0.read(buf)
+    }
+}
