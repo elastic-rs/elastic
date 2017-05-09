@@ -1,6 +1,6 @@
 [package]
 name = "elastic"
-version = "0.11.0"
+version = "0.12.0"
 authors = ["Ashley Mannix <ashleymannix@live.com.au>"]
 license = "Apache-2.0"
 keywords = ["elasticsearch", "search"]
@@ -13,15 +13,15 @@ nightly = ["elastic_reqwest/nightly"]
 
 [dependencies]
 error-chain = "~0.7.0"
-serde = "~0.9.0"
-serde_json = "~0.9.0"
+serde = "~1"
+serde_json = "~1"
 reqwest = "~0.4.0"
 
 elastic_reqwest = "~0.7.1"
-elastic_responses = "~0.6.1"
-elastic_types = "~0.13.0"
+elastic_responses = "~0.7.2"
+elastic_types = "~0.15.0"
 
 [dev-dependencies]
 json_str = "^0.*"
-serde_derive = "~0.9.0"
-elastic_derive = "~0.1.0"
+serde_derive = "~1"
+elastic_derive = { version = "~0.2.0", path = "../derive" }

@@ -89,15 +89,16 @@
 //! ```
 
 use std::marker::PhantomData;
-use serde::Deserialize;
 
 use elastic_reqwest::ElasticClient;
-use elastic_reqwest::req::DefaultBody;
-use error::*;
-use reqwest::{Client as HttpClient, Response as RawResponse};
+use elastic_responses::{HttpResponse as HttpResponseParser};
+use serde::de::DeserializeOwned;
+use reqwest::{Client as HttpClient};
 
-use self::requests::{IntoBody, empty_body, HttpRequest, SearchRequest, Index, Type};
-use self::responses::{HttpResponse, FromResponse, SearchResponse};
+use error::*;
+use self::requests::{IntoBody, DefaultBody, empty_body, Index, Type, HttpRequest, SearchRequest};
+use self::responses::{HttpResponse, SearchResponse};
+use self::responses::parse::IsOk;
 
 pub use elastic_reqwest::RequestParams;
 
@@ -185,7 +186,7 @@ impl Client {
     pub fn search<'a, TDocument>
         (&'a self)
          -> RequestBuilder<'a, SearchRequestBuilder<TDocument, DefaultBody>, DefaultBody>
-        where TDocument: Deserialize
+        where TDocument: DeserializeOwned
     {
         RequestBuilder::new(&self, None, SearchRequestBuilder::new())
     }
@@ -211,7 +212,7 @@ impl<TDocument> SearchRequestBuilder<TDocument, DefaultBody> {
 }
 
 impl<'a, TDocument, TBody> RequestBuilder<'a, SearchRequestBuilder<TDocument, TBody>, TBody>
-    where TDocument: Deserialize,
+    where TDocument: DeserializeOwned,
           TBody: IntoBody
 {
     /// Set the indices for the search request.
@@ -321,9 +322,9 @@ impl<'a, TRequest, TBody> RequestBuilder<'a, TRequest, TBody>
     fn send_raw(self) -> Result<ResponseBuilder> {
         let params = self.params.as_ref().unwrap_or(&self.client.params);
 
-        let res = self.client.http.elastic_req(params, self.req)?;
+        let res = self.client.http.elastic_req(params, self.req)?.into();
 
-        Ok(ResponseBuilder::from(res))
+        Ok(ResponseBuilder(res))
     }
 }
 
@@ -344,38 +345,24 @@ impl<'a, TRequest, TBody> RequestBuilder<'a, TRequest, TBody>
 ///
 /// This structure wraps the completed HTTP response but gives you
 /// options for converting it into a concrete type.
-pub struct ResponseBuilder(RawResponse);
-
-impl From<RawResponse> for ResponseBuilder {
-    fn from(value: RawResponse) -> Self {
-        ResponseBuilder(value)
-    }
-}
-
-impl Into<HttpResponse<RawResponse>> for ResponseBuilder {
-    fn into(self) -> HttpResponse<RawResponse> {
-        let status = self.0.status().to_u16();
-
-        HttpResponse::new(status, self.0)
-    }
-}
+/// You can also `Read` directly from the response body.
+pub struct ResponseBuilder(HttpResponse);
 
 impl ResponseBuilder {
-    /// Get the raw HTTP response.
-    ///
-    /// This will consume the `ResponseBuilder` and return a raw
-    /// `HttpResponse` that can be read as a byte buffer.
-    pub fn into_raw(self) -> HttpResponse<RawResponse> {
-        HttpResponse::new(self.0.status().to_u16(), self.0)
-    }
-
     /// Get the HTTP status for the response.
     pub fn status(&self) -> u16 {
-        self.0.status().to_u16()
+        self.0.status()
     }
 
     /// Get the response body from JSON.
     ///
+    /// Convert the builder into a raw HTTP response that implements `Read`.
+    pub fn raw(self) -> HttpResponse {
+        self.0
+    }
+
+    /// Parse an API response type from the HTTP body.
+    /// 
     /// This will consume the `ResponseBuilder` and return a
     /// concrete response type or an error.
     ///
@@ -428,23 +415,26 @@ impl ResponseBuilder {
     ///                      .and_then(|res| res.response::<Value>());
     /// # }
     /// ```
-    pub fn into_response<T>(self) -> Result<T>
-        where T: FromResponse
+    pub fn response<T>(self) -> Result<T>
+        where T: IsOk + DeserializeOwned
     {
-        T::from_response(self).map_err(|e| e.into())
+        let (status, body) = (self.0.status(), self.0);
+
+        let parser = HttpResponseParser::from_read(status, body);
+        parser.into_response().map_err(|e| e.into())
     }
 }
 
 /// Try convert a `ResponseBuilder` into a concrete response type.
 pub fn into_response<T>(res: ResponseBuilder) -> Result<T>
-    where T: FromResponse
+    where T: IsOk + DeserializeOwned
 {
-    res.into_response()
+    res.response()
 }
 
 /// Try convert a `ResponseBuilder` into a raw response type.
-pub fn into_raw(res: ResponseBuilder) -> Result<HttpResponse<RawResponse>> {
-    Ok(res.into_raw())
+pub fn into_raw(res: ResponseBuilder) -> Result<HttpResponse> {
+    Ok(res.raw())
 }
 
 pub mod requests {
@@ -459,13 +449,12 @@ pub mod requests {
     //! - [`BulkRequest`](endpoints/struct.BulkRequest.html) for the [Bulk API](http://www.elastic.co/guide/en/elasticsearch/reference/master/docs-bulk.html)
 
     pub use elastic_reqwest::IntoReqwestBody as IntoBody;
-    pub use elastic_reqwest::req::{HttpRequest, HttpMethod, empty_body, Url};
+    pub use elastic_reqwest::req::{HttpRequest, HttpMethod, empty_body, Url, DefaultBody};
     pub use elastic_reqwest::req::params;
     pub use elastic_reqwest::req::endpoints;
 
     pub use self::params::*;
     pub use self::endpoints::*;
-    pub use impls::*;
 }
 
 pub mod responses {
@@ -477,24 +466,12 @@ pub mod responses {
     //! - [`GetResponse`](type.GetResponse.html) for the [Document API](http://www.elastic.co/guide/en/elasticsearch/reference/master/docs-get.html)
     //! - [`BulkResponse`](struct.BulkResponse.html) for the [Bulk API](http://www.elastic.co/guide/en/elasticsearch/reference/master/docs-bulk.html)
 
+    use std::io::{Read, Result as IoResult};
+
     use elastic_responses::{SearchResponseOf, GetResponseOf};
+    use reqwest::Response as RawResponse;
 
-    pub use elastic_responses::{FromResponse, HttpResponse, AggregationIterator, Aggregations,
-                                Hit, Hits, Shards, PingResponse, BulkResponse, BulkErrorsResponse};
-
-    /// A generic Search API response.
-    ///
-    /// For responses that contain multiple document types, use
-    /// `SearchResponse<serde_json::Value>`.
-    ///
-    /// This type won't parse if you've applied any [response filters]().
-    /// If you need to tweak the shape of the search response you can
-    /// define your own response type and implement `FromResponse` for it.
-    /// See the [`parse`](parse/index.html) mod for more details.
-    pub type SearchResponse<T> = SearchResponseOf<Hit<T>>;
-
-    /// A generic Get Document API response.
-    pub type GetResponse<T> = GetResponseOf<T>;
+    pub use elastic_responses::{AggregationIterator, Aggregations, Hit, Hits, Shards};
 
     pub mod parse {
         //! Utility types for response parsing.
@@ -513,28 +490,37 @@ pub mod responses {
         //! # extern crate elastic;
         //! # use std::io::Read;
         //! # use elastic::prelude::*;
-        //! # use elastic::error::ResponseError;
+        //! # use elastic::error::ParseResponseError;
         //! # use elastic::client::responses::parse::*;
         //! #[derive(Deserialize)]
         //! struct MyResponse {
         //!     took: u64
         //! }
-        //!
-        //! impl FromResponse for MyResponse {
-        //!     fn from_response<I, R>(res: I) -> Result<Self, ResponseError>
-        //!         where I: Into<HttpResponse<R>>, R: Read
+        //! 
+        //! impl IsOk for MyResponse {
+        //!     fn is_ok<B>(head: HttpResponseHead, body: Unbuffered<B>) -> Result<MaybeOkResponse<B>, ParseResponseError>
+        //!         where B: ResponseBody
         //!     {
-        //!         // HttpResponse.response() lets you inspect a response for success
-        //!         res.into().response(|http_res| {
-        //!             match http_res.status() {
-        //!                 // If the status is 2xx then return the response with `ok: true`
-        //!                 // The body will be parsed as a `MyResponse`.
-        //!                 200...299 => Ok(MaybeOkResponse::ok(http_res)),
-        //!                 // Otherwise return the response with `ok: false`
-        //!                 // The body will be parsed as an `ApiError`.
-        //!                 _ => Ok(MaybeOkResponse::err(http_res))
+        //!         match head.status() {
+        //!             // If the status is 2xx then return the response with `ok: true`
+        //!             // The body will be parsed as a `MyResponse`.
+        //!             200...299 => Ok(MaybeOkResponse::ok(body)),
+        //!             // If the status is 404 it might be ok, or it might be an error
+        //!             404 => {
+        //!                 let (maybe_err, body) = body.body()?;
+        //! 
+        //!                 // See if the body contains an `error` field
+        //!                 // If it does, then it's an error
+        //!                 let is_ok = maybe_err.as_object()
+        //!                     .and_then(|maybe_err| maybe_err.get("error"))
+        //!                     .is_none();
+        //! 
+        //!                 Ok(MaybeOkResponse::new(is_ok, body))
         //!             }
-        //!         })
+        //!             // Otherwise return the response with `ok: false`
+        //!             // The body will be parsed as an `ApiError`.
+        //!             _ => Ok(MaybeOkResponse::err(body))
+        //!         }
         //!     }
         //! }
         //! # fn main() {}
@@ -545,8 +531,47 @@ pub mod responses {
         //! This will consume the `UnbufferedResponse` and return a `BufferedResponse`
         //! instead that keeps the response body private for later handlers to use.
 
-        pub use elastic_responses::parse::{MaybeOkResponse, MaybeBufferedResponse,
-                                           UnbufferedResponse, BufferedResponse};
+        pub use elastic_responses::HttpResponseHead;
+        pub use elastic_responses::parse::{IsOk, ResponseBody, MaybeOkResponse, MaybeBufferedResponse,
+                                           Unbuffered, Buffered};
+    }
+
+    pub use elastic_responses::{PingResponse, BulkResponse, BulkErrorsResponse};
+
+    /// A generic Search API response.
+    /// 
+    /// For responses that contain multiple document types, use
+    /// `SearchResponse<serde_json::Value>`.
+    /// 
+    /// This type won't parse if you've applied any [response filters]().
+    /// If you need to tweak the shape of the search response you can
+    /// define your own response type and implement `FromResponse` for it.
+    /// See the [`parse`](parse/index.html) mod for more details.
+    pub type SearchResponse<T> = SearchResponseOf<Hit<T>>;
+
+    /// A generic Get Document API response.
+    pub type GetResponse<T> = GetResponseOf<T>;
+
+    /// A raw HTTP response that can be buffered.
+    pub struct HttpResponse(RawResponse);
+
+    impl From<RawResponse> for HttpResponse {
+        fn from(value: RawResponse) -> HttpResponse {
+            HttpResponse(value)
+        }
+    }
+
+    impl HttpResponse {
+        /// Get the HTTP status for the response.
+        pub fn status(&self) -> u16 {
+            self.0.status().to_u16()
+        }
+    }
+
+    impl Read for HttpResponse {
+        fn read(&mut self, buf: &mut [u8]) -> IoResult<usize> {
+            self.0.read(buf)
+        }
     }
 }
 

@@ -46,15 +46,20 @@
 
 #![allow(missing_docs)]
 
-pub use serde_json::Error as JsonError;
-pub use reqwest::Error as HttpError;
-pub use elastic_responses::error::{ApiError, ResponseError};
+use std::error::Error as StdError;
+
+use serde_json::Error as JsonError;
+use reqwest::Error as HttpError;
+use elastic_responses::error::ResponseError;
+pub use elastic_responses::error::{ApiError, ParseResponseError};
+
+pub struct SerdeError(Box<StdError>);
 
 error_chain! {
     foreign_links {
         Api(ApiError);
-        Json(JsonError);
         Http(HttpError);
+        Parse(ParseResponseError);
     }
 }
 
@@ -62,7 +67,13 @@ impl From<ResponseError> for Error {
     fn from(err: ResponseError) -> Self {
         match err {
             ResponseError::Api(err) => ErrorKind::Api(err).into(),
-            ResponseError::Json(err) => ErrorKind::Json(err).into(),
+            ResponseError::Parse(err) => ErrorKind::Parse(err).into()
         }
+    }
+}
+
+impl From<JsonError> for Error {
+    fn from(err: JsonError) -> Self {
+        ErrorKind::Parse(ParseResponseError::Json(err)).into()
     }
 }

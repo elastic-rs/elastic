@@ -478,7 +478,7 @@ pub mod types {
     //! }
     //!
     //! // Map `MyEnum` as a `keyword` in Elasticsearch, but treat it as an enum in Rust
-    //! impl FieldType<DefaultKeywordMapping, KeywordFormat> for MyEnum {}
+    //! impl KeywordFieldType<DefaultKeywordMapping> for MyEnum {}
     //! # }
     //! ```
     //!
@@ -495,7 +495,7 @@ pub mod types {
     //! # fn main() {
     //! # #[derive(Serialize, Deserialize)]
     //! # enum MyEnum {}
-    //! # impl FieldType<DefaultKeywordMapping, KeywordFormat> for MyEnum {}
+    //! # impl KeywordFieldType<DefaultKeywordMapping> for MyEnum {}
     //! #[derive(Serialize, Deserialize, ElasticType)]
     //! struct MyType {
     //!     value: MyEnum
@@ -518,7 +518,7 @@ pub mod types {
     //! # use elastic::prelude::*;
     //! # #[derive(Serialize, Deserialize)]
     //! # enum MyEnum {}
-    //! # impl FieldType<DefaultKeywordMapping, KeywordFormat> for MyEnum {}
+    //! # impl KeywordFieldType<DefaultKeywordMapping> for MyEnum {}
     //! # #[derive(Serialize, Deserialize, ElasticType)]
     //! # struct MyType {
     //! #     value: MyEnum
@@ -595,7 +595,10 @@ pub mod types {
     //! see the [`TryForDoc`](../client/requests/trait.TryForDoc.html) and
     //! [`TryForMapping`](../client/requests/trait.TryForMapping.html) traits.
 
-    pub use elastic_types::{document, field, boolean, date, geo, ip, number, string, prelude};
+    pub use elastic_types::{document, boolean, date, geo, ip, number, string, prelude};
+
+    #[doc(hidden)]
+    pub use elastic_types::derive;
 }
 
 pub mod prelude {
