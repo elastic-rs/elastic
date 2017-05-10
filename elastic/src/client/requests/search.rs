@@ -3,7 +3,8 @@ use serde::de::DeserializeOwned;
 
 use error::*;
 use client::{into_response, Client};
-use client::requests::{empty_body, DefaultBody, IntoBody, Index, Type, SearchRequest, RequestBuilder};
+use client::requests::{empty_body, DefaultBody, IntoBody, Index, Type, SearchRequest,
+                       RequestBuilder};
 use client::responses::SearchResponse;
 
 /// A builder for a search request.
@@ -21,17 +22,29 @@ impl Client {
          -> RequestBuilder<'a, SearchRequestBuilder<TDocument, DefaultBody>, DefaultBody>
         where TDocument: DeserializeOwned
     {
-        RequestBuilder::new(&self, None, SearchRequestBuilder::new())
+        RequestBuilder::new(&self, None, SearchRequestBuilder::new(empty_body()))
     }
 }
 
-impl<TDocument> SearchRequestBuilder<TDocument, DefaultBody> {
-    fn new() -> Self {
+impl<TDocument, TBody> SearchRequestBuilder<TDocument, TBody>
+    where TDocument: DeserializeOwned,
+          TBody: IntoBody
+{
+    fn new(body: TBody) -> Self {
         SearchRequestBuilder {
             index: None,
             ty: None,
-            body: empty_body(),
+            body: body,
             _marker: PhantomData,
+        }
+    }
+
+    fn into_request(self) -> SearchRequest<'static, TBody> {
+        let index = self.index.unwrap_or("_all".into());
+
+        match self.ty {
+            Some(ty) => SearchRequest::for_index_ty(index, ty, self.body),
+            None => SearchRequest::for_index(index, self.body),
         }
     }
 }
@@ -79,15 +92,50 @@ impl<'a, TDocument, TBody> RequestBuilder<'a, SearchRequestBuilder<TDocument, TB
 
     /// Send the search request.
     pub fn send(self) -> Result<SearchResponse<TDocument>> {
-        let req = self.req;
-
-        let index = req.index.unwrap_or("_all".into());
-
-        let req = match req.ty {
-            Some(ty) => SearchRequest::for_index_ty(index, ty, req.body),
-            None => SearchRequest::for_index(index, req.body),
-        };
+        let req = self.req.into_request();
 
         RequestBuilder::new(self.client, self.params, req).send_raw().and_then(into_response)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use serde_json::Value;
+    use prelude::*;
+
+    #[test]
+    fn default_request() {
+        let client = Client::new(RequestParams::new("http://eshost:9200")).unwrap();
+
+        let req = client.search::<Value>().req.into_request();
+
+        assert_eq!("/_all/_search", req.url.as_ref());
+    }
+
+    #[test]
+    fn specify_index() {
+        let client = Client::new(RequestParams::new("http://eshost:9200")).unwrap();
+
+        let req = client.search::<Value>().index("new-idx").req.into_request();
+
+        assert_eq!("/new-idx/_search", req.url.as_ref());
+    }
+
+    #[test]
+    fn specify_ty() {
+        let client = Client::new(RequestParams::new("http://eshost:9200")).unwrap();
+
+        let req = client.search::<Value>().ty(Some("new-ty")).req.into_request();
+
+        assert_eq!("/_all/new-ty/_search", req.url.as_ref());
+    }
+
+    #[test]
+    fn specify_body() {
+        let client = Client::new(RequestParams::new("http://eshost:9200")).unwrap();
+
+        let req = client.search::<Value>().body("{}").req.into_request();
+
+        assert_eq!("{}", req.body);
     }
 }

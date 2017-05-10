@@ -159,24 +159,3 @@ pub fn into_raw(res: ResponseBuilder) -> Result<HttpResponse> {
 }
 
 struct IntoResponse(RawResponse);
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn request_builder_params() {
-        let client = Client::new(RequestParams::new("http://eshost:9200")).unwrap();
-
-        let req = RequestBuilder::<_, _, ()>::new(&client, None, requests::PingRequest::new())
-            .params(|p| p.url_param("pretty", true))
-            .params(|p| p.url_param("refresh", true));
-
-        let params = &req.params.unwrap();
-
-        let (_, query) = params.get_url_qry();
-
-        assert_eq!("http://eshost:9200", &params.base_url);
-        assert_eq!("?pretty=true&refresh=true", query.unwrap());
-    }
-}

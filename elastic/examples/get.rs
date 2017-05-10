@@ -12,9 +12,7 @@ fn main() {
     // The `params` includes the base node url (http://localhost:9200).
     let client = Client::new(RequestParams::default()).unwrap();
 
-    let req = GetRequest::for_index_ty_id("typed_sample_index", "mytype", "1");
-
-    let res = client.get::<Value>().request(req).send();
+    let res = client.get::<Value>(index("typed_sample_index"), id("1")).ty("mytype").send();
 
     match res {
         // The doc was found: no need to index

@@ -20,7 +20,7 @@
 //! struct MyResponse {
 //!     took: u64
 //! }
-//! 
+//!
 //! impl IsOk for MyResponse {
 //!     fn is_ok<B>(head: HttpResponseHead, body: Unbuffered<B>) -> Result<MaybeOkResponse<B>, ParseResponseError>
 //!         where B: ResponseBody
@@ -32,13 +32,13 @@
 //!             // If the status is 404 it might be ok, or it might be an error
 //!             404 => {
 //!                 let (maybe_err, body) = body.body()?;
-//! 
+//!
 //!                 // See if the body contains an `error` field
 //!                 // If it does, then it's an error
 //!                 let is_ok = maybe_err.as_object()
 //!                     .and_then(|maybe_err| maybe_err.get("error"))
 //!                     .is_none();
-//! 
+//!
 //!                 Ok(MaybeOkResponse::new(is_ok, body))
 //!             }
 //!             // Otherwise return the response with `ok: false`
@@ -57,4 +57,4 @@
 
 pub use elastic_responses::HttpResponseHead;
 pub use elastic_responses::parse::{IsOk, ResponseBody, MaybeOkResponse, MaybeBufferedResponse,
-                                    Unbuffered, Buffered};
+                                   Unbuffered, Buffered};

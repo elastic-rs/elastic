@@ -8,8 +8,6 @@
 //! - [`IndicesPutMappingRequest`](endpoints/struct.IndicesPutMappingRequest.html) for the [Mapping API](http://www.elastic.co/guide/en/elasticsearch/reference/master/indices-put-mapping.html)
 //! - [`BulkRequest`](endpoints/struct.BulkRequest.html) for the [Bulk API](http://www.elastic.co/guide/en/elasticsearch/reference/master/docs-bulk.html)
 
-mod search;
-
 use std::marker::PhantomData;
 use elastic_reqwest::ElasticClient;
 
@@ -24,7 +22,12 @@ pub use elastic_reqwest::req::endpoints;
 
 pub use self::params::*;
 pub use self::endpoints::*;
+
+mod search;
 pub use self::search::*;
+
+mod get;
+pub use self::get::*;
 
 /// A builder for a request.
 ///
@@ -132,5 +135,26 @@ impl<'a, TRequest, TBody> RequestBuilder<'a, TRequest, TBody>
     /// that can be used to parse the response.
     pub fn send(self) -> Result<ResponseBuilder> {
         self.send_raw()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn request_builder_params() {
+        let client = Client::new(RequestParams::new("http://eshost:9200")).unwrap();
+
+        let req = RequestBuilder::<_, ()>::new(&client, None, PingRequest::new())
+            .params(|p| p.url_param("pretty", true))
+            .params(|p| p.url_param("refresh", true));
+
+        let params = &req.params.unwrap();
+
+        let (_, query) = params.get_url_qry();
+
+        assert_eq!("http://eshost:9200", &params.base_url);
+        assert_eq!("?pretty=true&refresh=true", query.unwrap());
     }
 }

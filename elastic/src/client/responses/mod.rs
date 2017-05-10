@@ -41,7 +41,7 @@ impl ResponseBuilder {
     }
 
     /// Parse an API response type from the HTTP body.
-    /// 
+    ///
     /// This will consume the `ResponseBuilder` and return a
     /// concrete response type or an error.
     ///
@@ -105,10 +105,10 @@ impl ResponseBuilder {
 }
 
 /// A generic Search API response.
-/// 
+///
 /// For responses that contain multiple document types, use
 /// `SearchResponse<serde_json::Value>`.
-/// 
+///
 /// This type won't parse if you've applied any [response filters]().
 /// If you need to tweak the shape of the search response you can
 /// define your own response type and implement `FromResponse` for it.

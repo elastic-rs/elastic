@@ -275,8 +275,8 @@ pub mod types;
 pub mod prelude {
     //! A glob import for convenience.
 
-    pub use super::client::{Client, RequestParams, into_response, into_raw};
-    pub use super::client::requests::*;
-    pub use super::client::responses::*;
-    pub use super::types::prelude::*;
+    pub use client::{Client, RequestParams, into_response, into_raw};
+    pub use client::requests::*;
+    pub use client::responses::*;
+    pub use types::prelude::*;
 }

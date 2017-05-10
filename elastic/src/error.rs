@@ -67,7 +67,7 @@ impl From<ResponseError> for Error {
     fn from(err: ResponseError) -> Self {
         match err {
             ResponseError::Api(err) => ErrorKind::Api(err).into(),
-            ResponseError::Parse(err) => ErrorKind::Parse(err).into()
+            ResponseError::Parse(err) => ErrorKind::Parse(err).into(),
         }
     }
 }

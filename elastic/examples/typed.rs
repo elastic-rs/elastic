@@ -53,13 +53,7 @@ fn main() {
 }
 
 fn ensure_indexed(client: &Client, doc: MyType) {
-    let index = Index::from(INDEX);
-    let ty = MyType::name();
-    let id = doc.id.to_string();
-    let req = GetRequest::for_index_ty_id(index, ty, id);
-
-    let get_res = client.get::<MyType>()
-                        .request(req)
+    let get_res = client.get::<MyType>(index(INDEX), id(doc.id.to_string()))
                         .send();
 
     match get_res {
@@ -93,21 +87,25 @@ fn put_index(client: &Client) {
     let index = Index::from(INDEX);
     let mapping = MyType::mapping();
 
-    let req = IndicesPutMappingRequest::try_for_mapping((index, mapping)).unwrap();
+    unimplemented!();
 
-    client.request(req).send().unwrap();
+    //let req = IndicesPutMappingRequest::try_for_mapping((index, mapping)).unwrap();
+
+    //client.request(req).send().unwrap();
 }
 
 fn put_doc(client: &Client, doc: MyType) {
     let index = Index::from(INDEX);
     let id = Id::from(doc.id.to_string());
 
-    let req = IndexRequest::try_for_doc((index, id, &doc)).unwrap();
+    unimplemented!();
 
-    client.request(req)
-          .params(|params| params.url_param("refresh", true))
-          .send()
-          .unwrap();
+    //let req = IndexRequest::try_for_doc((index, id, &doc)).unwrap();
+
+    //client.request(req)
+    //      .params(|params| params.url_param("refresh", true))
+    //      .send()
+    //      .unwrap();
 }
 
 fn search(client: &Client) -> SearchResponse<MyType> {
@@ -123,5 +121,14 @@ fn search(client: &Client) -> SearchResponse<MyType> {
         SearchRequest::for_index(INDEX, body)
     };
 
-    client.search().request(req).send().unwrap()
+    client.search()
+          .index(INDEX)
+          .body(json_str!({
+                query: {
+                    query_string: {
+                        query: "title"
+                    }
+                }
+          }))
+          .send().unwrap()
 }
