@@ -28,8 +28,79 @@ fn get_custom_type_name() {
 }
 
 #[test]
+fn get_value_type_name() {
+    assert_eq!("value", Value::name());
+}
+
+#[test]
 fn derive_custom_type_mapping() {
     assert_eq!(ManualCustomTypeMapping, CustomType::mapping());
+}
+
+#[test]
+fn serialise_document() {
+    let ser = serde_json::to_string(&Document::from(SimpleTypeMapping)).unwrap();
+
+    let expected = json_str!({
+        "properties":{
+            "field1": {
+                "type": "date",
+                "format": "epoch_millis"
+            },
+            "field2": {
+                "type": "nested",
+                "properties": {
+                    "field": {
+                        "type": "integer"
+                    }
+                }
+            }
+        }
+    });
+
+    assert_eq!(expected, ser);
+}
+
+#[test]
+fn serialise_document_with_no_props() {
+    let ser = serde_json::to_string(&Document::from(NoPropsMapping)).unwrap();
+
+    let expected = json_str!({
+        "properties": {
+
+        }
+    });
+
+    assert_eq!(expected, ser);
+}
+
+#[test]
+fn serialise_document_for_custom_mapping() {
+    let ser = serde_json::to_string(&Document::from(ManualCustomTypeMapping)).unwrap();
+
+    let expected = json_str!({
+        "properties": {
+            "field": {
+                "type": "integer"
+            },
+            "renamed_field": {
+                "type": "integer"
+            }
+        }
+    });
+
+    assert_eq!(expected, ser);
+}
+
+#[test]
+fn serialise_document_for_value() {
+    let ser = serde_json::to_string(&Document::from(Value::mapping())).unwrap();
+
+    let expected = json_str!({
+        "properties": {}
+    });
+
+    assert_eq!(expected, ser);
 }
 
 #[test]
@@ -37,7 +108,7 @@ fn serialise_mapping_with_wrapped_types() {
     let ser = serde_json::to_string(&Document::from(WrappedMapping)).unwrap();
 
     let expected = json_str!({
-        "properties":{
+        "properties": {
             "field1": {
                 "type": "integer"
             },
@@ -45,11 +116,11 @@ fn serialise_mapping_with_wrapped_types() {
                 "type": "boolean"
             },
             "field3": {
-                "type":"text",
-                "fields":{
+                "type": "text",
+                "fields": {
                     "keyword":{
-                        "type":"keyword",
-                        "ignore_above":256
+                        "type": "keyword",
+                        "ignore_above": 256
                     }
                 }
             },
@@ -88,75 +159,6 @@ fn serialise_index_mapping() {
     });
 
     assert_eq!(expected, ser);
-}
-
-#[test]
-fn serialise_document() {
-    let ser = serde_json::to_string(&Document::from(SimpleTypeMapping)).unwrap();
-
-    let expected = json_str!({
-        "properties":{
-            "field1": {
-                "type": "date",
-                "format": "epoch_millis"
-            },
-            "field2": {
-                "type": "nested",
-                "properties": {
-                    "field": {
-                        "type": "integer"
-                    }
-                }
-            }
-        }
-    });
-
-    assert_eq!(expected, ser);
-}
-
-#[test]
-fn serialise_document_with_no_props() {
-    let ser = serde_json::to_string(&Document::from(NoPropsMapping)).unwrap();
-
-    let expected = json_str!({
-        "properties": {
-            
-        }
-    });
-
-    assert_eq!(expected, ser);
-}
-
-#[test]
-fn serialise_document_for_custom_mapping() {
-    let ser = serde_json::to_string(&Document::from(ManualCustomTypeMapping)).unwrap();
-
-    let expected = json_str!({
-        "properties":{
-            "field": {
-                "type":"integer"
-            },
-            "renamed_field": {
-                "type":"integer"
-            }
-        }
-    });
-
-    assert_eq!(expected, ser);
-}
-
-#[test]
-fn serialise_document_for_mapping_as_value() {
-    let value = match serde_json::to_value(&Document::from(SimpleTypeMapping)) {
-        Ok(Value::Object(value)) => value,
-        _ => panic!("expected Ok(Value::Map)")
-    };
-
-    let field1_type = &value["properties"]["field1"]["type"];
-
-    let ser = serde_json::ser::to_string(&field1_type).unwrap();
-
-    assert_eq!("\"date\"", &ser);
 }
 
 #[test]
