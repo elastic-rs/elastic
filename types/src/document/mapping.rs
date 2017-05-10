@@ -148,19 +148,30 @@ impl<T> Serialize for Field<T, DocumentFormat>
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
         where S: Serializer
     {
-        let mut state = try!(serializer.serialize_struct("mapping", 5));
-
         let ty = <T as DocumentMapping>::data_type();
+        let (is_object, has_props) = (ty == OBJECT_DATATYPE, T::props_len() > 0);
+
+        let props_len = match (is_object, has_props) {
+            (true, true) => 5,
+            (true, false)|(false, true) => 4,
+            (false, false) => 3
+        };
+
+        let mut state = try!(serializer.serialize_struct("mapping", props_len));
+
+        
         try!(state.serialize_field("type", ty));
 
         ser_field!(state, "dynamic", T::dynamic());
         ser_field!(state, "include_in_all", T::include_in_all());
 
-        if ty == OBJECT_DATATYPE {
+        if is_object {
             ser_field!(state, "enabled", T::enabled());
         }
 
-        try!(state.serialize_field("properties", &Properties::<T>::default()));
+        if has_props {
+            try!(state.serialize_field("properties", &Properties::<T>::default()));
+        }
 
         state.end()
     }
