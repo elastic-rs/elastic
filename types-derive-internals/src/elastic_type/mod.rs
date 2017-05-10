@@ -73,7 +73,9 @@ fn impl_elastic_type(crate_root: Tokens, item: &syn::MacroInput, mapping: &syn::
     let ty = &item.ident;
 
     quote!(
-        impl #crate_root::derive::DocumentType<#mapping> for #ty { }
+        impl #crate_root::derive::DocumentType for #ty {
+            type Mapping = #mapping;
+        }
     )
 }
 

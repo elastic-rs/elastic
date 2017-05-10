@@ -16,7 +16,7 @@ impl<T, M> FieldType<M, DocumentFormat> for T
 }
 
 impl<T, M> DocumentFieldType<M> for T
-    where T: DocumentType<M>,
+    where T: DocumentType<Mapping = M>,
           M: DocumentMapping
 {
 }

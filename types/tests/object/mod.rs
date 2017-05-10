@@ -4,6 +4,15 @@ use elastic_types::prelude::*;
 use ::object_fixtures::*;
 
 #[test]
+fn use_doc_as_generic_without_supplying_mapping_param() {
+    fn use_document<TDocument>() where TDocument: DocumentType {
+        assert!(true);
+    }
+
+    use_document::<SimpleType>();
+}
+
+#[test]
 fn get_type_name() {
     assert_eq!("simpletype", SimpleTypeMapping::name());
 }

@@ -368,7 +368,9 @@ pub mod object_fixtures {
         pub field2: SimpleNestedType
     }
 
-    impl DocumentType<SimpleTypeMapping> for SimpleType { }
+    impl DocumentType for SimpleType {
+        type Mapping = SimpleTypeMapping;
+    }
 
     #[derive(Default, Clone)]
     pub struct SimpleTypeMapping;
@@ -393,7 +395,9 @@ pub mod object_fixtures {
         pub field: i32
     }
 
-    impl DocumentType<SimpleNestedTypeMapping> for SimpleNestedType { }
+    impl DocumentType for SimpleNestedType {
+        type Mapping = SimpleNestedTypeMapping;
+    }
 
     #[derive(Default, Clone)]
     pub struct SimpleNestedTypeMapping;

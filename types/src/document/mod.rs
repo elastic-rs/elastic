@@ -111,7 +111,7 @@
 //! }
 //!
 //! #[derive(Default)]
-//! struct MyTypeMapping;
+//! pub struct MyTypeMapping;
 //! impl DocumentMapping for MyTypeMapping {
 //!     //Give your own name to a type
 //!     fn name() -> &'static str { "my_type" }
@@ -145,7 +145,7 @@
 //! # }
 //! #
 //! # #[derive(Default)]
-//! # struct MyTypeMapping;
+//! # pub struct MyTypeMapping;
 //! # impl DocumentMapping for MyTypeMapping {
 //! #   fn name() -> &'static str { "my_type" }
 //! #   fn data_type() -> &'static str { OBJECT_DATATYPE }
@@ -246,7 +246,9 @@
 //! }
 //!
 //! //Implement DocumentType for your type. This binds it to the mapping
-//! impl DocumentType<MyTypeMapping> for MyType { }
+//! impl DocumentType for MyType {
+//!     type Mapping = MyTypeMapping;
+//! }
 //!
 //! //Define the type mapping for our type
 //! #[derive(Default)]
