@@ -11,6 +11,6 @@ name = "elastic_derive"
 proc-macro = true
 
 [dependencies]
-elastic_types_derive_internals = { version = "~0.16.0", path = "../../elastic-types/types-derive-internals" }
+elastic_types_derive_internals = "~0.16.0"
 syn = { version = "~0.11.0", features = ["aster", "visit", "parsing", "full"] }
 quote = "~0.3.0"
