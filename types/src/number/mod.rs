@@ -18,7 +18,7 @@
 //!
 //! For defining your own number mapping, see [mapping details](mapping/index.html#derive-mapping).
 //!
-//! Map with a default `number` (`i32` in this case):
+//! Map with a default `number` (`integer` in this case):
 //!
 //! ```
 //! struct MyType {
@@ -26,7 +26,7 @@
 //! }
 //! ```
 //!
-//! Map with a custom `number` (`i32` in this case):
+//! Map with a custom `number` (`integer` in this case):
 //!
 //! ```
 //! # extern crate serde;
@@ -40,6 +40,23 @@
 //! struct MyType {
 //!     pub field: Integer<MyIntegerMapping>
 //! }
+//! # }
+//! ```
+//! 
+//! Map a custom type as a `number` field (`integer` in this case):
+//! 
+//! ```
+//! # extern crate serde;
+//! # #[macro_use]
+//! # extern crate elastic_types;
+//! # #[macro_use]
+//! # extern crate serde_derive;
+//! # fn main() {
+//! # use elastic_types::prelude::*;
+//! #[derive(Serialize)]
+//! struct MyIntegerField(i32);
+//! 
+//! impl IntegerFieldType<DefaultIntegerMapping> for MyIntegerField {}
 //! # }
 //! ```
 //!

@@ -1,4 +1,3 @@
-#[macro_export]
 macro_rules! impl_string_type {
     ($wrapper_ty:ident, $mapping_ty:ident, $field_type:ident) => (
         impl <M> $field_type<M> for $wrapper_ty<M> where

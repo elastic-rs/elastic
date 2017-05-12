@@ -8,15 +8,16 @@ use private::field::FieldMapping;
 ///
 /// This trait is implemented for the type being mapped, rather than the mapping
 /// type itself.
-pub trait DocumentType<M>
-    where M: DocumentMapping,
-          Self: Serialize
+pub trait DocumentType where Self: Serialize
 {
+    /// The mapping type for this document.
+    type Mapping: DocumentMapping;
+
     /// Get the name for this type.
     ///
     /// This is a convenience method that returns the `name` of the bound `DocumentMapping`.
     fn name() -> &'static str {
-        M::name()
+        Self::Mapping::name()
     }
 }
 

@@ -32,7 +32,6 @@
 //! ```ignore
 //! #[macro_use]
 //! extern crate elastic_types_derive;
-//! #[macro_use]
 //! extern crate elastic_types;
 //! ```
 //!
@@ -321,7 +320,7 @@
 //!
 //! ```ignore
 //! [dependencies]
-//! elastic_types = { version = "*", features = "nightly" }
+//! elastic_types = "*"
 //! elastic_types_derive = "*"
 //! ```
 //!
@@ -459,6 +458,7 @@
 //!
 //! All Elasticsearch types implement the base `FieldType<M: FieldMapping<F>, F>` trait
 //! where `M` is the mapping and `F` is a type-specific format.
+//! All document types implement `DocumentType` with an associated `Mapping: DocumentMapping` type.
 //!
 //! The following table illustrates the types provided by `elastic_types`:
 //!
@@ -520,6 +520,9 @@ extern crate elastic_types_derive;
 pub extern crate chrono;
 pub extern crate geo as georust;
 pub extern crate geojson;
+
+#[macro_use]
+mod macros;
 
 #[macro_use]
 mod private;

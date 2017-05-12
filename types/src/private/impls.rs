@@ -4,8 +4,10 @@ use std::collections::{HashMap, BTreeMap};
 use serde::{Serialize, Serializer};
 use serde::ser::SerializeStruct;
 use serde_json::Value;
+
 use super::field::{FieldMapping, SerializeField};
-use document::{Field, FieldType};
+use document::{Field, FieldType, DocumentType};
+use document::mapping::{DocumentMapping, PropertiesMapping};
 
 /// A mapping implementation for a non-core type, or anywhere it's ok for Elasticsearch to infer the mapping at index-time.
 #[derive(Debug, PartialEq, Default, Clone)]
@@ -67,9 +69,6 @@ impl<M, F> Serialize for Field<WrappedMapping<M, F>, F>
     }
 }
 
-/// Mapping implementation for a `serde_json::Value`.
-impl FieldType<DefaultMapping, ()> for Value {}
-
 /// Mapping implementation for a standard binary tree map.
 impl<K, V> FieldType<DefaultMapping, ()> for BTreeMap<K, V>
     where K: AsRef<str> + Ord + Serialize,
@@ -98,4 +97,26 @@ impl<T, M, F> FieldType<WrappedMapping<M, F>, F> for Option<T>
           F: Default,
           Field<M, F>: Serialize
 {
+}
+
+#[derive(Default)]
+pub struct ValueDocumentMapping;
+
+impl DocumentMapping for ValueDocumentMapping {
+    fn name() -> &'static str {
+        "value"
+    }
+}
+
+impl DocumentType for Value {
+    type Mapping = ValueDocumentMapping;
+}
+
+impl PropertiesMapping for ValueDocumentMapping {
+    fn props_len() -> usize { 0 }
+
+    fn serialize_props<S>(_: &mut S) -> Result<(), S::Error>
+    where S: SerializeStruct {
+        Ok(())
+    }
 }

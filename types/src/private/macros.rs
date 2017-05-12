@@ -1,13 +1,3 @@
-#[macro_export]
-macro_rules! ser_field {
-    ($serializer:ident, $field:expr, $val_opt:expr) => (
-        if let Some(f) = $val_opt {
-            try!($serializer.serialize_field($field, &f));
-        }
-    )
-}
-
-#[macro_export]
 macro_rules! impl_mapping_type {
     ($std_ty:ident, $wrapper_ty:ident, $mapping_ty:ident) => (
         impl <M> From<$std_ty> for $wrapper_ty<M> where

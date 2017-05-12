@@ -360,60 +360,7 @@ pub mod geo_shape_fixtures {
 
 pub mod object_fixtures {
     use serde::ser::SerializeStruct;
-    use elastic_types::prelude::*;
-
-    #[derive(Serialize)]
-    pub struct SimpleType {
-        pub field1: Date<EpochMillis>,
-        pub field2: SimpleNestedType
-    }
-
-    impl DocumentType<SimpleTypeMapping> for SimpleType { }
-
-    #[derive(Default, Clone)]
-    pub struct SimpleTypeMapping;
-    impl DocumentMapping for SimpleTypeMapping {
-        fn name() -> &'static str { "simpletype" }
-    }
-    impl PropertiesMapping for SimpleTypeMapping {
-        fn props_len() -> usize { 2 }
-        
-        fn serialize_props<S>(state: &mut S) -> Result<(), S::Error> 
-            where S: SerializeStruct
-        {
-            try!(field_ser(state, "field1", Date::<EpochMillis>::mapping()));
-            try!(field_ser(state, "field2", SimpleNestedType::mapping()));
-
-            Ok(())
-        }
-    }
-
-    #[derive(Serialize)]
-    pub struct SimpleNestedType {
-        pub field: i32
-    }
-
-    impl DocumentType<SimpleNestedTypeMapping> for SimpleNestedType { }
-
-    #[derive(Default, Clone)]
-    pub struct SimpleNestedTypeMapping;
-    impl DocumentMapping for SimpleNestedTypeMapping {
-        fn name() -> &'static str { "simplenestedtype" }
-    }
-    impl PropertiesMapping for SimpleNestedTypeMapping {
-        fn props_len() -> usize { 1 }
-        
-        fn serialize_props<S>(state: &mut S) -> Result<(), S::Error> 
-            where S: SerializeStruct
-        {
-            try!(field_ser(state, "field", i32::mapping()));
-
-            Ok(())
-        }
-    }
-}
-
-pub mod object_macro_fixtures {
+    use serde_json::Value;
     use elastic_types::prelude::*;
 
     // Make sure we can derive with no `uses`.
@@ -426,6 +373,34 @@ pub mod object_macro_fixtures {
         #[derive(Default, ElasticDateFormat)]
         #[elastic(date_format="yyyy")]
         pub struct DateFormatWithNoPath;
+    }
+
+    #[derive(Serialize)]
+    pub struct ManualType {
+        pub field1: Date<EpochMillis>,
+        pub field2: SimpleNestedType
+    }
+
+    impl DocumentType for ManualType {
+        type Mapping = ManualTypeMapping;
+    }
+
+    #[derive(Default, Clone)]
+    pub struct ManualTypeMapping;
+    impl DocumentMapping for ManualTypeMapping {
+        fn name() -> &'static str { "manualtype" }
+    }
+    impl PropertiesMapping for ManualTypeMapping {
+        fn props_len() -> usize { 2 }
+        
+        fn serialize_props<S>(state: &mut S) -> Result<(), S::Error> 
+            where S: SerializeStruct
+        {
+            try!(field_ser(state, "field1", Date::<EpochMillis>::mapping()));
+            try!(field_ser(state, "field2", SimpleNestedType::mapping()));
+
+            Ok(())
+        }
     }
 
     #[derive(Serialize, ElasticType)]
@@ -459,8 +434,12 @@ pub mod object_macro_fixtures {
     pub struct Wrapped {
         pub field1: Vec<i32>,
         pub field2: Option<bool>,
-        pub field3: &'static str
+        pub field3: &'static str,
+        pub field4: Value,
     }
+
+    #[derive(Serialize, ElasticType)]
+    pub struct NoProps {}
 
     #[derive(Default, Serialize)]
     pub struct Index {
@@ -474,7 +453,6 @@ pub mod object_macro_fixtures {
 }
 
 pub mod object;
-pub mod object_macro;
 pub mod geo_point;
 pub mod geo_shape;
 pub mod date;

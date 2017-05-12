@@ -34,30 +34,46 @@ pub fn expand_derive(crate_root: Tokens,
         .map(|f| f.unwrap())
         .collect();
 
-    let mut genned = Vec::new();
-
-    let mapping_ty = {
+    let (mapping_ty, define_mapping, impl_mapping) = {
         // If a user supplies a mapping with `#[elastic(mapping="")]`, then use it.
         // Otherwise, define the mapping struct and implement defaults for it.
         if let Some(mapping_ty) = get_mapping_from_attr(input) {
-            mapping_ty
+            (mapping_ty, Tokens::new(), Tokens::new())
         } else {
             let mapping_ty = get_default_mapping(input);
             let es_ty = get_elastic_type_name(input);
 
-            genned.push(define_mapping(&mapping_ty));
-            genned.push(impl_object_mapping(crate_root.clone(), &mapping_ty, &es_ty));
+            let impl_mapping = impl_object_mapping(crate_root.clone(), &mapping_ty, &es_ty);
 
-            mapping_ty
+            let define_mapping = define_mapping(&mapping_ty);
+
+            (mapping_ty, define_mapping, impl_mapping)
         }
     };
 
-    genned.push(impl_elastic_type(crate_root.clone(), input, &mapping_ty));
-    genned.push(impl_props_mapping(crate_root.clone(),
+    let impl_elastic_ty = impl_elastic_ty(crate_root.clone(), input, &mapping_ty);
+    let impl_props_mapping = impl_props_mapping(crate_root.clone(),
                                    &mapping_ty,
-                                   get_props_ser_stmts(crate_root.clone(), &fields)));
+                                   get_props_ser_stmts(crate_root.clone(), &fields));
 
-    Ok(genned)
+    let mod_impl = syn::Ident::new(format!("__ImplElasticType{}", input.ident));
+
+    Ok(vec![quote!(
+        #define_mapping
+
+        #[allow(non_snake_case)]
+        mod #mod_impl {
+            #![allow(dead_code, unused_variables)]
+            
+            use super::*;
+
+            #impl_mapping
+
+            #impl_elastic_ty
+
+            #impl_props_mapping
+        }
+    )])
 }
 
 // Define a struct for the mapping with a few defaults
@@ -69,11 +85,13 @@ fn define_mapping(name: &syn::Ident) -> Tokens {
 }
 
 // Implement DocumentType for the type being derived with the mapping
-fn impl_elastic_type(crate_root: Tokens, item: &syn::MacroInput, mapping: &syn::Ident) -> Tokens {
+fn impl_elastic_ty(crate_root: Tokens, item: &syn::MacroInput, mapping: &syn::Ident) -> Tokens {
     let ty = &item.ident;
 
     quote!(
-        impl #crate_root::derive::DocumentType<#mapping> for #ty { }
+        impl #crate_root::derive::DocumentType for #ty {
+            type Mapping = #mapping;
+        }
     )
 }
 

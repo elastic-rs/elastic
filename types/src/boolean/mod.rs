@@ -28,6 +28,23 @@
 //! }
 //! # }
 //! ```
+//! 
+//! Map a custom type as a `boolean` field:
+//! 
+//! ```
+//! # extern crate serde;
+//! # #[macro_use]
+//! # extern crate elastic_types;
+//! # #[macro_use]
+//! # extern crate serde_derive;
+//! # fn main() {
+//! # use elastic_types::prelude::*;
+//! #[derive(Serialize)]
+//! struct MyBooleanField(bool);
+//! 
+//! impl BooleanFieldType<DefaultBooleanMapping> for MyBooleanField {}
+//! # }
+//! ```
 //!
 //! # Links
 //!

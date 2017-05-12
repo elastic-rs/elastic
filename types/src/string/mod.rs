@@ -51,6 +51,29 @@
 //! }
 //! # }
 //! ```
+//! 
+//! Map a custom type as a `keyword` field.
+//! This is especially useful for simple `enum`s:
+//! 
+//! ```
+//! # extern crate serde;
+//! # #[macro_use]
+//! # extern crate elastic_types;
+//! # #[macro_use]
+//! # extern crate serde_derive;
+//! # fn main() {
+//! # use elastic_types::prelude::*;
+//! #[derive(Serialize)]
+//! #[serde(rename_all = "lowercase")]
+//! enum MyKeywordField {
+//!     VariantA,
+//!     VariantB,
+//!     VariantC,
+//! }
+//! 
+//! impl KeywordFieldType<DefaultKeywordMapping> for MyKeywordField {}
+//! # }
+//! ```
 //!
 //! # Links
 //!
