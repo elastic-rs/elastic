@@ -1,6 +1,6 @@
 [package]
 name = "elastic_requests"
-version = "0.4.1"
+version = "0.4.2"
 authors = ["Ashley Mannix <ashleymannix@live.com.au>"]
 license = "Apache-2.0"
 description = "Code generated request types for the Elasticsearch REST API."

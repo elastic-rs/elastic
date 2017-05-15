@@ -156,4 +156,13 @@ mod tests {
 
         do_something_with_static_request(req).join().unwrap();
     }
+
+    #[test]
+    fn id_from_number() {
+        let ids = vec![Id::from(1i32), Id::from(1u32), Id::from(1i64), Id::from(1u64), Id::from(1isize), Id::from(1usize)];
+
+        for id in ids {
+            assert_eq!("1", &*id);
+        }
+    }
 }

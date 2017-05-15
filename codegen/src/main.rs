@@ -270,6 +270,9 @@ fn params_mod(tokens: &mut Tokens, derives: Tokens, params_to_emit: BTreeMap<Str
     tokens.append(uses.to_string());
     tokens.append("\n\n");
 
+    tokens.append(r#"include!("genned.params.rs");"#);
+    tokens.append("\n\n");
+
     let params_to_emit = params_to_emit.iter()
         .filter(|&(_, is_emitted)| *is_emitted);
 
