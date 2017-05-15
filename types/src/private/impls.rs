@@ -1,3 +1,5 @@
+use std::rc::Rc;
+use std::sync::Arc;
 use std::hash::Hash;
 use std::marker::PhantomData;
 use std::collections::{HashMap, BTreeMap};
@@ -5,8 +7,8 @@ use serde::{Serialize, Serializer};
 use serde::ser::SerializeStruct;
 use serde_json::Value;
 
-use super::field::{FieldMapping, SerializeField};
-use document::{Field, FieldType, DocumentType};
+use super::field::{DocumentField, FieldMapping, SerializeField};
+use document::{FieldType, DocumentType};
 use document::mapping::{DocumentMapping, PropertiesMapping};
 
 /// A mapping implementation for a non-core type, or anywhere it's ok for Elasticsearch to infer the mapping at index-time.
@@ -15,10 +17,10 @@ struct DefaultMapping;
 impl FieldMapping<()> for DefaultMapping {}
 
 impl SerializeField<()> for DefaultMapping {
-    type Field = Field<Self, ()>;
+    type Field = DocumentField<Self, ()>;
 }
 
-impl Serialize for Field<DefaultMapping, ()> {
+impl Serialize for DocumentField<DefaultMapping, ()> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
         where S: Serializer
     {
@@ -58,7 +60,7 @@ impl<M, F> SerializeField<F> for WrappedMapping<M, F>
     type Field = M::Field;
 }
 
-impl<M, F> Serialize for Field<WrappedMapping<M, F>, F>
+impl<M, F> Serialize for DocumentField<WrappedMapping<M, F>, F>
     where M: FieldMapping<F>,
           F: Default
 {
@@ -87,7 +89,7 @@ impl<T, M, F> FieldType<WrappedMapping<M, F>, F> for Vec<T>
     where T: FieldType<M, F>,
           M: FieldMapping<F>,
           F: Default,
-          Field<M, F>: Serialize
+          DocumentField<M, F>: Serialize
 {
 }
 
@@ -95,7 +97,7 @@ impl<T, M, F> FieldType<WrappedMapping<M, F>, F> for Option<T>
     where T: FieldType<M, F>,
           M: FieldMapping<F>,
           F: Default,
-          Field<M, F>: Serialize
+          DocumentField<M, F>: Serialize
 {
 }
 
@@ -113,10 +115,34 @@ impl DocumentType for Value {
 }
 
 impl PropertiesMapping for ValueDocumentMapping {
-    fn props_len() -> usize { 0 }
+    fn props_len() -> usize {
+        0
+    }
 
     fn serialize_props<S>(_: &mut S) -> Result<(), S::Error>
-    where S: SerializeStruct {
+        where S: SerializeStruct
+    {
         Ok(())
     }
+}
+
+impl<TDocument, TMapping> DocumentType for Arc<TDocument>
+    where TDocument: DocumentType<Mapping = TMapping> + Serialize,
+          TMapping: DocumentMapping
+{
+    type Mapping = TMapping;
+}
+
+impl<TDocument, TMapping> DocumentType for Rc<TDocument>
+    where TDocument: DocumentType<Mapping = TMapping> + Serialize,
+          TMapping: DocumentMapping
+{
+    type Mapping = TMapping;
+}
+
+impl<'a, TDocument, TMapping> DocumentType for &'a TDocument
+    where TDocument: DocumentType<Mapping = TMapping> + Serialize,
+          TMapping: DocumentMapping
+{
+    type Mapping = TMapping;
 }

@@ -35,9 +35,9 @@
 //! }
 //! # }
 //! ```
-//! 
+//!
 //! Map a custom type as a `geo_shape` field:
-//! 
+//!
 //! ```
 //! # extern crate serde;
 //! # #[macro_use]
@@ -48,7 +48,7 @@
 //! # use elastic_types::prelude::*;
 //! #[derive(Serialize)]
 //! struct MyGeoShapeField(String);
-//! 
+//!
 //! impl GeoShapeFieldType<DefaultGeoShapeMapping> for MyGeoShapeField {}
 //! # }
 //! ```

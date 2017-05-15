@@ -39,6 +39,6 @@ fn fmt_epoch(b: &mut Bencher) {
 #[bench]
 fn mapping(b: &mut Bencher) {
     b.iter(|| {
-        serde_json::to_string(&Field::from(MyDateMapping)).unwrap()
+        serde_json::to_string(&DocumentField::from(MyDateMapping)).unwrap()
     });
 }

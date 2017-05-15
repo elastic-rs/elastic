@@ -80,6 +80,6 @@ fn fmt_array(b: &mut Bencher) {
 #[bench]
 fn mapping(b: &mut Bencher) {
     b.iter(|| {
-        serde_json::to_string(&Field::from(MyGeoPointMapping)).unwrap()
+        serde_json::to_string(&DocumentField::from(MyGeoPointMapping)).unwrap()
     });
 }

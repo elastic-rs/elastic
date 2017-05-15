@@ -81,7 +81,7 @@
 //! #     pub my_num: i32
 //! # }
 //! # fn main() {
-//! let mapping = serde_json::to_string(&Document::from(MyType::mapping())).unwrap();
+//! let mapping = serde_json::to_string(&IndexDocumentMapping::from(MyType::mapping())).unwrap();
 //! # }
 //! ```
 //!
@@ -105,7 +105,7 @@
 //! #     pub my_num: i32
 //! # }
 //! # fn main() {
-//! # let mapping = serde_json::to_string(&Document::from(MyType::mapping())).unwrap();
+//! # let mapping = serde_json::to_string(&IndexDocumentMapping::from(MyType::mapping())).unwrap();
 //! # let json = json_str!(
 //! {
 //!     "properties": {
@@ -175,7 +175,7 @@
 //! #     pub my_type: MyType
 //! # }
 //! # fn main() {
-//! # let mapping = serde_json::to_string(&Document::from(MyOtherType::mapping())).unwrap();
+//! # let mapping = serde_json::to_string(&IndexDocumentMapping::from(MyOtherType::mapping())).unwrap();
 //! # let json = json_str!(
 //! {
 //!     "properties": {
@@ -383,7 +383,7 @@
 //! fn main() {
 //!     println!("\"{}\":{{ {} }}",
 //!         Article::name(),
-//!         serde_json::to_string(&Document::from(Article::mapping())).unwrap()
+//!         serde_json::to_string(&IndexDocumentMapping::from(Article::mapping())).unwrap()
 //!     );
 //! }
 //! ```
@@ -520,6 +520,10 @@ extern crate elastic_types_derive;
 pub extern crate chrono;
 pub extern crate geo as georust;
 pub extern crate geojson;
+
+#[cfg(test)]
+#[macro_use]
+extern crate json_str;
 
 #[macro_use]
 mod macros;

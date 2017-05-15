@@ -7,13 +7,13 @@ use test::Bencher;
 #[bench]
 fn keyword_mapping(b: &mut Bencher) {
     b.iter(|| {
-        serde_json::to_string(&Field::from(MyKeywordMapping)).unwrap()
+        serde_json::to_string(&DocumentField::from(MyKeywordMapping)).unwrap()
     });
 }
 
 #[bench]
 fn text_mapping(b: &mut Bencher) {
     b.iter(|| {
-        serde_json::to_string(&Field::from(MyTextMapping)).unwrap()
+        serde_json::to_string(&DocumentField::from(MyTextMapping)).unwrap()
     });
 }

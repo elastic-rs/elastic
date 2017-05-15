@@ -57,7 +57,7 @@
 //! #   pub my_num: i32
 //! # }
 //! # fn main() {
-//! # let mapping = serde_json::to_string(&Field::from(MyTypeMapping)).unwrap();
+//! # let mapping = serde_json::to_string(&DocumentField::from(MyTypeMapping)).unwrap();
 //! # let json = json_str!(
 //! {
 //!     "type": "nested",
@@ -151,7 +151,7 @@
 //! #   fn data_type() -> &'static str { OBJECT_DATATYPE }
 //! # }
 //! # fn main() {
-//! # let mapping = serde_json::to_string(&Field::from(MyTypeMapping)).unwrap();
+//! # let mapping = serde_json::to_string(&DocumentField::from(MyTypeMapping)).unwrap();
 //! # let json = json_str!(
 //! {
 //!     "type": "object",

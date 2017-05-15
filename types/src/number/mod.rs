@@ -42,9 +42,9 @@
 //! }
 //! # }
 //! ```
-//! 
+//!
 //! Map a custom type as a `number` field (`integer` in this case):
-//! 
+//!
 //! ```
 //! # extern crate serde;
 //! # #[macro_use]
@@ -55,7 +55,7 @@
 //! # use elastic_types::prelude::*;
 //! #[derive(Serialize)]
 //! struct MyIntegerField(i32);
-//! 
+//!
 //! impl IntegerFieldType<DefaultIntegerMapping> for MyIntegerField {}
 //! # }
 //! ```

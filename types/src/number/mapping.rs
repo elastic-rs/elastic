@@ -52,7 +52,7 @@
 //! }
 //! # );
 //! # #[cfg(feature = "nightly")]
-//! # let mapping = serde_json::to_string(&Field::from(MyIntegerMapping)).unwrap();
+//! # let mapping = serde_json::to_string(&DocumentField::from(MyIntegerMapping)).unwrap();
 //! # #[cfg(not(feature = "nightly"))]
 //! # let mapping = json.clone();
 //! # assert_eq!(json, mapping);
@@ -61,8 +61,8 @@
 
 use serde::Serialize;
 use serde::ser::SerializeStruct;
-use private::field::{FieldMapping, SerializeField};
-use document::{Field, FieldType};
+use private::field::{DocumentField, FieldMapping, SerializeField};
+use document::FieldType;
 
 macro_rules! number_mapping {
     ($mapping:ident, $format:ident, $field_trait:ident, $datatype_name:expr, $std_ty:ty) => (
@@ -123,10 +123,10 @@ macro_rules! number_mapping {
         impl<T> SerializeField<$format> for T
             where T: $mapping
         {
-            type Field = Field<T, $format>;
+            type Field = DocumentField<T, $format>;
         }
 
-        impl <T> Serialize for Field<T, $format> where
+        impl <T> Serialize for DocumentField<T, $format> where
         T: FieldMapping<$format> + $mapping {
             fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where
             S: ::serde::Serializer {
@@ -191,3 +191,431 @@ impl FloatFieldType<DefaultFloatMapping> for f32 {}
 pub struct DefaultDoubleMapping;
 impl DoubleMapping for DefaultDoubleMapping {}
 impl DoubleFieldType<DefaultDoubleMapping> for f64 {}
+
+#[cfg(test)]
+mod tests {
+    use serde_json;
+
+    use prelude::*;
+    use private::field::DocumentField;
+
+    #[derive(Default, Clone)]
+    pub struct MyIntegerMapping;
+    impl IntegerMapping for MyIntegerMapping {
+        fn coerce() -> Option<bool> {
+            Some(true)
+        }
+
+        fn boost() -> Option<f32> {
+            Some(1.1)
+        }
+
+        fn doc_values() -> Option<bool> {
+            Some(false)
+        }
+
+        fn ignore_malformed() -> Option<bool> {
+            Some(true)
+        }
+
+        fn include_in_all() -> Option<bool> {
+            Some(true)
+        }
+
+        fn index() -> Option<bool> {
+            Some(false)
+        }
+
+        fn store() -> Option<bool> {
+            Some(true)
+        }
+
+        fn null_value() -> Option<i32> {
+            Some(42)
+        }
+    }
+
+    #[derive(Default, Clone)]
+    pub struct MyLongMapping;
+    impl LongMapping for MyLongMapping {
+        fn coerce() -> Option<bool> {
+            Some(true)
+        }
+
+        fn boost() -> Option<f32> {
+            Some(1.1)
+        }
+
+        fn doc_values() -> Option<bool> {
+            Some(false)
+        }
+
+        fn ignore_malformed() -> Option<bool> {
+            Some(true)
+        }
+
+        fn include_in_all() -> Option<bool> {
+            Some(true)
+        }
+
+        fn index() -> Option<bool> {
+            Some(false)
+        }
+
+        fn store() -> Option<bool> {
+            Some(true)
+        }
+
+        fn null_value() -> Option<i64> {
+            Some(-42)
+        }
+    }
+
+    #[derive(Default, Clone)]
+    pub struct MyShortMapping;
+    impl ShortMapping for MyShortMapping {
+        fn coerce() -> Option<bool> {
+            Some(true)
+        }
+
+        fn boost() -> Option<f32> {
+            Some(1.1)
+        }
+
+        fn doc_values() -> Option<bool> {
+            Some(false)
+        }
+
+        fn ignore_malformed() -> Option<bool> {
+            Some(true)
+        }
+
+        fn include_in_all() -> Option<bool> {
+            Some(true)
+        }
+
+        fn index() -> Option<bool> {
+            Some(false)
+        }
+
+        fn store() -> Option<bool> {
+            Some(true)
+        }
+
+        fn null_value() -> Option<i16> {
+            Some(42)
+        }
+    }
+
+    #[derive(Default, Clone)]
+    pub struct MyByteMapping;
+    impl ByteMapping for MyByteMapping {
+        fn coerce() -> Option<bool> {
+            Some(true)
+        }
+
+        fn boost() -> Option<f32> {
+            Some(1.1)
+        }
+
+        fn doc_values() -> Option<bool> {
+            Some(false)
+        }
+
+        fn ignore_malformed() -> Option<bool> {
+            Some(true)
+        }
+
+        fn include_in_all() -> Option<bool> {
+            Some(true)
+        }
+
+        fn index() -> Option<bool> {
+            Some(false)
+        }
+
+        fn store() -> Option<bool> {
+            Some(true)
+        }
+
+        fn null_value() -> Option<i8> {
+            Some(1)
+        }
+    }
+
+    #[derive(Default, Clone)]
+    pub struct MyFloatMapping;
+    impl FloatMapping for MyFloatMapping {
+        fn coerce() -> Option<bool> {
+            Some(true)
+        }
+
+        fn boost() -> Option<f32> {
+            Some(1.1)
+        }
+
+        fn doc_values() -> Option<bool> {
+            Some(false)
+        }
+
+        fn ignore_malformed() -> Option<bool> {
+            Some(true)
+        }
+
+        fn include_in_all() -> Option<bool> {
+            Some(true)
+        }
+
+        fn index() -> Option<bool> {
+            Some(false)
+        }
+
+        fn store() -> Option<bool> {
+            Some(true)
+        }
+
+        fn null_value() -> Option<f32> {
+            Some(1.04)
+        }
+    }
+
+    #[derive(Default, Clone)]
+    pub struct MyDoubleMapping;
+    impl DoubleMapping for MyDoubleMapping {
+        fn coerce() -> Option<bool> {
+            Some(true)
+        }
+
+        fn boost() -> Option<f32> {
+            Some(1.1)
+        }
+
+        fn doc_values() -> Option<bool> {
+            Some(false)
+        }
+
+        fn ignore_malformed() -> Option<bool> {
+            Some(true)
+        }
+
+        fn include_in_all() -> Option<bool> {
+            Some(true)
+        }
+
+        fn index() -> Option<bool> {
+            Some(false)
+        }
+
+        fn store() -> Option<bool> {
+            Some(true)
+        }
+
+        fn null_value() -> Option<f64> {
+            Some(-0.00002)
+        }
+    }
+
+    #[test]
+    fn i32_has_default_mapping() {
+        assert_eq!(DefaultIntegerMapping, i32::mapping());
+    }
+
+    #[test]
+    fn i64_has_default_mapping() {
+        assert_eq!(DefaultLongMapping, i64::mapping());
+    }
+
+    #[test]
+    fn i16_has_default_mapping() {
+        assert_eq!(DefaultShortMapping, i16::mapping());
+    }
+
+    #[test]
+    fn i8_has_default_mapping() {
+        assert_eq!(DefaultByteMapping, i8::mapping());
+    }
+
+    #[test]
+    fn f32_has_default_mapping() {
+        assert_eq!(DefaultFloatMapping, f32::mapping());
+    }
+
+    #[test]
+    fn f64_has_default_mapping() {
+        assert_eq!(DefaultDoubleMapping, f64::mapping());
+    }
+
+    #[test]
+    fn serialise_mapping_integer_default() {
+        let ser = serde_json::to_string(&DocumentField::from(DefaultIntegerMapping)).unwrap();
+
+        let expected = json_str!({
+            "type": "integer"
+        });
+
+        assert_eq!(expected, ser);
+    }
+
+    #[test]
+    fn serialise_mapping_integer_custom() {
+        let ser = serde_json::to_string(&DocumentField::from(MyIntegerMapping)).unwrap();
+
+        let expected = json_str!({
+            "type": "integer",
+            "coerce": true,
+            "boost": 1.1,
+            "doc_values": false,
+            "ignore_malformed": true,
+            "include_in_all": true,
+            "null_value": 42,
+            "store": true
+        });
+
+        assert_eq!(expected, ser);
+    }
+
+    #[test]
+    fn serialise_mapping_long_default() {
+        let ser = serde_json::to_string(&DocumentField::from(DefaultLongMapping)).unwrap();
+
+        let expected = json_str!({
+            "type": "long"
+        });
+
+        assert_eq!(expected, ser);
+    }
+
+    #[test]
+    fn serialise_mapping_long_custom() {
+        let ser = serde_json::to_string(&DocumentField::from(MyLongMapping)).unwrap();
+
+        let expected = json_str!({
+            "type": "long",
+            "coerce": true,
+            "boost": 1.1,
+            "doc_values": false,
+            "ignore_malformed": true,
+            "include_in_all": true,
+            "null_value": -42,
+            "store": true
+        });
+
+        assert_eq!(expected, ser);
+    }
+
+    #[test]
+    fn serialise_mapping_short_default() {
+        let ser = serde_json::to_string(&DocumentField::from(DefaultShortMapping)).unwrap();
+
+        let expected = json_str!({
+            "type": "short"
+        });
+
+        assert_eq!(expected, ser);
+    }
+
+    #[test]
+    fn serialise_mapping_short_custom() {
+        let ser = serde_json::to_string(&DocumentField::from(MyShortMapping)).unwrap();
+
+        let expected = json_str!({
+            "type": "short",
+            "coerce": true,
+            "boost": 1.1,
+            "doc_values": false,
+            "ignore_malformed": true,
+            "include_in_all": true,
+            "null_value": 42,
+            "store": true
+        });
+
+        assert_eq!(expected, ser);
+    }
+
+    #[test]
+    fn serialise_mapping_byte_default() {
+        let ser = serde_json::to_string(&DocumentField::from(DefaultByteMapping)).unwrap();
+
+        let expected = json_str!({
+            "type": "byte"
+        });
+
+        assert_eq!(expected, ser);
+    }
+
+    #[test]
+    fn serialise_mapping_byte_custom() {
+        let ser = serde_json::to_string(&DocumentField::from(MyByteMapping)).unwrap();
+
+        let expected = json_str!({
+            "type": "byte",
+            "coerce": true,
+            "boost": 1.1,
+            "doc_values": false,
+            "ignore_malformed": true,
+            "include_in_all": true,
+            "null_value": 1,
+            "store": true
+        });
+
+        assert_eq!(expected, ser);
+    }
+
+    #[test]
+    fn serialise_mapping_double_default() {
+        let ser = serde_json::to_string(&DocumentField::from(DefaultDoubleMapping)).unwrap();
+
+        let expected = json_str!({
+            "type": "double"
+        });
+
+        assert_eq!(expected, ser);
+    }
+
+    #[test]
+    fn serialise_mapping_double_custom() {
+        let ser = serde_json::to_string(&DocumentField::from(MyDoubleMapping)).unwrap();
+
+        let expected = json_str!({
+            "type": "double",
+            "coerce": true,
+            "boost": 1.1,
+            "doc_values": false,
+            "ignore_malformed": true,
+            "include_in_all": true,
+            "null_value": -0.00002,
+            "store": true
+        });
+
+        assert_eq!(expected, ser);
+    }
+
+    #[test]
+    fn serialise_mapping_float_default() {
+        let ser = serde_json::to_string(&DocumentField::from(DefaultFloatMapping)).unwrap();
+
+        let expected = json_str!({
+            "type": "float"
+        });
+
+        assert_eq!(expected, ser);
+    }
+
+    #[test]
+    fn serialise_mapping_float_custom() {
+        let ser = serde_json::to_string(&DocumentField::from(MyFloatMapping)).unwrap();
+
+        let expected = json_str!({
+            "type": "float",
+            "coerce": true,
+            "boost": 1.1,
+            "doc_values": false,
+            "ignore_malformed": true,
+            "include_in_all": true,
+            "null_value": 1.04,
+            "store": true
+        });
+
+        assert_eq!(expected, ser);
+    }
+}
