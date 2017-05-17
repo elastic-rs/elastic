@@ -1,51 +1,54 @@
-use std::marker::PhantomData;
-use serde::de::DeserializeOwned;
+use serde_json::Value;
+use serde::Serialize;
 
 use error::*;
 use client::{into_response, Client};
-use client::requests::{DefaultBody, Index, Type, Id, GetRequest, RequestBuilder};
-use client::responses::GetResponse;
+use client::requests::{Document, Index, Type, Id, IndexRequest, RequestBuilder};
 use types::document::DocumentType;
 
-/// A builder for a get request.
-pub struct GetRequestBuilder<TDocument> {
+/// A builder for a index request.
+pub struct IndexRequestBuilder<TDocument> {
     index: Index<'static>,
     ty: Type<'static>,
     id: Id<'static>,
-    _marker: PhantomData<TDocument>,
+    doc: Document<TDocument>,
 }
 
 impl Client {
-    /// Create a `RequestBuilder` for a get request.
-    pub fn get<'a, TDocument>(&'a self,
+    /// Create a `RequestBuilder` for a index request.
+    pub fn index<'a, TDocument>(&'a self,
                               index: Index<'static>,
-                              id: Id<'static>)
-                              -> RequestBuilder<'a, GetRequestBuilder<TDocument>, DefaultBody>
-        where TDocument: DeserializeOwned + DocumentType
+                              id: Id<'static>,
+                              doc: TDocument)
+                              -> RequestBuilder<'a, IndexRequestBuilder<TDocument>, Document<TDocument>>
+        where TDocument: Serialize + DocumentType
     {
         let ty = TDocument::name().into();
+        let doc = Document::from(doc);
 
         RequestBuilder::new(&self,
                             None,
-                            GetRequestBuilder {
+                            IndexRequestBuilder {
                                 index: index,
                                 ty: ty,
                                 id: id,
-                                _marker: PhantomData,
+                                doc: doc,
                             })
     }
 }
 
-impl<TDocument> GetRequestBuilder<TDocument> {
-    fn into_request(self) -> GetRequest<'static> {
-        GetRequest::for_index_ty_id(self.index, self.ty, self.id)
+impl<TDocument> IndexRequestBuilder<TDocument> 
+    where TDocument: Serialize
+{
+    fn into_request(self) -> IndexRequest<'static, Document<TDocument>> {
+        IndexRequest::for_index_ty_id(self.index, self.ty, self.id, self.doc)
     }
 }
 
-impl<'a, TDocument> RequestBuilder<'a, GetRequestBuilder<TDocument>, DefaultBody>
-    where TDocument: DeserializeOwned + DocumentType
+impl<'a, TDocument> RequestBuilder<'a, IndexRequestBuilder<TDocument>, Document<TDocument>>
+    where TDocument: Serialize + DocumentType
 {
-    /// Set the index for the get request.
+    /// Set the index for the index request.
     pub fn index<I>(mut self, index: I) -> Self
         where I: Into<Index<'static>>
     {
@@ -53,7 +56,7 @@ impl<'a, TDocument> RequestBuilder<'a, GetRequestBuilder<TDocument>, DefaultBody
         self
     }
 
-    /// Set the type for the get request.
+    /// Set the type for the index request.
     pub fn ty<I>(mut self, ty: I) -> Self
         where I: Into<Type<'static>>
     {
@@ -61,7 +64,7 @@ impl<'a, TDocument> RequestBuilder<'a, GetRequestBuilder<TDocument>, DefaultBody
         self
     }
 
-    /// Set the id for the get request.
+    /// Set the id for the index request.
     pub fn id<I>(mut self, id: I) -> Self
         where I: Into<Id<'static>>
     {
@@ -69,8 +72,8 @@ impl<'a, TDocument> RequestBuilder<'a, GetRequestBuilder<TDocument>, DefaultBody
         self
     }
 
-    /// Send the get request.
-    pub fn send(self) -> Result<GetResponse<TDocument>> {
+    /// Send the index request.
+    pub fn send(self) -> Result<Value> {
         let req = self.req.into_request();
 
         RequestBuilder::new(self.client, self.params, req).send_raw().and_then(into_response)
@@ -86,9 +89,10 @@ mod tests {
     fn default_request() {
         let client = Client::new(RequestParams::new("http://eshost:9200")).unwrap();
 
-        let req = client.get::<Value>(index("test-idx"), id("1")).req.into_request();
+        let req = client.index::<Value>(index("test-idx"), id("1"), Value::Null).req.into_request();
 
         assert_eq!("/test-idx/value/1", req.url.as_ref());
+        assert_eq!(Document::from(Value::Null), req.body);
     }
 
     #[test]
@@ -96,7 +100,7 @@ mod tests {
         let client = Client::new(RequestParams::new("http://eshost:9200")).unwrap();
 
         let req =
-            client.get::<Value>(index("test-idx"), id("1")).index("new-idx").req.into_request();
+            client.index::<Value>(index("test-idx"), id("1"), Value::Null).index("new-idx").req.into_request();
 
         assert_eq!("/new-idx/value/1", req.url.as_ref());
     }
@@ -105,7 +109,7 @@ mod tests {
     fn specify_ty() {
         let client = Client::new(RequestParams::new("http://eshost:9200")).unwrap();
 
-        let req = client.get::<Value>(index("test-idx"), id("1")).ty("new-ty").req.into_request();
+        let req = client.index::<Value>(index("test-idx"), id("1"), Value::Null).ty("new-ty").req.into_request();
 
         assert_eq!("/test-idx/new-ty/1", req.url.as_ref());
     }
@@ -114,7 +118,7 @@ mod tests {
     fn specify_id() {
         let client = Client::new(RequestParams::new("http://eshost:9200")).unwrap();
 
-        let req = client.get::<Value>(index("test-idx"), id("1")).id("new-id").req.into_request();
+        let req = client.index::<Value>(index("test-idx"), id("1"), Value::Null).id("new-id").req.into_request();
 
         assert_eq!("/test-idx/value/new-id", req.url.as_ref());
     }

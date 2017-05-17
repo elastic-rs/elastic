@@ -267,6 +267,7 @@ pub mod http {
     //! Raw HTTP modules.
 
     pub use reqwest::header;
+    pub use reqwest::Body;
 }
 
 pub mod client;

@@ -46,20 +46,50 @@
 
 #![allow(missing_docs)]
 
+use std::fmt;
 use std::error::Error as StdError;
 
-use serde_json::Error as JsonError;
-use reqwest::Error as HttpError;
 use elastic_responses::error::ResponseError;
+use reqwest::Error as ReqwestError;
+
+pub use elastic_reqwest::Error as RequestError;
 pub use elastic_responses::error::{ApiError, ParseResponseError};
 
-pub struct SerdeError(Box<StdError>);
+#[derive(Debug)]
+pub struct ClientError {
+    inner: ReqwestError
+}
+
+impl StdError for ClientError {
+    fn description(&self) -> &str {
+        self.inner.description()
+    }
+
+    fn cause(&self) -> Option<&StdError> {
+        self.inner.cause()
+    }
+}
+
+impl fmt::Display for ClientError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        fmt::Display::fmt(&self.inner, f)
+    }
+}
 
 error_chain! {
     foreign_links {
         Api(ApiError);
-        Http(HttpError);
-        Parse(ParseResponseError);
+        Client(ClientError);
+        Request(RequestError);
+        Response(ParseResponseError);
+    }
+}
+
+impl From<ReqwestError> for ClientError {
+    fn from(err: ReqwestError) -> Self {
+        ClientError {
+            inner: err
+        }
     }
 }
 
@@ -67,13 +97,7 @@ impl From<ResponseError> for Error {
     fn from(err: ResponseError) -> Self {
         match err {
             ResponseError::Api(err) => ErrorKind::Api(err).into(),
-            ResponseError::Parse(err) => ErrorKind::Parse(err).into(),
+            ResponseError::Parse(err) => ErrorKind::Response(err).into(),
         }
-    }
-}
-
-impl From<JsonError> for Error {
-    fn from(err: JsonError) -> Self {
-        ErrorKind::Parse(ParseResponseError::Json(err)).into()
     }
 }
