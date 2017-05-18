@@ -1,15 +1,11 @@
-use std::rc::Rc;
-use std::sync::Arc;
 use std::hash::Hash;
 use std::marker::PhantomData;
 use std::collections::{HashMap, BTreeMap};
 use serde::{Serialize, Serializer};
 use serde::ser::SerializeStruct;
-use serde_json::Value;
 
 use super::field::{DocumentField, FieldMapping, SerializeField};
-use document::{FieldType, DocumentType};
-use document::mapping::{DocumentMapping, PropertiesMapping};
+use document::FieldType;
 
 /// A mapping implementation for a non-core type, or anywhere it's ok for Elasticsearch to infer the mapping at index-time.
 #[derive(Debug, PartialEq, Default, Clone)]
@@ -99,50 +95,4 @@ impl<T, M, F> FieldType<WrappedMapping<M, F>, F> for Option<T>
           F: Default,
           DocumentField<M, F>: Serialize
 {
-}
-
-#[derive(Default)]
-pub struct ValueDocumentMapping;
-
-impl DocumentMapping for ValueDocumentMapping {
-    fn name() -> &'static str {
-        "value"
-    }
-}
-
-impl DocumentType for Value {
-    type Mapping = ValueDocumentMapping;
-}
-
-impl PropertiesMapping for ValueDocumentMapping {
-    fn props_len() -> usize {
-        0
-    }
-
-    fn serialize_props<S>(_: &mut S) -> Result<(), S::Error>
-        where S: SerializeStruct
-    {
-        Ok(())
-    }
-}
-
-impl<TDocument, TMapping> DocumentType for Arc<TDocument>
-    where TDocument: DocumentType<Mapping = TMapping> + Serialize,
-          TMapping: DocumentMapping
-{
-    type Mapping = TMapping;
-}
-
-impl<TDocument, TMapping> DocumentType for Rc<TDocument>
-    where TDocument: DocumentType<Mapping = TMapping> + Serialize,
-          TMapping: DocumentMapping
-{
-    type Mapping = TMapping;
-}
-
-impl<'a, TDocument, TMapping> DocumentType for &'a TDocument
-    where TDocument: DocumentType<Mapping = TMapping> + Serialize,
-          TMapping: DocumentMapping
-{
-    type Mapping = TMapping;
 }

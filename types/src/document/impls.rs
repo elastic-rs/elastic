@@ -1,6 +1,9 @@
+use std::sync::{Mutex, RwLock};
+use std::borrow::Cow;
 use std::marker::PhantomData;
-use serde::ser::SerializeStruct;
-use super::mapping::DocumentMapping;
+use serde::ser::{Serialize, SerializeStruct};
+use serde_json::Value;
+use super::mapping::{DocumentMapping, PropertiesMapping};
 use private::field::FieldMapping;
 
 /// The additional fields available to an indexable Elasticsearch type.
@@ -247,10 +250,64 @@ pub fn doc_ser<S, M>(state: &mut S, field: &'static str, _: M) -> Result<(), S::
     state.serialize_field(field, &IndexDocumentMapping::<M>::default())
 }
 
+/// Mapping for an anonymous json object.
+#[derive(Default)]
+pub struct ValueDocumentMapping;
+
+impl DocumentMapping for ValueDocumentMapping {
+    fn name() -> &'static str {
+        "value"
+    }
+}
+
+impl DocumentType for Value {
+    type Mapping = ValueDocumentMapping;
+}
+
+impl PropertiesMapping for ValueDocumentMapping {
+    fn props_len() -> usize {
+        0
+    }
+
+    fn serialize_props<S>(_: &mut S) -> Result<(), S::Error>
+        where S: SerializeStruct
+    {
+        Ok(())
+    }
+}
+
+impl<'a, TDocument, TMapping> DocumentType for &'a TDocument
+    where TDocument: DocumentType<Mapping = TMapping> + Serialize,
+          TMapping: DocumentMapping
+{
+    type Mapping = TMapping;
+}
+
+impl<TDocument, TMapping> DocumentType for Mutex<TDocument>
+    where TDocument: DocumentType<Mapping = TMapping> + Serialize,
+          TMapping: DocumentMapping
+{
+    type Mapping = TMapping;
+}
+
+impl<TDocument, TMapping> DocumentType for RwLock<TDocument>
+    where TDocument: DocumentType<Mapping = TMapping> + Serialize,
+          TMapping: DocumentMapping
+{
+    type Mapping = TMapping;
+}
+
+impl<'a, TDocument, TMapping> DocumentType for Cow<'a, TDocument>
+    where TDocument: DocumentType<Mapping = TMapping> + Serialize + Clone,
+          TMapping: DocumentMapping
+{
+    type Mapping = TMapping;
+}
+
 #[cfg(test)]
 mod tests {
-    use std::rc::Rc;
-    use std::sync::Arc;
+    use std::sync::{Mutex, RwLock};
+    use std::borrow::Cow;
     use serde_json::{self, Value};
     use prelude::*;
 
@@ -268,13 +325,13 @@ mod tests {
         pub struct DateFormatWithNoPath;
     }
 
-    #[derive(Serialize, ElasticType)]
+    #[derive(Clone, Serialize, ElasticType)]
     pub struct SimpleType {
         pub field1: Date<EpochMillis>,
         pub field2: SimpleNestedType,
     }
 
-    #[derive(Serialize, ElasticType)]
+    #[derive(Clone, Serialize, ElasticType)]
     pub struct SimpleNestedType {
         pub field: i32,
     }
@@ -389,8 +446,8 @@ mod tests {
     }
 
     #[test]
-    fn serialise_document_rc() {
-        let ser = serde_json::to_string(&IndexDocumentMapping::from(Rc::<SimpleType>::mapping())).unwrap();
+    fn serialise_document_mutex() {
+        let ser = serde_json::to_string(&IndexDocumentMapping::from(Mutex::<SimpleType>::mapping())).unwrap();
 
         let expected = serde_json::to_string(&IndexDocumentMapping::from(SimpleType::mapping())).unwrap();
 
@@ -398,8 +455,17 @@ mod tests {
     }
 
     #[test]
-    fn serialise_document_arc() {
-        let ser = serde_json::to_string(&IndexDocumentMapping::from(Arc::<SimpleType>::mapping())).unwrap();
+    fn serialise_document_rwlock() {
+        let ser = serde_json::to_string(&IndexDocumentMapping::from(RwLock::<SimpleType>::mapping())).unwrap();
+
+        let expected = serde_json::to_string(&IndexDocumentMapping::from(SimpleType::mapping())).unwrap();
+
+        assert_eq!(expected, ser);
+    }
+
+    #[test]
+    fn serialise_document_cow() {
+        let ser = serde_json::to_string(&IndexDocumentMapping::from(Cow::<'static, SimpleType>::mapping())).unwrap();
 
         let expected = serde_json::to_string(&IndexDocumentMapping::from(SimpleType::mapping())).unwrap();
 
