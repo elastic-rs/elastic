@@ -12,6 +12,8 @@ pub struct GetResponseOf<T> {
     pub index: String,
     #[serde(rename = "_type")]
     pub ty: String,
+    #[serde(rename = "_id")]
+    pub id: String,
     #[serde(rename = "_version")]
     pub version: Option<u32>,
     pub found: bool,

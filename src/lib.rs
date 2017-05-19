@@ -59,12 +59,14 @@ mod ping;
 mod get;
 mod search;
 mod bulk;
+mod index;
 
 pub use self::common::*;
 pub use self::ping::*;
 pub use self::get::*;
 pub use self::search::*;
 pub use self::bulk::*;
+pub use self::index::*;
 
 use std::io::{Read, Result as IoResult};
 

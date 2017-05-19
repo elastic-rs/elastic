@@ -1,0 +1,13 @@
+{
+  "error": {
+    "root_cause": [
+      {
+        "type": "mapper_parsing_exception",
+        "reason": "failed to parse, document is empty"
+      }
+    ],
+    "type": "mapper_parsing_exception",
+    "reason": "failed to parse, document is empty"
+  },
+  "status": 400
+}

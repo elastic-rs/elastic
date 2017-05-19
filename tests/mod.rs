@@ -36,3 +36,4 @@ pub mod ping;
 pub mod get;
 pub mod search;
 pub mod bulk;
+pub mod index;

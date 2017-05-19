@@ -42,6 +42,10 @@ quick_error! {
             description("request parse error")
             display("request parse error: '{}' on line: {}, col: {}", reason, line, col)
         }
+        MapperParsing { reason: String } {
+            description("mapper parse error")
+            display("mapper parse error: '{}'", reason)
+        }
         ActionRequestValidation { reason: String }
         Other(v: Map<String, Value>) {
             description("error response from Elasticsearch")
@@ -108,6 +112,13 @@ impl From<Map<String, Value>> for ApiError {
                 ApiError::Parsing {
                     line: line,
                     col: col,
+                    reason: reason.into(),
+                }
+            }
+            "mapper_parsing_exception" => {
+                let reason = error_key!(obj[reason]: |v| v.as_str());
+
+                ApiError::MapperParsing {
                     reason: reason.into(),
                 }
             }
