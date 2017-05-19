@@ -45,27 +45,11 @@ impl<TDocument> GetRequestBuilder<TDocument> {
 impl<'a, TDocument> RequestBuilder<'a, GetRequestBuilder<TDocument>, DefaultBody>
     where TDocument: DeserializeOwned + DocumentType
 {
-    /// Set the index for the get request.
-    pub fn index<I>(mut self, index: I) -> Self
-        where I: Into<Index<'static>>
-    {
-        self.req.index = index.into();
-        self
-    }
-
     /// Set the type for the get request.
     pub fn ty<I>(mut self, ty: I) -> Self
         where I: Into<Type<'static>>
     {
         self.req.ty = ty.into();
-        self
-    }
-
-    /// Set the id for the get request.
-    pub fn id<I>(mut self, id: I) -> Self
-        where I: Into<Id<'static>>
-    {
-        self.req.id = id.into();
         self
     }
 
@@ -92,30 +76,11 @@ mod tests {
     }
 
     #[test]
-    fn specify_index() {
-        let client = Client::new(RequestParams::new("http://eshost:9200")).unwrap();
-
-        let req =
-            client.get::<Value>(index("test-idx"), id("1")).index("new-idx").req.into_request();
-
-        assert_eq!("/new-idx/value/1", req.url.as_ref());
-    }
-
-    #[test]
     fn specify_ty() {
         let client = Client::new(RequestParams::new("http://eshost:9200")).unwrap();
 
         let req = client.get::<Value>(index("test-idx"), id("1")).ty("new-ty").req.into_request();
 
         assert_eq!("/test-idx/new-ty/1", req.url.as_ref());
-    }
-
-    #[test]
-    fn specify_id() {
-        let client = Client::new(RequestParams::new("http://eshost:9200")).unwrap();
-
-        let req = client.get::<Value>(index("test-idx"), id("1")).id("new-id").req.into_request();
-
-        assert_eq!("/test-idx/value/new-id", req.url.as_ref());
     }
 }

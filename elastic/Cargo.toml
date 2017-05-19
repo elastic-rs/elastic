@@ -18,7 +18,7 @@ serde_json = "~1"
 reqwest = "~0.6.0"
 
 elastic_reqwest = { version = "~0.8.0", path = "../../elastic-hyper" }
-elastic_responses = "~0.7.2"
+elastic_responses = { version = "~0.8.0", path = "../../elastic-responses" }
 elastic_types = { version = "~0.17.0", path = "../../elastic-types/types" }
 
 [dev-dependencies]

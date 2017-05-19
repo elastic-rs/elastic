@@ -137,7 +137,7 @@ impl Client {
     ///
     /// See [`RequestParams`](struct.RequestParams.html) for more configuration options.
     pub fn new(params: RequestParams) -> Result<Self> {
-        let client = HttpClient::new().map_err(|e| ClientError::from(e))?;
+        let client = HttpClient::new()?;
 
         Ok(Client {
             http: client,

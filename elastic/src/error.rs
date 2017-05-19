@@ -46,50 +46,18 @@
 
 #![allow(missing_docs)]
 
-use std::fmt;
-use std::error::Error as StdError;
-
 use elastic_responses::error::ResponseError;
+use serde_json::Error as JsonError;
 use reqwest::Error as ReqwestError;
 
-pub use elastic_reqwest::Error as RequestError;
 pub use elastic_responses::error::{ApiError, ParseResponseError};
-
-#[derive(Debug)]
-pub struct ClientError {
-    inner: ReqwestError
-}
-
-impl StdError for ClientError {
-    fn description(&self) -> &str {
-        self.inner.description()
-    }
-
-    fn cause(&self) -> Option<&StdError> {
-        self.inner.cause()
-    }
-}
-
-impl fmt::Display for ClientError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        fmt::Display::fmt(&self.inner, f)
-    }
-}
 
 error_chain! {
     foreign_links {
         Api(ApiError);
-        Client(ClientError);
-        Request(RequestError);
+        Client(ReqwestError);
+        Json(JsonError);
         Response(ParseResponseError);
-    }
-}
-
-impl From<ReqwestError> for ClientError {
-    fn from(err: ReqwestError) -> Self {
-        ClientError {
-            inner: err
-        }
     }
 }
 

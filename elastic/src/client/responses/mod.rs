@@ -18,7 +18,8 @@ use client::IntoResponse;
 use self::parse::IsOk;
 
 pub use elastic_responses::{AggregationIterator, Aggregations, Hit, Hits, Shards};
-pub use elastic_responses::{PingResponse, BulkResponse, BulkErrorsResponse};
+pub use elastic_responses::{CommandResponse, IndexResponse, PingResponse, BulkResponse,
+                            BulkErrorsResponse};
 
 /// A builder for a response.
 ///

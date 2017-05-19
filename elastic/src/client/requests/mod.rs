@@ -15,7 +15,7 @@ use error::*;
 use client::{Client, RequestParams, IntoResponse};
 use client::responses::ResponseBuilder;
 
-pub use elastic_reqwest::IntoBody;
+pub use elastic_reqwest::IntoReqwestBody as IntoBody;
 pub use elastic_reqwest::req::{HttpRequest, HttpMethod, empty_body, Url, DefaultBody};
 pub use elastic_reqwest::req::params;
 pub use elastic_reqwest::req::endpoints;
@@ -23,17 +23,20 @@ pub use elastic_reqwest::req::endpoints;
 pub use self::params::*;
 pub use self::endpoints::*;
 
-mod document;
-pub use self::document::*;
-
 mod search;
 pub use self::search::*;
 
 mod get;
 pub use self::get::*;
 
-mod index;
-pub use self::index::*;
+mod index_document;
+pub use self::index_document::*;
+
+mod put_mapping;
+pub use self::put_mapping::*;
+
+mod create_index;
+pub use self::create_index::*;
 
 /// A builder for a request.
 ///
