@@ -1,6 +1,6 @@
 [package]
 name = "elastic_reqwest"
-version = "0.7.1"
+version = "0.8.0"
 authors = ["Ashley Mannix <ashleymannix@live.com.au>", "Stephan Buys <stephan.buys@gmail.com>"]
 license = "Apache-2.0"
 description = "A lightweight implementation of the Elasticsearch API based on reqwest."
@@ -13,7 +13,7 @@ nightly = []
 
 [dependencies]
 elastic_requests = "~0.4.1"
-reqwest = "~0.4.0"
+reqwest = "~0.6.0"
 url = "~1"
 
 [dev-dependencies]
