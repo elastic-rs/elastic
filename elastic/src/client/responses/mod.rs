@@ -10,15 +10,15 @@ pub mod parse;
 
 use std::io::{Read, Result as IoResult};
 use serde::de::DeserializeOwned;
-use elastic_responses::{HttpResponse as HttpResponseParser, SearchResponseOf, GetResponseOf};
+use elastic_reqwest::res::{SearchResponseOf, GetResponseOf, parse};
 use reqwest::Response as RawResponse;
 
 use error::*;
 use client::IntoResponse;
 use self::parse::IsOk;
 
-pub use elastic_responses::{AggregationIterator, Aggregations, Hit, Hits, Shards};
-pub use elastic_responses::{CommandResponse, IndexResponse, PingResponse, BulkResponse,
+pub use elastic_reqwest::res::{AggregationIterator, Aggregations, Hit, Hits, Shards};
+pub use elastic_reqwest::res::{CommandResponse, IndexResponse, PingResponse, BulkResponse,
                             BulkErrorsResponse, BulkItem, BulkItems, BulkItemError, BulkAction};
 
 /// A builder for a response.
@@ -95,13 +95,12 @@ impl ResponseBuilder {
     ///                      .and_then(|res| res.response::<Value>());
     /// # }
     /// ```
-    pub fn response<T>(self) -> Result<T>
+    pub fn into_response<T>(self) -> Result<T>
         where T: IsOk + DeserializeOwned
     {
         let (status, body) = (self.0.status(), self.0);
 
-        let parser = HttpResponseParser::from_read(status, body);
-        parser.into_response().map_err(|e| e.into())
+        parse().from_reader(status, body).map_err(|e| e.into())
     }
 }
 

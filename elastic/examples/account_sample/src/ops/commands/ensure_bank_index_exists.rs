@@ -1,7 +1,7 @@
 use ops::Client;
 use std::io::Error as IoError;
 use serde_json::{Value, Error as JsonError};
-use elastic::client::requests::{IndicesExistsRequest};
+use elastic::client::requests::IndicesExistsRequest;
 use elastic::client::responses::CommandResponse;
 use elastic::error::Error as ResponseError;
 
@@ -21,7 +21,7 @@ impl EnsureBankIndexExists for Client {
             // Not found, create the index
             404 => {
                 self.io.create_index(model::index::name()).body(model::index::body()).send()?;
-            },
+            }
             // Some other response, deserialise
             _ => {
                 exists.response::<CommandResponse>()?;
@@ -53,7 +53,7 @@ quick_error!{
 #[cfg(test)]
 mod tests {
     use super::*;
-    
+
     #[test]
     fn put_request_url() {
         let req = put(vec![]);

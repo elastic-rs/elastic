@@ -5,8 +5,8 @@
 //! Field serialisation and mapping is all handled in the same place
 //! so it's always in sync.
 
-use elastic::types::prelude::{FieldType, KeywordFieldType, Text, DefaultTextMapping, TextMapping, Keyword,
-                              DefaultKeywordMapping, DocumentType};
+use elastic::types::prelude::{FieldType, KeywordFieldType, Text, DefaultTextMapping, TextMapping,
+                              Keyword, DefaultKeywordMapping, DocumentType};
 
 /// Our main model; an account in the bank.
 #[derive(Debug, Serialize, Deserialize, ElasticType)]

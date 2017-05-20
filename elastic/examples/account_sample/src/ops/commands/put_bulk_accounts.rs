@@ -20,13 +20,14 @@ impl PutBulkAccounts for Client {
         let body = bulk_body(path)?;
         let req = put(body);
 
-        let res = self.io.request(req)
+        let res = self.io
+            .request(req)
             .params(|params| params.url_param("refresh", true))
             .send()
             .and_then(into_response::<BulkErrorsResponse>)?;
 
         if res.is_err() {
-            return Err(res.items.into())
+            return Err(res.items.into());
         }
 
         Ok(())
@@ -66,7 +67,7 @@ quick_error!{
 #[cfg(test)]
 mod tests {
     use super::*;
-    
+
     #[test]
     fn put_request_url() {
         let req = put(vec![]);

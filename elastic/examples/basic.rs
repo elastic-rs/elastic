@@ -14,19 +14,18 @@ fn main() {
     // The `params` includes the base node url (http://localhost:9200).
     let client = Client::new(RequestParams::default()).unwrap();
 
+    let query = json!({
+        "query": {
+            "query_string": {
+                "query": "*"
+            }
+        }
+    });
+
     // Send the request and process the response.
     let res = client.search::<Value>()
                     .index("_all")
-                    .body({
-                        json!({
-                            "query": {
-                                "query_string": {
-                                    "query": "*"
-                                }
-                            }
-                        })
-                        .to_string()
-                    })
+                    .body(query.to_string())
                     .send()
                     .unwrap();
 

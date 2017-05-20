@@ -46,11 +46,11 @@
 
 #![allow(missing_docs)]
 
-use elastic_responses::error::ResponseError;
 use serde_json::Error as JsonError;
 use reqwest::Error as ReqwestError;
+use elastic_reqwest::res::error::ResponseError;
 
-pub use elastic_responses::error::{ApiError, ParseResponseError};
+pub use elastic_reqwest::res::error::{ApiError, ParseResponseError};
 
 error_chain! {
     foreign_links {

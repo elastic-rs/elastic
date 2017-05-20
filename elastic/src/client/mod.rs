@@ -2,6 +2,40 @@
 //!
 //! This module contains the HTTP client, as well
 //! as request and response types.
+//! 
+//! # Request builders
+//! 
+//! Some commonly used endpoints have high-level builder methods you can use to configure requests easily.
+//! They're exposed as methods on the `Client`:
+//! 
+//! - `search`
+//! - `index_document`
+//! - `put_mapping`
+//! - `create_index`
+//! 
+//! All builders follow a standard pattern:
+//! 
+//! - Client method that takes all required parameters without inference
+//! - Optional or inferred parameters can be overrided in builder methods with inference
+//! - Send will return a specific response type
+//! 
+//! ## Examples
+//! 
+//! A `get` request for a value:
+//! 
+//! ```no_run
+//! let response = client.get::<Value>(index("values"), id(1)).send();
+//! ```
+//! 
+//! Is equivalent to:
+//! 
+//! ```no_run
+//! let response = client.request(GetRequest::for_index_ty_id("values", "value", 1))
+//!                      .send()
+//!                      .and_then(into_response::<GetResponse<Value>>);
+//! ```
+//! 
+//! These builders are wrappers around the raw request types, which can also be used to make requests.
 //!
 //! # The request process
 //!
@@ -150,7 +184,7 @@ impl Client {
 pub fn into_response<T>(res: ResponseBuilder) -> Result<T>
     where T: IsOk + DeserializeOwned
 {
-    res.response()
+    res.into_response()
 }
 
 /// Try convert a `ResponseBuilder` into a raw response type.

@@ -15,6 +15,9 @@
 //! - [`reqwest`/`hyper`](https://github.com/seanmonstar/reqwest) as the default HTTP layer
 //! - [`serde`/`serde_json`](https://serde.rs/) for serialisation.
 //!
+//! `elastic` is designed to scale up to the complexity of Elasticsearch's API, and with the complexity
+//! of the environments Elasticsearch is deployed in.
+//! 
 //! # Usage
 //!
 //! This crate is on [crates.io](https://crates.io/crates/elastic).
@@ -259,7 +262,6 @@ extern crate serde_json;
 extern crate reqwest;
 extern crate elastic_reqwest;
 extern crate elastic_types;
-extern crate elastic_responses;
 
 pub mod error;
 

@@ -55,6 +55,11 @@ impl SimpleSearchQuery for Client {
           }
         });
 
-        self.io.search().index(model::index::name()).ty(Some(model::account::name())).body(query.to_string()).send()
+        self.io
+            .search()
+            .index(model::index::name())
+            .ty(Some(model::account::name()))
+            .body(query.to_string())
+            .send()
     }
 }

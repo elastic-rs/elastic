@@ -38,6 +38,6 @@ fn main() {
     let accounts = client.simple_search_query("Bruce Coffey").unwrap();
 
     for account in accounts.hits() {
-    	println!("{:?}", account);
+        println!("{:?}", account);
     }
 }
