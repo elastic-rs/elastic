@@ -8,7 +8,7 @@ use ::load_file;
 #[test]
 fn success_parse_response() {
     let f = load_file("tests/samples/index_success.json");
-    let deserialized = parse::<IndexResponse>().from_read(200, f).unwrap();
+    let deserialized = parse::<IndexResponse>().from_reader(200, f).unwrap();
 
     assert!(deserialized.created);
     assert_eq!("testindex", deserialized.index);
@@ -20,7 +20,7 @@ fn success_parse_response() {
 #[test]
 fn error_parse_mapping() {
     let f = load_file("tests/samples/error_mapper_parsing.json");
-    let deserialized = parse::<IndexResponse>().from_read(404, f).unwrap_err();
+    let deserialized = parse::<IndexResponse>().from_reader(404, f).unwrap_err();
 
     let valid = match deserialized {
         ResponseError::Api(ApiError::MapperParsing { ref reason })

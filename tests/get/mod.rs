@@ -8,7 +8,7 @@ use ::load_file;
 #[test]
 fn success_parse_found_doc_response() {
     let f = load_file("tests/samples/get_found.json");
-    let deserialized = parse::<GetResponse>().from_read(200, f).unwrap();
+    let deserialized = parse::<GetResponse>().from_reader(200, f).unwrap();
 
     let id = deserialized.source
         .unwrap()
@@ -27,7 +27,7 @@ fn success_parse_found_doc_response() {
 #[test]
 fn success_parse_not_found_doc_response() {
     let f = load_file("tests/samples/get_not_found.json");
-    let deserialized = parse::<GetResponse>().from_read(404, f).unwrap();
+    let deserialized = parse::<GetResponse>().from_reader(404, f).unwrap();
 
     assert!(!deserialized.found);
 }
@@ -35,7 +35,7 @@ fn success_parse_not_found_doc_response() {
 #[test]
 fn error_parse_index_not_found() {
     let f = load_file("tests/samples/error_index_not_found.json");
-    let deserialized = parse::<GetResponse>().from_read(404, f).unwrap_err();
+    let deserialized = parse::<GetResponse>().from_reader(404, f).unwrap_err();
 
     let valid = match deserialized {
         ResponseError::Api(ApiError::IndexNotFound { ref index })

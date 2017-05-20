@@ -8,7 +8,7 @@ use ::load_file;
 #[test]
 fn success_parse_index_ops() {
     let f = load_file("tests/samples/bulk_index.json");
-    let deserialized = parse::<BulkResponse>().from_read(200, f).unwrap();
+    let deserialized = parse::<BulkResponse>().from_reader(200, f).unwrap();
 
     assert!(deserialized.is_ok());
 
@@ -19,7 +19,7 @@ fn success_parse_index_ops() {
 #[test]
 fn success_parse_index_ops_errors_only() {
     let f = load_file("tests/samples/bulk_index.json");
-    let deserialized = parse::<BulkErrorsResponse>().from_read(200, f).unwrap();
+    let deserialized = parse::<BulkErrorsResponse>().from_reader(200, f).unwrap();
 
     assert!(deserialized.is_ok());
     assert_eq!(0, deserialized.items.len());
@@ -28,7 +28,7 @@ fn success_parse_index_ops_errors_only() {
 #[test]
 fn success_parse_multi_ops() {
     let f = load_file("tests/samples/bulk_multiple_ops.json");
-    let deserialized = parse::<BulkResponse>().from_read(200, f).unwrap();
+    let deserialized = parse::<BulkResponse>().from_reader(200, f).unwrap();
 
     assert!(deserialized.is_ok());
 
@@ -52,7 +52,7 @@ fn success_parse_multi_ops() {
 #[test]
 fn success_parse_multi_ops_errors_only() {
     let f = load_file("tests/samples/bulk_multiple_ops.json");
-    let deserialized = parse::<BulkErrorsResponse>().from_read(200, f).unwrap();
+    let deserialized = parse::<BulkErrorsResponse>().from_reader(200, f).unwrap();
 
     assert!(deserialized.is_ok());
     assert_eq!(0, deserialized.items.len());
@@ -61,7 +61,7 @@ fn success_parse_multi_ops_errors_only() {
 #[test]
 fn success_parse_with_errors() {
     let f = load_file("tests/samples/bulk_error.json");
-    let deserialized = parse::<BulkResponse>().from_read(200, f).unwrap();
+    let deserialized = parse::<BulkResponse>().from_reader(200, f).unwrap();
 
     assert!(deserialized.is_err());
 
@@ -72,7 +72,7 @@ fn success_parse_with_errors() {
 #[test]
 fn success_parse_with_errors_errors_only() {
     let f = load_file("tests/samples/bulk_error.json");
-    let deserialized = parse::<BulkErrorsResponse>().from_read(200, f).unwrap();
+    let deserialized = parse::<BulkErrorsResponse>().from_reader(200, f).unwrap();
 
     assert!(deserialized.is_err());
 
@@ -82,7 +82,7 @@ fn success_parse_with_errors_errors_only() {
 #[test]
 fn error_parse_action_request_validation() {
     let f = load_file("tests/samples/error_action_request_validation.json");
-    let deserialized = parse::<BulkResponse>().from_read(400, f).unwrap_err();
+    let deserialized = parse::<BulkResponse>().from_reader(400, f).unwrap_err();
 
     let valid = match deserialized {
         ResponseError::Api(ApiError::ActionRequestValidation { ref reason })
@@ -96,7 +96,7 @@ fn error_parse_action_request_validation() {
 #[test]
 fn error_parse_action_request_validation_errors_only() {
     let f = load_file("tests/samples/error_action_request_validation.json");
-    let deserialized = parse::<BulkErrorsResponse>().from_read(400, f).unwrap_err();
+    let deserialized = parse::<BulkErrorsResponse>().from_reader(400, f).unwrap_err();
 
     let valid = match deserialized {
         ResponseError::Api(ApiError::ActionRequestValidation { ref reason })
