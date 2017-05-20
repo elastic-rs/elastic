@@ -18,23 +18,27 @@ fn main() {
     let (client, _) = cli::default().unwrap();
 
     // Create a new set of params with pretty printing.
-    let params = RequestParams::default()
-        .url_param("pretty", true);
+    let params = RequestParams::default().url_param("pretty", true);
 
     // Create a query DSL request body.
-    let body = json_str!({
-        query: {
-            query_string: {
-                query: "*"
+    let req = {
+        let body = json_str!({
+            query: {
+                query_string: {
+                    query: "*"
+                }
             }
-        }
-    });
+        });
+
+        SearchRequest::for_index("_all", body)
+    };
 
     // Send the request and read the response.
-    let mut res = client.elastic_req(&params, SearchRequest::for_index("_all", body)).unwrap();
+    let res = {
+        let res = client.elastic_req(&params, req).unwrap();
 
-    let mut message = String::new();
-    res.read_to_string(&mut message).unwrap();
+        cli::res::parse::<SearchResponse>().from_reader(res.status().to_u16(), res).unwrap()
+    };
 
-    println!("Got response: {}", message);
+    println!("Got response: {:?}", res);
 }

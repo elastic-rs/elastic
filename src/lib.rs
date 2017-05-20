@@ -152,6 +152,7 @@
 #![deny(missing_docs)]
 
 extern crate elastic_requests;
+extern crate elastic_responses;
 extern crate reqwest;
 extern crate url;
 
@@ -168,6 +169,13 @@ use url::form_urlencoded::Serializer;
 /// These are re-exported from `elastic_requests` for convenience.
 pub mod req {
     pub use elastic_requests::*;
+}
+
+/// Response types.
+/// 
+/// These are re-exported from `elastic_responses` for convenience.
+pub mod res {
+    pub use elastic_resonses::*;
 }
 
 use self::req::{HttpRequest, HttpMethod};
