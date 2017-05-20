@@ -175,7 +175,7 @@ pub mod req {
 /// 
 /// These are re-exported from `elastic_responses` for convenience.
 pub mod res {
-    pub use elastic_resonses::*;
+    pub use elastic_responses::*;
 }
 
 use self::req::{HttpRequest, HttpMethod};
