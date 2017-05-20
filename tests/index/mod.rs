@@ -3,12 +3,12 @@ extern crate serde_json;
 
 use elastic_responses::*;
 use elastic_responses::error::*;
-use ::load_file_as_response;
+use ::load_file;
 
 #[test]
 fn success_parse_response() {
-    let s = load_file_as_response(200, "tests/samples/index_success.json");
-    let deserialized = s.into_response::<IndexResponse>().unwrap();
+    let f = load_file("tests/samples/index_success.json");
+    let deserialized = parse::<IndexResponse>().from_read(200, f).unwrap();
 
     assert!(deserialized.created);
     assert_eq!("testindex", deserialized.index);
@@ -19,8 +19,8 @@ fn success_parse_response() {
 
 #[test]
 fn error_parse_mapping() {
-    let s = load_file_as_response(404, "tests/samples/error_mapper_parsing.json");
-    let deserialized = s.into_response::<IndexResponse>().unwrap_err();
+    let f = load_file("tests/samples/error_mapper_parsing.json");
+    let deserialized = parse::<IndexResponse>().from_read(404, f).unwrap_err();
 
     let valid = match deserialized {
         ResponseError::Api(ApiError::MapperParsing { ref reason })

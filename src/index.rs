@@ -1,6 +1,5 @@
-use super::HttpResponseHead;
 use common::Shards;
-use parse::{IsOk, ResponseBody, Unbuffered, MaybeOkResponse};
+use parsing::{IsOk, HttpResponseHead, ResponseBody, Unbuffered, MaybeOkResponse};
 use error::*;
 
 /// Response for a document index request.

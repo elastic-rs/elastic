@@ -1,8 +1,8 @@
 use serde::de::DeserializeOwned;
 use serde_json::{Map, Value};
 
-use super::{Shards, HttpResponseHead};
-use parse::{IsOk, ResponseBody, Unbuffered, MaybeOkResponse};
+use common::Shards;
+use parsing::{IsOk, HttpResponseHead, ResponseBody, Unbuffered, MaybeOkResponse};
 use error::*;
 
 use std::borrow::Cow;

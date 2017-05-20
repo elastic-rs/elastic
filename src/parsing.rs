@@ -1,58 +1,66 @@
 //! Response type parsing.
 
+use std::marker::PhantomData;
+use std::io::{Cursor, Read};
 use serde::de::DeserializeOwned;
 use serde_json::{self, Value};
 
-use std::io::{Cursor, Read};
-
-use super::{HttpResponse, HttpResponseHead, SliceBody, ReadBody};
 use error::*;
 
-impl<B: ResponseBody> HttpResponse<B> {
-    /// Convert this http response into either `Ok(T)` or an `Err(ApiError)`.
-    /// 
-    /// # Examples
-    /// 
-    /// Any type that implements `IsOk` can be parsed into a concrete response or an `ApiError`:
-    /// 
-    /// ```no_run
-    /// # extern crate serde_json;
-    /// # extern crate elastic_responses;
-    /// # use serde_json::*;
-    /// # use elastic_responses::*;
-    /// # use elastic_responses::error::*;
-    /// # fn do_request() -> HttpResponseSlice<Vec<u8>> { unimplemented!() }
-    /// # fn main() {
-    /// // Send a document get request and read as a generic HttpResponse
-    /// let http_response = do_request();
-    ///
-    /// let get_response = http_response.into_response::<GetResponseOf<Value>>();
-    /// 
-    /// match get_response {
-    ///     Ok(res) => {
-    ///         // Do something with the GetResponse
-    ///     }
-    ///     Err(ResponseError::Api(ApiError::IndexNotFound { index })) => {
-    ///         // Do something with the missing index error
-    ///     }
-    ///     _ => {
-    ///         // Some other error
-    ///     }
-    /// }
-    /// # }
-    /// ```
-    pub fn into_response<T: IsOk + DeserializeOwned>(self) -> Result<T, ResponseError> {
-        let maybe = T::is_ok(self.head, Unbuffered(self.body))?;
+pub struct Parse<T> {
+    _marker: PhantomData<T>,
+}
 
-        match maybe.ok {
-            true => {
-                let ok = maybe.res.parse_ok()?;
-                Ok(ok)
-            }
-            false => {
-                let err = maybe.res.parse_err()?;
-                Err(ResponseError::Api(err))
-            }
+/// Try parse a http response into a concrete type.
+pub fn parse<T: IsOk + DeserializeOwned>() -> Parse<T> {
+    Parse {
+        _marker: PhantomData,
+    }
+}
+
+impl<T: IsOk + DeserializeOwned> Parse<T> {
+    /// Try parse a contiguous slice of bytes into a concrete response.
+    pub fn from_slice<B: AsRef<[u8]>, H: Into<HttpResponseHead>>(self, head: H, body: B) -> Result<T, ResponseError> {
+        from_body(head.into(), SliceBody(body))
+    }
+
+    /// Try parse an arbitrary reader into a concrete response.
+    pub fn from_read<B: Read, H: Into<HttpResponseHead>>(self, head: H, body: B) -> Result<T, ResponseError> {
+        from_body(head.into(), ReadBody(body))
+    }
+}
+
+fn from_body<B: ResponseBody, T: IsOk + DeserializeOwned>(head: HttpResponseHead, body: B) -> Result<T, ResponseError> {
+    let maybe = T::is_ok(head, Unbuffered(body))?;
+
+    match maybe.ok {
+        true => {
+            let ok = maybe.res.parse_ok()?;
+            Ok(ok)
+        }
+        false => {
+            let err = maybe.res.parse_err()?;
+            Err(ResponseError::Api(err))
+        }
+    }
+}
+
+/// The non-body component of the HTTP response.
+pub struct HttpResponseHead {
+    code: u16,
+}
+
+impl HttpResponseHead {
+    /// Get the status code.
+    pub fn status(&self) -> u16 {
+        self.code
+    }
+}
+
+impl From<u16> for HttpResponseHead {
+    fn from(status: u16) -> Self {
+        HttpResponseHead {
+            code: status
         }
     }
 }
@@ -72,6 +80,8 @@ pub trait ResponseBody where Self: Sized
     /// Parse the body as an API error.
     fn parse_err(self) -> Result<ApiError, ParseResponseError>;
 }
+
+struct ReadBody<B>(B);
 
 impl<B: Read> ResponseBody for ReadBody<B> {
     type Buffered = SliceBody<Vec<u8>>;
@@ -93,6 +103,8 @@ impl<B: Read> ResponseBody for ReadBody<B> {
         serde_json::from_reader(self.0).map_err(|e| e.into())
     }
 }
+
+struct SliceBody<B>(B);
 
 impl<B: AsRef<[u8]>> ResponseBody for SliceBody<B> {
     type Buffered = Self;
