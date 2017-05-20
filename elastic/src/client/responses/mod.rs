@@ -19,7 +19,7 @@ use self::parse::IsOk;
 
 pub use elastic_responses::{AggregationIterator, Aggregations, Hit, Hits, Shards};
 pub use elastic_responses::{CommandResponse, IndexResponse, PingResponse, BulkResponse,
-                            BulkErrorsResponse};
+                            BulkErrorsResponse, BulkItem, BulkItems, BulkItemError, BulkAction};
 
 /// A builder for a response.
 ///

@@ -1,6 +1,4 @@
 use ops::Client;
-use elastic::client::into_response;
-use elastic::client::requests::{SearchRequest, IntoBody};
 use elastic::client::responses::SearchResponse;
 use elastic::error::Result;
 
@@ -13,63 +11,50 @@ pub trait SimpleSearchQuery {
 
 impl SimpleSearchQuery for Client {
     fn simple_search_query(&self, qry: &str) -> Result<SearchResponse<Account>> {
-        let qry = format!("\"{}\"", qry);
-        let req = search(search_body(&qry));
-        
-        self.io.search().request(req).send()
-    }
-}
-
-fn search<B>(body: B) -> SearchRequest<'static, B>
-    where B: IntoBody
-{
-    SearchRequest::for_index_ty(model::index::name(), model::account::name(), body)
-}
-
-fn search_body(qry: &str) -> String {
-    let get_body = json_fn!(|qry| {
-      "query": {
-        "function_score": {
+        let query = json!({
           "query": {
-            "bool": {
-              "should": [
+            "function_score": {
+              "query": {
+                "bool": {
+                  "should": [
+                    {
+                      "query_string": {
+                        "query": qry
+                      }
+                    },
+                    {
+                      "term": {
+                        "employer": { 
+                          "value": qry,
+                          "boost": 1.3
+                        }
+                      }
+                    }
+                  ]
+                }
+              },
+              "functions": [
                 {
-                  "query_string": {
-                    "query": $qry
+                  "gauss": {
+                    "balance": {
+                      "origin": 30000,
+                      "scale": 10000
+                    }
                   }
                 },
                 {
-                  "term": {
-                    "employer": { 
-                      "value": $qry,
-                      "boost": 1.3
+                  "gauss": {
+                    "age": {
+                      "origin": 35,
+                      "scale": 5
                     }
                   }
                 }
               ]
             }
-          },
-          "functions": [
-            {
-              "gauss": {
-                "balance": {
-                  "origin": 30000,
-                  "scale": 10000
-                }
-              }
-            },
-            {
-              "gauss": {
-                "age": {
-                  "origin": 35,
-                  "scale": 5
-                }
-              }
-            }
-          ]
-        }
-      }
-    });
+          }
+        });
 
-    get_body(qry)
+        self.io.search().index(model::index::name()).ty(Some(model::account::name())).body(query.to_string()).send()
+    }
 }

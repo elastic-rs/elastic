@@ -12,6 +12,7 @@ extern crate json_str;
 extern crate quick_error;
 
 extern crate serde;
+#[macro_use]
 extern crate serde_json;
 extern crate elastic;
 

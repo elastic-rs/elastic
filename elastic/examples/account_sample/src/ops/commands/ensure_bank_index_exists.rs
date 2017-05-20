@@ -1,8 +1,8 @@
 use ops::Client;
 use std::io::Error as IoError;
 use serde_json::{Value, Error as JsonError};
-use elastic::client::into_response;
-use elastic::client::requests::{IntoBody, IndicesExistsRequest, IndicesCreateRequest};
+use elastic::client::requests::{IndicesExistsRequest};
+use elastic::client::responses::CommandResponse;
 use elastic::error::Error as ResponseError;
 
 use model;
@@ -13,38 +13,23 @@ pub trait EnsureBankIndexExists {
 
 impl EnsureBankIndexExists for Client {
     fn ensure_bank_index_exists(&self) -> Result<(), EnsureBankIndexExistsError> {
-        let exists = self.io.request(exists()).send()?;
+        let exists = self.io.request(IndicesExistsRequest::for_index(model::index::name())).send()?;
 
         match exists.status() {
             // Success, do nothing
             200 => (),
             // Not found, create the index
             404 => {
-                let body = model::index::body()?;
-                let req = put(body);
-
-                self.io.request(req)
-                    .send()
-                    .and_then(into_response::<Value>)?;
+                self.io.create_index(model::index::name()).body(model::index::body()).send()?;
             },
             // Some other response, deserialise
             _ => {
-                exists.into_response::<Value>()?;
+                exists.response::<CommandResponse>()?;
             }
         }
 
         Ok(())
     }
-}
-
-fn exists() -> IndicesExistsRequest<'static> {
-    IndicesExistsRequest::for_index(model::index::name())
-}
-
-fn put<B>(body: B) -> IndicesCreateRequest<'static, B>
-    where B: IntoBody
-{
-    IndicesCreateRequest::for_index(model::index::name(), body)
 }
 
 quick_error!{

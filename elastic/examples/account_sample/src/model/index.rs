@@ -5,7 +5,7 @@
 //! analysers, filters and mapping for `Account`s.
 
 use elastic::client::requests::Index;
-use elastic::types::prelude::{Document, FieldType};
+use elastic::types::prelude::{IndexDocumentMapping, FieldType};
 use serde_json::{self, Error as JsonError};
 use super::account::{self, Account};
 
@@ -15,53 +15,43 @@ pub fn name() -> Index<'static> {
 }
 
 /// Get the settings and mappings for the index.
-pub fn body() -> Result<String, JsonError> {
-    let account_name = format!("\"{}\"", account::name());
-    let account_mapping = serde_json::to_string(&Document::from(Account::mapping()))?;
-    let filters = bank_filters();
-    let analysers = bank_analysers();
+pub fn body() -> String {
+    let account_name = account::name();
+    let account_mapping = IndexDocumentMapping::from(Account::mapping());
 
-    let get_index = json_fn!(|filters, analysers, account_name, account_mapping| {
+    let body = json!({
         "settings" : {
             "analysis" : {
-                "filter" : $filters,
-                "analyzer" : $analysers
+                "filter" : {
+                    "email": {
+                        "type": "pattern_capture",
+                        "preserve_original": 1,
+                        "patterns": [
+                            "([^@]+)",
+                            "(\\p{L}+)",
+                            "(\\d+)",
+                            "@(.+)"
+                        ]
+                    }
+                },
+                "analyzer" : {
+                    "email": {
+                        "tokenizer": "uax_url_email",
+                        "filter": [
+                            "email",
+                            "lowercase",
+                            "unique"
+                        ]
+                    }
+                }
             }
         },
         "mappings": {
-            $account_name: $account_mapping
+            account_name: account_mapping
         }
     });
 
-    Ok(get_index(&filters, &analysers, &account_name, &account_mapping))
-}
-
-fn bank_filters() -> String {
-    json_str!({
-        "email": {
-            "type": "pattern_capture",
-            "preserve_original": 1,
-            "patterns": [
-                "([^@]+)",
-                "(\\p{L}+)",
-                "(\\d+)",
-                "@(.+)"
-            ]
-        }
-    })
-}
-
-fn bank_analysers() -> String {
-    json_str!({
-        "email": {
-            "tokenizer": "uax_url_email",
-            "filter": [
-                "email",
-                "lowercase",
-                "unique"
-            ]
-        }
-    })
+    body.to_string()
 }
 
 #[cfg(test)]
