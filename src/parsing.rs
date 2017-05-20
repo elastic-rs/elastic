@@ -7,6 +7,7 @@ use serde_json::{self, Value};
 
 use error::*;
 
+/// A parser that separates taking a response type from the readable body type.
 pub struct Parse<T> {
     _marker: PhantomData<T>,
 }
@@ -25,7 +26,7 @@ impl<T: IsOk + DeserializeOwned> Parse<T> {
     }
 
     /// Try parse an arbitrary reader into a concrete response.
-    pub fn from_read<B: Read, H: Into<HttpResponseHead>>(self, head: H, body: B) -> Result<T, ResponseError> {
+    pub fn from_reader<B: Read, H: Into<HttpResponseHead>>(self, head: H, body: B) -> Result<T, ResponseError> {
         from_body(head.into(), ReadBody(body))
     }
 }
