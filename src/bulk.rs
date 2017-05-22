@@ -12,7 +12,7 @@ use std::error::Error;
 
 type BulkError = Value;
 
-type DefaultString = String;
+type DefaultAllocatedField = String;
 
 /// Response for a [bulk request](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-bulk.html).
 /// 
@@ -91,7 +91,7 @@ type DefaultString = String;
 /// # }
 /// ``` 
 #[derive(Deserialize, Debug, Clone)]
-pub struct BulkResponse<TIndex = DefaultString, TType = DefaultString, TId = DefaultString> {
+pub struct BulkResponse<TIndex = DefaultAllocatedField, TType = DefaultAllocatedField, TId = DefaultAllocatedField> {
     pub took: u64,
     errors: bool,
     pub items: BulkItems<TIndex, TType, TId>,
@@ -171,7 +171,7 @@ impl<TIndex, TType, TId> BulkResponse<TIndex, TType, TId> {
 /// ``` 
 #[derive(Deserialize, Debug, Clone)]
 #[serde(bound(deserialize = "TIndex: Deserialize<'de>, TType: Deserialize<'de>, TId: Deserialize<'de>"))]
-pub struct BulkErrorsResponse<TIndex = DefaultString, TType = DefaultString, TId = DefaultString> {
+pub struct BulkErrorsResponse<TIndex = DefaultAllocatedField, TType = DefaultAllocatedField, TId = DefaultAllocatedField> {
     pub took: u64,
     errors: bool,
     #[serde(deserialize_with = "deserialize_bulk_item_errors")]
@@ -190,7 +190,7 @@ impl<TIndex, TType, TId> BulkErrorsResponse<TIndex, TType, TId> {
 
 /// A successful bulk response item.
 #[derive(Debug, Clone)]
-pub struct BulkItem<TIndex = DefaultString, TType = DefaultString, TId = DefaultString> {
+pub struct BulkItem<TIndex = DefaultAllocatedField, TType = DefaultAllocatedField, TId = DefaultAllocatedField> {
     pub action: BulkAction,
     pub index: TIndex,
     pub ty: TType,
@@ -203,7 +203,7 @@ pub struct BulkItem<TIndex = DefaultString, TType = DefaultString, TId = Default
 
 /// A failed bulk response item.
 #[derive(Debug, Clone)]
-pub struct BulkItemError<TIndex = DefaultString, TType = DefaultString, TId = DefaultString> {
+pub struct BulkItemError<TIndex = DefaultAllocatedField, TType = DefaultAllocatedField, TId = DefaultAllocatedField> {
     pub action: BulkAction,
     pub index: TIndex,
     pub ty: TType,
