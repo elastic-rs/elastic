@@ -2,7 +2,7 @@ use common::Shards;
 use parsing::{IsOk, HttpResponseHead, ResponseBody, Unbuffered, MaybeOkResponse};
 use error::*;
 
-/// Response for a document index request.
+/// Response for an [index document request](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html).
 #[derive(Deserialize, Debug)]
 pub struct IndexResponse {
     #[serde(rename = "_index")]

@@ -13,6 +13,64 @@ pub struct Parse<T> {
 }
 
 /// Try parse a http response into a concrete type.
+/// 
+/// Parsing is split between two calls:
+/// 
+/// - `parse` where you can specify the response type
+/// - `from_slice`/`from_reader` wher you can specify the kind of body to read from
+/// 
+/// The reason for splitting the functions is so we can infer the types of arguments to `from_*`,
+/// but provide the concrete response type in cases it can't be inferred.
+/// 
+/// # Examples
+/// 
+/// Provide an explicit response type in the `parse` function:
+/// 
+/// ```no_run
+/// # extern crate serde_json;
+/// # extern crate elastic_responses;
+/// # use serde_json::*;
+/// # use elastic_responses::*;
+/// # use elastic_responses::error::*;
+/// # fn do_request() -> (u16, Vec<u8>) { unimplemented!() }
+/// # fn main() {
+/// # let (response_status, response_body) = do_request();
+/// let get_response = parse::<GetResponseOf<Value>>().from_slice(response_status, response_body);
+/// # }
+/// ```
+/// 
+/// Provide an explicit response type on the result ident:
+/// 
+/// ```no_run
+/// # extern crate serde_json;
+/// # extern crate elastic_responses;
+/// # use serde_json::Value;
+/// # use elastic_responses::*;
+/// # use elastic_responses::error::*;
+/// # fn do_request() -> (u16, Vec<u8>) { unimplemented!() }
+/// # fn main() {
+/// # let (response_status, response_body) = do_request();
+/// let get_response: Result<GetResponseOf<Value>, ResponseError> = parse().from_slice(response_status, response_body);
+/// # }
+/// ```
+/// 
+/// If Rust can infer the concrete response type then you can avoid specifying it at all:
+/// 
+/// ```no_run
+/// # extern crate serde_json;
+/// # extern crate elastic_responses;
+/// # use serde_json::Value;
+/// # use elastic_responses::*;
+/// # use elastic_responses::error::*;
+/// # fn do_request() -> (u16, Vec<u8>) { unimplemented!() }
+/// # fn main() {
+/// # fn parse_response() -> Result<GetResponseOf<Value>, ResponseError> {
+/// # let (response_status, response_body) = do_request();
+/// let get_response = parse().from_slice(response_status, response_body);
+/// # get_response
+/// # }
+/// # }
+/// ```
 pub fn parse<T: IsOk + DeserializeOwned>() -> Parse<T> {
     Parse {
         _marker: PhantomData,
@@ -129,10 +187,49 @@ impl<B: AsRef<[u8]>> ResponseBody for SliceBody<B> {
 
 /// Convert a response message into a either a success
 /// or failure result.
+/// 
+/// This is the main trait that drives response parsing by inspecting the http status and potentially
+/// buffering the response to determine whether or not it represents a successful operation.
+/// This trait doesn't do the actual deserialisation, it just passes on a `MaybeOkResponse`.
+/// Any type that implements `IsOk` can be deserialised by `parse`.
+/// 
+/// # Examples
+/// 
+/// Implement `IsOk` for a custom response type, where a http `404` might still contain a valid response:
+/// 
+/// ```
+/// # #[macro_use] extern crate serde_derive;
+/// # extern crate serde;
+/// # extern crate elastic_responses;
+/// # use elastic_responses::parsing::*;
+/// # use elastic_responses::error::*;
+/// # fn main() {}
+/// # #[derive(Deserialize)]
+/// # struct MyResponse;
+/// impl IsOk for MyResponse {
+///     fn is_ok<B: ResponseBody>(head: HttpResponseHead, unbuffered: Unbuffered<B>) -> Result<MaybeOkResponse<B>, ParseResponseError> {
+///         match head.status() {
+///             200...299 => Ok(MaybeOkResponse::ok(unbuffered)),
+///             404 => {
+///                 // If we get a 404, it could be an IndexNotFound error or ok
+///                 // Check if the response contains a root 'error' node
+///                 let (body, buffered) = unbuffered.body()?;
+/// 
+///                 let is_ok = body.as_object()
+///                     .and_then(|body| body.get("error"))
+///                     .is_none();
+/// 
+///                 Ok(MaybeOkResponse::new(is_ok, buffered))
+///             }
+///             _ => Ok(MaybeOkResponse::err(unbuffered)),
+///         }
+///     }
+/// }
+/// ```
 pub trait IsOk
 {
     /// Inspect the http response to determine whether or not it succeeded.
-    fn is_ok<B: ResponseBody>(head: HttpResponseHead, body: Unbuffered<B>) -> Result<MaybeOkResponse<B>, ParseResponseError>;
+    fn is_ok<B: ResponseBody>(head: HttpResponseHead, unbuffered: Unbuffered<B>) -> Result<MaybeOkResponse<B>, ParseResponseError>;
 }
 
 impl IsOk for Value {
@@ -180,6 +277,7 @@ impl<B> MaybeOkResponse<B> where B: ResponseBody
     }
 }
 
+/// A response body that hasn't been buffered yet.
 pub struct Unbuffered<B>(B);
 
 impl<B: ResponseBody> Unbuffered<B> {
@@ -189,6 +287,7 @@ impl<B: ResponseBody> Unbuffered<B> {
     }
 }
 
+/// A response body that has been buffered.
 pub struct Buffered<B: ResponseBody>(B::Buffered);
 
 /// A response body that may or may not have been buffered.

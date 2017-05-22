@@ -9,7 +9,7 @@ extern crate elastic_responses;
 
 use elastic_reqwest::ElasticClient;
 use elastic_reqwest::req::BulkRequest;
-use elastic_responses::{HttpResponse, BulkErrorsResponse};
+use elastic_responses::{parse, BulkErrorsResponse};
 
 fn get_req() -> String {
     let mut bulk = String::new();
@@ -31,13 +31,10 @@ fn main() {
     let (client, params) = elastic_reqwest::default().unwrap();
 
     // Send the request and read the response.
-    let http_res = {
-        let res = client.elastic_req(&params, BulkRequest::new(get_req())).unwrap();
-        HttpResponse::from_read(res.status().to_u16(), res)
-    };
+    let res = client.elastic_req(&params, BulkRequest::new(get_req())).unwrap();
 
     //Parse body to JSON. You could also use `BulkErrorsResponse`.
-    let body_as_json: BulkErrorsResponse = http_res.into_response().unwrap();
+    let body_as_json: BulkErrorsResponse = parse::<BulkErrorsResponse>().from_reader(res.status().to_u16(), res).unwrap();
 
     println!("{:?}", body_as_json);
 }
