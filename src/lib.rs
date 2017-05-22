@@ -69,8 +69,9 @@
 //!
 //! extern crate reqwest;
 //! extern crate elastic_reqwest as cli;
-//! use cli::{ ElasticClient, RequestParams };
+//! use cli::{ ElasticClient, ParseResponse, RequestParams };
 //! use cli::req::SimpleSearchRequest;
+//! use cli::res::{parse, SearchResponse};
 //!
 //! # fn main() {
 //! let (client, _) = cli::default().unwrap();
@@ -83,7 +84,8 @@
 //!     "myindex", "mytype"
 //! );
 //!
-//! client.elastic_req(&params, search).unwrap();
+//! let http_res = client.elastic_req(&params, search).unwrap();
+//! let search_res = parse::<SearchResponse>().from_response(http_res).unwrap();
 //! # }
 //! ```
 //!
@@ -99,8 +101,9 @@
 //! #[macro_use]
 //! extern crate json_str;
 //! extern crate elastic_reqwest as cli;
-//! use cli::ElasticClient;
+//! use cli::{ElasticClient, ParseResponse};
 //! use cli::req::SearchRequest;
+//! use cli::res::{parse, SearchResponse};
 //!
 //! # fn main() {
 //! let (client, params) = cli::default().unwrap();
@@ -127,7 +130,8 @@
 //!     })
 //! );
 //!
-//! client.elastic_req(&params, search).unwrap();
+//! let http_res = client.elastic_req(&params, search).unwrap();
+//! let search_res = parse::<SearchResponse>().from_response(http_res).unwrap();
 //! # }
 //! ```
 //!
@@ -353,6 +357,18 @@ pub trait ElasticClient {
     fn elastic_req<I, B>(&self, params: &RequestParams, req: I) -> Result<Response, reqwest::Error> 
         where I: Into<HttpRequest<'static, B>>,
               B: IntoReqwestBody;
+}
+
+/// Represents a response that can be parsed into a concrete Elasticsearch response.
+pub trait ParseResponse<TResponse> {
+    /// Parse a response into a concrete response type.
+    fn from_response(self, response: Response) -> Result<TResponse, ResponseError>;
+}
+
+impl<TResponse: IsOk + DeserializeOwned> ParseResponse<TResponse> for Parse<TResponse> {
+    fn from_response(self, response: Response) -> Result<TResponse, ResponseError> {
+        self.from_reader(response.status().to_u16(), response)
+    }
 }
 
 macro_rules! req_with_body {

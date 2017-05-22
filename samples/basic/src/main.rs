@@ -9,8 +9,9 @@
 extern crate json_str;
 extern crate elastic_reqwest as cli;
 
-use cli::{ElasticClient, RequestParams};
+use cli::{ElasticClient, ParseResponse, RequestParams};
 use cli::req::SearchRequest;
+use cli::res::{parse, SearchResponse};
 use std::io::Read;
 
 fn main() {
@@ -34,11 +35,9 @@ fn main() {
     };
 
     // Send the request and read the response.
-    let res = {
-        let res = client.elastic_req(&params, req).unwrap();
+    let http_res = client.elastic_req(&params, req).unwrap();
 
-        cli::res::parse::<SearchResponse>().from_reader(res.status().to_u16(), res).unwrap()
-    };
+    let res = parse::<SearchResponse>().from_response(http_res).unwrap();
 
     println!("Got response: {:?}", res);
 }
