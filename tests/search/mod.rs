@@ -4,52 +4,52 @@ extern crate serde_json;
 use elastic_responses::*;
 use elastic_responses::error::*;
 use serde_json::Value;
-use ::load_file_as_response;
+use ::load_file;
 
 #[test]
 fn success_parse_empty() {
-    let s = load_file_as_response(200, "tests/samples/search_empty.json");
-    let deserialized = s.into_response::<SearchResponse>().unwrap();
+    let f = load_file("tests/samples/search_empty.json");
+    let deserialized = parse::<SearchResponse>().from_reader(200, f).unwrap();
 
     assert_eq!(deserialized.hits().into_iter().count(), 0);
 }
 
 #[test]
 fn success_parse_hits_simple() {
-    let s = load_file_as_response(200, "tests/samples/search_hits_only.json");
-    let deserialized = s.into_response::<SearchResponse>().unwrap();
+    let f = load_file("tests/samples/search_hits_only.json");
+    let deserialized = parse::<SearchResponse>().from_reader(200, f).unwrap();
 
     assert_eq!(deserialized.hits().into_iter().count(), 5);
 }
 
 #[test]
 fn success_parse_hits_no_score() {
-    let s = load_file_as_response(200, "tests/samples/search_null_score.json");
-    let deserialized = s.into_response::<SearchResponse>().unwrap();
+    let f = load_file("tests/samples/search_null_score.json");
+    let deserialized = parse::<SearchResponse>().from_reader(200, f).unwrap();
 
     assert_eq!(deserialized.hits().into_iter().count(), 1);
 }
 
 #[test]
 fn success_parse_simple_aggs() {
-    let s = load_file_as_response(200, "tests/samples/search_aggregation_simple.json");
-    let deserialized = s.into_response::<SearchResponse>().unwrap();
+    let f = load_file("tests/samples/search_aggregation_simple.json");
+    let deserialized = parse::<SearchResponse>().from_reader(200, f).unwrap();
 
     assert_eq!(deserialized.aggs().into_iter().count(), 124);
 }
 
 #[test]
 fn success_parse_3level_aggs() {
-    let s = load_file_as_response(200, "tests/samples/search_aggregation_3level.json");
-    let deserialized = s.into_response::<SearchResponse>().unwrap();
+    let f = load_file("tests/samples/search_aggregation_3level.json");
+    let deserialized = parse::<SearchResponse>().from_reader(200, f).unwrap();
 
     assert_eq!(deserialized.aggs().into_iter().count(), 201);
 }
 
 #[test]
 fn success_parse_3level_multichild_aggs() {
-    let s = load_file_as_response(200, "tests/samples/search_aggregation_3level_multichild.json");
-    let deserialized = s.into_response::<SearchResponse>().unwrap();
+    let f = load_file("tests/samples/search_aggregation_3level_multichild.json");
+    let deserialized = parse::<SearchResponse>().from_reader(200, f).unwrap();
 
     let min = "min_ack_pkts_sent";
     let avg = "avg_ack_pkts_sent";
@@ -70,8 +70,8 @@ fn success_parse_3level_multichild_aggs() {
 
 #[test]
 fn success_parse_3level_multistats_aggs() {
-    let s = load_file_as_response(200, "tests/samples/search_aggregation_3level_multistats.json");
-    let deserialized = s.into_response::<SearchResponse>().unwrap();
+    let f = load_file("tests/samples/search_aggregation_3level_multistats.json");
+    let deserialized = parse::<SearchResponse>().from_reader(200, f).unwrap();
 
     let min = "extstats_ack_pkts_sent_min";
     let avg = "stats_ack_pkts_sent_avg";
@@ -94,14 +94,14 @@ fn success_parse_3level_multistats_aggs() {
 
 #[test]
 fn success_parse_simple_aggs_no_empty_first_record() {
-    let s = load_file_as_response(200, "tests/samples/search_aggregation_simple.json");
-    let deserialized = s.into_response::<SearchResponse>().unwrap();
+    let f = load_file("tests/samples/search_aggregation_simple.json");
+    let deserialized = parse::<SearchResponse>().from_reader(200, f).unwrap();
 
-    let s = "timechart";
+    let agg = "timechart";
     let mut first = true;
     for i in deserialized.aggs().into_iter().take(50) {
         if first {
-            assert!(i.contains_key(s));
+            assert!(i.contains_key(agg));
             first = false;
         }
     }
@@ -109,16 +109,16 @@ fn success_parse_simple_aggs_no_empty_first_record() {
 
 #[test]
 fn success_parse_hits_simple_as_value() {
-    let s = load_file_as_response(200, "tests/samples/search_hits_only.json");
-    let deserialized = s.into_response::<Value>().unwrap();
+    let f = load_file("tests/samples/search_hits_only.json");
+    let deserialized = parse::<Value>().from_reader(200, f).unwrap();
 
     assert_eq!(deserialized["_shards"]["total"].as_u64().unwrap(), 5);
 }
 
 #[test]
 fn error_parse_index_not_found() {
-    let s = load_file_as_response(404, "tests/samples/error_index_not_found.json");
-    let deserialized = s.into_response::<SearchResponse>().unwrap_err();
+    let f = load_file("tests/samples/error_index_not_found.json");
+    let deserialized = parse::<SearchResponse>().from_reader(404, f).unwrap_err();
 
     let valid = match deserialized {
         ResponseError::Api(ApiError::IndexNotFound { ref index })
@@ -131,8 +131,8 @@ fn error_parse_index_not_found() {
 
 #[test]
 fn error_parse_parsing() {
-    let s = load_file_as_response(400, "tests/samples/error_parsing.json");
-    let deserialized = s.into_response::<SearchResponse>().unwrap_err();
+    let f = load_file("tests/samples/error_parsing.json");
+    let deserialized = parse::<SearchResponse>().from_reader(400, f).unwrap_err();
 
     let valid = match deserialized {
         ResponseError::Api(ApiError::Parsing { line: 2, col: 9, ref reason })
@@ -145,8 +145,8 @@ fn error_parse_parsing() {
 
 #[test]
 fn error_parse_other() {
-    let s = load_file_as_response(500, "tests/samples/error_other.json");
-    let deserialized = s.into_response::<SearchResponse>().unwrap_err();
+    let f = load_file("tests/samples/error_other.json");
+    let deserialized = parse::<SearchResponse>().from_reader(500, f).unwrap_err();
 
     let reason = match deserialized {
         ResponseError::Api(ApiError::Other(ref err)) => err.get("reason")

@@ -2,8 +2,7 @@ use serde::de::{Deserialize, Deserializer, Visitor, Error as DeError, SeqAccess,
 use serde_json::Value;
 use common::Shards;
 
-use super::HttpResponseHead;
-use parse::{IsOk, ResponseBody, Unbuffered, MaybeOkResponse};
+use parsing::{IsOk, HttpResponseHead, ResponseBody, Unbuffered, MaybeOkResponse};
 use error::*;
 
 use std::cmp;
@@ -12,6 +11,8 @@ use std::marker::PhantomData;
 use std::error::Error;
 
 type BulkError = Value;
+
+type DefaultAllocatedField = String;
 
 /// Response for a [bulk request](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-bulk.html).
 /// 
@@ -90,7 +91,7 @@ type BulkError = Value;
 /// # }
 /// ``` 
 #[derive(Deserialize, Debug, Clone)]
-pub struct BulkResponse<TIndex = String, TType = String, TId = String> {
+pub struct BulkResponse<TIndex = DefaultAllocatedField, TType = DefaultAllocatedField, TId = DefaultAllocatedField> {
     pub took: u64,
     errors: bool,
     pub items: BulkItems<TIndex, TType, TId>,
@@ -170,7 +171,7 @@ impl<TIndex, TType, TId> BulkResponse<TIndex, TType, TId> {
 /// ``` 
 #[derive(Deserialize, Debug, Clone)]
 #[serde(bound(deserialize = "TIndex: Deserialize<'de>, TType: Deserialize<'de>, TId: Deserialize<'de>"))]
-pub struct BulkErrorsResponse<TIndex = String, TType = String, TId = String> {
+pub struct BulkErrorsResponse<TIndex = DefaultAllocatedField, TType = DefaultAllocatedField, TId = DefaultAllocatedField> {
     pub took: u64,
     errors: bool,
     #[serde(deserialize_with = "deserialize_bulk_item_errors")]
@@ -189,7 +190,7 @@ impl<TIndex, TType, TId> BulkErrorsResponse<TIndex, TType, TId> {
 
 /// A successful bulk response item.
 #[derive(Debug, Clone)]
-pub struct BulkItem<TIndex, TType, TId> {
+pub struct BulkItem<TIndex = DefaultAllocatedField, TType = DefaultAllocatedField, TId = DefaultAllocatedField> {
     pub action: BulkAction,
     pub index: TIndex,
     pub ty: TType,
@@ -202,7 +203,7 @@ pub struct BulkItem<TIndex, TType, TId> {
 
 /// A failed bulk response item.
 #[derive(Debug, Clone)]
-pub struct BulkItemError<TIndex, TType, TId> {
+pub struct BulkItemError<TIndex = DefaultAllocatedField, TType = DefaultAllocatedField, TId = DefaultAllocatedField> {
     pub action: BulkAction,
     pub index: TIndex,
     pub ty: TType,

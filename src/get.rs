@@ -1,8 +1,7 @@
 use serde::de::DeserializeOwned;
 use serde_json::Value;
 
-use super::HttpResponseHead;
-use parse::{IsOk, ResponseBody, Unbuffered, MaybeOkResponse};
+use parsing::{IsOk, HttpResponseHead, ResponseBody, Unbuffered, MaybeOkResponse};
 use error::*;
 
 /// Response for a [get document request](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-get.html).
@@ -12,6 +11,8 @@ pub struct GetResponseOf<T> {
     pub index: String,
     #[serde(rename = "_type")]
     pub ty: String,
+    #[serde(rename = "_id")]
+    pub id: String,
     #[serde(rename = "_version")]
     pub version: Option<u32>,
     pub found: bool,

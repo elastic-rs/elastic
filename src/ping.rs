@@ -1,5 +1,4 @@
-use super::HttpResponseHead;
-use parse::{IsOk, ResponseBody, Unbuffered, MaybeOkResponse};
+use parsing::{IsOk, HttpResponseHead, ResponseBody, Unbuffered, MaybeOkResponse};
 use error::*;
 
 /// Response for a cluster ping request.
