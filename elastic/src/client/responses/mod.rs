@@ -10,6 +10,7 @@ pub mod parse;
 
 use std::io::{Read, Result as IoResult};
 use serde::de::DeserializeOwned;
+use elastic_reqwest::ParseResponse;
 use elastic_reqwest::res::{SearchResponseOf, GetResponseOf, parse};
 use reqwest::Response as RawResponse;
 
@@ -39,6 +40,11 @@ impl ResponseBuilder {
     /// Convert the builder into a raw HTTP response that implements `Read`.
     pub fn raw(self) -> HttpResponse {
         self.0
+    }
+
+    /// Get a raw http response.
+    fn reqwest(self) -> RawResponse {
+        self.raw().0
     }
 
     /// Parse an API response type from the HTTP body.
@@ -98,9 +104,7 @@ impl ResponseBuilder {
     pub fn into_response<T>(self) -> Result<T>
         where T: IsOk + DeserializeOwned
     {
-        let (status, body) = (self.0.status(), self.0);
-
-        parse().from_reader(status, body).map_err(|e| e.into())
+        parse().from_response(self.reqwest()).map_err(Into::into)
     }
 }
 
@@ -111,14 +115,14 @@ impl ResponseBuilder {
 ///
 /// This type won't parse if you've applied any [response filters]().
 /// If you need to tweak the shape of the search response you can
-/// define your own response type and implement `FromResponse` for it.
+/// define your own response type and implement `IsOk` for it.
 /// See the [`parse`](parse/index.html) mod for more details.
 pub type SearchResponse<T> = SearchResponseOf<Hit<T>>;
 
 /// A generic Get Document API response.
 pub type GetResponse<T> = GetResponseOf<T>;
 
-/// A raw HTTP response that can be buffered.
+/// A raw HTTP response that can be buffered using `Read`.
 pub struct HttpResponse(RawResponse);
 
 impl HttpResponse {
