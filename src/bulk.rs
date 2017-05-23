@@ -58,12 +58,15 @@ type DefaultAllocatedField = String;
 /// 
 /// # Optimising bulk responses
 /// 
-/// The `BulkResponse` type has a few generic parameters for the index, type and id fields.
+/// If you're only interested in bulk operations that failed, see [`BulkErrorsResponse`](struct.BulkErrorsResponse.html).
+/// It can avoid allocating bulk operation responses that will never be processed.
+/// 
+/// Both the `BulkResponse` and `BulkErrorsResponse` types have generic parameters for the index, type and id fields.
 /// If your bulk operations have a small set of possible values for these fields you can avoid
 /// allocating `String`s on the heap by using an alternative type, like an `enum`.
 /// 
 /// In the example below, we expect all bulk operations to use either a type called `mytypea` or `mytypeb`
-/// and an index called `myindex :
+/// and an index called `myindex`:
 /// 
 /// ```no_run
 /// # extern crate serde;
@@ -74,22 +77,23 @@ type DefaultAllocatedField = String;
 /// # fn main() {
 /// # fn do_request() -> BulkResponse<Index, Type> { unimplemented!() }
 /// #[derive(Deserialize)]
+/// #[serde(rename_all = "lowercase")]
 /// enum Index {
-///     #[serde(rename = "myindex")]
 ///     MyIndex,
 /// }
 /// 
 /// #[derive(Deserialize)]
+/// #[serde(rename_all = "lowercase")]
 /// enum Type {
-///     #[serde(rename = "mytypea")]
 ///     MyTypeA,
-///     #[serde(rename = "mytypeb")]
 ///     MyTypeB,
 /// }
 /// 
 /// let bulk: BulkResponse<Index, Type> = do_request();
 /// # }
-/// ``` 
+/// ```
+/// 
+/// Also see the [`string-cache`](https://github.com/servo/string-cache) crate as an alternative to using `String`s and `enum`s.
 #[derive(Deserialize, Debug, Clone)]
 pub struct BulkResponse<TIndex = DefaultAllocatedField, TType = DefaultAllocatedField, TId = DefaultAllocatedField> {
     pub took: u64,
@@ -134,41 +138,6 @@ impl<TIndex, TType, TId> BulkResponse<TIndex, TType, TId> {
 /// }
 /// # }
 /// ```
-///
-/// # Optimising bulk responses
-/// 
-/// The `BulkErrorsResponse` type has a few generic parameters for the index, type and id fields.
-/// If your bulk operations have a small set of possible values for these fields you can avoid
-/// allocating `String`s on the heap by using an alternative type, like an `enum`.
-/// 
-/// In the example below, we expect all bulk operations to use either a type called `mytypea` or `mytypeb`
-/// and an index called `myindex :
-/// 
-/// ```no_run
-/// # extern crate serde;
-/// # #[macro_use] extern crate serde_derive;
-/// # extern crate serde_json;
-/// # extern crate elastic_responses;
-/// # use elastic_responses::*;
-/// # fn main() {
-/// # fn do_request() -> BulkErrorsResponse<Index, Type> { unimplemented!() }
-/// #[derive(Deserialize)]
-/// enum Index {
-///     #[serde(rename = "myindex")]
-///     MyIndex,
-/// }
-/// 
-/// #[derive(Deserialize)]
-/// enum Type {
-///     #[serde(rename = "mytypea")]
-///     MyTypeA,
-///     #[serde(rename = "mytypeb")]
-///     MyTypeB,
-/// }
-/// 
-/// let bulk: BulkErrorsResponse<Index, Type> = do_request();
-/// # }
-/// ``` 
 #[derive(Deserialize, Debug, Clone)]
 #[serde(bound(deserialize = "TIndex: Deserialize<'de>, TType: Deserialize<'de>, TId: Deserialize<'de>"))]
 pub struct BulkErrorsResponse<TIndex = DefaultAllocatedField, TType = DefaultAllocatedField, TId = DefaultAllocatedField> {
