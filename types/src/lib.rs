@@ -526,9 +526,6 @@ extern crate geojson;
 extern crate json_str;
 
 #[macro_use]
-mod macros;
-
-#[macro_use]
 mod private;
 
 pub mod document;
