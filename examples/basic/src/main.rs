@@ -12,7 +12,6 @@ extern crate elastic_reqwest as cli;
 use cli::{ElasticClient, ParseResponse, RequestParams};
 use cli::req::SearchRequest;
 use cli::res::{parse, SearchResponse};
-use std::io::Read;
 
 fn main() {
     // Get a new default client.

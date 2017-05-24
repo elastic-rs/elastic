@@ -17,7 +17,6 @@ extern crate serde_derive;
 extern crate elastic_types;
 #[macro_use]
 extern crate elastic_types_derive;
-extern crate elastic_responses;
 extern crate elastic_reqwest as cli;
 
 use std::net::Ipv4Addr;
