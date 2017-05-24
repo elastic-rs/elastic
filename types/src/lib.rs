@@ -59,7 +59,7 @@
 //! # }
 //! ```
 //!
-//! You can then serialise your mapping as json using a [`Document`](document/struct.Document.html)
+//! You can then serialise your mapping as json using an [`IndexDocumentMapping`](document/struct.IndexDocumentMapping.html)
 //! wrapper:
 //!
 //! ```
@@ -224,7 +224,7 @@
 //! ```
 //!
 //! This produces the same mapping as before.
-//! See the [`object`](object/index.html) mod for more details.
+//! See the [`document`](document/index.html) mod for more details.
 //!
 //! ### Overloading default mapping
 //!
@@ -517,9 +517,9 @@ extern crate serde_json;
 #[macro_use]
 extern crate elastic_types_derive;
 
-pub extern crate chrono;
-pub extern crate geo as georust;
-pub extern crate geojson;
+extern crate chrono;
+extern crate geo as georust;
+extern crate geojson;
 
 #[cfg(test)]
 #[macro_use]
