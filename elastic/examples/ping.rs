@@ -1,3 +1,7 @@
+//! Ping the cluster.
+//! 
+//! NOTE: This sample expects you have a node running on `localhost:9200`.
+
 extern crate elastic;
 
 use elastic::prelude::*;

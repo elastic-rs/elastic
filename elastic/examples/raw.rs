@@ -1,6 +1,9 @@
-//! A basic raw usage example.
+//! A raw search request.
 //! 
 //! NOTE: This sample expects you have a node running on `localhost:9200`.
+//! 
+//! This sample demonstrates a raw search request where the body is read into a `String` rather
+//! than being deserialised.
 
 extern crate elastic;
 

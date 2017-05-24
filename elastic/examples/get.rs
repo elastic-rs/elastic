@@ -1,3 +1,10 @@
+//! Get a document from an index.
+//! 
+//! NOTE: This sample expects you have a node running on `localhost:9200`.
+//! 
+//! This sample demonstrates how to get a previously indexed document.
+//! There are a few error cases to consider, depending on whether or not the index
+//! exists, and the document is indexed.
 //! Also see the `typed` sample for a more complete implementation.
 
 extern crate serde_json;

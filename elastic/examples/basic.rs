@@ -1,6 +1,9 @@
-//! A basic usage example.
+//! A simple search request.
 //! 
 //! NOTE: This sample expects you have a node running on `localhost:9200`.
+//! 
+//! This sample executes a search request and iterates through the returned hits
+//! as anonymous json objects.
 
 #[macro_use]
 extern crate serde_json;
