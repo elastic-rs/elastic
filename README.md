@@ -20,7 +20,6 @@ Windows       | Nightly          | [![Build status](https://ci.appveyor.com/api/
 
 Version   | Docs
 --------- | -------------
-`master`  | [![Documentation](https://img.shields.io/badge/docs-rustdoc-orange.svg)](https://elastic-rs.github.io/elastic-types/elastic_types/)
 `current` | [![Documentation](https://img.shields.io/badge/docs-rustdoc-orange.svg)](https://docs.rs/elastic_types/*/elastic_types/)
 
 ## Example
