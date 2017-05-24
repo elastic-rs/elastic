@@ -1,14 +1,14 @@
 //! Elasticsearch REST API Client
 //!
 //! A lightweight implementation of the Elasticsearch API based on the
-//! [`reqwest`](https://github.com/seanmonstar/reqwest/) HTTP client.
+//! [`reqwest`][reqwest] HTTP client.
 //!
-//! Each API endpoint is represented as its own function,
-//! so each possible http route gets its own function.
+//! Each API endpoint is represented as its own type, that only accept a valid combination
+//! of route parameters.
 //! This library makes very few assumptions, leaving it up to you to decide what to invest your
 //! precious CPU cycles into.
 //!
-//! The entire API is generated from the official Elasticsearch spec, so it's always current.
+//! The API is generated from the official Elasticsearch spec, so it's always current.
 //!
 //! # Supported Versions
 //!
@@ -18,7 +18,7 @@
 //!
 //! # Usage
 //!
-//! This crate is on [crates.io](https://crates.io/crates/reqwest).
+//! This crate is on [crates.io][crates].
 //! To get started, add `elastic_reqwest` and `reqwest` to your `Cargo.toml`:
 //!
 //! ```ignore
@@ -39,8 +39,18 @@
 //! Then reference in your crate root:
 //!
 //! ```
+//! extern crate reqwest;
 //! extern crate elastic_reqwest as cli;
+//! 
+//! use cli::{ElasticClient, ParseResponse, parse};
 //! ```
+//! 
+//! ## The Gist
+//! 
+//! - Create a [`reqwest::Client`][default]
+//! - Call [`elastic_req`][elastic_req] on the client
+//! - Work with the raw http response
+//! - Or call [`parse`][parse] to get a concrete response or API error
 //!
 //! ## Minimal Example
 //!
@@ -65,13 +75,13 @@
 //! Execute a search query with a url parameter:
 //!
 //! ```no_run
-//! //HTTP GET /myindex/mytype/_search?q='my string'
+//! //HTTP GET /myindex/mytype/_search?q=*
 //!
-//! extern crate reqwest;
 //! extern crate elastic_reqwest as cli;
-//! use cli::{ ElasticClient, ParseResponse, RequestParams };
+//! 
+//! use cli::{ ElasticClient, ParseResponse, RequestParams, parse };
 //! use cli::req::SimpleSearchRequest;
-//! use cli::res::{parse, SearchResponse};
+//! use cli::res::SearchResponse;
 //!
 //! # fn main() {
 //! let (client, _) = cli::default().unwrap();
@@ -91,19 +101,19 @@
 //!
 //! ## Search Request with Json
 //!
-//! Using the [`json_str`](http://kodraus.github.io/rustdoc/json_str/) crate, you can execute
+//! Using the [`json_str`][json_str] crate, you can execute
 //! queries using pure json:
 //!
 //! ```no_run
 //! //HTTP POST /myindex/mytype/_search
 //!
-//! #
 //! #[macro_use]
 //! extern crate json_str;
 //! extern crate elastic_reqwest as cli;
-//! use cli::{ElasticClient, ParseResponse};
+//! 
+//! use cli::{ElasticClient, ParseResponse, parse};
 //! use cli::req::SearchRequest;
-//! use cli::res::{parse, SearchResponse};
+//! use cli::res::SearchResponse;
 //!
 //! # fn main() {
 //! let (client, params) = cli::default().unwrap();
@@ -135,20 +145,29 @@
 //! # }
 //! ```
 //!
-//! See more [examples](https://github.com/KodrAus/elasticsearch-rs/tree/master/hyper/samples).
-//!
 //! # See Also
 //!
-//! - [`elastic`](https://github.com/elastic-rs/elastic). 
+//! - [`elastic`][elastic]. 
 //! A higher-level Elasticsearch client that uses `elastic_reqwest` as its HTTP layer.
-//! - [`rs-es`](https://github.com/benashford/rs-es).
-//! An alternative Elasticsearch client for Rust that provides an implementation of the Query DSL.
-//! - [`json_str`](https://github.com/KodrAus/json_str)
+//! - [`rs-es`][rs-es].
+//! A higher-level Elasticsearch client that provides strongly-typed Query DSL buiilders.
+//! - [`json_str`][json_str]
 //! A library for generating minified json strings from Rust syntax.
 //!
 //! # Links
-//! - [Elasticsearch Docs](https://www.elastic.co/guide/en/elasticsearch/reference/master/index.html)
-//! - [Github](https://github.com/elastic-rs/elastic-reqwest)
+//! - [Elasticsearch Docs][es-docs]
+//! - [Github][repo]
+//! 
+//! [default]: fn.default.html
+//! [elastic_req]: trait.ElasticClient.html#tymethod.elastic_req
+//! [parse]: fn.parse.html
+//! [elastic]: https://github.com/elastic-rs/elastic
+//! [rs-es]: https://github.com/benashford/rs-es
+//! [json_str]: https://github.com/KodrAus/json_str
+//! [reqwest]: https://github.com/seanmonstar/reqwest/
+//! [es-docs]: https://www.elastic.co/guide/en/elasticsearch/reference/master/index.html
+//! [repo]: https://github.com/elastic-rs/elastic-reqwest
+//! [crates]: https://crates.io/crates/elastic_reqwest
 
 #![cfg_attr(feature = "nightly", feature(specialization))]
 
@@ -157,6 +176,7 @@
 
 extern crate elastic_requests;
 extern crate elastic_responses;
+extern crate serde;
 extern crate reqwest;
 extern crate url;
 
@@ -164,6 +184,7 @@ extern crate url;
 use std::io::Cursor;
 use std::collections::BTreeMap;
 use std::str;
+use serde::de::DeserializeOwned;
 use reqwest::header::{Header, HeaderFormat, Headers, ContentType};
 use reqwest::{RequestBuilder, Response};
 use url::form_urlencoded::Serializer;
@@ -182,7 +203,11 @@ pub mod res {
     pub use elastic_responses::*;
 }
 
+pub use self::res::parse;
+
 use self::req::{HttpRequest, HttpMethod};
+use self::res::parsing::{Parse, IsOk};
+use self::res::error::ResponseError;
 
 /// Misc parameters for any request.
 ///
@@ -319,7 +344,7 @@ pub fn default() -> Result<(reqwest::Client, RequestParams), reqwest::Error> {
     reqwest::Client::new().map(|cli| (cli, RequestParams::default()))
 }
 
-/// A type that can be converted into a `reqwest::Body`.
+/// A type that can be converted into a request body.
 pub trait IntoReqwestBody {
     /// Convert self into a body.
     fn into_body(self) -> reqwest::Body;
@@ -354,6 +379,22 @@ impl IntoReqwestBody for &'static str {
 /// Represents a client that can send Elasticsearch requests.
 pub trait ElasticClient {
     /// Send a request and get a response.
+    /// 
+    /// # Examples
+    /// 
+    /// Bring the `ElasticClient` trait into scope and call `elastic_req` with any type that
+    /// can be converted into a `req::HttpRequest`.
+    /// This method returns a raw `reqwest::Response`.
+    /// 
+    /// ```
+    /// # use elastic_reqwest::req::SimpleSearchRequest;
+    /// # let request = SimpleSearchRequest::for_index_ty("myindex", "mytype");
+    /// use elastic_reqwest::ElasticClient;
+    /// 
+    /// let (client, params) = elastic_reqwest::default().unwrap();
+    /// 
+    /// let http_res = client.elastic_req(&params, request).unwrap();
+    /// ```
     fn elastic_req<I, B>(&self, params: &RequestParams, req: I) -> Result<Response, reqwest::Error> 
         where I: Into<HttpRequest<'static, B>>,
               B: IntoReqwestBody;
@@ -362,7 +403,7 @@ pub trait ElasticClient {
 /// Represents a response that can be parsed into a concrete Elasticsearch response.
 pub trait ParseResponse<TResponse> {
     /// Parse a response into a concrete response type.
-    fn from_response(self, response: Response) -> Result<TResponse, ResponseError>;
+    fn from_response(self, response: Response) -> Result<TResponse, res::error::ResponseError>;
 }
 
 impl<TResponse: IsOk + DeserializeOwned> ParseResponse<TResponse> for Parse<TResponse> {
