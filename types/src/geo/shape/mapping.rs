@@ -63,7 +63,7 @@ struct GeoShapeFormat;
 /// #     }
 /// # }
 /// # fn main() {
-/// # let mapping = serde_json::to_string(&DocumentField::from(MyGeoShapeMapping)).unwrap();
+/// # let mapping = standalone_field_ser(MyGeoShapeMapping).unwrap();
 /// # let json = json_str!(
 /// {
 ///     "type": "geo_shape",

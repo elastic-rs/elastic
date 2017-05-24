@@ -7,6 +7,6 @@ use test::Bencher;
 #[bench]
 fn mapping(b: &mut Bencher) {
     b.iter(|| {
-        serde_json::to_string(&DocumentField::from(MyIpMapping)).unwrap()
+        standalone_field_ser(MyIpMapping).unwrap()
     });
 }

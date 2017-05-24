@@ -77,7 +77,7 @@ struct DateFormatWrapper<F>
 /// #     }
 /// # }
 /// # fn main() {
-/// # let mapping = serde_json::to_string(&DocumentField::from(MyDateMapping)).unwrap();
+/// # let mapping = standalone_field_ser(MyDateMapping).unwrap();
 /// # let json = json_str!(
 /// {
 ///     "type": "date",

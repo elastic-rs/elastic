@@ -153,7 +153,7 @@ impl IpMapping for DefaultIpMapping {}
 mod tests {
     use serde_json;
     use std::net::Ipv4Addr;
-    
+
     use prelude::*;
     use private::field::DocumentField;
 

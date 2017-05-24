@@ -80,7 +80,7 @@ struct GeoPointFormatWrapper<F>
 /// #     }
 /// # }
 /// # fn main() {
-/// # let mapping = serde_json::to_string(&DocumentField::from(MyGeoPointMapping)).unwrap();
+/// # let mapping = standalone_field_ser(MyGeoPointMapping).unwrap();
 /// # let json = json_str!(
 /// {
 ///     "type": "geo_point",

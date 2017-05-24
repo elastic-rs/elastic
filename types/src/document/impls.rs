@@ -2,7 +2,7 @@ use std::sync::{Mutex, RwLock};
 use std::borrow::Cow;
 use std::marker::PhantomData;
 use serde::ser::{Serialize, SerializeStruct};
-use serde_json::Value;
+use serde_json::{self, Value};
 use super::mapping::{DocumentMapping, PropertiesMapping};
 use private::field::FieldMapping;
 
@@ -248,6 +248,18 @@ pub fn doc_ser<S, M>(state: &mut S, field: &'static str, _: M) -> Result<(), S::
           M: DocumentMapping
 {
     state.serialize_field(field, &IndexDocumentMapping::<M>::default())
+}
+
+/// Serialize a field individually.
+/// 
+/// This method isn't intended to be used publicly, but is useful in the docs.
+#[doc(hidden)]
+#[inline]
+pub fn standalone_field_ser<M, F>(_: M) -> Result<String, serde_json::Error>
+    where M: FieldMapping<F>,
+          F: Default
+{
+    serde_json::to_string(&M::Field::default())
 }
 
 /// Mapping for an anonymous json object.
