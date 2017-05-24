@@ -26,10 +26,10 @@
 //! elastic_reqwest = "*"
 //! reqwest = "*"
 //! ```
-//! 
+//!
 //! On the `nightly` channel, you can use the `nightly` feature
 //! to avoid copying borrowed body buffers:
-//! 
+//!
 //! ```ignore
 //! [dependencies]
 //! elastic_reqwest = { version = "*", features = ["nightly"] }
@@ -41,12 +41,13 @@
 //! ```
 //! extern crate reqwest;
 //! extern crate elastic_reqwest as cli;
-//! 
+//!
 //! use cli::{ElasticClient, ParseResponse, parse};
+//! # fn main() {}
 //! ```
-//! 
+//!
 //! ## The Gist
-//! 
+//!
 //! - Create a [`reqwest::Client`][default]
 //! - Call [`elastic_req`][elastic_req] on the client
 //! - Work with the raw http response
@@ -78,7 +79,7 @@
 //! //HTTP GET /myindex/mytype/_search?q=*
 //!
 //! extern crate elastic_reqwest as cli;
-//! 
+//!
 //! use cli::{ ElasticClient, ParseResponse, RequestParams, parse };
 //! use cli::req::SimpleSearchRequest;
 //! use cli::res::SearchResponse;
@@ -110,7 +111,7 @@
 //! #[macro_use]
 //! extern crate json_str;
 //! extern crate elastic_reqwest as cli;
-//! 
+//!
 //! use cli::{ElasticClient, ParseResponse, parse};
 //! use cli::req::SearchRequest;
 //! use cli::res::SearchResponse;
@@ -147,7 +148,7 @@
 //!
 //! # See Also
 //!
-//! - [`elastic`][elastic]. 
+//! - [`elastic`][elastic].
 //! A higher-level Elasticsearch client that uses `elastic_reqwest` as its HTTP layer.
 //! - [`rs-es`][rs-es].
 //! A higher-level Elasticsearch client that provides strongly-typed Query DSL buiilders.
@@ -157,7 +158,7 @@
 //! # Links
 //! - [Elasticsearch Docs][es-docs]
 //! - [Github][repo]
-//! 
+//!
 //! [default]: fn.default.html
 //! [elastic_req]: trait.ElasticClient.html#tymethod.elastic_req
 //! [parse]: fn.parse.html
@@ -190,14 +191,14 @@ use reqwest::{RequestBuilder, Response};
 use url::form_urlencoded::Serializer;
 
 /// Request types.
-/// 
+///
 /// These are re-exported from `elastic_requests` for convenience.
 pub mod req {
     pub use elastic_requests::*;
 }
 
 /// Response types.
-/// 
+///
 /// These are re-exported from `elastic_responses` for convenience.
 pub mod res {
     pub use elastic_responses::*;
@@ -267,7 +268,7 @@ pub struct RequestParams {
 
 impl RequestParams {
     /// Create a new container for request parameters.
-    /// 
+    ///
     /// This method takes a fully-qualified url for the Elasticsearch
     /// node.
     /// It will also set the `Content-Type` header to `application/json`.
@@ -290,15 +291,13 @@ impl RequestParams {
     }
 
     /// Set a url param value.
-    /// 
+    ///
     /// These parameters are added as query parameters to request urls.
-    pub fn url_param<T: ToString>(mut self, key: &'static str, value: T) -> Self
-    {
+    pub fn url_param<T: ToString>(mut self, key: &'static str, value: T) -> Self {
         if self.url_params.contains_key(key) {
             let mut entry = self.url_params.get_mut(key).unwrap();
             *entry = value.to_string();
-        }
-        else {
+        } else {
             self.url_params.insert(key, value.to_string());
         }
 
@@ -379,23 +378,23 @@ impl IntoReqwestBody for &'static str {
 /// Represents a client that can send Elasticsearch requests.
 pub trait ElasticClient {
     /// Send a request and get a response.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// Bring the `ElasticClient` trait into scope and call `elastic_req` with any type that
     /// can be converted into a `req::HttpRequest`.
     /// This method returns a raw `reqwest::Response`.
-    /// 
-    /// ```
+    ///
+    /// ```no_run
     /// # use elastic_reqwest::req::SimpleSearchRequest;
     /// # let request = SimpleSearchRequest::for_index_ty("myindex", "mytype");
     /// use elastic_reqwest::ElasticClient;
-    /// 
+    ///
     /// let (client, params) = elastic_reqwest::default().unwrap();
-    /// 
+    ///
     /// let http_res = client.elastic_req(&params, request).unwrap();
     /// ```
-    fn elastic_req<I, B>(&self, params: &RequestParams, req: I) -> Result<Response, reqwest::Error> 
+    fn elastic_req<I, B>(&self, params: &RequestParams, req: I) -> Result<Response, reqwest::Error>
         where I: Into<HttpRequest<'static, B>>,
               B: IntoReqwestBody;
 }
@@ -422,7 +421,7 @@ macro_rules! req_with_body {
     })
 }
 
-fn build_req<I, B>(client: &reqwest::Client, params: &RequestParams, req: I) -> RequestBuilder 
+fn build_req<I, B>(client: &reqwest::Client, params: &RequestParams, req: I) -> RequestBuilder
     where I: Into<HttpRequest<'static, B>>,
           B: IntoReqwestBody
 {
@@ -450,9 +449,9 @@ fn build_req<I, B>(client: &reqwest::Client, params: &RequestParams, req: I) -> 
         HttpMethod::Head => client.head(&url).headers(params.headers.to_owned()),
 
         HttpMethod::Delete => client.request(reqwest::Method::Delete, &url).headers(params.headers.to_owned()),
-        
+
         HttpMethod::Put => req_with_body!(client, url, body, params, Put),
-        
+
         HttpMethod::Patch => req_with_body!(client, url, body, params, Patch),
     }
 }
@@ -480,11 +479,11 @@ mod tests {
 
     fn expected_req(cli: &Client, method: Method, url: &str, body: Option<Vec<u8>>) -> RequestBuilder {
         let req = cli.request(method, url)
-                         .header(ContentType::json());
+            .header(ContentType::json());
 
         match body {
             Some(body) => req.body(body),
-            None => req
+            None => req,
         }
     }
 
@@ -519,7 +518,9 @@ mod tests {
     #[test]
     fn post_req() {
         let cli = Client::new().unwrap();
-        let req = build_req(&cli, &params(), PercolateRequest::for_index_ty("idx", "ty", vec![]));
+        let req = build_req(&cli,
+                            &params(),
+                            PercolateRequest::for_index_ty("idx", "ty", vec![]));
 
         let url = "eshost:9200/path/idx/ty/_percolate?pretty=true&q=*";
 
@@ -531,7 +532,9 @@ mod tests {
     #[test]
     fn put_req() {
         let cli = Client::new().unwrap();
-        let req = build_req(&cli, &params(), IndicesCreateRequest::for_index("idx", vec![]));
+        let req = build_req(&cli,
+                            &params(),
+                            IndicesCreateRequest::for_index("idx", vec![]));
 
         let url = "eshost:9200/path/idx?pretty=true&q=*";
 
@@ -589,8 +592,7 @@ mod tests {
 
     #[test]
     fn request_params_can_set_base_url() {
-        let req = RequestParams::default()
-            .base_url("http://eshost:9200");
+        let req = RequestParams::default().base_url("http://eshost:9200");
 
         assert_eq!("http://eshost:9200", req.base_url);
     }
@@ -602,7 +604,8 @@ mod tests {
             .url_param("pretty", true)
             .url_param("q", "*");
 
-        assert_eq!((16, Some(String::from("?pretty=true&q=*"))), req.get_url_qry());
+        assert_eq!((16, Some(String::from("?pretty=true&q=*"))),
+                   req.get_url_qry());
     }
 
     #[test]
