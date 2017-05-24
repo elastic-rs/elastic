@@ -4,8 +4,8 @@ use std::marker::PhantomData;
 use serde::{Serialize, Serializer};
 use serde::ser::SerializeStruct;
 use super::{DateFormat, Date};
-use private::field::{FieldMapping, SerializeField};
-use document::{Field, FieldType};
+use private::field::{DocumentField, FieldMapping, SerializeField};
+use document::FieldType;
 
 /// A field that will be mapped as a `date`.
 pub trait DateFieldType<M, F>
@@ -77,7 +77,7 @@ struct DateFormatWrapper<F>
 /// #     }
 /// # }
 /// # fn main() {
-/// # let mapping = serde_json::to_string(&Field::from(MyDateMapping)).unwrap();
+/// # let mapping = standalone_field_ser(MyDateMapping).unwrap();
 /// # let json = json_str!(
 /// {
 ///     "type": "date",
@@ -175,10 +175,10 @@ impl<T, F> SerializeField<DateFormatWrapper<F>> for T
     where T: DateMapping<Format = F>,
           F: DateFormat
 {
-    type Field = Field<T, DateFormatWrapper<F>>;
+    type Field = DocumentField<T, DateFormatWrapper<F>>;
 }
 
-impl<T, F> Serialize for Field<T, DateFormatWrapper<F>>
+impl<T, F> Serialize for DocumentField<T, DateFormatWrapper<F>>
     where T: FieldMapping<DateFormatWrapper<F>> + DateMapping<Format = F>,
           F: DateFormat
 {
@@ -214,4 +214,84 @@ impl<F> DateMapping for DefaultDateMapping<F>
     where F: DateFormat
 {
     type Format = F;
+}
+
+#[cfg(test)]
+mod tests {
+    use serde_json;
+    use chrono::{DateTime, UTC};
+
+    use prelude::*;
+    use private::field::DocumentField;
+
+    #[derive(Default, Clone)]
+    pub struct MyDateMapping;
+    impl DateMapping for MyDateMapping {
+        type Format = EpochMillis;
+
+        fn null_value() -> Option<Date<Self::Format, Self>> {
+            Some(Date::build(2015, 3, 14, 16, 45, 13, 778))
+        }
+
+        fn boost() -> Option<f32> {
+            Some(1.01)
+        }
+
+        fn index() -> Option<bool> {
+            Some(true)
+        }
+
+        fn doc_values() -> Option<bool> {
+            Some(true)
+        }
+
+        fn include_in_all() -> Option<bool> {
+            Some(false)
+        }
+
+        fn store() -> Option<bool> {
+            Some(true)
+        }
+
+        fn ignore_malformed() -> Option<bool> {
+            Some(true)
+        }
+    }
+
+    #[test]
+    fn datetime_has_default_mapping() {
+        assert_eq!(DefaultDateMapping::<ChronoFormat>::default(), DateTime::<UTC>::mapping());
+    }
+
+    #[test]
+    fn serialise_mapping_default() {
+        let ser = serde_json::to_string(&DocumentField::from(DefaultDateMapping::<DefaultDateFormat>::default())).unwrap();
+
+        let expected = json_str!({
+            "type": "date",
+            "format": "basic_date_time"
+        });
+
+        assert_eq!(expected, ser);
+    }
+
+    #[test]
+    fn serialise_mapping_custom() {
+        let ser = serde_json::to_string(&DocumentField::from(MyDateMapping)).unwrap();
+
+        let expected = json_str!({
+            "type": "date",
+            "format": "epoch_millis",
+            "boost": 1.01,
+            "doc_values": true,
+            "include_in_all": false,
+            "index": true,
+            "store": true,
+            "ignore_malformed": true,
+            "null_value": "1426351513778"
+        });
+
+        assert_eq!(expected, ser);
+    }
+
 }

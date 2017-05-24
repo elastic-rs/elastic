@@ -29,9 +29,9 @@
 //! }
 //! # }
 //! ```
-//! 
+//!
 //! Map a custom type as an `ip` field:
-//! 
+//!
 //! ```
 //! # extern crate serde;
 //! # #[macro_use]
@@ -42,7 +42,7 @@
 //! # use elastic_types::prelude::*;
 //! #[derive(Serialize)]
 //! struct MyIpField(String);
-//! 
+//!
 //! impl IpFieldType<DefaultIpMapping> for MyIpField {}
 //! # }
 //! ```

@@ -59,7 +59,7 @@
 //! # }
 //! ```
 //!
-//! You can then serialise your mapping as json using a [`Document`](document/struct.Document.html)
+//! You can then serialise your mapping as json using an [`IndexDocumentMapping`](document/struct.IndexDocumentMapping.html)
 //! wrapper:
 //!
 //! ```
@@ -81,7 +81,7 @@
 //! #     pub my_num: i32
 //! # }
 //! # fn main() {
-//! let mapping = serde_json::to_string(&Document::from(MyType::mapping())).unwrap();
+//! let mapping = serde_json::to_string(&IndexDocumentMapping::from(MyType::mapping())).unwrap();
 //! # }
 //! ```
 //!
@@ -105,7 +105,7 @@
 //! #     pub my_num: i32
 //! # }
 //! # fn main() {
-//! # let mapping = serde_json::to_string(&Document::from(MyType::mapping())).unwrap();
+//! # let mapping = serde_json::to_string(&IndexDocumentMapping::from(MyType::mapping())).unwrap();
 //! # let json = json_str!(
 //! {
 //!     "properties": {
@@ -175,7 +175,7 @@
 //! #     pub my_type: MyType
 //! # }
 //! # fn main() {
-//! # let mapping = serde_json::to_string(&Document::from(MyOtherType::mapping())).unwrap();
+//! # let mapping = serde_json::to_string(&IndexDocumentMapping::from(MyOtherType::mapping())).unwrap();
 //! # let json = json_str!(
 //! {
 //!     "properties": {
@@ -224,7 +224,7 @@
 //! ```
 //!
 //! This produces the same mapping as before.
-//! See the [`object`](object/index.html) mod for more details.
+//! See the [`document`](document/index.html) mod for more details.
 //!
 //! ### Overloading default mapping
 //!
@@ -383,7 +383,7 @@
 //! fn main() {
 //!     println!("\"{}\":{{ {} }}",
 //!         Article::name(),
-//!         serde_json::to_string(&Document::from(Article::mapping())).unwrap()
+//!         serde_json::to_string(&IndexDocumentMapping::from(Article::mapping())).unwrap()
 //!     );
 //! }
 //! ```
@@ -517,12 +517,13 @@ extern crate serde_json;
 #[macro_use]
 extern crate elastic_types_derive;
 
-pub extern crate chrono;
-pub extern crate geo as georust;
-pub extern crate geojson;
+extern crate chrono;
+extern crate geo as georust;
+extern crate geojson;
 
+#[cfg(test)]
 #[macro_use]
-mod macros;
+extern crate json_str;
 
 #[macro_use]
 mod private;

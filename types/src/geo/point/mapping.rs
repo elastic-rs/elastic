@@ -5,8 +5,8 @@ use serde::{Serialize, Serializer};
 use serde::ser::SerializeStruct;
 use super::GeoPointFormat;
 use geo::mapping::Distance;
-use private::field::{FieldMapping, SerializeField};
-use document::{Field, FieldType};
+use private::field::{DocumentField, FieldMapping, SerializeField};
+use document::FieldType;
 
 /// A field that will be mapped as a `geo_point`.
 pub trait GeoPointFieldType<M, F>
@@ -80,7 +80,7 @@ struct GeoPointFormatWrapper<F>
 /// #     }
 /// # }
 /// # fn main() {
-/// # let mapping = serde_json::to_string(&Field::from(MyGeoPointMapping)).unwrap();
+/// # let mapping = standalone_field_ser(MyGeoPointMapping).unwrap();
 /// # let json = json_str!(
 /// {
 ///     "type": "geo_point",
@@ -163,10 +163,10 @@ impl<T, F> SerializeField<GeoPointFormatWrapper<F>> for T
     where T: GeoPointMapping<Format = F>,
           F: GeoPointFormat
 {
-    type Field = Field<T, GeoPointFormatWrapper<F>>;
+    type Field = DocumentField<T, GeoPointFormatWrapper<F>>;
 }
 
-impl<T, F> Serialize for Field<T, GeoPointFormatWrapper<F>>
+impl<T, F> Serialize for DocumentField<T, GeoPointFormatWrapper<F>>
     where T: FieldMapping<GeoPointFormatWrapper<F>> + GeoPointMapping<Format = F>,
           F: GeoPointFormat
 {
@@ -199,4 +199,66 @@ impl<F> GeoPointMapping for DefaultGeoPointMapping<F>
     where F: GeoPointFormat
 {
     type Format = F;
+}
+
+#[cfg(test)]
+mod tests {
+    use serde_json;
+
+    use prelude::*;
+    use private::field::DocumentField;
+
+    #[derive(Default, Clone)]
+    pub struct MyGeoPointMapping;
+    impl GeoPointMapping for MyGeoPointMapping {
+        type Format = GeoPointArray;
+
+        fn geohash() -> Option<bool> {
+            Some(false)
+        }
+
+        fn geohash_precision() -> Option<Distance> {
+            Some(Distance(50.0, DistanceUnit::Meters))
+        }
+
+        fn geohash_prefix() -> Option<bool> {
+            Some(true)
+        }
+
+        fn ignore_malformed() -> Option<bool> {
+            Some(true)
+        }
+
+        fn lat_lon() -> Option<bool> {
+            Some(true)
+        }
+    }
+
+    #[test]
+    fn serialise_mapping_default() {
+        let ser = serde_json::to_string(&DocumentField::from(DefaultGeoPointMapping::<DefaultGeoPointFormat>::default())).unwrap();
+
+        let expected = json_str!({
+            "type": "geo_point"
+        });
+
+        assert_eq!(expected, ser);
+    }
+
+    #[test]
+    fn serialise_mapping_custom() {
+        let ser = serde_json::to_string(&DocumentField::from(MyGeoPointMapping)).unwrap();
+
+        let expected = json_str!({
+            "type": "geo_point",
+            "geohash": false,
+            "geohash_precision": "50m",
+            "geohash_prefix": true,
+            "ignore_malformed": true,
+            "lat_lon": true
+        });
+
+        assert_eq!(expected, ser);
+    }
+
 }

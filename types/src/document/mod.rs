@@ -57,7 +57,7 @@
 //! #   pub my_num: i32
 //! # }
 //! # fn main() {
-//! # let mapping = serde_json::to_string(&Field::from(MyTypeMapping)).unwrap();
+//! # let mapping = standalone_field_ser(MyTypeMapping).unwrap();
 //! # let json = json_str!(
 //! {
 //!     "type": "nested",
@@ -151,7 +151,7 @@
 //! #   fn data_type() -> &'static str { OBJECT_DATATYPE }
 //! # }
 //! # fn main() {
-//! # let mapping = serde_json::to_string(&Field::from(MyTypeMapping)).unwrap();
+//! # let mapping = standalone_field_ser(MyTypeMapping).unwrap();
 //! # let json = json_str!(
 //! {
 //!     "type": "object",
@@ -225,7 +225,7 @@
 //!
 //! ## Manually Implement Mapping
 //!
-//! You can build object mappings by manually implementing the [`DocumentMapping`](trait.DocumentMapping.html) and [`PropertiesMapping`](trait.PropertiesMapping.html) traits:
+//! You can build object mappings by manually implementing the [`DocumentMapping`](mapping/trait.DocumentMapping.html) and [`PropertiesMapping`](mapping/trait.PropertiesMapping.html) traits:
 //!
 //! ```
 //! # #[macro_use]

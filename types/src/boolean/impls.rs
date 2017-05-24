@@ -119,3 +119,42 @@ impl<'de, M> Deserialize<'de> for Boolean<M>
         deserializer.deserialize_any(BooleanVisitor::<M>::default())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use serde_json;
+
+    use prelude::*;
+
+    #[derive(Default)]
+    struct MyBooleanMapping;
+    impl BooleanMapping for MyBooleanMapping {}
+
+    #[test]
+    fn can_change_boolean_mapping() {
+        fn takes_custom_mapping(_: Boolean<MyBooleanMapping>) -> bool {
+            true
+        }
+
+        let boolean: Boolean<DefaultBooleanMapping> = Boolean::new(true);
+
+        assert!(takes_custom_mapping(boolean.remap()));
+    }
+
+    #[test]
+    fn serialise_elastic_boolean() {
+        let boolean: Boolean<DefaultBooleanMapping> = Boolean::new(true);
+
+        let ser = serde_json::to_string(&boolean).unwrap();
+
+        assert_eq!("true", ser);
+    }
+
+    #[test]
+    fn deserialise_elastic_boolean() {
+        let boolean: Boolean<DefaultBooleanMapping> = serde_json::from_str("true").unwrap();
+
+        assert_eq!(true, boolean);
+    }
+
+}

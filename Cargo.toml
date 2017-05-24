@@ -1,0 +1,6 @@
+[workspace]
+members = [
+	"types",
+    "types-derive",
+    "types-derive-internals",
+]

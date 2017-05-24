@@ -28,7 +28,6 @@ matrix:
     - rust: nightly
       env:
         - CRATE="types"
-        - DOC_UPLOAD=true
 env:
   global:
     - TRAVIS_CARGO_NIGHTLY_FEATURE=""
@@ -41,6 +40,4 @@ script:
   - |
       cd $CRATE &&
       travis-cargo test &&
-      travis-cargo --only nightly bench &&
-      travis-cargo --only nightly doc &&
-      if [ $DOC_UPLOAD ]; then travis-cargo --only nightly doc-upload; fi
+      travis-cargo --only nightly bench

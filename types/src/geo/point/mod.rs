@@ -37,9 +37,9 @@
 //! }
 //! # }
 //! ```
-//! 
+//!
 //! Map a custom type as a `geo_point` field:
-//! 
+//!
 //! ```
 //! # extern crate serde;
 //! # #[macro_use]
@@ -50,7 +50,7 @@
 //! # use elastic_types::prelude::*;
 //! #[derive(Serialize)]
 //! struct MyGeoPointField(f32, f32);
-//! 
+//!
 //! impl GeoPointFieldType<DefaultGeoPointMapping<GeoPointObject>, GeoPointObject> for MyGeoPointField {}
 //! # }
 //! ```

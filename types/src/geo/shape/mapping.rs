@@ -3,8 +3,8 @@
 use serde::{Serialize, Serializer};
 use serde::ser::SerializeStruct;
 use geo::mapping::Distance;
-use private::field::{FieldMapping, SerializeField};
-use document::{Field, FieldType};
+use private::field::{DocumentField, FieldMapping, SerializeField};
+use document::FieldType;
 
 /// A field that will be mapped as a `geo_shape`.
 pub trait GeoShapeFieldType<M> where M: GeoShapeMapping {}
@@ -63,7 +63,7 @@ struct GeoShapeFormat;
 /// #     }
 /// # }
 /// # fn main() {
-/// # let mapping = serde_json::to_string(&Field::from(MyGeoShapeMapping)).unwrap();
+/// # let mapping = standalone_field_ser(MyGeoShapeMapping).unwrap();
 /// # let json = json_str!(
 /// {
 ///     "type": "geo_shape",
@@ -158,10 +158,10 @@ impl<T> FieldMapping<GeoShapeFormat> for T
 impl<T> SerializeField<GeoShapeFormat> for T
     where T: GeoShapeMapping
 {
-    type Field = Field<T, GeoShapeFormat>;
+    type Field = DocumentField<T, GeoShapeFormat>;
 }
 
-impl<T> Serialize for Field<T, GeoShapeFormat>
+impl<T> Serialize for DocumentField<T, GeoShapeFormat>
     where T: FieldMapping<GeoShapeFormat> + GeoShapeMapping
 {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
@@ -248,4 +248,74 @@ impl Serialize for Orientation {
             Orientation::CounterClockwise => "ccw",
         })
     }
+}
+
+#[cfg(test)]
+mod tests {
+    use serde_json;
+
+    use prelude::*;
+    use private::field::DocumentField;
+
+    #[derive(Default, Clone)]
+    pub struct MyGeoShapeMapping;
+    impl GeoShapeMapping for MyGeoShapeMapping {
+        fn tree() -> Option<Tree> {
+            Some(Tree::Geohash)
+        }
+
+        fn precision() -> Option<Distance> {
+            Some(Distance(50.0, DistanceUnit::Meters))
+        }
+
+        fn tree_levels() -> Option<i32> {
+            Some(8)
+        }
+
+        fn strategy() -> Option<Strategy> {
+            Some(Strategy::Recursive)
+        }
+
+        fn distance_error_pct() -> Option<f32> {
+            Some(0.5)
+        }
+
+        fn orientation() -> Option<Orientation> {
+            Some(Orientation::Clockwise)
+        }
+
+        fn points_only() -> Option<bool> {
+            Some(false)
+        }
+    }
+
+    #[test]
+    fn serialise_mapping_default() {
+        let ser = serde_json::to_string(&DocumentField::from(DefaultGeoShapeMapping)).unwrap();
+
+        let expected = json_str!({
+            "type": "geo_shape"
+        });
+
+        assert_eq!(expected, ser);
+    }
+
+    #[test]
+    fn serialise_mapping_custom() {
+        let ser = serde_json::to_string(&DocumentField::from(MyGeoShapeMapping)).unwrap();
+
+        let expected = json_str!({
+            "type": "geo_shape",
+            "tree": "geohash",
+            "precision": "50m",
+            "tree_levels": 8,
+            "strategy": "recursive",
+            "distance_error_pct": 0.5,
+            "orientation": "cw",
+            "points_only": false
+        });
+
+        assert_eq!(expected, ser);
+    }
+
 }

@@ -5,6 +5,9 @@
 *.dll
 *.rs.bk
 
+/target/
+/obj/
+
 # Executables
 *.exe
 

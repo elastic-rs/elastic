@@ -4,8 +4,8 @@ use std::collections::BTreeMap;
 use serde::{Serialize, Serializer};
 use serde::ser::SerializeStruct;
 use string::mapping::{StringField, IndexOptions};
-use private::field::{FieldMapping, SerializeField};
-use document::{Field, FieldType};
+use private::field::{DocumentField, FieldMapping, SerializeField};
+use document::FieldType;
 
 /// A field that will be mapped as a `keyword`.
 pub trait KeywordFieldType<M> where M: KeywordMapping {}
@@ -72,7 +72,7 @@ struct KeywordFormat;
 /// }
 /// # );
 /// # #[cfg(feature = "nightly")]
-/// # let mapping = serde_json::to_string(&Field::from(MyStringMapping)).unwrap();
+/// # let mapping = serde_json::to_string(&DocumentField::from(MyStringMapping)).unwrap();
 /// # #[cfg(not(feature = "nightly"))]
 /// # let mapping = json.clone();
 /// # assert_eq!(json, mapping);
@@ -212,10 +212,10 @@ impl<T> FieldMapping<KeywordFormat> for T
 impl<T> SerializeField<KeywordFormat> for T
     where T: KeywordMapping
 {
-    type Field = Field<T, KeywordFormat>;
+    type Field = DocumentField<T, KeywordFormat>;
 }
 
-impl<T> Serialize for Field<T, KeywordFormat>
+impl<T> Serialize for DocumentField<T, KeywordFormat>
     where T: FieldMapping<KeywordFormat> + KeywordMapping
 {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>

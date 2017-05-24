@@ -6,41 +6,41 @@ use test::Bencher;
 #[bench]
 fn mapping_sml(b: &mut Bencher) {
     b.iter(|| {
-        serde_json::to_string(&Document::from(MySmlMapping)).unwrap()
+        serde_json::to_string(&IndexDocumentMapping::from(MySmlMapping)).unwrap()
     });
 }
 
 #[bench]
 fn mapping_med(b: &mut Bencher) {
     b.iter(|| {
-        serde_json::to_string(&Document::from(MyMedMapping)).unwrap()
+        serde_json::to_string(&IndexDocumentMapping::from(MyMedMapping)).unwrap()
     });
 }
 
 #[bench]
 fn mapping_lrg(b: &mut Bencher) {
     b.iter(|| {
-        serde_json::to_string(&Document::from(MyLrgMapping)).unwrap()
+        serde_json::to_string(&IndexDocumentMapping::from(MyLrgMapping)).unwrap()
     });
 }
 
 #[bench]
 fn mapping_value_sml(b: &mut Bencher) {
     b.iter(|| {
-        serde_json::to_value(&Document::from(MySmlMapping))
+        serde_json::to_value(&IndexDocumentMapping::from(MySmlMapping))
     });
 }
 
 #[bench]
 fn mapping_value_med(b: &mut Bencher) {
     b.iter(|| {
-        serde_json::to_value(&Document::from(MyMedMapping))
+        serde_json::to_value(&IndexDocumentMapping::from(MyMedMapping))
     });
 }
 
 #[bench]
 fn mapping_value_lrg(b: &mut Bencher) {
     b.iter(|| {
-        serde_json::to_value(&Document::from(MyLrgMapping))
+        serde_json::to_value(&IndexDocumentMapping::from(MyLrgMapping))
     });
 }

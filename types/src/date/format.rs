@@ -8,9 +8,9 @@ use std::vec::IntoIter;
 /// A format used for parsing and formatting dates.
 ///
 /// The format is specified as two functions: `parse` and `format`.
-/// 
+///
 /// # Examples
-/// 
+///
 /// The easiest way to implement `DateFormat` is to derive `ElasticDateFormat`
 /// on a unit struct:
 ///
@@ -27,14 +27,14 @@ use std::vec::IntoIter;
 /// struct MyFormat;
 /// # }
 /// ```
-/// 
-/// The `#[elastic(date_format)]` attribute is required, 
+///
+/// The `#[elastic(date_format)]` attribute is required,
 /// and must contain a valid [format string](http://www.joda.org/joda-time/apidocs/org/joda/time/format/DateTimeFormat.html).
-/// 
+///
 /// > NOTE: Only a small subset of the Joda time format is supported.
-/// 
+///
 /// You can customise the indexed format name by adding an `#[elastic(date_format_name)]` attribute:
-/// 
+///
 /// ```
 /// # #[macro_use]
 /// # extern crate elastic_types;
@@ -71,7 +71,7 @@ enum FormattedDateInner<'a> {
 
 impl<'a> Display for FormattedDateInner<'a> {
     fn fmt(&self, f: &mut Formatter) -> FmtResult {
-        fn fmt<T>(inner: &T, f: &mut Formatter) -> FmtResult 
+        fn fmt<T>(inner: &T, f: &mut Formatter) -> FmtResult
             where T: Display
         {
             inner.fmt(f)
@@ -86,10 +86,10 @@ impl<'a> Display for FormattedDateInner<'a> {
 }
 
 /// A formatted date.
-/// 
+///
 /// This type can avoid allocating strings for date formats.
 pub struct FormattedDate<'a> {
-    inner: FormattedDateInner<'a>
+    inner: FormattedDateInner<'a>,
 }
 
 impl<'a> Display for FormattedDate<'a> {
@@ -103,32 +103,26 @@ impl<'a> Into<String> for FormattedDate<'a> {
         match self.inner {
             FormattedDateInner::Delayed(inner) => inner.to_string(),
             FormattedDateInner::Buffered(inner) => inner,
-            FormattedDateInner::Number(inner) => inner.to_string()
+            FormattedDateInner::Number(inner) => inner.to_string(),
         }
     }
 }
 
 impl<'a> From<DelayedFormat<IntoIter<Item<'a>>>> for FormattedDate<'a> {
     fn from(formatted: DelayedFormat<IntoIter<Item<'a>>>) -> Self {
-        FormattedDate {
-            inner: FormattedDateInner::Delayed(formatted)
-        }
+        FormattedDate { inner: FormattedDateInner::Delayed(formatted) }
     }
 }
 
 impl<'a> From<String> for FormattedDate<'a> {
     fn from(formatted: String) -> Self {
-        FormattedDate {
-            inner: FormattedDateInner::Buffered(formatted)
-        }
+        FormattedDate { inner: FormattedDateInner::Buffered(formatted) }
     }
 }
 
 impl<'a> From<i64> for FormattedDate<'a> {
     fn from(formatted: i64) -> Self {
-        FormattedDate {
-            inner: FormattedDateInner::Number(formatted)
-        }
+        FormattedDate { inner: FormattedDateInner::Number(formatted) }
     }
 }
 

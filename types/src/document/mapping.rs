@@ -3,15 +3,15 @@
 use std::marker::PhantomData;
 use serde::{Serialize, Serializer};
 use serde::ser::SerializeStruct;
-use super::{DocumentType, FieldType, Field, Document};
-use private::field::{FieldMapping, SerializeField};
+use super::{DocumentType, FieldType, IndexDocumentMapping};
+use private::field::{DocumentField, FieldMapping, SerializeField};
 
 /// A field that will be mapped as a nested document.
 pub trait DocumentFieldType<M> where M: DocumentMapping {}
 
 impl<T, M> FieldType<M, DocumentFormat> for T
     where M: DocumentMapping,
-          T: DocumentFieldType<M> + Serialize
+          T: DocumentFieldType<M>
 {
 }
 
@@ -139,10 +139,10 @@ impl<T> FieldMapping<DocumentFormat> for T
 impl<T> SerializeField<DocumentFormat> for T
     where T: DocumentMapping
 {
-    type Field = Field<T, DocumentFormat>;
+    type Field = DocumentField<T, DocumentFormat>;
 }
 
-impl<T> Serialize for Field<T, DocumentFormat>
+impl<T> Serialize for DocumentField<T, DocumentFormat>
     where T: FieldMapping<DocumentFormat> + DocumentMapping
 {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
@@ -153,13 +153,13 @@ impl<T> Serialize for Field<T, DocumentFormat>
 
         let props_len = match (is_object, has_props) {
             (true, true) => 5,
-            (true, false)|(false, true) => 4,
-            (false, false) => 3
+            (true, false) | (false, true) => 4,
+            (false, false) => 3,
         };
 
         let mut state = try!(serializer.serialize_struct("mapping", props_len));
 
-        
+
         try!(state.serialize_field("type", ty));
 
         ser_field!(state, "dynamic", T::dynamic());
@@ -177,7 +177,7 @@ impl<T> Serialize for Field<T, DocumentFormat>
     }
 }
 
-impl<M> Serialize for Document<M>
+impl<M> Serialize for IndexDocumentMapping<M>
     where M: DocumentMapping
 {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>

@@ -37,9 +37,9 @@
 //! }
 //! # }
 //! ```
-//! 
+//!
 //! Map a custom type as a `date` field:
-//! 
+//!
 //! ```
 //! # extern crate serde;
 //! # #[macro_use]
@@ -50,7 +50,7 @@
 //! # use elastic_types::prelude::*;
 //! #[derive(Serialize)]
 //! struct MyDateField(String);
-//! 
+//!
 //! impl DateFieldType<DefaultDateMapping<ChronoFormat>, ChronoFormat> for MyDateField {}
 //! # }
 //! ```
@@ -82,7 +82,7 @@
 //! # use elastic_types::prelude::*;
 //! # fn main() {
 //! use chrono::{DateTime, UTC};
-//! 
+//!
 //! #[derive(Default, Clone)]
 //! struct MyCustomFormat;
 //! impl DateFormat for MyCustomFormat {

@@ -3,8 +3,8 @@
 use std::net::Ipv4Addr;
 use serde::{Serialize, Serializer};
 use serde::ser::SerializeStruct;
-use private::field::{FieldMapping, SerializeField};
-use document::{Field, FieldType};
+use private::field::{DocumentField, FieldMapping, SerializeField};
+use document::FieldType;
 
 /// A field that will be mapped as an `ip`.
 pub trait IpFieldType<M> where M: IpMapping {}
@@ -71,7 +71,7 @@ struct IpFormat;
 /// }
 /// # );
 /// # #[cfg(feature = "nightly")]
-/// # let mapping = serde_json::to_string(&Field::from(MyIpMapping)).unwrap();
+/// # let mapping = serde_json::to_string(&DocumentField::from(MyIpMapping)).unwrap();
 /// # #[cfg(not(feature = "nightly"))]
 /// # let mapping = json.clone();
 /// # assert_eq!(json, mapping);
@@ -121,10 +121,10 @@ impl<T> FieldMapping<IpFormat> for T
 impl<T> SerializeField<IpFormat> for T
     where T: IpMapping
 {
-    type Field = Field<T, IpFormat>;
+    type Field = DocumentField<T, IpFormat>;
 }
 
-impl<T> Serialize for Field<T, IpFormat>
+impl<T> Serialize for DocumentField<T, IpFormat>
     where T: FieldMapping<IpFormat> + IpMapping
 {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
@@ -148,3 +148,69 @@ impl<T> Serialize for Field<T, IpFormat>
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultIpMapping;
 impl IpMapping for DefaultIpMapping {}
+
+#[cfg(test)]
+mod tests {
+    use serde_json;
+    use std::net::Ipv4Addr;
+
+    use prelude::*;
+    use private::field::DocumentField;
+
+    #[derive(Default, Clone)]
+    pub struct MyIpMapping;
+    impl IpMapping for MyIpMapping {
+        fn boost() -> Option<f32> {
+            Some(1.01)
+        }
+
+        fn index() -> Option<bool> {
+            Some(false)
+        }
+
+        fn doc_values() -> Option<bool> {
+            Some(true)
+        }
+
+        fn store() -> Option<bool> {
+            Some(true)
+        }
+
+        fn null_value() -> Option<Ipv4Addr> {
+            Some(Ipv4Addr::new(127, 0, 0, 1))
+        }
+    }
+
+    #[test]
+    fn ipv4addr_has_default_mapping() {
+        assert_eq!(DefaultIpMapping, Ipv4Addr::mapping());
+    }
+
+    #[test]
+    fn serialise_mapping_default() {
+        let ser = serde_json::to_string(&DocumentField::from(DefaultIpMapping)).unwrap();
+
+        let expected = json_str!({
+            "type": "ip"
+        });
+
+        assert_eq!(expected, ser);
+    }
+
+    #[test]
+    fn serialise_mapping_custom() {
+        let ser = serde_json::to_string(&DocumentField::from(MyIpMapping)).unwrap();
+
+        let expected = json_str!({
+            "type": "ip",
+            "boost": 1.01,
+            "doc_values": true,
+            "index": false,
+            "store": true,
+            "null_value": "127.0.0.1"
+        });
+
+        assert_eq!(expected, ser);
+    }
+
+}

@@ -4,8 +4,8 @@ use std::collections::BTreeMap;
 use serde::{Serialize, Serializer};
 use serde::ser::SerializeStruct;
 use string::mapping::{StringField, IndexOptions};
-use private::field::{FieldMapping, SerializeField};
-use document::{Field, FieldType};
+use private::field::{DocumentField, FieldMapping, SerializeField};
+use document::FieldType;
 
 /// A field that will be mapped as `text`.
 pub trait TextFieldType<M> where M: TextMapping {}
@@ -72,7 +72,7 @@ struct TextFormat;
 /// }
 /// # );
 /// # #[cfg(feature = "nightly")]
-/// # let mapping = serde_json::to_string(&Field::from(MyStringMapping)).unwrap();
+/// # let mapping = serde_json::to_string(&DocumentField::from(MyStringMapping)).unwrap();
 /// # #[cfg(not(feature = "nightly"))]
 /// # let mapping = json.clone();
 /// # assert_eq!(json, mapping);
@@ -232,10 +232,10 @@ impl<T> FieldMapping<TextFormat> for T
 impl<T> SerializeField<TextFormat> for T
     where T: TextMapping
 {
-    type Field = Field<T, TextFormat>;
+    type Field = DocumentField<T, TextFormat>;
 }
 
-impl<T> Serialize for Field<T, TextFormat>
+impl<T> Serialize for DocumentField<T, TextFormat>
     where T: FieldMapping<TextFormat> + TextMapping
 {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
