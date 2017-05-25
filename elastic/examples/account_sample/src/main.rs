@@ -7,8 +7,6 @@ extern crate serde_derive;
 #[macro_use]
 extern crate elastic_derive;
 #[macro_use]
-extern crate json_str;
-#[macro_use]
 extern crate quick_error;
 
 extern crate serde;

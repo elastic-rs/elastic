@@ -24,7 +24,7 @@ impl EnsureBankIndexExists for Client {
             }
             // Some other response, deserialise
             _ => {
-                exists.response::<CommandResponse>()?;
+                exists.into_response::<CommandResponse>()?;
             }
         }
 
