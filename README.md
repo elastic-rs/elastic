@@ -1,6 +1,6 @@
 # [`elastic_reqwest`](https://docs.rs/elastic_reqwest/*/elastic_reqwest/) [![Latest Version](https://img.shields.io/crates/v/elastic_reqwest.svg)](https://crates.io/crates/elastic_reqwest)
 
-Provides a no-fuss, synchronous [`reqwest`](https://github.com/seanmonstar/reqwest) implementation of the Elasticsearch REST API. The `reqwest` client is simple to use; there's basically no setup needed besides creating a `reqwest::Client` object to use for requests. The `reqwest` client is general-purpose and suitable for any scenario where on-demand requests are sufficient.
+Provides a no-fuss, synchronous [`reqwest`](https://github.com/seanmonstar/reqwest) implementation of the Elasticsearch REST API. The `reqwest` client is simple to use; there's basically no setup needed besides creating a `reqwest::Client` object to use for requests. The `reqwest` client is general-purpose and suitable for any scenario where on-demand requests are sufficient. It also splits the request process into a few logical methods that could be easily split across asynchronous boundaries.
 
 This library is the HTTP backend for the higher-level [`elastic`](https://github.com/elastic-rs/elastic) client.
 
@@ -49,12 +49,15 @@ Ping the availability of your cluster:
 extern crate elastic_reqwest as cli;
 extern crate reqwest;
 
-use cli::ElasticClient;
+use cli::{ElasticClient, ParseResponse, parse};
 use cli::req::PingRequest;
+use cli::res::PingResponse;
 
 let (client, params) = cli::default().unwrap();
 
-client.elastic_req(&params, PingRequest::new()).unwrap();
+let http_res = client.elastic_req(&params, PingRequest::new()).unwrap();
+
+let parse_res = parse::<PingResponse>().from_response(http_res).unwrap();
 ```
 
 Customise the location of the Elasticsearch cluster:
@@ -72,8 +75,9 @@ extern crate json_str;
 extern crate elastic_reqwest as cli;
 extern crate reqwest;
 
-use cli::ElasticClient;
+use cli::{ElasticClient, ParseResponse, parse};
 use cli::req::SearchRequest;
+use cli::res::SearchResponse;
  
 let (client, params) = cli::default().unwrap();
 
@@ -100,5 +104,7 @@ let search = {
     SearchRequest::for_index_ty("myindex", "mytype", body)
 };
 
-client.elastic_req(&params, search).unwrap();
+let http_res = client.elastic_req(&params, search).unwrap();
+
+let search_res = parse::<SearchResponse>().from_response(http_res).unwrap();
 ```

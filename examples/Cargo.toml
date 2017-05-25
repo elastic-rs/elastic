@@ -1,6 +1,6 @@
 [workspace]
 members = [
-	"basic",
+    "basic",
     "typed",
     "bulk",
 ]
