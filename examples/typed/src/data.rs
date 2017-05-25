@@ -24,5 +24,5 @@ pub struct Index {
 
 #[derive(Default, Serialize)]
 struct Mappings {
-    mystruct: Document<MyStructMapping>,
+    mystruct: IndexDocumentMapping<MyStructMapping>,
 }
