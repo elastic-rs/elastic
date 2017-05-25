@@ -4,14 +4,14 @@ use super::mapping::*;
 
 macro_rules! number_type {
     ($wrapper_ty:ident, $mapping_ty:ident, $field_trait:ident, $std_ty:ident) => (
-        /// Number type with a given mapping.
+        /** Number type with a given mapping. **/
         #[derive(Debug, Default, Clone, PartialEq)]
         pub struct $wrapper_ty<M> where M: $mapping_ty {
             value: $std_ty,
             _m: PhantomData<M>
         }
         impl <M> $wrapper_ty<M> where M: $mapping_ty {
-            /// Creates a new number with the given mapping.
+            /** Creates a new number with the given mapping. **/
             pub fn new<I: Into<$std_ty>>(num: I) -> $wrapper_ty<M> {
                 $wrapper_ty {
                     value: num.into(),
@@ -19,7 +19,7 @@ macro_rules! number_type {
                 }
             }
 
-            /// Change the mapping of this number.
+            /** Change the mapping of this number. **/
             pub fn remap<MInto: $mapping_ty>(self) -> $wrapper_ty<MInto> {
                 $wrapper_ty::<MInto>::new(self.value)
             }
@@ -99,41 +99,32 @@ mod tests {
 
     #[test]
     fn serialise_elastic_numbers() {
-        let ser = vec![
-            {
-                let num = Integer::<MyIntegerMapping>::new(1i32);
-                serde_json::to_string(&num).unwrap()
-            },
-            {
-                let num = Long::<MyLongMapping>::new(1i64);
-                serde_json::to_string(&num).unwrap()
-            },
-            {
-                let num = Short::<MyShortMapping>::new(1i16);
-                serde_json::to_string(&num).unwrap()
-            },
-            {
-                let num = Byte::<MyByteMapping>::new(1i8);
-                serde_json::to_string(&num).unwrap()
-            },
-            {
-                let num = Float::<MyFloatMapping>::new(1.01f32);
-                serde_json::to_string(&num).unwrap()
-            },
-            {
-                let num = Double::<MyDoubleMapping>::new(1.01f64);
-                serde_json::to_string(&num).unwrap()
-            }
-        ];
+        let ser = vec![{
+                           let num = Integer::<MyIntegerMapping>::new(1i32);
+                           serde_json::to_string(&num).unwrap()
+                       },
+                       {
+                           let num = Long::<MyLongMapping>::new(1i64);
+                           serde_json::to_string(&num).unwrap()
+                       },
+                       {
+                           let num = Short::<MyShortMapping>::new(1i16);
+                           serde_json::to_string(&num).unwrap()
+                       },
+                       {
+                           let num = Byte::<MyByteMapping>::new(1i8);
+                           serde_json::to_string(&num).unwrap()
+                       },
+                       {
+                           let num = Float::<MyFloatMapping>::new(1.01f32);
+                           serde_json::to_string(&num).unwrap()
+                       },
+                       {
+                           let num = Double::<MyDoubleMapping>::new(1.01f64);
+                           serde_json::to_string(&num).unwrap()
+                       }];
 
-        let expected_ser = vec![
-            "1",
-            "1",
-            "1",
-            "1",
-            "1.01",
-            "1.01"
-        ];
+        let expected_ser = vec!["1", "1", "1", "1", "1.01", "1.01"];
 
         let mut success = true;
         for i in 0..ser.len() {
@@ -155,9 +146,7 @@ mod tests {
         let float_de: Float<MyFloatMapping> = serde_json::from_str("1.01").unwrap();
         let double_de: Double<MyDoubleMapping> = serde_json::from_str("1.01").unwrap();
 
-        assert_eq!(
-            (1i32, 1i64, 1i16, 1i8, 1.01f32, 1.01f64),
-            (*int_de, *long_de, *short_de, *byte_de, *float_de, *double_de)
-        );
+        assert_eq!((1i32, 1i64, 1i16, 1i8, 1.01f32, 1.01f64),
+                   (*int_de, *long_de, *short_de, *byte_de, *float_de, *double_de));
     }
 }

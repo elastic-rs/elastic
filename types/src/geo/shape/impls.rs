@@ -3,24 +3,26 @@ use serde::{Serialize, Deserialize, Serializer, Deserializer};
 use geojson::Geometry;
 use super::mapping::{GeoShapeFieldType, GeoShapeMapping, DefaultGeoShapeMapping};
 
-/// Geo shape type with a given mapping.
-///
-/// Defining a `geo_shape` with a mapping:
-///
-/// ```
-/// # extern crate elastic_types;
-/// extern crate geojson;
-/// use geojson::{ Geometry, Value };
-///
-/// # use elastic_types::prelude::*;
-/// # fn main() {
-/// let point: GeoShape<DefaultGeoShapeMapping> = GeoShape::new(
-///     Geometry::new(
-///         Value::Point(vec![ 1.0, 1.0 ])
-///     )
-/// );
-/// # }
-/// ```
+/**
+Geo shape type with a given mapping.
+
+Defining a `geo_shape` with a mapping:
+
+```
+# extern crate elastic_types;
+extern crate geojson;
+use geojson::{ Geometry, Value };
+
+# use elastic_types::prelude::*;
+# fn main() {
+let point: GeoShape<DefaultGeoShapeMapping> = GeoShape::new(
+    Geometry::new(
+        Value::Point(vec![ 1.0, 1.0 ])
+    )
+);
+# }
+```
+**/
 #[derive(Debug, Clone, PartialEq)]
 pub struct GeoShape<M = DefaultGeoShapeMapping>
     where M: GeoShapeMapping
@@ -32,26 +34,28 @@ pub struct GeoShape<M = DefaultGeoShapeMapping>
 impl<M> GeoShape<M>
     where M: GeoShapeMapping
 {
-    /// Creates a new `GeoShape` from the given `Geometry`.
-    ///
-    /// This function will consume the provided `Geometry`.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// # extern crate elastic_types;
-    /// # extern crate geojson;
-    /// use geojson::{ Geometry, Value };
-    ///
-    /// # use elastic_types::prelude::*;
-    /// # fn main() {
-    /// let point: GeoShape = GeoShape::new(
-    ///     Geometry::new(
-    ///         Value::Point(vec![ 1.0, 1.0 ])
-    ///     )
-    /// );
-    /// # }
-    /// ```
+    /**
+    Creates a new `GeoShape` from the given `Geometry`.
+    
+    This function will consume the provided `Geometry`.
+    
+    # Examples
+    
+    ```
+    # extern crate elastic_types;
+    # extern crate geojson;
+    use geojson::{ Geometry, Value };
+    
+    # use elastic_types::prelude::*;
+    # fn main() {
+    let point: GeoShape = GeoShape::new(
+        Geometry::new(
+            Value::Point(vec![ 1.0, 1.0 ])
+        )
+    );
+    # }
+    ```
+    **/
     pub fn new<I>(geo: I) -> GeoShape<M>
         where I: Into<Geometry>
     {
@@ -61,7 +65,7 @@ impl<M> GeoShape<M>
         }
     }
 
-    /// Change the mapping of this geo shape.
+    /** Change the mapping of this geo shape. **/
     pub fn remap<MInto: GeoShapeMapping>(self) -> GeoShape<MInto> {
         GeoShape::<MInto>::new(self.value)
     }

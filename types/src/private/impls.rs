@@ -7,7 +7,7 @@ use serde::ser::SerializeStruct;
 use super::field::{DocumentField, FieldMapping, SerializeField};
 use document::FieldType;
 
-/// A mapping implementation for a non-core type, or anywhere it's ok for Elasticsearch to infer the mapping at index-time.
+/** A mapping implementation for a non-core type, or anywhere it's ok for Elasticsearch to infer the mapping at index-time. **/
 #[derive(Debug, PartialEq, Default, Clone)]
 struct DefaultMapping;
 impl FieldMapping<()> for DefaultMapping {}
@@ -28,10 +28,12 @@ impl Serialize for DocumentField<DefaultMapping, ()> {
     }
 }
 
-/// Mapping for a wrapped value, like an array or optional type.
-///
-/// In Elasticsearch, arrays and optional types aren't special, anything can be indexed as an array or null.
-/// So the mapping for an array or optional type is just the mapping for the type it contains.
+/**
+Mapping for a wrapped value, like an array or optional type.
+
+In Elasticsearch, arrays and optional types aren't special, anything can be indexed as an array or null.
+So the mapping for an array or optional type is just the mapping for the type it contains.
+**/
 #[derive(Debug, Default, Clone)]
 struct WrappedMapping<M, F>
     where M: FieldMapping<F>,
@@ -67,14 +69,14 @@ impl<M, F> Serialize for DocumentField<WrappedMapping<M, F>, F>
     }
 }
 
-/// Mapping implementation for a standard binary tree map.
+/** Mapping implementation for a standard binary tree map. **/
 impl<K, V> FieldType<DefaultMapping, ()> for BTreeMap<K, V>
     where K: AsRef<str> + Ord + Serialize,
           V: Serialize
 {
 }
 
-/// Mapping implementation for a standard hash map.
+/** Mapping implementation for a standard hash map. **/
 impl<K, V> FieldType<DefaultMapping, ()> for HashMap<K, V>
     where K: AsRef<str> + Eq + Hash + Serialize,
           V: Serialize

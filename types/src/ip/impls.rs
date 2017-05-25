@@ -8,21 +8,23 @@ use super::mapping::{IpFieldType, IpMapping, DefaultIpMapping};
 
 impl IpFieldType<DefaultIpMapping> for Ipv4Addr {}
 
-/// An Elasticsearch `ip` with a mapping.
-///
-/// Where the mapping isn't custom, you can use the standard library `Ipv4Addr` instead.
-///
-/// # Examples
-///
-/// Defining an `ip` with a mapping:
-///
-/// ```
-/// use std::net::Ipv4Addr;
-/// use elastic_types::ip::mapping::DefaultIpMapping;
-/// use elastic_types::ip::Ip;
-///
-/// let ip = Ip::<DefaultIpMapping>::new(Ipv4Addr::new(127, 0, 0, 1));
-/// ```
+/**
+An Elasticsearch `ip` with a mapping.
+
+Where the mapping isn't custom, you can use the standard library `Ipv4Addr` instead.
+
+# Examples
+
+Defining an `ip` with a mapping:
+
+```
+use std::net::Ipv4Addr;
+use elastic_types::ip::mapping::DefaultIpMapping;
+use elastic_types::ip::Ip;
+
+let ip = Ip::<DefaultIpMapping>::new(Ipv4Addr::new(127, 0, 0, 1));
+```
+**/
 #[derive(Debug, Clone, PartialEq)]
 pub struct Ip<M>
     where M: IpMapping
@@ -33,19 +35,21 @@ pub struct Ip<M>
 impl<M> Ip<M>
     where M: IpMapping
 {
-    /// Creates a new `Ip` with the given mapping.
-    ///
-    /// # Examples
-    ///
-    /// Create a new `Ip` from a `Ip4vAddr`:
-    ///
-    /// ```
-    /// use std::net::Ipv4Addr;
-    /// use elastic_types::ip::mapping::DefaultIpMapping;
-    /// use elastic_types::ip::Ip;
-    ///
-    /// let ip = Ip::<DefaultIpMapping>::new(Ipv4Addr::new(127, 0, 0, 1));
-    /// ```
+    /**
+    Creates a new `Ip` with the given mapping.
+    
+    # Examples
+    
+    Create a new `Ip` from a `Ip4vAddr`:
+    
+    ```
+    use std::net::Ipv4Addr;
+    use elastic_types::ip::mapping::DefaultIpMapping;
+    use elastic_types::ip::Ip;
+    
+    let ip = Ip::<DefaultIpMapping>::new(Ipv4Addr::new(127, 0, 0, 1));
+    ```
+    **/
     pub fn new<I>(ip: I) -> Ip<M>
         where I: Into<Ipv4Addr>
     {
@@ -55,27 +59,29 @@ impl<M> Ip<M>
         }
     }
 
-    /// Change the mapping of this ip.
-    ///
-    /// # Examples
-    ///
-    /// Change the mapping for a given `Ip`:
-    ///
-    /// ```
-    /// # extern crate serde;
-    /// # #[macro_use]
-    /// # extern crate elastic_types;
-    /// # fn main() {
-    /// # use std::net::Ipv4Addr;
-    /// # use elastic_types::prelude::*;
-    /// # #[derive(Default)]
-    /// # struct MyIpMapping;
-    /// # impl IpMapping for MyIpMapping { }
-    /// let es_ip = Ip::<DefaultIpMapping>::new(Ipv4Addr::new(127, 0, 0, 1));
-    ///
-    /// let ip: Ip<MyIpMapping> = es_ip.remap();
-    /// # }
-    /// ```
+    /**
+    Change the mapping of this ip.
+    
+    # Examples
+    
+    Change the mapping for a given `Ip`:
+    
+    ```
+    # extern crate serde;
+    # #[macro_use]
+    # extern crate elastic_types;
+    # fn main() {
+    # use std::net::Ipv4Addr;
+    # use elastic_types::prelude::*;
+    # #[derive(Default)]
+    # struct MyIpMapping;
+    # impl IpMapping for MyIpMapping { }
+    let es_ip = Ip::<DefaultIpMapping>::new(Ipv4Addr::new(127, 0, 0, 1));
+    
+    let ip: Ip<MyIpMapping> = es_ip.remap();
+    # }
+    ```
+    **/
     pub fn remap<MInto>(self) -> Ip<MInto>
         where MInto: IpMapping
     {

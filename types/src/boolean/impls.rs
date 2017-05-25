@@ -5,18 +5,20 @@ use super::mapping::{BooleanFieldType, BooleanMapping, DefaultBooleanMapping};
 
 impl BooleanFieldType<DefaultBooleanMapping> for bool {}
 
-/// An Elasticsearch `boolean` with a mapping.
-///
-/// Where the mapping isn't custom, you can use the standard library `bool` instead.
-///
-/// # Examples
-///
-/// Defining a `bool` with a mapping:
-///
-/// ```
-/// # use elastic_types::prelude::*;
-/// let boolean = Boolean::<DefaultBooleanMapping>::new(true);
-/// ```
+/**
+An Elasticsearch `boolean` with a mapping.
+
+Where the mapping isn't custom, you can use the standard library `bool` instead.
+
+# Examples
+
+Defining a `bool` with a mapping:
+
+```
+# use elastic_types::prelude::*;
+let boolean = Boolean::<DefaultBooleanMapping>::new(true);
+```
+**/
 #[derive(Debug, Clone, Default, PartialEq)]
 pub struct Boolean<M>
     where M: BooleanMapping
@@ -27,16 +29,18 @@ pub struct Boolean<M>
 impl<M> Boolean<M>
     where M: BooleanMapping
 {
-    /// Creates a new `Boolean` with the given mapping.
-    ///
-    /// # Examples
-    ///
-    /// Create a new `Boolean` from a `bool`:
-    ///
-    /// ```
-    /// # use elastic_types::prelude::*;
-    /// let boolean = Boolean::<DefaultBooleanMapping>::new(false);
-    /// ```
+    /**
+    Creates a new `Boolean` with the given mapping.
+    
+    # Examples
+    
+    Create a new `Boolean` from a `bool`:
+    
+    ```
+    # use elastic_types::prelude::*;
+    let boolean = Boolean::<DefaultBooleanMapping>::new(false);
+    ```
+    **/
     pub fn new<I>(boolean: I) -> Boolean<M>
         where I: Into<bool>
     {
@@ -46,26 +50,28 @@ impl<M> Boolean<M>
         }
     }
 
-    /// Change the mapping of this boolean.
-    ///
-    /// # Examples
-    ///
-    /// Change the mapping for a given `Boolean`:
-    ///
-    /// ```
-    /// # extern crate serde;
-    /// # #[macro_use]
-    /// # extern crate elastic_types;
-    /// # fn main() {
-    /// # use elastic_types::prelude::*;
-    /// # #[derive(Default)]
-    /// # struct MyBooleanMapping;
-    /// # impl BooleanMapping for MyBooleanMapping { }
-    /// let es_boolean = Boolean::<DefaultBooleanMapping>::new(true);
-    ///
-    /// let boolean: Boolean<MyBooleanMapping> = es_boolean.remap();
-    /// # }
-    /// ```
+    /**
+    Change the mapping of this boolean.
+    
+    # Examples
+    
+    Change the mapping for a given `Boolean`:
+    
+    ```
+    # extern crate serde;
+    # #[macro_use]
+    # extern crate elastic_types;
+    # fn main() {
+    # use elastic_types::prelude::*;
+    # #[derive(Default)]
+    # struct MyBooleanMapping;
+    # impl BooleanMapping for MyBooleanMapping { }
+    let es_boolean = Boolean::<DefaultBooleanMapping>::new(true);
+    
+    let boolean: Boolean<MyBooleanMapping> = es_boolean.remap();
+    # }
+    ```
+    **/
     pub fn remap<MInto>(self) -> Boolean<MInto>
         where MInto: BooleanMapping
     {

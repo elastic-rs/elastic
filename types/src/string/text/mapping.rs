@@ -1,4 +1,4 @@
-//! Mapping for the Elasticsearch `text` type.
+/*! Mapping for the Elasticsearch `text` type. !*/
 
 use std::collections::BTreeMap;
 use serde::{Serialize, Serializer};
@@ -7,7 +7,7 @@ use string::mapping::{StringField, IndexOptions};
 use private::field::{DocumentField, FieldMapping, SerializeField};
 use document::FieldType;
 
-/// A field that will be mapped as `text`.
+/** A field that will be mapped as `text`. **/
 pub trait TextFieldType<M> where M: TextMapping {}
 
 impl<T, M> FieldType<M, TextFormat> for T
@@ -19,203 +19,230 @@ impl<T, M> FieldType<M, TextFormat> for T
 #[derive(Default)]
 struct TextFormat;
 
-/// The base requirements for mapping a `string` type.
-///
-/// Custom mappings can be defined by implementing `TextMapping`.
-///
-/// # Examples
-///
-/// Define a custom `TextMapping`:
-///
-/// ## Derive Mapping
-///
-/// ```
-/// # #[macro_use]
-/// # extern crate elastic_types;
-/// # extern crate serde;
-/// # use elastic_types::prelude::*;
-/// #[derive(Default)]
-/// struct MyStringMapping;
-/// impl TextMapping for MyStringMapping {
-///     //Overload the mapping functions here
-///     fn boost() -> Option<f32> {
-///         Some(1.5)
-///     }
-/// }
-/// # fn main() {}
-/// ```
-///
-/// This will produce the following mapping:
-///
-/// ```
-/// # #[macro_use]
-/// # extern crate json_str;
-/// # #[macro_use]
-/// # extern crate elastic_types;
-/// # extern crate serde;
-/// # #[cfg(feature = "nightly")]
-/// # extern crate serde_json;
-/// # use elastic_types::prelude::*;
-/// # #[derive(Default)]
-/// # struct MyStringMapping;
-/// # impl TextMapping for MyStringMapping {
-/// #     //Overload the mapping functions here
-/// #     fn boost() -> Option<f32> {
-/// #         Some(1.5)
-/// #     }
-/// # }
-/// # fn main() {
-/// # let json = json_str!(
-/// {
-///     "type": "text",
-///     "boost": 1.5
-/// }
-/// # );
-/// # #[cfg(feature = "nightly")]
-/// # let mapping = serde_json::to_string(&DocumentField::from(MyStringMapping)).unwrap();
-/// # #[cfg(not(feature = "nightly"))]
-/// # let mapping = json.clone();
-/// # assert_eq!(json, mapping);
-/// # }
-/// ```
+/**
+The base requirements for mapping a `string` type.
+
+Custom mappings can be defined by implementing `TextMapping`.
+
+# Examples
+
+Define a custom `TextMapping`:
+
+## Derive Mapping
+
+```
+# #[macro_use]
+# extern crate elastic_types;
+# extern crate serde;
+# use elastic_types::prelude::*;
+#[derive(Default)]
+struct MyStringMapping;
+impl TextMapping for MyStringMapping {
+    //Overload the mapping functions here
+    fn boost() -> Option<f32> {
+        Some(1.5)
+    }
+}
+# fn main() {}
+```
+
+This will produce the following mapping:
+
+```
+# #[macro_use]
+# extern crate json_str;
+# #[macro_use]
+# extern crate elastic_types;
+# extern crate serde;
+# #[cfg(feature = "nightly")]
+# extern crate serde_json;
+# use elastic_types::prelude::*;
+# #[derive(Default)]
+# struct MyStringMapping;
+# impl TextMapping for MyStringMapping {
+#     //Overload the mapping functions here
+#     fn boost() -> Option<f32> {
+#         Some(1.5)
+#     }
+# }
+# fn main() {
+# let json = json_str!(
+{
+    "type": "text",
+    "boost": 1.5
+}
+# );
+# #[cfg(feature = "nightly")]
+# let mapping = serde_json::to_string(&DocumentField::from(MyStringMapping)).unwrap();
+# #[cfg(not(feature = "nightly"))]
+# let mapping = json.clone();
+# assert_eq!(json, mapping);
+# }
+```
+**/
 pub trait TextMapping
     where Self: Default
 {
-    /// The analyzer which should be used for analyzed string fields,
-    /// both at index-time and at search-time (unless overridden by the `search_analyzer`).
-    /// Defaults to the default index analyzer, or the `standard` analyzer.
+    /**
+    The analyzer which should be used for analyzed string fields,
+    both at index-time and at search-time (unless overridden by the `search_analyzer`).
+    Defaults to the default index analyzer, or the `standard` analyzer.
+    **/
     fn analyzer() -> Option<&'static str> {
         None
     }
 
-    /// Field-level index time boosting. Accepts a floating point number, defaults to `1.0`.
+    /** Field-level index time boosting. Accepts a floating point number, defaults to `1.0`. **/
     fn boost() -> Option<f32> {
         None
     }
 
-    /// Should global ordinals be loaded eagerly on refresh?
-    /// Accepts `true` or `false` (default).
-    /// Enabling this is a good idea on fields that are frequently used for (significant) terms aggregations.
+    /**
+    Should global ordinals be loaded eagerly on refresh?
+    Accepts `true` or `false` (default).
+    Enabling this is a good idea on fields that are frequently used for (significant) terms aggregations.
+    **/
     fn eager_global_ordinals() -> Option<bool> {
         None
     }
 
-    /// Can the field use in-memory fielddata for sorting, aggregations, or scripting?
-    /// Accepts `true` or `false` (default).
+    /**
+    Can the field use in-memory fielddata for sorting, aggregations, or scripting?
+    Accepts `true` or `false` (default).
+    **/
     fn fielddata() -> Option<bool> {
         None
     }
 
-    /// Expert settings which allow to decide which values to load in memory when `fielddata` is enabled.
-    /// By default all values are loaded.
+    /**
+    Expert settings which allow to decide which values to load in memory when `fielddata` is enabled.
+    By default all values are loaded.
+    **/
     fn fielddata_frequency_filter() -> Option<FieldDataFrequencyFilter> {
         None
     }
 
-    /// Multi-fields allow the same string value to be indexed in multiple ways for different purposes,
-    /// such as one field for search and a multi-field for sorting and aggregations,
-    /// or the same string value analyzed by different analyzers.
-    ///
-    /// # Examples
-    ///
-    /// Subfields are provided as simple `struct`s, so you don't need to define a separate type
-    /// to map them:
-    ///
-    /// ```
-    /// # #[macro_use]
-    /// # extern crate elastic_types;
-    /// # extern crate serde;
-    /// # use std::collections::BTreeMap;
-    /// # use elastic_types::prelude::*;
-    /// # #[derive(Default)]
-    /// # struct MyStringMapping;
-    /// # impl TextMapping for MyStringMapping {
-    /// fn fields() -> Option<BTreeMap<&'static str, StringField>> {
-    ///     let mut fields = BTreeMap::new();
-    ///
-    ///     //Add a `token_count` as a sub field
-    ///     fields.insert("count", StringField::TokenCount(
-    ///         ElasticTokenCountFieldMapping::default())
-    ///     );
-    ///
-    ///     //Add a `completion` suggester as a sub field
-    ///     fields.insert("comp", StringField::Completion(
-    ///         ElasticCompletionFieldMapping::default())
-    ///     );
-    ///
-    ///     Some(fields)
-    /// }
-    /// # }
-    /// # fn main() {}
-    /// ```
+    /**
+    Multi-fields allow the same string value to be indexed in multiple ways for different purposes,
+    such as one field for search and a multi-field for sorting and aggregations,
+    or the same string value analyzed by different analyzers.
+    
+    # Examples
+    
+    Subfields are provided as simple `struct`s, so you don't need to define a separate type
+    to map them:
+    
+    ```
+    # #[macro_use]
+    # extern crate elastic_types;
+    # extern crate serde;
+    # use std::collections::BTreeMap;
+    # use elastic_types::prelude::*;
+    # #[derive(Default)]
+    # struct MyStringMapping;
+    # impl TextMapping for MyStringMapping {
+    fn fields() -> Option<BTreeMap<&'static str, StringField>> {
+        let mut fields = BTreeMap::new();
+    
+        //Add a `token_count` as a sub field
+        fields.insert("count", StringField::TokenCount(
+            ElasticTokenCountFieldMapping::default())
+        );
+    
+        //Add a `completion` suggester as a sub field
+        fields.insert("comp", StringField::Completion(
+            ElasticCompletionFieldMapping::default())
+        );
+    
+        Some(fields)
+    }
+    # }
+    # fn main() {}
+    ```
+    **/
     fn fields() -> Option<BTreeMap<&'static str, StringField>> {
         None
     }
 
-    /// Whether or not the field value should be included in the `_all` field?
-    /// Accepts true or false.
-    /// Defaults to `false` if index is set to `no`, or if a parent object field sets `include_in_all` to false.
-    /// Otherwise defaults to `true`.
+    /**
+    Whether or not the field value should be included in the `_all` field?
+    Accepts true or false.
+    Defaults to `false` if index is set to `no`, or if a parent object field sets `include_in_all` to false.
+    Otherwise defaults to `true`.
+    **/
     fn include_in_all() -> Option<bool> {
         None
     }
 
-    /// The maximum number of characters to index.
-    /// Any characters over this length will be ignored.
+    /**
+    The maximum number of characters to index.
+    Any characters over this length will be ignored.
+    **/
     fn ignore_above() -> Option<u32> {
         None
     }
 
-    /// Should the field be searchable? Accepts `true` (default) or `false`.
+    /** Should the field be searchable? Accepts `true` (default) or `false`. **/
     fn index() -> Option<bool> {
         None
     }
 
-    /// What information should be stored in the index, for search and highlighting purposes. Defaults to `Positions`.
+    /** What information should be stored in the index, for search and highlighting purposes. Defaults to `Positions`. **/
     fn index_options() -> Option<IndexOptions> {
         None
     }
 
-    /// Whether field-length should be taken into account when scoring queries. Accepts `true` (default) or `false`.
+    /** Whether field-length should be taken into account when scoring queries. Accepts `true` (default) or `false`. **/
     fn norms() -> Option<bool> {
         None
     }
 
-    /// The number of fake term position which should be inserted between each element of an array of strings.
-    /// Defaults to the `position_increment_gap` configured on the analyzer which defaults to `100`.
-    /// `100` was chosen because it prevents phrase queries with reasonably large slops (less than `100`)
-    /// from matching terms across field values.
+    /**
+    The number of fake term position which should be inserted between each element of an array of strings.
+    Defaults to the `position_increment_gap` configured on the analyzer which defaults to `100`.
+    `100` was chosen because it prevents phrase queries with reasonably large slops (less than `100`)
+    from matching terms across field values.
+    **/
     fn position_increment_gap() -> Option<u32> {
         None
     }
 
-    /// Whether the field value should be stored and retrievable separately from the `_source` field.
-    /// Accepts `true` or `false` (default).
+    /**
+    Whether the field value should be stored and retrievable separately from the `_source` field.
+    Accepts `true` or `false` (default).
+    **/
     fn store() -> Option<bool> {
         None
     }
 
-    /// The analyzer that should be used at search time on analyzed fields.
-    /// Defaults to the analyzer setting.
+    /**
+    The analyzer that should be used at search time on analyzed fields.
+    Defaults to the analyzer setting.
+    **/
     fn search_analyzer() -> Option<&'static str> {
         None
     }
 
-
-    /// The analyzer that should be used at search time when a phrase is encountered.
-    /// Defaults to the `search_analyzer` setting.
+    /**
+    The analyzer that should be used at search time when a phrase is encountered.
+    Defaults to the `search_analyzer` setting.
+    **/
     fn search_quote_analyzer() -> Option<&'static str> {
         None
     }
 
-    /// Which scoring algorithm or similarity should be used.
-    /// Defaults to `"classic"`, which uses TF/IDF.
+    /**
+    Which scoring algorithm or similarity should be used.
+    Defaults to `"classic"`, which uses TF/IDF.
+    **/
     fn similarity() -> Option<&'static str> {
         None
     }
 
-    /// Whether term vectors should be stored for an `analyzed` field.
-    /// Defaults to `No`.
+    /**
+    Whether term vectors should be stored for an `analyzed` field.
+    Defaults to `No`.
+    **/
     fn term_vector() -> Option<TermVector> {
         None
     }
@@ -269,23 +296,23 @@ impl<T> Serialize for DocumentField<T, TextFormat>
     }
 }
 
-/// Default mapping for `text`.
+/** Default mapping for `text`. **/
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultTextMapping;
 impl TextMapping for DefaultTextMapping {}
 
-/// Term vectors contain information about the terms produced by the analysis process.
+/** Term vectors contain information about the terms produced by the analysis process. **/
 #[derive(Debug, Clone, Copy)]
 pub enum TermVector {
-    /// No term vectors are stored. (default)
+    /** No term vectors are stored. (default) **/
     No,
-    /// Just the terms in the field are stored.
+    /** Just the terms in the field are stored. **/
     Yes,
-    /// Terms and positions are stored.
+    /** Terms and positions are stored. **/
     WithPositions,
-    /// Terms and character offsets are stored.
+    /** Terms and character offsets are stored. **/
     WithOffsets,
-    /// Terms, positions, and character offsets are stored.
+    /** Terms, positions, and character offsets are stored. **/
     WithPositionsOffsets,
 }
 
@@ -303,14 +330,14 @@ impl Serialize for TermVector {
     }
 }
 
-/// Fielddata for term frequency as a percentage range.
+/** Fielddata for term frequency as a percentage range. **/
 #[derive(Debug, Default, PartialEq, Clone, Copy)]
 pub struct FieldDataFrequencyFilter {
-    /// The min frequency percentage.
+    /** The min frequency percentage. **/
     pub min: Option<f32>,
-    /// The max frequency percentage.
+    /** The max frequency percentage. **/
     pub max: Option<f32>,
-    /// The minimum number of docs a segment should contain.
+    /** The minimum number of docs a segment should contain. **/
     pub min_segment_size: Option<i32>,
 }
 
@@ -328,56 +355,80 @@ impl Serialize for FieldDataFrequencyFilter {
     }
 }
 
-/// A multi-field string mapping.
+/** A multi-field string mapping. **/
 #[derive(Debug, Default, Clone, Copy)]
 pub struct TextFieldMapping {
-    /// The analyzer which should be used for analyzed string fields,
-    /// both at index-time and at search-time (unless overridden by the `search_analyzer`).
-    /// Defaults to the default index analyzer, or the `standard` analyzer.
+    /**
+    The analyzer which should be used for analyzed string fields,
+    both at index-time and at search-time (unless overridden by the `search_analyzer`).
+    Defaults to the default index analyzer, or the `standard` analyzer.
+    **/
     pub analyzer: Option<&'static str>,
-    /// Should global ordinals be loaded eagerly on refresh?
-    /// Accepts `true` or `false` (default).
-    /// Enabling this is a good idea on fields that are frequently used for (significant) terms aggregations.
+    /**
+    Should global ordinals be loaded eagerly on refresh?
+    Accepts `true` or `false` (default).
+    Enabling this is a good idea on fields that are frequently used for (significant) terms aggregations.
+    **/
     pub eager_global_ordinals: Option<bool>,
-    /// Can the field use in-memory fielddata for sorting, aggregations, or scripting?
-    /// Accepts `true` or `false` (default).
+    /**
+    Can the field use in-memory fielddata for sorting, aggregations, or scripting?
+    Accepts `true` or `false` (default).
+    **/
     pub fielddata: Option<bool>,
-    /// Expert settings which allow to decide which values to load in memory when `fielddata` is enabled.
-    /// By default all values are loaded.
+    /**
+    Expert settings which allow to decide which values to load in memory when `fielddata` is enabled.
+    By default all values are loaded.
+    **/
     pub fielddata_frequency_filter: Option<FieldDataFrequencyFilter>,
-    /// Whether or not the field value should be included in the `_all` field?
-    /// Accepts true or false.
-    /// Defaults to `false` if index is set to `no`, or if a parent object field sets `include_in_all` to false.
-    /// Otherwise defaults to `true`.
+    /**
+    Whether or not the field value should be included in the `_all` field?
+    Accepts true or false.
+    Defaults to `false` if index is set to `no`, or if a parent object field sets `include_in_all` to false.
+    Otherwise defaults to `true`.
+    **/
     pub include_in_all: Option<bool>,
-    /// The maximum number of characters to index.
-    /// Any characters over this length will be ignored.
+    /**
+    The maximum number of characters to index.
+    Any characters over this length will be ignored.
+    **/
     pub ignore_above: Option<u32>,
-    /// Should the field be searchable? Accepts `true` (default) or `false`.
+    /** Should the field be searchable? Accepts `true` (default) or `false`. **/
     pub index: Option<bool>,
-    /// What information should be stored in the index, for search and highlighting purposes. Defaults to `Positions`.
+    /** What information should be stored in the index, for search and highlighting purposes. Defaults to `Positions`. **/
     pub index_options: Option<IndexOptions>,
-    /// Whether field-length should be taken into account when scoring queries. Accepts `true` (default) or `false`.
+    /** Whether field-length should be taken into account when scoring queries. Accepts `true` (default) or `false`. **/
     pub norms: Option<bool>,
-    /// The number of fake term position which should be inserted between each element of an array of strings.
-    /// Defaults to the `position_increment_gap` configured on the analyzer which defaults to `100`.
-    /// `100` was chosen because it prevents phrase queries with reasonably large slops (less than `100`)
-    /// from matching terms across field values.
+    /**
+    The number of fake term position which should be inserted between each element of an array of strings.
+    Defaults to the `position_increment_gap` configured on the analyzer which defaults to `100`.
+    `100` was chosen because it prevents phrase queries with reasonably large slops (less than `100`)
+    from matching terms across field values.
+    **/
     pub position_increment_gap: Option<u32>,
-    /// Whether the field value should be stored and retrievable separately from the `_source` field.
-    /// Accepts `true` or `false` (default).
+    /**
+    Whether the field value should be stored and retrievable separately from the `_source` field.
+    Accepts `true` or `false` (default).
+    **/
     pub store: Option<bool>,
-    /// The analyzer that should be used at search time on analyzed fields.
-    /// Defaults to the analyzer setting.
+    /**
+    The analyzer that should be used at search time on analyzed fields.
+    Defaults to the analyzer setting.
+    **/
     pub search_analyzer: Option<&'static str>,
-    /// The analyzer that should be used at search time when a phrase is encountered.
-    /// Defaults to the `search_analyzer` setting.
+    /**
+    The analyzer that should be used at search time when a phrase is encountered.
+    Defaults to the `search_analyzer` setting.
+    **/
     pub search_quote_analyzer: Option<&'static str>,
-    /// Which scoring algorithm or similarity should be used.
-    /// Defaults to `"classic"`, which uses TF/IDF.
+    /**
+    Which scoring algorithm or similarity should be used.
+    Defaults to `"classic"`, which uses TF/IDF.
+    **/
     pub similarity: Option<&'static str>,
-    /// Whether term vectors should be stored for an `analyzed` field.
-    /// Defaults to `No`.
+    /**
+    Whether term vectors should be stored for an `analyzed` field.
+    Defaults to `No`.
+    **/
     pub term_vector: Option<TermVector>,
 }
 

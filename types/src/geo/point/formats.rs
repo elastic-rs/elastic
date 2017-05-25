@@ -6,7 +6,7 @@ use super::{Coordinate, Point, GeoPointFormat};
 use super::mapping::GeoPointMapping;
 use geo::mapping::Distance;
 
-/// Geo-point expressed as an object, with `lat` and `lon` keys.
+/** Geo-point expressed as an object, with `lat` and `lon` keys. **/
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct GeoPointObject;
 
@@ -37,7 +37,7 @@ impl GeoPointFormat for GeoPointObject {
     }
 }
 
-/// Geo-point expressed as a string with the format: `"lat,lon"`.
+/** Geo-point expressed as a string with the format: `"lat,lon"`. **/
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct GeoPointString;
 impl GeoPointFormat for GeoPointString {
@@ -102,7 +102,7 @@ impl GeoPointFormat for GeoPointString {
     }
 }
 
-/// Geo-point expressed as a geohash.
+/** Geo-point expressed as a geohash. **/
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct GeoPointHash;
 impl GeoPointFormat for GeoPointHash {
@@ -153,7 +153,7 @@ impl GeoPointFormat for GeoPointHash {
     }
 }
 
-/// Geo-point expressed as an array with the format: `[lon, lat]`
+/** Geo-point expressed as an array with the format: `[lon, lat]` **/
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct GeoPointArray;
 impl GeoPointFormat for GeoPointArray {
@@ -210,10 +210,7 @@ mod tests {
     fn object() {
         let point: GeoPoint<GeoPointObject> = serde_json::from_str(r#"{"lat":41.0,"lon":-71.34}"#).unwrap();
 
-        assert_eq!((-71.34, 41.0), (
-            point.x(),
-            point.y()
-        ));
+        assert_eq!((-71.34, 41.0), (point.x(), point.y()));
 
         let ser = serde_json::to_string(&point).unwrap();
 
@@ -224,10 +221,7 @@ mod tests {
     fn string() {
         let point: GeoPoint<GeoPointString> = serde_json::from_str(r#""41.12,-71.34""#).unwrap();
 
-        assert_eq!((-71.34, 41.12), (
-            point.x(),
-            point.y()
-        ));
+        assert_eq!((-71.34, 41.12), (point.x(), point.y()));
 
         let ser = serde_json::to_string(&point).unwrap();
 
@@ -252,10 +246,8 @@ mod tests {
     fn hash() {
         let point: GeoPoint<GeoPointHash> = serde_json::from_str(r#""drm3btev3e86""#).unwrap();
 
-        assert_eq!((-71.34000012651086, 41.12000000663102), (
-            point.x(),
-            point.y()
-        ));
+        assert_eq!((-71.34000012651086, 41.12000000663102),
+                   (point.x(), point.y()));
 
         let ser = serde_json::to_string(&point).unwrap();
 
@@ -266,10 +258,7 @@ mod tests {
     fn array() {
         let point: GeoPoint<GeoPointArray> = serde_json::from_str(r#"[-71.34,41]"#).unwrap();
 
-        assert_eq!((-71.34, 41.0), (
-            point.x(),
-            point.y()
-        ));
+        assert_eq!((-71.34, 41.0), (point.x(), point.y()));
 
         let ser = serde_json::to_string(&point).unwrap();
 

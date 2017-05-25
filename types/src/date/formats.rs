@@ -2,34 +2,40 @@ use chrono::{DateTime, NaiveDateTime, UTC, Timelike};
 use std::error::Error;
 use super::{DateFormat, FormattedDate, ParseError};
 
-/// Format for default `chrono::DateTime`.
+/** Format for default `chrono::DateTime`. **/
 #[derive(ElasticDateFormat, PartialEq, Debug, Default, Clone, Copy)]
 #[elastic(date_format="yyyy-MM-dd'T'HH:mm:ssZ")]
 pub struct ChronoFormat;
 
-/// Format for `basic_date_time_no_millis`.
-///
-/// # Links
-/// - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-date-format.html#built-in-date-formats)
+/**
+Format for `basic_date_time_no_millis`.
+
+# Links
+- [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-date-format.html#built-in-date-formats)
+**/
 #[derive(ElasticDateFormat, PartialEq, Debug, Default, Clone, Copy)]
 #[elastic(date_format="yyyyMMdd'T'HHmmssZ", date_format_name="basic_date_time_no_millis")]
 pub struct BasicDateTimeNoMillis;
 
-/// Format for `basic_date_time`.
-///
-/// # Links
-/// - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-date-format.html#built-in-date-formats)
+/**
+Format for `basic_date_time`.
+
+# Links
+- [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-date-format.html#built-in-date-formats)
+**/
 #[derive(ElasticDateFormat, PartialEq, Debug, Default, Clone, Copy)]
 #[elastic(date_format="yyyyMMdd'T'HHmmss.SSSZ", date_format_name="basic_date_time")]
 pub struct BasicDateTime;
 
-/// Format for `epoch_millis`.
-///
-/// Takes up to a 13 digit string of millis since the epoch and converts to a `DateTime`.
-/// This is an efficient formatter, so is a good choice for storing timestamps.
-///
-/// # Links
-/// - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-date-format.html#built-in-date-formats)
+/**
+Format for `epoch_millis`.
+
+Takes up to a 13 digit string of millis since the epoch and converts to a `DateTime`.
+This is an efficient formatter, so is a good choice for storing timestamps.
+
+# Links
+- [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-date-format.html#built-in-date-formats)
+**/
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct EpochMillis;
 
