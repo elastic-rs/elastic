@@ -17,15 +17,14 @@ extern crate serde_derive;
 extern crate elastic_types;
 #[macro_use]
 extern crate elastic_types_derive;
-extern crate elastic_responses;
 extern crate elastic_reqwest as cli;
 
 use std::net::Ipv4Addr;
 use reqwest::Client;
-use cli::{ElasticClient, RequestParams};
+use cli::{ElasticClient, ParseResponse, RequestParams};
 use cli::req::{IndicesCreateRequest, IndexRequest, SearchRequest};
+use cli::res::{parse, CommandResponse, IndexResponse, SearchResponseOf, Hit};
 use elastic_types::prelude::*;
-use elastic_responses::{HttpResponse, SearchResponseOf, Hit};
 
 mod data;
 use data::*;
@@ -63,7 +62,9 @@ fn create_index(client: &Client, params: &RequestParams) {
     let req = IndicesCreateRequest::for_index(INDEX, serde_json::to_string(&Index::default()).unwrap());
 
     // Create index
-    client.elastic_req(&params, req).unwrap();
+    let res = client.elastic_req(&params, req).unwrap();
+
+    parse::<CommandResponse>().from_response(res).unwrap();
 }
 
 fn get_data() -> Vec<MyStruct> {
@@ -93,7 +94,9 @@ fn index_datum(client: &Client, params: &RequestParams, datum: &MyStruct) {
                                             datum.id.to_string(),
                                             serde_json::to_string(&datum).unwrap());
 
-    client.elastic_req(&params, req).unwrap();
+    let res = client.elastic_req(&params, req).unwrap();
+
+    parse::<IndexResponse>().from_response(res).unwrap();
 }
 
 fn query(client: &Client, params: &RequestParams) -> SearchResponseOf<Hit<MyStruct>> {
@@ -107,10 +110,7 @@ fn query(client: &Client, params: &RequestParams) -> SearchResponseOf<Hit<MyStru
                                                 }
                                           }));
 
-    let res = {
-        let res = client.elastic_req(&params, req).unwrap();
-        HttpResponse::from_read(res.status().to_u16(), res)
-    };
+    let res = client.elastic_req(&params, req).unwrap();
 
-    res.into_response().unwrap()
+    parse().from_response(res).unwrap()
 }

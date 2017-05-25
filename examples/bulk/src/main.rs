@@ -22,8 +22,9 @@ extern crate lazy_static;
 
 extern crate elastic_reqwest as cli;
 
-use cli::ElasticClient;
+use cli::{ElasticClient, ParseResponse};
 use cli::req::BulkRequest;
+use cli::res::{parse, BulkResponse};
 
 // Create a bulk request to index a bunch of docs.
 macro_rules! bulk_req {
@@ -63,7 +64,9 @@ fn main() {
     let (client, params) = cli::default().unwrap();
 
     // Send the bulk request.
-    let res = client.elastic_req(&params, BulkRequest::new(get_req())).unwrap();
+    let http_res = client.elastic_req(&params, BulkRequest::new(get_req())).unwrap();
+
+    let res = parse::<BulkResponse>().from_response(http_res).unwrap();
 
     println!("{:?}", res);
 }

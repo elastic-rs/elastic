@@ -9,32 +9,34 @@
 extern crate json_str;
 extern crate elastic_reqwest as cli;
 
-use cli::{ElasticClient, RequestParams};
+use cli::{ElasticClient, ParseResponse, RequestParams};
 use cli::req::SearchRequest;
-use std::io::Read;
+use cli::res::{parse, SearchResponse};
 
 fn main() {
     // Get a new default client.
     let (client, _) = cli::default().unwrap();
 
     // Create a new set of params with pretty printing.
-    let params = RequestParams::default()
-        .url_param("pretty", true);
+    let params = RequestParams::default().url_param("pretty", true);
 
     // Create a query DSL request body.
-    let body = json_str!({
-        query: {
-            query_string: {
-                query: "*"
+    let req = {
+        let body = json_str!({
+            query: {
+                query_string: {
+                    query: "*"
+                }
             }
-        }
-    });
+        });
+
+        SearchRequest::for_index("_all", body)
+    };
 
     // Send the request and read the response.
-    let mut res = client.elastic_req(&params, SearchRequest::for_index("_all", body)).unwrap();
+    let http_res = client.elastic_req(&params, req).unwrap();
 
-    let mut message = String::new();
-    res.read_to_string(&mut message).unwrap();
+    let res = parse::<SearchResponse>().from_response(http_res).unwrap();
 
-    println!("Got response: {}", message);
+    println!("Got response: {:?}", res);
 }

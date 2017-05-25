@@ -6,12 +6,11 @@ authors = ["Ashley Mannix <ashleymannix@live.com.au>"]
 [dependencies]
 elastic_reqwest = { version = "*", path = "../../" }
 
-reqwest = "~0.4.0"
+reqwest = "~0.6"
 serde = "~1"
 serde_derive = "~1"
 serde_json = "~1"
-elastic_types = "~0.15"
-elastic_types_derive = "~0.15"
-elastic_responses = "~0.7"
+elastic_types = "~0.17"
+elastic_types_derive = "~0.17"
 
 json_str = { version = "*", features = ["nightly"]}
