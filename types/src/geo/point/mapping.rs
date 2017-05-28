@@ -1,4 +1,4 @@
-//! Mapping for the Elasticsearch `geo_point` type.
+/*! Mapping for the Elasticsearch `geo_point` type. !*/
 
 use std::marker::PhantomData;
 use serde::{Serialize, Serializer};
@@ -8,7 +8,7 @@ use geo::mapping::Distance;
 use private::field::{DocumentField, FieldMapping, SerializeField};
 use document::FieldType;
 
-/// A field that will be mapped as a `geo_point`.
+/** A field that will be mapped as a `geo_point`. **/
 pub trait GeoPointFieldType<M, F>
     where M: GeoPointMapping<Format = F>,
           F: GeoPointFormat
@@ -29,122 +29,132 @@ struct GeoPointFormatWrapper<F>
     _f: PhantomData<F>,
 }
 
-/// The base requirements for mapping a `geo_point` type.
-///
-/// # Examples
-///
-/// Define a custom `GeoPointMapping`:
-///
-/// ## Derive Mapping
-///
-/// Currently, deriving mapping only works for structs that take a `GeoPointFormat` as an associated type.
-///
-/// ```
-/// # #[macro_use]
-/// # extern crate elastic_types;
-/// # extern crate serde;
-/// # use std::marker::PhantomData;
-/// # use elastic_types::prelude::*;
-/// #[derive(Default)]
-/// struct MyGeoPointMapping;
-/// impl GeoPointMapping for MyGeoPointMapping {
-///     type Format = GeoPointArray;
-///
-///     //Overload the mapping functions here
-///     fn geohash() -> Option<bool> {
-///         Some(true)
-///     }
-/// }
-/// # fn main() {}
-/// ```
-///
-/// This will produce the following mapping:
-///
-/// ```
-/// # #[macro_use]
-/// # extern crate elastic_types_derive;
-/// # #[macro_use]
-/// # extern crate json_str;
-/// # #[macro_use]
-/// # extern crate elastic_types;
-/// # extern crate serde;
-/// # extern crate serde_json;
-/// # use std::marker::PhantomData;
-/// # use elastic_types::prelude::*;
-/// # #[derive(Default)]
-/// # struct MyGeoPointMapping;
-/// # impl GeoPointMapping for MyGeoPointMapping {
-/// #     type Format = GeoPointArray;
-/// #     fn geohash() -> Option<bool> {
-/// #         Some(true)
-/// #     }
-/// # }
-/// # fn main() {
-/// # let mapping = standalone_field_ser(MyGeoPointMapping).unwrap();
-/// # let json = json_str!(
-/// {
-///     "type": "geo_point",
-///     "geohash": true
-/// }
-/// # );
-/// # assert_eq!(json, mapping);
-/// # }
-/// ```
-///
-/// ## Map with a generic Format
-///
-/// You can use a generic input parameter to make your `GeoPointMapping` work for any kind of
-/// `GeoPointFormat`:
-///
-/// ```
-/// # #[macro_use]
-/// # extern crate elastic_types;
-/// # extern crate serde;
-/// # use std::marker::PhantomData;
-/// # use elastic_types::prelude::*;
-/// #[derive(Default)]
-/// struct MyGeoPointMapping<F> {
-///     _marker: PhantomData<F>
-/// }
-///
-/// impl <F: GeoPointFormat> GeoPointMapping for MyGeoPointMapping<F> {
-///     type Format = F;
-/// }
-/// # fn main() {}
-/// ```
+/**
+The base requirements for mapping a `geo_point` type.
+
+# Examples
+
+Define a custom `GeoPointMapping`:
+
+## Derive Mapping
+
+Currently, deriving mapping only works for structs that take a `GeoPointFormat` as an associated type.
+
+```
+# #[macro_use]
+# extern crate elastic_types;
+# extern crate serde;
+# use std::marker::PhantomData;
+# use elastic_types::prelude::*;
+#[derive(Default)]
+struct MyGeoPointMapping;
+impl GeoPointMapping for MyGeoPointMapping {
+    type Format = GeoPointArray;
+
+    //Overload the mapping functions here
+    fn geohash() -> Option<bool> {
+        Some(true)
+    }
+}
+# fn main() {}
+```
+
+This will produce the following mapping:
+
+```
+# #[macro_use]
+# extern crate elastic_types_derive;
+# #[macro_use]
+# extern crate json_str;
+# #[macro_use]
+# extern crate elastic_types;
+# extern crate serde;
+# extern crate serde_json;
+# use std::marker::PhantomData;
+# use elastic_types::prelude::*;
+# #[derive(Default)]
+# struct MyGeoPointMapping;
+# impl GeoPointMapping for MyGeoPointMapping {
+#     type Format = GeoPointArray;
+#     fn geohash() -> Option<bool> {
+#         Some(true)
+#     }
+# }
+# fn main() {
+# let mapping = standalone_field_ser(MyGeoPointMapping).unwrap();
+# let json = json_str!(
+{
+    "type": "geo_point",
+    "geohash": true
+}
+# );
+# assert_eq!(json, mapping);
+# }
+```
+
+## Map with a generic Format
+
+You can use a generic input parameter to make your `GeoPointMapping` work for any kind of
+`GeoPointFormat`:
+
+```
+# #[macro_use]
+# extern crate elastic_types;
+# extern crate serde;
+# use std::marker::PhantomData;
+# use elastic_types::prelude::*;
+#[derive(Default)]
+struct MyGeoPointMapping<F> {
+    _marker: PhantomData<F>
+}
+
+impl <F: GeoPointFormat> GeoPointMapping for MyGeoPointMapping<F> {
+    type Format = F;
+}
+# fn main() {}
+```
+**/
 pub trait GeoPointMapping
     where Self: Default
 {
-    /// The format used to serialise and deserialise the geo point.
-    ///
-    /// The format isn't actually a part of the Elasticsearch mapping for a `geo_point`,
-    /// but is included on the mapping to keep things consistent.
+    /**
+    The format used to serialise and deserialise the geo point.
+    
+    The format isn't actually a part of the Elasticsearch mapping for a `geo_point`,
+    but is included on the mapping to keep things consistent.
+    **/
     type Format: GeoPointFormat;
 
-    /// Should the `geo-point` also be indexed as a geohash in the `.geohash` sub-field? Defaults to `false`,
-    /// unless `geohash_prefix` is `true`.
+    /**
+    Should the `geo-point` also be indexed as a geohash in the `.geohash` sub-field? Defaults to `false`,
+    unless `geohash_prefix` is `true`.
+    **/
     fn geohash() -> Option<bool> {
         None
     }
 
-    /// The maximum length of the geohash to use for the geohash and `geohash_prefix` options.
+    /** The maximum length of the geohash to use for the geohash and `geohash_prefix` options. **/
     fn geohash_precision() -> Option<Distance> {
         None
     }
 
-    /// Should the `geo-point` also be indexed as a geohash plus all its prefixes? Defaults to `false`.
+    /** Should the `geo-point` also be indexed as a geohash plus all its prefixes? Defaults to `false`. **/
     fn geohash_prefix() -> Option<bool> {
         None
     }
 
-    /// If `true`, malformed `geo-points` are ignored.
-    /// If `false` (default), malformed `geo-points` throw an exception and reject the whole document.
+    /**
+    If `true`, malformed `geo-points` are ignored.
+    If `false` (default), malformed `geo-points` throw an exception and reject the whole document.
+    **/
     fn ignore_malformed() -> Option<bool> {
         None
     }
 
-    /// Should the `geo-point` also be indexed as `.lat` and `.lon` sub-fields?
-    /// Accepts `true` and `false` (default).
+    /**
+    Should the `geo-point` also be indexed as `.lat` and `.lon` sub-fields?
+    Accepts `true` and `false` (default).
+    **/
     fn lat_lon() -> Option<bool> {
         None
     }
@@ -187,7 +197,7 @@ impl<T, F> Serialize for DocumentField<T, GeoPointFormatWrapper<F>>
     }
 }
 
-/// Default mapping for `geo_point`.
+/** Default mapping for `geo_point`. **/
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultGeoPointMapping<F>
     where F: GeoPointFormat

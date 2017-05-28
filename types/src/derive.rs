@@ -1,4 +1,4 @@
-//! Functions that are exported and used by `elastic_types_derive`.
+/*! Functions that are exported and used by `elastic_types_derive`. !*/
 
 use chrono::{DateTime, UTC};
 use chrono::format::{self, Item, Parsed};
@@ -9,7 +9,7 @@ pub use date::{DateFormat, ParseError, FormattedDate};
 pub use document::{DocumentType, FieldType, field_ser};
 pub use document::mapping::{DocumentMapping, PropertiesMapping};
 
-/// Get the mapping for a field.
+/** Get the mapping for a field. **/
 #[inline]
 pub fn mapping<T, M, F>() -> M
     where T: FieldType<M, F>,
@@ -19,7 +19,7 @@ pub fn mapping<T, M, F>() -> M
     T::mapping()
 }
 
-/// Parse a date string using an owned slice of items.
+/** Parse a date string using an owned slice of items. **/
 pub fn parse_from_tokens<'a>(date: &str, fmt: Vec<Item<'a>>) -> Result<DateTime<UTC>, ParseError> {
     let mut parsed = Parsed::new();
     match format::parse(&mut parsed, date, fmt.into_iter()) {
@@ -38,7 +38,7 @@ pub fn parse_from_tokens<'a>(date: &str, fmt: Vec<Item<'a>>) -> Result<DateTime<
     }
 }
 
-/// Format a date string using an owned slice of items.
+/** Format a date string using an owned slice of items. **/
 pub fn format_with_tokens<'a>(date: &DateTime<UTC>, fmt: Vec<Item<'a>>) -> FormattedDate<'a> {
     date.format_with_items(fmt.into_iter()).into()
 }

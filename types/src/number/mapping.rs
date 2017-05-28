@@ -1,63 +1,65 @@
-//! Mapping for the Elasticsearch `number` types.
-//!
-//! Custom mappings can be defined by implementing the right number mapping for some Rust primitive number type.
-//! The implementation is the same for all number types, the only difference is the return type of `null_value`.
-//!
-//! # Examples
-//!
-//! Define a custom `IntegerMapping`:
-//!
-//! ## Derive Mapping
-//!
-//! ```
-//! # #[macro_use]
-//! # extern crate elastic_types;
-//! # extern crate serde;
-//! # use elastic_types::prelude::*;
-//! #[derive(Default)]
-//! struct MyIntegerMapping;
-//! impl IntegerMapping for MyIntegerMapping {
-//!     //Overload the mapping functions here
-//!     fn null_value() -> Option<i32> {
-//!         Some(42)
-//!     }
-//! }
-//! # fn main() {}
-//! ```
-//!
-//! This will produce the following mapping:
-//!
-//! ```
-//! # #[macro_use]
-//! # extern crate json_str;
-//! # #[macro_use]
-//! # extern crate elastic_types;
-//! # extern crate serde;
-//! # #[cfg(feature = "nightly")]
-//! # extern crate serde_json;
-//! # use elastic_types::prelude::*;
-//! # #[derive(Default)]
-//! # struct MyIntegerMapping;
-//! # impl IntegerMapping for MyIntegerMapping {
-//! #   //Overload the mapping functions here
-//! #   fn null_value() -> Option<i32> {
-//! #       Some(42)
-//! #   }
-//! # }
-//! # fn main() {
-//! # let json = json_str!(
-//! {
-//!     "type": "integer",
-//!     "null_value": 42
-//! }
-//! # );
-//! # #[cfg(feature = "nightly")]
-//! # let mapping = serde_json::to_string(&DocumentField::from(MyIntegerMapping)).unwrap();
-//! # #[cfg(not(feature = "nightly"))]
-//! # let mapping = json.clone();
-//! # assert_eq!(json, mapping);
-//! # }
-//! ```
+/*!
+Mapping for the Elasticsearch `number` types.
+
+Custom mappings can be defined by implementing the right number mapping for some Rust primitive number type.
+The implementation is the same for all number types, the only difference is the return type of `null_value`.
+
+# Examples
+
+Define a custom `IntegerMapping`:
+
+## Derive Mapping
+
+```
+# #[macro_use]
+# extern crate elastic_types;
+# extern crate serde;
+# use elastic_types::prelude::*;
+#[derive(Default)]
+struct MyIntegerMapping;
+impl IntegerMapping for MyIntegerMapping {
+    //Overload the mapping functions here
+    fn null_value() -> Option<i32> {
+        Some(42)
+    }
+}
+# fn main() {}
+```
+
+This will produce the following mapping:
+
+```
+# #[macro_use]
+# extern crate json_str;
+# #[macro_use]
+# extern crate elastic_types;
+# extern crate serde;
+# #[cfg(feature = "nightly")]
+# extern crate serde_json;
+# use elastic_types::prelude::*;
+# #[derive(Default)]
+# struct MyIntegerMapping;
+# impl IntegerMapping for MyIntegerMapping {
+#   //Overload the mapping functions here
+#   fn null_value() -> Option<i32> {
+#       Some(42)
+#   }
+# }
+# fn main() {
+# let json = json_str!(
+{
+    "type": "integer",
+    "null_value": 42
+}
+# );
+# #[cfg(feature = "nightly")]
+# let mapping = serde_json::to_string(&DocumentField::from(MyIntegerMapping)).unwrap();
+# #[cfg(not(feature = "nightly"))]
+# let mapping = json.clone();
+# assert_eq!(json, mapping);
+# }
+```
+!*/
 
 use serde::Serialize;
 use serde::ser::SerializeStruct;
@@ -69,7 +71,7 @@ macro_rules! number_mapping {
         #[derive(Default)]
         struct $format;
 
-        /// A field that will be mapped as a number.
+        /** A field that will be mapped as a number. **/
         pub trait $field_trait<M> where M: $mapping {}
 
         impl<T, M> FieldType<M, $format> for T
@@ -78,39 +80,49 @@ macro_rules! number_mapping {
         {
         }
 
-        /// Base `number` mapping.
+        /** Base `number` mapping. **/
         pub trait $mapping where
         Self: Default {
-            /// Try to convert strings to numbers and truncate fractions for integers. Accepts `true` (default) and `false`.
+            /** Try to convert strings to numbers and truncate fractions for integers. Accepts `true` (default) and `false`. **/
             fn coerce() -> Option<bool> { None }
 
-            /// Field-level index time boosting. Accepts a floating point number, defaults to `1.0`.
+            /** Field-level index time boosting. Accepts a floating point number, defaults to `1.0`. **/
             fn boost() -> Option<f32> { None }
 
-            /// Should the field be stored on disk in a column-stride fashion,
-            /// so that it can later be used for sorting, aggregations, or scripting?
-            /// Accepts `true` (default) or `false`.
+            /**
+            Should the field be stored on disk in a column-stride fashion,
+            so that it can later be used for sorting, aggregations, or scripting?
+            Accepts `true` (default) or `false`.
+            **/
             fn doc_values() -> Option<bool> { None }
 
-            /// If `true`, malformed numbers are ignored. If `false` (default),
-            /// malformed numbers throw an exception and reject the whole document.
+            /**
+            If `true`, malformed numbers are ignored. If `false` (default),
+            malformed numbers throw an exception and reject the whole document.
+            **/
             fn ignore_malformed() -> Option<bool> { None }
 
-            /// Whether or not the field value should be included in the `_all` field?
-            /// Accepts `true` or `false`. Defaults to false if index is set to no,
-            /// or if a parent object field sets `include_in_all` to false.
-            /// Otherwise defaults to `true`.
+            /**
+            Whether or not the field value should be included in the `_all` field?
+            Accepts `true` or `false`. Defaults to false if index is set to no,
+            or if a parent object field sets `include_in_all` to false.
+            Otherwise defaults to `true`.
+            **/
             fn include_in_all() -> Option<bool> { None }
 
-            /// Should the field be searchable? Accepts `not_analyzed` (default) and `no`.
+            /** Should the field be searchable? Accepts `not_analyzed` (default) and `no`. **/
             fn index() -> Option<bool> { None }
 
-            /// Accepts a numeric value of the same type as the field which is substituted for any explicit null values.
-            /// Defaults to `null`, which means the field is treated as missing.
+            /**
+            Accepts a numeric value of the same type as the field which is substituted for any explicit null values.
+            Defaults to `null`, which means the field is treated as missing.
+            **/
             fn null_value() -> Option<$std_ty> { None }
 
-            /// Whether the field value should be stored and retrievable separately from the `_source` field.
-            /// Accepts true or false (default).
+            /**
+            Whether the field value should be stored and retrievable separately from the `_source` field.
+            Accepts true or false (default).
+            **/
             fn store() -> Option<bool> { None }
         }
 
@@ -155,38 +167,38 @@ number_mapping!(ByteMapping, ByteFormat, ByteFieldType, "byte", i8);
 number_mapping!(FloatMapping, FloatFormat, FloatFieldType, "float", f32);
 number_mapping!(DoubleMapping, DoubleFormat, DoubleFieldType, "double", f64);
 
-/// Default mapping for an `integer` type.
+/** Default mapping for an `integer` type. **/
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultIntegerMapping;
 impl IntegerMapping for DefaultIntegerMapping {}
 impl IntegerFieldType<DefaultIntegerMapping> for i32 {}
 
-/// Default mapping for a `long` type.
+/** Default mapping for a `long` type. **/
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultLongMapping;
 impl LongMapping for DefaultLongMapping {}
 impl LongFieldType<DefaultLongMapping> for i64 {}
 impl LongFieldType<DefaultLongMapping> for isize {}
 
-/// Default mapping for a `short` type.
+/** Default mapping for a `short` type. **/
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultShortMapping;
 impl ShortMapping for DefaultShortMapping {}
 impl ShortFieldType<DefaultShortMapping> for i16 {}
 
-/// Default mapping for a `byte` type.
+/** Default mapping for a `byte` type. **/
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultByteMapping;
 impl ByteMapping for DefaultByteMapping {}
 impl ByteFieldType<DefaultByteMapping> for i8 {}
 
-/// Default mapping for a `float` type.
+/** Default mapping for a `float` type. **/
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultFloatMapping;
 impl FloatMapping for DefaultFloatMapping {}
 impl FloatFieldType<DefaultFloatMapping> for f32 {}
 
-/// Default mapping for a `double` type.
+/** Default mapping for a `double` type. **/
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultDoubleMapping;
 impl DoubleMapping for DefaultDoubleMapping {}

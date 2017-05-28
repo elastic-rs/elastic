@@ -1,4 +1,4 @@
-//! Mapping for the Elasticsearch `ip` type.
+/*! Mapping for the Elasticsearch `ip` type. !*/
 
 use std::net::Ipv4Addr;
 use serde::{Serialize, Serializer};
@@ -6,7 +6,7 @@ use serde::ser::SerializeStruct;
 use private::field::{DocumentField, FieldMapping, SerializeField};
 use document::FieldType;
 
-/// A field that will be mapped as an `ip`.
+/** A field that will be mapped as an `ip`. **/
 pub trait IpFieldType<M> where M: IpMapping {}
 
 impl<T, M> FieldType<M, IpFormat> for T
@@ -18,93 +18,101 @@ impl<T, M> FieldType<M, IpFormat> for T
 #[derive(Default)]
 struct IpFormat;
 
-/// The base requirements for mapping a `ip` type.
-///
-/// Custom mappings can be defined by implementing `IpMapping`.
-///
-/// # Examples
-///
-/// Define a custom `IpMapping`:
-///
-/// ## Derive Mapping
-///
-/// ```
-/// # #[macro_use]
-/// # extern crate elastic_types;
-/// # extern crate serde;
-/// # use elastic_types::prelude::*;
-/// #[derive(Default)]
-/// struct MyIpMapping;
-/// impl IpMapping for MyIpMapping {
-///     //Overload the mapping functions here
-///     fn boost() -> Option<f32> {
-///         Some(1.5)
-///     }
-/// }
-/// # fn main() {}
-/// ```
-///
-/// This will produce the following mapping:
-///
-/// ```
-/// # #[macro_use]
-/// # extern crate json_str;
-/// # #[macro_use]
-/// # extern crate elastic_types;
-/// # extern crate serde;
-/// # #[cfg(feature = "nightly")]
-/// # extern crate serde_json;
-/// # use elastic_types::prelude::*;
-/// # #[derive(Default)]
-/// # struct MyIpMapping;
-/// # impl IpMapping for MyIpMapping {
-/// #     //Overload the mapping functions here
-/// #     fn boost() -> Option<f32> {
-/// #         Some(1.5)
-/// #     }
-/// # }
-/// # fn main() {
-/// # let json = json_str!(
-/// {
-///     "type": "ip",
-///     "boost": 1.5
-/// }
-/// # );
-/// # #[cfg(feature = "nightly")]
-/// # let mapping = serde_json::to_string(&DocumentField::from(MyIpMapping)).unwrap();
-/// # #[cfg(not(feature = "nightly"))]
-/// # let mapping = json.clone();
-/// # assert_eq!(json, mapping);
-/// # }
-/// ```
+/**
+The base requirements for mapping a `ip` type.
+
+Custom mappings can be defined by implementing `IpMapping`.
+
+# Examples
+
+Define a custom `IpMapping`:
+
+## Derive Mapping
+
+```
+# #[macro_use]
+# extern crate elastic_types;
+# extern crate serde;
+# use elastic_types::prelude::*;
+#[derive(Default)]
+struct MyIpMapping;
+impl IpMapping for MyIpMapping {
+    //Overload the mapping functions here
+    fn boost() -> Option<f32> {
+        Some(1.5)
+    }
+}
+# fn main() {}
+```
+
+This will produce the following mapping:
+
+```
+# #[macro_use]
+# extern crate json_str;
+# #[macro_use]
+# extern crate elastic_types;
+# extern crate serde;
+# #[cfg(feature = "nightly")]
+# extern crate serde_json;
+# use elastic_types::prelude::*;
+# #[derive(Default)]
+# struct MyIpMapping;
+# impl IpMapping for MyIpMapping {
+#     //Overload the mapping functions here
+#     fn boost() -> Option<f32> {
+#         Some(1.5)
+#     }
+# }
+# fn main() {
+# let json = json_str!(
+{
+    "type": "ip",
+    "boost": 1.5
+}
+# );
+# #[cfg(feature = "nightly")]
+# let mapping = serde_json::to_string(&DocumentField::from(MyIpMapping)).unwrap();
+# #[cfg(not(feature = "nightly"))]
+# let mapping = json.clone();
+# assert_eq!(json, mapping);
+# }
+```
+**/
 pub trait IpMapping
     where Self: Default
 {
-    /// Field-level index time boosting. Accepts a floating point number, defaults to `1.0`.
+    /** Field-level index time boosting. Accepts a floating point number, defaults to `1.0`. **/
     fn boost() -> Option<f32> {
         None
     }
 
-    /// Should the field be stored on disk in a column-stride fashion,
-    /// so that it can later be used for sorting, aggregations, or scripting?
-    /// Accepts `true` (default) or `false`.
+    /**
+    Should the field be stored on disk in a column-stride fashion,
+    so that it can later be used for sorting, aggregations, or scripting?
+    Accepts `true` (default) or `false`.
+    **/
     fn doc_values() -> Option<bool> {
         None
     }
 
-    /// Should the field be searchable? Accepts `not_analyzed` (default) and `no`.
+    /** Should the field be searchable? Accepts `not_analyzed` (default) and `no`. **/
     fn index() -> Option<bool> {
         None
     }
 
-    /// Accepts a string value which is substituted for any explicit null values.
-    /// Defaults to `null`, which means the field is treated as missing.
+    /**
+    Accepts a string value which is substituted for any explicit null values.
+    Defaults to `null`, which means the field is treated as missing.
+    **/
     fn null_value() -> Option<Ipv4Addr> {
         None
     }
 
-    /// Whether the field value should be stored and retrievable separately from the `_source` field.
-    /// Accepts `true` or `false` (default).
+    /**
+    Whether the field value should be stored and retrievable separately from the `_source` field.
+    Accepts `true` or `false` (default).
+    **/
     fn store() -> Option<bool> {
         None
     }
@@ -144,7 +152,7 @@ impl<T> Serialize for DocumentField<T, IpFormat>
     }
 }
 
-/// Default mapping for `geo_shape`.
+/** Default mapping for `geo_shape`. **/
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultIpMapping;
 impl IpMapping for DefaultIpMapping {}

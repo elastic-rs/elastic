@@ -1,27 +1,27 @@
-//! Common mapping for the Elasticsearch `geo` types.
+/*! Common mapping for the Elasticsearch `geo` types. !*/
 
 use serde;
 use serde::Serialize;
 
-/// A unit of measure for distance.
+/** A unit of measure for distance. **/
 pub enum DistanceUnit {
-    /// For `in`.
+    /** For `in`. **/
     Inches,
-    /// For `yd`.
+    /** For `yd`. **/
     Yards,
-    /// For `mi`.
+    /** For `mi`. **/
     Miles,
-    /// For `km`.
+    /** For `km`. **/
     Kilometers,
-    /// For `m`.
+    /** For `m`. **/
     Meters,
-    /// For `cm`.
+    /** For `cm`. **/
     Centimeters,
-    /// For `mm`.
+    /** For `mm`. **/
     Millimeters,
 }
 
-/// A distance value paired with a unit of measure.
+/** A distance value paired with a unit of measure. **/
 pub struct Distance(pub f32, pub DistanceUnit);
 
 impl ToString for Distance {

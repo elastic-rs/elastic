@@ -5,61 +5,65 @@ use std::error::Error;
 use std::fmt::{Display, Result as FmtResult, Formatter};
 use std::vec::IntoIter;
 
-/// A format used for parsing and formatting dates.
-///
-/// The format is specified as two functions: `parse` and `format`.
-///
-/// # Examples
-///
-/// The easiest way to implement `DateFormat` is to derive `ElasticDateFormat`
-/// on a unit struct:
-///
-/// ```
-/// # #[macro_use]
-/// # extern crate elastic_types;
-/// # #[macro_use]
-/// # extern crate elastic_types_derive;
-/// # extern crate chrono;
-/// # use elastic_types::prelude::*;
-/// # fn main() {
-/// #[derive(Default, ElasticDateFormat)]
-/// #[elastic(date_format="yyyy-MM-dd'T'HH:mm:ss")]
-/// struct MyFormat;
-/// # }
-/// ```
-///
-/// The `#[elastic(date_format)]` attribute is required,
-/// and must contain a valid [format string](http://www.joda.org/joda-time/apidocs/org/joda/time/format/DateTimeFormat.html).
-///
-/// > NOTE: Only a small subset of the Joda time format is supported.
-///
-/// You can customise the indexed format name by adding an `#[elastic(date_format_name)]` attribute:
-///
-/// ```
-/// # #[macro_use]
-/// # extern crate elastic_types;
-/// # #[macro_use]
-/// # extern crate elastic_types_derive;
-/// # extern crate chrono;
-/// # use elastic_types::prelude::*;
-/// # fn main() {
-/// #[derive(Default, ElasticDateFormat)]
-/// #[elastic(date_format="yyyyMMdd'T'HHmmssZ", date_format_name="basic_date_time_no_millis")]
-/// struct MyFormat;
-/// # }
-/// ```
+/**
+A format used for parsing and formatting dates.
+
+The format is specified as two functions: `parse` and `format`.
+
+# Examples
+
+The easiest way to implement `DateFormat` is to derive `ElasticDateFormat`
+on a unit struct:
+
+```
+# #[macro_use]
+# extern crate elastic_types;
+# #[macro_use]
+# extern crate elastic_types_derive;
+# extern crate chrono;
+# use elastic_types::prelude::*;
+# fn main() {
+#[derive(Default, ElasticDateFormat)]
+#[elastic(date_format="yyyy-MM-dd'T'HH:mm:ss")]
+struct MyFormat;
+# }
+```
+
+The `#[elastic(date_format)]` attribute is required,
+and must contain a valid [format string](http://www.joda.org/joda-time/apidocs/org/joda/time/format/DateTimeFormat.html).
+
+> NOTE: Only a small subset of the Joda time format is supported.
+
+You can customise the indexed format name by adding an `#[elastic(date_format_name)]` attribute:
+
+```
+# #[macro_use]
+# extern crate elastic_types;
+# #[macro_use]
+# extern crate elastic_types_derive;
+# extern crate chrono;
+# use elastic_types::prelude::*;
+# fn main() {
+#[derive(Default, ElasticDateFormat)]
+#[elastic(date_format="yyyyMMdd'T'HHmmssZ", date_format_name="basic_date_time_no_millis")]
+struct MyFormat;
+# }
+```
+**/
 pub trait DateFormat
     where Self: Default
 {
-    /// Parses a date string to a `chrono::DateTime<UTC>` result.
+    /** Parses a date string to a `chrono::DateTime<UTC>` result. **/
     fn parse(date: &str) -> Result<DateTime<UTC>, ParseError>;
 
-    /// Formats a given `chrono::DateTime<UTC>` as a string.
+    /** Formats a given `chrono::DateTime<UTC>` as a string. **/
     fn format<'a>(date: &DateTime<UTC>) -> FormattedDate<'a>;
 
-    /// The name of the format.
-    ///
-    /// This is the string used when defining the format in the field mapping.
+    /**
+    The name of the format.
+    
+    This is the string used when defining the format in the field mapping.
+    **/
     fn name() -> &'static str;
 }
 
@@ -85,9 +89,11 @@ impl<'a> Display for FormattedDateInner<'a> {
     }
 }
 
-/// A formatted date.
-///
-/// This type can avoid allocating strings for date formats.
+/**
+A formatted date.
+
+This type can avoid allocating strings for date formats.
+**/
 pub struct FormattedDate<'a> {
     inner: FormattedDateInner<'a>,
 }
@@ -126,7 +132,7 @@ impl<'a> From<i64> for FormattedDate<'a> {
     }
 }
 
-/// Represents an error encountered during parsing.
+/** Represents an error encountered during parsing. **/
 #[derive(Debug)]
 pub struct ParseError {
     kind: ParseErrorKind,
