@@ -1,7 +1,7 @@
 //! Get a document from an index.
-//! 
+//!
 //! NOTE: This sample expects you have a node running on `localhost:9200`.
-//! 
+//!
 //! This sample demonstrates how to get a previously indexed document.
 //! There are a few error cases to consider, depending on whether or not the index
 //! exists, and the document is indexed.
@@ -19,7 +19,10 @@ fn main() {
     // The `params` includes the base node url (http://localhost:9200).
     let client = Client::new(RequestParams::default()).unwrap();
 
-    let res = client.get::<Value>(index("typed_sample_index"), id("1")).ty("mytype").send();
+    let res = client
+        .get::<Value>(index("typed_sample_index"), id("1"))
+        .ty("mytype")
+        .send();
 
     // Responses can be unpacked in various ways. In this case we check if:
     // - The call succeeded and the document was found
@@ -30,20 +33,20 @@ fn main() {
         // The doc was found
         Ok(GetResponse { source: Some(doc), .. }) => {
             println!("document found: {:?}", doc);
-        },
+        }
         // The index exists, but the doc wasn't found
         Ok(_) => {
             println!("document not found, but index exists");
-        },
+        }
         // An error was returned
         Err(e) => {
             match *e.kind() {
                 // No index
                 ErrorKind::Api(ApiError::IndexNotFound { .. }) => {
                     println!("index not found");
-                },
+                }
                 // Something went wrong, panic
-                _ => panic!(e)
+                _ => panic!(e),
             }
         }
     }

@@ -57,5 +57,5 @@ This will consume the `UnbufferedResponse` and return a `BufferedResponse`
 instead that keeps the response body private for later handlers to use.
 !*/
 
-pub use elastic_reqwest::res::parsing::{HttpResponseHead, IsOk, ResponseBody, MaybeOkResponse, MaybeBufferedResponse,
-                                   Unbuffered, Buffered};
+pub use elastic_reqwest::res::parsing::{HttpResponseHead, IsOk, ResponseBody, MaybeOkResponse,
+                                        MaybeBufferedResponse, Unbuffered, Buffered};

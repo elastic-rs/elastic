@@ -98,7 +98,9 @@ impl<'a, TDocument, TBody> RequestBuilder<'a, SearchRequestBuilder<TDocument, TB
     pub fn send(self) -> Result<SearchResponse<TDocument>> {
         let req = self.req.into_request();
 
-        RequestBuilder::new(self.client, self.params, req).send_raw().and_then(into_response)
+        RequestBuilder::new(self.client, self.params, req)
+            .send_raw()
+            .and_then(into_response)
     }
 }
 
@@ -129,7 +131,11 @@ mod tests {
     fn specify_ty() {
         let client = Client::new(RequestParams::new("http://eshost:9200")).unwrap();
 
-        let req = client.search::<Value>().ty(Some("new-ty")).req.into_request();
+        let req = client
+            .search::<Value>()
+            .ty(Some("new-ty"))
+            .req
+            .into_request();
 
         assert_eq!("/_all/new-ty/_search", req.url.as_ref());
     }

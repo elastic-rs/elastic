@@ -1,7 +1,7 @@
 //! Index a document.
 //!
 //! NOTE: This sample expects you have a node running on `localhost:9200`.
-//! 
+//!
 //! This sample demonstrates how to create an index, add type mapping, and index a document.
 //! Also see the `typed` sample for a more complete implementation.
 
@@ -34,19 +34,16 @@ fn main() {
     };
 
     // Create the index
-    client.create_index(sample_index())
-          .send()
-          .unwrap();
+    client.create_index(sample_index()).send().unwrap();
 
     // Add the document mapping (optional, but makes sure `timestamp` is mapped as a `date`)
-    client.put_mapping::<MyType>(sample_index())
-          .send()
-          .unwrap();
+    client.put_mapping::<MyType>(sample_index()).send().unwrap();
 
     // Index the document
-    client.index_document(sample_index(), id(doc.id), doc)
-          .send()
-          .unwrap();
+    client
+        .index_document(sample_index(), id(doc.id), doc)
+        .send()
+        .unwrap();
 }
 
 fn sample_index() -> Index<'static> {

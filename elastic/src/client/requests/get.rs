@@ -57,7 +57,9 @@ impl<'a, TDocument> RequestBuilder<'a, GetRequestBuilder<TDocument>, DefaultBody
     pub fn send(self) -> Result<GetResponse<TDocument>> {
         let req = self.req.into_request();
 
-        RequestBuilder::new(self.client, self.params, req).send_raw().and_then(into_response)
+        RequestBuilder::new(self.client, self.params, req)
+            .send_raw()
+            .and_then(into_response)
     }
 }
 
@@ -70,7 +72,10 @@ mod tests {
     fn default_request() {
         let client = Client::new(RequestParams::new("http://eshost:9200")).unwrap();
 
-        let req = client.get::<Value>(index("test-idx"), id("1")).req.into_request();
+        let req = client
+            .get::<Value>(index("test-idx"), id("1"))
+            .req
+            .into_request();
 
         assert_eq!("/test-idx/value/1", req.url.as_ref());
     }
@@ -79,7 +84,11 @@ mod tests {
     fn specify_ty() {
         let client = Client::new(RequestParams::new("http://eshost:9200")).unwrap();
 
-        let req = client.get::<Value>(index("test-idx"), id("1")).ty("new-ty").req.into_request();
+        let req = client
+            .get::<Value>(index("test-idx"), id("1"))
+            .ty("new-ty")
+            .req
+            .into_request();
 
         assert_eq!("/test-idx/new-ty/1", req.url.as_ref());
     }

@@ -333,9 +333,9 @@ impl Client {
         let client = HttpClient::new()?;
 
         Ok(Client {
-            http: client,
-            params: params,
-        })
+               http: client,
+               params: params,
+           })
     }
 }
 

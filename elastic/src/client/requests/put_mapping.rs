@@ -60,7 +60,9 @@ impl<'a, TDocument> RequestBuilder<'a, PutMappingRequestBuilder<TDocument>, TDoc
     pub fn send(self) -> Result<CommandResponse> {
         let req = self.req.into_request()?;
 
-        RequestBuilder::new(self.client, self.params, req).send_raw().and_then(into_response)
+        RequestBuilder::new(self.client, self.params, req)
+            .send_raw()
+            .and_then(into_response)
     }
 }
 
@@ -73,7 +75,11 @@ mod tests {
     fn default_request() {
         let client = Client::new(RequestParams::new("http://eshost:9200")).unwrap();
 
-        let req = client.put_mapping::<Value>(index("test-idx")).req.into_request().unwrap();
+        let req = client
+            .put_mapping::<Value>(index("test-idx"))
+            .req
+            .into_request()
+            .unwrap();
 
         assert_eq!("/test-idx/_mappings/value", req.url.as_ref());
         assert_eq!(r#"{"properties":{}}"#.as_bytes().to_vec(), req.body);
@@ -83,8 +89,12 @@ mod tests {
     fn specify_ty() {
         let client = Client::new(RequestParams::new("http://eshost:9200")).unwrap();
 
-        let req =
-            client.put_mapping::<Value>(index("test-idx")).ty("new-ty").req.into_request().unwrap();
+        let req = client
+            .put_mapping::<Value>(index("test-idx"))
+            .ty("new-ty")
+            .req
+            .into_request()
+            .unwrap();
 
         assert_eq!("/test-idx/_mappings/new-ty", req.url.as_ref());
     }

@@ -58,7 +58,9 @@ impl<'a, TBody> RequestBuilder<'a, CreateIndexRequestBuilder<TBody>, TBody>
     pub fn send(self) -> Result<CommandResponse> {
         let req = self.req.into_request();
 
-        RequestBuilder::new(self.client, self.params, req).send_raw().and_then(into_response)
+        RequestBuilder::new(self.client, self.params, req)
+            .send_raw()
+            .and_then(into_response)
     }
 }
 
@@ -79,7 +81,11 @@ mod tests {
     fn specify_body() {
         let client = Client::new(RequestParams::new("http://eshost:9200")).unwrap();
 
-        let req = client.create_index(index("testindex")).body("{}").req.into_request();
+        let req = client
+            .create_index(index("testindex"))
+            .body("{}")
+            .req
+            .into_request();
 
         assert_eq!("{}", req.body);
     }

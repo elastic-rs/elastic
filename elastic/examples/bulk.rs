@@ -1,7 +1,7 @@
 //! Send a bulk request.
-//! 
+//!
 //! NOTE: This sample expects you have a node running on `localhost:9200`.
-//! 
+//!
 //! This sample demonstrates a bulk request.
 //! There are a few extra dials you can tweak on bulk requests to get more
 //! performance out of them.
@@ -16,26 +16,28 @@ fn main() {
     let client = Client::new(RequestParams::default()).unwrap();
 
     // Execute a bulk request
-    let bulk: BulkResponse = client.request(BulkRequest::new(bulk_body()))
-                                   .send()
-                                   .and_then(into_response)
-                                   .unwrap();
+    let bulk: BulkResponse = client
+        .request(BulkRequest::new(bulk_body()))
+        .send()
+        .and_then(into_response)
+        .unwrap();
 
     println!("Successful operations");
     for op in bulk.items.ok {
-    	println!("{:?}", op);
+        println!("{:?}", op);
     }
 
     println!("Failed operations");
     for op in bulk.items.err {
-    	println!("{:?}", op);
+        println!("{:?}", op);
     }
 }
 
 fn bulk_body() -> String {
     let mut bulk = String::new();
     for i in 1..1000 {
-        let header = format!("{{ \"index\" : {{ \"_index\" : \"test\", \"_type\" : \"ty\", \"_id\" : \"{}\" }} }}", i);
+        let header = format!("{{ \"index\" : {{ \"_index\" : \"test\", \"_type\" : \"ty\", \"_id\" : \"{}\" }} }}",
+                             i);
         let body = format!("{{ \"title\" : \"string value {}\" }}", i);
 
         bulk.push_str(&header);

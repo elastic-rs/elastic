@@ -1,7 +1,7 @@
 //! A simple search request.
-//! 
+//!
 //! NOTE: This sample expects you have a node running on `localhost:9200`.
-//! 
+//!
 //! This sample executes a search request and iterates through the returned hits
 //! as anonymous json objects.
 
@@ -26,11 +26,12 @@ fn main() {
     });
 
     // Send the request and process the response.
-    let res = client.search::<Value>()
-                    .index("_all")
-                    .body(query.to_string())
-                    .send()
-                    .unwrap();
+    let res = client
+        .search::<Value>()
+        .index("_all")
+        .body(query.to_string())
+        .send()
+        .unwrap();
 
     // Iterate through the hits in the response.
     for hit in res.hits() {

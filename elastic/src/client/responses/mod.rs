@@ -22,7 +22,7 @@ use self::parse::IsOk;
 
 pub use elastic_reqwest::res::{AggregationIterator, Aggregations, Hit, Hits, Shards};
 pub use elastic_reqwest::res::{CommandResponse, IndexResponse, PingResponse, BulkResponse,
-                            BulkErrorsResponse, BulkItem, BulkItems, BulkItemError, BulkAction};
+                               BulkErrorsResponse, BulkItem, BulkItems, BulkItemError, BulkAction};
 
 /**
 A builder for a response.
@@ -112,7 +112,9 @@ impl ResponseBuilder {
     pub fn into_response<T>(self) -> Result<T>
         where T: IsOk + DeserializeOwned
     {
-        parse().from_response(self.reqwest_response()).map_err(Into::into)
+        parse()
+            .from_response(self.reqwest_response())
+            .map_err(Into::into)
     }
 }
 
