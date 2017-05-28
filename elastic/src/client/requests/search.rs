@@ -7,7 +7,7 @@ use client::requests::{empty_body, DefaultBody, IntoBody, Index, Type, SearchReq
                        RequestBuilder};
 use client::responses::SearchResponse;
 
-/// A builder for a search request.
+/** A builder for a search request. **/
 pub struct SearchRequestBuilder<TDocument, TBody> {
     index: Option<Index<'static>>,
     ty: Option<Type<'static>>,
@@ -16,7 +16,7 @@ pub struct SearchRequestBuilder<TDocument, TBody> {
 }
 
 impl Client {
-    /// Create a `RequestBuilder` for a search request.
+    /** Create a `RequestBuilder` for a search request. **/
     pub fn search<'a, TDocument>
         (&'a self)
          -> RequestBuilder<'a, SearchRequestBuilder<TDocument, DefaultBody>, DefaultBody>
@@ -53,9 +53,11 @@ impl<'a, TDocument, TBody> RequestBuilder<'a, SearchRequestBuilder<TDocument, TB
     where TDocument: DeserializeOwned,
           TBody: IntoBody
 {
-    /// Set the indices for the search request.
-    ///
-    /// If no index is specified then `_all` will be used.
+    /**
+    Set the indices for the search request.
+    
+    If no index is specified then `_all` will be used.
+    **/
     pub fn index<I>(mut self, index: I) -> Self
         where I: Into<Index<'static>>
     {
@@ -63,7 +65,7 @@ impl<'a, TDocument, TBody> RequestBuilder<'a, SearchRequestBuilder<TDocument, TB
         self
     }
 
-    /// Set the types for the search request.
+    /** Set the types for the search request. **/
     pub fn ty<I>(mut self, ty: Option<I>) -> Self
         where I: Into<Type<'static>>
     {
@@ -71,9 +73,11 @@ impl<'a, TDocument, TBody> RequestBuilder<'a, SearchRequestBuilder<TDocument, TB
         self
     }
 
-    /// Set the body for the search request.
-    ///
-    /// If no body is specified then an empty query will be used.
+    /**
+    Set the body for the search request.
+    
+    If no body is specified then an empty query will be used.
+    **/
     pub fn body<TNewBody>
         (self,
          body: TNewBody)
@@ -90,7 +94,7 @@ impl<'a, TDocument, TBody> RequestBuilder<'a, SearchRequestBuilder<TDocument, TB
                             })
     }
 
-    /// Send the search request.
+    /** Send the search request. **/
     pub fn send(self) -> Result<SearchResponse<TDocument>> {
         let req = self.req.into_request();
 

@@ -8,7 +8,7 @@ use client::requests::{Index, Type, IndicesPutMappingRequest, RequestBuilder};
 use client::responses::CommandResponse;
 use types::document::{FieldType, DocumentType, IndexDocumentMapping};
 
-/// A builder for a put mapping request.
+/** A builder for a put mapping request. **/
 pub struct PutMappingRequestBuilder<TDocument> {
     index: Index<'static>,
     ty: Type<'static>,
@@ -16,7 +16,7 @@ pub struct PutMappingRequestBuilder<TDocument> {
 }
 
 impl Client {
-    /// Create a `RequestBuilder` for a put mapping request.
+    /** Create a `RequestBuilder` for a put mapping request. **/
     pub fn put_mapping<'a, TDocument>
         (&'a self,
          index: Index<'static>)
@@ -48,7 +48,7 @@ impl<TDocument> PutMappingRequestBuilder<TDocument>
 impl<'a, TDocument> RequestBuilder<'a, PutMappingRequestBuilder<TDocument>, TDocument>
     where TDocument: DocumentType
 {
-    /// Set the type for the put mapping request.
+    /** Set the type for the put mapping request. **/
     pub fn ty<I>(mut self, ty: I) -> Self
         where I: Into<Type<'static>>
     {
@@ -56,7 +56,7 @@ impl<'a, TDocument> RequestBuilder<'a, PutMappingRequestBuilder<TDocument>, TDoc
         self
     }
 
-    /// Send the put mapping request.
+    /** Send the put mapping request. **/
     pub fn send(self) -> Result<CommandResponse> {
         let req = self.req.into_request()?;
 

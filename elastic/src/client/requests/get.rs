@@ -7,7 +7,7 @@ use client::requests::{DefaultBody, Index, Type, Id, GetRequest, RequestBuilder}
 use client::responses::GetResponse;
 use types::document::DocumentType;
 
-/// A builder for a get request.
+/** A builder for a get request. **/
 pub struct GetRequestBuilder<TDocument> {
     index: Index<'static>,
     ty: Type<'static>,
@@ -16,7 +16,7 @@ pub struct GetRequestBuilder<TDocument> {
 }
 
 impl Client {
-    /// Create a `RequestBuilder` for a get request.
+    /** Create a `RequestBuilder` for a get request. **/
     pub fn get<'a, TDocument>(&'a self,
                               index: Index<'static>,
                               id: Id<'static>)
@@ -45,7 +45,7 @@ impl<TDocument> GetRequestBuilder<TDocument> {
 impl<'a, TDocument> RequestBuilder<'a, GetRequestBuilder<TDocument>, DefaultBody>
     where TDocument: DeserializeOwned + DocumentType
 {
-    /// Set the type for the get request.
+    /** Set the type for the get request. **/
     pub fn ty<I>(mut self, ty: I) -> Self
         where I: Into<Type<'static>>
     {
@@ -53,7 +53,7 @@ impl<'a, TDocument> RequestBuilder<'a, GetRequestBuilder<TDocument>, DefaultBody
         self
     }
 
-    /// Send the get request.
+    /** Send the get request. **/
     pub fn send(self) -> Result<GetResponse<TDocument>> {
         let req = self.req.into_request();
 

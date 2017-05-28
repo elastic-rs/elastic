@@ -7,7 +7,7 @@ use client::requests::{Index, Type, Id, IndexRequest, RequestBuilder};
 use client::responses::IndexResponse;
 use types::document::DocumentType;
 
-/// A builder for an index request.
+/** A builder for an index request. **/
 pub struct IndexRequestBuilder<TDocument> {
     index: Index<'static>,
     ty: Type<'static>,
@@ -16,7 +16,7 @@ pub struct IndexRequestBuilder<TDocument> {
 }
 
 impl Client {
-    /// Create a `RequestBuilder` for an index request.
+    /** Create a `RequestBuilder` for an index request. **/
     pub fn index_document<'a, TDocument>(&'a self,
                                 index: Index<'static>,
                                 id: Id<'static>,
@@ -50,7 +50,7 @@ impl<TDocument> IndexRequestBuilder<TDocument>
 impl<'a, TDocument> RequestBuilder<'a, IndexRequestBuilder<TDocument>, TDocument>
     where TDocument: Serialize
 {
-    /// Set the type for the index request.
+    /** Set the type for the index request. **/
     pub fn ty<I>(mut self, ty: I) -> Self
         where I: Into<Type<'static>>
     {
@@ -58,7 +58,7 @@ impl<'a, TDocument> RequestBuilder<'a, IndexRequestBuilder<TDocument>, TDocument
         self
     }
 
-    /// Send the index request.
+    /** Send the index request. **/
     pub fn send(self) -> Result<IndexResponse> {
         let req = self.req.into_request()?;
 
