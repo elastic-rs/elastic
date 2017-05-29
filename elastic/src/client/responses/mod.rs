@@ -30,11 +30,11 @@ A builder for a response.
 This structure wraps the completed HTTP response but gives you
 options for converting it into a concrete type.
 You can also `Read` directly from the response body.
-**/
+*/
 pub struct ResponseBuilder(HttpResponse);
 
 impl ResponseBuilder {
-    /** Get the HTTP status for the response. **/
+    /** Get the HTTP status for the response. */
     pub fn status(&self) -> u16 {
         self.0.status()
     }
@@ -43,12 +43,12 @@ impl ResponseBuilder {
     Get the response body from JSON.
     
     Convert the builder into a raw HTTP response that implements `Read`.
-    **/
+    */
     pub fn raw(self) -> HttpResponse {
         self.0
     }
 
-    /** Get a raw http response. **/
+    /** Get a raw http response. */
     fn reqwest_response(self) -> RawResponse {
         self.raw().0
     }
@@ -128,17 +128,17 @@ This type won't parse if you've applied any [response filters]().
 If you need to tweak the shape of the search response you can
 define your own response type and implement `IsOk` for it.
 See the [`parse`](parse/index.html) mod for more details.
-**/
+*/
 pub type SearchResponse<T> = SearchResponseOf<Hit<T>>;
 
-/** A generic Get Document API response. **/
+/** A generic Get Document API response. */
 pub type GetResponse<T> = GetResponseOf<T>;
 
-/** A raw HTTP response that can be buffered using `Read`. **/
+/** A raw HTTP response that can be buffered using `Read`. */
 pub struct HttpResponse(RawResponse);
 
 impl HttpResponse {
-    /** Get the HTTP status for the response. **/
+    /** Get the HTTP status for the response. */
     pub fn status(&self) -> u16 {
         self.0.status().to_u16()
     }

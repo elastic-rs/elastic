@@ -4,14 +4,14 @@ use client::requests::{empty_body, DefaultBody, IntoBody, Index, IndicesCreateRe
                        RequestBuilder};
 use client::responses::CommandResponse;
 
-/** A builder for a search request. **/
+/** A builder for a [`create_index`]() request. */
 pub struct CreateIndexRequestBuilder<TBody> {
     index: Index<'static>,
     body: TBody,
 }
 
 impl Client {
-    /** Create a `RequestBuilder` for a search request. **/
+    /** Create a `RequestBuilder` for a create index request. */
     pub fn create_index<'a>
         (&'a self,
          index: Index<'static>)
@@ -40,7 +40,7 @@ impl<'a, TBody> RequestBuilder<'a, CreateIndexRequestBuilder<TBody>, TBody>
     Set the body for the search request.
     
     If no body is specified then an empty query will be used.
-    **/
+    */
     pub fn body<TNewBody>(self,
                           body: TNewBody)
                           -> RequestBuilder<'a, CreateIndexRequestBuilder<TNewBody>, TNewBody>
@@ -54,7 +54,7 @@ impl<'a, TBody> RequestBuilder<'a, CreateIndexRequestBuilder<TBody>, TBody>
                             })
     }
 
-    /** Send the search request. **/
+    /** Send the search request. */
     pub fn send(self) -> Result<CommandResponse> {
         let req = self.req.into_request();
 

@@ -11,7 +11,7 @@ They're exposed as methods on the `Client`:
 Client method | Elasticsearch API | Raw request type | Response type
 ------------- | ----------------- | ------------ | -------------
 [`search`]()      | [Query DSL]()     | [`SearchRequest`]() | [`SearchResponse`]()
-[`get`]()         | [Get Document]()  | [`GetRequest`]() | [`GetResponse`]()
+[`get_document`]()         | [Get Document]()  | [`GetRequest`]() | [`GetResponse`]()
 [`index_document`]() | [Put Document]() | [`IndexRequest`]() | [`IndexResponse`]()
 [`put_mapping`]() | [Put Mapping]() | [`IndicesPutMappingRequest`]() | [`CommandResponse`]()
 [`create_index`]() | [Create Index]() | [`IndicesCreateRequest`]() | [`CommandResponse`]()
@@ -22,12 +22,14 @@ All builders follow a standard pattern:
 - Optional or inferred parameters can be overridden in builder methods with inference
 - `send` will return a specific response type
 
+These builders are wrappers around the [`request`]() method, taking a raw request type.
+
 ## Examples
 
 A `get` request for a value:
 
 ```no_run
-let response = client.get::<Value>(index("values"), id(1)).send();
+let response = client.get_document::<Value>(index("values"), id(1)).send();
 ```
 
 Is equivalent to:
@@ -38,7 +40,7 @@ let response = client.request(GetRequest::for_index_ty_id("values", "value", 1))
                      .and_then(into_response::<GetResponse<Value>>);
 ```
 
-A `search` request for a value:
+A `search` request for a value, where the response is matched for an `ApiError`:
 
 ```no_run
 let response = client.search::<Value>()
@@ -74,19 +76,19 @@ match response {
 }
 ```
 
-These builders are wrappers around the raw request types, which can also be used to make requests.
-
 # Raw request types
 
-All Elasticsearch API endpoints have a strongly-typed request type that can be used to build a request.
-The process is described in more detail below.
+Not all endpoints have strongly-typed builders, but all Elasticsearch API endpoints have a specific request type that can be used to build a request manually and send with the [`request`]() method.
+The builders described above are just wrappers around these request types, but that doesn't mean raw requests are a second-class API.
+You have more control over how requests are serialised, sent and deserialised using the raw requests API.
+All request endpoints live in the [`endpoints`]() module.
+
+The process of sending raw requests is described in more detail below.
 
 ## The raw request process
 
-The pieces involved in sending a request and parsing the response are modular.
-Each one exposes Rust traits you can implement to support your own logic.
-If you just want to send search/get requests and parse a search/get response then
-you won't need to worry about this so much.
+The pieces involved in sending an Elasticsearch API request and parsing the response are modular.
+Each one exposes Rust traits you can implement to support your own logic but if you just want to send search/get requests and parse a search/get response then you won't need to worry about this so much.
 
 The basic flow from request to response is:
 
@@ -120,9 +122,7 @@ with the steps in the above process labelled:
 # use elastic::error::*;
 # use serde_json::Value;
 # fn main() {
-// Create a `Client`
-let client = Client::new(RequestParams::default()).unwrap();
-
+# let client = Client::new(RequestParams::default()).unwrap();
 // Create a `SearchRequest` for all indices
 let req = {
     let body = json_str!({
@@ -139,26 +139,7 @@ let req = {
 // Send the request and read the response as a `SearchResponse`
 let response = client.request(req) // 1
                      .send() // 2
-                     .and_then(|res| res.into_response::<SearchResponse<Value>>()); // 3
-
-match response {
-    Ok(response) => {
-        // Iterate through the response hits
-        for hit in response.hits() {
-            println!("{:?}", hit);
-        }
-    },
-    Err(e) => {
-        match *e.kind() {
-            ErrorKind::Api(ref e) => {
-                // handle a REST API error
-            },
-            ref e => {
-                // handle a HTTP or JSON error
-            }
-        }
-    }
-}
+                     .and_then(into_response::<SearchResponse<Value>>); // 3
 # }
 ```
 
@@ -239,12 +220,25 @@ Call `into_response` on a sent request to get a strongly typed response:
 # let req = PingRequest::new();
 let response = client.request(req)
                      .send()
-                     .and_then(|res| res.response::<SearchResponse<MyType>>())
-                     .unwrap();
+                     .and_then(into_response::<SearchResponse<Value>>);
 
-// Iterate through the response hits
-for hit in response.hits() {
-    println!("{:?}", hit);
+match response {
+    Ok(response) => {
+        // Iterate through the response hits
+        for hit in response.hits() {
+            println!("{:?}", hit);
+        }
+    },
+    Err(e) => {
+        match *e.kind() {
+            ErrorKind::Api(ref e) => {
+                // handle a REST API error
+            },
+            ref e => {
+                // handle a HTTP or JSON error
+            }
+        }
+    }
 }
 # }
 ```
@@ -265,7 +259,7 @@ Alternatively to `into_repsonse`, call `into_raw` on a sent request to get a raw
 # let req = PingRequest::new();
 let response = client.request(req)
                      .send()
-                     .map(|res| res.into_raw())
+                     .and_then(into_raw)
                      .unwrap();
 
 let mut body = String::new();
@@ -295,7 +289,7 @@ A HTTP client for the Elasticsearch REST API.
 
 The `Client` is a structure that lets you create and send `RequestBuilder`s.
 It's mostly a thin wrapper over a `reqwest::Client`.
-**/
+*/
 pub struct Client {
     http: HttpClient,
     params: RequestParams,
@@ -328,7 +322,7 @@ impl Client {
     ```
     
     See [`RequestParams`](struct.RequestParams.html) for more configuration options.
-    **/
+    */
     pub fn new(params: RequestParams) -> Result<Self> {
         let client = HttpClient::new()?;
 
@@ -339,14 +333,14 @@ impl Client {
     }
 }
 
-/** Try convert a `ResponseBuilder` into a concrete response type. **/
+/** Try convert a `ResponseBuilder` into a concrete response type. */
 pub fn into_response<T>(res: ResponseBuilder) -> Result<T>
     where T: IsOk + DeserializeOwned
 {
     res.into_response()
 }
 
-/** Try convert a `ResponseBuilder` into a raw response type. **/
+/** Try convert a `ResponseBuilder` into a raw response type. */
 pub fn into_raw(res: ResponseBuilder) -> Result<HttpResponse> {
     Ok(res.raw())
 }

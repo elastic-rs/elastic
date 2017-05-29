@@ -70,16 +70,21 @@ use elastic::prelude::*;
 // Create a client with default params (host: 'http://localhost:9200')
 let client = Client::new(RequestParams::default()).unwrap();
 
-// Send the ping request and unwrap the response
+// Send the search request
 let response = client.search::<Value>()
                      .index("myindex")
                      .ty("mytype")
                      .send()
                      .unwrap();
+
+// Iterate through the hits (of type `Value`)
+for hit in response.hits() {
+    println!("{:?}", hit);
+}
 ```
 
 The `Client` will use a default set of request parameters that are passed to each request.
-Properties like the host and query parameters can be configured:
+Properties like the host and query parameters can be configured for all requests:
 
 ```no_run
 # use elastic::prelude::*;
@@ -99,9 +104,7 @@ use elastic::prelude::*;
 let client = Client::new(RequestParams::default()).unwrap();
 
 let response = client.search::<Value>()
-                     .params(|p| p.url_param("pretty", false))
-                     .index("myindex")
-                     .ty("mytype")
+                     .params(|p| p.url_param("pretty", true))
                      .send()
                      .unwrap();
 ```
@@ -131,7 +134,31 @@ struct MyType {
 # }
 ```
 
-Use your document type to build index requests:
+Searching on a type that derives `ElasticType` will infer the right document type and deserialise appropriately:
+
+```
+# extern crate serde;
+# #[macro_use]
+# extern crate serde_derive;
+# #[macro_use]
+# extern crate elastic_derive;
+# extern crate elastic;
+# use elastic::prelude::*;
+# fn main() {
+# #[derive(Serialize, Deserialize, ElasticType)]
+# struct MyType {
+#     pub id: i32,
+#     pub title: String,
+#     pub timestamp: Date<DefaultDateFormat>
+# }
+let response = client.search::<MyType>()
+                     .index("myindex")
+                     .send()
+                     .unwrap();
+# }
+```
+
+Types that derive `ElasticType` can be indexed:
 
 ```
 # extern crate serde;
@@ -154,15 +181,13 @@ let doc = MyType {
     timestamp: Date::now()
 };
 
-let index = Index::from("index");
-let id = Id::from(doc.id.to_string());
-
-// A tuple of (Index, Id, MyType) can be converted into an IndexRequest
-let req = IndexRequest::try_for_doc((index, id, &doc)).unwrap();
+let response = client.index_document(index("myindex"), id(doc.id), doc)
+                     .send()
+                     .unwrap();
 # }
 ```
 
-Use your document type to build mapping requests:
+Types that derive `ElasticType` can be mapped:
 
 ```
 # extern crate serde;
@@ -179,11 +204,9 @@ Use your document type to build mapping requests:
 #     pub title: String,
 #     pub timestamp: Date<DefaultDateFormat>
 # }
-let index = Index::from("index");
-let mapping = MyType::mapping();
-
-// A tuple of (Index, MyTypeMapping) can be converted into a MappingRequest
-let req = IndicesPutMappingRequest::try_for_mapping((index, mapping)).unwrap();
+let response = client.put_mapping::<MyType>(index("myindex"))
+                     .send()
+                     .unwrap();
 # }
 ```
 

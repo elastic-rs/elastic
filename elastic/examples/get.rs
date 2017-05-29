@@ -20,7 +20,7 @@ fn main() {
     let client = Client::new(RequestParams::default()).unwrap();
 
     let res = client
-        .get::<Value>(index("typed_sample_index"), id("1"))
+        .get_document::<Value>(index("typed_sample_index"), id("1"))
         .ty("mytype")
         .send();
 
