@@ -6,7 +6,7 @@ Key response types include:
 - [`SearchResponse`](type.SearchResponse.html) for the [Query DSL](http://www.elastic.co/guide/en/elasticsearch/reference/master/search-search.html)
 - [`GetResponse`](type.GetResponse.html) for the [Document API](http://www.elastic.co/guide/en/elasticsearch/reference/master/docs-get.html)
 - [`BulkResponse`](struct.BulkResponse.html) for the [Bulk API](http://www.elastic.co/guide/en/elasticsearch/reference/master/docs-bulk.html)
-!*/
+*/
 
 pub mod parse;
 
@@ -108,7 +108,7 @@ impl ResponseBuilder {
                          .and_then(|res| res.response::<Value>());
     # }
     ```
-    !*/
+    */
     pub fn into_response<T>(self) -> Result<T>
         where T: IsOk + DeserializeOwned
     {

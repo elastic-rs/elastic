@@ -228,7 +228,7 @@ about how they're going to be used.
 
 - [Elasticsearch Docs](https://www.elastic.co/guide/en/elasticsearch/reference/master/index.html)
 - [Github](https://github.com/elastic-rs/elastic)
-!*/
+*/
 
 #![deny(warnings)]
 #![deny(missing_docs)]
@@ -244,7 +244,11 @@ extern crate elastic_types;
 pub mod error;
 
 pub mod http {
-    /*! Raw HTTP modules. !*/
+    /*! 
+    Raw HTTP modules.
+
+    These types are re-exported from `reqwest` and used in parts of `elastic`s public API.
+    */
 
     pub use reqwest::header;
     pub use reqwest::Body;
@@ -254,7 +258,7 @@ pub mod client;
 pub mod types;
 
 pub mod prelude {
-    /*! A glob import for convenience. !*/
+    /*! A glob import for convenience. */
 
     pub use client::{Client, RequestParams, into_response, into_raw};
     pub use client::requests::*;

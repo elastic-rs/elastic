@@ -89,7 +89,7 @@ match response {
 You can also parse the response body into a temporary `serde_json::Value` if the status code isn't enough to determine if it's ok.
 This will consume the `UnbufferedResponse` and return a `BufferedResponse` instead that keeps the response body private for later handlers to use.
 See the [`IsOk`]() trait for more details.
-!*/
+*/
 
 pub use elastic_reqwest::res::parsing::{HttpResponseHead, IsOk, ResponseBody, MaybeOkResponse,
                                         MaybeBufferedResponse, Unbuffered, Buffered};

@@ -55,7 +55,9 @@ fn sample_index() -> Index<'static> {
 }
 
 fn ensure_indexed(client: &Client, doc: MyType) {
-    let get_res = client.get_document::<MyType>(sample_index(), id(doc.id)).send();
+    let get_res = client
+        .get_document::<MyType>(sample_index(), id(doc.id))
+        .send();
 
     match get_res {
         // The doc was found: no need to index

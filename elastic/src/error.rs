@@ -44,7 +44,7 @@ match res {
     }
 }
 ```
-!*/
+*/
 
 #![allow(missing_docs)]
 

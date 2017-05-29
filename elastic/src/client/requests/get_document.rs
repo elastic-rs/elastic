@@ -17,10 +17,11 @@ pub struct GetRequestBuilder<TDocument> {
 
 impl Client {
     /** Create a `RequestBuilder` for a get request. */
-    pub fn get_document<'a, TDocument>(&'a self,
-                              index: Index<'static>,
-                              id: Id<'static>)
-                              -> RequestBuilder<'a, GetRequestBuilder<TDocument>, DefaultBody>
+    pub fn get_document<'a, TDocument>
+        (&'a self,
+         index: Index<'static>,
+         id: Id<'static>)
+         -> RequestBuilder<'a, GetRequestBuilder<TDocument>, DefaultBody>
         where TDocument: DeserializeOwned + DocumentType
     {
         let ty = TDocument::name().into();

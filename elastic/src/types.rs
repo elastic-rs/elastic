@@ -1,10 +1,8 @@
 /*!
 Indexable documents and type mapping.
 
-This module contains tools for defining Elasticsearch-compatible
-document types.
-Document mapping is defined using Rust traits, which are added to fields
-as generic parameters.
+This module contains tools for defining Elasticsearch-compatible document types.
+Document mapping is defined using Rust traits, which are added to fields as generic parameters.
 This has the following benefits:
 
 - Your `struct` is the one source of truth for serialisation and mapping.
@@ -27,8 +25,7 @@ some_field: Boolean<MyMapping>
 
 The source type is `boolean` and the mapping is `MyMapping`.
 
-Most datatypes also implement a default mapping for a common Rust type if you don't
-need to customise how a field is mapped:
+Most datatypes also implement a default mapping for a common Rust type if you don't need to customise how a field is mapped:
 
 ```ignore
 some_field: bool
@@ -37,8 +34,7 @@ some_field: bool
 See the table below for a complete list of supported datatypes and their default
 implementations.
 
-All Elasticsearch types implement the base `FieldType<M: FieldMapping<F>, F>` trait
-where `M` is the mapping and `F` is a type-specific format.
+All Elasticsearch types implement the base `FieldType<M: FieldMapping<F>, F>` trait where `M` is the mapping and `F` is a type-specific format.
 
 ## Supported datatypes
 
@@ -110,8 +106,7 @@ struct MyType {
 # }
 ```
 
-You can use the `Document` type wrapper to serialise the mapping for your
-document types:
+You can use the `IndexDocumentMapping` type wrapper to serialise the mapping for your document types:
 
 ```
 # extern crate elastic;
@@ -125,7 +120,7 @@ document types:
 # fn main() {
 # #[derive(Serialize, Deserialize, ElasticType)]
 # struct MyType {}
-let doc = Document::from(MyType::mapping());
+let doc = IndexDocumentMapping::from(MyType::mapping());
 
 let mapping = serde_json::to_string(&doc).unwrap();
 # }
@@ -151,7 +146,7 @@ This will produce the following JSON:
 #     title: String,
 #     timestamp: Date<EpochMillis>
 # }
-# let mapping = serde_json::to_string(&Document::from(MyType::mapping())).unwrap();
+# let mapping = serde_json::to_string(&IndexDocumentMapping::from(MyType::mapping())).unwrap();
 # let expected = json_str!(
 {
     "properties": {
@@ -183,10 +178,8 @@ with them.
 
 ## Define custom field data types
 
-Use traits to define your own field types and have them mapped as one of the
-core datatypes.
-In the below example, variants of `MyEnum` will be serialised as a string,
-which we map as a non-analysed `keyword` in Elasticsearch:
+Use traits to define your own field types and have them mapped as one of the core datatypes.
+In the below example, variants of `MyEnum` will be serialised as a string, which we map as a non-analysed `keyword` in Elasticsearch:
 
 ```
 # extern crate elastic;
@@ -251,7 +244,7 @@ Serialising `MyType`s mapping will produce the following json:
 #     value: MyEnum
 # }
 # fn main() {
-# let mapping = serde_json::to_string(&Document::from(MyType::mapping())).unwrap();
+# let mapping = serde_json::to_string(&IndexDocumentMapping::from(MyType::mapping())).unwrap();
 # let expected = json_str!(
 {
     "properties": {
@@ -264,64 +257,7 @@ Serialising `MyType`s mapping will produce the following json:
 # assert_eq!(expected, mapping);
 # }
 ```
-
-## Convert documents into requests
-
-Documents and their mappings can be converted into index and
-mapping REST API requests.
-
-Convert a document and index type into an index request:
-
-```
-# extern crate elastic;
-# #[macro_use]
-# extern crate elastic_derive;
-# extern crate serde;
-# extern crate serde_json;
-# #[macro_use]
-# extern crate serde_derive;
-# use elastic::prelude::*;
-# fn main() {
-# #[derive(Serialize, Deserialize, ElasticType)]
-# struct MyType {}
-# fn get_doc() -> MyType { MyType {} }
-// Get an `Index` and an instance of some `ElasticType`
-let index = Index::from("my_index");
-let doc = get_doc();
-
-// Convert the index and document into an index request
-let req = IndexRequest::try_for_doc((index, &doc)).unwrap();
-# }
-```
-
-Convert a document and index type into a mapping request:
-
-```
-# extern crate elastic;
-# #[macro_use]
-# extern crate elastic_derive;
-# extern crate serde;
-# extern crate serde_json;
-# #[macro_use]
-# extern crate serde_derive;
-# use elastic::prelude::*;
-# fn main() {
-# #[derive(Serialize, Deserialize, ElasticType)]
-# struct MyType {}
-# fn get_doc() -> MyType { MyType {} }
-// Get an `Index` and an instance of some `ElasticType`
-let index = Index::from("my_index");
-let doc = get_doc();
-
-// Convert the index and document into an index request
-let req = IndicesPutMappingRequest::try_for_doc((index, &doc)).unwrap();
-# }
-```
-
-For more conversions between documents and requests,
-see the [`TryForDoc`](../client/requests/trait.TryForDoc.html) and
-[`TryForMapping`](../client/requests/trait.TryForMapping.html) traits.
-!*/
+*/
 
 pub use elastic_types::{document, boolean, date, geo, ip, number, string, prelude};
 

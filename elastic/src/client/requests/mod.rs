@@ -3,7 +3,7 @@ Request types for the Elasticsearch REST API.
 
 This module contains implementation details that are useful if you want to customise the request process,
 but aren't generally important for sending requests.
-!*/
+*/
 
 use std::marker::PhantomData;
 use elastic_reqwest::ElasticClient;

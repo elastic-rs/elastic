@@ -269,7 +269,7 @@ response.read_to_string(&mut body).unwrap();
 
 The `HttpResponse` implements `Read` so you can buffer out the raw response data.
 For more details see the [`responses`]() module.
-!*/
+*/
 
 pub mod requests;
 pub mod responses;
