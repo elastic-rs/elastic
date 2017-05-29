@@ -18,7 +18,7 @@ use elastic_types::string::keyword::Keyword;
 
 let string = Keyword::<DefaultKeywordMapping>::new("my string value");
 ```
-**/
+*/
 #[derive(Debug, Clone, Default, PartialEq)]
 pub struct Keyword<M>
     where M: KeywordMapping
@@ -42,7 +42,7 @@ impl<M> Keyword<M>
     
     let string = Keyword::<DefaultKeywordMapping>::new("my string");
     ```
-    **/
+    */
     pub fn new<I>(string: I) -> Keyword<M>
         where I: Into<String>
     {
@@ -52,7 +52,7 @@ impl<M> Keyword<M>
         }
     }
 
-    /** Change the mapping of this string. **/
+    /** Change the mapping of this string. */
     pub fn remap<MInto>(self) -> Keyword<MInto>
         where MInto: KeywordMapping
     {

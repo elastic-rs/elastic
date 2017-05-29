@@ -24,7 +24,7 @@ use elastic_types::ip::Ip;
 
 let ip = Ip::<DefaultIpMapping>::new(Ipv4Addr::new(127, 0, 0, 1));
 ```
-**/
+*/
 #[derive(Debug, Clone, PartialEq)]
 pub struct Ip<M>
     where M: IpMapping
@@ -49,7 +49,7 @@ impl<M> Ip<M>
     
     let ip = Ip::<DefaultIpMapping>::new(Ipv4Addr::new(127, 0, 0, 1));
     ```
-    **/
+    */
     pub fn new<I>(ip: I) -> Ip<M>
         where I: Into<Ipv4Addr>
     {
@@ -81,7 +81,7 @@ impl<M> Ip<M>
     let ip: Ip<MyIpMapping> = es_ip.remap();
     # }
     ```
-    **/
+    */
     pub fn remap<MInto>(self) -> Ip<MInto>
         where MInto: IpMapping
     {

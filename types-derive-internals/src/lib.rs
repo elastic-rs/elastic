@@ -2,7 +2,7 @@
 Elasticsearch Core Types Codegen
 
 This crate contains the internals for `elastic_types`-related codegen.
-!*/
+*/
 
 #[macro_use]
 extern crate quote;

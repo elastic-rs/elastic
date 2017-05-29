@@ -22,7 +22,7 @@ let point: GeoShape<DefaultGeoShapeMapping> = GeoShape::new(
 );
 # }
 ```
-**/
+*/
 #[derive(Debug, Clone, PartialEq)]
 pub struct GeoShape<M = DefaultGeoShapeMapping>
     where M: GeoShapeMapping
@@ -55,7 +55,7 @@ impl<M> GeoShape<M>
     );
     # }
     ```
-    **/
+    */
     pub fn new<I>(geo: I) -> GeoShape<M>
         where I: Into<Geometry>
     {
@@ -65,7 +65,7 @@ impl<M> GeoShape<M>
         }
     }
 
-    /** Change the mapping of this geo shape. **/
+    /** Change the mapping of this geo shape. */
     pub fn remap<MInto: GeoShapeMapping>(self) -> GeoShape<MInto> {
         GeoShape::<MInto>::new(self.value)
     }

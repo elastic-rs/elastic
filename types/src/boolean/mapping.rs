@@ -1,11 +1,11 @@
-/*! Mapping for the Elasticsearch `boolean` type. !*/
+/*! Mapping for the Elasticsearch `boolean` type. */
 
 use serde::{Serialize, Serializer};
 use serde::ser::SerializeStruct;
 use private::field::{DocumentField, FieldMapping, SerializeField};
 use document::FieldType;
 
-/** A field that will be mapped as a `boolean`. **/
+/** A field that will be mapped as a `boolean`. */
 pub trait BooleanFieldType<M> where M: BooleanMapping {}
 
 impl<T, M> FieldType<M, BooleanFormat> for T
@@ -78,11 +78,11 @@ This will produce the following mapping:
 # assert_eq!(json, mapping);
 # }
 ```
-**/
+*/
 pub trait BooleanMapping
     where Self: Default
 {
-    /** Field-level index time boosting. Accepts a floating point number, defaults to `1.0`. **/
+    /** Field-level index time boosting. Accepts a floating point number, defaults to `1.0`. */
     fn boost() -> Option<f32> {
         None
     }
@@ -91,12 +91,12 @@ pub trait BooleanMapping
     Should the field be stored on disk in a column-stride fashion,
     so that it can later be used for sorting, aggregations, or scripting?
     Accepts `true` (default) or `false`.
-    **/
+    */
     fn doc_values() -> Option<bool> {
         None
     }
 
-    /** Should the field be searchable? Accepts `not_analyzed` (default) and `no`. **/
+    /** Should the field be searchable? Accepts `not_analyzed` (default) and `no`. */
     fn index() -> Option<bool> {
         None
     }
@@ -104,7 +104,7 @@ pub trait BooleanMapping
     /**
     Accepts a string value which is substituted for any explicit null values.
     Defaults to `null`, which means the field is treated as missing.
-    **/
+    */
     fn null_value() -> Option<bool> {
         None
     }
@@ -112,7 +112,7 @@ pub trait BooleanMapping
     /**
     Whether the field value should be stored and retrievable separately from the `_source` field.
     Accepts `true` or `false` (default).
-    **/
+    */
     fn store() -> Option<bool> {
         None
     }
@@ -152,7 +152,7 @@ impl<T> Serialize for DocumentField<T, BooleanFormat>
     }
 }
 
-/** Default mapping for `bool`. **/
+/** Default mapping for `bool`. */
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultBooleanMapping;
 impl BooleanMapping for DefaultBooleanMapping {}

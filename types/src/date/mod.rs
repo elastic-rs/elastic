@@ -104,7 +104,7 @@ impl DateFormat for MyCustomFormat {
 
 # Links
 - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/date.html)
-!*/
+*/
 
 pub mod mapping;
 
@@ -117,10 +117,10 @@ pub use self::formats::*;
 
 use chrono::{DateTime, UTC};
 
-/** A re-export of the `chrono::DateTime` struct with `UTC` timezone. **/
+/** A re-export of the `chrono::DateTime` struct with `UTC` timezone. */
 pub type ChronoDateTime = DateTime<UTC>;
 
-/** The default `date` format (`BasicDateTime`). **/
+/** The default `date` format (`BasicDateTime`). */
 pub type DefaultDateFormat = BasicDateTime;
 
 pub mod prelude {
@@ -128,7 +128,7 @@ pub mod prelude {
     Includes all types for the `date` type.
     
     This is a convenience module to make it easy to build mappings for multiple types without too many `use` statements.
-    !*/
+    */
 
     pub use super::DefaultDateFormat;
     pub use super::format::*;

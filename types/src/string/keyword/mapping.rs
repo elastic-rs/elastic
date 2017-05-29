@@ -1,4 +1,4 @@
-/*! Mapping for the Elasticsearch `keyword` type. !*/
+/*! Mapping for the Elasticsearch `keyword` type. */
 
 use std::collections::BTreeMap;
 use serde::{Serialize, Serializer};
@@ -7,7 +7,7 @@ use string::mapping::{StringField, IndexOptions};
 use private::field::{DocumentField, FieldMapping, SerializeField};
 use document::FieldType;
 
-/** A field that will be mapped as a `keyword`. **/
+/** A field that will be mapped as a `keyword`. */
 pub trait KeywordFieldType<M> where M: KeywordMapping {}
 
 impl<T, M> FieldType<M, KeywordFormat> for T
@@ -79,7 +79,7 @@ This will produce the following mapping:
 # assert_eq!(json, mapping);
 # }
 ```
-**/
+*/
 pub trait KeywordMapping
     where Self: Default
 {
@@ -87,12 +87,12 @@ pub trait KeywordMapping
     The analyzer which should be used for analyzed string fields,
     both at index-time and at search-time (unless overridden by the `search_analyzer`).
     Defaults to the default index analyzer, or the `standard` analyzer.
-    **/
+    */
     fn analyzer() -> Option<&'static str> {
         None
     }
 
-    /** Field-level index time boosting. Accepts a floating point number, defaults to `1.0`. **/
+    /** Field-level index time boosting. Accepts a floating point number, defaults to `1.0`. */
     fn boost() -> Option<f32> {
         None
     }
@@ -101,7 +101,7 @@ pub trait KeywordMapping
     Should the field be stored on disk in a column-stride fashion,
     so that it can later be used for sorting, aggregations, or scripting?
     Accepts `true` (default) or `false`.
-    **/
+    */
     fn doc_values() -> Option<bool> {
         None
     }
@@ -110,7 +110,7 @@ pub trait KeywordMapping
     Should global ordinals be loaded eagerly on refresh?
     Accepts `true` or `false` (default).
     Enabling this is a good idea on fields that are frequently used for (significant) terms aggregations.
-    **/
+    */
     fn eager_global_ordinals() -> Option<bool> {
         None
     }
@@ -152,7 +152,7 @@ pub trait KeywordMapping
     # }
     # fn main() {}
     ```
-    **/
+    */
     fn fields() -> Option<BTreeMap<&'static str, StringField>> {
         None
     }
@@ -162,7 +162,7 @@ pub trait KeywordMapping
     Accepts true or false.
     Defaults to `false` if index is set to `no`, or if a parent object field sets `include_in_all` to false.
     Otherwise defaults to `true`.
-    **/
+    */
     fn include_in_all() -> Option<bool> {
         None
     }
@@ -170,24 +170,24 @@ pub trait KeywordMapping
     /**
     The maximum number of characters to index.
     Any characters over this length will be ignored.
-    **/
+    */
     fn ignore_above() -> Option<u32> {
         None
     }
 
     /**
     Should the field be searchable? Accepts `true` (default) or `false`.
-    **/
+    */
     fn index() -> Option<bool> {
         None
     }
 
-    /** What information should be stored in the index, for search and highlighting purposes. Defaults to `Positions`. **/
+    /** What information should be stored in the index, for search and highlighting purposes. Defaults to `Positions`. */
     fn index_options() -> Option<IndexOptions> {
         None
     }
 
-    /** Whether field-length should be taken into account when scoring queries. Accepts `true` (default) or `false`. **/
+    /** Whether field-length should be taken into account when scoring queries. Accepts `true` (default) or `false`. */
     fn norms() -> Option<bool> {
         None
     }
@@ -195,7 +195,7 @@ pub trait KeywordMapping
     /**
     Accepts a `string` value which is substituted for any explicit null values.
     Defaults to `null`, which means the field is treated as missing.
-    **/
+    */
     fn null_value() -> Option<&'static str> {
         None
     }
@@ -203,7 +203,7 @@ pub trait KeywordMapping
     /**
     Whether the field value should be stored and retrievable separately from the `_source` field.
     Accepts `true` or `false` (default).
-    **/
+    */
     fn store() -> Option<bool> {
         None
     }
@@ -211,7 +211,7 @@ pub trait KeywordMapping
     /**
     The analyzer that should be used at search time on analyzed fields.
     Defaults to the analyzer setting.
-    **/
+    */
     fn search_analyzer() -> Option<&'static str> {
         None
     }
@@ -219,7 +219,7 @@ pub trait KeywordMapping
     /**
     Which scoring algorithm or similarity should be used.
     Defaults to `"classic"`, which uses TF/IDF.
-    **/
+    */
     fn similarity() -> Option<&'static str> {
         None
     }
@@ -268,64 +268,64 @@ impl<T> Serialize for DocumentField<T, KeywordFormat>
     }
 }
 
-/** Default mapping for `bool`. **/
+/** Default mapping for `bool`. */
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultKeywordMapping;
 impl KeywordMapping for DefaultKeywordMapping {}
 
-/** A multi-field string mapping. **/
+/** A multi-field string mapping. */
 #[derive(Debug, Default, Clone, Copy)]
 pub struct KeywordFieldMapping {
     /**
     The analyzer which should be used for analyzed string fields,
     both at index-time and at search-time (unless overridden by the `search_analyzer`).
     Defaults to the default index analyzer, or the `standard` analyzer.
-    **/
+    */
     pub analyzer: Option<&'static str>,
     /**
     Should the field be stored on disk in a column-stride fashion,
     so that it can later be used for sorting, aggregations, or scripting?
     Accepts `true` (default) or `false`.
-    **/
+    */
     pub doc_values: Option<bool>,
     /**
     Should global ordinals be loaded eagerly on refresh?
     Accepts `true` or `false` (default).
     Enabling this is a good idea on fields that are frequently used for (significant) terms aggregations.
-    **/
+    */
     pub eager_global_ordinals: Option<bool>,
     /**
     Whether or not the field value should be included in the `_all` field?
     Accepts true or false.
     Defaults to `false` if index is set to `no`, or if a parent object field sets `include_in_all` to false.
     Otherwise defaults to `true`.
-    **/
+    */
     pub include_in_all: Option<bool>,
     /**
     The maximum number of characters to index.
     Any characters over this length will be ignored.
-    **/
+    */
     pub ignore_above: Option<u32>,
-    /** Should the field be searchable? Accepts `true` (default) or `false`. **/
+    /** Should the field be searchable? Accepts `true` (default) or `false`. */
     pub index: Option<bool>,
-    /** What information should be stored in the index, for search and highlighting purposes. Defaults to `Positions`. **/
+    /** What information should be stored in the index, for search and highlighting purposes. Defaults to `Positions`. */
     pub index_options: Option<IndexOptions>,
-    /** Whether field-length should be taken into account when scoring queries. Accepts `true` (default) or `false`. **/
+    /** Whether field-length should be taken into account when scoring queries. Accepts `true` (default) or `false`. */
     pub norms: Option<bool>,
     /**
     Whether the field value should be stored and retrievable separately from the `_source` field.
     Accepts `true` or `false` (default).
-    **/
+    */
     pub store: Option<bool>,
     /**
     The analyzer that should be used at search time on analyzed fields.
     Defaults to the analyzer setting.
-    **/
+    */
     pub search_analyzer: Option<&'static str>,
     /**
     Which scoring algorithm or similarity should be used.
     Defaults to `"classic"`, which uses TF/IDF.
-    **/
+    */
     pub similarity: Option<&'static str>,
 }
 

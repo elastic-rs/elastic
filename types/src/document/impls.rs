@@ -11,16 +11,16 @@ The additional fields available to an indexable Elasticsearch type.
 
 This trait is implemented for the type being mapped, rather than the mapping
 type itself.
-**/
+*/
 pub trait DocumentType {
-    /** The mapping type for this document. **/
+    /** The mapping type for this document. */
     type Mapping: DocumentMapping;
 
     /**
     Get the name for this type.
     
     This is a convenience method that returns the `name` of the bound `DocumentMapping`.
-    **/
+    */
     fn name() -> &'static str {
         Self::Mapping::name()
     }
@@ -38,14 +38,14 @@ Each type has two generic arguments that help define its mapping:
 # Links
 
 - [Elasticsearch docs](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-types.html)
-**/
+*/
 pub trait FieldType<M, F>
     where M: FieldMapping<F>,
           F: Default
 {
     /**
     Get the mapping for this type.
-    **/
+    */
     fn mapping() -> M {
         M::default()
     }
@@ -225,7 +225,7 @@ impl Serialize for Mappings {
 # assert_eq!(json, index);
 # }
 ```
-**/
+*/
 #[derive(Default)]
 pub struct IndexDocumentMapping<M>
     where M: DocumentMapping
@@ -241,7 +241,7 @@ impl<M> From<M> for IndexDocumentMapping<M>
     }
 }
 
-/** Serialise a field mapping as a field using the given serialiser. **/
+/** Serialise a field mapping as a field using the given serialiser. */
 #[inline]
 pub fn field_ser<S, M, F>(state: &mut S, field: &'static str, _: M) -> Result<(), S::Error>
     where S: SerializeStruct,
@@ -251,7 +251,7 @@ pub fn field_ser<S, M, F>(state: &mut S, field: &'static str, _: M) -> Result<()
     state.serialize_field(field, &M::Field::default())
 }
 
-/** Serialise a document mapping as a field using the given serialiser. **/
+/** Serialise a document mapping as a field using the given serialiser. */
 #[inline]
 pub fn doc_ser<S, M>(state: &mut S, field: &'static str, _: M) -> Result<(), S::Error>
     where S: SerializeStruct,
@@ -264,7 +264,7 @@ pub fn doc_ser<S, M>(state: &mut S, field: &'static str, _: M) -> Result<(), S::
 Serialize a field individually.
 
 This method isn't intended to be used publicly, but is useful in the docs.
-**/
+*/
 #[doc(hidden)]
 #[inline]
 pub fn standalone_field_ser<M, F>(_: M) -> Result<String, serde_json::Error>
@@ -274,7 +274,7 @@ pub fn standalone_field_ser<M, F>(_: M) -> Result<String, serde_json::Error>
     serde_json::to_string(&M::Field::default())
 }
 
-/** Mapping for an anonymous json object. **/
+/** Mapping for an anonymous json object. */
 #[derive(Default)]
 pub struct ValueDocumentMapping;
 

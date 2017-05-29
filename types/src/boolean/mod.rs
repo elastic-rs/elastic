@@ -50,7 +50,7 @@ impl BooleanFieldType<DefaultBooleanMapping> for MyBooleanField {}
 # Links
 
 - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/boolean.html)
-!*/
+*/
 pub mod mapping;
 
 mod impls;
@@ -61,7 +61,7 @@ pub mod prelude {
     Includes all types for the `boolean` type.
     
     This is a convenience module to make it easy to build mappings for multiple types without too many `use` statements.
-    !*/
+    */
 
     pub use super::impls::*;
     pub use super::mapping::*;

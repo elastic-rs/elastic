@@ -79,7 +79,7 @@ impl KeywordFieldType<DefaultKeywordMapping> for MyKeywordField {}
 # Links
 
 - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/string.html)
-!*/
+*/
 
 #[macro_use]
 mod macros;
@@ -97,7 +97,7 @@ pub mod prelude {
     Includes all types for the `string` types.
     
     This is a convenience module to make it easy to build mappings for multiple types without too many `use` statements.
-    !*/
+    */
 
     pub use super::keyword::prelude::*;
     pub use super::text::prelude::*;

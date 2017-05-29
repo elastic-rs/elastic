@@ -546,7 +546,7 @@ pub mod prelude {
     Includes all data types.
     
     This is a convenience module to make it easy to build mappings for multiple types without too many `use` statements.
-    !*/
+    */
 
     pub use document::prelude::*;
 

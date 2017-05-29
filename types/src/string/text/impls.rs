@@ -22,7 +22,7 @@ use elastic_types::string::text::Text;
 
 let string = Text::<DefaultTextMapping>::new("my string value");
 ```
-**/
+*/
 #[derive(Debug, Clone, Default, PartialEq)]
 pub struct Text<M>
     where M: TextMapping
@@ -46,7 +46,7 @@ impl<M> Text<M>
     
     let string = Text::<DefaultTextMapping>::new("my string");
     ```
-    **/
+    */
     pub fn new<I>(string: I) -> Text<M>
         where I: Into<String>
     {
@@ -56,7 +56,7 @@ impl<M> Text<M>
         }
     }
 
-    /** Change the mapping of this string. **/
+    /** Change the mapping of this string. */
     pub fn remap<MInto>(self) -> Text<MInto>
         where MInto: TextMapping
     {

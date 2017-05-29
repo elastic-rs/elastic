@@ -1,4 +1,4 @@
-/*! Mapping for the Elasticsearch `date` type. !*/
+/*! Mapping for the Elasticsearch `date` type. */
 
 use std::marker::PhantomData;
 use serde::{Serialize, Serializer};
@@ -7,7 +7,7 @@ use super::{DateFormat, Date};
 use private::field::{DocumentField, FieldMapping, SerializeField};
 use document::FieldType;
 
-/** A field that will be mapped as a `date`. **/
+/** A field that will be mapped as a `date`. */
 pub trait DateFieldType<M, F>
     where M: DateMapping<Format = F>,
           F: DateFormat
@@ -110,7 +110,7 @@ impl <F: DateFormat> DateMapping for MyDateMapping<F> {
 }
 # fn main() {}
 ```
-**/
+*/
 pub trait DateMapping
     where Self: Default
 {
@@ -119,10 +119,10 @@ pub trait DateMapping
     
     The value of `Format::name()` is what's sent to Elasticsearch as the format to use.
     This is also used to serialise and deserialise formatted `Date`s.
-    **/
+    */
     type Format: DateFormat;
 
-    /** Field-level index time boosting. Accepts a floating point number, defaults to `1.0`. **/
+    /** Field-level index time boosting. Accepts a floating point number, defaults to `1.0`. */
     fn boost() -> Option<f32> {
         None
     }
@@ -131,7 +131,7 @@ pub trait DateMapping
     Should the field be stored on disk in a column-stride fashion,
     so that it can later be used for sorting, aggregations, or scripting?
     Accepts `true` (default) or `false`.
-    **/
+    */
     fn doc_values() -> Option<bool> {
         None
     }
@@ -141,12 +141,12 @@ pub trait DateMapping
     Accepts true or false.
     Defaults to `false` if index is set to `no`, or if a parent object field sets `include_in_all` to false.
     Otherwise defaults to `true`.
-    **/
+    */
     fn include_in_all() -> Option<bool> {
         None
     }
 
-    /** Should the field be searchable? Accepts `not_analyzed` (default) and `no`. **/
+    /** Should the field be searchable? Accepts `not_analyzed` (default) and `no`. */
     fn index() -> Option<bool> {
         None
     }
@@ -154,7 +154,7 @@ pub trait DateMapping
     /**
     Whether the field value should be stored and retrievable separately from the `_source` field.
     Accepts `true` or `false` (default).
-    **/
+    */
     fn store() -> Option<bool> {
         None
     }
@@ -162,7 +162,7 @@ pub trait DateMapping
     /**
     If `true`, malformed numbers are ignored.
     If `false` (default), malformed numbers throw an exception and reject the whole document.
-    **/
+    */
     fn ignore_malformed() -> Option<bool> {
         None
     }
@@ -170,7 +170,7 @@ pub trait DateMapping
     /**
     Accepts a date value in one of the configured format's as the field which is substituted for any explicit null values.
     Defaults to `null`, which means the field is treated as missing.
-    **/
+    */
     fn null_value() -> Option<Date<Self::Format, Self>> {
         None
     }
@@ -216,7 +216,7 @@ impl<T, F> Serialize for DocumentField<T, DateFormatWrapper<F>>
     }
 }
 
-/** Default mapping for `date`. **/
+/** Default mapping for `date`. */
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultDateMapping<F>
     where F: DateFormat

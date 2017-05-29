@@ -6,7 +6,7 @@ Elasticsearch Core Types Codegen
 
  # Links
  - [Github](https://github.com/elastic-rs/elastic-types)
- !*/
+ */
 
 extern crate proc_macro;
 

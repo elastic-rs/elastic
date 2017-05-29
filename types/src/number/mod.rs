@@ -64,7 +64,7 @@ impl IntegerFieldType<DefaultIntegerMapping> for MyIntegerField {}
 # Links
 
 - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/number.html)
-!*/
+*/
 
 pub mod mapping;
 
@@ -76,7 +76,7 @@ pub mod prelude {
     Includes all types for the `number` type.
     
     This is a convenience module to make it easy to build mappings for multiple types without too many `use` statements.
-    !*/
+    */
 
     pub use super::impls::*;
     pub use super::mapping::*;

@@ -50,7 +50,7 @@ println!("({},{})",
 
 # Links
 - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/geo-point.html)
-**/
+*/
 #[derive(Debug, Clone, PartialEq)]
 pub struct GeoPoint<F, M = DefaultGeoPointMapping<F>>
     where F: GeoPointFormat,
@@ -85,7 +85,7 @@ impl<F, M> GeoPoint<F, M>
     let point: GeoPoint<DefaultGeoPointFormat> = GeoPoint::new(Point(coord));
     # }
     ```
-    **/
+    */
     pub fn new<I>(point: I) -> GeoPoint<F, M>
         where I: Into<Point>
     {
@@ -102,7 +102,7 @@ impl<F, M> GeoPoint<F, M>
     # use elastic_types::geo::point::{ GeoPoint, DefaultGeoPointFormat };
     let point: GeoPoint<DefaultGeoPointFormat> = GeoPoint::build(1.0, 1.0);
     ```
-    **/
+    */
     pub fn build(x: f64, y: f64) -> GeoPoint<F, M> {
         GeoPoint::<F, M>::new(Point::new(x, y))
     }
@@ -120,7 +120,7 @@ impl<F, M> GeoPoint<F, M>
     //Change the format to an object
     let otherpoint: GeoPoint<GeoPointObject> = point.remap();
     ```
-    **/
+    */
     pub fn remap<FInto, MInto>(self) -> GeoPoint<FInto, MInto>
         where FInto: GeoPointFormat,
               MInto: GeoPointMapping<Format = FInto>

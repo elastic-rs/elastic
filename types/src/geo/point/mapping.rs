@@ -1,4 +1,4 @@
-/*! Mapping for the Elasticsearch `geo_point` type. !*/
+/*! Mapping for the Elasticsearch `geo_point` type. */
 
 use std::marker::PhantomData;
 use serde::{Serialize, Serializer};
@@ -8,7 +8,7 @@ use geo::mapping::Distance;
 use private::field::{DocumentField, FieldMapping, SerializeField};
 use document::FieldType;
 
-/** A field that will be mapped as a `geo_point`. **/
+/** A field that will be mapped as a `geo_point`. */
 pub trait GeoPointFieldType<M, F>
     where M: GeoPointMapping<Format = F>,
           F: GeoPointFormat
@@ -113,7 +113,7 @@ impl <F: GeoPointFormat> GeoPointMapping for MyGeoPointMapping<F> {
 }
 # fn main() {}
 ```
-**/
+*/
 pub trait GeoPointMapping
     where Self: Default
 {
@@ -122,23 +122,23 @@ pub trait GeoPointMapping
     
     The format isn't actually a part of the Elasticsearch mapping for a `geo_point`,
     but is included on the mapping to keep things consistent.
-    **/
+    */
     type Format: GeoPointFormat;
 
     /**
     Should the `geo-point` also be indexed as a geohash in the `.geohash` sub-field? Defaults to `false`,
     unless `geohash_prefix` is `true`.
-    **/
+    */
     fn geohash() -> Option<bool> {
         None
     }
 
-    /** The maximum length of the geohash to use for the geohash and `geohash_prefix` options. **/
+    /** The maximum length of the geohash to use for the geohash and `geohash_prefix` options. */
     fn geohash_precision() -> Option<Distance> {
         None
     }
 
-    /** Should the `geo-point` also be indexed as a geohash plus all its prefixes? Defaults to `false`. **/
+    /** Should the `geo-point` also be indexed as a geohash plus all its prefixes? Defaults to `false`. */
     fn geohash_prefix() -> Option<bool> {
         None
     }
@@ -146,7 +146,7 @@ pub trait GeoPointMapping
     /**
     If `true`, malformed `geo-points` are ignored.
     If `false` (default), malformed `geo-points` throw an exception and reject the whole document.
-    **/
+    */
     fn ignore_malformed() -> Option<bool> {
         None
     }
@@ -154,7 +154,7 @@ pub trait GeoPointMapping
     /**
     Should the `geo-point` also be indexed as `.lat` and `.lon` sub-fields?
     Accepts `true` and `false` (default).
-    **/
+    */
     fn lat_lon() -> Option<bool> {
         None
     }
@@ -197,7 +197,7 @@ impl<T, F> Serialize for DocumentField<T, GeoPointFormatWrapper<F>>
     }
 }
 
-/** Default mapping for `geo_point`. **/
+/** Default mapping for `geo_point`. */
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultGeoPointMapping<F>
     where F: GeoPointFormat

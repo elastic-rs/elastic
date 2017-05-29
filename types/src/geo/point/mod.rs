@@ -59,7 +59,7 @@ impl GeoPointFieldType<DefaultGeoPointMapping<GeoPointObject>, GeoPointObject> f
 # Links
 
 - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/geo-point.html)
-!*/
+*/
 
 use georust::{Coordinate as C, Point as P, Geometry as G};
 
@@ -77,7 +77,7 @@ pub use self::impls::*;
 pub use self::format::*;
 pub use self::formats::*;
 
-/** The default `geo_point` format (`GeoPointArray`). **/
+/** The default `geo_point` format (`GeoPointArray`). */
 pub type DefaultGeoPointFormat = GeoPointArray;
 
 pub mod prelude {
@@ -85,7 +85,7 @@ pub mod prelude {
     Includes all types for the `geo_point` type.
     
     This is a convenience module to make it easy to build mappings for multiple types without too many `use` statements.
-    !*/
+    */
 
     pub use super::DefaultGeoPointFormat;
     pub use super::format::*;

@@ -1,4 +1,4 @@
-/*! Mapping for Elasticsearch `geo_shape` types. !*/
+/*! Mapping for Elasticsearch `geo_shape` types. */
 
 use serde::{Serialize, Serializer};
 use serde::ser::SerializeStruct;
@@ -6,7 +6,7 @@ use geo::mapping::Distance;
 use private::field::{DocumentField, FieldMapping, SerializeField};
 use document::FieldType;
 
-/** A field that will be mapped as a `geo_shape`. **/
+/** A field that will be mapped as a `geo_shape`. */
 pub trait GeoShapeFieldType<M> where M: GeoShapeMapping {}
 
 impl<T, M> FieldType<M, GeoShapeFormat> for T
@@ -74,14 +74,14 @@ This will produce the following mapping:
 # assert_eq!(json, mapping);
 # }
 ```
-**/
+*/
 pub trait GeoShapeMapping
     where Self: Default
 {
     /**
     Name of the PrefixTree implementation to be used:
     `geohash` for `GeohashPrefixTree` and `quadtree` for `QuadPrefixTree`.
-    **/
+    */
     fn tree() -> Option<Tree> {
         None
     }
@@ -92,7 +92,7 @@ pub trait GeoShapeMapping
     The value specifies the desired precision and Elasticsearch will calculate the best
     `tree_levels` value to honor this precision.
     The value should be a number followed by an optional distance unit.
-    **/
+    */
     fn precision() -> Option<Distance> {
         None
     }
@@ -106,7 +106,7 @@ pub trait GeoShapeMapping
     users may use the `precision` parameter instead.
     However, Elasticsearch only uses the `tree_levels` parameter internally and this is
     what is returned via the mapping API even if you use the `precision` parameter.
-    **/
+    */
     fn tree_levels() -> Option<i32> {
         None
     }
@@ -118,7 +118,7 @@ pub trait GeoShapeMapping
     There are two strategies available: `recursive` and `term`.
     Term strategy supports point types only (the `points_only` parameter will be automatically set to `true`)
     while `Recursive` strategy supports all shape types.
-    **/
+    */
     fn strategy() -> Option<Strategy> {
         None
     }
@@ -134,7 +134,7 @@ pub trait GeoShapeMapping
     To improve indexing performance (at the cost of query accuracy) explicitly define `tree_level`
     or `precision` along with a reasonable `distance_error_pct`,
     noting that large shapes will have greater false positives.
-    **/
+    */
     fn distance_error_pct() -> Option<f32> {
         None
     }
@@ -143,7 +143,7 @@ pub trait GeoShapeMapping
     Setting this parameter in the `geo_shape` mapping explicitly sets vertex order for
     the coordinate list of a `geo_shape` field but can be overridden in each individual
     GeoJSON document.
-    **/
+    */
     fn orientation() -> Option<Orientation> {
         None
     }
@@ -156,7 +156,7 @@ pub trait GeoShapeMapping
     At present `geo_shape` queries can not be executed on geo_point field types.
     This option bridges the gap by improving point performance on a `geo_shape` field
     so that geo_shape queries are optimal on a point only field.
-    **/
+    */
     fn points_only() -> Option<bool> {
         None
     }
@@ -199,16 +199,16 @@ impl<T> Serialize for DocumentField<T, GeoShapeFormat>
     }
 }
 
-/** Default mapping for `geo_shape`. **/
+/** Default mapping for `geo_shape`. */
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultGeoShapeMapping;
 impl GeoShapeMapping for DefaultGeoShapeMapping {}
 
-/** Name of the `PrefixTree` implementation to be used. **/
+/** Name of the `PrefixTree` implementation to be used. */
 pub enum Tree {
-    /** For `GeohashPrefixTree`. **/
+    /** For `GeohashPrefixTree`. */
     Geohash,
-    /** For `QuadPrefixTree`. **/
+    /** For `QuadPrefixTree`. */
     QuadPrefix,
 }
 
@@ -223,11 +223,11 @@ impl Serialize for Tree {
     }
 }
 
-/** The strategy defines the approach for how to represent shapes at indexing and search time. **/
+/** The strategy defines the approach for how to represent shapes at indexing and search time. */
 pub enum Strategy {
-    /** Recursive strategy supports all shape types. **/
+    /** Recursive strategy supports all shape types. */
     Recursive,
-    /** Term strategy supports point types only. **/
+    /** Term strategy supports point types only. */
     Term,
 }
 
@@ -249,11 +249,11 @@ each of which can be specified in a few different ways.
 - Left-hand rule: left, cw, clockwise.
 The default orientation (counterclockwise) complies with the OGC standard which defines outer
 ring vertices in counterclockwise order with inner ring(s) vertices (holes) in clockwise order.
-**/
+*/
 pub enum Orientation {
-    /** For `cw`. **/
+    /** For `cw`. */
     Clockwise,
-    /** For `ccw`. **/
+    /** For `ccw`. */
     CounterClockwise,
 }
 
