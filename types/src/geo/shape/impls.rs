@@ -137,7 +137,7 @@ mod tests {
             "coordinates": [ 1, 1 ],
             "type": "Point"
         }))
-            .unwrap();
+                .unwrap();
 
         assert_eq!(
             Geometry::new(

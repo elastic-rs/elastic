@@ -611,9 +611,9 @@ mod tests {
             Dynamic::False,
             Dynamic::Strict
         ]
-            .iter()
-            .map(|i| serde_json::to_string(i).unwrap())
-            .collect();
+                .iter()
+                .map(|i| serde_json::to_string(i).unwrap())
+                .collect();
 
         let expected_opts = vec![
             r#"true"#,

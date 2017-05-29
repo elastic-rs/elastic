@@ -149,7 +149,7 @@ impl GeoPointFormat for GeoPointHash {
                             y: point.y(),
                         },
                         len)
-            .serialize(serializer)
+                .serialize(serializer)
     }
 }
 

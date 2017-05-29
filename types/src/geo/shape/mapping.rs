@@ -217,9 +217,9 @@ impl Serialize for Tree {
         where S: Serializer
     {
         serializer.serialize_str(match *self {
-            Tree::Geohash => "geohash",
-            Tree::QuadPrefix => "quadtree",
-        })
+                                     Tree::Geohash => "geohash",
+                                     Tree::QuadPrefix => "quadtree",
+                                 })
     }
 }
 
@@ -236,9 +236,9 @@ impl Serialize for Strategy {
         where S: Serializer
     {
         serializer.serialize_str(match *self {
-            Strategy::Recursive => "recursive",
-            Strategy::Term => "term",
-        })
+                                     Strategy::Recursive => "recursive",
+                                     Strategy::Term => "term",
+                                 })
     }
 }
 
@@ -262,9 +262,9 @@ impl Serialize for Orientation {
         where S: Serializer
     {
         serializer.serialize_str(match *self {
-            Orientation::Clockwise => "cw",
-            Orientation::CounterClockwise => "ccw",
-        })
+                                     Orientation::Clockwise => "cw",
+                                     Orientation::CounterClockwise => "ccw",
+                                 })
     }
 }
 

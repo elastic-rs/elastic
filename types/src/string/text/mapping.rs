@@ -321,12 +321,12 @@ impl Serialize for TermVector {
         where S: Serializer
     {
         serializer.serialize_str(match *self {
-            TermVector::No => "no",
-            TermVector::Yes => "yes",
-            TermVector::WithPositions => "with_positions",
-            TermVector::WithOffsets => "with_offsets",
-            TermVector::WithPositionsOffsets => "with_positions_offsets",
-        })
+                                     TermVector::No => "no",
+                                     TermVector::Yes => "yes",
+                                     TermVector::WithPositions => "with_positions",
+                                     TermVector::WithOffsets => "with_offsets",
+                                     TermVector::WithPositionsOffsets => "with_positions_offsets",
+                                 })
     }
 }
 

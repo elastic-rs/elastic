@@ -372,7 +372,9 @@ mod tests {
 
     #[test]
     fn dates_should_use_chrono_format() {
-        let dt = chrono::UTC.datetime_from_str("13/05/2015 00:00:00", "%d/%m/%Y %H:%M:%S").unwrap();
+        let dt = chrono::UTC
+            .datetime_from_str("13/05/2015 00:00:00", "%d/%m/%Y %H:%M:%S")
+            .unwrap();
         let expected = dt.format("%Y/%m/%d %H:%M:%S").to_string();
 
         let dt = Date::<NamedDateFormat>::new(dt.clone());
@@ -383,7 +385,9 @@ mod tests {
 
     #[test]
     fn dates_should_use_es_format() {
-        let dt = chrono::UTC.datetime_from_str("13/05/2015 00:00:00", "%d/%m/%Y %H:%M:%S").unwrap();
+        let dt = chrono::UTC
+            .datetime_from_str("13/05/2015 00:00:00", "%d/%m/%Y %H:%M:%S")
+            .unwrap();
         let expected = "20150513".to_string();
 
         let dt = Date::<UnNamedDateFormat>::new(dt.clone());
@@ -405,7 +409,9 @@ mod tests {
 
     #[test]
     fn can_build_date_from_chrono() {
-        let date: Date<DefaultDateFormat> = Date::new(chrono::UTC.datetime_from_str("13/05/2015 00:00:00", "%d/%m/%Y %H:%M:%S").unwrap());
+        let date: Date<DefaultDateFormat> = Date::new(chrono::UTC
+                                                          .datetime_from_str("13/05/2015 00:00:00", "%d/%m/%Y %H:%M:%S")
+                                                          .unwrap());
 
         assert_eq!((2015, 5, 13, 0, 0, 0),
                    (date.year(), date.month(), date.day(), date.hour(), date.minute(), date.second()));
@@ -421,8 +427,9 @@ mod tests {
 
     #[test]
     fn serialise_elastic_date() {
-        let date = Date::<BasicDateTime>::new(chrono::UTC.datetime_from_str("13/05/2015 00:00:00", "%d/%m/%Y %H:%M:%S")
-            .unwrap());
+        let date = Date::<BasicDateTime>::new(chrono::UTC
+                                                  .datetime_from_str("13/05/2015 00:00:00", "%d/%m/%Y %H:%M:%S")
+                                                  .unwrap());
 
         let ser = serde_json::to_string(&date).unwrap();
 
@@ -438,7 +445,8 @@ mod tests {
 
     #[test]
     fn serialise_elastic_date_brw() {
-        let chrono_date = chrono::UTC.datetime_from_str("13/05/2015 00:00:00", "%d/%m/%Y %H:%M:%S")
+        let chrono_date = chrono::UTC
+            .datetime_from_str("13/05/2015 00:00:00", "%d/%m/%Y %H:%M:%S")
             .unwrap();
 
         let date = DateBrw::<BasicDateTime>::new(&chrono_date);
