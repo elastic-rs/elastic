@@ -1,4 +1,4 @@
-/*! Common mapping for the Elasticsearch `string` types. !*/
+/*! Common mapping for the Elasticsearch `string` types. */
 
 use std::collections::BTreeMap;
 use serde::{Serialize, Serializer};
@@ -6,7 +6,7 @@ use serde::ser::SerializeStruct;
 use super::text::mapping::{TextMapping, TextFieldMapping};
 use super::keyword::mapping::KeywordFieldMapping;
 
-/** Default mapping for `String`. **/
+/** Default mapping for `String`. */
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultStringMapping;
 impl TextMapping for DefaultStringMapping {
@@ -14,32 +14,35 @@ impl TextMapping for DefaultStringMapping {
         let mut fields = BTreeMap::new();
 
         fields.insert("keyword",
-                      StringField::Keyword(KeywordFieldMapping { ignore_above: Some(256), ..Default::default() }));
+                      StringField::Keyword(KeywordFieldMapping {
+                                               ignore_above: Some(256),
+                                               ..Default::default()
+                                           }));
 
         Some(fields)
     }
 }
 
-/** The `index_options` parameter controls what information is added to the inverted index, for search and highlighting purposes. **/
+/** The `index_options` parameter controls what information is added to the inverted index, for search and highlighting purposes. */
 #[derive(Debug, Clone, Copy)]
 pub enum IndexOptions {
-    /** Only the doc number is indexed. Can answer the question Does this term exist in this field? **/
+    /** Only the doc number is indexed. Can answer the question Does this term exist in this field? */
     Docs,
     /**
     Doc number and term frequencies are indexed.
     Term frequencies are used to score repeated terms higher than single terms.
-    **/
+    */
     Freqs,
     /**
     Doc number, term frequencies, and term positions (or order) are indexed.
     Positions can be used for proximity or phrase queries.
-    **/
+    */
     Positions,
     /**
     Doc number, term frequencies, positions,
     and start and end character offsets (which map the term back to the original string) are indexed.
     Offsets are used by the postings highlighter.
-    **/
+    */
     Offsets,
 }
 
@@ -48,11 +51,11 @@ impl Serialize for IndexOptions {
         where S: Serializer
     {
         serializer.serialize_str(match *self {
-            IndexOptions::Docs => "docs",
-            IndexOptions::Freqs => "freqs",
-            IndexOptions::Positions => "positions",
-            IndexOptions::Offsets => "offsets",
-        })
+                                     IndexOptions::Docs => "docs",
+                                     IndexOptions::Freqs => "freqs",
+                                     IndexOptions::Positions => "positions",
+                                     IndexOptions::Offsets => "offsets",
+                                 })
     }
 }
 
@@ -60,16 +63,16 @@ impl Serialize for IndexOptions {
 A string sub-field type.
 
 String types can have a number of alternative field representations for different purposes.
-**/
+*/
 #[derive(Debug, Clone, Copy)]
 pub enum StringField {
-    /** A `token_count` sub field. **/
+    /** A `token_count` sub field. */
     TokenCount(ElasticTokenCountFieldMapping),
-    /** A `completion` suggester sub field. **/
+    /** A `completion` suggester sub field. */
     Completion(ElasticCompletionFieldMapping),
-    /** A `keyword` sub field. **/
+    /** A `keyword` sub field. */
     Keyword(KeywordFieldMapping),
-    /** A `text` sub field. **/
+    /** A `text` sub field. */
     Text(TextFieldMapping),
 }
 
@@ -86,41 +89,41 @@ impl Serialize for StringField {
     }
 }
 
-/** A multi-field string mapping for a [token count](https://www.elastic.co/guide/en/elasticsearch/reference/current/token-count.html). **/
+/** A multi-field string mapping for a [token count](https://www.elastic.co/guide/en/elasticsearch/reference/current/token-count.html). */
 #[derive(Debug, Default, Clone, Copy)]
 pub struct ElasticTokenCountFieldMapping {
     /**
     The analyzer which should be used for analyzed string fields,
     both at index-time and at search-time (unless overridden by the `search_analyzer`).
     Defaults to the default index analyzer, or the `standard` analyzer.
-    **/
+    */
     pub analyzer: Option<&'static str>,
-    /** Field-level index time boosting. Accepts a floating point number, defaults to `1.0`. **/
+    /** Field-level index time boosting. Accepts a floating point number, defaults to `1.0`. */
     pub boost: Option<f32>,
     /**
     Should the field be stored on disk in a column-stride fashion,
     so that it can later be used for sorting, aggregations, or scripting?
     Accepts `true` (default) or `false`.
-    **/
+    */
     pub doc_values: Option<bool>,
-    /** Should the field be searchable? Accepts `not_analyzed` (default) and `no`. **/
+    /** Should the field be searchable? Accepts `not_analyzed` (default) and `no`. */
     pub index: Option<IndexAnalysis>,
     /**
     Whether or not the field value should be included in the `_all` field?
     Accepts true or false.
     Defaults to `false` if index is set to `no`, or if a parent object field sets `include_in_all` to false.
     Otherwise defaults to `true`.
-    **/
+    */
     pub include_in_all: Option<bool>,
     /**
     Controls the number of extra terms that are indexed to make range queries faster.
     Defaults to `32`.
-    **/
+    */
     pub precision_step: Option<u32>,
     /**
     Whether the field value should be stored and retrievable separately from the `_source` field.
     Accepts `true` or `false` (default).
-    **/
+    */
     pub store: Option<bool>,
 }
 
@@ -144,24 +147,24 @@ impl Serialize for ElasticTokenCountFieldMapping {
     }
 }
 
-/** A multi-field string mapping for a [completion suggester](https://www.elastic.co/guide/en/elasticsearch/reference/current/search-suggesters-completion.html#search-suggesters-completion). **/
+/** A multi-field string mapping for a [completion suggester](https://www.elastic.co/guide/en/elasticsearch/reference/current/search-suggesters-completion.html#search-suggesters-completion). */
 #[derive(Debug, Default, Clone, Copy)]
 pub struct ElasticCompletionFieldMapping {
     /**
     The analyzer which should be used for analyzed string fields,
     both at index-time and at search-time (unless overridden by the `search_analyzer`).
     Defaults to the default index analyzer, or the `standard` analyzer.
-    **/
+    */
     pub analyzer: Option<&'static str>,
-    /** The search analyzer to use, defaults to value of analyzer. **/
+    /** The search analyzer to use, defaults to value of analyzer. */
     pub search_analyzer: Option<&'static str>,
-    /** Enables the storing of payloads, defaults to `false`. **/
+    /** Enables the storing of payloads, defaults to `false`. */
     pub payloads: Option<bool>,
     /**
     Preserves the separators, defaults to `true`.
     If disabled, you could find a field starting with Foo Fighters,
     if you suggest for foof.
-    **/
+    */
     pub preserve_separators: Option<bool>,
     /**
     Enables position increments, defaults to `true`.
@@ -169,7 +172,7 @@ pub struct ElasticCompletionFieldMapping {
     you could get a field starting with The Beatles, if you suggest for b.
     > Note: You could also achieve this by indexing two inputs, Beatles and The Beatles,
     no need to change a simple analyzer, if you are able to enrich your data.
-    **/
+    */
     pub preserve_position_increments: Option<bool>,
     /**
     Limits the length of a single input, defaults to `50` `UTF-16` code points.
@@ -178,7 +181,7 @@ pub struct ElasticCompletionFieldMapping {
     The most usecases won’t be influenced by the default value since prefix completions
     hardly grow beyond prefixes longer than a handful of characters.
     (Old name "max_input_len" is deprecated)
-    **/
+    */
     pub max_input_length: Option<u32>,
 }
 
@@ -203,7 +206,7 @@ impl Serialize for ElasticCompletionFieldMapping {
     }
 }
 
-/** Should the field be searchable? Accepts `not_analyzed` (default) and `no`. **/
+/** Should the field be searchable? Accepts `not_analyzed` (default) and `no`. */
 #[derive(Debug, Clone, Copy)]
 pub enum IndexAnalysis {
     /**
@@ -213,15 +216,15 @@ pub enum IndexAnalysis {
     At search time, the query string is passed through (usually) the same analyzer
     to generate terms in the same format as those in the index.
     It is this process that enables full text search.
-    **/
+    */
     Analyzed,
     /**
     Add the field value to the index unchanged, as a single term.
     This is the default for all fields that support this option except for string fields.
     `not_analyzed` fields are usually used with term-level queries for structured search.
-    **/
+    */
     NotAnalyzed,
-    /** Do not add this field value to the index. With this setting, the field will not be queryable. **/
+    /** Do not add this field value to the index. With this setting, the field will not be queryable. */
     No,
 }
 
@@ -230,10 +233,10 @@ impl Serialize for IndexAnalysis {
         where S: Serializer
     {
         serializer.serialize_str(match *self {
-            IndexAnalysis::Analyzed => "analyzed",
-            IndexAnalysis::NotAnalyzed => "not_analyzed",
-            IndexAnalysis::No => "no",
-        })
+                                     IndexAnalysis::Analyzed => "analyzed",
+                                     IndexAnalysis::NotAnalyzed => "not_analyzed",
+                                     IndexAnalysis::No => "no",
+                                 })
     }
 }
 
@@ -252,7 +255,10 @@ mod tests {
             let mut fields = BTreeMap::new();
 
             fields.insert("raw",
-                          StringField::Keyword(KeywordFieldMapping { analyzer: Some("my_analyzer"), ..Default::default() }));
+                          StringField::Keyword(KeywordFieldMapping {
+                                                   analyzer: Some("my_analyzer"),
+                                                   ..Default::default()
+                                               }));
 
             fields.insert("count",
                           StringField::TokenCount(ElasticTokenCountFieldMapping::default()));
@@ -264,7 +270,10 @@ mod tests {
         }
 
         fn fielddata_frequency_filter() -> Option<FieldDataFrequencyFilter> {
-            Some(FieldDataFrequencyFilter { min: Some(0.0), ..Default::default() })
+            Some(FieldDataFrequencyFilter {
+                     min: Some(0.0),
+                     ..Default::default()
+                 })
         }
 
         fn analyzer() -> Option<&'static str> {
@@ -335,7 +344,10 @@ mod tests {
             let mut fields = BTreeMap::new();
 
             fields.insert("text",
-                          StringField::Text(TextFieldMapping { analyzer: Some("my_analyzer"), ..Default::default() }));
+                          StringField::Text(TextFieldMapping {
+                                                analyzer: Some("my_analyzer"),
+                                                ..Default::default()
+                                            }));
 
             fields.insert("count",
                           StringField::TokenCount(ElasticTokenCountFieldMapping::default()));
@@ -547,9 +559,9 @@ mod tests {
             IndexOptions::Positions,
             IndexOptions::Offsets
         ]
-            .iter()
-            .map(|i| serde_json::to_string(i).unwrap())
-            .collect();
+                .iter()
+                .map(|i| serde_json::to_string(i).unwrap())
+                .collect();
 
         let expected_opts = vec![
             r#""docs""#,
@@ -578,9 +590,9 @@ mod tests {
             TermVector::WithOffsets,
             TermVector::WithPositionsOffsets
         ]
-            .iter()
-            .map(|i| serde_json::to_string(i).unwrap())
-            .collect();
+                .iter()
+                .map(|i| serde_json::to_string(i).unwrap())
+                .collect();
 
         let expected_opts = vec![
             r#""no""#,
@@ -604,18 +616,18 @@ mod tests {
     #[test]
     fn serialise_mapping_keyword_field() {
         let mapping = StringField::Keyword(KeywordFieldMapping {
-            analyzer: Some("my_analyzer"),
-            doc_values: Some(true),
-            eager_global_ordinals: Some(false),
-            include_in_all: Some(true),
-            ignore_above: Some(256),
-            index: Some(false),
-            index_options: Some(IndexOptions::Docs),
-            norms: Some(true),
-            store: Some(true),
-            search_analyzer: Some("my_analyzer"),
-            similarity: Some("my_analyzer"),
-        });
+                                               analyzer: Some("my_analyzer"),
+                                               doc_values: Some(true),
+                                               eager_global_ordinals: Some(false),
+                                               include_in_all: Some(true),
+                                               ignore_above: Some(256),
+                                               index: Some(false),
+                                               index_options: Some(IndexOptions::Docs),
+                                               norms: Some(true),
+                                               store: Some(true),
+                                               search_analyzer: Some("my_analyzer"),
+                                               similarity: Some("my_analyzer"),
+                                           });
         let ser = serde_json::to_string(&mapping).unwrap();
 
         let expected = json_str!({
@@ -639,22 +651,25 @@ mod tests {
     #[test]
     fn serialise_mapping_text_field() {
         let mapping = StringField::Text(TextFieldMapping {
-            fielddata_frequency_filter: Some(FieldDataFrequencyFilter { min: Some(0.0), ..Default::default() }),
-            analyzer: Some("my_analyzer"),
-            eager_global_ordinals: Some(true),
-            fielddata: Some(false),
-            include_in_all: Some(false),
-            ignore_above: Some(512),
-            index: Some(true),
-            index_options: Some(IndexOptions::Freqs),
-            norms: Some(true),
-            position_increment_gap: Some(1),
-            store: Some(false),
-            search_analyzer: Some("my_analyzer"),
-            search_quote_analyzer: Some("my_analyzer"),
-            similarity: Some("BM25"),
-            term_vector: Some(TermVector::No),
-        });
+                                            fielddata_frequency_filter: Some(FieldDataFrequencyFilter {
+                                                                                 min: Some(0.0),
+                                                                                 ..Default::default()
+                                                                             }),
+                                            analyzer: Some("my_analyzer"),
+                                            eager_global_ordinals: Some(true),
+                                            fielddata: Some(false),
+                                            include_in_all: Some(false),
+                                            ignore_above: Some(512),
+                                            index: Some(true),
+                                            index_options: Some(IndexOptions::Freqs),
+                                            norms: Some(true),
+                                            position_increment_gap: Some(1),
+                                            store: Some(false),
+                                            search_analyzer: Some("my_analyzer"),
+                                            search_quote_analyzer: Some("my_analyzer"),
+                                            similarity: Some("BM25"),
+                                            term_vector: Some(TermVector::No),
+                                        });
         let ser = serde_json::to_string(&mapping).unwrap();
 
         let expected = json_str!({
@@ -684,14 +699,14 @@ mod tests {
     #[test]
     fn serialise_mapping_token_count_field() {
         let mapping = StringField::TokenCount(ElasticTokenCountFieldMapping {
-            analyzer: Some("my_analyzer"),
-            boost: Some(1.3),
-            doc_values: Some(false),
-            index: Some(IndexAnalysis::No),
-            include_in_all: Some(true),
-            precision_step: Some(15),
-            store: Some(true),
-        });
+                                                  analyzer: Some("my_analyzer"),
+                                                  boost: Some(1.3),
+                                                  doc_values: Some(false),
+                                                  index: Some(IndexAnalysis::No),
+                                                  include_in_all: Some(true),
+                                                  precision_step: Some(15),
+                                                  store: Some(true),
+                                              });
         let ser = serde_json::to_string(&mapping).unwrap();
 
         let expected = json_str!({
@@ -711,13 +726,13 @@ mod tests {
     #[test]
     fn serialise_mapping_completion_field() {
         let mapping = StringField::Completion(ElasticCompletionFieldMapping {
-            analyzer: Some("my_analyzer"),
-            search_analyzer: Some("my_analyzer"),
-            payloads: Some(true),
-            preserve_separators: Some(false),
-            preserve_position_increments: Some(true),
-            max_input_length: Some(512),
-        });
+                                                  analyzer: Some("my_analyzer"),
+                                                  search_analyzer: Some("my_analyzer"),
+                                                  payloads: Some(true),
+                                                  preserve_separators: Some(false),
+                                                  preserve_position_increments: Some(true),
+                                                  max_input_length: Some(512),
+                                              });
         let ser = serde_json::to_string(&mapping).unwrap();
 
         let expected = json_str!({

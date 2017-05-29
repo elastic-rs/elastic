@@ -18,7 +18,7 @@ Defining a `bool` with a mapping:
 # use elastic_types::prelude::*;
 let boolean = Boolean::<DefaultBooleanMapping>::new(true);
 ```
-**/
+*/
 #[derive(Debug, Clone, Default, PartialEq)]
 pub struct Boolean<M>
     where M: BooleanMapping
@@ -40,7 +40,7 @@ impl<M> Boolean<M>
     # use elastic_types::prelude::*;
     let boolean = Boolean::<DefaultBooleanMapping>::new(false);
     ```
-    **/
+    */
     pub fn new<I>(boolean: I) -> Boolean<M>
         where I: Into<bool>
     {
@@ -71,7 +71,7 @@ impl<M> Boolean<M>
     let boolean: Boolean<MyBooleanMapping> = es_boolean.remap();
     # }
     ```
-    **/
+    */
     pub fn remap<MInto>(self) -> Boolean<MInto>
         where MInto: BooleanMapping
     {

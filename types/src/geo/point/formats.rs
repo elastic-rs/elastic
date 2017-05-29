@@ -6,7 +6,7 @@ use super::{Coordinate, Point, GeoPointFormat};
 use super::mapping::GeoPointMapping;
 use geo::mapping::Distance;
 
-/** Geo-point expressed as an object, with `lat` and `lon` keys. **/
+/** Geo-point expressed as an object, with `lat` and `lon` keys. */
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct GeoPointObject;
 
@@ -37,7 +37,7 @@ impl GeoPointFormat for GeoPointObject {
     }
 }
 
-/** Geo-point expressed as a string with the format: `"lat,lon"`. **/
+/** Geo-point expressed as a string with the format: `"lat,lon"`. */
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct GeoPointString;
 impl GeoPointFormat for GeoPointString {
@@ -102,7 +102,7 @@ impl GeoPointFormat for GeoPointString {
     }
 }
 
-/** Geo-point expressed as a geohash. **/
+/** Geo-point expressed as a geohash. */
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct GeoPointHash;
 impl GeoPointFormat for GeoPointHash {
@@ -149,11 +149,11 @@ impl GeoPointFormat for GeoPointHash {
                             y: point.y(),
                         },
                         len)
-            .serialize(serializer)
+                .serialize(serializer)
     }
 }
 
-/** Geo-point expressed as an array with the format: `[lon, lat]` **/
+/** Geo-point expressed as an array with the format: `[lon, lat]` */
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct GeoPointArray;
 impl GeoPointFormat for GeoPointArray {

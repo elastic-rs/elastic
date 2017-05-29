@@ -12,7 +12,7 @@ The input must satisfy the following rules:
 - The structs field types must implement `FieldType` (or be ignored).
 - A mapping type supplied by `#[elastic(mapping="<ident>")]` must implement `DocumentMapping`,
 but not `PropertiesMapping`.
-**/
+*/
 pub fn expand_derive(crate_root: Tokens,
                      input: &syn::MacroInput)
                      -> Result<Vec<Tokens>, DeriveElasticTypeError> {

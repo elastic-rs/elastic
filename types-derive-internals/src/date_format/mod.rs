@@ -12,7 +12,7 @@ The input must satisfy the following rules:
 
 - It must be a unit struct.
 - It must have an `#[elastic(date_format="<value>")]` attribute.
-**/
+*/
 pub fn expand_derive(crate_root: Tokens,
                      input: &syn::MacroInput)
                      -> Result<Vec<Tokens>, DeriveDateFormatError> {
