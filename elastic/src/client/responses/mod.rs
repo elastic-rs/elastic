@@ -53,12 +53,9 @@ impl ResponseBuilder {
     /**
     Parse an API response type from the HTTP body.
     
-    This will consume the `ResponseBuilder` and return a
-    concrete response type or an error.
+    This will consume the `ResponseBuilder` and return a concrete response type or an error.
     
-    The response is parsed according to the `FromResponse`
-    implementation for `T` that will inspect the response and
-    either return an `Ok(T)` or an `Err(ApiError)`.
+    The response is parsed according to the `FromResponse` mplementation for `T` that will inspect the response and either return an `Ok(T)` or an `Err(ApiError)`.
     
     # Examples
     
@@ -84,7 +81,7 @@ impl ResponseBuilder {
     # let req = PingRequest::new();
     let response = client.request(req)
                          .send()
-                         .and_then(|res| res.response::<SearchResponse<MyType>>());
+                         .and_then(into_response::<SearchResponse<MyType>>);
     # }
     ```
     
@@ -102,7 +99,7 @@ impl ResponseBuilder {
     # let req = PingRequest::new();
     let response = client.request(req)
                          .send()
-                         .and_then(|res| res.response::<Value>());
+                         .and_then(into_response::<Value>);
     # }
     ```
     */

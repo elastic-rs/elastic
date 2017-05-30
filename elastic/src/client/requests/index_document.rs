@@ -18,7 +18,7 @@ pub struct IndexRequestBuilder<TDocument> {
 impl Client {
     /** 
     
-    Create a `RequestBuilder` for an index request.
+    Create a [`RequestBuilder` for an index request]().
 
     # Examples
 
@@ -26,10 +26,8 @@ impl Client {
 
     ```no_run
     # extern crate serde;
-    # #[macro_use]
-    # extern crate serde_derive;
-    # #[macro_use]
-    # extern crate elastic_derive;
+    # #[macro_use] extern crate serde_derive;
+    # #[macro_use] extern crate elastic_derive;
     # extern crate elastic;
     # use elastic::prelude::*;
     # fn main() {
@@ -39,6 +37,7 @@ impl Client {
     #     pub title: String,
     #     pub timestamp: Date<DefaultDateFormat>
     # }
+    # let client = Client::new(RequestParams::default()).unwrap();
     let doc = MyType {
         id: 1,
         title: String::from("A title"),

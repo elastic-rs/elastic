@@ -77,12 +77,14 @@ Individual requests can override these parameter values:
 # extern crate serde_json;
 # use serde_json::Value;
 # use elastic::prelude::*;
+# fn main() {
 let client = Client::new(RequestParams::default()).unwrap();
 
 let response = client.search::<Value>()
                      .params(|p| p.url_param("pretty", true))
                      .send()
                      .unwrap();
+# }
 ```
 
 For more details, see the [`client`](client/index.html) and [`requests`](client/requests/index.html) modules.
@@ -99,10 +101,8 @@ Derive `Serialize`, `Deserialize` and `ElasticType` on your document types:
 
 ```no_run
 # extern crate serde;
-# #[macro_use]
-# extern crate serde_derive;
-# #[macro_use]
-# extern crate elastic_derive;
+# #[macro_use] extern crate serde_derive;
+# #[macro_use] extern crate elastic_derive;
 # extern crate elastic;
 # use elastic::prelude::*;
 # fn main() {
@@ -119,15 +119,14 @@ Call [`Client.put_mapping`]() to ensure an index has the right mapping for your 
 
 ```no_run
 # extern crate serde;
-# #[macro_use]
-# extern crate serde_derive;
-# #[macro_use]
-# extern crate elastic_derive;
+# #[macro_use] extern crate serde_derive;
+# #[macro_use] extern crate elastic_derive;
 # extern crate elastic;
 # use elastic::prelude::*;
 # fn main() {
 # #[derive(Serialize, Deserialize, ElasticType)]
 # struct MyType { }
+# let client = Client::new(RequestParams::default()).unwrap();
 client.put_mapping::<MyType>(index("myindex"))
       .send()
       .unwrap();
@@ -138,10 +137,8 @@ Then call [`Client.index_document`]() to index documents in Elasticsearch:
 
 ```no_run
 # extern crate serde;
-# #[macro_use]
-# extern crate serde_derive;
-# #[macro_use]
-# extern crate elastic_derive;
+# #[macro_use] extern crate serde_derive;
+# #[macro_use] extern crate elastic_derive;
 # extern crate elastic;
 # use elastic::prelude::*;
 # fn main() {
@@ -151,6 +148,7 @@ Then call [`Client.index_document`]() to index documents in Elasticsearch:
 #     pub title: String,
 #     pub timestamp: Date<DefaultDateFormat>
 # }
+# let client = Client::new(RequestParams::default()).unwrap();
 let doc = MyType {
     id: 1,
     title: String::from("A title"),
@@ -167,10 +165,8 @@ Call [`Client.get_document`]() to retrieve a single document from an index:
 
 ```no_run
 # extern crate serde;
-# #[macro_use]
-# extern crate serde_derive;
-# #[macro_use]
-# extern crate elastic_derive;
+# #[macro_use] extern crate serde_derive;
+# #[macro_use] extern crate elastic_derive;
 # extern crate elastic;
 # use elastic::prelude::*;
 # fn main() {
@@ -180,6 +176,7 @@ Call [`Client.get_document`]() to retrieve a single document from an index:
 #     pub title: String,
 #     pub timestamp: Date<DefaultDateFormat>
 # }
+# let client = Client::new(RequestParams::default()).unwrap();
 let response = client.get_document::<MyType>(index("myindex"), id(1))
                      .send()
                      .unwrap();
@@ -198,19 +195,18 @@ Call [`Client.search`]() to execute [Query DSL]() queries:
 
 ```no_run
 # extern crate serde;
-# #[macro_use]
-# extern crate serde_derive;
-# #[macro_use]
-# extern crate elastic_derive;
+# #[macro_use] extern crate serde_derive;
+# #[macro_use] extern crate elastic_derive;
+# #[macro_use] extern crate json_str;
 # extern crate elastic;
 # use elastic::prelude::*;
 # fn main() {
-# #[derive(Serialize, Deserialize, ElasticType)]
+# #[derive(Debug, Serialize, Deserialize, ElasticType)]
 # struct MyType { }
 # let client = Client::new(RequestParams::default()).unwrap();
 let response = client.search::<MyType>()
                      .index("myindex")
-                     .query(json_str!({
+                     .body(json_str!({
                          query: {
                             query_string: {
                                 query: "*"

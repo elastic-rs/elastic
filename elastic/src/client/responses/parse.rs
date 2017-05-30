@@ -8,8 +8,7 @@ This example defines a search response that, for whatever reason, only includes 
 
 ```
 # extern crate serde;
-# #[macro_use]
-# extern crate serde_derive;
+# #[macro_use] extern crate serde_derive;
 # extern crate elastic;
 # use std::io::Read;
 # use elastic::prelude::*;
@@ -41,11 +40,10 @@ The `MyResponse` type can then be used for deserialising a concrete response:
 
 ```no_run
 # extern crate serde;
-# #[macro_use]
-# extern crate serde_derive;
+# #[macro_use] extern crate serde_derive;
 # extern crate elastic;
 # use elastic::prelude::*;
-# use elastic::error::ParseResponseError;
+# use elastic::error::{ErrorKind, ParseResponseError};
 # use elastic::client::responses::parse::*;
 # #[derive(Deserialize)]
 # struct MyResponse {

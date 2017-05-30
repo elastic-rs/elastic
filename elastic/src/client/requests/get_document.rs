@@ -17,7 +17,7 @@ pub struct GetRequestBuilder<TDocument> {
 
 impl Client {
     /** 
-    Create a `RequestBuilder` for a get request.
+    Create a [`RequestBuilder` for a get request]().
 
     # Examples
 
@@ -38,6 +38,7 @@ impl Client {
     #     pub title: String,
     #     pub timestamp: Date<DefaultDateFormat>
     # }
+    # let client = Client::new(RequestParams::default()).unwrap();
     let response = client.get_document::<MyType>(index("myindex"), id(1))
                          .send()
                          .unwrap();
@@ -54,13 +55,14 @@ impl Client {
 
     ```no_run
     # extern crate serde;
-    # #[macro_use]
-    # extern crate serde_derive;
-    # #[macro_use]
-    # extern crate elastic_derive;
+    # extern crate serde_json;
+    # #[macro_use] extern crate serde_derive;
+    # #[macro_use] extern crate elastic_derive;
     # extern crate elastic;
+    # use serde_json::Value;
     # use elastic::prelude::*;
     # fn main() {
+    # let client = Client::new(RequestParams::default()).unwrap();
     let response = client.get_document::<Value>(index("myindex"), id(1))
                          .ty("mytype")
                          .send()

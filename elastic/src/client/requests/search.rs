@@ -17,7 +17,7 @@ pub struct SearchRequestBuilder<TDocument, TBody> {
 
 impl Client {
     /** 
-    Create a `RequestBuilder` for a search request. 
+    Create a [`RequestBuilder` for a search request](). 
 
     # Examples
 
@@ -25,19 +25,18 @@ impl Client {
     
     ```no_run
     # extern crate serde;
-    # #[macro_use]
-    # extern crate serde_derive;
-    # #[macro_use]
-    # extern crate elastic_derive;
+    # #[macro_use] extern crate serde_derive;
+    # #[macro_use] extern crate elastic_derive;
+    # #[macro_use] extern crate json_str;
     # extern crate elastic;
     # use elastic::prelude::*;
     # fn main() {
-    # #[derive(Serialize, Deserialize, ElasticType)]
+    # #[derive(Debug, Serialize, Deserialize, ElasticType)]
     # struct MyType { }
     # let client = Client::new(RequestParams::default()).unwrap();
     let response = client.search::<MyType>()
                          .index("myindex")
-                         .query(json_str!({
+                         .body(json_str!({
                              query: {
                                  query_string: {
                                      query: "*"
@@ -63,13 +62,14 @@ impl Client {
     # extern crate serde_json;
     # use serde_json::Value;
     # use elastic::prelude::*;
+    # fn main() {
     # let client = Client::new(RequestParams::default()).unwrap();
     let response = client.search::<Value>()
                          .index("myindex")
-                         .ty("mytype")
+                         .ty(Some("mytype"))
                          .send()
                          .unwrap();
-    }
+    # }
     ```
     */
     pub fn search<'a, TDocument>

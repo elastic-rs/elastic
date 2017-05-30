@@ -162,9 +162,9 @@ impl<'a, TRequest, TBody> RequestBuilder<'a, TRequest, TBody>
     # extern crate serde_json;
     # use serde_json::Value;
     # use elastic::prelude::*;
+    # fn main() {
     # fn get_req() -> PingRequest<'static> { PingRequest::new() }
     # let client = Client::new(RequestParams::default()).unwrap();
-    # fn main() {
     let response = client.request(get_req())
                          .send()
                          .and_then(into_response::<SearchResponse<Value>>)

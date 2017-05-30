@@ -25,9 +25,17 @@ All builders follow a standard pattern:
 A search request for a value, where the response is matched for an `ApiError`:
 
 ```no_run
+# #[macro_use] extern crate json_str;
+# extern crate serde_json;
+# extern crate elastic;
+# use serde_json::Value;
+# use elastic::prelude::*;
+# use elastic::error::*;
+# fn main() {
+# let client = Client::new(RequestParams::default()).unwrap();
 let response = client.search::<Value>()
                      .index("myindex")
-                     .ty("myty")
+                     .ty(Some("myty"))
                      .body(json_str!({
                          query: {
                              query_string: {
@@ -35,8 +43,7 @@ let response = client.search::<Value>()
                              }
                          }
                      }))
-                     .send()
-                     .unwrap();
+                     .send();
 
 match response {
     Ok(response) => {
@@ -56,6 +63,7 @@ match response {
         }
     }
 }
+# }
 ```
 
 The request builders are wrappers around the [`Client.request`]() method, taking a [raw request type]().
@@ -67,6 +75,7 @@ A `get` request for a value:
 # use serde_json::Value;
 # use elastic::prelude::*;
 # fn main() {
+# let client = Client::new(RequestParams::default()).unwrap();
 let response = client.get_document::<Value>(index("values"), id(1)).send();
 # }
 ```
@@ -74,11 +83,16 @@ let response = client.get_document::<Value>(index("values"), id(1)).send();
 Is equivalent to:
 
 ```no_run
+# extern crate serde_json;
+# extern crate elastic;
+# use serde_json::Value;
 # use elastic::prelude::*;
+# fn main() {
 # let client = Client::new(RequestParams::default()).unwrap();
 let response = client.request(GetRequest::for_index_ty_id("values", "value", 1))
                      .send()
                      .and_then(into_response::<GetResponse<Value>>);
+# }
 ```
 
 # Raw request types
@@ -177,14 +191,19 @@ let req = {
 A raw request to index a document:
 
 ```no_run
+# #[macro_use] extern crate serde_derive;
+# extern crate serde;
 # extern crate serde_json;
 # extern crate elastic;
 # use elastic::prelude::*;
+# #[derive(Serialize)]
+# struct MyType;
 # fn main() {
+# let doc = MyType;
 let req = {
     let body = serde_json::to_string(&doc).unwrap();
 
-    IndexRequest::for_index_ty_id("myindex", "myty", body)
+    IndexRequest::for_index_ty_id("myindex", "myty", 1, body)
 };
 # }
 ```
@@ -200,7 +219,8 @@ For raw requests this returns a `HttpResponse`.
 
 ```no_run
 # use elastic::prelude::*;
-# use client = Client::new(RequestParams::default()).unwrap();
+# let client = Client::new(RequestParams::default()).unwrap();
+# let req = PingRequest::new();
 let request_builder = client.request(req);
 
 // Set additional url parameters
@@ -219,12 +239,13 @@ Call `into_response` on a sent request to get a strongly typed response:
 
 ```no_run
 # extern crate serde;
-# #[macro_use]
-# extern crate serde_derive;
-# #[macro_use]
-# extern crate elastic_derive;
+# extern crate serde_json;
+# #[macro_use] extern crate serde_derive;
+# #[macro_use] extern crate elastic_derive;
 # extern crate elastic;
+# use serde_json::Value;
 # use elastic::prelude::*;
+# use elastic::error::*;
 # fn main() {
 # #[derive(Serialize, Deserialize, ElasticType)]
 # struct MyType {
@@ -264,17 +285,16 @@ Alternatively to `into_repsonse`, call `into_raw` on a sent request to get a raw
 
 ```no_run
 # extern crate serde;
-# #[macro_use]
-# extern crate serde_derive;
-# #[macro_use]
-# extern crate elastic_derive;
+# #[macro_use] extern crate serde_derive;
+# #[macro_use] extern crate elastic_derive;
 # extern crate elastic;
+# use std::io::Read;
 # use elastic::prelude::*;
 # fn main() {
 # let params = RequestParams::new("http://es_host:9200");
 # let client = Client::new(params).unwrap();
 # let req = PingRequest::new();
-let response = client.request(req)
+let mut response = client.request(req)
                      .send()
                      .and_then(into_raw)
                      .unwrap();

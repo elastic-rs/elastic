@@ -17,7 +17,7 @@ pub struct PutMappingRequestBuilder<TDocument> {
 
 impl Client {
     /** 
-    Create a `RequestBuilder` for a put mapping request. 
+    Create a [`RequestBuilder` for a put mapping request](). 
     
     # Examples
 
@@ -25,15 +25,14 @@ impl Client {
 
     ```no_run
     # extern crate serde;
-    # #[macro_use]
-    # extern crate serde_derive;
-    # #[macro_use]
-    # extern crate elastic_derive;
+    # #[macro_use] extern crate serde_derive;
+    # #[macro_use] extern crate elastic_derive;
     # extern crate elastic;
     # use elastic::prelude::*;
     # fn main() {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType { }
+    # let client = Client::new(RequestParams::default()).unwrap();
     client.put_mapping::<MyType>(index("myindex"))
           .send()
           .unwrap();

@@ -12,7 +12,7 @@ pub struct CreateIndexRequestBuilder<TBody> {
 
 impl Client {
     /** 
-    Create a `RequestBuilder` for a create index request.
+    Create a [`RequestBuilder` for a create index request]().
 
     # Examples
     
@@ -31,6 +31,8 @@ impl Client {
     Create an index with settings and document mappings for a [`DocumentType`]() called `MyType`:
 
     ```no_run
+    # extern crate serde;
+    # #[macro_use] extern crate serde_derive;
     # #[macro_use] extern crate elastic_derive;
     # #[macro_use] extern crate serde_json;
     # extern crate elastic;
