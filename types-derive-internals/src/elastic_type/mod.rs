@@ -58,23 +58,19 @@ pub fn expand_derive(crate_root: Tokens,
                                    &mapping_ty,
                                    get_props_ser_stmts(crate_root.clone(), &fields));
 
-    let mod_impl = syn::Ident::new(format!("__ImplElasticType{}", input.ident));
+    let dummy_wrapper = syn::Ident::new(format!("_IMPL_EASTIC_TYPE_FOR_{}", input.ident));
 
     Ok(vec![quote!(
         #define_mapping
 
-        #[allow(non_snake_case)]
-        mod #mod_impl {
-            #![allow(dead_code, unused_variables)]
-            
-            use super::*;
-
+        #[allow(non_upper_case_globals, dead_code, unused_variables)]
+        const #dummy_wrapper: () = {            
             #impl_mapping
 
             #impl_elastic_ty
 
             #impl_props_mapping
-        }
+        };
     )])
 }
 

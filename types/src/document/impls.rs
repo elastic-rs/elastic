@@ -349,6 +349,19 @@ mod tests {
         pub struct DateFormatWithNoPath;
     }
 
+    // Make sure we can derive in a function scope
+    #[allow(dead_code)]
+    fn fn_scope() {
+        #[derive(Serialize, ElasticType)]
+        pub struct TypeInFn {
+            id: i32,
+        }
+
+        #[derive(Default, ElasticDateFormat)]
+        #[elastic(date_format="yyyy")]
+        pub struct DateFormatInFn;
+    }
+
     #[derive(Clone, Serialize, ElasticType)]
     pub struct SimpleType {
         pub field1: Date<EpochMillis>,
