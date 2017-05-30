@@ -16,7 +16,32 @@ pub struct PutMappingRequestBuilder<TDocument> {
 }
 
 impl Client {
-    /** Create a `RequestBuilder` for a put mapping request. */
+    /** 
+    Create a `RequestBuilder` for a put mapping request. 
+    
+    # Examples
+
+    Put the document mapping for a [`DocumentType`]() called `MyType`:
+
+    ```no_run
+    # extern crate serde;
+    # #[macro_use]
+    # extern crate serde_derive;
+    # #[macro_use]
+    # extern crate elastic_derive;
+    # extern crate elastic;
+    # use elastic::prelude::*;
+    # fn main() {
+    # #[derive(Serialize, Deserialize, ElasticType)]
+    # struct MyType { }
+    client.put_mapping::<MyType>(index("myindex"))
+          .send()
+          .unwrap();
+    # }
+    ```
+
+    For more details on document types and mapping, see the [`types`]() module.
+    */
     pub fn put_mapping<'a, TDocument>
         (&'a self,
          index: Index<'static>)
@@ -45,6 +70,13 @@ impl<TDocument> PutMappingRequestBuilder<TDocument>
     }
 }
 
+/** 
+# Put mapping builder
+
+A request builder for a [`Put Mapping`]() request.
+
+Call [`Client.put_mapping`]() to get a `RequestBuilder` for a put mapping request.
+*/
 impl<'a, TDocument> RequestBuilder<'a, PutMappingRequestBuilder<TDocument>, TDocument>
     where TDocument: DocumentType
 {

@@ -56,7 +56,7 @@ impl Client {
     
     # Examples
     
-    Turn a concrete request into a `RequestBuilder`:
+    Send a cluster ping and read the returned metadata:
     
     ```no_run
     # use elastic::prelude::*;
@@ -67,8 +67,10 @@ impl Client {
     // Turn the `PingRequest` into a `RequestBuilder`
     let builder = client.request(req);
     
-    // Send the `RequestBuilder`
-    let res = builder.send().unwrap();
+    // Send the `RequestBuilder` and parse as a `PingResponse`
+    let ping = builder.send().and_then(into_response::<PingResponse>).unwrap();
+
+    println!("cluster: {}", ping.name);
     ```
     */
     pub fn request<'a, TRequest, TBody>(&'a self,
@@ -135,6 +137,13 @@ impl<'a, TRequest, TBody> RequestBuilder<'a, TRequest, TBody>
     }
 }
 
+/** 
+# Raw request builder
+
+A request builder for a [raw request type]().
+
+Call [`Client.request`]() to get a `RequestBuilder` for a raw request.
+*/
 impl<'a, TRequest, TBody> RequestBuilder<'a, TRequest, TBody>
     where TRequest: Into<HttpRequest<'static, TBody>>,
           TBody: IntoBody

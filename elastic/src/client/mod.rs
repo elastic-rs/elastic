@@ -22,25 +22,7 @@ All builders follow a standard pattern:
 - Optional or inferred parameters can be overridden in builder methods with inference
 - `send` will return a specific response type
 
-These builders are wrappers around the [`request`]() method, taking a raw request type.
-
-## Examples
-
-A `get` request for a value:
-
-```no_run
-let response = client.get_document::<Value>(index("values"), id(1)).send();
-```
-
-Is equivalent to:
-
-```no_run
-let response = client.request(GetRequest::for_index_ty_id("values", "value", 1))
-                     .send()
-                     .and_then(into_response::<GetResponse<Value>>);
-```
-
-A `search` request for a value, where the response is matched for an `ApiError`:
+A search request for a value, where the response is matched for an `ApiError`:
 
 ```no_run
 let response = client.search::<Value>()
@@ -76,9 +58,32 @@ match response {
 }
 ```
 
+The request builders are wrappers around the [`Client.request`]() method, taking a [raw request type]().
+A `get` request for a value:
+
+```no_run
+# extern crate serde_json;
+# extern crate elastic;
+# use serde_json::Value;
+# use elastic::prelude::*;
+# fn main() {
+let response = client.get_document::<Value>(index("values"), id(1)).send();
+# }
+```
+
+Is equivalent to:
+
+```no_run
+# use elastic::prelude::*;
+# let client = Client::new(RequestParams::default()).unwrap();
+let response = client.request(GetRequest::for_index_ty_id("values", "value", 1))
+                     .send()
+                     .and_then(into_response::<GetResponse<Value>>);
+```
+
 # Raw request types
 
-Not all endpoints have strongly-typed builders, but all Elasticsearch API endpoints have a specific request type that can be used to build a request manually and send with the [`request`]() method.
+Not all endpoints have strongly-typed builders, but all Elasticsearch API endpoints have a specific [raw request type]() that can be used to build a request manually and send with the [`Client.request`]() method.
 The builders described above are just wrappers around these request types, but that doesn't mean raw requests are a second-class API.
 You have more control over how requests are serialised, sent and deserialised using the raw requests API.
 All request endpoints live in the [`endpoints`]() module.
@@ -88,7 +93,7 @@ The process of sending raw requests is described in more detail below.
 ## The raw request process
 
 The pieces involved in sending an Elasticsearch API request and parsing the response are modular.
-Each one exposes Rust traits you can implement to support your own logic but if you just want to send search/get requests and parse a search/get response then you won't need to worry about this so much.
+Each one exposes Rust traits you can implement to support your own logic but if you just want to send a search/get request and parse a search/get response then you won't need to worry about this so much.
 
 The basic flow from request to response is:
 
@@ -151,6 +156,10 @@ Each request type expects its parameters upfront and is generic over the request
 A raw search request:
 
 ```no_run
+# #[macro_use] extern crate json_str;
+# extern crate elastic;
+# use elastic::prelude::*;
+# fn main() {
 let req = {
     let body = json_str!({
         query: {
@@ -162,16 +171,22 @@ let req = {
 
     SearchRequest::for_index_ty("myindex", "myty", body)
 };
+# }
 ```
 
 A raw request to index a document:
 
 ```no_run
+# extern crate serde_json;
+# extern crate elastic;
+# use elastic::prelude::*;
+# fn main() {
 let req = {
     let body = serde_json::to_string(&doc).unwrap();
 
     IndexRequest::for_index_ty_id("myindex", "myty", body)
 };
+# }
 ```
 
 ### 2. Sending requests
@@ -184,6 +199,8 @@ For high-level requests this returns a strongly-typed response.
 For raw requests this returns a `HttpResponse`.
 
 ```no_run
+# use elastic::prelude::*;
+# use client = Client::new(RequestParams::default()).unwrap();
 let request_builder = client.request(req);
 
 // Set additional url parameters

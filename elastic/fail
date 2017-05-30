@@ -1,0 +1,350 @@
+
+running 40 tests
+test src/client/mod.rs - client (line 24) ... FAILED
+test src/client/mod.rs - client (line 207) ... FAILED
+test src/client/mod.rs - client (line 62) ... FAILED
+test src/client/mod.rs - client (line 162) ... ok
+test src/client/mod.rs - client (line 184) ... FAILED
+test src/client/mod.rs - client (line 124) ... ok
+test src/client/mod.rs - client (line 273) ... FAILED
+test src/client/mod.rs - client (line 75) ... FAILED
+test src/client/requests/mod.rs - client::requests::RequestBuilder<'a, TRequest, TBody>::send (line 152) ... FAILED
+test src/client/mod.rs - client (line 227) ... FAILED
+test src/client/requests/create_index.rs - client::requests::create_index::Client::create_index (line 33) ... FAILED
+test src/client/requests/create_index.rs - client::requests::create_index::Client::create_index (line 20) ... ok
+test src/client/requests/mod.rs - client::requests::Client::request (line 60) ... ok
+test src/client/requests/mod.rs - client::requests::RequestBuilder<'a, TRequest, TBody>::params (line 107) ... ok
+test src/client/responses/mod.rs - client::responses::ResponseBuilder::into_response (line 94) ... FAILED
+test src/client/responses/parse.rs - client::responses::parse (line 42) ... FAILED
+test src/client/responses/mod.rs - client::responses::ResponseBuilder::into_response (line 66) ... FAILED
+test src/error.rs - error (line 20) ... ok
+test src/lib.rs -  (line 102) ... ok
+test src/lib.rs -  (line 239) ... FAILED
+test src/lib.rs -  (line 24) ... ignored
+test src/lib.rs -  (line 33) ... ignored
+test src/lib.rs -  (line 123) ... FAILED
+test src/lib.rs -  (line 173) ... FAILED
+test src/lib.rs -  (line 205) ... FAILED
+test src/lib.rs -  (line 143) ... FAILED
+test src/client/responses/parse.rs - client::responses::parse (line 8) ... ok
+test src/lib.rs -  (line 65) ... ok
+test src/lib.rs -  (line 76) ... FAILED
+test src/types.rs - types (line 21) ... ignored
+test src/lib.rs -  (line 43) ... ok
+test src/types.rs - types (line 30) ... ignored
+test src/client/mod.rs - client::Client::new (line 328) ... ok
+test src/types.rs - types (line 186) ... ok
+test src/types.rs - types (line 210) ... ok
+test src/types.rs - types (line 111) ... ok
+test src/client/mod.rs - client::Client::new (line 336) ... ok
+test src/types.rs - types (line 87) ... ok
+test src/types.rs - types (line 232) ... ok
+test src/types.rs - types (line 132) ... ok
+
+failures:
+
+---- src/client/mod.rs - client (line 24) stdout ----
+	error: cannot find macro `json_str!` in this scope
+ --> <anon>:5:28
+  |
+5 |                      .body(json_str!({
+  |                            ^^^^^^^^
+
+error[E0425]: cannot find value `client` in this scope
+ --> <anon>:2:16
+  |
+2 | let response = client.search::<Value>()
+  |                ^^^^^^ not found in this scope
+
+error[E0412]: cannot find type `Value` in this scope
+ --> <anon>:2:32
+  |
+2 | let response = client.search::<Value>()
+  |                                ^^^^^ not found in this scope
+
+error[E0433]: failed to resolve. Use of undeclared type or module `ErrorKind`
+  --> <anon>:24:13
+   |
+24 |             ErrorKind::Api(ref e) => {
+   |             ^^^^^^^^^^^^^^ Use of undeclared type or module `ErrorKind`
+
+error: aborting due to 4 previous errors
+
+thread 'rustc' panicked at 'Box<Any>', /checkout/src/librustc_errors/lib.rs:453
+note: Run with `RUST_BACKTRACE=1` for a backtrace.
+thread 'rustc' panicked at 'couldn't compile the test', /checkout/src/librustdoc/test.rs:273
+
+---- src/client/mod.rs - client (line 207) stdout ----
+	error: expected one of `::`, `;`, or `as`, found `=`
+ --> <anon>:4:12
+  |
+4 | use client = Client::new(RequestParams::default()).unwrap();
+  |           -^ unexpected token
+  |           |
+  |           expected one of `::`, `;`, or `as` here
+
+error[E0425]: cannot find value `client` in this scope
+ --> <anon>:5:23
+  |
+5 | let request_builder = client.request(req);
+  |                       ^^^^^^ not found in this scope
+
+error[E0425]: cannot find value `req` in this scope
+ --> <anon>:5:38
+  |
+5 | let request_builder = client.request(req);
+  |                                      ^^^ not found in this scope
+
+error: aborting due to previous error(s)
+
+thread 'rustc' panicked at 'Box<Any>', /checkout/src/librustc/session/mod.rs:216
+
+---- src/client/mod.rs - client (line 62) stdout ----
+	error[E0425]: cannot find value `client` in this scope
+ --> <anon>:6:16
+  |
+6 | let response = client.get_document::<Value>(index("values"), id(1)).send();
+  |                ^^^^^^ not found in this scope
+
+error: aborting due to previous error(s)
+
+thread 'rustc' panicked at 'Box<Any>', /checkout/src/librustc/session/mod.rs:216
+
+---- src/client/mod.rs - client (line 184) stdout ----
+	error[E0425]: cannot find value `doc` in this scope
+ --> <anon>:6:39
+  |
+6 |     let body = serde_json::to_string(&doc).unwrap();
+  |                                       ^^^ not found in this scope
+
+error[E0061]: this function takes 4 parameters but 3 parameters were supplied
+ --> <anon>:8:35
+  |
+8 |     IndexRequest::for_index_ty_id("myindex", "myty", body)
+  |                                   ^^^^^^^^^^^^^^^^^^^^^^^ expected 4 parameters
+
+error: aborting due to previous error(s)
+
+thread 'rustc' panicked at 'Box<Any>', /checkout/src/librustc/session/mod.rs:216
+
+---- src/client/mod.rs - client (line 273) stdout ----
+	error: no method named `read_to_string` found for type `elastic::prelude::HttpResponse` in the current scope
+  --> <anon>:18:10
+   |
+18 | response.read_to_string(&mut body).unwrap();
+   |          ^^^^^^^^^^^^^^
+   |
+   = help: items from traits can only be used if the trait is in scope; the following trait is implemented but not in scope, perhaps add a `use` for it:
+   = help: candidate #1: `use std::io::Read;`
+
+error: aborting due to previous error(s)
+
+thread 'rustc' panicked at 'Box<Any>', /checkout/src/librustc/session/mod.rs:216
+
+---- src/client/mod.rs - client (line 75) stdout ----
+	error[E0412]: cannot find type `Value` in this scope
+ --> <anon>:7:60
+  |
+7 |                      .and_then(into_response::<GetResponse<Value>>);
+  |                                                            ^^^^^ not found in this scope
+  |
+  = help: there is an enum variant `elastic::http::header::AccessControlAllowOrigin::Value`, did you mean to use `elastic::http::header::AccessControlAllowOrigin`?
+
+error: aborting due to previous error(s)
+
+thread 'rustc' panicked at 'Box<Any>', /checkout/src/librustc/session/mod.rs:216
+
+---- src/client/requests/mod.rs - client::requests::RequestBuilder<'a, TRequest, TBody>::send (line 152) stdout ----
+	error: expected item, found `let`
+ --> <anon>:6:1
+  |
+6 | let client = Client::new(RequestParams::default()).unwrap();
+  | ^^^
+
+error: aborting due to previous error(s)
+
+thread 'rustc' panicked at 'Box<Any>', /checkout/src/librustc/session/mod.rs:216
+
+---- src/client/mod.rs - client (line 227) stdout ----
+	error[E0412]: cannot find type `Value` in this scope
+  --> <anon>:20:63
+   |
+20 |                      .and_then(into_response::<SearchResponse<Value>>);
+   |                                                               ^^^^^ not found in this scope
+   |
+   = help: there is an enum variant `elastic::http::header::AccessControlAllowOrigin::Value`, did you mean to use `elastic::http::header::AccessControlAllowOrigin`?
+
+error[E0433]: failed to resolve. Use of undeclared type or module `ErrorKind`
+  --> <anon>:31:13
+   |
+31 |             ErrorKind::Api(ref e) => {
+   |             ^^^^^^^^^^^^^^ Use of undeclared type or module `ErrorKind`
+
+error: aborting due to previous error(s)
+
+thread 'rustc' panicked at 'Box<Any>', /checkout/src/librustc/session/mod.rs:216
+
+---- src/client/requests/create_index.rs - client::requests::create_index::Client::create_index (line 33) stdout ----
+	error: cannot find derive macro `Deserialize` in this scope
+ --> <anon>:5:21
+  |
+5 | #[derive(Serialize, Deserialize, ElasticType)]
+  |                     ^^^^^^^^^^^
+
+error: cannot find derive macro `Serialize` in this scope
+ --> <anon>:5:10
+  |
+5 | #[derive(Serialize, Deserialize, ElasticType)]
+  |          ^^^^^^^^^
+
+error[E0433]: failed to resolve. Maybe a missing `extern crate serde;`?
+ --> <anon>:5:34
+  |
+5 | #[derive(Serialize, Deserialize, ElasticType)]
+  |                                  ^^^^^^^^^^^ Maybe a missing `extern crate serde;`?
+
+error: aborting due to 3 previous errors
+
+thread 'rustc' panicked at 'Box<Any>', /checkout/src/librustc_errors/lib.rs:453
+thread 'rustc' panicked at 'couldn't compile the test', /checkout/src/librustdoc/test.rs:273
+
+---- src/client/responses/mod.rs - client::responses::ResponseBuilder::into_response (line 94) stdout ----
+	error: no method named `response` found for type `elastic::prelude::ResponseBuilder` in the current scope
+  --> <anon>:11:42
+   |
+11 |                      .and_then(|res| res.response::<Value>());
+   |                                          ^^^^^^^^
+
+error: aborting due to previous error(s)
+
+thread 'rustc' panicked at 'Box<Any>', /checkout/src/librustc/session/mod.rs:216
+
+---- src/client/responses/parse.rs - client::responses::parse (line 42) stdout ----
+	error[E0433]: failed to resolve. Use of undeclared type or module `ErrorKind`
+  --> <anon>:35:13
+   |
+35 |             ErrorKind::Api(ref e) => {
+   |             ^^^^^^^^^^^^^^ Use of undeclared type or module `ErrorKind`
+
+error: aborting due to previous error(s)
+
+thread 'rustc' panicked at 'Box<Any>', /checkout/src/librustc/session/mod.rs:216
+
+---- src/client/responses/mod.rs - client::responses::ResponseBuilder::into_response (line 66) stdout ----
+	error: no method named `response` found for type `elastic::prelude::ResponseBuilder` in the current scope
+  --> <anon>:20:42
+   |
+20 |                      .and_then(|res| res.response::<SearchResponse<MyType>>());
+   |                                          ^^^^^^^^
+
+error: aborting due to previous error(s)
+
+thread 'rustc' panicked at 'Box<Any>', /checkout/src/librustc/session/mod.rs:216
+
+---- src/lib.rs -  (line 239) stdout ----
+	error: unexpected close delimiter: `}`
+  --> <anon>:13:1
+   |
+13 | }
+   | ^
+
+thread 'rustc' panicked at 'Box<Any>', /checkout/src/libsyntax/parse/mod.rs:216
+thread 'rustc' panicked at 'couldn't compile the test', /checkout/src/librustdoc/test.rs:273
+
+---- src/lib.rs -  (line 123) stdout ----
+	error[E0425]: cannot find value `client` in this scope
+  --> <anon>:11:1
+   |
+11 | client.put_mapping::<MyType>(index("myindex"))
+   | ^^^^^^ not found in this scope
+
+error: aborting due to previous error(s)
+
+thread 'rustc' panicked at 'Box<Any>', /checkout/src/librustc/session/mod.rs:216
+
+---- src/lib.rs -  (line 173) stdout ----
+	error[E0425]: cannot find value `client` in this scope
+  --> <anon>:15:16
+   |
+15 | let response = client.get_document::<MyType>(index("myindex"), id(1))
+   |                ^^^^^^ not found in this scope
+
+error: aborting due to previous error(s)
+
+thread 'rustc' panicked at 'Box<Any>', /checkout/src/librustc/session/mod.rs:216
+
+---- src/lib.rs -  (line 205) stdout ----
+	error: cannot find macro `json_str!` in this scope
+  --> <anon>:14:29
+   |
+14 |                      .query(json_str!({
+   |                             ^^^^^^^^
+
+error: aborting due to previous error
+
+thread 'rustc' panicked at 'Box<Any>', /checkout/src/librustc_errors/lib.rs:453
+thread 'rustc' panicked at 'couldn't compile the test', /checkout/src/librustdoc/test.rs:273
+
+---- src/lib.rs -  (line 143) stdout ----
+	error[E0425]: cannot find value `client` in this scope
+  --> <anon>:21:16
+   |
+21 | let response = client.index_document(index("myindex"), id(doc.id), doc)
+   |                ^^^^^^ not found in this scope
+
+error: aborting due to previous error(s)
+
+thread 'rustc' panicked at 'Box<Any>', /checkout/src/librustc/session/mod.rs:216
+
+---- src/lib.rs -  (line 76) stdout ----
+	error[E0432]: unresolved import `serde_json::Value`
+ --> <anon>:4:5
+  |
+4 | use serde_json::Value;
+  |     ^^^^^^^^^^^^^^^^^ Maybe a missing `extern crate serde_json;`?
+
+error[E0432]: unresolved import `elastic::prelude::*`
+ --> <anon>:5:5
+  |
+5 | use elastic::prelude::*;
+  |     ^^^^^^^^^^^^^^^^^^^^ Maybe a missing `extern crate elastic;`?
+
+error[E0433]: failed to resolve. Use of undeclared type or module `Client`
+ --> <anon>:6:14
+  |
+6 | let client = Client::new(RequestParams::default()).unwrap();
+  |              ^^^^^^^^^^^ Use of undeclared type or module `Client`
+
+error[E0433]: failed to resolve. Use of undeclared type or module `RequestParams`
+ --> <anon>:6:26
+  |
+6 | let client = Client::new(RequestParams::default()).unwrap();
+  |                          ^^^^^^^^^^^^^^^^^^^^^^ Use of undeclared type or module `RequestParams`
+
+error: aborting due to previous error(s)
+
+thread 'rustc' panicked at 'Box<Any>', /checkout/src/librustc/session/mod.rs:216
+
+
+failures:
+    src/client/mod.rs - client (line 184)
+    src/client/mod.rs - client (line 207)
+    src/client/mod.rs - client (line 227)
+    src/client/mod.rs - client (line 24)
+    src/client/mod.rs - client (line 273)
+    src/client/mod.rs - client (line 62)
+    src/client/mod.rs - client (line 75)
+    src/client/requests/create_index.rs - client::requests::create_index::Client::create_index (line 33)
+    src/client/requests/mod.rs - client::requests::RequestBuilder<'a, TRequest, TBody>::send (line 152)
+    src/client/responses/mod.rs - client::responses::ResponseBuilder::into_response (line 66)
+    src/client/responses/mod.rs - client::responses::ResponseBuilder::into_response (line 94)
+    src/client/responses/parse.rs - client::responses::parse (line 42)
+    src/lib.rs -  (line 123)
+    src/lib.rs -  (line 143)
+    src/lib.rs -  (line 173)
+    src/lib.rs -  (line 205)
+    src/lib.rs -  (line 239)
+    src/lib.rs -  (line 76)
+
+test result: FAILED. 18 passed; 18 failed; 4 ignored; 0 measured
+

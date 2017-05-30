@@ -16,7 +16,43 @@ pub struct IndexRequestBuilder<TDocument> {
 }
 
 impl Client {
-    /** Create a `RequestBuilder` for an index request. */
+    /** 
+    
+    Create a `RequestBuilder` for an index request.
+
+    # Examples
+
+    Index a [`DocumentType`]() called `MyType` with an id of `1`:
+
+    ```no_run
+    # extern crate serde;
+    # #[macro_use]
+    # extern crate serde_derive;
+    # #[macro_use]
+    # extern crate elastic_derive;
+    # extern crate elastic;
+    # use elastic::prelude::*;
+    # fn main() {
+    # #[derive(Serialize, Deserialize, ElasticType)]
+    # struct MyType {
+    #     pub id: i32,
+    #     pub title: String,
+    #     pub timestamp: Date<DefaultDateFormat>
+    # }
+    let doc = MyType {
+        id: 1,
+        title: String::from("A title"),
+        timestamp: Date::now()
+    };
+
+    let response = client.index_document(index("myindex"), id(doc.id), doc)
+                         .send()
+                         .unwrap();
+    # }
+    ```
+
+    For more details on document types and mapping, see the [`types`]() module.
+    */
     pub fn index_document<'a, TDocument>
         (&'a self,
          index: Index<'static>,
@@ -48,6 +84,13 @@ impl<TDocument> IndexRequestBuilder<TDocument>
     }
 }
 
+/** 
+# Index document builder
+
+A request builder for an [`Index`]() request.
+
+Call [`Client.index_doocument`]() to get a `RequestBuilder` for an indexrequest.
+*/
 impl<'a, TDocument> RequestBuilder<'a, IndexRequestBuilder<TDocument>, TDocument>
     where TDocument: Serialize
 {

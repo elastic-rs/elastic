@@ -1,11 +1,8 @@
 /*!
 Response types for the Elasticsearch REST API.
 
-Key response types include:
-
-- [`SearchResponse`](type.SearchResponse.html) for the [Query DSL](http://www.elastic.co/guide/en/elasticsearch/reference/master/search-search.html)
-- [`GetResponse`](type.GetResponse.html) for the [Document API](http://www.elastic.co/guide/en/elasticsearch/reference/master/docs-get.html)
-- [`BulkResponse`](struct.BulkResponse.html) for the [Bulk API](http://www.elastic.co/guide/en/elasticsearch/reference/master/docs-bulk.html)
+All [high-level builders]() return one of these response types for you.
+This module also contains helpers that can be used to parse responses from a raw [`HttpResponse`]().
 */
 
 pub mod parse;

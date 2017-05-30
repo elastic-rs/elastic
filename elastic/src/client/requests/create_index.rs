@@ -11,7 +11,59 @@ pub struct CreateIndexRequestBuilder<TBody> {
 }
 
 impl Client {
-    /** Create a `RequestBuilder` for a create index request. */
+    /** 
+    Create a `RequestBuilder` for a create index request.
+
+    # Examples
+    
+    Create an index called `myindex`:
+    
+    ```no_run
+    # use elastic::prelude::*;
+    # let client = Client::new(RequestParams::default()).unwrap();
+    let my_index = index("myindex");
+
+    let response = client.create_index(my_index).send().unwrap();
+
+    assert!(response.acknowledged);
+    ```
+
+    Create an index with settings and document mappings for a [`DocumentType`]() called `MyType`:
+
+    ```no_run
+    # #[macro_use] extern crate elastic_derive;
+    # #[macro_use] extern crate serde_json;
+    # extern crate elastic;
+    # use elastic::prelude::*;
+    # #[derive(Serialize, Deserialize, ElasticType)]
+    # struct MyType { }
+    # fn main() {
+    # let client = Client::new(RequestParams::default()).unwrap();
+    let my_index = index("myindex");
+
+    let body = json!({
+        "settings": {
+            "index": {
+                "number_of_shards": 3,
+                "number_of_replicas": 2
+            }
+        },
+        "mappings": {
+            MyType::name(): IndexDocumentMapping::from(MyType::mapping())
+        }
+    });
+
+    let response = client.create_index(my_index)
+                         .body(body.to_string())
+                         .send()
+                         .unwrap();
+
+    assert!(response.acknowledged);
+    # }
+    ```
+
+    For more details on document types and mapping, see the [`types`]() module.
+    */
     pub fn create_index<'a>
         (&'a self,
          index: Index<'static>)
@@ -33,6 +85,13 @@ impl<TBody> CreateIndexRequestBuilder<TBody>
     }
 }
 
+/** 
+# Create index builder
+
+A request builder for a [`Create Index`]() request.
+
+Call [`Client.create_index`]() to get a `RequestBuilder` for a create index request.
+*/
 impl<'a, TBody> RequestBuilder<'a, CreateIndexRequestBuilder<TBody>, TBody>
     where TBody: IntoBody
 {

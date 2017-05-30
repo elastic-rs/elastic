@@ -16,7 +16,62 @@ pub struct SearchRequestBuilder<TDocument, TBody> {
 }
 
 impl Client {
-    /** Create a `RequestBuilder` for a search request. */
+    /** 
+    Create a `RequestBuilder` for a search request. 
+
+    # Examples
+
+    Run a simple [query string]() query for a [`DocumentType`]() called `MyType`:
+    
+    ```no_run
+    # extern crate serde;
+    # #[macro_use]
+    # extern crate serde_derive;
+    # #[macro_use]
+    # extern crate elastic_derive;
+    # extern crate elastic;
+    # use elastic::prelude::*;
+    # fn main() {
+    # #[derive(Serialize, Deserialize, ElasticType)]
+    # struct MyType { }
+    # let client = Client::new(RequestParams::default()).unwrap();
+    let response = client.search::<MyType>()
+                         .index("myindex")
+                         .query(json_str!({
+                             query: {
+                                 query_string: {
+                                     query: "*"
+                                 }
+                             }
+                         }))
+                         .send()
+                         .unwrap();
+
+    // Iterate through the hits (of type `MyType`)
+    for hit in response.hits() {
+        println!("{:?}", hit);
+    }
+    # }
+    ```
+
+    For more details on document types and mapping, see the [`types`]() module.
+
+    It's also possible to use `serde_json::Value`s as documents when searching:
+
+    ```no_run
+    # extern crate elastic;
+    # extern crate serde_json;
+    # use serde_json::Value;
+    # use elastic::prelude::*;
+    # let client = Client::new(RequestParams::default()).unwrap();
+    let response = client.search::<Value>()
+                         .index("myindex")
+                         .ty("mytype")
+                         .send()
+                         .unwrap();
+    }
+    ```
+    */
     pub fn search<'a, TDocument>
         (&'a self)
          -> RequestBuilder<'a, SearchRequestBuilder<TDocument, DefaultBody>, DefaultBody>
@@ -49,6 +104,13 @@ impl<TDocument, TBody> SearchRequestBuilder<TDocument, TBody>
     }
 }
 
+/** 
+# Search request builder
+
+A request builder for a [`Query DSL`]() query.
+
+Call [`Client.search`]() to get a `RequestBuilder` for a search request.
+*/
 impl<'a, TDocument, TBody> RequestBuilder<'a, SearchRequestBuilder<TDocument, TBody>, TBody>
     where TDocument: DeserializeOwned,
           TBody: IntoBody

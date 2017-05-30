@@ -56,38 +56,15 @@ extern crate serde_derive;
 
 # Examples
 
-## Making requests
+## Creating a client
 
-Each endpoint in the Elasticsearch REST API is provided as a strongly-typed structure.
-The client offers high-level request builders for some common Elasticsearch operations, like `search`:
-
-```no_run
-# extern crate elastic;
-# extern crate serde_json;
-use serde_json::Value;
-use elastic::prelude::*;
-
-// Create a client with default params (host: 'http://localhost:9200')
-let client = Client::new(RequestParams::default()).unwrap();
-
-// Send the search request
-let response = client.search::<Value>()
-                     .index("myindex")
-                     .ty("mytype")
-                     .send()
-                     .unwrap();
-
-// Iterate through the hits (of type `Value`)
-for hit in response.hits() {
-    println!("{:?}", hit);
-}
-```
-
+The [`Client`]() type is used to make interact with an Elasticsearch cluster.
 The `Client` will use a default set of request parameters that are passed to each request.
 Properties like the host and query parameters can be configured for all requests:
 
 ```no_run
-# use elastic::prelude::*;
+use elastic::prelude::*;
+
 let params = RequestParams::new("http://es_host:9200").url_param("pretty", true);
 
 let client = Client::new(params).unwrap();
@@ -99,8 +76,7 @@ Individual requests can override these parameter values:
 # extern crate elastic;
 # extern crate serde_json;
 # use serde_json::Value;
-use elastic::prelude::*;
-
+# use elastic::prelude::*;
 let client = Client::new(RequestParams::default()).unwrap();
 
 let response = client.search::<Value>()
@@ -111,9 +87,14 @@ let response = client.search::<Value>()
 
 For more details, see the [`client`](client/index.html) and [`requests`](client/requests/index.html) modules.
 
-## Defining document types
+## Making requests
 
-The Mapping API is provided as a custom derive plugin and Rust traits.
+Each endpoint in the Elasticsearch REST API is provided as a strongly-typed structure.
+The client offers high-level request builders for some common Elasticsearch operations.
+
+### Getting and Indexing documents
+
+The [Document Mapping API]() is provided as a custom derive plugin and set of Rust traits.
 Derive `Serialize`, `Deserialize` and `ElasticType` on your document types:
 
 ```no_run
@@ -134,9 +115,9 @@ struct MyType {
 # }
 ```
 
-Searching on a type that derives `ElasticType` will infer the right document type and deserialise appropriately:
+Call [`Client.put_mapping`]() to ensure an index has the right mapping for your document types:
 
-```
+```no_run
 # extern crate serde;
 # #[macro_use]
 # extern crate serde_derive;
@@ -146,21 +127,16 @@ Searching on a type that derives `ElasticType` will infer the right document typ
 # use elastic::prelude::*;
 # fn main() {
 # #[derive(Serialize, Deserialize, ElasticType)]
-# struct MyType {
-#     pub id: i32,
-#     pub title: String,
-#     pub timestamp: Date<DefaultDateFormat>
-# }
-let response = client.search::<MyType>()
-                     .index("myindex")
-                     .send()
-                     .unwrap();
+# struct MyType { }
+client.put_mapping::<MyType>(index("myindex"))
+      .send()
+      .unwrap();
 # }
 ```
 
-Types that derive `ElasticType` can be indexed:
+Then call [`Client.index_document`]() to index documents in Elasticsearch:
 
-```
+```no_run
 # extern crate serde;
 # #[macro_use]
 # extern crate serde_derive;
@@ -187,9 +163,9 @@ let response = client.index_document(index("myindex"), id(doc.id), doc)
 # }
 ```
 
-Types that derive `ElasticType` can be mapped:
+Call [`Client.get_document`]() to retrieve a single document from an index:
 
-```
+```no_run
 # extern crate serde;
 # #[macro_use]
 # extern crate serde_derive;
@@ -204,13 +180,52 @@ Types that derive `ElasticType` can be mapped:
 #     pub title: String,
 #     pub timestamp: Date<DefaultDateFormat>
 # }
-let response = client.put_mapping::<MyType>(index("myindex"))
+let response = client.get_document::<MyType>(index("myindex"), id(1))
                      .send()
                      .unwrap();
+
+if let Some(doc) = response.source {
+    println!("id: {}", doc.id);
+}
 # }
 ```
 
 For more details on document types, see the [`types`](types/index.html) module.
+
+### Searching documents
+
+Call [`Client.search`]() to execute [Query DSL]() queries:
+
+```no_run
+# extern crate serde;
+# #[macro_use]
+# extern crate serde_derive;
+# #[macro_use]
+# extern crate elastic_derive;
+# extern crate elastic;
+# use elastic::prelude::*;
+# fn main() {
+# #[derive(Serialize, Deserialize, ElasticType)]
+# struct MyType { }
+# let client = Client::new(RequestParams::default()).unwrap();
+let response = client.search::<MyType>()
+                     .index("myindex")
+                     .query(json_str!({
+                         query: {
+                            query_string: {
+                                query: "*"
+                            }
+                         }
+                     }))
+                     .send()
+                     .unwrap();
+
+// Iterate through the hits (of type `MyType`)
+for hit in response.hits() {
+    println!("{:?}", hit);
+}
+# }
+```
 
 # Crate design
 

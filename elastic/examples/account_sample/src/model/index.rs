@@ -6,7 +6,6 @@
 
 use elastic::client::requests::Index;
 use elastic::types::prelude::{IndexDocumentMapping, FieldType};
-use serde_json::{self, Error as JsonError};
 use super::account::{self, Account};
 
 /// Get the name of the bank index.
@@ -16,9 +15,6 @@ pub fn name() -> Index<'static> {
 
 /// Get the settings and mappings for the index.
 pub fn body() -> String {
-    let account_name = account::name();
-    let account_mapping = IndexDocumentMapping::from(Account::mapping());
-
     let body = json!({
         "settings" : {
             "analysis" : {
@@ -47,7 +43,7 @@ pub fn body() -> String {
             }
         },
         "mappings": {
-            account_name: account_mapping
+            account::name(): IndexDocumentMapping::from(Account::mapping())
         }
     });
 
