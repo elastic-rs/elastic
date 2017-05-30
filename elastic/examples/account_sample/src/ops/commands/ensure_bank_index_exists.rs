@@ -13,14 +13,19 @@ pub trait EnsureBankIndexExists {
 
 impl EnsureBankIndexExists for Client {
     fn ensure_bank_index_exists(&self) -> Result<(), EnsureBankIndexExistsError> {
-        let exists = self.io.request(IndicesExistsRequest::for_index(model::index::name())).send()?;
+        let exists = self.io
+            .request(IndicesExistsRequest::for_index(model::index::name()))
+            .send()?;
 
         match exists.status() {
             // Success, do nothing
             200 => (),
             // Not found, create the index
             404 => {
-                self.io.create_index(model::index::name()).body(model::index::body()).send()?;
+                self.io
+                    .create_index(model::index::name())
+                    .body(model::index::body().to_string())
+                    .send()?;
             }
             // Some other response, deserialise
             _ => {
@@ -47,17 +52,5 @@ quick_error!{
             from()
             display("failed to ensure index exists: {}", err)
         }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn put_request_url() {
-        let req = put(vec![]);
-
-        assert_eq!("/bank-sample", req.url.as_ref());
     }
 }

@@ -3,6 +3,8 @@
 
 #[macro_use]
 extern crate serde_derive;
+#[macro_use]
+extern crate elastic_derive;
 
 extern crate stopwatch;
 extern crate time;
@@ -18,11 +20,20 @@ use stopwatch::Stopwatch;
 use elastic::http;
 use elastic::prelude::*;
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, ElasticType)]
+#[elastic(mapping = "BenchDocMapping")]
 struct BenchDoc {
     pub id: i32,
     pub title: String,
     pub timestamp: Date<EpochMillis>,
+}
+
+#[derive(Default)]
+struct BenchDocMapping;
+impl DocumentMapping for BenchDocMapping {
+    fn name() -> &'static str {
+        "bench_doc"
+    }
 }
 
 static BODY: &'static str = json_lit!(
@@ -54,11 +65,11 @@ fn main() {
     for _ in 0..runs {
         let mut sw = Stopwatch::start_new();
 
-        let req = SearchRequest::for_index_ty("bench_index", "bench_doc", BODY);
-        let res: SearchResponse<BenchDoc> = client.request(req)
-                                                  .send()
-                                                  .and_then(|res| res.response())
-                                                  .unwrap();
+        let res = client.search::<BenchDoc>()
+                        .index("bench_index")
+                        .body(BODY)
+                        .send()
+                        .unwrap();
 
         sw.stop();
 

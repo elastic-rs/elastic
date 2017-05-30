@@ -55,10 +55,10 @@ pub fn mapped_file<P>
         let slices_future = map_file_to_chunks(path);
 
         slices_future.and_then(|slices| {
-            let streamed = ChunkStream(slices);
+                                   let streamed = ChunkStream(slices);
 
-            tx.send_all(streamed).map_err(|e| e.into())
-        })
+                                   tx.send_all(streamed).map_err(|e| e.into())
+                               })
     });
 
     let tx_future = tx_future.and_then(|_| ok(()));

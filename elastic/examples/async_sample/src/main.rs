@@ -47,7 +47,8 @@ fn main() {
     // Get a future to send a bulk request
     let req = BulkRequest::for_index_ty("bulk-current", "bulk-ty", body);
 
-    let req_future = client.request(hyper_req::build(&url, req))
+    let req_future = client
+        .request(hyper_req::build(&url, req))
         .and_then(|res| {
             let status: u16 = res.status().into();
 
@@ -57,11 +58,12 @@ fn main() {
                 .and_then(move |buf| {
                     // Do the deserialisation on the CPU pool
                     pool.spawn_fn(move || {
-                        let res: BulkResponse = parse().from_slice(status, &buf).unwrap();
-                        println!("{:?}", res);
+                                      let res: BulkResponse =
+                                          parse().from_slice(status, &buf).unwrap();
+                                      println!("{:?}", res);
 
-                        ok(())
-                    })
+                                      ok(())
+                                  })
                 })
         })
         .map_err(|e| e.into());
