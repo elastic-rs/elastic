@@ -43,13 +43,23 @@ impl ResponseBuilder {
     
     Convert the builder into a raw HTTP response that implements `Read`.
     */
+    #[deprecated(note = "use `into_raw`")]
     pub fn raw(self) -> HttpResponse {
+        self.into_raw()
+    }
+
+    /**
+    Get the response body from JSON.
+    
+    Convert the builder into a raw HTTP response that implements `Read`.
+    */
+    pub fn into_raw(self) -> HttpResponse {
         self.0
     }
 
     /** Get a raw http response. */
     fn reqwest_response(self) -> RawResponse {
-        self.raw().0
+        self.into_raw().0
     }
 
     /**
