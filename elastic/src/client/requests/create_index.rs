@@ -126,7 +126,7 @@ impl<'a, TBody> RequestBuilder<'a, CreateIndexRequestBuilder<TBody>, TBody>
                             })
     }
 
-    /** Send the search request. */
+    /** Send the create index request. */
     pub fn send(self) -> Result<CommandResponse> {
         let req = self.req.into_request();
 
