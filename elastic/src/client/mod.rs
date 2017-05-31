@@ -142,20 +142,8 @@ with the steps in the above process labelled:
 # use serde_json::Value;
 # fn main() {
 # let client = Client::new(RequestParams::default()).unwrap();
-// Create a `SearchRequest` for all indices
-let req = {
-    let body = json_str!({
-        query: {
-            query_string: {
-                query: "*"
-            }
-        }
-    });
+let req = SearchRequest::for_index("_all", empty_body());
 
-    SearchRequest::for_index("_all", body)
-};
-
-// Send the request and read the response as a `SearchResponse`
 let response = client.request(req) // 1
                      .send() // 2
                      .and_then(into_response::<SearchResponse<Value>>); // 3
@@ -295,9 +283,9 @@ Alternatively, call [`ResponseBuilder.into_raw`][ResponseBuilder.into_raw] on a 
 # let client = Client::new(params).unwrap();
 # let req = PingRequest::new();
 let mut response = client.request(req)
-                     .send()
-                     .and_then(into_raw)
-                     .unwrap();
+                         .send()
+                         .and_then(into_raw)
+                         .unwrap();
 
 let mut body = String::new();
 response.read_to_string(&mut body).unwrap();
