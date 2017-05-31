@@ -9,6 +9,7 @@ extern crate elastic;
 
 use std::env;
 use std::io::Read;
+use time::Duration;
 use stopwatch::Stopwatch;
 
 use elastic::http;
@@ -52,6 +53,9 @@ fn main() {
         sw.stop();
 
         test::black_box(buf);
+
+        let elapsed = Duration::from_std(sw.elapsed()).unwrap();
+        results.push(elapsed.num_nanoseconds().unwrap());
     }
 
     results.sort();
