@@ -5,8 +5,8 @@
 //! Field serialisation and mapping is all handled in the same place
 //! so it's always in sync.
 
-use elastic::types::prelude::{FieldType, KeywordFieldType, Text, DefaultTextMapping, TextMapping, Keyword,
-                              DefaultKeywordMapping, DocumentType};
+use elastic::types::prelude::{FieldType, KeywordFieldType, Text, DefaultTextMapping, TextMapping,
+                              Keyword, DefaultKeywordMapping, DocumentType};
 
 /// Our main model; an account in the bank.
 #[derive(Debug, Serialize, Deserialize, ElasticType)]
@@ -75,12 +75,12 @@ impl TextMapping for EmailMapping {
 #[cfg(test)]
 mod tests {
     use serde_json;
-    use elastic::types::prelude::Document;
+    use elastic::types::prelude::IndexDocumentMapping;
     use super::{mapping, Account};
 
     #[test]
     fn deserialize() {
-        let ser = json_str!({
+        let ser = json!({
             "account_number":1,
             "balance":39225,
             "firstname":"Amber",
@@ -94,16 +94,16 @@ mod tests {
             "state":"IL"
         });
 
-        let de: Result<Account, _> = serde_json::from_str(&ser);
+        let de: Result<Account, _> = serde_json::from_value(ser);
 
         assert!(de.is_ok());
     }
 
     #[test]
     fn serialise_mapping() {
-        let ser = serde_json::to_string(&Document::from(mapping())).unwrap();
+        let ser = serde_json::to_value(&IndexDocumentMapping::from(mapping())).unwrap();
 
-        let expected = json_str!({
+        let expected = json!({
             "properties":{
                 "account_number":{
                     "type":"integer"

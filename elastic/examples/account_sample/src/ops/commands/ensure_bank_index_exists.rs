@@ -1,7 +1,8 @@
 use ops::Client;
 use std::io::Error as IoError;
 use serde_json::{Value, Error as JsonError};
-use elastic::client::requests::{IntoBody, IndicesExistsRequest, IndicesCreateRequest};
+use elastic::client::requests::IndicesExistsRequest;
+use elastic::client::responses::CommandResponse;
 use elastic::error::Error as ResponseError;
 
 use model;
@@ -12,37 +13,28 @@ pub trait EnsureBankIndexExists {
 
 impl EnsureBankIndexExists for Client {
     fn ensure_bank_index_exists(&self) -> Result<(), EnsureBankIndexExistsError> {
-        let exists = self.io.request(exists()).send()?;
+        let exists = self.io
+            .request(IndicesExistsRequest::for_index(model::index::name()))
+            .send()?;
 
         match exists.status() {
             // Success, do nothing
             200 => (),
             // Not found, create the index
             404 => {
-                let body = model::index::body()?;
-
-                self.io.request(put(body))
-                    .send()
-                    .and_then(|res| res.response::<Value>())?;
-            },
+                self.io
+                    .create_index(model::index::name())
+                    .body(model::index::body().to_string())
+                    .send()?;
+            }
             // Some other response, deserialise
             _ => {
-                exists.response::<Value>()?;
+                exists.into_response::<CommandResponse>()?;
             }
         }
 
         Ok(())
     }
-}
-
-fn exists() -> IndicesExistsRequest<'static> {
-    IndicesExistsRequest::for_index(model::index::name())
-}
-
-fn put<B>(body: B) -> IndicesCreateRequest<'static, B>
-    where B: IntoBody
-{
-    IndicesCreateRequest::for_index(model::index::name(), body)
 }
 
 quick_error!{
@@ -60,17 +52,5 @@ quick_error!{
             from()
             display("failed to ensure index exists: {}", err)
         }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    
-    #[test]
-    fn put_request_url() {
-        let req = put(vec![]);
-
-        assert_eq!("/bank-sample", req.url.as_ref());
     }
 }

@@ -14,5 +14,3 @@ quick-error = "*"
 serde = "*"
 serde_json = "*"
 serde_derive = "*"
-
-json_str = "*"

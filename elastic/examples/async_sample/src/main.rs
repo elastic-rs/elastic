@@ -15,10 +15,9 @@ extern crate futures_cpupool;
 extern crate quick_error;
 
 use std::str;
-use std::io::Read;
 
 use elastic_requests::BulkRequest;
-use elastic_responses::BulkErrorsResponse;
+use elastic_responses::{parse, BulkResponse};
 
 use tokio_core::reactor::Core;
 use futures::{Future, Stream};
@@ -46,24 +45,25 @@ fn main() {
     let buffer_future = pool.spawn(buffer_future);
 
     // Get a future to send a bulk request
-    let req = BulkRequest::for_index_ty("bulk-test", "bulk-ty", body);
-    let req_future = client.request(hyper_req::build(&url, req))
+    let req = BulkRequest::for_index_ty("bulk-current", "bulk-ty", body);
+
+    let req_future = client
+        .request(hyper_req::build(&url, req))
         .and_then(|res| {
+            let status: u16 = res.status().into();
+
             // Buffer the response and parse as a bulk response
             res.body()
-                .fold(Vec::new(), |mut buf, chunk| {
-                    chunk.as_ref()
-                        .read_to_end(&mut buf)
-                        .map(|_| buf)
-                })
-                .and_then(|buf| {
+                .concat()
+                .and_then(move |buf| {
                     // Do the deserialisation on the CPU pool
                     pool.spawn_fn(move || {
-                        let res: BulkErrorsResponse = serde_json::from_slice(&buf).unwrap();
-                        println!("{:?}", res);
+                                      let res: BulkResponse =
+                                          parse().from_slice(status, &buf).unwrap();
+                                      println!("{:?}", res);
 
-                        ok(())
-                    })
+                                      ok(())
+                                  })
                 })
         })
         .map_err(|e| e.into());

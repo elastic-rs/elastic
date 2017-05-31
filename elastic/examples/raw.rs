@@ -1,6 +1,9 @@
-//! A basic raw usage example.
-//! 
+//! A raw search request.
+//!
 //! NOTE: This sample expects you have a node running on `localhost:9200`.
+//!
+//! This sample demonstrates a raw search request where the body is read into a `String` rather
+//! than being deserialised.
 
 extern crate elastic;
 
@@ -17,15 +20,12 @@ fn main() {
     let req = SearchRequest::for_index("_all", r#"{ "query": { "match_all": {} } }"#);
 
     // Send the request and process the response.
-    let mut res = client.request(req)
-                        .send()
-                        .map(|res| res.raw())
-                        .unwrap();
+    let mut res = client.request(req).send().and_then(into_raw).unwrap();
 
     // Check if the response is in the 200 range
     match res.status() {
         200...299 => (),
-        status => panic!("error: {:?}", status)
+        status => panic!("error: {:?}", status),
     }
 
     // Read the response body to a string

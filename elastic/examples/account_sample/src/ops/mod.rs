@@ -10,16 +10,14 @@ use elastic::error::Result;
 /// functionality from the underlying client to consumers.
 /// In an application where commands and queries aren't just executed in
 /// the `main` function, you can use a `T: EnsureBankIndexExists` type bound.
-pub struct Client { 
-	io: EsClient 
+pub struct Client {
+    io: EsClient,
 }
 
 impl Client {
-	pub fn new(params: RequestParams) -> Result<Self> {
-		let client = EsClient::new(params)?;
+    pub fn new(params: RequestParams) -> Result<Self> {
+        let client = EsClient::new(params)?;
 
-		Ok(Client {
-			io: client
-		})
-	}
+        Ok(Client { io: client })
+    }
 }
