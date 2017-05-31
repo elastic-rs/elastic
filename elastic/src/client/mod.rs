@@ -8,13 +8,13 @@ This module contains the HTTP client, as well as request and response types.
 Some commonly used endpoints have high-level builder methods you can use to configure requests easily.
 They're exposed as methods on the `Client`:
 
-Client method | Elasticsearch API | Raw request type | Response type
-------------- | ----------------- | ------------ | -------------
-[`search`]()      | [Query DSL]()     | [`SearchRequest`]() | [`SearchResponse`]()
-[`get_document`]()         | [Get Document]()  | [`GetRequest`]() | [`GetResponse`]()
-[`index_document`]() | [Put Document]() | [`IndexRequest`]() | [`IndexResponse`]()
-[`put_mapping`]() | [Put Mapping]() | [`IndicesPutMappingRequest`]() | [`CommandResponse`]()
-[`create_index`]() | [Create Index]() | [`IndicesCreateRequest`]() | [`CommandResponse`]()
+Client method                               | Elasticsearch API                  | Raw request type                                        | Response type
+------------------------------------------- | ---------------------------------- | ------------------------------------------------------- | ------------------------------------
+[`search`][Client.search]                   | [Search][docs-search]              | [`SearchRequest`][SearchRequest]                        | [`SearchResponse`][SearchResponse]
+[`get_document`][Client.get_document]       | [Get Document][docs-get]           | [`GetRequest`][GetRequest]                              | [`GetResponse`][GetResponse]
+[`index_document`][Client.index_document]   | [Index Document][docs-index]       | [`IndexRequest`][IndexRequest]                          | [`IndexResponse`][IndexResponse]
+[`put_mapping`][Client.put_mapping]         | [Put Mapping][docs-mapping]        | [`IndicesPutMappingRequest`][IndicesPutMappingRequest]  | [`CommandResponse`][CommandResponse]
+[`create_index`][Client.create_index]       | [Create Index][docs-create-index]  | [`IndicesCreateRequest`][IndicesCreateRequest]          | [`CommandResponse`][CommandResponse]
 
 All builders follow a standard pattern:
 
@@ -66,7 +66,7 @@ match response {
 # }
 ```
 
-The request builders are wrappers around the [`Client.request`]() method, taking a [raw request type]().
+The request builders are wrappers around the [`Client.request`][Client.request] method, taking a [raw request type][endpoints-mod].
 A `get` request for a value:
 
 ```no_run
@@ -97,10 +97,10 @@ let response = client.request(GetRequest::for_index_ty_id("values", "value", 1))
 
 # Raw request types
 
-Not all endpoints have strongly-typed builders, but all Elasticsearch API endpoints have a specific [raw request type]() that can be used to build a request manually and send with the [`Client.request`]() method.
+Not all endpoints have strongly-typed builders, but all Elasticsearch API endpoints have a specific [raw request type][endpoints-mod] that can be used to build a request manually and send with the [`Client.request`][Client.Request] method.
 The builders described above are just wrappers around these request types, but that doesn't mean raw requests are a second-class API.
 You have more control over how requests are serialised, sent and deserialised using the raw requests API.
-All request endpoints live in the [`endpoints`]() module.
+All request endpoints live in the [`endpoints`][endpoints-mod] module.
 
 The process of sending raw requests is described in more detail below.
 
@@ -111,19 +111,19 @@ Each one exposes Rust traits you can implement to support your own logic but if 
 
 The basic flow from request to response is:
 
-**1)** Turn a concrete [request type](requests/endpoints/index.html) into a [`RequestBuilder`](struct.RequestBuilder.html):
+**1)** Turn a concrete [request type][endpoints-mod] into a [`RequestBuilder`][RequestBuilder]:
 
 ```text
 [RequestType] ---> [Client.request()] ---> [RequestBuilder]
 ```
 
-**2)** Send the [`RequestBuilder`](struct.RequestBuilder.html) and get a [`ResponseBuilder`](struct.ResponseBuilder.html):
+**2)** Send the [`RequestBuilder`][RequestBuilder] and get a [`ResponseBuilder`][ResponseBuilder]:
 
 ```text
 [RequestBuilder.send()] ---> [ResponseBuilder]
 ```
 
-**3)** Parse the [`ResponseBuilder`](struct.ResponseBuilder.html) to a [response type](responses/parse/trait.FromResponse.html#Implementors):
+**3)** Parse the [`ResponseBuilder`][ResponseBuilder] to a [response type][response-types]:
 
 ```text
 [ResponseBuilder.response()] ---> [ResponseType]
@@ -164,7 +164,7 @@ let response = client.request(req) // 1
 
 ### 1. Building raw requests
 
-The [`endpoints`]() module contains code-generated request types for the Elasticsearch REST API.
+The [`endpoints`][endpoints-mod] module contains code-generated request types for the Elasticsearch REST API.
 Each request type expects its parameters upfront and is generic over the request body.
 
 A raw search request:
@@ -212,10 +212,10 @@ let req = {
 
 Both high-level request builders and raw requests have some common builder methods:
 
-- [`params`]() for setting url query parameters
-- [`send`]() for sending the request.
+- [`params`][RequestBuilder.params] for setting url query parameters
+- a `send` method for sending the request.
 For high-level requests this returns a strongly-typed response.
-For raw requests this returns a `HttpResponse`.
+For raw requests this returns a [`ResponseBuilder`][ResponseBuilder].
 
 ```no_run
 # use elastic::prelude::*;
@@ -235,7 +235,7 @@ let response = request_builder.send();
 
 ### 3. Parsing responses
 
-Call `into_response` on a sent request to get a strongly typed response:
+Call [`ResponseBuilder.into_response`][ResponseBuilder.into_response] on a sent request to get a [strongly typed response][response-types]:
 
 ```no_run
 # extern crate serde;
@@ -281,7 +281,7 @@ match response {
 # }
 ```
 
-Alternatively to `into_repsonse`, call `into_raw` on a sent request to get a raw `HttpResponse`:
+Alternatively, call [`ResponseBuilder.into_raw`][ResponseBuilder.into_raw] on a sent request to get a raw [`HttpResponse`][HttpResponse]:
 
 ```no_run
 # extern crate serde;
@@ -304,8 +304,42 @@ response.read_to_string(&mut body).unwrap();
 # }
 ```
 
-The `HttpResponse` implements `Read` so you can buffer out the raw response data.
-For more details see the [`responses`]() module.
+`HttpResponse` implements the standard `Read` trait so you can buffer out the raw response data.
+For more details see the [`responses`][responses-mod] module.
+
+[docs-search]: http://www.elastic.co/guide/en/elasticsearch/reference/current/search-search.html
+[docs-get]: http://www.elastic.co/guide/en/elasticsearch/reference/current/docs-get.html
+[docs-index]: https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html
+[docs-mapping]: https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping.html
+[docs-create-index]: https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-create-index.html
+
+[endpoints-mod]: requests/endpoints/index.html
+[RequestParams]: struct.RequestParams.html
+[Client.request]: struct.Client.html#method.request
+[Client.search]: struct.Client.html#method.search
+[Client.get_document]: struct.Client.html#method.get_document
+[Client.index_document]: struct.Client.html#method.index_document
+[Client.put_mapping]: struct.Client.html#method.put_mapping
+[Client.create_index]: struct.Client.html#method.create_index
+
+[RequestBuilder]: requests/struct.RequestBuilder.html
+[RequestBuilder.params]: requests/struct.RequestBuilder.html#method.params
+[SearchRequest]: requests/endpoints/struct.SearchRequest.html
+[GetRequest]: requests/endpoints/struct.GetRequest.html
+[IndexRequest]: requests/endpoints/struct.IndexRequest.html
+[IndicesPutMappingRequest]: requests/endpoints/struct.IndicesPutMappingRequest.html
+[IndicesCreateRequest]: requests/endpoints/struct.IndicesCreateRequest.html
+
+[responses-mod]: responses/index.html
+[ResponseBuilder]: responses/struct.ResponseBuilder.html
+[ResponseBuilder.into_response]: responses/struct.ResponseBuilder.html#method.into_response
+[ResponseBuilder.into_raw]: responses/struct.ResponseBuilder.html#method.into_raw
+[SearchResponse]: responses/type.SearchResponse.html
+[GetResponse]: responses/type.GetResponse.html
+[IndexResponse]: responses/struct.IndexResponse.html
+[CommandResponse]: responses/struct.CommandResponse.html
+[HttpResponse]: responses/struct.HttpResponse.html
+[response-types]: responses/parse/trait.IsOk.html#implementors
 */
 
 pub mod requests;
@@ -324,8 +358,19 @@ pub use elastic_reqwest::RequestParams;
 /**
 A HTTP client for the Elasticsearch REST API.
 
-The `Client` is a structure that lets you create and send `RequestBuilder`s.
-It's mostly a thin wrapper over a `reqwest::Client`.
+The `Client` is a structure that lets you create and send [`RequestBuilder`][RequestBuilder]s.
+It's mostly a thin wrapper over a `reqwest::Client` and is re-usable.
+
+# Examples
+
+Create a `Client` for an Elasticsearch node at `es_host:9200`:
+
+```no_run
+# use elastic::prelude::*;
+let params = RequestParams::new("http://es_host:9200").url_param("pretty", true);
+
+let client = Client::new(params).unwrap();
+```
 */
 pub struct Client {
     http: HttpClient,
@@ -358,7 +403,7 @@ impl Client {
     let client = Client::new(RequestParams::new("http://eshost:9200")).unwrap();
     ```
     
-    See [`RequestParams`](struct.RequestParams.html) for more configuration options.
+    See [`RequestParams`][RequestParams] for more configuration options.
     */
     pub fn new(params: RequestParams) -> Result<Self> {
         let client = HttpClient::new()?;

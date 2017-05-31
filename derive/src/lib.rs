@@ -1,10 +1,10 @@
-//! Elasticsearch Codegen
-//!
-//! Compile-time code generation for Elasticsearch type implementations.
-//! This crate provides custom `derive` attributes for data types in the [`elastic`](https://github.com/elastic-rs/elastic) crate.
-//!
-//! # Links
-//! - [Github](https://github.com/elastic-rs/elastic)
+/*! Elasticsearch Codegen
+
+Compile-time code generation for Elasticsearch type implementations.
+This crate provides custom `derive` attributes for data types in the [`elastic`][github] crate.
+
+[github]: https://github.com/elastic-rs/elastic
+*/
 
 extern crate proc_macro;
 

@@ -13,15 +13,15 @@ The client provides a flexible API with a default happy-path so you can customis
 way you use it.
 It depends heavily on the following crates:
 
-- [`reqwest`/`hyper`](https://github.com/seanmonstar/reqwest) as the default HTTP layer
-- [`serde`/`serde_json`](https://serde.rs/) for serialisation.
+- [`reqwest`/`hyper`][reqwest] as the default HTTP layer
+- [`serde`/`serde_json`][serde] for serialisation.
 
 `elastic` is designed to scale up to the complexity of Elasticsearch's API, and with the complexity
 of the environments Elasticsearch is deployed in.
 
 # Usage
 
-This crate is on [crates.io](https://crates.io/crates/elastic).
+This crate is on [crates.io][crates-io].
 To get stated, add `elastic` to your `Cargo.toml`:
 
 ```ignore
@@ -46,19 +46,13 @@ Then reference in your crate root:
 extern crate elastic;
 #[macro_use]
 extern crate elastic_derive;
-
-// Optional
-extern crate serde;
-extern crate serde_json;
-#[macro_use]
-extern crate serde_derive;
 ```
 
 # Examples
 
 ## Creating a client
 
-The [`Client`]() type is used to make interact with an Elasticsearch cluster.
+The [`Client`][Client] type is used to make interact with an Elasticsearch cluster.
 The `Client` will use a default set of request parameters that are passed to each request.
 Properties like the host and query parameters can be configured for all requests:
 
@@ -87,7 +81,7 @@ let response = client.search::<Value>()
 # }
 ```
 
-For more details, see the [`client`](client/index.html) and [`requests`](client/requests/index.html) modules.
+For more details, see the [`client`][client-mod] and [`requests`][requests-mod] modules.
 
 ## Making requests
 
@@ -96,7 +90,7 @@ The client offers high-level request builders for some common Elasticsearch oper
 
 ### Getting and Indexing documents
 
-The [Document Mapping API]() is provided as a custom derive plugin and set of Rust traits.
+The [Document Mapping API][docs-mapping] is provided as a custom derive plugin and set of Rust traits.
 Derive `Serialize`, `Deserialize` and `ElasticType` on your document types:
 
 ```no_run
@@ -115,7 +109,7 @@ struct MyType {
 # }
 ```
 
-Call [`Client.put_mapping`]() to ensure an index has the right mapping for your document types:
+Call [`Client.put_mapping`][Client.put_mapping] to ensure an index has the right mapping for your document types:
 
 ```no_run
 # extern crate serde;
@@ -133,7 +127,7 @@ client.put_mapping::<MyType>(index("myindex"))
 # }
 ```
 
-Then call [`Client.index_document`]() to index documents in Elasticsearch:
+Then call [`Client.index_document`][Client.index_document] to index documents in Elasticsearch:
 
 ```no_run
 # extern crate serde;
@@ -161,7 +155,7 @@ let response = client.index_document(index("myindex"), id(doc.id), doc)
 # }
 ```
 
-Call [`Client.get_document`]() to retrieve a single document from an index:
+Call [`Client.get_document`][Client.get_document] to retrieve a single document from an index:
 
 ```no_run
 # extern crate serde;
@@ -187,11 +181,11 @@ if let Some(doc) = response.source {
 # }
 ```
 
-For more details on document types, see the [`types`](types/index.html) module.
+For more details on document types, see the [`types`][types-mod] module.
 
 ### Searching documents
 
-Call [`Client.search`]() to execute [Query DSL]() queries:
+Call [`Client.search`][Client.search] to execute [Query DSL][docs-search] queries:
 
 ```no_run
 # extern crate serde;
@@ -227,18 +221,41 @@ for hit in response.hits() {
 
 This crate is mostly a meta-package composed of a number of smaller pieces including:
 
-- [`elastic_reqwest`]() HTTP transport
-- [`elastic_requests`]() API request builders
-- [`elastic_responses`]() API response parsers
-- [`elastic_types`]() tools for document and mapping APIs
+- [`elastic_reqwest`][elastic-reqwest] HTTP transport
+- [`elastic_requests`][elastic-requests] API request builders
+- [`elastic_responses`][elastic-responses] API response parsers
+- [`elastic_types`][elastic-types] tools for document and mapping APIs
 
 This crate glues these libraries together with some simple assumptions
 about how they're going to be used.
 
 # Links
 
-- [Elasticsearch Docs](https://www.elastic.co/guide/en/elasticsearch/reference/master/index.html)
-- [Github](https://github.com/elastic-rs/elastic)
+- [Elasticsearch Docs][docs-root]
+- [Github][github]
+
+[reqwest]: https://github.com/seanmonstar/reqwest
+[serde]: https://serde.rs/
+[crates-io]: https://crates.io/crates/elastic
+[github]: https://github.com/elastic-rs/elastic
+
+[elastic-reqwest]: https://github.com/elastic-rs/elastic-reqwest
+[elastic-requests]: https://github.com/elastic-rs/elastic-requests
+[elastic-responses]: https://github.com/elastic-rs/elastic-responses
+[elastic-types]: https://github.com/elastic-rs/elastic-types
+
+[docs-root]: https://www.elastic.co/guide/en/elasticsearch/reference/current/index.html
+[docs-mapping]: https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping.html
+[docs-search]: http://www.elastic.co/guide/en/elasticsearch/reference/current/search-search.html
+
+[Client]: client/struct.Client.html
+[Client.put_mapping]: client/struct.Client.html#method.put_mapping
+[Client.index_document]: client/struct.Client.html#method.index_document
+[Client.get_document]: client/struct.Client.html#method.get_document
+[Client.search]: client/struct.Client.html#method.search
+[client-mod]: client/index.html
+[requests-mod]: client/requests/index.html
+[types-mod]: types/index.html
 */
 
 #![deny(warnings)]

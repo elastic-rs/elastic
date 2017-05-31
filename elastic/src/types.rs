@@ -40,22 +40,22 @@ All Elasticsearch types implement the base `FieldType<M: FieldMapping<F>, F>` tr
 
 The following table illustrates the types provided by `elastic`:
 
- Elasticsearch Type  | Rust Type (Default Mapping) | Crate     | Rust Type (Custom Mapping)                                      | Format Type
- ------------------- | --------------------------- | --------- | --------------------------------------------------------------- | -----------------
- `object`            | -                           | -         | type implementing [`DocumentType<M>`](document/index.html)      | -
- `integer`           | `i32`                       | `std`     | [`Integer<M>`](number/index.html)                               | -
- `long`              | `i64`                       | `std`     | [`Long<M>`](number/index.html)                                  | -
- `short`             | `i16`                       | `std`     | [`Short<M>`](number/index.html)                                 | -
- `byte`              | `i8`                        | `std`     | [`Byte<M>`](number/index.html)                                  | -
- `float`             | `f32`                       | `std`     | [`Float<M>`](number/index.html)                                 | -
- `double`            | `f64`                       | `std`     | [`Double<M>`](number/index.html)                                | -
- `keyword`           | -                           | -         | [`Keyword<M>`](string/index.html)                               | -
- `text`              | `String`                    | `std`     | [`Text<M>`](string/index.html)                                  | -
- `boolean`           | `bool`                      | `std`     | [`Boolean<M>`](boolean/index.html)                              | -
- `ip`                | `Ipv4Addr`                  | `std`     | [`Ip<M>`](ip/index.html)                                        | -
- `date`              | `DateTime<UTC>`             | `chrono`  | [`Date<F, M>`](date/index.html)                                 | `DateFormat`
- `geo_point`         | `Point`                     | `geo`     | [`GeoPoint<F, M>`](geo/point/index.html)                        | `GeoPointFormat`
- `geo_shape`         | -                           | `geojson` | [`GeoShape<M>`](geo/shape/index.html)                           | -
+ Elasticsearch Type  | Rust Type (Default Mapping) | Crate     | Rust Type (Custom Mapping)                               | Format Type
+ ------------------- | --------------------------- | --------- | -------------------------------------------------------- | -----------------
+ `object`            | -                           | -         | type implementing [`DocumentType<M>`][document-mod]      | -
+ `integer`           | `i32`                       | `std`     | [`Integer<M>`][number-mod]                               | -
+ `long`              | `i64`                       | `std`     | [`Long<M>`][number-mod]                                  | -
+ `short`             | `i16`                       | `std`     | [`Short<M>`][number-mod]                                 | -
+ `byte`              | `i8`                        | `std`     | [`Byte<M>`][number-mod]                                  | -
+ `float`             | `f32`                       | `std`     | [`Float<M>`][number-mod]                                 | -
+ `double`            | `f64`                       | `std`     | [`Double<M>`][number-mod]                                | -
+ `keyword`           | -                           | -         | [`Keyword<M>`][string-mod]                               | -
+ `text`              | `String`                    | `std`     | [`Text<M>`][string-mod]                                  | -
+ `boolean`           | `bool`                      | `std`     | [`Boolean<M>`][boolean-mod]                              | -
+ `ip`                | `Ipv4Addr`                  | `std`     | [`Ip<M>`][ip-mod]                                        | -
+ `date`              | `DateTime<UTC>`             | `chrono`  | [`Date<F, M>`][date-mod]                                 | `DateFormat`
+ `geo_point`         | `Point`                     | `geo`     | [`GeoPoint<F, M>`][geopoint-mod]                         | `GeoPointFormat`
+ `geo_shape`         | -                           | `geojson` | [`GeoShape<M>`][geoshape-mod]                            | -
 
 ## Mapping
 
@@ -81,7 +81,7 @@ This is a particularly helpful feature for serialisation.
 
 ## Derive document mapping
 
-Document types must derive `serde`'s [serialisation traits]().
+Document types must derive `serde`'s [serialisation traits][serde].
 Use simple generic types to annotate your Rust structures with Elasticsearch
 document field mappings:
 
@@ -257,6 +257,17 @@ Serialising `MyType`s mapping will produce the following json:
 # assert_eq!(expected, mapping);
 # }
 ```
+
+[serde]: https://serde.rs
+
+[document-mod]: document/index.html
+[number-mod]: number/index.html
+[string-mod]: string/index.html
+[boolean-mod]: boolean/index.html
+[ip-mod]: ip/index.html
+[date-mod]: date/index.html
+[geopoint-mod]: geo/point/index.html
+[geoshape-mod]: geo/shape/index.html
 */
 
 pub use elastic_types::{document, boolean, date, geo, ip, number, string, prelude};

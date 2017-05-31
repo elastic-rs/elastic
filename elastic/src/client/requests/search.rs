@@ -7,7 +7,11 @@ use client::requests::{empty_body, DefaultBody, IntoBody, Index, Type, SearchReq
                        RequestBuilder};
 use client::responses::SearchResponse;
 
-/** A builder for a [`search`]() request. */
+/** 
+A builder for a [`Client.search`][Client.search] request. 
+
+[Client.search]: ../struct.Client.html#method.search
+*/
 pub struct SearchRequestBuilder<TDocument, TBody> {
     index: Option<Index<'static>>,
     ty: Option<Type<'static>>,
@@ -17,11 +21,11 @@ pub struct SearchRequestBuilder<TDocument, TBody> {
 
 impl Client {
     /** 
-    Create a [`RequestBuilder` for a search request](). 
+    Create a [`RequestBuilder` for a search request][RequestBuilder.search]. 
 
     # Examples
 
-    Run a simple [query string]() query for a [`DocumentType`]() called `MyType`:
+    Run a simple [Query Stringx][docs-querystring] query for a [`DocumentType`][documents-mod] called `MyType`:
     
     ```no_run
     # extern crate serde;
@@ -53,7 +57,7 @@ impl Client {
     # }
     ```
 
-    For more details on document types and mapping, see the [`types`]() module.
+    For more details on document types and mapping, see the [`types`][types-mod] module.
 
     It's also possible to use `serde_json::Value`s as documents when searching:
 
@@ -71,6 +75,11 @@ impl Client {
                          .unwrap();
     # }
     ```
+
+    [RequestBuilder.search]: requests/struct.RequestBuilder.html#search-builder
+    [types-mod]: ../types/index.html
+    [documents-mod]: ../types/document/index.html
+    [docs-querystring]: https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html
     */
     pub fn search<'a, TDocument>
         (&'a self)
@@ -107,9 +116,12 @@ impl<TDocument, TBody> SearchRequestBuilder<TDocument, TBody>
 /** 
 # Search request builder
 
-A request builder for a [`Query DSL`]() query.
+A request builder for a [Search][docs-search] query.
 
-Call [`Client.search`]() to get a `RequestBuilder` for a search request.
+Call [`Client.search`][Client.search] to get a `RequestBuilder` for a search request.
+
+[Client.search]: ../struct.Client.html#method.search
+[docs-search]: http://www.elastic.co/guide/en/elasticsearch/reference/current/search-search.html
 */
 impl<'a, TDocument, TBody> RequestBuilder<'a, SearchRequestBuilder<TDocument, TBody>, TBody>
     where TDocument: DeserializeOwned,

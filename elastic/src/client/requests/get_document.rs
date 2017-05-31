@@ -7,7 +7,12 @@ use client::requests::{DefaultBody, Index, Type, Id, GetRequest, RequestBuilder}
 use client::responses::GetResponse;
 use types::document::DocumentType;
 
-/** A builder for a [`get_document`]() request. */
+/** 
+
+A builder for a [`Client.get_document`][Client.get_document] request. 
+
+[Client.get_document]: ../struct.Client.html#method.get_document
+*/
 pub struct GetRequestBuilder<TDocument> {
     index: Index<'static>,
     ty: Type<'static>,
@@ -17,11 +22,11 @@ pub struct GetRequestBuilder<TDocument> {
 
 impl Client {
     /** 
-    Create a [`RequestBuilder` for a get request]().
+    Create a [`RequestBuilder` for a get request][RequestBuilder.get_document].
 
     # Examples
 
-    Get a [`DocumentType`]() called `MyType` with an id of `1`:
+    Get a [`DocumentType`][documents-mod] called `MyType` with an id of `1`:
     
     ```no_run
     # extern crate serde;
@@ -49,7 +54,7 @@ impl Client {
     # }
     ```
 
-    For more details on document types, see the [`types`]() module.
+    For more details on document types, see the [`types`][types-mod] module.
 
     Get the same document as a `serde_json::Value`:
 
@@ -69,6 +74,10 @@ impl Client {
                          .unwrap();
     # }
     ```
+
+    [RequestBuilder.get_document]: requests/struct.RequestBuilder.html#get-document-builder
+    [types-mod]: ../types/index.html
+    [documents-mod]: ../types/document/index.html
     */
     pub fn get_document<'a, TDocument>
         (&'a self,
@@ -99,9 +108,12 @@ impl<TDocument> GetRequestBuilder<TDocument> {
 /** 
 # Get document builder
 
-A request builder for a [`Get Document`]() request.
+A request builder for a [Get Document][docs-get] request.
 
-Call [`Client.get_document`]() to get a `RequestBuilder` for a get document request.
+Call [`Client.get_document`][Client.get_document] to get a `RequestBuilder` for a get document request.
+
+[Client.get_document]: ../struct.Client.html#method.get_document
+[docs-get]: http://www.elastic.co/guide/en/elasticsearch/reference/current/docs-get.html
 */
 impl<'a, TDocument> RequestBuilder<'a, GetRequestBuilder<TDocument>, DefaultBody>
     where TDocument: DeserializeOwned + DocumentType

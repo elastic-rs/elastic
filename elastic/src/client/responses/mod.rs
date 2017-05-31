@@ -1,8 +1,11 @@
 /*!
 Response types for the Elasticsearch REST API.
 
-All [high-level builders]() return one of these response types for you.
-This module also contains helpers that can be used to parse responses from a raw [`HttpResponse`]().
+All [high-level builders][request-builders] return one of these response types for you.
+This module also contains helpers that can be used to parse responses from a raw [`HttpResponse`][HttpResponse].
+
+[HttpResponse]: struct.HttpResponse.html
+[request-builders]: ../index.html#request-builders
 */
 
 pub mod parse;
@@ -10,15 +13,14 @@ pub mod parse;
 use std::io::{Read, Result as IoResult};
 use serde::de::DeserializeOwned;
 use elastic_reqwest::ParseResponse;
-use elastic_reqwest::res::{SearchResponseOf, GetResponseOf, parse};
+use elastic_reqwest::res::parse;
 use reqwest::Response as RawResponse;
 
 use error::*;
 use client::IntoResponse;
 use self::parse::IsOk;
 
-pub use elastic_reqwest::res::{AggregationIterator, Aggregations, Hit, Hits, Shards};
-pub use elastic_reqwest::res::{CommandResponse, IndexResponse, PingResponse, BulkResponse,
+pub use elastic_reqwest::res::{SearchResponseOf, GetResponseOf, AggregationIterator, Aggregations, Hit, Hits, Shards, CommandResponse, IndexResponse, PingResponse, BulkResponse,
                                BulkErrorsResponse, BulkItem, BulkItems, BulkItemError, BulkAction};
 
 /**
@@ -53,9 +55,9 @@ impl ResponseBuilder {
     /**
     Parse an API response type from the HTTP body.
     
-    This will consume the `ResponseBuilder` and return a concrete response type or an error.
+    This will consume the `ResponseBuilder` and return a [concrete response type][response-types] or an error.
     
-    The response is parsed according to the `FromResponse` mplementation for `T` that will inspect the response and either return an `Ok(T)` or an `Err(ApiError)`.
+    The response is parsed according to the `IsOk` implementation for `T` that will inspect the response and either return an `Ok(T)` or an `Err(ApiError)`.
     
     # Examples
     
@@ -102,6 +104,8 @@ impl ResponseBuilder {
                          .and_then(into_response::<Value>);
     # }
     ```
+
+    [response-types]: parse/trait.IsOk.html#implementors
     */
     pub fn into_response<T>(self) -> Result<T>
         where T: IsOk + DeserializeOwned
@@ -115,13 +119,14 @@ impl ResponseBuilder {
 /**
 A generic Search API response.
 
-For responses that contain multiple document types, use
-`SearchResponse<serde_json::Value>`.
+For responses that contain multiple document types, use `SearchResponse<serde_json::Value>`.
 
-This type won't parse if you've applied any [response filters]().
-If you need to tweak the shape of the search response you can
-define your own response type and implement `IsOk` for it.
-See the [`parse`](parse/index.html) mod for more details.
+This type won't parse if you've applied any [response filters][docs-response-filtering].
+If you need to tweak the shape of the search response you can define your own response type and implement `IsOk` for it.
+See the [`parse`][parse-mod] mod for more details.
+
+[parse-mod]: parse/index.html
+[docs-response-filtering]: https://www.elastic.co/guide/en/elasticsearch/reference/current/common-options.html#common-options-response-filtering
 */
 pub type SearchResponse<T> = SearchResponseOf<Hit<T>>;
 

@@ -4,7 +4,11 @@ use client::requests::{empty_body, DefaultBody, IntoBody, Index, IndicesCreateRe
                        RequestBuilder};
 use client::responses::CommandResponse;
 
-/** A builder for a [`create_index`]() request. */
+/** 
+A builder for a [`Client.create_index`][Client.create_index] request. 
+
+[Client.create_index]: ../struct.Client.html#method.create_index
+*/
 pub struct CreateIndexRequestBuilder<TBody> {
     index: Index<'static>,
     body: TBody,
@@ -12,7 +16,7 @@ pub struct CreateIndexRequestBuilder<TBody> {
 
 impl Client {
     /** 
-    Create a [`RequestBuilder` for a create index request]().
+    Create a [`RequestBuilder` for a create index request][RequestBuilder.create_index].
 
     # Examples
     
@@ -28,7 +32,7 @@ impl Client {
     assert!(response.acknowledged);
     ```
 
-    Create an index with settings and document mappings for a [`DocumentType`]() called `MyType`:
+    Create an index with settings and document mappings for a [`DocumentType`][documents-mod] called `MyType`:
 
     ```no_run
     # extern crate serde;
@@ -64,7 +68,11 @@ impl Client {
     # }
     ```
 
-    For more details on document types and mapping, see the [`types`]() module.
+    For more details on document types and mapping, see the [`types`][types-mod] module.
+
+    [RequestBuilder.create_index]: requests/struct.RequestBuilder.html#create-index-builder
+    [types-mod]: ../types/index.html
+    [documents-mod]: ../types/document/index.html
     */
     pub fn create_index<'a>
         (&'a self,
@@ -90,9 +98,12 @@ impl<TBody> CreateIndexRequestBuilder<TBody>
 /** 
 # Create index builder
 
-A request builder for a [`Create Index`]() request.
+A request builder for a [Create Index][docs-create-index] request.
 
-Call [`Client.create_index`]() to get a `RequestBuilder` for a create index request.
+Call [`Client.create_index`][Client.create_index] to get a `RequestBuilder` for a create index request.
+
+[Client.create_index]: ../struct.Client.html#method.create_index
+[docs-create-index]: https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-create-index.html
 */
 impl<'a, TBody> RequestBuilder<'a, CreateIndexRequestBuilder<TBody>, TBody>
     where TBody: IntoBody

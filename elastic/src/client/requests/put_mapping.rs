@@ -8,7 +8,11 @@ use client::requests::{Index, Type, IndicesPutMappingRequest, RequestBuilder};
 use client::responses::CommandResponse;
 use types::document::{FieldType, DocumentType, IndexDocumentMapping};
 
-/** A builder for a [`put_mapping`]() request. */
+/** 
+A builder for a [`Client.put_mapping`][Client.put_mapping] request. 
+
+[Client.put_mapping]: ../struct.Client.html#method.put_mapping
+*/
 pub struct PutMappingRequestBuilder<TDocument> {
     index: Index<'static>,
     ty: Type<'static>,
@@ -17,11 +21,11 @@ pub struct PutMappingRequestBuilder<TDocument> {
 
 impl Client {
     /** 
-    Create a [`RequestBuilder` for a put mapping request](). 
+    Create a [`RequestBuilder` for a put mapping request][RequestBuilder.put_mapping]. 
     
     # Examples
 
-    Put the document mapping for a [`DocumentType`]() called `MyType`:
+    Put the document mapping for a [`DocumentType`][documents-mod] called `MyType`:
 
     ```no_run
     # extern crate serde;
@@ -39,7 +43,11 @@ impl Client {
     # }
     ```
 
-    For more details on document types and mapping, see the [`types`]() module.
+    For more details on document types and mapping, see the [`types`][types-mod] module.
+
+    [RequestBuilder.put_mapping]: requests/struct.RequestBuilder.html#put-mapping-builder
+    [types-mod]: ../types/index.html
+    [documents-mod]: ../types/document/index.html
     */
     pub fn put_mapping<'a, TDocument>
         (&'a self,
@@ -72,9 +80,12 @@ impl<TDocument> PutMappingRequestBuilder<TDocument>
 /** 
 # Put mapping builder
 
-A request builder for a [`Put Mapping`]() request.
+A request builder for a [Put Mapping][docs-mapping] request.
 
-Call [`Client.put_mapping`]() to get a `RequestBuilder` for a put mapping request.
+Call [`Client.put_mapping`][Client.put_mapping] to get a `RequestBuilder` for a put mapping request.
+
+[Client.put_mapping]: ../struct.Client.html#method.put_mapping
+[docs-mapping]: https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping.html
 */
 impl<'a, TDocument> RequestBuilder<'a, PutMappingRequestBuilder<TDocument>, TDocument>
     where TDocument: DocumentType

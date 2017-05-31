@@ -7,7 +7,11 @@ use client::requests::{Index, Type, Id, IndexRequest, RequestBuilder};
 use client::responses::IndexResponse;
 use types::document::DocumentType;
 
-/** A builder for an [`index_document`]() request. */
+/** 
+A builder for an [`Client.index_document`][Client.index_document] request. 
+
+[Client.index_document]: ../struct.Client.html#method.index_document
+*/
 pub struct IndexRequestBuilder<TDocument> {
     index: Index<'static>,
     ty: Type<'static>,
@@ -18,11 +22,11 @@ pub struct IndexRequestBuilder<TDocument> {
 impl Client {
     /** 
     
-    Create a [`RequestBuilder` for an index request]().
+    Create a [`RequestBuilder` for an index request][RequestBuilder.index_document].
 
     # Examples
 
-    Index a [`DocumentType`]() called `MyType` with an id of `1`:
+    Index a [`DocumentType`][documents-mod] called `MyType` with an id of `1`:
 
     ```no_run
     # extern crate serde;
@@ -50,7 +54,11 @@ impl Client {
     # }
     ```
 
-    For more details on document types and mapping, see the [`types`]() module.
+    For more details on document types and mapping, see the [`types`][types-mod] module.
+    
+    [RequestBuilder.index_document]: requests/struct.RequestBuilder.html#index-document-builder
+    [types-mod]: ../types/index.html
+    [documents-mod]: ../types/document/index.html
     */
     pub fn index_document<'a, TDocument>
         (&'a self,
@@ -86,9 +94,12 @@ impl<TDocument> IndexRequestBuilder<TDocument>
 /** 
 # Index document builder
 
-A request builder for an [`Index`]() request.
+A request builder for an [Index][docs-index] request.
 
-Call [`Client.index_doocument`]() to get a `RequestBuilder` for an indexrequest.
+Call [`Client.index_document`][Client.index_document] to get a `RequestBuilder` for an index request.
+
+[Client.index_document]: ../struct.Client.html#method.index_document
+[docs-index]: https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html
 */
 impl<'a, TDocument> RequestBuilder<'a, IndexRequestBuilder<TDocument>, TDocument>
     where TDocument: Serialize

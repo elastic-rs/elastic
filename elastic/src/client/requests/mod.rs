@@ -49,10 +49,10 @@ pub struct RequestBuilder<'a, TRequest, TBody> {
 
 impl Client {
     /**
-    Create a raw `RequestBuilder` that can be configured before sending.
+    Create a [raw `RequestBuilder`][Client.raw_request] that can be configured before sending.
     
-    The `request` method accepts any type that can be converted into a [`HttpRequest<'static>`](requests/struct.HttpRequest.html),
-    which includes the endpoint types in the [`requests`](requests/endpoints/index.html) module.
+    The `request` method accepts any type that can be converted into a [`HttpRequest<'static>`][HttpRequest],
+    which includes the endpoint types in the [`endpoints`][endpoints-mod] module.
     
     # Examples
     
@@ -72,6 +72,10 @@ impl Client {
 
     println!("cluster: {}", ping.name);
     ```
+
+    [HttpRequest]: requests/struct.HttpRequest.html
+    [Client.raw_request]: requests/struct.RequestBuilder.html#raw-request-builder
+    [endpoints-mod]: requests/endpoints/index.html
     */
     pub fn request<'a, TRequest, TBody>(&'a self,
                                         req: TRequest)
@@ -140,9 +144,12 @@ impl<'a, TRequest, TBody> RequestBuilder<'a, TRequest, TBody>
 /** 
 # Raw request builder
 
-A request builder for a [raw request type]().
+A request builder for a [raw request type][endpoints-mod].
 
-Call [`Client.request`]() to get a `RequestBuilder` for a raw request.
+Call [`Client.request`][Client.request] to get a `RequestBuilder` for a raw request.
+
+[Client.request]: ../struct.Client.html#method.request
+[endpoints-mod]: endpoints/index.html
 */
 impl<'a, TRequest, TBody> RequestBuilder<'a, TRequest, TBody>
     where TRequest: Into<HttpRequest<'static, TBody>>,
@@ -151,7 +158,7 @@ impl<'a, TRequest, TBody> RequestBuilder<'a, TRequest, TBody>
     /**
     Send this request and return the response.
     
-    This method consumes the `RequestBuilder` and returns a `ResponseBuilder` that can be used to parse the response.
+    This method consumes the `RequestBuilder` and returns a [`ResponseBuilder`][ResponseBuilder] that can be used to parse the response.
 
     # Examples
 
@@ -171,6 +178,8 @@ impl<'a, TRequest, TBody> RequestBuilder<'a, TRequest, TBody>
                          .unwrap();
     # }
     ```
+
+    [ResponseBuilder]: ../responses/struct.ResponseBuilder.html
     */
     pub fn send(self) -> Result<ResponseBuilder> {
         self.send_raw()
