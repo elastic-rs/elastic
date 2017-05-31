@@ -24,7 +24,20 @@ Version  | Docs
 
 ## Example
 
+Add `elastic` to your `Cargo.toml`:
+
+```toml
+[dependencies]
+elastic = "*"
+elastic_derive = "*"
+serde_json = "*"
+```
+
+Create a `Client` and start making requests:
+
 ```rust
+#[macro_use]
+extern crate elastic_derive;
 #[macro_use]
 extern crate serde_json;
 extern crate elastic;
@@ -60,76 +73,6 @@ for hit in res.hits() {
 
 See the [examples](https://github.com/elastic-rs/elastic/tree/master/elastic/examples) folder for complete samples.
 
-Add `elastic` to your `Cargo.toml`:
-
-```toml
-[dependencies]
-elastic = "*"
-
-# Optional
-
-elastic_derive = "*"
-
-serde = "*"
-serde_derive = "*"
-serde_json = "*"
-
-json_str = "*"
-```
-
-And reference in your crate root:
-
-```rust
-#[macro_use] extern crate json_str;
-#[macro_use] extern crate elastic_derive;
-#[macro_use] extern crate serde_derive;
-
-extern crate elastic;
-extern crate serde;
-extern crate serde_json;
-
-use serde_json::Value;
-use elastic::prelude::*;
-```
-
-### Making requests
-
-Get a client instance:
-
-```rust
-let client = Client::new(RequestParams::default()).unwrap();
-```
-
-Create a search request:
-
-```rust
-let body = json_str!({
-    query: {
-        query_string: {
-            query: "*"
-        }
-    }
-});
-
-let req = SearchRequest::for_index("_all", body);
-```
-
-Send the request and iterate through the returned hits:
-
-```rust
-// SearchResponse works with any Deserialize type
-let res: SearchResponse<Value> = client.request(req)
-                                       .send()
-                                       .and_then(|res| res.response())
-                                       .unwrap();
-
-for hit in res.hits() {
-    println!("{:?}", hit);
-}
-```
-
-See the [docs](https://docs.rs/elastic/*/elastic/) for more details.
-
 ### Building documents
 
 Document mapping is derived at compile-time from your _Plain Old Rust Structures_. Just add a `#[derive(ElasticType)]` attribute:
@@ -144,14 +87,9 @@ struct MyDocument {
 }
 ```
 
-You can then serialise the document mapping as json:
+And you can start using `MyDocument` in `Client` request methods.
 
-```rust
-let doc = Document::from(MyDocument::mapping());
-let mapping = serde_json::to_string(&doc).unwrap();
-```
-
-See the [docs](https://elastic-rs.github.io/elastic/elastic/types/index.html) for more details.
+See the [docs](https://docs.rs/elastic/*/elastic/types/index.html) for more details.
 
 ## Alternatives
 
@@ -161,7 +99,7 @@ If you'd like to use a strongly-typed Query DSL builder see [`rs-es`](https://gi
 
 To provide a full-featured and efficient Elasticsearch client for Rust over (eventually) asynchronous io. Rust gives us a lot of tools for building super-performant but highly accessible libraries, which we aim to continue.
 
-The REST API is provided by a simple [inline JSON macro](https://github.com/KodrAus/json_str) so it's always possible to build any query. This means you don't need to learn another API for interacting with Elasticsearch; queries mocked in [Dev Tools](https://www.elastic.co/blog/found-sense-a-cool-json-aware-interface-to-elasticsearch) can just be copy+pasted into your Rust code.
+The REST API is provided by a simple [inline JSON macro](https://github.com/KodrAus/json_str) or `serde_json`'s [`json!`](https://docs.serde.rs/serde_json/macro.json.html) macro so it's always possible to build any query. This means you don't need to learn another API for interacting with Elasticsearch; queries mocked in [Dev Tools](https://www.elastic.co/blog/found-sense-a-cool-json-aware-interface-to-elasticsearch) can just be copy+pasted into your Rust source.
 
 The core focus of this project is on strong typing over your document types and query responses in Elasticsearch, rather than trying to map the entire Query DSL.
 
