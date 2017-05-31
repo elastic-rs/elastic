@@ -1,22 +1,12 @@
 /*!
 Client-side error types.
 
-The main `Error` type combines the various kinds of errors
-that can occur when interacting with Elasticsearch.
-These include:
-
-- `Api`: an error directly from an Elasticsearch exception,
-like `index_not_found`.
-This is the probably the variant you'll be interested in handling.
-- `Json`: a general error serialising or deserialising json.
-- `Http`: a general error in the http transport.
+The main `Error` type combines the various kinds of errors that can occur when interacting with Elasticsearch.
 
 # Examples
 
-Any method defined in `elastic` that could fail will return a
-`Result<T, Error>` that can be matched on.
-The below example sends a request and then checks the response
-for an `ErrorKind::Api`:
+Any method defined in `elastic` that could fail will return a `Result<T, Error>` that can be matched on.
+The below example sends a request and then checks the response for an `ErrorKind::Api`:
 
 ```no_run
 # use elastic::prelude::*;
@@ -25,8 +15,7 @@ for an `ErrorKind::Api`:
 # let req = PingRequest::new();
 // Send a request.
 // This will return a Result<ResponseBuilder, Error>
-let res = client.request(req)
-                .send();
+let res = client.request(req).send();
 
 match res {
     Ok(response) => {

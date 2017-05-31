@@ -7,8 +7,7 @@ This has the following benefits:
 
 - Your `struct` is the one source of truth for serialisation and mapping.
 There's no extra mapping function to maintain.
-- Mapping is immutable and zero-cost. You don't pay anything at runtime
-for having mapping metadata available.
+- Mapping is immutable and zero-cost. You don't pay anything at runtime for having mapping metadata available.
 
 # Document and data types
 
@@ -16,8 +15,7 @@ Types in Elasticsearch are a combination of _source_ and _mapping_.
 The source is the data (like `42` or `"my string"`) and the mapping is metadata about how to
 interpret and use the data (like the format of a date string).
 
-The approach `elastic` takes to types is to bundle the mapping up as a _Zero Sized Type_,
-which is then bound to a field type as a generic parameter. For example:
+The approach `elastic` takes to types is to bundle the mapping up as a _Zero Sized Type_, which is then bound to a field type as a generic parameter. For example:
 
 ```ignore
 some_field: Boolean<MyMapping>
@@ -59,8 +57,7 @@ The following table illustrates the types provided by `elastic`:
 
 ## Mapping
 
-Having the mapping available at compile-time captures the fact that a mapping is static and tied
-to the data type.
+Having the mapping available at compile-time captures the fact that a mapping is static and tied to the data type.
 
 Where there's a `std` type that's equivalent to an Elasticsearch type (like `i32` for `integer`),
 a default mapping is implemented for that type.
@@ -73,8 +70,8 @@ that type is provided (like `Date`, which implements `Deref<Target = chrono::Dat
 
 ## Formats
 
-For some types (like `Date`), it's helpful to have an extra generic parameter that describes the
-way the data can be interpreted. For most types the format isn't exposed, because there aren't any alternative formats available.
+For some types (like `Date`), it's helpful to have an extra generic parameter that describes the way the data can be interpreted. 
+For most types the format isn't exposed, because there aren't any alternative formats available.
 This is a particularly helpful feature for serialisation.
 
 # Examples
@@ -82,8 +79,7 @@ This is a particularly helpful feature for serialisation.
 ## Derive document mapping
 
 Document types must derive `serde`'s [serialisation traits][serde].
-Use simple generic types to annotate your Rust structures with Elasticsearch
-document field mappings:
+Use simple generic types to annotate your Rust structures with Elasticsearch document field mappings:
 
 ```
 # extern crate elastic;
@@ -173,8 +169,7 @@ This will produce the following JSON:
 # }
 ```
 
-See the table above for a list of all supported datatypes and how to work
-with them.
+See the table above for a list of all supported datatypes and how to work with them.
 
 ## Define custom field data types
 

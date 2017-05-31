@@ -8,6 +8,10 @@ description = "A modular client for the Elasticsearch REST API."
 documentation = "https://docs.rs/elastic/"
 repository = "https://github.com/elastic-rs/elastic"
 
+[badges]
+travis-ci = { repository = "elastic-rs/elastic" }
+appveyor = { repository = "elastic-rs/elastic" }
+
 [features]
 nightly = ["elastic_reqwest/nightly"]
 

@@ -25,7 +25,7 @@ impl Client {
 
     # Examples
 
-    Run a simple [Query Stringx][docs-querystring] query for a [`DocumentType`][documents-mod] called `MyType`:
+    Run a simple [Query String][docs-querystring] query for a [`DocumentType`][documents-mod] called `MyType`:
     
     ```no_run
     # extern crate serde;
@@ -76,7 +76,7 @@ impl Client {
     # }
     ```
 
-    [RequestBuilder.search]: requests/struct.RequestBuilder.html#search-builder
+    [RequestBuilder.search]: requests/struct.RequestBuilder.html#search-request-builder
     [types-mod]: ../types/index.html
     [documents-mod]: ../types/document/index.html
     [docs-querystring]: https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html
