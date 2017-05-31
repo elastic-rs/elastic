@@ -412,7 +412,7 @@ pub fn into_response<T>(res: ResponseBuilder) -> Result<T>
 
 /** Try convert a `ResponseBuilder` into a raw response type. */
 pub fn into_raw(res: ResponseBuilder) -> Result<HttpResponse> {
-    Ok(res.raw())
+    Ok(res.into_raw())
 }
 
 struct IntoResponse(RawResponse);

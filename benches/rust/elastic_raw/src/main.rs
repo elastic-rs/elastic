@@ -44,7 +44,7 @@ fn main() {
         let mut sw = Stopwatch::start_new();
 
         let req = SearchRequest::for_index_ty("bench_index", "bench_doc", BODY);
-        let mut res = client.request(req).send().unwrap().raw();
+        let mut res = client.request(req).send().unwrap().into_raw();
 
         let mut buf = Vec::new();
         res.read_to_end(&mut buf).unwrap();
