@@ -9,7 +9,7 @@ use std::marker::PhantomData;
 use elastic_reqwest::ElasticClient;
 
 use error::*;
-use client::{Client, RequestParams, IntoResponse};
+use client::{Client, RequestParams, IntoResponseBuilder};
 use client::responses::ResponseBuilder;
 
 pub use elastic_reqwest::IntoReqwestBody as IntoBody;
@@ -137,7 +137,7 @@ impl<'a, TRequest, TBody> RequestBuilder<'a, TRequest, TBody>
 
         let res = self.client.http.elastic_req(params, self.req)?;
 
-        Ok(IntoResponse(res).into())
+        Ok(IntoResponseBuilder(res).into())
     }
 }
 
