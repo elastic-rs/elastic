@@ -17,25 +17,29 @@ use elastic_reqwest::res::parse;
 use reqwest::Response as RawResponse;
 
 use error::*;
-use client::IntoResponse;
+use client::IntoResponseBuilder;
 use self::parse::IsOk;
 
 pub use elastic_reqwest::res::{SearchResponseOf, GetResponseOf, AggregationIterator, Aggregations, Hit, Hits, Shards, CommandResponse, IndexResponse, PingResponse, BulkResponse,
                                BulkErrorsResponse, BulkItem, BulkItems, BulkItemError, BulkAction};
-
 /**
 A builder for a response.
 
-This structure wraps the completed HTTP response but gives you
-options for converting it into a concrete type.
+This structure wraps the completed HTTP response but gives you options for converting it into a concrete type.
 You can also `Read` directly from the response body.
 */
-pub struct ResponseBuilder(HttpResponse);
+pub struct ResponseBuilder(RawResponse);
+
+impl Into<ResponseBuilder> for IntoResponseBuilder {
+    fn into(self) -> ResponseBuilder {
+        ResponseBuilder(self.0)
+    }
+}
 
 impl ResponseBuilder {
     /** Get the HTTP status for the response. */
     pub fn status(&self) -> u16 {
-        self.0.status()
+        self.0.status().to_u16()
     }
 
     /**
@@ -54,12 +58,7 @@ impl ResponseBuilder {
     Convert the builder into a raw HTTP response that implements `Read`.
     */
     pub fn into_raw(self) -> HttpResponse {
-        self.0
-    }
-
-    /** Get a raw http response. */
-    fn reqwest_response(self) -> RawResponse {
-        self.into_raw().0
+        HttpResponse(self.0)
     }
 
     /**
@@ -121,7 +120,7 @@ impl ResponseBuilder {
         where T: IsOk + DeserializeOwned
     {
         parse()
-            .from_response(self.reqwest_response())
+            .from_response(self.0)
             .map_err(Into::into)
     }
 }
@@ -156,17 +155,5 @@ impl HttpResponse {
 impl Read for HttpResponse {
     fn read(&mut self, buf: &mut [u8]) -> IoResult<usize> {
         self.0.read(buf)
-    }
-}
-
-impl Into<HttpResponse> for IntoResponse {
-    fn into(self) -> HttpResponse {
-        HttpResponse(self.0)
-    }
-}
-
-impl Into<ResponseBuilder> for IntoResponse {
-    fn into(self) -> ResponseBuilder {
-        ResponseBuilder(self.into())
     }
 }

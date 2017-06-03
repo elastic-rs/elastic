@@ -410,9 +410,10 @@ pub fn into_response<T>(res: ResponseBuilder) -> Result<T>
     res.into_response()
 }
 
-/** Try convert a `ResponseBuilder` into a raw response type. */
+/** Try convert a `ResponseBuilder` into a raw http response. */
 pub fn into_raw(res: ResponseBuilder) -> Result<HttpResponse> {
     Ok(res.into_raw())
 }
 
-struct IntoResponse(RawResponse);
+/** A type that can be converted into a `ResponseBuilder` without being exposed publicly. */
+struct IntoResponseBuilder(RawResponse);

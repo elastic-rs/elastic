@@ -226,8 +226,7 @@ This crate is mostly a meta-package composed of a number of smaller pieces inclu
 - [`elastic_responses`][elastic-responses] API response parsers
 - [`elastic_types`][elastic-types] tools for document and mapping APIs
 
-This crate glues these libraries together with some simple assumptions
-about how they're going to be used.
+This crate glues these libraries together with some simple assumptions about how they're going to be used.
 
 # Links
 
@@ -276,6 +275,7 @@ pub mod http {
     Raw HTTP modules.
 
     These types are re-exported from `reqwest` and used in parts of `elastic`s public API.
+    They may eventually be wrapped and made implementation details.
     */
 
     pub use reqwest::header;
