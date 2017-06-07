@@ -26,7 +26,6 @@ use elastic_responses::parse;
 
 use tokio_core::reactor::Core;
 use futures::{Future, Stream};
-use futures::future::lazy;
 use futures_cpupool::{CpuPool, Builder as CpuPoolBuilder};
 
 use hyper::Client;
@@ -35,7 +34,6 @@ use hyper::client::HttpConnector;
 use error::Error;
 
 type RequestBody = body::FileBody;
-type ResponseBody = body::HttpReadBody;
 
 type AllocatedField = string_cache::DefaultAtom;
 type BulkResponse = elastic_responses::BulkErrorsResponse<AllocatedField, AllocatedField, String>;
@@ -55,8 +53,10 @@ fn main() {
         .body::<RequestBody>()
         .build(&core.handle());
 
-    let request = send_request(url, &client, pool);
-    core.run(request).unwrap();
+    // Send a request and get a future for the response
+    let response_future = send_request(url, &client, pool);
+
+    core.run(response_future).unwrap();
 }
 
 fn send_request(url: &'static str,
@@ -64,49 +64,46 @@ fn send_request(url: &'static str,
                 pool: CpuPool)
                 -> impl Future<Item = BulkResponse, Error = Error> {
     // Get a future to buffer a bulk file
-    let (buffer_request_body, body) = body::mapped_file("./data/accounts.json").unwrap();
+    let (buffer_request_body, request_body) = body::mapped_file("./data/accounts.json").unwrap();
     let buffer_request_body = pool.spawn(buffer_request_body);
 
     // Build a Bulk request
-    let req = BulkRequest::for_index_ty("bulk-async", "bulk-ty", body);
+    let req = BulkRequest::for_index_ty("bulk-async", "bulk-ty", request_body);
 
     // Send the request
     let send_request = client
         .request(hyper_req::build(&url, req))
         .map_err(Into::into);
 
-    // Read and desrialise the response
-    let read_response = send_request
-        .and_then(buffer_response_body)
-        .and_then(move |res| pool.spawn(deserialise_response(res)));
+    // Buffer the response chunks into a synchronously readable sequence
+    let read_response = send_request.and_then(move |response| {
+        let status: u16 = response.status().into();
+        let chunks = body::ChunkBodyBuilder::new();
+
+        response.body()
+            .fold(chunks, concat_chunks)
+            .map(move |chunks| (status, chunks.build()))
+            .map_err(Into::into)
+    });
+
+    // Deserialise the response body into a concrete type
+    let deserialise_response = read_response.and_then(move |(status, mut response_body)| {
+        pool.spawn_fn(move || {
+            parse::<BulkResponse>()
+                .from_reader(status, &mut response_body)
+                .map_err(Into::into)
+        })
+    });
 
     // Join the future to buffer the request body with the future to send the request
     buffer_request_body
-        .join(read_response)
-        .and_then(move |(_, res)| Ok(res))
+        .join(deserialise_response)
+        .map(move |(_, response)| response)
 }
 
-// Read the response body into a queue of chunks
-fn buffer_response_body(res: hyper::client::Response)
-                        -> impl Future<Item = (u16, ResponseBody), Error = Error> {
-    let status: u16 = res.status().into();
-
-    // Buffer the response chunks into a synchronously readable sequence
-    res.body()
-        .fold(body::HttpReadBodyBuilder::new(), concat_chunks)
-        .and_then(move |buf| Ok((status, buf.build())))
-        .map_err(Into::into)
-}
-
-fn concat_chunks(mut buf: body::HttpReadBodyBuilder,
+fn concat_chunks(mut chunks: body::ChunkBodyBuilder,
                  chunk: hyper::Chunk)
-                 -> Result<body::HttpReadBodyBuilder, hyper::Error> {
-    buf.push(chunk);
-    Ok(buf)
-}
-
-// Deserialise the queue of chunks as a BulkResponse
-fn deserialise_response((status, mut buf): (u16, ResponseBody))
-                        -> impl Future<Item = BulkResponse, Error = Error> {
-    lazy(move || parse::<BulkResponse>().from_reader(status, &mut buf)).map_err(Into::into)
+                 -> Result<body::ChunkBodyBuilder, hyper::Error> {
+    chunks.append(chunk);
+    Ok(chunks)
 }
