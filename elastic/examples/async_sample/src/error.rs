@@ -1,19 +1,23 @@
 use std::io::Error as IoError;
 use futures::sync::mpsc::SendError;
 use hyper::Error as HyperError;
+use elastic_responses::error::ResponseError;
 
 use body;
 
 quick_error!{
     #[derive(Debug)]
-    pub enum RequestError {
+    pub enum Error {
         Io(err: IoError) {
             from()
         }
-        Body(err: SendError<body::ChunkResult>) {
+        Hyper(err: HyperError) {
             from()
         }
-        Request(err: HyperError) {
+        Response(err: ResponseError) {
+            from()
+        }
+        FileBody(err: SendError<body::FileChunkResult>) {
             from()
         }
     }
