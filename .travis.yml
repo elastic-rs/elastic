@@ -15,12 +15,6 @@ matrix:
         - CRATE="derive"
     - rust: stable
       env:
-        - CRATE="elastic/examples/account_sample"
-    - rust: stable
-      env:
-        - CRATE="elastic/examples/async_sample"
-    - rust: stable
-      env:
         - CRATE="elastic"
 
     - rust: nightly
@@ -29,6 +23,12 @@ matrix:
     - rust: nightly
       env:
         - CRATE="elastic"
+    - rust: nightly
+      env:
+        - CRATE="elastic/examples/account_sample"
+    - rust: nightly
+      env:
+        - CRATE="elastic/examples/async_sample"
 
 env:
   global:

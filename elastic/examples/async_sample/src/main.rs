@@ -78,7 +78,7 @@ fn send_request(url: &'static str, client: &Client<HttpConnector, RequestBody>, 
 
 // Read the response body into a queue of chunks
 fn buffer_response_body(res: hyper::client::Response) -> impl Future<Item = (u16, ResponseBody), Error = Error> {
-    let status: u16 = (*res.status()).into();
+    let status: u16 = res.status().into();
 
     // Buffer the response chunks into a synchronously readable sequence
     let buffer_body = res.body()
