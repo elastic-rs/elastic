@@ -17,7 +17,7 @@ quick_error!{
         Response(err: ResponseError) {
             from()
         }
-        FileBody(err: SendError<body::FileChunkResult>) {
+        FileBody(err: SendError<body::request::FileChunkResult>) {
             from()
         }
     }
