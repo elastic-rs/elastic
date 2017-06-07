@@ -70,7 +70,8 @@ pub fn mapped_file<P>
 }
 
 // mmap a file and push its chunks into a queue
-fn map_file_to_chunks<P>(path: P) -> impl Future<Item = VecDeque<FileChunkResult>, Error = Error> + Send
+fn map_file_to_chunks<P>(path: P)
+                         -> impl Future<Item = VecDeque<FileChunkResult>, Error = Error> + Send
     where P: AsRef<Path>
 {
     let file = match Mmap::open_path(path, Protection::Read) {
@@ -154,11 +155,12 @@ impl HttpReadBodyBuilder {
     pub fn push(&mut self, chunk: HttpChunk) {
         let len = chunk.len();
 
-        self.0.push_back(ReadableChunk {
-            len: len,
-            pos: 0,
-            buf: chunk
-        });
+        self.0
+            .push_back(ReadableChunk {
+                           len: len,
+                           pos: 0,
+                           buf: chunk,
+                       });
     }
 
     pub fn build(self) -> HttpReadBody {
@@ -170,9 +172,9 @@ impl HttpReadBodyBuilder {
 }
 
 impl Read for HttpReadBody {
-    fn read(&mut self, buf: &mut[u8]) -> Result<usize, IoError> {
+    fn read(&mut self, buf: &mut [u8]) -> Result<usize, IoError> {
         let mut pop = false;
-        
+
         let read = if let Some(mut chunk) = self.0.front_mut() {
             let read = chunk.read(buf)?;
 
@@ -181,8 +183,7 @@ impl Read for HttpReadBody {
             }
 
             read
-        }
-        else {
+        } else {
             0
         };
 
