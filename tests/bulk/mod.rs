@@ -106,15 +106,3 @@ fn error_parse_action_request_validation_errors_only() {
 
     assert!(valid);
 }
-
-#[test]
-fn error_display() {
-    let f = load_file("tests/samples/bulk_error.json");
-    let deserialized = parse::<BulkErrorsResponse>().from_reader(200, f).unwrap();
-
-    assert!(deserialized.is_err());
-
-    for err in deserialized {
-        panic!("err: {}", err);
-    }
-}
