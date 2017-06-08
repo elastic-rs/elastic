@@ -1,3 +1,6 @@
+/// A default type for allocated fields in responses.
+pub(crate) type DefaultAllocatedField = String;
+
 /// Returned hits metadata.
 #[derive(Deserialize, Debug, Clone)]
 pub struct Shards {
