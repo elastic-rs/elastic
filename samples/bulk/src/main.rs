@@ -34,7 +34,7 @@ fn main() {
     let res = client.elastic_req(&params, BulkRequest::new(get_req())).unwrap();
 
     //Parse body to JSON. You could also use `BulkErrorsResponse`.
-    let body_as_json: BulkErrorsResponse = parse::<BulkErrorsResponse>().from_reader(res.status().to_u16(), res).unwrap();
+    let body_as_json: BulkErrorsResponse = parse().from_reader(res.status().to_u16(), res).unwrap();
 
     println!("{:?}", body_as_json);
 }

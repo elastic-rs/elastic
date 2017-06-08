@@ -70,7 +70,7 @@ fn main() {
     let res = client.elastic_req(&params, SearchRequest::for_index("_all", body)).unwrap();
 
     //Parse body to JSON
-    let body_as_json: SearchResponse = parse::<SearchResponse>().from_reader(res.status().to_u16(), res).unwrap();
+    let body_as_json: SearchResponse = parse().from_reader(res.status().to_u16(), res).unwrap();
 
     //Use hits() or aggs() iterators
     //Hits

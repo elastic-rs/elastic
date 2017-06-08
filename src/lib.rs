@@ -108,7 +108,7 @@ mod common;
 mod command;
 mod ping;
 mod get;
-mod search;
+pub mod search;
 pub mod bulk;
 mod index;
 
@@ -116,7 +116,7 @@ pub use self::common::*;
 pub use self::command::*;
 pub use self::ping::*;
 pub use self::get::*;
-pub use self::search::*;
+pub use self::search::SearchResponse;
 pub use self::bulk::{BulkResponse, BulkErrorsResponse};
 pub use self::index::*;
 

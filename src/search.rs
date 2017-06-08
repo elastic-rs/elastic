@@ -1,7 +1,7 @@
 use serde::de::DeserializeOwned;
 use serde_json::{Map, Value};
 
-use common::Shards;
+use common::{DefaultAllocatedField, Shards};
 use parsing::{IsOk, HttpResponseHead, ResponseBody, Unbuffered, MaybeOkResponse};
 use error::*;
 
@@ -37,19 +37,17 @@ use std::slice::Iter;
 /// # }
 /// ```
 #[derive(Deserialize, Debug)]
-pub struct SearchResponseOf<T> {
+pub struct SearchResponse<T> {
     pub took: u64,
     pub timed_out: bool,
     #[serde(rename = "_shards")]
     pub shards: Shards,
-    pub hits: Hits<T>,
+    pub hits: Hits<Hit<T>>,
     pub aggregations: Option<Aggregations>,
     pub status: Option<u16>,
 }
 
-pub type SearchResponse = SearchResponseOf<Hit<Value>>;
-
-impl<T: DeserializeOwned> IsOk for SearchResponseOf<T> {
+impl<T: DeserializeOwned> IsOk for SearchResponse<T> {
     fn is_ok<B: ResponseBody>(head: HttpResponseHead, body: Unbuffered<B>) -> Result<MaybeOkResponse<B>, ParseResponseError> {
         match head.status() {
             200...299 => Ok(MaybeOkResponse::ok(body)),
@@ -58,10 +56,10 @@ impl<T: DeserializeOwned> IsOk for SearchResponseOf<T> {
     }
 }
 
-impl<T> SearchResponseOf<T> {
+impl<T> SearchResponse<T> {
     /// Returns an Iterator to the search results or hits of the response.
-    pub fn hits(&self) -> &[T] {
-        &self.hits.hits()
+    pub fn hits(&self) -> &[Hit<T>] {
+        self.hits.hits()
     }
 
     /// Returns an Iterator to the search results or aggregations part of the response.
@@ -92,9 +90,9 @@ impl<T> Hits<T> {
 #[derive(Deserialize, Debug)]
 pub struct Hit<T> {
     #[serde(rename = "_index")]
-    pub index: String,
+    pub index: DefaultAllocatedField,
     #[serde(rename = "_type")]
-    pub ty: String,
+    pub ty: DefaultAllocatedField,
     #[serde(rename = "_version")]
     pub version: Option<u32>,
     #[serde(rename = "_score")]

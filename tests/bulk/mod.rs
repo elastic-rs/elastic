@@ -39,10 +39,10 @@ fn success_parse_multi_ops() {
 
     for item in deserialized.into_iter().filter_map(Result::ok) {
         match item.action() {
-            BulkAction::Index => index_count += 1,
-            BulkAction::Create => create_count += 1,
-            BulkAction::Update => update_count += 1,
-            BulkAction::Delete => delete_count += 1,
+            bulk::Action::Index => index_count += 1,
+            bulk::Action::Create => create_count += 1,
+            bulk::Action::Update => update_count += 1,
+            bulk::Action::Delete => delete_count += 1,
         }
     }
 

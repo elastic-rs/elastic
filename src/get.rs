@@ -6,7 +6,7 @@ use error::*;
 
 /// Response for a [get document request](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-get.html).
 #[derive(Deserialize, Debug)]
-pub struct GetResponseOf<T> {
+pub struct GetResponse<T = Value> {
     #[serde(rename = "_index")]
     pub index: String,
     #[serde(rename = "_type")]
@@ -22,9 +22,7 @@ pub struct GetResponseOf<T> {
     pub routing: Option<String>,
 }
 
-pub type GetResponse = GetResponseOf<Value>;
-
-impl<T: DeserializeOwned> IsOk for GetResponseOf<T> {
+impl<T: DeserializeOwned> IsOk for GetResponse<T> {
     fn is_ok<B: ResponseBody>(head: HttpResponseHead, body: Unbuffered<B>) -> Result<MaybeOkResponse<B>, ParseResponseError> {
         match head.status() {
             200...299 => Ok(MaybeOkResponse::ok(body)),
