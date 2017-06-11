@@ -21,8 +21,9 @@ impl<T, F, M> FieldType<M, DateFormatWrapper<F>> for T
 {
 }
 
+#[doc(hidden)]
 #[derive(Default)]
-struct DateFormatWrapper<F>
+pub struct DateFormatWrapper<F>
     where F: DateFormat
 {
     _f: PhantomData<F>,
@@ -116,7 +117,7 @@ pub trait DateMapping
 {
     /**
     The date format bound to this mapping.
-    
+
     The value of `Format::name()` is what's sent to Elasticsearch as the format to use.
     This is also used to serialise and deserialise formatted `Date`s.
     */

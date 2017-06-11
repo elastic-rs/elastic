@@ -68,8 +68,9 @@ use document::FieldType;
 
 macro_rules! number_mapping {
     ($mapping:ident, $format:ident, $field_trait:ident, $datatype_name:expr, $std_ty:ty) => (
+        #[doc(hidden)]
         #[derive(Default)]
-        struct $format;
+        pub struct $format;
 
         /** A field that will be mapped as a number. */
         pub trait $field_trait<M> where M: $mapping {}
@@ -126,8 +127,8 @@ macro_rules! number_mapping {
             fn store() -> Option<bool> { None }
         }
 
-        impl <T> FieldMapping<$format> for T 
-            where T: $mapping 
+        impl <T> FieldMapping<$format> for T
+            where T: $mapping
         {
             fn data_type() -> &'static str { $datatype_name }
         }

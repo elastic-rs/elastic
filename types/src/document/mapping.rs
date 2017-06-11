@@ -30,8 +30,9 @@ pub const DYNAMIC_DATATYPE: &'static str = "dynamic";
 /** Elasticsearch datatype name. */
 pub const NESTED_DATATYPE: &'static str = "nested";
 
+#[doc(hidden)]
 #[derive(Default)]
-struct DocumentFormat;
+pub struct DocumentFormat;
 
 /** The base requirements for mapping an `object` type. */
 pub trait DocumentMapping
@@ -129,14 +130,14 @@ This trait is automatically implemented for you when you `#[derive(ElasticType)]
 pub trait PropertiesMapping {
     /**
     The number of mapped property fields for this type.
-    
+
     This number should be the same as the number of fields being serialised by `serialize_props`.
     */
     fn props_len() -> usize;
 
     /**
     Serialisation for the mapped property fields on this type.
-    
+
     You can use the `field_ser` function to simplify `serde` calls.
     */
     fn serialize_props<S>(state: &mut S) -> Result<(), S::Error> where S: SerializeStruct;

@@ -35,7 +35,7 @@ In Elasticsearch, arrays and optional types aren't special, anything can be inde
 So the mapping for an array or optional type is just the mapping for the type it contains.
 */
 #[derive(Debug, Default, Clone)]
-struct WrappedMapping<M, F>
+pub struct WrappedMapping<M, F>
     where M: FieldMapping<F>,
           F: Default
 {
