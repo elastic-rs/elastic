@@ -19,7 +19,7 @@ pub struct Parse<T> {
 /// - `parse` where you can specify the response type
 /// - `from_slice`/`from_reader` wher you can specify the kind of body to read from
 /// 
-/// The reason for splitting the functions is so we can infer the types of arguments to `from_*`,
+/// The reason for splitting the functions is so we can infer the types of arguments to `from_slice` and `from_reader`,
 /// but provide the concrete response type in cases it can't be inferred.
 /// 
 /// # Examples
@@ -191,7 +191,18 @@ impl<B: AsRef<[u8]>> ResponseBody for SliceBody<B> {
 /// This is the main trait that drives response parsing by inspecting the http status and potentially
 /// buffering the response to determine whether or not it represents a successful operation.
 /// This trait doesn't do the actual deserialisation, it just passes on a `MaybeOkResponse`.
+/// 
+/// Some endpoints may not map success or error responses directly to a status code.
+/// In this case, the `Unbuffered` body can be buffered into an anonymous json object and inspected
+/// for an error node.
+/// The `Unbuffered` type takes care of response bodies that can only be buffered once.
+/// 
 /// Any type that implements `IsOk` can be deserialised by `parse`.
+/// Implementations should behave in the following way:
+/// 
+/// - If the response is successful, this trait should return `Ok(MaybeOkResponse::ok)`.
+/// - If the response is an error, this trait should return `Ok(MaybeOkResponse::err)`.
+/// - If the response isn't recognised or is otherwise invalid, this trait should return `Err`.
 /// 
 /// # Examples
 /// 
