@@ -93,3 +93,4 @@ See the [`IsOk`][IsOk] trait for more details.
 
 pub use elastic_reqwest::res::parsing::{HttpResponseHead, IsOk, ResponseBody, MaybeOkResponse,
                                         MaybeBufferedResponse, Unbuffered, Buffered};
+pub use elastic_reqwest::res::error::ParseResponseError;
