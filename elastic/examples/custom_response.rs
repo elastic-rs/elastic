@@ -14,7 +14,7 @@ extern crate elastic;
 
 use serde_json::Value;
 use elastic::prelude::*;
-use elastic::client::responses::parse::{IsOk, ParseResponseError, ResponseBody, HttpResponseHead, MaybeOkResponse, Unbuffered};
+use elastic::client::responses::parse::*;
 
 #[derive(Deserialize, Debug)]
 struct SearchResponse {
