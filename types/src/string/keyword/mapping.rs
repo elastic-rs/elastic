@@ -16,8 +16,9 @@ impl<T, M> FieldType<M, KeywordFormat> for T
 {
 }
 
+#[doc(hidden)]
 #[derive(Default)]
-struct KeywordFormat;
+pub struct KeywordFormat;
 
 /**
 The base requirements for mapping a `string` type.
@@ -119,12 +120,12 @@ pub trait KeywordMapping
     Multi-fields allow the same string value to be indexed in multiple ways for different purposes,
     such as one field for search and a multi-field for sorting and aggregations,
     or the same string value analyzed by different analyzers.
-    
+
     # Examples
-    
+
     Subfields are provided as simple `struct`s, so you don't need to define a separate type
     to map them:
-    
+
     ```
     # #[macro_use]
     # extern crate elastic_types;
@@ -136,17 +137,17 @@ pub trait KeywordMapping
     # impl KeywordMapping for MyStringMapping {
     fn fields() -> Option<BTreeMap<&'static str, StringField>> {
             let mut fields = BTreeMap::new();
-    
+
         //Add a `token_count` as a sub field
         fields.insert("count", StringField::TokenCount(
             ElasticTokenCountFieldMapping::default())
         );
-    
+
         //Add a `completion` suggester as a sub field
         fields.insert("comp", StringField::Completion(
             ElasticCompletionFieldMapping::default())
         );
-    
+
         Some(fields)
         }
     # }

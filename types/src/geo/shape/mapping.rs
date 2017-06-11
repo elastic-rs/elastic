@@ -15,8 +15,9 @@ impl<T, M> FieldType<M, GeoShapeFormat> for T
 {
 }
 
+#[doc(hidden)]
 #[derive(Default)]
-struct GeoShapeFormat;
+pub struct GeoShapeFormat;
 
 /**
 The base requirements for mapping a `geo_shape` type.
@@ -126,7 +127,7 @@ pub trait GeoShapeMapping
     /**
     Used as a hint to the `PrefixTree` about how precise it should be.
     Defaults to `0.025` (2.5%) with `0.5` as the maximum supported value.
-    
+
     > PERFORMANCE NOTE: This value will default to `0` if a `precision` or `tree_level` definition is explicitly defined.
     This guarantees spatial precision at the level defined in the mapping.
     This can lead to significant memory usage for high resolution shapes with low error

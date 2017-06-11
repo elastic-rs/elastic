@@ -15,8 +15,9 @@ impl<T, M> FieldType<M, IpFormat> for T
 {
 }
 
+#[doc(hidden)]
 #[derive(Default)]
-struct IpFormat;
+pub struct IpFormat;
 
 /**
 The base requirements for mapping a `ip` type.

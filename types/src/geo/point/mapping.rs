@@ -22,8 +22,9 @@ impl<T, F, M> FieldType<M, GeoPointFormatWrapper<F>> for T
 {
 }
 
+#[doc(hidden)]
 #[derive(Default)]
-struct GeoPointFormatWrapper<F>
+pub struct GeoPointFormatWrapper<F>
     where F: GeoPointFormat
 {
     _f: PhantomData<F>,
@@ -119,7 +120,7 @@ pub trait GeoPointMapping
 {
     /**
     The format used to serialise and deserialise the geo point.
-    
+
     The format isn't actually a part of the Elasticsearch mapping for a `geo_point`,
     but is included on the mapping to keep things consistent.
     */

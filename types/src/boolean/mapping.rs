@@ -14,8 +14,9 @@ impl<T, M> FieldType<M, BooleanFormat> for T
 {
 }
 
+#[doc(hidden)]
 #[derive(Default)]
-struct BooleanFormat;
+pub struct BooleanFormat;
 
 /**
 The base requirements for mapping a `boolean` type.
