@@ -8,9 +8,11 @@ quick_error! {
     /// An error parsing a response stream.
     #[derive(Debug)]
     pub enum ParseResponseError {
+        /// The response contains invalid json.
         Json(err: JsonError) {
             from()
         }
+        /// The response caused an io error while buffering.
         Io(err: IoError) {
             from()
         }
@@ -21,9 +23,11 @@ quick_error! {
     /// An error parsing a REST API response to a success value.
     #[derive(Debug)]
     pub enum ResponseError {
+        /// A REST API error from Elasticsearch.
         Api(err: ApiError) {
             from()
         }
+        /// An error parsing a response body.
         Parse(err: ParseResponseError) {
             from()
         }
