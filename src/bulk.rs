@@ -16,8 +16,9 @@ type BulkError = Value;
 
 /// Response for a [bulk request](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-bulk.html).
 /// 
-/// This type splits successful and failed bulk operations so it's easier
-/// to handle errors in bulk requests.
+/// Individual bulk operations are a `Result<OkItem, ErrorItem>` and can be iterated over.
+/// Any individual operation may be an `Err(ErrorItem)`, so it's important to check them.
+/// The `is_ok` and `is_err` methods on `BulkResponse` make this easier.
 /// 
 /// # Examples
 /// 
@@ -31,15 +32,19 @@ type BulkError = Value;
 /// // Send a request (omitted, see `samples/bulk`), and read the response.
 /// // Parse body to JSON as an elastic_responses::BulkResponse object
 /// let body_as_json: BulkResponse = do_request();
+/// 
+/// // Check if the response contains any errors
+/// if body_as_json.is_err() {
+///     println!("some bulk operations failed");
+/// }
 ///
-/// // Do something with successful operations
-/// for op in body_as_json.iter() {
+/// for op in body_as_json {
 ///     match op {
-///         Ok(ref op) => {
+///         Ok(op) => {
 ///             // Do something with successful operations
 ///             println!("ok: {:?}", op)
 ///         },
-///         Err(ref e) => {
+///         Err(op) => {
 ///             // Do something with failed operations
 ///             println!("err: {:?}", op)
 ///         }
@@ -48,29 +53,18 @@ type BulkError = Value;
 /// # }
 /// ```
 /// 
-/// A bulk response can also be connverted into an iterator of `Result`s that combines the successful and failed operations:
+/// Use `iter` to iterate over individual operations without taking ownership of them:
 /// 
 /// ```no_run
 /// # extern crate elastic_responses;
 /// # use elastic_responses::*;
 /// # fn do_request() -> BulkResponse { unimplemented!() }
 /// # fn main() {
-/// // Send a request (omitted, see `samples/bulk`), and read the response.
-/// // Parse body to JSON as an elastic_responses::BulkResponse object
 /// let body_as_json: BulkResponse = do_request();
 ///
-/// // Do something with successful operations
-/// for op in body_as_json {
-///     match op {
-///         Ok(op) => {
-///             // Do something with successful operations
-///             println!("ok: {:?}", op)
-///         },
-///         Err(e) => {
-///             // Do something with failed operations
-///             println!("err: {:?}", op),
-///         }
-///     }
+/// // Do something with successful operations for index `myindex`
+/// for op in body_as_json.iter().filter_map(Result::ok).filter(|o| o.index() == "myindex") {
+///     println!("ok: {:?}", op);
 /// }
 /// # }
 /// ```
@@ -112,7 +106,29 @@ type BulkError = Value;
 /// # }
 /// ```
 /// 
-/// Also see the [`string-cache`](https://github.com/servo/string-cache) crate as an alternative to using `String`s and `enum`s.
+/// Other crates that can avoid allocating strings:
+/// 
+/// - [`string-cache`](https://github.com/servo/string-cache) crate for interning string values
+/// - [`inlinable-string`]() crate for storing small strings on the stack
+/// 
+/// # Taking `BulkResonse` as an argument
+/// 
+/// The `BulkResponse` type has three default generic parameters for the index, type and id fields.
+/// If you need to accept a `BulkResponse` as a function argument, you should specify these generics.
+/// Otherwise the function will only accept a default `BulkResponse`:
+/// 
+/// ```
+/// # use elastic_responses::*;
+/// // Do
+/// fn takes_any_response<TIndex, TType, TId>(res: BulkResponse<TIndex, TType, TId>) { 
+///     // Supports any BulkResponse
+/// }
+/// 
+/// // Don't
+/// fn takes_default_response(res: BulkResponse) {
+///     // Only supports default BulkResponse
+/// }
+/// ```
 #[derive(Deserialize, Debug, Clone)]
 #[serde(bound(deserialize = "TIndex: Deserialize<'de>, TType: Deserialize<'de>, TId: Deserialize<'de>"))]
 pub struct BulkResponse<TIndex = DefaultAllocatedField, TType = DefaultAllocatedField, TId = DefaultAllocatedField> {
@@ -187,6 +203,7 @@ impl<'a, TIndex: 'a, TType: 'a, TId: 'a> Iterator for ResultIter<'a, TIndex, TTy
 /// ```no_run
 /// # extern crate elastic_responses;
 /// # use elastic_responses::*;
+/// # use elastic_responses::bulk::Action;
 /// # fn do_request() -> BulkErrorsResponse { unimplemented!() }
 /// # fn main() {
 /// // Send a request (omitted, see `samples/bulk`), and read the response.
@@ -194,13 +211,48 @@ impl<'a, TIndex: 'a, TType: 'a, TId: 'a> Iterator for ResultIter<'a, TIndex, TTy
 /// let body_as_json: BulkErrorsResponse = do_request();
 /// 
 /// // Do something with failed operations
-/// for op in body_as_json.items {
-///     match op.action {
+/// for op in body_as_json {
+///     match op.action() {
 ///         Action::Delete => (), // Ignore failed deletes
 ///         _ => println!("bulk op failed: {:?}", op) 
 ///     }
 /// }
 /// # }
+/// ```
+///
+/// Use `iter` to iterate over individual errors without taking ownership of them:
+/// 
+/// ```no_run
+/// # extern crate elastic_responses;
+/// # use elastic_responses::*;
+/// # fn do_request() -> BulkErrorsResponse { unimplemented!() }
+/// # fn main() {
+/// let body_as_json: BulkErrorsResponse = do_request();
+///
+/// // Do something with errors for index `myindex`
+/// for op in body_as_json.iter().filter(|o| o.index() == "myindex") {
+///     println!("ok: {:?}", op);
+/// }
+/// # }
+/// ```
+///
+/// # Taking `BulkErrorsResponse` as an argument
+/// 
+/// The `BulkErrorsResponse` type has three default generic parameters for the index, type and id fields.
+/// If you need to accept a `BulkErrorsResponse` as a function argument, you should specify these generics.
+/// Otherwise the function will only accept a default `BulkErrorsResponse`:
+/// 
+/// ```
+/// # use elastic_responses::*;
+/// // Do
+/// fn takes_any_response<TIndex, TType, TId>(res: BulkErrorsResponse<TIndex, TType, TId>) { 
+///     // Supports any BulkErrorsResponse
+/// }
+/// 
+/// // Don't
+/// fn takes_default_response(res: BulkErrorsResponse) {
+///     // Only supports default BulkErrorsResponse
+/// }
 /// ```
 #[derive(Deserialize, Debug, Clone)]
 #[serde(bound(deserialize = "TIndex: Deserialize<'de>, TType: Deserialize<'de>, TId: Deserialize<'de>"))]
