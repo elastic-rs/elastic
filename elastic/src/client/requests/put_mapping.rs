@@ -3,8 +3,8 @@ use serde_json;
 use serde::Serialize;
 
 use error::*;
-use client::{into_response, Client};
-use client::requests::{Index, Type, IndicesPutMappingRequest, RequestBuilder};
+use client::Client;
+use client::requests::{Index, Type, IndicesPutMappingRequest, RequestBuilder, RawRequestBuilder};
 use client::responses::CommandResponse;
 use types::document::{FieldType, DocumentType, IndexDocumentMapping};
 
@@ -49,10 +49,9 @@ impl Client {
     [types-mod]: ../types/index.html
     [documents-mod]: ../types/document/index.html
     */
-    pub fn put_mapping<'a, TDocument>
-        (&'a self,
-         index: Index<'static>)
-         -> RequestBuilder<'a, PutMappingRequestBuilder<TDocument>, TDocument>
+    pub fn put_mapping<'a, TDocument>(&'a self,
+                                      index: Index<'static>)
+                                      -> RequestBuilder<'a, PutMappingRequestBuilder<TDocument>>
         where TDocument: Serialize + DocumentType
     {
         let ty = TDocument::name().into();
@@ -87,7 +86,7 @@ Call [`Client.put_mapping`][Client.put_mapping] to get a `RequestBuilder` for a 
 [Client.put_mapping]: ../struct.Client.html#method.put_mapping
 [docs-mapping]: https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping.html
 */
-impl<'a, TDocument> RequestBuilder<'a, PutMappingRequestBuilder<TDocument>, TDocument>
+impl<'a, TDocument> RequestBuilder<'a, PutMappingRequestBuilder<TDocument>>
     where TDocument: DocumentType
 {
     /** Set the type for the put mapping request. */
@@ -102,9 +101,9 @@ impl<'a, TDocument> RequestBuilder<'a, PutMappingRequestBuilder<TDocument>, TDoc
     pub fn send(self) -> Result<CommandResponse> {
         let req = self.req.into_request()?;
 
-        RequestBuilder::new(self.client, self.params, req)
-            .send_raw()
-            .and_then(into_response)
+        RequestBuilder::new(self.client, self.params, RawRequestBuilder::new(req))
+            .send_raw()?
+            .into_response()
     }
 }
 

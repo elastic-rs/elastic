@@ -2,8 +2,8 @@ use serde_json;
 use serde::Serialize;
 
 use error::*;
-use client::{into_response, Client};
-use client::requests::{Index, Type, Id, IndexRequest, RequestBuilder};
+use client::Client;
+use client::requests::{Index, Type, Id, IndexRequest, RequestBuilder, RawRequestBuilder};
 use client::responses::IndexResponse;
 use types::document::DocumentType;
 
@@ -60,12 +60,11 @@ impl Client {
     [types-mod]: ../types/index.html
     [documents-mod]: ../types/document/index.html
     */
-    pub fn index_document<'a, TDocument>
-        (&'a self,
-         index: Index<'static>,
-         id: Id<'static>,
-         doc: TDocument)
-         -> RequestBuilder<'a, IndexRequestBuilder<TDocument>, TDocument>
+    pub fn index_document<'a, TDocument>(&'a self,
+                                         index: Index<'static>,
+                                         id: Id<'static>,
+                                         doc: TDocument)
+                                         -> RequestBuilder<'a, IndexRequestBuilder<TDocument>>
         where TDocument: Serialize + DocumentType
     {
         let ty = TDocument::name().into();
@@ -101,7 +100,7 @@ Call [`Client.index_document`][Client.index_document] to get a `RequestBuilder` 
 [Client.index_document]: ../struct.Client.html#method.index_document
 [docs-index]: https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html
 */
-impl<'a, TDocument> RequestBuilder<'a, IndexRequestBuilder<TDocument>, TDocument>
+impl<'a, TDocument> RequestBuilder<'a, IndexRequestBuilder<TDocument>>
     where TDocument: Serialize
 {
     /** Set the type for the index request. */
@@ -116,9 +115,9 @@ impl<'a, TDocument> RequestBuilder<'a, IndexRequestBuilder<TDocument>, TDocument
     pub fn send(self) -> Result<IndexResponse> {
         let req = self.req.into_request()?;
 
-        RequestBuilder::new(self.client, self.params, req)
-            .send_raw()
-            .and_then(into_response)
+        RequestBuilder::new(self.client, self.params, RawRequestBuilder::new(req))
+            .send_raw()?
+            .into_response()
     }
 }
 

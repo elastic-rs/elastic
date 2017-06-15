@@ -2,8 +2,8 @@ use std::marker::PhantomData;
 use serde::de::DeserializeOwned;
 
 use error::*;
-use client::{into_response, Client};
-use client::requests::{DefaultBody, Index, Type, Id, GetRequest, RequestBuilder};
+use client::Client;
+use client::requests::{Index, Type, Id, GetRequest, RequestBuilder, RawRequestBuilder};
 use client::responses::GetResponse;
 use types::document::DocumentType;
 
@@ -79,11 +79,10 @@ impl Client {
     [types-mod]: ../types/index.html
     [documents-mod]: ../types/document/index.html
     */
-    pub fn get_document<'a, TDocument>
-        (&'a self,
-         index: Index<'static>,
-         id: Id<'static>)
-         -> RequestBuilder<'a, GetRequestBuilder<TDocument>, DefaultBody>
+    pub fn get_document<'a, TDocument>(&'a self,
+                                       index: Index<'static>,
+                                       id: Id<'static>)
+                                       -> RequestBuilder<'a, GetRequestBuilder<TDocument>>
         where TDocument: DeserializeOwned + DocumentType
     {
         let ty = TDocument::name().into();
@@ -115,7 +114,7 @@ Call [`Client.get_document`][Client.get_document] to get a `RequestBuilder` for 
 [Client.get_document]: ../struct.Client.html#method.get_document
 [docs-get]: http://www.elastic.co/guide/en/elasticsearch/reference/current/docs-get.html
 */
-impl<'a, TDocument> RequestBuilder<'a, GetRequestBuilder<TDocument>, DefaultBody>
+impl<'a, TDocument> RequestBuilder<'a, GetRequestBuilder<TDocument>>
     where TDocument: DeserializeOwned + DocumentType
 {
     /** Set the type for the get request. */
@@ -130,9 +129,9 @@ impl<'a, TDocument> RequestBuilder<'a, GetRequestBuilder<TDocument>, DefaultBody
     pub fn send(self) -> Result<GetResponse<TDocument>> {
         let req = self.req.into_request();
 
-        RequestBuilder::new(self.client, self.params, req)
-            .send_raw()
-            .and_then(into_response)
+        RequestBuilder::new(self.client, self.params, RawRequestBuilder::new(req))
+            .send_raw()?
+            .into_response()
     }
 }
 

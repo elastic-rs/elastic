@@ -358,6 +358,8 @@ Create a `Client` for an Elasticsearch node at `es_host:9200`:
 let params = RequestParams::new("http://es_host:9200").url_param("pretty", true);
 
 let client = Client::new(params).unwrap();
+
+[RequestBuilder]: requests/index.html
 ```
 */
 pub struct Client {
@@ -392,6 +394,8 @@ impl Client {
     ```
     
     See [`RequestParams`][RequestParams] for more configuration options.
+
+    [RequestParams]: struct.RequestParams.html
     */
     pub fn new(params: RequestParams) -> Result<Self> {
         let client = HttpClient::new()?;

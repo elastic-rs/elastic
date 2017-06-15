@@ -20,8 +20,10 @@ use error::*;
 use client::IntoResponseBuilder;
 use self::parse::IsOk;
 
-pub use elastic_reqwest::res::{SearchResponseOf, GetResponseOf, AggregationIterator, Aggregations, Hit, Hits, Shards, CommandResponse, IndexResponse, PingResponse, BulkResponse,
-                               BulkErrorsResponse, BulkItem, BulkItems, BulkItemError, BulkAction};
+pub use elastic_reqwest::res::{SearchResponseOf, GetResponseOf, AggregationIterator, Aggregations,
+                               Hit, Hits, Shards, CommandResponse, IndexResponse, PingResponse,
+                               BulkResponse, BulkErrorsResponse, BulkItem, BulkItems,
+                               BulkItemError, BulkAction};
 /**
 A builder for a response.
 
@@ -119,9 +121,7 @@ impl ResponseBuilder {
     pub fn into_response<T>(self) -> Result<T>
         where T: IsOk + DeserializeOwned
     {
-        parse()
-            .from_response(self.0)
-            .map_err(Into::into)
+        parse().from_response(self.0).map_err(Into::into)
     }
 }
 

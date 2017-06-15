@@ -1,7 +1,7 @@
 use error::*;
-use client::{into_response, Client};
+use client::Client;
 use client::requests::{empty_body, DefaultBody, IntoBody, Index, IndicesCreateRequest,
-                       RequestBuilder};
+                       RequestBuilder, RawRequestBuilder};
 use client::responses::CommandResponse;
 
 /** 
@@ -74,10 +74,9 @@ impl Client {
     [types-mod]: ../types/index.html
     [documents-mod]: ../types/document/index.html
     */
-    pub fn create_index<'a>
-        (&'a self,
-         index: Index<'static>)
-         -> RequestBuilder<'a, CreateIndexRequestBuilder<DefaultBody>, DefaultBody> {
+    pub fn create_index<'a>(&'a self,
+                            index: Index<'static>)
+                            -> RequestBuilder<'a, CreateIndexRequestBuilder<DefaultBody>> {
         RequestBuilder::new(&self,
                             None,
                             CreateIndexRequestBuilder {
@@ -105,7 +104,7 @@ Call [`Client.create_index`][Client.create_index] to get a `RequestBuilder` for 
 [Client.create_index]: ../struct.Client.html#method.create_index
 [docs-create-index]: https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-create-index.html
 */
-impl<'a, TBody> RequestBuilder<'a, CreateIndexRequestBuilder<TBody>, TBody>
+impl<'a, TBody> RequestBuilder<'a, CreateIndexRequestBuilder<TBody>>
     where TBody: IntoBody
 {
     /** 
@@ -115,7 +114,7 @@ impl<'a, TBody> RequestBuilder<'a, CreateIndexRequestBuilder<TBody>, TBody>
     */
     pub fn body<TNewBody>(self,
                           body: TNewBody)
-                          -> RequestBuilder<'a, CreateIndexRequestBuilder<TNewBody>, TNewBody>
+                          -> RequestBuilder<'a, CreateIndexRequestBuilder<TNewBody>>
         where TNewBody: IntoBody
     {
         RequestBuilder::new(self.client,
@@ -130,9 +129,9 @@ impl<'a, TBody> RequestBuilder<'a, CreateIndexRequestBuilder<TBody>, TBody>
     pub fn send(self) -> Result<CommandResponse> {
         let req = self.req.into_request();
 
-        RequestBuilder::new(self.client, self.params, req)
-            .send_raw()
-            .and_then(into_response)
+        RequestBuilder::new(self.client, self.params, RawRequestBuilder::new(req))
+            .send_raw()?
+            .into_response()
     }
 }
 

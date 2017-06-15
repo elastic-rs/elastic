@@ -23,8 +23,8 @@ impl PutBulkAccounts for Client {
         let res = self.io
             .request(req)
             .params(|params| params.url_param("refresh", true))
-            .send()
-            .and_then(into_response::<BulkErrorsResponse>)?;
+            .send()?
+            .into_response::<BulkErrorsResponse>()?;
 
         if res.is_err() {
             return Err(res.items.into());
