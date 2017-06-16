@@ -218,7 +218,7 @@ mod tests {
     fn request_builder_params() {
         let client = Client::new(RequestParams::new("http://eshost:9200")).unwrap();
 
-        let req = RequestBuilder::<_, ()>::new(&client, None, PingRequest::new())
+        let req = RequestBuilder::new(&client, None, PingRequest::new())
             .params(|p| p.url_param("pretty", true))
             .params(|p| p.url_param("refresh", true));
 
