@@ -2,9 +2,9 @@ use std::marker::PhantomData;
 use serde::de::DeserializeOwned;
 
 use error::*;
-use client::{into_response, Client};
+use client::Client;
 use client::requests::{empty_body, DefaultBody, IntoBody, Index, Type, SearchRequest,
-                       RequestBuilder};
+                       RequestBuilder, RawRequestBuilder};
 use client::responses::SearchResponse;
 
 /** 
@@ -83,7 +83,7 @@ impl Client {
     */
     pub fn search<'a, TDocument>
         (&'a self)
-         -> RequestBuilder<'a, SearchRequestBuilder<TDocument, DefaultBody>, DefaultBody>
+         -> RequestBuilder<'a, SearchRequestBuilder<TDocument, DefaultBody>>
         where TDocument: DeserializeOwned
     {
         RequestBuilder::new(&self, None, SearchRequestBuilder::new(empty_body()))
@@ -123,7 +123,7 @@ Call [`Client.search`][Client.search] to get a `RequestBuilder` for a search req
 [Client.search]: ../struct.Client.html#method.search
 [docs-search]: http://www.elastic.co/guide/en/elasticsearch/reference/current/search-search.html
 */
-impl<'a, TDocument, TBody> RequestBuilder<'a, SearchRequestBuilder<TDocument, TBody>, TBody>
+impl<'a, TDocument, TBody> RequestBuilder<'a, SearchRequestBuilder<TDocument, TBody>>
     where TDocument: DeserializeOwned,
           TBody: IntoBody
 {
@@ -152,10 +152,9 @@ impl<'a, TDocument, TBody> RequestBuilder<'a, SearchRequestBuilder<TDocument, TB
     
     If no body is specified then an empty query will be used.
     */
-    pub fn body<TNewBody>
-        (self,
-         body: TNewBody)
-         -> RequestBuilder<'a, SearchRequestBuilder<TDocument, TNewBody>, TNewBody>
+    pub fn body<TNewBody>(self,
+                          body: TNewBody)
+                          -> RequestBuilder<'a, SearchRequestBuilder<TDocument, TNewBody>>
         where TNewBody: IntoBody
     {
         RequestBuilder::new(self.client,
@@ -172,9 +171,9 @@ impl<'a, TDocument, TBody> RequestBuilder<'a, SearchRequestBuilder<TDocument, TB
     pub fn send(self) -> Result<SearchResponse<TDocument>> {
         let req = self.req.into_request();
 
-        RequestBuilder::new(self.client, self.params, req)
-            .send_raw()
-            .and_then(into_response)
+        RequestBuilder::new(self.client, self.params, RawRequestBuilder::new(req))
+            .send_raw()?
+            .into_response()
     }
 }
 

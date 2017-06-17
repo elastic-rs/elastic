@@ -18,12 +18,12 @@ use elastic::client::responses::parse::*;
 
 #[derive(Deserialize, Debug)]
 struct SearchResponse {
-    hits: Hits
+    hits: Hits,
 }
 
 #[derive(Deserialize, Debug)]
 struct Hits {
-    hits: Vec<Hit>
+    hits: Vec<Hit>,
 }
 
 #[derive(Deserialize, Debug)]
@@ -34,7 +34,9 @@ struct Hit {
 
 // Implement `IsOk` for our custom `SearchResponse` so it can be used in the call to `into_response`.
 impl IsOk for SearchResponse {
-    fn is_ok<B: ResponseBody>(head: HttpResponseHead, body: Unbuffered<B>) -> Result<MaybeOkResponse<B>, ParseResponseError> {
+    fn is_ok<B: ResponseBody>(head: HttpResponseHead,
+                              body: Unbuffered<B>)
+                              -> Result<MaybeOkResponse<B>, ParseResponseError> {
         match head.status() {
             200...299 => Ok(MaybeOkResponse::ok(body)),
             _ => Ok(MaybeOkResponse::err(body)),

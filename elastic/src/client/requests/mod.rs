@@ -40,11 +40,38 @@ A builder for a raw request.
 
 This structure wraps up a concrete REST API request type and lets you adjust parameters before sending it.
 */
-pub struct RequestBuilder<'a, TRequest, TBody> {
+pub struct RequestBuilder<'a, TRequest> {
     client: &'a Client,
     params: Option<RequestParams>,
     req: TRequest,
-    _marker: PhantomData<TBody>,
+}
+
+/**
+A builder for a raw [`Client.request`][Client.request]. 
+
+[Client.request]: ../struct.Client.html#method.request
+*/
+pub struct RawRequestBuilder<TRequest, TBody> {
+    inner: TRequest,
+    _marker: PhantomData<TBody>
+}
+
+impl<TRequest, TBody> RawRequestBuilder<TRequest, TBody> {
+    fn new(req: TRequest) -> Self {
+        RawRequestBuilder {
+            inner: req,
+            _marker: PhantomData,
+        }
+    }
+}
+
+impl<TRequest, TBody> Into<HttpRequest<'static, TBody>> for RawRequestBuilder<TRequest, TBody>
+    where TRequest: Into<HttpRequest<'static, TBody>>,
+          TBody: IntoBody
+{
+    fn into(self) -> HttpRequest<'static, TBody> {
+        self.inner.into()
+    }
 }
 
 impl Client {
@@ -79,26 +106,23 @@ impl Client {
     */
     pub fn request<'a, TRequest, TBody>(&'a self,
                                         req: TRequest)
-                                        -> RequestBuilder<'a, TRequest, TBody>
+                                        -> RequestBuilder<'a, RawRequestBuilder<TRequest, TBody>>
         where TRequest: Into<HttpRequest<'static, TBody>>,
               TBody: IntoBody
     {
-        RequestBuilder::new(&self, None, req)
+        RequestBuilder::new(&self, None, RawRequestBuilder::new(req))
     }
 }
 
-impl<'a, TRequest, TBody> RequestBuilder<'a, TRequest, TBody> {
+impl<'a, TRequest> RequestBuilder<'a, TRequest> {
     fn new(client: &'a Client, params: Option<RequestParams>, req: TRequest) -> Self {
         RequestBuilder {
             client: client,
             params: params,
             req: req,
-            _marker: PhantomData,
         }
     }
-}
 
-impl<'a, TRequest, TBody> RequestBuilder<'a, TRequest, TBody> {
     /**
     Override the parameters for this request.
     
@@ -128,8 +152,8 @@ impl<'a, TRequest, TBody> RequestBuilder<'a, TRequest, TBody> {
     }
 }
 
-impl<'a, TRequest, TBody> RequestBuilder<'a, TRequest, TBody>
-    where TRequest: Into<HttpRequest<'static, TBody>>,
+impl<'a, TRequest, TBody> RequestBuilder<'a, RawRequestBuilder<TRequest, TBody>>
+    where TRequest: Into<HttpRequest<'static, TBody>>, 
           TBody: IntoBody
 {
     fn send_raw(self) -> Result<ResponseBuilder> {
@@ -151,8 +175,8 @@ Call [`Client.request`][Client.request] to get a `RequestBuilder` for a raw requ
 [Client.request]: ../struct.Client.html#method.request
 [endpoints-mod]: endpoints/index.html
 */
-impl<'a, TRequest, TBody> RequestBuilder<'a, TRequest, TBody>
-    where TRequest: Into<HttpRequest<'static, TBody>>,
+impl<'a, TRequest, TBody> RequestBuilder<'a, RawRequestBuilder<TRequest, TBody>>
+    where TRequest: Into<HttpRequest<'static, TBody>>, 
           TBody: IntoBody
 {
     /**
@@ -194,7 +218,7 @@ mod tests {
     fn request_builder_params() {
         let client = Client::new(RequestParams::new("http://eshost:9200")).unwrap();
 
-        let req = RequestBuilder::<_, ()>::new(&client, None, PingRequest::new())
+        let req = RequestBuilder::new(&client, None, PingRequest::new())
             .params(|p| p.url_param("pretty", true))
             .params(|p| p.url_param("refresh", true));
 
