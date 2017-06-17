@@ -2,7 +2,6 @@ use std::cmp;
 use std::collections::VecDeque;
 use std::io::{Read, Error as IoError};
 
-use futures::{Sink, Poll, Async};
 use hyper::Chunk as HyperChunk;
 
 /// A readable wrapper around a `Chunk`.
