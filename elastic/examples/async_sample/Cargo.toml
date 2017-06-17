@@ -16,4 +16,4 @@ hyper = { git = "https://github.com/hyperium/hyper.git" }
 
 quick-error = "*"
 
-string_cache = { version = "*", git = "https://github.com/KodrAus/string-cache.git", branch = "chore/serde-1.0" }
+string_cache = "*"
