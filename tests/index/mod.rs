@@ -10,11 +10,11 @@ fn success_parse_response() {
     let f = load_file("tests/samples/index_success.json");
     let deserialized = parse::<IndexResponse>().from_reader(200, f).unwrap();
 
-    assert!(deserialized.created);
-    assert_eq!("testindex", deserialized.index);
-    assert_eq!("testtype", deserialized.ty);
-    assert_eq!("1", deserialized.id);
-    assert_eq!(Some(1), deserialized.version);
+    assert!(deserialized.created());
+    assert_eq!("testindex", deserialized.index());
+    assert_eq!("testtype", deserialized.ty());
+    assert_eq!("1", deserialized.id());
+    assert_eq!(Some(1), deserialized.version());
 }
 
 #[test]

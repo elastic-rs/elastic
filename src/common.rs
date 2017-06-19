@@ -2,9 +2,26 @@
 pub(crate) type DefaultAllocatedField = String;
 
 /// Returned hits metadata.
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Deserialize, Debug, Clone, Copy)]
 pub struct Shards {
-    pub total: u32,
-    pub successful: u32,
-    pub failed: u32,
+    total: u32,
+    successful: u32,
+    failed: u32,
+}
+
+impl Shards {
+    /// The total number of shards that participated in this request.
+    pub fn total(&self) -> u32 {
+        self.total
+    }
+
+    /// The total number of shards that successfully processed the request.
+    pub fn successful(&self) -> u32 {
+        self.successful
+    }
+
+    /// The total number of shards that failed to process the request.
+    pub fn failed(&self) -> u32 {
+        self.failed
+    }
 }

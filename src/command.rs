@@ -4,7 +4,16 @@ use error::*;
 /// A standard command acknowledgement response.
 #[derive(Deserialize, Debug, Clone)]
 pub struct CommandResponse {
-    pub acknowledged: bool
+    acknowledged: bool
+}
+
+impl CommandResponse {
+    /// Whether or not the request was acknowledged.
+    /// 
+    /// This doesn't necessarily mean the request has been fully processed.
+    pub fn acknowledged(&self) -> bool {
+        self.acknowledged
+    }
 }
 
 impl IsOk for CommandResponse {

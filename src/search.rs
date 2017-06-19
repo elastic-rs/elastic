@@ -44,7 +44,7 @@ pub struct SearchResponse<T> {
     #[serde(rename = "_shards")]
     shards: Shards,
     hits: HitsWrapper<T>,
-    aggregations: Option<AggregationsWrapper>,
+    aggregations: Option<AggsWrapper>,
     status: Option<u16>,
 }
 
@@ -114,8 +114,8 @@ impl<T> SearchResponse<T> {
     ///
     /// This Iterator transforms the tree-like JSON object into a row/table
     /// based format for use with standard iterator adaptors.
-    pub fn aggregations(&self) -> Aggregations {
-        Aggregations::new(self.aggregations.as_ref())
+    pub fn aggs(&self) -> Aggs {
+        Aggs::new(self.aggregations.as_ref())
     }
 }
 
@@ -230,30 +230,52 @@ pub struct Hit<T> {
 }
 
 impl<T> Hit<T> {
+    /// Get a reference to the source document.
     pub fn document(&self) -> Option<&T> {
         self.source.as_ref()
     }
 
+    /// Convert the hit into the source document.
     pub fn into_document(self) -> Option<T> {
         self.source
     }
+
+    /// The index for the hit.
+    pub fn index(&self) -> &str {
+        &self.index
+    }
+
+    /// The type of the hit.
+    pub fn ty(&self) -> &str {
+        &self.ty
+    }
+
+    /// The version of the hit.
+    pub fn version(&self) -> Option<u32> {
+        self.version.clone()
+    }
+
+    /// The score of the hit.
+    pub fn score(&self) -> Option<f32> {
+        self.score.clone()
+    }
 }
 
-/// Type Struct to hold a generic `serde_json::Value` tree of the Aggregation results.
+/// Type Struct to hold a generic `serde_json::Value` tree of the aggregation results.
 #[derive(Deserialize, Debug)]
-struct AggregationsWrapper(Value);
+struct AggsWrapper(Value);
 
-/// Aggregator that traverses the results from Elasticsearch's Aggregations and returns a result
+/// Aggregator that traverses the results from Elasticsearch's aggregations and returns a result
 /// row by row in a table-styled fashion.
 #[derive(Debug)]
-pub struct Aggregations<'a> {
+pub struct Aggs<'a> {
     current_row: Option<RowData<'a>>,
     current_row_finished: bool,
     iter_stack: Vec<(&'a str, Iter<'a, Value>)>,
 }
 
-impl<'a> Aggregations<'a> {
-    fn new(aggregations: Option<&'a AggregationsWrapper>) -> Aggregations<'a> {
+impl<'a> Aggs<'a> {
+    fn new(aggregations: Option<&'a AggsWrapper>) -> Aggs<'a> {
         let iter_stack = {
             match aggregations.and_then(|aggs| aggs.0.as_object()) {
                 Some(o) => {
@@ -270,7 +292,7 @@ impl<'a> Aggregations<'a> {
             }
         };
 
-        Aggregations {
+        Aggs {
             current_row: None,
             current_row_finished: false,
             iter_stack: iter_stack
@@ -292,7 +314,7 @@ fn insert_value<'a>(fieldname: &str,
     }
 }
 
-impl<'a> Iterator for Aggregations<'a> {
+impl<'a> Iterator for Aggs<'a> {
     type Item = RowData<'a>;
 
     fn next(&mut self) -> Option<RowData<'a>> {

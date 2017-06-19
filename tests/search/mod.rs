@@ -35,7 +35,7 @@ fn success_aggs_when_not_present() {
     let f = load_file("tests/samples/search_hits_only.json");
     let deserialized = parse::<SearchResponse<Value>>().from_reader(200, f).unwrap();
 
-    assert_eq!(deserialized.aggregations().count(), 0);
+    assert_eq!(deserialized.aggs().count(), 0);
 }
 
 #[test]
@@ -43,7 +43,7 @@ fn success_parse_simple_aggs() {
     let f = load_file("tests/samples/search_aggregation_simple.json");
     let deserialized = parse::<SearchResponse<Value>>().from_reader(200, f).unwrap();
 
-    assert_eq!(deserialized.aggs().into_iter().count(), 124);
+    assert_eq!(deserialized.aggs().count(), 124);
 }
 
 #[test]
@@ -51,7 +51,7 @@ fn success_parse_3level_aggs() {
     let f = load_file("tests/samples/search_aggregation_3level.json");
     let deserialized = parse::<SearchResponse<Value>>().from_reader(200, f).unwrap();
 
-    assert_eq!(deserialized.aggs().into_iter().count(), 201);
+    assert_eq!(deserialized.aggs().count(), 201);
 }
 
 #[test]
@@ -64,7 +64,7 @@ fn success_parse_3level_multichild_aggs() {
     let max = "max_ack_pkts_sent";
     let mut first = true;
     let mut count = 0;
-    for i in deserialized.aggs().into_iter().take(500000) {
+    for i in deserialized.aggs().take(500000) {
         count += 1;
         if first {
             assert!(i.contains_key(min));
@@ -87,7 +87,7 @@ fn success_parse_3level_multistats_aggs() {
     let stddevu = "extstats_ack_pkts_sent_std_deviation_bounds_upper";
     let mut first = true;
     let mut count = 0;
-    for i in deserialized.aggs().into_iter().take(500000) {
+    for i in deserialized.aggs().take(500000) {
         count += 1;
         if first {
             assert!(i.contains_key(min));
@@ -107,7 +107,7 @@ fn success_parse_simple_aggs_no_empty_first_record() {
 
     let agg = "timechart";
     let mut first = true;
-    for i in deserialized.aggs().into_iter().take(50) {
+    for i in deserialized.aggs().take(50) {
         if first {
             assert!(i.contains_key(agg));
             first = false;

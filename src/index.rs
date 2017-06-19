@@ -6,16 +6,48 @@ use error::*;
 #[derive(Deserialize, Debug)]
 pub struct IndexResponse {
     #[serde(rename = "_index")]
-    pub index: String,
+    index: String,
     #[serde(rename = "_type")]
-    pub ty: String,
+    ty: String,
     #[serde(rename = "_id")]
-    pub id: String,
+    id: String,
     #[serde(rename = "_version")]
-    pub version: Option<u32>,
-    pub created: bool,
+    version: Option<u32>,
+    created: bool,
     #[serde(rename = "_shards")]
-    pub shards: Shards,
+    shards: Shards,
+}
+
+impl IndexResponse {
+    /// Shards metadata for the request.
+    pub fn shards(&self) -> &Shards {
+        &self.shards
+    }
+
+    /// Whether or not a matching document was created.
+    pub fn created(&self) -> bool {
+        self.created
+    }
+
+    /// The index for the document.
+    pub fn index(&self) -> &str {
+        &self.index
+    }
+
+    /// The type of the document.
+    pub fn ty(&self) -> &str {
+        &self.ty
+    }
+
+    /// The id of the document.
+    pub fn id(&self) -> &str {
+        &self.id
+    }
+
+    /// The version of the document.
+    pub fn version(&self) -> Option<u32> {
+        self.version.clone()
+    }
 }
 
 impl IsOk for IndexResponse {
