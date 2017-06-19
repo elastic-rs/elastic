@@ -32,7 +32,7 @@ Query your Elasticsearch Cluster, then iterate through the results:
 let mut res = client.elastic_req(&params, SearchRequest::for_index("_all", body)).unwrap();
 
 // Parse body to JSON
-let body_as_json = parse::<SearchResponse>().from_reader(res.status().to_u16(), res).unwrap();
+let body_as_json = parse::<SearchResponse<Value>>().from_reader(res.status().to_u16(), res).unwrap();
 
 // Use hits() or aggs() iterators
 // Hits
@@ -57,14 +57,17 @@ let mut res = client.elastic_req(&params, BulkRequest::new(body)).unwrap();
 // Parse body to JSON
 let body_as_json = parse::<BulkResponse>().from_reader(res.status().to_u16(), res).unwrap();
 
-// Do something with successful operations
-for op in body_as_json.items.ok {
-    println!("{:?}", op);
-}
-
-// Do something with failed operations
-for op in body_as_json.items.err {
-    println!("{:?}", op);
+for op in body_as_json.into_iter() {
+    match op {
+        Ok(ok) => {
+            // Do something with successful operations
+            println!("ok: {:?}", op);
+        },
+        Err(err) => {
+            // Do something with failed operations
+            println!("{:?}", op);
+        }
+    }
 }
 ```
  
@@ -74,4 +77,3 @@ Licensed under either of these:
  
 - Apache License, Version 2.0 ([LICENSE-APACHE](LICENSE-APACHE) or http://apache.org/licenses/LICENSE-2.0)
 - MIT license ([LICENSE-MIT](LICENSE-MIT) or http://opensource.org/licenses/MIT)
- 

@@ -1,3 +1,5 @@
+//! Response types for a cluster ping request.
+
 use parsing::{IsOk, HttpResponseHead, ResponseBody, Unbuffered, MaybeOkResponse};
 use error::*;
 

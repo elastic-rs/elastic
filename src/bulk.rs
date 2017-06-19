@@ -1,3 +1,5 @@
+//! Response types for a [bulk request](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-bulk.html).
+
 use serde::de::{Deserialize, Deserializer, Visitor, Error as DeError, SeqAccess, MapAccess};
 use serde_json::Value;
 use common::{DefaultAllocatedField, Shards};

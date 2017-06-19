@@ -1,3 +1,5 @@
+//! Response types for a [search request](https://www.elastic.co/guide/en/elasticsearch/reference/current/search-search.html).
+
 use serde::de::DeserializeOwned;
 use serde_json::{Map, Value};
 

@@ -1,3 +1,5 @@
+//! Response types for a [get document request](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-get.html).
+
 use serde::de::DeserializeOwned;
 
 use parsing::{IsOk, HttpResponseHead, ResponseBody, Unbuffered, MaybeOkResponse};

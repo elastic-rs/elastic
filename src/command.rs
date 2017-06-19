@@ -1,3 +1,5 @@
+//! Response types for a standard command.
+
 use parsing::{IsOk, HttpResponseHead, ResponseBody, Unbuffered, MaybeOkResponse};
 use error::*;
 

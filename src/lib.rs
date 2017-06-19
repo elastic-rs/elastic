@@ -3,6 +3,7 @@
 //! A crate to handle parsing and handling Elasticsearch search results which provides
 //! convenient iterators to step through the results returned. It is designed to work
 //! with [`elastic-reqwest`][elastic-reqwest].
+//! It also re-exports `serde_json::Value` for convenient anonymous json objects.
 //! 
 //! This crate provides parsers that can be used to convert a http response into a concrete
 //! type or an API error.
@@ -121,3 +122,6 @@ pub use self::bulk::{BulkResponse, BulkErrorsResponse};
 pub use self::index::*;
 
 pub use self::parsing::parse;
+
+/// Re-export of `serde_json::Value` for convenience.
+pub use serde_json::Value;
