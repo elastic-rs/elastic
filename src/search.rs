@@ -20,12 +20,12 @@ use std::vec::IntoIter;
 /// 
 /// ```no_run
 /// # extern crate elastic_responses;
-/// # use elastic_responses::SearchResponse;
-/// # fn do_request() -> SearchResponse { unimplemented!() }
+/// # use elastic_responses::{SearchResponse, Value};
+/// # fn do_request() -> SearchResponse<Value> { unimplemented!() }
 /// # fn main() {
 /// // Send a request (omitted, see `samples/basic`), and read the response.
 /// // Parse body to JSON as an elastic_responses::SearchResponse object
-/// let body_as_json: SearchResponse = do_request();
+/// let body_as_json: SearchResponse<Value> = do_request();
 ///
 /// // Use hits() or aggs() iterators
 /// // Hits

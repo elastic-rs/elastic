@@ -35,7 +35,7 @@ pub struct Parse<T> {
 /// # fn do_request() -> (u16, Vec<u8>) { unimplemented!() }
 /// # fn main() {
 /// # let (response_status, response_body) = do_request();
-/// let get_response = parse::<GetResponseOf<Value>>().from_slice(response_status, response_body);
+/// let get_response = parse::<GetResponse<Value>>().from_slice(response_status, response_body);
 /// # }
 /// ```
 /// 
@@ -50,7 +50,7 @@ pub struct Parse<T> {
 /// # fn do_request() -> (u16, Vec<u8>) { unimplemented!() }
 /// # fn main() {
 /// # let (response_status, response_body) = do_request();
-/// let get_response: Result<GetResponseOf<Value>, ResponseError> = parse().from_slice(response_status, response_body);
+/// let get_response: Result<GetResponse<Value>, ResponseError> = parse().from_slice(response_status, response_body);
 /// # }
 /// ```
 /// 
@@ -64,7 +64,7 @@ pub struct Parse<T> {
 /// # use elastic_responses::error::*;
 /// # fn do_request() -> (u16, Vec<u8>) { unimplemented!() }
 /// # fn main() {
-/// # fn parse_response() -> Result<GetResponseOf<Value>, ResponseError> {
+/// # fn parse_response() -> Result<GetResponse<Value>, ResponseError> {
 /// # let (response_status, response_body) = do_request();
 /// let get_response = parse().from_slice(response_status, response_body);
 /// # get_response

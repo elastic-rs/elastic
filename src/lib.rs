@@ -30,22 +30,22 @@
 //! # use elastic_responses::*;
 //! # fn do_request() -> (u16, Vec<u8>) { unimplemented!() }
 //! # fn main() {
-//! // Send a document get request and read as a response
+//! // Send a search request and read as a response
 //! let (response_status, response_body) = do_request();
 //! 
 //! // Parse body to JSON as an elastic_responses::SearchResponse object
 //! // If the response is an API error then it'll be parsed into a friendly Rust error
-//! let body_as_json = parse::<SearchResponse>().from_slice(response_status, response_body).unwrap();
+//! let response = parse::<SearchResponse<Value>>().from_slice(response_status, response_body).unwrap();
 //!
 //! // Use hits() or aggs() iterators
 //! // Hits
-//! for i in body_as_json.hits() {
-//!   println!("{:?}",i);
+//! for i in response.hits() {
+//!   println!("{:?}", i);
 //! }
 //!
 //! // Agregations
-//! for i in body_as_json.aggs() {
-//!   println!("{:?}",i);
+//! for i in response.aggs() {
+//!   println!("{:?}", i);
 //! }
 //! # }
 //! ```
@@ -63,13 +63,13 @@
 //! // Send a document get request and read as a response
 //! let (response_status, response_body) = do_request();
 //!
-//! let get_response = parse::<GetResponseOf<Value>>().from_slice(response_status, response_body);
+//! let response = parse::<GetResponse<Value>>().from_slice(response_status, response_body);
 //! 
-//! match get_response {
-//!     Ok(ref res) if res.found => {
+//! match response.map(|res| res.into_document()) {
+//!     Ok(Some(doc)) => {
 //!         // The document was found
 //!     }
-//!     Ok(res) => {
+//!     Ok(None) => {
 //!         // The document was not found
 //!     }
 //!     Err(ResponseError::Api(ApiError::IndexNotFound { index })) => {
