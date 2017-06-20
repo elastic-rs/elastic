@@ -37,15 +37,18 @@
 //! // If the response is an API error then it'll be parsed into a friendly Rust error
 //! let response = parse::<SearchResponse<Value>>().from_slice(response_status, response_body).unwrap();
 //!
-//! // Use hits() or aggs() iterators
-//! // Hits
-//! for i in response.hits() {
-//!   println!("{:?}", i);
+//! // Iterate over hits. Could also use `documents`
+//! for hit in response.hits() {
+//!     let score = hit.score().unwrap_or(f32::default());
+//!     let doc = hit.document();
+//!     
+//!     println!("score: {}", score);
+//!     println!("doc: {:?}", doc);
 //! }
 //!
 //! // Agregations
-//! for i in response.aggs() {
-//!   println!("{:?}", i);
+//! for agg in response.aggs() {
+//!   println!("{:?}", agg);
 //! }
 //! # }
 //! ```

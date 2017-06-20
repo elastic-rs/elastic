@@ -59,17 +59,16 @@ fn success_parse_3level_multichild_aggs() {
     let f = load_file("tests/samples/search_aggregation_3level_multichild.json");
     let deserialized = parse::<SearchResponse<Value>>().from_reader(200, f).unwrap();
 
-    let min = "min_ack_pkts_sent";
-    let avg = "avg_ack_pkts_sent";
-    let max = "max_ack_pkts_sent";
     let mut first = true;
     let mut count = 0;
+    
     for i in deserialized.aggs().take(500000) {
         count += 1;
         if first {
-            assert!(i.contains_key(min));
-            assert!(i.contains_key(max));
-            assert!(i.contains_key(avg));
+            assert_eq!(&json!(12), i["max_ack_pkts_sent"]);
+            assert_eq!(&json!(7), i["avg_ack_pkts_sent"]);
+            assert_eq!(&json!(2), i["min_ack_pkts_sent"]);
+
             first = false;
         }
     }
@@ -81,19 +80,16 @@ fn success_parse_3level_multistats_aggs() {
     let f = load_file("tests/samples/search_aggregation_3level_multistats.json");
     let deserialized = parse::<SearchResponse<Value>>().from_reader(200, f).unwrap();
 
-    let min = "extstats_ack_pkts_sent_min";
-    let avg = "stats_ack_pkts_sent_avg";
-    let max = "extstats_ack_pkts_sent_max";
-    let stddevu = "extstats_ack_pkts_sent_std_deviation_bounds_upper";
     let mut first = true;
     let mut count = 0;
     for i in deserialized.aggs().take(500000) {
         count += 1;
         if first {
-            assert!(i.contains_key(min));
-            assert!(i.contains_key(max));
-            assert!(i.contains_key(avg));
-            assert!(i.contains_key(stddevu));
+            assert_eq!(&json!(2), i["extstats_ack_pkts_sent_min"]);
+            assert_eq!(&json!(7), i["stats_ack_pkts_sent_avg"]);
+            assert_eq!(&json!(12), i["extstats_ack_pkts_sent_max"]);
+            assert_eq!(&json!(17), i["extstats_ack_pkts_sent_std_deviation_bounds_upper"]);
+
             first = false;
         }
     }
