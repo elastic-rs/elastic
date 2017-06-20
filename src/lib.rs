@@ -46,9 +46,12 @@
 //!     println!("doc: {:?}", doc);
 //! }
 //!
-//! // Agregations
+//! // Agregations are flattened into individual stats metrics
 //! for agg in response.aggs() {
-//!   println!("{:?}", agg);
+//!     let min_ack_pkts = agg["min_ack_pkts_sent"].as_u64().unwrap();
+//!     let max_ack_pkts = agg["max_ack_pkts_sent"].as_u64().unwrap();
+//!     
+//!     println!("min: {}, max: {}", min_ack_pkts, max_ack_pkts);
 //! }
 //! # }
 //! ```

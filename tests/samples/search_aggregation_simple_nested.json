@@ -1,0 +1,1229 @@
+{
+  "took": 28,
+  "timed_out": false,
+  "_shards": {
+    "total": 86,
+    "successful": 86,
+    "failed": 0
+  },
+  "hits": {
+    "total": 18959,
+    "max_score": 0,
+    "hits": []
+  },
+  "aggregations": {
+    "timechart": {
+      "buckets": [
+        {
+          "key_as_string": "2016-12-29T15:18:30.000+02:00",
+          "key": 1483017510000,
+          "doc_count": 101,
+          "hosts": {
+            "doc_count_error_upper_bound": 0,
+            "sum_other_doc_count": 0,
+            "buckets": [
+              {
+                "key": "0060e0634ff8",
+                "doc_count": 49,
+                "avg_pkts_sent_a2b": {
+                  "value": 7.666666666666667
+                }
+              },
+              {
+                "key": "b827ebdd0999",
+                "doc_count": 41,
+                "avg_pkts_sent_a2b": {
+                  "value": null
+                }
+              },
+              {
+                "key": "0060e063505c",
+                "doc_count": 7,
+                "avg_pkts_sent_a2b": {
+                  "value": 3.3333333333333335
+                }
+              },
+              {
+                "key": "b827ebb95199",
+                "doc_count": 4,
+                "avg_pkts_sent_a2b": {
+                  "value": null
+                }
+              }
+            ]
+          }
+        },
+        {
+          "key_as_string": "2016-12-29T15:19:00.000+02:00",
+          "key": 1483017540000,
+          "doc_count": 460,
+          "hosts": {
+            "doc_count_error_upper_bound": 0,
+            "sum_other_doc_count": 0,
+            "buckets": [
+              {
+                "key": "0060e0634ff8",
+                "doc_count": 247,
+                "avg_pkts_sent_a2b": {
+                  "value": 25
+                }
+              },
+              {
+                "key": "0060e063505c",
+                "doc_count": 136,
+                "avg_pkts_sent_a2b": {
+                  "value": 5.615384615384615
+                }
+              },
+              {
+                "key": "b827ebb95199",
+                "doc_count": 58,
+                "avg_pkts_sent_a2b": {
+                  "value": null
+                }
+              },
+              {
+                "key": "b827ebdd0999",
+                "doc_count": 19,
+                "avg_pkts_sent_a2b": {
+                  "value": null
+                }
+              }
+            ]
+          }
+        },
+        {
+          "key_as_string": "2016-12-29T15:19:30.000+02:00",
+          "key": 1483017570000,
+          "doc_count": 302,
+          "hosts": {
+            "doc_count_error_upper_bound": 0,
+            "sum_other_doc_count": 0,
+            "buckets": [
+              {
+                "key": "0060e0634ff8",
+                "doc_count": 180,
+                "avg_pkts_sent_a2b": {
+                  "value": 31.142857142857142
+                }
+              },
+              {
+                "key": "0060e063505c",
+                "doc_count": 52,
+                "avg_pkts_sent_a2b": {
+                  "value": 15
+                }
+              },
+              {
+                "key": "b827ebdd0999",
+                "doc_count": 52,
+                "avg_pkts_sent_a2b": {
+                  "value": null
+                }
+              },
+              {
+                "key": "b827ebb95199",
+                "doc_count": 18,
+                "avg_pkts_sent_a2b": {
+                  "value": null
+                }
+              }
+            ]
+          }
+        },
+        {
+          "key_as_string": "2016-12-29T15:20:00.000+02:00",
+          "key": 1483017600000,
+          "doc_count": 542,
+          "hosts": {
+            "doc_count_error_upper_bound": 0,
+            "sum_other_doc_count": 0,
+            "buckets": [
+              {
+                "key": "0060e0634ff8",
+                "doc_count": 292,
+                "avg_pkts_sent_a2b": {
+                  "value": 15.333333333333334
+                }
+              },
+              {
+                "key": "0060e063505c",
+                "doc_count": 189,
+                "avg_pkts_sent_a2b": {
+                  "value": 7.15
+                }
+              },
+              {
+                "key": "b827ebb95199",
+                "doc_count": 58,
+                "avg_pkts_sent_a2b": {
+                  "value": null
+                }
+              },
+              {
+                "key": "b827ebdd0999",
+                "doc_count": 3,
+                "avg_pkts_sent_a2b": {
+                  "value": null
+                }
+              }
+            ]
+          }
+        },
+        {
+          "key_as_string": "2016-12-29T15:20:30.000+02:00",
+          "key": 1483017630000,
+          "doc_count": 627,
+          "hosts": {
+            "doc_count_error_upper_bound": 0,
+            "sum_other_doc_count": 0,
+            "buckets": [
+              {
+                "key": "0060e0634ff8",
+                "doc_count": 400,
+                "avg_pkts_sent_a2b": {
+                  "value": 8.875
+                }
+              },
+              {
+                "key": "0060e063505c",
+                "doc_count": 140,
+                "avg_pkts_sent_a2b": {
+                  "value": 8.88888888888889
+                }
+              },
+              {
+                "key": "b827ebdd0999",
+                "doc_count": 73,
+                "avg_pkts_sent_a2b": {
+                  "value": null
+                }
+              },
+              {
+                "key": "b827ebb95199",
+                "doc_count": 14,
+                "avg_pkts_sent_a2b": {
+                  "value": null
+                }
+              }
+            ]
+          }
+        },
+        {
+          "key_as_string": "2016-12-29T15:21:00.000+02:00",
+          "key": 1483017660000,
+          "doc_count": 615,
+          "hosts": {
+            "doc_count_error_upper_bound": 0,
+            "sum_other_doc_count": 0,
+            "buckets": [
+              {
+                "key": "0060e0634ff8",
+                "doc_count": 456,
+                "avg_pkts_sent_a2b": {
+                  "value": 21.833333333333332
+                }
+              },
+              {
+                "key": "0060e063505c",
+                "doc_count": 116,
+                "avg_pkts_sent_a2b": {
+                  "value": 1.7272727272727273
+                }
+              },
+              {
+                "key": "b827ebb95199",
+                "doc_count": 39,
+                "avg_pkts_sent_a2b": {
+                  "value": null
+                }
+              },
+              {
+                "key": "b827ebdd0999",
+                "doc_count": 4,
+                "avg_pkts_sent_a2b": {
+                  "value": null
+                }
+              }
+            ]
+          }
+        },
+        {
+          "key_as_string": "2016-12-29T15:21:30.000+02:00",
+          "key": 1483017690000,
+          "doc_count": 401,
+          "hosts": {
+            "doc_count_error_upper_bound": 0,
+            "sum_other_doc_count": 0,
+            "buckets": [
+              {
+                "key": "0060e0634ff8",
+                "doc_count": 211,
+                "avg_pkts_sent_a2b": {
+                  "value": 36.833333333333336
+                }
+              },
+              {
+                "key": "0060e063505c",
+                "doc_count": 103,
+                "avg_pkts_sent_a2b": {
+                  "value": 6.434782608695652
+                }
+              },
+              {
+                "key": "b827ebdd0999",
+                "doc_count": 49,
+                "avg_pkts_sent_a2b": {
+                  "value": null
+                }
+              },
+              {
+                "key": "b827ebb95199",
+                "doc_count": 38,
+                "avg_pkts_sent_a2b": {
+                  "value": null
+                }
+              }
+            ]
+          }
+        },
+        {
+          "key_as_string": "2016-12-29T15:22:00.000+02:00",
+          "key": 1483017720000,
+          "doc_count": 609,
+          "hosts": {
+            "doc_count_error_upper_bound": 0,
+            "sum_other_doc_count": 0,
+            "buckets": [
+              {
+                "key": "0060e0634ff8",
+                "doc_count": 302,
+                "avg_pkts_sent_a2b": {
+                  "value": 46.8
+                }
+              },
+              {
+                "key": "0060e063505c",
+                "doc_count": 261,
+                "avg_pkts_sent_a2b": {
+                  "value": 22.75
+                }
+              },
+              {
+                "key": "b827ebb95199",
+                "doc_count": 43,
+                "avg_pkts_sent_a2b": {
+                  "value": null
+                }
+              },
+              {
+                "key": "b827ebdd0999",
+                "doc_count": 3,
+                "avg_pkts_sent_a2b": {
+                  "value": null
+                }
+              }
+            ]
+          }
+        },
+        {
+          "key_as_string": "2016-12-29T15:22:30.000+02:00",
+          "key": 1483017750000,
+          "doc_count": 552,
+          "hosts": {
+            "doc_count_error_upper_bound": 0,
+            "sum_other_doc_count": 0,
+            "buckets": [
+              {
+                "key": "0060e0634ff8",
+                "doc_count": 314,
+                "avg_pkts_sent_a2b": {
+                  "value": 20.22222222222222
+                }
+              },
+              {
+                "key": "0060e063505c",
+                "doc_count": 156,
+                "avg_pkts_sent_a2b": {
+                  "value": 18.703703703703702
+                }
+              },
+              {
+                "key": "b827ebdd0999",
+                "doc_count": 53,
+                "avg_pkts_sent_a2b": {
+                  "value": null
+                }
+              },
+              {
+                "key": "b827ebb95199",
+                "doc_count": 29,
+                "avg_pkts_sent_a2b": {
+                  "value": null
+                }
+              }
+            ]
+          }
+        },
+        {
+          "key_as_string": "2016-12-29T15:23:00.000+02:00",
+          "key": 1483017780000,
+          "doc_count": 572,
+          "hosts": {
+            "doc_count_error_upper_bound": 0,
+            "sum_other_doc_count": 0,
+            "buckets": [
+              {
+                "key": "0060e0634ff8",
+                "doc_count": 328,
+                "avg_pkts_sent_a2b": {
+                  "value": 26
+                }
+              },
+              {
+                "key": "0060e063505c",
+                "doc_count": 154,
+                "avg_pkts_sent_a2b": {
+                  "value": 13.375
+                }
+              },
+              {
+                "key": "b827ebb95199",
+                "doc_count": 87,
+                "avg_pkts_sent_a2b": {
+                  "value": null
+                }
+              },
+              {
+                "key": "b827ebdd0999",
+                "doc_count": 3,
+                "avg_pkts_sent_a2b": {
+                  "value": null
+                }
+              }
+            ]
+          }
+        },
+        {
+          "key_as_string": "2016-12-29T15:23:30.000+02:00",
+          "key": 1483017810000,
+          "doc_count": 355,
+          "hosts": {
+            "doc_count_error_upper_bound": 0,
+            "sum_other_doc_count": 0,
+            "buckets": [
+              {
+                "key": "0060e0634ff8",
+                "doc_count": 218,
+                "avg_pkts_sent_a2b": {
+                  "value": 11.875
+                }
+              },
+              {
+                "key": "0060e063505c",
+                "doc_count": 71,
+                "avg_pkts_sent_a2b": {
+                  "value": 5.733333333333333
+                }
+              },
+              {
+                "key": "b827ebdd0999",
+                "doc_count": 51,
+                "avg_pkts_sent_a2b": {
+                  "value": null
+                }
+              },
+              {
+                "key": "b827ebb95199",
+                "doc_count": 15,
+                "avg_pkts_sent_a2b": {
+                  "value": null
+                }
+              }
+            ]
+          }
+        },
+        {
+          "key_as_string": "2016-12-29T15:24:00.000+02:00",
+          "key": 1483017840000,
+          "doc_count": 455,
+          "hosts": {
+            "doc_count_error_upper_bound": 0,
+            "sum_other_doc_count": 0,
+            "buckets": [
+              {
+                "key": "0060e0634ff8",
+                "doc_count": 270,
+                "avg_pkts_sent_a2b": {
+                  "value": 9
+                }
+              },
+              {
+                "key": "0060e063505c",
+                "doc_count": 139,
+                "avg_pkts_sent_a2b": {
+                  "value": 5
+                }
+              },
+              {
+                "key": "b827ebb95199",
+                "doc_count": 38,
+                "avg_pkts_sent_a2b": {
+                  "value": null
+                }
+              },
+              {
+                "key": "b827ebdd0999",
+                "doc_count": 8,
+                "avg_pkts_sent_a2b": {
+                  "value": null
+                }
+              }
+            ]
+          }
+        },
+        {
+          "key_as_string": "2016-12-29T15:24:30.000+02:00",
+          "key": 1483017870000,
+          "doc_count": 417,
+          "hosts": {
+            "doc_count_error_upper_bound": 0,
+            "sum_other_doc_count": 0,
+            "buckets": [
+              {
+                "key": "0060e0634ff8",
+                "doc_count": 239,
+                "avg_pkts_sent_a2b": {
+                  "value": 4
+                }
+              },
+              {
+                "key": "0060e063505c",
+                "doc_count": 93,
+                "avg_pkts_sent_a2b": {
+                  "value": 7.2
+                }
+              },
+              {
+                "key": "b827ebdd0999",
+                "doc_count": 49,
+                "avg_pkts_sent_a2b": {
+                  "value": null
+                }
+              },
+              {
+                "key": "b827ebb95199",
+                "doc_count": 36,
+                "avg_pkts_sent_a2b": {
+                  "value": null
+                }
+              }
+            ]
+          }
+        },
+        {
+          "key_as_string": "2016-12-29T15:25:00.000+02:00",
+          "key": 1483017900000,
+          "doc_count": 482,
+          "hosts": {
+            "doc_count_error_upper_bound": 0,
+            "sum_other_doc_count": 0,
+            "buckets": [
+              {
+                "key": "0060e0634ff8",
+                "doc_count": 278,
+                "avg_pkts_sent_a2b": {
+                  "value": 79
+                }
+              },
+              {
+                "key": "0060e063505c",
+                "doc_count": 149,
+                "avg_pkts_sent_a2b": {
+                  "value": 5.071428571428571
+                }
+              },
+              {
+                "key": "b827ebb95199",
+                "doc_count": 48,
+                "avg_pkts_sent_a2b": {
+                  "value": null
+                }
+              },
+              {
+                "key": "b827ebdd0999",
+                "doc_count": 7,
+                "avg_pkts_sent_a2b": {
+                  "value": null
+                }
+              }
+            ]
+          }
+        },
+        {
+          "key_as_string": "2016-12-29T15:25:30.000+02:00",
+          "key": 1483017930000,
+          "doc_count": 1230,
+          "hosts": {
+            "doc_count_error_upper_bound": 0,
+            "sum_other_doc_count": 0,
+            "buckets": [
+              {
+                "key": "0060e063505c",
+                "doc_count": 823,
+                "avg_pkts_sent_a2b": {
+                  "value": 9.39090909090909
+                }
+              },
+              {
+                "key": "0060e0634ff8",
+                "doc_count": 311,
+                "avg_pkts_sent_a2b": {
+                  "value": 14.727272727272727
+                }
+              },
+              {
+                "key": "b827ebdd0999",
+                "doc_count": 65,
+                "avg_pkts_sent_a2b": {
+                  "value": null
+                }
+              },
+              {
+                "key": "b827ebb95199",
+                "doc_count": 31,
+                "avg_pkts_sent_a2b": {
+                  "value": null
+                }
+              }
+            ]
+          }
+        },
+        {
+          "key_as_string": "2016-12-29T15:26:00.000+02:00",
+          "key": 1483017960000,
+          "doc_count": 1246,
+          "hosts": {
+            "doc_count_error_upper_bound": 0,
+            "sum_other_doc_count": 0,
+            "buckets": [
+              {
+                "key": "0060e063505c",
+                "doc_count": 853,
+                "avg_pkts_sent_a2b": {
+                  "value": 6.567226890756302
+                }
+              },
+              {
+                "key": "0060e0634ff8",
+                "doc_count": 325,
+                "avg_pkts_sent_a2b": {
+                  "value": 168
+                }
+              },
+              {
+                "key": "b827ebb95199",
+                "doc_count": 61,
+                "avg_pkts_sent_a2b": {
+                  "value": null
+                }
+              },
+              {
+                "key": "b827ebdd0999",
+                "doc_count": 7,
+                "avg_pkts_sent_a2b": {
+                  "value": null
+                }
+              }
+            ]
+          }
+        },
+        {
+          "key_as_string": "2016-12-29T15:26:30.000+02:00",
+          "key": 1483017990000,
+          "doc_count": 664,
+          "hosts": {
+            "doc_count_error_upper_bound": 0,
+            "sum_other_doc_count": 0,
+            "buckets": [
+              {
+                "key": "0060e063505c",
+                "doc_count": 301,
+                "avg_pkts_sent_a2b": {
+                  "value": 4.888888888888889
+                }
+              },
+              {
+                "key": "0060e0634ff8",
+                "doc_count": 280,
+                "avg_pkts_sent_a2b": {
+                  "value": 5.636363636363637
+                }
+              },
+              {
+                "key": "b827ebdd0999",
+                "doc_count": 68,
+                "avg_pkts_sent_a2b": {
+                  "value": null
+                }
+              },
+              {
+                "key": "b827ebb95199",
+                "doc_count": 15,
+                "avg_pkts_sent_a2b": {
+                  "value": null
+                }
+              }
+            ]
+          }
+        },
+        {
+          "key_as_string": "2016-12-29T15:27:00.000+02:00",
+          "key": 1483018020000,
+          "doc_count": 1608,
+          "hosts": {
+            "doc_count_error_upper_bound": 0,
+            "sum_other_doc_count": 0,
+            "buckets": [
+              {
+                "key": "0060e063505c",
+                "doc_count": 1187,
+                "avg_pkts_sent_a2b": {
+                  "value": 10.123762376237623
+                }
+              },
+              {
+                "key": "0060e0634ff8",
+                "doc_count": 338,
+                "avg_pkts_sent_a2b": {
+                  "value": 46
+                }
+              },
+              {
+                "key": "b827ebb95199",
+                "doc_count": 55,
+                "avg_pkts_sent_a2b": {
+                  "value": null
+                }
+              },
+              {
+                "key": "b827ebdd0999",
+                "doc_count": 28,
+                "avg_pkts_sent_a2b": {
+                  "value": null
+                }
+              }
+            ]
+          }
+        },
+        {
+          "key_as_string": "2016-12-29T15:27:30.000+02:00",
+          "key": 1483018050000,
+          "doc_count": 453,
+          "hosts": {
+            "doc_count_error_upper_bound": 0,
+            "sum_other_doc_count": 0,
+            "buckets": [
+              {
+                "key": "0060e0634ff8",
+                "doc_count": 221,
+                "avg_pkts_sent_a2b": {
+                  "value": 13.307692307692308
+                }
+              },
+              {
+                "key": "0060e063505c",
+                "doc_count": 163,
+                "avg_pkts_sent_a2b": {
+                  "value": 8.080645161290322
+                }
+              },
+              {
+                "key": "b827ebdd0999",
+                "doc_count": 54,
+                "avg_pkts_sent_a2b": {
+                  "value": null
+                }
+              },
+              {
+                "key": "b827ebb95199",
+                "doc_count": 15,
+                "avg_pkts_sent_a2b": {
+                  "value": null
+                }
+              }
+            ]
+          }
+        },
+        {
+          "key_as_string": "2016-12-29T15:28:00.000+02:00",
+          "key": 1483018080000,
+          "doc_count": 1035,
+          "hosts": {
+            "doc_count_error_upper_bound": 0,
+            "sum_other_doc_count": 0,
+            "buckets": [
+              {
+                "key": "0060e063505c",
+                "doc_count": 611,
+                "avg_pkts_sent_a2b": {
+                  "value": 8.405405405405405
+                }
+              },
+              {
+                "key": "0060e0634ff8",
+                "doc_count": 359,
+                "avg_pkts_sent_a2b": {
+                  "value": 6
+                }
+              },
+              {
+                "key": "b827ebb95199",
+                "doc_count": 58,
+                "avg_pkts_sent_a2b": {
+                  "value": null
+                }
+              },
+              {
+                "key": "b827ebdd0999",
+                "doc_count": 7,
+                "avg_pkts_sent_a2b": {
+                  "value": null
+                }
+              }
+            ]
+          }
+        },
+        {
+          "key_as_string": "2016-12-29T15:28:30.000+02:00",
+          "key": 1483018110000,
+          "doc_count": 473,
+          "hosts": {
+            "doc_count_error_upper_bound": 0,
+            "sum_other_doc_count": 0,
+            "buckets": [
+              {
+                "key": "0060e0634ff8",
+                "doc_count": 192,
+                "avg_pkts_sent_a2b": {
+                  "value": 21.272727272727273
+                }
+              },
+              {
+                "key": "0060e063505c",
+                "doc_count": 191,
+                "avg_pkts_sent_a2b": {
+                  "value": 7.215189873417722
+                }
+              },
+              {
+                "key": "b827ebdd0999",
+                "doc_count": 49,
+                "avg_pkts_sent_a2b": {
+                  "value": null
+                }
+              },
+              {
+                "key": "b827ebb95199",
+                "doc_count": 41,
+                "avg_pkts_sent_a2b": {
+                  "value": null
+                }
+              }
+            ]
+          }
+        },
+        {
+          "key_as_string": "2016-12-29T15:29:00.000+02:00",
+          "key": 1483018140000,
+          "doc_count": 684,
+          "hosts": {
+            "doc_count_error_upper_bound": 0,
+            "sum_other_doc_count": 0,
+            "buckets": [
+              {
+                "key": "0060e063505c",
+                "doc_count": 335,
+                "avg_pkts_sent_a2b": {
+                  "value": 5.155172413793103
+                }
+              },
+              {
+                "key": "0060e0634ff8",
+                "doc_count": 282,
+                "avg_pkts_sent_a2b": {
+                  "value": 40
+                }
+              },
+              {
+                "key": "b827ebb95199",
+                "doc_count": 58,
+                "avg_pkts_sent_a2b": {
+                  "value": null
+                }
+              },
+              {
+                "key": "b827ebdd0999",
+                "doc_count": 9,
+                "avg_pkts_sent_a2b": {
+                  "value": null
+                }
+              }
+            ]
+          }
+        },
+        {
+          "key_as_string": "2016-12-29T15:29:30.000+02:00",
+          "key": 1483018170000,
+          "doc_count": 416,
+          "hosts": {
+            "doc_count_error_upper_bound": 0,
+            "sum_other_doc_count": 0,
+            "buckets": [
+              {
+                "key": "0060e0634ff8",
+                "doc_count": 176,
+                "avg_pkts_sent_a2b": {
+                  "value": 18.444444444444443
+                }
+              },
+              {
+                "key": "0060e063505c",
+                "doc_count": 173,
+                "avg_pkts_sent_a2b": {
+                  "value": 6.967741935483871
+                }
+              },
+              {
+                "key": "b827ebdd0999",
+                "doc_count": 50,
+                "avg_pkts_sent_a2b": {
+                  "value": null
+                }
+              },
+              {
+                "key": "b827ebb95199",
+                "doc_count": 17,
+                "avg_pkts_sent_a2b": {
+                  "value": null
+                }
+              }
+            ]
+          }
+        },
+        {
+          "key_as_string": "2016-12-29T15:30:00.000+02:00",
+          "key": 1483018200000,
+          "doc_count": 559,
+          "hosts": {
+            "doc_count_error_upper_bound": 0,
+            "sum_other_doc_count": 0,
+            "buckets": [
+              {
+                "key": "0060e0634ff8",
+                "doc_count": 265,
+                "avg_pkts_sent_a2b": {
+                  "value": 14
+                }
+              },
+              {
+                "key": "0060e063505c",
+                "doc_count": 229,
+                "avg_pkts_sent_a2b": {
+                  "value": 3.625
+                }
+              },
+              {
+                "key": "b827ebb95199",
+                "doc_count": 58,
+                "avg_pkts_sent_a2b": {
+                  "value": null
+                }
+              },
+              {
+                "key": "b827ebdd0999",
+                "doc_count": 7,
+                "avg_pkts_sent_a2b": {
+                  "value": null
+                }
+              }
+            ]
+          }
+        },
+        {
+          "key_as_string": "2016-12-29T15:30:30.000+02:00",
+          "key": 1483018230000,
+          "doc_count": 771,
+          "hosts": {
+            "doc_count_error_upper_bound": 0,
+            "sum_other_doc_count": 0,
+            "buckets": [
+              {
+                "key": "0060e0634ff8",
+                "doc_count": 450,
+                "avg_pkts_sent_a2b": {
+                  "value": 11.6
+                }
+              },
+              {
+                "key": "0060e063505c",
+                "doc_count": 237,
+                "avg_pkts_sent_a2b": {
+                  "value": 16.591836734693878
+                }
+              },
+              {
+                "key": "b827ebdd0999",
+                "doc_count": 67,
+                "avg_pkts_sent_a2b": {
+                  "value": null
+                }
+              },
+              {
+                "key": "b827ebb95199",
+                "doc_count": 17,
+                "avg_pkts_sent_a2b": {
+                  "value": null
+                }
+              }
+            ]
+          }
+        },
+        {
+          "key_as_string": "2016-12-29T15:31:00.000+02:00",
+          "key": 1483018260000,
+          "doc_count": 906,
+          "hosts": {
+            "doc_count_error_upper_bound": 0,
+            "sum_other_doc_count": 0,
+            "buckets": [
+              {
+                "key": "0060e0634ff8",
+                "doc_count": 467,
+                "avg_pkts_sent_a2b": {
+                  "value": 69.5
+                }
+              },
+              {
+                "key": "0060e063505c",
+                "doc_count": 392,
+                "avg_pkts_sent_a2b": {
+                  "value": 12.628571428571428
+                }
+              },
+              {
+                "key": "b827ebb95199",
+                "doc_count": 40,
+                "avg_pkts_sent_a2b": {
+                  "value": null
+                }
+              },
+              {
+                "key": "b827ebdd0999",
+                "doc_count": 7,
+                "avg_pkts_sent_a2b": {
+                  "value": null
+                }
+              }
+            ]
+          }
+        },
+        {
+          "key_as_string": "2016-12-29T15:31:30.000+02:00",
+          "key": 1483018290000,
+          "doc_count": 645,
+          "hosts": {
+            "doc_count_error_upper_bound": 0,
+            "sum_other_doc_count": 0,
+            "buckets": [
+              {
+                "key": "0060e0634ff8",
+                "doc_count": 328,
+                "avg_pkts_sent_a2b": {
+                  "value": 12.214285714285714
+                }
+              },
+              {
+                "key": "0060e063505c",
+                "doc_count": 253,
+                "avg_pkts_sent_a2b": {
+                  "value": 13.967391304347826
+                }
+              },
+              {
+                "key": "b827ebb95199",
+                "doc_count": 51,
+                "avg_pkts_sent_a2b": {
+                  "value": null
+                }
+              },
+              {
+                "key": "b827ebdd0999",
+                "doc_count": 13,
+                "avg_pkts_sent_a2b": {
+                  "value": null
+                }
+              }
+            ]
+          }
+        },
+        {
+          "key_as_string": "2016-12-29T15:32:00.000+02:00",
+          "key": 1483018320000,
+          "doc_count": 618,
+          "hosts": {
+            "doc_count_error_upper_bound": 0,
+            "sum_other_doc_count": 0,
+            "buckets": [
+              {
+                "key": "0060e0634ff8",
+                "doc_count": 326,
+                "avg_pkts_sent_a2b": {
+                  "value": 161
+                }
+              },
+              {
+                "key": "0060e063505c",
+                "doc_count": 155,
+                "avg_pkts_sent_a2b": {
+                  "value": 13.25
+                }
+              },
+              {
+                "key": "b827ebb95199",
+                "doc_count": 93,
+                "avg_pkts_sent_a2b": {
+                  "value": null
+                }
+              },
+              {
+                "key": "b827ebdd0999",
+                "doc_count": 44,
+                "avg_pkts_sent_a2b": {
+                  "value": null
+                }
+              }
+            ]
+          }
+        },
+        {
+          "key_as_string": "2016-12-29T15:32:30.000+02:00",
+          "key": 1483018350000,
+          "doc_count": 339,
+          "hosts": {
+            "doc_count_error_upper_bound": 0,
+            "sum_other_doc_count": 0,
+            "buckets": [
+              {
+                "key": "0060e0634ff8",
+                "doc_count": 246,
+                "avg_pkts_sent_a2b": {
+                  "value": 18.75
+                }
+              },
+              {
+                "key": "0060e063505c",
+                "doc_count": 42,
+                "avg_pkts_sent_a2b": {
+                  "value": 10.545454545454545
+                }
+              },
+              {
+                "key": "b827ebb95199",
+                "doc_count": 38,
+                "avg_pkts_sent_a2b": {
+                  "value": null
+                }
+              },
+              {
+                "key": "b827ebdd0999",
+                "doc_count": 13,
+                "avg_pkts_sent_a2b": {
+                  "value": null
+                }
+              }
+            ]
+          }
+        },
+        {
+          "key_as_string": "2016-12-29T15:33:00.000+02:00",
+          "key": 1483018380000,
+          "doc_count": 667,
+          "hosts": {
+            "doc_count_error_upper_bound": 0,
+            "sum_other_doc_count": 0,
+            "buckets": [
+              {
+                "key": "0060e0634ff8",
+                "doc_count": 424,
+                "avg_pkts_sent_a2b": {
+                  "value": 54
+                }
+              },
+              {
+                "key": "0060e063505c",
+                "doc_count": 125,
+                "avg_pkts_sent_a2b": {
+                  "value": 1.8571428571428572
+                }
+              },
+              {
+                "key": "b827ebb95199",
+                "doc_count": 80,
+                "avg_pkts_sent_a2b": {
+                  "value": null
+                }
+              },
+              {
+                "key": "b827ebdd0999",
+                "doc_count": 38,
+                "avg_pkts_sent_a2b": {
+                  "value": null
+                }
+              }
+            ]
+          }
+        },
+        {
+          "key_as_string": "2016-12-29T15:33:30.000+02:00",
+          "key": 1483018410000,
+          "doc_count": 155,
+          "hosts": {
+            "doc_count_error_upper_bound": 0,
+            "sum_other_doc_count": 0,
+            "buckets": [
+              {
+                "key": "0060e0634ff8",
+                "doc_count": 104,
+                "avg_pkts_sent_a2b": {
+                  "value": 154
+                }
+              },
+              {
+                "key": "b827ebb95199",
+                "doc_count": 19,
+                "avg_pkts_sent_a2b": {
+                  "value": null
+                }
+              },
+              {
+                "key": "0060e063505c",
+                "doc_count": 18,
+                "avg_pkts_sent_a2b": {
+                  "value": 73
+                }
+              },
+              {
+                "key": "b827ebdd0999",
+                "doc_count": 14,
+                "avg_pkts_sent_a2b": {
+                  "value": null
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

@@ -12,33 +12,42 @@ use std::collections::BTreeMap;
 use std::slice::Iter;
 use std::vec::IntoIter;
 
-/// Response for a [search request](https://www.elastic.co/guide/en/elasticsearch/reference/current/search-search.html).
+/// Response for a [search request][search-req].
 /// 
 /// This is the main `struct` of the crate, provides access to the `hits` and `aggs` iterators.
 /// 
+/// # Aggregations
+/// 
+/// Aggregations currently have the following limitations:
+/// 
+/// - Only metric aggregations nested in buckets are supported
+/// - Only [Simple Metric Aggregations][metric-aggs] like `avg`, `min`, `max`, `sum` and [Stats Aggregations][stats-aggs] are supported
+/// 
 /// # Examples
+/// 
+/// Iterate over the hits in a search response:
 /// 
 /// ```no_run
 /// # extern crate elastic_responses;
 /// # use elastic_responses::{SearchResponse, Value};
 /// # fn do_request() -> SearchResponse<Value> { unimplemented!() }
 /// # fn main() {
-/// // Send a request (omitted, see `samples/basic`), and read the response.
-/// // Parse body to JSON as an elastic_responses::SearchResponse object
-/// let body_as_json: SearchResponse<Value> = do_request();
+/// let response: SearchResponse<Value> = do_request();
 ///
-/// // Use hits() or aggs() iterators
-/// // Hits
-/// for i in body_as_json.hits() {
-///   println!("{:?}",i);
-/// }
-///
-/// // Agregations
-/// for i in body_as_json.aggs() {
-///   println!("{:?}",i);
+/// // Iterate over hits. Could also use `documents`
+/// for hit in response.hits() {
+///     let score = hit.score().unwrap_or(f32::default());
+///     let doc = hit.document();
+///     
+///     println!("score: {}", score);
+///     println!("doc: {:?}", doc);
 /// }
 /// # }
 /// ```
+/// 
+/// [search-req]: https://www.elastic.co/guide/en/elasticsearch/reference/current/search-search.html
+/// [metric-aggs]: https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations-metrics.html
+/// [stats-aggs]: https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations-metrics-stats-aggregation.html
 #[derive(Deserialize, Debug)]
 pub struct SearchResponse<T> {
     took: u64,
@@ -112,7 +121,7 @@ impl<T> SearchResponse<T> {
         IntoDocuments::new(self.hits)
     }
 
-    /// Returns an Iterator to the search results or aggregations part of the response.
+    /// Iterate over the aggregations in the response.
     ///
     /// This Iterator transforms the tree-like JSON object into a row/table
     /// based format for use with standard iterator adaptors.
@@ -130,7 +139,7 @@ impl<T: DeserializeOwned> IsOk for SearchResponse<T> {
     }
 }
 
-/// An iterator over search query hits.
+/// A borrowing iterator over search query hits.
 pub struct Hits<'a, T: 'a> {
     inner: Iter<'a, Hit<T>>,
 }
@@ -151,7 +160,7 @@ impl<'a, T: 'a> Iterator for Hits<'a, T> {
     }
 }
 
-/// An iterator over search query hits.
+/// A consuminig iterator over search query hits.
 pub struct IntoHits<T> {
     inner: IntoIter<Hit<T>>,
 }
@@ -172,7 +181,7 @@ impl<T> Iterator for IntoHits<T> {
     }
 }
 
-/// An iterator over the source documents in search query hits.
+/// A borrowing iterator over the source documents in search query hits.
 pub struct Documents<'a, T: 'a> {
     inner: Iter<'a, Hit<T>>,
 }
@@ -193,7 +202,7 @@ impl<'a, T: 'a> Iterator for Documents<'a, T> {
     }
 }
 
-/// An iterator over the source documents in search query hits.
+/// A consuming iterator over the source documents in search query hits.
 pub struct IntoDocuments<T> {
     inner: IntoIter<Hit<T>>,
 }
@@ -418,10 +427,6 @@ impl<'a> Iterator for Aggs<'a> {
             };
         }
 
-        match self.current_row {
-            // FIXME: Refactor to avoid this clone()
-            Some(ref x) => Some(x.clone()),
-            None => None,
-        }
+        self.current_row.take()
     }
 }

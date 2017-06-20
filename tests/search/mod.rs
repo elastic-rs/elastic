@@ -43,6 +43,19 @@ fn success_parse_simple_aggs() {
     let f = load_file("tests/samples/search_aggregation_simple.json");
     let deserialized = parse::<SearchResponse<Value>>().from_reader(200, f).unwrap();
 
+    let agg = deserialized.aggs()
+        .filter_map(|agg| agg.get("myagg").and_then(|val| val.as_f64()))
+        .nth(0);
+
+    // TODO: Enable once we support simple values
+    // assert_eq!(Some(10f64), agg);
+}
+
+#[test]
+fn success_parse_simple_nested_aggs() {
+    let f = load_file("tests/samples/search_aggregation_simple_nested.json");
+    let deserialized = parse::<SearchResponse<Value>>().from_reader(200, f).unwrap();
+
     assert_eq!(deserialized.aggs().count(), 124);
 }
 
