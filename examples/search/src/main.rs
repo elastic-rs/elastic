@@ -7,9 +7,9 @@ extern crate json_str;
 extern crate elastic_reqwest;
 extern crate elastic_responses;
 
-use elastic_reqwest::{ElasticClient};
+use elastic_reqwest::ElasticClient;
 use elastic_reqwest::req::SearchRequest;
-use elastic_responses::{parse, SearchResponse};
+use elastic_responses::{parse, SearchResponse, Value};
 
 fn main() {
 
@@ -67,19 +67,21 @@ fn main() {
     });
 
     // Send the request and read the response.
-    let res = client.elastic_req(&params, SearchRequest::for_index("_all", body)).unwrap();
+    let res = client
+        .elastic_req(&params, SearchRequest::for_index("_all", body))
+        .unwrap();
 
     //Parse body to JSON
-    let body_as_json: SearchResponse = parse().from_reader(res.status().to_u16(), res).unwrap();
+    let response: SearchResponse<Value> = parse().from_reader(res.status().to_u16(), res).unwrap();
 
     //Use hits() or aggs() iterators
     //Hits
-    for i in body_as_json.hits() {
+    for i in response.hits() {
         println!("{:?}",i);
     }
 
     //Agregations
-    for i in body_as_json.aggs() {
+    for i in response.aggs() {
         println!("{:?}",i);
     }
 }
