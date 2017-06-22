@@ -561,7 +561,7 @@ pub mod geo_shape_fixtures {
 
 pub mod object_fixtures {
     use serde::ser::SerializeStruct;
-    use chrono::{DateTime, UTC};
+    use chrono::{DateTime, Utc};
     use elastic_types::prelude::*;
 
     #[derive(Default, Clone)]
@@ -581,7 +581,7 @@ pub mod object_fixtures {
         {
             try!(field_ser(state, "integer", i32::mapping()));
             try!(field_ser(state, "string", String::mapping()));
-            try!(field_ser(state, "date", DateTime::<UTC>::mapping()));
+            try!(field_ser(state, "date", DateTime::<Utc>::mapping()));
 
             Ok(())
         }
@@ -604,7 +604,7 @@ pub mod object_fixtures {
         {
             try!(field_ser(state, "integer", i32::mapping()));
             try!(field_ser(state, "string", String::mapping()));
-            try!(field_ser(state, "date", DateTime::<UTC>::mapping()));
+            try!(field_ser(state, "date", DateTime::<Utc>::mapping()));
             try!(field_ser(state, "field", MySmlMapping));
 
             Ok(())
@@ -628,7 +628,7 @@ pub mod object_fixtures {
         {
             try!(field_ser(state, "integer", i32::mapping()));
             try!(field_ser(state, "string", String::mapping()));
-            try!(field_ser(state, "date", DateTime::<UTC>::mapping()));
+            try!(field_ser(state, "date", DateTime::<Utc>::mapping()));
             try!(field_ser(state, "field", MyMedMapping));
 
             Ok(())

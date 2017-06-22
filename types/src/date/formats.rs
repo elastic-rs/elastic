@@ -1,4 +1,4 @@
-use chrono::{DateTime, NaiveDateTime, UTC, Timelike};
+use chrono::{DateTime, NaiveDateTime, Utc, Timelike};
 use std::error::Error;
 use super::{DateFormat, FormattedDate, ParseError};
 
@@ -44,7 +44,7 @@ impl DateFormat for EpochMillis {
         "epoch_millis"
     }
 
-    fn parse(date: &str) -> Result<DateTime<UTC>, ParseError> {
+    fn parse(date: &str) -> Result<DateTime<Utc>, ParseError> {
         let millis = try!(date.parse::<i64>().map_err(|e| e.description().to_string()));
 
         let (s, m) = {
@@ -60,10 +60,10 @@ impl DateFormat for EpochMillis {
             }
         };
 
-        Ok(DateTime::from_utc(NaiveDateTime::from_timestamp(s, m as u32 * 1000000), UTC))
+        Ok(DateTime::from_utc(NaiveDateTime::from_timestamp(s, m as u32 * 1000000), Utc))
     }
 
-    fn format<'a>(date: &DateTime<UTC>) -> FormattedDate<'a> {
+    fn format<'a>(date: &DateTime<Utc>) -> FormattedDate<'a> {
         let msec = (date.timestamp() * 1000) + (date.nanosecond() as i64 / 1000000);
         msec.into()
     }
@@ -71,7 +71,7 @@ impl DateFormat for EpochMillis {
 
 #[cfg(test)]
 mod tests {
-    use chrono::{DateTime, UTC};
+    use chrono::{DateTime, Utc};
     use prelude::*;
 
     #[test]
@@ -353,14 +353,14 @@ mod tests {
                 "yyyy-MM-dd'T'HH:mm:ssZ"
             }
 
-            fn format<'a>(date: &DateTime<UTC>) -> FormattedDate<'a> {
+            fn format<'a>(date: &DateTime<Utc>) -> FormattedDate<'a> {
                 date.to_rfc3339().into()
             }
 
-            fn parse(date: &str) -> Result<DateTime<UTC>, ParseError> {
+            fn parse(date: &str) -> Result<DateTime<Utc>, ParseError> {
                 let date = try!(DateTime::parse_from_rfc3339(date).map_err(|e| ParseError::from(e)));
 
-                Ok(DateTime::from_utc(date.naive_local(), UTC))
+                Ok(DateTime::from_utc(date.naive_local(), Utc))
             }
         }
 

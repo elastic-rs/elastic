@@ -3,7 +3,7 @@ Implementation of the Elasticsearch `date` type.
 
 Dates in Elasticsearch are exposed as a formatted `string` which can contain a `date` and/or a `time` component.
 
-All dates used by `elastic_types` are expected to be given in `UTC`, and if no time is supplied, then 12:00am will be used instead.
+All dates used by `elastic_types` are expected to be given in `Utc`, and if no time is supplied, then 12:00am will be used instead.
 Where performance is paramount, the `EpochMillis` date format will parse and format dates the fastest.
 The difference is especially obvious on the `stable` channel, where date formats can't be parsed at compile time.
 
@@ -82,21 +82,21 @@ You can also manually implement `DateFormat` and write your own arbitrary format
 # extern crate chrono;
 # use elastic_types::prelude::*;
 # fn main() {
-use chrono::{DateTime, UTC};
+use chrono::{DateTime, Utc};
 
 #[derive(Default, Clone)]
 struct MyCustomFormat;
 impl DateFormat for MyCustomFormat {
     fn name() -> &'static str { "yyyy-MM-dd'T'HH:mm:ssZ" }
 
-    fn format<'a>(date: &DateTime<UTC>) -> FormattedDate<'a> {
+    fn format<'a>(date: &DateTime<Utc>) -> FormattedDate<'a> {
         date.to_rfc3339().into()
     }
 
-    fn parse(date: &str) -> Result<DateTime<UTC>, ParseError> {
+    fn parse(date: &str) -> Result<DateTime<Utc>, ParseError> {
         let date = try!(DateTime::parse_from_rfc3339(date).map_err(|e| ParseError::from(e)));
 
-            Ok(DateTime::from_utc(date.naive_local(), UTC))
+            Ok(DateTime::from_utc(date.naive_local(), Utc))
         }
     }
 # }
@@ -115,10 +115,10 @@ pub use self::format::*;
 pub use self::impls::*;
 pub use self::formats::*;
 
-use chrono::{DateTime, UTC};
+use chrono::{DateTime, Utc};
 
-/** A re-export of the `chrono::DateTime` struct with `UTC` timezone. */
-pub type ChronoDateTime = DateTime<UTC>;
+/** A re-export of the `chrono::DateTime` struct with `Utc` timezone. */
+pub type ChronoDateTime = DateTime<Utc>;
 
 /** The default `date` format (`BasicDateTime`). */
 pub type DefaultDateFormat = BasicDateTime;

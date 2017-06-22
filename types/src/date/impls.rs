@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 use std::fmt::{Display, Result as FmtResult, Formatter};
-use chrono::{UTC, NaiveDateTime, NaiveDate, NaiveTime};
+use chrono::{Utc, NaiveDateTime, NaiveDate, NaiveTime};
 use serde::{Serialize, Deserialize, Serializer, Deserializer};
 use serde::de::{Visitor, Error};
 use super::ChronoDateTime;
@@ -16,7 +16,7 @@ impl DateFieldType<DefaultDateMapping<ChronoFormat>, ChronoFormat> for ChronoDat
 An Elasticsearch `date` type with a required `time` component.
 
 The [format](format/index.html) is provided as a generic parameter.
-This struct wraps up a `chrono::DateTime<UTC>` struct, meaning storing time in `UTC` is required.
+This struct wraps up a `chrono::DateTime<Utc>` struct, meaning storing time in `Utc` is required.
 
 # Examples
 
@@ -77,7 +77,7 @@ impl<F, M> Date<F, M>
           M: DateMapping<Format = F>
 {
     /**
-    Creates a new `Date` from the given `chrono::DateTime<UTC>`.
+    Creates a new `Date` from the given `chrono::DateTime<Utc>`.
     
     This function will consume the provided `chrono` date.
     
@@ -89,11 +89,11 @@ impl<F, M> Date<F, M>
     # extern crate elastic_types;
     # extern crate chrono;
     # fn main() {
-    use chrono::UTC;
+    use chrono::Utc;
     use elastic_types::date::{ Date, DefaultDateFormat };
     
     //Create a chrono DateTime struct
-    let chronoDate = UTC::now();
+    let chronoDate = Utc::now();
     
     //Give it to the Date struct
     let esDate: Date<DefaultDateFormat> = Date::new(chronoDate);
@@ -108,7 +108,7 @@ impl<F, M> Date<F, M>
     }
 
     /**
-    Creates an `Date` from the given UTC primitives:
+    Creates an `Date` from the given Utc primitives:
     
     ```
     # use elastic_types::prelude::*;
@@ -119,7 +119,7 @@ impl<F, M> Date<F, M>
         Date {
             value: ChronoDateTime::from_utc(NaiveDateTime::new(NaiveDate::from_ymd(year, month, day),
                                                                NaiveTime::from_hms_milli(hour, minute, second, milli)),
-                                            UTC),
+                                            Utc),
             _t: PhantomData,
         }
     }
@@ -136,7 +136,7 @@ impl<F, M> Date<F, M>
     */
     pub fn now() -> Date<F, M> {
         Date {
-            value: UTC::now(),
+            value: Utc::now(),
             _t: PhantomData,
         }
     }
@@ -372,7 +372,7 @@ mod tests {
 
     #[test]
     fn dates_should_use_chrono_format() {
-        let dt = chrono::UTC
+        let dt = chrono::Utc
             .datetime_from_str("13/05/2015 00:00:00", "%d/%m/%Y %H:%M:%S")
             .unwrap();
         let expected = dt.format("%Y/%m/%d %H:%M:%S").to_string();
@@ -385,7 +385,7 @@ mod tests {
 
     #[test]
     fn dates_should_use_es_format() {
-        let dt = chrono::UTC
+        let dt = chrono::Utc
             .datetime_from_str("13/05/2015 00:00:00", "%d/%m/%Y %H:%M:%S")
             .unwrap();
         let expected = "20150513".to_string();
@@ -409,7 +409,7 @@ mod tests {
 
     #[test]
     fn can_build_date_from_chrono() {
-        let date: Date<DefaultDateFormat> = Date::new(chrono::UTC
+        let date: Date<DefaultDateFormat> = Date::new(chrono::Utc
                                                           .datetime_from_str("13/05/2015 00:00:00", "%d/%m/%Y %H:%M:%S")
                                                           .unwrap());
 
@@ -427,7 +427,7 @@ mod tests {
 
     #[test]
     fn serialise_elastic_date() {
-        let date = Date::<BasicDateTime>::new(chrono::UTC
+        let date = Date::<BasicDateTime>::new(chrono::Utc
                                                   .datetime_from_str("13/05/2015 00:00:00", "%d/%m/%Y %H:%M:%S")
                                                   .unwrap());
 
@@ -445,7 +445,7 @@ mod tests {
 
     #[test]
     fn serialise_elastic_date_brw() {
-        let chrono_date = chrono::UTC
+        let chrono_date = chrono::Utc
             .datetime_from_str("13/05/2015 00:00:00", "%d/%m/%Y %H:%M:%S")
             .unwrap();
 
