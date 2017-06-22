@@ -1,6 +1,6 @@
 /*! Functions that are exported and used by `elastic_types_derive`. */
 
-use chrono::{DateTime, UTC};
+use chrono::{DateTime, Utc};
 use chrono::format::{self, Item, Parsed};
 
 use private::field::FieldMapping;
@@ -20,7 +20,7 @@ pub fn mapping<T, M, F>() -> M
 }
 
 /** Parse a date string using an owned slice of items. */
-pub fn parse_from_tokens<'a>(date: &str, fmt: Vec<Item<'a>>) -> Result<DateTime<UTC>, ParseError> {
+pub fn parse_from_tokens<'a>(date: &str, fmt: Vec<Item<'a>>) -> Result<DateTime<Utc>, ParseError> {
     let mut parsed = Parsed::new();
     match format::parse(&mut parsed, date, fmt.into_iter()) {
         Ok(_) => {
@@ -32,13 +32,13 @@ pub fn parse_from_tokens<'a>(date: &str, fmt: Vec<Item<'a>>) -> Result<DateTime<
 
             // Set the DateTime result
             let dt = try!(parsed.to_naive_datetime_with_offset(0));
-            Ok(DateTime::from_utc(dt, UTC))
+            Ok(DateTime::from_utc(dt, Utc))
         }
         Err(e) => Err(e.into()),
     }
 }
 
 /** Format a date string using an owned slice of items. */
-pub fn format_with_tokens<'a>(date: &DateTime<UTC>, fmt: Vec<Item<'a>>) -> FormattedDate<'a> {
+pub fn format_with_tokens<'a>(date: &DateTime<Utc>, fmt: Vec<Item<'a>>) -> FormattedDate<'a> {
     date.format_with_items(fmt.into_iter()).into()
 }

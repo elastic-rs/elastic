@@ -109,7 +109,7 @@ named!(millisecond(&[u8]) -> DateFormatToken,
     )
 );
 
-/** Parse `Z` as a UTC timezone. */
+/** Parse `Z` as a Utc timezone. */
 named!(utc(&[u8]) -> DateFormatToken,
     do_parse!(
         char!('Z') >>

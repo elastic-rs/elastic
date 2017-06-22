@@ -234,7 +234,7 @@ impl<F> DateMapping for DefaultDateMapping<F>
 #[cfg(test)]
 mod tests {
     use serde_json;
-    use chrono::{DateTime, UTC};
+    use chrono::{DateTime, Utc};
 
     use prelude::*;
     use private::field::DocumentField;
@@ -275,7 +275,7 @@ mod tests {
 
     #[test]
     fn datetime_has_default_mapping() {
-        assert_eq!(DefaultDateMapping::<ChronoFormat>::default(), DateTime::<UTC>::mapping());
+        assert_eq!(DefaultDateMapping::<ChronoFormat>::default(), DateTime::<Utc>::mapping());
     }
 
     #[test]

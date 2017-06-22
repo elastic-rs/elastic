@@ -476,7 +476,7 @@ The following table illustrates the types provided by `elastic_types`:
  `text`              | `String`                    | `std`     | [`Text<M>`](string/index.html)                                                   | -
  `boolean`           | `bool`                      | `std`     | [`Boolean<M>`](boolean/index.html)                                               | -
  `ip`                | `Ipv4Addr`                  | `std`     | [`Ip<M>`](ip/index.html)                                                         | -
- `date`              | `DateTime<UTC>`             | `chrono`  | [`Date<F, M>`](date/index.html)                                                  | `DateFormat`
+ `date`              | `DateTime<Utc>`             | `chrono`  | [`Date<F, M>`](date/index.html)                                                  | `DateFormat`
  `geo_point`         | `Point`                     | `geo`     | [`GeoPoint<F, M>`](geo/point/index.html)                                         | `GeoPointFormat`
  `geo_shape`         | -                           | `geojson` | [`GeoShape<M>`](geo/shape/index.html)                                            | -
 
@@ -492,7 +492,7 @@ If you want to provide your own mapping for a `std` type, there's also a struct 
 that wraps the `std` type but also takes an explicit mapping (like `Integer` which implements `Deref<Target = i32>`).
 
 Where there isn't a `std` type available (like `date`), an external crate is used and an implementation of
-that type is provided (like `Date`, which implements `Deref<Target = chrono::DateTime<UTC>>`).
+that type is provided (like `Date`, which implements `Deref<Target = chrono::DateTime<Utc>>`).
 
 ## Formats
 

@@ -1,5 +1,5 @@
 use chrono;
-use chrono::{DateTime, UTC};
+use chrono::{DateTime, Utc};
 use chrono::format::{Item, DelayedFormat};
 use std::error::Error;
 use std::fmt::{Display, Result as FmtResult, Formatter};
@@ -53,11 +53,11 @@ struct MyFormat;
 pub trait DateFormat
     where Self: Default
 {
-    /** Parses a date string to a `chrono::DateTime<UTC>` result. */
-    fn parse(date: &str) -> Result<DateTime<UTC>, ParseError>;
+    /** Parses a date string to a `chrono::DateTime<Utc>` result. */
+    fn parse(date: &str) -> Result<DateTime<Utc>, ParseError>;
 
-    /** Formats a given `chrono::DateTime<UTC>` as a string. */
-    fn format<'a>(date: &DateTime<UTC>) -> FormattedDate<'a>;
+    /** Formats a given `chrono::DateTime<Utc>` as a string. */
+    fn format<'a>(date: &DateTime<Utc>) -> FormattedDate<'a>;
 
     /**
     The name of the format.
