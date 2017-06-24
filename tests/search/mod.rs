@@ -1,5 +1,6 @@
 extern crate elastic_responses;
 extern crate serde_json;
+extern crate serde;
 
 use elastic_responses::*;
 use elastic_responses::error::*;
@@ -18,6 +19,39 @@ fn success_parse_empty() {
 fn success_parse_hits_simple() {
     let f = load_file("tests/samples/search_hits_only.json");
     let deserialized = parse::<SearchResponse<Value>>().from_reader(200, f).unwrap();
+
+    assert_eq!(deserialized.hits().into_iter().count(), 5);
+}
+
+#[test]
+fn success_parse_hits_simple_of_t() {
+    #[allow(dead_code)]
+    #[derive(Deserialize)]
+    struct Event {
+        #[serde(rename = "@version")]
+        version: String,
+        #[serde(rename = "@timestamp")]
+        timestamp: String,
+        port: u16,
+        #[serde(rename = "type")]
+        ty: String,
+        tags: Vec<String>,
+        #[serde(rename = "destinationAddress")]
+        destination_address: String,
+        #[serde(rename = "countryCode", default)]
+        country_code: String,
+        #[serde(rename = "countryName", default)]
+        country_name: String,
+        #[serde(rename = "cityName", default)]
+        city_name: String,
+        #[serde(rename = "internetServiceProviderName", default)]
+        internet_service_provider_name: String,
+        #[serde(rename = "syslogProgram")]
+        syslog_program: String
+    }
+
+    let f = load_file("tests/samples/search_hits_only.json");
+    let deserialized = parse::<SearchResponse<Event>>().from_reader(200, f).unwrap();
 
     assert_eq!(deserialized.hits().into_iter().count(), 5);
 }
@@ -43,7 +77,7 @@ fn success_parse_simple_aggs() {
     let f = load_file("tests/samples/search_aggregation_simple.json");
     let deserialized = parse::<SearchResponse<Value>>().from_reader(200, f).unwrap();
 
-    let agg = deserialized.aggs()
+    let _agg = deserialized.aggs()
         .filter_map(|agg| agg.get("myagg").and_then(|val| val.as_f64()))
         .nth(0);
 

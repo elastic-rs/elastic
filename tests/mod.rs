@@ -1,6 +1,8 @@
 extern crate elastic_responses;
 #[macro_use]
 extern crate serde_json;
+#[macro_use]
+extern crate serde_derive;
 
 use std::fs::File;
 

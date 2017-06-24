@@ -56,6 +56,32 @@
 //! # }
 //! ```
 //! 
+//! Any type that implements `Deserialize` can be used as the document type in the search response:
+//! 
+//! ```no_run
+//! # #[macro_use] extern crate serde_derive;
+//! # extern crate serde;
+//! # extern crate elastic_responses;
+//! # use elastic_responses::*;
+//! # fn do_request() -> (u16, Vec<u8>) { unimplemented!() }
+//! # fn main() {
+//! #[derive(Deserialize)]
+//! struct MyDocument {
+//!     title: String,
+//!     description: String
+//! }
+//! 
+//! let (response_status, response_body) = do_request();
+//! 
+//! let response = parse::<SearchResponse<MyDocument>>().from_slice(response_status, response_body).unwrap();
+//!
+//! for doc in response.documents() {
+//!     println!("title: {}", doc.title);
+//!     println!("description: {}", doc.description);
+//! }
+//! # }
+//! ```
+//! 
 //! Run a [Get Document][get-document] request, and handle cases where the document wasn't found or the index doesn't exist:
 //! 
 //! ```no_run
@@ -87,6 +113,10 @@
 //! }
 //! # }
 //! ```
+//! 
+//! As with `SearchResponse`, any type that implements `Deserialize` can be used as the generic document type
+//! in a `GetResponse`.
+//! 
 //! [elastic-reqwest]: https://github.com/elastic-rs/elastic-reqwest/
 //! [crates-io]: https://crates.io/crates/elastic_responses
 //! [query-dsl]: https://www.elastic.co/guide/en/elasticsearch/reference/current/search.html
