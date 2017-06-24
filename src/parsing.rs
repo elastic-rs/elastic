@@ -300,7 +300,7 @@ impl<B> MaybeOkResponse<B> where B: ResponseBody
 pub struct Unbuffered<B>(B);
 
 impl<B: ResponseBody> Unbuffered<B> {
-    Buffer the response body to a json value and return a new buffered representation.
+    /** Buffer the response body to a json value and return a new buffered representation. */
     pub fn body(self) -> Result<(Value, Buffered<B>), ParseResponseError> {
         self.0.body().map(|(value, body)| (value, Buffered(body)))
     }
