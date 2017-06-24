@@ -32,16 +32,16 @@ Query your Elasticsearch Cluster, then iterate through the results:
 let mut res = client.elastic_req(&params, SearchRequest::for_index("_all", body)).unwrap();
 
 // Parse body to JSON
-let body_as_json = parse::<SearchResponse<Value>>().from_reader(res.status().to_u16(), res).unwrap();
+let response = parse::<SearchResponse<Value>>().from_reader(res.status().to_u16(), res).unwrap();
 
 // Use hits() or aggs() iterators
 // Hits
-for hit in body_as_json.hits() {
+for hit in response.hits() {
     println!("{:?}", hit);
 }
 
 // Agregations
-for agg in body_as_json.aggs() {
+for agg in response.aggs() {
     println!("{:?}", agg);
 }
 ```
@@ -55,9 +55,9 @@ Bulk response operations are split by whether they succeeded or failed:
 let mut res = client.elastic_req(&params, BulkRequest::new(body)).unwrap();
 
 // Parse body to JSON
-let body_as_json = parse::<BulkResponse>().from_reader(res.status().to_u16(), res).unwrap();
+let response = parse::<BulkResponse>().from_reader(res.status().to_u16(), res).unwrap();
 
-for op in body_as_json.into_iter() {
+for op in response.into_iter() {
     match op {
         Ok(ok) => {
             // Do something with successful operations

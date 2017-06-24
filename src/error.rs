@@ -1,18 +1,20 @@
-//! Error types from Elasticsearch
+/*!
+Error types from Elasticsearch
+*/
 
 use serde::{Deserialize, Deserializer};
 use serde_json::{Map, Value, Error as JsonError};
 use std::io::Error as IoError;
 
 quick_error! {
-    /// An error parsing a response stream.
+    /** An error parsing a response stream. */
     #[derive(Debug)]
     pub enum ParseResponseError {
-        /// The response contains invalid json.
+        /** The response contains invalid json. */
         Json(err: JsonError) {
             from()
         }
-        /// The response caused an io error while buffering.
+        /** The response caused an io error while buffering. */
         Io(err: IoError) {
             from()
         }
@@ -20,14 +22,14 @@ quick_error! {
 }
 
 quick_error! {
-    /// An error parsing a REST API response to a success value.
+    /** An error parsing a REST API response to a success value. */
     #[derive(Debug)]
     pub enum ResponseError {
-        /// A REST API error from Elasticsearch.
+        /** A REST API error from Elasticsearch. */
         Api(err: ApiError) {
             from()
         }
-        /// An error parsing a response body.
+        /** An error parsing a response body. */
         Parse(err: ParseResponseError) {
             from()
         }
@@ -35,7 +37,7 @@ quick_error! {
 }
 
 quick_error! {
-    /// A REST API error response.
+    /** A REST API error response. */
     #[derive(Debug, PartialEq)]
     pub enum ApiError {
         IndexNotFound { index: String } {

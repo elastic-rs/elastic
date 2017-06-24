@@ -1,18 +1,22 @@
-//! Response types for a standard command.
+/*!
+Response types for a standard command.
+*/
 
 use parsing::{IsOk, HttpResponseHead, ResponseBody, Unbuffered, MaybeOkResponse};
 use error::*;
 
-/// A standard command acknowledgement response.
+/** A standard command acknowledgement response. */
 #[derive(Deserialize, Debug, Clone)]
 pub struct CommandResponse {
     acknowledged: bool
 }
 
 impl CommandResponse {
-    /// Whether or not the request was acknowledged.
-    /// 
-    /// This doesn't necessarily mean the request has been fully processed.
+    /** 
+    Whether or not the request was acknowledged.
+    
+    This doesn't necessarily mean the request has been fully processed.
+    */
     pub fn acknowledged(&self) -> bool {
         self.acknowledged
     }
