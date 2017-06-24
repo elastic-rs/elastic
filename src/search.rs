@@ -1,4 +1,6 @@
-//! Response types for a [search request](https://www.elastic.co/guide/en/elasticsearch/reference/current/search-search.html).
+/*! 
+Response types for a [search request](https://www.elastic.co/guide/en/elasticsearch/reference/current/search-search.html).
+*/
 
 use serde::de::DeserializeOwned;
 use serde_json::{Map, Value};
@@ -12,42 +14,44 @@ use std::collections::BTreeMap;
 use std::slice::Iter;
 use std::vec::IntoIter;
 
-/// Response for a [search request][search-req].
-/// 
-/// This is the main `struct` of the crate, provides access to the `hits` and `aggs` iterators.
-/// 
-/// # Aggregations
-/// 
-/// Aggregations currently have the following limitations:
-/// 
-/// - Only metric aggregations nested in buckets are supported
-/// - Only [Simple Metric Aggregations][metric-aggs] like `avg`, `min`, `max`, `sum` and [Stats Aggregations][stats-aggs] are supported
-/// 
-/// # Examples
-/// 
-/// Iterate over the hits in a search response:
-/// 
-/// ```no_run
-/// # extern crate elastic_responses;
-/// # use elastic_responses::{SearchResponse, Value};
-/// # fn do_request() -> SearchResponse<Value> { unimplemented!() }
-/// # fn main() {
-/// let response: SearchResponse<Value> = do_request();
-///
-/// // Iterate over hits. Could also use `documents`
-/// for hit in response.hits() {
-///     let score = hit.score().unwrap_or(f32::default());
-///     let doc = hit.document();
-///     
-///     println!("score: {}", score);
-///     println!("doc: {:?}", doc);
-/// }
-/// # }
-/// ```
-/// 
-/// [search-req]: https://www.elastic.co/guide/en/elasticsearch/reference/current/search-search.html
-/// [metric-aggs]: https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations-metrics.html
-/// [stats-aggs]: https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations-metrics-stats-aggregation.html
+/** 
+Response for a [search request][search-req].
+
+This is the main `struct` of the crate, provides access to the `hits` and `aggs` iterators.
+
+# Aggregations
+
+Aggregations currently have the following limitations:
+
+- Only metric aggregations nested in buckets are supported
+- Only [Simple Metric Aggregations][metric-aggs] like `avg`, `min`, `max`, `sum` and [Stats Aggregations][stats-aggs] are supported
+
+# Examples
+
+Iterate over the hits in a search response:
+
+```no_run
+# extern crate elastic_responses;
+# use elastic_responses::{SearchResponse, Value};
+# fn do_request() -> SearchResponse<Value> { unimplemented!() }
+# fn main() {
+let response: SearchResponse<Value> = do_request();
+
+// Iterate over hits. Could also use `documents`
+for hit in response.hits() {
+    let score = hit.score().unwrap_or(f32::default());
+    let doc = hit.document();
+    
+    println!("score: {}", score);
+    println!("doc: {:?}", doc);
+}
+# }
+```
+
+[search-req]: https://www.elastic.co/guide/en/elasticsearch/reference/current/search-search.html
+[metric-aggs]: https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations-metrics.html
+[stats-aggs]: https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations-metrics-stats-aggregation.html
+*/
 #[derive(Deserialize, Debug)]
 pub struct SearchResponse<T> {
     took: u64,
@@ -59,7 +63,7 @@ pub struct SearchResponse<T> {
     status: Option<u16>,
 }
 
-/// Struct to hold the search's Hits, serializable to type `T` or `serde_json::Value`
+/** Struct to hold the search's Hits, serializable to type `T` or `serde_json::Value`. */
 #[derive(Deserialize, Debug)]
 struct HitsWrapper<T> {
     total: u64,
@@ -69,62 +73,65 @@ struct HitsWrapper<T> {
 }
 
 impl<T> SearchResponse<T> {
-    /// Time in milliseconds it took for Elasticsearch to process the request.
+    /** Time in milliseconds it took for Elasticsearch to process the request. */
     pub fn took(&self) -> u64 {
         self.took
     }
 
-    /// Whether or not the request timed out before completing.
+    /** Whether or not the request timed out before completing. */
     pub fn timed_out(&self) -> bool {
         self.timed_out
     }
 
-    /// Shards metadata for the request.
+    /** Shards metadata for the request. */
     pub fn shards(&self) -> &Shards {
         &self.shards
     }
 
-    /// A http status associated with the response.
+    /** A http status associated with the response. */
     pub fn status(&self) -> Option<u16> {
         self.status.clone()
     }
 
-    /// The total number of documents that matched the search query.
+    /** The total number of documents that matched the search query. */
     pub fn total(&self) -> u64 {
         self.hits.total
     }
 
-    /// The max score for documents that matched the search query.
+    /** The max score for documents that matched the search query. */
     pub fn max_score(&self) -> Option<f32> {
         self.hits.max_score.clone()
     }
 
-    /// Iterate over the hits matched by the search query.
+    /** Iterate over the hits matched by the search query. */
     pub fn hits(&self) -> Hits<T> {
         Hits::new(&self.hits)
     }
 
-    /// Convert the response into an iterator that consumes the hits.
+    /** Convert the response into an iterator that consumes the hits. */
     pub fn into_hits(self) -> IntoHits<T> {
         IntoHits::new(self.hits)
     }
 
-    /// Iterate over the documents matched by the search query.
-    /// 
-    /// This iterator emits just the `_source` field for the returned hits.
+    /** 
+    Iterate over the documents matched by the search query.
+    
+    This iterator emits just the `_source` field for the returned hits.
+    */
     pub fn documents(&self) -> Documents<T> {
         Documents::new(&self.hits)
     }
 
-    /// Convert the response into an iterator that consumes the documents.
+    /** Convert the response into an iterator that consumes the documents. */
     pub fn into_documents(self) -> IntoDocuments<T> {
         IntoDocuments::new(self.hits)
     }
 
-    /// Iterate over the aggregations in the response.
-    ///
-    /// This Iterator transforms the tree-like JSON object into a row/table
-    /// based format for use with standard iterator adaptors.
+    /** 
+    Iterate over the aggregations in the response.
+    
+    This Iterator transforms the tree-like JSON object into a row/table based format for use with standard iterator adaptors.
+    */
     pub fn aggs(&self) -> Aggs {
         Aggs::new(self.aggregations.as_ref())
     }
@@ -139,7 +146,7 @@ impl<T: DeserializeOwned> IsOk for SearchResponse<T> {
     }
 }
 
-/// A borrowing iterator over search query hits.
+/** A borrowing iterator over search query hits. */
 pub struct Hits<'a, T: 'a> {
     inner: Iter<'a, Hit<T>>,
 }
@@ -160,7 +167,7 @@ impl<'a, T: 'a> Iterator for Hits<'a, T> {
     }
 }
 
-/// A consuminig iterator over search query hits.
+/** A consuminig iterator over search query hits. */
 pub struct IntoHits<T> {
     inner: IntoIter<Hit<T>>,
 }
@@ -181,7 +188,7 @@ impl<T> Iterator for IntoHits<T> {
     }
 }
 
-/// A borrowing iterator over the source documents in search query hits.
+/** A borrowing iterator over the source documents in search query hits. */
 pub struct Documents<'a, T: 'a> {
     inner: Iter<'a, Hit<T>>,
 }
@@ -202,7 +209,7 @@ impl<'a, T: 'a> Iterator for Documents<'a, T> {
     }
 }
 
-/// A consuming iterator over the source documents in search query hits.
+/** A consuming iterator over the source documents in search query hits. */
 pub struct IntoDocuments<T> {
     inner: IntoIter<Hit<T>>,
 }
@@ -223,7 +230,7 @@ impl<T> Iterator for IntoDocuments<T> {
     }
 }
 
-/// Full metadata and source for a single hit.
+/** Full metadata and source for a single hit. */
 #[derive(Deserialize, Debug)]
 pub struct Hit<T> {
     #[serde(rename = "_index")]
@@ -241,43 +248,44 @@ pub struct Hit<T> {
 }
 
 impl<T> Hit<T> {
-    /// Get a reference to the source document.
+    /** Get a reference to the source document. */
     pub fn document(&self) -> Option<&T> {
         self.source.as_ref()
     }
 
-    /// Convert the hit into the source document.
+    /** Convert the hit into the source document. */
     pub fn into_document(self) -> Option<T> {
         self.source
     }
 
-    /// The index for the hit.
+    /** The index for the hit. */
     pub fn index(&self) -> &str {
         &self.index
     }
 
-    /// The type of the hit.
+    /** The type of the hit. */
     pub fn ty(&self) -> &str {
         &self.ty
     }
 
-    /// The version of the hit.
+    /** The version of the hit. */
     pub fn version(&self) -> Option<u32> {
         self.version.clone()
     }
 
-    /// The score of the hit.
+    /** The score of the hit. */
     pub fn score(&self) -> Option<f32> {
         self.score.clone()
     }
 }
 
-/// Type Struct to hold a generic `serde_json::Value` tree of the aggregation results.
+/** Type Struct to hold a generic `serde_json::Value` tree of the aggregation results. */
 #[derive(Deserialize, Debug)]
 struct AggsWrapper(Value);
 
-/// Aggregator that traverses the results from Elasticsearch's aggregations and returns a result
-/// row by row in a table-styled fashion.
+/** 
+Aggregator that traverses the results from Elasticsearch's aggregations and returns a result row by row in a table-styled fashion.
+*/
 #[derive(Debug)]
 pub struct Aggs<'a> {
     current_row: Option<RowData<'a>>,

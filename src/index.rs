@@ -1,10 +1,12 @@
-//! Response types for an [index document request](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html).
+/*!
+Response types for an [index document request](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html).
+*/
 
 use common::Shards;
 use parsing::{IsOk, HttpResponseHead, ResponseBody, Unbuffered, MaybeOkResponse};
 use error::*;
 
-/// Response for an [index document request](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html).
+/** Response for an [index document request](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html). */
 #[derive(Deserialize, Debug)]
 pub struct IndexResponse {
     #[serde(rename = "_index")]
@@ -21,32 +23,32 @@ pub struct IndexResponse {
 }
 
 impl IndexResponse {
-    /// Shards metadata for the request.
+    /** Shards metadata for the request. */
     pub fn shards(&self) -> &Shards {
         &self.shards
     }
 
-    /// Whether or not a matching document was created.
+    /** Whether or not a matching document was created. */
     pub fn created(&self) -> bool {
         self.created
     }
 
-    /// The index for the document.
+    /** The index for the document. */
     pub fn index(&self) -> &str {
         &self.index
     }
 
-    /// The type of the document.
+    /** The type of the document. */
     pub fn ty(&self) -> &str {
         &self.ty
     }
 
-    /// The id of the document.
+    /** The id of the document. */
     pub fn id(&self) -> &str {
         &self.id
     }
 
-    /// The version of the document.
+    /** The version of the document. */
     pub fn version(&self) -> Option<u32> {
         self.version.clone()
     }

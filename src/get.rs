@@ -1,11 +1,13 @@
-//! Response types for a [get document request](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-get.html).
+/*!
+Response types for a [get document request](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-get.html).
+*/
 
 use serde::de::DeserializeOwned;
 
 use parsing::{IsOk, HttpResponseHead, ResponseBody, Unbuffered, MaybeOkResponse};
 use error::*;
 
-/// Response for a [get document request](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-get.html).
+/** Response for a [get document request](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-get.html). */
 #[derive(Deserialize, Debug)]
 pub struct GetResponse<T> {
     #[serde(rename = "_index")]
@@ -24,37 +26,37 @@ pub struct GetResponse<T> {
 }
 
 impl<T> GetResponse<T> {
-    /// Get a reference to the source document.
+    /** Get a reference to the source document. */
     pub fn document(&self) -> Option<&T> {
         self.source.as_ref()
     }
 
-    /// Convert the response into the source document.
+    /** Convert the response into the source document. */
     pub fn into_document(self) -> Option<T> {
         self.source
     }
 
-    /// Whether or not a matching document was found.
+    /** Whether or not a matching document was found. */
     pub fn found(&self) -> bool {
         self.found
     }
 
-    /// The index for the document.
+    /** The index for the document. */
     pub fn index(&self) -> &str {
         &self.index
     }
 
-    /// The type of the document.
+    /** The type of the document. */
     pub fn ty(&self) -> &str {
         &self.ty
     }
 
-    /// The id of the document.
+    /** The id of the document. */
     pub fn id(&self) -> &str {
         &self.id
     }
 
-    /// The version of the document.
+    /** The version of the document. */
     pub fn version(&self) -> Option<u32> {
         self.version.clone()
     }
