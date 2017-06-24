@@ -1,30 +1,66 @@
+//! Response types for a [get document request](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-get.html).
+
 use serde::de::DeserializeOwned;
-use serde_json::Value;
 
 use parsing::{IsOk, HttpResponseHead, ResponseBody, Unbuffered, MaybeOkResponse};
 use error::*;
 
 /// Response for a [get document request](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-get.html).
 #[derive(Deserialize, Debug)]
-pub struct GetResponseOf<T> {
+pub struct GetResponse<T> {
     #[serde(rename = "_index")]
-    pub index: String,
+    index: String,
     #[serde(rename = "_type")]
-    pub ty: String,
+    ty: String,
     #[serde(rename = "_id")]
-    pub id: String,
+    id: String,
     #[serde(rename = "_version")]
-    pub version: Option<u32>,
-    pub found: bool,
+    version: Option<u32>,
+    found: bool,
     #[serde(rename = "_source")]
-    pub source: Option<T>,
+    source: Option<T>,
     #[serde(rename="_routing")]
-    pub routing: Option<String>,
+    routing: Option<String>,
 }
 
-pub type GetResponse = GetResponseOf<Value>;
+impl<T> GetResponse<T> {
+    /// Get a reference to the source document.
+    pub fn document(&self) -> Option<&T> {
+        self.source.as_ref()
+    }
 
-impl<T: DeserializeOwned> IsOk for GetResponseOf<T> {
+    /// Convert the response into the source document.
+    pub fn into_document(self) -> Option<T> {
+        self.source
+    }
+
+    /// Whether or not a matching document was found.
+    pub fn found(&self) -> bool {
+        self.found
+    }
+
+    /// The index for the document.
+    pub fn index(&self) -> &str {
+        &self.index
+    }
+
+    /// The type of the document.
+    pub fn ty(&self) -> &str {
+        &self.ty
+    }
+
+    /// The id of the document.
+    pub fn id(&self) -> &str {
+        &self.id
+    }
+
+    /// The version of the document.
+    pub fn version(&self) -> Option<u32> {
+        self.version.clone()
+    }
+}
+
+impl<T: DeserializeOwned> IsOk for GetResponse<T> {
     fn is_ok<B: ResponseBody>(head: HttpResponseHead, body: Unbuffered<B>) -> Result<MaybeOkResponse<B>, ParseResponseError> {
         match head.status() {
             200...299 => Ok(MaybeOkResponse::ok(body)),

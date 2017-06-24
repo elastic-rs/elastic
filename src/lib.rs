@@ -3,6 +3,7 @@
 //! A crate to handle parsing and handling Elasticsearch search results which provides
 //! convenient iterators to step through the results returned. It is designed to work
 //! with [`elastic-reqwest`][elastic-reqwest].
+//! It also re-exports `serde_json::Value` for convenient anonymous json objects.
 //! 
 //! This crate provides parsers that can be used to convert a http response into a concrete
 //! type or an API error.
@@ -29,22 +30,54 @@
 //! # use elastic_responses::*;
 //! # fn do_request() -> (u16, Vec<u8>) { unimplemented!() }
 //! # fn main() {
-//! // Send a document get request and read as a response
+//! // Send a search request and read as a response
 //! let (response_status, response_body) = do_request();
 //! 
 //! // Parse body to JSON as an elastic_responses::SearchResponse object
 //! // If the response is an API error then it'll be parsed into a friendly Rust error
-//! let body_as_json = parse::<SearchResponse>().from_slice(response_status, response_body).unwrap();
+//! let response = parse::<SearchResponse<Value>>().from_slice(response_status, response_body).unwrap();
 //!
-//! // Use hits() or aggs() iterators
-//! // Hits
-//! for i in body_as_json.hits() {
-//!   println!("{:?}",i);
+//! // Iterate over hits. Could also use `documents`
+//! for hit in response.hits() {
+//!     let score = hit.score().unwrap_or(f32::default());
+//!     let doc = hit.document();
+//!     
+//!     println!("score: {}", score);
+//!     println!("doc: {:?}", doc);
 //! }
 //!
-//! // Agregations
-//! for i in body_as_json.aggs() {
-//!   println!("{:?}",i);
+//! // Agregations are flattened into individual stats metrics
+//! for agg in response.aggs() {
+//!     let min_ack_pkts = agg["min_ack_pkts_sent"].as_u64().unwrap();
+//!     let max_ack_pkts = agg["max_ack_pkts_sent"].as_u64().unwrap();
+//!     
+//!     println!("min: {}, max: {}", min_ack_pkts, max_ack_pkts);
+//! }
+//! # }
+//! ```
+//! 
+//! Any type that implements `Deserialize` can be used as the document type in the search response:
+//! 
+//! ```no_run
+//! # #[macro_use] extern crate serde_derive;
+//! # extern crate serde;
+//! # extern crate elastic_responses;
+//! # use elastic_responses::*;
+//! # fn do_request() -> (u16, Vec<u8>) { unimplemented!() }
+//! # fn main() {
+//! #[derive(Deserialize)]
+//! struct MyDocument {
+//!     title: String,
+//!     description: String
+//! }
+//! 
+//! let (response_status, response_body) = do_request();
+//! 
+//! let response = parse::<SearchResponse<MyDocument>>().from_slice(response_status, response_body).unwrap();
+//!
+//! for doc in response.documents() {
+//!     println!("title: {}", doc.title);
+//!     println!("description: {}", doc.description);
 //! }
 //! # }
 //! ```
@@ -62,13 +95,13 @@
 //! // Send a document get request and read as a response
 //! let (response_status, response_body) = do_request();
 //!
-//! let get_response = parse::<GetResponseOf<Value>>().from_slice(response_status, response_body);
+//! let response = parse::<GetResponse<Value>>().from_slice(response_status, response_body);
 //! 
-//! match get_response {
-//!     Ok(ref res) if res.found => {
+//! match response.map(|res| res.into_document()) {
+//!     Ok(Some(doc)) => {
 //!         // The document was found
 //!     }
-//!     Ok(res) => {
+//!     Ok(None) => {
 //!         // The document was not found
 //!     }
 //!     Err(ResponseError::Api(ApiError::IndexNotFound { index })) => {
@@ -80,6 +113,10 @@
 //! }
 //! # }
 //! ```
+//! 
+//! As with `SearchResponse`, any type that implements `Deserialize` can be used as the generic document type
+//! in a `GetResponse`.
+//! 
 //! [elastic-reqwest]: https://github.com/elastic-rs/elastic-reqwest/
 //! [crates-io]: https://crates.io/crates/elastic_responses
 //! [query-dsl]: https://www.elastic.co/guide/en/elasticsearch/reference/current/search.html
@@ -108,16 +145,19 @@ mod common;
 mod command;
 mod ping;
 mod get;
-mod search;
-mod bulk;
+pub mod search;
+pub mod bulk;
 mod index;
 
 pub use self::common::*;
 pub use self::command::*;
 pub use self::ping::*;
 pub use self::get::*;
-pub use self::search::*;
-pub use self::bulk::*;
+pub use self::search::SearchResponse;
+pub use self::bulk::{BulkResponse, BulkErrorsResponse};
 pub use self::index::*;
 
 pub use self::parsing::parse;
+
+/// Re-export of `serde_json::Value` for convenience.
+pub use serde_json::Value;

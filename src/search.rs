@@ -1,3 +1,5 @@
+//! Response types for a [search request](https://www.elastic.co/guide/en/elasticsearch/reference/current/search-search.html).
+
 use serde::de::DeserializeOwned;
 use serde_json::{Map, Value};
 
@@ -8,48 +10,127 @@ use error::*;
 use std::borrow::Cow;
 use std::collections::BTreeMap;
 use std::slice::Iter;
+use std::vec::IntoIter;
 
-/// Response for a [search request](https://www.elastic.co/guide/en/elasticsearch/reference/current/search-search.html).
+/// Response for a [search request][search-req].
 /// 
 /// This is the main `struct` of the crate, provides access to the `hits` and `aggs` iterators.
 /// 
+/// # Aggregations
+/// 
+/// Aggregations currently have the following limitations:
+/// 
+/// - Only metric aggregations nested in buckets are supported
+/// - Only [Simple Metric Aggregations][metric-aggs] like `avg`, `min`, `max`, `sum` and [Stats Aggregations][stats-aggs] are supported
+/// 
 /// # Examples
+/// 
+/// Iterate over the hits in a search response:
 /// 
 /// ```no_run
 /// # extern crate elastic_responses;
-/// # use elastic_responses::SearchResponse;
-/// # fn do_request() -> SearchResponse { unimplemented!() }
+/// # use elastic_responses::{SearchResponse, Value};
+/// # fn do_request() -> SearchResponse<Value> { unimplemented!() }
 /// # fn main() {
-/// // Send a request (omitted, see `samples/basic`), and read the response.
-/// // Parse body to JSON as an elastic_responses::SearchResponse object
-/// let body_as_json: SearchResponse = do_request();
+/// let response: SearchResponse<Value> = do_request();
 ///
-/// // Use hits() or aggs() iterators
-/// // Hits
-/// for i in body_as_json.hits() {
-///   println!("{:?}",i);
-/// }
-///
-/// // Agregations
-/// for i in body_as_json.aggs() {
-///   println!("{:?}",i);
+/// // Iterate over hits. Could also use `documents`
+/// for hit in response.hits() {
+///     let score = hit.score().unwrap_or(f32::default());
+///     let doc = hit.document();
+///     
+///     println!("score: {}", score);
+///     println!("doc: {:?}", doc);
 /// }
 /// # }
 /// ```
+/// 
+/// [search-req]: https://www.elastic.co/guide/en/elasticsearch/reference/current/search-search.html
+/// [metric-aggs]: https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations-metrics.html
+/// [stats-aggs]: https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations-metrics-stats-aggregation.html
 #[derive(Deserialize, Debug)]
-pub struct SearchResponseOf<T> {
-    pub took: u64,
-    pub timed_out: bool,
+pub struct SearchResponse<T> {
+    took: u64,
+    timed_out: bool,
     #[serde(rename = "_shards")]
-    pub shards: Shards,
-    pub hits: Hits<T>,
-    pub aggregations: Option<Aggregations>,
-    pub status: Option<u16>,
+    shards: Shards,
+    hits: HitsWrapper<T>,
+    aggregations: Option<AggsWrapper>,
+    status: Option<u16>,
 }
 
-pub type SearchResponse = SearchResponseOf<Hit<Value>>;
+/// Struct to hold the search's Hits, serializable to type `T` or `serde_json::Value`
+#[derive(Deserialize, Debug)]
+struct HitsWrapper<T> {
+    total: u64,
+    max_score: Option<f32>,
+    #[serde(rename = "hits")]
+    inner: Vec<Hit<T>>,
+}
 
-impl<T: DeserializeOwned> IsOk for SearchResponseOf<T> {
+impl<T> SearchResponse<T> {
+    /// Time in milliseconds it took for Elasticsearch to process the request.
+    pub fn took(&self) -> u64 {
+        self.took
+    }
+
+    /// Whether or not the request timed out before completing.
+    pub fn timed_out(&self) -> bool {
+        self.timed_out
+    }
+
+    /// Shards metadata for the request.
+    pub fn shards(&self) -> &Shards {
+        &self.shards
+    }
+
+    /// A http status associated with the response.
+    pub fn status(&self) -> Option<u16> {
+        self.status.clone()
+    }
+
+    /// The total number of documents that matched the search query.
+    pub fn total(&self) -> u64 {
+        self.hits.total
+    }
+
+    /// The max score for documents that matched the search query.
+    pub fn max_score(&self) -> Option<f32> {
+        self.hits.max_score.clone()
+    }
+
+    /// Iterate over the hits matched by the search query.
+    pub fn hits(&self) -> Hits<T> {
+        Hits::new(&self.hits)
+    }
+
+    /// Convert the response into an iterator that consumes the hits.
+    pub fn into_hits(self) -> IntoHits<T> {
+        IntoHits::new(self.hits)
+    }
+
+    /// Iterate over the documents matched by the search query.
+    /// 
+    /// This iterator emits just the `_source` field for the returned hits.
+    pub fn documents(&self) -> Documents<T> {
+        Documents::new(&self.hits)
+    }
+
+    /// Convert the response into an iterator that consumes the documents.
+    pub fn into_documents(self) -> IntoDocuments<T> {
+        IntoDocuments::new(self.hits)
+    }
+
+    /// Iterate over the aggregations in the response.
+    ///
+    /// This Iterator transforms the tree-like JSON object into a row/table
+    /// based format for use with standard iterator adaptors.
+    pub fn aggs(&self) -> Aggs {
+        Aggs::new(self.aggregations.as_ref())
+    }
+}
+
+impl<T: DeserializeOwned> IsOk for SearchResponse<T> {
     fn is_ok<B: ResponseBody>(head: HttpResponseHead, body: Unbuffered<B>) -> Result<MaybeOkResponse<B>, ParseResponseError> {
         match head.status() {
             200...299 => Ok(MaybeOkResponse::ok(body)),
@@ -58,33 +139,87 @@ impl<T: DeserializeOwned> IsOk for SearchResponseOf<T> {
     }
 }
 
-impl<T> SearchResponseOf<T> {
-    /// Returns an Iterator to the search results or hits of the response.
-    pub fn hits(&self) -> &[T] {
-        &self.hits.hits()
-    }
+/// A borrowing iterator over search query hits.
+pub struct Hits<'a, T: 'a> {
+    inner: Iter<'a, Hit<T>>,
+}
 
-    /// Returns an Iterator to the search results or aggregations part of the response.
-    ///
-    /// This Iterator transforms the tree-like JSON object into a row/table
-    /// based format for use with standard iterator adaptors.
-    pub fn aggs(&self) -> &Aggregations {
-        // FIXME: Create empty aggregation, remove unwrap()
-        self.aggregations.as_ref().unwrap()
+impl<'a, T: 'a> Hits<'a, T> {
+    fn new(hits: &'a HitsWrapper<T>) -> Self {
+        Hits {
+            inner: hits.inner.iter()
+        }
     }
 }
 
-/// Struct to hold the search's Hits, serializable to type `T` or `serde_json::Value`
-#[derive(Deserialize, Debug)]
-pub struct Hits<T> {
-    pub total: u64,
-    pub max_score: Option<f32>,
-    pub hits: Vec<T>,
+impl<'a, T: 'a> Iterator for Hits<'a, T> {
+    type Item = &'a Hit<T>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.inner.next()
+    }
 }
 
-impl<T> Hits<T> {
-    fn hits(&self) -> &[T] {
-        &self.hits
+/// A consuminig iterator over search query hits.
+pub struct IntoHits<T> {
+    inner: IntoIter<Hit<T>>,
+}
+
+impl<T> IntoHits<T> {
+    fn new(hits: HitsWrapper<T>) -> Self {
+        IntoHits {
+            inner: hits.inner.into_iter()
+        }
+    }
+}
+
+impl<T> Iterator for IntoHits<T> {
+    type Item = Hit<T>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.inner.next()
+    }
+}
+
+/// A borrowing iterator over the source documents in search query hits.
+pub struct Documents<'a, T: 'a> {
+    inner: Iter<'a, Hit<T>>,
+}
+
+impl<'a, T: 'a> Documents<'a, T> {
+    fn new(hits: &'a HitsWrapper<T>) -> Self {
+        Documents {
+            inner: hits.inner.iter()
+        }
+    }
+}
+
+impl<'a, T: 'a> Iterator for Documents<'a, T> {
+    type Item = &'a T;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.inner.next().and_then(|hit| hit.source.as_ref())
+    }
+}
+
+/// A consuming iterator over the source documents in search query hits.
+pub struct IntoDocuments<T> {
+    inner: IntoIter<Hit<T>>,
+}
+
+impl<T> IntoDocuments<T> {
+    fn new(hits: HitsWrapper<T>) -> Self {
+        IntoDocuments {
+            inner: hits.inner.into_iter()
+        }
+    }
+}
+
+impl<T> Iterator for IntoDocuments<T> {
+    type Item = T;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.inner.next().and_then(|hit| hit.source)
     }
 }
 
@@ -92,63 +227,86 @@ impl<T> Hits<T> {
 #[derive(Deserialize, Debug)]
 pub struct Hit<T> {
     #[serde(rename = "_index")]
-    pub index: String,
+    index: String,
     #[serde(rename = "_type")]
-    pub ty: String,
+    ty: String,
     #[serde(rename = "_version")]
-    pub version: Option<u32>,
+    version: Option<u32>,
     #[serde(rename = "_score")]
-    pub score: Option<f32>,
+    score: Option<f32>,
     #[serde(rename = "_source")]
-    pub source: Option<T>,
+    source: Option<T>,
     #[serde(rename="_routing")]
-    pub routing: Option<String>,
+    routing: Option<String>,
 }
 
-/// Type Struct to hold a generic `serde_json::Value` tree of the Aggregation results.
-#[derive(Deserialize, Debug)]
-pub struct Aggregations(Value);
+impl<T> Hit<T> {
+    /// Get a reference to the source document.
+    pub fn document(&self) -> Option<&T> {
+        self.source.as_ref()
+    }
 
-impl<'a> IntoIterator for &'a Aggregations {
-    type Item = RowData<'a>;
-    type IntoIter = AggregationIterator<'a>;
+    /// Convert the hit into the source document.
+    pub fn into_document(self) -> Option<T> {
+        self.source
+    }
 
-    fn into_iter(self) -> AggregationIterator<'a> {
-        AggregationIterator::new(self)
+    /// The index for the hit.
+    pub fn index(&self) -> &str {
+        &self.index
+    }
+
+    /// The type of the hit.
+    pub fn ty(&self) -> &str {
+        &self.ty
+    }
+
+    /// The version of the hit.
+    pub fn version(&self) -> Option<u32> {
+        self.version.clone()
+    }
+
+    /// The score of the hit.
+    pub fn score(&self) -> Option<f32> {
+        self.score.clone()
     }
 }
 
-/// Aggregator that traverses the results from Elasticsearch's Aggregations and returns a result
+/// Type Struct to hold a generic `serde_json::Value` tree of the aggregation results.
+#[derive(Deserialize, Debug)]
+struct AggsWrapper(Value);
+
+/// Aggregator that traverses the results from Elasticsearch's aggregations and returns a result
 /// row by row in a table-styled fashion.
 #[derive(Debug)]
-pub struct AggregationIterator<'a> {
+pub struct Aggs<'a> {
     current_row: Option<RowData<'a>>,
     current_row_finished: bool,
-    iter_stack: Vec<(Option<&'a String>, Iter<'a, Value>)>,
-    aggregations: &'a Aggregations,
+    iter_stack: Vec<(&'a str, Iter<'a, Value>)>,
 }
 
-impl<'a> AggregationIterator<'a> {
-    fn new(a: &'a Aggregations) -> AggregationIterator<'a> {
-        let o = a.0
-            .as_object()
-            .expect("Not implemented, we only cater for bucket objects");
-        // FIXME: Bad for lib // JPG: quick-error
+impl<'a> Aggs<'a> {
+    fn new(aggregations: Option<&'a AggsWrapper>) -> Aggs<'a> {
+        let iter_stack = {
+            match aggregations.and_then(|aggs| aggs.0.as_object()) {
+                Some(o) => {
+                    o.into_iter()
+                        .filter_map(|(key, child)| {
+                            child.as_object()
+                                .and_then(|child| child.get("buckets"))
+                                .and_then(Value::as_array)
+                                .map(|array| (key.as_ref(), array.iter()))
+                        })
+                        .collect()
+                },
+                None => Vec::new(),
+            }
+        };
 
-        let s = o.into_iter()
-            .filter_map(|(key, child)| {
-                child.as_object()
-                    .and_then(|child| child.get("buckets"))
-                    .and_then(Value::as_array)
-                    .map(|array| (Some(key), array.iter()))
-            })
-            .collect();
-
-        AggregationIterator {
+        Aggs {
             current_row: None,
             current_row_finished: false,
-            iter_stack: s,
-            aggregations: a,
+            iter_stack: iter_stack
         }
     }
 }
@@ -167,7 +325,7 @@ fn insert_value<'a>(fieldname: &str,
     }
 }
 
-impl<'a> Iterator for AggregationIterator<'a> {
+impl<'a> Iterator for Aggs<'a> {
     type Item = RowData<'a>;
 
     fn next(&mut self) -> Option<RowData<'a>> {
@@ -177,16 +335,13 @@ impl<'a> Iterator for AggregationIterator<'a> {
         }
 
         loop {
-            if let Some(mut i) = self.iter_stack.pop() {
-                let n = i.1.next();
-
-                // FIXME: can this fail?
-                let active_name = &i.0.unwrap();
+            if let Some((active_name, mut array)) = self.iter_stack.pop() {
+                let n = array.next();
 
                 // Iterate down?
                 let mut has_buckets = false;
                 // Save
-                self.iter_stack.push(i);
+                self.iter_stack.push((active_name, array));
 
                 debug!("ITER: Depth {}", self.iter_stack.len());
                 // FIXME: Move this, to be able to process first line too
@@ -200,7 +355,7 @@ impl<'a> Iterator for AggregationIterator<'a> {
                                 if let Some(buckets) = c.get("buckets") {
                                     has_buckets = true;
                                     if let Value::Array(ref a) = *buckets {
-                                        self.iter_stack.push((Some(key), a.iter()));
+                                        self.iter_stack.push((key, a.iter()));
                                     }
                                     continue;
                                 }
@@ -272,10 +427,6 @@ impl<'a> Iterator for AggregationIterator<'a> {
             };
         }
 
-        match self.current_row {
-            // FIXME: Refactor to avoid this clone()
-            Some(ref x) => Some(x.clone()),
-            None => None,
-        }
+        self.current_row.take()
     }
 }

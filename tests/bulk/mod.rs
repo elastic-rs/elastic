@@ -12,8 +12,8 @@ fn success_parse_index_ops() {
 
     assert!(deserialized.is_ok());
 
-    assert_eq!(0, deserialized.items.err.len());
-    assert_eq!(5, deserialized.items.ok.len());
+    assert_eq!(0, deserialized.iter().filter(Result::is_err).count());
+    assert_eq!(5, deserialized.iter().filter(Result::is_ok).count());
 }
 
 #[test]
@@ -22,7 +22,7 @@ fn success_parse_index_ops_errors_only() {
     let deserialized = parse::<BulkErrorsResponse>().from_reader(200, f).unwrap();
 
     assert!(deserialized.is_ok());
-    assert_eq!(0, deserialized.items.len());
+    assert_eq!(0, deserialized.iter().count());
 }
 
 #[test]
@@ -37,12 +37,12 @@ fn success_parse_multi_ops() {
     let mut update_count = 0;
     let mut delete_count = 0;
 
-    for item in deserialized.items.ok {
-        match item.action {
-            BulkAction::Index => index_count += 1,
-            BulkAction::Create => create_count += 1,
-            BulkAction::Update => update_count += 1,
-            BulkAction::Delete => delete_count += 1,
+    for item in deserialized.into_iter().filter_map(Result::ok) {
+        match item.action() {
+            bulk::Action::Index => index_count += 1,
+            bulk::Action::Create => create_count += 1,
+            bulk::Action::Update => update_count += 1,
+            bulk::Action::Delete => delete_count += 1,
         }
     }
 
@@ -55,7 +55,7 @@ fn success_parse_multi_ops_errors_only() {
     let deserialized = parse::<BulkErrorsResponse>().from_reader(200, f).unwrap();
 
     assert!(deserialized.is_ok());
-    assert_eq!(0, deserialized.items.len());
+    assert_eq!(0, deserialized.iter().count());
 }
 
 #[test]
@@ -65,8 +65,8 @@ fn success_parse_with_errors() {
 
     assert!(deserialized.is_err());
 
-    assert_eq!(1, deserialized.items.err.len());
-    assert_eq!(1, deserialized.items.ok.len());
+    assert_eq!(1, deserialized.iter().filter(Result::is_err).count());
+    assert_eq!(1, deserialized.iter().filter(Result::is_ok).count());
 }
 
 #[test]
@@ -76,7 +76,7 @@ fn success_parse_with_errors_errors_only() {
 
     assert!(deserialized.is_err());
 
-    assert_eq!(1, deserialized.items.len());
+    assert_eq!(1, deserialized.iter().count());
 }
 
 #[test]

@@ -9,5 +9,5 @@ fn success_parse_command_response() {
     let f = load_file("tests/samples/acknowledged.json");
     let deserialized = parse::<CommandResponse>().from_reader(200, f).unwrap();
 
-    assert!(deserialized.acknowledged);
+    assert!(deserialized.acknowledged());
 }

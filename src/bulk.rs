@@ -1,23 +1,26 @@
+//! Response types for a [bulk request](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-bulk.html).
+
 use serde::de::{Deserialize, Deserializer, Visitor, Error as DeError, SeqAccess, MapAccess};
 use serde_json::Value;
-use common::Shards;
+use common::{DefaultAllocatedField, Shards};
 
 use parsing::{IsOk, HttpResponseHead, ResponseBody, Unbuffered, MaybeOkResponse};
 use error::*;
 
 use std::cmp;
 use std::fmt;
+use std::slice::Iter;
+use std::vec::IntoIter;
 use std::marker::PhantomData;
 use std::error::Error;
 
 type BulkError = Value;
 
-type DefaultAllocatedField = String;
-
 /// Response for a [bulk request](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-bulk.html).
 /// 
-/// This type splits successful and failed bulk operations so it's easier
-/// to handle errors in bulk requests.
+/// Individual bulk items are a `Result` of [`OkItem`](struct.OkItem.html) or [`ErrorItem`](struct.ErrorItem.html) and can be iterated over.
+/// Any individual bulk item may be an `Err(ErrorItem)`, so it's important to check them.
+/// The `is_ok` and `is_err` methods on `BulkResponse` make it easier to assert there are no errors.
 /// 
 /// # Examples
 /// 
@@ -28,44 +31,60 @@ type DefaultAllocatedField = String;
 /// # use elastic_responses::*;
 /// # fn do_request() -> BulkResponse { unimplemented!() }
 /// # fn main() {
-/// // Send a request (omitted, see `samples/bulk`), and read the response.
-/// // Parse body to JSON as an elastic_responses::BulkResponse object
-/// let body_as_json: BulkResponse = do_request();
-///
-/// // Do something with successful operations
-/// for op in body_as_json.items.ok {
-///     match op.action {
-///         BulkAction::Create => {
-///             println!("created index: {}, type: {}, id: {}", 
-///                 op.index, 
-///                 op.ty, 
-///                 op.id
-///             );
-///         },
-///         _ => ()
-///     }
+/// let response: BulkResponse = do_request();
+/// 
+/// // Check if the response contains any errors
+/// if response.is_err() {
+///     println!("some bulk items failed");
 /// }
 ///
-/// // Do something with failed operations
-/// for op in body_as_json.items.err {
-///     match op.action {
-///         BulkAction::Delete => (), // Ignore failed deletes
-///         _ => println!("bulk op failed: {:?}", op) 
+/// // Iterate through all items
+/// for item in response {
+///     match item {
+///         Ok(item) => {
+///             // Do something with the `OkItem`s
+///             println!("ok: {:?}", item)
+///         },
+///         Err(item) => {
+///             // Do something with the `ErrorItem`s
+///             println!("err: {:?}", item)
+///         }
 ///     }
+/// }
+/// # }
+/// ```
+/// 
+/// Use `iter` to iterate over individual items without taking ownership of them:
+/// 
+/// ```no_run
+/// # extern crate elastic_responses;
+/// # use elastic_responses::*;
+/// # fn do_request() -> BulkResponse { unimplemented!() }
+/// # fn main() {
+/// let response: BulkResponse = do_request();
+///
+/// // Do something with successful items for index `myindex`
+/// let item_iter = response.iter()
+///                         .filter_map(Result::ok)
+///                         .filter(|o| o.index() == "myindex");
+/// 
+/// for item in item_iter {
+///     // Do something with the `OkItem`s
+///     println!("ok: {:?}", item);
 /// }
 /// # }
 /// ```
 /// 
 /// # Optimising bulk responses
 /// 
-/// If you're only interested in bulk operations that failed, see [`BulkErrorsResponse`](struct.BulkErrorsResponse.html).
-/// It can avoid allocating bulk operation responses that will never be processed.
+/// If you're only interested in bulk items that failed, see [`BulkErrorsResponse`](struct.BulkErrorsResponse.html).
+/// It can avoid allocating bulk item responses that will never be processed.
 /// 
 /// Both the `BulkResponse` and `BulkErrorsResponse` types have generic parameters for the index, type and id fields.
-/// If your bulk operations have a small set of possible values for these fields you can avoid
+/// If your bulk items have a small set of possible values for these fields you can avoid
 /// allocating `String`s on the heap by using an alternative type, like an `enum`.
 /// 
-/// In the example below, we expect all bulk operations to use either a type called `mytypea` or `mytypeb`
+/// In the example below, we expect all bulk items to use either a type called `mytypea` or `mytypeb`
 /// and an index called `myindex`:
 /// 
 /// ```no_run
@@ -93,28 +112,128 @@ type DefaultAllocatedField = String;
 /// # }
 /// ```
 /// 
-/// Also see the [`string-cache`](https://github.com/servo/string-cache) crate as an alternative to using `String`s and `enum`s.
+/// Other crates that can avoid allocating strings:
+/// 
+/// - [`string-cache`](https://github.com/servo/string-cache) crate for interning string values
+/// - [`inlinable-string`](https://github.com/fitzgen/inlinable_string) crate for storing small strings on the stack
+/// 
+/// # Taking `BulkResonse` as an argument
+/// 
+/// The `BulkResponse` type has three default generic parameters for the index, type and id fields.
+/// If you need to accept a `BulkResponse` as a function argument, you should specify these generics.
+/// Otherwise the function will only accept a default `BulkResponse`:
+/// 
+/// ```
+/// # use elastic_responses::*;
+/// // Do: Supports any BulkResponse
+/// fn takes_any_response<TIndex, TType, TId>(res: BulkResponse<TIndex, TType, TId>) { 
+/// 
+/// }
+/// 
+/// // Don't: Only supports default BulkResponse
+/// fn takes_default_response(res: BulkResponse) {
+/// 
+/// }
+/// ```
 #[derive(Deserialize, Debug, Clone)]
+#[serde(bound(deserialize = "TIndex: Deserialize<'de>, TType: Deserialize<'de>, TId: Deserialize<'de>"))]
 pub struct BulkResponse<TIndex = DefaultAllocatedField, TType = DefaultAllocatedField, TId = DefaultAllocatedField> {
-    pub took: u64,
+    took: u64,
     errors: bool,
-    pub items: BulkItems<TIndex, TType, TId>,
+    #[serde(deserialize_with = "deserialize_bulk_items")]
+    items: Vec<ItemResult<TIndex, TType, TId>>,
 }
 
 impl<TIndex, TType, TId> BulkResponse<TIndex, TType, TId> {
+    /// Time in milliseconds it took for Elasticsearch to process the request.
+    pub fn took(&self) -> u64 {
+        self.took
+    }
+
+    /// Returns `true` if all bulk items succeeded.
     pub fn is_ok(&self) -> bool {
         !self.errors
     }
 
+    /// Returns `true` if any bulk items failed.
     pub fn is_err(&self) -> bool {
         self.errors
+    }
+
+    /// Iterate through the bulk items.
+    /// 
+    /// The items in this iterator are a standard `Result` where `Ok` means the item succeeded
+    /// and `Err` means it failed.
+    /// 
+    /// To move out of the items in a `BulkResponse` instead of borrowing them, call `into_iter`.
+    /// 
+    /// # Examples
+    /// 
+    /// Iterate through the individual items in a `BulkResponse`:
+    /// 
+    /// ```no_run
+    /// # extern crate elastic_responses;
+    /// # use elastic_responses::*;
+    /// # fn do_request() -> BulkResponse { unimplemented!() }
+    /// # fn main() {
+    /// let response: BulkResponse = do_request();
+    /// 
+    /// // Iterate through all items
+    /// for item in response.iter() {
+    ///     match item {
+    ///         Ok(ref item) => {
+    ///             // Do something with the `OkItem`s
+    ///             println!("ok: {:?}", item)
+    ///         },
+    ///         Err(ref item) => {
+    ///             // Do something with the `ErrorItem`s
+    ///             println!("err: {:?}", item)
+    ///         }
+    ///     }
+    /// }
+    /// # }
+    /// ```
+    pub fn iter(&self) -> ResultIter<TIndex, TType, TId> {
+        ResultIter(self.items.iter())
+    }
+}
+
+impl<TIndex, TType, TId> IntoIterator for BulkResponse<TIndex, TType, TId> {
+    type Item = <Self::IntoIter as Iterator>::Item;
+    type IntoIter = ResultIntoIter<TIndex, TType, TId>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        ResultIntoIter(self.items.into_iter())
+    }
+}
+
+/// An owning iterator for a bulk item that may have succeeded or failed.
+pub struct ResultIntoIter<TIndex, TType, TId>(IntoIter<ItemResult<TIndex, TType, TId>>);
+
+impl<TIndex, TType, TId> Iterator for ResultIntoIter<TIndex, TType, TId> {
+    type Item = ItemResult<TIndex, TType, TId>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.0.next()
+    }
+}
+
+/// A borrowing iterator for a bulk item that may have succeeded or failed.
+pub struct ResultIter<'a, TIndex: 'a, TType: 'a, TId: 'a>(Iter<'a, ItemResult<TIndex, TType, TId>>);
+
+impl<'a, TIndex: 'a, TType: 'a, TId: 'a> Iterator for ResultIter<'a, TIndex, TType, TId> {
+    type Item = ItemResultBrw<'a, TIndex, TType, TId>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.0.next().map(|item| item.as_ref())
     }
 }
 
 /// Response for a [bulk request](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-bulk.html).
 /// 
-/// This type only accumulates bulk operations that failed.
+/// This type only accumulates bulk items that failed.
 /// It can be more efficient if you only care about errors.
+/// Individual bulk items are [`ErrorItem`](struct.ErrorItem.html) and can be iterated over.
 /// 
 /// # Examples
 /// 
@@ -123,80 +242,248 @@ impl<TIndex, TType, TId> BulkResponse<TIndex, TType, TId> {
 /// ```no_run
 /// # extern crate elastic_responses;
 /// # use elastic_responses::*;
+/// # use elastic_responses::bulk::Action;
 /// # fn do_request() -> BulkErrorsResponse { unimplemented!() }
 /// # fn main() {
-/// // Send a request (omitted, see `samples/bulk`), and read the response.
-/// // Parse body to JSON as an elastic_responses::BulkErrorsResponse object
-/// let body_as_json: BulkErrorsResponse = do_request();
+/// let response: BulkErrorsResponse = do_request();
 /// 
-/// // Do something with failed operations
-/// for op in body_as_json.items {
-///     match op.action {
-///         BulkAction::Delete => (), // Ignore failed deletes
-///         _ => println!("bulk op failed: {:?}", op) 
+/// // Do something with failed items
+/// for item in response {
+///     match item.action() {
+///         Action::Delete => (), // Ignore failed deletes
+///         _ => println!("err: {:?}", item) 
 ///     }
 /// }
 /// # }
 /// ```
+///
+/// Use `iter` to iterate over individual errors without taking ownership of them:
+/// 
+/// ```no_run
+/// # extern crate elastic_responses;
+/// # use elastic_responses::*;
+/// # fn do_request() -> BulkErrorsResponse { unimplemented!() }
+/// # fn main() {
+/// let response: BulkErrorsResponse = do_request();
+///
+/// // Do something with errors for index `myindex`
+/// let item_iter = response.iter()
+///                         .filter(|o| o.index() == "myindex");
+/// 
+/// for item in item_iter {
+///     println!("err: {:?}", item);
+/// }
+/// # }
+/// ```
+///
+/// # Taking `BulkErrorsResponse` as an argument
+/// 
+/// The `BulkErrorsResponse` type has three default generic parameters for the index, type and id fields.
+/// If you need to accept a `BulkErrorsResponse` as a function argument, you should specify these generics.
+/// Otherwise the function will only accept a default `BulkErrorsResponse`:
+/// 
+/// ```
+/// # use elastic_responses::*;
+/// // Do: Supports any BulkErrorsResponse
+/// fn takes_any_response<TIndex, TType, TId>(res: BulkErrorsResponse<TIndex, TType, TId>) { 
+/// 
+/// }
+/// 
+/// // Don't: Only supports default BulkErrorsResponse
+/// fn takes_default_response(res: BulkErrorsResponse) {
+/// 
+/// }
+/// ```
 #[derive(Deserialize, Debug, Clone)]
 #[serde(bound(deserialize = "TIndex: Deserialize<'de>, TType: Deserialize<'de>, TId: Deserialize<'de>"))]
 pub struct BulkErrorsResponse<TIndex = DefaultAllocatedField, TType = DefaultAllocatedField, TId = DefaultAllocatedField> {
-    pub took: u64,
+    took: u64,
     errors: bool,
     #[serde(deserialize_with = "deserialize_bulk_item_errors")]
-    pub items: Vec<BulkItemError<TIndex, TType, TId>>,
+    items: Vec<ErrorItem<TIndex, TType, TId>>,
+}
+
+impl<TIndex, TType, TId> IntoIterator for BulkErrorsResponse<TIndex, TType, TId> {
+    type Item = <Self::IntoIter as Iterator>::Item;
+    type IntoIter = ErrorIntoIter<TIndex, TType, TId>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        ErrorIntoIter(self.items.into_iter())
+    }
+}
+
+/// An owning iterator for a bulk item that failed.
+pub struct ErrorIntoIter<TIndex, TType, TId>(IntoIter<ErrorItem<TIndex, TType, TId>>);
+
+impl<TIndex, TType, TId> Iterator for ErrorIntoIter<TIndex, TType, TId> {
+    type Item = ErrorItem<TIndex, TType, TId>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.0.next()
+    }
+}
+
+/// A borrowing iterator for a bulk item that failed.
+pub struct ErrorIter<'a, TIndex: 'a, TType: 'a, TId: 'a>(Iter<'a, ErrorItem<TIndex, TType, TId>>);
+
+impl<'a, TIndex: 'a, TType: 'a, TId: 'a> Iterator for ErrorIter<'a, TIndex, TType, TId> {
+    type Item = &'a ErrorItem<TIndex, TType, TId>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.0.next()
+    }
 }
 
 impl<TIndex, TType, TId> BulkErrorsResponse<TIndex, TType, TId> {
+    /// Time in milliseconds it took for Elasticsearch to process the request.
+    pub fn took(&self) -> u64 {
+        self.took
+    }
+
+    /// Returns `true` if all bulk items succeeded.
     pub fn is_ok(&self) -> bool {
         !self.errors
     }
 
+    /// Returns `true` if any bulk itemss failed.
     pub fn is_err(&self) -> bool {
         self.errors
     }
+
+    /// Iterate through the bulk item errors.
+    /// 
+    /// Items in this iterator all all errors that occurred while handling the bulk request.
+    /// 
+    /// # Examples
+    /// 
+    /// Iterate through the individual items in a `BulkErrorsResponse`:
+    /// 
+    /// ```no_run
+    /// # extern crate elastic_responses;
+    /// # use elastic_responses::*;
+    /// # fn do_request() -> BulkErrorsResponse { unimplemented!() }
+    /// # fn main() {
+    /// let response: BulkErrorsResponse = do_request();
+    /// 
+    /// // Iterate through all items
+    /// for item in response.iter() {
+    ///     // Do something with failed items
+    ///     println!("err: {:?}", item)
+    /// }
+    /// # }
+    /// ```
+    
+    pub fn iter(&self) -> ErrorIter<TIndex, TType, TId> {
+        ErrorIter(self.items.iter())
+    }
 }
+
+type ItemResult<TIndex, TType, TId> = Result<OkItem<TIndex, TType, TId>, ErrorItem<TIndex, TType, TId>>;
+type ItemResultBrw<'a, TIndex, TType, TId> = Result<&'a OkItem<TIndex, TType, TId>, &'a ErrorItem<TIndex, TType, TId>>;
 
 /// A successful bulk response item.
 #[derive(Debug, Clone)]
-pub struct BulkItem<TIndex = DefaultAllocatedField, TType = DefaultAllocatedField, TId = DefaultAllocatedField> {
-    pub action: BulkAction,
-    pub index: TIndex,
-    pub ty: TType,
-    pub id: TId,
-    pub version: Option<u32>,
-    pub shards: Option<Shards>,
-    pub created: Option<bool>,
-    pub found: Option<bool>,
+pub struct OkItem<TIndex = DefaultAllocatedField, TType = DefaultAllocatedField, TId = DefaultAllocatedField> {
+    action: Action,
+    index: TIndex,
+    ty: TType,
+    id: TId,
+    version: Option<u32>,
+    shards: Option<Shards>,
+    created: Option<bool>,
+    found: Option<bool>,
+}
+
+impl<TIndex, TType, TId> OkItem<TIndex, TType, TId> {
+    /// The bulk action for this item.
+    pub fn action(&self) -> Action {
+        self.action
+    }
+
+    /// The document version after this item.
+    pub fn version(&self) -> Option<u32> {
+        self.version.clone()
+    }
+
+    /// Whether or not this item created the document.
+    /// 
+    /// `created` will only be `true` if the action is `Index` and the document didn't already exist.
+    pub fn created(&self) -> bool {
+        self.created.clone().unwrap_or(false)
+    }
+
+    /// Whether or not this item found the document.
+    /// 
+    /// `found` will only be `true` if the action is `Delete` and the document did already exist.
+    pub fn found(&self) -> bool {
+        self.found.clone().unwrap_or(false)
+    }
+    
+    /// The index for this item.
+    pub fn index(&self) -> &TIndex {
+        &self.index
+    }
+    
+    /// The document type for this item.
+    pub fn ty(&self) -> &TType {
+        &self.ty
+    }
+    
+    /// The document id for this item.
+    pub fn id(&self) -> &TId {
+        &self.id
+    }
 }
 
 /// A failed bulk response item.
 #[derive(Debug, Clone)]
-pub struct BulkItemError<TIndex = DefaultAllocatedField, TType = DefaultAllocatedField, TId = DefaultAllocatedField> {
-    pub action: BulkAction,
-    pub index: TIndex,
-    pub ty: TType,
-    pub id: TId,
-    pub err: BulkError
+pub struct ErrorItem<TIndex = DefaultAllocatedField, TType = DefaultAllocatedField, TId = DefaultAllocatedField> {
+    action: Action,
+    index: TIndex,
+    ty: TType,
+    id: TId,
+    err: BulkError
 }
 
-impl<TIndex, TType, TId> fmt::Display for BulkItemError<TIndex, TType, TId>
+impl<TIndex, TType, TId> ErrorItem<TIndex, TType, TId> {
+    /// The bulk action for this item.
+    pub fn action(&self) -> Action {
+        self.action
+    }
+
+    /// The index for this item.
+    pub fn index(&self) -> &TIndex {
+        &self.index
+    }
+    
+    /// The document type for this item.
+    pub fn ty(&self) -> &TType {
+        &self.ty
+    }
+    
+    /// The document id for this item.
+    pub fn id(&self) -> &TId {
+        &self.id
+    }
+}
+
+impl<TIndex, TType, TId> fmt::Display for ErrorItem<TIndex, TType, TId>
     where TIndex: fmt::Display + fmt::Debug,
           TType: fmt::Display + fmt::Debug,
           TId: fmt::Display + fmt::Debug
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{:?}", self)
+        write!(f, "bulk item failed. Details: index: {}, type: {}, id: {}, inner error: {}", self.index, self.ty, self.id, self.err)
     }
 }
 
-impl<TIndex, TType, TId> Error for BulkItemError<TIndex, TType, TId> 
+impl<TIndex, TType, TId> Error for ErrorItem<TIndex, TType, TId> 
     where TIndex: fmt::Display + fmt::Debug,
           TType: fmt::Display + fmt::Debug,
           TId: fmt::Display + fmt::Debug
 {
     fn description(&self) -> &str {
-        "Bulk operation failed"
+        "bulk item failed"
     }
 
     fn cause(&self) -> Option<&Error> {
@@ -204,16 +491,9 @@ impl<TIndex, TType, TId> Error for BulkItemError<TIndex, TType, TId>
     }
 }
 
-/// Bulk items split by success or failure.
-#[derive(Debug, Clone)]
-pub struct BulkItems<TIndex, TType, TId> {
-    pub ok: Vec<BulkItem<TIndex, TType, TId>>,
-    pub err: Vec<BulkItemError<TIndex, TType, TId>>,
-}
-
 /// The bulk action being performed.
-#[derive(Deserialize, Debug, Clone)]
-pub enum BulkAction {
+#[derive(Deserialize, Debug, Clone, Copy)]
+pub enum Action {
     #[serde(rename = "index")]
     Index,
     #[serde(rename = "create")]
@@ -244,53 +524,53 @@ impl<TIndex, TType, TId> IsOk for BulkErrorsResponse<TIndex, TType, TId> {
 
 // Deserialisation
 
-struct BulkItemDe<TIndex, TType, TId> {
-    action: BulkAction,
-    inner: BulkItemDeInner<TIndex, TType, TId>,
+struct ItemDe<TIndex, TType, TId> {
+    action: Action,
+    inner: ItemDeInner<TIndex, TType, TId>,
 }
 
 #[derive(Deserialize, Debug, Clone)]
-struct BulkItemDeInner<TIndex, TType, TId> {
+struct ItemDeInner<TIndex, TType, TId> {
     #[serde(rename = "_index")]
-    pub index: TIndex,
+    index: TIndex,
     #[serde(rename = "_type")]
-    pub ty: TType,
+    ty: TType,
     #[serde(rename = "_id")]
-    pub id: TId,
+    id: TId,
     #[serde(rename = "_version")]
-    pub version: Option<u32>,
+    version: Option<u32>,
     #[serde(rename = "_shards")]
-    pub shards: Option<Shards>,
-    pub created: Option<bool>,
-    pub found: Option<bool>,
+    shards: Option<Shards>,
+    created: Option<bool>,
+    found: Option<bool>,
     status: u16,
     error: Option<BulkError>,
 }
 
-impl<TIndex, TType, TId> BulkItemDe<TIndex, TType, TId> {
-    fn into_err(self) -> Option<BulkItemError<TIndex, TType, TId>> {
+impl<'de, TIndex, TType, TId> ItemDe<TIndex, TType, TId>
+    where TIndex: Deserialize<'de>,
+          TType: Deserialize<'de>,
+          TId: Deserialize<'de>,
+{
+    fn into_err(self) -> Option<ErrorItem<TIndex, TType, TId>> {
         match self.inner.error {
-            Some(err) => Some(BulkItemError {
-                action: self.action,
-                index: self.inner.index,
-                ty: self.inner.ty,
-                id: self.inner.id,
-                err: err,
-            }),
-            None => None
-        }
-    }
-
-    fn into_result(self) -> Result<BulkItem<TIndex, TType, TId>, BulkItemError<TIndex, TType, TId>> {
-        match self.inner.error {
-            Some(err) => Err(BulkItemError {
+            Some(err) => Some(ErrorItem {
                 action: self.action,
                 index: self.inner.index,
                 ty: self.inner.ty,
                 id: self.inner.id,
                 err: err
             }),
-            None => Ok(BulkItem {
+            None => None
+        }
+    }
+
+    fn into_result(self) -> ItemResult<TIndex, TType, TId> {
+        if self.inner.error.is_some() {
+            Err(self.into_err().expect("expected an error"))
+        }
+        else {
+            Ok(OkItem {
                 action: self.action,
                 index: self.inner.index,
                 ty: self.inner.ty,
@@ -304,24 +584,24 @@ impl<TIndex, TType, TId> BulkItemDe<TIndex, TType, TId> {
     }
 }
 
-impl<'de, TIndex, TType, TId> Deserialize<'de> for BulkItemDe<TIndex, TType, TId> 
+impl<'de, TIndex, TType, TId> Deserialize<'de> for ItemDe<TIndex, TType, TId>
     where TIndex: Deserialize<'de>,
           TType: Deserialize<'de>,
-          TId: Deserialize<'de>
+          TId: Deserialize<'de>,
 {
-    fn deserialize<D>(deserializer: D) -> Result<BulkItemDe<TIndex, TType, TId>, D::Error>
+    fn deserialize<D>(deserializer: D) -> Result<ItemDe<TIndex, TType, TId>, D::Error>
         where D: Deserializer<'de> 
     {
-        struct BulkItemDeVisitor<TIndex, TType, TId> {
-            _marker: PhantomData<(TIndex, TType, TId)>,
+        struct ItemDeVisitor<TIndex, TType, TId> {
+            _marker: PhantomData<(TIndex, TType, TId)>
         }
 
-        impl<'de, TIndex, TType, TId> Visitor<'de> for BulkItemDeVisitor<TIndex, TType, TId> 
+        impl<'de, TIndex, TType, TId> Visitor<'de> for ItemDeVisitor<TIndex, TType, TId>
             where TIndex: Deserialize<'de>,
                   TType: Deserialize<'de>,
-                  TId: Deserialize<'de>
+                  TId: Deserialize<'de>,
         {
-            type Value = BulkItemDe<TIndex, TType, TId>;
+            type Value = ItemDe<TIndex, TType, TId>;
 
             fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
                 formatter.write_str("a bulk item")
@@ -332,7 +612,7 @@ impl<'de, TIndex, TType, TId> Deserialize<'de> for BulkItemDe<TIndex, TType, TId
             {
                 let (action, inner) = visitor.next_entry()?.ok_or(V::Error::custom("expected at least one field"))?;
 
-                let result = BulkItemDe {
+                let result = ItemDe {
                     action: action,
                     inner: inner
                 };
@@ -341,65 +621,56 @@ impl<'de, TIndex, TType, TId> Deserialize<'de> for BulkItemDe<TIndex, TType, TId
             }
         }
 
-        deserializer.deserialize_any(BulkItemDeVisitor { _marker: PhantomData })
+        deserializer.deserialize_any(ItemDeVisitor { _marker: PhantomData })
     }
 }
 
-impl<'de, TIndex, TType, TId> Deserialize<'de> for BulkItems<TIndex, TType, TId> 
-    where TIndex: Deserialize<'de>,
+fn deserialize_bulk_items<'de, D, TIndex, TType, TId>(deserializer: D) -> Result<Vec<ItemResult<TIndex, TType, TId>>, D::Error>
+    where D: Deserializer <'de>,
+          TIndex: Deserialize<'de>,
           TType: Deserialize<'de>,
           TId: Deserialize<'de>
 {
-    fn deserialize<D>(deserializer: D) -> Result<BulkItems<TIndex, TType, TId>, D::Error>
-        where D: Deserializer<'de>
-    {
-        struct BulkItemsVisitor<TIndex, TType, TId> {
+    struct OkItemsVisitor<TIndex, TType, TId> {
             _marker: PhantomData<(TIndex, TType, TId)>,
         }
 
-        impl<'de, TIndex, TType, TId> Visitor<'de> for BulkItemsVisitor<TIndex, TType, TId> 
+        impl<'de, TIndex, TType, TId> Visitor<'de> for OkItemsVisitor<TIndex, TType, TId> 
             where TIndex: Deserialize<'de>,
                   TType: Deserialize<'de>,
                   TId: Deserialize<'de>
         {
-            type Value = BulkItems<TIndex, TType, TId>;
+            type Value = Vec<ItemResult<TIndex, TType, TId>>;
 
             fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
                 formatter.write_str("a sequence")
             }
 
             #[inline]
-            fn visit_unit<E>(self) -> Result<BulkItems<TIndex, TType, TId>, E>
+            fn visit_unit<E>(self) -> Result<Vec<ItemResult<TIndex, TType, TId>>, E>
                 where E: DeError,
             {
-                Ok(BulkItems { ok: vec![], err: vec![] })
+                Ok(vec![])
             }
 
             #[inline]
-            fn visit_seq<V>(self, mut visitor: V) -> Result<BulkItems<TIndex, TType, TId>, V::Error>
+            fn visit_seq<V>(self, mut visitor: V) -> Result<Vec<ItemResult<TIndex, TType, TId>>, V::Error>
                 where V: SeqAccess<'de>,
             {
-                let mut values = BulkItems {
-                    ok: Vec::with_capacity(cmp::min(visitor.size_hint().unwrap_or(0), 4096)),
-                    err: Vec::with_capacity(cmp::min(visitor.size_hint().unwrap_or(0), 512))
-                };
+                let mut values = Vec::with_capacity(cmp::min(visitor.size_hint().unwrap_or(0), 4096));
 
-                while let Some(value) = visitor.next_element::<BulkItemDe<TIndex, TType, TId>>()? {
-                    match value.into_result() {
-                        Ok(item) => values.ok.push(item),
-                        Err(item) => values.err.push(item)
-                    }
+                while let Some(value) = visitor.next_element::<ItemDe<_, _, _>>()? {
+                    values.push(value.into_result());
                 }
 
                 Ok(values)
             }
         }
 
-        deserializer.deserialize_any(BulkItemsVisitor { _marker: PhantomData })
-    }
+        deserializer.deserialize_any(OkItemsVisitor { _marker: PhantomData })
 }
 
-fn deserialize_bulk_item_errors<'de, D, TIndex, TType, TId>(deserializer: D) -> Result<Vec<BulkItemError<TIndex, TType, TId>>, D::Error>
+fn deserialize_bulk_item_errors<'de, D, TIndex, TType, TId>(deserializer: D) -> Result<Vec<ErrorItem<TIndex, TType, TId>>, D::Error>
     where D: Deserializer <'de>,
           TIndex: Deserialize<'de>,
           TType: Deserialize<'de>,
@@ -414,26 +685,26 @@ fn deserialize_bulk_item_errors<'de, D, TIndex, TType, TId>(deserializer: D) -> 
                   TType: Deserialize<'de>,
                   TId: Deserialize<'de>
         {
-            type Value = Vec<BulkItemError<TIndex, TType, TId>>;
+            type Value = Vec<ErrorItem<TIndex, TType, TId>>;
 
             fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
                 formatter.write_str("a sequence")
             }
 
             #[inline]
-            fn visit_unit<E>(self) -> Result<Vec<BulkItemError<TIndex, TType, TId>>, E>
+            fn visit_unit<E>(self) -> Result<Vec<ErrorItem<TIndex, TType, TId>>, E>
                 where E: DeError,
             {
                 Ok(vec![])
             }
 
             #[inline]
-            fn visit_seq<V>(self, mut visitor: V) -> Result<Vec<BulkItemError<TIndex, TType, TId>>, V::Error>
+            fn visit_seq<V>(self, mut visitor: V) -> Result<Vec<ErrorItem<TIndex, TType, TId>>, V::Error>
                 where V: SeqAccess<'de>,
             {
                 let mut values = Vec::with_capacity(cmp::min(visitor.size_hint().unwrap_or(0), 4096));
 
-                while let Some(value) = visitor.next_element::<BulkItemDe<TIndex, TType, TId>>()? {
+                while let Some(value) = visitor.next_element::<ItemDe<_, _, _>>()? {
                     if let Some(value) = value.into_err() {
                         values.push(value);
                     }
