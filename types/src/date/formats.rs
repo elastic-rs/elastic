@@ -2,6 +2,9 @@ use chrono::{DateTime, NaiveDateTime, Utc, Timelike};
 use std::error::Error;
 use super::{DateFormat, FormattedDate, ParseError};
 
+/** The default `date` format (`BasicDateTime`). */
+pub type DefaultDateFormat = BasicDateTime;
+
 /** Format for default `chrono::DateTime`. */
 #[derive(ElasticDateFormat, PartialEq, Debug, Default, Clone, Copy)]
 #[elastic(date_format="yyyy-MM-dd'T'HH:mm:ssZ")]

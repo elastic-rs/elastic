@@ -1,14 +1,16 @@
 use std::marker::PhantomData;
 use std::fmt::{Display, Result as FmtResult, Formatter};
-use chrono::{Utc, NaiveDateTime, NaiveDate, NaiveTime};
+use chrono::{DateTime, Utc, NaiveDateTime, NaiveDate, NaiveTime};
 use serde::{Serialize, Deserialize, Serializer, Deserializer};
 use serde::de::{Visitor, Error};
-use super::ChronoDateTime;
 use super::format::{DateFormat, ParseError};
-use super::formats::ChronoFormat;
+use super::formats::{DefaultDateFormat, ChronoFormat};
 use super::mapping::{DateFieldType, DateMapping, DefaultDateMapping};
 
 pub use chrono::{Datelike, Timelike};
+
+/** A re-export of the `chrono::DateTime` struct with `Utc` timezone. */
+pub type ChronoDateTime = DateTime<Utc>;
 
 impl DateFieldType<DefaultDateMapping<ChronoFormat>, ChronoFormat> for ChronoDateTime {}
 
@@ -64,10 +66,7 @@ println!("{}/{}/{} {}:{}:{}.{}",
 - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/date.html)
 */
 #[derive(Debug, Clone, PartialEq)]
-pub struct Date<F, M = DefaultDateMapping<F>>
-    where F: DateFormat,
-          M: DateMapping<Format = F>
-{
+pub struct Date<F, M = DefaultDateMapping<F>> {
     value: ChronoDateTime,
     _t: PhantomData<(M, F)>,
 }
@@ -344,6 +343,164 @@ impl<'a, F, M> Serialize for DateBrw<'a, F, M>
     }
 }
 
+/// A date expression.
+#[derive(Debug, Clone, PartialEq)]
+pub struct DateExpr<F, M = DefaultDateMapping<F>> {
+    anchor: DateExprAnchor<F, M>,
+    ops: Vec<DateExprOp>
+}
+
+impl<F, M> Display for DateExpr<F, M>
+    where F: DateFormat,
+          M: DateMapping<Format = F>
+{
+    fn fmt(&self, f: &mut Formatter) -> FmtResult {
+        self.anchor.fmt(f)?;
+
+        for op in &self.ops {
+            op.fmt(f)?;
+        }
+
+        Ok(())
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+enum DateExprAnchor<F, M> {
+    Now,
+    Value(Date<F, M>)
+}
+
+impl<F, M> Display for DateExprAnchor<F, M>
+    where F: DateFormat,
+          M: DateMapping<Format = F>
+{
+    fn fmt(&self, f: &mut Formatter) -> FmtResult {
+        match *self {
+            DateExprAnchor::Now => "now".fmt(f),
+            // TODO: Is `2015-05-01||` valid?
+            DateExprAnchor::Value(ref date) => write!(f, "{}||", date),
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+enum DateExprOp {
+    Add(usize, DateExprOpUnit),
+    Sub(usize, DateExprOpUnit),
+    Round(DateExprOpUnit)
+}
+
+impl Display for DateExprOp {
+    fn fmt(&self, f: &mut Formatter) -> FmtResult {
+        match *self {
+            DateExprOp::Add(size, unit) => write!(f, "+{}{}", size, unit),
+            DateExprOp::Sub(size, unit) => write!(f, "-{}{}", size, unit),
+            DateExprOp::Round(unit) => write!(f, "/{}", unit)
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+enum DateExprOpUnit {
+    Year,
+    Month,
+    Week,
+    Day,
+    Hour,
+    Minute,
+    Second
+}
+
+impl Display for DateExprOpUnit {
+    fn fmt(&self, f: &mut Formatter) -> FmtResult {
+        let fmtd = match *self {
+            DateExprOpUnit::Year => "y",
+            DateExprOpUnit::Month => "M",
+            DateExprOpUnit::Week => "w",
+            DateExprOpUnit::Day => "d",
+            DateExprOpUnit::Hour => "h",
+            DateExprOpUnit::Minute => "m",
+            DateExprOpUnit::Second => "s"
+        };
+
+        fmtd.fmt(f)
+    }
+}
+
+macro_rules! impl_expr_ops {
+    ($op:path, $add:ident, $sub:ident, $round:ident) => (
+        /// Add to the anchored date.
+        pub fn $add(mut self, value: usize) -> Self {
+            self.ops.push(DateExprOp::Add(value, $op));
+            self
+        }
+
+        /// Subtract from the anchored date.
+        pub fn $sub(mut self, value: usize) -> Self {
+            self.ops.push(DateExprOp::Sub(value, $op));
+            self
+        }
+
+        /// Round the anchored date.
+        pub fn $round(mut self) -> Self {
+            self.ops.push(DateExprOp::Round($op));
+            self
+        }
+    )
+}
+
+impl DateExpr<DefaultDateFormat, DefaultDateMapping<DefaultDateFormat>> {
+    /// Create a new date expression for `now`.
+    /// 
+    /// This value is different from `DateTime::now()` because it doesn't calculate the current date from the system clock.
+    /// It serialises to the literal `now`, which is interpreted by Elasticsearch when indexing.
+    pub fn now() -> Self {
+        DateExpr {
+            anchor: DateExprAnchor::Now,
+            ops: Vec::new(),
+        }
+    }
+}
+
+impl<F, M> DateExpr<F, M> 
+    where F: DateFormat,
+          M: DateMapping<Format = F>
+{
+    /// Create a new date expression from a concrete date value.
+    pub fn value(date: Date<F, M>) -> Self {
+        DateExpr {
+            anchor: DateExprAnchor::Value(date),
+            ops: Vec::new(),
+        }
+    }
+
+    impl_expr_ops!(DateExprOpUnit::Year, add_years, sub_years, round_year);
+    impl_expr_ops!(DateExprOpUnit::Month, add_months, sub_months, round_month);
+    impl_expr_ops!(DateExprOpUnit::Week, add_weeks, sub_weeks, round_week);
+    impl_expr_ops!(DateExprOpUnit::Day, add_days, sub_days, round_day);
+    impl_expr_ops!(DateExprOpUnit::Hour, add_hours, sub_hours, round_hour);
+    impl_expr_ops!(DateExprOpUnit::Minute, add_minutes, sub_minutes, round_minute);
+    impl_expr_ops!(DateExprOpUnit::Second, add_seconds, sub_seconds, round_second);
+}
+
+impl<F, M> DateFieldType<M, F> for DateExpr<F, M>
+    where F: DateFormat,
+          M: DateMapping<Format = F>
+{
+}
+
+impl<F, M> Serialize for DateExpr<F, M>
+    where F: DateFormat,
+          M: DateMapping<Format = F>
+{
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+        where S: Serializer
+    {
+        serializer.collect_str(&self)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use serde_json;
@@ -456,4 +613,80 @@ mod tests {
         assert_eq!(r#""20150513T000000.000Z""#, ser);
     }
 
+    #[test]
+    fn serialise_date_expr_now() {
+        let expr = DateExpr::now();
+
+        let ser = serde_json::to_string(&expr).unwrap();
+
+        assert_eq!(r#""now""#, ser);
+    }
+
+    #[test]
+    fn serialise_date_expr_value() {
+        let expr = DateExpr::value(Date::<BasicDateTime>::build(2015, 5, 13, 0, 0, 0, 0));
+
+        let ser = serde_json::to_string(&expr).unwrap();
+
+        assert_eq!(r#""20150513T000000.000Z||""#, ser);
+    }
+
+    #[test]
+    fn serialise_date_expr_value_with_ops() {
+        let expr = DateExpr::value(Date::<BasicDateTime>::build(2015, 5, 13, 0, 0, 0, 0))
+            .add_days(2)
+            .round_week();
+
+        let ser = serde_json::to_string(&expr).unwrap();
+
+        assert_eq!(r#""20150513T000000.000Z||+2d/w""#, ser);
+    }
+
+    #[test]
+    fn serialise_date_expr_add() {
+        let expr = DateExpr::now()
+            .add_years(1)
+            .add_months(2)
+            .add_weeks(3)
+            .add_days(4)
+            .add_hours(5)
+            .add_minutes(6)
+            .add_seconds(7);
+
+        let ser = serde_json::to_string(&expr).unwrap();
+
+        assert_eq!(r#""now+1y+2M+3w+4d+5h+6m+7s""#, ser);
+    }
+
+    #[test]
+    fn serialise_date_expr_sub() {
+        let expr = DateExpr::now()
+            .sub_years(1)
+            .sub_months(2)
+            .sub_weeks(3)
+            .sub_days(4)
+            .sub_hours(5)
+            .sub_minutes(6)
+            .sub_seconds(7);
+
+        let ser = serde_json::to_string(&expr).unwrap();
+
+        assert_eq!(r#""now-1y-2M-3w-4d-5h-6m-7s""#, ser);
+    }
+
+    #[test]
+    fn serialise_date_expr_round() {
+        let expr = DateExpr::now()
+            .round_year()
+            .round_month()
+            .round_week()
+            .round_day()
+            .round_hour()
+            .round_minute()
+            .round_second();
+
+        let ser = serde_json::to_string(&expr).unwrap();
+
+        assert_eq!(r#""now/y/M/w/d/h/m/s""#, ser);
+    }
 }

@@ -115,14 +115,6 @@ pub use self::format::*;
 pub use self::impls::*;
 pub use self::formats::*;
 
-use chrono::{DateTime, Utc};
-
-/** A re-export of the `chrono::DateTime` struct with `Utc` timezone. */
-pub type ChronoDateTime = DateTime<Utc>;
-
-/** The default `date` format (`BasicDateTime`). */
-pub type DefaultDateFormat = BasicDateTime;
-
 pub mod prelude {
     /*!
     Includes all types for the `date` type.

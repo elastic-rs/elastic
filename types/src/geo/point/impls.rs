@@ -52,10 +52,7 @@ println!("({},{})",
 - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/geo-point.html)
 */
 #[derive(Debug, Clone, PartialEq)]
-pub struct GeoPoint<F, M = DefaultGeoPointMapping<F>>
-    where F: GeoPointFormat,
-          M: GeoPointMapping<Format = F>
-{
+pub struct GeoPoint<F, M = DefaultGeoPointMapping<F>> {
     value: Point,
     _t: PhantomData<(M, F)>,
 }

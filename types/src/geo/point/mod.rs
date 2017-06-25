@@ -77,9 +77,6 @@ pub use self::impls::*;
 pub use self::format::*;
 pub use self::formats::*;
 
-/** The default `geo_point` format (`GeoPointArray`). */
-pub type DefaultGeoPointFormat = GeoPointArray;
-
 pub mod prelude {
     /*!
     Includes all types for the `geo_point` type.

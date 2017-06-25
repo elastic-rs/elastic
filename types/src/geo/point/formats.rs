@@ -6,6 +6,9 @@ use super::{Coordinate, Point, GeoPointFormat};
 use super::mapping::GeoPointMapping;
 use geo::mapping::Distance;
 
+/** The default `geo_point` format (`GeoPointArray`). */
+pub type DefaultGeoPointFormat = GeoPointArray;
+
 /** Geo-point expressed as an object, with `lat` and `lon` keys. */
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct GeoPointObject;
