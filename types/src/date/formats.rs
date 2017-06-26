@@ -1,6 +1,7 @@
 use chrono::{DateTime, NaiveDateTime, Utc, Timelike};
 use std::error::Error;
-use super::{DateFormat, FormattedDate, ParseError};
+use std::borrow::Cow;
+use super::{DateFormat, FormattedDate, ParsableDate, ParseError};
 
 /** The default `date` format (`BasicDateTime`). */
 pub type DefaultDateFormat = BasicDateTime;
@@ -47,8 +48,10 @@ impl DateFormat for EpochMillis {
         "epoch_millis"
     }
 
-    fn parse(date: &str) -> Result<DateTime<Utc>, ParseError> {
-        let millis = try!(date.parse::<i64>().map_err(|e| e.description().to_string()));
+    fn parse<'a, P>(date: P) -> Result<DateTime<Utc>, ParseError> where P: Into<ParsableDate<'a>> {
+        let date = date.into();
+        
+        let millis = date.parse::<i64>().map_err(|e| e.description().to_string())?;
 
         let (s, m) = {
             // For positive timestamps:
@@ -66,7 +69,7 @@ impl DateFormat for EpochMillis {
         Ok(DateTime::from_utc(NaiveDateTime::from_timestamp(s, m as u32 * 1000000), Utc))
     }
 
-    fn format<'a>(date: &DateTime<Utc>) -> FormattedDate<'a> {
+    fn format<'a>(date: Cow<'a, DateTime<Utc>>) -> FormattedDate<'a> {
         let msec = (date.timestamp() * 1000) + (date.nanosecond() as i64 / 1000000);
         msec.into()
     }

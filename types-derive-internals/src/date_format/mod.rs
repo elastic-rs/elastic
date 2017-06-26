@@ -42,6 +42,14 @@ pub fn expand_derive(crate_root: Tokens,
     Ok(vec![derived])
 }
 
+/*
+/** Parses a date string to a `chrono::DateTime<Utc>` result. */
+    fn parse<'a, P>(fmtd: P) -> Result<DateTime<Utc>, ParseError> where P: Into<ParsableDate<'a>>;
+
+    /** Formats a given `chrono::DateTime<Utc>` as a string. */
+    fn format<'a>(date: Cow<'a, DateTime<Utc>>) -> FormattedDate<'a>;
+*/
+
 // Implement DateFormat for the type being derived with the mapping
 fn impl_date_format(crate_root: Tokens,
                     item: &syn::MacroInput,
@@ -51,7 +59,9 @@ fn impl_date_format(crate_root: Tokens,
     let ty = &item.ident;
 
     let parse_fn = quote!(
-        fn parse(date: &str) -> ::std::result::Result<::chrono::DateTime<::chrono::Utc>, #crate_root::derive::ParseError> {
+        fn parse<'a, P>(date: P) -> ::std::result::Result<::chrono::DateTime<::chrono::Utc>, #crate_root::derive::ParseError> 
+            where P: ::std::convert::Into<#crate_root::derive::ParsableDate<'a>>
+        {
             let fmt = vec![ #(#format),* ];
 
             #crate_root::derive::parse_from_tokens(date, fmt)
@@ -59,7 +69,7 @@ fn impl_date_format(crate_root: Tokens,
     );
 
     let format_fn = quote!(
-        fn format<'a>(date: &::chrono::DateTime<::chrono::Utc>) -> #crate_root::derive::FormattedDate<'a> {
+        fn format<'a>(date: ::std::borrow::Cow<'a, ::chrono::DateTime<::chrono::Utc>>) -> #crate_root::derive::FormattedDate<'a> {
             let fmt = vec![ #(#format),* ];
 
             #crate_root::derive::format_with_tokens(date, fmt)

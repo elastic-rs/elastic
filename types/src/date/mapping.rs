@@ -1,23 +1,75 @@
 /*! Mapping for the Elasticsearch `date` type. */
 
 use std::marker::PhantomData;
+use std::borrow::Cow;
 use serde::{Serialize, Serializer};
 use serde::ser::SerializeStruct;
-use super::{DateFormat, Date};
+use super::{DateFormat, FormattedDate, ParsableDate, ParseError, Date, ChronoDateTime};
 use private::field::{DocumentField, FieldMapping, SerializeField};
 use document::FieldType;
 
 /** A field that will be mapped as a `date`. */
-pub trait DateFieldType<M, F>
-    where M: DateMapping<Format = F>,
-          F: DateFormat
+pub trait DateFieldType<M>
 {
 }
 
-impl<T, F, M> FieldType<M, DateFormatWrapper<F>> for T
-    where F: DateFormat,
-          M: DateMapping<Format = F>,
-          T: DateFieldType<M, F> + Serialize
+/** A more general `DateFieldType` that can be parsed and formatted. */
+pub trait DateType where Self: Sized {
+    /**
+    The date format bound to this datelike type.
+    */
+    type Format: DateFormat;
+
+    /** Get a maybe owned raw `chrono` date from this type. */
+    fn to_raw_date<'a>(&'a self) -> Cow<'a, ChronoDateTime>;
+
+    /** Build this type from a raw `chrono` date. */
+    fn from_raw_date(date: ChronoDateTime) -> Self;
+    
+    /**
+    Format the date and time as a string.
+    
+    The format of the string is specified by the given `DateFormat`.
+    
+    # Examples
+    
+    ```
+    # use elastic_types::prelude::*;
+    let date: Date<BasicDateTime> = Date::now();
+    let fmt = date.format();
+    
+    //eg: 20151126T145543.778Z
+    println!("{}", fmt);
+    ```
+    */
+    fn format<'a>(&'a self) -> FormattedDate<'a> {
+        Self::Format::format(self.to_raw_date())
+    }
+
+    /**
+    Parse the date and time from a string.
+    
+    The format of the string must match the given `DateFormat`.
+    
+    # Examples
+    
+    Parsing from a specified `DateFormat`.
+    
+    ```
+    # use elastic_types::prelude::*;
+    let date = Date::<BasicDateTime>::parse("20151126T145543.778Z").unwrap();
+    ```
+    */
+    fn parse<'a, I>(fmtd: I) -> Result<Self, ParseError> where I: Into<ParsableDate<'a>> {
+        let raw = Self::Format::parse(fmtd)?;
+        
+        Ok(Self::from_raw_date(raw))
+    }
+}
+
+impl<T, M> FieldType<M, DateFormatWrapper<M::Format>> for T
+    where T: DateFieldType<M> + Serialize,
+          M: DateMapping
 {
 }
 
@@ -172,7 +224,7 @@ pub trait DateMapping
     Accepts a date value in one of the configured format's as the field which is substituted for any explicit null values.
     Defaults to `null`, which means the field is treated as missing.
     */
-    fn null_value() -> Option<Date<Self::Format, Self>> {
+    fn null_value() -> Option<Date<Self>> {
         None
     }
 }

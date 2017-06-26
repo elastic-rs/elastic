@@ -1,6 +1,8 @@
 use chrono;
 use chrono::{DateTime, Utc};
 use chrono::format::{Item, DelayedFormat};
+use std::borrow::Cow;
+use std::ops::Deref;
 use std::error::Error;
 use std::fmt::{Display, Result as FmtResult, Formatter};
 use std::vec::IntoIter;
@@ -54,10 +56,10 @@ pub trait DateFormat
     where Self: Default
 {
     /** Parses a date string to a `chrono::DateTime<Utc>` result. */
-    fn parse(date: &str) -> Result<DateTime<Utc>, ParseError>;
+    fn parse<'a, P>(fmtd: P) -> Result<DateTime<Utc>, ParseError> where P: Into<ParsableDate<'a>>;
 
     /** Formats a given `chrono::DateTime<Utc>` as a string. */
-    fn format<'a>(date: &DateTime<Utc>) -> FormattedDate<'a>;
+    fn format<'a>(date: Cow<'a, DateTime<Utc>>) -> FormattedDate<'a>;
 
     /**
     The name of the format.
@@ -65,28 +67,6 @@ pub trait DateFormat
     This is the string used when defining the format in the field mapping.
     */
     fn name() -> &'static str;
-}
-
-enum FormattedDateInner<'a> {
-    Delayed(DelayedFormat<IntoIter<Item<'a>>>),
-    Buffered(String),
-    Number(i64),
-}
-
-impl<'a> Display for FormattedDateInner<'a> {
-    fn fmt(&self, f: &mut Formatter) -> FmtResult {
-        fn fmt<T>(inner: &T, f: &mut Formatter) -> FmtResult
-            where T: Display
-        {
-            inner.fmt(f)
-        }
-
-        match *self {
-            FormattedDateInner::Delayed(ref inner) => fmt(inner, f),
-            FormattedDateInner::Buffered(ref inner) => fmt(inner, f),
-            FormattedDateInner::Number(ref inner) => fmt(inner, f),
-        }
-    }
 }
 
 /**
@@ -98,19 +78,63 @@ pub struct FormattedDate<'a> {
     inner: FormattedDateInner<'a>,
 }
 
-impl<'a> Display for FormattedDate<'a> {
-    fn fmt(&self, f: &mut Formatter) -> FmtResult {
-        self.inner.fmt(f)
+enum FormattedDateInner<'a> {
+    Delayed(DelayedFormat<IntoIter<Item<'a>>>),
+    Buffered(String),
+    Number(i64),
+}
+
+/**
+A parsable date.
+
+This type represents a date that can be parsed.
+*/
+pub struct ParsableDate<'a>(Cow<'a, str>);
+
+impl<'a> Deref for ParsableDate<'a> {
+    type Target = str;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
     }
 }
 
-impl<'a> Into<String> for FormattedDate<'a> {
-    fn into(self) -> String {
-        match self.inner {
-            FormattedDateInner::Delayed(inner) => inner.to_string(),
-            FormattedDateInner::Buffered(inner) => inner,
-            FormattedDateInner::Number(inner) => inner.to_string(),
+impl<'a> From<&'a str> for ParsableDate<'a> {
+    fn from(s: &'a str) -> Self {
+        ParsableDate(Cow::Borrowed(s))
+    }
+}
+
+impl<'a> From<FormattedDate<'a>> for ParsableDate<'a> {
+    fn from(date: FormattedDate<'a>) -> Self {
+        let inner = match date.inner {
+            FormattedDateInner::Buffered(s) => s,
+            _ => date.to_string()
+        };
+
+        ParsableDate(Cow::Owned(inner))
+    }
+}
+
+impl<'a> Display for FormattedDateInner<'a> {
+    fn fmt(&self, f: &mut Formatter) -> FmtResult {
+        fn fmt_inner<T>(inner: &T, f: &mut Formatter) -> FmtResult
+            where T: Display
+        {
+            inner.fmt(f)
         }
+
+        match *self {
+            FormattedDateInner::Delayed(ref inner) => fmt_inner(inner, f),
+            FormattedDateInner::Buffered(ref inner) => fmt_inner(inner, f),
+            FormattedDateInner::Number(ref inner) => fmt_inner(inner, f),
+        }
+    }
+}
+
+impl<'a> Display for FormattedDate<'a> {
+    fn fmt(&self, f: &mut Formatter) -> FmtResult {
+        self.inner.fmt(f)
     }
 }
 
