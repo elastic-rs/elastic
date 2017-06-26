@@ -7,7 +7,7 @@ use private::field::{DocumentField, FieldMapping, SerializeField};
 use document::FieldType;
 
 /** A field that will be mapped as an `ip`. */
-pub trait IpFieldType<M> where M: IpMapping {}
+pub trait IpFieldType<M> {}
 
 impl<T, M> FieldType<M, IpFormat> for T
     where M: IpMapping,

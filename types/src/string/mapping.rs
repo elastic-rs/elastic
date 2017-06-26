@@ -13,11 +13,9 @@ impl TextMapping for DefaultStringMapping {
     fn fields() -> Option<BTreeMap<&'static str, StringField>> {
         let mut fields = BTreeMap::new();
 
-        fields.insert("keyword",
-                      StringField::Keyword(KeywordFieldMapping {
-                                               ignore_above: Some(256),
-                                               ..Default::default()
-                                           }));
+        let keyword = KeywordFieldMapping { ignore_above: Some(256), ..Default::default() };
+
+        fields.insert("keyword", StringField::Keyword(keyword));
 
         Some(fields)
     }

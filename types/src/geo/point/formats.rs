@@ -1,4 +1,5 @@
 use std::str::FromStr;
+use std::fmt::Write;
 use serde::{Serialize, Serializer, Deserialize, Deserializer};
 use serde::de::{Error, Unexpected, Visitor, SeqAccess};
 use geohash;
@@ -93,13 +94,9 @@ impl GeoPointFormat for GeoPointString {
         where M: GeoPointMapping<Format = Self>,
               S: Serializer
     {
-        let x = point.0.x.to_string();
-        let y = point.0.y.to_string();
+        let mut fmtd = String::new();
 
-        let mut fmtd = String::with_capacity(x.len() + y.len() + 1);
-        fmtd.push_str(&y);
-        fmtd.push(',');
-        fmtd.push_str(&x);
+        write!(&mut fmtd, "{},{}", point.0.x, point.0.y).expect("Display for a point failed");
 
         serializer.serialize_str(&fmtd)
     }

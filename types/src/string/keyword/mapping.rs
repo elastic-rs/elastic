@@ -8,7 +8,7 @@ use private::field::{DocumentField, FieldMapping, SerializeField};
 use document::FieldType;
 
 /** A field that will be mapped as a `keyword`. */
-pub trait KeywordFieldType<M> where M: KeywordMapping {}
+pub trait KeywordFieldType<M> {}
 
 impl<T, M> FieldType<M, KeywordFormat> for T
     where M: KeywordMapping,

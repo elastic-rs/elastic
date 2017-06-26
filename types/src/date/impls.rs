@@ -170,10 +170,10 @@ impl<M> Date<M> where M: DateMapping
     let otherdate: Date<EpochMillis> = date.remap();
     ```
     */
-    pub fn remap<MInto>(self) -> Date<MInto>
+    pub fn remap<MInto>(date: Date<M>) -> Date<MInto>
         where MInto: DateMapping
     {
-        Date::new(self.value)
+        Date::new(date.value)
     }
 }
 
@@ -507,19 +507,6 @@ mod tests {
         let date: Date<BasicDateTime> = serde_json::from_str(r#""20150513T000000.000Z""#).unwrap();
 
         assert_eq!((2015, 5, 13), (date.year(), date.month(), date.day()));
-    }
-
-    #[test]
-    fn serialise_elastic_date_brw() {
-        let chrono_date = chrono::Utc
-            .datetime_from_str("13/05/2015 00:00:00", "%d/%m/%Y %H:%M:%S")
-            .unwrap();
-
-        let date = DateBrw::<BasicDateTime>::new(&chrono_date);
-
-        let ser = serde_json::to_string(&date).unwrap();
-
-        assert_eq!(r#""20150513T000000.000Z""#, ser);
     }
 
     #[test]

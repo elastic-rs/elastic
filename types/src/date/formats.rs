@@ -359,11 +359,11 @@ mod tests {
                 "yyyy-MM-dd'T'HH:mm:ssZ"
             }
 
-            fn format<'a>(date: &DateTime<Utc>) -> FormattedDate<'a> {
+            fn format<'a>(date: Cow<'a, DateTime<Utc>>) -> FormattedDate<'a> {
                 date.to_rfc3339().into()
             }
 
-            fn parse(date: &str) -> Result<DateTime<Utc>, ParseError> {
+            fn parse<'a, P>(date: P) -> Result<DateTime<Utc>, ParseError> where P: Into<ParsableDate<'a>> {
                 let date = try!(DateTime::parse_from_rfc3339(date).map_err(|e| ParseError::from(e)));
 
                 Ok(DateTime::from_utc(date.naive_local(), Utc))

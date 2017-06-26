@@ -56,7 +56,7 @@ pub trait DateFormat
     where Self: Default
 {
     /** Parses a date string to a `chrono::DateTime<Utc>` result. */
-    fn parse<'a, P>(fmtd: P) -> Result<DateTime<Utc>, ParseError> where P: Into<ParsableDate<'a>>;
+    fn parse<'a, P>(date: P) -> Result<DateTime<Utc>, ParseError> where P: Into<ParsableDate<'a>>;
 
     /** Formats a given `chrono::DateTime<Utc>` as a string. */
     fn format<'a>(date: Cow<'a, DateTime<Utc>>) -> FormattedDate<'a>;

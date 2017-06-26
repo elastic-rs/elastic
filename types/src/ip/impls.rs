@@ -26,12 +26,11 @@ let ip = Ip::<DefaultIpMapping>::new(Ipv4Addr::new(127, 0, 0, 1));
 ```
 */
 #[derive(Debug, Clone, PartialEq)]
-pub struct Ip<M>
-    where M: IpMapping
-{
+pub struct Ip<M> {
     value: Ipv4Addr,
     _m: PhantomData<M>,
 }
+
 impl<M> Ip<M>
     where M: IpMapping
 {
@@ -82,10 +81,10 @@ impl<M> Ip<M>
     # }
     ```
     */
-    pub fn remap<MInto>(self) -> Ip<MInto>
+    pub fn remap<MInto>(ip: Ip<M>) -> Ip<MInto>
         where MInto: IpMapping
     {
-        Ip::<MInto>::new(self.value)
+        Ip::new(ip.value)
     }
 }
 

@@ -9,15 +9,11 @@ use private::field::{DocumentField, FieldMapping, SerializeField};
 use document::FieldType;
 
 /** A field that will be mapped as a `date`. */
-pub trait DateFieldType<M>
-{
-}
+pub trait DateFieldType<M> {}
 
 /** A more general `DateFieldType` that can be parsed and formatted. */
 pub trait DateType where Self: Sized {
-    /**
-    The date format bound to this datelike type.
-    */
+    /** The date format bound to this datelike type. */
     type Format: DateFormat;
 
     /** Get a maybe owned raw `chrono` date from this type. */
@@ -296,7 +292,7 @@ mod tests {
     impl DateMapping for MyDateMapping {
         type Format = EpochMillis;
 
-        fn null_value() -> Option<Date<Self::Format, Self>> {
+        fn null_value() -> Option<Date<Self>> {
             Some(Date::build(2015, 3, 14, 16, 45, 13, 778))
         }
 

@@ -5,7 +5,7 @@ use super::mapping::{TextFieldType, TextMapping};
 use string::mapping::DefaultStringMapping;
 
 impl TextFieldType<DefaultStringMapping> for String {}
-impl TextFieldType<DefaultStringMapping> for &'static str {}
+impl<'a> TextFieldType<DefaultStringMapping> for &'a str {}
 
 /**
 An Elasticsearch `text` field with a mapping.
@@ -24,12 +24,11 @@ let string = Text::<DefaultTextMapping>::new("my string value");
 ```
 */
 #[derive(Debug, Clone, Default, PartialEq)]
-pub struct Text<M>
-    where M: TextMapping
-{
+pub struct Text<M> {
     value: String,
     _m: PhantomData<M>,
 }
+
 impl<M> Text<M>
     where M: TextMapping
 {

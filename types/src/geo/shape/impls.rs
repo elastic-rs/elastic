@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 use serde::{Serialize, Deserialize, Serializer, Deserializer};
 use geojson::Geometry;
-use super::mapping::{GeoShapeFieldType, GeoShapeMapping, DefaultGeoShapeMapping};
+use super::mapping::{GeoShapeFieldType, GeoShapeMapping};
 
 /**
 Geo shape type with a given mapping.
@@ -24,9 +24,7 @@ let point: GeoShape<DefaultGeoShapeMapping> = GeoShape::new(
 ```
 */
 #[derive(Debug, Clone, PartialEq)]
-pub struct GeoShape<M = DefaultGeoShapeMapping>
-    where M: GeoShapeMapping
-{
+pub struct GeoShape<M> {
     value: Geometry,
     _m: PhantomData<M>,
 }
@@ -66,8 +64,10 @@ impl<M> GeoShape<M>
     }
 
     /** Change the mapping of this geo shape. */
-    pub fn remap<MInto: GeoShapeMapping>(self) -> GeoShape<MInto> {
-        GeoShape::<MInto>::new(self.value)
+    pub fn remap<MInto>(shape: GeoShape<M>) -> GeoShape<MInto> 
+        where MInto: GeoShapeMapping
+    {
+        GeoShape::new(shape.value)
     }
 }
 

@@ -20,12 +20,11 @@ let boolean = Boolean::<DefaultBooleanMapping>::new(true);
 ```
 */
 #[derive(Debug, Clone, Default, PartialEq)]
-pub struct Boolean<M>
-    where M: BooleanMapping
-{
+pub struct Boolean<M> {
     value: bool,
     _m: PhantomData<M>,
 }
+
 impl<M> Boolean<M>
     where M: BooleanMapping
 {
@@ -72,10 +71,10 @@ impl<M> Boolean<M>
     # }
     ```
     */
-    pub fn remap<MInto>(self) -> Boolean<MInto>
+    pub fn remap<MInto>(boolean: Boolean<M>) -> Boolean<MInto>
         where MInto: BooleanMapping
     {
-        Boolean::<MInto>::new(self.value)
+        Boolean::<MInto>::new(boolean.value)
     }
 }
 

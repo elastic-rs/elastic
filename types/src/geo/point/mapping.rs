@@ -9,16 +9,11 @@ use private::field::{DocumentField, FieldMapping, SerializeField};
 use document::FieldType;
 
 /** A field that will be mapped as a `geo_point`. */
-pub trait GeoPointFieldType<M, F>
-    where M: GeoPointMapping<Format = F>,
-          F: GeoPointFormat
-{
-}
+pub trait GeoPointFieldType<M> {}
 
-impl<T, F, M> FieldType<M, GeoPointFormatWrapper<F>> for T
-    where F: GeoPointFormat,
-          M: GeoPointMapping<Format = F>,
-          T: GeoPointFieldType<M, F> + Serialize
+impl<T, M> FieldType<M, GeoPointFormatWrapper<M::Format>> for T
+    where T: GeoPointFieldType<M> + Serialize,
+          M: GeoPointMapping
 {
 }
 

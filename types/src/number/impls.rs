@@ -6,10 +6,11 @@ macro_rules! number_type {
     ($wrapper_ty:ident, $mapping_ty:ident, $field_trait:ident, $std_ty:ident) => (
         /** Number type with a given mapping. */
         #[derive(Debug, Default, Clone, PartialEq)]
-        pub struct $wrapper_ty<M> where M: $mapping_ty {
+        pub struct $wrapper_ty<M> {
             value: $std_ty,
             _m: PhantomData<M>
         }
+
         impl <M> $wrapper_ty<M> where M: $mapping_ty {
             /** Creates a new number with the given mapping. */
             pub fn new<I: Into<$std_ty>>(num: I) -> $wrapper_ty<M> {
@@ -20,8 +21,10 @@ macro_rules! number_type {
             }
 
             /** Change the mapping of this number. */
-            pub fn remap<MInto: $mapping_ty>(self) -> $wrapper_ty<MInto> {
-                $wrapper_ty::<MInto>::new(self.value)
+            pub fn remap<MInto>(number: $wrapper_ty<M>) -> $wrapper_ty<MInto> 
+                where MInto: $mapping_ty
+            {
+                $wrapper_ty::new(number.value)
             }
         }
 

@@ -73,7 +73,7 @@ macro_rules! number_mapping {
         pub struct $format;
 
         /** A field that will be mapped as a number. */
-        pub trait $field_trait<M> where M: $mapping {}
+        pub trait $field_trait<M> {}
 
         impl<T, M> FieldType<M, $format> for T
             where M: $mapping,
