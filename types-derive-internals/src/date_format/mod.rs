@@ -42,14 +42,6 @@ pub fn expand_derive(crate_root: Tokens,
     Ok(vec![derived])
 }
 
-/*
-/** Parses a date string to a `chrono::DateTime<Utc>` result. */
-    fn parse<'a, P>(fmtd: P) -> Result<DateTime<Utc>, ParseError> where P: Into<ParsableDate<'a>>;
-
-    /** Formats a given `chrono::DateTime<Utc>` as a string. */
-    fn format<'a>(date: Cow<'a, DateTime<Utc>>) -> FormattedDate<'a>;
-*/
-
 // Implement DateFormat for the type being derived with the mapping
 fn impl_date_format(crate_root: Tokens,
                     item: &syn::MacroInput,
