@@ -6,7 +6,7 @@ macro_rules! number_type {
     ($wrapper_ty:ident, $mapping_ty:ident, $field_trait:ident, $std_ty:ident) => (
         /** Number type with a given mapping. */
         #[derive(Debug, Default, Clone, PartialEq)]
-        pub struct $wrapper_ty<M> {
+        pub struct $wrapper_ty<M>  where M: $mapping_ty {
             value: $std_ty,
             _m: PhantomData<M>
         }
@@ -97,7 +97,7 @@ mod tests {
 
         let number: Integer<DefaultIntegerMapping> = Integer::new(1);
 
-        assert!(takes_custom_mapping(number.remap()));
+        assert!(takes_custom_mapping(Integer::remap(number)));
     }
 
     #[test]

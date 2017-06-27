@@ -364,7 +364,7 @@ mod tests {
 
     #[derive(Clone, Serialize, ElasticType)]
     pub struct SimpleType {
-        pub field1: Date<EpochMillis>,
+        pub field1: Date<DefaultDateMapping<EpochMillis>>,
         pub field2: SimpleNestedType,
     }
 

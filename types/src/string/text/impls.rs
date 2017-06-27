@@ -24,7 +24,7 @@ let string = Text::<DefaultTextMapping>::new("my string value");
 ```
 */
 #[derive(Debug, Clone, Default, PartialEq)]
-pub struct Text<M> {
+pub struct Text<M>  where M: TextMapping {
     value: String,
     _m: PhantomData<M>,
 }

@@ -20,7 +20,7 @@ let boolean = Boolean::<DefaultBooleanMapping>::new(true);
 ```
 */
 #[derive(Debug, Clone, Default, PartialEq)]
-pub struct Boolean<M> {
+pub struct Boolean<M> where M: BooleanMapping {
     value: bool,
     _m: PhantomData<M>,
 }
@@ -143,7 +143,7 @@ mod tests {
 
         let boolean: Boolean<DefaultBooleanMapping> = Boolean::new(true);
 
-        assert!(takes_custom_mapping(boolean.remap()));
+        assert!(takes_custom_mapping(Boolean::remap(boolean)));
     }
 
     #[test]

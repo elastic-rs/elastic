@@ -20,7 +20,7 @@ let string = Keyword::<DefaultKeywordMapping>::new("my string value");
 ```
 */
 #[derive(Debug, Clone, Default, PartialEq)]
-pub struct Keyword<M> {
+pub struct Keyword<M>  where M: KeywordMapping {
     value: String,
     _m: PhantomData<M>,
 }

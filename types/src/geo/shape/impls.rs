@@ -24,7 +24,7 @@ let point: GeoShape<DefaultGeoShapeMapping> = GeoShape::new(
 ```
 */
 #[derive(Debug, Clone, PartialEq)]
-pub struct GeoShape<M> {
+pub struct GeoShape<M>  where M: GeoShapeMapping {
     value: Geometry,
     _m: PhantomData<M>,
 }
@@ -116,7 +116,7 @@ mod tests {
 
         let point: GeoShape<DefaultGeoShapeMapping> = GeoShape::new(Geometry::new(Value::Point(vec![ 1.0, 1.0 ])));
 
-        assert!(takes_custom_mapping(point.remap()));
+        assert!(takes_custom_mapping(GeoShape::remap(point)));
     }
 
     #[test]

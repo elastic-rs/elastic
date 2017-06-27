@@ -99,6 +99,12 @@ impl<'a> Deref for ParsableDate<'a> {
     }
 }
 
+impl<'a> From<String> for ParsableDate<'a> {
+    fn from(s: String) -> Self {
+        ParsableDate(Cow::Owned(s))
+    }
+}
+
 impl<'a> From<&'a str> for ParsableDate<'a> {
     fn from(s: &'a str) -> Self {
         ParsableDate(Cow::Borrowed(s))

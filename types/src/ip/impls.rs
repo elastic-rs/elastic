@@ -26,7 +26,7 @@ let ip = Ip::<DefaultIpMapping>::new(Ipv4Addr::new(127, 0, 0, 1));
 ```
 */
 #[derive(Debug, Clone, PartialEq)]
-pub struct Ip<M> {
+pub struct Ip<M> where M: IpMapping {
     value: Ipv4Addr,
     _m: PhantomData<M>,
 }
@@ -166,7 +166,7 @@ mod tests {
 
         let ip: Ip<DefaultIpMapping> = Ip::new(Ipv4Addr::new(127, 0, 0, 1));
 
-        assert!(takes_custom_mapping(ip.remap()));
+        assert!(takes_custom_mapping(Ip::remap(ip)));
     }
 
     #[test]

@@ -43,14 +43,14 @@ Defining a date using the default format:
 
 ```
 # use elastic_types::prelude::*;
-let date: Date<DefaultDateFormat> = Date::now();
+let date: Date<DefaultDateMapping<DefaultDateFormat>> = Date::now();
 ```
 
 Defining a date using a named format:
 
 ```
 # use elastic_types::prelude::*;
-let date = Date::<BasicDateTime>::now();
+let date = Date::<DefaultDateMapping<BasicDateTime>>::now();
 ```
 
 Defining a date using a custom mapping:
@@ -64,7 +64,7 @@ Accessing the values of a date:
 
 ```
 # use elastic_types::prelude::*;
-let date = Date::<BasicDateTime>::now();
+let date = Date::<DefaultDateMapping<BasicDateTime>>::now();
 
 //eg: 2010/04/30 13:56:59.372
 println!("{}/{}/{} {}:{}:{}.{}",
@@ -83,7 +83,7 @@ println!("{}/{}/{} {}:{}:{}.{}",
 - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/date.html)
 */
 #[derive(Debug, Clone, PartialEq)]
-pub struct Date<M> {
+pub struct Date<M> where M: DateMapping {
     value: ChronoDateTime,
     _m: PhantomData<M>,
 }
@@ -110,7 +110,7 @@ impl<M> Date<M> where M: DateMapping
     let chronoDate = Utc::now();
     
     //Give it to the Date struct
-    let esDate: Date<DefaultDateFormat> = Date::new(chronoDate);
+    let esDate: Date<DefaultDateMapping<DefaultDateFormat>> = Date::new(chronoDate);
     # }
     ```
     */
@@ -126,7 +126,7 @@ impl<M> Date<M> where M: DateMapping
     
     ```
     # use elastic_types::prelude::*;
-    let esDate: Date<DefaultDateFormat> = Date::build(2015, 5, 14, 16, 45, 8, 886);
+    let esDate: Date<DefaultDateMapping<DefaultDateFormat>> = Date::build(2015, 5, 14, 16, 45, 8, 886);
     ```
     */
     pub fn build(year: i32, month: u32, day: u32, hour: u32, minute: u32, second: u32, milli: u32) -> Self {
@@ -146,7 +146,7 @@ impl<M> Date<M> where M: DateMapping
     
     ```
     # use elastic_types::prelude::*;
-    let date: Date<DefaultDateFormat> = Date::now();
+    let date: Date<DefaultDateMapping<DefaultDateFormat>> = Date::now();
     ```
     */
     pub fn now() -> Self {
@@ -164,10 +164,10 @@ impl<M> Date<M> where M: DateMapping
     ```
     # use elastic_types::prelude::*;
     //Get the current datetime formatted as basic_date_time
-    let date: Date<BasicDateTime> = Date::now();
+    let date: Date<DefaultDateMapping<BasicDateTime>> = Date::now();
     
     //Change the format to epoch_millis
-    let otherdate: Date<EpochMillis> = date.remap();
+    let otherdate: Date<DefaultDateMapping<EpochMillis>> = date.remap();
     ```
     */
     pub fn remap<MInto>(date: Date<M>) -> Date<MInto>
@@ -257,14 +257,14 @@ impl<'de, M> Deserialize<'de> for Date<M>
             fn visit_i64<E>(self, v: i64) -> Result<Date<M>, E>
                 where E: Error
             {
-                let result = Date::parse(v.to_string().as_ref());
+                let result = Date::parse(v.to_string());
                 result.map_err(|err| Error::custom(format!("{}", err)))
             }
 
             fn visit_u64<E>(self, v: u64) -> Result<Date<M>, E>
                 where E: Error
             {
-                let result = Date::parse(v.to_string().as_ref());
+                let result = Date::parse(v.to_string());
                 result.map_err(|err| Error::custom(format!("{}", err)))
             }
         }
@@ -443,8 +443,8 @@ mod tests {
             .unwrap();
         let expected = dt.format("%Y/%m/%d %H:%M:%S").to_string();
 
-        let dt = Date::<NamedDateFormat>::new(dt.clone());
-        let actual = dt.format();
+        let dt = Date::<DefaultDateMapping<NamedDateFormat>>::new(dt.clone());
+        let actual = dt.format().to_string();
 
         assert_eq!(expected, actual);
     }
@@ -456,26 +456,26 @@ mod tests {
             .unwrap();
         let expected = "20150513".to_string();
 
-        let dt = Date::<UnNamedDateFormat>::new(dt.clone());
-        let actual = dt.format();
+        let dt = Date::<DefaultDateMapping<UnNamedDateFormat>>::new(dt.clone());
+        let actual = dt.format().to_string();
 
         assert_eq!(expected, actual);
     }
 
     #[test]
     fn can_change_date_mapping() {
-        fn takes_epoch_millis(_: Date<EpochMillis>) -> bool {
+        fn takes_epoch_millis(_: Date<DefaultDateMapping<EpochMillis>>) -> bool {
             true
         }
 
-        let date: Date<BasicDateTime> = Date::now();
+        let date: Date<DefaultDateMapping<BasicDateTime>> = Date::now();
 
-        assert!(takes_epoch_millis(date.remap()));
+        assert!(takes_epoch_millis(Date::remap(date)));
     }
 
     #[test]
     fn can_build_date_from_chrono() {
-        let date: Date<DefaultDateFormat> = Date::new(chrono::Utc
+        let date: Date<DefaultDateMapping<DefaultDateFormat>> = Date::new(chrono::Utc
                                                           .datetime_from_str("13/05/2015 00:00:00", "%d/%m/%Y %H:%M:%S")
                                                           .unwrap());
 
@@ -485,7 +485,7 @@ mod tests {
 
     #[test]
     fn can_build_date_from_prim() {
-        let date: Date<DefaultDateFormat> = Date::build(2015, 5, 13, 0, 0, 0, 0);
+        let date: Date<DefaultDateMapping<DefaultDateFormat>> = Date::build(2015, 5, 13, 0, 0, 0, 0);
 
         assert_eq!((2015, 5, 13, 0, 0, 0),
                    (date.year(), date.month(), date.day(), date.hour(), date.minute(), date.second()));
@@ -493,7 +493,7 @@ mod tests {
 
     #[test]
     fn serialise_elastic_date() {
-        let date = Date::<BasicDateTime>::new(chrono::Utc
+        let date = Date::<DefaultDateMapping<BasicDateTime>>::new(chrono::Utc
                                                   .datetime_from_str("13/05/2015 00:00:00", "%d/%m/%Y %H:%M:%S")
                                                   .unwrap());
 
@@ -504,7 +504,7 @@ mod tests {
 
     #[test]
     fn deserialise_elastic_date() {
-        let date: Date<BasicDateTime> = serde_json::from_str(r#""20150513T000000.000Z""#).unwrap();
+        let date: Date<DefaultDateMapping<BasicDateTime>> = serde_json::from_str(r#""20150513T000000.000Z""#).unwrap();
 
         assert_eq!((2015, 5, 13), (date.year(), date.month(), date.day()));
     }
@@ -520,7 +520,7 @@ mod tests {
 
     #[test]
     fn serialise_date_expr_value() {
-        let expr = DateExpr::value(Date::<BasicDateTime>::build(2015, 5, 13, 0, 0, 0, 0));
+        let expr = DateExpr::value(Date::<DefaultDateMapping<BasicDateTime>>::build(2015, 5, 13, 0, 0, 0, 0));
 
         let ser = serde_json::to_string(&expr).unwrap();
 
@@ -529,7 +529,7 @@ mod tests {
 
     #[test]
     fn serialise_date_expr_value_with_ops() {
-        let expr = DateExpr::value(Date::<BasicDateTime>::build(2015, 5, 13, 0, 0, 0, 0))
+        let expr = DateExpr::value(Date::<DefaultDateMapping<BasicDateTime>>::build(2015, 5, 13, 0, 0, 0, 0))
             .add_days(2)
             .round_week();
 
