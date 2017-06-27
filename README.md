@@ -66,7 +66,7 @@ Which looks like:
 ```json
 {
   "properties": {
-    "my_date": {
+    "timestamp": {
       "type": "date",
       "format": "epoch_millis"
     },
