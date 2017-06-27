@@ -98,7 +98,7 @@ Types that derive `ElasticType` are themselves serialisable, which can be very h
 }
 ```
 
-Using the `Date<EpochMillis>` type for the `timestamp`, we can correctly deserialise the document as a strongly typed object:
+Using the `Date` type for the `timestamp`, we can correctly deserialise the document as a strongly typed object:
 
 ```rust
 #[derive(Deserialize)]
