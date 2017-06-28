@@ -28,8 +28,6 @@ Custom mappings can be defined by implementing `IpMapping`.
 
 Define a custom `IpMapping`:
 
-## Derive Mapping
-
 ```
 # #[macro_use]
 # extern crate elastic_types;

@@ -8,8 +8,6 @@ The implementation is the same for all number types, the only difference is the 
 
 Define a custom `IntegerMapping`:
 
-## Derive Mapping
-
 ```
 # #[macro_use]
 # extern crate elastic_types;

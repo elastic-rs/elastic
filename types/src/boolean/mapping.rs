@@ -27,8 +27,6 @@ Custom mappings can be defined by implementing `BooleanMapping`.
 
 Define a custom `BooleanMapping`:
 
-## Derive Mapping
-
 ```
 # extern crate serde;
 # #[macro_use]

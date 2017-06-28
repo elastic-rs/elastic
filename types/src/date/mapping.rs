@@ -4,7 +4,7 @@ use std::marker::PhantomData;
 use std::borrow::Cow;
 use serde::{Serialize, Serializer};
 use serde::ser::SerializeStruct;
-use super::{DateFormat, FormattedDate, ParsableDate, ParseError, Date, ChronoDateTime};
+use super::{DateFormat, DefaultDateFormat, FormattedDate, ParsableDate, ParseError, Date, ChronoDateTime};
 use private::field::{DocumentField, FieldMapping, SerializeField};
 use document::FieldType;
 
@@ -84,9 +84,7 @@ The base requirements for mapping a `date` type.
 
 Define a custom `DateMapping`:
 
-## Derive Mapping
-
-Currently, deriving mapping only works for structs that take a generic `DateFormat` parameter.
+Define a custom `DateMapping` that's valid for a single `DateFormat`:
 
 ```
 # #[macro_use]
@@ -107,7 +105,7 @@ impl DateMapping for MyDateMapping {
 # fn main() {}
 ```
 
-This will produce the following mapping when mapped with the `EpochMillis` format:
+This will produce the following mapping:
 
 ```
 # #[macro_use]
@@ -141,8 +139,7 @@ This will produce the following mapping when mapped with the `EpochMillis` forma
 
 ## Map with a generic Format
 
-You can use a generic input parameter to make your `DateMapping` work for any kind of
-`DateFormat`:
+You can use a generic input parameter to make your `DateMapping` work for any kind of `DateFormat`:
 
 ```
 # #[macro_use]
@@ -154,11 +151,16 @@ You can use a generic input parameter to make your `DateMapping` work for any ki
 struct MyDateMapping<F> {
     _marker: PhantomData<F>
 }
-impl <F: DateFormat> DateMapping for MyDateMapping<F> {
+
+impl <F> DateMapping for MyDateMapping<F> 
+    where F: DateFormat
+{
     type Format = F;
 }
 # fn main() {}
 ```
+
+This is how `DefaultDateMapping` is able to support any format.
 */
 pub trait DateMapping
     where Self: Default
@@ -267,7 +269,7 @@ impl<T, F> Serialize for DocumentField<T, DateFormatWrapper<F>>
 
 /** Default mapping for `date`. */
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
-pub struct DefaultDateMapping<F>
+pub struct DefaultDateMapping<F = DefaultDateFormat>
     where F: DateFormat
 {
     _f: PhantomData<F>,

@@ -32,10 +32,6 @@ The base requirements for mapping a `geo_point` type.
 
 Define a custom `GeoPointMapping`:
 
-## Derive Mapping
-
-Currently, deriving mapping only works for structs that take a `GeoPointFormat` as an associated type.
-
 ```
 # #[macro_use]
 # extern crate elastic_types;

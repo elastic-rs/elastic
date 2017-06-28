@@ -29,8 +29,6 @@ Custom mappings can be defined by implementing `KeywordMapping`.
 
 Define a custom `KeywordMapping`:
 
-## Derive Mapping
-
 ```
 # #[macro_use]
 # extern crate elastic_types;

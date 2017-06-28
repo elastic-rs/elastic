@@ -27,11 +27,6 @@ impl DateType for ChronoDateTime {
 }
 
 /**
-A convenient default date with a configurable format.
-*/
-pub type DefaultDate<F> = Date<DefaultDateMapping<F>>;
-
-/**
 An Elasticsearch `date` type with a required `time` component.
 
 The [format](format/index.html) is provided as a generic parameter.
@@ -43,14 +38,14 @@ Defining a date using the default format:
 
 ```
 # use elastic_types::prelude::*;
-let date: Date<DefaultDateMapping<DefaultDateFormat>> = Date::now();
+let date: Date<DefaultDateMapping> = Date::now();
 ```
 
 Defining a date using a named format:
 
 ```
 # use elastic_types::prelude::*;
-let date = Date::<DefaultDateMapping<BasicDateTime>>::now();
+let date: Date<DefaultDateMapping<BasicDateTime>> = Date::now();
 ```
 
 Defining a date using a custom mapping:

@@ -28,8 +28,6 @@ Custom mappings can be defined by implementing `GeoShapeMapping`.
 
 Define a custom `GeoShapeMapping`:
 
-## Derive Mapping
-
 ```
 # #[macro_use]
 # extern crate elastic_types;

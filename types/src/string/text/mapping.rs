@@ -29,8 +29,6 @@ Custom mappings can be defined by implementing `TextMapping`.
 
 Define a custom `TextMapping`:
 
-## Derive Mapping
-
 ```
 # #[macro_use]
 # extern crate elastic_types;

@@ -16,7 +16,7 @@ Map with a default `date`:
 ```
 # use elastic_types::prelude::*;
 struct MyType {
-    pub field: Date<DefaultDateFormat>
+    pub field: Date<DefaultDateMapping>
 }
 ```
 
@@ -34,7 +34,7 @@ Map with a custom `date`:
 # struct MyDateMapping;
 # impl DateMapping for MyDateMapping { type Format = EpochMillis; }
 struct MyType {
-    pub field: Date<EpochMillis, MyDateMapping>
+    pub field: Date<MyDateMapping>
 }
 # }
 ```
@@ -52,8 +52,28 @@ Map a custom type as a `date` field:
 #[derive(Serialize)]
 struct MyDateField(String);
 
-impl DateFieldType<DefaultDateMapping<ChronoFormat>, ChronoFormat> for MyDateField {}
+impl DateFieldType<DefaultDateMapping<ChronoFormat>> for MyDateField {}
+}
 # }
+```
+
+Implementing `DateFieldType` is enough to map a custom type as a `date` in Elasticsearch, but that doesn't allow it to be used in [date math expressions][date-math].
+To support date math, you need to implement the general `DateType` trait:
+
+```
+# extern crate serde;
+# #[macro_use]
+# extern crate elastic_types;
+# #[macro_use]
+# extern crate serde_derive;
+# fn main() {
+# use elastic_types::prelude::*;
+# #[derive(Serialize)]
+# struct MyDateField(String);
+impl DateType for MyDateField {
+    type Format = ChronoFormat;
+
+}
 ```
 
 ## Creating Formats
