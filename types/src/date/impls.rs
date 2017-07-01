@@ -3,7 +3,7 @@ use std::fmt::{Display, Result as FmtResult, Formatter};
 use chrono::{DateTime, Utc, NaiveDateTime, NaiveDate, NaiveTime};
 use serde::{Serialize, Deserialize, Serializer, Deserializer};
 use serde::de::{Visitor, Error};
-use super::format::{DateFormat, FormattableDate, FormattedDate, ParsableDate, ParseError};
+use super::format::{DateFormat, FormattableDate};
 use super::formats::ChronoFormat;
 use super::mapping::{DateFieldType, DateMapping, DefaultDateMapping};
 
@@ -135,46 +135,6 @@ impl<M> Date<M> where M: DateMapping
     }
 
     /**
-    Format the date and time.
-    
-    The format is specified by the given `DateFormat`.
-    
-    # Examples
-    
-    ```
-    # use elastic_types::prelude::*;
-    let date: Date<DefaultDateMapping<BasicDateTime>> = Date::now();
-    let fmt = Date::format(&date);
-    
-    //eg: 20151126T145543.778Z
-    println!("{}", fmt);
-    ```
-    */
-    pub fn format<'a>(date: &'a Date<M>) -> FormattedDate<'a> {
-        M::Format::format(&date.value)
-    }
-
-    /**
-    Parse the date and time from a string.
-    
-    The format of the string must match the given `DateFormat`.
-    
-    # Examples
-    
-    Parsing from a specified `DateFormat`.
-    
-    ```
-    # use elastic_types::prelude::*;
-    let date = Date::<DefaultDateMapping<BasicDateTime>>::parse("20151126T145543.778Z").unwrap();
-    ```
-    */
-    pub fn parse<'a, I>(fmtd: I) -> Result<Self, ParseError> where I: Into<ParsableDate<'a>> {
-        let raw = M::Format::parse(fmtd)?;
-        
-        Ok(Self::from(raw))
-    }
-
-    /**
     Gets the current system time.
     
     # Examples
@@ -255,7 +215,7 @@ impl<M> Display for Date<M>
     where M: DateMapping
 {
     fn fmt(&self, f: &mut Formatter) -> FmtResult {
-        write!(f, "{}", Date::format(self))
+        write!(f, "{}", M::Format::format(self))
     }
 }
 
@@ -295,22 +255,25 @@ impl<'de, M> Deserialize<'de> for Date<M>
             fn visit_str<E>(self, v: &str) -> Result<Date<M>, E>
                 where E: Error
             {
-                let result = Date::parse(v);
-                result.map_err(|err| Error::custom(format!("{}", err)))
+                let result = M::Format::parse(v).map_err(|err| Error::custom(format!("{}", err)))?;
+
+                Ok(result.into())
             }
 
             fn visit_i64<E>(self, v: i64) -> Result<Date<M>, E>
                 where E: Error
             {
-                let result = Date::parse(v.to_string());
-                result.map_err(|err| Error::custom(format!("{}", err)))
+                let result = M::Format::parse(v.to_string()).map_err(|err| Error::custom(format!("{}", err)))?;
+
+                Ok(result.into())
             }
 
             fn visit_u64<E>(self, v: u64) -> Result<Date<M>, E>
                 where E: Error
             {
-                let result = Date::parse(v.to_string());
-                result.map_err(|err| Error::custom(format!("{}", err)))
+                let result = M::Format::parse(v.to_string()).map_err(|err| Error::custom(format!("{}", err)))?;
+
+                Ok(result.into())
             }
         }
 
