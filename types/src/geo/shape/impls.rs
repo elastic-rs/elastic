@@ -46,7 +46,7 @@ impl<M> GeoShape<M>
     
     # use elastic_types::prelude::*;
     # fn main() {
-    let point: GeoShape = GeoShape::new(
+    let point: GeoShape<DefaultGeoShapeMapping> = GeoShape::new(
         Geometry::new(
             Value::Point(vec![ 1.0, 1.0 ])
         )

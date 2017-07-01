@@ -105,7 +105,7 @@ impl<M> Date<M> where M: DateMapping
     let chronoDate = Utc::now();
     
     //Give it to the Date struct
-    let esDate: Date<DefaultDateMapping<DefaultDateFormat>> = Date::new(chronoDate);
+    let esDate: Date<DefaultDateMapping> = Date::new(chronoDate);
     # }
     ```
     */
@@ -121,7 +121,7 @@ impl<M> Date<M> where M: DateMapping
     
     ```
     # use elastic_types::prelude::*;
-    let esDate: Date<DefaultDateMapping<DefaultDateFormat>> = Date::build(2015, 5, 14, 16, 45, 8, 886);
+    let esDate: Date<DefaultDateMapping> = Date::build(2015, 5, 14, 16, 45, 8, 886);
     ```
     */
     pub fn build(year: i32, month: u32, day: u32, hour: u32, minute: u32, second: u32, milli: u32) -> Self {
@@ -141,7 +141,7 @@ impl<M> Date<M> where M: DateMapping
     
     ```
     # use elastic_types::prelude::*;
-    let date: Date<DefaultDateMapping<DefaultDateFormat>> = Date::now();
+    let date: Date<DefaultDateMapping> = Date::now();
     ```
     */
     pub fn now() -> Self {
@@ -470,7 +470,7 @@ mod tests {
 
     #[test]
     fn can_build_date_from_chrono() {
-        let date: Date<DefaultDateMapping<DefaultDateFormat>> = Date::new(chrono::Utc
+        let date: Date<DefaultDateMapping> = Date::new(chrono::Utc
                                                           .datetime_from_str("13/05/2015 00:00:00", "%d/%m/%Y %H:%M:%S")
                                                           .unwrap());
 
@@ -480,7 +480,7 @@ mod tests {
 
     #[test]
     fn can_build_date_from_prim() {
-        let date: Date<DefaultDateMapping<DefaultDateFormat>> = Date::build(2015, 5, 13, 0, 0, 0, 0);
+        let date: Date<DefaultDateMapping> = Date::build(2015, 5, 13, 0, 0, 0, 0);
 
         assert_eq!((2015, 5, 13, 0, 0, 0),
                    (date.year(), date.month(), date.day(), date.hour(), date.minute(), date.second()));

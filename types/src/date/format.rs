@@ -11,6 +11,7 @@ use std::vec::IntoIter;
 A format used for parsing and formatting dates.
 
 The format is specified as two functions: `parse` and `format`.
+`chrono`s `DateTime<Utc>` is used as an intermediate value passed as input and produced as output for formatting.
 
 # Examples
 

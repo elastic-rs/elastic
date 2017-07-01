@@ -11,7 +11,7 @@ fn parse_string(b: &mut Bencher) {
 
 #[bench]
 fn fmt_string(b: &mut Bencher) {
-    let dt: Date<DefaultDateMapping<DefaultDateFormat>> = Date::now();
+    let dt: Date<DefaultDateMapping> = Date::now();
 
     b.iter(|| serde_json::to_string(&dt).unwrap());
 }

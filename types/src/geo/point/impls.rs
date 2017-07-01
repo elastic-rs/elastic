@@ -15,31 +15,22 @@ This struct wraps up a `geo::Point` struct, which have an `x` and `y` floating p
 Defining a geo point using the default format:
 
 ```
-# use elastic_types::geo::point::{ GeoPoint, DefaultGeoPointFormat };
-let point: GeoPoint<DefaultGeoPointFormat> = GeoPoint::build(1.0, 1.0);
+# use elastic_types::prelude::*;
+let point: GeoPoint<DefaultGeoPointMapping> = GeoPoint::build(1.0, 1.0);
 ```
 
 Defining a geo point using a named format:
 
 ```
-# use elastic_types::geo::point::{ GeoPoint, GeoPointString };
-let point: GeoPoint<GeoPointString> = GeoPoint::build(1.0, 1.0);
-```
-
-Defining a geo point using a custom mapping:
-
-```
-# use elastic_types::geo::point::mapping::DefaultGeoPointMapping;
-# use elastic_types::geo::point::{ GeoPoint, GeoPointString };
-
-let point: GeoPoint<GeoPointString, DefaultGeoPointMapping<_>> = GeoPoint::build(1.0, 1.0);
+# use elastic_types::prelude::*;
+let point: GeoPoint<DefaultGeoPointMapping<GeoPointString>> = GeoPoint::build(1.0, 1.0);
 ```
 
 Accessing the values of a geo point:
 
 ```
-# use elastic_types::geo::point::{ GeoPoint, DefaultGeoPointFormat };
-let point: GeoPoint<DefaultGeoPointFormat> = GeoPoint::build(1.0, 1.0);
+# use elastic_types::prelude::*;
+let point: GeoPoint<DefaultGeoPointMapping> = GeoPoint::build(1.0, 1.0);
 
 //eg: (1.0,1.0)
 println!("({},{})",
@@ -72,13 +63,13 @@ impl<M> GeoPoint<M>
     # extern crate geo;
     # fn main() {
     use geo::{ Point, Coordinate };
-    use elastic_types::geo::point::{ GeoPoint, DefaultGeoPointFormat };
+    use elastic_types::prelude::*;
     
     //Create a geo Coordinate struct
     let coord = Coordinate { x: 1.0, y: 1.0 };
     
     //Give it to the GeoPoint struct
-    let point: GeoPoint<DefaultGeoPointFormat> = GeoPoint::new(Point(coord));
+    let point: GeoPoint<DefaultGeoPointMapping> = GeoPoint::new(Point(coord));
     # }
     ```
     */
@@ -95,8 +86,8 @@ impl<M> GeoPoint<M>
     Creates an `GeoPoint` from the given `x` and `y` primitives:
     
     ```
-    # use elastic_types::geo::point::{ GeoPoint, DefaultGeoPointFormat };
-    let point: GeoPoint<DefaultGeoPointFormat> = GeoPoint::build(1.0, 1.0);
+    # use elastic_types::prelude::*;
+    let point: GeoPoint<DefaultGeoPointMapping> = GeoPoint::build(1.0, 1.0);
     ```
     */
     pub fn build(x: f64, y: f64) -> Self {
@@ -109,12 +100,12 @@ impl<M> GeoPoint<M>
     # Examples
     
     ```
-    # use elastic_types::geo::point::{ GeoPoint, GeoPointString, GeoPointObject };
+    # use elastic_types::prelude::*;
     //Get a point formatted as a string
-    let point: GeoPoint<GeoPointString> = GeoPoint::build(1.0, 1.0);
+    let point: GeoPoint<DefaultGeoPointMapping<GeoPointString>> = GeoPoint::build(1.0, 1.0);
     
     //Change the format to an object
-    let otherpoint: GeoPoint<GeoPointObject> = point.remap();
+    let otherpoint: GeoPoint<DefaultGeoPointMapping<GeoPointObject>> = GeoPoint::remap(point);
     ```
     */
     pub fn remap<MInto>(point: GeoPoint<M>) -> GeoPoint<MInto>

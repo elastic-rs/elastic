@@ -15,7 +15,7 @@ Map with a default `geo_point`:
 ```
 # use elastic_types::geo::point::prelude::*;
 struct MyType {
-    pub field: GeoPoint<DefaultGeoPointFormat>
+    pub field: GeoPoint<DefaultGeoPointMapping>
 }
 ```
 
@@ -34,7 +34,7 @@ Map with a custom `geo_point`:
 # struct MyGeoPointMapping;
 # impl GeoPointMapping for MyGeoPointMapping { type Format = GeoPointString; }
 struct MyType {
-    pub field: GeoPoint<GeoPointString, MyGeoPointMapping>
+    pub field: GeoPoint<MyGeoPointMapping>
 }
 # }
 ```
@@ -52,7 +52,7 @@ Map a custom type as a `geo_point` field:
 #[derive(Serialize)]
 struct MyGeoPointField(f32, f32);
 
-impl GeoPointFieldType<DefaultGeoPointMapping<GeoPointObject>, GeoPointObject> for MyGeoPointField {}
+impl GeoPointFieldType<DefaultGeoPointMapping<GeoPointObject>> for MyGeoPointField {}
 # }
 ```
 

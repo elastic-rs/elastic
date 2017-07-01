@@ -3,7 +3,7 @@
 use std::marker::PhantomData;
 use serde::{Serialize, Serializer};
 use serde::ser::SerializeStruct;
-use super::GeoPointFormat;
+use super::{GeoPointFormat, DefaultGeoPointFormat};
 use geo::mapping::Distance;
 use private::field::{DocumentField, FieldMapping, SerializeField};
 use document::FieldType;
@@ -191,7 +191,7 @@ impl<T, F> Serialize for DocumentField<T, GeoPointFormatWrapper<F>>
 
 /** Default mapping for `geo_point`. */
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
-pub struct DefaultGeoPointMapping<F>
+pub struct DefaultGeoPointMapping<F = DefaultGeoPointFormat>
     where F: GeoPointFormat
 {
     _f: PhantomData<F>,

@@ -11,7 +11,11 @@ use document::FieldType;
 /** A field that will be mapped as a `date`. */
 pub trait DateFieldType<M> {}
 
-/** A more general `DateFieldType` that can be parsed and formatted. */
+/** 
+A more general `DateFieldType` that can be parsed and formatted. 
+
+Formattable dates depend on being able to convert to and from `chrono::DateTime<Utc>` values.
+*/
 pub trait DateType where Self: Sized {
     /** The date format bound to this datelike type. */
     type Format: DateFormat;

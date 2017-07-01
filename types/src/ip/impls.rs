@@ -77,7 +77,7 @@ impl<M> Ip<M>
     # impl IpMapping for MyIpMapping { }
     let es_ip = Ip::<DefaultIpMapping>::new(Ipv4Addr::new(127, 0, 0, 1));
     
-    let ip: Ip<MyIpMapping> = es_ip.remap();
+    let ip: Ip<MyIpMapping> = Ip::remap(es_ip);
     # }
     ```
     */
