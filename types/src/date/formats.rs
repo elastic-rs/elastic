@@ -1,6 +1,5 @@
 use chrono::{DateTime, NaiveDateTime, Utc, Timelike};
 use std::error::Error;
-use std::borrow::Cow;
 use super::{DateFormat, FormattedDate, ParsableDate, ParseError};
 
 /** The default `date` format (`BasicDateTime`). */
@@ -69,7 +68,7 @@ impl DateFormat for EpochMillis {
         Ok(DateTime::from_utc(NaiveDateTime::from_timestamp(s, m as u32 * 1000000), Utc))
     }
 
-    fn format<'a>(date: Cow<'a, DateTime<Utc>>) -> FormattedDate<'a> {
+    fn format<'a>(date: &'a DateTime<Utc>) -> FormattedDate<'a> {
         let msec = (date.timestamp() * 1000) + (date.nanosecond() as i64 / 1000000);
         msec.into()
     }
@@ -77,7 +76,6 @@ impl DateFormat for EpochMillis {
 
 #[cfg(test)]
 mod tests {
-    use std::borrow::Cow;
     use chrono::{DateTime, Utc};
     use prelude::*;
 
@@ -97,7 +95,7 @@ mod tests {
             )
         );
 
-        let fmtd = date.format().to_string();
+        let fmtd = Date::format(&date).to_string();
         assert_eq!("2015-07-03T14:55:02Z", &fmtd);
     }
 
@@ -122,7 +120,7 @@ mod tests {
             )
         );
 
-        let fmtd = date.format().to_string();
+        let fmtd = Date::format(&date).to_string();
         assert_eq!("20150703T145502Z", &fmtd);
     }
 
@@ -148,7 +146,7 @@ mod tests {
             )
         );
 
-        let fmtd = date.format().to_string();
+        let fmtd = Date::format(&date).to_string();
         assert_eq!("20150703T145502.478Z", &fmtd);
     }
 
@@ -174,7 +172,7 @@ mod tests {
             )
         );
 
-        let fmtd = date.format().to_string();
+        let fmtd = Date::format(&date).to_string();
         assert_eq!("1435935302478", &fmtd);
     }
 
@@ -200,7 +198,7 @@ mod tests {
             )
         );
 
-        let fmtd = date.format().to_string();
+        let fmtd = Date::format(&date).to_string();
         assert_eq!("1435935302000", &fmtd);
     }
 
@@ -221,7 +219,7 @@ mod tests {
             )
         );
 
-        let fmtd = date.format().to_string();
+        let fmtd = Date::format(&date).to_string();
         assert_eq!("-8031171898478", &fmtd);
     }
 
@@ -242,7 +240,7 @@ mod tests {
             )
         );
 
-        let fmtd = date.format().to_string();
+        let fmtd = Date::format(&date).to_string();
         assert_eq!("-8031171898000", &fmtd);
     }
 
@@ -263,7 +261,7 @@ mod tests {
             )
         );
 
-        let fmtd = date.format().to_string();
+        let fmtd = Date::format(&date).to_string();
         assert_eq!("100", &fmtd);
     }
 
@@ -284,7 +282,7 @@ mod tests {
             )
         );
 
-        let fmtd = date.format().to_string();
+        let fmtd = Date::format(&date).to_string();
         assert_eq!("5100", &fmtd);
     }
 
@@ -305,7 +303,7 @@ mod tests {
             )
         );
 
-        let fmtd = date.format().to_string();
+        let fmtd = Date::format(&date).to_string();
         assert_eq!("-100", &fmtd);
     }
 
@@ -326,7 +324,7 @@ mod tests {
             )
         );
 
-        let fmtd = date.format().to_string();
+        let fmtd = Date::format(&date).to_string();
         assert_eq!("-5100", &fmtd);
     }
 
@@ -347,7 +345,7 @@ mod tests {
             )
         );
 
-        let fmtd = date.format().to_string();
+        let fmtd = Date::format(&date).to_string();
         assert_eq!("0", &fmtd);
     }
 
@@ -360,7 +358,7 @@ mod tests {
                 "yyyy-MM-dd'T'HH:mm:ssZ"
             }
 
-            fn format<'a>(date: Cow<'a, DateTime<Utc>>) -> FormattedDate<'a> {
+            fn format<'a>(date: &'a DateTime<Utc>) -> FormattedDate<'a> {
                 date.to_rfc3339().into()
             }
 
@@ -387,7 +385,7 @@ mod tests {
             )
         );
 
-        let fmtd = date.format().to_string();
+        let fmtd = Date::format(&date).to_string();
         assert_eq!("2015-07-03T14:55:02+00:00", &fmtd);
     }
 }

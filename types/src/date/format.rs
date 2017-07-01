@@ -1,17 +1,18 @@
 use chrono;
-use chrono::{DateTime, Utc};
 use chrono::format::{Item, DelayedFormat};
-use std::borrow::Cow;
+use std::marker::PhantomData;
+use std::borrow::{Cow, Borrow};
 use std::ops::Deref;
 use std::error::Error;
 use std::fmt::{Display, Result as FmtResult, Formatter};
 use std::vec::IntoIter;
+use super::ChronoDateTime;
 
 /**
 A format used for parsing and formatting dates.
 
 The format is specified as two functions: `parse` and `format`.
-`chrono`s `DateTime<Utc>` is used as an intermediate value passed as input and produced as output for formatting.
+`chrono`s `ChronoDateTime` is used as an intermediate value passed as input and produced as output for formatting.
 
 # Examples
 
@@ -57,10 +58,10 @@ pub trait DateFormat
     where Self: Default
 {
     /** Parses a date string to a `chrono::DateTime<Utc>` result. */
-    fn parse<'a, P>(date: P) -> Result<DateTime<Utc>, ParseError> where P: Into<ParsableDate<'a>>;
+    fn parse<'a, P>(date: P) -> Result<ChronoDateTime, ParseError> where P: Into<ParsableDate<'a>>;
 
     /** Formats a given `chrono::DateTime<Utc>` as a string. */
-    fn format<'a>(date: Cow<'a, DateTime<Utc>>) -> FormattedDate<'a>;
+    fn format<'a>(date: &'a ChronoDateTime) -> FormattedDate<'a>;
 
     /**
     The name of the format.
@@ -71,18 +72,32 @@ pub trait DateFormat
 }
 
 /**
-A formatted date.
+A formattable date.
 
-This type can avoid allocating strings for date formats.
+This type captures a date value and a format so they can be used to produce a formatted date.
+Rather than relying on `DateFieldType` for formattable dates, prefer `FormattableDate` instead, since it doesn't assume any mapping.
 */
-pub struct FormattedDate<'a> {
-    inner: FormattedDateInner<'a>,
+pub struct FormattableDate<'a, F>(Cow<'a, ChronoDateTime>, PhantomData<F>);
+
+impl<'a, F> FormattableDate<'a, F> {
+    /** Wrap an owned date value in a `FormattableDate`. */
+    pub fn owned<I>(date: I) -> Self where I: Into<ChronoDateTime> {
+        FormattableDate(Cow::Owned(date.into()), PhantomData)
+    }
+
+    /** Wrap a borrowed date value in a `FormattableDate`. */
+    pub fn borrowed<I>(date: &'a I) -> Self where I: Borrow<ChronoDateTime> {
+        FormattableDate(Cow::Borrowed(date.borrow()), PhantomData)
+    }
 }
 
-enum FormattedDateInner<'a> {
-    Delayed(DelayedFormat<IntoIter<Item<'a>>>),
-    Buffered(String),
-    Number(i64),
+impl<'a, F> FormattableDate<'a, F>
+    where F: DateFormat
+{
+    /** Use the generic format parameter to format the captured date value. */
+    pub fn format(&'a self) -> FormattedDate<'a> {
+        F::format(self.0.as_ref())
+    }
 }
 
 /**
@@ -121,6 +136,21 @@ impl<'a> From<FormattedDate<'a>> for ParsableDate<'a> {
 
         ParsableDate(Cow::Owned(inner))
     }
+}
+
+/**
+A formatted date.
+
+This type can avoid allocating strings for date formats.
+*/
+pub struct FormattedDate<'a> {
+    inner: FormattedDateInner<'a>,
+}
+
+enum FormattedDateInner<'a> {
+    Delayed(DelayedFormat<IntoIter<Item<'a>>>),
+    Buffered(String),
+    Number(i64),
 }
 
 impl<'a> Display for FormattedDateInner<'a> {

@@ -1,6 +1,5 @@
 /*! Functions that are exported and used by `elastic_types_derive`. */
 
-use std::borrow::Cow;
 use chrono::{DateTime, Utc};
 use chrono::format::{self, Item, Parsed};
 
@@ -44,6 +43,6 @@ pub fn parse_from_tokens<'a, P>(date: P, fmt: Vec<Item<'a>>) -> Result<DateTime<
 }
 
 /** Format a date string using an owned slice of items. */
-pub fn format_with_tokens<'a>(date: Cow<'a, DateTime<Utc>>, fmt: Vec<Item<'a>>) -> FormattedDate<'a> {
+pub fn format_with_tokens<'a>(date: &'a DateTime<Utc>, fmt: Vec<Item<'a>>) -> FormattedDate<'a> {
     date.format_with_items(fmt.into_iter()).into()
 }

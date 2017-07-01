@@ -61,7 +61,7 @@ fn impl_date_format(crate_root: Tokens,
     );
 
     let format_fn = quote!(
-        fn format<'a>(date: ::std::borrow::Cow<'a, ::chrono::DateTime<::chrono::Utc>>) -> #crate_root::derive::FormattedDate<'a> {
+        fn format<'a>(date: &'a ::chrono::DateTime<::chrono::Utc>) -> #crate_root::derive::FormattedDate<'a> {
             let fmt = vec![ #(#format),* ];
 
             #crate_root::derive::format_with_tokens(date, fmt)

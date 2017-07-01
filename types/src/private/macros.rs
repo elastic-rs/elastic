@@ -8,7 +8,7 @@ macro_rules! ser_field {
 
 macro_rules! impl_mapping_type {
     ($std_ty:ident, $wrapper_ty:ident, $mapping_ty:ident) => (
-        impl <M> From<$std_ty> for $wrapper_ty<M> where
+        impl<M> From<$std_ty> for $wrapper_ty<M> where
         M: $mapping_ty {
             fn from(value: $std_ty) -> Self {
                 $wrapper_ty::new(value)
@@ -37,10 +37,17 @@ macro_rules! impl_mapping_type {
             }
         }
 
-        impl <M> ::std::ops::Deref for $wrapper_ty<M> where
+        impl<M> ::std::ops::Deref for $wrapper_ty<M> where
         M: $mapping_ty {
             type Target = $std_ty;
             fn deref(&self) -> &$std_ty {
+                &self.value
+            }
+        }
+
+        impl<M> ::std::borrow::Borrow<$std_ty> for $wrapper_ty<M> where
+        M: $mapping_ty {
+            fn borrow(&self) -> &$std_ty {
                 &self.value
             }
         }

@@ -1,11 +1,11 @@
 use std::marker::PhantomData;
-use std::borrow::Cow;
 use std::fmt::{Display, Result as FmtResult, Formatter};
 use chrono::{DateTime, Utc, NaiveDateTime, NaiveDate, NaiveTime};
 use serde::{Serialize, Deserialize, Serializer, Deserializer};
 use serde::de::{Visitor, Error};
+use super::format::{DateFormat, FormattableDate, FormattedDate, ParsableDate, ParseError};
 use super::formats::ChronoFormat;
-use super::mapping::{DateType, DateFieldType, DateMapping, DefaultDateMapping};
+use super::mapping::{DateFieldType, DateMapping, DefaultDateMapping};
 
 pub use chrono::{Datelike, Timelike};
 
@@ -14,15 +14,15 @@ pub type ChronoDateTime = DateTime<Utc>;
 
 impl DateFieldType<DefaultDateMapping<ChronoFormat>> for ChronoDateTime {}
 
-impl DateType for ChronoDateTime {
-    type Format = ChronoFormat;
-
-    fn to_raw_date<'a>(&'a self) -> Cow<'a, DateTime<Utc>> {
-        Cow::Borrowed(self)
+impl<'a> Into<FormattableDate<'a, ChronoFormat>> for ChronoDateTime {
+    fn into(self) -> FormattableDate<'a, ChronoFormat> {
+        FormattableDate::owned(self)
     }
+}
 
-    fn from_raw_date(date: DateTime<Utc>) -> Self {
-        date
+impl<'a> Into<FormattableDate<'a, ChronoFormat>> for &'a ChronoDateTime {
+    fn into(self) -> FormattableDate<'a, ChronoFormat> {
+        FormattableDate::borrowed(self)
     }
 }
 
@@ -135,6 +135,46 @@ impl<M> Date<M> where M: DateMapping
     }
 
     /**
+    Format the date and time.
+    
+    The format is specified by the given `DateFormat`.
+    
+    # Examples
+    
+    ```
+    # use elastic_types::prelude::*;
+    let date: Date<DefaultDateMapping<BasicDateTime>> = Date::now();
+    let fmt = Date::format(&date);
+    
+    //eg: 20151126T145543.778Z
+    println!("{}", fmt);
+    ```
+    */
+    pub fn format<'a>(date: &'a Date<M>) -> FormattedDate<'a> {
+        M::Format::format(&date.value)
+    }
+
+    /**
+    Parse the date and time from a string.
+    
+    The format of the string must match the given `DateFormat`.
+    
+    # Examples
+    
+    Parsing from a specified `DateFormat`.
+    
+    ```
+    # use elastic_types::prelude::*;
+    let date = Date::<DefaultDateMapping<BasicDateTime>>::parse("20151126T145543.778Z").unwrap();
+    ```
+    */
+    pub fn parse<'a, I>(fmtd: I) -> Result<Self, ParseError> where I: Into<ParsableDate<'a>> {
+        let raw = M::Format::parse(fmtd)?;
+        
+        Ok(Self::from(raw))
+    }
+
+    /**
     Gets the current system time.
     
     # Examples
@@ -177,17 +217,27 @@ impl<M> DateFieldType<M> for Date<M>
 {
 }
 
-impl<M> DateType for Date<M> 
+impl<M> Into<ChronoDateTime> for Date<M> 
     where M: DateMapping
 {
-    type Format = M::Format;
-
-    fn to_raw_date<'a>(&'a self) -> Cow<'a, DateTime<Utc>> {
-        Cow::Borrowed(&self.value)
+    fn into(self) -> ChronoDateTime {
+        self.value
     }
+}
 
-    fn from_raw_date(date: DateTime<Utc>) -> Self {
-        Self::from(date)
+impl<'a, M> Into<FormattableDate<'a, M::Format>> for Date<M> 
+    where M: DateMapping
+{
+    fn into(self) -> FormattableDate<'a, M::Format> {
+        FormattableDate::owned(self)
+    }
+}
+
+impl<'a, M> Into<FormattableDate<'a, M::Format>> for &'a Date<M> 
+    where M: DateMapping
+{
+    fn into(self) -> FormattableDate<'a, M::Format> {
+        FormattableDate::borrowed(self)
     }
 }
 
@@ -205,7 +255,7 @@ impl<M> Display for Date<M>
     where M: DateMapping
 {
     fn fmt(&self, f: &mut Formatter) -> FmtResult {
-        write!(f, "{}", self.format())
+        write!(f, "{}", Date::format(self))
     }
 }
 
@@ -371,8 +421,8 @@ macro_rules! impl_expr_ops {
 impl DateExpr {
     /// Create a new date expression for `now`.
     /// 
-    /// This value is different from `DateTime::now()` because it doesn't calculate the current date from the system clock.
-    /// It serialises to the literal `now`, which is interpreted by Elasticsearch when indexing.
+    /// This value is different from `Date::now()` because it doesn't calculate the current date from the system clock.
+    /// It serialises to the literal string `"now"`, which is interpreted by Elasticsearch when indexing.
     pub fn now() -> Self {
         DateExpr {
             anchor: DateExprAnchor::Now,
@@ -381,7 +431,14 @@ impl DateExpr {
     }
     
     /// Create a new date expression from a concrete date value.
-    pub fn value<D>(date: D) -> Self where D: DateType {
+    /// 
+    /// This method accepts any type that can be converted into a `FormattableDate`, which includes owned or borrowed `DateFieldType`s.
+    pub fn value<'a, F, D>(date: D) -> Self 
+        where D: Into<FormattableDate<'a, F>>,
+              F: DateFormat
+    {
+        let date = date.into();
+
         DateExpr {
             anchor: DateExprAnchor::Value(date.format().to_string()),
             ops: Vec::new(),
@@ -439,7 +496,7 @@ mod tests {
         let expected = dt.format("%Y/%m/%d %H:%M:%S").to_string();
 
         let dt = Date::<DefaultDateMapping<NamedDateFormat>>::new(dt.clone());
-        let actual = dt.format().to_string();
+        let actual = Date::format(&dt).to_string();
 
         assert_eq!(expected, actual);
     }
@@ -452,7 +509,7 @@ mod tests {
         let expected = "20150513".to_string();
 
         let dt = Date::<DefaultDateMapping<UnNamedDateFormat>>::new(dt.clone());
-        let actual = dt.format().to_string();
+        let actual = Date::format(&dt).to_string();
 
         assert_eq!(expected, actual);
     }
@@ -514,7 +571,18 @@ mod tests {
     }
 
     #[test]
-    fn serialise_date_expr_value() {
+    fn serialise_date_expr_chrono() {
+        let date = chrono::Utc.datetime_from_str("13/05/2015 00:00:00", "%d/%m/%Y %H:%M:%S").unwrap();
+
+        let expr = DateExpr::value(date);
+
+        let ser = serde_json::to_string(&expr).unwrap();
+
+        assert_eq!(r#""2015-05-13T00:00:00Z||""#, ser);
+    }
+
+    #[test]
+    fn serialise_date_expr_date() {
         let expr = DateExpr::value(Date::<DefaultDateMapping<BasicDateTime>>::build(2015, 5, 13, 0, 0, 0, 0));
 
         let ser = serde_json::to_string(&expr).unwrap();
@@ -523,8 +591,17 @@ mod tests {
     }
 
     #[test]
+    fn serialise_date_expr_borrowed() {
+        let expr = DateExpr::value(&Date::<DefaultDateMapping<BasicDateTime>>::build(2015, 5, 13, 0, 0, 0, 0));
+
+        let ser = serde_json::to_string(&expr).unwrap();
+
+        assert_eq!(r#""20150513T000000.000Z||""#, ser);
+    }
+
+    #[test]
     fn serialise_date_expr_value_with_ops() {
-        let expr = DateExpr::value(Date::<DefaultDateMapping<BasicDateTime>>::build(2015, 5, 13, 0, 0, 0, 0))
+        let expr = DateExpr::value(&Date::<DefaultDateMapping<BasicDateTime>>::build(2015, 5, 13, 0, 0, 0, 0))
             .add_days(2)
             .round_week();
 
