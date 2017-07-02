@@ -3,7 +3,7 @@ use std::fmt::{Display, Result as FmtResult, Formatter};
 use chrono::{DateTime, Utc, NaiveDateTime, NaiveDate, NaiveTime};
 use serde::{Serialize, Deserialize, Serializer, Deserializer};
 use serde::de::{Visitor, Error};
-use super::format::{DateFormat, FormattedDate, FormattableDate, ParsableDate, ParseError};
+use super::format::{DateFormat, FormattedDate, FormattableDate, ParseError};
 use super::formats::ChronoFormat;
 use super::mapping::{DateFieldType, DateMapping, DefaultDateMapping};
 
@@ -248,19 +248,19 @@ impl<'de, M> Deserialize<'de> for Date<M>
             fn visit_str<E>(self, v: &str) -> Result<Date<M>, E>
                 where E: Error
             {
-                parse(v).into_date().map_err(|err| Error::custom(format!("{}", err)))
+                parse(v).map_err(|err| Error::custom(format!("{}", err)))
             }
 
             fn visit_i64<E>(self, v: i64) -> Result<Date<M>, E>
                 where E: Error
             {
-                parse(v.to_string()).into_date().map_err(|err| Error::custom(format!("{}", err)))
+                parse(&v.to_string()).map_err(|err| Error::custom(format!("{}", err)))
             }
 
             fn visit_u64<E>(self, v: u64) -> Result<Date<M>, E>
                 where E: Error
             {
-                parse(v.to_string()).into_date().map_err(|err| Error::custom(format!("{}", err)))
+                parse(&v.to_string()).map_err(|err| Error::custom(format!("{}", err)))
             }
         }
 
@@ -277,21 +277,10 @@ pub(crate) fn format<'a, F, D>(date: D) -> FormattedDate<'a>
 }
 
 /** A convenience function for parsing a date. */
-pub(crate) fn parse<'a, P>(date: P) -> Parse<'a, P>
-    where P: Into<ParsableDate<'a>>
-{
-    Parse(date, PhantomData)
-}
+pub(crate) fn parse<M>(date: &str) -> Result<Date<M>, ParseError> where M: DateMapping {
+    let parsed = M::Format::parse(date)?;
 
-/** A convenience structure for parsing a date. */
-pub(crate) struct Parse<'a, P>(P, PhantomData<&'a ()>);
-
-impl<'a, P> Parse<'a, P> where P: Into<ParsableDate<'a>> {
-    pub fn into_date<M>(self) -> Result<Date<M>, ParseError> where M: DateMapping {
-        let parsed = M::Format::parse(self.0)?;
-
-        Ok(parsed.into())
-    }
+    Ok(parsed.into())
 }
 
 /**

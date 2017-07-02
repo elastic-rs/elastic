@@ -51,9 +51,7 @@ fn impl_date_format(crate_root: Tokens,
     let ty = &item.ident;
 
     let parse_fn = quote!(
-        fn parse<'a, P>(date: P) -> ::std::result::Result<::chrono::DateTime<::chrono::Utc>, #crate_root::derive::ParseError> 
-            where P: ::std::convert::Into<#crate_root::derive::ParsableDate<'a>>
-        {
+        fn parse(date: &str) -> ::std::result::Result<::chrono::DateTime<::chrono::Utc>, #crate_root::derive::ParseError> {
             let fmt = vec![ #(#format),* ];
 
             #crate_root::derive::parse_from_tokens(date, fmt)

@@ -6,7 +6,7 @@ use chrono::format::{self, Item, Parsed};
 
 use private::field::FieldMapping;
 
-pub use date::{DateFormat, ParseError, FormattedDate, ParsableDate};
+pub use date::{DateFormat, ParseError, FormattedDate};
 pub use document::{DocumentType, FieldType, field_ser};
 pub use document::mapping::{DocumentMapping, PropertiesMapping};
 
@@ -21,13 +21,9 @@ pub fn mapping<T, M, F>() -> M
 }
 
 /** Parse a date string using an owned slice of items. */
-pub fn parse_from_tokens<'a, P>(date: P, fmt: Vec<Item<'a>>) -> Result<DateTime<Utc>, ParseError> 
-    where P: Into<ParsableDate<'a>>
-{
-    let date = date.into();
-
+pub fn parse_from_tokens<'a>(date: &str, fmt: Vec<Item<'a>>) -> Result<DateTime<Utc>, ParseError> {
     let mut parsed = Parsed::new();
-    match format::parse(&mut parsed, date.as_ref(), fmt.into_iter()) {
+    match format::parse(&mut parsed, date, fmt.into_iter()) {
         Ok(_) => {
             // If the parsed result doesn't contain any time, set it to the default
             if parsed.hour_mod_12.is_none() {

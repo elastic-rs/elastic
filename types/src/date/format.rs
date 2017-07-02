@@ -2,7 +2,6 @@ use chrono;
 use chrono::format::{Item, DelayedFormat};
 use std::marker::PhantomData;
 use std::borrow::{Cow, Borrow};
-use std::ops::Deref;
 use std::error::Error;
 use std::fmt::{Display, Result as FmtResult, Formatter};
 use std::vec::IntoIter;
@@ -58,7 +57,7 @@ pub trait DateFormat
     where Self: Default
 {
     /** Parses a date string to a `chrono::DateTime<Utc>` result. */
-    fn parse<'a, P>(date: P) -> Result<ChronoDateTime, ParseError> where P: Into<ParsableDate<'a>>;
+    fn parse(date: &str) -> Result<ChronoDateTime, ParseError>;
 
     /** Formats a given `chrono::DateTime<Utc>` as a string. */
     fn format<'a>(date: Cow<'a, ChronoDateTime>) -> FormattedDate<'a>;
@@ -97,44 +96,6 @@ impl<'a, F> FormattableDate<'a, F>
     /** Use the generic format parameter to format the captured date value. */
     pub fn format(self) -> FormattedDate<'a> {
         F::format(self.0)
-    }
-}
-
-/**
-A parsable date.
-
-This type represents a date that can be parsed.
-*/
-pub struct ParsableDate<'a>(Cow<'a, str>);
-
-impl<'a> Deref for ParsableDate<'a> {
-    type Target = str;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-impl<'a> From<String> for ParsableDate<'a> {
-    fn from(s: String) -> Self {
-        ParsableDate(Cow::Owned(s))
-    }
-}
-
-impl<'a> From<&'a str> for ParsableDate<'a> {
-    fn from(s: &'a str) -> Self {
-        ParsableDate(Cow::Borrowed(s))
-    }
-}
-
-impl<'a> From<FormattedDate<'a>> for ParsableDate<'a> {
-    fn from(date: FormattedDate<'a>) -> Self {
-        let inner = match date.inner {
-            FormattedDateInner::Buffered(s) => s,
-            _ => date.to_string()
-        };
-
-        ParsableDate(Cow::Owned(inner))
     }
 }
 

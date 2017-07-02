@@ -1,7 +1,7 @@
 use std::error::Error;
 use std::borrow::Cow;
-use chrono::{DateTime, NaiveDateTime, Utc, Timelike};
-use super::{DateFormat, FormattedDate, ParsableDate, ParseError};
+use chrono::{DateTime, Utc, NaiveDateTime, Timelike};
+use super::{DateFormat, FormattedDate, ParseError};
 
 /** The default `date` format (`BasicDateTime`). */
 pub type DefaultDateFormat = BasicDateTime;
@@ -48,9 +48,7 @@ impl DateFormat for EpochMillis {
         "epoch_millis"
     }
 
-    fn parse<'a, P>(date: P) -> Result<DateTime<Utc>, ParseError> where P: Into<ParsableDate<'a>> {
-        let date = date.into();
-        
+    fn parse(date: &str) -> Result<DateTime<Utc>, ParseError> {
         let millis = date.parse::<i64>().map_err(|e| e.description().to_string())?;
 
         let (s, m) = {
@@ -84,7 +82,7 @@ mod tests {
 
     #[test]
     fn chrono() {
-        let date = parse("2015-07-03T14:55:02Z").into_date::<DefaultDateMapping<ChronoFormat>>().unwrap();
+        let date = parse::<DefaultDateMapping<ChronoFormat>>("2015-07-03T14:55:02Z").unwrap();
 
         assert_eq!(
             (2015i32, 7u32, 3u32, 14u32, 55u32, 2u32),
@@ -109,7 +107,7 @@ mod tests {
 
     #[test]
     fn basic_datetime_no_millis() {
-        let date = parse("20150703T145502Z").into_date::<DefaultDateMapping<BasicDateTimeNoMillis>>().unwrap();
+        let date = parse::<DefaultDateMapping<BasicDateTimeNoMillis>>("20150703T145502Z").unwrap();
 
         assert_eq!(
             (2015i32, 7u32, 3u32, 14u32, 55u32, 2u32),
@@ -134,7 +132,7 @@ mod tests {
 
     #[test]
     fn basic_date_time() {
-        let date = parse("20150703T145502.478Z").into_date::<DefaultDateMapping<BasicDateTime>>().unwrap();
+        let date = parse::<DefaultDateMapping<BasicDateTime>>("20150703T145502.478Z").unwrap();
 
         assert_eq!(
             (2015i32, 7u32, 3u32, 14u32, 55u32, 2u32, 478u32),
@@ -160,7 +158,7 @@ mod tests {
 
     #[test]
     fn epoch_millis() {
-        let date = parse("1435935302478").into_date::<DefaultDateMapping<EpochMillis>>().unwrap();
+        let date = parse::<DefaultDateMapping<EpochMillis>>("1435935302478").unwrap();
 
         assert_eq!(
             (2015i32, 7u32, 3u32, 14u32, 55u32, 2u32, 478u32),
@@ -186,7 +184,7 @@ mod tests {
 
     #[test]
     fn epoch_millis_no_millis() {
-        let date = parse("1435935302000").into_date::<DefaultDateMapping<EpochMillis>>().unwrap();
+        let date = parse::<DefaultDateMapping<EpochMillis>>("1435935302000").unwrap();
 
         assert_eq!(
             (2015i32, 7u32, 3u32, 14u32, 55u32, 2u32, 0u32),
@@ -207,7 +205,7 @@ mod tests {
 
     #[test]
     fn epoch_millis_minus() {
-        let date = parse("-8031171898478").into_date::<DefaultDateMapping<EpochMillis>>().unwrap();
+        let date = parse::<DefaultDateMapping<EpochMillis>>("-8031171898478").unwrap();
 
         assert_eq!(
             (1715i32, 7u32, 3u32, 14u32, 55u32, 1u32, 522u32),
@@ -228,7 +226,7 @@ mod tests {
 
     #[test]
     fn epoch_millis_minus_no_millis() {
-        let date = parse("-8031171898000").into_date::<DefaultDateMapping<EpochMillis>>().unwrap();
+        let date = parse::<DefaultDateMapping<EpochMillis>>("-8031171898000").unwrap();
 
         assert_eq!(
             (1715i32, 7u32, 3u32, 14u32, 55u32, 1u32, 1000u32),
@@ -249,7 +247,7 @@ mod tests {
 
     #[test]
     fn epoch_millis_very_short() {
-        let date = parse("100").into_date::<DefaultDateMapping<EpochMillis>>().unwrap();
+        let date = parse::<DefaultDateMapping<EpochMillis>>("100").unwrap();
 
         assert_eq!(
             (1970i32, 1u32, 1u32, 0u32, 0u32, 0u32, 100u32),
@@ -270,7 +268,7 @@ mod tests {
 
     #[test]
     fn epoch_millis_short() {
-        let date = parse("5100").into_date::<DefaultDateMapping<EpochMillis>>().unwrap();
+        let date = parse::<DefaultDateMapping<EpochMillis>>("5100").unwrap();
 
         assert_eq!(
             (1970i32, 1u32, 1u32, 0u32, 0u32, 5u32, 100u32),
@@ -291,7 +289,7 @@ mod tests {
 
     #[test]
     fn epoch_millis_very_short_minus() {
-        let date = parse("-100").into_date::<DefaultDateMapping<EpochMillis>>().unwrap();
+        let date = parse::<DefaultDateMapping<EpochMillis>>("-100").unwrap();
 
         assert_eq!(
             (1969i32, 12u32, 31u32, 23u32, 59u32, 59u32, 900u32),
@@ -312,7 +310,7 @@ mod tests {
 
     #[test]
     fn epoch_millis_short_minus() {
-        let date = parse("-5100").into_date::<DefaultDateMapping<EpochMillis>>().unwrap();
+        let date = parse::<DefaultDateMapping<EpochMillis>>("-5100").unwrap();
 
         assert_eq!(
             (1969i32, 12u32, 31u32, 23u32, 59u32, 54u32, 900u32),
@@ -333,7 +331,7 @@ mod tests {
 
     #[test]
     fn epoch_millis_zero() {
-        let date = parse("0").into_date::<DefaultDateMapping<EpochMillis>>().unwrap();
+        let date = parse::<DefaultDateMapping<EpochMillis>>("0").unwrap();
 
         assert_eq!(
             (1970i32, 1u32, 1u32, 0u32, 0u32, 0u32, 0u32),
@@ -365,16 +363,14 @@ mod tests {
                 date.to_rfc3339().into()
             }
 
-            fn parse<'a, P>(date: P) -> Result<DateTime<Utc>, ParseError> where P: Into<ParsableDate<'a>> {
-                let date = date.into();
-
-                let date = DateTime::parse_from_rfc3339(&date).map_err(|e| ParseError::from(e))?;
+            fn parse(date: &str) -> Result<ChronoDateTime, ParseError> {
+                let date = DateTime::parse_from_rfc3339(date).map_err(|e| ParseError::from(e))?;
 
                 Ok(DateTime::from_utc(date.naive_local(), Utc))
             }
         }
 
-        let date = parse("2015-07-03T14:55:02+00:00").into_date::<DefaultDateMapping<MyCustomFormat>>().unwrap();
+        let date = parse::<DefaultDateMapping<MyCustomFormat>>("2015-07-03T14:55:02+00:00").unwrap();
 
         assert_eq!(
             (2015i32, 7u32, 3u32, 14u32, 55u32, 2u32),
