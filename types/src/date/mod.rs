@@ -7,13 +7,14 @@ All dates used by `elastic_types` are expected to be given in `Utc`, and if no t
 Where performance is paramount, the `EpochMillis` date format will parse and format dates the fastest.
 The difference is especially obvious on the `stable` channel, where date formats can't be parsed at compile time.
 
-There are two main date-like types:
+There are a few date types in this module:
 
 - `Date<M>` which is a document field that maps as `date`, and has a format attached to its mapping
-- `FormattableDate<F>` which is just a date value and a format.
+- `ChronoDateTime` is a re-export of `chrono::DateTime<Utc>` and is similar to `Date<DefaultDateMapping<ChronoFormat>>`
+- `DateValue` which is a simple date value, without mapping or formatting. It's used as an intermediate value
+- `FormattableDateValue<F>` which is just a date value and a format.
 
-For your document types, use `Date<M>`.
-For types that need a formattable date but aren't mapped, use `FormattableDate<F>`.
+For the most part, you'll only need to use `Date`s or `ChronoDateTime`s, and the rest are used internally or at API boundaries.
 
 # Examples
 

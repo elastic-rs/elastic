@@ -16,6 +16,12 @@ macro_rules! borrow_fn {
 
 macro_rules! impl_mapping_type {
     ($std_ty:ident, $wrapper_ty:ident, $mapping_ty:ident) => (
+        impl<M> ::private::field::StdField<$std_ty> for $wrapper_ty<M> where
+        M: $mapping_ty
+        {
+
+        }
+
         impl<M> From<$std_ty> for $wrapper_ty<M> where
         M: $mapping_ty {
             fn from(value: $std_ty) -> Self {

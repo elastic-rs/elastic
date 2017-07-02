@@ -1,6 +1,7 @@
-use chrono;
+use chrono::{self, Utc, NaiveDateTime, NaiveDate, NaiveTime};
 use chrono::format::{Item, DelayedFormat};
 use std::ops::Deref;
+use std::marker::PhantomData;
 use std::borrow::Borrow;
 use std::error::Error;
 use std::fmt::{Display, Result as FmtResult, Formatter};
@@ -23,13 +24,50 @@ TODO:
 
 /** 
 A date value produced and consumed by date formats.
+
+You probably won't need to use this type directly.
 */
 #[derive(Debug, Clone, PartialEq)]
 pub struct DateValue(ChronoDateTime);
 
-impl From<ChronoDateTime> for DateValue {
-    fn from(date: ChronoDateTime) -> Self {
+impl DateValue {
+    pub fn now() -> Self {
+        DateValue(Utc::now())
+    }
+
+    pub fn build(year: i32, month: u32, day: u32, hour: u32, minute: u32, second: u32, milli: u32) -> Self {
+        let ndate = NaiveDate::from_ymd(year, month, day);
+        let ntime = NaiveTime::from_hms_milli(hour, minute, second, milli);
+
+        let date = ChronoDateTime::from_utc(NaiveDateTime::new(ndate, ntime), Utc);
+
         DateValue(date)
+    }
+}
+
+impl<F> From<FormattableDateValue<F>> for DateValue {
+    fn from(date: FormattableDateValue<F>) -> Self {
+        date.0
+    }
+}
+
+impl PartialEq<ChronoDateTime> for DateValue {
+    fn eq(&self, other: &ChronoDateTime) -> bool {
+        PartialEq::eq(&self.0, other)
+    }
+
+    fn ne(&self, other: &ChronoDateTime) -> bool {
+        PartialEq::ne(&self.0, other)
+    }
+}
+
+impl PartialEq<DateValue> for ChronoDateTime {
+    fn eq(&self, other: &DateValue) -> bool {
+        PartialEq::eq(self, &other.0)
+    }
+
+    fn ne(&self, other: &DateValue) -> bool {
+        PartialEq::ne(self, &other.0)
     }
 }
 
@@ -49,16 +87,65 @@ impl Deref for DateValue {
 }
 
 /** 
-A trait for converting into a `DateValue` while enforcing a particular format. 
+A date value paired with a format.
 
-This trait is to ensure `Date`s and `DateTime<Utc>`s that are input into types like `DateExpr` don't have their formats ignored.
+This type provides a convenient way to parse and format a date value with a fixed format.
 */
-pub trait IntoDateValue {
-    /** A format type that can be used to restrict the conversion. */
-    type Format;
+#[derive(Debug, Clone, PartialEq)]
+pub struct FormattableDateValue<F>(DateValue, PhantomData<F>);
 
-    /** Convert into a `DateValue`. */
-    fn into(self) -> DateValue;
+impl<F> FormattableDateValue<F> where F: DateFormat {
+    pub fn format<'a>(&'a self) -> FormattedDate<'a> {
+        F::format(&self.0)
+    }
+
+    pub fn parse(date: &str) -> Result<Self, ParseError> {
+        let date = F::parse(date)?;
+
+        Ok(FormattableDateValue::from(date))
+    }
+
+    pub fn reformat<FInto>(self) -> FormattableDateValue<FInto> {
+        FormattableDateValue(self.0, PhantomData)
+    }
+}
+
+impl<F> Borrow<ChronoDateTime> for FormattableDateValue<F> {
+    fn borrow(&self) -> &ChronoDateTime {
+        &self.0
+    }
+}
+
+impl<F> PartialEq<ChronoDateTime> for FormattableDateValue<F> {
+    fn eq(&self, other: &ChronoDateTime) -> bool {
+        PartialEq::eq(&self.0, other)
+    }
+
+    fn ne(&self, other: &ChronoDateTime) -> bool {
+        PartialEq::ne(&self.0, other)
+    }
+}
+
+impl<F> PartialEq<FormattableDateValue<F>> for ChronoDateTime {
+    fn eq(&self, other: &FormattableDateValue<F>) -> bool {
+        PartialEq::eq(self, &other.0)
+    }
+
+    fn ne(&self, other: &FormattableDateValue<F>) -> bool {
+        PartialEq::ne(self, &other.0)
+    }
+}
+
+impl<F> From<DateValue> for FormattableDateValue<F> {
+    fn from(date: DateValue) -> Self {
+        FormattableDateValue(date.into(), PhantomData)
+    }
+}
+
+impl From<ChronoDateTime> for DateValue {
+    fn from(date: ChronoDateTime) -> Self {
+        DateValue(date)
+    }
 }
 
 /**

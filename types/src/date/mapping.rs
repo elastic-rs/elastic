@@ -3,19 +3,19 @@
 use std::marker::PhantomData;
 use serde::{Serialize, Serializer};
 use serde::ser::SerializeStruct;
-use super::{DateFormat, DefaultDateFormat, IntoDateValue, Date};
+use super::{DateFormat, DefaultDateFormat, FormattableDateValue, Date};
 use private::field::{DocumentField, FieldMapping, SerializeField};
 use document::FieldType;
 
 /** A field that will be mapped as a `date`. */
 pub trait DateFieldType<M> 
-    where Self: IntoDateValue<Format = M::Format>,
+    where Self: Into<FormattableDateValue<M::Format>>,
           M: DateMapping
 { }
 
 impl<T, M> FieldType<M, DateFormatWrapper<M::Format>> for T
     where T: DateFieldType<M> + Serialize,
-          T: IntoDateValue<Format = M::Format>,
+          T: Into<FormattableDateValue<M::Format>>,
           M: DateMapping
 { }
 

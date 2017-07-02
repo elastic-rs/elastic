@@ -1,12 +1,14 @@
 use std::borrow::Borrow;
+use std::ops::Deref;
 use std::marker::PhantomData;
 use std::fmt::{Display, Result as FmtResult, Formatter};
 use chrono::{DateTime, Utc, NaiveDateTime, NaiveDate, NaiveTime};
 use serde::{Serialize, Deserialize, Serializer, Deserializer};
 use serde::de::{Visitor, Error};
-use super::format::{DateValue, IntoDateValue, DateFormat, FormattedDate, ParseError};
+use super::format::{DateValue, FormattableDateValue, DateFormat, FormattedDate, ParseError};
 use super::formats::ChronoFormat;
 use super::mapping::{DateFieldType, DateMapping, DefaultDateMapping};
+use private::field::StdField;
 
 pub use chrono::{Datelike, Timelike};
 
@@ -15,11 +17,9 @@ pub type ChronoDateTime = DateTime<Utc>;
 
 impl DateFieldType<DefaultDateMapping<ChronoFormat>> for ChronoDateTime {}
 
-impl IntoDateValue for DateTime<Utc> {
-    type Format = ChronoFormat;
-
-    fn into(self) -> DateValue {
-        DateValue::from(self)
+impl From<ChronoDateTime> for FormattableDateValue<ChronoFormat> {
+    fn from(date: ChronoDateTime) -> Self {
+        FormattableDateValue::from(DateValue::from(date))
     }
 }
 
@@ -69,8 +69,7 @@ println!("{}/{}/{} {}:{}:{}.{}",
 */
 #[derive(Debug, Clone, PartialEq)]
 pub struct Date<M> where M: DateMapping {
-    value: DateValue,
-    _m: PhantomData<M>,
+    value: FormattableDateValue<M::Format>,
 }
 
 impl<M> Date<M> where M: DateMapping
@@ -100,11 +99,10 @@ impl<M> Date<M> where M: DateMapping
     ```
     */
     pub fn new<I>(date: I) -> Self 
-        where I: Into<DateValue>
+        where I: Into<FormattableDateValue<M::Format>>
     {
         Date {
-            value: date.into(),
-            _m: PhantomData,
+            value: date.into()
         }
     }
 
@@ -117,12 +115,7 @@ impl<M> Date<M> where M: DateMapping
     ```
     */
     pub fn build(year: i32, month: u32, day: u32, hour: u32, minute: u32, second: u32, milli: u32) -> Self {
-        let ndate = NaiveDate::from_ymd(year, month, day);
-        let ntime = NaiveTime::from_hms_milli(hour, minute, second, milli);
-
-        let date = ChronoDateTime::from_utc(NaiveDateTime::new(ndate, ntime), Utc);
-
-        Date::new(date)
+        Date::new(DateValue::build(year, month, day, hour, minute, second, milli))
     }
 
     /**
@@ -136,7 +129,7 @@ impl<M> Date<M> where M: DateMapping
     ```
     */
     pub fn now() -> Self {
-        Date::new(Utc::now())
+        Date::new(DateValue::now())
     }
 
     /**
@@ -156,7 +149,7 @@ impl<M> Date<M> where M: DateMapping
     pub fn remap<MInto>(date: Date<M>) -> Date<MInto>
         where MInto: DateMapping
     {
-        Date::new(date.value)
+        Date::new(date.value.reformat())
     }
 }
 
@@ -165,17 +158,65 @@ impl<M> DateFieldType<M> for Date<M>
 {
 }
 
-impl<M> IntoDateValue for Date<M> 
-    where M: DateMapping
-{
-    type Format = M::Format;
-
-    fn into(self) -> DateValue {
-        self.value
+impl<M> From<Date<M>> for FormattableDateValue<M::Format> where M: DateMapping {
+    fn from(date: Date<M>) -> Self {
+        FormattableDateValue::from(date.value)
     }
 }
 
-impl_mapping_type!(ChronoDateTime, Date, DateMapping);
+impl<M> StdField<ChronoDateTime> for Date<M>
+    where M: DateMapping
+{
+}
+
+impl<M> From<DateValue> for Date<M> 
+    where M: DateMapping 
+{
+    fn from(value: DateValue) -> Self {
+        Date::new(value)
+    }
+}
+
+impl<M> PartialEq<ChronoDateTime> for Date<M> 
+    where M: DateMapping 
+{
+    fn eq(&self, other: &ChronoDateTime) -> bool {
+        PartialEq::eq(&self.value, other)
+    }
+
+    fn ne(&self, other: &ChronoDateTime) -> bool {
+        PartialEq::ne(&self.value, other)
+    }
+}
+
+impl<M> PartialEq<Date<M>> for ChronoDateTime 
+    where M: DateMapping 
+{
+    fn eq(&self, other: &Date<M>) -> bool {
+        PartialEq::eq(self, &other.value)
+    }
+
+    fn ne(&self, other: &Date<M>) -> bool {
+        PartialEq::ne(self, &other.value)
+    }
+}
+
+impl<M> Deref for Date<M> 
+    where M: DateMapping 
+{
+    type Target = ChronoDateTime;
+    fn deref(&self) -> &ChronoDateTime {
+        self.value.borrow()
+    }
+}
+
+impl<M> Borrow<ChronoDateTime> for Date<M> 
+    where M: DateMapping 
+{
+    fn borrow(&self) -> &ChronoDateTime {
+        self.value.borrow()
+    }
+}
 
 impl<M> Default for Date<M>
     where M: DateMapping
@@ -253,14 +294,14 @@ impl<'de, M> Deserialize<'de> for Date<M>
 pub(crate) fn format<'a, M>(date: &'a Date<M>) -> FormattedDate<'a>
     where M: DateMapping
 {
-    M::Format::format(&date.value)
+    date.value.format()
 }
 
 /** A convenience function for parsing a date. */
 pub(crate) fn parse<M>(date: &str) -> Result<Date<M>, ParseError> 
     where M: DateMapping 
 {
-    let parsed = M::Format::parse(date)?;
+    let parsed = FormattableDateValue::parse(date)?;
 
     Ok(Date::new(parsed))
 }
@@ -326,7 +367,7 @@ impl<F> Display for DateExpr<F>
 #[derive(Debug, Clone, PartialEq)]
 enum DateExprAnchor<F> {
     Now,
-    Value(DateValue, PhantomData<F>)
+    Value(FormattableDateValue<F>)
 }
 
 impl<F> Display for DateExprAnchor<F>
@@ -335,7 +376,7 @@ impl<F> Display for DateExprAnchor<F>
     fn fmt(&self, f: &mut Formatter) -> FmtResult {
         match *self {
             DateExprAnchor::Now => "now".fmt(f),
-            DateExprAnchor::Value(ref date, _) => write!(f, "{}||", F::format(&date)),
+            DateExprAnchor::Value(ref date) => write!(f, "{}||", date.format()),
         }
     }
 }
@@ -424,25 +465,55 @@ impl<F> DateExpr<F>
 
     /** 
     Create a new date expression from a concrete date value.
-    
-    This method accepts any type that can be converted into a `FormattableDate`, which includes owned or borrowed `DateFieldType`s.
-    */
-    pub fn value<D>(date: D) -> Self 
-        where D: IntoDateValue<Format = F>
-    {
-        Self::value_ignore_format(date)
-    }
 
-    /** 
-    Create a new date expression from a concrete date value, ignoring its original format.
+    If the input is a `DateValue`, then it'll use any format specified on the `DateExpr`.
+    If the input is a `Date` or `chrono::DateTime`, then the format on its mapping must match the format expected by the `DateExpr`.
+
+    # Examples
+
+    Create a date expression from a `chrono::DateTime`:
+
+    ```
+    let date = DateValue::now();
+
+    // The format annotation `EpochMillis` is required
+    let expr: DateExpr<EpochMillis> = DateExpr::value(date);
+    ```
+
+    Create a date expression from a `Date`:
+
+    ```
+    let date: Date<DefaultDateMapping<EpochMillis>> = Date::now();
+
+    // The format `EpochMillis` is inferred
+    let expr = DateExpr::value(date);
+    ```
+
+    Attempting to create a date expression from a `Date` with a different format will fail to compile:
+
+    ```
+    let date: Date<DefaultDateMapping<BasicDateTime>> = Date::now();
+
+    // Error
+    let expr: DateExpr<EpochMillis> = DateExpr::value(date);
+    ```
+
+    This is to ensure formats aren't silently converted when they shouldn't be, leading to runtime errors in Elasticsearch.
+    Use the `remap` method on `Date` to convert the format:
+
+    ```
+    let date: Date<DefaultDateMapping<BasicDateTime>> = Date::now();
+
+    let expr: DateExpr<EpochMillis> = DateExpr::value(Date::remap(date));
+    ```
     */
-    pub fn value_ignore_format<D>(date: D) -> Self
-        where D: IntoDateValue
+    pub fn value<D>(date: D) -> Self
+        where D: Into<FormattableDateValue<F>>
     {
         let date = date.into();
         
         DateExpr {
-            anchor: DateExprAnchor::Value(date, PhantomData),
+            anchor: DateExprAnchor::Value(date),
             ops: Vec::new(),
         }
     }
