@@ -1,9 +1,10 @@
+use std::borrow::Borrow;
 use std::marker::PhantomData;
 use std::fmt::{Display, Result as FmtResult, Formatter};
 use chrono::{DateTime, Utc, NaiveDateTime, NaiveDate, NaiveTime};
 use serde::{Serialize, Deserialize, Serializer, Deserializer};
 use serde::de::{Visitor, Error};
-use super::format::{DateFormat, FormattedDate, FormattableDate, ParseError};
+use super::format::{DateValue, IntoDateValue, DateFormat, FormattedDate, ParseError};
 use super::formats::ChronoFormat;
 use super::mapping::{DateFieldType, DateMapping, DefaultDateMapping};
 
@@ -14,15 +15,11 @@ pub type ChronoDateTime = DateTime<Utc>;
 
 impl DateFieldType<DefaultDateMapping<ChronoFormat>> for ChronoDateTime {}
 
-impl<'a> Into<FormattableDate<'a, ChronoFormat>> for ChronoDateTime {
-    fn into(self) -> FormattableDate<'a, ChronoFormat> {
-        FormattableDate::from_owned(self)
-    }
-}
+impl IntoDateValue for DateTime<Utc> {
+    type Format = ChronoFormat;
 
-impl<'a> Into<FormattableDate<'a, ChronoFormat>> for &'a ChronoDateTime {
-    fn into(self) -> FormattableDate<'a, ChronoFormat> {
-        FormattableDate::from_borrowed(self)
+    fn into(self) -> DateValue {
+        DateValue::from(self)
     }
 }
 
@@ -72,7 +69,7 @@ println!("{}/{}/{} {}:{}:{}.{}",
 */
 #[derive(Debug, Clone, PartialEq)]
 pub struct Date<M> where M: DateMapping {
-    value: ChronoDateTime,
+    value: DateValue,
     _m: PhantomData<M>,
 }
 
@@ -102,9 +99,11 @@ impl<M> Date<M> where M: DateMapping
     # }
     ```
     */
-    pub fn new(date: ChronoDateTime) -> Self {
+    pub fn new<I>(date: I) -> Self 
+        where I: Into<DateValue>
+    {
         Date {
-            value: date,
+            value: date.into(),
             _m: PhantomData,
         }
     }
@@ -121,10 +120,9 @@ impl<M> Date<M> where M: DateMapping
         let ndate = NaiveDate::from_ymd(year, month, day);
         let ntime = NaiveTime::from_hms_milli(hour, minute, second, milli);
 
-        Date {
-            value: ChronoDateTime::from_utc(NaiveDateTime::new(ndate, ntime), Utc),
-            _m: PhantomData,
-        }
+        let date = ChronoDateTime::from_utc(NaiveDateTime::new(ndate, ntime), Utc);
+
+        Date::new(date)
     }
 
     /**
@@ -138,10 +136,7 @@ impl<M> Date<M> where M: DateMapping
     ```
     */
     pub fn now() -> Self {
-        Date {
-            value: Utc::now(),
-            _m: PhantomData,
-        }
+        Date::new(Utc::now())
     }
 
     /**
@@ -170,27 +165,13 @@ impl<M> DateFieldType<M> for Date<M>
 {
 }
 
-impl<M> Into<ChronoDateTime> for Date<M> 
+impl<M> IntoDateValue for Date<M> 
     where M: DateMapping
 {
-    fn into(self) -> ChronoDateTime {
+    type Format = M::Format;
+
+    fn into(self) -> DateValue {
         self.value
-    }
-}
-
-impl<'a, M> Into<FormattableDate<'a, M::Format>> for Date<M> 
-    where M: DateMapping
-{
-    fn into(self) -> FormattableDate<'a, M::Format> {
-        FormattableDate::from_owned(self)
-    }
-}
-
-impl<'a, M> Into<FormattableDate<'a, M::Format>> for &'a Date<M> 
-    where M: DateMapping
-{
-    fn into(self) -> FormattableDate<'a, M::Format> {
-        FormattableDate::from_borrowed(self)
     }
 }
 
@@ -269,18 +250,19 @@ impl<'de, M> Deserialize<'de> for Date<M>
 }
 
 /** A convenience function for formatting a date. */
-pub(crate) fn format<'a, F, D>(date: D) -> FormattedDate<'a>
-    where D: Into<FormattableDate<'a, F>>,
-          F: DateFormat + 'a
+pub(crate) fn format<'a, M>(date: &'a Date<M>) -> FormattedDate<'a>
+    where M: DateMapping
 {
-    date.into().format()
+    M::Format::format(&date.value)
 }
 
 /** A convenience function for parsing a date. */
-pub(crate) fn parse<M>(date: &str) -> Result<Date<M>, ParseError> where M: DateMapping {
+pub(crate) fn parse<M>(date: &str) -> Result<Date<M>, ParseError> 
+    where M: DateMapping 
+{
     let parsed = M::Format::parse(date)?;
 
-    Ok(parsed.into())
+    Ok(Date::new(parsed))
 }
 
 /**
@@ -322,12 +304,14 @@ let expr = DateExpr::value().add_days(2);
 ```
 */
 #[derive(Debug, Clone, PartialEq)]
-pub struct DateExpr {
-    anchor: DateExprAnchor,
-    ops: Vec<DateExprOp>
+pub struct DateExpr<F> {
+    anchor: DateExprAnchor<F>,
+    ops: Vec<DateExprOp>,
 }
 
-impl Display for DateExpr {
+impl<F> Display for DateExpr<F> 
+    where F: DateFormat
+{
     fn fmt(&self, f: &mut Formatter) -> FmtResult {
         self.anchor.fmt(f)?;
 
@@ -340,16 +324,18 @@ impl Display for DateExpr {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-enum DateExprAnchor {
+enum DateExprAnchor<F> {
     Now,
-    Value(String)
+    Value(DateValue, PhantomData<F>)
 }
 
-impl Display for DateExprAnchor {
+impl<F> Display for DateExprAnchor<F>
+    where F: DateFormat
+{
     fn fmt(&self, f: &mut Formatter) -> FmtResult {
         match *self {
             DateExprAnchor::Now => "now".fmt(f),
-            DateExprAnchor::Value(ref date) => write!(f, "{}||", date),
+            DateExprAnchor::Value(ref date, _) => write!(f, "{}||", F::format(&date)),
         }
     }
 }
@@ -420,7 +406,9 @@ macro_rules! impl_expr_ops {
     )
 }
 
-impl DateExpr {
+impl<F> DateExpr<F>
+    where F: DateFormat
+{
     /**
     Create a new date expression for `now`.
     
@@ -439,14 +427,22 @@ impl DateExpr {
     
     This method accepts any type that can be converted into a `FormattableDate`, which includes owned or borrowed `DateFieldType`s.
     */
-    pub fn value<'a, F, D>(date: D) -> Self 
-        where D: Into<FormattableDate<'a, F>>,
-              F: DateFormat + 'a
+    pub fn value<D>(date: D) -> Self 
+        where D: IntoDateValue<Format = F>
     {
-        let formatted = format(date).to_string();
+        Self::value_ignore_format(date)
+    }
 
+    /** 
+    Create a new date expression from a concrete date value, ignoring its original format.
+    */
+    pub fn value_ignore_format<D>(date: D) -> Self
+        where D: IntoDateValue
+    {
+        let date = date.into();
+        
         DateExpr {
-            anchor: DateExprAnchor::Value(formatted),
+            anchor: DateExprAnchor::Value(date, PhantomData),
             ops: Vec::new(),
         }
     }
@@ -460,7 +456,9 @@ impl DateExpr {
     impl_expr_ops!(DateExprOpUnit::Second, add_seconds, sub_seconds, round_second);
 }
 
-impl Serialize for DateExpr {
+impl<F> Serialize for DateExpr<F> 
+    where F: DateFormat
+{
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
         where S: Serializer
     {

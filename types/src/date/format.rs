@@ -1,17 +1,71 @@
 use chrono;
 use chrono::format::{Item, DelayedFormat};
-use std::marker::PhantomData;
-use std::borrow::{Cow, Borrow};
+use std::ops::Deref;
+use std::borrow::Borrow;
 use std::error::Error;
 use std::fmt::{Display, Result as FmtResult, Formatter};
 use std::vec::IntoIter;
 use super::ChronoDateTime;
 
+/*
+TODO: 
+
+- Use `DateValue` for passing around dates that don't have mapping or formats
+- Don't support constructing `DateValue`s directly? Seems reasonable, or `IntoDateValueWithFormat` wouldn't be very useful
+- Expect owned values for `DateValue`
+- Still support borrowed values for formatting
+
+- `Date` is the field type you use for mapping fields
+- `DateTime<Utc>` is the field type you use if you don't care about mapping or formats
+- `DateValue` is the type you use for raw date values
+- `IntoDateValue` has a `Format` parameter that can be used to constrain inputs
+*/
+
+/** 
+A date value produced and consumed by date formats.
+*/
+#[derive(Debug, Clone, PartialEq)]
+pub struct DateValue(ChronoDateTime);
+
+impl From<ChronoDateTime> for DateValue {
+    fn from(date: ChronoDateTime) -> Self {
+        DateValue(date)
+    }
+}
+
+impl Borrow<ChronoDateTime> for DateValue {
+    fn borrow(&self) -> &ChronoDateTime {
+        &self.0
+    }
+}
+
+// TODO: Remove this
+impl Deref for DateValue {
+    type Target = ChronoDateTime;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+/** 
+A trait for converting into a `DateValue` while enforcing a particular format. 
+
+This trait is to ensure `Date`s and `DateTime<Utc>`s that are input into types like `DateExpr` don't have their formats ignored.
+*/
+pub trait IntoDateValue {
+    /** A format type that can be used to restrict the conversion. */
+    type Format;
+
+    /** Convert into a `DateValue`. */
+    fn into(self) -> DateValue;
+}
+
 /**
 A format used for parsing and formatting dates.
 
 The format is specified as two functions: `parse` and `format`.
-`chrono`s `ChronoDateTime` is used as an intermediate value passed as input and produced as output for formatting.
+A general `DateValue` is used as an intermediate value passed as input and produced as output for formatting.
 
 # Examples
 
@@ -57,10 +111,10 @@ pub trait DateFormat
     where Self: Default
 {
     /** Parses a date string to a `chrono::DateTime<Utc>` result. */
-    fn parse(date: &str) -> Result<ChronoDateTime, ParseError>;
+    fn parse(date: &str) -> Result<DateValue, ParseError>;
 
     /** Formats a given `chrono::DateTime<Utc>` as a string. */
-    fn format<'a>(date: Cow<'a, ChronoDateTime>) -> FormattedDate<'a>;
+    fn format<'a>(date: &'a DateValue) -> FormattedDate<'a>;
 
     /**
     The name of the format.
@@ -68,35 +122,6 @@ pub trait DateFormat
     This is the string used when defining the format in the field mapping.
     */
     fn name() -> &'static str;
-}
-
-/**
-A formattable date.
-
-This type captures a date value and a format so they can be used to produce a formatted date.
-Rather than relying on `DateFieldType` for formattable dates, prefer `FormattableDate` instead, since it doesn't assume any mapping.
-*/
-pub struct FormattableDate<'a, F>(Cow<'a, ChronoDateTime>, PhantomData<F>);
-
-impl<'a, F> FormattableDate<'a, F> {
-    /** Wrap an owned date value in a `FormattableDate`. */
-    pub fn from_owned<I>(date: I) -> Self where I: Into<ChronoDateTime> {
-        FormattableDate(Cow::Owned(date.into()), PhantomData)
-    }
-
-    /** Wrap a borrowed date value in a `FormattableDate`. */
-    pub fn from_borrowed<I>(date: &'a I) -> Self where I: Borrow<ChronoDateTime> {
-        FormattableDate(Cow::Borrowed(date.borrow()), PhantomData)
-    }
-}
-
-impl<'a, F> FormattableDate<'a, F>
-    where F: DateFormat
-{
-    /** Use the generic format parameter to format the captured date value. */
-    pub fn format(self) -> FormattedDate<'a> {
-        F::format(self.0)
-    }
 }
 
 /**
