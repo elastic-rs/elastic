@@ -61,7 +61,7 @@ pub trait DateFormat
     fn parse<'a, P>(date: P) -> Result<ChronoDateTime, ParseError> where P: Into<ParsableDate<'a>>;
 
     /** Formats a given `chrono::DateTime<Utc>` as a string. */
-    fn format<'a>(date: &'a ChronoDateTime) -> FormattedDate<'a>;
+    fn format<'a>(date: Cow<'a, ChronoDateTime>) -> FormattedDate<'a>;
 
     /**
     The name of the format.
@@ -95,8 +95,8 @@ impl<'a, F> FormattableDate<'a, F>
     where F: DateFormat
 {
     /** Use the generic format parameter to format the captured date value. */
-    pub fn format(&'a self) -> FormattedDate<'a> {
-        F::format(self.0.as_ref())
+    pub fn format(self) -> FormattedDate<'a> {
+        F::format(self.0)
     }
 }
 

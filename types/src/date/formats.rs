@@ -1,5 +1,6 @@
-use chrono::{DateTime, NaiveDateTime, Utc, Timelike};
 use std::error::Error;
+use std::borrow::Cow;
+use chrono::{DateTime, NaiveDateTime, Utc, Timelike};
 use super::{DateFormat, FormattedDate, ParsableDate, ParseError};
 
 /** The default `date` format (`BasicDateTime`). */
@@ -68,7 +69,7 @@ impl DateFormat for EpochMillis {
         Ok(DateTime::from_utc(NaiveDateTime::from_timestamp(s, m as u32 * 1000000), Utc))
     }
 
-    fn format<'a>(date: &'a DateTime<Utc>) -> FormattedDate<'a> {
+    fn format<'a>(date: Cow<'a, DateTime<Utc>>) -> FormattedDate<'a> {
         let msec = (date.timestamp() * 1000) + (date.nanosecond() as i64 / 1000000);
         msec.into()
     }
@@ -76,12 +77,14 @@ impl DateFormat for EpochMillis {
 
 #[cfg(test)]
 mod tests {
+    use std::borrow::Cow;
     use chrono::{DateTime, Utc};
+    use date::{format, parse};
     use prelude::*;
 
     #[test]
     fn chrono() {
-        let date = Date::<DefaultDateMapping<ChronoFormat>>::parse("2015-07-03T14:55:02Z").unwrap();
+        let date = parse("2015-07-03T14:55:02Z").into_date::<DefaultDateMapping<ChronoFormat>>().unwrap();
 
         assert_eq!(
             (2015i32, 7u32, 3u32, 14u32, 55u32, 2u32),
@@ -95,7 +98,7 @@ mod tests {
             )
         );
 
-        let fmtd = Date::format(&date).to_string();
+        let fmtd = format(&date).to_string();
         assert_eq!("2015-07-03T14:55:02Z", &fmtd);
     }
 
@@ -106,7 +109,7 @@ mod tests {
 
     #[test]
     fn basic_datetime_no_millis() {
-        let date = Date::<DefaultDateMapping<BasicDateTimeNoMillis>>::parse("20150703T145502Z").unwrap();
+        let date = parse("20150703T145502Z").into_date::<DefaultDateMapping<BasicDateTimeNoMillis>>().unwrap();
 
         assert_eq!(
             (2015i32, 7u32, 3u32, 14u32, 55u32, 2u32),
@@ -120,7 +123,7 @@ mod tests {
             )
         );
 
-        let fmtd = Date::format(&date).to_string();
+        let fmtd = format(&date).to_string();
         assert_eq!("20150703T145502Z", &fmtd);
     }
 
@@ -131,7 +134,7 @@ mod tests {
 
     #[test]
     fn basic_date_time() {
-        let date = Date::<DefaultDateMapping<BasicDateTime>>::parse("20150703T145502.478Z").unwrap();
+        let date = parse("20150703T145502.478Z").into_date::<DefaultDateMapping<BasicDateTime>>().unwrap();
 
         assert_eq!(
             (2015i32, 7u32, 3u32, 14u32, 55u32, 2u32, 478u32),
@@ -146,7 +149,7 @@ mod tests {
             )
         );
 
-        let fmtd = Date::format(&date).to_string();
+        let fmtd = format(&date).to_string();
         assert_eq!("20150703T145502.478Z", &fmtd);
     }
 
@@ -157,7 +160,7 @@ mod tests {
 
     #[test]
     fn epoch_millis() {
-        let date = Date::<DefaultDateMapping<EpochMillis>>::parse("1435935302478").unwrap();
+        let date = parse("1435935302478").into_date::<DefaultDateMapping<EpochMillis>>().unwrap();
 
         assert_eq!(
             (2015i32, 7u32, 3u32, 14u32, 55u32, 2u32, 478u32),
@@ -172,7 +175,7 @@ mod tests {
             )
         );
 
-        let fmtd = Date::format(&date).to_string();
+        let fmtd = format(&date).to_string();
         assert_eq!("1435935302478", &fmtd);
     }
 
@@ -183,7 +186,7 @@ mod tests {
 
     #[test]
     fn epoch_millis_no_millis() {
-        let date = Date::<DefaultDateMapping<EpochMillis>>::parse("1435935302000").unwrap();
+        let date = parse("1435935302000").into_date::<DefaultDateMapping<EpochMillis>>().unwrap();
 
         assert_eq!(
             (2015i32, 7u32, 3u32, 14u32, 55u32, 2u32, 0u32),
@@ -198,13 +201,13 @@ mod tests {
             )
         );
 
-        let fmtd = Date::format(&date).to_string();
+        let fmtd = format(&date).to_string();
         assert_eq!("1435935302000", &fmtd);
     }
 
     #[test]
     fn epoch_millis_minus() {
-        let date = Date::<DefaultDateMapping<EpochMillis>>::parse("-8031171898478").unwrap();
+        let date = parse("-8031171898478").into_date::<DefaultDateMapping<EpochMillis>>().unwrap();
 
         assert_eq!(
             (1715i32, 7u32, 3u32, 14u32, 55u32, 1u32, 522u32),
@@ -219,13 +222,13 @@ mod tests {
             )
         );
 
-        let fmtd = Date::format(&date).to_string();
+        let fmtd = format(&date).to_string();
         assert_eq!("-8031171898478", &fmtd);
     }
 
     #[test]
     fn epoch_millis_minus_no_millis() {
-        let date = Date::<DefaultDateMapping<EpochMillis>>::parse("-8031171898000").unwrap();
+        let date = parse("-8031171898000").into_date::<DefaultDateMapping<EpochMillis>>().unwrap();
 
         assert_eq!(
             (1715i32, 7u32, 3u32, 14u32, 55u32, 1u32, 1000u32),
@@ -240,13 +243,13 @@ mod tests {
             )
         );
 
-        let fmtd = Date::format(&date).to_string();
+        let fmtd = format(&date).to_string();
         assert_eq!("-8031171898000", &fmtd);
     }
 
     #[test]
     fn epoch_millis_very_short() {
-        let date = Date::<DefaultDateMapping<EpochMillis>>::parse("100").unwrap();
+        let date = parse("100").into_date::<DefaultDateMapping<EpochMillis>>().unwrap();
 
         assert_eq!(
             (1970i32, 1u32, 1u32, 0u32, 0u32, 0u32, 100u32),
@@ -261,13 +264,13 @@ mod tests {
             )
         );
 
-        let fmtd = Date::format(&date).to_string();
+        let fmtd = format(&date).to_string();
         assert_eq!("100", &fmtd);
     }
 
     #[test]
     fn epoch_millis_short() {
-        let date = Date::<DefaultDateMapping<EpochMillis>>::parse("5100").unwrap();
+        let date = parse("5100").into_date::<DefaultDateMapping<EpochMillis>>().unwrap();
 
         assert_eq!(
             (1970i32, 1u32, 1u32, 0u32, 0u32, 5u32, 100u32),
@@ -282,13 +285,13 @@ mod tests {
             )
         );
 
-        let fmtd = Date::format(&date).to_string();
+        let fmtd = format(&date).to_string();
         assert_eq!("5100", &fmtd);
     }
 
     #[test]
     fn epoch_millis_very_short_minus() {
-        let date = Date::<DefaultDateMapping<EpochMillis>>::parse("-100").unwrap();
+        let date = parse("-100").into_date::<DefaultDateMapping<EpochMillis>>().unwrap();
 
         assert_eq!(
             (1969i32, 12u32, 31u32, 23u32, 59u32, 59u32, 900u32),
@@ -303,13 +306,13 @@ mod tests {
             )
         );
 
-        let fmtd = Date::format(&date).to_string();
+        let fmtd = format(&date).to_string();
         assert_eq!("-100", &fmtd);
     }
 
     #[test]
     fn epoch_millis_short_minus() {
-        let date = Date::<DefaultDateMapping<EpochMillis>>::parse("-5100").unwrap();
+        let date = parse("-5100").into_date::<DefaultDateMapping<EpochMillis>>().unwrap();
 
         assert_eq!(
             (1969i32, 12u32, 31u32, 23u32, 59u32, 54u32, 900u32),
@@ -324,13 +327,13 @@ mod tests {
             )
         );
 
-        let fmtd = Date::format(&date).to_string();
+        let fmtd = format(&date).to_string();
         assert_eq!("-5100", &fmtd);
     }
 
     #[test]
     fn epoch_millis_zero() {
-        let date = Date::<DefaultDateMapping<EpochMillis>>::parse("0").unwrap();
+        let date = parse("0").into_date::<DefaultDateMapping<EpochMillis>>().unwrap();
 
         assert_eq!(
             (1970i32, 1u32, 1u32, 0u32, 0u32, 0u32, 0u32),
@@ -345,7 +348,7 @@ mod tests {
             )
         );
 
-        let fmtd = Date::format(&date).to_string();
+        let fmtd = format(&date).to_string();
         assert_eq!("0", &fmtd);
     }
 
@@ -358,7 +361,7 @@ mod tests {
                 "yyyy-MM-dd'T'HH:mm:ssZ"
             }
 
-            fn format<'a>(date: &'a DateTime<Utc>) -> FormattedDate<'a> {
+            fn format<'a>(date: Cow<'a, DateTime<Utc>>) -> FormattedDate<'a> {
                 date.to_rfc3339().into()
             }
 
@@ -371,7 +374,7 @@ mod tests {
             }
         }
 
-        let date = Date::<DefaultDateMapping<MyCustomFormat>>::parse("2015-07-03T14:55:02+00:00").unwrap();
+        let date = parse("2015-07-03T14:55:02+00:00").into_date::<DefaultDateMapping<MyCustomFormat>>().unwrap();
 
         assert_eq!(
             (2015i32, 7u32, 3u32, 14u32, 55u32, 2u32),
@@ -385,7 +388,7 @@ mod tests {
             )
         );
 
-        let fmtd = Date::format(&date).to_string();
+        let fmtd = format(&date).to_string();
         assert_eq!("2015-07-03T14:55:02+00:00", &fmtd);
     }
 }

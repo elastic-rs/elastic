@@ -7,6 +7,14 @@ All dates used by `elastic_types` are expected to be given in `Utc`, and if no t
 Where performance is paramount, the `EpochMillis` date format will parse and format dates the fastest.
 The difference is especially obvious on the `stable` channel, where date formats can't be parsed at compile time.
 
+There are two main date-like types:
+
+- `Date<M>` which is a document field that maps as `date`, and has a format attached to its mapping
+- `FormattableDate<F>` which is just a date value and a format.
+
+For your document types, use `Date<M>`.
+For types that need a formattable date but aren't mapped, use `FormattableDate<F>`.
+
 # Examples
 
 For defining your own date mapping, see [mapping details](mapping/trait.DateMapping.html#derive-mapping).
@@ -20,7 +28,7 @@ struct MyType {
 }
 ```
 
-Map with a custom `date`:
+Map with a custom `date` mapping:
 
 ```
 # extern crate serde;
@@ -53,28 +61,26 @@ Map a custom type as a `date` field:
 struct MyDateField(String);
 
 impl DateFieldType<DefaultDateMapping<ChronoFormat>> for MyDateField {}
+
+impl<'a> Into<FormattableDate<'a, ChronoFormat>> for ChronoDateTime {
+    fn into(self) -> FormattableDate<'a, ChronoFormat> {
+        FormattableDate::owned(self)
+    }
+}
+
+impl<'a> Into<FormattableDate<'a, ChronoFormat>> for &'a ChronoDateTime {
+    fn into(self) -> FormattableDate<'a, ChronoFormat> {
+        FormattableDate::borrowed(self)
+    }
 }
 # }
 ```
 
-Implementing `DateFieldType` is enough to map a custom type as a `date` in Elasticsearch, but that doesn't allow it to be used in [date math expressions][date-math].
-To support date math, you need to implement the general `DateType` trait:
+Implementing `DateFieldType` also requires implementing `Into<FormattableDate>` for both owned and borrowed values.
+This is so date fields can be used in other types that require formatted dates but aren't mapped, like date math expressions.
 
-```
-# extern crate serde;
-# #[macro_use]
-# extern crate elastic_types;
-# #[macro_use]
-# extern crate serde_derive;
-# fn main() {
-# use elastic_types::prelude::*;
-# #[derive(Serialize)]
-# struct MyDateField(String);
-impl DateType for MyDateField {
-    type Format = ChronoFormat;
-
-}
-```
+Dates currently use `chrono::DateTime<Utc>` as an intermediate type between parsing and formatting.
+This makes it less useful to implement your own `DateFieldType`s, but easier to re-use formats.
 
 ## Creating Formats
 

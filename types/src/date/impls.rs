@@ -3,7 +3,7 @@ use std::fmt::{Display, Result as FmtResult, Formatter};
 use chrono::{DateTime, Utc, NaiveDateTime, NaiveDate, NaiveTime};
 use serde::{Serialize, Deserialize, Serializer, Deserializer};
 use serde::de::{Visitor, Error};
-use super::format::{DateFormat, FormattableDate};
+use super::format::{DateFormat, FormattedDate, FormattableDate, ParsableDate, ParseError};
 use super::formats::ChronoFormat;
 use super::mapping::{DateFieldType, DateMapping, DefaultDateMapping};
 
@@ -48,18 +48,11 @@ Defining a date using a named format:
 let date: Date<DefaultDateMapping<BasicDateTime>> = Date::now();
 ```
 
-Defining a date using a custom mapping:
-
-```
-# use elastic_types::prelude::*;
-let date: Date<BasicDateTime, DefaultDateMapping<_>> = Date::now();
-```
-
 Accessing the values of a date:
 
 ```
 # use elastic_types::prelude::*;
-let date = Date::<DefaultDateMapping<BasicDateTime>>::now();
+let date = Date::<DefaultDateMapping>::now();
 
 //eg: 2010/04/30 13:56:59.372
 println!("{}/{}/{} {}:{}:{}.{}",
@@ -215,7 +208,7 @@ impl<M> Display for Date<M>
     where M: DateMapping
 {
     fn fmt(&self, f: &mut Formatter) -> FmtResult {
-        write!(f, "{}", M::Format::format(self))
+        write!(f, "{}", format(self))
     }
 }
 
@@ -255,25 +248,19 @@ impl<'de, M> Deserialize<'de> for Date<M>
             fn visit_str<E>(self, v: &str) -> Result<Date<M>, E>
                 where E: Error
             {
-                let result = M::Format::parse(v).map_err(|err| Error::custom(format!("{}", err)))?;
-
-                Ok(result.into())
+                parse(v).into_date().map_err(|err| Error::custom(format!("{}", err)))
             }
 
             fn visit_i64<E>(self, v: i64) -> Result<Date<M>, E>
                 where E: Error
             {
-                let result = M::Format::parse(v.to_string()).map_err(|err| Error::custom(format!("{}", err)))?;
-
-                Ok(result.into())
+                parse(v.to_string()).into_date().map_err(|err| Error::custom(format!("{}", err)))
             }
 
             fn visit_u64<E>(self, v: u64) -> Result<Date<M>, E>
                 where E: Error
             {
-                let result = M::Format::parse(v.to_string()).map_err(|err| Error::custom(format!("{}", err)))?;
-
-                Ok(result.into())
+                parse(v.to_string()).into_date().map_err(|err| Error::custom(format!("{}", err)))
             }
         }
 
@@ -281,7 +268,70 @@ impl<'de, M> Deserialize<'de> for Date<M>
     }
 }
 
-/// A date expression.
+/** A convenience function for formatting a date. */
+pub(crate) fn format<'a, F, D>(date: D) -> FormattedDate<'a>
+    where D: Into<FormattableDate<'a, F>>,
+          F: DateFormat + 'a
+{
+    date.into().format()
+}
+
+/** A convenience function for parsing a date. */
+pub(crate) fn parse<'a, P>(date: P) -> Parse<'a, P>
+    where P: Into<ParsableDate<'a>>
+{
+    Parse(date, PhantomData)
+}
+
+/** A convenience structure for parsing a date. */
+pub(crate) struct Parse<'a, P>(P, PhantomData<&'a ()>);
+
+impl<'a, P> Parse<'a, P> where P: Into<ParsableDate<'a>> {
+    pub fn into_date<M>(self) -> Result<Date<M>, ParseError> where M: DateMapping {
+        let parsed = M::Format::parse(self.0)?;
+
+        Ok(parsed.into())
+    }
+}
+
+/**
+A [date math](https://www.elastic.co/guide/en/elasticsearch/reference/current/common-options.html#date-math) expression.
+
+Date math expressions start from an anchor date, like the literal `now` or `2017-05-06` and apply math operations to produce a new date value.
+
+# Examples
+
+A date expression for `now` plus 2 days:
+
+```
+# use elastic_types::prelude::*;
+let expr = DateExpr::now().add_days(2);
+```
+
+Which serialises to:
+
+```
+# extern crate serde_json;
+# #[macro_use] extern crate json_str;
+# extern crate elastic_types;
+# use elastic_types::prelude::*;
+# fn main() {
+# let expr = DateExpr::now().add_days(2);
+# let ser = serde_json::to_string(expr).unwrap();
+# let expected = json_str!(
+"now+2d"
+# );
+# assert_eq!(expected, ser);
+# }
+```
+
+A date expression using a concrete date value plus 2 days:
+
+```
+# use elastic_types::prelude::*;
+let expr = DateExpr::value().add_days(2);
+```
+*/
 #[derive(Debug, Clone, PartialEq)]
 pub struct DateExpr {
     anchor: DateExprAnchor,
@@ -361,19 +411,19 @@ impl Display for DateExprOpUnit {
 
 macro_rules! impl_expr_ops {
     ($op:path, $add:ident, $sub:ident, $round:ident) => (
-        /// Add to the anchored date.
+        /** Add to the anchored date. */
         pub fn $add(mut self, value: usize) -> Self {
             self.ops.push(DateExprOp::Add(value, $op));
             self
         }
 
-        /// Subtract from the anchored date.
+        /** Subtract from the anchored date. */
         pub fn $sub(mut self, value: usize) -> Self {
             self.ops.push(DateExprOp::Sub(value, $op));
             self
         }
 
-        /// Round the anchored date.
+        /** Round the anchored date. */
         pub fn $round(mut self) -> Self {
             self.ops.push(DateExprOp::Round($op));
             self
@@ -382,28 +432,32 @@ macro_rules! impl_expr_ops {
 }
 
 impl DateExpr {
-    /// Create a new date expression for `now`.
-    /// 
-    /// This value is different from `Date::now()` because it doesn't calculate the current date from the system clock.
-    /// It serialises to the literal string `"now"`, which is interpreted by Elasticsearch when indexing.
+    /**
+    Create a new date expression for `now`.
+    
+    This value is different from `Date::now()` because it doesn't calculate the current date from the system clock.
+    It serialises to the literal string `"now"`, which is interpreted by Elasticsearch when indexing.
+    */
     pub fn now() -> Self {
         DateExpr {
             anchor: DateExprAnchor::Now,
             ops: Vec::new(),
         }
     }
+
+    /** 
+    Create a new date expression from a concrete date value.
     
-    /// Create a new date expression from a concrete date value.
-    /// 
-    /// This method accepts any type that can be converted into a `FormattableDate`, which includes owned or borrowed `DateFieldType`s.
+    This method accepts any type that can be converted into a `FormattableDate`, which includes owned or borrowed `DateFieldType`s.
+    */
     pub fn value<'a, F, D>(date: D) -> Self 
         where D: Into<FormattableDate<'a, F>>,
-              F: DateFormat
+              F: DateFormat + 'a
     {
-        let date = date.into();
+        let formatted = format(date).to_string();
 
         DateExpr {
-            anchor: DateExprAnchor::Value(date.format().to_string()),
+            anchor: DateExprAnchor::Value(formatted),
             ops: Vec::new(),
         }
     }
@@ -459,7 +513,7 @@ mod tests {
         let expected = dt.format("%Y/%m/%d %H:%M:%S").to_string();
 
         let dt = Date::<DefaultDateMapping<NamedDateFormat>>::new(dt.clone());
-        let actual = Date::format(&dt).to_string();
+        let actual = format(&dt).to_string();
 
         assert_eq!(expected, actual);
     }
@@ -472,7 +526,7 @@ mod tests {
         let expected = "20150513".to_string();
 
         let dt = Date::<DefaultDateMapping<UnNamedDateFormat>>::new(dt.clone());
-        let actual = Date::format(&dt).to_string();
+        let actual = format(&dt).to_string();
 
         assert_eq!(expected, actual);
     }
