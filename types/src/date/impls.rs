@@ -16,13 +16,13 @@ impl DateFieldType<DefaultDateMapping<ChronoFormat>> for ChronoDateTime {}
 
 impl<'a> Into<FormattableDate<'a, ChronoFormat>> for ChronoDateTime {
     fn into(self) -> FormattableDate<'a, ChronoFormat> {
-        FormattableDate::owned(self)
+        FormattableDate::from_owned(self)
     }
 }
 
 impl<'a> Into<FormattableDate<'a, ChronoFormat>> for &'a ChronoDateTime {
     fn into(self) -> FormattableDate<'a, ChronoFormat> {
-        FormattableDate::borrowed(self)
+        FormattableDate::from_borrowed(self)
     }
 }
 
@@ -182,7 +182,7 @@ impl<'a, M> Into<FormattableDate<'a, M::Format>> for Date<M>
     where M: DateMapping
 {
     fn into(self) -> FormattableDate<'a, M::Format> {
-        FormattableDate::owned(self)
+        FormattableDate::from_owned(self)
     }
 }
 
@@ -190,7 +190,7 @@ impl<'a, M> Into<FormattableDate<'a, M::Format>> for &'a Date<M>
     where M: DateMapping
 {
     fn into(self) -> FormattableDate<'a, M::Format> {
-        FormattableDate::borrowed(self)
+        FormattableDate::from_borrowed(self)
     }
 }
 

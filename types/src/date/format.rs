@@ -80,12 +80,12 @@ pub struct FormattableDate<'a, F>(Cow<'a, ChronoDateTime>, PhantomData<F>);
 
 impl<'a, F> FormattableDate<'a, F> {
     /** Wrap an owned date value in a `FormattableDate`. */
-    pub fn owned<I>(date: I) -> Self where I: Into<ChronoDateTime> {
+    pub fn from_owned<I>(date: I) -> Self where I: Into<ChronoDateTime> {
         FormattableDate(Cow::Owned(date.into()), PhantomData)
     }
 
     /** Wrap a borrowed date value in a `FormattableDate`. */
-    pub fn borrowed<I>(date: &'a I) -> Self where I: Borrow<ChronoDateTime> {
+    pub fn from_borrowed<I>(date: &'a I) -> Self where I: Borrow<ChronoDateTime> {
         FormattableDate(Cow::Borrowed(date.borrow()), PhantomData)
     }
 }
