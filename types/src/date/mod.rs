@@ -5,16 +5,19 @@ Dates in Elasticsearch are exposed as a formatted `string` which can contain a `
 
 All dates used by `elastic_types` are expected to be given in `Utc`, and if no time is supplied, then 12:00am will be used instead.
 Where performance is paramount, the `EpochMillis` date format will parse and format dates the fastest.
-The difference is especially obvious on the `stable` channel, where date formats can't be parsed at compile time.
 
-There are a few date types in this module:
+# Date types
 
-- `Date<M>` which is a document field that maps as `date`, and has a format attached to its mapping
-- `ChronoDateTime` is a re-export of `chrono::DateTime<Utc>` and is similar to `Date<DefaultDateMapping<ChronoFormat>>`
-- `DateValue` which is a simple date value, without mapping or formatting. It's used as an intermediate value
-- `FormattableDateValue<F>` which is just a date value and a format.
+## `Date<M>`
 
-For the most part, you'll only need to use `Date`s or `ChronoDateTime`s, and the rest are used internally or at API boundaries.
+The `Date<M>` type and `chrono`s `DateTime<Utc>` are the main `date` field types you add to document types.
+If the mapping and format aren't important, use `DateTime<Utc>`.
+If you need to specify mapping properties like `boost`, or use a specific format like `epoch_millis`, use `Date<M>`.
+
+## `DateValue` and `FormattableDateValue<F>`
+
+The `DateValue` and `FormattableDateValue<F>` types are used in methods to represent dates that either don't have a format or have a specific format respectively.
+`Date` and `DateTime<Utc>` can freely convert to and from these types, so you probably won't need to interact with them directly.
 
 # Examples
 
@@ -24,9 +27,23 @@ Map with a default `date`:
 
 ```
 # use elastic_types::prelude::*;
+use chrono::{DateTime, Utc};
+
 struct MyType {
-    pub field: Date<DefaultDateMapping>
+    pub field: DateTime<Utc>
 }
+```
+
+For custom formats, the most ergonomic approach is to declare a type alias using the mapping and format:
+
+```
+# use elastic_types::prelude::*;
+type Timestamp = Date<DefaultDateMapping<EpochMillis>>;
+
+struct MyType {
+    pub field: Timestamp
+}
+# }
 ```
 
 Map with a custom `date` mapping:
@@ -48,45 +65,10 @@ struct MyType {
 # }
 ```
 
-Map a custom type as a `date` field:
-
-```
-# extern crate serde;
-# #[macro_use]
-# extern crate elastic_types;
-# #[macro_use]
-# extern crate serde_derive;
-# fn main() {
-# use elastic_types::prelude::*;
-#[derive(Serialize)]
-struct MyDateField(String);
-
-impl DateFieldType<DefaultDateMapping<ChronoFormat>> for MyDateField {}
-
-impl<'a> Into<FormattableDate<'a, ChronoFormat>> for ChronoDateTime {
-    fn into(self) -> FormattableDate<'a, ChronoFormat> {
-        FormattableDate::owned(self)
-    }
-}
-
-impl<'a> Into<FormattableDate<'a, ChronoFormat>> for &'a ChronoDateTime {
-    fn into(self) -> FormattableDate<'a, ChronoFormat> {
-        FormattableDate::borrowed(self)
-    }
-}
-# }
-```
-
-Implementing `DateFieldType` also requires implementing `Into<FormattableDate>` for both owned and borrowed values.
-This is so date fields can be used in other types that require formatted dates but aren't mapped, like date math expressions.
-
-Dates currently use `chrono::DateTime<Utc>` as an intermediate type between parsing and formatting.
-This makes it less useful to implement your own `DateFieldType`s, but easier to re-use formats.
-
 ## Creating Formats
 
 To make it easier to build your own date formats, derive `ElasticDateFormat` on a unit struct.
-This will convert an Elasticsearch format string into a `Vec<chrono::format::Item>` for efficient parsing at runtime:
+This will convert an Elasticsearch format string into a `Vec<chrono::format::Item>` for efficient parsing and formatting at runtime:
 
 ```
 # #[macro_use]
@@ -112,19 +94,18 @@ You can also manually implement `DateFormat` and write your own arbitrary format
 use chrono::{DateTime, Utc};
 
 #[derive(Default, Clone)]
-struct MyCustomFormat;
-impl DateFormat for MyCustomFormat {
+struct Rfc3339Format;
+impl DateFormat for Rfc3339Format {
     fn name() -> &'static str { "yyyy-MM-dd'T'HH:mm:ssZ" }
 
-    fn format<'a>(date: &DateTime<Utc>) -> FormattedDate<'a> {
+    fn format<'a>(date: &'a DateValue) -> FormattedDate<'a> {
         date.to_rfc3339().into()
     }
 
-    fn parse(date: &str) -> Result<DateTime<Utc>, ParseError> {
-        let date = try!(DateTime::parse_from_rfc3339(date).map_err(|e| ParseError::from(e)));
+    fn parse(date: &str) -> Result<DateValue, ParseError> {
+        let date = DateTime::parse_from_rfc3339(date)?;
 
-            Ok(DateTime::from_utc(date.naive_local(), Utc))
-        }
+        Ok(DateTime::from_utc(date.naive_local(), Utc).into())
     }
 # }
 ```

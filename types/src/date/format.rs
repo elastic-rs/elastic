@@ -8,33 +8,23 @@ use std::fmt::{Display, Result as FmtResult, Formatter};
 use std::vec::IntoIter;
 use super::ChronoDateTime;
 
-/*
-TODO: 
-
-- Use `DateValue` for passing around dates that don't have mapping or formats
-- Don't support constructing `DateValue`s directly? Seems reasonable, or `IntoDateValueWithFormat` wouldn't be very useful
-- Expect owned values for `DateValue`
-- Still support borrowed values for formatting
-
-- `Date` is the field type you use for mapping fields
-- `DateTime<Utc>` is the field type you use if you don't care about mapping or formats
-- `DateValue` is the type you use for raw date values
-- `IntoDateValue` has a `Format` parameter that can be used to constrain inputs
-*/
-
 /** 
 A date value produced and consumed by date formats.
 
-You probably won't need to use this type directly.
+`DateValue` is a very thin wrapper over `DateTime<Utc>` that doesn't carry any formatting semantics.
+Like `FormattableDateValue`, this type is used for binding generics in methods that accept date values but it ignores any format on the input type.
+You probably won't need to use it directly except to clobber the format on a `Date<M>` or `DateTime<Utc>` value.
 */
 #[derive(Debug, Clone, PartialEq)]
 pub struct DateValue(ChronoDateTime);
 
 impl DateValue {
+    /** Equivalent to `DateTime<Utc>::now()` */
     pub fn now() -> Self {
         DateValue(Utc::now())
     }
 
+    /** Construct a `DateValue` from individual parts. */
     pub fn build(year: i32, month: u32, day: u32, hour: u32, minute: u32, second: u32, milli: u32) -> Self {
         let ndate = NaiveDate::from_ymd(year, month, day);
         let ntime = NaiveTime::from_hms_milli(hour, minute, second, milli);
@@ -48,6 +38,12 @@ impl DateValue {
 impl<F> From<FormattableDateValue<F>> for DateValue {
     fn from(date: FormattableDateValue<F>) -> Self {
         date.0
+    }
+}
+
+impl From<ChronoDateTime> for DateValue {
+    fn from(date: ChronoDateTime) -> Self {
+        DateValue(date)
     }
 }
 
@@ -77,7 +73,6 @@ impl Borrow<ChronoDateTime> for DateValue {
     }
 }
 
-// TODO: Remove this
 impl Deref for DateValue {
     type Target = ChronoDateTime;
 
@@ -89,30 +84,36 @@ impl Deref for DateValue {
 /** 
 A date value paired with a format.
 
-This type provides a convenient way to parse and format a date value with a fixed format.
+`FormattableDateValue<F>` bundles a `DateValue` with a specific format and is used to ensure the formats of mappable date types aren't accidentally changed.
+Like `DateValue`, this type is used for binding generics in methods that accept date values but it requires the input type uses a specific format.
+You probably don't need to use it directly except to ensure date formats aren't silently changed.
 */
 #[derive(Debug, Clone, PartialEq)]
 pub struct FormattableDateValue<F>(DateValue, PhantomData<F>);
 
 impl<F> FormattableDateValue<F> where F: DateFormat {
+    /** Format the wrapped date value using the generic format. */
     pub fn format<'a>(&'a self) -> FormattedDate<'a> {
         F::format(&self.0)
     }
 
+    /** Parse a date value using the generic format. */
     pub fn parse(date: &str) -> Result<Self, ParseError> {
         let date = F::parse(date)?;
 
         Ok(FormattableDateValue::from(date))
     }
+}
 
-    pub fn reformat<FInto>(self) -> FormattableDateValue<FInto> {
-        FormattableDateValue(self.0, PhantomData)
+impl<F> From<DateValue> for FormattableDateValue<F> {
+    fn from(date: DateValue) -> Self {
+        FormattableDateValue(date.into(), PhantomData)
     }
 }
 
 impl<F> Borrow<ChronoDateTime> for FormattableDateValue<F> {
     fn borrow(&self) -> &ChronoDateTime {
-        &self.0
+        self.0.borrow()
     }
 }
 
@@ -133,18 +134,6 @@ impl<F> PartialEq<FormattableDateValue<F>> for ChronoDateTime {
 
     fn ne(&self, other: &FormattableDateValue<F>) -> bool {
         PartialEq::ne(self, &other.0)
-    }
-}
-
-impl<F> From<DateValue> for FormattableDateValue<F> {
-    fn from(date: DateValue) -> Self {
-        FormattableDateValue(date.into(), PhantomData)
-    }
-}
-
-impl From<ChronoDateTime> for DateValue {
-    fn from(date: ChronoDateTime) -> Self {
-        DateValue(date)
     }
 }
 

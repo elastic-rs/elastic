@@ -2,7 +2,7 @@ use std::borrow::Borrow;
 use std::ops::Deref;
 use std::marker::PhantomData;
 use std::fmt::{Display, Result as FmtResult, Formatter};
-use chrono::{DateTime, Utc, NaiveDateTime, NaiveDate, NaiveTime};
+use chrono::{DateTime, Utc};
 use serde::{Serialize, Deserialize, Serializer, Deserializer};
 use serde::de::{Visitor, Error};
 use super::format::{DateValue, FormattableDateValue, DateFormat, FormattedDate, ParseError};
@@ -149,7 +149,7 @@ impl<M> Date<M> where M: DateMapping
     pub fn remap<MInto>(date: Date<M>) -> Date<MInto>
         where MInto: DateMapping
     {
-        Date::new(date.value.reformat())
+        Date::new(DateValue::from(date.value))
     }
 }
 
@@ -160,13 +160,20 @@ impl<M> DateFieldType<M> for Date<M>
 
 impl<M> From<Date<M>> for FormattableDateValue<M::Format> where M: DateMapping {
     fn from(date: Date<M>) -> Self {
-        FormattableDateValue::from(date.value)
+        date.value
     }
 }
 
-impl<M> StdField<ChronoDateTime> for Date<M>
-    where M: DateMapping
-{
+impl<M> From<FormattableDateValue<M::Format>> for Date<M> where M: DateMapping {
+    fn from(date: FormattableDateValue<M::Format>) -> Self {
+        Date::new(date)
+    }
+}
+
+impl<M> From<Date<M>> for DateValue where M: DateMapping {
+    fn from(date: Date<M>) -> Self {
+        date.value.into()
+    }
 }
 
 impl<M> From<DateValue> for Date<M> 
@@ -175,6 +182,11 @@ impl<M> From<DateValue> for Date<M>
     fn from(value: DateValue) -> Self {
         Date::new(value)
     }
+}
+
+impl<M> StdField<ChronoDateTime> for Date<M>
+    where M: DateMapping
+{
 }
 
 impl<M> PartialEq<ChronoDateTime> for Date<M> 
@@ -565,28 +577,22 @@ mod tests {
 
     #[test]
     fn dates_should_use_chrono_format() {
-        let dt = chrono::Utc
-            .datetime_from_str("13/05/2015 00:00:00", "%d/%m/%Y %H:%M:%S")
-            .unwrap();
-        let expected = dt.format("%Y/%m/%d %H:%M:%S").to_string();
+        let dt = DateValue::build(2015, 05, 13, 0, 0, 0, 0);
 
         let dt = Date::<DefaultDateMapping<NamedDateFormat>>::new(dt.clone());
         let actual = format(&dt).to_string();
 
-        assert_eq!(expected, actual);
+        assert_eq!("2015/05/13 00:00:00", actual);
     }
 
     #[test]
     fn dates_should_use_es_format() {
-        let dt = chrono::Utc
-            .datetime_from_str("13/05/2015 00:00:00", "%d/%m/%Y %H:%M:%S")
-            .unwrap();
-        let expected = "20150513".to_string();
+        let dt = DateValue::build(2015, 05, 13, 0, 0, 0, 0);
 
         let dt = Date::<DefaultDateMapping<UnNamedDateFormat>>::new(dt.clone());
         let actual = format(&dt).to_string();
 
-        assert_eq!(expected, actual);
+        assert_eq!("20150513", actual);
     }
 
     #[test]
@@ -601,10 +607,18 @@ mod tests {
     }
 
     #[test]
+    fn can_build_date_from_value() {
+        let date: Date<DefaultDateMapping> = Date::new(DateValue::build(2015, 05, 13, 0, 0, 0, 0));
+
+        assert_eq!((2015, 5, 13, 0, 0, 0),
+                   (date.year(), date.month(), date.day(), date.hour(), date.minute(), date.second()));
+    }
+
+    #[test]
     fn can_build_date_from_chrono() {
-        let date: Date<DefaultDateMapping> = Date::new(chrono::Utc
-                                                          .datetime_from_str("13/05/2015 00:00:00", "%d/%m/%Y %H:%M:%S")
-                                                          .unwrap());
+        let date = chrono::Utc.datetime_from_str("13/05/2015 00:00:00", "%d/%m/%Y %H:%M:%S").unwrap();
+
+        let date: Date<DefaultDateMapping<ChronoFormat>> = Date::new(date);
 
         assert_eq!((2015, 5, 13, 0, 0, 0),
                    (date.year(), date.month(), date.day(), date.hour(), date.minute(), date.second()));
@@ -620,9 +634,7 @@ mod tests {
 
     #[test]
     fn serialise_elastic_date() {
-        let date = Date::<DefaultDateMapping<BasicDateTime>>::new(chrono::Utc
-                                                  .datetime_from_str("13/05/2015 00:00:00", "%d/%m/%Y %H:%M:%S")
-                                                  .unwrap());
+        let date = Date::<DefaultDateMapping<BasicDateTime>>::new(DateValue::build(2015, 05, 13, 0, 0, 0, 0));
 
         let ser = serde_json::to_string(&date).unwrap();
 
@@ -638,7 +650,7 @@ mod tests {
 
     #[test]
     fn serialise_date_expr_now() {
-        let expr = DateExpr::now();
+        let expr = DateExpr::<DefaultDateFormat>::now();
 
         let ser = serde_json::to_string(&expr).unwrap();
 
@@ -666,17 +678,8 @@ mod tests {
     }
 
     #[test]
-    fn serialise_date_expr_borrowed() {
-        let expr = DateExpr::value(&Date::<DefaultDateMapping<BasicDateTime>>::build(2015, 5, 13, 0, 0, 0, 0));
-
-        let ser = serde_json::to_string(&expr).unwrap();
-
-        assert_eq!(r#""20150513T000000.000Z||""#, ser);
-    }
-
-    #[test]
     fn serialise_date_expr_value_with_ops() {
-        let expr = DateExpr::value(&Date::<DefaultDateMapping<BasicDateTime>>::build(2015, 5, 13, 0, 0, 0, 0))
+        let expr = DateExpr::value(Date::<DefaultDateMapping<BasicDateTime>>::build(2015, 5, 13, 0, 0, 0, 0))
             .add_days(2)
             .round_week();
 
@@ -687,7 +690,7 @@ mod tests {
 
     #[test]
     fn serialise_date_expr_add() {
-        let expr = DateExpr::now()
+        let expr = DateExpr::<DefaultDateFormat>::now()
             .add_years(1)
             .add_months(2)
             .add_weeks(3)
@@ -703,7 +706,7 @@ mod tests {
 
     #[test]
     fn serialise_date_expr_sub() {
-        let expr = DateExpr::now()
+        let expr = DateExpr::<DefaultDateFormat>::now()
             .sub_years(1)
             .sub_months(2)
             .sub_weeks(3)
@@ -719,7 +722,7 @@ mod tests {
 
     #[test]
     fn serialise_date_expr_round() {
-        let expr = DateExpr::now()
+        let expr = DateExpr::<DefaultDateFormat>::now()
             .round_year()
             .round_month()
             .round_week()

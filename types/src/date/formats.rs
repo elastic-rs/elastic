@@ -76,7 +76,6 @@ impl DateFormat for EpochMillis {
 
 #[cfg(test)]
 mod tests {
-    use std::borrow::Cow;
     use chrono::{DateTime, Utc};
     use date::{format, parse};
     use prelude::*;
@@ -360,14 +359,14 @@ mod tests {
                 "yyyy-MM-dd'T'HH:mm:ssZ"
             }
 
-            fn format<'a>(date: Cow<'a, DateTime<Utc>>) -> FormattedDate<'a> {
+            fn format<'a>(date: &'a DateValue) -> FormattedDate<'a> {
                 date.to_rfc3339().into()
             }
 
-            fn parse(date: &str) -> Result<ChronoDateTime, ParseError> {
+            fn parse(date: &str) -> Result<DateValue, ParseError> {
                 let date = DateTime::parse_from_rfc3339(date).map_err(|e| ParseError::from(e))?;
 
-                Ok(DateTime::from_utc(date.naive_local(), Utc))
+                Ok(DateTime::from_utc(date.naive_local(), Utc).into())
             }
         }
 

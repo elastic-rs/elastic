@@ -479,7 +479,7 @@ The following table illustrates the types provided by `elastic_types`:
  `boolean`           | `bool`                      | `std`     | [`Boolean<M>`](boolean/index.html)                                               | -
  `ip`                | `Ipv4Addr`                  | `std`     | [`Ip<M>`](ip/index.html)                                                         | -
  `date`              | `DateTime<Utc>`             | `chrono`  | [`Date<M>`](date/index.html)                                                  | `DateFormat`
- `geo_point`         | `Point`                     | `geo`     | [`GeoPoint<F, M>`](geo/point/index.html)                                         | `GeoPointFormat`
+ `geo_point`         | `Point`                     | `geo`     | [`GeoPoint<M>`](geo/point/index.html)                                         | `GeoPointFormat`
  `geo_shape`         | -                           | `geojson` | [`GeoShape<M>`](geo/shape/index.html)                                            | -
 
 ## Mapping
