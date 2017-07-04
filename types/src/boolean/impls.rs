@@ -66,9 +66,9 @@ impl<M> Boolean<M>
     # #[derive(Default)]
     # struct MyBooleanMapping;
     # impl BooleanMapping for MyBooleanMapping { }
-    let es_boolean = Boolean::<DefaultBooleanMapping>::new(true);
+    let boolean = Boolean::<DefaultBooleanMapping>::new(true);
     
-    let boolean: Boolean<MyBooleanMapping> = es_boolean.remap();
+    let boolean: Boolean<MyBooleanMapping> = Boolean::remap(boolean);
     # }
     ```
     */

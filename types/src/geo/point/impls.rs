@@ -35,7 +35,7 @@ let point: GeoPoint<DefaultGeoPointMapping> = GeoPoint::build(1.0, 1.0);
 
 //eg: (1.0,1.0)
 println!("({},{})",
-        point.x(),
+    point.x(),
     point.y()
 );
 ```

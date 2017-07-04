@@ -26,12 +26,16 @@ For defining your own date mapping, see [mapping details](mapping/trait.DateMapp
 Map with a default `date`:
 
 ```
+# extern crate chrono;
+# extern crate elastic_types;
 # use elastic_types::prelude::*;
+# fn main() {
 use chrono::{DateTime, Utc};
 
 struct MyType {
     pub field: DateTime<Utc>
 }
+# }
 ```
 
 For custom formats, the most ergonomic approach is to declare a type alias using the mapping and format:
@@ -43,7 +47,6 @@ type Timestamp = Date<DefaultDateMapping<EpochMillis>>;
 struct MyType {
     pub field: Timestamp
 }
-# }
 ```
 
 Map with a custom `date` mapping:
@@ -107,6 +110,7 @@ impl DateFormat for Rfc3339Format {
 
         Ok(DateTime::from_utc(date.naive_local(), Utc).into())
     }
+}
 # }
 ```
 
