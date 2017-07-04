@@ -1,3 +1,4 @@
+use std::borrow::Borrow;
 use std::marker::PhantomData;
 use serde::{Serialize, Deserialize, Serializer, Deserializer};
 use serde::de::{Visitor, Error};
@@ -20,12 +21,11 @@ let string = Keyword::<DefaultKeywordMapping>::new("my string value");
 ```
 */
 #[derive(Debug, Clone, Default, PartialEq)]
-pub struct Keyword<M>
-    where M: KeywordMapping
-{
+pub struct Keyword<M>  where M: KeywordMapping {
     value: String,
     _m: PhantomData<M>,
 }
+
 impl<M> Keyword<M>
     where M: KeywordMapping
 {

@@ -1,7 +1,8 @@
+use std::borrow::Borrow;
 use std::marker::PhantomData;
 use serde::{Serialize, Deserialize, Serializer, Deserializer};
 use georust::{ToGeo, Geometry as GeoEnum};
-use super::mapping::{GeoPointFieldType, GeoPointMapping, DefaultGeoPointMapping};
+use super::mapping::{GeoPointFieldType, GeoPointMapping};
 use super::{Coordinate, Point, Geometry, GeoPointFormat};
 
 /**
@@ -15,35 +16,26 @@ This struct wraps up a `geo::Point` struct, which have an `x` and `y` floating p
 Defining a geo point using the default format:
 
 ```
-# use elastic_types::geo::point::{ GeoPoint, DefaultGeoPointFormat };
-let point: GeoPoint<DefaultGeoPointFormat> = GeoPoint::build(1.0, 1.0);
+# use elastic_types::prelude::*;
+let point: GeoPoint<DefaultGeoPointMapping> = GeoPoint::build(1.0, 1.0);
 ```
 
 Defining a geo point using a named format:
 
 ```
-# use elastic_types::geo::point::{ GeoPoint, GeoPointString };
-let point: GeoPoint<GeoPointString> = GeoPoint::build(1.0, 1.0);
-```
-
-Defining a geo point using a custom mapping:
-
-```
-# use elastic_types::geo::point::mapping::DefaultGeoPointMapping;
-# use elastic_types::geo::point::{ GeoPoint, GeoPointString };
-
-let point: GeoPoint<GeoPointString, DefaultGeoPointMapping<_>> = GeoPoint::build(1.0, 1.0);
+# use elastic_types::prelude::*;
+let point: GeoPoint<DefaultGeoPointMapping<GeoPointString>> = GeoPoint::build(1.0, 1.0);
 ```
 
 Accessing the values of a geo point:
 
 ```
-# use elastic_types::geo::point::{ GeoPoint, DefaultGeoPointFormat };
-let point: GeoPoint<DefaultGeoPointFormat> = GeoPoint::build(1.0, 1.0);
+# use elastic_types::prelude::*;
+let point: GeoPoint<DefaultGeoPointMapping> = GeoPoint::build(1.0, 1.0);
 
 //eg: (1.0,1.0)
 println!("({},{})",
-        point.x(),
+    point.x(),
     point.y()
 );
 ```
@@ -52,17 +44,13 @@ println!("({},{})",
 - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/geo-point.html)
 */
 #[derive(Debug, Clone, PartialEq)]
-pub struct GeoPoint<F, M = DefaultGeoPointMapping<F>>
-    where F: GeoPointFormat,
-          M: GeoPointMapping<Format = F>
-{
+pub struct GeoPoint<M>  where M: GeoPointMapping {
     value: Point,
-    _t: PhantomData<(M, F)>,
+    _m: PhantomData<M>,
 }
 
-impl<F, M> GeoPoint<F, M>
-    where F: GeoPointFormat,
-          M: GeoPointMapping<Format = F>
+impl<M> GeoPoint<M>
+    where M: GeoPointMapping
 {
     /**
     Creates a new `GeoPoint` from the given coordinate.
@@ -76,22 +64,22 @@ impl<F, M> GeoPoint<F, M>
     # extern crate geo;
     # fn main() {
     use geo::{ Point, Coordinate };
-    use elastic_types::geo::point::{ GeoPoint, DefaultGeoPointFormat };
+    use elastic_types::prelude::*;
     
     //Create a geo Coordinate struct
     let coord = Coordinate { x: 1.0, y: 1.0 };
     
     //Give it to the GeoPoint struct
-    let point: GeoPoint<DefaultGeoPointFormat> = GeoPoint::new(Point(coord));
+    let point: GeoPoint<DefaultGeoPointMapping> = GeoPoint::new(Point(coord));
     # }
     ```
     */
-    pub fn new<I>(point: I) -> GeoPoint<F, M>
+    pub fn new<I>(point: I) -> Self
         where I: Into<Point>
     {
         GeoPoint {
             value: point.into(),
-            _t: PhantomData,
+            _m: PhantomData,
         }
     }
 
@@ -99,12 +87,12 @@ impl<F, M> GeoPoint<F, M>
     Creates an `GeoPoint` from the given `x` and `y` primitives:
     
     ```
-    # use elastic_types::geo::point::{ GeoPoint, DefaultGeoPointFormat };
-    let point: GeoPoint<DefaultGeoPointFormat> = GeoPoint::build(1.0, 1.0);
+    # use elastic_types::prelude::*;
+    let point: GeoPoint<DefaultGeoPointMapping> = GeoPoint::build(1.0, 1.0);
     ```
     */
-    pub fn build(x: f64, y: f64) -> GeoPoint<F, M> {
-        GeoPoint::<F, M>::new(Point::new(x, y))
+    pub fn build(x: f64, y: f64) -> Self {
+        GeoPoint::new(Point::new(x, y))
     }
 
     /**
@@ -113,67 +101,61 @@ impl<F, M> GeoPoint<F, M>
     # Examples
     
     ```
-    # use elastic_types::geo::point::{ GeoPoint, GeoPointString, GeoPointObject };
+    # use elastic_types::prelude::*;
     //Get a point formatted as a string
-    let point: GeoPoint<GeoPointString> = GeoPoint::build(1.0, 1.0);
+    let point: GeoPoint<DefaultGeoPointMapping<GeoPointString>> = GeoPoint::build(1.0, 1.0);
     
     //Change the format to an object
-    let otherpoint: GeoPoint<GeoPointObject> = point.remap();
+    let otherpoint: GeoPoint<DefaultGeoPointMapping<GeoPointObject>> = GeoPoint::remap(point);
     ```
     */
-    pub fn remap<FInto, MInto>(self) -> GeoPoint<FInto, MInto>
-        where FInto: GeoPointFormat,
-              MInto: GeoPointMapping<Format = FInto>
+    pub fn remap<MInto>(point: GeoPoint<M>) -> GeoPoint<MInto>
+        where MInto: GeoPointMapping
     {
-        GeoPoint::<FInto, MInto>::new(self.value)
+        GeoPoint::new(point.value)
     }
 }
 
-impl<F, M> GeoPointFieldType<M, F> for GeoPoint<F, M>
-    where F: GeoPointFormat,
-          M: GeoPointMapping<Format = F>
+impl<M> GeoPointFieldType<M> for GeoPoint<M>
+    where M: GeoPointMapping
 {
 }
 
-impl_mapping_type!(Point, GeoPoint, GeoPointMapping, GeoPointFormat);
+impl_mapping_type!(Point, GeoPoint, GeoPointMapping);
 
-impl<F, M> From<Coordinate> for GeoPoint<F, M>
-    where F: GeoPointFormat,
-          M: GeoPointMapping<Format = F>
+impl<M> From<Coordinate> for GeoPoint<M>
+    where M: GeoPointMapping
 {
-    fn from(point: Coordinate) -> GeoPoint<F, M> {
-        GeoPoint::<F, M>::new(Point::new(point.x, point.y))
+    fn from(point: Coordinate) -> GeoPoint<M> {
+        GeoPoint::new(Point::new(point.x, point.y))
     }
 }
 
-impl<F, M> ToGeo<f64> for GeoPoint<F, M>
-    where F: GeoPointFormat,
-          M: GeoPointMapping<Format = F>
+impl<M> ToGeo<f64> for GeoPoint<M>
+    where M: GeoPointMapping
 {
     fn to_geo(&self) -> Geometry {
         GeoEnum::Point(self.value.clone())
     }
 }
 
-impl<F, M> Serialize for GeoPoint<F, M>
-    where F: GeoPointFormat,
-          M: GeoPointMapping<Format = F>
+impl<M> Serialize for GeoPoint<M>
+    where M: GeoPointMapping
 {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
         where S: Serializer
     {
-        F::format::<S, M>(&self.value, serializer)
+        M::Format::format::<S, M>(&self.value, serializer)
     }
 }
 
-impl<'de, F, M> Deserialize<'de> for GeoPoint<F, M>
-    where F: GeoPointFormat,
-          M: GeoPointMapping<Format = F>
+impl<'de, M> Deserialize<'de> for GeoPoint<M>
+    where M: GeoPointMapping
 {
-    fn deserialize<D>(deserializer: D) -> Result<GeoPoint<F, M>, D::Error>
+    fn deserialize<D>(deserializer: D) -> Result<GeoPoint<M>, D::Error>
         where D: Deserializer<'de>
     {
-        let point = try!(F::parse(deserializer));
+        let point = M::Format::parse(deserializer)?;
 
         Ok(point.into())
     }
@@ -187,27 +169,27 @@ mod tests {
 
     #[test]
     fn can_change_point_mapping() {
-        fn takes_custom_mapping(_: GeoPoint<GeoPointObject>) -> bool {
+        fn takes_custom_mapping(_: GeoPoint<DefaultGeoPointMapping<GeoPointObject>>) -> bool {
             true
         }
 
-        let point: GeoPoint<GeoPointString> = GeoPoint::new(Point(Coordinate { x: 1.0, y: 1.0 }));
+        let point: GeoPoint<DefaultGeoPointMapping<GeoPointString>> = GeoPoint::new(Point(Coordinate { x: 1.0, y: 1.0 }));
 
-        assert!(takes_custom_mapping(point.remap()));
+        assert!(takes_custom_mapping(GeoPoint::remap(point)));
     }
 
     #[test]
     fn can_build_point_from_geo() {
         let coord = Coordinate { x: 1.0, y: 1.0 };
 
-        let point = GeoPoint::<DefaultGeoPointFormat>::new(Point(coord.clone()));
+        let point = GeoPoint::<DefaultGeoPointMapping<DefaultGeoPointFormat>>::new(Point(coord.clone()));
 
         assert_eq!((coord.x, coord.y), (point.x(), point.y()));
     }
 
     #[test]
     fn can_convert_point_to_geo() {
-        let point = GeoPoint::<DefaultGeoPointFormat>::new(Point(Coordinate { x: 1.0, y: 1.0 }));
+        let point = GeoPoint::<DefaultGeoPointMapping<DefaultGeoPointFormat>>::new(Point(Coordinate { x: 1.0, y: 1.0 }));
         let geo = point.to_geo();
 
         match geo {

@@ -8,8 +8,6 @@ The implementation is the same for all number types, the only difference is the 
 
 Define a custom `IntegerMapping`:
 
-## Derive Mapping
-
 ```
 # #[macro_use]
 # extern crate elastic_types;
@@ -73,7 +71,7 @@ macro_rules! number_mapping {
         pub struct $format;
 
         /** A field that will be mapped as a number. */
-        pub trait $field_trait<M> where M: $mapping {}
+        pub trait $field_trait<M> {}
 
         impl<T, M> FieldType<M, $format> for T
             where M: $mapping,

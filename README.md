@@ -47,10 +47,12 @@ Define a custom Elasticsearch type called `mytype`:
 ```rust
 #[derive(Serialize, Deserialize, ElasticType)]
 pub struct MyType {
-	pub my_date: Date<EpochMillis>,
+	pub timestamp: Timestamp,
 	pub my_string: String,
 	pub my_num: i32
 }
+
+type Timestamp = Date<DefaultDateMapping<EpochMillis>>;
 ```
 
 You can then get the mapping for your type as `json`:
@@ -64,7 +66,7 @@ Which looks like:
 ```json
 {
   "properties": {
-    "my_date": {
+    "timestamp": {
       "type": "date",
       "format": "epoch_millis"
     },
@@ -96,15 +98,17 @@ Types that derive `ElasticType` are themselves serialisable, which can be very h
 }
 ```
 
-Using the `Date<EpochMillis>` type for the `timestamp`, we can correctly deserialise the document as a strongly typed object:
+Using the `Date` type for the `timestamp`, we can correctly deserialise the document as a strongly typed object:
 
 ```rust
 #[derive(Deserialize)]
 struct MyType {
   id: i32,
-  timestamp: Date<EpochMillis>,
+  timestamp: Timestamp,
   title: String
 }
+
+type Timestamp = Date<DefaultDateMapping<EpochMillis>>;
 
 let de: MyType = serde_json::from_str(json).unwrap();
 

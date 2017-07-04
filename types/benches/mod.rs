@@ -18,7 +18,7 @@ pub mod date_fixtures {
     impl DateMapping for MyDateMapping {
         type Format = EpochMillis;
 
-        fn null_value() -> Option<Date<Self::Format, Self>> {
+        fn null_value() -> Option<Date<Self>> {
             Some(Date::build(2015, 3, 14, 16, 45, 13, 778))
         }
 

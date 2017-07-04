@@ -8,7 +8,7 @@ use private::field::{DocumentField, FieldMapping, SerializeField};
 use document::FieldType;
 
 /** A field that will be mapped as `text`. */
-pub trait TextFieldType<M> where M: TextMapping {}
+pub trait TextFieldType<M> {}
 
 impl<T, M> FieldType<M, TextFormat> for T
     where M: TextMapping,
@@ -28,8 +28,6 @@ Custom mappings can be defined by implementing `TextMapping`.
 # Examples
 
 Define a custom `TextMapping`:
-
-## Derive Mapping
 
 ```
 # #[macro_use]

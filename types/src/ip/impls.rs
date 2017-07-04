@@ -1,3 +1,4 @@
+use std::borrow::Borrow;
 use std::marker::PhantomData;
 use std::net::Ipv4Addr;
 use std::str::FromStr;
@@ -26,12 +27,11 @@ let ip = Ip::<DefaultIpMapping>::new(Ipv4Addr::new(127, 0, 0, 1));
 ```
 */
 #[derive(Debug, Clone, PartialEq)]
-pub struct Ip<M>
-    where M: IpMapping
-{
+pub struct Ip<M> where M: IpMapping {
     value: Ipv4Addr,
     _m: PhantomData<M>,
 }
+
 impl<M> Ip<M>
     where M: IpMapping
 {
@@ -78,14 +78,14 @@ impl<M> Ip<M>
     # impl IpMapping for MyIpMapping { }
     let es_ip = Ip::<DefaultIpMapping>::new(Ipv4Addr::new(127, 0, 0, 1));
     
-    let ip: Ip<MyIpMapping> = es_ip.remap();
+    let ip: Ip<MyIpMapping> = Ip::remap(es_ip);
     # }
     ```
     */
-    pub fn remap<MInto>(self) -> Ip<MInto>
+    pub fn remap<MInto>(ip: Ip<M>) -> Ip<MInto>
         where MInto: IpMapping
     {
-        Ip::<MInto>::new(self.value)
+        Ip::new(ip.value)
     }
 }
 
@@ -167,7 +167,7 @@ mod tests {
 
         let ip: Ip<DefaultIpMapping> = Ip::new(Ipv4Addr::new(127, 0, 0, 1));
 
-        assert!(takes_custom_mapping(ip.remap()));
+        assert!(takes_custom_mapping(Ip::remap(ip)));
     }
 
     #[test]

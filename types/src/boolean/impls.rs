@@ -1,3 +1,4 @@
+use std::borrow::Borrow;
 use std::marker::PhantomData;
 use serde::{Serialize, Deserialize, Serializer, Deserializer};
 use serde::de::{Visitor, Error};
@@ -20,12 +21,11 @@ let boolean = Boolean::<DefaultBooleanMapping>::new(true);
 ```
 */
 #[derive(Debug, Clone, Default, PartialEq)]
-pub struct Boolean<M>
-    where M: BooleanMapping
-{
+pub struct Boolean<M> where M: BooleanMapping {
     value: bool,
     _m: PhantomData<M>,
 }
+
 impl<M> Boolean<M>
     where M: BooleanMapping
 {
@@ -66,16 +66,16 @@ impl<M> Boolean<M>
     # #[derive(Default)]
     # struct MyBooleanMapping;
     # impl BooleanMapping for MyBooleanMapping { }
-    let es_boolean = Boolean::<DefaultBooleanMapping>::new(true);
+    let boolean = Boolean::<DefaultBooleanMapping>::new(true);
     
-    let boolean: Boolean<MyBooleanMapping> = es_boolean.remap();
+    let boolean: Boolean<MyBooleanMapping> = Boolean::remap(boolean);
     # }
     ```
     */
-    pub fn remap<MInto>(self) -> Boolean<MInto>
+    pub fn remap<MInto>(boolean: Boolean<M>) -> Boolean<MInto>
         where MInto: BooleanMapping
     {
-        Boolean::<MInto>::new(self.value)
+        Boolean::<MInto>::new(boolean.value)
     }
 }
 
@@ -144,7 +144,7 @@ mod tests {
 
         let boolean: Boolean<DefaultBooleanMapping> = Boolean::new(true);
 
-        assert!(takes_custom_mapping(boolean.remap()));
+        assert!(takes_custom_mapping(Boolean::remap(boolean)));
     }
 
     #[test]

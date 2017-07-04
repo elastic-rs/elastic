@@ -1,10 +1,14 @@
 use std::str::FromStr;
+use std::fmt::Write;
 use serde::{Serialize, Serializer, Deserialize, Deserializer};
 use serde::de::{Error, Unexpected, Visitor, SeqAccess};
 use geohash;
 use super::{Coordinate, Point, GeoPointFormat};
 use super::mapping::GeoPointMapping;
 use geo::mapping::Distance;
+
+/** The default `geo_point` format (`GeoPointArray`). */
+pub type DefaultGeoPointFormat = GeoPointArray;
 
 /** Geo-point expressed as an object, with `lat` and `lon` keys. */
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
@@ -90,13 +94,9 @@ impl GeoPointFormat for GeoPointString {
         where M: GeoPointMapping<Format = Self>,
               S: Serializer
     {
-        let x = point.0.x.to_string();
-        let y = point.0.y.to_string();
+        let mut fmtd = String::new();
 
-        let mut fmtd = String::with_capacity(x.len() + y.len() + 1);
-        fmtd.push_str(&y);
-        fmtd.push(',');
-        fmtd.push_str(&x);
+        write!(&mut fmtd, "{},{}", point.0.y, point.0.x).expect("Display for a point failed");
 
         serializer.serialize_str(&fmtd)
     }
@@ -208,7 +208,7 @@ mod tests {
 
     #[test]
     fn object() {
-        let point: GeoPoint<GeoPointObject> = serde_json::from_str(r#"{"lat":41.0,"lon":-71.34}"#).unwrap();
+        let point: GeoPoint<DefaultGeoPointMapping<GeoPointObject>> = serde_json::from_str(r#"{"lat":41.0,"lon":-71.34}"#).unwrap();
 
         assert_eq!((-71.34, 41.0), (point.x(), point.y()));
 
@@ -219,7 +219,7 @@ mod tests {
 
     #[test]
     fn string() {
-        let point: GeoPoint<GeoPointString> = serde_json::from_str(r#""41.12,-71.34""#).unwrap();
+        let point: GeoPoint<DefaultGeoPointMapping<GeoPointString>> = serde_json::from_str(r#""41.12,-71.34""#).unwrap();
 
         assert_eq!((-71.34, 41.12), (point.x(), point.y()));
 
@@ -230,21 +230,21 @@ mod tests {
 
     #[test]
     fn string_with_single_point() {
-        let de = serde_json::from_str::<GeoPoint<GeoPointString>>(r#""41.12""#);
+        let de = serde_json::from_str::<GeoPoint<DefaultGeoPointMapping<GeoPointString>>>(r#""41.12""#);
 
         assert!(de.is_err());
     }
 
     #[test]
     fn string_with_invalid_nums() {
-        let de = serde_json::from_str::<GeoPoint<GeoPointString>>(r#""41.12,stuff""#);
+        let de = serde_json::from_str::<GeoPoint<DefaultGeoPointMapping<GeoPointString>>>(r#""41.12,stuff""#);
 
         assert!(de.is_err());
     }
 
     #[test]
     fn hash() {
-        let point: GeoPoint<GeoPointHash> = serde_json::from_str(r#""drm3btev3e86""#).unwrap();
+        let point: GeoPoint<DefaultGeoPointMapping<GeoPointHash>> = serde_json::from_str(r#""drm3btev3e86""#).unwrap();
 
         assert_eq!((-71.34000012651086, 41.12000000663102),
                    (point.x(), point.y()));
@@ -256,7 +256,7 @@ mod tests {
 
     #[test]
     fn array() {
-        let point: GeoPoint<GeoPointArray> = serde_json::from_str(r#"[-71.34,41]"#).unwrap();
+        let point: GeoPoint<DefaultGeoPointMapping<GeoPointArray>> = serde_json::from_str(r#"[-71.34,41]"#).unwrap();
 
         assert_eq!((-71.34, 41.0), (point.x(), point.y()));
 
@@ -267,7 +267,7 @@ mod tests {
 
     #[test]
     fn array_with_single_point() {
-        let de = serde_json::from_str::<GeoPoint<GeoPointArray>>(r#"[-71.34]"#);
+        let de = serde_json::from_str::<GeoPoint<DefaultGeoPointMapping<GeoPointArray>>>(r#"[-71.34]"#);
 
         assert!(de.is_err());
     }

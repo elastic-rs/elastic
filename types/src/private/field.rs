@@ -1,4 +1,6 @@
 use std::marker::PhantomData;
+use std::borrow::Borrow;
+use std::ops::Deref;
 use serde::Serialize;
 
 pub trait SerializeField<F> {
@@ -12,6 +14,13 @@ pub trait FieldMapping<F>
     fn data_type() -> &'static str {
         "object"
     }
+}
+
+/** Captures traits required for conversion between a field with mapping and a default counterpart. */
+pub trait StdField<T>
+    where Self: PartialEq<T> + Deref<Target = T> + Borrow<T>,
+          T: PartialEq<Self>
+{
 }
 
 /**

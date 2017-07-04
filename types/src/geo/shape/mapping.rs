@@ -7,7 +7,7 @@ use private::field::{DocumentField, FieldMapping, SerializeField};
 use document::FieldType;
 
 /** A field that will be mapped as a `geo_shape`. */
-pub trait GeoShapeFieldType<M> where M: GeoShapeMapping {}
+pub trait GeoShapeFieldType<M> {}
 
 impl<T, M> FieldType<M, GeoShapeFormat> for T
     where M: GeoShapeMapping,
@@ -27,8 +27,6 @@ Custom mappings can be defined by implementing `GeoShapeMapping`.
 # Examples
 
 Define a custom `GeoShapeMapping`:
-
-## Derive Mapping
 
 ```
 # #[macro_use]

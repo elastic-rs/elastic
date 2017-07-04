@@ -53,7 +53,7 @@ Derive `ElasticType` on your Elasticsearch-mappable types:
 # use elastic_types::prelude::*;
 #[derive(Serialize, ElasticType)]
 pub struct MyType {
-    pub my_date: Date<DefaultDateFormat>,
+    pub my_date: Date<DefaultDateMapping>,
     pub my_num: i32
 }
 # fn main() {
@@ -77,7 +77,7 @@ wrapper:
 # use elastic_types::prelude::*;
 # #[derive(Serialize, Deserialize, ElasticType)]
 # pub struct MyType {
-#     pub my_date: Date<DefaultDateFormat>,
+#     pub my_date: Date<DefaultDateMapping>,
 #     pub my_string: String,
 #     pub my_num: i32
 # }
@@ -102,7 +102,7 @@ This will produce the following result:
 # use elastic_types::prelude::*;
 # #[derive(Serialize, Deserialize, ElasticType)]
 # pub struct MyType {
-#     pub my_date: Date<DefaultDateFormat>,
+#     pub my_date: Date<DefaultDateMapping>,
 #     pub my_num: i32
 # }
 # fn main() {
@@ -141,7 +141,7 @@ Of course, structs that derive `ElasticType` can also be used as fields in other
 # use elastic_types::prelude::*;
 # #[derive(Serialize, Deserialize, ElasticType)]
 # pub struct MyType {
-#     pub my_date: Date<DefaultDateFormat>,
+#     pub my_date: Date<DefaultDateMapping>,
 #     pub my_num: i32
 # }
 #[derive(Serialize, Deserialize, ElasticType)]
@@ -168,7 +168,7 @@ Our mapping for `MyOtherType` then looks like:
 # use elastic_types::prelude::*;
 # #[derive(Serialize, Deserialize, ElasticType)]
 # pub struct MyType {
-#     pub my_date: Date<DefaultDateFormat>,
+#     pub my_date: Date<DefaultDateMapping>,
 #     pub my_num: i32
 # }
 # #[derive(Serialize, Deserialize, ElasticType)]
@@ -217,7 +217,7 @@ to derive mapping from `Option` or `Vec` types:
 # use elastic_types::prelude::*;
 #[derive(Serialize, Deserialize, ElasticType)]
 pub struct MyType {
-    pub my_date: Option<Date<DefaultDateFormat>>,
+    pub my_date: Option<Date<DefaultDateMapping>>,
     pub my_num: Vec<i32>
 }
 # fn main() {
@@ -268,7 +268,7 @@ Take the following document:
 }
 ```
 
-Using the `Date<EpochMillis>` type for the `timestamp`, we can correctly deserialise the document as a strongly typed
+Using the `Date<DefaultDateMapping<EpochMillis>>` type for the `timestamp`, we can correctly deserialise the document as a strongly typed
 object:
 
 ```
@@ -286,9 +286,11 @@ object:
 #[derive(Serialize, Deserialize, ElasticType)]
 struct MyType {
     id: i32,
-    timestamp: Date<EpochMillis>,
+    timestamp: Timestamp,
     title: String
 }
+
+type Timestamp = Date<DefaultDateMapping<EpochMillis>>;
 
 # fn main() {
 # let json = "{\"id\": 15,\"timestamp\": 1435935302478,\"title\": \"my timestamped object\"}";
@@ -347,7 +349,7 @@ struct Article {
     pub id: i32,
     pub title: String,
     pub content: Text<ContentMapping>,
-    pub timestamp: Option<Date<EpochMillis, TimestampMapping>>,
+    pub timestamp: Option<Date<TimestampMapping>>,
     pub geoip: GeoIp
 }
 
@@ -357,7 +359,7 @@ struct Article {
 #[derive(Serialize, Deserialize, ElasticType)]
 struct GeoIp {
     pub ip: ::std::net::Ipv4Addr,
-    pub loc: GeoPoint<DefaultGeoPointFormat>
+    pub loc: GeoPoint<DefaultGeoPointMapping>
 }
 
 
@@ -376,7 +378,7 @@ struct TimestampMapping;
 impl DateMapping for TimestampMapping {
     type Format = EpochMillis;
 
-    fn null_value() -> Option<Date<EpochMillis, Self>> {
+    fn null_value() -> Option<Date<Self>> {
         Some(Date::now())
     }
 }
@@ -476,8 +478,8 @@ The following table illustrates the types provided by `elastic_types`:
  `text`              | `String`                    | `std`     | [`Text<M>`](string/index.html)                                                   | -
  `boolean`           | `bool`                      | `std`     | [`Boolean<M>`](boolean/index.html)                                               | -
  `ip`                | `Ipv4Addr`                  | `std`     | [`Ip<M>`](ip/index.html)                                                         | -
- `date`              | `DateTime<Utc>`             | `chrono`  | [`Date<F, M>`](date/index.html)                                                  | `DateFormat`
- `geo_point`         | `Point`                     | `geo`     | [`GeoPoint<F, M>`](geo/point/index.html)                                         | `GeoPointFormat`
+ `date`              | `DateTime<Utc>`             | `chrono`  | [`Date<M>`](date/index.html)                                                  | `DateFormat`
+ `geo_point`         | `Point`                     | `geo`     | [`GeoPoint<M>`](geo/point/index.html)                                         | `GeoPointFormat`
  `geo_shape`         | -                           | `geojson` | [`GeoShape<M>`](geo/shape/index.html)                                            | -
 
 ## Mapping

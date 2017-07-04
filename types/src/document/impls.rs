@@ -77,7 +77,7 @@ For example, we can define an index type for the Create Index API that includes 
 # use elastic_types::prelude::*;
 #[derive(Serialize, ElasticType)]
 pub struct MyType {
-    pub my_date: Date<DefaultDateFormat>,
+    pub my_date: Date<DefaultDateMapping>,
     pub my_string: String,
     pub my_num: i32
 }
@@ -111,7 +111,7 @@ Serialising `MyIndex` will produce the following json:
 # use elastic_types::prelude::*;
 # #[derive(Serialize, ElasticType)]
 # pub struct MyType {
-#     pub my_date: Date<DefaultDateFormat>,
+#     pub my_date: Date<DefaultDateMapping>,
 #     pub my_string: String,
 #     pub my_num: i32
 # }
@@ -174,7 +174,7 @@ to keep field names up to date if the document type name changes:
 # use elastic_types::prelude::*;
 #[derive(Serialize, ElasticType)]
 # pub struct MyType {
-#     pub my_date: Date<DefaultDateFormat>,
+#     pub my_date: Date<DefaultDateMapping>,
 #     pub my_string: String,
 #     pub my_num: i32
 # }
@@ -364,7 +364,7 @@ mod tests {
 
     #[derive(Clone, Serialize, ElasticType)]
     pub struct SimpleType {
-        pub field1: Date<EpochMillis>,
+        pub field1: Date<DefaultDateMapping<EpochMillis>>,
         pub field2: SimpleNestedType,
     }
 

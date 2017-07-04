@@ -4,6 +4,8 @@ Elasticsearch Core Types Codegen
 This crate contains the internals for `elastic_types`-related codegen.
 */
 
+#![recursion_limit="128"]
+
 #[macro_use]
 extern crate quote;
 extern crate syn;

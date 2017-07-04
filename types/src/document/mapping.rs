@@ -83,7 +83,7 @@ Say we have a mappable type with 3 fields called `MyType` and a mapping type cal
 ```
 # use elastic_types::prelude::*;
 struct MyType {
-    pub my_date: Date<DefaultDateFormat>,
+    pub my_date: Date<DefaultDateMapping>,
     pub my_string: String,
     pub my_num: i32
 }
@@ -113,7 +113,7 @@ impl PropertiesMapping for MyTypeMapping {
 
     fn serialize_props<S>(state: &mut S) -> Result<(), S::Error>
     where S: SerializeStruct {
-        try!(field_ser(state, "my_date", Date::<DefaultDateFormat>::mapping()));
+        try!(field_ser(state, "my_date", Date::<DefaultDateMapping>::mapping()));
         try!(field_ser(state, "my_string", String::mapping()));
         try!(field_ser(state, "my_num", i32::mapping()));
 

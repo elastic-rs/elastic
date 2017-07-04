@@ -6,7 +6,7 @@ use private::field::{DocumentField, FieldMapping, SerializeField};
 use document::FieldType;
 
 /** A field that will be mapped as a `boolean`. */
-pub trait BooleanFieldType<M> where M: BooleanMapping {}
+pub trait BooleanFieldType<M> {}
 
 impl<T, M> FieldType<M, BooleanFormat> for T
     where M: BooleanMapping,
@@ -26,8 +26,6 @@ Custom mappings can be defined by implementing `BooleanMapping`.
 # Examples
 
 Define a custom `BooleanMapping`:
-
-## Derive Mapping
 
 ```
 # extern crate serde;

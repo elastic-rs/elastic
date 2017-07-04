@@ -3,23 +3,21 @@
 use std::marker::PhantomData;
 use serde::{Serialize, Serializer};
 use serde::ser::SerializeStruct;
-use super::{DateFormat, Date};
+use super::{DateFormat, DefaultDateFormat, FormattableDateValue, Date};
 use private::field::{DocumentField, FieldMapping, SerializeField};
 use document::FieldType;
 
 /** A field that will be mapped as a `date`. */
-pub trait DateFieldType<M, F>
-    where M: DateMapping<Format = F>,
-          F: DateFormat
-{
-}
+pub trait DateFieldType<M> 
+    where Self: Into<FormattableDateValue<M::Format>>,
+          M: DateMapping
+{ }
 
-impl<T, F, M> FieldType<M, DateFormatWrapper<F>> for T
-    where F: DateFormat,
-          M: DateMapping<Format = F>,
-          T: DateFieldType<M, F> + Serialize
-{
-}
+impl<T, M> FieldType<M, DateFormatWrapper<M::Format>> for T
+    where T: DateFieldType<M> + Serialize,
+          T: Into<FormattableDateValue<M::Format>>,
+          M: DateMapping
+{ }
 
 #[doc(hidden)]
 #[derive(Default)]
@@ -36,9 +34,7 @@ The base requirements for mapping a `date` type.
 
 Define a custom `DateMapping`:
 
-## Derive Mapping
-
-Currently, deriving mapping only works for structs that take a generic `DateFormat` parameter.
+Define a custom `DateMapping` that's valid for a single `DateFormat`:
 
 ```
 # #[macro_use]
@@ -59,7 +55,7 @@ impl DateMapping for MyDateMapping {
 # fn main() {}
 ```
 
-This will produce the following mapping when mapped with the `EpochMillis` format:
+This will produce the following mapping:
 
 ```
 # #[macro_use]
@@ -93,8 +89,7 @@ This will produce the following mapping when mapped with the `EpochMillis` forma
 
 ## Map with a generic Format
 
-You can use a generic input parameter to make your `DateMapping` work for any kind of
-`DateFormat`:
+You can use a generic input parameter to make your `DateMapping` work for any kind of `DateFormat`:
 
 ```
 # #[macro_use]
@@ -106,11 +101,16 @@ You can use a generic input parameter to make your `DateMapping` work for any ki
 struct MyDateMapping<F> {
     _marker: PhantomData<F>
 }
-impl <F: DateFormat> DateMapping for MyDateMapping<F> {
+
+impl <F> DateMapping for MyDateMapping<F> 
+    where F: DateFormat
+{
     type Format = F;
 }
 # fn main() {}
 ```
+
+This is how `DefaultDateMapping` is able to support any format.
 */
 pub trait DateMapping
     where Self: Default
@@ -172,7 +172,7 @@ pub trait DateMapping
     Accepts a date value in one of the configured format's as the field which is substituted for any explicit null values.
     Defaults to `null`, which means the field is treated as missing.
     */
-    fn null_value() -> Option<Date<Self::Format, Self>> {
+    fn null_value() -> Option<Date<Self>> {
         None
     }
 }
@@ -219,7 +219,7 @@ impl<T, F> Serialize for DocumentField<T, DateFormatWrapper<F>>
 
 /** Default mapping for `date`. */
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
-pub struct DefaultDateMapping<F>
+pub struct DefaultDateMapping<F = DefaultDateFormat>
     where F: DateFormat
 {
     _f: PhantomData<F>,
@@ -244,7 +244,7 @@ mod tests {
     impl DateMapping for MyDateMapping {
         type Format = EpochMillis;
 
-        fn null_value() -> Option<Date<Self::Format, Self>> {
+        fn null_value() -> Option<Date<Self>> {
             Some(Date::build(2015, 3, 14, 16, 45, 13, 778))
         }
 

@@ -3,22 +3,17 @@
 use std::marker::PhantomData;
 use serde::{Serialize, Serializer};
 use serde::ser::SerializeStruct;
-use super::GeoPointFormat;
+use super::{GeoPointFormat, DefaultGeoPointFormat};
 use geo::mapping::Distance;
 use private::field::{DocumentField, FieldMapping, SerializeField};
 use document::FieldType;
 
 /** A field that will be mapped as a `geo_point`. */
-pub trait GeoPointFieldType<M, F>
-    where M: GeoPointMapping<Format = F>,
-          F: GeoPointFormat
-{
-}
+pub trait GeoPointFieldType<M> {}
 
-impl<T, F, M> FieldType<M, GeoPointFormatWrapper<F>> for T
-    where F: GeoPointFormat,
-          M: GeoPointMapping<Format = F>,
-          T: GeoPointFieldType<M, F> + Serialize
+impl<T, M> FieldType<M, GeoPointFormatWrapper<M::Format>> for T
+    where T: GeoPointFieldType<M> + Serialize,
+          M: GeoPointMapping
 {
 }
 
@@ -36,10 +31,6 @@ The base requirements for mapping a `geo_point` type.
 # Examples
 
 Define a custom `GeoPointMapping`:
-
-## Derive Mapping
-
-Currently, deriving mapping only works for structs that take a `GeoPointFormat` as an associated type.
 
 ```
 # #[macro_use]
@@ -200,7 +191,7 @@ impl<T, F> Serialize for DocumentField<T, GeoPointFormatWrapper<F>>
 
 /** Default mapping for `geo_point`. */
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
-pub struct DefaultGeoPointMapping<F>
+pub struct DefaultGeoPointMapping<F = DefaultGeoPointFormat>
     where F: GeoPointFormat
 {
     _f: PhantomData<F>,

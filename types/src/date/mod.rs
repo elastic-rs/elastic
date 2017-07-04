@@ -5,7 +5,19 @@ Dates in Elasticsearch are exposed as a formatted `string` which can contain a `
 
 All dates used by `elastic_types` are expected to be given in `Utc`, and if no time is supplied, then 12:00am will be used instead.
 Where performance is paramount, the `EpochMillis` date format will parse and format dates the fastest.
-The difference is especially obvious on the `stable` channel, where date formats can't be parsed at compile time.
+
+# Date types
+
+## `Date<M>`
+
+The `Date<M>` type and `chrono`s `DateTime<Utc>` are the main `date` field types you add to document types.
+If the mapping and format aren't important, use `DateTime<Utc>`.
+If you need to specify mapping properties like `boost`, or use a specific format like `epoch_millis`, use `Date<M>`.
+
+## `DateValue` and `FormattableDateValue<F>`
+
+The `DateValue` and `FormattableDateValue<F>` types are used in methods to represent dates that either don't have a format or have a specific format respectively.
+`Date` and `DateTime<Utc>` can freely convert to and from these types, so you probably won't need to interact with them directly.
 
 # Examples
 
@@ -14,13 +26,30 @@ For defining your own date mapping, see [mapping details](mapping/trait.DateMapp
 Map with a default `date`:
 
 ```
+# extern crate chrono;
+# extern crate elastic_types;
 # use elastic_types::prelude::*;
+# fn main() {
+use chrono::{DateTime, Utc};
+
 struct MyType {
-    pub field: Date<DefaultDateFormat>
+    pub field: DateTime<Utc>
+}
+# }
+```
+
+For custom formats, the most ergonomic approach is to declare a type alias using the mapping and format:
+
+```
+# use elastic_types::prelude::*;
+type Timestamp = Date<DefaultDateMapping<EpochMillis>>;
+
+struct MyType {
+    pub field: Timestamp
 }
 ```
 
-Map with a custom `date`:
+Map with a custom `date` mapping:
 
 ```
 # extern crate serde;
@@ -34,32 +63,15 @@ Map with a custom `date`:
 # struct MyDateMapping;
 # impl DateMapping for MyDateMapping { type Format = EpochMillis; }
 struct MyType {
-    pub field: Date<EpochMillis, MyDateMapping>
+    pub field: Date<MyDateMapping>
 }
-# }
-```
-
-Map a custom type as a `date` field:
-
-```
-# extern crate serde;
-# #[macro_use]
-# extern crate elastic_types;
-# #[macro_use]
-# extern crate serde_derive;
-# fn main() {
-# use elastic_types::prelude::*;
-#[derive(Serialize)]
-struct MyDateField(String);
-
-impl DateFieldType<DefaultDateMapping<ChronoFormat>, ChronoFormat> for MyDateField {}
 # }
 ```
 
 ## Creating Formats
 
 To make it easier to build your own date formats, derive `ElasticDateFormat` on a unit struct.
-This will convert an Elasticsearch format string into a `Vec<chrono::format::Item>` for efficient parsing at runtime:
+This will convert an Elasticsearch format string into a `Vec<chrono::format::Item>` for efficient parsing and formatting at runtime:
 
 ```
 # #[macro_use]
@@ -85,20 +97,20 @@ You can also manually implement `DateFormat` and write your own arbitrary format
 use chrono::{DateTime, Utc};
 
 #[derive(Default, Clone)]
-struct MyCustomFormat;
-impl DateFormat for MyCustomFormat {
+struct Rfc3339Format;
+impl DateFormat for Rfc3339Format {
     fn name() -> &'static str { "yyyy-MM-dd'T'HH:mm:ssZ" }
 
-    fn format<'a>(date: &DateTime<Utc>) -> FormattedDate<'a> {
+    fn format<'a>(date: &'a DateValue) -> FormattedDate<'a> {
         date.to_rfc3339().into()
     }
 
-    fn parse(date: &str) -> Result<DateTime<Utc>, ParseError> {
-        let date = try!(DateTime::parse_from_rfc3339(date).map_err(|e| ParseError::from(e)));
+    fn parse(date: &str) -> Result<DateValue, ParseError> {
+        let date = DateTime::parse_from_rfc3339(date)?;
 
-            Ok(DateTime::from_utc(date.naive_local(), Utc))
-        }
+        Ok(DateTime::from_utc(date.naive_local(), Utc).into())
     }
+}
 # }
 ```
 
@@ -114,14 +126,6 @@ mod impls;
 pub use self::format::*;
 pub use self::impls::*;
 pub use self::formats::*;
-
-use chrono::{DateTime, Utc};
-
-/** A re-export of the `chrono::DateTime` struct with `Utc` timezone. */
-pub type ChronoDateTime = DateTime<Utc>;
-
-/** The default `date` format (`BasicDateTime`). */
-pub type DefaultDateFormat = BasicDateTime;
 
 pub mod prelude {
     /*!
