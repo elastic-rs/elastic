@@ -23,7 +23,7 @@ use std::net::Ipv4Addr;
 use reqwest::Client;
 use cli::{ElasticClient, ParseResponse, RequestParams};
 use cli::req::{IndicesCreateRequest, IndexRequest, SearchRequest};
-use cli::res::{parse, CommandResponse, IndexResponse, SearchResponseOf, Hit};
+use cli::res::{parse, CommandResponse, IndexResponse, SearchResponse, Hit};
 use elastic_types::prelude::*;
 
 mod data;
@@ -99,7 +99,7 @@ fn index_datum(client: &Client, params: &RequestParams, datum: &MyStruct) {
     parse::<IndexResponse>().from_response(res).unwrap();
 }
 
-fn query(client: &Client, params: &RequestParams) -> SearchResponseOf<Hit<MyStruct>> {
+fn query(client: &Client, params: &RequestParams) -> SearchResponse<MyStruct> {
     let req = SearchRequest::for_index_ty(INDEX,
                                           MyStruct::name(),
                                           json_lit!({

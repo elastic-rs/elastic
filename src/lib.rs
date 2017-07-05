@@ -42,7 +42,7 @@
 //! extern crate reqwest;
 //! extern crate elastic_reqwest as cli;
 //!
-//! use cli::{ElasticClient, ParseResponse, parse};
+//! use cli::{ElasticClientSync, ParseResponse, parse};
 //! # fn main() {}
 //! ```
 //!
@@ -61,7 +61,7 @@
 //! //HTTP HEAD /
 //!
 //! # extern crate elastic_reqwest as cli;
-//! use cli::ElasticClient;
+//! use cli::ElasticClientSync;
 //! use cli::req::PingRequest;
 //!
 //! # fn main() {
@@ -80,7 +80,7 @@
 //!
 //! extern crate elastic_reqwest as cli;
 //!
-//! use cli::{ ElasticClient, ParseResponse, RequestParams, parse };
+//! use cli::{ ElasticClientSync, ParseResponse, RequestParams, parse };
 //! use cli::req::SimpleSearchRequest;
 //! use cli::res::SearchResponse;
 //!
@@ -112,7 +112,7 @@
 //! extern crate json_str;
 //! extern crate elastic_reqwest as cli;
 //!
-//! use cli::{ElasticClient, ParseResponse, parse};
+//! use cli::{ElasticClientSync, ParseResponse, parse};
 //! use cli::req::SearchRequest;
 //! use cli::res::SearchResponse;
 //!
@@ -160,7 +160,7 @@
 //! - [Github][repo]
 //!
 //! [default]: fn.default.html
-//! [elastic_req]: trait.ElasticClient.html#tymethod.elastic_req
+//! [elastic_req]: trait.ElasticClientSync.html#tymethod.elastic_req
 //! [parse]: fn.parse.html
 //! [elastic]: https://github.com/elastic-rs/elastic
 //! [rs-es]: https://github.com/benashford/rs-es
@@ -181,14 +181,11 @@ extern crate serde;
 extern crate reqwest;
 extern crate url;
 
-#[cfg(feature = "nightly")]
-use std::io::Cursor;
-use std::collections::BTreeMap;
-use std::str;
-use serde::de::DeserializeOwned;
-use reqwest::header::{Header, HeaderFormat, Headers, ContentType};
-use reqwest::{RequestBuilder, Response};
-use url::form_urlencoded::Serializer;
+mod sync;
+mod async;
+
+pub use self::sync::*;
+pub use self::async::*;
 
 /// Request types.
 ///
@@ -206,9 +203,11 @@ pub mod res {
 
 pub use self::res::parse;
 
-use self::req::{HttpRequest, HttpMethod};
-use self::res::parsing::{Parse, IsOk};
-use self::res::error::ResponseError;
+use std::collections::BTreeMap;
+use std::str;
+use reqwest::header::{Header, Headers, ContentType};
+use url::form_urlencoded::Serializer;
+use self::req::HttpMethod;
 
 /// Misc parameters for any request.
 ///
@@ -259,11 +258,11 @@ use self::res::error::ResponseError;
 #[derive(Debug, Clone)]
 pub struct RequestParams {
     /// Base url for Elasticsearch.
-    pub base_url: String,
+    base_url: String,
     /// Simple key-value store for url query params.
-    pub url_params: BTreeMap<&'static str, String>,
+    url_params: BTreeMap<&'static str, String>,
     /// The complete set of headers that will be sent with the request.
-    pub headers: Headers,
+    headers: Headers,
 }
 
 impl RequestParams {
@@ -306,7 +305,7 @@ impl RequestParams {
 
     /// Set a header value on the params.
     pub fn header<H>(mut self, header: H) -> Self
-        where H: Header + HeaderFormat
+        where H: Header
     {
         self.headers.set(header);
 
@@ -343,239 +342,35 @@ pub fn default() -> Result<(reqwest::Client, RequestParams), reqwest::Error> {
     reqwest::Client::new().map(|cli| (cli, RequestParams::default()))
 }
 
-/// A type that can be converted into a request body.
-pub trait IntoReqwestBody {
-    /// Convert self into a body.
-    fn into_body(self) -> reqwest::Body;
-}
-
-impl<B: Into<reqwest::Body>> IntoReqwestBody for B {
-    #[cfg(feature = "nightly")]
-    default fn into_body(self) -> reqwest::Body {
-        self.into()
-    }
-
-    #[cfg(not(feature = "nightly"))]
-    fn into_body(self) -> reqwest::Body {
-        self.into()
-    }
-}
-
-#[cfg(feature = "nightly")]
-impl IntoReqwestBody for &'static [u8] {
-    fn into_body(self) -> reqwest::Body {
-        reqwest::Body::new(Cursor::new(self))
-    }
-}
-
-#[cfg(feature = "nightly")]
-impl IntoReqwestBody for &'static str {
-    fn into_body(self) -> reqwest::Body {
-        reqwest::Body::new(Cursor::new(self))
-    }
-}
-
-/// Represents a client that can send Elasticsearch requests.
-pub trait ElasticClient {
-    /// Send a request and get a response.
-    ///
-    /// # Examples
-    ///
-    /// Bring the `ElasticClient` trait into scope and call `elastic_req` with any type that
-    /// can be converted into a `req::HttpRequest`.
-    /// This method returns a raw `reqwest::Response`.
-    ///
-    /// ```no_run
-    /// # use elastic_reqwest::req::SimpleSearchRequest;
-    /// # let request = SimpleSearchRequest::for_index_ty("myindex", "mytype");
-    /// use elastic_reqwest::ElasticClient;
-    ///
-    /// let (client, params) = elastic_reqwest::default().unwrap();
-    ///
-    /// let http_res = client.elastic_req(&params, request).unwrap();
-    /// ```
-    fn elastic_req<I, B>(&self, params: &RequestParams, req: I) -> Result<Response, reqwest::Error>
-        where I: Into<HttpRequest<'static, B>>,
-              B: IntoReqwestBody;
-}
-
-/// Represents a response that can be parsed into a concrete Elasticsearch response.
-pub trait ParseResponse<TResponse> {
-    /// Parse a response into a concrete response type.
-    fn from_response(self, response: Response) -> Result<TResponse, res::error::ResponseError>;
-}
-
-impl<TResponse: IsOk + DeserializeOwned> ParseResponse<TResponse> for Parse<TResponse> {
-    fn from_response(self, response: Response) -> Result<TResponse, ResponseError> {
-        self.from_reader(response.status().to_u16(), response)
-    }
-}
-
-macro_rules! req_with_body {
-    ($client:ident, $url:ident, $body:ident, $params:ident, $method:ident) => ({
-        let body = $body.expect("Expected this request to have a body. This is a bug, please file an issue on GitHub.");
-
-        $client.request(reqwest::Method::$method, &$url)
-               .headers($params.headers.to_owned())
-               .body(body.into_body())
-    })
-}
-
-fn build_req<I, B>(client: &reqwest::Client, params: &RequestParams, req: I) -> RequestBuilder
-    where I: Into<HttpRequest<'static, B>>,
-          B: IntoReqwestBody
-{
-    let req = req.into();
-
+fn build_url<'a>(req_url: &str, params: &RequestParams) -> String {
     let (qry_len, qry) = params.get_url_qry();
 
-    let mut url = String::with_capacity(params.base_url.len() + req.url.len() + qry_len);
+    let mut url = String::with_capacity(params.base_url.len() + req_url.len() + qry_len);
 
     url.push_str(&params.base_url);
-    url.push_str(&req.url);
+    url.push_str(&req_url);
 
     if let Some(qry) = qry {
         url.push_str(&qry);
     }
 
-    let method = req.method;
-    let body = req.body;
-
-    match method {
-        HttpMethod::Get => client.get(&url).headers(params.headers.to_owned()),
-
-        HttpMethod::Post => req_with_body!(client, url, body, params, Post),
-
-        HttpMethod::Head => client.head(&url).headers(params.headers.to_owned()),
-
-        HttpMethod::Delete => client.request(reqwest::Method::Delete, &url).headers(params.headers.to_owned()),
-
-        HttpMethod::Put => req_with_body!(client, url, body, params, Put),
-
-        HttpMethod::Patch => req_with_body!(client, url, body, params, Patch),
-    }
+    url
 }
 
-impl ElasticClient for reqwest::Client {
-    fn elastic_req<I, B>(&self, params: &RequestParams, req: I) -> Result<Response, reqwest::Error>
-        where I: Into<HttpRequest<'static, B>>,
-              B: IntoReqwestBody
-    {
-        build_req(&self, params, req).send()
+fn build_method(method: HttpMethod) -> reqwest::Method {
+    match method {
+        HttpMethod::Get => reqwest::Method::Get,
+        HttpMethod::Post => reqwest::Method::Post,
+        HttpMethod::Head => reqwest::Method::Head,
+        HttpMethod::Delete => reqwest::Method::Delete,
+        HttpMethod::Put => reqwest::Method::Put,
+        HttpMethod::Patch => reqwest::Method::Patch,
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use reqwest::{Client, RequestBuilder, Method};
     use super::*;
-    use super::req::*;
-
-    fn params() -> RequestParams {
-        RequestParams::new("eshost:9200/path")
-            .url_param("pretty", true)
-            .url_param("q", "*")
-    }
-
-    fn expected_req(cli: &Client, method: Method, url: &str, body: Option<Vec<u8>>) -> RequestBuilder {
-        let req = cli.request(method, url)
-            .header(ContentType::json());
-
-        match body {
-            Some(body) => req.body(body),
-            None => req,
-        }
-    }
-
-    fn assert_req(expected: RequestBuilder, actual: RequestBuilder) {
-        assert_eq!(format!("{:?}", expected), format!("{:?}", actual));
-    }
-
-    #[test]
-    fn head_req() {
-        let cli = Client::new().unwrap();
-        let req = build_req(&cli, &params(), PingHeadRequest::new());
-
-        let url = "eshost:9200/path/?pretty=true&q=*";
-
-        let expected = expected_req(&cli, Method::Head, url, None);
-
-        assert_req(expected, req);
-    }
-
-    #[test]
-    fn get_req() {
-        let cli = Client::new().unwrap();
-        let req = build_req(&cli, &params(), SimpleSearchRequest::new());
-
-        let url = "eshost:9200/path/_search?pretty=true&q=*";
-
-        let expected = expected_req(&cli, Method::Get, url, None);
-
-        assert_req(expected, req);
-    }
-
-    #[test]
-    fn post_req() {
-        let cli = Client::new().unwrap();
-        let req = build_req(&cli,
-                            &params(),
-                            PercolateRequest::for_index_ty("idx", "ty", vec![]));
-
-        let url = "eshost:9200/path/idx/ty/_percolate?pretty=true&q=*";
-
-        let expected = expected_req(&cli, Method::Post, url, Some(vec![]));
-
-        assert_req(expected, req);
-    }
-
-    #[test]
-    fn put_req() {
-        let cli = Client::new().unwrap();
-        let req = build_req(&cli,
-                            &params(),
-                            IndicesCreateRequest::for_index("idx", vec![]));
-
-        let url = "eshost:9200/path/idx?pretty=true&q=*";
-
-        let expected = expected_req(&cli, Method::Put, url, Some(vec![]));
-
-        assert_req(expected, req);
-    }
-
-    #[test]
-    fn delete_req() {
-        let cli = Client::new().unwrap();
-        let req = build_req(&cli, &params(), IndicesDeleteRequest::for_index("idx"));
-
-        let url = "eshost:9200/path/idx?pretty=true&q=*";
-
-        let expected = expected_req(&cli, Method::Delete, url, None);
-
-        assert_req(expected, req);
-    }
-
-    #[test]
-    fn owned_string_into_body() {
-        String::new().into_body();
-    }
-
-    #[test]
-    fn borrowed_string_into_body() {
-        "abc".into_body();
-    }
-
-    #[test]
-    fn owned_vec_into_body() {
-        Vec::new().into_body();
-    }
-
-    #[test]
-    fn borrowed_vec_into_body() {
-        static BODY: &'static [u8] = &[0, 1, 2];
-
-        (&BODY).into_body();
-    }
 
     #[test]
     fn request_params_has_default_content_type() {

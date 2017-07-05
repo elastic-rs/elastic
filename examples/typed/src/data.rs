@@ -6,14 +6,14 @@ use elastic_types::prelude::*;
 pub struct MyStruct {
     pub id: i32,
     pub title: String,
-    pub timestamp: Date<DefaultDateFormat>,
+    pub timestamp: Date<DefaultDateMapping>,
     pub geo: GeoLocation,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, ElasticType)]
 pub struct GeoLocation {
     pub ip: Ipv4Addr,
-    pub loc: GeoPoint<DefaultGeoPointFormat>,
+    pub loc: GeoPoint<DefaultGeoPointMapping>,
 }
 
 // An index request type with mappings bundled in
