@@ -208,6 +208,7 @@ pub mod res {
 
 pub use self::res::parse;
 
+use std::sync::Arc;
 use std::collections::BTreeMap;
 use std::str;
 use reqwest::header::{Headers, ContentType};
@@ -260,13 +261,14 @@ use self::req::HttpMethod;
 ///     .url_param("q", "*");
 /// # }
 /// ```
+#[derive(Clone)]
 pub struct RequestParams {
     /// Base url for Elasticsearch.
     base_url: String,
     /// Simple key-value store for url query params.
     url_params: BTreeMap<&'static str, String>,
     /// The complete set of headers that will be sent with the request.
-    headers: Box<Fn(&mut Headers) + Send + Sync + 'static>,
+    headers: Arc<Fn(&mut Headers) + Send + Sync + 'static>,
 }
 
 impl RequestParams {
@@ -280,7 +282,7 @@ impl RequestParams {
 
         RequestParams {
             base_url: base.into(),
-            headers: Box::new(headers),
+            headers: Arc::new(headers),
             url_params: BTreeMap::new(),
         }
     }
@@ -322,7 +324,7 @@ impl RequestParams {
             headers_fn(&mut headers);
         };
 
-        self.headers = Box::new(headers);
+        self.headers = Arc::new(headers);
 
         self
     }

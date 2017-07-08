@@ -88,7 +88,8 @@ impl<TResponse: IsOk + DeserializeOwned> ParseResponseSync<TResponse> for Parse<
     }
 }
 
-fn build_req<I, B>(client: &Client, params: &RequestParams, req: I) -> Result<RequestBuilder, Error>
+#[doc(hidden)]
+pub fn build_req<I, B>(client: &Client, params: &RequestParams, req: I) -> Result<RequestBuilder, Error>
     where I: Into<HttpRequest<'static, B>>,
           B: IntoBodySync
 {
