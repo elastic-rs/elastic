@@ -180,6 +180,11 @@ extern crate elastic_responses;
 extern crate serde;
 extern crate reqwest;
 extern crate url;
+extern crate bytes;
+extern crate futures;
+
+#[cfg(test)]
+extern crate tokio_core;
 
 mod sync;
 mod async;
@@ -205,7 +210,7 @@ pub use self::res::parse;
 
 use std::collections::BTreeMap;
 use std::str;
-use reqwest::header::{Header, Headers, ContentType};
+use reqwest::header::{Headers, ContentType};
 use url::form_urlencoded::Serializer;
 use self::req::HttpMethod;
 
@@ -255,14 +260,13 @@ use self::req::HttpMethod;
 ///     .url_param("q", "*");
 /// # }
 /// ```
-#[derive(Debug, Clone)]
 pub struct RequestParams {
     /// Base url for Elasticsearch.
     base_url: String,
     /// Simple key-value store for url query params.
     url_params: BTreeMap<&'static str, String>,
     /// The complete set of headers that will be sent with the request.
-    headers: Headers,
+    headers: Box<Fn(&mut Headers) + Send + Sync + 'static>,
 }
 
 impl RequestParams {
@@ -272,12 +276,11 @@ impl RequestParams {
     /// node.
     /// It will also set the `Content-Type` header to `application/json`.
     pub fn new<T: Into<String>>(base: T) -> Self {
-        let mut headers = Headers::new();
-        headers.set(ContentType::json());
+        let headers = |headers: &mut Headers| headers.set(ContentType::json());
 
         RequestParams {
             base_url: base.into(),
-            headers: headers,
+            headers: Box::new(headers),
             url_params: BTreeMap::new(),
         }
     }
@@ -294,6 +297,7 @@ impl RequestParams {
     /// These parameters are added as query parameters to request urls.
     pub fn url_param<T: ToString>(mut self, key: &'static str, value: T) -> Self {
         if self.url_params.contains_key(key) {
+            // This is safe because we know here that the key exists
             let mut entry = self.url_params.get_mut(key).unwrap();
             *entry = value.to_string();
         } else {
@@ -304,12 +308,32 @@ impl RequestParams {
     }
 
     /// Set a header value on the params.
-    pub fn header<H>(mut self, header: H) -> Self
-        where H: Header
+    /// 
+    /// Each call to `headers` will chain to the end of the last call.
+    /// This function allocates a new `Box` for each call, so it's recommended to just call it once
+    /// and configure multiple headers, rather than calling it once per header.
+    pub fn headers<F>(mut self, headers_fn: F) -> Self
+        where F: Fn(&mut Headers) + Send + Sync + 'static
     {
-        self.headers.set(header);
+        let old_fn = self.headers;
+
+        let headers = move |mut headers: &mut Headers| {
+            old_fn(&mut headers);
+            headers_fn(&mut headers);
+        };
+
+        self.headers = Box::new(headers);
 
         self
+    }
+
+    /// Create a new `Headers` structure, and thread it through the configuration functions.
+    pub fn get_headers(&self) -> Headers {
+        let mut headers = Headers::new();
+
+        (self.headers)(&mut headers);
+
+        headers
     }
 
     /// Get the url query params as a formatted string.
@@ -369,13 +393,43 @@ fn build_method(method: HttpMethod) -> reqwest::Method {
 }
 
 #[cfg(test)]
+fn assert_send<T: Send>() {}
+
+#[cfg(test)]
+fn assert_sync<T: Sync>() {}
+
+#[cfg(test)]
 mod tests {
+    use reqwest::header::{Referer, Authorization, ContentType};
     use super::*;
+
+    #[test]
+    fn assert_send_sync() {
+        assert_send::<RequestParams>();
+        assert_sync::<RequestParams>();
+    }
 
     #[test]
     fn request_params_has_default_content_type() {
         let req = RequestParams::default();
-        assert_eq!(Some(&ContentType::json()), req.headers.get::<ContentType>());
+
+        let headers = req.get_headers();
+
+        assert_eq!(Some(&ContentType::json()), headers.get::<ContentType>());
+    }
+
+    #[test]
+    fn set_multiple_headers() {
+        let req = RequestParams::default()
+            .headers(|h| h.set(Referer::new("/not-the-value")))
+            .headers(|h| h.set(Referer::new("/People.html#tim")))
+            .headers(|h| h.set(Authorization("let me in".to_owned())));
+
+        let headers = req.get_headers();
+
+        assert_eq!(Some(&ContentType::json()), headers.get::<ContentType>());
+        assert_eq!(Some(&Referer::new("/People.html#tim")), headers.get::<Referer>());
+        assert_eq!(Some(&Authorization("let me in".to_owned())), headers.get::<Authorization<String>>());
     }
 
     #[test]

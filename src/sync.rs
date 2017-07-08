@@ -1,7 +1,7 @@
 use std::io::Cursor;
 use std::fs::File;
 use serde::de::DeserializeOwned;
-use reqwest::{self, RequestBuilder, Response};
+use reqwest::{Client, RequestBuilder, Response, Body, Error};
 
 use super::req::HttpRequest;
 use super::res::parsing::{Parse, IsOk};
@@ -11,42 +11,42 @@ use super::{RequestParams, build_url, build_method};
 /// A type that can be converted into a request body.
 pub trait IntoBodySync {
     /// Convert self into a body.
-    fn into_body(self) -> reqwest::Body;
+    fn into_body(self) -> Body;
 }
 
-impl IntoBodySync for reqwest::Body {
-    fn into_body(self) -> reqwest::Body {
+impl IntoBodySync for Body {
+    fn into_body(self) -> Body {
         self
     }
 }
 
 impl IntoBodySync for File {
-    fn into_body(self) -> reqwest::Body {
+    fn into_body(self) -> Body {
         self.into()
     }
 }
 
 impl IntoBodySync for Vec<u8> {
-    fn into_body(self) -> reqwest::Body {
+    fn into_body(self) -> Body {
         self.into()
     }
 }
 
 impl IntoBodySync for String {
-    fn into_body(self) -> reqwest::Body {
+    fn into_body(self) -> Body {
         self.into()
     }
 }
 
 impl IntoBodySync for &'static [u8] {
-    fn into_body(self) -> reqwest::Body {
-        reqwest::Body::new(Cursor::new(self))
+    fn into_body(self) -> Body {
+        Body::new(Cursor::new(self))
     }
 }
 
 impl IntoBodySync for &'static str {
-    fn into_body(self) -> reqwest::Body {
-        reqwest::Body::new(Cursor::new(self))
+    fn into_body(self) -> Body {
+        Body::new(Cursor::new(self))
     }
 }
 
@@ -69,18 +69,18 @@ pub trait ElasticClientSync {
     ///
     /// let http_res = client.elastic_req(&params, request).unwrap();
     /// ```
-    fn elastic_req<I, B>(&self, params: &RequestParams, req: I) -> Result<Response, reqwest::Error>
+    fn elastic_req<I, B>(&self, params: &RequestParams, req: I) -> Result<Response, Error>
         where I: Into<HttpRequest<'static, B>>,
               B: IntoBodySync;
 }
 
 /// Represents a response that can be parsed into a concrete Elasticsearch response.
-pub trait ParseResponse<TResponse> {
+pub trait ParseResponseSync<TResponse> {
     /// Parse a response into a concrete response type.
     fn from_response(self, response: Response) -> Result<TResponse, ResponseError>;
 }
 
-impl<TResponse: IsOk + DeserializeOwned> ParseResponse<TResponse> for Parse<TResponse> {
+impl<TResponse: IsOk + DeserializeOwned> ParseResponseSync<TResponse> for Parse<TResponse> {
     fn from_response(self, response: Response) -> Result<TResponse, ResponseError> {
         let status: u16 = response.status().into();
 
@@ -88,7 +88,7 @@ impl<TResponse: IsOk + DeserializeOwned> ParseResponse<TResponse> for Parse<TRes
     }
 }
 
-fn build_req<I, B>(client: &reqwest::Client, params: &RequestParams, req: I) -> Result<RequestBuilder, reqwest::Error>
+fn build_req<I, B>(client: &Client, params: &RequestParams, req: I) -> Result<RequestBuilder, Error>
     where I: Into<HttpRequest<'static, B>>,
           B: IntoBodySync
 {
@@ -100,7 +100,7 @@ fn build_req<I, B>(client: &reqwest::Client, params: &RequestParams, req: I) -> 
 
     let mut req = client.request(method, &url)?;
     {
-        req.headers(params.headers.to_owned());
+        req.headers(params.get_headers());
 
         if let Some(body) = body {
             req.body(body.into_body());
@@ -110,8 +110,8 @@ fn build_req<I, B>(client: &reqwest::Client, params: &RequestParams, req: I) -> 
     Ok(req)
 }
 
-impl ElasticClientSync for reqwest::Client {
-    fn elastic_req<I, B>(&self, params: &RequestParams, req: I) -> Result<Response, reqwest::Error>
+impl ElasticClientSync for Client {
+    fn elastic_req<I, B>(&self, params: &RequestParams, req: I) -> Result<Response, Error>
         where I: Into<HttpRequest<'static, B>>,
               B: IntoBodySync
     {
@@ -238,5 +238,10 @@ mod tests {
         static BODY: &'static [u8] = &[0, 1, 2];
 
         (&BODY).into_body();
+    }
+
+    #[test]
+    fn empty_body_into_body() {
+        empty_body().into_body();
     }
 }
