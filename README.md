@@ -1,7 +1,7 @@
 # [`elastic`](https://docs.rs/elastic/*/elastic/) [![Latest Version](https://img.shields.io/crates/v/elastic.svg)](https://crates.io/crates/elastic)
 
-`elastic` is a modular API client for [Elasticsearch](https://github.com/elastic/elasticsearch) written in [Rust](https://www.rust-lang.org).
-The API is targetting Elastic `5.x`.
+`elastic` is an efficient, modular API client for [Elasticsearch](https://github.com/elastic/elasticsearch) written in [Rust](https://www.rust-lang.org).
+The API is targeting the Elastic Stack `5.x`.
 
 `elastic` provides strongly-typed documents and weakly-typed queries.
 
@@ -97,9 +97,9 @@ If you'd like to use a strongly-typed Query DSL builder see [`rs-es`](https://gi
 
 ## Goals
 
-To provide a full-featured and efficient Elasticsearch client for Rust over (eventually) asynchronous io. Rust gives us a lot of tools for building super-performant but highly accessible libraries, which we aim to continue.
+To provide a full-featured and efficient Elasticsearch client for Rust over asynchronous io. Rust gives us a lot of tools for building super-performant but highly accessible libraries, which we aim to continue. `elastic` is aimed at people who need to work with Elasticsearch and are considering using Rust, as well as users that are already using Rust. We want to offer a solution to interacting with Elasticsearch that's compelling from both within and outside the Rust ecosystem.
 
-The REST API is provided by a simple [inline JSON macro](https://github.com/KodrAus/json_str) or `serde_json`'s [`json!`](https://docs.serde.rs/serde_json/macro.json.html) macro so it's always possible to build any query. This means you don't need to learn another API for interacting with Elasticsearch; queries mocked in [Dev Tools](https://www.elastic.co/blog/found-sense-a-cool-json-aware-interface-to-elasticsearch) can just be copy+pasted into your Rust source.
+The REST API is covered by a simple inline JSON macro like `serde_json`'s [`json!`](https://docs.serde.rs/serde_json/macro.json.html) or [`json_str!`](https://github.com/KodrAus/json_str) so it's always possible to build any query. This means you don't need to learn another API for interacting with Elasticsearch; queries mocked in [Dev Tools](https://www.elastic.co/blog/found-sense-a-cool-json-aware-interface-to-elasticsearch) could just be copy+pasted into your Rust source.
 
 The core focus of this project is on strong typing over your document types and query responses in Elasticsearch, rather than trying to map the entire Query DSL.
 
@@ -108,20 +108,22 @@ Support for Elastic's plugin products, like `watcher` and `graph` could be added
 ## Development
 
 Development is active, but because functionality is split across crates it can be hard to track where the effort is going.
-There is a [GitHub Project](https://github.com/orgs/elastic-rs/projects/1) to easily track priorities at the crate-level.
+There is a [GitHub Project](https://github.com/orgs/elastic-rs/projects/1) to easily track priorities at the crate-level. Other cross-crate concerns are also tracked as projects.
 
-The `elastic` crate brings these independent units together into a cohesive API. It aims to provide the glue between them and offer some good defaults. If you have a more specialised use-case, you can pick and choose the crates that will best support it. See the [crates](#crates) section for a full list.
+`elastic` targets the `stable` channel, so it doesn't use any unstable features, but we'd like to track where improvements can be made by unstable features once they stabilise. There is another [GitHub Project](https://github.com/orgs/elastic-rs/projects/8) to record these possible enhancements.
+
+The `elastic` crate brings a few independent crates together into a cohesive API. It aims to provide the glue between them and offer some good defaults. If you have a more specialised use-case, you can pick and choose the crates that will best support it. See the [crates](#crates) section for a full list.
 
 `elastic` sits on a stack with hard dependencies on the following libraries:
 
-- `reqwest`/`hyper` for HTTP
+- `reqwest`/`hyper` for HTTP transport
 - `serde` for serialisation
 
-There hasn't been much effort put into abstracting these dependencies at this stage.
+There hasn't been much effort put into abstracting these dependencies at this stage, and `elastic` can't stabilise until these libraries and few others do.
 
 ### Methodology
 
-The following is a simple set of guidelines that the codebase should follow.
+The following is a simple set of guidelines that the codebase should follow. It's mostly a reminder to ourselves and not a hard set of rules.
 
 #### Usability
 
@@ -139,7 +141,7 @@ The following is a simple set of guidelines that the codebase should follow.
 #### Testing
 
 - Try cover the whole public API surface so breaking changes result in broken tests/examples
-- Features should fail to compile if used incorrectly rather than having lots of usecases that need testing
+- Features should fail to compile if used incorrectly rather than having surprising behaviour at runtime
 
 #### Documentation
 
