@@ -6,26 +6,28 @@
 //! To make things readable, the `pretty` url param is provided.
 
 #[macro_use]
-extern crate json_str;
+extern crate serde_json;
 extern crate elastic_reqwest as cli;
 
 use cli::{ElasticClient, ParseResponse, RequestParams};
 use cli::req::SearchRequest;
 use cli::res::{parse, SearchResponse};
 
-fn main() {
+fn run() -> Result<(), Error> {
     // Get a new default client.
-    let (client, _) = cli::default().unwrap();
+    let (client, _) = cli::default()?;
 
     // Create a new set of params with pretty printing.
     let params = RequestParams::default().url_param("pretty", true);
 
     // Create a query DSL request body.
     let req = {
-        let body = json_str!({
-            query: {
-                query_string: {
-                    query: "*"
+        let query = "*";
+
+        let body = json!({
+            "query": {
+                "query_string": {
+                    "query": $query
                 }
             }
         });
@@ -34,9 +36,13 @@ fn main() {
     };
 
     // Send the request and read the response.
-    let http_res = client.elastic_req(&params, req).unwrap();
+    let http_res = client.elastic_req(&params, req)?;
 
-    let res = parse::<SearchResponse>().from_response(http_res).unwrap();
+    let res = parse::<SearchResponse>().from_response(http_res)?;
 
     println!("Got response: {:?}", res);
+}
+
+fn main() {
+    run().unwrap();
 }

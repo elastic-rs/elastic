@@ -1,12 +1,12 @@
 use std::io::Cursor;
 use std::fs::File;
 use serde::de::DeserializeOwned;
-use reqwest::{Client, RequestBuilder, Response, Body, Error};
+use serde_json::Value;
+use reqwest::{Client, RequestBuilder, Response, Body};
 
 use super::req::HttpRequest;
 use super::res::parsing::{Parse, IsOk};
-use super::res::error::ResponseError;
-use super::{RequestParams, build_url, build_method};
+use super::{Error, RequestParams, build_url, build_method};
 
 /// A type that can be converted into a request body.
 pub trait IntoBodySync {
@@ -35,6 +35,12 @@ impl IntoBodySync for Vec<u8> {
 impl IntoBodySync for String {
     fn into_body(self) -> Body {
         self.into()
+    }
+}
+
+impl IntoBodySync for Value {
+    fn into_body(self) -> Body {
+        self.to_string().into()
     }
 }
 
@@ -77,14 +83,14 @@ pub trait ElasticClientSync {
 /// Represents a response that can be parsed into a concrete Elasticsearch response.
 pub trait ParseResponseSync<TResponse> {
     /// Parse a response into a concrete response type.
-    fn from_response(self, response: Response) -> Result<TResponse, ResponseError>;
+    fn from_response(self, response: Response) -> Result<TResponse, Error>;
 }
 
 impl<TResponse: IsOk + DeserializeOwned> ParseResponseSync<TResponse> for Parse<TResponse> {
-    fn from_response(self, response: Response) -> Result<TResponse, ResponseError> {
+    fn from_response(self, response: Response) -> Result<TResponse, Error> {
         let status: u16 = response.status().into();
 
-        self.from_reader(status, response)
+        self.from_reader(status, response).map_err(Into::into)
     }
 }
 
@@ -116,7 +122,7 @@ impl ElasticClientSync for Client {
         where I: Into<HttpRequest<'static, B>>,
               B: IntoBodySync
     {
-        build_req_sync(&self, params, req)?.send()
+        build_req_sync(&self, params, req)?.send().map_err(Into::into)
     }
 }
 
@@ -244,5 +250,10 @@ mod tests {
     #[test]
     fn empty_body_into_body() {
         empty_body().into_body();
+    }
+
+    #[test]
+    fn json_value_into_body() {
+        json!({}).into_body();
     }
 }

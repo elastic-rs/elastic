@@ -26,11 +26,7 @@ script:
       travis-cargo --only nightly test -- --features nightly &&
       travis-cargo test &&
       travis-cargo bench &&
-      cd examples/basic &&
-      travis-cargo build &&
-      cd ../bulk &&
-      travis-cargo build &&
-      cd ../typed &&
+      cd examples/typed &&
       travis-cargo --only nightly build &&
       cd ../../ &&
       travis-cargo --only stable doc

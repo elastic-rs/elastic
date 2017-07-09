@@ -1,10 +1,10 @@
 use bytes::Bytes;
+use serde_json::Value;
 use reqwest::unstable::async::{Client, RequestBuilder, Response, Body};
-use reqwest::Error;
 use futures::{Future, IntoFuture};
 
 use super::req::HttpRequest;
-use super::{RequestParams, build_url, build_method};
+use super::{Error, RequestParams, build_url, build_method};
 
 /// A type that can be converted into a request body.
 pub trait IntoBodyAsync {
@@ -27,6 +27,12 @@ impl IntoBodyAsync for Vec<u8> {
 impl IntoBodyAsync for String {
     fn into_body(self) -> Body {
         self.into()
+    }
+}
+
+impl IntoBodyAsync for Value {
+    fn into_body(self) -> Body {
+        self.to_string().into()
     }
 }
 
@@ -80,7 +86,7 @@ impl ElasticClientAsync for Client {
     {
         let fut = build_req_async(&self, params, req)
             .into_future()
-            .and_then(|mut req| req.send());
+            .and_then(|mut req| req.send().map_err(Into::into));
 
         Box::new(fut)
     }
@@ -212,5 +218,10 @@ mod tests {
     #[test]
     fn empty_body_into_body() {
         empty_body().into_body();
+    }
+
+    #[test]
+    fn json_value_into_body() {
+        json!({}).into_body();
     }
 }

@@ -175,9 +175,14 @@
 #![deny(warnings)]
 #![deny(missing_docs)]
 
+#[macro_use]
+extern crate quick_error;
+
 extern crate elastic_requests;
 extern crate elastic_responses;
 extern crate serde;
+#[cfg_attr(test, macro_use)] 
+extern crate serde_json;
 extern crate reqwest;
 extern crate url;
 extern crate bytes;
@@ -211,9 +216,33 @@ pub use self::res::parse;
 use std::sync::Arc;
 use std::collections::BTreeMap;
 use std::str;
+use reqwest::Error as ReqwestError;
 use reqwest::header::{Headers, ContentType};
 use url::form_urlencoded::Serializer;
+
+use self::res::error::ResponseError;
 use self::req::HttpMethod;
+
+quick_error! {
+    /// An error sending a request or parsing a response.
+    #[derive(Debug)]
+    pub enum Error {
+        /// A http error.
+        Http(err: ReqwestError) {
+            from()
+            description("http error")
+            display("http error: {}", err)
+            cause(err)   
+        }
+        /// A response error.
+        Response(err: ResponseError) {
+            from()
+            description("response error")
+            display("response error: {}", err)
+            cause(err)   
+        }
+    }
+}
 
 /// Misc parameters for any request.
 ///
@@ -367,8 +396,10 @@ impl Default for RequestParams {
 }
 
 /// Get a default `Client` and `RequestParams`.
-pub fn default() -> Result<(reqwest::Client, RequestParams), reqwest::Error> {
-    reqwest::Client::new().map(|cli| (cli, RequestParams::default()))
+pub fn default() -> Result<(reqwest::Client, RequestParams), Error> {
+    reqwest::Client::new()
+        .map(|cli| (cli, RequestParams::default()))
+        .map_err(Into::into)
 }
 
 fn build_url<'a>(req_url: &str, params: &RequestParams) -> String {

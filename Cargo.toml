@@ -19,6 +19,8 @@ reqwest = { version = "*", git = "https://github.com/seanmonstar/reqwest.git", f
 url = "~1"
 bytes = "*"
 futures = "*"
+serde_json = "~1"
+quick-error = "~1"
 
 [dev-dependencies]
 json_str = "^0.*"
