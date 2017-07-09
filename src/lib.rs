@@ -268,7 +268,7 @@ pub struct RequestParams {
     /// Simple key-value store for url query params.
     url_params: BTreeMap<&'static str, String>,
     /// The complete set of headers that will be sent with the request.
-    headers: Arc<Fn(&mut Headers) + Send + Sync + 'static>,
+    headers_factory: Option<Arc<Fn(&mut Headers) + Send + Sync + 'static>>,
 }
 
 impl RequestParams {
@@ -278,11 +278,9 @@ impl RequestParams {
     /// node.
     /// It will also set the `Content-Type` header to `application/json`.
     pub fn new<T: Into<String>>(base: T) -> Self {
-        let headers = |headers: &mut Headers| headers.set(ContentType::json());
-
         RequestParams {
             base_url: base.into(),
-            headers: Arc::new(headers),
+            headers_factory: None,
             url_params: BTreeMap::new(),
         }
     }
@@ -314,17 +312,19 @@ impl RequestParams {
     /// Each call to `headers` will chain to the end of the last call.
     /// This function allocates a new `Box` for each call, so it's recommended to just call it once
     /// and configure multiple headers, rather than calling it once per header.
-    pub fn headers<F>(mut self, headers_fn: F) -> Self
+    pub fn headers<F>(mut self, headers_factory: F) -> Self
         where F: Fn(&mut Headers) + Send + Sync + 'static
     {
-        let old_fn = self.headers;
+        if let Some(old_headers_factory) = self.headers_factory {
+            let headers_factory = move |mut headers: &mut Headers| {
+                old_headers_factory(&mut headers);
+                headers_factory(&mut headers);
+            };
 
-        let headers = move |mut headers: &mut Headers| {
-            old_fn(&mut headers);
-            headers_fn(&mut headers);
-        };
-
-        self.headers = Arc::new(headers);
+            self.headers_factory = Some(Arc::new(headers_factory));
+        } else {
+            self.headers_factory = Some(Arc::new(headers_factory));
+        }
 
         self
     }
@@ -332,8 +332,11 @@ impl RequestParams {
     /// Create a new `Headers` structure, and thread it through the configuration functions.
     pub fn get_headers(&self) -> Headers {
         let mut headers = Headers::new();
+        headers.set(ContentType::json());
 
-        (self.headers)(&mut headers);
+        if let Some(ref headers_factory) = self.headers_factory {
+            headers_factory(&mut headers);
+        }
 
         headers
     }

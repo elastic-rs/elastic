@@ -1,12 +1,15 @@
 #![feature(test)]
 
 extern crate reqwest;
+extern crate tokio_core;
 extern crate elastic_reqwest;
 extern crate test;
 
-use reqwest::Client;
+use reqwest::Client as ClientSync;
+use reqwest::unstable::async::Client as ClientAsync;
 use reqwest::header::Referer;
-use elastic_reqwest::{build_req, RequestParams};
+use tokio_core::reactor::Core;
+use elastic_reqwest::{build_req_sync, build_req_async, RequestParams};
 use elastic_reqwest::req::PingRequest;
 
 #[inline(always)]
@@ -38,12 +41,12 @@ fn with_params_5(params: RequestParams) -> RequestParams {
 }
 
 macro_rules! bench {
-    ($({$bench_name:ident, $bench_macro:ident}),*) => (
+    ($($bench_name:ident),*) => (
         $(
             mod $bench_name {
                 use super::*;
 
-                $bench_macro!(
+                $bench_name!(
                     { default, RequestParams::default() },
                     { headers_1, with_headers_1(RequestParams::default()) },
                     { headers_5, with_headers_5(RequestParams::default()) },
@@ -55,7 +58,7 @@ macro_rules! bench {
     )
 }
 
-macro_rules! bench_new {
+macro_rules! new {
     ($({ $name:ident, $params:expr }),*) => (
         $(
             #[bench]
@@ -68,7 +71,7 @@ macro_rules! bench_new {
     )
 }
 
-macro_rules! bench_clone {
+macro_rules! clone {
     ($({ $name:ident, $params:expr }),*) => (
         $(
             #[bench]
@@ -83,7 +86,7 @@ macro_rules! bench_clone {
     )
 }
 
-macro_rules! bench_get_headers {
+macro_rules! get_headers {
     ($({ $name:ident, $params:expr }),*) => (
         $(
             #[bench]
@@ -98,16 +101,34 @@ macro_rules! bench_get_headers {
     )
 }
 
-macro_rules! bench_make_request {
+macro_rules! build_request_sync {
     ($({ $name:ident, $params:expr }),*) => (
         $(
             #[bench]
             fn $name(b: &mut test::Bencher) {
                 let params = RequestParams::default();
-                let cli = Client::new().unwrap();
+                let cli = ClientSync::new().unwrap();
 
                 b.iter(|| {
-                    build_req(&cli, &params, PingRequest::new())
+                    build_req_sync(&cli, &params, PingRequest::new())
+                })
+            }
+        )*
+    )
+}
+
+macro_rules! build_request_async {
+    ($({ $name:ident, $params:expr }),*) => (
+        $(
+            #[bench]
+            fn $name(b: &mut test::Bencher) {
+                let core = Core::new().unwrap();
+
+                let params = RequestParams::default();
+                let cli = ClientAsync::new(&core.handle()).unwrap();
+
+                b.iter(|| {
+                    build_req_async(&cli, &params, PingRequest::new())
                 })
             }
         )*
@@ -129,10 +150,11 @@ macro_rules! get_url_query {
     )
 }
 
-bench!(
-    { new, bench_new },
-    { clone, bench_clone },
-    { get_headers, bench_get_headers },
-    { get_url_query, get_url_query },
-    { make_request, bench_make_request }
-);
+bench![
+    new,
+    clone,
+    get_headers,
+    get_url_query,
+    build_request_sync,
+    build_request_async
+];

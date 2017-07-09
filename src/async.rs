@@ -50,7 +50,8 @@ pub trait ElasticClientAsync {
               B: IntoBodyAsync;
 }
 
-fn build_req<I, B>(client: &Client, params: &RequestParams, req: I) -> Result<RequestBuilder, Error>
+/// Build an asynchronous `reqwest::RequestBuilder` from an Elasticsearch request.
+pub fn build_req_async<I, B>(client: &Client, params: &RequestParams, req: I) -> Result<RequestBuilder, Error>
     where I: Into<HttpRequest<'static, B>>,
           B: IntoBodyAsync
 {
@@ -77,7 +78,7 @@ impl ElasticClientAsync for Client {
         where I: Into<HttpRequest<'static, B>>,
               B: IntoBodyAsync
     {
-        let fut = build_req(&self, params, req)
+        let fut = build_req_async(&self, params, req)
             .into_future()
             .and_then(|mut req| req.send());
 
@@ -125,7 +126,7 @@ mod tests {
     #[test]
     fn head_req() {
         let cli = Client::new(&core().handle()).unwrap();
-        let req = build_req(&cli, &params(), PingHeadRequest::new());
+        let req = build_req_async(&cli, &params(), PingHeadRequest::new());
 
         let url = "eshost:9200/path/?pretty=true&q=*";
 
@@ -137,7 +138,7 @@ mod tests {
     #[test]
     fn get_req() {
         let cli = Client::new(&core().handle()).unwrap();
-        let req = build_req(&cli, &params(), SimpleSearchRequest::new());
+        let req = build_req_async(&cli, &params(), SimpleSearchRequest::new());
 
         let url = "eshost:9200/path/_search?pretty=true&q=*";
 
@@ -149,7 +150,7 @@ mod tests {
     #[test]
     fn post_req() {
         let cli = Client::new(&core().handle()).unwrap();
-        let req = build_req(&cli,
+        let req = build_req_async(&cli,
                             &params(),
                             PercolateRequest::for_index_ty("idx", "ty", vec![]));
 
@@ -163,7 +164,7 @@ mod tests {
     #[test]
     fn put_req() {
         let cli = Client::new(&core().handle()).unwrap();
-        let req = build_req(&cli,
+        let req = build_req_async(&cli,
                             &params(),
                             IndicesCreateRequest::for_index("idx", vec![]));
 
@@ -177,7 +178,7 @@ mod tests {
     #[test]
     fn delete_req() {
         let cli = Client::new(&core().handle()).unwrap();
-        let req = build_req(&cli, &params(), IndicesDeleteRequest::for_index("idx"));
+        let req = build_req_async(&cli, &params(), IndicesDeleteRequest::for_index("idx"));
 
         let url = "eshost:9200/path/idx?pretty=true&q=*";
 
