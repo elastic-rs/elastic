@@ -1,9 +1,12 @@
 use bytes::Bytes;
+use serde::de::DeserializeOwned;
 use serde_json::Value;
 use reqwest::unstable::async::{Client, RequestBuilder, Response, Body};
 use futures::{Future, IntoFuture};
+use tokio_io::io;
 
 use super::req::HttpRequest;
+use super::res::parsing::{Parse, IsOk};
 use super::{Error, RequestParams, build_url, build_method};
 
 /// A type that can be converted into a request body.
@@ -89,6 +92,28 @@ impl ElasticClientAsync for Client {
             .and_then(|mut req| req.send().map_err(Into::into));
 
         Box::new(fut)
+    }
+}
+
+/// Represents a response that can be parsed into a concrete Elasticsearch response.
+pub trait ParseResponseAsync<TResponse> {
+    /// Parse a response into a concrete response type.
+    fn from_response(self, response: Response) -> Box<Future<Item = TResponse, Error = Error>>;
+}
+
+impl<TResponse: IsOk + DeserializeOwned + 'static> ParseResponseAsync<TResponse> for Parse<TResponse> {
+    fn from_response(self, response: Response) -> Box<Future<Item = TResponse, Error = Error>> {
+        let status: u16 = response.status().into();
+
+        let body_future = io::read_to_end(response, Vec::new())
+            .map_err(Into::into);
+
+        let de_future = body_future
+            .and_then(move |(_, body)| {
+                self.from_slice(status, &body).map_err(Into::into)
+            });
+
+        Box::new(de_future)
     }
 }
 

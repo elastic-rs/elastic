@@ -48,7 +48,7 @@
 //!
 //! ## The Gist
 //!
-//! - Create a [`reqwest::Client`][default]
+//! - Create a [`ClientSync`][default]
 //! - Call [`elastic_req`][elastic_req] on the client
 //! - Work with the raw http response
 //! - Or call [`parse`][parse] to get a concrete response or API error
@@ -170,8 +170,6 @@
 //! [repo]: https://github.com/elastic-rs/elastic-reqwest
 //! [crates]: https://crates.io/crates/elastic_reqwest
 
-#![cfg_attr(feature = "nightly", feature(specialization))]
-
 #![deny(warnings)]
 #![deny(missing_docs)]
 
@@ -186,10 +184,9 @@ extern crate serde_json;
 extern crate reqwest;
 extern crate url;
 extern crate bytes;
-extern crate futures;
-
-#[cfg(test)]
 extern crate tokio_core;
+extern crate tokio_io;
+extern crate futures;
 
 mod sync;
 mod async;
@@ -213,10 +210,13 @@ pub mod res {
 
 pub use self::res::parse;
 
+use std::io::Error as IoError;
 use std::sync::Arc;
 use std::collections::BTreeMap;
 use std::str;
-use reqwest::Error as ReqwestError;
+use tokio_core::reactor::Handle;
+use reqwest::{Client as ClientSync, Error as ReqwestError};
+use reqwest::unstable::async::Client as ClientAsync;
 use reqwest::header::{Headers, ContentType};
 use url::form_urlencoded::Serializer;
 
@@ -233,6 +233,13 @@ quick_error! {
             description("http error")
             display("http error: {}", err)
             cause(err)   
+        }
+        /// An io error.
+        Io(err: IoError) {
+            from()
+            description("io error")
+            display("io error: {}", err)
+            cause(err)
         }
         /// A response error.
         Response(err: ResponseError) {
@@ -396,8 +403,15 @@ impl Default for RequestParams {
 }
 
 /// Get a default `Client` and `RequestParams`.
-pub fn default() -> Result<(reqwest::Client, RequestParams), Error> {
-    reqwest::Client::new()
+pub fn default_sync() -> Result<(ClientSync, RequestParams), Error> {
+    ClientSync::new()
+        .map(|cli| (cli, RequestParams::default()))
+        .map_err(Into::into)
+}
+
+/// Get a default `Client` and `RequestParams`.
+pub fn default_async(handle: &Handle) -> Result<(ClientAsync, RequestParams), Error> {
+    ClientAsync::new(handle)
         .map(|cli| (cli, RequestParams::default()))
         .map_err(Into::into)
 }

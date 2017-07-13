@@ -80,20 +80,6 @@ pub trait ElasticClientSync {
               B: IntoBodySync;
 }
 
-/// Represents a response that can be parsed into a concrete Elasticsearch response.
-pub trait ParseResponseSync<TResponse> {
-    /// Parse a response into a concrete response type.
-    fn from_response(self, response: Response) -> Result<TResponse, Error>;
-}
-
-impl<TResponse: IsOk + DeserializeOwned> ParseResponseSync<TResponse> for Parse<TResponse> {
-    fn from_response(self, response: Response) -> Result<TResponse, Error> {
-        let status: u16 = response.status().into();
-
-        self.from_reader(status, response).map_err(Into::into)
-    }
-}
-
 /// Build a synchronous `reqwest::RequestBuilder` from an Elasticsearch request.
 pub fn build_req_sync<I, B>(client: &Client, params: &RequestParams, req: I) -> Result<RequestBuilder, Error>
     where I: Into<HttpRequest<'static, B>>,
@@ -123,6 +109,20 @@ impl ElasticClientSync for Client {
               B: IntoBodySync
     {
         build_req_sync(&self, params, req)?.send().map_err(Into::into)
+    }
+}
+
+/// Represents a response that can be parsed into a concrete Elasticsearch response.
+pub trait ParseResponseSync<TResponse> {
+    /// Parse a response into a concrete response type.
+    fn from_response(self, response: Response) -> Result<TResponse, Error>;
+}
+
+impl<TResponse: IsOk + DeserializeOwned> ParseResponseSync<TResponse> for Parse<TResponse> {
+    fn from_response(self, response: Response) -> Result<TResponse, Error> {
+        let status: u16 = response.status().into();
+
+        self.from_reader(status, response).map_err(Into::into)
     }
 }
 

@@ -7,16 +7,22 @@
 
 #[macro_use]
 extern crate serde_json;
+extern crate tokio_core;
+extern crate futures;
 extern crate elastic_reqwest as cli;
 
 use serde_json::Value;
-use cli::{ElasticClientSync, ParseResponseSync, RequestParams, Error};
+use tokio_core::reactor::Core;
+use futures::Future;
+use cli::{ElasticClientAsync, ParseResponseAsync, RequestParams, Error};
 use cli::req::SearchRequest;
 use cli::res::{parse, SearchResponse};
 
 fn run() -> Result<(), Error> {
+    let mut core = Core::new().unwrap();
+
     // Get a new default client.
-    let (client, _) = cli::default_sync()?;
+    let (client, _) = cli::default_async(&core.handle())?;
 
     // Create a new set of params with pretty printing.
     let params = RequestParams::default().url_param("pretty", true);
@@ -37,11 +43,15 @@ fn run() -> Result<(), Error> {
     };
 
     // Send the request and read the response.
-    let http_res = client.elastic_req(&params, req)?;
+    let req_fut = client.elastic_req(&params, req)
+        .and_then(|http_res| parse::<SearchResponse<Value>>().from_response(http_res))
+        .and_then(|res| {
+            println!("Got response: {:?}", res);
+            
+            Ok(())
+        });
 
-    let res = parse::<SearchResponse<Value>>().from_response(http_res)?;
-
-    println!("Got response: {:?}", res);
+    core.run(req_fut).unwrap();
 
     Ok(())
 }
