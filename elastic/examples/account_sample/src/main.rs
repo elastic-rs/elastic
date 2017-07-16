@@ -23,7 +23,7 @@ use ops::commands::{EnsureBankIndexExists, PutBulkAccounts};
 use ops::queries::SimpleSearchQuery;
 
 fn main() {
-    let client = ClientBuilder::new().build().unwrap();
+    let client = Client::new(RequestParams::default()).unwrap();
 
     println!("checking index");
 

@@ -347,6 +347,7 @@ pub use elastic_reqwest::RequestParams;
 A builder for a client.
 */
 pub struct ClientBuilder {
+    http: Option<HttpClient>,
     params: RequestParams
 }
 
@@ -362,6 +363,7 @@ impl ClientBuilder {
     */
     pub fn new() -> Self {
         ClientBuilder {
+            http: None,
             params: RequestParams::default()
         }
     }
@@ -432,13 +434,27 @@ impl ClientBuilder {
         self
     }
 
+    /** Use the given `reqwest::Client` for sending requests. */
+    pub fn http_client(mut self, client: HttpClient) -> Self {
+        self.http = Some(client);
+
+        self
+    }
+
     /** 
     Construct a [`Client`][Client] from this builder. 
 
     [Client]: struct.Client.html
     */
     pub fn build(self) -> Result<Client> {
-        Client::new(self.params)
+        if let Some(http) = self.http {
+            Ok(Client {
+                http: http,
+                params: self.params
+            })
+        } else {
+            Client::new(self.params)
+        }
     }
 }
 
