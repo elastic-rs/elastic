@@ -60,7 +60,7 @@ The `MyResponse` type can then be used for deserialising a concrete response:
 #     }
 # }
 # fn main() {
-# let client = Client::new(RequestParams::default()).unwrap();
+# let client = ClientBuilder::new().build().unwrap();
 # let req = SearchRequest::new("");
 let response = client.request(req)
                      .send()

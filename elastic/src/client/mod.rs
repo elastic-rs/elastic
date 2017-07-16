@@ -32,7 +32,7 @@ A search request for a value, where the response is matched for an `ApiError`:
 # use elastic::prelude::*;
 # use elastic::error::*;
 # fn main() {
-# let client = Client::new(RequestParams::default()).unwrap();
+# let client = ClientBuilder::new().build().unwrap();
 let response = client.search::<Value>()
                      .index("myindex")
                      .ty(Some("myty"))
@@ -75,7 +75,7 @@ A `get` request for a value:
 # use serde_json::Value;
 # use elastic::prelude::*;
 # fn main() {
-# let client = Client::new(RequestParams::default()).unwrap();
+# let client = ClientBuilder::new().build().unwrap();
 let response = client.get_document::<Value>(index("values"), id(1)).send();
 # }
 ```
@@ -88,7 +88,7 @@ Is equivalent to:
 # use serde_json::Value;
 # use elastic::prelude::*;
 # fn main() {
-# let client = Client::new(RequestParams::default()).unwrap();
+# let client = ClientBuilder::new().build().unwrap();
 let response = client.request(GetRequest::for_index_ty_id("values", "value", 1))
                      .send()
                      .and_then(into_response::<GetResponse<Value>>);
@@ -141,7 +141,7 @@ with the steps in the above process labelled:
 # use elastic::error::*;
 # use serde_json::Value;
 # fn main() {
-# let client = Client::new(RequestParams::default()).unwrap();
+# let client = ClientBuilder::new().build().unwrap();
 let req = SearchRequest::for_index("_all", empty_body());
 
 let response = client.request(req) // 1
@@ -207,7 +207,7 @@ For raw requests this returns a [`ResponseBuilder`][ResponseBuilder].
 
 ```no_run
 # use elastic::prelude::*;
-# let client = Client::new(RequestParams::default()).unwrap();
+# let client = ClientBuilder::new().build().unwrap();
 # let req = PingRequest::new();
 let request_builder = client.request(req);
 
@@ -344,6 +344,105 @@ use self::responses::parse::IsOk;
 pub use elastic_reqwest::RequestParams;
 
 /**
+A builder for a client.
+*/
+pub struct ClientBuilder {
+    params: RequestParams
+}
+
+impl ClientBuilder {
+    /**
+    Create a new client builder.
+
+    By default, a client constructed by this builder will:
+
+    - Send requests to `localhost:9200`
+    - Not use any authentication
+    - Not use TLS
+    */
+    pub fn new() -> Self {
+        ClientBuilder {
+            params: RequestParams::default()
+        }
+    }
+
+    /**
+    Set the base url. 
+
+    The url must be fully qualified.
+    This method is a convenient alternative to using `params` to specify the `base_url`.
+
+    # Examples
+
+    Specify a base url for the client to send requests to.
+    In this case, the base url is HTTPS, and not on the root path:
+
+    ```
+    # use elastic::prelude::*;
+    let builder = ClientBuilder::new()
+        .base_url("https://my_es_cluster/some_path");
+    ```
+    */
+    pub fn base_url<I>(mut self, base_url: I) -> Self 
+        where I: Into<String>
+    {
+        self.params = self.params.base_url(base_url);
+
+        self
+    }
+
+    /**
+    Specify default request parameters.
+    
+    # Examples
+    
+    Require all responses use pretty-printing:
+    
+    ```
+    # use elastic::prelude::*;
+    let builder = ClientBuilder::new()
+        .params(|params| params.url_param("pretty", true));
+    ```
+
+    Add an authorization header:
+
+    ```
+    # use elastic::prelude::*;
+    use elastic::http::header::Authorization;
+
+    let builder = ClientBuilder::new()
+        .params(|params| params.header(Authorization("let me in".to_owned())));
+    ```
+
+    Specify a base url (prefer the [`base_url`][ClientBuilder.base_url] method on `ClientBuilder` instead):
+
+    ```
+    # use elastic::prelude::*;
+    let builder = ClientBuilder::new()
+        .params(|params| params.base_url("https://my_es_cluster/some_path"));
+    ```
+
+    [ClientBuilder.base_url]: #method.base_url
+    */
+    pub fn params<F>(mut self, builder: F) -> Self
+        where F: Fn(RequestParams) -> RequestParams
+    {
+        self.params = builder(self.params);
+
+        self
+    }
+
+    /** 
+    Construct a [`Client`][Client] from this builder. 
+
+    [Client]: struct.Client.html
+    */
+    pub fn build(self) -> Result<Client> {
+        Client::new(self.params)
+    }
+}
+
+/**
 A HTTP client for the Elasticsearch REST API.
 
 The `Client` is a structure that lets you create and send [`RequestBuilder`][RequestBuilder]s.
@@ -383,7 +482,7 @@ impl Client {
     
     ```
     # use elastic::prelude::*;
-    let client = Client::new(RequestParams::default()).unwrap();
+    let client = ClientBuilder::new().build().unwrap();
     ```
     
     Create a `Client` for a specific node:

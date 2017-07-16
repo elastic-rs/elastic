@@ -11,7 +11,7 @@ The below example sends a request and then checks the response for an `ErrorKind
 ```no_run
 # use elastic::prelude::*;
 # use elastic::error::*;
-# let client = Client::new(RequestParams::default()).unwrap();
+# let client = ClientBuilder::new().build().unwrap();
 # let req = PingRequest::new();
 // Send a request.
 // This will return a Result<ResponseBuilder, Error>

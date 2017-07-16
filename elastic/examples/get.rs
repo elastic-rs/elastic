@@ -17,7 +17,7 @@ use elastic::prelude::*;
 fn main() {
     // A reqwest HTTP client and default parameters.
     // The `params` includes the base node url (http://localhost:9200).
-    let client = Client::new(RequestParams::default()).unwrap();
+    let client = ClientBuilder::new().build().unwrap();
 
     let res = client
         .get_document::<Value>(index("typed_sample_index"), id("1"))

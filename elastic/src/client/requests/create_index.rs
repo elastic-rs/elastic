@@ -24,7 +24,7 @@ impl Client {
     
     ```no_run
     # use elastic::prelude::*;
-    # let client = Client::new(RequestParams::default()).unwrap();
+    # let client = ClientBuilder::new().build().unwrap();
     let my_index = index("myindex");
 
     let response = client.create_index(my_index).send().unwrap();
@@ -44,7 +44,7 @@ impl Client {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType { }
     # fn main() {
-    # let client = Client::new(RequestParams::default()).unwrap();
+    # let client = ClientBuilder::new().build().unwrap();
     let my_index = index("myindex");
 
     let body = json!({

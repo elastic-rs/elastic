@@ -41,7 +41,7 @@ impl Client {
     #     pub title: String,
     #     pub timestamp: Date<DefaultDateFormat>
     # }
-    # let client = Client::new(RequestParams::default()).unwrap();
+    # let client = ClientBuilder::new().build().unwrap();
     let doc = MyType {
         id: 1,
         title: String::from("A title"),

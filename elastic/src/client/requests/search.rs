@@ -37,7 +37,7 @@ impl Client {
     # fn main() {
     # #[derive(Debug, Serialize, Deserialize, ElasticType)]
     # struct MyType { }
-    # let client = Client::new(RequestParams::default()).unwrap();
+    # let client = ClientBuilder::new().build().unwrap();
     let response = client.search::<MyType>()
                          .index("myindex")
                          .body(json_str!({
@@ -67,7 +67,7 @@ impl Client {
     # use serde_json::Value;
     # use elastic::prelude::*;
     # fn main() {
-    # let client = Client::new(RequestParams::default()).unwrap();
+    # let client = ClientBuilder::new().build().unwrap();
     let response = client.search::<Value>()
                          .index("myindex")
                          .ty(Some("mytype"))

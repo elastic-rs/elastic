@@ -87,7 +87,7 @@ impl Client {
     
     ```no_run
     # use elastic::prelude::*;
-    # let client = Client::new(RequestParams::default()).unwrap();
+    # let client = ClientBuilder::new().build().unwrap();
     // `PingRequest` implements `Into<HttpRequest>`
     let req = PingRequest::new();
     
@@ -135,7 +135,7 @@ impl<'a, TRequest> RequestBuilder<'a, TRequest> {
     
     ```no_run
     # use elastic::prelude::*;
-    # let client = Client::new(RequestParams::default()).unwrap();
+    # let client = ClientBuilder::new().build().unwrap();
     # fn get_req() -> PingRequest<'static> { PingRequest::new() }
     let builder = client.request(get_req())
                         .params(|params| params.url_param("refresh", true));
@@ -195,7 +195,7 @@ impl<'a, TRequest, TBody> RequestBuilder<'a, RawRequestBuilder<TRequest, TBody>>
     # use elastic::prelude::*;
     # fn main() {
     # fn get_req() -> PingRequest<'static> { PingRequest::new() }
-    # let client = Client::new(RequestParams::default()).unwrap();
+    # let client = ClientBuilder::new().build().unwrap();
     let response = client.request(get_req())
                          .send()
                          .and_then(into_response::<SearchResponse<Value>>)
