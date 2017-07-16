@@ -58,8 +58,10 @@ fn main() {
         }
     };
 
-    let params = RequestParams::default().header(http::header::Connection::keep_alive());
-    let client = Client::new(params).unwrap();
+    let client = ClientBuilder::new()
+        .params(|p| p.header(http::header::Connection::keep_alive()))
+        .build()
+        .unwrap();
 
     let mut results = Vec::<i64>::with_capacity(runs as usize);
     for _ in 0..runs {

@@ -2,6 +2,7 @@
 members = [
 	"elastic",
     "elastic_raw",
+    "elastic_bulk",
     "rs-es",
 ]
 
