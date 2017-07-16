@@ -27,4 +27,4 @@ elastic_types = "~0.18.0"
 [dev-dependencies]
 json_str = "^0.*"
 serde_derive = "~1"
-elastic_derive = { version = "~0.13.1", path = "../derive" }
+elastic_derive = "~0.13.1"
