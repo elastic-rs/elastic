@@ -46,8 +46,8 @@ use serde_json::Value;
 use elastic::prelude::*;
 
 // A reqwest HTTP client and default parameters.
-// The `params` includes the base node url (http://localhost:9200).
-let client = Client::new(RequestParams::default()).unwrap();
+// The builder includes the base node url (http://localhost:9200).
+let client = ClientBuilder::new().build().unwrap();
 
 // A search request with a freeform body.
 let res = client.search::<Value>()
