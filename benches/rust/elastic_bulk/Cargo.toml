@@ -10,5 +10,6 @@ profile_memory = []
 elastic = { version = "*", path = "../../../elastic", features = ["nightly"] }
 string_cache = { version = "*", optional = true }
 inlinable_string = { version = "*", features = ["serde"], optional = true }
+lazy_static = { version = "*" }
 
-lazy_static = { version = "*", optional = true }
+measure = { version = "*", path = "../measure" }

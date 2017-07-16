@@ -12,5 +12,4 @@ serde_derive = "~1"
 
 rs-es = { version = "*", default-features = false }
 
-stopwatch = "*"
-time = "*"
+measure = { version = "*", path = "../measure" }
