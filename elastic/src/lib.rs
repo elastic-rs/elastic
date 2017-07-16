@@ -58,10 +58,15 @@ Properties like the host and query parameters can be configured for all requests
 
 ```no_run
 use elastic::prelude::*;
+use elastic::http::header::Authorization;
 
-let params = RequestParams::new("http://es_host:9200").url_param("pretty", true);
+let builder = ClientBuilder::new()
+    .base_url("http://es_host:9200")
+    .params(|p| p
+        .url_param("pretty", true)
+        .header(Authorization("let me in".to_owned())));
 
-let client = Client::new(params).unwrap();
+let client = builder.build().unwrap();
 ```
 
 Individual requests can override these parameter values:
@@ -72,7 +77,7 @@ Individual requests can override these parameter values:
 # use serde_json::Value;
 # use elastic::prelude::*;
 # fn main() {
-let client = Client::new(RequestParams::default()).unwrap();
+let client = ClientBuilder::new().build().unwrap();
 
 let response = client.search::<Value>()
                      .params(|p| p.url_param("pretty", true))
@@ -120,7 +125,7 @@ Call [`Client.put_mapping`][Client.put_mapping] to ensure an index has the right
 # fn main() {
 # #[derive(Serialize, Deserialize, ElasticType)]
 # struct MyType { }
-# let client = Client::new(RequestParams::default()).unwrap();
+# let client = ClientBuilder::new().build().unwrap();;
 client.put_mapping::<MyType>(index("myindex"))
       .send()
       .unwrap();
@@ -142,7 +147,7 @@ Then call [`Client.index_document`][Client.index_document] to index documents in
 #     pub title: String,
 #     pub timestamp: Date<DefaultDateFormat>
 # }
-# let client = Client::new(RequestParams::default()).unwrap();
+# let client = ClientBuilder::new().build().unwrap();;
 let doc = MyType {
     id: 1,
     title: String::from("A title"),
@@ -170,7 +175,7 @@ Call [`Client.get_document`][Client.get_document] to retrieve a single document 
 #     pub title: String,
 #     pub timestamp: Date<DefaultDateFormat>
 # }
-# let client = Client::new(RequestParams::default()).unwrap();
+# let client = ClientBuilder::new().build().unwrap();;
 let response = client.get_document::<MyType>(index("myindex"), id(1))
                      .send()
                      .unwrap();
@@ -197,7 +202,7 @@ Call [`Client.search`][Client.search] to execute [Query DSL][docs-search] querie
 # fn main() {
 # #[derive(Debug, Serialize, Deserialize, ElasticType)]
 # struct MyType { }
-# let client = Client::new(RequestParams::default()).unwrap();
+# let client = ClientBuilder::new().build().unwrap();;
 let response = client.search::<MyType>()
                      .index("myindex")
                      .body(json_str!({
@@ -288,7 +293,7 @@ pub mod types;
 pub mod prelude {
     /*! A glob import for convenience. */
 
-    pub use client::{Client, RequestParams, into_response, into_raw};
+    pub use client::{ClientBuilder, Client, RequestParams, into_response, into_raw};
     pub use client::requests::*;
     pub use client::responses::*;
     pub use types::prelude::*;

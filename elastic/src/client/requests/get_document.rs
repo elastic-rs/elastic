@@ -43,7 +43,7 @@ impl Client {
     #     pub title: String,
     #     pub timestamp: Date<DefaultDateFormat>
     # }
-    # let client = Client::new(RequestParams::default()).unwrap();
+    # let client = ClientBuilder::new().build().unwrap();
     let response = client.get_document::<MyType>(index("myindex"), id(1))
                          .send()
                          .unwrap();
@@ -67,7 +67,7 @@ impl Client {
     # use serde_json::Value;
     # use elastic::prelude::*;
     # fn main() {
-    # let client = Client::new(RequestParams::default()).unwrap();
+    # let client = ClientBuilder::new().build().unwrap();
     let response = client.get_document::<Value>(index("myindex"), id(1))
                          .ty("mytype")
                          .send()

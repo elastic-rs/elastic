@@ -13,7 +13,7 @@ use elastic::prelude::*;
 
 fn main() {
     // A HTTP client and request parameters
-    let client = Client::new(RequestParams::default()).unwrap();
+    let client = ClientBuilder::new().build().unwrap();
 
     // Execute a bulk request
     let bulk: BulkResponse = client

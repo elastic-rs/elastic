@@ -36,7 +36,7 @@ impl Client {
     # fn main() {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType { }
-    # let client = Client::new(RequestParams::default()).unwrap();
+    # let client = ClientBuilder::new().build().unwrap();
     client.put_mapping::<MyType>(index("myindex"))
           .send()
           .unwrap();
