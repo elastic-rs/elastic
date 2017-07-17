@@ -1,5 +1,7 @@
 [workspace]
 members = [
+    "prepare",
+    "measure",
 	"elastic",
     "elastic_raw",
     "elastic_bulk",

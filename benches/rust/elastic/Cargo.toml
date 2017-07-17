@@ -11,5 +11,4 @@ json_str = { version = "*", features = ["nightly"]}
 elastic = { version = "*", path = "../../../elastic", features = ["nightly"] }
 elastic_derive = { version = "*", path = "../../../derive" }
 
-time = "*"
-stopwatch = "*"
+measure = { version = "*", path = "../measure" }
