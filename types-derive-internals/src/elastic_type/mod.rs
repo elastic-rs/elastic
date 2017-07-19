@@ -115,7 +115,7 @@ fn impl_props_mapping(crate_root: Tokens,
             fn props_len() -> usize { #stmts_len }
 
             fn serialize_props<S>(state: &mut S) -> ::std::result::Result<(), S::Error> 
-                where S: ::serde::ser::SerializeStruct {
+                where S: #crate_root::derive::SerializeStruct {
                 #(#stmts)*
                 Ok(())
             }

@@ -1,13 +1,16 @@
 /*! Functions that are exported and used by `elastic_types_derive`. */
 
 use chrono::{DateTime, Utc};
-use chrono::format::{self, Item, Parsed};
+use chrono::format::{self, Parsed};
 
 use private::field::FieldMapping;
 
 pub use date::{DateFormat, DateValue, ParseError, FormattedDate};
 pub use document::{DocumentType, FieldType, field_ser};
 pub use document::mapping::{DocumentMapping, PropertiesMapping};
+
+pub use chrono::format::{Item, Pad, Numeric, Fixed};
+pub use serde::ser::SerializeStruct;
 
 /** Get the mapping for a field. */
 #[inline]

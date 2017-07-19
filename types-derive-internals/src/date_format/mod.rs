@@ -34,7 +34,7 @@ pub fn expand_derive(crate_root: Tokens,
     let tokens: Vec<Tokens> = parse::to_tokens(format)
         ?
         .into_iter()
-        .map(|t| t.into())
+        .map(|t| t.into_tokens(&crate_root))
         .collect();
 
     let derived = impl_date_format(crate_root, input, name, &tokens);
@@ -97,24 +97,24 @@ fn get_name_from_attr<'a>(item: &'a syn::MacroInput) -> Option<&'a str> {
     val.and_then(|v| get_str_from_lit(v).ok())
 }
 
-impl<'a> Into<Tokens> for parse::DateFormatToken<'a> {
-    fn into(self) -> Tokens {
+impl<'a> parse::DateFormatToken<'a> {
+    fn into_tokens(self, crate_root: &Tokens) -> Tokens {
         use self::parse::DateFormatToken::*;
 
         match self {
-            Year => quote!(::chrono::format::Item::Numeric(::chrono::format::Numeric::Year, ::chrono::format::Pad::Zero)),
-            Month => quote!(::chrono::format::Item::Numeric(::chrono::format::Numeric::Month, ::chrono::format::Pad::Zero)),
-            DayOfMonth => quote!(::chrono::format::Item::Numeric(::chrono::format::Numeric::Day, ::chrono::format::Pad::Zero)),
-            DayOfYear => quote!(::chrono::format::Item::Numeric(::chrono::format::Numeric::Ordinal, ::chrono::format::Pad::Zero)),
-            Hour => quote!(::chrono::format::Item::Numeric(::chrono::format::Numeric::Hour, ::chrono::format::Pad::Zero)),
-            Minute => quote!(::chrono::format::Item::Numeric(::chrono::format::Numeric::Minute, ::chrono::format::Pad::Zero)),
-            Second => quote!(::chrono::format::Item::Numeric(::chrono::format::Numeric::Second, ::chrono::format::Pad::Zero)),
+            Year => quote!(#crate_root::derive::Item::Numeric(#crate_root::derive::Numeric::Year, #crate_root::derive::Pad::Zero)),
+            Month => quote!(#crate_root::derive::Item::Numeric(#crate_root::derive::Numeric::Month, #crate_root::derive::Pad::Zero)),
+            DayOfMonth => quote!(#crate_root::derive::Item::Numeric(#crate_root::derive::Numeric::Day, #crate_root::derive::Pad::Zero)),
+            DayOfYear => quote!(#crate_root::derive::Item::Numeric(#crate_root::derive::Numeric::Ordinal, #crate_root::derive::Pad::Zero)),
+            Hour => quote!(#crate_root::derive::Item::Numeric(#crate_root::derive::Numeric::Hour, #crate_root::derive::Pad::Zero)),
+            Minute => quote!(#crate_root::derive::Item::Numeric(#crate_root::derive::Numeric::Minute, #crate_root::derive::Pad::Zero)),
+            Second => quote!(#crate_root::derive::Item::Numeric(#crate_root::derive::Numeric::Second, #crate_root::derive::Pad::Zero)),
             Millisecond => {
-                quote!(::chrono::format::Item::Fixed(::chrono::format::Fixed::Nanosecond3))
+                quote!(#crate_root::derive::Item::Fixed(#crate_root::derive::Fixed::Nanosecond3))
             }
-            Utc => quote!(::chrono::format::Item::Literal("Z")),
-            Delim(s) => quote!(::chrono::format::Item::Literal(#s)),
-            Escaped(s) => quote!(::chrono::format::Item::Literal(#s)),
+            Utc => quote!(#crate_root::derive::Item::Literal("Z")),
+            Delim(s) => quote!(#crate_root::derive::Item::Literal(#s)),
+            Escaped(s) => quote!(#crate_root::derive::Item::Literal(#s)),
         }
     }
 }
