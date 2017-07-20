@@ -24,19 +24,27 @@ extern crate string_cache;
 extern crate inlinable_string;
 extern crate elastic;
 
+extern crate reqwest;
+
 extern crate measure;
 
 use elastic::http;
 use elastic::prelude::*;
 
 #[cfg(not(any(feature="string_cache", feature="inlinable_string")))]
-type BulkResponseType = elastic::prelude::BulkResponse<String, String, String>;
+type AllocatedField = String;
 
 #[cfg(feature="string_cache")]
-type BulkResponseType = elastic::prelude::BulkResponse<string_cache::DefaultAtom, string_cache::DefaultAtom, string_cache::DefaultAtom>;
+type AllocatedField = string_cache::DefaultAtom;
 
 #[cfg(feature="inlinable_string")]
-type BulkResponseType = elastic::prelude::BulkResponse<inlinable_string::InlinableString, inlinable_string::InlinableString, inlinable_string::InlinableString>;
+type AllocatedField = inlinable_string::InlinableString;
+
+#[cfg(not(feature="errors_only"))]
+type BulkResponseType = elastic::prelude::BulkResponse<AllocatedField, AllocatedField, AllocatedField>;
+
+#[cfg(feature="errors_only")]
+type BulkResponseType = elastic::prelude::BulkErrorsResponse<AllocatedField, AllocatedField, AllocatedField>;
 
 // Create a bulk request to index a bunch of docs.
 macro_rules! bulk_req {
@@ -64,10 +72,24 @@ fn get_req() -> &'static str {
     &REQUEST
 }
 
+#[cfg(feature="gzip")]
+fn http_client() -> reqwest::Client {
+    reqwest::Client::new().unwrap()
+}
+
+#[cfg(not(feature="gzip"))]
+fn http_client() -> reqwest::Client {
+    let mut http = reqwest::Client::new().unwrap();
+    http.gzip(false);
+
+    http
+}
+
 fn main() {
     let runs = measure::parse_runs_from_env();
 
     let client = ClientBuilder::new()
+        .http_client(http_client())
         .params(|p| p.header(http::header::Connection::keep_alive()))
         .build()
         .unwrap();
