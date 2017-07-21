@@ -6,7 +6,7 @@
 
 extern crate elastic_reqwest as cli;
 
-use cli::{ElasticClient, ParseResponse};
+use cli::{SyncElasticClient, SyncFromResponse, Error};
 use cli::req::BulkRequest;
 use cli::res::{parse, BulkResponse};
 
@@ -28,7 +28,7 @@ fn get_req() -> String {
 
 fn run() -> Result<(), Error> {
     // Get a new default client.
-    let (client, params) = cli::default()?;
+    let (client, params) = cli::default_sync()?;
 
     // Send the bulk request.
     let http_res = client.elastic_req(&params, BulkRequest::new(get_req()))?;
@@ -36,6 +36,8 @@ fn run() -> Result<(), Error> {
     let res = parse::<BulkResponse>().from_response(http_res)?;
 
     println!("{:?}", res);
+
+    Ok(())
 }
 
 fn main() {

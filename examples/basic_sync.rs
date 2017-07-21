@@ -10,7 +10,7 @@ extern crate serde_json;
 extern crate elastic_reqwest as cli;
 
 use serde_json::Value;
-use cli::{ElasticClientSync, ParseResponseSync, RequestParams, Error};
+use cli::{SyncElasticClient, SyncFromResponse, RequestParams, Error};
 use cli::req::SearchRequest;
 use cli::res::{parse, SearchResponse};
 

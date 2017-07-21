@@ -14,7 +14,7 @@ extern crate elastic_reqwest as cli;
 use serde_json::Value;
 use tokio_core::reactor::Core;
 use futures::Future;
-use cli::{ElasticClientAsync, ParseResponseAsync, RequestParams, Error};
+use cli::{AsyncElasticClient, AsyncFromResponse, RequestParams, Error};
 use cli::req::SearchRequest;
 use cli::res::{parse, SearchResponse};
 

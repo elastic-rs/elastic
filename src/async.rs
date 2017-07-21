@@ -1,3 +1,6 @@
+/*! Asynchronous http client. */
+
+use std::ops::Deref;
 use bytes::Bytes;
 use serde::de::DeserializeOwned;
 use serde_json::Value;
@@ -10,59 +13,71 @@ use super::res::parsing::{Parse, IsOk};
 use super::{Error, RequestParams, build_url, build_method};
 
 /// A type that can be converted into a request body.
-pub trait IntoBodyAsync {
-    /// Convert self into a body.
-    fn into_body(self) -> Body;
-}
+pub struct AsyncBody(Body);
 
-impl IntoBodyAsync for Body {
-    fn into_body(self) -> Body {
-        self
+impl AsyncBody {
+    /// Convert the body into its inner value.
+    pub fn into_inner(self) -> Body {
+        self.0
     }
 }
 
-impl IntoBodyAsync for Vec<u8> {
-    fn into_body(self) -> Body {
-        self.into()
+impl Deref for AsyncBody {
+    type Target = Body;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
     }
 }
 
-impl IntoBodyAsync for String {
-    fn into_body(self) -> Body {
-        self.into()
+impl From<Body> for AsyncBody {
+    fn from(body: Body) -> AsyncBody {
+        AsyncBody(body)
     }
 }
 
-impl IntoBodyAsync for Value {
-    fn into_body(self) -> Body {
-        self.to_string().into()
+impl From<Vec<u8>> for AsyncBody {
+    fn from(body: Vec<u8>) -> AsyncBody {
+        AsyncBody(body.into())
     }
 }
 
-impl IntoBodyAsync for &'static [u8] {
-    fn into_body(self) -> Body {
-        Bytes::from(self).into()
+impl From<String> for AsyncBody {
+    fn from(body: String) -> AsyncBody {
+        AsyncBody(body.into())
     }
 }
 
-impl IntoBodyAsync for &'static str {
-    fn into_body(self) -> Body {
-        Bytes::from(self).into()
+impl From<Value> for AsyncBody {
+    fn from(body: Value) -> AsyncBody {
+        AsyncBody(body.to_string().into())
+    }
+}
+
+impl From<&'static [u8]> for AsyncBody {
+    fn from(body: &'static [u8]) -> AsyncBody {
+        AsyncBody(Bytes::from(body).into())
+    }
+}
+
+impl From<&'static str> for AsyncBody {
+    fn from(body: &'static str) -> AsyncBody {
+        AsyncBody(Bytes::from(body).into())
     }
 }
 
 /// Represents a client that can send Elasticsearch requests.
-pub trait ElasticClientAsync {
+pub trait AsyncElasticClient {
     /// Send a request and get a response.
     fn elastic_req<I, B>(&self, params: &RequestParams, req: I) -> Box<Future<Item = Response, Error = Error>>
         where I: Into<HttpRequest<'static, B>>,
-              B: IntoBodyAsync;
+              B: Into<AsyncBody>;
 }
 
 /// Build an asynchronous `reqwest::RequestBuilder` from an Elasticsearch request.
 pub fn build_req_async<I, B>(client: &Client, params: &RequestParams, req: I) -> Result<RequestBuilder, Error>
     where I: Into<HttpRequest<'static, B>>,
-          B: IntoBodyAsync
+          B: Into<AsyncBody>
 {
     let req = req.into();
 
@@ -75,17 +90,17 @@ pub fn build_req_async<I, B>(client: &Client, params: &RequestParams, req: I) ->
         req.headers(params.get_headers());
 
         if let Some(body) = body {
-            req.body(body.into_body());
+            req.body(body.into().into_inner());
         }
     }
 
     Ok(req)
 }
 
-impl ElasticClientAsync for Client {
+impl AsyncElasticClient for Client {
     fn elastic_req<I, B>(&self, params: &RequestParams, req: I) -> Box<Future<Item = Response, Error = Error>>
         where I: Into<HttpRequest<'static, B>>,
-              B: IntoBodyAsync
+              B: Into<AsyncBody>
     {
         let fut = build_req_async(&self, params, req)
             .into_future()
@@ -96,12 +111,12 @@ impl ElasticClientAsync for Client {
 }
 
 /// Represents a response that can be parsed into a concrete Elasticsearch response.
-pub trait ParseResponseAsync<TResponse> {
+pub trait AsyncFromResponse<TResponse> {
     /// Parse a response into a concrete response type.
     fn from_response(self, response: Response) -> Box<Future<Item = TResponse, Error = Error>>;
 }
 
-impl<TResponse: IsOk + DeserializeOwned + 'static> ParseResponseAsync<TResponse> for Parse<TResponse> {
+impl<TResponse: IsOk + DeserializeOwned + 'static> AsyncFromResponse<TResponse> for Parse<TResponse> {
     fn from_response(self, response: Response) -> Box<Future<Item = TResponse, Error = Error>> {
         let status: u16 = response.status().into();
 
@@ -220,33 +235,33 @@ mod tests {
 
     #[test]
     fn owned_string_into_body() {
-        String::new().into_body();
+        AsyncBody::from(String::new());
     }
 
     #[test]
     fn borrowed_string_into_body() {
-        "abc".into_body();
+        AsyncBody::from("abc");
     }
 
     #[test]
     fn owned_vec_into_body() {
-        Vec::new().into_body();
+        AsyncBody::from(Vec::new());
     }
 
     #[test]
     fn borrowed_vec_into_body() {
         static BODY: &'static [u8] = &[0, 1, 2];
 
-        (&BODY).into_body();
+        AsyncBody::from(BODY);
     }
 
     #[test]
     fn empty_body_into_body() {
-        empty_body().into_body();
+        AsyncBody::from(empty_body());
     }
 
     #[test]
     fn json_value_into_body() {
-        json!({}).into_body();
+        AsyncBody::from(json!({}));
     }
 }

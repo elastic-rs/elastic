@@ -42,7 +42,7 @@
 //! extern crate reqwest;
 //! extern crate elastic_reqwest as cli;
 //!
-//! use cli::{ElasticClientSync, ParseResponse, parse};
+//! use cli::{SyncElasticClient, ParseResponse, parse};
 //! # fn main() {}
 //! ```
 //!
@@ -61,7 +61,7 @@
 //! //HTTP HEAD /
 //!
 //! # extern crate elastic_reqwest as cli;
-//! use cli::ElasticClientSync;
+//! use cli::SyncElasticClient;
 //! use cli::req::PingRequest;
 //!
 //! # fn main() {
@@ -80,7 +80,7 @@
 //!
 //! extern crate elastic_reqwest as cli;
 //!
-//! use cli::{ ElasticClientSync, ParseResponse, RequestParams, parse };
+//! use cli::{ SyncElasticClient, ParseResponse, RequestParams, parse };
 //! use cli::req::SimpleSearchRequest;
 //! use cli::res::SearchResponse;
 //!
@@ -112,7 +112,7 @@
 //! extern crate json_str;
 //! extern crate elastic_reqwest as cli;
 //!
-//! use cli::{ElasticClientSync, ParseResponse, parse};
+//! use cli::{SyncElasticClient, ParseResponse, parse};
 //! use cli::req::SearchRequest;
 //! use cli::res::SearchResponse;
 //!
@@ -160,7 +160,7 @@
 //! - [Github][repo]
 //!
 //! [default]: fn.default.html
-//! [elastic_req]: trait.ElasticClientSync.html#tymethod.elastic_req
+//! [elastic_req]: trait.SyncElasticClient.html#tymethod.elastic_req
 //! [parse]: fn.parse.html
 //! [elastic]: https://github.com/elastic-rs/elastic
 //! [rs-es]: https://github.com/benashford/rs-es
@@ -188,11 +188,11 @@ extern crate tokio_core;
 extern crate tokio_io;
 extern crate futures;
 
-mod sync;
-mod async;
+pub mod sync;
+pub mod async;
 
-pub use self::sync::*;
-pub use self::async::*;
+pub use self::sync::{SyncElasticClient, SyncBody, SyncFromResponse};
+pub use self::async::{AsyncElasticClient, AsyncBody, AsyncFromResponse};
 
 /// Request types.
 ///
