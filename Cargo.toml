@@ -15,7 +15,7 @@ nightly = []
 serde = "~1"
 elastic_requests = "~0.4.1"
 elastic_responses = "~0.9.0"
-reqwest = { version = "*", git = "https://github.com/kodraus/reqwest.git", branch = "feat/async-decoder", features = ["unstable"] }
+reqwest = { version = "*", git = "https://github.com/KodrAus/reqwest.git", branch = "feat/async-decoder", features = ["unstable"] }
 url = "~1"
 bytes = "*"
 tokio-core = "*"
