@@ -1,5 +1,5 @@
 use error::*;
-use client::Client;
+use client::{Client, Sender, SyncSender, AsyncSender};
 use client::requests::{empty_body, DefaultBody, IntoBody, Index, IndicesCreateRequest,
                        RequestBuilder, RawRequestBuilder};
 use client::responses::CommandResponse;
@@ -14,7 +14,9 @@ pub struct CreateIndexRequestBuilder<TBody> {
     body: TBody,
 }
 
-impl Client {
+impl<TSender> Client<TSender> 
+    where TSender: Sender
+{
     /** 
     Create a [`RequestBuilder` for a create index request][RequestBuilder.create_index].
 
@@ -74,10 +76,8 @@ impl Client {
     [types-mod]: ../types/index.html
     [documents-mod]: ../types/document/index.html
     */
-    pub fn create_index<'a>(&'a self,
-                            index: Index<'static>)
-                            -> RequestBuilder<'a, CreateIndexRequestBuilder<DefaultBody>> {
-        RequestBuilder::new(&self,
+    pub fn create_index(&self, index: Index<'static>) -> RequestBuilder<TSender, CreateIndexRequestBuilder<DefaultBody>> {
+        RequestBuilder::new(self.clone(),
                             None,
                             CreateIndexRequestBuilder {
                                 index: index,
@@ -86,9 +86,7 @@ impl Client {
     }
 }
 
-impl<TBody> CreateIndexRequestBuilder<TBody>
-    where TBody: IntoBody
-{
+impl<TBody> CreateIndexRequestBuilder<TBody> {
     fn into_request(self) -> IndicesCreateRequest<'static, TBody> {
         IndicesCreateRequest::for_index(self.index, self.body)
     }
@@ -104,8 +102,9 @@ Call [`Client.create_index`][Client.create_index] to get a `RequestBuilder` for 
 [Client.create_index]: ../struct.Client.html#method.create_index
 [docs-create-index]: https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-create-index.html
 */
-impl<'a, TBody> RequestBuilder<'a, CreateIndexRequestBuilder<TBody>>
-    where TBody: IntoBody
+impl<TSender, TBody> RequestBuilder<TSender, CreateIndexRequestBuilder<TBody>>
+    where TSender: Sender,
+          TBody: Into<TSender::Body>
 {
     /** 
     Set the body for the search request.
@@ -114,8 +113,8 @@ impl<'a, TBody> RequestBuilder<'a, CreateIndexRequestBuilder<TBody>>
     */
     pub fn body<TNewBody>(self,
                           body: TNewBody)
-                          -> RequestBuilder<'a, CreateIndexRequestBuilder<TNewBody>>
-        where TNewBody: IntoBody
+                          -> RequestBuilder<TSender, CreateIndexRequestBuilder<TNewBody>>
+        where TNewBody: Into<TSender::Body>
     {
         RequestBuilder::new(self.client,
                             self.params,
@@ -124,7 +123,11 @@ impl<'a, TBody> RequestBuilder<'a, CreateIndexRequestBuilder<TBody>>
                                 body: body,
                             })
     }
+}
 
+impl<TBody> RequestBuilder<SyncSender, CreateIndexRequestBuilder<TBody>>
+    where TBody: Into<<SyncSender as Sender>::Body>
+{
     /** Send the create index request. */
     pub fn send(self) -> Result<CommandResponse> {
         let req = self.req.into_request();

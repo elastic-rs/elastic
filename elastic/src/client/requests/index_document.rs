@@ -2,7 +2,7 @@ use serde_json;
 use serde::Serialize;
 
 use error::*;
-use client::Client;
+use client::{Client, Sender, SyncSender, AsyncSender};
 use client::requests::{Index, Type, Id, IndexRequest, RequestBuilder, RawRequestBuilder};
 use client::responses::IndexResponse;
 use types::document::DocumentType;
@@ -19,9 +19,10 @@ pub struct IndexRequestBuilder<TDocument> {
     doc: TDocument,
 }
 
-impl Client {
-    /** 
-    
+impl<TSender> Client<TSender> 
+    where TSender: Sender
+{
+    /**
     Create a [`RequestBuilder` for an index request][RequestBuilder.index_document].
 
     # Examples
@@ -60,16 +61,16 @@ impl Client {
     [types-mod]: ../types/index.html
     [documents-mod]: ../types/document/index.html
     */
-    pub fn index_document<'a, TDocument>(&'a self,
+    pub fn index_document<TDocument>(&self,
                                          index: Index<'static>,
                                          id: Id<'static>,
                                          doc: TDocument)
-                                         -> RequestBuilder<'a, IndexRequestBuilder<TDocument>>
+                                         -> RequestBuilder<TSender, IndexRequestBuilder<TDocument>>
         where TDocument: Serialize + DocumentType
     {
         let ty = TDocument::name().into();
 
-        RequestBuilder::new(&self,
+        RequestBuilder::new(self.clone(),
                             None,
                             IndexRequestBuilder {
                                 index: index,
@@ -100,8 +101,8 @@ Call [`Client.index_document`][Client.index_document] to get a `RequestBuilder` 
 [Client.index_document]: ../struct.Client.html#method.index_document
 [docs-index]: https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html
 */
-impl<'a, TDocument> RequestBuilder<'a, IndexRequestBuilder<TDocument>>
-    where TDocument: Serialize
+impl<TSender, TDocument> RequestBuilder<TSender, IndexRequestBuilder<TDocument>> 
+    where TSender: Sender
 {
     /** Set the type for the index request. */
     pub fn ty<I>(mut self, ty: I) -> Self
@@ -110,7 +111,11 @@ impl<'a, TDocument> RequestBuilder<'a, IndexRequestBuilder<TDocument>>
         self.req.ty = ty.into();
         self
     }
+}
 
+impl<TDocument> RequestBuilder<SyncSender, IndexRequestBuilder<TDocument>>
+    where TDocument: Serialize
+{
     /** Send the index request. */
     pub fn send(self) -> Result<IndexResponse> {
         let req = self.req.into_request()?;

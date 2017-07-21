@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 use serde::de::DeserializeOwned;
 
 use error::*;
-use client::Client;
+use client::{Client, Sender, SyncSender, AsyncSender};
 use client::requests::{empty_body, DefaultBody, IntoBody, Index, Type, SearchRequest,
                        RequestBuilder, RawRequestBuilder};
 use client::responses::SearchResponse;
@@ -19,7 +19,9 @@ pub struct SearchRequestBuilder<TDocument, TBody> {
     _marker: PhantomData<TDocument>,
 }
 
-impl Client {
+impl<TSender> Client<TSender> 
+    where TSender: Sender
+{
     /** 
     Create a [`RequestBuilder` for a search request][RequestBuilder.search]. 
 
@@ -81,18 +83,17 @@ impl Client {
     [documents-mod]: ../types/document/index.html
     [docs-querystring]: https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html
     */
-    pub fn search<'a, TDocument>
-        (&'a self)
-         -> RequestBuilder<'a, SearchRequestBuilder<TDocument, DefaultBody>>
+    pub fn search<TDocument>
+        (&self)
+         -> RequestBuilder<TSender, SearchRequestBuilder<TDocument, DefaultBody>>
         where TDocument: DeserializeOwned
     {
-        RequestBuilder::new(&self, None, SearchRequestBuilder::new(empty_body()))
+        RequestBuilder::new(self.clone(), None, SearchRequestBuilder::new(empty_body()))
     }
 }
 
 impl<TDocument, TBody> SearchRequestBuilder<TDocument, TBody>
-    where TDocument: DeserializeOwned,
-          TBody: IntoBody
+    where TDocument: DeserializeOwned
 {
     fn new(body: TBody) -> Self {
         SearchRequestBuilder {
@@ -123,9 +124,8 @@ Call [`Client.search`][Client.search] to get a `RequestBuilder` for a search req
 [Client.search]: ../struct.Client.html#method.search
 [docs-search]: http://www.elastic.co/guide/en/elasticsearch/reference/current/search-search.html
 */
-impl<'a, TDocument, TBody> RequestBuilder<'a, SearchRequestBuilder<TDocument, TBody>>
-    where TDocument: DeserializeOwned,
-          TBody: IntoBody
+impl<TSender, TDocument, TBody> RequestBuilder<TSender, SearchRequestBuilder<TDocument, TBody>>
+    where TSender: Sender
 {
     /**
     Set the indices for the search request.
@@ -154,8 +154,8 @@ impl<'a, TDocument, TBody> RequestBuilder<'a, SearchRequestBuilder<TDocument, TB
     */
     pub fn body<TNewBody>(self,
                           body: TNewBody)
-                          -> RequestBuilder<'a, SearchRequestBuilder<TDocument, TNewBody>>
-        where TNewBody: IntoBody
+                          -> RequestBuilder<TSender, SearchRequestBuilder<TDocument, TNewBody>>
+        where TNewBody: Into<TSender::Body>
     {
         RequestBuilder::new(self.client,
                             self.params,
@@ -166,7 +166,12 @@ impl<'a, TDocument, TBody> RequestBuilder<'a, SearchRequestBuilder<TDocument, TB
                                 _marker: PhantomData,
                             })
     }
+}
 
+impl<TDocument, TBody> RequestBuilder<SyncBody, SearchRequestBuilder<TDocument, TBody>>
+    where TDocument: DeserializeOwned,
+          TBody: Into<<SyncSender as Sender>::Body>
+{
     /** Send the search request. */
     pub fn send(self) -> Result<SearchResponse<TDocument>> {
         let req = self.req.into_request();

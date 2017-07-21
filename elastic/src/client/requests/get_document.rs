@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 use serde::de::DeserializeOwned;
 
 use error::*;
-use client::Client;
+use client::{Client, Sender, SyncSender, AsyncSender};
 use client::requests::{Index, Type, Id, GetRequest, RequestBuilder, RawRequestBuilder};
 use client::responses::GetResponse;
 use types::document::DocumentType;
@@ -20,7 +20,9 @@ pub struct GetRequestBuilder<TDocument> {
     _marker: PhantomData<TDocument>,
 }
 
-impl Client {
+impl<TSender> Client<TSender> 
+    where TSender: Sender
+{
     /** 
     Create a [`RequestBuilder` for a get request][RequestBuilder.get_document].
 
@@ -79,15 +81,15 @@ impl Client {
     [types-mod]: ../types/index.html
     [documents-mod]: ../types/document/index.html
     */
-    pub fn get_document<'a, TDocument>(&'a self,
+    pub fn get_document<TDocument>(&self,
                                        index: Index<'static>,
                                        id: Id<'static>)
-                                       -> RequestBuilder<'a, GetRequestBuilder<TDocument>>
+                                       -> RequestBuilder<TSender, GetRequestBuilder<TDocument>>
         where TDocument: DeserializeOwned + DocumentType
     {
         let ty = TDocument::name().into();
 
-        RequestBuilder::new(&self,
+        RequestBuilder::new(self.clone(),
                             None,
                             GetRequestBuilder {
                                 index: index,
@@ -114,8 +116,8 @@ Call [`Client.get_document`][Client.get_document] to get a `RequestBuilder` for 
 [Client.get_document]: ../struct.Client.html#method.get_document
 [docs-get]: http://www.elastic.co/guide/en/elasticsearch/reference/current/docs-get.html
 */
-impl<'a, TDocument> RequestBuilder<'a, GetRequestBuilder<TDocument>>
-    where TDocument: DeserializeOwned + DocumentType
+impl<TSender, TDocument> RequestBuilder<TSender, GetRequestBuilder<TDocument>>
+    where TSender: Sender
 {
     /** Set the type for the get request. */
     pub fn ty<I>(mut self, ty: I) -> Self
@@ -124,7 +126,11 @@ impl<'a, TDocument> RequestBuilder<'a, GetRequestBuilder<TDocument>>
         self.req.ty = ty.into();
         self
     }
+}
 
+impl<TDocument> RequestBuilder<SyncSender, GetRequestBuilder<TDocument>>
+    where TDocument: DeserializeOwned + DocumentType
+{
     /** Send the get request. */
     pub fn send(self) -> Result<GetResponse<TDocument>> {
         let req = self.req.into_request();

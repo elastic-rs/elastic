@@ -3,7 +3,7 @@ use serde_json;
 use serde::Serialize;
 
 use error::*;
-use client::Client;
+use client::{Client, Sender, SyncSender, AsyncSender};
 use client::requests::{Index, Type, IndicesPutMappingRequest, RequestBuilder, RawRequestBuilder};
 use client::responses::CommandResponse;
 use types::document::{FieldType, DocumentType, IndexDocumentMapping};
@@ -19,7 +19,9 @@ pub struct PutMappingRequestBuilder<TDocument> {
     _marker: PhantomData<TDocument>,
 }
 
-impl Client {
+impl<TSender> Client<TSender> 
+    where TSender: Sender
+{
     /** 
     Create a [`RequestBuilder` for a put mapping request][RequestBuilder.put_mapping]. 
     
@@ -49,14 +51,14 @@ impl Client {
     [types-mod]: ../types/index.html
     [documents-mod]: ../types/document/index.html
     */
-    pub fn put_mapping<'a, TDocument>(&'a self,
+    pub fn put_mapping<TDocument>(&self,
                                       index: Index<'static>)
-                                      -> RequestBuilder<'a, PutMappingRequestBuilder<TDocument>>
+                                      -> RequestBuilder<TSender, PutMappingRequestBuilder<TDocument>>
         where TDocument: Serialize + DocumentType
     {
         let ty = TDocument::name().into();
 
-        RequestBuilder::new(&self,
+        RequestBuilder::new(self.clone(),
                             None,
                             PutMappingRequestBuilder {
                                 index: index,
@@ -86,8 +88,8 @@ Call [`Client.put_mapping`][Client.put_mapping] to get a `RequestBuilder` for a 
 [Client.put_mapping]: ../struct.Client.html#method.put_mapping
 [docs-mapping]: https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping.html
 */
-impl<'a, TDocument> RequestBuilder<'a, PutMappingRequestBuilder<TDocument>>
-    where TDocument: DocumentType
+impl<TSender, TDocument> RequestBuilder<TSender, PutMappingRequestBuilder<TDocument>>
+    where TSender: Sender
 {
     /** Set the type for the put mapping request. */
     pub fn ty<I>(mut self, ty: I) -> Self
@@ -96,7 +98,11 @@ impl<'a, TDocument> RequestBuilder<'a, PutMappingRequestBuilder<TDocument>>
         self.req.ty = ty.into();
         self
     }
+}
 
+impl<TDocument> RequestBuilder<SyncSender, PutMappingRequestBuilder<TDocument>>
+    where TDocument: DocumentType
+{
     /** Send the put mapping request. */
     pub fn send(self) -> Result<CommandResponse> {
         let req = self.req.into_request()?;

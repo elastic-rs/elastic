@@ -334,7 +334,9 @@ pub mod requests;
 pub mod responses;
 
 use serde::de::DeserializeOwned;
-use reqwest::{Client as HttpClient, Response as RawResponse};
+use elastic_reqwest::{SyncBody, AsyncBody};
+use reqwest::{Client as SyncHttpClient, Response as SyncRawResponse};
+use reqwest::unstable::async::{Client as AsyncHttpClient};
 
 use error::*;
 use self::responses::ResponseBuilder;
@@ -342,6 +344,29 @@ use self::responses::HttpResponse;
 use self::responses::parse::IsOk;
 
 pub use elastic_reqwest::RequestParams;
+
+#[derive(Clone, Copy)]
+pub enum SyncSender {}
+#[derive(Clone, Copy)]
+pub enum AsyncSender {}
+
+pub trait Sender {
+    #[doc(hidden)]
+    type Http;
+
+    #[doc(hidden)]
+    type Body;
+}
+
+impl Sender for SyncSender {
+    type Http = SyncHttpClient;
+    type Body = SyncBody;
+}
+
+impl Sender for AsyncSender {
+    type Http = AsyncHttpClient;
+    type Body = AsyncBody;
+}
 
 /**
 A builder for a client.
@@ -446,14 +471,14 @@ impl ClientBuilder {
 
     [Client]: struct.Client.html
     */
-    pub fn build(self) -> Result<Client> {
+    pub fn build(self) -> Result<SyncClient> {
         if let Some(http) = self.http {
-            Ok(Client {
+            Ok(SyncClient {
                 http: http,
                 params: self.params
             })
         } else {
-            Client::new(self.params)
+            SyncClient::new(self.params)
         }
     }
 }
@@ -477,14 +502,17 @@ let client = Client::new(params).unwrap();
 [RequestBuilder]: requests/index.html
 ```
 */
-pub struct Client {
-    http: HttpClient,
+#[derive(Clone)]
+pub struct Client<TSender> 
+    where TSender: Sender
+{
+    http: TSender::Http,
     params: RequestParams,
 }
 
-impl Client {
+impl Client<SyncSender> {
     /**
-    Create a new client for the given parameters.
+    Create a new synchronous client for the given parameters.
     
     The parameters given here are used as the defaults for any
     request made by this client, but can be overriden on a
@@ -513,14 +541,57 @@ impl Client {
     [RequestParams]: struct.RequestParams.html
     */
     pub fn new(params: RequestParams) -> Result<Self> {
-        let client = HttpClient::new()?;
+        let http = <SyncSender as Sender>::Http::new()?;
 
         Ok(Client {
-               http: client,
+               http: http,
                params: params,
            })
     }
 }
+
+impl Client<AsyncSender> {
+    /**
+    Create a new asynchronous client for the given parameters.
+    
+    The parameters given here are used as the defaults for any
+    request made by this client, but can be overriden on a
+    per-request basis.
+    This method can return a `HttpError` if the underlying `reqwest::Client`
+    fails to create.
+    
+    # Examples
+    
+    Create a `Client` with default parameters:
+    
+    ```
+    # use elastic::prelude::*;
+    let client = ClientBuilder::new().build().unwrap();
+    ```
+    
+    Create a `Client` for a specific node:
+    
+    ```
+    # use elastic::prelude::*;
+    let client = Client::new(RequestParams::new("http://eshost:9200")).unwrap();
+    ```
+    
+    See [`RequestParams`][RequestParams] for more configuration options.
+
+    [RequestParams]: struct.RequestParams.html
+    */
+    pub fn new(handle: &Handle, params: RequestParams) -> Result<Self> {
+        let http = <AsyncSender as Sender>::Http::new(handle)?;
+
+        Ok(Client {
+               http: http,
+               params: params,
+           })
+    }
+}
+
+pub type SyncClient = Client<SyncSender>;
+pub type AsyncClient = Client<AsyncSender>;
 
 /** Try convert a `ResponseBuilder` into a concrete response type. */
 pub fn into_response<T>(res: ResponseBuilder) -> Result<T>
@@ -535,4 +606,4 @@ pub fn into_raw(res: ResponseBuilder) -> Result<HttpResponse> {
 }
 
 /** A type that can be converted into a `ResponseBuilder` without being exposed publicly. */
-struct IntoResponseBuilder(RawResponse);
+struct IntoResponseBuilder(SyncRawResponse);

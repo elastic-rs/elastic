@@ -6,13 +6,13 @@ but aren't generally important for sending requests.
 */
 
 use std::marker::PhantomData;
-use elastic_reqwest::ElasticClient;
+use elastic_reqwest::{SyncElasticClient, AsyncElasticClient};
 
 use error::*;
-use client::{Client, RequestParams, IntoResponseBuilder};
+use client::{Client, Sender, SyncSender, AsyncSender, RequestParams, IntoResponseBuilder};
 use client::responses::ResponseBuilder;
 
-pub use elastic_reqwest::IntoReqwestBody as IntoBody;
+pub use elastic_reqwest::{SyncBody, AsyncBody};
 pub use elastic_reqwest::req::{HttpRequest, HttpMethod, empty_body, Url, DefaultBody};
 pub use elastic_reqwest::req::params;
 pub use elastic_reqwest::req::endpoints;
@@ -40,8 +40,10 @@ A builder for a raw request.
 
 This structure wraps up a concrete REST API request type and lets you adjust parameters before sending it.
 */
-pub struct RequestBuilder<'a, TRequest> {
-    client: &'a Client,
+pub struct RequestBuilder<TSender, TRequest> 
+    where TSender: Sender
+{
+    client: Client<TSender>,
     params: Option<RequestParams>,
     req: TRequest,
 }
@@ -66,15 +68,16 @@ impl<TRequest, TBody> RawRequestBuilder<TRequest, TBody> {
 }
 
 impl<TRequest, TBody> Into<HttpRequest<'static, TBody>> for RawRequestBuilder<TRequest, TBody>
-    where TRequest: Into<HttpRequest<'static, TBody>>,
-          TBody: IntoBody
+    where TRequest: Into<HttpRequest<'static, TBody>>
 {
     fn into(self) -> HttpRequest<'static, TBody> {
         self.inner.into()
     }
 }
 
-impl Client {
+impl<TSender> Client<TSender> 
+    where TSender: Sender
+{
     /**
     Create a [raw `RequestBuilder`][Client.raw_request] that can be configured before sending.
     
@@ -104,18 +107,18 @@ impl Client {
     [Client.raw_request]: requests/struct.RequestBuilder.html#raw-request-builder
     [endpoints-mod]: requests/endpoints/index.html
     */
-    pub fn request<'a, TRequest, TBody>(&'a self,
-                                        req: TRequest)
-                                        -> RequestBuilder<'a, RawRequestBuilder<TRequest, TBody>>
+    pub fn request<TRequest, TBody>(&self, req: TRequest) -> RequestBuilder<TSender, RawRequestBuilder<TRequest, TBody>>
         where TRequest: Into<HttpRequest<'static, TBody>>,
-              TBody: IntoBody
+              TBody: Into<TSender::Body>
     {
-        RequestBuilder::new(&self, None, RawRequestBuilder::new(req))
+        RequestBuilder::new(self.clone(), None, RawRequestBuilder::new(req))
     }
 }
 
-impl<'a, TRequest> RequestBuilder<'a, TRequest> {
-    fn new(client: &'a Client, params: Option<RequestParams>, req: TRequest) -> Self {
+impl<TSender, TRequest> RequestBuilder<TSender, TRequest> 
+    where TSender: Sender
+{
+    fn new(client: Client<TSender>, params: Option<RequestParams>, req: TRequest) -> Self {
         RequestBuilder {
             client: client,
             params: params,
@@ -152,9 +155,9 @@ impl<'a, TRequest> RequestBuilder<'a, TRequest> {
     }
 }
 
-impl<'a, TRequest, TBody> RequestBuilder<'a, RawRequestBuilder<TRequest, TBody>>
+impl<TRequest, TBody> RequestBuilder<SyncSender, RawRequestBuilder<TRequest, TBody>>
     where TRequest: Into<HttpRequest<'static, TBody>>, 
-          TBody: IntoBody
+          TBody: Into<<SyncSender as Sender>::Body>
 {
     fn send_raw(self) -> Result<ResponseBuilder> {
         let params = self.params.as_ref().unwrap_or(&self.client.params);
@@ -175,9 +178,9 @@ Call [`Client.request`][Client.request] to get a `RequestBuilder` for a raw requ
 [Client.request]: ../struct.Client.html#method.request
 [endpoints-mod]: endpoints/index.html
 */
-impl<'a, TRequest, TBody> RequestBuilder<'a, RawRequestBuilder<TRequest, TBody>>
+impl<TRequest, TBody> RequestBuilder<SyncSender, RawRequestBuilder<TRequest, TBody>>
     where TRequest: Into<HttpRequest<'static, TBody>>, 
-          TBody: IntoBody
+          TBody: Into<<SyncSender as Sender>::Body>
 {
     /**
     Send this request and return the response.

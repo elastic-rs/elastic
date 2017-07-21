@@ -38,7 +38,7 @@ match res {
 #![allow(missing_docs)]
 
 use serde_json::Error as JsonError;
-use reqwest::Error as ReqwestError;
+use elastic_reqwest::Error as ClientError;
 use elastic_reqwest::res::error::ResponseError;
 
 pub use elastic_reqwest::res::error::{ApiError, ParseResponseError};
@@ -46,7 +46,7 @@ pub use elastic_reqwest::res::error::{ApiError, ParseResponseError};
 error_chain! {
     foreign_links {
         Api(ApiError);
-        Client(ReqwestError);
+        Client(ClientError);
         Json(JsonError);
         Response(ParseResponseError);
     }
