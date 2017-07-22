@@ -271,6 +271,7 @@ extern crate serde;
 extern crate serde_json;
 extern crate reqwest;
 extern crate futures;
+extern crate futures_cpupool;
 extern crate tokio_core;
 extern crate tokio_io;
 extern crate elastic_reqwest;
@@ -296,7 +297,7 @@ pub mod types;
 pub mod prelude {
     /*! A glob import for convenience. */
 
-    pub use client::{ClientBuilder, Client, RequestParams};
+    pub use client::{SyncClientBuilder, AsyncClientBuilder, Client, RequestParams};
     pub use client::requests::*;
     pub use client::responses::*;
     pub use types::prelude::*;

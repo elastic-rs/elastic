@@ -23,6 +23,7 @@ reqwest = { version = "*", git = "https://github.com/KodrAus/reqwest.git", branc
 futures = "*"
 tokio-core = "*"
 tokio-io = "*"
+futures-cpupool = "*"
 
 elastic_reqwest = { version = "*", path = "../../elastic-hyper" }
 elastic_types = "~0.19.0"

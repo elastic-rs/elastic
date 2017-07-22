@@ -13,15 +13,6 @@ mod async;
 
 pub mod parse;
 
-use std::io::{Read, Result as IoResult};
-use serde::de::DeserializeOwned;
-use elastic_reqwest::SyncFromResponse;
-use elastic_reqwest::res::parse;
-use reqwest::Response as RawResponse;
-
-use error::*;
-use self::parse::IsOk;
-
 pub use self::sync::*;
 pub use self::async::*;
 

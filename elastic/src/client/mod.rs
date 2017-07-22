@@ -32,7 +32,7 @@ A search request for a value, where the response is matched for an `ApiError`:
 # use elastic::prelude::*;
 # use elastic::error::*;
 # fn main() {
-# let client = ClientBuilder::new().build().unwrap();
+# let client = SyncClientBuilder::new().build().unwrap();
 let response = client.search::<Value>()
                      .index("myindex")
                      .ty(Some("myty"))
@@ -75,7 +75,7 @@ A `get` request for a value:
 # use serde_json::Value;
 # use elastic::prelude::*;
 # fn main() {
-# let client = ClientBuilder::new().build().unwrap();
+# let client = SyncClientBuilder::new().build().unwrap();
 let response = client.get_document::<Value>(index("values"), id(1)).send();
 # }
 ```
@@ -88,7 +88,7 @@ Is equivalent to:
 # use serde_json::Value;
 # use elastic::prelude::*;
 # fn main() {
-# let client = ClientBuilder::new().build().unwrap();
+# let client = SyncClientBuilder::new().build().unwrap();
 let response = client.request(GetRequest::for_index_ty_id("values", "value", 1))
                      .send()
                      .and_then(into_response::<GetResponse<Value>>);
@@ -141,7 +141,7 @@ with the steps in the above process labelled:
 # use elastic::error::*;
 # use serde_json::Value;
 # fn main() {
-# let client = ClientBuilder::new().build().unwrap();
+# let client = SyncClientBuilder::new().build().unwrap();
 let req = SearchRequest::for_index("_all", empty_body());
 
 let response = client.request(req) // 1
@@ -207,7 +207,7 @@ For raw requests this returns a [`ResponseBuilder`][ResponseBuilder].
 
 ```no_run
 # use elastic::prelude::*;
-# let client = ClientBuilder::new().build().unwrap();
+# let client = SyncClientBuilder::new().build().unwrap();
 # let req = PingRequest::new();
 let request_builder = client.request(req);
 
@@ -334,20 +334,16 @@ pub mod requests;
 pub mod responses;
 
 use serde::de::DeserializeOwned;
+use futures_cpupool::CpuPool;
 use tokio_core::reactor::Handle;
 use elastic_reqwest::{SyncBody, AsyncBody};
 use reqwest::{Client as SyncHttpClient, Response as SyncRawResponse, Error as ClientError};
-use reqwest::unstable::async::{Client as AsyncHttpClient};
+use reqwest::unstable::async::{Client as AsyncHttpClientInner};
 
 use error::*;
 use self::responses::parse::IsOk;
 
 pub use elastic_reqwest::RequestParams;
-
-#[derive(Clone, Copy)]
-pub enum SyncSender {}
-#[derive(Clone, Copy)]
-pub enum AsyncSender {}
 
 pub trait Sender: Clone {
     #[doc(hidden)]
@@ -357,25 +353,23 @@ pub trait Sender: Clone {
     type Body;
 }
 
+#[derive(Clone, Copy)]
+pub enum SyncSender {}
+
 impl Sender for SyncSender {
     type Http = SyncHttpClient;
     type Body = SyncBody;
 }
 
-impl Sender for AsyncSender {
-    type Http = AsyncHttpClient;
-    type Body = AsyncBody;
-}
-
 /**
 A builder for a client.
 */
-pub struct ClientBuilder {
+pub struct SyncClientBuilder {
     http: Option<SyncHttpClient>,
     params: RequestParams
 }
 
-impl ClientBuilder {
+impl SyncClientBuilder {
     /**
     Create a new client builder.
 
@@ -386,7 +380,7 @@ impl ClientBuilder {
     - Not use TLS
     */
     pub fn new() -> Self {
-        ClientBuilder {
+        SyncClientBuilder {
             http: None,
             params: RequestParams::default()
         }
@@ -405,7 +399,7 @@ impl ClientBuilder {
 
     ```
     # use elastic::prelude::*;
-    let builder = ClientBuilder::new()
+    let builder = SyncClientBuilder::new()
         .base_url("https://my_es_cluster/some_path");
     ```
     */
@@ -426,7 +420,7 @@ impl ClientBuilder {
     
     ```
     # use elastic::prelude::*;
-    let builder = ClientBuilder::new()
+    let builder = SyncClientBuilder::new()
         .params(|params| params.url_param("pretty", true));
     ```
 
@@ -436,19 +430,19 @@ impl ClientBuilder {
     # use elastic::prelude::*;
     use elastic::http::header::Authorization;
 
-    let builder = ClientBuilder::new()
+    let builder = SyncClientBuilder::new()
         .params(|params| params.header(Authorization("let me in".to_owned())));
     ```
 
-    Specify a base url (prefer the [`base_url`][ClientBuilder.base_url] method on `ClientBuilder` instead):
+    Specify a base url (prefer the [`base_url`][SyncClientBuilder.base_url] method on `SyncClientBuilder` instead):
 
     ```
     # use elastic::prelude::*;
-    let builder = ClientBuilder::new()
+    let builder = SyncClientBuilder::new()
         .params(|params| params.base_url("https://my_es_cluster/some_path"));
     ```
 
-    [ClientBuilder.base_url]: #method.base_url
+    [SyncClientBuilder.base_url]: #method.base_url
     */
     pub fn params<F>(mut self, builder: F) -> Self
         where F: Fn(RequestParams) -> RequestParams
@@ -479,6 +473,78 @@ impl ClientBuilder {
         } else {
             SyncClient::new(self.params)
         }
+    }
+}
+
+#[derive(Clone, Copy)]
+pub enum AsyncSender {}
+
+impl Sender for AsyncSender {
+    type Http = AsyncHttpClient;
+    type Body = AsyncBody;
+}
+
+#[derive(Clone)]
+pub struct AsyncHttpClient {
+    inner: AsyncHttpClientInner,
+    de_pool: Option<CpuPool>
+}
+
+pub struct AsyncClientBuilder {
+    http: Option<AsyncHttpClientInner>,
+    de_pool: Option<CpuPool>,
+    params: RequestParams
+}
+
+impl AsyncClientBuilder {
+    pub fn new() -> Self {
+        let de_pool = CpuPool::new(4);
+
+        AsyncClientBuilder {
+            http: None,
+            de_pool: Some(de_pool),
+            params: RequestParams::default()
+        }
+    }
+
+    pub fn base_url<I>(mut self, base_url: I) -> Self 
+        where I: Into<String>
+    {
+        self.params = self.params.base_url(base_url);
+
+        self
+    }
+
+    pub fn params<F>(mut self, builder: F) -> Self
+        where F: Fn(RequestParams) -> RequestParams
+    {
+        self.params = builder(self.params);
+
+        self
+    }
+
+    pub fn de_pool(mut self, de_pool: Option<CpuPool>) -> Self {
+        self.de_pool = de_pool;
+
+        self
+    }
+
+    pub fn http_client(mut self, client: AsyncHttpClientInner) -> Self {
+        self.http = Some(client);
+
+        self
+    }
+
+    pub fn build(self, handle: &Handle) -> Result<AsyncClient> {
+        let http = self.http.map(|http| Ok(http)).unwrap_or(AsyncHttpClientInner::new(handle))?;
+
+        Ok(AsyncClient {
+            http: AsyncHttpClient {
+                inner: http,
+                de_pool: self.de_pool,
+            },
+            params: self.params,
+        })
     }
 }
 
@@ -525,7 +591,7 @@ impl Client<SyncSender> {
     
     ```
     # use elastic::prelude::*;
-    let client = ClientBuilder::new().build().unwrap();
+    let client = SyncClientBuilder::new().build().unwrap();
     ```
     
     Create a `Client` for a specific node:
@@ -539,7 +605,7 @@ impl Client<SyncSender> {
 
     [RequestParams]: struct.RequestParams.html
     */
-    pub fn new(params: RequestParams) -> Result<Self> {
+    fn new(params: RequestParams) -> Result<Self> {
         let http = <SyncSender as Sender>::Http::new()?;
 
         Ok(Client {
@@ -565,7 +631,7 @@ impl Client<AsyncSender> {
     
     ```
     # use elastic::prelude::*;
-    let client = ClientBuilder::new().build().unwrap();
+    let client = SyncClientBuilder::new().build().unwrap();
     ```
     
     Create a `Client` for a specific node:
@@ -579,11 +645,14 @@ impl Client<AsyncSender> {
 
     [RequestParams]: struct.RequestParams.html
     */
-    pub fn new(handle: &Handle, params: RequestParams) -> Result<Self> {
-        let http = <AsyncSender as Sender>::Http::new(handle)?;
+    fn new(handle: &Handle, params: RequestParams) -> Result<Self> {
+        let http = AsyncHttpClientInner::new(handle)?;
 
         Ok(Client {
-               http: http,
+               http: AsyncHttpClient {
+                   inner: http,
+                   de_pool: None,   
+               },
                params: params,
            })
     }

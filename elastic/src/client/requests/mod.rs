@@ -248,9 +248,13 @@ impl<TRequest, TBody> RequestBuilder<AsyncSender, RawRequestBuilder<TRequest, TB
     pub fn send(self) -> Box<Future<Item = AsyncResponseBuilder, Error = Error>> {
         let params = self.params.as_ref().unwrap_or(&self.client.params);
 
-        let res_future = self.client.http
-            .elastic_req(params, self.req)
-            .map(async_response)
+        let req = self.req;
+        let http = self.client.http.inner;
+        let de_pool = self.client.http.de_pool;
+
+        let res_future = http
+            .elastic_req(params, req)
+            .map(|res| async_response(res, de_pool))
             .map_err(Into::into);
         
         Box::new(res_future)

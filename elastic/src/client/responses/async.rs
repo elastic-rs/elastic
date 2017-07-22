@@ -1,5 +1,7 @@
 use std::io::{Read, Result as IoResult};
 use futures::Future;
+use futures_cpupool::CpuPool;
+use tokio_io::{AsyncRead, io as async_io};
 use serde::de::DeserializeOwned;
 use reqwest::unstable::async::Response as RawResponse;
 
@@ -14,15 +16,22 @@ A builder for a response.
 This structure wraps the completed HTTP response but gives you options for converting it into a concrete type.
 You can also `Read` directly from the response body.
 */
-pub struct AsyncResponseBuilder(RawResponse);
-
-pub(crate) fn async_response(res: RawResponse) -> AsyncResponseBuilder {
-    AsyncResponseBuilder(res)
+pub struct AsyncResponseBuilder {
+    inner: RawResponse,
+    de_pool: Option<CpuPool>
 }
+
+pub(crate) fn async_response(res: RawResponse, de_pool: Option<CpuPool>) -> AsyncResponseBuilder {
+    AsyncResponseBuilder {
+        inner: res,
+        de_pool: de_pool
+    }
+}
+
 impl AsyncResponseBuilder {
     /** Get the HTTP status for the response. */
     pub fn status(&self) -> u16 {
-        self.0.status().into()
+        self.inner.status().into()
     }
 
     /**
@@ -31,7 +40,7 @@ impl AsyncResponseBuilder {
     Convert the builder into a raw HTTP response that implements `Read`.
     */
     pub fn into_raw(self) -> AsyncHttpResponse {
-        AsyncHttpResponse(self.0)
+        AsyncHttpResponse(self.inner)
     }
 
     /**
@@ -90,11 +99,27 @@ impl AsyncResponseBuilder {
     [response-types]: parse/trait.IsOk.html#implementors
     */
     pub fn into_response<T>(self) -> Box<Future<Item = T, Error = Error>>
-        where T: IsOk + DeserializeOwned + 'static
+        where T: IsOk + DeserializeOwned + Send + 'static
     {
-        let res_future = parse().from_response(self.0).map_err(Into::into);
+        let status = self.status();
 
-        Box::new(res_future)
+        let body_future = async_io::read_to_end(self.inner, Vec::new()).map_err(Into::into);
+
+        let de_fn = move |body| parse().from_slice(status, &body).map_err(Into::into);
+
+        if let Some(de_pool) = self.de_pool {
+            let de_future = body_future
+                .and_then(move |(_, body)| {
+                    de_pool.spawn_fn(move || de_fn(body))
+                });
+
+            return Box::new(de_future)
+        }
+        
+        let de_future = body_future
+            .and_then(move |(_, body)| de_fn(body));
+
+        Box::new(de_future)
     }
 }
 
@@ -112,4 +137,8 @@ impl Read for AsyncHttpResponse {
     fn read(&mut self, buf: &mut [u8]) -> IoResult<usize> {
         self.0.read(buf)
     }
+}
+
+impl AsyncRead for AsyncHttpResponse {
+
 }

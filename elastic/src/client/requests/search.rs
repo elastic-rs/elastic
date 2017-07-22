@@ -201,7 +201,7 @@ impl<TDocument, TBody> RequestBuilder<SyncSender, SearchRequestBuilder<TDocument
 ## Send asynchronously
 */
 impl<TDocument, TBody> RequestBuilder<AsyncSender, SearchRequestBuilder<TDocument, TBody>>
-    where TDocument: DeserializeOwned + 'static,
+    where TDocument: DeserializeOwned + Send + 'static,
           TBody: Into<<AsyncSender as Sender>::Body>
 {
     /** Send the search request asynchronously. */
