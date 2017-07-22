@@ -136,7 +136,7 @@ impl<TDocument> RequestBuilder<SyncSender, GetRequestBuilder<TDocument>>
         let req = self.req.into_request();
 
         RequestBuilder::new(self.client, self.params, RawRequestBuilder::new(req))
-            .send_raw()?
+            .send()?
             .into_response()
     }
 }

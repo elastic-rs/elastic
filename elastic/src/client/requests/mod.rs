@@ -6,11 +6,12 @@ but aren't generally important for sending requests.
 */
 
 use std::marker::PhantomData;
+use futures::Future;
 use elastic_reqwest::{SyncElasticClient, AsyncElasticClient};
 
 use error::*;
-use client::{Client, Sender, SyncSender, AsyncSender, RequestParams, IntoResponseBuilder};
-use client::responses::ResponseBuilder;
+use client::{Client, Sender, SyncSender, AsyncSender, RequestParams};
+use client::responses::{sync_response, async_response, SyncResponseBuilder, AsyncResponseBuilder};
 
 pub use elastic_reqwest::{SyncBody, AsyncBody};
 pub use elastic_reqwest::req::{HttpRequest, HttpMethod, empty_body, Url, DefaultBody};
@@ -155,19 +156,6 @@ impl<TSender, TRequest> RequestBuilder<TSender, TRequest>
     }
 }
 
-impl<TRequest, TBody> RequestBuilder<SyncSender, RawRequestBuilder<TRequest, TBody>>
-    where TRequest: Into<HttpRequest<'static, TBody>>, 
-          TBody: Into<<SyncSender as Sender>::Body>
-{
-    fn send_raw(self) -> Result<ResponseBuilder> {
-        let params = self.params.as_ref().unwrap_or(&self.client.params);
-
-        let res = self.client.http.elastic_req(params, self.req)?;
-
-        Ok(IntoResponseBuilder(res).into())
-    }
-}
-
 /** 
 # Raw request builder
 
@@ -208,8 +196,64 @@ impl<TRequest, TBody> RequestBuilder<SyncSender, RawRequestBuilder<TRequest, TBo
 
     [ResponseBuilder]: ../responses/struct.ResponseBuilder.html
     */
-    pub fn send(self) -> Result<ResponseBuilder> {
-        self.send_raw()
+    pub fn send(self) -> Result<SyncResponseBuilder> {
+        let params = self.params.as_ref().unwrap_or(&self.client.params);
+
+        let res = self.client.http.elastic_req(params, self.req)?;
+
+        Ok(sync_response(res))
+    }
+}
+
+/** 
+# Raw request builder
+
+A request builder for a [raw request type][endpoints-mod].
+
+Call [`Client.request`][Client.request] to get a `RequestBuilder` for a raw request.
+
+[Client.request]: ../struct.Client.html#method.request
+[endpoints-mod]: endpoints/index.html
+*/
+impl<TRequest, TBody> RequestBuilder<AsyncSender, RawRequestBuilder<TRequest, TBody>>
+    where TRequest: Into<HttpRequest<'static, TBody>>, 
+          TBody: Into<<AsyncSender as Sender>::Body>
+{
+    /**
+    Send this request and return the response.
+    
+    This method consumes the `RequestBuilder` and returns a [`ResponseBuilder`][ResponseBuilder] that can be used to parse the response.
+
+    # Examples
+
+    Send a raw request and parse it to a concrete response type:
+
+    ```no_run
+    # extern crate elastic;
+    # extern crate serde_json;
+    # use serde_json::Value;
+    # use elastic::prelude::*;
+    # fn main() {
+    # fn get_req() -> PingRequest<'static> { PingRequest::new() }
+    # let client = ClientBuilder::new().build().unwrap();
+    let response = client.request(get_req())
+                         .send()
+                         .and_then(into_response::<SearchResponse<Value>>)
+                         .unwrap();
+    # }
+    ```
+
+    [ResponseBuilder]: ../responses/struct.ResponseBuilder.html
+    */
+    pub fn send(self) -> Box<Future<Item = AsyncResponseBuilder, Error = Error>> {
+        let params = self.params.as_ref().unwrap_or(&self.client.params);
+
+        let res_future = self.client.http
+            .elastic_req(params, self.req)
+            .map(async_response)
+            .map_err(Into::into);
+        
+        Box::new(res_future)
     }
 }
 

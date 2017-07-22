@@ -190,7 +190,7 @@ impl<TDocument, TBody> RequestBuilder<SyncSender, SearchRequestBuilder<TDocument
         let req = self.req.into_request();
 
         RequestBuilder::new(self.client, self.params, RawRequestBuilder::new(req))
-            .send_raw()?
+            .send()?
             .into_response()
     }
 }
@@ -201,14 +201,18 @@ impl<TDocument, TBody> RequestBuilder<SyncSender, SearchRequestBuilder<TDocument
 ## Send asynchronously
 */
 impl<TDocument, TBody> RequestBuilder<AsyncSender, SearchRequestBuilder<TDocument, TBody>>
-    where TDocument: DeserializeOwned,
+    where TDocument: DeserializeOwned + 'static,
           TBody: Into<<AsyncSender as Sender>::Body>
 {
     /** Send the search request asynchronously. */
     pub fn send(self) -> Box<Future<Item = SearchResponse<TDocument>, Error = Error>> {
         let req = self.req.into_request();
 
-        unimplemented!();
+        let res_future = RequestBuilder::new(self.client, self.params, RawRequestBuilder::new(req))
+            .send()
+            .and_then(|res| res.into_response());
+
+        Box::new(res_future)
     }
 }
 

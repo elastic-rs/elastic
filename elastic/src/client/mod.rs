@@ -340,8 +340,6 @@ use reqwest::{Client as SyncHttpClient, Response as SyncRawResponse, Error as Cl
 use reqwest::unstable::async::{Client as AsyncHttpClient};
 
 use error::*;
-use self::responses::ResponseBuilder;
-use self::responses::HttpResponse;
 use self::responses::parse::IsOk;
 
 pub use elastic_reqwest::RequestParams;
@@ -593,18 +591,3 @@ impl Client<AsyncSender> {
 
 pub type SyncClient = Client<SyncSender>;
 pub type AsyncClient = Client<AsyncSender>;
-
-/** Try convert a `ResponseBuilder` into a concrete response type. */
-pub fn into_response<T>(res: ResponseBuilder) -> Result<T>
-    where T: IsOk + DeserializeOwned
-{
-    res.into_response()
-}
-
-/** Try convert a `ResponseBuilder` into a raw http response. */
-pub fn into_raw(res: ResponseBuilder) -> Result<HttpResponse> {
-    Ok(res.into_raw())
-}
-
-/** A type that can be converted into a `ResponseBuilder` without being exposed publicly. */
-struct IntoResponseBuilder(SyncRawResponse);
