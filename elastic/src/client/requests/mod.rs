@@ -213,6 +213,9 @@ impl<TRequest, TBody> RequestBuilder<SyncSender, RawRequestBuilder<TRequest, TBo
     }
 }
 
+pub type SyncRequestBuilder<T> = RequestBuilder<SyncSender, T>;
+pub type AsyncRequestBuilder<T> = RequestBuilder<AsyncSender, T>;
+
 #[cfg(test)]
 mod tests {
     use super::*;

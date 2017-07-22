@@ -20,6 +20,9 @@ error-chain = "~0.9.0"
 serde = "~1"
 serde_json = "~1"
 reqwest = { version = "*", git = "https://github.com/KodrAus/reqwest.git", branch = "feat/async-decoder", features = ["unstable"] }
+futures = "*"
+tokio-core = "*"
+tokio-io = "*"
 
 elastic_reqwest = { version = "*", path = "../../elastic-hyper" }
 elastic_types = "~0.19.0"

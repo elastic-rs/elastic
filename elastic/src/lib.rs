@@ -270,6 +270,9 @@ extern crate error_chain;
 extern crate serde;
 extern crate serde_json;
 extern crate reqwest;
+extern crate futures;
+extern crate tokio_core;
+extern crate tokio_io;
 extern crate elastic_reqwest;
 extern crate elastic_types;
 

@@ -37,8 +37,10 @@ match res {
 
 #![allow(missing_docs)]
 
+use std::io::Error as IoError;
 use serde_json::Error as JsonError;
-use elastic_reqwest::Error as ClientError;
+use reqwest::Error as ReqwestError;
+use elastic_reqwest::Error as ReqwestClientError;
 use elastic_reqwest::res::error::ResponseError;
 
 pub use elastic_reqwest::res::error::{ApiError, ParseResponseError};
@@ -46,8 +48,9 @@ pub use elastic_reqwest::res::error::{ApiError, ParseResponseError};
 error_chain! {
     foreign_links {
         Api(ApiError);
-        Client(ClientError);
+        Client(ReqwestError);
         Json(JsonError);
+        Io(IoError);
         Response(ParseResponseError);
     }
 }
@@ -57,6 +60,16 @@ impl From<ResponseError> for Error {
         match err {
             ResponseError::Api(err) => ErrorKind::Api(err).into(),
             ResponseError::Parse(err) => ErrorKind::Response(err).into(),
+        }
+    }
+}
+
+impl From<ReqwestClientError> for Error {
+    fn from(err: ReqwestClientError) -> Self {
+        match err {
+            ReqwestClientError::Http(err) => ErrorKind::Client(err).into(),
+            ReqwestClientError::Io(err) => ErrorKind::Io(err).into(),
+            ReqwestClientError::Response(err) => err.into()
         }
     }
 }

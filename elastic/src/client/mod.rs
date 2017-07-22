@@ -334,8 +334,9 @@ pub mod requests;
 pub mod responses;
 
 use serde::de::DeserializeOwned;
+use tokio_core::reactor::Handle;
 use elastic_reqwest::{SyncBody, AsyncBody};
-use reqwest::{Client as SyncHttpClient, Response as SyncRawResponse};
+use reqwest::{Client as SyncHttpClient, Response as SyncRawResponse, Error as ClientError};
 use reqwest::unstable::async::{Client as AsyncHttpClient};
 
 use error::*;
@@ -350,9 +351,9 @@ pub enum SyncSender {}
 #[derive(Clone, Copy)]
 pub enum AsyncSender {}
 
-pub trait Sender {
+pub trait Sender: Clone {
     #[doc(hidden)]
-    type Http;
+    type Http: Clone;
 
     #[doc(hidden)]
     type Body;
@@ -372,7 +373,7 @@ impl Sender for AsyncSender {
 A builder for a client.
 */
 pub struct ClientBuilder {
-    http: Option<HttpClient>,
+    http: Option<SyncHttpClient>,
     params: RequestParams
 }
 
@@ -460,7 +461,7 @@ impl ClientBuilder {
     }
 
     /** Use the given `reqwest::Client` for sending requests. */
-    pub fn http_client(mut self, client: HttpClient) -> Self {
+    pub fn http_client(mut self, client: SyncHttpClient) -> Self {
         self.http = Some(client);
 
         self

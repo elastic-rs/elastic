@@ -1,9 +1,10 @@
 use std::marker::PhantomData;
+use futures::Future;
 use serde::de::DeserializeOwned;
 
 use error::*;
 use client::{Client, Sender, SyncSender, AsyncSender};
-use client::requests::{empty_body, DefaultBody, IntoBody, Index, Type, SearchRequest,
+use client::requests::{empty_body, DefaultBody, SyncRequestBuilder, AsyncRequestBuilder, SyncBody, AsyncBody, Index, Type, SearchRequest,
                        RequestBuilder, RawRequestBuilder};
 use client::responses::SearchResponse;
 
@@ -19,6 +20,11 @@ pub struct SearchRequestBuilder<TDocument, TBody> {
     _marker: PhantomData<TDocument>,
 }
 
+/**
+# Search request
+
+## Create builder
+*/
 impl<TSender> Client<TSender> 
     where TSender: Sender
 {
@@ -115,7 +121,9 @@ impl<TDocument, TBody> SearchRequestBuilder<TDocument, TBody>
 }
 
 /** 
-# Search request builder
+# Search request
+
+## Builder methods
 
 A request builder for a [Search][docs-search] query.
 
@@ -168,17 +176,39 @@ impl<TSender, TDocument, TBody> RequestBuilder<TSender, SearchRequestBuilder<TDo
     }
 }
 
-impl<TDocument, TBody> RequestBuilder<SyncBody, SearchRequestBuilder<TDocument, TBody>>
+/**
+# Search request
+
+## Send synchronously
+*/
+impl<TDocument, TBody> RequestBuilder<SyncSender, SearchRequestBuilder<TDocument, TBody>>
     where TDocument: DeserializeOwned,
           TBody: Into<<SyncSender as Sender>::Body>
 {
-    /** Send the search request. */
+    /** Send the search request synchronously. */
     pub fn send(self) -> Result<SearchResponse<TDocument>> {
         let req = self.req.into_request();
 
         RequestBuilder::new(self.client, self.params, RawRequestBuilder::new(req))
             .send_raw()?
             .into_response()
+    }
+}
+
+/**
+# Search request
+
+## Send asynchronously
+*/
+impl<TDocument, TBody> RequestBuilder<AsyncSender, SearchRequestBuilder<TDocument, TBody>>
+    where TDocument: DeserializeOwned,
+          TBody: Into<<AsyncSender as Sender>::Body>
+{
+    /** Send the search request asynchronously. */
+    pub fn send(self) -> Box<Future<Item = SearchResponse<TDocument>, Error = Error>> {
+        let req = self.req.into_request();
+
+        unimplemented!();
     }
 }
 

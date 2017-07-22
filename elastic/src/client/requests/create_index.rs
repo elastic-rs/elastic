@@ -1,6 +1,6 @@
 use error::*;
 use client::{Client, Sender, SyncSender, AsyncSender};
-use client::requests::{empty_body, DefaultBody, IntoBody, Index, IndicesCreateRequest,
+use client::requests::{empty_body, DefaultBody, Index, IndicesCreateRequest,
                        RequestBuilder, RawRequestBuilder};
 use client::responses::CommandResponse;
 
@@ -107,7 +107,7 @@ impl<TSender, TBody> RequestBuilder<TSender, CreateIndexRequestBuilder<TBody>>
           TBody: Into<TSender::Body>
 {
     /** 
-    Set the body for the search request.
+    Set the body for the create index request.
     
     If no body is specified then an empty query will be used.
     */

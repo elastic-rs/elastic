@@ -12,7 +12,7 @@ pub mod parse;
 
 use std::io::{Read, Result as IoResult};
 use serde::de::DeserializeOwned;
-use elastic_reqwest::ParseResponse;
+use elastic_reqwest::SyncFromResponse;
 use elastic_reqwest::res::parse;
 use reqwest::Response as RawResponse;
 
@@ -20,10 +20,12 @@ use error::*;
 use client::IntoResponseBuilder;
 use self::parse::IsOk;
 
-pub use elastic_reqwest::res::{SearchResponse, GetResponse, AggregationIterator, Aggregations,
-                               Hit, Hits, Shards, CommandResponse, IndexResponse, PingResponse,
-                               BulkResponse, BulkErrorsResponse, BulkItem, BulkItems,
-                               BulkItemError, BulkAction};
+pub use elastic_reqwest::res::{SearchResponse, GetResponse, Shards, CommandResponse, IndexResponse, PingResponse,
+                               BulkResponse, BulkErrorsResponse};
+
+pub use elastic_reqwest::res::search;
+pub use elastic_reqwest::res::bulk;
+
 /**
 A builder for a response.
 
