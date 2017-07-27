@@ -7,16 +7,16 @@
 
 #[macro_use]
 extern crate serde_json;
-extern crate elastic_reqwest as cli;
+extern crate elastic_reqwest;
 
 use serde_json::Value;
-use cli::{SyncElasticClient, SyncFromResponse, RequestParams, Error};
-use cli::req::SearchRequest;
-use cli::res::{parse, SearchResponse};
+use elastic_reqwest::{SyncElasticClient, SyncFromResponse, RequestParams, Error};
+use elastic_reqwest::req::SearchRequest;
+use elastic_reqwest::res::{parse, SearchResponse};
 
 fn run() -> Result<(), Error> {
     // Get a new default client.
-    let (client, _) = cli::default_sync()?;
+    let (client, _) = elastic_reqwest::sync::default()?;
 
     // Create a new set of params with pretty printing.
     let params = RequestParams::default().url_param("pretty", true);

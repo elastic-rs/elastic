@@ -11,11 +11,18 @@ use super::req::HttpRequest;
 use super::res::parsing::{Parse, IsOk};
 use super::{Error, RequestParams, build_url, build_method};
 
-/// A type that can be converted into a request body.
+/** Get a default `Client` and `RequestParams`. */
+pub fn default() -> Result<(Client, RequestParams), Error> {
+    Client::new()
+        .map(|cli| (cli, RequestParams::default()))
+        .map_err(Into::into)
+}
+
+/** A type that can be converted into a request body. */
 pub struct SyncBody(Body);
 
 impl SyncBody {
-    /// Convert the body into its inner value.
+    /** Convert the body into its inner value. */
     pub fn into_inner(self) -> Body {
         self.0
     }
@@ -71,31 +78,36 @@ impl From<&'static str> for SyncBody {
     }
 }
 
-/// Represents a client that can send Elasticsearch requests.
+/** Represents a client that can send Elasticsearch requests synchronously. */
 pub trait SyncElasticClient {
-    /// Send a request and get a response.
-    ///
-    /// # Examples
-    ///
-    /// Bring the `SyncElasticClient` trait into scope and call `elastic_req` with any type that
-    /// can be converted into a `req::HttpRequest`.
-    /// This method returns a raw `reqwest::Response`.
-    ///
-    /// ```no_run
-    /// # use elastic_reqwest::req::SimpleSearchRequest;
-    /// # let request = SimpleSearchRequest::for_index_ty("myindex", "mytype");
-    /// use elastic_reqwest::SyncElasticClient;
-    ///
-    /// let (client, params) = elastic_reqwest::default().unwrap();
-    ///
-    /// let http_res = client.elastic_req(&params, request).unwrap();
-    /// ```
+    /** 
+    Send a request and get a response.
+    
+    # Examples
+    
+    Bring the `SyncElasticClient` trait into scope and call `elastic_req` with any type that
+    can be converted into a `req::HttpRequest`.
+    This method returns a raw `reqwest::Response`.
+    
+    ```no_run
+    # extern crate elastic_reqwest;
+    # use elastic_reqwest::req::SimpleSearchRequest;
+    # fn main () {
+    # let request = SimpleSearchRequest::for_index_ty("myindex", "mytype");
+    use elastic_reqwest::SyncElasticClient;
+    
+    let (client, params) = elastic_reqwest::sync::default().unwrap();
+    
+    let http_res = client.elastic_req(&params, request).unwrap();
+    # }
+    ```
+    */
     fn elastic_req<I, B>(&self, params: &RequestParams, req: I) -> Result<Response, Error>
         where I: Into<HttpRequest<'static, B>>,
               B: Into<SyncBody>;
 }
 
-/// Build a synchronous `reqwest::RequestBuilder` from an Elasticsearch request.
+/** Build a synchronous `reqwest::RequestBuilder` from an Elasticsearch request. */
 pub fn build_req_sync<I, B>(client: &Client, params: &RequestParams, req: I) -> Result<RequestBuilder, Error>
     where I: Into<HttpRequest<'static, B>>,
           B: Into<SyncBody>
@@ -127,9 +139,9 @@ impl SyncElasticClient for Client {
     }
 }
 
-/// Represents a response that can be parsed into a concrete Elasticsearch response.
+/** Represents a response that can be parsed into a concrete Elasticsearch response. */
 pub trait SyncFromResponse<TResponse> {
-    /// Parse a response into a concrete response type.
+    /** Parse a response into a concrete response type. */
     fn from_response(self, response: Response) -> Result<TResponse, Error>;
 }
 

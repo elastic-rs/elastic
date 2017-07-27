@@ -6,17 +6,25 @@ use serde::de::DeserializeOwned;
 use serde_json::Value;
 use reqwest::unstable::async::{Client, RequestBuilder, Response, Body};
 use futures::{Future, IntoFuture};
+use tokio_core::reactor::Handle;
 use tokio_io::io;
 
 use super::req::HttpRequest;
 use super::res::parsing::{Parse, IsOk};
 use super::{Error, RequestParams, build_url, build_method};
 
-/// A type that can be converted into a request body.
+/** Get a default `Client` and `RequestParams`. */
+pub fn default(handle: &Handle) -> Result<(Client, RequestParams), Error> {
+    Client::new(handle)
+        .map(|cli| (cli, RequestParams::default()))
+        .map_err(Into::into)
+}
+
+/** A type that can be converted into a request body. */
 pub struct AsyncBody(Body);
 
 impl AsyncBody {
-    /// Convert the body into its inner value.
+    /** Convert the body into its inner value. */
     pub fn into_inner(self) -> Body {
         self.0
     }
@@ -66,15 +74,39 @@ impl From<&'static str> for AsyncBody {
     }
 }
 
-/// Represents a client that can send Elasticsearch requests.
+/** Represents a client that can send Elasticsearch requests asynchronously. */
 pub trait AsyncElasticClient {
-    /// Send a request and get a response.
+    /** 
+    Send a request and get a response.
+    
+    # Examples
+    
+    Bring the `AsyncElasticClient` trait into scope and call `elastic_req` with any type that can be converted into a `req::HttpRequest`.
+    This method returns a raw `reqwest::Response`.
+    
+    ```no_run
+    # extern crate elastic_reqwest;
+    # extern crate tokio_core;
+    # use elastic_reqwest::req::SimpleSearchRequest;
+    # fn main() {
+    # let mut core = tokio_core::reactor::Core::new().unwrap();
+    # let request = SimpleSearchRequest::for_index_ty("myindex", "mytype");
+    use elastic_reqwest::AsyncElasticClient;
+    
+    let (client, params) = elastic_reqwest::async::default(&core.handle()).unwrap();
+    
+    let http_future = client.elastic_req(&params, request);
+
+    core.run(http_future).unwrap();
+    # }
+    ```
+    */
     fn elastic_req<I, B>(&self, params: &RequestParams, req: I) -> Box<Future<Item = Response, Error = Error>>
         where I: Into<HttpRequest<'static, B>>,
               B: Into<AsyncBody>;
 }
 
-/// Build an asynchronous `reqwest::RequestBuilder` from an Elasticsearch request.
+/** Build an asynchronous `reqwest::RequestBuilder` from an Elasticsearch request. */
 pub fn build_req_async<I, B>(client: &Client, params: &RequestParams, req: I) -> Result<RequestBuilder, Error>
     where I: Into<HttpRequest<'static, B>>,
           B: Into<AsyncBody>
@@ -110,9 +142,9 @@ impl AsyncElasticClient for Client {
     }
 }
 
-/// Represents a response that can be parsed into a concrete Elasticsearch response.
+/** Represents a response that can be parsed into a concrete Elasticsearch response. */
 pub trait AsyncFromResponse<TResponse> {
-    /// Parse a response into a concrete response type.
+    /** Parse a response into a concrete response type. */
     fn from_response(self, response: Response) -> Box<Future<Item = TResponse, Error = Error>>;
 }
 

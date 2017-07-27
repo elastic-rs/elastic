@@ -4,11 +4,11 @@
 //! 
 //! This sample demonstrates a request with a large body.
 
-extern crate elastic_reqwest as cli;
+extern crate elastic_reqwest;
 
-use cli::{SyncElasticClient, SyncFromResponse, Error};
-use cli::req::BulkRequest;
-use cli::res::{parse, BulkResponse};
+use elastic_reqwest::{SyncElasticClient, SyncFromResponse, Error};
+use elastic_reqwest::req::BulkRequest;
+use elastic_reqwest::res::{parse, BulkResponse};
 
 // Create a bulk request to index a bunch of docs.
 fn get_req() -> String {
@@ -28,7 +28,7 @@ fn get_req() -> String {
 
 fn run() -> Result<(), Error> {
     // Get a new default client.
-    let (client, params) = cli::default_sync()?;
+    let (client, params) = elastic_reqwest::sync::default()?;
 
     // Send the bulk request.
     let http_res = client.elastic_req(&params, BulkRequest::new(get_req()))?;

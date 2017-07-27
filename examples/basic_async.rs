@@ -9,20 +9,20 @@
 extern crate serde_json;
 extern crate tokio_core;
 extern crate futures;
-extern crate elastic_reqwest as cli;
+extern crate elastic_reqwest;
 
 use serde_json::Value;
 use tokio_core::reactor::Core;
 use futures::Future;
-use cli::{AsyncElasticClient, AsyncFromResponse, RequestParams, Error};
-use cli::req::SearchRequest;
-use cli::res::{parse, SearchResponse};
+use elastic_reqwest::{AsyncElasticClient, AsyncFromResponse, RequestParams, Error};
+use elastic_reqwest::req::SearchRequest;
+use elastic_reqwest::res::{parse, SearchResponse};
 
 fn run() -> Result<(), Error> {
     let mut core = Core::new().unwrap();
 
     // Get a new default client.
-    let (client, _) = cli::default_async(&core.handle())?;
+    let (client, _) = elastic_reqwest::async::default(&core.handle())?;
 
     // Create a new set of params with pretty printing.
     let params = RequestParams::default().url_param("pretty", true);
