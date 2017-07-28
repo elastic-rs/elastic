@@ -108,7 +108,7 @@ pub trait SyncElasticClient {
 }
 
 /** Build a synchronous `reqwest::RequestBuilder` from an Elasticsearch request. */
-pub fn build_req_sync<I, B>(client: &Client, params: &RequestParams, req: I) -> Result<RequestBuilder, Error>
+pub fn build_req<I, B>(client: &Client, params: &RequestParams, req: I) -> Result<RequestBuilder, Error>
     where I: Into<HttpRequest<'static, B>>,
           B: Into<SyncBody>
 {
@@ -135,7 +135,7 @@ impl SyncElasticClient for Client {
         where I: Into<HttpRequest<'static, B>>,
               B: Into<SyncBody>
     {
-        build_req_sync(&self, params, req)?.send().map_err(Into::into)
+        build_req(&self, params, req)?.send().map_err(Into::into)
     }
 }
 
@@ -186,7 +186,7 @@ mod tests {
     #[test]
     fn head_req() {
         let cli = Client::new().unwrap();
-        let req = build_req_sync(&cli, &params(), PingHeadRequest::new());
+        let req = build_req(&cli, &params(), PingHeadRequest::new());
 
         let url = "eshost:9200/path/?pretty=true&q=*";
 
@@ -198,7 +198,7 @@ mod tests {
     #[test]
     fn get_req() {
         let cli = Client::new().unwrap();
-        let req = build_req_sync(&cli, &params(), SimpleSearchRequest::new());
+        let req = build_req(&cli, &params(), SimpleSearchRequest::new());
 
         let url = "eshost:9200/path/_search?pretty=true&q=*";
 
@@ -210,7 +210,7 @@ mod tests {
     #[test]
     fn post_req() {
         let cli = Client::new().unwrap();
-        let req = build_req_sync(&cli,
+        let req = build_req(&cli,
                             &params(),
                             PercolateRequest::for_index_ty("idx", "ty", vec![]));
 
@@ -224,7 +224,7 @@ mod tests {
     #[test]
     fn put_req() {
         let cli = Client::new().unwrap();
-        let req = build_req_sync(&cli,
+        let req = build_req(&cli,
                             &params(),
                             IndicesCreateRequest::for_index("idx", vec![]));
 
@@ -238,7 +238,7 @@ mod tests {
     #[test]
     fn delete_req() {
         let cli = Client::new().unwrap();
-        let req = build_req_sync(&cli, &params(), IndicesDeleteRequest::for_index("idx"));
+        let req = build_req(&cli, &params(), IndicesDeleteRequest::for_index("idx"));
 
         let url = "eshost:9200/path/idx?pretty=true&q=*";
 

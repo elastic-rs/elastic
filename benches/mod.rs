@@ -9,7 +9,9 @@ use reqwest::Client as ClientSync;
 use reqwest::unstable::async::Client as ClientAsync;
 use reqwest::header::Referer;
 use tokio_core::reactor::Core;
-use elastic_reqwest::{build_req_sync, build_req_async, RequestParams};
+use elastic_reqwest::RequestParams;
+use elastic_reqwest::sync::build_req as build_req_sync;
+use elastic_reqwest::async::build_req as build_req_async;
 use elastic_reqwest::req::PingRequest;
 
 #[inline(always)]
