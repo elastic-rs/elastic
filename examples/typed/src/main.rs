@@ -10,7 +10,6 @@
 
 extern crate serde;
 extern crate serde_json;
-extern crate reqwest;
 #[macro_use]
 extern crate serde_derive;
 
@@ -20,10 +19,9 @@ extern crate elastic_types_derive;
 extern crate elastic_reqwest;
 
 use std::net::Ipv4Addr;
-use reqwest::Client;
-use elastic_reqwest::{ElasticClient, ParseResponse, RequestParams};
+use elastic_reqwest::{SyncElasticClient, SyncFromResponse, RequestParams};
 use elastic_reqwest::req::{IndicesCreateRequest, IndexRequest, SearchRequest};
-use elastic_reqwest::res::{parse, CommandResponse, IndexResponse, SearchResponse, Hit};
+use elastic_reqwest::res::{parse, CommandResponse, IndexResponse, SearchResponse};
 use elastic_types::prelude::*;
 
 mod data;
@@ -51,14 +49,16 @@ fn main() {
     // Perform a search request and deserialise to `SearchResponse`.
     let res = query(&client, &params);
 
-    println!("results: {}", res.hits.total);
+    println!("results: {}", res.hits().count());
 
     for hit in res.hits() {
         println!("hit: {:?}", hit);
     }
 }
 
-fn create_index(client: &Client, params: &RequestParams) {
+fn create_index<TClient>(client: &TClient, params: &RequestParams) 
+    where TClient: SyncElasticClient
+{
     let req = IndicesCreateRequest::for_index(INDEX, serde_json::to_string(&Index::default()).unwrap());
 
     // Create index
@@ -88,7 +88,9 @@ fn get_data() -> Vec<MyStruct> {
          }]
 }
 
-fn index_datum(client: &Client, params: &RequestParams, datum: &MyStruct) {
+fn index_datum<TClient>(client: &TClient, params: &RequestParams, datum: &MyStruct) 
+    where TClient: SyncElasticClient
+{
     let req = IndexRequest::for_index_ty_id(INDEX,
                                             MyStruct::name(),
                                             datum.id.to_string(),
@@ -99,7 +101,9 @@ fn index_datum(client: &Client, params: &RequestParams, datum: &MyStruct) {
     parse::<IndexResponse>().from_response(res).unwrap();
 }
 
-fn query(client: &Client, params: &RequestParams) -> SearchResponse<MyStruct> {
+fn query<TClient>(client: &TClient, params: &RequestParams) -> SearchResponse<MyStruct> 
+    where TClient: SyncElasticClient
+{
     let req = SearchRequest::for_index_ty(INDEX,
                                           MyStruct::name(),
                                           json_lit!({
