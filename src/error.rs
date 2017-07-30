@@ -44,6 +44,10 @@ quick_error! {
             description("index not found")
             display("index not found: '{}'", index)
         }
+        IndexAlreadyExists { index: String } {
+            description("index already exists")
+            display("index already exists: '{}'", index)
+        }
         Parsing { line: u64, col: u64, reason: String } {
             description("request parse error")
             display("request parse error: '{}' on line: {}, col: {}", reason, line, col)
@@ -57,6 +61,8 @@ quick_error! {
             description("error response from Elasticsearch")
             display("error response from Elasticsearch: {:?}", v)
         }
+        #[doc(hidden)]
+        __NonExhaustive {}
     }
 }
 
@@ -109,6 +115,11 @@ impl From<Map<String, Value>> for ApiError {
                 let index = error_key!(obj[index]: |v| v.as_str());
 
                 ApiError::IndexNotFound { index: index.into() }
+            }
+            "index_already_exists_exception" => {
+                let index = error_key!(obj[index]: |v| v.as_str());
+
+                ApiError::IndexAlreadyExists { index: index.into() }
             }
             "parsing_exception" => {
                 let line = error_key!(obj[line]: |v| v.as_u64());

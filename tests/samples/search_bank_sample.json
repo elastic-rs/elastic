@@ -1,0 +1,205 @@
+{
+  "took" : 3,
+  "timed_out" : false,
+  "_shards" : {
+    "total" : 20,
+    "successful" : 20,
+    "failed" : 0
+  },
+  "hits" : {
+    "total" : 2008,
+    "max_score" : 1.0,
+    "hits" : [
+      {
+        "_index" : "bulk-async",
+        "_type" : "bulk-ty",
+        "_id" : "25",
+        "_score" : 1.0,
+        "_source" : {
+          "account_number" : 25,
+          "balance" : 40540,
+          "firstname" : "Virginia",
+          "lastname" : "Ayala",
+          "age" : 39,
+          "gender" : "F",
+          "address" : "171 Putnam Avenue",
+          "employer" : "Filodyne",
+          "email" : "virginiaayala@filodyne.com",
+          "city" : "Nicholson",
+          "state" : "PA"
+        }
+      },
+      {
+        "_index" : "bulk-async",
+        "_type" : "bulk-ty",
+        "_id" : "44",
+        "_score" : 1.0,
+        "_source" : {
+          "account_number" : 44,
+          "balance" : 34487,
+          "firstname" : "Aurelia",
+          "lastname" : "Harding",
+          "age" : 37,
+          "gender" : "M",
+          "address" : "502 Baycliff Terrace",
+          "employer" : "Orbalix",
+          "email" : "aureliaharding@orbalix.com",
+          "city" : "Yardville",
+          "state" : "DE"
+        }
+      },
+      {
+        "_index" : "bulk-async",
+        "_type" : "bulk-ty",
+        "_id" : "99",
+        "_score" : 1.0,
+        "_source" : {
+          "account_number" : 99,
+          "balance" : 47159,
+          "firstname" : "Ratliff",
+          "lastname" : "Heath",
+          "age" : 39,
+          "gender" : "F",
+          "address" : "806 Rockwell Place",
+          "employer" : "Zappix",
+          "email" : "ratliffheath@zappix.com",
+          "city" : "Shaft",
+          "state" : "ND"
+        }
+      },
+      {
+        "_index" : "bulk-async",
+        "_type" : "bulk-ty",
+        "_id" : "119",
+        "_score" : 1.0,
+        "_source" : {
+          "account_number" : 119,
+          "balance" : 49222,
+          "firstname" : "Laverne",
+          "lastname" : "Johnson",
+          "age" : 28,
+          "gender" : "F",
+          "address" : "302 Howard Place",
+          "employer" : "Senmei",
+          "email" : "lavernejohnson@senmei.com",
+          "city" : "Herlong",
+          "state" : "DC"
+        }
+      },
+      {
+        "_index" : "bulk-async",
+        "_type" : "bulk-ty",
+        "_id" : "126",
+        "_score" : 1.0,
+        "_source" : {
+          "account_number" : 126,
+          "balance" : 3607,
+          "firstname" : "Effie",
+          "lastname" : "Gates",
+          "age" : 39,
+          "gender" : "F",
+          "address" : "620 National Drive",
+          "employer" : "Digitalus",
+          "email" : "effiegates@digitalus.com",
+          "city" : "Blodgett",
+          "state" : "MD"
+        }
+      },
+      {
+        "_index" : "bulk-async",
+        "_type" : "bulk-ty",
+        "_id" : "145",
+        "_score" : 1.0,
+        "_source" : {
+          "account_number" : 145,
+          "balance" : 47406,
+          "firstname" : "Rowena",
+          "lastname" : "Wilkinson",
+          "age" : 32,
+          "gender" : "M",
+          "address" : "891 Elton Street",
+          "employer" : "Asimiline",
+          "email" : "rowenawilkinson@asimiline.com",
+          "city" : "Ripley",
+          "state" : "NH"
+        }
+      },
+      {
+        "_index" : "bulk-async",
+        "_type" : "bulk-ty",
+        "_id" : "183",
+        "_score" : 1.0,
+        "_source" : {
+          "account_number" : 183,
+          "balance" : 14223,
+          "firstname" : "Hudson",
+          "lastname" : "English",
+          "age" : 26,
+          "gender" : "F",
+          "address" : "823 Herkimer Place",
+          "employer" : "Xinware",
+          "email" : "hudsonenglish@xinware.com",
+          "city" : "Robbins",
+          "state" : "ND"
+        }
+      },
+      {
+        "_index" : "bulk-async",
+        "_type" : "bulk-ty",
+        "_id" : "190",
+        "_score" : 1.0,
+        "_source" : {
+          "account_number" : 190,
+          "balance" : 3150,
+          "firstname" : "Blake",
+          "lastname" : "Davidson",
+          "age" : 30,
+          "gender" : "F",
+          "address" : "636 Diamond Street",
+          "employer" : "Quantasis",
+          "email" : "blakedavidson@quantasis.com",
+          "city" : "Crumpler",
+          "state" : "KY"
+        }
+      },
+      {
+        "_index" : "bulk-async",
+        "_type" : "bulk-ty",
+        "_id" : "208",
+        "_score" : 1.0,
+        "_source" : {
+          "account_number" : 208,
+          "balance" : 40760,
+          "firstname" : "Garcia",
+          "lastname" : "Hess",
+          "age" : 26,
+          "gender" : "F",
+          "address" : "810 Nostrand Avenue",
+          "employer" : "Quiltigen",
+          "email" : "garciahess@quiltigen.com",
+          "city" : "Brooktrails",
+          "state" : "GA"
+        }
+      },
+      {
+        "_index" : "bulk-async",
+        "_type" : "bulk-ty",
+        "_id" : "222",
+        "_score" : 1.0,
+        "_source" : {
+          "account_number" : 222,
+          "balance" : 14764,
+          "firstname" : "Rachelle",
+          "lastname" : "Rice",
+          "age" : 36,
+          "gender" : "M",
+          "address" : "333 Narrows Avenue",
+          "employer" : "Enaut",
+          "email" : "rachellerice@enaut.com",
+          "city" : "Wright",
+          "state" : "AZ"
+        }
+      }
+    ]
+  }
+}

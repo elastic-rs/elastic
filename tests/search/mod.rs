@@ -65,6 +65,14 @@ fn success_parse_hits_no_score() {
 }
 
 #[test]
+fn success_parse_hits_bank_sample() {
+    let f = load_file("tests/samples/search_bank_sample.json");
+    let deserialized = parse::<SearchResponse<Value>>().from_reader(200, f).unwrap();
+
+    assert_eq!(deserialized.hits().into_iter().count(), 10);
+}
+
+#[test]
 fn success_aggs_when_not_present() {
     let f = load_file("tests/samples/search_hits_only.json");
     let deserialized = parse::<SearchResponse<Value>>().from_reader(200, f).unwrap();
