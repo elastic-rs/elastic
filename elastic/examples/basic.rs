@@ -5,6 +5,7 @@
 //! This sample executes a search request and iterates through the returned hits
 //! as anonymous json objects.
 
+extern crate env_logger;
 #[macro_use]
 extern crate serde_json;
 extern crate elastic;
@@ -13,6 +14,8 @@ use serde_json::Value;
 use elastic::prelude::*;
 
 fn main() {
+    env_logger::init().unwrap();
+
     // A reqwest HTTP client and default parameters.
     // The `params` includes the base node url (http://localhost:9200).
     let client = ClientBuilder::new().build().unwrap();

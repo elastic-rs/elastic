@@ -5,6 +5,7 @@
 //! This sample demonstrates how to create an index, add type mapping, and index a document.
 //! Also see the `typed` sample for a more complete implementation.
 
+extern crate env_logger;
 #[macro_use]
 extern crate elastic_derive;
 #[macro_use]
@@ -23,6 +24,8 @@ struct MyType {
 }
 
 fn main() {
+    env_logger::init().unwrap();
+
     // A HTTP client and request parameters
     let client = ClientBuilder::new().build().unwrap();
 

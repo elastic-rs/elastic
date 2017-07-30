@@ -7,6 +7,7 @@
 //! exists, and the document is indexed.
 //! Also see the `typed` sample for a more complete implementation.
 
+extern crate env_logger;
 extern crate serde_json;
 extern crate elastic;
 
@@ -15,6 +16,8 @@ use elastic::error::*;
 use elastic::prelude::*;
 
 fn main() {
+    env_logger::init().unwrap();
+
     // A reqwest HTTP client and default parameters.
     // The `params` includes the base node url (http://localhost:9200).
     let client = ClientBuilder::new().build().unwrap();

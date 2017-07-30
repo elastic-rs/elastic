@@ -266,6 +266,9 @@ This crate glues these libraries together with some simple assumptions about how
 #![deny(missing_docs)]
 
 #[macro_use]
+extern crate log;
+extern crate uuid;
+#[macro_use]
 extern crate error_chain;
 extern crate serde;
 extern crate serde_json;

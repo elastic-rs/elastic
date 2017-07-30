@@ -5,12 +5,15 @@
 //! This sample demonstrates a raw search request where the body is read into a `String` rather
 //! than being deserialised.
 
+extern crate env_logger;
 extern crate elastic;
 
 use std::io::Read;
 use elastic::prelude::*;
 
 fn main() {
+    env_logger::init().unwrap();
+
     // A reqwest HTTP client and default parameters.
     // The `params` includes the base node url (http://localhost:9200).
     let params = RequestParams::default().url_param("pretty", true);

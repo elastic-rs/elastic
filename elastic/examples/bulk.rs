@@ -7,11 +7,14 @@
 //! performance out of them.
 //! See the docs for `BulkResponse` for more details.
 
+extern crate env_logger;
 extern crate elastic;
 
 use elastic::prelude::*;
 
 fn main() {
+    env_logger::init().unwrap();
+
     // A HTTP client and request parameters
     let client = ClientBuilder::new().build().unwrap();
 
