@@ -81,7 +81,7 @@ fn ensure_indexed(client: &Client, doc: MyType) {
             put_doc(client, doc);
         }
         // Something went wrong: panic
-        Err(e) => panic!(e),
+        Err(e) => panic!("{:?}", e),
     }
 }
 
