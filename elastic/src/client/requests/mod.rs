@@ -160,14 +160,22 @@ impl<'a, TRequest, TBody> RequestBuilder<'a, RawRequestBuilder<TRequest, TBody>>
     fn send_raw(self) -> Result<ResponseBuilder> {
         let correlation_id = Uuid::new_v4();
         let params = self.params.as_ref().unwrap_or(&self.client.params);
+        let req = self.req.inner.into();
 
-        let req: HttpRequest<_> = self.req.into();
+        info!("Elasticsearch Request: correlation_id: '{}', path: '{}'", correlation_id, req.url.as_ref());
 
-        debug!("Elasticsearch Request: correlation_id: '{}', path: '{}'", correlation_id, req.url.as_ref());
+        let res = match self.client.http.elastic_req(params, req) {
+            Ok(res) => {
+                info!("Elasticsearch Response: correlation_id: '{}', status: '{}'", correlation_id, res.status());
 
-        let res = self.client.http.elastic_req(params, req)?;
+                res
+            },
+            Err(e) => {
+                error!("Elasticsearch Response: correlation_id: '{}', error: '{}'", correlation_id, e);
 
-        debug!("Elasticsearch Response: correlation_id: '{}', status: '{}'", correlation_id, res.status());
+                Err(e)?
+            }
+        };
 
         Ok(IntoResponseBuilder(res).into())
     }

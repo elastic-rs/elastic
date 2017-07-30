@@ -2,7 +2,6 @@ use std::io::{Result as IoResult, Error as IoError};
 use std::fs::File;
 use std::path::Path;
 use ops::Client;
-use elastic::client::into_response;
 use elastic::client::requests::{IntoBody, BulkRequest};
 use elastic::client::responses::{BulkErrorsResponse, BulkItemError};
 use elastic::error::Error as ResponseError;

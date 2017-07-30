@@ -1,6 +1,6 @@
 use ops::Client;
 use std::io::Error as IoError;
-use serde_json::{Value, Error as JsonError};
+use serde_json::Error as JsonError;
 use elastic::client::requests::IndicesExistsRequest;
 use elastic::client::responses::CommandResponse;
 use elastic::error::Error as ResponseError;
