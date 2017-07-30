@@ -5,6 +5,7 @@
 //! This sample demonstrates creating a custom `SearchResponse` type that can be used with
 //! the `filter_path` query parameter to only return the matched hits.
 
+extern crate env_logger;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
@@ -45,6 +46,8 @@ impl IsOk for SearchResponse {
 }
 
 fn main() {
+    env_logger::init().unwrap();
+
     // A reqwest HTTP client and default parameters.
     // The `params` includes the base node url (http://localhost:9200).
     let client = ClientBuilder::new().build().unwrap();

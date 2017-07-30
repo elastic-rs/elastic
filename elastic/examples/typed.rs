@@ -10,6 +10,7 @@
 //! - Index a document
 //! - Search the index and iterate over hits
 
+extern crate env_logger;
 #[macro_use]
 extern crate json_str;
 #[macro_use]
@@ -31,6 +32,8 @@ struct MyType {
 }
 
 fn main() {
+    env_logger::init().unwrap();
+
     // A HTTP client and request parameters
     let client = ClientBuilder::new().build().unwrap();
 
