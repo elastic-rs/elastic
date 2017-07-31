@@ -36,6 +36,7 @@ match res {
 */
 
 #![allow(missing_docs)]
+#![allow(unused_doc_comment)]
 
 use serde_json::Error as JsonError;
 use reqwest::Error as ReqwestError;
