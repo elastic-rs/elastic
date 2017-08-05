@@ -98,28 +98,21 @@ impl AsyncResponseBuilder {
 
     [response-types]: parse/trait.IsOk.html#implementors
     */
-    pub fn into_response<T>(self) -> Box<Future<Item = T, Error = Error>>
+    pub fn into_response<T>(mut self) -> Box<Future<Item = T, Error = Error>>
         where T: IsOk + DeserializeOwned + Send + 'static
     {
         let status = self.status();
-
-        let body_future = async_io::read_to_end(self.inner, Vec::new()).map_err(Into::into);
-
+        let body = self.inner.body();
         let de_fn = move |body| parse().from_slice(status, &body).map_err(Into::into);
 
+        let body_future = async_io::read_to_end(body, Vec::new()).map_err(Into::into);
+
         if let Some(de_pool) = self.de_pool {
-            let de_future = body_future
-                .and_then(move |(_, body)| {
-                    de_pool.spawn_fn(move || de_fn(body))
-                });
-
-            return Box::new(de_future)
+            Box::new(body_future.and_then(move |(_, body)| de_pool.spawn_fn(move || de_fn(body))))
         }
-        
-        let de_future = body_future
-            .and_then(move |(_, body)| de_fn(body));
-
-        Box::new(de_future)
+        else {
+            Box::new(body_future.and_then(move |(_, body)| de_fn(body)))
+        }
     }
 }
 
@@ -131,14 +124,4 @@ impl AsyncHttpResponse {
     pub fn status(&self) -> u16 {
         self.0.status().into()
     }
-}
-
-impl Read for AsyncHttpResponse {
-    fn read(&mut self, buf: &mut [u8]) -> IoResult<usize> {
-        self.0.read(buf)
-    }
-}
-
-impl AsyncRead for AsyncHttpResponse {
-
 }

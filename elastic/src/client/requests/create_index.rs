@@ -119,7 +119,7 @@ impl<TSender, TBody> RequestBuilder<TSender, CreateIndexRequestBuilder<TBody>>
         RequestBuilder::new(self.client,
                             self.params,
                             CreateIndexRequestBuilder {
-                                index: self.req.index,
+                                index: self.inner.index,
                                 body: body,
                             })
     }
@@ -130,7 +130,7 @@ impl<TBody> RequestBuilder<SyncSender, CreateIndexRequestBuilder<TBody>>
 {
     /** Send the create index request. */
     pub fn send(self) -> Result<CommandResponse> {
-        let req = self.req.into_request();
+        let req = self.inner.into_request();
 
         RequestBuilder::new(self.client, self.params, RawRequestBuilder::new(req))
             .send()?

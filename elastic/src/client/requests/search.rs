@@ -143,7 +143,7 @@ impl<TSender, TDocument, TBody> RequestBuilder<TSender, SearchRequestBuilder<TDo
     pub fn index<I>(mut self, index: I) -> Self
         where I: Into<Index<'static>>
     {
-        self.req.index = Some(index.into());
+        self.inner.index = Some(index.into());
         self
     }
 
@@ -151,7 +151,7 @@ impl<TSender, TDocument, TBody> RequestBuilder<TSender, SearchRequestBuilder<TDo
     pub fn ty<I>(mut self, ty: Option<I>) -> Self
         where I: Into<Type<'static>>
     {
-        self.req.ty = ty.map(Into::into);
+        self.inner.ty = ty.map(Into::into);
         self
     }
 
@@ -169,8 +169,8 @@ impl<TSender, TDocument, TBody> RequestBuilder<TSender, SearchRequestBuilder<TDo
                             self.params,
                             SearchRequestBuilder {
                                 body: body,
-                                index: self.req.index,
-                                ty: self.req.ty,
+                                index: self.inner.index,
+                                ty: self.inner.ty,
                                 _marker: PhantomData,
                             })
     }
@@ -187,7 +187,7 @@ impl<TDocument, TBody> RequestBuilder<SyncSender, SearchRequestBuilder<TDocument
 {
     /** Send the search request synchronously. */
     pub fn send(self) -> Result<SearchResponse<TDocument>> {
-        let req = self.req.into_request();
+        let req = self.inner.into_request();
 
         RequestBuilder::new(self.client, self.params, RawRequestBuilder::new(req))
             .send()?
@@ -206,7 +206,7 @@ impl<TDocument, TBody> RequestBuilder<AsyncSender, SearchRequestBuilder<TDocumen
 {
     /** Send the search request asynchronously. */
     pub fn send(self) -> Box<Future<Item = SearchResponse<TDocument>, Error = Error>> {
-        let req = self.req.into_request();
+        let req = self.inner.into_request();
 
         let res_future = RequestBuilder::new(self.client, self.params, RawRequestBuilder::new(req))
             .send()

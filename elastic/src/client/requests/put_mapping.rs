@@ -95,7 +95,7 @@ impl<TSender, TDocument> RequestBuilder<TSender, PutMappingRequestBuilder<TDocum
     pub fn ty<I>(mut self, ty: I) -> Self
         where I: Into<Type<'static>>
     {
-        self.req.ty = ty.into();
+        self.inner.ty = ty.into();
         self
     }
 }
@@ -105,7 +105,7 @@ impl<TDocument> RequestBuilder<SyncSender, PutMappingRequestBuilder<TDocument>>
 {
     /** Send the put mapping request. */
     pub fn send(self) -> Result<CommandResponse> {
-        let req = self.req.into_request()?;
+        let req = self.inner.into_request()?;
 
         RequestBuilder::new(self.client, self.params, RawRequestBuilder::new(req))
             .send()?

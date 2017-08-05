@@ -46,7 +46,7 @@ pub struct RequestBuilder<TSender, TRequest>
 {
     client: Client<TSender>,
     params: Option<RequestParams>,
-    req: TRequest,
+    inner: TRequest,
 }
 
 /**
@@ -55,24 +55,16 @@ A builder for a raw [`Client.request`][Client.request].
 [Client.request]: ../struct.Client.html#method.request
 */
 pub struct RawRequestBuilder<TRequest, TBody> {
-    inner: TRequest,
+    req: TRequest,
     _marker: PhantomData<TBody>
 }
 
 impl<TRequest, TBody> RawRequestBuilder<TRequest, TBody> {
     fn new(req: TRequest) -> Self {
         RawRequestBuilder {
-            inner: req,
+            req: req,
             _marker: PhantomData,
         }
-    }
-}
-
-impl<TRequest, TBody> Into<HttpRequest<'static, TBody>> for RawRequestBuilder<TRequest, TBody>
-    where TRequest: Into<HttpRequest<'static, TBody>>
-{
-    fn into(self) -> HttpRequest<'static, TBody> {
-        self.inner.into()
     }
 }
 
@@ -123,7 +115,7 @@ impl<TSender, TRequest> RequestBuilder<TSender, TRequest>
         RequestBuilder {
             client: client,
             params: params,
-            req: req,
+            inner: req,
         }
     }
 
@@ -198,8 +190,10 @@ impl<TRequest, TBody> RequestBuilder<SyncSender, RawRequestBuilder<TRequest, TBo
     */
     pub fn send(self) -> Result<SyncResponseBuilder> {
         let params = self.params.as_ref().unwrap_or(&self.client.params);
+        let req = self.inner.req;
+        let http = self.client.sender.http;
 
-        let res = self.client.http.elastic_req(params, self.req)?;
+        let res = http.elastic_req(params, req)?;
 
         Ok(sync_response(res))
     }
@@ -247,10 +241,8 @@ impl<TRequest, TBody> RequestBuilder<AsyncSender, RawRequestBuilder<TRequest, TB
     */
     pub fn send(self) -> Box<Future<Item = AsyncResponseBuilder, Error = Error>> {
         let params = self.params.as_ref().unwrap_or(&self.client.params);
-
-        let req = self.req;
-        let http = self.client.http.inner;
-        let de_pool = self.client.http.de_pool;
+        let req = self.inner.req;
+        let AsyncSender { http, de_pool } = self.client.sender;
 
         let res_future = http
             .elastic_req(params, req)

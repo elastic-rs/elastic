@@ -338,7 +338,7 @@ use futures_cpupool::CpuPool;
 use tokio_core::reactor::Handle;
 use elastic_reqwest::{SyncBody, AsyncBody};
 use reqwest::{Client as SyncHttpClient, Response as SyncRawResponse, Error as ClientError};
-use reqwest::unstable::async::{Client as AsyncHttpClientInner};
+use reqwest::unstable::async::{Client as AsyncHttpClient};
 
 use error::*;
 use self::responses::parse::IsOk;
@@ -347,17 +347,25 @@ pub use elastic_reqwest::RequestParams;
 
 pub trait Sender: Clone {
     #[doc(hidden)]
-    type Http: Clone;
-
-    #[doc(hidden)]
     type Body;
 }
 
-#[derive(Clone, Copy)]
-pub enum SyncSender {}
+#[derive(Clone)]
+pub struct SyncSender {
+    http: SyncHttpClient
+}
+
+impl SyncSender {
+    fn new() -> Result<Self> {
+        let http = SyncHttpClient::new()?;
+
+        Ok(SyncSender {
+            http: http
+        })
+    }
+}
 
 impl Sender for SyncSender {
-    type Http = SyncHttpClient;
     type Body = SyncBody;
 }
 
@@ -467,7 +475,9 @@ impl SyncClientBuilder {
     pub fn build(self) -> Result<SyncClient> {
         if let Some(http) = self.http {
             Ok(SyncClient {
-                http: http,
+                sender: SyncSender {
+                    http: http
+                },
                 params: self.params
             })
         } else {
@@ -476,22 +486,29 @@ impl SyncClientBuilder {
     }
 }
 
-#[derive(Clone, Copy)]
-pub enum AsyncSender {}
-
-impl Sender for AsyncSender {
-    type Http = AsyncHttpClient;
-    type Body = AsyncBody;
-}
-
 #[derive(Clone)]
-pub struct AsyncHttpClient {
-    inner: AsyncHttpClientInner,
+pub struct AsyncSender {
+    http: AsyncHttpClient,
     de_pool: Option<CpuPool>
 }
 
+impl AsyncSender {
+    fn new(handle: &Handle) -> Result<Self> {
+        let http = AsyncHttpClient::new(handle)?;
+
+        Ok(AsyncSender {
+            http: http,
+            de_pool: None
+        })
+    }
+}
+
+impl Sender for AsyncSender {
+    type Body = AsyncBody;
+}
+
 pub struct AsyncClientBuilder {
-    http: Option<AsyncHttpClientInner>,
+    http: Option<AsyncHttpClient>,
     de_pool: Option<CpuPool>,
     params: RequestParams
 }
@@ -529,18 +546,18 @@ impl AsyncClientBuilder {
         self
     }
 
-    pub fn http_client(mut self, client: AsyncHttpClientInner) -> Self {
+    pub fn http_client(mut self, client: AsyncHttpClient) -> Self {
         self.http = Some(client);
 
         self
     }
 
     pub fn build(self, handle: &Handle) -> Result<AsyncClient> {
-        let http = self.http.map(|http| Ok(http)).unwrap_or(AsyncHttpClientInner::new(handle))?;
+        let http = self.http.map(|http| Ok(http)).unwrap_or(AsyncHttpClient::new(handle))?;
 
         Ok(AsyncClient {
-            http: AsyncHttpClient {
-                inner: http,
+            sender: AsyncSender {
+                http: http,
                 de_pool: self.de_pool,
             },
             params: self.params,
@@ -568,10 +585,8 @@ let client = Client::new(params).unwrap();
 ```
 */
 #[derive(Clone)]
-pub struct Client<TSender> 
-    where TSender: Sender
-{
-    http: TSender::Http,
+pub struct Client<TSender> {
+    sender: TSender,
     params: RequestParams,
 }
 
@@ -606,10 +621,10 @@ impl Client<SyncSender> {
     [RequestParams]: struct.RequestParams.html
     */
     fn new(params: RequestParams) -> Result<Self> {
-        let http = <SyncSender as Sender>::Http::new()?;
+        let http = SyncSender::new()?;
 
         Ok(Client {
-               http: http,
+               sender: http,
                params: params,
            })
     }
@@ -646,11 +661,11 @@ impl Client<AsyncSender> {
     [RequestParams]: struct.RequestParams.html
     */
     fn new(handle: &Handle, params: RequestParams) -> Result<Self> {
-        let http = AsyncHttpClientInner::new(handle)?;
+        let http = AsyncHttpClient::new(handle)?;
 
         Ok(Client {
-               http: AsyncHttpClient {
-                   inner: http,
+               sender: AsyncSender {
+                   http: http,
                    de_pool: None,   
                },
                params: params,
