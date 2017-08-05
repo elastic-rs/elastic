@@ -149,10 +149,11 @@ pub trait AsyncFromResponse<TResponse> {
 }
 
 impl<TResponse: IsOk + DeserializeOwned + 'static> AsyncFromResponse<TResponse> for Parse<TResponse> {
-    fn from_response(self, response: Response) -> Box<Future<Item = TResponse, Error = Error>> {
+    fn from_response(self, mut response: Response) -> Box<Future<Item = TResponse, Error = Error>> {
         let status: u16 = response.status().into();
+        let body = response.body();
 
-        let body_future = io::read_to_end(response, Vec::new())
+        let body_future = io::read_to_end(body, Vec::new())
             .map_err(Into::into);
 
         let de_future = body_future
