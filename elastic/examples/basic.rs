@@ -15,21 +15,19 @@ use elastic::prelude::*;
 fn main() {
     // A reqwest HTTP client and default parameters.
     // The `params` includes the base node url (http://localhost:9200).
-    let client = ClientBuilder::new().build().unwrap();
-
-    let query = json!({
-        "query": {
-            "query_string": {
-                "query": "*"
-            }
-        }
-    });
+    let client = SyncClientBuilder::new().build().unwrap();
 
     // Send the request and process the response.
     let res = client
         .search::<Value>()
         .index("_all")
-        .body(query.to_string())
+        .body(json!({
+            "query": {
+                "query_string": {
+                    "query": "*"
+                }
+            }
+        }))
         .send()
         .unwrap();
 

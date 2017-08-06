@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 use serde_json;
 use serde::Serialize;
 
-use error::*;
+use error::{self, Result};
 use client::{Client, Sender, SyncSender, AsyncSender};
 use client::requests::{Index, Type, IndicesPutMappingRequest, RequestBuilder, RawRequestBuilder};
 use client::responses::CommandResponse;
@@ -72,7 +72,7 @@ impl<TDocument> PutMappingRequestBuilder<TDocument>
     where TDocument: DocumentType
 {
     fn into_request(self) -> Result<IndicesPutMappingRequest<'static, Vec<u8>>> {
-        let body = serde_json::to_vec(&IndexDocumentMapping::from(TDocument::mapping()))?;
+        let body = serde_json::to_vec(&IndexDocumentMapping::from(TDocument::mapping())).map_err(|e| error::request(e))?;
 
         Ok(IndicesPutMappingRequest::for_index_ty(self.index, self.ty, body))
     }

@@ -2,7 +2,7 @@ use std::io::{Read, Result as IoResult};
 use serde::de::DeserializeOwned;
 use reqwest::Response as RawResponse;
 
-use error::*;
+use error::{self, Result};
 use elastic_reqwest::SyncFromResponse;
 use elastic_reqwest::res::parse;
 use super::parse::IsOk;
@@ -92,7 +92,8 @@ impl SyncResponseBuilder {
     pub fn into_response<T>(self) -> Result<T>
         where T: IsOk + DeserializeOwned
     {
-        parse().from_response(self.0).map_err(Into::into)
+        let status = self.status();
+        parse().from_response(self.0).map_err(|e| error::response(status, e))
     }
 }
 

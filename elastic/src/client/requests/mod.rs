@@ -9,7 +9,7 @@ use std::marker::PhantomData;
 use futures::Future;
 use elastic_reqwest::{SyncElasticClient, AsyncElasticClient};
 
-use error::*;
+use error::{self, Result, Error};
 use client::{Client, Sender, SyncSender, AsyncSender, RequestParams};
 use client::responses::{sync_response, async_response, SyncResponseBuilder, AsyncResponseBuilder};
 
@@ -197,7 +197,7 @@ impl<TRequest, TBody> RequestBuilder<SyncSender, RawRequestBuilder<TRequest, TBo
         let req = self.inner.req;
         let http = self.client.sender.http;
 
-        let res = http.elastic_req(params, req)?;
+        let res = http.elastic_req(params, req).map_err(|e| error::request(e))?;
 
         Ok(sync_response(res))
     }
@@ -248,12 +248,12 @@ impl<TRequest, TBody> RequestBuilder<AsyncSender, RawRequestBuilder<TRequest, TB
         let req = self.inner.req;
         let AsyncSender { http, de_pool } = self.client.sender;
 
-        let res_future = http
+        let req_future = http
             .elastic_req(params, req)
-            .map(|res| async_response(res, de_pool))
-            .map_err(Into::into);
+            .map_err(|e| error::request(e))
+            .map(|res| async_response(res, de_pool));
         
-        Box::new(res_future)
+        Box::new(req_future)
     }
 }
 

@@ -5,7 +5,7 @@ use tokio_io::{AsyncRead, io as async_io};
 use serde::de::DeserializeOwned;
 use reqwest::unstable::async::Response as RawResponse;
 
-use error::*;
+use error::{self, Result, Error};
 use elastic_reqwest::AsyncFromResponse;
 use elastic_reqwest::res::parse;
 use super::parse::IsOk;
@@ -103,9 +103,9 @@ impl AsyncResponseBuilder {
     {
         let status = self.status();
         let body = self.inner.body();
-        let de_fn = move |body| parse().from_slice(status, &body).map_err(Into::into);
+        let de_fn = move |body| parse().from_slice(status, &body).map_err(move |e| error::response(status, e));
 
-        let body_future = async_io::read_to_end(body, Vec::new()).map_err(Into::into);
+        let body_future = async_io::read_to_end(body, Vec::new()).map_err(move |e| error::response(status, e));
 
         if let Some(de_pool) = self.de_pool {
             Box::new(body_future.and_then(move |(_, body)| de_pool.spawn_fn(move || de_fn(body))))

@@ -1,7 +1,7 @@
 use serde_json;
 use serde::Serialize;
 
-use error::*;
+use error::{self, Result};
 use client::{Client, Sender, SyncSender, AsyncSender};
 use client::requests::{Index, Type, Id, IndexRequest, RequestBuilder, RawRequestBuilder};
 use client::responses::IndexResponse;
@@ -85,7 +85,7 @@ impl<TDocument> IndexRequestBuilder<TDocument>
     where TDocument: Serialize
 {
     fn into_request(self) -> Result<IndexRequest<'static, Vec<u8>>> {
-        let body = serde_json::to_vec(&self.doc)?;
+        let body = serde_json::to_vec(&self.doc).map_err(|e| error::request(e))?;
 
         Ok(IndexRequest::for_index_ty_id(self.index, self.ty, self.id, body))
     }

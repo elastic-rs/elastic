@@ -439,7 +439,7 @@ use elastic_reqwest::{SyncBody, AsyncBody};
 use reqwest::{Client as SyncHttpClient, Response as SyncRawResponse, Error as ClientError};
 use reqwest::unstable::async::{Client as AsyncHttpClient};
 
-use error::*;
+use error::{self, Result};
 use self::responses::parse::IsOk;
 
 pub use elastic_reqwest::RequestParams;
@@ -456,7 +456,7 @@ pub struct SyncSender {
 
 impl SyncSender {
     fn new() -> Result<Self> {
-        let http = SyncHttpClient::new()?;
+        let http = SyncHttpClient::new().map_err(|e| error::build(e))?;
 
         Ok(SyncSender {
             http: http
@@ -593,7 +593,7 @@ pub struct AsyncSender {
 
 impl AsyncSender {
     fn new(handle: &Handle) -> Result<Self> {
-        let http = AsyncHttpClient::new(handle)?;
+        let http = AsyncHttpClient::new(handle).map_err(|e| error::build(e))?;
 
         Ok(AsyncSender {
             http: http,
@@ -652,7 +652,9 @@ impl AsyncClientBuilder {
     }
 
     pub fn build(self, handle: &Handle) -> Result<AsyncClient> {
-        let http = self.http.map(|http| Ok(http)).unwrap_or(AsyncHttpClient::new(handle))?;
+        let http = self.http.map(|http| Ok(http))
+                            .unwrap_or(AsyncHttpClient::new(handle))
+                            .map_err(|e| error::build(e))?;
 
         Ok(AsyncClient {
             sender: AsyncSender {
@@ -760,7 +762,7 @@ impl Client<AsyncSender> {
     [RequestParams]: struct.RequestParams.html
     */
     fn new(handle: &Handle, params: RequestParams) -> Result<Self> {
-        let http = AsyncHttpClient::new(handle)?;
+        let http = AsyncHttpClient::new(handle).map_err(|e| error::build(e))?;
 
         Ok(Client {
                sender: AsyncSender {
