@@ -119,6 +119,14 @@ impl AsyncResponseBuilder {
 /** A raw HTTP response that can be buffered using `Read`. */
 pub struct AsyncHttpResponse(RawResponse);
 
+impl Read for AsyncHttpResponse {
+    fn read(&mut self, buf: &mut [u8]) -> IoResult<usize> {
+        self.0.body_mut().read(buf)
+    }
+}
+
+impl AsyncRead for AsyncHttpResponse { }
+
 impl AsyncHttpResponse {
     /** Get the HTTP status for the response. */
     pub fn status(&self) -> u16 {

@@ -3,6 +3,28 @@ HTTP client, requests and responses.
 
 This module contains the HTTP client, as well as request and response types.
 
+# Sync and async clients
+
+`elastic` provides two clients:
+
+- [`SyncClient`]() for making synchronous requests
+- [`AsyncClient`]() for making asynchronous requests using  the [`futures`]() crate.
+
+To be precise, `elastic` actually offers only one client, `Client<TSender>`, that is generic over the kind of requests it can send.
+This makes it possible to share methods on request builders, but can make the method signatures more difficult to follow.
+
+## Building a synchronous client
+
+Use a `SyncClientBuilder` to configure a synchronous client.
+
+> TODO: Fill this out
+
+## Building an asynchronous client
+
+Use an `AsyncClientbuilder` to configure an asynchronous client.
+
+> TODO: Fill this out
+
 # Request builders
 
 Some commonly used endpoints have high-level builder methods you can use to configure requests easily.
@@ -18,8 +40,8 @@ Client method                               | Elasticsearch API                 
 
 All builders follow a standard pattern:
 
-- The `Client` method that takes all required parameters without inference
-- Optional or inferred parameters can be overridden in builder methods with inference
+- The `Client` method that takes all required parameters without type inference
+- Optional or inferred parameters can be overridden in builder methods with type inference
 - `send` will return a specific response type
 
 A search request for a value, where the response is matched for an `ApiError`:
@@ -126,7 +148,7 @@ The basic flow from request to response is:
 **3)** Parse the [`ResponseBuilder`][ResponseBuilder] to a [response type][response-types]:
 
 ```text
-[ResponseBuilder.response()] ---> [ResponseType]
+[ResponseBuilder.into_response()] ---> [ResponseType]
 ```
 
 The example below shows how these pieces fit together in code  by sending a simple `SearchRequest`, 
@@ -204,6 +226,8 @@ Both high-level request builders and raw requests have some common builder metho
 - a `send` method for sending the request.
 For high-level requests this returns a strongly-typed response.
 For raw requests this returns a [`ResponseBuilder`][ResponseBuilder].
+If the request was sent synchronously, the response is returned as a `Result`.
+If the request was sent asynchronously, the response is returned as a `Future`.
 
 ```no_run
 # use elastic::prelude::*;
@@ -221,9 +245,9 @@ let request_builder = request_builder.params(|p| p
 let response = request_builder.send();
 ```
 
-### 3. Parsing responses
+### 3. Parsing responses synchronously
 
-Call [`ResponseBuilder.into_response`][ResponseBuilder.into_response] on a sent request to get a [strongly typed response][response-types]:
+Call [`SyncResponseBuilder.into_response`][SyncResponseBuilder.into_response] on a sent request to get a [strongly typed response][response-types]:
 
 ```no_run
 # extern crate serde;
@@ -245,8 +269,8 @@ Call [`ResponseBuilder.into_response`][ResponseBuilder.into_response] on a sent 
 # let client = Client::new(params).unwrap();
 # let req = PingRequest::new();
 let response = client.request(req)
-                     .send()
-                     .and_then(into_response::<SearchResponse<Value>>);
+                     .send()?
+                     .into_response::<SearchResponse<Value>>()?;
 
 match response {
     Ok(response) => {
@@ -269,7 +293,7 @@ match response {
 # }
 ```
 
-Alternatively, call [`ResponseBuilder.into_raw`][ResponseBuilder.into_raw] on a sent request to get a raw [`HttpResponse`][HttpResponse]:
+Alternatively, call [`SyncResponseBuilder.into_raw`][SyncResponseBuilder.into_raw] on a sent request to get a raw [`HttpResponse`][HttpResponse]:
 
 ```no_run
 # extern crate serde;
@@ -283,16 +307,88 @@ Alternatively, call [`ResponseBuilder.into_raw`][ResponseBuilder.into_raw] on a 
 # let client = Client::new(params).unwrap();
 # let req = PingRequest::new();
 let mut response = client.request(req)
-                         .send()
-                         .and_then(into_raw)
-                         .unwrap();
+                         .send()?
+                         .into_raw()?;
 
 let mut body = String::new();
 response.read_to_string(&mut body).unwrap();
+
+println!("{}", body);
 # }
 ```
 
-`HttpResponse` implements the standard `Read` trait so you can buffer out the raw response data.
+`SyncHttpResponse` implements the standard `Read` trait so you can buffer out the raw response data.
+For more details see the [`responses`][responses-mod] module.
+
+### 3. Parsing responses asynchronously
+
+Call [`AsyncResponseBuilder.into_response`][AsyncResponseBuilder.into_response] on a sent request to get a [strongly typed response][response-types]:
+
+```no_run
+# extern crate serde;
+# extern crate serde_json;
+# #[macro_use] extern crate serde_derive;
+# #[macro_use] extern crate elastic_derive;
+# extern crate elastic;
+# use serde_json::Value;
+# use elastic::prelude::*;
+# use elastic::error::*;
+# fn main() {
+# #[derive(Serialize, Deserialize, ElasticType)]
+# struct MyType {
+#     pub id: i32,
+#     pub title: String,
+#     pub timestamp: Date<DefaultDateFormat>
+# }
+# let params = RequestParams::new("http://es_host:9200");
+# let client = Client::new(params).unwrap();
+# let req = PingRequest::new();
+let future = client.request(req)
+                   .send()
+                   .and_then(|response| res.into_response::<SearchResponse<Value>>);
+
+future.and_then(|response| {
+    // Iterate through the response hits
+    for hit in response.hits() {
+        println!("{:?}", hit);
+    }
+
+    Ok(())
+};
+# }
+```
+
+Alternatively, call [`AsyncResponseBuilder.into_raw`][AsyncResponseBuilder.into_raw] on a sent request to get a raw [`HttpResponse`][HttpResponse]:
+
+```no_run
+# extern crate serde;
+# #[macro_use] extern crate serde_derive;
+# #[macro_use] extern crate elastic_derive;
+# extern crate elastic;
+# use std::io::Read;
+# use elastic::prelude::*;
+# fn main() {
+# let params = RequestParams::new("http://es_host:9200");
+# let client = Client::new(params).unwrap();
+# let req = PingRequest::new();
+let mut future = client.request(req)
+                       .send()
+                       .and_then(|response| response.into_raw());
+
+future.and_then(|response| {
+    tokio_io::read_to_end(response, Vec::new())
+})
+.and_then(|(response, body)| {
+    let body = String::from_utf8(body).unwrap();
+
+    println!("{}", body);
+
+    Ok(())
+});
+# }
+```
+
+`AsyncHttpResponse` implements `tokio_io`s `AsyncRead` trait so you can buffer out the raw response data.
 For more details see the [`responses`][responses-mod] module.
 
 [docs-search]: http://www.elastic.co/guide/en/elasticsearch/reference/current/search-search.html
@@ -319,9 +415,12 @@ For more details see the [`responses`][responses-mod] module.
 [IndicesCreateRequest]: requests/endpoints/struct.IndicesCreateRequest.html
 
 [responses-mod]: responses/index.html
-[ResponseBuilder]: responses/struct.ResponseBuilder.html
-[ResponseBuilder.into_response]: responses/struct.ResponseBuilder.html#method.into_response
-[ResponseBuilder.into_raw]: responses/struct.ResponseBuilder.html#method.into_raw
+[SyncResponseBuilder]: responses/struct.SyncResponseBuilder.html
+[SyncResponseBuilder.into_response]: responses/struct.SyncResponseBuilder.html#method.into_response
+[SyncResponseBuilder.into_raw]: responses/struct.SyncResponseBuilder.html#method.into_raw
+[AsyncResponseBuilder]: responses/struct.AsyncResponseBuilder.html
+[AsyncResponseBuilder.into_response]: responses/struct.AsyncResponseBuilder.html#method.into_response
+[AsyncResponseBuilder.into_raw]: responses/struct.AsyncResponseBuilder.html#method.into_raw
 [SearchResponse]: responses/type.SearchResponse.html
 [GetResponse]: responses/type.GetResponse.html
 [IndexResponse]: responses/struct.IndexResponse.html

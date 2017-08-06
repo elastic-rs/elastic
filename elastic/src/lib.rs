@@ -50,7 +50,7 @@ extern crate elastic_derive;
 
 # Examples
 
-## Creating a client
+## Creating a synchronous client
 
 The [`Client`][Client] type is used to make interact with an Elasticsearch cluster.
 The `Client` will use a default set of request parameters that are passed to each request.
@@ -60,7 +60,7 @@ Properties like the host and query parameters can be configured for all requests
 use elastic::prelude::*;
 use elastic::http::header::Authorization;
 
-let builder = ClientBuilder::new()
+let builder = SyncClientBuilder::new()
     .base_url("http://es_host:9200")
     .params(|p| p
         .url_param("pretty", true)
@@ -77,7 +77,7 @@ Individual requests can override these parameter values:
 # use serde_json::Value;
 # use elastic::prelude::*;
 # fn main() {
-let client = ClientBuilder::new().build().unwrap();
+let client = SyncClientBuilder::new().build().unwrap();
 
 let response = client.search::<Value>()
                      .params(|p| p.url_param("pretty", true))

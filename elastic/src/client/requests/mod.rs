@@ -40,6 +40,10 @@ pub use self::create_index::*;
 A builder for a raw request.
 
 This structure wraps up a concrete REST API request type and lets you adjust parameters before sending it.
+The `RequestBuilder` has two generic parameters:
+
+- `TSender`: the kind of request sender. This can be either synchronous or asynchronous
+- `TRequest`: the inner request type, for example `SearchRequestBuilder`.
 */
 pub struct RequestBuilder<TSender, TRequest> 
     where TSender: Sender
