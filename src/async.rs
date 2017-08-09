@@ -5,9 +5,8 @@ use bytes::Bytes;
 use serde::de::DeserializeOwned;
 use serde_json::Value;
 use reqwest::unstable::async::{Client, RequestBuilder, Response, Body};
-use futures::{Future, IntoFuture};
+use futures::{Future, Stream, IntoFuture};
 use tokio_core::reactor::Handle;
-use tokio_io::io;
 
 use super::req::HttpRequest;
 use super::res::parsing::{Parse, IsOk};
@@ -151,14 +150,12 @@ pub trait AsyncFromResponse<TResponse> {
 impl<TResponse: IsOk + DeserializeOwned + 'static> AsyncFromResponse<TResponse> for Parse<TResponse> {
     fn from_response(self, mut response: Response) -> Box<Future<Item = TResponse, Error = Error>> {
         let status: u16 = response.status().into();
-        let body = response.body();
-
-        let body_future = io::read_to_end(body, Vec::new())
+        let body_future = response.body().concat2()
             .map_err(Into::into);
 
         let de_future = body_future
-            .and_then(move |(_, body)| {
-                self.from_slice(status, &body).map_err(Into::into)
+            .and_then(move |body| {
+                self.from_slice(status, body.as_ref()).map_err(Into::into)
             });
 
         Box::new(de_future)

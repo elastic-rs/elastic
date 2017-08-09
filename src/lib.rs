@@ -254,7 +254,6 @@ pub mod res {
 
 pub use self::res::parse;
 
-use std::io::Error as IoError;
 use std::sync::Arc;
 use std::collections::BTreeMap;
 use std::str;
@@ -275,13 +274,6 @@ quick_error! {
             description("http error")
             display("http error: {}", err)
             cause(err)   
-        }
-        /** An io error. */
-        Io(err: IoError) {
-            from()
-            description("io error")
-            display("io error: {}", err)
-            cause(err)
         }
         /** A response error. */
         Response(err: ResponseError) {
