@@ -36,16 +36,29 @@ use std::fmt;
 use std::error::Error as StdError;
 
 use serde_json;
+use reqwest::Error as ReqwestError;
 use elastic_reqwest::Error as ElasticReqwestError;
 use elastic_reqwest::res::error::ResponseError;
 
 pub use elastic_reqwest::res::error::ApiError;
 
+/** An alias for a result. */
 pub type Result<T> = ::std::result::Result<T, Error>;
 
+/** 
+An error encountered while interacting with Elasticsearch.
+
+API errors can be easily matched and destructured whereas client errors
+can be formatted, but not destructured.
+
+If the `RUST_BACKTRACE` environment variable is `1` then client errors will
+also contain a backtrace.
+*/
 #[derive(Debug)]
 pub enum Error {
+    /** An API error from Elasticsearch. */
     Api(ApiError),
+    /** Any other kind of error. */
     Client(ClientError)
 }
 
@@ -74,6 +87,7 @@ impl fmt::Display for Error {
     }
 }
 
+/** An error building a client, sending a request or receiving a response. */
 #[derive(Debug)]
 pub struct ClientError {
     inner: inner::Error,
@@ -160,6 +174,12 @@ impl Into<MaybeApiError<io::Error>> for io::Error {
     }
 }
 
+impl Into<MaybeApiError<ReqwestError>> for ReqwestError {
+    fn into(self) -> MaybeApiError<Self> {
+        MaybeApiError::Other(self)
+    }
+}
+
 impl Into<MaybeApiError<serde_json::Error>> for serde_json::Error {
     fn into(self) -> MaybeApiError<Self> {
         MaybeApiError::Other(self)
@@ -167,6 +187,7 @@ impl Into<MaybeApiError<serde_json::Error>> for serde_json::Error {
 }
 
 mod inner {
+    #![allow(unknown_lints)]
     #![allow(missing_docs)]
 
     error_chain! {

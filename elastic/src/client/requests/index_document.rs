@@ -2,7 +2,7 @@ use serde_json;
 use serde::Serialize;
 
 use error::{self, Result};
-use client::{Client, Sender, SyncSender, AsyncSender};
+use client::{Client, Sender, SyncSender};
 use client::requests::{Index, Type, Id, IndexRequest, RequestBuilder, RawRequestBuilder};
 use client::responses::IndexResponse;
 use types::document::DocumentType;

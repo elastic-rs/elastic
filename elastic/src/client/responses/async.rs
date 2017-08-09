@@ -1,14 +1,13 @@
-use std::io::{Read, Result as IoResult};
-use futures::Future;
+use futures::{Future, Stream, Poll};
 use futures_cpupool::CpuPool;
-use tokio_io::{AsyncRead, io as async_io};
 use serde::de::DeserializeOwned;
 use reqwest::unstable::async::Response as RawResponse;
 
-use error::{self, Result, Error};
-use elastic_reqwest::AsyncFromResponse;
+use error::{self, Error};
 use elastic_reqwest::res::parse;
 use super::parse::IsOk;
+
+pub use reqwest::unstable::async::Chunk;
 
 /**
 A builder for a response.
@@ -103,15 +102,15 @@ impl AsyncResponseBuilder {
     {
         let status = self.status();
         let body = self.inner.body();
-        let de_fn = move |body| parse().from_slice(status, &body).map_err(move |e| error::response(status, e));
+        let de_fn = move |body: Chunk| parse().from_slice(status, body.as_ref()).map_err(move |e| error::response(status, e));
 
-        let body_future = async_io::read_to_end(body, Vec::new()).map_err(move |e| error::response(status, e));
+        let body_future = body.concat2().map_err(move |e| error::response(status, e));
 
         if let Some(de_pool) = self.de_pool {
-            Box::new(body_future.and_then(move |(_, body)| de_pool.spawn_fn(move || de_fn(body))))
+            Box::new(body_future.and_then(move |body| de_pool.spawn_fn(move || de_fn(body))))
         }
         else {
-            Box::new(body_future.and_then(move |(_, body)| de_fn(body)))
+            Box::new(body_future.and_then(move |body| de_fn(body)))
         }
     }
 }
@@ -119,13 +118,18 @@ impl AsyncResponseBuilder {
 /** A raw HTTP response that can be buffered using `Read`. */
 pub struct AsyncHttpResponse(RawResponse);
 
-impl Read for AsyncHttpResponse {
-    fn read(&mut self, buf: &mut [u8]) -> IoResult<usize> {
-        self.0.body_mut().read(buf)
+impl Stream for AsyncHttpResponse {
+    type Item = Chunk;
+    type Error = Error;
+
+    fn poll(&mut self) -> Poll<Option<Self::Item>, Self::Error> {
+        self.0.body_mut().poll().map_err(|e| {
+            let status = self.status();
+
+            error::response(status, e)
+        })
     }
 }
-
-impl AsyncRead for AsyncHttpResponse { }
 
 impl AsyncHttpResponse {
     /** Get the HTTP status for the response. */

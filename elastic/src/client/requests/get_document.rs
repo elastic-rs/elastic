@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 use serde::de::DeserializeOwned;
 
 use error::*;
-use client::{Client, Sender, SyncSender, AsyncSender};
+use client::{Client, Sender, SyncSender};
 use client::requests::{Index, Type, Id, GetRequest, RequestBuilder, RawRequestBuilder};
 use client::responses::GetResponse;
 use types::document::DocumentType;

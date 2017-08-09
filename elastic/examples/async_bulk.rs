@@ -7,27 +7,38 @@
 //! performance out of them.
 //! See the docs for `BulkResponse` for more details.
 
+extern crate futures;
+extern crate tokio_core;
 extern crate elastic;
 
+use futures::Future;
+use tokio_core::reactor::Core;
 use elastic::prelude::*;
 
 fn main() {
+    let mut core = Core::new().unwrap();
+
     // A HTTP client and request parameters
-    let client = SyncClientBuilder::new().build().unwrap();
+    let client = AsyncClientBuilder::new().build(&core.handle()).unwrap();
 
     // Execute a bulk request
-    let bulk = client
+    let res_future = client
         .request(BulkRequest::new(bulk_body()))
         .send()
-        .and_then(|res| res.into_response::<BulkResponse>())
-        .unwrap();
+        .and_then(|res| res.into_response::<BulkResponse>());
 
-    for op in bulk {
-        match op {
-            Ok(op) => println!("ok: {:?}", op),
-            Err(op) => println!("err: {:?}", op)
+    let bulk_future = res_future.and_then(|bulk| {
+        for op in bulk {
+            match op {
+                Ok(op) => println!("ok: {:?}", op),
+                Err(op) => println!("err: {:?}", op)
+            }
         }
-    }
+
+        Ok(())
+    });
+
+    core.run(bulk_future).unwrap();
 }
 
 fn bulk_body() -> String {

@@ -4,7 +4,7 @@ use serde::de::DeserializeOwned;
 
 use error::*;
 use client::{Client, Sender, SyncSender, AsyncSender};
-use client::requests::{empty_body, DefaultBody, SyncRequestBuilder, AsyncRequestBuilder, SyncBody, AsyncBody, Index, Type, SearchRequest,
+use client::requests::{empty_body, DefaultBody, SyncRequestBuilder, AsyncRequestBuilder, Index, Type, SearchRequest,
                        RequestBuilder, RawRequestBuilder};
 use client::responses::SearchResponse;
 
@@ -227,7 +227,7 @@ impl<TSender, TDocument, TBody> RequestBuilder<TSender, SearchRequestBuilder<TDo
 Send a search request synchronously using a [`SyncClient`]().
 This will block the current thread until a response arrives and is deserialised.
 */
-impl<TDocument, TBody> RequestBuilder<SyncSender, SearchRequestBuilder<TDocument, TBody>>
+impl<TDocument, TBody> SyncRequestBuilder<SearchRequestBuilder<TDocument, TBody>>
     where TDocument: DeserializeOwned,
           TBody: Into<<SyncSender as Sender>::Body>
 {
@@ -292,7 +292,7 @@ This will return a future that will resolve to the deserialised search response.
 [Send synchronously]: #search-request-send-sync
 [Send asynchronously]: #search-request-send-async
 */
-impl<TDocument, TBody> RequestBuilder<AsyncSender, SearchRequestBuilder<TDocument, TBody>>
+impl<TDocument, TBody> AsyncRequestBuilder<SearchRequestBuilder<TDocument, TBody>>
     where TDocument: DeserializeOwned + Send + 'static,
           TBody: Into<<AsyncSender as Sender>::Body>
 {

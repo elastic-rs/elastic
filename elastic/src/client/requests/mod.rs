@@ -257,7 +257,10 @@ impl<TRequest, TBody> RequestBuilder<AsyncSender, RawRequestBuilder<TRequest, TB
     }
 }
 
+/// An alias for a synchronous request builder.
 pub type SyncRequestBuilder<T> = RequestBuilder<SyncSender, T>;
+
+/// An alias for an asynchronous request builder.
 pub type AsyncRequestBuilder<T> = RequestBuilder<AsyncSender, T>;
 
 #[cfg(test)]

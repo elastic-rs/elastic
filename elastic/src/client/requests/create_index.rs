@@ -1,5 +1,5 @@
 use error::*;
-use client::{Client, Sender, SyncSender, AsyncSender};
+use client::{Client, Sender, SyncSender};
 use client::requests::{empty_body, DefaultBody, Index, IndicesCreateRequest,
                        RequestBuilder, RawRequestBuilder};
 use client::responses::CommandResponse;

@@ -432,36 +432,33 @@ For more details see the [`responses`][responses-mod] module.
 pub mod requests;
 pub mod responses;
 
-use serde::de::DeserializeOwned;
 use futures_cpupool::CpuPool;
 use tokio_core::reactor::Handle;
 use elastic_reqwest::{SyncBody, AsyncBody};
-use reqwest::{Client as SyncHttpClient, Response as SyncRawResponse, Error as ClientError};
-use reqwest::unstable::async::{Client as AsyncHttpClient};
+use reqwest::Client as SyncHttpClient;
+use reqwest::unstable::async::Client as AsyncHttpClient;
 
 use error::{self, Result};
-use self::responses::parse::IsOk;
 
 pub use elastic_reqwest::RequestParams;
 
+/**
+Represents a type that can send a request.
+
+This trait has two implementations:
+
+- `SyncSender` for sending synchronous requests
+- `AsyncSender` for sending asynchronous requests
+*/
 pub trait Sender: Clone {
     #[doc(hidden)]
     type Body;
 }
 
+/** A synchronous request sender. */
 #[derive(Clone)]
 pub struct SyncSender {
     http: SyncHttpClient
-}
-
-impl SyncSender {
-    fn new() -> Result<Self> {
-        let http = SyncHttpClient::new().map_err(|e| error::build(e))?;
-
-        Ok(SyncSender {
-            http: http
-        })
-    }
 }
 
 impl Sender for SyncSender {
@@ -572,40 +569,33 @@ impl SyncClientBuilder {
     [Client]: struct.Client.html
     */
     pub fn build(self) -> Result<SyncClient> {
-        if let Some(http) = self.http {
-            Ok(SyncClient {
-                sender: SyncSender {
-                    http: http
-                },
-                params: self.params
-            })
-        } else {
-            SyncClient::new(self.params)
-        }
+        let http = self.http.map(|http| Ok(http))
+                            .unwrap_or(SyncHttpClient::new())
+                            .map_err(|e| error::build(e))?;
+
+        Ok(SyncClient {
+            sender: SyncSender {
+                http: http
+            },
+            params: self.params
+        })
     }
 }
 
+/** An asynchronous request sender. */
 #[derive(Clone)]
 pub struct AsyncSender {
     http: AsyncHttpClient,
     de_pool: Option<CpuPool>
 }
 
-impl AsyncSender {
-    fn new(handle: &Handle) -> Result<Self> {
-        let http = AsyncHttpClient::new(handle).map_err(|e| error::build(e))?;
-
-        Ok(AsyncSender {
-            http: http,
-            de_pool: None
-        })
-    }
-}
-
 impl Sender for AsyncSender {
     type Body = AsyncBody;
 }
 
+/**
+A builder for a client.
+*/
 pub struct AsyncClientBuilder {
     http: Option<AsyncHttpClient>,
     de_pool: Option<CpuPool>,
@@ -613,6 +603,7 @@ pub struct AsyncClientBuilder {
 }
 
 impl AsyncClientBuilder {
+    /** Create a new client builder. */
     pub fn new() -> Self {
         let de_pool = CpuPool::new(4);
 
@@ -623,6 +614,23 @@ impl AsyncClientBuilder {
         }
     }
 
+    /**
+    Set the base url. 
+
+    The url must be fully qualified.
+    This method is a convenient alternative to using `params` to specify the `base_url`.
+
+    # Examples
+
+    Specify a base url for the client to send requests to.
+    In this case, the base url is HTTPS, and not on the root path:
+
+    ```
+    # use elastic::prelude::*;
+    let builder = SyncClientBuilder::new()
+        .base_url("https://my_es_cluster/some_path");
+    ```
+    */
     pub fn base_url<I>(mut self, base_url: I) -> Self 
         where I: Into<String>
     {
@@ -631,6 +639,39 @@ impl AsyncClientBuilder {
         self
     }
 
+    /**
+    Specify default request parameters.
+    
+    # Examples
+    
+    Require all responses use pretty-printing:
+    
+    ```
+    # use elastic::prelude::*;
+    let builder = SyncClientBuilder::new()
+        .params(|params| params.url_param("pretty", true));
+    ```
+
+    Add an authorization header:
+
+    ```
+    # use elastic::prelude::*;
+    use elastic::http::header::Authorization;
+
+    let builder = SyncClientBuilder::new()
+        .params(|params| params.header(Authorization("let me in".to_owned())));
+    ```
+
+    Specify a base url (prefer the [`base_url`][SyncClientBuilder.base_url] method on `SyncClientBuilder` instead):
+
+    ```
+    # use elastic::prelude::*;
+    let builder = SyncClientBuilder::new()
+        .params(|params| params.base_url("https://my_es_cluster/some_path"));
+    ```
+
+    [SyncClientBuilder.base_url]: #method.base_url
+    */
     pub fn params<F>(mut self, builder: F) -> Self
         where F: Fn(RequestParams) -> RequestParams
     {
@@ -639,18 +680,29 @@ impl AsyncClientBuilder {
         self
     }
 
+    /** 
+    Use the given `CpuPool` for deserialising responses.
+
+    If the pool is `None` then responses will be deserialised on the same thread as the io `Core`.
+    */
     pub fn de_pool(mut self, de_pool: Option<CpuPool>) -> Self {
         self.de_pool = de_pool;
 
         self
     }
 
+    /** Use the given `reqwest::Client` for sending requests. */
     pub fn http_client(mut self, client: AsyncHttpClient) -> Self {
         self.http = Some(client);
 
         self
     }
 
+    /** 
+    Construct a [`Client`][Client] from this builder. 
+
+    [Client]: struct.Client.html
+    */
     pub fn build(self, handle: &Handle) -> Result<AsyncClient> {
         let http = self.http.map(|http| Ok(http))
                             .unwrap_or(AsyncHttpClient::new(handle))
@@ -691,88 +743,8 @@ pub struct Client<TSender> {
     params: RequestParams,
 }
 
-impl Client<SyncSender> {
-    /**
-    Create a new synchronous client for the given parameters.
-    
-    The parameters given here are used as the defaults for any
-    request made by this client, but can be overriden on a
-    per-request basis.
-    This method can return a `HttpError` if the underlying `reqwest::Client`
-    fails to create.
-    
-    # Examples
-    
-    Create a `Client` with default parameters:
-    
-    ```
-    # use elastic::prelude::*;
-    let client = SyncClientBuilder::new().build().unwrap();
-    ```
-    
-    Create a `Client` for a specific node:
-    
-    ```
-    # use elastic::prelude::*;
-    let client = Client::new(RequestParams::new("http://eshost:9200")).unwrap();
-    ```
-    
-    See [`RequestParams`][RequestParams] for more configuration options.
-
-    [RequestParams]: struct.RequestParams.html
-    */
-    fn new(params: RequestParams) -> Result<Self> {
-        let http = SyncSender::new()?;
-
-        Ok(Client {
-               sender: http,
-               params: params,
-           })
-    }
-}
-
-impl Client<AsyncSender> {
-    /**
-    Create a new asynchronous client for the given parameters.
-    
-    The parameters given here are used as the defaults for any
-    request made by this client, but can be overriden on a
-    per-request basis.
-    This method can return a `HttpError` if the underlying `reqwest::Client`
-    fails to create.
-    
-    # Examples
-    
-    Create a `Client` with default parameters:
-    
-    ```
-    # use elastic::prelude::*;
-    let client = SyncClientBuilder::new().build().unwrap();
-    ```
-    
-    Create a `Client` for a specific node:
-    
-    ```
-    # use elastic::prelude::*;
-    let client = Client::new(RequestParams::new("http://eshost:9200")).unwrap();
-    ```
-    
-    See [`RequestParams`][RequestParams] for more configuration options.
-
-    [RequestParams]: struct.RequestParams.html
-    */
-    fn new(handle: &Handle, params: RequestParams) -> Result<Self> {
-        let http = AsyncHttpClient::new(handle).map_err(|e| error::build(e))?;
-
-        Ok(Client {
-               sender: AsyncSender {
-                   http: http,
-                   de_pool: None,   
-               },
-               params: params,
-           })
-    }
-}
-
+/// A synchronous Elasticsearch client.
 pub type SyncClient = Client<SyncSender>;
+
+/// An asynchronous Elasticsearch client.
 pub type AsyncClient = Client<AsyncSender>;
