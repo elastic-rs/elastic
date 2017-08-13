@@ -295,7 +295,7 @@ impl RequestParams {
     /// These parameters are added as query parameters to request urls.
     pub fn url_param<T: ToString>(mut self, key: &'static str, value: T) -> Self {
         if self.url_params.contains_key(key) {
-            let mut entry = self.url_params.get_mut(key).unwrap();
+            let entry = self.url_params.get_mut(key).unwrap();
             *entry = value.to_string();
         } else {
             self.url_params.insert(key, value.to_string());
