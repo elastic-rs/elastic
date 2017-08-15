@@ -258,7 +258,7 @@ use std::sync::Arc;
 use std::collections::BTreeMap;
 use std::str;
 use reqwest::Error as ReqwestError;
-use reqwest::header::{Headers, ContentType};
+use reqwest::header::{Header, Headers, ContentType};
 use url::form_urlencoded::Serializer;
 
 use self::res::error::ResponseError;
@@ -317,7 +317,7 @@ With custom headers:
 # use reqwest::header::Authorization;
 # fn main() {
 let params = RequestParams::default()
-    .headers(|h| h.set(Authorization("let me in".to_owned())));
+    .header(Authorization("let me in".to_owned()));
 # }
 ```
 
@@ -383,12 +383,23 @@ impl RequestParams {
     }
 
     /** 
+    Set a request header.
+    */
+    pub fn header<H>(self, header: H) -> Self
+        where H: Header + Clone
+    {
+        self.headers(move |h| h.set(header.clone()))
+    }
+
+    /** 
     Set a header value on the params.
     
     Each call to `headers` will chain to the end of the last call.
-    This function allocates a new `Box` for each call, so it's recommended to just call it once and configure multiple headers, rather than calling it once per header.
+    This function allocates a new `Box` for each call.
+
+    Once we can depend on `http` this might go away.
     */
-    pub fn headers<F>(mut self, headers_factory: F) -> Self
+    fn headers<F>(mut self, headers_factory: F) -> Self
         where F: Fn(&mut Headers) + Send + Sync + 'static
     {
         if let Some(old_headers_factory) = self.headers_factory {

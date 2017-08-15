@@ -16,16 +16,16 @@ use elastic_reqwest::req::PingRequest;
 
 #[inline(always)]
 fn with_headers_1(params: RequestParams) -> RequestParams {
-    params.headers(|h| h.set(Referer::new("/People.html#tim")))
+    params.header(Referer::new("/People.html#tim"))
 }
 
 #[inline(always)]
 fn with_headers_5(params: RequestParams) -> RequestParams {
-    params.headers(|h| h.set(Referer::new("/People.html#tim")))
-          .headers(|h| h.set(Referer::new("/People.html#tim")))
-          .headers(|h| h.set(Referer::new("/People.html#tim")))
-          .headers(|h| h.set(Referer::new("/People.html#tim")))
-          .headers(|h| h.set(Referer::new("/People.html#tim")))
+    params.header(Referer::new("/People.html#tim"))
+          .header(Referer::new("/People.html#tim"))
+          .header(Referer::new("/People.html#tim"))
+          .header(Referer::new("/People.html#tim"))
+          .header(Referer::new("/People.html#tim"))
 }
 
 #[inline(always)]
