@@ -1,29 +1,49 @@
 use serde_json;
+use futures::{Future, IntoFuture};
 use serde::Serialize;
 
-use error::{self, Result};
-use client::{Client, Sender, SyncSender};
-use client::requests::{Index, Type, Id, IndexRequest, RequestBuilder, RawRequestBuilder};
+use error::{self, Result, Error};
+use client::{Client, Sender, SyncSender, AsyncSender};
+use client::requests::{Index, Type, Id, IndexRequest, RequestBuilder};
+use client::requests::raw::RawRequestInner;
 use client::responses::IndexResponse;
 use types::document::DocumentType;
 
 /** 
-A builder for an [`Client.index_document`][Client.index_document] request. 
+An [index request][docs-index] builder that can be configured before sending.
 
-[Client.index_document]: ../struct.Client.html#method.index_document
+Call [`Client.index_document`][Client.index_document] to get an `IndexRequest`. 
+The `send` method will either send the request [synchronously][send-sync] or [asynchronously][send-async], depending on the `Client` it was created from.
+
+[docs-index]: https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html
+[send-sync]: #send-synchronously
+[send-async]: #send-asynchronously
+[Client.index_document]: ../struct.Client.html#index-request
 */
-pub struct IndexRequestBuilder<TDocument> {
+pub type IndexRequestBuilder<TSender, TDocument> = RequestBuilder<TSender, IndexRequestInner<TDocument>>;
+
+#[doc(hidden)]
+pub struct IndexRequestInner<TDocument> {
     index: Index<'static>,
     ty: Type<'static>,
     id: Id<'static>,
     doc: TDocument,
 }
 
+/**
+# Index request
+*/
 impl<TSender> Client<TSender> 
     where TSender: Sender
 {
     /**
-    Create a [`RequestBuilder` for an index request][RequestBuilder.index_document].
+    Create a [`IndexRequestBuilder`][IndexRequestBuilder] with this `Client` that can be configured before sending.
+
+    For more details, see:
+
+    - [builder methods][builder-methods]
+    - [send synchronously][send-sync]
+    - [send asynchronously][send-async]
 
     # Examples
 
@@ -57,7 +77,10 @@ impl<TSender> Client<TSender>
 
     For more details on document types and mapping, see the [`types`][types-mod] module.
     
-    [RequestBuilder.index_document]: requests/struct.RequestBuilder.html#index-document-builder
+    [IndexRequestBuilder]: requests/type.IndexRequestBuilder.html
+    [builder-methods]: requests/type.IndexRequestBuilder.html#builder-methods
+    [send-sync]: requests/type.IndexRequestBuilder.html#send-synchronously
+    [send-async]: requests/type.IndexRequestBuilder.html#send-asynchronously
     [types-mod]: ../types/index.html
     [documents-mod]: ../types/document/index.html
     */
@@ -65,14 +88,14 @@ impl<TSender> Client<TSender>
                                          index: Index<'static>,
                                          id: Id<'static>,
                                          doc: TDocument)
-                                         -> RequestBuilder<TSender, IndexRequestBuilder<TDocument>>
+                                         -> IndexRequestBuilder<TSender, TDocument>
         where TDocument: Serialize + DocumentType
     {
         let ty = TDocument::name().into();
 
         RequestBuilder::new(self.clone(),
                             None,
-                            IndexRequestBuilder {
+                            IndexRequestInner {
                                 index: index,
                                 ty: ty,
                                 id: id,
@@ -81,7 +104,7 @@ impl<TSender> Client<TSender>
     }
 }
 
-impl<TDocument> IndexRequestBuilder<TDocument>
+impl<TDocument> IndexRequestInner<TDocument>
     where TDocument: Serialize
 {
     fn into_request(self) -> Result<IndexRequest<'static, Vec<u8>>> {
@@ -91,17 +114,12 @@ impl<TDocument> IndexRequestBuilder<TDocument>
     }
 }
 
-/** 
-# Index document builder
+/**
+# Builder methods
 
-A request builder for an [Index][docs-index] request.
-
-Call [`Client.index_document`][Client.index_document] to get a `RequestBuilder` for an index request.
-
-[Client.index_document]: ../struct.Client.html#method.index_document
-[docs-index]: https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html
+Configure a `IndexRequestBuilder` before sending it.
 */
-impl<TSender, TDocument> RequestBuilder<TSender, IndexRequestBuilder<TDocument>> 
+impl<TSender, TDocument> IndexRequestBuilder<TSender, TDocument> 
     where TSender: Sender
 {
     /** Set the type for the index request. */
@@ -113,16 +131,49 @@ impl<TSender, TDocument> RequestBuilder<TSender, IndexRequestBuilder<TDocument>>
     }
 }
 
-impl<TDocument> RequestBuilder<SyncSender, IndexRequestBuilder<TDocument>>
+/**
+# Send synchronously
+*/
+impl<TDocument> IndexRequestBuilder<SyncSender, TDocument>
     where TDocument: Serialize
 {
-    /** Send the index request. */
+    /**
+    Send a `IndexRequestBuilder` synchronously using a [`SyncClient`]().
+
+    This will block the current thread until a response arrives and is deserialised.
+    */
     pub fn send(self) -> Result<IndexResponse> {
         let req = self.inner.into_request()?;
 
-        RequestBuilder::new(self.client, self.params, RawRequestBuilder::new(req))
+        RequestBuilder::new(self.client, self.params, RawRequestInner::new(req))
             .send()?
             .into_response()
+    }
+}
+
+/**
+# Send asynchronously
+*/
+impl<TDocument> IndexRequestBuilder<AsyncSender, TDocument>
+    where TDocument: Serialize + Send + 'static
+{
+    /**
+    Send a `IndexRequestBuilder` asynchronously using an [`AsyncClient`]().
+    
+    This will return a future that will resolve to the deserialised index response.
+    */
+    pub fn send(self) -> Box<Future<Item = IndexResponse, Error = Error>> {
+        let (client, params) = (self.client, self.params);
+
+        let req_future = self.inner.into_request().into_future();
+
+        let res_future = req_future.and_then(move |req| {
+            RequestBuilder::new(client, params, RawRequestInner::new(req))
+            .send()
+            .and_then(|res| res.into_response())
+        });
+
+        Box::new(res_future)
     }
 }
 

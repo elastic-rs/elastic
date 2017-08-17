@@ -1,25 +1,46 @@
+use futures::Future;
+
 use error::*;
-use client::{Client, Sender, SyncSender};
+use client::{Client, Sender, SyncSender, AsyncSender};
 use client::requests::{empty_body, DefaultBody, Index, IndicesCreateRequest,
-                       RequestBuilder, RawRequestBuilder};
+                       RequestBuilder};
+use client::requests::raw::RawRequestInner;
 use client::responses::CommandResponse;
 
 /** 
-A builder for a [`Client.create_index`][Client.create_index] request. 
+A [create index request][docs-create-index] builder that can be configured before sending. 
 
-[Client.create_index]: ../struct.Client.html#method.create_index
+Call [`Client.create_index`][Client.create_index] to get a `CreateIndexRequestBuilder`.
+The `send` method will either send the request [synchronously][send-sync] or [asynchronously][send-async], depending on the `Client` it was created from.
+
+[docs-create-index]: https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-create-index.html
+[send-sync]: #send-synchronously
+[send-async]: #send-asynchronously
+[Client.create_index]: ../struct.Client.html#create-index-request
 */
-pub struct CreateIndexRequestBuilder<TBody> {
+pub type CreateIndexRequestBuilder<TSender, TBody> = RequestBuilder<TSender, CreateIndexRequestInner<TBody>>;
+
+#[doc(hidden)]
+pub struct CreateIndexRequestInner<TBody> {
     index: Index<'static>,
     body: TBody,
 }
 
+/**
+# Create index request
+*/
 impl<TSender> Client<TSender> 
     where TSender: Sender
 {
     /** 
-    Create a [`RequestBuilder` for a create index request][RequestBuilder.create_index].
+    Create a [`CreateIndexRequestBuilder`][CreateIndexRequestBuilder] with this `Client` that can be configured before sending.
 
+    For more details, see:
+
+    - [builder methods][builder-methods]
+    - [send synchronously][send-sync]
+    - [send asynchronously][send-async]
+    
     # Examples
     
     Create an index called `myindex`:
@@ -72,37 +93,35 @@ impl<TSender> Client<TSender>
 
     For more details on document types and mapping, see the [`types`][types-mod] module.
 
-    [RequestBuilder.create_index]: requests/struct.RequestBuilder.html#create-index-builder
+    [CreateIndexRequestBuilder]: requests/type.CreateIndexRequestBuilder.html
+    [builder-methods]: requests/type.CreateIndexRequestBuilder.html#builder-methods
+    [send-sync]: requests/type.CreateIndexRequestBuilder.html#send-synchronously
+    [send-async]: requests/type.CreateIndexRequestBuilder.html#send-asynchronously
     [types-mod]: ../types/index.html
     [documents-mod]: ../types/document/index.html
     */
-    pub fn create_index(&self, index: Index<'static>) -> RequestBuilder<TSender, CreateIndexRequestBuilder<DefaultBody>> {
+    pub fn create_index(&self, index: Index<'static>) -> CreateIndexRequestBuilder<TSender, DefaultBody> {
         RequestBuilder::new(self.clone(),
                             None,
-                            CreateIndexRequestBuilder {
+                            CreateIndexRequestInner {
                                 index: index,
                                 body: empty_body(),
                             })
     }
 }
 
-impl<TBody> CreateIndexRequestBuilder<TBody> {
+impl<TBody> CreateIndexRequestInner<TBody> {
     fn into_request(self) -> IndicesCreateRequest<'static, TBody> {
         IndicesCreateRequest::for_index(self.index, self.body)
     }
 }
 
 /** 
-# Create index builder
+# Builder methods
 
-A request builder for a [Create Index][docs-create-index] request.
-
-Call [`Client.create_index`][Client.create_index] to get a `RequestBuilder` for a create index request.
-
-[Client.create_index]: ../struct.Client.html#method.create_index
-[docs-create-index]: https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-create-index.html
+Configure a `CreateIndexRequestBuilder` before sending it.
 */
-impl<TSender, TBody> RequestBuilder<TSender, CreateIndexRequestBuilder<TBody>>
+impl<TSender, TBody> CreateIndexRequestBuilder<TSender, TBody>
     where TSender: Sender,
           TBody: Into<TSender::Body>
 {
@@ -113,28 +132,57 @@ impl<TSender, TBody> RequestBuilder<TSender, CreateIndexRequestBuilder<TBody>>
     */
     pub fn body<TNewBody>(self,
                           body: TNewBody)
-                          -> RequestBuilder<TSender, CreateIndexRequestBuilder<TNewBody>>
+                          -> CreateIndexRequestBuilder<TSender, TNewBody>
         where TNewBody: Into<TSender::Body>
     {
         RequestBuilder::new(self.client,
                             self.params,
-                            CreateIndexRequestBuilder {
+                            CreateIndexRequestInner {
                                 index: self.inner.index,
                                 body: body,
                             })
     }
 }
 
-impl<TBody> RequestBuilder<SyncSender, CreateIndexRequestBuilder<TBody>>
+/**
+# Send synchronously
+*/
+impl<TBody> CreateIndexRequestBuilder<SyncSender, TBody>
     where TBody: Into<<SyncSender as Sender>::Body>
 {
-    /** Send the create index request. */
+    /**
+    Send a `CreateIndexRequestBuilder` synchronously using a [`SyncClient`]().
+
+    This will block the current thread until a response arrives and is deserialised.
+    */
     pub fn send(self) -> Result<CommandResponse> {
         let req = self.inner.into_request();
 
-        RequestBuilder::new(self.client, self.params, RawRequestBuilder::new(req))
+        RequestBuilder::new(self.client, self.params, RawRequestInner::new(req))
             .send()?
             .into_response()
+    }
+}
+
+/**
+# Send asynchronously
+*/
+impl<TBody> CreateIndexRequestBuilder<AsyncSender, TBody>
+    where TBody: Into<<AsyncSender as Sender>::Body>
+{
+    /**
+    Send a `CreateIndexRequestBuilder` asynchronously using an [`AsyncClient`]().
+    
+    This will return a future that will resolve to the deserialised command response.
+    */
+    pub fn send(self) -> Box<Future<Item = CommandResponse, Error = Error>> {
+        let req = self.inner.into_request();
+
+        let res_future = RequestBuilder::new(self.client, self.params, RawRequestInner::new(req))
+            .send()
+            .and_then(|res| res.into_response());
+
+        Box::new(res_future)
     }
 }
 

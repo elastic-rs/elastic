@@ -1,29 +1,48 @@
 use std::marker::PhantomData;
 use serde_json;
+use futures::{Future, IntoFuture};
 use serde::Serialize;
 
-use error::{self, Result};
-use client::{Client, Sender, SyncSender};
-use client::requests::{Index, Type, IndicesPutMappingRequest, RequestBuilder, RawRequestBuilder};
+use error::{self, Result, Error};
+use client::{Client, Sender, SyncSender, AsyncSender};
+use client::requests::{Index, Type, IndicesPutMappingRequest, RequestBuilder};
+use client::requests::raw::RawRequestInner;
 use client::responses::CommandResponse;
 use types::document::{FieldType, DocumentType, IndexDocumentMapping};
 
 /** 
-A builder for a [`Client.put_mapping`][Client.put_mapping] request. 
+A [put mapping request][docs-mapping] builder that can be configured before sending.
 
-[Client.put_mapping]: ../struct.Client.html#method.put_mapping
+Call [`Client.put_mapping`][Client.put_mapping] to get a `PutMappingRequestBuilder`. 
+The `send` method will either send the request [synchronously][send-sync] or [asynchronously][send-async], depending on the `Client` it was created from.
+
+[docs-mapping]: https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping.html
+[send-sync]: #send-synchronously
+[send-async]: #send-asynchronously
+[Client.put_mapping]: ../struct.Client.html#put-mapping-request
 */
-pub struct PutMappingRequestBuilder<TDocument> {
+pub type PutMappingRequestBuilder<TSender, TDocument> = RequestBuilder<TSender, PutMappingRequestInner<TDocument>>;
+
+pub struct PutMappingRequestInner<TDocument> {
     index: Index<'static>,
     ty: Type<'static>,
     _marker: PhantomData<TDocument>,
 }
 
+/**
+# Put mapping request
+*/
 impl<TSender> Client<TSender> 
     where TSender: Sender
 {
     /** 
-    Create a [`RequestBuilder` for a put mapping request][RequestBuilder.put_mapping]. 
+    Create a [`PutMappingRequestBuilder`][PutMappingRequestBuilder] with this `Client` that can be configured before sending.
+
+    For more details, see:
+
+    - [builder methods][builder-methods]
+    - [send synchronously][send-sync]
+    - [send asynchronously][send-async]
     
     # Examples
 
@@ -47,20 +66,23 @@ impl<TSender> Client<TSender>
 
     For more details on document types and mapping, see the [`types`][types-mod] module.
 
-    [RequestBuilder.put_mapping]: requests/struct.RequestBuilder.html#put-mapping-builder
+    [PutMappingRequestBuilder]: requests/type.PutMappingRequestBuilder.html
+    [builder-methods]: requests/type.PutMappingRequestBuilder.html#builder-methods
+    [send-sync]: requests/type.PutMappingRequestBuilder.html#send-synchronously
+    [send-async]: requests/type.PutMappingRequestBuilder.html#send-asynchronously
     [types-mod]: ../types/index.html
     [documents-mod]: ../types/document/index.html
     */
     pub fn put_mapping<TDocument>(&self,
                                       index: Index<'static>)
-                                      -> RequestBuilder<TSender, PutMappingRequestBuilder<TDocument>>
+                                      -> PutMappingRequestBuilder<TSender, TDocument>
         where TDocument: Serialize + DocumentType
     {
         let ty = TDocument::name().into();
 
         RequestBuilder::new(self.clone(),
                             None,
-                            PutMappingRequestBuilder {
+                            PutMappingRequestInner {
                                 index: index,
                                 ty: ty,
                                 _marker: PhantomData,
@@ -68,7 +90,7 @@ impl<TSender> Client<TSender>
     }
 }
 
-impl<TDocument> PutMappingRequestBuilder<TDocument>
+impl<TDocument> PutMappingRequestInner<TDocument>
     where TDocument: DocumentType
 {
     fn into_request(self) -> Result<IndicesPutMappingRequest<'static, Vec<u8>>> {
@@ -79,16 +101,11 @@ impl<TDocument> PutMappingRequestBuilder<TDocument>
 }
 
 /** 
-# Put mapping builder
+# Builder methods
 
-A request builder for a [Put Mapping][docs-mapping] request.
-
-Call [`Client.put_mapping`][Client.put_mapping] to get a `RequestBuilder` for a put mapping request.
-
-[Client.put_mapping]: ../struct.Client.html#method.put_mapping
-[docs-mapping]: https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping.html
+Configure a `PutMappingRequestBuilder` before sending it.
 */
-impl<TSender, TDocument> RequestBuilder<TSender, PutMappingRequestBuilder<TDocument>>
+impl<TSender, TDocument> PutMappingRequestBuilder<TSender, TDocument>
     where TSender: Sender
 {
     /** Set the type for the put mapping request. */
@@ -100,16 +117,49 @@ impl<TSender, TDocument> RequestBuilder<TSender, PutMappingRequestBuilder<TDocum
     }
 }
 
-impl<TDocument> RequestBuilder<SyncSender, PutMappingRequestBuilder<TDocument>>
+/**
+# Send synchronously
+*/
+impl<TDocument> PutMappingRequestBuilder<SyncSender, TDocument>
     where TDocument: DocumentType
 {
-    /** Send the put mapping request. */
+    /**
+    Send a `PutMappingRequestBuilder` synchronously using a [`SyncClient`]().
+
+    This will block the current thread until a response arrives and is deserialised.
+    */
     pub fn send(self) -> Result<CommandResponse> {
         let req = self.inner.into_request()?;
 
-        RequestBuilder::new(self.client, self.params, RawRequestBuilder::new(req))
+        RequestBuilder::new(self.client, self.params, RawRequestInner::new(req))
             .send()?
             .into_response()
+    }
+}
+
+/**
+# Send asynchronously
+*/
+impl<TDocument> PutMappingRequestBuilder<AsyncSender, TDocument>
+    where TDocument: DocumentType + 'static
+{
+    /**
+    Send a `PutMappingRequestBuilder` asynchronously using an [`AsyncClient`]().
+    
+    This will return a future that will resolve to the deserialised command response.
+    */
+    pub fn send(self) -> Box<Future<Item = CommandResponse, Error = Error>> {
+        let (client, params) = (self.client, self.params);
+
+        let req_future = self.inner.into_request().into_future();
+
+        let res_future = req_future.and_then(move |req| {
+            RequestBuilder::new(client, params, RawRequestInner::new(req))
+            .send()
+            .and_then(|res| res.into_response())
+        });
+
+        Box::new(res_future)
     }
 }
 

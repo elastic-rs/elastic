@@ -2,18 +2,27 @@ use std::marker::PhantomData;
 use futures::Future;
 use serde::de::DeserializeOwned;
 
-use error::*;
+use error::{self, Result, Error};
 use client::{Client, Sender, SyncSender, AsyncSender};
-use client::requests::{empty_body, DefaultBody, SyncRequestBuilder, AsyncRequestBuilder, Index, Type, SearchRequest,
-                       RequestBuilder, RawRequestBuilder};
+use client::requests::{empty_body, DefaultBody, Index, Type, SearchRequest, RequestBuilder};
+use client::requests::raw::RawRequestInner;
 use client::responses::SearchResponse;
 
-/** 
-A builder for a [`Client.search`][Client.search] request. 
+/**
+A [search request][docs-search] builder that can be configured before sending. 
 
-[Client.search]: ../struct.Client.html#method.search
+Call [`Client.search`][Client.search] to get a `SearchRequestBuilder`.
+The `send` method will either send the request [synchronously][send-sync] or [asynchronously][send-async], depending on the `Client` it was created from.
+
+[docs-search]: https://www.elastic.co/guide/en/elasticsearch/reference/current/search-search.html
+[send-sync]: #send-synchronously
+[send-async]: #send-asynchronously
+[Client.search]: ../struct.Client.html#search-request
 */
-pub struct SearchRequestBuilder<TDocument, TBody> {
+pub type SearchRequestBuilder<TSender, TDocument, TBody> = RequestBuilder<TSender, SearchRequestInner<TDocument, TBody>>;
+
+#[doc(hidden)]
+pub struct SearchRequestInner<TDocument, TBody> {
     index: Option<Index<'static>>,
     ty: Option<Type<'static>>,
     body: TBody,
@@ -22,29 +31,18 @@ pub struct SearchRequestBuilder<TDocument, TBody> {
 
 /**
 # Search request
-
-## Making search requests:
-
-- [Client method]
-- [Builder methods]
-- [Send synchronously]
-- [Send asynchronously]
-
-[Client method]: #search-request-client-method
-[Builder methods]: requests/struct.RequestBuilder.html#search-request-builder-methods
-[Send synchronously]: requests/struct.RequestBuilder.html#search-request-send-sync
-[Send asynchronously]: requests/struct.RequestBuilder.html#search-request-send-async
-
-<a id="search-request-client-method"></a>
-## Client method
-
-Create a builder for a search request using a `Client` instance.
 */
 impl<TSender> Client<TSender> 
     where TSender: Sender
 {
     /** 
-    Create a [`RequestBuilder` for a search request][RequestBuilder.search]. 
+    Create a [`SearchRequestBuilder`][SearchRequestBuilder] with this `Client` that can be configured before sending.
+
+    For more details, see:
+
+    - [builder methods][builder-methods]
+    - [send synchronously][send-sync]
+    - [send asynchronously][send-async]
 
     # Examples
 
@@ -99,25 +97,28 @@ impl<TSender> Client<TSender>
     # }
     ```
 
-    [RequestBuilder.search]: requests/struct.RequestBuilder.html#search-request-builder
+    [SearchRequestBuilder]: requests/type.SearchRequestBuilder.html
+    [builder-methods]: requests/type.SearchRequestBuilder.html#builder-methods
+    [send-sync]: requests/type.SearchRequestBuilder.html#send-synchronously
+    [send-async]: requests/type.SearchRequestBuilder.html#send-asynchronously
     [types-mod]: ../types/index.html
     [documents-mod]: ../types/document/index.html
     [docs-querystring]: https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html
     */
     pub fn search<TDocument>
         (&self)
-         -> RequestBuilder<TSender, SearchRequestBuilder<TDocument, DefaultBody>>
+         -> SearchRequestBuilder<TSender, TDocument, DefaultBody>
         where TDocument: DeserializeOwned
     {
-        RequestBuilder::new(self.clone(), None, SearchRequestBuilder::new(empty_body()))
+        RequestBuilder::new(self.clone(), None, SearchRequestInner::new(empty_body()))
     }
 }
 
-impl<TDocument, TBody> SearchRequestBuilder<TDocument, TBody>
+impl<TDocument, TBody> SearchRequestInner<TDocument, TBody>
     where TDocument: DeserializeOwned
 {
     fn new(body: TBody) -> Self {
-        SearchRequestBuilder {
+        SearchRequestInner {
             index: None,
             ty: None,
             body: body,
@@ -135,34 +136,12 @@ impl<TDocument, TBody> SearchRequestBuilder<TDocument, TBody>
     }
 }
 
-/** 
-# Search request
+/**
+# Builder methods
 
-## Making search requests:
-
-- [Client method]
-- [Builder methods]
-- [Send synchronously]
-- [Send asynchronously]
-
-[Client method]: ../struct.Client.html#search-request-client-method
-[Builder methods]: #search-request-builder-methods
-[Send synchronously]: #search-request-send-sync
-[Send asynchronously]: #search-request-send-async
-
-<a id="search-request-builder-methods"></a>
-## Builder methods
-
-Configure a search request before sending.
-
-A request builder for a [Search][docs-search] query.
-
-Call [`Client.search`][Client.search] to get a `RequestBuilder` for a search request.
-
-[Client.search]: ../struct.Client.html#method.search
-[docs-search]: http://www.elastic.co/guide/en/elasticsearch/reference/current/search-search.html
+Configure a `SearchRequestBuilder` before sending it.
 */
-impl<TSender, TDocument, TBody> RequestBuilder<TSender, SearchRequestBuilder<TDocument, TBody>>
+impl<TSender, TDocument, TBody> SearchRequestBuilder<TSender, TDocument, TBody>
     where TSender: Sender
 {
     /**
@@ -192,12 +171,12 @@ impl<TSender, TDocument, TBody> RequestBuilder<TSender, SearchRequestBuilder<TDo
     */
     pub fn body<TNewBody>(self,
                           body: TNewBody)
-                          -> RequestBuilder<TSender, SearchRequestBuilder<TDocument, TNewBody>>
+                          -> SearchRequestBuilder<TSender, TDocument, TNewBody>
         where TNewBody: Into<TSender::Body>
     {
         RequestBuilder::new(self.client,
                             self.params,
-                            SearchRequestBuilder {
+                            SearchRequestInner {
                                 body: body,
                                 index: self.inner.index,
                                 ty: self.inner.ty,
@@ -207,32 +186,16 @@ impl<TSender, TDocument, TBody> RequestBuilder<TSender, SearchRequestBuilder<TDo
 }
 
 /**
-# Search request
-
-## Making search requests:
-
-- [Client method]
-- [Builder methods]
-- [Send synchronously]
-- [Send asynchronously]
-
-[Client method]: ../struct.Client.html#search-request-client-method
-[Builder methods]: #search-request-builder-methods
-[Send synchronously]: #search-request-send-sync
-[Send asynchronously]: #search-request-send-async
-
-<a id="search-request-send-sync"></a>
-## Send synchronously
-
-Send a search request synchronously using a [`SyncClient`]().
-This will block the current thread until a response arrives and is deserialised.
+# Send synchronously
 */
-impl<TDocument, TBody> SyncRequestBuilder<SearchRequestBuilder<TDocument, TBody>>
+impl<TDocument, TBody> SearchRequestBuilder<SyncSender, TDocument, TBody>
     where TDocument: DeserializeOwned,
           TBody: Into<<SyncSender as Sender>::Body>
 {
-    /** 
-    Send the search request synchronously.
+    /**
+    Send a `SearchRequestBuilder` synchronously using a [`SyncClient`]().
+
+    This will block the current thread until a response arrives and is deserialised.
 
     # Examples
 
@@ -260,44 +223,27 @@ impl<TDocument, TBody> SyncRequestBuilder<SearchRequestBuilder<TDocument, TBody>
     }
     # }
     ```
-    
     */
     pub fn send(self) -> Result<SearchResponse<TDocument>> {
         let req = self.inner.into_request();
 
-        RequestBuilder::new(self.client, self.params, RawRequestBuilder::new(req))
+        RequestBuilder::new(self.client, self.params, RawRequestInner::new(req))
             .send()?
             .into_response()
     }
 }
 
 /**
-# Search request
-
-<a id="search-request-send-async"></a>
-## Send asynchronously
-
-Send a search request asynchronously using an [`AsyncClient`]().
-This will return a future that will resolve to the deserialised search response.
-
-## Making search requests:
-
-- [Client method]
-- [Builder methods]
-- [Send synchronously]
-- [Send asynchronously]
-
-[Client method]: ../struct.Client.html#search-request-client-method
-[Builder methods]: #search-request-builder-methods
-[Send synchronously]: #search-request-send-sync
-[Send asynchronously]: #search-request-send-async
+# Send asynchronously
 */
-impl<TDocument, TBody> AsyncRequestBuilder<SearchRequestBuilder<TDocument, TBody>>
+impl<TDocument, TBody> SearchRequestBuilder<AsyncSender, TDocument, TBody>
     where TDocument: DeserializeOwned + Send + 'static,
           TBody: Into<<AsyncSender as Sender>::Body>
 {
-    /** 
-    Send the search request asynchronously. 
+    /**
+    Send a `SearchRequestBuilder` asynchronously using an [`AsyncClient`]().
+    
+    This will return a future that will resolve to the deserialised search response.
 
     # Examples
 
@@ -330,12 +276,11 @@ impl<TDocument, TBody> AsyncRequestBuilder<SearchRequestBuilder<TDocument, TBody
     });
     # }
     ```
-    
     */
     pub fn send(self) -> Box<Future<Item = SearchResponse<TDocument>, Error = Error>> {
         let req = self.inner.into_request();
 
-        let res_future = RequestBuilder::new(self.client, self.params, RawRequestBuilder::new(req))
+        let res_future = RequestBuilder::new(self.client, self.params, RawRequestInner::new(req))
             .send()
             .and_then(|res| res.into_response());
 

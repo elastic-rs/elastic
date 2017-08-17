@@ -15,15 +15,27 @@ This makes it possible to share methods on request builders, but can make the me
 
 ## Building a synchronous client
 
-Use a `SyncClientBuilder` to configure a synchronous client.
+Use a [`SyncClientBuilder`]() to configure a synchronous client.
 
-> TODO: Fill this out
+```
+let client = SyncClientBuilder::new().build()?;
+```
+
+Requests on the synchronous client will block the current thread until a response is received.
+The response is returned as a `Result`.
 
 ## Building an asynchronous client
 
-Use an `AsyncClientbuilder` to configure an asynchronous client.
+Use an [`AsyncClientBuilder`]() to configure an asynchronous client.
 
-> TODO: Fill this out
+The asynchronous client requires a handle to a `tokio::reactor::Core`:
+
+```
+let client = AsyncClientBuilder::new().build(&core.handle())?;
+```
+
+Requests on the asynchronous client won't block the current thread.
+Instead a `Future` will be returned immediately that will resolve to a response at a later point.
 
 # Request builders
 
@@ -400,11 +412,11 @@ For more details see the [`responses`][responses-mod] module.
 [endpoints-mod]: requests/endpoints/index.html
 [RequestParams]: struct.RequestParams.html
 [Client.request]: struct.Client.html#method.request
-[Client.search]: struct.Client.html#method.search
-[Client.get_document]: struct.Client.html#method.get_document
-[Client.index_document]: struct.Client.html#method.index_document
+[Client.search]: struct.Client.html#search-request
+[Client.get_document]: struct.Client.html#get-document
+[Client.index_document]: struct.Client.html#index-request
 [Client.put_mapping]: struct.Client.html#method.put_mapping
-[Client.create_index]: struct.Client.html#method.create_index
+[Client.create_index]: struct.Client.html#create-index-request
 
 [RequestBuilder]: requests/struct.RequestBuilder.html
 [RequestBuilder.params]: requests/struct.RequestBuilder.html#method.params
@@ -603,13 +615,20 @@ pub struct AsyncClientBuilder {
 }
 
 impl AsyncClientBuilder {
-    /** Create a new client builder. */
-    pub fn new() -> Self {
-        let de_pool = CpuPool::new(4);
+    /** 
+    Create a new client builder.
 
+    By default, a client constructed by this builder will:
+
+    - Send requests to `localhost:9200`
+    - Not deserialise repsonses on a cpu pool
+    - Not use any authentication
+    - Not use TLS
+    */
+    pub fn new() -> Self {
         AsyncClientBuilder {
             http: None,
-            de_pool: Some(de_pool),
+            de_pool: None,
             params: RequestParams::default()
         }
     }
@@ -684,9 +703,22 @@ impl AsyncClientBuilder {
     Use the given `CpuPool` for deserialising responses.
 
     If the pool is `None` then responses will be deserialised on the same thread as the io `Core`.
+
+    # Examples
+
+    Use a cpu pool to deserialise responses:
+
+    ```
+    let pool = CpuPool::new(4)?;
+
+    let builder = AsyncClientBuilder::new()
+        .de_pool(pool);
+    ```
     */
-    pub fn de_pool(mut self, de_pool: Option<CpuPool>) -> Self {
-        self.de_pool = de_pool;
+    pub fn de_pool<P>(mut self, de_pool: P) -> Self 
+        where P: Into<Option<CpuPool>>
+    {
+        self.de_pool = de_pool.into();
 
         self
     }
