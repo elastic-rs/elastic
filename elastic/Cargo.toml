@@ -29,6 +29,5 @@ elastic_reqwest = { version = "*", git = "https://github.com/elastic-rs/elastic-
 elastic_types = "~0.19.0"
 
 [dev-dependencies]
-json_str = "^0.*"
 serde_derive = "~1"
 elastic_derive = { version = "~0.14.0", path = "../derive" }

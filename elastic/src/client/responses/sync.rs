@@ -61,7 +61,7 @@ impl SyncResponseBuilder {
     #     pub timestamp: Date<DefaultDateFormat>
     # }
     # let params = RequestParams::new("http://es_host:9200");
-    # let client = Client::new(params).unwrap();
+    # let client = Client::new(params)?;
     # let req = PingRequest::new();
     let response = client.request(req)
                          .send()
@@ -79,7 +79,7 @@ impl SyncResponseBuilder {
     # use elastic::prelude::*;
     # fn main() {
     # let params = RequestParams::default();
-    # let client = Client::new(params).unwrap();
+    # let client = Client::new(params)?;
     # let req = PingRequest::new();
     let response = client.request(req)
                          .send()

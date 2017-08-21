@@ -118,7 +118,7 @@ You can use the `IndexDocumentMapping` type wrapper to serialise the mapping for
 # struct MyType {}
 let doc = IndexDocumentMapping::from(MyType::mapping());
 
-let mapping = serde_json::to_string(&doc).unwrap();
+let mapping = serde_json::to_string(&doc)?;
 # }
 ```
 
@@ -132,8 +132,6 @@ This will produce the following JSON:
 # extern crate serde_json;
 # #[macro_use]
 # extern crate serde_derive;
-# #[macro_use]
-# extern crate json_str;
 # use elastic::prelude::*;
 # fn main() {
 # #[derive(Serialize, Deserialize, ElasticType)]
@@ -142,8 +140,8 @@ This will produce the following JSON:
 #     title: String,
 #     timestamp: Date<EpochMillis>
 # }
-# let mapping = serde_json::to_string(&IndexDocumentMapping::from(MyType::mapping())).unwrap();
-# let expected = json_str!(
+# let mapping = serde_json::to_string(&IndexDocumentMapping::from(MyType::mapping()))?;
+# let expected = json!(
 {
     "properties": {
         "id": {
@@ -165,7 +163,7 @@ This will produce the following JSON:
     }
 }
 # );
-# assert_eq!(expected, mapping);
+# assert_eq!(expected.to_string(), mapping);
 # }
 ```
 
@@ -228,8 +226,6 @@ Serialising `MyType`s mapping will produce the following json:
 # #[macro_use]
 # extern crate serde_derive;
 # extern crate serde_json;
-# #[macro_use]
-# extern crate json_str;
 # use elastic::prelude::*;
 # #[derive(Serialize, Deserialize)]
 # enum MyEnum {}
@@ -239,8 +235,8 @@ Serialising `MyType`s mapping will produce the following json:
 #     value: MyEnum
 # }
 # fn main() {
-# let mapping = serde_json::to_string(&IndexDocumentMapping::from(MyType::mapping())).unwrap();
-# let expected = json_str!(
+# let mapping = serde_json::to_string(&IndexDocumentMapping::from(MyType::mapping()))?;
+# let expected = json!(
 {
     "properties": {
         "value": {
@@ -249,7 +245,7 @@ Serialising `MyType`s mapping will produce the following json:
     }
 }
 # );
-# assert_eq!(expected, mapping);
+# assert_eq!(expected.to_string(), mapping);
 # }
 ```
 

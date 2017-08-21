@@ -10,18 +10,18 @@ use client::responses::CommandResponse;
 /** 
 A [create index request][docs-create-index] builder that can be configured before sending. 
 
-Call [`Client.create_index`][Client.create_index] to get a `CreateIndexRequestBuilder`.
+Call [`Client.index_create`][Client.index_create] to get a `IndexCreateRequestBuilder`.
 The `send` method will either send the request [synchronously][send-sync] or [asynchronously][send-async], depending on the `Client` it was created from.
 
 [docs-create-index]: https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-create-index.html
 [send-sync]: #send-synchronously
 [send-async]: #send-asynchronously
-[Client.create_index]: ../struct.Client.html#create-index-request
+[Client.index_create]: ../struct.Client.html#create-index-request
 */
-pub type CreateIndexRequestBuilder<TSender, TBody> = RequestBuilder<TSender, CreateIndexRequestInner<TBody>>;
+pub type IndexCreateRequestBuilder<TSender, TBody> = RequestBuilder<TSender, IndexCreateRequestInner<TBody>>;
 
 #[doc(hidden)]
-pub struct CreateIndexRequestInner<TBody> {
+pub struct IndexCreateRequestInner<TBody> {
     index: Index<'static>,
     body: TBody,
 }
@@ -33,7 +33,7 @@ impl<TSender> Client<TSender>
     where TSender: Sender
 {
     /** 
-    Create a [`CreateIndexRequestBuilder`][CreateIndexRequestBuilder] with this `Client` that can be configured before sending.
+    Create a [`IndexCreateRequestBuilder`][IndexCreateRequestBuilder] with this `Client` that can be configured before sending.
 
     For more details, see:
 
@@ -47,10 +47,10 @@ impl<TSender> Client<TSender>
     
     ```no_run
     # use elastic::prelude::*;
-    # let client = ClientBuilder::new().build().unwrap();
+    # let client = ClientBuilder::new().build()?;
     let my_index = index("myindex");
 
-    let response = client.create_index(my_index).send().unwrap();
+    let response = client.index_create(my_index).send()?;
 
     assert!(response.acknowledged);
     ```
@@ -67,7 +67,7 @@ impl<TSender> Client<TSender>
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType { }
     # fn main() {
-    # let client = ClientBuilder::new().build().unwrap();
+    # let client = ClientBuilder::new().build()?;
     let my_index = index("myindex");
 
     let body = json!({
@@ -82,10 +82,9 @@ impl<TSender> Client<TSender>
         }
     });
 
-    let response = client.create_index(my_index)
+    let response = client.index_create(my_index)
                          .body(body.to_string())
-                         .send()
-                         .unwrap();
+                         .send()?;
 
     assert!(response.acknowledged);
     # }
@@ -93,24 +92,24 @@ impl<TSender> Client<TSender>
 
     For more details on document types and mapping, see the [`types`][types-mod] module.
 
-    [CreateIndexRequestBuilder]: requests/type.CreateIndexRequestBuilder.html
-    [builder-methods]: requests/type.CreateIndexRequestBuilder.html#builder-methods
-    [send-sync]: requests/type.CreateIndexRequestBuilder.html#send-synchronously
-    [send-async]: requests/type.CreateIndexRequestBuilder.html#send-asynchronously
+    [IndexCreateRequestBuilder]: requests/type.IndexCreateRequestBuilder.html
+    [builder-methods]: requests/type.IndexCreateRequestBuilder.html#builder-methods
+    [send-sync]: requests/type.IndexCreateRequestBuilder.html#send-synchronously
+    [send-async]: requests/type.IndexCreateRequestBuilder.html#send-asynchronously
     [types-mod]: ../types/index.html
     [documents-mod]: ../types/document/index.html
     */
-    pub fn create_index(&self, index: Index<'static>) -> CreateIndexRequestBuilder<TSender, DefaultBody> {
+    pub fn index_create(&self, index: Index<'static>) -> IndexCreateRequestBuilder<TSender, DefaultBody> {
         RequestBuilder::new(self.clone(),
                             None,
-                            CreateIndexRequestInner {
+                            IndexCreateRequestInner {
                                 index: index,
                                 body: empty_body(),
                             })
     }
 }
 
-impl<TBody> CreateIndexRequestInner<TBody> {
+impl<TBody> IndexCreateRequestInner<TBody> {
     fn into_request(self) -> IndicesCreateRequest<'static, TBody> {
         IndicesCreateRequest::for_index(self.index, self.body)
     }
@@ -119,9 +118,9 @@ impl<TBody> CreateIndexRequestInner<TBody> {
 /** 
 # Builder methods
 
-Configure a `CreateIndexRequestBuilder` before sending it.
+Configure a `IndexCreateRequestBuilder` before sending it.
 */
-impl<TSender, TBody> CreateIndexRequestBuilder<TSender, TBody>
+impl<TSender, TBody> IndexCreateRequestBuilder<TSender, TBody>
     where TSender: Sender,
           TBody: Into<TSender::Body>
 {
@@ -132,12 +131,12 @@ impl<TSender, TBody> CreateIndexRequestBuilder<TSender, TBody>
     */
     pub fn body<TNewBody>(self,
                           body: TNewBody)
-                          -> CreateIndexRequestBuilder<TSender, TNewBody>
+                          -> IndexCreateRequestBuilder<TSender, TNewBody>
         where TNewBody: Into<TSender::Body>
     {
         RequestBuilder::new(self.client,
                             self.params,
-                            CreateIndexRequestInner {
+                            IndexCreateRequestInner {
                                 index: self.inner.index,
                                 body: body,
                             })
@@ -147,11 +146,11 @@ impl<TSender, TBody> CreateIndexRequestBuilder<TSender, TBody>
 /**
 # Send synchronously
 */
-impl<TBody> CreateIndexRequestBuilder<SyncSender, TBody>
+impl<TBody> IndexCreateRequestBuilder<SyncSender, TBody>
     where TBody: Into<<SyncSender as Sender>::Body>
 {
     /**
-    Send a `CreateIndexRequestBuilder` synchronously using a [`SyncClient`]().
+    Send a `IndexCreateRequestBuilder` synchronously using a [`SyncClient`]().
 
     This will block the current thread until a response arrives and is deserialised.
     */
@@ -167,11 +166,11 @@ impl<TBody> CreateIndexRequestBuilder<SyncSender, TBody>
 /**
 # Send asynchronously
 */
-impl<TBody> CreateIndexRequestBuilder<AsyncSender, TBody>
+impl<TBody> IndexCreateRequestBuilder<AsyncSender, TBody>
     where TBody: Into<<AsyncSender as Sender>::Body>
 {
     /**
-    Send a `CreateIndexRequestBuilder` asynchronously using an [`AsyncClient`]().
+    Send a `IndexCreateRequestBuilder` asynchronously using an [`AsyncClient`]().
     
     This will return a future that will resolve to the deserialised command response.
     */
@@ -194,7 +193,7 @@ mod tests {
     fn default_request() {
         let client = Client::new(RequestParams::new("http://eshost:9200")).unwrap();
 
-        let req = client.create_index(index("testindex")).req.into_request();
+        let req = client.index_create(index("testindex")).req.into_request();
 
         assert_eq!("/testindex", req.url.as_ref());
     }
@@ -204,7 +203,7 @@ mod tests {
         let client = Client::new(RequestParams::new("http://eshost:9200")).unwrap();
 
         let req = client
-            .create_index(index("testindex"))
+            .index_create(index("testindex"))
             .body("{}")
             .req
             .into_request();

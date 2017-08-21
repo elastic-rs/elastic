@@ -3,7 +3,7 @@ use futures::Future;
 use elastic_reqwest::{SyncElasticClient, AsyncElasticClient};
 
 use error::{self, Result, Error};
-use client::{Client, Sender, SyncSender, AsyncSender, RequestParams};
+use client::{Client, Sender, SyncSender, AsyncSender};
 use client::requests::{HttpRequest, RequestBuilder};
 use client::responses::{sync_response, async_response, SyncResponseBuilder, AsyncResponseBuilder};
 
@@ -58,7 +58,7 @@ impl<TSender> Client<TSender>
     
     ```no_run
     # use elastic::prelude::*;
-    # let client = ClientBuilder::new().build().unwrap();
+    # let client = ClientBuilder::new().build()?;
     // `PingRequest` implements `Into<HttpRequest>`
     let req = PingRequest::new();
     
@@ -66,7 +66,7 @@ impl<TSender> Client<TSender>
     let builder = client.request(req);
     
     // Send the `RequestBuilder` and parse as a `PingResponse`
-    let ping = builder.send().and_then(into_response::<PingResponse>).unwrap();
+    let ping = builder.send().and_then(into_response::<PingResponse>)?;
 
     println!("cluster: {}", ping.name);
     ```
@@ -110,11 +110,10 @@ impl<TRequest, TBody> RawRequestBuilder<SyncSender, TRequest, TBody>
     # use elastic::prelude::*;
     # fn main() {
     # fn get_req() -> PingRequest<'static> { PingRequest::new() }
-    # let client = ClientBuilder::new().build().unwrap();
+    # let client = ClientBuilder::new().build()?;
     let response = client.request(get_req())
-                         .send()
-                         .and_then(into_response::<SearchResponse<Value>>)
-                         .unwrap();
+                         .send()?
+                         .into_response::<SearchResponse<Value>>()?;
     # }
     ```
 
@@ -155,11 +154,10 @@ impl<TRequest, TBody> RawRequestBuilder<AsyncSender, TRequest, TBody>
     # use elastic::prelude::*;
     # fn main() {
     # fn get_req() -> PingRequest<'static> { PingRequest::new() }
-    # let client = ClientBuilder::new().build().unwrap();
+    # let client = ClientBuilder::new().build()?;
     let response = client.request(get_req())
-                         .send()
-                         .and_then(into_response::<SearchResponse<Value>>)
-                         .unwrap();
+                         .send()?
+                         .into_response::<SearchResponse<Value>>();
     # }
     ```
 

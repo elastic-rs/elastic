@@ -12,18 +12,18 @@ use types::document::DocumentType;
 /** 
 An [index request][docs-index] builder that can be configured before sending.
 
-Call [`Client.index_document`][Client.index_document] to get an `IndexRequest`. 
+Call [`Client.document_index`][Client.document_index] to get an `IndexRequest`. 
 The `send` method will either send the request [synchronously][send-sync] or [asynchronously][send-async], depending on the `Client` it was created from.
 
 [docs-index]: https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html
 [send-sync]: #send-synchronously
 [send-async]: #send-asynchronously
-[Client.index_document]: ../struct.Client.html#index-request
+[Client.document_index]: ../struct.Client.html#index-request
 */
-pub type IndexRequestBuilder<TSender, TDocument> = RequestBuilder<TSender, IndexRequestInner<TDocument>>;
+pub type DocumentIndexRequestBuilder<TSender, TDocument> = RequestBuilder<TSender, DocumentIndexRequestInner<TDocument>>;
 
 #[doc(hidden)]
-pub struct IndexRequestInner<TDocument> {
+pub struct DocumentIndexRequestInner<TDocument> {
     index: Index<'static>,
     ty: Type<'static>,
     id: Id<'static>,
@@ -37,7 +37,7 @@ impl<TSender> Client<TSender>
     where TSender: Sender
 {
     /**
-    Create a [`IndexRequestBuilder`][IndexRequestBuilder] with this `Client` that can be configured before sending.
+    Create a [`DocumentIndexRequestBuilder`][DocumentIndexRequestBuilder] with this `Client` that can be configured before sending.
 
     For more details, see:
 
@@ -62,40 +62,39 @@ impl<TSender> Client<TSender>
     #     pub title: String,
     #     pub timestamp: Date<DefaultDateFormat>
     # }
-    # let client = ClientBuilder::new().build().unwrap();
+    # let client = ClientBuilder::new().build()?;
     let doc = MyType {
         id: 1,
         title: String::from("A title"),
         timestamp: Date::now()
     };
 
-    let response = client.index_document(index("myindex"), id(doc.id), doc)
-                         .send()
-                         .unwrap();
+    let response = client.document_index(index("myindex"), id(doc.id), doc)
+                         .send()?;
     # }
     ```
 
     For more details on document types and mapping, see the [`types`][types-mod] module.
     
-    [IndexRequestBuilder]: requests/type.IndexRequestBuilder.html
-    [builder-methods]: requests/type.IndexRequestBuilder.html#builder-methods
-    [send-sync]: requests/type.IndexRequestBuilder.html#send-synchronously
-    [send-async]: requests/type.IndexRequestBuilder.html#send-asynchronously
+    [DocumentIndexRequestBuilder]: requests/type.DocumentIndexRequestBuilder.html
+    [builder-methods]: requests/type.DocumentIndexRequestBuilder.html#builder-methods
+    [send-sync]: requests/type.DocumentIndexRequestBuilder.html#send-synchronously
+    [send-async]: requests/type.DocumentIndexRequestBuilder.html#send-asynchronously
     [types-mod]: ../types/index.html
     [documents-mod]: ../types/document/index.html
     */
-    pub fn index_document<TDocument>(&self,
+    pub fn document_index<TDocument>(&self,
                                          index: Index<'static>,
                                          id: Id<'static>,
                                          doc: TDocument)
-                                         -> IndexRequestBuilder<TSender, TDocument>
+                                         -> DocumentIndexRequestBuilder<TSender, TDocument>
         where TDocument: Serialize + DocumentType
     {
         let ty = TDocument::name().into();
 
         RequestBuilder::new(self.clone(),
                             None,
-                            IndexRequestInner {
+                            DocumentIndexRequestInner {
                                 index: index,
                                 ty: ty,
                                 id: id,
@@ -104,7 +103,7 @@ impl<TSender> Client<TSender>
     }
 }
 
-impl<TDocument> IndexRequestInner<TDocument>
+impl<TDocument> DocumentIndexRequestInner<TDocument>
     where TDocument: Serialize
 {
     fn into_request(self) -> Result<IndexRequest<'static, Vec<u8>>> {
@@ -117,9 +116,9 @@ impl<TDocument> IndexRequestInner<TDocument>
 /**
 # Builder methods
 
-Configure a `IndexRequestBuilder` before sending it.
+Configure a `DocumentIndexRequestBuilder` before sending it.
 */
-impl<TSender, TDocument> IndexRequestBuilder<TSender, TDocument> 
+impl<TSender, TDocument> DocumentIndexRequestBuilder<TSender, TDocument> 
     where TSender: Sender
 {
     /** Set the type for the index request. */
@@ -134,11 +133,11 @@ impl<TSender, TDocument> IndexRequestBuilder<TSender, TDocument>
 /**
 # Send synchronously
 */
-impl<TDocument> IndexRequestBuilder<SyncSender, TDocument>
+impl<TDocument> DocumentIndexRequestBuilder<SyncSender, TDocument>
     where TDocument: Serialize
 {
     /**
-    Send a `IndexRequestBuilder` synchronously using a [`SyncClient`]().
+    Send a `DocumentIndexRequestBuilder` synchronously using a [`SyncClient`]().
 
     This will block the current thread until a response arrives and is deserialised.
     */
@@ -154,11 +153,11 @@ impl<TDocument> IndexRequestBuilder<SyncSender, TDocument>
 /**
 # Send asynchronously
 */
-impl<TDocument> IndexRequestBuilder<AsyncSender, TDocument>
+impl<TDocument> DocumentIndexRequestBuilder<AsyncSender, TDocument>
     where TDocument: Serialize + Send + 'static
 {
     /**
-    Send a `IndexRequestBuilder` asynchronously using an [`AsyncClient`]().
+    Send a `DocumentIndexRequestBuilder` asynchronously using an [`AsyncClient`]().
     
     This will return a future that will resolve to the deserialised index response.
     */
@@ -187,7 +186,7 @@ mod tests {
         let client = Client::new(RequestParams::new("http://eshost:9200")).unwrap();
 
         let req = client
-            .index_document(index("test-idx"), id("1"), Value::Null)
+            .document_index(index("test-idx"), id("1"), Value::Null)
             .req
             .into_request()
             .unwrap();
@@ -201,7 +200,7 @@ mod tests {
         let client = Client::new(RequestParams::new("http://eshost:9200")).unwrap();
 
         let req = client
-            .index_document(index("test-idx"), id("1"), Value::Null)
+            .document_index(index("test-idx"), id("1"), Value::Null)
             .ty("new-ty")
             .req
             .into_request()
@@ -216,7 +215,7 @@ mod tests {
 
         let doc = Value::Null;
         let req = client
-            .index_document(index("test-idx"), id("1"), &doc)
+            .document_index(index("test-idx"), id("1"), &doc)
             .req
             .into_request()
             .unwrap();

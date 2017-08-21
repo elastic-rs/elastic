@@ -42,13 +42,13 @@ Instead a `Future` will be returned immediately that will resolve to a response 
 Some commonly used endpoints have high-level builder methods you can use to configure requests easily.
 They're exposed as methods on the `Client`:
 
-Client method                               | Elasticsearch API                  | Raw request type                                        | Response type
-------------------------------------------- | ---------------------------------- | ------------------------------------------------------- | ------------------------------------
-[`search`][Client.search]                   | [Search][docs-search]              | [`SearchRequest`][SearchRequest]                        | [`SearchResponse`][SearchResponse]
-[`get_document`][Client.get_document]       | [Get Document][docs-get]           | [`GetRequest`][GetRequest]                              | [`GetResponse`][GetResponse]
-[`index_document`][Client.index_document]   | [Index Document][docs-index]       | [`IndexRequest`][IndexRequest]                          | [`IndexResponse`][IndexResponse]
-[`put_mapping`][Client.put_mapping]         | [Put Mapping][docs-mapping]        | [`IndicesPutMappingRequest`][IndicesPutMappingRequest]  | [`CommandResponse`][CommandResponse]
-[`create_index`][Client.create_index]       | [Create Index][docs-create-index]  | [`IndicesCreateRequest`][IndicesCreateRequest]          | [`CommandResponse`][CommandResponse]
+Client method                                                 | Elasticsearch API                  | Raw request type                                        | Response type
+------------------------------------------------------------- | ---------------------------------- | ------------------------------------------------------- | ------------------------------------
+[`search`][Client.search]                                     | [Search][docs-search]              | [`SearchRequest`][SearchRequest]                        | [`SearchResponse`][SearchResponse]
+[`document_get`][Client.document_get]                         | [Get Document][docs-get]           | [`GetRequest`][GetRequest]                              | [`GetResponse`][GetResponse]
+[`document_index`][Client.document_index]                     | [Index Document][docs-index]       | [`IndexRequest`][IndexRequest]                          | [`IndexResponse`][IndexResponse]
+[`document_put_mapping`][Client.document_put_mapping]         | [Put Mapping][docs-mapping]        | [`IndicesPutMappingRequest`][IndicesPutMappingRequest]  | [`CommandResponse`][CommandResponse]
+[`index_create`][Client.index_create]                         | [Create Index][docs-create-index]  | [`IndicesCreateRequest`][IndicesCreateRequest]          | [`CommandResponse`][CommandResponse]
 
 All builders follow a standard pattern:
 
@@ -66,7 +66,7 @@ A search request for a value, where the response is matched for an `ApiError`:
 # use elastic::prelude::*;
 # use elastic::error::*;
 # fn main() {
-# let client = SyncClientBuilder::new().build().unwrap();
+# let client = SyncClientBuilder::new().build()?;
 let response = client.search::<Value>()
                      .index("myindex")
                      .ty(Some("myty"))
@@ -86,15 +86,11 @@ match response {
             println!("{:?}", hit);
         }
     },
+    Err(Error::Api(e)) => {
+        // handle a REST API error
+    },
     Err(e) => {
-        match *e.kind() {
-            ErrorKind::Api(ref e) => {
-                // handle a REST API error
-            },
-            ref e => {
-                // handle a HTTP or JSON error
-            }
-        }
+        // handle a HTTP or JSON error
     }
 }
 # }
@@ -109,8 +105,8 @@ A `get` request for a value:
 # use serde_json::Value;
 # use elastic::prelude::*;
 # fn main() {
-# let client = SyncClientBuilder::new().build().unwrap();
-let response = client.get_document::<Value>(index("values"), id(1)).send();
+# let client = SyncClientBuilder::new().build()?;
+let response = client.document_get::<Value>(index("values"), id(1)).send()?;
 # }
 ```
 
@@ -122,10 +118,10 @@ Is equivalent to:
 # use serde_json::Value;
 # use elastic::prelude::*;
 # fn main() {
-# let client = SyncClientBuilder::new().build().unwrap();
+# let client = SyncClientBuilder::new().build()?;
 let response = client.request(GetRequest::for_index_ty_id("values", "value", 1))
-                     .send()
-                     .and_then(into_response::<GetResponse<Value>>);
+                     .send()?
+                     .into_response::<GetResponse<Value>>()?;
 # }
 ```
 
@@ -175,12 +171,12 @@ with the steps in the above process labelled:
 # use elastic::error::*;
 # use serde_json::Value;
 # fn main() {
-# let client = SyncClientBuilder::new().build().unwrap();
+# let client = SyncClientBuilder::new().build()?;
 let req = SearchRequest::for_index("_all", empty_body());
 
 let response = client.request(req) // 1
-                     .send() // 2
-                     .and_then(into_response::<SearchResponse<Value>>); // 3
+                     .send()? // 2
+                     .into_response::<SearchResponse<Value>>()?; // 3
 # }
 ```
 
@@ -223,7 +219,7 @@ A raw request to index a document:
 # fn main() {
 # let doc = MyType;
 let req = {
-    let body = serde_json::to_string(&doc).unwrap();
+    let body = serde_json::to_string(&doc)?;
 
     IndexRequest::for_index_ty_id("myindex", "myty", 1, body)
 };
@@ -243,7 +239,7 @@ If the request was sent asynchronously, the response is returned as a `Future`.
 
 ```no_run
 # use elastic::prelude::*;
-# let client = SyncClientBuilder::new().build().unwrap();
+# let client = SyncClientBuilder::new().build()?;
 # let req = PingRequest::new();
 let request_builder = client.request(req);
 
@@ -278,7 +274,7 @@ Call [`SyncResponseBuilder.into_response`][SyncResponseBuilder.into_response] on
 #     pub timestamp: Date<DefaultDateFormat>
 # }
 # let params = RequestParams::new("http://es_host:9200");
-# let client = Client::new(params).unwrap();
+# let client = Client::new(params)?;
 # let req = PingRequest::new();
 let response = client.request(req)
                      .send()?
@@ -291,15 +287,11 @@ match response {
             println!("{:?}", hit);
         }
     },
+    Err(Error::Api(e)) => {
+        // handle a REST API error
+    },
     Err(e) => {
-        match *e.kind() {
-            ErrorKind::Api(ref e) => {
-                // handle a REST API error
-            },
-            ref e => {
-                // handle a HTTP or JSON error
-            }
-        }
+        // handle a HTTP or JSON error
     }
 }
 # }
@@ -316,14 +308,14 @@ Alternatively, call [`SyncResponseBuilder.into_raw`][SyncResponseBuilder.into_ra
 # use elastic::prelude::*;
 # fn main() {
 # let params = RequestParams::new("http://es_host:9200");
-# let client = Client::new(params).unwrap();
+# let client = Client::new(params)?;
 # let req = PingRequest::new();
 let mut response = client.request(req)
                          .send()?
                          .into_raw()?;
 
 let mut body = String::new();
-response.read_to_string(&mut body).unwrap();
+response.read_to_string(&mut body)?;
 
 println!("{}", body);
 # }
@@ -353,7 +345,7 @@ Call [`AsyncResponseBuilder.into_response`][AsyncResponseBuilder.into_response] 
 #     pub timestamp: Date<DefaultDateFormat>
 # }
 # let params = RequestParams::new("http://es_host:9200");
-# let client = Client::new(params).unwrap();
+# let client = Client::new(params)?;
 # let req = PingRequest::new();
 let future = client.request(req)
                    .send()
@@ -381,7 +373,7 @@ Alternatively, call [`AsyncResponseBuilder.into_raw`][AsyncResponseBuilder.into_
 # use elastic::prelude::*;
 # fn main() {
 # let params = RequestParams::new("http://es_host:9200");
-# let client = Client::new(params).unwrap();
+# let client = Client::new(params)?;
 # let req = PingRequest::new();
 let mut future = client.request(req)
                        .send()
@@ -391,7 +383,7 @@ future.and_then(|response| {
     tokio_io::read_to_end(response, Vec::new())
 })
 .and_then(|(response, body)| {
-    let body = String::from_utf8(body).unwrap();
+    let body = String::from_utf8(body)?;
 
     println!("{}", body);
 
@@ -413,10 +405,10 @@ For more details see the [`responses`][responses-mod] module.
 [RequestParams]: struct.RequestParams.html
 [Client.request]: struct.Client.html#method.request
 [Client.search]: struct.Client.html#search-request
-[Client.get_document]: struct.Client.html#get-document
-[Client.index_document]: struct.Client.html#index-request
-[Client.put_mapping]: struct.Client.html#method.put_mapping
-[Client.create_index]: struct.Client.html#create-index-request
+[Client.document_get]: struct.Client.html#get-document
+[Client.document_index]: struct.Client.html#index-request
+[Client.document_put_mapping]: struct.Client.html#method.document_put_mapping
+[Client.index_create]: struct.Client.html#create-index-request
 
 [RequestBuilder]: requests/struct.RequestBuilder.html
 [RequestBuilder.params]: requests/struct.RequestBuilder.html#method.params
@@ -764,7 +756,7 @@ Create a `Client` for an Elasticsearch node at `es_host:9200`:
 # use elastic::prelude::*;
 let params = RequestParams::new("http://es_host:9200").url_param("pretty", true);
 
-let client = Client::new(params).unwrap();
+let client = Client::new(params)?;
 
 [RequestBuilder]: requests/index.html
 ```

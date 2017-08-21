@@ -1,7 +1,8 @@
+use std::mem;
 use futures::{Future, Stream, Poll};
 use futures_cpupool::CpuPool;
 use serde::de::DeserializeOwned;
-use reqwest::unstable::async::Response as RawResponse;
+use reqwest::unstable::async::{Decoder, Response as RawResponse};
 
 use error::{self, Error};
 use elastic_reqwest::res::parse;
@@ -69,7 +70,7 @@ impl AsyncResponseBuilder {
     #     pub timestamp: Date<DefaultDateFormat>
     # }
     # let params = RequestParams::new("http://es_host:9200");
-    # let client = Client::new(params).unwrap();
+    # let client = Client::new(params)?;
     # let req = PingRequest::new();
     let response = client.request(req)
                          .send()
@@ -87,7 +88,7 @@ impl AsyncResponseBuilder {
     # use elastic::prelude::*;
     # fn main() {
     # let params = RequestParams::default();
-    # let client = Client::new(params).unwrap();
+    # let client = Client::new(params)?;
     # let req = PingRequest::new();
     let response = client.request(req)
                          .send()
@@ -101,7 +102,7 @@ impl AsyncResponseBuilder {
         where T: IsOk + DeserializeOwned + Send + 'static
     {
         let status = self.status();
-        let body = self.inner.body();
+        let body = mem::replace(self.inner.body_mut(), Decoder::empty());
         let de_fn = move |body: Chunk| parse().from_slice(status, body.as_ref()).map_err(move |e| error::response(status, e));
 
         let body_future = body.concat2().map_err(move |e| error::response(status, e));

@@ -33,7 +33,6 @@ elastic_derive = "*"
 The following optional dependencies may also be useful:
 
 ```ignore
-json_str = "*"
 serde = "*"
 serde_json = "*"
 serde_derive = "*"
@@ -66,7 +65,7 @@ let builder = SyncClientBuilder::new()
         .url_param("pretty", true)
         .header(Authorization("let me in".to_owned())));
 
-let client = builder.build().unwrap();
+let client = builder.build()?;
 ```
 
 Individual requests can override these parameter values:
@@ -77,12 +76,11 @@ Individual requests can override these parameter values:
 # use serde_json::Value;
 # use elastic::prelude::*;
 # fn main() {
-let client = SyncClientBuilder::new().build().unwrap();
+let client = SyncClientBuilder::new().build()?;
 
 let response = client.search::<Value>()
                      .params(|p| p.url_param("pretty", true))
-                     .send()
-                     .unwrap();
+                     .send()?;
 # }
 ```
 
@@ -114,7 +112,7 @@ struct MyType {
 # }
 ```
 
-Call [`Client.put_mapping`][Client.put_mapping] to ensure an index has the right mapping for your document types:
+Call [`Client.document_put_mapping`][Client.document_put_mapping] to ensure an index has the right mapping for your document types:
 
 ```no_run
 # extern crate serde;
@@ -125,14 +123,13 @@ Call [`Client.put_mapping`][Client.put_mapping] to ensure an index has the right
 # fn main() {
 # #[derive(Serialize, Deserialize, ElasticType)]
 # struct MyType { }
-# let client = ClientBuilder::new().build().unwrap();;
-client.put_mapping::<MyType>(index("myindex"))
-      .send()
-      .unwrap();
+# let client = ClientBuilder::new().build()?;
+client.document_put_mapping::<MyType>(index("myindex"))
+      .send()?;
 # }
 ```
 
-Then call [`Client.index_document`][Client.index_document] to index documents in Elasticsearch:
+Then call [`Client.document_index`][Client.document_index] to index documents in Elasticsearch:
 
 ```no_run
 # extern crate serde;
@@ -147,20 +144,19 @@ Then call [`Client.index_document`][Client.index_document] to index documents in
 #     pub title: String,
 #     pub timestamp: Date<DefaultDateFormat>
 # }
-# let client = ClientBuilder::new().build().unwrap();;
+# let client = ClientBuilder::new().build()?;
 let doc = MyType {
     id: 1,
     title: String::from("A title"),
     timestamp: Date::now()
 };
 
-let response = client.index_document(index("myindex"), id(doc.id), doc)
-                     .send()
-                     .unwrap();
+let response = client.document_index(index("myindex"), id(doc.id), doc)
+                     .send()?;
 # }
 ```
 
-Call [`Client.get_document`][Client.get_document] to retrieve a single document from an index:
+Call [`Client.document_get`][Client.document_get] to retrieve a single document from an index:
 
 ```no_run
 # extern crate serde;
@@ -175,10 +171,9 @@ Call [`Client.get_document`][Client.get_document] to retrieve a single document 
 #     pub title: String,
 #     pub timestamp: Date<DefaultDateFormat>
 # }
-# let client = ClientBuilder::new().build().unwrap();;
-let response = client.get_document::<MyType>(index("myindex"), id(1))
-                     .send()
-                     .unwrap();
+# let client = ClientBuilder::new().build()?;
+let response = client.document_get::<MyType>(index("myindex"), id(1))
+                     .send()?;
 
 if let Some(doc) = response.source {
     println!("id: {}", doc.id);
@@ -196,24 +191,22 @@ Call [`Client.search`][Client.search] to execute [Query DSL][docs-search] querie
 # extern crate serde;
 # #[macro_use] extern crate serde_derive;
 # #[macro_use] extern crate elastic_derive;
-# #[macro_use] extern crate json_str;
 # extern crate elastic;
 # use elastic::prelude::*;
 # fn main() {
 # #[derive(Debug, Serialize, Deserialize, ElasticType)]
 # struct MyType { }
-# let client = ClientBuilder::new().build().unwrap();;
+# let client = ClientBuilder::new().build()?;
 let response = client.search::<MyType>()
                      .index("myindex")
-                     .body(json_str!({
-                         query: {
-                            query_string: {
-                                query: "*"
+                     .body(json!({
+                         "query": {
+                            "query_string": {
+                                "query": "*"
                             }
                          }
                      }))
-                     .send()
-                     .unwrap();
+                     .send()?;
 
 // Iterate through the hits (of type `MyType`)
 for hit in response.hits() {
@@ -253,9 +246,9 @@ This crate glues these libraries together with some simple assumptions about how
 [docs-search]: http://www.elastic.co/guide/en/elasticsearch/reference/current/search-search.html
 
 [Client]: client/struct.Client.html
-[Client.put_mapping]: client/struct.Client.html#method.put_mapping
-[Client.index_document]: client/struct.Client.html#method.index_document
-[Client.get_document]: client/struct.Client.html#method.get_document
+[Client.document_put_mapping]: client/struct.Client.html#method.document_put_mapping
+[Client.document_index]: client/struct.Client.html#method.document_index
+[Client.document_get]: client/struct.Client.html#method.document_get
 [Client.search]: client/struct.Client.html#method.search
 [client-mod]: client/index.html
 [requests-mod]: client/requests/index.html

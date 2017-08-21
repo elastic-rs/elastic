@@ -5,14 +5,9 @@ This module contains implementation details that are useful if you want to custo
 but aren't generally important for sending requests.
 */
 
-use std::marker::PhantomData;
-use futures::Future;
 use futures_cpupool::CpuPool;
-use elastic_reqwest::{SyncElasticClient, AsyncElasticClient};
 
-use error::{self, Result, Error};
-use client::{Client, Sender, SyncSender, AsyncSender, RequestParams};
-use client::responses::{sync_response, async_response, SyncResponseBuilder, AsyncResponseBuilder};
+use client::{Client, Sender, AsyncSender, RequestParams};
 
 pub use elastic_reqwest::{SyncBody, AsyncBody};
 pub use elastic_reqwest::req::{HttpRequest, HttpMethod, empty_body, Url, DefaultBody};
@@ -25,20 +20,21 @@ pub use self::endpoints::*;
 mod raw;
 pub use self::raw::RawRequestBuilder;
 
+// Search requests
 mod search;
 pub use self::search::SearchRequestBuilder;
 
-mod get_document;
-pub use self::get_document::GetRequestBuilder;
+// Document requests
+mod document_get;
+mod document_index;
+mod document_put_mapping;
+pub use self::document_get::DocumentGetRequestBuilder;
+pub use self::document_index::DocumentIndexRequestBuilder;
+pub use self::document_put_mapping::DocumentPutMappingRequestBuilder;
 
-mod index_document;
-pub use self::index_document::IndexRequestBuilder;
-
-mod put_mapping;
-pub use self::put_mapping::PutMappingRequestBuilder;
-
-mod create_index;
-pub use self::create_index::CreateIndexRequestBuilder;
+// Index requests
+mod index_create;
+pub use self::index_create::IndexCreateRequestBuilder;
 
 /**
 A builder for a request.
@@ -87,7 +83,7 @@ impl<TSender, TRequest> RequestBuilder<TSender, TRequest>
     
     ```no_run
     # use elastic::prelude::*;
-    # let client = ClientBuilder::new().build().unwrap();
+    # let client = ClientBuilder::new().build()?;
     # fn get_req() -> PingRequest<'static> { PingRequest::new() }
     let builder = client.request(get_req())
                         .params(|params| params.url_param("refresh", true));
@@ -109,7 +105,7 @@ The following methods can be called on any asynchronous request builder.
 */
 impl<TRequest> RequestBuilder<AsyncSender, TRequest> {
     /**
-    Override the thread pool used for deserialisation.
+    Override the thread pool used for deserialisation for this request.
         
     # Examples
 
@@ -117,7 +113,7 @@ impl<TRequest> RequestBuilder<AsyncSender, TRequest> {
 
     ```no_run
     # use elastic::prelude::*;
-    # let client = AsyncClientBuilder::new().build().unwrap();
+    # let client = AsyncClientBuilder::new().build()?;
     # fn get_req() -> PingRequest<'static> { PingRequest::new() }
     let pool = CpuPool::new(4)?;
     let builder = client.request(get_req())
@@ -128,7 +124,7 @@ impl<TRequest> RequestBuilder<AsyncSender, TRequest> {
     
     ```no_run
     # use elastic::prelude::*;
-    # let client = AsyncClientBuilder::new().build().unwrap();
+    # let client = AsyncClientBuilder::new().build()?;
     # fn get_req() -> PingRequest<'static> { PingRequest::new() }
     let builder = client.request(get_req())
                         .de_pool(None);

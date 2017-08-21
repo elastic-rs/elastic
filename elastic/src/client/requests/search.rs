@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 use futures::Future;
 use serde::de::DeserializeOwned;
 
-use error::{self, Result, Error};
+use error::{Result, Error};
 use client::{Client, Sender, SyncSender, AsyncSender};
 use client::requests::{empty_body, DefaultBody, Index, Type, SearchRequest, RequestBuilder};
 use client::requests::raw::RawRequestInner;
@@ -52,24 +52,24 @@ impl<TSender> Client<TSender>
     # extern crate serde;
     # #[macro_use] extern crate serde_derive;
     # #[macro_use] extern crate elastic_derive;
-    # #[macro_use] extern crate json_str;
     # extern crate elastic;
     # use elastic::prelude::*;
     # fn main() {
     # #[derive(Debug, Serialize, Deserialize, ElasticType)]
     # struct MyType { }
-    # let client = ClientBuilder::new().build().unwrap();
+    # let client = ClientBuilder::new().build()?;
+    let query = "a query string";
+
     let response = client.search::<MyType>()
                          .index("myindex")
-                         .body(json_str!({
-                             query: {
-                                 query_string: {
-                                     query: "*"
+                         .body(json!({
+                             "query": {
+                                 "query_string": {
+                                     "query": query
                                  }
                              }
                          }))
-                         .send()
-                         .unwrap();
+                         .send()?;
 
     // Iterate through the hits (of type `MyType`)
     for hit in response.hits() {
@@ -88,12 +88,11 @@ impl<TSender> Client<TSender>
     # use serde_json::Value;
     # use elastic::prelude::*;
     # fn main() {
-    # let client = ClientBuilder::new().build().unwrap();
+    # let client = ClientBuilder::new().build()?;
     let response = client.search::<Value>()
                          .index("myindex")
                          .ty(Some("mytype"))
-                         .send()
-                         .unwrap();
+                         .send()?;
     # }
     ```
 
@@ -205,17 +204,15 @@ impl<TDocument, TBody> SearchRequestBuilder<SyncSender, TDocument, TBody>
     # extern crate serde;
     # #[macro_use] extern crate serde_derive;
     # #[macro_use] extern crate elastic_derive;
-    # #[macro_use] extern crate json_str;
     # extern crate elastic;
     # use elastic::prelude::*;
     # fn main() {
     # #[derive(Debug, Serialize, Deserialize, ElasticType)]
     # struct MyType { }
-    # let client = ClientBuilder::new().build().unwrap();
+    # let client = ClientBuilder::new().build()?;
     let response = client.search::<MyType>()
                          .index("myindex")
-                         .send()
-                         .unwrap();
+                         .send()?;
 
     // Iterate through the hits (of type `MyType`)
     for hit in response.hits() {
@@ -253,15 +250,14 @@ impl<TDocument, TBody> SearchRequestBuilder<AsyncSender, TDocument, TBody>
     # extern crate serde;
     # #[macro_use] extern crate serde_derive;
     # #[macro_use] extern crate elastic_derive;
-    # #[macro_use] extern crate json_str;
     # extern crate elastic;
     # use elastic::prelude::*;
     # fn main() {
     # #[derive(Debug, Serialize, Deserialize, ElasticType)]
     # struct MyType { }
-    # let core = Core::new().unwrap();
+    # let core = Core::new()?;
     # let handle = core.handle();
-    # let client = AsyncClientBuilder::new().build(&handle).unwrap();
+    # let client = AsyncClientBuilder::new().build(&handle)?;
     let future = client.search::<MyType>()
                        .index("myindex")
                        .send();

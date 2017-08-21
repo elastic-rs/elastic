@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 use futures::Future;
 use serde::de::DeserializeOwned;
 
-use error::{self, Result, Error};
+use error::{Result, Error};
 use client::{Client, Sender, SyncSender, AsyncSender};
 use client::requests::{Index, Type, Id, GetRequest, RequestBuilder};
 use client::requests::raw::RawRequestInner;
@@ -12,18 +12,18 @@ use types::document::DocumentType;
 /** 
 A [get document request][docs-get] builder that can be configured before sending.
 
-Call [`Client.get_document`][Client.get_document] to get a `GetRequestBuilder`.
+Call [`Client.document_get`][Client.document_get] to get a `DocumentGetRequestBuilder`.
 The `send` method will either send the request [synchronously][send-sync] or [asynchronously][send-async], depending on the `Client` it was created from.
 
 [docs-get]: http://www.elastic.co/guide/en/elasticsearch/reference/current/docs-get.html
 [send-sync]: #send-synchronously
 [send-async]: #send-asynchronously
-[Client.get_document]: ../struct.Client.html#get-document
+[Client.document_get]: ../struct.Client.html#get-document
 */
-pub type GetRequestBuilder<TSender, TDocument> = RequestBuilder<TSender, GetRequestInner<TDocument>>;
+pub type DocumentGetRequestBuilder<TSender, TDocument> = RequestBuilder<TSender, DocumentGetRequestInner<TDocument>>;
 
 #[doc(hidden)]
-pub struct GetRequestInner<TDocument> {
+pub struct DocumentGetRequestInner<TDocument> {
     index: Index<'static>,
     ty: Type<'static>,
     id: Id<'static>,
@@ -37,7 +37,7 @@ impl<TSender> Client<TSender>
     where TSender: Sender
 {
     /** 
-    Create a [`GetRequestBuilder`][GetRequestBuilder] with this `Client` that can be configured before sending.
+    Create a [`DocumentGetRequestBuilder`][DocumentGetRequestBuilder] with this `Client` that can be configured before sending.
 
     For more details, see:
 
@@ -64,10 +64,9 @@ impl<TSender> Client<TSender>
     #     pub title: String,
     #     pub timestamp: Date<DefaultDateFormat>
     # }
-    # let client = ClientBuilder::new().build().unwrap();
-    let response = client.get_document::<MyType>(index("myindex"), id(1))
-                         .send()
-                         .unwrap();
+    # let client = ClientBuilder::new().build()?;
+    let response = client.document_get::<MyType>(index("myindex"), id(1))
+                         .send()?;
 
     if let Some(doc) = response.source {
         println!("id: {}", doc.id);
@@ -88,32 +87,31 @@ impl<TSender> Client<TSender>
     # use serde_json::Value;
     # use elastic::prelude::*;
     # fn main() {
-    # let client = ClientBuilder::new().build().unwrap();
-    let response = client.get_document::<Value>(index("myindex"), id(1))
+    # let client = ClientBuilder::new().build()?;
+    let response = client.document_get::<Value>(index("myindex"), id(1))
                          .ty("mytype")
-                         .send()
-                         .unwrap();
+                         .send()?;
     # }
     ```
 
-    [GetRequestBuilder]: requests/type.GetRequestBuilder.html
-    [builder-methods]: requests/type.GetRequestBuilder.html#builder-methods
-    [send-sync]: requests/type.GetRequestBuilder.html#send-synchronously
-    [send-async]: requests/type.GetRequestBuilder.html#send-asynchronously
+    [DocumentGetRequestBuilder]: requests/type.DocumentGetRequestBuilder.html
+    [builder-methods]: requests/type.DocumentGetRequestBuilder.html#builder-methods
+    [send-sync]: requests/type.DocumentGetRequestBuilder.html#send-synchronously
+    [send-async]: requests/type.DocumentGetRequestBuilder.html#send-asynchronously
     [types-mod]: ../types/index.html
     [documents-mod]: ../types/document/index.html
     */
-    pub fn get_document<TDocument>(&self,
+    pub fn document_get<TDocument>(&self,
                                        index: Index<'static>,
                                        id: Id<'static>)
-                                       -> GetRequestBuilder<TSender, TDocument>
+                                       -> DocumentGetRequestBuilder<TSender, TDocument>
         where TDocument: DeserializeOwned + DocumentType
     {
         let ty = TDocument::name().into();
 
         RequestBuilder::new(self.clone(),
                             None,
-                            GetRequestInner {
+                            DocumentGetRequestInner {
                                 index: index,
                                 ty: ty,
                                 id: id,
@@ -122,7 +120,7 @@ impl<TSender> Client<TSender>
     }
 }
 
-impl<TDocument> GetRequestInner<TDocument> {
+impl<TDocument> DocumentGetRequestInner<TDocument> {
     fn into_request(self) -> GetRequest<'static> {
         GetRequest::for_index_ty_id(self.index, self.ty, self.id)
     }
@@ -131,9 +129,9 @@ impl<TDocument> GetRequestInner<TDocument> {
 /**
 # Builder methods
 
-Configure a `GetRequestBuilder` before sending it.
+Configure a `DocumentGetRequestBuilder` before sending it.
 */
-impl<TSender, TDocument> GetRequestBuilder<TSender, TDocument>
+impl<TSender, TDocument> DocumentGetRequestBuilder<TSender, TDocument>
     where TSender: Sender
 {
     /** Set the type for the get request. */
@@ -148,11 +146,11 @@ impl<TSender, TDocument> GetRequestBuilder<TSender, TDocument>
 /**
 # Send synchronously
 */
-impl<TDocument> GetRequestBuilder<SyncSender, TDocument>
+impl<TDocument> DocumentGetRequestBuilder<SyncSender, TDocument>
     where TDocument: DeserializeOwned
 {
     /**
-    Send a `GetRequestBuilder` synchronously using a [`SyncClient`]().
+    Send a `DocumentGetRequestBuilder` synchronously using a [`SyncClient`]().
 
     This will block the current thread until a response arrives and is deserialised.
     */
@@ -168,11 +166,11 @@ impl<TDocument> GetRequestBuilder<SyncSender, TDocument>
 /**
 # Send asynchronously
 */
-impl<TDocument> GetRequestBuilder<AsyncSender, TDocument>
+impl<TDocument> DocumentGetRequestBuilder<AsyncSender, TDocument>
     where TDocument: DeserializeOwned + Send + 'static,
 {
     /**
-    Send a `GetRequestBuilder` asynchronously using an [`AsyncClient`]().
+    Send a `DocumentGetRequestBuilder` asynchronously using an [`AsyncClient`]().
     
     This will return a future that will resolve to the deserialised get document response.
     */
@@ -197,7 +195,7 @@ mod tests {
         let client = Client::new(RequestParams::new("http://eshost:9200")).unwrap();
 
         let req = client
-            .get_document::<Value>(index("test-idx"), id("1"))
+            .document_get::<Value>(index("test-idx"), id("1"))
             .req
             .into_request();
 
@@ -209,7 +207,7 @@ mod tests {
         let client = Client::new(RequestParams::new("http://eshost:9200")).unwrap();
 
         let req = client
-            .get_document::<Value>(index("test-idx"), id("1"))
+            .document_get::<Value>(index("test-idx"), id("1"))
             .ty("new-ty")
             .req
             .into_request();
