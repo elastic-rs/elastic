@@ -375,9 +375,7 @@ impl RequestParams {
         self
     }
 
-    /** 
-    Set a request header.
-    */
+    /** Set a request header. */
     pub fn header<H>(self, header: H) -> Self
         where H: Header + Clone
     {
@@ -407,6 +405,11 @@ impl RequestParams {
         }
 
         self
+    }
+
+    /** Get the base url. */
+    pub fn get_base_url(&self) -> &str {
+        &self.base_url
     }
 
     /** Create a new `Headers` structure, and thread it through the configuration functions. */
