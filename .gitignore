@@ -13,6 +13,7 @@ Cargo.lock
 # Visual Studio
 *.user
 *.suo
+.vscode
 
 /target/
 /obj/

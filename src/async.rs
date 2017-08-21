@@ -1,10 +1,11 @@
 /*! Asynchronous http client. */
 
+use std::mem;
 use std::ops::Deref;
 use bytes::Bytes;
 use serde::de::DeserializeOwned;
 use serde_json::Value;
-use reqwest::unstable::async::{Client, RequestBuilder, Response, Body};
+use reqwest::unstable::async::{Client, Decoder, RequestBuilder, Response, Body};
 use futures::{Future, Stream, IntoFuture};
 use tokio_core::reactor::Handle;
 
@@ -150,7 +151,8 @@ pub trait AsyncFromResponse<TResponse> {
 impl<TResponse: IsOk + DeserializeOwned + 'static> AsyncFromResponse<TResponse> for Parse<TResponse> {
     fn from_response(self, mut response: Response) -> Box<Future<Item = TResponse, Error = Error>> {
         let status: u16 = response.status().into();
-        let body_future = response.body().concat2()
+        let body_future = mem::replace(response.body_mut(), Decoder::empty())
+            .concat2()
             .map_err(Into::into);
 
         let de_future = body_future
