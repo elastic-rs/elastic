@@ -282,6 +282,8 @@ quick_error! {
             display("response error: {}", err)
             cause(err)   
         }
+        #[doc(hidden)]
+        __NonExhaustive
     }
 }
 
