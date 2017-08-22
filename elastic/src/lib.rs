@@ -290,7 +290,7 @@ pub mod types;
 pub mod prelude {
     /*! A glob import for convenience. */
 
-    pub use client::{SyncClientBuilder, AsyncClientBuilder, Client, RequestParams};
+    pub use client::{SyncClientBuilder, AsyncClientBuilder, SyncClient, AsyncClient, RequestParams};
     pub use client::requests::*;
     pub use client::responses::*;
     pub use types::prelude::*;

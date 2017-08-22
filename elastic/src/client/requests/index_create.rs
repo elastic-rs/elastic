@@ -191,22 +191,21 @@ mod tests {
 
     #[test]
     fn default_request() {
-        let client = Client::new(RequestParams::new("http://eshost:9200")).unwrap();
+        let client = SyncClientBuilder::new().build().unwrap();
 
-        let req = client.index_create(index("testindex")).req.into_request();
+        let req = client.index_create(index("testindex")).inner.into_request();
 
         assert_eq!("/testindex", req.url.as_ref());
     }
 
     #[test]
     fn specify_body() {
-        let client = Client::new(RequestParams::new("http://eshost:9200")).unwrap();
+        let client = SyncClientBuilder::new().build().unwrap();
 
         let req = client
             .index_create(index("testindex"))
             .body("{}")
-            .req
-            .into_request();
+            .inner.into_request();
 
         assert_eq!("{}", req.body);
     }

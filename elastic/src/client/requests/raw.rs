@@ -1,11 +1,7 @@
 use std::marker::PhantomData;
-use futures::Future;
-use elastic_reqwest::{SyncElasticClient, AsyncElasticClient};
 
-use error::{self, Result, Error};
-use client::{Client, Sender, SyncSender, AsyncSender};
+use client::{Client, Sender};
 use client::requests::{HttpRequest, RequestBuilder};
-use client::responses::{sync_response, async_response, SyncResponseBuilder, AsyncResponseBuilder};
 
 /**
 A raw request builder that can be configured before sending.
@@ -86,22 +82,23 @@ impl<TSender> Client<TSender>
     }
 }
 
-/**
-# Send synchronously
-*/
-impl<TRequest, TBody> RawRequestBuilder<SyncSender, TRequest, TBody>
-    where TRequest: Into<HttpRequest<'static, TBody>>, 
-          TBody: Into<<SyncSender as Sender>::Body>
+impl<TSender, TRequest, TBody> RawRequestBuilder<TSender, TRequest, TBody>
+    where TSender: Sender,
+          TRequest: Into<HttpRequest<'static, TBody>>, 
+          TBody: Into<<TSender>::Body>
 {
     /**
-    Send a `RawRequestBuilder` synchronously using a [`SyncClient`]().
+    Send a `RawRequestBuilder`.
 
-    This will block the current thread until a response arrives and is deserialised.
+    If this request is for a [`SyncClient`](), then `send` will block the current thread until a response arrives and is deserialised.
     The returned [`SyncResponseBuilder`][SyncResponseBuilder] can be used to parse the response.
+
+    If this request is for an [`AsyncClient`](), then `send` will return a future that will resolve to the deserialised index response.
+    The returned [`AsyncHttpResponse`][AsyncHttpResponse] can be used to parse the response.
 
     # Examples
 
-    Send a raw request and parse it to a concrete response type:
+    Send a raw request synchronously and parse it to a concrete response type:
 
     ```no_run
     # extern crate elastic;
@@ -110,42 +107,15 @@ impl<TRequest, TBody> RawRequestBuilder<SyncSender, TRequest, TBody>
     # use elastic::prelude::*;
     # fn main() {
     # fn get_req() -> PingRequest<'static> { PingRequest::new() }
-    # let client = ClientBuilder::new().build()?;
+    let client = SyncClientBuilder::new().build()?;
+
     let response = client.request(get_req())
                          .send()?
                          .into_response::<SearchResponse<Value>>()?;
     # }
     ```
 
-    [SyncResponseBuilder]: ../responses/struct.SyncResponseBuilder.html
-    */
-    pub fn send(self) -> Result<SyncResponseBuilder> {
-        let params = self.params.as_ref().unwrap_or(&self.client.params);
-        let req = self.inner.req;
-        let http = self.client.sender.http;
-
-        let res = http.elastic_req(params, req).map_err(|e| error::request(e))?;
-
-        Ok(sync_response(res))
-    }
-}
-
-/**
-# Send asynchronously
-*/
-impl<TRequest, TBody> RawRequestBuilder<AsyncSender, TRequest, TBody>
-    where TRequest: Into<HttpRequest<'static, TBody>>, 
-          TBody: Into<<AsyncSender as Sender>::Body>
-{
-    /**
-    Send a `RawRequestBuilder` asynchronously using a [`AsyncClient`]().
-
-    This will return a future that will resolve to the deserialised index response.
-    The returned [`AsyncHttpResponse`][AsyncHttpResponse] can be used to parse the response.
-
-    # Examples
-
-    Send a raw request and parse it to a concrete response type:
+    Send a raw request asynchronously and parse it to a concrete response type:
 
     ```no_run
     # extern crate elastic;
@@ -154,25 +124,23 @@ impl<TRequest, TBody> RawRequestBuilder<AsyncSender, TRequest, TBody>
     # use elastic::prelude::*;
     # fn main() {
     # fn get_req() -> PingRequest<'static> { PingRequest::new() }
-    # let client = ClientBuilder::new().build()?;
+    # let core = Core::new()?;
+    # let handle = core.handle();
+    let client = AsyncClientBuilder::new().build(handle)?;
+
     let response = client.request(get_req())
-                         .send()?
-                         .into_response::<SearchResponse<Value>>();
+                         .send()
+                         .and_then(|res| res.into_response::<SearchResponse<Value>>());
     # }
     ```
 
-    [AsyncHttpResponse]: ../responses/struct.AsyncHttpResponse.html
+    [SyncResponseBuilder]: ../responses/struct.SyncResponseBuilder.html
     */
-    pub fn send(self) -> Box<Future<Item = AsyncResponseBuilder, Error = Error>> {
-        let params = self.params.as_ref().unwrap_or(&self.client.params);
-        let req = self.inner.req;
-        let AsyncSender { http, de_pool } = self.client.sender;
+    pub fn send(self) -> TSender::Response {
+        let client = self.client;
+        let req = self.inner.req.into();
+        let params = self.params.as_ref().unwrap_or(&client.params);
 
-        let req_future = http
-            .elastic_req(params, req)
-            .map_err(|e| error::request(e))
-            .map(|res| async_response(res, de_pool));
-        
-        Box::new(req_future)
+        client.sender.send(req, params)
     }
 }

@@ -1,6 +1,7 @@
 use std::marker::PhantomData;
 use serde_json;
 use futures::{Future, IntoFuture};
+use futures_cpupool::CpuPool;
 use serde::Serialize;
 
 use error::{self, Result, Error};
@@ -92,10 +93,24 @@ impl<TSender> Client<TSender>
 impl<TDocument> DocumentPutMappingRequestInner<TDocument>
     where TDocument: DocumentType
 {
-    fn into_request(self) -> Result<IndicesPutMappingRequest<'static, Vec<u8>>> {
+    fn into_sync_request(self) -> Result<IndicesPutMappingRequest<'static, Vec<u8>>> {
         let body = serde_json::to_vec(&IndexDocumentMapping::from(TDocument::mapping())).map_err(|e| error::request(e))?;
 
         Ok(IndicesPutMappingRequest::for_index_ty(self.index, self.ty, body))
+    }
+}
+
+impl<TDocument> DocumentPutMappingRequestInner<TDocument>
+    where TDocument: DocumentType + Send + 'static
+{
+    fn into_async_request(self, ser_pool: Option<CpuPool>) -> Box<Future<Item = IndicesPutMappingRequest<'static, Vec<u8>>, Error = Error>> {
+        if let Some(ser_pool) = ser_pool {
+            let request_future = ser_pool.spawn_fn(|| self.into_sync_request());
+
+            Box::new(request_future)
+        } else {
+            Box::new(self.into_sync_request().into_future())
+        }
     }
 }
 
@@ -128,7 +143,7 @@ impl<TDocument> DocumentPutMappingRequestBuilder<SyncSender, TDocument>
     This will block the current thread until a response arrives and is deserialised.
     */
     pub fn send(self) -> Result<CommandResponse> {
-        let req = self.inner.into_request()?;
+        let req = self.inner.into_sync_request()?;
 
         RequestBuilder::new(self.client, self.params, RawRequestInner::new(req))
             .send()?
@@ -140,7 +155,7 @@ impl<TDocument> DocumentPutMappingRequestBuilder<SyncSender, TDocument>
 # Send asynchronously
 */
 impl<TDocument> DocumentPutMappingRequestBuilder<AsyncSender, TDocument>
-    where TDocument: DocumentType + 'static
+    where TDocument: DocumentType + Send + 'static
 {
     /**
     Send a `DocumentPutMappingRequestBuilder` asynchronously using an [`AsyncClient`]().
@@ -150,7 +165,8 @@ impl<TDocument> DocumentPutMappingRequestBuilder<AsyncSender, TDocument>
     pub fn send(self) -> Box<Future<Item = CommandResponse, Error = Error>> {
         let (client, params) = (self.client, self.params);
 
-        let req_future = self.inner.into_request().into_future();
+        let ser_pool = client.sender.serde_pool.clone();
+        let req_future = self.inner.into_async_request(ser_pool);
 
         let res_future = req_future.and_then(move |req| {
             RequestBuilder::new(client, params, RawRequestInner::new(req))
@@ -169,12 +185,11 @@ mod tests {
 
     #[test]
     fn default_request() {
-        let client = Client::new(RequestParams::new("http://eshost:9200")).unwrap();
+        let client = SyncClientBuilder::new().build().unwrap();
 
         let req = client
             .document_put_mapping::<Value>(index("test-idx"))
-            .req
-            .into_request()
+            .inner.into_sync_request()
             .unwrap();
 
         assert_eq!("/test-idx/_mappings/value", req.url.as_ref());
@@ -183,13 +198,12 @@ mod tests {
 
     #[test]
     fn specify_ty() {
-        let client = Client::new(RequestParams::new("http://eshost:9200")).unwrap();
+        let client = SyncClientBuilder::new().build().unwrap();
 
         let req = client
             .document_put_mapping::<Value>(index("test-idx"))
             .ty("new-ty")
-            .req
-            .into_request()
+            .inner.into_sync_request()
             .unwrap();
 
         assert_eq!("/test-idx/_mappings/new-ty", req.url.as_ref());

@@ -192,25 +192,23 @@ mod tests {
 
     #[test]
     fn default_request() {
-        let client = Client::new(RequestParams::new("http://eshost:9200")).unwrap();
+        let client = SyncClientBuilder::new().build().unwrap();
 
         let req = client
             .document_get::<Value>(index("test-idx"), id("1"))
-            .req
-            .into_request();
+            .inner.into_request();
 
         assert_eq!("/test-idx/value/1", req.url.as_ref());
     }
 
     #[test]
     fn specify_ty() {
-        let client = Client::new(RequestParams::new("http://eshost:9200")).unwrap();
+        let client = SyncClientBuilder::new().build().unwrap();
 
         let req = client
             .document_get::<Value>(index("test-idx"), id("1"))
             .ty("new-ty")
-            .req
-            .into_request();
+            .inner.into_request();
 
         assert_eq!("/test-idx/new-ty/1", req.url.as_ref());
     }

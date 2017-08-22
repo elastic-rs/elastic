@@ -13,14 +13,17 @@ use elastic::prelude::*;
 fn main() {
     // A reqwest HTTP client and default parameters.
     // The `params` includes the base node url (http://localhost:9200).
-    let params = RequestParams::default().url_param("pretty", true);
-    let client = Client::new(params).unwrap();
+    let client = SyncClientBuilder::new()
+        .params(|p| p.url_param("pretty", true))
+        .build()?;
 
     // A search request from the body.
     let req = SearchRequest::for_index("_all", r#"{ "query": { "match_all": {} } }"#);
 
     // Send the request and process the response.
-    let mut res = client.request(req).send().and_then(into_raw).unwrap();
+    let mut res = client.request(req)
+                        .send()?
+                        .into_raw()?;
 
     // Check if the response is in the 200 range
     match res.status() {
@@ -30,7 +33,7 @@ fn main() {
 
     // Read the response body to a string
     let mut body = String::new();
-    res.read_to_string(&mut body).unwrap();
+    res.read_to_string(&mut body)?;
 
     println!("{}", body);
 }

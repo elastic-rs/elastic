@@ -18,9 +18,8 @@ fn main() {
     // Execute a bulk request
     let bulk = client
         .request(BulkRequest::new(bulk_body()))
-        .send()
-        .and_then(|res| res.into_response::<BulkResponse>())
-        .unwrap();
+        .send()?
+        .into_response::<BulkResponse>()?;
 
     for op in bulk {
         match op {

@@ -11,8 +11,6 @@
 //! - Search the index and iterate over hits
 
 #[macro_use]
-extern crate json_str;
-#[macro_use]
 extern crate elastic_derive;
 #[macro_use]
 extern crate serde_derive;
@@ -31,8 +29,10 @@ struct MyType {
 }
 
 fn main() {
+    let mut core = Core::new()?;
+
     // A HTTP client and request parameters
-    let client = SyncClientBuilder::new().build()?;
+    let client = AsyncClientBuilder::new().build(&core.handle())?;
 
     // Create a document to index
     let doc = MyType {
@@ -42,12 +42,18 @@ fn main() {
     };
 
     // Check if the doc exists and index if it doesn't
-    ensure_indexed(&client, doc)?;
+    let index_future = ensure_indexed(&client, doc);
 
     // Do a search request
-    let res = search(&client, "title")?;
+    let search_future = index_future.and_then(|| search(&client, "title"));
 
-    println!("{:?}", res);
+    let res_future = search_future.and_then(|res| {
+        println!("{:?}", res);
+
+        Ok(())
+    });
+
+    core.run(res_future)?;
 }
 
 fn sample_index() -> Index<'static> {
@@ -61,7 +67,7 @@ fn ensure_indexed(client: &Client, doc: MyType) {
 
     match get_res.map(|res| res.into_document()) {
         // The doc was found: no need to index
-        Ok(Some(doc)}) => {
+        Ok(Some(doc)) => {
             println!("document already indexed: {:?}", doc);
         }
         // The index exists, but the doc wasn't found: map and index

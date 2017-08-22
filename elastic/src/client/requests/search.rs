@@ -291,40 +291,39 @@ mod tests {
 
     #[test]
     fn default_request() {
-        let client = Client::new(RequestParams::new("http://eshost:9200")).unwrap();
+        let client = SyncClientBuilder::new().build().unwrap();
 
-        let req = client.search::<Value>().req.into_request();
+        let req = client.search::<Value>().inner.into_request();
 
         assert_eq!("/_all/_search", req.url.as_ref());
     }
 
     #[test]
     fn specify_index() {
-        let client = Client::new(RequestParams::new("http://eshost:9200")).unwrap();
+        let client = SyncClientBuilder::new().build().unwrap();
 
-        let req = client.search::<Value>().index("new-idx").req.into_request();
+        let req = client.search::<Value>().index("new-idx").inner.into_request();
 
         assert_eq!("/new-idx/_search", req.url.as_ref());
     }
 
     #[test]
     fn specify_ty() {
-        let client = Client::new(RequestParams::new("http://eshost:9200")).unwrap();
+        let client = SyncClientBuilder::new().build().unwrap();
 
         let req = client
             .search::<Value>()
             .ty(Some("new-ty"))
-            .req
-            .into_request();
+            .inner.into_request();
 
         assert_eq!("/_all/new-ty/_search", req.url.as_ref());
     }
 
     #[test]
     fn specify_body() {
-        let client = Client::new(RequestParams::new("http://eshost:9200")).unwrap();
+        let client = SyncClientBuilder::new().build().unwrap();
 
-        let req = client.search::<Value>().body("{}").req.into_request();
+        let req = client.search::<Value>().body("{}").inner.into_request();
 
         assert_eq!("{}", req.body);
     }

@@ -19,13 +19,13 @@ nightly = ["elastic_reqwest/nightly"]
 error-chain = "0.11.0-rc.2"
 serde = "~1"
 serde_json = "~1"
-reqwest = { version = "*", git = "https://github.com/KodrAus/reqwest.git", branch = "feat/async-decoder", features = ["unstable"] }
+reqwest = { version = "*", git = "https://github.com/seanmonstar/reqwest.git", features = ["unstable"] }
 futures = "*"
 tokio-core = "*"
 tokio-io = "*"
 futures-cpupool = "*"
 
-elastic_reqwest = { version = "*", git = "https://github.com/elastic-rs/elastic-reqwest.git", branch = "feat/async" }
+elastic_reqwest = { version = "*", git = "https://github.com/elastic-rs/elastic-reqwest.git" }
 elastic_types = "~0.19.0"
 
 [dev-dependencies]

@@ -16,10 +16,10 @@ use tokio_core::reactor::Core;
 use elastic::prelude::*;
 
 fn main() {
-    let mut core = Core::new().unwrap();
+    let mut core = Core::new()?;
 
     // A HTTP client and request parameters
-    let client = AsyncClientBuilder::new().build(&core.handle()).unwrap();
+    let client = AsyncClientBuilder::new().build(&core.handle())?;
 
     // Execute a bulk request
     let res_future = client
@@ -38,7 +38,7 @@ fn main() {
         Ok(())
     });
 
-    core.run(bulk_future).unwrap();
+    core.run(bulk_future)?;
 }
 
 fn bulk_body() -> String {

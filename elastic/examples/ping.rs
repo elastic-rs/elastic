@@ -8,14 +8,13 @@ use elastic::prelude::*;
 
 fn main() {
     // A HTTP client and request parameters
-    let client = ClientBuilder::new().build().unwrap();
+    let client = SyncClientBuilder::new().build()?;
 
     // Ping the cluster
-    let ping: PingResponse = client
+    let ping = client
         .request(PingRequest::new())
-        .send()
-        .and_then(into_response)
-        .unwrap();
+        .send()?
+        .into_response::<PingResponse>()?;
 
     println!("{:?}", ping);
 }

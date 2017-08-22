@@ -24,7 +24,7 @@ struct MyType {
 
 fn main() {
     // A HTTP client and request parameters
-    let client = ClientBuilder::new().build().unwrap();
+    let client = SyncClientBuilder::new().build()?;
 
     // Create a document to index
     let doc = MyType {
@@ -34,16 +34,15 @@ fn main() {
     };
 
     // Create the index
-    client.create_index(sample_index()).send().unwrap();
+    client.create_index(sample_index()).send()?;
 
     // Add the document mapping (optional, but makes sure `timestamp` is mapped as a `date`)
-    client.put_mapping::<MyType>(sample_index()).send().unwrap();
+    client.put_mapping::<MyType>(sample_index()).send()?;
 
     // Index the document
     client
         .index_document(sample_index(), id(doc.id), doc)
-        .send()
-        .unwrap();
+        .send()?;
 }
 
 fn sample_index() -> Index<'static> {

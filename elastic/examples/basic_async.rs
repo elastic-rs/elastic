@@ -13,12 +13,16 @@ use serde_json::Value;
 use elastic::prelude::*;
 
 fn main() {
+    let mut core = Core::new()?;
+    let pool = CpuPool::new(4)?;
+
     // A reqwest HTTP client and default parameters.
     // The `params` includes the base node url (http://localhost:9200).
-    let client = SyncClientBuilder::new().build()?;
+    // We also specify a cpu pool for deserialising responses on.
+    let client = AsyncClientBuilder::new().de_pool(pool).build(&core.handle())?;
 
     // Send the request and process the response.
-    let res = client
+    let res_future = client
         .search::<Value>()
         .index("_all")
         .body(json!({
@@ -28,12 +32,17 @@ fn main() {
                 }
             }
         }))
-        .send()?;
+        .send()
+        .and_then(|res| res.into_response::<BulkResponse>());
 
-    // Iterate through the hits in the response.
-    for hit in res.hits() {
-        println!("{:?}", hit);
-    }
+    let search_future = res_future.and_then(|res| {
+        // Iterate through the hits in the response.
+        for hit in res.hits() {
+            println!("{:?}", hit);
+        }
 
-    println!("{:?}", res);
+        Ok(())
+    });
+
+    core.run(search_future)?;
 }

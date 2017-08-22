@@ -117,7 +117,7 @@ impl<TRequest> RequestBuilder<AsyncSender, TRequest> {
     # fn get_req() -> PingRequest<'static> { PingRequest::new() }
     let pool = CpuPool::new(4)?;
     let builder = client.request(get_req())
-                        .de_pool(pool.clone());
+                        .serde_pool(pool.clone());
     ```
     
     Never deserialise the response on a thread pool:
@@ -127,13 +127,13 @@ impl<TRequest> RequestBuilder<AsyncSender, TRequest> {
     # let client = AsyncClientBuilder::new().build()?;
     # fn get_req() -> PingRequest<'static> { PingRequest::new() }
     let builder = client.request(get_req())
-                        .de_pool(None);
+                        .serde_pool(None);
     ```
     */
-    pub fn de_pool<P>(mut self, pool: P) -> Self
+    pub fn serde_pool<P>(mut self, pool: P) -> Self
         where P: Into<Option<CpuPool>>
     {
-        self.client.sender.de_pool = pool.into();
+        self.client.sender.serde_pool = pool.into();
 
         self
     }
@@ -141,13 +141,13 @@ impl<TRequest> RequestBuilder<AsyncSender, TRequest> {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use prelude::*;
 
     #[test]
     fn request_builder_params() {
-        let client = Client::new(RequestParams::new("http://eshost:9200")).unwrap();
+        let client = SyncClientBuilder::new().base_url("http://eshost:9200").build().unwrap();
 
-        let req = RequestBuilder::new(&client, None, PingRequest::new())
+        let req = RequestBuilder::new(client.clone(), None, PingRequest::new())
             .params(|p| p.url_param("pretty", true))
             .params(|p| p.url_param("refresh", true));
 
@@ -155,7 +155,7 @@ mod tests {
 
         let (_, query) = params.get_url_qry();
 
-        assert_eq!("http://eshost:9200", &params.base_url);
+        assert_eq!("http://eshost:9200", params.get_base_url());
         assert_eq!("?pretty=true&refresh=true", query.unwrap());
     }
 }

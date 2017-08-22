@@ -1,5 +1,6 @@
 use serde_json;
 use futures::{Future, IntoFuture};
+use futures_cpupool::CpuPool;
 use serde::Serialize;
 
 use error::{self, Result, Error};
@@ -106,10 +107,24 @@ impl<TSender> Client<TSender>
 impl<TDocument> DocumentIndexRequestInner<TDocument>
     where TDocument: Serialize
 {
-    fn into_request(self) -> Result<IndexRequest<'static, Vec<u8>>> {
+    fn into_sync_request(self) -> Result<IndexRequest<'static, Vec<u8>>> {
         let body = serde_json::to_vec(&self.doc).map_err(|e| error::request(e))?;
 
         Ok(IndexRequest::for_index_ty_id(self.index, self.ty, self.id, body))
+    }
+}
+
+impl<TDocument> DocumentIndexRequestInner<TDocument>
+    where TDocument: Serialize + Send + 'static
+{
+    fn into_async_request(self, ser_pool: Option<CpuPool>) -> Box<Future<Item = IndexRequest<'static, Vec<u8>>, Error = Error>> {
+        if let Some(ser_pool) = ser_pool {
+            let request_future = ser_pool.spawn_fn(|| self.into_sync_request());
+
+            Box::new(request_future)
+        } else {
+            Box::new(self.into_sync_request().into_future())
+        }
     }
 }
 
@@ -142,7 +157,7 @@ impl<TDocument> DocumentIndexRequestBuilder<SyncSender, TDocument>
     This will block the current thread until a response arrives and is deserialised.
     */
     pub fn send(self) -> Result<IndexResponse> {
-        let req = self.inner.into_request()?;
+        let req = self.inner.into_sync_request()?;
 
         RequestBuilder::new(self.client, self.params, RawRequestInner::new(req))
             .send()?
@@ -164,7 +179,8 @@ impl<TDocument> DocumentIndexRequestBuilder<AsyncSender, TDocument>
     pub fn send(self) -> Box<Future<Item = IndexResponse, Error = Error>> {
         let (client, params) = (self.client, self.params);
 
-        let req_future = self.inner.into_request().into_future();
+        let ser_pool = client.sender.serde_pool.clone();
+        let req_future = self.inner.into_async_request(ser_pool);
 
         let res_future = req_future.and_then(move |req| {
             RequestBuilder::new(client, params, RawRequestInner::new(req))
@@ -183,12 +199,11 @@ mod tests {
 
     #[test]
     fn default_request() {
-        let client = Client::new(RequestParams::new("http://eshost:9200")).unwrap();
+        let client = SyncClientBuilder::new().build().unwrap();
 
         let req = client
             .document_index(index("test-idx"), id("1"), Value::Null)
-            .req
-            .into_request()
+            .inner.into_sync_request()
             .unwrap();
 
         assert_eq!("/test-idx/value/1", req.url.as_ref());
@@ -197,13 +212,12 @@ mod tests {
 
     #[test]
     fn specify_ty() {
-        let client = Client::new(RequestParams::new("http://eshost:9200")).unwrap();
+        let client = SyncClientBuilder::new().build().unwrap();
 
         let req = client
             .document_index(index("test-idx"), id("1"), Value::Null)
             .ty("new-ty")
-            .req
-            .into_request()
+            .inner.into_sync_request()
             .unwrap();
 
         assert_eq!("/test-idx/new-ty/1", req.url.as_ref());
@@ -211,13 +225,12 @@ mod tests {
 
     #[test]
     fn document_borrow() {
-        let client = Client::new(RequestParams::new("http://eshost:9200")).unwrap();
+        let client = SyncClientBuilder::new().build().unwrap();
 
         let doc = Value::Null;
         let req = client
             .document_index(index("test-idx"), id("1"), &doc)
-            .req
-            .into_request()
+            .inner.into_sync_request()
             .unwrap();
 
         assert_eq!("/test-idx/value/1", req.url.as_ref());

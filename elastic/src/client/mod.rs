@@ -10,9 +10,6 @@ This module contains the HTTP client, as well as request and response types.
 - [`SyncClient`]() for making synchronous requests
 - [`AsyncClient`]() for making asynchronous requests using  the [`futures`]() crate.
 
-To be precise, `elastic` actually offers only one client, `Client<TSender>`, that is generic over the kind of requests it can send.
-This makes it possible to share methods on request builders, but can make the method signatures more difficult to follow.
-
 ## Building a synchronous client
 
 Use a [`SyncClientBuilder`]() to configure a synchronous client.
@@ -188,15 +185,15 @@ Each request type expects its parameters upfront and is generic over the request
 A raw search request:
 
 ```no_run
-# #[macro_use] extern crate json_str;
+# #[macro_use] extern crate serde_json;
 # extern crate elastic;
 # use elastic::prelude::*;
 # fn main() {
 let req = {
-    let body = json_str!({
-        query: {
-            query_string: {
-                query: "*"
+    let body = json!({
+        "query": {
+            "query_string": {
+                "query": "*"
             }
         }
     });
@@ -436,27 +433,39 @@ For more details see the [`responses`][responses-mod] module.
 pub mod requests;
 pub mod responses;
 
+use futures::Future;
 use futures_cpupool::CpuPool;
 use tokio_core::reactor::Handle;
-use elastic_reqwest::{SyncBody, AsyncBody};
+use elastic_reqwest::{SyncBody, AsyncBody, SyncElasticClient, AsyncElasticClient};
 use reqwest::Client as SyncHttpClient;
 use reqwest::unstable::async::Client as AsyncHttpClient;
 
-use error::{self, Result};
+use self::requests::HttpRequest;
+use self::responses::{sync_response, async_response, SyncResponseBuilder, AsyncResponseBuilder};
+use error::{self, Error, Result};
 
 pub use elastic_reqwest::RequestParams;
+
+mod private {
+    pub trait Sealed {}
+}
 
 /**
 Represents a type that can send a request.
 
-This trait has two implementations:
-
-- `SyncSender` for sending synchronous requests
-- `AsyncSender` for sending asynchronous requests
+You probably don't need to touch this trait directly.
+See the [`Client`]() type for making requests.
 */
-pub trait Sender: Clone {
-    #[doc(hidden)]
+pub trait Sender: private::Sealed + Clone {
+    /// The kind of request body this sender accepts.
     type Body;
+    /// The kind of response this sender produces.
+    type Response;
+
+    /// Send a request.
+    fn send<TRequest, TBody>(&self, req: TRequest, params: &RequestParams) -> Self::Response
+        where TRequest: Into<HttpRequest<'static, TBody>>,
+              TBody: Into<Self::Body>;
 }
 
 /** A synchronous request sender. */
@@ -465,13 +474,23 @@ pub struct SyncSender {
     http: SyncHttpClient
 }
 
+impl private::Sealed for SyncSender {}
+
 impl Sender for SyncSender {
     type Body = SyncBody;
+    type Response = Result<SyncResponseBuilder>;
+
+    fn send<TRequest, TBody>(&self, req: TRequest, params: &RequestParams) -> Self::Response
+        where TRequest: Into<HttpRequest<'static, TBody>>,
+              TBody: Into<Self::Body>
+    {
+        let res = self.http.elastic_req(params, req).map_err(|e| error::request(e))?;
+
+        Ok(sync_response(res))
+    }
 }
 
-/**
-A builder for a client.
-*/
+/** A builder for a syncronous client. */
 pub struct SyncClientBuilder {
     http: Option<SyncHttpClient>,
     params: RequestParams
@@ -568,7 +587,7 @@ impl SyncClientBuilder {
     }
 
     /** 
-    Construct a [`Client`][Client] from this builder. 
+    Construct a [`SyncClient`][SyncClient] from this builder. 
 
     [Client]: struct.Client.html
     */
@@ -590,19 +609,34 @@ impl SyncClientBuilder {
 #[derive(Clone)]
 pub struct AsyncSender {
     http: AsyncHttpClient,
-    de_pool: Option<CpuPool>
+    serde_pool: Option<CpuPool>
 }
+
+impl private::Sealed for AsyncSender {}
 
 impl Sender for AsyncSender {
     type Body = AsyncBody;
+    type Response = Box<Future<Item = AsyncResponseBuilder, Error = Error>>;
+
+    fn send<TRequest, TBody>(&self, req: TRequest, params: &RequestParams) -> Self::Response
+        where TRequest: Into<HttpRequest<'static, TBody>>,
+              TBody: Into<Self::Body>
+    {
+        let serde_pool = self.serde_pool.clone();
+
+        let req_future = self.http
+            .elastic_req(params, req)
+            .map_err(|e| error::request(e))
+            .map(|res| async_response(res, serde_pool));
+        
+        Box::new(req_future)
+    }
 }
 
-/**
-A builder for a client.
-*/
+/** A builder for an asynchronous client. */
 pub struct AsyncClientBuilder {
     http: Option<AsyncHttpClient>,
-    de_pool: Option<CpuPool>,
+    serde_pool: Option<CpuPool>,
     params: RequestParams
 }
 
@@ -620,7 +654,7 @@ impl AsyncClientBuilder {
     pub fn new() -> Self {
         AsyncClientBuilder {
             http: None,
-            de_pool: None,
+            serde_pool: None,
             params: RequestParams::default()
         }
     }
@@ -692,25 +726,25 @@ impl AsyncClientBuilder {
     }
 
     /** 
-    Use the given `CpuPool` for deserialising responses.
+    Use the given `CpuPool` for serialising and deserialising responses.
 
-    If the pool is `None` then responses will be deserialised on the same thread as the io `Core`.
+    If the pool is `None` then responses will be serialised and deserialised on the same thread as the io `Core`.
 
     # Examples
 
-    Use a cpu pool to deserialise responses:
+    Use a cpu pool to serialise and deserialise responses:
 
     ```
     let pool = CpuPool::new(4)?;
 
     let builder = AsyncClientBuilder::new()
-        .de_pool(pool);
+        .serde_pool(pool);
     ```
     */
-    pub fn de_pool<P>(mut self, de_pool: P) -> Self 
+    pub fn serde_pool<P>(mut self, serde_pool: P) -> Self 
         where P: Into<Option<CpuPool>>
     {
-        self.de_pool = de_pool.into();
+        self.serde_pool = serde_pool.into();
 
         self
     }
@@ -723,7 +757,7 @@ impl AsyncClientBuilder {
     }
 
     /** 
-    Construct a [`Client`][Client] from this builder. 
+    Construct an [`AsyncClient`][AsyncClient] from this builder. 
 
     [Client]: struct.Client.html
     */
@@ -735,7 +769,7 @@ impl AsyncClientBuilder {
         Ok(AsyncClient {
             sender: AsyncSender {
                 http: http,
-                de_pool: self.de_pool,
+                serde_pool: self.serde_pool,
             },
             params: self.params,
         })
@@ -746,19 +780,34 @@ impl AsyncClientBuilder {
 A HTTP client for the Elasticsearch REST API.
 
 The `Client` is a structure that lets you create and send [`RequestBuilder`][RequestBuilder]s.
-It's mostly a thin wrapper over a `reqwest::Client` and is re-usable.
+`Client` is generic over a `Sender`, but rather than use `Client` directly, use one of:
+
+- [`SyncClient`]()
+- [`AsyncClient`]()
 
 # Examples
 
-Create a `Client` for an Elasticsearch node at `es_host:9200`:
+Create a synchronous `Client` and send a ping request:
 
-```no_run
-# use elastic::prelude::*;
-let params = RequestParams::new("http://es_host:9200").url_param("pretty", true);
+```
+let client = SyncClientBuilder::new().build()?;
 
-let client = Client::new(params)?;
+let response = client.request(PingRequest::new())
+                     .send()?
+                     .into_response::<PingResponse>()?;
+```
 
-[RequestBuilder]: requests/index.html
+Create an asynchronous `Client` and send a ping request:
+
+```
+let mut core = Core::new()?;
+let client = AsyncClientBuilder::new().build(&core.handle())?;
+
+let response_future = client.request(PingRequest::new())
+                            .send()
+                            .and_then(|res| res.into_response::<PingResponse>());
+
+core.run(response_future)?;
 ```
 */
 #[derive(Clone)]
@@ -767,8 +816,39 @@ pub struct Client<TSender> {
     params: RequestParams,
 }
 
-/// A synchronous Elasticsearch client.
+/** 
+A synchronous Elasticsearch client.
+ 
+# Examples
+
+Create a synchronous `Client` and send a ping request:
+
+```
+let client = SyncClientBuilder::new().build()?;
+
+let response = client.request(PingRequest::new())
+                     .send()?
+                     .into_response::<PingResponse>()?;
+```
+*/
 pub type SyncClient = Client<SyncSender>;
 
-/// An asynchronous Elasticsearch client.
+/** 
+An asynchronous Elasticsearch client.
+
+# Examples
+
+Create an asynchronous `Client` and send a ping request:
+
+```
+let mut core = Core::new()?;
+let client = AsyncClientBuilder::new().build(&core.handle())?;
+
+let response_future = client.request(PingRequest::new())
+                            .send()
+                            .and_then(|res| res.into_response::<PingResponse>());
+
+core.run(response_future)?;
+```
+*/
 pub type AsyncClient = Client<AsyncSender>;

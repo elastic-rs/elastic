@@ -1,5 +1,5 @@
 [package]
-name = "async-sample"
+name = "async-raw-sample"
 version = "0.1.0"
 authors = ["Ashley Mannix <ashleymannix@live.com.au>"]
 
