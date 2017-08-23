@@ -30,14 +30,17 @@ fn main() {
     let client = build_client::call(&core.handle(), run).unwrap();
 
     // Build and start a container to run tests against
-    build_container::call(run).unwrap();
+    build_container::start(run).unwrap();
 
     // Wait until the container is ready
-    core.run(wait_until_ready::call(client.clone())).unwrap();
+    core.run(wait_until_ready::call(client.clone(), 60)).unwrap();
 
     // Run the integration tests
-    let results = core.run(run_tests::call(client)).unwrap();
+    let results = core.run(run_tests::call(client, 8)).unwrap();
     let failed: Vec<_> = results.iter().filter(|success| **success == false).collect();
+
+    // Kill the container
+    build_container::kill(run).unwrap();
 
     if failed.len() > 0 {
         println!("{}", Red.bold().paint(format!("{} of {} tests failed", failed.len(), results.len())));

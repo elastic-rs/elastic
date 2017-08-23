@@ -10,6 +10,9 @@ pub struct NoIndex;
 impl IntegrationTest for NoIndex {
     type Response = SearchResponse<Value>;
 
+    fn kind() -> &'static str { "search" }
+    fn name() -> &'static str { "no_index" }
+
     // Ensure the index doesn't exist
     fn prepare(&self, client: AsyncClient) -> Box<Future<Item = (), Error = Error>> {
         let req = client.request(IndicesDeleteRequest::for_index("no_index_idx"))

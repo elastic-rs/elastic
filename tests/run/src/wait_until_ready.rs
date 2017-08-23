@@ -5,29 +5,40 @@ use futures::{stream, Future, Stream};
 use elastic::prelude::*;
 use elastic::error::Error;
 
-pub fn call(client: AsyncClient) -> Box<Future<Item = (), Error = Box<StdError>>> {
-    println!("waiting until the cluster is ready...");
+#[derive(Clone)]
+struct Ping {
+    client: AsyncClient,
+}
 
-    let timer = Timer::default();
-    let stream = stream::unfold((), move |_| {
-        let request = client.request(PingRequest::new()).send().map_err(|e| e.into());
+impl Ping {
+    fn is_not_ready(&self) -> Box<Future<Item = bool, Error = Box<StdError>>> {
+        let request = self.client.request(PingRequest::new()).send().map_err(|e| e.into());
 
-        let map_result = request.then(|res: Result<AsyncResponseBuilder, Error>| match res {
-            Ok(_) => Ok((true, ())),
-            _ => Ok((false, ()))
+        let check = request.then(|res: Result<AsyncResponseBuilder, Error>| match res {
+            Ok(_) => Ok(false),
+            _ => Ok(true)
         });
 
-        Some(map_result)
-    });
+        Box::new(check)
+    }
+}
 
-    let wait = timer.interval(Duration::from_secs(10));
+pub fn call(client: AsyncClient, timeout_secs: u64) -> Box<Future<Item = (), Error = Box<StdError>>> {
+    println!("waiting up to {}s until the cluster is ready...", timeout_secs);
+
+    let timer = Timer::default();
+    let stream = stream::repeat(Ping { client: client });
+
+    let wait = timer.interval(Duration::from_secs(10)).from_err();
 
     let poll = stream
+        .take_while(|ping| ping.is_not_ready())
         .zip(wait)
-        .take_while(|&(r, ())| Ok(!r))
-        .into_future()
-        .map(|_| ())
-        .map_err(|(e, _)| e.into());
+        .collect();
 
-    Box::new(timer.timeout(poll, Duration::from_secs(60)))
+    let poll_or_timeout = timer
+        .timeout(poll, Duration::from_secs(timeout_secs))
+        .map(|_| ());
+
+    Box::new(poll_or_timeout)
 }
