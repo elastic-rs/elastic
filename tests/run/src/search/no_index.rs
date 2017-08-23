@@ -10,6 +10,7 @@ pub struct NoIndex;
 impl IntegrationTest for NoIndex {
     type Response = SearchResponse<Value>;
 
+    // Ensure the index doesn't exist
     fn prepare(&self, client: AsyncClient) -> Box<Future<Item = (), Error = Error>> {
         let req = client.request(IndicesDeleteRequest::for_index("no_index_idx"))
                         .send()
@@ -18,6 +19,7 @@ impl IntegrationTest for NoIndex {
         Box::new(req)
     }
 
+    // Execute a search request against that index
     fn request(&self, client: AsyncClient) -> Box<Future<Item = Self::Response, Error = Error>> {
         client.search()
               .index("no_index_idx")
@@ -25,6 +27,7 @@ impl IntegrationTest for NoIndex {
               .send()
     }
 
+    // Ensure an `IndexNotFound` error is returned
     fn assert_err(&self, err: &Error) -> bool {
         match *err {
             Error::Api(ApiError::IndexNotFound { .. }) => true,

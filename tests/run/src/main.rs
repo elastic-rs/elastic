@@ -1,3 +1,12 @@
+/*!
+# Integration tests
+
+This crate is intended to provide a suite of integration tests that are run against an Elasticsearch cluster.
+They should ensure that `elastic` behaves as expected when making requests, indexing documents, putting mapping etc.
+They should also provide a way to inspect how the client behaves under load and where memory is being allocated.
+*/
+
+extern crate term_painter;
 extern crate futures;
 extern crate tokio_core;
 #[macro_use]
@@ -9,7 +18,11 @@ extern crate elastic;
 #[macro_use]
 extern crate elastic_derive;
 
+use std::process;
 use std::fmt::Debug;
+
+use term_painter::ToStyle;
+use term_painter::Color::*;
 use futures::{Future, IntoFuture};
 use serde_json::Value;
 use elastic::prelude::*;
@@ -47,7 +60,7 @@ fn run_test<T>(client: AsyncClient, test: T) -> Box<Future<Item = bool, Error = 
         .then(move |prep| {
             match prep {
                 Err(ref e) if !test.prepare_err(e) => {
-                    println!("{:?}: prepare failwhale: {:?}", test, e);
+                    println!("{} {:?}", Red.bold().paint(format!("{:?}: prepare failed:", test)), e);
                     Err(())
                 },
                 _ => Ok(test)
@@ -58,21 +71,26 @@ fn run_test<T>(client: AsyncClient, test: T) -> Box<Future<Item = bool, Error = 
                 .then(move |res| {
                     match res {
                         Ok(ref res) if !test.assert_ok(res) => {
-                            println!("{:?}: unexpected response failwhale: {:?}", test, res);
-                            Ok(false)
+                            println!("{} {:?}", Red.bold().paint(format!("{:?}: unexpected response:", test)), res);
+                            Err(())
                         },
                         Err(ref e) if !test.assert_err(e) => {
-                            println!("{:?}: unexpected error failwhale: {:?}", test, e);
-                            Ok(false)
+                            println!("{} {:?}", Red.bold().paint(format!("{:?}: unexpected error:", test)), e);
+                            Err(())
                         },
                         _ => {
-                            println!("{:?}: ok", test);
+                            println!("{}", Green.paint(format!("{:?}: ok", test)));
                             Ok(true)
                         }
                     }
                 })
         })
-        .map_err(|e| ());
+        .then(|outcome| {
+            match outcome {
+                Err(_) => Ok(false),
+                outcome => outcome
+            }
+        });
 
     Box::new(fut)
 }
@@ -87,5 +105,14 @@ fn main() {
 
     let tests = futures::future::join_all(search_tests);
 
-    core.run(tests).unwrap();
+    let results = core.run(tests).unwrap();
+    let failed: Vec<_> = results.iter().filter(|success| **success == false).collect();
+
+    if failed.len() > 0 {
+        println!("{}", Red.bold().paint(format!("{} of {} tests failed", failed.len(), results.len())));
+        process::exit(1);
+    } else {
+        println!("{}", Green.paint(format!("all {} tests passed", results.len())));
+        process::exit(0);
+    }
 }
