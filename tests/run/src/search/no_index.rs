@@ -2,7 +2,7 @@ use serde_json::Value;
 use futures::Future;
 use elastic::prelude::*;
 use elastic::error::{Error, ApiError};
-use ::IntegrationTest;
+use run_tests::IntegrationTest;
 
 #[derive(Debug, Clone, Copy)]
 pub struct NoIndex;
