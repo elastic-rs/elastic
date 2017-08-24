@@ -2,9 +2,8 @@ use std::io::{Result as IoResult, Error as IoError};
 use std::fs::File;
 use std::path::Path;
 use ops::Client;
-use elastic::client::into_response;
-use elastic::client::requests::{IntoBody, BulkRequest};
-use elastic::client::responses::{BulkErrorsResponse, BulkItemError};
+use elastic::client::requests::{SyncBody, BulkRequest};
+use elastic::client::responses::bulk::{BulkErrorsResponse, ErrorItem};
 use elastic::error::Error as ResponseError;
 
 use model;
@@ -27,7 +26,7 @@ impl PutBulkAccounts for Client {
             .into_response::<BulkErrorsResponse>()?;
 
         if res.is_err() {
-            return Err(res.items.into());
+            return Err(PutBulkAccountsError::Bulk(res.into_iter().collect()));
         }
 
         Ok(())
@@ -35,7 +34,7 @@ impl PutBulkAccounts for Client {
 }
 
 fn put<B>(body: B) -> BulkRequest<'static, B>
-    where B: IntoBody
+    where B: Into<SyncBody>
 {
     BulkRequest::for_index_ty(model::index::name(), model::account::name(), body)
 }
@@ -57,7 +56,7 @@ quick_error!{
             from()
             display("failed to put bulk accounts: {}", err)
         }
-        Bulk(err: Vec<BulkItemError>) {
+        Bulk(err: Vec<ErrorItem>) {
             from()
             display("failed to put bulk accounts: {:?}", err)
         }

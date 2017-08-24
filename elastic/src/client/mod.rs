@@ -518,6 +518,16 @@ impl SyncClientBuilder {
     }
 
     /**
+    Create a new client builder with the given default request parameters.
+    */
+    pub fn from_params(params: RequestParams) -> Self {
+        SyncClientBuilder {
+            http: None,
+            params: params
+        }
+    }
+
+    /**
     Set the base url. 
 
     The url must be fully qualified.
@@ -660,6 +670,17 @@ impl AsyncClientBuilder {
             http: None,
             serde_pool: None,
             params: RequestParams::default()
+        }
+    }
+
+    /**
+    Create a new client builder with the given default request parameters.
+    */
+    pub fn from_params(params: RequestParams) -> Self {
+        AsyncClientBuilder {
+            http: None,
+            serde_pool: None,
+            params: params
         }
     }
 

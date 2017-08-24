@@ -67,7 +67,7 @@ impl Read for ChunkBody {
     fn read(&mut self, buf: &mut [u8]) -> Result<usize, IoError> {
         let mut pop = false;
 
-        let read = if let Some(mut chunk) = self.0.front_mut() {
+        let read = if let Some(chunk) = self.0.front_mut() {
             let read = chunk.read(buf)?;
 
             if chunk.pos >= chunk.len {

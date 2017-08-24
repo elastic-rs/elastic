@@ -1,7 +1,7 @@
 pub mod commands;
 pub mod queries;
 
-use elastic::client::{Client as EsClient, RequestParams};
+use elastic::client::{RequestParams, SyncClient, SyncClientBuilder};
 use elastic::error::Result;
 
 /// A wrapper over the `elastic::Client` that we can implement commands
@@ -11,12 +11,12 @@ use elastic::error::Result;
 /// In an application where commands and queries aren't just executed in
 /// the `main` function, you can use a `T: EnsureBankIndexExists` type bound.
 pub struct Client {
-    io: EsClient,
+    io: SyncClient,
 }
 
 impl Client {
     pub fn new(params: RequestParams) -> Result<Self> {
-        let client = EsClient::new(params)?;
+        let client = SyncClientBuilder::from_params(params).build()?;
 
         Ok(Client { io: client })
     }

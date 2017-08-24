@@ -44,7 +44,7 @@ pub fn build<I, B>(base_url: &str, req: I) -> Request<B>
 
     // Set content type header
     {
-        let mut headers = req.headers_mut();
+        let headers = req.headers_mut();
         headers.set(ContentType::json())
     }
 

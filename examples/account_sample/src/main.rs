@@ -17,25 +17,32 @@ extern crate elastic;
 pub mod model;
 pub mod ops;
 
+use std::error::Error;
 use elastic::client::RequestParams;
 use ops::Client;
 use ops::commands::{EnsureBankIndexExists, PutBulkAccounts};
 use ops::queries::SimpleSearchQuery;
 
-fn main() {
-    let client = Client::new(RequestParams::default()).unwrap();
+fn run() -> Result<(), Box<Error>> {
+    let client = Client::new(RequestParams::default())?;
 
     println!("checking index");
 
-    client.ensure_bank_index_exists().unwrap();
+    client.ensure_bank_index_exists()?;
 
     println!("updating docs");
 
-    client.put_bulk_accounts("data/accounts.json").unwrap();
+    client.put_bulk_accounts("data/accounts.json")?;
 
-    let accounts = client.simple_search_query("Bruce Coffey").unwrap();
+    let accounts = client.simple_search_query("Bruce Coffey")?;
 
     for account in accounts.hits() {
         println!("{:?}", account);
     }
+
+    Ok(())
+} 
+
+fn main() {
+    run().unwrap()
 }
