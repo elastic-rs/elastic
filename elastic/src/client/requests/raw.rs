@@ -45,8 +45,6 @@ impl<TSender> Client<TSender>
     For more details, see:
 
     - [builder methods][builder-methods]
-    - [send synchronously][send-sync]
-    - [send asynchronously][send-async]
     
     # Examples
     
@@ -70,8 +68,6 @@ impl<TSender> Client<TSender>
     [HttpRequest]: requests/struct.HttpRequest.html
     [RawRequestBuilder]: requests/type.RawRequestBuilder.html
     [builder-methods]: requests/type.RawRequestBuilder.html#builder-methods
-    [send-sync]: requests/type.RawRequestBuilder.html#send-synchronously
-    [send-async]: requests/type.RawRequestBuilder.html#send-asynchronously
     [endpoints-mod]: requests/endpoints/index.html
     */
     pub fn request<TRequest, TBody>(&self, req: TRequest) -> RawRequestBuilder<TSender, TRequest, TBody>

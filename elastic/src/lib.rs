@@ -295,3 +295,9 @@ pub mod prelude {
     pub use client::responses::*;
     pub use types::prelude::*;
 }
+
+#[cfg(test)]
+mod tests {
+    pub fn assert_send<T: Send>() {}
+    pub fn assert_sync<T: Sync>() {}
+}

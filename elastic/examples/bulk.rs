@@ -9,11 +9,12 @@
 
 extern crate elastic;
 
+use std::error::Error;
 use elastic::prelude::*;
 
-fn main() {
+fn run() -> Result<(), Box<Error>> {
     // A HTTP client and request parameters
-    let client = SyncClientBuilder::new().build().unwrap();
+    let client = SyncClientBuilder::new().build()?;
 
     // Execute a bulk request
     let bulk = client
@@ -27,6 +28,8 @@ fn main() {
             Err(op) => println!("err: {:?}", op)
         }
     }
+
+    Ok(())
 }
 
 fn bulk_body() -> String {
@@ -43,4 +46,8 @@ fn bulk_body() -> String {
     }
 
     bulk
+}
+
+fn main() {
+    run().unwrap()
 }

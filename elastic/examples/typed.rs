@@ -11,7 +11,7 @@
 //! - Search the index and iterate over hits
 
 #[macro_use]
-extern crate json_str;
+extern crate serde_json;
 #[macro_use]
 extern crate elastic_derive;
 #[macro_use]
@@ -20,17 +20,18 @@ extern crate serde;
 
 extern crate elastic;
 
-use elastic::error::*;
+use std::error::Error as StdError;
+use elastic::error::{Error, ApiError};
 use elastic::prelude::*;
 
 #[derive(Debug, Serialize, Deserialize, ElasticType)]
 struct MyType {
     id: i32,
     title: String,
-    timestamp: Date<DefaultDateFormat>,
+    timestamp: Date<DefaultDateMapping>,
 }
 
-fn main() {
+fn run() -> Result<(), Box<StdError>> {
     // A HTTP client and request parameters
     let client = SyncClientBuilder::new().build()?;
 
@@ -48,53 +49,61 @@ fn main() {
     let res = search(&client, "title")?;
 
     println!("{:?}", res);
+
+    Ok(())
 }
 
 fn sample_index() -> Index<'static> {
     Index::from("typed_sample_index")
 }
 
-fn ensure_indexed(client: &Client, doc: MyType) {
+fn ensure_indexed(client: &SyncClient, doc: MyType) -> Result<(), Error> {
     let get_res = client
-        .get_document::<MyType>(sample_index(), id(doc.id))
+        .document_get::<MyType>(sample_index(), id(doc.id))
         .send();
 
     match get_res.map(|res| res.into_document()) {
         // The doc was found: no need to index
-        Ok(Some(doc)}) => {
+        Ok(Some(doc)) => {
             println!("document already indexed: {:?}", doc);
         }
         // The index exists, but the doc wasn't found: map and index
         Ok(None) => {
             println!("indexing doc");
 
-            put_doc(client, doc);
+            put_doc(client, doc)?;
         }
         // No index: create it, then map and index
         Err(Error::Api(ApiError::IndexNotFound { .. })) => {
             println!("creating index and doc");
 
-            put_index(client);
-            put_doc(client, doc);
+            put_index(client)?;
+            put_doc(client, doc)?;
         }
         // Something went wrong: panic
-        Err(e) => panic!("{:?}", e),
+        Err(e) => Err(e)?,
     }
+
+    Ok(())
 }
 
-fn put_index(client: &Client) {
-    client.create_index(sample_index()).send().unwrap();
-    client.put_mapping::<MyType>(sample_index()).send().unwrap();
+fn put_index(client: &SyncClient) -> Result<(), Error> {
+    client.index_create(sample_index()).send()?;
+    client.document_put_mapping::<MyType>(sample_index()).send()?;
+
+    Ok(())
 }
 
-fn put_doc(client: &Client, doc: MyType) {
+fn put_doc(client: &SyncClient, doc: MyType) -> Result<(), Error> {
     client
-        .index_document(sample_index(), id(doc.id), doc)
+        .document_index(sample_index(), id(doc.id), doc)
         .params(|p| p.url_param("refresh", true))
         .send()?;
+    
+    Ok(())
 }
 
-fn search(client: &Client, query: &'static str) -> SearchResponse<MyType> {
+fn search(client: &SyncClient, query: &'static str) -> Result<SearchResponse<MyType>, Error> {
     client
         .search()
         .index(sample_index())
@@ -106,4 +115,8 @@ fn search(client: &Client, query: &'static str) -> SearchResponse<MyType> {
                 }
           }))
         .send()
+}
+
+fn main() {
+    run().unwrap()
 }

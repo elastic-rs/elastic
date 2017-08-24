@@ -21,10 +21,10 @@ The `send` method will either send the request [synchronously][send-sync] or [as
 [send-async]: #send-asynchronously
 [Client.document_index]: ../struct.Client.html#index-request
 */
-pub type DocumentIndexRequestBuilder<TSender, TDocument> = RequestBuilder<TSender, DocumentIndexRequestInner<TDocument>>;
+pub type IndexRequestBuilder<TSender, TDocument> = RequestBuilder<TSender, IndexRequestInner<TDocument>>;
 
 #[doc(hidden)]
-pub struct DocumentIndexRequestInner<TDocument> {
+pub struct IndexRequestInner<TDocument> {
     index: Index<'static>,
     ty: Type<'static>,
     id: Id<'static>,
@@ -38,7 +38,7 @@ impl<TSender> Client<TSender>
     where TSender: Sender
 {
     /**
-    Create a [`DocumentIndexRequestBuilder`][DocumentIndexRequestBuilder] with this `Client` that can be configured before sending.
+    Create a [`IndexRequestBuilder`][IndexRequestBuilder] with this `Client` that can be configured before sending.
 
     For more details, see:
 
@@ -77,10 +77,10 @@ impl<TSender> Client<TSender>
 
     For more details on document types and mapping, see the [`types`][types-mod] module.
     
-    [DocumentIndexRequestBuilder]: requests/type.DocumentIndexRequestBuilder.html
-    [builder-methods]: requests/type.DocumentIndexRequestBuilder.html#builder-methods
-    [send-sync]: requests/type.DocumentIndexRequestBuilder.html#send-synchronously
-    [send-async]: requests/type.DocumentIndexRequestBuilder.html#send-asynchronously
+    [IndexRequestBuilder]: requests/type.IndexRequestBuilder.html
+    [builder-methods]: requests/type.IndexRequestBuilder.html#builder-methods
+    [send-sync]: requests/type.IndexRequestBuilder.html#send-synchronously
+    [send-async]: requests/type.IndexRequestBuilder.html#send-asynchronously
     [types-mod]: ../types/index.html
     [documents-mod]: ../types/document/index.html
     */
@@ -88,14 +88,14 @@ impl<TSender> Client<TSender>
                                          index: Index<'static>,
                                          id: Id<'static>,
                                          doc: TDocument)
-                                         -> DocumentIndexRequestBuilder<TSender, TDocument>
+                                         -> IndexRequestBuilder<TSender, TDocument>
         where TDocument: Serialize + DocumentType
     {
         let ty = TDocument::name().into();
 
         RequestBuilder::new(self.clone(),
                             None,
-                            DocumentIndexRequestInner {
+                            IndexRequestInner {
                                 index: index,
                                 ty: ty,
                                 id: id,
@@ -104,7 +104,7 @@ impl<TSender> Client<TSender>
     }
 }
 
-impl<TDocument> DocumentIndexRequestInner<TDocument>
+impl<TDocument> IndexRequestInner<TDocument>
     where TDocument: Serialize
 {
     fn into_sync_request(self) -> Result<IndexRequest<'static, Vec<u8>>> {
@@ -114,7 +114,7 @@ impl<TDocument> DocumentIndexRequestInner<TDocument>
     }
 }
 
-impl<TDocument> DocumentIndexRequestInner<TDocument>
+impl<TDocument> IndexRequestInner<TDocument>
     where TDocument: Serialize + Send + 'static
 {
     fn into_async_request(self, ser_pool: Option<CpuPool>) -> Box<Future<Item = IndexRequest<'static, Vec<u8>>, Error = Error>> {
@@ -131,9 +131,9 @@ impl<TDocument> DocumentIndexRequestInner<TDocument>
 /**
 # Builder methods
 
-Configure a `DocumentIndexRequestBuilder` before sending it.
+Configure a `IndexRequestBuilder` before sending it.
 */
-impl<TSender, TDocument> DocumentIndexRequestBuilder<TSender, TDocument> 
+impl<TSender, TDocument> IndexRequestBuilder<TSender, TDocument> 
     where TSender: Sender
 {
     /** Set the type for the index request. */
@@ -148,11 +148,11 @@ impl<TSender, TDocument> DocumentIndexRequestBuilder<TSender, TDocument>
 /**
 # Send synchronously
 */
-impl<TDocument> DocumentIndexRequestBuilder<SyncSender, TDocument>
+impl<TDocument> IndexRequestBuilder<SyncSender, TDocument>
     where TDocument: Serialize
 {
     /**
-    Send a `DocumentIndexRequestBuilder` synchronously using a [`SyncClient`]().
+    Send a `IndexRequestBuilder` synchronously using a [`SyncClient`]().
 
     This will block the current thread until a response arrives and is deserialised.
     */
@@ -168,11 +168,11 @@ impl<TDocument> DocumentIndexRequestBuilder<SyncSender, TDocument>
 /**
 # Send asynchronously
 */
-impl<TDocument> DocumentIndexRequestBuilder<AsyncSender, TDocument>
+impl<TDocument> IndexRequestBuilder<AsyncSender, TDocument>
     where TDocument: Serialize + Send + 'static
 {
     /**
-    Send a `DocumentIndexRequestBuilder` asynchronously using an [`AsyncClient`]().
+    Send a `IndexRequestBuilder` asynchronously using an [`AsyncClient`]().
     
     This will return a future that will resolve to the deserialised index response.
     */

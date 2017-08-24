@@ -14,22 +14,28 @@
 extern crate elastic_derive;
 #[macro_use]
 extern crate serde_derive;
+#[macro_use]
+extern crate serde_json;
 extern crate serde;
+extern crate tokio_core;
+extern crate futures;
 
 extern crate elastic;
 
-use elastic::error::*;
+use std::error::Error as StdError;
+use futures::{Future, IntoFuture};
 use elastic::prelude::*;
+use elastic::error::{Error, ApiError};
 
 #[derive(Debug, Serialize, Deserialize, ElasticType)]
 struct MyType {
     id: i32,
     title: String,
-    timestamp: Date<DefaultDateFormat>,
+    timestamp: Date<DefaultDateMapping>,
 }
 
-fn main() {
-    let mut core = Core::new()?;
+fn run() -> Result<(), Box<StdError>> {
+    let mut core = tokio_core::reactor::Core::new()?;
 
     // A HTTP client and request parameters
     let client = AsyncClientBuilder::new().build(&core.handle())?;
@@ -42,65 +48,88 @@ fn main() {
     };
 
     // Check if the doc exists and index if it doesn't
-    let index_future = ensure_indexed(&client, doc);
+    let index_future = ensure_indexed(client.clone(), doc);
 
     // Do a search request
-    let search_future = index_future.and_then(|| search(&client, "title"));
+    let search_future = search(client.clone(), "title");
 
-    let res_future = search_future.and_then(|res| {
-        println!("{:?}", res);
+    let res_future = index_future
+        .and_then(|_| search_future)
+        .and_then(|res| {
+            println!("{:?}", res);
 
-        Ok(())
-    });
+            Ok(())
+        });
 
     core.run(res_future)?;
+
+    Ok(())
 }
 
 fn sample_index() -> Index<'static> {
     Index::from("typed_sample_index")
 }
 
-fn ensure_indexed(client: &Client, doc: MyType) {
+fn ensure_indexed(client: AsyncClient, doc: MyType) -> Box<Future<Item = (), Error = Error>> {
     let get_res = client
-        .get_document::<MyType>(sample_index(), id(doc.id))
+        .document_get::<MyType>(sample_index(), id(doc.id))
+        .send()
+        .map(|res| res.into_document());
+
+    let put_doc = get_res.then(move |res| {
+        match res {
+            // The doc was found: no need to index
+            Ok(Some(doc)) => {
+                println!("document already indexed: {:?}", doc);
+
+                Box::new(Ok(()).into_future())
+            }
+            // The index exists, but the doc wasn't found: map and index
+            Ok(None) => {
+                println!("indexing doc");
+
+                put_doc(client, doc)
+            }
+            // No index: create it, then map and index
+            Err(Error::Api(ApiError::IndexNotFound { .. })) => {
+                println!("creating index and doc");
+
+                let put_doc = put_index(client.clone()).and_then(|_| put_doc(client, doc));
+
+                Box::new(put_doc)
+            }
+            // Something went wrong
+            Err(e) => Box::new(Err(e).into_future()),
+        }
+    });
+
+    Box::new(put_doc)
+}
+
+fn put_index(client: AsyncClient) -> Box<Future<Item = (), Error = Error>> {
+    let create_index = client
+        .index_create(sample_index())
         .send();
 
-    match get_res.map(|res| res.into_document()) {
-        // The doc was found: no need to index
-        Ok(Some(doc)) => {
-            println!("document already indexed: {:?}", doc);
-        }
-        // The index exists, but the doc wasn't found: map and index
-        Ok(None) => {
-            println!("indexing doc");
+    let put_mapping = client
+        .document_put_mapping::<MyType>(sample_index())
+        .send()
+        .map(|_| ());
 
-            put_doc(client, doc);
-        }
-        // No index: create it, then map and index
-        Err(Error::Api(ApiError::IndexNotFound { .. })) => {
-            println!("creating index and doc");
-
-            put_index(client);
-            put_doc(client, doc);
-        }
-        // Something went wrong: panic
-        Err(e) => panic!("{:?}", e),
-    }
+    Box::new(create_index.and_then(|_| put_mapping))
 }
 
-fn put_index(client: &Client) {
-    client.create_index(sample_index()).send().unwrap();
-    client.put_mapping::<MyType>(sample_index()).send().unwrap();
-}
-
-fn put_doc(client: &Client, doc: MyType) {
-    client
-        .index_document(sample_index(), id(doc.id), doc)
+fn put_doc(client: AsyncClient, doc: MyType) -> Box<Future<Item = (), Error = Error>> {
+    let index_doc = client
+        .document_index(sample_index(), id(doc.id), doc)
         .params(|p| p.url_param("refresh", true))
-        .send()?;
+        .send()
+        .map(|_| ());
+    
+    Box::new(index_doc)
 }
 
-fn search(client: &Client, query: &'static str) -> SearchResponse<MyType> {
+fn search(client: AsyncClient, query: &'static str) -> Box<Future<Item = SearchResponse<MyType>, Error = Error>> {
     client
         .search()
         .index(sample_index())
@@ -112,4 +141,8 @@ fn search(client: &Client, query: &'static str) -> SearchResponse<MyType> {
                 }
           }))
         .send()
+}
+
+fn main() {
+    run().unwrap()
 }

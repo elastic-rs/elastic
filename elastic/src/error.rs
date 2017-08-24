@@ -207,3 +207,14 @@ mod inner {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use ::tests::*;
+
+    #[test]
+    fn error_is_send_sync() {
+        assert_send::<Error>();
+    }
+}

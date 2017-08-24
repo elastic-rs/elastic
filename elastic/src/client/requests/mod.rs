@@ -1,8 +1,7 @@
 /*!
 Request types for the Elasticsearch REST API.
 
-This module contains implementation details that are useful if you want to customise the request process,
-but aren't generally important for sending requests.
+This module contains implementation details that are useful if you want to customise the request process, but aren't generally important for sending requests.
 */
 
 use futures_cpupool::CpuPool;
@@ -28,9 +27,9 @@ pub use self::search::SearchRequestBuilder;
 mod document_get;
 mod document_index;
 mod document_put_mapping;
-pub use self::document_get::DocumentGetRequestBuilder;
-pub use self::document_index::DocumentIndexRequestBuilder;
-pub use self::document_put_mapping::DocumentPutMappingRequestBuilder;
+pub use self::document_get::GetRequestBuilder;
+pub use self::document_index::IndexRequestBuilder;
+pub use self::document_put_mapping::PutMappingRequestBuilder;
 
 // Index requests
 mod index_create;

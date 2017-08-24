@@ -3,7 +3,7 @@ HTTP client, requests and responses.
 
 This module contains the HTTP client, as well as request and response types.
 
-# Sync and async clients
+# The gist
 
 `elastic` provides two clients:
 
@@ -34,29 +34,11 @@ let client = AsyncClientBuilder::new().build(&core.handle())?;
 Requests on the asynchronous client won't block the current thread.
 Instead a `Future` will be returned immediately that will resolve to a response at a later point.
 
-# Request builders
+## Sending requests
 
-Some commonly used endpoints have high-level builder methods you can use to configure requests easily.
-They're exposed as methods on the `Client`:
-
-Client method                                                 | Elasticsearch API                  | Raw request type                                        | Response type
-------------------------------------------------------------- | ---------------------------------- | ------------------------------------------------------- | ------------------------------------
-[`search`][Client.search]                                     | [Search][docs-search]              | [`SearchRequest`][SearchRequest]                        | [`SearchResponse`][SearchResponse]
-[`document_get`][Client.document_get]                         | [Get Document][docs-get]           | [`GetRequest`][GetRequest]                              | [`GetResponse`][GetResponse]
-[`document_index`][Client.document_index]                     | [Index Document][docs-index]       | [`IndexRequest`][IndexRequest]                          | [`IndexResponse`][IndexResponse]
-[`document_put_mapping`][Client.document_put_mapping]         | [Put Mapping][docs-mapping]        | [`IndicesPutMappingRequest`][IndicesPutMappingRequest]  | [`CommandResponse`][CommandResponse]
-[`index_create`][Client.index_create]                         | [Create Index][docs-create-index]  | [`IndicesCreateRequest`][IndicesCreateRequest]          | [`CommandResponse`][CommandResponse]
-
-All builders follow a standard pattern:
-
-- The `Client` method that takes all required parameters without type inference
-- Optional or inferred parameters can be overridden in builder methods with type inference
-- `send` will return a specific response type
-
-A search request for a value, where the response is matched for an `ApiError`:
+Requests can be sent with an instance of a client using a builder API:
 
 ```no_run
-# #[macro_use] extern crate json_str;
 # extern crate serde_json;
 # extern crate elastic;
 # use serde_json::Value;
@@ -67,10 +49,10 @@ A search request for a value, where the response is matched for an `ApiError`:
 let response = client.search::<Value>()
                      .index("myindex")
                      .ty(Some("myty"))
-                     .body(json_str!({
-                         query: {
-                             query_string: {
-                                 query: "*"
+                     .body(json!({
+                         "query": {
+                             "query_string": {
+                                 "query": "*"
                              }
                          }
                      }))
@@ -93,8 +75,30 @@ match response {
 # }
 ```
 
+`SyncClient` and `AsyncClient` offer the same request methods.
+The details are explained below.
+
+# Request builders
+
+Some commonly used endpoints have high-level builder methods you can use to configure requests easily.
+They're exposed as methods on the `Client`:
+
+Client method                                                 | Elasticsearch API                  | Raw request type                                        | Response type
+------------------------------------------------------------- | ---------------------------------- | ------------------------------------------------------- | ------------------------------------
+[`search`][Client.search]                                     | [Search][docs-search]              | [`SearchRequest`][SearchRequest]                        | [`SearchResponse`][SearchResponse]
+[`document_get`][Client.document_get]                         | [Get Document][docs-get]           | [`GetRequest`][GetRequest]                              | [`GetResponse`][GetResponse]
+[`document_index`][Client.document_index]                     | [Index Document][docs-index]       | [`IndexRequest`][IndexRequest]                          | [`IndexResponse`][IndexResponse]
+[`document_put_mapping`][Client.document_put_mapping]         | [Put Mapping][docs-mapping]        | [`IndicesPutMappingRequest`][IndicesPutMappingRequest]  | [`CommandResponse`][CommandResponse]
+[`index_create`][Client.index_create]                         | [Create Index][docs-create-index]  | [`IndicesCreateRequest`][IndicesCreateRequest]          | [`CommandResponse`][CommandResponse]
+
+All builders follow a standard pattern:
+
+- The `Client` method that takes all required parameters without type inference
+- Optional or inferred parameters can be overridden in builder methods with type inference
+- `send` will return a specific response type
+
 The request builders are wrappers around the [`Client.request`][Client.request] method, taking a [raw request type][endpoints-mod].
-A `get` request for a value:
+For example, a `document_get` request for a value:
 
 ```no_run
 # extern crate serde_json;
@@ -107,7 +111,7 @@ let response = client.document_get::<Value>(index("values"), id(1)).send()?;
 # }
 ```
 
-Is equivalent to:
+is equivalent to:
 
 ```no_run
 # extern crate serde_json;
@@ -852,3 +856,15 @@ core.run(response_future)?;
 ```
 */
 pub type AsyncClient = Client<AsyncSender>;
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use ::tests::*;
+
+    #[test]
+    fn client_is_send_sync() {
+        assert_send::<SyncClient>();
+        assert_sync::<SyncClient>();
+    }
+}

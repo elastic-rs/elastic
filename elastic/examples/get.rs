@@ -10,17 +10,18 @@
 extern crate serde_json;
 extern crate elastic;
 
+use std::error::Error as StdError;
 use serde_json::Value;
-use elastic::error::*;
+use elastic::error::{Error, ApiError};
 use elastic::prelude::*;
 
-fn main() {
+fn run() -> Result<(), Box<StdError>> {
     // A reqwest HTTP client and default parameters.
     // The `params` includes the base node url (http://localhost:9200).
     let client = SyncClientBuilder::new().build()?;
 
     let res = client
-        .get_document::<Value>(index("typed_sample_index"), id("1"))
+        .document_get::<Value>(index("typed_sample_index"), id("1"))
         .ty("mytype")
         .send();
 
@@ -42,7 +43,13 @@ fn main() {
         Err(Error::Api(ApiError::IndexNotFound { .. })) => {
             println!("index not found");
         },
-        // Some other error: panic
-        Err(e) => panic!("{:?}", e)
+        // Some other error
+        Err(e) => Err(e)?
     }
+
+    Ok(())
+}
+
+fn main() {
+    run().unwrap()
 }

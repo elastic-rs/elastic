@@ -11,11 +11,12 @@ extern crate futures;
 extern crate tokio_core;
 extern crate elastic;
 
+use std::error::Error;
 use futures::Future;
 use tokio_core::reactor::Core;
 use elastic::prelude::*;
 
-fn main() {
+fn run() -> Result<(), Box<Error>> {
     let mut core = Core::new()?;
 
     // A HTTP client and request parameters
@@ -39,6 +40,8 @@ fn main() {
     });
 
     core.run(bulk_future)?;
+
+    Ok(())
 }
 
 fn bulk_body() -> String {
@@ -55,4 +58,8 @@ fn bulk_body() -> String {
     }
 
     bulk
+}
+
+fn main() {
+    run().unwrap()
 }

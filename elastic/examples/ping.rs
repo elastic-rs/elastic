@@ -4,9 +4,10 @@
 
 extern crate elastic;
 
+use std::error::Error;
 use elastic::prelude::*;
 
-fn main() {
+fn run() -> Result<(), Box<Error>> {
     // A HTTP client and request parameters
     let client = SyncClientBuilder::new().build()?;
 
@@ -17,4 +18,10 @@ fn main() {
         .into_response::<PingResponse>()?;
 
     println!("{:?}", ping);
+
+    Ok(())
+}
+
+fn main() {
+    run().unwrap()
 }

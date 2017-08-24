@@ -12,7 +12,7 @@ use types::document::DocumentType;
 /** 
 A [get document request][docs-get] builder that can be configured before sending.
 
-Call [`Client.document_get`][Client.document_get] to get a `DocumentGetRequestBuilder`.
+Call [`Client.document_get`][Client.document_get] to get a `GetRequestBuilder`.
 The `send` method will either send the request [synchronously][send-sync] or [asynchronously][send-async], depending on the `Client` it was created from.
 
 [docs-get]: http://www.elastic.co/guide/en/elasticsearch/reference/current/docs-get.html
@@ -20,10 +20,10 @@ The `send` method will either send the request [synchronously][send-sync] or [as
 [send-async]: #send-asynchronously
 [Client.document_get]: ../struct.Client.html#get-document
 */
-pub type DocumentGetRequestBuilder<TSender, TDocument> = RequestBuilder<TSender, DocumentGetRequestInner<TDocument>>;
+pub type GetRequestBuilder<TSender, TDocument> = RequestBuilder<TSender, GetRequestInner<TDocument>>;
 
 #[doc(hidden)]
-pub struct DocumentGetRequestInner<TDocument> {
+pub struct GetRequestInner<TDocument> {
     index: Index<'static>,
     ty: Type<'static>,
     id: Id<'static>,
@@ -37,7 +37,7 @@ impl<TSender> Client<TSender>
     where TSender: Sender
 {
     /** 
-    Create a [`DocumentGetRequestBuilder`][DocumentGetRequestBuilder] with this `Client` that can be configured before sending.
+    Create a [`GetRequestBuilder`][GetRequestBuilder] with this `Client` that can be configured before sending.
 
     For more details, see:
 
@@ -94,24 +94,24 @@ impl<TSender> Client<TSender>
     # }
     ```
 
-    [DocumentGetRequestBuilder]: requests/type.DocumentGetRequestBuilder.html
-    [builder-methods]: requests/type.DocumentGetRequestBuilder.html#builder-methods
-    [send-sync]: requests/type.DocumentGetRequestBuilder.html#send-synchronously
-    [send-async]: requests/type.DocumentGetRequestBuilder.html#send-asynchronously
+    [GetRequestBuilder]: requests/type.GetRequestBuilder.html
+    [builder-methods]: requests/type.GetRequestBuilder.html#builder-methods
+    [send-sync]: requests/type.GetRequestBuilder.html#send-synchronously
+    [send-async]: requests/type.GetRequestBuilder.html#send-asynchronously
     [types-mod]: ../types/index.html
     [documents-mod]: ../types/document/index.html
     */
     pub fn document_get<TDocument>(&self,
                                        index: Index<'static>,
                                        id: Id<'static>)
-                                       -> DocumentGetRequestBuilder<TSender, TDocument>
+                                       -> GetRequestBuilder<TSender, TDocument>
         where TDocument: DeserializeOwned + DocumentType
     {
         let ty = TDocument::name().into();
 
         RequestBuilder::new(self.clone(),
                             None,
-                            DocumentGetRequestInner {
+                            GetRequestInner {
                                 index: index,
                                 ty: ty,
                                 id: id,
@@ -120,7 +120,7 @@ impl<TSender> Client<TSender>
     }
 }
 
-impl<TDocument> DocumentGetRequestInner<TDocument> {
+impl<TDocument> GetRequestInner<TDocument> {
     fn into_request(self) -> GetRequest<'static> {
         GetRequest::for_index_ty_id(self.index, self.ty, self.id)
     }
@@ -129,9 +129,9 @@ impl<TDocument> DocumentGetRequestInner<TDocument> {
 /**
 # Builder methods
 
-Configure a `DocumentGetRequestBuilder` before sending it.
+Configure a `GetRequestBuilder` before sending it.
 */
-impl<TSender, TDocument> DocumentGetRequestBuilder<TSender, TDocument>
+impl<TSender, TDocument> GetRequestBuilder<TSender, TDocument>
     where TSender: Sender
 {
     /** Set the type for the get request. */
@@ -146,11 +146,11 @@ impl<TSender, TDocument> DocumentGetRequestBuilder<TSender, TDocument>
 /**
 # Send synchronously
 */
-impl<TDocument> DocumentGetRequestBuilder<SyncSender, TDocument>
+impl<TDocument> GetRequestBuilder<SyncSender, TDocument>
     where TDocument: DeserializeOwned
 {
     /**
-    Send a `DocumentGetRequestBuilder` synchronously using a [`SyncClient`]().
+    Send a `GetRequestBuilder` synchronously using a [`SyncClient`]().
 
     This will block the current thread until a response arrives and is deserialised.
     */
@@ -166,11 +166,11 @@ impl<TDocument> DocumentGetRequestBuilder<SyncSender, TDocument>
 /**
 # Send asynchronously
 */
-impl<TDocument> DocumentGetRequestBuilder<AsyncSender, TDocument>
+impl<TDocument> GetRequestBuilder<AsyncSender, TDocument>
     where TDocument: DeserializeOwned + Send + 'static,
 {
     /**
-    Send a `DocumentGetRequestBuilder` asynchronously using an [`AsyncClient`]().
+    Send a `GetRequestBuilder` asynchronously using an [`AsyncClient`]().
     
     This will return a future that will resolve to the deserialised get document response.
     */

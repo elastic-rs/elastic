@@ -12,6 +12,7 @@ extern crate serde_derive;
 extern crate serde_json;
 extern crate elastic;
 
+use std::error::Error;
 use serde_json::Value;
 use elastic::prelude::*;
 use elastic::client::responses::parse::*;
@@ -44,7 +45,7 @@ impl IsOk for SearchResponse {
     }
 }
 
-fn main() {
+fn run() -> Result<(), Box<Error>> {
     // A reqwest HTTP client and default parameters.
     // The `params` includes the base node url (http://localhost:9200).
     let client = SyncClientBuilder::new().build()?;
@@ -70,4 +71,10 @@ fn main() {
     }
 
     println!("{:?}", res);
+
+    Ok(())
+}
+
+fn main() {
+    run().unwrap()
 }

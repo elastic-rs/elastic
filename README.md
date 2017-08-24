@@ -47,7 +47,7 @@ use elastic::prelude::*;
 
 // A reqwest HTTP client and default parameters.
 // The builder includes the base node url (http://localhost:9200).
-let client = ClientBuilder::new().build().unwrap();
+let client = SyncClientBuilder::new().build().unwrap();
 
 // A search request with a freeform body.
 let res = client.search::<Value>()
@@ -60,10 +60,8 @@ let res = client.search::<Value>()
                             }
                         }
                     })
-                    .to_string()
                 })
-                .send()
-                .unwrap();
+                .send()?;
 
 // Iterate through the hits in the response.
 for hit in res.hits() {

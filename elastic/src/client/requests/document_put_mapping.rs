@@ -14,7 +14,7 @@ use types::document::{FieldType, DocumentType, IndexDocumentMapping};
 /** 
 A [put mapping request][docs-mapping] builder that can be configured before sending.
 
-Call [`Client.document_put_mapping`][Client.document_put_mapping] to get a `DocumentPutMappingRequestBuilder`. 
+Call [`Client.document_put_mapping`][Client.document_put_mapping] to get a `PutMappingRequestBuilder`. 
 The `send` method will either send the request [synchronously][send-sync] or [asynchronously][send-async], depending on the `Client` it was created from.
 
 [docs-mapping]: https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping.html
@@ -22,9 +22,9 @@ The `send` method will either send the request [synchronously][send-sync] or [as
 [send-async]: #send-asynchronously
 [Client.document_put_mapping]: ../struct.Client.html#put-mapping-request
 */
-pub type DocumentPutMappingRequestBuilder<TSender, TDocument> = RequestBuilder<TSender, DocumentPutMappingRequestInner<TDocument>>;
+pub type PutMappingRequestBuilder<TSender, TDocument> = RequestBuilder<TSender, PutMappingRequestInner<TDocument>>;
 
-pub struct DocumentPutMappingRequestInner<TDocument> {
+pub struct PutMappingRequestInner<TDocument> {
     index: Index<'static>,
     ty: Type<'static>,
     _marker: PhantomData<TDocument>,
@@ -37,7 +37,7 @@ impl<TSender> Client<TSender>
     where TSender: Sender
 {
     /** 
-    Create a [`DocumentPutMappingRequestBuilder`][DocumentPutMappingRequestBuilder] with this `Client` that can be configured before sending.
+    Create a [`PutMappingRequestBuilder`][PutMappingRequestBuilder] with this `Client` that can be configured before sending.
 
     For more details, see:
 
@@ -66,23 +66,23 @@ impl<TSender> Client<TSender>
 
     For more details on document types and mapping, see the [`types`][types-mod] module.
 
-    [DocumentPutMappingRequestBuilder]: requests/type.DocumentPutMappingRequestBuilder.html
-    [builder-methods]: requests/type.DocumentPutMappingRequestBuilder.html#builder-methods
-    [send-sync]: requests/type.DocumentPutMappingRequestBuilder.html#send-synchronously
-    [send-async]: requests/type.DocumentPutMappingRequestBuilder.html#send-asynchronously
+    [PutMappingRequestBuilder]: requests/type.PutMappingRequestBuilder.html
+    [builder-methods]: requests/type.PutMappingRequestBuilder.html#builder-methods
+    [send-sync]: requests/type.PutMappingRequestBuilder.html#send-synchronously
+    [send-async]: requests/type.PutMappingRequestBuilder.html#send-asynchronously
     [types-mod]: ../types/index.html
     [documents-mod]: ../types/document/index.html
     */
     pub fn document_put_mapping<TDocument>(&self,
                                       index: Index<'static>)
-                                      -> DocumentPutMappingRequestBuilder<TSender, TDocument>
+                                      -> PutMappingRequestBuilder<TSender, TDocument>
         where TDocument: Serialize + DocumentType
     {
         let ty = TDocument::name().into();
 
         RequestBuilder::new(self.clone(),
                             None,
-                            DocumentPutMappingRequestInner {
+                            PutMappingRequestInner {
                                 index: index,
                                 ty: ty,
                                 _marker: PhantomData,
@@ -90,7 +90,7 @@ impl<TSender> Client<TSender>
     }
 }
 
-impl<TDocument> DocumentPutMappingRequestInner<TDocument>
+impl<TDocument> PutMappingRequestInner<TDocument>
     where TDocument: DocumentType
 {
     fn into_sync_request(self) -> Result<IndicesPutMappingRequest<'static, Vec<u8>>> {
@@ -100,7 +100,7 @@ impl<TDocument> DocumentPutMappingRequestInner<TDocument>
     }
 }
 
-impl<TDocument> DocumentPutMappingRequestInner<TDocument>
+impl<TDocument> PutMappingRequestInner<TDocument>
     where TDocument: DocumentType + Send + 'static
 {
     fn into_async_request(self, ser_pool: Option<CpuPool>) -> Box<Future<Item = IndicesPutMappingRequest<'static, Vec<u8>>, Error = Error>> {
@@ -117,9 +117,9 @@ impl<TDocument> DocumentPutMappingRequestInner<TDocument>
 /** 
 # Builder methods
 
-Configure a `DocumentPutMappingRequestBuilder` before sending it.
+Configure a `PutMappingRequestBuilder` before sending it.
 */
-impl<TSender, TDocument> DocumentPutMappingRequestBuilder<TSender, TDocument>
+impl<TSender, TDocument> PutMappingRequestBuilder<TSender, TDocument>
     where TSender: Sender
 {
     /** Set the type for the put mapping request. */
@@ -134,11 +134,11 @@ impl<TSender, TDocument> DocumentPutMappingRequestBuilder<TSender, TDocument>
 /**
 # Send synchronously
 */
-impl<TDocument> DocumentPutMappingRequestBuilder<SyncSender, TDocument>
+impl<TDocument> PutMappingRequestBuilder<SyncSender, TDocument>
     where TDocument: DocumentType
 {
     /**
-    Send a `DocumentPutMappingRequestBuilder` synchronously using a [`SyncClient`]().
+    Send a `PutMappingRequestBuilder` synchronously using a [`SyncClient`]().
 
     This will block the current thread until a response arrives and is deserialised.
     */
@@ -154,11 +154,11 @@ impl<TDocument> DocumentPutMappingRequestBuilder<SyncSender, TDocument>
 /**
 # Send asynchronously
 */
-impl<TDocument> DocumentPutMappingRequestBuilder<AsyncSender, TDocument>
+impl<TDocument> PutMappingRequestBuilder<AsyncSender, TDocument>
     where TDocument: DocumentType + Send + 'static
 {
     /**
-    Send a `DocumentPutMappingRequestBuilder` asynchronously using an [`AsyncClient`]().
+    Send a `PutMappingRequestBuilder` asynchronously using an [`AsyncClient`]().
     
     This will return a future that will resolve to the deserialised command response.
     */

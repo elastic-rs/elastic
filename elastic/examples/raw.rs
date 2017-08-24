@@ -7,10 +7,11 @@
 
 extern crate elastic;
 
+use std::error::Error;
 use std::io::Read;
 use elastic::prelude::*;
 
-fn main() {
+fn run() -> Result<(), Box<Error>> {
     // A reqwest HTTP client and default parameters.
     // The `params` includes the base node url (http://localhost:9200).
     let client = SyncClientBuilder::new()
@@ -23,7 +24,7 @@ fn main() {
     // Send the request and process the response.
     let mut res = client.request(req)
                         .send()?
-                        .into_raw()?;
+                        .into_raw();
 
     // Check if the response is in the 200 range
     match res.status() {
@@ -36,4 +37,10 @@ fn main() {
     res.read_to_string(&mut body)?;
 
     println!("{}", body);
+
+    Ok(())
+}
+
+fn main() {
+    run().unwrap()
 }

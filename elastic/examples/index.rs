@@ -13,16 +13,17 @@ extern crate serde;
 
 extern crate elastic;
 
+use std::error::Error;
 use elastic::prelude::*;
 
 #[derive(Debug, Serialize, Deserialize, ElasticType)]
 struct MyType {
     id: i32,
     title: String,
-    timestamp: Date<DefaultDateFormat>,
+    timestamp: Date<DefaultDateMapping>,
 }
 
-fn main() {
+fn run() -> Result<(), Box<Error>> {
     // A HTTP client and request parameters
     let client = SyncClientBuilder::new().build()?;
 
@@ -34,15 +35,20 @@ fn main() {
     };
 
     // Create the index
-    client.create_index(sample_index()).send()?;
+    client.index_create(sample_index()).send()?;
 
     // Add the document mapping (optional, but makes sure `timestamp` is mapped as a `date`)
-    client.put_mapping::<MyType>(sample_index()).send()?;
+    client.document_put_mapping::<MyType>(sample_index()).send()?;
 
     // Index the document
-    client
-        .index_document(sample_index(), id(doc.id), doc)
-        .send()?;
+    client.document_index(sample_index(), id(doc.id), doc)
+          .send()?;
+
+    Ok(())
+}
+
+fn main() {
+    run().unwrap();
 }
 
 fn sample_index() -> Index<'static> {
