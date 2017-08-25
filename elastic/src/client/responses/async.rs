@@ -65,7 +65,7 @@ impl AsyncResponseBuilder {
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
     # fn run() -> Result<(), Box<::std::error::Error>> {
-    # #[derive(Serialize, Deserialize, ElasticType)]
+    # #[derive(Debug, Serialize, Deserialize, ElasticType)]
     # struct MyType { }
     # let core = tokio_core::reactor::Core::new()?;
     # let client = AsyncClientBuilder::new().build(&core.handle())?;
@@ -95,6 +95,7 @@ impl AsyncResponseBuilder {
     # extern crate serde_json;
     # extern crate elastic;
     # use futures::Future;
+    # use serde_json::Value;
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
     # fn run() -> Result<(), Box<::std::error::Error>> {
@@ -103,7 +104,7 @@ impl AsyncResponseBuilder {
     # let req = PingRequest::new();
     let future = client.request(SimpleSearchRequest::for_index_ty("myindex", "mytype"))
                        .send()
-                       .and_then(|repsonse| response.into_response::<Value>());
+                       .and_then(|response| response.into_response::<Value>());
     # Ok(())
     # }
     ```

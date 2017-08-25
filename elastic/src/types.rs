@@ -226,7 +226,8 @@ Serialising `MyType`s mapping will produce the following json:
 # #[macro_use] extern crate elastic_derive;
 # extern crate serde;
 # #[macro_use] extern crate serde_derive;
-# #[macro_use] extern crate serde_json;
+# #[macro_use] extern crate json_str;
+# extern crate serde_json;
 # use elastic::prelude::*;
 # #[derive(Serialize, Deserialize)]
 # enum MyEnum {}
@@ -238,7 +239,7 @@ Serialising `MyType`s mapping will produce the following json:
 # fn main() { run().unwrap() }
 # fn run() -> Result<(), Box<::std::error::Error>> {
 # let mapping = serde_json::to_string(&IndexDocumentMapping::from(MyType::mapping()))?;
-# let expected = json!(
+# let expected = json_str!(
 {
     "properties": {
         "value": {
@@ -247,7 +248,7 @@ Serialising `MyType`s mapping will produce the following json:
     }
 }
 # );
-# assert_eq!(expected.to_string(), mapping);
+# assert_eq!(expected, mapping);
 # Ok(())
 # }
 ```

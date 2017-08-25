@@ -69,15 +69,11 @@ match response {
     Ok(response) => {
         println!("took: {}", response.took);
     },
+    Err(Error::Api(e)) => {
+        // handle a REST API error
+    },
     Err(e) => {
-        match *e.kind() {
-            ErrorKind::Api(ref e) => {
-                // handle a REST API error
-            },
-            ref e => {
-                // handle a HTTP or JSON error
-            }
-        }
+        // handle a HTTP or JSON error
     }
 }
 # Ok(())

@@ -53,19 +53,19 @@ impl SyncResponseBuilder {
     # extern crate elastic_derive;
     # extern crate elastic;
     # use elastic::prelude::*;
-    # fn main() {
+    # fn main() { run().unwrap() }
+    # fn run() -> Result<(), Box<::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
     #     pub id: i32,
     #     pub title: String,
-    #     pub timestamp: Date<DefaultDateFormat>
+    #     pub timestamp: Date<DefaultDateMapping>
     # }
-    # let params = RequestParams::new("http://es_host:9200");
-    # let client = Client::new(params)?;
-    # let req = PingRequest::new();
-    let response = client.request(req)
-                         .send()
-                         .and_then(into_response::<SearchResponse<MyType>>);
+    # let client = SyncClientBuilder::new().build()?;
+    let response = client.request(SimpleSearchRequest::for_index_ty("myindex", "mytype"))
+                         .send()?
+                         .into_response::<SearchResponse<MyType>>();
+    # Ok(())
     # }
     ```
     
@@ -77,13 +77,13 @@ impl SyncResponseBuilder {
     # extern crate serde_json;
     # use serde_json::Value;
     # use elastic::prelude::*;
-    # fn main() {
-    # let params = RequestParams::default();
-    # let client = Client::new(params)?;
-    # let req = PingRequest::new();
-    let response = client.request(req)
-                         .send()
-                         .and_then(into_response::<Value>);
+    # fn main() { run().unwrap() }
+    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # let client = SyncClientBuilder::new().build()?;
+    let response = client.request(SimpleSearchRequest::for_index_ty("myindex", "mytype"))
+                         .send()?
+                         .into_response::<Value>();
+    # Ok(())
     # }
     ```
 

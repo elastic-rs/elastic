@@ -6,18 +6,22 @@ The main `Error` type combines the various kinds of errors that can occur when i
 # Examples
 
 Any method defined in `elastic` that could fail will return a `Result<T, Error>` that can be matched on.
-The below example sends a request and then checks the response for an `ErrorKind::Api`:
+The below example sends a request and then checks the response for an `Error::Api`:
 
 ```no_run
+# extern crate elastic;
+# extern crate serde_json;
+# use serde_json::Value;
 # use elastic::prelude::*;
-# use elastic::error::*;
-# let client = ClientBuilder::new().build()?;
-# let req = PingRequest::new();
+# use elastic::error::Error;
+# fn main() { run().unwrap() }
+# fn run() -> Result<(), Box<::std::error::Error>> {
+# let client = SyncClientBuilder::new().build()?;
 // Send a request.
-// This will return a Result<ResponseBuilder, Error>
-let res = client.request(req).send();
+// The returned error may be a REST API error from Elasticsearch or an internal error
+let response = client.search::<Value>().send();
 
-match res {
+match response {
     Ok(response) => {
         // do something with the response
     },
@@ -28,6 +32,8 @@ match res {
         // handle a client error
     }
 }
+# Ok(())
+# }
 ```
 */
 
