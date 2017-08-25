@@ -10,7 +10,11 @@ addons:
 matrix:
   include:
     - rust: stable
+      env:
+        - CHANNEL="stable"
     - rust: nightly
+      env:
+        - CHANNEL="nightly"
 
 env:
   global:
