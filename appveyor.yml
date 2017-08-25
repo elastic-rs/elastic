@@ -12,5 +12,4 @@ install:
   - cargo -vV
 build: false
 test_script:
-  - ps: cd elastic
-  - cargo test --verbose --no-default-features
+  - ps: cargo test --verbose --all
