@@ -6,29 +6,11 @@ addons:
       - libcurl4-openssl-dev
       - libelf-dev
       - libdw-dev
-      - binutils-dev # optional: only required for the --verify flag of coveralls
 
 matrix:
   include:
     - rust: stable
-      env:
-        - CRATE="derive"
-    - rust: stable
-      env:
-        - CRATE="elastic"
-
     - rust: nightly
-      env:
-        - CRATE="benches/rust/elastic"
-    - rust: nightly
-      env:
-        - CRATE="elastic"
-    - rust: nightly
-      env:
-        - CRATE="elastic/examples/account_sample"
-    - rust: nightly
-      env:
-        - CRATE="elastic/examples/async_sample"
 
 env:
   global:
@@ -41,6 +23,6 @@ before_script:
 
 script:
   - |
-      cd $CRATE &&
-      travis-cargo test &&
-      travis-cargo --only nightly bench
+      cargo test --all &&
+      travis-cargo --only nightly bench --all &&
+      cd tests/run &&  cargo run

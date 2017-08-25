@@ -472,6 +472,7 @@ For more details see the [`responses`][responses-mod] module.
 pub mod requests;
 pub mod responses;
 
+use uuid::Uuid;
 use futures::Future;
 use futures_cpupool::CpuPool;
 use tokio_core::reactor::Handle;
@@ -523,8 +524,22 @@ impl Sender for SyncSender {
         where TRequest: Into<HttpRequest<'static, TBody>>,
               TBody: Into<Self::Body>
     {
-        let res = self.http.elastic_req(params, req).map_err(|e| error::request(e))?;
+        let correlation_id = Uuid::new_v4();
+        let req = req.into();
 
+        info!("Elasticsearch Request: correlation_id: '{}', path: '{}'", correlation_id, req.url.as_ref());
+
+        let res = match self.http.elastic_req(params, req).map_err(|e| error::request(e)) {
+            Ok(res) => {
+                info!("Elasticsearch Response: correlation_id: '{}', status: '{}'", correlation_id, res.status());
+                res
+            },
+            Err(e) => {
+                error!("Elasticsearch Response: correlation_id: '{}', error: '{}'", correlation_id, e);
+                Err(e)?
+            }
+        };
+        
         Ok(sync_response(res))
     }
 }
@@ -672,11 +687,21 @@ impl Sender for AsyncSender {
               TBody: Into<Self::Body>
     {
         let serde_pool = self.serde_pool.clone();
+        let correlation_id = Uuid::new_v4();
+        let req = req.into();
+
+        info!("Elasticsearch Request: correlation_id: '{}', path: '{}'", correlation_id, req.url.as_ref());
 
         let req_future = self.http
             .elastic_req(params, req)
-            .map_err(|e| error::request(e))
-            .map(|res| async_response(res, serde_pool));
+            .map_err(move |e| {
+                error!("Elasticsearch Response: correlation_id: '{}', error: '{}'", correlation_id, e);
+                error::request(e)
+            })
+            .map(move |res| {
+                info!("Elasticsearch Response: correlation_id: '{}', status: '{}'", correlation_id, res.status());
+                async_response(res, serde_pool)
+            });
         
         Box::new(req_future)
     }

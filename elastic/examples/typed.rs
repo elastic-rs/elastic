@@ -10,6 +10,7 @@
 //! - Index a document
 //! - Search the index and iterate over hits
 
+extern crate env_logger;
 #[macro_use]
 extern crate serde_json;
 #[macro_use]
@@ -118,5 +119,6 @@ fn search(client: &SyncClient, query: &'static str) -> Result<SearchResponse<MyT
 }
 
 fn main() {
+    env_logger::init().unwrap();
     run().unwrap()
 }

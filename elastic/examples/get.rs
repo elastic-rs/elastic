@@ -7,6 +7,7 @@
 //! exists, and the document is indexed.
 //! Also see the `typed` sample for a more complete implementation.
 
+extern crate env_logger;
 extern crate serde_json;
 extern crate elastic;
 
@@ -51,5 +52,6 @@ fn run() -> Result<(), Box<StdError>> {
 }
 
 fn main() {
+    env_logger::init().unwrap();
     run().unwrap()
 }

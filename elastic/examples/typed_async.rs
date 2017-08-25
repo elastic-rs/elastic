@@ -10,6 +10,7 @@
 //! - Index a document
 //! - Search the index and iterate over hits
 
+extern crate env_logger;
 #[macro_use]
 extern crate elastic_derive;
 #[macro_use]
@@ -144,5 +145,6 @@ fn search(client: AsyncClient, query: &'static str) -> Box<Future<Item = SearchR
 }
 
 fn main() {
+    env_logger::init().unwrap();
     run().unwrap()
 }

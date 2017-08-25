@@ -2,6 +2,7 @@
 //!
 //! NOTE: This sample expects you have a node running on `localhost:9200`.
 
+extern crate env_logger;
 extern crate elastic;
 
 use std::error::Error;
@@ -23,5 +24,6 @@ fn run() -> Result<(), Box<Error>> {
 }
 
 fn main() {
+    env_logger::init().unwrap();
     run().unwrap()
 }

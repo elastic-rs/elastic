@@ -5,6 +5,7 @@
 //! This sample demonstrates how to create an index, add type mapping, and index a document.
 //! Also see the `typed` sample for a more complete implementation.
 
+extern crate env_logger;
 #[macro_use]
 extern crate elastic_derive;
 #[macro_use]
@@ -48,6 +49,7 @@ fn run() -> Result<(), Box<Error>> {
 }
 
 fn main() {
+    env_logger::init().unwrap();
     run().unwrap();
 }
 

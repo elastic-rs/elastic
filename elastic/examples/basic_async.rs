@@ -5,6 +5,7 @@
 //! This sample executes a search request and iterates through the returned hits
 //! as anonymous json objects.
 
+extern crate env_logger;
 extern crate futures;
 extern crate tokio_core;
 extern crate futures_cpupool;

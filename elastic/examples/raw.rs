@@ -5,6 +5,7 @@
 //! This sample demonstrates a raw search request where the body is read into a `String` rather
 //! than being deserialised.
 
+extern crate env_logger;
 extern crate elastic;
 
 use std::error::Error;
@@ -42,5 +43,6 @@ fn run() -> Result<(), Box<Error>> {
 }
 
 fn main() {
+    env_logger::init().unwrap();
     run().unwrap()
 }

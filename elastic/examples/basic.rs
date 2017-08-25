@@ -5,6 +5,7 @@
 //! This sample executes a search request and iterates through the returned hits
 //! as anonymous json objects.
 
+extern crate env_logger;
 #[macro_use]
 extern crate serde_json;
 extern crate elastic;
@@ -42,5 +43,6 @@ fn run() -> Result<(), Box<Error>> {
 }
 
 fn main() {
+    env_logger::init().unwrap();
     run().unwrap();
 }

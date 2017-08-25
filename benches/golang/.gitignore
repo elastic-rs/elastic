@@ -1,5 +1,0 @@
-*.bk
-perf.*
-golang
-/bin/
-/pkg/

@@ -5,6 +5,7 @@
 //! This sample demonstrates creating a custom `SearchResponse` type that can be used with
 //! the `filter_path` query parameter to only return the matched hits.
 
+extern crate env_logger;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
@@ -76,5 +77,6 @@ fn run() -> Result<(), Box<Error>> {
 }
 
 fn main() {
+    env_logger::init().unwrap();
     run().unwrap()
 }

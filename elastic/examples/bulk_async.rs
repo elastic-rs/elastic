@@ -7,6 +7,7 @@
 //! performance out of them.
 //! See the docs for `BulkResponse` for more details.
 
+extern crate env_logger;
 extern crate futures;
 extern crate tokio_core;
 extern crate elastic;
@@ -61,5 +62,6 @@ fn bulk_body() -> String {
 }
 
 fn main() {
+    env_logger::init().unwrap();
     run().unwrap()
 }
