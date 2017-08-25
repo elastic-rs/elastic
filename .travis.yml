@@ -23,6 +23,4 @@ before_script:
 
 script:
   - |
-      cargo test --all &&
-      travis-cargo --only nightly bench --all &&
-      cd tests/run &&  cargo run
+      ./ci/${CHANNEL}.sh
