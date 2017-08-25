@@ -1,5 +1,3 @@
-set -x
-
 cargo test --verbose --all
 
 cd benches

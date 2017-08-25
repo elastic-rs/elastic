@@ -1,1 +1,3 @@
+set -x
+
 ./${CHANNEL}.sh
