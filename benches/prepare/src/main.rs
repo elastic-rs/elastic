@@ -13,7 +13,7 @@ use elastic::prelude::*;
 struct BenchDoc {
     pub id: i32,
     pub title: String,
-    pub timestamp: Date<EpochMillis>,
+    pub timestamp: Date<DefaultDateMapping<EpochMillis>>,
 }
 
 #[derive(Default)]
@@ -29,11 +29,11 @@ fn index() -> Index<'static> {
 }
 
 fn main() {
-    let client = ClientBuilder::new().build().unwrap();
+    let client = SyncClientBuilder::new().build().unwrap();
 
-    client.create_index(index()).send().unwrap();
+    client.index_create(index()).send().unwrap();
 
-    client.put_mapping::<BenchDoc>(index()).send().unwrap();
+    client.document_put_mapping::<BenchDoc>(index()).send().unwrap();
 
     for i in 0..10 {
         let doc = BenchDoc {
@@ -42,6 +42,6 @@ fn main() {
             timestamp: Date::now(),
         };
 
-        client.index_document(index(), id(i), &doc).send().unwrap();
+        client.document_index(index(), id(i), &doc).send().unwrap();
     }
 }

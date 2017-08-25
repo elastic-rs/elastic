@@ -88,7 +88,7 @@ fn http_client() -> reqwest::Client {
 fn main() {
     let runs = measure::parse_runs_from_env();
 
-    let client = ClientBuilder::new()
+    let client = SyncClientBuilder::new()
         .http_client(http_client())
         .params(|p| p.header(http::header::Connection::keep_alive()))
         .build()
@@ -97,7 +97,7 @@ fn main() {
     let results = measure::run(runs, || {
         client.request(BulkRequest::new(get_req()))
               .send()
-              .and_then(into_response::<BulkResponseType>)
+              .and_then(|res| res.into_response::<BulkResponseType>())
               .unwrap()
     });
 

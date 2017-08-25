@@ -1,1 +1,2 @@
-cargo test --all
+cd elastic
+cargo test

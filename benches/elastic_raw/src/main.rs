@@ -24,7 +24,7 @@ static BODY: &'static str = json_lit!(
 fn main() {
     let runs = measure::parse_runs_from_env();
 
-    let client = ClientBuilder::new()
+    let client = SyncClientBuilder::new()
         .params(|p| p.header(http::header::Connection::keep_alive()))
         .build()
         .unwrap();
