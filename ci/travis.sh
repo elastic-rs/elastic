@@ -1,3 +1,3 @@
 set -x
 
-./${CHANNEL}.sh
+./ci/${CHANNEL}.sh
