@@ -55,12 +55,16 @@ impl<TSender> Client<TSender>
     # #[macro_use] extern crate elastic_derive;
     # extern crate elastic;
     # use elastic::prelude::*;
-    # fn main() {
+    # fn main() { run().unwrap() }
+    # fn run() -> Result<(), Box<::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType { }
-    # let client = ClientBuilder::new().build()?;
-    client.document_put_mapping::<MyType>(index("myindex"))
-          .send()?;
+    # let client = SyncClientBuilder::new().build()?;
+    let response = client.document_put_mapping::<MyType>(index("myindex"))
+                         .send()?;
+
+    assert!(response.acknowledged());
+    # Ok(())
     # }
     ```
 
@@ -141,6 +145,29 @@ impl<TDocument> PutMappingRequestBuilder<SyncSender, TDocument>
     Send a `PutMappingRequestBuilder` synchronously using a [`SyncClient`]().
 
     This will block the current thread until a response arrives and is deserialised.
+
+    # Examples
+
+    Put the mapping for a document type called `MyType`:
+
+    ```no_run
+    # extern crate serde;
+    # #[macro_use] extern crate serde_derive;
+    # #[macro_use] extern crate elastic_derive;
+    # extern crate elastic;
+    # use elastic::prelude::*;
+    # fn main() { run().unwrap() }
+    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # #[derive(Serialize, Deserialize, ElasticType)]
+    # struct MyType { }
+    # let client = SyncClientBuilder::new().build()?;
+    let response = client.document_put_mapping::<MyType>(index("myindex"))
+                         .send()?;
+
+    assert!(response.acknowledged());
+    # Ok(())
+    # }
+    ```
     */
     pub fn send(self) -> Result<CommandResponse> {
         let req = self.inner.into_sync_request()?;
@@ -161,6 +188,37 @@ impl<TDocument> PutMappingRequestBuilder<AsyncSender, TDocument>
     Send a `PutMappingRequestBuilder` asynchronously using an [`AsyncClient`]().
     
     This will return a future that will resolve to the deserialised command response.
+
+    # Examples
+
+    Put the mapping for a document type called `MyType`:
+
+    ```no_run
+    # extern crate futures;
+    # extern crate tokio_core;
+    # extern crate serde;
+    # #[macro_use] extern crate serde_derive;
+    # #[macro_use] extern crate elastic_derive;
+    # extern crate elastic;
+    # use futures::Future;
+    # use elastic::prelude::*;
+    # fn main() { run().unwrap() }
+    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # #[derive(Serialize, Deserialize, ElasticType)]
+    # struct MyType { }
+    # let core = tokio_core::reactor::Core::new()?;
+    # let client = AsyncClientBuilder::new().build(&core.handle())?;
+    let future = client.document_put_mapping::<MyType>(index("myindex"))
+                       .send();
+
+    future.and_then(|response| {
+        assert!(response.acknowledged());
+
+        Ok(())
+    });
+    # Ok(())
+    # }
+    ```
     */
     pub fn send(self) -> Box<Future<Item = CommandResponse, Error = Error>> {
         let (client, params) = (self.client, self.params);

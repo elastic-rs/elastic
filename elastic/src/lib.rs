@@ -9,15 +9,12 @@ A modular and efficient native client for the Elasticsearch REST API.
  --------------- | -------------
  `0.x`           | `5.x`
 
-The client provides a flexible API with a default happy-path so you can customise the
-way you use it.
-It depends heavily on the following crates:
+This crate depends heavily on the following crates:
 
 - [`reqwest`/`hyper`][reqwest] as the default HTTP layer
 - [`serde`/`serde_json`][serde] for serialisation.
 
-`elastic` is designed to scale up to the complexity of Elasticsearch's API, and with the complexity
-of the environments Elasticsearch is deployed in.
+`elastic` is designed to scale up to the complexity of Elasticsearch's API, and with the complexity of the environments Elasticsearch is deployed in.
 
 # Usage
 
@@ -51,9 +48,10 @@ extern crate elastic_derive;
 
 ## Creating a synchronous client
 
-The [`Client`][Client] type is used to make interact with an Elasticsearch cluster.
-The `Client` will use a default set of request parameters that are passed to each request.
-Properties like the host and query parameters can be configured for all requests:
+The [`SyncClient`][SyncClient] type is used to interact with an Elasticsearch cluster.
+A client can be created through the [`SyncClientBuilder`][SyncClientBuilder].
+
+The builder allows you to configure default parameters for all requests:
 
 ```no_run
 use elastic::prelude::*;
@@ -79,11 +77,12 @@ Individual requests can override these parameter values:
 let client = SyncClientBuilder::new().build()?;
 
 let response = client.search::<Value>()
-                     .params(|p| p.url_param("pretty", true))
+                     .params(|p| p.url_param("pretty", false))
                      .send()?;
 # }
 ```
 
+`elastic` also offers an [`AsyncClient`][AsyncClient].
 For more details, see the [`client`][client-mod] and [`requests`][requests-mod] modules.
 
 ## Making requests
@@ -245,6 +244,9 @@ This crate glues these libraries together with some simple assumptions about how
 [docs-mapping]: https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping.html
 [docs-search]: http://www.elastic.co/guide/en/elasticsearch/reference/current/search-search.html
 
+[SyncClient]: client/type.SyncClient.html
+[SyncClientBuilder]: client/struct.SyncClientBuilder.html
+[AsyncClient]: client/type.AsyncClient.html
 [Client]: client/struct.Client.html
 [Client.document_put_mapping]: client/struct.Client.html#method.document_put_mapping
 [Client.document_index]: client/struct.Client.html#method.document_index

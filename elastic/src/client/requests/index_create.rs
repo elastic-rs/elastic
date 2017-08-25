@@ -46,13 +46,18 @@ impl<TSender> Client<TSender>
     Create an index called `myindex`:
     
     ```no_run
+    # extern crate elastic;
     # use elastic::prelude::*;
-    # let client = ClientBuilder::new().build()?;
+    # fn main() { run().unwrap() }
+    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # let client = SyncClientBuilder::new().build()?;
     let my_index = index("myindex");
 
     let response = client.index_create(my_index).send()?;
 
-    assert!(response.acknowledged);
+    assert!(response.acknowledged());
+    # Ok(())
+    # }
     ```
 
     Create an index with settings and document mappings for a [`DocumentType`][documents-mod] called `MyType`:
@@ -66,8 +71,9 @@ impl<TSender> Client<TSender>
     # use elastic::prelude::*;
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType { }
-    # fn main() {
-    # let client = ClientBuilder::new().build()?;
+    # fn main() { run().unwrap() }
+    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # let client = SyncClientBuilder::new().build()?;
     let my_index = index("myindex");
 
     let body = json!({
@@ -86,7 +92,8 @@ impl<TSender> Client<TSender>
                          .body(body.to_string())
                          .send()?;
 
-    assert!(response.acknowledged);
+    assert!(response.acknowledged());
+    # Ok(())
     # }
     ```
 
@@ -153,6 +160,25 @@ impl<TBody> IndexCreateRequestBuilder<SyncSender, TBody>
     Send a `IndexCreateRequestBuilder` synchronously using a [`SyncClient`]().
 
     This will block the current thread until a response arrives and is deserialised.
+
+    # Examples
+    
+    Create an index called `myindex`:
+    
+    ```no_run
+    # extern crate elastic;
+    # use elastic::prelude::*;
+    # fn main() { run().unwrap() }
+    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # let client = SyncClientBuilder::new().build()?;
+    let my_index = index("myindex");
+
+    let response = client.index_create(my_index).send()?;
+
+    assert!(response.acknowledged());
+    # Ok(())
+    # }
+    ```
     */
     pub fn send(self) -> Result<CommandResponse> {
         let req = self.inner.into_request();
@@ -173,6 +199,33 @@ impl<TBody> IndexCreateRequestBuilder<AsyncSender, TBody>
     Send a `IndexCreateRequestBuilder` asynchronously using an [`AsyncClient`]().
     
     This will return a future that will resolve to the deserialised command response.
+
+    # Examples
+    
+    Create an index called `myindex`:
+    
+    ```no_run
+    # extern crate futures;
+    # extern crate tokio_core;
+    # extern crate elastic;
+    # use futures::Future;
+    # use elastic::prelude::*;
+    # fn main() { run().unwrap() }
+    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # let core = tokio_core::reactor::Core::new()?;
+    # let client = AsyncClientBuilder::new().build(&core.handle())?;
+    let my_index = index("myindex");
+
+    let future = client.index_create(my_index).send();
+
+    future.and_then(|response| {
+        assert!(response.acknowledged());
+
+        Ok(())
+    });
+    # Ok(())
+    # }
+    ```
     */
     pub fn send(self) -> Box<Future<Item = CommandResponse, Error = Error>> {
         let req = self.inner.into_request();

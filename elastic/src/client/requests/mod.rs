@@ -81,11 +81,16 @@ impl<TSender, TRequest> RequestBuilder<TSender, TRequest>
     Add a url param to force an index refresh:
     
     ```no_run
+    # extern crate elastic;
     # use elastic::prelude::*;
-    # let client = ClientBuilder::new().build()?;
+    # fn main() { run().unwrap() }
+    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # let client = SyncClientBuilder::new().build()?;
     # fn get_req() -> PingRequest<'static> { PingRequest::new() }
     let builder = client.request(get_req())
-                        .params(|params| params.url_param("refresh", true));
+                        .params(|p| p.url_param("refresh", true));
+    # Ok(())
+    # }
     ```
     */
     pub fn params<F>(mut self, builder: F) -> Self
@@ -111,22 +116,40 @@ impl<TRequest> RequestBuilder<AsyncSender, TRequest> {
     Use the given thread pool to deserialise the response:
 
     ```no_run
+    # extern crate tokio_core;
+    # extern crate futures_cpupool;
+    # extern crate elastic;
+    # use futures_cpupool::CpuPool;
     # use elastic::prelude::*;
-    # let client = AsyncClientBuilder::new().build()?;
+    # fn main() { run().unwrap() }
+    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # let core = tokio_core::reactor::Core::new()?;
+    # let client = AsyncClientBuilder::new().build(&core.handle())?;
     # fn get_req() -> PingRequest<'static> { PingRequest::new() }
-    let pool = CpuPool::new(4)?;
+    let pool = CpuPool::new(4);
     let builder = client.request(get_req())
                         .serde_pool(pool.clone());
+    # Ok(())
+    # }
     ```
     
     Never deserialise the response on a thread pool:
     
     ```no_run
+    # extern crate tokio_core;
+    # extern crate futures_cpupool;
+    # extern crate elastic;
+    # use futures_cpupool::CpuPool;
     # use elastic::prelude::*;
-    # let client = AsyncClientBuilder::new().build()?;
+    # fn main() { run().unwrap() }
+    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # let core = tokio_core::reactor::Core::new()?;
+    # let client = AsyncClientBuilder::new().build(&core.handle())?;
     # fn get_req() -> PingRequest<'static> { PingRequest::new() }
     let builder = client.request(get_req())
                         .serde_pool(None);
+    # Ok(())
+    # }
     ```
     */
     pub fn serde_pool<P>(mut self, pool: P) -> Self

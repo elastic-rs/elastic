@@ -15,7 +15,13 @@ This module contains the HTTP client, as well as request and response types.
 Use a [`SyncClientBuilder`]() to configure a synchronous client.
 
 ```
+# extern crate elastic;
+# use elastic::prelude::*;
+# fn main() { run().unwrap() }
+# fn run() -> Result<(), Box<::std::error::Error>> {
 let client = SyncClientBuilder::new().build()?;
+# Ok(())
+# }
 ```
 
 Requests on the synchronous client will block the current thread until a response is received.
@@ -28,7 +34,15 @@ Use an [`AsyncClientBuilder`]() to configure an asynchronous client.
 The asynchronous client requires a handle to a `tokio::reactor::Core`:
 
 ```
+# extern crate tokio_core;
+# extern crate elastic;
+# use elastic::prelude::*;
+# fn main() { run().unwrap() }
+# fn run() -> Result<(), Box<::std::error::Error>> {
+# let core = tokio_core::reactor::Core::new()?;
 let client = AsyncClientBuilder::new().build(&core.handle())?;
+# Ok(())
+# }
 ```
 
 Requests on the asynchronous client won't block the current thread.
@@ -39,12 +53,13 @@ Instead a `Future` will be returned immediately that will resolve to a response 
 Requests can be sent with an instance of a client using a builder API:
 
 ```no_run
-# extern crate serde_json;
+# #[macro_use] extern crate serde_json;
 # extern crate elastic;
 # use serde_json::Value;
 # use elastic::prelude::*;
-# use elastic::error::*;
-# fn main() {
+# use elastic::error::Error;
+# fn main() { run().unwrap() }
+# fn run() -> Result<(), Box<::std::error::Error>> {
 # let client = SyncClientBuilder::new().build()?;
 let response = client.search::<Value>()
                      .index("myindex")
@@ -72,6 +87,7 @@ match response {
         // handle a HTTP or JSON error
     }
 }
+# Ok(())
 # }
 ```
 
@@ -93,11 +109,11 @@ Client method                                                 | Elasticsearch AP
 
 All builders follow a standard pattern:
 
-- The `Client` method that takes all required parameters without type inference
+- The `Client` method takes all required parameters without type inference
 - Optional or inferred parameters can be overridden in builder methods with type inference
 - `send` will return a specific response type
 
-The request builders are wrappers around the [`Client.request`][Client.request] method, taking a [raw request type][endpoints-mod].
+The high-level request builders are wrappers around the [`Client.request`][Client.request] method, taking a [raw request type][endpoints-mod].
 For example, a `document_get` request for a value:
 
 ```no_run
@@ -105,9 +121,11 @@ For example, a `document_get` request for a value:
 # extern crate elastic;
 # use serde_json::Value;
 # use elastic::prelude::*;
-# fn main() {
+# fn main() { run().unwrap() }
+# fn run() -> Result<(), Box<::std::error::Error>> {
 # let client = SyncClientBuilder::new().build()?;
 let response = client.document_get::<Value>(index("values"), id(1)).send()?;
+# Ok(())
 # }
 ```
 
@@ -118,11 +136,13 @@ is equivalent to:
 # extern crate elastic;
 # use serde_json::Value;
 # use elastic::prelude::*;
-# fn main() {
+# fn main() { run().unwrap() }
+# fn run() -> Result<(), Box<::std::error::Error>> {
 # let client = SyncClientBuilder::new().build()?;
 let response = client.request(GetRequest::for_index_ty_id("values", "value", 1))
                      .send()?
                      .into_response::<GetResponse<Value>>()?;
+# Ok(())
 # }
 ```
 
@@ -142,26 +162,25 @@ Each one exposes Rust traits you can implement to support your own logic but if 
 
 The basic flow from request to response is:
 
-**1)** Turn a concrete [request type][endpoints-mod] into a [`RequestBuilder`][RequestBuilder]:
+**1)** Turn a concrete [request type][endpoints-mod] into a [`RawRequestBuilder`][RawRequestBuilder]:
 
 ```text
-[RequestType] ---> [Client.request()] ---> [RequestBuilder]
+[RequestType] ---> [Client.request()] ---> [RawRequestBuilder]
 ```
 
-**2)** Send the [`RequestBuilder`][RequestBuilder] and get a [`ResponseBuilder`][ResponseBuilder]:
+**2)** Send the [`RawRequestBuilder`][RawRequestBuilder] and get a response builder:
 
 ```text
-[RequestBuilder.send()] ---> [ResponseBuilder]
+[RawRequestBuilder.send()] ---> [ResponseBuilder]
 ```
 
-**3)** Parse the [`ResponseBuilder`][ResponseBuilder] to a [response type][response-types]:
+**3)** Parse the response builder to a [response type][response-types]:
 
 ```text
 [ResponseBuilder.into_response()] ---> [ResponseType]
 ```
 
-The example below shows how these pieces fit together in code  by sending a simple `SearchRequest`, 
-with the steps in the above process labelled:
+The example below shows how these pieces fit together in code  by sending a simple synchronous `SearchRequest`, with the steps in the above process labelled:
 
 ```no_run
 # extern crate elastic;
@@ -169,15 +188,16 @@ with the steps in the above process labelled:
 # extern crate json_str;
 # extern crate serde_json;
 # use elastic::prelude::*;
-# use elastic::error::*;
 # use serde_json::Value;
-# fn main() {
+# fn main() { run().unwrap() }
+# fn run() -> Result<(), Box<::std::error::Error>> {
 # let client = SyncClientBuilder::new().build()?;
 let req = SearchRequest::for_index("_all", empty_body());
 
 let response = client.request(req) // 1
                      .send()? // 2
                      .into_response::<SearchResponse<Value>>()?; // 3
+# Ok(())
 # }
 ```
 
@@ -210,20 +230,18 @@ let req = {
 A raw request to index a document:
 
 ```no_run
-# #[macro_use] extern crate serde_derive;
-# extern crate serde;
 # extern crate serde_json;
 # extern crate elastic;
 # use elastic::prelude::*;
-# #[derive(Serialize)]
-# struct MyType;
-# fn main() {
-# let doc = MyType;
+# fn main() { run().unwrap() }
+# fn run() -> Result<(), Box<::std::error::Error>> {
+# let doc = true;
 let req = {
     let body = serde_json::to_string(&doc)?;
 
     IndexRequest::for_index_ty_id("myindex", "myty", 1, body)
 };
+# Ok(())
 # }
 ```
 
@@ -239,7 +257,10 @@ If the request was sent synchronously, the response is returned as a `Result`.
 If the request was sent asynchronously, the response is returned as a `Future`.
 
 ```no_run
+# extern crate elastic;
 # use elastic::prelude::*;
+# fn main() { run().unwrap() }
+# fn run() -> Result<(), Box<::std::error::Error>> {
 # let client = SyncClientBuilder::new().build()?;
 # let req = PingRequest::new();
 let request_builder = client.request(req);
@@ -252,6 +273,8 @@ let request_builder = request_builder.params(|p| p
 
 // Send the request
 let response = request_builder.send();
+# Ok(())
+# }
 ```
 
 ### 3. Parsing responses synchronously
@@ -266,20 +289,20 @@ Call [`SyncResponseBuilder.into_response`][SyncResponseBuilder.into_response] on
 # extern crate elastic;
 # use serde_json::Value;
 # use elastic::prelude::*;
-# use elastic::error::*;
-# fn main() {
+# use elastic::error::Error;
+# fn main() { run().unwrap() }
+# fn run() -> Result<(), Box<::std::error::Error>> {
 # #[derive(Serialize, Deserialize, ElasticType)]
 # struct MyType {
 #     pub id: i32,
 #     pub title: String,
-#     pub timestamp: Date<DefaultDateFormat>
+#     pub timestamp: Date<DefaultDateMapping>
 # }
-# let params = RequestParams::new("http://es_host:9200");
-# let client = Client::new(params)?;
+# let client = SyncClientBuilder::new().build()?;
 # let req = PingRequest::new();
 let response = client.request(req)
                      .send()?
-                     .into_response::<SearchResponse<Value>>()?;
+                     .into_response::<SearchResponse<Value>>();
 
 match response {
     Ok(response) => {
@@ -295,6 +318,7 @@ match response {
         // handle a HTTP or JSON error
     }
 }
+# Ok(())
 # }
 ```
 
@@ -307,18 +331,19 @@ Alternatively, call [`SyncResponseBuilder.into_raw`][SyncResponseBuilder.into_ra
 # extern crate elastic;
 # use std::io::Read;
 # use elastic::prelude::*;
-# fn main() {
-# let params = RequestParams::new("http://es_host:9200");
-# let client = Client::new(params)?;
+# fn main() { run().unwrap() }
+# fn run() -> Result<(), Box<::std::error::Error>> {
+# let client = SyncClientBuilder::new().build()?;
 # let req = PingRequest::new();
 let mut response = client.request(req)
                          .send()?
-                         .into_raw()?;
+                         .into_raw();
 
 let mut body = String::new();
 response.read_to_string(&mut body)?;
 
 println!("{}", body);
+# Ok(())
 # }
 ```
 
@@ -330,27 +355,30 @@ For more details see the [`responses`][responses-mod] module.
 Call [`AsyncResponseBuilder.into_response`][AsyncResponseBuilder.into_response] on a sent request to get a [strongly typed response][response-types]:
 
 ```no_run
+# extern crate futures;
+# extern crate tokio_core;
 # extern crate serde;
 # extern crate serde_json;
 # #[macro_use] extern crate serde_derive;
 # #[macro_use] extern crate elastic_derive;
 # extern crate elastic;
+# use futures::Future;
 # use serde_json::Value;
 # use elastic::prelude::*;
-# use elastic::error::*;
-# fn main() {
+# fn main() { run().unwrap() }
+# fn run() -> Result<(), Box<::std::error::Error>> {
 # #[derive(Serialize, Deserialize, ElasticType)]
 # struct MyType {
 #     pub id: i32,
 #     pub title: String,
-#     pub timestamp: Date<DefaultDateFormat>
+#     pub timestamp: Date<DefaultDateMapping>
 # }
-# let params = RequestParams::new("http://es_host:9200");
-# let client = Client::new(params)?;
+# let core = tokio_core::reactor::Core::new()?;
+# let client = AsyncClientBuilder::new().build(&core.handle())?;
 # let req = PingRequest::new();
 let future = client.request(req)
                    .send()
-                   .and_then(|response| res.into_response::<SearchResponse<Value>>);
+                   .and_then(|response| response.into_response::<SearchResponse<Value>>());
 
 future.and_then(|response| {
     // Iterate through the response hits
@@ -359,37 +387,43 @@ future.and_then(|response| {
     }
 
     Ok(())
-};
+});
+# Ok(())
 # }
 ```
 
 Alternatively, call [`AsyncResponseBuilder.into_raw`][AsyncResponseBuilder.into_raw] on a sent request to get a raw [`HttpResponse`][HttpResponse]:
 
 ```no_run
+# extern crate futures;
+# extern crate tokio_core;
 # extern crate serde;
 # #[macro_use] extern crate serde_derive;
 # #[macro_use] extern crate elastic_derive;
 # extern crate elastic;
+# use std::str;
 # use std::io::Read;
+# use futures::{Future, Stream};
 # use elastic::prelude::*;
-# fn main() {
-# let params = RequestParams::new("http://es_host:9200");
-# let client = Client::new(params)?;
+# fn main() { run().unwrap() }
+# fn run() -> Result<(), Box<::std::error::Error>> {
+# let core = tokio_core::reactor::Core::new()?;
+# let client = AsyncClientBuilder::new().build(&core.handle())?;
 # let req = PingRequest::new();
-let mut future = client.request(req)
-                       .send()
-                       .and_then(|response| response.into_raw());
+let future = client.request(req)
+                   .send()
+                   .and_then(|response| Ok(response.into_raw()))
+                   .and_then(|raw| raw.concat2())
+                   .map_err(|e| Box::new(e) as Box<::std::error::Error>);
 
-future.and_then(|response| {
-    tokio_io::read_to_end(response, Vec::new())
-})
-.and_then(|(response, body)| {
-    let body = String::from_utf8(body)?;
+future.and_then(|body| {
+    let body = str::from_utf8(body.as_ref())?;
 
     println!("{}", body);
 
     Ok(())
 });
+# Ok(())
 # }
 ```
 
@@ -412,7 +446,8 @@ For more details see the [`responses`][responses-mod] module.
 [Client.index_create]: struct.Client.html#create-index-request
 
 [RequestBuilder]: requests/struct.RequestBuilder.html
-[RequestBuilder.params]: requests/struct.RequestBuilder.html#method.params
+[RequestBuilder.params]: requests/struct.RequestBuilder.html#method.param
+[RawRequestBuilder]: requests/type.RawRequestBuilder.htmls
 [SearchRequest]: requests/endpoints/struct.SearchRequest.html
 [GetRequest]: requests/endpoints/struct.GetRequest.html
 [IndexRequest]: requests/endpoints/struct.IndexRequest.html
@@ -562,7 +597,7 @@ impl SyncClientBuilder {
     ```
     # use elastic::prelude::*;
     let builder = SyncClientBuilder::new()
-        .params(|params| params.url_param("pretty", true));
+        .params(|p| p.url_param("pretty", true));
     ```
 
     Add an authorization header:
@@ -572,7 +607,7 @@ impl SyncClientBuilder {
     use elastic::http::header::Authorization;
 
     let builder = SyncClientBuilder::new()
-        .params(|params| params.header(Authorization("let me in".to_owned())));
+        .params(|p| p.header(Authorization("let me in".to_owned())));
     ```
 
     Specify a base url (prefer the [`base_url`][SyncClientBuilder.base_url] method on `SyncClientBuilder` instead):
@@ -580,7 +615,7 @@ impl SyncClientBuilder {
     ```
     # use elastic::prelude::*;
     let builder = SyncClientBuilder::new()
-        .params(|params| params.base_url("https://my_es_cluster/some_path"));
+        .params(|p| p.base_url("https://my_es_cluster/some_path"));
     ```
 
     [SyncClientBuilder.base_url]: #method.base_url
@@ -719,7 +754,7 @@ impl AsyncClientBuilder {
     ```
     # use elastic::prelude::*;
     let builder = SyncClientBuilder::new()
-        .params(|params| params.url_param("pretty", true));
+        .params(|p| p.url_param("pretty", true));
     ```
 
     Add an authorization header:
@@ -729,7 +764,7 @@ impl AsyncClientBuilder {
     use elastic::http::header::Authorization;
 
     let builder = SyncClientBuilder::new()
-        .params(|params| params.header(Authorization("let me in".to_owned())));
+        .params(|p| p.header(Authorization("let me in".to_owned())));
     ```
 
     Specify a base url (prefer the [`base_url`][SyncClientBuilder.base_url] method on `SyncClientBuilder` instead):
@@ -737,7 +772,7 @@ impl AsyncClientBuilder {
     ```
     # use elastic::prelude::*;
     let builder = SyncClientBuilder::new()
-        .params(|params| params.base_url("https://my_es_cluster/some_path"));
+        .params(|p| p.base_url("https://my_es_cluster/some_path"));
     ```
 
     [SyncClientBuilder.base_url]: #method.base_url
@@ -760,10 +795,18 @@ impl AsyncClientBuilder {
     Use a cpu pool to serialise and deserialise responses:
 
     ```
-    let pool = CpuPool::new(4)?;
+    # extern crate futures_cpupool;
+    # extern crate elastic;
+    # use elastic::prelude::*;
+    # use futures_cpupool::CpuPool;
+    # fn main() { run().unwrap() }
+    # fn run() -> Result<(), Box<::std::error::Error>> {
+    let pool = CpuPool::new(4);
 
     let builder = AsyncClientBuilder::new()
         .serde_pool(pool);
+    # Ok(())
+    # }
     ```
     */
     pub fn serde_pool<P>(mut self, serde_pool: P) -> Self 
@@ -814,17 +857,31 @@ The `Client` is a structure that lets you create and send [`RequestBuilder`][Req
 
 Create a synchronous `Client` and send a ping request:
 
-```
+```no_run
+# extern crate elastic;
+# use elastic::prelude::*;
+# fn main() { run().unwrap() }
+# fn run() -> Result<(), Box<::std::error::Error>> {
 let client = SyncClientBuilder::new().build()?;
 
 let response = client.request(PingRequest::new())
                      .send()?
                      .into_response::<PingResponse>()?;
+# Ok(())
+# }
 ```
 
 Create an asynchronous `Client` and send a ping request:
 
-```
+```no_run
+# extern crate futures;
+# extern crate tokio_core;
+# extern crate elastic;
+# use futures::Future;
+# use tokio_core::reactor::Core;
+# use elastic::prelude::*;
+# fn main() { run().unwrap() }
+# fn run() -> Result<(), Box<::std::error::Error>> {
 let mut core = Core::new()?;
 let client = AsyncClientBuilder::new().build(&core.handle())?;
 
@@ -833,6 +890,8 @@ let response_future = client.request(PingRequest::new())
                             .and_then(|res| res.into_response::<PingResponse>());
 
 core.run(response_future)?;
+# Ok(())
+# }
 ```
 */
 #[derive(Clone)]
@@ -848,12 +907,18 @@ A synchronous Elasticsearch client.
 
 Create a synchronous `Client` and send a ping request:
 
-```
+```no_run
+# extern crate elastic;
+# use elastic::prelude::*;
+# fn main() { run().unwrap() }
+# fn run() -> Result<(), Box<::std::error::Error>> {
 let client = SyncClientBuilder::new().build()?;
 
 let response = client.request(PingRequest::new())
                      .send()?
                      .into_response::<PingResponse>()?;
+# Ok(())
+# }
 ```
 */
 pub type SyncClient = Client<SyncSender>;
@@ -865,7 +930,15 @@ An asynchronous Elasticsearch client.
 
 Create an asynchronous `Client` and send a ping request:
 
-```
+```no_run
+# extern crate futures;
+# extern crate tokio_core;
+# extern crate elastic;
+# use futures::Future;
+# use tokio_core::reactor::Core;
+# use elastic::prelude::*;
+# fn main() { run().unwrap() }
+# fn run() -> Result<(), Box<::std::error::Error>> {
 let mut core = Core::new()?;
 let client = AsyncClientBuilder::new().build(&core.handle())?;
 
@@ -874,6 +947,8 @@ let response_future = client.request(PingRequest::new())
                             .and_then(|res| res.into_response::<PingResponse>());
 
 core.run(response_future)?;
+# Ok(())
+# }
 ```
 */
 pub type AsyncClient = Client<AsyncSender>;

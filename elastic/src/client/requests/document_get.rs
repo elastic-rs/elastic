@@ -57,20 +57,22 @@ impl<TSender> Client<TSender>
     # extern crate elastic_derive;
     # extern crate elastic;
     # use elastic::prelude::*;
-    # fn main() {
+    # fn main() { run().unwrap() }
+    # fn run() -> Result<(), Box<::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
     #     pub id: i32,
     #     pub title: String,
-    #     pub timestamp: Date<DefaultDateFormat>
+    #     pub timestamp: Date<DefaultDateMapping>
     # }
-    # let client = ClientBuilder::new().build()?;
+    # let client = SyncClientBuilder::new().build()?;
     let response = client.document_get::<MyType>(index("myindex"), id(1))
                          .send()?;
 
-    if let Some(doc) = response.source {
+    if let Some(doc) = response.into_document() {
         println!("id: {}", doc.id);
     }
+    # Ok(())
     # }
     ```
 
@@ -86,11 +88,13 @@ impl<TSender> Client<TSender>
     # extern crate elastic;
     # use serde_json::Value;
     # use elastic::prelude::*;
-    # fn main() {
-    # let client = ClientBuilder::new().build()?;
+    # fn main() { run().unwrap() }
+    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # let client = SyncClientBuilder::new().build()?;
     let response = client.document_get::<Value>(index("myindex"), id(1))
                          .ty("mytype")
                          .send()?;
+    # Ok(())
     # }
     ```
 
@@ -153,6 +157,32 @@ impl<TDocument> GetRequestBuilder<SyncSender, TDocument>
     Send a `GetRequestBuilder` synchronously using a [`SyncClient`]().
 
     This will block the current thread until a response arrives and is deserialised.
+
+    # Examples
+
+    Get a document from an index called `myindex` with an id of `1`:
+
+    ```no_run
+    # extern crate serde;
+    # extern crate serde_json;
+    # #[macro_use] extern crate serde_derive;
+    # #[macro_use] extern crate elastic_derive;
+    # extern crate elastic;
+    # use serde_json::Value;
+    # use elastic::prelude::*;
+    # fn main() { run().unwrap() }
+    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # let client = SyncClientBuilder::new().build()?;
+    let response = client.document_get::<Value>(index("myindex"), id(1))
+                         .ty("mytype")
+                         .send()?;
+    
+    if let Some(doc) = response.into_document() {
+        println!("{:?}", doc);
+    }
+    # Ok(())
+    # }
+    ```
     */
     pub fn send(self) -> Result<GetResponse<TDocument>> {
         let req = self.inner.into_request();
@@ -173,6 +203,40 @@ impl<TDocument> GetRequestBuilder<AsyncSender, TDocument>
     Send a `GetRequestBuilder` asynchronously using an [`AsyncClient`]().
     
     This will return a future that will resolve to the deserialised get document response.
+
+    # Examples
+
+    Get a document from an index called `myindex` with an id of `1`:
+
+    ```no_run
+    # extern crate futures;
+    # extern crate tokio_core;
+    # extern crate serde;
+    # extern crate serde_json;
+    # #[macro_use] extern crate serde_derive;
+    # #[macro_use] extern crate elastic_derive;
+    # extern crate elastic;
+    # use serde_json::Value;
+    # use futures::Future;
+    # use elastic::prelude::*;
+    # fn main() { run().unwrap() }
+    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # let core = tokio_core::reactor::Core::new()?;
+    # let client = AsyncClientBuilder::new().build(&core.handle())?;
+    let future = client.document_get::<Value>(index("myindex"), id(1))
+                       .ty("mytype")
+                       .send();
+    
+    future.and_then(|response| {
+        if let Some(doc) = response.into_document() {
+            println!("{:?}", doc);
+        }
+
+        Ok(())
+    });
+    # Ok(())
+    # }
+    ```
     */
     pub fn send(self) -> Box<Future<Item = GetResponse<TDocument>, Error = Error>> {
         let req = self.inner.into_request();

@@ -51,8 +51,11 @@ impl<TSender> Client<TSender>
     Send a cluster ping and read the returned metadata:
     
     ```no_run
+    # extern crate elastic;
     # use elastic::prelude::*;
-    # let client = ClientBuilder::new().build()?;
+    # fn main() { run().unwrap() }
+    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # let client = SyncClientBuilder::new().build()?;
     // `PingRequest` implements `Into<HttpRequest>`
     let req = PingRequest::new();
     
@@ -60,9 +63,11 @@ impl<TSender> Client<TSender>
     let builder = client.request(req);
     
     // Send the `RequestBuilder` and parse as a `PingResponse`
-    let ping = builder.send().and_then(into_response::<PingResponse>)?;
+    let ping = builder.send()?.into_response::<PingResponse>()?;
 
-    println!("cluster: {}", ping.name);
+    println!("cluster: {}", ping.name());
+    # Ok(())
+    # }
     ```
 
     [HttpRequest]: requests/struct.HttpRequest.html
@@ -101,32 +106,48 @@ impl<TSender, TRequest, TBody> RawRequestBuilder<TSender, TRequest, TBody>
     # extern crate serde_json;
     # use serde_json::Value;
     # use elastic::prelude::*;
-    # fn main() {
-    # fn get_req() -> PingRequest<'static> { PingRequest::new() }
-    let client = SyncClientBuilder::new().build()?;
-
-    let response = client.request(get_req())
+    # fn main() { run().unwrap() }
+    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # let client = SyncClientBuilder::new().build()?;
+    let response = client.request(SimpleSearchRequest::for_index_ty("myindex", "mytype"))
                          .send()?
                          .into_response::<SearchResponse<Value>>()?;
+    
+    // Iterate through the hits (of type `MyType`)
+    for hit in response.hits() {
+        println!("{:?}", hit);
+    }
+    # Ok(())
     # }
     ```
 
     Send a raw request asynchronously and parse it to a concrete response type:
 
     ```no_run
+    # extern crate tokio_core;
+    # extern crate futures;
     # extern crate elastic;
     # extern crate serde_json;
     # use serde_json::Value;
     # use elastic::prelude::*;
-    # fn main() {
-    # fn get_req() -> PingRequest<'static> { PingRequest::new() }
-    # let core = Core::new()?;
-    # let handle = core.handle();
-    let client = AsyncClientBuilder::new().build(handle)?;
+    # use futures::Future;
+    # fn main() { run().unwrap() }
+    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # let core = tokio_core::reactor::Core::new()?;
+    # let client = AsyncClientBuilder::new().build(&core.handle())?;
+    let future = client.request(SimpleSearchRequest::for_index_ty("myindex", "mytype"))
+                       .send()
+                       .and_then(|res| res.into_response::<SearchResponse<Value>>());
+    
+    future.and_then(|response| {
+        // Iterate through the hits (of type `MyType`)
+        for hit in response.hits() {
+            println!("{:?}", hit);
+        }
 
-    let response = client.request(get_req())
-                         .send()
-                         .and_then(|res| res.into_response::<SearchResponse<Value>>());
+        Ok(())
+    });
+    # Ok(())
     # }
     ```
 

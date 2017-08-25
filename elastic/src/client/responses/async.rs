@@ -55,26 +55,34 @@ impl AsyncResponseBuilder {
     Get a strongly typed `SearchResponse`:
     
     ```no_run
+    # extern crate tokio_core;
+    # extern crate futures;
     # extern crate serde;
-    # #[macro_use]
-    # extern crate serde_derive;
-    # #[macro_use]
-    # extern crate elastic_derive;
+    # #[macro_use] extern crate serde_derive;
+    # #[macro_use] extern crate elastic_derive;
     # extern crate elastic;
+    # use futures::Future;
     # use elastic::prelude::*;
-    # fn main() {
+    # fn main() { run().unwrap() }
+    # fn run() -> Result<(), Box<::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
-    # struct MyType {
-    #     pub id: i32,
-    #     pub title: String,
-    #     pub timestamp: Date<DefaultDateFormat>
-    # }
-    # let params = RequestParams::new("http://es_host:9200");
-    # let client = Client::new(params)?;
+    # struct MyType { }
+    # let core = tokio_core::reactor::Core::new()?;
+    # let client = AsyncClientBuilder::new().build(&core.handle())?;
     # let req = PingRequest::new();
-    let response = client.request(req)
-                         .send()
-                         .and_then(into_response::<SearchResponse<MyType>>);
+    let future = client.request(SimpleSearchRequest::for_index_ty("myindex", "mytype"))
+                       .send()
+                       .and_then(|response| response.into_response::<SearchResponse<MyType>>());
+
+    future.and_then(|response| {
+        // Iterate through the hits (of type `MyType`)
+        for hit in response.hits() {
+            println!("{:?}", hit);
+        }
+
+        Ok(())
+    });
+    # Ok(())
     # }
     ```
     
@@ -82,17 +90,21 @@ impl AsyncResponseBuilder {
     if the HTTP status code is `Ok` or `Err(ApiError)` otherwise:
     
     ```no_run
-    # extern crate elastic;
+    # extern crate tokio_core;
+    # extern crate futures;
     # extern crate serde_json;
-    # use serde_json::Value;
+    # extern crate elastic;
+    # use futures::Future;
     # use elastic::prelude::*;
-    # fn main() {
-    # let params = RequestParams::default();
-    # let client = Client::new(params)?;
+    # fn main() { run().unwrap() }
+    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # let core = tokio_core::reactor::Core::new()?;
+    # let client = AsyncClientBuilder::new().build(&core.handle())?;
     # let req = PingRequest::new();
-    let response = client.request(req)
-                         .send()
-                         .and_then(into_response::<Value>);
+    let future = client.request(SimpleSearchRequest::for_index_ty("myindex", "mytype"))
+                       .send()
+                       .and_then(|repsonse| response.into_response::<Value>());
+    # Ok(())
     # }
     ```
 

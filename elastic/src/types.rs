@@ -51,8 +51,8 @@ The following table illustrates the types provided by `elastic`:
  `text`              | `String`                    | `std`     | [`Text<M>`][string-mod]                                  | -
  `boolean`           | `bool`                      | `std`     | [`Boolean<M>`][boolean-mod]                              | -
  `ip`                | `Ipv4Addr`                  | `std`     | [`Ip<M>`][ip-mod]                                        | -
- `date`              | `DateTime<UTC>`             | `chrono`  | [`Date<F, M>`][date-mod]                                 | `DateFormat`
- `geo_point`         | `Point`                     | `geo`     | [`GeoPoint<F, M>`][geopoint-mod]                         | `GeoPointFormat`
+ `date`              | `DateTime<UTC>`             | `chrono`  | [`Date<M>`][date-mod]                                    | `DateFormat`
+ `geo_point`         | `Point`                     | `geo`     | [`GeoPoint<M>`][geopoint-mod]                            | `GeoPointFormat`
  `geo_shape`         | -                           | `geojson` | [`GeoShape<M>`][geoshape-mod]                            | -
 
 ## Mapping
@@ -97,7 +97,7 @@ struct MyType {
     // Mapped as a `text` field with a `keyword` subfield
     title: String,
     // Mapped as a `date` field with an `epoch_millis` format
-    timestamp: Date<EpochMillis>
+    timestamp: Date<DefaultDateMapping<EpochMillis>>
 }
 # }
 ```
@@ -113,12 +113,14 @@ You can use the `IndexDocumentMapping` type wrapper to serialise the mapping for
 # #[macro_use]
 # extern crate serde_derive;
 # use elastic::prelude::*;
-# fn main() {
+# fn main() { run().unwrap() }
+# fn run() -> Result<(), Box<::std::error::Error>> {
 # #[derive(Serialize, Deserialize, ElasticType)]
 # struct MyType {}
 let doc = IndexDocumentMapping::from(MyType::mapping());
 
 let mapping = serde_json::to_string(&doc)?;
+# Ok(())
 # }
 ```
 
@@ -126,22 +128,22 @@ This will produce the following JSON:
 
 ```
 # extern crate elastic;
-# #[macro_use]
-# extern crate elastic_derive;
+# #[macro_use] extern crate elastic_derive;
 # extern crate serde;
+# #[macro_use] extern crate json_str;
 # extern crate serde_json;
-# #[macro_use]
-# extern crate serde_derive;
+# #[macro_use] extern crate serde_derive;
 # use elastic::prelude::*;
-# fn main() {
+# fn main() { run().unwrap() }
+# fn run() -> Result<(), Box<::std::error::Error>> {
 # #[derive(Serialize, Deserialize, ElasticType)]
 # struct MyType {
 #     id: i32,
 #     title: String,
-#     timestamp: Date<EpochMillis>
+#     timestamp: Date<DefaultDateMapping<EpochMillis>>
 # }
 # let mapping = serde_json::to_string(&IndexDocumentMapping::from(MyType::mapping()))?;
-# let expected = json!(
+# let expected = json_str!(
 {
     "properties": {
         "id": {
@@ -163,7 +165,8 @@ This will produce the following JSON:
     }
 }
 # );
-# assert_eq!(expected.to_string(), mapping);
+# assert_eq!(expected, mapping);
+# Ok(())
 # }
 ```
 
@@ -220,12 +223,10 @@ Serialising `MyType`s mapping will produce the following json:
 
 ```
 # extern crate elastic;
-# #[macro_use]
-# extern crate elastic_derive;
+# #[macro_use] extern crate elastic_derive;
 # extern crate serde;
-# #[macro_use]
-# extern crate serde_derive;
-# extern crate serde_json;
+# #[macro_use] extern crate serde_derive;
+# #[macro_use] extern crate serde_json;
 # use elastic::prelude::*;
 # #[derive(Serialize, Deserialize)]
 # enum MyEnum {}
@@ -234,7 +235,8 @@ Serialising `MyType`s mapping will produce the following json:
 # struct MyType {
 #     value: MyEnum
 # }
-# fn main() {
+# fn main() { run().unwrap() }
+# fn run() -> Result<(), Box<::std::error::Error>> {
 # let mapping = serde_json::to_string(&IndexDocumentMapping::from(MyType::mapping()))?;
 # let expected = json!(
 {
@@ -246,6 +248,7 @@ Serialising `MyType`s mapping will produce the following json:
 }
 # );
 # assert_eq!(expected.to_string(), mapping);
+# Ok(())
 # }
 ```
 

@@ -52,12 +52,14 @@ impl<TSender> Client<TSender>
     # extern crate serde;
     # #[macro_use] extern crate serde_derive;
     # #[macro_use] extern crate elastic_derive;
+    # #[macro_use] extern crate serde_json;
     # extern crate elastic;
     # use elastic::prelude::*;
-    # fn main() {
+    # fn main() { run().unwrap() }
+    # fn run() -> Result<(), Box<::std::error::Error>> {
     # #[derive(Debug, Serialize, Deserialize, ElasticType)]
     # struct MyType { }
-    # let client = ClientBuilder::new().build()?;
+    # let client = SyncClientBuilder::new().build()?;
     let query = "a query string";
 
     let response = client.search::<MyType>()
@@ -75,6 +77,7 @@ impl<TSender> Client<TSender>
     for hit in response.hits() {
         println!("{:?}", hit);
     }
+    # Ok(())
     # }
     ```
 
@@ -87,12 +90,14 @@ impl<TSender> Client<TSender>
     # extern crate serde_json;
     # use serde_json::Value;
     # use elastic::prelude::*;
-    # fn main() {
-    # let client = ClientBuilder::new().build()?;
+    # fn main() { run().unwrap() }
+    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # let client = SyncClientBuilder::new().build()?;
     let response = client.search::<Value>()
                          .index("myindex")
                          .ty(Some("mytype"))
                          .send()?;
+    # Ok(())
     # }
     ```
 
@@ -206,10 +211,11 @@ impl<TDocument, TBody> SearchRequestBuilder<SyncSender, TDocument, TBody>
     # #[macro_use] extern crate elastic_derive;
     # extern crate elastic;
     # use elastic::prelude::*;
-    # fn main() {
+    # fn main() { run().unwrap() }
+    # fn run() -> Result<(), Box<::std::error::Error>> {
     # #[derive(Debug, Serialize, Deserialize, ElasticType)]
     # struct MyType { }
-    # let client = ClientBuilder::new().build()?;
+    # let client = SyncClientBuilder::new().build()?;
     let response = client.search::<MyType>()
                          .index("myindex")
                          .send()?;
@@ -218,6 +224,7 @@ impl<TDocument, TBody> SearchRequestBuilder<SyncSender, TDocument, TBody>
     for hit in response.hits() {
         println!("{:?}", hit);
     }
+    # Ok(())
     # }
     ```
     */
@@ -247,22 +254,25 @@ impl<TDocument, TBody> SearchRequestBuilder<AsyncSender, TDocument, TBody>
     Run a simple [Query String][docs-querystring] query for a [`DocumentType`][documents-mod] called `MyType`:
     
     ```no_run
+    # extern crate tokio_core;
+    # extern crate futures;
     # extern crate serde;
     # #[macro_use] extern crate serde_derive;
     # #[macro_use] extern crate elastic_derive;
     # extern crate elastic;
+    # use futures::Future;
     # use elastic::prelude::*;
-    # fn main() {
+    # fn main() { run().unwrap() }
+    # fn run() -> Result<(), Box<::std::error::Error>> {
     # #[derive(Debug, Serialize, Deserialize, ElasticType)]
     # struct MyType { }
-    # let core = Core::new()?;
-    # let handle = core.handle();
-    # let client = AsyncClientBuilder::new().build(&handle)?;
+    # let core = tokio_core::reactor::Core::new()?;
+    # let client = AsyncClientBuilder::new().build(&core.handle())?;
     let future = client.search::<MyType>()
                        .index("myindex")
                        .send();
 
-    let future = future.and_then(|response| {
+    future.and_then(|response| {
         // Iterate through the hits (of type `MyType`)
         for hit in response.hits() {
             println!("{:?}", hit);
@@ -270,6 +280,7 @@ impl<TDocument, TBody> SearchRequestBuilder<AsyncSender, TDocument, TBody>
 
         Ok(())
     });
+    # Ok(())
     # }
     ```
     */

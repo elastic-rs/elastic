@@ -56,14 +56,15 @@ impl<TSender> Client<TSender>
     # #[macro_use] extern crate elastic_derive;
     # extern crate elastic;
     # use elastic::prelude::*;
-    # fn main() {
+    # fn main() { run().unwrap() }
+    # fn run() -> Result<(), Box<::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
     #     pub id: i32,
     #     pub title: String,
-    #     pub timestamp: Date<DefaultDateFormat>
+    #     pub timestamp: Date<DefaultDateMapping>
     # }
-    # let client = ClientBuilder::new().build()?;
+    # let client = SyncClientBuilder::new().build()?;
     let doc = MyType {
         id: 1,
         title: String::from("A title"),
@@ -72,6 +73,9 @@ impl<TSender> Client<TSender>
 
     let response = client.document_index(index("myindex"), id(doc.id), doc)
                          .send()?;
+    
+    assert!(response.created());
+    # Ok(())
     # }
     ```
 
@@ -155,6 +159,39 @@ impl<TDocument> IndexRequestBuilder<SyncSender, TDocument>
     Send a `IndexRequestBuilder` synchronously using a [`SyncClient`]().
 
     This will block the current thread until a response arrives and is deserialised.
+
+    # Examples
+
+    Index a document with an id of `1`:
+
+    ```no_run
+    # extern crate serde;
+    # #[macro_use] extern crate serde_derive;
+    # #[macro_use] extern crate elastic_derive;
+    # extern crate elastic;
+    # use elastic::prelude::*;
+    # fn main() { run().unwrap() }
+    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # #[derive(Serialize, Deserialize, ElasticType)]
+    # struct MyType {
+    #     pub id: i32,
+    #     pub title: String,
+    #     pub timestamp: Date<DefaultDateMapping>
+    # }
+    # let client = SyncClientBuilder::new().build()?;
+    let doc = MyType {
+        id: 1,
+        title: String::from("A title"),
+        timestamp: Date::now()
+    };
+
+    let response = client.document_index(index("myindex"), id(doc.id), doc)
+                         .send()?;
+    
+    assert!(response.created());
+    # Ok(())
+    # }
+    ```
     */
     pub fn send(self) -> Result<IndexResponse> {
         let req = self.inner.into_sync_request()?;
@@ -175,6 +212,47 @@ impl<TDocument> IndexRequestBuilder<AsyncSender, TDocument>
     Send a `IndexRequestBuilder` asynchronously using an [`AsyncClient`]().
     
     This will return a future that will resolve to the deserialised index response.
+
+    # Examples
+
+    Index a document with an id of `1`:
+
+    ```no_run
+    # extern crate serde;
+    # extern crate futures;
+    # extern crate tokio_core;
+    # #[macro_use] extern crate serde_derive;
+    # #[macro_use] extern crate elastic_derive;
+    # extern crate elastic;
+    # use futures::Future;
+    # use elastic::prelude::*;
+    # fn main() { run().unwrap() }
+    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # #[derive(Serialize, Deserialize, ElasticType)]
+    # struct MyType {
+    #     pub id: i32,
+    #     pub title: String,
+    #     pub timestamp: Date<DefaultDateMapping>
+    # }
+    # let core = tokio_core::reactor::Core::new()?;
+    # let client = AsyncClientBuilder::new().build(&core.handle())?;
+    let doc = MyType {
+        id: 1,
+        title: String::from("A title"),
+        timestamp: Date::now()
+    };
+
+    let future = client.document_index(index("myindex"), id(doc.id), doc)
+                       .send();
+    
+    future.and_then(|response| {
+        assert!(response.created());
+
+        Ok(())
+    });
+    # Ok(())
+    # }
+    ```
     */
     pub fn send(self) -> Box<Future<Item = IndexResponse, Error = Error>> {
         let (client, params) = (self.client, self.params);
