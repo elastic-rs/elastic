@@ -11,7 +11,7 @@ gzip = []
 
 [dependencies]
 reqwest = "*"
-elastic = { version = "*", path = "../../../elastic", features = ["nightly"] }
+elastic = { version = "*", path = "../../elastic", features = ["nightly"] }
 string_cache = { version = "*", optional = true }
 inlinable_string = { version = "*", features = ["serde"], optional = true }
 lazy_static = { version = "*" }

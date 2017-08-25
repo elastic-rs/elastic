@@ -1,4 +1,6 @@
-sudo: false
+sudo: required
+services:
+  - docker
 language: rust
 addons:
   apt:
