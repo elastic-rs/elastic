@@ -51,7 +51,7 @@ impl Sender for SyncSender {
 
         info!("Elasticsearch Request: correlation_id: '{}', path: '{}'", correlation_id, req.url.as_ref());
 
-        let res = match self.http.elastic_req(params, req).map_err(|e| error::request(e)) {
+        let res = match self.http.elastic_req(params, req).map_err(error::request) {
             Ok(res) => {
                 info!("Elasticsearch Response: correlation_id: '{}', status: '{}'", correlation_id, res.status());
                 res
@@ -70,6 +70,12 @@ impl Sender for SyncSender {
 pub struct SyncClientBuilder {
     http: Option<SyncHttpClient>,
     params: RequestParams
+}
+
+impl Default for SyncClientBuilder {
+    fn default() -> Self {
+        SyncClientBuilder::new()
+    }
 }
 
 impl SyncClientBuilder {
@@ -178,9 +184,9 @@ impl SyncClientBuilder {
     [Client]: struct.Client.html
     */
     pub fn build(self) -> Result<SyncClient> {
-        let http = self.http.map(|http| Ok(http))
-                            .unwrap_or(SyncHttpClient::new())
-                            .map_err(|e| error::build(e))?;
+        let http = self.http.map(Ok)
+                            .unwrap_or_else(SyncHttpClient::new)
+                            .map_err(error::build)?;
 
         Ok(SyncClient {
             sender: SyncSender {

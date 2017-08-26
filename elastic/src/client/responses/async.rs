@@ -126,7 +126,7 @@ impl AsyncResponseBuilder {
             Box::new(body_future.and_then(move |body| de_pool.spawn_fn(move || de_fn(body))))
         }
         else {
-            Box::new(body_future.and_then(move |body| de_fn(body)))
+            Box::new(body_future.and_then(de_fn))
         }
     }
 }

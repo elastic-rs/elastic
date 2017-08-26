@@ -112,7 +112,7 @@ impl<TDocument> IndexRequestInner<TDocument>
     where TDocument: Serialize
 {
     fn into_sync_request(self) -> Result<IndexRequest<'static, Vec<u8>>> {
-        let body = serde_json::to_vec(&self.doc).map_err(|e| error::request(e))?;
+        let body = serde_json::to_vec(&self.doc).map_err(error::request)?;
 
         Ok(IndexRequest::for_index_ty_id(self.index, self.ty, self.id, body))
     }

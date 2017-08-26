@@ -275,8 +275,8 @@ This crate glues these libraries together with some simple assumptions about how
 [types-mod]: types/index.html
 */
 
-#![deny(warnings)]
-#![deny(missing_docs)]
+#![deny(warnings, missing_docs)]
+#![allow(unknown_lints, doc_markdown)]
 
 #[macro_use]
 extern crate log;

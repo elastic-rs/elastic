@@ -96,7 +96,14 @@ impl<TSender, TRequest> RequestBuilder<TSender, TRequest>
     pub fn params<F>(mut self, builder: F) -> Self
         where F: Fn(RequestParams) -> RequestParams
     {
-        self.params = Some(builder(self.params.unwrap_or(self.client.params.clone())));
+        let params = self.params;
+        let client = self.client;
+
+        self.params = {
+            Some(builder(params.unwrap_or_else(|| client.params.clone())))
+        };
+
+        self.client = client;
 
         self
     }

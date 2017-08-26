@@ -193,7 +193,6 @@ impl Into<MaybeApiError<serde_json::Error>> for serde_json::Error {
 }
 
 mod inner {
-    #![allow(unknown_lints)]
     #![allow(missing_docs)]
 
     error_chain! {

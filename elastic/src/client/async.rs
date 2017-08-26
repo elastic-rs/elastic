@@ -85,6 +85,12 @@ pub struct AsyncClientBuilder {
     params: RequestParams
 }
 
+impl Default for AsyncClientBuilder {
+    fn default() -> Self {
+        AsyncClientBuilder::new()
+    }
+}
+
 impl AsyncClientBuilder {
     /** 
     Create a new client builder.
@@ -226,9 +232,9 @@ impl AsyncClientBuilder {
     [Client]: struct.Client.html
     */
     pub fn build(self, handle: &Handle) -> Result<AsyncClient> {
-        let http = self.http.map(|http| Ok(http))
-                            .unwrap_or(AsyncHttpClient::new(handle))
-                            .map_err(|e| error::build(e))?;
+        let http = self.http.map(Ok)
+                            .unwrap_or_else(|| AsyncHttpClient::new(handle))
+                            .map_err(error::build)?;
 
         Ok(AsyncClient {
             sender: AsyncSender {

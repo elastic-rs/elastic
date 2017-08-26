@@ -98,7 +98,7 @@ impl<TDocument> PutMappingRequestInner<TDocument>
     where TDocument: DocumentType
 {
     fn into_sync_request(self) -> Result<IndicesPutMappingRequest<'static, Vec<u8>>> {
-        let body = serde_json::to_vec(&IndexDocumentMapping::from(TDocument::mapping())).map_err(|e| error::request(e))?;
+        let body = serde_json::to_vec(&IndexDocumentMapping::from(TDocument::mapping())).map_err(error::request)?;
 
         Ok(IndicesPutMappingRequest::for_index_ty(self.index, self.ty, body))
     }

@@ -131,7 +131,7 @@ impl<TDocument, TBody> SearchRequestInner<TDocument, TBody>
     }
 
     fn into_request(self) -> SearchRequest<'static, TBody> {
-        let index = self.index.unwrap_or("_all".into());
+        let index = self.index.unwrap_or_else(|| "_all".into());
 
         match self.ty {
             Some(ty) => SearchRequest::for_index_ty(index, ty, self.body),
