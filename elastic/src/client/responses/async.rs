@@ -5,10 +5,8 @@ use serde::de::DeserializeOwned;
 use reqwest::unstable::async::{Decoder, Response as RawResponse};
 
 use error::{self, Error};
-use elastic_reqwest::res::parse;
-use super::parse::IsOk;
-
-pub use reqwest::unstable::async::Chunk;
+use http::AsyncChunk;
+use super::parse::{parse, IsOk};
 
 /**
 A builder for a response.
@@ -116,7 +114,11 @@ impl AsyncResponseBuilder {
     {
         let status = self.status();
         let body = mem::replace(self.inner.body_mut(), Decoder::empty());
-        let de_fn = move |body: Chunk| parse().from_slice(status, body.as_ref()).map_err(move |e| error::response(status, e));
+
+        let de_fn = move |body: AsyncChunk| {
+            parse().from_slice(status, body.as_ref())
+                   .map_err(move |e| error::response(status, e))
+        };
 
         let body_future = body.concat2().map_err(move |e| error::response(status, e));
 
@@ -133,7 +135,7 @@ impl AsyncResponseBuilder {
 pub struct AsyncHttpResponse(RawResponse);
 
 impl Stream for AsyncHttpResponse {
-    type Item = Chunk;
+    type Item = AsyncChunk;
     type Error = Error;
 
     fn poll(&mut self) -> Poll<Option<Self::Item>, Self::Error> {

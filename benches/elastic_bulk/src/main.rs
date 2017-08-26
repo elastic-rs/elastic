@@ -6,11 +6,6 @@
 //! 
 //! If you compile with `--features profile_memory` then it uses the system allocator 
 //! to play nicely with valgrind for profile_memory.
-//! 
-//! If you compile with `--features lazy_static` then the sample uses a borrowed
-//! request instead of an owned one.
-//! This will avoid allocating multiple copies of the request if the same body
-//! is used multiple times.
 
 #![cfg_attr(feature="profile_memory", feature(alloc_system))]
 #[cfg(feature="profile_memory")]

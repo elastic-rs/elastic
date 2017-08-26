@@ -304,7 +304,8 @@ pub mod http {
     */
 
     pub use reqwest::header;
-    pub use reqwest::Body;
+    pub use reqwest::Body as SyncBody;
+    pub use reqwest::unstable::async::Chunk as AsyncChunk;
 }
 
 pub mod client;

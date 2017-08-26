@@ -80,7 +80,7 @@ Document mapping is derived at compile-time from your _Plain Old Rust Structures
 struct MyDocument {
 	pub id: i32,
 	pub title: String,
-	pub timestamp: Date<EpochMillis>,
+	pub timestamp: Date<DefaultDateMapping<EpochMillis>>,
 	pub content: Text<DefaultTextMapping>,
 }
 ```
