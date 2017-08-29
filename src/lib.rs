@@ -225,7 +225,6 @@ extern crate reqwest;
 extern crate url;
 extern crate bytes;
 extern crate tokio_core;
-extern crate tokio_io;
 extern crate futures;
 
 pub mod sync;
