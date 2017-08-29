@@ -103,7 +103,6 @@ Execute a search request asynchronously and parse the response:
 extern crate serde_json;
 extern crate elastic_reqwest;
 extern crate tokio_core;
-extern crate tokio_io;
 extern crate futures;
 
 use tokio_core::reactor::Core;
@@ -225,7 +224,6 @@ extern crate reqwest;
 extern crate url;
 extern crate bytes;
 extern crate tokio_core;
-extern crate tokio_io;
 extern crate futures;
 
 pub mod sync;
