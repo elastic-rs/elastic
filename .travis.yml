@@ -8,6 +8,4 @@ rust:
 script:
   - |
       cargo test &&
-      cargo bench &&
-      cd examples/typed &&
-      cargo build
+      cargo bench
