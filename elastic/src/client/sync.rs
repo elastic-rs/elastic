@@ -9,6 +9,8 @@ use client::{private, Client, Sender, RequestParams};
 
 /** 
 A synchronous Elasticsearch client.
+
+Use a [`SyncClientBuilder`][SyncClientBuilder] to configure and build a `SyncClient`.
  
 # Examples
 
@@ -27,6 +29,8 @@ let response = client.request(PingRequest::new())
 # Ok(())
 # }
 ```
+
+[SyncClientBuilder]: struct.SyncClientBuilder.html
 */
 pub type SyncClient = Client<SyncSender>;
 

@@ -156,7 +156,7 @@ impl<TDocument> IndexRequestBuilder<SyncSender, TDocument>
     where TDocument: Serialize
 {
     /**
-    Send a `IndexRequestBuilder` synchronously using a [`SyncClient`]().
+    Send a `IndexRequestBuilder` synchronously using a [`SyncClient`][SyncClient].
 
     This will block the current thread until a response arrives and is deserialised.
 
@@ -192,6 +192,8 @@ impl<TDocument> IndexRequestBuilder<SyncSender, TDocument>
     # Ok(())
     # }
     ```
+
+    [SyncClient]: ../type.SyncClient.html
     */
     pub fn send(self) -> Result<IndexResponse> {
         let req = self.inner.into_sync_request()?;
@@ -209,7 +211,7 @@ impl<TDocument> IndexRequestBuilder<AsyncSender, TDocument>
     where TDocument: Serialize + Send + 'static
 {
     /**
-    Send a `IndexRequestBuilder` asynchronously using an [`AsyncClient`]().
+    Send a `IndexRequestBuilder` asynchronously using an [`AsyncClient`][AsyncClient].
     
     This will return a future that will resolve to the deserialised index response.
 
@@ -253,6 +255,8 @@ impl<TDocument> IndexRequestBuilder<AsyncSender, TDocument>
     # Ok(())
     # }
     ```
+
+    [AsyncClient]: ../type.AsyncClient.html
     */
     pub fn send(self) -> Box<Future<Item = IndexResponse, Error = Error>> {
         let (client, params) = (self.client, self.params);

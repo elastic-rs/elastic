@@ -12,7 +12,8 @@ A modular and efficient native client for the Elasticsearch REST API.
 This crate depends heavily on the following crates:
 
 - [`reqwest`/`hyper`][reqwest] as the default HTTP layer
-- [`serde`/`serde_json`][serde] for serialisation.
+- [`serde`/`serde_json`][serde] for serialisation
+- [`futures`/`tokio`][tokio] for async io.
 
 `elastic` is designed to scale up to the complexity of Elasticsearch's API, and with the complexity of the environments Elasticsearch is deployed in.
 
@@ -48,8 +49,8 @@ extern crate elastic_derive;
 
 ## Creating a synchronous client
 
-The [`SyncClient`][SyncClient] type is used to interact with an Elasticsearch cluster.
-A client can be created through the [`SyncClientBuilder`][SyncClientBuilder].
+The [`SyncClient`][SyncClient] type is an easy way to interact with an Elasticsearch cluster.
+A synchronous client can be created through the [`SyncClientBuilder`][SyncClientBuilder].
 
 The builder allows you to configure default parameters for all requests:
 
@@ -250,6 +251,7 @@ This crate glues these libraries together with some simple assumptions about how
 
 [reqwest]: https://github.com/seanmonstar/reqwest
 [serde]: https://serde.rs/
+[tokio]: https://tokio.rs
 [crates-io]: https://crates.io/crates/elastic
 [github]: https://github.com/elastic-rs/elastic
 

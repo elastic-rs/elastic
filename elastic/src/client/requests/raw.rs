@@ -7,10 +7,8 @@ use client::requests::{HttpRequest, RequestBuilder};
 A raw request builder that can be configured before sending.
 
 Call [`Client.request`][Client.request] to get an `IndexRequest`. 
-The `send` method will either send the request [synchronously][send-sync] or [asynchronously][send-async], depending on the `Client` it was created from.
+The `send` method will either send the request synchronously or asynchronously, depending on the `Client` it was created from.
 
-[send-sync]: #send-synchronously
-[send-async]: #send-asynchronously
 [Client.request]: ../struct.Client.html#raw-request
 */
 pub type RawRequestBuilder<TSender, TRequest, TBody> = RequestBuilder<TSender, RawRequestInner<TRequest, TBody>>;
@@ -42,10 +40,6 @@ impl<TSender> Client<TSender>
     The `request` method accepts any type that can be converted into a [`HttpRequest<'static>`][HttpRequest],
     which includes the endpoint types in the [`endpoints`][endpoints-mod] module.
 
-    For more details, see:
-
-    - [builder methods][builder-methods]
-    
     # Examples
     
     Send a cluster ping and read the returned metadata:
@@ -72,7 +66,6 @@ impl<TSender> Client<TSender>
 
     [HttpRequest]: requests/struct.HttpRequest.html
     [RawRequestBuilder]: requests/type.RawRequestBuilder.html
-    [builder-methods]: requests/type.RawRequestBuilder.html#builder-methods
     [endpoints-mod]: requests/endpoints/index.html
     */
     pub fn request<TRequest, TBody>(&self, req: TRequest) -> RawRequestBuilder<TSender, TRequest, TBody>
@@ -91,11 +84,11 @@ impl<TSender, TRequest, TBody> RawRequestBuilder<TSender, TRequest, TBody>
     /**
     Send a `RawRequestBuilder`.
 
-    If this request is for a [`SyncClient`](), then `send` will block the current thread until a response arrives and is deserialised.
+    If this request is for a [`SyncClient`][SyncClient], then `send` will block the current thread until a response arrives and is deserialised.
     The returned [`SyncResponseBuilder`][SyncResponseBuilder] can be used to parse the response.
 
-    If this request is for an [`AsyncClient`](), then `send` will return a future that will resolve to the deserialised index response.
-    The returned [`AsyncHttpResponse`][AsyncHttpResponse] can be used to parse the response.
+    If this request is for an [`AsyncClient`][AsyncClient], then `send` will return a future that will resolve to the deserialised index response.
+    The returned [`AsyncResponseBuilder`][AsyncResponseBuilder] can be used to parse the response.
 
     # Examples
 
@@ -151,7 +144,10 @@ impl<TSender, TRequest, TBody> RawRequestBuilder<TSender, TRequest, TBody>
     # }
     ```
 
+    [SyncClient]: ../type.SyncClient.html
     [SyncResponseBuilder]: ../responses/struct.SyncResponseBuilder.html
+    [AsyncClient]: ../type.AsyncClient.html
+    [AsyncResponseBuilder]: ../responses/struct.AsyncResponseBuilder.html
     */
     pub fn send(self) -> TSender::Response {
         let client = self.client;

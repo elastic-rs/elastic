@@ -142,7 +142,7 @@ impl<TDocument> PutMappingRequestBuilder<SyncSender, TDocument>
     where TDocument: DocumentType
 {
     /**
-    Send a `PutMappingRequestBuilder` synchronously using a [`SyncClient`]().
+    Send a `PutMappingRequestBuilder` synchronously using a [`SyncClient`][SyncClient].
 
     This will block the current thread until a response arrives and is deserialised.
 
@@ -168,6 +168,8 @@ impl<TDocument> PutMappingRequestBuilder<SyncSender, TDocument>
     # Ok(())
     # }
     ```
+
+    [SyncClient]: ../type.SyncClient.html
     */
     pub fn send(self) -> Result<CommandResponse> {
         let req = self.inner.into_sync_request()?;
@@ -185,7 +187,7 @@ impl<TDocument> PutMappingRequestBuilder<AsyncSender, TDocument>
     where TDocument: DocumentType + Send + 'static
 {
     /**
-    Send a `PutMappingRequestBuilder` asynchronously using an [`AsyncClient`]().
+    Send a `PutMappingRequestBuilder` asynchronously using an [`AsyncClient`][AsyncClient].
     
     This will return a future that will resolve to the deserialised command response.
 
@@ -219,6 +221,8 @@ impl<TDocument> PutMappingRequestBuilder<AsyncSender, TDocument>
     # Ok(())
     # }
     ```
+
+    [AsyncClient]: type.AsyncClient.html
     */
     pub fn send(self) -> Box<Future<Item = CommandResponse, Error = Error>> {
         let (client, params) = (self.client, self.params);

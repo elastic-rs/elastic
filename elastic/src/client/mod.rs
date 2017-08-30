@@ -7,12 +7,12 @@ This module contains the HTTP client, as well as request and response types.
 
 `elastic` provides two clients:
 
-- [`SyncClient`]() for making synchronous requests
-- [`AsyncClient`]() for making asynchronous requests using  the [`futures`]() crate.
+- [`SyncClient`][SyncClient] for making synchronous requests
+- [`AsyncClient`][AsyncClient] for making asynchronous requests using the [`tokio`][tokio] stack.
 
 ## Building a synchronous client
 
-Use a [`SyncClientBuilder`]() to configure a synchronous client.
+Use a [`SyncClientBuilder`][SyncClientBuilder] to configure a synchronous client.
 
 ```
 # extern crate elastic;
@@ -29,7 +29,7 @@ The response is returned as a `Result`.
 
 ## Building an asynchronous client
 
-Use an [`AsyncClientBuilder`]() to configure an asynchronous client.
+Use an [`AsyncClientBuilder`][AsyncClientBuilder] to configure an asynchronous client.
 
 The asynchronous client requires a handle to a `tokio::reactor::Core`:
 
@@ -252,7 +252,7 @@ Both high-level request builders and raw requests have some common builder metho
 - [`params`][RequestBuilder.params] for setting url query parameters
 - a `send` method for sending the request.
 For high-level requests this returns a strongly-typed response.
-For raw requests this returns a [`ResponseBuilder`][ResponseBuilder].
+For raw requests this returns a response builder.
 If the request was sent synchronously, the response is returned as a `Result`.
 If the request was sent asynchronously, the response is returned as a `Future`.
 
@@ -322,7 +322,7 @@ match response {
 # }
 ```
 
-Alternatively, call [`SyncResponseBuilder.into_raw`][SyncResponseBuilder.into_raw] on a sent request to get a raw [`HttpResponse`][HttpResponse]:
+Alternatively, call [`SyncResponseBuilder.into_raw`][SyncResponseBuilder.into_raw] on a sent request to get a raw [`SyncHttpResponse`][SyncHttpResponse]:
 
 ```no_run
 # extern crate serde;
@@ -392,7 +392,7 @@ future.and_then(|response| {
 # }
 ```
 
-Alternatively, call [`AsyncResponseBuilder.into_raw`][AsyncResponseBuilder.into_raw] on a sent request to get a raw [`HttpResponse`][HttpResponse]:
+Alternatively, call [`AsyncResponseBuilder.into_raw`][AsyncResponseBuilder.into_raw] on a sent request to get a raw [`AsyncHttpResponse`][AsyncHttpResponse]:
 
 ```no_run
 # extern crate futures;
@@ -427,7 +427,7 @@ future.and_then(|body| {
 # }
 ```
 
-`AsyncHttpResponse` implements `tokio_io`s `AsyncRead` trait so you can buffer out the raw response data.
+`AsyncHttpResponse` implements the async `Stream` trait so you can buffer out the raw response data.
 For more details see the [`responses`][responses-mod] module.
 
 [docs-search]: http://www.elastic.co/guide/en/elasticsearch/reference/current/search-search.html
@@ -436,8 +436,14 @@ For more details see the [`responses`][responses-mod] module.
 [docs-mapping]: https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping.html
 [docs-create-index]: https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-create-index.html
 
+[tokio]: https://tokio.rs
+
 [endpoints-mod]: requests/endpoints/index.html
 [RequestParams]: struct.RequestParams.html
+[SyncClient]: type.SyncClient.html
+[SyncClientBuilder]: struct.SyncClientBuilder.html
+[AsyncClient]: type.AsyncClient.html
+[AsyncClientBuilder]: struct.AsyncClientBuilder.html
 [Client.request]: struct.Client.html#method.request
 [Client.search]: struct.Client.html#search-request
 [Client.document_get]: struct.Client.html#get-document
@@ -446,8 +452,8 @@ For more details see the [`responses`][responses-mod] module.
 [Client.index_create]: struct.Client.html#create-index-request
 
 [RequestBuilder]: requests/struct.RequestBuilder.html
-[RequestBuilder.params]: requests/struct.RequestBuilder.html#method.param
-[RawRequestBuilder]: requests/type.RawRequestBuilder.htmls
+[RequestBuilder.params]: requests/struct.RequestBuilder.html#method.params
+[RawRequestBuilder]: requests/type.RawRequestBuilder.html
 [SearchRequest]: requests/endpoints/struct.SearchRequest.html
 [GetRequest]: requests/endpoints/struct.GetRequest.html
 [IndexRequest]: requests/endpoints/struct.IndexRequest.html
@@ -465,7 +471,8 @@ For more details see the [`responses`][responses-mod] module.
 [GetResponse]: responses/type.GetResponse.html
 [IndexResponse]: responses/struct.IndexResponse.html
 [CommandResponse]: responses/struct.CommandResponse.html
-[HttpResponse]: responses/struct.HttpResponse.html
+[SyncHttpResponse]: responses/struct.SyncHttpResponse.html
+[AsyncHttpResponse]: responses/struct.AsyncHttpResponse.html
 [response-types]: responses/parse/trait.IsOk.html#implementors
 */
 
@@ -489,7 +496,9 @@ mod private {
 Represents a type that can send a request.
 
 You probably don't need to touch this trait directly.
-See the [`Client`]() type for making requests.
+See the [`Client`][Client] type for making requests.
+
+[Client]: struct.Client.html
 */
 pub trait Sender: private::Sealed + Clone {
     /// The kind of request body this sender accepts.
@@ -506,11 +515,11 @@ pub trait Sender: private::Sealed + Clone {
 /**
 A HTTP client for the Elasticsearch REST API.
 
-The `Client` is a structure that lets you create and send [`RequestBuilder`][RequestBuilder]s.
+The `Client` is a structure that lets you create and send request builders.
 `Client` is generic over a `Sender`, but rather than use `Client` directly, use one of:
 
-- [`SyncClient`]()
-- [`AsyncClient`]()
+- [`SyncClient`][SyncClient]
+- [`AsyncClient`][AsyncClient]
 
 # Examples
 
@@ -552,6 +561,9 @@ core.run(response_future)?;
 # Ok(())
 # }
 ```
+
+[SyncClient]: type.SyncClient.html
+[AsyncClient]: type.AsyncClient.html
 */
 #[derive(Clone)]
 pub struct Client<TSender> {

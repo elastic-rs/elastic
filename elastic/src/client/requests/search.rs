@@ -197,7 +197,7 @@ impl<TDocument, TBody> SearchRequestBuilder<SyncSender, TDocument, TBody>
           TBody: Into<<SyncSender as Sender>::Body>
 {
     /**
-    Send a `SearchRequestBuilder` synchronously using a [`SyncClient`]().
+    Send a `SearchRequestBuilder` synchronously using a [`SyncClient`][SyncClient].
 
     This will block the current thread until a response arrives and is deserialised.
 
@@ -227,6 +227,10 @@ impl<TDocument, TBody> SearchRequestBuilder<SyncSender, TDocument, TBody>
     # Ok(())
     # }
     ```
+
+    [SyncClient]: ../type.SyncClient.html
+    [documents-mod]: ../../types/document/index.html
+    [docs-querystring]: https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html
     */
     pub fn send(self) -> Result<SearchResponse<TDocument>> {
         let req = self.inner.into_request();
@@ -245,7 +249,7 @@ impl<TDocument, TBody> SearchRequestBuilder<AsyncSender, TDocument, TBody>
           TBody: Into<<AsyncSender as Sender>::Body>
 {
     /**
-    Send a `SearchRequestBuilder` asynchronously using an [`AsyncClient`]().
+    Send a `SearchRequestBuilder` asynchronously using an [`AsyncClient`][AsyncClient].
     
     This will return a future that will resolve to the deserialised search response.
 
@@ -283,6 +287,10 @@ impl<TDocument, TBody> SearchRequestBuilder<AsyncSender, TDocument, TBody>
     # Ok(())
     # }
     ```
+
+    [AsyncClient]: ../type.AsyncClient.html
+    [documents-mod]: ../../types/document/index.html
+    [docs-querystring]: https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html
     */
     pub fn send(self) -> Box<Future<Item = SearchResponse<TDocument>, Error = Error>> {
         let req = self.inner.into_request();

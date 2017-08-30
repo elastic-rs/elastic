@@ -154,7 +154,7 @@ impl<TDocument> GetRequestBuilder<SyncSender, TDocument>
     where TDocument: DeserializeOwned
 {
     /**
-    Send a `GetRequestBuilder` synchronously using a [`SyncClient`]().
+    Send a `GetRequestBuilder` synchronously using a [`SyncClient`][SyncClient].
 
     This will block the current thread until a response arrives and is deserialised.
 
@@ -183,6 +183,8 @@ impl<TDocument> GetRequestBuilder<SyncSender, TDocument>
     # Ok(())
     # }
     ```
+
+    [SyncClient]: ../type.SyncClient.html
     */
     pub fn send(self) -> Result<GetResponse<TDocument>> {
         let req = self.inner.into_request();
@@ -200,7 +202,7 @@ impl<TDocument> GetRequestBuilder<AsyncSender, TDocument>
     where TDocument: DeserializeOwned + Send + 'static,
 {
     /**
-    Send a `GetRequestBuilder` asynchronously using an [`AsyncClient`]().
+    Send a `GetRequestBuilder` asynchronously using an [`AsyncClient`][AsyncClient].
     
     This will return a future that will resolve to the deserialised get document response.
 
@@ -237,6 +239,8 @@ impl<TDocument> GetRequestBuilder<AsyncSender, TDocument>
     # Ok(())
     # }
     ```
+
+    [AsyncClient]: ../type.AsyncClient.html
     */
     pub fn send(self) -> Box<Future<Item = GetResponse<TDocument>, Error = Error>> {
         let req = self.inner.into_request();

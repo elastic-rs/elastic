@@ -44,6 +44,7 @@ impl AsyncResponseBuilder {
     /**
     Parse an API response type from the HTTP body.
     
+    The deserialisation may occur on a background thread.
     This will consume the `AsyncResponseBuilder` and return a [concrete response type][response-types] or an error.
     
     The response is parsed according to the `IsOk` implementation for `T` that will inspect the response and either return an `Ok(T)` or an `Err(ApiError)`.

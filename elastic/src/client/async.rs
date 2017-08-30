@@ -13,6 +13,8 @@ use client::{private, Client, Sender, RequestParams};
 /** 
 An asynchronous Elasticsearch client.
 
+Use an [`AsyncClientBuilder`][AsyncClientBuilder] to configure and build an `AsyncClient`.
+
 # Examples
 
 Create an asynchronous `Client` and send a ping request:
@@ -37,6 +39,8 @@ core.run(response_future)?;
 # Ok(())
 # }
 ```
+
+[AsyncClientBuilder]: struct.AsyncClientBuilder.html
 */
 pub type AsyncClient = Client<AsyncSender>;
 
