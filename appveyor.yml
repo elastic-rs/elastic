@@ -12,4 +12,4 @@ install:
   - cargo -vV
 build: false
 test_script:
-  - ps: cargo test --verbose --all
+  - cargo test --verbose --all
