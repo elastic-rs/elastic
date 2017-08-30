@@ -1,7 +1,6 @@
 #[macro_use]
 extern crate serde_derive;
 
-extern crate serde;
 extern crate rs_es;
 
 extern crate measure;

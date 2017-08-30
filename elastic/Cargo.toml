@@ -24,7 +24,6 @@ serde_json = "~1"
 reqwest = { version = "*", git = "https://github.com/seanmonstar/reqwest.git", features = ["unstable"] }
 futures = "*"
 tokio-core = "*"
-tokio-io = "*"
 futures-cpupool = "*"
 
 elastic_reqwest = { version = "*", git = "https://github.com/elastic-rs/elastic-reqwest.git" }
