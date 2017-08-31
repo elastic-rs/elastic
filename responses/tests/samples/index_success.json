@@ -1,0 +1,12 @@
+{
+  "_index": "testindex",
+  "_type": "testtype",
+  "_id": "1",
+  "_version": 1,
+  "_shards": {
+    "total": 2,
+    "successful": 1,
+    "failed": 0
+  },
+  "created": true
+}

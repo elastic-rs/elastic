@@ -1,0 +1,6 @@
+{
+  "_index": "testindex",
+  "_type": "testtype",
+  "_id": "100",
+  "found": false
+}

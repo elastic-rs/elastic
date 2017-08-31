@@ -1,0 +1,11 @@
+{
+	"error":{
+		"root_cause":[{
+			"type":"action_request_validation_exception",
+			"reason":"Validation Failed: 1: index is missing;2: type is missing;"
+		}],
+		"type":"action_request_validation_exception",
+		"reason":"Validation Failed: 1: index is missing;2: type is missing;"
+	},
+	"status":400
+}

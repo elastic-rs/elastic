@@ -1,0 +1,10 @@
+{
+  "_index": "testindex",
+  "_type": "testtype",
+  "_id": "1",
+  "_version": 8,
+  "found": true,
+  "_source": {
+    "id": 1
+  }
+}

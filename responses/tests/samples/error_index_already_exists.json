@@ -1,0 +1,17 @@
+{
+    "error": {
+        "root_cause": [
+            {
+                "type": "index_already_exists_exception",
+                "reason": "index [carrots/PhdlpbQbSYis7egyEAoGSw] already exists",
+                "index_uuid": "PhdlpbQbSYis7egyEAoGSw",
+                "index": "carrots"
+            }
+        ],
+        "type": "index_already_exists_exception",
+        "reason": "index [carrots/PhdlpbQbSYis7egyEAoGSw] already exists",
+        "index_uuid": "PhdlpbQbSYis7egyEAoGSw",
+        "index": "carrots"
+    },
+    "status": 400
+}

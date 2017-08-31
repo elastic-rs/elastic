@@ -1,0 +1,19 @@
+{
+  "took": 43,
+  "timed_out": false,
+  "_shards": {
+    "total": 81,
+    "successful": 81,
+    "failed": 0
+  },
+  "hits": {
+    "total": 15859,
+    "max_score": 0,
+    "hits": []
+  },
+  "aggregations": {
+    "myagg": {
+      "value": 10.0
+    }
+  }
+}
