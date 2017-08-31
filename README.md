@@ -151,7 +151,7 @@ The following is a simple set of guidelines that the codebase should follow. It'
 
 ## Navigating the repository
 
-`elastic` bundles up a couple of crates into a single client. If you want to pick and choose functionality, you can work with these crates independently.
+`elastic` bundles up a couple of crates into a single client. This might make it difficult to find your way around the codebase when following items or finding out where a change should live.
 
 ### `elastic`
 
