@@ -10,31 +10,27 @@ extern crate env_logger;
 extern crate serde_json;
 extern crate elastic;
 
+use std::error::Error;
 use serde_json::Value;
 use elastic::prelude::*;
 
-fn main() {
-    env_logger::init().unwrap();
-
+fn run() -> Result<(), Box<Error>> {
     // A reqwest HTTP client and default parameters.
     // The `params` includes the base node url (http://localhost:9200).
-    let client = ClientBuilder::new().build().unwrap();
-
-    let query = json!({
-        "query": {
-            "query_string": {
-                "query": "*"
-            }
-        }
-    });
+    let client = SyncClientBuilder::new().build()?;
 
     // Send the request and process the response.
     let res = client
         .search::<Value>()
         .index("_all")
-        .body(query.to_string())
-        .send()
-        .unwrap();
+        .body(json!({
+            "query": {
+                "query_string": {
+                    "query": "*"
+                }
+            }
+        }))
+        .send()?;
 
     // Iterate through the hits in the response.
     for hit in res.hits() {
@@ -42,4 +38,11 @@ fn main() {
     }
 
     println!("{:?}", res);
+
+    Ok(())
+}
+
+fn main() {
+    env_logger::init().unwrap();
+    run().unwrap();
 }

@@ -10,9 +10,7 @@ This example defines a search response that, for whatever reason, only includes 
 # extern crate serde;
 # #[macro_use] extern crate serde_derive;
 # extern crate elastic;
-# use std::io::Read;
 # use elastic::prelude::*;
-# use elastic::error::ParseResponseError;
 # use elastic::client::responses::parse::*;
 #[derive(Deserialize)]
 struct MyResponse {
@@ -43,7 +41,7 @@ The `MyResponse` type can then be used for deserialising a concrete response:
 # #[macro_use] extern crate serde_derive;
 # extern crate elastic;
 # use elastic::prelude::*;
-# use elastic::error::{ErrorKind, ParseResponseError};
+# use elastic::error::Error;
 # use elastic::client::responses::parse::*;
 # #[derive(Deserialize)]
 # struct MyResponse {
@@ -59,28 +57,26 @@ The `MyResponse` type can then be used for deserialising a concrete response:
 #         }
 #     }
 # }
-# fn main() {
-# let client = ClientBuilder::new().build().unwrap();
+# fn main() { run().unwrap() }
+# fn run() -> Result<(), Box<::std::error::Error>> {
+# let client = SyncClientBuilder::new().build()?;
 # let req = SearchRequest::new("");
 let response = client.request(req)
-                     .send()
-                     .and_then(into_response::<MyResponse>);
+                     .send()?
+                     .into_response::<MyResponse>();
 
 match response {
     Ok(response) => {
         println!("took: {}", response.took);
     },
+    Err(Error::Api(e)) => {
+        // handle a REST API error
+    },
     Err(e) => {
-        match *e.kind() {
-            ErrorKind::Api(ref e) => {
-                // handle a REST API error
-            },
-            ref e => {
-                // handle a HTTP or JSON error
-            }
-        }
+        // handle a HTTP or JSON error
     }
 }
+# Ok(())
 # }
 ```
 
@@ -90,6 +86,8 @@ See the [`IsOk`][IsOk] trait for more details.
 
 [IsOk]: trait.IsOk.html
 */
+
+pub(super) use elastic_reqwest::res::parse;
 
 pub use elastic_reqwest::res::parsing::{HttpResponseHead, IsOk, ResponseBody, MaybeOkResponse,
                                         MaybeBufferedResponse, Unbuffered, Buffered};

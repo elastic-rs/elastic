@@ -33,7 +33,7 @@ elastic_derive = "*"
 serde_json = "*"
 ```
 
-Create a `Client` and start making requests:
+Create a `SyncClient` and start making requests:
 
 ```rust
 #[macro_use]
@@ -47,7 +47,9 @@ use elastic::prelude::*;
 
 // A reqwest HTTP client and default parameters.
 // The builder includes the base node url (http://localhost:9200).
-let client = ClientBuilder::new().build().unwrap();
+let client = SyncClientBuilder::new().build()?;
+
+let query = "some query string";
 
 // A search request with a freeform body.
 let res = client.search::<Value>()
@@ -56,14 +58,12 @@ let res = client.search::<Value>()
                     json!({
                         "query": {
                             "query_string": {
-                                "query": "*"
+                                "query": query
                             }
                         }
                     })
-                    .to_string()
                 })
-                .send()
-                .unwrap();
+                .send()?;
 
 // Iterate through the hits in the response.
 for hit in res.hits() {
@@ -71,7 +71,8 @@ for hit in res.hits() {
 }
 ```
 
-See the [examples](https://github.com/elastic-rs/elastic/tree/master/elastic/examples) folder for complete samples.
+`elastic` also offers an `AsyncClient` for use with the `tokio` asynchronous io stack.
+See the [examples](https://github.com/elastic-rs/elastic/tree/master/examples) folder for complete samples.
 
 ### Building documents
 
@@ -82,7 +83,7 @@ Document mapping is derived at compile-time from your _Plain Old Rust Structures
 struct MyDocument {
 	pub id: i32,
 	pub title: String,
-	pub timestamp: Date<EpochMillis>,
+	pub timestamp: Date<DefaultDateMapping<EpochMillis>>,
 	pub content: Text<DefaultTextMapping>,
 }
 ```

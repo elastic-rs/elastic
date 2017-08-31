@@ -9,15 +9,13 @@ A modular and efficient native client for the Elasticsearch REST API.
  --------------- | -------------
  `0.x`           | `5.x`
 
-The client provides a flexible API with a default happy-path so you can customise the
-way you use it.
-It depends heavily on the following crates:
+This crate depends heavily on the following crates:
 
 - [`reqwest`/`hyper`][reqwest] as the default HTTP layer
-- [`serde`/`serde_json`][serde] for serialisation.
+- [`serde`/`serde_json`][serde] for serialisation
+- [`futures`/`tokio`][tokio] for async io.
 
-`elastic` is designed to scale up to the complexity of Elasticsearch's API, and with the complexity
-of the environments Elasticsearch is deployed in.
+`elastic` is designed to scale up to the complexity of Elasticsearch's API, and with the complexity of the environments Elasticsearch is deployed in.
 
 # Usage
 
@@ -33,7 +31,6 @@ elastic_derive = "*"
 The following optional dependencies may also be useful:
 
 ```ignore
-json_str = "*"
 serde = "*"
 serde_json = "*"
 serde_derive = "*"
@@ -50,23 +47,29 @@ extern crate elastic_derive;
 
 # Examples
 
-## Creating a client
+## Creating a synchronous client
 
-The [`Client`][Client] type is used to make interact with an Elasticsearch cluster.
-The `Client` will use a default set of request parameters that are passed to each request.
-Properties like the host and query parameters can be configured for all requests:
+The [`SyncClient`][SyncClient] type is an easy way to interact with an Elasticsearch cluster.
+A synchronous client can be created through the [`SyncClientBuilder`][SyncClientBuilder].
+
+The builder allows you to configure default parameters for all requests:
 
 ```no_run
+# extern crate elastic;
+# fn main() { run().unwrap() }
+# fn run() -> Result<(), Box<::std::error::Error>> {
 use elastic::prelude::*;
 use elastic::http::header::Authorization;
 
-let builder = ClientBuilder::new()
+let builder = SyncClientBuilder::new()
     .base_url("http://es_host:9200")
     .params(|p| p
         .url_param("pretty", true)
         .header(Authorization("let me in".to_owned())));
 
-let client = builder.build().unwrap();
+let client = builder.build()?;
+# Ok(())
+# }
 ```
 
 Individual requests can override these parameter values:
@@ -76,16 +79,18 @@ Individual requests can override these parameter values:
 # extern crate serde_json;
 # use serde_json::Value;
 # use elastic::prelude::*;
-# fn main() {
-let client = ClientBuilder::new().build().unwrap();
+# fn main() { run().unwrap() }
+# fn run() -> Result<(), Box<::std::error::Error>> {
+let client = SyncClientBuilder::new().build()?;
 
 let response = client.search::<Value>()
-                     .params(|p| p.url_param("pretty", true))
-                     .send()
-                     .unwrap();
+                     .params(|p| p.url_param("pretty", false))
+                     .send()?;
+# Ok(())
 # }
 ```
 
+`elastic` also offers an [`AsyncClient`][AsyncClient].
 For more details, see the [`client`][client-mod] and [`requests`][requests-mod] modules.
 
 ## Making requests
@@ -104,17 +109,19 @@ Derive `Serialize`, `Deserialize` and `ElasticType` on your document types:
 # #[macro_use] extern crate elastic_derive;
 # extern crate elastic;
 # use elastic::prelude::*;
-# fn main() {
+# fn main() { run().unwrap() }
+# fn run() -> Result<(), Box<::std::error::Error>> {
 #[derive(Serialize, Deserialize, ElasticType)]
 struct MyType {
     pub id: i32,
     pub title: String,
-    pub timestamp: Date<DefaultDateFormat>
+    pub timestamp: Date<DefaultDateMapping>
 }
+# Ok(())
 # }
 ```
 
-Call [`Client.put_mapping`][Client.put_mapping] to ensure an index has the right mapping for your document types:
+Call [`Client.document_put_mapping`][Client.document_put_mapping] to ensure an index has the right mapping for your document types:
 
 ```no_run
 # extern crate serde;
@@ -122,17 +129,18 @@ Call [`Client.put_mapping`][Client.put_mapping] to ensure an index has the right
 # #[macro_use] extern crate elastic_derive;
 # extern crate elastic;
 # use elastic::prelude::*;
-# fn main() {
+# fn main() { run().unwrap() }
+# fn run() -> Result<(), Box<::std::error::Error>> {
 # #[derive(Serialize, Deserialize, ElasticType)]
 # struct MyType { }
-# let client = ClientBuilder::new().build().unwrap();;
-client.put_mapping::<MyType>(index("myindex"))
-      .send()
-      .unwrap();
+# let client = SyncClientBuilder::new().build()?;
+client.document_put_mapping::<MyType>(index("myindex"))
+      .send()?;
+# Ok(())
 # }
 ```
 
-Then call [`Client.index_document`][Client.index_document] to index documents in Elasticsearch:
+Then call [`Client.document_index`][Client.document_index] to index documents in Elasticsearch:
 
 ```no_run
 # extern crate serde;
@@ -140,27 +148,28 @@ Then call [`Client.index_document`][Client.index_document] to index documents in
 # #[macro_use] extern crate elastic_derive;
 # extern crate elastic;
 # use elastic::prelude::*;
-# fn main() {
+# fn main() { run().unwrap() }
+# fn run() -> Result<(), Box<::std::error::Error>> {
 # #[derive(Serialize, Deserialize, ElasticType)]
 # struct MyType {
 #     pub id: i32,
 #     pub title: String,
-#     pub timestamp: Date<DefaultDateFormat>
+#     pub timestamp: Date<DefaultDateMapping>
 # }
-# let client = ClientBuilder::new().build().unwrap();;
+# let client = SyncClientBuilder::new().build()?;
 let doc = MyType {
     id: 1,
     title: String::from("A title"),
     timestamp: Date::now()
 };
 
-let response = client.index_document(index("myindex"), id(doc.id), doc)
-                     .send()
-                     .unwrap();
+let response = client.document_index(index("myindex"), id(doc.id), doc)
+                     .send()?;
+# Ok(())
 # }
 ```
 
-Call [`Client.get_document`][Client.get_document] to retrieve a single document from an index:
+Call [`Client.document_get`][Client.document_get] to retrieve a single document from an index:
 
 ```no_run
 # extern crate serde;
@@ -168,21 +177,22 @@ Call [`Client.get_document`][Client.get_document] to retrieve a single document 
 # #[macro_use] extern crate elastic_derive;
 # extern crate elastic;
 # use elastic::prelude::*;
-# fn main() {
+# fn main() { run().unwrap() }
+# fn run() -> Result<(), Box<::std::error::Error>> {
 # #[derive(Serialize, Deserialize, ElasticType)]
 # struct MyType {
 #     pub id: i32,
 #     pub title: String,
-#     pub timestamp: Date<DefaultDateFormat>
+#     pub timestamp: Date<DefaultDateMapping>
 # }
-# let client = ClientBuilder::new().build().unwrap();;
-let response = client.get_document::<MyType>(index("myindex"), id(1))
-                     .send()
-                     .unwrap();
+# let client = SyncClientBuilder::new().build()?;
+let response = client.document_get::<MyType>(index("myindex"), id(1))
+                     .send()?;
 
-if let Some(doc) = response.source {
+if let Some(doc) = response.into_document() {
     println!("id: {}", doc.id);
 }
+# Ok(())
 # }
 ```
 
@@ -194,31 +204,32 @@ Call [`Client.search`][Client.search] to execute [Query DSL][docs-search] querie
 
 ```no_run
 # extern crate serde;
+# #[macro_use] extern crate serde_json;
 # #[macro_use] extern crate serde_derive;
 # #[macro_use] extern crate elastic_derive;
-# #[macro_use] extern crate json_str;
 # extern crate elastic;
 # use elastic::prelude::*;
-# fn main() {
+# fn main() { run().unwrap() }
+# fn run() -> Result<(), Box<::std::error::Error>> {
 # #[derive(Debug, Serialize, Deserialize, ElasticType)]
 # struct MyType { }
-# let client = ClientBuilder::new().build().unwrap();;
+# let client = SyncClientBuilder::new().build()?;
 let response = client.search::<MyType>()
                      .index("myindex")
-                     .body(json_str!({
-                         query: {
-                            query_string: {
-                                query: "*"
+                     .body(json!({
+                         "query": {
+                            "query_string": {
+                                "query": "*"
                             }
                          }
                      }))
-                     .send()
-                     .unwrap();
+                     .send()?;
 
 // Iterate through the hits (of type `MyType`)
 for hit in response.hits() {
     println!("{:?}", hit);
 }
+# Ok(())
 # }
 ```
 
@@ -240,6 +251,7 @@ This crate glues these libraries together with some simple assumptions about how
 
 [reqwest]: https://github.com/seanmonstar/reqwest
 [serde]: https://serde.rs/
+[tokio]: https://tokio.rs
 [crates-io]: https://crates.io/crates/elastic
 [github]: https://github.com/elastic-rs/elastic
 
@@ -252,18 +264,21 @@ This crate glues these libraries together with some simple assumptions about how
 [docs-mapping]: https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping.html
 [docs-search]: http://www.elastic.co/guide/en/elasticsearch/reference/current/search-search.html
 
+[SyncClient]: client/type.SyncClient.html
+[SyncClientBuilder]: client/struct.SyncClientBuilder.html
+[AsyncClient]: client/type.AsyncClient.html
 [Client]: client/struct.Client.html
-[Client.put_mapping]: client/struct.Client.html#method.put_mapping
-[Client.index_document]: client/struct.Client.html#method.index_document
-[Client.get_document]: client/struct.Client.html#method.get_document
+[Client.document_put_mapping]: client/struct.Client.html#method.document_put_mapping
+[Client.document_index]: client/struct.Client.html#method.document_index
+[Client.document_get]: client/struct.Client.html#method.document_get
 [Client.search]: client/struct.Client.html#method.search
 [client-mod]: client/index.html
 [requests-mod]: client/requests/index.html
 [types-mod]: types/index.html
 */
 
-#![deny(warnings)]
-#![deny(missing_docs)]
+#![deny(warnings, missing_docs)]
+#![allow(unknown_lints, doc_markdown)]
 
 #[macro_use]
 extern crate log;
@@ -273,6 +288,9 @@ extern crate error_chain;
 extern crate serde;
 extern crate serde_json;
 extern crate reqwest;
+extern crate futures;
+extern crate futures_cpupool;
+extern crate tokio_core;
 extern crate elastic_reqwest;
 extern crate elastic_types;
 
@@ -287,7 +305,8 @@ pub mod http {
     */
 
     pub use reqwest::header;
-    pub use reqwest::Body;
+    pub use reqwest::Body as SyncBody;
+    pub use reqwest::unstable::async::Chunk as AsyncChunk;
 }
 
 pub mod client;
@@ -296,8 +315,14 @@ pub mod types;
 pub mod prelude {
     /*! A glob import for convenience. */
 
-    pub use client::{ClientBuilder, Client, RequestParams, into_response, into_raw};
+    pub use client::{SyncClientBuilder, AsyncClientBuilder, SyncClient, AsyncClient, RequestParams};
     pub use client::requests::*;
     pub use client::responses::*;
     pub use types::prelude::*;
+}
+
+#[cfg(test)]
+mod tests {
+    pub fn assert_send<T: Send>() {}
+    pub fn assert_sync<T: Sync>() {}
 }

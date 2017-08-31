@@ -1,0 +1,2 @@
+cd elastic
+cargo test

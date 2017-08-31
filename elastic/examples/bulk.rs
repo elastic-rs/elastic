@@ -10,30 +10,27 @@
 extern crate env_logger;
 extern crate elastic;
 
+use std::error::Error;
 use elastic::prelude::*;
 
-fn main() {
-    env_logger::init().unwrap();
-
+fn run() -> Result<(), Box<Error>> {
     // A HTTP client and request parameters
-    let client = ClientBuilder::new().build().unwrap();
+    let client = SyncClientBuilder::new().build()?;
 
     // Execute a bulk request
-    let bulk: BulkResponse = client
+    let bulk = client
         .request(BulkRequest::new(bulk_body()))
-        .send()
-        .and_then(into_response)
-        .unwrap();
+        .send()?
+        .into_response::<BulkResponse>()?;
 
-    println!("Successful operations");
-    for op in bulk.items.ok {
-        println!("{:?}", op);
+    for op in bulk {
+        match op {
+            Ok(op) => println!("ok: {:?}", op),
+            Err(op) => println!("err: {:?}", op)
+        }
     }
 
-    println!("Failed operations");
-    for op in bulk.items.err {
-        println!("{:?}", op);
-    }
+    Ok(())
 }
 
 fn bulk_body() -> String {
@@ -50,4 +47,9 @@ fn bulk_body() -> String {
     }
 
     bulk
+}
+
+fn main() {
+    env_logger::init().unwrap();
+    run().unwrap()
 }

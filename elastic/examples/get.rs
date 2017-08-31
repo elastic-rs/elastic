@@ -11,19 +11,18 @@ extern crate env_logger;
 extern crate serde_json;
 extern crate elastic;
 
+use std::error::Error as StdError;
 use serde_json::Value;
-use elastic::error::*;
+use elastic::error::{Error, ApiError};
 use elastic::prelude::*;
 
-fn main() {
-    env_logger::init().unwrap();
-
+fn run() -> Result<(), Box<StdError>> {
     // A reqwest HTTP client and default parameters.
     // The `params` includes the base node url (http://localhost:9200).
-    let client = ClientBuilder::new().build().unwrap();
+    let client = SyncClientBuilder::new().build()?;
 
     let res = client
-        .get_document::<Value>(index("typed_sample_index"), id("1"))
+        .document_get::<Value>(index("typed_sample_index"), id("1"))
         .ty("mytype")
         .send();
 
@@ -32,25 +31,27 @@ fn main() {
     // - The call succeeded but the document wasn't found
     // - The call failed because the index doesn't exist
     // - The call failed for some other reason
-    match res {
+    match res.map(|res| res.into_document()) {
         // The doc was found
-        Ok(GetResponse { source: Some(doc), .. }) => {
+        Ok(Some(doc)) => {
             println!("document found: {:?}", doc);
         }
         // The index exists, but the doc wasn't found
-        Ok(_) => {
+        Ok(None) => {
             println!("document not found, but index exists");
         }
-        // An error was returned
-        Err(e) => {
-            match *e.kind() {
-                // No index
-                ErrorKind::Api(ApiError::IndexNotFound { .. }) => {
-                    println!("index not found");
-                }
-                // Something went wrong, panic
-                _ => panic!(e),
-            }
-        }
+        // No index
+        Err(Error::Api(ApiError::IndexNotFound { .. })) => {
+            println!("index not found");
+        },
+        // Some other error
+        Err(e) => Err(e)?
     }
+
+    Ok(())
+}
+
+fn main() {
+    env_logger::init().unwrap();
+    run().unwrap()
 }

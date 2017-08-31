@@ -1,19 +1,14 @@
 /*!
 Request types for the Elasticsearch REST API.
 
-This module contains implementation details that are useful if you want to customise the request process,
-but aren't generally important for sending requests.
+This module contains implementation details that are useful if you want to customise the request process, but aren't generally important for sending requests.
 */
 
-use std::marker::PhantomData;
-use uuid::Uuid;
-use elastic_reqwest::ElasticClient;
+use futures_cpupool::CpuPool;
 
-use error::*;
-use client::{Client, RequestParams, IntoResponseBuilder};
-use client::responses::ResponseBuilder;
+use client::{Client, Sender, AsyncSender, RequestParams};
 
-pub use elastic_reqwest::IntoReqwestBody as IntoBody;
+pub use elastic_reqwest::{SyncBody, AsyncBody};
 pub use elastic_reqwest::req::{HttpRequest, HttpMethod, empty_body, Url, DefaultBody};
 pub use elastic_reqwest::req::params;
 pub use elastic_reqwest::req::endpoints;
@@ -21,106 +16,57 @@ pub use elastic_reqwest::req::endpoints;
 pub use self::params::*;
 pub use self::endpoints::*;
 
+mod raw;
+pub use self::raw::RawRequestBuilder;
+
+// Search requests
 mod search;
-pub use self::search::*;
+pub use self::search::SearchRequestBuilder;
 
-mod get_document;
-pub use self::get_document::*;
+// Document requests
+mod document_get;
+mod document_index;
+mod document_put_mapping;
+pub use self::document_get::GetRequestBuilder;
+pub use self::document_index::IndexRequestBuilder;
+pub use self::document_put_mapping::PutMappingRequestBuilder;
 
-mod index_document;
-pub use self::index_document::*;
-
-mod put_mapping;
-pub use self::put_mapping::*;
-
-mod create_index;
-pub use self::create_index::*;
+// Index requests
+mod index_create;
+pub use self::index_create::IndexCreateRequestBuilder;
 
 /**
-A builder for a raw request.
+A builder for a request.
 
 This structure wraps up a concrete REST API request type and lets you adjust parameters before sending it.
+The `RequestBuilder` has two generic parameters:
+
+- `TSender`: the kind of request sender. This can be either synchronous or asynchronous
+- `TRequest`: the inner request type, for example `SearchRequestBuilder`.
+
+`RequestBuilder` contains methods that are common to all request builders.
 */
-pub struct RequestBuilder<'a, TRequest> {
-    client: &'a Client,
+pub struct RequestBuilder<TSender, TRequest> 
+    where TSender: Sender
+{
+    client: Client<TSender>,
     params: Option<RequestParams>,
-    req: TRequest,
+    inner: TRequest,
 }
 
 /**
-A builder for a raw [`Client.request`][Client.request]. 
+# Methods for any request builder
 
-[Client.request]: ../struct.Client.html#method.request
+The following methods can be called on any request builder, whether it's synchronous or asynchronous.
 */
-pub struct RawRequestBuilder<TRequest, TBody> {
-    inner: TRequest,
-    _marker: PhantomData<TBody>
-}
-
-impl<TRequest, TBody> RawRequestBuilder<TRequest, TBody> {
-    fn new(req: TRequest) -> Self {
-        RawRequestBuilder {
-            inner: req,
-            _marker: PhantomData,
-        }
-    }
-}
-
-impl<TRequest, TBody> Into<HttpRequest<'static, TBody>> for RawRequestBuilder<TRequest, TBody>
-    where TRequest: Into<HttpRequest<'static, TBody>>,
-          TBody: IntoBody
+impl<TSender, TRequest> RequestBuilder<TSender, TRequest> 
+    where TSender: Sender
 {
-    fn into(self) -> HttpRequest<'static, TBody> {
-        self.inner.into()
-    }
-}
-
-impl Client {
-    /**
-    Create a [raw `RequestBuilder`][Client.raw_request] that can be configured before sending.
-    
-    The `request` method accepts any type that can be converted into a [`HttpRequest<'static>`][HttpRequest],
-    which includes the endpoint types in the [`endpoints`][endpoints-mod] module.
-    
-    # Examples
-    
-    Send a cluster ping and read the returned metadata:
-    
-    ```no_run
-    # use elastic::prelude::*;
-    # let client = ClientBuilder::new().build().unwrap();
-    // `PingRequest` implements `Into<HttpRequest>`
-    let req = PingRequest::new();
-    
-    // Turn the `PingRequest` into a `RequestBuilder`
-    let builder = client.request(req);
-    
-    // Send the `RequestBuilder` and parse as a `PingResponse`
-    let ping = builder.send().and_then(into_response::<PingResponse>).unwrap();
-
-    println!("cluster: {}", ping.name);
-    ```
-
-    [HttpRequest]: requests/struct.HttpRequest.html
-    [Client.raw_request]: requests/struct.RequestBuilder.html#raw-request-builder
-    [endpoints-mod]: requests/endpoints/index.html
-    */
-    pub fn request<'a, TRequest, TBody>(&'a self,
-                                        req: TRequest)
-                                        -> RequestBuilder<'a, RawRequestBuilder<TRequest, TBody>>
-        where TRequest: Into<HttpRequest<'static, TBody>>,
-              TBody: IntoBody
-    {
-        RequestBuilder::new(&self, None, RawRequestBuilder::new(req))
-    }
-}
-
-impl<'a, TRequest> RequestBuilder<'a, TRequest> {
-    fn new(client: &'a Client, params: Option<RequestParams>, req: TRequest) -> Self {
+    fn new(client: Client<TSender>, params: Option<RequestParams>, req: TRequest) -> Self {
         RequestBuilder {
             client: client,
             params: params,
-            req: req,
+            inner: req,
         }
     }
 
@@ -135,106 +81,102 @@ impl<'a, TRequest> RequestBuilder<'a, TRequest> {
     Add a url param to force an index refresh:
     
     ```no_run
+    # extern crate elastic;
     # use elastic::prelude::*;
-    # let client = ClientBuilder::new().build().unwrap();
+    # fn main() { run().unwrap() }
+    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # let client = SyncClientBuilder::new().build()?;
     # fn get_req() -> PingRequest<'static> { PingRequest::new() }
     let builder = client.request(get_req())
-                        .params(|params| params.url_param("refresh", true));
+                        .params(|p| p.url_param("refresh", true));
+    # Ok(())
+    # }
     ```
-
-    The `params` method is available for any request builder.
     */
     pub fn params<F>(mut self, builder: F) -> Self
         where F: Fn(RequestParams) -> RequestParams
     {
-        self.params = Some(builder(self.params.unwrap_or(self.client.params.clone())));
+        let params = self.params;
+        let client = self.client;
+
+        self.params = {
+            Some(builder(params.unwrap_or_else(|| client.params.clone())))
+        };
+
+        self.client = client;
 
         self
     }
 }
 
-impl<'a, TRequest, TBody> RequestBuilder<'a, RawRequestBuilder<TRequest, TBody>>
-    where TRequest: Into<HttpRequest<'static, TBody>>, 
-          TBody: IntoBody
-{
-    fn send_raw(self) -> Result<ResponseBuilder> {
-        let correlation_id = Uuid::new_v4();
-        let params = self.params.as_ref().unwrap_or(&self.client.params);
-        let req = self.req.inner.into();
+/**
+# Methods for asynchronous request builders
 
-        info!("Elasticsearch Request: correlation_id: '{}', path: '{}'", correlation_id, req.url.as_ref());
-
-        let res = match self.client.http.elastic_req(params, req) {
-            Ok(res) => {
-                info!("Elasticsearch Response: correlation_id: '{}', status: '{}'", correlation_id, res.status());
-
-                res
-            },
-            Err(e) => {
-                error!("Elasticsearch Response: correlation_id: '{}', error: '{}'", correlation_id, e);
-
-                Err(e)?
-            }
-        };
-
-        Ok(IntoResponseBuilder(res).into())
-    }
-}
-
-/** 
-# Raw request builder
-
-A request builder for a [raw request type][endpoints-mod].
-
-Call [`Client.request`][Client.request] to get a `RequestBuilder` for a raw request.
-
-[Client.request]: ../struct.Client.html#method.request
-[endpoints-mod]: endpoints/index.html
+The following methods can be called on any asynchronous request builder.
 */
-impl<'a, TRequest, TBody> RequestBuilder<'a, RawRequestBuilder<TRequest, TBody>>
-    where TRequest: Into<HttpRequest<'static, TBody>>, 
-          TBody: IntoBody
-{
+impl<TRequest> RequestBuilder<AsyncSender, TRequest> {
     /**
-    Send this request and return the response.
-    
-    This method consumes the `RequestBuilder` and returns a [`ResponseBuilder`][ResponseBuilder] that can be used to parse the response.
-
+    Override the thread pool used for deserialisation for this request.
+        
     # Examples
 
-    Send a raw request and parse it to a concrete response type:
+    Use the given thread pool to deserialise the response:
 
     ```no_run
+    # extern crate tokio_core;
+    # extern crate futures_cpupool;
     # extern crate elastic;
-    # extern crate serde_json;
-    # use serde_json::Value;
+    # use futures_cpupool::CpuPool;
     # use elastic::prelude::*;
-    # fn main() {
+    # fn main() { run().unwrap() }
+    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # let core = tokio_core::reactor::Core::new()?;
+    # let client = AsyncClientBuilder::new().build(&core.handle())?;
     # fn get_req() -> PingRequest<'static> { PingRequest::new() }
-    # let client = ClientBuilder::new().build().unwrap();
-    let response = client.request(get_req())
-                         .send()
-                         .and_then(into_response::<SearchResponse<Value>>)
-                         .unwrap();
+    let pool = CpuPool::new(4);
+    let builder = client.request(get_req())
+                        .serde_pool(pool.clone());
+    # Ok(())
     # }
     ```
-
-    [ResponseBuilder]: ../responses/struct.ResponseBuilder.html
+    
+    Never deserialise the response on a thread pool:
+    
+    ```no_run
+    # extern crate tokio_core;
+    # extern crate futures_cpupool;
+    # extern crate elastic;
+    # use futures_cpupool::CpuPool;
+    # use elastic::prelude::*;
+    # fn main() { run().unwrap() }
+    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # let core = tokio_core::reactor::Core::new()?;
+    # let client = AsyncClientBuilder::new().build(&core.handle())?;
+    # fn get_req() -> PingRequest<'static> { PingRequest::new() }
+    let builder = client.request(get_req())
+                        .serde_pool(None);
+    # Ok(())
+    # }
+    ```
     */
-    pub fn send(self) -> Result<ResponseBuilder> {
-        self.send_raw()
+    pub fn serde_pool<P>(mut self, pool: P) -> Self
+        where P: Into<Option<CpuPool>>
+    {
+        self.client.sender.serde_pool = pool.into();
+
+        self
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use prelude::*;
 
     #[test]
     fn request_builder_params() {
-        let client = Client::new(RequestParams::new("http://eshost:9200")).unwrap();
+        let client = SyncClientBuilder::new().base_url("http://eshost:9200").build().unwrap();
 
-        let req = RequestBuilder::new(&client, None, PingRequest::new())
+        let req = RequestBuilder::new(client.clone(), None, PingRequest::new())
             .params(|p| p.url_param("pretty", true))
             .params(|p| p.url_param("refresh", true));
 
@@ -242,7 +184,7 @@ mod tests {
 
         let (_, query) = params.get_url_qry();
 
-        assert_eq!("http://eshost:9200", &params.base_url);
+        assert_eq!("http://eshost:9200", params.get_base_url());
         assert_eq!("?pretty=true&refresh=true", query.unwrap());
     }
 }

@@ -1,46 +1,15 @@
-sudo: false
+sudo: required
 language: rust
-addons:
-  apt:
-    packages:
-      - libcurl4-openssl-dev
-      - libelf-dev
-      - libdw-dev
-      - binutils-dev # optional: only required for the --verify flag of coveralls
+services:
+  - docker
 
 matrix:
   include:
     - rust: stable
       env:
-        - CRATE="derive"
-    - rust: stable
-      env:
-        - CRATE="elastic"
-
+        - CHANNEL="stable"
     - rust: nightly
       env:
-        - CRATE="benches/rust/elastic"
-    - rust: nightly
-      env:
-        - CRATE="elastic"
-    - rust: nightly
-      env:
-        - CRATE="elastic/examples/account_sample"
-    - rust: nightly
-      env:
-        - CRATE="elastic/examples/async_sample"
+        - CHANNEL="nightly"
 
-env:
-  global:
-    - TRAVIS_CARGO_NIGHTLY_FEATURE=""
-
-before_script:
-  - |
-      pip install 'travis-cargo<0.2' --user &&
-      export PATH=$HOME/.local/bin:$PATH
-
-script:
-  - |
-      cd $CRATE &&
-      travis-cargo test &&
-      travis-cargo --only nightly bench
+script: ./ci/travis.sh

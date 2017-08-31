@@ -13,6 +13,7 @@ extern crate serde_derive;
 extern crate serde_json;
 extern crate elastic;
 
+use std::error::Error;
 use serde_json::Value;
 use elastic::prelude::*;
 use elastic::client::responses::parse::*;
@@ -45,12 +46,10 @@ impl IsOk for SearchResponse {
     }
 }
 
-fn main() {
-    env_logger::init().unwrap();
-
+fn run() -> Result<(), Box<Error>> {
     // A reqwest HTTP client and default parameters.
     // The `params` includes the base node url (http://localhost:9200).
-    let client = ClientBuilder::new().build().unwrap();
+    let client = SyncClientBuilder::new().build()?;
 
     let query = json!({
         "query": {
@@ -64,9 +63,8 @@ fn main() {
     let res = client
         .request(SearchRequest::new(query.to_string()))
         .params(|q| q.url_param("filter_path", "hits.hits._source"))
-        .send()
-        .and_then(into_response::<SearchResponse>)
-        .unwrap();
+        .send()?
+        .into_response::<SearchResponse>()?;
 
     // Iterate through the hits in the response.
     for hit in &res.hits.hits {
@@ -74,4 +72,11 @@ fn main() {
     }
 
     println!("{:?}", res);
+
+    Ok(())
+}
+
+fn main() {
+    env_logger::init().unwrap();
+    run().unwrap()
 }
