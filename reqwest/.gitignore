@@ -1,0 +1,20 @@
+# Compiled files
+*.o
+*.so
+*.rlib
+*.dll
+*.rs.bk
+
+# Executables
+*.exe
+
+Cargo.lock
+
+# Visual Studio
+*.user
+*.suo
+.vscode
+
+/target/
+/obj/
+.idea
