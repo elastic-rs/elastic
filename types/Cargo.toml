@@ -1,0 +1,7 @@
+[workspace]
+members = [
+    "types",
+    "types-derive",
+    "types-derive-internals",
+    "tests/derive-compile-test"
+]
