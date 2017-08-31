@@ -9,7 +9,6 @@ ssl = ["rs-es/ssl"]
 [dependencies]
 serde = "~1"
 serde_derive = "~1"
-
 rs-es = { version = "*", default-features = false }
 
 measure = { version = "*", path = "../measure" }

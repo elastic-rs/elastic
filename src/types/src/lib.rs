@@ -303,7 +303,7 @@ assert_eq!(2015, de.timestamp.year());
 ## A Complete Example
 
 Before digging in to the API, consider the following complete example for defining and mapping a
-type called `Article` on `nightly`.
+type called `Article`.
 As `json`, the `Article` type should look something like this:
 
 ```ignore

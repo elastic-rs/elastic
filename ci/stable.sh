@@ -1,2 +1,2 @@
-cd elastic
+cd src/elastic
 cargo test

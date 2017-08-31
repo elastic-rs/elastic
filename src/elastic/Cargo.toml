@@ -12,9 +12,6 @@ repository = "https://github.com/elastic-rs/elastic"
 travis-ci = { repository = "elastic-rs/elastic" }
 appveyor = { repository = "elastic-rs/elastic" }
 
-[features]
-nightly = ["elastic_reqwest/nightly"]
-
 [dependencies]
 error-chain = "0.11.0-rc.2"
 log = "~0.3.8"
@@ -26,11 +23,11 @@ futures = "*"
 tokio-core = "*"
 futures-cpupool = "*"
 
-elastic_reqwest = { version = "*", git = "https://github.com/elastic-rs/elastic-reqwest.git" }
+elastic_reqwest = { version = "*", path = "../reqwest" }
 elastic_types = "~0.19.0"
 
 [dev-dependencies]
 json_str = "~0.5"
 serde_derive = "~1"
-elastic_derive = { version = "~0.14.0", path = "../derive" }
+elastic_derive = { version = "~0.14.0", path = "../elastic_derive" }
 env_logger = "~0.4.3"

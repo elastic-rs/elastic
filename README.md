@@ -8,7 +8,7 @@ The API is targeting the Elastic Stack `5.x`.
 Quick reference:
 
 - [crates](#crates)
-- [examples](https://github.com/elastic-rs/elastic/tree/master/elastic/examples)
+- [examples](https://github.com/elastic-rs/elastic/tree/master/examples)
 
 ## Build Status
 Platform  | Channel | Status
@@ -108,9 +108,6 @@ Support for Elastic's plugin products, like `watcher` and `graph` could be added
 
 ## Development
 
-Development is active, but because functionality is split across crates it can be hard to track where the effort is going.
-There is a [GitHub Project](https://github.com/orgs/elastic-rs/projects/1) to easily track priorities at the crate-level. Other cross-crate concerns are also tracked as projects.
-
 `elastic` targets the `stable` channel, so it doesn't use any unstable features, but we'd like to track where improvements can be made by unstable features once they stabilise. There is another [GitHub Project](https://github.com/orgs/elastic-rs/projects/8) to record these possible enhancements.
 
 The `elastic` crate brings a few independent crates together into a cohesive API. It aims to provide the glue between them and offer some good defaults. If you have a more specialised use-case, you can pick and choose the crates that will best support it. See the [crates](#crates) section for a full list.
@@ -152,22 +149,33 @@ The following is a simple set of guidelines that the codebase should follow. It'
 - `elastic` should link back to the underlying crate when it re-exports a feature
 - Crates should link to `elastic` when it re-exports that feature
 
-## Crates
+## Navigating the repository
 
 `elastic` bundles up a couple of crates into a single client. If you want to pick and choose functionality, you can work with these crates independently.
 
-### [`elastic_reqwest`](https://github.com/elastic-rs/elastic-reqwest)
+### `elastic`
+
+This is the main crate that bundles up `elastic_requests`, `elastic_types`, `elastic_requests` and `elastic_responses`.
+
+### `elastic_reqwest`
 
 A synchronous [`reqwest`](https://github.com/seanmonstar/reqwest) implementation of the Elasticsearch REST API.
 
-### [`elastic_requests`](https://github.com/elastic-rs/elastic-requests)
+### `elastic_requests`
 
 Zero-copy request types for the REST API endpoints. These are automatically generated from the official spec.
 
-### [`elastic_responses`](https://github.com/elastic-rs/elastic-responses)
+### `elastic_responses`
 
 Idiomatic support for inspecting Elasticsearch responses and iterating over hits.
 
-### [`elastic_types`](https://github.com/elastic-rs/elastic-types)
+### `elastic_types`
 
 A library for building Elasticsearch types in Rust. Define your Elasticsearch types as PORS (Plain Old Rust Structures) and generate an equivalent Elasticsearch mapping from them, where correctness is enforced by Rust's type system.
+
+## License
+
+Licensed under either of these:
+ 
+- Apache License, Version 2.0 ([LICENSE-APACHE](LICENSE-APACHE) or http://apache.org/licenses/LICENSE-2.0)
+- MIT license ([LICENSE-MIT](LICENSE-MIT) or http://opensource.org/licenses/MIT)

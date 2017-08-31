@@ -2,19 +2,7 @@
 
 A crate to handle parsing and handling Elasticsearch search results which provides convenient iterators to step through the results returned. It is designed to work with [`elastic-reqwest`](https://github.com/elastic-rs/elastic-reqwest/).
 
-## Build Status
-Platform  | Channel | Status
-------------- | ------------- | -------------
-Linux / OSX  | Stable / Nightly | [![Build Status](https://travis-ci.org/elastic-rs/elastic-responses.svg?branch=master)](https://travis-ci.org/elastic-rs/elastic-responses)
-
-## Documentation
-
-Version  | Docs
-------------- | -------------
-`master`  | [![Documentation](https://img.shields.io/badge/docs-rustdoc-orange.svg)](https://elastic-rs.github.io/elastic-responses/elastic_responses/)
-`current`  | [![Documentation](https://img.shields.io/badge/docs-rustdoc-orange.svg)](https://docs.rs/elastic_responses/*/elastic_responses/)
-
-## Usage
+## Example
  
 `Cargo.toml`
 ```

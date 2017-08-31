@@ -1,7 +1,14 @@
 [workspace]
 members = [
-    "elastic",
-    "derive",
+    "src/elastic",
+    "src/elastic_derive",
+    "src/requests",
+    "src/requests_codegen",
+    "src/reqwest",
+    "src/responses",
+    "src/types",
+    "src/types_derive",
+    "src/types_derive_internals",
     "tests/run",
     "examples/account_sample",
     "examples/async_raw_sample"

@@ -7,6 +7,4 @@ description = "Code generated request types for the Elasticsearch REST API."
 documentation = "https://docs.rs/elastic_requests/"
 repository = "https://github.com/elastic-rs/elastic-requests"
 
-exclude = ["codegen/*"]
-
 [dependencies]

@@ -10,8 +10,8 @@ errors_only = []
 gzip = []
 
 [dependencies]
+elastic = { version = "*", path = "../../src/elastic" }
 reqwest = { version = "*", git = "https://github.com/seanmonstar/reqwest.git", features = ["unstable"] }
-elastic = { version = "*", path = "../../elastic", features = ["nightly"] }
 string_cache = { version = "*", optional = true }
 inlinable_string = { version = "*", features = ["serde"], optional = true }
 lazy_static = { version = "*" }

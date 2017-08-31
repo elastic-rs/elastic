@@ -2,19 +2,7 @@
 
 `elastic_requests` is a strongly-typed, code-generated implementation of the Elasticsearch REST API for Rust.
 
-This library doesn't provide HTTP transport directly, it's used by [`elastic_hyper`](https://github.com/elastic-rs/elastic-hyper) for that.
-
-## Build Status
-Platform  | Channel | Status
-------------- | ------------- | -------------
-Linux / OSX  | Stable / Nightly | [![Build Status](https://travis-ci.org/elastic-rs/elastic-requests.svg?branch=master)](https://travis-ci.org/elastic-rs/elastic-requests)
-
-## Documentation
-
-Version  | Docs
-------------- | -------------
-`master`  | [![Documentation](https://img.shields.io/badge/docs-rustdoc-orange.svg)](https://elastic-rs.github.io/elastic-requests/elastic_requests/)
-`current`  | [![Documentation](https://img.shields.io/badge/docs-rustdoc-orange.svg)](https://docs.rs/elastic_requests/*/elastic_requests/)
+This library doesn't provide HTTP transport directly, it's used by `elastic` and `elastic_reqwest` for that.
 
 The goal is to be zero-allocation where possible, so request types are just wrappers around potentially owned data.
 A structure is generated for each REST endpoint, that generate url paths from the given parameters.
@@ -81,5 +69,5 @@ This can be run from the `codegen` directory:
 
 ```
 $ cd codegen
-$ cargo run > ../src/genned.rs
+$ cargo run > ../requests/src/genned.rs
 ```

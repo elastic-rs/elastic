@@ -10,18 +10,6 @@ This library makes heavy use of [`serde`](https://serde.rs/) for serialisation. 
 
 This library is the document serialisation provider for the higher-level [`elastic`](https://github.com/elastic-rs/elastic) client.
 
-## Build Status
-Platform  | Channel | Status
-------------- | ---------------- | -------------
-Linux / OSX   | Stable / Nightly | [![Build Status](https://travis-ci.org/elastic-rs/elastic-types.svg?branch=master)](https://travis-ci.org/elastic-rs/elastic-types)
-Windows       | Nightly          | [![Build status](https://ci.appveyor.com/api/projects/status/0fk6ogm3inh3wip2?svg=true)](https://ci.appveyor.com/project/KodrAus/elastic-types-42k4g)
-
-## Documentation
-
-Version   | Docs
---------- | -------------
-`current` | [![Documentation](https://img.shields.io/badge/docs-rustdoc-orange.svg)](https://docs.rs/elastic_types/*/elastic_types/)
-
 ## Example
 
 Add `elastic_types` to your `Cargo.toml`:
