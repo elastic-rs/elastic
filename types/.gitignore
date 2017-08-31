@@ -1,4 +1,18 @@
-*.bk
+# Compiled files
+*.o
+*.so
+*.rlib
+*.dll
+*.rs.bk
 
 /target/
 /obj/
+
+# Executables
+*.exe
+
+Cargo.lock
+
+# Visual Studio
+*.user
+*.suo
