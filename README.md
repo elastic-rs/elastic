@@ -33,7 +33,7 @@ elastic_derive = "*"
 serde_json = "*"
 ```
 
-Create a `Client` and start making requests:
+Create a `SyncClient` and start making requests:
 
 ```rust
 #[macro_use]
@@ -47,7 +47,9 @@ use elastic::prelude::*;
 
 // A reqwest HTTP client and default parameters.
 // The builder includes the base node url (http://localhost:9200).
-let client = SyncClientBuilder::new().build().unwrap();
+let client = SyncClientBuilder::new().build()?;
+
+let query = "some query string";
 
 // A search request with a freeform body.
 let res = client.search::<Value>()
@@ -56,7 +58,7 @@ let res = client.search::<Value>()
                     json!({
                         "query": {
                             "query_string": {
-                                "query": "*"
+                                "query": query
                             }
                         }
                     })
@@ -69,7 +71,8 @@ for hit in res.hits() {
 }
 ```
 
-See the [examples](https://github.com/elastic-rs/elastic/tree/master/elastic/examples) folder for complete samples.
+`elastic` also offers an `AsyncClient` for use with the `tokio` asynchronous io stack.
+See the [examples](https://github.com/elastic-rs/elastic/tree/master/examples) folder for complete samples.
 
 ### Building documents
 
