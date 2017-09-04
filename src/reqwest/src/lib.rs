@@ -226,6 +226,7 @@ extern crate bytes;
 extern crate tokio_core;
 extern crate futures;
 
+pub mod params;
 pub mod sync;
 pub mod async;
 
@@ -253,7 +254,7 @@ pub mod res {
 pub use self::res::parse;
 
 use std::sync::Arc;
-use std::collections::BTreeMap;
+use std::collections::HashMap;
 use std::str;
 use reqwest::Error as ReqwestError;
 use reqwest::header::{Header, Headers, ContentType};
@@ -286,9 +287,21 @@ quick_error! {
 }
 
 /**
-Misc parameters for any request.
+A builder for `RequestParams`.
 
-The `RequestParams` struct allows you to set headers and url parameters for your requests.
+This builder doesn't expect a base url to be suppliedd up-front.
+*/
+#[derive(Clone)]
+pub struct RequestParamsBuilder {
+    url_params: Arc<HashMap<&'static str, String>>,
+    // We should be able to replace this with `Arc<HeadersMap>` from the `http` crate
+    headers_factory: Option<Arc<Fn(&mut Headers) + Send + Sync + 'static>>,
+}
+
+/**
+Parameters for a single REST API request.
+
+The `RequestParams` struct allows you to set headers and url parameters for a given request.
 By default, the `ContentType::json` header will always be added.
 Url parameters are added as simple key-value pairs, and serialised by [rust-url](http://servo.github.io/rust-url/url/index.html).
 
@@ -335,34 +348,22 @@ let params = RequestParams::default()
 */
 #[derive(Clone)]
 pub struct RequestParams {
-    /** Base url for Elasticsearch. */
-    base_url: String,
-    /** Simple key-value store for url query params. */
-    url_params: BTreeMap<&'static str, String>,
-    /** The complete set of headers that will be sent with the request. */
-    headers_factory: Option<Arc<Fn(&mut Headers) + Send + Sync + 'static>>,
+    base_url: Arc<str>,
+    inner: RequestParamsBuilder,
 }
 
-impl RequestParams {
+impl RequestParamsBuilder {
     /** 
     Create a new container for request parameters.
     
     This method takes a fully-qualified url for the Elasticsearch node.
     It will also set the `Content-Type` header to `application/json`.
     */
-    pub fn new<T: Into<String>>(base: T) -> Self {
-        RequestParams {
-            base_url: base.into(),
+    pub fn new() -> Self {
+        RequestParamsBuilder {
             headers_factory: None,
-            url_params: BTreeMap::new(),
+            url_params: Arc::new(HashMap::new()),
         }
-    }
-
-    /** Set the base url for the Elasticsearch node. */
-    pub fn base_url<T: Into<String>>(mut self, base: T) -> Self {
-        self.base_url = base.into();
-
-        self
     }
 
     /** 
@@ -371,7 +372,7 @@ impl RequestParams {
     These parameters are added as query parameters to request urls.
     */
     pub fn url_param<T: ToString>(mut self, key: &'static str, value: T) -> Self {
-        self.url_params.insert(key, value.to_string());
+        Arc::make_mut(&mut self.url_params).insert(key, value.to_string());
         self
     }
 
@@ -387,8 +388,6 @@ impl RequestParams {
     
     Each call to `headers` will chain to the end of the last call.
     This function allocates a new `Box` for each call.
-
-    Once we can depend on `http` this might go away.
     */
     fn headers<F>(mut self, headers_factory: F) -> Self
         where F: Fn(&mut Headers) + Send + Sync + 'static
@@ -407,6 +406,65 @@ impl RequestParams {
         self
     }
 
+    /**
+    Build `RequestParams`.
+    */
+    pub fn build<T: AsRef<str>>(&self, base: T) -> RequestParams {
+        RequestParams {
+            base_url: base.as_ref().into(),
+            inner: self.clone()
+        }
+    }
+}
+
+impl Default for RequestParamsBuilder {
+    fn default() -> Self {
+        RequestParamsBuilder::new()
+    }
+}
+
+impl RequestParams {
+    fn from_parts(base_url: Arc<str>, inner: RequestParamsBuilder) -> Self {
+        RequestParams {
+            base_url: base_url,
+            inner: inner,
+        }
+    }
+
+    /** 
+    Create a new container for request parameters.
+    
+    This method takes a fully-qualified url for the Elasticsearch node.
+    It will also set the `Content-Type` header to `application/json`.
+    */
+    pub fn new<T: AsRef<str>>(base: T) -> Self {
+        RequestParams::from_parts(base.as_ref().into(), RequestParamsBuilder::new())
+    }
+
+    /** Set the base url for the Elasticsearch node. */
+    pub fn base_url<T: AsRef<str>>(mut self, base: T) -> Self {
+        self.base_url = base.as_ref().into();        
+        self
+    }
+
+    /** 
+    Set a url param value.
+    
+    These parameters are added as query parameters to request urls.
+    */
+    pub fn url_param<T: ToString>(mut self, key: &'static str, value: T) -> Self {
+        self.inner = self.inner.url_param(key, value);
+        self
+    }
+
+    /** Set a request header. */
+    pub fn header<H>(mut self, header: H) -> Self
+        where H: Header + Clone
+    {
+        self.inner = self.inner.header(header);
+        self
+    }
+
     /** Get the base url. */
     pub fn get_base_url(&self) -> &str {
         &self.base_url
@@ -417,7 +475,7 @@ impl RequestParams {
         let mut headers = Headers::new();
         headers.set(ContentType::json());
 
-        if let Some(ref headers_factory) = self.headers_factory {
+        if let Some(ref headers_factory) = self.inner.headers_factory {
             headers_factory(&mut headers);
         }
 
@@ -432,9 +490,9 @@ impl RequestParams {
     If the value is `None`, then the length will be `0`.
     */
     pub fn get_url_qry(&self) -> (usize, Option<String>) {
-        if self.url_params.len() > 0 {
+        if self.inner.url_params.len() > 0 {
             let qry: String = Serializer::for_suffix(String::from("?"), 1)
-                .extend_pairs(self.url_params.iter())
+                .extend_pairs(self.inner.url_params.iter())
                 .finish();
 
             (qry.len(), Some(qry))
