@@ -12,7 +12,7 @@ pub mod multiple_addresses {
     impl<TStrategy> MultipleAddresses<TStrategy> where TStrategy: Strategy {
         pub fn next(&self) -> RequestParams {
             let address = self.strategy.next(&self.addresses);
-            self.base.build(address)
+            RequestParams::from_parts(address, self.base.clone())
         }
     }
 
