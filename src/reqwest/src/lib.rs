@@ -226,7 +226,7 @@ extern crate bytes;
 extern crate tokio_core;
 extern crate futures;
 
-pub mod params;
+pub mod sniffer;
 pub mod sync;
 pub mod async;
 
@@ -387,7 +387,7 @@ impl RequestParamsBuilder {
     Set a header value on the params.
     
     Each call to `headers` will chain to the end of the last call.
-    This function allocates a new `Box` for each call.
+    This function allocates a new `Arc` for each call.
     */
     fn headers<F>(mut self, headers_factory: F) -> Self
         where F: Fn(&mut Headers) + Send + Sync + 'static
@@ -563,9 +563,9 @@ mod tests {
     #[test]
     fn set_multiple_headers() {
         let req = RequestParams::default()
-            .headers(|h| h.set(Referer::new("/not-the-value")))
-            .headers(|h| h.set(Referer::new("/People.html#tim")))
-            .headers(|h| h.set(Authorization("let me in".to_owned())));
+            .header(Referer::new("/not-the-value"))
+            .header(Referer::new("/People.html#tim"))
+            .header(Authorization("let me in".to_owned()));
 
         let headers = req.get_headers();
 
@@ -578,14 +578,14 @@ mod tests {
     fn request_params_has_default_base_url() {
         let req = RequestParams::default();
 
-        assert_eq!("http://localhost:9200", req.base_url);
+        assert_eq!("http://localhost:9200", req.get_base_url());
     }
 
     #[test]
     fn request_params_can_set_base_url() {
         let req = RequestParams::default().base_url("http://eshost:9200");
 
-        assert_eq!("http://eshost:9200", req.base_url);
+        assert_eq!("http://eshost:9200", req.get_base_url());
     }
 
     #[test]
