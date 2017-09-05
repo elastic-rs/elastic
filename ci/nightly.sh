@@ -1,3 +1,5 @@
+set -ex
+
 cargo test --verbose --all
 cargo bench --verbose --all
 

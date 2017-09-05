@@ -109,7 +109,7 @@ macro_rules! build_request_sync {
             #[bench]
             fn $name(b: &mut test::Bencher) {
                 let params = RequestParams::default();
-                let cli = ClientSync::new().unwrap();
+                let cli = ClientSync::new();
 
                 b.iter(|| {
                     build_req_sync(&cli, &params, PingRequest::new())
@@ -127,7 +127,7 @@ macro_rules! build_request_async {
                 let core = Core::new().unwrap();
 
                 let params = RequestParams::default();
-                let cli = ClientAsync::new(&core.handle()).unwrap();
+                let cli = ClientAsync::new(&core.handle());
 
                 b.iter(|| {
                     build_req_async(&cli, &params, PingRequest::new())

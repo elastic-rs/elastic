@@ -5,8 +5,8 @@ use std::ops::Deref;
 use bytes::Bytes;
 use serde::de::DeserializeOwned;
 use serde_json::Value;
-use reqwest::unstable::async::{Client, Decoder, RequestBuilder, Response, Body};
-use futures::{Future, Stream, IntoFuture};
+use reqwest::unstable::async::{Client, ClientBuilder, Decoder, RequestBuilder, Response, Body};
+use futures::{Future, Stream};
 use tokio_core::reactor::Handle;
 
 use super::req::HttpRequest;
@@ -15,7 +15,8 @@ use super::{Error, RequestParams, build_url, build_method};
 
 /** Get a default `Client` and `RequestParams`. */
 pub fn default(handle: &Handle) -> Result<(Client, RequestParams), Error> {
-    Client::new(handle)
+    ClientBuilder::new()
+        .build(handle)
         .map(|cli| (cli, RequestParams::default()))
         .map_err(Into::into)
 }
@@ -107,7 +108,7 @@ pub trait AsyncElasticClient {
 }
 
 /** Build an asynchronous `reqwest::RequestBuilder` from an Elasticsearch request. */
-pub fn build_req<I, B>(client: &Client, params: &RequestParams, req: I) -> Result<RequestBuilder, Error>
+pub fn build_req<I, B>(client: &Client, params: &RequestParams, req: I) -> RequestBuilder
     where I: Into<HttpRequest<'static, B>>,
           B: Into<AsyncBody>
 {
@@ -117,7 +118,7 @@ pub fn build_req<I, B>(client: &Client, params: &RequestParams, req: I) -> Resul
     let method = build_method(req.method);
     let body = req.body;
 
-    let mut req = client.request(method, &url)?;
+    let mut req = client.request(method, &url);
     {
         req.headers(params.get_headers());
 
@@ -126,7 +127,7 @@ pub fn build_req<I, B>(client: &Client, params: &RequestParams, req: I) -> Resul
         }
     }
 
-    Ok(req)
+    req
 }
 
 impl AsyncElasticClient for Client {
@@ -134,11 +135,8 @@ impl AsyncElasticClient for Client {
         where I: Into<HttpRequest<'static, B>>,
               B: Into<AsyncBody>
     {
-        let fut = build_req(&self, params, req)
-            .into_future()
-            .and_then(|mut req| req.send().map_err(Into::into));
-
-        Box::new(fut)
+        let mut req = build_req(&self, params, req);
+        Box::new(req.send().map_err(Into::into))
     }
 }
 
@@ -181,7 +179,7 @@ mod tests {
     }
 
     fn expected_req(cli: &Client, method: Method, url: &str, body: Option<Vec<u8>>) -> RequestBuilder {
-        let mut req = cli.request(method, url).unwrap();
+        let mut req = cli.request(method, url);
         {
             req.header(ContentType::json());
 
@@ -203,31 +201,31 @@ mod tests {
 
     #[test]
     fn head_req() {
-        let cli = Client::new(&core().handle()).unwrap();
+        let cli = Client::new(&core().handle());
         let req = build_req(&cli, &params(), PingHeadRequest::new());
 
         let url = "eshost:9200/path/?pretty=true&q=*";
 
         let expected = expected_req(&cli, Method::Head, url, None);
 
-        assert_req(expected, req.unwrap());
+        assert_req(expected, req);
     }
 
     #[test]
     fn get_req() {
-        let cli = Client::new(&core().handle()).unwrap();
+        let cli = Client::new(&core().handle());
         let req = build_req(&cli, &params(), SimpleSearchRequest::new());
 
         let url = "eshost:9200/path/_search?pretty=true&q=*";
 
         let expected = expected_req(&cli, Method::Get, url, None);
 
-        assert_req(expected, req.unwrap());
+        assert_req(expected, req);
     }
 
     #[test]
     fn post_req() {
-        let cli = Client::new(&core().handle()).unwrap();
+        let cli = Client::new(&core().handle());
         let req = build_req(&cli,
                             &params(),
                             PercolateRequest::for_index_ty("idx", "ty", vec![]));
@@ -236,12 +234,12 @@ mod tests {
 
         let expected = expected_req(&cli, Method::Post, url, Some(vec![]));
 
-        assert_req(expected, req.unwrap());
+        assert_req(expected, req);
     }
 
     #[test]
     fn put_req() {
-        let cli = Client::new(&core().handle()).unwrap();
+        let cli = Client::new(&core().handle());
         let req = build_req(&cli,
                             &params(),
                             IndicesCreateRequest::for_index("idx", vec![]));
@@ -250,19 +248,19 @@ mod tests {
 
         let expected = expected_req(&cli, Method::Put, url, Some(vec![]));
 
-        assert_req(expected, req.unwrap());
+        assert_req(expected, req);
     }
 
     #[test]
     fn delete_req() {
-        let cli = Client::new(&core().handle()).unwrap();
+        let cli = Client::new(&core().handle());
         let req = build_req(&cli, &params(), IndicesDeleteRequest::for_index("idx"));
 
         let url = "eshost:9200/path/idx?pretty=true&q=*";
 
         let expected = expected_req(&cli, Method::Delete, url, None);
 
-        assert_req(expected, req.unwrap());
+        assert_req(expected, req);
     }
 
     #[test]

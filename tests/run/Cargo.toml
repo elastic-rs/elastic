@@ -2,6 +2,7 @@
 name = "run"
 version = "0.1.0"
 authors = ["Ashley Mannix <ashleymannix@live.com.au>"]
+publish = false
 
 [dependencies]
 elastic = { version = "*", path = "../../src/elastic" }

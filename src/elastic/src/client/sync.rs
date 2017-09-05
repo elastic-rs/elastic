@@ -1,6 +1,6 @@
 use uuid::Uuid;
 use elastic_reqwest::{SyncBody, SyncElasticClient};
-use reqwest::Client as SyncHttpClient;
+use reqwest::{Client as SyncHttpClient, ClientBuilder as SyncHttpClientBuilder};
 
 use error::{self, Result};
 use client::requests::HttpRequest;
@@ -189,7 +189,7 @@ impl SyncClientBuilder {
     */
     pub fn build(self) -> Result<SyncClient> {
         let http = self.http.map(Ok)
-                            .unwrap_or_else(SyncHttpClient::new)
+                            .unwrap_or_else(|| SyncHttpClientBuilder::new().build())
                             .map_err(error::build)?;
 
         Ok(SyncClient {
