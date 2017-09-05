@@ -3,7 +3,7 @@ use futures::Future;
 use futures_cpupool::CpuPool;
 use tokio_core::reactor::Handle;
 use elastic_reqwest::{AsyncBody, AsyncElasticClient};
-use reqwest::unstable::async::Client as AsyncHttpClient;
+use reqwest::unstable::async::{Client as AsyncHttpClient, ClientBuilder as AsyncHttpClientBuilder};
 
 use error::{self, Error, Result};
 use client::requests::HttpRequest;
@@ -237,7 +237,7 @@ impl AsyncClientBuilder {
     */
     pub fn build(self, handle: &Handle) -> Result<AsyncClient> {
         let http = self.http.map(Ok)
-                            .unwrap_or_else(|| AsyncHttpClient::new(handle))
+                            .unwrap_or_else(|| AsyncHttpClientBuilder::new().build(handle))
                             .map_err(error::build)?;
 
         Ok(AsyncClient {
