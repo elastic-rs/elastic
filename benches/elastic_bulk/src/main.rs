@@ -69,12 +69,12 @@ fn get_req() -> &'static str {
 
 #[cfg(feature="gzip")]
 fn http_client() -> reqwest::Client {
-    reqwest::Client::new().unwrap()
+    reqwest::Client::new()
 }
 
 #[cfg(not(feature="gzip"))]
 fn http_client() -> reqwest::Client {
-    let mut http = reqwest::Client::new().unwrap();
+    let mut http = reqwest::Client::new();
     http.gzip(false);
 
     http
