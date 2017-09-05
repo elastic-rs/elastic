@@ -1,3 +1,3 @@
-set -x
+set -ex
 
 ./ci/${CHANNEL}.sh
