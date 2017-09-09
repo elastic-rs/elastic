@@ -218,6 +218,8 @@ extern crate quick_error;
 extern crate elastic_requests;
 extern crate elastic_responses;
 extern crate serde;
+#[macro_use]
+extern crate serde_derive;
 #[cfg_attr(test, macro_use)] 
 extern crate serde_json;
 extern crate reqwest;
