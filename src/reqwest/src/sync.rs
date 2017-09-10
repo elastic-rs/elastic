@@ -1,6 +1,5 @@
 /*! Synchronous http client. */
 
-use std::ops::Deref;
 use std::io::Cursor;
 use std::fs::File;
 use serde::de::DeserializeOwned;
@@ -27,14 +26,6 @@ impl SyncBody {
     /** Convert the body into its inner value. */
     pub fn into_inner(self) -> Body {
         self.0
-    }
-}
-
-impl Deref for SyncBody {
-    type Target = Body;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
     }
 }
 

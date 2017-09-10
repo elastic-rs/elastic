@@ -1,7 +1,6 @@
 /*! Asynchronous http client. */
 
 use std::mem;
-use std::ops::Deref;
 use bytes::Bytes;
 use serde::de::DeserializeOwned;
 use serde_json::Value;
@@ -29,14 +28,6 @@ impl AsyncBody {
     /** Convert the body into its inner value. */
     pub fn into_inner(self) -> Body {
         self.0
-    }
-}
-
-impl Deref for AsyncBody {
-    type Target = Body;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
     }
 }
 
