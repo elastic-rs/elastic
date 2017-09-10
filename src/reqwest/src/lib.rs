@@ -226,6 +226,10 @@ extern crate bytes;
 extern crate tokio_core;
 extern crate futures;
 
+mod private {
+    pub trait Sealed {}
+}
+
 pub mod sync;
 pub mod async;
 

@@ -3,7 +3,7 @@ use std::time::Duration;
 use tokio_timer::Timer;
 use futures::{stream, Future, Stream};
 use elastic::prelude::*;
-use elastic::error::Error;
+use elastic::Error;
 
 #[derive(Clone)]
 struct Ping {

@@ -6,9 +6,10 @@ use bytes::Bytes;
 use serde::de::DeserializeOwned;
 use serde_json::Value;
 use reqwest::unstable::async::{Client, ClientBuilder, Decoder, RequestBuilder, Response, Body};
-use futures::{Future, Stream};
+use futures::{Future, Stream, Poll};
 use tokio_core::reactor::Handle;
 
+use private;
 use super::req::HttpRequest;
 use super::res::parsing::{Parse, IsOk};
 use super::{Error, RequestParams, build_url, build_method};
@@ -76,7 +77,7 @@ impl From<&'static str> for AsyncBody {
 }
 
 /** Represents a client that can send Elasticsearch requests asynchronously. */
-pub trait AsyncElasticClient {
+pub trait AsyncElasticClient: private::Sealed {
     /** 
     Send a request and get a response.
     
@@ -102,9 +103,31 @@ pub trait AsyncElasticClient {
     # }
     ```
     */
-    fn elastic_req<I, B>(&self, params: &RequestParams, req: I) -> Box<Future<Item = Response, Error = Error>>
+    fn elastic_req<I, B>(&self, params: &RequestParams, req: I) -> Pending
         where I: Into<HttpRequest<'static, B>>,
               B: Into<AsyncBody>;
+}
+
+/** A future returned by calling `elastic_req`. */
+pub struct Pending {
+    inner: Box<Future<Item = Response, Error = Error>>,
+}
+
+impl Pending {
+    fn new<F>(fut: F) -> Self where F: Future<Item = Response, Error = Error> + 'static {
+        Pending {
+            inner: Box::new(fut),
+        }
+    }
+}
+
+impl Future for Pending {
+    type Item = Response;
+    type Error = Error;
+
+    fn poll(&mut self) -> Poll<Self::Item, Self::Error> {
+        self.inner.poll()
+    }
 }
 
 /** Build an asynchronous `reqwest::RequestBuilder` from an Elasticsearch request. */
@@ -131,23 +154,49 @@ pub fn build_req<I, B>(client: &Client, params: &RequestParams, req: I) -> Reque
 }
 
 impl AsyncElasticClient for Client {
-    fn elastic_req<I, B>(&self, params: &RequestParams, req: I) -> Box<Future<Item = Response, Error = Error>>
+    fn elastic_req<I, B>(&self, params: &RequestParams, req: I) -> Pending
         where I: Into<HttpRequest<'static, B>>,
               B: Into<AsyncBody>
     {
         let mut req = build_req(&self, params, req);
-        Box::new(req.send().map_err(Into::into))
+        Pending::new(req.send().map_err(Into::into))
     }
 }
 
+impl private::Sealed for Client {}
+
 /** Represents a response that can be parsed into a concrete Elasticsearch response. */
-pub trait AsyncFromResponse<TResponse> {
+pub trait AsyncFromResponse<TResponse>: private::Sealed {
     /** Parse a response into a concrete response type. */
-    fn from_response(self, response: Response) -> Box<Future<Item = TResponse, Error = Error>>;
+    fn from_response(self, response: Response) -> FromResponse<TResponse>;
 }
 
+/** A future returned by calling `elastic_req`. */
+pub struct FromResponse<TResponse> {
+    inner: Box<Future<Item = TResponse, Error = Error>>,
+}
+
+impl<TResponse> FromResponse<TResponse> {
+    fn new<F>(fut: F) -> Self where F: Future<Item = TResponse, Error = Error> + 'static {
+        FromResponse {
+            inner: Box::new(fut),
+        }
+    }
+}
+
+impl<TResponse> Future for FromResponse<TResponse> {
+    type Item = TResponse;
+    type Error = Error;
+
+    fn poll(&mut self) -> Poll<Self::Item, Self::Error> {
+        self.inner.poll()
+    }
+}
+
+impl<TResponse> private::Sealed for Parse<TResponse> {}
+
 impl<TResponse: IsOk + DeserializeOwned + 'static> AsyncFromResponse<TResponse> for Parse<TResponse> {
-    fn from_response(self, mut response: Response) -> Box<Future<Item = TResponse, Error = Error>> {
+    fn from_response(self, mut response: Response) -> FromResponse<TResponse> {
         let status: u16 = response.status().into();
         let body_future = mem::replace(response.body_mut(), Decoder::empty())
             .concat2()
@@ -158,7 +207,7 @@ impl<TResponse: IsOk + DeserializeOwned + 'static> AsyncFromResponse<TResponse> 
                 self.from_slice(status, body.as_ref()).map_err(Into::into)
             });
 
-        Box::new(de_future)
+        FromResponse::new(de_future)
     }
 }
 

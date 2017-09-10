@@ -1,10 +1,18 @@
+/*!
+Builders for [get document requests][docs-get].
+
+[docs-get]: http://www.elastic.co/guide/en/elasticsearch/reference/current/docs-get.html
+*/
+
 use std::marker::PhantomData;
-use futures::Future;
+use futures::{Future, Poll};
 use serde::de::DeserializeOwned;
 
 use error::{Result, Error};
 use client::{Client, Sender, SyncSender, AsyncSender};
-use client::requests::{Index, Type, Id, GetRequest, RequestBuilder};
+use client::requests::RequestBuilder;
+use client::requests::params::{Index, Type, Id};
+use client::requests::endpoints::GetRequest;
 use client::requests::raw::RawRequestInner;
 use client::responses::GetResponse;
 use types::document::DocumentType;
@@ -18,7 +26,7 @@ The `send` method will either send the request [synchronously][send-sync] or [as
 [docs-get]: http://www.elastic.co/guide/en/elasticsearch/reference/current/docs-get.html
 [send-sync]: #send-synchronously
 [send-async]: #send-asynchronously
-[Client.document_get]: ../struct.Client.html#get-document
+[Client.document_get]: ../../struct.Client.html#get-document
 */
 pub type GetRequestBuilder<TSender, TDocument> = RequestBuilder<TSender, GetRequestInner<TDocument>>;
 
@@ -98,12 +106,12 @@ impl<TSender> Client<TSender>
     # }
     ```
 
-    [GetRequestBuilder]: requests/type.GetRequestBuilder.html
-    [builder-methods]: requests/type.GetRequestBuilder.html#builder-methods
-    [send-sync]: requests/type.GetRequestBuilder.html#send-synchronously
-    [send-async]: requests/type.GetRequestBuilder.html#send-asynchronously
-    [types-mod]: ../types/index.html
-    [documents-mod]: ../types/document/index.html
+    [GetRequestBuilder]: requests/document_get/type.GetRequestBuilder.html
+    [builder-methods]: requests/document_get/type.GetRequestBuilder.html#builder-methods
+    [send-sync]: requests/document_get/type.GetRequestBuilder.html#send-synchronously
+    [send-async]: requests/document_get/type.GetRequestBuilder.html#send-asynchronously
+    [types-mod]: ../../types/index.html
+    [documents-mod]: ../../types/document/index.html
     */
     pub fn document_get<TDocument>(&self,
                                        index: Index<'static>,
@@ -184,7 +192,7 @@ impl<TDocument> GetRequestBuilder<SyncSender, TDocument>
     # }
     ```
 
-    [SyncClient]: ../type.SyncClient.html
+    [SyncClient]: ../../type.SyncClient.html
     */
     pub fn send(self) -> Result<GetResponse<TDocument>> {
         let req = self.inner.into_request();
@@ -240,16 +248,40 @@ impl<TDocument> GetRequestBuilder<AsyncSender, TDocument>
     # }
     ```
 
-    [AsyncClient]: ../type.AsyncClient.html
+    [AsyncClient]: ../../type.AsyncClient.html
     */
-    pub fn send(self) -> Box<Future<Item = GetResponse<TDocument>, Error = Error>> {
+    pub fn send(self) -> Pending<TDocument> {
         let req = self.inner.into_request();
 
         let res_future = RequestBuilder::new(self.client, self.params, RawRequestInner::new(req))
             .send()
             .and_then(|res| res.into_response());
 
-        Box::new(res_future)
+        Pending::new(res_future)
+    }
+}
+
+/** A future returned by calling `send`. */
+pub struct Pending<TDocument> {
+    inner: Box<Future<Item = GetResponse<TDocument>, Error = Error>>,
+}
+
+impl<TDocument> Pending<TDocument> {
+    fn new<F>(fut: F) -> Self where F: Future<Item = GetResponse<TDocument>, Error = Error> + 'static {
+        Pending {
+            inner: Box::new(fut),
+        }
+    }
+}
+
+impl<TDocument> Future for Pending<TDocument> 
+    where TDocument: DeserializeOwned + Send + 'static,
+{
+    type Item = GetResponse<TDocument>;
+    type Error = Error;
+
+    fn poll(&mut self) -> Poll<Self::Item, Self::Error> {
+        self.inner.poll()
     }
 }
 

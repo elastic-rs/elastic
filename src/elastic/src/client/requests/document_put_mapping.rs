@@ -1,12 +1,20 @@
+/*!
+Builders for [put mapping requests][docs-mapping].
+
+[docs-mapping]: https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping.html
+*/
+
 use std::marker::PhantomData;
 use serde_json;
-use futures::{Future, IntoFuture};
+use futures::{Future, IntoFuture, Poll};
 use futures_cpupool::CpuPool;
 use serde::Serialize;
 
 use error::{self, Result, Error};
 use client::{Client, Sender, SyncSender, AsyncSender};
-use client::requests::{Index, Type, IndicesPutMappingRequest, RequestBuilder};
+use client::requests::RequestBuilder;
+use client::requests::params::{Index, Type};
+use client::requests::endpoints::IndicesPutMappingRequest;
 use client::requests::raw::RawRequestInner;
 use client::responses::CommandResponse;
 use types::document::{FieldType, DocumentType, IndexDocumentMapping};
@@ -20,10 +28,11 @@ The `send` method will either send the request [synchronously][send-sync] or [as
 [docs-mapping]: https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping.html
 [send-sync]: #send-synchronously
 [send-async]: #send-asynchronously
-[Client.document_put_mapping]: ../struct.Client.html#put-mapping-request
+[Client.document_put_mapping]: ../../struct.Client.html#put-mapping-request
 */
 pub type PutMappingRequestBuilder<TSender, TDocument> = RequestBuilder<TSender, PutMappingRequestInner<TDocument>>;
 
+#[doc(hidden)]
 pub struct PutMappingRequestInner<TDocument> {
     index: Index<'static>,
     ty: Type<'static>,
@@ -70,12 +79,12 @@ impl<TSender> Client<TSender>
 
     For more details on document types and mapping, see the [`types`][types-mod] module.
 
-    [PutMappingRequestBuilder]: requests/type.PutMappingRequestBuilder.html
-    [builder-methods]: requests/type.PutMappingRequestBuilder.html#builder-methods
-    [send-sync]: requests/type.PutMappingRequestBuilder.html#send-synchronously
-    [send-async]: requests/type.PutMappingRequestBuilder.html#send-asynchronously
-    [types-mod]: ../types/index.html
-    [documents-mod]: ../types/document/index.html
+    [PutMappingRequestBuilder]: requests/document_put_mapping/type.PutMappingRequestBuilder.html
+    [builder-methods]: requests/document_put_mapping/type.PutMappingRequestBuilder.html#builder-methods
+    [send-sync]: requests/document_put_mapping/type.PutMappingRequestBuilder.html#send-synchronously
+    [send-async]: requests/document_put_mapping/type.PutMappingRequestBuilder.html#send-asynchronously
+    [types-mod]: ../../types/index.html
+    [documents-mod]: ../../types/document/index.html
     */
     pub fn document_put_mapping<TDocument>(&self,
                                       index: Index<'static>)
@@ -169,7 +178,7 @@ impl<TDocument> PutMappingRequestBuilder<SyncSender, TDocument>
     # }
     ```
 
-    [SyncClient]: ../type.SyncClient.html
+    [SyncClient]: ../../type.SyncClient.html
     */
     pub fn send(self) -> Result<CommandResponse> {
         let req = self.inner.into_sync_request()?;
@@ -222,9 +231,9 @@ impl<TDocument> PutMappingRequestBuilder<AsyncSender, TDocument>
     # }
     ```
 
-    [AsyncClient]: type.AsyncClient.html
+    [AsyncClient]: ../../type.AsyncClient.html
     */
-    pub fn send(self) -> Box<Future<Item = CommandResponse, Error = Error>> {
+    pub fn send(self) -> Pending {
         let (client, params) = (self.client, self.params);
 
         let ser_pool = client.sender.serde_pool.clone();
@@ -236,7 +245,29 @@ impl<TDocument> PutMappingRequestBuilder<AsyncSender, TDocument>
             .and_then(|res| res.into_response())
         });
 
-        Box::new(res_future)
+        Pending::new(res_future)
+    }
+}
+
+/** A future returned by calling `send`. */
+pub struct Pending {
+    inner: Box<Future<Item = CommandResponse, Error = Error>>,
+}
+
+impl Pending {
+    fn new<F>(fut: F) -> Self where F: Future<Item = CommandResponse, Error = Error> + 'static {
+        Pending {
+            inner: Box::new(fut),
+        }
+    }
+}
+
+impl Future for Pending {
+    type Item = CommandResponse;
+    type Error = Error;
+
+    fn poll(&mut self) -> Poll<Self::Item, Self::Error> {
+        self.inner.poll()
     }
 }
 

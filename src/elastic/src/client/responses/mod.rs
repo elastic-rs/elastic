@@ -21,3 +21,13 @@ pub use elastic_reqwest::res::{SearchResponse, GetResponse, Shards, CommandRespo
 
 pub use elastic_reqwest::res::search;
 pub use elastic_reqwest::res::bulk;
+
+pub mod prelude {
+    /*! A glob import for convenience. */
+
+    pub use super::{SearchResponse, GetResponse, Shards, CommandResponse, IndexResponse, PingResponse,
+                               BulkResponse, BulkErrorsResponse};
+
+    pub use super::async::AsyncResponseBuilder;
+    pub use super::sync::SyncResponseBuilder;
+}

@@ -1,10 +1,18 @@
+/*!
+Builders for [search requests][docs-search].
+
+[docs-search]: https://www.elastic.co/guide/en/elasticsearch/reference/current/search-search.html
+*/
+
 use std::marker::PhantomData;
-use futures::Future;
+use futures::{Future, Poll};
 use serde::de::DeserializeOwned;
 
 use error::{Result, Error};
 use client::{Client, Sender, SyncSender, AsyncSender};
-use client::requests::{empty_body, DefaultBody, Index, Type, SearchRequest, RequestBuilder};
+use client::requests::{empty_body, DefaultBody, RequestBuilder};
+use client::requests::params::{Index, Type};
+use client::requests::endpoints::SearchRequest;
 use client::requests::raw::RawRequestInner;
 use client::responses::SearchResponse;
 
@@ -17,7 +25,7 @@ The `send` method will either send the request [synchronously][send-sync] or [as
 [docs-search]: https://www.elastic.co/guide/en/elasticsearch/reference/current/search-search.html
 [send-sync]: #send-synchronously
 [send-async]: #send-asynchronously
-[Client.search]: ../struct.Client.html#search-request
+[Client.search]: ../../struct.Client.html#search-request
 */
 pub type SearchRequestBuilder<TSender, TDocument, TBody> = RequestBuilder<TSender, SearchRequestInner<TDocument, TBody>>;
 
@@ -101,12 +109,12 @@ impl<TSender> Client<TSender>
     # }
     ```
 
-    [SearchRequestBuilder]: requests/type.SearchRequestBuilder.html
-    [builder-methods]: requests/type.SearchRequestBuilder.html#builder-methods
-    [send-sync]: requests/type.SearchRequestBuilder.html#send-synchronously
-    [send-async]: requests/type.SearchRequestBuilder.html#send-asynchronously
-    [types-mod]: ../types/index.html
-    [documents-mod]: ../types/document/index.html
+    [SearchRequestBuilder]: requests/search/type.SearchRequestBuilder.html
+    [builder-methods]: requests/search/type.SearchRequestBuilder.html#builder-methods
+    [send-sync]: requests/search/type.SearchRequestBuilder.html#send-synchronously
+    [send-async]: requests/search/type.SearchRequestBuilder.html#send-asynchronously
+    [types-mod]: ../../types/index.html
+    [documents-mod]: ../../types/document/index.html
     [docs-querystring]: https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html
     */
     pub fn search<TDocument>
@@ -228,8 +236,8 @@ impl<TDocument, TBody> SearchRequestBuilder<SyncSender, TDocument, TBody>
     # }
     ```
 
-    [SyncClient]: ../type.SyncClient.html
-    [documents-mod]: ../../types/document/index.html
+    [SyncClient]: ../../type.SyncClient.html
+    [documents-mod]: ../../../types/document/index.html
     [docs-querystring]: https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html
     */
     pub fn send(self) -> Result<SearchResponse<TDocument>> {
@@ -288,18 +296,42 @@ impl<TDocument, TBody> SearchRequestBuilder<AsyncSender, TDocument, TBody>
     # }
     ```
 
-    [AsyncClient]: ../type.AsyncClient.html
-    [documents-mod]: ../../types/document/index.html
+    [AsyncClient]: ../../type.AsyncClient.html
+    [documents-mod]: ../../../types/document/index.html
     [docs-querystring]: https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html
     */
-    pub fn send(self) -> Box<Future<Item = SearchResponse<TDocument>, Error = Error>> {
+    pub fn send(self) -> Pending<TDocument> {
         let req = self.inner.into_request();
 
         let res_future = RequestBuilder::new(self.client, self.params, RawRequestInner::new(req))
             .send()
             .and_then(|res| res.into_response());
 
-        Box::new(res_future)
+        Pending::new(res_future)
+    }
+}
+
+/** A future returned by calling `send`. */
+pub struct Pending<TDocument> {
+    inner: Box<Future<Item = SearchResponse<TDocument>, Error = Error>>,
+}
+
+impl<TDocument> Pending<TDocument> {
+    fn new<F>(fut: F) -> Self where F: Future<Item = SearchResponse<TDocument>, Error = Error> + 'static {
+        Pending {
+            inner: Box::new(fut),
+        }
+    }
+}
+
+impl<TDocument> Future for Pending<TDocument> 
+    where TDocument: DeserializeOwned + Send + 'static,
+{
+    type Item = SearchResponse<TDocument>;
+    type Error = Error;
+
+    fn poll(&mut self) -> Poll<Self::Item, Self::Error> {
+        self.inner.poll()
     }
 }
 

@@ -13,7 +13,7 @@ The below example sends a request and then checks the response for an `Error::Ap
 # extern crate serde_json;
 # use serde_json::Value;
 # use elastic::prelude::*;
-# use elastic::error::Error;
+# use elastic::Error;
 # fn main() { run().unwrap() }
 # fn run() -> Result<(), Box<::std::error::Error>> {
 # let client = SyncClientBuilder::new().build()?;
