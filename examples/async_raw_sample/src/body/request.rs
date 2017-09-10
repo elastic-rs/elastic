@@ -50,7 +50,7 @@ impl Stream for FileChunkStream {
 /// The second item is the async body to use in the request.
 pub fn mapped_file<P>
     (path: P)
-     -> Result<(impl Future<Item = (), Error = Error> + Send, FileBody), IoError>
+     -> (impl Future<Item = (), Error = Error> + Send, FileBody)
     where P: AsRef<Path> + Send + 'static
 {
     let (tx, rx) = FileBody::pair();
@@ -67,7 +67,7 @@ pub fn mapped_file<P>
 
     let tx_future = tx_future.map(|_| ());
 
-    Ok((tx_future, rx))
+    (tx_future, rx)
 }
 
 // mmap a file and push its chunks into a queue

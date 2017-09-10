@@ -64,7 +64,7 @@ fn send_request(url: &'static str,
                 pool: CpuPool)
                 -> impl Future<Item = BulkResponse, Error = Error> {
     // Get a future to buffer a bulk file
-    let (buffer_request_body, request_body) = body::request::mapped_file("./data/accounts.json").unwrap();
+    let (buffer_request_body, request_body) = body::request::mapped_file("./data/accounts.json");
     let buffer_request_body = pool.spawn(buffer_request_body);
 
     // Build a Bulk request
