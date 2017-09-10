@@ -131,7 +131,7 @@ fn put_doc(client: AsyncClient, doc: MyType) -> Box<Future<Item = (), Error = Er
 }
 
 fn search(client: AsyncClient, query: &'static str) -> Box<Future<Item = SearchResponse<MyType>, Error = Error>> {
-    client
+    let search = client
         .search()
         .index(sample_index())
         .body(json!({
@@ -141,7 +141,9 @@ fn search(client: AsyncClient, query: &'static str) -> Box<Future<Item = SearchR
                     }
                 }
           }))
-        .send()
+        .send();
+    
+    Box::new(search)
 }
 
 fn main() {

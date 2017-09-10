@@ -41,7 +41,7 @@ The `MyResponse` type can then be used for deserialising a concrete response:
 # #[macro_use] extern crate serde_derive;
 # extern crate elastic;
 # use elastic::prelude::*;
-# use elastic::error::Error;
+# use elastic::Error;
 # use elastic::client::responses::parse::*;
 # #[derive(Deserialize)]
 # struct MyResponse {

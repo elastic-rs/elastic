@@ -110,7 +110,7 @@ impl AsyncResponseBuilder {
 
     [response-types]: parse/trait.IsOk.html#implementors
     */
-    pub fn into_response<T>(mut self) -> Box<Future<Item = T, Error = Error>>
+    pub fn into_response<T>(mut self) -> IntoResponse<T>
         where T: IsOk + DeserializeOwned + Send + 'static
     {
         let status = self.status();
@@ -124,11 +124,35 @@ impl AsyncResponseBuilder {
         let body_future = body.concat2().map_err(move |e| error::response(status, e));
 
         if let Some(de_pool) = self.de_pool {
-            Box::new(body_future.and_then(move |body| de_pool.spawn_fn(move || de_fn(body))))
+            IntoResponse::new(body_future.and_then(move |body| de_pool.spawn_fn(move || de_fn(body))))
         }
         else {
-            Box::new(body_future.and_then(de_fn))
+            IntoResponse::new(body_future.and_then(de_fn))
         }
+    }
+}
+
+/** A future returned by calling `into_response`. */
+pub struct IntoResponse<T> {
+    inner: Box<Future<Item = T, Error = Error>>,
+}
+
+impl<T> IntoResponse<T> {
+    fn new<F>(fut: F) -> Self where F: Future<Item = T, Error = Error> + 'static {
+        IntoResponse {
+            inner: Box::new(fut),
+        }
+    }
+}
+
+impl<T> Future for IntoResponse<T> 
+    where T: IsOk + DeserializeOwned + Send + 'static
+{
+    type Item = T;
+    type Error = Error;
+
+    fn poll(&mut self) -> Poll<Self::Item, Self::Error> {
+        self.inner.poll()
     }
 }
 

@@ -1,5 +1,5 @@
 use uuid::Uuid;
-use futures::Future;
+use futures::{Future, Poll};
 use futures_cpupool::CpuPool;
 use tokio_core::reactor::Handle;
 use elastic_reqwest::{AsyncBody, AsyncElasticClient};
@@ -55,7 +55,7 @@ impl private::Sealed for AsyncSender {}
 
 impl Sender for AsyncSender {
     type Body = AsyncBody;
-    type Response = Box<Future<Item = AsyncResponseBuilder, Error = Error>>;
+    type Response = Pending;
 
     fn send<TRequest, TBody>(&self, req: TRequest, params: &RequestParams) -> Self::Response
         where TRequest: Into<HttpRequest<'static, TBody>>,
@@ -78,7 +78,29 @@ impl Sender for AsyncSender {
                 async_response(res, serde_pool)
             });
         
-        Box::new(req_future)
+        Pending::new(req_future)
+    }
+}
+
+/** A future returned by calling `send`. */
+pub struct Pending {
+    inner: Box<Future<Item = AsyncResponseBuilder, Error = Error>>,
+}
+
+impl Pending {
+    fn new<F>(fut: F) -> Self where F: Future<Item = AsyncResponseBuilder, Error = Error> + 'static {
+        Pending {
+            inner: Box::new(fut),
+        }
+    }
+}
+
+impl Future for Pending {
+    type Item = AsyncResponseBuilder;
+    type Error = Error;
+
+    fn poll(&mut self) -> Poll<Self::Item, Self::Error> {
+        self.inner.poll()
     }
 }
 

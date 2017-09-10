@@ -237,10 +237,10 @@ for hit in response.hits() {
 
 This crate is mostly a meta-package composed of a number of smaller pieces including:
 
-- [`elastic_reqwest`][elastic-reqwest] HTTP transport
-- [`elastic_requests`][elastic-requests] API request builders
-- [`elastic_responses`][elastic-responses] API response parsers
-- [`elastic_types`][elastic-types] tools for document and mapping APIs
+- `elastic_reqwest` HTTP transport
+- `elastic_requests` API request builders
+- `elastic_responses` API response parsers
+- `elastic_types` tools for document and mapping APIs
 
 This crate glues these libraries together with some simple assumptions about how they're going to be used.
 
@@ -254,11 +254,6 @@ This crate glues these libraries together with some simple assumptions about how
 [tokio]: https://tokio.rs
 [crates-io]: https://crates.io/crates/elastic
 [github]: https://github.com/elastic-rs/elastic
-
-[elastic-reqwest]: https://github.com/elastic-rs/elastic-reqwest
-[elastic-requests]: https://github.com/elastic-rs/elastic-requests
-[elastic-responses]: https://github.com/elastic-rs/elastic-responses
-[elastic-types]: https://github.com/elastic-rs/elastic-types
 
 [docs-root]: https://www.elastic.co/guide/en/elasticsearch/reference/current/index.html
 [docs-mapping]: https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping.html
@@ -295,6 +290,7 @@ extern crate elastic_reqwest;
 extern crate elastic_types;
 
 pub mod error;
+pub use error::Error;
 
 pub mod http {
     /*! 
@@ -315,9 +311,7 @@ pub mod types;
 pub mod prelude {
     /*! A glob import for convenience. */
 
-    pub use client::{SyncClientBuilder, AsyncClientBuilder, SyncClient, AsyncClient, RequestParams};
-    pub use client::requests::*;
-    pub use client::responses::*;
+    pub use client::prelude::*;
     pub use types::prelude::*;
 }
 

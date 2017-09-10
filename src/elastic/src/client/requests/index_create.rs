@@ -1,9 +1,16 @@
-use futures::Future;
+/*!
+Builders for [create index requests][docs-create-index].
+
+[docs-create-index]: https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-create-index.html
+*/
+
+use futures::{Future, Poll};
 
 use error::*;
 use client::{Client, Sender, SyncSender, AsyncSender};
-use client::requests::{empty_body, DefaultBody, Index, IndicesCreateRequest,
-                       RequestBuilder};
+use client::requests::{empty_body, DefaultBody, RequestBuilder};
+use client::requests::params::Index;
+use client::requests::endpoints::IndicesCreateRequest;
 use client::requests::raw::RawRequestInner;
 use client::responses::CommandResponse;
 
@@ -16,7 +23,7 @@ The `send` method will either send the request [synchronously][send-sync] or [as
 [docs-create-index]: https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-create-index.html
 [send-sync]: #send-synchronously
 [send-async]: #send-asynchronously
-[Client.index_create]: ../struct.Client.html#create-index-request
+[Client.index_create]: ../../struct.Client.html#create-index-request
 */
 pub type IndexCreateRequestBuilder<TSender, TBody> = RequestBuilder<TSender, IndexCreateRequestInner<TBody>>;
 
@@ -99,12 +106,12 @@ impl<TSender> Client<TSender>
 
     For more details on document types and mapping, see the [`types`][types-mod] module.
 
-    [IndexCreateRequestBuilder]: requests/type.IndexCreateRequestBuilder.html
-    [builder-methods]: requests/type.IndexCreateRequestBuilder.html#builder-methods
-    [send-sync]: requests/type.IndexCreateRequestBuilder.html#send-synchronously
-    [send-async]: requests/type.IndexCreateRequestBuilder.html#send-asynchronously
-    [types-mod]: ../types/index.html
-    [documents-mod]: ../types/document/index.html
+    [IndexCreateRequestBuilder]: requests/index_create/type.IndexCreateRequestBuilder.html
+    [builder-methods]: requests/index_create/type.IndexCreateRequestBuilder.html#builder-methods
+    [send-sync]: requests/index_create/type.IndexCreateRequestBuilder.html#send-synchronously
+    [send-async]: requests/index_create/type.IndexCreateRequestBuilder.html#send-asynchronously
+    [types-mod]: ../../types/index.html
+    [documents-mod]: ../../types/document/index.html
     */
     pub fn index_create(&self, index: Index<'static>) -> IndexCreateRequestBuilder<TSender, DefaultBody> {
         RequestBuilder::new(self.clone(),
@@ -180,7 +187,7 @@ impl<TBody> IndexCreateRequestBuilder<SyncSender, TBody>
     # }
     ```
 
-    [SyncClient]: type.SyncClient.html
+    [SyncClient]: ../../type.SyncClient.html
     */
     pub fn send(self) -> Result<CommandResponse> {
         let req = self.inner.into_request();
@@ -229,16 +236,38 @@ impl<TBody> IndexCreateRequestBuilder<AsyncSender, TBody>
     # }
     ```
 
-    [AsyncClient]: type.AsyncClient.html
+    [AsyncClient]: ../../type.AsyncClient.html
     */
-    pub fn send(self) -> Box<Future<Item = CommandResponse, Error = Error>> {
+    pub fn send(self) -> Pending {
         let req = self.inner.into_request();
 
         let res_future = RequestBuilder::new(self.client, self.params, RawRequestInner::new(req))
             .send()
             .and_then(|res| res.into_response());
 
-        Box::new(res_future)
+        Pending::new(res_future)
+    }
+}
+
+/** A future returned by calling `send`. */
+pub struct Pending {
+    inner: Box<Future<Item = CommandResponse, Error = Error>>,
+}
+
+impl Pending {
+    fn new<F>(fut: F) -> Self where F: Future<Item = CommandResponse, Error = Error> + 'static {
+        Pending {
+            inner: Box::new(fut),
+        }
+    }
+}
+
+impl Future for Pending {
+    type Item = CommandResponse;
+    type Error = Error;
+
+    fn poll(&mut self) -> Poll<Self::Item, Self::Error> {
+        self.inner.poll()
     }
 }
 

@@ -16,23 +16,23 @@ pub use elastic_reqwest::req::endpoints;
 pub use self::params::*;
 pub use self::endpoints::*;
 
-mod raw;
+pub mod raw;
 pub use self::raw::RawRequestBuilder;
 
 // Search requests
-mod search;
+pub mod search;
 pub use self::search::SearchRequestBuilder;
 
 // Document requests
-mod document_get;
-mod document_index;
-mod document_put_mapping;
+pub mod document_get;
+pub mod document_index;
+pub mod document_put_mapping;
 pub use self::document_get::GetRequestBuilder;
 pub use self::document_index::IndexRequestBuilder;
 pub use self::document_put_mapping::PutMappingRequestBuilder;
 
 // Index requests
-mod index_create;
+pub mod index_create;
 pub use self::index_create::IndexCreateRequestBuilder;
 
 /**
@@ -168,8 +168,18 @@ impl<TRequest> RequestBuilder<AsyncSender, TRequest> {
     }
 }
 
+pub mod prelude {
+    /*! A glob import for convenience. */
+
+    pub use super::params::*;
+    pub use super::endpoints::*;
+
+    pub use super::{empty_body, DefaultBody, RawRequestBuilder, SearchRequestBuilder, GetRequestBuilder, IndexRequestBuilder, PutMappingRequestBuilder, IndexCreateRequestBuilder};
+}
+
 #[cfg(test)]
 mod tests {
+    use super::RequestBuilder;
     use prelude::*;
 
     #[test]

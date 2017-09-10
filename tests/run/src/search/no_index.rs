@@ -24,10 +24,12 @@ impl IntegrationTest for NoIndex {
 
     // Execute a search request against that index
     fn request(&self, client: AsyncClient) -> Box<Future<Item = Self::Response, Error = Error>> {
-        client.search()
-              .index("no_index_idx")
-              .ty(Some("no_index_ty"))
-              .send()
+        let res = client.search()
+                        .index("no_index_idx")
+                        .ty(Some("no_index_ty"))
+                        .send();
+        
+        Box::new(res)
     }
 
     // Ensure an `IndexNotFound` error is returned

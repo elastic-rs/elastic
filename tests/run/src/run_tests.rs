@@ -4,7 +4,7 @@ use term_painter::ToStyle;
 use term_painter::Color::*;
 use futures::{stream, Future, Stream};
 use elastic::prelude::*;
-use elastic::error::Error;
+use elastic::Error;
 
 pub type TestResult = bool;
 pub type Test = Box<Fn(AsyncClient) -> Box<Future<Item = TestResult, Error = ()>>>;

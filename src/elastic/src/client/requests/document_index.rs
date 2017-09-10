@@ -1,11 +1,19 @@
+/*!
+Builders for [index requests][docs-index].
+
+[docs-index]: https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html
+*/
+
 use serde_json;
-use futures::{Future, IntoFuture};
+use futures::{Future, IntoFuture, Poll};
 use futures_cpupool::CpuPool;
 use serde::Serialize;
 
 use error::{self, Result, Error};
 use client::{Client, Sender, SyncSender, AsyncSender};
-use client::requests::{Index, Type, Id, IndexRequest, RequestBuilder};
+use client::requests::RequestBuilder;
+use client::requests::params::{Index, Type, Id};
+use client::requests::endpoints::IndexRequest;
 use client::requests::raw::RawRequestInner;
 use client::responses::IndexResponse;
 use types::document::DocumentType;
@@ -19,7 +27,7 @@ The `send` method will either send the request [synchronously][send-sync] or [as
 [docs-index]: https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html
 [send-sync]: #send-synchronously
 [send-async]: #send-asynchronously
-[Client.document_index]: ../struct.Client.html#index-request
+[Client.document_index]: ../../struct.Client.html#index-request
 */
 pub type IndexRequestBuilder<TSender, TDocument> = RequestBuilder<TSender, IndexRequestInner<TDocument>>;
 
@@ -81,12 +89,12 @@ impl<TSender> Client<TSender>
 
     For more details on document types and mapping, see the [`types`][types-mod] module.
     
-    [IndexRequestBuilder]: requests/type.IndexRequestBuilder.html
-    [builder-methods]: requests/type.IndexRequestBuilder.html#builder-methods
-    [send-sync]: requests/type.IndexRequestBuilder.html#send-synchronously
-    [send-async]: requests/type.IndexRequestBuilder.html#send-asynchronously
-    [types-mod]: ../types/index.html
-    [documents-mod]: ../types/document/index.html
+    [IndexRequestBuilder]: requests/document_index/type.IndexRequestBuilder.html
+    [builder-methods]: requests/document_index/type.IndexRequestBuilder.html#builder-methods
+    [send-sync]: requests/document_index/type.IndexRequestBuilder.html#send-synchronously
+    [send-async]: requests/document_index/type.IndexRequestBuilder.html#send-asynchronously
+    [types-mod]: ../../types/index.html
+    [documents-mod]: ../../types/document/index.html
     */
     pub fn document_index<TDocument>(&self,
                                          index: Index<'static>,
@@ -193,7 +201,7 @@ impl<TDocument> IndexRequestBuilder<SyncSender, TDocument>
     # }
     ```
 
-    [SyncClient]: ../type.SyncClient.html
+    [SyncClient]: ../../type.SyncClient.html
     */
     pub fn send(self) -> Result<IndexResponse> {
         let req = self.inner.into_sync_request()?;
@@ -256,9 +264,9 @@ impl<TDocument> IndexRequestBuilder<AsyncSender, TDocument>
     # }
     ```
 
-    [AsyncClient]: ../type.AsyncClient.html
+    [AsyncClient]: ../../type.AsyncClient.html
     */
-    pub fn send(self) -> Box<Future<Item = IndexResponse, Error = Error>> {
+    pub fn send(self) -> Pending {
         let (client, params) = (self.client, self.params);
 
         let ser_pool = client.sender.serde_pool.clone();
@@ -270,7 +278,29 @@ impl<TDocument> IndexRequestBuilder<AsyncSender, TDocument>
             .and_then(|res| res.into_response())
         });
 
-        Box::new(res_future)
+        Pending::new(res_future)
+    }
+}
+
+/** A future returned by calling `send`. */
+pub struct Pending {
+    inner: Box<Future<Item = IndexResponse, Error = Error>>,
+}
+
+impl Pending {
+    fn new<F>(fut: F) -> Self where F: Future<Item = IndexResponse, Error = Error> + 'static {
+        Pending {
+            inner: Box::new(fut),
+        }
+    }
+}
+
+impl Future for Pending {
+    type Item = IndexResponse;
+    type Error = Error;
+
+    fn poll(&mut self) -> Poll<Self::Item, Self::Error> {
+        self.inner.poll()
     }
 }
 

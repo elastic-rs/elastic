@@ -4,7 +4,7 @@ use std::path::Path;
 use ops::Client;
 use elastic::client::requests::{SyncBody, BulkRequest};
 use elastic::client::responses::bulk::{BulkErrorsResponse, ErrorItem};
-use elastic::error::Error as ResponseError;
+use elastic::Error as ResponseError;
 
 use model;
 

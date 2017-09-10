@@ -7,6 +7,7 @@ use serde::de::DeserializeOwned;
 use serde_json::Value;
 use reqwest::{Client, ClientBuilder, RequestBuilder, Response, Body};
 
+use private;
 use super::req::HttpRequest;
 use super::res::parsing::{Parse, IsOk};
 use super::{Error, RequestParams, build_url, build_method};
@@ -80,7 +81,7 @@ impl From<&'static str> for SyncBody {
 }
 
 /** Represents a client that can send Elasticsearch requests synchronously. */
-pub trait SyncElasticClient {
+pub trait SyncElasticClient: private::Sealed {
     /** 
     Send a request and get a response.
     
@@ -139,6 +140,8 @@ impl SyncElasticClient for Client {
         build_req(&self, params, req).send().map_err(Into::into)
     }
 }
+
+impl private::Sealed for Client {}
 
 /** Represents a response that can be parsed into a concrete Elasticsearch response. */
 pub trait SyncFromResponse<TResponse> {
