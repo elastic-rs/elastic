@@ -2,9 +2,16 @@
 
 set -o errexit -o nounset
 
-BRANCH=$(if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then echo $TRAVIS_BRANCH; else echo $TRAVIS_PULL_REQUEST_BRANCH; fi)
+cargo test --verbose --all
+cargo bench --verbose --all
 
-echo $BRANCH
+cd benches
+cargo build --all
+
+cd ../tests/run
+cargo run
+
+BRANCH=$(if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then echo $TRAVIS_BRANCH; else echo $TRAVIS_PULL_REQUEST_BRANCH; fi)
 
 if [ "$BRANCH" == "master" ]; then
     echo "uploading crate docs"
@@ -23,12 +30,3 @@ if [ "$BRANCH" == "master" ]; then
     echo "Pushing gh-pages to GitHub"
     git push -q upstream HEAD:refs/heads/gh-pages --force
 fi
-
-cargo test --verbose --all
-cargo bench --verbose --all
-
-cd benches
-cargo build --all
-
-cd ../tests/run
-cargo run
