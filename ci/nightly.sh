@@ -9,10 +9,10 @@ cargo build --all
 cd ../tests/run
 cargo run
 
-# if [ "$TRAVIS_BRANCH" != "master" ]; then
-#     echo "ignoring doc upload on non-master branch"
-#     exit 0
-# fi
+if [ "$TRAVIS_BRANCH" != "master" ]; then
+    echo "ignoring doc upload on non-master branch"
+    exit 0
+fi
 
 cd ../../
 cargo doc --all
