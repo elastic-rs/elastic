@@ -2,9 +2,11 @@
 
 set -o errexit -o nounset
 
-echo $TRAVIS_BRANCH
+BRANCH=$(if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then echo $TRAVIS_BRANCH; else echo $TRAVIS_PULL_REQUEST_BRANCH; fi)
 
-if [ "$TRAVIS_BRANCH" = "master" ]; then
+echo $BRANCH
+
+if [ "$BRANCH" == "master" ]; then
     echo "uploading crate docs"
 
     cargo doc --all
