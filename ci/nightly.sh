@@ -9,22 +9,19 @@ cargo build --all
 cd ../tests/run
 cargo run
 
-if [ "$TRAVIS_BRANCH" != "master" ]; then
-    echo "ignoring doc upload on non-master branch"
-    exit 0
+if [ "$TRAVIS_BRANCH" = "master" ]; then
+    cd ../../
+    cargo doc --all
+
+    REV=$(git rev-parse --short HEAD)
+    cd target/doc
+    git init
+    git remote add upstream "https://$GH_TOKEN@github.com/elastic-rs/elastic.git"
+    git config user.name "elastic-rs"
+    git config user.email "travis@elastic.rs"
+    git add -A .
+    git commit -qm "Build docs at ${TRAVIS_REPO_SLUG}@${REV}"
+
+    echo "Pushing gh-pages to GitHub"
+    git push -q upstream HEAD:refs/heads/gh-pages --force
 fi
-
-cd ../../
-cargo doc --all
-
-REV=$(git rev-parse --short HEAD)
-cd target/doc
-git init
-git remote add upstream "https://$GH_TOKEN@github.com/elastic-rs/elastic.git"
-git config user.name "elastic-rs"
-git config user.email "travis@elastic.rs"
-git add -A .
-git commit -qm "Build docs at ${TRAVIS_REPO_SLUG}@${REV}"
-
-echo "Pushing gh-pages to GitHub"
-git push -q upstream HEAD:refs/heads/gh-pages --force
