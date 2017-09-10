@@ -1,16 +1,10 @@
-set -ex
+#!/bin/bash
 
-cargo test --verbose --all
-cargo bench --verbose --all
-
-cd benches
-cargo build --all
-
-cd ../tests/run
-cargo run
+set -o errexit -o nounset
 
 if [ "$TRAVIS_BRANCH" = "master" ]; then
-    cd ../../
+    echo "uploading crate docs"
+
     cargo doc --all
 
     REV=$(git rev-parse --short HEAD)
@@ -25,3 +19,12 @@ if [ "$TRAVIS_BRANCH" = "master" ]; then
     echo "Pushing gh-pages to GitHub"
     git push -q upstream HEAD:refs/heads/gh-pages --force
 fi
+
+cargo test --verbose --all
+cargo bench --verbose --all
+
+cd benches
+cargo build --all
+
+cd ../tests/run
+cargo run
