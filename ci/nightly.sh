@@ -16,6 +16,7 @@ BRANCH=$(if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then echo $TRAVIS_BRANCH; els
 if [ "$BRANCH" == "master" ]; then
     echo "uploading crate docs"
 
+    cd ../../
     cargo doc --all
 
     REV=$(git rev-parse --short HEAD)
