@@ -2,6 +2,8 @@
 
 set -o errexit -o nounset
 
+echo $TRAVIS_BRANCH
+
 if [ "$TRAVIS_BRANCH" = "master" ]; then
     echo "uploading crate docs"
 
