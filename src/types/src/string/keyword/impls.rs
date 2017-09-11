@@ -21,13 +21,13 @@ let string = Keyword::<DefaultKeywordMapping>::new("my string value");
 ```
 */
 #[derive(Debug, Clone, Default, PartialEq)]
-pub struct Keyword<M>  where M: KeywordMapping {
+pub struct Keyword<TMapping>  where TMapping: KeywordMapping {
     value: String,
-    _m: PhantomData<M>,
+    _m: PhantomData<TMapping>,
 }
 
-impl<M> Keyword<M>
-    where M: KeywordMapping
+impl<TMapping> Keyword<TMapping>
+    where TMapping: KeywordMapping
 {
     /**
     Creates a new `Keyword` with the given mapping.
@@ -43,7 +43,7 @@ impl<M> Keyword<M>
     let string = Keyword::<DefaultKeywordMapping>::new("my string");
     ```
     */
-    pub fn new<I>(string: I) -> Keyword<M>
+    pub fn new<I>(string: I) -> Keyword<TMapping>
         where I: Into<String>
     {
         Keyword {
@@ -53,10 +53,10 @@ impl<M> Keyword<M>
     }
 
     /** Change the mapping of this string. */
-    pub fn remap<MInto>(self) -> Keyword<MInto>
-        where MInto: KeywordMapping
+    pub fn remap<TNewMapping>(keyword: Keyword<TMapping>) -> Keyword<TNewMapping>
+        where TNewMapping: KeywordMapping
     {
-        Keyword::<MInto>::new(self.value)
+        Keyword::new(keyword.value)
     }
 }
 

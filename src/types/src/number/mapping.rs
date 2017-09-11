@@ -59,25 +59,10 @@ This will produce the following mapping:
 ```
 */
 
-use serde::Serialize;
-use serde::ser::SerializeStruct;
-use private::field::{DocumentField, FieldMapping, SerializeField};
-use document::FieldType;
-
 macro_rules! number_mapping {
-    ($mapping:ident, $format:ident, $field_trait:ident, $datatype_name:expr, $std_ty:ty) => (
-        #[doc(hidden)]
-        #[derive(Default)]
-        pub struct $format;
-
+    ($mapping:ident, $pivot:ident, $field_trait:ident, $datatype_name:expr, $std_ty:ty, $private_mod:ident) => (
         /** A field that will be mapped as a number. */
-        pub trait $field_trait<M> {}
-
-        impl<T, M> FieldType<M, $format> for T
-            where M: $mapping,
-                T: $field_trait<M> + Serialize
-        {
-        }
+        pub trait $field_trait<TMapping> {}
 
         /** Base `number` mapping. */
         pub trait $mapping where
@@ -125,46 +110,58 @@ macro_rules! number_mapping {
             fn store() -> Option<bool> { None }
         }
 
-        impl <T> FieldMapping<$format> for T
-            where T: $mapping
-        {
-            fn data_type() -> &'static str { $datatype_name }
-        }
+        mod $private_mod {
+            use serde::Serialize;
+            use serde::ser::SerializeStruct;
+            use private::field::{FieldType, DocumentField, FieldMapping};
+            use super::{$field_trait, $mapping};
 
-        impl<T> SerializeField<$format> for T
-            where T: $mapping
-        {
-            type Field = DocumentField<T, $format>;
-        }
+            #[derive(Default)]
+            pub struct $pivot;
+            
+            impl<TField, TMapping> FieldType<TMapping, $pivot> for TField
+                where TField: $field_trait<TMapping> + Serialize,
+                      TMapping: $mapping
+            { }
 
-        impl <T> Serialize for DocumentField<T, $format> where
-        T: FieldMapping<$format> + $mapping {
-            fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where
-            S: ::serde::Serializer {
-                let mut state = try!(serializer.serialize_struct("mapping", 8));
+            impl<TMapping> FieldMapping<$pivot> for TMapping
+                where TMapping: $mapping
+            {
+                type DocumentField = DocumentField<TMapping, $pivot>;
 
-                try!(state.serialize_field("type", &T::data_type()));
+                fn data_type() -> &'static str { $datatype_name }
+            }
 
-                ser_field!(state, "coerce", T::coerce());
-                ser_field!(state, "boost", T::boost());
-                ser_field!(state, "doc_values", T::doc_values());
-                ser_field!(state, "ignore_malformed", T::ignore_malformed());
-                ser_field!(state, "include_in_all", T::include_in_all());
-                ser_field!(state, "null_value", T::null_value());
-                ser_field!(state, "store", T::store());
+            impl<TMapping> Serialize for DocumentField<TMapping, $pivot>
+                where TMapping: FieldMapping<$pivot> + $mapping 
+            {
+                fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where
+                S: ::serde::Serializer {
+                    let mut state = try!(serializer.serialize_struct("mapping", 8));
 
-                state.end()
+                    try!(state.serialize_field("type", TMapping::data_type()));
+
+                    ser_field!(state, "coerce", TMapping::coerce());
+                    ser_field!(state, "boost", TMapping::boost());
+                    ser_field!(state, "doc_values", TMapping::doc_values());
+                    ser_field!(state, "ignore_malformed", TMapping::ignore_malformed());
+                    ser_field!(state, "include_in_all", TMapping::include_in_all());
+                    ser_field!(state, "null_value", TMapping::null_value());
+                    ser_field!(state, "store", TMapping::store());
+
+                    state.end()
+                }
             }
         }
     )
 }
 
-number_mapping!(IntegerMapping, IntegerFormat, IntegerFieldType, "integer", i32);
-number_mapping!(LongMapping, LongFormat, LongFieldType, "long", i64);
-number_mapping!(ShortMapping, ShortFormat, ShortFieldType, "short", i16);
-number_mapping!(ByteMapping, ByteFormat, ByteFieldType, "byte", i8);
-number_mapping!(FloatMapping, FloatFormat, FloatFieldType, "float", f32);
-number_mapping!(DoubleMapping, DoubleFormat, DoubleFieldType, "double", f64);
+number_mapping!(IntegerMapping, IntegerFormat, IntegerFieldType, "integer", i32, private_i32);
+number_mapping!(LongMapping, LongFormat, LongFieldType, "long", i64, private_i64);
+number_mapping!(ShortMapping, ShortFormat, ShortFieldType, "short", i16, private_i16);
+number_mapping!(ByteMapping, ByteFormat, ByteFieldType, "byte", i8, private_i8);
+number_mapping!(FloatMapping, FloatFormat, FloatFieldType, "float", f32, private_f32);
+number_mapping!(DoubleMapping, DoubleFormat, DoubleFieldType, "double", f64, private_f64);
 
 /** Default mapping for an `integer` type. */
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
@@ -208,7 +205,7 @@ mod tests {
     use serde_json;
 
     use prelude::*;
-    use private::field::DocumentField;
+    use private::field::{FieldType, DocumentField};
 
     #[derive(Default, Clone)]
     pub struct MyIntegerMapping;
@@ -428,32 +425,32 @@ mod tests {
 
     #[test]
     fn i32_has_default_mapping() {
-        assert_eq!(DefaultIntegerMapping, i32::mapping());
+        assert_eq!(DefaultIntegerMapping, i32::field_mapping());
     }
 
     #[test]
     fn i64_has_default_mapping() {
-        assert_eq!(DefaultLongMapping, i64::mapping());
+        assert_eq!(DefaultLongMapping, i64::field_mapping());
     }
 
     #[test]
     fn i16_has_default_mapping() {
-        assert_eq!(DefaultShortMapping, i16::mapping());
+        assert_eq!(DefaultShortMapping, i16::field_mapping());
     }
 
     #[test]
     fn i8_has_default_mapping() {
-        assert_eq!(DefaultByteMapping, i8::mapping());
+        assert_eq!(DefaultByteMapping, i8::field_mapping());
     }
 
     #[test]
     fn f32_has_default_mapping() {
-        assert_eq!(DefaultFloatMapping, f32::mapping());
+        assert_eq!(DefaultFloatMapping, f32::field_mapping());
     }
 
     #[test]
     fn f64_has_default_mapping() {
-        assert_eq!(DefaultDoubleMapping, f64::mapping());
+        assert_eq!(DefaultDoubleMapping, f64::field_mapping());
     }
 
     #[test]

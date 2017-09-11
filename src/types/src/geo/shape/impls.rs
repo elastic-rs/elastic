@@ -25,13 +25,13 @@ let point: GeoShape<DefaultGeoShapeMapping> = GeoShape::new(
 ```
 */
 #[derive(Debug, Clone, PartialEq)]
-pub struct GeoShape<M>  where M: GeoShapeMapping {
+pub struct GeoShape<TMapping> where TMapping: GeoShapeMapping {
     value: Geometry,
-    _m: PhantomData<M>,
+    _m: PhantomData<TMapping>,
 }
 
-impl<M> GeoShape<M>
-    where M: GeoShapeMapping
+impl<TMapping> GeoShape<TMapping>
+    where TMapping: GeoShapeMapping
 {
     /**
     Creates a new `GeoShape` from the given `Geometry`.
@@ -55,7 +55,7 @@ impl<M> GeoShape<M>
     # }
     ```
     */
-    pub fn new<I>(geo: I) -> GeoShape<M>
+    pub fn new<I>(geo: I) -> GeoShape<TMapping>
         where I: Into<Geometry>
     {
         GeoShape {
@@ -65,19 +65,19 @@ impl<M> GeoShape<M>
     }
 
     /** Change the mapping of this geo shape. */
-    pub fn remap<MInto>(shape: GeoShape<M>) -> GeoShape<MInto> 
-        where MInto: GeoShapeMapping
+    pub fn remap<TNewMapping>(shape: GeoShape<TMapping>) -> GeoShape<TNewMapping> 
+        where TNewMapping: GeoShapeMapping
     {
         GeoShape::new(shape.value)
     }
 }
 
-impl<M> GeoShapeFieldType<M> for GeoShape<M> where M: GeoShapeMapping {}
+impl<TMapping> GeoShapeFieldType<TMapping> for GeoShape<TMapping> where TMapping: GeoShapeMapping {}
 
 impl_mapping_type!(Geometry, GeoShape, GeoShapeMapping);
 
-impl<M> Serialize for GeoShape<M>
-    where M: GeoShapeMapping
+impl<TMapping> Serialize for GeoShape<TMapping>
+    where TMapping: GeoShapeMapping
 {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
         where S: Serializer
@@ -86,15 +86,15 @@ impl<M> Serialize for GeoShape<M>
     }
 }
 
-impl<'de, M> Deserialize<'de> for GeoShape<M>
-    where M: GeoShapeMapping
+impl<'de, TMapping> Deserialize<'de> for GeoShape<TMapping>
+    where TMapping: GeoShapeMapping
 {
-    fn deserialize<D>(deserializer: D) -> Result<GeoShape<M>, D::Error>
+    fn deserialize<D>(deserializer: D) -> Result<GeoShape<TMapping>, D::Error>
         where D: Deserializer<'de>
     {
         let t = try!(Geometry::deserialize(deserializer));
 
-        Ok(GeoShape::<M>::new(t))
+        Ok(GeoShape::new(t))
     }
 }
 

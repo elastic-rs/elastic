@@ -244,7 +244,7 @@ mod tests {
     use std::collections::BTreeMap;
 
     use prelude::*;
-    use private::field::DocumentField;
+    use private::field::{FieldType, DocumentField};
 
     #[derive(Default, Clone)]
     pub struct MyTextMapping;
@@ -411,7 +411,7 @@ mod tests {
 
     #[test]
     fn string_has_default_mapping() {
-        assert_eq!(DefaultStringMapping, String::mapping());
+        assert_eq!(DefaultStringMapping, String::field_mapping());
     }
 
     #[test]

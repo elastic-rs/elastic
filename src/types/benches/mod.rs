@@ -9,6 +9,8 @@ extern crate geojson;
 extern crate test;
 
 extern crate elastic_types;
+#[macro_use]
+extern crate elastic_types_derive;
 
 pub mod date_fixtures {
     use elastic_types::prelude::*;
@@ -564,6 +566,14 @@ pub mod object_fixtures {
     use chrono::{DateTime, Utc};
     use elastic_types::prelude::*;
 
+    #[derive(ElasticType)]
+    #[elastic(mapping = "MySmlMapping")]
+    pub struct MySmlType {
+        integer: i32,
+        string: String,
+        date: DateTime<Utc>,
+    }
+
     #[derive(Default, Clone)]
     pub struct MySmlMapping;
     impl DocumentMapping for MySmlMapping {
@@ -571,20 +581,14 @@ pub mod object_fixtures {
             "ty"
         }
     }
-    impl PropertiesMapping for MySmlMapping {
-        fn props_len() -> usize {
-            3
-        }
 
-        fn serialize_props<S>(state: &mut S) -> Result<(), S::Error>
-            where S: SerializeStruct
-        {
-            try!(field_ser(state, "integer", i32::mapping()));
-            try!(field_ser(state, "string", String::mapping()));
-            try!(field_ser(state, "date", DateTime::<Utc>::mapping()));
-
-            Ok(())
-        }
+    #[derive(ElasticType)]
+    #[elastic(mapping = "MyMedMapping")]
+    pub struct MyMedType {
+        integer: i32,
+        string: String,
+        date: DateTime<Utc>,
+        field: MySmlType,
     }
 
     #[derive(Default, Clone)]
@@ -594,21 +598,14 @@ pub mod object_fixtures {
             "ty"
         }
     }
-    impl PropertiesMapping for MyMedMapping {
-        fn props_len() -> usize {
-            4
-        }
 
-        fn serialize_props<S>(state: &mut S) -> Result<(), S::Error>
-            where S: SerializeStruct
-        {
-            try!(field_ser(state, "integer", i32::mapping()));
-            try!(field_ser(state, "string", String::mapping()));
-            try!(field_ser(state, "date", DateTime::<Utc>::mapping()));
-            try!(field_ser(state, "field", MySmlMapping));
-
-            Ok(())
-        }
+    #[derive(ElasticType)]
+    #[elastic(mapping = "MyLrgMapping")]
+    pub struct MyLrgType {
+        integer: i32,
+        string: String,
+        date: DateTime<Utc>,
+        field: MyMedType,
     }
 
     #[derive(Default, Clone)]
@@ -616,22 +613,6 @@ pub mod object_fixtures {
     impl DocumentMapping for MyLrgMapping {
         fn name() -> &'static str {
             "ty"
-        }
-    }
-    impl PropertiesMapping for MyLrgMapping {
-        fn props_len() -> usize {
-            4
-        }
-
-        fn serialize_props<S>(state: &mut S) -> Result<(), S::Error>
-            where S: SerializeStruct
-        {
-            try!(field_ser(state, "integer", i32::mapping()));
-            try!(field_ser(state, "string", String::mapping()));
-            try!(field_ser(state, "date", DateTime::<Utc>::mapping()));
-            try!(field_ser(state, "field", MyMedMapping));
-
-            Ok(())
         }
     }
 }

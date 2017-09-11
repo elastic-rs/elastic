@@ -1,6 +1,5 @@
 use std::collections::VecDeque;
 use std::path::Path;
-use std::io::Error as IoError;
 
 use tokio_proto::streaming::Body as BodyStream;
 use futures::{IntoFuture, Future, Stream, Sink, Poll, Async};
