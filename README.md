@@ -14,7 +14,7 @@ Quick reference:
 
 This crate is still quite unstable and is likely to continue to churn breaking releases over the near future with not-so-detailed changelogs.
 
-If you run into any problems upgrading feel free to [open up an issue](https://github.com/elastic-rs/elastic/issues) and we'll give you a hand. The goal is definitely to offer a stable API eventually.
+If you run into any problems upgrading in your own open source projects feel free to [open up an issue](https://github.com/elastic-rs/elastic/issues) and we'll give you a hand. The goal is definitely to offer a stable API eventually.
 
 ## Build Status
 Platform  | Channel | Status
