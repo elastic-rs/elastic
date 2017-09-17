@@ -27,13 +27,13 @@ let ip = Ip::<DefaultIpMapping>::new(Ipv4Addr::new(127, 0, 0, 1));
 ```
 */
 #[derive(Debug, Clone, PartialEq)]
-pub struct Ip<M> where M: IpMapping {
+pub struct Ip<TMapping> where TMapping: IpMapping {
     value: Ipv4Addr,
-    _m: PhantomData<M>,
+    _m: PhantomData<TMapping>,
 }
 
-impl<M> Ip<M>
-    where M: IpMapping
+impl<TMapping> Ip<TMapping>
+    where TMapping: IpMapping
 {
     /**
     Creates a new `Ip` with the given mapping.
@@ -50,7 +50,7 @@ impl<M> Ip<M>
     let ip = Ip::<DefaultIpMapping>::new(Ipv4Addr::new(127, 0, 0, 1));
     ```
     */
-    pub fn new<I>(ip: I) -> Ip<M>
+    pub fn new<I>(ip: I) -> Ip<TMapping>
         where I: Into<Ipv4Addr>
     {
         Ip {
@@ -82,20 +82,20 @@ impl<M> Ip<M>
     # }
     ```
     */
-    pub fn remap<MInto>(ip: Ip<M>) -> Ip<MInto>
-        where MInto: IpMapping
+    pub fn remap<TNewMapping>(ip: Ip<TMapping>) -> Ip<TNewMapping>
+        where TNewMapping: IpMapping
     {
         Ip::new(ip.value)
     }
 }
 
-impl<M> IpFieldType<M> for Ip<M> where M: IpMapping {}
+impl<TMapping> IpFieldType<TMapping> for Ip<TMapping> where TMapping: IpMapping {}
 
 impl_mapping_type!(Ipv4Addr, Ip, IpMapping);
 
 // Serialize elastic ip
-impl<M> Serialize for Ip<M>
-    where M: IpMapping
+impl<TMapping> Serialize for Ip<TMapping>
+    where TMapping: IpMapping
 {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
         where S: Serializer
@@ -105,46 +105,44 @@ impl<M> Serialize for Ip<M>
 }
 
 // Deserialize elastic ip
-impl<'de, M> Deserialize<'de> for Ip<M>
-    where M: IpMapping
+impl<'de, TMapping> Deserialize<'de> for Ip<TMapping>
+    where TMapping: IpMapping
 {
-    fn deserialize<D>(deserializer: D) -> Result<Ip<M>, D::Error>
+    fn deserialize<D>(deserializer: D) -> Result<Ip<TMapping>, D::Error>
         where D: Deserializer<'de>
     {
         #[derive(Default)]
-        struct IpVisitor<M>
-            where M: IpMapping
-        {
-            _m: PhantomData<M>,
+        struct IpVisitor<TMapping> {
+            _m: PhantomData<TMapping>,
         }
 
-        impl<'de, M> Visitor<'de> for IpVisitor<M>
-            where M: IpMapping
+        impl<'de, TMapping> Visitor<'de> for IpVisitor<TMapping>
+            where TMapping: IpMapping
         {
-            type Value = Ip<M>;
+            type Value = Ip<TMapping>;
 
             fn expecting(&self, formatter: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
                 write!(formatter, "a json string containing an IpV4 address")
             }
 
-            fn visit_string<E>(self, v: String) -> Result<Ip<M>, E>
+            fn visit_string<E>(self, v: String) -> Result<Ip<TMapping>, E>
                 where E: Error
             {
                 let de = try!(Ipv4Addr::from_str(&v).map_err(|e| E::custom(e.description().to_string())));
 
-                Ok(Ip::<M>::new(de))
+                Ok(Ip::new(de))
             }
 
-            fn visit_str<E>(self, v: &str) -> Result<Ip<M>, E>
+            fn visit_str<E>(self, v: &str) -> Result<Ip<TMapping>, E>
                 where E: Error
             {
                 let de = try!(Ipv4Addr::from_str(v).map_err(|e| E::custom(e.description().to_string())));
 
-                Ok(Ip::<M>::new(de))
+                Ok(Ip::new(de))
             }
         }
 
-        deserializer.deserialize_any(IpVisitor::<M>::default())
+        deserializer.deserialize_any(IpVisitor::<TMapping>::default())
     }
 }
 

@@ -1,23 +1,9 @@
 /*! Mapping for the Elasticsearch `ip` type. */
 
 use std::net::Ipv4Addr;
-use serde::{Serialize, Serializer};
-use serde::ser::SerializeStruct;
-use private::field::{DocumentField, FieldMapping, SerializeField};
-use document::FieldType;
 
 /** A field that will be mapped as an `ip`. */
-pub trait IpFieldType<M> {}
-
-impl<T, M> FieldType<M, IpFormat> for T
-    where M: IpMapping,
-          T: IpFieldType<M> + Serialize
-{
-}
-
-#[doc(hidden)]
-#[derive(Default)]
-pub struct IpFormat;
+pub trait IpFieldType<TMapping> {}
 
 /**
 The base requirements for mapping a `ip` type.
@@ -117,44 +103,55 @@ pub trait IpMapping
     }
 }
 
-impl<T> FieldMapping<IpFormat> for T
-    where T: IpMapping
-{
-    fn data_type() -> &'static str {
-        "ip"
-    }
-}
-
-impl<T> SerializeField<IpFormat> for T
-    where T: IpMapping
-{
-    type Field = DocumentField<T, IpFormat>;
-}
-
-impl<T> Serialize for DocumentField<T, IpFormat>
-    where T: FieldMapping<IpFormat> + IpMapping
-{
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where S: Serializer
-    {
-        let mut state = try!(serializer.serialize_struct("mapping", 6));
-
-        try!(state.serialize_field("type", T::data_type()));
-
-        ser_field!(state, "boost", T::boost());
-        ser_field!(state, "doc_values", T::doc_values());
-        ser_field!(state, "index", T::index());
-        ser_field!(state, "store", T::store());
-        ser_field!(state, "null_value", T::null_value());
-
-        state.end()
-    }
-}
-
 /** Default mapping for `geo_shape`. */
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultIpMapping;
 impl IpMapping for DefaultIpMapping {}
+
+mod private {
+    use serde::{Serialize, Serializer};
+    use serde::ser::SerializeStruct;
+    use private::field::{FieldType, DocumentField, FieldMapping};
+    use super::{IpFieldType, IpMapping};
+
+    #[derive(Default)]
+    pub struct IpPivot;
+
+    impl<TField, TMapping> FieldType<TMapping, IpPivot> for TField
+        where TField: IpFieldType<TMapping> + Serialize,
+              TMapping: IpMapping
+    { }
+
+    impl<TMapping> FieldMapping<IpPivot> for TMapping
+        where TMapping: IpMapping
+    {
+        type DocumentField = DocumentField<TMapping, IpPivot>;
+
+        fn data_type() -> &'static str {
+            "ip"
+        }
+    }
+
+    impl<TMapping> Serialize for DocumentField<TMapping, IpPivot>
+        where TMapping: FieldMapping<IpPivot> + IpMapping
+    {
+        fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+            where S: Serializer
+        {
+            let mut state = try!(serializer.serialize_struct("mapping", 6));
+
+            try!(state.serialize_field("type", TMapping::data_type()));
+
+            ser_field!(state, "boost", TMapping::boost());
+            ser_field!(state, "doc_values", TMapping::doc_values());
+            ser_field!(state, "index", TMapping::index());
+            ser_field!(state, "store", TMapping::store());
+            ser_field!(state, "null_value", TMapping::null_value());
+
+            state.end()
+        }
+    }
+}
 
 #[cfg(test)]
 mod tests {
@@ -162,7 +159,7 @@ mod tests {
     use std::net::Ipv4Addr;
 
     use prelude::*;
-    use private::field::DocumentField;
+    use private::field::{FieldType, DocumentField};
 
     #[derive(Default, Clone)]
     pub struct MyIpMapping;
@@ -190,7 +187,7 @@ mod tests {
 
     #[test]
     fn ipv4addr_has_default_mapping() {
-        assert_eq!(DefaultIpMapping, Ipv4Addr::mapping());
+        assert_eq!(DefaultIpMapping, Ipv4Addr::field_mapping());
     }
 
     #[test]

@@ -23,7 +23,7 @@ pub trait GeoPointFormat
     Formatting also has access to the mapping type, which could be needed to build the structure
     properly.
     */
-    fn format<S, M>(point: &Point, serializer: S) -> Result<S::Ok, S::Error>
-        where M: GeoPointMapping<Format = Self>,
+    fn format<S, TMapping>(point: &Point, serializer: S) -> Result<S::Ok, S::Error>
+        where TMapping: GeoPointMapping<Format = Self>,
               S: Serializer;
 }

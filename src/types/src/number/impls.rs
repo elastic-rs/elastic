@@ -7,14 +7,14 @@ macro_rules! number_type {
     ($wrapper_ty:ident, $mapping_ty:ident, $field_trait:ident, $std_ty:ident) => (
         /** Number type with a given mapping. */
         #[derive(Debug, Default, Clone, PartialEq)]
-        pub struct $wrapper_ty<M>  where M: $mapping_ty {
+        pub struct $wrapper_ty<TMapping>  where TMapping: $mapping_ty {
             value: $std_ty,
-            _m: PhantomData<M>
+            _m: PhantomData<TMapping>
         }
 
-        impl <M> $wrapper_ty<M> where M: $mapping_ty {
+        impl<TMapping> $wrapper_ty<TMapping> where TMapping: $mapping_ty {
             /** Creates a new number with the given mapping. */
-            pub fn new<I: Into<$std_ty>>(num: I) -> $wrapper_ty<M> {
+            pub fn new<I: Into<$std_ty>>(num: I) -> $wrapper_ty<TMapping> {
                 $wrapper_ty {
                     value: num.into(),
                     _m: PhantomData
@@ -22,19 +22,19 @@ macro_rules! number_type {
             }
 
             /** Change the mapping of this number. */
-            pub fn remap<MInto>(number: $wrapper_ty<M>) -> $wrapper_ty<MInto> 
-                where MInto: $mapping_ty
+            pub fn remap<TNewMapping>(number: $wrapper_ty<TMapping>) -> $wrapper_ty<TNewMapping> 
+                where TNewMapping: $mapping_ty
             {
                 $wrapper_ty::new(number.value)
             }
         }
 
-        impl <M> $field_trait<M> for $wrapper_ty<M> where M: $mapping_ty { }
+        impl<TMapping> $field_trait<TMapping> for $wrapper_ty<TMapping> where TMapping: $mapping_ty { }
 
         impl_mapping_type!($std_ty, $wrapper_ty, $mapping_ty);
 
         //Serialize elastic number.
-        impl <M> Serialize for $wrapper_ty<M> where M: $mapping_ty {
+        impl<TMapping> Serialize for $wrapper_ty<TMapping> where TMapping: $mapping_ty {
             fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where
             S: Serializer {
                 self.value.serialize(serializer)
@@ -42,12 +42,12 @@ macro_rules! number_type {
         }
 
         //Deserialize elastic number.
-        impl <'de, M: $mapping_ty> Deserialize<'de> for $wrapper_ty<M> {
-            fn deserialize<D>(deserializer: D) -> Result<$wrapper_ty<M>, D::Error> where
+        impl <'de, TMapping> Deserialize<'de> for $wrapper_ty<TMapping> where TMapping: $mapping_ty {
+            fn deserialize<D>(deserializer: D) -> Result<$wrapper_ty<TMapping>, D::Error> where
             D: Deserializer<'de> {
                 let t = try!($std_ty::deserialize(deserializer));
 
-                Ok($wrapper_ty::<M>::new(t))
+                Ok($wrapper_ty::new(t))
             }
         }
     )

@@ -1,23 +1,10 @@
 /*! Mapping for Elasticsearch `geo_shape` types. */
 
 use serde::{Serialize, Serializer};
-use serde::ser::SerializeStruct;
 use geo::mapping::Distance;
-use private::field::{DocumentField, FieldMapping, SerializeField};
-use document::FieldType;
 
 /** A field that will be mapped as a `geo_shape`. */
-pub trait GeoShapeFieldType<M> {}
-
-impl<T, M> FieldType<M, GeoShapeFormat> for T
-    where M: GeoShapeMapping,
-          T: GeoShapeFieldType<M> + Serialize
-{
-}
-
-#[doc(hidden)]
-#[derive(Default)]
-pub struct GeoShapeFormat;
+pub trait GeoShapeFieldType<TMapping> {}
 
 /**
 The base requirements for mapping a `geo_shape` type.
@@ -63,7 +50,7 @@ This will produce the following mapping:
 #     }
 # }
 # fn main() {
-# let mapping = standalone_field_ser(MyGeoShapeMapping).unwrap();
+# let mapping = elastic_types::derive::standalone_field_ser(MyGeoShapeMapping).unwrap();
 # let json = json_str!(
 {
     "type": "geo_shape",
@@ -161,43 +148,6 @@ pub trait GeoShapeMapping
     }
 }
 
-
-impl<T> FieldMapping<GeoShapeFormat> for T
-    where T: GeoShapeMapping
-{
-    fn data_type() -> &'static str {
-        "geo_shape"
-    }
-}
-
-impl<T> SerializeField<GeoShapeFormat> for T
-    where T: GeoShapeMapping
-{
-    type Field = DocumentField<T, GeoShapeFormat>;
-}
-
-impl<T> Serialize for DocumentField<T, GeoShapeFormat>
-    where T: FieldMapping<GeoShapeFormat> + GeoShapeMapping
-{
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where S: Serializer
-    {
-        let mut state = try!(serializer.serialize_struct("mapping", 8));
-
-        try!(state.serialize_field("type", T::data_type()));
-
-        ser_field!(state, "tree", T::tree());
-        ser_field!(state, "precision", T::precision());
-        ser_field!(state, "tree_levels", T::tree_levels());
-        ser_field!(state, "strategy", T::strategy());
-        ser_field!(state, "distance_error_pct", T::distance_error_pct());
-        ser_field!(state, "orientation", T::orientation());
-        ser_field!(state, "points_only", T::points_only());
-
-        state.end()
-    }
-}
-
 /** Default mapping for `geo_shape`. */
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultGeoShapeMapping;
@@ -264,6 +214,53 @@ impl Serialize for Orientation {
                                      Orientation::Clockwise => "cw",
                                      Orientation::CounterClockwise => "ccw",
                                  })
+    }
+}
+
+mod private {
+    use serde::{Serialize, Serializer};
+    use serde::ser::SerializeStruct;
+    use private::field::{FieldType, DocumentField, FieldMapping};
+    use super::{GeoShapeMapping, GeoShapeFieldType};
+
+    impl<TField, TMapping> FieldType<TMapping, GeoShapePivot> for TField
+        where TField: GeoShapeFieldType<TMapping> + Serialize,
+              TMapping: GeoShapeMapping
+    { }
+
+    #[derive(Default)]
+    pub struct GeoShapePivot;
+
+    impl<TMapping> FieldMapping<GeoShapePivot> for TMapping
+        where TMapping: GeoShapeMapping
+    {
+        type DocumentField = DocumentField<TMapping, GeoShapePivot>;
+
+        fn data_type() -> &'static str {
+            "geo_shape"
+        }
+    }
+
+    impl<TMapping> Serialize for DocumentField<TMapping, GeoShapePivot>
+        where TMapping: FieldMapping<GeoShapePivot> + GeoShapeMapping
+    {
+        fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+            where S: Serializer
+        {
+            let mut state = try!(serializer.serialize_struct("mapping", 8));
+
+            try!(state.serialize_field("type", TMapping::data_type()));
+
+            ser_field!(state, "tree", TMapping::tree());
+            ser_field!(state, "precision", TMapping::precision());
+            ser_field!(state, "tree_levels", TMapping::tree_levels());
+            ser_field!(state, "strategy", TMapping::strategy());
+            ser_field!(state, "distance_error_pct", TMapping::distance_error_pct());
+            ser_field!(state, "orientation", TMapping::orientation());
+            ser_field!(state, "points_only", TMapping::points_only());
+
+            state.end()
+        }
     }
 }
 

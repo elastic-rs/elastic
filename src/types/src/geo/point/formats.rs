@@ -29,8 +29,8 @@ impl GeoPointFormat for GeoPointObject {
         Ok(Point::new(point.lon, point.lat))
     }
 
-    fn format<S, M>(point: &Point, serializer: S) -> Result<S::Ok, S::Error>
-        where M: GeoPointMapping<Format = Self>,
+    fn format<S, TMapping>(point: &Point, serializer: S) -> Result<S::Ok, S::Error>
+        where TMapping: GeoPointMapping<Format = Self>,
               S: Serializer
     {
         GeoPointObjectType {
@@ -90,8 +90,8 @@ impl GeoPointFormat for GeoPointString {
         Ok(Point::new(x, y))
     }
 
-    fn format<S, M>(point: &Point, serializer: S) -> Result<S::Ok, S::Error>
-        where M: GeoPointMapping<Format = Self>,
+    fn format<S, TMapping>(point: &Point, serializer: S) -> Result<S::Ok, S::Error>
+        where TMapping: GeoPointMapping<Format = Self>,
               S: Serializer
     {
         let mut fmtd = String::new();
@@ -135,11 +135,11 @@ impl GeoPointFormat for GeoPointHash {
         Ok(Point::new(coord.x, coord.y))
     }
 
-    fn format<S, M>(point: &Point, serializer: S) -> Result<S::Ok, S::Error>
-        where M: GeoPointMapping<Format = Self>,
+    fn format<S, TMapping>(point: &Point, serializer: S) -> Result<S::Ok, S::Error>
+        where TMapping: GeoPointMapping<Format = Self>,
               S: Serializer
     {
-        let len = match M::geohash_precision() {
+        let len = match TMapping::geohash_precision() {
             Some(Distance(l, _)) => l as usize,
             None => 12usize,
         };
@@ -192,8 +192,8 @@ impl GeoPointFormat for GeoPointArray {
         deserializer.deserialize_any(PointVisitor)
     }
 
-    fn format<S, M>(point: &Point, serializer: S) -> Result<S::Ok, S::Error>
-        where M: GeoPointMapping<Format = Self>,
+    fn format<S, TMapping>(point: &Point, serializer: S) -> Result<S::Ok, S::Error>
+        where TMapping: GeoPointMapping<Format = Self>,
               S: Serializer
     {
         [point.x(), point.y()].serialize(serializer)

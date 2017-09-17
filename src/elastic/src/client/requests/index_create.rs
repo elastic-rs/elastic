@@ -91,7 +91,7 @@ impl<TSender> Client<TSender>
             }
         },
         "mappings": {
-            MyType::name(): IndexDocumentMapping::from(MyType::mapping())
+            MyType::name(): MyType::index_mapping()
         }
     });
 

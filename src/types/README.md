@@ -46,7 +46,7 @@ type Timestamp = Date<DefaultDateMapping<EpochMillis>>;
 You can then get the mapping for your type as `json`:
 
 ```rust
-let mapping = serde_json::to_string(&IndexDocumentMapping::from(MyType::mapping())).unwrap();
+let mapping = serde_json::to_string(&MyType::index_mapping()).unwrap();
 ```
 
 Which looks like:

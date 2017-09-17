@@ -68,11 +68,11 @@ println!("{}/{}/{} {}:{}:{}.{}",
 - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/date.html)
 */
 #[derive(Debug, Clone, PartialEq)]
-pub struct Date<M> where M: DateMapping {
-    value: FormattableDateValue<M::Format>,
+pub struct Date<TMapping> where TMapping: DateMapping {
+    value: FormattableDateValue<TMapping::Format>,
 }
 
-impl<M> Date<M> where M: DateMapping
+impl<TMapping> Date<TMapping> where TMapping: DateMapping
 {
     /**
     Creates a new `Date` from the given `chrono::DateTime<Utc>`.
@@ -128,7 +128,7 @@ impl<M> Date<M> where M: DateMapping
     ```
     */
     pub fn new<I>(date: I) -> Self 
-        where I: Into<FormattableDateValue<M::Format>>
+        where I: Into<FormattableDateValue<TMapping::Format>>
     {
         Date {
             value: date.into()
@@ -175,51 +175,51 @@ impl<M> Date<M> where M: DateMapping
     let otherdate: Date<DefaultDateMapping<EpochMillis>> = Date::remap(date);
     ```
     */
-    pub fn remap<MInto>(date: Date<M>) -> Date<MInto>
-        where MInto: DateMapping
+    pub fn remap<TNewMapping>(date: Date<TMapping>) -> Date<TNewMapping>
+        where TNewMapping: DateMapping
     {
         Date::new(DateValue::from(date.value))
     }
 }
 
-impl<M> DateFieldType<M> for Date<M>
-    where M: DateMapping
+impl<TMapping> DateFieldType<TMapping> for Date<TMapping>
+    where TMapping: DateMapping
 {
 }
 
-impl<M> From<Date<M>> for FormattableDateValue<M::Format> where M: DateMapping {
-    fn from(date: Date<M>) -> Self {
+impl<TMapping> From<Date<TMapping>> for FormattableDateValue<TMapping::Format> where TMapping: DateMapping {
+    fn from(date: Date<TMapping>) -> Self {
         date.value
     }
 }
 
-impl<M> From<FormattableDateValue<M::Format>> for Date<M> where M: DateMapping {
-    fn from(date: FormattableDateValue<M::Format>) -> Self {
+impl<TMapping> From<FormattableDateValue<TMapping::Format>> for Date<TMapping> where TMapping: DateMapping {
+    fn from(date: FormattableDateValue<TMapping::Format>) -> Self {
         Date::new(date)
     }
 }
 
-impl<M> From<Date<M>> for DateValue where M: DateMapping {
-    fn from(date: Date<M>) -> Self {
+impl<TMapping> From<Date<TMapping>> for DateValue where TMapping: DateMapping {
+    fn from(date: Date<TMapping>) -> Self {
         date.value.into()
     }
 }
 
-impl<M> From<DateValue> for Date<M> 
-    where M: DateMapping 
+impl<TMapping> From<DateValue> for Date<TMapping> 
+    where TMapping: DateMapping 
 {
     fn from(value: DateValue) -> Self {
         Date::new(value)
     }
 }
 
-impl<M> StdField<ChronoDateTime> for Date<M>
-    where M: DateMapping
+impl<TMapping> StdField<ChronoDateTime> for Date<TMapping>
+    where TMapping: DateMapping
 {
 }
 
-impl<M> PartialEq<ChronoDateTime> for Date<M> 
-    where M: DateMapping 
+impl<TMapping> PartialEq<ChronoDateTime> for Date<TMapping> 
+    where TMapping: DateMapping 
 {
     fn eq(&self, other: &ChronoDateTime) -> bool {
         PartialEq::eq(&self.value, other)
@@ -230,20 +230,20 @@ impl<M> PartialEq<ChronoDateTime> for Date<M>
     }
 }
 
-impl<M> PartialEq<Date<M>> for ChronoDateTime 
-    where M: DateMapping 
+impl<TMapping> PartialEq<Date<TMapping>> for ChronoDateTime 
+    where TMapping: DateMapping 
 {
-    fn eq(&self, other: &Date<M>) -> bool {
+    fn eq(&self, other: &Date<TMapping>) -> bool {
         PartialEq::eq(self, &other.value)
     }
 
-    fn ne(&self, other: &Date<M>) -> bool {
+    fn ne(&self, other: &Date<TMapping>) -> bool {
         PartialEq::ne(self, &other.value)
     }
 }
 
-impl<M> Deref for Date<M> 
-    where M: DateMapping 
+impl<TMapping> Deref for Date<TMapping> 
+    where TMapping: DateMapping 
 {
     type Target = ChronoDateTime;
     fn deref(&self) -> &ChronoDateTime {
@@ -251,32 +251,32 @@ impl<M> Deref for Date<M>
     }
 }
 
-impl<M> Borrow<ChronoDateTime> for Date<M> 
-    where M: DateMapping 
+impl<TMapping> Borrow<ChronoDateTime> for Date<TMapping> 
+    where TMapping: DateMapping 
 {
     fn borrow(&self) -> &ChronoDateTime {
         self.value.borrow()
     }
 }
 
-impl<M> Default for Date<M>
-    where M: DateMapping
+impl<TMapping> Default for Date<TMapping>
+    where TMapping: DateMapping
 {
     fn default() -> Self {
         Date::now()
     }
 }
 
-impl<M> Display for Date<M>
-    where M: DateMapping
+impl<TMapping> Display for Date<TMapping>
+    where TMapping: DateMapping
 {
     fn fmt(&self, f: &mut Formatter) -> FmtResult {
         write!(f, "{}", format(self))
     }
 }
 
-impl<M> Serialize for Date<M>
-    where M: DateMapping
+impl<TMapping> Serialize for Date<TMapping>
+    where TMapping: DateMapping
 {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
         where S: Serializer
@@ -285,62 +285,60 @@ impl<M> Serialize for Date<M>
     }
 }
 
-impl<'de, M> Deserialize<'de> for Date<M>
-    where M: DateMapping
+impl<'de, TMapping> Deserialize<'de> for Date<TMapping>
+    where TMapping: DateMapping
 {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
         where D: Deserializer<'de>
     {
         #[derive(Default)]
-        struct DateTimeVisitor<M>
-            where M: DateMapping
-        {
-            _t: PhantomData<M>,
+        struct DateTimeVisitor<TMapping> {
+            _t: PhantomData<TMapping>,
         }
 
-        impl<'de, M> Visitor<'de> for DateTimeVisitor<M>
-            where M: DateMapping
+        impl<'de, TMapping> Visitor<'de> for DateTimeVisitor<TMapping>
+            where TMapping: DateMapping
         {
-            type Value = Date<M>;
+            type Value = Date<TMapping>;
 
             fn expecting(&self, formatter: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
                 write!(formatter,
                        "a json string or number containing a formatted date")
             }
 
-            fn visit_str<E>(self, v: &str) -> Result<Date<M>, E>
+            fn visit_str<E>(self, v: &str) -> Result<Date<TMapping>, E>
                 where E: Error
             {
                 parse(v).map_err(|err| Error::custom(format!("{}", err)))
             }
 
-            fn visit_i64<E>(self, v: i64) -> Result<Date<M>, E>
+            fn visit_i64<E>(self, v: i64) -> Result<Date<TMapping>, E>
                 where E: Error
             {
                 parse(&v.to_string()).map_err(|err| Error::custom(format!("{}", err)))
             }
 
-            fn visit_u64<E>(self, v: u64) -> Result<Date<M>, E>
+            fn visit_u64<E>(self, v: u64) -> Result<Date<TMapping>, E>
                 where E: Error
             {
                 parse(&v.to_string()).map_err(|err| Error::custom(format!("{}", err)))
             }
         }
 
-        deserializer.deserialize_any(DateTimeVisitor::<M>::default())
+        deserializer.deserialize_any(DateTimeVisitor::<TMapping>::default())
     }
 }
 
 /** A convenience function for formatting a date. */
-pub(crate) fn format<'a, M>(date: &'a Date<M>) -> FormattedDate<'a>
-    where M: DateMapping
+pub(crate) fn format<'a, TMapping>(date: &'a Date<TMapping>) -> FormattedDate<'a>
+    where TMapping: DateMapping
 {
     date.value.format()
 }
 
 /** A convenience function for parsing a date. */
-pub(crate) fn parse<M>(date: &str) -> Result<Date<M>, ParseError> 
-    where M: DateMapping 
+pub(crate) fn parse<TMapping>(date: &str) -> Result<Date<TMapping>, ParseError> 
+    where TMapping: DateMapping 
 {
     let parsed = FormattableDateValue::parse(date)?;
 
@@ -403,13 +401,13 @@ Which serialises to:
 ```
 */
 #[derive(Debug, Clone, PartialEq)]
-pub struct DateExpr<F> {
-    anchor: DateExprAnchor<F>,
+pub struct DateExpr<TFormat> {
+    anchor: DateExprAnchor<TFormat>,
     ops: Vec<DateExprOp>,
 }
 
-impl<F> Display for DateExpr<F> 
-    where F: DateFormat
+impl<TFormat> Display for DateExpr<TFormat> 
+    where TFormat: DateFormat
 {
     fn fmt(&self, f: &mut Formatter) -> FmtResult {
         self.anchor.fmt(f)?;
@@ -423,13 +421,13 @@ impl<F> Display for DateExpr<F>
 }
 
 #[derive(Debug, Clone, PartialEq)]
-enum DateExprAnchor<F> {
+enum DateExprAnchor<TFormat> {
     Now,
-    Value(FormattableDateValue<F>)
+    Value(FormattableDateValue<TFormat>)
 }
 
-impl<F> Display for DateExprAnchor<F>
-    where F: DateFormat
+impl<TFormat> Display for DateExprAnchor<TFormat>
+    where TFormat: DateFormat
 {
     fn fmt(&self, f: &mut Formatter) -> FmtResult {
         match *self {
@@ -505,8 +503,8 @@ macro_rules! impl_expr_ops {
     )
 }
 
-impl<F> DateExpr<F>
-    where F: DateFormat
+impl<TFormat> DateExpr<TFormat>
+    where TFormat: DateFormat
 {
     /**
     Create a new date expression for `now`.
@@ -570,8 +568,8 @@ impl<F> DateExpr<F>
     let expr: DateExpr<EpochMillis> = DateExpr::value(DateValue::from(date));
     ```
     */
-    pub fn value<D>(date: D) -> Self
-        where D: Into<FormattableDateValue<F>>
+    pub fn value<TDate>(date: TDate) -> Self
+        where TDate: Into<FormattableDateValue<TFormat>>
     {
         let date = date.into();
         
@@ -590,8 +588,8 @@ impl<F> DateExpr<F>
     impl_expr_ops!(DateExprOpUnit::Second, add_seconds, sub_seconds, round_second);
 }
 
-impl<F> Serialize for DateExpr<F> 
-    where F: DateFormat
+impl<TFormat> Serialize for DateExpr<TFormat> 
+    where TFormat: DateFormat
 {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
         where S: Serializer
