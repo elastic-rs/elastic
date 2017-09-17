@@ -71,7 +71,7 @@ impl TextMapping for EmailMapping {
 mod tests {
     use serde_json;
     use elastic::types::prelude::DocumentType;
-    use super::{mapping, Account};
+    use super::*;
 
     #[test]
     fn deserialize() {
