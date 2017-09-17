@@ -13,24 +13,21 @@ The input must satisfy the following rules:
 - A mapping type supplied by `#[elastic(mapping="<ident>")]` must implement `DocumentMapping`,
 but not `PropertiesMapping`.
 */
-pub fn expand_derive(crate_root: Tokens,
-                     input: &syn::MacroInput)
-                     -> Result<Vec<Tokens>, DeriveElasticTypeError> {
+pub fn expand_derive(crate_root: Tokens, input: &syn::MacroInput) -> Result<Vec<Tokens>, DeriveElasticTypeError> {
     // Annotatable item for a struct with struct fields
     let fields = match input.body {
-        syn::Body::Struct(ref data) => {
-            match *data {
-                syn::VariantData::Struct(ref fields) => Some(fields),
-                _ => None,
-            }
-        }
+        syn::Body::Struct(ref data) => match *data {
+            syn::VariantData::Struct(ref fields) => Some(fields),
+            _ => None,
+        },
         _ => None,
     };
 
     let fields = fields.ok_or(DeriveElasticTypeError::InvalidInput)?;
 
     // Get the serializable fields
-    let fields: Vec<(syn::Ident, &syn::Field)> = fields.iter()
+    let fields: Vec<(syn::Ident, &syn::Field)> = fields
+        .iter()
         .map(|f| get_ser_field(f))
         .filter(|f| f.is_some())
         .map(|f| f.unwrap())
@@ -54,13 +51,16 @@ pub fn expand_derive(crate_root: Tokens,
     };
 
     let impl_elastic_ty = impl_elastic_ty(crate_root.clone(), input, &mapping_ty);
-    let impl_props_mapping = impl_props_mapping(crate_root.clone(),
-                                   &mapping_ty,
-                                   get_props_ser_stmts(crate_root.clone(), &fields));
+    let impl_props_mapping = impl_props_mapping(
+        crate_root.clone(),
+        &mapping_ty,
+        get_props_ser_stmts(crate_root.clone(), &fields),
+    );
 
     let dummy_wrapper = syn::Ident::new(format!("_IMPL_EASTIC_TYPE_FOR_{}", input.ident));
 
-    Ok(vec![quote!(
+    Ok(vec![
+        quote!(
         #define_mapping
 
         #[allow(non_upper_case_globals, dead_code, unused_variables)]
@@ -71,7 +71,8 @@ pub fn expand_derive(crate_root: Tokens,
 
             #impl_props_mapping
         };
-    )])
+    ),
+    ])
 }
 
 // Define a struct for the mapping with a few defaults
@@ -103,10 +104,7 @@ fn impl_object_mapping(crate_root: Tokens, mapping: &syn::Ident, es_ty: &syn::Li
 }
 
 // Implement PropertiesMapping for the mapping
-fn impl_props_mapping(crate_root: Tokens,
-                      mapping: &syn::Ident,
-                      prop_ser_stmts: Vec<Tokens>)
-                      -> Tokens {
+fn impl_props_mapping(crate_root: Tokens, mapping: &syn::Ident, prop_ser_stmts: Vec<Tokens>) -> Tokens {
     let stmts_len = prop_ser_stmts.len();
     let stmts = prop_ser_stmts;
 
@@ -125,7 +123,8 @@ fn impl_props_mapping(crate_root: Tokens,
 
 // Get the serde serialisation statements for each of the fields on the type being derived
 fn get_props_ser_stmts(crate_root: Tokens, fields: &[(syn::Ident, &syn::Field)]) -> Vec<Tokens> {
-    let fields: Vec<Tokens> = fields.iter()
+    let fields: Vec<Tokens> = fields
+        .iter()
         .cloned()
         .map(|(name, field)| {
             let lit = syn::Lit::Str(name.as_ref().to_string(), syn::StrStyle::Cooked);
@@ -154,8 +153,10 @@ fn get_default_mapping(item: &syn::MacroInput) -> syn::Ident {
 
 // Get the default name for the indexed elasticsearch type name
 fn get_elastic_type_name(item: &syn::MacroInput) -> syn::Lit {
-    syn::Lit::Str(format!("{}", item.ident).to_lowercase(),
-                  syn::StrStyle::Cooked)
+    syn::Lit::Str(
+        format!("{}", item.ident).to_lowercase(),
+        syn::StrStyle::Cooked,
+    )
 }
 
 fn get_ser_field(field: &syn::Field) -> Option<(syn::Ident, &syn::Field)> {
@@ -173,7 +174,10 @@ fn get_ser_field(field: &syn::Field) -> Option<(syn::Ident, &syn::Field)> {
         return None;
     }
 
-    Some((syn::Ident::from(serde_field.name().serialize_name().as_ref()), field))
+    Some((
+        syn::Ident::from(serde_field.name().serialize_name().as_ref()),
+        field,
+    ))
 }
 
 quick_error! {

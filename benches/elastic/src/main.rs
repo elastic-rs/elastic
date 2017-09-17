@@ -2,12 +2,12 @@
 #![plugin(json_str)]
 
 #[macro_use]
-extern crate serde_derive;
-#[macro_use]
 extern crate elastic_derive;
+#[macro_use]
+extern crate serde_derive;
 
-extern crate serde;
 extern crate elastic;
+extern crate serde;
 
 extern crate measure;
 
@@ -48,13 +48,14 @@ fn main() {
         .params(|p| p.header(http::header::Connection::keep_alive()))
         .build()
         .unwrap();
-    
+
     let results = measure::run(runs, || {
-        client.search::<BenchDoc>()
-              .index("bench_index")
-              .body(BODY)
-              .send()
-              .unwrap()
+        client
+            .search::<BenchDoc>()
+            .index("bench_index")
+            .body(BODY)
+            .send()
+            .unwrap()
     });
 
     println!("{}", results);

@@ -122,14 +122,14 @@ impl HttpResponseHead {
 
 impl From<u16> for HttpResponseHead {
     fn from(status: u16) -> Self {
-        HttpResponseHead {
-            code: status
-        }
+        HttpResponseHead { code: status }
     }
 }
 
 /** A http response body that can be buffered into a json value. */
-pub trait ResponseBody where Self: Sized
+pub trait ResponseBody
+where
+    Self: Sized,
 {
     /** The type of a buffered response body. */
     type Buffered: ResponseBody;
@@ -243,8 +243,7 @@ impl IsOk for MyResponse {
 }
 ```
 */
-pub trait IsOk
-{
+pub trait IsOk {
     /** Inspect the http response to determine whether or not it succeeded. */
     fn is_ok<B: ResponseBody>(head: HttpResponseHead, unbuffered: Unbuffered<B>) -> Result<MaybeOkResponse<B>, ParseResponseError>;
 }
@@ -259,21 +258,25 @@ impl IsOk for Value {
 }
 
 /** A response that might be successful or an `ApiError`. */
-pub struct MaybeOkResponse<B> 
-    where B: ResponseBody
+pub struct MaybeOkResponse<B>
+where
+    B: ResponseBody,
 {
     ok: bool,
     res: MaybeBufferedResponse<B>,
 }
 
-impl<B> MaybeOkResponse<B> where B: ResponseBody
+impl<B> MaybeOkResponse<B>
+where
+    B: ResponseBody,
 {
     /** 
     Create a new response that indicates where or not the
     body is successful or an `ApiError`.
     */
     pub fn new<I>(ok: bool, res: I) -> Self
-        where I: Into<MaybeBufferedResponse<B>>
+    where
+        I: Into<MaybeBufferedResponse<B>>,
     {
         MaybeOkResponse {
             ok: ok,
@@ -283,14 +286,16 @@ impl<B> MaybeOkResponse<B> where B: ResponseBody
 
     /** Create a response where the body is successful. */
     pub fn ok<I>(res: I) -> Self
-        where I: Into<MaybeBufferedResponse<B>>
+    where
+        I: Into<MaybeBufferedResponse<B>>,
     {
         Self::new(true, res)
     }
 
     /** Create a resposne where the body is an error. */
     pub fn err<I>(res: I) -> Self
-        where I: Into<MaybeBufferedResponse<B>>
+    where
+        I: Into<MaybeBufferedResponse<B>>,
     {
         Self::new(false, res)
     }
@@ -316,32 +321,35 @@ This type makes it possible to inspect the response body for
 an error type before passing it along to be deserialised properly.
 */
 pub enum MaybeBufferedResponse<B>
-    where B: ResponseBody
+where
+    B: ResponseBody,
 {
     Unbuffered(B),
     Buffered(B::Buffered),
 }
 
 impl<B> MaybeBufferedResponse<B>
-    where B: ResponseBody
+where
+    B: ResponseBody,
 {
     fn parse_ok<T: DeserializeOwned>(self) -> Result<T, ParseResponseError> {
         match self {
             MaybeBufferedResponse::Unbuffered(b) => b.parse_ok(),
-            MaybeBufferedResponse::Buffered(b) => b.parse_ok()
+            MaybeBufferedResponse::Buffered(b) => b.parse_ok(),
         }
     }
 
     fn parse_err(self) -> Result<ApiError, ParseResponseError> {
         match self {
             MaybeBufferedResponse::Unbuffered(b) => b.parse_err(),
-            MaybeBufferedResponse::Buffered(b) => b.parse_err()
+            MaybeBufferedResponse::Buffered(b) => b.parse_err(),
         }
     }
 }
 
 impl<B> From<Unbuffered<B>> for MaybeBufferedResponse<B>
-    where B: ResponseBody
+where
+    B: ResponseBody,
 {
     fn from(value: Unbuffered<B>) -> Self {
         MaybeBufferedResponse::Unbuffered(value.0)
@@ -349,7 +357,8 @@ impl<B> From<Unbuffered<B>> for MaybeBufferedResponse<B>
 }
 
 impl<B> From<Buffered<B>> for MaybeBufferedResponse<B>
-    where B: ResponseBody
+where
+    B: ResponseBody,
 {
     fn from(value: Buffered<B>) -> Self {
         MaybeBufferedResponse::Buffered(value.0)

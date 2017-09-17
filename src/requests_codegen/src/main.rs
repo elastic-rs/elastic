@@ -1,17 +1,17 @@
-#![recursion_limit="200"]
+#![recursion_limit = "200"]
 
 #[cfg(test)]
 #[macro_use]
 extern crate json_str;
 
+extern crate serde;
 #[macro_use]
 extern crate serde_derive;
-extern crate serde;
 extern crate serde_json;
 
-extern crate syn;
 #[macro_use]
 extern crate quote;
+extern crate syn;
 
 extern crate inflector;
 
@@ -20,7 +20,7 @@ pub mod gen;
 
 use std::collections::BTreeMap;
 use std::io::{stdout, Read, Write};
-use std::fs::{File, read_dir};
+use std::fs::{read_dir, File};
 
 use quote::Tokens;
 use parse::*;
@@ -45,7 +45,7 @@ fn main() {
         .add_simple_search()
         .add_get_ping_req();
 
-    endpoints = endpoints    
+    endpoints = endpoints
         .into_iter()
         .map(|e| strip_verbs(e))
         .map(|e| dedup_urls(e))
@@ -53,17 +53,23 @@ fn main() {
 
     let http_mod_name = "http";
 
-    build_mod("endpoints", &mut tokens,
-        |ref mut tokens| endpoints_mod(tokens, derives.clone(), http_mod_name, endpoints, &mut params_to_emit)
-    );
+    build_mod("endpoints", &mut tokens, |ref mut tokens| {
+        endpoints_mod(
+            tokens,
+            derives.clone(),
+            http_mod_name,
+            endpoints,
+            &mut params_to_emit,
+        )
+    });
 
-    build_mod(http_mod_name, &mut tokens,
-        |ref mut tokens| http_mod(tokens, derives.clone())
-    );
+    build_mod(http_mod_name, &mut tokens, |ref mut tokens| {
+        http_mod(tokens, derives.clone())
+    });
 
-    build_mod("params", &mut tokens,
-        |ref mut tokens| params_mod(tokens, derives.clone(), params_to_emit)
-    );
+    build_mod("params", &mut tokens, |ref mut tokens| {
+        params_mod(tokens, derives.clone(), params_to_emit)
+    });
 
     end_comment_block_for_logging();
 
@@ -97,10 +103,10 @@ fn from_dir(path: &str) -> Result<Vec<(String, Endpoint)>, String> {
 }
 
 fn from_reader<R>(name: String, rdr: &mut R) -> Result<(String, Endpoint), String>
-    where R: Read
+where
+    R: Read,
 {
-    let endpoint: BTreeMap<String, Endpoint> = try!(serde_json::from_reader(rdr)
-        .map_err(|e| format!("Failed to parse {} because: {}", name, e)));
+    let endpoint: BTreeMap<String, Endpoint> = try!(serde_json::from_reader(rdr).map_err(|e| format!("Failed to parse {} because: {}", name, e)));
 
     Ok(endpoint.endpoint())
 }
@@ -113,13 +119,11 @@ fn strip_verbs(endpoint: (String, Endpoint)) -> (String, Endpoint) {
     let verb = match iter.len() {
         0 => unreachable!(),
         1 => iter.next().unwrap(),
-        _ => {
-            if iter.any(|m| m == HttpMethod::Post) {
-                HttpMethod::Post
-            } else {
-                iter.next().unwrap()
-            }
-        }
+        _ => if iter.any(|m| m == HttpMethod::Post) {
+            HttpMethod::Post
+        } else {
+            iter.next().unwrap()
+        },
     };
 
     endpoint.methods = vec![verb];
@@ -138,9 +142,7 @@ fn dedup_urls(endpoint: (String, Endpoint)) -> (String, Endpoint) {
         deduped_paths.insert(key, path);
     }
 
-    endpoint.url.paths = deduped_paths.into_iter()
-        .map(|(_, p)| p)
-        .collect();
+    endpoint.url.paths = deduped_paths.into_iter().map(|(_, p)| p).collect();
 
     (name, endpoint)
 }
@@ -162,8 +164,8 @@ impl CustomEndpoints for Vec<(String, Endpoint)> {
 
                         endpoints.push((String::from("simple_search"), simple_search_endpoint));
                         endpoints.push((String::from("search"), endpoint));
-                    },
-                    _ => endpoints.push((name, endpoint))
+                    }
+                    _ => endpoints.push((name, endpoint)),
                 }
 
                 endpoints
@@ -180,8 +182,8 @@ impl CustomEndpoints for Vec<(String, Endpoint)> {
 
                         endpoints.push((String::from("ping"), get_endpoint));
                         endpoints.push((String::from("ping_head"), endpoint));
-                    },
-                    _ => endpoints.push((name, endpoint))
+                    }
+                    _ => endpoints.push((name, endpoint)),
                 }
 
                 endpoints
@@ -192,7 +194,7 @@ impl CustomEndpoints for Vec<(String, Endpoint)> {
 fn endpoints_mod(tokens: &mut Tokens, derives: Tokens, http_mod: &'static str, endpoints: Vec<(String, Endpoint)>, params_to_emit: &mut BTreeMap<String, bool>) {
     let mut http_mod_tokens = Tokens::new();
     http_mod_tokens.append(http_mod);
-    
+
     let uses = quote!(
         use super:: #http_mod_tokens ::*;
         use super::params::*;
@@ -209,19 +211,13 @@ fn endpoints_mod(tokens: &mut Tokens, derives: Tokens, http_mod: &'static str, e
         let url_params = gen::url_params::UrlParamBuilder::from(&e).build();
         let (ref url_params_item, _) = url_params;
 
-        let (req_params_item, req_params_ty) =
-            gen::request_params::RequestParamBuilder::from(&e).build();
+        let (req_params_item, req_params_ty) = gen::request_params::RequestParamBuilder::from(&e).build();
 
-        let req_ctors_item =
-            gen::request_ctors::RequestParamsCtorBuilder::from((&e, &req_params_ty, &url_params))
-                .build();
+        let req_ctors_item = gen::request_ctors::RequestParamsCtorBuilder::from((&e, &req_params_ty, &url_params)).build();
 
-        let url_method_item =
-            gen::url_builder::UrlMethodBuilder::from((&e, &url_params)).build();
+        let url_method_item = gen::url_builder::UrlMethodBuilder::from((&e, &url_params)).build();
 
-        let req_into_http_item =
-            gen::request_into_http::RequestIntoHttpRequestBuilder::from((&e, &req_params_ty))
-                .build();
+        let req_into_http_item = gen::request_into_http::RequestIntoHttpRequestBuilder::from((&e, &req_params_ty)).build();
 
         tokens.append_all(vec![
             derives.clone(),
@@ -230,7 +226,7 @@ fn endpoints_mod(tokens: &mut Tokens, derives: Tokens, http_mod: &'static str, e
             derives.clone(),
             quote!(#req_params_item),
             quote!(#req_ctors_item),
-            quote!(#req_into_http_item)
+            quote!(#req_into_http_item),
         ]);
     }
 }
@@ -254,11 +250,11 @@ fn http_mod(tokens: &mut Tokens, derives: Tokens) {
     tokens.append_all(vec![
         derives.clone(),
         url_tokens,
-        body_tokens, 
+        body_tokens,
         derives.clone(),
-        http_req_item, 
+        http_req_item,
         derives.clone(),
-        quote!(#http_method_item)
+        quote!(#http_method_item),
     ]);
 }
 
@@ -273,23 +269,20 @@ fn params_mod(tokens: &mut Tokens, derives: Tokens, params_to_emit: BTreeMap<Str
     tokens.append(r#"include!("genned.params.rs");"#);
     tokens.append("\n\n");
 
-    let params_to_emit = params_to_emit.iter()
-        .filter(|&(_, is_emitted)| *is_emitted);
+    let params_to_emit = params_to_emit.iter().filter(|&(_, is_emitted)| *is_emitted);
 
     for (ty, _) in params_to_emit {
         let ty_item = gen::types::wrapped_ty::item(ty);
 
-        tokens.append_all(vec![
-            derives.clone(),
-            quote!(#ty_item)
-        ]);
+        tokens.append_all(vec![derives.clone(), quote!(#ty_item)]);
 
         tokens.append("\n\n");
     }
 }
 
-fn build_mod<F>(mod_name: &'static str, tokens: &mut Tokens, bldr: F) 
-    where F: FnOnce(&mut Tokens) -> ()
+fn build_mod<F>(mod_name: &'static str, tokens: &mut Tokens, bldr: F)
+where
+    F: FnOnce(&mut Tokens) -> (),
 {
     tokens.append(&format!("pub mod {} {{", mod_name));
 

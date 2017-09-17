@@ -2,14 +2,14 @@
 #![plugin(json_str)]
 
 #[macro_use]
-extern crate serde_derive;
-#[macro_use]
 extern crate elastic_derive;
 extern crate futures;
+#[macro_use]
+extern crate serde_derive;
 extern crate tokio_core;
 
-extern crate serde;
 extern crate elastic;
+extern crate serde;
 
 extern crate measure;
 
@@ -50,12 +50,13 @@ fn main() {
         .params(|p| p.header(http::header::Connection::keep_alive()))
         .build(&core.handle())
         .unwrap();
-    
+
     let results_future = measure::run_future(runs, || {
-        client.search::<BenchDoc>()
-              .index("bench_index")
-              .body(BODY)
-              .send()
+        client
+            .search::<BenchDoc>()
+            .index("bench_index")
+            .body(BODY)
+            .send()
     });
 
     results = core.run(results_future).unwrap();

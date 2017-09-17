@@ -1,13 +1,15 @@
 /*! Mapping for the Elasticsearch `date` type. */
 
 use std::marker::PhantomData;
-use super::{DateFormat, DefaultDateFormat, FormattableDateValue, Date};
+use super::{Date, DateFormat, DefaultDateFormat, FormattableDateValue};
 
 /** A field that will be mapped as a `date`. */
-pub trait DateFieldType<TMapping> 
-    where Self: Into<FormattableDateValue<TMapping::Format>>,
-          TMapping: DateMapping
-{ }
+pub trait DateFieldType<TMapping>
+where
+    Self: Into<FormattableDateValue<TMapping::Format>>,
+    TMapping: DateMapping,
+{
+}
 
 /**
 The base requirements for mapping a `date` type.
@@ -95,7 +97,8 @@ impl <F> DateMapping for MyDateMapping<F>
 This is how `DefaultDateMapping` is able to support any format.
 */
 pub trait DateMapping
-    where Self: Default
+where
+    Self: Default,
 {
     /**
     The date format bound to this mapping.
@@ -162,13 +165,15 @@ pub trait DateMapping
 /** Default mapping for `date`. */
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultDateMapping<TFormat = DefaultDateFormat>
-    where TFormat: DateFormat
+where
+    TFormat: DateFormat,
 {
     _f: PhantomData<TFormat>,
 }
 
 impl<TFormat> DateMapping for DefaultDateMapping<TFormat>
-    where TFormat: DateFormat
+where
+    TFormat: DateFormat,
 {
     type Format = TFormat;
 }
@@ -177,21 +182,24 @@ mod private {
     use serde::{Serialize, Serializer};
     use serde::ser::SerializeStruct;
     use date::{DateFormat, FormattableDateValue};
-    use private::field::{FieldType, DocumentField, FieldMapping};
+    use private::field::{DocumentField, FieldMapping, FieldType};
     use super::{DateFieldType, DateMapping};
 
     impl<TField, TMapping> FieldType<TMapping, DatePivot> for TField
-        where TField: DateFieldType<TMapping> + Serialize,
-            TField: Into<FormattableDateValue<TMapping::Format>>,
-            TMapping: DateMapping
-    { }
+    where
+        TField: DateFieldType<TMapping> + Serialize,
+        TField: Into<FormattableDateValue<TMapping::Format>>,
+        TMapping: DateMapping,
+    {
+    }
 
     #[derive(Default)]
     pub struct DatePivot;
 
     impl<TMapping, TFormat> FieldMapping<DatePivot> for TMapping
-        where TMapping: DateMapping<Format = TFormat>,
-              TFormat: DateFormat
+    where
+        TMapping: DateMapping<Format = TFormat>,
+        TFormat: DateFormat,
     {
         type DocumentField = DocumentField<TMapping, DatePivot>;
 
@@ -201,11 +209,13 @@ mod private {
     }
 
     impl<TMapping, TFormat> Serialize for DocumentField<TMapping, DatePivot>
-        where TMapping: FieldMapping<DatePivot> + DateMapping<Format = TFormat>,
-            TFormat: DateFormat
+    where
+        TMapping: FieldMapping<DatePivot> + DateMapping<Format = TFormat>,
+        TFormat: DateFormat,
     {
         fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-            where S: Serializer
+        where
+            S: Serializer,
         {
             let mut state = try!(serializer.serialize_struct("mapping", 9));
 
@@ -231,7 +241,7 @@ mod tests {
     use chrono::{DateTime, Utc};
 
     use prelude::*;
-    use private::field::{FieldType, DocumentField};
+    use private::field::{DocumentField, FieldType};
 
     #[derive(Default, Clone)]
     pub struct MyDateMapping;
@@ -269,12 +279,17 @@ mod tests {
 
     #[test]
     fn datetime_has_default_mapping() {
-        assert_eq!(DefaultDateMapping::<ChronoFormat>::default(), DateTime::<Utc>::field_mapping());
+        assert_eq!(
+            DefaultDateMapping::<ChronoFormat>::default(),
+            DateTime::<Utc>::field_mapping()
+        );
     }
 
     #[test]
     fn serialise_mapping_default() {
-        let ser = serde_json::to_string(&DocumentField::from(DefaultDateMapping::<DefaultDateFormat>::default())).unwrap();
+        let ser = serde_json::to_string(&DocumentField::from(
+            DefaultDateMapping::<DefaultDateFormat>::default(),
+        )).unwrap();
 
         let expected = json_str!({
             "type": "date",

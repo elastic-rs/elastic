@@ -1,9 +1,9 @@
 use std::str::FromStr;
 use std::fmt::Write;
-use serde::{Serialize, Serializer, Deserialize, Deserializer};
-use serde::de::{Error, Unexpected, Visitor, SeqAccess};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use serde::de::{Error, SeqAccess, Unexpected, Visitor};
 use geohash;
-use super::{Coordinate, Point, GeoPointFormat};
+use super::{Coordinate, GeoPointFormat, Point};
 use super::mapping::GeoPointMapping;
 use geo::mapping::Distance;
 
@@ -22,7 +22,8 @@ struct GeoPointObjectType {
 
 impl GeoPointFormat for GeoPointObject {
     fn parse<'de, D>(deserializer: D) -> Result<Point, D::Error>
-        where D: Deserializer<'de>
+    where
+        D: Deserializer<'de>,
     {
         let point = try!(GeoPointObjectType::deserialize(deserializer));
 
@@ -30,14 +31,14 @@ impl GeoPointFormat for GeoPointObject {
     }
 
     fn format<S, TMapping>(point: &Point, serializer: S) -> Result<S::Ok, S::Error>
-        where TMapping: GeoPointMapping<Format = Self>,
-              S: Serializer
+    where
+        TMapping: GeoPointMapping<Format = Self>,
+        S: Serializer,
     {
         GeoPointObjectType {
-                lon: point.x(),
-                lat: point.y(),
-            }
-            .serialize(serializer)
+            lon: point.x(),
+            lat: point.y(),
+        }.serialize(serializer)
     }
 }
 
@@ -46,7 +47,8 @@ impl GeoPointFormat for GeoPointObject {
 pub struct GeoPointString;
 impl GeoPointFormat for GeoPointString {
     fn parse<'de, D>(deserializer: D) -> Result<Point, D::Error>
-        where D: Deserializer<'de>
+    where
+        D: Deserializer<'de>,
     {
         struct PointVisitor;
 
@@ -58,13 +60,15 @@ impl GeoPointFormat for GeoPointString {
             }
 
             fn visit_str<E>(self, value: &str) -> Result<String, E>
-                where E: Error
+            where
+                E: Error,
             {
                 Ok(String::from(value))
             }
 
             fn visit_string<E>(self, value: String) -> Result<String, E>
-                where E: Error
+            where
+                E: Error,
             {
                 Ok(value)
             }
@@ -74,8 +78,10 @@ impl GeoPointFormat for GeoPointString {
 
         let xy: Vec<&str> = fmtd.split(",").collect();
         if xy.len() != 2 {
-            return Err(D::Error::invalid_value(Unexpected::Str(&fmtd),
-                                               &"point must be formatted as `'y,x'`"));
+            return Err(D::Error::invalid_value(
+                Unexpected::Str(&fmtd),
+                &"point must be formatted as `'y,x'`",
+            ));
         }
 
         let x = match f64::from_str(xy[1]) {
@@ -91,8 +97,9 @@ impl GeoPointFormat for GeoPointString {
     }
 
     fn format<S, TMapping>(point: &Point, serializer: S) -> Result<S::Ok, S::Error>
-        where TMapping: GeoPointMapping<Format = Self>,
-              S: Serializer
+    where
+        TMapping: GeoPointMapping<Format = Self>,
+        S: Serializer,
     {
         let mut fmtd = String::new();
 
@@ -107,7 +114,8 @@ impl GeoPointFormat for GeoPointString {
 pub struct GeoPointHash;
 impl GeoPointFormat for GeoPointHash {
     fn parse<'de, D>(deserializer: D) -> Result<Point, D::Error>
-        where D: Deserializer<'de>
+    where
+        D: Deserializer<'de>,
     {
         struct PointVisitor;
         impl<'de> Visitor<'de> for PointVisitor {
@@ -118,13 +126,15 @@ impl GeoPointFormat for GeoPointHash {
             }
 
             fn visit_str<E>(self, value: &str) -> Result<String, E>
-                where E: Error
+            where
+                E: Error,
             {
                 Ok(String::from(value))
             }
 
             fn visit_string<E>(self, value: String) -> Result<String, E>
-                where E: Error
+            where
+                E: Error,
             {
                 Ok(value)
             }
@@ -136,20 +146,22 @@ impl GeoPointFormat for GeoPointHash {
     }
 
     fn format<S, TMapping>(point: &Point, serializer: S) -> Result<S::Ok, S::Error>
-        where TMapping: GeoPointMapping<Format = Self>,
-              S: Serializer
+    where
+        TMapping: GeoPointMapping<Format = Self>,
+        S: Serializer,
     {
         let len = match TMapping::geohash_precision() {
             Some(Distance(l, _)) => l as usize,
             None => 12usize,
         };
 
-        geohash::encode(Coordinate {
-                            x: point.x(),
-                            y: point.y(),
-                        },
-                        len)
-                .serialize(serializer)
+        geohash::encode(
+            Coordinate {
+                x: point.x(),
+                y: point.y(),
+            },
+            len,
+        ).serialize(serializer)
     }
 }
 
@@ -158,7 +170,8 @@ impl GeoPointFormat for GeoPointHash {
 pub struct GeoPointArray;
 impl GeoPointFormat for GeoPointArray {
     fn parse<'de, D>(deserializer: D) -> Result<Point, D::Error>
-        where D: Deserializer<'de>
+    where
+        D: Deserializer<'de>,
     {
         struct PointVisitor;
         impl<'de> Visitor<'de> for PointVisitor {
@@ -169,20 +182,27 @@ impl GeoPointFormat for GeoPointArray {
             }
 
             fn visit_seq<S>(self, mut visitor: S) -> Result<Self::Value, S::Error>
-                where S: SeqAccess<'de>
+            where
+                S: SeqAccess<'de>,
             {
                 let mut values = Vec::with_capacity(2);
 
                 while let Some(value) = visitor.next_element()? {
                     if values.len() == 2 {
-                        Err(S::Error::invalid_value(Unexpected::Seq, &"a json array with 2 values"))?;
+                        Err(S::Error::invalid_value(
+                            Unexpected::Seq,
+                            &"a json array with 2 values",
+                        ))?;
                     }
 
                     values.push(value);
                 }
 
                 if values.len() != 2 {
-                    Err(S::Error::invalid_value(Unexpected::Seq, &"a json array with 2 values"))?;
+                    Err(S::Error::invalid_value(
+                        Unexpected::Seq,
+                        &"a json array with 2 values",
+                    ))?;
                 }
 
                 Ok(Point::new(values[0], values[1]))
@@ -193,8 +213,9 @@ impl GeoPointFormat for GeoPointArray {
     }
 
     fn format<S, TMapping>(point: &Point, serializer: S) -> Result<S::Ok, S::Error>
-        where TMapping: GeoPointMapping<Format = Self>,
-              S: Serializer
+    where
+        TMapping: GeoPointMapping<Format = Self>,
+        S: Serializer,
     {
         [point.x(), point.y()].serialize(serializer)
     }
@@ -246,8 +267,10 @@ mod tests {
     fn hash() {
         let point: GeoPoint<DefaultGeoPointMapping<GeoPointHash>> = serde_json::from_str(r#""drm3btev3e86""#).unwrap();
 
-        assert_eq!((-71.34000012651086, 41.12000000663102),
-                   (point.x(), point.y()));
+        assert_eq!(
+            (-71.34000012651086, 41.12000000663102),
+            (point.x(), point.y())
+        );
 
         let ser = serde_json::to_string(&point).unwrap();
 

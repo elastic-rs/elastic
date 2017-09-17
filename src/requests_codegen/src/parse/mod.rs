@@ -23,34 +23,29 @@ pub struct Endpoint {
 
 impl Endpoint {
     pub fn has_body(&self) -> bool {
-        self.body.is_some() || self.methods.iter().any(|m| m == &HttpMethod::Post || m == &HttpMethod::Put)
+        self.body.is_some() ||
+            self.methods
+                .iter()
+                .any(|m| m == &HttpMethod::Post || m == &HttpMethod::Put)
     }
 }
 
 #[derive(Debug, PartialEq, Deserialize, Clone, Copy)]
 pub enum HttpMethod {
-    #[serde(rename = "HEAD")]
-    Head,
-    #[serde(rename = "GET")]
-    Get,
-    #[serde(rename = "POST")]
-    Post,
-    #[serde(rename = "PUT")]
-    Put,
-    #[serde(rename = "PATCH")]
-    Patch,
-    #[serde(rename = "DELETE")]
-    Delete,
+    #[serde(rename = "HEAD")] Head,
+    #[serde(rename = "GET")] Get,
+    #[serde(rename = "POST")] Post,
+    #[serde(rename = "PUT")] Put,
+    #[serde(rename = "PATCH")] Patch,
+    #[serde(rename = "DELETE")] Delete,
 }
 
 #[derive(Debug, PartialEq, Deserialize, Clone)]
 pub struct Url {
     pub path: Path,
     pub paths: Vec<Path>,
-    #[serde(default = "BTreeMap::new")]
-    pub parts: BTreeMap<String, Type>,
-    #[serde(default = "BTreeMap::new")]
-    pub params: BTreeMap<String, Type>,
+    #[serde(default = "BTreeMap::new")] pub parts: BTreeMap<String, Type>,
+    #[serde(default = "BTreeMap::new")] pub params: BTreeMap<String, Type>,
 }
 
 impl Url {
@@ -61,38 +56,25 @@ impl Url {
 
 #[derive(Debug, PartialEq, Deserialize, Clone)]
 pub struct Type {
-    #[serde(rename = "type", default)]
-    pub ty: TypeKind,
+    #[serde(rename = "type", default)] pub ty: TypeKind,
     pub description: String,
-    #[serde(default = "Vec::new")]
-    pub options: Vec<Value>,
-    #[serde(default)]
-    pub default: Option<Value>,
+    #[serde(default = "Vec::new")] pub options: Vec<Value>,
+    #[serde(default)] pub default: Option<Value>,
 }
 
 #[derive(Debug, PartialEq, Deserialize, Clone)]
 pub enum TypeKind {
     None,
-    #[serde(rename = "list")]
-    List,
-    #[serde(rename = "enum")]
-    Enum,
-    #[serde(rename = "string")]
-    String,
-    #[serde(rename = "text")]
-    Text,
-    #[serde(rename = "boolean")]
-    Boolean,
-    #[serde(rename = "number")]
-    Number,
-    #[serde(rename = "float")]
-    Float,
-    #[serde(rename = "integer")]
-    Integer,
-    #[serde(rename = "time")]
-    Time,
-    #[serde(rename = "duration")]
-    Duration,
+    #[serde(rename = "list")] List,
+    #[serde(rename = "enum")] Enum,
+    #[serde(rename = "string")] String,
+    #[serde(rename = "text")] Text,
+    #[serde(rename = "boolean")] Boolean,
+    #[serde(rename = "number")] Number,
+    #[serde(rename = "float")] Float,
+    #[serde(rename = "integer")] Integer,
+    #[serde(rename = "time")] Time,
+    #[serde(rename = "duration")] Duration,
 }
 
 impl Default for TypeKind {
@@ -112,11 +94,9 @@ impl Path {
     pub fn params<'a>(&'a self) -> Vec<&'a str> {
         self.split()
             .iter()
-            .filter_map(|p| {
-                match *p {
-                    PathPart::Param(p) => Some(p),
-                    _ => None,
-                }
+            .filter_map(|p| match *p {
+                PathPart::Param(p) => Some(p),
+                _ => None,
             })
             .collect()
     }
@@ -187,11 +167,9 @@ pub trait PathParams<'a> {
 impl<'a> PathParams<'a> for Vec<PathPart<'a>> {
     fn params(&'a self) -> Vec<&'a str> {
         self.iter()
-            .filter_map(|p| {
-                match *p {
-                    PathPart::Param(p) => Some(p),
-                    _ => None,
-                }
+            .filter_map(|p| match *p {
+                PathPart::Param(p) => Some(p),
+                _ => None,
             })
             .collect()
     }
@@ -206,38 +184,48 @@ pub struct Body {
 pub fn get_url() -> Url {
     Url {
         path: Path("/_search".to_string()),
-        paths: vec![Path("/_search".to_string()), Path("/{index}/_search".to_string()), Path("/{index}/{type}/_search".to_string())],
+        paths: vec![
+            Path("/_search".to_string()),
+            Path("/{index}/_search".to_string()),
+            Path("/{index}/{type}/_search".to_string()),
+        ],
         parts: {
             let mut map = BTreeMap::new();
 
-            map.insert("index".to_string(),
-                       Type {
-                           ty: TypeKind::List,
-                           description: "A comma-separated list of index names to search".to_string(),
-                           options: vec![],
-                           default: None,
-                       });
+            map.insert(
+                "index".to_string(),
+                Type {
+                    ty: TypeKind::List,
+                    description: "A comma-separated list of index names to search".to_string(),
+                    options: vec![],
+                    default: None,
+                },
+            );
 
-            map.insert("type".to_string(),
-                       Type {
-                           ty: TypeKind::List,
-                           description: "A comma-separated list of document types to search".to_string(),
-                           options: vec![],
-                           default: None,
-                       });
+            map.insert(
+                "type".to_string(),
+                Type {
+                    ty: TypeKind::List,
+                    description: "A comma-separated list of document types to search".to_string(),
+                    options: vec![],
+                    default: None,
+                },
+            );
 
             map
         },
         params: {
             let mut map = BTreeMap::new();
 
-            map.insert("analyzer".to_string(),
-                       Type {
-                           ty: TypeKind::String,
-                           description: "The analyzer to use for the query string".to_string(),
-                           options: vec![],
-                           default: None,
-                       });
+            map.insert(
+                "analyzer".to_string(),
+                Type {
+                    ty: TypeKind::String,
+                    description: "The analyzer to use for the query string".to_string(),
+                    options: vec![],
+                    default: None,
+                },
+            );
 
             map
         },
@@ -247,7 +235,7 @@ pub fn get_url() -> Url {
 #[cfg(test)]
 mod tests {
     mod path {
-        use ::parse::{Path, PathPart};
+        use parse::{Path, PathPart};
 
         #[test]
         fn parse_param_only() {
@@ -262,7 +250,11 @@ mod tests {
         fn parse_param_first() {
             let path = Path("{index}/{type}".to_string());
 
-            let expected = vec![PathPart::Param("index"), PathPart::Literal("/"), PathPart::Param("type")];
+            let expected = vec![
+                PathPart::Param("index"),
+                PathPart::Literal("/"),
+                PathPart::Param("type"),
+            ];
 
             assert_eq!(expected, path.split());
         }
@@ -271,7 +263,12 @@ mod tests {
         fn parse_params_and_literals() {
             let path = Path("/{index}/part/{type}".to_string());
 
-            let expected = vec![PathPart::Literal("/"), PathPart::Param("index"), PathPart::Literal("/part/"), PathPart::Param("type")];
+            let expected = vec![
+                PathPart::Literal("/"),
+                PathPart::Param("index"),
+                PathPart::Literal("/part/"),
+                PathPart::Param("type"),
+            ];
 
             assert_eq!(expected, path.split());
         }
@@ -296,7 +293,7 @@ mod tests {
     }
 
     mod endpoint {
-        use ::parse::*;
+        use parse::*;
 
         #[test]
         fn has_body_if_body_is_some() {
@@ -304,7 +301,9 @@ mod tests {
                 documentation: String::new(),
                 methods: vec![HttpMethod::Get],
                 url: get_url(),
-                body: Some(Body { description: String::new() }),
+                body: Some(Body {
+                    description: String::new(),
+                }),
             };
 
             assert!(endpoint.has_body());
@@ -348,7 +347,7 @@ mod tests {
     }
 
     mod url {
-        use ::parse::*;
+        use parse::*;
 
         #[test]
         fn lookup_param_type_in_part() {
@@ -387,7 +386,7 @@ mod tests {
         use std::collections::BTreeMap;
         use serde_json;
         use serde_json::value::to_value;
-        use ::parse::*;
+        use parse::*;
 
         fn http_eq(expected: HttpMethod, ser: &'static str) {
             assert_eq!(expected, serde_json::from_str::<HttpMethod>(ser).unwrap());
@@ -450,7 +449,7 @@ mod tests {
             let expected = Type {
                 ty: TypeKind::Enum,
                 description: "The default operator for query string query (AND or OR)".to_string(),
-                options: vec![ to_value("AND").unwrap(), to_value("OR").unwrap() ],
+                options: vec![to_value("AND").unwrap(), to_value("OR").unwrap()],
                 default: Some(to_value("OR").unwrap()),
             };
 
@@ -463,16 +462,24 @@ mod tests {
                 "description": "The search definition using the Query DSL"
             });
 
-            let expected = Some(Body { description: "The search definition using the Query DSL".to_string() });
+            let expected = Some(Body {
+                description: "The search definition using the Query DSL".to_string(),
+            });
 
-            assert_eq!(expected, serde_json::from_str::<Option<Body>>(&ser).unwrap());
+            assert_eq!(
+                expected,
+                serde_json::from_str::<Option<Body>>(&ser).unwrap()
+            );
         }
 
         #[test]
         fn deserialise_body_none() {
             let expected: Option<Body> = None;
 
-            assert_eq!(expected, serde_json::from_str::<Option<Body>>("null").unwrap());
+            assert_eq!(
+                expected,
+                serde_json::from_str::<Option<Body>>("null").unwrap()
+            );
         }
 
         #[test]
@@ -503,39 +510,45 @@ mod tests {
                 paths: vec![
                     Path("/_search".to_string()),
                     Path("/{index}/_search".to_string()),
-                    Path("/{index}/{type}/_search".to_string())
+                    Path("/{index}/{type}/_search".to_string()),
                 ],
                 parts: {
                     let mut map = BTreeMap::new();
 
-                    map.insert("index".to_string(),
-                               Type {
-                                   ty: TypeKind::List,
-                                   description: "A comma-separated list of index names to search".to_string(),
-                                   options: vec![],
-                                   default: None,
-                               });
+                    map.insert(
+                        "index".to_string(),
+                        Type {
+                            ty: TypeKind::List,
+                            description: "A comma-separated list of index names to search".to_string(),
+                            options: vec![],
+                            default: None,
+                        },
+                    );
 
-                    map.insert("type".to_string(),
-                               Type {
-                                   ty: TypeKind::List,
-                                   description: "A comma-separated list of document types to search".to_string(),
-                                   options: vec![],
-                                   default: None,
-                               });
+                    map.insert(
+                        "type".to_string(),
+                        Type {
+                            ty: TypeKind::List,
+                            description: "A comma-separated list of document types to search".to_string(),
+                            options: vec![],
+                            default: None,
+                        },
+                    );
 
                     map
                 },
                 params: {
                     let mut map = BTreeMap::new();
 
-                    map.insert("analyzer".to_string(),
-                               Type {
-                                   ty: TypeKind::String,
-                                   description: "The analyzer to use for the query string".to_string(),
-                                   options: vec![],
-                                   default: None,
-                               });
+                    map.insert(
+                        "analyzer".to_string(),
+                        Type {
+                            ty: TypeKind::String,
+                            description: "The analyzer to use for the query string".to_string(),
+                            options: vec![],
+                            default: None,
+                        },
+                    );
 
                     map
                 },
@@ -563,18 +576,22 @@ mod tests {
             });
 
             let mut expected = BTreeMap::new();
-            expected.insert("search".to_string(),
-                            Endpoint {
-                                documentation: "http://www.elastic.co/guide/en/elasticsearch/reference/master/search-search.html".to_string(),
-                                methods: vec![ HttpMethod::Get, HttpMethod::Post ],
-                                url: Url {
-                                    path: Path("/_search".to_string()),
-                                    paths: vec![],
-                                    parts: BTreeMap::new(),
-                                    params: BTreeMap::new(),
-                                },
-                                body: Some(Body { description: "The search definition using the Query DSL".to_string() }),
-                            });
+            expected.insert(
+                "search".to_string(),
+                Endpoint {
+                    documentation: "http://www.elastic.co/guide/en/elasticsearch/reference/master/search-search.html".to_string(),
+                    methods: vec![HttpMethod::Get, HttpMethod::Post],
+                    url: Url {
+                        path: Path("/_search".to_string()),
+                        paths: vec![],
+                        parts: BTreeMap::new(),
+                        params: BTreeMap::new(),
+                    },
+                    body: Some(Body {
+                        description: "The search definition using the Query DSL".to_string(),
+                    }),
+                },
+            );
 
             let de: BTreeMap<String, Endpoint> = serde_json::from_str(&ser).unwrap();
 

@@ -1,5 +1,5 @@
 use syn;
-use ::parse;
+use parse;
 use super::types;
 use super::helpers::*;
 
@@ -24,12 +24,14 @@ impl RequestParamBuilder {
     }
 
     pub fn build(self) -> (syn::Item, syn::Ty) {
-        let mut fields = vec![syn::Field {
-            ident: Some(ident("url")),
-            vis: syn::Visibility::Public,
-            attrs: vec![],
-            ty: types::url::ty()
-        }];
+        let mut fields = vec![
+            syn::Field {
+                ident: Some(ident("url")),
+                vis: syn::Visibility::Public,
+                attrs: vec![],
+                ty: types::url::ty(),
+            },
+        ];
 
         let mut generics = generics(vec![lifetime()], vec![]);
 
@@ -41,20 +43,26 @@ impl RequestParamBuilder {
                 ty: types::body::ty(),
             });
 
-            generics.ty_params.push(ty_param(types::body::ident(), vec![]));
+            generics
+                .ty_params
+                .push(ty_param(types::body::ident(), vec![]));
         }
 
         let fields = syn::VariantData::Struct(fields);
 
-        let ty = ty_path(self.name.as_ref(), 
-                         generics.lifetimes
-                                 .iter()
-                                 .map(|l| l.lifetime.to_owned())
-                                 .collect(), 
-                         generics.ty_params
-                                 .iter()
-                                 .map(|t| ty(t.ident.as_ref()))
-                                 .collect());
+        let ty = ty_path(
+            self.name.as_ref(),
+            generics
+                .lifetimes
+                .iter()
+                .map(|l| l.lifetime.to_owned())
+                .collect(),
+            generics
+                .ty_params
+                .iter()
+                .map(|t| ty(t.ident.as_ref()))
+                .collect(),
+        );
 
         let item = syn::Item {
             ident: self.name,
@@ -130,15 +138,19 @@ mod tests {
 
     #[test]
     fn gen_params_enum_from_endpoint() {
-        use ::parse::*;
+        use parse::*;
 
-        let endpoint = ("indices.exists_alias".to_string(),
-                        Endpoint {
-            documentation: String::new(),
-            methods: vec![HttpMethod::Get],
-            url: get_url(),
-            body: Some(Body { description: String::new() }),
-        });
+        let endpoint = (
+            "indices.exists_alias".to_string(),
+            Endpoint {
+                documentation: String::new(),
+                methods: vec![HttpMethod::Get],
+                url: get_url(),
+                body: Some(Body {
+                    description: String::new(),
+                }),
+            },
+        );
 
         let (result, _) = RequestParamBuilder::from(&endpoint).build();
 

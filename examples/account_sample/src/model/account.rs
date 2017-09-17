@@ -5,8 +5,7 @@
 //! Field serialisation and mapping is all handled in the same place
 //! so it's always in sync.
 
-use elastic::types::prelude::{KeywordFieldType, Text, DefaultTextMapping, TextMapping,
-                              Keyword, DefaultKeywordMapping, DocumentType};
+use elastic::types::prelude::{DefaultKeywordMapping, DefaultTextMapping, DocumentType, Keyword, KeywordFieldType, Text, TextMapping};
 
 /// Our main model; an account in the bank.
 #[derive(Debug, Serialize, Deserialize, ElasticType)]
@@ -46,10 +45,8 @@ pub type State = Keyword<DefaultKeywordMapping>;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub enum Gender {
-    #[serde(rename = "F")]
-    Female,
-    #[serde(rename = "M")]
-    Male,
+    #[serde(rename = "F")] Female,
+    #[serde(rename = "M")] Male,
 }
 
 impl KeywordFieldType<DefaultKeywordMapping> for Gender {}

@@ -1,10 +1,10 @@
+extern crate serde;
 #[macro_use]
 extern crate serde_derive;
-extern crate serde;
 
+extern crate elastic;
 #[macro_use]
 extern crate elastic_derive;
-extern crate elastic;
 
 use elastic::prelude::*;
 
@@ -33,7 +33,10 @@ fn main() {
 
     client.index_create(index()).send().unwrap();
 
-    client.document_put_mapping::<BenchDoc>(index()).send().unwrap();
+    client
+        .document_put_mapping::<BenchDoc>(index())
+        .send()
+        .unwrap();
 
     for i in 0..10 {
         let doc = BenchDoc {

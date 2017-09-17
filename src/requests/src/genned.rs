@@ -1,10 +1,10 @@
 // This code is automatically generated
 //
 pub mod endpoints {
-    use super :: http :: * ;
-    use super :: params :: * ;
+    use super::http::*;
+    use super::params::*;
 
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum IndicesCloseUrlParams<'a> {
         Index(Index<'a>),
     }
@@ -21,14 +21,15 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct IndicesCloseRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> IndicesCloseRequest<'a, B> {
         pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
-            where IIndex: Into<Index<'a>>
+        where
+            IIndex: Into<Index<'a>>,
         {
             IndicesCloseRequest {
                 url: IndicesCloseUrlParams::Index(index.into()).url(),
@@ -45,7 +46,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum DeleteScriptUrlParams<'a> {
         LangId(Lang<'a>, Id<'a>),
     }
@@ -63,16 +64,19 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct DeleteScriptRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> DeleteScriptRequest<'a> {
         pub fn for_lang_id<ILang, IId>(lang: ILang, id: IId) -> Self
-            where ILang: Into<Lang<'a>>,
-                  IId: Into<Id<'a>>
+        where
+            ILang: Into<Lang<'a>>,
+            IId: Into<Id<'a>>,
         {
-            DeleteScriptRequest { url: DeleteScriptUrlParams::LangId(lang.into(), id.into()).url() }
+            DeleteScriptRequest {
+                url: DeleteScriptUrlParams::LangId(lang.into(), id.into()).url(),
+            }
         }
     }
     impl<'a> Into<HttpRequest<'a, DefaultBody>> for DeleteScriptRequest<'a> {
@@ -84,7 +88,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum TermvectorsUrlParams<'a> {
         IndexType(Index<'a>, Type<'a>),
         IndexTypeId(Index<'a>, Type<'a>, Id<'a>),
@@ -102,8 +106,7 @@ pub mod endpoints {
                     Url::from(url)
                 }
                 TermvectorsUrlParams::IndexTypeId(ref index, ref ty, ref id) => {
-                    let mut url = String::with_capacity(16usize + index.len() + ty.len() +
-                                                        id.len());
+                    let mut url = String::with_capacity(16usize + index.len() + ty.len() + id.len());
                     url.push_str("/");
                     url.push_str(index.as_ref());
                     url.push_str("/");
@@ -116,29 +119,27 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct TermvectorsRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> TermvectorsRequest<'a, B> {
         pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: B) -> Self
-            where IIndex: Into<Index<'a>>,
-                  IType: Into<Type<'a>>
+        where
+            IIndex: Into<Index<'a>>,
+            IType: Into<Type<'a>>,
         {
             TermvectorsRequest {
                 url: TermvectorsUrlParams::IndexType(index.into(), ty.into()).url(),
                 body: body,
             }
         }
-        pub fn for_index_ty_id<IIndex, IType, IId>(index: IIndex,
-                                                   ty: IType,
-                                                   id: IId,
-                                                   body: B)
-                                                   -> Self
-            where IIndex: Into<Index<'a>>,
-                  IType: Into<Type<'a>>,
-                  IId: Into<Id<'a>>
+        pub fn for_index_ty_id<IIndex, IType, IId>(index: IIndex, ty: IType, id: IId, body: B) -> Self
+        where
+            IIndex: Into<Index<'a>>,
+            IType: Into<Type<'a>>,
+            IId: Into<Id<'a>>,
         {
             TermvectorsRequest {
                 url: TermvectorsUrlParams::IndexTypeId(index.into(), ty.into(), id.into()).url(),
@@ -155,7 +156,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum FieldStatsUrlParams<'a> {
         None,
         Index(Index<'a>),
@@ -174,7 +175,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct FieldStatsRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
@@ -187,7 +188,8 @@ pub mod endpoints {
             }
         }
         pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
-            where IIndex: Into<Index<'a>>
+        where
+            IIndex: Into<Index<'a>>,
         {
             FieldStatsRequest {
                 url: FieldStatsUrlParams::Index(index.into()).url(),
@@ -204,7 +206,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum CatThreadPoolUrlParams<'a> {
         None,
         ThreadPoolPatterns(ThreadPoolPatterns<'a>),
@@ -222,14 +224,20 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct CatThreadPoolRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> CatThreadPoolRequest<'a> {
         pub fn new() -> Self {
-            CatThreadPoolRequest { url: CatThreadPoolUrlParams::None.url() }
-        } pub fn for_thread_pool_patterns < IThreadPoolPatterns > ( thread_pool_patterns : IThreadPoolPatterns ) -> Self where IThreadPoolPatterns : Into < ThreadPoolPatterns < 'a > > {
+            CatThreadPoolRequest {
+                url: CatThreadPoolUrlParams::None.url(),
+            }
+        }
+        pub fn for_thread_pool_patterns<IThreadPoolPatterns>(thread_pool_patterns: IThreadPoolPatterns) -> Self
+        where
+            IThreadPoolPatterns: Into<ThreadPoolPatterns<'a>>,
+        {
             CatThreadPoolRequest {
                 url: CatThreadPoolUrlParams::ThreadPoolPatterns(thread_pool_patterns.into()).url(),
             }
@@ -244,7 +252,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum SnapshotDeleteUrlParams<'a> {
         RepositorySnapshot(Repository<'a>, Snapshot<'a>),
     }
@@ -252,8 +260,7 @@ pub mod endpoints {
         pub fn url(self) -> Url<'a> {
             match self {
                 SnapshotDeleteUrlParams::RepositorySnapshot(ref repository, ref snapshot) => {
-                    let mut url = String::with_capacity(12usize + repository.len() +
-                                                        snapshot.len());
+                    let mut url = String::with_capacity(12usize + repository.len() + snapshot.len());
                     url.push_str("/_snapshot/");
                     url.push_str(repository.as_ref());
                     url.push_str("/");
@@ -263,21 +270,18 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct SnapshotDeleteRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> SnapshotDeleteRequest<'a> {
-        pub fn for_repository_snapshot<IRepository, ISnapshot>(repository: IRepository,
-                                                               snapshot: ISnapshot)
-                                                               -> Self
-            where IRepository: Into<Repository<'a>>,
-                  ISnapshot: Into<Snapshot<'a>>
+        pub fn for_repository_snapshot<IRepository, ISnapshot>(repository: IRepository, snapshot: ISnapshot) -> Self
+        where
+            IRepository: Into<Repository<'a>>,
+            ISnapshot: Into<Snapshot<'a>>,
         {
             SnapshotDeleteRequest {
-                url: SnapshotDeleteUrlParams::RepositorySnapshot(repository.into(),
-                                                                 snapshot.into())
-                    .url(),
+                url: SnapshotDeleteUrlParams::RepositorySnapshot(repository.into(), snapshot.into()).url(),
             }
         }
     }
@@ -290,7 +294,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum IndicesGetSettingsUrlParams<'a> {
         None,
         Index(Index<'a>),
@@ -325,33 +329,40 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct IndicesGetSettingsRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> IndicesGetSettingsRequest<'a> {
         pub fn new() -> Self {
-            IndicesGetSettingsRequest { url: IndicesGetSettingsUrlParams::None.url() }
+            IndicesGetSettingsRequest {
+                url: IndicesGetSettingsUrlParams::None.url(),
+            }
         }
         pub fn for_index<IIndex>(index: IIndex) -> Self
-            where IIndex: Into<Index<'a>>
+        where
+            IIndex: Into<Index<'a>>,
         {
             IndicesGetSettingsRequest {
                 url: IndicesGetSettingsUrlParams::Index(index.into()).url(),
             }
         }
         pub fn for_index_name<IIndex, IName>(index: IIndex, name: IName) -> Self
-            where IIndex: Into<Index<'a>>,
-                  IName: Into<Name<'a>>
+        where
+            IIndex: Into<Index<'a>>,
+            IName: Into<Name<'a>>,
         {
             IndicesGetSettingsRequest {
                 url: IndicesGetSettingsUrlParams::IndexName(index.into(), name.into()).url(),
             }
         }
         pub fn for_name<IName>(name: IName) -> Self
-            where IName: Into<Name<'a>>
+        where
+            IName: Into<Name<'a>>,
         {
-            IndicesGetSettingsRequest { url: IndicesGetSettingsUrlParams::Name(name.into()).url() }
+            IndicesGetSettingsRequest {
+                url: IndicesGetSettingsUrlParams::Name(name.into()).url(),
+            }
         }
     }
     impl<'a> Into<HttpRequest<'a, DefaultBody>> for IndicesGetSettingsRequest<'a> {
@@ -363,7 +374,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum CreateUrlParams<'a> {
         IndexTypeId(Index<'a>, Type<'a>, Id<'a>),
     }
@@ -371,8 +382,7 @@ pub mod endpoints {
         pub fn url(self) -> Url<'a> {
             match self {
                 CreateUrlParams::IndexTypeId(ref index, ref ty, ref id) => {
-                    let mut url = String::with_capacity(11usize + index.len() + ty.len() +
-                                                        id.len());
+                    let mut url = String::with_capacity(11usize + index.len() + ty.len() + id.len());
                     url.push_str("/");
                     url.push_str(index.as_ref());
                     url.push_str("/");
@@ -385,20 +395,17 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct CreateRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> CreateRequest<'a, B> {
-        pub fn for_index_ty_id<IIndex, IType, IId>(index: IIndex,
-                                                   ty: IType,
-                                                   id: IId,
-                                                   body: B)
-                                                   -> Self
-            where IIndex: Into<Index<'a>>,
-                  IType: Into<Type<'a>>,
-                  IId: Into<Id<'a>>
+        pub fn for_index_ty_id<IIndex, IType, IId>(index: IIndex, ty: IType, id: IId, body: B) -> Self
+        where
+            IIndex: Into<Index<'a>>,
+            IType: Into<Type<'a>>,
+            IId: Into<Id<'a>>,
         {
             CreateRequest {
                 url: CreateUrlParams::IndexTypeId(index.into(), ty.into(), id.into()).url(),
@@ -415,7 +422,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum SnapshotDeleteRepositoryUrlParams<'a> {
         Repository(Repository<'a>),
     }
@@ -431,13 +438,14 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct SnapshotDeleteRepositoryRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> SnapshotDeleteRepositoryRequest<'a> {
         pub fn for_repository<IRepository>(repository: IRepository) -> Self
-            where IRepository: Into<Repository<'a>>
+        where
+            IRepository: Into<Repository<'a>>,
         {
             SnapshotDeleteRepositoryRequest {
                 url: SnapshotDeleteRepositoryUrlParams::Repository(repository.into()).url(),
@@ -453,7 +461,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum ClusterAllocationExplainUrlParams {
         None,
     }
@@ -464,7 +472,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct ClusterAllocationExplainRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
@@ -486,7 +494,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum IndicesPutTemplateUrlParams<'a> {
         Name(Name<'a>),
     }
@@ -502,14 +510,15 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct IndicesPutTemplateRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> IndicesPutTemplateRequest<'a, B> {
         pub fn for_name<IName>(name: IName, body: B) -> Self
-            where IName: Into<Name<'a>>
+        where
+            IName: Into<Name<'a>>,
         {
             IndicesPutTemplateRequest {
                 url: IndicesPutTemplateUrlParams::Name(name.into()).url(),
@@ -526,7 +535,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum IndicesGetTemplateUrlParams<'a> {
         None,
         Name(Name<'a>),
@@ -544,18 +553,23 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct IndicesGetTemplateRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> IndicesGetTemplateRequest<'a> {
         pub fn new() -> Self {
-            IndicesGetTemplateRequest { url: IndicesGetTemplateUrlParams::None.url() }
+            IndicesGetTemplateRequest {
+                url: IndicesGetTemplateUrlParams::None.url(),
+            }
         }
         pub fn for_name<IName>(name: IName) -> Self
-            where IName: Into<Name<'a>>
+        where
+            IName: Into<Name<'a>>,
         {
-            IndicesGetTemplateRequest { url: IndicesGetTemplateUrlParams::Name(name.into()).url() }
+            IndicesGetTemplateRequest {
+                url: IndicesGetTemplateUrlParams::Name(name.into()).url(),
+            }
         }
     }
     impl<'a> Into<HttpRequest<'a, DefaultBody>> for IndicesGetTemplateRequest<'a> {
@@ -567,7 +581,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum ClusterStateUrlParams<'a> {
         None,
         Metric(Metric<'a>),
@@ -594,22 +608,28 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct ClusterStateRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> ClusterStateRequest<'a> {
         pub fn new() -> Self {
-            ClusterStateRequest { url: ClusterStateUrlParams::None.url() }
+            ClusterStateRequest {
+                url: ClusterStateUrlParams::None.url(),
+            }
         }
         pub fn for_metric<IMetric>(metric: IMetric) -> Self
-            where IMetric: Into<Metric<'a>>
+        where
+            IMetric: Into<Metric<'a>>,
         {
-            ClusterStateRequest { url: ClusterStateUrlParams::Metric(metric.into()).url() }
+            ClusterStateRequest {
+                url: ClusterStateUrlParams::Metric(metric.into()).url(),
+            }
         }
         pub fn for_metric_index<IMetric, IIndex>(metric: IMetric, index: IIndex) -> Self
-            where IMetric: Into<Metric<'a>>,
-                  IIndex: Into<Index<'a>>
+        where
+            IMetric: Into<Metric<'a>>,
+            IIndex: Into<Index<'a>>,
         {
             ClusterStateRequest {
                 url: ClusterStateUrlParams::MetricIndex(metric.into(), index.into()).url(),
@@ -625,7 +645,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum MsearchTemplateUrlParams<'a> {
         None,
         Index(Index<'a>),
@@ -654,7 +674,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct MsearchTemplateRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
@@ -667,7 +687,8 @@ pub mod endpoints {
             }
         }
         pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
-            where IIndex: Into<Index<'a>>
+        where
+            IIndex: Into<Index<'a>>,
         {
             MsearchTemplateRequest {
                 url: MsearchTemplateUrlParams::Index(index.into()).url(),
@@ -675,8 +696,9 @@ pub mod endpoints {
             }
         }
         pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: B) -> Self
-            where IIndex: Into<Index<'a>>,
-                  IType: Into<Type<'a>>
+        where
+            IIndex: Into<Index<'a>>,
+            IType: Into<Type<'a>>,
         {
             MsearchTemplateRequest {
                 url: MsearchTemplateUrlParams::IndexType(index.into(), ty.into()).url(),
@@ -693,7 +715,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum BulkUrlParams<'a> {
         None,
         Index(Index<'a>),
@@ -722,7 +744,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct BulkRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
@@ -735,7 +757,8 @@ pub mod endpoints {
             }
         }
         pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
-            where IIndex: Into<Index<'a>>
+        where
+            IIndex: Into<Index<'a>>,
         {
             BulkRequest {
                 url: BulkUrlParams::Index(index.into()).url(),
@@ -743,8 +766,9 @@ pub mod endpoints {
             }
         }
         pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: B) -> Self
-            where IIndex: Into<Index<'a>>,
-                  IType: Into<Type<'a>>
+        where
+            IIndex: Into<Index<'a>>,
+            IType: Into<Type<'a>>,
         {
             BulkRequest {
                 url: BulkUrlParams::IndexType(index.into(), ty.into()).url(),
@@ -761,7 +785,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum ExplainUrlParams<'a> {
         IndexTypeId(Index<'a>, Type<'a>, Id<'a>),
     }
@@ -769,8 +793,7 @@ pub mod endpoints {
         pub fn url(self) -> Url<'a> {
             match self {
                 ExplainUrlParams::IndexTypeId(ref index, ref ty, ref id) => {
-                    let mut url = String::with_capacity(12usize + index.len() + ty.len() +
-                                                        id.len());
+                    let mut url = String::with_capacity(12usize + index.len() + ty.len() + id.len());
                     url.push_str("/");
                     url.push_str(index.as_ref());
                     url.push_str("/");
@@ -783,20 +806,17 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct ExplainRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> ExplainRequest<'a, B> {
-        pub fn for_index_ty_id<IIndex, IType, IId>(index: IIndex,
-                                                   ty: IType,
-                                                   id: IId,
-                                                   body: B)
-                                                   -> Self
-            where IIndex: Into<Index<'a>>,
-                  IType: Into<Type<'a>>,
-                  IId: Into<Id<'a>>
+        pub fn for_index_ty_id<IIndex, IType, IId>(index: IIndex, ty: IType, id: IId, body: B) -> Self
+        where
+            IIndex: Into<Index<'a>>,
+            IType: Into<Type<'a>>,
+            IId: Into<Id<'a>>,
         {
             ExplainRequest {
                 url: ExplainUrlParams::IndexTypeId(index.into(), ty.into(), id.into()).url(),
@@ -813,7 +833,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum SuggestUrlParams<'a> {
         None,
         Index(Index<'a>),
@@ -832,7 +852,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct SuggestRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
@@ -845,7 +865,8 @@ pub mod endpoints {
             }
         }
         pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
-            where IIndex: Into<Index<'a>>
+        where
+            IIndex: Into<Index<'a>>,
         {
             SuggestRequest {
                 url: SuggestUrlParams::Index(index.into()).url(),
@@ -862,7 +883,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum SnapshotGetRepositoryUrlParams<'a> {
         None,
         Repository(Repository<'a>),
@@ -880,16 +901,19 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct SnapshotGetRepositoryRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> SnapshotGetRepositoryRequest<'a> {
         pub fn new() -> Self {
-            SnapshotGetRepositoryRequest { url: SnapshotGetRepositoryUrlParams::None.url() }
+            SnapshotGetRepositoryRequest {
+                url: SnapshotGetRepositoryUrlParams::None.url(),
+            }
         }
         pub fn for_repository<IRepository>(repository: IRepository) -> Self
-            where IRepository: Into<Repository<'a>>
+        where
+            IRepository: Into<Repository<'a>>,
         {
             SnapshotGetRepositoryRequest {
                 url: SnapshotGetRepositoryUrlParams::Repository(repository.into()).url(),
@@ -905,7 +929,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum RenderSearchTemplateUrlParams<'a> {
         None,
         Id(Id<'a>),
@@ -923,7 +947,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct RenderSearchTemplateRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
@@ -936,7 +960,8 @@ pub mod endpoints {
             }
         }
         pub fn for_id<IId>(id: IId, body: B) -> Self
-            where IId: Into<Id<'a>>
+        where
+            IId: Into<Id<'a>>,
         {
             RenderSearchTemplateRequest {
                 url: RenderSearchTemplateUrlParams::Id(id.into()).url(),
@@ -953,7 +978,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum IndicesStatsUrlParams<'a> {
         None,
         Index(Index<'a>),
@@ -988,31 +1013,40 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct IndicesStatsRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> IndicesStatsRequest<'a> {
         pub fn new() -> Self {
-            IndicesStatsRequest { url: IndicesStatsUrlParams::None.url() }
+            IndicesStatsRequest {
+                url: IndicesStatsUrlParams::None.url(),
+            }
         }
         pub fn for_index<IIndex>(index: IIndex) -> Self
-            where IIndex: Into<Index<'a>>
+        where
+            IIndex: Into<Index<'a>>,
         {
-            IndicesStatsRequest { url: IndicesStatsUrlParams::Index(index.into()).url() }
+            IndicesStatsRequest {
+                url: IndicesStatsUrlParams::Index(index.into()).url(),
+            }
         }
         pub fn for_index_metric<IIndex, IMetric>(index: IIndex, metric: IMetric) -> Self
-            where IIndex: Into<Index<'a>>,
-                  IMetric: Into<Metric<'a>>
+        where
+            IIndex: Into<Index<'a>>,
+            IMetric: Into<Metric<'a>>,
         {
             IndicesStatsRequest {
                 url: IndicesStatsUrlParams::IndexMetric(index.into(), metric.into()).url(),
             }
         }
         pub fn for_metric<IMetric>(metric: IMetric) -> Self
-            where IMetric: Into<Metric<'a>>
+        where
+            IMetric: Into<Metric<'a>>,
         {
-            IndicesStatsRequest { url: IndicesStatsUrlParams::Metric(metric.into()).url() }
+            IndicesStatsRequest {
+                url: IndicesStatsUrlParams::Metric(metric.into()).url(),
+            }
         }
     }
     impl<'a> Into<HttpRequest<'a, DefaultBody>> for IndicesStatsRequest<'a> {
@@ -1024,7 +1058,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum CatRepositoriesUrlParams {
         None,
     }
@@ -1035,13 +1069,15 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct CatRepositoriesRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> CatRepositoriesRequest<'a> {
         pub fn new() -> Self {
-            CatRepositoriesRequest { url: CatRepositoriesUrlParams::None.url() }
+            CatRepositoriesRequest {
+                url: CatRepositoriesUrlParams::None.url(),
+            }
         }
     }
     impl<'a> Into<HttpRequest<'a, DefaultBody>> for CatRepositoriesRequest<'a> {
@@ -1053,7 +1089,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum IndicesForcemergeUrlParams<'a> {
         None,
         Index(Index<'a>),
@@ -1072,7 +1108,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct IndicesForcemergeRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
@@ -1085,7 +1121,8 @@ pub mod endpoints {
             }
         }
         pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
-            where IIndex: Into<Index<'a>>
+        where
+            IIndex: Into<Index<'a>>,
         {
             IndicesForcemergeRequest {
                 url: IndicesForcemergeUrlParams::Index(index.into()).url(),
@@ -1102,7 +1139,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum PingUrlParams {
         None,
     }
@@ -1113,13 +1150,15 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct PingRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> PingRequest<'a> {
         pub fn new() -> Self {
-            PingRequest { url: PingUrlParams::None.url() }
+            PingRequest {
+                url: PingUrlParams::None.url(),
+            }
         }
     }
     impl<'a> Into<HttpRequest<'a, DefaultBody>> for PingRequest<'a> {
@@ -1131,7 +1170,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum PingHeadUrlParams {
         None,
     }
@@ -1142,13 +1181,15 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct PingHeadRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> PingHeadRequest<'a> {
         pub fn new() -> Self {
-            PingHeadRequest { url: PingHeadUrlParams::None.url() }
+            PingHeadRequest {
+                url: PingHeadUrlParams::None.url(),
+            }
         }
     }
     impl<'a> Into<HttpRequest<'a, DefaultBody>> for PingHeadRequest<'a> {
@@ -1160,7 +1201,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum TasksGetUrlParams<'a> {
         TaskId(TaskId<'a>),
     }
@@ -1176,15 +1217,18 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct TasksGetRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> TasksGetRequest<'a> {
         pub fn for_task_id<ITaskId>(task_id: ITaskId) -> Self
-            where ITaskId: Into<TaskId<'a>>
+        where
+            ITaskId: Into<TaskId<'a>>,
         {
-            TasksGetRequest { url: TasksGetUrlParams::TaskId(task_id.into()).url() }
+            TasksGetRequest {
+                url: TasksGetUrlParams::TaskId(task_id.into()).url(),
+            }
         }
     }
     impl<'a> Into<HttpRequest<'a, DefaultBody>> for TasksGetRequest<'a> {
@@ -1196,7 +1240,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum IndicesExistsUrlParams<'a> {
         Index(Index<'a>),
     }
@@ -1212,15 +1256,18 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct IndicesExistsRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> IndicesExistsRequest<'a> {
         pub fn for_index<IIndex>(index: IIndex) -> Self
-            where IIndex: Into<Index<'a>>
+        where
+            IIndex: Into<Index<'a>>,
         {
-            IndicesExistsRequest { url: IndicesExistsUrlParams::Index(index.into()).url() }
+            IndicesExistsRequest {
+                url: IndicesExistsUrlParams::Index(index.into()).url(),
+            }
         }
     }
     impl<'a> Into<HttpRequest<'a, DefaultBody>> for IndicesExistsRequest<'a> {
@@ -1232,7 +1279,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum IndicesFlushSyncedUrlParams<'a> {
         None,
         Index(Index<'a>),
@@ -1251,7 +1298,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct IndicesFlushSyncedRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
@@ -1264,7 +1311,8 @@ pub mod endpoints {
             }
         }
         pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
-            where IIndex: Into<Index<'a>>
+        where
+            IIndex: Into<Index<'a>>,
         {
             IndicesFlushSyncedRequest {
                 url: IndicesFlushSyncedUrlParams::Index(index.into()).url(),
@@ -1281,7 +1329,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum MsearchUrlParams<'a> {
         None,
         Index(Index<'a>),
@@ -1310,7 +1358,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct MsearchRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
@@ -1323,7 +1371,8 @@ pub mod endpoints {
             }
         }
         pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
-            where IIndex: Into<Index<'a>>
+        where
+            IIndex: Into<Index<'a>>,
         {
             MsearchRequest {
                 url: MsearchUrlParams::Index(index.into()).url(),
@@ -1331,8 +1380,9 @@ pub mod endpoints {
             }
         }
         pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: B) -> Self
-            where IIndex: Into<Index<'a>>,
-                  IType: Into<Type<'a>>
+        where
+            IIndex: Into<Index<'a>>,
+            IType: Into<Type<'a>>,
         {
             MsearchRequest {
                 url: MsearchUrlParams::IndexType(index.into(), ty.into()).url(),
@@ -1349,7 +1399,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum InfoUrlParams {
         None,
     }
@@ -1360,13 +1410,15 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct InfoRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> InfoRequest<'a> {
         pub fn new() -> Self {
-            InfoRequest { url: InfoUrlParams::None.url() }
+            InfoRequest {
+                url: InfoUrlParams::None.url(),
+            }
         }
     }
     impl<'a> Into<HttpRequest<'a, DefaultBody>> for InfoRequest<'a> {
@@ -1378,7 +1430,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum SearchTemplateUrlParams<'a> {
         None,
         Index(Index<'a>),
@@ -1407,7 +1459,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct SearchTemplateRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
@@ -1420,7 +1472,8 @@ pub mod endpoints {
             }
         }
         pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
-            where IIndex: Into<Index<'a>>
+        where
+            IIndex: Into<Index<'a>>,
         {
             SearchTemplateRequest {
                 url: SearchTemplateUrlParams::Index(index.into()).url(),
@@ -1428,8 +1481,9 @@ pub mod endpoints {
             }
         }
         pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: B) -> Self
-            where IIndex: Into<Index<'a>>,
-                  IType: Into<Type<'a>>
+        where
+            IIndex: Into<Index<'a>>,
+            IType: Into<Type<'a>>,
         {
             SearchTemplateRequest {
                 url: SearchTemplateUrlParams::IndexType(index.into(), ty.into()).url(),
@@ -1446,7 +1500,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum IndicesDeleteUrlParams<'a> {
         Index(Index<'a>),
     }
@@ -1462,15 +1516,18 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct IndicesDeleteRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> IndicesDeleteRequest<'a> {
         pub fn for_index<IIndex>(index: IIndex) -> Self
-            where IIndex: Into<Index<'a>>
+        where
+            IIndex: Into<Index<'a>>,
         {
-            IndicesDeleteRequest { url: IndicesDeleteUrlParams::Index(index.into()).url() }
+            IndicesDeleteRequest {
+                url: IndicesDeleteUrlParams::Index(index.into()).url(),
+            }
         }
     }
     impl<'a> Into<HttpRequest<'a, DefaultBody>> for IndicesDeleteRequest<'a> {
@@ -1482,7 +1539,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum DeleteByQueryUrlParams<'a> {
         Index(Index<'a>),
         IndexType(Index<'a>, Type<'a>),
@@ -1509,14 +1566,15 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct DeleteByQueryRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> DeleteByQueryRequest<'a, B> {
         pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
-            where IIndex: Into<Index<'a>>
+        where
+            IIndex: Into<Index<'a>>,
         {
             DeleteByQueryRequest {
                 url: DeleteByQueryUrlParams::Index(index.into()).url(),
@@ -1524,8 +1582,9 @@ pub mod endpoints {
             }
         }
         pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: B) -> Self
-            where IIndex: Into<Index<'a>>,
-                  IType: Into<Type<'a>>
+        where
+            IIndex: Into<Index<'a>>,
+            IType: Into<Type<'a>>,
         {
             DeleteByQueryRequest {
                 url: DeleteByQueryUrlParams::IndexType(index.into(), ty.into()).url(),
@@ -1542,7 +1601,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum DeleteTemplateUrlParams<'a> {
         Id(Id<'a>),
     }
@@ -1558,15 +1617,18 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct DeleteTemplateRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> DeleteTemplateRequest<'a> {
         pub fn for_id<IId>(id: IId) -> Self
-            where IId: Into<Id<'a>>
+        where
+            IId: Into<Id<'a>>,
         {
-            DeleteTemplateRequest { url: DeleteTemplateUrlParams::Id(id.into()).url() }
+            DeleteTemplateRequest {
+                url: DeleteTemplateUrlParams::Id(id.into()).url(),
+            }
         }
     }
     impl<'a> Into<HttpRequest<'a, DefaultBody>> for DeleteTemplateRequest<'a> {
@@ -1578,7 +1640,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum IndicesCreateUrlParams<'a> {
         Index(Index<'a>),
     }
@@ -1594,14 +1656,15 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct IndicesCreateRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> IndicesCreateRequest<'a, B> {
         pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
-            where IIndex: Into<Index<'a>>
+        where
+            IIndex: Into<Index<'a>>,
         {
             IndicesCreateRequest {
                 url: IndicesCreateUrlParams::Index(index.into()).url(),
@@ -1618,7 +1681,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum PercolateUrlParams<'a> {
         IndexType(Index<'a>, Type<'a>),
         IndexTypeId(Index<'a>, Type<'a>, Id<'a>),
@@ -1636,8 +1699,7 @@ pub mod endpoints {
                     Url::from(url)
                 }
                 PercolateUrlParams::IndexTypeId(ref index, ref ty, ref id) => {
-                    let mut url = String::with_capacity(14usize + index.len() + ty.len() +
-                                                        id.len());
+                    let mut url = String::with_capacity(14usize + index.len() + ty.len() + id.len());
                     url.push_str("/");
                     url.push_str(index.as_ref());
                     url.push_str("/");
@@ -1650,29 +1712,27 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct PercolateRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> PercolateRequest<'a, B> {
         pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: B) -> Self
-            where IIndex: Into<Index<'a>>,
-                  IType: Into<Type<'a>>
+        where
+            IIndex: Into<Index<'a>>,
+            IType: Into<Type<'a>>,
         {
             PercolateRequest {
                 url: PercolateUrlParams::IndexType(index.into(), ty.into()).url(),
                 body: body,
             }
         }
-        pub fn for_index_ty_id<IIndex, IType, IId>(index: IIndex,
-                                                   ty: IType,
-                                                   id: IId,
-                                                   body: B)
-                                                   -> Self
-            where IIndex: Into<Index<'a>>,
-                  IType: Into<Type<'a>>,
-                  IId: Into<Id<'a>>
+        pub fn for_index_ty_id<IIndex, IType, IId>(index: IIndex, ty: IType, id: IId, body: B) -> Self
+        where
+            IIndex: Into<Index<'a>>,
+            IType: Into<Type<'a>>,
+            IId: Into<Id<'a>>,
         {
             PercolateRequest {
                 url: PercolateUrlParams::IndexTypeId(index.into(), ty.into(), id.into()).url(),
@@ -1689,7 +1749,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum SimpleSearchUrlParams<'a> {
         None,
         Index(Index<'a>),
@@ -1718,22 +1778,28 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct SimpleSearchRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> SimpleSearchRequest<'a> {
         pub fn new() -> Self {
-            SimpleSearchRequest { url: SimpleSearchUrlParams::None.url() }
+            SimpleSearchRequest {
+                url: SimpleSearchUrlParams::None.url(),
+            }
         }
         pub fn for_index<IIndex>(index: IIndex) -> Self
-            where IIndex: Into<Index<'a>>
+        where
+            IIndex: Into<Index<'a>>,
         {
-            SimpleSearchRequest { url: SimpleSearchUrlParams::Index(index.into()).url() }
+            SimpleSearchRequest {
+                url: SimpleSearchUrlParams::Index(index.into()).url(),
+            }
         }
         pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType) -> Self
-            where IIndex: Into<Index<'a>>,
-                  IType: Into<Type<'a>>
+        where
+            IIndex: Into<Index<'a>>,
+            IType: Into<Type<'a>>,
         {
             SimpleSearchRequest {
                 url: SimpleSearchUrlParams::IndexType(index.into(), ty.into()).url(),
@@ -1749,7 +1815,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum SearchUrlParams<'a> {
         None,
         Index(Index<'a>),
@@ -1778,7 +1844,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct SearchRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
@@ -1791,7 +1857,8 @@ pub mod endpoints {
             }
         }
         pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
-            where IIndex: Into<Index<'a>>
+        where
+            IIndex: Into<Index<'a>>,
         {
             SearchRequest {
                 url: SearchUrlParams::Index(index.into()).url(),
@@ -1799,8 +1866,9 @@ pub mod endpoints {
             }
         }
         pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: B) -> Self
-            where IIndex: Into<Index<'a>>,
-                  IType: Into<Type<'a>>
+        where
+            IIndex: Into<Index<'a>>,
+            IType: Into<Type<'a>>,
         {
             SearchRequest {
                 url: SearchUrlParams::IndexType(index.into(), ty.into()).url(),
@@ -1817,7 +1885,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum CatNodeattrsUrlParams {
         None,
     }
@@ -1828,13 +1896,15 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct CatNodeattrsRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> CatNodeattrsRequest<'a> {
         pub fn new() -> Self {
-            CatNodeattrsRequest { url: CatNodeattrsUrlParams::None.url() }
+            CatNodeattrsRequest {
+                url: CatNodeattrsUrlParams::None.url(),
+            }
         }
     }
     impl<'a> Into<HttpRequest<'a, DefaultBody>> for CatNodeattrsRequest<'a> {
@@ -1846,7 +1916,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum SnapshotVerifyRepositoryUrlParams<'a> {
         Repository(Repository<'a>),
     }
@@ -1863,14 +1933,15 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct SnapshotVerifyRepositoryRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> SnapshotVerifyRepositoryRequest<'a, B> {
         pub fn for_repository<IRepository>(repository: IRepository, body: B) -> Self
-            where IRepository: Into<Repository<'a>>
+        where
+            IRepository: Into<Repository<'a>>,
         {
             SnapshotVerifyRepositoryRequest {
                 url: SnapshotVerifyRepositoryUrlParams::Repository(repository.into()).url(),
@@ -1887,7 +1958,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum CountUrlParams<'a> {
         None,
         Index(Index<'a>),
@@ -1916,7 +1987,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct CountRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
@@ -1929,7 +2000,8 @@ pub mod endpoints {
             }
         }
         pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
-            where IIndex: Into<Index<'a>>
+        where
+            IIndex: Into<Index<'a>>,
         {
             CountRequest {
                 url: CountUrlParams::Index(index.into()).url(),
@@ -1937,8 +2009,9 @@ pub mod endpoints {
             }
         }
         pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: B) -> Self
-            where IIndex: Into<Index<'a>>,
-                  IType: Into<Type<'a>>
+        where
+            IIndex: Into<Index<'a>>,
+            IType: Into<Type<'a>>,
         {
             CountRequest {
                 url: CountUrlParams::IndexType(index.into(), ty.into()).url(),
@@ -1955,7 +2028,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum CatAllocationUrlParams<'a> {
         None,
         NodeId(NodeId<'a>),
@@ -1973,18 +2046,23 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct CatAllocationRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> CatAllocationRequest<'a> {
         pub fn new() -> Self {
-            CatAllocationRequest { url: CatAllocationUrlParams::None.url() }
+            CatAllocationRequest {
+                url: CatAllocationUrlParams::None.url(),
+            }
         }
         pub fn for_node_id<INodeId>(node_id: INodeId) -> Self
-            where INodeId: Into<NodeId<'a>>
+        where
+            INodeId: Into<NodeId<'a>>,
         {
-            CatAllocationRequest { url: CatAllocationUrlParams::NodeId(node_id.into()).url() }
+            CatAllocationRequest {
+                url: CatAllocationUrlParams::NodeId(node_id.into()).url(),
+            }
         }
     }
     impl<'a> Into<HttpRequest<'a, DefaultBody>> for CatAllocationRequest<'a> {
@@ -1996,7 +2074,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum IndicesFlushUrlParams<'a> {
         None,
         Index(Index<'a>),
@@ -2015,7 +2093,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct IndicesFlushRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
@@ -2028,7 +2106,8 @@ pub mod endpoints {
             }
         }
         pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
-            where IIndex: Into<Index<'a>>
+        where
+            IIndex: Into<Index<'a>>,
         {
             IndicesFlushRequest {
                 url: IndicesFlushUrlParams::Index(index.into()).url(),
@@ -2045,7 +2124,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum IndicesRefreshUrlParams<'a> {
         None,
         Index(Index<'a>),
@@ -2064,7 +2143,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct IndicesRefreshRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
@@ -2077,7 +2156,8 @@ pub mod endpoints {
             }
         }
         pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
-            where IIndex: Into<Index<'a>>
+        where
+            IIndex: Into<Index<'a>>,
         {
             IndicesRefreshRequest {
                 url: IndicesRefreshUrlParams::Index(index.into()).url(),
@@ -2094,7 +2174,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum CatHelpUrlParams {
         None,
     }
@@ -2105,13 +2185,15 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct CatHelpRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> CatHelpRequest<'a> {
         pub fn new() -> Self {
-            CatHelpRequest { url: CatHelpUrlParams::None.url() }
+            CatHelpRequest {
+                url: CatHelpUrlParams::None.url(),
+            }
         }
     }
     impl<'a> Into<HttpRequest<'a, DefaultBody>> for CatHelpRequest<'a> {
@@ -2123,7 +2205,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum SearchShardsUrlParams<'a> {
         None,
         Index(Index<'a>),
@@ -2142,7 +2224,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct SearchShardsRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
@@ -2155,7 +2237,8 @@ pub mod endpoints {
             }
         }
         pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
-            where IIndex: Into<Index<'a>>
+        where
+            IIndex: Into<Index<'a>>,
         {
             SearchShardsRequest {
                 url: SearchShardsUrlParams::Index(index.into()).url(),
@@ -2172,7 +2255,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum ClusterHealthUrlParams<'a> {
         None,
         Index(Index<'a>),
@@ -2190,18 +2273,23 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct ClusterHealthRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> ClusterHealthRequest<'a> {
         pub fn new() -> Self {
-            ClusterHealthRequest { url: ClusterHealthUrlParams::None.url() }
+            ClusterHealthRequest {
+                url: ClusterHealthUrlParams::None.url(),
+            }
         }
         pub fn for_index<IIndex>(index: IIndex) -> Self
-            where IIndex: Into<Index<'a>>
+        where
+            IIndex: Into<Index<'a>>,
         {
-            ClusterHealthRequest { url: ClusterHealthUrlParams::Index(index.into()).url() }
+            ClusterHealthRequest {
+                url: ClusterHealthUrlParams::Index(index.into()).url(),
+            }
         }
     }
     impl<'a> Into<HttpRequest<'a, DefaultBody>> for ClusterHealthRequest<'a> {
@@ -2213,7 +2301,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum IndicesExistsAliasUrlParams<'a> {
         Index(Index<'a>),
         IndexName(Index<'a>, Name<'a>),
@@ -2246,30 +2334,35 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct IndicesExistsAliasRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> IndicesExistsAliasRequest<'a> {
         pub fn for_index<IIndex>(index: IIndex) -> Self
-            where IIndex: Into<Index<'a>>
+        where
+            IIndex: Into<Index<'a>>,
         {
             IndicesExistsAliasRequest {
                 url: IndicesExistsAliasUrlParams::Index(index.into()).url(),
             }
         }
         pub fn for_index_name<IIndex, IName>(index: IIndex, name: IName) -> Self
-            where IIndex: Into<Index<'a>>,
-                  IName: Into<Name<'a>>
+        where
+            IIndex: Into<Index<'a>>,
+            IName: Into<Name<'a>>,
         {
             IndicesExistsAliasRequest {
                 url: IndicesExistsAliasUrlParams::IndexName(index.into(), name.into()).url(),
             }
         }
         pub fn for_name<IName>(name: IName) -> Self
-            where IName: Into<Name<'a>>
+        where
+            IName: Into<Name<'a>>,
         {
-            IndicesExistsAliasRequest { url: IndicesExistsAliasUrlParams::Name(name.into()).url() }
+            IndicesExistsAliasRequest {
+                url: IndicesExistsAliasUrlParams::Name(name.into()).url(),
+            }
         }
     }
     impl<'a> Into<HttpRequest<'a, DefaultBody>> for IndicesExistsAliasRequest<'a> {
@@ -2281,7 +2374,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum IndicesGetFieldMappingUrlParams<'a> {
         Fields(Fields<'a>),
         IndexFields(Index<'a>, Fields<'a>),
@@ -2306,8 +2399,7 @@ pub mod endpoints {
                     Url::from(url)
                 }
                 IndicesGetFieldMappingUrlParams::IndexTypeFields(ref index, ref ty, ref fields) => {
-                    let mut url = String::with_capacity(18usize + index.len() + ty.len() +
-                                                        fields.len());
+                    let mut url = String::with_capacity(18usize + index.len() + ty.len() + fields.len());
                     url.push_str("/");
                     url.push_str(index.as_ref());
                     url.push_str("/_mapping/");
@@ -2327,45 +2419,42 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct IndicesGetFieldMappingRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> IndicesGetFieldMappingRequest<'a> {
         pub fn for_fields<IFields>(fields: IFields) -> Self
-            where IFields: Into<Fields<'a>>
+        where
+            IFields: Into<Fields<'a>>,
         {
             IndicesGetFieldMappingRequest {
                 url: IndicesGetFieldMappingUrlParams::Fields(fields.into()).url(),
             }
         }
         pub fn for_index_fields<IIndex, IFields>(index: IIndex, fields: IFields) -> Self
-            where IIndex: Into<Index<'a>>,
-                  IFields: Into<Fields<'a>>
+        where
+            IIndex: Into<Index<'a>>,
+            IFields: Into<Fields<'a>>,
         {
             IndicesGetFieldMappingRequest {
-                url: IndicesGetFieldMappingUrlParams::IndexFields(index.into(), fields.into())
-                    .url(),
+                url: IndicesGetFieldMappingUrlParams::IndexFields(index.into(), fields.into()).url(),
             }
         }
-        pub fn for_index_ty_fields<IIndex, IType, IFields>(index: IIndex,
-                                                           ty: IType,
-                                                           fields: IFields)
-                                                           -> Self
-            where IIndex: Into<Index<'a>>,
-                  IType: Into<Type<'a>>,
-                  IFields: Into<Fields<'a>>
+        pub fn for_index_ty_fields<IIndex, IType, IFields>(index: IIndex, ty: IType, fields: IFields) -> Self
+        where
+            IIndex: Into<Index<'a>>,
+            IType: Into<Type<'a>>,
+            IFields: Into<Fields<'a>>,
         {
             IndicesGetFieldMappingRequest {
-                url: IndicesGetFieldMappingUrlParams::IndexTypeFields(index.into(),
-                                                                      ty.into(),
-                                                                      fields.into())
-                    .url(),
+                url: IndicesGetFieldMappingUrlParams::IndexTypeFields(index.into(), ty.into(), fields.into()).url(),
             }
         }
         pub fn for_ty_fields<IType, IFields>(ty: IType, fields: IFields) -> Self
-            where IType: Into<Type<'a>>,
-                  IFields: Into<Fields<'a>>
+        where
+            IType: Into<Type<'a>>,
+            IFields: Into<Fields<'a>>,
         {
             IndicesGetFieldMappingRequest {
                 url: IndicesGetFieldMappingUrlParams::TypeFields(ty.into(), fields.into()).url(),
@@ -2381,7 +2470,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum IngestPutPipelineUrlParams<'a> {
         Id(Id<'a>),
     }
@@ -2397,14 +2486,15 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct IngestPutPipelineRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> IngestPutPipelineRequest<'a, B> {
         pub fn for_id<IId>(id: IId, body: B) -> Self
-            where IId: Into<Id<'a>>
+        where
+            IId: Into<Id<'a>>,
         {
             IngestPutPipelineRequest {
                 url: IngestPutPipelineUrlParams::Id(id.into()).url(),
@@ -2421,7 +2511,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum ClusterPendingTasksUrlParams {
         None,
     }
@@ -2432,13 +2522,15 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct ClusterPendingTasksRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> ClusterPendingTasksRequest<'a> {
         pub fn new() -> Self {
-            ClusterPendingTasksRequest { url: ClusterPendingTasksUrlParams::None.url() }
+            ClusterPendingTasksRequest {
+                url: ClusterPendingTasksUrlParams::None.url(),
+            }
         }
     }
     impl<'a> Into<HttpRequest<'a, DefaultBody>> for ClusterPendingTasksRequest<'a> {
@@ -2450,7 +2542,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum IngestSimulateUrlParams<'a> {
         None,
         Id(Id<'a>),
@@ -2469,7 +2561,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct IngestSimulateRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
@@ -2482,7 +2574,8 @@ pub mod endpoints {
             }
         }
         pub fn for_id<IId>(id: IId, body: B) -> Self
-            where IId: Into<Id<'a>>
+        where
+            IId: Into<Id<'a>>,
         {
             IngestSimulateRequest {
                 url: IngestSimulateUrlParams::Id(id.into()).url(),
@@ -2499,7 +2592,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum IndicesGetAliasUrlParams<'a> {
         None,
         Index(Index<'a>),
@@ -2534,31 +2627,40 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct IndicesGetAliasRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> IndicesGetAliasRequest<'a> {
         pub fn new() -> Self {
-            IndicesGetAliasRequest { url: IndicesGetAliasUrlParams::None.url() }
+            IndicesGetAliasRequest {
+                url: IndicesGetAliasUrlParams::None.url(),
+            }
         }
         pub fn for_index<IIndex>(index: IIndex) -> Self
-            where IIndex: Into<Index<'a>>
+        where
+            IIndex: Into<Index<'a>>,
         {
-            IndicesGetAliasRequest { url: IndicesGetAliasUrlParams::Index(index.into()).url() }
+            IndicesGetAliasRequest {
+                url: IndicesGetAliasUrlParams::Index(index.into()).url(),
+            }
         }
         pub fn for_index_name<IIndex, IName>(index: IIndex, name: IName) -> Self
-            where IIndex: Into<Index<'a>>,
-                  IName: Into<Name<'a>>
+        where
+            IIndex: Into<Index<'a>>,
+            IName: Into<Name<'a>>,
         {
             IndicesGetAliasRequest {
                 url: IndicesGetAliasUrlParams::IndexName(index.into(), name.into()).url(),
             }
         }
         pub fn for_name<IName>(name: IName) -> Self
-            where IName: Into<Name<'a>>
+        where
+            IName: Into<Name<'a>>,
         {
-            IndicesGetAliasRequest { url: IndicesGetAliasUrlParams::Name(name.into()).url() }
+            IndicesGetAliasRequest {
+                url: IndicesGetAliasUrlParams::Name(name.into()).url(),
+            }
         }
     }
     impl<'a> Into<HttpRequest<'a, DefaultBody>> for IndicesGetAliasRequest<'a> {
@@ -2570,7 +2672,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum GetScriptUrlParams<'a> {
         LangId(Lang<'a>, Id<'a>),
     }
@@ -2588,16 +2690,19 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct GetScriptRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> GetScriptRequest<'a> {
         pub fn for_lang_id<ILang, IId>(lang: ILang, id: IId) -> Self
-            where ILang: Into<Lang<'a>>,
-                  IId: Into<Id<'a>>
+        where
+            ILang: Into<Lang<'a>>,
+            IId: Into<Id<'a>>,
         {
-            GetScriptRequest { url: GetScriptUrlParams::LangId(lang.into(), id.into()).url() }
+            GetScriptRequest {
+                url: GetScriptUrlParams::LangId(lang.into(), id.into()).url(),
+            }
         }
     }
     impl<'a> Into<HttpRequest<'a, DefaultBody>> for GetScriptRequest<'a> {
@@ -2609,7 +2714,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum IndicesRecoveryUrlParams<'a> {
         None,
         Index(Index<'a>),
@@ -2628,18 +2733,23 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct IndicesRecoveryRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> IndicesRecoveryRequest<'a> {
         pub fn new() -> Self {
-            IndicesRecoveryRequest { url: IndicesRecoveryUrlParams::None.url() }
+            IndicesRecoveryRequest {
+                url: IndicesRecoveryUrlParams::None.url(),
+            }
         }
         pub fn for_index<IIndex>(index: IIndex) -> Self
-            where IIndex: Into<Index<'a>>
+        where
+            IIndex: Into<Index<'a>>,
         {
-            IndicesRecoveryRequest { url: IndicesRecoveryUrlParams::Index(index.into()).url() }
+            IndicesRecoveryRequest {
+                url: IndicesRecoveryUrlParams::Index(index.into()).url(),
+            }
         }
     }
     impl<'a> Into<HttpRequest<'a, DefaultBody>> for IndicesRecoveryRequest<'a> {
@@ -2651,7 +2761,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum IngestDeletePipelineUrlParams<'a> {
         Id(Id<'a>),
     }
@@ -2667,15 +2777,18 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct IngestDeletePipelineRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> IngestDeletePipelineRequest<'a> {
         pub fn for_id<IId>(id: IId) -> Self
-            where IId: Into<Id<'a>>
+        where
+            IId: Into<Id<'a>>,
         {
-            IngestDeletePipelineRequest { url: IngestDeletePipelineUrlParams::Id(id.into()).url() }
+            IngestDeletePipelineRequest {
+                url: IngestDeletePipelineUrlParams::Id(id.into()).url(),
+            }
         }
     }
     impl<'a> Into<HttpRequest<'a, DefaultBody>> for IngestDeletePipelineRequest<'a> {
@@ -2687,7 +2800,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum TasksCancelUrlParams<'a> {
         None,
         TaskId(TaskId<'a>),
@@ -2706,7 +2819,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct TasksCancelRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
@@ -2719,7 +2832,8 @@ pub mod endpoints {
             }
         }
         pub fn for_task_id<ITaskId>(task_id: ITaskId, body: B) -> Self
-            where ITaskId: Into<TaskId<'a>>
+        where
+            ITaskId: Into<TaskId<'a>>,
         {
             TasksCancelRequest {
                 url: TasksCancelUrlParams::TaskId(task_id.into()).url(),
@@ -2736,7 +2850,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum IndicesClearCacheUrlParams<'a> {
         None,
         Index(Index<'a>),
@@ -2755,7 +2869,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct IndicesClearCacheRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
@@ -2768,7 +2882,8 @@ pub mod endpoints {
             }
         }
         pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
-            where IIndex: Into<Index<'a>>
+        where
+            IIndex: Into<Index<'a>>,
         {
             IndicesClearCacheRequest {
                 url: IndicesClearCacheUrlParams::Index(index.into()).url(),
@@ -2785,7 +2900,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum DeleteUrlParams<'a> {
         IndexTypeId(Index<'a>, Type<'a>, Id<'a>),
     }
@@ -2805,15 +2920,16 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct DeleteRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> DeleteRequest<'a> {
         pub fn for_index_ty_id<IIndex, IType, IId>(index: IIndex, ty: IType, id: IId) -> Self
-            where IIndex: Into<Index<'a>>,
-                  IType: Into<Type<'a>>,
-                  IId: Into<Id<'a>>
+        where
+            IIndex: Into<Index<'a>>,
+            IType: Into<Type<'a>>,
+            IId: Into<Id<'a>>,
         {
             DeleteRequest {
                 url: DeleteUrlParams::IndexTypeId(index.into(), ty.into(), id.into()).url(),
@@ -2829,7 +2945,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum IndicesPutMappingUrlParams<'a> {
         IndexType(Index<'a>, Type<'a>),
         Type(Type<'a>),
@@ -2854,15 +2970,16 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct IndicesPutMappingRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> IndicesPutMappingRequest<'a, B> {
         pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: B) -> Self
-            where IIndex: Into<Index<'a>>,
-                  IType: Into<Type<'a>>
+        where
+            IIndex: Into<Index<'a>>,
+            IType: Into<Type<'a>>,
         {
             IndicesPutMappingRequest {
                 url: IndicesPutMappingUrlParams::IndexType(index.into(), ty.into()).url(),
@@ -2870,7 +2987,8 @@ pub mod endpoints {
             }
         }
         pub fn for_ty<IType>(ty: IType, body: B) -> Self
-            where IType: Into<Type<'a>>
+        where
+            IType: Into<Type<'a>>,
         {
             IndicesPutMappingRequest {
                 url: IndicesPutMappingUrlParams::Type(ty.into()).url(),
@@ -2887,7 +3005,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum CatAliasesUrlParams<'a> {
         None,
         Name(Name<'a>),
@@ -2905,18 +3023,23 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct CatAliasesRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> CatAliasesRequest<'a> {
         pub fn new() -> Self {
-            CatAliasesRequest { url: CatAliasesUrlParams::None.url() }
+            CatAliasesRequest {
+                url: CatAliasesUrlParams::None.url(),
+            }
         }
         pub fn for_name<IName>(name: IName) -> Self
-            where IName: Into<Name<'a>>
+        where
+            IName: Into<Name<'a>>,
         {
-            CatAliasesRequest { url: CatAliasesUrlParams::Name(name.into()).url() }
+            CatAliasesRequest {
+                url: CatAliasesUrlParams::Name(name.into()).url(),
+            }
         }
     }
     impl<'a> Into<HttpRequest<'a, DefaultBody>> for CatAliasesRequest<'a> {
@@ -2928,7 +3051,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum ClusterStatsUrlParams<'a> {
         None,
         NodeId(NodeId<'a>),
@@ -2946,18 +3069,23 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct ClusterStatsRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> ClusterStatsRequest<'a> {
         pub fn new() -> Self {
-            ClusterStatsRequest { url: ClusterStatsUrlParams::None.url() }
+            ClusterStatsRequest {
+                url: ClusterStatsUrlParams::None.url(),
+            }
         }
         pub fn for_node_id<INodeId>(node_id: INodeId) -> Self
-            where INodeId: Into<NodeId<'a>>
+        where
+            INodeId: Into<NodeId<'a>>,
         {
-            ClusterStatsRequest { url: ClusterStatsUrlParams::NodeId(node_id.into()).url() }
+            ClusterStatsRequest {
+                url: ClusterStatsUrlParams::NodeId(node_id.into()).url(),
+            }
         }
     }
     impl<'a> Into<HttpRequest<'a, DefaultBody>> for ClusterStatsRequest<'a> {
@@ -2969,7 +3097,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum IndicesValidateQueryUrlParams<'a> {
         None,
         Index(Index<'a>),
@@ -2998,7 +3126,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct IndicesValidateQueryRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
@@ -3011,7 +3139,8 @@ pub mod endpoints {
             }
         }
         pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
-            where IIndex: Into<Index<'a>>
+        where
+            IIndex: Into<Index<'a>>,
         {
             IndicesValidateQueryRequest {
                 url: IndicesValidateQueryUrlParams::Index(index.into()).url(),
@@ -3019,8 +3148,9 @@ pub mod endpoints {
             }
         }
         pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: B) -> Self
-            where IIndex: Into<Index<'a>>,
-                  IType: Into<Type<'a>>
+        where
+            IIndex: Into<Index<'a>>,
+            IType: Into<Type<'a>>,
         {
             IndicesValidateQueryRequest {
                 url: IndicesValidateQueryUrlParams::IndexType(index.into(), ty.into()).url(),
@@ -3037,7 +3167,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum CatPendingTasksUrlParams {
         None,
     }
@@ -3048,13 +3178,15 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct CatPendingTasksRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> CatPendingTasksRequest<'a> {
         pub fn new() -> Self {
-            CatPendingTasksRequest { url: CatPendingTasksUrlParams::None.url() }
+            CatPendingTasksRequest {
+                url: CatPendingTasksUrlParams::None.url(),
+            }
         }
     }
     impl<'a> Into<HttpRequest<'a, DefaultBody>> for CatPendingTasksRequest<'a> {
@@ -3066,7 +3198,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum ClearScrollUrlParams<'a> {
         None,
         ScrollId(ScrollId<'a>),
@@ -3084,7 +3216,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct ClearScrollRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
@@ -3097,7 +3229,8 @@ pub mod endpoints {
             }
         }
         pub fn for_scroll_id<IScrollId>(scroll_id: IScrollId, body: B) -> Self
-            where IScrollId: Into<ScrollId<'a>>
+        where
+            IScrollId: Into<ScrollId<'a>>,
         {
             ClearScrollRequest {
                 url: ClearScrollUrlParams::ScrollId(scroll_id.into()).url(),
@@ -3114,7 +3247,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum CatShardsUrlParams<'a> {
         None,
         Index(Index<'a>),
@@ -3132,18 +3265,23 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct CatShardsRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> CatShardsRequest<'a> {
         pub fn new() -> Self {
-            CatShardsRequest { url: CatShardsUrlParams::None.url() }
+            CatShardsRequest {
+                url: CatShardsUrlParams::None.url(),
+            }
         }
         pub fn for_index<IIndex>(index: IIndex) -> Self
-            where IIndex: Into<Index<'a>>
+        where
+            IIndex: Into<Index<'a>>,
         {
-            CatShardsRequest { url: CatShardsUrlParams::Index(index.into()).url() }
+            CatShardsRequest {
+                url: CatShardsUrlParams::Index(index.into()).url(),
+            }
         }
     }
     impl<'a> Into<HttpRequest<'a, DefaultBody>> for CatShardsRequest<'a> {
@@ -3155,7 +3293,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum IndicesShardStoresUrlParams<'a> {
         None,
         Index(Index<'a>),
@@ -3174,16 +3312,19 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct IndicesShardStoresRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> IndicesShardStoresRequest<'a> {
         pub fn new() -> Self {
-            IndicesShardStoresRequest { url: IndicesShardStoresUrlParams::None.url() }
+            IndicesShardStoresRequest {
+                url: IndicesShardStoresUrlParams::None.url(),
+            }
         }
         pub fn for_index<IIndex>(index: IIndex) -> Self
-            where IIndex: Into<Index<'a>>
+        where
+            IIndex: Into<Index<'a>>,
         {
             IndicesShardStoresRequest {
                 url: IndicesShardStoresUrlParams::Index(index.into()).url(),
@@ -3199,7 +3340,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum IndicesUpdateAliasesUrlParams {
         None,
     }
@@ -3210,7 +3351,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct IndicesUpdateAliasesRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
@@ -3232,7 +3373,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum CatSegmentsUrlParams<'a> {
         None,
         Index(Index<'a>),
@@ -3250,18 +3391,23 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct CatSegmentsRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> CatSegmentsRequest<'a> {
         pub fn new() -> Self {
-            CatSegmentsRequest { url: CatSegmentsUrlParams::None.url() }
+            CatSegmentsRequest {
+                url: CatSegmentsUrlParams::None.url(),
+            }
         }
         pub fn for_index<IIndex>(index: IIndex) -> Self
-            where IIndex: Into<Index<'a>>
+        where
+            IIndex: Into<Index<'a>>,
         {
-            CatSegmentsRequest { url: CatSegmentsUrlParams::Index(index.into()).url() }
+            CatSegmentsRequest {
+                url: CatSegmentsUrlParams::Index(index.into()).url(),
+            }
         }
     }
     impl<'a> Into<HttpRequest<'a, DefaultBody>> for CatSegmentsRequest<'a> {
@@ -3273,7 +3419,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum MpercolateUrlParams<'a> {
         None,
         Index(Index<'a>),
@@ -3302,7 +3448,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct MpercolateRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
@@ -3315,7 +3461,8 @@ pub mod endpoints {
             }
         }
         pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
-            where IIndex: Into<Index<'a>>
+        where
+            IIndex: Into<Index<'a>>,
         {
             MpercolateRequest {
                 url: MpercolateUrlParams::Index(index.into()).url(),
@@ -3323,8 +3470,9 @@ pub mod endpoints {
             }
         }
         pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: B) -> Self
-            where IIndex: Into<Index<'a>>,
-                  IType: Into<Type<'a>>
+        where
+            IIndex: Into<Index<'a>>,
+            IType: Into<Type<'a>>,
         {
             MpercolateRequest {
                 url: MpercolateUrlParams::IndexType(index.into(), ty.into()).url(),
@@ -3341,7 +3489,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum IndicesOpenUrlParams<'a> {
         Index(Index<'a>),
     }
@@ -3358,14 +3506,15 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct IndicesOpenRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> IndicesOpenRequest<'a, B> {
         pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
-            where IIndex: Into<Index<'a>>
+        where
+            IIndex: Into<Index<'a>>,
         {
             IndicesOpenRequest {
                 url: IndicesOpenUrlParams::Index(index.into()).url(),
@@ -3382,7 +3531,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum GetUrlParams<'a> {
         IndexTypeId(Index<'a>, Type<'a>, Id<'a>),
     }
@@ -3402,17 +3551,20 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct GetRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> GetRequest<'a> {
         pub fn for_index_ty_id<IIndex, IType, IId>(index: IIndex, ty: IType, id: IId) -> Self
-            where IIndex: Into<Index<'a>>,
-                  IType: Into<Type<'a>>,
-                  IId: Into<Id<'a>>
+        where
+            IIndex: Into<Index<'a>>,
+            IType: Into<Type<'a>>,
+            IId: Into<Id<'a>>,
         {
-            GetRequest { url: GetUrlParams::IndexTypeId(index.into(), ty.into(), id.into()).url() }
+            GetRequest {
+                url: GetUrlParams::IndexTypeId(index.into(), ty.into(), id.into()).url(),
+            }
         }
     }
     impl<'a> Into<HttpRequest<'a, DefaultBody>> for GetRequest<'a> {
@@ -3424,7 +3576,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum UpdateByQueryUrlParams<'a> {
         Index(Index<'a>),
         IndexType(Index<'a>, Type<'a>),
@@ -3451,14 +3603,15 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct UpdateByQueryRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> UpdateByQueryRequest<'a, B> {
         pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
-            where IIndex: Into<Index<'a>>
+        where
+            IIndex: Into<Index<'a>>,
         {
             UpdateByQueryRequest {
                 url: UpdateByQueryUrlParams::Index(index.into()).url(),
@@ -3466,8 +3619,9 @@ pub mod endpoints {
             }
         }
         pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: B) -> Self
-            where IIndex: Into<Index<'a>>,
-                  IType: Into<Type<'a>>
+        where
+            IIndex: Into<Index<'a>>,
+            IType: Into<Type<'a>>,
         {
             UpdateByQueryRequest {
                 url: UpdateByQueryUrlParams::IndexType(index.into(), ty.into()).url(),
@@ -3484,7 +3638,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum MtermvectorsUrlParams<'a> {
         None,
         Index(Index<'a>),
@@ -3513,7 +3667,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct MtermvectorsRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
@@ -3526,7 +3680,8 @@ pub mod endpoints {
             }
         }
         pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
-            where IIndex: Into<Index<'a>>
+        where
+            IIndex: Into<Index<'a>>,
         {
             MtermvectorsRequest {
                 url: MtermvectorsUrlParams::Index(index.into()).url(),
@@ -3534,8 +3689,9 @@ pub mod endpoints {
             }
         }
         pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: B) -> Self
-            where IIndex: Into<Index<'a>>,
-                  IType: Into<Type<'a>>
+        where
+            IIndex: Into<Index<'a>>,
+            IType: Into<Type<'a>>,
         {
             MtermvectorsRequest {
                 url: MtermvectorsUrlParams::IndexType(index.into(), ty.into()).url(),
@@ -3552,7 +3708,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum CatRecoveryUrlParams<'a> {
         None,
         Index(Index<'a>),
@@ -3570,18 +3726,23 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct CatRecoveryRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> CatRecoveryRequest<'a> {
         pub fn new() -> Self {
-            CatRecoveryRequest { url: CatRecoveryUrlParams::None.url() }
+            CatRecoveryRequest {
+                url: CatRecoveryUrlParams::None.url(),
+            }
         }
         pub fn for_index<IIndex>(index: IIndex) -> Self
-            where IIndex: Into<Index<'a>>
+        where
+            IIndex: Into<Index<'a>>,
         {
-            CatRecoveryRequest { url: CatRecoveryUrlParams::Index(index.into()).url() }
+            CatRecoveryRequest {
+                url: CatRecoveryUrlParams::Index(index.into()).url(),
+            }
         }
     }
     impl<'a> Into<HttpRequest<'a, DefaultBody>> for CatRecoveryRequest<'a> {
@@ -3593,7 +3754,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum SnapshotRestoreUrlParams<'a> {
         RepositorySnapshot(Repository<'a>, Snapshot<'a>),
     }
@@ -3601,8 +3762,7 @@ pub mod endpoints {
         pub fn url(self) -> Url<'a> {
             match self {
                 SnapshotRestoreUrlParams::RepositorySnapshot(ref repository, ref snapshot) => {
-                    let mut url = String::with_capacity(21usize + repository.len() +
-                                                        snapshot.len());
+                    let mut url = String::with_capacity(21usize + repository.len() + snapshot.len());
                     url.push_str("/_snapshot/");
                     url.push_str(repository.as_ref());
                     url.push_str("/");
@@ -3613,23 +3773,19 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct SnapshotRestoreRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> SnapshotRestoreRequest<'a, B> {
-        pub fn for_repository_snapshot<IRepository, ISnapshot>(repository: IRepository,
-                                                               snapshot: ISnapshot,
-                                                               body: B)
-                                                               -> Self
-            where IRepository: Into<Repository<'a>>,
-                  ISnapshot: Into<Snapshot<'a>>
+        pub fn for_repository_snapshot<IRepository, ISnapshot>(repository: IRepository, snapshot: ISnapshot, body: B) -> Self
+        where
+            IRepository: Into<Repository<'a>>,
+            ISnapshot: Into<Snapshot<'a>>,
         {
             SnapshotRestoreRequest {
-                url: SnapshotRestoreUrlParams::RepositorySnapshot(repository.into(),
-                                                                  snapshot.into())
-                    .url(),
+                url: SnapshotRestoreUrlParams::RepositorySnapshot(repository.into(), snapshot.into()).url(),
                 body: body,
             }
         }
@@ -3643,7 +3799,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum ReindexUrlParams {
         None,
     }
@@ -3654,7 +3810,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct ReindexRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
@@ -3676,7 +3832,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum CatHealthUrlParams {
         None,
     }
@@ -3687,13 +3843,15 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct CatHealthRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> CatHealthRequest<'a> {
         pub fn new() -> Self {
-            CatHealthRequest { url: CatHealthUrlParams::None.url() }
+            CatHealthRequest {
+                url: CatHealthUrlParams::None.url(),
+            }
         }
     }
     impl<'a> Into<HttpRequest<'a, DefaultBody>> for CatHealthRequest<'a> {
@@ -3705,7 +3863,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum CatCountUrlParams<'a> {
         None,
         Index(Index<'a>),
@@ -3723,18 +3881,23 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct CatCountRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> CatCountRequest<'a> {
         pub fn new() -> Self {
-            CatCountRequest { url: CatCountUrlParams::None.url() }
+            CatCountRequest {
+                url: CatCountUrlParams::None.url(),
+            }
         }
         pub fn for_index<IIndex>(index: IIndex) -> Self
-            where IIndex: Into<Index<'a>>
+        where
+            IIndex: Into<Index<'a>>,
         {
-            CatCountRequest { url: CatCountUrlParams::Index(index.into()).url() }
+            CatCountRequest {
+                url: CatCountUrlParams::Index(index.into()).url(),
+            }
         }
     }
     impl<'a> Into<HttpRequest<'a, DefaultBody>> for CatCountRequest<'a> {
@@ -3746,7 +3909,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum CatSnapshotsUrlParams<'a> {
         None,
         Repository(Repository<'a>),
@@ -3764,18 +3927,23 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct CatSnapshotsRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> CatSnapshotsRequest<'a> {
         pub fn new() -> Self {
-            CatSnapshotsRequest { url: CatSnapshotsUrlParams::None.url() }
+            CatSnapshotsRequest {
+                url: CatSnapshotsUrlParams::None.url(),
+            }
         }
         pub fn for_repository<IRepository>(repository: IRepository) -> Self
-            where IRepository: Into<Repository<'a>>
+        where
+            IRepository: Into<Repository<'a>>,
         {
-            CatSnapshotsRequest { url: CatSnapshotsUrlParams::Repository(repository.into()).url() }
+            CatSnapshotsRequest {
+                url: CatSnapshotsUrlParams::Repository(repository.into()).url(),
+            }
         }
     }
     impl<'a> Into<HttpRequest<'a, DefaultBody>> for CatSnapshotsRequest<'a> {
@@ -3787,7 +3955,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum IndicesGetMappingUrlParams<'a> {
         None,
         Index(Index<'a>),
@@ -3822,31 +3990,40 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct IndicesGetMappingRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> IndicesGetMappingRequest<'a> {
         pub fn new() -> Self {
-            IndicesGetMappingRequest { url: IndicesGetMappingUrlParams::None.url() }
+            IndicesGetMappingRequest {
+                url: IndicesGetMappingUrlParams::None.url(),
+            }
         }
         pub fn for_index<IIndex>(index: IIndex) -> Self
-            where IIndex: Into<Index<'a>>
+        where
+            IIndex: Into<Index<'a>>,
         {
-            IndicesGetMappingRequest { url: IndicesGetMappingUrlParams::Index(index.into()).url() }
+            IndicesGetMappingRequest {
+                url: IndicesGetMappingUrlParams::Index(index.into()).url(),
+            }
         }
         pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType) -> Self
-            where IIndex: Into<Index<'a>>,
-                  IType: Into<Type<'a>>
+        where
+            IIndex: Into<Index<'a>>,
+            IType: Into<Type<'a>>,
         {
             IndicesGetMappingRequest {
                 url: IndicesGetMappingUrlParams::IndexType(index.into(), ty.into()).url(),
             }
         }
         pub fn for_ty<IType>(ty: IType) -> Self
-            where IType: Into<Type<'a>>
+        where
+            IType: Into<Type<'a>>,
         {
-            IndicesGetMappingRequest { url: IndicesGetMappingUrlParams::Type(ty.into()).url() }
+            IndicesGetMappingRequest {
+                url: IndicesGetMappingUrlParams::Type(ty.into()).url(),
+            }
         }
     }
     impl<'a> Into<HttpRequest<'a, DefaultBody>> for IndicesGetMappingRequest<'a> {
@@ -3858,7 +4035,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum SnapshotGetUrlParams<'a> {
         RepositorySnapshot(Repository<'a>, Snapshot<'a>),
     }
@@ -3866,8 +4043,7 @@ pub mod endpoints {
         pub fn url(self) -> Url<'a> {
             match self {
                 SnapshotGetUrlParams::RepositorySnapshot(ref repository, ref snapshot) => {
-                    let mut url = String::with_capacity(12usize + repository.len() +
-                                                        snapshot.len());
+                    let mut url = String::with_capacity(12usize + repository.len() + snapshot.len());
                     url.push_str("/_snapshot/");
                     url.push_str(repository.as_ref());
                     url.push_str("/");
@@ -3877,20 +4053,18 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct SnapshotGetRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> SnapshotGetRequest<'a> {
-        pub fn for_repository_snapshot<IRepository, ISnapshot>(repository: IRepository,
-                                                               snapshot: ISnapshot)
-                                                               -> Self
-            where IRepository: Into<Repository<'a>>,
-                  ISnapshot: Into<Snapshot<'a>>
+        pub fn for_repository_snapshot<IRepository, ISnapshot>(repository: IRepository, snapshot: ISnapshot) -> Self
+        where
+            IRepository: Into<Repository<'a>>,
+            ISnapshot: Into<Snapshot<'a>>,
         {
             SnapshotGetRequest {
-                url: SnapshotGetUrlParams::RepositorySnapshot(repository.into(), snapshot.into())
-                    .url(),
+                url: SnapshotGetUrlParams::RepositorySnapshot(repository.into(), snapshot.into()).url(),
             }
         }
     }
@@ -3903,7 +4077,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum CatNodesUrlParams {
         None,
     }
@@ -3914,13 +4088,15 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct CatNodesRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> CatNodesRequest<'a> {
         pub fn new() -> Self {
-            CatNodesRequest { url: CatNodesUrlParams::None.url() }
+            CatNodesRequest {
+                url: CatNodesUrlParams::None.url(),
+            }
         }
     }
     impl<'a> Into<HttpRequest<'a, DefaultBody>> for CatNodesRequest<'a> {
@@ -3932,7 +4108,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum ExistsUrlParams<'a> {
         IndexTypeId(Index<'a>, Type<'a>, Id<'a>),
     }
@@ -3952,15 +4128,16 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct ExistsRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> ExistsRequest<'a> {
         pub fn for_index_ty_id<IIndex, IType, IId>(index: IIndex, ty: IType, id: IId) -> Self
-            where IIndex: Into<Index<'a>>,
-                  IType: Into<Type<'a>>,
-                  IId: Into<Id<'a>>
+        where
+            IIndex: Into<Index<'a>>,
+            IType: Into<Type<'a>>,
+            IId: Into<Id<'a>>,
         {
             ExistsRequest {
                 url: ExistsUrlParams::IndexTypeId(index.into(), ty.into(), id.into()).url(),
@@ -3976,7 +4153,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum ClusterRerouteUrlParams {
         None,
     }
@@ -3987,7 +4164,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct ClusterRerouteRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
@@ -4009,7 +4186,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum NodesHotThreadsUrlParams<'a> {
         None,
         NodeId(NodeId<'a>),
@@ -4028,18 +4205,23 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct NodesHotThreadsRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> NodesHotThreadsRequest<'a> {
         pub fn new() -> Self {
-            NodesHotThreadsRequest { url: NodesHotThreadsUrlParams::None.url() }
+            NodesHotThreadsRequest {
+                url: NodesHotThreadsUrlParams::None.url(),
+            }
         }
         pub fn for_node_id<INodeId>(node_id: INodeId) -> Self
-            where INodeId: Into<NodeId<'a>>
+        where
+            INodeId: Into<NodeId<'a>>,
         {
-            NodesHotThreadsRequest { url: NodesHotThreadsUrlParams::NodeId(node_id.into()).url() }
+            NodesHotThreadsRequest {
+                url: NodesHotThreadsUrlParams::NodeId(node_id.into()).url(),
+            }
         }
     }
     impl<'a> Into<HttpRequest<'a, DefaultBody>> for NodesHotThreadsRequest<'a> {
@@ -4051,7 +4233,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum NodesStatsUrlParams<'a> {
         None,
         Metric(Metric<'a>),
@@ -4071,8 +4253,7 @@ pub mod endpoints {
                     Url::from(url)
                 }
                 NodesStatsUrlParams::MetricIndexMetric(ref metric, ref index_metric) => {
-                    let mut url = String::with_capacity(15usize + metric.len() +
-                                                        index_metric.len());
+                    let mut url = String::with_capacity(15usize + metric.len() + index_metric.len());
                     url.push_str("/_nodes/stats/");
                     url.push_str(metric.as_ref());
                     url.push_str("/");
@@ -4094,11 +4275,8 @@ pub mod endpoints {
                     url.push_str(metric.as_ref());
                     Url::from(url)
                 }
-                NodesStatsUrlParams::NodeIdMetricIndexMetric(ref node_id,
-                                                             ref metric,
-                                                             ref index_metric) => {
-                    let mut url = String::with_capacity(16usize + node_id.len() + metric.len() +
-                                                        index_metric.len());
+                NodesStatsUrlParams::NodeIdMetricIndexMetric(ref node_id, ref metric, ref index_metric) => {
+                    let mut url = String::with_capacity(16usize + node_id.len() + metric.len() + index_metric.len());
                     url.push_str("/_nodes/");
                     url.push_str(node_id.as_ref());
                     url.push_str("/stats/");
@@ -4110,48 +4288,58 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct NodesStatsRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> NodesStatsRequest<'a> {
         pub fn new() -> Self {
-            NodesStatsRequest { url: NodesStatsUrlParams::None.url() }
+            NodesStatsRequest {
+                url: NodesStatsUrlParams::None.url(),
+            }
         }
         pub fn for_metric<IMetric>(metric: IMetric) -> Self
-            where IMetric: Into<Metric<'a>>
-        {
-            NodesStatsRequest { url: NodesStatsUrlParams::Metric(metric.into()).url() }
-        }
-        pub fn for_metric_index_metric<IMetric, IIndexMetric>(metric: IMetric,
-                                                              index_metric: IIndexMetric)
-                                                              -> Self
-            where IMetric: Into<Metric<'a>>,
-                  IIndexMetric: Into<IndexMetric<'a>>
+        where
+            IMetric: Into<Metric<'a>>,
         {
             NodesStatsRequest {
-                url: NodesStatsUrlParams::MetricIndexMetric(metric.into(), index_metric.into())
-                    .url(),
+                url: NodesStatsUrlParams::Metric(metric.into()).url(),
+            }
+        }
+        pub fn for_metric_index_metric<IMetric, IIndexMetric>(metric: IMetric, index_metric: IIndexMetric) -> Self
+        where
+            IMetric: Into<Metric<'a>>,
+            IIndexMetric: Into<IndexMetric<'a>>,
+        {
+            NodesStatsRequest {
+                url: NodesStatsUrlParams::MetricIndexMetric(metric.into(), index_metric.into()).url(),
             }
         }
         pub fn for_node_id<INodeId>(node_id: INodeId) -> Self
-            where INodeId: Into<NodeId<'a>>
+        where
+            INodeId: Into<NodeId<'a>>,
         {
-            NodesStatsRequest { url: NodesStatsUrlParams::NodeId(node_id.into()).url() }
+            NodesStatsRequest {
+                url: NodesStatsUrlParams::NodeId(node_id.into()).url(),
+            }
         }
         pub fn for_node_id_metric<INodeId, IMetric>(node_id: INodeId, metric: IMetric) -> Self
-            where INodeId: Into<NodeId<'a>>,
-                  IMetric: Into<Metric<'a>>
+        where
+            INodeId: Into<NodeId<'a>>,
+            IMetric: Into<Metric<'a>>,
         {
             NodesStatsRequest {
                 url: NodesStatsUrlParams::NodeIdMetric(node_id.into(), metric.into()).url(),
             }
-        } pub fn for_node_id_metric_index_metric < INodeId , IMetric , IIndexMetric > ( node_id : INodeId , metric : IMetric , index_metric : IIndexMetric ) -> Self where INodeId : Into < NodeId < 'a > > , IMetric : Into < Metric < 'a > > , IIndexMetric : Into < IndexMetric < 'a > > {
+        }
+        pub fn for_node_id_metric_index_metric<INodeId, IMetric, IIndexMetric>(node_id: INodeId, metric: IMetric, index_metric: IIndexMetric) -> Self
+        where
+            INodeId: Into<NodeId<'a>>,
+            IMetric: Into<Metric<'a>>,
+            IIndexMetric: Into<IndexMetric<'a>>,
+        {
             NodesStatsRequest {
-                url: NodesStatsUrlParams::NodeIdMetricIndexMetric(node_id.into(),
-                                                                  metric.into(),
-                                                                  index_metric.into())
-                    .url(),
+                url: NodesStatsUrlParams::NodeIdMetricIndexMetric(node_id.into(), metric.into(), index_metric.into()).url(),
             }
         }
     }
@@ -4164,7 +4352,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum IngestGetPipelineUrlParams<'a> {
         None,
         Id(Id<'a>),
@@ -4182,18 +4370,23 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct IngestGetPipelineRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> IngestGetPipelineRequest<'a> {
         pub fn new() -> Self {
-            IngestGetPipelineRequest { url: IngestGetPipelineUrlParams::None.url() }
+            IngestGetPipelineRequest {
+                url: IngestGetPipelineUrlParams::None.url(),
+            }
         }
         pub fn for_id<IId>(id: IId) -> Self
-            where IId: Into<Id<'a>>
+        where
+            IId: Into<Id<'a>>,
         {
-            IngestGetPipelineRequest { url: IngestGetPipelineUrlParams::Id(id.into()).url() }
+            IngestGetPipelineRequest {
+                url: IngestGetPipelineUrlParams::Id(id.into()).url(),
+            }
         }
     }
     impl<'a> Into<HttpRequest<'a, DefaultBody>> for IngestGetPipelineRequest<'a> {
@@ -4205,7 +4398,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum PutTemplateUrlParams<'a> {
         Id(Id<'a>),
     }
@@ -4221,14 +4414,15 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct PutTemplateRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> PutTemplateRequest<'a, B> {
         pub fn for_id<IId>(id: IId, body: B) -> Self
-            where IId: Into<Id<'a>>
+        where
+            IId: Into<Id<'a>>,
         {
             PutTemplateRequest {
                 url: PutTemplateUrlParams::Id(id.into()).url(),
@@ -4245,7 +4439,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum GetSourceUrlParams<'a> {
         IndexTypeId(Index<'a>, Type<'a>, Id<'a>),
     }
@@ -4253,8 +4447,7 @@ pub mod endpoints {
         pub fn url(self) -> Url<'a> {
             match self {
                 GetSourceUrlParams::IndexTypeId(ref index, ref ty, ref id) => {
-                    let mut url = String::with_capacity(11usize + index.len() + ty.len() +
-                                                        id.len());
+                    let mut url = String::with_capacity(11usize + index.len() + ty.len() + id.len());
                     url.push_str("/");
                     url.push_str(index.as_ref());
                     url.push_str("/");
@@ -4267,15 +4460,16 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct GetSourceRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> GetSourceRequest<'a> {
         pub fn for_index_ty_id<IIndex, IType, IId>(index: IIndex, ty: IType, id: IId) -> Self
-            where IIndex: Into<Index<'a>>,
-                  IType: Into<Type<'a>>,
-                  IId: Into<Id<'a>>
+        where
+            IIndex: Into<Index<'a>>,
+            IType: Into<Type<'a>>,
+            IId: Into<Id<'a>>,
         {
             GetSourceRequest {
                 url: GetSourceUrlParams::IndexTypeId(index.into(), ty.into(), id.into()).url(),
@@ -4291,7 +4485,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum SnapshotCreateUrlParams<'a> {
         RepositorySnapshot(Repository<'a>, Snapshot<'a>),
     }
@@ -4299,8 +4493,7 @@ pub mod endpoints {
         pub fn url(self) -> Url<'a> {
             match self {
                 SnapshotCreateUrlParams::RepositorySnapshot(ref repository, ref snapshot) => {
-                    let mut url = String::with_capacity(12usize + repository.len() +
-                                                        snapshot.len());
+                    let mut url = String::with_capacity(12usize + repository.len() + snapshot.len());
                     url.push_str("/_snapshot/");
                     url.push_str(repository.as_ref());
                     url.push_str("/");
@@ -4310,23 +4503,19 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct SnapshotCreateRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> SnapshotCreateRequest<'a, B> {
-        pub fn for_repository_snapshot<IRepository, ISnapshot>(repository: IRepository,
-                                                               snapshot: ISnapshot,
-                                                               body: B)
-                                                               -> Self
-            where IRepository: Into<Repository<'a>>,
-                  ISnapshot: Into<Snapshot<'a>>
+        pub fn for_repository_snapshot<IRepository, ISnapshot>(repository: IRepository, snapshot: ISnapshot, body: B) -> Self
+        where
+            IRepository: Into<Repository<'a>>,
+            ISnapshot: Into<Snapshot<'a>>,
         {
             SnapshotCreateRequest {
-                url: SnapshotCreateUrlParams::RepositorySnapshot(repository.into(),
-                                                                 snapshot.into())
-                    .url(),
+                url: SnapshotCreateUrlParams::RepositorySnapshot(repository.into(), snapshot.into()).url(),
                 body: body,
             }
         }
@@ -4340,7 +4529,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum ScrollUrlParams<'a> {
         None,
         ScrollId(ScrollId<'a>),
@@ -4358,7 +4547,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct ScrollRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
@@ -4371,7 +4560,8 @@ pub mod endpoints {
             }
         }
         pub fn for_scroll_id<IScrollId>(scroll_id: IScrollId, body: B) -> Self
-            where IScrollId: Into<ScrollId<'a>>
+        where
+            IScrollId: Into<ScrollId<'a>>,
         {
             ScrollRequest {
                 url: ScrollUrlParams::ScrollId(scroll_id.into()).url(),
@@ -4388,7 +4578,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum SnapshotStatusUrlParams<'a> {
         None,
         Repository(Repository<'a>),
@@ -4406,8 +4596,7 @@ pub mod endpoints {
                     Url::from(url)
                 }
                 SnapshotStatusUrlParams::RepositorySnapshot(ref repository, ref snapshot) => {
-                    let mut url = String::with_capacity(20usize + repository.len() +
-                                                        snapshot.len());
+                    let mut url = String::with_capacity(20usize + repository.len() + snapshot.len());
                     url.push_str("/_snapshot/");
                     url.push_str(repository.as_ref());
                     url.push_str("/");
@@ -4418,31 +4607,31 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct SnapshotStatusRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> SnapshotStatusRequest<'a> {
         pub fn new() -> Self {
-            SnapshotStatusRequest { url: SnapshotStatusUrlParams::None.url() }
+            SnapshotStatusRequest {
+                url: SnapshotStatusUrlParams::None.url(),
+            }
         }
         pub fn for_repository<IRepository>(repository: IRepository) -> Self
-            where IRepository: Into<Repository<'a>>
+        where
+            IRepository: Into<Repository<'a>>,
         {
             SnapshotStatusRequest {
                 url: SnapshotStatusUrlParams::Repository(repository.into()).url(),
             }
         }
-        pub fn for_repository_snapshot<IRepository, ISnapshot>(repository: IRepository,
-                                                               snapshot: ISnapshot)
-                                                               -> Self
-            where IRepository: Into<Repository<'a>>,
-                  ISnapshot: Into<Snapshot<'a>>
+        pub fn for_repository_snapshot<IRepository, ISnapshot>(repository: IRepository, snapshot: ISnapshot) -> Self
+        where
+            IRepository: Into<Repository<'a>>,
+            ISnapshot: Into<Snapshot<'a>>,
         {
             SnapshotStatusRequest {
-                url: SnapshotStatusUrlParams::RepositorySnapshot(repository.into(),
-                                                                 snapshot.into())
-                    .url(),
+                url: SnapshotStatusUrlParams::RepositorySnapshot(repository.into(), snapshot.into()).url(),
             }
         }
     }
@@ -4455,7 +4644,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum MgetUrlParams<'a> {
         None,
         Index(Index<'a>),
@@ -4484,7 +4673,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct MgetRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
@@ -4497,7 +4686,8 @@ pub mod endpoints {
             }
         }
         pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
-            where IIndex: Into<Index<'a>>
+        where
+            IIndex: Into<Index<'a>>,
         {
             MgetRequest {
                 url: MgetUrlParams::Index(index.into()).url(),
@@ -4505,8 +4695,9 @@ pub mod endpoints {
             }
         }
         pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: B) -> Self
-            where IIndex: Into<Index<'a>>,
-                  IType: Into<Type<'a>>
+        where
+            IIndex: Into<Index<'a>>,
+            IType: Into<Type<'a>>,
         {
             MgetRequest {
                 url: MgetUrlParams::IndexType(index.into(), ty.into()).url(),
@@ -4523,7 +4714,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum IndicesExistsTemplateUrlParams<'a> {
         Name(Name<'a>),
     }
@@ -4539,13 +4730,14 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct IndicesExistsTemplateRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> IndicesExistsTemplateRequest<'a> {
         pub fn for_name<IName>(name: IName) -> Self
-            where IName: Into<Name<'a>>
+        where
+            IName: Into<Name<'a>>,
         {
             IndicesExistsTemplateRequest {
                 url: IndicesExistsTemplateUrlParams::Name(name.into()).url(),
@@ -4561,7 +4753,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum IndicesGetUpgradeUrlParams<'a> {
         None,
         Index(Index<'a>),
@@ -4580,18 +4772,23 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct IndicesGetUpgradeRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> IndicesGetUpgradeRequest<'a> {
         pub fn new() -> Self {
-            IndicesGetUpgradeRequest { url: IndicesGetUpgradeUrlParams::None.url() }
+            IndicesGetUpgradeRequest {
+                url: IndicesGetUpgradeUrlParams::None.url(),
+            }
         }
         pub fn for_index<IIndex>(index: IIndex) -> Self
-            where IIndex: Into<Index<'a>>
+        where
+            IIndex: Into<Index<'a>>,
         {
-            IndicesGetUpgradeRequest { url: IndicesGetUpgradeUrlParams::Index(index.into()).url() }
+            IndicesGetUpgradeRequest {
+                url: IndicesGetUpgradeUrlParams::Index(index.into()).url(),
+            }
         }
     }
     impl<'a> Into<HttpRequest<'a, DefaultBody>> for IndicesGetUpgradeRequest<'a> {
@@ -4603,7 +4800,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum PutScriptUrlParams<'a> {
         LangId(Lang<'a>, Id<'a>),
     }
@@ -4621,15 +4818,16 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct PutScriptRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> PutScriptRequest<'a, B> {
         pub fn for_lang_id<ILang, IId>(lang: ILang, id: IId, body: B) -> Self
-            where ILang: Into<Lang<'a>>,
-                  IId: Into<Id<'a>>
+        where
+            ILang: Into<Lang<'a>>,
+            IId: Into<Id<'a>>,
         {
             PutScriptRequest {
                 url: PutScriptUrlParams::LangId(lang.into(), id.into()).url(),
@@ -4646,7 +4844,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum GetTemplateUrlParams<'a> {
         Id(Id<'a>),
     }
@@ -4662,15 +4860,18 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct GetTemplateRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> GetTemplateRequest<'a> {
         pub fn for_id<IId>(id: IId) -> Self
-            where IId: Into<Id<'a>>
+        where
+            IId: Into<Id<'a>>,
         {
-            GetTemplateRequest { url: GetTemplateUrlParams::Id(id.into()).url() }
+            GetTemplateRequest {
+                url: GetTemplateUrlParams::Id(id.into()).url(),
+            }
         }
     }
     impl<'a> Into<HttpRequest<'a, DefaultBody>> for GetTemplateRequest<'a> {
@@ -4682,7 +4883,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum IndicesDeleteTemplateUrlParams<'a> {
         Name(Name<'a>),
     }
@@ -4698,13 +4899,14 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct IndicesDeleteTemplateRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> IndicesDeleteTemplateRequest<'a> {
         pub fn for_name<IName>(name: IName) -> Self
-            where IName: Into<Name<'a>>
+        where
+            IName: Into<Name<'a>>,
         {
             IndicesDeleteTemplateRequest {
                 url: IndicesDeleteTemplateUrlParams::Name(name.into()).url(),
@@ -4720,7 +4922,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum IndexUrlParams<'a> {
         IndexType(Index<'a>, Type<'a>),
         IndexTypeId(Index<'a>, Type<'a>, Id<'a>),
@@ -4749,29 +4951,27 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct IndexRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> IndexRequest<'a, B> {
         pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: B) -> Self
-            where IIndex: Into<Index<'a>>,
-                  IType: Into<Type<'a>>
+        where
+            IIndex: Into<Index<'a>>,
+            IType: Into<Type<'a>>,
         {
             IndexRequest {
                 url: IndexUrlParams::IndexType(index.into(), ty.into()).url(),
                 body: body,
             }
         }
-        pub fn for_index_ty_id<IIndex, IType, IId>(index: IIndex,
-                                                   ty: IType,
-                                                   id: IId,
-                                                   body: B)
-                                                   -> Self
-            where IIndex: Into<Index<'a>>,
-                  IType: Into<Type<'a>>,
-                  IId: Into<Id<'a>>
+        pub fn for_index_ty_id<IIndex, IType, IId>(index: IIndex, ty: IType, id: IId, body: B) -> Self
+        where
+            IIndex: Into<Index<'a>>,
+            IType: Into<Type<'a>>,
+            IId: Into<Id<'a>>,
         {
             IndexRequest {
                 url: IndexUrlParams::IndexTypeId(index.into(), ty.into(), id.into()).url(),
@@ -4788,7 +4988,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum IndicesPutSettingsUrlParams<'a> {
         None,
         Index(Index<'a>),
@@ -4807,7 +5007,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct IndicesPutSettingsRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
@@ -4820,7 +5020,8 @@ pub mod endpoints {
             }
         }
         pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
-            where IIndex: Into<Index<'a>>
+        where
+            IIndex: Into<Index<'a>>,
         {
             IndicesPutSettingsRequest {
                 url: IndicesPutSettingsUrlParams::Index(index.into()).url(),
@@ -4837,7 +5038,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum CatTemplatesUrlParams<'a> {
         None,
         Name(Name<'a>),
@@ -4855,18 +5056,23 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct CatTemplatesRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> CatTemplatesRequest<'a> {
         pub fn new() -> Self {
-            CatTemplatesRequest { url: CatTemplatesUrlParams::None.url() }
+            CatTemplatesRequest {
+                url: CatTemplatesUrlParams::None.url(),
+            }
         }
         pub fn for_name<IName>(name: IName) -> Self
-            where IName: Into<Name<'a>>
+        where
+            IName: Into<Name<'a>>,
         {
-            CatTemplatesRequest { url: CatTemplatesUrlParams::Name(name.into()).url() }
+            CatTemplatesRequest {
+                url: CatTemplatesUrlParams::Name(name.into()).url(),
+            }
         }
     }
     impl<'a> Into<HttpRequest<'a, DefaultBody>> for CatTemplatesRequest<'a> {
@@ -4878,7 +5084,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum CatIndicesUrlParams<'a> {
         None,
         Index(Index<'a>),
@@ -4896,18 +5102,23 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct CatIndicesRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> CatIndicesRequest<'a> {
         pub fn new() -> Self {
-            CatIndicesRequest { url: CatIndicesUrlParams::None.url() }
+            CatIndicesRequest {
+                url: CatIndicesUrlParams::None.url(),
+            }
         }
         pub fn for_index<IIndex>(index: IIndex) -> Self
-            where IIndex: Into<Index<'a>>
+        where
+            IIndex: Into<Index<'a>>,
         {
-            CatIndicesRequest { url: CatIndicesUrlParams::Index(index.into()).url() }
+            CatIndicesRequest {
+                url: CatIndicesUrlParams::Index(index.into()).url(),
+            }
         }
     }
     impl<'a> Into<HttpRequest<'a, DefaultBody>> for CatIndicesRequest<'a> {
@@ -4919,7 +5130,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum ClusterPutSettingsUrlParams {
         None,
     }
@@ -4930,7 +5141,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct ClusterPutSettingsRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
@@ -4952,7 +5163,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum UpdateUrlParams<'a> {
         IndexTypeId(Index<'a>, Type<'a>, Id<'a>),
     }
@@ -4960,8 +5171,7 @@ pub mod endpoints {
         pub fn url(self) -> Url<'a> {
             match self {
                 UpdateUrlParams::IndexTypeId(ref index, ref ty, ref id) => {
-                    let mut url = String::with_capacity(11usize + index.len() + ty.len() +
-                                                        id.len());
+                    let mut url = String::with_capacity(11usize + index.len() + ty.len() + id.len());
                     url.push_str("/");
                     url.push_str(index.as_ref());
                     url.push_str("/");
@@ -4974,20 +5184,17 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct UpdateRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> UpdateRequest<'a, B> {
-        pub fn for_index_ty_id<IIndex, IType, IId>(index: IIndex,
-                                                   ty: IType,
-                                                   id: IId,
-                                                   body: B)
-                                                   -> Self
-            where IIndex: Into<Index<'a>>,
-                  IType: Into<Type<'a>>,
-                  IId: Into<Id<'a>>
+        pub fn for_index_ty_id<IIndex, IType, IId>(index: IIndex, ty: IType, id: IId, body: B) -> Self
+        where
+            IIndex: Into<Index<'a>>,
+            IType: Into<Type<'a>>,
+            IId: Into<Id<'a>>,
         {
             UpdateRequest {
                 url: UpdateUrlParams::IndexTypeId(index.into(), ty.into(), id.into()).url(),
@@ -5004,7 +5211,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum IndicesPutAliasUrlParams<'a> {
         IndexName(Index<'a>, Name<'a>),
     }
@@ -5022,15 +5229,16 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct IndicesPutAliasRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> IndicesPutAliasRequest<'a, B> {
         pub fn for_index_name<IIndex, IName>(index: IIndex, name: IName, body: B) -> Self
-            where IIndex: Into<Index<'a>>,
-                  IName: Into<Name<'a>>
+        where
+            IIndex: Into<Index<'a>>,
+            IName: Into<Name<'a>>,
         {
             IndicesPutAliasRequest {
                 url: IndicesPutAliasUrlParams::IndexName(index.into(), name.into()).url(),
@@ -5047,7 +5255,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum CatPluginsUrlParams {
         None,
     }
@@ -5058,13 +5266,15 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct CatPluginsRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> CatPluginsRequest<'a> {
         pub fn new() -> Self {
-            CatPluginsRequest { url: CatPluginsUrlParams::None.url() }
+            CatPluginsRequest {
+                url: CatPluginsUrlParams::None.url(),
+            }
         }
     }
     impl<'a> Into<HttpRequest<'a, DefaultBody>> for CatPluginsRequest<'a> {
@@ -5076,7 +5286,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum CountPercolateUrlParams<'a> {
         IndexType(Index<'a>, Type<'a>),
         IndexTypeId(Index<'a>, Type<'a>, Id<'a>),
@@ -5094,8 +5304,7 @@ pub mod endpoints {
                     Url::from(url)
                 }
                 CountPercolateUrlParams::IndexTypeId(ref index, ref ty, ref id) => {
-                    let mut url = String::with_capacity(20usize + index.len() + ty.len() +
-                                                        id.len());
+                    let mut url = String::with_capacity(20usize + index.len() + ty.len() + id.len());
                     url.push_str("/");
                     url.push_str(index.as_ref());
                     url.push_str("/");
@@ -5108,29 +5317,27 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct CountPercolateRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> CountPercolateRequest<'a, B> {
         pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: B) -> Self
-            where IIndex: Into<Index<'a>>,
-                  IType: Into<Type<'a>>
+        where
+            IIndex: Into<Index<'a>>,
+            IType: Into<Type<'a>>,
         {
             CountPercolateRequest {
                 url: CountPercolateUrlParams::IndexType(index.into(), ty.into()).url(),
                 body: body,
             }
         }
-        pub fn for_index_ty_id<IIndex, IType, IId>(index: IIndex,
-                                                   ty: IType,
-                                                   id: IId,
-                                                   body: B)
-                                                   -> Self
-            where IIndex: Into<Index<'a>>,
-                  IType: Into<Type<'a>>,
-                  IId: Into<Id<'a>>
+        pub fn for_index_ty_id<IIndex, IType, IId>(index: IIndex, ty: IType, id: IId, body: B) -> Self
+        where
+            IIndex: Into<Index<'a>>,
+            IType: Into<Type<'a>>,
+            IId: Into<Id<'a>>,
         {
             CountPercolateRequest {
                 url: CountPercolateUrlParams::IndexTypeId(index.into(), ty.into(), id.into()).url(),
@@ -5147,7 +5354,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum IndicesUpgradeUrlParams<'a> {
         None,
         Index(Index<'a>),
@@ -5166,7 +5373,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct IndicesUpgradeRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
@@ -5179,7 +5386,8 @@ pub mod endpoints {
             }
         }
         pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
-            where IIndex: Into<Index<'a>>
+        where
+            IIndex: Into<Index<'a>>,
         {
             IndicesUpgradeRequest {
                 url: IndicesUpgradeUrlParams::Index(index.into()).url(),
@@ -5196,7 +5404,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum IndicesDeleteAliasUrlParams<'a> {
         IndexName(Index<'a>, Name<'a>),
     }
@@ -5214,14 +5422,15 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct IndicesDeleteAliasRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> IndicesDeleteAliasRequest<'a> {
         pub fn for_index_name<IIndex, IName>(index: IIndex, name: IName) -> Self
-            where IIndex: Into<Index<'a>>,
-                  IName: Into<Name<'a>>
+        where
+            IIndex: Into<Index<'a>>,
+            IName: Into<Name<'a>>,
         {
             IndicesDeleteAliasRequest {
                 url: IndicesDeleteAliasUrlParams::IndexName(index.into(), name.into()).url(),
@@ -5237,7 +5446,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum CatTasksUrlParams {
         None,
     }
@@ -5248,13 +5457,15 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct CatTasksRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> CatTasksRequest<'a> {
         pub fn new() -> Self {
-            CatTasksRequest { url: CatTasksUrlParams::None.url() }
+            CatTasksRequest {
+                url: CatTasksUrlParams::None.url(),
+            }
         }
     }
     impl<'a> Into<HttpRequest<'a, DefaultBody>> for CatTasksRequest<'a> {
@@ -5266,7 +5477,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum IndicesRolloverUrlParams<'a> {
         Alias(Alias<'a>),
         AliasNewIndex(Alias<'a>, NewIndex<'a>),
@@ -5292,26 +5503,25 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct IndicesRolloverRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> IndicesRolloverRequest<'a, B> {
         pub fn for_alias<IAlias>(alias: IAlias, body: B) -> Self
-            where IAlias: Into<Alias<'a>>
+        where
+            IAlias: Into<Alias<'a>>,
         {
             IndicesRolloverRequest {
                 url: IndicesRolloverUrlParams::Alias(alias.into()).url(),
                 body: body,
             }
         }
-        pub fn for_alias_new_index<IAlias, INewIndex>(alias: IAlias,
-                                                      new_index: INewIndex,
-                                                      body: B)
-                                                      -> Self
-            where IAlias: Into<Alias<'a>>,
-                  INewIndex: Into<NewIndex<'a>>
+        pub fn for_alias_new_index<IAlias, INewIndex>(alias: IAlias, new_index: INewIndex, body: B) -> Self
+        where
+            IAlias: Into<Alias<'a>>,
+            INewIndex: Into<NewIndex<'a>>,
         {
             IndicesRolloverRequest {
                 url: IndicesRolloverUrlParams::AliasNewIndex(alias.into(), new_index.into()).url(),
@@ -5328,7 +5538,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum ReindexRethrottleUrlParams<'a> {
         TaskId(TaskId<'a>),
     }
@@ -5345,14 +5555,15 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct ReindexRethrottleRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> ReindexRethrottleRequest<'a, B> {
         pub fn for_task_id<ITaskId>(task_id: ITaskId, body: B) -> Self
-            where ITaskId: Into<TaskId<'a>>
+        where
+            ITaskId: Into<TaskId<'a>>,
         {
             ReindexRethrottleRequest {
                 url: ReindexRethrottleUrlParams::TaskId(task_id.into()).url(),
@@ -5369,7 +5580,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum SnapshotCreateRepositoryUrlParams<'a> {
         Repository(Repository<'a>),
     }
@@ -5385,14 +5596,15 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct SnapshotCreateRepositoryRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> SnapshotCreateRepositoryRequest<'a, B> {
         pub fn for_repository<IRepository>(repository: IRepository, body: B) -> Self
-            where IRepository: Into<Repository<'a>>
+        where
+            IRepository: Into<Repository<'a>>,
         {
             SnapshotCreateRepositoryRequest {
                 url: SnapshotCreateRepositoryUrlParams::Repository(repository.into()).url(),
@@ -5409,7 +5621,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum IndicesGetUrlParams<'a> {
         Index(Index<'a>),
         IndexFeature(Index<'a>, Feature<'a>),
@@ -5434,19 +5646,23 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct IndicesGetRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> IndicesGetRequest<'a> {
         pub fn for_index<IIndex>(index: IIndex) -> Self
-            where IIndex: Into<Index<'a>>
+        where
+            IIndex: Into<Index<'a>>,
         {
-            IndicesGetRequest { url: IndicesGetUrlParams::Index(index.into()).url() }
+            IndicesGetRequest {
+                url: IndicesGetUrlParams::Index(index.into()).url(),
+            }
         }
         pub fn for_index_feature<IIndex, IFeature>(index: IIndex, feature: IFeature) -> Self
-            where IIndex: Into<Index<'a>>,
-                  IFeature: Into<Feature<'a>>
+        where
+            IIndex: Into<Index<'a>>,
+            IFeature: Into<Feature<'a>>,
         {
             IndicesGetRequest {
                 url: IndicesGetUrlParams::IndexFeature(index.into(), feature.into()).url(),
@@ -5462,7 +5678,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum IndicesAnalyzeUrlParams<'a> {
         None,
         Index(Index<'a>),
@@ -5481,7 +5697,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct IndicesAnalyzeRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
@@ -5494,7 +5710,8 @@ pub mod endpoints {
             }
         }
         pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
-            where IIndex: Into<Index<'a>>
+        where
+            IIndex: Into<Index<'a>>,
         {
             IndicesAnalyzeRequest {
                 url: IndicesAnalyzeUrlParams::Index(index.into()).url(),
@@ -5511,7 +5728,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum CatFielddataUrlParams<'a> {
         None,
         Fields(Fields<'a>),
@@ -5529,18 +5746,23 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct CatFielddataRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> CatFielddataRequest<'a> {
         pub fn new() -> Self {
-            CatFielddataRequest { url: CatFielddataUrlParams::None.url() }
+            CatFielddataRequest {
+                url: CatFielddataUrlParams::None.url(),
+            }
         }
         pub fn for_fields<IFields>(fields: IFields) -> Self
-            where IFields: Into<Fields<'a>>
+        where
+            IFields: Into<Fields<'a>>,
         {
-            CatFielddataRequest { url: CatFielddataUrlParams::Fields(fields.into()).url() }
+            CatFielddataRequest {
+                url: CatFielddataUrlParams::Fields(fields.into()).url(),
+            }
         }
     }
     impl<'a> Into<HttpRequest<'a, DefaultBody>> for CatFielddataRequest<'a> {
@@ -5552,7 +5774,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum IndicesSegmentsUrlParams<'a> {
         None,
         Index(Index<'a>),
@@ -5571,18 +5793,23 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct IndicesSegmentsRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> IndicesSegmentsRequest<'a> {
         pub fn new() -> Self {
-            IndicesSegmentsRequest { url: IndicesSegmentsUrlParams::None.url() }
+            IndicesSegmentsRequest {
+                url: IndicesSegmentsUrlParams::None.url(),
+            }
         }
         pub fn for_index<IIndex>(index: IIndex) -> Self
-            where IIndex: Into<Index<'a>>
+        where
+            IIndex: Into<Index<'a>>,
         {
-            IndicesSegmentsRequest { url: IndicesSegmentsUrlParams::Index(index.into()).url() }
+            IndicesSegmentsRequest {
+                url: IndicesSegmentsUrlParams::Index(index.into()).url(),
+            }
         }
     }
     impl<'a> Into<HttpRequest<'a, DefaultBody>> for IndicesSegmentsRequest<'a> {
@@ -5594,7 +5821,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum IndicesShrinkUrlParams<'a> {
         IndexTarget(Index<'a>, Target<'a>),
     }
@@ -5612,15 +5839,16 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct IndicesShrinkRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> IndicesShrinkRequest<'a, B> {
         pub fn for_index_target<IIndex, ITarget>(index: IIndex, target: ITarget, body: B) -> Self
-            where IIndex: Into<Index<'a>>,
-                  ITarget: Into<Target<'a>>
+        where
+            IIndex: Into<Index<'a>>,
+            ITarget: Into<Target<'a>>,
         {
             IndicesShrinkRequest {
                 url: IndicesShrinkUrlParams::IndexTarget(index.into(), target.into()).url(),
@@ -5637,7 +5865,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum TasksListUrlParams {
         None,
     }
@@ -5648,13 +5876,15 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct TasksListRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> TasksListRequest<'a> {
         pub fn new() -> Self {
-            TasksListRequest { url: TasksListUrlParams::None.url() }
+            TasksListRequest {
+                url: TasksListUrlParams::None.url(),
+            }
         }
     }
     impl<'a> Into<HttpRequest<'a, DefaultBody>> for TasksListRequest<'a> {
@@ -5666,7 +5896,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum CatMasterUrlParams {
         None,
     }
@@ -5677,13 +5907,15 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct CatMasterRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> CatMasterRequest<'a> {
         pub fn new() -> Self {
-            CatMasterRequest { url: CatMasterUrlParams::None.url() }
+            CatMasterRequest {
+                url: CatMasterUrlParams::None.url(),
+            }
         }
     }
     impl<'a> Into<HttpRequest<'a, DefaultBody>> for CatMasterRequest<'a> {
@@ -5695,7 +5927,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum IndicesExistsTypeUrlParams<'a> {
         IndexType(Index<'a>, Type<'a>),
     }
@@ -5713,14 +5945,15 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct IndicesExistsTypeRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> IndicesExistsTypeRequest<'a> {
         pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType) -> Self
-            where IIndex: Into<Index<'a>>,
-                  IType: Into<Type<'a>>
+        where
+            IIndex: Into<Index<'a>>,
+            IType: Into<Type<'a>>,
         {
             IndicesExistsTypeRequest {
                 url: IndicesExistsTypeUrlParams::IndexType(index.into(), ty.into()).url(),
@@ -5736,7 +5969,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum ClusterGetSettingsUrlParams {
         None,
     }
@@ -5747,13 +5980,15 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct ClusterGetSettingsRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> ClusterGetSettingsRequest<'a> {
         pub fn new() -> Self {
-            ClusterGetSettingsRequest { url: ClusterGetSettingsUrlParams::None.url() }
+            ClusterGetSettingsRequest {
+                url: ClusterGetSettingsUrlParams::None.url(),
+            }
         }
     }
     impl<'a> Into<HttpRequest<'a, DefaultBody>> for ClusterGetSettingsRequest<'a> {
@@ -5765,7 +6000,7 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     enum NodesInfoUrlParams<'a> {
         None,
         Metric(Metric<'a>),
@@ -5799,27 +6034,36 @@ pub mod endpoints {
             }
         }
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct NodesInfoRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> NodesInfoRequest<'a> {
         pub fn new() -> Self {
-            NodesInfoRequest { url: NodesInfoUrlParams::None.url() }
+            NodesInfoRequest {
+                url: NodesInfoUrlParams::None.url(),
+            }
         }
         pub fn for_metric<IMetric>(metric: IMetric) -> Self
-            where IMetric: Into<Metric<'a>>
+        where
+            IMetric: Into<Metric<'a>>,
         {
-            NodesInfoRequest { url: NodesInfoUrlParams::Metric(metric.into()).url() }
+            NodesInfoRequest {
+                url: NodesInfoUrlParams::Metric(metric.into()).url(),
+            }
         }
         pub fn for_node_id<INodeId>(node_id: INodeId) -> Self
-            where INodeId: Into<NodeId<'a>>
+        where
+            INodeId: Into<NodeId<'a>>,
         {
-            NodesInfoRequest { url: NodesInfoUrlParams::NodeId(node_id.into()).url() }
+            NodesInfoRequest {
+                url: NodesInfoUrlParams::NodeId(node_id.into()).url(),
+            }
         }
         pub fn for_node_id_metric<INodeId, IMetric>(node_id: INodeId, metric: IMetric) -> Self
-            where INodeId: Into<NodeId<'a>>,
-                  IMetric: Into<Metric<'a>>
+        where
+            INodeId: Into<NodeId<'a>>,
+            IMetric: Into<Metric<'a>>,
         {
             NodesInfoRequest {
                 url: NodesInfoUrlParams::NodeIdMetric(node_id.into(), metric.into()).url(),
@@ -5841,8 +6085,8 @@ pub mod http {
     use std::borrow::Cow;
     use std::ops::Deref;
 
-    # [ derive ( Debug , PartialEq , Clone ) ]
-    # [ doc = r" A wrapper around an owned or borrowed url." ]
+    #[derive(Debug, PartialEq, Clone)]
+    #[doc = r" A wrapper around an owned or borrowed url."]
     pub struct Url<'a>(Cow<'a, str>);
     impl<'a> From<&'a str> for Url<'a> {
         fn from(value: &'a str) -> Url<'a> {
@@ -5860,22 +6104,22 @@ pub mod http {
             &self.0
         }
     }
-    # [ doc = r" A default body type." ]
+    #[doc = r" A default body type."]
     pub type DefaultBody = &'static [u8];
-    # [ doc = r" A convenience method for a default, empty body." ]
-    # [ doc = r" This method doesn't allocate." ]
+    #[doc = r" A convenience method for a default, empty body."]
+    #[doc = r" This method doesn't allocate."]
     pub fn empty_body() -> DefaultBody {
         &[]
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
-    # [ doc = r" A general request type that all endpoints can be converted into." ]
+    #[derive(Debug, PartialEq, Clone)]
+    #[doc = r" A general request type that all endpoints can be converted into."]
     pub struct HttpRequest<'a, B> {
         pub url: Url<'a>,
         pub method: HttpMethod,
         pub body: Option<B>,
     }
-    # [ derive ( Debug , PartialEq , Clone ) ]
-    # [ doc = r" A standard HTTP verb." ]
+    #[derive(Debug, PartialEq, Clone)]
+    #[doc = r" A standard HTTP verb."]
     pub enum HttpMethod {
         Head,
         Get,
@@ -5891,10 +6135,11 @@ pub mod params {
 
     include!("genned.params.rs");
 
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct Alias<'a>(pub Cow<'a, str>);
     pub fn alias<'a, I>(value: I) -> Alias<'a>
-        where I: Into<Alias<'a>>
+    where
+        I: Into<Alias<'a>>,
     {
         value.into()
     }
@@ -5915,10 +6160,11 @@ pub mod params {
         }
     }
 
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct Feature<'a>(pub Cow<'a, str>);
     pub fn feature<'a, I>(value: I) -> Feature<'a>
-        where I: Into<Feature<'a>>
+    where
+        I: Into<Feature<'a>>,
     {
         value.into()
     }
@@ -5939,10 +6185,11 @@ pub mod params {
         }
     }
 
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct Fields<'a>(pub Cow<'a, str>);
     pub fn fields<'a, I>(value: I) -> Fields<'a>
-        where I: Into<Fields<'a>>
+    where
+        I: Into<Fields<'a>>,
     {
         value.into()
     }
@@ -5963,10 +6210,11 @@ pub mod params {
         }
     }
 
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct Id<'a>(pub Cow<'a, str>);
     pub fn id<'a, I>(value: I) -> Id<'a>
-        where I: Into<Id<'a>>
+    where
+        I: Into<Id<'a>>,
     {
         value.into()
     }
@@ -5987,10 +6235,11 @@ pub mod params {
         }
     }
 
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct Index<'a>(pub Cow<'a, str>);
     pub fn index<'a, I>(value: I) -> Index<'a>
-        where I: Into<Index<'a>>
+    where
+        I: Into<Index<'a>>,
     {
         value.into()
     }
@@ -6011,10 +6260,11 @@ pub mod params {
         }
     }
 
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct IndexMetric<'a>(pub Cow<'a, str>);
     pub fn index_metric<'a, I>(value: I) -> IndexMetric<'a>
-        where I: Into<IndexMetric<'a>>
+    where
+        I: Into<IndexMetric<'a>>,
     {
         value.into()
     }
@@ -6035,10 +6285,11 @@ pub mod params {
         }
     }
 
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct Lang<'a>(pub Cow<'a, str>);
     pub fn lang<'a, I>(value: I) -> Lang<'a>
-        where I: Into<Lang<'a>>
+    where
+        I: Into<Lang<'a>>,
     {
         value.into()
     }
@@ -6059,10 +6310,11 @@ pub mod params {
         }
     }
 
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct Metric<'a>(pub Cow<'a, str>);
     pub fn metric<'a, I>(value: I) -> Metric<'a>
-        where I: Into<Metric<'a>>
+    where
+        I: Into<Metric<'a>>,
     {
         value.into()
     }
@@ -6083,10 +6335,11 @@ pub mod params {
         }
     }
 
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct Name<'a>(pub Cow<'a, str>);
     pub fn name<'a, I>(value: I) -> Name<'a>
-        where I: Into<Name<'a>>
+    where
+        I: Into<Name<'a>>,
     {
         value.into()
     }
@@ -6107,10 +6360,11 @@ pub mod params {
         }
     }
 
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct NewIndex<'a>(pub Cow<'a, str>);
     pub fn new_index<'a, I>(value: I) -> NewIndex<'a>
-        where I: Into<NewIndex<'a>>
+    where
+        I: Into<NewIndex<'a>>,
     {
         value.into()
     }
@@ -6131,10 +6385,11 @@ pub mod params {
         }
     }
 
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct NodeId<'a>(pub Cow<'a, str>);
     pub fn node_id<'a, I>(value: I) -> NodeId<'a>
-        where I: Into<NodeId<'a>>
+    where
+        I: Into<NodeId<'a>>,
     {
         value.into()
     }
@@ -6155,10 +6410,11 @@ pub mod params {
         }
     }
 
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct Repository<'a>(pub Cow<'a, str>);
     pub fn repository<'a, I>(value: I) -> Repository<'a>
-        where I: Into<Repository<'a>>
+    where
+        I: Into<Repository<'a>>,
     {
         value.into()
     }
@@ -6179,10 +6435,11 @@ pub mod params {
         }
     }
 
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct ScrollId<'a>(pub Cow<'a, str>);
     pub fn scroll_id<'a, I>(value: I) -> ScrollId<'a>
-        where I: Into<ScrollId<'a>>
+    where
+        I: Into<ScrollId<'a>>,
     {
         value.into()
     }
@@ -6203,10 +6460,11 @@ pub mod params {
         }
     }
 
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct Snapshot<'a>(pub Cow<'a, str>);
     pub fn snapshot<'a, I>(value: I) -> Snapshot<'a>
-        where I: Into<Snapshot<'a>>
+    where
+        I: Into<Snapshot<'a>>,
     {
         value.into()
     }
@@ -6227,10 +6485,11 @@ pub mod params {
         }
     }
 
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct Target<'a>(pub Cow<'a, str>);
     pub fn target<'a, I>(value: I) -> Target<'a>
-        where I: Into<Target<'a>>
+    where
+        I: Into<Target<'a>>,
     {
         value.into()
     }
@@ -6251,10 +6510,11 @@ pub mod params {
         }
     }
 
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct TaskId<'a>(pub Cow<'a, str>);
     pub fn task_id<'a, I>(value: I) -> TaskId<'a>
-        where I: Into<TaskId<'a>>
+    where
+        I: Into<TaskId<'a>>,
     {
         value.into()
     }
@@ -6275,10 +6535,11 @@ pub mod params {
         }
     }
 
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct ThreadPoolPatterns<'a>(pub Cow<'a, str>);
     pub fn thread_pool_patterns<'a, I>(value: I) -> ThreadPoolPatterns<'a>
-        where I: Into<ThreadPoolPatterns<'a>>
+    where
+        I: Into<ThreadPoolPatterns<'a>>,
     {
         value.into()
     }
@@ -6299,10 +6560,11 @@ pub mod params {
         }
     }
 
-    # [ derive ( Debug , PartialEq , Clone ) ]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct Type<'a>(pub Cow<'a, str>);
     pub fn ty<'a, I>(value: I) -> Type<'a>
-        where I: Into<Type<'a>>
+    where
+        I: Into<Type<'a>>,
     {
         value.into()
     }

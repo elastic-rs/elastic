@@ -212,7 +212,8 @@ impl Serialize for Mappings {
 */
 #[derive(Default)]
 pub struct IndexDocumentMapping<TMapping>
-    where TMapping: DocumentMapping
+where
+    TMapping: DocumentMapping,
 {
     _m: PhantomData<TMapping>,
 }
@@ -237,36 +238,41 @@ impl PropertiesMapping for ValueDocumentMapping {
     }
 
     fn serialize_props<S>(_: &mut S) -> Result<(), S::Error>
-        where S: SerializeStruct
+    where
+        S: SerializeStruct,
     {
         Ok(())
     }
 }
 
 impl<'a, TDocument, TMapping> DocumentType for &'a TDocument
-    where TDocument: DocumentType<Mapping = TMapping> + Serialize,
-          TMapping: DocumentMapping
+where
+    TDocument: DocumentType<Mapping = TMapping> + Serialize,
+    TMapping: DocumentMapping,
 {
     type Mapping = TMapping;
 }
 
 impl<TDocument, TMapping> DocumentType for Mutex<TDocument>
-    where TDocument: DocumentType<Mapping = TMapping> + Serialize,
-          TMapping: DocumentMapping
+where
+    TDocument: DocumentType<Mapping = TMapping> + Serialize,
+    TMapping: DocumentMapping,
 {
     type Mapping = TMapping;
 }
 
 impl<TDocument, TMapping> DocumentType for RwLock<TDocument>
-    where TDocument: DocumentType<Mapping = TMapping> + Serialize,
-          TMapping: DocumentMapping
+where
+    TDocument: DocumentType<Mapping = TMapping> + Serialize,
+    TMapping: DocumentMapping,
 {
     type Mapping = TMapping;
 }
 
 impl<'a, TDocument, TMapping> DocumentType for Cow<'a, TDocument>
-    where TDocument: DocumentType<Mapping = TMapping> + Serialize + Clone,
-          TMapping: DocumentMapping
+where
+    TDocument: DocumentType<Mapping = TMapping> + Serialize + Clone,
+    TMapping: DocumentMapping,
 {
     type Mapping = TMapping;
 }
@@ -288,7 +294,7 @@ mod tests {
         }
 
         #[derive(Default, ElasticDateFormat)]
-        #[elastic(date_format="yyyy")]
+        #[elastic(date_format = "yyyy")]
         pub struct DateFormatWithNoPath;
     }
 
@@ -301,7 +307,7 @@ mod tests {
         }
 
         #[derive(Default, ElasticDateFormat)]
-        #[elastic(date_format="yyyy")]
+        #[elastic(date_format = "yyyy")]
         pub struct DateFormatInFn;
     }
 
@@ -317,13 +323,11 @@ mod tests {
     }
 
     #[derive(Serialize, ElasticType)]
-    #[elastic(mapping="ManualCustomTypeMapping")]
+    #[elastic(mapping = "ManualCustomTypeMapping")]
     pub struct CustomType {
         pub field: i32,
-        #[serde(skip_serializing)]
-        pub ignored_field: i32,
-        #[serde(rename="renamed_field")]
-        pub field2: i32,
+        #[serde(skip_serializing)] pub ignored_field: i32,
+        #[serde(rename = "renamed_field")] pub field2: i32,
     }
 
     #[derive(PartialEq, Debug, Default)]
@@ -359,7 +363,8 @@ mod tests {
     #[test]
     fn use_doc_as_generic_without_supplying_mapping_param() {
         fn use_document<TDocument>()
-            where TDocument: DocumentType
+        where
+            TDocument: DocumentType,
         {
             assert!(true);
         }
@@ -560,20 +565,12 @@ mod tests {
 
     #[test]
     fn serialise_mapping_dynamic() {
-        let d_opts: Vec<String> = vec![
-            Dynamic::True,
-            Dynamic::False,
-            Dynamic::Strict
-        ]
-                .iter()
-                .map(|i| serde_json::to_string(i).unwrap())
-                .collect();
+        let d_opts: Vec<String> = vec![Dynamic::True, Dynamic::False, Dynamic::Strict]
+            .iter()
+            .map(|i| serde_json::to_string(i).unwrap())
+            .collect();
 
-        let expected_opts = vec![
-            r#"true"#,
-            r#"false"#,
-            r#""strict""#
-        ];
+        let expected_opts = vec![r#"true"#, r#"false"#, r#""strict""#];
 
         let mut success = true;
         for i in 0..d_opts.len() {

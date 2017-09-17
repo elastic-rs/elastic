@@ -7,7 +7,7 @@ Builders for [create index requests][docs-create-index].
 use futures::{Future, Poll};
 
 use error::*;
-use client::{Client, Sender, SyncSender, AsyncSender};
+use client::{AsyncSender, Client, Sender, SyncSender};
 use client::requests::{empty_body, DefaultBody, RequestBuilder};
 use client::requests::params::Index;
 use client::requests::endpoints::IndicesCreateRequest;
@@ -36,8 +36,9 @@ pub struct IndexCreateRequestInner<TBody> {
 /**
 # Create index request
 */
-impl<TSender> Client<TSender> 
-    where TSender: Sender
+impl<TSender> Client<TSender>
+where
+    TSender: Sender,
 {
     /** 
     Create a [`IndexCreateRequestBuilder`][IndexCreateRequestBuilder] with this `Client` that can be configured before sending.
@@ -114,12 +115,14 @@ impl<TSender> Client<TSender>
     [documents-mod]: ../../types/document/index.html
     */
     pub fn index_create(&self, index: Index<'static>) -> IndexCreateRequestBuilder<TSender, DefaultBody> {
-        RequestBuilder::new(self.clone(),
-                            None,
-                            IndexCreateRequestInner {
-                                index: index,
-                                body: empty_body(),
-                            })
+        RequestBuilder::new(
+            self.clone(),
+            None,
+            IndexCreateRequestInner {
+                index: index,
+                body: empty_body(),
+            },
+        )
     }
 }
 
@@ -135,25 +138,27 @@ impl<TBody> IndexCreateRequestInner<TBody> {
 Configure a `IndexCreateRequestBuilder` before sending it.
 */
 impl<TSender, TBody> IndexCreateRequestBuilder<TSender, TBody>
-    where TSender: Sender,
-          TBody: Into<TSender::Body>
+where
+    TSender: Sender,
+    TBody: Into<TSender::Body>,
 {
     /** 
     Set the body for the create index request.
     
     If no body is specified then an empty query will be used.
     */
-    pub fn body<TNewBody>(self,
-                          body: TNewBody)
-                          -> IndexCreateRequestBuilder<TSender, TNewBody>
-        where TNewBody: Into<TSender::Body>
+    pub fn body<TNewBody>(self, body: TNewBody) -> IndexCreateRequestBuilder<TSender, TNewBody>
+    where
+        TNewBody: Into<TSender::Body>,
     {
-        RequestBuilder::new(self.client,
-                            self.params,
-                            IndexCreateRequestInner {
-                                index: self.inner.index,
-                                body: body,
-                            })
+        RequestBuilder::new(
+            self.client,
+            self.params,
+            IndexCreateRequestInner {
+                index: self.inner.index,
+                body: body,
+            },
+        )
     }
 }
 
@@ -161,7 +166,8 @@ impl<TSender, TBody> IndexCreateRequestBuilder<TSender, TBody>
 # Send synchronously
 */
 impl<TBody> IndexCreateRequestBuilder<SyncSender, TBody>
-    where TBody: Into<<SyncSender as Sender>::Body>
+where
+    TBody: Into<<SyncSender as Sender>::Body>,
 {
     /**
     Send a `IndexCreateRequestBuilder` synchronously using a [`SyncClient`][SyncClient].
@@ -202,7 +208,8 @@ impl<TBody> IndexCreateRequestBuilder<SyncSender, TBody>
 # Send asynchronously
 */
 impl<TBody> IndexCreateRequestBuilder<AsyncSender, TBody>
-    where TBody: Into<<AsyncSender as Sender>::Body>
+where
+    TBody: Into<<AsyncSender as Sender>::Body>,
 {
     /**
     Send a `IndexCreateRequestBuilder` asynchronously using an [`AsyncClient`][AsyncClient].
@@ -255,7 +262,10 @@ pub struct Pending {
 }
 
 impl Pending {
-    fn new<F>(fut: F) -> Self where F: Future<Item = CommandResponse, Error = Error> + 'static {
+    fn new<F>(fut: F) -> Self
+    where
+        F: Future<Item = CommandResponse, Error = Error> + 'static,
+    {
         Pending {
             inner: Box::new(fut),
         }
@@ -291,7 +301,8 @@ mod tests {
         let req = client
             .index_create(index("testindex"))
             .body("{}")
-            .inner.into_request();
+            .inner
+            .into_request();
 
         assert_eq!("{}", req.body);
     }

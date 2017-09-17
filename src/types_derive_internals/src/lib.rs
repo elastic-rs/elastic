@@ -4,7 +4,7 @@ Elasticsearch Core Types Codegen
 This crate contains the internals for `elastic_types`-related codegen.
 */
 
-#![recursion_limit="128"]
+#![recursion_limit = "128"]
 
 #[macro_use]
 extern crate quote;
@@ -17,8 +17,8 @@ extern crate quick_error;
 extern crate nom;
 
 extern crate serde;
-extern crate serde_json;
 extern crate serde_derive_internals;
+extern crate serde_json;
 
 extern crate chrono;
 
@@ -39,8 +39,7 @@ fn get_elastic_attr_name_value<'a>(name: &str, item: &'a syn::MacroInput) -> Opt
         for meta_item in meta_items {
             match *meta_item {
                 // Parse `#[elastic({name}="foo")]`
-                syn::NestedMetaItem::MetaItem(syn::MetaItem::NameValue(ref key, ref lit))
-                    if key == name => {
+                syn::NestedMetaItem::MetaItem(syn::MetaItem::NameValue(ref key, ref lit)) if key == name => {
                     return Some(lit);
                 }
                 _ => (),

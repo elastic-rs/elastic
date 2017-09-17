@@ -3,7 +3,8 @@
 use std::str;
 
 pub fn shift_while<F>(i: &[u8], f: F) -> &[u8]
-    where F: Fn(u8) -> bool
+where
+    F: Fn(u8) -> bool,
 {
     let mut ctr = 0;
     for c in i {
@@ -18,7 +19,8 @@ pub fn shift_while<F>(i: &[u8], f: F) -> &[u8]
 }
 
 pub fn take_while<F>(i: &[u8], f: F) -> (&[u8], &str)
-    where F: Fn(u8) -> bool
+where
+    F: Fn(u8) -> bool,
 {
     let mut ctr = 0;
 
@@ -34,7 +36,8 @@ pub fn take_while<F>(i: &[u8], f: F) -> (&[u8], &str)
 }
 
 pub fn take_while1<F>(i: &[u8], f: F) -> (&[u8], &str)
-    where F: Fn(u8) -> bool
+where
+    F: Fn(u8) -> bool,
 {
     let mut ctr = 0;
 

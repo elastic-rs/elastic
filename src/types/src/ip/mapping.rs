@@ -65,7 +65,8 @@ This will produce the following mapping:
 ```
 */
 pub trait IpMapping
-    where Self: Default
+where
+    Self: Default,
 {
     /** Field-level index time boosting. Accepts a floating point number, defaults to `1.0`. */
     fn boost() -> Option<f32> {
@@ -111,19 +112,22 @@ impl IpMapping for DefaultIpMapping {}
 mod private {
     use serde::{Serialize, Serializer};
     use serde::ser::SerializeStruct;
-    use private::field::{FieldType, DocumentField, FieldMapping};
+    use private::field::{DocumentField, FieldMapping, FieldType};
     use super::{IpFieldType, IpMapping};
 
     #[derive(Default)]
     pub struct IpPivot;
 
     impl<TField, TMapping> FieldType<TMapping, IpPivot> for TField
-        where TField: IpFieldType<TMapping> + Serialize,
-              TMapping: IpMapping
-    { }
+    where
+        TField: IpFieldType<TMapping> + Serialize,
+        TMapping: IpMapping,
+    {
+    }
 
     impl<TMapping> FieldMapping<IpPivot> for TMapping
-        where TMapping: IpMapping
+    where
+        TMapping: IpMapping,
     {
         type DocumentField = DocumentField<TMapping, IpPivot>;
 
@@ -133,10 +137,12 @@ mod private {
     }
 
     impl<TMapping> Serialize for DocumentField<TMapping, IpPivot>
-        where TMapping: FieldMapping<IpPivot> + IpMapping
+    where
+        TMapping: FieldMapping<IpPivot> + IpMapping,
     {
         fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-            where S: Serializer
+        where
+            S: Serializer,
         {
             let mut state = try!(serializer.serialize_struct("mapping", 6));
 
@@ -159,7 +165,7 @@ mod tests {
     use std::net::Ipv4Addr;
 
     use prelude::*;
-    use private::field::{FieldType, DocumentField};
+    use private::field::{DocumentField, FieldType};
 
     #[derive(Default, Clone)]
     pub struct MyIpMapping;

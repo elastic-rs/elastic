@@ -1,7 +1,7 @@
 use std::borrow::Borrow;
 use std::marker::PhantomData;
-use serde::{Serialize, Deserialize, Serializer, Deserializer};
-use serde::de::{Visitor, Error};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use serde::de::{Error, Visitor};
 use super::mapping::{KeywordFieldType, KeywordMapping};
 
 /**
@@ -21,13 +21,17 @@ let string = Keyword::<DefaultKeywordMapping>::new("my string value");
 ```
 */
 #[derive(Debug, Clone, Default, PartialEq)]
-pub struct Keyword<TMapping>  where TMapping: KeywordMapping {
+pub struct Keyword<TMapping>
+where
+    TMapping: KeywordMapping,
+{
     value: String,
     _m: PhantomData<TMapping>,
 }
 
 impl<TMapping> Keyword<TMapping>
-    where TMapping: KeywordMapping
+where
+    TMapping: KeywordMapping,
 {
     /**
     Creates a new `Keyword` with the given mapping.
@@ -44,7 +48,8 @@ impl<TMapping> Keyword<TMapping>
     ```
     */
     pub fn new<I>(string: I) -> Keyword<TMapping>
-        where I: Into<String>
+    where
+        I: Into<String>,
     {
         Keyword {
             value: string.into(),
@@ -54,7 +59,8 @@ impl<TMapping> Keyword<TMapping>
 
     /** Change the mapping of this string. */
     pub fn remap<TNewMapping>(keyword: Keyword<TMapping>) -> Keyword<TNewMapping>
-        where TNewMapping: KeywordMapping
+    where
+        TNewMapping: KeywordMapping,
     {
         Keyword::new(keyword.value)
     }

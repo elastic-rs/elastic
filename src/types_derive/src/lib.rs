@@ -10,12 +10,12 @@ Elasticsearch Core Types Codegen
 
 extern crate proc_macro;
 
-extern crate syn;
+extern crate elastic_types_derive_internals as internals;
 #[macro_use]
 extern crate quote;
-extern crate elastic_types_derive_internals as internals;
+extern crate syn;
 
-use internals::{elastic_type, date_format};
+use internals::{date_format, elastic_type};
 
 #[proc_macro_derive(ElasticType, attributes(elastic))]
 pub fn derive_elastic_type(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
@@ -27,8 +27,8 @@ pub fn derive_elastic_type(input: proc_macro::TokenStream) -> proc_macro::TokenS
             expanded.append_all(genned);
 
             expanded.to_string().parse().unwrap()
-        },
-        Err(e) => panic!("{}", e)
+        }
+        Err(e) => panic!("{}", e),
     }
 }
 
@@ -42,7 +42,7 @@ pub fn derive_date_format(input: proc_macro::TokenStream) -> proc_macro::TokenSt
             expanded.append_all(genned);
 
             expanded.to_string().parse().unwrap()
-        },
-        Err(e) => panic!("{}", e)
+        }
+        Err(e) => panic!("{}", e),
     }
 }

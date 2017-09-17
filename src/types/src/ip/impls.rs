@@ -3,9 +3,9 @@ use std::marker::PhantomData;
 use std::net::Ipv4Addr;
 use std::str::FromStr;
 use std::error::Error as StdError;
-use serde::{Serialize, Deserialize, Serializer, Deserializer};
-use serde::de::{Visitor, Error};
-use super::mapping::{IpFieldType, IpMapping, DefaultIpMapping};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use serde::de::{Error, Visitor};
+use super::mapping::{DefaultIpMapping, IpFieldType, IpMapping};
 
 impl IpFieldType<DefaultIpMapping> for Ipv4Addr {}
 
@@ -27,13 +27,17 @@ let ip = Ip::<DefaultIpMapping>::new(Ipv4Addr::new(127, 0, 0, 1));
 ```
 */
 #[derive(Debug, Clone, PartialEq)]
-pub struct Ip<TMapping> where TMapping: IpMapping {
+pub struct Ip<TMapping>
+where
+    TMapping: IpMapping,
+{
     value: Ipv4Addr,
     _m: PhantomData<TMapping>,
 }
 
 impl<TMapping> Ip<TMapping>
-    where TMapping: IpMapping
+where
+    TMapping: IpMapping,
 {
     /**
     Creates a new `Ip` with the given mapping.
@@ -51,7 +55,8 @@ impl<TMapping> Ip<TMapping>
     ```
     */
     pub fn new<I>(ip: I) -> Ip<TMapping>
-        where I: Into<Ipv4Addr>
+    where
+        I: Into<Ipv4Addr>,
     {
         Ip {
             value: ip.into(),
@@ -83,22 +88,29 @@ impl<TMapping> Ip<TMapping>
     ```
     */
     pub fn remap<TNewMapping>(ip: Ip<TMapping>) -> Ip<TNewMapping>
-        where TNewMapping: IpMapping
+    where
+        TNewMapping: IpMapping,
     {
         Ip::new(ip.value)
     }
 }
 
-impl<TMapping> IpFieldType<TMapping> for Ip<TMapping> where TMapping: IpMapping {}
+impl<TMapping> IpFieldType<TMapping> for Ip<TMapping>
+where
+    TMapping: IpMapping,
+{
+}
 
 impl_mapping_type!(Ipv4Addr, Ip, IpMapping);
 
 // Serialize elastic ip
 impl<TMapping> Serialize for Ip<TMapping>
-    where TMapping: IpMapping
+where
+    TMapping: IpMapping,
 {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where S: Serializer
+    where
+        S: Serializer,
     {
         serializer.serialize_str(&self.value.to_string())
     }
@@ -106,10 +118,12 @@ impl<TMapping> Serialize for Ip<TMapping>
 
 // Deserialize elastic ip
 impl<'de, TMapping> Deserialize<'de> for Ip<TMapping>
-    where TMapping: IpMapping
+where
+    TMapping: IpMapping,
 {
     fn deserialize<D>(deserializer: D) -> Result<Ip<TMapping>, D::Error>
-        where D: Deserializer<'de>
+    where
+        D: Deserializer<'de>,
     {
         #[derive(Default)]
         struct IpVisitor<TMapping> {
@@ -117,7 +131,8 @@ impl<'de, TMapping> Deserialize<'de> for Ip<TMapping>
         }
 
         impl<'de, TMapping> Visitor<'de> for IpVisitor<TMapping>
-            where TMapping: IpMapping
+        where
+            TMapping: IpMapping,
         {
             type Value = Ip<TMapping>;
 
@@ -126,7 +141,8 @@ impl<'de, TMapping> Deserialize<'de> for Ip<TMapping>
             }
 
             fn visit_string<E>(self, v: String) -> Result<Ip<TMapping>, E>
-                where E: Error
+            where
+                E: Error,
             {
                 let de = try!(Ipv4Addr::from_str(&v).map_err(|e| E::custom(e.description().to_string())));
 
@@ -134,7 +150,8 @@ impl<'de, TMapping> Deserialize<'de> for Ip<TMapping>
             }
 
             fn visit_str<E>(self, v: &str) -> Result<Ip<TMapping>, E>
-                where E: Error
+            where
+                E: Error,
             {
                 let de = try!(Ipv4Addr::from_str(v).map_err(|e| E::custom(e.description().to_string())));
 

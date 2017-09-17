@@ -90,10 +90,13 @@ impl SyncResponseBuilder {
     [response-types]: parse/trait.IsOk.html#implementors
     */
     pub fn into_response<T>(self) -> Result<T>
-        where T: IsOk + DeserializeOwned
+    where
+        T: IsOk + DeserializeOwned,
     {
         let status = self.status();
-        parse().from_response(self.0).map_err(|e| error::response(status, e))
+        parse()
+            .from_response(self.0)
+            .map_err(|e| error::response(status, e))
     }
 }
 

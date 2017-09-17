@@ -31,14 +31,29 @@ pub fn start(run: &str) -> Result<(), Box<Error>> {
 
         // Build the container
         Command::new("docker")
-            .args(&["build", "-f", &names.build_path, "-t", &names.build_name, "."])
+            .args(&[
+                "build",
+                "-f",
+                &names.build_path,
+                "-t",
+                &names.build_name,
+                ".",
+            ])
             .stdout(Stdio::inherit())
             .stderr(Stdio::inherit())
             .output()?;
 
         // Start the container
         Command::new("docker")
-            .args(&["run", "-itd", "-p", "9200:9200", "--name", &names.container_name, &names.build_name])
+            .args(&[
+                "run",
+                "-itd",
+                "-p",
+                "9200:9200",
+                "--name",
+                &names.container_name,
+                &names.build_name,
+            ])
             .stdout(Stdio::inherit())
             .stderr(Stdio::inherit())
             .output()?;
@@ -60,6 +75,6 @@ pub fn kill(run: &str) -> Result<(), Box<Error>> {
         .stdout(Stdio::inherit())
         .stderr(Stdio::inherit())
         .output()?;
-    
+
     Ok(())
 }

@@ -513,11 +513,11 @@ This is a particularly helpful feature for serialisation.
 extern crate geohash;
 
 #[macro_use]
-extern crate serde_derive;
-extern crate serde;
-extern crate serde_json;
-#[macro_use]
 extern crate elastic_types_derive;
+extern crate serde;
+#[macro_use]
+extern crate serde_derive;
+extern crate serde_json;
 
 extern crate chrono;
 extern crate geo as georust;

@@ -13,17 +13,13 @@ The input must satisfy the following rules:
 - It must be a unit struct.
 - It must have an `#[elastic(date_format="<value>")]` attribute.
 */
-pub fn expand_derive(crate_root: Tokens,
-                     input: &syn::MacroInput)
-                     -> Result<Vec<Tokens>, DeriveDateFormatError> {
+pub fn expand_derive(crate_root: Tokens, input: &syn::MacroInput) -> Result<Vec<Tokens>, DeriveDateFormatError> {
     // Annotatable item for a unit struct
     match input.body {
-        syn::Body::Struct(ref data) => {
-            match *data {
-                syn::VariantData::Unit => Ok(()),
-                _ => Err(DeriveDateFormatError::InvalidInput),
-            }
-        }
+        syn::Body::Struct(ref data) => match *data {
+            syn::VariantData::Unit => Ok(()),
+            _ => Err(DeriveDateFormatError::InvalidInput),
+        },
         _ => Err(DeriveDateFormatError::InvalidInput),
     }?;
 
@@ -31,8 +27,7 @@ pub fn expand_derive(crate_root: Tokens,
 
     let name = get_name_from_attr(input).unwrap_or(format);
 
-    let tokens: Vec<Tokens> = parse::to_tokens(format)
-        ?
+    let tokens: Vec<Tokens> = parse::to_tokens(format)?
         .into_iter()
         .map(|t| t.into_tokens(&crate_root))
         .collect();
@@ -43,11 +38,7 @@ pub fn expand_derive(crate_root: Tokens,
 }
 
 // Implement DateFormat for the type being derived with the mapping
-fn impl_date_format(crate_root: Tokens,
-                    item: &syn::MacroInput,
-                    name: &str,
-                    format: &[Tokens])
-                    -> Tokens {
+fn impl_date_format(crate_root: Tokens, item: &syn::MacroInput, name: &str, format: &[Tokens]) -> Tokens {
     let ty = &item.ident;
 
     let parse_fn = quote!(
@@ -109,9 +100,7 @@ impl<'a> parse::DateFormatToken<'a> {
             Hour => quote!(#crate_root::derive::Item::Numeric(#crate_root::derive::Numeric::Hour, #crate_root::derive::Pad::Zero)),
             Minute => quote!(#crate_root::derive::Item::Numeric(#crate_root::derive::Numeric::Minute, #crate_root::derive::Pad::Zero)),
             Second => quote!(#crate_root::derive::Item::Numeric(#crate_root::derive::Numeric::Second, #crate_root::derive::Pad::Zero)),
-            Millisecond => {
-                quote!(#crate_root::derive::Item::Fixed(#crate_root::derive::Fixed::Nanosecond3))
-            }
+            Millisecond => quote!(#crate_root::derive::Item::Fixed(#crate_root::derive::Fixed::Nanosecond3)),
             Utc => quote!(#crate_root::derive::Item::Literal("Z")),
             Delim(s) => quote!(#crate_root::derive::Item::Literal(#s)),
             Escaped(s) => quote!(#crate_root::derive::Item::Literal(#s)),

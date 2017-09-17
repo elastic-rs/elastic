@@ -62,7 +62,8 @@ This will produce the following mapping:
 ```
 */
 pub trait GeoShapeMapping
-    where Self: Default
+where
+    Self: Default,
 {
     /**
     Name of the PrefixTree implementation to be used:
@@ -155,39 +156,37 @@ impl GeoShapeMapping for DefaultGeoShapeMapping {}
 
 /** Name of the `PrefixTree` implementation to be used. */
 pub enum Tree {
-    /** For `GeohashPrefixTree`. */
-    Geohash,
-    /** For `QuadPrefixTree`. */
-    QuadPrefix,
+    /** For `GeohashPrefixTree`. */ Geohash,
+    /** For `QuadPrefixTree`. */ QuadPrefix,
 }
 
 impl Serialize for Tree {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where S: Serializer
+    where
+        S: Serializer,
     {
         serializer.serialize_str(match *self {
-                                     Tree::Geohash => "geohash",
-                                     Tree::QuadPrefix => "quadtree",
-                                 })
+            Tree::Geohash => "geohash",
+            Tree::QuadPrefix => "quadtree",
+        })
     }
 }
 
 /** The strategy defines the approach for how to represent shapes at indexing and search time. */
 pub enum Strategy {
-    /** Recursive strategy supports all shape types. */
-    Recursive,
-    /** Term strategy supports point types only. */
-    Term,
+    /** Recursive strategy supports all shape types. */ Recursive,
+    /** Term strategy supports point types only. */ Term,
 }
 
 impl Serialize for Strategy {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where S: Serializer
+    where
+        S: Serializer,
     {
         serializer.serialize_str(match *self {
-                                     Strategy::Recursive => "recursive",
-                                     Strategy::Term => "term",
-                                 })
+            Strategy::Recursive => "recursive",
+            Strategy::Term => "term",
+        })
     }
 }
 
@@ -200,39 +199,41 @@ The default orientation (counterclockwise) complies with the OGC standard which 
 ring vertices in counterclockwise order with inner ring(s) vertices (holes) in clockwise order.
 */
 pub enum Orientation {
-    /** For `cw`. */
-    Clockwise,
-    /** For `ccw`. */
-    CounterClockwise,
+    /** For `cw`. */ Clockwise,
+    /** For `ccw`. */ CounterClockwise,
 }
 
 impl Serialize for Orientation {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where S: Serializer
+    where
+        S: Serializer,
     {
         serializer.serialize_str(match *self {
-                                     Orientation::Clockwise => "cw",
-                                     Orientation::CounterClockwise => "ccw",
-                                 })
+            Orientation::Clockwise => "cw",
+            Orientation::CounterClockwise => "ccw",
+        })
     }
 }
 
 mod private {
     use serde::{Serialize, Serializer};
     use serde::ser::SerializeStruct;
-    use private::field::{FieldType, DocumentField, FieldMapping};
-    use super::{GeoShapeMapping, GeoShapeFieldType};
+    use private::field::{DocumentField, FieldMapping, FieldType};
+    use super::{GeoShapeFieldType, GeoShapeMapping};
 
     impl<TField, TMapping> FieldType<TMapping, GeoShapePivot> for TField
-        where TField: GeoShapeFieldType<TMapping> + Serialize,
-              TMapping: GeoShapeMapping
-    { }
+    where
+        TField: GeoShapeFieldType<TMapping> + Serialize,
+        TMapping: GeoShapeMapping,
+    {
+    }
 
     #[derive(Default)]
     pub struct GeoShapePivot;
 
     impl<TMapping> FieldMapping<GeoShapePivot> for TMapping
-        where TMapping: GeoShapeMapping
+    where
+        TMapping: GeoShapeMapping,
     {
         type DocumentField = DocumentField<TMapping, GeoShapePivot>;
 
@@ -242,10 +243,12 @@ mod private {
     }
 
     impl<TMapping> Serialize for DocumentField<TMapping, GeoShapePivot>
-        where TMapping: FieldMapping<GeoShapePivot> + GeoShapeMapping
+    where
+        TMapping: FieldMapping<GeoShapePivot> + GeoShapeMapping,
     {
         fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-            where S: Serializer
+        where
+            S: Serializer,
         {
             let mut state = try!(serializer.serialize_struct("mapping", 8));
 

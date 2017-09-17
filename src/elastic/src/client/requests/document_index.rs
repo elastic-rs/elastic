@@ -9,10 +9,10 @@ use futures::{Future, IntoFuture, Poll};
 use futures_cpupool::CpuPool;
 use serde::Serialize;
 
-use error::{self, Result, Error};
-use client::{Client, Sender, SyncSender, AsyncSender};
+use error::{self, Error, Result};
+use client::{AsyncSender, Client, Sender, SyncSender};
 use client::requests::RequestBuilder;
-use client::requests::params::{Index, Type, Id};
+use client::requests::params::{Id, Index, Type};
 use client::requests::endpoints::IndexRequest;
 use client::requests::raw::RawRequestInner;
 use client::responses::IndexResponse;
@@ -42,8 +42,9 @@ pub struct IndexRequestInner<TDocument> {
 /**
 # Index request
 */
-impl<TSender> Client<TSender> 
-    where TSender: Sender
+impl<TSender> Client<TSender>
+where
+    TSender: Sender,
 {
     /**
     Create a [`IndexRequestBuilder`][IndexRequestBuilder] with this `Client` that can be configured before sending.
@@ -96,38 +97,44 @@ impl<TSender> Client<TSender>
     [types-mod]: ../../types/index.html
     [documents-mod]: ../../types/document/index.html
     */
-    pub fn document_index<TDocument>(&self,
-                                         index: Index<'static>,
-                                         id: Id<'static>,
-                                         doc: TDocument)
-                                         -> IndexRequestBuilder<TSender, TDocument>
-        where TDocument: Serialize + DocumentType
+    pub fn document_index<TDocument>(&self, index: Index<'static>, id: Id<'static>, doc: TDocument) -> IndexRequestBuilder<TSender, TDocument>
+    where
+        TDocument: Serialize + DocumentType,
     {
         let ty = TDocument::name().into();
 
-        RequestBuilder::new(self.clone(),
-                            None,
-                            IndexRequestInner {
-                                index: index,
-                                ty: ty,
-                                id: id,
-                                doc: doc,
-                            })
+        RequestBuilder::new(
+            self.clone(),
+            None,
+            IndexRequestInner {
+                index: index,
+                ty: ty,
+                id: id,
+                doc: doc,
+            },
+        )
     }
 }
 
 impl<TDocument> IndexRequestInner<TDocument>
-    where TDocument: Serialize
+where
+    TDocument: Serialize,
 {
     fn into_sync_request(self) -> Result<IndexRequest<'static, Vec<u8>>> {
         let body = serde_json::to_vec(&self.doc).map_err(error::request)?;
 
-        Ok(IndexRequest::for_index_ty_id(self.index, self.ty, self.id, body))
+        Ok(IndexRequest::for_index_ty_id(
+            self.index,
+            self.ty,
+            self.id,
+            body,
+        ))
     }
 }
 
 impl<TDocument> IndexRequestInner<TDocument>
-    where TDocument: Serialize + Send + 'static
+where
+    TDocument: Serialize + Send + 'static,
 {
     fn into_async_request(self, ser_pool: Option<CpuPool>) -> Box<Future<Item = IndexRequest<'static, Vec<u8>>, Error = Error>> {
         if let Some(ser_pool) = ser_pool {
@@ -145,12 +152,14 @@ impl<TDocument> IndexRequestInner<TDocument>
 
 Configure a `IndexRequestBuilder` before sending it.
 */
-impl<TSender, TDocument> IndexRequestBuilder<TSender, TDocument> 
-    where TSender: Sender
+impl<TSender, TDocument> IndexRequestBuilder<TSender, TDocument>
+where
+    TSender: Sender,
 {
     /** Set the type for the index request. */
     pub fn ty<I>(mut self, ty: I) -> Self
-        where I: Into<Type<'static>>
+    where
+        I: Into<Type<'static>>,
     {
         self.inner.ty = ty.into();
         self
@@ -161,7 +170,8 @@ impl<TSender, TDocument> IndexRequestBuilder<TSender, TDocument>
 # Send synchronously
 */
 impl<TDocument> IndexRequestBuilder<SyncSender, TDocument>
-    where TDocument: Serialize
+where
+    TDocument: Serialize,
 {
     /**
     Send a `IndexRequestBuilder` synchronously using a [`SyncClient`][SyncClient].
@@ -216,7 +226,8 @@ impl<TDocument> IndexRequestBuilder<SyncSender, TDocument>
 # Send asynchronously
 */
 impl<TDocument> IndexRequestBuilder<AsyncSender, TDocument>
-    where TDocument: Serialize + Send + 'static
+where
+    TDocument: Serialize + Send + 'static,
 {
     /**
     Send a `IndexRequestBuilder` asynchronously using an [`AsyncClient`][AsyncClient].
@@ -274,8 +285,8 @@ impl<TDocument> IndexRequestBuilder<AsyncSender, TDocument>
 
         let res_future = req_future.and_then(move |req| {
             RequestBuilder::new(client, params, RawRequestInner::new(req))
-            .send()
-            .and_then(|res| res.into_response())
+                .send()
+                .and_then(|res| res.into_response())
         });
 
         Pending::new(res_future)
@@ -288,7 +299,10 @@ pub struct Pending {
 }
 
 impl Pending {
-    fn new<F>(fut: F) -> Self where F: Future<Item = IndexResponse, Error = Error> + 'static {
+    fn new<F>(fut: F) -> Self
+    where
+        F: Future<Item = IndexResponse, Error = Error> + 'static,
+    {
         Pending {
             inner: Box::new(fut),
         }
@@ -315,7 +329,8 @@ mod tests {
 
         let req = client
             .document_index(index("test-idx"), id("1"), Value::Null)
-            .inner.into_sync_request()
+            .inner
+            .into_sync_request()
             .unwrap();
 
         assert_eq!("/test-idx/value/1", req.url.as_ref());
@@ -329,7 +344,8 @@ mod tests {
         let req = client
             .document_index(index("test-idx"), id("1"), Value::Null)
             .ty("new-ty")
-            .inner.into_sync_request()
+            .inner
+            .into_sync_request()
             .unwrap();
 
         assert_eq!("/test-idx/new-ty/1", req.url.as_ref());
@@ -342,7 +358,8 @@ mod tests {
         let doc = Value::Null;
         let req = client
             .document_index(index("test-idx"), id("1"), &doc)
-            .inner.into_sync_request()
+            .inner
+            .into_sync_request()
             .unwrap();
 
         assert_eq!("/test-idx/value/1", req.url.as_ref());

@@ -1,10 +1,10 @@
-use chrono::{self, Utc, NaiveDateTime, NaiveDate, NaiveTime};
-use chrono::format::{Item, DelayedFormat};
+use chrono::{self, NaiveDate, NaiveDateTime, NaiveTime, Utc};
+use chrono::format::{DelayedFormat, Item};
 use std::ops::Deref;
 use std::marker::PhantomData;
 use std::borrow::Borrow;
 use std::error::Error;
-use std::fmt::{Display, Result as FmtResult, Formatter};
+use std::fmt::{Display, Formatter, Result as FmtResult};
 use std::vec::IntoIter;
 use super::ChronoDateTime;
 
@@ -91,7 +91,10 @@ You probably don't need to use it directly except to ensure date formats aren't 
 #[derive(Debug, Clone, PartialEq)]
 pub struct FormattableDateValue<TFormat>(DateValue, PhantomData<TFormat>);
 
-impl<TFormat> FormattableDateValue<TFormat> where TFormat: DateFormat {
+impl<TFormat> FormattableDateValue<TFormat>
+where
+    TFormat: DateFormat,
+{
     /** Format the wrapped date value using the generic format. */
     pub fn format<'a>(&'a self) -> FormattedDate<'a> {
         TFormat::format(&self.0)
@@ -184,7 +187,8 @@ struct MyFormat;
 ```
 */
 pub trait DateFormat
-    where Self: Default
+where
+    Self: Default,
 {
     /** Parses a date string to a `chrono::DateTime<Utc>` result. */
     fn parse(date: &str) -> Result<DateValue, ParseError>;
@@ -218,7 +222,8 @@ enum FormattedDateInner<'a> {
 impl<'a> Display for FormattedDateInner<'a> {
     fn fmt(&self, f: &mut Formatter) -> FmtResult {
         fn fmt_inner<T>(inner: &T, f: &mut Formatter) -> FmtResult
-            where T: Display
+        where
+            T: Display,
         {
             inner.fmt(f)
         }
@@ -239,19 +244,25 @@ impl<'a> Display for FormattedDate<'a> {
 
 impl<'a> From<DelayedFormat<IntoIter<Item<'a>>>> for FormattedDate<'a> {
     fn from(formatted: DelayedFormat<IntoIter<Item<'a>>>) -> Self {
-        FormattedDate { inner: FormattedDateInner::Delayed(formatted) }
+        FormattedDate {
+            inner: FormattedDateInner::Delayed(formatted),
+        }
     }
 }
 
 impl<'a> From<String> for FormattedDate<'a> {
     fn from(formatted: String) -> Self {
-        FormattedDate { inner: FormattedDateInner::Buffered(formatted) }
+        FormattedDate {
+            inner: FormattedDateInner::Buffered(formatted),
+        }
     }
 }
 
 impl<'a> From<i64> for FormattedDate<'a> {
     fn from(formatted: i64) -> Self {
-        FormattedDate { inner: FormattedDateInner::Number(formatted) }
+        FormattedDate {
+            inner: FormattedDateInner::Number(formatted),
+        }
     }
 }
 
@@ -294,12 +305,16 @@ impl Error for ParseError {
 
 impl From<chrono::ParseError> for ParseError {
     fn from(err: chrono::ParseError) -> ParseError {
-        ParseError { kind: ParseErrorKind::Chrono(err) }
+        ParseError {
+            kind: ParseErrorKind::Chrono(err),
+        }
     }
 }
 
 impl From<String> for ParseError {
     fn from(err: String) -> ParseError {
-        ParseError { kind: ParseErrorKind::Other(err) }
+        ParseError {
+            kind: ParseErrorKind::Other(err),
+        }
     }
 }

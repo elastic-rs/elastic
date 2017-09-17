@@ -8,7 +8,7 @@ use reqwest::unstable::async::{Client as AsyncHttpClient, ClientBuilder as Async
 use error::{self, Error, Result};
 use client::requests::HttpRequest;
 use client::responses::{async_response, AsyncResponseBuilder};
-use client::{private, Client, Sender, RequestParams};
+use client::{private, Client, RequestParams, Sender};
 
 /** 
 An asynchronous Elasticsearch client.
@@ -47,8 +47,8 @@ pub type AsyncClient = Client<AsyncSender>;
 /** An asynchronous request sender. */
 #[derive(Clone)]
 pub struct AsyncSender {
-    pub (in client) http: AsyncHttpClient,
-    pub (in client) serde_pool: Option<CpuPool>
+    pub(in client) http: AsyncHttpClient,
+    pub(in client) serde_pool: Option<CpuPool>,
 }
 
 impl private::Sealed for AsyncSender {}
@@ -58,26 +58,39 @@ impl Sender for AsyncSender {
     type Response = Pending;
 
     fn send<TRequest, TBody>(&self, req: TRequest, params: &RequestParams) -> Self::Response
-        where TRequest: Into<HttpRequest<'static, TBody>>,
-              TBody: Into<Self::Body>
+    where
+        TRequest: Into<HttpRequest<'static, TBody>>,
+        TBody: Into<Self::Body>,
     {
         let serde_pool = self.serde_pool.clone();
         let correlation_id = Uuid::new_v4();
         let req = req.into();
 
-        info!("Elasticsearch Request: correlation_id: '{}', path: '{}'", correlation_id, req.url.as_ref());
+        info!(
+            "Elasticsearch Request: correlation_id: '{}', path: '{}'",
+            correlation_id,
+            req.url.as_ref()
+        );
 
         let req_future = self.http
             .elastic_req(params, req)
             .map_err(move |e| {
-                error!("Elasticsearch Response: correlation_id: '{}', error: '{}'", correlation_id, e);
+                error!(
+                    "Elasticsearch Response: correlation_id: '{}', error: '{}'",
+                    correlation_id,
+                    e
+                );
                 error::request(e)
             })
             .map(move |res| {
-                info!("Elasticsearch Response: correlation_id: '{}', status: '{}'", correlation_id, res.status());
+                info!(
+                    "Elasticsearch Response: correlation_id: '{}', status: '{}'",
+                    correlation_id,
+                    res.status()
+                );
                 async_response(res, serde_pool)
             });
-        
+
         Pending::new(req_future)
     }
 }
@@ -88,7 +101,10 @@ pub struct Pending {
 }
 
 impl Pending {
-    fn new<F>(fut: F) -> Self where F: Future<Item = AsyncResponseBuilder, Error = Error> + 'static {
+    fn new<F>(fut: F) -> Self
+    where
+        F: Future<Item = AsyncResponseBuilder, Error = Error> + 'static,
+    {
         Pending {
             inner: Box::new(fut),
         }
@@ -108,7 +124,7 @@ impl Future for Pending {
 pub struct AsyncClientBuilder {
     http: Option<AsyncHttpClient>,
     serde_pool: Option<CpuPool>,
-    params: RequestParams
+    params: RequestParams,
 }
 
 impl Default for AsyncClientBuilder {
@@ -132,7 +148,7 @@ impl AsyncClientBuilder {
         AsyncClientBuilder {
             http: None,
             serde_pool: None,
-            params: RequestParams::default()
+            params: RequestParams::default(),
         }
     }
 
@@ -143,7 +159,7 @@ impl AsyncClientBuilder {
         AsyncClientBuilder {
             http: None,
             serde_pool: None,
-            params: params
+            params: params,
         }
     }
 
@@ -164,8 +180,9 @@ impl AsyncClientBuilder {
         .base_url("https://my_es_cluster/some_path");
     ```
     */
-    pub fn base_url<I>(mut self, base_url: I) -> Self 
-        where I: Into<String>
+    pub fn base_url<I>(mut self, base_url: I) -> Self
+    where
+        I: Into<String>,
     {
         self.params = self.params.base_url(base_url);
 
@@ -206,7 +223,8 @@ impl AsyncClientBuilder {
     [SyncClientBuilder.base_url]: #method.base_url
     */
     pub fn params<F>(mut self, builder: F) -> Self
-        where F: Fn(RequestParams) -> RequestParams
+    where
+        F: Fn(RequestParams) -> RequestParams,
     {
         self.params = builder(self.params);
 
@@ -237,8 +255,9 @@ impl AsyncClientBuilder {
     # }
     ```
     */
-    pub fn serde_pool<P>(mut self, serde_pool: P) -> Self 
-        where P: Into<Option<CpuPool>>
+    pub fn serde_pool<P>(mut self, serde_pool: P) -> Self
+    where
+        P: Into<Option<CpuPool>>,
     {
         self.serde_pool = serde_pool.into();
 
@@ -258,9 +277,10 @@ impl AsyncClientBuilder {
     [Client]: struct.Client.html
     */
     pub fn build(self, handle: &Handle) -> Result<AsyncClient> {
-        let http = self.http.map(Ok)
-                            .unwrap_or_else(|| AsyncHttpClientBuilder::new().build(handle))
-                            .map_err(error::build)?;
+        let http = self.http
+            .map(Ok)
+            .unwrap_or_else(|| AsyncHttpClientBuilder::new().build(handle))
+            .map_err(error::build)?;
 
         Ok(AsyncClient {
             sender: AsyncSender {

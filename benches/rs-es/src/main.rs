@@ -21,9 +21,10 @@ fn main() {
 
     let mut client = Client::new("http://localhost:9200").unwrap();
     let qry = Query::build_query_string("*").build();
-    
+
     let results = measure::run(runs, || {
-        let res: SearchResult<BenchDoc> = client.search_query()
+        let res: SearchResult<BenchDoc> = client
+            .search_query()
             .with_indexes(&["bench_index"])
             .with_types(&["bench_doc"])
             .with_query(&qry)
