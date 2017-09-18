@@ -2,13 +2,13 @@
 Response types for a standard command.
 */
 
-use parsing::{IsOk, HttpResponseHead, ResponseBody, Unbuffered, MaybeOkResponse};
+use parsing::{HttpResponseHead, IsOk, MaybeOkResponse, ResponseBody, Unbuffered};
 use error::*;
 
 /** A standard command acknowledgement response. */
 #[derive(Deserialize, Debug, Clone)]
 pub struct CommandResponse {
-    acknowledged: bool
+    acknowledged: bool,
 }
 
 impl CommandResponse {

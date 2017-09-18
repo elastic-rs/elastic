@@ -2,7 +2,7 @@
 Response types for a cluster ping request.
 */
 
-use parsing::{IsOk, HttpResponseHead, ResponseBody, Unbuffered, MaybeOkResponse};
+use parsing::{HttpResponseHead, IsOk, MaybeOkResponse, ResponseBody, Unbuffered};
 use error::*;
 
 /** Response for a cluster ping request. */
@@ -21,7 +21,7 @@ pub struct ClusterVersion {
     build_hash: String,
     build_date: String,
     build_snapshot: bool,
-    lucene_version: String
+    lucene_version: String,
 }
 
 impl PingResponse {

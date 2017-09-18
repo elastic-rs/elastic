@@ -1,9 +1,9 @@
 use std::borrow::Borrow;
 use std::marker::PhantomData;
-use serde::{Serialize, Deserialize, Serializer, Deserializer};
-use georust::{ToGeo, Geometry as GeoEnum};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use georust::{Geometry as GeoEnum, ToGeo};
 use super::mapping::{GeoPointFieldType, GeoPointMapping};
-use super::{Coordinate, Point, Geometry, GeoPointFormat};
+use super::{Coordinate, GeoPointFormat, Geometry, Point};
 
 /**
 An Elasticsearch `geo_point` type with a format.
@@ -44,13 +44,17 @@ println!("({},{})",
 - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/geo-point.html)
 */
 #[derive(Debug, Clone, PartialEq)]
-pub struct GeoPoint<TMapping> where TMapping: GeoPointMapping {
+pub struct GeoPoint<TMapping>
+where
+    TMapping: GeoPointMapping,
+{
     value: Point,
     _m: PhantomData<TMapping>,
 }
 
 impl<TMapping> GeoPoint<TMapping>
-    where TMapping: GeoPointMapping
+where
+    TMapping: GeoPointMapping,
 {
     /**
     Creates a new `GeoPoint` from the given coordinate.
@@ -75,7 +79,8 @@ impl<TMapping> GeoPoint<TMapping>
     ```
     */
     pub fn new<I>(point: I) -> Self
-        where I: Into<Point>
+    where
+        I: Into<Point>,
     {
         GeoPoint {
             value: point.into(),
@@ -110,21 +115,24 @@ impl<TMapping> GeoPoint<TMapping>
     ```
     */
     pub fn remap<TNewMapping>(point: GeoPoint<TMapping>) -> GeoPoint<TNewMapping>
-        where TNewMapping: GeoPointMapping
+    where
+        TNewMapping: GeoPointMapping,
     {
         GeoPoint::new(point.value)
     }
 }
 
 impl<TMapping> GeoPointFieldType<TMapping> for GeoPoint<TMapping>
-    where TMapping: GeoPointMapping
+where
+    TMapping: GeoPointMapping,
 {
 }
 
 impl_mapping_type!(Point, GeoPoint, GeoPointMapping);
 
 impl<TMapping> From<Coordinate> for GeoPoint<TMapping>
-    where TMapping: GeoPointMapping
+where
+    TMapping: GeoPointMapping,
 {
     fn from(point: Coordinate) -> GeoPoint<TMapping> {
         GeoPoint::new(Point::new(point.x, point.y))
@@ -132,7 +140,8 @@ impl<TMapping> From<Coordinate> for GeoPoint<TMapping>
 }
 
 impl<TMapping> ToGeo<f64> for GeoPoint<TMapping>
-    where TMapping: GeoPointMapping
+where
+    TMapping: GeoPointMapping,
 {
     fn to_geo(&self) -> Geometry {
         GeoEnum::Point(self.value.clone())
@@ -140,20 +149,24 @@ impl<TMapping> ToGeo<f64> for GeoPoint<TMapping>
 }
 
 impl<TMapping> Serialize for GeoPoint<TMapping>
-    where TMapping: GeoPointMapping
+where
+    TMapping: GeoPointMapping,
 {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where S: Serializer
+    where
+        S: Serializer,
     {
         TMapping::Format::format::<S, TMapping>(&self.value, serializer)
     }
 }
 
 impl<'de, TMapping> Deserialize<'de> for GeoPoint<TMapping>
-    where TMapping: GeoPointMapping
+where
+    TMapping: GeoPointMapping,
 {
     fn deserialize<D>(deserializer: D) -> Result<GeoPoint<TMapping>, D::Error>
-        where D: Deserializer<'de>
+    where
+        D: Deserializer<'de>,
     {
         let point = TMapping::Format::parse(deserializer)?;
 
@@ -163,7 +176,7 @@ impl<'de, TMapping> Deserialize<'de> for GeoPoint<TMapping>
 
 #[cfg(test)]
 mod tests {
-    use georust::{Geometry, ToGeo, Point, Coordinate};
+    use georust::{Coordinate, Geometry, Point, ToGeo};
 
     use prelude::*;
 

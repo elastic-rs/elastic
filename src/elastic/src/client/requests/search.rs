@@ -8,8 +8,8 @@ use std::marker::PhantomData;
 use futures::{Future, Poll};
 use serde::de::DeserializeOwned;
 
-use error::{Result, Error};
-use client::{Client, Sender, SyncSender, AsyncSender};
+use error::{Error, Result};
+use client::{AsyncSender, Client, Sender, SyncSender};
 use client::requests::{empty_body, DefaultBody, RequestBuilder};
 use client::requests::params::{Index, Type};
 use client::requests::endpoints::SearchRequest;
@@ -40,8 +40,9 @@ pub struct SearchRequestInner<TDocument, TBody> {
 /**
 # Search request
 */
-impl<TSender> Client<TSender> 
-    where TSender: Sender
+impl<TSender> Client<TSender>
+where
+    TSender: Sender,
 {
     /** 
     Create a [`SearchRequestBuilder`][SearchRequestBuilder] with this `Client` that can be configured before sending.
@@ -117,17 +118,17 @@ impl<TSender> Client<TSender>
     [documents-mod]: ../../types/document/index.html
     [docs-querystring]: https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html
     */
-    pub fn search<TDocument>
-        (&self)
-         -> SearchRequestBuilder<TSender, TDocument, DefaultBody>
-        where TDocument: DeserializeOwned
+    pub fn search<TDocument>(&self) -> SearchRequestBuilder<TSender, TDocument, DefaultBody>
+    where
+        TDocument: DeserializeOwned,
     {
         RequestBuilder::new(self.clone(), None, SearchRequestInner::new(empty_body()))
     }
 }
 
 impl<TDocument, TBody> SearchRequestInner<TDocument, TBody>
-    where TDocument: DeserializeOwned
+where
+    TDocument: DeserializeOwned,
 {
     fn new(body: TBody) -> Self {
         SearchRequestInner {
@@ -154,7 +155,8 @@ impl<TDocument, TBody> SearchRequestInner<TDocument, TBody>
 Configure a `SearchRequestBuilder` before sending it.
 */
 impl<TSender, TDocument, TBody> SearchRequestBuilder<TSender, TDocument, TBody>
-    where TSender: Sender
+where
+    TSender: Sender,
 {
     /**
     Set the indices for the search request.
@@ -162,7 +164,8 @@ impl<TSender, TDocument, TBody> SearchRequestBuilder<TSender, TDocument, TBody>
     If no index is specified then `_all` will be used.
     */
     pub fn index<I>(mut self, index: I) -> Self
-        where I: Into<Index<'static>>
+    where
+        I: Into<Index<'static>>,
     {
         self.inner.index = Some(index.into());
         self
@@ -170,7 +173,8 @@ impl<TSender, TDocument, TBody> SearchRequestBuilder<TSender, TDocument, TBody>
 
     /** Set the types for the search request. */
     pub fn ty<I>(mut self, ty: Option<I>) -> Self
-        where I: Into<Type<'static>>
+    where
+        I: Into<Type<'static>>,
     {
         self.inner.ty = ty.map(Into::into);
         self
@@ -181,19 +185,20 @@ impl<TSender, TDocument, TBody> SearchRequestBuilder<TSender, TDocument, TBody>
     
     If no body is specified then an empty query will be used.
     */
-    pub fn body<TNewBody>(self,
-                          body: TNewBody)
-                          -> SearchRequestBuilder<TSender, TDocument, TNewBody>
-        where TNewBody: Into<TSender::Body>
+    pub fn body<TNewBody>(self, body: TNewBody) -> SearchRequestBuilder<TSender, TDocument, TNewBody>
+    where
+        TNewBody: Into<TSender::Body>,
     {
-        RequestBuilder::new(self.client,
-                            self.params,
-                            SearchRequestInner {
-                                body: body,
-                                index: self.inner.index,
-                                ty: self.inner.ty,
-                                _marker: PhantomData,
-                            })
+        RequestBuilder::new(
+            self.client,
+            self.params,
+            SearchRequestInner {
+                body: body,
+                index: self.inner.index,
+                ty: self.inner.ty,
+                _marker: PhantomData,
+            },
+        )
     }
 }
 
@@ -201,8 +206,9 @@ impl<TSender, TDocument, TBody> SearchRequestBuilder<TSender, TDocument, TBody>
 # Send synchronously
 */
 impl<TDocument, TBody> SearchRequestBuilder<SyncSender, TDocument, TBody>
-    where TDocument: DeserializeOwned,
-          TBody: Into<<SyncSender as Sender>::Body>
+where
+    TDocument: DeserializeOwned,
+    TBody: Into<<SyncSender as Sender>::Body>,
 {
     /**
     Send a `SearchRequestBuilder` synchronously using a [`SyncClient`][SyncClient].
@@ -253,8 +259,9 @@ impl<TDocument, TBody> SearchRequestBuilder<SyncSender, TDocument, TBody>
 # Send asynchronously
 */
 impl<TDocument, TBody> SearchRequestBuilder<AsyncSender, TDocument, TBody>
-    where TDocument: DeserializeOwned + Send + 'static,
-          TBody: Into<<AsyncSender as Sender>::Body>
+where
+    TDocument: DeserializeOwned + Send + 'static,
+    TBody: Into<<AsyncSender as Sender>::Body>,
 {
     /**
     Send a `SearchRequestBuilder` asynchronously using an [`AsyncClient`][AsyncClient].
@@ -317,15 +324,19 @@ pub struct Pending<TDocument> {
 }
 
 impl<TDocument> Pending<TDocument> {
-    fn new<F>(fut: F) -> Self where F: Future<Item = SearchResponse<TDocument>, Error = Error> + 'static {
+    fn new<F>(fut: F) -> Self
+    where
+        F: Future<Item = SearchResponse<TDocument>, Error = Error> + 'static,
+    {
         Pending {
             inner: Box::new(fut),
         }
     }
 }
 
-impl<TDocument> Future for Pending<TDocument> 
-    where TDocument: DeserializeOwned + Send + 'static,
+impl<TDocument> Future for Pending<TDocument>
+where
+    TDocument: DeserializeOwned + Send + 'static,
 {
     type Item = SearchResponse<TDocument>;
     type Error = Error;
@@ -353,7 +364,11 @@ mod tests {
     fn specify_index() {
         let client = SyncClientBuilder::new().build().unwrap();
 
-        let req = client.search::<Value>().index("new-idx").inner.into_request();
+        let req = client
+            .search::<Value>()
+            .index("new-idx")
+            .inner
+            .into_request();
 
         assert_eq!("/new-idx/_search", req.url.as_ref());
     }
@@ -365,7 +380,8 @@ mod tests {
         let req = client
             .search::<Value>()
             .ty(Some("new-ty"))
-            .inner.into_request();
+            .inner
+            .into_request();
 
         assert_eq!("/_all/new-ty/_search", req.url.as_ref());
     }

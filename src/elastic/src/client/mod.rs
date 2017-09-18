@@ -508,8 +508,9 @@ pub trait Sender: private::Sealed + Clone {
 
     /// Send a request.
     fn send<TRequest, TBody>(&self, req: TRequest, params: &RequestParams) -> Self::Response
-        where TRequest: Into<HttpRequest<'static, TBody>>,
-              TBody: Into<Self::Body>;
+    where
+        TRequest: Into<HttpRequest<'static, TBody>>,
+        TBody: Into<Self::Body>;
 }
 
 /**
@@ -574,7 +575,7 @@ pub struct Client<TSender> {
 pub mod prelude {
     /*! A glob import for convenience. */
 
-    pub use super::{SyncClientBuilder, AsyncClientBuilder, SyncClient, AsyncClient, RequestParams};
+    pub use super::{AsyncClient, AsyncClientBuilder, RequestParams, SyncClient, SyncClientBuilder};
     pub use super::requests::prelude::*;
     pub use super::responses::prelude::*;
 }
@@ -582,7 +583,7 @@ pub mod prelude {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use ::tests::*;
+    use tests::*;
 
     #[test]
     fn client_is_send_sync() {

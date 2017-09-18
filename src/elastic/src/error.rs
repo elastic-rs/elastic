@@ -62,24 +62,22 @@ also contain a backtrace.
 */
 #[derive(Debug)]
 pub enum Error {
-    /** An API error from Elasticsearch. */
-    Api(ApiError),
-    /** Any other kind of error. */
-    Client(ClientError)
+    /** An API error from Elasticsearch. */ Api(ApiError),
+    /** Any other kind of error. */ Client(ClientError),
 }
 
 impl StdError for Error {
     fn description(&self) -> &str {
         match *self {
             Error::Api(_) => "API error returned from Elasticsearch",
-            Error::Client(_) => "error sending a request or receiving a response"
+            Error::Client(_) => "error sending a request or receiving a response",
         }
     }
 
     fn cause(&self) -> Option<&StdError> {
         match *self {
             Error::Api(ref e) => Some(e),
-            Error::Client(ref e) => Some(e)
+            Error::Client(ref e) => Some(e),
         }
     }
 }
@@ -88,7 +86,11 @@ impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
             Error::Api(ref e) => write!(f, "API error returned from Elasticsearch. Caused by: {}", e),
-            Error::Client(ref e) => write!(f, "error sending a request or receiving a response. Caused by: {}", e)
+            Error::Client(ref e) => write!(
+                f,
+                "error sending a request or receiving a response. Caused by: {}",
+                e
+            ),
         }
     }
 }
@@ -115,43 +117,46 @@ impl fmt::Display for ClientError {
     }
 }
 
-pub(crate) fn build<E>(err: E) -> Error 
-    where E: StdError + Send + 'static
+pub(crate) fn build<E>(err: E) -> Error
+where
+    E: StdError + Send + 'static,
 {
     Error::Client(ClientError {
-        inner: inner::Error::with_chain(err, inner::ErrorKind::Build)
+        inner: inner::Error::with_chain(err, inner::ErrorKind::Build),
     })
 }
 
-pub(crate) fn request<E>(err: E) -> Error 
-    where E: StdError + Send + 'static
+pub(crate) fn request<E>(err: E) -> Error
+where
+    E: StdError + Send + 'static,
 {
     Error::Client(ClientError {
-        inner: inner::Error::with_chain(err, inner::ErrorKind::Request)
+        inner: inner::Error::with_chain(err, inner::ErrorKind::Request),
     })
 }
 
-pub(crate) fn response<E>(status: u16, err: E) -> Error 
-    where E: Into<MaybeApiError<E>> + StdError + Send + 'static
+pub(crate) fn response<E>(status: u16, err: E) -> Error
+where
+    E: Into<MaybeApiError<E>> + StdError + Send + 'static,
 {
     match err.into() {
         MaybeApiError::Api(err) => Error::Api(err),
         MaybeApiError::Other(err) => Error::Client(ClientError {
-            inner: inner::Error::with_chain(err, inner::ErrorKind::Response(status))
-        })
+            inner: inner::Error::with_chain(err, inner::ErrorKind::Response(status)),
+        }),
     }
 }
 
 pub(crate) enum MaybeApiError<E> {
     Api(ApiError),
-    Other(E)
+    Other(E),
 }
 
 impl Into<MaybeApiError<ResponseError>> for ResponseError {
     fn into(self) -> MaybeApiError<Self> {
         match self {
             ResponseError::Api(err) => MaybeApiError::Api(err),
-            err => MaybeApiError::Other(err)
+            err => MaybeApiError::Other(err),
         }
     }
 }
@@ -160,7 +165,7 @@ impl Into<MaybeApiError<ElasticReqwestError>> for ResponseError {
     fn into(self) -> MaybeApiError<ElasticReqwestError> {
         match self {
             ResponseError::Api(err) => MaybeApiError::Api(err),
-            err => MaybeApiError::Other(ElasticReqwestError::Response(err))
+            err => MaybeApiError::Other(ElasticReqwestError::Response(err)),
         }
     }
 }
@@ -169,7 +174,7 @@ impl Into<MaybeApiError<ElasticReqwestError>> for ElasticReqwestError {
     fn into(self) -> MaybeApiError<Self> {
         match self {
             ElasticReqwestError::Response(err) => err.into(),
-            err => MaybeApiError::Other(err)
+            err => MaybeApiError::Other(err),
         }
     }
 }
@@ -216,7 +221,7 @@ mod inner {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use ::tests::*;
+    use tests::*;
 
     #[test]
     fn error_is_send_sync() {

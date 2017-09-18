@@ -1,8 +1,8 @@
 #![feature(test)]
 
 extern crate stopwatch;
-extern crate time;
 extern crate test;
+extern crate time;
 
 use std::env;
 use std::fmt;
@@ -12,7 +12,7 @@ use stopwatch::Stopwatch;
 pub struct Measure {
     runs: usize,
     mean: i64,
-    percentiles: Vec<(f32, i64)>
+    percentiles: Vec<(f32, i64)>,
 }
 
 impl fmt::Display for Measure {
@@ -34,17 +34,21 @@ pub fn parse_runs_from_env() -> usize {
 
     // Get the command name
     let _ = args.next().unwrap();
-    
+
     // Get the first argument as a usize
     if args.len() >= 1 {
-        args.next().unwrap().parse::<usize>().unwrap_or(default_runs)
+        args.next()
+            .unwrap()
+            .parse::<usize>()
+            .unwrap_or(default_runs)
     } else {
         default_runs
     }
 }
 
 pub fn run<F, FOut>(runs: usize, mut f: F) -> Measure
-    where F: FnMut() -> FOut
+where
+    F: FnMut() -> FOut,
 {
     let mut results = Vec::<i64>::with_capacity(runs as usize);
     for _ in 0..runs {
@@ -66,22 +70,12 @@ pub fn run<F, FOut>(runs: usize, mut f: F) -> Measure
     Measure {
         runs: runs,
         mean: mean,
-        percentiles: pv
+        percentiles: pv,
     }
 }
 
 fn percentiles(data: &Vec<i64>, runs: f32) -> Vec<(f32, i64)> {
-    vec![
-        0.50,
-        0.66,
-        0.75,
-        0.80,
-        0.90,
-        0.95,
-        0.98,
-        0.99,
-        1.00
-    ]
+    vec![0.50, 0.66, 0.75, 0.80, 0.90, 0.95, 0.98, 0.99, 1.00]
         .iter()
         .map(|p| {
             let p: f32 = *p;

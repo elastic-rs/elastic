@@ -2,7 +2,7 @@ use std::collections::VecDeque;
 use std::path::Path;
 
 use tokio_proto::streaming::Body as BodyStream;
-use futures::{IntoFuture, Future, Stream, Sink, Poll, Async};
+use futures::{Async, Future, IntoFuture, Poll, Sink, Stream};
 use futures::future::lazy;
 use futures::sync::mpsc::SendError;
 use memmap::{Mmap, MmapViewSync, Protection};
@@ -47,10 +47,9 @@ impl Stream for FileChunkStream {
 ///
 /// The first item is a future that will stream chunks from the mapped file.
 /// The second item is the async body to use in the request.
-pub fn mapped_file<P>
-    (path: P)
-     -> (impl Future<Item = (), Error = Error> + Send, FileBody)
-    where P: AsRef<Path> + Send + 'static
+pub fn mapped_file<P>(path: P) -> (impl Future<Item = (), Error = Error> + Send, FileBody)
+where
+    P: AsRef<Path> + Send + 'static,
 {
     let (tx, rx) = FileBody::pair();
 
@@ -71,7 +70,8 @@ pub fn mapped_file<P>
 
 // mmap a file and push its chunks into a queue
 fn map_file_to_chunks<P>(path: P) -> Result<VecDeque<FileChunkResult>, Error>
-    where P: AsRef<Path>
+where
+    P: AsRef<Path>,
 {
     let file = Mmap::open_path(path, Protection::Read)?.into_view_sync();
 

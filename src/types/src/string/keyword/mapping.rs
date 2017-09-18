@@ -3,7 +3,7 @@
 use std::collections::BTreeMap;
 use serde::{Serialize, Serializer};
 use serde::ser::SerializeStruct;
-use string::mapping::{StringField, IndexOptions};
+use string::mapping::{IndexOptions, StringField};
 use private::field::FieldMapping;
 
 /** A field that will be mapped as a `keyword`. */
@@ -69,7 +69,8 @@ This will produce the following mapping:
 ```
 */
 pub trait KeywordMapping
-    where Self: Default
+where
+    Self: Default,
 {
     /**
     The analyzer which should be used for analyzed string fields,
@@ -251,12 +252,9 @@ pub struct KeywordFieldMapping {
     Any characters over this length will be ignored.
     */
     pub ignore_above: Option<u32>,
-    /** Should the field be searchable? Accepts `true` (default) or `false`. */
-    pub index: Option<bool>,
-    /** What information should be stored in the index, for search and highlighting purposes. Defaults to `Positions`. */
-    pub index_options: Option<IndexOptions>,
-    /** Whether field-length should be taken into account when scoring queries. Accepts `true` (default) or `false`. */
-    pub norms: Option<bool>,
+    /** Should the field be searchable? Accepts `true` (default) or `false`. */ pub index: Option<bool>,
+    /** What information should be stored in the index, for search and highlighting purposes. Defaults to `Positions`. */ pub index_options: Option<IndexOptions>,
+    /** Whether field-length should be taken into account when scoring queries. Accepts `true` (default) or `false`. */ pub norms: Option<bool>,
     /**
     Whether the field value should be stored and retrievable separately from the `_source` field.
     Accepts `true` or `false` (default).
@@ -276,7 +274,8 @@ pub struct KeywordFieldMapping {
 
 impl Serialize for KeywordFieldMapping {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where S: Serializer
+    where
+        S: Serializer,
     {
         let mut state = try!(serializer.serialize_struct("mapping", 12));
 
@@ -301,19 +300,22 @@ impl Serialize for KeywordFieldMapping {
 mod private {
     use serde::{Serialize, Serializer};
     use serde::ser::SerializeStruct;
-    use private::field::{FieldType, DocumentField, FieldMapping};
+    use private::field::{DocumentField, FieldMapping, FieldType};
     use super::{KeywordFieldType, KeywordMapping};
 
     #[derive(Default)]
     pub struct KeywordPivot;
 
     impl<TField, TMapping> FieldType<TMapping, KeywordPivot> for TField
-        where TField: KeywordFieldType<TMapping> + Serialize,
-              TMapping: KeywordMapping
-    { }
+    where
+        TField: KeywordFieldType<TMapping> + Serialize,
+        TMapping: KeywordMapping,
+    {
+    }
 
     impl<TMapping> FieldMapping<KeywordPivot> for TMapping
-        where TMapping: KeywordMapping
+    where
+        TMapping: KeywordMapping,
     {
         type DocumentField = DocumentField<TMapping, KeywordPivot>;
 
@@ -323,10 +325,12 @@ mod private {
     }
 
     impl<TMapping> Serialize for DocumentField<TMapping, KeywordPivot>
-        where TMapping: FieldMapping<KeywordPivot> + KeywordMapping
+    where
+        TMapping: FieldMapping<KeywordPivot> + KeywordMapping,
     {
         fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-            where S: Serializer
+        where
+            S: Serializer,
         {
             let mut state = try!(serializer.serialize_struct("mapping", 15));
 
@@ -335,7 +339,11 @@ mod private {
             ser_field!(state, "boost", TMapping::boost());
             ser_field!(state, "analyzer", TMapping::analyzer());
             ser_field!(state, "doc_values", TMapping::doc_values());
-            ser_field!(state, "eager_global_ordinals", TMapping::eager_global_ordinals());
+            ser_field!(
+                state,
+                "eager_global_ordinals",
+                TMapping::eager_global_ordinals()
+            );
             ser_field!(state, "fields", TMapping::fields());
             ser_field!(state, "include_in_all", TMapping::include_in_all());
             ser_field!(state, "ignore_above", TMapping::ignore_above());

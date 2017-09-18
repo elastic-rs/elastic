@@ -28,7 +28,7 @@ fn main() {
         .params(|p| p.header(http::header::Connection::keep_alive()))
         .build()
         .unwrap();
-    
+
     let results = measure::run(runs, || {
         let req = SearchRequest::for_index_ty("bench_index", "bench_doc", BODY);
         let mut res = client.request(req).send().unwrap().into_raw();

@@ -1,5 +1,5 @@
 use std::mem;
-use futures::{Future, Stream, Poll};
+use futures::{Future, Poll, Stream};
 use futures_cpupool::CpuPool;
 use serde::de::DeserializeOwned;
 use reqwest::unstable::async::{Decoder, Response as RawResponse};
@@ -16,13 +16,13 @@ You can also `Read` directly from the response body.
 */
 pub struct AsyncResponseBuilder {
     inner: RawResponse,
-    de_pool: Option<CpuPool>
+    de_pool: Option<CpuPool>,
 }
 
 pub(crate) fn async_response(res: RawResponse, de_pool: Option<CpuPool>) -> AsyncResponseBuilder {
     AsyncResponseBuilder {
         inner: res,
-        de_pool: de_pool
+        de_pool: de_pool,
     }
 }
 
@@ -111,22 +111,25 @@ impl AsyncResponseBuilder {
     [response-types]: parse/trait.IsOk.html#implementors
     */
     pub fn into_response<T>(mut self) -> IntoResponse<T>
-        where T: IsOk + DeserializeOwned + Send + 'static
+    where
+        T: IsOk + DeserializeOwned + Send + 'static,
     {
         let status = self.status();
         let body = mem::replace(self.inner.body_mut(), Decoder::empty());
 
         let de_fn = move |body: AsyncChunk| {
-            parse().from_slice(status, body.as_ref())
-                   .map_err(move |e| error::response(status, e))
+            parse()
+                .from_slice(status, body.as_ref())
+                .map_err(move |e| error::response(status, e))
         };
 
         let body_future = body.concat2().map_err(move |e| error::response(status, e));
 
         if let Some(de_pool) = self.de_pool {
-            IntoResponse::new(body_future.and_then(move |body| de_pool.spawn_fn(move || de_fn(body))))
-        }
-        else {
+            IntoResponse::new(
+                body_future.and_then(move |body| de_pool.spawn_fn(move || de_fn(body))),
+            )
+        } else {
             IntoResponse::new(body_future.and_then(de_fn))
         }
     }
@@ -138,15 +141,19 @@ pub struct IntoResponse<T> {
 }
 
 impl<T> IntoResponse<T> {
-    fn new<F>(fut: F) -> Self where F: Future<Item = T, Error = Error> + 'static {
+    fn new<F>(fut: F) -> Self
+    where
+        F: Future<Item = T, Error = Error> + 'static,
+    {
         IntoResponse {
             inner: Box::new(fut),
         }
     }
 }
 
-impl<T> Future for IntoResponse<T> 
-    where T: IsOk + DeserializeOwned + Send + 'static
+impl<T> Future for IntoResponse<T>
+where
+    T: IsOk + DeserializeOwned + Send + 'static,
 {
     type Item = T;
     type Error = Error;

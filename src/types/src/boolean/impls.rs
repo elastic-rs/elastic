@@ -1,7 +1,7 @@
 use std::borrow::Borrow;
 use std::marker::PhantomData;
-use serde::{Serialize, Deserialize, Serializer, Deserializer};
-use serde::de::{Visitor, Error};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use serde::de::{Error, Visitor};
 use super::mapping::{BooleanFieldType, BooleanMapping, DefaultBooleanMapping};
 
 impl BooleanFieldType<DefaultBooleanMapping> for bool {}
@@ -21,13 +21,17 @@ let boolean = Boolean::<DefaultBooleanMapping>::new(true);
 ```
 */
 #[derive(Debug, Clone, Default, PartialEq)]
-pub struct Boolean<TMapping> where TMapping: BooleanMapping {
+pub struct Boolean<TMapping>
+where
+    TMapping: BooleanMapping,
+{
     value: bool,
     _m: PhantomData<TMapping>,
 }
 
 impl<TMapping> Boolean<TMapping>
-    where TMapping: BooleanMapping
+where
+    TMapping: BooleanMapping,
 {
     /**
     Creates a new `Boolean` with the given mapping.
@@ -42,7 +46,8 @@ impl<TMapping> Boolean<TMapping>
     ```
     */
     pub fn new<I>(boolean: I) -> Boolean<TMapping>
-        where I: Into<bool>
+    where
+        I: Into<bool>,
     {
         Boolean {
             value: boolean.into(),
@@ -73,31 +78,40 @@ impl<TMapping> Boolean<TMapping>
     ```
     */
     pub fn remap<TNewMapping>(boolean: Boolean<TMapping>) -> Boolean<TNewMapping>
-        where TNewMapping: BooleanMapping
+    where
+        TNewMapping: BooleanMapping,
     {
         Boolean::<TNewMapping>::new(boolean.value)
     }
 }
 
-impl<TMapping> BooleanFieldType<TMapping> for Boolean<TMapping> where TMapping: BooleanMapping {}
+impl<TMapping> BooleanFieldType<TMapping> for Boolean<TMapping>
+where
+    TMapping: BooleanMapping,
+{
+}
 
 impl_mapping_type!(bool, Boolean, BooleanMapping);
 
 impl<TMapping> Serialize for Boolean<TMapping>
-    where TMapping: BooleanMapping
+where
+    TMapping: BooleanMapping,
 {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where S: Serializer
+    where
+        S: Serializer,
     {
         serializer.serialize_bool(self.value)
     }
 }
 
 impl<'de, TMapping> Deserialize<'de> for Boolean<TMapping>
-    where TMapping: BooleanMapping
+where
+    TMapping: BooleanMapping,
 {
     fn deserialize<D>(deserializer: D) -> Result<Boolean<TMapping>, D::Error>
-        where D: Deserializer<'de>
+    where
+        D: Deserializer<'de>,
     {
         #[derive(Default)]
         struct BooleanVisitor<TMapping> {
@@ -105,7 +119,8 @@ impl<'de, TMapping> Deserialize<'de> for Boolean<TMapping>
         }
 
         impl<'de, TMapping> Visitor<'de> for BooleanVisitor<TMapping>
-            where TMapping: BooleanMapping
+        where
+            TMapping: BooleanMapping,
         {
             type Value = Boolean<TMapping>;
 
@@ -114,7 +129,8 @@ impl<'de, TMapping> Deserialize<'de> for Boolean<TMapping>
             }
 
             fn visit_bool<E>(self, v: bool) -> Result<Boolean<TMapping>, E>
-                where E: Error
+            where
+                E: Error,
             {
                 Ok(Boolean::<TMapping>::new(v))
             }

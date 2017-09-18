@@ -12,11 +12,14 @@ struct Ping {
 
 impl Ping {
     fn is_not_ready(&self) -> Box<Future<Item = bool, Error = Box<StdError>>> {
-        let request = self.client.request(PingRequest::new()).send().map_err(|e| e.into());
+        let request = self.client
+            .request(PingRequest::new())
+            .send()
+            .map_err(|e| e.into());
 
         let check = request.then(|res: Result<AsyncResponseBuilder, Error>| match res {
             Ok(_) => Ok(false),
-            _ => Ok(true)
+            _ => Ok(true),
         });
 
         Box::new(check)
@@ -24,7 +27,10 @@ impl Ping {
 }
 
 pub fn call(client: AsyncClient, timeout_secs: u64) -> Box<Future<Item = (), Error = Box<StdError>>> {
-    println!("waiting up to {}s until the cluster is ready...", timeout_secs);
+    println!(
+        "waiting up to {}s until the cluster is ready...",
+        timeout_secs
+    );
 
     let timer = Timer::default();
     let stream = stream::repeat(Ping { client: client });

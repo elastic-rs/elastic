@@ -6,10 +6,10 @@ This module contains implementation details that are useful if you want to custo
 
 use futures_cpupool::CpuPool;
 
-use client::{Client, Sender, AsyncSender, RequestParams};
+use client::{AsyncSender, Client, RequestParams, Sender};
 
-pub use elastic_reqwest::{SyncBody, AsyncBody};
-pub use elastic_reqwest::req::{HttpRequest, HttpMethod, empty_body, Url, DefaultBody};
+pub use elastic_reqwest::{AsyncBody, SyncBody};
+pub use elastic_reqwest::req::{empty_body, DefaultBody, HttpMethod, HttpRequest, Url};
 pub use elastic_reqwest::req::params;
 pub use elastic_reqwest::req::endpoints;
 
@@ -46,8 +46,9 @@ The `RequestBuilder` has two generic parameters:
 
 `RequestBuilder` contains methods that are common to all request builders.
 */
-pub struct RequestBuilder<TSender, TRequest> 
-    where TSender: Sender
+pub struct RequestBuilder<TSender, TRequest>
+where
+    TSender: Sender,
 {
     client: Client<TSender>,
     params: Option<RequestParams>,
@@ -59,8 +60,9 @@ pub struct RequestBuilder<TSender, TRequest>
 
 The following methods can be called on any request builder, whether it's synchronous or asynchronous.
 */
-impl<TSender, TRequest> RequestBuilder<TSender, TRequest> 
-    where TSender: Sender
+impl<TSender, TRequest> RequestBuilder<TSender, TRequest>
+where
+    TSender: Sender,
 {
     fn new(client: Client<TSender>, params: Option<RequestParams>, req: TRequest) -> Self {
         RequestBuilder {
@@ -94,14 +96,13 @@ impl<TSender, TRequest> RequestBuilder<TSender, TRequest>
     ```
     */
     pub fn params<F>(mut self, builder: F) -> Self
-        where F: Fn(RequestParams) -> RequestParams
+    where
+        F: Fn(RequestParams) -> RequestParams,
     {
         let params = self.params;
         let client = self.client;
 
-        self.params = {
-            Some(builder(params.unwrap_or_else(|| client.params.clone())))
-        };
+        self.params = { Some(builder(params.unwrap_or_else(|| client.params.clone()))) };
 
         self.client = client;
 
@@ -160,7 +161,8 @@ impl<TRequest> RequestBuilder<AsyncSender, TRequest> {
     ```
     */
     pub fn serde_pool<P>(mut self, pool: P) -> Self
-        where P: Into<Option<CpuPool>>
+    where
+        P: Into<Option<CpuPool>>,
     {
         self.client.sender.serde_pool = pool.into();
 
@@ -174,7 +176,7 @@ pub mod prelude {
     pub use super::params::*;
     pub use super::endpoints::*;
 
-    pub use super::{empty_body, DefaultBody, RawRequestBuilder, SearchRequestBuilder, GetRequestBuilder, IndexRequestBuilder, PutMappingRequestBuilder, IndexCreateRequestBuilder};
+    pub use super::{empty_body, DefaultBody, GetRequestBuilder, IndexCreateRequestBuilder, IndexRequestBuilder, PutMappingRequestBuilder, RawRequestBuilder, SearchRequestBuilder};
 }
 
 #[cfg(test)]
@@ -184,7 +186,10 @@ mod tests {
 
     #[test]
     fn request_builder_params() {
-        let client = SyncClientBuilder::new().base_url("http://eshost:9200").build().unwrap();
+        let client = SyncClientBuilder::new()
+            .base_url("http://eshost:9200")
+            .build()
+            .unwrap();
 
         let req = RequestBuilder::new(client.clone(), None, PingRequest::new())
             .params(|p| p.url_param("pretty", true))

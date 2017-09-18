@@ -1,7 +1,7 @@
 use std::borrow::Borrow;
 use std::marker::PhantomData;
-use serde::{Serialize, Deserialize, Serializer, Deserializer};
-use serde::de::{Visitor, Error};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use serde::de::{Error, Visitor};
 use super::mapping::{TextFieldType, TextMapping};
 use string::mapping::DefaultStringMapping;
 
@@ -25,13 +25,17 @@ let string = Text::<DefaultTextMapping>::new("my string value");
 ```
 */
 #[derive(Debug, Clone, Default, PartialEq)]
-pub struct Text<TMapping> where TMapping: TextMapping {
+pub struct Text<TMapping>
+where
+    TMapping: TextMapping,
+{
     value: String,
     _m: PhantomData<TMapping>,
 }
 
 impl<TMapping> Text<TMapping>
-    where TMapping: TextMapping
+where
+    TMapping: TextMapping,
 {
     /**
     Creates a new `Text` with the given mapping.
@@ -48,7 +52,8 @@ impl<TMapping> Text<TMapping>
     ```
     */
     pub fn new<I>(string: I) -> Text<TMapping>
-        where I: Into<String>
+    where
+        I: Into<String>,
     {
         Text {
             value: string.into(),
@@ -58,7 +63,8 @@ impl<TMapping> Text<TMapping>
 
     /** Change the mapping of this string. */
     pub fn remap<TNewMapping>(text: Text<TMapping>) -> Text<TNewMapping>
-        where TNewMapping: TextMapping
+    where
+        TNewMapping: TextMapping,
     {
         Text::new(text.value)
     }

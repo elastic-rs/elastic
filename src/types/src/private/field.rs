@@ -12,8 +12,9 @@ use serde::Serialize;
 
 /** The base representation of an Elasticsearch data type. */
 pub trait FieldType<TMapping, TPivot>
-    where TMapping: FieldMapping<TPivot>,
-          TPivot: Default
+where
+    TMapping: FieldMapping<TPivot>,
+    TPivot: Default,
 {
     /** Get a serialisable instance of the type mapping as a field. */
     fn field_mapping() -> TMapping {
@@ -23,8 +24,9 @@ pub trait FieldType<TMapping, TPivot>
 
 /** The base representation of an Elasticsearch data type mapping. */
 pub trait FieldMapping<TPivot>
-    where Self: Default,
-          TPivot: Default
+where
+    Self: Default,
+    TPivot: Default,
 {
     /** Prevents infinite recursion when resolving `Serialize` on nested mappings. */
     type DocumentField: Serialize + Default;
@@ -36,8 +38,9 @@ pub trait FieldMapping<TPivot>
 
 /** Captures traits required for conversion between a field with mapping and a default counterpart. */
 pub trait StdField<TStd>
-    where Self: PartialEq<TStd> + Deref<Target = TStd> + Borrow<TStd>,
-          TStd: PartialEq<Self>
+where
+    Self: PartialEq<TStd> + Deref<Target = TStd> + Borrow<TStd>,
+    TStd: PartialEq<Self>,
 {
 }
 
@@ -51,15 +54,17 @@ Individual implementations of `Serialize` for `DocumentField` are spread through
 */
 #[derive(Default)]
 pub struct DocumentField<TMapping, TPivot>
-    where TMapping: FieldMapping<TPivot>,
-          TPivot: Default
+where
+    TMapping: FieldMapping<TPivot>,
+    TPivot: Default,
 {
     _m: PhantomData<(TMapping, TPivot)>,
 }
 
 impl<TMapping, TPivot> From<TMapping> for DocumentField<TMapping, TPivot>
-    where TMapping: FieldMapping<TPivot>,
-          TPivot: Default
+where
+    TMapping: FieldMapping<TPivot>,
+    TPivot: Default,
 {
     fn from(_: TMapping) -> Self {
         DocumentField::<TMapping, TPivot>::default()

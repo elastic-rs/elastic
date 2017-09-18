@@ -1,6 +1,6 @@
 use std::borrow::Borrow;
 use std::marker::PhantomData;
-use serde::{Serialize, Deserialize, Serializer, Deserializer};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use super::mapping::*;
 
 macro_rules! number_type {
@@ -103,30 +103,32 @@ mod tests {
 
     #[test]
     fn serialise_elastic_numbers() {
-        let ser = vec![{
-                           let num = Integer::<MyIntegerMapping>::new(1i32);
-                           serde_json::to_string(&num).unwrap()
-                       },
-                       {
-                           let num = Long::<MyLongMapping>::new(1i64);
-                           serde_json::to_string(&num).unwrap()
-                       },
-                       {
-                           let num = Short::<MyShortMapping>::new(1i16);
-                           serde_json::to_string(&num).unwrap()
-                       },
-                       {
-                           let num = Byte::<MyByteMapping>::new(1i8);
-                           serde_json::to_string(&num).unwrap()
-                       },
-                       {
-                           let num = Float::<MyFloatMapping>::new(1.01f32);
-                           serde_json::to_string(&num).unwrap()
-                       },
-                       {
-                           let num = Double::<MyDoubleMapping>::new(1.01f64);
-                           serde_json::to_string(&num).unwrap()
-                       }];
+        let ser = vec![
+            {
+                let num = Integer::<MyIntegerMapping>::new(1i32);
+                serde_json::to_string(&num).unwrap()
+            },
+            {
+                let num = Long::<MyLongMapping>::new(1i64);
+                serde_json::to_string(&num).unwrap()
+            },
+            {
+                let num = Short::<MyShortMapping>::new(1i16);
+                serde_json::to_string(&num).unwrap()
+            },
+            {
+                let num = Byte::<MyByteMapping>::new(1i8);
+                serde_json::to_string(&num).unwrap()
+            },
+            {
+                let num = Float::<MyFloatMapping>::new(1.01f32);
+                serde_json::to_string(&num).unwrap()
+            },
+            {
+                let num = Double::<MyDoubleMapping>::new(1.01f64);
+                serde_json::to_string(&num).unwrap()
+            },
+        ];
 
         let expected_ser = vec!["1", "1", "1", "1", "1.01", "1.01"];
 
@@ -150,7 +152,16 @@ mod tests {
         let float_de: Float<MyFloatMapping> = serde_json::from_str("1.01").unwrap();
         let double_de: Double<MyDoubleMapping> = serde_json::from_str("1.01").unwrap();
 
-        assert_eq!((1i32, 1i64, 1i16, 1i8, 1.01f32, 1.01f64),
-                   (*int_de, *long_de, *short_de, *byte_de, *float_de, *double_de));
+        assert_eq!(
+            (1i32, 1i64, 1i16, 1i8, 1.01f32, 1.01f64),
+            (
+                *int_de,
+                *long_de,
+                *short_de,
+                *byte_de,
+                *float_de,
+                *double_de
+            )
+        );
     }
 }

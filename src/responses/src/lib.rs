@@ -137,8 +137,8 @@ extern crate quick_error;
 extern crate serde;
 extern crate serde_json;
 
-extern crate slog_stdlog;
 extern crate slog_envlogger;
+extern crate slog_stdlog;
 
 pub mod error;
 pub mod parsing;
@@ -156,7 +156,7 @@ pub use self::command::*;
 pub use self::ping::*;
 pub use self::get::*;
 pub use self::search::SearchResponse;
-pub use self::bulk::{BulkResponse, BulkErrorsResponse};
+pub use self::bulk::{BulkErrorsResponse, BulkResponse};
 pub use self::index::*;
 
 pub use self::parsing::parse;

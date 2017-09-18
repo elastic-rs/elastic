@@ -8,10 +8,10 @@ use std::marker::PhantomData;
 use futures::{Future, Poll};
 use serde::de::DeserializeOwned;
 
-use error::{Result, Error};
-use client::{Client, Sender, SyncSender, AsyncSender};
+use error::{Error, Result};
+use client::{AsyncSender, Client, Sender, SyncSender};
 use client::requests::RequestBuilder;
-use client::requests::params::{Index, Type, Id};
+use client::requests::params::{Id, Index, Type};
 use client::requests::endpoints::GetRequest;
 use client::requests::raw::RawRequestInner;
 use client::responses::GetResponse;
@@ -41,8 +41,9 @@ pub struct GetRequestInner<TDocument> {
 /**
 # Get document
 */
-impl<TSender> Client<TSender> 
-    where TSender: Sender
+impl<TSender> Client<TSender>
+where
+    TSender: Sender,
 {
     /** 
     Create a [`GetRequestBuilder`][GetRequestBuilder] with this `Client` that can be configured before sending.
@@ -113,22 +114,22 @@ impl<TSender> Client<TSender>
     [types-mod]: ../../types/index.html
     [documents-mod]: ../../types/document/index.html
     */
-    pub fn document_get<TDocument>(&self,
-                                       index: Index<'static>,
-                                       id: Id<'static>)
-                                       -> GetRequestBuilder<TSender, TDocument>
-        where TDocument: DeserializeOwned + DocumentType
+    pub fn document_get<TDocument>(&self, index: Index<'static>, id: Id<'static>) -> GetRequestBuilder<TSender, TDocument>
+    where
+        TDocument: DeserializeOwned + DocumentType,
     {
         let ty = TDocument::name().into();
 
-        RequestBuilder::new(self.clone(),
-                            None,
-                            GetRequestInner {
-                                index: index,
-                                ty: ty,
-                                id: id,
-                                _marker: PhantomData,
-                            })
+        RequestBuilder::new(
+            self.clone(),
+            None,
+            GetRequestInner {
+                index: index,
+                ty: ty,
+                id: id,
+                _marker: PhantomData,
+            },
+        )
     }
 }
 
@@ -144,11 +145,13 @@ impl<TDocument> GetRequestInner<TDocument> {
 Configure a `GetRequestBuilder` before sending it.
 */
 impl<TSender, TDocument> GetRequestBuilder<TSender, TDocument>
-    where TSender: Sender
+where
+    TSender: Sender,
 {
     /** Set the type for the get request. */
     pub fn ty<I>(mut self, ty: I) -> Self
-        where I: Into<Type<'static>>
+    where
+        I: Into<Type<'static>>,
     {
         self.inner.ty = ty.into();
         self
@@ -159,7 +162,8 @@ impl<TSender, TDocument> GetRequestBuilder<TSender, TDocument>
 # Send synchronously
 */
 impl<TDocument> GetRequestBuilder<SyncSender, TDocument>
-    where TDocument: DeserializeOwned
+where
+    TDocument: DeserializeOwned,
 {
     /**
     Send a `GetRequestBuilder` synchronously using a [`SyncClient`][SyncClient].
@@ -207,7 +211,8 @@ impl<TDocument> GetRequestBuilder<SyncSender, TDocument>
 # Send asynchronously
 */
 impl<TDocument> GetRequestBuilder<AsyncSender, TDocument>
-    where TDocument: DeserializeOwned + Send + 'static,
+where
+    TDocument: DeserializeOwned + Send + 'static,
 {
     /**
     Send a `GetRequestBuilder` asynchronously using an [`AsyncClient`][AsyncClient].
@@ -267,15 +272,19 @@ pub struct Pending<TDocument> {
 }
 
 impl<TDocument> Pending<TDocument> {
-    fn new<F>(fut: F) -> Self where F: Future<Item = GetResponse<TDocument>, Error = Error> + 'static {
+    fn new<F>(fut: F) -> Self
+    where
+        F: Future<Item = GetResponse<TDocument>, Error = Error> + 'static,
+    {
         Pending {
             inner: Box::new(fut),
         }
     }
 }
 
-impl<TDocument> Future for Pending<TDocument> 
-    where TDocument: DeserializeOwned + Send + 'static,
+impl<TDocument> Future for Pending<TDocument>
+where
+    TDocument: DeserializeOwned + Send + 'static,
 {
     type Item = GetResponse<TDocument>;
     type Error = Error;
@@ -296,7 +305,8 @@ mod tests {
 
         let req = client
             .document_get::<Value>(index("test-idx"), id("1"))
-            .inner.into_request();
+            .inner
+            .into_request();
 
         assert_eq!("/test-idx/value/1", req.url.as_ref());
     }
@@ -308,7 +318,8 @@ mod tests {
         let req = client
             .document_get::<Value>(index("test-idx"), id("1"))
             .ty("new-ty")
-            .inner.into_request();
+            .inner
+            .into_request();
 
         assert_eq!("/test-idx/new-ty/1", req.url.as_ref());
     }

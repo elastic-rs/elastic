@@ -1,7 +1,7 @@
 /*! Mapping for the Elasticsearch `geo_point` type. */
 
 use std::marker::PhantomData;
-use super::{GeoPointFormat, DefaultGeoPointFormat};
+use super::{DefaultGeoPointFormat, GeoPointFormat};
 use geo::mapping::Distance;
 
 /** A field that will be mapped as a `geo_point`. */
@@ -89,7 +89,8 @@ impl <F: GeoPointFormat> GeoPointMapping for MyGeoPointMapping<F> {
 ```
 */
 pub trait GeoPointMapping
-    where Self: Default
+where
+    Self: Default,
 {
     /**
     The format used to serialise and deserialise the geo point.
@@ -137,13 +138,15 @@ pub trait GeoPointMapping
 /** Default mapping for `geo_point`. */
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultGeoPointMapping<TFormat = DefaultGeoPointFormat>
-    where TFormat: GeoPointFormat
+where
+    TFormat: GeoPointFormat,
 {
     _f: PhantomData<TFormat>,
 }
 
 impl<TFormat> GeoPointMapping for DefaultGeoPointMapping<TFormat>
-    where TFormat: GeoPointFormat
+where
+    TFormat: GeoPointFormat,
 {
     type Format = TFormat;
 }
@@ -151,19 +154,22 @@ impl<TFormat> GeoPointMapping for DefaultGeoPointMapping<TFormat>
 mod private {
     use serde::{Serialize, Serializer};
     use serde::ser::SerializeStruct;
-    use private::field::{FieldType, DocumentField, FieldMapping};
+    use private::field::{DocumentField, FieldMapping, FieldType};
     use super::{GeoPointFieldType, GeoPointMapping};
 
     #[derive(Default)]
     pub struct GeoPointPivot;
 
     impl<TField, TMapping> FieldType<TMapping, GeoPointPivot> for TField
-        where TField: GeoPointFieldType<TMapping> + Serialize,
-              TMapping: GeoPointMapping
-    { }
+    where
+        TField: GeoPointFieldType<TMapping> + Serialize,
+        TMapping: GeoPointMapping,
+    {
+    }
 
     impl<TMapping> FieldMapping<GeoPointPivot> for TMapping
-        where TMapping: GeoPointMapping,
+    where
+        TMapping: GeoPointMapping,
     {
         type DocumentField = DocumentField<TMapping, GeoPointPivot>;
 
@@ -173,10 +179,12 @@ mod private {
     }
 
     impl<TMapping> Serialize for DocumentField<TMapping, GeoPointPivot>
-        where TMapping: FieldMapping<GeoPointPivot> + GeoPointMapping,
+    where
+        TMapping: FieldMapping<GeoPointPivot> + GeoPointMapping,
     {
         fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-            where S: Serializer
+        where
+            S: Serializer,
         {
             let mut state = try!(serializer.serialize_struct("mapping", 6));
 
@@ -228,7 +236,9 @@ mod tests {
 
     #[test]
     fn serialise_mapping_default() {
-        let ser = serde_json::to_string(&DocumentField::from(DefaultGeoPointMapping::<DefaultGeoPointFormat>::default())).unwrap();
+        let ser = serde_json::to_string(&DocumentField::from(
+            DefaultGeoPointMapping::<DefaultGeoPointFormat>::default(),
+        )).unwrap();
 
         let expected = json_str!({
             "type": "geo_point"

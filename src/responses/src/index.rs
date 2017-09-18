@@ -3,23 +3,18 @@ Response types for an [index document request](https://www.elastic.co/guide/en/e
 */
 
 use common::Shards;
-use parsing::{IsOk, HttpResponseHead, ResponseBody, Unbuffered, MaybeOkResponse};
+use parsing::{HttpResponseHead, IsOk, MaybeOkResponse, ResponseBody, Unbuffered};
 use error::*;
 
 /** Response for an [index document request](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html). */
 #[derive(Deserialize, Debug)]
 pub struct IndexResponse {
-    #[serde(rename = "_index")]
-    index: String,
-    #[serde(rename = "_type")]
-    ty: String,
-    #[serde(rename = "_id")]
-    id: String,
-    #[serde(rename = "_version")]
-    version: Option<u32>,
+    #[serde(rename = "_index")] index: String,
+    #[serde(rename = "_type")] ty: String,
+    #[serde(rename = "_id")] id: String,
+    #[serde(rename = "_version")] version: Option<u32>,
     created: bool,
-    #[serde(rename = "_shards")]
-    shards: Shards,
+    #[serde(rename = "_shards")] shards: Shards,
 }
 
 impl IndexResponse {

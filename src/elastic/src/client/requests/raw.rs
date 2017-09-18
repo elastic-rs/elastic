@@ -20,7 +20,7 @@ pub type RawRequestBuilder<TSender, TRequest, TBody> = RequestBuilder<TSender, R
 #[doc(hidden)]
 pub struct RawRequestInner<TRequest, TBody> {
     req: TRequest,
-    _marker: PhantomData<TBody>
+    _marker: PhantomData<TBody>,
 }
 
 impl<TRequest, TBody> RawRequestInner<TRequest, TBody> {
@@ -35,8 +35,9 @@ impl<TRequest, TBody> RawRequestInner<TRequest, TBody> {
 /**
 # Raw request
 */
-impl<TSender> Client<TSender> 
-    where TSender: Sender
+impl<TSender> Client<TSender>
+where
+    TSender: Sender,
 {
     /**
     Create a [`RawRequestBuilder`][RawRequestBuilder] with this `Client` that can be configured before sending.
@@ -73,17 +74,19 @@ impl<TSender> Client<TSender>
     [endpoints-mod]: requests/endpoints/index.html
     */
     pub fn request<TRequest, TBody>(&self, req: TRequest) -> RawRequestBuilder<TSender, TRequest, TBody>
-        where TRequest: Into<HttpRequest<'static, TBody>>,
-              TBody: Into<TSender::Body>
+    where
+        TRequest: Into<HttpRequest<'static, TBody>>,
+        TBody: Into<TSender::Body>,
     {
         RequestBuilder::new(self.clone(), None, RawRequestInner::new(req))
     }
 }
 
 impl<TSender, TRequest, TBody> RawRequestBuilder<TSender, TRequest, TBody>
-    where TSender: Sender,
-          TRequest: Into<HttpRequest<'static, TBody>>, 
-          TBody: Into<<TSender>::Body>
+where
+    TSender: Sender,
+    TRequest: Into<HttpRequest<'static, TBody>>,
+    TBody: Into<<TSender>::Body>,
 {
     /**
     Send a `RawRequestBuilder`.

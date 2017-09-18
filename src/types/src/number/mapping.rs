@@ -156,12 +156,54 @@ macro_rules! number_mapping {
     )
 }
 
-number_mapping!(IntegerMapping, IntegerFormat, IntegerFieldType, "integer", i32, private_i32);
-number_mapping!(LongMapping, LongFormat, LongFieldType, "long", i64, private_i64);
-number_mapping!(ShortMapping, ShortFormat, ShortFieldType, "short", i16, private_i16);
-number_mapping!(ByteMapping, ByteFormat, ByteFieldType, "byte", i8, private_i8);
-number_mapping!(FloatMapping, FloatFormat, FloatFieldType, "float", f32, private_f32);
-number_mapping!(DoubleMapping, DoubleFormat, DoubleFieldType, "double", f64, private_f64);
+number_mapping!(
+    IntegerMapping,
+    IntegerFormat,
+    IntegerFieldType,
+    "integer",
+    i32,
+    private_i32
+);
+number_mapping!(
+    LongMapping,
+    LongFormat,
+    LongFieldType,
+    "long",
+    i64,
+    private_i64
+);
+number_mapping!(
+    ShortMapping,
+    ShortFormat,
+    ShortFieldType,
+    "short",
+    i16,
+    private_i16
+);
+number_mapping!(
+    ByteMapping,
+    ByteFormat,
+    ByteFieldType,
+    "byte",
+    i8,
+    private_i8
+);
+number_mapping!(
+    FloatMapping,
+    FloatFormat,
+    FloatFieldType,
+    "float",
+    f32,
+    private_f32
+);
+number_mapping!(
+    DoubleMapping,
+    DoubleFormat,
+    DoubleFieldType,
+    "double",
+    f64,
+    private_f64
+);
 
 /** Default mapping for an `integer` type. */
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
@@ -205,7 +247,7 @@ mod tests {
     use serde_json;
 
     use prelude::*;
-    use private::field::{FieldType, DocumentField};
+    use private::field::{DocumentField, FieldType};
 
     #[derive(Default, Clone)]
     pub struct MyIntegerMapping;
