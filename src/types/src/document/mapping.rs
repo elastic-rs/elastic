@@ -3,21 +3,11 @@
 use std::marker::PhantomData;
 use serde::{Serialize, Serializer};
 use serde::ser::SerializeStruct;
-use super::{DocumentType, FieldType, IndexDocumentMapping};
-use private::field::{DocumentField, FieldMapping, SerializeField};
 
 /** A field that will be mapped as a nested document. */
-pub trait DocumentFieldType<M> where M: DocumentMapping {}
-
-impl<T, M> FieldType<M, DocumentFormat> for T
-    where M: DocumentMapping,
-          T: DocumentFieldType<M>
-{
-}
-
-impl<T, M> DocumentFieldType<M> for T
-    where T: DocumentType<Mapping = M>,
-          M: DocumentMapping
+pub trait DocumentFieldType<M>
+where
+    M: DocumentMapping,
 {
 }
 
@@ -30,13 +20,10 @@ pub const DYNAMIC_DATATYPE: &'static str = "dynamic";
 /** Elasticsearch datatype name. */
 pub const NESTED_DATATYPE: &'static str = "nested";
 
-#[doc(hidden)]
-#[derive(Default)]
-pub struct DocumentFormat;
-
 /** The base requirements for mapping an `object` type. */
 pub trait DocumentMapping
-    where Self: PropertiesMapping + Default
+where
+    Self: PropertiesMapping + Default,
 {
     /** Get the indexed name for this mapping. */
     fn name() -> &'static str;
@@ -74,58 +61,7 @@ pub trait DocumentMapping
 /**
 Serialisation for the mapping of object properties.
 
-This trait is designed to be auto-derived, so it expects you to be familiar with how `serde` works.
-
-# Examples
-
-Say we have a mappable type with 3 fields called `MyType` and a mapping type called `MyTypeMapping`:
-
-```
-# use elastic_types::prelude::*;
-struct MyType {
-    pub my_date: Date<DefaultDateMapping>,
-    pub my_string: String,
-    pub my_num: i32
-}
-
-#[derive(Default)]
-struct MyTypeMapping;
-```
-
-To serialise the mapping of each of `MyType`s fields, we implement `PropertiesMapping` for `MyTypeMapping`,
-and use `serde` to serialise the mapping types for each field.
-
-```
-# #[macro_use]
-# extern crate json_str;
-# #[macro_use]
-# extern crate serde_derive;
-# #[macro_use]
-# extern crate elastic_types_derive;
-# #[macro_use]
-# extern crate elastic_types;
-# extern crate serde;
-# use serde::ser::SerializeStruct;
-# use elastic_types::prelude::*;
-# pub struct MyTypeMapping;
-impl PropertiesMapping for MyTypeMapping {
-    fn props_len() -> usize { 3 }
-
-    fn serialize_props<S>(state: &mut S) -> Result<(), S::Error>
-    where S: SerializeStruct {
-        try!(field_ser(state, "my_date", Date::<DefaultDateMapping>::mapping()));
-        try!(field_ser(state, "my_string", String::mapping()));
-        try!(field_ser(state, "my_num", i32::mapping()));
-
-        Ok(())
-    }
-}
-# fn main() {
-# }
-```
-
-It's easy to get an instance of the mapping for a given type by calling the static `mapping` function.
-This trait is automatically implemented for you when you `#[derive(ElasticType)]`.
+This trait is designed to be auto-derived and can't be usefully implemented manually.
 */
 pub trait PropertiesMapping {
     /**
@@ -140,87 +76,29 @@ pub trait PropertiesMapping {
 
     You can use the `field_ser` function to simplify `serde` calls.
     */
-    fn serialize_props<S>(state: &mut S) -> Result<(), S::Error> where S: SerializeStruct;
-}
-
-impl<T> FieldMapping<DocumentFormat> for T
-    where T: DocumentMapping
-{
-    fn data_type() -> &'static str {
-        <Self as DocumentMapping>::data_type()
-    }
-}
-
-impl<T> SerializeField<DocumentFormat> for T
-    where T: DocumentMapping
-{
-    type Field = DocumentField<T, DocumentFormat>;
-}
-
-impl<T> Serialize for DocumentField<T, DocumentFormat>
-    where T: FieldMapping<DocumentFormat> + DocumentMapping
-{
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where S: Serializer
-    {
-        let ty = <T as DocumentMapping>::data_type();
-        let (is_object, has_props) = (ty == OBJECT_DATATYPE, T::props_len() > 0);
-
-        let props_len = match (is_object, has_props) {
-            (true, true) => 5,
-            (true, false) | (false, true) => 4,
-            (false, false) => 3,
-        };
-
-        let mut state = try!(serializer.serialize_struct("mapping", props_len));
-
-
-        try!(state.serialize_field("type", ty));
-
-        ser_field!(state, "dynamic", T::dynamic());
-        ser_field!(state, "include_in_all", T::include_in_all());
-
-        if is_object {
-            ser_field!(state, "enabled", T::enabled());
-        }
-
-        if has_props {
-            try!(state.serialize_field("properties", &Properties::<T>::default()));
-        }
-
-        state.end()
-    }
-}
-
-impl<M> Serialize for IndexDocumentMapping<M>
-    where M: DocumentMapping
-{
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where S: Serializer
-    {
-        let mut state = try!(serializer.serialize_struct("mapping", 1));
-
-        try!(state.serialize_field("properties", &Properties::<M>::default()));
-
-        state.end()
-    }
+    fn serialize_props<S>(state: &mut S) -> Result<(), S::Error>
+    where
+        S: SerializeStruct;
 }
 
 #[derive(Default)]
-struct Properties<M>
-    where M: DocumentMapping
+struct Properties<TMapping>
+where
+    TMapping: DocumentMapping,
 {
-    _m: PhantomData<M>,
+    _m: PhantomData<TMapping>,
 }
 
-impl<M> Serialize for Properties<M>
-    where M: DocumentMapping
+impl<TMapping> Serialize for Properties<TMapping>
+where
+    TMapping: DocumentMapping,
 {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where S: Serializer
+    where
+        S: Serializer,
     {
-        let mut state = try!(serializer.serialize_struct("properties", M::props_len()));
-        try!(M::serialize_props(&mut state));
+        let mut state = try!(serializer.serialize_struct("properties", TMapping::props_len()));
+        try!(TMapping::serialize_props(&mut state));
         state.end()
     }
 }
@@ -231,22 +109,108 @@ Inner objects inherit the setting from their parent object or from the mapping t
 */
 #[derive(Debug, Clone, Copy)]
 pub enum Dynamic {
-    /** Newly detected fields are added to the mapping. (default). */
-    True,
-    /** Newly detected fields are ignored. New fields must be added explicitly. */
-    False,
-    /** If new fields are detected, an exception is thrown and the document is rejected. */
-    Strict,
+    /** Newly detected fields are added to the mapping. (default). */ True,
+    /** Newly detected fields are ignored. New fields must be added explicitly. */ False,
+    /** If new fields are detected, an exception is thrown and the document is rejected. */ Strict,
 }
 
 impl Serialize for Dynamic {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where S: Serializer
+    where
+        S: Serializer,
     {
         match *self {
             Dynamic::True => serializer.serialize_bool(true),
             Dynamic::False => serializer.serialize_bool(false),
             Dynamic::Strict => serializer.serialize_str("strict"),
+        }
+    }
+}
+
+mod private {
+    use serde::{Serialize, Serializer};
+    use serde::ser::SerializeStruct;
+    use document::{DocumentType, IndexDocumentMapping};
+    use private::field::{DocumentField, FieldMapping, FieldType};
+    use super::{DocumentFieldType, DocumentMapping, Properties, OBJECT_DATATYPE};
+
+    #[derive(Default)]
+    pub struct DocumentPivot;
+
+    impl<TField, TMapping> FieldType<TMapping, DocumentPivot> for TField
+    where
+        TMapping: DocumentMapping,
+        TField: DocumentFieldType<TMapping>,
+    {
+    }
+
+    impl<TDocument, TMapping> DocumentFieldType<TMapping> for TDocument
+    where
+        TDocument: DocumentType<Mapping = TMapping>,
+        TMapping: DocumentMapping,
+    {
+    }
+
+    impl<TMapping> FieldMapping<DocumentPivot> for TMapping
+    where
+        TMapping: DocumentMapping,
+    {
+        type DocumentField = DocumentField<TMapping, DocumentPivot>;
+
+        fn data_type() -> &'static str {
+            <Self as DocumentMapping>::data_type()
+        }
+    }
+
+    impl<TMapping> Serialize for DocumentField<TMapping, DocumentPivot>
+    where
+        TMapping: FieldMapping<DocumentPivot> + DocumentMapping,
+    {
+        fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+        where
+            S: Serializer,
+        {
+            let ty = <TMapping as DocumentMapping>::data_type();
+            let (is_object, has_props) = (ty == OBJECT_DATATYPE, TMapping::props_len() > 0);
+
+            let props_len = match (is_object, has_props) {
+                (true, true) => 5,
+                (true, false) | (false, true) => 4,
+                (false, false) => 3,
+            };
+
+            let mut state = try!(serializer.serialize_struct("mapping", props_len));
+
+            try!(state.serialize_field("type", ty));
+
+            ser_field!(state, "dynamic", TMapping::dynamic());
+            ser_field!(state, "include_in_all", TMapping::include_in_all());
+
+            if is_object {
+                ser_field!(state, "enabled", TMapping::enabled());
+            }
+
+            if has_props {
+                try!(state.serialize_field("properties", &Properties::<TMapping>::default()));
+            }
+
+            state.end()
+        }
+    }
+
+    impl<TMapping> Serialize for IndexDocumentMapping<TMapping>
+    where
+        TMapping: DocumentMapping,
+    {
+        fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+        where
+            S: Serializer,
+        {
+            let mut state = try!(serializer.serialize_struct("mapping", 1));
+
+            try!(state.serialize_field("properties", &Properties::<TMapping>::default()));
+
+            state.end()
         }
     }
 }

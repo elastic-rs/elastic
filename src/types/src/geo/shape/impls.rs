@@ -1,6 +1,6 @@
 use std::borrow::Borrow;
 use std::marker::PhantomData;
-use serde::{Serialize, Deserialize, Serializer, Deserializer};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use geojson::Geometry;
 use super::mapping::{GeoShapeFieldType, GeoShapeMapping};
 
@@ -25,13 +25,17 @@ let point: GeoShape<DefaultGeoShapeMapping> = GeoShape::new(
 ```
 */
 #[derive(Debug, Clone, PartialEq)]
-pub struct GeoShape<M>  where M: GeoShapeMapping {
+pub struct GeoShape<TMapping>
+where
+    TMapping: GeoShapeMapping,
+{
     value: Geometry,
-    _m: PhantomData<M>,
+    _m: PhantomData<TMapping>,
 }
 
-impl<M> GeoShape<M>
-    where M: GeoShapeMapping
+impl<TMapping> GeoShape<TMapping>
+where
+    TMapping: GeoShapeMapping,
 {
     /**
     Creates a new `GeoShape` from the given `Geometry`.
@@ -55,8 +59,9 @@ impl<M> GeoShape<M>
     # }
     ```
     */
-    pub fn new<I>(geo: I) -> GeoShape<M>
-        where I: Into<Geometry>
+    pub fn new<I>(geo: I) -> GeoShape<TMapping>
+    where
+        I: Into<Geometry>,
     {
         GeoShape {
             value: geo.into(),
@@ -65,36 +70,45 @@ impl<M> GeoShape<M>
     }
 
     /** Change the mapping of this geo shape. */
-    pub fn remap<MInto>(shape: GeoShape<M>) -> GeoShape<MInto> 
-        where MInto: GeoShapeMapping
+    pub fn remap<TNewMapping>(shape: GeoShape<TMapping>) -> GeoShape<TNewMapping>
+    where
+        TNewMapping: GeoShapeMapping,
     {
         GeoShape::new(shape.value)
     }
 }
 
-impl<M> GeoShapeFieldType<M> for GeoShape<M> where M: GeoShapeMapping {}
+impl<TMapping> GeoShapeFieldType<TMapping> for GeoShape<TMapping>
+where
+    TMapping: GeoShapeMapping,
+{
+}
 
 impl_mapping_type!(Geometry, GeoShape, GeoShapeMapping);
 
-impl<M> Serialize for GeoShape<M>
-    where M: GeoShapeMapping
+impl<TMapping> Serialize for GeoShape<TMapping>
+where
+    TMapping: GeoShapeMapping,
 {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where S: Serializer
+    where
+        S: Serializer,
     {
         self.value.serialize(serializer)
     }
 }
 
-impl<'de, M> Deserialize<'de> for GeoShape<M>
-    where M: GeoShapeMapping
+impl<'de, TMapping> Deserialize<'de> for GeoShape<TMapping>
+where
+    TMapping: GeoShapeMapping,
 {
-    fn deserialize<D>(deserializer: D) -> Result<GeoShape<M>, D::Error>
-        where D: Deserializer<'de>
+    fn deserialize<D>(deserializer: D) -> Result<GeoShape<TMapping>, D::Error>
+    where
+        D: Deserializer<'de>,
     {
         let t = try!(Geometry::deserialize(deserializer));
 
-        Ok(GeoShape::<M>::new(t))
+        Ok(GeoShape::new(t))
     }
 }
 
@@ -115,21 +129,24 @@ mod tests {
             true
         }
 
-        let point: GeoShape<DefaultGeoShapeMapping> = GeoShape::new(Geometry::new(Value::Point(vec![ 1.0, 1.0 ])));
+        let point: GeoShape<DefaultGeoShapeMapping> = GeoShape::new(Geometry::new(Value::Point(vec![1.0, 1.0])));
 
         assert!(takes_custom_mapping(GeoShape::remap(point)));
     }
 
     #[test]
     fn serialise_elastic_geo_shape() {
-        let shape = GeoShape::<DefaultGeoShapeMapping>::new(Geometry::new(Value::Point(vec![ 1.0, 1.0 ])));
+        let shape = GeoShape::<DefaultGeoShapeMapping>::new(Geometry::new(Value::Point(vec![1.0, 1.0])));
 
         let ser = serde_json::to_string(&shape).unwrap();
 
-        assert_eq!(json_str!({
+        assert_eq!(
+            json_str!({
             "coordinates": [ 1.0, 1.0 ],
             "type": "Point"
-        }), ser);
+        }),
+            ser
+        );
     }
 
     #[test]
@@ -137,14 +154,9 @@ mod tests {
         let shape: GeoShape<DefaultGeoShapeMapping> = serde_json::from_str(&json_str!({
             "coordinates": [ 1, 1 ],
             "type": "Point"
-        }))
-                .unwrap();
+        })).unwrap();
 
-        assert_eq!(
-            Geometry::new(
-                Value::Point(vec![ 1.0, 1.0 ])),
-            *shape
-        );
+        assert_eq!(Geometry::new(Value::Point(vec![1.0, 1.0])), *shape);
     }
 
 }

@@ -1,25 +1,60 @@
-/*! Functions that are exported and used by `elastic_types_derive`. */
+/*!
+Functions that are exported and used by `elastic_types_derive`.
 
+This module is 'private' and should only be consumed by `elastic_types_derive`.
+Its contents aren't subject to SemVer.
+*/
+
+use serde_json;
+use serde::Serialize;
 use chrono::{DateTime, Utc};
 use chrono::format::{self, Parsed};
 
-use private::field::FieldMapping;
+use private::field::{DocumentField, FieldMapping, FieldType};
 
-pub use date::{DateFormat, DateValue, ParseError, FormattedDate};
-pub use document::{DocumentType, FieldType, field_ser};
+pub use date::{DateFormat, DateValue, FormattedDate, ParseError};
+pub use document::DocumentType;
 pub use document::mapping::{DocumentMapping, PropertiesMapping};
 
-pub use chrono::format::{Item, Pad, Numeric, Fixed};
+pub use chrono::format::{Fixed, Item, Numeric, Pad};
 pub use serde::ser::SerializeStruct;
 
 /** Get the mapping for a field. */
 #[inline]
-pub fn mapping<T, M, F>() -> M
-    where T: FieldType<M, F>,
-          M: FieldMapping<F>,
-          F: Default
+pub fn mapping<TField, TMapping, TPivot>() -> TMapping
+where
+    TField: FieldType<TMapping, TPivot>,
+    TMapping: FieldMapping<TPivot>,
+    TPivot: Default,
 {
-    T::mapping()
+    TMapping::default()
+}
+
+/** Serialise a field mapping as a field using the given serialiser. */
+#[inline]
+pub fn field_ser<S, TMapping, TPivot>(state: &mut S, field: &'static str, _: TMapping) -> Result<(), S::Error>
+where
+    S: SerializeStruct,
+    TMapping: FieldMapping<TPivot>,
+    TPivot: Default,
+    DocumentField<TMapping, TPivot>: Serialize,
+{
+    state.serialize_field(field, &DocumentField::<TMapping, TPivot>::default())
+}
+
+/**
+Serialize a field individually.
+
+This method isn't intended to be used publicly, but is useful in the docs.
+*/
+#[inline]
+pub fn standalone_field_ser<TMapping, TPivot>(_: TMapping) -> Result<String, serde_json::Error>
+where
+    TMapping: FieldMapping<TPivot>,
+    TPivot: Default,
+    DocumentField<TMapping, TPivot>: Serialize,
+{
+    serde_json::to_string(&DocumentField::<TMapping, TPivot>::default())
 }
 
 /** Parse a date string using an owned slice of items. */

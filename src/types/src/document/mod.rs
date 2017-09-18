@@ -57,7 +57,7 @@ This will produce the following field mapping:
 #   pub my_num: i32
 # }
 # fn main() {
-# let mapping = standalone_field_ser(MyTypeMapping).unwrap();
+# let mapping = elastic_types::derive::standalone_field_ser(MyTypeMapping).unwrap();
 # let json = json_str!(
 {
     "type": "nested",
@@ -151,7 +151,7 @@ This will produce the following field mapping:
 #   fn data_type() -> &'static str { OBJECT_DATATYPE }
 # }
 # fn main() {
-# let mapping = standalone_field_ser(MyTypeMapping).unwrap();
+# let mapping = elastic_types::derive::standalone_field_ser(MyTypeMapping).unwrap();
 # let json = json_str!(
 {
     "type": "object",
@@ -217,60 +217,6 @@ Automatically deriving mapping has the following limitations:
 So you can't `#[derive(ElasticType)]` on `MyType<T>`.
 - Mapping types can't be shared. This is because they need to map the type fields, so are specific to that type.
 So you can't share `MyTypeMapping` between `MyType` and `MyOtherType`.
-
-All of the above limitations can be worked around by implementing the mapping manually.
-
-Remember that Elasticsearch will automatically update mappings based on the objects it sees though,
-so if your 'un-mapped' field is serialised, then an inferred mapping will be added for it.
-
-## Manually Implement Mapping
-
-You can build object mappings by manually implementing the [`DocumentMapping`](mapping/trait.DocumentMapping.html) and [`PropertiesMapping`](mapping/trait.PropertiesMapping.html) traits:
-
-```
-# #[macro_use]
-# extern crate json_str;
-# #[macro_use]
-# extern crate serde_derive;
-# #[macro_use]
-# extern crate elastic_types_derive;
-# #[macro_use]
-# extern crate elastic_types;
-# extern crate serde;
-# use elastic_types::prelude::*;
-#[derive(Serialize)]
-pub struct MyType {
-    pub my_date: Date<DefaultDateMapping>,
-    pub my_string: String,
-    pub my_num: i32
-}
-
-//Implement DocumentType for your type. This binds it to the mapping
-impl DocumentType for MyType {
-    type Mapping = MyTypeMapping;
-}
-
-//Define the type mapping for our type
-#[derive(Default)]
-pub struct MyTypeMapping;
-impl DocumentMapping for MyTypeMapping {
-    fn name() -> &'static str { "my_type" }
-}
-impl PropertiesMapping for MyTypeMapping {
-    fn props_len() -> usize { 3 }
-
-    fn serialize_props<S>(state: &mut S) -> Result<(), S::Error>
-    where S: serde::ser::SerializeStruct {
-        try!(field_ser(state, "my_date", Date::<DefaultDateMapping>::mapping()));
-        try!(field_ser(state, "my_string", String::mapping()));
-        try!(field_ser(state, "my_num", i32::mapping()));
-
-        Ok(())
-    }
-}
-# fn main() {
-# }
-```
 
 # Links
 - [Field Types](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-types.html)

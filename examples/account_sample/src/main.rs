@@ -3,16 +3,15 @@
 //! It expects you have an Elasticsearch node running on `localhost:9200`.
 
 #[macro_use]
-extern crate serde_derive;
-#[macro_use]
 extern crate elastic_derive;
 #[macro_use]
 extern crate quick_error;
+#[macro_use]
+extern crate serde_derive;
 
-extern crate serde;
+extern crate elastic;
 #[macro_use]
 extern crate serde_json;
-extern crate elastic;
 
 pub mod model;
 pub mod ops;
@@ -41,7 +40,7 @@ fn run() -> Result<(), Box<Error>> {
     }
 
     Ok(())
-} 
+}
 
 fn main() {
     run().unwrap()

@@ -215,25 +215,29 @@ A library for generating minified json strings from Rust syntax.
 #[macro_use]
 extern crate quick_error;
 
+extern crate bytes;
 extern crate elastic_requests;
 extern crate elastic_responses;
+extern crate futures;
+extern crate reqwest;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
-#[cfg_attr(test, macro_use)] 
+#[cfg_attr(test, macro_use)]
 extern crate serde_json;
-extern crate reqwest;
-extern crate url;
-extern crate bytes;
 extern crate tokio_core;
-extern crate futures;
+extern crate url;
+
+mod private {
+    pub trait Sealed {}
+}
 
 pub mod sniffer;
 pub mod sync;
 pub mod async;
 
-pub use self::sync::{SyncElasticClient, SyncBody, SyncFromResponse};
-pub use self::async::{AsyncElasticClient, AsyncBody, AsyncFromResponse};
+pub use self::sync::{SyncBody, SyncElasticClient, SyncFromResponse};
+pub use self::async::{AsyncBody, AsyncElasticClient, AsyncFromResponse};
 
 /**
 Request types.
@@ -259,7 +263,7 @@ use std::sync::Arc;
 use std::collections::HashMap;
 use std::str;
 use reqwest::Error as ReqwestError;
-use reqwest::header::{Header, Headers, ContentType};
+use reqwest::header::{ContentType, Header, Headers};
 use url::form_urlencoded::Serializer;
 
 use self::res::error::ResponseError;
@@ -274,14 +278,14 @@ quick_error! {
             from()
             description("http error")
             display("http error: {}", err)
-            cause(err)   
+            cause(err)
         }
         /** A response error. */
         Response(err: ResponseError) {
             from()
             description("response error")
             display("response error: {}", err)
-            cause(err)   
+            cause(err)
         }
         #[doc(hidden)]
         __NonExhaustive
@@ -380,7 +384,8 @@ impl RequestParamsBuilder {
 
     /** Set a request header. */
     pub fn header<H>(self, header: H) -> Self
-        where H: Header + Clone
+    where
+        H: Header + Clone,
     {
         self.headers(move |h| h.set(header.clone()))
     }
@@ -392,7 +397,8 @@ impl RequestParamsBuilder {
     This function allocates a new `Arc` for each call.
     */
     fn headers<F>(mut self, headers_factory: F) -> Self
-        where F: Fn(&mut Headers) + Send + Sync + 'static
+    where
+        F: Fn(&mut Headers) + Send + Sync + 'static,
     {
         if let Some(old_headers_factory) = self.headers_factory {
             let headers_factory = move |mut headers: &mut Headers| {
@@ -414,7 +420,7 @@ impl RequestParamsBuilder {
     pub fn build<T: AsRef<str>>(&self, base: T) -> RequestParams {
         RequestParams {
             base_url: base.as_ref().into(),
-            inner: self.clone()
+            inner: self.clone(),
         }
     }
 }
@@ -445,7 +451,7 @@ impl RequestParams {
 
     /** Set the base url for the Elasticsearch node. */
     pub fn base_url<T: AsRef<str>>(mut self, base: T) -> Self {
-        self.base_url = base.as_ref().into();        
+        self.base_url = base.as_ref().into();
         self
     }
 
@@ -461,7 +467,8 @@ impl RequestParams {
 
     /** Set a request header. */
     pub fn header<H>(mut self, header: H) -> Self
-        where H: Header + Clone
+    where
+        H: Header + Clone,
     {
         self.inner = self.inner.header(header);
         self
@@ -544,7 +551,7 @@ fn assert_sync<T: Sync>() {}
 
 #[cfg(test)]
 mod tests {
-    use reqwest::header::{Referer, Authorization, ContentType};
+    use reqwest::header::{Authorization, ContentType, Referer};
     use super::*;
 
     #[test]
@@ -572,8 +579,14 @@ mod tests {
         let headers = req.get_headers();
 
         assert_eq!(Some(&ContentType::json()), headers.get::<ContentType>());
-        assert_eq!(Some(&Referer::new("/People.html#tim")), headers.get::<Referer>());
-        assert_eq!(Some(&Authorization("let me in".to_owned())), headers.get::<Authorization<String>>());
+        assert_eq!(
+            Some(&Referer::new("/People.html#tim")),
+            headers.get::<Referer>()
+        );
+        assert_eq!(
+            Some(&Authorization("let me in".to_owned())),
+            headers.get::<Authorization<String>>()
+        );
     }
 
     #[test]
@@ -597,8 +610,10 @@ mod tests {
             .url_param("pretty", true)
             .url_param("q", "*");
 
-        assert_eq!((16, Some(String::from("?pretty=true&q=*"))),
-                   req.get_url_qry());
+        assert_eq!(
+            (16, Some(String::from("?pretty=true&q=*"))),
+            req.get_url_qry()
+        );
     }
 
     #[test]

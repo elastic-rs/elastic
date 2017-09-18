@@ -3,22 +3,11 @@
 use std::collections::BTreeMap;
 use serde::{Serialize, Serializer};
 use serde::ser::SerializeStruct;
-use string::mapping::{StringField, IndexOptions};
-use private::field::{DocumentField, FieldMapping, SerializeField};
-use document::FieldType;
+use string::mapping::{IndexOptions, StringField};
+use private::field::FieldMapping;
 
 /** A field that will be mapped as `text`. */
-pub trait TextFieldType<M> {}
-
-impl<T, M> FieldType<M, TextFormat> for T
-    where M: TextMapping,
-          T: TextFieldType<M> + Serialize
-{
-}
-
-#[doc(hidden)]
-#[derive(Default)]
-pub struct TextFormat;
+pub trait TextFieldType<TMapping> {}
 
 /**
 The base requirements for mapping a `string` type.
@@ -80,7 +69,8 @@ This will produce the following mapping:
 ```
 */
 pub trait TextMapping
-    where Self: Default
+where
+    Self: Default,
 {
     /**
     The analyzer which should be used for analyzed string fields,
@@ -247,54 +237,6 @@ pub trait TextMapping
     }
 }
 
-impl<T> FieldMapping<TextFormat> for T
-    where T: TextMapping
-{
-    fn data_type() -> &'static str {
-        "text"
-    }
-}
-
-impl<T> SerializeField<TextFormat> for T
-    where T: TextMapping
-{
-    type Field = DocumentField<T, TextFormat>;
-}
-
-impl<T> Serialize for DocumentField<T, TextFormat>
-    where T: FieldMapping<TextFormat> + TextMapping
-{
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where S: Serializer
-    {
-        let mut state = try!(serializer.serialize_struct("mapping", 18));
-
-        try!(state.serialize_field("type", T::data_type()));
-
-        ser_field!(state, "boost", T::boost());
-        ser_field!(state, "analyzer", T::analyzer());
-        ser_field!(state, "eager_global_ordinals", T::eager_global_ordinals());
-        ser_field!(state, "fielddata", T::fielddata());
-        ser_field!(state,
-                   "fielddata_frequency_filter",
-                   T::fielddata_frequency_filter());
-        ser_field!(state, "fields", T::fields());
-        ser_field!(state, "include_in_all", T::include_in_all());
-        ser_field!(state, "ignore_above", T::ignore_above());
-        ser_field!(state, "index", T::index());
-        ser_field!(state, "index_options", T::index_options());
-        ser_field!(state, "norms", T::norms());
-        ser_field!(state, "position_increment_gap", T::position_increment_gap());
-        ser_field!(state, "store", T::store());
-        ser_field!(state, "search_analyzer", T::search_analyzer());
-        ser_field!(state, "search_quote_analyzer", T::search_quote_analyzer());
-        ser_field!(state, "similarity", T::similarity());
-        ser_field!(state, "term_vector", T::term_vector());
-
-        state.end()
-    }
-}
-
 /** Default mapping for `text`. */
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultTextMapping;
@@ -303,46 +245,40 @@ impl TextMapping for DefaultTextMapping {}
 /** Term vectors contain information about the terms produced by the analysis process. */
 #[derive(Debug, Clone, Copy)]
 pub enum TermVector {
-    /** No term vectors are stored. (default) */
-    No,
-    /** Just the terms in the field are stored. */
-    Yes,
-    /** Terms and positions are stored. */
-    WithPositions,
-    /** Terms and character offsets are stored. */
-    WithOffsets,
-    /** Terms, positions, and character offsets are stored. */
-    WithPositionsOffsets,
+    /** No term vectors are stored. (default) */ No,
+    /** Just the terms in the field are stored. */ Yes,
+    /** Terms and positions are stored. */ WithPositions,
+    /** Terms and character offsets are stored. */ WithOffsets,
+    /** Terms, positions, and character offsets are stored. */ WithPositionsOffsets,
 }
 
 impl Serialize for TermVector {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where S: Serializer
+    where
+        S: Serializer,
     {
         serializer.serialize_str(match *self {
-                                     TermVector::No => "no",
-                                     TermVector::Yes => "yes",
-                                     TermVector::WithPositions => "with_positions",
-                                     TermVector::WithOffsets => "with_offsets",
-                                     TermVector::WithPositionsOffsets => "with_positions_offsets",
-                                 })
+            TermVector::No => "no",
+            TermVector::Yes => "yes",
+            TermVector::WithPositions => "with_positions",
+            TermVector::WithOffsets => "with_offsets",
+            TermVector::WithPositionsOffsets => "with_positions_offsets",
+        })
     }
 }
 
 /** Fielddata for term frequency as a percentage range. */
 #[derive(Debug, Default, PartialEq, Clone, Copy)]
 pub struct FieldDataFrequencyFilter {
-    /** The min frequency percentage. */
-    pub min: Option<f32>,
-    /** The max frequency percentage. */
-    pub max: Option<f32>,
-    /** The minimum number of docs a segment should contain. */
-    pub min_segment_size: Option<i32>,
+    /** The min frequency percentage. */ pub min: Option<f32>,
+    /** The max frequency percentage. */ pub max: Option<f32>,
+    /** The minimum number of docs a segment should contain. */ pub min_segment_size: Option<i32>,
 }
 
 impl Serialize for FieldDataFrequencyFilter {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where S: Serializer
+    where
+        S: Serializer,
     {
         let mut state = try!(serializer.serialize_struct("mapping", 3));
 
@@ -391,12 +327,9 @@ pub struct TextFieldMapping {
     Any characters over this length will be ignored.
     */
     pub ignore_above: Option<u32>,
-    /** Should the field be searchable? Accepts `true` (default) or `false`. */
-    pub index: Option<bool>,
-    /** What information should be stored in the index, for search and highlighting purposes. Defaults to `Positions`. */
-    pub index_options: Option<IndexOptions>,
-    /** Whether field-length should be taken into account when scoring queries. Accepts `true` (default) or `false`. */
-    pub norms: Option<bool>,
+    /** Should the field be searchable? Accepts `true` (default) or `false`. */ pub index: Option<bool>,
+    /** What information should be stored in the index, for search and highlighting purposes. Defaults to `Positions`. */ pub index_options: Option<IndexOptions>,
+    /** Whether field-length should be taken into account when scoring queries. Accepts `true` (default) or `false`. */ pub norms: Option<bool>,
     /**
     The number of fake term position which should be inserted between each element of an array of strings.
     Defaults to the `position_increment_gap` configured on the analyzer which defaults to `100`.
@@ -433,7 +366,8 @@ pub struct TextFieldMapping {
 
 impl Serialize for TextFieldMapping {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where S: Serializer
+    where
+        S: Serializer,
     {
         let mut state = try!(serializer.serialize_struct("mapping", 16));
 
@@ -442,9 +376,11 @@ impl Serialize for TextFieldMapping {
         ser_field!(state, "analyzer", self.analyzer);
         ser_field!(state, "eager_global_ordinals", self.eager_global_ordinals);
         ser_field!(state, "fielddata", self.fielddata);
-        ser_field!(state,
-                   "fielddata_frequency_filter",
-                   self.fielddata_frequency_filter);
+        ser_field!(
+            state,
+            "fielddata_frequency_filter",
+            self.fielddata_frequency_filter
+        );
         ser_field!(state, "include_in_all", self.include_in_all);
         ser_field!(state, "ignore_above", self.ignore_above);
         ser_field!(state, "index", self.index);
@@ -458,5 +394,83 @@ impl Serialize for TextFieldMapping {
         ser_field!(state, "term_vector", self.term_vector);
 
         state.end()
+    }
+}
+
+mod private {
+    use serde::{Serialize, Serializer};
+    use serde::ser::SerializeStruct;
+    use private::field::{DocumentField, FieldMapping, FieldType};
+    use super::{TextFieldType, TextMapping};
+
+    #[derive(Default)]
+    pub struct TextPivot;
+
+    impl<TField, TMapping> FieldType<TMapping, TextPivot> for TField
+    where
+        TField: TextFieldType<TMapping> + Serialize,
+        TMapping: TextMapping,
+    {
+    }
+
+    impl<TMapping> FieldMapping<TextPivot> for TMapping
+    where
+        TMapping: TextMapping,
+    {
+        type DocumentField = DocumentField<TMapping, TextPivot>;
+
+        fn data_type() -> &'static str {
+            "text"
+        }
+    }
+
+    impl<TMapping> Serialize for DocumentField<TMapping, TextPivot>
+    where
+        TMapping: FieldMapping<TextPivot> + TextMapping,
+    {
+        fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+        where
+            S: Serializer,
+        {
+            let mut state = try!(serializer.serialize_struct("mapping", 18));
+
+            try!(state.serialize_field("type", TMapping::data_type()));
+
+            ser_field!(state, "boost", TMapping::boost());
+            ser_field!(state, "analyzer", TMapping::analyzer());
+            ser_field!(
+                state,
+                "eager_global_ordinals",
+                TMapping::eager_global_ordinals()
+            );
+            ser_field!(state, "fielddata", TMapping::fielddata());
+            ser_field!(
+                state,
+                "fielddata_frequency_filter",
+                TMapping::fielddata_frequency_filter()
+            );
+            ser_field!(state, "fields", TMapping::fields());
+            ser_field!(state, "include_in_all", TMapping::include_in_all());
+            ser_field!(state, "ignore_above", TMapping::ignore_above());
+            ser_field!(state, "index", TMapping::index());
+            ser_field!(state, "index_options", TMapping::index_options());
+            ser_field!(state, "norms", TMapping::norms());
+            ser_field!(
+                state,
+                "position_increment_gap",
+                TMapping::position_increment_gap()
+            );
+            ser_field!(state, "store", TMapping::store());
+            ser_field!(state, "search_analyzer", TMapping::search_analyzer());
+            ser_field!(
+                state,
+                "search_quote_analyzer",
+                TMapping::search_quote_analyzer()
+            );
+            ser_field!(state, "similarity", TMapping::similarity());
+            ser_field!(state, "term_vector", TMapping::term_vector());
+
+            state.end()
+        }
     }
 }

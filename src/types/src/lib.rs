@@ -82,7 +82,7 @@ wrapper:
 #     pub my_num: i32
 # }
 # fn main() {
-let mapping = serde_json::to_string(&IndexDocumentMapping::from(MyType::mapping())).unwrap();
+let mapping = serde_json::to_string(&MyType::index_mapping()).unwrap();
 # }
 ```
 
@@ -106,7 +106,7 @@ This will produce the following result:
 #     pub my_num: i32
 # }
 # fn main() {
-# let mapping = serde_json::to_string(&IndexDocumentMapping::from(MyType::mapping())).unwrap();
+# let mapping = serde_json::to_string(&MyType::index_mapping()).unwrap();
 # let json = json_str!(
 {
     "properties": {
@@ -176,7 +176,7 @@ Our mapping for `MyOtherType` then looks like:
 #     pub my_type: MyType
 # }
 # fn main() {
-# let mapping = serde_json::to_string(&IndexDocumentMapping::from(MyOtherType::mapping())).unwrap();
+# let mapping = serde_json::to_string(&MyOtherType::index_mapping()).unwrap();
 # let json = json_str!(
 {
     "properties": {
@@ -386,7 +386,7 @@ impl DateMapping for TimestampMapping {
 fn main() {
     println!("\"{}\":{{ {} }}",
         Article::name(),
-        serde_json::to_string(&IndexDocumentMapping::from(Article::mapping())).unwrap()
+        serde_json::to_string(&Article::index_mapping()).unwrap()
     );
 }
 ```
@@ -459,8 +459,6 @@ Boolean<MyMapping>
 
 The source type is `boolean` and the mapping is `MyMapping`.
 
-All Elasticsearch types implement the base `FieldType<M: FieldMapping<F>, F>` trait
-where `M` is the mapping and `F` is a type-specific format.
 All document types implement `DocumentType` with an associated `Mapping: DocumentMapping` type.
 
 The following table illustrates the types provided by `elastic_types`:
@@ -478,8 +476,8 @@ The following table illustrates the types provided by `elastic_types`:
  `text`              | `String`                    | `std`     | [`Text<M>`](string/index.html)                                                   | -
  `boolean`           | `bool`                      | `std`     | [`Boolean<M>`](boolean/index.html)                                               | -
  `ip`                | `Ipv4Addr`                  | `std`     | [`Ip<M>`](ip/index.html)                                                         | -
- `date`              | `DateTime<Utc>`             | `chrono`  | [`Date<M>`](date/index.html)                                                  | `DateFormat`
- `geo_point`         | `Point`                     | `geo`     | [`GeoPoint<M>`](geo/point/index.html)                                         | `GeoPointFormat`
+ `date`              | `DateTime<Utc>`             | `chrono`  | [`Date<M>`](date/index.html)                                                     | `DateFormat`
+ `geo_point`         | `Point`                     | `geo`     | [`GeoPoint<M>`](geo/point/index.html)                                            | `GeoPointFormat`
  `geo_shape`         | -                           | `geojson` | [`GeoShape<M>`](geo/shape/index.html)                                            | -
 
 ## Mapping
@@ -515,11 +513,11 @@ This is a particularly helpful feature for serialisation.
 extern crate geohash;
 
 #[macro_use]
-extern crate serde_derive;
-extern crate serde;
-extern crate serde_json;
-#[macro_use]
 extern crate elastic_types_derive;
+extern crate serde;
+#[macro_use]
+extern crate serde_derive;
+extern crate serde_json;
 
 extern crate chrono;
 extern crate geo as georust;

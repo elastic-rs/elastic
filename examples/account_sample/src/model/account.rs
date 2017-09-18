@@ -5,8 +5,7 @@
 //! Field serialisation and mapping is all handled in the same place
 //! so it's always in sync.
 
-use elastic::types::prelude::{FieldType, KeywordFieldType, Text, DefaultTextMapping, TextMapping,
-                              Keyword, DefaultKeywordMapping, DocumentType};
+use elastic::types::prelude::{DefaultKeywordMapping, DefaultTextMapping, DocumentType, Keyword, KeywordFieldType, Text, TextMapping};
 
 /// Our main model; an account in the bank.
 #[derive(Debug, Serialize, Deserialize, ElasticType)]
@@ -29,11 +28,6 @@ pub fn name() -> &'static str {
     Account::name()
 }
 
-/// Get the strongly typed document mapping.
-pub fn mapping() -> AccountMapping {
-    Account::mapping()
-}
-
 // We're using type aliases to make the `Account` definition more ergonomic.
 
 pub type Address = Text<DefaultTextMapping>;
@@ -51,10 +45,8 @@ pub type State = Keyword<DefaultKeywordMapping>;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub enum Gender {
-    #[serde(rename = "F")]
-    Female,
-    #[serde(rename = "M")]
-    Male,
+    #[serde(rename = "F")] Female,
+    #[serde(rename = "M")] Male,
 }
 
 impl KeywordFieldType<DefaultKeywordMapping> for Gender {}
@@ -75,8 +67,8 @@ impl TextMapping for EmailMapping {
 #[cfg(test)]
 mod tests {
     use serde_json;
-    use elastic::types::prelude::IndexDocumentMapping;
-    use super::{mapping, Account};
+    use elastic::types::prelude::DocumentType;
+    use super::*;
 
     #[test]
     fn deserialize() {
@@ -101,7 +93,7 @@ mod tests {
 
     #[test]
     fn serialise_mapping() {
-        let ser = serde_json::to_value(&IndexDocumentMapping::from(mapping())).unwrap();
+        let ser = serde_json::to_value(&Account::index_mapping()).unwrap();
 
         let expected = json!({
             "properties":{

@@ -3,7 +3,7 @@
 use std::collections::BTreeMap;
 use serde::{Serialize, Serializer};
 use serde::ser::SerializeStruct;
-use super::text::mapping::{TextMapping, TextFieldMapping};
+use super::text::mapping::{TextFieldMapping, TextMapping};
 use super::keyword::mapping::KeywordFieldMapping;
 
 /** Default mapping for `String`. */
@@ -13,7 +13,10 @@ impl TextMapping for DefaultStringMapping {
     fn fields() -> Option<BTreeMap<&'static str, StringField>> {
         let mut fields = BTreeMap::new();
 
-        let keyword = KeywordFieldMapping { ignore_above: Some(256), ..Default::default() };
+        let keyword = KeywordFieldMapping {
+            ignore_above: Some(256),
+            ..Default::default()
+        };
 
         fields.insert("keyword", StringField::Keyword(keyword));
 
@@ -24,8 +27,7 @@ impl TextMapping for DefaultStringMapping {
 /** The `index_options` parameter controls what information is added to the inverted index, for search and highlighting purposes. */
 #[derive(Debug, Clone, Copy)]
 pub enum IndexOptions {
-    /** Only the doc number is indexed. Can answer the question Does this term exist in this field? */
-    Docs,
+    /** Only the doc number is indexed. Can answer the question Does this term exist in this field? */ Docs,
     /**
     Doc number and term frequencies are indexed.
     Term frequencies are used to score repeated terms higher than single terms.
@@ -46,14 +48,15 @@ pub enum IndexOptions {
 
 impl Serialize for IndexOptions {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where S: Serializer
+    where
+        S: Serializer,
     {
         serializer.serialize_str(match *self {
-                                     IndexOptions::Docs => "docs",
-                                     IndexOptions::Freqs => "freqs",
-                                     IndexOptions::Positions => "positions",
-                                     IndexOptions::Offsets => "offsets",
-                                 })
+            IndexOptions::Docs => "docs",
+            IndexOptions::Freqs => "freqs",
+            IndexOptions::Positions => "positions",
+            IndexOptions::Offsets => "offsets",
+        })
     }
 }
 
@@ -64,19 +67,16 @@ String types can have a number of alternative field representations for differen
 */
 #[derive(Debug, Clone, Copy)]
 pub enum StringField {
-    /** A `token_count` sub field. */
-    TokenCount(ElasticTokenCountFieldMapping),
-    /** A `completion` suggester sub field. */
-    Completion(ElasticCompletionFieldMapping),
-    /** A `keyword` sub field. */
-    Keyword(KeywordFieldMapping),
-    /** A `text` sub field. */
-    Text(TextFieldMapping),
+    /** A `token_count` sub field. */ TokenCount(ElasticTokenCountFieldMapping),
+    /** A `completion` suggester sub field. */ Completion(ElasticCompletionFieldMapping),
+    /** A `keyword` sub field. */ Keyword(KeywordFieldMapping),
+    /** A `text` sub field. */ Text(TextFieldMapping),
 }
 
 impl Serialize for StringField {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where S: Serializer
+    where
+        S: Serializer,
     {
         match *self {
             StringField::TokenCount(m) => m.serialize(serializer),
@@ -96,16 +96,14 @@ pub struct ElasticTokenCountFieldMapping {
     Defaults to the default index analyzer, or the `standard` analyzer.
     */
     pub analyzer: Option<&'static str>,
-    /** Field-level index time boosting. Accepts a floating point number, defaults to `1.0`. */
-    pub boost: Option<f32>,
+    /** Field-level index time boosting. Accepts a floating point number, defaults to `1.0`. */ pub boost: Option<f32>,
     /**
     Should the field be stored on disk in a column-stride fashion,
     so that it can later be used for sorting, aggregations, or scripting?
     Accepts `true` (default) or `false`.
     */
     pub doc_values: Option<bool>,
-    /** Should the field be searchable? Accepts `not_analyzed` (default) and `no`. */
-    pub index: Option<IndexAnalysis>,
+    /** Should the field be searchable? Accepts `not_analyzed` (default) and `no`. */ pub index: Option<IndexAnalysis>,
     /**
     Whether or not the field value should be included in the `_all` field?
     Accepts true or false.
@@ -127,7 +125,8 @@ pub struct ElasticTokenCountFieldMapping {
 
 impl Serialize for ElasticTokenCountFieldMapping {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where S: Serializer
+    where
+        S: Serializer,
     {
         let mut state = try!(serializer.serialize_struct("mapping", 8));
 
@@ -154,10 +153,8 @@ pub struct ElasticCompletionFieldMapping {
     Defaults to the default index analyzer, or the `standard` analyzer.
     */
     pub analyzer: Option<&'static str>,
-    /** The search analyzer to use, defaults to value of analyzer. */
-    pub search_analyzer: Option<&'static str>,
-    /** Enables the storing of payloads, defaults to `false`. */
-    pub payloads: Option<bool>,
+    /** The search analyzer to use, defaults to value of analyzer. */ pub search_analyzer: Option<&'static str>,
+    /** Enables the storing of payloads, defaults to `false`. */ pub payloads: Option<bool>,
     /**
     Preserves the separators, defaults to `true`.
     If disabled, you could find a field starting with Foo Fighters,
@@ -185,7 +182,8 @@ pub struct ElasticCompletionFieldMapping {
 
 impl Serialize for ElasticCompletionFieldMapping {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where S: Serializer
+    where
+        S: Serializer,
     {
         let mut state = try!(serializer.serialize_struct("mapping", 7));
 
@@ -195,9 +193,11 @@ impl Serialize for ElasticCompletionFieldMapping {
         ser_field!(state, "search_analyzer", self.search_analyzer);
         ser_field!(state, "payloads", self.payloads);
         ser_field!(state, "preserve_separators", self.preserve_separators);
-        ser_field!(state,
-                   "preserve_position_increments",
-                   self.preserve_position_increments);
+        ser_field!(
+            state,
+            "preserve_position_increments",
+            self.preserve_position_increments
+        );
         ser_field!(state, "max_input_length", self.max_input_length);
 
         state.end()
@@ -222,19 +222,19 @@ pub enum IndexAnalysis {
     `not_analyzed` fields are usually used with term-level queries for structured search.
     */
     NotAnalyzed,
-    /** Do not add this field value to the index. With this setting, the field will not be queryable. */
-    No,
+    /** Do not add this field value to the index. With this setting, the field will not be queryable. */ No,
 }
 
 impl Serialize for IndexAnalysis {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where S: Serializer
+    where
+        S: Serializer,
     {
         serializer.serialize_str(match *self {
-                                     IndexAnalysis::Analyzed => "analyzed",
-                                     IndexAnalysis::NotAnalyzed => "not_analyzed",
-                                     IndexAnalysis::No => "no",
-                                 })
+            IndexAnalysis::Analyzed => "analyzed",
+            IndexAnalysis::NotAnalyzed => "not_analyzed",
+            IndexAnalysis::No => "no",
+        })
     }
 }
 
@@ -244,7 +244,7 @@ mod tests {
     use std::collections::BTreeMap;
 
     use prelude::*;
-    use private::field::DocumentField;
+    use private::field::{DocumentField, FieldType};
 
     #[derive(Default, Clone)]
     pub struct MyTextMapping;
@@ -252,26 +252,32 @@ mod tests {
         fn fields() -> Option<BTreeMap<&'static str, StringField>> {
             let mut fields = BTreeMap::new();
 
-            fields.insert("raw",
-                          StringField::Keyword(KeywordFieldMapping {
-                                                   analyzer: Some("my_analyzer"),
-                                                   ..Default::default()
-                                               }));
+            fields.insert(
+                "raw",
+                StringField::Keyword(KeywordFieldMapping {
+                    analyzer: Some("my_analyzer"),
+                    ..Default::default()
+                }),
+            );
 
-            fields.insert("count",
-                          StringField::TokenCount(ElasticTokenCountFieldMapping::default()));
+            fields.insert(
+                "count",
+                StringField::TokenCount(ElasticTokenCountFieldMapping::default()),
+            );
 
-            fields.insert("comp",
-                          StringField::Completion(ElasticCompletionFieldMapping::default()));
+            fields.insert(
+                "comp",
+                StringField::Completion(ElasticCompletionFieldMapping::default()),
+            );
 
             Some(fields)
         }
 
         fn fielddata_frequency_filter() -> Option<FieldDataFrequencyFilter> {
             Some(FieldDataFrequencyFilter {
-                     min: Some(0.0),
-                     ..Default::default()
-                 })
+                min: Some(0.0),
+                ..Default::default()
+            })
         }
 
         fn analyzer() -> Option<&'static str> {
@@ -341,17 +347,23 @@ mod tests {
         fn fields() -> Option<BTreeMap<&'static str, StringField>> {
             let mut fields = BTreeMap::new();
 
-            fields.insert("text",
-                          StringField::Text(TextFieldMapping {
-                                                analyzer: Some("my_analyzer"),
-                                                ..Default::default()
-                                            }));
+            fields.insert(
+                "text",
+                StringField::Text(TextFieldMapping {
+                    analyzer: Some("my_analyzer"),
+                    ..Default::default()
+                }),
+            );
 
-            fields.insert("count",
-                          StringField::TokenCount(ElasticTokenCountFieldMapping::default()));
+            fields.insert(
+                "count",
+                StringField::TokenCount(ElasticTokenCountFieldMapping::default()),
+            );
 
-            fields.insert("comp",
-                          StringField::Completion(ElasticCompletionFieldMapping::default()));
+            fields.insert(
+                "comp",
+                StringField::Completion(ElasticCompletionFieldMapping::default()),
+            );
 
             Some(fields)
         }
@@ -411,7 +423,7 @@ mod tests {
 
     #[test]
     fn string_has_default_mapping() {
-        assert_eq!(DefaultStringMapping, String::mapping());
+        assert_eq!(DefaultStringMapping, String::field_mapping());
     }
 
     #[test]
@@ -555,18 +567,12 @@ mod tests {
             IndexOptions::Docs,
             IndexOptions::Freqs,
             IndexOptions::Positions,
-            IndexOptions::Offsets
-        ]
-                .iter()
-                .map(|i| serde_json::to_string(i).unwrap())
-                .collect();
+            IndexOptions::Offsets,
+        ].iter()
+            .map(|i| serde_json::to_string(i).unwrap())
+            .collect();
 
-        let expected_opts = vec![
-            r#""docs""#,
-            r#""freqs""#,
-            r#""positions""#,
-            r#""offsets""#
-        ];
+        let expected_opts = vec![r#""docs""#, r#""freqs""#, r#""positions""#, r#""offsets""#];
 
         let mut success = true;
         for i in 0..io_opts.len() {
@@ -586,18 +592,17 @@ mod tests {
             TermVector::Yes,
             TermVector::WithPositions,
             TermVector::WithOffsets,
-            TermVector::WithPositionsOffsets
-        ]
-                .iter()
-                .map(|i| serde_json::to_string(i).unwrap())
-                .collect();
+            TermVector::WithPositionsOffsets,
+        ].iter()
+            .map(|i| serde_json::to_string(i).unwrap())
+            .collect();
 
         let expected_opts = vec![
             r#""no""#,
             r#""yes""#,
             r#""with_positions""#,
             r#""with_offsets""#,
-            r#""with_positions_offsets""#
+            r#""with_positions_offsets""#,
         ];
 
         let mut success = true;
@@ -614,18 +619,18 @@ mod tests {
     #[test]
     fn serialise_mapping_keyword_field() {
         let mapping = StringField::Keyword(KeywordFieldMapping {
-                                               analyzer: Some("my_analyzer"),
-                                               doc_values: Some(true),
-                                               eager_global_ordinals: Some(false),
-                                               include_in_all: Some(true),
-                                               ignore_above: Some(256),
-                                               index: Some(false),
-                                               index_options: Some(IndexOptions::Docs),
-                                               norms: Some(true),
-                                               store: Some(true),
-                                               search_analyzer: Some("my_analyzer"),
-                                               similarity: Some("my_analyzer"),
-                                           });
+            analyzer: Some("my_analyzer"),
+            doc_values: Some(true),
+            eager_global_ordinals: Some(false),
+            include_in_all: Some(true),
+            ignore_above: Some(256),
+            index: Some(false),
+            index_options: Some(IndexOptions::Docs),
+            norms: Some(true),
+            store: Some(true),
+            search_analyzer: Some("my_analyzer"),
+            similarity: Some("my_analyzer"),
+        });
         let ser = serde_json::to_string(&mapping).unwrap();
 
         let expected = json_str!({
@@ -649,25 +654,25 @@ mod tests {
     #[test]
     fn serialise_mapping_text_field() {
         let mapping = StringField::Text(TextFieldMapping {
-                                            fielddata_frequency_filter: Some(FieldDataFrequencyFilter {
-                                                                                 min: Some(0.0),
-                                                                                 ..Default::default()
-                                                                             }),
-                                            analyzer: Some("my_analyzer"),
-                                            eager_global_ordinals: Some(true),
-                                            fielddata: Some(false),
-                                            include_in_all: Some(false),
-                                            ignore_above: Some(512),
-                                            index: Some(true),
-                                            index_options: Some(IndexOptions::Freqs),
-                                            norms: Some(true),
-                                            position_increment_gap: Some(1),
-                                            store: Some(false),
-                                            search_analyzer: Some("my_analyzer"),
-                                            search_quote_analyzer: Some("my_analyzer"),
-                                            similarity: Some("BM25"),
-                                            term_vector: Some(TermVector::No),
-                                        });
+            fielddata_frequency_filter: Some(FieldDataFrequencyFilter {
+                min: Some(0.0),
+                ..Default::default()
+            }),
+            analyzer: Some("my_analyzer"),
+            eager_global_ordinals: Some(true),
+            fielddata: Some(false),
+            include_in_all: Some(false),
+            ignore_above: Some(512),
+            index: Some(true),
+            index_options: Some(IndexOptions::Freqs),
+            norms: Some(true),
+            position_increment_gap: Some(1),
+            store: Some(false),
+            search_analyzer: Some("my_analyzer"),
+            search_quote_analyzer: Some("my_analyzer"),
+            similarity: Some("BM25"),
+            term_vector: Some(TermVector::No),
+        });
         let ser = serde_json::to_string(&mapping).unwrap();
 
         let expected = json_str!({
@@ -697,14 +702,14 @@ mod tests {
     #[test]
     fn serialise_mapping_token_count_field() {
         let mapping = StringField::TokenCount(ElasticTokenCountFieldMapping {
-                                                  analyzer: Some("my_analyzer"),
-                                                  boost: Some(1.3),
-                                                  doc_values: Some(false),
-                                                  index: Some(IndexAnalysis::No),
-                                                  include_in_all: Some(true),
-                                                  precision_step: Some(15),
-                                                  store: Some(true),
-                                              });
+            analyzer: Some("my_analyzer"),
+            boost: Some(1.3),
+            doc_values: Some(false),
+            index: Some(IndexAnalysis::No),
+            include_in_all: Some(true),
+            precision_step: Some(15),
+            store: Some(true),
+        });
         let ser = serde_json::to_string(&mapping).unwrap();
 
         let expected = json_str!({
@@ -724,13 +729,13 @@ mod tests {
     #[test]
     fn serialise_mapping_completion_field() {
         let mapping = StringField::Completion(ElasticCompletionFieldMapping {
-                                                  analyzer: Some("my_analyzer"),
-                                                  search_analyzer: Some("my_analyzer"),
-                                                  payloads: Some(true),
-                                                  preserve_separators: Some(false),
-                                                  preserve_position_increments: Some(true),
-                                                  max_input_length: Some(512),
-                                              });
+            analyzer: Some("my_analyzer"),
+            search_analyzer: Some("my_analyzer"),
+            payloads: Some(true),
+            preserve_separators: Some(false),
+            preserve_position_increments: Some(true),
+            max_input_length: Some(512),
+        });
         let ser = serde_json::to_string(&mapping).unwrap();
 
         let expected = json_str!({

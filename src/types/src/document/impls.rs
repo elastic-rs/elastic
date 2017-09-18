@@ -2,9 +2,8 @@ use std::sync::{Mutex, RwLock};
 use std::borrow::Cow;
 use std::marker::PhantomData;
 use serde::ser::{Serialize, SerializeStruct};
-use serde_json::{self, Value};
+use serde_json::Value;
 use super::mapping::{DocumentMapping, PropertiesMapping};
-use private::field::FieldMapping;
 
 /**
 The additional fields available to an indexable Elasticsearch type.
@@ -24,30 +23,15 @@ pub trait DocumentType {
     fn name() -> &'static str {
         Self::Mapping::name()
     }
-}
 
-/**
-The base representation of an Elasticsearch data type.
+    /** Get a serialisable instance of the type mapping as a field. */
+    fn field_mapping() -> Self::Mapping {
+        Self::Mapping::default()
+    }
 
-`FieldType` is the main `trait` you need to care about when building your own Elasticsearch types.
-Each type has two generic arguments that help define its mapping:
-
-- A mapping type, which implements `FieldMapping`
-- A format type, which is usually `()`. Types with multiple formats, like `Date`, can use the format in the type definition.
-
-# Links
-
-- [Elasticsearch docs](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-types.html)
-*/
-pub trait FieldType<M, F>
-    where M: FieldMapping<F>,
-          F: Default
-{
-    /**
-    Get the mapping for this type.
-    */
-    fn mapping() -> M {
-        M::default()
+    /** Get a serialisable instance of the type mapping as an indexable type */
+    fn index_mapping() -> IndexDocumentMapping<Self::Mapping> {
+        IndexDocumentMapping::default()
     }
 }
 
@@ -189,7 +173,7 @@ impl Serialize for Mappings {
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         let mut state = try!(serializer.serialize_struct("mappings", 1));
 
-        try!(state.serialize_field(MyType::name(), &IndexDocumentMapping::from(MyType::mapping())));
+        try!(state.serialize_field(MyType::name(), &MyType::index_mapping()));
 
         state.end()
     }
@@ -227,51 +211,11 @@ impl Serialize for Mappings {
 ```
 */
 #[derive(Default)]
-pub struct IndexDocumentMapping<M>
-    where M: DocumentMapping
+pub struct IndexDocumentMapping<TMapping>
+where
+    TMapping: DocumentMapping,
 {
-    _m: PhantomData<M>,
-}
-
-impl<M> From<M> for IndexDocumentMapping<M>
-    where M: DocumentMapping
-{
-    fn from(_: M) -> Self {
-        IndexDocumentMapping::<M>::default()
-    }
-}
-
-/** Serialise a field mapping as a field using the given serialiser. */
-#[inline]
-pub fn field_ser<S, M, F>(state: &mut S, field: &'static str, _: M) -> Result<(), S::Error>
-    where S: SerializeStruct,
-          M: FieldMapping<F>,
-          F: Default
-{
-    state.serialize_field(field, &M::Field::default())
-}
-
-/** Serialise a document mapping as a field using the given serialiser. */
-#[inline]
-pub fn doc_ser<S, M>(state: &mut S, field: &'static str, _: M) -> Result<(), S::Error>
-    where S: SerializeStruct,
-          M: DocumentMapping
-{
-    state.serialize_field(field, &IndexDocumentMapping::<M>::default())
-}
-
-/**
-Serialize a field individually.
-
-This method isn't intended to be used publicly, but is useful in the docs.
-*/
-#[doc(hidden)]
-#[inline]
-pub fn standalone_field_ser<M, F>(_: M) -> Result<String, serde_json::Error>
-    where M: FieldMapping<F>,
-          F: Default
-{
-    serde_json::to_string(&M::Field::default())
+    _m: PhantomData<TMapping>,
 }
 
 /** Mapping for an anonymous json object. */
@@ -294,36 +238,41 @@ impl PropertiesMapping for ValueDocumentMapping {
     }
 
     fn serialize_props<S>(_: &mut S) -> Result<(), S::Error>
-        where S: SerializeStruct
+    where
+        S: SerializeStruct,
     {
         Ok(())
     }
 }
 
 impl<'a, TDocument, TMapping> DocumentType for &'a TDocument
-    where TDocument: DocumentType<Mapping = TMapping> + Serialize,
-          TMapping: DocumentMapping
+where
+    TDocument: DocumentType<Mapping = TMapping> + Serialize,
+    TMapping: DocumentMapping,
 {
     type Mapping = TMapping;
 }
 
 impl<TDocument, TMapping> DocumentType for Mutex<TDocument>
-    where TDocument: DocumentType<Mapping = TMapping> + Serialize,
-          TMapping: DocumentMapping
+where
+    TDocument: DocumentType<Mapping = TMapping> + Serialize,
+    TMapping: DocumentMapping,
 {
     type Mapping = TMapping;
 }
 
 impl<TDocument, TMapping> DocumentType for RwLock<TDocument>
-    where TDocument: DocumentType<Mapping = TMapping> + Serialize,
-          TMapping: DocumentMapping
+where
+    TDocument: DocumentType<Mapping = TMapping> + Serialize,
+    TMapping: DocumentMapping,
 {
     type Mapping = TMapping;
 }
 
 impl<'a, TDocument, TMapping> DocumentType for Cow<'a, TDocument>
-    where TDocument: DocumentType<Mapping = TMapping> + Serialize + Clone,
-          TMapping: DocumentMapping
+where
+    TDocument: DocumentType<Mapping = TMapping> + Serialize + Clone,
+    TMapping: DocumentMapping,
 {
     type Mapping = TMapping;
 }
@@ -345,7 +294,7 @@ mod tests {
         }
 
         #[derive(Default, ElasticDateFormat)]
-        #[elastic(date_format="yyyy")]
+        #[elastic(date_format = "yyyy")]
         pub struct DateFormatWithNoPath;
     }
 
@@ -358,7 +307,7 @@ mod tests {
         }
 
         #[derive(Default, ElasticDateFormat)]
-        #[elastic(date_format="yyyy")]
+        #[elastic(date_format = "yyyy")]
         pub struct DateFormatInFn;
     }
 
@@ -374,13 +323,11 @@ mod tests {
     }
 
     #[derive(Serialize, ElasticType)]
-    #[elastic(mapping="ManualCustomTypeMapping")]
+    #[elastic(mapping = "ManualCustomTypeMapping")]
     pub struct CustomType {
         pub field: i32,
-        #[serde(skip_serializing)]
-        pub ignored_field: i32,
-        #[serde(rename="renamed_field")]
-        pub field2: i32,
+        #[serde(skip_serializing)] pub ignored_field: i32,
+        #[serde(rename = "renamed_field")] pub field2: i32,
     }
 
     #[derive(PartialEq, Debug, Default)]
@@ -416,7 +363,8 @@ mod tests {
     #[test]
     fn use_doc_as_generic_without_supplying_mapping_param() {
         fn use_document<TDocument>()
-            where TDocument: DocumentType
+        where
+            TDocument: DocumentType,
         {
             assert!(true);
         }
@@ -446,12 +394,12 @@ mod tests {
 
     #[test]
     fn derive_custom_type_mapping() {
-        assert_eq!(ManualCustomTypeMapping, CustomType::mapping());
+        assert_eq!(ManualCustomTypeMapping, CustomType::field_mapping());
     }
 
     #[test]
     fn serialise_document() {
-        let ser = serde_json::to_string(&IndexDocumentMapping::from(SimpleType::mapping())).unwrap();
+        let ser = serde_json::to_string(&SimpleType::index_mapping()).unwrap();
 
         let expected = json_str!({
             "properties":{
@@ -475,48 +423,46 @@ mod tests {
 
     #[test]
     fn serialise_document_borrowed() {
-        let ser = serde_json::to_string(&IndexDocumentMapping::from(<&'static SimpleType>::mapping())).unwrap();
+        let ser = serde_json::to_string(&<&'static SimpleType>::index_mapping()).unwrap();
 
-        let expected = serde_json::to_string(&IndexDocumentMapping::from(SimpleType::mapping())).unwrap();
+        let expected = serde_json::to_string(&SimpleType::index_mapping()).unwrap();
 
         assert_eq!(expected, ser);
     }
 
     #[test]
     fn serialise_document_mutex() {
-        let ser = serde_json::to_string(&IndexDocumentMapping::from(Mutex::<SimpleType>::mapping())).unwrap();
+        let ser = serde_json::to_string(&Mutex::<SimpleType>::index_mapping()).unwrap();
 
-        let expected = serde_json::to_string(&IndexDocumentMapping::from(SimpleType::mapping())).unwrap();
+        let expected = serde_json::to_string(&SimpleType::index_mapping()).unwrap();
 
         assert_eq!(expected, ser);
     }
 
     #[test]
     fn serialise_document_rwlock() {
-        let ser = serde_json::to_string(&IndexDocumentMapping::from(RwLock::<SimpleType>::mapping())).unwrap();
+        let ser = serde_json::to_string(&RwLock::<SimpleType>::index_mapping()).unwrap();
 
-        let expected = serde_json::to_string(&IndexDocumentMapping::from(SimpleType::mapping())).unwrap();
+        let expected = serde_json::to_string(&SimpleType::index_mapping()).unwrap();
 
         assert_eq!(expected, ser);
     }
 
     #[test]
     fn serialise_document_cow() {
-        let ser = serde_json::to_string(&IndexDocumentMapping::from(Cow::<'static, SimpleType>::mapping())).unwrap();
+        let ser = serde_json::to_string(&Cow::<'static, SimpleType>::index_mapping()).unwrap();
 
-        let expected = serde_json::to_string(&IndexDocumentMapping::from(SimpleType::mapping())).unwrap();
+        let expected = serde_json::to_string(&SimpleType::index_mapping()).unwrap();
 
         assert_eq!(expected, ser);
     }
 
     #[test]
     fn serialise_document_with_no_props() {
-        let ser = serde_json::to_string(&IndexDocumentMapping::from(NoProps::mapping())).unwrap();
+        let ser = serde_json::to_string(&NoProps::index_mapping()).unwrap();
 
         let expected = json_str!({
-            "properties": {
-
-            }
+            "properties": {}
         });
 
         assert_eq!(expected, ser);
@@ -524,7 +470,7 @@ mod tests {
 
     #[test]
     fn serialise_document_for_custom_mapping() {
-        let ser = serde_json::to_string(&IndexDocumentMapping::from(CustomType::mapping())).unwrap();
+        let ser = serde_json::to_string(&CustomType::index_mapping()).unwrap();
 
         let expected = json_str!({
             "properties": {
@@ -542,7 +488,7 @@ mod tests {
 
     #[test]
     fn serialise_document_for_value() {
-        let ser = serde_json::to_string(&IndexDocumentMapping::from(Value::mapping())).unwrap();
+        let ser = serde_json::to_string(&Value::index_mapping()).unwrap();
 
         let expected = json_str!({
             "properties": {}
@@ -553,7 +499,7 @@ mod tests {
 
     #[test]
     fn serialise_mapping_with_wrapped_types() {
-        let ser = serde_json::to_string(&IndexDocumentMapping::from(Wrapped::mapping())).unwrap();
+        let ser = serde_json::to_string(&Wrapped::index_mapping()).unwrap();
 
         let expected = json_str!({
             "properties": {
@@ -619,20 +565,12 @@ mod tests {
 
     #[test]
     fn serialise_mapping_dynamic() {
-        let d_opts: Vec<String> = vec![
-            Dynamic::True,
-            Dynamic::False,
-            Dynamic::Strict
-        ]
-                .iter()
-                .map(|i| serde_json::to_string(i).unwrap())
-                .collect();
+        let d_opts: Vec<String> = vec![Dynamic::True, Dynamic::False, Dynamic::Strict]
+            .iter()
+            .map(|i| serde_json::to_string(i).unwrap())
+            .collect();
 
-        let expected_opts = vec![
-            r#"true"#,
-            r#"false"#,
-            r#""strict""#
-        ];
+        let expected_opts = vec![r#"true"#, r#"false"#, r#""strict""#];
 
         let mut success = true;
         for i in 0..d_opts.len() {

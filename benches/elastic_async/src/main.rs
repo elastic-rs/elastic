@@ -3,8 +3,10 @@
 
 #[macro_use]
 extern crate elastic_derive;
+extern crate futures;
 #[macro_use]
 extern crate serde_derive;
+extern crate tokio_core;
 
 extern crate elastic;
 extern crate serde;
@@ -44,19 +46,20 @@ static BODY: &'static str = json_lit!(
 fn main() {
     let runs = measure::parse_runs_from_env();
 
-    let client = SyncClientBuilder::new()
+    let client = AsyncClientBuilder::new()
         .params(|p| p.header(http::header::Connection::keep_alive()))
-        .build()
+        .build(&core.handle())
         .unwrap();
 
-    let results = measure::run(runs, || {
+    let results_future = measure::run_future(runs, || {
         client
             .search::<BenchDoc>()
             .index("bench_index")
             .body(BODY)
             .send()
-            .unwrap()
     });
+
+    results = core.run(results_future).unwrap();
 
     println!("{}", results);
 }

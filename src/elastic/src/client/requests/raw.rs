@@ -1,3 +1,7 @@
+/*!
+Builders for raw requests.
+*/
+
 use std::marker::PhantomData;
 
 use client::{Client, Sender};
@@ -9,18 +13,18 @@ A raw request builder that can be configured before sending.
 Call [`Client.request`][Client.request] to get an `IndexRequest`. 
 The `send` method will either send the request synchronously or asynchronously, depending on the `Client` it was created from.
 
-[Client.request]: ../struct.Client.html#raw-request
+[Client.request]: ../../struct.Client.html#raw-request
 */
 pub type RawRequestBuilder<TSender, TRequest, TBody> = RequestBuilder<TSender, RawRequestInner<TRequest, TBody>>;
 
 #[doc(hidden)]
 pub struct RawRequestInner<TRequest, TBody> {
     req: TRequest,
-    _marker: PhantomData<TBody>
+    _marker: PhantomData<TBody>,
 }
 
 impl<TRequest, TBody> RawRequestInner<TRequest, TBody> {
-    pub fn new(req: TRequest) -> Self {
+    pub(crate) fn new(req: TRequest) -> Self {
         RawRequestInner {
             req: req,
             _marker: PhantomData,
@@ -31,8 +35,9 @@ impl<TRequest, TBody> RawRequestInner<TRequest, TBody> {
 /**
 # Raw request
 */
-impl<TSender> Client<TSender> 
-    where TSender: Sender
+impl<TSender> Client<TSender>
+where
+    TSender: Sender,
 {
     /**
     Create a [`RawRequestBuilder`][RawRequestBuilder] with this `Client` that can be configured before sending.
@@ -65,21 +70,23 @@ impl<TSender> Client<TSender>
     ```
 
     [HttpRequest]: requests/struct.HttpRequest.html
-    [RawRequestBuilder]: requests/type.RawRequestBuilder.html
+    [RawRequestBuilder]: requests/raw/type.RawRequestBuilder.html
     [endpoints-mod]: requests/endpoints/index.html
     */
     pub fn request<TRequest, TBody>(&self, req: TRequest) -> RawRequestBuilder<TSender, TRequest, TBody>
-        where TRequest: Into<HttpRequest<'static, TBody>>,
-              TBody: Into<TSender::Body>
+    where
+        TRequest: Into<HttpRequest<'static, TBody>>,
+        TBody: Into<TSender::Body>,
     {
         RequestBuilder::new(self.clone(), None, RawRequestInner::new(req))
     }
 }
 
 impl<TSender, TRequest, TBody> RawRequestBuilder<TSender, TRequest, TBody>
-    where TSender: Sender,
-          TRequest: Into<HttpRequest<'static, TBody>>, 
-          TBody: Into<<TSender>::Body>
+where
+    TSender: Sender,
+    TRequest: Into<HttpRequest<'static, TBody>>,
+    TBody: Into<<TSender>::Body>,
 {
     /**
     Send a `RawRequestBuilder`.
@@ -144,10 +151,10 @@ impl<TSender, TRequest, TBody> RawRequestBuilder<TSender, TRequest, TBody>
     # }
     ```
 
-    [SyncClient]: ../type.SyncClient.html
-    [SyncResponseBuilder]: ../responses/struct.SyncResponseBuilder.html
-    [AsyncClient]: ../type.AsyncClient.html
-    [AsyncResponseBuilder]: ../responses/struct.AsyncResponseBuilder.html
+    [SyncClient]: ../../type.SyncClient.html
+    [SyncResponseBuilder]: ../../responses/struct.SyncResponseBuilder.html
+    [AsyncClient]: ../../type.AsyncClient.html
+    [AsyncResponseBuilder]: ../../responses/struct.AsyncResponseBuilder.html
     */
     pub fn send(self) -> TSender::Response {
         let client = self.client;

@@ -2,17 +2,18 @@ use std::str::FromStr;
 use std::fmt::Debug;
 
 use futures::Stream;
-use hyper::{Method, Uri, Error as HyperError};
+use hyper::{Error as HyperError, Method, Uri};
 use hyper::header::ContentType;
 use hyper::client::Request;
 
-use elastic_requests::{HttpRequest, HttpMethod};
+use elastic_requests::{HttpMethod, HttpRequest};
 
 /// Build a `hyper` request from an `elastic` request.
 pub fn build<I, B>(base_url: &str, req: I) -> Request<B>
-    where I: Into<HttpRequest<'static, B>>,
-          B: Stream<Error = HyperError> + 'static + Debug,
-          B::Item: AsRef<[u8]>
+where
+    I: Into<HttpRequest<'static, B>>,
+    B: Stream<Error = HyperError> + 'static + Debug,
+    B::Item: AsRef<[u8]>,
 {
     let req = req.into();
 

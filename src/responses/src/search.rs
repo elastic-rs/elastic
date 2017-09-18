@@ -6,7 +6,7 @@ use serde::de::DeserializeOwned;
 use serde_json::{Map, Value};
 
 use common::Shards;
-use parsing::{IsOk, HttpResponseHead, ResponseBody, Unbuffered, MaybeOkResponse};
+use parsing::{HttpResponseHead, IsOk, MaybeOkResponse, ResponseBody, Unbuffered};
 use error::*;
 
 use std::borrow::Cow;
@@ -56,8 +56,7 @@ for hit in response.hits() {
 pub struct SearchResponse<T> {
     took: u64,
     timed_out: bool,
-    #[serde(rename = "_shards")]
-    shards: Shards,
+    #[serde(rename = "_shards")] shards: Shards,
     hits: HitsWrapper<T>,
     aggregations: Option<AggsWrapper>,
     status: Option<u16>,
@@ -68,8 +67,7 @@ pub struct SearchResponse<T> {
 struct HitsWrapper<T> {
     total: u64,
     max_score: Option<f32>,
-    #[serde(rename = "hits")]
-    inner: Vec<Hit<T>>,
+    #[serde(rename = "hits")] inner: Vec<Hit<T>>,
 }
 
 impl<T> SearchResponse<T> {
@@ -154,7 +152,7 @@ pub struct Hits<'a, T: 'a> {
 impl<'a, T: 'a> Hits<'a, T> {
     fn new(hits: &'a HitsWrapper<T>) -> Self {
         Hits {
-            inner: hits.inner.iter()
+            inner: hits.inner.iter(),
         }
     }
 }
@@ -175,7 +173,7 @@ pub struct IntoHits<T> {
 impl<T> IntoHits<T> {
     fn new(hits: HitsWrapper<T>) -> Self {
         IntoHits {
-            inner: hits.inner.into_iter()
+            inner: hits.inner.into_iter(),
         }
     }
 }
@@ -196,7 +194,7 @@ pub struct Documents<'a, T: 'a> {
 impl<'a, T: 'a> Documents<'a, T> {
     fn new(hits: &'a HitsWrapper<T>) -> Self {
         Documents {
-            inner: hits.inner.iter()
+            inner: hits.inner.iter(),
         }
     }
 }
@@ -217,7 +215,7 @@ pub struct IntoDocuments<T> {
 impl<T> IntoDocuments<T> {
     fn new(hits: HitsWrapper<T>) -> Self {
         IntoDocuments {
-            inner: hits.inner.into_iter()
+            inner: hits.inner.into_iter(),
         }
     }
 }
@@ -233,18 +231,12 @@ impl<T> Iterator for IntoDocuments<T> {
 /** Full metadata and source for a single hit. */
 #[derive(Deserialize, Debug)]
 pub struct Hit<T> {
-    #[serde(rename = "_index")]
-    index: String,
-    #[serde(rename = "_type")]
-    ty: String,
-    #[serde(rename = "_version")]
-    version: Option<u32>,
-    #[serde(rename = "_score")]
-    score: Option<f32>,
-    #[serde(rename = "_source")]
-    source: Option<T>,
-    #[serde(rename="_routing")]
-    routing: Option<String>,
+    #[serde(rename = "_index")] index: String,
+    #[serde(rename = "_type")] ty: String,
+    #[serde(rename = "_version")] version: Option<u32>,
+    #[serde(rename = "_score")] score: Option<f32>,
+    #[serde(rename = "_source")] source: Option<T>,
+    #[serde(rename = "_routing")] routing: Option<String>,
 }
 
 impl<T> Hit<T> {
@@ -297,16 +289,15 @@ impl<'a> Aggs<'a> {
     fn new(aggregations: Option<&'a AggsWrapper>) -> Aggs<'a> {
         let iter_stack = {
             match aggregations.and_then(|aggs| aggs.0.as_object()) {
-                Some(o) => {
-                    o.into_iter()
-                        .filter_map(|(key, child)| {
-                            child.as_object()
-                                .and_then(|child| child.get("buckets"))
-                                .and_then(Value::as_array)
-                                .map(|array| (key.as_ref(), array.iter()))
-                        })
-                        .collect()
-                },
+                Some(o) => o.into_iter()
+                    .filter_map(|(key, child)| {
+                        child
+                            .as_object()
+                            .and_then(|child| child.get("buckets"))
+                            .and_then(Value::as_array)
+                            .map(|array| (key.as_ref(), array.iter()))
+                    })
+                    .collect(),
                 None => Vec::new(),
             }
         };
@@ -314,7 +305,7 @@ impl<'a> Aggs<'a> {
         Aggs {
             current_row: None,
             current_row_finished: false,
-            iter_stack: iter_stack
+            iter_stack: iter_stack,
         }
     }
 }
@@ -322,10 +313,7 @@ impl<'a> Aggs<'a> {
 type Object = Map<String, Value>;
 type RowData<'a> = BTreeMap<Cow<'a, str>, &'a Value>;
 
-fn insert_value<'a>(fieldname: &str,
-                    json_object: &'a Object,
-                    keyname: &str,
-                    rowdata: &mut RowData<'a>) {
+fn insert_value<'a>(fieldname: &str, json_object: &'a Object, keyname: &str, rowdata: &mut RowData<'a>) {
     if let Some(v) = json_object.get(fieldname) {
         let field_name = format!("{}_{}", keyname, fieldname);
         debug!("ITER: Insert value! {} {:?}", field_name, v);
@@ -384,19 +372,19 @@ impl<'a> Iterator for Aggs<'a> {
                                 insert_value("std_deviation", c, key, row);
 
                                 if c.contains_key("std_deviation_bounds") {
-                                    if let Some(child_values) = c.get("std_deviation_bounds")
-                                        .unwrap()
-                                        .as_object() {
+                                    if let Some(child_values) = c.get("std_deviation_bounds").unwrap().as_object() {
                                         let u = child_values.get("upper");
                                         let l = child_values.get("lower");
                                         let un = format!("{}_std_deviation_bounds_upper", key);
                                         let ln = format!("{}_std_deviation_bounds_lower", key);
-                                        debug!("ITER: Insert std_dev_bounds! {} {} u: {:?} l: \
-                                                {:?}",
-                                               un,
-                                               ln,
-                                               u.unwrap(),
-                                               l.unwrap());
+                                        debug!(
+                                            "ITER: Insert std_dev_bounds! {} {} u: {:?} l: \
+                                             {:?}",
+                                            un,
+                                            ln,
+                                            u.unwrap(),
+                                            l.unwrap()
+                                        );
                                         row.insert(Cow::Owned(un), u.unwrap());
                                         row.insert(Cow::Owned(ln), l.unwrap());
                                     }

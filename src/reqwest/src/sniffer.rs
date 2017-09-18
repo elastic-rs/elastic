@@ -8,7 +8,7 @@ use std::sync::Arc;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use reqwest::unstable::async::Client;
 use futures::{Future, IntoFuture};
-use ::{RequestParams, RequestParamsBuilder, Error};
+use {Error, RequestParams, RequestParamsBuilder};
 use async::AsyncElasticClient;
 use req::NodesInfoRequest;
 
@@ -19,7 +19,10 @@ pub struct MultipleAddresses<TStrategy> {
     params_builder: RequestParamsBuilder,
 }
 
-impl<TStrategy> MultipleAddresses<TStrategy> where TStrategy: Strategy {
+impl<TStrategy> MultipleAddresses<TStrategy>
+where
+    TStrategy: Strategy,
+{
     /** Get the next address for a request. */
     pub fn next(&self) -> RequestParams {
         let address = self.strategy.next(&self.addresses);
@@ -30,8 +33,9 @@ impl<TStrategy> MultipleAddresses<TStrategy> where TStrategy: Strategy {
 impl MultipleAddresses<RoundRobin> {
     /** Use a round-robin strategy for balancing traffic over the given set of addresses. */
     pub fn round_robin<I, S>(addresses: I, params_builder: RequestParamsBuilder) -> Self
-        where I: IntoIterator<Item = S>,
-                S: AsRef<str>
+    where
+        I: IntoIterator<Item = S>,
+        S: AsRef<str>,
     {
         let addresses = addresses.into_iter().map(|a| a.as_ref().into()).collect();
         let strategy = RoundRobin::default();
@@ -58,7 +62,7 @@ pub struct RoundRobin {
 impl Default for RoundRobin {
     fn default() -> Self {
         RoundRobin {
-            index: Arc::new(AtomicUsize::new(0))
+            index: Arc::new(AtomicUsize::new(0)),
         }
     }
 }
@@ -85,14 +89,12 @@ struct SniffedNodes {
 
 #[derive(Debug, PartialEq, Deserialize)]
 struct SniffedNode<'a> {
-    #[serde(borrow)]
-    http: Option<SniffedNodeHttp<'a>>,
+    #[serde(borrow)] http: Option<SniffedNodeHttp<'a>>,
 }
 
 #[derive(Debug, PartialEq, Deserialize)]
 struct SniffedNodeHttp<'a> {
-    #[serde(borrow)]
-    publish_address: Option<&'a str>,
+    #[serde(borrow)] publish_address: Option<&'a str>,
 }
 
 impl AsyncClusterSniffer {
@@ -103,7 +105,7 @@ impl AsyncClusterSniffer {
             MultipleAddresses {
                 addresses: vec![base_params.base_url.clone()],
                 strategy: RoundRobin::default(),
-                params_builder: builder
+                params_builder: builder,
             }
         };
 
@@ -113,14 +115,16 @@ impl AsyncClusterSniffer {
         // - we want more metadata about the nodes
         // The publish_address may not correspond to the address the node is actually available on
         // In this case, we might want to offer some kind of filter function that consumers can use to transform addresses
-        let refresh_params = base_params.clone().url_param("filter_path", "nodes.*.http.publish_address");
+        let refresh_params = base_params
+            .clone()
+            .url_param("filter_path", "nodes.*.http.publish_address");
 
         AsyncClusterSniffer {
             client: client,
             base_params: base_params,
             refresh_params: refresh_params,
             refresh: true,
-            addresses: Rc::new(RefCell::new(addresses))
+            addresses: Rc::new(RefCell::new(addresses)),
         }
     }
 
@@ -137,7 +141,8 @@ impl AsyncClusterSniffer {
     pub fn next(&mut self) -> Box<Future<Item = RequestParams, Error = Error>> {
         if self.should_refresh() {
             // Need to refresh the addresses
-            let req_future = self.client.elastic_req(&self.refresh_params, NodesInfoRequest::new());
+            let req_future = self.client
+                .elastic_req(&self.refresh_params, NodesInfoRequest::new());
 
             unimplemented!();
         } else {
@@ -162,8 +167,8 @@ mod tests {
 
         let expected = SniffedNode {
             http: Some(SniffedNodeHttp {
-                publish_address: Some("127.0.0.1:9200")
-            })
+                publish_address: Some("127.0.0.1:9200"),
+            }),
         };
 
         let actual: SniffedNode = serde_json::from_str(&nodes).unwrap();

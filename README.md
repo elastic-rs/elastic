@@ -10,6 +10,12 @@ Quick reference:
 - [crates](#crates)
 - [examples](https://github.com/elastic-rs/elastic/tree/master/examples)
 
+## Stability
+
+This crate is still quite unstable and is likely to continue to churn breaking releases over the near future with not-so-detailed changelogs.
+
+If you run into any problems upgrading in your own open source projects feel free to [open up an issue](https://github.com/elastic-rs/elastic/issues) and we'll give you a hand. The goal is definitely to offer a stable API eventually.
+
 ## Build Status
 Platform  | Channel | Status
 ------------- | ------------- | -------------
@@ -18,9 +24,10 @@ Windows  | Nightly | [![Build status](https://ci.appveyor.com/api/projects/statu
 
 ## Documentation
 
-Version  | Docs
+Version       | Docs
 ------------- | -------------
-`current`  | [![Documentation](https://img.shields.io/badge/docs-rustdoc-orange.svg)](https://docs.rs/elastic/*/elastic/)
+`current`     | [![Documentation](https://img.shields.io/badge/docs-rustdoc-blue.svg)](https://docs.rs/elastic/*/elastic/)
+`master`      | [![Documentation](https://img.shields.io/badge/docs-rustdoc-orange.svg)](http://elastic-rs.github.io/elastic/elastic/index.html)
 
 ## Example
 
@@ -54,15 +61,13 @@ let query = "some query string";
 // A search request with a freeform body.
 let res = client.search::<Value>()
                 .index("_all")
-                .body({
-                    json!({
-                        "query": {
-                            "query_string": {
-                                "query": query
-                            }
+                .body(json!({
+                    "query": {
+                        "query_string": {
+                            "query": query
                         }
-                    })
-                })
+                    }
+                }))
                 .send()?;
 
 // Iterate through the hits in the response.
@@ -117,7 +122,7 @@ The `elastic` crate brings a few independent crates together into a cohesive API
 - `reqwest`/`hyper` for HTTP transport
 - `serde` for serialisation
 
-There hasn't been much effort put into abstracting these dependencies at this stage, and `elastic` can't stabilise until these libraries and few others do.
+There hasn't been much effort put into abstracting these dependencies at this stage, and `elastic` can't stabilise until these libraries and a few others do.
 
 ### Methodology
 
@@ -146,8 +151,7 @@ The following is a simple set of guidelines that the codebase should follow. It'
 - Types should have detailed docs with general examples
 - Type methods should have examples and document any panics/error cases
 - Modules should have general guidance for the types they contain
-- `elastic` should link back to the underlying crate when it re-exports a feature
-- Crates should link to `elastic` when it re-exports that feature
+- Make it easy to navigate between related types. `elastic` uses a lot of generic code that can be hard to follow, so we need to work hard to help the user follow what's happening
 
 ## Navigating the repository
 

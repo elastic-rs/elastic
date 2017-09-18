@@ -3,22 +3,11 @@
 use std::collections::BTreeMap;
 use serde::{Serialize, Serializer};
 use serde::ser::SerializeStruct;
-use string::mapping::{StringField, IndexOptions};
-use private::field::{DocumentField, FieldMapping, SerializeField};
-use document::FieldType;
+use string::mapping::{IndexOptions, StringField};
+use private::field::FieldMapping;
 
 /** A field that will be mapped as a `keyword`. */
-pub trait KeywordFieldType<M> {}
-
-impl<T, M> FieldType<M, KeywordFormat> for T
-    where M: KeywordMapping,
-          T: KeywordFieldType<M> + Serialize
-{
-}
-
-#[doc(hidden)]
-#[derive(Default)]
-pub struct KeywordFormat;
+pub trait KeywordFieldType<TMapping> {}
 
 /**
 The base requirements for mapping a `string` type.
@@ -80,7 +69,8 @@ This will produce the following mapping:
 ```
 */
 pub trait KeywordMapping
-    where Self: Default
+where
+    Self: Default,
 {
     /**
     The analyzer which should be used for analyzed string fields,
@@ -224,49 +214,6 @@ pub trait KeywordMapping
     }
 }
 
-impl<T> FieldMapping<KeywordFormat> for T
-    where T: KeywordMapping
-{
-    fn data_type() -> &'static str {
-        "keyword"
-    }
-}
-
-impl<T> SerializeField<KeywordFormat> for T
-    where T: KeywordMapping
-{
-    type Field = DocumentField<T, KeywordFormat>;
-}
-
-impl<T> Serialize for DocumentField<T, KeywordFormat>
-    where T: FieldMapping<KeywordFormat> + KeywordMapping
-{
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where S: Serializer
-    {
-        let mut state = try!(serializer.serialize_struct("mapping", 15));
-
-        try!(state.serialize_field("type", T::data_type()));
-
-        ser_field!(state, "boost", T::boost());
-        ser_field!(state, "analyzer", T::analyzer());
-        ser_field!(state, "doc_values", T::doc_values());
-        ser_field!(state, "eager_global_ordinals", T::eager_global_ordinals());
-        ser_field!(state, "fields", T::fields());
-        ser_field!(state, "include_in_all", T::include_in_all());
-        ser_field!(state, "ignore_above", T::ignore_above());
-        ser_field!(state, "index", T::index());
-        ser_field!(state, "index_options", T::index_options());
-        ser_field!(state, "norms", T::norms());
-        ser_field!(state, "null_value", T::null_value());
-        ser_field!(state, "store", T::store());
-        ser_field!(state, "search_analyzer", T::search_analyzer());
-        ser_field!(state, "similarity", T::similarity());
-
-        state.end()
-    }
-}
-
 /** Default mapping for `bool`. */
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultKeywordMapping;
@@ -305,12 +252,9 @@ pub struct KeywordFieldMapping {
     Any characters over this length will be ignored.
     */
     pub ignore_above: Option<u32>,
-    /** Should the field be searchable? Accepts `true` (default) or `false`. */
-    pub index: Option<bool>,
-    /** What information should be stored in the index, for search and highlighting purposes. Defaults to `Positions`. */
-    pub index_options: Option<IndexOptions>,
-    /** Whether field-length should be taken into account when scoring queries. Accepts `true` (default) or `false`. */
-    pub norms: Option<bool>,
+    /** Should the field be searchable? Accepts `true` (default) or `false`. */ pub index: Option<bool>,
+    /** What information should be stored in the index, for search and highlighting purposes. Defaults to `Positions`. */ pub index_options: Option<IndexOptions>,
+    /** Whether field-length should be taken into account when scoring queries. Accepts `true` (default) or `false`. */ pub norms: Option<bool>,
     /**
     Whether the field value should be stored and retrievable separately from the `_source` field.
     Accepts `true` or `false` (default).
@@ -330,7 +274,8 @@ pub struct KeywordFieldMapping {
 
 impl Serialize for KeywordFieldMapping {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where S: Serializer
+    where
+        S: Serializer,
     {
         let mut state = try!(serializer.serialize_struct("mapping", 12));
 
@@ -349,5 +294,68 @@ impl Serialize for KeywordFieldMapping {
         ser_field!(state, "similarity", self.similarity);
 
         state.end()
+    }
+}
+
+mod private {
+    use serde::{Serialize, Serializer};
+    use serde::ser::SerializeStruct;
+    use private::field::{DocumentField, FieldMapping, FieldType};
+    use super::{KeywordFieldType, KeywordMapping};
+
+    #[derive(Default)]
+    pub struct KeywordPivot;
+
+    impl<TField, TMapping> FieldType<TMapping, KeywordPivot> for TField
+    where
+        TField: KeywordFieldType<TMapping> + Serialize,
+        TMapping: KeywordMapping,
+    {
+    }
+
+    impl<TMapping> FieldMapping<KeywordPivot> for TMapping
+    where
+        TMapping: KeywordMapping,
+    {
+        type DocumentField = DocumentField<TMapping, KeywordPivot>;
+
+        fn data_type() -> &'static str {
+            "keyword"
+        }
+    }
+
+    impl<TMapping> Serialize for DocumentField<TMapping, KeywordPivot>
+    where
+        TMapping: FieldMapping<KeywordPivot> + KeywordMapping,
+    {
+        fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+        where
+            S: Serializer,
+        {
+            let mut state = try!(serializer.serialize_struct("mapping", 15));
+
+            try!(state.serialize_field("type", TMapping::data_type()));
+
+            ser_field!(state, "boost", TMapping::boost());
+            ser_field!(state, "analyzer", TMapping::analyzer());
+            ser_field!(state, "doc_values", TMapping::doc_values());
+            ser_field!(
+                state,
+                "eager_global_ordinals",
+                TMapping::eager_global_ordinals()
+            );
+            ser_field!(state, "fields", TMapping::fields());
+            ser_field!(state, "include_in_all", TMapping::include_in_all());
+            ser_field!(state, "ignore_above", TMapping::ignore_above());
+            ser_field!(state, "index", TMapping::index());
+            ser_field!(state, "index_options", TMapping::index_options());
+            ser_field!(state, "norms", TMapping::norms());
+            ser_field!(state, "null_value", TMapping::null_value());
+            ser_field!(state, "store", TMapping::store());
+            ser_field!(state, "search_analyzer", TMapping::search_analyzer());
+            ser_field!(state, "similarity", TMapping::similarity());
+
+            state.end()
+        }
     }
 }

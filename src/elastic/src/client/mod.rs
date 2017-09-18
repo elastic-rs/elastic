@@ -57,7 +57,7 @@ Requests can be sent with an instance of a client using a builder API:
 # extern crate elastic;
 # use serde_json::Value;
 # use elastic::prelude::*;
-# use elastic::error::Error;
+# use elastic::Error;
 # fn main() { run().unwrap() }
 # fn run() -> Result<(), Box<::std::error::Error>> {
 # let client = SyncClientBuilder::new().build()?;
@@ -289,7 +289,7 @@ Call [`SyncResponseBuilder.into_response`][SyncResponseBuilder.into_response] on
 # extern crate elastic;
 # use serde_json::Value;
 # use elastic::prelude::*;
-# use elastic::error::Error;
+# use elastic::Error;
 # fn main() { run().unwrap() }
 # fn run() -> Result<(), Box<::std::error::Error>> {
 # #[derive(Serialize, Deserialize, ElasticType)]
@@ -508,8 +508,9 @@ pub trait Sender: private::Sealed + Clone {
 
     /// Send a request.
     fn send<TRequest, TBody>(&self, req: TRequest, params: &RequestParams) -> Self::Response
-        where TRequest: Into<HttpRequest<'static, TBody>>,
-              TBody: Into<Self::Body>;
+    where
+        TRequest: Into<HttpRequest<'static, TBody>>,
+        TBody: Into<Self::Body>;
 }
 
 /**
@@ -571,10 +572,18 @@ pub struct Client<TSender> {
     params: RequestParams,
 }
 
+pub mod prelude {
+    /*! A glob import for convenience. */
+
+    pub use super::{AsyncClient, AsyncClientBuilder, RequestParams, SyncClient, SyncClientBuilder};
+    pub use super::requests::prelude::*;
+    pub use super::responses::prelude::*;
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
-    use ::tests::*;
+    use tests::*;
 
     #[test]
     fn client_is_send_sync() {

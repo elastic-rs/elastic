@@ -5,20 +5,13 @@ use serde::Serialize;
 
 /** A unit of measure for distance. */
 pub enum DistanceUnit {
-    /** For `in`. */
-    Inches,
-    /** For `yd`. */
-    Yards,
-    /** For `mi`. */
-    Miles,
-    /** For `km`. */
-    Kilometers,
-    /** For `m`. */
-    Meters,
-    /** For `cm`. */
-    Centimeters,
-    /** For `mm`. */
-    Millimeters,
+    /** For `in`. */ Inches,
+    /** For `yd`. */ Yards,
+    /** For `mi`. */ Miles,
+    /** For `km`. */ Kilometers,
+    /** For `m`. */ Meters,
+    /** For `cm`. */ Centimeters,
+    /** For `mm`. */ Millimeters,
 }
 
 /** A distance value paired with a unit of measure. */
@@ -47,7 +40,8 @@ impl ToString for Distance {
 
 impl Serialize for Distance {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where S: serde::Serializer
+    where
+        S: serde::Serializer,
     {
         serializer.serialize_str(&self.to_string())
     }

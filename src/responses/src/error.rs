@@ -3,7 +3,7 @@ Error types from Elasticsearch
 */
 
 use serde::{Deserialize, Deserializer};
-use serde_json::{Map, Value, Error as JsonError};
+use serde_json::{Error as JsonError, Map, Value};
 use std::io::Error as IoError;
 
 quick_error! {
@@ -82,7 +82,8 @@ macro_rules! error_key {
 
 impl<'de> Deserialize<'de> for ApiError {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-        where D: Deserializer<'de>
+    where
+        D: Deserializer<'de>,
     {
         let value = Map::deserialize(deserializer)?;
 
@@ -114,12 +115,16 @@ impl From<Map<String, Value>> for ApiError {
             "index_not_found_exception" => {
                 let index = error_key!(obj[index]: |v| v.as_str());
 
-                ApiError::IndexNotFound { index: index.into() }
+                ApiError::IndexNotFound {
+                    index: index.into(),
+                }
             }
             "index_already_exists_exception" => {
                 let index = error_key!(obj[index]: |v| v.as_str());
 
-                ApiError::IndexAlreadyExists { index: index.into() }
+                ApiError::IndexAlreadyExists {
+                    index: index.into(),
+                }
             }
             "parsing_exception" => {
                 let line = error_key!(obj[line]: |v| v.as_u64());

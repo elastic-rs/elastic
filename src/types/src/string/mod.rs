@@ -126,7 +126,7 @@ mod tests {
 
         let string: Keyword<DefaultKeywordMapping> = Keyword::new("stuff");
 
-        assert!(takes_custom_mapping(string.remap()));
+        assert!(takes_custom_mapping(Keyword::remap(string)));
     }
 
     #[test]
@@ -153,7 +153,7 @@ mod tests {
 
         let string: Text<DefaultTextMapping> = Text::new("stuff");
 
-        assert!(takes_custom_mapping(string.remap()));
+        assert!(takes_custom_mapping(Text::remap(string)));
     }
 
     #[test]

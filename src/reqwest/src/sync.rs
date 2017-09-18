@@ -1,15 +1,15 @@
 /*! Synchronous http client. */
 
-use std::ops::Deref;
 use std::io::Cursor;
 use std::fs::File;
 use serde::de::DeserializeOwned;
 use serde_json::Value;
-use reqwest::{Client, ClientBuilder, RequestBuilder, Response, Body};
+use reqwest::{Body, Client, ClientBuilder, RequestBuilder, Response};
 
+use private;
 use super::req::HttpRequest;
-use super::res::parsing::{Parse, IsOk};
-use super::{Error, RequestParams, build_url, build_method};
+use super::res::parsing::{IsOk, Parse};
+use super::{build_method, build_url, Error, RequestParams};
 
 /** Get a default `Client` and `RequestParams`. */
 pub fn default() -> Result<(Client, RequestParams), Error> {
@@ -26,14 +26,6 @@ impl SyncBody {
     /** Convert the body into its inner value. */
     pub fn into_inner(self) -> Body {
         self.0
-    }
-}
-
-impl Deref for SyncBody {
-    type Target = Body;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
     }
 }
 
@@ -80,7 +72,7 @@ impl From<&'static str> for SyncBody {
 }
 
 /** Represents a client that can send Elasticsearch requests synchronously. */
-pub trait SyncElasticClient {
+pub trait SyncElasticClient: private::Sealed {
     /** 
     Send a request and get a response.
     
@@ -104,14 +96,16 @@ pub trait SyncElasticClient {
     ```
     */
     fn elastic_req<I, B>(&self, params: &RequestParams, req: I) -> Result<Response, Error>
-        where I: Into<HttpRequest<'static, B>>,
-              B: Into<SyncBody>;
+    where
+        I: Into<HttpRequest<'static, B>>,
+        B: Into<SyncBody>;
 }
 
 /** Build a synchronous `reqwest::RequestBuilder` from an Elasticsearch request. */
 pub fn build_req<I, B>(client: &Client, params: &RequestParams, req: I) -> RequestBuilder
-    where I: Into<HttpRequest<'static, B>>,
-          B: Into<SyncBody>
+where
+    I: Into<HttpRequest<'static, B>>,
+    B: Into<SyncBody>,
 {
     let req = req.into();
 
@@ -133,12 +127,15 @@ pub fn build_req<I, B>(client: &Client, params: &RequestParams, req: I) -> Reque
 
 impl SyncElasticClient for Client {
     fn elastic_req<I, B>(&self, params: &RequestParams, req: I) -> Result<Response, Error>
-        where I: Into<HttpRequest<'static, B>>,
-              B: Into<SyncBody>
+    where
+        I: Into<HttpRequest<'static, B>>,
+        B: Into<SyncBody>,
     {
         build_req(&self, params, req).send().map_err(Into::into)
     }
 }
+
+impl private::Sealed for Client {}
 
 /** Represents a response that can be parsed into a concrete Elasticsearch response. */
 pub trait SyncFromResponse<TResponse> {
@@ -156,7 +153,7 @@ impl<TResponse: IsOk + DeserializeOwned> SyncFromResponse<TResponse> for Parse<T
 
 #[cfg(test)]
 mod tests {
-    use reqwest::{Client, RequestBuilder, Method};
+    use reqwest::{Client, Method, RequestBuilder};
     use reqwest::header::ContentType;
     use super::*;
     use req::*;
@@ -211,9 +208,11 @@ mod tests {
     #[test]
     fn post_req() {
         let cli = Client::new();
-        let req = build_req(&cli,
-                            &params(),
-                            PercolateRequest::for_index_ty("idx", "ty", vec![]));
+        let req = build_req(
+            &cli,
+            &params(),
+            PercolateRequest::for_index_ty("idx", "ty", vec![]),
+        );
 
         let url = "eshost:9200/path/idx/ty/_percolate?pretty=true&q=*";
 
@@ -225,9 +224,11 @@ mod tests {
     #[test]
     fn put_req() {
         let cli = Client::new();
-        let req = build_req(&cli,
-                            &params(),
-                            IndicesCreateRequest::for_index("idx", vec![]));
+        let req = build_req(
+            &cli,
+            &params(),
+            IndicesCreateRequest::for_index("idx", vec![]),
+        );
 
         let url = "eshost:9200/path/idx?pretty=true&q=*";
 

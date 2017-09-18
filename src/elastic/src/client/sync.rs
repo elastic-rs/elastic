@@ -5,7 +5,7 @@ use reqwest::{Client as SyncHttpClient, ClientBuilder as SyncHttpClientBuilder};
 use error::{self, Result};
 use client::requests::HttpRequest;
 use client::responses::{sync_response, SyncResponseBuilder};
-use client::{private, Client, Sender, RequestParams};
+use client::{private, Client, RequestParams, Sender};
 
 /** 
 A synchronous Elasticsearch client.
@@ -37,7 +37,7 @@ pub type SyncClient = Client<SyncSender>;
 /** A synchronous request sender. */
 #[derive(Clone)]
 pub struct SyncSender {
-    pub (in client) http: SyncHttpClient
+    pub(in client) http: SyncHttpClient,
 }
 
 impl private::Sealed for SyncSender {}
@@ -47,25 +47,38 @@ impl Sender for SyncSender {
     type Response = Result<SyncResponseBuilder>;
 
     fn send<TRequest, TBody>(&self, req: TRequest, params: &RequestParams) -> Self::Response
-        where TRequest: Into<HttpRequest<'static, TBody>>,
-              TBody: Into<Self::Body>
+    where
+        TRequest: Into<HttpRequest<'static, TBody>>,
+        TBody: Into<Self::Body>,
     {
         let correlation_id = Uuid::new_v4();
         let req = req.into();
 
-        info!("Elasticsearch Request: correlation_id: '{}', path: '{}'", correlation_id, req.url.as_ref());
+        info!(
+            "Elasticsearch Request: correlation_id: '{}', path: '{}'",
+            correlation_id,
+            req.url.as_ref()
+        );
 
         let res = match self.http.elastic_req(params, req).map_err(error::request) {
             Ok(res) => {
-                info!("Elasticsearch Response: correlation_id: '{}', status: '{}'", correlation_id, res.status());
+                info!(
+                    "Elasticsearch Response: correlation_id: '{}', status: '{}'",
+                    correlation_id,
+                    res.status()
+                );
                 res
-            },
+            }
             Err(e) => {
-                error!("Elasticsearch Response: correlation_id: '{}', error: '{}'", correlation_id, e);
+                error!(
+                    "Elasticsearch Response: correlation_id: '{}', error: '{}'",
+                    correlation_id,
+                    e
+                );
                 Err(e)?
             }
         };
-        
+
         Ok(sync_response(res))
     }
 }
@@ -73,7 +86,7 @@ impl Sender for SyncSender {
 /** A builder for a syncronous client. */
 pub struct SyncClientBuilder {
     http: Option<SyncHttpClient>,
-    params: RequestParams
+    params: RequestParams,
 }
 
 impl Default for SyncClientBuilder {
@@ -95,7 +108,7 @@ impl SyncClientBuilder {
     pub fn new() -> Self {
         SyncClientBuilder {
             http: None,
-            params: RequestParams::default()
+            params: RequestParams::default(),
         }
     }
 
@@ -105,7 +118,7 @@ impl SyncClientBuilder {
     pub fn from_params(params: RequestParams) -> Self {
         SyncClientBuilder {
             http: None,
-            params: params
+            params: params,
         }
     }
 
@@ -126,8 +139,9 @@ impl SyncClientBuilder {
         .base_url("https://my_es_cluster/some_path");
     ```
     */
-    pub fn base_url<I>(mut self, base_url: I) -> Self 
-        where I: Into<String>
+    pub fn base_url<I>(mut self, base_url: I) -> Self
+    where
+        I: Into<String>,
     {
         self.params = self.params.base_url(base_url);
 
@@ -168,7 +182,8 @@ impl SyncClientBuilder {
     [SyncClientBuilder.base_url]: #method.base_url
     */
     pub fn params<F>(mut self, builder: F) -> Self
-        where F: Fn(RequestParams) -> RequestParams
+    where
+        F: Fn(RequestParams) -> RequestParams,
     {
         self.params = builder(self.params);
 
@@ -188,15 +203,14 @@ impl SyncClientBuilder {
     [Client]: struct.Client.html
     */
     pub fn build(self) -> Result<SyncClient> {
-        let http = self.http.map(Ok)
-                            .unwrap_or_else(|| SyncHttpClientBuilder::new().build())
-                            .map_err(error::build)?;
+        let http = self.http
+            .map(Ok)
+            .unwrap_or_else(|| SyncHttpClientBuilder::new().build())
+            .map_err(error::build)?;
 
         Ok(SyncClient {
-            sender: SyncSender {
-                http: http
-            },
-            params: self.params
+            sender: SyncSender { http: http },
+            params: self.params,
         })
     }
 }

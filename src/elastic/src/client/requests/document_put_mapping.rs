@@ -1,15 +1,23 @@
+/*!
+Builders for [put mapping requests][docs-mapping].
+
+[docs-mapping]: https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping.html
+*/
+
 use std::marker::PhantomData;
 use serde_json;
-use futures::{Future, IntoFuture};
+use futures::{Future, IntoFuture, Poll};
 use futures_cpupool::CpuPool;
 use serde::Serialize;
 
-use error::{self, Result, Error};
-use client::{Client, Sender, SyncSender, AsyncSender};
-use client::requests::{Index, Type, IndicesPutMappingRequest, RequestBuilder};
+use error::{self, Error, Result};
+use client::{AsyncSender, Client, Sender, SyncSender};
+use client::requests::RequestBuilder;
+use client::requests::params::{Index, Type};
+use client::requests::endpoints::IndicesPutMappingRequest;
 use client::requests::raw::RawRequestInner;
 use client::responses::CommandResponse;
-use types::document::{FieldType, DocumentType, IndexDocumentMapping};
+use types::document::DocumentType;
 
 /** 
 A [put mapping request][docs-mapping] builder that can be configured before sending.
@@ -20,10 +28,11 @@ The `send` method will either send the request [synchronously][send-sync] or [as
 [docs-mapping]: https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping.html
 [send-sync]: #send-synchronously
 [send-async]: #send-asynchronously
-[Client.document_put_mapping]: ../struct.Client.html#put-mapping-request
+[Client.document_put_mapping]: ../../struct.Client.html#put-mapping-request
 */
 pub type PutMappingRequestBuilder<TSender, TDocument> = RequestBuilder<TSender, PutMappingRequestInner<TDocument>>;
 
+#[doc(hidden)]
 pub struct PutMappingRequestInner<TDocument> {
     index: Index<'static>,
     ty: Type<'static>,
@@ -33,8 +42,9 @@ pub struct PutMappingRequestInner<TDocument> {
 /**
 # Put mapping request
 */
-impl<TSender> Client<TSender> 
-    where TSender: Sender
+impl<TSender> Client<TSender>
+where
+    TSender: Sender,
 {
     /** 
     Create a [`PutMappingRequestBuilder`][PutMappingRequestBuilder] with this `Client` that can be configured before sending.
@@ -70,42 +80,49 @@ impl<TSender> Client<TSender>
 
     For more details on document types and mapping, see the [`types`][types-mod] module.
 
-    [PutMappingRequestBuilder]: requests/type.PutMappingRequestBuilder.html
-    [builder-methods]: requests/type.PutMappingRequestBuilder.html#builder-methods
-    [send-sync]: requests/type.PutMappingRequestBuilder.html#send-synchronously
-    [send-async]: requests/type.PutMappingRequestBuilder.html#send-asynchronously
-    [types-mod]: ../types/index.html
-    [documents-mod]: ../types/document/index.html
+    [PutMappingRequestBuilder]: requests/document_put_mapping/type.PutMappingRequestBuilder.html
+    [builder-methods]: requests/document_put_mapping/type.PutMappingRequestBuilder.html#builder-methods
+    [send-sync]: requests/document_put_mapping/type.PutMappingRequestBuilder.html#send-synchronously
+    [send-async]: requests/document_put_mapping/type.PutMappingRequestBuilder.html#send-asynchronously
+    [types-mod]: ../../types/index.html
+    [documents-mod]: ../../types/document/index.html
     */
-    pub fn document_put_mapping<TDocument>(&self,
-                                      index: Index<'static>)
-                                      -> PutMappingRequestBuilder<TSender, TDocument>
-        where TDocument: Serialize + DocumentType
+    pub fn document_put_mapping<TDocument>(&self, index: Index<'static>) -> PutMappingRequestBuilder<TSender, TDocument>
+    where
+        TDocument: Serialize + DocumentType,
     {
         let ty = TDocument::name().into();
 
-        RequestBuilder::new(self.clone(),
-                            None,
-                            PutMappingRequestInner {
-                                index: index,
-                                ty: ty,
-                                _marker: PhantomData,
-                            })
+        RequestBuilder::new(
+            self.clone(),
+            None,
+            PutMappingRequestInner {
+                index: index,
+                ty: ty,
+                _marker: PhantomData,
+            },
+        )
     }
 }
 
 impl<TDocument> PutMappingRequestInner<TDocument>
-    where TDocument: DocumentType
+where
+    TDocument: DocumentType,
 {
     fn into_sync_request(self) -> Result<IndicesPutMappingRequest<'static, Vec<u8>>> {
-        let body = serde_json::to_vec(&IndexDocumentMapping::from(TDocument::mapping())).map_err(error::request)?;
+        let body = serde_json::to_vec(&TDocument::index_mapping()).map_err(error::request)?;
 
-        Ok(IndicesPutMappingRequest::for_index_ty(self.index, self.ty, body))
+        Ok(IndicesPutMappingRequest::for_index_ty(
+            self.index,
+            self.ty,
+            body,
+        ))
     }
 }
 
 impl<TDocument> PutMappingRequestInner<TDocument>
-    where TDocument: DocumentType + Send + 'static
+where
+    TDocument: DocumentType + Send + 'static,
 {
     fn into_async_request(self, ser_pool: Option<CpuPool>) -> Box<Future<Item = IndicesPutMappingRequest<'static, Vec<u8>>, Error = Error>> {
         if let Some(ser_pool) = ser_pool {
@@ -124,11 +141,13 @@ impl<TDocument> PutMappingRequestInner<TDocument>
 Configure a `PutMappingRequestBuilder` before sending it.
 */
 impl<TSender, TDocument> PutMappingRequestBuilder<TSender, TDocument>
-    where TSender: Sender
+where
+    TSender: Sender,
 {
     /** Set the type for the put mapping request. */
     pub fn ty<I>(mut self, ty: I) -> Self
-        where I: Into<Type<'static>>
+    where
+        I: Into<Type<'static>>,
     {
         self.inner.ty = ty.into();
         self
@@ -139,7 +158,8 @@ impl<TSender, TDocument> PutMappingRequestBuilder<TSender, TDocument>
 # Send synchronously
 */
 impl<TDocument> PutMappingRequestBuilder<SyncSender, TDocument>
-    where TDocument: DocumentType
+where
+    TDocument: DocumentType,
 {
     /**
     Send a `PutMappingRequestBuilder` synchronously using a [`SyncClient`][SyncClient].
@@ -169,7 +189,7 @@ impl<TDocument> PutMappingRequestBuilder<SyncSender, TDocument>
     # }
     ```
 
-    [SyncClient]: ../type.SyncClient.html
+    [SyncClient]: ../../type.SyncClient.html
     */
     pub fn send(self) -> Result<CommandResponse> {
         let req = self.inner.into_sync_request()?;
@@ -184,7 +204,8 @@ impl<TDocument> PutMappingRequestBuilder<SyncSender, TDocument>
 # Send asynchronously
 */
 impl<TDocument> PutMappingRequestBuilder<AsyncSender, TDocument>
-    where TDocument: DocumentType + Send + 'static
+where
+    TDocument: DocumentType + Send + 'static,
 {
     /**
     Send a `PutMappingRequestBuilder` asynchronously using an [`AsyncClient`][AsyncClient].
@@ -222,9 +243,9 @@ impl<TDocument> PutMappingRequestBuilder<AsyncSender, TDocument>
     # }
     ```
 
-    [AsyncClient]: type.AsyncClient.html
+    [AsyncClient]: ../../type.AsyncClient.html
     */
-    pub fn send(self) -> Box<Future<Item = CommandResponse, Error = Error>> {
+    pub fn send(self) -> Pending {
         let (client, params) = (self.client, self.params);
 
         let ser_pool = client.sender.serde_pool.clone();
@@ -232,11 +253,36 @@ impl<TDocument> PutMappingRequestBuilder<AsyncSender, TDocument>
 
         let res_future = req_future.and_then(move |req| {
             RequestBuilder::new(client, params, RawRequestInner::new(req))
-            .send()
-            .and_then(|res| res.into_response())
+                .send()
+                .and_then(|res| res.into_response())
         });
 
-        Box::new(res_future)
+        Pending::new(res_future)
+    }
+}
+
+/** A future returned by calling `send`. */
+pub struct Pending {
+    inner: Box<Future<Item = CommandResponse, Error = Error>>,
+}
+
+impl Pending {
+    fn new<F>(fut: F) -> Self
+    where
+        F: Future<Item = CommandResponse, Error = Error> + 'static,
+    {
+        Pending {
+            inner: Box::new(fut),
+        }
+    }
+}
+
+impl Future for Pending {
+    type Item = CommandResponse;
+    type Error = Error;
+
+    fn poll(&mut self) -> Poll<Self::Item, Self::Error> {
+        self.inner.poll()
     }
 }
 
@@ -251,7 +297,8 @@ mod tests {
 
         let req = client
             .document_put_mapping::<Value>(index("test-idx"))
-            .inner.into_sync_request()
+            .inner
+            .into_sync_request()
             .unwrap();
 
         assert_eq!("/test-idx/_mappings/value", req.url.as_ref());
@@ -265,7 +312,8 @@ mod tests {
         let req = client
             .document_put_mapping::<Value>(index("test-idx"))
             .ty("new-ty")
-            .inner.into_sync_request()
+            .inner
+            .into_sync_request()
             .unwrap();
 
         assert_eq!("/test-idx/_mappings/new-ty", req.url.as_ref());

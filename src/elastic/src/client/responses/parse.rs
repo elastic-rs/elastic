@@ -41,7 +41,7 @@ The `MyResponse` type can then be used for deserialising a concrete response:
 # #[macro_use] extern crate serde_derive;
 # extern crate elastic;
 # use elastic::prelude::*;
-# use elastic::error::Error;
+# use elastic::Error;
 # use elastic::client::responses::parse::*;
 # #[derive(Deserialize)]
 # struct MyResponse {
@@ -89,6 +89,5 @@ See the [`IsOk`][IsOk] trait for more details.
 
 pub(super) use elastic_reqwest::res::parse;
 
-pub use elastic_reqwest::res::parsing::{HttpResponseHead, IsOk, ResponseBody, MaybeOkResponse,
-                                        MaybeBufferedResponse, Unbuffered, Buffered};
+pub use elastic_reqwest::res::parsing::{Buffered, HttpResponseHead, IsOk, MaybeBufferedResponse, MaybeOkResponse, ResponseBody, Unbuffered};
 pub use elastic_reqwest::res::error::ParseResponseError;

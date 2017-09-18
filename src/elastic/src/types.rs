@@ -117,7 +117,7 @@ You can use the `IndexDocumentMapping` type wrapper to serialise the mapping for
 # fn run() -> Result<(), Box<::std::error::Error>> {
 # #[derive(Serialize, Deserialize, ElasticType)]
 # struct MyType {}
-let doc = IndexDocumentMapping::from(MyType::mapping());
+let doc = MyType::index_mapping();
 
 let mapping = serde_json::to_string(&doc)?;
 # Ok(())
@@ -142,7 +142,7 @@ This will produce the following JSON:
 #     title: String,
 #     timestamp: Date<DefaultDateMapping<EpochMillis>>
 # }
-# let mapping = serde_json::to_string(&IndexDocumentMapping::from(MyType::mapping()))?;
+# let mapping = serde_json::to_string(&MyType::index_mapping())?;
 # let expected = json_str!(
 {
     "properties": {
@@ -238,7 +238,7 @@ Serialising `MyType`s mapping will produce the following json:
 # }
 # fn main() { run().unwrap() }
 # fn run() -> Result<(), Box<::std::error::Error>> {
-# let mapping = serde_json::to_string(&IndexDocumentMapping::from(MyType::mapping()))?;
+# let mapping = serde_json::to_string(&MyType::index_mapping())?;
 # let expected = json_str!(
 {
     "properties": {
@@ -265,7 +265,7 @@ Serialising `MyType`s mapping will produce the following json:
 [geoshape-mod]: geo/shape/index.html
 */
 
-pub use elastic_types::{document, boolean, date, geo, ip, number, string, prelude};
+pub use elastic_types::{boolean, date, document, geo, ip, number, prelude, string};
 
 #[doc(hidden)]
 pub use elastic_types::derive;

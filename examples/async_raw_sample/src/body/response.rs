@@ -1,6 +1,6 @@
 use std::cmp;
 use std::collections::VecDeque;
-use std::io::{Read, Error as IoError};
+use std::io::{Error as IoError, Read};
 
 use hyper::Chunk as HyperChunk;
 
@@ -50,7 +50,8 @@ impl ChunkBodyBuilder {
     }
 
     pub fn append<I>(&mut self, chunk: I)
-        where I: Into<Chunk>
+    where
+        I: Into<Chunk>,
     {
         self.0.push_back(chunk.into());
     }

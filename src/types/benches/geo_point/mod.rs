@@ -1,5 +1,6 @@
 use serde_json;
 use georust::{Point, Coordinate};
+use elastic_types;
 use elastic_types::prelude::*;
 use geo_point_fixtures::*;
 
@@ -83,5 +84,5 @@ fn fmt_array(b: &mut Bencher) {
 
 #[bench]
 fn mapping(b: &mut Bencher) {
-    b.iter(|| standalone_field_ser(MyGeoPointMapping).unwrap());
+    b.iter(|| elastic_types::derive::standalone_field_ser(MyGeoPointMapping).unwrap());
 }

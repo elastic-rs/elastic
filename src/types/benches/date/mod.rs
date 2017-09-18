@@ -1,4 +1,5 @@
 use serde_json;
+use elastic_types;
 use elastic_types::prelude::*;
 use date_fixtures::*;
 
@@ -30,5 +31,5 @@ fn fmt_epoch(b: &mut Bencher) {
 
 #[bench]
 fn mapping(b: &mut Bencher) {
-    b.iter(|| standalone_field_ser(MyDateMapping).unwrap());
+    b.iter(|| elastic_types::derive::standalone_field_ser(MyDateMapping).unwrap());
 }

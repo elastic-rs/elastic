@@ -1,22 +1,7 @@
 /*! Mapping for the Elasticsearch `boolean` type. */
 
-use serde::{Serialize, Serializer};
-use serde::ser::SerializeStruct;
-use private::field::{DocumentField, FieldMapping, SerializeField};
-use document::FieldType;
-
 /** A field that will be mapped as a `boolean`. */
-pub trait BooleanFieldType<M> {}
-
-impl<T, M> FieldType<M, BooleanFormat> for T
-    where M: BooleanMapping,
-          T: BooleanFieldType<M> + Serialize
-{
-}
-
-#[doc(hidden)]
-#[derive(Default)]
-pub struct BooleanFormat;
+pub trait BooleanFieldType<TMapping> {}
 
 /**
 The base requirements for mapping a `boolean` type.
@@ -79,7 +64,8 @@ This will produce the following mapping:
 ```
 */
 pub trait BooleanMapping
-    where Self: Default
+where
+    Self: Default,
 {
     /** Field-level index time boosting. Accepts a floating point number, defaults to `1.0`. */
     fn boost() -> Option<f32> {
@@ -117,51 +103,67 @@ pub trait BooleanMapping
     }
 }
 
-impl<T> FieldMapping<BooleanFormat> for T
-    where T: BooleanMapping
-{
-    fn data_type() -> &'static str {
-        "boolean"
-    }
-}
-
-impl<T> SerializeField<BooleanFormat> for T
-    where T: BooleanMapping
-{
-    type Field = DocumentField<T, BooleanFormat>;
-}
-
-impl<T> Serialize for DocumentField<T, BooleanFormat>
-    where T: FieldMapping<BooleanFormat> + BooleanMapping
-{
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where S: Serializer
-    {
-        let mut state = try!(serializer.serialize_struct("mapping", 6));
-
-        try!(state.serialize_field("type", T::data_type()));
-
-        ser_field!(state, "boost", T::boost());
-        ser_field!(state, "doc_values", T::doc_values());
-        ser_field!(state, "index", T::index());
-        ser_field!(state, "store", T::store());
-        ser_field!(state, "null_value", T::null_value());
-
-        state.end()
-    }
-}
-
 /** Default mapping for `bool`. */
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultBooleanMapping;
 impl BooleanMapping for DefaultBooleanMapping {}
+
+mod private {
+    use serde::{Serialize, Serializer};
+    use serde::ser::SerializeStruct;
+    use private::field::{DocumentField, FieldMapping, FieldType};
+    use super::{BooleanFieldType, BooleanMapping};
+
+    #[derive(Default)]
+    pub struct BooleanPivot;
+
+    impl<TField, TMapping> FieldType<TMapping, BooleanPivot> for TField
+    where
+        TMapping: BooleanMapping,
+        TField: BooleanFieldType<TMapping> + Serialize,
+    {
+    }
+
+    impl<TMapping> FieldMapping<BooleanPivot> for TMapping
+    where
+        TMapping: BooleanMapping,
+    {
+        type DocumentField = DocumentField<TMapping, BooleanPivot>;
+
+        fn data_type() -> &'static str {
+            "boolean"
+        }
+    }
+
+    impl<TMapping> Serialize for DocumentField<TMapping, BooleanPivot>
+    where
+        TMapping: FieldMapping<BooleanPivot> + BooleanMapping,
+    {
+        fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+        where
+            S: Serializer,
+        {
+            let mut state = try!(serializer.serialize_struct("mapping", 6));
+
+            try!(state.serialize_field("type", TMapping::data_type()));
+
+            ser_field!(state, "boost", TMapping::boost());
+            ser_field!(state, "doc_values", TMapping::doc_values());
+            ser_field!(state, "index", TMapping::index());
+            ser_field!(state, "store", TMapping::store());
+            ser_field!(state, "null_value", TMapping::null_value());
+
+            state.end()
+        }
+    }
+}
 
 #[cfg(test)]
 mod tests {
     use serde_json;
 
     use prelude::*;
-    use private::field::DocumentField;
+    use private::field::{DocumentField, FieldType};
 
     #[derive(Default, Clone)]
     pub struct MyBooleanMapping;
@@ -189,7 +191,7 @@ mod tests {
 
     #[test]
     fn bool_has_default_mapping() {
-        assert_eq!(DefaultBooleanMapping, bool::mapping());
+        assert_eq!(DefaultBooleanMapping, bool::field_mapping());
     }
 
     #[test]

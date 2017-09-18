@@ -1,29 +1,11 @@
 /*! Mapping for the Elasticsearch `geo_point` type. */
 
 use std::marker::PhantomData;
-use serde::{Serialize, Serializer};
-use serde::ser::SerializeStruct;
-use super::{GeoPointFormat, DefaultGeoPointFormat};
+use super::{DefaultGeoPointFormat, GeoPointFormat};
 use geo::mapping::Distance;
-use private::field::{DocumentField, FieldMapping, SerializeField};
-use document::FieldType;
 
 /** A field that will be mapped as a `geo_point`. */
 pub trait GeoPointFieldType<M> {}
-
-impl<T, M> FieldType<M, GeoPointFormatWrapper<M::Format>> for T
-    where T: GeoPointFieldType<M> + Serialize,
-          M: GeoPointMapping
-{
-}
-
-#[doc(hidden)]
-#[derive(Default)]
-pub struct GeoPointFormatWrapper<F>
-    where F: GeoPointFormat
-{
-    _f: PhantomData<F>,
-}
 
 /**
 The base requirements for mapping a `geo_point` type.
@@ -73,7 +55,7 @@ This will produce the following mapping:
 #     }
 # }
 # fn main() {
-# let mapping = standalone_field_ser(MyGeoPointMapping).unwrap();
+# let mapping = elastic_types::derive::standalone_field_ser(MyGeoPointMapping).unwrap();
 # let json = json_str!(
 {
     "type": "geo_point",
@@ -107,7 +89,8 @@ impl <F: GeoPointFormat> GeoPointMapping for MyGeoPointMapping<F> {
 ```
 */
 pub trait GeoPointMapping
-    where Self: Default
+where
+    Self: Default,
 {
     /**
     The format used to serialise and deserialise the geo point.
@@ -152,55 +135,70 @@ pub trait GeoPointMapping
     }
 }
 
-impl<T, F> FieldMapping<GeoPointFormatWrapper<F>> for T
-    where T: GeoPointMapping<Format = F>,
-          F: GeoPointFormat
-{
-    fn data_type() -> &'static str {
-        "geo_point"
-    }
-}
-
-impl<T, F> SerializeField<GeoPointFormatWrapper<F>> for T
-    where T: GeoPointMapping<Format = F>,
-          F: GeoPointFormat
-{
-    type Field = DocumentField<T, GeoPointFormatWrapper<F>>;
-}
-
-impl<T, F> Serialize for DocumentField<T, GeoPointFormatWrapper<F>>
-    where T: FieldMapping<GeoPointFormatWrapper<F>> + GeoPointMapping<Format = F>,
-          F: GeoPointFormat
-{
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where S: Serializer
-    {
-        let mut state = try!(serializer.serialize_struct("mapping", 6));
-
-        try!(state.serialize_field("type", T::data_type()));
-
-        ser_field!(state, "geohash", T::geohash());
-        ser_field!(state, "geohash_precision", T::geohash_precision());
-        ser_field!(state, "geohash_prefix", T::geohash_prefix());
-        ser_field!(state, "ignore_malformed", T::ignore_malformed());
-        ser_field!(state, "lat_lon", T::lat_lon());
-
-        state.end()
-    }
-}
-
 /** Default mapping for `geo_point`. */
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
-pub struct DefaultGeoPointMapping<F = DefaultGeoPointFormat>
-    where F: GeoPointFormat
+pub struct DefaultGeoPointMapping<TFormat = DefaultGeoPointFormat>
+where
+    TFormat: GeoPointFormat,
 {
-    _f: PhantomData<F>,
+    _f: PhantomData<TFormat>,
 }
 
-impl<F> GeoPointMapping for DefaultGeoPointMapping<F>
-    where F: GeoPointFormat
+impl<TFormat> GeoPointMapping for DefaultGeoPointMapping<TFormat>
+where
+    TFormat: GeoPointFormat,
 {
-    type Format = F;
+    type Format = TFormat;
+}
+
+mod private {
+    use serde::{Serialize, Serializer};
+    use serde::ser::SerializeStruct;
+    use private::field::{DocumentField, FieldMapping, FieldType};
+    use super::{GeoPointFieldType, GeoPointMapping};
+
+    #[derive(Default)]
+    pub struct GeoPointPivot;
+
+    impl<TField, TMapping> FieldType<TMapping, GeoPointPivot> for TField
+    where
+        TField: GeoPointFieldType<TMapping> + Serialize,
+        TMapping: GeoPointMapping,
+    {
+    }
+
+    impl<TMapping> FieldMapping<GeoPointPivot> for TMapping
+    where
+        TMapping: GeoPointMapping,
+    {
+        type DocumentField = DocumentField<TMapping, GeoPointPivot>;
+
+        fn data_type() -> &'static str {
+            "geo_point"
+        }
+    }
+
+    impl<TMapping> Serialize for DocumentField<TMapping, GeoPointPivot>
+    where
+        TMapping: FieldMapping<GeoPointPivot> + GeoPointMapping,
+    {
+        fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+        where
+            S: Serializer,
+        {
+            let mut state = try!(serializer.serialize_struct("mapping", 6));
+
+            try!(state.serialize_field("type", TMapping::data_type()));
+
+            ser_field!(state, "geohash", TMapping::geohash());
+            ser_field!(state, "geohash_precision", TMapping::geohash_precision());
+            ser_field!(state, "geohash_prefix", TMapping::geohash_prefix());
+            ser_field!(state, "ignore_malformed", TMapping::ignore_malformed());
+            ser_field!(state, "lat_lon", TMapping::lat_lon());
+
+            state.end()
+        }
+    }
 }
 
 #[cfg(test)]
@@ -238,7 +236,9 @@ mod tests {
 
     #[test]
     fn serialise_mapping_default() {
-        let ser = serde_json::to_string(&DocumentField::from(DefaultGeoPointMapping::<DefaultGeoPointFormat>::default())).unwrap();
+        let ser = serde_json::to_string(&DocumentField::from(
+            DefaultGeoPointMapping::<DefaultGeoPointFormat>::default(),
+        )).unwrap();
 
         let expected = json_str!({
             "type": "geo_point"

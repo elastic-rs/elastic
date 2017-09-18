@@ -1,23 +1,10 @@
 /*! Mapping for Elasticsearch `geo_shape` types. */
 
 use serde::{Serialize, Serializer};
-use serde::ser::SerializeStruct;
 use geo::mapping::Distance;
-use private::field::{DocumentField, FieldMapping, SerializeField};
-use document::FieldType;
 
 /** A field that will be mapped as a `geo_shape`. */
-pub trait GeoShapeFieldType<M> {}
-
-impl<T, M> FieldType<M, GeoShapeFormat> for T
-    where M: GeoShapeMapping,
-          T: GeoShapeFieldType<M> + Serialize
-{
-}
-
-#[doc(hidden)]
-#[derive(Default)]
-pub struct GeoShapeFormat;
+pub trait GeoShapeFieldType<TMapping> {}
 
 /**
 The base requirements for mapping a `geo_shape` type.
@@ -63,7 +50,7 @@ This will produce the following mapping:
 #     }
 # }
 # fn main() {
-# let mapping = standalone_field_ser(MyGeoShapeMapping).unwrap();
+# let mapping = elastic_types::derive::standalone_field_ser(MyGeoShapeMapping).unwrap();
 # let json = json_str!(
 {
     "type": "geo_shape",
@@ -75,7 +62,8 @@ This will produce the following mapping:
 ```
 */
 pub trait GeoShapeMapping
-    where Self: Default
+where
+    Self: Default,
 {
     /**
     Name of the PrefixTree implementation to be used:
@@ -161,43 +149,6 @@ pub trait GeoShapeMapping
     }
 }
 
-
-impl<T> FieldMapping<GeoShapeFormat> for T
-    where T: GeoShapeMapping
-{
-    fn data_type() -> &'static str {
-        "geo_shape"
-    }
-}
-
-impl<T> SerializeField<GeoShapeFormat> for T
-    where T: GeoShapeMapping
-{
-    type Field = DocumentField<T, GeoShapeFormat>;
-}
-
-impl<T> Serialize for DocumentField<T, GeoShapeFormat>
-    where T: FieldMapping<GeoShapeFormat> + GeoShapeMapping
-{
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where S: Serializer
-    {
-        let mut state = try!(serializer.serialize_struct("mapping", 8));
-
-        try!(state.serialize_field("type", T::data_type()));
-
-        ser_field!(state, "tree", T::tree());
-        ser_field!(state, "precision", T::precision());
-        ser_field!(state, "tree_levels", T::tree_levels());
-        ser_field!(state, "strategy", T::strategy());
-        ser_field!(state, "distance_error_pct", T::distance_error_pct());
-        ser_field!(state, "orientation", T::orientation());
-        ser_field!(state, "points_only", T::points_only());
-
-        state.end()
-    }
-}
-
 /** Default mapping for `geo_shape`. */
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct DefaultGeoShapeMapping;
@@ -205,39 +156,37 @@ impl GeoShapeMapping for DefaultGeoShapeMapping {}
 
 /** Name of the `PrefixTree` implementation to be used. */
 pub enum Tree {
-    /** For `GeohashPrefixTree`. */
-    Geohash,
-    /** For `QuadPrefixTree`. */
-    QuadPrefix,
+    /** For `GeohashPrefixTree`. */ Geohash,
+    /** For `QuadPrefixTree`. */ QuadPrefix,
 }
 
 impl Serialize for Tree {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where S: Serializer
+    where
+        S: Serializer,
     {
         serializer.serialize_str(match *self {
-                                     Tree::Geohash => "geohash",
-                                     Tree::QuadPrefix => "quadtree",
-                                 })
+            Tree::Geohash => "geohash",
+            Tree::QuadPrefix => "quadtree",
+        })
     }
 }
 
 /** The strategy defines the approach for how to represent shapes at indexing and search time. */
 pub enum Strategy {
-    /** Recursive strategy supports all shape types. */
-    Recursive,
-    /** Term strategy supports point types only. */
-    Term,
+    /** Recursive strategy supports all shape types. */ Recursive,
+    /** Term strategy supports point types only. */ Term,
 }
 
 impl Serialize for Strategy {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where S: Serializer
+    where
+        S: Serializer,
     {
         serializer.serialize_str(match *self {
-                                     Strategy::Recursive => "recursive",
-                                     Strategy::Term => "term",
-                                 })
+            Strategy::Recursive => "recursive",
+            Strategy::Term => "term",
+        })
     }
 }
 
@@ -250,20 +199,71 @@ The default orientation (counterclockwise) complies with the OGC standard which 
 ring vertices in counterclockwise order with inner ring(s) vertices (holes) in clockwise order.
 */
 pub enum Orientation {
-    /** For `cw`. */
-    Clockwise,
-    /** For `ccw`. */
-    CounterClockwise,
+    /** For `cw`. */ Clockwise,
+    /** For `ccw`. */ CounterClockwise,
 }
 
 impl Serialize for Orientation {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where S: Serializer
+    where
+        S: Serializer,
     {
         serializer.serialize_str(match *self {
-                                     Orientation::Clockwise => "cw",
-                                     Orientation::CounterClockwise => "ccw",
-                                 })
+            Orientation::Clockwise => "cw",
+            Orientation::CounterClockwise => "ccw",
+        })
+    }
+}
+
+mod private {
+    use serde::{Serialize, Serializer};
+    use serde::ser::SerializeStruct;
+    use private::field::{DocumentField, FieldMapping, FieldType};
+    use super::{GeoShapeFieldType, GeoShapeMapping};
+
+    impl<TField, TMapping> FieldType<TMapping, GeoShapePivot> for TField
+    where
+        TField: GeoShapeFieldType<TMapping> + Serialize,
+        TMapping: GeoShapeMapping,
+    {
+    }
+
+    #[derive(Default)]
+    pub struct GeoShapePivot;
+
+    impl<TMapping> FieldMapping<GeoShapePivot> for TMapping
+    where
+        TMapping: GeoShapeMapping,
+    {
+        type DocumentField = DocumentField<TMapping, GeoShapePivot>;
+
+        fn data_type() -> &'static str {
+            "geo_shape"
+        }
+    }
+
+    impl<TMapping> Serialize for DocumentField<TMapping, GeoShapePivot>
+    where
+        TMapping: FieldMapping<GeoShapePivot> + GeoShapeMapping,
+    {
+        fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+        where
+            S: Serializer,
+        {
+            let mut state = try!(serializer.serialize_struct("mapping", 8));
+
+            try!(state.serialize_field("type", TMapping::data_type()));
+
+            ser_field!(state, "tree", TMapping::tree());
+            ser_field!(state, "precision", TMapping::precision());
+            ser_field!(state, "tree_levels", TMapping::tree_levels());
+            ser_field!(state, "strategy", TMapping::strategy());
+            ser_field!(state, "distance_error_pct", TMapping::distance_error_pct());
+            ser_field!(state, "orientation", TMapping::orientation());
+            ser_field!(state, "points_only", TMapping::points_only());
+
+            state.end()
+        }
     }
 }
 

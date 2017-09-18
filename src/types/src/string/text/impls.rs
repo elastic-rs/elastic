@@ -1,7 +1,7 @@
 use std::borrow::Borrow;
 use std::marker::PhantomData;
-use serde::{Serialize, Deserialize, Serializer, Deserializer};
-use serde::de::{Visitor, Error};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use serde::de::{Error, Visitor};
 use super::mapping::{TextFieldType, TextMapping};
 use string::mapping::DefaultStringMapping;
 
@@ -25,13 +25,17 @@ let string = Text::<DefaultTextMapping>::new("my string value");
 ```
 */
 #[derive(Debug, Clone, Default, PartialEq)]
-pub struct Text<M>  where M: TextMapping {
+pub struct Text<TMapping>
+where
+    TMapping: TextMapping,
+{
     value: String,
-    _m: PhantomData<M>,
+    _m: PhantomData<TMapping>,
 }
 
-impl<M> Text<M>
-    where M: TextMapping
+impl<TMapping> Text<TMapping>
+where
+    TMapping: TextMapping,
 {
     /**
     Creates a new `Text` with the given mapping.
@@ -47,8 +51,9 @@ impl<M> Text<M>
     let string = Text::<DefaultTextMapping>::new("my string");
     ```
     */
-    pub fn new<I>(string: I) -> Text<M>
-        where I: Into<String>
+    pub fn new<I>(string: I) -> Text<TMapping>
+    where
+        I: Into<String>,
     {
         Text {
             value: string.into(),
@@ -57,10 +62,11 @@ impl<M> Text<M>
     }
 
     /** Change the mapping of this string. */
-    pub fn remap<MInto>(self) -> Text<MInto>
-        where MInto: TextMapping
+    pub fn remap<TNewMapping>(text: Text<TMapping>) -> Text<TNewMapping>
+    where
+        TNewMapping: TextMapping,
     {
-        Text::<MInto>::new(self.value)
+        Text::new(text.value)
     }
 }
 

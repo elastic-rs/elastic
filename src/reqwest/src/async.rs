@@ -1,17 +1,17 @@
 /*! Asynchronous http client. */
 
 use std::mem;
-use std::ops::Deref;
 use bytes::Bytes;
 use serde::de::DeserializeOwned;
 use serde_json::Value;
-use reqwest::unstable::async::{Client, ClientBuilder, Decoder, RequestBuilder, Response, Body};
-use futures::{Future, Stream};
+use reqwest::unstable::async::{Body, Client, ClientBuilder, Decoder, RequestBuilder, Response};
+use futures::{Future, Poll, Stream};
 use tokio_core::reactor::Handle;
 
+use private;
 use super::req::HttpRequest;
-use super::res::parsing::{Parse, IsOk};
-use super::{Error, RequestParams, build_url, build_method};
+use super::res::parsing::{IsOk, Parse};
+use super::{build_method, build_url, Error, RequestParams};
 
 /** Get a default `Client` and `RequestParams`. */
 pub fn default(handle: &Handle) -> Result<(Client, RequestParams), Error> {
@@ -28,14 +28,6 @@ impl AsyncBody {
     /** Convert the body into its inner value. */
     pub fn into_inner(self) -> Body {
         self.0
-    }
-}
-
-impl Deref for AsyncBody {
-    type Target = Body;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
     }
 }
 
@@ -76,7 +68,7 @@ impl From<&'static str> for AsyncBody {
 }
 
 /** Represents a client that can send Elasticsearch requests asynchronously. */
-pub trait AsyncElasticClient {
+pub trait AsyncElasticClient: private::Sealed {
     /** 
     Send a request and get a response.
     
@@ -102,15 +94,42 @@ pub trait AsyncElasticClient {
     # }
     ```
     */
-    fn elastic_req<I, B>(&self, params: &RequestParams, req: I) -> Box<Future<Item = Response, Error = Error>>
-        where I: Into<HttpRequest<'static, B>>,
-              B: Into<AsyncBody>;
+    fn elastic_req<I, B>(&self, params: &RequestParams, req: I) -> Pending
+    where
+        I: Into<HttpRequest<'static, B>>,
+        B: Into<AsyncBody>;
+}
+
+/** A future returned by calling `elastic_req`. */
+pub struct Pending {
+    inner: Box<Future<Item = Response, Error = Error>>,
+}
+
+impl Pending {
+    fn new<F>(fut: F) -> Self
+    where
+        F: Future<Item = Response, Error = Error> + 'static,
+    {
+        Pending {
+            inner: Box::new(fut),
+        }
+    }
+}
+
+impl Future for Pending {
+    type Item = Response;
+    type Error = Error;
+
+    fn poll(&mut self) -> Poll<Self::Item, Self::Error> {
+        self.inner.poll()
+    }
 }
 
 /** Build an asynchronous `reqwest::RequestBuilder` from an Elasticsearch request. */
 pub fn build_req<I, B>(client: &Client, params: &RequestParams, req: I) -> RequestBuilder
-    where I: Into<HttpRequest<'static, B>>,
-          B: Into<AsyncBody>
+where
+    I: Into<HttpRequest<'static, B>>,
+    B: Into<AsyncBody>,
 {
     let req = req.into();
 
@@ -131,34 +150,63 @@ pub fn build_req<I, B>(client: &Client, params: &RequestParams, req: I) -> Reque
 }
 
 impl AsyncElasticClient for Client {
-    fn elastic_req<I, B>(&self, params: &RequestParams, req: I) -> Box<Future<Item = Response, Error = Error>>
-        where I: Into<HttpRequest<'static, B>>,
-              B: Into<AsyncBody>
+    fn elastic_req<I, B>(&self, params: &RequestParams, req: I) -> Pending
+    where
+        I: Into<HttpRequest<'static, B>>,
+        B: Into<AsyncBody>,
     {
         let mut req = build_req(&self, params, req);
-        Box::new(req.send().map_err(Into::into))
+        Pending::new(req.send().map_err(Into::into))
     }
 }
 
+impl private::Sealed for Client {}
+
 /** Represents a response that can be parsed into a concrete Elasticsearch response. */
-pub trait AsyncFromResponse<TResponse> {
+pub trait AsyncFromResponse<TResponse>: private::Sealed {
     /** Parse a response into a concrete response type. */
-    fn from_response(self, response: Response) -> Box<Future<Item = TResponse, Error = Error>>;
+    fn from_response(self, response: Response) -> FromResponse<TResponse>;
 }
 
+/** A future returned by calling `elastic_req`. */
+pub struct FromResponse<TResponse> {
+    inner: Box<Future<Item = TResponse, Error = Error>>,
+}
+
+impl<TResponse> FromResponse<TResponse> {
+    fn new<F>(fut: F) -> Self
+    where
+        F: Future<Item = TResponse, Error = Error> + 'static,
+    {
+        FromResponse {
+            inner: Box::new(fut),
+        }
+    }
+}
+
+impl<TResponse> Future for FromResponse<TResponse> {
+    type Item = TResponse;
+    type Error = Error;
+
+    fn poll(&mut self) -> Poll<Self::Item, Self::Error> {
+        self.inner.poll()
+    }
+}
+
+impl<TResponse> private::Sealed for Parse<TResponse> {}
+
 impl<TResponse: IsOk + DeserializeOwned + 'static> AsyncFromResponse<TResponse> for Parse<TResponse> {
-    fn from_response(self, mut response: Response) -> Box<Future<Item = TResponse, Error = Error>> {
+    fn from_response(self, mut response: Response) -> FromResponse<TResponse> {
         let status: u16 = response.status().into();
         let body_future = mem::replace(response.body_mut(), Decoder::empty())
             .concat2()
             .map_err(Into::into);
 
-        let de_future = body_future
-            .and_then(move |body| {
-                self.from_slice(status, body.as_ref()).map_err(Into::into)
-            });
+        let de_future = body_future.and_then(move |body| {
+            self.from_slice(status, body.as_ref()).map_err(Into::into)
+        });
 
-        Box::new(de_future)
+        FromResponse::new(de_future)
     }
 }
 
@@ -226,9 +274,11 @@ mod tests {
     #[test]
     fn post_req() {
         let cli = Client::new(&core().handle());
-        let req = build_req(&cli,
-                            &params(),
-                            PercolateRequest::for_index_ty("idx", "ty", vec![]));
+        let req = build_req(
+            &cli,
+            &params(),
+            PercolateRequest::for_index_ty("idx", "ty", vec![]),
+        );
 
         let url = "eshost:9200/path/idx/ty/_percolate?pretty=true&q=*";
 
@@ -240,9 +290,11 @@ mod tests {
     #[test]
     fn put_req() {
         let cli = Client::new(&core().handle());
-        let req = build_req(&cli,
-                            &params(),
-                            IndicesCreateRequest::for_index("idx", vec![]));
+        let req = build_req(
+            &cli,
+            &params(),
+            IndicesCreateRequest::for_index("idx", vec![]),
+        );
 
         let url = "eshost:9200/path/idx?pretty=true&q=*";
 

@@ -5,12 +5,12 @@ extern crate elastic_responses;
 extern crate string_cache;
 
 extern crate futures;
-extern crate tokio_proto;
 extern crate tokio_core;
+extern crate tokio_proto;
 
-extern crate memmap;
-extern crate hyper;
 extern crate futures_cpupool;
+extern crate hyper;
+extern crate memmap;
 
 #[macro_use]
 extern crate quick_error;
@@ -26,7 +26,7 @@ use elastic_responses::parse;
 
 use tokio_core::reactor::Core;
 use futures::{Future, Stream};
-use futures_cpupool::{CpuPool, Builder as CpuPoolBuilder};
+use futures_cpupool::{Builder as CpuPoolBuilder, CpuPool};
 
 use hyper::Client;
 use hyper::client::HttpConnector;
@@ -59,12 +59,9 @@ fn main() {
     core.run(response_future).unwrap();
 }
 
-fn send_request(url: &'static str,
-                client: &Client<HttpConnector, RequestBody>,
-                pool: CpuPool)
-                -> impl Future<Item = BulkResponse, Error = Error> {
+fn send_request(url: &'static str, client: &Client<HttpConnector, RequestBody>, pool: CpuPool) -> impl Future<Item = BulkResponse, Error = Error> {
     // Get a future to buffer a bulk file
-    let (buffer_request_body, request_body) = body::request::mapped_file("./data/accounts.json").unwrap();
+    let (buffer_request_body, request_body) = body::request::mapped_file("./data/accounts.json");
     let buffer_request_body = pool.spawn(buffer_request_body);
 
     // Build a Bulk request
@@ -80,7 +77,8 @@ fn send_request(url: &'static str,
         let status: u16 = response.status().into();
         let chunks = body::response::ChunkBodyBuilder::new();
 
-        response.body()
+        response
+            .body()
             .fold(chunks, concat_chunks)
             .map(move |chunks| (status, chunks.build()))
             .map_err(Into::into)
@@ -101,9 +99,7 @@ fn send_request(url: &'static str,
         .map(move |(_, response)| response)
 }
 
-fn concat_chunks(mut chunks: body::response::ChunkBodyBuilder,
-                 chunk: hyper::Chunk)
-                 -> Result<body::response::ChunkBodyBuilder, hyper::Error> {
+fn concat_chunks(mut chunks: body::response::ChunkBodyBuilder, chunk: hyper::Chunk) -> Result<body::response::ChunkBodyBuilder, hyper::Error> {
     chunks.append(chunk);
     Ok(chunks)
 }

@@ -1,6 +1,6 @@
 use inflector::Inflector;
 use syn;
-use ::parse;
+use parse;
 use super::helpers::*;
 
 /// Builder for request url parameters enum.
@@ -33,9 +33,7 @@ impl UrlParamBuilder {
             _ => {
                 self.has_lifetime = true;
 
-                let cased: Vec<String> = params.iter()
-                    .map(|i| i.to_pascal_case())
-                    .collect();
+                let cased: Vec<String> = params.iter().map(|i| i.to_pascal_case()).collect();
 
                 let name = cased.join("");
 
@@ -54,16 +52,19 @@ impl UrlParamBuilder {
             ident: ident(name),
             attrs: vec![],
             discriminant: None,
-            data: syn::VariantData::Tuple(params.iter()
-                .map(|param| {
-                    syn::Field {
-                        ident: None,
-                        vis: syn::Visibility::Inherited,
-                        attrs: vec![],
-                        ty: ty_a(param.as_ref()),
-                    }
-                })
-                .collect()),
+            data: syn::VariantData::Tuple(
+                params
+                    .iter()
+                    .map(|param| {
+                        syn::Field {
+                            ident: None,
+                            vis: syn::Visibility::Inherited,
+                            attrs: vec![],
+                            ty: ty_a(param.as_ref()),
+                        }
+                    })
+                    .collect(),
+            ),
         }
     }
 
@@ -87,8 +88,7 @@ impl UrlParamBuilder {
         let (ty, generics) = {
             if self.has_lifetime {
                 (ty_a(self.name.as_ref()), generics_a())
-            }
-            else {
+            } else {
                 (ty(self.name.as_ref()), generics_none())
             }
         };
@@ -160,15 +160,17 @@ mod tests {
 
     #[test]
     fn gen_params_enum_from_endpoint() {
-        use ::parse::*;
+        use parse::*;
 
-        let endpoint = ("indices.exists_alias".to_string(),
-                        Endpoint {
-            documentation: String::new(),
-            methods: vec![HttpMethod::Get],
-            url: get_url(),
-            body: None,
-        });
+        let endpoint = (
+            "indices.exists_alias".to_string(),
+            Endpoint {
+                documentation: String::new(),
+                methods: vec![HttpMethod::Get],
+                url: get_url(),
+                body: None,
+            },
+        );
 
         let (result, _) = UrlParamBuilder::from(&endpoint).build();
 
