@@ -450,6 +450,7 @@ impl RequestParams {
     }
 
     /** Set the base url for the Elasticsearch node. */
+    #[deprecated(since = "0.20.0", note = "use `RequestParamsBuilder` to set properties.")]
     pub fn base_url<T: AsRef<str>>(mut self, base: T) -> Self {
         self.base_url = base.as_ref().into();
         self
@@ -466,6 +467,7 @@ impl RequestParams {
     }
 
     /** Set a request header. */
+    #[deprecated(since = "0.20.0", note = "use `RequestParamsBuilder` to set properties.")]
     pub fn header<H>(mut self, header: H) -> Self
     where
         H: Header + Clone,
@@ -556,6 +558,9 @@ mod tests {
 
     #[test]
     fn assert_send_sync() {
+        assert_send::<RequestParamsBuilder>();
+        assert_sync::<RequestParamsBuilder>();
+
         assert_send::<RequestParams>();
         assert_sync::<RequestParams>();
     }
@@ -571,10 +576,11 @@ mod tests {
 
     #[test]
     fn set_multiple_headers() {
-        let req = RequestParams::default()
+        let req = RequestParamsBuilder::default()
             .header(Referer::new("/not-the-value"))
             .header(Referer::new("/People.html#tim"))
-            .header(Authorization("let me in".to_owned()));
+            .header(Authorization("let me in".to_owned()))
+            .build("http://localhost:9200");
 
         let headers = req.get_headers();
 
@@ -598,20 +604,21 @@ mod tests {
 
     #[test]
     fn request_params_can_set_base_url() {
-        let req = RequestParams::default().base_url("http://eshost:9200");
+        let req = RequestParamsBuilder::default()
+            .build("http://eshost:9200");
 
         assert_eq!("http://eshost:9200", req.get_base_url());
     }
 
     #[test]
     fn request_params_can_set_url_query() {
-        let req = RequestParams::default()
+        let req = RequestParamsBuilder::default()
             .url_param("pretty", false)
             .url_param("pretty", true)
-            .url_param("q", "*");
+            .build("http://localhost:9200");
 
         assert_eq!(
-            (16, Some(String::from("?pretty=true&q=*"))),
+            (12, Some(String::from("?pretty=true"))),
             req.get_url_qry()
         );
     }

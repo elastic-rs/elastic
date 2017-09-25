@@ -2,15 +2,20 @@
 
 #![allow(warnings)]
 
+use std::fmt;
+use std::marker::PhantomData;
 use std::rc::Rc;
 use std::cell::RefCell;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use reqwest::unstable::async::Client;
 use futures::{Future, IntoFuture};
+use serde::de::{Deserialize, Deserializer, Visitor, MapAccess, SeqAccess, Error as DeError};
 use {Error, RequestParams, RequestParamsBuilder};
-use async::AsyncElasticClient;
+use async::{AsyncElasticClient, AsyncFromResponse};
 use req::NodesInfoRequest;
+use res::parsing::{parse, IsOk, HttpResponseHead, Unbuffered, MaybeOkResponse, ResponseBody};
+use res::error::ParseResponseError;
 
 /** Select a base address for a given request using some strategy. */
 pub struct MultipleAddresses<TStrategy> {
@@ -25,8 +30,14 @@ where
 {
     /** Get the next address for a request. */
     pub fn next(&self) -> RequestParams {
-        let address = self.strategy.next(&self.addresses);
-        RequestParams::from_parts(address, self.params_builder.clone())
+        self.try_next().expect("unable to optain a node address")
+    }
+
+    /** Try get the next address for a request. */
+    pub fn try_next(&self) -> Option<RequestParams> {
+        self.strategy
+            .try_next(&self.addresses)
+            .map(|address| RequestParams::from_parts(address, self.params_builder.clone()))
     }
 }
 
@@ -37,7 +48,10 @@ impl MultipleAddresses<RoundRobin> {
         I: IntoIterator<Item = S>,
         S: AsRef<str>,
     {
-        let addresses = addresses.into_iter().map(|a| a.as_ref().into()).collect();
+        let addresses: Vec<_> = addresses.into_iter().map(|a| a.as_ref().into()).collect();
+
+        assert!(addresses.len() > 0, "must supply more than 0 node addresses");
+
         let strategy = RoundRobin::default();
 
         MultipleAddresses {
@@ -50,8 +64,8 @@ impl MultipleAddresses<RoundRobin> {
 
 /** The strategy selects an address from a given collection. */
 pub trait Strategy: Send + Sync {
-    /** Get the next address. */
-    fn next(&self, addresses: &[Arc<str>]) -> Arc<str>;
+    /** Try get the next address. */
+    fn try_next(&self, addresses: &[Arc<str>]) -> Option<Arc<str>>;
 }
 
 /** A round-robin strategy cycles through addresses sequentially. */
@@ -68,9 +82,13 @@ impl Default for RoundRobin {
 }
 
 impl Strategy for RoundRobin {
-    fn next(&self, addresses: &[Arc<str>]) -> Arc<str> {
-        let i = self.index.fetch_add(1, Ordering::Relaxed) % addresses.len();
-        addresses[i].clone()
+    fn try_next(&self, addresses: &[Arc<str>]) -> Option<Arc<str>> {
+        if addresses.len() == 0 {
+            None
+        } else {
+            let i = self.index.fetch_add(1, Ordering::Relaxed) % addresses.len();
+            Some(addresses[i].clone())
+        }
     }
 }
 
@@ -83,18 +101,73 @@ pub struct AsyncClusterSniffer {
     addresses: Rc<RefCell<MultipleAddresses<RoundRobin>>>,
 }
 
+#[derive(Debug, PartialEq, Deserialize)]
 struct SniffedNodes {
-    nodes: Vec<Arc<str>>,
+    #[serde(deserialize_with = "deserialize_nodes")]
+    nodes: Vec<SniffedNode>,
+}
+
+impl IsOk for SniffedNodes {
+    fn is_ok<B: ResponseBody>(head: HttpResponseHead, unbuffered: Unbuffered<B>) -> Result<MaybeOkResponse<B>, ParseResponseError> {
+        match head.status() {
+            200...299 => Ok(MaybeOkResponse::ok(unbuffered)),
+            _ => Ok(MaybeOkResponse::err(unbuffered)),
+        }
+    }
+}
+
+fn deserialize_nodes<'de, D>(deserializer: D) -> Result<Vec<SniffedNode>, D::Error>
+    where
+        D: Deserializer<'de>
+{
+    #[derive(Debug, PartialEq)]
+    struct SniffedNodeSet(Vec<SniffedNode>);
+
+    impl<'de> Deserialize<'de> for SniffedNodeSet {
+        fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+        where
+            D: Deserializer<'de>
+        {
+            #[derive(Default)]
+            struct SniffedNodeSetVisitor;
+
+            impl<'de> Visitor<'de> for SniffedNodeSetVisitor {
+                type Value = SniffedNodeSet;
+
+                fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+                    formatter.write_str("a map of node values")
+                }
+
+                fn visit_map<M>(self, mut access: M) -> Result<Self::Value, M::Error>
+                    where M: MapAccess<'de>
+                {
+                    let mut nodes = Vec::with_capacity(access.size_hint().unwrap_or(0));
+
+                    while let Some((_, node)) = access.next_entry::<&str, _>()? {
+                        nodes.push(node);
+                    }
+
+                    Ok(SniffedNodeSet(nodes))
+                }
+            }
+            
+            deserializer.deserialize_map(SniffedNodeSetVisitor::default())
+        }
+    }
+
+    let nodes = SniffedNodeSet::deserialize(deserializer)?;
+
+    Ok(nodes.0)
 }
 
 #[derive(Debug, PartialEq, Deserialize)]
-struct SniffedNode<'a> {
-    #[serde(borrow)] http: Option<SniffedNodeHttp<'a>>,
+struct SniffedNode {
+    http: Option<SniffedNodeHttp>,
 }
 
 #[derive(Debug, PartialEq, Deserialize)]
-struct SniffedNodeHttp<'a> {
-    #[serde(borrow)] publish_address: Option<&'a str>,
+struct SniffedNodeHttp {
+    publish_address: Option<String>,
 }
 
 impl AsyncClusterSniffer {
@@ -140,13 +213,31 @@ impl AsyncClusterSniffer {
     /** Get the next address for a request. */
     pub fn next(&mut self) -> Box<Future<Item = RequestParams, Error = Error>> {
         if self.should_refresh() {
-            // Need to refresh the addresses
-            let req_future = self.client
-                .elastic_req(&self.refresh_params, NodesInfoRequest::new());
+            let addresses = self.addresses.clone();
+            let base_params = self.base_params.clone();
 
-            unimplemented!();
+            // TODO: Make this more resilient to failure
+            // TODO: Pull this into something testable
+            // TODO: Ensure we only have 1 refresh happening at a time
+            let refresh_addresses = self.client
+                .elastic_req(&self.refresh_params, NodesInfoRequest::new())
+                .and_then(|res| parse::<SniffedNodes>().from_response(res))
+                .and_then(move |parsed| {
+                    let mut multiple_addresses = addresses.borrow_mut();
+
+                    multiple_addresses.addresses = parsed.nodes
+                        .into_iter()
+                        .filter_map(|node| node.http
+                            .and_then(|http| http.publish_address)
+                            .map(|publish_address| Arc::<str>::from(publish_address)))
+                        .collect();
+
+                    Ok(multiple_addresses.try_next().unwrap_or(base_params))
+                });
+
+            Box::new(refresh_addresses)
         } else {
-            let address = Ok(self.addresses.borrow().next()).into_future();
+            let address = Ok(self.addresses.borrow().try_next().unwrap_or_else(|| self.base_params.clone())).into_future();
             Box::new(address)
         }
     }
@@ -158,20 +249,53 @@ mod tests {
     use super::*;
 
     #[test]
-    fn deserialise_publish_address() {
+    fn deserialise_nodes() {
         let nodes = json!({
-            "http" : {
-                "publish_address" : "127.0.0.1:9200"
+            "nodes": {
+                "node1": {
+                    "http": {
+                        "publish_address": "1.1.1.1:9200"
+                    }
+                },
+                "node2": {
+                    "http": {
+                        "publish_address": "1.1.1.2:9200"
+                    }
+                }
             }
         }).to_string();
 
-        let expected = SniffedNode {
-            http: Some(SniffedNodeHttp {
-                publish_address: Some("127.0.0.1:9200"),
-            }),
+        let expected = SniffedNodes {
+            nodes: vec![
+                SniffedNode {
+                    http: Some(SniffedNodeHttp {
+                        publish_address: Some("1.1.1.1:9200".to_owned()),
+                    }),
+                },
+                 SniffedNode {
+                    http: Some(SniffedNodeHttp {
+                        publish_address: Some("1.1.1.2:9200".to_owned()),
+                    }),
+                }
+            ]
         };
 
-        let actual: SniffedNode = serde_json::from_str(&nodes).unwrap();
+        let actual: SniffedNodes = serde_json::from_str(&nodes).unwrap();
+
+        assert_eq!(expected, actual);
+    }
+
+    #[test]
+    fn deserialise_nodes_empty() {
+        let nodes = json!({
+            "nodes": { }
+        }).to_string();
+
+        let expected = SniffedNodes {
+            nodes: vec![]
+        };
+
+        let actual: SniffedNodes = serde_json::from_str(&nodes).unwrap();
 
         assert_eq!(expected, actual);
     }

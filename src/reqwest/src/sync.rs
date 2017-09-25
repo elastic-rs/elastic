@@ -7,9 +7,9 @@ use serde_json::Value;
 use reqwest::{Body, Client, ClientBuilder, RequestBuilder, Response};
 
 use private;
-use super::req::HttpRequest;
-use super::res::parsing::{IsOk, Parse};
-use super::{build_method, build_url, Error, RequestParams};
+use req::HttpRequest;
+use res::parsing::{IsOk, Parse};
+use ::{build_method, build_url, Error, RequestParams};
 
 /** Get a default `Client` and `RequestParams`. */
 pub fn default() -> Result<(Client, RequestParams), Error> {
@@ -161,7 +161,6 @@ mod tests {
     fn params() -> RequestParams {
         RequestParams::new("eshost:9200/path")
             .url_param("pretty", true)
-            .url_param("q", "*")
     }
 
     fn expected_req(cli: &Client, method: Method, url: &str, body: Option<Vec<u8>>) -> RequestBuilder {
@@ -186,7 +185,7 @@ mod tests {
         let cli = Client::new();
         let req = build_req(&cli, &params(), PingHeadRequest::new());
 
-        let url = "eshost:9200/path/?pretty=true&q=*";
+        let url = "eshost:9200/path/?pretty=true";
 
         let expected = expected_req(&cli, Method::Head, url, None);
 
@@ -198,7 +197,7 @@ mod tests {
         let cli = Client::new();
         let req = build_req(&cli, &params(), SimpleSearchRequest::new());
 
-        let url = "eshost:9200/path/_search?pretty=true&q=*";
+        let url = "eshost:9200/path/_search?pretty=true";
 
         let expected = expected_req(&cli, Method::Get, url, None);
 
@@ -214,7 +213,7 @@ mod tests {
             PercolateRequest::for_index_ty("idx", "ty", vec![]),
         );
 
-        let url = "eshost:9200/path/idx/ty/_percolate?pretty=true&q=*";
+        let url = "eshost:9200/path/idx/ty/_percolate?pretty=true";
 
         let expected = expected_req(&cli, Method::Post, url, Some(vec![]));
 
@@ -230,7 +229,7 @@ mod tests {
             IndicesCreateRequest::for_index("idx", vec![]),
         );
 
-        let url = "eshost:9200/path/idx?pretty=true&q=*";
+        let url = "eshost:9200/path/idx?pretty=true";
 
         let expected = expected_req(&cli, Method::Put, url, Some(vec![]));
 
@@ -242,7 +241,7 @@ mod tests {
         let cli = Client::new();
         let req = build_req(&cli, &params(), IndicesDeleteRequest::for_index("idx"));
 
-        let url = "eshost:9200/path/idx?pretty=true&q=*";
+        let url = "eshost:9200/path/idx?pretty=true";
 
         let expected = expected_req(&cli, Method::Delete, url, None);
 
