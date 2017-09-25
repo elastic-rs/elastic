@@ -115,7 +115,7 @@ impl AsyncResponseBuilder {
         T: IsOk + DeserializeOwned + Send + 'static,
     {
         let status = self.status();
-        let body = mem::replace(self.inner.body_mut(), Decoder::empty());
+        let body = self.inner.into_body();
 
         let de_fn = move |body: AsyncChunk| {
             parse()

@@ -123,32 +123,6 @@ impl SyncClientBuilder {
     }
 
     /**
-    Set the base url. 
-
-    The url must be fully qualified.
-    This method is a convenient alternative to using `params` to specify the `base_url`.
-
-    # Examples
-
-    Specify a base url for the client to send requests to.
-    In this case, the base url is HTTPS, and not on the root path:
-
-    ```
-    # use elastic::prelude::*;
-    let builder = SyncClientBuilder::new()
-        .base_url("https://my_es_cluster/some_path");
-    ```
-    */
-    pub fn base_url<I>(mut self, base_url: I) -> Self
-    where
-        I: Into<String>,
-    {
-        self.params = self.params.base_url(base_url);
-
-        self
-    }
-
-    /**
     Specify default request parameters.
     
     # Examples
@@ -183,7 +157,7 @@ impl SyncClientBuilder {
     */
     pub fn params<F>(mut self, builder: F) -> Self
     where
-        F: Fn(RequestParams) -> RequestParams,
+        F: Fn(RequestParamsBuilder) -> RequestParamsBuilder,
     {
         self.params = builder(self.params);
 

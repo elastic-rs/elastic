@@ -480,13 +480,14 @@ pub mod requests;
 pub mod responses;
 
 use self::requests::HttpRequest;
+use elastic_reqwest::sniffer::{MultipleAddresses, RoundRobin};
 
 mod sync;
 mod async;
 pub use self::sync::*;
 pub use self::async::*;
 
-pub use elastic_reqwest::RequestParams;
+pub use elastic_reqwest::{RequestParamsBuilder, RequestParams};
 
 mod private {
     pub trait Sealed {}
@@ -569,13 +570,14 @@ core.run(response_future)?;
 #[derive(Clone)]
 pub struct Client<TSender> {
     sender: TSender,
-    params: RequestParams,
+    nodes: MultipleAddresses<RoundRobin>,
+    params: RequestParamsBuilder,
 }
 
 pub mod prelude {
     /*! A glob import for convenience. */
 
-    pub use super::{AsyncClient, AsyncClientBuilder, RequestParams, SyncClient, SyncClientBuilder};
+    pub use super::{AsyncClient, AsyncClientBuilder, RequestParamsBuilder, RequestParams, SyncClient, SyncClientBuilder};
     pub use super::requests::prelude::*;
     pub use super::responses::prelude::*;
 }
