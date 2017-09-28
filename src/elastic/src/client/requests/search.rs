@@ -191,7 +191,7 @@ where
     {
         RequestBuilder::new(
             self.client,
-            self.params,
+            self.params_builder,
             SearchRequestInner {
                 body: body,
                 index: self.inner.index,
@@ -208,7 +208,7 @@ where
 impl<TDocument, TBody> SearchRequestBuilder<SyncSender, TDocument, TBody>
 where
     TDocument: DeserializeOwned,
-    TBody: Into<<SyncSender as Sender>::Body>,
+    TBody: Into<<SyncSender as Sender>::Body> + 'static,
 {
     /**
     Send a `SearchRequestBuilder` synchronously using a [`SyncClient`][SyncClient].
@@ -249,7 +249,7 @@ where
     pub fn send(self) -> Result<SearchResponse<TDocument>> {
         let req = self.inner.into_request();
 
-        RequestBuilder::new(self.client, self.params, RawRequestInner::new(req))
+        RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
             .send()?
             .into_response()
     }
@@ -261,7 +261,7 @@ where
 impl<TDocument, TBody> SearchRequestBuilder<AsyncSender, TDocument, TBody>
 where
     TDocument: DeserializeOwned + Send + 'static,
-    TBody: Into<<AsyncSender as Sender>::Body>,
+    TBody: Into<<AsyncSender as Sender>::Body> + 'static,
 {
     /**
     Send a `SearchRequestBuilder` asynchronously using an [`AsyncClient`][AsyncClient].
@@ -310,7 +310,7 @@ where
     pub fn send(self) -> Pending<TDocument> {
         let req = self.inner.into_request();
 
-        let res_future = RequestBuilder::new(self.client, self.params, RawRequestInner::new(req))
+        let res_future = RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
             .send()
             .and_then(|res| res.into_response());
 

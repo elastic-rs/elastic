@@ -18,6 +18,7 @@ use res::parsing::{parse, IsOk, HttpResponseHead, Unbuffered, MaybeOkResponse, R
 use res::error::ParseResponseError;
 
 /** Select a base address for a given request using some strategy. */
+#[derive(Clone)]
 pub struct MultipleAddresses<TStrategy> {
     addresses: Vec<Arc<str>>,
     strategy: TStrategy,
@@ -69,6 +70,7 @@ pub trait Strategy: Send + Sync {
 }
 
 /** A round-robin strategy cycles through addresses sequentially. */
+#[derive(Clone)]
 pub struct RoundRobin {
     index: Arc<AtomicUsize>,
 }
@@ -93,12 +95,95 @@ impl Strategy for RoundRobin {
 }
 
 /** Periodically sniff node addresses in a cluster. */
+#[derive(Clone)]
 pub struct AsyncClusterSniffer {
     client: Client,
     base_params: RequestParams,
     refresh_params: RequestParams,
+    inner: Rc<RefCell<AsyncClusterSnifferInner>>,
+}
+
+struct AsyncClusterSnifferInner {
     refresh: bool,
-    addresses: Rc<RefCell<MultipleAddresses<RoundRobin>>>,
+    refreshing: bool,
+    nodes: MultipleAddresses<RoundRobin>,
+}
+
+impl AsyncClusterSniffer {
+    /** Create a cluster sniffer with the given base parameters. */
+    pub fn new(client: Client, base_params: RequestParams) -> Self {
+        let builder = base_params.inner.clone();
+        let nodes = MultipleAddresses::round_robin(vec![base_params.base_url.clone()], builder);
+
+        // Specify a `filter_path` when updating node stats because deserialisation occurs on tokio thread
+        // This should change in the future if:
+        // - we can provide a cpu pool to deserialise on
+        // - we want more metadata about the nodes
+        // The publish_address may not correspond to the address the node is actually available on
+        // In this case, we might want to offer some kind of filter function that consumers can use to transform addresses
+        let refresh_params = base_params
+            .clone()
+            .url_param("filter_path", "nodes.*.http.publish_address");
+
+        AsyncClusterSniffer {
+            client: client,
+            base_params: base_params,
+            refresh_params: refresh_params,
+            inner: Rc::new(RefCell::new(AsyncClusterSnifferInner {
+                refresh: true,
+                refreshing: false,
+                nodes: nodes
+            })),
+        }
+    }
+
+    fn should_refresh(&self) -> bool {
+        let mut inner = self.inner.borrow_mut();
+
+        if !inner.refreshing && inner.refresh {
+            inner.refresh = false;
+            true
+        } else {
+            false
+        }
+    }
+
+    /** Get the next address for a request. */
+    pub fn next(&self) -> Box<Future<Item = RequestParams, Error = Error>> {
+        if self.should_refresh() {
+            let mut inner = self.inner.clone();
+            {
+                inner.borrow_mut().refreshing = true;
+            }
+
+            let base_params = self.base_params.clone();
+
+            // TODO: Make this more resilient to failure
+            // TODO: Ensure we only have 1 refresh happening at a time (extra refreshing property)
+            let refresh_addresses = self.client
+                .elastic_req(&self.refresh_params, NodesInfoRequest::new())
+                .and_then(|res| parse::<SniffedNodes>().from_response(res))
+                .and_then(move |parsed| {
+                    let mut inner = inner.borrow_mut();
+
+                    inner.nodes.addresses = parsed.nodes
+                        .into_iter()
+                        .filter_map(|node| node.http
+                            .and_then(|http| http.publish_address)
+                            .map(|publish_address| Arc::<str>::from(publish_address)))
+                        .collect();
+
+                    inner.refreshing = false;
+
+                    Ok(inner.nodes.try_next().unwrap_or(base_params))
+                });
+
+            Box::new(refresh_addresses)
+        } else {
+            let address = Ok(self.inner.borrow().nodes.try_next().unwrap_or_else(|| self.base_params.clone())).into_future();
+            Box::new(address)
+        }
+    }
 }
 
 #[derive(Debug, PartialEq, Deserialize)]
@@ -168,79 +253,6 @@ struct SniffedNode {
 #[derive(Debug, PartialEq, Deserialize)]
 struct SniffedNodeHttp {
     publish_address: Option<String>,
-}
-
-impl AsyncClusterSniffer {
-    /** Create a cluster sniffer with the given base parameters. */
-    pub fn new(client: Client, base_params: RequestParams) -> Self {
-        let builder = base_params.inner.clone();
-        let addresses = {
-            MultipleAddresses {
-                addresses: vec![base_params.base_url.clone()],
-                strategy: RoundRobin::default(),
-                params_builder: builder,
-            }
-        };
-
-        // Specify a `filter_path` when updating node stats because deserialisation occurs on tokio thread
-        // This should change in the future if:
-        // - we can provide a cpu pool to deserialise on
-        // - we want more metadata about the nodes
-        // The publish_address may not correspond to the address the node is actually available on
-        // In this case, we might want to offer some kind of filter function that consumers can use to transform addresses
-        let refresh_params = base_params
-            .clone()
-            .url_param("filter_path", "nodes.*.http.publish_address");
-
-        AsyncClusterSniffer {
-            client: client,
-            base_params: base_params,
-            refresh_params: refresh_params,
-            refresh: true,
-            addresses: Rc::new(RefCell::new(addresses)),
-        }
-    }
-
-    fn should_refresh(&mut self) -> bool {
-        if self.refresh {
-            self.refresh = false;
-            true
-        } else {
-            false
-        }
-    }
-
-    /** Get the next address for a request. */
-    pub fn next(&mut self) -> Box<Future<Item = RequestParams, Error = Error>> {
-        if self.should_refresh() {
-            let addresses = self.addresses.clone();
-            let base_params = self.base_params.clone();
-
-            // TODO: Make this more resilient to failure
-            // TODO: Pull this into something testable
-            // TODO: Ensure we only have 1 refresh happening at a time
-            let refresh_addresses = self.client
-                .elastic_req(&self.refresh_params, NodesInfoRequest::new())
-                .and_then(|res| parse::<SniffedNodes>().from_response(res))
-                .and_then(move |parsed| {
-                    let mut multiple_addresses = addresses.borrow_mut();
-
-                    multiple_addresses.addresses = parsed.nodes
-                        .into_iter()
-                        .filter_map(|node| node.http
-                            .and_then(|http| http.publish_address)
-                            .map(|publish_address| Arc::<str>::from(publish_address)))
-                        .collect();
-
-                    Ok(multiple_addresses.try_next().unwrap_or(base_params))
-                });
-
-            Box::new(refresh_addresses)
-        } else {
-            let address = Ok(self.addresses.borrow().try_next().unwrap_or_else(|| self.base_params.clone())).into_future();
-            Box::new(address)
-        }
-    }
 }
 
 #[cfg(test)]

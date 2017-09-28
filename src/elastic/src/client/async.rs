@@ -1,14 +1,15 @@
 use uuid::Uuid;
-use futures::{Future, Poll};
+use futures::{Future, IntoFuture, Poll};
 use futures_cpupool::CpuPool;
 use tokio_core::reactor::Handle;
 use elastic_reqwest::{AsyncBody, AsyncElasticClient};
+use elastic_reqwest::sniffer::{MultipleAddresses, RoundRobin, AsyncClusterSniffer};
 use reqwest::unstable::async::{Client as AsyncHttpClient, ClientBuilder as AsyncHttpClientBuilder};
 
 use error::{self, Error, Result};
 use client::requests::HttpRequest;
 use client::responses::{async_response, AsyncResponseBuilder};
-use client::{private, Client, RequestParams, Sender};
+use client::{private, Client, RequestParams, RequestParamsBuilder, Sender, SendableRequest, DEFAULT_NODE_ADDRESS};
 
 /** 
 An asynchronous Elasticsearch client.
@@ -49,6 +50,22 @@ pub type AsyncClient = Client<AsyncSender>;
 pub struct AsyncSender {
     pub(in client) http: AsyncHttpClient,
     pub(in client) serde_pool: Option<CpuPool>,
+    addresses: AsyncAddresses,
+}
+
+#[derive(Clone)]
+enum AsyncAddresses {
+    Static(MultipleAddresses<RoundRobin>),
+    Sniffed(AsyncClusterSniffer),
+}
+
+impl AsyncAddresses {
+    fn next(&self) -> Box<Future<Item = RequestParams, Error = Error>> {
+        match *self {
+            AsyncAddresses::Static(ref addresses) => Box::new(Ok(addresses.next()).into_future()),
+            AsyncAddresses::Sniffed(ref sniffer) => Box::new(sniffer.next().map_err(error::request)),
+        }
+    }
 }
 
 impl private::Sealed for AsyncSender {}
@@ -57,14 +74,16 @@ impl Sender for AsyncSender {
     type Body = AsyncBody;
     type Response = Pending;
 
-    fn send<TRequest, TBody>(&self, req: TRequest, params: &RequestParams) -> Self::Response
+    fn send<TRequest, TBody>(&self, request: SendableRequest<TRequest, TBody>) -> Self::Response
     where
         TRequest: Into<HttpRequest<'static, TBody>>,
-        TBody: Into<Self::Body>,
+        TBody: Into<Self::Body> + 'static
     {
         let serde_pool = self.serde_pool.clone();
+        let http = self.http.clone();
         let correlation_id = Uuid::new_v4();
-        let req = req.into();
+        let params_builder = request.params_builder;
+        let req = request.inner.into();
 
         info!(
             "Elasticsearch Request: correlation_id: '{}', path: '{}'",
@@ -72,24 +91,42 @@ impl Sender for AsyncSender {
             req.url.as_ref()
         );
 
-        let req_future = self.http
-            .elastic_req(params, req)
+        let params_future = self.addresses.next()
             .map_err(move |e| {
                 error!(
-                    "Elasticsearch Response: correlation_id: '{}', error: '{}'",
+                    "Elasticsearch Node Selection: correlation_id: '{}', error: '{}'",
                     correlation_id,
                     e
                 );
-                error::request(e)
+                e
             })
-            .map(move |res| {
-                info!(
-                    "Elasticsearch Response: correlation_id: '{}', status: '{}'",
-                    correlation_id,
-                    res.status()
-                );
-                async_response(res, serde_pool)
+            .map(move |params| {
+                if let Some(params_builder) = params_builder {
+                   params_builder(params)
+                } else {
+                    params
+                }
             });
+
+        let req_future = params_future.and_then(move |params| {
+            http.elastic_req(&params, req)
+                .map_err(move |e| {
+                    error!(
+                        "Elasticsearch Response: correlation_id: '{}', error: '{}'",
+                        correlation_id,
+                        e
+                    );
+                    error::request(e)
+                })
+                .map(move |res| {
+                    info!(
+                        "Elasticsearch Response: correlation_id: '{}', status: '{}'",
+                        correlation_id,
+                        res.status()
+                    );
+                    async_response(res, serde_pool)
+                })
+        });
 
         Pending::new(req_future)
     }
@@ -124,7 +161,34 @@ impl Future for Pending {
 pub struct AsyncClientBuilder {
     http: Option<AsyncHttpClient>,
     serde_pool: Option<CpuPool>,
-    params: RequestParams,
+    addresses: AsyncAddressesBuilder,
+    params: RequestParamsBuilder,
+}
+
+enum AsyncAddressesBuilder {
+    Static(Vec<String>),
+    Sniffed(String),
+}
+
+impl Default for AsyncAddressesBuilder {
+    fn default() -> Self {
+        AsyncAddressesBuilder::Static(vec![DEFAULT_NODE_ADDRESS.to_owned()])
+    }
+}
+
+impl AsyncAddressesBuilder {
+    fn build(self, params: RequestParamsBuilder, client: AsyncHttpClient) -> AsyncAddresses {
+        match self {
+            AsyncAddressesBuilder::Static(addresses) => {
+                AsyncAddresses::Static(MultipleAddresses::round_robin(addresses, params))
+            },
+            AsyncAddressesBuilder::Sniffed(base_address) => {
+                let params = params.build(base_address);
+
+                AsyncAddresses::Sniffed(AsyncClusterSniffer::new(client, params))
+            }
+        }
+    }
 }
 
 impl Default for AsyncClientBuilder {
@@ -148,19 +212,43 @@ impl AsyncClientBuilder {
         AsyncClientBuilder {
             http: None,
             serde_pool: None,
-            params: RequestParams::default(),
+            params: RequestParamsBuilder::default(),
+            addresses: AsyncAddressesBuilder::default(),
         }
     }
 
     /**
     Create a new client builder with the given default request parameters.
     */
-    pub fn from_params(params: RequestParams) -> Self {
+    pub fn from_params(params: RequestParamsBuilder) -> Self {
         AsyncClientBuilder {
             http: None,
             serde_pool: None,
             params: params,
+            addresses: AsyncAddressesBuilder::default(),
         }
+    }
+
+    /**
+    Specify a set of static node addresses to load balance requests on.
+    */
+    pub fn static_addresses<I>(mut self, addresses: I) -> Self
+        where I: IntoIterator<Item = String>
+    {
+        self.addresses = AsyncAddressesBuilder::Static(addresses.into_iter().collect());
+
+        self
+    }
+
+    /**
+    Specify a node address to sniff other nodes in the cluster from.
+    */
+    pub fn sniff_addresses<I>(mut self, address: I) -> Self
+        where I: Into<String>
+    {
+        self.addresses = AsyncAddressesBuilder::Sniffed(address.into());
+
+        self
     }
 
     /**
@@ -255,13 +343,15 @@ impl AsyncClientBuilder {
             .map(Ok)
             .unwrap_or_else(|| AsyncHttpClientBuilder::new().build(handle))
             .map_err(error::build)?;
+        
+        let addresses = self.addresses.build(self.params, http.clone());
 
         Ok(AsyncClient {
             sender: AsyncSender {
                 http: http,
                 serde_pool: self.serde_pool,
+                addresses: addresses,
             },
-            params: self.params,
         })
     }
 }

@@ -51,7 +51,7 @@ where
     TSender: Sender,
 {
     client: Client<TSender>,
-    params: Option<RequestParams>,
+    params_builder: Option<Box<Fn(RequestParams) -> RequestParams>>,
     inner: TRequest,
 }
 
@@ -64,10 +64,10 @@ impl<TSender, TRequest> RequestBuilder<TSender, TRequest>
 where
     TSender: Sender,
 {
-    fn new(client: Client<TSender>, params: Option<RequestParams>, req: TRequest) -> Self {
+    fn new(client: Client<TSender>, builder: Option<Box<Fn(RequestParams) -> RequestParams>>, req: TRequest) -> Self {
         RequestBuilder {
             client: client,
-            params: params,
+            params_builder: builder,
             inner: req,
         }
     }
@@ -75,8 +75,9 @@ where
     /**
     Override the parameters for this request.
     
-    This method will clone the `RequestParams` on the `Client` and pass
-    them to the closure.
+    This method will box the given closure and use it to mutate the request parameters.
+    It will be called after a node address has been chosen so `params` can be used to override the url a request will be sent to.
+    Each call to `params` will be chained so it can be called multiple times but it's recommended to only call once.
     
     # Examples
     
@@ -94,17 +95,36 @@ where
     # Ok(())
     # }
     ```
+
+    Force the request to be sent to `http://different-host:9200`:
+
+    ```no_run
+    # extern crate elastic;
+    # use elastic::prelude::*;
+    # fn main() { run().unwrap() }
+    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # let client = SyncClientBuilder::new().build()?;
+    # fn get_req() -> PingRequest<'static> { PingRequest::new() }
+    let builder = client.request(get_req())
+                        .params(|p| p.base_url("http://different-host:9200"));
+    # Ok(())
+    # }
+    ```
     */
     pub fn params<F>(mut self, builder: F) -> Self
     where
-        F: Fn(RequestParams) -> RequestParams,
+        F: Fn(RequestParams) -> RequestParams + 'static,
     {
-        let params = self.params;
-        let client = self.client;
+        if let Some(old_params_builder) = self.params_builder {
+            let params_builder = move |params: RequestParams| {
+                let params = old_params_builder(params);
+                builder(params)
+            };
 
-        self.params = { Some(builder(params.unwrap_or_else(|| client.params.clone()))) };
-
-        self.client = client;
+            self.params_builder = Some(Box::new(params_builder));
+        } else {
+            self.params_builder = Some(Box::new(builder));
+        }
 
         self
     }

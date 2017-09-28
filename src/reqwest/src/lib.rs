@@ -295,13 +295,13 @@ quick_error! {
 /**
 A builder for `RequestParams`.
 
-This builder doesn't expect a base url to be suppliedd up-front.
+This builder doesn't expect a base url to be supplied up-front.
 */
 #[derive(Clone)]
 pub struct RequestParamsBuilder {
     url_params: Arc<HashMap<&'static str, String>>,
     // We should be able to replace this with `Arc<HeadersMap>` from the `http` crate
-    headers_factory: Option<Arc<Fn(&mut Headers) + Send + Sync + 'static>>,
+    headers_builder: Option<Arc<Fn(&mut Headers) + Send + Sync + 'static>>,
 }
 
 /**
@@ -367,7 +367,7 @@ impl RequestParamsBuilder {
     */
     pub fn new() -> Self {
         RequestParamsBuilder {
-            headers_factory: None,
+            headers_builder: None,
             url_params: Arc::new(HashMap::new()),
         }
     }
@@ -396,19 +396,19 @@ impl RequestParamsBuilder {
     Each call to `headers` will chain to the end of the last call.
     This function allocates a new `Arc` for each call.
     */
-    fn headers<F>(mut self, headers_factory: F) -> Self
+    fn headers<F>(mut self, headers_builder: F) -> Self
     where
         F: Fn(&mut Headers) + Send + Sync + 'static,
     {
-        if let Some(old_headers_factory) = self.headers_factory {
-            let headers_factory = move |mut headers: &mut Headers| {
-                old_headers_factory(&mut headers);
-                headers_factory(&mut headers);
+        if let Some(old_headers_builder) = self.headers_builder {
+            let headers_builder = move |mut headers: &mut Headers| {
+                old_headers_builder(&mut headers);
+                headers_builder(&mut headers);
             };
 
-            self.headers_factory = Some(Arc::new(headers_factory));
+            self.headers_builder = Some(Arc::new(headers_builder));
         } else {
-            self.headers_factory = Some(Arc::new(headers_factory));
+            self.headers_builder = Some(Arc::new(headers_builder));
         }
 
         self
@@ -450,7 +450,6 @@ impl RequestParams {
     }
 
     /** Set the base url for the Elasticsearch node. */
-    #[deprecated(since = "0.20.0", note = "use `RequestParamsBuilder` to set properties.")]
     pub fn base_url<T: AsRef<str>>(mut self, base: T) -> Self {
         self.base_url = base.as_ref().into();
         self
@@ -467,7 +466,6 @@ impl RequestParams {
     }
 
     /** Set a request header. */
-    #[deprecated(since = "0.20.0", note = "use `RequestParamsBuilder` to set properties.")]
     pub fn header<H>(mut self, header: H) -> Self
     where
         H: Header + Clone,
@@ -486,8 +484,8 @@ impl RequestParams {
         let mut headers = Headers::new();
         headers.set(ContentType::json());
 
-        if let Some(ref headers_factory) = self.inner.headers_factory {
-            headers_factory(&mut headers);
+        if let Some(ref headers_builder) = self.inner.headers_builder {
+            headers_builder(&mut headers);
         }
 
         headers

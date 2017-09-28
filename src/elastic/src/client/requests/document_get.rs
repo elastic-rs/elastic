@@ -201,7 +201,7 @@ where
     pub fn send(self) -> Result<GetResponse<TDocument>> {
         let req = self.inner.into_request();
 
-        RequestBuilder::new(self.client, self.params, RawRequestInner::new(req))
+        RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
             .send()?
             .into_response()
     }
@@ -258,7 +258,7 @@ where
     pub fn send(self) -> Pending<TDocument> {
         let req = self.inner.into_request();
 
-        let res_future = RequestBuilder::new(self.client, self.params, RawRequestInner::new(req))
+        let res_future = RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
             .send()
             .and_then(|res| res.into_response());
 

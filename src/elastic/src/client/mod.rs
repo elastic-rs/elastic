@@ -479,8 +479,8 @@ For more details see the [`responses`][responses-mod] module.
 pub mod requests;
 pub mod responses;
 
+use std::marker::PhantomData;
 use self::requests::HttpRequest;
-use elastic_reqwest::sniffer::{MultipleAddresses, RoundRobin};
 
 mod sync;
 mod async;
@@ -491,6 +491,13 @@ pub use elastic_reqwest::{RequestParamsBuilder, RequestParams};
 
 mod private {
     pub trait Sealed {}
+}
+
+/** A sendable request. */
+pub struct SendableRequest<TRequest, TBody> {
+    inner: TRequest,
+    params_builder: Option<Box<Fn(RequestParams) -> RequestParams>>,
+    _marker: PhantomData<TBody>,
 }
 
 /**
@@ -508,10 +515,10 @@ pub trait Sender: private::Sealed + Clone {
     type Response;
 
     /// Send a request.
-    fn send<TRequest, TBody>(&self, req: TRequest, params: &RequestParams) -> Self::Response
+    fn send<TRequest, TBody>(&self, request: SendableRequest<TRequest, TBody>) -> Self::Response
     where
         TRequest: Into<HttpRequest<'static, TBody>>,
-        TBody: Into<Self::Body>;
+        TBody: Into<Self::Body> + 'static;
 }
 
 /**
@@ -570,9 +577,9 @@ core.run(response_future)?;
 #[derive(Clone)]
 pub struct Client<TSender> {
     sender: TSender,
-    nodes: MultipleAddresses<RoundRobin>,
-    params: RequestParamsBuilder,
 }
+
+const DEFAULT_NODE_ADDRESS: &'static str = "http://localhost:9200";
 
 pub mod prelude {
     /*! A glob import for convenience. */
