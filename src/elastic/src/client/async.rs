@@ -232,10 +232,12 @@ impl AsyncClientBuilder {
     /**
     Specify a set of static node addresses to load balance requests on.
     */
-    pub fn static_addresses<I>(mut self, addresses: I) -> Self
-        where I: IntoIterator<Item = String>
+    pub fn static_addresses<I, S>(mut self, addresses: I) -> Self
+        where I: IntoIterator<Item = S>,
+              S: AsRef<str>,
     {
-        self.addresses = AsyncAddressesBuilder::Static(addresses.into_iter().collect());
+        let addresses = addresses.into_iter().map(|address| address.as_ref().to_owned()).collect();
+        self.addresses = AsyncAddressesBuilder::Static(addresses);
 
         self
     }
@@ -244,9 +246,9 @@ impl AsyncClientBuilder {
     Specify a node address to sniff other nodes in the cluster from.
     */
     pub fn sniff_addresses<I>(mut self, address: I) -> Self
-        where I: Into<String>
+        where I: AsRef<str>
     {
-        self.addresses = AsyncAddressesBuilder::Sniffed(address.into());
+        self.addresses = AsyncAddressesBuilder::Sniffed(address.as_ref().to_owned());
 
         self
     }

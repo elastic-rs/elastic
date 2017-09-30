@@ -1,5 +1,7 @@
 /*! Connection sniffing and multiple static addresses. */
 
+// TODO: Work out the storage for addresses properly. Might just want to use `Arc<str>: From<S>`
+
 #![allow(warnings)]
 
 use std::fmt;
@@ -113,7 +115,7 @@ impl AsyncClusterSniffer {
     /** Create a cluster sniffer with the given base parameters. */
     pub fn new(client: Client, base_params: RequestParams) -> Self {
         let builder = base_params.inner.clone();
-        let nodes = MultipleAddresses::round_robin(vec![base_params.base_url.clone()], builder);
+        let nodes = MultipleAddresses::round_robin(&[base_params.base_url.clone()], builder);
 
         // Specify a `filter_path` when updating node stats because deserialisation occurs on tokio thread
         // This should change in the future if:
