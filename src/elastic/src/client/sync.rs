@@ -1,12 +1,13 @@
+use std::sync::Arc;
 use uuid::Uuid;
-use elastic_reqwest::{SyncBody, SyncElasticClient};
-use elastic_reqwest::sniffer::{MultipleAddresses, RoundRobin};
+use elastic_reqwest::{SyncBody, SyncElasticClient, DEFAULT_NODE_ADDRESS};
+use elastic_reqwest::static_nodes::StaticNodes;
 use reqwest::{Client as SyncHttpClient, ClientBuilder as SyncHttpClientBuilder};
 
 use error::{self, Result};
 use client::requests::HttpRequest;
 use client::responses::{sync_response, SyncResponseBuilder};
-use client::{private, Client, RequestParams, RequestParamsBuilder, Sender, SendableRequest, DEFAULT_NODE_ADDRESS};
+use client::{private, Client, RequestParams, PreRequestParams, Sender, SendableRequest};
 
 /** 
 A synchronous Elasticsearch client.
@@ -39,18 +40,18 @@ pub type SyncClient = Client<SyncSender>;
 #[derive(Clone)]
 pub struct SyncSender {
     pub(in client) http: SyncHttpClient,
-    addresses: SyncAddresses,
+    nodes: SyncNodes,
 }
 
 #[derive(Clone)]
-enum SyncAddresses {
-    Static(MultipleAddresses<RoundRobin>),
+enum SyncNodes {
+    Static(StaticNodes),
 }
 
-impl SyncAddresses {
+impl SyncNodes {
     fn next(&self) -> Result<RequestParams> {
         match *self {
-            SyncAddresses::Static(ref addresses) => Ok(addresses.next()),
+            SyncNodes::Static(ref nodes) => Ok(nodes.next()),
         }
     }
 }
@@ -76,7 +77,7 @@ impl Sender for SyncSender {
             req.url.as_ref()
         );
 
-        let params = self.addresses.next()
+        let params = self.nodes.next()
             .map_err(|e| {
                 error!(
                     "Elasticsearch Node Selection: correlation_id: '{}', error: '{}'",
@@ -119,25 +120,25 @@ impl Sender for SyncSender {
 /** A builder for a syncronous client. */
 pub struct SyncClientBuilder {
     http: Option<SyncHttpClient>,
-    addresses: SyncAddressesBuilder,
-    params: RequestParamsBuilder,
+    nodes: SyncNodesBuilder,
+    params: PreRequestParams,
 }
 
-enum SyncAddressesBuilder {
-    Static(Vec<String>),
+enum SyncNodesBuilder {
+    Static(Vec<Arc<str>>),
 }
 
-impl Default for SyncAddressesBuilder {
+impl Default for SyncNodesBuilder {
     fn default() -> Self {
-        SyncAddressesBuilder::Static(vec![DEFAULT_NODE_ADDRESS.to_owned()])
+        SyncNodesBuilder::Static(vec![DEFAULT_NODE_ADDRESS.into()])
     }
 }
 
-impl SyncAddressesBuilder {
-    fn build(self, params: RequestParamsBuilder) -> SyncAddresses {
+impl SyncNodesBuilder {
+    fn build(self, params: PreRequestParams) -> SyncNodes {
         match self {
-            SyncAddressesBuilder::Static(addresses) => {
-                SyncAddresses::Static(MultipleAddresses::round_robin(addresses, params))
+            SyncNodesBuilder::Static(nodes) => {
+                SyncNodes::Static(StaticNodes::round_robin(nodes, params))
             }
         }
     }
@@ -162,31 +163,31 @@ impl SyncClientBuilder {
     pub fn new() -> Self {
         SyncClientBuilder {
             http: None,
-            addresses: SyncAddressesBuilder::default(),
-            params: RequestParamsBuilder::default(),
+            nodes: SyncNodesBuilder::default(),
+            params: PreRequestParams::default(),
         }
     }
 
     /**
     Create a new client builder with the given default request parameters.
     */
-    pub fn from_params(params: RequestParamsBuilder) -> Self {
+    pub fn from_params(params: PreRequestParams) -> Self {
         SyncClientBuilder {
             http: None,
-            addresses: SyncAddressesBuilder::default(),
+            nodes: SyncNodesBuilder::default(),
             params: params,
         }
     }
 
     /**
-    Specify a set of static node addresses to load balance requests on.
+    Specify a set of static node nodes to load balance requests on.
     */
-    pub fn static_addresses<I, S>(mut self, addresses: I) -> Self
+    pub fn static_nodes<I, S>(mut self, nodes: I) -> Self
         where I: IntoIterator<Item = S>,
-              S: AsRef<str>,
+              S: Into<Arc<str>>,
     {
-        let addresses = addresses.into_iter().map(|address| address.as_ref().to_owned()).collect();
-        self.addresses = SyncAddressesBuilder::Static(addresses);
+        let nodes = nodes.into_iter().map(|address| address.into()).collect();
+        self.nodes = SyncNodesBuilder::Static(nodes);
 
         self
     }
@@ -226,7 +227,7 @@ impl SyncClientBuilder {
     */
     pub fn params<F>(mut self, builder: F) -> Self
     where
-        F: Fn(RequestParamsBuilder) -> RequestParamsBuilder,
+        F: Fn(PreRequestParams) -> PreRequestParams,
     {
         self.params = builder(self.params);
 
@@ -251,12 +252,12 @@ impl SyncClientBuilder {
             .unwrap_or_else(|| SyncHttpClientBuilder::new().build())
             .map_err(error::build)?;
 
-        let addresses = self.addresses.build(self.params);
+        let nodes = self.nodes.build(self.params);
 
         Ok(SyncClient {
             sender: SyncSender {
                 http: http,
-                addresses: addresses,
+                nodes: nodes,
             }
         })
     }

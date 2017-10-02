@@ -487,7 +487,7 @@ mod async;
 pub use self::sync::*;
 pub use self::async::*;
 
-pub use elastic_reqwest::{RequestParamsBuilder, RequestParams};
+pub use elastic_reqwest::{PreRequestParams, RequestParams};
 
 mod private {
     pub trait Sealed {}
@@ -579,12 +579,10 @@ pub struct Client<TSender> {
     sender: TSender,
 }
 
-const DEFAULT_NODE_ADDRESS: &'static str = "http://localhost:9200";
-
 pub mod prelude {
     /*! A glob import for convenience. */
 
-    pub use super::{AsyncClient, AsyncClientBuilder, RequestParamsBuilder, RequestParams, SyncClient, SyncClientBuilder};
+    pub use super::{AsyncClient, AsyncClientBuilder, PreRequestParams, RequestParams, SyncClient, SyncClientBuilder};
     pub use super::requests::prelude::*;
     pub use super::responses::prelude::*;
 }

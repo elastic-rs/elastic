@@ -1,5 +1,8 @@
 /*! Asynchronous http client. */
 
+mod nodes_info;
+pub mod sniffed_nodes;
+
 use bytes::Bytes;
 use serde::de::DeserializeOwned;
 use serde_json::Value;

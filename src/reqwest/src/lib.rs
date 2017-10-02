@@ -182,6 +182,18 @@ let search_res = parse::<SearchResponse<Value>>().from_response(http_res).unwrap
 # }
 ```
 
+## Load balancing requests
+
+Requests can be load balanced to nodes in a cluster in a few ways.
+
+### Static set of node addresses
+
+> TODO: Fill this in
+
+### Sniff node addresses periodically
+
+> TODO: Fill this in
+
 # See Also
 
 - [`elastic`][elastic].
@@ -232,12 +244,17 @@ mod private {
     pub trait Sealed {}
 }
 
-pub mod sniffer;
+pub mod static_nodes;
 pub mod sync;
 pub mod async;
 
 pub use self::sync::{SyncBody, SyncElasticClient, SyncFromResponse};
 pub use self::async::{AsyncBody, AsyncElasticClient, AsyncFromResponse};
+
+/**
+The default base url to send requests to.
+*/
+pub const DEFAULT_NODE_ADDRESS: &'static str = "http://localhost:9200";
 
 /**
 Request types.
@@ -293,12 +310,13 @@ quick_error! {
 }
 
 /**
-A builder for `RequestParams`.
+An incomplete set of request parameters.
 
-This builder doesn't expect a base url to be supplied up-front.
+The difference between `PreRequestParams` and `RequestParams` is the absense of a base url to send requests to.
+When requests are load balanced between multiple Elasticsearch nodes the url to send a request to might not be known upfront.
 */
 #[derive(Clone)]
-pub struct RequestParamsBuilder {
+pub struct PreRequestParams {
     url_params: Arc<HashMap<&'static str, String>>,
     // We should be able to replace this with `Arc<HeadersMap>` from the `http` crate
     headers_builder: Option<Arc<Fn(&mut Headers) + Send + Sync + 'static>>,
@@ -355,10 +373,10 @@ let params = RequestParams::default()
 #[derive(Clone)]
 pub struct RequestParams {
     base_url: Arc<str>,
-    inner: RequestParamsBuilder,
+    inner: PreRequestParams,
 }
 
-impl RequestParamsBuilder {
+impl PreRequestParams {
     /** 
     Create a new container for request parameters.
     
@@ -366,7 +384,7 @@ impl RequestParamsBuilder {
     It will also set the `Content-Type` header to `application/json`.
     */
     pub fn new() -> Self {
-        RequestParamsBuilder {
+        PreRequestParams {
             headers_builder: None,
             url_params: Arc::new(HashMap::new()),
         }
@@ -413,28 +431,19 @@ impl RequestParamsBuilder {
 
         self
     }
-
-    /**
-    Build `RequestParams`.
-    */
-    pub fn build<T: AsRef<str>>(&self, base: T) -> RequestParams {
-        RequestParams {
-            base_url: base.as_ref().into(),
-            inner: self.clone(),
-        }
-    }
 }
 
-impl Default for RequestParamsBuilder {
+impl Default for PreRequestParams {
     fn default() -> Self {
-        RequestParamsBuilder::new()
+        PreRequestParams::new()
     }
 }
 
 impl RequestParams {
-    fn from_parts(base_url: Arc<str>, inner: RequestParamsBuilder) -> Self {
+    /** Create a container for request parameters from a base url and pre request parameters. */
+    pub fn from_parts<T: Into<Arc<str>>>(base_url: T, inner: PreRequestParams) -> Self {
         RequestParams {
-            base_url: base_url,
+            base_url: base_url.into(),
             inner: inner,
         }
     }
@@ -445,13 +454,13 @@ impl RequestParams {
     This method takes a fully-qualified url for the Elasticsearch node.
     It will also set the `Content-Type` header to `application/json`.
     */
-    pub fn new<T: AsRef<str>>(base: T) -> Self {
-        RequestParams::from_parts(base.as_ref().into(), RequestParamsBuilder::new())
+    pub fn new<T: Into<Arc<str>>>(base_url: T) -> Self {
+        RequestParams::from_parts(base_url.into(), PreRequestParams::new())
     }
 
     /** Set the base url for the Elasticsearch node. */
-    pub fn base_url<T: AsRef<str>>(mut self, base: T) -> Self {
-        self.base_url = base.as_ref().into();
+    pub fn base_url<T: Into<Arc<str>>>(mut self, base_url: T) -> Self {
+        self.base_url = base_url.into();
         self
     }
 
@@ -509,11 +518,16 @@ impl RequestParams {
             (0, None)
         }
     }
+
+    /** Split the request parameters into its parts. */
+    pub fn split(self) -> (Arc<str>, PreRequestParams) {
+        (self.base_url, self.inner)
+    }
 }
 
 impl Default for RequestParams {
     fn default() -> Self {
-        RequestParams::new("http://localhost:9200")
+        RequestParams::new(DEFAULT_NODE_ADDRESS)
     }
 }
 
@@ -556,8 +570,8 @@ mod tests {
 
     #[test]
     fn assert_send_sync() {
-        assert_send::<RequestParamsBuilder>();
-        assert_sync::<RequestParamsBuilder>();
+        assert_send::<PreRequestParams>();
+        assert_sync::<PreRequestParams>();
 
         assert_send::<RequestParams>();
         assert_sync::<RequestParams>();
@@ -574,11 +588,11 @@ mod tests {
 
     #[test]
     fn set_multiple_headers() {
-        let req = RequestParamsBuilder::default()
+        let req = PreRequestParams::default()
             .header(Referer::new("/not-the-value"))
             .header(Referer::new("/People.html#tim"))
             .header(Authorization("let me in".to_owned()))
-            .build("http://localhost:9200");
+            .build(DEFAULT_NODE_ADDRESS);
 
         let headers = req.get_headers();
 
@@ -597,12 +611,12 @@ mod tests {
     fn request_params_has_default_base_url() {
         let req = RequestParams::default();
 
-        assert_eq!("http://localhost:9200", req.get_base_url());
+        assert_eq!(DEFAULT_NODE_ADDRESS, req.get_base_url());
     }
 
     #[test]
     fn request_params_can_set_base_url() {
-        let req = RequestParamsBuilder::default()
+        let req = PreRequestParams::default()
             .build("http://eshost:9200");
 
         assert_eq!("http://eshost:9200", req.get_base_url());
@@ -610,10 +624,10 @@ mod tests {
 
     #[test]
     fn request_params_can_set_url_query() {
-        let req = RequestParamsBuilder::default()
+        let req = PreRequestParams::default()
             .url_param("pretty", false)
             .url_param("pretty", true)
-            .build("http://localhost:9200");
+            .build(DEFAULT_NODE_ADDRESS);
 
         assert_eq!(
             (12, Some(String::from("?pretty=true"))),
