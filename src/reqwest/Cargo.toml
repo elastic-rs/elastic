@@ -12,7 +12,7 @@ exclude = [ "samples" ]
 serde = "~1"
 elastic_requests = { version = "~0.20.0", path = "../requests" }
 elastic_responses = { version = "~0.20.0", path = "../responses" }
-reqwest = { version = "*", git = "https://github.com/seanmonstar/reqwest.git", features = ["unstable"] }
+reqwest = { version = "~0.8.0", features = ["unstable"] }
 url = "~1"
 bytes = "*"
 tokio-core = "*"

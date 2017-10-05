@@ -18,7 +18,7 @@ log = "~0.3.8"
 uuid = { version = "~0.5.1", features = [ "v4" ] }
 serde = "~1"
 serde_json = "~1"
-reqwest = { version = "*", git = "https://github.com/seanmonstar/reqwest.git", features = ["unstable"] }
+reqwest = { version = "~0.8.0", features = ["unstable"] }
 futures = "*"
 tokio-core = "*"
 futures-cpupool = "*"
