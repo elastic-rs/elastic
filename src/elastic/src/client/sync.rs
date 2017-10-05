@@ -158,7 +158,9 @@ impl SyncClientBuilder {
     ```
     # use elastic::prelude::*;
     let builder = SyncClientBuilder::new()
-        .params(|p| p.url_param("pretty", true));
+        .params(|p| {
+            p.url_param("pretty", true)
+        });
     ```
 
     Add an authorization header:
@@ -168,7 +170,9 @@ impl SyncClientBuilder {
     use elastic::http::header::Authorization;
 
     let builder = SyncClientBuilder::new()
-        .params(|p| p.header(Authorization("let me in".to_owned())));
+        .params(|p| {
+            p.header(Authorization("let me in".to_owned()))
+        });
     ```
 
     Specify a base url (prefer the [`base_url`][SyncClientBuilder.base_url] method on `SyncClientBuilder` instead):
@@ -176,7 +180,9 @@ impl SyncClientBuilder {
     ```
     # use elastic::prelude::*;
     let builder = SyncClientBuilder::new()
-        .params(|p| p.base_url("https://my_es_cluster/some_path"));
+        .params(|p| {
+            p.base_url("https://my_es_cluster/some_path")
+        });
     ```
 
     [SyncClientBuilder.base_url]: #method.base_url
