@@ -8,10 +8,10 @@ publish = false
 elastic_requests = { version = "*", path = "../../src/requests" }
 elastic_responses = { version = "*", path = "../../src/responses" }
 
-tokio-core = "*"
+tokio-core = "~0.1.9"
 tokio-proto = "*"
-futures = "*"
-futures-cpupool = "*"
+futures = "~0.1.16"
+futures-cpupool = "~0.1.6"
 memmap = "*"
 hyper = { git = "https://github.com/hyperium/hyper.git" }
 

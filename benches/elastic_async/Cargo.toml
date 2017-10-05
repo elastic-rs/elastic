@@ -7,7 +7,7 @@ authors = ["Ashley Mannix <ashleymannix@live.com.au>"]
 elastic = { version = "*", path = "../../src/elastic", features = ["nightly"] }
 elastic_derive = { version = "*", path = "../../src/elastic_derive" }
 tokio_core = "*"
-futures = "*"
+futures = "~0.1.16"
 serde = "*"
 serde_derive = "*"
 json_str = { version = "*", features = ["nightly"]}
