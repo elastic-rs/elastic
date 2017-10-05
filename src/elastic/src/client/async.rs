@@ -327,13 +327,16 @@ impl AsyncClientBuilder {
     Build with a given `AsyncHttpClient`.
 
     ```no_run
+    # extern crate tokio_core;
     # extern crate reqwest;
     # extern crate elastic;
+    # use tokio_core::reactor::Core;
+    # use reqwest::unstable::async::Client;
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
     # fn run() -> Result<(), Box<::std::error::Error>> {
     let mut core = Core::new()?;
-    let client = reqwest::unstable::Client::new(&core.handle());
+    let client = Client::new(&core.handle());
 
     let builder = AsyncClientBuilder::new().build(client);
     # Ok(())

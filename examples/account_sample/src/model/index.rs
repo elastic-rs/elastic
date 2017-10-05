@@ -7,7 +7,7 @@
 use serde_json::Value;
 use elastic::client::requests::Index;
 use elastic::types::prelude::DocumentType;
-use super::account::{self, Account};
+use super::account::Account;
 
 /// Get the name of the bank index.
 pub fn name() -> Index<'static> {
