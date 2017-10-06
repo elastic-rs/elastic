@@ -1,0 +1,190 @@
+{
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "range": {
+            "@timestamp": {
+              "gte": "now-1h",
+              "lte": "now"
+            }
+          }
+        },
+        {
+          "term": {
+            "syslogProgram.raw": "extFlowRecords"
+          }
+        }
+      ],
+      "must_not": []
+    }
+  },
+  "size": 0,
+  "aggs": {
+    "timechart": {
+      "date_histogram": {
+        "field": "@timestamp",
+        "interval": "60s",
+        "min_doc_count": 0
+      },
+      "aggs": {
+        "sourceAddress": {
+          "terms": {
+            "field": "sourceAddress.raw",
+            "size": 5,
+            "order": {
+              "_count": "desc"
+            }
+          },
+          "aggs": {
+            "sourcePort": {
+              "terms": {
+                "field": "sourcePort",
+                "size": 5,
+                "order": {
+                  "_count": "desc"
+                }
+              },
+              "aggs": {
+                "destinationAddress": {
+                  "terms": {
+                    "field": "destinationAddress.raw",
+                    "size": 5,
+                    "order": {
+                      "_count": "desc"
+                    }
+                  },
+                  "aggs": {
+                    "destinationPort": {
+                      "terms": {
+                        "field": "destinationPort",
+                        "size": 5,
+                        "order": {
+                          "_count": "desc"
+                        }
+                      },
+                      "aggs": {
+                        "routerAddress": {
+                          "terms": {
+                            "field": "flowRouterAddress.raw",
+                            "size": 10000,
+                            "order": {
+                              "_term": "asc"
+                            }
+                          },
+                          "aggs": {
+                            "flowProtocol": {
+                              "terms": {
+                                "field": "flowProtocol.raw",
+                                "size": 10000,
+                                "order": {
+                                  "_term": "asc"
+                                }
+                              },
+                              "aggs": {
+                                "flowFlags": {
+                                  "terms": {
+                                    "field": "flowFlags.raw",
+                                    "size": 10000,
+                                    "order": {
+                                      "_term": "asc"
+                                    }
+                                  },
+                                  "aggs": {
+                                    "flowInputInterface": {
+                                      "terms": {
+                                        "field": "flowInputInterface",
+                                        "size": 10000,
+                                        "order": {
+                                          "_term": "asc"
+                                        }
+                                      },
+                                      "aggs": {
+                                        "flowOutputInterface": {
+                                          "terms": {
+                                            "field": "flowOutputInterface",
+                                            "size": 10000,
+                                            "order": {
+                                              "_term": "asc"
+                                            }
+                                          },
+                                          "aggs": {
+                                            "flowTOS": {
+                                              "terms": {
+                                                "field": "flowTOS",
+                                                "size": 10000,
+                                                "order": {
+                                                  "_term": "asc"
+                                                }
+                                              },
+                                              "aggs": {
+                                                "flowSourceAS": {
+                                                  "terms": {
+                                                    "field": "flowSourceAS",
+                                                    "size": 10000,
+                                                    "order": {
+                                                      "_term": "asc"
+                                                    }
+                                                  },
+                                                  "aggs": {
+                                                    "sumnumberOfBytes": {
+                                                      "sum": {
+                                                        "field": "bytesTransmitted"
+                                                      }
+                                                    },
+                                                    "sumnumberOfPackets": {
+                                                      "sum": {
+                                                        "field": "numberOfPackets"
+                                                      }
+                                                    },
+                                                    "sumnumberOfFlows": {
+                                                      "sum": {
+                                                        "field": "numberOfFlows"
+                                                      }
+                                                    },
+                                                    "sumflowDuration": {
+                                                      "sum": {
+                                                        "field": "flowDuration"
+                                                      }
+                                                    },
+                                                    "avgflowPacketsPerSecond": {
+                                                      "avg": {
+                                                        "field": "flowPacketsPerSecond"
+                                                      }
+                                                    },
+                                                    "avgflowBitsPerSecond": {
+                                                      "avg": {
+                                                        "field": "flowBitsPerSecond"
+                                                      }
+                                                    },
+                                                    "maxflowBytesPerPackage": {
+                                                      "max": {
+                                                        "field": "flowBytesPerPackage"
+                                                      }
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

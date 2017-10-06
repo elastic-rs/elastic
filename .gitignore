@@ -16,3 +16,4 @@ target
 *.user
 *.suo
 .vscode
+.idea/
