@@ -2,6 +2,7 @@
 members = [
     "src/elastic",
     "src/elastic_derive",
+    "src/queries",
     "src/requests",
     "src/requests_codegen",
     "src/reqwest",
