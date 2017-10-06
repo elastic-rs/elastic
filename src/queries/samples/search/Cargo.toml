@@ -18,10 +18,10 @@ git = "https://github.com/stephanbuys/timestrings.git"
 version = "*"
 
 [dependencies.elastic]
-git = "https://github.com/elastic-rs/elastic.git"
+path = "../../../../src/elastic/"
 version = "*"
 
 [dependencies.elastic_derive]
-git = "https://github.com/elastic-rs/elastic.git"
+path = "../../../../src/elastic_derive/"
 version = "*"
 
