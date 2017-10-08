@@ -7,23 +7,24 @@ if [ "$KIND" == "build" ]; then
 
     BRANCH=$(if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then echo $TRAVIS_BRANCH; else echo $TRAVIS_PULL_REQUEST_BRANCH; fi)
 
-    echo "uploading crate docs"
+    if [ "$BRANCH" == "master" ]; then
+        echo "uploading crate docs"
 
-    cargo doc --all
+        cargo doc --all
 
-    REV=$(git rev-parse --short HEAD)
-    cd target/doc
-    
-    rm -r .git || true
-    git init
-    git remote add upstream "https://$GH_TOKEN@github.com/elastic-rs/elastic.git"
-    git config user.name "elastic-rs"
-    git config user.email "travis@elastic.rs"
-    git add -A .
-    git commit -qm "Build docs at ${TRAVIS_REPO_SLUG}@${REV}"
+        REV=$(git rev-parse --short HEAD)
+        cd target/doc
+        rm -r .git || true
+        git init
+        git remote add upstream "https://$GH_TOKEN@github.com/elastic-rs/elastic.git"
+        git config user.name "elastic-rs"
+        git config user.email "travis@elastic.rs"
+        git add -A .
+        git commit -qm "Build docs at ${TRAVIS_REPO_SLUG}@${REV}"
 
-    echo "Pushing gh-pages to GitHub"
-    git push -q upstream HEAD:refs/heads/gh-pages --force
+        echo "Pushing gh-pages to GitHub"
+        git push -q upstream HEAD:refs/heads/gh-pages --force
+    fi
 elif [ "$KIND" == "bench" ]; then
     cargo bench --verbose --all
 
