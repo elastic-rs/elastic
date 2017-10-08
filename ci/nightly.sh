@@ -13,7 +13,8 @@ if [ "$KIND" == "build" ]; then
 
     REV=$(git rev-parse --short HEAD)
     cd target/doc
-    rm -r .git &>/dev/null
+    
+    rm -r .git || true
     git init
     git remote add upstream "https://$GH_TOKEN@github.com/elastic-rs/elastic.git"
     git config user.name "elastic-rs"
