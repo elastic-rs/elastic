@@ -30,7 +30,6 @@ elif [ "$KIND" == "bench" ]; then
 
     cd benches
     cargo build --all
-fi
 elif [ "$KIND" == "integration" ]; then 
     cd tests/run
     cargo run
