@@ -16,4 +16,9 @@ target
 *.user
 *.suo
 .vscode
+
+# JetBrains IDEs
 .idea/
+
+# CLion
+/cmake-build-debug/

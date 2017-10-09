@@ -1,6 +1,6 @@
 [package]
 authors = ["Stephan Buys <stephan.buys@panoptix.co.za>"]
-name = "elastic-queries"
+name = "elastic_queries"
 version = "0.1.0"
 license = "MIT/Apache-2.0"
 description = "Constuct and manipulate strongly typed Elasticsearch Queries using a source JSON files or builders."
