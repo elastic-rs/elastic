@@ -162,10 +162,6 @@ The following is a simple set of guidelines that the codebase should follow. It'
 
 This is the main crate that bundles up `elastic_requests`, `elastic_types`, `elastic_requests` and `elastic_responses`.
 
-### `elastic_reqwest`
-
-A synchronous [`reqwest`](https://github.com/seanmonstar/reqwest) implementation of the Elasticsearch REST API.
-
 ### `elastic_requests`
 
 Zero-copy request types for the REST API endpoints. These are automatically generated from the official spec.

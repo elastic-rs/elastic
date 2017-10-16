@@ -1,13 +1,13 @@
 use std::sync::Arc;
 use uuid::Uuid;
-use elastic_reqwest::{SyncBody, SyncElasticClient, DEFAULT_NODE_ADDRESS};
-use elastic_reqwest::static_nodes::StaticNodes;
 use reqwest::{Client as SyncHttpClient, ClientBuilder as SyncHttpClientBuilder};
 
 use error::{self, Result};
-use client::requests::HttpRequest;
+use private;
+use client::sender::static_nodes::StaticNodes;
+use client::requests::{HttpRequest, SyncBody};
 use client::responses::{sync_response, SyncResponseBuilder};
-use client::{private, Client, RequestParams, PreRequestParams, Sender, SendableRequest};
+use client::{Client, RequestParams, PreRequestParams, Sender, SendableRequest};
 
 /** 
 A synchronous Elasticsearch client.
@@ -56,6 +56,51 @@ impl SyncNodes {
     }
 }
 
+impl SyncSender {
+    fn params(&self, correlation_id: Uuid, params_builder: Option<Box<Fn(RequestParams) -> RequestParams>>) -> Result<RequestParams> {
+        self.nodes.next()
+            .map_err(|e| {
+                error!(
+                    "Elasticsearch Node Selection: correlation_id: '{}', error: '{}'",
+                    correlation_id,
+                    e
+                );
+                e
+            })
+            .map(move |params| {
+                if let Some(params_builder) = params_builder {
+                    params_builder(params)
+                } else {
+                    params
+                }
+            })
+    }
+}
+
+/** Build a synchronous `reqwest::RequestBuilder` from an Elasticsearch request. */
+fn build_req<I, B>(client: &Client, params: &RequestParams, req: I) -> RequestBuilder
+where
+    I: Into<HttpRequest<'static, B>>,
+    B: Into<SyncBody>,
+{
+    let req = req.into();
+
+    let url = build_url(&req.url, &params);
+    let method = build_method(req.method);
+    let body = req.body;
+
+    let mut req = client.request(method, &url);
+    {
+        req.headers(params.get_headers());
+
+        if let Some(body) = body {
+            req.body(body.into().into_inner());
+        }
+    }
+
+    req
+}
+
 impl private::Sealed for SyncSender {}
 
 impl Sender for SyncSender {
@@ -77,24 +122,10 @@ impl Sender for SyncSender {
             req.url.as_ref()
         );
 
-        let params = self.nodes.next()
-            .map_err(|e| {
-                error!(
-                    "Elasticsearch Node Selection: correlation_id: '{}', error: '{}'",
-                    correlation_id,
-                    e
-                );
-                e
-            })
-            .map(move |params| {
-                if let Some(params_builder) = params_builder {
-                    params_builder(params)
-                } else {
-                    params
-                }
-            })?;
+        let params = self.params(correlation_id, params_builder)?;
+        let req = build_req(&self.http, params, req);
 
-        let res = match self.http.elastic_req(&params, req).map_err(error::request) {
+        let res = match req.send().map_err(error::request) {
             Ok(res) => {
                 info!(
                     "Elasticsearch Response: correlation_id: '{}', status: '{}'",
@@ -275,5 +306,140 @@ impl SyncClientBuilder {
                 nodes: nodes,
             }
         })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use reqwest::{Client, Method, RequestBuilder};
+    use reqwest::header::ContentType;
+    use super::*;
+    use req::*;
+
+    fn params() -> RequestParams {
+        RequestParams::new("eshost:9200/path")
+            .url_param("pretty", true)
+    }
+
+    fn expected_req(cli: &Client, method: Method, url: &str, body: Option<Vec<u8>>) -> RequestBuilder {
+        let mut req = cli.request(method, url);
+        {
+            req.header(ContentType::json());
+
+            if let Some(body) = body {
+                req.body(body);
+            }
+        }
+
+        req
+    }
+
+    fn assert_req(expected: RequestBuilder, actual: RequestBuilder) {
+        assert_eq!(format!("{:?}", expected), format!("{:?}", actual));
+    }
+
+    #[test]
+    fn head_req() {
+        let cli = Client::new();
+        let req = build_req(&cli, &params(), PingHeadRequest::new());
+
+        let url = "eshost:9200/path/?pretty=true";
+
+        let expected = expected_req(&cli, Method::Head, url, None);
+
+        assert_req(expected, req);
+    }
+
+    #[test]
+    fn get_req() {
+        let cli = Client::new();
+        let req = build_req(&cli, &params(), SimpleSearchRequest::new());
+
+        let url = "eshost:9200/path/_search?pretty=true";
+
+        let expected = expected_req(&cli, Method::Get, url, None);
+
+        assert_req(expected, req);
+    }
+
+    #[test]
+    fn post_req() {
+        let cli = Client::new();
+        let req = build_req(
+            &cli,
+            &params(),
+            PercolateRequest::for_index_ty("idx", "ty", vec![]),
+        );
+
+        let url = "eshost:9200/path/idx/ty/_percolate?pretty=true";
+
+        let expected = expected_req(&cli, Method::Post, url, Some(vec![]));
+
+        assert_req(expected, req);
+    }
+
+    #[test]
+    fn put_req() {
+        let cli = Client::new();
+        let req = build_req(
+            &cli,
+            &params(),
+            IndicesCreateRequest::for_index("idx", vec![]),
+        );
+
+        let url = "eshost:9200/path/idx?pretty=true";
+
+        let expected = expected_req(&cli, Method::Put, url, Some(vec![]));
+
+        assert_req(expected, req);
+    }
+
+    #[test]
+    fn delete_req() {
+        let cli = Client::new();
+        let req = build_req(&cli, &params(), IndicesDeleteRequest::for_index("idx"));
+
+        let url = "eshost:9200/path/idx?pretty=true";
+
+        let expected = expected_req(&cli, Method::Delete, url, None);
+
+        assert_req(expected, req);
+    }
+
+    #[test]
+    fn file_into_body() {
+        SyncBody::from(File::open("Cargo.toml").unwrap());
+    }
+
+    #[test]
+    fn owned_string_into_body() {
+        SyncBody::from(String::new());
+    }
+
+    #[test]
+    fn borrowed_string_into_body() {
+        SyncBody::from("abc");
+    }
+
+    #[test]
+    fn owned_vec_into_body() {
+        SyncBody::from(Vec::new());
+    }
+
+    #[test]
+    fn borrowed_vec_into_body() {
+        static BODY: &'static [u8] = &[0, 1, 2];
+
+        SyncBody::from(BODY);
+    }
+
+    #[test]
+    fn empty_body_into_body() {
+        SyncBody::from(empty_body());
+    }
+
+    #[test]
+    fn json_value_into_body() {
+        SyncBody::from(json!({}));
     }
 }

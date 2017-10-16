@@ -272,10 +272,11 @@ This crate glues these libraries together with some simple assumptions about how
 [types-mod]: types/index.html
 */
 
-#![deny(warnings, missing_docs)]
+//#![deny(warnings, missing_docs)]
 #![allow(unknown_lints, doc_markdown)]
 
-extern crate elastic_reqwest;
+extern crate elastic_requests;
+extern crate elastic_responses;
 extern crate elastic_types;
 #[macro_use]
 extern crate error_chain;
@@ -291,6 +292,10 @@ extern crate uuid;
 
 pub mod error;
 pub use error::Error;
+
+mod private {
+    pub trait Sealed {}
+}
 
 pub mod http {
     /*! 

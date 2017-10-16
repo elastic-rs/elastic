@@ -3,9 +3,7 @@ use serde::de::DeserializeOwned;
 use reqwest::Response as RawResponse;
 
 use error::{self, Result};
-use elastic_reqwest::SyncFromResponse;
-use elastic_reqwest::res::parse;
-use super::parse::IsOk;
+use super::parse::{self, IsOk};
 
 /**
 A builder for a response.
@@ -93,9 +91,8 @@ impl SyncResponseBuilder {
     where
         T: IsOk + DeserializeOwned,
     {
-        let status = self.status();
         parse()
-            .from_response(self.0)
+            .from_reader(self.status(), self.0)
             .map_err(|e| error::response(status, e))
     }
 }

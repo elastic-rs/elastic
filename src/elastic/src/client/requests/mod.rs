@@ -8,13 +8,17 @@ use futures_cpupool::CpuPool;
 
 use client::{AsyncSender, Client, RequestParams, Sender};
 
-pub use elastic_reqwest::{AsyncBody, SyncBody};
-pub use elastic_reqwest::req::{empty_body, DefaultBody, HttpMethod, HttpRequest, Url};
-pub use elastic_reqwest::req::params;
-pub use elastic_reqwest::req::endpoints;
+pub use elastic_requests::{empty_body, DefaultBody, HttpMethod, HttpRequest, Url};
+pub use elastic_requests::params;
+pub use elastic_requests::endpoints;
 
 pub use self::params::*;
 pub use self::endpoints::*;
+
+mod sync;
+mod async;
+pub use self::sync::*;
+pub use self::async::*;
 
 pub mod raw;
 pub use self::raw::RawRequestBuilder;
@@ -197,29 +201,4 @@ pub mod prelude {
     pub use super::endpoints::*;
 
     pub use super::{empty_body, DefaultBody, GetRequestBuilder, IndexCreateRequestBuilder, IndexRequestBuilder, PutMappingRequestBuilder, RawRequestBuilder, SearchRequestBuilder};
-}
-
-#[cfg(test)]
-mod tests {
-    use super::RequestBuilder;
-    use prelude::*;
-
-    #[test]
-    fn request_builder_params() {
-        let client = SyncClientBuilder::new()
-            .static_node("http://eshost:9200")
-            .build()
-            .unwrap();
-
-        let req = RequestBuilder::new(client.clone(), None, PingRequest::new())
-            .params(|p| p.url_param("pretty", true))
-            .params(|p| p.url_param("refresh", true));
-
-        let params = &req.params.unwrap();
-
-        let (_, query) = params.get_url_qry();
-
-        assert_eq!("http://eshost:9200", params.get_base_url());
-        assert_eq!("?pretty=true&refresh=true", query.unwrap());
-    }
 }

@@ -2,8 +2,7 @@
 
 use std::fmt;
 use serde::de::{Deserialize, Deserializer, Visitor, MapAccess};
-use res::parsing::{IsOk, HttpResponseHead, Unbuffered, MaybeOkResponse, ResponseBody};
-use res::error::ParseResponseError;
+use client::responses::parse::{IsOk, HttpResponseHead, Unbuffered, MaybeOkResponse, ResponseBody, ParseResponseError};
 
 use std::iter::IntoIterator;
 use std::vec::IntoIter;

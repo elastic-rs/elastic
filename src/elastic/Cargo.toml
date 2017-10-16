@@ -23,7 +23,8 @@ futures = "~0.1.16"
 tokio-core = "~0.1.9"
 futures-cpupool = "~0.1.6"
 
-elastic_reqwest = { version = "~0.20.0", path = "../reqwest" }
+elastic_requests = { version = "~0.20.0", path = "../requests" }
+elastic_responses = { version = "~0.20.0", path = "../responses" }
 elastic_types = { version = "~0.20.0", path = "../types" }
 
 [dev-dependencies]

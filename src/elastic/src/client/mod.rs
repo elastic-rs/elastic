@@ -476,50 +476,17 @@ For more details see the [`responses`][responses-mod] module.
 [response-types]: responses/parse/trait.IsOk.html#implementors
 */
 
+pub mod sender;
 pub mod requests;
 pub mod responses;
 
 use std::marker::PhantomData;
 use self::requests::HttpRequest;
 
-mod sync;
-mod async;
 pub use self::sync::*;
 pub use self::async::*;
 
-pub use elastic_reqwest::{PreRequestParams, RequestParams};
-
-mod private {
-    pub trait Sealed {}
-}
-
-/** A sendable request. */
-pub struct SendableRequest<TRequest, TBody> {
-    inner: TRequest,
-    params_builder: Option<Box<Fn(RequestParams) -> RequestParams>>,
-    _marker: PhantomData<TBody>,
-}
-
-/**
-Represents a type that can send a request.
-
-You probably don't need to touch this trait directly.
-See the [`Client`][Client] type for making requests.
-
-[Client]: struct.Client.html
-*/
-pub trait Sender: private::Sealed + Clone {
-    /// The kind of request body this sender accepts.
-    type Body;
-    /// The kind of response this sender produces.
-    type Response;
-
-    /// Send a request.
-    fn send<TRequest, TBody>(&self, request: SendableRequest<TRequest, TBody>) -> Self::Response
-    where
-        TRequest: Into<HttpRequest<'static, TBody>>,
-        TBody: Into<Self::Body> + 'static;
-}
+pub use self::sender::params::{PreRequestParams, RequestParams};
 
 /**
 A HTTP client for the Elasticsearch REST API.

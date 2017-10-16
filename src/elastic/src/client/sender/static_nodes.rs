@@ -1,6 +1,4 @@
-/*! Connection sniffing and multiple static nodes. */
-
-#![allow(warnings)]
+/*! Multiple static nodes that can be load balanced by some strategy. */
 
 use std::fmt;
 use std::marker::PhantomData;
@@ -11,11 +9,8 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use reqwest::unstable::async::Client;
 use futures::{Future, IntoFuture};
 use serde::de::{Deserialize, Deserializer, Visitor, MapAccess, SeqAccess, Error as DeError};
-use {Error, RequestParams, PreRequestParams};
-use async::{AsyncElasticClient, AsyncFromResponse};
-use req::NodesInfoRequest;
-use res::parsing::{parse, IsOk, HttpResponseHead, Unbuffered, MaybeOkResponse, ResponseBody};
-use res::error::ParseResponseError;
+use client::sender::params::{RequestParams, PreRequestParams};
+use client::requests::endpoints::NodesInfoRequest;
 
 /** Select a base address for a given request using some strategy. */
 #[derive(Clone)]

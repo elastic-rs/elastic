@@ -4,16 +4,16 @@ use uuid::Uuid;
 use futures::{Future, IntoFuture, Poll};
 use futures_cpupool::CpuPool;
 use tokio_core::reactor::Handle;
-use elastic_reqwest::{AsyncBody, AsyncElasticClient, DEFAULT_NODE_ADDRESS};
-use elastic_reqwest::static_nodes::StaticNodes;
-use elastic_reqwest::async::sniffed_nodes::{SniffedNodes};
 use reqwest::Error as ReqwestError;
 use reqwest::unstable::async::{Client as AsyncHttpClient, ClientBuilder as AsyncHttpClientBuilder};
 
 use error::{self, Error};
-use client::requests::HttpRequest;
+use private;
+use client::requests::{AsyncBody, HttpRequest};
+use client::sender::static_nodes::StaticNodes;
+use client::sender::sniffed_nodes::SniffedNodes;
 use client::responses::{async_response, AsyncResponseBuilder};
-use client::{private, Client, RequestParams, PreRequestParams, Sender, SendableRequest};
+use client::{Client, RequestParams, PreRequestParams, Sender, SendableRequest};
 
 /** 
 An asynchronous Elasticsearch client.
@@ -60,7 +60,7 @@ pub struct AsyncSender {
 #[derive(Clone)]
 enum AsyncNodes {
     Static(StaticNodes),
-    Sniffed(SniffedNodes),
+    Sniffed(SniffedNodes<AsyncSender>),
 }
 
 impl AsyncNodes {
@@ -69,6 +69,29 @@ impl AsyncNodes {
             AsyncNodes::Static(ref nodes) => Box::new(Ok(nodes.next()).into_future()),
             AsyncNodes::Sniffed(ref sniffer) => Box::new(sniffer.next().map_err(error::request)),
         }
+    }
+}
+
+impl AsyncSender {
+    fn params(&self, correlation_id: Uuid, params_builder: Option<Box<Fn(RequestParams) -> RequestParams>>) -> Box<Future<Item = RequestParams, Error = Error>> {
+        let params_future = self.nodes.next()
+            .map_err(move |e| {
+                error!(
+                    "Elasticsearch Node Selection: correlation_id: '{}', error: '{}'",
+                    correlation_id,
+                    e
+                );
+                e
+            })
+            .map(move |params| {
+                if let Some(params_builder) = params_builder {
+                   params_builder(params)
+                } else {
+                    params
+                }
+            });
+        
+        Box::new(params_future)
     }
 }
 
@@ -95,25 +118,11 @@ impl Sender for AsyncSender {
             req.url.as_ref()
         );
 
-        let params_future = self.nodes.next()
-            .map_err(move |e| {
-                error!(
-                    "Elasticsearch Node Selection: correlation_id: '{}', error: '{}'",
-                    correlation_id,
-                    e
-                );
-                e
-            })
-            .map(move |params| {
-                if let Some(params_builder) = params_builder {
-                   params_builder(params)
-                } else {
-                    params
-                }
-            });
+        let params_future = self.params(correlation_id, params_builder);
 
         let req_future = params_future.and_then(move |params| {
-            http.elastic_req(&params, req)
+            build_req(&http, params, req)
+                .send()
                 .map_err(move |e| {
                     error!(
                         "Elasticsearch Response: correlation_id: '{}', error: '{}'",
@@ -134,6 +143,30 @@ impl Sender for AsyncSender {
 
         Pending::new(req_future)
     }
+}
+
+/** Build an asynchronous `reqwest::RequestBuilder` from an Elasticsearch request. */
+fn build_req<I, B>(client: &Client, params: &RequestParams, req: I) -> RequestBuilder
+where
+    I: Into<HttpRequest<'static, B>>,
+    B: Into<AsyncBody>,
+{
+    let req = req.into();
+
+    let url = build_url(&req.url, &params);
+    let method = build_method(req.method);
+    let body = req.body;
+
+    let mut req = client.request(method, &url);
+    {
+        req.headers(params.get_headers());
+
+        if let Some(body) = body {
+            req.body(body.into().into_inner());
+        }
+    }
+
+    req
 }
 
 /** A future returned by calling `send`. */
@@ -435,5 +468,142 @@ impl AsyncClientBuilder {
                 nodes: nodes,
             },
         })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use reqwest::Method;
+    use reqwest::unstable::async::{Client, RequestBuilder};
+    use reqwest::header::ContentType;
+    use tokio_core::reactor::Core;
+
+    use super::*;
+    use req::*;
+
+    fn params() -> RequestParams {
+        RequestParams::new("eshost:9200/path")
+            .url_param("pretty", true)
+    }
+
+    fn expected_req(cli: &Client, method: Method, url: &str, body: Option<Vec<u8>>) -> RequestBuilder {
+        let mut req = cli.request(method, url);
+        {
+            req.header(ContentType::json());
+
+            if let Some(body) = body {
+                req.body(body);
+            }
+        }
+
+        req
+    }
+
+    fn assert_req(expected: RequestBuilder, actual: RequestBuilder) {
+        assert_eq!(format!("{:?}", expected), format!("{:?}", actual));
+    }
+
+    fn core() -> Core {
+        Core::new().unwrap()
+    }
+
+    #[test]
+    fn head_req() {
+        let cli = Client::new(&core().handle());
+        let req = build_req(&cli, &params(), PingHeadRequest::new());
+
+        let url = "eshost:9200/path/?pretty=true";
+
+        let expected = expected_req(&cli, Method::Head, url, None);
+
+        assert_req(expected, req);
+    }
+
+    #[test]
+    fn get_req() {
+        let cli = Client::new(&core().handle());
+        let req = build_req(&cli, &params(), SimpleSearchRequest::new());
+
+        let url = "eshost:9200/path/_search?pretty=true";
+
+        let expected = expected_req(&cli, Method::Get, url, None);
+
+        assert_req(expected, req);
+    }
+
+    #[test]
+    fn post_req() {
+        let cli = Client::new(&core().handle());
+        let req = build_req(
+            &cli,
+            &params(),
+            PercolateRequest::for_index_ty("idx", "ty", vec![]),
+        );
+
+        let url = "eshost:9200/path/idx/ty/_percolate?pretty=true";
+
+        let expected = expected_req(&cli, Method::Post, url, Some(vec![]));
+
+        assert_req(expected, req);
+    }
+
+    #[test]
+    fn put_req() {
+        let cli = Client::new(&core().handle());
+        let req = build_req(
+            &cli,
+            &params(),
+            IndicesCreateRequest::for_index("idx", vec![]),
+        );
+
+        let url = "eshost:9200/path/idx?pretty=true";
+
+        let expected = expected_req(&cli, Method::Put, url, Some(vec![]));
+
+        assert_req(expected, req);
+    }
+
+    #[test]
+    fn delete_req() {
+        let cli = Client::new(&core().handle());
+        let req = build_req(&cli, &params(), IndicesDeleteRequest::for_index("idx"));
+
+        let url = "eshost:9200/path/idx?pretty=true";
+
+        let expected = expected_req(&cli, Method::Delete, url, None);
+
+        assert_req(expected, req);
+    }
+
+    #[test]
+    fn owned_string_into_body() {
+        AsyncBody::from(String::new());
+    }
+
+    #[test]
+    fn borrowed_string_into_body() {
+        AsyncBody::from("abc");
+    }
+
+    #[test]
+    fn owned_vec_into_body() {
+        AsyncBody::from(Vec::new());
+    }
+
+    #[test]
+    fn borrowed_vec_into_body() {
+        static BODY: &'static [u8] = &[0, 1, 2];
+
+        AsyncBody::from(BODY);
+    }
+
+    #[test]
+    fn empty_body_into_body() {
+        AsyncBody::from(empty_body());
+    }
+
+    #[test]
+    fn json_value_into_body() {
+        AsyncBody::from(json!({}));
     }
 }

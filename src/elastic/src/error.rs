@@ -43,10 +43,9 @@ use std::error::Error as StdError;
 
 use serde_json;
 use reqwest::Error as ReqwestError;
-use elastic_reqwest::Error as ElasticReqwestError;
-use elastic_reqwest::res::error::ResponseError;
+use elastic_responses::error::ResponseError;
 
-pub use elastic_reqwest::res::error::ApiError;
+pub use elastic_responses::error::ApiError;
 
 /** An alias for a result. */
 pub type Result<T> = ::std::result::Result<T, Error>;
@@ -156,24 +155,6 @@ impl Into<MaybeApiError<ResponseError>> for ResponseError {
     fn into(self) -> MaybeApiError<Self> {
         match self {
             ResponseError::Api(err) => MaybeApiError::Api(err),
-            err => MaybeApiError::Other(err),
-        }
-    }
-}
-
-impl Into<MaybeApiError<ElasticReqwestError>> for ResponseError {
-    fn into(self) -> MaybeApiError<ElasticReqwestError> {
-        match self {
-            ResponseError::Api(err) => MaybeApiError::Api(err),
-            err => MaybeApiError::Other(ElasticReqwestError::Response(err)),
-        }
-    }
-}
-
-impl Into<MaybeApiError<ElasticReqwestError>> for ElasticReqwestError {
-    fn into(self) -> MaybeApiError<Self> {
-        match self {
-            ElasticReqwestError::Response(err) => err.into(),
             err => MaybeApiError::Other(err),
         }
     }
