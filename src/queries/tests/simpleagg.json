@@ -1,0 +1,33 @@
+{
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "range": {
+            "@timestamp": {
+              "gte": "now-1h",
+              "lte": "now"
+            }
+          }
+        },
+        {
+          "term": {
+            "syslogProgram.raw": "extFlowRecords"
+          }
+        }
+      ],
+      "must_not": []
+    }
+  },
+  "size": 0,
+  "aggs": {
+    "timechart": {
+      "date_histogram": {
+        "field": "@timestamp",
+        "interval": "60s",
+        "min_doc_count": 0
+      },
+      "aggs": {}
+    }
+  }
+}

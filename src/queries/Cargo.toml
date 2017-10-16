@@ -1,0 +1,23 @@
+[package]
+authors = ["Stephan Buys <stephan.buys@panoptix.co.za>"]
+name = "elastic_queries"
+version = "0.1.0"
+license = "MIT/Apache-2.0"
+description = "Constuct and manipulate strongly typed Elasticsearch Queries using a source JSON files or builders."
+documentation = "https://docs.rs/elastic_queries"
+repository = "https://github.com/stephanbuys/elastic-queries"
+exclude = [ "samples" ]
+
+[dependencies]
+derive_builder = "0.5.0"
+error-chain = "0.11.0"
+serde = "~1"
+serde_derive = "~1"
+serde_json = "~1"
+
+[dependencies.clippy]
+optional = true
+version = "0.0.164"
+
+[features]
+default = []

@@ -207,7 +207,7 @@ mod tests {
     #[test]
     fn request_builder_params() {
         let client = SyncClientBuilder::new()
-            .base_url("http://eshost:9200")
+            .static_node("http://eshost:9200")
             .build()
             .unwrap();
 

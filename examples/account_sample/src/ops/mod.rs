@@ -16,7 +16,7 @@ pub struct Client {
 
 impl Client {
     pub fn new(address: &'static str) -> Result<Self> {
-        let client = SyncClientBuilder::new().static_nodes(vec![address]).build()?;
+        let client = SyncClientBuilder::new().static_node(address).build()?;
 
         Ok(Client { io: client })
     }

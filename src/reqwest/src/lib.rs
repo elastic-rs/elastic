@@ -588,11 +588,10 @@ mod tests {
 
     #[test]
     fn set_multiple_headers() {
-        let req = PreRequestParams::default()
+        let req = RequestParams::new(DEFAULT_NODE_ADDRESS)
             .header(Referer::new("/not-the-value"))
             .header(Referer::new("/People.html#tim"))
-            .header(Authorization("let me in".to_owned()))
-            .build(DEFAULT_NODE_ADDRESS);
+            .header(Authorization("let me in".to_owned()));
 
         let headers = req.get_headers();
 
@@ -616,18 +615,16 @@ mod tests {
 
     #[test]
     fn request_params_can_set_base_url() {
-        let req = PreRequestParams::default()
-            .build("http://eshost:9200");
+        let req = RequestParams::new("http://eshost:9200");
 
         assert_eq!("http://eshost:9200", req.get_base_url());
     }
 
     #[test]
     fn request_params_can_set_url_query() {
-        let req = PreRequestParams::default()
+        let req = RequestParams::new(DEFAULT_NODE_ADDRESS)
             .url_param("pretty", false)
-            .url_param("pretty", true)
-            .build(DEFAULT_NODE_ADDRESS);
+            .url_param("pretty", true);
 
         assert_eq!(
             (12, Some(String::from("?pretty=true"))),

@@ -1,3 +1,5 @@
+use std::sync::Arc;
+use std::error::Error as StdError;
 use uuid::Uuid;
 use futures::{Future, IntoFuture, Poll};
 use futures_cpupool::CpuPool;
@@ -5,9 +7,10 @@ use tokio_core::reactor::Handle;
 use elastic_reqwest::{AsyncBody, AsyncElasticClient, DEFAULT_NODE_ADDRESS};
 use elastic_reqwest::static_nodes::StaticNodes;
 use elastic_reqwest::async::sniffed_nodes::{SniffedNodes};
+use reqwest::Error as ReqwestError;
 use reqwest::unstable::async::{Client as AsyncHttpClient, ClientBuilder as AsyncHttpClientBuilder};
 
-use error::{self, Error, Result};
+use error::{self, Error};
 use client::requests::HttpRequest;
 use client::responses::{async_response, AsyncResponseBuilder};
 use client::{private, Client, RequestParams, PreRequestParams, Sender, SendableRequest};
@@ -160,20 +163,19 @@ impl Future for Pending {
 
 /** A builder for an asynchronous client. */
 pub struct AsyncClientBuilder {
-    http: Option<AsyncHttpClient>,
     serde_pool: Option<CpuPool>,
     nodes: AsyncNodesBuilder,
     params: PreRequestParams,
 }
 
 enum AsyncNodesBuilder {
-    Static(Vec<String>),
-    Sniffed(String),
+    Static(Vec<Arc<str>>),
+    Sniffed(Arc<str>),
 }
 
 impl Default for AsyncNodesBuilder {
     fn default() -> Self {
-        AsyncNodesBuilder::Static(vec![DEFAULT_NODE_ADDRESS.to_owned()])
+        AsyncNodesBuilder::Static(vec![DEFAULT_NODE_ADDRESS.into()])
     }
 }
 
@@ -189,6 +191,38 @@ impl AsyncNodesBuilder {
                 AsyncNodes::Sniffed(SniffedNodes::new(client, params))
             }
         }
+    }
+}
+
+/**
+A type that can be used to construct an async http client.
+
+This trait has a few default implementations:
+
+- `AsyncHttpClient`: returns `self`
+- `Handle`: returns a new `AsyncHttpClient` bound to `self`.
+*/
+pub trait IntoAsyncHttpClient {
+    /** The type of error returned by the conversion. */
+    type Error: StdError + Send + 'static;
+
+    /** Convert `self` into an `AsyncHttpClient`. */
+    fn into_async_http_client(self) -> Result<AsyncHttpClient, Self::Error>;
+}
+
+impl IntoAsyncHttpClient for AsyncHttpClient {
+    type Error = Error;
+
+    fn into_async_http_client(self) -> Result<AsyncHttpClient, Self::Error> {
+        Ok(self)
+    }
+}
+
+impl<'a> IntoAsyncHttpClient for &'a Handle {
+    type Error = ReqwestError;
+
+    fn into_async_http_client(self) -> Result<AsyncHttpClient, Self::Error> {
+        AsyncHttpClientBuilder::new().build(self)
     }
 }
 
@@ -211,7 +245,6 @@ impl AsyncClientBuilder {
     */
     pub fn new() -> Self {
         AsyncClientBuilder {
-            http: None,
             serde_pool: None,
             params: PreRequestParams::default(),
             nodes: AsyncNodesBuilder::default(),
@@ -223,7 +256,6 @@ impl AsyncClientBuilder {
     */
     pub fn from_params(params: PreRequestParams) -> Self {
         AsyncClientBuilder {
-            http: None,
             serde_pool: None,
             params: params,
             nodes: AsyncNodesBuilder::default(),
@@ -231,13 +263,22 @@ impl AsyncClientBuilder {
     }
 
     /**
+    Specify a static node nodes to send requests to.
+    */
+    pub fn static_node<S>(self, node: S) -> Self
+        where S: Into<Arc<str>>,
+    {
+        self.static_nodes(vec![node])
+    }
+
+    /**
     Specify a set of static node nodes to load balance requests on.
     */
     pub fn static_nodes<I, S>(mut self, nodes: I) -> Self
         where I: IntoIterator<Item = S>,
-              S: AsRef<str>,
+              S:Into<Arc<str>>,
     {
-        let nodes = nodes.into_iter().map(|address| address.as_ref().to_owned()).collect();
+        let nodes = nodes.into_iter().map(|address| address.into()).collect();
         self.nodes = AsyncNodesBuilder::Static(nodes);
 
         self
@@ -247,9 +288,9 @@ impl AsyncClientBuilder {
     Specify a node address to sniff other nodes in the cluster from.
     */
     pub fn sniff_nodes<I>(mut self, address: I) -> Self
-        where I: AsRef<str>
+        where I: Into<Arc<str>>
     {
-        self.nodes = AsyncNodesBuilder::Sniffed(address.as_ref().to_owned());
+        self.nodes = AsyncNodesBuilder::Sniffed(address.into());
 
         self
     }
@@ -264,7 +305,9 @@ impl AsyncClientBuilder {
     ```
     # use elastic::prelude::*;
     let builder = SyncClientBuilder::new()
-        .params(|p| p.url_param("pretty", true));
+        .params(|p| {
+            p.url_param("pretty", true)
+        });
     ```
 
     Add an authorization header:
@@ -274,7 +317,9 @@ impl AsyncClientBuilder {
     use elastic::http::header::Authorization;
 
     let builder = SyncClientBuilder::new()
-        .params(|p| p.header(Authorization("let me in".to_owned())));
+        .params(|p| {
+            p.header(Authorization("let me in".to_owned()))
+        });
     ```
 
     Specify a base url (prefer the [`base_url`][SyncClientBuilder.base_url] method on `SyncClientBuilder` instead):
@@ -282,7 +327,9 @@ impl AsyncClientBuilder {
     ```
     # use elastic::prelude::*;
     let builder = SyncClientBuilder::new()
-        .params(|p| p.base_url("https://my_es_cluster/some_path"));
+        .params(|p| {
+            p.base_url("https://my_es_cluster/some_path")
+        });
     ```
 
     [SyncClientBuilder.base_url]: #method.base_url
@@ -314,8 +361,7 @@ impl AsyncClientBuilder {
     # fn run() -> Result<(), Box<::std::error::Error>> {
     let pool = CpuPool::new(4);
 
-    let builder = AsyncClientBuilder::new()
-        .serde_pool(pool);
+    let builder = AsyncClientBuilder::new().serde_pool(pool);
     # Ok(())
     # }
     ```
@@ -329,22 +375,55 @@ impl AsyncClientBuilder {
         self
     }
 
-    /** Use the given `reqwest::Client` for sending requests. */
-    pub fn http_client(mut self, client: AsyncHttpClient) -> Self {
-        self.http = Some(client);
-
-        self
-    }
-
     /** 
-    Construct an [`AsyncClient`][AsyncClient] from this builder. 
+    Construct an [`AsyncClient`][AsyncClient] from this builder.
 
-    [Client]: struct.Client.html
+    The `build` method accepts any type that can be used to construct a http client from.
+
+    # Examples
+
+    Build with an asynchronous `Handle`.
+    This will build an `AsyncClient` with a default underlying `AsyncHttpClient` using the handle.
+
+    ```no_run
+    # extern crate tokio_core;
+    # extern crate elastic;
+    # use elastic::prelude::*;
+    # use tokio_core::reactor::Core;
+    # fn main() { run().unwrap() }
+    # fn run() -> Result<(), Box<::std::error::Error>> {
+    let mut core = Core::new()?;
+
+    let builder = AsyncClientBuilder::new().build(&core.handle());
+    # Ok(())
+    # }
+    ```
+
+    Build with a given `AsyncHttpClient`.
+
+    ```no_run
+    # extern crate tokio_core;
+    # extern crate reqwest;
+    # extern crate elastic;
+    # use tokio_core::reactor::Core;
+    # use reqwest::unstable::async::Client;
+    # use elastic::prelude::*;
+    # fn main() { run().unwrap() }
+    # fn run() -> Result<(), Box<::std::error::Error>> {
+    let mut core = Core::new()?;
+    let client = Client::new(&core.handle());
+
+    let builder = AsyncClientBuilder::new().build(client);
+    # Ok(())
+    # }
+    ```
+
+    [AsyncClient]: type.AsyncClient.html
     */
-    pub fn build(self, handle: &Handle) -> Result<AsyncClient> {
-        let http = self.http
-            .map(Ok)
-            .unwrap_or_else(|| AsyncHttpClientBuilder::new().build(handle))
+    pub fn build<TIntoHttp>(self, client: TIntoHttp) -> Result<AsyncClient, Error> 
+        where TIntoHttp: IntoAsyncHttpClient
+    {
+        let http = client.into_async_http_client()
             .map_err(error::build)?;
         
         let nodes = self.nodes.build(self.params, http.clone());

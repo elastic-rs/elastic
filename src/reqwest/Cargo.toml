@@ -13,11 +13,11 @@ serde_derive = "~1"
 serde_json = "~1"
 elastic_requests = { version = "~0.20.0", path = "../requests" }
 elastic_responses = { version = "~0.20.0", path = "../responses" }
-reqwest = { version = "*", git = "https://github.com/seanmonstar/reqwest.git", features = ["unstable"] }
+reqwest = { version = "~0.8.0", features = ["unstable"] }
 url = "~1"
-bytes = "*"
-tokio-core = "*"
-futures = "*"
+bytes = "0.4.5"
+tokio-core = "~0.1.9"
+futures = "~0.1.16"
 quick-error = "~1"
 
 [dev-dependencies]

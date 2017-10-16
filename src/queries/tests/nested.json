@@ -1,0 +1,120 @@
+{
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "range": {
+            "@timestamp": {
+              "gte": "now-1h",
+              "lte": "now"
+            }
+          }
+        },
+        {
+          "term": {
+            "syslogProgram.raw": "extFlowRecords"
+          }
+        }
+      ],
+      "must_not": []
+    }
+  },
+  "size": 0,
+  "aggs": {
+    "Agg1Date": {
+      "date_histogram": {
+        "field": "Agg1Date",
+        "interval": "60s",
+        "min_doc_count": 0
+      },
+      "aggs": {
+        "Agg2Terms": {
+          "terms": {
+            "field": "Agg2Terms",
+            "size": 5,
+            "order": {
+              "_count": "desc"
+            }
+          },
+          "aggs": {
+            "Agg3Terms": {
+              "terms": {
+                "field": "Agg3Terms",
+                "size": 5,
+                "order": {
+                  "_count": "desc"
+                }
+              },
+              "aggs": {
+                "Agg4Terms": {
+                  "terms": {
+                    "field": "Agg4Terms",
+                    "size": 5,
+                    "order": {
+                      "_count": "desc"
+                    }
+                  },
+                  "aggs": {
+                    "Agg5Terms": {
+                      "terms": {
+                        "field": "Agg5Terms",
+                        "size": 5,
+                        "order": {
+                          "_count": "desc"
+                        }
+                      },
+                      "aggs": {
+                        "Agg6Terms": {
+                          "terms": {
+                            "field": "Agg6Terms",
+                            "size": 10000,
+                            "order": {
+                              "_term": "asc"
+                            }
+                          },
+                          "aggs": {
+                            "Agg7Terms": {
+                              "terms": {
+                                "field": "Agg7Terms",
+                                "size": 10000,
+                                "order": {
+                                  "_term": "asc"
+                                }
+                              },
+                              "aggs": {
+                                "Agg8Terms": {
+                                  "terms": {
+                                    "field": "Agg8Terms",
+                                    "size": 10000,
+                                    "order": {
+                                      "_term": "asc"
+                                    }
+                                  },
+                                  "aggs": {
+                                    "Agg9Terms": {
+                                      "terms": {
+                                        "field": "Agg9Terms",
+                                        "size": 10000,
+                                        "order": {
+                                          "_term": "asc"
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
