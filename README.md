@@ -1,4 +1,4 @@
-# [`elastic`](https://docs.rs/elastic/*/elastic/) [![Latest Version](https://img.shields.io/crates/v/elastic.svg)](https://crates.io/crates/elastic)
+# [`elastic`](https://docs.rs/elastic/*/elastic/) [![Latest Version](https://img.shields.io/crates/v/elastic.svg)](https://crates.io/crates/elastic) [![Gitter](https://img.shields.io/gitter/room/nwjs/nw.js.svg)](https://gitter.im/elastic-rs/Lobby)
 
 `elastic` is an efficient, modular API client for [Elasticsearch](https://github.com/elastic/elasticsearch) written in [Rust](https://www.rust-lang.org).
 The API is targeting the Elastic Stack `5.x`.
@@ -25,10 +25,10 @@ Windows  | Nightly | [![Build status](https://ci.appveyor.com/api/projects/statu
 
 ## Documentation
 
-Version       | Docs
-------------- | -------------
-`current`     | [![Documentation](https://img.shields.io/badge/docs-rustdoc-blue.svg)](https://docs.rs/elastic/*/elastic/)
-`master`      | [![Documentation](https://img.shields.io/badge/docs-rustdoc-orange.svg)](http://elastic-rs.github.io/elastic/elastic/index.html)
+Version                | Docs
+---------------------- | -------------
+current (`master`)     | [![Documentation](https://img.shields.io/badge/docs-rustdoc-blue.svg)](https://docs.rs/elastic/*/elastic/)
+`vNext`                | [![Documentation](https://img.shields.io/badge/docs-rustdoc-orange.svg)](http://elastic-rs.github.io/elastic/elastic/index.html)
 
 ## Example
 
