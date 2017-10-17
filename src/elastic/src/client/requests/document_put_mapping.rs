@@ -11,7 +11,8 @@ use futures_cpupool::CpuPool;
 use serde::Serialize;
 
 use error::{self, Error, Result};
-use client::{AsyncSender, Client, Sender, SyncSender};
+use client::Client;
+use client::sender::{AsyncSender, Sender, SyncSender};
 use client::requests::RequestBuilder;
 use client::requests::params::{Index, Type};
 use client::requests::endpoints::IndicesPutMappingRequest;

@@ -287,8 +287,12 @@ extern crate log;
 extern crate reqwest;
 extern crate serde;
 extern crate serde_json;
+#[macro_use]
+extern crate serde_derive;
 extern crate tokio_core;
 extern crate uuid;
+extern crate url;
+extern crate bytes;
 
 pub mod error;
 pub use error::Error;
@@ -307,7 +311,7 @@ pub mod http {
 
     pub use reqwest::header;
     pub use reqwest::Body as SyncBody;
-    pub use reqwest::unstable::async::Chunk as AsyncChunk;
+    pub use reqwest::unstable::async::{Chunk as AsyncChunk, Body as AsyncBody};
 }
 
 pub mod client;

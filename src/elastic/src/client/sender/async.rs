@@ -5,15 +5,16 @@ use futures::{Future, IntoFuture, Poll};
 use futures_cpupool::CpuPool;
 use tokio_core::reactor::Handle;
 use reqwest::Error as ReqwestError;
-use reqwest::unstable::async::{Client as AsyncHttpClient, ClientBuilder as AsyncHttpClientBuilder};
+use reqwest::unstable::async::{Client as AsyncHttpClient, ClientBuilder as AsyncHttpClientBuilder, RequestBuilder as AsyncHttpRequestBuilder};
 
 use error::{self, Error};
 use private;
 use client::requests::{AsyncBody, HttpRequest};
+use client::sender::{DEFAULT_NODE_ADDRESS, build_method, build_url, RequestParams, PreRequestParams, Sender, SendableRequest};
 use client::sender::static_nodes::StaticNodes;
 use client::sender::sniffed_nodes::SniffedNodes;
 use client::responses::{async_response, AsyncResponseBuilder};
-use client::{Client, RequestParams, PreRequestParams, Sender, SendableRequest};
+use client::Client;
 
 /** 
 An asynchronous Elasticsearch client.
@@ -60,7 +61,7 @@ pub struct AsyncSender {
 #[derive(Clone)]
 enum AsyncNodes {
     Static(StaticNodes),
-    Sniffed(SniffedNodes<AsyncSender>),
+    Sniffed(Box<SniffedNodes<AsyncSender>>),
 }
 
 impl AsyncNodes {
@@ -146,7 +147,7 @@ impl Sender for AsyncSender {
 }
 
 /** Build an asynchronous `reqwest::RequestBuilder` from an Elasticsearch request. */
-fn build_req<I, B>(client: &Client, params: &RequestParams, req: I) -> RequestBuilder
+fn build_req<I, B>(client: &AsyncHttpClient, params: &RequestParams, req: I) -> AsyncHttpRequestBuilder
 where
     I: Into<HttpRequest<'static, B>>,
     B: Into<AsyncBody>,

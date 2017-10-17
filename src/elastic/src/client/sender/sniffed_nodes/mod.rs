@@ -3,15 +3,13 @@
 mod nodes_info;
 use self::nodes_info::*;
 
-use std::rc::Rc;
-use std::cell::RefCell;
-use std::sync::Arc;
-use reqwest::unstable::async::Client;
+use std::sync::{Arc, RwLock};
 use futures::{Future, IntoFuture};
 use client::sender::static_nodes::StaticNodes;
 use client::sender::params::RequestParams;
+use client::sender::{SyncSender, AsyncSender, SendableRequest};
 use client::requests::NodesInfoRequest;
-use client::responses::parse;
+use client::responses::parse::parse;
 use error::Error;
 
 /** 
@@ -34,7 +32,7 @@ struct SniffedNodesInner {
     nodes: StaticNodes,
 }
 
-impl<TSender> SniffedNodes {
+impl<TSender> SniffedNodes<TSender> {
     /**
     Create a cluster sniffer with the given base parameters.
     
@@ -43,7 +41,7 @@ impl<TSender> SniffedNodes {
     */
     pub fn new(sender: TSender, default_params: RequestParams) -> Self {
         let builder = default_params.inner.clone();
-        let nodes = StaticNodes::round_robin(vec![params.base_url.clone()], builder);
+        let nodes = StaticNodes::round_robin(vec![default_params.base_url.clone()], builder);
 
         // Specify a `filter_path` when updating node stats because deserialisation occurs on tokio thread
         // This should change in the future if:
@@ -58,7 +56,7 @@ impl<TSender> SniffedNodes {
             sender: sender,
             default_params: default_params,
             refresh_params: Box::new(refresh_params),
-            inner: Rc::new(RefCell::new(SniffedNodesInner {
+            inner: Arc::new(RwLock::new(SniffedNodesInner {
                 refresh: true,
                 refreshing: false,
                 nodes: nodes

@@ -480,13 +480,7 @@ pub mod sender;
 pub mod requests;
 pub mod responses;
 
-use std::marker::PhantomData;
-use self::requests::HttpRequest;
-
-pub use self::sync::*;
-pub use self::async::*;
-
-pub use self::sender::params::{PreRequestParams, RequestParams};
+pub use self::sender::{SyncClientBuilder, AsyncClientBuilder, SyncClient, AsyncClient, PreRequestParams, RequestParams};
 
 /**
 A HTTP client for the Elasticsearch REST API.
@@ -549,7 +543,8 @@ pub struct Client<TSender> {
 pub mod prelude {
     /*! A glob import for convenience. */
 
-    pub use super::{AsyncClient, AsyncClientBuilder, PreRequestParams, RequestParams, SyncClient, SyncClientBuilder};
+    pub use super::sender::{PreRequestParams, RequestParams};
+    pub use super::{AsyncClient, AsyncClientBuilder, SyncClient, SyncClientBuilder};
     pub use super::requests::prelude::*;
     pub use super::responses::prelude::*;
 }

@@ -3,7 +3,7 @@ use serde::de::DeserializeOwned;
 use reqwest::Response as RawResponse;
 
 use error::{self, Result};
-use super::parse::{self, IsOk};
+use super::parse::{parse, IsOk};
 
 /**
 A builder for a response.
@@ -91,8 +91,10 @@ impl SyncResponseBuilder {
     where
         T: IsOk + DeserializeOwned,
     {
+        let status = self.status();
+
         parse()
-            .from_reader(self.status(), self.0)
+            .from_reader(status, self.0)
             .map_err(|e| error::response(status, e))
     }
 }

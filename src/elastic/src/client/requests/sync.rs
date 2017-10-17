@@ -1,3 +1,9 @@
+use std::io::Cursor;
+use std::fs::File;
+use serde_json::Value;
+
+use http::SyncBody as Body;
+
 /** A type that can be converted into a request body. */
 pub struct SyncBody(Body);
 

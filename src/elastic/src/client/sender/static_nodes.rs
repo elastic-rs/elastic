@@ -1,16 +1,8 @@
 /*! Multiple static nodes that can be load balanced by some strategy. */
 
-use std::fmt;
-use std::marker::PhantomData;
-use std::rc::Rc;
-use std::cell::RefCell;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicUsize, Ordering};
-use reqwest::unstable::async::Client;
-use futures::{Future, IntoFuture};
-use serde::de::{Deserialize, Deserializer, Visitor, MapAccess, SeqAccess, Error as DeError};
 use client::sender::params::{RequestParams, PreRequestParams};
-use client::requests::endpoints::NodesInfoRequest;
 
 /** Select a base address for a given request using some strategy. */
 #[derive(Clone)]

@@ -1,13 +1,14 @@
 use std::sync::Arc;
 use uuid::Uuid;
-use reqwest::{Client as SyncHttpClient, ClientBuilder as SyncHttpClientBuilder};
+use reqwest::{Client as SyncHttpClient, ClientBuilder as SyncHttpClientBuilder, RequestBuilder as SyncHttpRequestBuilder};
 
 use error::{self, Result};
 use private;
+use client::sender::{DEFAULT_NODE_ADDRESS, build_method, build_url, RequestParams, PreRequestParams, Sender, SendableRequest};
 use client::sender::static_nodes::StaticNodes;
 use client::requests::{HttpRequest, SyncBody};
 use client::responses::{sync_response, SyncResponseBuilder};
-use client::{Client, RequestParams, PreRequestParams, Sender, SendableRequest};
+use client::Client;
 
 /** 
 A synchronous Elasticsearch client.
@@ -78,7 +79,7 @@ impl SyncSender {
 }
 
 /** Build a synchronous `reqwest::RequestBuilder` from an Elasticsearch request. */
-fn build_req<I, B>(client: &Client, params: &RequestParams, req: I) -> RequestBuilder
+fn build_req<I, B>(client: &SyncHttpClient, params: &RequestParams, req: I) -> SyncHttpRequestBuilder
 where
     I: Into<HttpRequest<'static, B>>,
     B: Into<SyncBody>,

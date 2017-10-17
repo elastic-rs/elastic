@@ -7,7 +7,8 @@ Builders for [create index requests][docs-create-index].
 use futures::{Future, Poll};
 
 use error::*;
-use client::{AsyncSender, Client, Sender, SyncSender};
+use client::Client;
+use client::sender::{AsyncSender, Sender, SyncSender};
 use client::requests::{empty_body, DefaultBody, RequestBuilder};
 use client::requests::params::Index;
 use client::requests::endpoints::IndicesCreateRequest;

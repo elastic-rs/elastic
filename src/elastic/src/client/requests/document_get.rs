@@ -9,7 +9,8 @@ use futures::{Future, Poll};
 use serde::de::DeserializeOwned;
 
 use error::{Error, Result};
-use client::{AsyncSender, Client, Sender, SyncSender};
+use client::Client;
+use client::sender::{AsyncSender, Sender, SyncSender};
 use client::requests::RequestBuilder;
 use client::requests::params::{Id, Index, Type};
 use client::requests::endpoints::GetRequest;

@@ -6,7 +6,8 @@ This module contains implementation details that are useful if you want to custo
 
 use futures_cpupool::CpuPool;
 
-use client::{AsyncSender, Client, RequestParams, Sender};
+use client::Client;
+use client::sender::{AsyncSender, RequestParams, Sender};
 
 pub use elastic_requests::{empty_body, DefaultBody, HttpMethod, HttpRequest, Url};
 pub use elastic_requests::params;

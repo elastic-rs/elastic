@@ -2,7 +2,12 @@ use std::sync::Arc;
 use std::collections::HashMap;
 
 use reqwest;
-use reqwest::header::{Headers, ContentType};
+use reqwest::header::{Header, Headers, ContentType};
+use url::form_urlencoded::Serializer;
+
+use client::requests::HttpMethod;
+
+pub const DEFAULT_NODE_ADDRESS: &'static str = "http://localhost:9200";
 
 /**
 An incomplete set of request parameters.
@@ -226,7 +231,7 @@ impl Default for RequestParams {
     }
 }
 
-fn build_url<'a>(req_url: &str, params: &RequestParams) -> String {
+pub(crate) fn build_url<'a>(req_url: &str, params: &RequestParams) -> String {
     let (qry_len, qry) = params.get_url_qry();
 
     let mut url = String::with_capacity(params.base_url.len() + req_url.len() + qry_len);
@@ -241,7 +246,7 @@ fn build_url<'a>(req_url: &str, params: &RequestParams) -> String {
     url
 }
 
-fn build_method(method: HttpMethod) -> reqwest::Method {
+pub(crate) fn build_method(method: HttpMethod) -> reqwest::Method {
     match method {
         HttpMethod::Get => reqwest::Method::Get,
         HttpMethod::Post => reqwest::Method::Post,

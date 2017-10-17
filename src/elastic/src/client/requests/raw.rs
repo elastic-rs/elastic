@@ -4,7 +4,8 @@ Builders for raw requests.
 
 use std::marker::PhantomData;
 
-use client::{Client, Sender, SendableRequest};
+use client::Client;
+use client::sender::{Sender, SendableRequest};
 use client::requests::{HttpRequest, RequestBuilder};
 
 /**

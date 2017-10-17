@@ -1,8 +1,17 @@
-pub mod params;
 pub mod static_nodes;
 pub mod sniffed_nodes;
-pub mod sync;
-pub mod async;
+
+mod sync;
+mod async;
+mod params;
+pub use self::sync::*;
+pub use self::async::*;
+pub use self::params::*;
+
+use std::marker::PhantomData;
+
+use client::requests::HttpRequest;
+use private;
 
 /** A sendable request. */
 pub struct SendableRequest<TRequest, TBody> {
