@@ -59,37 +59,20 @@ can be formatted, but not destructured.
 If the `RUST_BACKTRACE` environment variable is `1` then client errors will
 also contain a backtrace.
 */
-#[derive(Debug)]
-pub enum Error {
-    /** An API error from Elasticsearch. */ Api(ApiError),
-    /** Any other kind of error. */ Client(ClientError),
-}
-
-impl StdError for Error {
-    fn description(&self) -> &str {
-        match *self {
-            Error::Api(_) => "API error returned from Elasticsearch",
-            Error::Client(_) => "error sending a request or receiving a response",
+quick_error! {
+    #[derive(Debug)]
+    pub enum Error {
+        /** An API error from Elasticsearch. */
+        Api(err: ApiError) {
+            cause(err)
+            description("API error returned from Elasticsearch")
+            display("API error returned from Elasticsearch. Caused by: {}", err)
         }
-    }
-
-    fn cause(&self) -> Option<&StdError> {
-        match *self {
-            Error::Api(ref e) => Some(e),
-            Error::Client(ref e) => Some(e),
-        }
-    }
-}
-
-impl fmt::Display for Error {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match *self {
-            Error::Api(ref e) => write!(f, "API error returned from Elasticsearch. Caused by: {}", e),
-            Error::Client(ref e) => write!(
-                f,
-                "error sending a request or receiving a response. Caused by: {}",
-                e
-            ),
+        /** Any other kind of error. */
+        Client(err: ClientError) {
+            cause(err)
+            description("error sending a request or receiving a response")
+            display("error sending a request or receiving a response. Caused by: {}", err)
         }
     }
 }

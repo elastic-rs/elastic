@@ -482,6 +482,8 @@ pub mod responses;
 
 pub use self::sender::{SyncClientBuilder, AsyncClientBuilder, SyncClient, AsyncClient, PreRequestParams, RequestParams};
 
+use self::sender::NodeAddresses;
+
 /**
 A HTTP client for the Elasticsearch REST API.
 
@@ -538,6 +540,7 @@ core.run(response_future)?;
 #[derive(Clone)]
 pub struct Client<TSender> {
     sender: TSender,
+    addresses: NodeAddresses<TSender>,
 }
 
 pub mod prelude {

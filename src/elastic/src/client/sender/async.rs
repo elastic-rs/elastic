@@ -1,6 +1,5 @@
 use std::sync::Arc;
 use std::error::Error as StdError;
-use uuid::Uuid;
 use futures::{Future, IntoFuture, Poll};
 use futures_cpupool::CpuPool;
 use tokio_core::reactor::Handle;
@@ -10,9 +9,7 @@ use reqwest::unstable::async::{Client as AsyncHttpClient, ClientBuilder as Async
 use error::{self, Error};
 use private;
 use client::requests::{AsyncBody, HttpRequest};
-use client::sender::{DEFAULT_NODE_ADDRESS, build_method, build_url, RequestParams, PreRequestParams, Sender, SendableRequest};
-use client::sender::static_nodes::StaticNodes;
-use client::sender::sniffed_nodes::SniffedNodes;
+use client::sender::{build_method, build_url, RequestParams, PreRequestParams, NextParams, Sender, SendableRequest, NodeAddressesBuilder, NodeAddresses, NodeAddressesInner};
 use client::responses::{async_response, AsyncResponseBuilder};
 use client::Client;
 
@@ -55,61 +52,26 @@ pub type AsyncClient = Client<AsyncSender>;
 pub struct AsyncSender {
     pub(in client) http: AsyncHttpClient,
     pub(in client) serde_pool: Option<CpuPool>,
-    nodes: AsyncNodes,
-}
-
-#[derive(Clone)]
-enum AsyncNodes {
-    Static(StaticNodes),
-    Sniffed(Box<SniffedNodes<AsyncSender>>),
-}
-
-impl AsyncNodes {
-    fn next(&self) -> Box<Future<Item = RequestParams, Error = Error>> {
-        match *self {
-            AsyncNodes::Static(ref nodes) => Box::new(Ok(nodes.next()).into_future()),
-            AsyncNodes::Sniffed(ref sniffer) => Box::new(sniffer.next().map_err(error::request)),
-        }
-    }
-}
-
-impl AsyncSender {
-    fn params(&self, correlation_id: Uuid, params_builder: Option<Box<Fn(RequestParams) -> RequestParams>>) -> Box<Future<Item = RequestParams, Error = Error>> {
-        let params_future = self.nodes.next()
-            .map_err(move |e| {
-                error!(
-                    "Elasticsearch Node Selection: correlation_id: '{}', error: '{}'",
-                    correlation_id,
-                    e
-                );
-                e
-            })
-            .map(move |params| {
-                if let Some(params_builder) = params_builder {
-                   params_builder(params)
-                } else {
-                    params
-                }
-            });
-        
-        Box::new(params_future)
-    }
 }
 
 impl private::Sealed for AsyncSender {}
 
+// TODO: Split this up so we can test requests without sending them
 impl Sender for AsyncSender {
     type Body = AsyncBody;
     type Response = Pending;
+    // TODO: Can we support this without using a Box? Maybe just an enum with a `Box` cop-out variant
+    type Params = PendingParams;
 
-    fn send<TRequest, TBody>(&self, request: SendableRequest<TRequest, TBody>) -> Self::Response
+    fn send<TRequest, TParams, TBody>(&self, request: SendableRequest<TRequest, TParams, TBody>) -> Self::Response
     where
         TRequest: Into<HttpRequest<'static, TBody>>,
-        TBody: Into<Self::Body> + 'static
+        TBody: Into<Self::Body> + 'static,
+        TParams: Into<Self::Params> + 'static,
     {
+        let correlation_id = request.correlation_id;
         let serde_pool = self.serde_pool.clone();
         let http = self.http.clone();
-        let correlation_id = Uuid::new_v4();
         let params_builder = request.params_builder;
         let req = request.inner.into();
 
@@ -119,10 +81,17 @@ impl Sender for AsyncSender {
             req.url.as_ref()
         );
 
-        let params_future = self.params(correlation_id, params_builder);
+        let params_future = request.params.into().map_err(move |e| {
+            error!(
+                "Elasticsearch Node Selection: correlation_id: '{}', error: '{}'",
+                correlation_id,
+                e
+            );
+            e
+        });
 
         let req_future = params_future.and_then(move |params| {
-            build_req(&http, params, req)
+            build_req(&http, params, params_builder, req)
                 .send()
                 .map_err(move |e| {
                     error!(
@@ -146,13 +115,60 @@ impl Sender for AsyncSender {
     }
 }
 
+impl NextParams for NodeAddresses<AsyncSender> {
+    type Params = PendingParams;
+
+    fn next(&self) -> Self::Params {
+        match self.inner {
+            NodeAddressesInner::Static(ref nodes) => PendingParams::new(nodes.next().into_future()),
+            NodeAddressesInner::Sniffed(ref sniffer) => PendingParams::new(sniffer.next()),
+        }
+    }
+}
+
+pub struct PendingParams {
+    inner: Box<Future<Item = RequestParams, Error = Error>>,
+}
+
+impl PendingParams {
+    fn new<F>(fut: F) -> Self
+    where
+        F: Future<Item = RequestParams, Error = Error> + 'static,
+    {
+        PendingParams {
+            inner: Box::new(fut),
+        }
+    }
+}
+
+impl Future for PendingParams {
+    type Item = RequestParams;
+    type Error = Error;
+
+    fn poll(&mut self) -> Poll<Self::Item, Self::Error> {
+        self.inner.poll()
+    }
+}
+
+impl From<RequestParams> for PendingParams {
+    fn from(params: RequestParams) -> Self {
+        PendingParams::new(Ok(params).into_future())
+    }
+}
+
 /** Build an asynchronous `reqwest::RequestBuilder` from an Elasticsearch request. */
-fn build_req<I, B>(client: &AsyncHttpClient, params: &RequestParams, req: I) -> AsyncHttpRequestBuilder
+fn build_req<I, B>(client: &AsyncHttpClient, params: RequestParams, params_builder: Option<Arc<Fn(RequestParams) -> RequestParams>>, req: I) -> AsyncHttpRequestBuilder
 where
     I: Into<HttpRequest<'static, B>>,
     B: Into<AsyncBody>,
 {
     let req = req.into();
+    let params = if let Some(params_builder) = params_builder {
+        params_builder(params)
+    }
+    else {
+        params
+    };
 
     let url = build_url(&req.url, &params);
     let method = build_method(req.method);
@@ -198,34 +214,8 @@ impl Future for Pending {
 /** A builder for an asynchronous client. */
 pub struct AsyncClientBuilder {
     serde_pool: Option<CpuPool>,
-    nodes: AsyncNodesBuilder,
+    nodes: NodeAddressesBuilder,
     params: PreRequestParams,
-}
-
-enum AsyncNodesBuilder {
-    Static(Vec<Arc<str>>),
-    Sniffed(Arc<str>),
-}
-
-impl Default for AsyncNodesBuilder {
-    fn default() -> Self {
-        AsyncNodesBuilder::Static(vec![DEFAULT_NODE_ADDRESS.into()])
-    }
-}
-
-impl AsyncNodesBuilder {
-    fn build(self, params: PreRequestParams, client: AsyncHttpClient) -> AsyncNodes {
-        match self {
-            AsyncNodesBuilder::Static(nodes) => {
-                AsyncNodes::Static(StaticNodes::round_robin(nodes, params))
-            },
-            AsyncNodesBuilder::Sniffed(default_node) => {
-                let params = RequestParams::from_parts(default_node, params);
-
-                AsyncNodes::Sniffed(SniffedNodes::new(client, params))
-            }
-        }
-    }
 }
 
 /**
@@ -281,7 +271,7 @@ impl AsyncClientBuilder {
         AsyncClientBuilder {
             serde_pool: None,
             params: PreRequestParams::default(),
-            nodes: AsyncNodesBuilder::default(),
+            nodes: NodeAddressesBuilder::default(),
         }
     }
 
@@ -292,7 +282,7 @@ impl AsyncClientBuilder {
         AsyncClientBuilder {
             serde_pool: None,
             params: params,
-            nodes: AsyncNodesBuilder::default(),
+            nodes: NodeAddressesBuilder::default(),
         }
     }
 
@@ -313,7 +303,7 @@ impl AsyncClientBuilder {
               S:Into<Arc<str>>,
     {
         let nodes = nodes.into_iter().map(|address| address.into()).collect();
-        self.nodes = AsyncNodesBuilder::Static(nodes);
+        self.nodes = NodeAddressesBuilder::Static(nodes);
 
         self
     }
@@ -324,7 +314,7 @@ impl AsyncClientBuilder {
     pub fn sniff_nodes<I>(mut self, address: I) -> Self
         where I: Into<Arc<str>>
     {
-        self.nodes = AsyncNodesBuilder::Sniffed(address.into());
+        self.nodes = NodeAddressesBuilder::Sniffed(address.into());
 
         self
     }
@@ -460,14 +450,16 @@ impl AsyncClientBuilder {
         let http = client.into_async_http_client()
             .map_err(error::build)?;
         
-        let nodes = self.nodes.build(self.params, http.clone());
+        let sender = AsyncSender {
+            http: http,
+            serde_pool: self.serde_pool,
+        };
+        
+        let addresses = self.nodes.build(self.params, sender.clone());
 
         Ok(AsyncClient {
-            sender: AsyncSender {
-                http: http,
-                serde_pool: self.serde_pool,
-                nodes: nodes,
-            },
+            sender: sender,
+            addresses: addresses,
         })
     }
 }

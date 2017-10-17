@@ -13,6 +13,7 @@ travis-ci = { repository = "elastic-rs/elastic" }
 appveyor = { repository = "elastic-rs/elastic" }
 
 [dependencies]
+quick-error = "~1"
 error-chain = "0.11.0"
 log = "~0.3.8"
 uuid = { version = "~0.5.1", features = [ "v4" ] }

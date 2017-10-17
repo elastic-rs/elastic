@@ -6,11 +6,10 @@ use self::nodes_info::*;
 use std::sync::{Arc, RwLock};
 use futures::{Future, IntoFuture};
 use client::sender::static_nodes::StaticNodes;
-use client::sender::params::RequestParams;
-use client::sender::{SyncSender, AsyncSender, SendableRequest};
+use client::sender::{Sender, SyncSender, AsyncSender, SendableRequest, RequestParams, NextParams};
 use client::requests::NodesInfoRequest;
-use client::responses::parse::parse;
 use error::Error;
+use private;
 
 /** 
 Periodically sniff nodes in a cluster.
@@ -22,7 +21,7 @@ The base url for the node is obtained by the `http.publish_address` field on a [
 pub struct SniffedNodes<TSender> {
     sender: TSender,
     default_params: RequestParams,
-    refresh_params: Box<Fn(RequestParams) -> RequestParams>,
+    refresh_params_builder: Arc<Fn(RequestParams) -> RequestParams>,
     inner: Arc<RwLock<SniffedNodesInner>>,
 }
 
@@ -40,8 +39,8 @@ impl<TSender> SniffedNodes<TSender> {
     These aren't necessarily the same as the parameters the `Sender` uses internally to sniff the cluster state.
     */
     pub fn new(sender: TSender, default_params: RequestParams) -> Self {
-        let builder = default_params.inner.clone();
-        let nodes = StaticNodes::round_robin(vec![default_params.base_url.clone()], builder);
+        let (base_url, builder) = default_params.clone().split();
+        let nodes = StaticNodes::round_robin(vec![base_url], builder);
 
         // Specify a `filter_path` when updating node stats because deserialisation occurs on tokio thread
         // This should change in the future if:
@@ -49,13 +48,13 @@ impl<TSender> SniffedNodes<TSender> {
         // - we want more metadata about the nodes
         // The publish_address may not correspond to the address the node is actually available on
         // In this case, we might want to offer some kind of filter function that consumers can use to transform nodes
-        let refresh_params = |params|
+        let refresh_params_builder = |params: RequestParams|
             params.url_param("filter_path", "nodes.*.http.publish_address");
 
         SniffedNodes {
             sender: sender,
             default_params: default_params,
-            refresh_params: Box::new(refresh_params),
+            refresh_params_builder: Arc::new(refresh_params_builder),
             inner: Arc::new(RwLock::new(SniffedNodesInner {
                 refresh: true,
                 refreshing: false,
@@ -64,11 +63,18 @@ impl<TSender> SniffedNodes<TSender> {
         }
     }
 
+    /**
+    Check whether the addresses should be refreshed.
+
+    If the addresses should be refreshed, and we're not currently refreshing then we set `refresh` to `false` and `refreshing` to `true`.
+    This method should only be called by `next`, which will always set `refreshing` back to `false` when it's finished.
+    */
     fn should_refresh(&self) -> bool {
-        let mut inner = self.inner.borrow_mut();
+        let mut inner = self.inner.write().expect("lock poisoned");
 
         if !inner.refreshing && inner.refresh {
             inner.refresh = false;
+            inner.refreshing = true;
             true
         } else {
             false
@@ -76,31 +82,36 @@ impl<TSender> SniffedNodes<TSender> {
     }
 }
 
-// TODO: Share most of this logic
+impl<TSender> private::Sealed for SniffedNodes<TSender> { }
 
-impl SniffedNodes<AsyncSender> {
-    /** Get the next address for a request. */
-    pub fn next(&self) -> Box<Future<Item = RequestParams, Error = Error>> {
+// TODO: Share most of this logic
+impl NextParams for SniffedNodes<AsyncSender> {
+    type Params = Box<Future<Item = RequestParams, Error = Error>>;
+
+    fn next(&self) -> Self::Params {
         if !self.should_refresh() {
-            let address = Ok(self.inner.borrow().nodes.try_next().unwrap_or_else(|| self.default_params.clone())).into_future();
+            let inner = self.inner.read().expect("lock poisoned");
+            let address = Ok(inner.nodes.next().unwrap_or_else(|_| self.default_params.clone())).into_future();
+
             Box::new(address)
         } else {
-            let inner = self.inner.clone();
-            {
-                inner.borrow_mut().refreshing = true;
-            }
-
             let default_params = self.default_params.clone();
 
             // TODO: Make this more resilient to failure
             // TODO: Ensure we only have 1 refresh happening at a time (extra refreshing property)
-            let req = SendableRequest::new(NodesInfoRequest::new(), self.params_builder.clone());
+            let req = SendableRequest::new(
+                NodesInfoRequest::new(),
+                self.default_params.clone(),
+                Some(self.refresh_params_builder.clone()));
+
+            let send_inner = self.inner.clone();
+            let finally_inner = self.inner.clone();
 
             let refresh_nodes = self.sender
                 .send(req)
-                .and_then(|res| parse::<NodesInfoResponse>().from_response(res))
+                .and_then(|res| res.into_response::<NodesInfoResponse>())
                 .and_then(move |parsed| {
-                    let mut inner = inner.borrow_mut();
+                    let mut inner = send_inner.write().expect("lock poisoned");
 
                     inner.nodes.nodes = parsed
                         .into_iter()
@@ -109,9 +120,13 @@ impl SniffedNodes<AsyncSender> {
                             .map(|publish_address| Arc::<str>::from(publish_address)))
                         .collect();
 
+                    Ok(inner.nodes.next().unwrap_or(default_params))
+                })
+                .then(move |res| {
+                    let mut inner = finally_inner.write().expect("lock poisoned");
                     inner.refreshing = false;
 
-                    Ok(inner.nodes.try_next().unwrap_or(default_params))
+                    res
                 });
 
             Box::new(refresh_nodes)
@@ -119,45 +134,14 @@ impl SniffedNodes<AsyncSender> {
     }
 }
 
-impl SniffedNodes<SyncSender> {
-    /** Get the next address for a request. */
-    pub fn next(&self) -> Result<RequestParams, Error> {
-        if !self.should_refresh() {
-            Ok(self.inner.borrow().nodes.try_next().unwrap_or_else(|| self.default_params.clone()))
-        } else {
-            let inner = self.inner.clone();
-            {
-                inner.borrow_mut().refreshing = true;
-            }
+impl NextParams for SniffedNodes<SyncSender> {
+    type Params = Result<RequestParams, Error>;
 
-            let default_params = self.default_params.clone();
-
-            // TODO: Make this more resilient to failure
-            // TODO: Ensure we only have 1 refresh happening at a time (extra refreshing property)
-            let req = SendableRequest::new(NodesInfoRequest::new(), self.params_builder.clone());
-
-            let refresh_nodes = self.sender
-                .send(req)
-                .and_then(|res| parse::<NodesInfoResponse>().from_response(res))
-                .and_then(move |parsed| {
-                    let mut inner = inner.borrow_mut();
-
-                    inner.nodes.nodes = parsed
-                        .into_iter()
-                        .filter_map(|node| node.http
-                            .and_then(|http| http.publish_address)
-                            .map(|publish_address| Arc::<str>::from(publish_address)))
-                        .collect();
-
-                    inner.refreshing = false;
-
-                    Ok(inner.nodes.try_next().unwrap_or(default_params))
-                });
-
-            Box::new(refresh_nodes)
-        }
+    fn next(&self) -> Self::Params {
+        unimplemented!()
     }
 }
+
 
 #[cfg(test)]
 mod tests {

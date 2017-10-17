@@ -5,7 +5,7 @@ Builders for raw requests.
 use std::marker::PhantomData;
 
 use client::Client;
-use client::sender::{Sender, SendableRequest};
+use client::sender::{Sender, SendableRequest, NodeAddresses, NextParams};
 use client::requests::{HttpRequest, RequestBuilder};
 
 /**
@@ -86,6 +86,8 @@ where
 impl<TSender, TRequest, TBody> RawRequestBuilder<TSender, TRequest, TBody>
 where
     TSender: Sender,
+    NodeAddresses<TSender>: NextParams,
+    <NodeAddresses<TSender> as NextParams>::Params: Into<TSender::Params> + 'static,
     TRequest: Into<HttpRequest<'static, TBody>>,
     TBody: Into<<TSender>::Body> + 'static,
 {
@@ -161,12 +163,9 @@ where
         let client = self.client;
         let req = self.inner.req.into();
         let params_builder = self.params_builder;
+        let params = client.addresses.next();
 
-        let req = SendableRequest {
-            inner: req,
-            params_builder: params_builder,
-            _marker: PhantomData,
-        };
+        let req = SendableRequest::new(req, params, params_builder);
 
         client.sender.send(req)
     }

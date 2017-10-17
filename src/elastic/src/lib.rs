@@ -280,6 +280,8 @@ extern crate elastic_responses;
 extern crate elastic_types;
 #[macro_use]
 extern crate error_chain;
+#[macro_use]
+extern crate quick_error;
 extern crate futures;
 extern crate futures_cpupool;
 #[macro_use]

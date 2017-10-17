@@ -4,6 +4,7 @@ Request types for the Elasticsearch REST API.
 This module contains implementation details that are useful if you want to customise the request process, but aren't generally important for sending requests.
 */
 
+use std::sync::Arc;
 use futures_cpupool::CpuPool;
 
 use client::Client;
@@ -56,7 +57,7 @@ where
     TSender: Sender,
 {
     client: Client<TSender>,
-    params_builder: Option<Box<Fn(RequestParams) -> RequestParams>>,
+    params_builder: Option<Arc<Fn(RequestParams) -> RequestParams>>,
     inner: TRequest,
 }
 
@@ -69,7 +70,7 @@ impl<TSender, TRequest> RequestBuilder<TSender, TRequest>
 where
     TSender: Sender,
 {
-    fn new(client: Client<TSender>, builder: Option<Box<Fn(RequestParams) -> RequestParams>>, req: TRequest) -> Self {
+    fn new(client: Client<TSender>, builder: Option<Arc<Fn(RequestParams) -> RequestParams>>, req: TRequest) -> Self {
         RequestBuilder {
             client: client,
             params_builder: builder,
@@ -126,9 +127,9 @@ where
                 builder(params)
             };
 
-            self.params_builder = Some(Box::new(params_builder));
+            self.params_builder = Some(Arc::new(params_builder));
         } else {
-            self.params_builder = Some(Box::new(builder));
+            self.params_builder = Some(Arc::new(builder));
         }
 
         self

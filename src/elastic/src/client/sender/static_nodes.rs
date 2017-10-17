@@ -2,7 +2,9 @@
 
 use std::sync::Arc;
 use std::sync::atomic::{AtomicUsize, Ordering};
-use client::sender::params::{RequestParams, PreRequestParams};
+use client::sender::{RequestParams, PreRequestParams, NextParams};
+use error::{self, Error};
+use private;
 
 /** Select a base address for a given request using some strategy. */
 #[derive(Clone)]
@@ -12,22 +14,21 @@ pub struct StaticNodes<TStrategy = RoundRobin> {
     params: PreRequestParams,
 }
 
-impl<TStrategy> StaticNodes<TStrategy>
+impl<TStrategy> NextParams for StaticNodes<TStrategy>
 where
-    TStrategy: Strategy,
+    TStrategy: Strategy + Clone,
 {
-    /** Get the next address for a request. */
-    pub fn next(&self) -> RequestParams {
-        self.try_next().expect("unable to optain a node address")
-    }
+    type Params = Result<RequestParams, Error>;
 
-    /** Try get the next address for a request. */
-    pub fn try_next(&self) -> Option<RequestParams> {
+    fn next(&self) -> Self::Params {
         self.strategy
             .try_next(&self.nodes)
             .map(|address| RequestParams::from_parts(address, self.params.clone()))
+            .map_err(error::request)
     }
 }
+
+impl<TStrategy> private::Sealed for StaticNodes<TStrategy> { }
 
 impl StaticNodes<RoundRobin> {
     /** Use a round-robin strategy for balancing traffic over the given set of nodes. */
@@ -53,7 +54,26 @@ impl StaticNodes<RoundRobin> {
 /** The strategy selects an address from a given collection. */
 pub trait Strategy: Send + Sync {
     /** Try get the next address. */
-    fn try_next(&self, nodes: &[Arc<str>]) -> Option<Arc<str>>;
+    fn try_next(&self, nodes: &[Arc<str>]) -> Result<Arc<str>, StrategyError>;
+}
+
+/** 
+An error attempting to get an address using a strategy.
+*/
+quick_error! {
+    #[derive(Debug)]
+    pub enum StrategyError {
+        Empty {
+            description("the list of addresses was empty")
+        }
+        /** A different kind of error */
+        Other(err: String) {
+            description("an error occurred while getting an address")
+            display("an error occurred while getting an address. Caused by: {}", err)
+        }
+        #[doc(hidden)]
+        __NonExhaustive
+    }
 }
 
 /** A round-robin strategy cycles through nodes sequentially. */
@@ -71,12 +91,12 @@ impl Default for RoundRobin {
 }
 
 impl Strategy for RoundRobin {
-    fn try_next(&self, nodes: &[Arc<str>]) -> Option<Arc<str>> {
+    fn try_next(&self, nodes: &[Arc<str>]) -> Result<Arc<str>, StrategyError> {
         if nodes.len() == 0 {
-            None
+            Err(StrategyError::Empty)
         } else {
             let i = self.index.fetch_add(1, Ordering::Relaxed) % nodes.len();
-            Some(nodes[i].clone())
+            Ok(nodes[i].clone())
         }
     }
 }
