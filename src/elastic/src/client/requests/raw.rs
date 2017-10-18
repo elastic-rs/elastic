@@ -86,10 +86,10 @@ where
 impl<TSender, TRequest, TBody> RawRequestBuilder<TSender, TRequest, TBody>
 where
     TSender: Sender,
-    NodeAddresses<TSender>: NextParams,
-    <NodeAddresses<TSender> as NextParams>::Params: Into<TSender::Params> + 'static,
     TRequest: Into<HttpRequest<'static, TBody>>,
     TBody: Into<<TSender>::Body> + 'static,
+    NodeAddresses<TSender>: NextParams,
+    <NodeAddresses<TSender> as NextParams>::Params: Into<TSender::Params> + 'static,
 {
     /**
     Send a `RawRequestBuilder`.

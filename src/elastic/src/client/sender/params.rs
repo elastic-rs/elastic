@@ -259,7 +259,8 @@ pub(crate) fn build_method(method: HttpMethod) -> reqwest::Method {
 
 #[cfg(test)]
 mod tests {
-    use reqwest::header::{Authorization, ContentType, Referer};
+    use tests::{assert_send, assert_sync};
+    use http::header::{Authorization, ContentType, Referer};
     use super::*;
 
     #[test]

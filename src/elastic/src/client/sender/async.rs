@@ -59,8 +59,7 @@ impl private::Sealed for AsyncSender {}
 // TODO: Split this up so we can test requests without sending them
 impl Sender for AsyncSender {
     type Body = AsyncBody;
-    type Response = Pending;
-    // TODO: Can we support this without using a Box? Maybe just an enum with a `Box` cop-out variant
+    type Response = PendingResponse;
     type Params = PendingParams;
 
     fn send<TRequest, TParams, TBody>(&self, request: SendableRequest<TRequest, TParams, TBody>) -> Self::Response
@@ -111,7 +110,7 @@ impl Sender for AsyncSender {
                 })
         });
 
-        Pending::new(req_future)
+        PendingResponse::new(req_future)
     }
 }
 
@@ -126,6 +125,7 @@ impl NextParams for NodeAddresses<AsyncSender> {
     }
 }
 
+/** A future returned by calling `next` on an async set of `NodeAddresses`. */
 pub struct PendingParams {
     inner: Box<Future<Item = RequestParams, Error = Error>>,
 }
@@ -186,23 +186,23 @@ where
     req
 }
 
-/** A future returned by calling `send`. */
-pub struct Pending {
+/** A future returned by calling `send` on an `AsyncSender`. */
+pub struct PendingResponse {
     inner: Box<Future<Item = AsyncResponseBuilder, Error = Error>>,
 }
 
-impl Pending {
+impl PendingResponse {
     fn new<F>(fut: F) -> Self
     where
         F: Future<Item = AsyncResponseBuilder, Error = Error> + 'static,
     {
-        Pending {
+        PendingResponse {
             inner: Box::new(fut),
         }
     }
 }
 
-impl Future for Pending {
+impl Future for PendingResponse {
     type Item = AsyncResponseBuilder;
     type Error = Error;
 
@@ -472,11 +472,15 @@ mod tests {
     use tokio_core::reactor::Core;
 
     use super::*;
-    use req::*;
+    use client::requests::*;
 
     fn params() -> RequestParams {
         RequestParams::new("eshost:9200/path")
-            .url_param("pretty", true)
+            .url_param("pretty", false)
+    }
+
+    fn builder() -> Option<Arc<Fn(RequestParams) -> RequestParams>> {
+        Some(Arc::new(|params| params.url_param("pretty", true)))
     }
 
     fn expected_req(cli: &Client, method: Method, url: &str, body: Option<Vec<u8>>) -> RequestBuilder {
@@ -503,7 +507,7 @@ mod tests {
     #[test]
     fn head_req() {
         let cli = Client::new(&core().handle());
-        let req = build_req(&cli, &params(), PingHeadRequest::new());
+        let req = build_req(&cli, params(), builder(), PingHeadRequest::new());
 
         let url = "eshost:9200/path/?pretty=true";
 
@@ -515,7 +519,7 @@ mod tests {
     #[test]
     fn get_req() {
         let cli = Client::new(&core().handle());
-        let req = build_req(&cli, &params(), SimpleSearchRequest::new());
+        let req = build_req(&cli, params(), builder(), SimpleSearchRequest::new());
 
         let url = "eshost:9200/path/_search?pretty=true";
 
@@ -529,7 +533,8 @@ mod tests {
         let cli = Client::new(&core().handle());
         let req = build_req(
             &cli,
-            &params(),
+            params(),
+            builder(),
             PercolateRequest::for_index_ty("idx", "ty", vec![]),
         );
 
@@ -545,7 +550,7 @@ mod tests {
         let cli = Client::new(&core().handle());
         let req = build_req(
             &cli,
-            &params(),
+            params(), builder(),
             IndicesCreateRequest::for_index("idx", vec![]),
         );
 
@@ -559,7 +564,7 @@ mod tests {
     #[test]
     fn delete_req() {
         let cli = Client::new(&core().handle());
-        let req = build_req(&cli, &params(), IndicesDeleteRequest::for_index("idx"));
+        let req = build_req(&cli, params(), builder(), IndicesDeleteRequest::for_index("idx"));
 
         let url = "eshost:9200/path/idx?pretty=true";
 

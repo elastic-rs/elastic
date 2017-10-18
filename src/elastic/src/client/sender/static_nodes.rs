@@ -39,8 +39,6 @@ impl StaticNodes<RoundRobin> {
     {
         let nodes: Vec<_> = nodes.into_iter().map(Into::into).collect();
 
-        assert!(nodes.len() > 0, "must supply more than 0 nodes");
-
         let strategy = RoundRobin::default();
 
         StaticNodes {
@@ -98,5 +96,18 @@ impl Strategy for RoundRobin {
             let i = self.index.fetch_add(1, Ordering::Relaxed) % nodes.len();
             Ok(nodes[i].clone())
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn round_robin() {
+        unimplemented!("test round robin works as expected");
+    }
+
+    #[test]
+    fn round_robin_try_next_empty_fails() {
+        unimplemented!("empty set of nodes fails `try_next`");
     }
 }

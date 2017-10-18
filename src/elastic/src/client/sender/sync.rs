@@ -285,14 +285,20 @@ impl SyncClientBuilder {
 
 #[cfg(test)]
 mod tests {
+    use std::fs::File;
     use reqwest::{Client, Method, RequestBuilder};
     use reqwest::header::ContentType;
+
     use super::*;
-    use req::*;
+    use client::requests::*;
 
     fn params() -> RequestParams {
         RequestParams::new("eshost:9200/path")
-            .url_param("pretty", true)
+            .url_param("pretty", false)
+    }
+
+    fn builder() -> Option<Arc<Fn(RequestParams) -> RequestParams>> {
+        Some(Arc::new(|params| params.url_param("pretty", true)))
     }
 
     fn expected_req(cli: &Client, method: Method, url: &str, body: Option<Vec<u8>>) -> RequestBuilder {
@@ -315,7 +321,7 @@ mod tests {
     #[test]
     fn head_req() {
         let cli = Client::new();
-        let req = build_req(&cli, &params(), PingHeadRequest::new());
+        let req = build_req(&cli, params(), builder(), PingHeadRequest::new());
 
         let url = "eshost:9200/path/?pretty=true";
 
@@ -327,7 +333,7 @@ mod tests {
     #[test]
     fn get_req() {
         let cli = Client::new();
-        let req = build_req(&cli, &params(), SimpleSearchRequest::new());
+        let req = build_req(&cli, params(), builder(), SimpleSearchRequest::new());
 
         let url = "eshost:9200/path/_search?pretty=true";
 
@@ -341,7 +347,7 @@ mod tests {
         let cli = Client::new();
         let req = build_req(
             &cli,
-            &params(),
+            params(), builder(),
             PercolateRequest::for_index_ty("idx", "ty", vec![]),
         );
 
@@ -357,7 +363,8 @@ mod tests {
         let cli = Client::new();
         let req = build_req(
             &cli,
-            &params(),
+            params(),
+            builder(),
             IndicesCreateRequest::for_index("idx", vec![]),
         );
 
@@ -371,7 +378,7 @@ mod tests {
     #[test]
     fn delete_req() {
         let cli = Client::new();
-        let req = build_req(&cli, &params(), IndicesDeleteRequest::for_index("idx"));
+        let req = build_req(&cli, params(), builder(), IndicesDeleteRequest::for_index("idx"));
 
         let url = "eshost:9200/path/idx?pretty=true";
 

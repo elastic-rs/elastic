@@ -66,6 +66,12 @@ Represents a type that can send a request.
 You probably don't need to touch this trait directly.
 See the [`Client`][Client] type for making requests.
 
+Even though the `Sender` trait is quite generic, it's not really designed to be implemented externally.
+The request builders expect there to be 2 concrete implementations of `Sender`, namely `SyncSender` and `AsyncSender`.
+The real purpose is to make it possible to share builders so the sync and async APIs don't diverge.
+
+At some point in the future though this may be made more generic so you could reasonably plug your own `Sender`s in to `elastic`.
+
 [Client]: struct.Client.html
 */
 pub trait Sender: private::Sealed + Clone {
@@ -86,9 +92,17 @@ pub trait Sender: private::Sealed + Clone {
 
 /**
 Represents a type that can fetch request parameters.
+
+A set of request parameters are fetched before each HTTP request.
+The `NextParams` trait makes it possible to load balance requests between multiple nodes in an Elasticsearch cluster.
+Out of the box `elastic` provides implementations for a static set of nodes or nodes sniffed from the [Nodes Stats API]().
 */
 pub trait NextParams: private::Sealed + Clone {
-    /* The kind of parameters produces. */
+    /*
+    The kind of parameters produces.
+
+    This type is designed to link a `NextParams` implementation with a particular `Sender`.
+    */
     type Params;
 
     /* Get a set of request parameters. */
