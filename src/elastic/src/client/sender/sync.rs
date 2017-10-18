@@ -47,7 +47,7 @@ impl private::Sealed for SyncSender {}
 impl Sender for SyncSender {
     type Body = SyncBody;
     type Response = Result<SyncResponseBuilder>;
-    type Params = Result<RequestParams>;
+    type Params = Params;
 
     fn send<TRequest, TParams, TBody>(&self, request: SendableRequest<TRequest, TParams, TBody>) -> Self::Response
     where
@@ -65,7 +65,7 @@ impl Sender for SyncSender {
             req.url.as_ref()
         );
 
-        let params = request.params.into().map_err(|e| {
+        let params = request.params.into().inner.map_err(|e| {
             error!(
                 "Elasticsearch Node Selection: correlation_id: '{}', error: '{}'",
                 correlation_id,
@@ -100,13 +100,32 @@ impl Sender for SyncSender {
 }
 
 impl NextParams for NodeAddresses<SyncSender> {
-    type Params = Result<RequestParams>;
+    type Params = Params;
 
     fn next(&self) -> Self::Params {
         match self.inner {
-            NodeAddressesInner::Static(ref nodes) => nodes.next(),
-            NodeAddressesInner::Sniffed(ref sniffer) => sniffer.next(),
+            NodeAddressesInner::Static(ref nodes) => Params::new(nodes.next()),
+            NodeAddressesInner::Sniffed(ref sniffer) => Params::new(sniffer.next()),
         }
+    }
+}
+
+/** A set of parameters returned by calling `next` on a sync set of `NodeAddresses`. */
+pub struct Params {
+    inner: Result<RequestParams>,
+}
+
+impl Params {
+    fn new(res: Result<RequestParams>) -> Self {
+        Params {
+            inner: res,
+        }
+    }
+}
+
+impl From<RequestParams> for Params {
+    fn from(params: RequestParams) -> Self {
+        Params::new(Ok(params))
     }
 }
 

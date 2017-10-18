@@ -129,6 +129,14 @@ where
     }
 }
 
+/** A convenient method to generate errors in tests. */
+#[cfg(test)]
+pub(crate) fn test() -> Error {
+    Error::Client(ClientError {
+        inner: inner::Error::from("a test error"),
+    })
+}
+
 pub(crate) enum MaybeApiError<E> {
     Api(ApiError),
     Other(E),

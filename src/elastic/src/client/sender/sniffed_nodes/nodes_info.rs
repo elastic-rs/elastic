@@ -10,7 +10,7 @@ use std::vec::IntoIter;
 #[derive(Debug, PartialEq, Deserialize)]
 pub struct NodesInfoResponse {
     #[serde(deserialize_with = "deserialize_nodes")]
-    nodes: Vec<SniffedNode>,
+    pub nodes: Vec<SniffedNode>,
 }
 
 #[derive(Debug, PartialEq, Deserialize)]

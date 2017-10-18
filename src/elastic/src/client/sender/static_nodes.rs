@@ -101,13 +101,50 @@ impl Strategy for RoundRobin {
 
 #[cfg(test)]
 mod tests {
-    #[test]
-    fn round_robin() {
-        unimplemented!("test round robin works as expected");
+    use client::sender::NextParams;
+    use super::*;
+
+    fn round_robin(addresses: Vec<&'static str>) -> StaticNodes<RoundRobin> {
+        StaticNodes::round_robin(addresses, PreRequestParams::default())
+    }
+
+    fn expected_addresses() -> Vec<&'static str> {
+        vec![
+            "http://a:9200",
+            "http://b:9200",
+            "http://c:9200"
+        ]
     }
 
     #[test]
-    fn round_robin_try_next_empty_fails() {
-        unimplemented!("empty set of nodes fails `try_next`");
+    fn round_robin_next_multi() {
+        let nodes = round_robin(expected_addresses());
+
+        for _ in 0..10 {
+            for expected in expected_addresses() {
+                let actual = nodes.next().unwrap();
+
+                assert_eq!(expected, actual.get_base_url());
+            }
+        }
+    }
+
+    #[test]
+    fn round_robin_next_single() {
+        let expected = "http://a:9200";
+        let nodes = round_robin(vec![expected]);
+
+        for _ in 0..10 {
+            let actual = nodes.next().unwrap();
+
+            assert_eq!(expected, actual.get_base_url());
+        }
+    }
+
+    #[test]
+    fn round_robin_next_empty_fails() {
+        let nodes = round_robin(vec![]);
+
+        assert!(nodes.next().is_err());
     }
 }
