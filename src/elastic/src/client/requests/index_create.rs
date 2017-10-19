@@ -17,7 +17,7 @@ use client::responses::CommandResponse;
 /** 
 A [create index request][docs-create-index] builder that can be configured before sending. 
 
-Call [`Client.index_create`][Client.index_create] to get a `IndexCreateRequestBuilder`.
+Call [`Client.index_create`][Client.index_create] to get an `IndexCreateRequestBuilder`.
 The `send` method will either send the request [synchronously][send-sync] or [asynchronously][send-async], depending on the `Client` it was created from.
 
 [docs-create-index]: https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-create-index.html
@@ -41,7 +41,7 @@ where
     TSender: Sender,
 {
     /** 
-    Create a [`IndexCreateRequestBuilder`][IndexCreateRequestBuilder] with this `Client` that can be configured before sending.
+    Create an [`IndexCreateRequestBuilder`][IndexCreateRequestBuilder] with this `Client` that can be configured before sending.
 
     For more details, see:
 
@@ -135,7 +135,7 @@ impl<TBody> IndexCreateRequestInner<TBody> {
 /** 
 # Builder methods
 
-Configure a `IndexCreateRequestBuilder` before sending it.
+Configure an `IndexCreateRequestBuilder` before sending it.
 */
 impl<TSender, TBody> IndexCreateRequestBuilder<TSender, TBody>
 where
@@ -170,7 +170,7 @@ where
     TBody: Into<<SyncSender as Sender>::Body>,
 {
     /**
-    Send a `IndexCreateRequestBuilder` synchronously using a [`SyncClient`][SyncClient].
+    Send an `IndexCreateRequestBuilder` synchronously using a [`SyncClient`][SyncClient].
 
     This will block the current thread until a response arrives and is deserialised.
 
@@ -212,7 +212,7 @@ where
     TBody: Into<<AsyncSender as Sender>::Body>,
 {
     /**
-    Send a `IndexCreateRequestBuilder` asynchronously using an [`AsyncClient`][AsyncClient].
+    Send an `IndexCreateRequestBuilder` asynchronously using an [`AsyncClient`][AsyncClient].
     
     This will return a future that will resolve to the deserialised command response.
 

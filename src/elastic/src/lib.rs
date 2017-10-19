@@ -285,7 +285,10 @@ extern crate futures_cpupool;
 extern crate log;
 extern crate reqwest;
 extern crate serde;
+#[cfg_attr(test, macro_use)]
 extern crate serde_json;
+#[macro_use]
+extern crate serde_derive;
 extern crate tokio_core;
 extern crate uuid;
 

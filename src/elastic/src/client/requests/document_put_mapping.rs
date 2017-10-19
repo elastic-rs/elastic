@@ -288,7 +288,7 @@ impl Future for Pending {
 
 #[cfg(test)]
 mod tests {
-    use serde_json::Value;
+    use serde_json::{self, Value};
     use prelude::*;
 
     #[test]
@@ -300,9 +300,17 @@ mod tests {
             .inner
             .into_sync_request()
             .unwrap();
+        
+        let expected_body = json!({
+            "properties": {
+
+            }
+        });
+
+        let actual_body: Value = serde_json::from_slice(&req.body).unwrap();
 
         assert_eq!("/test-idx/_mappings/value", req.url.as_ref());
-        assert_eq!(r#"{"properties":{}}"#.as_bytes().to_vec(), req.body);
+        assert_eq!(expected_body.to_string(), actual_body.to_string());
     }
 
     #[test]

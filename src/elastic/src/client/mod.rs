@@ -104,8 +104,14 @@ Client method                                                 | Elasticsearch AP
 [`search`][Client.search]                                     | [Search][docs-search]              | [`SearchRequest`][SearchRequest]                        | [`SearchResponse`][SearchResponse]
 [`document_get`][Client.document_get]                         | [Get Document][docs-get]           | [`GetRequest`][GetRequest]                              | [`GetResponse`][GetResponse]
 [`document_index`][Client.document_index]                     | [Index Document][docs-index]       | [`IndexRequest`][IndexRequest]                          | [`IndexResponse`][IndexResponse]
+[`document_update`][Client.document_update]                   | [Update Document][docs-update]     | [`UpdateRequest`][UpdateRequest]                        | [`UpdateResponse`][UpdateResponse]
+[`document_delete`][Client.document_delete]                   | [Delete Document][docs-delete]     | [`DeleteRequest`][DeleteRequest]                        | [`DeleteResponse`][DeleteResponse]
 [`document_put_mapping`][Client.document_put_mapping]         | [Put Mapping][docs-mapping]        | [`IndicesPutMappingRequest`][IndicesPutMappingRequest]  | [`CommandResponse`][CommandResponse]
 [`index_create`][Client.index_create]                         | [Create Index][docs-create-index]  | [`IndicesCreateRequest`][IndicesCreateRequest]          | [`CommandResponse`][CommandResponse]
+[`index_open`][Client.index_open]                             | [Open Index][docs-open-index]      | [`IndicesOpenRequest`][IndicesOpenRequest]              | [`CommandResponse`][CommandResponse]
+[`index_close`][Client.index_close]                           | [Close Index][docs-close-index]    | [`IndicesCloseRequest`][IndicesCloseRequest]            | [`CommandResponse`][CommandResponse]
+[`index_delete`][Client.index_delete]                         | [Delete Index][docs-delete-index]  | [`IndicesDeleteRequest`][IndicesDeleteRequest]          | [`CommandResponse`][CommandResponse]
+[`ping`][Client.ping]                                         | -                                  | [`PingRequest`][PingRequest]                            | [`PingResponse`][PingResponse]
 
 All builders follow a standard pattern:
 
@@ -432,9 +438,14 @@ For more details see the [`responses`][responses-mod] module.
 
 [docs-search]: http://www.elastic.co/guide/en/elasticsearch/reference/current/search-search.html
 [docs-get]: http://www.elastic.co/guide/en/elasticsearch/reference/current/docs-get.html
+[docs-update]: http://www.elastic.co/guide/en/elasticsearch/reference/current/docs-update.html
+[docs-delete]: http://www.elastic.co/guide/en/elasticsearch/reference/current/docs-delete.html
 [docs-index]: https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html
 [docs-mapping]: https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping.html
 [docs-create-index]: https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-create-index.html
+[docs-close-index]: https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-open-close.html
+[docs-open-index]: https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-open-close.html
+[docs-delete-index]: https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-delete-index.html
 
 [tokio]: https://tokio.rs
 
@@ -447,18 +458,30 @@ For more details see the [`responses`][responses-mod] module.
 [Client.request]: struct.Client.html#method.request
 [Client.search]: struct.Client.html#search-request
 [Client.document_get]: struct.Client.html#get-document
+[Client.document_update]: struct.Client.html#update-document
+[Client.document_delete]: struct.Client.html#delete-document
 [Client.document_index]: struct.Client.html#index-request
 [Client.document_put_mapping]: struct.Client.html#method.document_put_mapping
 [Client.index_create]: struct.Client.html#create-index-request
+[Client.index_open]: struct.Client.html#open-index-request
+[Client.index_close]: struct.Client.html#close-index-request
+[Client.index_delete]: struct.Client.html#delete-index-request
+[Client.ping]: struct.Client.html#ping-request
 
 [RequestBuilder]: requests/struct.RequestBuilder.html
 [RequestBuilder.params]: requests/struct.RequestBuilder.html#method.params
 [RawRequestBuilder]: requests/type.RawRequestBuilder.html
 [SearchRequest]: requests/endpoints/struct.SearchRequest.html
 [GetRequest]: requests/endpoints/struct.GetRequest.html
+[UpdateRequest]: requests/endpoints/struct.UpdateRequest.html
+[DeleteRequest]: requests/endpoints/struct.DeleteRequest.html
 [IndexRequest]: requests/endpoints/struct.IndexRequest.html
 [IndicesPutMappingRequest]: requests/endpoints/struct.IndicesPutMappingRequest.html
 [IndicesCreateRequest]: requests/endpoints/struct.IndicesCreateRequest.html
+[IndicesOpenRequest]: requests/endpoints/struct.IndicesOpenRequest.html
+[IndicesCloseRequest]: requests/endpoints/struct.IndicesCloseRequest.html
+[IndicesDeleteRequest]: requests/endpoints/struct.IndicesDeleteRequest.html
+[PingRequest]: requests/endpoints/struct.PingRequest.html
 
 [responses-mod]: responses/index.html
 [SyncResponseBuilder]: responses/struct.SyncResponseBuilder.html
@@ -469,7 +492,10 @@ For more details see the [`responses`][responses-mod] module.
 [AsyncResponseBuilder.into_raw]: responses/struct.AsyncResponseBuilder.html#method.into_raw
 [SearchResponse]: responses/type.SearchResponse.html
 [GetResponse]: responses/type.GetResponse.html
+[UpdateResponse]: responses/type.UpdateResponse.html
+[DeleteResponse]: responses/type.DeleteResponse.html
 [IndexResponse]: responses/struct.IndexResponse.html
+[PingResponse]: responses/struct.PingResponse.html
 [CommandResponse]: responses/struct.CommandResponse.html
 [SyncHttpResponse]: responses/struct.SyncHttpResponse.html
 [AsyncHttpResponse]: responses/struct.AsyncHttpResponse.html
