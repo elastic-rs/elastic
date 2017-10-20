@@ -171,6 +171,13 @@ impl From<Map<String, Value>> for ApiError {
                     index: index.into(),
                 }
             }
+            "document_missing_exception" => {
+                let index = error_key!(obj[index]: |v| v.as_str());
+
+                ApiError::DocumentMissing {
+                    index: index.into(),
+                }
+            }
             "parsing_exception" => {
                 let line = error_key!(obj[line]: |v| v.as_u64());
                 let col = error_key!(obj[col]: |v| v.as_u64());

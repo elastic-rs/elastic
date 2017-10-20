@@ -4,7 +4,7 @@ use term_painter::ToStyle;
 use term_painter::Color::*;
 use futures::{stream, Future, Stream};
 use elastic::prelude::*;
-use elastic::Error;
+use elastic::error::{Error, ApiError};
 
 pub type TestResult = bool;
 pub type Test = Box<Fn(AsyncClient) -> Box<Future<Item = TestResult, Error = ()>>>;
@@ -19,8 +19,11 @@ pub trait IntegrationTest: Debug {
     fn prepare(&self, client: AsyncClient) -> Box<Future<Item = (), Error = Error>>;
 
     /// Check an error during preparation and possibly continue.
-    fn prepare_err(&self, _err: &Error) -> bool {
-        false
+    fn prepare_err(&self, err: &Error) -> bool {
+        match *err {
+            Error::Api(ApiError::IndexNotFound {.. }) => true,
+            _ => false,
+        }
     }
 
     /// Execute requests.
@@ -41,7 +44,7 @@ pub fn test<T>(client: AsyncClient, test: T) -> Box<Future<Item = TestResult, Er
 where
     T: IntegrationTest + Send + 'static,
 {
-    let prefix = format!("{}: {} ({:?}):", T::kind(), T::name(), test);
+    let prefix = format!("{}: {} (`{:?}`):", T::kind(), T::name(), test);
 
     let prep_failed = format!("{} prepare failed:", prefix);
     let assert_ok_failed = format!("{} unexpected response:", prefix);
@@ -51,7 +54,7 @@ where
     let fut = test.prepare(client.clone())
         .then(move |prep| match prep {
             Err(ref e) if !test.prepare_err(e) => {
-                println!("{} {:?}", Red.bold().paint(prep_failed), e);
+                println!("{} `{}`", Red.bold().paint(prep_failed), e);
                 Err(())
             }
             _ => Ok(test),
@@ -59,11 +62,11 @@ where
         .and_then(move |test| {
             test.request(client.clone()).then(move |res| match res {
                 Ok(ref res) if !test.assert_ok(res) => {
-                    println!("{} {:?}", Red.bold().paint(assert_ok_failed), res);
+                    println!("{} `{:?}`", Red.bold().paint(assert_ok_failed), res);
                     Err(())
                 }
                 Err(ref e) if !test.assert_err(e) => {
-                    println!("{} {:?}", Red.bold().paint(assert_err_failed), e);
+                    println!("{} `{}`", Red.bold().paint(assert_err_failed), e);
                     Err(())
                 }
                 _ => {
@@ -82,10 +85,14 @@ where
 
 pub fn call(client: AsyncClient, max_concurrent_tests: usize) -> Box<Future<Item = Vec<TestResult>, Error = ()>> {
     use search;
+    use document;
 
-    let search_tests = search::tests().into_iter().map(move |t| t(client.clone()));
+    let document_tests = document::tests().into_iter();
+    let search_tests = search::tests().into_iter();
+    
+    let all_tests = document_tests.chain(search_tests).map(move |t| t(client.clone()));
 
-    let test_stream = stream::futures_unordered(search_tests)
+    let test_stream = stream::futures_unordered(all_tests)
         .map(|r| Ok(r))
         .buffer_unordered(max_concurrent_tests);
 

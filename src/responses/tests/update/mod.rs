@@ -35,3 +35,17 @@ fn success_parse_noop_doc_response() {
 
     assert!(!deserialized.updated());
 }
+
+#[test]
+fn error_parse_document_missing() {
+    let f = load_file("tests/samples/error_document_missing.json");
+    let deserialized = parse::<UpdateResponse>().from_reader(404, f).unwrap_err();
+
+    let valid = match deserialized {
+        ResponseError::Api(ApiError::DocumentMissing { ref index })
+        if index == "carrots" => true,
+        _ => false
+    };
+
+    assert!(valid);
+}

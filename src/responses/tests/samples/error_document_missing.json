@@ -6,13 +6,13 @@
             "reason": "[testtype][3]: document missing",
             "index_uuid": "clVwR_NuQ8mzIuJ_vQ_asw",
             "shard": "4",
-            "index": "testindex"
+            "index": "carrots"
         }],
         "type": "document_missing_exception",
         "reason": "[testtype][3]: document missing",
         "index_uuid": "clVwR_NuQ8mzIuJ_vQ_asw",
         "shard": "4",
-        "index": "testindex"
+        "index": "carrots"
     },
     "status": 404
 }

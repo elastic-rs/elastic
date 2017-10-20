@@ -706,6 +706,7 @@ pub struct Script<TParams> {
 
 #[derive(Serialize)]
 struct ScriptInner<TParams> {
+    #[serde(rename = "inline")]
     source: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     lang: Option<String>,
@@ -866,7 +867,7 @@ mod tests {
 
         let expected_body = json!({
             "script": {
-                "source": "ctx._source.a = params.str"
+                "inline": "ctx._source.a = params.str"
             }
         });
 
@@ -888,7 +889,7 @@ mod tests {
 
         let expected_body = json!({
             "script": {
-                "source": "ctx._source.a = params.str"
+                "inline": "ctx._source.a = params.str"
             }
         });
 
@@ -913,7 +914,7 @@ mod tests {
 
         let expected_body = json!({
             "script": {
-                "source": "ctx._source.a = params.str",
+                "inline": "ctx._source.a = params.str",
                 "lang": "painless",
                 "params": {
                     "str": "some value",
@@ -950,7 +951,7 @@ mod tests {
 
         let expected_body = json!({
             "script": {
-                "source": "ctx._source.a = params.str",
+                "inline": "ctx._source.a = params.str",
                 "params": {
                     "a": "some value",
                     "b": 42
