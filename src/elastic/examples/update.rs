@@ -53,9 +53,7 @@ fn run() -> Result<(), Box<Error>> {
 
     // Update the document using a script
     let update = client.document_update::<MyType>(sample_index(), id(doc_id))
-          .doc(json!({
-              "title": "New title"
-          }))
+          .script(r#"ctx._source.title = "A new title""#)
           .send()?;
 
     assert!(update.updated());
