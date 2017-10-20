@@ -95,6 +95,8 @@ For more details, see the [`client`][client-mod] and [`requests`][requests-mod] 
 
 ## Making requests
 
+_For a list of common client methods, see [here][request-builders]._
+
 Each endpoint in the Elasticsearch REST API is provided as a strongly-typed structure.
 The client offers high-level request builders for some common Elasticsearch operations.
 
@@ -270,6 +272,7 @@ This crate glues these libraries together with some simple assumptions about how
 [client-mod]: client/index.html
 [requests-mod]: client/requests/index.html
 [types-mod]: types/index.html
+[request-builders]: client/index.html#request-builders
 */
 
 #![deny(warnings, missing_docs)]
@@ -285,7 +288,10 @@ extern crate futures_cpupool;
 extern crate log;
 extern crate reqwest;
 extern crate serde;
+#[cfg_attr(test, macro_use)]
 extern crate serde_json;
+#[macro_use]
+extern crate serde_derive;
 extern crate tokio_core;
 extern crate uuid;
 

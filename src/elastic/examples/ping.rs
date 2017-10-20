@@ -13,10 +13,7 @@ fn run() -> Result<(), Box<Error>> {
     let client = SyncClientBuilder::new().build()?;
 
     // Ping the cluster
-    let ping = client
-        .request(PingRequest::new())
-        .send()?
-        .into_response::<PingResponse>()?;
+    let ping = client.ping().send()?;
 
     println!("{:?}", ping);
 
