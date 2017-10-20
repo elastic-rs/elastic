@@ -10,6 +10,8 @@ extern crate env_logger;
 extern crate elastic_derive;
 #[macro_use]
 extern crate serde_derive;
+#[macro_use]
+extern crate serde_json;
 extern crate serde;
 
 extern crate elastic;
@@ -52,7 +54,7 @@ fn run() -> Result<(), Box<Error>> {
     // Update the document using a script
     let update = client.document_update::<MyType>(sample_index(), id(doc_id))
           .doc(json!({
-              title: "New title"
+              "title": "New title"
           }))
           .send()?;
 
