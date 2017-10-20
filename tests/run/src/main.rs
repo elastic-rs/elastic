@@ -7,9 +7,14 @@ They should also provide a way to inspect how the client behaves under load and 
 */
 
 extern crate elastic;
+#[macro_use]
+extern crate elastic_derive;
 extern crate futures;
 extern crate serde;
+#[macro_use]
 extern crate serde_json;
+#[macro_use]
+extern crate serde_derive;
 extern crate term_painter;
 extern crate tokio_core;
 extern crate tokio_timer;
@@ -18,6 +23,7 @@ use std::process;
 use term_painter::ToStyle;
 use term_painter::Color::*;
 
+mod document;
 mod search;
 mod run_tests;
 mod build_client;

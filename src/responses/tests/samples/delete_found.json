@@ -1,0 +1,13 @@
+{
+    "found": true,
+    "_index": "testindex",
+    "_type": "testtype",
+    "_id": "1",
+    "_version": 2,
+    "result": "deleted",
+    "_shards": {
+        "total": 2,
+        "successful": 1,
+        "failed": 0
+    }
+}

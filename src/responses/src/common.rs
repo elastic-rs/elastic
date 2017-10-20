@@ -25,3 +25,15 @@ impl Shards {
         self.failed
     }
 }
+
+#[derive(Deserialize, Debug)]
+pub(crate) enum DocumentResult {
+    #[serde(rename = "deleted")]
+    Deleted,
+    #[serde(rename = "updated")]
+    Updated,
+    #[serde(rename = "not_found")]
+    NotFound,
+    #[serde(rename = "noop")]
+    NoOp,
+}

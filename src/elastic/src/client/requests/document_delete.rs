@@ -1,37 +1,36 @@
 /*!
-Builders for [get document requests][docs-get].
+Builders for [delete document requests][docs-delete].
 
-[docs-get]: http://www.elastic.co/guide/en/elasticsearch/reference/current/docs-get.html
+[docs-delete]: http://www.elastic.co/guide/en/elasticsearch/reference/current/docs-delete.html
 */
 
 use std::marker::PhantomData;
 use futures::{Future, Poll};
-use serde::de::DeserializeOwned;
 
 use error::{Error, Result};
 use client::{AsyncSender, Client, Sender, SyncSender};
 use client::requests::RequestBuilder;
 use client::requests::params::{Id, Index, Type};
-use client::requests::endpoints::GetRequest;
+use client::requests::endpoints::DeleteRequest;
 use client::requests::raw::RawRequestInner;
-use client::responses::GetResponse;
+use client::responses::DeleteResponse;
 use types::document::DocumentType;
 
 /** 
-A [get document request][docs-get] builder that can be configured before sending.
+A [delete document request][docs-delete] builder that can be configured before sending.
 
-Call [`Client.document_get`][Client.document_get] to get a `GetRequestBuilder`.
+Call [`Client.document_delete`][Client.document_delete] to get a `DeleteRequestBuilder`.
 The `send` method will either send the request [synchronously][send-sync] or [asynchronously][send-async], depending on the `Client` it was created from.
 
-[docs-get]: http://www.elastic.co/guide/en/elasticsearch/reference/current/docs-get.html
+[docs-delete]: http://www.elastic.co/guide/en/elasticsearch/reference/current/docs-delete.html
 [send-sync]: #send-synchronously
 [send-async]: #send-asynchronously
-[Client.document_get]: ../../struct.Client.html#get-document
+[Client.document_delete]: ../../struct.Client.html#delete-document
 */
-pub type GetRequestBuilder<TSender, TDocument> = RequestBuilder<TSender, GetRequestInner<TDocument>>;
+pub type DeleteRequestBuilder<TSender, TDocument> = RequestBuilder<TSender, DeleteRequestInner<TDocument>>;
 
 #[doc(hidden)]
-pub struct GetRequestInner<TDocument> {
+pub struct DeleteRequestInner<TDocument> {
     index: Index<'static>,
     ty: Type<'static>,
     id: Id<'static>,
@@ -39,14 +38,14 @@ pub struct GetRequestInner<TDocument> {
 }
 
 /**
-# Get document
+# Delete document
 */
 impl<TSender> Client<TSender>
 where
     TSender: Sender,
 {
     /** 
-    Create a [`GetRequestBuilder`][GetRequestBuilder] with this `Client` that can be configured before sending.
+    Create a [`DeleteRequestBuilder`][DeleteRequestBuilder] with this `Client` that can be configured before sending.
 
     For more details, see:
 
@@ -56,7 +55,7 @@ where
 
     # Examples
 
-    Get a [`DocumentType`][documents-mod] called `MyType` with an id of `1`:
+    Delete a [`DocumentType`][documents-mod] called `MyType` with an id of `1`:
     
     ```no_run
     # extern crate serde;
@@ -75,55 +74,30 @@ where
     #     pub timestamp: Date<DefaultDateMapping>
     # }
     # let client = SyncClientBuilder::new().build()?;
-    let response = client.document_get::<MyType>(index("myindex"), id(1))
+    let response = client.document_delete::<MyType>(index("myindex"), id(1))
                          .send()?;
 
-    if let Some(doc) = response.into_document() {
-        println!("id: {}", doc.id);
-    }
+    assert!(response.deleted());
     # Ok(())
     # }
     ```
 
-    For more details on document types, see the [`types`][types-mod] module.
-
-    Get the same document as a `serde_json::Value`:
-
-    ```no_run
-    # extern crate serde;
-    # extern crate serde_json;
-    # #[macro_use] extern crate serde_derive;
-    # #[macro_use] extern crate elastic_derive;
-    # extern crate elastic;
-    # use serde_json::Value;
-    # use elastic::prelude::*;
-    # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<::std::error::Error>> {
-    # let client = SyncClientBuilder::new().build()?;
-    let response = client.document_get::<Value>(index("myindex"), id(1))
-                         .ty("mytype")
-                         .send()?;
-    # Ok(())
-    # }
-    ```
-
-    [GetRequestBuilder]: requests/document_get/type.GetRequestBuilder.html
-    [builder-methods]: requests/document_get/type.GetRequestBuilder.html#builder-methods
-    [send-sync]: requests/document_get/type.GetRequestBuilder.html#send-synchronously
-    [send-async]: requests/document_get/type.GetRequestBuilder.html#send-asynchronously
-    [types-mod]: ../types/index.html
+    [DeleteRequestBuilder]: requests/document_delete/type.DeleteRequestBuilder.html
+    [builder-methods]: requests/document_delete/type.DeleteRequestBuilder.html#builder-methods
+    [send-sync]: requests/document_delete/type.DeleteRequestBuilder.html#send-synchronously
+    [send-async]: requests/document_delete/type.DeleteRequestBuilder.html#send-asynchronously
     [documents-mod]: ../types/document/index.html
     */
-    pub fn document_get<TDocument>(&self, index: Index<'static>, id: Id<'static>) -> GetRequestBuilder<TSender, TDocument>
+    pub fn document_delete<TDocument>(&self, index: Index<'static>, id: Id<'static>) -> DeleteRequestBuilder<TSender, TDocument>
     where
-        TDocument: DeserializeOwned + DocumentType,
+        TDocument: DocumentType,
     {
         let ty = TDocument::name().into();
 
         RequestBuilder::new(
             self.clone(),
             None,
-            GetRequestInner {
+            DeleteRequestInner {
                 index: index,
                 ty: ty,
                 id: id,
@@ -133,22 +107,22 @@ where
     }
 }
 
-impl<TDocument> GetRequestInner<TDocument> {
-    fn into_request(self) -> GetRequest<'static> {
-        GetRequest::for_index_ty_id(self.index, self.ty, self.id)
+impl<TDocument> DeleteRequestInner<TDocument> {
+    fn into_request(self) -> DeleteRequest<'static> {
+        DeleteRequest::for_index_ty_id(self.index, self.ty, self.id)
     }
 }
 
 /**
 # Builder methods
 
-Configure a `GetRequestBuilder` before sending it.
+Configure a `DeleteRequestBuilder` before sending it.
 */
-impl<TSender, TDocument> GetRequestBuilder<TSender, TDocument>
+impl<TSender, TDocument> DeleteRequestBuilder<TSender, TDocument>
 where
     TSender: Sender,
 {
-    /** Set the type for the get request. */
+    /** Set the type for the delete request. */
     pub fn ty<I>(mut self, ty: I) -> Self
     where
         I: Into<Type<'static>>,
@@ -161,44 +135,44 @@ where
 /**
 # Send synchronously
 */
-impl<TDocument> GetRequestBuilder<SyncSender, TDocument>
-where
-    TDocument: DeserializeOwned,
-{
+impl<TDocument> DeleteRequestBuilder<SyncSender, TDocument> {
     /**
-    Send a `GetRequestBuilder` synchronously using a [`SyncClient`][SyncClient].
+    Send a `DeleteRequestBuilder` synchronously using a [`SyncClient`][SyncClient].
 
     This will block the current thread until a response arrives and is deserialised.
 
     # Examples
 
-    Get a document from an index called `myindex` with an id of `1`:
+    Delete a document from an index called `myindex` with an id of `1`:
 
     ```no_run
     # extern crate serde;
-    # extern crate serde_json;
-    # #[macro_use] extern crate serde_derive;
-    # #[macro_use] extern crate elastic_derive;
+    # #[macro_use]
+    # extern crate serde_derive;
+    # #[macro_use]
+    # extern crate elastic_derive;
     # extern crate elastic;
-    # use serde_json::Value;
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
     # fn run() -> Result<(), Box<::std::error::Error>> {
+    # #[derive(Serialize, Deserialize, ElasticType)]
+    # struct MyType {
+    #     pub id: i32,
+    #     pub title: String,
+    #     pub timestamp: Date<DefaultDateMapping>
+    # }
     # let client = SyncClientBuilder::new().build()?;
-    let response = client.document_get::<Value>(index("myindex"), id(1))
-                         .ty("mytype")
+    let response = client.document_delete::<MyType>(index("myindex"), id(1))
                          .send()?;
-    
-    if let Some(doc) = response.into_document() {
-        println!("{:?}", doc);
-    }
+
+    assert!(response.deleted());
     # Ok(())
     # }
     ```
 
     [SyncClient]: ../../type.SyncClient.html
     */
-    pub fn send(self) -> Result<GetResponse<TDocument>> {
+    pub fn send(self) -> Result<DeleteResponse> {
         let req = self.inner.into_request();
 
         RequestBuilder::new(self.client, self.params, RawRequestInner::new(req))
@@ -210,18 +184,15 @@ where
 /**
 # Send asynchronously
 */
-impl<TDocument> GetRequestBuilder<AsyncSender, TDocument>
-where
-    TDocument: DeserializeOwned + Send + 'static,
-{
+impl<TDocument> DeleteRequestBuilder<AsyncSender, TDocument> {
     /**
-    Send a `GetRequestBuilder` asynchronously using an [`AsyncClient`][AsyncClient].
+    Send a `DeleteRequestBuilder` asynchronously using an [`AsyncClient`][AsyncClient].
     
-    This will return a future that will resolve to the deserialised get document response.
+    This will return a future that will resolve to the deserialised delete document response.
 
     # Examples
 
-    Get a document from an index called `myindex` with an id of `1`:
+    Delete a document from an index called `myindex` with an id of `1`:
 
     ```no_run
     # extern crate futures;
@@ -238,14 +209,12 @@ where
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # let core = tokio_core::reactor::Core::new()?;
     # let client = AsyncClientBuilder::new().build(&core.handle())?;
-    let future = client.document_get::<Value>(index("myindex"), id(1))
+    let future = client.document_delete::<Value>(index("myindex"), id(1))
                        .ty("mytype")
                        .send();
     
     future.and_then(|response| {
-        if let Some(doc) = response.into_document() {
-            println!("{:?}", doc);
-        }
+        assert!(response.deleted());
 
         Ok(())
     });
@@ -255,7 +224,7 @@ where
 
     [AsyncClient]: ../../type.AsyncClient.html
     */
-    pub fn send(self) -> Pending<TDocument> {
+    pub fn send(self) -> Pending {
         let req = self.inner.into_request();
 
         let res_future = RequestBuilder::new(self.client, self.params, RawRequestInner::new(req))
@@ -267,14 +236,14 @@ where
 }
 
 /** A future returned by calling `send`. */
-pub struct Pending<TDocument> {
-    inner: Box<Future<Item = GetResponse<TDocument>, Error = Error>>,
+pub struct Pending {
+    inner: Box<Future<Item = DeleteResponse, Error = Error>>,
 }
 
-impl<TDocument> Pending<TDocument> {
+impl Pending {
     fn new<F>(fut: F) -> Self
     where
-        F: Future<Item = GetResponse<TDocument>, Error = Error> + 'static,
+        F: Future<Item = DeleteResponse, Error = Error> + 'static,
     {
         Pending {
             inner: Box::new(fut),
@@ -282,11 +251,8 @@ impl<TDocument> Pending<TDocument> {
     }
 }
 
-impl<TDocument> Future for Pending<TDocument>
-where
-    TDocument: DeserializeOwned + Send + 'static,
-{
-    type Item = GetResponse<TDocument>;
+impl Future for Pending {
+    type Item = DeleteResponse;
     type Error = Error;
 
     fn poll(&mut self) -> Poll<Self::Item, Self::Error> {
@@ -304,7 +270,7 @@ mod tests {
         let client = SyncClientBuilder::new().build().unwrap();
 
         let req = client
-            .document_get::<Value>(index("test-idx"), id("1"))
+            .document_delete::<Value>(index("test-idx"), id("1"))
             .inner
             .into_request();
 
@@ -316,7 +282,7 @@ mod tests {
         let client = SyncClientBuilder::new().build().unwrap();
 
         let req = client
-            .document_get::<Value>(index("test-idx"), id("1"))
+            .document_delete::<Value>(index("test-idx"), id("1"))
             .ty("new-ty")
             .inner
             .into_request();

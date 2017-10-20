@@ -1,0 +1,18 @@
+{
+    "error": {
+        "root_cause": [
+        {
+            "type": "document_missing_exception",
+            "reason": "[testtype][3]: document missing",
+            "index_uuid": "clVwR_NuQ8mzIuJ_vQ_asw",
+            "shard": "4",
+            "index": "carrots"
+        }],
+        "type": "document_missing_exception",
+        "reason": "[testtype][3]: document missing",
+        "index_uuid": "clVwR_NuQ8mzIuJ_vQ_asw",
+        "shard": "4",
+        "index": "carrots"
+    },
+    "status": 404
+}

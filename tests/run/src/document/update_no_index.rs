@@ -1,22 +1,26 @@
-use serde_json::Value;
 use futures::Future;
 use elastic::prelude::*;
-use elastic::error::{ApiError, Error};
+use elastic::error::{Error, ApiError};
 use run_tests::IntegrationTest;
 
 #[derive(Debug, Clone, Copy)]
-pub struct NoIndex;
+pub struct UpdateNoIndex;
 
-const INDEX: &'static str = "no_index_idx";
+#[derive(Debug, PartialEq, Serialize, Deserialize, ElasticType)]
+pub struct Doc {
+    id: i32,
+}
 
-impl IntegrationTest for NoIndex {
-    type Response = SearchResponse<Value>;
+const INDEX: &'static str = "update_no_index_idx";
+
+impl IntegrationTest for UpdateNoIndex {
+    type Response = UpdateResponse;
 
     fn kind() -> &'static str {
-        "search"
+        "document"
     }
     fn name() -> &'static str {
-        "no_index"
+        "update_no_index"
     }
 
     // Ensure the index doesn't exist
@@ -29,21 +33,19 @@ impl IntegrationTest for NoIndex {
         Box::new(delete_res)
     }
 
-    // Execute a search request against that index
+    // Execute an update request against that index
     fn request(&self, client: AsyncClient) -> Box<Future<Item = Self::Response, Error = Error>> {
-        let res = client
-            .search()
-            .index(INDEX)
-            .ty(Some("no_index_ty"))
+        let res = client.document_update::<Doc>(index(INDEX), id(1))
+            .doc(Doc { id: 1 })
             .send();
 
         Box::new(res)
     }
 
-    // Ensure an `IndexNotFound` error is returned
+    // Ensure an `DocumentMissing` error is returned
     fn assert_err(&self, err: &Error) -> bool {
         match *err {
-            Error::Api(ApiError::IndexNotFound { .. }) => true,
+            Error::Api(ApiError::DocumentMissing { .. }) => true,
             _ => false,
         }
     }
