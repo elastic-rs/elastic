@@ -65,6 +65,11 @@ where
     # Ok(())
     # }
     ```
+
+    [IndexDeleteRequestBuilder]: requests/index_delete/type.IndexDeleteRequestBuilder.html
+    [builder-methods]: requests/index_delete/type.IndexDeleteRequestBuilder.html#builder-methods
+    [send-sync]: requests/index_delete/type.IndexDeleteRequestBuilder.html#send-synchronously
+    [send-async]: requests/index_delete/type.IndexDeleteRequestBuilder.html#send-asynchronously
     */
     pub fn index_delete(&self, index: Index<'static>) -> IndexDeleteRequestBuilder<TSender> {
         RequestBuilder::new(

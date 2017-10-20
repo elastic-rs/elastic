@@ -81,6 +81,12 @@ where
     # Ok(())
     # }
     ```
+
+    [DeleteRequestBuilder]: requests/document_delete/type.DeleteRequestBuilder.html
+    [builder-methods]: requests/document_delete/type.DeleteRequestBuilder.html#builder-methods
+    [send-sync]: requests/document_delete/type.DeleteRequestBuilder.html#send-synchronously
+    [send-async]: requests/document_delete/type.DeleteRequestBuilder.html#send-asynchronously
+    [documents-mod]: ../types/document/index.html
     */
     pub fn document_delete<TDocument>(&self, index: Index<'static>, id: Id<'static>) -> DeleteRequestBuilder<TSender, TDocument>
     where

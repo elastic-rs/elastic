@@ -111,8 +111,8 @@ where
     [builder-methods]: requests/index_create/type.IndexCreateRequestBuilder.html#builder-methods
     [send-sync]: requests/index_create/type.IndexCreateRequestBuilder.html#send-synchronously
     [send-async]: requests/index_create/type.IndexCreateRequestBuilder.html#send-asynchronously
-    [types-mod]: ../../types/index.html
-    [documents-mod]: ../../types/document/index.html
+    [types-mod]: ../types/index.html
+    [documents-mod]: ../types/document/index.html
     */
     pub fn index_create(&self, index: Index<'static>) -> IndexCreateRequestBuilder<TSender, DefaultBody> {
         RequestBuilder::new(

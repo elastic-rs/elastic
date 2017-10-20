@@ -142,7 +142,7 @@ where
     # let client = SyncClientBuilder::new().build()?;
     # let new_doc = MyType { id: 1, title: String::new(), timestamp: Date::now() };
     let response = client.document_update::<MyType>(index("myindex"), id(1))
-                         .inline_script(r#"ctx._source.title = "New Title""#)
+                         .script(r#"ctx._source.title = "New Title""#)
                          .send()?;
 
     assert!(response.updated());
@@ -171,8 +171,7 @@ where
     # let client = SyncClientBuilder::new().build()?;
     # let new_doc = MyType { id: 1, title: String::new(), timestamp: Date::now() };
     let response = client.document_update::<MyType>(index("myindex"), id(1))
-                         .script(|script| script
-                            .source("ctx._source.title = params.newTitle")
+                         .script_fluent("ctx._source.title = params.newTitle", |script| script
                             .param("newTitle", "New Title"))
                          .send()?;
 
@@ -180,6 +179,12 @@ where
     # Ok(())
     # }
     ```
+
+    [UpdateRequestBuilder]: requests/document_update/type.UpdateRequestBuilder.html
+    [builder-methods]: requests/document_update/type.UpdateRequestBuilder.html#builder-methods
+    [send-sync]: requests/document_update/type.UpdateRequestBuilder.html#send-synchronously
+    [send-async]: requests/document_update/type.UpdateRequestBuilder.html#send-asynchronously
+    [documents-mod]: ../types/document/index.html
     */
     pub fn document_update<TDocument>(&self, index: Index<'static>, id: Id<'static>) -> UpdateRequestBuilder<TSender, Doc<TDocument>>
     where
@@ -312,6 +317,8 @@ where
     # Ok(())
     # }
     ```
+
+    [documents-mod]: ../../types/document/index.html
     */
     pub fn doc<TDocument>(self, doc: TDocument) -> UpdateRequestBuilder<TSender, Doc<TDocument>>
     where
@@ -331,7 +338,7 @@ where
     }
 
     /**
-    Update the source using [an inline script][painless-script].
+    Update the source using [an inline script][painless-lang].
     
     # Examples
 
@@ -356,23 +363,69 @@ where
     # let client = SyncClientBuilder::new().build()?;
     # let new_doc = MyType { id: 1, title: String::new(), timestamp: Date::now() };
     let response = client.document_update::<MyType>(index("myindex"), id(1))
-                         .inline_script(r#"ctx._source.title = "New Title""#)
+                         .script(r#"ctx._source.title = "New Title""#)
                          .send();
     # Ok(())
     # }
     ```
-    */
-    pub fn inline_script<TScript>(self, source: TScript) -> UpdateRequestBuilder<TSender, Script<DefaultParams>>
+
+     Update the `title` property of a document using a parameterised script:
+    
+    ```no_run
+    # extern crate serde;
+    # #[macro_use]
+    # extern crate serde_derive;
+    # #[macro_use]
+    # extern crate elastic_derive;
+    # extern crate elastic;
+    # use elastic::client::requests::document_update::ScriptBuilder;
+    # use elastic::prelude::*;
+    # fn main() { run().unwrap() }
+    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # #[derive(Serialize, Deserialize, ElasticType)]
+    # struct MyType {
+    #     pub id: i32,
+    #     pub title: String,
+    #     pub timestamp: Date<DefaultDateMapping>
+    # }
+    # let client = SyncClientBuilder::new().build()?;
+    # let new_doc = MyType { id: 1, title: String::new(), timestamp: Date::now() };
+    let script = ScriptBuilder::new("ctx._source.title = params.newTitle")
+        .param("newTitle", "New Title");
+
+    let response = client.document_update::<MyType>(index("myindex"), id(1))
+                         .script(script)
+                         .send()?;
+
+    assert!(response.updated());
+    # Ok(())
+    # }
+    ```
+
+    [painless-lang]: https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-scripting-painless.html
+     */
+    pub fn script<TScript, TParams>(self, builder: TScript) -> UpdateRequestBuilder<TSender, Script<TParams>>
     where
-        TScript: ToString
+        TScript: Into<ScriptBuilder<TParams>>
     {
-        self.script(|script| script.source(source.to_string()))
+        RequestBuilder::new(
+            self.client,
+            self.params,
+            UpdateRequestInner {
+                body: builder.into().build(),
+                index: self.inner.index,
+                ty: self.inner.ty,
+                id: self.inner.id,
+                _marker: PhantomData,
+            },
+        )
     }
 
     /**
-    Update the source using a script.
+    Update the source using [a script][painless-lang] configured by a fluent closure API.
 
-    If a `source` isn't specified in the builder then a default no-op script is used.
+    The fluent API can be more ergonomic to work with than constructing builders directly.
+    Susequent calls to `script` will override any previous script properties.
 
     # Examples
 
@@ -397,8 +450,7 @@ where
     # let client = SyncClientBuilder::new().build()?;
     # let new_doc = MyType { id: 1, title: String::new(), timestamp: Date::now() };
     let response = client.document_update::<MyType>(index("myindex"), id(1))
-                         .script(|script| script
-                            .source("ctx._source.title = params.newTitle")
+                         .script_fluent("ctx._source.title = params.newTitle", |script| script
                             .param("newTitle", "New Title"))
                          .send()?;
 
@@ -406,24 +458,55 @@ where
     # Ok(())
     # }
     ```
+
+    Script parameters can also be strongly typed, so long as they implement the `Serialize` trait.
+    If the parameters don't serialize to an object then Elasticsearch will fail to parse them:
+
+    ```no_run
+    # extern crate serde;
+    # #[macro_use]
+    # extern crate serde_derive;
+    # #[macro_use]
+    # extern crate elastic_derive;
+    # extern crate elastic;
+    # use elastic::prelude::*;
+    # fn main() { run().unwrap() }
+    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # #[derive(Serialize, Deserialize, ElasticType)]
+    # struct MyType {
+    #     pub id: i32,
+    #     pub title: String,
+    #     pub timestamp: Date<DefaultDateMapping>
+    # }
+    # let client = SyncClientBuilder::new().build()?;
+    # let new_doc = MyType { id: 1, title: String::new(), timestamp: Date::now() };
+    #[derive(Serialize)]
+    struct MyParams {
+        title: &'static str
+    }
+
+    let response = client.document_update::<MyType>(index("myindex"), id(1))
+                         .script_fluent("ctx._source.title = params.title", |script| script
+                            .params(MyParams {
+                                title: "New Title",
+                            }))
+                         .send()?;
+
+    assert!(response.updated());
+    # Ok(())
+    # }
+    ```
+
+    [painless-lang]: https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-scripting-painless.html
     */
-    pub fn script<TBuilder, TParams>(self, builder: TBuilder) -> UpdateRequestBuilder<TSender, Script<TParams>>
+    pub fn script_fluent<TScript, TBuilder, TParams>(self, source: TScript, builder: TBuilder) -> UpdateRequestBuilder<TSender, Script<TParams>>
     where
+        TScript: ToString,
         TBuilder: Fn(ScriptBuilder<DefaultParams>) -> ScriptBuilder<TParams>
     {
-        let script = builder(ScriptBuilder::new()).build();
+        let builder = builder(ScriptBuilder::new(source));
         
-        RequestBuilder::new(
-            self.client,
-            self.params,
-            UpdateRequestInner {
-                body: script,
-                index: self.inner.index,
-                ty: self.inner.ty,
-                id: self.inner.id,
-                _marker: PhantomData,
-            },
-        )
+        self.script(builder)
     }
 }
 
@@ -632,16 +715,19 @@ struct ScriptInner<TParams> {
 
 /** A builder for an update script that can be configured before sending. */
 pub struct ScriptBuilder<TParams> {
-    source: Option<String>,
+    source: String,
     lang: Option<String>,
     params: Option<TParams>,
 }
 
 impl ScriptBuilder<DefaultParams> {
-    fn new() -> Self {
+    /** Create a new script builder using the given source. */
+    pub fn new<TScript>(source: TScript) -> Self 
+        where TScript: ToString,
+    {
         ScriptBuilder {
+            source: source.to_string(),
             params: None,
-            source: None,
             lang: None,
         }
     }
@@ -661,14 +747,6 @@ impl ScriptBuilder<DefaultParams> {
 }
 
 impl<TParams> ScriptBuilder<TParams> {
-    /** Set the source for the update script. */
-    pub fn source<TSource>(mut self, source: TSource) -> Self 
-        where TSource: ToString,
-    {
-        self.source = Some(source.to_string());
-        self
-    }
-
     /** Set the language for the update script. */
     pub fn lang<TLang>(mut self, lang: Option<TLang>) -> Self 
         where TLang: ToString,
@@ -687,11 +765,9 @@ impl<TParams> ScriptBuilder<TParams> {
     }
 
     fn build(self) -> Script<TParams> {
-        let source = self.source.unwrap_or_else(|| "ctx._source".to_owned());
-
         Script {
             script: ScriptInner {
-                source: source,
+                source: self.source,
                 params: self.params,
                 lang: self.lang,
             }
@@ -699,9 +775,22 @@ impl<TParams> ScriptBuilder<TParams> {
     }
 }
 
+impl From<String> for ScriptBuilder<DefaultParams> {
+    fn from(source: String) -> Self {
+        ScriptBuilder::new(source)
+    }
+}
+
+impl<'a> From<&'a str> for ScriptBuilder<DefaultParams> {
+    fn from(source: &'a str) -> Self {
+        ScriptBuilder::new(source)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use serde_json::{self, Value};
+    use super::ScriptBuilder;
     use prelude::*;
 
     #[test]
@@ -770,7 +859,7 @@ mod tests {
 
         let req = client
             .document_update::<Value>(index("test-idx"), id("1"))
-            .inline_script("ctx._source.a = params.str")
+            .script("ctx._source.a = params.str")
             .inner
             .into_sync_request()
             .unwrap();
@@ -787,13 +876,34 @@ mod tests {
     }
 
     #[test]
-    fn specify_script() {
+    fn specify_script_value() {
         let client = SyncClientBuilder::new().build().unwrap();
 
         let req = client
             .document_update::<Value>(index("test-idx"), id("1"))
-            .script(|script| script
-                .source("ctx._source.a = params.str")
+            .script(ScriptBuilder::new("ctx._source.a = params.str"))
+            .inner
+            .into_sync_request()
+            .unwrap();
+
+        let expected_body = json!({
+            "script": {
+                "source": "ctx._source.a = params.str"
+            }
+        });
+
+        let actual_body: Value = serde_json::from_slice(&req.body).unwrap();
+
+        assert_eq!(expected_body.to_string(), actual_body.to_string());
+    }
+
+    #[test]
+    fn specify_script_fluent() {
+        let client = SyncClientBuilder::new().build().unwrap();
+
+        let req = client
+            .document_update::<Value>(index("test-idx"), id("1"))
+            .script_fluent("ctx._source.a = params.str", |script| script
                 .lang(Some("painless"))
                 .param("str", "some value")
                 .param("other", "some other value"))
@@ -829,8 +939,7 @@ mod tests {
 
         let req = client
             .document_update::<Value>(index("test-idx"), id("1"))
-            .script(|script| script
-                .source("ctx._source.a = params.str")
+            .script_fluent("ctx._source.a = params.str", |script| script
                 .params(MyParams {
                     a: "some value",
                     b: 42
@@ -846,28 +955,6 @@ mod tests {
                     "a": "some value",
                     "b": 42
                 }
-            }
-        });
-
-        let actual_body: Value = serde_json::from_slice(&req.body).unwrap();
-
-        assert_eq!(expected_body.to_string(), actual_body.to_string());
-    }
-
-    #[test]
-    fn specify_script_default() {
-        let client = SyncClientBuilder::new().build().unwrap();
-
-        let req = client
-            .document_update::<Value>(index("test-idx"), id("1"))
-            .script(|script| script)
-            .inner
-            .into_sync_request()
-            .unwrap();
-
-        let expected_body = json!({
-            "script": {
-                "source": "ctx._source"
             }
         });
 

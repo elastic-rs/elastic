@@ -65,6 +65,11 @@ where
     # Ok(())
     # }
     ```
+
+    [IndexCloseRequestBuilder]: requests/index_close/type.IndexCloseRequestBuilder.html
+    [builder-methods]: requests/index_close/type.IndexCloseRequestBuilder.html#builder-methods
+    [send-sync]: requests/index_close/type.IndexCloseRequestBuilder.html#send-synchronously
+    [send-async]: requests/index_close/type.IndexCloseRequestBuilder.html#send-asynchronously
     */
     pub fn index_close(&self, index: Index<'static>) -> IndexCloseRequestBuilder<TSender> {
         RequestBuilder::new(

@@ -65,6 +65,11 @@ where
     # Ok(())
     # }
     ```
+
+    [IndexOpenRequestBuilder]: requests/index_open/type.IndexOpenRequestBuilder.html
+    [builder-methods]: requests/index_open/type.IndexOpenRequestBuilder.html#builder-methods
+    [send-sync]: requests/index_open/type.IndexOpenRequestBuilder.html#send-synchronously
+    [send-async]: requests/index_open/type.IndexOpenRequestBuilder.html#send-asynchronously
     */
     pub fn index_open(&self, index: Index<'static>) -> IndexOpenRequestBuilder<TSender> {
         RequestBuilder::new(

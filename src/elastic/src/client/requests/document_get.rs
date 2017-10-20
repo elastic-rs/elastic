@@ -111,8 +111,8 @@ where
     [builder-methods]: requests/document_get/type.GetRequestBuilder.html#builder-methods
     [send-sync]: requests/document_get/type.GetRequestBuilder.html#send-synchronously
     [send-async]: requests/document_get/type.GetRequestBuilder.html#send-asynchronously
-    [types-mod]: ../../types/index.html
-    [documents-mod]: ../../types/document/index.html
+    [types-mod]: ../types/index.html
+    [documents-mod]: ../types/document/index.html
     */
     pub fn document_get<TDocument>(&self, index: Index<'static>, id: Id<'static>) -> GetRequestBuilder<TSender, TDocument>
     where

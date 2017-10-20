@@ -84,8 +84,8 @@ where
     [builder-methods]: requests/document_put_mapping/type.PutMappingRequestBuilder.html#builder-methods
     [send-sync]: requests/document_put_mapping/type.PutMappingRequestBuilder.html#send-synchronously
     [send-async]: requests/document_put_mapping/type.PutMappingRequestBuilder.html#send-asynchronously
-    [types-mod]: ../../types/index.html
-    [documents-mod]: ../../types/document/index.html
+    [types-mod]: ../types/index.html
+    [documents-mod]: ../types/document/index.html
     */
     pub fn document_put_mapping<TDocument>(&self, index: Index<'static>) -> PutMappingRequestBuilder<TSender, TDocument>
     where

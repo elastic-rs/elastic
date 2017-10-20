@@ -27,7 +27,7 @@ pub type PingRequestBuilder<TSender> = RequestBuilder<TSender, PingRequestInner>
 pub struct PingRequestInner;
 
 /**
-# Search request
+# Ping request
 */
 impl<TSender> Client<TSender>
 where
@@ -137,7 +137,7 @@ impl PingRequestBuilder<AsyncSender> {
 
     # Examples
 
-    Run a simple [Query String][docs-querystring] query for a [`DocumentType`][documents-mod] called `MyType`:
+    Ping an Elasticsearch node:
     
     ```no_run
     # extern crate tokio_core;

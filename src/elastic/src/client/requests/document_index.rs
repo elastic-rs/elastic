@@ -94,8 +94,8 @@ where
     [builder-methods]: requests/document_index/type.IndexRequestBuilder.html#builder-methods
     [send-sync]: requests/document_index/type.IndexRequestBuilder.html#send-synchronously
     [send-async]: requests/document_index/type.IndexRequestBuilder.html#send-asynchronously
-    [types-mod]: ../../types/index.html
-    [documents-mod]: ../../types/document/index.html
+    [types-mod]: ../types/index.html
+    [documents-mod]: ../types/document/index.html
     */
     pub fn document_index<TDocument>(&self, index: Index<'static>, id: Id<'static>, doc: TDocument) -> IndexRequestBuilder<TSender, TDocument>
     where
