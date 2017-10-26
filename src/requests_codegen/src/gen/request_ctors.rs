@@ -6,7 +6,7 @@ use super::types;
 /// Structure for a request type constructor associated function.
 struct Constructor {
     ident: syn::Ident,
-    doc: syn::Attribute,
+    doc_comment: Option<String>,
     params_fields: Vec<(syn::Ident, syn::Ty)>,
     body_field: Option<(syn::Ident, syn::Ty)>,
 }
@@ -35,24 +35,16 @@ impl RequestParamsCtorBuilder {
         }
     }
 
-    pub fn with_constructor<TDoc>(mut self, params: Vec<String>, doc: TDoc) -> Self
-        where TDoc: Into<String>,
-    {
-        let doc = syn::Attribute {
-            style: syn::AttrStyle::Outer,
-            value: syn::MetaItem::NameValue(ident("doc"), lit(doc.into())),
-            is_sugared_doc: true,
-        };
-
+    pub fn with_constructor(mut self, params: Vec<String>, doc_comment: Option<String>) -> Self {
         let ctor = match params.len() {
-            0 => Self::ctor_none(self.has_body, doc),
+            0 => Self::ctor_none(self.has_body, doc_comment),
             _ => {
                 let name: Vec<String> = params.iter().map(|i| i.into_rust_var()).collect();
                 let name = format!("for_{}", name.join("_"));
 
                 let cased: Vec<String> = params.iter().map(|i| i.into_rust_type()).collect();
 
-                Self::ctor(&name, cased, self.has_body, doc)
+                Self::ctor(&name, cased, self.has_body, doc_comment)
             }
         };
 
@@ -64,12 +56,12 @@ impl RequestParamsCtorBuilder {
     /// A constructor function with no url parameters.
     ///
     /// This function has the form `new(body?)`.
-    fn ctor_none(has_body: bool, doc: syn::Attribute) -> Constructor {
+    fn ctor_none(has_body: bool, doc_comment: Option<String>) -> Constructor {
         let body_field = Self::body_field(has_body);
 
         Constructor {
             ident: ident("new"),
-            doc: doc,
+            doc_comment: doc_comment,
             params_fields: vec![],
             body_field: body_field,
         }
@@ -78,7 +70,7 @@ impl RequestParamsCtorBuilder {
     /// A constructor function with url parameters.
     ///
     /// This function has the form `param1_param2(param1, param2, body?)`.
-    fn ctor(name: &str, fields: Vec<String>, has_body: bool, doc: syn::Attribute) -> Constructor {
+    fn ctor(name: &str, fields: Vec<String>, has_body: bool, doc_comment: Option<String>) -> Constructor {
         let fields: Vec<(syn::Ident, syn::Ty)> = fields
             .iter()
             .map(|f| (ident(f.into_rust_var()), ty_a(f)))
@@ -88,7 +80,7 @@ impl RequestParamsCtorBuilder {
 
         Constructor {
             ident: ident(name),
-            doc: doc,
+            doc_comment: doc_comment,
             params_fields: fields,
             body_field: body_field,
         }
@@ -273,13 +265,16 @@ impl RequestParamsCtorBuilder {
 
         let body = Self::ctor_body(req_ty.clone(), params_ty, &ctor);
 
+        let mut attrs = vec![];
+        if let Some(ref doc_comment) = ctor.doc_comment {
+            attrs.push(doc(doc_comment.to_owned()));
+        }
+
         syn::ImplItem {
             ident: ctor.ident.clone(),
             vis: syn::Visibility::Public,
             defaultness: syn::Defaultness::Final,
-            attrs: vec![
-                ctor.doc.clone()
-            ],
+            attrs: attrs,
             node: syn::ImplItemKind::Method(
                 syn::MethodSig {
                     unsafety: syn::Unsafety::Normal,
@@ -369,7 +364,7 @@ impl<
                     .iter()
                     .zip(endpoint.url.paths.iter())
                     .map(|(v, p)| {
-                        let doc = format!("`{}`", p.0);
+                        let doc = format!("Request to: `{}`", p);
 
                         match v.data {
                             syn::VariantData::Unit => {
@@ -394,7 +389,7 @@ impl<
         };
 
         for (ctor, doc) in ctors {
-            builder = builder.with_constructor(ctor, doc);
+            builder = builder.with_constructor(ctor, Some(doc));
         }
 
         builder

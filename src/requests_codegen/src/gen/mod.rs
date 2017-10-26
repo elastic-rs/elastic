@@ -332,6 +332,15 @@ pub mod helpers {
         syn::ExprKind::Field(Box::new(path_none(obj).into_expr()), ident(field)).into()
     }
 
+    /// AST for an outer doc comment.
+    pub fn doc(comment: String) -> syn::Attribute {
+        syn::Attribute {
+            style: syn::AttrStyle::Outer,
+            value: syn::MetaItem::NameValue(ident("doc"), lit(comment)),
+            is_sugared_doc: true,
+        }
+    }
+
     /// Parse quoted tokens to an item.
     pub fn parse_item(input: quote::Tokens) -> syn::Item {
         syn::parse_item(input.to_string().as_ref()).unwrap()
