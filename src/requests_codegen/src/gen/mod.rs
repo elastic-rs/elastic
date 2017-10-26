@@ -212,6 +212,11 @@ pub mod helpers {
         syn::Ident::new(sanitise_ident(ident))
     }
 
+    /// Build a literal
+    pub fn lit(lit: String) -> syn::Lit {
+        syn::Lit::Str(lit, syn::StrStyle::Cooked)
+    }
+
     /// A standard `'a` lifetime.
     pub fn lifetime() -> syn::Lifetime {
         syn::Lifetime {

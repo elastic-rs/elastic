@@ -6,6 +6,7 @@ use super::types;
 /// Structure for a request type constructor associated function.
 struct Constructor {
     ident: syn::Ident,
+    doc: syn::Attribute,
     params_fields: Vec<(syn::Ident, syn::Ty)>,
     body_field: Option<(syn::Ident, syn::Ty)>,
 }
@@ -34,16 +35,24 @@ impl RequestParamsCtorBuilder {
         }
     }
 
-    pub fn with_constructor(mut self, params: Vec<String>) -> Self {
+    pub fn with_constructor<TDoc>(mut self, params: Vec<String>, doc: TDoc) -> Self
+        where TDoc: Into<String>,
+    {
+        let doc = syn::Attribute {
+            style: syn::AttrStyle::Outer,
+            value: syn::MetaItem::NameValue(ident("doc"), lit(doc.into())),
+            is_sugared_doc: true,
+        };
+
         let ctor = match params.len() {
-            0 => Self::ctor_none(self.has_body),
+            0 => Self::ctor_none(self.has_body, doc),
             _ => {
                 let name: Vec<String> = params.iter().map(|i| i.into_rust_var()).collect();
                 let name = format!("for_{}", name.join("_"));
 
                 let cased: Vec<String> = params.iter().map(|i| i.into_rust_type()).collect();
 
-                Self::ctor(&name, cased, self.has_body)
+                Self::ctor(&name, cased, self.has_body, doc)
             }
         };
 
@@ -55,11 +64,12 @@ impl RequestParamsCtorBuilder {
     /// A constructor function with no url parameters.
     ///
     /// This function has the form `new(body?)`.
-    fn ctor_none(has_body: bool) -> Constructor {
+    fn ctor_none(has_body: bool, doc: syn::Attribute) -> Constructor {
         let body_field = Self::body_field(has_body);
 
         Constructor {
             ident: ident("new"),
+            doc: doc,
             params_fields: vec![],
             body_field: body_field,
         }
@@ -68,7 +78,7 @@ impl RequestParamsCtorBuilder {
     /// A constructor function with url parameters.
     ///
     /// This function has the form `param1_param2(param1, param2, body?)`.
-    fn ctor(name: &str, fields: Vec<String>, has_body: bool) -> Constructor {
+    fn ctor(name: &str, fields: Vec<String>, has_body: bool, doc: syn::Attribute) -> Constructor {
         let fields: Vec<(syn::Ident, syn::Ty)> = fields
             .iter()
             .map(|f| (ident(f.into_rust_var()), ty_a(f)))
@@ -78,6 +88,7 @@ impl RequestParamsCtorBuilder {
 
         Constructor {
             ident: ident(name),
+            doc: doc,
             params_fields: fields,
             body_field: body_field,
         }
@@ -266,7 +277,9 @@ impl RequestParamsCtorBuilder {
             ident: ctor.ident.clone(),
             vis: syn::Visibility::Public,
             defaultness: syn::Defaultness::Final,
-            attrs: vec![],
+            attrs: vec![
+                ctor.doc.clone()
+            ],
             node: syn::ImplItemKind::Method(
                 syn::MethodSig {
                     unsafety: syn::Unsafety::Normal,
@@ -350,23 +363,38 @@ impl<
             (*params_ty).to_owned(),
         );
 
-        let ctors: Vec<Vec<String>> = match params.node {
-            syn::ItemKind::Enum(ref variants, _) => variants
-                .iter()
-                .map(|v| match v.data {
-                    syn::VariantData::Unit => vec![],
-                    syn::VariantData::Tuple(ref fields) => fields
-                        .iter()
-                        .map(|f| f.ty.get_ident().to_string())
-                        .collect(),
-                    _ => panic!("Only tuple and unit variants are supported."),
-                })
-                .collect(),
+        let ctors: Vec<(Vec<String>, String)> = match params.node {
+            syn::ItemKind::Enum(ref variants, _) => {
+                variants
+                    .iter()
+                    .zip(endpoint.url.paths.iter())
+                    .map(|(v, p)| {
+                        let doc = format!("`{}`", p.0);
+
+                        match v.data {
+                            syn::VariantData::Unit => {
+                                let args = vec![];
+
+                                (args, doc)
+                            },
+                            syn::VariantData::Tuple(ref fields) => {
+                                let args = fields
+                                    .iter()
+                                    .map(|f| f.ty.get_ident().to_string())
+                                    .collect();
+                                
+                                (args, doc)
+                            },
+                            _ => panic!("Only tuple and unit variants are supported."),
+                        }
+                    })
+                    .collect()
+            },
             _ => panic!("Only enum types are supported."),
         };
 
-        for ctor in ctors {
-            builder = builder.with_constructor(ctor);
+        for (ctor, doc) in ctors {
+            builder = builder.with_constructor(ctor, doc);
         }
 
         builder
@@ -381,7 +409,7 @@ pub mod tests {
     fn gen_request_ctor_none() {
         let req_ty = ty_a("Request");
         let result = RequestParamsCtorBuilder::new(false, req_ty, ty_a("UrlParams"))
-            .with_constructor(vec![])
+            .with_constructor(vec![], "A doc comment")
             .build();
 
         let expected = quote!(
@@ -401,7 +429,7 @@ pub mod tests {
     fn gen_request_ctor_params() {
         let req_ty = ty_a("Request");
         let result = RequestParamsCtorBuilder::new(false, req_ty, ty_a("UrlParams"))
-            .with_constructor(vec!["Index".into(), "Type".into(), "Id".into()])
+            .with_constructor(vec!["Index".into(), "Type".into(), "Id".into()], "A doc comment")
             .build();
 
         let expected = quote!(
@@ -425,7 +453,7 @@ pub mod tests {
     fn gen_request_ctor_body() {
         let req_ty = ty_path("Request", vec![lifetime()], vec![types::body::ty()]);
         let result = RequestParamsCtorBuilder::new(true, req_ty, ty_a("UrlParams"))
-            .with_constructor(vec![])
+            .with_constructor(vec![], "A doc comment")
             .build();
 
         let expected = quote!(
@@ -446,7 +474,7 @@ pub mod tests {
     fn gen_request_ctor_params_body() {
         let req_ty = ty_path("Request", vec![lifetime()], vec![types::body::ty()]);
         let result = RequestParamsCtorBuilder::new(true, req_ty, ty_a("UrlParams"))
-            .with_constructor(vec!["Index".into(), "Type".into(), "Id".into()])
+            .with_constructor(vec!["Index".into(), "Type".into(), "Id".into()], "A doc comment")
             .build();
 
         let expected = quote!(
