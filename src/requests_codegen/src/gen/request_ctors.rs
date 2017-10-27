@@ -6,6 +6,7 @@ use super::types;
 /// Structure for a request type constructor associated function.
 struct Constructor {
     ident: syn::Ident,
+    doc_comment: Option<String>,
     params_fields: Vec<(syn::Ident, syn::Ty)>,
     body_field: Option<(syn::Ident, syn::Ty)>,
 }
@@ -34,16 +35,16 @@ impl RequestParamsCtorBuilder {
         }
     }
 
-    pub fn with_constructor(mut self, params: Vec<String>) -> Self {
+    pub fn with_constructor(mut self, params: Vec<String>, doc_comment: Option<String>) -> Self {
         let ctor = match params.len() {
-            0 => Self::ctor_none(self.has_body),
+            0 => Self::ctor_none(self.has_body, doc_comment),
             _ => {
                 let name: Vec<String> = params.iter().map(|i| i.into_rust_var()).collect();
                 let name = format!("for_{}", name.join("_"));
 
                 let cased: Vec<String> = params.iter().map(|i| i.into_rust_type()).collect();
 
-                Self::ctor(&name, cased, self.has_body)
+                Self::ctor(&name, cased, self.has_body, doc_comment)
             }
         };
 
@@ -55,11 +56,12 @@ impl RequestParamsCtorBuilder {
     /// A constructor function with no url parameters.
     ///
     /// This function has the form `new(body?)`.
-    fn ctor_none(has_body: bool) -> Constructor {
+    fn ctor_none(has_body: bool, doc_comment: Option<String>) -> Constructor {
         let body_field = Self::body_field(has_body);
 
         Constructor {
             ident: ident("new"),
+            doc_comment: doc_comment,
             params_fields: vec![],
             body_field: body_field,
         }
@@ -68,7 +70,7 @@ impl RequestParamsCtorBuilder {
     /// A constructor function with url parameters.
     ///
     /// This function has the form `param1_param2(param1, param2, body?)`.
-    fn ctor(name: &str, fields: Vec<String>, has_body: bool) -> Constructor {
+    fn ctor(name: &str, fields: Vec<String>, has_body: bool, doc_comment: Option<String>) -> Constructor {
         let fields: Vec<(syn::Ident, syn::Ty)> = fields
             .iter()
             .map(|f| (ident(f.into_rust_var()), ty_a(f)))
@@ -78,6 +80,7 @@ impl RequestParamsCtorBuilder {
 
         Constructor {
             ident: ident(name),
+            doc_comment: doc_comment,
             params_fields: fields,
             body_field: body_field,
         }
@@ -262,11 +265,16 @@ impl RequestParamsCtorBuilder {
 
         let body = Self::ctor_body(req_ty.clone(), params_ty, &ctor);
 
+        let mut attrs = vec![];
+        if let Some(ref doc_comment) = ctor.doc_comment {
+            attrs.push(doc(doc_comment.to_owned()));
+        }
+
         syn::ImplItem {
             ident: ctor.ident.clone(),
             vis: syn::Visibility::Public,
             defaultness: syn::Defaultness::Final,
-            attrs: vec![],
+            attrs: attrs,
             node: syn::ImplItemKind::Method(
                 syn::MethodSig {
                     unsafety: syn::Unsafety::Normal,
@@ -350,23 +358,38 @@ impl<
             (*params_ty).to_owned(),
         );
 
-        let ctors: Vec<Vec<String>> = match params.node {
-            syn::ItemKind::Enum(ref variants, _) => variants
-                .iter()
-                .map(|v| match v.data {
-                    syn::VariantData::Unit => vec![],
-                    syn::VariantData::Tuple(ref fields) => fields
-                        .iter()
-                        .map(|f| f.ty.get_ident().to_string())
-                        .collect(),
-                    _ => panic!("Only tuple and unit variants are supported."),
-                })
-                .collect(),
+        let ctors: Vec<(Vec<String>, String)> = match params.node {
+            syn::ItemKind::Enum(ref variants, _) => {
+                variants
+                    .iter()
+                    .zip(endpoint.url.paths.iter())
+                    .map(|(v, p)| {
+                        let doc = format!("Request to: `{}`", p);
+
+                        match v.data {
+                            syn::VariantData::Unit => {
+                                let args = vec![];
+
+                                (args, doc)
+                            },
+                            syn::VariantData::Tuple(ref fields) => {
+                                let args = fields
+                                    .iter()
+                                    .map(|f| f.ty.get_ident().to_string())
+                                    .collect();
+                                
+                                (args, doc)
+                            },
+                            _ => panic!("Only tuple and unit variants are supported."),
+                        }
+                    })
+                    .collect()
+            },
             _ => panic!("Only enum types are supported."),
         };
 
-        for ctor in ctors {
-            builder = builder.with_constructor(ctor);
+        for (ctor, doc) in ctors {
+            builder = builder.with_constructor(ctor, Some(doc));
         }
 
         builder
@@ -381,11 +404,12 @@ pub mod tests {
     fn gen_request_ctor_none() {
         let req_ty = ty_a("Request");
         let result = RequestParamsCtorBuilder::new(false, req_ty, ty_a("UrlParams"))
-            .with_constructor(vec![])
+            .with_constructor(vec![], Some("A doc comment".to_owned()))
             .build();
 
         let expected = quote!(
             impl <'a> Request<'a> {
+                #[doc = "A doc comment"]
                 pub fn new() -> Self {
                     Request {
                         url: UrlParams::None.url()
@@ -401,11 +425,12 @@ pub mod tests {
     fn gen_request_ctor_params() {
         let req_ty = ty_a("Request");
         let result = RequestParamsCtorBuilder::new(false, req_ty, ty_a("UrlParams"))
-            .with_constructor(vec!["Index".into(), "Type".into(), "Id".into()])
+            .with_constructor(vec!["Index".into(), "Type".into(), "Id".into()], Some("A doc comment".to_owned()))
             .build();
 
         let expected = quote!(
             impl <'a> Request<'a> {
+                #[doc = "A doc comment"]
                 pub fn for_index_ty_id<IIndex, IType, IId>(index: IIndex, ty: IType, id: IId) -> Self
                     where IIndex: Into<Index<'a> >,
                           IType: Into<Type<'a> >,
@@ -425,7 +450,7 @@ pub mod tests {
     fn gen_request_ctor_body() {
         let req_ty = ty_path("Request", vec![lifetime()], vec![types::body::ty()]);
         let result = RequestParamsCtorBuilder::new(true, req_ty, ty_a("UrlParams"))
-            .with_constructor(vec![])
+            .with_constructor(vec![], None)
             .build();
 
         let expected = quote!(
@@ -446,7 +471,7 @@ pub mod tests {
     fn gen_request_ctor_params_body() {
         let req_ty = ty_path("Request", vec![lifetime()], vec![types::body::ty()]);
         let result = RequestParamsCtorBuilder::new(true, req_ty, ty_a("UrlParams"))
-            .with_constructor(vec!["Index".into(), "Type".into(), "Id".into()])
+            .with_constructor(vec!["Index".into(), "Type".into(), "Id".into()], None)
             .build();
 
         let expected = quote!(
@@ -494,7 +519,8 @@ pub mod tests {
         let result = RequestParamsCtorBuilder::from((&endpoint, &req_ty, &url_params)).build();
 
         let expected = quote!(
-            impl <'a, B> IndicesExistsAliasRequest <'a, B> { 
+            impl <'a, B> IndicesExistsAliasRequest <'a, B> {
+                #[doc = "Request to: `/_search`"]
                 pub fn new(body: B) -> Self { 
                     IndicesExistsAliasRequest { 
                         url : IndicesExistsAliasUrlParams::None.url(),
@@ -502,6 +528,7 @@ pub mod tests {
                     }
                 }
 
+                #[doc = "Request to: `/{index}/_search`"]
                 pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
                     where IIndex: Into<Index<'a> >
                 { 
@@ -511,6 +538,7 @@ pub mod tests {
                     }
                 }
 
+                #[doc = "Request to: `/{index}/{type}/_search`"]
                 pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: B) -> Self
                     where IIndex: Into<Index<'a> >,
                           IType: Into<Type<'a> >

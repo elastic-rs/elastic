@@ -212,6 +212,11 @@ pub mod helpers {
         syn::Ident::new(sanitise_ident(ident))
     }
 
+    /// Build a literal
+    pub fn lit(lit: String) -> syn::Lit {
+        syn::Lit::Str(lit, syn::StrStyle::Cooked)
+    }
+
     /// A standard `'a` lifetime.
     pub fn lifetime() -> syn::Lifetime {
         syn::Lifetime {
@@ -325,6 +330,15 @@ pub mod helpers {
     /// AST for a simple field access.
     pub fn field(obj: &str, field: &str) -> syn::Expr {
         syn::ExprKind::Field(Box::new(path_none(obj).into_expr()), ident(field)).into()
+    }
+
+    /// AST for an outer doc comment.
+    pub fn doc(comment: String) -> syn::Attribute {
+        syn::Attribute {
+            style: syn::AttrStyle::Outer,
+            value: syn::MetaItem::NameValue(ident("doc"), lit(comment)),
+            is_sugared_doc: true,
+        }
     }
 
     /// Parse quoted tokens to an item.

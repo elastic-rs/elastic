@@ -7,18 +7,28 @@ use super::helpers::*;
 pub struct RequestParamBuilder {
     name: syn::Ident,
     has_body: bool,
+    doc_comment: Option<String>,
 }
 
 impl RequestParamBuilder {
     pub fn new(name: &str) -> Self {
         RequestParamBuilder {
             name: ident(name),
+            doc_comment: None,
             has_body: false,
         }
     }
 
     pub fn has_body(mut self, has_body: bool) -> Self {
         self.has_body = has_body;
+
+        self
+    }
+
+    pub fn doc_comment<TDoc>(mut self, doc_comment: TDoc) -> Self
+        where TDoc: Into<String>,
+    {
+        self.doc_comment = Some(doc_comment.into());
 
         self
     }
@@ -64,10 +74,16 @@ impl RequestParamBuilder {
                 .collect(),
         );
 
+        let mut attrs = vec![];
+
+        if let Some(doc_comment) = self.doc_comment {
+            attrs.push(doc(doc_comment));
+        }
+
         let item = syn::Item {
             ident: self.name,
             vis: syn::Visibility::Public,
-            attrs: vec![],
+            attrs: attrs,
             node: syn::ItemKind::Struct(fields, generics),
         };
 
@@ -80,8 +96,16 @@ impl<'a> From<&'a (String, parse::Endpoint)> for RequestParamBuilder {
         let &(ref endpoint_name, ref endpoint) = value;
 
         let name = format!("{}Request", endpoint_name.into_rust_type());
+        let doc_comment = if let Some(method) = endpoint.preferred_method() {
+            format!("`{:?}: {}`\n\n[Elasticsearch Documentation]({})", method, endpoint.url.path, endpoint.documentation)
+        }
+        else {
+            format!("`{}`", endpoint.url.path)
+        };
 
-        let builder = RequestParamBuilder::new(&name).has_body(endpoint.has_body());
+        let builder = RequestParamBuilder::new(&name)
+            .has_body(endpoint.has_body())
+            .doc_comment(doc_comment);
 
         builder
     }
@@ -123,10 +147,11 @@ mod tests {
     }
 
     #[test]
-    fn gen_request_params_with_body() {
-        let (result, _) = RequestParamBuilder::new("Request").has_body(true).build();
+    fn gen_request_params_with_body_doc() {
+        let (result, _) = RequestParamBuilder::new("Request").has_body(true).doc_comment("Some doc").build();
 
         let expected = quote!(
+            #[doc = "Some doc"]
             pub struct Request<'a, B> {
                 pub url: Url<'a>,
                 pub body: B
@@ -155,6 +180,7 @@ mod tests {
         let (result, _) = RequestParamBuilder::from(&endpoint).build();
 
         let expected = quote!(
+            #[doc = "`Get: /_search`\n\n[Elasticsearch Documentation]()"]
             pub struct IndicesExistsAliasRequest<'a, B> {
                 pub url: Url<'a>,
                 pub body: B

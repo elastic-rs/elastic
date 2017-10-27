@@ -1,5 +1,5 @@
-// This code is automatically generated
-//
+/*This code is automatically generated
+*/
 pub mod endpoints {
     use super::http::*;
     use super::params::*;
@@ -22,11 +22,13 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Post: /{index}/_close`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/indices-open-close.html)"]
     pub struct IndicesCloseRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> IndicesCloseRequest<'a, B> {
+        #[doc = "Request to: `/{index}/_close`"]
         pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -65,10 +67,12 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Delete: /_scripts/{lang}/{id}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/modules-scripting.html)"]
     pub struct DeleteScriptRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> DeleteScriptRequest<'a> {
+        #[doc = "Request to: `/_scripts/{lang}/{id}`"]
         pub fn for_lang_id<ILang, IId>(lang: ILang, id: IId) -> Self
         where
             ILang: Into<Lang<'a>>,
@@ -120,11 +124,13 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Post: /{index}/{type}/_termvectors`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/docs-termvectors.html)"]
     pub struct TermvectorsRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> TermvectorsRequest<'a, B> {
+        #[doc = "Request to: `/{index}/{type}/_termvectors`"]
         pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: B) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -135,6 +141,7 @@ pub mod endpoints {
                 body: body,
             }
         }
+        #[doc = "Request to: `/{index}/{type}/{id}/_termvectors`"]
         pub fn for_index_ty_id<IIndex, IType, IId>(index: IIndex, ty: IType, id: IId, body: B) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -176,17 +183,20 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Post: /_field_stats`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/search-field-stats.html)"]
     pub struct FieldStatsRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> FieldStatsRequest<'a, B> {
+        #[doc = "Request to: `/_field_stats`"]
         pub fn new(body: B) -> Self {
             FieldStatsRequest {
                 url: FieldStatsUrlParams::None.url(),
                 body: body,
             }
         }
+        #[doc = "Request to: `/{index}/_field_stats`"]
         pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -225,15 +235,18 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Get: /_cat/thread_pool`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/cat-thread-pool.html)"]
     pub struct CatThreadPoolRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> CatThreadPoolRequest<'a> {
+        #[doc = "Request to: `/_cat/thread_pool`"]
         pub fn new() -> Self {
             CatThreadPoolRequest {
                 url: CatThreadPoolUrlParams::None.url(),
             }
         }
+        #[doc = "Request to: `/_cat/thread_pool/{thread_pool_patterns}`"]
         pub fn for_thread_pool_patterns<IThreadPoolPatterns>(thread_pool_patterns: IThreadPoolPatterns) -> Self
         where
             IThreadPoolPatterns: Into<ThreadPoolPatterns<'a>>,
@@ -271,10 +284,12 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Delete: /_snapshot/{repository}/{snapshot}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/modules-snapshots.html)"]
     pub struct SnapshotDeleteRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> SnapshotDeleteRequest<'a> {
+        #[doc = "Request to: `/_snapshot/{repository}/{snapshot}`"]
         pub fn for_repository_snapshot<IRepository, ISnapshot>(repository: IRepository, snapshot: ISnapshot) -> Self
         where
             IRepository: Into<Repository<'a>>,
@@ -330,15 +345,18 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Get: /_settings`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/indices-get-settings.html)"]
     pub struct IndicesGetSettingsRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> IndicesGetSettingsRequest<'a> {
+        #[doc = "Request to: `/_settings`"]
         pub fn new() -> Self {
             IndicesGetSettingsRequest {
                 url: IndicesGetSettingsUrlParams::None.url(),
             }
         }
+        #[doc = "Request to: `/{index}/_settings`"]
         pub fn for_index<IIndex>(index: IIndex) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -347,6 +365,7 @@ pub mod endpoints {
                 url: IndicesGetSettingsUrlParams::Index(index.into()).url(),
             }
         }
+        #[doc = "Request to: `/{index}/_settings/{name}`"]
         pub fn for_index_name<IIndex, IName>(index: IIndex, name: IName) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -356,6 +375,7 @@ pub mod endpoints {
                 url: IndicesGetSettingsUrlParams::IndexName(index.into(), name.into()).url(),
             }
         }
+        #[doc = "Request to: `/_settings/{name}`"]
         pub fn for_name<IName>(name: IName) -> Self
         where
             IName: Into<Name<'a>>,
@@ -396,11 +416,13 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Post: /{index}/{type}/{id}/_create`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/docs-index_.html)"]
     pub struct CreateRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> CreateRequest<'a, B> {
+        #[doc = "Request to: `/{index}/{type}/{id}/_create`"]
         pub fn for_index_ty_id<IIndex, IType, IId>(index: IIndex, ty: IType, id: IId, body: B) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -439,10 +461,12 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Delete: /_snapshot/{repository}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/modules-snapshots.html)"]
     pub struct SnapshotDeleteRepositoryRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> SnapshotDeleteRepositoryRequest<'a> {
+        #[doc = "Request to: `/_snapshot/{repository}`"]
         pub fn for_repository<IRepository>(repository: IRepository) -> Self
         where
             IRepository: Into<Repository<'a>>,
@@ -473,11 +497,13 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Post: /_cluster/allocation/explain`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/cluster-allocation-explain.html)"]
     pub struct ClusterAllocationExplainRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> ClusterAllocationExplainRequest<'a, B> {
+        #[doc = "Request to: `/_cluster/allocation/explain`"]
         pub fn new(body: B) -> Self {
             ClusterAllocationExplainRequest {
                 url: ClusterAllocationExplainUrlParams::None.url(),
@@ -511,11 +537,13 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Post: /_template/{name}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/indices-templates.html)"]
     pub struct IndicesPutTemplateRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> IndicesPutTemplateRequest<'a, B> {
+        #[doc = "Request to: `/_template/{name}`"]
         pub fn for_name<IName>(name: IName, body: B) -> Self
         where
             IName: Into<Name<'a>>,
@@ -554,15 +582,18 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Get: /_template/{name}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/indices-templates.html)"]
     pub struct IndicesGetTemplateRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> IndicesGetTemplateRequest<'a> {
+        #[doc = "Request to: `/_template`"]
         pub fn new() -> Self {
             IndicesGetTemplateRequest {
                 url: IndicesGetTemplateUrlParams::None.url(),
             }
         }
+        #[doc = "Request to: `/_template/{name}`"]
         pub fn for_name<IName>(name: IName) -> Self
         where
             IName: Into<Name<'a>>,
@@ -609,15 +640,18 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Get: /_cluster/state`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/cluster-state.html)"]
     pub struct ClusterStateRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> ClusterStateRequest<'a> {
+        #[doc = "Request to: `/_cluster/state`"]
         pub fn new() -> Self {
             ClusterStateRequest {
                 url: ClusterStateUrlParams::None.url(),
             }
         }
+        #[doc = "Request to: `/_cluster/state/{metric}`"]
         pub fn for_metric<IMetric>(metric: IMetric) -> Self
         where
             IMetric: Into<Metric<'a>>,
@@ -626,6 +660,7 @@ pub mod endpoints {
                 url: ClusterStateUrlParams::Metric(metric.into()).url(),
             }
         }
+        #[doc = "Request to: `/_cluster/state/{metric}/{index}`"]
         pub fn for_metric_index<IMetric, IIndex>(metric: IMetric, index: IIndex) -> Self
         where
             IMetric: Into<Metric<'a>>,
@@ -675,17 +710,20 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Post: /_msearch/template`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/search-multi-search.html)"]
     pub struct MsearchTemplateRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> MsearchTemplateRequest<'a, B> {
+        #[doc = "Request to: `/_msearch/template`"]
         pub fn new(body: B) -> Self {
             MsearchTemplateRequest {
                 url: MsearchTemplateUrlParams::None.url(),
                 body: body,
             }
         }
+        #[doc = "Request to: `/{index}/_msearch/template`"]
         pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -695,6 +733,7 @@ pub mod endpoints {
                 body: body,
             }
         }
+        #[doc = "Request to: `/{index}/{type}/_msearch/template`"]
         pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: B) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -745,17 +784,20 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Post: /_bulk`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/docs-bulk.html)"]
     pub struct BulkRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> BulkRequest<'a, B> {
+        #[doc = "Request to: `/_bulk`"]
         pub fn new(body: B) -> Self {
             BulkRequest {
                 url: BulkUrlParams::None.url(),
                 body: body,
             }
         }
+        #[doc = "Request to: `/{index}/_bulk`"]
         pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -765,6 +807,7 @@ pub mod endpoints {
                 body: body,
             }
         }
+        #[doc = "Request to: `/{index}/{type}/_bulk`"]
         pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: B) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -807,11 +850,13 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Post: /{index}/{type}/{id}/_explain`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/search-explain.html)"]
     pub struct ExplainRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> ExplainRequest<'a, B> {
+        #[doc = "Request to: `/{index}/{type}/{id}/_explain`"]
         pub fn for_index_ty_id<IIndex, IType, IId>(index: IIndex, ty: IType, id: IId, body: B) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -853,17 +898,20 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Post: /_suggest`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/search-suggesters.html)"]
     pub struct SuggestRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> SuggestRequest<'a, B> {
+        #[doc = "Request to: `/_suggest`"]
         pub fn new(body: B) -> Self {
             SuggestRequest {
                 url: SuggestUrlParams::None.url(),
                 body: body,
             }
         }
+        #[doc = "Request to: `/{index}/_suggest`"]
         pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -902,15 +950,18 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Get: /_snapshot`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/modules-snapshots.html)"]
     pub struct SnapshotGetRepositoryRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> SnapshotGetRepositoryRequest<'a> {
+        #[doc = "Request to: `/_snapshot`"]
         pub fn new() -> Self {
             SnapshotGetRepositoryRequest {
                 url: SnapshotGetRepositoryUrlParams::None.url(),
             }
         }
+        #[doc = "Request to: `/_snapshot/{repository}`"]
         pub fn for_repository<IRepository>(repository: IRepository) -> Self
         where
             IRepository: Into<Repository<'a>>,
@@ -948,17 +999,20 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Post: /_render/template`\n\n[Elasticsearch Documentation](http://www.elasticsearch.org/guide/en/elasticsearch/reference/master/search-template.html)"]
     pub struct RenderSearchTemplateRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> RenderSearchTemplateRequest<'a, B> {
+        #[doc = "Request to: `/_render/template`"]
         pub fn new(body: B) -> Self {
             RenderSearchTemplateRequest {
                 url: RenderSearchTemplateUrlParams::None.url(),
                 body: body,
             }
         }
+        #[doc = "Request to: `/_render/template/{id}`"]
         pub fn for_id<IId>(id: IId, body: B) -> Self
         where
             IId: Into<Id<'a>>,
@@ -1014,15 +1068,18 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Get: /_stats`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/indices-stats.html)"]
     pub struct IndicesStatsRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> IndicesStatsRequest<'a> {
+        #[doc = "Request to: `/_stats`"]
         pub fn new() -> Self {
             IndicesStatsRequest {
                 url: IndicesStatsUrlParams::None.url(),
             }
         }
+        #[doc = "Request to: `/{index}/_stats`"]
         pub fn for_index<IIndex>(index: IIndex) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -1031,6 +1088,7 @@ pub mod endpoints {
                 url: IndicesStatsUrlParams::Index(index.into()).url(),
             }
         }
+        #[doc = "Request to: `/{index}/_stats/{metric}`"]
         pub fn for_index_metric<IIndex, IMetric>(index: IIndex, metric: IMetric) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -1040,6 +1098,7 @@ pub mod endpoints {
                 url: IndicesStatsUrlParams::IndexMetric(index.into(), metric.into()).url(),
             }
         }
+        #[doc = "Request to: `/_stats/{metric}`"]
         pub fn for_metric<IMetric>(metric: IMetric) -> Self
         where
             IMetric: Into<Metric<'a>>,
@@ -1070,10 +1129,12 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Get: /_cat/repositories`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/cat-repositories.html)"]
     pub struct CatRepositoriesRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> CatRepositoriesRequest<'a> {
+        #[doc = "Request to: `/_cat/repositories`"]
         pub fn new() -> Self {
             CatRepositoriesRequest {
                 url: CatRepositoriesUrlParams::None.url(),
@@ -1109,17 +1170,20 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Post: /_forcemerge`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/indices-forcemerge.html)"]
     pub struct IndicesForcemergeRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> IndicesForcemergeRequest<'a, B> {
+        #[doc = "Request to: `/_forcemerge`"]
         pub fn new(body: B) -> Self {
             IndicesForcemergeRequest {
                 url: IndicesForcemergeUrlParams::None.url(),
                 body: body,
             }
         }
+        #[doc = "Request to: `/{index}/_forcemerge`"]
         pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -1151,10 +1215,12 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Get: /`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/)"]
     pub struct PingRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> PingRequest<'a> {
+        #[doc = "Request to: `/`"]
         pub fn new() -> Self {
             PingRequest {
                 url: PingUrlParams::None.url(),
@@ -1182,10 +1248,12 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Head: /`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/)"]
     pub struct PingHeadRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> PingHeadRequest<'a> {
+        #[doc = "Request to: `/`"]
         pub fn new() -> Self {
             PingHeadRequest {
                 url: PingHeadUrlParams::None.url(),
@@ -1218,10 +1286,12 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Get: /_tasks/{task_id}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/tasks.html)"]
     pub struct TasksGetRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> TasksGetRequest<'a> {
+        #[doc = "Request to: `/_tasks/{task_id}`"]
         pub fn for_task_id<ITaskId>(task_id: ITaskId) -> Self
         where
             ITaskId: Into<TaskId<'a>>,
@@ -1257,10 +1327,12 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Head: /{index}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/indices-exists.html)"]
     pub struct IndicesExistsRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> IndicesExistsRequest<'a> {
+        #[doc = "Request to: `/{index}`"]
         pub fn for_index<IIndex>(index: IIndex) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -1299,17 +1371,20 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Post: /_flush/synced`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/indices-synced-flush.html)"]
     pub struct IndicesFlushSyncedRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> IndicesFlushSyncedRequest<'a, B> {
+        #[doc = "Request to: `/_flush/synced`"]
         pub fn new(body: B) -> Self {
             IndicesFlushSyncedRequest {
                 url: IndicesFlushSyncedUrlParams::None.url(),
                 body: body,
             }
         }
+        #[doc = "Request to: `/{index}/_flush/synced`"]
         pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -1359,17 +1434,20 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Post: /_msearch`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/search-multi-search.html)"]
     pub struct MsearchRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> MsearchRequest<'a, B> {
+        #[doc = "Request to: `/_msearch`"]
         pub fn new(body: B) -> Self {
             MsearchRequest {
                 url: MsearchUrlParams::None.url(),
                 body: body,
             }
         }
+        #[doc = "Request to: `/{index}/_msearch`"]
         pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -1379,6 +1457,7 @@ pub mod endpoints {
                 body: body,
             }
         }
+        #[doc = "Request to: `/{index}/{type}/_msearch`"]
         pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: B) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -1411,10 +1490,12 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Get: /`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/)"]
     pub struct InfoRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> InfoRequest<'a> {
+        #[doc = "Request to: `/`"]
         pub fn new() -> Self {
             InfoRequest {
                 url: InfoUrlParams::None.url(),
@@ -1460,17 +1541,20 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Post: /_search/template`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/search-template.html)"]
     pub struct SearchTemplateRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> SearchTemplateRequest<'a, B> {
+        #[doc = "Request to: `/_search/template`"]
         pub fn new(body: B) -> Self {
             SearchTemplateRequest {
                 url: SearchTemplateUrlParams::None.url(),
                 body: body,
             }
         }
+        #[doc = "Request to: `/{index}/_search/template`"]
         pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -1480,6 +1564,7 @@ pub mod endpoints {
                 body: body,
             }
         }
+        #[doc = "Request to: `/{index}/{type}/_search/template`"]
         pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: B) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -1517,10 +1602,12 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Delete: /{index}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/indices-delete-index.html)"]
     pub struct IndicesDeleteRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> IndicesDeleteRequest<'a> {
+        #[doc = "Request to: `/{index}`"]
         pub fn for_index<IIndex>(index: IIndex) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -1567,11 +1654,13 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Post: /{index}/_delete_by_query`\n\n[Elasticsearch Documentation](https://www.elastic.co/guide/en/elasticsearch/reference/master/docs-delete-by-query.html)"]
     pub struct DeleteByQueryRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> DeleteByQueryRequest<'a, B> {
+        #[doc = "Request to: `/{index}/_delete_by_query`"]
         pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -1581,6 +1670,7 @@ pub mod endpoints {
                 body: body,
             }
         }
+        #[doc = "Request to: `/{index}/{type}/_delete_by_query`"]
         pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: B) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -1618,10 +1708,12 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Delete: /_search/template/{id}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/search-template.html)"]
     pub struct DeleteTemplateRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> DeleteTemplateRequest<'a> {
+        #[doc = "Request to: `/_search/template/{id}`"]
         pub fn for_id<IId>(id: IId) -> Self
         where
             IId: Into<Id<'a>>,
@@ -1657,11 +1749,13 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Put: /{index}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/indices-create-index.html)"]
     pub struct IndicesCreateRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> IndicesCreateRequest<'a, B> {
+        #[doc = "Request to: `/{index}`"]
         pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -1713,11 +1807,13 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Post: /{index}/{type}/_percolate`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/search-percolate.html)"]
     pub struct PercolateRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> PercolateRequest<'a, B> {
+        #[doc = "Request to: `/{index}/{type}/_percolate`"]
         pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: B) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -1728,6 +1824,7 @@ pub mod endpoints {
                 body: body,
             }
         }
+        #[doc = "Request to: `/{index}/{type}/{id}/_percolate`"]
         pub fn for_index_ty_id<IIndex, IType, IId>(index: IIndex, ty: IType, id: IId, body: B) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -1779,15 +1876,18 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Get: /_search`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/search-search.html)"]
     pub struct SimpleSearchRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> SimpleSearchRequest<'a> {
+        #[doc = "Request to: `/_search`"]
         pub fn new() -> Self {
             SimpleSearchRequest {
                 url: SimpleSearchUrlParams::None.url(),
             }
         }
+        #[doc = "Request to: `/{index}/_search`"]
         pub fn for_index<IIndex>(index: IIndex) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -1796,6 +1896,7 @@ pub mod endpoints {
                 url: SimpleSearchUrlParams::Index(index.into()).url(),
             }
         }
+        #[doc = "Request to: `/{index}/{type}/_search`"]
         pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -1845,17 +1946,20 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Post: /_search`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/search-search.html)"]
     pub struct SearchRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> SearchRequest<'a, B> {
+        #[doc = "Request to: `/_search`"]
         pub fn new(body: B) -> Self {
             SearchRequest {
                 url: SearchUrlParams::None.url(),
                 body: body,
             }
         }
+        #[doc = "Request to: `/{index}/_search`"]
         pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -1865,6 +1969,7 @@ pub mod endpoints {
                 body: body,
             }
         }
+        #[doc = "Request to: `/{index}/{type}/_search`"]
         pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: B) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -1897,10 +2002,12 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Get: /_cat/nodeattrs`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/cat-nodeattrs.html)"]
     pub struct CatNodeattrsRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> CatNodeattrsRequest<'a> {
+        #[doc = "Request to: `/_cat/nodeattrs`"]
         pub fn new() -> Self {
             CatNodeattrsRequest {
                 url: CatNodeattrsUrlParams::None.url(),
@@ -1934,11 +2041,13 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Post: /_snapshot/{repository}/_verify`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/modules-snapshots.html)"]
     pub struct SnapshotVerifyRepositoryRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> SnapshotVerifyRepositoryRequest<'a, B> {
+        #[doc = "Request to: `/_snapshot/{repository}/_verify`"]
         pub fn for_repository<IRepository>(repository: IRepository, body: B) -> Self
         where
             IRepository: Into<Repository<'a>>,
@@ -1988,17 +2097,20 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Post: /_count`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/search-count.html)"]
     pub struct CountRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> CountRequest<'a, B> {
+        #[doc = "Request to: `/_count`"]
         pub fn new(body: B) -> Self {
             CountRequest {
                 url: CountUrlParams::None.url(),
                 body: body,
             }
         }
+        #[doc = "Request to: `/{index}/_count`"]
         pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -2008,6 +2120,7 @@ pub mod endpoints {
                 body: body,
             }
         }
+        #[doc = "Request to: `/{index}/{type}/_count`"]
         pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: B) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -2047,15 +2160,18 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Get: /_cat/allocation`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/cat-allocation.html)"]
     pub struct CatAllocationRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> CatAllocationRequest<'a> {
+        #[doc = "Request to: `/_cat/allocation`"]
         pub fn new() -> Self {
             CatAllocationRequest {
                 url: CatAllocationUrlParams::None.url(),
             }
         }
+        #[doc = "Request to: `/_cat/allocation/{node_id}`"]
         pub fn for_node_id<INodeId>(node_id: INodeId) -> Self
         where
             INodeId: Into<NodeId<'a>>,
@@ -2094,17 +2210,20 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Post: /_flush`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/indices-flush.html)"]
     pub struct IndicesFlushRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> IndicesFlushRequest<'a, B> {
+        #[doc = "Request to: `/_flush`"]
         pub fn new(body: B) -> Self {
             IndicesFlushRequest {
                 url: IndicesFlushUrlParams::None.url(),
                 body: body,
             }
         }
+        #[doc = "Request to: `/{index}/_flush`"]
         pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -2144,17 +2263,20 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Post: /_refresh`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/indices-refresh.html)"]
     pub struct IndicesRefreshRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> IndicesRefreshRequest<'a, B> {
+        #[doc = "Request to: `/_refresh`"]
         pub fn new(body: B) -> Self {
             IndicesRefreshRequest {
                 url: IndicesRefreshUrlParams::None.url(),
                 body: body,
             }
         }
+        #[doc = "Request to: `/{index}/_refresh`"]
         pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -2186,10 +2308,12 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Get: /_cat`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/cat.html)"]
     pub struct CatHelpRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> CatHelpRequest<'a> {
+        #[doc = "Request to: `/_cat`"]
         pub fn new() -> Self {
             CatHelpRequest {
                 url: CatHelpUrlParams::None.url(),
@@ -2225,17 +2349,20 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Post: /{index}/_search_shards`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/search-shards.html)"]
     pub struct SearchShardsRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> SearchShardsRequest<'a, B> {
+        #[doc = "Request to: `/_search_shards`"]
         pub fn new(body: B) -> Self {
             SearchShardsRequest {
                 url: SearchShardsUrlParams::None.url(),
                 body: body,
             }
         }
+        #[doc = "Request to: `/{index}/_search_shards`"]
         pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -2274,15 +2401,18 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Get: /_cluster/health`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/cluster-health.html)"]
     pub struct ClusterHealthRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> ClusterHealthRequest<'a> {
+        #[doc = "Request to: `/_cluster/health`"]
         pub fn new() -> Self {
             ClusterHealthRequest {
                 url: ClusterHealthUrlParams::None.url(),
             }
         }
+        #[doc = "Request to: `/_cluster/health/{index}`"]
         pub fn for_index<IIndex>(index: IIndex) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -2335,10 +2465,12 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Head: /_alias/{name}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/indices-aliases.html)"]
     pub struct IndicesExistsAliasRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> IndicesExistsAliasRequest<'a> {
+        #[doc = "Request to: `/{index}/_alias`"]
         pub fn for_index<IIndex>(index: IIndex) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -2347,6 +2479,7 @@ pub mod endpoints {
                 url: IndicesExistsAliasUrlParams::Index(index.into()).url(),
             }
         }
+        #[doc = "Request to: `/{index}/_alias/{name}`"]
         pub fn for_index_name<IIndex, IName>(index: IIndex, name: IName) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -2356,6 +2489,7 @@ pub mod endpoints {
                 url: IndicesExistsAliasUrlParams::IndexName(index.into(), name.into()).url(),
             }
         }
+        #[doc = "Request to: `/_alias/{name}`"]
         pub fn for_name<IName>(name: IName) -> Self
         where
             IName: Into<Name<'a>>,
@@ -2420,10 +2554,12 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Get: /_mapping/field/{fields}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/indices-get-field-mapping.html)"]
     pub struct IndicesGetFieldMappingRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> IndicesGetFieldMappingRequest<'a> {
+        #[doc = "Request to: `/_mapping/field/{fields}`"]
         pub fn for_fields<IFields>(fields: IFields) -> Self
         where
             IFields: Into<Fields<'a>>,
@@ -2432,6 +2568,7 @@ pub mod endpoints {
                 url: IndicesGetFieldMappingUrlParams::Fields(fields.into()).url(),
             }
         }
+        #[doc = "Request to: `/{index}/_mapping/field/{fields}`"]
         pub fn for_index_fields<IIndex, IFields>(index: IIndex, fields: IFields) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -2441,6 +2578,7 @@ pub mod endpoints {
                 url: IndicesGetFieldMappingUrlParams::IndexFields(index.into(), fields.into()).url(),
             }
         }
+        #[doc = "Request to: `/{index}/_mapping/{type}/field/{fields}`"]
         pub fn for_index_ty_fields<IIndex, IType, IFields>(index: IIndex, ty: IType, fields: IFields) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -2451,6 +2589,7 @@ pub mod endpoints {
                 url: IndicesGetFieldMappingUrlParams::IndexTypeFields(index.into(), ty.into(), fields.into()).url(),
             }
         }
+        #[doc = "Request to: `/_mapping/{type}/field/{fields}`"]
         pub fn for_ty_fields<IType, IFields>(ty: IType, fields: IFields) -> Self
         where
             IType: Into<Type<'a>>,
@@ -2487,11 +2626,13 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Put: /_ingest/pipeline/{id}`\n\n[Elasticsearch Documentation](https://www.elastic.co/guide/en/elasticsearch/plugins/master/ingest.html)"]
     pub struct IngestPutPipelineRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> IngestPutPipelineRequest<'a, B> {
+        #[doc = "Request to: `/_ingest/pipeline/{id}`"]
         pub fn for_id<IId>(id: IId, body: B) -> Self
         where
             IId: Into<Id<'a>>,
@@ -2523,10 +2664,12 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Get: /_cluster/pending_tasks`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/cluster-pending.html)"]
     pub struct ClusterPendingTasksRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> ClusterPendingTasksRequest<'a> {
+        #[doc = "Request to: `/_cluster/pending_tasks`"]
         pub fn new() -> Self {
             ClusterPendingTasksRequest {
                 url: ClusterPendingTasksUrlParams::None.url(),
@@ -2562,17 +2705,20 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Post: /_ingest/pipeline/_simulate`\n\n[Elasticsearch Documentation](https://www.elastic.co/guide/en/elasticsearch/plugins/master/ingest.html)"]
     pub struct IngestSimulateRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> IngestSimulateRequest<'a, B> {
+        #[doc = "Request to: `/_ingest/pipeline/_simulate`"]
         pub fn new(body: B) -> Self {
             IngestSimulateRequest {
                 url: IngestSimulateUrlParams::None.url(),
                 body: body,
             }
         }
+        #[doc = "Request to: `/_ingest/pipeline/{id}/_simulate`"]
         pub fn for_id<IId>(id: IId, body: B) -> Self
         where
             IId: Into<Id<'a>>,
@@ -2628,15 +2774,18 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Get: /_alias/`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/indices-aliases.html)"]
     pub struct IndicesGetAliasRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> IndicesGetAliasRequest<'a> {
+        #[doc = "Request to: `/_alias`"]
         pub fn new() -> Self {
             IndicesGetAliasRequest {
                 url: IndicesGetAliasUrlParams::None.url(),
             }
         }
+        #[doc = "Request to: `/{index}/_alias`"]
         pub fn for_index<IIndex>(index: IIndex) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -2645,6 +2794,7 @@ pub mod endpoints {
                 url: IndicesGetAliasUrlParams::Index(index.into()).url(),
             }
         }
+        #[doc = "Request to: `/{index}/_alias/{name}`"]
         pub fn for_index_name<IIndex, IName>(index: IIndex, name: IName) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -2654,6 +2804,7 @@ pub mod endpoints {
                 url: IndicesGetAliasUrlParams::IndexName(index.into(), name.into()).url(),
             }
         }
+        #[doc = "Request to: `/_alias/{name}`"]
         pub fn for_name<IName>(name: IName) -> Self
         where
             IName: Into<Name<'a>>,
@@ -2691,10 +2842,12 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Get: /_scripts/{lang}/{id}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/modules-scripting.html)"]
     pub struct GetScriptRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> GetScriptRequest<'a> {
+        #[doc = "Request to: `/_scripts/{lang}/{id}`"]
         pub fn for_lang_id<ILang, IId>(lang: ILang, id: IId) -> Self
         where
             ILang: Into<Lang<'a>>,
@@ -2734,15 +2887,18 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Get: /_recovery`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/indices-recovery.html)"]
     pub struct IndicesRecoveryRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> IndicesRecoveryRequest<'a> {
+        #[doc = "Request to: `/_recovery`"]
         pub fn new() -> Self {
             IndicesRecoveryRequest {
                 url: IndicesRecoveryUrlParams::None.url(),
             }
         }
+        #[doc = "Request to: `/{index}/_recovery`"]
         pub fn for_index<IIndex>(index: IIndex) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -2778,10 +2934,12 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Delete: /_ingest/pipeline/{id}`\n\n[Elasticsearch Documentation](https://www.elastic.co/guide/en/elasticsearch/plugins/master/ingest.html)"]
     pub struct IngestDeletePipelineRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> IngestDeletePipelineRequest<'a> {
+        #[doc = "Request to: `/_ingest/pipeline/{id}`"]
         pub fn for_id<IId>(id: IId) -> Self
         where
             IId: Into<Id<'a>>,
@@ -2820,17 +2978,20 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Post: /_tasks`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/tasks.html)"]
     pub struct TasksCancelRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> TasksCancelRequest<'a, B> {
+        #[doc = "Request to: `/_tasks/_cancel`"]
         pub fn new(body: B) -> Self {
             TasksCancelRequest {
                 url: TasksCancelUrlParams::None.url(),
                 body: body,
             }
         }
+        #[doc = "Request to: `/_tasks/{task_id}/_cancel`"]
         pub fn for_task_id<ITaskId>(task_id: ITaskId, body: B) -> Self
         where
             ITaskId: Into<TaskId<'a>>,
@@ -2870,17 +3031,20 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Post: /_cache/clear`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/indices-clearcache.html)"]
     pub struct IndicesClearCacheRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> IndicesClearCacheRequest<'a, B> {
+        #[doc = "Request to: `/_cache/clear`"]
         pub fn new(body: B) -> Self {
             IndicesClearCacheRequest {
                 url: IndicesClearCacheUrlParams::None.url(),
                 body: body,
             }
         }
+        #[doc = "Request to: `/{index}/_cache/clear`"]
         pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -2921,10 +3085,12 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Delete: /{index}/{type}/{id}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/docs-delete.html)"]
     pub struct DeleteRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> DeleteRequest<'a> {
+        #[doc = "Request to: `/{index}/{type}/{id}`"]
         pub fn for_index_ty_id<IIndex, IType, IId>(index: IIndex, ty: IType, id: IId) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -2971,11 +3137,13 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Post: /{index}/{type}/_mapping`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/indices-put-mapping.html)"]
     pub struct IndicesPutMappingRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> IndicesPutMappingRequest<'a, B> {
+        #[doc = "Request to: `/{index}/_mappings/{type}`"]
         pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: B) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -2986,6 +3154,7 @@ pub mod endpoints {
                 body: body,
             }
         }
+        #[doc = "Request to: `/_mappings/{type}`"]
         pub fn for_ty<IType>(ty: IType, body: B) -> Self
         where
             IType: Into<Type<'a>>,
@@ -3024,15 +3193,18 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Get: /_cat/aliases`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/cat-alias.html)"]
     pub struct CatAliasesRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> CatAliasesRequest<'a> {
+        #[doc = "Request to: `/_cat/aliases`"]
         pub fn new() -> Self {
             CatAliasesRequest {
                 url: CatAliasesUrlParams::None.url(),
             }
         }
+        #[doc = "Request to: `/_cat/aliases/{name}`"]
         pub fn for_name<IName>(name: IName) -> Self
         where
             IName: Into<Name<'a>>,
@@ -3070,15 +3242,18 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Get: /_cluster/stats`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/cluster-stats.html)"]
     pub struct ClusterStatsRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> ClusterStatsRequest<'a> {
+        #[doc = "Request to: `/_cluster/stats`"]
         pub fn new() -> Self {
             ClusterStatsRequest {
                 url: ClusterStatsUrlParams::None.url(),
             }
         }
+        #[doc = "Request to: `/_cluster/stats/nodes/{node_id}`"]
         pub fn for_node_id<INodeId>(node_id: INodeId) -> Self
         where
             INodeId: Into<NodeId<'a>>,
@@ -3127,17 +3302,20 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Post: /_validate/query`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/search-validate.html)"]
     pub struct IndicesValidateQueryRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> IndicesValidateQueryRequest<'a, B> {
+        #[doc = "Request to: `/_validate/query`"]
         pub fn new(body: B) -> Self {
             IndicesValidateQueryRequest {
                 url: IndicesValidateQueryUrlParams::None.url(),
                 body: body,
             }
         }
+        #[doc = "Request to: `/{index}/_validate/query`"]
         pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -3147,6 +3325,7 @@ pub mod endpoints {
                 body: body,
             }
         }
+        #[doc = "Request to: `/{index}/{type}/_validate/query`"]
         pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: B) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -3179,10 +3358,12 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Get: /_cat/pending_tasks`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/cat-pending-tasks.html)"]
     pub struct CatPendingTasksRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> CatPendingTasksRequest<'a> {
+        #[doc = "Request to: `/_cat/pending_tasks`"]
         pub fn new() -> Self {
             CatPendingTasksRequest {
                 url: CatPendingTasksUrlParams::None.url(),
@@ -3217,17 +3398,20 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Delete: /_search/scroll/{scroll_id}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/search-request-scroll.html)"]
     pub struct ClearScrollRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> ClearScrollRequest<'a, B> {
+        #[doc = "Request to: `/_search/scroll`"]
         pub fn new(body: B) -> Self {
             ClearScrollRequest {
                 url: ClearScrollUrlParams::None.url(),
                 body: body,
             }
         }
+        #[doc = "Request to: `/_search/scroll/{scroll_id}`"]
         pub fn for_scroll_id<IScrollId>(scroll_id: IScrollId, body: B) -> Self
         where
             IScrollId: Into<ScrollId<'a>>,
@@ -3266,15 +3450,18 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Get: /_cat/shards`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/cat-shards.html)"]
     pub struct CatShardsRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> CatShardsRequest<'a> {
+        #[doc = "Request to: `/_cat/shards`"]
         pub fn new() -> Self {
             CatShardsRequest {
                 url: CatShardsUrlParams::None.url(),
             }
         }
+        #[doc = "Request to: `/_cat/shards/{index}`"]
         pub fn for_index<IIndex>(index: IIndex) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -3313,15 +3500,18 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Get: /_shard_stores`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/indices-shards-stores.html)"]
     pub struct IndicesShardStoresRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> IndicesShardStoresRequest<'a> {
+        #[doc = "Request to: `/_shard_stores`"]
         pub fn new() -> Self {
             IndicesShardStoresRequest {
                 url: IndicesShardStoresUrlParams::None.url(),
             }
         }
+        #[doc = "Request to: `/{index}/_shard_stores`"]
         pub fn for_index<IIndex>(index: IIndex) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -3352,11 +3542,13 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Post: /_aliases`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/indices-aliases.html)"]
     pub struct IndicesUpdateAliasesRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> IndicesUpdateAliasesRequest<'a, B> {
+        #[doc = "Request to: `/_aliases`"]
         pub fn new(body: B) -> Self {
             IndicesUpdateAliasesRequest {
                 url: IndicesUpdateAliasesUrlParams::None.url(),
@@ -3392,15 +3584,18 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Get: /_cat/segments`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/cat-segments.html)"]
     pub struct CatSegmentsRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> CatSegmentsRequest<'a> {
+        #[doc = "Request to: `/_cat/segments`"]
         pub fn new() -> Self {
             CatSegmentsRequest {
                 url: CatSegmentsUrlParams::None.url(),
             }
         }
+        #[doc = "Request to: `/_cat/segments/{index}`"]
         pub fn for_index<IIndex>(index: IIndex) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -3449,17 +3644,20 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Post: /_mpercolate`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/search-percolate.html)"]
     pub struct MpercolateRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> MpercolateRequest<'a, B> {
+        #[doc = "Request to: `/_mpercolate`"]
         pub fn new(body: B) -> Self {
             MpercolateRequest {
                 url: MpercolateUrlParams::None.url(),
                 body: body,
             }
         }
+        #[doc = "Request to: `/{index}/_mpercolate`"]
         pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -3469,6 +3667,7 @@ pub mod endpoints {
                 body: body,
             }
         }
+        #[doc = "Request to: `/{index}/{type}/_mpercolate`"]
         pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: B) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -3507,11 +3706,13 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Post: /{index}/_open`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/indices-open-close.html)"]
     pub struct IndicesOpenRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> IndicesOpenRequest<'a, B> {
+        #[doc = "Request to: `/{index}/_open`"]
         pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -3552,10 +3753,12 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Get: /{index}/{type}/{id}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/docs-get.html)"]
     pub struct GetRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> GetRequest<'a> {
+        #[doc = "Request to: `/{index}/{type}/{id}`"]
         pub fn for_index_ty_id<IIndex, IType, IId>(index: IIndex, ty: IType, id: IId) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -3604,11 +3807,13 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Post: /{index}/_update_by_query`\n\n[Elasticsearch Documentation](https://www.elastic.co/guide/en/elasticsearch/reference/master/docs-update-by-query.html)"]
     pub struct UpdateByQueryRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> UpdateByQueryRequest<'a, B> {
+        #[doc = "Request to: `/{index}/_update_by_query`"]
         pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -3618,6 +3823,7 @@ pub mod endpoints {
                 body: body,
             }
         }
+        #[doc = "Request to: `/{index}/{type}/_update_by_query`"]
         pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: B) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -3668,17 +3874,20 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Post: /_mtermvectors`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/docs-multi-termvectors.html)"]
     pub struct MtermvectorsRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> MtermvectorsRequest<'a, B> {
+        #[doc = "Request to: `/_mtermvectors`"]
         pub fn new(body: B) -> Self {
             MtermvectorsRequest {
                 url: MtermvectorsUrlParams::None.url(),
                 body: body,
             }
         }
+        #[doc = "Request to: `/{index}/_mtermvectors`"]
         pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -3688,6 +3897,7 @@ pub mod endpoints {
                 body: body,
             }
         }
+        #[doc = "Request to: `/{index}/{type}/_mtermvectors`"]
         pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: B) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -3727,15 +3937,18 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Get: /_cat/recovery`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/cat-recovery.html)"]
     pub struct CatRecoveryRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> CatRecoveryRequest<'a> {
+        #[doc = "Request to: `/_cat/recovery`"]
         pub fn new() -> Self {
             CatRecoveryRequest {
                 url: CatRecoveryUrlParams::None.url(),
             }
         }
+        #[doc = "Request to: `/_cat/recovery/{index}`"]
         pub fn for_index<IIndex>(index: IIndex) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -3774,11 +3987,13 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Post: /_snapshot/{repository}/{snapshot}/_restore`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/modules-snapshots.html)"]
     pub struct SnapshotRestoreRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> SnapshotRestoreRequest<'a, B> {
+        #[doc = "Request to: `/_snapshot/{repository}/{snapshot}/_restore`"]
         pub fn for_repository_snapshot<IRepository, ISnapshot>(repository: IRepository, snapshot: ISnapshot, body: B) -> Self
         where
             IRepository: Into<Repository<'a>>,
@@ -3811,11 +4026,13 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Post: /_reindex`\n\n[Elasticsearch Documentation](https://www.elastic.co/guide/en/elasticsearch/reference/master/docs-reindex.html)"]
     pub struct ReindexRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> ReindexRequest<'a, B> {
+        #[doc = "Request to: `/_reindex`"]
         pub fn new(body: B) -> Self {
             ReindexRequest {
                 url: ReindexUrlParams::None.url(),
@@ -3844,10 +4061,12 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Get: /_cat/health`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/cat-health.html)"]
     pub struct CatHealthRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> CatHealthRequest<'a> {
+        #[doc = "Request to: `/_cat/health`"]
         pub fn new() -> Self {
             CatHealthRequest {
                 url: CatHealthUrlParams::None.url(),
@@ -3882,15 +4101,18 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Get: /_cat/count`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/cat-count.html)"]
     pub struct CatCountRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> CatCountRequest<'a> {
+        #[doc = "Request to: `/_cat/count`"]
         pub fn new() -> Self {
             CatCountRequest {
                 url: CatCountUrlParams::None.url(),
             }
         }
+        #[doc = "Request to: `/_cat/count/{index}`"]
         pub fn for_index<IIndex>(index: IIndex) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -3928,15 +4150,18 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Get: /_cat/snapshots`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/cat-snapshots.html)"]
     pub struct CatSnapshotsRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> CatSnapshotsRequest<'a> {
+        #[doc = "Request to: `/_cat/snapshots`"]
         pub fn new() -> Self {
             CatSnapshotsRequest {
                 url: CatSnapshotsUrlParams::None.url(),
             }
         }
+        #[doc = "Request to: `/_cat/snapshots/{repository}`"]
         pub fn for_repository<IRepository>(repository: IRepository) -> Self
         where
             IRepository: Into<Repository<'a>>,
@@ -3991,15 +4216,18 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Get: /_mapping`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/indices-get-mapping.html)"]
     pub struct IndicesGetMappingRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> IndicesGetMappingRequest<'a> {
+        #[doc = "Request to: `/_mapping`"]
         pub fn new() -> Self {
             IndicesGetMappingRequest {
                 url: IndicesGetMappingUrlParams::None.url(),
             }
         }
+        #[doc = "Request to: `/{index}/_mapping`"]
         pub fn for_index<IIndex>(index: IIndex) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -4008,6 +4236,7 @@ pub mod endpoints {
                 url: IndicesGetMappingUrlParams::Index(index.into()).url(),
             }
         }
+        #[doc = "Request to: `/{index}/_mapping/{type}`"]
         pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -4017,6 +4246,7 @@ pub mod endpoints {
                 url: IndicesGetMappingUrlParams::IndexType(index.into(), ty.into()).url(),
             }
         }
+        #[doc = "Request to: `/_mapping/{type}`"]
         pub fn for_ty<IType>(ty: IType) -> Self
         where
             IType: Into<Type<'a>>,
@@ -4054,10 +4284,12 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Get: /_snapshot/{repository}/{snapshot}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/modules-snapshots.html)"]
     pub struct SnapshotGetRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> SnapshotGetRequest<'a> {
+        #[doc = "Request to: `/_snapshot/{repository}/{snapshot}`"]
         pub fn for_repository_snapshot<IRepository, ISnapshot>(repository: IRepository, snapshot: ISnapshot) -> Self
         where
             IRepository: Into<Repository<'a>>,
@@ -4089,10 +4321,12 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Get: /_cat/nodes`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/cat-nodes.html)"]
     pub struct CatNodesRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> CatNodesRequest<'a> {
+        #[doc = "Request to: `/_cat/nodes`"]
         pub fn new() -> Self {
             CatNodesRequest {
                 url: CatNodesUrlParams::None.url(),
@@ -4129,10 +4363,12 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Head: /{index}/{type}/{id}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/docs-get.html)"]
     pub struct ExistsRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> ExistsRequest<'a> {
+        #[doc = "Request to: `/{index}/{type}/{id}`"]
         pub fn for_index_ty_id<IIndex, IType, IId>(index: IIndex, ty: IType, id: IId) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -4165,11 +4401,13 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Post: /_cluster/reroute`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/cluster-reroute.html)"]
     pub struct ClusterRerouteRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> ClusterRerouteRequest<'a, B> {
+        #[doc = "Request to: `/_cluster/reroute`"]
         pub fn new(body: B) -> Self {
             ClusterRerouteRequest {
                 url: ClusterRerouteUrlParams::None.url(),
@@ -4206,15 +4444,18 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Get: /_nodes/hot_threads`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/cluster-nodes-hot-threads.html)"]
     pub struct NodesHotThreadsRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> NodesHotThreadsRequest<'a> {
+        #[doc = "Request to: `/_nodes/hot_threads`"]
         pub fn new() -> Self {
             NodesHotThreadsRequest {
                 url: NodesHotThreadsUrlParams::None.url(),
             }
         }
+        #[doc = "Request to: `/_nodes/{node_id}/hot_threads`"]
         pub fn for_node_id<INodeId>(node_id: INodeId) -> Self
         where
             INodeId: Into<NodeId<'a>>,
@@ -4289,15 +4530,18 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Get: /_nodes/stats`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/cluster-nodes-stats.html)"]
     pub struct NodesStatsRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> NodesStatsRequest<'a> {
+        #[doc = "Request to: `/_nodes/stats`"]
         pub fn new() -> Self {
             NodesStatsRequest {
                 url: NodesStatsUrlParams::None.url(),
             }
         }
+        #[doc = "Request to: `/_nodes/stats/{metric}`"]
         pub fn for_metric<IMetric>(metric: IMetric) -> Self
         where
             IMetric: Into<Metric<'a>>,
@@ -4306,6 +4550,7 @@ pub mod endpoints {
                 url: NodesStatsUrlParams::Metric(metric.into()).url(),
             }
         }
+        #[doc = "Request to: `/_nodes/stats/{metric}/{index_metric}`"]
         pub fn for_metric_index_metric<IMetric, IIndexMetric>(metric: IMetric, index_metric: IIndexMetric) -> Self
         where
             IMetric: Into<Metric<'a>>,
@@ -4315,6 +4560,7 @@ pub mod endpoints {
                 url: NodesStatsUrlParams::MetricIndexMetric(metric.into(), index_metric.into()).url(),
             }
         }
+        #[doc = "Request to: `/_nodes/{node_id}/stats`"]
         pub fn for_node_id<INodeId>(node_id: INodeId) -> Self
         where
             INodeId: Into<NodeId<'a>>,
@@ -4323,6 +4569,7 @@ pub mod endpoints {
                 url: NodesStatsUrlParams::NodeId(node_id.into()).url(),
             }
         }
+        #[doc = "Request to: `/_nodes/{node_id}/stats/{metric}`"]
         pub fn for_node_id_metric<INodeId, IMetric>(node_id: INodeId, metric: IMetric) -> Self
         where
             INodeId: Into<NodeId<'a>>,
@@ -4332,6 +4579,7 @@ pub mod endpoints {
                 url: NodesStatsUrlParams::NodeIdMetric(node_id.into(), metric.into()).url(),
             }
         }
+        #[doc = "Request to: `/_nodes/{node_id}/stats/{metric}/{index_metric}`"]
         pub fn for_node_id_metric_index_metric<INodeId, IMetric, IIndexMetric>(node_id: INodeId, metric: IMetric, index_metric: IIndexMetric) -> Self
         where
             INodeId: Into<NodeId<'a>>,
@@ -4371,15 +4619,18 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Get: /_ingest/pipeline/{id}`\n\n[Elasticsearch Documentation](https://www.elastic.co/guide/en/elasticsearch/plugins/master/ingest.html)"]
     pub struct IngestGetPipelineRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> IngestGetPipelineRequest<'a> {
+        #[doc = "Request to: `/_ingest/pipeline`"]
         pub fn new() -> Self {
             IngestGetPipelineRequest {
                 url: IngestGetPipelineUrlParams::None.url(),
             }
         }
+        #[doc = "Request to: `/_ingest/pipeline/{id}`"]
         pub fn for_id<IId>(id: IId) -> Self
         where
             IId: Into<Id<'a>>,
@@ -4415,11 +4666,13 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Post: /_search/template/{id}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/search-template.html)"]
     pub struct PutTemplateRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> PutTemplateRequest<'a, B> {
+        #[doc = "Request to: `/_search/template/{id}`"]
         pub fn for_id<IId>(id: IId, body: B) -> Self
         where
             IId: Into<Id<'a>>,
@@ -4461,10 +4714,12 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Get: /{index}/{type}/{id}/_source`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/docs-get.html)"]
     pub struct GetSourceRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> GetSourceRequest<'a> {
+        #[doc = "Request to: `/{index}/{type}/{id}/_source`"]
         pub fn for_index_ty_id<IIndex, IType, IId>(index: IIndex, ty: IType, id: IId) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -4504,11 +4759,13 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Post: /_snapshot/{repository}/{snapshot}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/modules-snapshots.html)"]
     pub struct SnapshotCreateRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> SnapshotCreateRequest<'a, B> {
+        #[doc = "Request to: `/_snapshot/{repository}/{snapshot}`"]
         pub fn for_repository_snapshot<IRepository, ISnapshot>(repository: IRepository, snapshot: ISnapshot, body: B) -> Self
         where
             IRepository: Into<Repository<'a>>,
@@ -4548,17 +4805,20 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Post: /_search/scroll`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/search-request-scroll.html)"]
     pub struct ScrollRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> ScrollRequest<'a, B> {
+        #[doc = "Request to: `/_search/scroll`"]
         pub fn new(body: B) -> Self {
             ScrollRequest {
                 url: ScrollUrlParams::None.url(),
                 body: body,
             }
         }
+        #[doc = "Request to: `/_search/scroll/{scroll_id}`"]
         pub fn for_scroll_id<IScrollId>(scroll_id: IScrollId, body: B) -> Self
         where
             IScrollId: Into<ScrollId<'a>>,
@@ -4608,15 +4868,18 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Get: /_snapshot/_status`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/modules-snapshots.html)"]
     pub struct SnapshotStatusRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> SnapshotStatusRequest<'a> {
+        #[doc = "Request to: `/_snapshot/_status`"]
         pub fn new() -> Self {
             SnapshotStatusRequest {
                 url: SnapshotStatusUrlParams::None.url(),
             }
         }
+        #[doc = "Request to: `/_snapshot/{repository}/_status`"]
         pub fn for_repository<IRepository>(repository: IRepository) -> Self
         where
             IRepository: Into<Repository<'a>>,
@@ -4625,6 +4888,7 @@ pub mod endpoints {
                 url: SnapshotStatusUrlParams::Repository(repository.into()).url(),
             }
         }
+        #[doc = "Request to: `/_snapshot/{repository}/{snapshot}/_status`"]
         pub fn for_repository_snapshot<IRepository, ISnapshot>(repository: IRepository, snapshot: ISnapshot) -> Self
         where
             IRepository: Into<Repository<'a>>,
@@ -4674,17 +4938,20 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Post: /_mget`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/docs-multi-get.html)"]
     pub struct MgetRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> MgetRequest<'a, B> {
+        #[doc = "Request to: `/_mget`"]
         pub fn new(body: B) -> Self {
             MgetRequest {
                 url: MgetUrlParams::None.url(),
                 body: body,
             }
         }
+        #[doc = "Request to: `/{index}/_mget`"]
         pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -4694,6 +4961,7 @@ pub mod endpoints {
                 body: body,
             }
         }
+        #[doc = "Request to: `/{index}/{type}/_mget`"]
         pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: B) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -4731,10 +4999,12 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Head: /_template/{name}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/indices-templates.html)"]
     pub struct IndicesExistsTemplateRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> IndicesExistsTemplateRequest<'a> {
+        #[doc = "Request to: `/_template/{name}`"]
         pub fn for_name<IName>(name: IName) -> Self
         where
             IName: Into<Name<'a>>,
@@ -4773,15 +5043,18 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Get: /_upgrade`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/indices-upgrade.html)"]
     pub struct IndicesGetUpgradeRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> IndicesGetUpgradeRequest<'a> {
+        #[doc = "Request to: `/_upgrade`"]
         pub fn new() -> Self {
             IndicesGetUpgradeRequest {
                 url: IndicesGetUpgradeUrlParams::None.url(),
             }
         }
+        #[doc = "Request to: `/{index}/_upgrade`"]
         pub fn for_index<IIndex>(index: IIndex) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -4819,11 +5092,13 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Post: /_scripts/{lang}/{id}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/modules-scripting.html)"]
     pub struct PutScriptRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> PutScriptRequest<'a, B> {
+        #[doc = "Request to: `/_scripts/{lang}/{id}`"]
         pub fn for_lang_id<ILang, IId>(lang: ILang, id: IId, body: B) -> Self
         where
             ILang: Into<Lang<'a>>,
@@ -4861,10 +5136,12 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Get: /_search/template/{id}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/search-template.html)"]
     pub struct GetTemplateRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> GetTemplateRequest<'a> {
+        #[doc = "Request to: `/_search/template/{id}`"]
         pub fn for_id<IId>(id: IId) -> Self
         where
             IId: Into<Id<'a>>,
@@ -4900,10 +5177,12 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Delete: /_template/{name}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/indices-templates.html)"]
     pub struct IndicesDeleteTemplateRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> IndicesDeleteTemplateRequest<'a> {
+        #[doc = "Request to: `/_template/{name}`"]
         pub fn for_name<IName>(name: IName) -> Self
         where
             IName: Into<Name<'a>>,
@@ -4952,11 +5231,13 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Post: /{index}/{type}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/docs-index_.html)"]
     pub struct IndexRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> IndexRequest<'a, B> {
+        #[doc = "Request to: `/{index}/{type}`"]
         pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: B) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -4967,6 +5248,7 @@ pub mod endpoints {
                 body: body,
             }
         }
+        #[doc = "Request to: `/{index}/{type}/{id}`"]
         pub fn for_index_ty_id<IIndex, IType, IId>(index: IIndex, ty: IType, id: IId, body: B) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -5008,17 +5290,20 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Put: /_settings`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/indices-update-settings.html)"]
     pub struct IndicesPutSettingsRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> IndicesPutSettingsRequest<'a, B> {
+        #[doc = "Request to: `/_settings`"]
         pub fn new(body: B) -> Self {
             IndicesPutSettingsRequest {
                 url: IndicesPutSettingsUrlParams::None.url(),
                 body: body,
             }
         }
+        #[doc = "Request to: `/{index}/_settings`"]
         pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -5057,15 +5342,18 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Get: /_cat/templates`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/cat-templates.html)"]
     pub struct CatTemplatesRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> CatTemplatesRequest<'a> {
+        #[doc = "Request to: `/_cat/templates`"]
         pub fn new() -> Self {
             CatTemplatesRequest {
                 url: CatTemplatesUrlParams::None.url(),
             }
         }
+        #[doc = "Request to: `/_cat/templates/{name}`"]
         pub fn for_name<IName>(name: IName) -> Self
         where
             IName: Into<Name<'a>>,
@@ -5103,15 +5391,18 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Get: /_cat/indices`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/cat-indices.html)"]
     pub struct CatIndicesRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> CatIndicesRequest<'a> {
+        #[doc = "Request to: `/_cat/indices`"]
         pub fn new() -> Self {
             CatIndicesRequest {
                 url: CatIndicesUrlParams::None.url(),
             }
         }
+        #[doc = "Request to: `/_cat/indices/{index}`"]
         pub fn for_index<IIndex>(index: IIndex) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -5142,11 +5433,13 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Put: /_cluster/settings`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/cluster-update-settings.html)"]
     pub struct ClusterPutSettingsRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> ClusterPutSettingsRequest<'a, B> {
+        #[doc = "Request to: `/_cluster/settings`"]
         pub fn new(body: B) -> Self {
             ClusterPutSettingsRequest {
                 url: ClusterPutSettingsUrlParams::None.url(),
@@ -5185,11 +5478,13 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Post: /{index}/{type}/{id}/_update`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/docs-update.html)"]
     pub struct UpdateRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> UpdateRequest<'a, B> {
+        #[doc = "Request to: `/{index}/{type}/{id}/_update`"]
         pub fn for_index_ty_id<IIndex, IType, IId>(index: IIndex, ty: IType, id: IId, body: B) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -5230,11 +5525,13 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Post: /{index}/_alias/{name}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/indices-aliases.html)"]
     pub struct IndicesPutAliasRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> IndicesPutAliasRequest<'a, B> {
+        #[doc = "Request to: `/{index}/_aliases/{name}`"]
         pub fn for_index_name<IIndex, IName>(index: IIndex, name: IName, body: B) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -5267,10 +5564,12 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Get: /_cat/plugins`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/cat-plugins.html)"]
     pub struct CatPluginsRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> CatPluginsRequest<'a> {
+        #[doc = "Request to: `/_cat/plugins`"]
         pub fn new() -> Self {
             CatPluginsRequest {
                 url: CatPluginsUrlParams::None.url(),
@@ -5318,11 +5617,13 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Post: /{index}/{type}/_percolate/count`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/search-percolate.html)"]
     pub struct CountPercolateRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> CountPercolateRequest<'a, B> {
+        #[doc = "Request to: `/{index}/{type}/_percolate/count`"]
         pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: B) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -5333,6 +5634,7 @@ pub mod endpoints {
                 body: body,
             }
         }
+        #[doc = "Request to: `/{index}/{type}/{id}/_percolate/count`"]
         pub fn for_index_ty_id<IIndex, IType, IId>(index: IIndex, ty: IType, id: IId, body: B) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -5374,17 +5676,20 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Post: /_upgrade`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/indices-upgrade.html)"]
     pub struct IndicesUpgradeRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> IndicesUpgradeRequest<'a, B> {
+        #[doc = "Request to: `/_upgrade`"]
         pub fn new(body: B) -> Self {
             IndicesUpgradeRequest {
                 url: IndicesUpgradeUrlParams::None.url(),
                 body: body,
             }
         }
+        #[doc = "Request to: `/{index}/_upgrade`"]
         pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -5423,10 +5728,12 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Delete: /{index}/_alias/{name}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/indices-aliases.html)"]
     pub struct IndicesDeleteAliasRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> IndicesDeleteAliasRequest<'a> {
+        #[doc = "Request to: `/{index}/_aliases/{name}`"]
         pub fn for_index_name<IIndex, IName>(index: IIndex, name: IName) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -5458,10 +5765,12 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Get: /_cat/tasks`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/tasks.html)"]
     pub struct CatTasksRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> CatTasksRequest<'a> {
+        #[doc = "Request to: `/_cat/tasks`"]
         pub fn new() -> Self {
             CatTasksRequest {
                 url: CatTasksUrlParams::None.url(),
@@ -5504,11 +5813,13 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Post: /{alias}/_rollover`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/indices-rollover-index.html)"]
     pub struct IndicesRolloverRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> IndicesRolloverRequest<'a, B> {
+        #[doc = "Request to: `/{alias}/_rollover`"]
         pub fn for_alias<IAlias>(alias: IAlias, body: B) -> Self
         where
             IAlias: Into<Alias<'a>>,
@@ -5518,6 +5829,7 @@ pub mod endpoints {
                 body: body,
             }
         }
+        #[doc = "Request to: `/{alias}/_rollover/{new_index}`"]
         pub fn for_alias_new_index<IAlias, INewIndex>(alias: IAlias, new_index: INewIndex, body: B) -> Self
         where
             IAlias: Into<Alias<'a>>,
@@ -5556,11 +5868,13 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Post: /_reindex/{task_id}/_rethrottle`\n\n[Elasticsearch Documentation](https://www.elastic.co/guide/en/elasticsearch/reference/master/docs-reindex.html)"]
     pub struct ReindexRethrottleRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> ReindexRethrottleRequest<'a, B> {
+        #[doc = "Request to: `/_delete_by_query/{task_id}/_rethrottle`"]
         pub fn for_task_id<ITaskId>(task_id: ITaskId, body: B) -> Self
         where
             ITaskId: Into<TaskId<'a>>,
@@ -5597,11 +5911,13 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Post: /_snapshot/{repository}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/modules-snapshots.html)"]
     pub struct SnapshotCreateRepositoryRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> SnapshotCreateRepositoryRequest<'a, B> {
+        #[doc = "Request to: `/_snapshot/{repository}`"]
         pub fn for_repository<IRepository>(repository: IRepository, body: B) -> Self
         where
             IRepository: Into<Repository<'a>>,
@@ -5647,10 +5963,12 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Get: /{index}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/indices-get-index.html)"]
     pub struct IndicesGetRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> IndicesGetRequest<'a> {
+        #[doc = "Request to: `/{index}`"]
         pub fn for_index<IIndex>(index: IIndex) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -5659,6 +5977,7 @@ pub mod endpoints {
                 url: IndicesGetUrlParams::Index(index.into()).url(),
             }
         }
+        #[doc = "Request to: `/{index}/{feature}`"]
         pub fn for_index_feature<IIndex, IFeature>(index: IIndex, feature: IFeature) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -5698,17 +6017,20 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Post: /_analyze`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/indices-analyze.html)"]
     pub struct IndicesAnalyzeRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> IndicesAnalyzeRequest<'a, B> {
+        #[doc = "Request to: `/_analyze`"]
         pub fn new(body: B) -> Self {
             IndicesAnalyzeRequest {
                 url: IndicesAnalyzeUrlParams::None.url(),
                 body: body,
             }
         }
+        #[doc = "Request to: `/{index}/_analyze`"]
         pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -5747,15 +6069,18 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Get: /_cat/fielddata`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/cat-fielddata.html)"]
     pub struct CatFielddataRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> CatFielddataRequest<'a> {
+        #[doc = "Request to: `/_cat/fielddata`"]
         pub fn new() -> Self {
             CatFielddataRequest {
                 url: CatFielddataUrlParams::None.url(),
             }
         }
+        #[doc = "Request to: `/_cat/fielddata/{fields}`"]
         pub fn for_fields<IFields>(fields: IFields) -> Self
         where
             IFields: Into<Fields<'a>>,
@@ -5794,15 +6119,18 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Get: /_segments`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/indices-segments.html)"]
     pub struct IndicesSegmentsRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> IndicesSegmentsRequest<'a> {
+        #[doc = "Request to: `/_segments`"]
         pub fn new() -> Self {
             IndicesSegmentsRequest {
                 url: IndicesSegmentsUrlParams::None.url(),
             }
         }
+        #[doc = "Request to: `/{index}/_segments`"]
         pub fn for_index<IIndex>(index: IIndex) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -5840,11 +6168,13 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Post: /{index}/_shrink/{target}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/indices-shrink-index.html)"]
     pub struct IndicesShrinkRequest<'a, B> {
         pub url: Url<'a>,
         pub body: B,
     }
     impl<'a, B> IndicesShrinkRequest<'a, B> {
+        #[doc = "Request to: `/{index}/_shrink/{target}`"]
         pub fn for_index_target<IIndex, ITarget>(index: IIndex, target: ITarget, body: B) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -5877,10 +6207,12 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Get: /_tasks`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/tasks.html)"]
     pub struct TasksListRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> TasksListRequest<'a> {
+        #[doc = "Request to: `/_tasks`"]
         pub fn new() -> Self {
             TasksListRequest {
                 url: TasksListUrlParams::None.url(),
@@ -5908,10 +6240,12 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Get: /_cat/master`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/cat-master.html)"]
     pub struct CatMasterRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> CatMasterRequest<'a> {
+        #[doc = "Request to: `/_cat/master`"]
         pub fn new() -> Self {
             CatMasterRequest {
                 url: CatMasterUrlParams::None.url(),
@@ -5946,10 +6280,12 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Head: /{index}/_mapping/{type}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/indices-types-exists.html)"]
     pub struct IndicesExistsTypeRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> IndicesExistsTypeRequest<'a> {
+        #[doc = "Request to: `/{index}/_mapping/{type}`"]
         pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType) -> Self
         where
             IIndex: Into<Index<'a>>,
@@ -5981,10 +6317,12 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Get: /_cluster/settings`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/cluster-update-settings.html)"]
     pub struct ClusterGetSettingsRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> ClusterGetSettingsRequest<'a> {
+        #[doc = "Request to: `/_cluster/settings`"]
         pub fn new() -> Self {
             ClusterGetSettingsRequest {
                 url: ClusterGetSettingsUrlParams::None.url(),
@@ -6035,15 +6373,18 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Get: /_nodes`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/cluster-nodes-info.html)"]
     pub struct NodesInfoRequest<'a> {
         pub url: Url<'a>,
     }
     impl<'a> NodesInfoRequest<'a> {
+        #[doc = "Request to: `/_nodes`"]
         pub fn new() -> Self {
             NodesInfoRequest {
                 url: NodesInfoUrlParams::None.url(),
             }
         }
+        #[doc = "Request to: `/_nodes/{metric}`"]
         pub fn for_metric<IMetric>(metric: IMetric) -> Self
         where
             IMetric: Into<Metric<'a>>,
@@ -6052,6 +6393,7 @@ pub mod endpoints {
                 url: NodesInfoUrlParams::Metric(metric.into()).url(),
             }
         }
+        #[doc = "Request to: `/_nodes/{node_id}`"]
         pub fn for_node_id<INodeId>(node_id: INodeId) -> Self
         where
             INodeId: Into<NodeId<'a>>,
@@ -6060,6 +6402,7 @@ pub mod endpoints {
                 url: NodesInfoUrlParams::NodeId(node_id.into()).url(),
             }
         }
+        #[doc = "Request to: `/_nodes/{node_id}/{metric}`"]
         pub fn for_node_id_metric<INodeId, IMetric>(node_id: INodeId, metric: IMetric) -> Self
         where
             INodeId: Into<NodeId<'a>>,
