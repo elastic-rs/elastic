@@ -47,7 +47,7 @@ fn main() {
 
     endpoints = endpoints
         .into_iter()
-        .map(|e| strip_verbs(e))
+        .map(|e| strip_methods(e))
         .map(|e| dedup_urls(e))
         .collect();
 
@@ -111,22 +111,12 @@ where
     Ok(endpoint.endpoint())
 }
 
-fn strip_verbs(endpoint: (String, Endpoint)) -> (String, Endpoint) {
+fn strip_methods(endpoint: (String, Endpoint)) -> (String, Endpoint) {
     let (name, mut endpoint) = endpoint;
 
-    // Choose a single HTTP verb per endpoint: either POST or 1st entry
-    let mut iter = endpoint.methods.into_iter();
-    let verb = match iter.len() {
-        0 => unreachable!(),
-        1 => iter.next().unwrap(),
-        _ => if iter.any(|m| m == HttpMethod::Post) {
-            HttpMethod::Post
-        } else {
-            iter.next().unwrap()
-        },
-    };
+    let preferred_method = endpoint.preferred_method().expect("there should always be at least 1 method");
 
-    endpoint.methods = vec![verb];
+    endpoint.methods = vec![preferred_method];
 
     (name, endpoint)
 }
