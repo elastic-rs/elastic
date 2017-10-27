@@ -404,11 +404,12 @@ pub mod tests {
     fn gen_request_ctor_none() {
         let req_ty = ty_a("Request");
         let result = RequestParamsCtorBuilder::new(false, req_ty, ty_a("UrlParams"))
-            .with_constructor(vec![], "A doc comment")
+            .with_constructor(vec![], Some("A doc comment".to_owned()))
             .build();
 
         let expected = quote!(
             impl <'a> Request<'a> {
+                #[doc = "A doc comment"]
                 pub fn new() -> Self {
                     Request {
                         url: UrlParams::None.url()
@@ -424,11 +425,12 @@ pub mod tests {
     fn gen_request_ctor_params() {
         let req_ty = ty_a("Request");
         let result = RequestParamsCtorBuilder::new(false, req_ty, ty_a("UrlParams"))
-            .with_constructor(vec!["Index".into(), "Type".into(), "Id".into()], "A doc comment")
+            .with_constructor(vec!["Index".into(), "Type".into(), "Id".into()], Some("A doc comment".to_owned()))
             .build();
 
         let expected = quote!(
             impl <'a> Request<'a> {
+                #[doc = "A doc comment"]
                 pub fn for_index_ty_id<IIndex, IType, IId>(index: IIndex, ty: IType, id: IId) -> Self
                     where IIndex: Into<Index<'a> >,
                           IType: Into<Type<'a> >,
@@ -448,7 +450,7 @@ pub mod tests {
     fn gen_request_ctor_body() {
         let req_ty = ty_path("Request", vec![lifetime()], vec![types::body::ty()]);
         let result = RequestParamsCtorBuilder::new(true, req_ty, ty_a("UrlParams"))
-            .with_constructor(vec![], "A doc comment")
+            .with_constructor(vec![], None)
             .build();
 
         let expected = quote!(
@@ -469,7 +471,7 @@ pub mod tests {
     fn gen_request_ctor_params_body() {
         let req_ty = ty_path("Request", vec![lifetime()], vec![types::body::ty()]);
         let result = RequestParamsCtorBuilder::new(true, req_ty, ty_a("UrlParams"))
-            .with_constructor(vec!["Index".into(), "Type".into(), "Id".into()], "A doc comment")
+            .with_constructor(vec!["Index".into(), "Type".into(), "Id".into()], None)
             .build();
 
         let expected = quote!(
@@ -517,7 +519,8 @@ pub mod tests {
         let result = RequestParamsCtorBuilder::from((&endpoint, &req_ty, &url_params)).build();
 
         let expected = quote!(
-            impl <'a, B> IndicesExistsAliasRequest <'a, B> { 
+            impl <'a, B> IndicesExistsAliasRequest <'a, B> {
+                #[doc = "Request to: `/_search`"]
                 pub fn new(body: B) -> Self { 
                     IndicesExistsAliasRequest { 
                         url : IndicesExistsAliasUrlParams::None.url(),
@@ -525,6 +528,7 @@ pub mod tests {
                     }
                 }
 
+                #[doc = "Request to: `/{index}/_search`"]
                 pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
                     where IIndex: Into<Index<'a> >
                 { 
@@ -534,6 +538,7 @@ pub mod tests {
                     }
                 }
 
+                #[doc = "Request to: `/{index}/{type}/_search`"]
                 pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: B) -> Self
                     where IIndex: Into<Index<'a> >,
                           IType: Into<Type<'a> >

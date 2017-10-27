@@ -97,7 +97,7 @@ impl<'a> From<&'a (String, parse::Endpoint)> for RequestParamBuilder {
 
         let name = format!("{}Request", endpoint_name.into_rust_type());
         let doc_comment = if let Some(method) = endpoint.preferred_method() {
-            format!("`{:?}: {}`", method, endpoint.url.path)
+            format!("`{:?}: {}`\n\n[Elasticsearch Documentation]({})", method, endpoint.url.path, endpoint.documentation)
         }
         else {
             format!("`{}`", endpoint.url.path)
@@ -147,10 +147,11 @@ mod tests {
     }
 
     #[test]
-    fn gen_request_params_with_body() {
-        let (result, _) = RequestParamBuilder::new("Request").has_body(true).build();
+    fn gen_request_params_with_body_doc() {
+        let (result, _) = RequestParamBuilder::new("Request").has_body(true).doc_comment("Some doc").build();
 
         let expected = quote!(
+            #[doc = "Some doc"]
             pub struct Request<'a, B> {
                 pub url: Url<'a>,
                 pub body: B
@@ -179,6 +180,7 @@ mod tests {
         let (result, _) = RequestParamBuilder::from(&endpoint).build();
 
         let expected = quote!(
+            #[doc = "`Get: /_search`\n\n[Elasticsearch Documentation]()"]
             pub struct IndicesExistsAliasRequest<'a, B> {
                 pub url: Url<'a>,
                 pub body: B
