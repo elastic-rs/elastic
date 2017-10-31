@@ -12,6 +12,5 @@ members = [
     "src/types_derive_internals",
     "src/types/tests/derive_compile_test",
     "tests/run",
-    "examples/account_sample",
-    "examples/async_raw_sample"
+    "examples/account_sample"
 ]
