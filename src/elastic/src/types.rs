@@ -29,10 +29,7 @@ Most datatypes also implement a default mapping for a common Rust type if you do
 some_field: bool
 ```
 
-See the table below for a complete list of supported datatypes and their default
-implementations.
-
-All Elasticsearch types implement the base `FieldType<M: FieldMapping<F>, F>` trait where `M` is the mapping and `F` is a type-specific format.
+See the table below for a complete list of supported datatypes and their default implementations.
 
 ## Supported datatypes
 

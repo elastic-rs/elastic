@@ -68,6 +68,6 @@ The types in this library are generated from the [Elasticsearch REST API spec](h
 This can be run from the `codegen` directory:
 
 ```
-$ cd codegen
+$ cd requests_codegen
 $ cargo run > ../requests/src/genned.rs
 ```

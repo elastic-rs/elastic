@@ -28,7 +28,7 @@ The `send` method will either send the request [synchronously][send-sync] or [as
 [docs-index]: https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html
 [send-sync]: #send-synchronously
 [send-async]: #send-asynchronously
-[Client.document_index]: ../../struct.Client.html#index-request
+[Client.document_index]: ../../struct.Client.html#index-document
 */
 pub type IndexRequestBuilder<TSender, TDocument> = RequestBuilder<TSender, IndexRequestInner<TDocument>>;
 
@@ -41,7 +41,7 @@ pub struct IndexRequestInner<TDocument> {
 }
 
 /**
-# Index request
+# Index document
 */
 impl<TSender> Client<TSender>
 where
@@ -95,8 +95,8 @@ where
     [builder-methods]: requests/document_index/type.IndexRequestBuilder.html#builder-methods
     [send-sync]: requests/document_index/type.IndexRequestBuilder.html#send-synchronously
     [send-async]: requests/document_index/type.IndexRequestBuilder.html#send-asynchronously
-    [types-mod]: ../../types/index.html
-    [documents-mod]: ../../types/document/index.html
+    [types-mod]: ../types/index.html
+    [documents-mod]: ../types/document/index.html
     */
     pub fn document_index<TDocument>(&self, index: Index<'static>, id: Id<'static>, doc: TDocument) -> IndexRequestBuilder<TSender, TDocument>
     where

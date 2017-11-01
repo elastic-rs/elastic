@@ -13,11 +13,11 @@ struct Ping {
 impl Ping {
     fn is_not_ready(&self) -> Box<Future<Item = bool, Error = Box<StdError>>> {
         let request = self.client
-            .request(PingRequest::new())
+            .ping()
             .send()
             .map_err(|e| e.into());
 
-        let check = request.then(|res: Result<AsyncResponseBuilder, Error>| match res {
+        let check = request.then(|res: Result<PingResponse, Error>| match res {
             Ok(_) => Ok(false),
             _ => Ok(true),
         });

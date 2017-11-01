@@ -32,14 +32,28 @@ pub use self::search::SearchRequestBuilder;
 // Document requests
 pub mod document_get;
 pub mod document_index;
+pub mod document_update;
+pub mod document_delete;
 pub mod document_put_mapping;
 pub use self::document_get::GetRequestBuilder;
 pub use self::document_index::IndexRequestBuilder;
+pub use self::document_update::UpdateRequestBuilder;
+pub use self::document_delete::DeleteRequestBuilder;
 pub use self::document_put_mapping::PutMappingRequestBuilder;
 
 // Index requests
 pub mod index_create;
+pub mod index_open;
+pub mod index_close;
+pub mod index_delete;
 pub use self::index_create::IndexCreateRequestBuilder;
+pub use self::index_open::IndexOpenRequestBuilder;
+pub use self::index_close::IndexCloseRequestBuilder;
+pub use self::index_delete::IndexDeleteRequestBuilder;
+
+// Misc requests
+pub mod ping;
+pub use self::ping::PingRequestBuilder;
 
 /**
 A builder for a request.

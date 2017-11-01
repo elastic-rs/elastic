@@ -7,6 +7,8 @@ use run_tests::IntegrationTest;
 #[derive(Debug, Clone, Copy)]
 pub struct NoIndex;
 
+const INDEX: &'static str = "no_index_idx";
+
 impl IntegrationTest for NoIndex {
     type Response = SearchResponse<Value>;
 
@@ -19,19 +21,19 @@ impl IntegrationTest for NoIndex {
 
     // Ensure the index doesn't exist
     fn prepare(&self, client: AsyncClient) -> Box<Future<Item = (), Error = Error>> {
-        let req = client
-            .request(IndicesDeleteRequest::for_index("no_index_idx"))
+        let delete_res = client
+            .index_delete(index(INDEX))
             .send()
             .map(|_| ());
 
-        Box::new(req)
+        Box::new(delete_res)
     }
 
     // Execute a search request against that index
     fn request(&self, client: AsyncClient) -> Box<Future<Item = Self::Response, Error = Error>> {
         let res = client
             .search()
-            .index("no_index_idx")
+            .index(INDEX)
             .ty(Some("no_index_ty"))
             .send();
 

@@ -125,6 +125,8 @@ in a `GetResponse`.
 [parse]: parsing/fn.parse.html
 */
 
+#[deny(warnings, missing_docs)]
+
 #[macro_use]
 extern crate log;
 
@@ -147,6 +149,8 @@ mod common;
 mod command;
 mod ping;
 mod get;
+mod delete;
+mod update;
 pub mod search;
 pub mod bulk;
 mod index;
@@ -155,6 +159,8 @@ pub use self::common::*;
 pub use self::command::*;
 pub use self::ping::*;
 pub use self::get::*;
+pub use self::delete::*;
+pub use self::update::*;
 pub use self::search::SearchResponse;
 pub use self::bulk::{BulkErrorsResponse, BulkResponse};
 pub use self::index::*;

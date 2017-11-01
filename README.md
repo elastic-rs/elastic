@@ -18,17 +18,17 @@ This crate is still quite unstable and is likely to continue to churn breaking r
 If you run into any problems upgrading in your own open source projects feel free to [open up an issue](https://github.com/elastic-rs/elastic/issues) and we'll give you a hand. The goal is definitely to offer a stable API eventually.
 
 ## Build Status
-Platform  | Channel | Status
-------------- | ------------- | -------------
-Linux / OSX  | Stable/Nightly | [![Build Status](https://travis-ci.org/elastic-rs/elastic.svg?branch=master)](https://travis-ci.org/elastic-rs/elastic)
-Windows  | Nightly | [![Build status](https://ci.appveyor.com/api/projects/status/csa78tcumdpnbur2?svg=true)](https://ci.appveyor.com/project/KodrAus/elastic)
+Platform  | Channel | Status (`master`) | Status (`vNext`)
+------------- | ------------- | ------------- | ------------
+Linux / OSX  | Stable/Nightly | [![Build Status](https://travis-ci.org/elastic-rs/elastic.svg?branch=master)](https://travis-ci.org/elastic-rs/elastic) | [![Build Status](https://travis-ci.org/elastic-rs/elastic.svg?branch=vNext)](https://travis-ci.org/elastic-rs/elastic)
+Windows  | Nightly | [![Build status](https://ci.appveyor.com/api/projects/status/csa78tcumdpnbur2?svg=true)](https://ci.appveyor.com/project/KodrAus/elastic) | [![Build status](https://ci.appveyor.com/api/projects/status/csa78tcumdpnbur2/branch/vNext?svg=true)](https://ci.appveyor.com/project/KodrAus/elastic/branch/vNext)
 
 ## Documentation
 
 Version                | Docs
 ---------------------- | -------------
 current (`master`)     | [![Documentation](https://img.shields.io/badge/docs-rustdoc-blue.svg)](https://docs.rs/elastic/*/elastic/)
-`vNext`                | [![Documentation](https://img.shields.io/badge/docs-rustdoc-orange.svg)](http://elastic-rs.github.io/elastic/elastic/index.html)
+unstable `vNext`       | [![Documentation](https://img.shields.io/badge/docs-rustdoc-orange.svg)](http://elastic-rs.github.io/elastic/elastic/index.html)
 
 ## Example
 
@@ -124,6 +124,14 @@ The `elastic` crate brings a few independent crates together into a cohesive API
 - `serde` for serialisation
 
 There hasn't been much effort put into abstracting these dependencies at this stage, and `elastic` can't stabilise until these libraries and a few others do.
+
+### Branches
+
+The `master` branch should always be just about current with what's released on `crates.io`. Any non-breaking changes will be merged straight into `master` and released.
+
+The `vNext` branch is where breaking changes for upcoming releases are collected. Once we're ready for a new breaking release, we'll merge `vNext` into `master` and push out a new release.
+
+If you'd like to work on a new feature, base off `master`, unless you depend on code that's already in `vNext`. If the feature can be implemented in a non-breaking way then we'll merge it in to `master` for you. If it can't then we'll merge it in to `vNext`.
 
 ### Methodology
 

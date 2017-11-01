@@ -1,4 +1,5 @@
 use std::collections::BTreeMap;
+use std::fmt;
 use serde_json::Value;
 
 mod parse;
@@ -27,6 +28,19 @@ impl Endpoint {
             self.methods
                 .iter()
                 .any(|m| m == &HttpMethod::Post || m == &HttpMethod::Put)
+    }
+
+    pub fn preferred_method(&self) -> Option<HttpMethod> {
+        let mut iter = self.methods.iter().cloned();
+        match iter.len() {
+            0 => None,
+            1 => iter.next(),
+            _ => if iter.any(|m| m == HttpMethod::Post) {
+                Some(HttpMethod::Post)
+            } else {
+                iter.next()
+            },
+        }
     }
 }
 
@@ -85,6 +99,12 @@ impl Default for TypeKind {
 
 #[derive(Debug, PartialEq, Deserialize, Clone)]
 pub struct Path(pub String);
+
+impl fmt::Display for Path {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        self.0.fmt(f)
+    }
+}
 
 impl Path {
     pub fn split<'a>(&'a self) -> Vec<PathPart<'a>> {
