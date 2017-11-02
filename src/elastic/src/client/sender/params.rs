@@ -34,40 +34,33 @@ Url parameters are added as simple key-value pairs, and serialised by [rust-url]
 With default query parameters:
 
 ```
-# use elastic_reqwest::RequestParams;
+# use elastic::client::RequestParams;
 let params = RequestParams::default();
 ```
 
 With a custom base url:
 
 ```
-# use elastic_reqwest::RequestParams;
+# use elastic::client::RequestParams;
 let params = RequestParams::new("http://mybaseurl:9200");
 ```
 
 With custom headers:
 
 ```
-# extern crate reqwest;
-# extern crate elastic_reqwest;
-# use elastic_reqwest::RequestParams;
-# use reqwest::header::Authorization;
-# fn main() {
+# use elastic::client::RequestParams;
+# use elastic::http::header::Authorization;
 let params = RequestParams::default()
     .header(Authorization("let me in".to_owned()));
-# }
 ```
 
 With url query parameters:
 
 ```
-# extern crate elastic_reqwest;
-# use elastic_reqwest::RequestParams;
-# fn main() {
+# use elastic::client::RequestParams;
 let params = RequestParams::default()
     .url_param("pretty", true)
     .url_param("q", "*");
-# }
 ```
 */
 #[derive(Clone)]

@@ -62,7 +62,7 @@ use elastic::prelude::*;
 use elastic::http::header::Authorization;
 
 let builder = SyncClientBuilder::new()
-    .base_url("http://es_host:9200")
+    .static_node("http://es_host:9200")
     .params(|p| p
         .url_param("pretty", true)
         .header(Authorization("let me in".to_owned())));

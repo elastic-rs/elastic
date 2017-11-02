@@ -56,7 +56,6 @@ pub struct AsyncSender {
 
 impl private::Sealed for AsyncSender {}
 
-// TODO: Split this up so we can test requests without sending them
 impl Sender for AsyncSender {
     type Body = AsyncBody;
     type Response = PendingResponse;
@@ -345,17 +344,6 @@ impl AsyncClientBuilder {
             p.header(Authorization("let me in".to_owned()))
         });
     ```
-
-    Specify a base url (prefer the [`base_url`][SyncClientBuilder.base_url] method on `SyncClientBuilder` instead):
-
-    ```
-    # use elastic::prelude::*;
-    let builder = SyncClientBuilder::new()
-        .params(|p| {
-            p.base_url("https://my_es_cluster/some_path")
-        });
-    ```
-
     [SyncClientBuilder.base_url]: #method.base_url
     */
     pub fn params<F>(mut self, builder: F) -> Self
