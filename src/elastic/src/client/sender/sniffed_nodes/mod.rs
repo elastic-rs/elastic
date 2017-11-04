@@ -3,6 +3,7 @@
 mod nodes_info;
 use self::nodes_info::*;
 
+use std::time::{Duration, Instant};
 use std::sync::{Arc, RwLock};
 use futures::{Future, IntoFuture};
 use client::sender::static_nodes::StaticNodes;
@@ -24,18 +25,61 @@ pub struct SniffedNodes<TSender> {
     inner: Arc<RwLock<SniffedNodesInner>>,
 }
 
-// TODO: Only keep the set of nodes in the lock
-// Use an `enum` for state that can be set atomically
+// Lock<Updating>
+
+// Request should only check 
+
+// LastUpdatedTime
+// CurrentTime
+// If !Updating && CurrentTime > LastUpdatedTime + Wait
+//   Set LastUpdatedTime = CurrentTime
+//   Set Updating
+
+// Get CurrentTime
+// Get Read Lock
+//   Check Refreshing + LastUpdatedTime + Wait
+//   No Refresh: return next
+//   Refresh: drop read lock
+// Get Write Lock
+//   Check Refreshing
+//   No Refresh: return next
+//   Refresh:
+//     Set Refreshing = True
+//     Execute Refresh
+//     Set Refreshing = False
+//     return next
+
 struct SniffedNodesInner {
-    refresh: bool,
+    last_update: Option<Instant>,
+    wait: Duration,
     refreshing: bool,
     nodes: StaticNodes,
+}
+
+impl SniffedNodesInner {
+    fn should_refresh(&self) -> bool {
+        // If there isn't a value for the last update then assume we need to refresh.
+        let last_update_is_stale = self.last_update.as_ref().map(|last_update| last_update.elapsed() > self.wait);
+
+        !self.refreshing && last_update_is_stale.unwrap_or(true)
+    }
+
+    fn update_nodes_and_next(&mut self, parsed: NodesInfoResponse) -> Result<RequestParams, Error> {
+        self.nodes.nodes = parsed
+            .into_iter()
+            .filter_map(|node| node.http
+                .and_then(|http| http.publish_address)
+                .map(|publish_address| Arc::<str>::from(publish_address)))
+            .collect();
+
+        self.nodes.next().map_err(error::request)
+    }
 }
 
 impl<TSender> SniffedNodes<TSender> {
     /**
     Create a cluster sniffer with the given base parameters.
-    
+
     The default parameters are returned in cases where there are no addresses available.
     These aren't necessarily the same as the parameters the `Sender` uses internally to sniff the cluster state.
     */
@@ -55,28 +99,11 @@ impl<TSender> SniffedNodes<TSender> {
             sender: sender,
             refresh_params: refresh_params.url_param("filter_path", "nodes.*.http.publish_address"),
             inner: Arc::new(RwLock::new(SniffedNodesInner {
-                refresh: true,
+                last_update: None,
+                wait: Duration::from_secs(30),
                 refreshing: false,
                 nodes: nodes
             })),
-        }
-    }
-
-    /**
-    Check whether the addresses should be refreshed.
-
-    If the addresses should be refreshed, and we're not currently refreshing then we set `refresh` to `false` and `refreshing` to `true`.
-    This method should only be called by `next`, which will always set `refreshing` back to `false` when it's finished.
-    */
-    fn should_refresh(&self) -> bool {
-        let mut inner = self.inner.write().expect("lock poisoned");
-
-        if !inner.refreshing && inner.refresh {
-            inner.refresh = false;
-            inner.refreshing = true;
-            true
-        } else {
-            false
         }
     }
 
@@ -90,27 +117,18 @@ impl<TSender> SniffedNodes<TSender> {
         TRefresh: Fn(SendableRequest<NodesInfoRequest<'static>, RequestParams, DefaultBody>) -> TRefreshFuture,
         TRefreshFuture: Future<Item = NodesInfoResponse, Error = Error> + 'static,
     {
-        if !self.should_refresh() {
-            let inner = self.inner.read().expect("lock poisoned");
-            let address = inner.nodes.next().map_err(error::request).into_future();
-
-            Box::new(address)
-        } else {
-            let req = self.sendable_request();
-
-            let inner = self.inner.clone();
-            let finally_inner = self.inner.clone();
-
-            let refresh_nodes = refresh(req)
-                .and_then(move |parsed| Self::update_nodes_and_next(&inner, parsed))
-                .then(move |res| {
-                    Self::finished_refreshing(&finally_inner);
-
-                    res
-                });
-
-            Box::new(refresh_nodes)
+        if let Some(address) = self.next_or_start_refresh() {
+            return Box::new(address.into_future());
         }
+
+        // Perform the refresh
+        let inner = self.inner.clone();
+        let req = self.sendable_request();
+
+        let refresh_nodes = refresh(req)
+            .then(move |fresh_nodes| Self::finish_refresh(&inner, fresh_nodes));
+
+        Box::new(refresh_nodes)
     }
 
     /**
@@ -122,20 +140,66 @@ impl<TSender> SniffedNodes<TSender> {
     where
         TRefresh: Fn(SendableRequest<NodesInfoRequest<'static>, RequestParams, DefaultBody>) -> Result<NodesInfoResponse, Error>,
     {
-        if !self.should_refresh() {
+        if let Some(address) = self.next_or_start_refresh() {
+            return address;
+        }
+
+        // Perform the refresh
+        let req = self.sendable_request();
+
+        let fresh_nodes = refresh(req);
+        Self::finish_refresh(&self.inner, fresh_nodes)
+    }
+}
+
+/*
+Shared logic between sync and async methods.
+
+These methods definitely aren't intended to be made public.
+There are invariants that are shared between them that require they're called in specific ways.
+*/
+impl<TSender> SniffedNodes<TSender> {
+    /**
+    Return a node address if the set of nodes is still current.
+
+    If this method returns `Some` then the set of nodes is current and an address is returned.
+    If this method returns `None` then eventually call `finish_refresh`.
+    */
+    fn next_or_start_refresh(&self) -> Option<Result<RequestParams, Error>> {
+        // Attempt to get an address using only a read lock first
+        let read_fresh = {
             let inner = self.inner.read().expect("lock poisoned");
 
-            inner.nodes.next().map_err(error::request)
-        } else {
-            let req = self.sendable_request();
+            if !inner.should_refresh() {
+                // Return the next address without refreshing
+                let address = inner.nodes.next().map_err(error::request);
 
-            let inner = self.inner.clone();
+                Some(address)
+            }
+            else {
+                None
+            }
+        };
 
-            let refresh_nodes = refresh(req).and_then(|parsed| Self::update_nodes_and_next(&inner, parsed));
-            Self::finished_refreshing(&inner);
+        // Attempt to refresh using a write lock otherwise
+        read_fresh.or_else(|| {
+            let mut inner = self.inner.write().expect("lock poisoned");
 
-            refresh_nodes
-        }
+            if inner.refreshing {
+                // Return the next address without refreshing
+                // This is unlikely but it's possible that a write lock
+                // gets acquired after another thread kicks off a refresh.
+                // In that case we don't want to do another one.
+                let address = inner.nodes.next().map_err(error::request);
+
+                Some(address)
+            }
+            else {
+                inner.refreshing = true;
+
+                None
+            }
+        })
     }
 
     fn sendable_request(&self) -> SendableRequest<NodesInfoRequest<'static>, RequestParams, DefaultBody> {
@@ -145,22 +209,16 @@ impl<TSender> SniffedNodes<TSender> {
             None)
     }
 
-    fn update_nodes_and_next(inner: &RwLock<SniffedNodesInner>, parsed: NodesInfoResponse) -> Result<RequestParams, Error> {
+    fn finish_refresh(inner: &RwLock<SniffedNodesInner>, fresh_nodes: Result<NodesInfoResponse, Error>) -> Result<RequestParams, Error> {
         let mut inner = inner.write().expect("lock poisoned");
 
-        inner.nodes.nodes = parsed
-            .into_iter()
-            .filter_map(|node| node.http
-                .and_then(|http| http.publish_address)
-                .map(|publish_address| Arc::<str>::from(publish_address)))
-            .collect();
-
-        inner.nodes.next().map_err(error::request)
-    }
-
-    fn finished_refreshing(inner: &RwLock<SniffedNodesInner>) {
-        let mut inner = inner.write().expect("lock poisoned");
         inner.refreshing = false;
+        inner.last_update = Some(Instant::now());
+
+        match fresh_nodes {
+            Ok(parsed) => inner.update_nodes_and_next(parsed),
+            Err(e) => Err(e)
+        }
     }
 }
 
@@ -228,11 +286,16 @@ mod tests {
         assert_eq!(refreshing, inner.refreshing);
     }
 
+    fn assert_should_refresh_equal(nodes: &SniffedNodes<()>, should_refresh: bool) {
+        let inner = nodes.inner.read().expect("lock poisoned");
+        assert_eq!(should_refresh, inner.should_refresh());
+    }
+
     #[test]
     fn should_refresh_is_true_initially() {
         let nodes = sender();
         
-        assert!(nodes.should_refresh());
+        assert_should_refresh_equal(&nodes, true);
     }
 
     #[test]
@@ -243,7 +306,7 @@ mod tests {
             inner.refreshing = true;
         }
 
-        assert!(!nodes.should_refresh());
+        assert_should_refresh_equal(&nodes, false);
     }
 
     #[test]
