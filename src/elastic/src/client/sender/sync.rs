@@ -3,7 +3,7 @@ use reqwest::{Client as SyncHttpClient, ClientBuilder as SyncHttpClientBuilder, 
 
 use error::{self, Result};
 use private;
-use client::sender::{build_method, build_url, RequestParams, PreRequestParams, NextParams, Sender, SendableRequest, NodeAddressesBuilder, NodeAddresses, NodeAddressesInner};
+use client::sender::{build_method, build_url, NodeAddress, RequestParams, PreRequestParams, NextParams, Sender, SendableRequest, NodeAddressesBuilder, NodeAddresses, NodeAddressesInner};
 use client::requests::{HttpRequest, SyncBody};
 use client::responses::{sync_response, SyncResponseBuilder};
 use client::Client;
@@ -204,7 +204,7 @@ impl SyncClientBuilder {
     Specify a static node nodes to send requests to.
     */
     pub fn static_node<S>(self, node: S) -> Self
-        where S: Into<Arc<str>>,
+        where S: Into<NodeAddress>,
     {
         self.static_nodes(vec![node])
     }
@@ -214,7 +214,7 @@ impl SyncClientBuilder {
     */
     pub fn static_nodes<I, S>(mut self, nodes: I) -> Self
         where I: IntoIterator<Item = S>,
-              S: Into<Arc<str>>,
+              S: Into<NodeAddress>,
     {
         let nodes = nodes.into_iter().map(|address| address.into()).collect();
         self.nodes = NodeAddressesBuilder::Static(nodes);

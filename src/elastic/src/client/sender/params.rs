@@ -6,6 +6,7 @@ use reqwest::header::{Header, Headers, ContentType};
 use url::form_urlencoded::Serializer;
 
 use client::requests::HttpMethod;
+use client::sender::NodeAddress;
 
 pub const DEFAULT_NODE_ADDRESS: &'static str = "http://localhost:9200";
 
@@ -65,7 +66,7 @@ let params = RequestParams::default()
 */
 #[derive(Clone)]
 pub struct RequestParams {
-    base_url: Arc<str>,
+    base_url: NodeAddress,
     inner: PreRequestParams,
 }
 
@@ -134,7 +135,7 @@ impl Default for PreRequestParams {
 
 impl RequestParams {
     /** Create a container for request parameters from a base url and pre request parameters. */
-    pub fn from_parts<T: Into<Arc<str>>>(base_url: T, inner: PreRequestParams) -> Self {
+    pub fn from_parts<T: Into<NodeAddress>>(base_url: T, inner: PreRequestParams) -> Self {
         RequestParams {
             base_url: base_url.into(),
             inner: inner,
@@ -147,12 +148,12 @@ impl RequestParams {
     This method takes a fully-qualified url for the Elasticsearch node.
     It will also set the `Content-Type` header to `application/json`.
     */
-    pub fn new<T: Into<Arc<str>>>(base_url: T) -> Self {
+    pub fn new<T: Into<NodeAddress>>(base_url: T) -> Self {
         RequestParams::from_parts(base_url.into(), PreRequestParams::new())
     }
 
     /** Set the base url for the Elasticsearch node. */
-    pub fn base_url<T: Into<Arc<str>>>(mut self, base_url: T) -> Self {
+    pub fn base_url<T: Into<NodeAddress>>(mut self, base_url: T) -> Self {
         self.base_url = base_url.into();
         self
     }
@@ -178,7 +179,7 @@ impl RequestParams {
 
     /** Get the base url. */
     pub fn get_base_url(&self) -> &str {
-        &self.base_url
+        self.base_url.as_ref()
     }
 
     /** Create a new `Headers` structure, and thread it through the configuration functions. */
@@ -213,7 +214,7 @@ impl RequestParams {
     }
 
     /** Split the request parameters into its parts. */
-    pub fn split(self) -> (Arc<str>, PreRequestParams) {
+    pub fn split(self) -> (NodeAddress, PreRequestParams) {
         (self.base_url, self.inner)
     }
 }
@@ -227,9 +228,9 @@ impl Default for RequestParams {
 pub(crate) fn build_url<'a>(req_url: &str, params: &RequestParams) -> String {
     let (qry_len, qry) = params.get_url_qry();
 
-    let mut url = String::with_capacity(params.base_url.len() + req_url.len() + qry_len);
+    let mut url = String::with_capacity(params.base_url.as_ref().len() + req_url.len() + qry_len);
 
-    url.push_str(&params.base_url);
+    url.push_str(params.base_url.as_ref());
     url.push_str(&req_url);
 
     if let Some(qry) = qry {

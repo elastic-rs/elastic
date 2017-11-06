@@ -7,7 +7,7 @@ use std::time::{Duration, Instant};
 use std::sync::{Arc, RwLock};
 use futures::{Future, IntoFuture};
 use client::sender::static_nodes::StaticNodes;
-use client::sender::{Sender, SyncSender, AsyncSender, SendableRequest, RequestParams, NextParams};
+use client::sender::{NodeAddress, Sender, SyncSender, AsyncSender, SendableRequest, PreRequestParams, RequestParams, NextParams};
 use client::requests::{NodesInfoRequest, DefaultBody};
 use error::{self, Error};
 use private;
@@ -25,29 +25,13 @@ pub struct SniffedNodes<TSender> {
     inner: Arc<RwLock<SniffedNodesInner>>,
 }
 
-// Lock<Updating>
-
-// Request should only check 
-
-// LastUpdatedTime
-// CurrentTime
-// If !Updating && CurrentTime > LastUpdatedTime + Wait
-//   Set LastUpdatedTime = CurrentTime
-//   Set Updating
-
-// Get CurrentTime
-// Get Read Lock
-//   Check Refreshing + LastUpdatedTime + Wait
-//   No Refresh: return next
-//   Refresh: drop read lock
-// Get Write Lock
-//   Check Refreshing
-//   No Refresh: return next
-//   Refresh:
-//     Set Refreshing = True
-//     Execute Refresh
-//     Set Refreshing = False
-//     return next
+/**
+A builder for a cluster sniffer.
+*/
+pub struct SniffedNodesBuilder {
+    base_url: NodeAddress,
+    wait: Option<Duration>,
+}
 
 struct SniffedNodesInner {
     last_update: Option<Instant>,
@@ -56,57 +40,7 @@ struct SniffedNodesInner {
     nodes: StaticNodes,
 }
 
-impl SniffedNodesInner {
-    fn should_refresh(&self) -> bool {
-        // If there isn't a value for the last update then assume we need to refresh.
-        let last_update_is_stale = self.last_update.as_ref().map(|last_update| last_update.elapsed() > self.wait);
-
-        !self.refreshing && last_update_is_stale.unwrap_or(true)
-    }
-
-    fn update_nodes_and_next(&mut self, parsed: NodesInfoResponse) -> Result<RequestParams, Error> {
-        self.nodes.nodes = parsed
-            .into_iter()
-            .filter_map(|node| node.http
-                .and_then(|http| http.publish_address)
-                .map(|publish_address| Arc::<str>::from(publish_address)))
-            .collect();
-
-        self.nodes.next().map_err(error::request)
-    }
-}
-
 impl<TSender> SniffedNodes<TSender> {
-    /**
-    Create a cluster sniffer with the given base parameters.
-
-    The default parameters are returned in cases where there are no addresses available.
-    These aren't necessarily the same as the parameters the `Sender` uses internally to sniff the cluster state.
-    */
-    pub fn new(sender: TSender, refresh_params: RequestParams) -> Self {
-        let nodes = {
-            let (base_url, builder) = refresh_params.clone().split();
-            StaticNodes::round_robin(vec![base_url], builder)
-        };
-
-        // Specify a `filter_path` when updating node stats because deserialisation occurs on tokio thread
-        // This should change in the future if:
-        // - we can provide a cpu pool to deserialise on
-        // - we want more metadata about the nodes
-        // The publish_address may not correspond to the address the node is actually available on
-        // In this case, we might want to offer some kind of filter function that consumers can use to transform nodes
-        SniffedNodes {
-            sender: sender,
-            refresh_params: refresh_params.url_param("filter_path", "nodes.*.http.publish_address"),
-            inner: Arc::new(RwLock::new(SniffedNodesInner {
-                last_update: None,
-                wait: Duration::from_secs(30),
-                refreshing: false,
-                nodes: nodes
-            })),
-        }
-    }
-
     /**
     Get the next async address or refresh.
 
@@ -149,6 +83,67 @@ impl<TSender> SniffedNodes<TSender> {
 
         let fresh_nodes = refresh(req);
         Self::finish_refresh(&self.inner, fresh_nodes)
+    }
+}
+
+impl SniffedNodesBuilder {
+    /**
+    Create a new `SniffedNodesBuilder` with the given base address.
+    */
+    pub fn new<I>(address: I) -> Self
+        where I: Into<NodeAddress>,
+    {
+        SniffedNodesBuilder {
+            base_url: address.into(),
+            wait: None,
+        }
+    }
+
+    /**
+    Specify a minimum duration to wait before refreshing the set of node addresses.
+    */
+    pub fn wait(mut self, wait: Duration) -> Self {
+        self.wait = Some(wait);
+        self
+    }
+
+    /**
+    Build a cluster sniffer using the given sender and parameters.
+
+    A `filter_path` url parameter will be added to the `refresh_parameters`.
+    */
+    pub(crate) fn build<TSender>(self, refresh_params: PreRequestParams, sender: TSender) -> SniffedNodes<TSender> {
+        let nodes = StaticNodes::round_robin(vec![self.base_url.clone()], refresh_params.clone());
+        let wait = self.wait.unwrap_or_else(|| Duration::from_secs(90));
+
+        // Specify a `filter_path` when updating node stats because deserialisation occurs on tokio thread
+        // This should change in the future if:
+        // - we can provide a cpu pool to deserialise on
+        // - we want more metadata about the nodes
+        // The publish_address may not correspond to the address the node is actually available on
+        // In this case, we might want to offer some kind of filter function that consumers can use to transform nodes
+        let refresh_params = RequestParams::from_parts(self.base_url, refresh_params)
+            .url_param("filter_path", "nodes.*.http.publish_address");
+
+        SniffedNodes {
+            sender: sender,
+            refresh_params: refresh_params,
+            inner: Arc::new(RwLock::new(SniffedNodesInner {
+                last_update: None,
+                wait: wait,
+                refreshing: false,
+                nodes: nodes
+            })),
+        }
+    }
+}
+
+impl<T> From<T> for SniffedNodesBuilder
+where
+    T: Into<NodeAddress>,
+{
+    fn from(address: T) -> Self {
+        SniffedNodesBuilder::new(address)
     }
 }
 
@@ -222,6 +217,26 @@ impl<TSender> SniffedNodes<TSender> {
     }
 }
 
+impl SniffedNodesInner {
+    fn should_refresh(&self) -> bool {
+        // If there isn't a value for the last update then assume we need to refresh.
+        let last_update_is_stale = self.last_update.as_ref().map(|last_update| last_update.elapsed() > self.wait);
+
+        !self.refreshing && last_update_is_stale.unwrap_or(true)
+    }
+
+    fn update_nodes_and_next(&mut self, parsed: NodesInfoResponse) -> Result<RequestParams, Error> {
+        self.nodes.nodes = parsed
+            .into_iter()
+            .filter_map(|node| node.http
+                .and_then(|http| http.publish_address)
+                .map(|publish_address| publish_address.into()))
+            .collect();
+
+        self.nodes.next().map_err(error::request)
+    }
+}
+
 impl<TSender> private::Sealed for SniffedNodes<TSender> { }
 
 impl NextParams for SniffedNodes<AsyncSender> {
@@ -246,7 +261,7 @@ mod tests {
     use super::*;
 
     fn sender() -> SniffedNodes<()> {
-        SniffedNodes::new((), RequestParams::default().base_url(initial_address()))
+        SniffedNodesBuilder::new(initial_address()).build(PreRequestParams::default(), ())
     }
 
     fn expected_nodes() -> NodesInfoResponse {

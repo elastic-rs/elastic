@@ -9,7 +9,8 @@ use reqwest::unstable::async::{Client as AsyncHttpClient, ClientBuilder as Async
 use error::{self, Error};
 use private;
 use client::requests::{AsyncBody, HttpRequest};
-use client::sender::{build_method, build_url, RequestParams, PreRequestParams, NextParams, Sender, SendableRequest, NodeAddressesBuilder, NodeAddresses, NodeAddressesInner};
+use client::sender::{build_method, build_url, NodeAddress, RequestParams, PreRequestParams, NextParams, Sender, SendableRequest, NodeAddressesBuilder, NodeAddresses, NodeAddressesInner};
+use client::sender::sniffed_nodes::SniffedNodesBuilder;
 use client::responses::{async_response, AsyncResponseBuilder};
 use client::Client;
 
@@ -289,7 +290,7 @@ impl AsyncClientBuilder {
     Specify a static node nodes to send requests to.
     */
     pub fn static_node<S>(self, node: S) -> Self
-        where S: Into<Arc<str>>,
+        where S: Into<NodeAddress>,
     {
         self.static_nodes(vec![node])
     }
@@ -299,7 +300,7 @@ impl AsyncClientBuilder {
     */
     pub fn static_nodes<I, S>(mut self, nodes: I) -> Self
         where I: IntoIterator<Item = S>,
-              S:Into<Arc<str>>,
+              S:Into<NodeAddress>,
     {
         let nodes = nodes.into_iter().map(|address| address.into()).collect();
         self.nodes = NodeAddressesBuilder::Static(nodes);
@@ -309,11 +310,45 @@ impl AsyncClientBuilder {
 
     /**
     Specify a node address to sniff other nodes in the cluster from.
+
+    # Examples
+
+    Use a given base url for sniffing the cluster's node addresses from:
+
+    ```
+    # use elastic::prelude::*;
+    let builder = AsyncClientBuilder::new()
+        .sniff_nodes("http://localhost:9200");
+    ```
     */
-    pub fn sniff_nodes<I>(mut self, address: I) -> Self
-        where I: Into<Arc<str>>
+    pub fn sniff_nodes<I>(mut self, builder: I) -> Self
+        where I: Into<SniffedNodesBuilder>
     {
-        self.nodes = NodeAddressesBuilder::Sniffed(address.into());
+        self.nodes = NodeAddressesBuilder::Sniffed(builder.into());
+
+        self
+    }
+
+    /**
+    Specify a node address to sniff other nodes in the cluster from.
+
+    # Examples
+
+    Use a given base url for sniffing the cluster's node addresses from:
+
+    ```
+    # use elastic::prelude::*;
+    let builder = AsyncClientBuilder::new()
+        .sniff_nodes("http://localhost:9200", |n| n
+            .wait(Duration::from_secs(90)));
+    ```
+    */
+    pub fn sniff_nodes_fluent<I, F>(mut self, address: I, builder: F) -> Self
+        where I: Into<NodeAddress>,
+              F: Fn(SniffedNodesBuilder) -> SniffedNodesBuilder
+    {
+        let address = address.into();
+        self.nodes = NodeAddressesBuilder::Sniffed(builder(address.into()));
 
         self
     }
@@ -327,7 +362,7 @@ impl AsyncClientBuilder {
     
     ```
     # use elastic::prelude::*;
-    let builder = SyncClientBuilder::new()
+    let builder = AsyncClientBuilder::new()
         .params(|p| {
             p.url_param("pretty", true)
         });
@@ -339,12 +374,12 @@ impl AsyncClientBuilder {
     # use elastic::prelude::*;
     use elastic::http::header::Authorization;
 
-    let builder = SyncClientBuilder::new()
+    let builder = AsyncClientBuilder::new()
         .params(|p| {
             p.header(Authorization("let me in".to_owned()))
         });
     ```
-    [SyncClientBuilder.base_url]: #method.base_url
+    [AsyncClientBuilder.base_url]: #method.base_url
     */
     pub fn params<F>(mut self, builder: F) -> Self
     where

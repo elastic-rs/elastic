@@ -29,7 +29,7 @@ use uuid::Uuid;
 
 use client::requests::HttpRequest;
 use self::static_nodes::StaticNodes;
-use self::sniffed_nodes::SniffedNodes;
+use self::sniffed_nodes::{SniffedNodes, SniffedNodesBuilder};
 use private;
 
 /**
@@ -110,6 +110,27 @@ pub trait NextParams: private::Sealed + Clone {
 }
 
 /**
+A single node address.
+*/
+#[derive(Clone)]
+pub struct NodeAddress(Arc<str>);
+
+impl AsRef<str> for NodeAddress {
+    fn as_ref(&self) -> &str {
+        self.0.as_ref()
+    }
+}
+
+impl<T> From<T> for NodeAddress
+where
+    T: Into<Arc<str>>
+{
+    fn from(address: T) -> Self {
+        NodeAddress(address.into())
+    }
+}
+
+/**
 A common container for a source of node addresses.
 */
 #[derive(Clone)]
@@ -118,15 +139,15 @@ pub struct NodeAddresses<TSender> {
 }
 
 impl<TSender> NodeAddresses<TSender> {
-    fn static_nodes(nodes: Vec<Arc<str>>, params: PreRequestParams) -> Self {
+    fn static_nodes(nodes: StaticNodes) -> Self {
         NodeAddresses {
-            inner: NodeAddressesInner::Static(StaticNodes::round_robin(nodes, params))
+            inner: NodeAddressesInner::Static(nodes)
         }
     }
 
-    fn sniffed_nodes(sender: TSender, params: RequestParams) -> Self {
+    fn sniffed_nodes(nodes: SniffedNodes<TSender>) -> Self {
         NodeAddresses {
-            inner: NodeAddressesInner::Sniffed(SniffedNodes::new(sender, params))
+            inner: NodeAddressesInner::Sniffed(nodes)
         }
     }
 }
@@ -140,8 +161,8 @@ enum NodeAddressesInner<TSender> {
 }
 
 enum NodeAddressesBuilder {
-    Static(Vec<Arc<str>>),
-    Sniffed(Arc<str>),
+    Static(Vec<NodeAddress>),
+    Sniffed(SniffedNodesBuilder),
 }
 
 impl Default for NodeAddressesBuilder {
@@ -154,12 +175,14 @@ impl NodeAddressesBuilder {
     fn build<TSender>(self, params: PreRequestParams, sender: TSender) -> NodeAddresses<TSender> {
         match self {
             NodeAddressesBuilder::Static(nodes) => {
-                NodeAddresses::static_nodes(nodes, params)
-            },
-            NodeAddressesBuilder::Sniffed(default_node) => {
-                let params = RequestParams::from_parts(default_node, params);
+                let nodes = StaticNodes::round_robin(nodes, params);
 
-                NodeAddresses::sniffed_nodes(sender, params)
+                NodeAddresses::static_nodes(nodes)
+            },
+            NodeAddressesBuilder::Sniffed(builder) => {
+                let nodes = builder.build(params, sender);
+
+                NodeAddresses::sniffed_nodes(nodes)
             }
         }
     }

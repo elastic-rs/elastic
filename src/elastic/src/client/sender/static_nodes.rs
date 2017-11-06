@@ -2,14 +2,14 @@
 
 use std::sync::Arc;
 use std::sync::atomic::{AtomicUsize, Ordering};
-use client::sender::{RequestParams, PreRequestParams, NextParams};
+use client::sender::{NodeAddress, RequestParams, PreRequestParams, NextParams};
 use error::{self, Error};
 use private;
 
 /** Select a base address for a given request using some strategy. */
 #[derive(Clone)]
 pub struct StaticNodes<TStrategy = RoundRobin> {
-    pub(crate) nodes: Vec<Arc<str>>,
+    pub(crate) nodes: Vec<NodeAddress>,
     strategy: TStrategy,
     params: PreRequestParams,
 }
@@ -35,7 +35,7 @@ impl StaticNodes<RoundRobin> {
     pub fn round_robin<I, S>(nodes: I, params: PreRequestParams) -> Self
     where
         I: IntoIterator<Item = S>,
-        S: Into<Arc<str>>,
+        S: Into<NodeAddress>,
     {
         let nodes: Vec<_> = nodes.into_iter().map(Into::into).collect();
 
@@ -52,7 +52,7 @@ impl StaticNodes<RoundRobin> {
 /** The strategy selects an address from a given collection. */
 pub trait Strategy: Send + Sync {
     /** Try get the next address. */
-    fn try_next(&self, nodes: &[Arc<str>]) -> Result<Arc<str>, StrategyError>;
+    fn try_next(&self, nodes: &[NodeAddress]) -> Result<NodeAddress, StrategyError>;
 }
 
 /** 
@@ -89,7 +89,7 @@ impl Default for RoundRobin {
 }
 
 impl Strategy for RoundRobin {
-    fn try_next(&self, nodes: &[Arc<str>]) -> Result<Arc<str>, StrategyError> {
+    fn try_next(&self, nodes: &[NodeAddress]) -> Result<NodeAddress, StrategyError> {
         if nodes.len() == 0 {
             Err(StrategyError::Empty)
         } else {
