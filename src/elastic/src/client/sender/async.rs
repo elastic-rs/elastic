@@ -334,12 +334,13 @@ impl AsyncClientBuilder {
 
     # Examples
 
-    Use a given base url for sniffing the cluster's node addresses from:
+    Use a given base url for sniffing the cluster's node addresses from and specify a minimum duration to wait before refreshing:
 
     ```
+    # use std::time::Duration;
     # use elastic::prelude::*;
     let builder = AsyncClientBuilder::new()
-        .sniff_nodes("http://localhost:9200", |n| n
+        .sniff_nodes_fluent("http://localhost:9200", |n| n
             .wait(Duration::from_secs(90)));
     ```
     */
