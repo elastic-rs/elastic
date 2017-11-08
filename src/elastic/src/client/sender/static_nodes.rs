@@ -9,7 +9,7 @@ use private;
 /** Select a base address for a given request using some strategy. */
 #[derive(Clone)]
 pub struct StaticNodes<TStrategy = RoundRobin> {
-    pub(crate) nodes: Vec<NodeAddress>,
+    nodes: Vec<NodeAddress>,
     strategy: TStrategy,
     params: PreRequestParams,
 }
@@ -29,6 +29,23 @@ where
 }
 
 impl<TStrategy> private::Sealed for StaticNodes<TStrategy> { }
+
+impl<TStrategy> StaticNodes<TStrategy> {
+    pub(crate) fn set(&mut self, nodes: Vec<NodeAddress>) -> Result<(), Error> {
+        if nodes.len() == 0 {
+            Err(error::request(error::message("the number of node addresses must be greater than 0")))?
+        }
+
+        self.nodes = nodes;
+
+        Ok(())
+    }
+
+    #[cfg(test)]
+    pub(crate) fn get(&self) -> &[NodeAddress] {
+        &self.nodes
+    }
+}
 
 impl StaticNodes<RoundRobin> {
     /** Use a round-robin strategy for balancing traffic over the given set of nodes. */

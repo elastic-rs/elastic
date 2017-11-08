@@ -32,5 +32,5 @@ elif [ "$KIND" == "bench" ]; then
     cargo build --all
 elif [ "$KIND" == "integration" ]; then 
     cd tests/run
-    cargo run
+    cargo run -- default sniff_node
 fi

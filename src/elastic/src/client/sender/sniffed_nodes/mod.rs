@@ -1,5 +1,28 @@
 /*! Load balanced nodes sniffed regularly from an Elasticsearch cluster. */
 
+/*
+This implementation currently has a few limitations that aren't great long term:
+
+- Requests are blocked by refreshes when they're deemed necessary
+- If refreshing fails for any reason then the entire request fails
+
+We could potentially work around these limitations this way:
+
+Asynchronously:
+
+- Instead of returning a future to refresh, store the future on the sniffer
+- When fetching refresh params, poll this future if it's `Some` (or check if it should be if it's `None`)
+  - If the future returns `Ready(params)` return those and set the inner future to `None`
+  - If the future returns `NotReady` return the default params
+
+Synchronously:
+
+- Offload the request to update parameters to a thread pool
+
+This means our `SniffedNodes` structure looks completely different in synchronous and asynchronous scenarios.
+It's effectively a rewrite.
+*/
+
 mod nodes_info;
 use self::nodes_info::*;
 
@@ -18,6 +41,9 @@ Periodically sniff nodes in a cluster.
 
 Requests are load balanced between the sniffed nodes using a round-robin strategy.
 The base url for the node is obtained by the `http.publish_address` field on a [node info request].
+
+Nodes are refreshed on the next request after the specified timeout.
+If updating the nodes fails for some reason then the request itself will also fail.
 */
 #[derive(Clone)]
 pub struct SniffedNodes<TSender> {
@@ -114,8 +140,8 @@ impl SniffedNodesBuilder {
 
     A `filter_path` url parameter will be added to the `refresh_parameters`.
     */
-    pub(crate) fn build<TSender>(self, refresh_params: PreRequestParams, sender: TSender) -> SniffedNodes<TSender> {
-        let nodes = StaticNodes::round_robin(vec![self.base_url.clone()], refresh_params.clone());
+    pub(crate) fn build<TSender>(self, base_params: PreRequestParams, sender: TSender) -> SniffedNodes<TSender> {
+        let nodes = StaticNodes::round_robin(vec![self.base_url.clone()], base_params.clone());
         let wait = self.wait.unwrap_or_else(|| Duration::from_secs(90));
 
         // Specify a `filter_path` when updating node stats because deserialisation occurs on tokio thread
@@ -124,7 +150,7 @@ impl SniffedNodesBuilder {
         // - we want more metadata about the nodes
         // The publish_address may not correspond to the address the node is actually available on
         // In this case, we might want to offer some kind of filter function that consumers can use to transform nodes
-        let refresh_params = RequestParams::from_parts(self.base_url, refresh_params)
+        let refresh_params = RequestParams::from_parts(self.base_url, base_params)
             .url_param("filter_path", "nodes.*.http.publish_address");
 
         SniffedNodes {
@@ -244,12 +270,7 @@ impl SniffedNodesInner {
                 }))
             .collect();
 
-        // If we end up with 0 nodes then ignore this update and assume they'll get fixed later
-        if nodes.len() == 0 {
-            Err(error::request(error::message("unexpectedly received 0 node addresses while refreshing")))?
-        }
-
-        self.nodes.nodes = nodes;
+        self.nodes.set(nodes)?;
         self.nodes.next().map_err(error::request)
     }
 }
@@ -321,7 +342,7 @@ mod tests {
 
     fn assert_node_addresses_equal(nodes: &SniffedNodes<()>, expected_addresses: Vec<&'static str>) {
         let inner = nodes.inner.read().expect("lock poisoned");
-        let actual: Vec<&str> = inner.nodes.nodes.iter().map(|node| node.as_ref()).collect();
+        let actual: Vec<&str> = inner.nodes.get().iter().map(|node| node.as_ref()).collect();
 
         assert_eq!(expected_addresses, actual);
     }
@@ -366,9 +387,7 @@ mod tests {
         })
         .wait();
 
-        res.unwrap();
-
-        //assert!(res.is_ok());
+        assert!(res.is_ok());
 
         assert_node_addresses_equal(&nodes, expected_addresses());
         assert_refreshing_equal(&nodes, false);
