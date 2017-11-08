@@ -48,7 +48,8 @@ impl DateFormat for EpochMillis {
     }
 
     fn parse(date: &str) -> Result<DateValue, ParseError> {
-        let millis = date.parse::<i64>().map_err(|e| e.description().to_string())?;
+        let millis = date.parse::<i64>()
+            .map_err(|e| e.description().to_string())?;
 
         let (s, m) = {
             // For positive timestamps:

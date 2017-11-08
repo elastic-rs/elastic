@@ -1,12 +1,12 @@
 #![feature(plugin, test)]
 #![plugin(json_str)]
 
-extern crate serde;
-extern crate serde_json;
-pub extern crate chrono;
 extern crate geo as georust;
 extern crate geojson;
+extern crate serde;
+extern crate serde_json;
 extern crate test;
+pub extern crate chrono;
 
 extern crate elastic_types;
 #[macro_use]
@@ -60,26 +60,32 @@ pub mod string_fixtures {
         fn fields() -> Option<BTreeMap<&'static str, StringField>> {
             let mut fields = BTreeMap::new();
 
-            fields.insert("raw",
-                          StringField::Keyword(KeywordFieldMapping {
-                                                   analyzer: Some("my_analyzer"),
-                                                   ..Default::default()
-                                               }));
+            fields.insert(
+                "raw",
+                StringField::Keyword(KeywordFieldMapping {
+                    analyzer: Some("my_analyzer"),
+                    ..Default::default()
+                }),
+            );
 
-            fields.insert("count",
-                          StringField::TokenCount(ElasticTokenCountFieldMapping::default()));
+            fields.insert(
+                "count",
+                StringField::TokenCount(ElasticTokenCountFieldMapping::default()),
+            );
 
-            fields.insert("comp",
-                          StringField::Completion(ElasticCompletionFieldMapping::default()));
+            fields.insert(
+                "comp",
+                StringField::Completion(ElasticCompletionFieldMapping::default()),
+            );
 
             Some(fields)
         }
 
         fn fielddata_frequency_filter() -> Option<FieldDataFrequencyFilter> {
             Some(FieldDataFrequencyFilter {
-                     min: Some(0.0),
-                     ..Default::default()
-                 })
+                min: Some(0.0),
+                ..Default::default()
+            })
         }
 
         fn analyzer() -> Option<&'static str> {
@@ -149,17 +155,23 @@ pub mod string_fixtures {
         fn fields() -> Option<BTreeMap<&'static str, StringField>> {
             let mut fields = BTreeMap::new();
 
-            fields.insert("text",
-                          StringField::Text(TextFieldMapping {
-                                                analyzer: Some("my_analyzer"),
-                                                ..Default::default()
-                                            }));
+            fields.insert(
+                "text",
+                StringField::Text(TextFieldMapping {
+                    analyzer: Some("my_analyzer"),
+                    ..Default::default()
+                }),
+            );
 
-            fields.insert("count",
-                          StringField::TokenCount(ElasticTokenCountFieldMapping::default()));
+            fields.insert(
+                "count",
+                StringField::TokenCount(ElasticTokenCountFieldMapping::default()),
+            );
 
-            fields.insert("comp",
-                          StringField::Completion(ElasticCompletionFieldMapping::default()));
+            fields.insert(
+                "comp",
+                StringField::Completion(ElasticCompletionFieldMapping::default()),
+            );
 
             Some(fields)
         }

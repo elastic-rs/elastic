@@ -1,12 +1,12 @@
 //! Elasticsearch Reqwest Client Samples
 //!
 //! This sample assumes you have a node running on `localhost`.
-//! 
+//!
 //! This sample demonstrates a request with a large body.
 
 extern crate elastic_reqwest;
 
-use elastic_reqwest::{SyncElasticClient, SyncFromResponse, Error};
+use elastic_reqwest::{Error, SyncElasticClient, SyncFromResponse};
 use elastic_reqwest::req::BulkRequest;
 use elastic_reqwest::res::{parse, BulkResponse};
 
@@ -14,7 +14,10 @@ use elastic_reqwest::res::{parse, BulkResponse};
 fn get_req() -> String {
     let mut bulk = String::new();
     for i in 1..1000 {
-        let header = format!("{{ \"index\" : {{ \"_index\" : \"test\", \"_type\" : \"ty\", \"_id\" : \"{}\" }} }}", i);
+        let header = format!(
+            "{{ \"index\" : {{ \"_index\" : \"test\", \"_type\" : \"ty\", \"_id\" : \"{}\" }} }}",
+            i
+        );
         let body = format!("{{ \"title\" : \"string value {}\" }}", i);
 
         bulk.push_str(&header);

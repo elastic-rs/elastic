@@ -345,11 +345,11 @@ impl AsyncClientBuilder {
 
     [AsyncClient]: type.AsyncClient.html
     */
-    pub fn build<TIntoHttp>(self, client: TIntoHttp) -> Result<AsyncClient, Error> 
-        where TIntoHttp: IntoAsyncHttpClient
+    pub fn build<TIntoHttp>(self, client: TIntoHttp) -> Result<AsyncClient, Error>
+    where
+        TIntoHttp: IntoAsyncHttpClient,
     {
-        let http = client.into_async_http_client()
-            .map_err(error::build)?;
+        let http = client.into_async_http_client().map_err(error::build)?;
 
         Ok(AsyncClient {
             sender: AsyncSender {

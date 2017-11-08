@@ -97,7 +97,7 @@ quick_error! {
         }
         /**
         A currently unrecognised error occurred.
-        
+
         **WARNING:** Don't rely on this variant to capture an error.
         As new variants are introduced they will no longer be matched by `ApiError::Other`.
         For this reason, this variant will disappear in the future.

@@ -8,7 +8,9 @@ pub struct TermFilter {
 
 impl TermFilter {
     pub fn new(f: String, v: Values) -> TermFilter {
-        TermFilter { term: FieldAndValue { field: f, value: v } }
+        TermFilter {
+            term: FieldAndValue { field: f, value: v },
+        }
     }
 }
 
@@ -30,6 +32,5 @@ mod tests {
 
         let j = r#"{ "term":  { "status": "published" }}"#;
         let _s: TermFilter = serde_json::from_str(j).unwrap();
-
     }
 }

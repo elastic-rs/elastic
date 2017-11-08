@@ -1,18 +1,17 @@
 use serde;
 use serde::de::Visitor;
-use serde::ser::{Serialize, Serializer, SerializeMap};
+use serde::ser::{Serialize, SerializeMap, Serializer};
 use std::fmt;
 use super::super::Values;
 
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialOrd, PartialEq, Ord, Eq)]
 pub enum EsDateFormat {
-    epoch_millis, //epoch in ms
-    epoch_second, //epoch in s
-    basic_date, //yyyyMMdd
+    epoch_millis,    //epoch in ms
+    epoch_second,    //epoch in s
+    basic_date,      //yyyyMMdd
     basic_date_time, //yyyyMMdd'T'HHmmss.SSSZ
-    #[doc(hidden)]
-    __Nonexhaustive,
+    #[doc(hidden)] __Nonexhaustive,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, Ord, PartialOrd, Eq, PartialEq)]

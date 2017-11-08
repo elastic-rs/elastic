@@ -2,7 +2,7 @@ extern crate elastic_responses;
 extern crate serde_json;
 
 use elastic_responses::*;
-use ::load_file;
+use load_file;
 
 #[test]
 fn success_parse_ping_response() {

@@ -24,8 +24,8 @@ pub struct Endpoint {
 
 impl Endpoint {
     pub fn has_body(&self) -> bool {
-        self.body.is_some() ||
-            self.methods
+        self.body.is_some()
+            || self.methods
                 .iter()
                 .any(|m| m == &HttpMethod::Post || m == &HttpMethod::Put)
     }

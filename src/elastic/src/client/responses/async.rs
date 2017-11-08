@@ -126,9 +126,7 @@ impl AsyncResponseBuilder {
         let body_future = body.concat2().map_err(move |e| error::response(status, e));
 
         if let Some(de_pool) = self.de_pool {
-            IntoResponse::new(
-                body_future.and_then(move |body| de_pool.spawn_fn(move || de_fn(body))),
-            )
+            IntoResponse::new(body_future.and_then(move |body| de_pool.spawn_fn(move || de_fn(body))))
         } else {
             IntoResponse::new(body_future.and_then(de_fn))
         }

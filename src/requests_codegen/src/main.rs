@@ -114,7 +114,9 @@ where
 fn strip_methods(endpoint: (String, Endpoint)) -> (String, Endpoint) {
     let (name, mut endpoint) = endpoint;
 
-    let preferred_method = endpoint.preferred_method().expect("there should always be at least 1 method");
+    let preferred_method = endpoint
+        .preferred_method()
+        .expect("there should always be at least 1 method");
 
     endpoint.methods = vec![preferred_method];
 

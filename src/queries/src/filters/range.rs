@@ -1,6 +1,6 @@
 use serde;
 use serde::de::Visitor;
-use serde::ser::{Serialize, Serializer, SerializeMap};
+use serde::ser::{Serialize, SerializeMap, Serializer};
 use std::fmt;
 use super::super::Values;
 use super::common::EsDateFormat;

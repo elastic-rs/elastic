@@ -12,7 +12,9 @@ pub fn tests() -> Vec<Test> {
         Box::new(|client| test(client, simple_index_get::SimpleIndexGet)),
         Box::new(|client| test(client, update_with_doc::UpdateWithDoc)),
         Box::new(|client| test(client, update_with_script::UpdateWithScript)),
-        Box::new(|client| test(client, update_with_inline_script::UpdateWithInlineScript)),
+        Box::new(|client| {
+            test(client, update_with_inline_script::UpdateWithInlineScript)
+        }),
         Box::new(|client| test(client, update_no_index::UpdateNoIndex)),
         Box::new(|client| test(client, delete::Delete)),
     ]

@@ -21,21 +21,14 @@ impl IntegrationTest for NoIndex {
 
     // Ensure the index doesn't exist
     fn prepare(&self, client: AsyncClient) -> Box<Future<Item = (), Error = Error>> {
-        let delete_res = client
-            .index_delete(index(INDEX))
-            .send()
-            .map(|_| ());
+        let delete_res = client.index_delete(index(INDEX)).send().map(|_| ());
 
         Box::new(delete_res)
     }
 
     // Execute a search request against that index
     fn request(&self, client: AsyncClient) -> Box<Future<Item = Self::Response, Error = Error>> {
-        let res = client
-            .search()
-            .index(INDEX)
-            .ty(Some("no_index_ty"))
-            .send();
+        let res = client.search().index(INDEX).ty(Some("no_index_ty")).send();
 
         Box::new(res)
     }

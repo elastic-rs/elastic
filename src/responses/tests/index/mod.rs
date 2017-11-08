@@ -3,7 +3,7 @@ extern crate serde_json;
 
 use elastic_responses::*;
 use elastic_responses::error::*;
-use ::load_file;
+use load_file;
 
 #[test]
 fn success_parse_response() {
@@ -23,9 +23,8 @@ fn error_parse_mapping() {
     let deserialized = parse::<IndexResponse>().from_reader(400, f).unwrap_err();
 
     let valid = match deserialized {
-        ResponseError::Api(ApiError::MapperParsing { ref reason })
-        if reason == "failed to parse, document is empty" => true,
-        _ => false
+        ResponseError::Api(ApiError::MapperParsing { ref reason }) if reason == "failed to parse, document is empty" => true,
+        _ => false,
     };
 
     assert!(valid);
@@ -37,9 +36,8 @@ fn error_parse_index_already_exists() {
     let deserialized = parse::<IndexResponse>().from_reader(400, f).unwrap_err();
 
     let valid = match deserialized {
-        ResponseError::Api(ApiError::IndexAlreadyExists { ref index })
-        if index == "carrots" => true,
-        _ => false
+        ResponseError::Api(ApiError::IndexAlreadyExists { ref index }) if index == "carrots" => true,
+        _ => false,
     };
 
     assert!(valid);

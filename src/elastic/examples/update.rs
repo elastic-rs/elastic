@@ -5,14 +5,14 @@
 //! This sample demonstrates how to create an index, add type mapping, and index a document.
 //! Also see the `typed` sample for a more complete implementation.
 
-extern crate env_logger;
 #[macro_use]
 extern crate elastic_derive;
+extern crate env_logger;
+extern crate serde;
 #[macro_use]
 extern crate serde_derive;
 #[macro_use]
 extern crate serde_json;
-extern crate serde;
 
 extern crate elastic;
 
@@ -43,18 +43,21 @@ fn run() -> Result<(), Box<Error>> {
     client.index_create(sample_index()).send()?;
 
     // Add the document mapping (optional, but makes sure `timestamp` is mapped as a `date`)
-    client.document_put_mapping::<MyType>(sample_index()).send()?;
+    client
+        .document_put_mapping::<MyType>(sample_index())
+        .send()?;
 
     // Index the document
-    client.document_index(sample_index(), id(doc_id), doc)
-          .params(|p| p
-            .url_param("refresh", true))
-          .send()?;
+    client
+        .document_index(sample_index(), id(doc_id), doc)
+        .params(|p| p.url_param("refresh", true))
+        .send()?;
 
     // Update the document using a script
-    let update = client.document_update::<MyType>(sample_index(), id(doc_id))
-          .script(r#"ctx._source.title = "A new title""#)
-          .send()?;
+    let update = client
+        .document_update::<MyType>(sample_index(), id(doc_id))
+        .script(r#"ctx._source.title = "A new title""#)
+        .send()?;
 
     assert!(update.updated());
 

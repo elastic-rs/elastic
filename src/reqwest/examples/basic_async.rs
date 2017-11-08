@@ -5,16 +5,16 @@
 //! This minimal sample executes a simple search request against all indices.
 //! To make things readable, the `pretty` url param is provided.
 
+extern crate elastic_reqwest;
+extern crate futures;
 #[macro_use]
 extern crate serde_json;
 extern crate tokio_core;
-extern crate futures;
-extern crate elastic_reqwest;
 
 use serde_json::Value;
 use tokio_core::reactor::Core;
 use futures::Future;
-use elastic_reqwest::{AsyncElasticClient, AsyncFromResponse, RequestParams, Error};
+use elastic_reqwest::{AsyncElasticClient, AsyncFromResponse, Error, RequestParams};
 use elastic_reqwest::req::SearchRequest;
 use elastic_reqwest::res::{parse, SearchResponse};
 
@@ -43,11 +43,14 @@ fn run() -> Result<(), Error> {
     };
 
     // Send the request and read the response.
-    let req_fut = client.elastic_req(&params, req)
-        .and_then(|http_res| parse::<SearchResponse<Value>>().from_response(http_res))
+    let req_fut = client
+        .elastic_req(&params, req)
+        .and_then(|http_res| {
+            parse::<SearchResponse<Value>>().from_response(http_res)
+        })
         .and_then(|res| {
             println!("Got response: {:?}", res);
-            
+
             Ok(())
         });
 
