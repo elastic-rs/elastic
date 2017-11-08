@@ -154,11 +154,11 @@ macro_rules! get_url_query {
     )
 }
 
-bench![
+bench! {
     new,
     clone,
     get_headers,
     get_url_query,
     build_request_sync,
     build_request_async
-]
+}
