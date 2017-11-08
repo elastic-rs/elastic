@@ -26,6 +26,5 @@ mod tests {
     fn wildcard_filter() {
         let j = r#"{ "wildcard" : { "user" : "ki*y" } }"#;
         let _s: WildcardFilter = serde_json::from_str(j).unwrap();
-
     }
 }

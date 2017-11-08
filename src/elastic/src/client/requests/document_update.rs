@@ -7,7 +7,7 @@ Builders for [update document requests][docs-update].
 use std::marker::PhantomData;
 use futures::{Future, IntoFuture, Poll};
 use futures_cpupool::CpuPool;
-use serde_json::{self, Value, Map};
+use serde_json::{self, Map, Value};
 use serde::ser::{Serialize, Serializer};
 
 use error::{self, Error};
@@ -323,7 +323,7 @@ where
     */
     pub fn doc<TDocument>(self, doc: TDocument) -> UpdateRequestBuilder<TSender, Doc<TDocument>>
     where
-        TDocument: Serialize + DocumentType
+        TDocument: Serialize + DocumentType,
     {
         RequestBuilder::new(
             self.client,
@@ -407,7 +407,7 @@ where
      */
     pub fn script<TScript, TParams>(self, builder: TScript) -> UpdateRequestBuilder<TSender, Script<TParams>>
     where
-        TScript: Into<ScriptBuilder<TParams>>
+        TScript: Into<ScriptBuilder<TParams>>,
     {
         RequestBuilder::new(
             self.client,
@@ -503,10 +503,10 @@ where
     pub fn script_fluent<TScript, TBuilder, TParams>(self, source: TScript, builder: TBuilder) -> UpdateRequestBuilder<TSender, Script<TParams>>
     where
         TScript: ToString,
-        TBuilder: Fn(ScriptBuilder<DefaultParams>) -> ScriptBuilder<TParams>
+        TBuilder: Fn(ScriptBuilder<DefaultParams>) -> ScriptBuilder<TParams>,
     {
         let builder = builder(ScriptBuilder::new(source));
-        
+
         self.script(builder)
     }
 }
@@ -515,7 +515,8 @@ where
 # Send synchronously
 */
 impl<TBody> UpdateRequestBuilder<SyncSender, TBody>
-where TBody: Serialize,
+where
+    TBody: Serialize,
 {
     /**
     Send an `UpdateRequestBuilder` synchronously using a [`SyncClient`][SyncClient].
@@ -567,7 +568,7 @@ where TBody: Serialize,
 /**
 # Send asynchronously
 */
-impl<TBody> UpdateRequestBuilder<AsyncSender, TBody> 
+impl<TBody> UpdateRequestBuilder<AsyncSender, TBody>
 where
     TBody: Serialize + Send + 'static,
 {
@@ -667,13 +668,13 @@ pub struct Doc<TDocument> {
 impl<TDocument> Doc<TDocument> {
     fn empty() -> Self {
         Doc {
-            doc: DocInner { inner: None }
+            doc: DocInner { inner: None },
         }
     }
 
     fn value(doc: TDocument) -> Self {
         Doc {
-            doc: DocInner { inner: Some(doc) }
+            doc: DocInner { inner: Some(doc) },
         }
     }
 }
@@ -707,12 +708,9 @@ pub struct Script<TParams> {
 
 #[derive(Serialize)]
 struct ScriptInner<TParams> {
-    #[serde(rename = "inline")]
-    source: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    lang: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    params: Option<TParams>,
+    #[serde(rename = "inline")] source: String,
+    #[serde(skip_serializing_if = "Option::is_none")] lang: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")] params: Option<TParams>,
 }
 
 /** A builder for an update script that can be configured before sending. */
@@ -724,8 +722,9 @@ pub struct ScriptBuilder<TParams> {
 
 impl ScriptBuilder<DefaultParams> {
     /** Create a new script builder using the given source. */
-    pub fn new<TScript>(source: TScript) -> Self 
-        where TScript: ToString,
+    pub fn new<TScript>(source: TScript) -> Self
+    where
+        TScript: ToString,
     {
         ScriptBuilder {
             source: source.to_string(),
@@ -735,7 +734,7 @@ impl ScriptBuilder<DefaultParams> {
     }
 
     /** Set a script parameter. */
-    pub fn param<TKey, TValue>(mut self, key: TKey, value: TValue) -> Self 
+    pub fn param<TKey, TValue>(mut self, key: TKey, value: TValue) -> Self
     where
         TKey: ToString,
         TValue: Into<Value>,
@@ -750,8 +749,9 @@ impl ScriptBuilder<DefaultParams> {
 
 impl<TParams> ScriptBuilder<TParams> {
     /** Set the language for the update script. */
-    pub fn lang<TLang>(mut self, lang: Option<TLang>) -> Self 
-        where TLang: ToString,
+    pub fn lang<TLang>(mut self, lang: Option<TLang>) -> Self
+    where
+        TLang: ToString,
     {
         self.lang = lang.map(|lang| lang.to_string());
         self
@@ -772,7 +772,7 @@ impl<TParams> ScriptBuilder<TParams> {
                 source: self.source,
                 params: self.params,
                 lang: self.lang,
-            }
+            },
         }
     }
 }
@@ -839,9 +839,7 @@ mod tests {
             "b": 123
         });
 
-        let expected_body = json!({
-            "doc": doc
-        });
+        let expected_body = json!({ "doc": doc });
 
         let req = client
             .document_update::<Value>(index("test-idx"), id("1"))
@@ -905,10 +903,12 @@ mod tests {
 
         let req = client
             .document_update::<Value>(index("test-idx"), id("1"))
-            .script_fluent("ctx._source.a = params.str", |script| script
-                .lang(Some("painless"))
-                .param("str", "some value")
-                .param("other", "some other value"))
+            .script_fluent("ctx._source.a = params.str", |script| {
+                script
+                    .lang(Some("painless"))
+                    .param("str", "some value")
+                    .param("other", "some other value")
+            })
             .inner
             .into_sync_request()
             .unwrap();
@@ -934,18 +934,19 @@ mod tests {
         #[derive(Serialize)]
         struct MyParams {
             a: &'static str,
-            b: i32
+            b: i32,
         }
 
         let client = SyncClientBuilder::new().build().unwrap();
 
         let req = client
             .document_update::<Value>(index("test-idx"), id("1"))
-            .script_fluent("ctx._source.a = params.str", |script| script
-                .params(MyParams {
+            .script_fluent("ctx._source.a = params.str", |script| {
+                script.params(MyParams {
                     a: "some value",
-                    b: 42
-                }))
+                    b: 42,
+                })
+            })
             .inner
             .into_sync_request()
             .unwrap();

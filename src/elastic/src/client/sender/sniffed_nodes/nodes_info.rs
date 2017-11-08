@@ -1,16 +1,15 @@
 /*! Contains the `NodesInfoResponse` type for sniffing node addresses in the cluster. */
 
 use std::fmt;
-use serde::de::{Deserialize, Deserializer, Visitor, MapAccess};
-use client::responses::parse::{IsOk, HttpResponseHead, Unbuffered, MaybeOkResponse, ResponseBody, ParseResponseError};
+use serde::de::{Deserialize, Deserializer, MapAccess, Visitor};
+use client::responses::parse::{HttpResponseHead, IsOk, MaybeOkResponse, ParseResponseError, ResponseBody, Unbuffered};
 
 use std::iter::IntoIterator;
 use std::vec::IntoIter;
 
 #[derive(Debug, PartialEq, Deserialize)]
 pub struct NodesInfoResponse {
-    #[serde(deserialize_with = "deserialize_nodes")]
-    pub nodes: Vec<SniffedNode>,
+    #[serde(deserialize_with = "deserialize_nodes")] pub nodes: Vec<SniffedNode>,
 }
 
 #[derive(Debug, PartialEq, Deserialize)]
@@ -42,8 +41,8 @@ impl IsOk for NodesInfoResponse {
 }
 
 fn deserialize_nodes<'de, D>(deserializer: D) -> Result<Vec<SniffedNode>, D::Error>
-    where
-        D: Deserializer<'de>
+where
+    D: Deserializer<'de>,
 {
     #[derive(Debug, PartialEq)]
     struct SniffedNodeSet(Vec<SniffedNode>);
@@ -51,7 +50,7 @@ fn deserialize_nodes<'de, D>(deserializer: D) -> Result<Vec<SniffedNode>, D::Err
     impl<'de> Deserialize<'de> for SniffedNodeSet {
         fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
         where
-            D: Deserializer<'de>
+            D: Deserializer<'de>,
         {
             #[derive(Default)]
             struct SniffedNodeSetVisitor;
@@ -64,7 +63,8 @@ fn deserialize_nodes<'de, D>(deserializer: D) -> Result<Vec<SniffedNode>, D::Err
                 }
 
                 fn visit_map<M>(self, mut access: M) -> Result<Self::Value, M::Error>
-                    where M: MapAccess<'de>
+                where
+                    M: MapAccess<'de>,
                 {
                     let mut nodes = Vec::with_capacity(access.size_hint().unwrap_or(0));
 
@@ -75,7 +75,7 @@ fn deserialize_nodes<'de, D>(deserializer: D) -> Result<Vec<SniffedNode>, D::Err
                     Ok(SniffedNodeSet(nodes))
                 }
             }
-            
+
             deserializer.deserialize_map(SniffedNodeSetVisitor::default())
         }
     }
@@ -114,12 +114,12 @@ mod tests {
                         publish_address: Some("1.1.1.1:9200".to_owned()),
                     }),
                 },
-                 SniffedNode {
+                SniffedNode {
                     http: Some(SniffedNodeHttp {
                         publish_address: Some("1.1.1.2:9200".to_owned()),
                     }),
-                }
-            ]
+                },
+            ],
         };
 
         let actual: NodesInfoResponse = serde_json::from_str(&nodes).unwrap();
@@ -133,9 +133,7 @@ mod tests {
             "nodes": { }
         }).to_string();
 
-        let expected = NodesInfoResponse {
-            nodes: vec![]
-        };
+        let expected = NodesInfoResponse { nodes: vec![] };
 
         let actual: NodesInfoResponse = serde_json::from_str(&nodes).unwrap();
 

@@ -3,7 +3,7 @@ use reqwest::{Client as SyncHttpClient, ClientBuilder as SyncHttpClientBuilder, 
 
 use error::{self, Result};
 use private;
-use client::sender::{build_method, build_url, NodeAddress, RequestParams, PreRequestParams, NextParams, Sender, SendableRequest, NodeAddressesBuilder, NodeAddresses, NodeAddressesInner};
+use client::sender::{build_method, build_url, NextParams, NodeAddress, NodeAddresses, NodeAddressesBuilder, NodeAddressesInner, PreRequestParams, RequestParams, SendableRequest, Sender};
 use client::requests::{HttpRequest, SyncBody};
 use client::responses::{sync_response, SyncResponseBuilder};
 use client::Client;
@@ -72,7 +72,7 @@ impl Sender for SyncSender {
             );
             e
         })?;
-        
+
         let mut req = build_req(&self.http, params, params_builder, req);
 
         let res = match req.send().map_err(error::request) {
@@ -116,9 +116,7 @@ pub struct Params {
 
 impl Params {
     fn new(res: Result<RequestParams>) -> Self {
-        Params {
-            inner: res,
-        }
+        Params { inner: res }
     }
 }
 
@@ -137,8 +135,7 @@ where
     let req = req.into();
     let params = if let Some(params_builder) = params_builder {
         params_builder(params)
-    }
-    else {
+    } else {
         params
     };
 
@@ -204,7 +201,8 @@ impl SyncClientBuilder {
     Specify a static node nodes to send requests to.
     */
     pub fn static_node<S>(self, node: S) -> Self
-        where S: Into<NodeAddress>,
+    where
+        S: Into<NodeAddress>,
     {
         self.static_nodes(vec![node])
     }
@@ -213,8 +211,9 @@ impl SyncClientBuilder {
     Specify a set of static node nodes to load balance requests on.
     */
     pub fn static_nodes<I, S>(mut self, nodes: I) -> Self
-        where I: IntoIterator<Item = S>,
-              S: Into<NodeAddress>,
+    where
+        I: IntoIterator<Item = S>,
+        S: Into<NodeAddress>,
     {
         let nodes = nodes.into_iter().map(|address| address.into()).collect();
         self.nodes = NodeAddressesBuilder::Static(nodes);
@@ -277,15 +276,13 @@ impl SyncClientBuilder {
             .unwrap_or_else(|| SyncHttpClientBuilder::new().build())
             .map_err(error::build)?;
 
-        let sender = SyncSender {
-            http: http,
-        };
+        let sender = SyncSender { http: http };
 
         let addresses = self.nodes.build(self.params, sender.clone());
 
         Ok(SyncClient {
             sender: sender,
-            addresses: addresses
+            addresses: addresses,
         })
     }
 }
@@ -300,8 +297,7 @@ mod tests {
     use client::requests::*;
 
     fn params() -> RequestParams {
-        RequestParams::new("eshost:9200/path")
-            .url_param("pretty", false)
+        RequestParams::new("eshost:9200/path").url_param("pretty", false)
     }
 
     fn builder() -> Option<Arc<Fn(RequestParams) -> RequestParams>> {
@@ -354,7 +350,8 @@ mod tests {
         let cli = Client::new();
         let req = build_req(
             &cli,
-            params(), builder(),
+            params(),
+            builder(),
             PercolateRequest::for_index_ty("idx", "ty", vec![]),
         );
 
@@ -385,7 +382,12 @@ mod tests {
     #[test]
     fn delete_req() {
         let cli = Client::new();
-        let req = build_req(&cli, params(), builder(), IndicesDeleteRequest::for_index("idx"));
+        let req = build_req(
+            &cli,
+            params(),
+            builder(),
+            IndicesDeleteRequest::for_index("idx"),
+        );
 
         let url = "eshost:9200/path/idx?pretty=true";
 

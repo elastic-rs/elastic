@@ -321,8 +321,6 @@ mod tests {
                 .aggs()
                 .is_some()
         );
-
-
     }
 
     #[test]
@@ -350,8 +348,6 @@ mod tests {
                 .aggs()
                 .is_some()
         );
-
-
     }
 
     #[test]
@@ -398,7 +394,13 @@ mod tests {
         let mut a = s1.aggs_get("sourcePort").unwrap();
 
         //Destructuring FTW
-        if let term(TermAggregation { terms: TermsAggFields { field: ref mut a, .. }, .. }) = *a {
+        if let term(TermAggregation {
+            terms: TermsAggFields {
+                field: ref mut a, ..
+            },
+            ..
+        }) = *a
+        {
             assert_eq!(a, "sourcePort");
         }
 
@@ -422,7 +424,11 @@ mod tests {
 
         let a = s1.aggs_get("Agg3Terms");
         if let Some(a) = a {
-            if let term(TermAggregation { terms: TermsAggFields { field: ref a, .. }, .. }) = *a {
+            if let term(TermAggregation {
+                terms: TermsAggFields { field: ref a, .. },
+                ..
+            }) = *a
+            {
                 assert_eq!(a, "Agg3Terms");
             }
 
@@ -445,7 +451,6 @@ mod tests {
                 assert!(a.aggs_get("AggNew").is_some());
 
                 assert!(a.aggs_get("Agg4Terms").is_some());
-
             }
         }
     }

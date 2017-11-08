@@ -39,7 +39,7 @@ macro_rules! impl_mapping_type {
 
             fn ne(&self, other: &$std_ty) -> bool {
                 borrow_fn!($std_ty);
-                
+
                 PartialEq::ne(borrow(&self.value), other)
             }
         }
@@ -48,13 +48,13 @@ macro_rules! impl_mapping_type {
         M: $mapping_ty {
             fn eq(&self, other: &$wrapper_ty<M>) -> bool {
                 borrow_fn!($std_ty);
-                
+
                 PartialEq::eq(self, borrow(&other.value))
             }
 
             fn ne(&self, other: &$wrapper_ty<M>) -> bool {
                 borrow_fn!($std_ty);
-                
+
                 PartialEq::ne(self, borrow(&other.value))
             }
         }
@@ -64,7 +64,7 @@ macro_rules! impl_mapping_type {
             type Target = $std_ty;
             fn deref(&self) -> &$std_ty {
                 borrow_fn!($std_ty);
-                
+
                 borrow(&self.value)
             }
         }
@@ -73,7 +73,7 @@ macro_rules! impl_mapping_type {
         M: $mapping_ty {
             fn borrow(&self) -> &$std_ty {
                 borrow_fn!($std_ty);
-                
+
                 borrow(&self.value)
             }
         }

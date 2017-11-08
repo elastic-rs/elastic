@@ -4,7 +4,7 @@ extern crate serde_json;
 use serde_json::Value;
 use elastic_responses::*;
 use elastic_responses::error::*;
-use ::load_file;
+use load_file;
 
 #[test]
 fn success_parse_found_doc_response() {
@@ -27,14 +27,13 @@ fn success_into_document() {
 
     match deserialized.ok().and_then(GetResponse::into_document) {
         Some(doc) => {
-            let id = doc
-                .as_object()
+            let id = doc.as_object()
                 .and_then(|src| src.get("id"))
                 .and_then(|id| id.as_u64());
 
-             assert_eq!(Some(1), id);
-        },
-        _ => panic!("expected deserialised doc to be Some")
+            assert_eq!(Some(1), id);
+        }
+        _ => panic!("expected deserialised doc to be Some"),
     }
 }
 
@@ -50,12 +49,13 @@ fn success_parse_not_found_doc_response() {
 #[test]
 fn error_parse_index_not_found() {
     let f = load_file("tests/samples/error_index_not_found.json");
-    let deserialized = parse::<GetResponse<Value>>().from_reader(404, f).unwrap_err();
+    let deserialized = parse::<GetResponse<Value>>()
+        .from_reader(404, f)
+        .unwrap_err();
 
     let valid = match deserialized {
-        ResponseError::Api(ApiError::IndexNotFound { ref index })
-        if index == "carrots" => true,
-        _ => false
+        ResponseError::Api(ApiError::IndexNotFound { ref index }) if index == "carrots" => true,
+        _ => false,
     };
 
     assert!(valid);

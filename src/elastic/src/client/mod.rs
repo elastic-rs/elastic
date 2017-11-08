@@ -506,7 +506,7 @@ pub mod sender;
 pub mod requests;
 pub mod responses;
 
-pub use self::sender::{SyncClientBuilder, AsyncClientBuilder, SyncClient, AsyncClient, PreRequestParams, RequestParams};
+pub use self::sender::{AsyncClient, AsyncClientBuilder, PreRequestParams, RequestParams, SyncClient, SyncClientBuilder};
 
 use self::sender::NodeAddresses;
 

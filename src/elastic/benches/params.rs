@@ -1,9 +1,9 @@
 #![feature(test)]
 
-extern crate reqwest;
-extern crate tokio_core;
 extern crate elastic;
+extern crate reqwest;
 extern crate test;
+extern crate tokio_core;
 
 use reqwest::header::Referer;
 use tokio_core::reactor::Core;
@@ -17,11 +17,12 @@ fn with_headers_1(params: RequestParams) -> RequestParams {
 
 #[inline(always)]
 fn with_headers_5(params: RequestParams) -> RequestParams {
-    params.header(Referer::new("/People.html#tim"))
-          .header(Referer::new("/People.html#tim"))
-          .header(Referer::new("/People.html#tim"))
-          .header(Referer::new("/People.html#tim"))
-          .header(Referer::new("/People.html#tim"))
+    params
+        .header(Referer::new("/People.html#tim"))
+        .header(Referer::new("/People.html#tim"))
+        .header(Referer::new("/People.html#tim"))
+        .header(Referer::new("/People.html#tim"))
+        .header(Referer::new("/People.html#tim"))
 }
 
 #[inline(always)]
@@ -31,11 +32,12 @@ fn with_params_1(params: RequestParams) -> RequestParams {
 
 #[inline(always)]
 fn with_params_5(params: RequestParams) -> RequestParams {
-    params.url_param("query", "*")
-          .url_param("query", "*")
-          .url_param("query", "*")
-          .url_param("query", "*")
-          .url_param("query", "*")
+    params
+        .url_param("query", "*")
+        .url_param("query", "*")
+        .url_param("query", "*")
+        .url_param("query", "*")
+        .url_param("query", "*")
 }
 
 macro_rules! bench {
@@ -114,9 +116,4 @@ macro_rules! get_url_query {
     )
 }
 
-bench![
-    new,
-    clone,
-    get_headers,
-    get_url_query
-];
+bench![new, clone, get_headers, get_url_query]

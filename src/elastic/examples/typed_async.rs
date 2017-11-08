@@ -10,23 +10,23 @@
 //! - Index a document
 //! - Search the index and iterate over hits
 
-extern crate env_logger;
 #[macro_use]
 extern crate elastic_derive;
+extern crate env_logger;
+extern crate futures;
+extern crate serde;
 #[macro_use]
 extern crate serde_derive;
 #[macro_use]
 extern crate serde_json;
-extern crate serde;
 extern crate tokio_core;
-extern crate futures;
 
 extern crate elastic;
 
 use std::error::Error as StdError;
 use futures::{Future, IntoFuture};
 use elastic::prelude::*;
-use elastic::error::{Error, ApiError};
+use elastic::error::{ApiError, Error};
 
 #[derive(Debug, Serialize, Deserialize, ElasticType)]
 struct MyType {
@@ -54,13 +54,11 @@ fn run() -> Result<(), Box<StdError>> {
     // Do a search request
     let search_future = search(client.clone(), "title");
 
-    let res_future = index_future
-        .and_then(|_| search_future)
-        .and_then(|res| {
-            println!("{:?}", res);
+    let res_future = index_future.and_then(|_| search_future).and_then(|res| {
+        println!("{:?}", res);
 
-            Ok(())
-        });
+        Ok(())
+    });
 
     core.run(res_future)?;
 
@@ -108,9 +106,7 @@ fn ensure_indexed(client: AsyncClient, doc: MyType) -> Box<Future<Item = (), Err
 }
 
 fn put_index(client: AsyncClient) -> Box<Future<Item = (), Error = Error>> {
-    let create_index = client
-        .index_create(sample_index())
-        .send();
+    let create_index = client.index_create(sample_index()).send();
 
     let put_mapping = client
         .document_put_mapping::<MyType>(sample_index())
@@ -126,7 +122,7 @@ fn put_doc(client: AsyncClient, doc: MyType) -> Box<Future<Item = (), Error = Er
         .params(|p| p.url_param("refresh", true))
         .send()
         .map(|_| ());
-    
+
     Box::new(index_doc)
 }
 
@@ -142,7 +138,7 @@ fn search(client: AsyncClient, query: &'static str) -> Box<Future<Item = SearchR
                 }
           }))
         .send();
-    
+
     Box::new(search)
 }
 

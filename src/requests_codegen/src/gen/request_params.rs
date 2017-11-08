@@ -26,7 +26,8 @@ impl RequestParamBuilder {
     }
 
     pub fn doc_comment<TDoc>(mut self, doc_comment: TDoc) -> Self
-        where TDoc: Into<String>,
+    where
+        TDoc: Into<String>,
     {
         self.doc_comment = Some(doc_comment.into());
 
@@ -97,9 +98,13 @@ impl<'a> From<&'a (String, parse::Endpoint)> for RequestParamBuilder {
 
         let name = format!("{}Request", endpoint_name.into_rust_type());
         let doc_comment = if let Some(method) = endpoint.preferred_method() {
-            format!("`{:?}: {}`\n\n[Elasticsearch Documentation]({})", method, endpoint.url.path, endpoint.documentation)
-        }
-        else {
+            format!(
+                "`{:?}: {}`\n\n[Elasticsearch Documentation]({})",
+                method,
+                endpoint.url.path,
+                endpoint.documentation
+            )
+        } else {
             format!("`{}`", endpoint.url.path)
         };
 
@@ -148,7 +153,10 @@ mod tests {
 
     #[test]
     fn gen_request_params_with_body_doc() {
-        let (result, _) = RequestParamBuilder::new("Request").has_body(true).doc_comment("Some doc").build();
+        let (result, _) = RequestParamBuilder::new("Request")
+            .has_body(true)
+            .doc_comment("Some doc")
+            .build();
 
         let expected = quote!(
             #[doc = "Some doc"]

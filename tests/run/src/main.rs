@@ -6,21 +6,21 @@ They should ensure that `elastic` behaves as expected when making requests, inde
 They should also provide a way to inspect how the client behaves under load and where memory is being allocated.
 */
 
+extern crate clap;
 extern crate elastic;
 #[macro_use]
 extern crate elastic_derive;
+extern crate env_logger;
 extern crate futures;
 extern crate futures_cpupool;
 extern crate serde;
 #[macro_use]
-extern crate serde_json;
-#[macro_use]
 extern crate serde_derive;
+#[macro_use]
+extern crate serde_json;
 extern crate term_painter;
 extern crate tokio_core;
 extern crate tokio_timer;
-extern crate env_logger;
-extern crate clap;
 
 use std::process;
 use term_painter::ToStyle;
@@ -38,10 +38,12 @@ fn main() {
     env_logger::init().unwrap();
 
     let matches = App::new("elastic_integration_tests")
-        .arg(Arg::with_name("runs")
-            .default_value("default")
-            .takes_value(true)
-            .multiple(true))
+        .arg(
+            Arg::with_name("runs")
+                .default_value("default")
+                .takes_value(true)
+                .multiple(true),
+        )
         .get_matches();
 
     let mut failed = Vec::<run_tests::TestResult>::new();
@@ -74,18 +76,12 @@ fn main() {
     if failed.len() > 0 {
         println!(
             "\n{}",
-            Red.bold().paint(format!(
-                "{} of {} tests failed",
-                failed.len(),
-                total
-            ))
+            Red.bold()
+                .paint(format!("{} of {} tests failed", failed.len(), total))
         );
         process::exit(1);
     } else {
-        println!(
-            "\n{}",
-            Green.paint(format!("all {} tests passed", total))
-        );
+        println!("\n{}", Green.paint(format!("all {} tests passed", total)));
         process::exit(0);
     }
 }

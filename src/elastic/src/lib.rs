@@ -278,27 +278,27 @@ This crate glues these libraries together with some simple assumptions about how
 //#![deny(warnings, missing_docs)]
 #![allow(unknown_lints, doc_markdown)]
 
+extern crate bytes;
 extern crate elastic_requests;
 extern crate elastic_responses;
 extern crate elastic_types;
 #[macro_use]
 extern crate error_chain;
-#[macro_use]
-extern crate quick_error;
 extern crate futures;
 extern crate futures_cpupool;
 #[macro_use]
 extern crate log;
+#[macro_use]
+extern crate quick_error;
 extern crate reqwest;
 extern crate serde;
-#[cfg_attr(test, macro_use)]
-extern crate serde_json;
 #[macro_use]
 extern crate serde_derive;
+#[cfg_attr(test, macro_use)]
+extern crate serde_json;
 extern crate tokio_core;
-extern crate uuid;
 extern crate url;
-extern crate bytes;
+extern crate uuid;
 
 pub mod error;
 pub use error::Error;
@@ -317,7 +317,7 @@ pub mod http {
 
     pub use reqwest::header;
     pub use reqwest::Body as SyncBody;
-    pub use reqwest::unstable::async::{Chunk as AsyncChunk, Body as AsyncBody};
+    pub use reqwest::unstable::async::{Body as AsyncBody, Chunk as AsyncChunk};
 }
 
 pub mod client;

@@ -7,8 +7,8 @@
 //! performance out of them.
 //! See the docs for `BulkResponse` for more details.
 
-extern crate env_logger;
 extern crate elastic;
+extern crate env_logger;
 
 use std::error::Error;
 use elastic::prelude::*;
@@ -26,7 +26,7 @@ fn run() -> Result<(), Box<Error>> {
     for op in bulk {
         match op {
             Ok(op) => println!("ok: {:?}", op),
-            Err(op) => println!("err: {:?}", op)
+            Err(op) => println!("err: {:?}", op),
         }
     }
 
@@ -36,8 +36,10 @@ fn run() -> Result<(), Box<Error>> {
 fn bulk_body() -> String {
     let mut bulk = String::new();
     for i in 1..1000 {
-        let header = format!("{{ \"index\" : {{ \"_index\" : \"test\", \"_type\" : \"ty\", \"_id\" : \"{}\" }} }}",
-                             i);
+        let header = format!(
+            "{{ \"index\" : {{ \"_index\" : \"test\", \"_type\" : \"ty\", \"_id\" : \"{}\" }} }}",
+            i
+        );
         let body = format!("{{ \"title\" : \"string value {}\" }}", i);
 
         bulk.push_str(&header);

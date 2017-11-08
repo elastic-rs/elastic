@@ -1,6 +1,6 @@
 use futures::Future;
 use elastic::prelude::*;
-use elastic::error::{Error, ApiError};
+use elastic::error::{ApiError, Error};
 use run_tests::IntegrationTest;
 
 #[derive(Debug, Clone, Copy)]
@@ -25,17 +25,15 @@ impl IntegrationTest for UpdateNoIndex {
 
     // Ensure the index doesn't exist
     fn prepare(&self, client: AsyncClient) -> Box<Future<Item = (), Error = Error>> {
-        let delete_res = client
-            .index_delete(index(INDEX))
-            .send()
-            .map(|_| ());
+        let delete_res = client.index_delete(index(INDEX)).send().map(|_| ());
 
         Box::new(delete_res)
     }
 
     // Execute an update request against that index
     fn request(&self, client: AsyncClient) -> Box<Future<Item = Self::Response, Error = Error>> {
-        let res = client.document_update::<Doc>(index(INDEX), id(1))
+        let res = client
+            .document_update::<Doc>(index(INDEX), id(1))
             .doc(Doc { id: 1 })
             .send();
 

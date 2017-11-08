@@ -143,7 +143,7 @@ where
 
 pub(crate) fn message<E>(err: E) -> string_error::Error
 where
-    E: Into<String>
+    E: Into<String>,
 {
     string_error::Error::Message(err.into())
 }

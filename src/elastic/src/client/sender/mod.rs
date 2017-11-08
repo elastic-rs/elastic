@@ -123,7 +123,7 @@ impl AsRef<str> for NodeAddress {
 
 impl<T> From<T> for NodeAddress
 where
-    T: Into<Arc<str>>
+    T: Into<Arc<str>>,
 {
     fn from(address: T) -> Self {
         NodeAddress(address.into())
@@ -141,13 +141,13 @@ pub struct NodeAddresses<TSender> {
 impl<TSender> NodeAddresses<TSender> {
     fn static_nodes(nodes: StaticNodes) -> Self {
         NodeAddresses {
-            inner: NodeAddressesInner::Static(nodes)
+            inner: NodeAddressesInner::Static(nodes),
         }
     }
 
     fn sniffed_nodes(nodes: SniffedNodes<TSender>) -> Self {
         NodeAddresses {
-            inner: NodeAddressesInner::Sniffed(nodes)
+            inner: NodeAddressesInner::Sniffed(nodes),
         }
     }
 }
@@ -178,7 +178,7 @@ impl NodeAddressesBuilder {
                 let nodes = StaticNodes::round_robin(nodes, params);
 
                 NodeAddresses::static_nodes(nodes)
-            },
+            }
             NodeAddressesBuilder::Sniffed(builder) => {
                 let nodes = builder.build(params, sender);
 

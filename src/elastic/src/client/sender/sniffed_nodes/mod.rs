@@ -31,8 +31,8 @@ use std::sync::{Arc, RwLock};
 use url::Url;
 use futures::{Future, IntoFuture};
 use client::sender::static_nodes::StaticNodes;
-use client::sender::{NodeAddress, Sender, SyncSender, AsyncSender, SendableRequest, PreRequestParams, RequestParams, NextParams};
-use client::requests::{NodesInfoRequest, DefaultBody};
+use client::sender::{AsyncSender, NextParams, NodeAddress, PreRequestParams, RequestParams, SendableRequest, Sender, SyncSender};
+use client::requests::{DefaultBody, NodesInfoRequest};
 use error::{self, Error};
 use private;
 
@@ -87,8 +87,9 @@ impl<TSender> SniffedNodes<TSender> {
         let req = self.sendable_request();
         let refresh_params = self.refresh_params.clone();
 
-        let refresh_nodes = refresh(req)
-            .then(move |fresh_nodes| Self::finish_refresh(&inner, &refresh_params, fresh_nodes));
+        let refresh_nodes = refresh(req).then(move |fresh_nodes| {
+            Self::finish_refresh(&inner, &refresh_params, fresh_nodes)
+        });
 
         Box::new(refresh_nodes)
     }
@@ -119,7 +120,8 @@ impl SniffedNodesBuilder {
     Create a new `SniffedNodesBuilder` with the given base address.
     */
     pub fn new<I>(address: I) -> Self
-        where I: Into<NodeAddress>,
+    where
+        I: Into<NodeAddress>,
     {
         SniffedNodesBuilder {
             base_url: address.into(),
@@ -150,8 +152,7 @@ impl SniffedNodesBuilder {
         // - we want more metadata about the nodes
         // The publish_address may not correspond to the address the node is actually available on
         // In this case, we might want to offer some kind of filter function that consumers can use to transform nodes
-        let refresh_params = RequestParams::from_parts(self.base_url, base_params)
-            .url_param("filter_path", "nodes.*.http.publish_address");
+        let refresh_params = RequestParams::from_parts(self.base_url, base_params).url_param("filter_path", "nodes.*.http.publish_address");
 
         SniffedNodes {
             sender: sender,
@@ -160,7 +161,7 @@ impl SniffedNodesBuilder {
                 last_update: None,
                 wait: wait,
                 refreshing: false,
-                nodes: nodes
+                nodes: nodes,
             })),
         }
     }
@@ -198,8 +199,7 @@ impl<TSender> SniffedNodes<TSender> {
                 let address = inner.nodes.next().map_err(error::request);
 
                 Some(address)
-            }
-            else {
+            } else {
                 None
             }
         };
@@ -216,8 +216,7 @@ impl<TSender> SniffedNodes<TSender> {
                 let address = inner.nodes.next().map_err(error::request);
 
                 Some(address)
-            }
-            else {
+            } else {
                 inner.refreshing = true;
 
                 None
@@ -226,10 +225,7 @@ impl<TSender> SniffedNodes<TSender> {
     }
 
     fn sendable_request(&self) -> SendableRequest<NodesInfoRequest<'static>, RequestParams, DefaultBody> {
-        SendableRequest::new(
-            NodesInfoRequest::new(),
-            self.refresh_params.clone(),
-            None)
+        SendableRequest::new(NodesInfoRequest::new(), self.refresh_params.clone(), None)
     }
 
     fn finish_refresh(inner: &RwLock<SniffedNodesInner>, refresh_params: &RequestParams, fresh_nodes: Result<NodesInfoResponse, Error>) -> Result<RequestParams, Error> {
@@ -254,7 +250,9 @@ impl<TSender> SniffedNodes<TSender> {
 impl SniffedNodesInner {
     fn should_refresh(&self) -> bool {
         // If there isn't a value for the last update then assume we need to refresh.
-        let last_update_is_stale = self.last_update.as_ref().map(|last_update| last_update.elapsed() > self.wait);
+        let last_update_is_stale = self.last_update
+            .as_ref()
+            .map(|last_update| last_update.elapsed() > self.wait);
 
         !self.refreshing && last_update_is_stale.unwrap_or(true)
     }
@@ -262,12 +260,14 @@ impl SniffedNodesInner {
     fn update_nodes_and_next(&mut self, parsed: NodesInfoResponse, scheme: &str) -> Result<RequestParams, Error> {
         let nodes: Vec<_> = parsed
             .into_iter()
-            .filter_map(|node| node.http
-                .and_then(|http| http.publish_address)
-                .map(|publish_address| {
-                    // NOTE: Nasty hack to include the correct scheme since `publish_address` is a `host:port`
-                    format!("{}://{}", scheme, publish_address).into()
-                }))
+            .filter_map(|node| {
+                node.http
+                    .and_then(|http| http.publish_address)
+                    .map(|publish_address| {
+                        // NOTE: Nasty hack to include the correct scheme since `publish_address` is a `host:port`
+                        format!("{}://{}", scheme, publish_address).into()
+                    })
+            })
             .collect();
 
         self.nodes.set(nodes)?;
@@ -275,13 +275,17 @@ impl SniffedNodesInner {
     }
 }
 
-impl<TSender> private::Sealed for SniffedNodes<TSender> { }
+impl<TSender> private::Sealed for SniffedNodes<TSender> {}
 
 impl NextParams for SniffedNodes<AsyncSender> {
     type Params = Box<Future<Item = RequestParams, Error = Error>>;
 
     fn next(&self) -> Self::Params {
-        self.async_next(|req| self.sender.send(req).and_then(|res| res.into_response::<NodesInfoResponse>()))
+        self.async_next(|req| {
+            self.sender
+                .send(req)
+                .and_then(|res| res.into_response::<NodesInfoResponse>())
+        })
     }
 }
 
@@ -289,7 +293,11 @@ impl NextParams for SniffedNodes<SyncSender> {
     type Params = Result<RequestParams, Error>;
 
     fn next(&self) -> Self::Params {
-        self.sync_next(|req| self.sender.send(req).and_then(|res| res.into_response::<NodesInfoResponse>()))
+        self.sync_next(|req| {
+            self.sender
+                .send(req)
+                .and_then(|res| res.into_response::<NodesInfoResponse>())
+        })
     }
 }
 
@@ -304,22 +312,21 @@ mod tests {
 
     fn expected_nodes() -> NodesInfoResponse {
         NodesInfoResponse {
-            nodes: publish_addresses().into_iter()
+            nodes: publish_addresses()
+                .into_iter()
                 .map(|address| {
                     SniffedNode {
                         http: Some(SniffedNodeHttp {
-                            publish_address: Some(address.to_owned())
-                        })
+                            publish_address: Some(address.to_owned()),
+                        }),
                     }
                 })
-                .collect()
+                .collect(),
         }
     }
 
     fn empty_nodes() -> NodesInfoResponse {
-        NodesInfoResponse {
-            nodes: vec![]
-        }
+        NodesInfoResponse { nodes: vec![] }
     }
 
     fn initial_address() -> &'static str {
@@ -327,17 +334,11 @@ mod tests {
     }
 
     fn publish_addresses() -> Vec<&'static str> {
-        vec![
-            "a:9200",
-            "127.0.0.1:9200",
-        ]
+        vec!["a:9200", "127.0.0.1:9200"]
     }
 
     fn expected_addresses() -> Vec<&'static str> {
-        vec![
-            "http://a:9200",
-            "http://127.0.0.1:9200",
-        ]
+        vec!["http://a:9200", "http://127.0.0.1:9200"]
     }
 
     fn assert_node_addresses_equal(nodes: &SniffedNodes<()>, expected_addresses: Vec<&'static str>) {
@@ -360,7 +361,7 @@ mod tests {
     #[test]
     fn should_refresh_is_true_initially() {
         let nodes = sender();
-        
+
         assert_should_refresh_equal(&nodes, true);
     }
 
@@ -380,12 +381,13 @@ mod tests {
         let nodes = sender();
         let nodes_while_refreshing = nodes.clone();
 
-        let res = nodes.async_next(move |_| {
-            assert_refreshing_equal(&nodes_while_refreshing, true);
+        let res = nodes
+            .async_next(move |_| {
+                assert_refreshing_equal(&nodes_while_refreshing, true);
 
-            Ok(expected_nodes()).into_future()
-        })
-        .wait();
+                Ok(expected_nodes()).into_future()
+            })
+            .wait();
 
         assert!(res.is_ok());
 
@@ -399,12 +401,13 @@ mod tests {
         let nodes = sender();
         let nodes_while_refreshing = nodes.clone();
 
-        let res = nodes.async_next(move |_| {
-            assert_refreshing_equal(&nodes_while_refreshing, true);
+        let res = nodes
+            .async_next(move |_| {
+                assert_refreshing_equal(&nodes_while_refreshing, true);
 
-            Ok(empty_nodes()).into_future()
-        })
-        .wait();
+                Ok(empty_nodes()).into_future()
+            })
+            .wait();
 
         assert!(res.is_err());
 
@@ -418,12 +421,13 @@ mod tests {
         let nodes = sender();
         let nodes_while_refreshing = nodes.clone();
 
-        let res = nodes.async_next(move |_| {
-            assert_refreshing_equal(&nodes_while_refreshing, true);
+        let res = nodes
+            .async_next(move |_| {
+                assert_refreshing_equal(&nodes_while_refreshing, true);
 
-            Err(error::test()).into_future()
-        })
-        .wait();
+                Err(error::test()).into_future()
+            })
+            .wait();
 
         assert!(res.is_err());
 

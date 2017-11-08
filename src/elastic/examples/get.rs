@@ -7,13 +7,13 @@
 //! exists, and the document is indexed.
 //! Also see the `typed` sample for a more complete implementation.
 
+extern crate elastic;
 extern crate env_logger;
 extern crate serde_json;
-extern crate elastic;
 
 use std::error::Error as StdError;
 use serde_json::Value;
-use elastic::error::{Error, ApiError};
+use elastic::error::{ApiError, Error};
 use elastic::prelude::*;
 
 fn run() -> Result<(), Box<StdError>> {
@@ -43,9 +43,9 @@ fn run() -> Result<(), Box<StdError>> {
         // No index
         Err(Error::Api(ApiError::IndexNotFound { .. })) => {
             println!("index not found");
-        },
+        }
         // Some other error
-        Err(e) => Err(e)?
+        Err(e) => Err(e)?,
     }
 
     Ok(())

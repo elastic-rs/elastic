@@ -2,7 +2,7 @@ use std::sync::Arc;
 use std::collections::HashMap;
 
 use reqwest;
-use reqwest::header::{Header, Headers, ContentType};
+use reqwest::header::{ContentType, Header, Headers};
 use url::form_urlencoded::Serializer;
 
 use client::requests::HttpMethod;
@@ -315,10 +315,7 @@ mod tests {
             .url_param("pretty", false)
             .url_param("pretty", true);
 
-        assert_eq!(
-            (12, Some(String::from("?pretty=true"))),
-            req.get_url_qry()
-        );
+        assert_eq!((12, Some(String::from("?pretty=true"))), req.get_url_qry());
     }
 
     #[test]

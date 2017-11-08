@@ -4,7 +4,7 @@ use term_painter::ToStyle;
 use term_painter::Color::*;
 use futures::{stream, Future, Stream};
 use elastic::prelude::*;
-use elastic::error::{Error, ApiError};
+use elastic::error::{ApiError, Error};
 
 pub type TestResult = bool;
 pub type Test = Box<Fn(AsyncClient) -> Box<Future<Item = TestResult, Error = ()>>>;
@@ -21,7 +21,7 @@ pub trait IntegrationTest: Debug {
     /// Check an error during preparation and possibly continue.
     fn prepare_err(&self, err: &Error) -> bool {
         match *err {
-            Error::Api(ApiError::IndexNotFound {.. }) => true,
+            Error::Api(ApiError::IndexNotFound { .. }) => true,
             _ => false,
         }
     }
@@ -89,8 +89,10 @@ pub fn call(client: AsyncClient, max_concurrent_tests: usize) -> Box<Future<Item
 
     let document_tests = document::tests().into_iter();
     let search_tests = search::tests().into_iter();
-    
-    let all_tests = document_tests.chain(search_tests).map(move |t| t(client.clone()));
+
+    let all_tests = document_tests
+        .chain(search_tests)
+        .map(move |t| t(client.clone()));
 
     let test_stream = stream::futures_unordered(all_tests)
         .map(|r| Ok(r))

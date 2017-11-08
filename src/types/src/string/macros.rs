@@ -55,7 +55,7 @@ macro_rules! impl_string_type {
                 TMapping: $mapping_ty {
                     type Value = $wrapper_ty<TMapping>;
 
-                    fn expecting(&self, formatter: &mut ::std::fmt::Formatter) -> ::std::fmt::Result 
+                    fn expecting(&self, formatter: &mut ::std::fmt::Formatter) -> ::std::fmt::Result
                     {
                         write!(formatter, "a json string")
                     }

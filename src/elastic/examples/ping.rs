@@ -2,8 +2,8 @@
 //!
 //! NOTE: This sample expects you have a node running on `localhost:9200`.
 
-extern crate env_logger;
 extern crate elastic;
+extern crate env_logger;
 
 use std::error::Error;
 use elastic::prelude::*;

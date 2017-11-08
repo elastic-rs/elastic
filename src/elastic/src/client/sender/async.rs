@@ -9,7 +9,7 @@ use reqwest::unstable::async::{Client as AsyncHttpClient, ClientBuilder as Async
 use error::{self, Error};
 use private;
 use client::requests::{AsyncBody, HttpRequest};
-use client::sender::{build_method, build_url, NodeAddress, RequestParams, PreRequestParams, NextParams, Sender, SendableRequest, NodeAddressesBuilder, NodeAddresses, NodeAddressesInner};
+use client::sender::{build_method, build_url, NextParams, NodeAddress, NodeAddresses, NodeAddressesBuilder, NodeAddressesInner, PreRequestParams, RequestParams, SendableRequest, Sender};
 use client::sender::sniffed_nodes::SniffedNodesBuilder;
 use client::responses::{async_response, AsyncResponseBuilder};
 use client::Client;
@@ -165,8 +165,7 @@ where
     let req = req.into();
     let params = if let Some(params_builder) = params_builder {
         params_builder(params)
-    }
-    else {
+    } else {
         params
     };
 
@@ -290,7 +289,8 @@ impl AsyncClientBuilder {
     Specify a static node nodes to send requests to.
     */
     pub fn static_node<S>(self, node: S) -> Self
-        where S: Into<NodeAddress>,
+    where
+        S: Into<NodeAddress>,
     {
         self.static_nodes(vec![node])
     }
@@ -299,8 +299,9 @@ impl AsyncClientBuilder {
     Specify a set of static node nodes to load balance requests on.
     */
     pub fn static_nodes<I, S>(mut self, nodes: I) -> Self
-        where I: IntoIterator<Item = S>,
-              S:Into<NodeAddress>,
+    where
+        I: IntoIterator<Item = S>,
+        S: Into<NodeAddress>,
     {
         let nodes = nodes.into_iter().map(|address| address.into()).collect();
         self.nodes = NodeAddressesBuilder::Static(nodes);
@@ -322,7 +323,8 @@ impl AsyncClientBuilder {
     ```
     */
     pub fn sniff_nodes<I>(mut self, builder: I) -> Self
-        where I: Into<SniffedNodesBuilder>
+    where
+        I: Into<SniffedNodesBuilder>,
     {
         self.nodes = NodeAddressesBuilder::Sniffed(builder.into());
 
@@ -345,8 +347,9 @@ impl AsyncClientBuilder {
     ```
     */
     pub fn sniff_nodes_fluent<I, F>(mut self, address: I, builder: F) -> Self
-        where I: Into<NodeAddress>,
-              F: Fn(SniffedNodesBuilder) -> SniffedNodesBuilder
+    where
+        I: Into<NodeAddress>,
+        F: Fn(SniffedNodesBuilder) -> SniffedNodesBuilder,
     {
         let address = address.into();
         self.nodes = NodeAddressesBuilder::Sniffed(builder(address.into()));
@@ -468,17 +471,17 @@ impl AsyncClientBuilder {
 
     [AsyncClient]: type.AsyncClient.html
     */
-    pub fn build<TIntoHttp>(self, client: TIntoHttp) -> Result<AsyncClient, Error> 
-        where TIntoHttp: IntoAsyncHttpClient
+    pub fn build<TIntoHttp>(self, client: TIntoHttp) -> Result<AsyncClient, Error>
+    where
+        TIntoHttp: IntoAsyncHttpClient,
     {
-        let http = client.into_async_http_client()
-            .map_err(error::build)?;
-        
+        let http = client.into_async_http_client().map_err(error::build)?;
+
         let sender = AsyncSender {
             http: http,
             serde_pool: self.serde_pool,
         };
-        
+
         let addresses = self.nodes.build(self.params, sender.clone());
 
         Ok(AsyncClient {
@@ -499,8 +502,7 @@ mod tests {
     use client::requests::*;
 
     fn params() -> RequestParams {
-        RequestParams::new("eshost:9200/path")
-            .url_param("pretty", false)
+        RequestParams::new("eshost:9200/path").url_param("pretty", false)
     }
 
     fn builder() -> Option<Arc<Fn(RequestParams) -> RequestParams>> {
@@ -574,7 +576,8 @@ mod tests {
         let cli = Client::new(&core().handle());
         let req = build_req(
             &cli,
-            params(), builder(),
+            params(),
+            builder(),
             IndicesCreateRequest::for_index("idx", vec![]),
         );
 
@@ -588,7 +591,12 @@ mod tests {
     #[test]
     fn delete_req() {
         let cli = Client::new(&core().handle());
-        let req = build_req(&cli, params(), builder(), IndicesDeleteRequest::for_index("idx"));
+        let req = build_req(
+            &cli,
+            params(),
+            builder(),
+            IndicesDeleteRequest::for_index("idx"),
+        );
 
         let url = "eshost:9200/path/idx?pretty=true";
 

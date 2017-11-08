@@ -19,6 +19,5 @@ mod tests {
     fn exists_filter() {
         let j = r#"{ "exists": { "field": "sourceAddress" } }"#;
         let _s: ExistsFilter = serde_json::from_str(j).unwrap();
-
     }
 }

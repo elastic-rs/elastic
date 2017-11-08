@@ -6,8 +6,7 @@ use super::super::filters::common::*;
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct TermAggregation {
     pub terms: TermsAggFields,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub aggs: Option<EsAggregation>,
+    #[serde(skip_serializing_if = "Option::is_none")] pub aggs: Option<EsAggregation>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -57,6 +56,5 @@ mod tests {
                       }
                     }"#;
         let _s: TermAggregation = serde_json::from_str(j).unwrap();
-
     }
 }

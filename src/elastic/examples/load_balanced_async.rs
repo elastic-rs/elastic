@@ -4,12 +4,12 @@
 //!
 //! You can also use a static set of addresses to load balance on.
 
+extern crate elastic;
 extern crate env_logger;
 extern crate futures;
-extern crate tokio_core;
 #[macro_use]
 extern crate serde_json;
-extern crate elastic;
+extern crate tokio_core;
 
 use std::error::Error;
 use futures::Future;
@@ -21,7 +21,9 @@ fn run() -> Result<(), Box<Error>> {
     let mut core = Core::new()?;
 
     // An async HTTP client that will sniff node addresses from the given base address.
-    let client = AsyncClientBuilder::new().sniff_nodes("http://localhost:9200").build(&core.handle())?;
+    let client = AsyncClientBuilder::new()
+        .sniff_nodes("http://localhost:9200")
+        .build(&core.handle())?;
 
     // Send the request and process the response.
     let ping_future = client
