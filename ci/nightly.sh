@@ -32,6 +32,8 @@ elif [ "$KIND" == "bench" ]; then
     cargo build --all
 elif [ "$KIND" == "integration" ]; then 
     cd tests/run
+    cargo build
+
     export RUST_LOG=info
-    cargo run -- default sniff_node
+    ../../target/debug/run default sniffed_node
 fi
