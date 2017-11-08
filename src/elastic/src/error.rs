@@ -77,6 +77,18 @@ quick_error! {
     }
 }
 
+pub(crate) mod string_error {
+    quick_error! {
+        #[derive(Debug)]
+        pub enum Error {
+            Message(err: String) {
+                description("An error occurred")
+                display("{}", err)
+            }
+        }
+    }
+}
+
 /** An error building a client, sending a request or receiving a response. */
 #[derive(Debug)]
 pub struct ClientError {
@@ -127,6 +139,13 @@ where
             inner: inner::Error::with_chain(err, inner::ErrorKind::Response(status)),
         }),
     }
+}
+
+pub(crate) fn message<E>(err: E) -> string_error::Error
+where
+    E: Into<String>
+{
+    string_error::Error::Message(err.into())
 }
 
 /** A convenient method to generate errors in tests. */

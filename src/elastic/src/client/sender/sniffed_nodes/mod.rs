@@ -5,6 +5,7 @@ use self::nodes_info::*;
 
 use std::time::{Duration, Instant};
 use std::sync::{Arc, RwLock};
+use url::Url;
 use futures::{Future, IntoFuture};
 use client::sender::static_nodes::StaticNodes;
 use client::sender::{NodeAddress, Sender, SyncSender, AsyncSender, SendableRequest, PreRequestParams, RequestParams, NextParams};
@@ -58,9 +59,10 @@ impl<TSender> SniffedNodes<TSender> {
         // Perform the refresh
         let inner = self.inner.clone();
         let req = self.sendable_request();
+        let refresh_params = self.refresh_params.clone();
 
         let refresh_nodes = refresh(req)
-            .then(move |fresh_nodes| Self::finish_refresh(&inner, fresh_nodes));
+            .then(move |fresh_nodes| Self::finish_refresh(&inner, &refresh_params, fresh_nodes));
 
         Box::new(refresh_nodes)
     }
@@ -82,7 +84,7 @@ impl<TSender> SniffedNodes<TSender> {
         let req = self.sendable_request();
 
         let fresh_nodes = refresh(req);
-        Self::finish_refresh(&self.inner, fresh_nodes)
+        Self::finish_refresh(&self.inner, &self.refresh_params, fresh_nodes)
     }
 }
 
@@ -204,16 +206,22 @@ impl<TSender> SniffedNodes<TSender> {
             None)
     }
 
-    fn finish_refresh(inner: &RwLock<SniffedNodesInner>, fresh_nodes: Result<NodesInfoResponse, Error>) -> Result<RequestParams, Error> {
+    fn finish_refresh(inner: &RwLock<SniffedNodesInner>, refresh_params: &RequestParams, fresh_nodes: Result<NodesInfoResponse, Error>) -> Result<RequestParams, Error> {
         let mut inner = inner.write().expect("lock poisoned");
 
         inner.refreshing = false;
+
+        // TODO: We need to deal with the scheme better here
+        // The `NodeAddress` should one day be a properly typed url we can interrogate
+        let parsed_url = Url::parse(refresh_params.get_base_url().as_ref()).map_err(error::request)?;
+        let scheme = parsed_url.scheme();
+
+        let fresh_nodes = fresh_nodes?;
+        let next = inner.update_nodes_and_next(fresh_nodes, scheme)?;
+
         inner.last_update = Some(Instant::now());
 
-        match fresh_nodes {
-            Ok(parsed) => inner.update_nodes_and_next(parsed),
-            Err(e) => Err(e)
-        }
+        Ok(next)
     }
 }
 
@@ -225,14 +233,23 @@ impl SniffedNodesInner {
         !self.refreshing && last_update_is_stale.unwrap_or(true)
     }
 
-    fn update_nodes_and_next(&mut self, parsed: NodesInfoResponse) -> Result<RequestParams, Error> {
-        self.nodes.nodes = parsed
+    fn update_nodes_and_next(&mut self, parsed: NodesInfoResponse, scheme: &str) -> Result<RequestParams, Error> {
+        let nodes: Vec<_> = parsed
             .into_iter()
             .filter_map(|node| node.http
                 .and_then(|http| http.publish_address)
-                .map(|publish_address| publish_address.into()))
+                .map(|publish_address| {
+                    // NOTE: Nasty hack to include the correct scheme since `publish_address` is a `host:port`
+                    format!("{}://{}", scheme, publish_address).into()
+                }))
             .collect();
 
+        // If we end up with 0 nodes then ignore this update and assume they'll get fixed later
+        if nodes.len() == 0 {
+            Err(error::request(error::message("unexpectedly received 0 node addresses while refreshing")))?
+        }
+
+        self.nodes.nodes = nodes;
         self.nodes.next().map_err(error::request)
     }
 }
@@ -266,7 +283,7 @@ mod tests {
 
     fn expected_nodes() -> NodesInfoResponse {
         NodesInfoResponse {
-            nodes: expected_addresses().into_iter()
+            nodes: publish_addresses().into_iter()
                 .map(|address| {
                     SniffedNode {
                         http: Some(SniffedNodeHttp {
@@ -278,14 +295,27 @@ mod tests {
         }
     }
 
+    fn empty_nodes() -> NodesInfoResponse {
+        NodesInfoResponse {
+            nodes: vec![]
+        }
+    }
+
     fn initial_address() -> &'static str {
         "http://initial:9200"
+    }
+
+    fn publish_addresses() -> Vec<&'static str> {
+        vec![
+            "a:9200",
+            "127.0.0.1:9200",
+        ]
     }
 
     fn expected_addresses() -> Vec<&'static str> {
         vec![
             "http://a:9200",
-            "http://b:9200",
+            "http://127.0.0.1:9200",
         ]
     }
 
@@ -336,14 +366,36 @@ mod tests {
         })
         .wait();
 
-        assert!(res.is_ok());
+        res.unwrap();
+
+        //assert!(res.is_ok());
 
         assert_node_addresses_equal(&nodes, expected_addresses());
         assert_refreshing_equal(&nodes, false);
+        assert_should_refresh_equal(&nodes, false);
     }
 
     #[test]
-    fn async_refresh_fail() {
+    fn async_refresh_fail_on_empty() {
+        let nodes = sender();
+        let nodes_while_refreshing = nodes.clone();
+
+        let res = nodes.async_next(move |_| {
+            assert_refreshing_equal(&nodes_while_refreshing, true);
+
+            Ok(empty_nodes()).into_future()
+        })
+        .wait();
+
+        assert!(res.is_err());
+
+        assert_node_addresses_equal(&nodes, vec![initial_address()]);
+        assert_refreshing_equal(&nodes, false);
+        assert_should_refresh_equal(&nodes, true);
+    }
+
+    #[test]
+    fn async_refresh_fail_on_request() {
         let nodes = sender();
         let nodes_while_refreshing = nodes.clone();
 
@@ -358,6 +410,7 @@ mod tests {
 
         assert_node_addresses_equal(&nodes, vec![initial_address()]);
         assert_refreshing_equal(&nodes, false);
+        assert_should_refresh_equal(&nodes, true);
     }
 
     #[test]
@@ -375,10 +428,29 @@ mod tests {
 
         assert_node_addresses_equal(&nodes, expected_addresses());
         assert_refreshing_equal(&nodes, false);
+        assert_should_refresh_equal(&nodes, false);
     }
 
     #[test]
-    fn sync_refresh_fail() {
+    fn sync_refresh_fail_on_empty() {
+        let nodes = sender();
+        let nodes_while_refreshing = nodes.clone();
+
+        let res = nodes.sync_next(move |_| {
+            assert_refreshing_equal(&nodes_while_refreshing, true);
+
+            Ok(empty_nodes())
+        });
+
+        assert!(res.is_err());
+
+        assert_node_addresses_equal(&nodes, vec![initial_address()]);
+        assert_refreshing_equal(&nodes, false);
+        assert_should_refresh_equal(&nodes, true);
+    }
+
+    #[test]
+    fn sync_refresh_fail_on_request() {
         let nodes = sender();
         let nodes_while_refreshing = nodes.clone();
 
@@ -392,5 +464,6 @@ mod tests {
 
         assert_node_addresses_equal(&nodes, vec![initial_address()]);
         assert_refreshing_equal(&nodes, false);
+        assert_should_refresh_equal(&nodes, true);
     }
 }

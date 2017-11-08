@@ -18,6 +18,7 @@ extern crate serde_derive;
 extern crate term_painter;
 extern crate tokio_core;
 extern crate tokio_timer;
+extern crate env_logger;
 
 use std::process;
 use term_painter::ToStyle;
@@ -31,7 +32,9 @@ mod build_container;
 mod wait_until_ready;
 
 fn main() {
-    let run = "default";
+    env_logger::init().unwrap();
+
+    let run = "sniffed_node";
     let mut core = tokio_core::reactor::Core::new().unwrap();
     let client = build_client::call(&core.handle(), run).unwrap();
 
