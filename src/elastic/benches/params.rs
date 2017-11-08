@@ -116,4 +116,9 @@ macro_rules! get_url_query {
     )
 }
 
-bench![new, clone, get_headers, get_url_query]
+bench! {
+    new,
+    clone,
+    get_headers,
+    get_url_query
+}
