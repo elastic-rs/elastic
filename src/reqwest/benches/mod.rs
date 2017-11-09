@@ -1,9 +1,9 @@
 #![feature(test)]
 
-extern crate reqwest;
-extern crate tokio_core;
 extern crate elastic_reqwest;
+extern crate reqwest;
 extern crate test;
+extern crate tokio_core;
 
 use reqwest::Client as ClientSync;
 use reqwest::unstable::async::Client as ClientAsync;
@@ -21,11 +21,12 @@ fn with_headers_1(params: RequestParams) -> RequestParams {
 
 #[inline(always)]
 fn with_headers_5(params: RequestParams) -> RequestParams {
-    params.header(Referer::new("/People.html#tim"))
-          .header(Referer::new("/People.html#tim"))
-          .header(Referer::new("/People.html#tim"))
-          .header(Referer::new("/People.html#tim"))
-          .header(Referer::new("/People.html#tim"))
+    params
+        .header(Referer::new("/People.html#tim"))
+        .header(Referer::new("/People.html#tim"))
+        .header(Referer::new("/People.html#tim"))
+        .header(Referer::new("/People.html#tim"))
+        .header(Referer::new("/People.html#tim"))
 }
 
 #[inline(always)]
@@ -35,11 +36,12 @@ fn with_params_1(params: RequestParams) -> RequestParams {
 
 #[inline(always)]
 fn with_params_5(params: RequestParams) -> RequestParams {
-    params.url_param("query", "*")
-          .url_param("query", "*")
-          .url_param("query", "*")
-          .url_param("query", "*")
-          .url_param("query", "*")
+    params
+        .url_param("query", "*")
+        .url_param("query", "*")
+        .url_param("query", "*")
+        .url_param("query", "*")
+        .url_param("query", "*")
 }
 
 macro_rules! bench {
@@ -152,11 +154,11 @@ macro_rules! get_url_query {
     )
 }
 
-bench![
+bench! {
     new,
     clone,
     get_headers,
     get_url_query,
     build_request_sync,
     build_request_async
-];
+}

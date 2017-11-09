@@ -5,13 +5,13 @@
 //! This sample executes a search request and iterates through the returned hits
 //! as anonymous json objects.
 
+extern crate elastic;
 extern crate env_logger;
 extern crate futures;
-extern crate tokio_core;
 extern crate futures_cpupool;
 #[macro_use]
 extern crate serde_json;
-extern crate elastic;
+extern crate tokio_core;
 
 use std::error::Error;
 use futures::Future;
@@ -27,7 +27,9 @@ fn run() -> Result<(), Box<Error>> {
     // A reqwest HTTP client and default parameters.
     // The `params` includes the base node url (http://localhost:9200).
     // We also specify a cpu pool for serialising and deserialising data on.
-    let client = AsyncClientBuilder::new().serde_pool(pool).build(&core.handle())?;
+    let client = AsyncClientBuilder::new()
+        .serde_pool(pool)
+        .build(&core.handle())?;
 
     // Send the request and process the response.
     let res_future = client

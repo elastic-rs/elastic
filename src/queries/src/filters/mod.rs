@@ -18,8 +18,7 @@ pub enum Filters {
     term(TermFilter),
     range(RangeFilter),
     exists(ExistsFilter),
-    #[serde(rename = "match")]
-    match_(MatchFilter),
+    #[serde(rename = "match")] match_(MatchFilter),
     wildcard(WildcardFilter),
 }
 

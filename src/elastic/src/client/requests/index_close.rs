@@ -8,7 +8,7 @@ use futures::{Future, Poll};
 
 use error::*;
 use client::{AsyncSender, Client, Sender, SyncSender};
-use client::requests::{RequestBuilder, DefaultBody, empty_body};
+use client::requests::{empty_body, DefaultBody, RequestBuilder};
 use client::requests::params::Index;
 use client::requests::endpoints::IndicesCloseRequest;
 use client::requests::raw::RawRequestInner;
@@ -72,13 +72,7 @@ where
     [send-async]: requests/index_close/type.IndexCloseRequestBuilder.html#send-asynchronously
     */
     pub fn index_close(&self, index: Index<'static>) -> IndexCloseRequestBuilder<TSender> {
-        RequestBuilder::new(
-            self.clone(),
-            None,
-            IndexCloseRequestInner {
-                index: index,
-            },
-        )
+        RequestBuilder::new(self.clone(), None, IndexCloseRequestInner { index: index })
     }
 }
 

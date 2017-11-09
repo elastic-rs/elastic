@@ -5,8 +5,8 @@
 //! This sample demonstrates a raw search request where the body is read into a `String` rather
 //! than being deserialised.
 
-extern crate env_logger;
 extern crate elastic;
+extern crate env_logger;
 
 use std::error::Error;
 use std::io::Read;
@@ -23,9 +23,7 @@ fn run() -> Result<(), Box<Error>> {
     let req = SearchRequest::for_index("_all", r#"{ "query": { "match_all": {} } }"#);
 
     // Send the request and process the response.
-    let mut res = client.request(req)
-                        .send()?
-                        .into_raw();
+    let mut res = client.request(req).send()?.into_raw();
 
     // Check if the response is in the 200 range
     match res.status() {

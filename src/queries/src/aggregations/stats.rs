@@ -36,6 +36,5 @@ mod tests {
                            }
                         }"#;
         let _s: AvgAggregation = serde_json::from_str(j).unwrap();
-
     }
 }

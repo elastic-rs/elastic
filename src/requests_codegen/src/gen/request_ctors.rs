@@ -359,32 +359,30 @@ impl<
         );
 
         let ctors: Vec<(Vec<String>, String)> = match params.node {
-            syn::ItemKind::Enum(ref variants, _) => {
-                variants
-                    .iter()
-                    .zip(endpoint.url.paths.iter())
-                    .map(|(v, p)| {
-                        let doc = format!("Request to: `{}`", p);
+            syn::ItemKind::Enum(ref variants, _) => variants
+                .iter()
+                .zip(endpoint.url.paths.iter())
+                .map(|(v, p)| {
+                    let doc = format!("Request to: `{}`", p);
 
-                        match v.data {
-                            syn::VariantData::Unit => {
-                                let args = vec![];
+                    match v.data {
+                        syn::VariantData::Unit => {
+                            let args = vec![];
 
-                                (args, doc)
-                            },
-                            syn::VariantData::Tuple(ref fields) => {
-                                let args = fields
-                                    .iter()
-                                    .map(|f| f.ty.get_ident().to_string())
-                                    .collect();
-                                
-                                (args, doc)
-                            },
-                            _ => panic!("Only tuple and unit variants are supported."),
+                            (args, doc)
                         }
-                    })
-                    .collect()
-            },
+                        syn::VariantData::Tuple(ref fields) => {
+                            let args = fields
+                                .iter()
+                                .map(|f| f.ty.get_ident().to_string())
+                                .collect();
+
+                            (args, doc)
+                        }
+                        _ => panic!("Only tuple and unit variants are supported."),
+                    }
+                })
+                .collect(),
             _ => panic!("Only enum types are supported."),
         };
 
@@ -425,7 +423,10 @@ pub mod tests {
     fn gen_request_ctor_params() {
         let req_ty = ty_a("Request");
         let result = RequestParamsCtorBuilder::new(false, req_ty, ty_a("UrlParams"))
-            .with_constructor(vec!["Index".into(), "Type".into(), "Id".into()], Some("A doc comment".to_owned()))
+            .with_constructor(
+                vec!["Index".into(), "Type".into(), "Id".into()],
+                Some("A doc comment".to_owned()),
+            )
             .build();
 
         let expected = quote!(

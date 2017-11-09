@@ -5,12 +5,12 @@
 //! This minimal sample executes a simple search request against all indices.
 //! To make things readable, the `pretty` url param is provided.
 
+extern crate elastic_reqwest;
 #[macro_use]
 extern crate serde_json;
-extern crate elastic_reqwest;
 
 use serde_json::Value;
-use elastic_reqwest::{SyncElasticClient, SyncFromResponse, RequestParams, Error};
+use elastic_reqwest::{Error, RequestParams, SyncElasticClient, SyncFromResponse};
 use elastic_reqwest::req::SearchRequest;
 use elastic_reqwest::res::{parse, SearchResponse};
 

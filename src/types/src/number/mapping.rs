@@ -118,7 +118,7 @@ macro_rules! number_mapping {
 
             #[derive(Default)]
             pub struct $pivot;
-            
+
             impl<TField, TMapping> FieldType<TMapping, $pivot> for TField
                 where TField: $field_trait<TMapping> + Serialize,
                       TMapping: $mapping
@@ -133,7 +133,7 @@ macro_rules! number_mapping {
             }
 
             impl<TMapping> Serialize for DocumentField<TMapping, $pivot>
-                where TMapping: FieldMapping<$pivot> + $mapping 
+                where TMapping: FieldMapping<$pivot> + $mapping
             {
                 fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where
                 S: ::serde::Serializer {

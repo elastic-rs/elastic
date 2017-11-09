@@ -3,7 +3,7 @@ extern crate serde_json;
 
 use elastic_responses::*;
 use elastic_responses::error::*;
-use ::load_file;
+use load_file;
 
 #[test]
 fn success_parse_index_ops() {
@@ -46,7 +46,10 @@ fn success_parse_multi_ops() {
         }
     }
 
-    assert_eq!((1, 1, 1, 1), (index_count, create_count, update_count, delete_count));
+    assert_eq!(
+        (1, 1, 1, 1),
+        (index_count, create_count, update_count, delete_count)
+    );
 }
 
 #[test]
@@ -85,9 +88,8 @@ fn error_parse_action_request_validation() {
     let deserialized = parse::<BulkResponse>().from_reader(400, f).unwrap_err();
 
     let valid = match deserialized {
-        ResponseError::Api(ApiError::ActionRequestValidation { ref reason })
-        if reason == "Validation Failed: 1: index is missing;2: type is missing;" => true,
-        _ => false
+        ResponseError::Api(ApiError::ActionRequestValidation { ref reason }) if reason == "Validation Failed: 1: index is missing;2: type is missing;" => true,
+        _ => false,
     };
 
     assert!(valid);
@@ -96,12 +98,13 @@ fn error_parse_action_request_validation() {
 #[test]
 fn error_parse_action_request_validation_errors_only() {
     let f = load_file("tests/samples/error_action_request_validation.json");
-    let deserialized = parse::<BulkErrorsResponse>().from_reader(400, f).unwrap_err();
+    let deserialized = parse::<BulkErrorsResponse>()
+        .from_reader(400, f)
+        .unwrap_err();
 
     let valid = match deserialized {
-        ResponseError::Api(ApiError::ActionRequestValidation { ref reason })
-        if reason == "Validation Failed: 1: index is missing;2: type is missing;" => true,
-        _ => false
+        ResponseError::Api(ApiError::ActionRequestValidation { ref reason }) if reason == "Validation Failed: 1: index is missing;2: type is missing;" => true,
+        _ => false,
     };
 
     assert!(valid);

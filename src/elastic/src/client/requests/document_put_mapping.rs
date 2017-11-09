@@ -300,7 +300,7 @@ mod tests {
             .inner
             .into_sync_request()
             .unwrap();
-        
+
         let expected_body = json!({
             "properties": {
 

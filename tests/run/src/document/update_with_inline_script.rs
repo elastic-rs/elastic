@@ -35,11 +35,10 @@ impl IntegrationTest for UpdateWithInlineScript {
 
     // Ensure the index doesn't exist
     fn prepare(&self, client: AsyncClient) -> Box<Future<Item = (), Error = Error>> {
-        let delete_res = client
-            .index_delete(index(INDEX))
-            .send();
+        let delete_res = client.index_delete(index(INDEX)).send();
 
-        let index_res = client.document_index(index(INDEX), id(ID), doc())
+        let index_res = client
+            .document_index(index(INDEX), id(ID), doc())
             .params(|p| p.url_param("refresh", true))
             .send();
 
@@ -48,7 +47,8 @@ impl IntegrationTest for UpdateWithInlineScript {
 
     // Execute an update request against that index using a script
     fn request(&self, client: AsyncClient) -> Box<Future<Item = Self::Response, Error = Error>> {
-        let update_res = client.document_update::<Doc>(index(INDEX), id(ID))
+        let update_res = client
+            .document_update::<Doc>(index(INDEX), id(ID))
             .script(format!("ctx._source.title = \"{}\"", EXPECTED_TITLE))
             .params(|p| p.url_param("refresh", true))
             .send();

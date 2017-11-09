@@ -5,13 +5,13 @@
 //! This sample demonstrates creating a custom `SearchResponse` type that can be used with
 //! the `filter_path` query parameter to only return the matched hits.
 
+extern crate elastic;
 extern crate env_logger;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
 #[macro_use]
 extern crate serde_json;
-extern crate elastic;
 
 use std::error::Error;
 use serde_json::Value;
@@ -30,15 +30,12 @@ struct Hits {
 
 #[derive(Deserialize, Debug)]
 struct Hit {
-    #[serde(rename = "_source")]
-    pub source: Value,
+    #[serde(rename = "_source")] pub source: Value,
 }
 
 // Implement `IsOk` for our custom `SearchResponse` so it can be used in the call to `into_response`.
 impl IsOk for SearchResponse {
-    fn is_ok<B: ResponseBody>(head: HttpResponseHead,
-                              body: Unbuffered<B>)
-                              -> Result<MaybeOkResponse<B>, ParseResponseError> {
+    fn is_ok<B: ResponseBody>(head: HttpResponseHead, body: Unbuffered<B>) -> Result<MaybeOkResponse<B>, ParseResponseError> {
         match head.status() {
             200...299 => Ok(MaybeOkResponse::ok(body)),
             _ => Ok(MaybeOkResponse::err(body)),

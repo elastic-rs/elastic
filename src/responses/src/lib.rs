@@ -126,7 +126,6 @@ in a `GetResponse`.
 */
 
 #[deny(warnings, missing_docs)]
-
 #[macro_use]
 extern crate log;
 

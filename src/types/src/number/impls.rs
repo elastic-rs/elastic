@@ -22,7 +22,7 @@ macro_rules! number_type {
             }
 
             /** Change the mapping of this number. */
-            pub fn remap<TNewMapping>(number: $wrapper_ty<TMapping>) -> $wrapper_ty<TNewMapping> 
+            pub fn remap<TNewMapping>(number: $wrapper_ty<TMapping>) -> $wrapper_ty<TNewMapping>
                 where TNewMapping: $mapping_ty
             {
                 $wrapper_ty::new(number.value)

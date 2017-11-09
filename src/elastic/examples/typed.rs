@@ -10,19 +10,19 @@
 //! - Index a document
 //! - Search the index and iterate over hits
 
-extern crate env_logger;
-#[macro_use]
-extern crate serde_json;
 #[macro_use]
 extern crate elastic_derive;
+extern crate env_logger;
+extern crate serde;
 #[macro_use]
 extern crate serde_derive;
-extern crate serde;
+#[macro_use]
+extern crate serde_json;
 
 extern crate elastic;
 
 use std::error::Error as StdError;
-use elastic::error::{Error, ApiError};
+use elastic::error::{ApiError, Error};
 use elastic::prelude::*;
 
 #[derive(Debug, Serialize, Deserialize, ElasticType)]
@@ -90,7 +90,9 @@ fn ensure_indexed(client: &SyncClient, doc: MyType) -> Result<(), Error> {
 
 fn put_index(client: &SyncClient) -> Result<(), Error> {
     client.index_create(sample_index()).send()?;
-    client.document_put_mapping::<MyType>(sample_index()).send()?;
+    client
+        .document_put_mapping::<MyType>(sample_index())
+        .send()?;
 
     Ok(())
 }
@@ -100,7 +102,7 @@ fn put_doc(client: &SyncClient, doc: MyType) -> Result<(), Error> {
         .document_index(sample_index(), id(doc.id), doc)
         .params(|p| p.url_param("refresh", true))
         .send()?;
-    
+
     Ok(())
 }
 

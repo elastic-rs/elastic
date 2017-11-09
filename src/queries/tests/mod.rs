@@ -1,5 +1,5 @@
-extern crate serde_json;
 extern crate elastic_queries;
+extern crate serde_json;
 
 use elastic_queries::prelude::*;
 

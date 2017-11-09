@@ -7,7 +7,7 @@ extern crate elastic_types;
 extern crate elastic_types_derive;
 
 #[derive(ElasticDateFormat, PartialEq, Debug, Default, Clone, Copy)]
-#[elastic(date_format="yyyy-MM-dd'T'HH:mm:ssZ")]
+#[elastic(date_format = "yyyy-MM-dd'T'HH:mm:ssZ")]
 pub struct DerivedDateFormat;
 
 #[derive(ElasticType)]
@@ -16,4 +16,4 @@ pub struct DerivedDocument {
     pub field2: i32,
 }
 
-fn main() { }
+fn main() {}
