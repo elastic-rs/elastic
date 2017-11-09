@@ -1,18 +1,14 @@
 #![feature(test)]
 
-extern crate elastic_reqwest;
+extern crate elastic;
 extern crate reqwest;
 extern crate test;
 extern crate tokio_core;
 
-use reqwest::Client as ClientSync;
-use reqwest::unstable::async::Client as ClientAsync;
 use reqwest::header::Referer;
 use tokio_core::reactor::Core;
-use elastic_reqwest::RequestParams;
-use elastic_reqwest::sync::build_req as build_req_sync;
-use elastic_reqwest::async::build_req as build_req_async;
-use elastic_reqwest::req::PingRequest;
+use elastic::client::RequestParams;
+use elastic::client::requests::PingRequest;
 
 #[inline(always)]
 fn with_headers_1(params: RequestParams) -> RequestParams {
@@ -105,40 +101,6 @@ macro_rules! get_headers {
     )
 }
 
-macro_rules! build_request_sync {
-    ($({ $name:ident, $params:expr }),*) => (
-        $(
-            #[bench]
-            fn $name(b: &mut test::Bencher) {
-                let params = RequestParams::default();
-                let cli = ClientSync::new();
-
-                b.iter(|| {
-                    build_req_sync(&cli, &params, PingRequest::new())
-                })
-            }
-        )*
-    )
-}
-
-macro_rules! build_request_async {
-    ($({ $name:ident, $params:expr }),*) => (
-        $(
-            #[bench]
-            fn $name(b: &mut test::Bencher) {
-                let core = Core::new().unwrap();
-
-                let params = RequestParams::default();
-                let cli = ClientAsync::new(&core.handle());
-
-                b.iter(|| {
-                    build_req_async(&cli, &params, PingRequest::new())
-                })
-            }
-        )*
-    )
-}
-
 macro_rules! get_url_query {
     ($({ $name:ident, $params:expr }),*) => (
         $(
@@ -158,7 +120,5 @@ bench! {
     new,
     clone,
     get_headers,
-    get_url_query,
-    build_request_sync,
-    build_request_async
+    get_url_query
 }

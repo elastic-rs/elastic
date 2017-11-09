@@ -16,3 +16,6 @@ tokio-core = "~0.1.9"
 tokio-timer = "*"
 futures-cpupool = "~0.1.6"
 term-painter = "*"
+clap = "*"
+
+env_logger = "*"

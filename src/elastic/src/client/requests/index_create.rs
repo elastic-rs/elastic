@@ -7,7 +7,8 @@ Builders for [create index requests][docs-create-index].
 use futures::{Future, Poll};
 
 use error::*;
-use client::{AsyncSender, Client, Sender, SyncSender};
+use client::Client;
+use client::sender::{AsyncSender, Sender, SyncSender};
 use client::requests::{empty_body, DefaultBody, RequestBuilder};
 use client::requests::params::Index;
 use client::requests::endpoints::IndicesCreateRequest;
@@ -153,7 +154,7 @@ where
     {
         RequestBuilder::new(
             self.client,
-            self.params,
+            self.params_builder,
             IndexCreateRequestInner {
                 index: self.inner.index,
                 body: body,
@@ -167,7 +168,7 @@ where
 */
 impl<TBody> IndexCreateRequestBuilder<SyncSender, TBody>
 where
-    TBody: Into<<SyncSender as Sender>::Body>,
+    TBody: Into<<SyncSender as Sender>::Body> + 'static,
 {
     /**
     Send an `IndexCreateRequestBuilder` synchronously using a [`SyncClient`][SyncClient].
@@ -198,7 +199,7 @@ where
     pub fn send(self) -> Result<CommandResponse> {
         let req = self.inner.into_request();
 
-        RequestBuilder::new(self.client, self.params, RawRequestInner::new(req))
+        RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
             .send()?
             .into_response()
     }
@@ -209,7 +210,7 @@ where
 */
 impl<TBody> IndexCreateRequestBuilder<AsyncSender, TBody>
 where
-    TBody: Into<<AsyncSender as Sender>::Body>,
+    TBody: Into<<AsyncSender as Sender>::Body> + 'static,
 {
     /**
     Send an `IndexCreateRequestBuilder` asynchronously using an [`AsyncClient`][AsyncClient].
@@ -248,7 +249,7 @@ where
     pub fn send(self) -> Pending {
         let req = self.inner.into_request();
 
-        let res_future = RequestBuilder::new(self.client, self.params, RawRequestInner::new(req))
+        let res_future = RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
             .send()
             .and_then(|res| res.into_response());
 

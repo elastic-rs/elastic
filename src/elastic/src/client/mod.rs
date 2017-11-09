@@ -502,42 +502,13 @@ For more details see the [`responses`][responses-mod] module.
 [response-types]: responses/parse/trait.IsOk.html#implementors
 */
 
+pub mod sender;
 pub mod requests;
 pub mod responses;
 
-use self::requests::HttpRequest;
+pub use self::sender::{AsyncClient, AsyncClientBuilder, PreRequestParams, RequestParams, SyncClient, SyncClientBuilder};
 
-mod sync;
-mod async;
-pub use self::sync::*;
-pub use self::async::*;
-
-pub use elastic_reqwest::RequestParams;
-
-mod private {
-    pub trait Sealed {}
-}
-
-/**
-Represents a type that can send a request.
-
-You probably don't need to touch this trait directly.
-See the [`Client`][Client] type for making requests.
-
-[Client]: struct.Client.html
-*/
-pub trait Sender: private::Sealed + Clone {
-    /// The kind of request body this sender accepts.
-    type Body;
-    /// The kind of response this sender produces.
-    type Response;
-
-    /// Send a request.
-    fn send<TRequest, TBody>(&self, req: TRequest, params: &RequestParams) -> Self::Response
-    where
-        TRequest: Into<HttpRequest<'static, TBody>>,
-        TBody: Into<Self::Body>;
-}
+use self::sender::NodeAddresses;
 
 /**
 A HTTP client for the Elasticsearch REST API.
@@ -595,13 +566,14 @@ core.run(response_future)?;
 #[derive(Clone)]
 pub struct Client<TSender> {
     sender: TSender,
-    params: RequestParams,
+    addresses: NodeAddresses<TSender>,
 }
 
 pub mod prelude {
     /*! A glob import for convenience. */
 
-    pub use super::{AsyncClient, AsyncClientBuilder, RequestParams, SyncClient, SyncClientBuilder};
+    pub use super::sender::{PreRequestParams, RequestParams};
+    pub use super::{AsyncClient, AsyncClientBuilder, SyncClient, SyncClientBuilder};
     pub use super::requests::prelude::*;
     pub use super::responses::prelude::*;
 }

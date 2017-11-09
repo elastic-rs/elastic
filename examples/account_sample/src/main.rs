@@ -17,13 +17,12 @@ pub mod model;
 pub mod ops;
 
 use std::error::Error;
-use elastic::client::RequestParams;
 use ops::Client;
 use ops::commands::{EnsureBankIndexExists, PutBulkAccounts};
 use ops::queries::SimpleSearchQuery;
 
 fn run() -> Result<(), Box<Error>> {
-    let client = Client::new(RequestParams::default())?;
+    let client = Client::new("http://localhost:9200")?;
 
     println!("checking index");
 

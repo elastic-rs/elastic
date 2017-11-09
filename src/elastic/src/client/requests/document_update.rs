@@ -11,7 +11,8 @@ use serde_json::{self, Map, Value};
 use serde::ser::{Serialize, Serializer};
 
 use error::{self, Error};
-use client::{AsyncSender, Client, Sender, SyncSender};
+use client::Client;
+use client::sender::{AsyncSender, Sender, SyncSender};
 use client::requests::RequestBuilder;
 use client::requests::params::{Id, Index, Type};
 use client::requests::endpoints::UpdateRequest;
@@ -326,7 +327,7 @@ where
     {
         RequestBuilder::new(
             self.client,
-            self.params,
+            self.params_builder,
             UpdateRequestInner {
                 body: Doc::value(doc),
                 index: self.inner.index,
@@ -410,7 +411,7 @@ where
     {
         RequestBuilder::new(
             self.client,
-            self.params,
+            self.params_builder,
             UpdateRequestInner {
                 body: builder.into().build(),
                 index: self.inner.index,
@@ -558,7 +559,7 @@ where
     pub fn send(self) -> Result<UpdateResponse, Error> {
         let req = self.inner.into_sync_request()?;
 
-        RequestBuilder::new(self.client, self.params, RawRequestInner::new(req))
+        RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
             .send()?
             .into_response()
     }
@@ -618,13 +619,13 @@ where
     [AsyncClient]: ../../type.AsyncClient.html
     */
     pub fn send(self) -> Pending {
-        let (client, params) = (self.client, self.params);
+        let (client, params_builder) = (self.client, self.params_builder);
 
         let ser_pool = client.sender.serde_pool.clone();
         let req_future = self.inner.into_async_request(ser_pool);
 
         let res_future = req_future.and_then(move |req| {
-            RequestBuilder::new(client, params, RawRequestInner::new(req))
+            RequestBuilder::new(client, params_builder, RawRequestInner::new(req))
                 .send()
                 .and_then(|res| res.into_response())
         });

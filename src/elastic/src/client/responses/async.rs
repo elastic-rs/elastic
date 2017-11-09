@@ -1,8 +1,7 @@
-use std::mem;
 use futures::{Future, Poll, Stream};
 use futures_cpupool::CpuPool;
 use serde::de::DeserializeOwned;
-use reqwest::unstable::async::{Decoder, Response as RawResponse};
+use reqwest::unstable::async::Response as RawResponse;
 
 use error::{self, Error};
 use http::AsyncChunk;
@@ -110,12 +109,12 @@ impl AsyncResponseBuilder {
 
     [response-types]: parse/trait.IsOk.html#implementors
     */
-    pub fn into_response<T>(mut self) -> IntoResponse<T>
+    pub fn into_response<T>(self) -> IntoResponse<T>
     where
         T: IsOk + DeserializeOwned + Send + 'static,
     {
         let status = self.status();
-        let body = mem::replace(self.inner.body_mut(), Decoder::empty());
+        let body = self.inner.into_body();
 
         let de_fn = move |body: AsyncChunk| {
             parse()

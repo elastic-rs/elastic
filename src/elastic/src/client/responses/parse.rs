@@ -87,7 +87,7 @@ See the [`IsOk`][IsOk] trait for more details.
 [IsOk]: trait.IsOk.html
 */
 
-pub(super) use elastic_reqwest::res::parse;
+pub(crate) use elastic_responses::parse;
 
-pub use elastic_reqwest::res::parsing::{Buffered, HttpResponseHead, IsOk, MaybeBufferedResponse, MaybeOkResponse, ResponseBody, Unbuffered};
-pub use elastic_reqwest::res::error::ParseResponseError;
+pub use elastic_responses::parsing::{Buffered, HttpResponseHead, IsOk, MaybeBufferedResponse, MaybeOkResponse, ResponseBody, Unbuffered};
+pub use elastic_responses::error::ParseResponseError;

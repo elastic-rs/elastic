@@ -8,7 +8,8 @@ use std::marker::PhantomData;
 use futures::{Future, Poll};
 
 use error::{Error, Result};
-use client::{AsyncSender, Client, Sender, SyncSender};
+use client::Client;
+use client::sender::{AsyncSender, Sender, SyncSender};
 use client::requests::RequestBuilder;
 use client::requests::params::{Id, Index, Type};
 use client::requests::endpoints::DeleteRequest;
@@ -175,7 +176,7 @@ impl<TDocument> DeleteRequestBuilder<SyncSender, TDocument> {
     pub fn send(self) -> Result<DeleteResponse> {
         let req = self.inner.into_request();
 
-        RequestBuilder::new(self.client, self.params, RawRequestInner::new(req))
+        RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
             .send()?
             .into_response()
     }
@@ -227,7 +228,7 @@ impl<TDocument> DeleteRequestBuilder<AsyncSender, TDocument> {
     pub fn send(self) -> Pending {
         let req = self.inner.into_request();
 
-        let res_future = RequestBuilder::new(self.client, self.params, RawRequestInner::new(req))
+        let res_future = RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
             .send()
             .and_then(|res| res.into_response());
 
