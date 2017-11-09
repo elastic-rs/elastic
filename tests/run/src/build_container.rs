@@ -1,31 +1,35 @@
 use std::error::Error;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 
 struct Names {
     container_name: String,
     build_name: String,
-    build_path: String,
+    dockerfile_name: String,
 }
 
 impl Names {
     fn from_run(run: &str) -> Self {
         let container_name = format!("elastic-rs-{}", run);
         let build_name = format!("{}:latest", container_name);
-        let build_path = format!("./containers/{}.Dockerfile", run);
+        let dockerfile_name = format!("{}.Dockerfile", run);
 
         Names {
             container_name: container_name,
             build_name: build_name,
-            build_path: build_path,
+            dockerfile_name: dockerfile_name,
         }
     }
 }
 
 pub fn start(run: &str) -> Result<(), Box<Error>> {
     let names = Names::from_run(run);
+    let containers_path = "./containers";
 
-    if Path::exists(names.build_path.as_ref()) {
+    let mut dockerfile_path = PathBuf::from(containers_path);
+    dockerfile_path.push(&names.dockerfile_name);
+
+    if Path::exists(dockerfile_path.as_ref()) {
         // Kill the container if it's runnning
         kill(run)?;
 
@@ -34,11 +38,12 @@ pub fn start(run: &str) -> Result<(), Box<Error>> {
             .args(&[
                 "build",
                 "-f",
-                &names.build_path,
+                &names.dockerfile_name,
                 "-t",
                 &names.build_name,
                 ".",
             ])
+            .current_dir("./containers")
             .stdout(Stdio::inherit())
             .stderr(Stdio::inherit())
             .output()?;
@@ -60,7 +65,7 @@ pub fn start(run: &str) -> Result<(), Box<Error>> {
 
         Ok(())
     } else {
-        println!("'{}' not found, skipping docker setup", names.build_path);
+        println!("'{:?}' not found, skipping docker setup", dockerfile_path);
 
         Ok(())
     }

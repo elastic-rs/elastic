@@ -16,10 +16,10 @@ pub mod parse;
 pub use self::sync::*;
 pub use self::async::*;
 
-pub use elastic_reqwest::res::{BulkErrorsResponse, BulkResponse, CommandResponse, DeleteResponse, GetResponse, IndicesExistsResponse, IndexResponse, PingResponse, SearchResponse, Shards, UpdateResponse};
+pub use elastic_responses::{BulkErrorsResponse, BulkResponse, CommandResponse, DeleteResponse, GetResponse, IndexResponse, IndicesExistsResponse, PingResponse, SearchResponse, Shards, UpdateResponse};
 
-pub use elastic_reqwest::res::search;
-pub use elastic_reqwest::res::bulk;
+pub use elastic_responses::search;
+pub use elastic_responses::bulk;
 
 pub mod prelude {
     /*! A glob import for convenience. */

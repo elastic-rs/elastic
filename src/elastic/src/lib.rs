@@ -62,7 +62,7 @@ use elastic::prelude::*;
 use elastic::http::header::Authorization;
 
 let builder = SyncClientBuilder::new()
-    .base_url("http://es_host:9200")
+    .static_node("http://es_host:9200")
     .params(|p| p
         .url_param("pretty", true)
         .header(Authorization("let me in".to_owned())));
@@ -275,10 +275,12 @@ This crate glues these libraries together with some simple assumptions about how
 [request-builders]: client/index.html#request-builders
 */
 
-#![deny(warnings, missing_docs)]
+//#![deny(warnings, missing_docs)]
 #![allow(unknown_lints, doc_markdown)]
 
-extern crate elastic_reqwest;
+extern crate bytes;
+extern crate elastic_requests;
+extern crate elastic_responses;
 extern crate elastic_types;
 #[macro_use]
 extern crate error_chain;
@@ -286,6 +288,8 @@ extern crate futures;
 extern crate futures_cpupool;
 #[macro_use]
 extern crate log;
+#[macro_use]
+extern crate quick_error;
 extern crate reqwest;
 extern crate serde;
 #[macro_use]
@@ -293,10 +297,15 @@ extern crate serde_derive;
 #[cfg_attr(test, macro_use)]
 extern crate serde_json;
 extern crate tokio_core;
+extern crate url;
 extern crate uuid;
 
 pub mod error;
 pub use error::Error;
+
+mod private {
+    pub trait Sealed {}
+}
 
 pub mod http {
     /*! 
@@ -308,7 +317,7 @@ pub mod http {
 
     pub use reqwest::header;
     pub use reqwest::Body as SyncBody;
-    pub use reqwest::unstable::async::Chunk as AsyncChunk;
+    pub use reqwest::unstable::async::{Body as AsyncBody, Chunk as AsyncChunk};
 }
 
 pub mod client;
