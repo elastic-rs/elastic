@@ -68,7 +68,6 @@ impl AsyncResponseBuilder {
     # struct MyType { }
     # let core = tokio_core::reactor::Core::new()?;
     # let client = AsyncClientBuilder::new().build(&core.handle())?;
-    # let req = PingRequest::new();
     let future = client.request(SimpleSearchRequest::for_index_ty("myindex", "mytype"))
                        .send()
                        .and_then(|response| response.into_response::<SearchResponse<MyType>>());
@@ -100,7 +99,6 @@ impl AsyncResponseBuilder {
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # let core = tokio_core::reactor::Core::new()?;
     # let client = AsyncClientBuilder::new().build(&core.handle())?;
-    # let req = PingRequest::new();
     let future = client.request(SimpleSearchRequest::for_index_ty("myindex", "mytype"))
                        .send()
                        .and_then(|response| response.into_response::<Value>());

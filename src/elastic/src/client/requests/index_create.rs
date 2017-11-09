@@ -82,8 +82,6 @@ where
     # fn main() { run().unwrap() }
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # let client = SyncClientBuilder::new().build()?;
-    let my_index = index("myindex");
-
     let body = json!({
         "settings": {
             "index": {
@@ -96,7 +94,7 @@ where
         }
     });
 
-    let response = client.index_create(my_index)
+    let response = client.index_create(index("myindex"))
                          .body(body.to_string())
                          .send()?;
 
@@ -184,9 +182,7 @@ where
     # fn main() { run().unwrap() }
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # let client = SyncClientBuilder::new().build()?;
-    let my_index = index("myindex");
-
-    let response = client.index_create(my_index).send()?;
+    let response = client.index_create(index("myindex")).send()?;
 
     assert!(response.acknowledged());
     # Ok(())
@@ -230,9 +226,7 @@ where
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # let core = tokio_core::reactor::Core::new()?;
     # let client = AsyncClientBuilder::new().build(&core.handle())?;
-    let my_index = index("myindex");
-
-    let future = client.index_create(my_index).send();
+    let future = client.index_create(index("myindex")).send();
 
     future.and_then(|response| {
         assert!(response.acknowledged());
