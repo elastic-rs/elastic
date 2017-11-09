@@ -58,8 +58,6 @@ where
     # #[derive(Debug, Serialize, Deserialize, ElasticType)]
     # struct MyType { }
     # let client = SyncClientBuilder::new().build()?;
-    let query = "a query string";
-
     let response = client.ping().send()?;
 
     println!("node: {}", response.name());
@@ -107,8 +105,6 @@ impl PingRequestBuilder<SyncSender> {
     # #[derive(Debug, Serialize, Deserialize, ElasticType)]
     # struct MyType { }
     # let client = SyncClientBuilder::new().build()?;
-    let query = "a query string";
-
     let response = client.ping().send()?;
 
     println!("node: {}", response.name());

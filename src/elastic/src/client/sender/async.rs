@@ -35,9 +35,7 @@ Create an asynchronous `Client` and send a ping request:
 let mut core = Core::new()?;
 let client = AsyncClientBuilder::new().build(&core.handle())?;
 
-let response_future = client.request(PingRequest::new())
-                            .send()
-                            .and_then(|res| res.into_response::<PingResponse>());
+let response_future = client.ping().send();
 
 core.run(response_future)?;
 # Ok(())

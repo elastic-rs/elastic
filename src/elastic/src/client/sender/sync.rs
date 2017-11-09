@@ -24,9 +24,7 @@ Create a synchronous `Client` and send a ping request:
 # fn run() -> Result<(), Box<::std::error::Error>> {
 let client = SyncClientBuilder::new().build()?;
 
-let response = client.request(PingRequest::new())
-                     .send()?
-                     .into_response::<PingResponse>()?;
+let response = client.ping().send()?;
 # Ok(())
 # }
 ```

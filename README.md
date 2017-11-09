@@ -28,7 +28,7 @@ Windows  | Nightly | [![Build status](https://ci.appveyor.com/api/projects/statu
 Version                | Docs
 ---------------------- | -------------
 current (`master`)     | [![Documentation](https://img.shields.io/badge/docs-rustdoc-blue.svg)](https://docs.rs/elastic/*/elastic/)
-unstable `vNext`       | [![Documentation](https://img.shields.io/badge/docs-rustdoc-orange.svg)](http://elastic-rs.github.io/elastic/elastic/index.html)
+unstable (`vNext`)     | [![Documentation](https://img.shields.io/badge/docs-rustdoc-orange.svg)](http://elastic-rs.github.io/elastic/elastic/index.html)
 
 ## Example
 
