@@ -9,7 +9,8 @@ use futures::{Future, Poll};
 use serde::de::DeserializeOwned;
 
 use error::{Error, Result};
-use client::{AsyncSender, Client, Sender, SyncSender};
+use client::Client;
+use client::sender::{AsyncSender, Sender, SyncSender};
 use client::requests::RequestBuilder;
 use client::requests::params::{Id, Index, Type};
 use client::requests::endpoints::GetRequest;
@@ -201,7 +202,7 @@ where
     pub fn send(self) -> Result<GetResponse<TDocument>> {
         let req = self.inner.into_request();
 
-        RequestBuilder::new(self.client, self.params, RawRequestInner::new(req))
+        RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
             .send()?
             .into_response()
     }
@@ -258,7 +259,7 @@ where
     pub fn send(self) -> Pending<TDocument> {
         let req = self.inner.into_request();
 
-        let res_future = RequestBuilder::new(self.client, self.params, RawRequestInner::new(req))
+        let res_future = RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
             .send()
             .and_then(|res| res.into_response());
 

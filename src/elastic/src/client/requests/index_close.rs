@@ -7,7 +7,8 @@ Builders for [close index requests][docs-close-index].
 use futures::{Future, Poll};
 
 use error::*;
-use client::{AsyncSender, Client, Sender, SyncSender};
+use client::Client;
+use client::sender::{AsyncSender, Sender, SyncSender};
 use client::requests::{empty_body, DefaultBody, RequestBuilder};
 use client::requests::params::Index;
 use client::requests::endpoints::IndicesCloseRequest;
@@ -111,7 +112,7 @@ impl IndexCloseRequestBuilder<SyncSender> {
     pub fn send(self) -> Result<CommandResponse> {
         let req = self.inner.into_request();
 
-        RequestBuilder::new(self.client, self.params, RawRequestInner::new(req))
+        RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
             .send()?
             .into_response()
     }
@@ -156,7 +157,7 @@ impl IndexCloseRequestBuilder<AsyncSender> {
     pub fn send(self) -> Pending {
         let req = self.inner.into_request();
 
-        let res_future = RequestBuilder::new(self.client, self.params, RawRequestInner::new(req))
+        let res_future = RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
             .send()
             .and_then(|res| res.into_response());
 

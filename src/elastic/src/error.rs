@@ -43,10 +43,9 @@ use std::error::Error as StdError;
 
 use serde_json;
 use reqwest::Error as ReqwestError;
-use elastic_reqwest::Error as ElasticReqwestError;
-use elastic_reqwest::res::error::ResponseError;
+use elastic_responses::error::ResponseError;
 
-pub use elastic_reqwest::res::error::ApiError;
+pub use elastic_responses::error::ApiError;
 
 /** An alias for a result. */
 pub type Result<T> = ::std::result::Result<T, Error>;
@@ -60,37 +59,32 @@ can be formatted, but not destructured.
 If the `RUST_BACKTRACE` environment variable is `1` then client errors will
 also contain a backtrace.
 */
-#[derive(Debug)]
-pub enum Error {
-    /** An API error from Elasticsearch. */ Api(ApiError),
-    /** Any other kind of error. */ Client(ClientError),
-}
-
-impl StdError for Error {
-    fn description(&self) -> &str {
-        match *self {
-            Error::Api(_) => "API error returned from Elasticsearch",
-            Error::Client(_) => "error sending a request or receiving a response",
+quick_error! {
+    #[derive(Debug)]
+    pub enum Error {
+        /** An API error from Elasticsearch. */
+        Api(err: ApiError) {
+            cause(err)
+            description("API error returned from Elasticsearch")
+            display("API error returned from Elasticsearch. Caused by: {}", err)
         }
-    }
-
-    fn cause(&self) -> Option<&StdError> {
-        match *self {
-            Error::Api(ref e) => Some(e),
-            Error::Client(ref e) => Some(e),
+        /** Any other kind of error. */
+        Client(err: ClientError) {
+            cause(err)
+            description("error sending a request or receiving a response")
+            display("error sending a request or receiving a response. Caused by: {}", err)
         }
     }
 }
 
-impl fmt::Display for Error {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match *self {
-            Error::Api(ref e) => write!(f, "API error returned from Elasticsearch. Caused by: {}", e),
-            Error::Client(ref e) => write!(
-                f,
-                "error sending a request or receiving a response. Caused by: {}",
-                e
-            ),
+pub(crate) mod string_error {
+    quick_error! {
+        #[derive(Debug)]
+        pub enum Error {
+            Message(err: String) {
+                description("An error occurred")
+                display("{}", err)
+            }
         }
     }
 }
@@ -147,6 +141,21 @@ where
     }
 }
 
+pub(crate) fn message<E>(err: E) -> string_error::Error
+where
+    E: Into<String>,
+{
+    string_error::Error::Message(err.into())
+}
+
+/** A convenient method to generate errors in tests. */
+#[cfg(test)]
+pub(crate) fn test() -> Error {
+    Error::Client(ClientError {
+        inner: inner::Error::from("a test error"),
+    })
+}
+
 pub(crate) enum MaybeApiError<E> {
     Api(ApiError),
     Other(E),
@@ -156,24 +165,6 @@ impl Into<MaybeApiError<ResponseError>> for ResponseError {
     fn into(self) -> MaybeApiError<Self> {
         match self {
             ResponseError::Api(err) => MaybeApiError::Api(err),
-            err => MaybeApiError::Other(err),
-        }
-    }
-}
-
-impl Into<MaybeApiError<ElasticReqwestError>> for ResponseError {
-    fn into(self) -> MaybeApiError<ElasticReqwestError> {
-        match self {
-            ResponseError::Api(err) => MaybeApiError::Api(err),
-            err => MaybeApiError::Other(ElasticReqwestError::Response(err)),
-        }
-    }
-}
-
-impl Into<MaybeApiError<ElasticReqwestError>> for ElasticReqwestError {
-    fn into(self) -> MaybeApiError<Self> {
-        match self {
-            ElasticReqwestError::Response(err) => err.into(),
             err => MaybeApiError::Other(err),
         }
     }

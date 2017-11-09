@@ -4,17 +4,23 @@ Request types for the Elasticsearch REST API.
 This module contains implementation details that are useful if you want to customise the request process, but aren't generally important for sending requests.
 */
 
+use std::sync::Arc;
 use futures_cpupool::CpuPool;
 
-use client::{AsyncSender, Client, RequestParams, Sender};
+use client::Client;
+use client::sender::{AsyncSender, RequestParams, Sender};
 
-pub use elastic_reqwest::{AsyncBody, SyncBody};
-pub use elastic_reqwest::req::{empty_body, DefaultBody, HttpMethod, HttpRequest, Url};
-pub use elastic_reqwest::req::params;
-pub use elastic_reqwest::req::endpoints;
+pub use elastic_requests::{empty_body, DefaultBody, HttpMethod, HttpRequest, Url};
+pub use elastic_requests::params;
+pub use elastic_requests::endpoints;
 
 pub use self::params::*;
 pub use self::endpoints::*;
+
+mod sync;
+mod async;
+pub use self::sync::*;
+pub use self::async::*;
 
 pub mod raw;
 pub use self::raw::RawRequestBuilder;
@@ -67,7 +73,7 @@ where
     TSender: Sender,
 {
     client: Client<TSender>,
-    params: Option<RequestParams>,
+    params_builder: Option<Arc<Fn(RequestParams) -> RequestParams>>,
     inner: TRequest,
 }
 
@@ -80,10 +86,10 @@ impl<TSender, TRequest> RequestBuilder<TSender, TRequest>
 where
     TSender: Sender,
 {
-    fn new(client: Client<TSender>, params: Option<RequestParams>, req: TRequest) -> Self {
+    fn new(client: Client<TSender>, builder: Option<Arc<Fn(RequestParams) -> RequestParams>>, req: TRequest) -> Self {
         RequestBuilder {
             client: client,
-            params: params,
+            params_builder: builder,
             inner: req,
         }
     }
@@ -91,8 +97,9 @@ where
     /**
     Override the parameters for this request.
     
-    This method will clone the `RequestParams` on the `Client` and pass
-    them to the closure.
+    This method will box the given closure and use it to mutate the request parameters.
+    It will be called after a node address has been chosen so `params` can be used to override the url a request will be sent to.
+    Each call to `params` will be chained so it can be called multiple times but it's recommended to only call once.
     
     # Examples
     
@@ -110,17 +117,36 @@ where
     # Ok(())
     # }
     ```
+
+    Force the request to be sent to `http://different-host:9200`:
+
+    ```no_run
+    # extern crate elastic;
+    # use elastic::prelude::*;
+    # fn main() { run().unwrap() }
+    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # let client = SyncClientBuilder::new().build()?;
+    # fn get_req() -> PingRequest<'static> { PingRequest::new() }
+    let builder = client.request(get_req())
+                        .params(|p| p.base_url("http://different-host:9200"));
+    # Ok(())
+    # }
+    ```
     */
     pub fn params<F>(mut self, builder: F) -> Self
     where
-        F: Fn(RequestParams) -> RequestParams,
+        F: Fn(RequestParams) -> RequestParams + 'static,
     {
-        let params = self.params;
-        let client = self.client;
+        if let Some(old_params_builder) = self.params_builder {
+            let params_builder = move |params: RequestParams| {
+                let params = old_params_builder(params);
+                builder(params)
+            };
 
-        self.params = { Some(builder(params.unwrap_or_else(|| client.params.clone()))) };
-
-        self.client = client;
+            self.params_builder = Some(Arc::new(params_builder));
+        } else {
+            self.params_builder = Some(Arc::new(builder));
+        }
 
         self
     }
@@ -208,29 +234,4 @@ pub mod prelude {
         PingRequestBuilder,
         UpdateRequestBuilder,
     };
-}
-
-#[cfg(test)]
-mod tests {
-    use super::RequestBuilder;
-    use prelude::*;
-
-    #[test]
-    fn request_builder_params() {
-        let client = SyncClientBuilder::new()
-            .base_url("http://eshost:9200")
-            .build()
-            .unwrap();
-
-        let req = RequestBuilder::new(client.clone(), None, PingRequest::new())
-            .params(|p| p.url_param("pretty", true))
-            .params(|p| p.url_param("refresh", true));
-
-        let params = &req.params.unwrap();
-
-        let (_, query) = params.get_url_qry();
-
-        assert_eq!("http://eshost:9200", params.get_base_url());
-        assert_eq!("?pretty=true&refresh=true", query.unwrap());
-    }
 }

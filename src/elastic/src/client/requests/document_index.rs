@@ -9,7 +9,8 @@ use futures::{Future, Poll};
 use serde::Serialize;
 
 use error::{self, Error, Result};
-use client::{AsyncSender, Client, Sender, SyncSender};
+use client::Client;
+use client::sender::{AsyncSender, Sender, SyncSender};
 use client::requests::RequestBuilder;
 use client::requests::params::{Id, Index, Type};
 use client::requests::endpoints::IndexRequest;
@@ -200,7 +201,7 @@ where
     pub fn send(self) -> Result<IndexResponse> {
         let req = self.inner.into_request()?;
 
-        RequestBuilder::new(self.client, self.params, RawRequestInner::new(req))
+        RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
             .send()?
             .into_response()
     }
@@ -262,12 +263,12 @@ where
     [AsyncClient]: ../../type.AsyncClient.html
     */
     pub fn send(self) -> Pending {
-        let (client, params, inner) = (self.client, self.params, self.inner);
+        let (client, params_builder, inner) = (self.client, self.params_builder, self.inner);
 
         let req_future = client.sender.maybe_async(move || inner.into_request());
 
         let res_future = req_future.and_then(move |req| {
-            RequestBuilder::new(client, params, RawRequestInner::new(req))
+            RequestBuilder::new(client, params_builder, RawRequestInner::new(req))
                 .send()
                 .and_then(|res| res.into_response())
         });
