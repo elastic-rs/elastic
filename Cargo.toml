@@ -5,7 +5,6 @@ members = [
     "src/queries",
     "src/requests",
     "src/requests_codegen",
-    "src/reqwest",
     "src/responses",
     "src/types",
     "src/types_derive",
