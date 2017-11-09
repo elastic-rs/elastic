@@ -4,6 +4,7 @@ use reqwest::{Client as SyncHttpClient, ClientBuilder as SyncHttpClientBuilder, 
 use error::{self, Result};
 use private;
 use client::sender::{build_method, build_url, NextParams, NodeAddress, NodeAddresses, NodeAddressesBuilder, NodeAddressesInner, PreRequestParams, RequestParams, SendableRequest, Sender};
+use client::sender::sniffed_nodes::SniffedNodesBuilder;
 use client::requests::{HttpRequest, SyncBody};
 use client::responses::{sync_response, SyncResponseBuilder};
 use client::Client;
@@ -215,6 +216,54 @@ impl SyncClientBuilder {
     {
         let nodes = nodes.into_iter().map(|address| address.into()).collect();
         self.nodes = NodeAddressesBuilder::Static(nodes);
+
+        self
+    }
+
+    /**
+    Specify a node address to sniff other nodes in the cluster from.
+
+    # Examples
+
+    Use a given base url for sniffing the cluster's node addresses from:
+
+    ```
+    # use elastic::prelude::*;
+    let builder = SyncClientBuilder::new()
+        .sniff_nodes("http://localhost:9200");
+    ```
+    */
+    pub fn sniff_nodes<I>(mut self, builder: I) -> Self
+    where
+        I: Into<SniffedNodesBuilder>,
+    {
+        self.nodes = NodeAddressesBuilder::Sniffed(builder.into());
+
+        self
+    }
+
+    /**
+    Specify a node address to sniff other nodes in the cluster from.
+
+    # Examples
+
+    Use a given base url for sniffing the cluster's node addresses from and specify a minimum duration to wait before refreshing:
+
+    ```
+    # use std::time::Duration;
+    # use elastic::prelude::*;
+    let builder = SyncClientBuilder::new()
+        .sniff_nodes_fluent("http://localhost:9200", |n| n
+            .wait(Duration::from_secs(90)));
+    ```
+    */
+    pub fn sniff_nodes_fluent<I, F>(mut self, address: I, builder: F) -> Self
+    where
+        I: Into<NodeAddress>,
+        F: Fn(SniffedNodesBuilder) -> SniffedNodesBuilder,
+    {
+        let address = address.into();
+        self.nodes = NodeAddressesBuilder::Sniffed(builder(address.into()));
 
         self
     }
