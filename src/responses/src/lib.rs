@@ -126,8 +126,6 @@ in a `GetResponse`.
 */
 
 #[deny(warnings, missing_docs)]
-#[macro_use]
-extern crate log;
 
 #[macro_use]
 extern crate serde_derive;
@@ -137,9 +135,6 @@ extern crate quick_error;
 
 extern crate serde;
 extern crate serde_json;
-
-extern crate slog_envlogger;
-extern crate slog_stdlog;
 
 pub mod error;
 pub mod parsing;
