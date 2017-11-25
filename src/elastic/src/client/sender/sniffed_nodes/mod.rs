@@ -30,6 +30,8 @@ use std::time::{Duration, Instant};
 use std::sync::{Arc, RwLock};
 use url::Url;
 use futures::{Future, IntoFuture};
+use fluent_builder::FluentBuilder;
+
 use client::sender::static_nodes::StaticNodes;
 use client::sender::{AsyncSender, NextParams, NodeAddress, PreRequestParams, RequestParams, SendableRequest, Sender, SyncSender};
 use client::requests::{DefaultBody, NodesInfoRequest};
@@ -227,7 +229,7 @@ impl<TSender> SniffedNodes<TSender> {
     }
 
     fn sendable_request(&self) -> SendableRequest<NodesInfoRequest<'static>, RequestParams, DefaultBody> {
-        SendableRequest::new(NodesInfoRequest::new(), self.refresh_params.clone(), None)
+        SendableRequest::new(NodesInfoRequest::new(), self.refresh_params.clone(), FluentBuilder::new())
     }
 
     fn finish_refresh(inner: &RwLock<SniffedNodesInner>, refresh_params: &RequestParams, fresh_nodes: Result<NodesInfoResponse, Error>) -> Result<RequestParams, Error> {

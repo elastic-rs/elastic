@@ -27,6 +27,7 @@ reqwest = { version = "~0.8.0", features = ["unstable"] }
 futures = "~0.1.16"
 tokio-core = "~0.1.9"
 futures-cpupool = "~0.1.6"
+fluent_builder = { version = "*", git = "https://github.com/KodrAus/fluent_builder.git", branch = "feat/fnonce-builders" }
 
 elastic_requests = { version = "~0.20.2", path = "../requests" }
 elastic_responses = { version = "~0.20.2", path = "../responses" }

@@ -88,7 +88,9 @@ impl Sender for AsyncSender {
         });
 
         let req_future = params_future.and_then(move |params| {
-            build_req(&http, params, params_builder, req)
+            let params = params_builder.into_value(|| params);
+
+            build_req(&http, params, req)
                 .send()
                 .map_err(move |e| {
                     error!(
@@ -155,18 +157,12 @@ impl From<RequestParams> for PendingParams {
 }
 
 /** Build an asynchronous `reqwest::RequestBuilder` from an Elasticsearch request. */
-fn build_req<I, B>(client: &AsyncHttpClient, params: RequestParams, params_builder: Option<Arc<Fn(RequestParams) -> RequestParams>>, req: I) -> AsyncHttpRequestBuilder
+fn build_req<I, B>(client: &AsyncHttpClient, params: RequestParams, req: I) -> AsyncHttpRequestBuilder
 where
     I: Into<HttpRequest<'static, B>>,
     B: Into<AsyncBody>,
 {
     let req = req.into();
-    let params = if let Some(params_builder) = params_builder {
-        params_builder(params)
-    } else {
-        params
-    };
-
     let url = build_url(&req.url, &params);
     let method = build_method(req.method);
     let body = req.body;

@@ -24,7 +24,7 @@ impl PutBulkAccounts for Client {
 
         let res = self.io
             .request(req)
-            .params(|params| params.url_param("refresh", true))
+            .params_fluent(|params| params.url_param("refresh", true))
             .send()?
             .into_response::<BulkErrorsResponse>()?;
 

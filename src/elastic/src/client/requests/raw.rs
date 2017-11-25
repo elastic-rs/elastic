@@ -79,7 +79,7 @@ where
         TRequest: Into<HttpRequest<'static, TBody>>,
         TBody: Into<TSender::Body>,
     {
-        RequestBuilder::new(self.clone(), None, RawRequestInner::new(req))
+        RequestBuilder::initial(self.clone(), RawRequestInner::new(req))
     }
 }
 

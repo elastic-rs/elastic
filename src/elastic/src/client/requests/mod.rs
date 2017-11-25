@@ -6,6 +6,7 @@ This module contains implementation details that are useful if you want to custo
 
 use std::sync::Arc;
 use futures_cpupool::CpuPool;
+use fluent_builder::FluentBuilder;
 
 use client::Client;
 use client::sender::{AsyncSender, RequestParams, Sender};
@@ -71,7 +72,7 @@ where
     TSender: Sender,
 {
     client: Client<TSender>,
-    params_builder: Option<Arc<Fn(RequestParams) -> RequestParams>>,
+    params_builder: FluentBuilder<RequestParams>,
     inner: TRequest,
 }
 
@@ -84,7 +85,15 @@ impl<TSender, TRequest> RequestBuilder<TSender, TRequest>
 where
     TSender: Sender,
 {
-    fn new(client: Client<TSender>, builder: Option<Arc<Fn(RequestParams) -> RequestParams>>, req: TRequest) -> Self {
+    fn initial(client: Client<TSender>, req: TRequest) -> Self {
+        RequestBuilder {
+            client: client,
+            params_builder: FluentBuilder::new(),
+            inner: req,
+        }
+    }
+
+    fn new(client: Client<TSender>, builder: FluentBuilder<RequestParams>, req: TRequest) -> Self {
         RequestBuilder {
             client: client,
             params_builder: builder,
@@ -131,20 +140,11 @@ where
     # }
     ```
     */
-    pub fn params<F>(mut self, builder: F) -> Self
+    pub fn params_fluent<F>(mut self, builder: F) -> Self
     where
         F: Fn(RequestParams) -> RequestParams + 'static,
     {
-        if let Some(old_params_builder) = self.params_builder {
-            let params_builder = move |params: RequestParams| {
-                let params = old_params_builder(params);
-                builder(params)
-            };
-
-            self.params_builder = Some(Arc::new(params_builder));
-        } else {
-            self.params_builder = Some(Arc::new(builder));
-        }
+        self.params_builder = self.params_builder.fluent(builder).boxed();
 
         self
     }

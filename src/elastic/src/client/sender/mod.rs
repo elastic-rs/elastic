@@ -13,6 +13,8 @@ Some notable types include:
 [Client]: ../struct.Client.html
 */
 
+use fluent_builder::FluentBuilder;
+
 pub mod static_nodes;
 pub mod sniffed_nodes;
 
@@ -44,12 +46,12 @@ pub struct SendableRequest<TRequest, TParams, TBody> {
     correlation_id: Uuid,
     inner: TRequest,
     params: TParams,
-    params_builder: Option<Arc<Fn(RequestParams) -> RequestParams>>,
+    params_builder: FluentBuilder<RequestParams>,
     _marker: PhantomData<TBody>,
 }
 
 impl<TRequest, TParams, TBody> SendableRequest<TRequest, TParams, TBody> {
-    pub(crate) fn new(inner: TRequest, params: TParams, params_builder: Option<Arc<Fn(RequestParams) -> RequestParams>>) -> Self {
+    pub(crate) fn new(inner: TRequest, params: TParams, params_builder: FluentBuilder<RequestParams>) -> Self {
         SendableRequest {
             correlation_id: Uuid::new_v4(),
             inner: inner,

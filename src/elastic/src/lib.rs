@@ -299,6 +299,7 @@ extern crate serde_json;
 extern crate tokio_core;
 extern crate url;
 extern crate uuid;
+extern crate fluent_builder;
 
 pub mod error;
 pub use error::Error;

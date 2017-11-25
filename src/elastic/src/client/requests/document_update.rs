@@ -9,6 +9,7 @@ use futures::{Future, IntoFuture, Poll};
 use futures_cpupool::CpuPool;
 use serde_json::{self, Map, Value};
 use serde::ser::{Serialize, Serializer};
+use fluent_builder::{FluentBuilder, Override};
 
 use error::{self, Error};
 use client::Client;
@@ -193,9 +194,8 @@ where
     {
         let ty = TDocument::name().into();
 
-        RequestBuilder::new(
+        RequestBuilder::initial(
             self.clone(),
-            None,
             UpdateRequestInner {
                 index: index,
                 ty: ty,

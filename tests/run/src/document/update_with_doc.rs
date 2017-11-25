@@ -44,7 +44,7 @@ impl IntegrationTest for UpdateWithDoc {
     fn request(&self, client: AsyncClient) -> Box<Future<Item = Self::Response, Error = Error>> {
         let index_res = client
             .document_index(index(INDEX), id(ID), doc())
-            .params(|p| p.url_param("refresh", true))
+            .params_fluent(|p| p.url_param("refresh", true))
             .send();
 
         let update_res = client
@@ -53,7 +53,7 @@ impl IntegrationTest for UpdateWithDoc {
                 id: ID,
                 title: EXPECTED_TITLE.to_owned(),
             })
-            .params(|p| p.url_param("refresh", true))
+            .params_fluent(|p| p.url_param("refresh", true))
             .send();
 
         let get_res = client.document_get(index(INDEX), id(ID)).send();

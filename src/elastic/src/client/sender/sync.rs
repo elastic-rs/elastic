@@ -72,7 +72,9 @@ impl Sender for SyncSender {
             e
         })?;
 
-        let mut req = build_req(&self.http, params, params_builder, req);
+        let params = params_builder.into_value(move || params);
+
+        let mut req = build_req(&self.http, params, req);
 
         let res = match req.send().map_err(error::request) {
             Ok(res) => {
@@ -126,17 +128,12 @@ impl From<RequestParams> for Params {
 }
 
 /** Build a synchronous `reqwest::RequestBuilder` from an Elasticsearch request. */
-fn build_req<I, B>(client: &SyncHttpClient, params: RequestParams, params_builder: Option<Arc<Fn(RequestParams) -> RequestParams>>, req: I) -> SyncHttpRequestBuilder
+fn build_req<I, B>(client: &SyncHttpClient, params: RequestParams, req: I) -> SyncHttpRequestBuilder
 where
     I: Into<HttpRequest<'static, B>>,
     B: Into<SyncBody>,
 {
     let req = req.into();
-    let params = if let Some(params_builder) = params_builder {
-        params_builder(params)
-    } else {
-        params
-    };
 
     let url = build_url(&req.url, &params);
     let method = build_method(req.method);

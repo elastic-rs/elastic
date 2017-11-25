@@ -71,7 +71,7 @@ where
     [send-async]: requests/index_close/type.IndexCloseRequestBuilder.html#send-asynchronously
     */
     pub fn index_close(&self, index: Index<'static>) -> IndexCloseRequestBuilder<TSender> {
-        RequestBuilder::new(self.clone(), None, IndexCloseRequestInner { index: index })
+        RequestBuilder::initial(self.clone(), IndexCloseRequestInner { index: index })
     }
 }
 
