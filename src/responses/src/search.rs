@@ -316,7 +316,6 @@ type RowData<'a> = BTreeMap<Cow<'a, str>, &'a Value>;
 fn insert_value<'a>(fieldname: &str, json_object: &'a Object, keyname: &str, rowdata: &mut RowData<'a>) {
     if let Some(v) = json_object.get(fieldname) {
         let field_name = format!("{}_{}", keyname, fieldname);
-        debug!("ITER: Insert value! {} {:?}", field_name, v);
         rowdata.insert(Cow::Owned(field_name), v);
     }
 }
@@ -339,12 +338,9 @@ impl<'a> Iterator for Aggs<'a> {
                 // Save
                 self.iter_stack.push((active_name, array));
 
-                debug!("ITER: Depth {}", self.iter_stack.len());
                 // FIXME: Move this, to be able to process first line too
                 if let Some(n) = n {
                     if let Some(ref mut row) = self.current_row {
-                        debug!("ITER: Row: {:?}", row);
-
                         for (key, value) in n.as_object().expect("Shouldn't get here!") {
                             if let Some(c) = value.as_object() {
                                 // Child Aggregation
@@ -357,7 +353,6 @@ impl<'a> Iterator for Aggs<'a> {
                                 }
                                 // Simple Value Aggregation Name
                                 if let Some(v) = c.get("value") {
-                                    debug!("ITER: Insert value! {} {:?}", key, v);
                                     row.insert(Cow::Borrowed(key), v);
                                     continue;
                                 }
@@ -377,14 +372,6 @@ impl<'a> Iterator for Aggs<'a> {
                                         let l = child_values.get("lower");
                                         let un = format!("{}_std_deviation_bounds_upper", key);
                                         let ln = format!("{}_std_deviation_bounds_lower", key);
-                                        debug!(
-                                            "ITER: Insert std_dev_bounds! {} {} u: {:?} l: \
-                                             {:?}",
-                                            un,
-                                            ln,
-                                            u.unwrap(),
-                                            l.unwrap()
-                                        );
                                         row.insert(Cow::Owned(un), u.unwrap());
                                         row.insert(Cow::Owned(ln), l.unwrap());
                                     }
@@ -393,11 +380,9 @@ impl<'a> Iterator for Aggs<'a> {
 
                             if key == "key" {
                                 // Bucket Aggregation Name
-                                debug!("ITER: Insert bucket! {} {:?}", active_name, value);
                                 row.insert(Cow::Borrowed(active_name), value);
                             } else if key == "doc_count" {
                                 // Bucket Aggregation Count
-                                debug!("ITER: Insert bucket count! {} {:?}", active_name, value);
                                 let field_name = format!("{}_doc_count", active_name);
                                 row.insert(Cow::Owned(field_name), value);
                             }
@@ -405,19 +390,14 @@ impl<'a> Iterator for Aggs<'a> {
                     }
                 } else {
                     // Was nothing here, exit
-                    debug!("ITER: Exit!");
                     self.iter_stack.pop();
                     continue;
                 }
 
                 if !has_buckets {
-                    debug!("ITER: Bucketless!");
                     break;
-                } else {
-                    debug!("ITER: Dive!");
                 }
             } else {
-                debug!("ITER: Done!");
                 self.current_row = None;
                 break;
             };

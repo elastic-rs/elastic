@@ -1,7 +1,7 @@
 [package]
 authors = ["Stephan Buys <stephan.buys@panoptix.co.za>", "Ashley Mannix <ashleymannix@live.com.au>"]
 name = "elastic_responses"
-version = "0.20.4"
+version = "0.20.5"
 license = "MIT/Apache-2.0"
 description = "Parses search results from Elasticsearch and presents results using convenient iterators."
 documentation = "https://docs.rs/elastic_responses"
@@ -9,13 +9,9 @@ repository = "https://github.com/elastic-rs/elastic"
 readme = "README.md"
 
 [dependencies]
-log = "~0.3"
 serde = "~1"
 serde_derive = "~1"
 serde_json = "~1"
-slog = "~1.4"
-slog-envlogger = "~0.5"
-slog-stdlog = "~1.1"
 quick-error = "~1.1"
 
 [dev-dependencies]
