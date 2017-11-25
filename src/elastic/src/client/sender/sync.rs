@@ -3,7 +3,7 @@ use reqwest::{Client as SyncHttpClient, ClientBuilder as SyncHttpClientBuilder, 
 
 use error::{self, Result};
 use private;
-use client::sender::{build_method, build_url, NextParams, NodeAddress, NodeAddresses, NodeAddressesBuilder, NodeAddressesInner, PreRequestParams, RequestParams, SendableRequest, Sender};
+use client::sender::{build_method, build_url, NextParams, NodeAddress, NodeAddresses, NodeAddressesBuilder, NodeAddressesInner, PreRequestParams, RequestParams, SendableRequest, SendableRequestParams, Sender};
 use client::sender::sniffed_nodes::SniffedNodesBuilder;
 use client::requests::{HttpRequest, SyncBody};
 use client::responses::{sync_response, SyncResponseBuilder};
@@ -54,7 +54,7 @@ impl Sender for SyncSender {
         TParams: Into<Self::Params> + 'static,
     {
         let correlation_id = request.correlation_id;
-        let params_builder = request.params_builder;
+        let params = request.params;
         let req = request.inner.into();
 
         info!(
@@ -63,16 +63,21 @@ impl Sender for SyncSender {
             req.url.as_ref()
         );
 
-        let params = request.params.into().inner.map_err(|e| {
-            error!(
-                "Elasticsearch Node Selection: correlation_id: '{}', error: '{}'",
-                correlation_id,
-                e
-            );
-            e
-        })?;
+        let params = match params {
+            SendableRequestParams::Value(params) => params,
+            SendableRequestParams::Builder { params, builder } => {
+                let params = params.into().inner.map_err(|e| {
+                    error!(
+                        "Elasticsearch Node Selection: correlation_id: '{}', error: '{}'",
+                        correlation_id,
+                        e
+                    );
+                    e
+                })?;
 
-        let params = params_builder.into_value(move || params);
+                builder.into_value(move || params)
+            }
+        };
 
         let mut req = build_req(&self.http, params, req);
 

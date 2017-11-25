@@ -45,20 +45,26 @@ This type encapsulates the state needed between a [`Client`][Client] and a [`Sen
 pub struct SendableRequest<TRequest, TParams, TBody> {
     correlation_id: Uuid,
     inner: TRequest,
-    params: TParams,
-    params_builder: FluentBuilder<RequestParams>,
+    params: SendableRequestParams<TParams>,
     _marker: PhantomData<TBody>,
 }
 
 impl<TRequest, TParams, TBody> SendableRequest<TRequest, TParams, TBody> {
-    pub(crate) fn new(inner: TRequest, params: TParams, params_builder: FluentBuilder<RequestParams>) -> Self {
+    pub(crate) fn new(inner: TRequest, params: SendableRequestParams<TParams>) -> Self {
         SendableRequest {
             correlation_id: Uuid::new_v4(),
             inner: inner,
             params: params,
-            params_builder: params_builder,
             _marker: PhantomData,
         }
+    }
+}
+
+pub(crate) enum SendableRequestParams<TParams> {
+    Value(RequestParams),
+    Builder {
+        params: TParams,
+        builder: FluentBuilder<RequestParams>,
     }
 }
 

@@ -33,7 +33,7 @@ use futures::{Future, IntoFuture};
 use fluent_builder::FluentBuilder;
 
 use client::sender::static_nodes::StaticNodes;
-use client::sender::{AsyncSender, NextParams, NodeAddress, PreRequestParams, RequestParams, SendableRequest, Sender, SyncSender};
+use client::sender::{AsyncSender, NextParams, NodeAddress, PreRequestParams, RequestParams, SendableRequest, SendableRequestParams, Sender, SyncSender};
 use client::requests::{DefaultBody, NodesInfoRequest};
 use error::{self, Error};
 use private;
@@ -229,7 +229,7 @@ impl<TSender> SniffedNodes<TSender> {
     }
 
     fn sendable_request(&self) -> SendableRequest<NodesInfoRequest<'static>, RequestParams, DefaultBody> {
-        SendableRequest::new(NodesInfoRequest::new(), self.refresh_params.clone(), FluentBuilder::new())
+        SendableRequest::new(NodesInfoRequest::new(), SendableRequestParams::Value(self.refresh_params.clone()))
     }
 
     fn finish_refresh(inner: &RwLock<SniffedNodesInner>, refresh_params: &RequestParams, fresh_nodes: Result<NodesInfoResponse, Error>) -> Result<RequestParams, Error> {

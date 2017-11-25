@@ -1,6 +1,7 @@
 use std::sync::Arc;
 use std::error::Error as StdError;
 use futures::{Future, IntoFuture, Poll};
+use futures::future::Either;
 use futures_cpupool::CpuPool;
 use tokio_core::reactor::Handle;
 use reqwest::Error as ReqwestError;
@@ -9,7 +10,7 @@ use reqwest::unstable::async::{Client as AsyncHttpClient, ClientBuilder as Async
 use error::{self, Error};
 use private;
 use client::requests::{AsyncBody, HttpRequest};
-use client::sender::{build_method, build_url, NextParams, NodeAddress, NodeAddresses, NodeAddressesBuilder, NodeAddressesInner, PreRequestParams, RequestParams, SendableRequest, Sender};
+use client::sender::{build_method, build_url, NextParams, NodeAddress, NodeAddresses, NodeAddressesBuilder, NodeAddressesInner, PreRequestParams, RequestParams, SendableRequest, SendableRequestParams, Sender};
 use client::sender::sniffed_nodes::SniffedNodesBuilder;
 use client::responses::{async_response, AsyncResponseBuilder};
 use client::Client;
@@ -69,7 +70,7 @@ impl Sender for AsyncSender {
         let correlation_id = request.correlation_id;
         let serde_pool = self.serde_pool.clone();
         let http = self.http.clone();
-        let params_builder = request.params_builder;
+        let params = request.params;
         let req = request.inner.into();
 
         info!(
@@ -78,18 +79,23 @@ impl Sender for AsyncSender {
             req.url.as_ref()
         );
 
-        let params_future = request.params.into().map_err(move |e| {
-            error!(
-                "Elasticsearch Node Selection: correlation_id: '{}', error: '{}'",
-                correlation_id,
-                e
-            );
-            e
-        });
+        let params_future = match params {
+            SendableRequestParams::Value(params) => Either::A(Ok(params).into_future()),
+            SendableRequestParams::Builder { params, builder } => {
+                let params = params.into().map_err(move |e| {
+                    error!(
+                        "Elasticsearch Node Selection: correlation_id: '{}', error: '{}'",
+                        correlation_id,
+                        e
+                    );
+                    e
+                });
+
+                Either::B(params.and_then(|params| Ok(builder.into_value(move || params))))
+            }
+        };
 
         let req_future = params_future.and_then(move |params| {
-            let params = params_builder.into_value(|| params);
-
             build_req(&http, params, req)
                 .send()
                 .map_err(move |e| {
