@@ -134,6 +134,17 @@ impl SniffedNodesBuilder {
     }
 
     /**
+    Specify a given base address.
+    */
+    pub fn base_url<I>(mut self, address: I) -> Self
+    where
+        I: Into<NodeAddress>,
+    {
+        self.base_url = address.into();
+        self
+    }
+
+    /**
     Specify a minimum duration to wait before refreshing the set of node addresses.
     */
     pub fn wait(mut self, wait: Duration) -> Self {

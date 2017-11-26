@@ -13,7 +13,7 @@ Some notable types include:
 [Client]: ../struct.Client.html
 */
 
-use fluent_builder::FluentBuilder;
+use fluent_builder::{FluentBuilder, StatefulFluentBuilder};
 
 pub mod static_nodes;
 pub mod sniffed_nodes;
@@ -170,7 +170,34 @@ enum NodeAddressesInner<TSender> {
 
 enum NodeAddressesBuilder {
     Static(Vec<NodeAddress>),
-    Sniffed(SniffedNodesBuilder),
+    Sniffed(StatefulFluentBuilder<SniffedNodesBuilder, NodeAddress>),
+}
+
+impl NodeAddressesBuilder {
+    fn sniff_nodes(mut self, builder: SniffedNodesBuilder) -> Self {
+        match self {
+            NodeAddressesBuilder::Sniffed(fluent_builder) => {
+                NodeAddressesBuilder::Sniffed(fluent_builder.value(builder))
+            },
+            _ => {
+                NodeAddressesBuilder::Sniffed(StatefulFluentBuilder::from_value(builder.into()))
+            }
+        }
+    }
+
+    fn sniff_nodes_fluent<F>(self, address: NodeAddress, fleunt_method: F) -> Self
+    where
+        F: FnOnce(SniffedNodesBuilder) -> SniffedNodesBuilder + 'static,
+    {
+        match self {
+            NodeAddressesBuilder::Sniffed(fluent_builder) => {
+                NodeAddressesBuilder::Sniffed(fluent_builder.fluent(address.into(), fleunt_method).boxed())
+            },
+            _ => {
+                NodeAddressesBuilder::Sniffed(StatefulFluentBuilder::from_fluent(address.into(), fleunt_method).boxed())
+            }
+        }
+    }
 }
 
 impl Default for NodeAddressesBuilder {
@@ -188,7 +215,7 @@ impl NodeAddressesBuilder {
                 NodeAddresses::static_nodes(nodes)
             }
             NodeAddressesBuilder::Sniffed(builder) => {
-                let nodes = builder.build(params, sender);
+                let nodes = builder.into_value(|node| SniffedNodesBuilder::new(node)).build(params, sender);
 
                 NodeAddresses::sniffed_nodes(nodes)
             }

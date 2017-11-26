@@ -6,6 +6,7 @@ use futures_cpupool::CpuPool;
 use tokio_core::reactor::Handle;
 use reqwest::Error as ReqwestError;
 use reqwest::unstable::async::{Client as AsyncHttpClient, ClientBuilder as AsyncHttpClientBuilder, RequestBuilder as AsyncHttpRequestBuilder};
+use fluent_builder::FluentBuilder;
 
 use error::{self, Error};
 use private;
@@ -214,7 +215,7 @@ impl Future for PendingResponse {
 pub struct AsyncClientBuilder {
     serde_pool: Option<CpuPool>,
     nodes: NodeAddressesBuilder,
-    params: PreRequestParams,
+    params: FluentBuilder<PreRequestParams>,
 }
 
 /**
@@ -269,7 +270,7 @@ impl AsyncClientBuilder {
     pub fn new() -> Self {
         AsyncClientBuilder {
             serde_pool: None,
-            params: PreRequestParams::default(),
+            params: FluentBuilder::new(),
             nodes: NodeAddressesBuilder::default(),
         }
     }
@@ -280,7 +281,7 @@ impl AsyncClientBuilder {
     pub fn from_params(params: PreRequestParams) -> Self {
         AsyncClientBuilder {
             serde_pool: None,
-            params: params,
+            params: FluentBuilder::new().value(params),
             nodes: NodeAddressesBuilder::default(),
         }
     }
@@ -326,7 +327,7 @@ impl AsyncClientBuilder {
     where
         I: Into<SniffedNodesBuilder>,
     {
-        self.nodes = NodeAddressesBuilder::Sniffed(builder.into());
+        self.nodes = self.nodes.sniff_nodes(builder.into());
 
         self
     }
@@ -349,10 +350,18 @@ impl AsyncClientBuilder {
     pub fn sniff_nodes_fluent<I, F>(mut self, address: I, builder: F) -> Self
     where
         I: Into<NodeAddress>,
-        F: Fn(SniffedNodesBuilder) -> SniffedNodesBuilder,
+        F: Fn(SniffedNodesBuilder) -> SniffedNodesBuilder + 'static,
     {
-        let address = address.into();
-        self.nodes = NodeAddressesBuilder::Sniffed(builder(address.into()));
+        self.nodes = self.nodes.sniff_nodes_fluent(address.into(), builder);
+
+        self
+    }
+
+    pub fn params<I>(mut self, params: I) -> Self
+    where
+        I: Into<PreRequestParams>,
+    {
+        self.params = self.params.value(params.into());
 
         self
     }
@@ -385,11 +394,11 @@ impl AsyncClientBuilder {
     ```
     [AsyncClientBuilder.base_url]: #method.base_url
     */
-    pub fn params<F>(mut self, builder: F) -> Self
+    pub fn params_fluent<F>(mut self, builder: F) -> Self
     where
-        F: Fn(PreRequestParams) -> PreRequestParams,
+        F: Fn(PreRequestParams) -> PreRequestParams + 'static,
     {
-        self.params = builder(self.params);
+        self.params = self.params.fluent(builder).boxed();
 
         self
     }
@@ -476,13 +485,14 @@ impl AsyncClientBuilder {
         TIntoHttp: IntoAsyncHttpClient,
     {
         let http = client.into_async_http_client().map_err(error::build)?;
+        let params = self.params.into_value(|| PreRequestParams::default());
 
         let sender = AsyncSender {
             http: http,
             serde_pool: self.serde_pool,
         };
 
-        let addresses = self.nodes.build(self.params, sender.clone());
+        let addresses = self.nodes.build(params, sender.clone());
 
         Ok(AsyncClient {
             sender: sender,

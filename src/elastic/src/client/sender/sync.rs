@@ -1,5 +1,6 @@
 use std::sync::Arc;
 use reqwest::{Client as SyncHttpClient, ClientBuilder as SyncHttpClientBuilder, RequestBuilder as SyncHttpRequestBuilder};
+use fluent_builder::FluentBuilder;
 
 use error::{self, Result};
 use private;
@@ -160,7 +161,7 @@ where
 pub struct SyncClientBuilder {
     http: Option<SyncHttpClient>,
     nodes: NodeAddressesBuilder,
-    params: PreRequestParams,
+    params: FluentBuilder<PreRequestParams>,
 }
 
 impl Default for SyncClientBuilder {
@@ -183,7 +184,7 @@ impl SyncClientBuilder {
         SyncClientBuilder {
             http: None,
             nodes: NodeAddressesBuilder::default(),
-            params: PreRequestParams::default(),
+            params: FluentBuilder::new(),
         }
     }
 
@@ -194,7 +195,7 @@ impl SyncClientBuilder {
         SyncClientBuilder {
             http: None,
             nodes: NodeAddressesBuilder::default(),
-            params: params,
+            params: FluentBuilder::new().value(params),
         }
     }
 
@@ -239,7 +240,7 @@ impl SyncClientBuilder {
     where
         I: Into<SniffedNodesBuilder>,
     {
-        self.nodes = NodeAddressesBuilder::Sniffed(builder.into());
+        self.nodes = self.nodes.sniff_nodes(builder.into());
 
         self
     }
@@ -262,10 +263,18 @@ impl SyncClientBuilder {
     pub fn sniff_nodes_fluent<I, F>(mut self, address: I, builder: F) -> Self
     where
         I: Into<NodeAddress>,
-        F: Fn(SniffedNodesBuilder) -> SniffedNodesBuilder,
+        F: Fn(SniffedNodesBuilder) -> SniffedNodesBuilder + 'static,
     {
-        let address = address.into();
-        self.nodes = NodeAddressesBuilder::Sniffed(builder(address.into()));
+        self.nodes = self.nodes.sniff_nodes_fluent(address.into(), builder);
+
+        self
+    }
+
+    pub fn params<I>(mut self, params: I) -> Self
+    where
+        I: Into<PreRequestParams>,
+    {
+        self.params = self.params.value(params.into());
 
         self
     }
@@ -298,11 +307,11 @@ impl SyncClientBuilder {
     ```
     [SyncClientBuilder.base_url]: #method.base_url
     */
-    pub fn params<F>(mut self, builder: F) -> Self
+    pub fn params_fluent<F>(mut self, builder: F) -> Self
     where
-        F: Fn(PreRequestParams) -> PreRequestParams,
+        F: Fn(PreRequestParams) -> PreRequestParams + 'static,
     {
-        self.params = builder(self.params);
+        self.params = self.params.fluent(builder).boxed();
 
         self
     }
@@ -325,9 +334,10 @@ impl SyncClientBuilder {
             .unwrap_or_else(|| SyncHttpClientBuilder::new().build())
             .map_err(error::build)?;
 
+        let params = self.params.into_value(|| PreRequestParams::default());
         let sender = SyncSender { http: http };
 
-        let addresses = self.nodes.build(self.params, sender.clone());
+        let addresses = self.nodes.build(params, sender.clone());
 
         Ok(SyncClient {
             sender: sender,
