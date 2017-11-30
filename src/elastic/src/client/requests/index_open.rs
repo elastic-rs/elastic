@@ -71,7 +71,7 @@ where
     [send-async]: requests/index_open/type.IndexOpenRequestBuilder.html#send-asynchronously
     */
     pub fn index_open(&self, index: Index<'static>) -> IndexOpenRequestBuilder<TSender> {
-        RequestBuilder::new(self.clone(), None, IndexOpenRequestInner { index: index })
+        RequestBuilder::initial(self.clone(), IndexOpenRequestInner { index: index })
     }
 }
 

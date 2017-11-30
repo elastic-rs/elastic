@@ -121,9 +121,8 @@ where
     {
         let ty = TDocument::name().into();
 
-        RequestBuilder::new(
+        RequestBuilder::initial(
             self.clone(),
-            None,
             GetRequestInner {
                 index: index,
                 ty: ty,

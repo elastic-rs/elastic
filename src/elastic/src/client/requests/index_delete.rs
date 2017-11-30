@@ -71,7 +71,7 @@ where
     [send-async]: requests/index_delete/type.IndexDeleteRequestBuilder.html#send-asynchronously
     */
     pub fn index_delete(&self, index: Index<'static>) -> IndexDeleteRequestBuilder<TSender> {
-        RequestBuilder::new(self.clone(), None, IndexDeleteRequestInner { index: index })
+        RequestBuilder::initial(self.clone(), IndexDeleteRequestInner { index: index })
     }
 }
 

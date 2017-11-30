@@ -47,7 +47,7 @@ fn main() {
     let runs = measure::parse_runs_from_env();
 
     let client = AsyncClientBuilder::new()
-        .params(|p| p.header(http::header::Connection::keep_alive()))
+        .params_fluent(|p| p.header(http::header::Connection::keep_alive()))
         .build(&core.handle())
         .unwrap();
 

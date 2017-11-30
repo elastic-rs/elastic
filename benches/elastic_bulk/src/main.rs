@@ -85,7 +85,7 @@ fn main() {
 
     let client = SyncClientBuilder::new()
         .http_client(http_client())
-        .params(|p| p.header(http::header::Connection::keep_alive()))
+        .params_fluent(|p| p.header(http::header::Connection::keep_alive()))
         .build()
         .unwrap();
 

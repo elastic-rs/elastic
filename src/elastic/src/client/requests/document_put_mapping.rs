@@ -93,9 +93,8 @@ where
     {
         let ty = TDocument::name().into();
 
-        RequestBuilder::new(
+        RequestBuilder::initial(
             self.clone(),
-            None,
             PutMappingRequestInner {
                 index: index,
                 ty: ty,
