@@ -63,7 +63,7 @@ use elastic::http::header::Authorization;
 
 let builder = SyncClientBuilder::new()
     .static_node("http://es_host:9200")
-    .params(|p| p
+    .params_fluent(|p| p
         .url_param("pretty", true)
         .header(Authorization("let me in".to_owned())));
 
@@ -84,7 +84,7 @@ Individual requests can override these parameter values:
 let client = SyncClientBuilder::new().build()?;
 
 let response = client.search::<Value>()
-                     .params(|p| p.url_param("pretty", false))
+                     .params_fluent(|p| p.url_param("pretty", false))
                      .send()?;
 # Ok(())
 # }
@@ -239,7 +239,6 @@ for hit in response.hits() {
 
 This crate is mostly a meta-package composed of a number of smaller pieces including:
 
-- `elastic_reqwest` HTTP transport
 - `elastic_requests` API request builders
 - `elastic_responses` API response parsers
 - `elastic_types` tools for document and mapping APIs
@@ -299,6 +298,7 @@ extern crate serde_json;
 extern crate tokio_core;
 extern crate url;
 extern crate uuid;
+extern crate fluent_builder;
 
 pub mod error;
 pub use error::Error;

@@ -71,7 +71,7 @@ where
     [send-async]: requests/index_exists/type.IndexExistsRequestBuilder.html#send-asynchronously
     */
     pub fn index_exists(&self, index: Index<'static>) -> IndexExistsRequestBuilder<TSender> {
-        RequestBuilder::new(self.clone(), None, IndexExistsRequestInner { index: index })
+        RequestBuilder::initial(self.clone(), IndexExistsRequestInner { index: index })
     }
 }
 

@@ -39,7 +39,7 @@ impl IntegrationTest for UpdateWithScript {
 
         let index_res = client
             .document_index(index(INDEX), id(ID), doc())
-            .params(|p| p.url_param("refresh", true))
+            .params_fluent(|p| p.url_param("refresh", true))
             .send();
 
         Box::new(delete_res.then(|_| index_res).map(|_| ()))
@@ -53,7 +53,7 @@ impl IntegrationTest for UpdateWithScript {
                 "ctx._source.title = params.newTitle",
                 |s| s.param("newTitle", EXPECTED_TITLE),
             )
-            .params(|p| p.url_param("refresh", true))
+            .params_fluent(|p| p.url_param("refresh", true))
             .send();
 
         let get_res = client.document_get(index(INDEX), id(ID)).send();

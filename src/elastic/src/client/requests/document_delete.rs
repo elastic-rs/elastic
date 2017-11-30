@@ -95,9 +95,8 @@ where
     {
         let ty = TDocument::name().into();
 
-        RequestBuilder::new(
+        RequestBuilder::initial(
             self.clone(),
-            None,
             DeleteRequestInner {
                 index: index,
                 ty: ty,

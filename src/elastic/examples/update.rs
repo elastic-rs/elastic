@@ -50,7 +50,7 @@ fn run() -> Result<(), Box<Error>> {
     // Index the document
     client
         .document_index(sample_index(), id(doc_id), doc)
-        .params(|p| p.url_param("refresh", true))
+        .params_fluent(|p| p.url_param("refresh", true))
         .send()?;
 
     // Update the document using a script

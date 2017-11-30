@@ -273,7 +273,7 @@ If the request was sent asynchronously, the response is returned as a `Future`.
 let request_builder = client.request(req);
 
 // Set additional url parameters
-let request_builder = request_builder.params(|p| p
+let request_builder = request_builder.params_fluent(|p| p
     .url_param("pretty", true)
     .url_param("refresh", true)
 );
