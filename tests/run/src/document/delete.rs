@@ -35,14 +35,14 @@ impl IntegrationTest for Delete {
     fn request(&self, client: AsyncClient) -> Box<Future<Item = Self::Response, Error = Error>> {
         let index_res = client
             .document_index(index(INDEX), id(ID), Doc { id: ID })
-            .params(|p| p.url_param("refresh", true))
+            .params_fluent(|p| p.url_param("refresh", true))
             .send();
 
         let pre_delete_res = client.document_get(index(INDEX), id(ID)).send();
 
         let delete_res = client
             .document_delete::<Doc>(index(INDEX), id(ID))
-            .params(|p| p.url_param("refresh", true))
+            .params_fluent(|p| p.url_param("refresh", true))
             .send();
 
         let post_delete_res = client.document_get(index(INDEX), id(ID)).send();

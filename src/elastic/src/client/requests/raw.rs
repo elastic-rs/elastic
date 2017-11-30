@@ -3,9 +3,10 @@ Builders for raw requests.
 */
 
 use std::marker::PhantomData;
+use fluent_builder::TryIntoValue;
 
 use client::Client;
-use client::sender::{NextParams, NodeAddresses, SendableRequest, Sender};
+use client::sender::{NextParams, NodeAddresses, SendableRequest, SendableRequestParams, Sender};
 use client::requests::{HttpRequest, RequestBuilder};
 
 /**
@@ -79,7 +80,7 @@ where
         TRequest: Into<HttpRequest<'static, TBody>>,
         TBody: Into<TSender::Body>,
     {
-        RequestBuilder::new(self.clone(), None, RawRequestInner::new(req))
+        RequestBuilder::initial(self.clone(), RawRequestInner::new(req))
     }
 }
 
@@ -162,10 +163,21 @@ where
     pub fn send(self) -> TSender::Response {
         let client = self.client;
         let req = self.inner.req.into();
-        let params_builder = self.params_builder;
-        let params = client.addresses.next();
 
-        let req = SendableRequest::new(req, params, params_builder);
+        // Only try fetch a next address if an explicit `RequestParams` hasn't been given
+        let params = match self.params_builder.try_into_value() {
+            TryIntoValue::Value(value) => {
+                SendableRequestParams::Value(value)
+            },
+            TryIntoValue::Builder(builder) => {
+                SendableRequestParams::Builder {
+                    params: client.addresses.next(),
+                    builder,
+                }
+            }
+        };
+
+        let req = SendableRequest::new(req, params);
 
         client.sender.send(req)
     }

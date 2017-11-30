@@ -30,7 +30,7 @@ impl IntegrationTest for RawQueryString {
         let index_reqs = future::join_all((0..10).into_iter().map(move |i| {
             client
                 .document_index(index(INDEX), id(i), Doc { id: i })
-                .params(|p| p.url_param("refresh", true))
+                .params_fluent(|p| p.url_param("refresh", true))
                 .send()
         }));
 

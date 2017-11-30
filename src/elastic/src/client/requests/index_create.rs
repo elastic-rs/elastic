@@ -114,9 +114,8 @@ where
     [documents-mod]: ../types/document/index.html
     */
     pub fn index_create(&self, index: Index<'static>) -> IndexCreateRequestBuilder<TSender, DefaultBody> {
-        RequestBuilder::new(
+        RequestBuilder::initial(
             self.clone(),
-            None,
             IndexCreateRequestInner {
                 index: index,
                 body: empty_body(),

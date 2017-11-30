@@ -39,7 +39,7 @@ impl IntegrationTest for UpdateWithInlineScript {
 
         let index_res = client
             .document_index(index(INDEX), id(ID), doc())
-            .params(|p| p.url_param("refresh", true))
+            .params_fluent(|p| p.url_param("refresh", true))
             .send();
 
         Box::new(delete_res.then(|_| index_res).map(|_| ()))
@@ -50,7 +50,7 @@ impl IntegrationTest for UpdateWithInlineScript {
         let update_res = client
             .document_update::<Doc>(index(INDEX), id(ID))
             .script(format!("ctx._source.title = \"{}\"", EXPECTED_TITLE))
-            .params(|p| p.url_param("refresh", true))
+            .params_fluent(|p| p.url_param("refresh", true))
             .send();
 
         let get_res = client.document_get(index(INDEX), id(ID)).send();

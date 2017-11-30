@@ -123,7 +123,7 @@ where
     where
         TDocument: DeserializeOwned,
     {
-        RequestBuilder::new(self.clone(), None, SearchRequestInner::new(empty_body()))
+        RequestBuilder::initial(self.clone(), SearchRequestInner::new(empty_body()))
     }
 }
 

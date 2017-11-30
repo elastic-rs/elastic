@@ -30,8 +30,9 @@ use std::time::{Duration, Instant};
 use std::sync::{Arc, RwLock};
 use url::Url;
 use futures::{Future, IntoFuture};
+
 use client::sender::static_nodes::StaticNodes;
-use client::sender::{AsyncSender, NextParams, NodeAddress, PreRequestParams, RequestParams, SendableRequest, Sender, SyncSender};
+use client::sender::{AsyncSender, NextParams, NodeAddress, PreRequestParams, RequestParams, SendableRequest, SendableRequestParams, Sender, SyncSender};
 use client::requests::{DefaultBody, NodesInfoRequest};
 use error::{self, Error};
 use private;
@@ -132,6 +133,17 @@ impl SniffedNodesBuilder {
     }
 
     /**
+    Specify a given base address.
+    */
+    pub fn base_url<I>(mut self, address: I) -> Self
+    where
+        I: Into<NodeAddress>,
+    {
+        self.base_url = address.into();
+        self
+    }
+
+    /**
     Specify a minimum duration to wait before refreshing the set of node addresses.
     */
     pub fn wait(mut self, wait: Duration) -> Self {
@@ -227,7 +239,7 @@ impl<TSender> SniffedNodes<TSender> {
     }
 
     fn sendable_request(&self) -> SendableRequest<NodesInfoRequest<'static>, RequestParams, DefaultBody> {
-        SendableRequest::new(NodesInfoRequest::new(), self.refresh_params.clone(), None)
+        SendableRequest::new(NodesInfoRequest::new(), SendableRequestParams::Value(self.refresh_params.clone()))
     }
 
     fn finish_refresh(inner: &RwLock<SniffedNodesInner>, refresh_params: &RequestParams, fresh_nodes: Result<NodesInfoResponse, Error>) -> Result<RequestParams, Error> {

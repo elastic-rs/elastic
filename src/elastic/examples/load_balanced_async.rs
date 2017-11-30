@@ -7,14 +7,11 @@
 extern crate elastic;
 extern crate env_logger;
 extern crate futures;
-#[macro_use]
-extern crate serde_json;
 extern crate tokio_core;
 
 use std::error::Error;
 use futures::Future;
 use tokio_core::reactor::Core;
-use serde_json::Value;
 use elastic::prelude::*;
 
 fn run() -> Result<(), Box<Error>> {
