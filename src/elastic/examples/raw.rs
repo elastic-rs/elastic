@@ -16,7 +16,7 @@ fn run() -> Result<(), Box<Error>> {
     // A reqwest HTTP client and default parameters.
     // The `params` includes the base node url (http://localhost:9200).
     let client = SyncClientBuilder::new()
-        .params(|p| p.url_param("pretty", true))
+        .params_fluent(|p| p.url_param("pretty", true))
         .build()?;
 
     // A search request from the body.

@@ -193,9 +193,8 @@ where
     {
         let ty = TDocument::name().into();
 
-        RequestBuilder::new(
+        RequestBuilder::initial(
             self.clone(),
-            None,
             UpdateRequestInner {
                 index: index,
                 ty: ty,

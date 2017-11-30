@@ -104,9 +104,8 @@ where
     {
         let ty = TDocument::name().into();
 
-        RequestBuilder::new(
+        RequestBuilder::initial(
             self.clone(),
-            None,
             IndexRequestInner {
                 index: index,
                 ty: ty,

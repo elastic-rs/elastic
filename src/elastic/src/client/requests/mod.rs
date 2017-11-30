@@ -4,8 +4,8 @@ Request types for the Elasticsearch REST API.
 This module contains implementation details that are useful if you want to customise the request process, but aren't generally important for sending requests.
 */
 
-use std::sync::Arc;
 use futures_cpupool::CpuPool;
+use fluent_builder::FluentBuilder;
 
 use client::Client;
 use client::sender::{AsyncSender, RequestParams, Sender};
@@ -71,7 +71,7 @@ where
     TSender: Sender,
 {
     client: Client<TSender>,
-    params_builder: Option<Arc<Fn(RequestParams) -> RequestParams>>,
+    params_builder: FluentBuilder<RequestParams>,
     inner: TRequest,
 }
 
@@ -84,7 +84,15 @@ impl<TSender, TRequest> RequestBuilder<TSender, TRequest>
 where
     TSender: Sender,
 {
-    fn new(client: Client<TSender>, builder: Option<Arc<Fn(RequestParams) -> RequestParams>>, req: TRequest) -> Self {
+    fn initial(client: Client<TSender>, req: TRequest) -> Self {
+        RequestBuilder {
+            client: client,
+            params_builder: FluentBuilder::new(),
+            inner: req,
+        }
+    }
+
+    fn new(client: Client<TSender>, builder: FluentBuilder<RequestParams>, req: TRequest) -> Self {
         RequestBuilder {
             client: client,
             params_builder: builder,
@@ -111,7 +119,7 @@ where
     # let client = SyncClientBuilder::new().build()?;
     # fn get_req() -> PingRequest<'static> { PingRequest::new() }
     let builder = client.request(get_req())
-                        .params(|p| p.url_param("refresh", true));
+                        .params_fluent(|p| p.url_param("refresh", true));
     # Ok(())
     # }
     ```
@@ -126,25 +134,48 @@ where
     # let client = SyncClientBuilder::new().build()?;
     # fn get_req() -> PingRequest<'static> { PingRequest::new() }
     let builder = client.request(get_req())
-                        .params(|p| p.base_url("http://different-host:9200"));
+                        .params_fluent(|p| p.base_url("http://different-host:9200"));
     # Ok(())
     # }
     ```
     */
-    pub fn params<F>(mut self, builder: F) -> Self
+    pub fn params_fluent<F>(mut self, builder: F) -> Self
     where
         F: Fn(RequestParams) -> RequestParams + 'static,
     {
-        if let Some(old_params_builder) = self.params_builder {
-            let params_builder = move |params: RequestParams| {
-                let params = old_params_builder(params);
-                builder(params)
-            };
+        self.params_builder = self.params_builder.fluent(builder).boxed();
 
-            self.params_builder = Some(Arc::new(params_builder));
-        } else {
-            self.params_builder = Some(Arc::new(builder));
-        }
+        self
+    }
+
+    /**
+    Specify default request parameters.
+
+    This method differs from `params_fluent` by not taking any default parameters into account.
+    The `RequestParams` passed in are exactly the `RequestParams` used to build the request.
+    
+    # Examples
+    
+    Add a url param to force an index refresh and send the request to `http://different-host:9200`:
+    
+    ```no_run
+    # extern crate elastic;
+    # use elastic::prelude::*;
+    # fn main() { run().unwrap() }
+    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # let client = SyncClientBuilder::new().build()?;
+    # fn get_req() -> PingRequest<'static> { PingRequest::new() }
+    let builder = client.request(get_req())
+                        .params(RequestParams::new("http://different-hos:9200").url_param("refresh", true));
+    # Ok(())
+    # }
+    ```
+    */
+    pub fn params<I>(mut self, params: I) -> Self
+    where
+        I: Into<RequestParams>
+    {
+        self.params_builder = self.params_builder.value(params.into());
 
         self
     }

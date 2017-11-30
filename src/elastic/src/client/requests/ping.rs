@@ -70,7 +70,7 @@ where
     [send-async]: requests/ping/type.PingRequestBuilder.html#send-asynchronously
     */
     pub fn ping(&self) -> PingRequestBuilder<TSender> {
-        RequestBuilder::new(self.clone(), None, PingRequestInner)
+        RequestBuilder::initial(self.clone(), PingRequestInner)
     }
 }
 

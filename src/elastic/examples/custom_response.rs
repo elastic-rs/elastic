@@ -59,7 +59,7 @@ fn run() -> Result<(), Box<Error>> {
     // Send the request and process the response.
     let res = client
         .request(SearchRequest::new(query.to_string()))
-        .params(|q| q.url_param("filter_path", "hits.hits._source"))
+        .params_fluent(|q| q.url_param("filter_path", "hits.hits._source"))
         .send()?
         .into_response::<SearchResponse>()?;
 
