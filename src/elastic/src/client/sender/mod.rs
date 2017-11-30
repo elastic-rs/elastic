@@ -174,7 +174,7 @@ enum NodeAddressesBuilder {
 }
 
 impl NodeAddressesBuilder {
-    fn sniff_nodes(mut self, builder: SniffedNodesBuilder) -> Self {
+    fn sniff_nodes(self, builder: SniffedNodesBuilder) -> Self {
         match self {
             NodeAddressesBuilder::Sniffed(fluent_builder) => {
                 NodeAddressesBuilder::Sniffed(fluent_builder.value(builder))

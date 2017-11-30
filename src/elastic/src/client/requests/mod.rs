@@ -4,7 +4,6 @@ Request types for the Elasticsearch REST API.
 This module contains implementation details that are useful if you want to customise the request process, but aren't generally important for sending requests.
 */
 
-use std::sync::Arc;
 use futures_cpupool::CpuPool;
 use fluent_builder::FluentBuilder;
 
@@ -120,7 +119,7 @@ where
     # let client = SyncClientBuilder::new().build()?;
     # fn get_req() -> PingRequest<'static> { PingRequest::new() }
     let builder = client.request(get_req())
-                        .params(|p| p.url_param("refresh", true));
+                        .params_fluent(|p| p.url_param("refresh", true));
     # Ok(())
     # }
     ```
@@ -135,7 +134,7 @@ where
     # let client = SyncClientBuilder::new().build()?;
     # fn get_req() -> PingRequest<'static> { PingRequest::new() }
     let builder = client.request(get_req())
-                        .params(|p| p.base_url("http://different-host:9200"));
+                        .params_fluent(|p| p.base_url("http://different-host:9200"));
     # Ok(())
     # }
     ```
@@ -149,6 +148,29 @@ where
         self
     }
 
+    /**
+    Specify default request parameters.
+
+    This method differs from `params_fluent` by not taking any default parameters into account.
+    The `RequestParams` passed in are exactly the `RequestParams` used to build the request.
+    
+    # Examples
+    
+    Add a url param to force an index refresh and send the request to `http://different-host:9200`:
+    
+    ```no_run
+    # extern crate elastic;
+    # use elastic::prelude::*;
+    # fn main() { run().unwrap() }
+    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # let client = SyncClientBuilder::new().build()?;
+    # fn get_req() -> PingRequest<'static> { PingRequest::new() }
+    let builder = client.request(get_req())
+                        .params(RequestParams::new("http://different-hos:9200").url_param("refresh", true));
+    # Ok(())
+    # }
+    ```
+    */
     pub fn params<I>(mut self, params: I) -> Self
     where
         I: Into<RequestParams>

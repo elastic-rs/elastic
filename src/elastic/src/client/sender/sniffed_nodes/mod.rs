@@ -30,7 +30,6 @@ use std::time::{Duration, Instant};
 use std::sync::{Arc, RwLock};
 use url::Url;
 use futures::{Future, IntoFuture};
-use fluent_builder::FluentBuilder;
 
 use client::sender::static_nodes::StaticNodes;
 use client::sender::{AsyncSender, NextParams, NodeAddress, PreRequestParams, RequestParams, SendableRequest, SendableRequestParams, Sender, SyncSender};

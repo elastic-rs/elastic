@@ -1,4 +1,3 @@
-use std::sync::Arc;
 use reqwest::{Client as SyncHttpClient, ClientBuilder as SyncHttpClientBuilder, RequestBuilder as SyncHttpRequestBuilder};
 use fluent_builder::FluentBuilder;
 
@@ -14,6 +13,7 @@ use client::Client;
 A synchronous Elasticsearch client.
 
 Use a [`SyncClientBuilder`][SyncClientBuilder] to configure and build a `SyncClient`.
+For more details about the methods available to a `SyncClient`, see the base [`Client`][Client] type.
  
 # Examples
 
@@ -31,6 +31,7 @@ let response = client.ping().send()?;
 # }
 ```
 
+[Client]: struct.Client.html
 [SyncClientBuilder]: struct.SyncClientBuilder.html
 */
 pub type SyncClient = Client<SyncSender>;
@@ -270,15 +271,6 @@ impl SyncClientBuilder {
         self
     }
 
-    pub fn params<I>(mut self, params: I) -> Self
-    where
-        I: Into<PreRequestParams>,
-    {
-        self.params = self.params.value(params.into());
-
-        self
-    }
-
     /**
     Specify default request parameters.
     
@@ -289,9 +281,8 @@ impl SyncClientBuilder {
     ```
     # use elastic::prelude::*;
     let builder = SyncClientBuilder::new()
-        .params(|p| {
-            p.url_param("pretty", true)
-        });
+        .params_fluent(|p| p
+            .url_param("pretty", true));
     ```
 
     Add an authorization header:
@@ -301,17 +292,49 @@ impl SyncClientBuilder {
     use elastic::http::header::Authorization;
 
     let builder = SyncClientBuilder::new()
-        .params(|p| {
-            p.header(Authorization("let me in".to_owned()))
-        });
+        .params_fluent(|p| p
+            .header(Authorization("let me in".to_owned())));
     ```
-    [SyncClientBuilder.base_url]: #method.base_url
     */
     pub fn params_fluent<F>(mut self, builder: F) -> Self
     where
         F: Fn(PreRequestParams) -> PreRequestParams + 'static,
     {
         self.params = self.params.fluent(builder).boxed();
+
+        self
+    }
+
+    /**
+    Specify default request parameters.
+
+    # Examples
+    
+    Require all responses use pretty-printing:
+    
+    ```
+    # use elastic::prelude::*;
+    let builder = SyncClientBuilder::new()
+        .params(PreRequestParams::default()
+            .url_param("pretty", true));
+    ```
+
+    Add an authorization header:
+
+    ```
+    # use elastic::prelude::*;
+    use elastic::http::header::Authorization;
+
+    let builder = SyncClientBuilder::new()
+        .params(PreRequestParams::default()
+            .header(Authorization("let me in".to_owned())));
+    ```
+    */
+    pub fn params<I>(mut self, params: I) -> Self
+    where
+        I: Into<PreRequestParams>,
+    {
+        self.params = self.params.value(params.into());
 
         self
     }
@@ -326,7 +349,7 @@ impl SyncClientBuilder {
     /** 
     Construct a [`SyncClient`][SyncClient] from this builder. 
 
-    [Client]: struct.Client.html
+    [SyncClient]: type.SyncClient.html
     */
     pub fn build(self) -> Result<SyncClient> {
         let http = self.http
@@ -356,11 +379,7 @@ mod tests {
     use client::requests::*;
 
     fn params() -> RequestParams {
-        RequestParams::new("eshost:9200/path").url_param("pretty", false)
-    }
-
-    fn builder() -> Option<Arc<Fn(RequestParams) -> RequestParams>> {
-        Some(Arc::new(|params| params.url_param("pretty", true)))
+        RequestParams::new("eshost:9200/path").url_param("pretty", true)
     }
 
     fn expected_req(cli: &Client, method: Method, url: &str, body: Option<Vec<u8>>) -> RequestBuilder {
@@ -383,7 +402,7 @@ mod tests {
     #[test]
     fn head_req() {
         let cli = Client::new();
-        let req = build_req(&cli, params(), builder(), PingHeadRequest::new());
+        let req = build_req(&cli, params(), PingHeadRequest::new());
 
         let url = "eshost:9200/path/?pretty=true";
 
@@ -395,7 +414,7 @@ mod tests {
     #[test]
     fn get_req() {
         let cli = Client::new();
-        let req = build_req(&cli, params(), builder(), SimpleSearchRequest::new());
+        let req = build_req(&cli, params(), SimpleSearchRequest::new());
 
         let url = "eshost:9200/path/_search?pretty=true";
 
@@ -410,7 +429,6 @@ mod tests {
         let req = build_req(
             &cli,
             params(),
-            builder(),
             PercolateRequest::for_index_ty("idx", "ty", vec![]),
         );
 
@@ -427,7 +445,6 @@ mod tests {
         let req = build_req(
             &cli,
             params(),
-            builder(),
             IndicesCreateRequest::for_index("idx", vec![]),
         );
 
@@ -444,7 +461,6 @@ mod tests {
         let req = build_req(
             &cli,
             params(),
-            builder(),
             IndicesDeleteRequest::for_index("idx"),
         );
 

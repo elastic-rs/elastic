@@ -100,7 +100,7 @@ fn put_index(client: &SyncClient) -> Result<(), Error> {
 fn put_doc(client: &SyncClient, doc: MyType) -> Result<(), Error> {
     client
         .document_index(sample_index(), id(doc.id), doc)
-        .params(|p| p.url_param("refresh", true))
+        .params_fluent(|p| p.url_param("refresh", true))
         .send()?;
 
     Ok(())

@@ -1,4 +1,3 @@
-use std::sync::Arc;
 use std::error::Error as StdError;
 use futures::{Future, IntoFuture, Poll};
 use futures::future::Either;
@@ -20,6 +19,7 @@ use client::Client;
 An asynchronous Elasticsearch client.
 
 Use an [`AsyncClientBuilder`][AsyncClientBuilder] to configure and build an `AsyncClient`.
+For more details about the methods available to an `AsyncClient`, see the base [`Client`][Client] type.
 
 # Examples
 
@@ -44,6 +44,7 @@ core.run(response_future)?;
 # }
 ```
 
+[Client]: struct.Client.html
 [AsyncClientBuilder]: struct.AsyncClientBuilder.html
 */
 pub type AsyncClient = Client<AsyncSender>;
@@ -357,15 +358,6 @@ impl AsyncClientBuilder {
         self
     }
 
-    pub fn params<I>(mut self, params: I) -> Self
-    where
-        I: Into<PreRequestParams>,
-    {
-        self.params = self.params.value(params.into());
-
-        self
-    }
-
     /**
     Specify default request parameters.
     
@@ -376,9 +368,8 @@ impl AsyncClientBuilder {
     ```
     # use elastic::prelude::*;
     let builder = AsyncClientBuilder::new()
-        .params(|p| {
-            p.url_param("pretty", true)
-        });
+        .params_fluent(|p| p
+            .url_param("pretty", true));
     ```
 
     Add an authorization header:
@@ -388,17 +379,49 @@ impl AsyncClientBuilder {
     use elastic::http::header::Authorization;
 
     let builder = AsyncClientBuilder::new()
-        .params(|p| {
-            p.header(Authorization("let me in".to_owned()))
-        });
+        .params_fluent(|p| p
+            .header(Authorization("let me in".to_owned())));
     ```
-    [AsyncClientBuilder.base_url]: #method.base_url
     */
     pub fn params_fluent<F>(mut self, builder: F) -> Self
     where
         F: Fn(PreRequestParams) -> PreRequestParams + 'static,
     {
         self.params = self.params.fluent(builder).boxed();
+
+        self
+    }
+
+    /**
+    Specify default request parameters.
+
+    # Examples
+    
+    Require all responses use pretty-printing:
+    
+    ```
+    # use elastic::prelude::*;
+    let builder = AsyncClientBuilder::new()
+        .params(PreRequestParams::new()
+            .url_param("pretty", true));
+    ```
+
+    Add an authorization header:
+
+    ```
+    # use elastic::prelude::*;
+    use elastic::http::header::Authorization;
+
+    let builder = AsyncClientBuilder::new()
+        .params(PreRequestParams::new()
+            .header(Authorization("let me in".to_owned())));
+    ```
+    */
+    pub fn params<I>(mut self, params: I) -> Self
+    where
+        I: Into<PreRequestParams>,
+    {
+        self.params = self.params.value(params.into());
 
         self
     }
@@ -512,11 +535,7 @@ mod tests {
     use client::requests::*;
 
     fn params() -> RequestParams {
-        RequestParams::new("eshost:9200/path").url_param("pretty", false)
-    }
-
-    fn builder() -> Option<Arc<Fn(RequestParams) -> RequestParams>> {
-        Some(Arc::new(|params| params.url_param("pretty", true)))
+        RequestParams::new("eshost:9200/path").url_param("pretty", true)
     }
 
     fn expected_req(cli: &Client, method: Method, url: &str, body: Option<Vec<u8>>) -> RequestBuilder {
@@ -543,7 +562,7 @@ mod tests {
     #[test]
     fn head_req() {
         let cli = Client::new(&core().handle());
-        let req = build_req(&cli, params(), builder(), PingHeadRequest::new());
+        let req = build_req(&cli, params(), PingHeadRequest::new());
 
         let url = "eshost:9200/path/?pretty=true";
 
@@ -555,7 +574,7 @@ mod tests {
     #[test]
     fn get_req() {
         let cli = Client::new(&core().handle());
-        let req = build_req(&cli, params(), builder(), SimpleSearchRequest::new());
+        let req = build_req(&cli, params(), SimpleSearchRequest::new());
 
         let url = "eshost:9200/path/_search?pretty=true";
 
@@ -570,7 +589,6 @@ mod tests {
         let req = build_req(
             &cli,
             params(),
-            builder(),
             PercolateRequest::for_index_ty("idx", "ty", vec![]),
         );
 
@@ -587,7 +605,6 @@ mod tests {
         let req = build_req(
             &cli,
             params(),
-            builder(),
             IndicesCreateRequest::for_index("idx", vec![]),
         );
 
@@ -604,7 +621,6 @@ mod tests {
         let req = build_req(
             &cli,
             params(),
-            builder(),
             IndicesDeleteRequest::for_index("idx"),
         );
 
