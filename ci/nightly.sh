@@ -10,7 +10,7 @@ if [ "$KIND" == "build" ]; then
     if [ "$BRANCH" == "vNext" ]; then
         echo "uploading crate docs"
 
-        cargo doc --all
+        cargo doc --no-deps --all
 
         REV=$(git rev-parse --short HEAD)
         cd target/doc
