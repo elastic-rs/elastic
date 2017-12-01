@@ -41,7 +41,7 @@ pub type SyncClient = Client<SyncSender>;
 #[derive(Clone)]
 pub struct SyncSender {
     pub(in client) http: SyncHttpClient,
-    pre_send: Option<Arc<Fn(&mut SyncHttpRequest)>>,
+    pre_send: Option<Arc<Fn(&mut SyncHttpRequest) + Send + Sync>>,
 }
 
 impl private::Sealed for SyncSender {}
@@ -169,7 +169,7 @@ pub struct SyncClientBuilder {
     http: Option<SyncHttpClient>,
     nodes: NodeAddressesBuilder,
     params: FluentBuilder<PreRequestParams>,
-    pre_send: Option<Arc<Fn(&mut SyncHttpRequest)>>,
+    pre_send: Option<Arc<Fn(&mut SyncHttpRequest) + Send + Sync + 'static>>,
 }
 
 impl Default for SyncClientBuilder {
@@ -364,7 +364,7 @@ impl SyncClientBuilder {
     */
     pub fn pre_send_raw<F>(mut self, pre_send: F) -> Self
     where
-        F: Fn(&mut SyncHttpRequest) + 'static,
+        F: Fn(&mut SyncHttpRequest) + Send + Sync + 'static,
     {
         self.pre_send = Some(Arc::new(pre_send));
 
