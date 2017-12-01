@@ -1,10 +1,11 @@
+use std::sync::Arc;
 use std::error::Error as StdError;
 use futures::{Future, IntoFuture, Poll};
 use futures::future::Either;
 use futures_cpupool::CpuPool;
 use tokio_core::reactor::Handle;
 use reqwest::Error as ReqwestError;
-use reqwest::unstable::async::{Client as AsyncHttpClient, ClientBuilder as AsyncHttpClientBuilder, RequestBuilder as AsyncHttpRequestBuilder};
+use reqwest::unstable::async::{Client as AsyncHttpClient, ClientBuilder as AsyncHttpClientBuilder, Request as AsyncHttpRequest, RequestBuilder as AsyncHttpRequestBuilder};
 use fluent_builder::FluentBuilder;
 
 use error::{self, Error};
@@ -54,6 +55,7 @@ pub type AsyncClient = Client<AsyncSender>;
 pub struct AsyncSender {
     pub(in client) http: AsyncHttpClient,
     pub(in client) serde_pool: Option<CpuPool>,
+    pre_send: Option<Arc<Fn(&mut AsyncHttpRequest)>>,
 }
 
 impl private::Sealed for AsyncSender {}
@@ -71,7 +73,6 @@ impl Sender for AsyncSender {
     {
         let correlation_id = request.correlation_id;
         let serde_pool = self.serde_pool.clone();
-        let http = self.http.clone();
         let params = request.params;
         let req = request.inner.into();
 
@@ -97,9 +98,19 @@ impl Sender for AsyncSender {
             }
         };
 
-        let req_future = params_future.and_then(move |params| {
-            build_req(&http, params, req)
-                .send()
+        let pre_send_http = self.http.clone();
+        let build_req_future = params_future.and_then(move |params| {
+            build_req(&pre_send_http, params, req).build().map_err(error::request)
+        });
+
+        let req_http = self.http.clone();
+        let pre_send = self.pre_send.clone();
+        let req_future = build_req_future.and_then(move |mut req| {
+            if let Some(pre_send) = pre_send {
+                pre_send(&mut req);
+            }
+                
+            req_http.execute(req)
                 .map_err(move |e| {
                     error!(
                         "Elasticsearch Response: correlation_id: '{}', error: '{}'",
@@ -217,6 +228,7 @@ pub struct AsyncClientBuilder {
     serde_pool: Option<CpuPool>,
     nodes: NodeAddressesBuilder,
     params: FluentBuilder<PreRequestParams>,
+    pre_send: Option<Arc<Fn(&mut AsyncHttpRequest)>>,
 }
 
 /**
@@ -273,6 +285,7 @@ impl AsyncClientBuilder {
             serde_pool: None,
             params: FluentBuilder::new(),
             nodes: NodeAddressesBuilder::default(),
+            pre_send: None,
         }
     }
 
@@ -284,6 +297,7 @@ impl AsyncClientBuilder {
             serde_pool: None,
             params: FluentBuilder::new().value(params),
             nodes: NodeAddressesBuilder::default(),
+            pre_send: None,
         }
     }
 
@@ -458,6 +472,22 @@ impl AsyncClientBuilder {
         self
     }
 
+    /**
+    Specify a function to tweak a raw request before sending.
+
+    This function will be applied to all outgoing requests and gives you the chance to perform operations the require the complete raw request,
+    such as request singing.
+    Prefer the `params` method on the client or individual requests where possible.
+    */
+    pub fn pre_send_raw<F>(mut self, pre_send: F) -> Self
+    where
+        F: Fn(&mut AsyncHttpRequest) + 'static,
+    {
+        self.pre_send = Some(Arc::new(pre_send));
+
+        self
+    }
+
     /** 
     Construct an [`AsyncClient`][AsyncClient] from this builder.
 
@@ -513,6 +543,7 @@ impl AsyncClientBuilder {
         let sender = AsyncSender {
             http: http,
             serde_pool: self.serde_pool,
+            pre_send: self.pre_send,
         };
 
         let addresses = self.nodes.build(params, sender.clone());

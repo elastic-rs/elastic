@@ -1,4 +1,5 @@
-use reqwest::{Client as SyncHttpClient, ClientBuilder as SyncHttpClientBuilder, RequestBuilder as SyncHttpRequestBuilder};
+use std::sync::Arc;
+use reqwest::{Client as SyncHttpClient, ClientBuilder as SyncHttpClientBuilder, Request as SyncHttpRequest, RequestBuilder as SyncHttpRequestBuilder};
 use fluent_builder::FluentBuilder;
 
 use error::{self, Result};
@@ -40,6 +41,7 @@ pub type SyncClient = Client<SyncSender>;
 #[derive(Clone)]
 pub struct SyncSender {
     pub(in client) http: SyncHttpClient,
+    pre_send: Option<Arc<Fn(&mut SyncHttpRequest)>>,
 }
 
 impl private::Sealed for SyncSender {}
@@ -81,9 +83,13 @@ impl Sender for SyncSender {
             }
         };
 
-        let mut req = build_req(&self.http, params, req);
+        let mut req = build_req(&self.http, params, req).build().map_err(error::request)?;
 
-        let res = match req.send().map_err(error::request) {
+        if let Some(ref pre_send) = self.pre_send {
+            pre_send(&mut req);
+        }
+
+        let res = match self.http.execute(req).map_err(error::request) {
             Ok(res) => {
                 info!(
                     "Elasticsearch Response: correlation_id: '{}', status: '{}'",
@@ -163,6 +169,7 @@ pub struct SyncClientBuilder {
     http: Option<SyncHttpClient>,
     nodes: NodeAddressesBuilder,
     params: FluentBuilder<PreRequestParams>,
+    pre_send: Option<Arc<Fn(&mut SyncHttpRequest)>>,
 }
 
 impl Default for SyncClientBuilder {
@@ -186,6 +193,7 @@ impl SyncClientBuilder {
             http: None,
             nodes: NodeAddressesBuilder::default(),
             params: FluentBuilder::new(),
+            pre_send: None,
         }
     }
 
@@ -197,6 +205,7 @@ impl SyncClientBuilder {
             http: None,
             nodes: NodeAddressesBuilder::default(),
             params: FluentBuilder::new().value(params),
+            pre_send: None,
         }
     }
 
@@ -346,6 +355,22 @@ impl SyncClientBuilder {
         self
     }
 
+    /**
+    Specify a function to tweak a raw request before sending.
+
+    This function will be applied to all outgoing requests and gives you the chance to perform operations the require the complete raw request,
+    such as request singing.
+    Prefer the `params` method on the client or individual requests where possible.
+    */
+    pub fn pre_send_raw<F>(mut self, pre_send: F) -> Self
+    where
+        F: Fn(&mut SyncHttpRequest) + 'static,
+    {
+        self.pre_send = Some(Arc::new(pre_send));
+
+        self
+    }
+
     /** 
     Construct a [`SyncClient`][SyncClient] from this builder. 
 
@@ -358,7 +383,7 @@ impl SyncClientBuilder {
             .map_err(error::build)?;
 
         let params = self.params.into_value(|| PreRequestParams::default());
-        let sender = SyncSender { http: http };
+        let sender = SyncSender { http, pre_send: self.pre_send };
 
         let addresses = self.nodes.build(params, sender.clone());
 
