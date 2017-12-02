@@ -1,57 +1,95 @@
-use std::io::Cursor;
-use std::fs::File;
+use bytes::Bytes;
 use serde_json::Value;
+use std::borrow::Cow;
+use std::io::{self, Read, Cursor};
 
-use http::SyncBody as Body;
+use http::{HttpRequest, SyncBody as Body};
+
+pub type SyncHttpRequest = HttpRequest<SyncBody>;
 
 /** A type that can be converted into a request body. */
-pub struct SyncBody(Body);
+pub struct SyncBody(SyncBodyInner);
+
+// TODO: Add streamed that builds a set of in-memory chunks when being read
+
+enum SyncBodyInner {
+    Shared(Bytes),
+    Bytes(Cow<'static, [u8]>),
+    Str(Cow<'static, str>),
+}
+
+impl AsRef<[u8]> for SyncBodyInner {
+    fn as_ref(&self) -> &[u8] {
+        match *self {
+            SyncBodyInner::Shared(ref bytes) => bytes.as_ref(),
+            SyncBodyInner::Bytes(ref bytes) => bytes.as_ref(),
+            SyncBodyInner::Str(ref string) => string.as_bytes()
+        }
+    }
+}
+
+/**
+A read adapter for a `SyncBody`.
+*/
+pub struct SyncBodyReader<'a> {
+    inner: Cursor<&'a SyncBodyInner>,
+}
+
+impl<'a> Read for SyncBodyReader<'a> {
+    fn read(&mut self, buf: &mut [u8]) -> Result<usize, io::Error> {
+        self.inner.read(buf)
+    }
+}
 
 impl SyncBody {
     /** Convert the body into its inner value. */
     pub fn into_inner(self) -> Body {
-        self.0
+        match self.0 {
+            SyncBodyInner::Shared(bytes) => bytes.to_vec().into(),
+            SyncBodyInner::Bytes(bytes) => match bytes {
+                Cow::Owned(bytes) => bytes.into(),
+                Cow::Borrowed(bytes) => bytes.into(),
+            },
+            SyncBodyInner::Str(string) => match string {
+                Cow::Owned(string) => string.into(),
+                Cow::Borrowed(string) => string.into(),
+            }
+        }
     }
 }
 
-impl From<Body> for SyncBody {
-    fn from(body: Body) -> SyncBody {
-        SyncBody(body)
-    }
-}
-
-impl From<File> for SyncBody {
-    fn from(body: File) -> SyncBody {
-        SyncBody(body.into())
+impl From<Bytes> for SyncBody {
+    fn from(body: Bytes) -> SyncBody {
+        SyncBody(SyncBodyInner::Shared(body))
     }
 }
 
 impl From<Vec<u8>> for SyncBody {
     fn from(body: Vec<u8>) -> SyncBody {
-        SyncBody(body.into())
+        SyncBody(SyncBodyInner::Bytes(body.into()))
     }
 }
 
 impl From<String> for SyncBody {
     fn from(body: String) -> SyncBody {
-        SyncBody(body.into())
+        SyncBody(SyncBodyInner::Str(body.into()))
     }
 }
 
 impl From<Value> for SyncBody {
     fn from(body: Value) -> SyncBody {
-        SyncBody(body.to_string().into())
+        SyncBody(SyncBodyInner::Str(body.to_string().into()))
     }
 }
 
 impl From<&'static [u8]> for SyncBody {
     fn from(body: &'static [u8]) -> SyncBody {
-        SyncBody(Body::new(Cursor::new(body)))
+        SyncBody(SyncBodyInner::Bytes(body.into()))
     }
 }
 
 impl From<&'static str> for SyncBody {
     fn from(body: &'static str) -> SyncBody {
-        SyncBody(Body::new(Cursor::new(body)))
+        SyncBody(SyncBodyInner::Str(body.into()))
     }
 }

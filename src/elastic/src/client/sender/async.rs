@@ -5,13 +5,14 @@ use futures::future::Either;
 use futures_cpupool::CpuPool;
 use tokio_core::reactor::Handle;
 use reqwest::Error as ReqwestError;
-use reqwest::unstable::async::{Client as AsyncHttpClient, ClientBuilder as AsyncHttpClientBuilder, Request as AsyncHttpRequest, RequestBuilder as AsyncHttpRequestBuilder};
+use reqwest::unstable::async::{Client as AsyncHttpClient, ClientBuilder as AsyncHttpClientBuilder, RequestBuilder as AsyncHttpRequestBuilder};
 use fluent_builder::FluentBuilder;
 
 use error::{self, Error};
+use http::Url;
 use private;
-use client::requests::{AsyncBody, HttpRequest};
-use client::sender::{build_method, build_url, NextParams, NodeAddress, NodeAddresses, NodeAddressesBuilder, NodeAddressesInner, PreRequestParams, RequestParams, SendableRequest, SendableRequestParams, Sender};
+use client::requests::{AsyncHttpRequest, AsyncBody, Endpoint};
+use client::sender::{build_reqwest_method, build_url, NextParams, NodeAddress, NodeAddresses, NodeAddressesBuilder, NodeAddressesInner, PreRequestParams, RequestParams, SendableRequest, SendableRequestParams, Sender};
 use client::sender::sniffed_nodes::SniffedNodesBuilder;
 use client::responses::{async_response, AsyncResponseBuilder};
 use client::Client;
@@ -55,7 +56,7 @@ pub type AsyncClient = Client<AsyncSender>;
 pub struct AsyncSender {
     pub(in client) http: AsyncHttpClient,
     pub(in client) serde_pool: Option<CpuPool>,
-    pre_send: Option<Arc<Fn(&mut AsyncHttpRequest)>>,
+    pre_send: Option<Arc<Fn(&mut AsyncHttpRequest) -> Box<Future<Item = (), Error = Box<StdError + Send>>>>>,
 }
 
 impl private::Sealed for AsyncSender {}
@@ -67,7 +68,7 @@ impl Sender for AsyncSender {
 
     fn send<TRequest, TParams, TBody>(&self, request: SendableRequest<TRequest, TParams, TBody>) -> Self::Response
     where
-        TRequest: Into<HttpRequest<'static, TBody>>,
+        TRequest: Into<Endpoint<'static, TBody>>,
         TBody: Into<Self::Body> + 'static,
         TParams: Into<Self::Params> + 'static,
     {
@@ -75,11 +76,14 @@ impl Sender for AsyncSender {
         let serde_pool = self.serde_pool.clone();
         let params = request.params;
         let req = request.inner.into();
+        let method = req.method;
+        let url = req.url;
+        let body = req.body.map(|body| body.into());
 
         info!(
             "Elasticsearch Request: correlation_id: '{}', path: '{}'",
             correlation_id,
-            req.url.as_ref()
+            url.as_ref()
         );
 
         let params_future = match params {
@@ -98,18 +102,39 @@ impl Sender for AsyncSender {
             }
         };
 
-        let pre_send_http = self.http.clone();
-        let build_req_future = params_future.and_then(move |params| {
-            build_req(&pre_send_http, params, req).build().map_err(error::request)
+        let build_req_future = params_future
+            .and_then(move |params| {
+                Url::parse(&build_url(&url, &params))
+                    .map_err(error::request)
+                    .map(|url| (params, url))
+            })
+            .and_then(move |(params, url)| {
+                Ok(AsyncHttpRequest {
+                    url,
+                    method,
+                    headers: params.get_headers(),
+                    body,
+                    _private: (),
+                })
+            });
+
+        let pre_send = self.pre_send.clone();
+        let pre_send_future = build_req_future.and_then(move |mut req| {
+            if let Some(pre_send) = pre_send {
+                Either::A(pre_send(&mut req).map_err(error::wrapped).map_err(error::request).and_then(move |_| Ok(req).into_future()))
+            }
+            else {
+                Either::B(Ok(req).into_future())
+            }
         });
 
+        let pre_send_http = self.http.clone();
+        let pre_send_future = pre_send_future.and_then(move |req| {
+            build_reqwest(&pre_send_http, req).build().map_err(error::request)
+        });
+        
         let req_http = self.http.clone();
-        let pre_send = self.pre_send.clone();
-        let req_future = build_req_future.and_then(move |mut req| {
-            if let Some(pre_send) = pre_send {
-                pre_send(&mut req);
-            }
-                
+        let req_future = pre_send_future.and_then(move |req| {
             req_http.execute(req)
                 .map_err(move |e| {
                     error!(
@@ -176,22 +201,17 @@ impl From<RequestParams> for PendingParams {
 }
 
 /** Build an asynchronous `reqwest::RequestBuilder` from an Elasticsearch request. */
-fn build_req<I, B>(client: &AsyncHttpClient, params: RequestParams, req: I) -> AsyncHttpRequestBuilder
-where
-    I: Into<HttpRequest<'static, B>>,
-    B: Into<AsyncBody>,
-{
-    let req = req.into();
-    let url = build_url(&req.url, &params);
-    let method = build_method(req.method);
-    let body = req.body;
+fn build_reqwest(client: &AsyncHttpClient, req: AsyncHttpRequest) -> AsyncHttpRequestBuilder {
+    let AsyncHttpRequest { url, method, headers, body, .. } = req;
 
-    let mut req = client.request(method, &url);
+    let method = build_reqwest_method(method);
+
+    let mut req = client.request(method, url);
     {
-        req.headers(params.get_headers());
+        req.headers(headers);
 
         if let Some(body) = body {
-            req.body(body.into().into_inner());
+            req.body(body.into_inner());
         }
     }
 
@@ -228,7 +248,7 @@ pub struct AsyncClientBuilder {
     serde_pool: Option<CpuPool>,
     nodes: NodeAddressesBuilder,
     params: FluentBuilder<PreRequestParams>,
-    pre_send: Option<Arc<Fn(&mut AsyncHttpRequest)>>,
+    pre_send: Option<Arc<Fn(&mut AsyncHttpRequest) -> Box<Future<Item = (), Error = Box<StdError + Send>>>>>,
 }
 
 /**
@@ -481,7 +501,7 @@ impl AsyncClientBuilder {
     */
     pub fn pre_send_raw<F>(mut self, pre_send: F) -> Self
     where
-        F: Fn(&mut AsyncHttpRequest) + 'static,
+        F: Fn(&mut AsyncHttpRequest) -> Box<Future<Item = (), Error = Box<StdError + Send>>> + 'static,
     {
         self.pre_send = Some(Arc::new(pre_send));
 

@@ -206,7 +206,6 @@ fn endpoints_mod(tokens: &mut Tokens, derives: Tokens, http_mod: &'static str, e
         let (req_params_item, req_params_ty) = gen::request_params::RequestParamBuilder::from(&e).build();
 
         let req_ctors_item = gen::request_ctors::RequestParamsCtorBuilder::from((&e, &req_params_ty, &url_params)).build();
-
         let url_method_item = gen::url_builder::UrlMethodBuilder::from((&e, &url_params)).build();
 
         let req_into_http_item = gen::request_into_http::RequestIntoHttpRequestBuilder::from((&e, &req_params_ty)).build();
@@ -227,13 +226,16 @@ fn http_mod(tokens: &mut Tokens, derives: Tokens) {
     let url_tokens = gen::types::url::tokens();
 
     let body_tokens = gen::types::body::tokens();
-    let http_method_item = gen::types::request::method_item();
-    let http_req_item = gen::types::request::req_tokens();
 
     let uses = quote!(
         use std::borrow::Cow;
         use std::ops::Deref;
+
+        extern crate http;
+        pub use self::http::Method;
     );
+
+    let http_req_item = gen::types::request::req_tokens();
 
     tokens.append(uses.to_string());
 
@@ -242,11 +244,9 @@ fn http_mod(tokens: &mut Tokens, derives: Tokens) {
     tokens.append_all(vec![
         derives.clone(),
         url_tokens,
-        body_tokens,
         derives.clone(),
         http_req_item,
-        derives.clone(),
-        quote!(#http_method_item),
+        body_tokens,
     ]);
 }
 

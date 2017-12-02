@@ -10,7 +10,7 @@ use fluent_builder::FluentBuilder;
 use client::Client;
 use client::sender::{AsyncSender, RequestParams, Sender};
 
-pub use elastic_requests::{empty_body, DefaultBody, HttpMethod, HttpRequest, Url};
+pub use elastic_requests::{empty_body, DefaultBody, Endpoint, UrlPath};
 pub use elastic_requests::params;
 pub use elastic_requests::endpoints;
 

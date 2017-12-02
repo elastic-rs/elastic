@@ -29,7 +29,7 @@ use std::sync::Arc;
 use std::marker::PhantomData;
 use uuid::Uuid;
 
-use client::requests::HttpRequest;
+use client::requests::Endpoint;
 use self::static_nodes::StaticNodes;
 use self::sniffed_nodes::{SniffedNodes, SniffedNodesBuilder};
 use private;
@@ -93,7 +93,7 @@ pub trait Sender: private::Sealed + Clone {
     /* Send a request. */
     fn send<TRequest, TParams, TBody>(&self, request: SendableRequest<TRequest, TParams, TBody>) -> Self::Response
     where
-        TRequest: Into<HttpRequest<'static, TBody>>,
+        TRequest: Into<Endpoint<'static, TBody>>,
         TBody: Into<Self::Body> + 'static,
         TParams: Into<Self::Params> + 'static;
 }

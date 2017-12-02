@@ -1,12 +1,14 @@
 use std::sync::Arc;
-use reqwest::{Client as SyncHttpClient, ClientBuilder as SyncHttpClientBuilder, Request as SyncHttpRequest, RequestBuilder as SyncHttpRequestBuilder};
+use std::error::Error as StdError;
+use reqwest::{Client as SyncHttpClient, ClientBuilder as SyncHttpClientBuilder, RequestBuilder as SyncHttpRequestBuilder};
 use fluent_builder::FluentBuilder;
 
-use error::{self, Result};
+use error::{self, Error};
 use private;
-use client::sender::{build_method, build_url, NextParams, NodeAddress, NodeAddresses, NodeAddressesBuilder, NodeAddressesInner, PreRequestParams, RequestParams, SendableRequest, SendableRequestParams, Sender};
+use http::Url;
+use client::sender::{build_reqwest_method, build_url, NextParams, NodeAddress, NodeAddresses, NodeAddressesBuilder, NodeAddressesInner, PreRequestParams, RequestParams, SendableRequest, SendableRequestParams, Sender};
 use client::sender::sniffed_nodes::SniffedNodesBuilder;
-use client::requests::{HttpRequest, SyncBody};
+use client::requests::{Endpoint, SyncBody, SyncHttpRequest};
 use client::responses::{sync_response, SyncResponseBuilder};
 use client::Client;
 
@@ -41,19 +43,19 @@ pub type SyncClient = Client<SyncSender>;
 #[derive(Clone)]
 pub struct SyncSender {
     pub(in client) http: SyncHttpClient,
-    pre_send: Option<Arc<Fn(&mut SyncHttpRequest) + Send + Sync>>,
+    pre_send: Option<Arc<Fn(&mut SyncHttpRequest) -> Result<(), Box<StdError + Send>> + Send + Sync>>,
 }
 
 impl private::Sealed for SyncSender {}
 
 impl Sender for SyncSender {
     type Body = SyncBody;
-    type Response = Result<SyncResponseBuilder>;
+    type Response = Result<SyncResponseBuilder, Error>;
     type Params = Params;
 
     fn send<TRequest, TParams, TBody>(&self, request: SendableRequest<TRequest, TParams, TBody>) -> Self::Response
     where
-        TRequest: Into<HttpRequest<'static, TBody>>,
+        TRequest: Into<Endpoint<'static, TBody>>,
         TBody: Into<Self::Body> + 'static,
         TParams: Into<Self::Params> + 'static,
     {
@@ -83,11 +85,19 @@ impl Sender for SyncSender {
             }
         };
 
-        let mut req = build_req(&self.http, params, req).build().map_err(error::request)?;
+        let mut req = SyncHttpRequest {
+            url: Url::parse(&build_url(&req.url, &params)).map_err(error::request)?,
+            method: req.method,
+            headers: params.get_headers(),
+            body: req.body.map(|body| body.into()),
+            _private: (),
+        };
 
         if let Some(ref pre_send) = self.pre_send {
-            pre_send(&mut req);
+            pre_send(&mut req).map_err(error::wrapped).map_err(error::request)?;
         }
+
+        let req = build_reqwest(&self.http, req).build().map_err(error::request)?;
 
         let res = match self.http.execute(req).map_err(error::request) {
             Ok(res) => {
@@ -125,11 +135,11 @@ impl NextParams for NodeAddresses<SyncSender> {
 
 /** A set of parameters returned by calling `next` on a sync set of `NodeAddresses`. */
 pub struct Params {
-    inner: Result<RequestParams>,
+    inner: Result<RequestParams, Error>,
 }
 
 impl Params {
-    fn new(res: Result<RequestParams>) -> Self {
+    fn new(res: Result<RequestParams, Error>) -> Self {
         Params { inner: res }
     }
 }
@@ -141,23 +151,17 @@ impl From<RequestParams> for Params {
 }
 
 /** Build a synchronous `reqwest::RequestBuilder` from an Elasticsearch request. */
-fn build_req<I, B>(client: &SyncHttpClient, params: RequestParams, req: I) -> SyncHttpRequestBuilder
-where
-    I: Into<HttpRequest<'static, B>>,
-    B: Into<SyncBody>,
-{
-    let req = req.into();
+fn build_reqwest(client: &SyncHttpClient, req: SyncHttpRequest) -> SyncHttpRequestBuilder {
+    let SyncHttpRequest { url, method, headers, body, .. } = req;
 
-    let url = build_url(&req.url, &params);
-    let method = build_method(req.method);
-    let body = req.body;
+    let method = build_reqwest_method(method);
 
-    let mut req = client.request(method, &url);
+    let mut req = client.request(method, url);
     {
-        req.headers(params.get_headers());
+        req.headers(headers);
 
         if let Some(body) = body {
-            req.body(body.into().into_inner());
+            req.body(body.into_inner());
         }
     }
 
@@ -169,7 +173,7 @@ pub struct SyncClientBuilder {
     http: Option<SyncHttpClient>,
     nodes: NodeAddressesBuilder,
     params: FluentBuilder<PreRequestParams>,
-    pre_send: Option<Arc<Fn(&mut SyncHttpRequest) + Send + Sync + 'static>>,
+    pre_send: Option<Arc<Fn(&mut SyncHttpRequest) -> Result<(), Box<StdError + Send>> + Send + Sync + 'static>>,
 }
 
 impl Default for SyncClientBuilder {
@@ -364,7 +368,7 @@ impl SyncClientBuilder {
     */
     pub fn pre_send_raw<F>(mut self, pre_send: F) -> Self
     where
-        F: Fn(&mut SyncHttpRequest) + Send + Sync + 'static,
+        F: Fn(&mut SyncHttpRequest) -> Result<(), Box<StdError + Send>> + Send + Sync + 'static,
     {
         self.pre_send = Some(Arc::new(pre_send));
 
@@ -376,7 +380,7 @@ impl SyncClientBuilder {
 
     [SyncClient]: type.SyncClient.html
     */
-    pub fn build(self) -> Result<SyncClient> {
+    pub fn build(self) -> Result<SyncClient, Error> {
         let http = self.http
             .map(Ok)
             .unwrap_or_else(|| SyncHttpClientBuilder::new().build())

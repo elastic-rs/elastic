@@ -7,7 +7,7 @@ use fluent_builder::TryIntoValue;
 
 use client::Client;
 use client::sender::{NextParams, NodeAddresses, SendableRequest, SendableRequestParams, Sender};
-use client::requests::{HttpRequest, RequestBuilder};
+use client::requests::{Endpoint, RequestBuilder};
 
 /**
 A raw request builder that can be configured before sending.
@@ -44,7 +44,7 @@ where
     /**
     Create a [`RawRequestBuilder`][RawRequestBuilder] with this `Client` that can be configured before sending.
 
-    The `request` method accepts any type that can be converted into a [`HttpRequest<'static>`][HttpRequest],
+    The `request` method accepts any type that can be converted into a [`Endpoint<'static>`][Endpoint],
     which includes the endpoint types in the [`endpoints`][endpoints-mod] module.
 
     # Examples
@@ -57,7 +57,7 @@ where
     # fn main() { run().unwrap() }
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # let client = SyncClientBuilder::new().build()?;
-    // `PingRequest` implements `Into<HttpRequest>`
+    // `PingRequest` implements `Into<Endpoint>`
     let req = PingRequest::new();
     
     // Turn the `PingRequest` into a `RequestBuilder`
@@ -71,13 +71,13 @@ where
     # }
     ```
 
-    [HttpRequest]: requests/struct.HttpRequest.html
+    [Endpoint]: requests/struct.Endpoint.html
     [RawRequestBuilder]: requests/raw/type.RawRequestBuilder.html
     [endpoints-mod]: requests/endpoints/index.html
     */
     pub fn request<TRequest, TBody>(&self, req: TRequest) -> RawRequestBuilder<TSender, TRequest, TBody>
     where
-        TRequest: Into<HttpRequest<'static, TBody>>,
+        TRequest: Into<Endpoint<'static, TBody>>,
         TBody: Into<TSender::Body>,
     {
         RequestBuilder::initial(self.clone(), RawRequestInner::new(req))
@@ -87,7 +87,7 @@ where
 impl<TSender, TRequest, TBody> RawRequestBuilder<TSender, TRequest, TBody>
 where
     TSender: Sender,
-    TRequest: Into<HttpRequest<'static, TBody>>,
+    TRequest: Into<Endpoint<'static, TBody>>,
     TBody: Into<<TSender>::Body> + 'static,
     NodeAddresses<TSender>: NextParams,
     <NodeAddresses<TSender> as NextParams>::Params: Into<TSender::Params> + 'static,

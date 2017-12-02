@@ -21,22 +21,25 @@ impl RequestIntoHttpRequestBuilder {
 
     pub fn build(self) -> quote::Tokens {
         let req_ty = self.req_ty;
+        let method_ty = types::request::method_ty();
 
         let method = match self.http_verb {
-            HttpMethod::Get => quote!(HttpMethod::Get),
-            HttpMethod::Post => quote!(HttpMethod::Post),
-            HttpMethod::Put => quote!(HttpMethod::Put),
-            HttpMethod::Delete => quote!(HttpMethod::Delete),
-            HttpMethod::Head => quote!(HttpMethod::Head),
-            HttpMethod::Patch => quote!(HttpMethod::Patch),
+            HttpMethod::Get => quote!(#method_ty ::GET),
+            HttpMethod::Post => quote!(#method_ty ::POST),
+            HttpMethod::Put => quote!(#method_ty ::PUT),
+            HttpMethod::Delete => quote!(#method_ty ::DELETE),
+            HttpMethod::Head => quote!(#method_ty ::HEAD),
+            HttpMethod::Patch => quote!(#method_ty ::PATCH),
         };
+
+        let endpoint_ty = ident(types::request::req_ident());
 
         if self.has_body {
             let generic_body = ident(types::body::ident());
             quote!(
-                impl <'a, #generic_body> Into<HttpRequest<'a, #generic_body> > for #req_ty {
-                    fn into(self) -> HttpRequest<'a, #generic_body> {
-                        HttpRequest {
+                impl <'a, #generic_body> Into<#endpoint_ty<'a, #generic_body> > for #req_ty {
+                    fn into(self) -> #endpoint_ty<'a, #generic_body> {
+                        #endpoint_ty {
                             url: self.url,
                             method: #method,
                             body: Some(self.body)
@@ -48,9 +51,9 @@ impl RequestIntoHttpRequestBuilder {
             let default_body = ident(types::body::default_ident());
 
             quote!(
-                impl <'a> Into<HttpRequest<'a, #default_body> > for #req_ty {
-                    fn into(self) -> HttpRequest<'a, #default_body> {
-                        HttpRequest {
+                impl <'a> Into<#endpoint_ty<'a, #default_body> > for #req_ty {
+                    fn into(self) -> #endpoint_ty<'a, #default_body> {
+                        #endpoint_ty {
                             url: self.url,
                             method: #method,
                             body: None

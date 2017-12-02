@@ -125,12 +125,13 @@ impl<'a> UrlReplaceBuilder<'a> {
         let len_expr = Self::summed_length_expr(len_exprs);
 
         let url_ident = ident("url");
+        let url_ty = ident(types::url::ident());
 
         let let_stmt = Self::let_url_stmt(url_ident.clone(), len_expr);
 
         let mut push_stmts = Self::push_part_stmts(url_ident.clone(), &self.url);
 
-        let return_expr = syn::Stmt::Expr(Box::new(parse_expr(quote!(Url::from(#url_ident)))));
+        let return_expr = syn::Stmt::Expr(Box::new(parse_expr(quote!(#url_ty ::from(#url_ident)))));
 
         let mut stmts = vec![let_stmt];
 
@@ -154,8 +155,9 @@ impl<'a> UrlReplaceBuilder<'a> {
         let path = path.join("");
 
         let lit = syn::Lit::Str(path, syn::StrStyle::Cooked);
+        let url_ty = ident(types::url::ident());
 
-        let expr = parse_expr(quote!(Url::from(#lit)));
+        let expr = parse_expr(quote!(#url_ty ::from(#lit)));
 
         syn::Block {
             stmts: vec![syn::Stmt::Expr(Box::new(expr))],

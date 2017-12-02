@@ -89,6 +89,30 @@ pub(crate) mod string_error {
     }
 }
 
+pub(crate) struct WrappedError(Box<StdError + Send>);
+
+impl fmt::Display for WrappedError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        self.0.fmt(f)
+    }
+}
+
+impl fmt::Debug for WrappedError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        self.0.fmt(f)
+    }
+}
+
+impl StdError for WrappedError {
+    fn description(&self) -> &str {
+        self.0.description()
+    }
+
+    fn cause(&self) -> Option<&StdError> {
+        self.0.cause()
+    }
+}
+
 /** An error building a client, sending a request or receiving a response. */
 #[derive(Debug)]
 pub struct ClientError {
@@ -118,6 +142,10 @@ where
     Error::Client(ClientError {
         inner: inner::Error::with_chain(err, inner::ErrorKind::Build),
     })
+}
+
+pub(crate) fn wrapped(err: Box<StdError + Send>) -> WrappedError {
+    WrappedError(err)
 }
 
 pub(crate) fn request<E>(err: E) -> Error
