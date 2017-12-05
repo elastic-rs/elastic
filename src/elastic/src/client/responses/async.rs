@@ -4,7 +4,7 @@ use serde::de::DeserializeOwned;
 use reqwest::unstable::async::Response as RawResponse;
 
 use error::{self, Error};
-use http::AsyncChunk;
+use http::{StatusCode, AsyncChunk, AsyncHttpResponse};
 use super::parse::{parse, IsOk};
 
 /**
@@ -15,20 +15,23 @@ You can also `Read` directly from the response body.
 */
 pub struct AsyncResponseBuilder {
     inner: RawResponse,
+    status: StatusCode,
     de_pool: Option<CpuPool>,
 }
 
-pub(crate) fn async_response(res: RawResponse, de_pool: Option<CpuPool>) -> AsyncResponseBuilder {
-    AsyncResponseBuilder {
+pub(crate) fn async_response(res: RawResponse, de_pool: Option<CpuPool>) -> Result<AsyncResponseBuilder, Error> {
+    let status = StatusCode::from_u16(res.status().into()).map_err(error::request)?;
+    Ok(AsyncResponseBuilder {
         inner: res,
+        status,
         de_pool: de_pool,
-    }
+    })
 }
 
 impl AsyncResponseBuilder {
     /** Get the HTTP status for the response. */
-    pub fn status(&self) -> u16 {
-        self.inner.status().into()
+    pub fn status(&self) -> StatusCode {
+        self.status
     }
 
     /**
@@ -37,7 +40,7 @@ impl AsyncResponseBuilder {
     Convert the builder into a raw HTTP response that implements `Read`.
     */
     pub fn into_raw(self) -> AsyncHttpResponse {
-        AsyncHttpResponse(self.inner)
+        AsyncHttpResponse::from_raw(self.status, self.inner)
     }
 
     /**
@@ -111,7 +114,7 @@ impl AsyncResponseBuilder {
     where
         T: IsOk + DeserializeOwned + Send + 'static,
     {
-        let status = self.status();
+        let status = self.status;
         let body = self.inner.into_body();
 
         let de_fn = move |body: AsyncChunk| {
@@ -155,28 +158,5 @@ where
 
     fn poll(&mut self) -> Poll<Self::Item, Self::Error> {
         self.inner.poll()
-    }
-}
-
-/** A raw HTTP response that can be buffered using `Read`. */
-pub struct AsyncHttpResponse(RawResponse);
-
-impl Stream for AsyncHttpResponse {
-    type Item = AsyncChunk;
-    type Error = Error;
-
-    fn poll(&mut self) -> Poll<Option<Self::Item>, Self::Error> {
-        self.0.body_mut().poll().map_err(|e| {
-            let status = self.status();
-
-            error::response(status, e)
-        })
-    }
-}
-
-impl AsyncHttpResponse {
-    /** Get the HTTP status for the response. */
-    pub fn status(&self) -> u16 {
-        self.0.status().into()
     }
 }

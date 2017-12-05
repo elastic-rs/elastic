@@ -6,7 +6,7 @@ use serde::de::{Deserialize, Deserializer, Error as DeError, MapAccess, SeqAcces
 use serde_json::Value;
 use common::{DefaultAllocatedField, Shards};
 
-use parsing::{HttpResponseHead, IsOk, MaybeOkResponse, ResponseBody, Unbuffered};
+use parsing::{HttpResponseHead, IsOkOnSuccess, MaybeOkResponse, ResponseBody, Unbuffered};
 use error::*;
 
 use std::cmp;
@@ -520,23 +520,9 @@ pub enum Action {
     #[serde(rename = "delete")] Delete,
 }
 
-impl<TIndex, TType, TId> IsOk for BulkResponse<TIndex, TType, TId> {
-    fn is_ok<B: ResponseBody>(head: HttpResponseHead, body: Unbuffered<B>) -> Result<MaybeOkResponse<B>, ParseResponseError> {
-        match head.status() {
-            200...299 => Ok(MaybeOkResponse::ok(body)),
-            _ => Ok(MaybeOkResponse::err(body)),
-        }
-    }
-}
+impl<TIndex, TType, TId> IsOkOnSuccess for BulkResponse<TIndex, TType, TId> { }
 
-impl<TIndex, TType, TId> IsOk for BulkErrorsResponse<TIndex, TType, TId> {
-    fn is_ok<B: ResponseBody>(head: HttpResponseHead, body: Unbuffered<B>) -> Result<MaybeOkResponse<B>, ParseResponseError> {
-        match head.status() {
-            200...299 => Ok(MaybeOkResponse::ok(body)),
-            _ => Ok(MaybeOkResponse::err(body)),
-        }
-    }
-}
+impl<TIndex, TType, TId> IsOkOnSuccess for BulkErrorsResponse<TIndex, TType, TId> { }
 
 // Deserialisation
 

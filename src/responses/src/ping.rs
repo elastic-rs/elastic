@@ -2,7 +2,7 @@
 Response types for a cluster ping request.
 */
 
-use parsing::{HttpResponseHead, IsOk, MaybeOkResponse, ResponseBody, Unbuffered};
+use parsing::{HttpResponseHead, IsOkOnSuccess, MaybeOkResponse, ResponseBody, Unbuffered};
 use error::*;
 
 /** Response for a cluster ping request. */
@@ -68,11 +68,4 @@ impl ClusterVersion {
     }
 }
 
-impl IsOk for PingResponse {
-    fn is_ok<B: ResponseBody>(head: HttpResponseHead, body: Unbuffered<B>) -> Result<MaybeOkResponse<B>, ParseResponseError> {
-        match head.status() {
-            200...299 => Ok(MaybeOkResponse::ok(body)),
-            _ => Ok(MaybeOkResponse::err(body)),
-        }
-    }
-}
+impl IsOkOnSuccess for PingResponse { }

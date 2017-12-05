@@ -17,11 +17,6 @@ pub use elastic_requests::endpoints;
 pub use self::params::*;
 pub use self::endpoints::*;
 
-mod sync;
-mod async;
-pub use self::sync::*;
-pub use self::async::*;
-
 pub mod raw;
 pub use self::raw::RawRequestBuilder;
 

@@ -4,8 +4,15 @@ use std::borrow::Cow;
 use std::io::{self, Read, Cursor};
 
 use tokio_io::AsyncRead;
-use http::{HttpRequest, AsyncBody as Body};
+use futures::{Stream, Poll};
+use reqwest::unstable::async::{Body, Response as RawResponse};
 
+use error::{self, Error};
+use http::{HttpRequest, StatusCode};
+
+pub use reqwest::unstable::async::{Chunk as AsyncChunk};
+
+/** A http request with an asynchronous body; */
 pub type AsyncHttpRequest = HttpRequest<AsyncBody>;
 
 /** A type that can be converted into a request body. */
@@ -94,5 +101,33 @@ impl From<&'static [u8]> for AsyncBody {
 impl From<&'static str> for AsyncBody {
     fn from(body: &'static str) -> AsyncBody {
         AsyncBody(AsyncBodyInner::Str(body.into()))
+    }
+}
+
+
+/** A raw HTTP response that can be buffered using `Read`. */
+pub struct AsyncHttpResponse(StatusCode, RawResponse);
+
+impl AsyncHttpResponse {
+    pub(crate) fn from_raw(status: StatusCode, response: RawResponse) -> Self {
+        AsyncHttpResponse(status, response)
+    }
+}
+
+impl Stream for AsyncHttpResponse {
+    type Item = AsyncChunk;
+    type Error = Error;
+
+    fn poll(&mut self) -> Poll<Option<Self::Item>, Self::Error> {
+        self.1.body_mut().poll().map_err(|e| {
+            error::response(self.0, e)
+        })
+    }
+}
+
+impl AsyncHttpResponse {
+    /** Get the HTTP status for the response. */
+    pub fn status(&self) -> StatusCode {
+        self.0
     }
 }

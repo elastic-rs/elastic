@@ -9,9 +9,9 @@ use reqwest::unstable::async::{Client as AsyncHttpClient, ClientBuilder as Async
 use fluent_builder::FluentBuilder;
 
 use error::{self, Error};
-use http::Url;
 use private;
-use client::requests::{AsyncHttpRequest, AsyncBody, Endpoint};
+use client::requests::Endpoint;
+use http::{AsyncHttpRequest, AsyncBody, Url};
 use client::sender::{build_reqwest_method, build_url, NextParams, NodeAddress, NodeAddresses, NodeAddressesBuilder, NodeAddressesInner, PreRequestParams, RequestParams, SendableRequest, SendableRequestParams, Sender};
 use client::sender::sniffed_nodes::SniffedNodesBuilder;
 use client::responses::{async_response, AsyncResponseBuilder};
@@ -46,7 +46,7 @@ core.run(response_future)?;
 # }
 ```
 
-[Client]: struct.Client.html
+[Client]: ../struct.Client.html
 [AsyncClientBuilder]: struct.AsyncClientBuilder.html
 */
 pub type AsyncClient = Client<AsyncSender>;
@@ -144,13 +144,13 @@ impl Sender for AsyncSender {
                     );
                     error::request(e)
                 })
-                .map(move |res| {
+                .and_then(move |res| {
                     info!(
                         "Elasticsearch Response: correlation_id: '{}', status: '{}'",
                         correlation_id,
                         res.status()
                     );
-                    async_response(res, serde_pool)
+                    async_response(res, serde_pool).into_future()
                 })
         });
 

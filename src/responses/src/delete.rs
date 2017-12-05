@@ -2,6 +2,8 @@
 Response types for a [delete document request](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-delete.html).
 */
 
+use http::StatusCode;
+
 use parsing::{HttpResponseHead, IsOk, MaybeOkResponse, ResponseBody, Unbuffered};
 use common::DocumentResult;
 use error::*;
@@ -56,7 +58,7 @@ impl DeleteResponse {
 impl IsOk for DeleteResponse {
     fn is_ok<B: ResponseBody>(head: HttpResponseHead, body: Unbuffered<B>) -> Result<MaybeOkResponse<B>, ParseResponseError> {
         match head.status() {
-            200...299 | 404 => Ok(MaybeOkResponse::ok(body)),
+            status if status.is_success() || status == StatusCode::NOT_FOUND => Ok(MaybeOkResponse::ok(body)),
             _ => Ok(MaybeOkResponse::err(body)),
         }
     }

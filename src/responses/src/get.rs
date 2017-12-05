@@ -3,6 +3,7 @@ Response types for a [get document request](https://www.elastic.co/guide/en/elas
 */
 
 use serde::de::DeserializeOwned;
+use http::StatusCode;
 
 use parsing::{HttpResponseHead, IsOk, MaybeOkResponse, ResponseBody, Unbuffered};
 use error::*;
@@ -59,8 +60,8 @@ impl<T> GetResponse<T> {
 impl<T: DeserializeOwned> IsOk for GetResponse<T> {
     fn is_ok<B: ResponseBody>(head: HttpResponseHead, body: Unbuffered<B>) -> Result<MaybeOkResponse<B>, ParseResponseError> {
         match head.status() {
-            200...299 => Ok(MaybeOkResponse::ok(body)),
-            404 => {
+            status if status.is_success() => Ok(MaybeOkResponse::ok(body)),
+            StatusCode::NOT_FOUND => {
                 // If we get a 404, it could be an IndexNotFound error or ok
                 // Check if the response contains a root 'error' node
                 let (maybe_err, body) = body.body()?;

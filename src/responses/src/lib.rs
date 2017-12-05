@@ -135,6 +135,7 @@ extern crate quick_error;
 
 extern crate serde;
 extern crate serde_json;
+extern crate http;
 
 pub mod error;
 pub mod parsing;
@@ -163,3 +164,5 @@ pub use self::parsing::parse;
 
 /** Re-export of `serde_json::Value` for convenience. */
 pub use serde_json::Value;
+
+pub use http::StatusCode;

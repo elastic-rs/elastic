@@ -5,12 +5,17 @@ These types are re-exported from `reqwest` and used in parts of `elastic`s publi
 They may eventually be wrapped and made implementation details.
 */
 
+mod sync;
+mod async;
+
+pub use self::sync::*;
+pub use self::async::*;
+
 pub use reqwest::Url;
 pub use reqwest::header;
-pub use reqwest::Body as SyncBody;
-pub use reqwest::unstable::async::{Body as AsyncBody, Chunk as AsyncChunk};
 
 pub use elastic_requests::Method;
+pub use elastic_responses::StatusCode;
 
 use self::header::Headers;
 

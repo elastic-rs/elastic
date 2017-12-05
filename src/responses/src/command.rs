@@ -2,7 +2,7 @@
 Response types for a standard command.
 */
 
-use parsing::{HttpResponseHead, IsOk, MaybeOkResponse, ResponseBody, Unbuffered};
+use parsing::{HttpResponseHead, IsOkOnSuccess, MaybeOkResponse, ResponseBody, Unbuffered};
 use error::*;
 
 /** A standard command acknowledgement response. */
@@ -22,11 +22,4 @@ impl CommandResponse {
     }
 }
 
-impl IsOk for CommandResponse {
-    fn is_ok<B: ResponseBody>(head: HttpResponseHead, body: Unbuffered<B>) -> Result<MaybeOkResponse<B>, ParseResponseError> {
-        match head.status() {
-            200...299 => Ok(MaybeOkResponse::ok(body)),
-            _ => Ok(MaybeOkResponse::err(body)),
-        }
-    }
-}
+impl IsOkOnSuccess for CommandResponse { }

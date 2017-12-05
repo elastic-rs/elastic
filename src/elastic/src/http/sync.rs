@@ -3,8 +3,11 @@ use serde_json::Value;
 use std::borrow::Cow;
 use std::io::{self, Read, Cursor};
 
-use http::{HttpRequest, SyncBody as Body};
+use reqwest::{Body, Response as RawResponse};
 
+use http::{HttpRequest, StatusCode};
+
+/** A http request with a synchronous body. */
 pub type SyncHttpRequest = HttpRequest<SyncBody>;
 
 /** A type that can be converted into a request body. */
@@ -91,5 +94,25 @@ impl From<&'static [u8]> for SyncBody {
 impl From<&'static str> for SyncBody {
     fn from(body: &'static str) -> SyncBody {
         SyncBody(SyncBodyInner::Str(body.into()))
+    }
+}
+
+/** A raw HTTP response that can be buffered using `Read`. */
+pub struct SyncHttpResponse(StatusCode, RawResponse);
+
+impl SyncHttpResponse {
+    pub(crate) fn from_raw(status: StatusCode, response: RawResponse) -> Self {
+        SyncHttpResponse(status, response)
+    }
+
+    /** Get the HTTP status for the response. */
+    pub fn status(&self) -> StatusCode {
+        self.0
+    }
+}
+
+impl Read for SyncHttpResponse {
+    fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
+        self.1.read(buf)
     }
 }

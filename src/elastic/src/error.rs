@@ -47,6 +47,8 @@ use elastic_responses::error::ResponseError;
 
 pub use elastic_responses::error::ApiError;
 
+use http::StatusCode;
+
 /** An alias for a result. */
 pub type Result<T> = ::std::result::Result<T, Error>;
 
@@ -157,7 +159,7 @@ where
     })
 }
 
-pub(crate) fn response<E>(status: u16, err: E) -> Error
+pub(crate) fn response<E>(status: StatusCode, err: E) -> Error
 where
     E: Into<MaybeApiError<E>> + StdError + Send + 'static,
 {
@@ -219,6 +221,8 @@ impl Into<MaybeApiError<serde_json::Error>> for serde_json::Error {
 mod inner {
     #![allow(missing_docs)]
 
+    use http::StatusCode;
+
     error_chain! {
         errors {
             Build {
@@ -229,7 +233,7 @@ mod inner {
                 description("error sending a request")
                 display("error sending a request")
             }
-            Response(status: u16) {
+            Response(status: StatusCode) {
                 description("error receiving a response")
                 display("error receiving a response. Status code: {}", status)
             }

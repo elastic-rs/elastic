@@ -5,10 +5,10 @@ use fluent_builder::FluentBuilder;
 
 use error::{self, Error};
 use private;
-use http::Url;
 use client::sender::{build_reqwest_method, build_url, NextParams, NodeAddress, NodeAddresses, NodeAddressesBuilder, NodeAddressesInner, PreRequestParams, RequestParams, SendableRequest, SendableRequestParams, Sender};
 use client::sender::sniffed_nodes::SniffedNodesBuilder;
-use client::requests::{Endpoint, SyncBody, SyncHttpRequest};
+use client::requests::Endpoint;
+use http::{SyncBody, SyncHttpRequest, Url};
 use client::responses::{sync_response, SyncResponseBuilder};
 use client::Client;
 
@@ -34,7 +34,7 @@ let response = client.ping().send()?;
 # }
 ```
 
-[Client]: struct.Client.html
+[Client]: ../struct.Client.html
 [SyncClientBuilder]: struct.SyncClientBuilder.html
 */
 pub type SyncClient = Client<SyncSender>;
@@ -118,7 +118,7 @@ impl Sender for SyncSender {
             }
         };
 
-        Ok(sync_response(res))
+        sync_response(res)
     }
 }
 
