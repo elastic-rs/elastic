@@ -93,6 +93,7 @@ You can also manually implement `DateFormat` and write your own arbitrary format
 # extern crate elastic_types;
 # extern crate chrono;
 # use elastic_types::prelude::*;
+# use elastic_types::date::ParseError;
 # fn main() {
 use chrono::{DateTime, Utc};
 
