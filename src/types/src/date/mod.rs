@@ -93,6 +93,7 @@ You can also manually implement `DateFormat` and write your own arbitrary format
 # extern crate elastic_types;
 # extern crate chrono;
 # use elastic_types::prelude::*;
+# use elastic_types::date::ParseError;
 # fn main() {
 use chrono::{DateTime, Utc};
 
@@ -135,7 +136,7 @@ pub mod prelude {
     */
 
     pub use super::DefaultDateFormat;
-    pub use super::format::*;
+    pub use super::format::{DateFormat, DateValue, FormattableDateValue, FormattedDate};
     pub use super::impls::*;
     pub use super::formats::*;
     pub use super::mapping::*;

@@ -78,7 +78,7 @@ impl DateFormat for EpochMillis {
 #[cfg(test)]
 mod tests {
     use chrono::{DateTime, Utc};
-    use date::{format, parse};
+    use date::{format, parse, ParseError};
     use prelude::*;
 
     #[test]
