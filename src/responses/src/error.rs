@@ -1,23 +1,88 @@
 /*!
-Error types from Elasticsearch
+Error types from Elasticsearch.
 */
 
 use serde::{Deserialize, Deserializer};
 use serde_json::{Error as JsonError, Map, Value};
+use std::error::Error as StdError;
 use std::io::Error as IoError;
+use std::fmt;
 
-quick_error! {
-    /** An error parsing a response stream. */
+mod inner {
+    use std::fmt;
+    use std::error::Error as StdError;
+    use serde_json::{Map, Value};
+
+    use super::ApiError;
+
     #[derive(Debug)]
-    pub enum ParseResponseError {
-        /** The response contains invalid json. */
-        Json(err: JsonError) {
-            from()
+    pub struct UnknownApiError(pub Map<String, Value>);
+
+    impl fmt::Display for UnknownApiError {
+        fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+            (&self.0 as &fmt::Debug).fmt(f)
         }
-        /** The response caused an io error while buffering. */
-        Io(err: IoError) {
-            from()
+    }
+
+    impl StdError for UnknownApiError {
+        fn description(&self) -> &str {
+            "an unknown API error"
         }
+
+        fn cause(&self) -> Option<&StdError> {
+            None
+        }
+    }
+
+    pub enum ParsedApiError {
+        Known(ApiError),
+        Unknown(Map<String, Value>)
+    }
+}
+
+pub(crate) use self::inner::*;
+
+/**
+A generic error parsing an API response.
+*/
+#[derive(Debug)]
+pub struct ParseError {
+    inner: Box<StdError + Send + Sync>,
+}
+
+impl ParseError {
+    pub fn new<E>(err: E) -> Self where E: StdError + Send + Sync + 'static {
+        ParseError {
+            inner: Box::new(err)
+        }
+    }
+}
+
+impl From<IoError> for ParseError {
+    fn from(err: IoError) -> Self {
+        ParseError::new(err)
+    }
+}
+
+impl From<JsonError> for ParseError {
+    fn from(err: JsonError) -> Self {
+        ParseError::new(err)
+    }
+}
+
+impl fmt::Display for ParseError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        self.inner.fmt(f)
+    }
+}
+
+impl StdError for ParseError {
+    fn description(&self) -> &str {
+        self.inner.description()
+    }
+
+    fn cause(&self) -> Option<&StdError> {
+        Some(&*self.inner)
     }
 }
 
@@ -30,7 +95,7 @@ quick_error! {
             from()
         }
         /** An error parsing a response body. */
-        Parse(err: ParseResponseError) {
+        Parse(err: ParseError) {
             from()
         }
     }
@@ -69,24 +134,6 @@ quick_error! {
             display("index already exists: '{}'", index)
         }
         /**
-        The request body contains invalid data.
-
-        If a Query DSL query contains invalid JSON or unrecognised properties then Elasticsearch will return a `Parsing` error.
-        */
-        Parsing { line: u64, col: u64, reason: String } {
-            description("request parse error")
-            display("request parse error: '{}' on line: {}, col: {}", reason, line, col)
-        }
-        /**
-        The document mapping contains invalid data.
-
-        If a put mapping request contains invalid JSON or unrecognised properties then Elasticsearch will return a `MapperParsing` error.
-        */
-        MapperParsing { reason: String } {
-            description("mapper parse error")
-            display("mapper parse error: '{}'", reason)
-        }
-        /**
         The request body can't be processed.
 
         Some endpoints that expect certain constraints of a request to hold will return an `ActionRequestValidation` error if those constraints aren't met.
@@ -94,17 +141,6 @@ quick_error! {
         ActionRequestValidation { reason: String } {
             description("action request failed validation")
             display("action request failed validation: '{}'", reason)
-        }
-        /**
-        A currently unrecognised error occurred.
-
-        **WARNING:** Don't rely on this variant to capture an error.
-        As new variants are introduced they will no longer be matched by `ApiError::Other`.
-        For this reason, this variant will disappear in the future.
-        */
-        Other(v: Map<String, Value>) {
-            description("error response from Elasticsearch")
-            display("error response from Elasticsearch: {:?}", v)
         }
         #[doc(hidden)]
         __NonExhaustive {}
@@ -119,13 +155,13 @@ macro_rules! error_key {
 
             match key {
                 Some(v) => v,
-                _ => return ApiError::Other($obj).into()
+                _ => return ParsedApiError::Unknown($obj)
             }
         }
     )
 }
 
-impl<'de> Deserialize<'de> for ApiError {
+impl<'de> Deserialize<'de> for ParsedApiError {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: Deserializer<'de>,
@@ -136,12 +172,12 @@ impl<'de> Deserialize<'de> for ApiError {
     }
 }
 
-impl From<Map<String, Value>> for ApiError {
+impl From<Map<String, Value>> for ParsedApiError {
     fn from(mut value: Map<String, Value>) -> Self {
         let obj = {
             match value.remove("error") {
                 Some(Value::Object(value)) => value,
-                _ => return ApiError::Other(value),
+                _ => return ParsedApiError::Unknown(value),
             }
         };
 
@@ -152,7 +188,7 @@ impl From<Map<String, Value>> for ApiError {
 
             match ty {
                 Some(ty) => ty,
-                _ => return ApiError::Other(obj),
+                _ => return ParsedApiError::Unknown(obj),
             }
         };
 
@@ -160,50 +196,32 @@ impl From<Map<String, Value>> for ApiError {
             "index_not_found_exception" => {
                 let index = error_key!(obj[index]: |v| v.as_str());
 
-                ApiError::IndexNotFound {
+                ParsedApiError::Known(ApiError::IndexNotFound {
                     index: index.into(),
-                }
+                })
             }
             "index_already_exists_exception" => {
                 let index = error_key!(obj[index]: |v| v.as_str());
 
-                ApiError::IndexAlreadyExists {
+                ParsedApiError::Known(ApiError::IndexAlreadyExists {
                     index: index.into(),
-                }
+                })
             }
             "document_missing_exception" => {
                 let index = error_key!(obj[index]: |v| v.as_str());
 
-                ApiError::DocumentMissing {
+                ParsedApiError::Known(ApiError::DocumentMissing {
                     index: index.into(),
-                }
-            }
-            "parsing_exception" => {
-                let line = error_key!(obj[line]: |v| v.as_u64());
-                let col = error_key!(obj[col]: |v| v.as_u64());
-                let reason = error_key!(obj[reason]: |v| v.as_str());
-
-                ApiError::Parsing {
-                    line: line,
-                    col: col,
-                    reason: reason.into(),
-                }
-            }
-            "mapper_parsing_exception" => {
-                let reason = error_key!(obj[reason]: |v| v.as_str());
-
-                ApiError::MapperParsing {
-                    reason: reason.into(),
-                }
+                })
             }
             "action_request_validation_exception" => {
                 let reason = error_key!(obj[reason]: |v| v.as_str());
 
-                ApiError::ActionRequestValidation {
+                ParsedApiError::Known(ApiError::ActionRequestValidation {
                     reason: reason.into(),
-                }
+                })
             }
-            _ => ApiError::Other(obj),
+            _ => ParsedApiError::Unknown(obj),
         }
     }
 }
