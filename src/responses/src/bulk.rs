@@ -521,7 +521,7 @@ pub enum Action {
 }
 
 impl<TIndex, TType, TId> IsOk for BulkResponse<TIndex, TType, TId> {
-    fn is_ok<B: ResponseBody>(head: HttpResponseHead, body: Unbuffered<B>) -> Result<MaybeOkResponse<B>, ParseResponseError> {
+    fn is_ok<B: ResponseBody>(head: HttpResponseHead, body: Unbuffered<B>) -> Result<MaybeOkResponse<B>, ParseError> {
         match head.status() {
             200...299 => Ok(MaybeOkResponse::ok(body)),
             _ => Ok(MaybeOkResponse::err(body)),
@@ -530,7 +530,7 @@ impl<TIndex, TType, TId> IsOk for BulkResponse<TIndex, TType, TId> {
 }
 
 impl<TIndex, TType, TId> IsOk for BulkErrorsResponse<TIndex, TType, TId> {
-    fn is_ok<B: ResponseBody>(head: HttpResponseHead, body: Unbuffered<B>) -> Result<MaybeOkResponse<B>, ParseResponseError> {
+    fn is_ok<B: ResponseBody>(head: HttpResponseHead, body: Unbuffered<B>) -> Result<MaybeOkResponse<B>, ParseError> {
         match head.status() {
             200...299 => Ok(MaybeOkResponse::ok(body)),
             _ => Ok(MaybeOkResponse::err(body)),

@@ -19,7 +19,7 @@ impl IndicesExistsResponse {
 }
 
 impl IsOk for IndicesExistsResponse {
-    fn is_ok<B: ResponseBody>(head: HttpResponseHead, body: Unbuffered<B>) -> Result<MaybeOkResponse<B>, ParseResponseError> {
+    fn is_ok<B: ResponseBody>(head: HttpResponseHead, body: Unbuffered<B>) -> Result<MaybeOkResponse<B>, ParseError> {
         match head.status() {
             200...299 => Ok(MaybeOkResponse::ok(json!({ "exists": true }))),
             404 => Ok(MaybeOkResponse::ok(json!({ "exists": false }))),

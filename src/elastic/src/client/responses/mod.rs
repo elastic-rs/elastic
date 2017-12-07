@@ -24,8 +24,5 @@ pub use elastic_responses::bulk;
 pub mod prelude {
     /*! A glob import for convenience. */
 
-    pub use super::{BulkErrorsResponse, BulkResponse, CommandResponse, DeleteResponse, GetResponse, IndicesExistsResponse, IndexResponse, PingResponse, SearchResponse, Shards, UpdateResponse};
-
-    pub use super::async::AsyncResponseBuilder;
-    pub use super::sync::SyncResponseBuilder;
+    pub use super::{AsyncResponseBuilder, SyncResponseBuilder, BulkErrorsResponse, BulkResponse, CommandResponse, DeleteResponse, GetResponse, IndexResponse, IndicesExistsResponse, PingResponse, SearchResponse, Shards, UpdateResponse};
 }
