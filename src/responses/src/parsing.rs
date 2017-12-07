@@ -135,13 +135,13 @@ where
     type Buffered: ResponseBody;
 
     /** Buffer the response body to a json value and return a new buffered representation. */
-    fn body(self) -> Result<(Value, Self::Buffered), ParseResponseError>;
+    fn body(self) -> Result<(Value, Self::Buffered), ParseError>;
 
     /** Parse the body as a success result. */
-    fn parse_ok<T: DeserializeOwned>(self) -> Result<T, ParseResponseError>;
+    fn parse_ok<T: DeserializeOwned>(self) -> Result<T, ParseError>;
 
     /** Parse the body as an API error. */
-    fn parse_err(self) -> Result<ApiError, ParseResponseError>;
+    fn parse_err(self) -> Result<ApiError, ParseError>;
 }
 
 struct ReadBody<B>(B);
@@ -149,7 +149,7 @@ struct ReadBody<B>(B);
 impl<B: Read> ResponseBody for ReadBody<B> {
     type Buffered = SliceBody<Vec<u8>>;
 
-    fn body(mut self) -> Result<(Value, Self::Buffered), ParseResponseError> {
+    fn body(mut self) -> Result<(Value, Self::Buffered), ParseError> {
         let mut buf = Vec::new();
         self.0.read_to_end(&mut buf)?;
 
@@ -158,12 +158,15 @@ impl<B: Read> ResponseBody for ReadBody<B> {
         Ok((body, SliceBody(buf)))
     }
 
-    fn parse_ok<T: DeserializeOwned>(self) -> Result<T, ParseResponseError> {
+    fn parse_ok<T: DeserializeOwned>(self) -> Result<T, ParseError> {
         serde_json::from_reader(self.0).map_err(|e| e.into())
     }
 
-    fn parse_err(self) -> Result<ApiError, ParseResponseError> {
-        serde_json::from_reader(self.0).map_err(|e| e.into())
+    fn parse_err(self) -> Result<ApiError, ParseError> {
+        match serde_json::from_reader(self.0)? {
+            ParsedApiError::Known(err) => Ok(err),
+            ParsedApiError::Unknown(err) => Err(ParseError::new(UnknownApiError(err)))
+        }
     }
 }
 
@@ -172,7 +175,7 @@ struct SliceBody<B>(B);
 impl<B: AsRef<[u8]>> ResponseBody for SliceBody<B> {
     type Buffered = Self;
 
-    fn body(self) -> Result<(Value, Self::Buffered), ParseResponseError> {
+    fn body(self) -> Result<(Value, Self::Buffered), ParseError> {
         let buf = self.0;
 
         let body: Value = serde_json::from_slice(buf.as_ref())?;
@@ -180,12 +183,15 @@ impl<B: AsRef<[u8]>> ResponseBody for SliceBody<B> {
         Ok((body, SliceBody(buf)))
     }
 
-    fn parse_ok<T: DeserializeOwned>(self) -> Result<T, ParseResponseError> {
+    fn parse_ok<T: DeserializeOwned>(self) -> Result<T, ParseError> {
         serde_json::from_slice(self.0.as_ref()).map_err(|e| e.into())
     }
 
-    fn parse_err(self) -> Result<ApiError, ParseResponseError> {
-        serde_json::from_slice(self.0.as_ref()).map_err(|e| e.into())
+    fn parse_err(self) -> Result<ApiError, ParseError> {
+        match serde_json::from_slice(self.0.as_ref())? {
+            ParsedApiError::Known(err) => Ok(err),
+            ParsedApiError::Unknown(err) => Err(ParseError::new(UnknownApiError(err)))
+        }
     }
 }
 
@@ -223,7 +229,7 @@ Implement `IsOk` for a custom response type, where a http `404` might still cont
 # #[derive(Deserialize)]
 # struct MyResponse;
 impl IsOk for MyResponse {
-    fn is_ok<B: ResponseBody>(head: HttpResponseHead, unbuffered: Unbuffered<B>) -> Result<MaybeOkResponse<B>, ParseResponseError> {
+    fn is_ok<B: ResponseBody>(head: HttpResponseHead, unbuffered: Unbuffered<B>) -> Result<MaybeOkResponse<B>, ParseError> {
         match head.status() {
             200...299 => Ok(MaybeOkResponse::ok(unbuffered)),
             404 => {
@@ -245,11 +251,11 @@ impl IsOk for MyResponse {
 */
 pub trait IsOk {
     /** Inspect the http response to determine whether or not it succeeded. */
-    fn is_ok<B: ResponseBody>(head: HttpResponseHead, unbuffered: Unbuffered<B>) -> Result<MaybeOkResponse<B>, ParseResponseError>;
+    fn is_ok<B: ResponseBody>(head: HttpResponseHead, unbuffered: Unbuffered<B>) -> Result<MaybeOkResponse<B>, ParseError>;
 }
 
 impl IsOk for Value {
-    fn is_ok<B: ResponseBody>(head: HttpResponseHead, body: Unbuffered<B>) -> Result<MaybeOkResponse<B>, ParseResponseError> {
+    fn is_ok<B: ResponseBody>(head: HttpResponseHead, body: Unbuffered<B>) -> Result<MaybeOkResponse<B>, ParseError> {
         match head.status() {
             200...299 => Ok(MaybeOkResponse::ok(body)),
             _ => Ok(MaybeOkResponse::err(body)),
@@ -306,7 +312,7 @@ pub struct Unbuffered<B>(B);
 
 impl<B: ResponseBody> Unbuffered<B> {
     /** Buffer the response body to a json value and return a new buffered representation. */
-    pub fn body(self) -> Result<(Value, Buffered<B>), ParseResponseError> {
+    pub fn body(self) -> Result<(Value, Buffered<B>), ParseError> {
         self.0.body().map(|(value, body)| (value, Buffered(body)))
     }
 }
@@ -332,14 +338,14 @@ impl<B> MaybeBufferedResponse<B>
 where
     B: ResponseBody,
 {
-    fn parse_ok<T: DeserializeOwned>(self) -> Result<T, ParseResponseError> {
+    fn parse_ok<T: DeserializeOwned>(self) -> Result<T, ParseError> {
         match self {
             MaybeBufferedResponse::Unbuffered(b) => b.parse_ok(),
             MaybeBufferedResponse::Buffered(b) => b.parse_ok(),
         }
     }
 
-    fn parse_err(self) -> Result<ApiError, ParseResponseError> {
+    fn parse_err(self) -> Result<ApiError, ParseError> {
         match self {
             MaybeBufferedResponse::Unbuffered(b) => b.parse_err(),
             MaybeBufferedResponse::Buffered(b) => b.parse_err(),
