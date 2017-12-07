@@ -135,7 +135,7 @@ pub mod prelude {
     */
 
     pub use super::DefaultDateFormat;
-    pub use super::format::*;
+    pub use super::format::{DateFormat, DateValue, FormattableDateValue, FormattedDate};
     pub use super::impls::*;
     pub use super::formats::*;
     pub use super::mapping::*;
