@@ -47,6 +47,8 @@ use elastic_responses::error::ResponseError;
 
 pub use elastic_responses::error::ApiError;
 
+use http::StatusCode;
+
 /** An alias for a result. */
 pub type Result<T> = ::std::result::Result<T, Error>;
 
@@ -89,6 +91,30 @@ pub(crate) mod string_error {
     }
 }
 
+pub(crate) struct WrappedError(Box<StdError + Send + Sync>);
+
+impl fmt::Display for WrappedError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        self.0.fmt(f)
+    }
+}
+
+impl fmt::Debug for WrappedError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        self.0.fmt(f)
+    }
+}
+
+impl StdError for WrappedError {
+    fn description(&self) -> &str {
+        self.0.description()
+    }
+
+    fn cause(&self) -> Option<&StdError> {
+        self.0.cause()
+    }
+}
+
 /** An error building a client, sending a request or receiving a response. */
 #[derive(Debug)]
 pub struct ClientError {
@@ -120,6 +146,10 @@ where
     })
 }
 
+pub(crate) fn wrapped(err: Box<StdError + Send + Sync>) -> WrappedError {
+    WrappedError(err)
+}
+
 pub(crate) fn request<E>(err: E) -> Error
 where
     E: StdError + Send + 'static,
@@ -129,7 +159,7 @@ where
     })
 }
 
-pub(crate) fn response<E>(status: u16, err: E) -> Error
+pub(crate) fn response<E>(status: StatusCode, err: E) -> Error
 where
     E: Into<MaybeApiError<E>> + StdError + Send + 'static,
 {
@@ -191,6 +221,8 @@ impl Into<MaybeApiError<serde_json::Error>> for serde_json::Error {
 mod inner {
     #![allow(missing_docs)]
 
+    use http::StatusCode;
+
     error_chain! {
         errors {
             Build {
@@ -201,7 +233,7 @@ mod inner {
                 description("error sending a request")
                 display("error sending a request")
             }
-            Response(status: u16) {
+            Response(status: StatusCode) {
                 description("error receiving a response")
                 display("error receiving a response. Status code: {}", status)
             }

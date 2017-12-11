@@ -9,7 +9,7 @@ use ::load_file;
 #[test]
 fn success_parse_found_response() {
     let f = load_file("tests/samples/delete_found.json");
-    let deserialized = parse::<DeleteResponse>().from_reader(200, f).unwrap();
+    let deserialized = parse::<DeleteResponse>().from_reader(StatusCode::OK, f).unwrap();
 
     assert_eq!("testindex", deserialized.index());
     assert_eq!("testtype", deserialized.ty());
@@ -23,7 +23,7 @@ fn success_parse_found_response() {
 #[test]
 fn success_parse_not_found_response() {
     let f = load_file("tests/samples/delete_not_found.json");
-    let deserialized = parse::<DeleteResponse>().from_reader(404, f).unwrap();
+    let deserialized = parse::<DeleteResponse>().from_reader(StatusCode::NOT_FOUND, f).unwrap();
 
     assert!(!deserialized.found());
     assert!(!deserialized.deleted());

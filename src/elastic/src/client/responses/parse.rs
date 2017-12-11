@@ -24,7 +24,7 @@ impl IsOk for MyResponse {
         match head.status() {
             // If the status is 2xx then return the response with `ok: true`
             // The body will be parsed as a `MyResponse`.
-            200...299 => Ok(MaybeOkResponse::ok(body)),
+            status if status.is_success() => Ok(MaybeOkResponse::ok(body)),
             // Otherwise return the response with `ok: false`
             // The body will be parsed as an `ApiError`.
             _ => Ok(MaybeOkResponse::err(body))
@@ -52,7 +52,7 @@ The `MyResponse` type can then be used for deserialising a concrete response:
 #         where B: ResponseBody
 #     {
 #         match head.status() {
-#             200...299 => Ok(MaybeOkResponse::ok(body)),
+#             status if status.is_success() => Ok(MaybeOkResponse::ok(body)),
 #             _ => Ok(MaybeOkResponse::err(body))
 #         }
 #     }
@@ -89,5 +89,5 @@ See the [`IsOk`][IsOk] trait for more details.
 
 pub(crate) use elastic_responses::parse;
 
-pub use elastic_responses::parsing::{Buffered, HttpResponseHead, IsOk, MaybeBufferedResponse, MaybeOkResponse, ResponseBody, Unbuffered};
+pub use elastic_responses::parsing::{Buffered, HttpResponseHead, IsOk, IsOkOnSuccess, MaybeBufferedResponse, MaybeOkResponse, ResponseBody, Unbuffered};
 pub use elastic_responses::error::ParseError;

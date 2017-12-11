@@ -159,7 +159,6 @@ impl Query {
         serde_json::to_string(&self)
     }
 
-
     pub fn add_filter(&mut self, section: BoolQuerySections, f: Filters) {
         if let Some(ref mut query) = self.query {
             query.bool.add_filter(section, f);
@@ -175,8 +174,10 @@ impl Query {
     fn aggs_up_to_target(&mut self, target: &str) -> Option<(&str, Aggregation)> {
         if let Some(root_aggs) = self.aggs_mut() {
             for (rootname, aggregations) in root_aggs.iter_mut() {
-                aggregations.aggs_fn(&|n, a| if n == target {
-                    a.aggs_clear();
+                aggregations.aggs_fn(&|n, a| {
+                    if n == target {
+                        a.aggs_clear();
+                    }
                 });
                 return Some((rootname, aggregations.clone()));
             }
@@ -220,8 +221,10 @@ impl Query {
             for (rootname, aggregations) in root_aggs.iter_mut() {
                 // Copy the root and clear it from the target onwards
                 let mut root = aggregations.clone();
-                root.aggs_fn(&|n, a| if n == target {
-                    a.aggs_clear();
+                root.aggs_fn(&|n, a| {
+                    if n == target {
+                        a.aggs_clear();
+                    }
                 });
 
                 //Find the target and store it
@@ -261,12 +264,14 @@ impl Query {
     fn drop_target_agg(&mut self, target: &str) {
         if let Some(root_aggs) = self.aggs_mut() {
             for (rootname, aggregations) in root_aggs.iter_mut() {
-                aggregations.aggs_fn(&|name, agg| if agg.has_child(target) {
-                    let mut backup = agg.clone();
-                    let grand_c = backup.aggs_get(target).unwrap().aggs();
-                    agg.aggs_clear();
-                    if let Some(c) = grand_c {
-                        agg.set_aggs(Some(c.clone()));
+                aggregations.aggs_fn(&|name, agg| {
+                    if agg.has_child(target) {
+                        let mut backup = agg.clone();
+                        let grand_c = backup.aggs_get(target).unwrap().aggs();
+                        agg.aggs_clear();
+                        if let Some(c) = grand_c {
+                            agg.set_aggs(Some(c.clone()));
+                        }
                     }
                 });
             }
@@ -301,7 +306,6 @@ impl QueryBuilder {
         Ok(Some(QueryFieldBuilder::default().build()?))
     }
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -412,7 +416,6 @@ mod tests {
               }
             }
             "#;
-
 
         let mut s: Query = super::serde_json::from_str(j).unwrap();
         s.add_filter(

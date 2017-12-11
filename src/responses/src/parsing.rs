@@ -6,6 +6,7 @@ use std::marker::PhantomData;
 use std::io::{Cursor, Read};
 use serde::de::DeserializeOwned;
 use serde_json::{self, Value};
+use http::StatusCode;
 
 use error::*;
 
@@ -35,7 +36,7 @@ Provide an explicit response type in the `parse` function:
 # use serde_json::*;
 # use elastic_responses::*;
 # use elastic_responses::error::*;
-# fn do_request() -> (u16, Vec<u8>) { unimplemented!() }
+# fn do_request() -> (StatusCode, Vec<u8>) { unimplemented!() }
 # fn main() {
 # let (response_status, response_body) = do_request();
 let get_response = parse::<GetResponse<Value>>().from_slice(response_status, response_body);
@@ -50,7 +51,7 @@ Provide an explicit response type on the result ident:
 # use serde_json::Value;
 # use elastic_responses::*;
 # use elastic_responses::error::*;
-# fn do_request() -> (u16, Vec<u8>) { unimplemented!() }
+# fn do_request() -> (StatusCode, Vec<u8>) { unimplemented!() }
 # fn main() {
 # let (response_status, response_body) = do_request();
 let get_response: Result<GetResponse<Value>, ParseError> = parse().from_slice(response_status, response_body);
@@ -65,7 +66,7 @@ If Rust can infer the concrete response type then you can avoid specifying it at
 # use serde_json::Value;
 # use elastic_responses::*;
 # use elastic_responses::error::*;
-# fn do_request() -> (u16, Vec<u8>) { unimplemented!() }
+# fn do_request() -> (StatusCode, Vec<u8>) { unimplemented!() }
 # fn main() {
 # fn parse_response() -> Result<GetResponse<Value>, ParseError> {
 # let (response_status, response_body) = do_request();
@@ -110,18 +111,18 @@ fn from_body<B: ResponseBody, T: IsOk + DeserializeOwned>(head: HttpResponseHead
 
 /** The non-body component of the HTTP response. */
 pub struct HttpResponseHead {
-    code: u16,
+    code: StatusCode,
 }
 
 impl HttpResponseHead {
     /** Get the status code. */
-    pub fn status(&self) -> u16 {
+    pub fn status(&self) -> StatusCode {
         self.code
     }
 }
 
-impl From<u16> for HttpResponseHead {
-    fn from(status: u16) -> Self {
+impl From<StatusCode> for HttpResponseHead {
+    fn from(status: StatusCode) -> Self {
         HttpResponseHead { code: status }
     }
 }
@@ -244,6 +245,7 @@ Implement `IsOk` for a custom response type, where a http `404` might still cont
 # #[macro_use] extern crate serde_derive;
 # extern crate serde;
 # extern crate elastic_responses;
+# use elastic_responses::*;
 # use elastic_responses::parsing::*;
 # use elastic_responses::error::*;
 # fn main() {}
@@ -252,8 +254,8 @@ Implement `IsOk` for a custom response type, where a http `404` might still cont
 impl IsOk for MyResponse {
     fn is_ok<B: ResponseBody>(head: HttpResponseHead, unbuffered: Unbuffered<B>) -> Result<MaybeOkResponse<B>, ParseError> {
         match head.status() {
-            200...299 => Ok(MaybeOkResponse::ok(unbuffered)),
-            404 => {
+            status if status.is_success() => Ok(MaybeOkResponse::ok(unbuffered)),
+            StatusCode::NOT_FOUND => {
                 // If we get a 404, it could be an IndexNotFound error or ok
                 // Check if the response contains a root 'error' node
                 let (body, buffered) = unbuffered.body()?;
@@ -275,14 +277,22 @@ pub trait IsOk {
     fn is_ok<B: ResponseBody>(head: HttpResponseHead, unbuffered: Unbuffered<B>) -> Result<MaybeOkResponse<B>, ParseError>;
 }
 
-impl IsOk for Value {
+/**
+A convenient trait that automatically derives `IsOk` if the status code is in the `200` range.
+*/
+pub trait IsOkOnSuccess {}
+
+impl<T: IsOkOnSuccess> IsOk for T {
     fn is_ok<B: ResponseBody>(head: HttpResponseHead, body: Unbuffered<B>) -> Result<MaybeOkResponse<B>, ParseError> {
-        match head.status() {
-            200...299 => Ok(MaybeOkResponse::ok(body)),
-            _ => Ok(MaybeOkResponse::err(body)),
+        if head.status().is_success() {
+            Ok(MaybeOkResponse::ok(body))
+        } else {
+            Ok(MaybeOkResponse::err(body))
         }
     }
 }
+
+impl IsOkOnSuccess for Value {}
 
 /** A response that might be successful or an `ApiError`. */
 pub struct MaybeOkResponse<B>

@@ -1,4 +1,3 @@
-
 pub use BoolQuerySections;
 pub use Query;
 pub use QueryBuilder;

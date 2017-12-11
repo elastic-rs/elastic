@@ -236,9 +236,10 @@ mod tests {
 
     #[test]
     fn serialise_mapping_default() {
-        let ser = serde_json::to_string(&DocumentField::from(
-            DefaultGeoPointMapping::<DefaultGeoPointFormat>::default(),
-        )).unwrap();
+        let ser = serde_json::to_string(&DocumentField::from(DefaultGeoPointMapping::<
+            DefaultGeoPointFormat,
+        >::default()))
+            .unwrap();
 
         let expected = json_str!({
             "type": "geo_point"

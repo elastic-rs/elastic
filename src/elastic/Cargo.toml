@@ -20,12 +20,14 @@ log = "~0.3.8"
 uuid = { version = "0.6", features = [ "v4" ] }
 url = "~1.5.1"
 bytes = "~0.4.5"
+http = "~0.1.0"
 serde = "~1"
 serde_json = "~1"
 serde_derive = "~1"
 reqwest = { version = "~0.8.0", features = ["unstable"] }
 futures = "~0.1.16"
 tokio-core = "~0.1.9"
+tokio-io = "~0.1.4"
 futures-cpupool = "~0.1.6"
 fluent_builder = "~0.5"
 

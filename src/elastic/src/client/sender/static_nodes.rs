@@ -23,9 +23,7 @@ where
     fn next(&self) -> Self::Params {
         self.strategy
             .try_next(&self.nodes)
-            .map(|address| {
-                RequestParams::from_parts(address, self.params.clone())
-            })
+            .map(|address| RequestParams::from_parts(address, self.params.clone()))
             .map_err(error::request)
     }
 }
