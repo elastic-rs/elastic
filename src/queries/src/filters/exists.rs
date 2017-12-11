@@ -1,4 +1,3 @@
-
 #[derive(Clone, Debug, Serialize, Deserialize, Ord, PartialOrd, Eq, PartialEq)]
 pub struct ExistsFilter {
     pub exists: ExistsField,
@@ -13,7 +12,6 @@ pub struct ExistsField {
 mod tests {
     use super::*;
     use serde_json;
-
 
     #[test]
     fn exists_filter() {

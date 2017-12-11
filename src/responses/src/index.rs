@@ -3,8 +3,7 @@ Response types for an [index document request](https://www.elastic.co/guide/en/e
 */
 
 use common::Shards;
-use parsing::{HttpResponseHead, IsOk, MaybeOkResponse, ResponseBody, Unbuffered};
-use error::*;
+use parsing::IsOkOnSuccess;
 
 /** Response for an [index document request](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html). */
 #[derive(Deserialize, Debug)]
@@ -49,11 +48,4 @@ impl IndexResponse {
     }
 }
 
-impl IsOk for IndexResponse {
-    fn is_ok<B: ResponseBody>(head: HttpResponseHead, body: Unbuffered<B>) -> Result<MaybeOkResponse<B>, ParseError> {
-        match head.status() {
-            200...299 => Ok(MaybeOkResponse::ok(body)),
-            _ => Ok(MaybeOkResponse::err(body)),
-        }
-    }
-}
+impl IsOkOnSuccess for IndexResponse {}

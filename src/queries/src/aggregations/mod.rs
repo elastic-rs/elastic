@@ -64,7 +64,6 @@ impl BucketAggregation for Aggregation {
     }
 }
 
-
 pub trait BucketAggregation {
     /// Simple addition of child Aggregration
     fn add_child(&mut self, name: &str, agg: Aggregation) {
@@ -87,8 +86,10 @@ pub trait BucketAggregation {
     fn set_aggs(&mut self, Option<EsAggregation>);
 
     fn add_child_to_target(&mut self, target: &str, name: &str, agg: Aggregation) {
-        self.aggs_fn(&|n, a| if n == target {
-            a.add_child(name, agg.clone());
+        self.aggs_fn(&|n, a| {
+            if n == target {
+                a.add_child(name, agg.clone());
+            }
         });
     }
 
@@ -254,7 +255,6 @@ impl<'i> Iterator for AggregationIterator<'i> {
             }
         };
 
-
         if let Some(next) = next {
             match next.1 {
                 &date_histogram(ref agg) => {
@@ -287,8 +287,6 @@ mod tests {
     use super::*;
     use serde_json;
     use super::super::Query;
-
-
 
     #[test]
     fn api_replace() {
@@ -406,7 +404,6 @@ mod tests {
 
         assert_eq!(s2.aggs_get("Foo").is_none(), true);
 
-
         //Test insert
         let j = include_str!("../../tests/nested.json");
         let mut s1: Query = serde_json::from_str(j).unwrap();
@@ -454,7 +451,6 @@ mod tests {
             }
         }
     }
-
 
     #[test]
     fn simple_closure() {

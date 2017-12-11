@@ -49,10 +49,9 @@ impl IntegrationTest for UpdateWithScript {
     fn request(&self, client: AsyncClient) -> Box<Future<Item = Self::Response, Error = Error>> {
         let update_res = client
             .document_update::<Doc>(index(INDEX), id(ID))
-            .script_fluent(
-                "ctx._source.title = params.newTitle",
-                |s| s.param("newTitle", EXPECTED_TITLE),
-            )
+            .script_fluent("ctx._source.title = params.newTitle", |s| {
+                s.param("newTitle", EXPECTED_TITLE)
+            })
             .params_fluent(|p| p.url_param("refresh", true))
             .send();
 

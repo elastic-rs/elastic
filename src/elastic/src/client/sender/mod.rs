@@ -29,7 +29,7 @@ use std::sync::Arc;
 use std::marker::PhantomData;
 use uuid::Uuid;
 
-use client::requests::HttpRequest;
+use client::requests::Endpoint;
 use self::static_nodes::StaticNodes;
 use self::sniffed_nodes::{SniffedNodes, SniffedNodesBuilder};
 use private;
@@ -42,15 +42,15 @@ This type encapsulates the state needed between a [`Client`][Client] and a [`Sen
 [Client]: ../struct.Client.html
 [Sender]: trait.Sender.html
 */
-pub struct SendableRequest<TRequest, TParams, TBody> {
+pub struct SendableRequest<TEndpoint, TParams, TBody> {
     correlation_id: Uuid,
-    inner: TRequest,
+    inner: TEndpoint,
     params: SendableRequestParams<TParams>,
     _marker: PhantomData<TBody>,
 }
 
-impl<TRequest, TParams, TBody> SendableRequest<TRequest, TParams, TBody> {
-    pub(crate) fn new(inner: TRequest, params: SendableRequestParams<TParams>) -> Self {
+impl<TEndpoint, TParams, TBody> SendableRequest<TEndpoint, TParams, TBody> {
+    pub(crate) fn new(inner: TEndpoint, params: SendableRequestParams<TParams>) -> Self {
         SendableRequest {
             correlation_id: Uuid::new_v4(),
             inner: inner,
@@ -65,7 +65,7 @@ pub(crate) enum SendableRequestParams<TParams> {
     Builder {
         params: TParams,
         builder: FluentBuilder<RequestParams>,
-    }
+    },
 }
 
 /**
@@ -91,9 +91,9 @@ pub trait Sender: private::Sealed + Clone {
     type Params;
 
     /* Send a request. */
-    fn send<TRequest, TParams, TBody>(&self, request: SendableRequest<TRequest, TParams, TBody>) -> Self::Response
+    fn send<TEndpoint, TParams, TBody>(&self, request: SendableRequest<TEndpoint, TParams, TBody>) -> Self::Response
     where
-        TRequest: Into<HttpRequest<'static, TBody>>,
+        TEndpoint: Into<Endpoint<'static, TBody>>,
         TBody: Into<Self::Body> + 'static,
         TParams: Into<Self::Params> + 'static;
 }
@@ -176,12 +176,8 @@ enum NodeAddressesBuilder {
 impl NodeAddressesBuilder {
     fn sniff_nodes(self, builder: SniffedNodesBuilder) -> Self {
         match self {
-            NodeAddressesBuilder::Sniffed(fluent_builder) => {
-                NodeAddressesBuilder::Sniffed(fluent_builder.value(builder))
-            },
-            _ => {
-                NodeAddressesBuilder::Sniffed(StatefulFluentBuilder::from_value(builder.into()))
-            }
+            NodeAddressesBuilder::Sniffed(fluent_builder) => NodeAddressesBuilder::Sniffed(fluent_builder.value(builder)),
+            _ => NodeAddressesBuilder::Sniffed(StatefulFluentBuilder::from_value(builder.into())),
         }
     }
 
@@ -190,12 +186,8 @@ impl NodeAddressesBuilder {
         F: FnOnce(SniffedNodesBuilder) -> SniffedNodesBuilder + 'static,
     {
         match self {
-            NodeAddressesBuilder::Sniffed(fluent_builder) => {
-                NodeAddressesBuilder::Sniffed(fluent_builder.fluent(address.into(), fleunt_method).boxed())
-            },
-            _ => {
-                NodeAddressesBuilder::Sniffed(StatefulFluentBuilder::from_fluent(address.into(), fleunt_method).boxed())
-            }
+            NodeAddressesBuilder::Sniffed(fluent_builder) => NodeAddressesBuilder::Sniffed(fluent_builder.fluent(address.into(), fleunt_method).boxed()),
+            _ => NodeAddressesBuilder::Sniffed(StatefulFluentBuilder::from_fluent(address.into(), fleunt_method).boxed()),
         }
     }
 }
@@ -215,7 +207,9 @@ impl NodeAddressesBuilder {
                 NodeAddresses::static_nodes(nodes)
             }
             NodeAddressesBuilder::Sniffed(builder) => {
-                let nodes = builder.into_value(|node| SniffedNodesBuilder::new(node)).build(params, sender);
+                let nodes = builder
+                    .into_value(|node| SniffedNodesBuilder::new(node))
+                    .build(params, sender);
 
                 NodeAddresses::sniffed_nodes(nodes)
             }

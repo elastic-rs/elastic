@@ -5,7 +5,7 @@ use reqwest;
 use reqwest::header::{ContentType, Header, Headers};
 use url::form_urlencoded::Serializer;
 
-use client::requests::HttpMethod;
+use http::Method;
 use client::sender::NodeAddress;
 
 pub const DEFAULT_NODE_ADDRESS: &'static str = "http://localhost:9200";
@@ -240,14 +240,15 @@ pub(crate) fn build_url<'a>(req_url: &str, params: &RequestParams) -> String {
     url
 }
 
-pub(crate) fn build_method(method: HttpMethod) -> reqwest::Method {
+pub(crate) fn build_reqwest_method(method: Method) -> reqwest::Method {
     match method {
-        HttpMethod::Get => reqwest::Method::Get,
-        HttpMethod::Post => reqwest::Method::Post,
-        HttpMethod::Head => reqwest::Method::Head,
-        HttpMethod::Delete => reqwest::Method::Delete,
-        HttpMethod::Put => reqwest::Method::Put,
-        HttpMethod::Patch => reqwest::Method::Patch,
+        Method::GET => reqwest::Method::Get,
+        Method::POST => reqwest::Method::Post,
+        Method::HEAD => reqwest::Method::Head,
+        Method::DELETE => reqwest::Method::Delete,
+        Method::PUT => reqwest::Method::Put,
+        Method::PATCH => reqwest::Method::Patch,
+        method => reqwest::Method::Extension(method.as_str().to_owned()),
     }
 }
 

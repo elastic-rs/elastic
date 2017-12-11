@@ -2,7 +2,7 @@ pub mod url_params;
 pub mod url_builder;
 pub mod request_params;
 pub mod request_ctors;
-pub mod request_into_http;
+pub mod request_into_endpoint;
 
 pub mod types {
     /// Type and declarations for the `Body` type.
@@ -14,7 +14,7 @@ pub mod types {
         use gen::helpers;
 
         pub fn ident() -> &'static str {
-            "Url"
+            "UrlPath"
         }
 
         pub fn ty() -> syn::Ty {
@@ -23,20 +23,21 @@ pub mod types {
 
         pub fn tokens() -> quote::Tokens {
             let url = ty();
+            let ident = helpers::ident(ident());
 
             quote!(
-                /// A wrapper around an owned or borrowed url.
+                /// A wrapper around an owned or borrowed url path.
                 pub struct #url(Cow<'a, str>);
 
                 impl <'a> From<&'a str> for #url {
                     fn from(value: &'a str) -> #url {
-                        Url(Cow::Borrowed(value))
+                        #ident (Cow::Borrowed(value))
                     }
                 }
                 
                 impl <'a> From<String> for #url {
                     fn from(value: String) -> #url {
-                        Url(Cow::Owned(value))
+                        #ident (Cow::Owned(value))
                     }
                 }
 
@@ -97,31 +98,15 @@ pub mod types {
         use gen::helpers;
 
         pub fn method_ident() -> &'static str {
-            "HttpMethod"
+            "Method"
         }
 
         pub fn method_ty() -> syn::Ty {
             helpers::ty(method_ident())
         }
 
-        pub fn method_item() -> syn::Item {
-            let method_ty = method_ty();
-
-            helpers::parse_item(quote!(
-                /// A standard HTTP verb.
-                pub enum #method_ty {
-                    Head,
-                    Get,
-                    Post,
-                    Put,
-                    Delete,
-                    Patch
-                }
-            ))
-        }
-
         pub fn req_ident() -> &'static str {
-            "HttpRequest"
+            "Endpoint"
         }
 
         pub fn req_ty(body_generic: syn::Ty) -> syn::Ty {
@@ -239,12 +224,10 @@ pub mod helpers {
         syn::Generics {
             lifetimes: lifetimes
                 .into_iter()
-                .map(|l| {
-                    syn::LifetimeDef {
-                        attrs: vec![],
-                        lifetime: l,
-                        bounds: vec![],
-                    }
+                .map(|l| syn::LifetimeDef {
+                    attrs: vec![],
+                    lifetime: l,
+                    bounds: vec![],
                 })
                 .collect(),
             ty_params: types,
@@ -304,15 +287,13 @@ pub mod helpers {
             global: false,
             segments: paths
                 .into_iter()
-                .map(|(path, lifetimes, types)| {
-                    syn::PathSegment {
-                        ident: syn::Ident::new(sanitise_ident(path)),
-                        parameters: syn::PathParameters::AngleBracketed(syn::AngleBracketedParameterData {
-                            lifetimes: lifetimes,
-                            types: types,
-                            bindings: vec![],
-                        }),
-                    }
+                .map(|(path, lifetimes, types)| syn::PathSegment {
+                    ident: syn::Ident::new(sanitise_ident(path)),
+                    parameters: syn::PathParameters::AngleBracketed(syn::AngleBracketedParameterData {
+                        lifetimes: lifetimes,
+                        types: types,
+                        bindings: vec![],
+                    }),
                 })
                 .collect(),
         }

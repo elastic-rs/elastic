@@ -9,3 +9,4 @@ repository = "https://github.com/elastic-rs/elastic"
 readme = "README.md"
 
 [dependencies]
+http = "~0.1"
