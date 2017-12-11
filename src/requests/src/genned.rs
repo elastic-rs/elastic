@@ -228,7 +228,9 @@ pub mod endpoints {
             IIndex: Into<Index<'a>>,
             IType: Into<Type<'a>>,
         {
-            IndicesExistsTypeRequest { url: IndicesExistsTypeUrlParams::IndexType(index.into(), ty.into()).url() }
+            IndicesExistsTypeRequest {
+                url: IndicesExistsTypeUrlParams::IndexType(index.into(), ty.into()).url(),
+            }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for IndicesExistsTypeRequest<'a> {
@@ -396,7 +398,9 @@ pub mod endpoints {
             IType: Into<Type<'a>>,
             IId: Into<Id<'a>>,
         {
-            GetRequest { url: GetUrlParams::IndexTypeId(index.into(), ty.into(), id.into()).url() }
+            GetRequest {
+                url: GetUrlParams::IndexTypeId(index.into(), ty.into(), id.into()).url(),
+            }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for GetRequest<'a> {
@@ -441,7 +445,9 @@ pub mod endpoints {
             IType: Into<Type<'a>>,
             IId: Into<Id<'a>>,
         {
-            DeleteRequest { url: DeleteUrlParams::IndexTypeId(index.into(), ty.into(), id.into()).url() }
+            DeleteRequest {
+                url: DeleteUrlParams::IndexTypeId(index.into(), ty.into(), id.into()).url(),
+            }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for DeleteRequest<'a> {
@@ -515,7 +521,9 @@ pub mod endpoints {
     impl<'a> TasksListRequest<'a> {
         #[doc = "Request to: `/_tasks`"]
         pub fn new() -> Self {
-            TasksListRequest { url: TasksListUrlParams::None.url() }
+            TasksListRequest {
+                url: TasksListUrlParams::None.url(),
+            }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for TasksListRequest<'a> {
@@ -553,14 +561,18 @@ pub mod endpoints {
     impl<'a> SnapshotGetRepositoryRequest<'a> {
         #[doc = "Request to: `/_snapshot`"]
         pub fn new() -> Self {
-            SnapshotGetRepositoryRequest { url: SnapshotGetRepositoryUrlParams::None.url() }
+            SnapshotGetRepositoryRequest {
+                url: SnapshotGetRepositoryUrlParams::None.url(),
+            }
         }
         #[doc = "Request to: `/_snapshot/{repository}`"]
         pub fn for_repository<IRepository>(repository: IRepository) -> Self
         where
             IRepository: Into<Repository<'a>>,
         {
-            SnapshotGetRepositoryRequest { url: SnapshotGetRepositoryUrlParams::Repository(repository.into()).url() }
+            SnapshotGetRepositoryRequest {
+                url: SnapshotGetRepositoryUrlParams::Repository(repository.into()).url(),
+            }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for SnapshotGetRepositoryRequest<'a> {
@@ -642,7 +654,9 @@ pub mod endpoints {
         where
             IId: Into<Id<'a>>,
         {
-            IngestDeletePipelineRequest { url: IngestDeletePipelineUrlParams::Id(id.into()).url() }
+            IngestDeletePipelineRequest {
+                url: IngestDeletePipelineUrlParams::Id(id.into()).url(),
+            }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for IngestDeletePipelineRequest<'a> {
@@ -680,14 +694,18 @@ pub mod endpoints {
     impl<'a> ClusterStatsRequest<'a> {
         #[doc = "Request to: `/_cluster/stats`"]
         pub fn new() -> Self {
-            ClusterStatsRequest { url: ClusterStatsUrlParams::None.url() }
+            ClusterStatsRequest {
+                url: ClusterStatsUrlParams::None.url(),
+            }
         }
         #[doc = "Request to: `/_cluster/stats/nodes/{node_id}`"]
         pub fn for_node_id<INodeId>(node_id: INodeId) -> Self
         where
             INodeId: Into<NodeId<'a>>,
         {
-            ClusterStatsRequest { url: ClusterStatsUrlParams::NodeId(node_id.into()).url() }
+            ClusterStatsRequest {
+                url: ClusterStatsUrlParams::NodeId(node_id.into()).url(),
+            }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for ClusterStatsRequest<'a> {
@@ -938,7 +956,9 @@ pub mod endpoints {
     impl<'a> CatHealthRequest<'a> {
         #[doc = "Request to: `/_cat/health`"]
         pub fn new() -> Self {
-            CatHealthRequest { url: CatHealthUrlParams::None.url() }
+            CatHealthRequest {
+                url: CatHealthUrlParams::None.url(),
+            }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for CatHealthRequest<'a> {
@@ -1225,7 +1245,9 @@ pub mod endpoints {
         where
             IIndex: Into<Index<'a>>,
         {
-            IndicesExistsAliasRequest { url: IndicesExistsAliasUrlParams::Index(index.into()).url() }
+            IndicesExistsAliasRequest {
+                url: IndicesExistsAliasUrlParams::Index(index.into()).url(),
+            }
         }
         #[doc = "Request to: `/{index}/_alias/{name}`"]
         pub fn for_index_name<IIndex, IName>(index: IIndex, name: IName) -> Self
@@ -1233,14 +1255,18 @@ pub mod endpoints {
             IIndex: Into<Index<'a>>,
             IName: Into<Name<'a>>,
         {
-            IndicesExistsAliasRequest { url: IndicesExistsAliasUrlParams::IndexName(index.into(), name.into()).url() }
+            IndicesExistsAliasRequest {
+                url: IndicesExistsAliasUrlParams::IndexName(index.into(), name.into()).url(),
+            }
         }
         #[doc = "Request to: `/_alias/{name}`"]
         pub fn for_name<IName>(name: IName) -> Self
         where
             IName: Into<Name<'a>>,
         {
-            IndicesExistsAliasRequest { url: IndicesExistsAliasUrlParams::Name(name.into()).url() }
+            IndicesExistsAliasRequest {
+                url: IndicesExistsAliasUrlParams::Name(name.into()).url(),
+            }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for IndicesExistsAliasRequest<'a> {
@@ -1502,14 +1528,18 @@ pub mod endpoints {
     impl<'a> IndicesGetMappingRequest<'a> {
         #[doc = "Request to: `/_mapping`"]
         pub fn new() -> Self {
-            IndicesGetMappingRequest { url: IndicesGetMappingUrlParams::None.url() }
+            IndicesGetMappingRequest {
+                url: IndicesGetMappingUrlParams::None.url(),
+            }
         }
         #[doc = "Request to: `/{index}/_mapping`"]
         pub fn for_index<IIndex>(index: IIndex) -> Self
         where
             IIndex: Into<Index<'a>>,
         {
-            IndicesGetMappingRequest { url: IndicesGetMappingUrlParams::Index(index.into()).url() }
+            IndicesGetMappingRequest {
+                url: IndicesGetMappingUrlParams::Index(index.into()).url(),
+            }
         }
         #[doc = "Request to: `/{index}/_mapping/{type}`"]
         pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType) -> Self
@@ -1517,14 +1547,18 @@ pub mod endpoints {
             IIndex: Into<Index<'a>>,
             IType: Into<Type<'a>>,
         {
-            IndicesGetMappingRequest { url: IndicesGetMappingUrlParams::IndexType(index.into(), ty.into()).url() }
+            IndicesGetMappingRequest {
+                url: IndicesGetMappingUrlParams::IndexType(index.into(), ty.into()).url(),
+            }
         }
         #[doc = "Request to: `/_mapping/{type}`"]
         pub fn for_ty<IType>(ty: IType) -> Self
         where
             IType: Into<Type<'a>>,
         {
-            IndicesGetMappingRequest { url: IndicesGetMappingUrlParams::Type(ty.into()).url() }
+            IndicesGetMappingRequest {
+                url: IndicesGetMappingUrlParams::Type(ty.into()).url(),
+            }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for IndicesGetMappingRequest<'a> {
@@ -1636,14 +1670,18 @@ pub mod endpoints {
     impl<'a> ClusterHealthRequest<'a> {
         #[doc = "Request to: `/_cluster/health`"]
         pub fn new() -> Self {
-            ClusterHealthRequest { url: ClusterHealthUrlParams::None.url() }
+            ClusterHealthRequest {
+                url: ClusterHealthUrlParams::None.url(),
+            }
         }
         #[doc = "Request to: `/_cluster/health/{index}`"]
         pub fn for_index<IIndex>(index: IIndex) -> Self
         where
             IIndex: Into<Index<'a>>,
         {
-            ClusterHealthRequest { url: ClusterHealthUrlParams::Index(index.into()).url() }
+            ClusterHealthRequest {
+                url: ClusterHealthUrlParams::Index(index.into()).url(),
+            }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for ClusterHealthRequest<'a> {
@@ -1681,14 +1719,18 @@ pub mod endpoints {
     impl<'a> CatAliasesRequest<'a> {
         #[doc = "Request to: `/_cat/aliases`"]
         pub fn new() -> Self {
-            CatAliasesRequest { url: CatAliasesUrlParams::None.url() }
+            CatAliasesRequest {
+                url: CatAliasesUrlParams::None.url(),
+            }
         }
         #[doc = "Request to: `/_cat/aliases/{name}`"]
         pub fn for_name<IName>(name: IName) -> Self
         where
             IName: Into<Name<'a>>,
         {
-            CatAliasesRequest { url: CatAliasesUrlParams::Name(name.into()).url() }
+            CatAliasesRequest {
+                url: CatAliasesUrlParams::Name(name.into()).url(),
+            }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for CatAliasesRequest<'a> {
@@ -1726,14 +1768,18 @@ pub mod endpoints {
     impl<'a> CatSegmentsRequest<'a> {
         #[doc = "Request to: `/_cat/segments`"]
         pub fn new() -> Self {
-            CatSegmentsRequest { url: CatSegmentsUrlParams::None.url() }
+            CatSegmentsRequest {
+                url: CatSegmentsUrlParams::None.url(),
+            }
         }
         #[doc = "Request to: `/_cat/segments/{index}`"]
         pub fn for_index<IIndex>(index: IIndex) -> Self
         where
             IIndex: Into<Index<'a>>,
         {
-            CatSegmentsRequest { url: CatSegmentsUrlParams::Index(index.into()).url() }
+            CatSegmentsRequest {
+                url: CatSegmentsUrlParams::Index(index.into()).url(),
+            }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for CatSegmentsRequest<'a> {
@@ -1782,14 +1828,18 @@ pub mod endpoints {
     impl<'a> SimpleSearchRequest<'a> {
         #[doc = "Request to: `/_search`"]
         pub fn new() -> Self {
-            SimpleSearchRequest { url: SimpleSearchUrlParams::None.url() }
+            SimpleSearchRequest {
+                url: SimpleSearchUrlParams::None.url(),
+            }
         }
         #[doc = "Request to: `/{index}/_search`"]
         pub fn for_index<IIndex>(index: IIndex) -> Self
         where
             IIndex: Into<Index<'a>>,
         {
-            SimpleSearchRequest { url: SimpleSearchUrlParams::Index(index.into()).url() }
+            SimpleSearchRequest {
+                url: SimpleSearchUrlParams::Index(index.into()).url(),
+            }
         }
         #[doc = "Request to: `/{index}/{type}/_search`"]
         pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType) -> Self
@@ -1797,7 +1847,9 @@ pub mod endpoints {
             IIndex: Into<Index<'a>>,
             IType: Into<Type<'a>>,
         {
-            SimpleSearchRequest { url: SimpleSearchUrlParams::IndexType(index.into(), ty.into()).url() }
+            SimpleSearchRequest {
+                url: SimpleSearchUrlParams::IndexType(index.into(), ty.into()).url(),
+            }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for SimpleSearchRequest<'a> {
@@ -1902,7 +1954,9 @@ pub mod endpoints {
     impl<'a> ClusterPendingTasksRequest<'a> {
         #[doc = "Request to: `/_cluster/pending_tasks`"]
         pub fn new() -> Self {
-            ClusterPendingTasksRequest { url: ClusterPendingTasksUrlParams::None.url() }
+            ClusterPendingTasksRequest {
+                url: ClusterPendingTasksUrlParams::None.url(),
+            }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for ClusterPendingTasksRequest<'a> {
@@ -1941,7 +1995,9 @@ pub mod endpoints {
         where
             IId: Into<Id<'a>>,
         {
-            GetTemplateRequest { url: GetTemplateUrlParams::Id(id.into()).url() }
+            GetTemplateRequest {
+                url: GetTemplateUrlParams::Id(id.into()).url(),
+            }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for GetTemplateRequest<'a> {
@@ -1979,14 +2035,18 @@ pub mod endpoints {
     impl<'a> CatThreadPoolRequest<'a> {
         #[doc = "Request to: `/_cat/thread_pool`"]
         pub fn new() -> Self {
-            CatThreadPoolRequest { url: CatThreadPoolUrlParams::None.url() }
+            CatThreadPoolRequest {
+                url: CatThreadPoolUrlParams::None.url(),
+            }
         }
         #[doc = "Request to: `/_cat/thread_pool/{thread_pool_patterns}`"]
         pub fn for_thread_pool_patterns<IThreadPoolPatterns>(thread_pool_patterns: IThreadPoolPatterns) -> Self
         where
             IThreadPoolPatterns: Into<ThreadPoolPatterns<'a>>,
         {
-            CatThreadPoolRequest { url: CatThreadPoolUrlParams::ThreadPoolPatterns(thread_pool_patterns.into()).url() }
+            CatThreadPoolRequest {
+                url: CatThreadPoolUrlParams::ThreadPoolPatterns(thread_pool_patterns.into()).url(),
+            }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for CatThreadPoolRequest<'a> {
@@ -2138,14 +2198,18 @@ pub mod endpoints {
     impl<'a> SnapshotStatusRequest<'a> {
         #[doc = "Request to: `/_snapshot/_status`"]
         pub fn new() -> Self {
-            SnapshotStatusRequest { url: SnapshotStatusUrlParams::None.url() }
+            SnapshotStatusRequest {
+                url: SnapshotStatusUrlParams::None.url(),
+            }
         }
         #[doc = "Request to: `/_snapshot/{repository}/_status`"]
         pub fn for_repository<IRepository>(repository: IRepository) -> Self
         where
             IRepository: Into<Repository<'a>>,
         {
-            SnapshotStatusRequest { url: SnapshotStatusUrlParams::Repository(repository.into()).url() }
+            SnapshotStatusRequest {
+                url: SnapshotStatusUrlParams::Repository(repository.into()).url(),
+            }
         }
         #[doc = "Request to: `/_snapshot/{repository}/{snapshot}/_status`"]
         pub fn for_repository_snapshot<IRepository, ISnapshot>(repository: IRepository, snapshot: ISnapshot) -> Self
@@ -2153,7 +2217,9 @@ pub mod endpoints {
             IRepository: Into<Repository<'a>>,
             ISnapshot: Into<Snapshot<'a>>,
         {
-            SnapshotStatusRequest { url: SnapshotStatusUrlParams::RepositorySnapshot(repository.into(), snapshot.into()).url() }
+            SnapshotStatusRequest {
+                url: SnapshotStatusUrlParams::RepositorySnapshot(repository.into(), snapshot.into()).url(),
+            }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for SnapshotStatusRequest<'a> {
@@ -2237,14 +2303,18 @@ pub mod endpoints {
     impl<'a> CatTemplatesRequest<'a> {
         #[doc = "Request to: `/_cat/templates`"]
         pub fn new() -> Self {
-            CatTemplatesRequest { url: CatTemplatesUrlParams::None.url() }
+            CatTemplatesRequest {
+                url: CatTemplatesUrlParams::None.url(),
+            }
         }
         #[doc = "Request to: `/_cat/templates/{name}`"]
         pub fn for_name<IName>(name: IName) -> Self
         where
             IName: Into<Name<'a>>,
         {
-            CatTemplatesRequest { url: CatTemplatesUrlParams::Name(name.into()).url() }
+            CatTemplatesRequest {
+                url: CatTemplatesUrlParams::Name(name.into()).url(),
+            }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for CatTemplatesRequest<'a> {
@@ -2283,7 +2353,9 @@ pub mod endpoints {
         where
             IIndex: Into<Index<'a>>,
         {
-            IndicesDeleteRequest { url: IndicesDeleteUrlParams::Index(index.into()).url() }
+            IndicesDeleteRequest {
+                url: IndicesDeleteUrlParams::Index(index.into()).url(),
+            }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for IndicesDeleteRequest<'a> {
@@ -2331,7 +2403,9 @@ pub mod endpoints {
         where
             IIndex: Into<Index<'a>>,
         {
-            IndicesGetRequest { url: IndicesGetUrlParams::Index(index.into()).url() }
+            IndicesGetRequest {
+                url: IndicesGetUrlParams::Index(index.into()).url(),
+            }
         }
         #[doc = "Request to: `/{index}/{feature}`"]
         pub fn for_index_feature<IIndex, IFeature>(index: IIndex, feature: IFeature) -> Self
@@ -2339,7 +2413,9 @@ pub mod endpoints {
             IIndex: Into<Index<'a>>,
             IFeature: Into<Feature<'a>>,
         {
-            IndicesGetRequest { url: IndicesGetUrlParams::IndexFeature(index.into(), feature.into()).url() }
+            IndicesGetRequest {
+                url: IndicesGetUrlParams::IndexFeature(index.into(), feature.into()).url(),
+            }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for IndicesGetRequest<'a> {
@@ -2488,14 +2564,18 @@ pub mod endpoints {
     impl<'a> NodesStatsRequest<'a> {
         #[doc = "Request to: `/_nodes/stats`"]
         pub fn new() -> Self {
-            NodesStatsRequest { url: NodesStatsUrlParams::None.url() }
+            NodesStatsRequest {
+                url: NodesStatsUrlParams::None.url(),
+            }
         }
         #[doc = "Request to: `/_nodes/stats/{metric}`"]
         pub fn for_metric<IMetric>(metric: IMetric) -> Self
         where
             IMetric: Into<Metric<'a>>,
         {
-            NodesStatsRequest { url: NodesStatsUrlParams::Metric(metric.into()).url() }
+            NodesStatsRequest {
+                url: NodesStatsUrlParams::Metric(metric.into()).url(),
+            }
         }
         #[doc = "Request to: `/_nodes/stats/{metric}/{index_metric}`"]
         pub fn for_metric_index_metric<IMetric, IIndexMetric>(metric: IMetric, index_metric: IIndexMetric) -> Self
@@ -2503,14 +2583,18 @@ pub mod endpoints {
             IMetric: Into<Metric<'a>>,
             IIndexMetric: Into<IndexMetric<'a>>,
         {
-            NodesStatsRequest { url: NodesStatsUrlParams::MetricIndexMetric(metric.into(), index_metric.into()).url() }
+            NodesStatsRequest {
+                url: NodesStatsUrlParams::MetricIndexMetric(metric.into(), index_metric.into()).url(),
+            }
         }
         #[doc = "Request to: `/_nodes/{node_id}/stats`"]
         pub fn for_node_id<INodeId>(node_id: INodeId) -> Self
         where
             INodeId: Into<NodeId<'a>>,
         {
-            NodesStatsRequest { url: NodesStatsUrlParams::NodeId(node_id.into()).url() }
+            NodesStatsRequest {
+                url: NodesStatsUrlParams::NodeId(node_id.into()).url(),
+            }
         }
         #[doc = "Request to: `/_nodes/{node_id}/stats/{metric}`"]
         pub fn for_node_id_metric<INodeId, IMetric>(node_id: INodeId, metric: IMetric) -> Self
@@ -2518,7 +2602,9 @@ pub mod endpoints {
             INodeId: Into<NodeId<'a>>,
             IMetric: Into<Metric<'a>>,
         {
-            NodesStatsRequest { url: NodesStatsUrlParams::NodeIdMetric(node_id.into(), metric.into()).url() }
+            NodesStatsRequest {
+                url: NodesStatsUrlParams::NodeIdMetric(node_id.into(), metric.into()).url(),
+            }
         }
         #[doc = "Request to: `/_nodes/{node_id}/stats/{metric}/{index_metric}`"]
         pub fn for_node_id_metric_index_metric<INodeId, IMetric, IIndexMetric>(node_id: INodeId, metric: IMetric, index_metric: IIndexMetric) -> Self
@@ -2527,7 +2613,9 @@ pub mod endpoints {
             IMetric: Into<Metric<'a>>,
             IIndexMetric: Into<IndexMetric<'a>>,
         {
-            NodesStatsRequest { url: NodesStatsUrlParams::NodeIdMetricIndexMetric(node_id.into(), metric.into(), index_metric.into()).url() }
+            NodesStatsRequest {
+                url: NodesStatsUrlParams::NodeIdMetricIndexMetric(node_id.into(), metric.into(), index_metric.into()).url(),
+            }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for NodesStatsRequest<'a> {
@@ -2565,14 +2653,18 @@ pub mod endpoints {
     impl<'a> CatSnapshotsRequest<'a> {
         #[doc = "Request to: `/_cat/snapshots`"]
         pub fn new() -> Self {
-            CatSnapshotsRequest { url: CatSnapshotsUrlParams::None.url() }
+            CatSnapshotsRequest {
+                url: CatSnapshotsUrlParams::None.url(),
+            }
         }
         #[doc = "Request to: `/_cat/snapshots/{repository}`"]
         pub fn for_repository<IRepository>(repository: IRepository) -> Self
         where
             IRepository: Into<Repository<'a>>,
         {
-            CatSnapshotsRequest { url: CatSnapshotsUrlParams::Repository(repository.into()).url() }
+            CatSnapshotsRequest {
+                url: CatSnapshotsUrlParams::Repository(repository.into()).url(),
+            }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for CatSnapshotsRequest<'a> {
@@ -2627,14 +2719,18 @@ pub mod endpoints {
     impl<'a> IndicesGetSettingsRequest<'a> {
         #[doc = "Request to: `/_settings`"]
         pub fn new() -> Self {
-            IndicesGetSettingsRequest { url: IndicesGetSettingsUrlParams::None.url() }
+            IndicesGetSettingsRequest {
+                url: IndicesGetSettingsUrlParams::None.url(),
+            }
         }
         #[doc = "Request to: `/{index}/_settings`"]
         pub fn for_index<IIndex>(index: IIndex) -> Self
         where
             IIndex: Into<Index<'a>>,
         {
-            IndicesGetSettingsRequest { url: IndicesGetSettingsUrlParams::Index(index.into()).url() }
+            IndicesGetSettingsRequest {
+                url: IndicesGetSettingsUrlParams::Index(index.into()).url(),
+            }
         }
         #[doc = "Request to: `/{index}/_settings/{name}`"]
         pub fn for_index_name<IIndex, IName>(index: IIndex, name: IName) -> Self
@@ -2642,14 +2738,18 @@ pub mod endpoints {
             IIndex: Into<Index<'a>>,
             IName: Into<Name<'a>>,
         {
-            IndicesGetSettingsRequest { url: IndicesGetSettingsUrlParams::IndexName(index.into(), name.into()).url() }
+            IndicesGetSettingsRequest {
+                url: IndicesGetSettingsUrlParams::IndexName(index.into(), name.into()).url(),
+            }
         }
         #[doc = "Request to: `/_settings/{name}`"]
         pub fn for_name<IName>(name: IName) -> Self
         where
             IName: Into<Name<'a>>,
         {
-            IndicesGetSettingsRequest { url: IndicesGetSettingsUrlParams::Name(name.into()).url() }
+            IndicesGetSettingsRequest {
+                url: IndicesGetSettingsUrlParams::Name(name.into()).url(),
+            }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for IndicesGetSettingsRequest<'a> {
@@ -2691,7 +2791,9 @@ pub mod endpoints {
             ILang: Into<Lang<'a>>,
             IId: Into<Id<'a>>,
         {
-            DeleteScriptRequest { url: DeleteScriptUrlParams::LangId(lang.into(), id.into()).url() }
+            DeleteScriptRequest {
+                url: DeleteScriptUrlParams::LangId(lang.into(), id.into()).url(),
+            }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for DeleteScriptRequest<'a> {
@@ -2859,7 +2961,9 @@ pub mod endpoints {
     impl<'a> CatPendingTasksRequest<'a> {
         #[doc = "Request to: `/_cat/pending_tasks`"]
         pub fn new() -> Self {
-            CatPendingTasksRequest { url: CatPendingTasksUrlParams::None.url() }
+            CatPendingTasksRequest {
+                url: CatPendingTasksUrlParams::None.url(),
+            }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for CatPendingTasksRequest<'a> {
@@ -2897,14 +3001,18 @@ pub mod endpoints {
     impl<'a> IngestGetPipelineRequest<'a> {
         #[doc = "Request to: `/_ingest/pipeline`"]
         pub fn new() -> Self {
-            IngestGetPipelineRequest { url: IngestGetPipelineUrlParams::None.url() }
+            IngestGetPipelineRequest {
+                url: IngestGetPipelineUrlParams::None.url(),
+            }
         }
         #[doc = "Request to: `/_ingest/pipeline/{id}`"]
         pub fn for_id<IId>(id: IId) -> Self
         where
             IId: Into<Id<'a>>,
         {
-            IngestGetPipelineRequest { url: IngestGetPipelineUrlParams::Id(id.into()).url() }
+            IngestGetPipelineRequest {
+                url: IngestGetPipelineUrlParams::Id(id.into()).url(),
+            }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for IngestGetPipelineRequest<'a> {
@@ -2943,14 +3051,18 @@ pub mod endpoints {
     impl<'a> IndicesRecoveryRequest<'a> {
         #[doc = "Request to: `/_recovery`"]
         pub fn new() -> Self {
-            IndicesRecoveryRequest { url: IndicesRecoveryUrlParams::None.url() }
+            IndicesRecoveryRequest {
+                url: IndicesRecoveryUrlParams::None.url(),
+            }
         }
         #[doc = "Request to: `/{index}/_recovery`"]
         pub fn for_index<IIndex>(index: IIndex) -> Self
         where
             IIndex: Into<Index<'a>>,
         {
-            IndicesRecoveryRequest { url: IndicesRecoveryUrlParams::Index(index.into()).url() }
+            IndicesRecoveryRequest {
+                url: IndicesRecoveryUrlParams::Index(index.into()).url(),
+            }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for IndicesRecoveryRequest<'a> {
@@ -3004,21 +3116,27 @@ pub mod endpoints {
     impl<'a> NodesInfoRequest<'a> {
         #[doc = "Request to: `/_nodes`"]
         pub fn new() -> Self {
-            NodesInfoRequest { url: NodesInfoUrlParams::None.url() }
+            NodesInfoRequest {
+                url: NodesInfoUrlParams::None.url(),
+            }
         }
         #[doc = "Request to: `/_nodes/{metric}`"]
         pub fn for_metric<IMetric>(metric: IMetric) -> Self
         where
             IMetric: Into<Metric<'a>>,
         {
-            NodesInfoRequest { url: NodesInfoUrlParams::Metric(metric.into()).url() }
+            NodesInfoRequest {
+                url: NodesInfoUrlParams::Metric(metric.into()).url(),
+            }
         }
         #[doc = "Request to: `/_nodes/{node_id}`"]
         pub fn for_node_id<INodeId>(node_id: INodeId) -> Self
         where
             INodeId: Into<NodeId<'a>>,
         {
-            NodesInfoRequest { url: NodesInfoUrlParams::NodeId(node_id.into()).url() }
+            NodesInfoRequest {
+                url: NodesInfoUrlParams::NodeId(node_id.into()).url(),
+            }
         }
         #[doc = "Request to: `/_nodes/{node_id}/{metric}`"]
         pub fn for_node_id_metric<INodeId, IMetric>(node_id: INodeId, metric: IMetric) -> Self
@@ -3026,7 +3144,9 @@ pub mod endpoints {
             INodeId: Into<NodeId<'a>>,
             IMetric: Into<Metric<'a>>,
         {
-            NodesInfoRequest { url: NodesInfoUrlParams::NodeIdMetric(node_id.into(), metric.into()).url() }
+            NodesInfoRequest {
+                url: NodesInfoUrlParams::NodeIdMetric(node_id.into(), metric.into()).url(),
+            }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for NodesInfoRequest<'a> {
@@ -3068,7 +3188,9 @@ pub mod endpoints {
             IRepository: Into<Repository<'a>>,
             ISnapshot: Into<Snapshot<'a>>,
         {
-            SnapshotGetRequest { url: SnapshotGetUrlParams::RepositorySnapshot(repository.into(), snapshot.into()).url() }
+            SnapshotGetRequest {
+                url: SnapshotGetUrlParams::RepositorySnapshot(repository.into(), snapshot.into()).url(),
+            }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for SnapshotGetRequest<'a> {
@@ -3154,14 +3276,18 @@ pub mod endpoints {
     impl<'a> IndicesShardStoresRequest<'a> {
         #[doc = "Request to: `/_shard_stores`"]
         pub fn new() -> Self {
-            IndicesShardStoresRequest { url: IndicesShardStoresUrlParams::None.url() }
+            IndicesShardStoresRequest {
+                url: IndicesShardStoresUrlParams::None.url(),
+            }
         }
         #[doc = "Request to: `/{index}/_shard_stores`"]
         pub fn for_index<IIndex>(index: IIndex) -> Self
         where
             IIndex: Into<Index<'a>>,
         {
-            IndicesShardStoresRequest { url: IndicesShardStoresUrlParams::Index(index.into()).url() }
+            IndicesShardStoresRequest {
+                url: IndicesShardStoresUrlParams::Index(index.into()).url(),
+            }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for IndicesShardStoresRequest<'a> {
@@ -3199,14 +3325,18 @@ pub mod endpoints {
     impl<'a> IndicesGetTemplateRequest<'a> {
         #[doc = "Request to: `/_template`"]
         pub fn new() -> Self {
-            IndicesGetTemplateRequest { url: IndicesGetTemplateUrlParams::None.url() }
+            IndicesGetTemplateRequest {
+                url: IndicesGetTemplateUrlParams::None.url(),
+            }
         }
         #[doc = "Request to: `/_template/{name}`"]
         pub fn for_name<IName>(name: IName) -> Self
         where
             IName: Into<Name<'a>>,
         {
-            IndicesGetTemplateRequest { url: IndicesGetTemplateUrlParams::Name(name.into()).url() }
+            IndicesGetTemplateRequest {
+                url: IndicesGetTemplateUrlParams::Name(name.into()).url(),
+            }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for IndicesGetTemplateRequest<'a> {
@@ -3302,7 +3432,9 @@ pub mod endpoints {
     impl<'a> CatMasterRequest<'a> {
         #[doc = "Request to: `/_cat/master`"]
         pub fn new() -> Self {
-            CatMasterRequest { url: CatMasterUrlParams::None.url() }
+            CatMasterRequest {
+                url: CatMasterUrlParams::None.url(),
+            }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for CatMasterRequest<'a> {
@@ -3341,14 +3473,18 @@ pub mod endpoints {
     impl<'a> NodesHotThreadsRequest<'a> {
         #[doc = "Request to: `/_nodes/hot_threads`"]
         pub fn new() -> Self {
-            NodesHotThreadsRequest { url: NodesHotThreadsUrlParams::None.url() }
+            NodesHotThreadsRequest {
+                url: NodesHotThreadsUrlParams::None.url(),
+            }
         }
         #[doc = "Request to: `/_nodes/{node_id}/hot_threads`"]
         pub fn for_node_id<INodeId>(node_id: INodeId) -> Self
         where
             INodeId: Into<NodeId<'a>>,
         {
-            NodesHotThreadsRequest { url: NodesHotThreadsUrlParams::NodeId(node_id.into()).url() }
+            NodesHotThreadsRequest {
+                url: NodesHotThreadsUrlParams::NodeId(node_id.into()).url(),
+            }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for NodesHotThreadsRequest<'a> {
@@ -3680,14 +3816,18 @@ pub mod endpoints {
     impl<'a> CatRecoveryRequest<'a> {
         #[doc = "Request to: `/_cat/recovery`"]
         pub fn new() -> Self {
-            CatRecoveryRequest { url: CatRecoveryUrlParams::None.url() }
+            CatRecoveryRequest {
+                url: CatRecoveryUrlParams::None.url(),
+            }
         }
         #[doc = "Request to: `/_cat/recovery/{index}`"]
         pub fn for_index<IIndex>(index: IIndex) -> Self
         where
             IIndex: Into<Index<'a>>,
         {
-            CatRecoveryRequest { url: CatRecoveryUrlParams::Index(index.into()).url() }
+            CatRecoveryRequest {
+                url: CatRecoveryUrlParams::Index(index.into()).url(),
+            }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for CatRecoveryRequest<'a> {
@@ -3726,7 +3866,9 @@ pub mod endpoints {
         where
             IName: Into<Name<'a>>,
         {
-            IndicesDeleteTemplateRequest { url: IndicesDeleteTemplateUrlParams::Name(name.into()).url() }
+            IndicesDeleteTemplateRequest {
+                url: IndicesDeleteTemplateUrlParams::Name(name.into()).url(),
+            }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for IndicesDeleteTemplateRequest<'a> {
@@ -3768,7 +3910,9 @@ pub mod endpoints {
             IRepository: Into<Repository<'a>>,
             ISnapshot: Into<Snapshot<'a>>,
         {
-            SnapshotDeleteRequest { url: SnapshotDeleteUrlParams::RepositorySnapshot(repository.into(), snapshot.into()).url() }
+            SnapshotDeleteRequest {
+                url: SnapshotDeleteUrlParams::RepositorySnapshot(repository.into(), snapshot.into()).url(),
+            }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for SnapshotDeleteRequest<'a> {
@@ -3852,7 +3996,9 @@ pub mod endpoints {
     impl<'a> CatHelpRequest<'a> {
         #[doc = "Request to: `/_cat`"]
         pub fn new() -> Self {
-            CatHelpRequest { url: CatHelpUrlParams::None.url() }
+            CatHelpRequest {
+                url: CatHelpUrlParams::None.url(),
+            }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for CatHelpRequest<'a> {
@@ -3925,14 +4071,18 @@ pub mod endpoints {
     impl<'a> CatIndicesRequest<'a> {
         #[doc = "Request to: `/_cat/indices`"]
         pub fn new() -> Self {
-            CatIndicesRequest { url: CatIndicesUrlParams::None.url() }
+            CatIndicesRequest {
+                url: CatIndicesUrlParams::None.url(),
+            }
         }
         #[doc = "Request to: `/_cat/indices/{index}`"]
         pub fn for_index<IIndex>(index: IIndex) -> Self
         where
             IIndex: Into<Index<'a>>,
         {
-            CatIndicesRequest { url: CatIndicesUrlParams::Index(index.into()).url() }
+            CatIndicesRequest {
+                url: CatIndicesUrlParams::Index(index.into()).url(),
+            }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for CatIndicesRequest<'a> {
@@ -3978,7 +4128,9 @@ pub mod endpoints {
             IType: Into<Type<'a>>,
             IId: Into<Id<'a>>,
         {
-            GetSourceRequest { url: GetSourceUrlParams::IndexTypeId(index.into(), ty.into(), id.into()).url() }
+            GetSourceRequest {
+                url: GetSourceUrlParams::IndexTypeId(index.into(), ty.into(), id.into()).url(),
+            }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for GetSourceRequest<'a> {
@@ -4070,7 +4222,9 @@ pub mod endpoints {
         where
             IIndex: Into<Index<'a>>,
         {
-            IndicesExistsRequest { url: IndicesExistsUrlParams::Index(index.into()).url() }
+            IndicesExistsRequest {
+                url: IndicesExistsUrlParams::Index(index.into()).url(),
+            }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for IndicesExistsRequest<'a> {
@@ -4112,7 +4266,9 @@ pub mod endpoints {
             ILang: Into<Lang<'a>>,
             IId: Into<Id<'a>>,
         {
-            GetScriptRequest { url: GetScriptUrlParams::LangId(lang.into(), id.into()).url() }
+            GetScriptRequest {
+                url: GetScriptUrlParams::LangId(lang.into(), id.into()).url(),
+            }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for GetScriptRequest<'a> {
@@ -4180,7 +4336,9 @@ pub mod endpoints {
         where
             IFields: Into<Fields<'a>>,
         {
-            IndicesGetFieldMappingRequest { url: IndicesGetFieldMappingUrlParams::Fields(fields.into()).url() }
+            IndicesGetFieldMappingRequest {
+                url: IndicesGetFieldMappingUrlParams::Fields(fields.into()).url(),
+            }
         }
         #[doc = "Request to: `/{index}/_mapping/field/{fields}`"]
         pub fn for_index_fields<IIndex, IFields>(index: IIndex, fields: IFields) -> Self
@@ -4188,7 +4346,9 @@ pub mod endpoints {
             IIndex: Into<Index<'a>>,
             IFields: Into<Fields<'a>>,
         {
-            IndicesGetFieldMappingRequest { url: IndicesGetFieldMappingUrlParams::IndexFields(index.into(), fields.into()).url() }
+            IndicesGetFieldMappingRequest {
+                url: IndicesGetFieldMappingUrlParams::IndexFields(index.into(), fields.into()).url(),
+            }
         }
         #[doc = "Request to: `/{index}/_mapping/{type}/field/{fields}`"]
         pub fn for_index_ty_fields<IIndex, IType, IFields>(index: IIndex, ty: IType, fields: IFields) -> Self
@@ -4197,7 +4357,9 @@ pub mod endpoints {
             IType: Into<Type<'a>>,
             IFields: Into<Fields<'a>>,
         {
-            IndicesGetFieldMappingRequest { url: IndicesGetFieldMappingUrlParams::IndexTypeFields(index.into(), ty.into(), fields.into()).url() }
+            IndicesGetFieldMappingRequest {
+                url: IndicesGetFieldMappingUrlParams::IndexTypeFields(index.into(), ty.into(), fields.into()).url(),
+            }
         }
         #[doc = "Request to: `/_mapping/{type}/field/{fields}`"]
         pub fn for_ty_fields<IType, IFields>(ty: IType, fields: IFields) -> Self
@@ -4205,7 +4367,9 @@ pub mod endpoints {
             IType: Into<Type<'a>>,
             IFields: Into<Fields<'a>>,
         {
-            IndicesGetFieldMappingRequest { url: IndicesGetFieldMappingUrlParams::TypeFields(ty.into(), fields.into()).url() }
+            IndicesGetFieldMappingRequest {
+                url: IndicesGetFieldMappingUrlParams::TypeFields(ty.into(), fields.into()).url(),
+            }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for IndicesGetFieldMappingRequest<'a> {
@@ -4260,14 +4424,18 @@ pub mod endpoints {
     impl<'a> IndicesStatsRequest<'a> {
         #[doc = "Request to: `/_stats`"]
         pub fn new() -> Self {
-            IndicesStatsRequest { url: IndicesStatsUrlParams::None.url() }
+            IndicesStatsRequest {
+                url: IndicesStatsUrlParams::None.url(),
+            }
         }
         #[doc = "Request to: `/{index}/_stats`"]
         pub fn for_index<IIndex>(index: IIndex) -> Self
         where
             IIndex: Into<Index<'a>>,
         {
-            IndicesStatsRequest { url: IndicesStatsUrlParams::Index(index.into()).url() }
+            IndicesStatsRequest {
+                url: IndicesStatsUrlParams::Index(index.into()).url(),
+            }
         }
         #[doc = "Request to: `/{index}/_stats/{metric}`"]
         pub fn for_index_metric<IIndex, IMetric>(index: IIndex, metric: IMetric) -> Self
@@ -4275,14 +4443,18 @@ pub mod endpoints {
             IIndex: Into<Index<'a>>,
             IMetric: Into<Metric<'a>>,
         {
-            IndicesStatsRequest { url: IndicesStatsUrlParams::IndexMetric(index.into(), metric.into()).url() }
+            IndicesStatsRequest {
+                url: IndicesStatsUrlParams::IndexMetric(index.into(), metric.into()).url(),
+            }
         }
         #[doc = "Request to: `/_stats/{metric}`"]
         pub fn for_metric<IMetric>(metric: IMetric) -> Self
         where
             IMetric: Into<Metric<'a>>,
         {
-            IndicesStatsRequest { url: IndicesStatsUrlParams::Metric(metric.into()).url() }
+            IndicesStatsRequest {
+                url: IndicesStatsUrlParams::Metric(metric.into()).url(),
+            }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for IndicesStatsRequest<'a> {
@@ -4320,14 +4492,18 @@ pub mod endpoints {
     impl<'a> CatShardsRequest<'a> {
         #[doc = "Request to: `/_cat/shards`"]
         pub fn new() -> Self {
-            CatShardsRequest { url: CatShardsUrlParams::None.url() }
+            CatShardsRequest {
+                url: CatShardsUrlParams::None.url(),
+            }
         }
         #[doc = "Request to: `/_cat/shards/{index}`"]
         pub fn for_index<IIndex>(index: IIndex) -> Self
         where
             IIndex: Into<Index<'a>>,
         {
-            CatShardsRequest { url: CatShardsUrlParams::Index(index.into()).url() }
+            CatShardsRequest {
+                url: CatShardsUrlParams::Index(index.into()).url(),
+            }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for CatShardsRequest<'a> {
@@ -4418,14 +4594,18 @@ pub mod endpoints {
     impl<'a> CatCountRequest<'a> {
         #[doc = "Request to: `/_cat/count`"]
         pub fn new() -> Self {
-            CatCountRequest { url: CatCountUrlParams::None.url() }
+            CatCountRequest {
+                url: CatCountUrlParams::None.url(),
+            }
         }
         #[doc = "Request to: `/_cat/count/{index}`"]
         pub fn for_index<IIndex>(index: IIndex) -> Self
         where
             IIndex: Into<Index<'a>>,
         {
-            CatCountRequest { url: CatCountUrlParams::Index(index.into()).url() }
+            CatCountRequest {
+                url: CatCountUrlParams::Index(index.into()).url(),
+            }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for CatCountRequest<'a> {
@@ -4456,7 +4636,9 @@ pub mod endpoints {
     impl<'a> CatRepositoriesRequest<'a> {
         #[doc = "Request to: `/_cat/repositories`"]
         pub fn new() -> Self {
-            CatRepositoriesRequest { url: CatRepositoriesUrlParams::None.url() }
+            CatRepositoriesRequest {
+                url: CatRepositoriesUrlParams::None.url(),
+            }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for CatRepositoriesRequest<'a> {
@@ -4487,7 +4669,9 @@ pub mod endpoints {
     impl<'a> InfoRequest<'a> {
         #[doc = "Request to: `/`"]
         pub fn new() -> Self {
-            InfoRequest { url: InfoUrlParams::None.url() }
+            InfoRequest {
+                url: InfoUrlParams::None.url(),
+            }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for InfoRequest<'a> {
@@ -4562,7 +4746,9 @@ pub mod endpoints {
     impl<'a> ClusterGetSettingsRequest<'a> {
         #[doc = "Request to: `/_cluster/settings`"]
         pub fn new() -> Self {
-            ClusterGetSettingsRequest { url: ClusterGetSettingsUrlParams::None.url() }
+            ClusterGetSettingsRequest {
+                url: ClusterGetSettingsUrlParams::None.url(),
+            }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for ClusterGetSettingsRequest<'a> {
@@ -4617,14 +4803,18 @@ pub mod endpoints {
     impl<'a> IndicesGetAliasRequest<'a> {
         #[doc = "Request to: `/_alias`"]
         pub fn new() -> Self {
-            IndicesGetAliasRequest { url: IndicesGetAliasUrlParams::None.url() }
+            IndicesGetAliasRequest {
+                url: IndicesGetAliasUrlParams::None.url(),
+            }
         }
         #[doc = "Request to: `/{index}/_alias`"]
         pub fn for_index<IIndex>(index: IIndex) -> Self
         where
             IIndex: Into<Index<'a>>,
         {
-            IndicesGetAliasRequest { url: IndicesGetAliasUrlParams::Index(index.into()).url() }
+            IndicesGetAliasRequest {
+                url: IndicesGetAliasUrlParams::Index(index.into()).url(),
+            }
         }
         #[doc = "Request to: `/{index}/_alias/{name}`"]
         pub fn for_index_name<IIndex, IName>(index: IIndex, name: IName) -> Self
@@ -4632,14 +4822,18 @@ pub mod endpoints {
             IIndex: Into<Index<'a>>,
             IName: Into<Name<'a>>,
         {
-            IndicesGetAliasRequest { url: IndicesGetAliasUrlParams::IndexName(index.into(), name.into()).url() }
+            IndicesGetAliasRequest {
+                url: IndicesGetAliasUrlParams::IndexName(index.into(), name.into()).url(),
+            }
         }
         #[doc = "Request to: `/_alias/{name}`"]
         pub fn for_name<IName>(name: IName) -> Self
         where
             IName: Into<Name<'a>>,
         {
-            IndicesGetAliasRequest { url: IndicesGetAliasUrlParams::Name(name.into()).url() }
+            IndicesGetAliasRequest {
+                url: IndicesGetAliasUrlParams::Name(name.into()).url(),
+            }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for IndicesGetAliasRequest<'a> {
@@ -4723,7 +4917,9 @@ pub mod endpoints {
     impl<'a> CatNodeattrsRequest<'a> {
         #[doc = "Request to: `/_cat/nodeattrs`"]
         pub fn new() -> Self {
-            CatNodeattrsRequest { url: CatNodeattrsUrlParams::None.url() }
+            CatNodeattrsRequest {
+                url: CatNodeattrsUrlParams::None.url(),
+            }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for CatNodeattrsRequest<'a> {
@@ -4911,7 +5107,9 @@ pub mod endpoints {
         where
             IRepository: Into<Repository<'a>>,
         {
-            SnapshotDeleteRepositoryRequest { url: SnapshotDeleteRepositoryUrlParams::Repository(repository.into()).url() }
+            SnapshotDeleteRepositoryRequest {
+                url: SnapshotDeleteRepositoryUrlParams::Repository(repository.into()).url(),
+            }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for SnapshotDeleteRepositoryRequest<'a> {
@@ -4950,14 +5148,18 @@ pub mod endpoints {
     impl<'a> IndicesSegmentsRequest<'a> {
         #[doc = "Request to: `/_segments`"]
         pub fn new() -> Self {
-            IndicesSegmentsRequest { url: IndicesSegmentsUrlParams::None.url() }
+            IndicesSegmentsRequest {
+                url: IndicesSegmentsUrlParams::None.url(),
+            }
         }
         #[doc = "Request to: `/{index}/_segments`"]
         pub fn for_index<IIndex>(index: IIndex) -> Self
         where
             IIndex: Into<Index<'a>>,
         {
-            IndicesSegmentsRequest { url: IndicesSegmentsUrlParams::Index(index.into()).url() }
+            IndicesSegmentsRequest {
+                url: IndicesSegmentsUrlParams::Index(index.into()).url(),
+            }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for IndicesSegmentsRequest<'a> {
@@ -4988,7 +5190,9 @@ pub mod endpoints {
     impl<'a> CatNodesRequest<'a> {
         #[doc = "Request to: `/_cat/nodes`"]
         pub fn new() -> Self {
-            CatNodesRequest { url: CatNodesUrlParams::None.url() }
+            CatNodesRequest {
+                url: CatNodesUrlParams::None.url(),
+            }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for CatNodesRequest<'a> {
@@ -5069,14 +5273,18 @@ pub mod endpoints {
     impl<'a> CatAllocationRequest<'a> {
         #[doc = "Request to: `/_cat/allocation`"]
         pub fn new() -> Self {
-            CatAllocationRequest { url: CatAllocationUrlParams::None.url() }
+            CatAllocationRequest {
+                url: CatAllocationUrlParams::None.url(),
+            }
         }
         #[doc = "Request to: `/_cat/allocation/{node_id}`"]
         pub fn for_node_id<INodeId>(node_id: INodeId) -> Self
         where
             INodeId: Into<NodeId<'a>>,
         {
-            CatAllocationRequest { url: CatAllocationUrlParams::NodeId(node_id.into()).url() }
+            CatAllocationRequest {
+                url: CatAllocationUrlParams::NodeId(node_id.into()).url(),
+            }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for CatAllocationRequest<'a> {
@@ -5115,14 +5323,18 @@ pub mod endpoints {
     impl<'a> IndicesGetUpgradeRequest<'a> {
         #[doc = "Request to: `/_upgrade`"]
         pub fn new() -> Self {
-            IndicesGetUpgradeRequest { url: IndicesGetUpgradeUrlParams::None.url() }
+            IndicesGetUpgradeRequest {
+                url: IndicesGetUpgradeUrlParams::None.url(),
+            }
         }
         #[doc = "Request to: `/{index}/_upgrade`"]
         pub fn for_index<IIndex>(index: IIndex) -> Self
         where
             IIndex: Into<Index<'a>>,
         {
-            IndicesGetUpgradeRequest { url: IndicesGetUpgradeUrlParams::Index(index.into()).url() }
+            IndicesGetUpgradeRequest {
+                url: IndicesGetUpgradeUrlParams::Index(index.into()).url(),
+            }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for IndicesGetUpgradeRequest<'a> {
@@ -5161,7 +5373,9 @@ pub mod endpoints {
         where
             IName: Into<Name<'a>>,
         {
-            IndicesExistsTemplateRequest { url: IndicesExistsTemplateUrlParams::Name(name.into()).url() }
+            IndicesExistsTemplateRequest {
+                url: IndicesExistsTemplateUrlParams::Name(name.into()).url(),
+            }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for IndicesExistsTemplateRequest<'a> {
@@ -5192,7 +5406,9 @@ pub mod endpoints {
     impl<'a> PingRequest<'a> {
         #[doc = "Request to: `/`"]
         pub fn new() -> Self {
-            PingRequest { url: PingUrlParams::None.url() }
+            PingRequest {
+                url: PingUrlParams::None.url(),
+            }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for PingRequest<'a> {
@@ -5223,7 +5439,9 @@ pub mod endpoints {
     impl<'a> PingHeadRequest<'a> {
         #[doc = "Request to: `/`"]
         pub fn new() -> Self {
-            PingHeadRequest { url: PingHeadUrlParams::None.url() }
+            PingHeadRequest {
+                url: PingHeadUrlParams::None.url(),
+            }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for PingHeadRequest<'a> {
@@ -5381,7 +5599,9 @@ pub mod endpoints {
         where
             IId: Into<Id<'a>>,
         {
-            DeleteTemplateRequest { url: DeleteTemplateUrlParams::Id(id.into()).url() }
+            DeleteTemplateRequest {
+                url: DeleteTemplateUrlParams::Id(id.into()).url(),
+            }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for DeleteTemplateRequest<'a> {
@@ -5499,14 +5719,18 @@ pub mod endpoints {
     impl<'a> ClusterStateRequest<'a> {
         #[doc = "Request to: `/_cluster/state`"]
         pub fn new() -> Self {
-            ClusterStateRequest { url: ClusterStateUrlParams::None.url() }
+            ClusterStateRequest {
+                url: ClusterStateUrlParams::None.url(),
+            }
         }
         #[doc = "Request to: `/_cluster/state/{metric}`"]
         pub fn for_metric<IMetric>(metric: IMetric) -> Self
         where
             IMetric: Into<Metric<'a>>,
         {
-            ClusterStateRequest { url: ClusterStateUrlParams::Metric(metric.into()).url() }
+            ClusterStateRequest {
+                url: ClusterStateUrlParams::Metric(metric.into()).url(),
+            }
         }
         #[doc = "Request to: `/_cluster/state/{metric}/{index}`"]
         pub fn for_metric_index<IMetric, IIndex>(metric: IMetric, index: IIndex) -> Self
@@ -5514,7 +5738,9 @@ pub mod endpoints {
             IMetric: Into<Metric<'a>>,
             IIndex: Into<Index<'a>>,
         {
-            ClusterStateRequest { url: ClusterStateUrlParams::MetricIndex(metric.into(), index.into()).url() }
+            ClusterStateRequest {
+                url: ClusterStateUrlParams::MetricIndex(metric.into(), index.into()).url(),
+            }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for ClusterStateRequest<'a> {
@@ -5559,7 +5785,9 @@ pub mod endpoints {
             IType: Into<Type<'a>>,
             IId: Into<Id<'a>>,
         {
-            ExistsRequest { url: ExistsUrlParams::IndexTypeId(index.into(), ty.into(), id.into()).url() }
+            ExistsRequest {
+                url: ExistsUrlParams::IndexTypeId(index.into(), ty.into(), id.into()).url(),
+            }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for ExistsRequest<'a> {
@@ -5855,7 +6083,9 @@ pub mod endpoints {
             IIndex: Into<Index<'a>>,
             IName: Into<Name<'a>>,
         {
-            IndicesDeleteAliasRequest { url: IndicesDeleteAliasUrlParams::IndexName(index.into(), name.into()).url() }
+            IndicesDeleteAliasRequest {
+                url: IndicesDeleteAliasUrlParams::IndexName(index.into(), name.into()).url(),
+            }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for IndicesDeleteAliasRequest<'a> {
@@ -5886,7 +6116,9 @@ pub mod endpoints {
     impl<'a> CatPluginsRequest<'a> {
         #[doc = "Request to: `/_cat/plugins`"]
         pub fn new() -> Self {
-            CatPluginsRequest { url: CatPluginsUrlParams::None.url() }
+            CatPluginsRequest {
+                url: CatPluginsUrlParams::None.url(),
+            }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for CatPluginsRequest<'a> {
@@ -5959,14 +6191,18 @@ pub mod endpoints {
     impl<'a> CatFielddataRequest<'a> {
         #[doc = "Request to: `/_cat/fielddata`"]
         pub fn new() -> Self {
-            CatFielddataRequest { url: CatFielddataUrlParams::None.url() }
+            CatFielddataRequest {
+                url: CatFielddataUrlParams::None.url(),
+            }
         }
         #[doc = "Request to: `/_cat/fielddata/{fields}`"]
         pub fn for_fields<IFields>(fields: IFields) -> Self
         where
             IFields: Into<Fields<'a>>,
         {
-            CatFielddataRequest { url: CatFielddataUrlParams::Fields(fields.into()).url() }
+            CatFielddataRequest {
+                url: CatFielddataUrlParams::Fields(fields.into()).url(),
+            }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for CatFielddataRequest<'a> {
@@ -5997,7 +6233,9 @@ pub mod endpoints {
     impl<'a> CatTasksRequest<'a> {
         #[doc = "Request to: `/_cat/tasks`"]
         pub fn new() -> Self {
-            CatTasksRequest { url: CatTasksUrlParams::None.url() }
+            CatTasksRequest {
+                url: CatTasksUrlParams::None.url(),
+            }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for CatTasksRequest<'a> {
@@ -6089,7 +6327,9 @@ pub mod endpoints {
         where
             ITaskId: Into<TaskId<'a>>,
         {
-            TasksGetRequest { url: TasksGetUrlParams::TaskId(task_id.into()).url() }
+            TasksGetRequest {
+                url: TasksGetUrlParams::TaskId(task_id.into()).url(),
+            }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for TasksGetRequest<'a> {
@@ -6187,11 +6427,11 @@ pub mod endpoints {
 pub mod http {
     use std::borrow::Cow;
     use std::ops::Deref;
-    extern crate http ;
+    extern crate http;
     pub use self::http::Method;
 
     #[derive(Debug, PartialEq, Clone)]
-    #[doc = r" A wrapper around an owned or borrowed url."]
+    #[doc = r" A wrapper around an owned or borrowed url path."]
     pub struct UrlPath<'a>(Cow<'a, str>);
     impl<'a> From<&'a str> for UrlPath<'a> {
         fn from(value: &'a str) -> UrlPath<'a> {

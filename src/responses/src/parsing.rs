@@ -218,6 +218,7 @@ Implement `IsOk` for a custom response type, where a http `404` might still cont
 # #[macro_use] extern crate serde_derive;
 # extern crate serde;
 # extern crate elastic_responses;
+# use elastic_responses::*;
 # use elastic_responses::parsing::*;
 # use elastic_responses::error::*;
 # fn main() {}
@@ -226,8 +227,8 @@ Implement `IsOk` for a custom response type, where a http `404` might still cont
 impl IsOk for MyResponse {
     fn is_ok<B: ResponseBody>(head: HttpResponseHead, unbuffered: Unbuffered<B>) -> Result<MaybeOkResponse<B>, ParseResponseError> {
         match head.status() {
-            200...299 => Ok(MaybeOkResponse::ok(unbuffered)),
-            404 => {
+            status if status.is_success() => Ok(MaybeOkResponse::ok(unbuffered)),
+            StatusCode::NOT_FOUND => {
                 // If we get a 404, it could be an IndexNotFound error or ok
                 // Check if the response contains a root 'error' node
                 let (body, buffered) = unbuffered.body()?;
@@ -252,20 +253,19 @@ pub trait IsOk {
 /**
 A convenient trait that automatically derives `IsOk` if the status code is in the `200` range.
 */
-pub trait IsOkOnSuccess { }
+pub trait IsOkOnSuccess {}
 
 impl<T: IsOkOnSuccess> IsOk for T {
     fn is_ok<B: ResponseBody>(head: HttpResponseHead, body: Unbuffered<B>) -> Result<MaybeOkResponse<B>, ParseResponseError> {
         if head.status().is_success() {
             Ok(MaybeOkResponse::ok(body))
-        }
-        else {
+        } else {
             Ok(MaybeOkResponse::err(body))
         }
     }
 }
 
-impl IsOkOnSuccess for Value { }
+impl IsOkOnSuccess for Value {}
 
 /** A response that might be successful or an `ApiError`. */
 pub struct MaybeOkResponse<B>

@@ -4,7 +4,7 @@ use serde::de::DeserializeOwned;
 use reqwest::unstable::async::Response as RawResponse;
 
 use error::{self, Error};
-use http::{StatusCode, AsyncChunk, AsyncHttpResponse};
+use http::{AsyncChunk, AsyncHttpResponse, StatusCode};
 use super::parse::{parse, IsOk};
 
 /**

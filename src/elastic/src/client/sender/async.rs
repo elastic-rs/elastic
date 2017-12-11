@@ -11,7 +11,7 @@ use fluent_builder::FluentBuilder;
 use error::{self, Error};
 use private;
 use client::requests::Endpoint;
-use http::{AsyncHttpRequest, AsyncBody, Url};
+use http::{AsyncBody, AsyncHttpRequest, Url};
 use client::sender::{build_reqwest_method, build_url, NextParams, NodeAddress, NodeAddresses, NodeAddressesBuilder, NodeAddressesInner, PreRequestParams, RequestParams, SendableRequest, SendableRequestParams, Sender};
 use client::sender::sniffed_nodes::SniffedNodesBuilder;
 use client::responses::{async_response, AsyncResponseBuilder};
@@ -75,7 +75,9 @@ impl Sender for AsyncSender {
         let correlation_id = request.correlation_id;
         let serde_pool = self.serde_pool.clone();
         let params = request.params;
-        let Endpoint { url, method, body, .. } = request.inner.into();
+        let Endpoint {
+            url, method, body, ..
+        } = request.inner.into();
 
         info!(
             "Elasticsearch Request: correlation_id: '{}', path: '{}'",
@@ -86,12 +88,12 @@ impl Sender for AsyncSender {
         let params_future = match params {
             SendableRequestParams::Value(params) => Either::A(Ok(params).into_future()),
             SendableRequestParams::Builder { params, builder } => {
-                let params = params.into()
-                    .log_err(move |e| error!(
+                let params = params.into().log_err(move |e| {
+                    error!(
                         "Elasticsearch Node Selection: correlation_id: '{}', error: '{:?}'",
-                        correlation_id,
-                        e
-                    ));
+                        correlation_id, e
+                    )
+                });
 
                 Either::B(params.and_then(|params| Ok(builder.into_value(move || params))))
             }
@@ -114,33 +116,37 @@ impl Sender for AsyncSender {
             });
 
         let pre_send = self.pre_send.clone();
-        let pre_send_future = build_req_future
-            .and_then(move |mut req| {
-                if let Some(pre_send) = pre_send {
-                    Either::A(pre_send(&mut req)
+        let pre_send_future = build_req_future.and_then(move |mut req| {
+            if let Some(pre_send) = pre_send {
+                Either::A(
+                    pre_send(&mut req)
                         .map_err(error::wrapped)
                         .map_err(error::request)
-                        .and_then(move |_| Ok(req).into_future()))
-                }
-                else {
-                    Either::B(Ok(req).into_future())
-                }
-            });
+                        .and_then(move |_| Ok(req).into_future()),
+                )
+            } else {
+                Either::B(Ok(req).into_future())
+            }
+        });
 
         let pre_send_http = self.http.clone();
         let pre_send_future = pre_send_future
             .and_then(move |req| {
-                build_reqwest(&pre_send_http, req).build().map_err(error::request)
+                build_reqwest(&pre_send_http, req)
+                    .build()
+                    .map_err(error::request)
             })
-            .log_err(move |e| error!(
-                "Elasticsearch Request: correlation_id: '{}', error: '{:?}'",
-                correlation_id,
-                e
-            ));
-        
+            .log_err(move |e| {
+                error!(
+                    "Elasticsearch Request: correlation_id: '{}', error: '{:?}'",
+                    correlation_id, e
+                )
+            });
+
         let req_http = self.http.clone();
         let req_future = pre_send_future.and_then(move |req| {
-            req_http.execute(req)
+            req_http
+                .execute(req)
                 .map_err(error::request)
                 .and_then(move |res| {
                     info!(
@@ -150,11 +156,12 @@ impl Sender for AsyncSender {
                     );
                     async_response(res, serde_pool).into_future()
                 })
-                .log_err(move |e| error!(
-                    "Elasticsearch Response: correlation_id: '{}', error: '{:?}'",
-                    correlation_id,
-                    e
-                ))
+                .log_err(move |e| {
+                    error!(
+                        "Elasticsearch Response: correlation_id: '{}', error: '{:?}'",
+                        correlation_id, e
+                    )
+                })
         });
 
         PendingResponse::new(req_future)
@@ -205,7 +212,13 @@ impl From<RequestParams> for PendingParams {
 
 /** Build an asynchronous `reqwest::RequestBuilder` from an Elasticsearch request. */
 fn build_reqwest(client: &AsyncHttpClient, req: AsyncHttpRequest) -> AsyncHttpRequestBuilder {
-    let AsyncHttpRequest { url, method, headers, body, .. } = req;
+    let AsyncHttpRequest {
+        url,
+        method,
+        headers,
+        body,
+        ..
+    } = req;
 
     let method = build_reqwest_method(method);
 
@@ -597,21 +610,29 @@ where
                 let log = self.log.take().expect("attempted to poll log twice");
                 log(&e);
                 Err(e)
-            },
-            other => other
+            }
+            other => other,
         }
     }
 }
 
-trait LogErr<E> where Self: Sized {
-    fn log_err<L>(self, log: L) -> PendingLogErr<Self, L> where L: FnOnce(&E);
+trait LogErr<E>
+where
+    Self: Sized,
+{
+    fn log_err<L>(self, log: L) -> PendingLogErr<Self, L>
+    where
+        L: FnOnce(&E);
 }
 
 impl<F, T, E> LogErr<E> for F
 where
-    F: Future<Item = T, Error = E>
+    F: Future<Item = T, Error = E>,
 {
-    fn log_err<L>(self, log: L) -> PendingLogErr<F, L> where L: FnOnce(&E) {
+    fn log_err<L>(self, log: L) -> PendingLogErr<F, L>
+    where
+        L: FnOnce(&E),
+    {
         PendingLogErr {
             future: self,
             log: Some(log),

@@ -42,7 +42,6 @@ mod tests {
     use super::*;
     use serde_json;
 
-
     #[test]
     fn date_histo_aggs() {
         let j = r#"{

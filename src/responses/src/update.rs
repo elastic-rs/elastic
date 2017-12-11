@@ -2,9 +2,8 @@
 Response types for a [update document request](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-update.html).
 */
 
-use parsing::{HttpResponseHead, IsOkOnSuccess, MaybeOkResponse, ResponseBody, Unbuffered};
+use parsing::IsOkOnSuccess;
 use common::DocumentResult;
-use error::*;
 
 /** Response for a [update document request](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-update.html). */
 #[derive(Deserialize, Debug)]
@@ -47,4 +46,4 @@ impl UpdateResponse {
     }
 }
 
-impl IsOkOnSuccess for UpdateResponse { }
+impl IsOkOnSuccess for UpdateResponse {}

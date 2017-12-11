@@ -36,10 +36,10 @@ pub struct HttpRequest<TBody> {
 impl<TBody> fmt::Debug for HttpRequest<TBody> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         f.debug_struct("HttpRequest")
-         .field("url", &self.url)
-         .field("method", &self.method)
-         .field("headers", &self.headers)
-         .field("body", &self.body.as_ref().map(|_| ()))
-         .finish()
+            .field("url", &self.url)
+            .field("method", &self.method)
+            .field("headers", &self.headers)
+            .field("body", &self.body.as_ref().map(|_| ()))
+            .finish()
     }
 }

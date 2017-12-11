@@ -2,8 +2,7 @@
 Response types for a cluster ping request.
 */
 
-use parsing::{HttpResponseHead, IsOkOnSuccess, MaybeOkResponse, ResponseBody, Unbuffered};
-use error::*;
+use parsing::IsOkOnSuccess;
 
 /** Response for a cluster ping request. */
 #[derive(Deserialize, Debug)]
@@ -68,4 +67,4 @@ impl ClusterVersion {
     }
 }
 
-impl IsOkOnSuccess for PingResponse { }
+impl IsOkOnSuccess for PingResponse {}

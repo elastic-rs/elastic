@@ -287,9 +287,10 @@ mod tests {
 
     #[test]
     fn serialise_mapping_default() {
-        let ser = serde_json::to_string(&DocumentField::from(
-            DefaultDateMapping::<DefaultDateFormat>::default(),
-        )).unwrap();
+        let ser = serde_json::to_string(&DocumentField::from(DefaultDateMapping::<
+            DefaultDateFormat,
+        >::default()))
+            .unwrap();
 
         let expected = json_str!({
             "type": "date",

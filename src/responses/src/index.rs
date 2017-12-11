@@ -3,8 +3,7 @@ Response types for an [index document request](https://www.elastic.co/guide/en/e
 */
 
 use common::Shards;
-use parsing::{HttpResponseHead, IsOkOnSuccess, MaybeOkResponse, ResponseBody, Unbuffered};
-use error::*;
+use parsing::IsOkOnSuccess;
 
 /** Response for an [index document request](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html). */
 #[derive(Deserialize, Debug)]
@@ -49,4 +48,4 @@ impl IndexResponse {
     }
 }
 
-impl IsOkOnSuccess for IndexResponse { }
+impl IsOkOnSuccess for IndexResponse {}

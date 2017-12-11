@@ -11,7 +11,7 @@ use load_file;
 fn success_parse_empty() {
     let f = load_file("tests/samples/search_empty.json");
     let deserialized = parse::<SearchResponse<Value>>()
-        .from_reader(200, f)
+        .from_reader(StatusCode::OK, f)
         .unwrap();
 
     assert_eq!(deserialized.hits().into_iter().count(), 0);
@@ -21,7 +21,7 @@ fn success_parse_empty() {
 fn success_parse_hits_simple() {
     let f = load_file("tests/samples/search_hits_only.json");
     let deserialized = parse::<SearchResponse<Value>>()
-        .from_reader(200, f)
+        .from_reader(StatusCode::OK, f)
         .unwrap();
 
     assert_eq!(deserialized.hits().into_iter().count(), 5);
@@ -47,7 +47,7 @@ fn success_parse_hits_simple_of_t() {
 
     let f = load_file("tests/samples/search_hits_only.json");
     let deserialized = parse::<SearchResponse<Event>>()
-        .from_reader(200, f)
+        .from_reader(StatusCode::OK, f)
         .unwrap();
 
     assert_eq!(deserialized.hits().into_iter().count(), 5);
@@ -57,7 +57,7 @@ fn success_parse_hits_simple_of_t() {
 fn success_parse_hits_no_score() {
     let f = load_file("tests/samples/search_null_score.json");
     let deserialized = parse::<SearchResponse<Value>>()
-        .from_reader(200, f)
+        .from_reader(StatusCode::OK, f)
         .unwrap();
 
     assert_eq!(deserialized.hits().into_iter().count(), 1);
@@ -67,7 +67,7 @@ fn success_parse_hits_no_score() {
 fn success_parse_hits_bank_sample() {
     let f = load_file("tests/samples/search_bank_sample.json");
     let deserialized = parse::<SearchResponse<Value>>()
-        .from_reader(200, f)
+        .from_reader(StatusCode::OK, f)
         .unwrap();
 
     assert_eq!(deserialized.hits().into_iter().count(), 10);
@@ -77,7 +77,7 @@ fn success_parse_hits_bank_sample() {
 fn success_aggs_when_not_present() {
     let f = load_file("tests/samples/search_hits_only.json");
     let deserialized = parse::<SearchResponse<Value>>()
-        .from_reader(200, f)
+        .from_reader(StatusCode::OK, f)
         .unwrap();
 
     assert_eq!(deserialized.aggs().count(), 0);
@@ -87,7 +87,7 @@ fn success_aggs_when_not_present() {
 fn success_parse_simple_aggs() {
     let f = load_file("tests/samples/search_aggregation_simple.json");
     let deserialized = parse::<SearchResponse<Value>>()
-        .from_reader(200, f)
+        .from_reader(StatusCode::OK, f)
         .unwrap();
 
     let _agg = deserialized
@@ -103,7 +103,7 @@ fn success_parse_simple_aggs() {
 fn success_parse_simple_nested_aggs() {
     let f = load_file("tests/samples/search_aggregation_simple_nested.json");
     let deserialized = parse::<SearchResponse<Value>>()
-        .from_reader(200, f)
+        .from_reader(StatusCode::OK, f)
         .unwrap();
 
     assert_eq!(deserialized.aggs().count(), 124);
@@ -113,7 +113,7 @@ fn success_parse_simple_nested_aggs() {
 fn success_parse_3level_aggs() {
     let f = load_file("tests/samples/search_aggregation_3level.json");
     let deserialized = parse::<SearchResponse<Value>>()
-        .from_reader(200, f)
+        .from_reader(StatusCode::OK, f)
         .unwrap();
 
     assert_eq!(deserialized.aggs().count(), 201);
@@ -123,7 +123,7 @@ fn success_parse_3level_aggs() {
 fn success_parse_3level_multichild_aggs() {
     let f = load_file("tests/samples/search_aggregation_3level_multichild.json");
     let deserialized = parse::<SearchResponse<Value>>()
-        .from_reader(200, f)
+        .from_reader(StatusCode::OK, f)
         .unwrap();
 
     let mut first = true;
@@ -146,7 +146,7 @@ fn success_parse_3level_multichild_aggs() {
 fn success_parse_3level_multistats_aggs() {
     let f = load_file("tests/samples/search_aggregation_3level_multistats.json");
     let deserialized = parse::<SearchResponse<Value>>()
-        .from_reader(200, f)
+        .from_reader(StatusCode::OK, f)
         .unwrap();
 
     let mut first = true;
@@ -172,7 +172,7 @@ fn success_parse_3level_multistats_aggs() {
 fn success_parse_simple_aggs_no_empty_first_record() {
     let f = load_file("tests/samples/search_aggregation_simple.json");
     let deserialized = parse::<SearchResponse<Value>>()
-        .from_reader(200, f)
+        .from_reader(StatusCode::OK, f)
         .unwrap();
 
     let agg = "timechart";
@@ -188,7 +188,7 @@ fn success_parse_simple_aggs_no_empty_first_record() {
 #[test]
 fn success_parse_hits_simple_as_value() {
     let f = load_file("tests/samples/search_hits_only.json");
-    let deserialized = parse::<Value>().from_reader(200, f).unwrap();
+    let deserialized = parse::<Value>().from_reader(StatusCode::OK, f).unwrap();
 
     assert_eq!(deserialized["_shards"]["total"].as_u64().unwrap(), 5);
 }
@@ -197,7 +197,7 @@ fn success_parse_hits_simple_as_value() {
 fn error_parse_index_not_found() {
     let f = load_file("tests/samples/error_index_not_found.json");
     let deserialized = parse::<SearchResponse<Value>>()
-        .from_reader(404, f)
+        .from_reader(StatusCode::NOT_FOUND, f)
         .unwrap_err();
 
     let valid = match deserialized {
@@ -212,7 +212,7 @@ fn error_parse_index_not_found() {
 fn error_parse_parsing() {
     let f = load_file("tests/samples/error_parsing.json");
     let deserialized = parse::<SearchResponse<Value>>()
-        .from_reader(400, f)
+        .from_reader(StatusCode::BAD_REQUEST, f)
         .unwrap_err();
 
     let valid = match deserialized {
@@ -234,7 +234,7 @@ fn error_parse_parsing() {
 fn error_parse_other() {
     let f = load_file("tests/samples/error_other.json");
     let deserialized = parse::<SearchResponse<Value>>()
-        .from_reader(500, f)
+        .from_reader(StatusCode::INTERNAL_SERVER_ERROR, f)
         .unwrap_err();
 
     let reason = match deserialized {

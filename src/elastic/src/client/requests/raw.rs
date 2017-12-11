@@ -166,15 +166,11 @@ where
 
         // Only try fetch a next address if an explicit `RequestParams` hasn't been given
         let params = match self.params_builder.try_into_value() {
-            TryIntoValue::Value(value) => {
-                SendableRequestParams::Value(value)
+            TryIntoValue::Value(value) => SendableRequestParams::Value(value),
+            TryIntoValue::Builder(builder) => SendableRequestParams::Builder {
+                params: client.addresses.next(),
+                builder,
             },
-            TryIntoValue::Builder(builder) => {
-                SendableRequestParams::Builder {
-                    params: client.addresses.next(),
-                    builder,
-                }
-            }
         };
 
         let req = SendableRequest::new(endpoint, params);

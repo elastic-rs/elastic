@@ -29,7 +29,7 @@ Run a [Query DSL][query-dsl] query, then iterate through the results:
 ```no_run
 # extern crate elastic_responses;
 # use elastic_responses::*;
-# fn do_request() -> (u16, Vec<u8>) { unimplemented!() }
+# fn do_request() -> (StatusCode, Vec<u8>) { unimplemented!() }
 # fn main() {
 // Send a search request and read as a response
 let (response_status, response_body) = do_request();
@@ -64,7 +64,7 @@ Any type that implements `Deserialize` can be used as the document type in the s
 # extern crate serde;
 # extern crate elastic_responses;
 # use elastic_responses::*;
-# fn do_request() -> (u16, Vec<u8>) { unimplemented!() }
+# fn do_request() -> (StatusCode, Vec<u8>) { unimplemented!() }
 # fn main() {
 #[derive(Deserialize)]
 struct MyDocument {
@@ -91,7 +91,7 @@ Run a [Get Document][get-document] request, and handle cases where the document 
 # use serde_json::Value;
 # use elastic_responses::*;
 # use elastic_responses::error::*;
-# fn do_request() -> (u16, Vec<u8>) { unimplemented!() }
+# fn do_request() -> (StatusCode, Vec<u8>) { unimplemented!() }
 # fn main() {
 // Send a document get request and read as a response
 let (response_status, response_body) = do_request();
@@ -126,16 +126,15 @@ in a `GetResponse`.
 */
 
 #[deny(warnings, missing_docs)]
-
 #[macro_use]
 extern crate serde_derive;
 
 #[macro_use]
 extern crate quick_error;
 
+extern crate http;
 extern crate serde;
 extern crate serde_json;
-extern crate http;
 
 pub mod error;
 pub mod parsing;

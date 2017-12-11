@@ -72,36 +72,39 @@ impl Sender for SyncSender {
         let params = match params {
             SendableRequestParams::Value(params) => params,
             SendableRequestParams::Builder { params, builder } => {
-                let params = params.into().inner
-                    .log_err(|e| error!(
+                let params = params.into().inner.log_err(|e| {
+                    error!(
                         "Elasticsearch Node Selection: correlation_id: '{}', error: '{:?}'",
-                        correlation_id,
-                        e
-                    ))?;
+                        correlation_id, e
+                    )
+                })?;
 
                 builder.into_value(move || params)
             }
         };
 
-        let mut req = build_req(endpoint, params)
-            .log_err(|e| error!(
+        let mut req = build_req(endpoint, params).log_err(|e| {
+            error!(
                 "Elasticsearch Request: correlation_id: '{}', error: '{:?}'",
-                correlation_id,
-                e
-            ))?;
+                correlation_id, e
+            )
+        })?;
 
         if let Some(ref pre_send) = self.pre_send {
             pre_send(&mut req)
                 .map_err(error::wrapped)
                 .map_err(error::request)
-                .log_err(|e| error!(
-                    "Elasticsearch Request Pre-send: correlation_id: '{}', error: '{:?}'",
-                    correlation_id,
-                    e
-                ))?;
+                .log_err(|e| {
+                    error!(
+                        "Elasticsearch Request Pre-send: correlation_id: '{}', error: '{:?}'",
+                        correlation_id, e
+                    )
+                })?;
         }
 
-        let req = build_reqwest(&self.http, req).build().map_err(error::request)?;
+        let req = build_reqwest(&self.http, req)
+            .build()
+            .map_err(error::request)?;
 
         let res = match self.http.execute(req).map_err(error::request) {
             Ok(res) => {
@@ -115,8 +118,7 @@ impl Sender for SyncSender {
             Err(e) => {
                 error!(
                     "Elasticsearch Response: correlation_id: '{}', error: '{:?}'",
-                    correlation_id,
-                    e
+                    correlation_id, e
                 );
                 Err(e)?
             }
@@ -172,7 +174,13 @@ where
 
 /** Build a synchronous `reqwest::RequestBuilder` from an Elasticsearch request. */
 fn build_reqwest(client: &SyncHttpClient, req: SyncHttpRequest) -> SyncHttpRequestBuilder {
-    let SyncHttpRequest { url, method, headers, body, .. } = req;
+    let SyncHttpRequest {
+        url,
+        method,
+        headers,
+        body,
+        ..
+    } = req;
 
     let method = build_reqwest_method(method);
 
@@ -407,7 +415,10 @@ impl SyncClientBuilder {
             .map_err(error::build)?;
 
         let params = self.params.into_value(|| PreRequestParams::default());
-        let sender = SyncSender { http, pre_send: self.pre_send };
+        let sender = SyncSender {
+            http,
+            pre_send: self.pre_send,
+        };
 
         let addresses = self.nodes.build(params, sender.clone());
 
@@ -419,11 +430,16 @@ impl SyncClientBuilder {
 }
 
 trait LogErr<E> {
-    fn log_err<F>(self, log: F) -> Self where F: FnOnce(&E);
+    fn log_err<F>(self, log: F) -> Self
+    where
+        F: FnOnce(&E);
 }
 
 impl<T, E> LogErr<E> for Result<T, E> {
-    fn log_err<F>(self, log: F) -> Self where F: FnOnce(&E) {
+    fn log_err<F>(self, log: F) -> Self
+    where
+        F: FnOnce(&E),
+    {
         if let Err(ref e) = self {
             log(e);
         }

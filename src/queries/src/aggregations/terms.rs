@@ -43,7 +43,6 @@ mod tests {
     use super::*;
     use serde_json;
 
-
     #[test]
     fn terms_aggs() {
         let j = r#"{

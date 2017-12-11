@@ -6,8 +6,7 @@ use serde::de::{Deserialize, Deserializer, Error as DeError, MapAccess, SeqAcces
 use serde_json::Value;
 use common::{DefaultAllocatedField, Shards};
 
-use parsing::{HttpResponseHead, IsOkOnSuccess, MaybeOkResponse, ResponseBody, Unbuffered};
-use error::*;
+use parsing::IsOkOnSuccess;
 
 use std::cmp;
 use std::fmt;
@@ -488,10 +487,7 @@ where
         write!(
             f,
             "bulk item failed. Details: index: {}, type: {}, id: {}, inner error: {}",
-            self.index,
-            self.ty,
-            self.id,
-            self.err
+            self.index, self.ty, self.id, self.err
         )
     }
 }
@@ -520,9 +516,9 @@ pub enum Action {
     #[serde(rename = "delete")] Delete,
 }
 
-impl<TIndex, TType, TId> IsOkOnSuccess for BulkResponse<TIndex, TType, TId> { }
+impl<TIndex, TType, TId> IsOkOnSuccess for BulkResponse<TIndex, TType, TId> {}
 
-impl<TIndex, TType, TId> IsOkOnSuccess for BulkErrorsResponse<TIndex, TType, TId> { }
+impl<TIndex, TType, TId> IsOkOnSuccess for BulkErrorsResponse<TIndex, TType, TId> {}
 
 // Deserialisation
 

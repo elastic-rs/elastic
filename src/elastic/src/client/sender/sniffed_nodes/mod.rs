@@ -90,9 +90,7 @@ impl<TSender> SniffedNodes<TSender> {
         let req = self.sendable_request();
         let refresh_params = self.refresh_params.clone();
 
-        let refresh_nodes = refresh(req).then(move |fresh_nodes| {
-            Self::finish_refresh(&inner, &refresh_params, fresh_nodes)
-        });
+        let refresh_nodes = refresh(req).then(move |fresh_nodes| Self::finish_refresh(&inner, &refresh_params, fresh_nodes));
 
         Box::new(refresh_nodes)
     }
@@ -239,7 +237,10 @@ impl<TSender> SniffedNodes<TSender> {
     }
 
     fn sendable_request(&self) -> SendableRequest<NodesInfoRequest<'static>, RequestParams, DefaultBody> {
-        SendableRequest::new(NodesInfoRequest::new(), SendableRequestParams::Value(self.refresh_params.clone()))
+        SendableRequest::new(
+            NodesInfoRequest::new(),
+            SendableRequestParams::Value(self.refresh_params.clone()),
+        )
     }
 
     fn finish_refresh(inner: &RwLock<SniffedNodesInner>, refresh_params: &RequestParams, fresh_nodes: Result<NodesInfoResponse, Error>) -> Result<RequestParams, Error> {
@@ -328,12 +329,10 @@ mod tests {
         NodesInfoResponse {
             nodes: publish_addresses()
                 .into_iter()
-                .map(|address| {
-                    SniffedNode {
-                        http: Some(SniffedNodeHttp {
-                            publish_address: Some(address.to_owned()),
-                        }),
-                    }
+                .map(|address| SniffedNode {
+                    http: Some(SniffedNodeHttp {
+                        publish_address: Some(address.to_owned()),
+                    }),
                 })
                 .collect(),
         }

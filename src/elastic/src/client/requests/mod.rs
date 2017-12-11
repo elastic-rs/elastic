@@ -168,7 +168,7 @@ where
     */
     pub fn params<I>(mut self, params: I) -> Self
     where
-        I: Into<RequestParams>
+        I: Into<RequestParams>,
     {
         self.params_builder = self.params_builder.value(params.into());
 

@@ -2,8 +2,7 @@
 Response types for a standard command.
 */
 
-use parsing::{HttpResponseHead, IsOkOnSuccess, MaybeOkResponse, ResponseBody, Unbuffered};
-use error::*;
+use parsing::IsOkOnSuccess;
 
 /** A standard command acknowledgement response. */
 #[derive(Deserialize, Debug, Clone)]
@@ -22,4 +21,4 @@ impl CommandResponse {
     }
 }
 
-impl IsOkOnSuccess for CommandResponse { }
+impl IsOkOnSuccess for CommandResponse {}

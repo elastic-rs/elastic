@@ -31,7 +31,7 @@ impl IntoIterator for NodesInfoResponse {
     }
 }
 
-impl IsOkOnSuccess for NodesInfoResponse { }
+impl IsOkOnSuccess for NodesInfoResponse {}
 
 fn deserialize_nodes<'de, D>(deserializer: D) -> Result<Vec<SniffedNode>, D::Error>
 where

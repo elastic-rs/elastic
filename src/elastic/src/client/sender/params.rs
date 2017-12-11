@@ -248,7 +248,7 @@ pub(crate) fn build_reqwest_method(method: Method) -> reqwest::Method {
         Method::DELETE => reqwest::Method::Delete,
         Method::PUT => reqwest::Method::Put,
         Method::PATCH => reqwest::Method::Patch,
-        method => reqwest::Method::Extension(method.as_str().to_owned())
+        method => reqwest::Method::Extension(method.as_str().to_owned()),
     }
 }
 

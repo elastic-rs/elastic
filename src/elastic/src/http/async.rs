@@ -1,16 +1,16 @@
 use bytes::Bytes;
 use serde_json::Value;
 use std::borrow::Cow;
-use std::io::{self, Read, Cursor};
+use std::io::{self, Cursor, Read};
 
 use tokio_io::AsyncRead;
-use futures::{Stream, Poll};
+use futures::{Poll, Stream};
 use reqwest::unstable::async::{Body, Response as RawResponse};
 
 use error::{self, Error};
 use http::{HttpRequest, StatusCode};
 
-pub use reqwest::unstable::async::{Chunk as AsyncChunk};
+pub use reqwest::unstable::async::Chunk as AsyncChunk;
 
 /** A http request with an asynchronous body; */
 pub type AsyncHttpRequest = HttpRequest<AsyncBody>;
@@ -29,7 +29,7 @@ impl AsRef<[u8]> for AsyncBodyInner {
         match *self {
             AsyncBodyInner::Shared(ref bytes) => bytes.as_ref(),
             AsyncBodyInner::Bytes(ref bytes) => bytes.as_ref(),
-            AsyncBodyInner::Str(ref string) => string.as_bytes()
+            AsyncBodyInner::Str(ref string) => string.as_bytes(),
         }
     }
 }
@@ -47,9 +47,7 @@ impl<'a> Read for AsyncBodyReader<'a> {
     }
 }
 
-impl<'a> AsyncRead for AsyncBodyReader<'a> {
-    
-}
+impl<'a> AsyncRead for AsyncBodyReader<'a> {}
 
 impl AsyncBody {
     /** Convert the body into its inner value. */
@@ -63,7 +61,7 @@ impl AsyncBody {
             AsyncBodyInner::Str(string) => match string {
                 Cow::Owned(string) => string.into(),
                 Cow::Borrowed(string) => string.into(),
-            }
+            },
         }
     }
 
@@ -72,7 +70,7 @@ impl AsyncBody {
     */
     pub fn reader(&mut self) -> AsyncBodyReader {
         AsyncBodyReader {
-            inner: Cursor::new(&self.0)
+            inner: Cursor::new(&self.0),
         }
     }
 }
@@ -113,7 +111,6 @@ impl From<&'static str> for AsyncBody {
     }
 }
 
-
 /** A raw HTTP response that can be buffered using `Read`. */
 pub struct AsyncHttpResponse(StatusCode, RawResponse);
 
@@ -128,9 +125,10 @@ impl Stream for AsyncHttpResponse {
     type Error = Error;
 
     fn poll(&mut self) -> Poll<Option<Self::Item>, Self::Error> {
-        self.1.body_mut().poll().map_err(|e| {
-            error::response(self.0, e)
-        })
+        self.1
+            .body_mut()
+            .poll()
+            .map_err(|e| error::response(self.0, e))
     }
 }
 

@@ -6,8 +6,7 @@ use serde::de::DeserializeOwned;
 use serde_json::{Map, Value};
 
 use common::Shards;
-use parsing::{HttpResponseHead, IsOkOnSuccess, MaybeOkResponse, ResponseBody, Unbuffered};
-use error::*;
+use parsing::IsOkOnSuccess;
 
 use std::borrow::Cow;
 use std::collections::BTreeMap;
@@ -135,7 +134,7 @@ impl<T> SearchResponse<T> {
     }
 }
 
-impl<T: DeserializeOwned> IsOkOnSuccess for SearchResponse<T> { }
+impl<T: DeserializeOwned> IsOkOnSuccess for SearchResponse<T> {}
 
 /** A borrowing iterator over search query hits. */
 pub struct Hits<'a, T: 'a> {

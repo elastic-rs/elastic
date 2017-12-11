@@ -151,7 +151,7 @@ impl CustomEndpoints for Vec<(String, Endpoint)> {
                 match name.as_ref() {
                     "search" => {
                         let mut simple_search_endpoint = endpoint.clone();
-                        simple_search_endpoint.methods = vec![HttpMethod::Get];
+                        simple_search_endpoint.methods = vec![Method::Get];
                         simple_search_endpoint.body = None;
 
                         endpoints.push((String::from("simple_search"), simple_search_endpoint));
@@ -170,7 +170,7 @@ impl CustomEndpoints for Vec<(String, Endpoint)> {
                 match name.as_ref() {
                     "ping" => {
                         let mut get_endpoint = endpoint.clone();
-                        get_endpoint.methods = vec![HttpMethod::Get];
+                        get_endpoint.methods = vec![Method::Get];
 
                         endpoints.push((String::from("ping"), get_endpoint));
                         endpoints.push((String::from("ping_head"), endpoint));
@@ -208,7 +208,7 @@ fn endpoints_mod(tokens: &mut Tokens, derives: Tokens, http_mod: &'static str, e
         let req_ctors_item = gen::request_ctors::RequestParamsCtorBuilder::from((&e, &req_params_ty, &url_params)).build();
         let url_method_item = gen::url_builder::UrlMethodBuilder::from((&e, &url_params)).build();
 
-        let req_into_http_item = gen::request_into_http::RequestIntoHttpRequestBuilder::from((&e, &req_params_ty)).build();
+        let req_into_http_item = gen::request_into_endpoint::RequestIntoEndpointBuilder::from((&e, &req_params_ty)).build();
 
         tokens.append_all(vec![
             derives.clone(),
