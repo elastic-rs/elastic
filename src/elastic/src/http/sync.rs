@@ -1,6 +1,7 @@
 use bytes::Bytes;
 use serde_json::Value;
 use std::borrow::Cow;
+use std::fs::File;
 use std::io::{self, Read, Cursor};
 
 use reqwest::{Body, Response as RawResponse};
@@ -13,21 +14,67 @@ pub type SyncHttpRequest = HttpRequest<SyncBody>;
 /** A type that can be converted into a request body. */
 pub struct SyncBody(SyncBodyInner);
 
-// TODO: Add streamed that builds a set of in-memory chunks when being read
-
 enum SyncBodyInner {
-    Shared(Bytes),
-    Bytes(Cow<'static, [u8]>),
-    Str(Cow<'static, str>),
+    UnBuffered(Box<Read + Send>),
+    Buffered(BufferedSyncBodyInner<'static>)
 }
 
-impl AsRef<[u8]> for SyncBodyInner {
+#[derive(Clone)]
+enum BufferedSyncBodyInner<'a> {
+    Shared(Bytes),
+    Bytes(Cow<'a, [u8]>),
+    Str(Cow<'a, str>),
+}
+
+impl<'a> AsRef<[u8]> for BufferedSyncBodyInner<'a> {
     fn as_ref(&self) -> &[u8] {
         match *self {
-            SyncBodyInner::Shared(ref bytes) => bytes.as_ref(),
-            SyncBodyInner::Bytes(ref bytes) => bytes.as_ref(),
-            SyncBodyInner::Str(ref string) => string.as_bytes()
+            BufferedSyncBodyInner::Shared(ref bytes) => bytes.as_ref(),
+            BufferedSyncBodyInner::Bytes(ref bytes) => bytes.as_ref(),
+            BufferedSyncBodyInner::Str(ref string) => string.as_bytes()
         }
+    }
+}
+
+impl<'a> BufferedSyncBodyInner<'a> {
+    fn as_ref(&self) -> BufferedSyncBodyInner {
+        match *self {
+            BufferedSyncBodyInner::Shared(ref bytes) => BufferedSyncBodyInner::Shared(bytes.clone()),
+            BufferedSyncBodyInner::Bytes(ref bytes) => BufferedSyncBodyInner::Bytes(Cow::Borrowed(bytes)),
+            BufferedSyncBodyInner::Str(ref string) => BufferedSyncBodyInner::Str(Cow::Borrowed(string))
+        }
+    }
+}
+
+impl SyncBody {
+    /** Convert the body into its inner value. */
+    pub(crate) fn into_inner(self) -> Body {
+        match self.0 {
+            SyncBodyInner::UnBuffered(reader) => Body::new(reader),
+            SyncBodyInner::Buffered(BufferedSyncBodyInner::Shared(bytes)) => bytes.to_vec().into(),
+            SyncBodyInner::Buffered(BufferedSyncBodyInner::Bytes(bytes)) => match bytes {
+                Cow::Owned(bytes) => bytes.into(),
+                Cow::Borrowed(bytes) => bytes.into(),
+            },
+            SyncBodyInner::Buffered(BufferedSyncBodyInner::Str(string)) => match string {
+                Cow::Owned(string) => string.into(),
+                Cow::Borrowed(string) => string.into(),
+            }
+        }
+    }
+
+     /**
+    Get a reader over the synchronous body.
+
+    If the body can only be read once then it will be buffered first so subsequent reads won't fail.
+    */
+    pub fn reader(&mut self) -> SyncBodyReader {
+        let state = match self.0 {
+            SyncBodyInner::UnBuffered(ref mut reader) => SyncBodyReaderState::UnBuffered(reader),
+            SyncBodyInner::Buffered(ref inner) => SyncBodyReaderState::Buffered(Cursor::new(inner.as_ref()))
+        };
+
+        SyncBodyReader { state }
     }
 }
 
@@ -35,65 +82,79 @@ impl AsRef<[u8]> for SyncBodyInner {
 A read adapter for a `SyncBody`.
 */
 pub struct SyncBodyReader<'a> {
-    inner: Cursor<&'a SyncBodyInner>,
+    state: SyncBodyReaderState<'a>,
+}
+
+enum SyncBodyReaderState<'a> {
+    UnBuffered(&'a mut Box<Read + Send>),
+    Buffered(Cursor<BufferedSyncBodyInner<'a>>),
+}
+
+impl<'a> SyncBodyReaderState<'a> {
+    fn buffer(&mut self) -> Result<&mut Cursor<BufferedSyncBodyInner<'a>>, io::Error> {
+        let new_buf = match *self {
+            SyncBodyReaderState::Buffered(ref mut buf) => return Ok(buf),
+            SyncBodyReaderState::UnBuffered(ref mut reader) => {
+                let mut buf = Vec::new();
+                reader.read_to_end(&mut buf)?;
+
+                SyncBodyReaderState::Buffered(Cursor::new(BufferedSyncBodyInner::Bytes(Cow::Owned(buf))))
+            }
+        };
+
+        *self = new_buf;
+
+        self.buffer()
+    }
 }
 
 impl<'a> Read for SyncBodyReader<'a> {
     fn read(&mut self, buf: &mut [u8]) -> Result<usize, io::Error> {
-        self.inner.read(buf)
-    }
-}
+        let reader = self.state.buffer()?;
 
-impl SyncBody {
-    /** Convert the body into its inner value. */
-    pub fn into_inner(self) -> Body {
-        match self.0 {
-            SyncBodyInner::Shared(bytes) => bytes.to_vec().into(),
-            SyncBodyInner::Bytes(bytes) => match bytes {
-                Cow::Owned(bytes) => bytes.into(),
-                Cow::Borrowed(bytes) => bytes.into(),
-            },
-            SyncBodyInner::Str(string) => match string {
-                Cow::Owned(string) => string.into(),
-                Cow::Borrowed(string) => string.into(),
-            }
-        }
+        reader.read(buf)
     }
 }
 
 impl From<Bytes> for SyncBody {
     fn from(body: Bytes) -> SyncBody {
-        SyncBody(SyncBodyInner::Shared(body))
+        SyncBody(SyncBodyInner::Buffered(BufferedSyncBodyInner::Shared(body)))
     }
 }
 
 impl From<Vec<u8>> for SyncBody {
     fn from(body: Vec<u8>) -> SyncBody {
-        SyncBody(SyncBodyInner::Bytes(body.into()))
+        SyncBody(SyncBodyInner::Buffered(BufferedSyncBodyInner::Bytes(body.into())))
     }
 }
 
 impl From<String> for SyncBody {
     fn from(body: String) -> SyncBody {
-        SyncBody(SyncBodyInner::Str(body.into()))
+        SyncBody(SyncBodyInner::Buffered(BufferedSyncBodyInner::Str(body.into())))
     }
 }
 
 impl From<Value> for SyncBody {
     fn from(body: Value) -> SyncBody {
-        SyncBody(SyncBodyInner::Str(body.to_string().into()))
+        SyncBody(SyncBodyInner::Buffered(BufferedSyncBodyInner::Str(body.to_string().into())))
     }
 }
 
 impl From<&'static [u8]> for SyncBody {
     fn from(body: &'static [u8]) -> SyncBody {
-        SyncBody(SyncBodyInner::Bytes(body.into()))
+        SyncBody(SyncBodyInner::Buffered(BufferedSyncBodyInner::Bytes(body.into())))
     }
 }
 
 impl From<&'static str> for SyncBody {
     fn from(body: &'static str) -> SyncBody {
-        SyncBody(SyncBodyInner::Str(body.into()))
+        SyncBody(SyncBodyInner::Buffered(BufferedSyncBodyInner::Str(body.into())))
+    }
+}
+
+impl From<File> for SyncBody {
+    fn from(body: File) -> SyncBody {
+        SyncBody(SyncBodyInner::UnBuffered(Box::new(body)))
     }
 }
 
@@ -114,5 +175,49 @@ impl SyncHttpResponse {
 impl Read for SyncHttpResponse {
     fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
         self.1.read(buf)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::fs::File;
+    use client::requests::empty_body;
+    use super::*;
+
+    #[test]
+    fn file_into_body() {
+        //SyncBody::from(File::open("Cargo.toml").unwrap());
+    }
+
+    #[test]
+    fn owned_string_into_body() {
+        SyncBody::from(String::new());
+    }
+
+    #[test]
+    fn borrowed_string_into_body() {
+        SyncBody::from("abc");
+    }
+
+    #[test]
+    fn owned_vec_into_body() {
+        SyncBody::from(Vec::new());
+    }
+
+    #[test]
+    fn borrowed_vec_into_body() {
+        static BODY: &'static [u8] = &[0, 1, 2];
+
+        SyncBody::from(BODY);
+    }
+
+    #[test]
+    fn empty_body_into_body() {
+        SyncBody::from(empty_body());
+    }
+
+    #[test]
+    fn json_value_into_body() {
+        SyncBody::from(json!({}));
     }
 }

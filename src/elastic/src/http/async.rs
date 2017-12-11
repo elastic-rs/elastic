@@ -66,6 +66,15 @@ impl AsyncBody {
             }
         }
     }
+
+    /**
+    Get a reader over the asynchronous body.
+    */
+    pub fn reader(&mut self) -> AsyncBodyReader {
+        AsyncBodyReader {
+            inner: Cursor::new(&self.0)
+        }
+    }
 }
 
 impl From<Bytes> for AsyncBody {
@@ -129,5 +138,43 @@ impl AsyncHttpResponse {
     /** Get the HTTP status for the response. */
     pub fn status(&self) -> StatusCode {
         self.0
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use client::requests::empty_body;
+    use super::*;
+
+    #[test]
+    fn owned_string_into_body() {
+        AsyncBody::from(String::new());
+    }
+
+    #[test]
+    fn borrowed_string_into_body() {
+        AsyncBody::from("abc");
+    }
+
+    #[test]
+    fn owned_vec_into_body() {
+        AsyncBody::from(Vec::new());
+    }
+
+    #[test]
+    fn borrowed_vec_into_body() {
+        static BODY: &'static [u8] = &[0, 1, 2];
+
+        AsyncBody::from(BODY);
+    }
+
+    #[test]
+    fn empty_body_into_body() {
+        AsyncBody::from(empty_body());
+    }
+
+    #[test]
+    fn json_value_into_body() {
+        AsyncBody::from(json!({}));
     }
 }

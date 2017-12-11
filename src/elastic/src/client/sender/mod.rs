@@ -42,15 +42,15 @@ This type encapsulates the state needed between a [`Client`][Client] and a [`Sen
 [Client]: ../struct.Client.html
 [Sender]: trait.Sender.html
 */
-pub struct SendableRequest<TRequest, TParams, TBody> {
+pub struct SendableRequest<TEndpoint, TParams, TBody> {
     correlation_id: Uuid,
-    inner: TRequest,
+    inner: TEndpoint,
     params: SendableRequestParams<TParams>,
     _marker: PhantomData<TBody>,
 }
 
-impl<TRequest, TParams, TBody> SendableRequest<TRequest, TParams, TBody> {
-    pub(crate) fn new(inner: TRequest, params: SendableRequestParams<TParams>) -> Self {
+impl<TEndpoint, TParams, TBody> SendableRequest<TEndpoint, TParams, TBody> {
+    pub(crate) fn new(inner: TEndpoint, params: SendableRequestParams<TParams>) -> Self {
         SendableRequest {
             correlation_id: Uuid::new_v4(),
             inner: inner,
@@ -91,9 +91,9 @@ pub trait Sender: private::Sealed + Clone {
     type Params;
 
     /* Send a request. */
-    fn send<TRequest, TParams, TBody>(&self, request: SendableRequest<TRequest, TParams, TBody>) -> Self::Response
+    fn send<TEndpoint, TParams, TBody>(&self, request: SendableRequest<TEndpoint, TParams, TBody>) -> Self::Response
     where
-        TRequest: Into<Endpoint<'static, TBody>>,
+        TEndpoint: Into<Endpoint<'static, TBody>>,
         TBody: Into<Self::Body> + 'static,
         TParams: Into<Self::Params> + 'static;
 }

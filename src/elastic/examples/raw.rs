@@ -27,7 +27,7 @@ fn run() -> Result<(), Box<Error>> {
 
     // Check if the response is in the 200 range
     match res.status() {
-        200...299 => (),
+        status if status.is_success() => (),
         status => panic!("error: {:?}", status),
     }
 

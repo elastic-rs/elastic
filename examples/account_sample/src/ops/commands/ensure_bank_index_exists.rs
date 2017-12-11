@@ -4,6 +4,7 @@ use serde_json::Error as JsonError;
 use elastic::client::requests::IndicesExistsRequest;
 use elastic::client::responses::CommandResponse;
 use elastic::Error as ResponseError;
+use elastic::http::StatusCode;
 
 use model;
 
@@ -19,9 +20,9 @@ impl EnsureBankIndexExists for Client {
 
         match exists.status() {
             // Success, do nothing
-            200 => (),
+            StatusCode::OK => (),
             // Not found, create the index
-            404 => {
+            StatusCode::NOT_FOUND => {
                 self.io
                     .index_create(model::index::name())
                     .body(model::index::body().to_string())

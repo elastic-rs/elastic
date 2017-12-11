@@ -43,7 +43,7 @@ pub type SyncClient = Client<SyncSender>;
 #[derive(Clone)]
 pub struct SyncSender {
     pub(in client) http: SyncHttpClient,
-    pre_send: Option<Arc<Fn(&mut SyncHttpRequest) -> Result<(), Box<StdError + Send>> + Send + Sync>>,
+    pre_send: Option<Arc<Fn(&mut SyncHttpRequest) -> Result<(), Box<StdError + Send + Sync>> + Send + Sync>>,
 }
 
 impl private::Sealed for SyncSender {}
@@ -53,48 +53,54 @@ impl Sender for SyncSender {
     type Response = Result<SyncResponseBuilder, Error>;
     type Params = Params;
 
-    fn send<TRequest, TParams, TBody>(&self, request: SendableRequest<TRequest, TParams, TBody>) -> Self::Response
+    fn send<TEndpoint, TParams, TBody>(&self, request: SendableRequest<TEndpoint, TParams, TBody>) -> Self::Response
     where
-        TRequest: Into<Endpoint<'static, TBody>>,
+        TEndpoint: Into<Endpoint<'static, TBody>>,
         TBody: Into<Self::Body> + 'static,
         TParams: Into<Self::Params> + 'static,
     {
         let correlation_id = request.correlation_id;
         let params = request.params;
-        let req = request.inner.into();
+        let endpoint = request.inner.into();
 
         info!(
             "Elasticsearch Request: correlation_id: '{}', path: '{}'",
             correlation_id,
-            req.url.as_ref()
+            endpoint.url.as_ref()
         );
 
         let params = match params {
             SendableRequestParams::Value(params) => params,
             SendableRequestParams::Builder { params, builder } => {
-                let params = params.into().inner.map_err(|e| {
-                    error!(
+                let params = params.into().inner
+                    .log_err(|e| error!(
                         "Elasticsearch Node Selection: correlation_id: '{}', error: '{}'",
                         correlation_id,
                         e
-                    );
-                    e
-                })?;
+                    ))?;
 
                 builder.into_value(move || params)
             }
         };
 
-        let mut req = SyncHttpRequest {
-            url: Url::parse(&build_url(&req.url, &params)).map_err(error::request)?,
-            method: req.method,
-            headers: params.get_headers(),
-            body: req.body.map(|body| body.into()),
-            _private: (),
-        };
+        let mut req = build_req(endpoint, params).map_err(|e| {
+            error!(
+                "Elasticsearch Request: correlation_id: '{}', error: '{}'",
+                correlation_id,
+                e
+            );
+            e
+        })?;
 
         if let Some(ref pre_send) = self.pre_send {
-            pre_send(&mut req).map_err(error::wrapped).map_err(error::request)?;
+            pre_send(&mut req)
+                .map_err(error::wrapped)
+                .map_err(error::request)
+                .log_err(|e| error!(
+                    "Elasticsearch Request Pre-send: correlation_id: '{}', error: '{}'",
+                    correlation_id,
+                    e
+                ))?;
         }
 
         let req = build_reqwest(&self.http, req).build().map_err(error::request)?;
@@ -150,6 +156,22 @@ impl From<RequestParams> for Params {
     }
 }
 
+/** Build an Elasticsearch request from an endpoint. */
+fn build_req<TBody>(endpoint: Endpoint<TBody>, params: RequestParams) -> Result<SyncHttpRequest, Error>
+where
+    TBody: Into<SyncBody>,
+{
+    let endpoint = SyncHttpRequest {
+        url: Url::parse(&build_url(&endpoint.url, &params)).map_err(error::request)?,
+        method: endpoint.method,
+        headers: params.get_headers(),
+        body: endpoint.body.map(|body| body.into()),
+        _private: (),
+    };
+
+    Ok(endpoint)
+}
+
 /** Build a synchronous `reqwest::RequestBuilder` from an Elasticsearch request. */
 fn build_reqwest(client: &SyncHttpClient, req: SyncHttpRequest) -> SyncHttpRequestBuilder {
     let SyncHttpRequest { url, method, headers, body, .. } = req;
@@ -173,7 +195,7 @@ pub struct SyncClientBuilder {
     http: Option<SyncHttpClient>,
     nodes: NodeAddressesBuilder,
     params: FluentBuilder<PreRequestParams>,
-    pre_send: Option<Arc<Fn(&mut SyncHttpRequest) -> Result<(), Box<StdError + Send>> + Send + Sync + 'static>>,
+    pre_send: Option<Arc<Fn(&mut SyncHttpRequest) -> Result<(), Box<StdError + Send + Sync>> + Send + Sync + 'static>>,
 }
 
 impl Default for SyncClientBuilder {
@@ -368,7 +390,7 @@ impl SyncClientBuilder {
     */
     pub fn pre_send_raw<F>(mut self, pre_send: F) -> Self
     where
-        F: Fn(&mut SyncHttpRequest) -> Result<(), Box<StdError + Send>> + Send + Sync + 'static,
+        F: Fn(&mut SyncHttpRequest) -> Result<(), Box<StdError + Send + Sync>> + Send + Sync + 'static,
     {
         self.pre_send = Some(Arc::new(pre_send));
 
@@ -398,142 +420,16 @@ impl SyncClientBuilder {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use std::fs::File;
-    use reqwest::{Client, Method, RequestBuilder};
-    use reqwest::header::ContentType;
+trait LogErr<E> {
+    fn log_err<F>(self, log: F) -> Self where F: FnOnce(&E);
+}
 
-    use super::*;
-    use client::requests::*;
-
-    fn params() -> RequestParams {
-        RequestParams::new("eshost:9200/path").url_param("pretty", true)
-    }
-
-    fn expected_req(cli: &Client, method: Method, url: &str, body: Option<Vec<u8>>) -> RequestBuilder {
-        let mut req = cli.request(method, url);
-        {
-            req.header(ContentType::json());
-
-            if let Some(body) = body {
-                req.body(body);
-            }
+impl<T, E> LogErr<E> for Result<T, E> {
+    fn log_err<F>(self, log: F) -> Self where F: FnOnce(&E) {
+        if let Err(ref e) = self {
+            log(e);
         }
 
-        req
-    }
-
-    fn assert_req(expected: RequestBuilder, actual: RequestBuilder) {
-        assert_eq!(format!("{:?}", expected), format!("{:?}", actual));
-    }
-
-    #[test]
-    fn head_req() {
-        let cli = Client::new();
-        let req = build_req(&cli, params(), PingHeadRequest::new());
-
-        let url = "eshost:9200/path/?pretty=true";
-
-        let expected = expected_req(&cli, Method::Head, url, None);
-
-        assert_req(expected, req);
-    }
-
-    #[test]
-    fn get_req() {
-        let cli = Client::new();
-        let req = build_req(&cli, params(), SimpleSearchRequest::new());
-
-        let url = "eshost:9200/path/_search?pretty=true";
-
-        let expected = expected_req(&cli, Method::Get, url, None);
-
-        assert_req(expected, req);
-    }
-
-    #[test]
-    fn post_req() {
-        let cli = Client::new();
-        let req = build_req(
-            &cli,
-            params(),
-            PercolateRequest::for_index_ty("idx", "ty", vec![]),
-        );
-
-        let url = "eshost:9200/path/idx/ty/_percolate?pretty=true";
-
-        let expected = expected_req(&cli, Method::Post, url, Some(vec![]));
-
-        assert_req(expected, req);
-    }
-
-    #[test]
-    fn put_req() {
-        let cli = Client::new();
-        let req = build_req(
-            &cli,
-            params(),
-            IndicesCreateRequest::for_index("idx", vec![]),
-        );
-
-        let url = "eshost:9200/path/idx?pretty=true";
-
-        let expected = expected_req(&cli, Method::Put, url, Some(vec![]));
-
-        assert_req(expected, req);
-    }
-
-    #[test]
-    fn delete_req() {
-        let cli = Client::new();
-        let req = build_req(
-            &cli,
-            params(),
-            IndicesDeleteRequest::for_index("idx"),
-        );
-
-        let url = "eshost:9200/path/idx?pretty=true";
-
-        let expected = expected_req(&cli, Method::Delete, url, None);
-
-        assert_req(expected, req);
-    }
-
-    #[test]
-    fn file_into_body() {
-        SyncBody::from(File::open("Cargo.toml").unwrap());
-    }
-
-    #[test]
-    fn owned_string_into_body() {
-        SyncBody::from(String::new());
-    }
-
-    #[test]
-    fn borrowed_string_into_body() {
-        SyncBody::from("abc");
-    }
-
-    #[test]
-    fn owned_vec_into_body() {
-        SyncBody::from(Vec::new());
-    }
-
-    #[test]
-    fn borrowed_vec_into_body() {
-        static BODY: &'static [u8] = &[0, 1, 2];
-
-        SyncBody::from(BODY);
-    }
-
-    #[test]
-    fn empty_body_into_body() {
-        SyncBody::from(empty_body());
-    }
-
-    #[test]
-    fn json_value_into_body() {
-        SyncBody::from(json!({}));
+        self
     }
 }

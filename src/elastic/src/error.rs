@@ -91,7 +91,7 @@ pub(crate) mod string_error {
     }
 }
 
-pub(crate) struct WrappedError(Box<StdError + Send>);
+pub(crate) struct WrappedError(Box<StdError + Send + Sync>);
 
 impl fmt::Display for WrappedError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -146,7 +146,7 @@ where
     })
 }
 
-pub(crate) fn wrapped(err: Box<StdError + Send>) -> WrappedError {
+pub(crate) fn wrapped(err: Box<StdError + Send + Sync>) -> WrappedError {
     WrappedError(err)
 }
 

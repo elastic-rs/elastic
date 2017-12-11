@@ -1,4 +1,4 @@
-//! Tweak the raw request before sending.
+//! Tweak the raw http request before sending.
 //!
 //! NOTE: This sample expects you have a node running on `localhost:9200`.
 
@@ -8,16 +8,34 @@ extern crate env_logger;
 
 use std::error::Error;
 use std::io::Read;
+use std::collections::hash_map::DefaultHasher;
+use std::hash::{Hash, Hasher};
 use elastic::prelude::*;
+use elastic::http::SyncHttpRequest;
 
-// TODO: It's not possible to read a `reqwest::Body`
-fn hash_request(request: &mut reqwest::Request) -> Result<(), Box<Error + Send>> {
-    let mut body = Vec::new();
-    let mut request_body = request.body_mut();
+fn hash_request(request: &mut SyncHttpRequest) -> Result<(), Box<Error + Send + Sync>> {
+    let &mut SyncHttpRequest { ref mut url, ref mut method, ref mut body, ref mut headers, .. } = request;
 
-    if let &mut Some(ref mut body) = request_body {
-        body.read_to_end(&mut body)?;
+    // Read the body into a temporary buffer
+    let mut buffered = Vec::new();
+    if let &mut Some(ref mut body) = body {
+        body.reader().read_to_end(&mut buffered)?;
     }
+
+    // Access the request data
+    let mut hasher = DefaultHasher::new();
+
+    url.hash(&mut hasher);
+    method.hash(&mut hasher);
+    buffered.hash(&mut hasher);
+    
+    for header in headers.iter() {
+        header.to_string().hash(&mut hasher);
+    }
+    
+    // Add a raw header to the request
+    let hash = hasher.finish();
+    headers.set_raw("X-BadHash", hash.to_string());
 
     Ok(())
 }
