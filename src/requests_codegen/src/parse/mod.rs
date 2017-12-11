@@ -17,7 +17,7 @@ impl ApiEndpoint for BTreeMap<String, Endpoint> {
 #[derive(Debug, PartialEq, Deserialize, Clone)]
 pub struct Endpoint {
     pub documentation: String,
-    pub methods: Vec<HttpMethod>,
+    pub methods: Vec<Method>,
     pub url: Url,
     pub body: Option<Body>,
 }
@@ -27,16 +27,16 @@ impl Endpoint {
         self.body.is_some()
             || self.methods
                 .iter()
-                .any(|m| m == &HttpMethod::Post || m == &HttpMethod::Put)
+                .any(|m| m == &Method::Post || m == &Method::Put)
     }
 
-    pub fn preferred_method(&self) -> Option<HttpMethod> {
+    pub fn preferred_method(&self) -> Option<Method> {
         let mut iter = self.methods.iter().cloned();
         match iter.len() {
             0 => None,
             1 => iter.next(),
-            _ => if iter.any(|m| m == HttpMethod::Post) {
-                Some(HttpMethod::Post)
+            _ => if iter.any(|m| m == Method::Post) {
+                Some(Method::Post)
             } else {
                 iter.next()
             },
@@ -45,7 +45,7 @@ impl Endpoint {
 }
 
 #[derive(Debug, PartialEq, Deserialize, Clone, Copy)]
-pub enum HttpMethod {
+pub enum Method {
     #[serde(rename = "HEAD")] Head,
     #[serde(rename = "GET")] Get,
     #[serde(rename = "POST")] Post,
@@ -319,7 +319,7 @@ mod tests {
         fn has_body_if_body_is_some() {
             let endpoint = Endpoint {
                 documentation: String::new(),
-                methods: vec![HttpMethod::Get],
+                methods: vec![Method::Get],
                 url: get_url(),
                 body: Some(Body {
                     description: String::new(),
@@ -333,7 +333,7 @@ mod tests {
         fn has_body_if_method_is_put() {
             let endpoint = Endpoint {
                 documentation: String::new(),
-                methods: vec![HttpMethod::Get, HttpMethod::Put],
+                methods: vec![Method::Get, Method::Put],
                 url: get_url(),
                 body: None,
             };
@@ -345,7 +345,7 @@ mod tests {
         fn has_body_if_method_is_post() {
             let endpoint = Endpoint {
                 documentation: String::new(),
-                methods: vec![HttpMethod::Get, HttpMethod::Post],
+                methods: vec![Method::Get, Method::Post],
                 url: get_url(),
                 body: None,
             };
@@ -357,7 +357,7 @@ mod tests {
         fn has_no_body_if_none_and_not_put_or_post() {
             let endpoint = Endpoint {
                 documentation: String::new(),
-                methods: vec![HttpMethod::Get, HttpMethod::Delete],
+                methods: vec![Method::Get, Method::Delete],
                 url: get_url(),
                 body: None,
             };
@@ -408,18 +408,18 @@ mod tests {
         use serde_json::value::to_value;
         use parse::*;
 
-        fn http_eq(expected: HttpMethod, ser: &'static str) {
-            assert_eq!(expected, serde_json::from_str::<HttpMethod>(ser).unwrap());
+        fn http_eq(expected: Method, ser: &'static str) {
+            assert_eq!(expected, serde_json::from_str::<Method>(ser).unwrap());
         }
 
         #[test]
         fn deserialise_http_method() {
-            http_eq(HttpMethod::Head, "\"HEAD\"");
-            http_eq(HttpMethod::Get, "\"GET\"");
-            http_eq(HttpMethod::Put, "\"PUT\"");
-            http_eq(HttpMethod::Post, "\"POST\"");
-            http_eq(HttpMethod::Patch, "\"PATCH\"");
-            http_eq(HttpMethod::Delete, "\"DELETE\"");
+            http_eq(Method::Head, "\"HEAD\"");
+            http_eq(Method::Get, "\"GET\"");
+            http_eq(Method::Put, "\"PUT\"");
+            http_eq(Method::Post, "\"POST\"");
+            http_eq(Method::Patch, "\"PATCH\"");
+            http_eq(Method::Delete, "\"DELETE\"");
         }
 
         fn type_kind_eq(expected: TypeKind, ser: &'static str) {
@@ -600,7 +600,7 @@ mod tests {
                 "search".to_string(),
                 Endpoint {
                     documentation: "http://www.elastic.co/guide/en/elasticsearch/reference/master/search-search.html".to_string(),
-                    methods: vec![HttpMethod::Get, HttpMethod::Post],
+                    methods: vec![Method::Get, Method::Post],
                     url: Url {
                         path: Path("/_search".to_string()),
                         paths: vec![],

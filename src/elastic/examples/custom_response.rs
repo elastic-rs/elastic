@@ -33,15 +33,9 @@ struct Hit {
     #[serde(rename = "_source")] pub source: Value,
 }
 
-// Implement `IsOk` for our custom `SearchResponse` so it can be used in the call to `into_response`.
-impl IsOk for SearchResponse {
-    fn is_ok<B: ResponseBody>(head: HttpResponseHead, body: Unbuffered<B>) -> Result<MaybeOkResponse<B>, ParseError> {
-        match head.status() {
-            200...299 => Ok(MaybeOkResponse::ok(body)),
-            _ => Ok(MaybeOkResponse::err(body)),
-        }
-    }
-}
+// Implement `IsOkOnSuccess` for our custom `SearchResponse` so it can be used in the call to `into_response`.
+// `IsOkOnSuccess` will return `Ok` if the response is in the `200` range.
+impl IsOkOnSuccess for SearchResponse { }
 
 fn run() -> Result<(), Box<Error>> {
     // A reqwest HTTP client and default parameters.

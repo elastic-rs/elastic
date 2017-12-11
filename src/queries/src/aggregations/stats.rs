@@ -20,7 +20,6 @@ mod tests {
     use super::*;
     use serde_json;
 
-
     #[test]
     fn stats_aggs() {
         let j = r#"{

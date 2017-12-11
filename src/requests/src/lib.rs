@@ -4,7 +4,7 @@
 //!
 //! The source is automatically generated from the official spec.
 //! A `struct` is provided for each endpoint that works with borrowed or owned data.
-//! There's also a more general `HttpRequest` type that all requests can be converted into.
+//! There's also a more general `Endpoint` type that all requests can be converted into.
 //!
 //! Request types are generic over the body buffer, `B`.
 //! This gives you a lot of flexibility when designing APIs,
@@ -53,13 +53,13 @@
 //! assert_eq!("/test_index/_search", req.url.as_ref());
 //! ```
 //!
-//! All request types can be converted into a more general `HttpRequest`.
+//! All request types can be converted into a more general `Endpoint`.
 //! In this example, `takes_req` accepts anything that can be converted into
-//! a `HttpRequest` where the body buffer is `AsRef<[u8]>`:
+//! a `Endpoint` where the body buffer is `AsRef<[u8]>`:
 //!
 //! ```
 //! # use elastic_requests::*;
-//! fn takes_req<'a, I: Into<HttpRequest<'a, B>>, B: AsRef<[u8]>>(req: I) {
+//! fn takes_req<'a, I: Into<Endpoint<'a, B>>, B: AsRef<[u8]>>(req: I) {
 //!     let req = req.into();
 //!     let body = req.body.as_ref();
 //!
@@ -121,9 +121,9 @@ mod tests {
     use std::thread;
     use super::*;
 
-    fn do_something_with_request<'a, I: Into<HttpRequest<'a, B>>, B: AsRef<[u8]>>(_: I) {}
+    fn do_something_with_request<'a, I: Into<Endpoint<'a, B>>, B: AsRef<[u8]>>(_: I) {}
 
-    fn do_something_with_static_request<I: Into<HttpRequest<'static, B>>, B: 'static + AsRef<[u8]> + Send>(req: I) -> thread::JoinHandle<()> {
+    fn do_something_with_static_request<I: Into<Endpoint<'static, B>>, B: 'static + AsRef<[u8]> + Send>(req: I) -> thread::JoinHandle<()> {
         let req = req.into();
         thread::spawn(move || {
             assert_eq!("/test_index/test_ty/_search", *req.url);

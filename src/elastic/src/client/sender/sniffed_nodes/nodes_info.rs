@@ -2,7 +2,7 @@
 
 use std::fmt;
 use serde::de::{Deserialize, Deserializer, MapAccess, Visitor};
-use client::responses::parse::{HttpResponseHead, IsOk, MaybeOkResponse, ParseError, ResponseBody, Unbuffered};
+use client::responses::parse::IsOkOnSuccess;
 
 use std::iter::IntoIterator;
 use std::vec::IntoIter;
@@ -31,14 +31,7 @@ impl IntoIterator for NodesInfoResponse {
     }
 }
 
-impl IsOk for NodesInfoResponse {
-    fn is_ok<B: ResponseBody>(head: HttpResponseHead, unbuffered: Unbuffered<B>) -> Result<MaybeOkResponse<B>, ParseError> {
-        match head.status() {
-            200...299 => Ok(MaybeOkResponse::ok(unbuffered)),
-            _ => Ok(MaybeOkResponse::err(unbuffered)),
-        }
-    }
-}
+impl IsOkOnSuccess for NodesInfoResponse {}
 
 fn deserialize_nodes<'de, D>(deserializer: D) -> Result<Vec<SniffedNode>, D::Error>
 where

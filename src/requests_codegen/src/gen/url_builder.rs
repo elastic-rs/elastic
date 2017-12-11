@@ -103,7 +103,7 @@ impl<'a> From<(&'a (syn::Item, syn::Ty), Vec<syn::Block>)> for UrlParamMatchBuil
 
 /// Builder for an efficient url value replacer.
 ///
-/// The inputs are expected to be `AsRef<str>` and the output is a `Url<'a>`.
+/// The inputs are expected to be `AsRef<str>` and the output is a `UrlPath<'a>`.
 pub struct UrlReplaceBuilder<'a> {
     url: Vec<PathPart<'a>>,
 }
@@ -125,12 +125,13 @@ impl<'a> UrlReplaceBuilder<'a> {
         let len_expr = Self::summed_length_expr(len_exprs);
 
         let url_ident = ident("url");
+        let url_ty = ident(types::url::ident());
 
         let let_stmt = Self::let_url_stmt(url_ident.clone(), len_expr);
 
         let mut push_stmts = Self::push_part_stmts(url_ident.clone(), &self.url);
 
-        let return_expr = syn::Stmt::Expr(Box::new(parse_expr(quote!(Url::from(#url_ident)))));
+        let return_expr = syn::Stmt::Expr(Box::new(parse_expr(quote!(#url_ty ::from(#url_ident)))));
 
         let mut stmts = vec![let_stmt];
 
@@ -154,8 +155,9 @@ impl<'a> UrlReplaceBuilder<'a> {
         let path = path.join("");
 
         let lit = syn::Lit::Str(path, syn::StrStyle::Cooked);
+        let url_ty = ident(types::url::ident());
 
-        let expr = parse_expr(quote!(Url::from(#lit)));
+        let expr = parse_expr(quote!(#url_ty ::from(#lit)));
 
         syn::Block {
             stmts: vec![syn::Stmt::Expr(Box::new(expr))],
@@ -169,7 +171,9 @@ impl<'a> UrlReplaceBuilder<'a> {
                 PathPart::Literal(p) => Some(p),
                 _ => None,
             })
-            .fold(0, |acc, p| acc + p.len());
+            .fold(0, |acc, p| {
+                acc + p.len()
+            });
 
         syn::ExprKind::Lit(syn::Lit::Int(len as u64, syn::IntTy::Usize)).into()
     }
@@ -245,9 +249,9 @@ impl<'a> UrlReplaceBuilder<'a> {
                 PathPart::Param(p) => {
                     let ident = ident(p);
 
-                    syn::Stmt::Semi(Box::new(
-                        parse_expr(quote!(#url_ident.push_str(#ident.as_ref()))),
-                    ))
+                    syn::Stmt::Semi(Box::new(parse_expr(
+                        quote!(#url_ident.push_str(#ident.as_ref())),
+                    )))
                 }
             })
             .collect()
@@ -392,7 +396,7 @@ mod tests {
     fn gen_url_no_params() {
         let result = UrlReplaceBuilder::from(vec![PathPart::Literal("/_search")]).build();
 
-        let expected = quote!({ Url::from("/_search") });
+        let expected = quote!({ UrlPath::from("/_search") });
 
         ast_eq(expected, result);
     }
@@ -413,7 +417,7 @@ mod tests {
             url.push_str("/_search/");
             url.push_str(ty.as_ref());
 
-            Url::from(url)
+            UrlPath::from(url)
         });
 
         ast_eq(expected, result);
@@ -427,7 +431,7 @@ mod tests {
 
         let expected = quote!(
             impl UrlParams {
-                pub fn url<'a>(self) -> Url<'a> { 
+                pub fn url<'a>(self) -> UrlPath<'a> { 
                     { }
                 }
             }
@@ -445,7 +449,7 @@ mod tests {
             "indices.exists_alias".to_string(),
             Endpoint {
                 documentation: String::new(),
-                methods: vec![HttpMethod::Get],
+                methods: vec![Method::Get],
                 url: get_url(),
                 body: Some(Body {
                     description: String::new(),
@@ -458,7 +462,7 @@ mod tests {
 
         let none_arm = quote!(
             IndicesExistsAliasUrlParams::None => {
-                Url::from("/_search")
+                UrlPath::from("/_search")
             }
         );
         let index_arm = quote!(
@@ -468,7 +472,7 @@ mod tests {
                 url.push_str(index.as_ref());
                 url.push_str("/_search");
     
-                Url::from(url)
+                UrlPath::from(url)
             }
         );
         let index_ty_arm = quote!(
@@ -480,12 +484,12 @@ mod tests {
                 url.push_str(ty.as_ref());
                 url.push_str("/_search");
     
-                Url::from(url)
+                UrlPath::from(url)
             }
         );
         let expected = quote!(
             impl <'a> IndicesExistsAliasUrlParams<'a> {
-                pub fn url(self) -> Url<'a> {
+                pub fn url(self) -> UrlPath<'a> {
                     match self {
                         #none_arm
                         #index_arm

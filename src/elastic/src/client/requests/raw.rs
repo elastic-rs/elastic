@@ -7,7 +7,7 @@ use fluent_builder::TryIntoValue;
 
 use client::Client;
 use client::sender::{NextParams, NodeAddresses, SendableRequest, SendableRequestParams, Sender};
-use client::requests::{HttpRequest, RequestBuilder};
+use client::requests::{Endpoint, RequestBuilder};
 
 /**
 A raw request builder that can be configured before sending.
@@ -17,18 +17,18 @@ The `send` method will either send the request synchronously or asynchronously, 
 
 [Client.request]: ../../struct.Client.html#raw-request
 */
-pub type RawRequestBuilder<TSender, TRequest, TBody> = RequestBuilder<TSender, RawRequestInner<TRequest, TBody>>;
+pub type RawRequestBuilder<TSender, TEndpoint, TBody> = RequestBuilder<TSender, RawRequestInner<TEndpoint, TBody>>;
 
 #[doc(hidden)]
-pub struct RawRequestInner<TRequest, TBody> {
-    req: TRequest,
+pub struct RawRequestInner<TEndpoint, TBody> {
+    endpoint: TEndpoint,
     _marker: PhantomData<TBody>,
 }
 
-impl<TRequest, TBody> RawRequestInner<TRequest, TBody> {
-    pub(crate) fn new(req: TRequest) -> Self {
+impl<TEndpoint, TBody> RawRequestInner<TEndpoint, TBody> {
+    pub(crate) fn new(endpoint: TEndpoint) -> Self {
         RawRequestInner {
-            req: req,
+            endpoint,
             _marker: PhantomData,
         }
     }
@@ -44,7 +44,7 @@ where
     /**
     Create a [`RawRequestBuilder`][RawRequestBuilder] with this `Client` that can be configured before sending.
 
-    The `request` method accepts any type that can be converted into a [`HttpRequest<'static>`][HttpRequest],
+    The `request` method accepts any type that can be converted into a [`Endpoint<'static>`][Endpoint],
     which includes the endpoint types in the [`endpoints`][endpoints-mod] module.
 
     # Examples
@@ -57,7 +57,7 @@ where
     # fn main() { run().unwrap() }
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # let client = SyncClientBuilder::new().build()?;
-    // `PingRequest` implements `Into<HttpRequest>`
+    // `PingRequest` implements `Into<Endpoint>`
     let req = PingRequest::new();
     
     // Turn the `PingRequest` into a `RequestBuilder`
@@ -71,23 +71,23 @@ where
     # }
     ```
 
-    [HttpRequest]: requests/struct.HttpRequest.html
+    [Endpoint]: requests/struct.Endpoint.html
     [RawRequestBuilder]: requests/raw/type.RawRequestBuilder.html
     [endpoints-mod]: requests/endpoints/index.html
     */
-    pub fn request<TRequest, TBody>(&self, req: TRequest) -> RawRequestBuilder<TSender, TRequest, TBody>
+    pub fn request<TEndpoint, TBody>(&self, endpoint: TEndpoint) -> RawRequestBuilder<TSender, TEndpoint, TBody>
     where
-        TRequest: Into<HttpRequest<'static, TBody>>,
+        TEndpoint: Into<Endpoint<'static, TBody>>,
         TBody: Into<TSender::Body>,
     {
-        RequestBuilder::initial(self.clone(), RawRequestInner::new(req))
+        RequestBuilder::initial(self.clone(), RawRequestInner::new(endpoint))
     }
 }
 
-impl<TSender, TRequest, TBody> RawRequestBuilder<TSender, TRequest, TBody>
+impl<TSender, TEndpoint, TBody> RawRequestBuilder<TSender, TEndpoint, TBody>
 where
     TSender: Sender,
-    TRequest: Into<HttpRequest<'static, TBody>>,
+    TEndpoint: Into<Endpoint<'static, TBody>>,
     TBody: Into<<TSender>::Body> + 'static,
     NodeAddresses<TSender>: NextParams,
     <NodeAddresses<TSender> as NextParams>::Params: Into<TSender::Params> + 'static,
@@ -162,22 +162,18 @@ where
     */
     pub fn send(self) -> TSender::Response {
         let client = self.client;
-        let req = self.inner.req.into();
+        let endpoint = self.inner.endpoint.into();
 
         // Only try fetch a next address if an explicit `RequestParams` hasn't been given
         let params = match self.params_builder.try_into_value() {
-            TryIntoValue::Value(value) => {
-                SendableRequestParams::Value(value)
+            TryIntoValue::Value(value) => SendableRequestParams::Value(value),
+            TryIntoValue::Builder(builder) => SendableRequestParams::Builder {
+                params: client.addresses.next(),
+                builder,
             },
-            TryIntoValue::Builder(builder) => {
-                SendableRequestParams::Builder {
-                    params: client.addresses.next(),
-                    builder,
-                }
-            }
         };
 
-        let req = SendableRequest::new(req, params);
+        let req = SendableRequest::new(endpoint, params);
 
         client.sender.send(req)
     }

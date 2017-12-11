@@ -283,6 +283,7 @@ extern crate elastic_responses;
 extern crate elastic_types;
 #[macro_use]
 extern crate error_chain;
+extern crate fluent_builder;
 extern crate futures;
 extern crate futures_cpupool;
 #[macro_use]
@@ -296,9 +297,9 @@ extern crate serde_derive;
 #[cfg_attr(test, macro_use)]
 extern crate serde_json;
 extern crate tokio_core;
+extern crate tokio_io;
 extern crate url;
 extern crate uuid;
-extern crate fluent_builder;
 
 pub mod error;
 pub use error::Error;
@@ -307,19 +308,7 @@ mod private {
     pub trait Sealed {}
 }
 
-pub mod http {
-    /*! 
-    Raw HTTP modules.
-
-    These types are re-exported from `reqwest` and used in parts of `elastic`s public API.
-    They may eventually be wrapped and made implementation details.
-    */
-
-    pub use reqwest::header;
-    pub use reqwest::Body as SyncBody;
-    pub use reqwest::unstable::async::{Body as AsyncBody, Chunk as AsyncChunk};
-}
-
+pub mod http;
 pub mod client;
 pub mod types;
 

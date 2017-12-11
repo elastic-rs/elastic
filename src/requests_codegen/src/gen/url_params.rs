@@ -55,13 +55,11 @@ impl UrlParamBuilder {
             data: syn::VariantData::Tuple(
                 params
                     .iter()
-                    .map(|param| {
-                        syn::Field {
-                            ident: None,
-                            vis: syn::Visibility::Inherited,
-                            attrs: vec![],
-                            ty: ty_a(param.as_ref()),
-                        }
+                    .map(|param| syn::Field {
+                        ident: None,
+                        vis: syn::Visibility::Inherited,
+                        attrs: vec![],
+                        ty: ty_a(param.as_ref()),
                     })
                     .collect(),
             ),
@@ -166,7 +164,7 @@ mod tests {
             "indices.exists_alias".to_string(),
             Endpoint {
                 documentation: String::new(),
-                methods: vec![HttpMethod::Get],
+                methods: vec![Method::Get],
                 url: get_url(),
                 body: None,
             },

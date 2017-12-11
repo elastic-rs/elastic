@@ -9,7 +9,7 @@ use load_file;
 #[test]
 fn success_parse_found_doc_response() {
     let f = load_file("tests/samples/get_found.json");
-    let deserialized = parse::<GetResponse<Value>>().from_reader(200, f).unwrap();
+    let deserialized = parse::<GetResponse<Value>>().from_reader(StatusCode::OK, f).unwrap();
 
     assert_eq!("testindex", deserialized.index());
     assert_eq!("testtype", deserialized.ty());
@@ -23,7 +23,7 @@ fn success_parse_found_doc_response() {
 #[test]
 fn success_into_document() {
     let f = load_file("tests/samples/get_found.json");
-    let deserialized = parse::<GetResponse<Value>>().from_reader(200, f);
+    let deserialized = parse::<GetResponse<Value>>().from_reader(StatusCode::OK, f);
 
     match deserialized.ok().and_then(GetResponse::into_document) {
         Some(doc) => {
@@ -40,7 +40,7 @@ fn success_into_document() {
 #[test]
 fn success_parse_not_found_doc_response() {
     let f = load_file("tests/samples/get_not_found.json");
-    let deserialized = parse::<GetResponse<Value>>().from_reader(404, f).unwrap();
+    let deserialized = parse::<GetResponse<Value>>().from_reader(StatusCode::NOT_FOUND, f).unwrap();
 
     assert!(!deserialized.found());
     assert!(deserialized.into_document().is_none());
@@ -50,7 +50,7 @@ fn success_parse_not_found_doc_response() {
 fn error_parse_index_not_found() {
     let f = load_file("tests/samples/error_index_not_found.json");
     let deserialized = parse::<GetResponse<Value>>()
-        .from_reader(404, f)
+        .from_reader(StatusCode::NOT_FOUND, f)
         .unwrap_err();
 
     let valid = match deserialized {

@@ -1,8 +1,8 @@
-use std::io::{Read, Result as IoResult};
 use serde::de::DeserializeOwned;
 use reqwest::Response as RawResponse;
 
 use error::{self, Result};
+use http::{StatusCode, SyncHttpResponse};
 use super::parse::{parse, IsOk};
 
 /**
@@ -11,16 +11,17 @@ A builder for a response.
 This structure wraps the completed HTTP response but gives you options for converting it into a concrete type.
 You can also `Read` directly from the response body.
 */
-pub struct SyncResponseBuilder(RawResponse);
+pub struct SyncResponseBuilder(StatusCode, RawResponse);
 
-pub(crate) fn sync_response(res: RawResponse) -> SyncResponseBuilder {
-    SyncResponseBuilder(res)
+pub(crate) fn sync_response(res: RawResponse) -> Result<SyncResponseBuilder> {
+    let status = StatusCode::from_u16(res.status().into()).map_err(error::request)?;
+    Ok(SyncResponseBuilder(status, res))
 }
 
 impl SyncResponseBuilder {
     /** Get the HTTP status for the response. */
-    pub fn status(&self) -> u16 {
-        self.0.status().into()
+    pub fn status(&self) -> StatusCode {
+        self.0
     }
 
     /**
@@ -29,7 +30,7 @@ impl SyncResponseBuilder {
     Convert the builder into a raw HTTP response that implements `Read`.
     */
     pub fn into_raw(self) -> SyncHttpResponse {
-        SyncHttpResponse(self.0)
+        SyncHttpResponse::from_raw(self.0, self.1)
     }
 
     /**
@@ -91,26 +92,9 @@ impl SyncResponseBuilder {
     where
         T: IsOk + DeserializeOwned,
     {
-        let status = self.status();
-
+        let status = self.0;
         parse()
-            .from_reader(status, self.0)
+            .from_reader(status, self.1)
             .map_err(|e| error::response(status, e))
-    }
-}
-
-/** A raw HTTP response that can be buffered using `Read`. */
-pub struct SyncHttpResponse(RawResponse);
-
-impl SyncHttpResponse {
-    /** Get the HTTP status for the response. */
-    pub fn status(&self) -> u16 {
-        self.0.status().into()
-    }
-}
-
-impl Read for SyncHttpResponse {
-    fn read(&mut self, buf: &mut [u8]) -> IoResult<usize> {
-        self.0.read(buf)
     }
 }

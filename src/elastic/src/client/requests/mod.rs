@@ -10,17 +10,12 @@ use fluent_builder::FluentBuilder;
 use client::Client;
 use client::sender::{AsyncSender, RequestParams, Sender};
 
-pub use elastic_requests::{empty_body, DefaultBody, HttpMethod, HttpRequest, Url};
+pub use elastic_requests::{empty_body, DefaultBody, Endpoint, UrlPath};
 pub use elastic_requests::params;
 pub use elastic_requests::endpoints;
 
 pub use self::params::*;
 pub use self::endpoints::*;
-
-mod sync;
-mod async;
-pub use self::sync::*;
-pub use self::async::*;
 
 pub mod raw;
 pub use self::raw::RawRequestBuilder;
@@ -175,7 +170,7 @@ where
     */
     pub fn params<I>(mut self, params: I) -> Self
     where
-        I: Into<RequestParams>
+        I: Into<RequestParams>,
     {
         self.params_builder = self.params_builder.value(params.into());
 

@@ -21,7 +21,6 @@ mod tests {
     use super::*;
     use serde_json;
 
-
     #[test]
     fn wildcard_filter() {
         let j = r#"{ "wildcard" : { "user" : "ki*y" } }"#;

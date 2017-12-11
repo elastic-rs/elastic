@@ -22,7 +22,6 @@ impl RangeFilter {
     }
 }
 
-
 #[derive(Builder, Clone, Debug, Serialize, Deserialize, Ord, PartialOrd, Eq, PartialEq)]
 pub struct RangeParams {
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -102,7 +101,6 @@ impl<'de> Visitor<'de> for RangeFilterVisitor {
 mod tests {
     use super::*;
     use serde_json;
-
 
     #[test]
     fn range_filter_new() {

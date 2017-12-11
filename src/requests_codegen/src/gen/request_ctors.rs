@@ -291,9 +291,7 @@ impl RequestParamsCtorBuilder {
     pub fn build(self) -> syn::Item {
         let ctors: Vec<syn::ImplItem> = self.ctors
             .iter()
-            .map(|c| {
-                Self::ctor_item(self.req_ty.clone(), self.params_ty.clone(), c)
-            })
+            .map(|c| Self::ctor_item(self.req_ty.clone(), self.params_ty.clone(), c))
             .collect();
 
         let generics = {
@@ -502,7 +500,7 @@ pub mod tests {
             "indices.exists_alias".to_string(),
             Endpoint {
                 documentation: String::new(),
-                methods: vec![HttpMethod::Get],
+                methods: vec![Method::Get],
                 url: get_url(),
                 body: Some(Body {
                     description: String::new(),

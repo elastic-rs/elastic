@@ -4,7 +4,6 @@ use serde::ser::{Serialize, SerializeMap, Serializer};
 use std::fmt;
 use super::super::Values;
 
-
 #[derive(Debug, Clone, Serialize, Deserialize, PartialOrd, PartialEq, Ord, Eq)]
 pub enum EsDateFormat {
     epoch_millis,    //epoch in ms
