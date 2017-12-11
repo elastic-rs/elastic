@@ -74,7 +74,7 @@ impl Sender for SyncSender {
             SendableRequestParams::Builder { params, builder } => {
                 let params = params.into().inner
                     .log_err(|e| error!(
-                        "Elasticsearch Node Selection: correlation_id: '{}', error: '{}'",
+                        "Elasticsearch Node Selection: correlation_id: '{}', error: '{:?}'",
                         correlation_id,
                         e
                     ))?;
@@ -83,21 +83,19 @@ impl Sender for SyncSender {
             }
         };
 
-        let mut req = build_req(endpoint, params).map_err(|e| {
-            error!(
-                "Elasticsearch Request: correlation_id: '{}', error: '{}'",
+        let mut req = build_req(endpoint, params)
+            .log_err(|e| error!(
+                "Elasticsearch Request: correlation_id: '{}', error: '{:?}'",
                 correlation_id,
                 e
-            );
-            e
-        })?;
+            ))?;
 
         if let Some(ref pre_send) = self.pre_send {
             pre_send(&mut req)
                 .map_err(error::wrapped)
                 .map_err(error::request)
                 .log_err(|e| error!(
-                    "Elasticsearch Request Pre-send: correlation_id: '{}', error: '{}'",
+                    "Elasticsearch Request Pre-send: correlation_id: '{}', error: '{:?}'",
                     correlation_id,
                     e
                 ))?;
@@ -116,7 +114,7 @@ impl Sender for SyncSender {
             }
             Err(e) => {
                 error!(
-                    "Elasticsearch Response: correlation_id: '{}', error: '{}'",
+                    "Elasticsearch Response: correlation_id: '{}', error: '{:?}'",
                     correlation_id,
                     e
                 );

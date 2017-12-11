@@ -88,7 +88,7 @@ impl Sender for AsyncSender {
             SendableRequestParams::Builder { params, builder } => {
                 let params = params.into()
                     .log_err(move |e| error!(
-                        "Elasticsearch Node Selection: correlation_id: '{}', error: '{}'",
+                        "Elasticsearch Node Selection: correlation_id: '{}', error: '{:?}'",
                         correlation_id,
                         e
                     ));
@@ -111,12 +111,7 @@ impl Sender for AsyncSender {
                     body: body.map(|body| body.into()),
                     _private: (),
                 })
-            })
-            .log_err(move |e| error!(
-                "Elasticsearch Request: correlation_id: '{}', error: '{}'",
-                correlation_id,
-                e
-            ));
+            });
 
         let pre_send = self.pre_send.clone();
         let pre_send_future = build_req_future
@@ -130,12 +125,7 @@ impl Sender for AsyncSender {
                 else {
                     Either::B(Ok(req).into_future())
                 }
-            })
-            .log_err(move |e| error!(
-                "Elasticsearch Request Pre-send: correlation_id: '{}', error: '{}'",
-                correlation_id,
-                e
-            ));
+            });
 
         let pre_send_http = self.http.clone();
         let pre_send_future = pre_send_future
@@ -143,7 +133,7 @@ impl Sender for AsyncSender {
                 build_reqwest(&pre_send_http, req).build().map_err(error::request)
             })
             .log_err(move |e| error!(
-                "Elasticsearch Request: correlation_id: '{}', error: '{}'",
+                "Elasticsearch Request: correlation_id: '{}', error: '{:?}'",
                 correlation_id,
                 e
             ));
@@ -161,7 +151,7 @@ impl Sender for AsyncSender {
                     async_response(res, serde_pool).into_future()
                 })
                 .log_err(move |e| error!(
-                    "Elasticsearch Response: correlation_id: '{}', error: '{}'",
+                    "Elasticsearch Response: correlation_id: '{}', error: '{:?}'",
                     correlation_id,
                     e
                 ))
