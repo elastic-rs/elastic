@@ -58,7 +58,7 @@ impl<T> GetResponse<T> {
 }
 
 impl<T: DeserializeOwned> IsOk for GetResponse<T> {
-    fn is_ok<B: ResponseBody>(head: HttpResponseHead, body: Unbuffered<B>) -> Result<MaybeOkResponse<B>, ParseResponseError> {
+    fn is_ok<B: ResponseBody>(head: HttpResponseHead, body: Unbuffered<B>) -> Result<MaybeOkResponse<B>, ParseError> {
         match head.status() {
             status if status.is_success() => Ok(MaybeOkResponse::ok(body)),
             StatusCode::NOT_FOUND => {
