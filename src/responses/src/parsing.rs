@@ -189,6 +189,24 @@ impl<B: AsRef<[u8]>> ResponseBody for SliceBody<B> {
     }
 }
 
+impl ResponseBody for Value {
+    type Buffered = Self;
+
+    fn body(self) -> Result<(Value, Self::Buffered), ParseResponseError> {
+        let value = self.clone();
+
+        Ok((self, value))
+    }
+
+    fn parse_ok<T: DeserializeOwned>(self) -> Result<T, ParseResponseError> {
+        serde_json::from_value(self).map_err(|e| e.into())
+    }
+
+    fn parse_err(self) -> Result<ApiError, ParseResponseError> {
+        serde_json::from_value(self).map_err(|e| e.into())
+    }
+}
+
 /**
 Convert a response message into a either a success
 or failure result.
@@ -326,6 +344,7 @@ where
 {
     Unbuffered(B),
     Buffered(B::Buffered),
+    Value(Value),
 }
 
 impl<B> MaybeBufferedResponse<B>
@@ -336,6 +355,7 @@ where
         match self {
             MaybeBufferedResponse::Unbuffered(b) => b.parse_ok(),
             MaybeBufferedResponse::Buffered(b) => b.parse_ok(),
+            MaybeBufferedResponse::Value(b) => b.parse_ok(),
         }
     }
 
@@ -343,6 +363,7 @@ where
         match self {
             MaybeBufferedResponse::Unbuffered(b) => b.parse_err(),
             MaybeBufferedResponse::Buffered(b) => b.parse_err(),
+            MaybeBufferedResponse::Value(b) => b.parse_err(),
         }
     }
 }
@@ -362,5 +383,14 @@ where
 {
     fn from(value: Buffered<B>) -> Self {
         MaybeBufferedResponse::Buffered(value.0)
+    }
+}
+
+impl<B> From<Value> for MaybeBufferedResponse<B>
+where
+    B: ResponseBody,
+{
+    fn from(value: Value) -> Self {
+        MaybeBufferedResponse::Value(value)
     }
 }

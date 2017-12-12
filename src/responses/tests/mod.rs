@@ -16,3 +16,4 @@ pub mod get;
 pub mod search;
 pub mod bulk;
 pub mod index;
+pub mod indices_exists;

@@ -35,8 +35,10 @@ fn run() -> Result<(), Box<Error>> {
         timestamp: Date::now(),
     };
 
-    // Create the index
-    client.index_create(sample_index()).send()?;
+    // Create the index if it doesn't exist
+    if !client.index_exists(sample_index()).send()?.exists() {
+        client.index_create(sample_index()).send()?;
+    }
 
     // Add the document mapping (optional, but makes sure `timestamp` is mapped as a `date`)
     client
