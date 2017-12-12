@@ -134,6 +134,7 @@ extern crate serde_derive;
 extern crate quick_error;
 
 extern crate serde;
+#[macro_use]
 extern crate serde_json;
 
 pub mod error;
@@ -149,6 +150,8 @@ pub mod search;
 pub mod bulk;
 mod index;
 
+mod indices_exists;
+
 pub use self::common::*;
 pub use self::command::*;
 pub use self::ping::*;
@@ -158,6 +161,8 @@ pub use self::update::*;
 pub use self::search::SearchResponse;
 pub use self::bulk::{BulkErrorsResponse, BulkResponse};
 pub use self::index::*;
+
+pub use self::indices_exists::*;
 
 pub use self::parsing::parse;
 

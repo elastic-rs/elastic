@@ -53,8 +53,9 @@ impl Sender for SyncSender {
         let req = req.into();
 
         info!(
-            "Elasticsearch Request: correlation_id: '{}', path: '{}'",
+            "Elasticsearch Request: correlation_id: '{}', method: '{:?}', path: '{}'",
             correlation_id,
+            req.method,
             req.url.as_ref()
         );
 
