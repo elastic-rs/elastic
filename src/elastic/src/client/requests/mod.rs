@@ -190,7 +190,22 @@ pub mod prelude {
     pub use super::params::*;
     pub use super::endpoints::*;
 
-    pub use super::{empty_body, DefaultBody, GetRequestBuilder, IndexCreateRequestBuilder, IndexRequestBuilder, PutMappingRequestBuilder, RawRequestBuilder, SearchRequestBuilder};
+    pub use super::{
+        empty_body,
+        DefaultBody,
+        DeleteRequestBuilder,
+        GetRequestBuilder,
+        IndexCreateRequestBuilder,
+        IndexDeleteRequestBuilder,
+        IndexOpenRequestBuilder,
+        IndexCloseRequestBuilder,
+        IndexRequestBuilder,
+        PutMappingRequestBuilder,
+        RawRequestBuilder,
+        SearchRequestBuilder,
+        PingRequestBuilder,
+        UpdateRequestBuilder,
+    };
 }
 
 #[cfg(test)]
