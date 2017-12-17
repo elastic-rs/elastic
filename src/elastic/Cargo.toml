@@ -1,6 +1,6 @@
 [package]
 name = "elastic"
-version = "0.20.6"
+version = "0.20.7"
 authors = ["Ashley Mannix <ashleymannix@live.com.au>"]
 license = "Apache-2.0"
 keywords = ["elasticsearch", "search"]
@@ -25,7 +25,7 @@ futures = "~0.1.16"
 tokio-core = "~0.1.9"
 futures-cpupool = "~0.1.6"
 
-elastic_reqwest = { version = "~0.20.2", path = "../reqwest" }
+elastic_reqwest = { version = "~0.20.7", path = "../reqwest" }
 elastic_types = { version = "~0.20.0", path = "../types" }
 
 [dev-dependencies]

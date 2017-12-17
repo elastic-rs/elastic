@@ -1,6 +1,6 @@
 [package]
 name = "elastic_reqwest"
-version = "0.20.6"
+version = "0.20.7"
 authors = ["Ashley Mannix <ashleymannix@live.com.au>", "Stephan Buys <stephan.buys@gmail.com>"]
 license = "Apache-2.0"
 description = "A lightweight implementation of the Elasticsearch API based on reqwest."
@@ -11,7 +11,7 @@ readme = "README.md"
 [dependencies]
 serde = "~1"
 elastic_requests = { version = "~0.20.0", path = "../requests" }
-elastic_responses = { version = "~0.20.2", path = "../responses" }
+elastic_responses = { version = "~0.20.7", path = "../responses" }
 reqwest = { version = "~0.8.0", features = ["unstable"] }
 url = "~1"
 bytes = "~0.4.5"
