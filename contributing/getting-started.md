@@ -11,8 +11,8 @@ This list should grow over time, and be updated as things change.
 
 1. The raw request type should already exist in `elastic_requests` (the types are pre-generated).
 1. Add the response type to `elastic_responses`. The name should align with the generated name for the request, like `IndicesExistsRequest` and `IndicesExistsResponse`.
-1. Add a client method to `elastic` in a new module under the `src/elastic/client/requests` folder. The naming convention is `document_*` for document methods like `document_get`, `index_*` for index methods like `index_exists` and no prefix for other methods like `search`.
-1. Add the method to the table in the client docs under `src/elastic/client/mod.rs`.
+1. Add a client method to `elastic` in a new module under the `src/elastic/src/client/requests` folder. The naming convention is `document_*` for document methods like `document_get`, `index_*` for index methods like `index_exists` and no prefix for other methods like `search`.
+1. Add the method to the table in the client docs under `src/elastic/src/client/mod.rs`.
 1. Add an integration test to `tests/run`.
 
 Some other considerations:
