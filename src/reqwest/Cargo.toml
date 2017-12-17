@@ -1,8 +1,8 @@
 [package]
 name = "elastic_reqwest"
-version = "0.20.7"
+version = "0.20.8"
 authors = ["Ashley Mannix <ashleymannix@live.com.au>", "Stephan Buys <stephan.buys@gmail.com>"]
-license = "Apache-2.0"
+license = "MIT/Apache-2.0"
 description = "A lightweight implementation of the Elasticsearch API based on reqwest."
 documentation = "https://docs.rs/elastic_reqwest/"
 repository = "https://github.com/elastic-rs/elastic"

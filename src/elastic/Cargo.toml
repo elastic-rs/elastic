@@ -1,8 +1,8 @@
 [package]
 name = "elastic"
-version = "0.20.7"
+version = "0.20.8"
 authors = ["Ashley Mannix <ashleymannix@live.com.au>"]
-license = "Apache-2.0"
+license = "MIT/Apache-2.0"
 keywords = ["elasticsearch", "search"]
 description = "A modular sync and async client for the Elasticsearch REST API."
 documentation = "https://docs.rs/elastic/"
