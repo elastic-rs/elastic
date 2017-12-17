@@ -25,6 +25,7 @@ use term_painter::Color::*;
 
 mod document;
 mod search;
+mod index;
 mod run_tests;
 mod build_client;
 mod build_container;
