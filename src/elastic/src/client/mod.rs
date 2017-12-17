@@ -111,6 +111,7 @@ Client method                                                 | Elasticsearch AP
 [`index_open`][Client.index_open]                             | [Open Index][docs-open-index]      | [`IndicesOpenRequest`][IndicesOpenRequest]              | [`CommandResponse`][CommandResponse]
 [`index_close`][Client.index_close]                           | [Close Index][docs-close-index]    | [`IndicesCloseRequest`][IndicesCloseRequest]            | [`CommandResponse`][CommandResponse]
 [`index_delete`][Client.index_delete]                         | [Delete Index][docs-delete-index]  | [`IndicesDeleteRequest`][IndicesDeleteRequest]          | [`CommandResponse`][CommandResponse]
+[`index_exists`][Client.index_exists]                         | [Index Exists][docs-index-exists]  | [`IndicesExistsRequest`][IndicesExistsRequest]          | [`IndicesExistsResponse`][IndicesExistsResponse]
 [`ping`][Client.ping]                                         | -                                  | [`PingRequest`][PingRequest]                            | [`PingResponse`][PingResponse]
 
 All builders follow a standard pattern:
@@ -445,6 +446,7 @@ For more details see the [`responses`][responses-mod] module.
 [docs-create-index]: https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-create-index.html
 [docs-close-index]: https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-open-close.html
 [docs-open-index]: https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-open-close.html
+[docs-index-exists]: https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-exists.html
 [docs-delete-index]: https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-delete-index.html
 
 [tokio]: https://tokio.rs
@@ -466,6 +468,7 @@ For more details see the [`responses`][responses-mod] module.
 [Client.index_open]: struct.Client.html#open-index-request
 [Client.index_close]: struct.Client.html#close-index-request
 [Client.index_delete]: struct.Client.html#delete-index-request
+[Client.index_exists]: struct.Client.html#index-exists-request
 [Client.ping]: struct.Client.html#ping-request
 
 [RequestBuilder]: requests/struct.RequestBuilder.html
@@ -481,6 +484,7 @@ For more details see the [`responses`][responses-mod] module.
 [IndicesOpenRequest]: requests/endpoints/struct.IndicesOpenRequest.html
 [IndicesCloseRequest]: requests/endpoints/struct.IndicesCloseRequest.html
 [IndicesDeleteRequest]: requests/endpoints/struct.IndicesDeleteRequest.html
+[IndicesExistsRequest]: requests/endpoints/struct.IndicesExistsRequest.html
 [PingRequest]: requests/endpoints/struct.PingRequest.html
 
 [responses-mod]: responses/index.html
@@ -495,6 +499,7 @@ For more details see the [`responses`][responses-mod] module.
 [UpdateResponse]: responses/type.UpdateResponse.html
 [DeleteResponse]: responses/type.DeleteResponse.html
 [IndexResponse]: responses/struct.IndexResponse.html
+[IndicesExistsResponse]: responses/struct.IndicesExistsResponse.html
 [PingResponse]: responses/struct.PingResponse.html
 [CommandResponse]: responses/struct.CommandResponse.html
 [SyncHttpResponse]: responses/struct.SyncHttpResponse.html

@@ -1,7 +1,7 @@
 /*!
 Builders for [index exists requests][docs-index-exists].
 
-[docs-index-exists]: https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-open-close.html
+[docs-index-exists]: https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-exists.html
 */
 
 use futures::{Future, Poll};
@@ -33,7 +33,7 @@ pub struct IndexExistsRequestInner {
 }
 
 /**
-# Open index request
+# Index exists request
 */
 impl<TSender> Client<TSender>
 where
@@ -49,7 +49,7 @@ where
     
     # Examples
     
-    Open an index called `myindex`:
+    Check whether an index called `myindex` exists:
     
     ```no_run
     # extern crate elastic;
@@ -91,7 +91,7 @@ impl IndexExistsRequestBuilder<SyncSender> {
 
     # Examples
     
-    Open an index called `myindex`:
+    Check whether an index called `myindex` exists:
     
     ```no_run
     # extern crate elastic;
@@ -128,7 +128,7 @@ impl IndexExistsRequestBuilder<AsyncSender> {
 
     # Examples
     
-    Open an index called `myindex`:
+    Check whether an index called `myindex` exists:
     
     ```no_run
     # extern crate futures;
