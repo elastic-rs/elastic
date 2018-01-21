@@ -6,8 +6,7 @@ Builders for [put mapping requests][docs-mapping].
 
 use std::marker::PhantomData;
 use serde_json;
-use futures::{Future, IntoFuture, Poll};
-use futures_cpupool::CpuPool;
+use futures::{Future, Poll};
 use serde::Serialize;
 
 use error::{self, Error, Result};
@@ -109,7 +108,7 @@ impl<TDocument> PutMappingRequestInner<TDocument>
 where
     TDocument: DocumentType,
 {
-    fn into_sync_request(self) -> Result<IndicesPutMappingRequest<'static, Vec<u8>>> {
+    fn into_request(self) -> Result<IndicesPutMappingRequest<'static, Vec<u8>>> {
         let body = serde_json::to_vec(&TDocument::index_mapping()).map_err(error::request)?;
 
         Ok(IndicesPutMappingRequest::for_index_ty(
@@ -117,21 +116,6 @@ where
             self.ty,
             body,
         ))
-    }
-}
-
-impl<TDocument> PutMappingRequestInner<TDocument>
-where
-    TDocument: DocumentType + Send + 'static,
-{
-    fn into_async_request(self, ser_pool: Option<CpuPool>) -> Box<Future<Item = IndicesPutMappingRequest<'static, Vec<u8>>, Error = Error>> {
-        if let Some(ser_pool) = ser_pool {
-            let request_future = ser_pool.spawn_fn(|| self.into_sync_request());
-
-            Box::new(request_future)
-        } else {
-            Box::new(self.into_sync_request().into_future())
-        }
     }
 }
 
@@ -192,7 +176,7 @@ where
     [SyncClient]: ../../type.SyncClient.html
     */
     pub fn send(self) -> Result<CommandResponse> {
-        let req = self.inner.into_sync_request()?;
+        let req = self.inner.into_request()?;
 
         RequestBuilder::new(self.client, self.params, RawRequestInner::new(req))
             .send()?
@@ -246,10 +230,9 @@ where
     [AsyncClient]: ../../type.AsyncClient.html
     */
     pub fn send(self) -> Pending {
-        let (client, params) = (self.client, self.params);
+        let (client, params, inner) = (self.client, self.params, self.inner);
 
-        let ser_pool = client.sender.serde_pool.clone();
-        let req_future = self.inner.into_async_request(ser_pool);
+        let req_future = client.sender.maybe_async(move || inner.into_request());
 
         let res_future = req_future.and_then(move |req| {
             RequestBuilder::new(client, params, RawRequestInner::new(req))
@@ -298,7 +281,7 @@ mod tests {
         let req = client
             .document_put_mapping::<Value>(index("test-idx"))
             .inner
-            .into_sync_request()
+            .into_request()
             .unwrap();
 
         let expected_body = json!({
@@ -321,7 +304,7 @@ mod tests {
             .document_put_mapping::<Value>(index("test-idx"))
             .ty("new-ty")
             .inner
-            .into_sync_request()
+            .into_request()
             .unwrap();
 
         assert_eq!("/test-idx/_mappings/new-ty", req.url.as_ref());

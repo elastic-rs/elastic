@@ -5,8 +5,7 @@ Builders for [update document requests][docs-update].
 */
 
 use std::marker::PhantomData;
-use futures::{Future, IntoFuture, Poll};
-use futures_cpupool::CpuPool;
+use futures::{Future, Poll};
 use serde_json::{self, Map, Value};
 use serde::ser::{Serialize, Serializer};
 
@@ -210,7 +209,7 @@ impl<TBody> UpdateRequestInner<TBody>
 where
     TBody: Serialize,
 {
-    fn into_sync_request(self) -> Result<UpdateRequest<'static, Vec<u8>>, Error> {
+    fn into_request(self) -> Result<UpdateRequest<'static, Vec<u8>>, Error> {
         let body = serde_json::to_vec(&self.body).map_err(error::request)?;
 
         Ok(UpdateRequest::for_index_ty_id(
@@ -219,21 +218,6 @@ where
             self.id,
             body,
         ))
-    }
-}
-
-impl<TBody> UpdateRequestInner<TBody>
-where
-    TBody: Serialize + Send + 'static,
-{
-    fn into_async_request(self, ser_pool: Option<CpuPool>) -> Box<Future<Item = UpdateRequest<'static, Vec<u8>>, Error = Error>> {
-        if let Some(ser_pool) = ser_pool {
-            let request_future = ser_pool.spawn_fn(|| self.into_sync_request());
-
-            Box::new(request_future)
-        } else {
-            Box::new(self.into_sync_request().into_future())
-        }
     }
 }
 
@@ -556,7 +540,7 @@ where
     [SyncClient]: ../../type.SyncClient.html
     */
     pub fn send(self) -> Result<UpdateResponse, Error> {
-        let req = self.inner.into_sync_request()?;
+        let req = self.inner.into_request()?;
 
         RequestBuilder::new(self.client, self.params, RawRequestInner::new(req))
             .send()?
@@ -618,10 +602,9 @@ where
     [AsyncClient]: ../../type.AsyncClient.html
     */
     pub fn send(self) -> Pending {
-        let (client, params) = (self.client, self.params);
+        let (client, params, inner) = (self.client, self.params, self.inner);
 
-        let ser_pool = client.sender.serde_pool.clone();
-        let req_future = self.inner.into_async_request(ser_pool);
+        let req_future = client.sender.maybe_async(move || inner.into_request());
 
         let res_future = req_future.and_then(move |req| {
             RequestBuilder::new(client, params, RawRequestInner::new(req))
@@ -801,7 +784,7 @@ mod tests {
         let req = client
             .document_update::<Value>(index("test-idx"), id("1"))
             .inner
-            .into_sync_request()
+            .into_request()
             .unwrap();
 
         assert_eq!("/test-idx/value/1/_update", req.url.as_ref());
@@ -823,7 +806,7 @@ mod tests {
             .document_update::<Value>(index("test-idx"), id("1"))
             .ty("new-ty")
             .inner
-            .into_sync_request()
+            .into_request()
             .unwrap();
 
         assert_eq!("/test-idx/new-ty/1/_update", req.url.as_ref());
@@ -844,7 +827,7 @@ mod tests {
             .document_update::<Value>(index("test-idx"), id("1"))
             .doc(doc)
             .inner
-            .into_sync_request()
+            .into_request()
             .unwrap();
 
         let actual_body: Value = serde_json::from_slice(&req.body).unwrap();
@@ -860,7 +843,7 @@ mod tests {
             .document_update::<Value>(index("test-idx"), id("1"))
             .script("ctx._source.a = params.str")
             .inner
-            .into_sync_request()
+            .into_request()
             .unwrap();
 
         let expected_body = json!({
@@ -882,7 +865,7 @@ mod tests {
             .document_update::<Value>(index("test-idx"), id("1"))
             .script(ScriptBuilder::new("ctx._source.a = params.str"))
             .inner
-            .into_sync_request()
+            .into_request()
             .unwrap();
 
         let expected_body = json!({
@@ -909,7 +892,7 @@ mod tests {
                     .param("other", "some other value")
             })
             .inner
-            .into_sync_request()
+            .into_request()
             .unwrap();
 
         let expected_body = json!({
@@ -947,7 +930,7 @@ mod tests {
                 })
             })
             .inner
-            .into_sync_request()
+            .into_request()
             .unwrap();
 
         let expected_body = json!({

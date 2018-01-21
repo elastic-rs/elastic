@@ -5,8 +5,7 @@ Builders for [index requests][docs-index].
 */
 
 use serde_json;
-use futures::{Future, IntoFuture, Poll};
-use futures_cpupool::CpuPool;
+use futures::{Future, Poll};
 use serde::Serialize;
 
 use error::{self, Error, Result};
@@ -120,7 +119,7 @@ impl<TDocument> IndexRequestInner<TDocument>
 where
     TDocument: Serialize,
 {
-    fn into_sync_request(self) -> Result<IndexRequest<'static, Vec<u8>>> {
+    fn into_request(self) -> Result<IndexRequest<'static, Vec<u8>>> {
         let body = serde_json::to_vec(&self.doc).map_err(error::request)?;
 
         Ok(IndexRequest::for_index_ty_id(
@@ -129,21 +128,6 @@ where
             self.id,
             body,
         ))
-    }
-}
-
-impl<TDocument> IndexRequestInner<TDocument>
-where
-    TDocument: Serialize + Send + 'static,
-{
-    fn into_async_request(self, ser_pool: Option<CpuPool>) -> Box<Future<Item = IndexRequest<'static, Vec<u8>>, Error = Error>> {
-        if let Some(ser_pool) = ser_pool {
-            let request_future = ser_pool.spawn_fn(|| self.into_sync_request());
-
-            Box::new(request_future)
-        } else {
-            Box::new(self.into_sync_request().into_future())
-        }
     }
 }
 
@@ -214,7 +198,7 @@ where
     [SyncClient]: ../../type.SyncClient.html
     */
     pub fn send(self) -> Result<IndexResponse> {
-        let req = self.inner.into_sync_request()?;
+        let req = self.inner.into_request()?;
 
         RequestBuilder::new(self.client, self.params, RawRequestInner::new(req))
             .send()?
@@ -278,10 +262,9 @@ where
     [AsyncClient]: ../../type.AsyncClient.html
     */
     pub fn send(self) -> Pending {
-        let (client, params) = (self.client, self.params);
+        let (client, params, inner) = (self.client, self.params, self.inner);
 
-        let ser_pool = client.sender.serde_pool.clone();
-        let req_future = self.inner.into_async_request(ser_pool);
+        let req_future = client.sender.maybe_async(move || inner.into_request());
 
         let res_future = req_future.and_then(move |req| {
             RequestBuilder::new(client, params, RawRequestInner::new(req))
@@ -330,7 +313,7 @@ mod tests {
         let req = client
             .document_index(index("test-idx"), id("1"), Value::Null)
             .inner
-            .into_sync_request()
+            .into_request()
             .unwrap();
 
         assert_eq!("/test-idx/value/1", req.url.as_ref());
@@ -345,7 +328,7 @@ mod tests {
             .document_index(index("test-idx"), id("1"), Value::Null)
             .ty("new-ty")
             .inner
-            .into_sync_request()
+            .into_request()
             .unwrap();
 
         assert_eq!("/test-idx/new-ty/1", req.url.as_ref());
@@ -359,7 +342,7 @@ mod tests {
         let req = client
             .document_index(index("test-idx"), id("1"), &doc)
             .inner
-            .into_sync_request()
+            .into_request()
             .unwrap();
 
         assert_eq!("/test-idx/value/1", req.url.as_ref());
