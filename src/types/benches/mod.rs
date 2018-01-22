@@ -1,11 +1,12 @@
-#![feature(plugin, test)]
-#![plugin(json_str)]
+#![feature(test)]
 
 extern crate geo as georust;
 extern crate geojson;
 extern crate serde;
 extern crate serde_json;
 extern crate test;
+#[macro_use]
+extern crate json_str;
 pub extern crate chrono;
 
 extern crate elastic_types;

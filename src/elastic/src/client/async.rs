@@ -1,7 +1,8 @@
 use std::error::Error as StdError;
 use uuid::Uuid;
 use futures::{Future, Poll};
-use futures_cpupool::CpuPool;
+use futures::future::{FutureResult, IntoFuture, Either};
+use futures_cpupool::{CpuPool, CpuFuture};
 use tokio_core::reactor::Handle;
 use elastic_reqwest::{AsyncBody, AsyncElasticClient};
 use reqwest::Error as ReqwestError;
@@ -93,6 +94,21 @@ impl Sender for AsyncSender {
             });
 
         Pending::new(req_future)
+    }
+}
+
+impl AsyncSender {
+    pub(crate) fn maybe_async<TFn, TResult>(&self, f: TFn)
+    -> Either<CpuFuture<TResult, Error>, FutureResult<TResult, Error>>
+    where
+        TFn: FnOnce() -> Result<TResult, Error> + Send + 'static,
+        TResult: Send + 'static,
+    {
+        if let Some(ref ser_pool) = self.serde_pool {
+            Either::A(ser_pool.spawn_fn(f))
+        } else {
+            Either::B(f().into_future())
+        }
     }
 }
 
