@@ -133,6 +133,13 @@ impl<T> SearchResponse<T> {
     pub fn aggs(&self) -> Aggs {
         Aggs::new(self.aggregations.as_ref())
     }
+
+    /**
+    Get a reference to the raw aggregation value.
+    */
+    pub fn aggs_raw(&self) -> Option<&Value> {
+        self.aggregations.as_ref().map(|wrapper| &wrapper.0)
+    }
 }
 
 impl<T: DeserializeOwned> IsOk for SearchResponse<T> {

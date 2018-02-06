@@ -107,6 +107,12 @@ fn success_parse_simple_nested_aggs() {
         .unwrap();
 
     assert_eq!(deserialized.aggs().count(), 124);
+
+    let doc_count = deserialized
+        .aggs_raw()
+        .and_then(|aggs| aggs["timechart"]["buckets"][0]["doc_count"].as_u64());
+
+    assert_eq!(Some(101), doc_count);
 }
 
 #[test]
