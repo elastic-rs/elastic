@@ -16,7 +16,7 @@ appveyor = { repository = "elastic-rs/elastic" }
 [dependencies]
 error-chain = "0.11.0"
 log = "~0.3.8"
-uuid = { version = "~0.5.1", features = [ "v4" ] }
+uuid = { version = "0.6", features = [ "v4" ] }
 serde = "~1"
 serde_json = "~1"
 serde_derive = "~1"
