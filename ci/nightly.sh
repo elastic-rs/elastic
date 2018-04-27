@@ -26,8 +26,6 @@ if [ "$KIND" == "build" ]; then
         git push -q upstream HEAD:refs/heads/gh-pages --force
     fi
 elif [ "$KIND" == "bench" ]; then
-    cargo bench --verbose --all
-
     cd benches
     cargo build --all
 elif [ "$KIND" == "integration" ]; then 
