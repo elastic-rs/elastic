@@ -1,6 +1,7 @@
 use std::error::Error as StdError;
-use std::time::Duration;
-use tokio_timer::Timer;
+use std::time::{Duration, Instant};
+use std::fmt;
+use tokio_timer::{Deadline, Interval};
 use futures::{stream, Future, Stream};
 use elastic::prelude::*;
 use elastic::Error;
@@ -11,12 +12,12 @@ struct Ping {
 }
 
 impl Ping {
-    fn is_not_ready(&self) -> Box<Future<Item = bool, Error = Box<StdError>>> {
+    fn is_ready(&self) -> Box<Future<Item = bool, Error = Box<StdError>>> {
         let request = self.client.ping().send().map_err(|e| e.into());
 
         let check = request.then(|res: Result<PingResponse, Error>| match res {
-            Ok(_) => Ok(false),
-            _ => Ok(true),
+            Ok(_) => Ok(true),
+            _ => Ok(false),
         });
 
         Box::new(check)
@@ -29,19 +30,37 @@ pub fn call(client: AsyncClient, timeout_secs: u64) -> Box<Future<Item = (), Err
         timeout_secs
     );
 
-    let timer = Timer::default();
     let stream = stream::repeat(Ping { client: client });
 
-    let wait = timer.interval(Duration::from_secs(10)).from_err();
+    let wait = Interval::new(Instant::now(), Duration::from_secs(10)).from_err();
 
     let poll = stream
-        .take_while(|ping| ping.is_not_ready())
+        .take_while(|ping| ping.is_ready().map(|ready| !ready))
         .zip(wait)
         .collect();
 
-    let poll_or_timeout = timer
-        .timeout(poll, Duration::from_secs(timeout_secs))
-        .map(|_| ());
+    let poll_or_timeout = Deadline::new(poll, Instant::now() + Duration::from_secs(timeout_secs))
+        .map(|_| ())
+        .map_err(|e| if let Some(e) = e.into_inner() { e } else { Box::new(TimeoutError) });
 
     Box::new(poll_or_timeout)
+}
+
+#[derive(Debug)]
+struct TimeoutError;
+
+impl StdError for TimeoutError {
+    fn description(&self) -> &str {
+        "timeout"
+    }
+
+    fn cause(&self) -> Option<&StdError> {
+        None
+    }
+}
+
+impl fmt::Display for TimeoutError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "timeout")
+    }
 }
