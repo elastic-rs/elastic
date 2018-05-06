@@ -49,7 +49,8 @@ fn run() -> Result<(), Box<Error>> {
 
     // Index the document
     client
-        .document_index(sample_index(), id(doc_id), doc)
+        .document_index(sample_index(), doc)
+        .id(doc_id)
         .params_fluent(|p| p.url_param("refresh", true))
         .send()?;
 

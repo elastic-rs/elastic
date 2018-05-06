@@ -98,8 +98,10 @@ fn put_index(client: &SyncClient) -> Result<(), Error> {
 }
 
 fn put_doc(client: &SyncClient, doc: MyType) -> Result<(), Error> {
+    let doc_id = doc.id;
     client
-        .document_index(sample_index(), id(doc.id), doc)
+        .document_index(sample_index(), doc)
+        .id(doc_id)
         .params_fluent(|p| p.url_param("refresh", true))
         .send()?;
 

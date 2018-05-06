@@ -165,7 +165,9 @@ let doc = MyType {
     timestamp: Date::now()
 };
 
-let response = client.document_index(index("myindex"), id(doc.id), doc)
+let doc_id = doc.id;
+let response = client.document_index(index("myindex"), doc)
+                     .id(doc_id)
                      .send()?;
 # Ok(())
 # }

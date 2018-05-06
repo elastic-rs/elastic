@@ -34,7 +34,8 @@ impl IntegrationTest for Delete {
     // Index a document, get it, delete it, then try get it again
     fn request(&self, client: AsyncClient) -> Box<Future<Item = Self::Response, Error = Error>> {
         let index_res = client
-            .document_index(index(INDEX), id(ID), Doc { id: ID })
+            .document_index(index(INDEX), Doc { id: ID })
+            .id(ID)
             .params_fluent(|p| p.url_param("refresh", true))
             .send();
 
