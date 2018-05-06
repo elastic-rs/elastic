@@ -1,5 +1,7 @@
 use run_tests::{test, Test};
 
+mod compile_test;
+
 mod simple_index_get;
 mod update_with_doc;
 mod update_with_script;
