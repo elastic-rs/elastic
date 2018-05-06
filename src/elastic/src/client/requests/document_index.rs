@@ -39,7 +39,7 @@ pub struct IndexRequestInner<TDocument> {
 }
 
 /**
-# Index document
+# Index document request
 */
 impl<TSender> Client<TSender>
 where
