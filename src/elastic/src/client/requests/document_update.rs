@@ -41,7 +41,7 @@ pub struct UpdateRequestInner<TBody> {
 }
 
 /**
-# Update document
+# Update document request
 */
 impl<TSender> Client<TSender>
 where

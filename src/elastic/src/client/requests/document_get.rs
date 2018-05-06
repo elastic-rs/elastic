@@ -39,7 +39,7 @@ pub struct GetRequestInner<TDocument> {
 }
 
 /**
-# Get document
+# Get document request
 */
 impl<TSender> Client<TSender>
 where

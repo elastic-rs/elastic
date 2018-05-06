@@ -459,10 +459,10 @@ For more details see the [`responses`][responses-mod] module.
 [AsyncClientBuilder]: struct.AsyncClientBuilder.html
 [Client.request]: struct.Client.html#method.request
 [Client.search]: struct.Client.html#search-request
-[Client.document_get]: struct.Client.html#get-document
-[Client.document_update]: struct.Client.html#update-document
-[Client.document_delete]: struct.Client.html#delete-document
-[Client.document_index]: struct.Client.html#index-request
+[Client.document_get]: struct.Client.html#get-document-request
+[Client.document_update]: struct.Client.html#update-document-request
+[Client.document_delete]: struct.Client.html#delete-document-request
+[Client.document_index]: struct.Client.html#index-document-request
 [Client.document_put_mapping]: struct.Client.html#method.document_put_mapping
 [Client.index_create]: struct.Client.html#create-index-request
 [Client.index_open]: struct.Client.html#open-index-request

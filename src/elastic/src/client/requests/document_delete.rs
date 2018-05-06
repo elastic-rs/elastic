@@ -38,7 +38,7 @@ pub struct DeleteRequestInner<TDocument> {
 }
 
 /**
-# Delete document
+# Delete document request
 */
 impl<TSender> Client<TSender>
 where
