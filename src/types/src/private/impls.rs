@@ -10,7 +10,7 @@ pub trait DefaultFieldType {}
 
 /** A mapping implementation for a non-core type, or anywhere it's ok for Elasticsearch to infer the mapping at index-time. */
 #[derive(Debug, PartialEq, Default, Clone)]
-struct DefaultMapping;
+pub struct DefaultMapping;
 impl FieldMapping<()> for DefaultMapping {
     type DocumentField = DocumentField<DefaultMapping, ()>;
 }
