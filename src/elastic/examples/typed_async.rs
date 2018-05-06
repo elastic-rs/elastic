@@ -146,6 +146,6 @@ fn search(client: AsyncClient, query: &'static str) -> Box<Future<Item = SearchR
 }
 
 fn main() {
-    env_logger::init().unwrap();
+    env_logger::init();
     run().unwrap()
 }
