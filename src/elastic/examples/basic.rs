@@ -43,6 +43,6 @@ fn run() -> Result<(), Box<Error>> {
 }
 
 fn main() {
-    env_logger::init().unwrap();
+    env_logger::init();
     run().unwrap();
 }

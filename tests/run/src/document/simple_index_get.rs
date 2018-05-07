@@ -44,7 +44,8 @@ impl IntegrationTest for SimpleIndexGet {
     // Index a document, then get it
     fn request(&self, client: AsyncClient) -> Box<Future<Item = Self::Response, Error = Error>> {
         let index_res = client
-            .document_index(index(INDEX), id(ID), doc())
+            .document_index(index(INDEX), doc())
+            .id(ID)
             .params_fluent(|p| p.url_param("refresh", true))
             .send();
 

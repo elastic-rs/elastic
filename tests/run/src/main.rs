@@ -36,7 +36,7 @@ mod build_container;
 mod wait_until_ready;
 
 fn main() {
-    env_logger::init().unwrap();
+    env_logger::init();
 
     let matches = App::new("elastic_integration_tests")
         .arg(

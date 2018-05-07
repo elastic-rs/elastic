@@ -117,8 +117,11 @@ fn put_index(client: AsyncClient) -> Box<Future<Item = (), Error = Error>> {
 }
 
 fn put_doc(client: AsyncClient, doc: MyType) -> Box<Future<Item = (), Error = Error>> {
+    let doc_id = doc.id;
+
     let index_doc = client
-        .document_index(sample_index(), id(doc.id), doc)
+        .document_index(sample_index(), doc)
+        .id(doc_id)
         .params_fluent(|p| p.url_param("refresh", true))
         .send()
         .map(|_| ());
@@ -143,6 +146,6 @@ fn search(client: AsyncClient, query: &'static str) -> Box<Future<Item = SearchR
 }
 
 fn main() {
-    env_logger::init().unwrap();
+    env_logger::init();
     run().unwrap()
 }

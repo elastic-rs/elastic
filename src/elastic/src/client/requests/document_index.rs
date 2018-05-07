@@ -35,7 +35,7 @@ pub type IndexRequestBuilder<TSender, TDocument> = RequestBuilder<TSender, Index
 pub struct IndexRequestInner<TDocument> {
     index: Index<'static>,
     ty: Type<'static>,
-    id: Id<'static>,
+    id: Option<Id<'static>>,
     doc: TDocument,
 }
 
@@ -80,7 +80,9 @@ where
         timestamp: Date::now()
     };
 
-    let response = client.document_index(index("myindex"), id(doc.id), doc)
+    let doc_id = doc.id;
+    let response = client.document_index(index("myindex"), doc)
+                         .id(doc_id)
                          .send()?;
     
     assert!(response.created());
@@ -97,7 +99,7 @@ where
     [types-mod]: ../types/index.html
     [documents-mod]: ../types/document/index.html
     */
-    pub fn document_index<TDocument>(&self, index: Index<'static>, id: Id<'static>, doc: TDocument) -> IndexRequestBuilder<TSender, TDocument>
+    pub fn document_index<TDocument>(&self, index: Index<'static>, doc: TDocument) -> IndexRequestBuilder<TSender, TDocument>
     where
         TDocument: Serialize + DocumentType,
     {
@@ -108,7 +110,7 @@ where
             IndexRequestInner {
                 index: index,
                 ty: ty,
-                id: id,
+                id: None,
                 doc: doc,
             },
         )
@@ -122,12 +124,12 @@ where
     fn into_request(self) -> Result<IndexRequest<'static, Vec<u8>>> {
         let body = serde_json::to_vec(&self.doc).map_err(error::request)?;
 
-        Ok(IndexRequest::for_index_ty_id(
-            self.index,
-            self.ty,
-            self.id,
-            body,
-        ))
+        let request = match self.id {
+            Some(id) => IndexRequest::for_index_ty_id(self.index, self.ty, id, body),
+            None => IndexRequest::for_index_ty(self.index, self.ty, body),
+        };
+
+        Ok(request)
     }
 }
 
@@ -146,6 +148,15 @@ where
         I: Into<Type<'static>>,
     {
         self.inner.ty = ty.into();
+        self
+    }
+
+    /** Set the id for the index request. */
+    pub fn id<I>(mut self, id: I) -> Self
+    where
+        I: Into<Id<'static>>
+    {
+        self.inner.id = Some(id.into());
         self
     }
 }
@@ -187,7 +198,9 @@ where
         timestamp: Date::now()
     };
 
-    let response = client.document_index(index("myindex"), id(doc.id), doc)
+    let doc_id = doc.id;
+    let response = client.document_index(index("myindex"), doc)
+                         .id(doc_id)
                          .send()?;
     
     assert!(response.created());
@@ -247,7 +260,9 @@ where
         timestamp: Date::now()
     };
 
-    let future = client.document_index(index("myindex"), id(doc.id), doc)
+    let doc_id = doc.id;
+    let future = client.document_index(index("myindex"), doc)
+                       .id(doc_id)
                        .send();
     
     future.and_then(|response| {
@@ -311,12 +326,12 @@ mod tests {
         let client = SyncClientBuilder::new().build().unwrap();
 
         let req = client
-            .document_index(index("test-idx"), id("1"), Value::Null)
+            .document_index(index("test-idx"), Value::Null)
             .inner
             .into_request()
             .unwrap();
 
-        assert_eq!("/test-idx/value/1", req.url.as_ref());
+        assert_eq!("/test-idx/value", req.url.as_ref());
         assert_eq!("null".as_bytes().to_vec(), req.body);
     }
 
@@ -325,13 +340,27 @@ mod tests {
         let client = SyncClientBuilder::new().build().unwrap();
 
         let req = client
-            .document_index(index("test-idx"), id("1"), Value::Null)
+            .document_index(index("test-idx"), Value::Null)
             .ty("new-ty")
             .inner
             .into_request()
             .unwrap();
 
-        assert_eq!("/test-idx/new-ty/1", req.url.as_ref());
+        assert_eq!("/test-idx/new-ty", req.url.as_ref());
+    }
+
+    #[test]
+    fn specify_id() {
+        let client = SyncClientBuilder::new().build().unwrap();
+
+        let req = client
+            .document_index(index("test-idx"), Value::Null)
+            .id(1)
+            .inner
+            .into_request()
+            .unwrap();
+
+        assert_eq!("/test-idx/value/1", req.url.as_ref());
     }
 
     #[test]
@@ -340,11 +369,11 @@ mod tests {
 
         let doc = Value::Null;
         let req = client
-            .document_index(index("test-idx"), id("1"), &doc)
+            .document_index(index("test-idx"), &doc)
             .inner
             .into_request()
             .unwrap();
 
-        assert_eq!("/test-idx/value/1", req.url.as_ref());
+        assert_eq!("/test-idx/value", req.url.as_ref());
     }
 }
