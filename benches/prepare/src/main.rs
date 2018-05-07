@@ -45,6 +45,6 @@ fn main() {
             timestamp: Date::now(),
         };
 
-        client.document_index(index(), id(i), &doc).send().unwrap();
+        client.document_index(index(), &doc).id(i).send().unwrap();
     }
 }

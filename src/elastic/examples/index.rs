@@ -46,15 +46,17 @@ fn run() -> Result<(), Box<Error>> {
         .send()?;
 
     // Index the document
+    let doc_id = doc.id;
     client
-        .document_index(sample_index(), id(doc.id), doc)
+        .document_index(sample_index(), doc)
+        .id(doc_id)
         .send()?;
 
     Ok(())
 }
 
 fn main() {
-    env_logger::init().unwrap();
+    env_logger::init();
     run().unwrap();
 }
 
