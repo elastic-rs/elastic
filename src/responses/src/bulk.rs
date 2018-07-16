@@ -515,6 +515,9 @@ impl<TIndex, TType, TId> ErrorItem<TIndex, TType, TId> {
     pub fn id(&self) -> &TId {
         &self.id
     }
+
+    /** Raw error JSON. */
+    pub fn err(&self) -> &BulkError { &self.err }
 }
 
 impl<TIndex, TType, TId> fmt::Display for ErrorItem<TIndex, TType, TId>
