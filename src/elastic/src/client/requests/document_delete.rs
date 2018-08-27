@@ -15,7 +15,7 @@ use client::requests::params::{Id, Index, Type};
 use client::requests::endpoints::DeleteRequest;
 use client::requests::raw::RawRequestInner;
 use client::responses::DeleteResponse;
-use types::document::DocumentType;
+use types::document::{DocumentType, StaticIndex, StaticType};
 
 /** 
 A [delete document request][docs-delete] builder that can be configured before sending.
@@ -89,11 +89,12 @@ where
     [send-async]: requests/document_delete/type.DeleteRequestBuilder.html#send-asynchronously
     [documents-mod]: ../types/document/index.html
     */
-    pub fn document_delete<TDocument>(&self, index: Index<'static>, id: Id<'static>) -> DeleteRequestBuilder<TSender, TDocument>
+    pub fn document_delete<TDocument>(&self, id: Id<'static>) -> DeleteRequestBuilder<TSender, TDocument>
     where
-        TDocument: DocumentType,
+        TDocument: DocumentType + StaticIndex + StaticType,
     {
-        let ty = TDocument::name().into();
+        let index = TDocument::static_index().into();
+        let ty = TDocument::static_ty().into();
 
         RequestBuilder::initial(
             self.clone(),

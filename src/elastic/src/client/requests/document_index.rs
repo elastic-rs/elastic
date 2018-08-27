@@ -4,6 +4,8 @@ Builders for [index requests][docs-index].
 [docs-index]: https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html
 */
 
+use std::borrow::Cow;
+
 use serde_json;
 use futures::{Future, Poll};
 use serde::Serialize;
@@ -99,18 +101,20 @@ where
     [types-mod]: ../types/index.html
     [documents-mod]: ../types/document/index.html
     */
-    pub fn document_index<TDocument>(&self, index: Index<'static>, doc: TDocument) -> IndexRequestBuilder<TSender, TDocument>
+    pub fn document_index<TDocument>(&self, doc: TDocument) -> IndexRequestBuilder<TSender, TDocument>
     where
         TDocument: Serialize + DocumentType,
     {
-        let ty = TDocument::name().into();
+        let index = doc.index().into_owned().into();
+        let ty = doc.ty().into_owned().into();
+        let id = doc.partial_id().map(Cow::into_owned).map(Into::into);
 
         RequestBuilder::initial(
             self.clone(),
             IndexRequestInner {
                 index: index,
                 ty: ty,
-                id: None,
+                id: id,
                 doc: doc,
             },
         )

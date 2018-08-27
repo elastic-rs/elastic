@@ -57,17 +57,14 @@ This will produce the following mapping:
 }
 # );
 # #[cfg(feature = "nightly")]
-# let mapping = serde_json::to_string(&DocumentField::from(MyIpMapping)).unwrap();
+# let mapping = serde_json::to_string(&field::serialize(MyIpMapping)).unwrap();
 # #[cfg(not(feature = "nightly"))]
 # let mapping = json.clone();
 # assert_eq!(json, mapping);
 # }
 ```
 */
-pub trait IpMapping
-where
-    Self: Default,
-{
+pub trait IpMapping {
     /** Field-level index time boosting. Accepts a floating point number, defaults to `1.0`. */
     fn boost() -> Option<f32> {
         None
@@ -112,7 +109,7 @@ impl IpMapping for DefaultIpMapping {}
 mod private {
     use serde::{Serialize, Serializer};
     use serde::ser::SerializeStruct;
-    use private::field::{DocumentField, FieldMapping, FieldType};
+    use private::field::{StaticSerialize, SerializeFieldMapping, FieldMapping, FieldType};
     use super::{IpFieldType, IpMapping};
 
     #[derive(Default)]
@@ -129,18 +126,18 @@ mod private {
     where
         TMapping: IpMapping,
     {
-        type DocumentField = DocumentField<TMapping, IpPivot>;
+        type SerializeFieldMapping = SerializeFieldMapping<TMapping, IpPivot>;
 
         fn data_type() -> &'static str {
             "ip"
         }
     }
 
-    impl<TMapping> Serialize for DocumentField<TMapping, IpPivot>
+    impl<TMapping> StaticSerialize for SerializeFieldMapping<TMapping, IpPivot>
     where
         TMapping: FieldMapping<IpPivot> + IpMapping,
     {
-        fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+        fn static_serialize<S>(serializer: S) -> Result<S::Ok, S::Error>
         where
             S: Serializer,
         {
@@ -165,7 +162,7 @@ mod tests {
     use std::net::Ipv4Addr;
 
     use prelude::*;
-    use private::field::{DocumentField, FieldType};
+    use private::field;
 
     #[derive(Default, Clone)]
     pub struct MyIpMapping;
@@ -192,13 +189,8 @@ mod tests {
     }
 
     #[test]
-    fn ipv4addr_has_default_mapping() {
-        assert_eq!(DefaultIpMapping, Ipv4Addr::field_mapping());
-    }
-
-    #[test]
     fn serialise_mapping_default() {
-        let ser = serde_json::to_string(&DocumentField::from(DefaultIpMapping)).unwrap();
+        let ser = serde_json::to_string(&field::serialize(DefaultIpMapping)).unwrap();
 
         let expected = json_str!({
             "type": "ip"
@@ -209,7 +201,7 @@ mod tests {
 
     #[test]
     fn serialise_mapping_custom() {
-        let ser = serde_json::to_string(&DocumentField::from(MyIpMapping)).unwrap();
+        let ser = serde_json::to_string(&field::serialize(MyIpMapping)).unwrap();
 
         let expected = json_str!({
             "type": "ip",

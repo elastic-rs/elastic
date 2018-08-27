@@ -17,7 +17,7 @@ use client::requests::params::{Id, Index, Type};
 use client::requests::endpoints::UpdateRequest;
 use client::requests::raw::RawRequestInner;
 use client::responses::UpdateResponse;
-use types::document::DocumentType;
+use types::document::{DocumentType, StaticIndex, StaticType};
 
 pub use client::requests::common::{Doc, Script, ScriptBuilder, DefaultParams};
 
@@ -172,7 +172,7 @@ where
     # }
     # let client = SyncClientBuilder::new().build()?;
     # let new_doc = MyType { id: 1, title: String::new(), timestamp: Date::now() };
-    let response = client.document_update::<MyType>(index("myindex"), id(1))
+    let response = client.document_update::<MyType>(id(1))
                          .script_fluent("ctx._source.title = params.newTitle", |script| script
                             .param("newTitle", "New Title"))
                          .send()?;
@@ -188,11 +188,12 @@ where
     [send-async]: requests/document_update/type.UpdateRequestBuilder.html#send-asynchronously
     [documents-mod]: ../types/document/index.html
     */
-    pub fn document_update<TDocument>(&self, index: Index<'static>, id: Id<'static>) -> UpdateRequestBuilder<TSender, Doc<TDocument>>
+    pub fn document_update<TDocument>(&self, id: Id<'static>) -> UpdateRequestBuilder<TSender, Doc<TDocument>>
     where
-        TDocument: DocumentType,
+        TDocument: DocumentType + StaticIndex + StaticType,
     {
-        let ty = TDocument::name().into();
+        let index = TDocument::static_index().into();
+        let ty = TDocument::static_ty().into();
 
         RequestBuilder::initial(
             self.clone(),
@@ -266,7 +267,7 @@ where
     # }
     # let client = SyncClientBuilder::new().build()?;
     # let new_doc = MyType { id: 1, title: String::new(), timestamp: Date::now() };
-    let response = client.document_update::<MyType>(index("myindex"), id(1))
+    let response = client.document_update::<MyType>(id(1))
                          .doc(new_doc)
                          .send();
     # Ok(())
@@ -295,7 +296,7 @@ where
     #     pub timestamp: Date<DefaultDateMapping>
     # }
     # let client = SyncClientBuilder::new().build()?;
-    let response = client.document_update::<MyType>(index("myindex"), id(1))
+    let response = client.document_update::<MyType>(id(1))
                          .doc(json!({
                              "title": "New Title"
                          }))
@@ -308,7 +309,7 @@ where
     */
     pub fn doc<TDocument>(self, doc: TDocument) -> UpdateRequestBuilder<TSender, Doc<TDocument>>
     where
-        TDocument: Serialize + DocumentType,
+        TDocument: Serialize,
     {
         RequestBuilder::new(
             self.client,

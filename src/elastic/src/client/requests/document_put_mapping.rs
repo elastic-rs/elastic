@@ -7,7 +7,6 @@ Builders for [put mapping requests][docs-mapping].
 use std::marker::PhantomData;
 use serde_json;
 use futures::{Future, Poll};
-use serde::Serialize;
 
 use error::{self, Error, Result};
 use client::Client;
@@ -17,7 +16,7 @@ use client::requests::params::{Index, Type};
 use client::requests::endpoints::IndicesPutMappingRequest;
 use client::requests::raw::RawRequestInner;
 use client::responses::CommandResponse;
-use types::document::DocumentType;
+use types::document::{DocumentType, StaticIndex, StaticType};
 
 /** 
 A [put mapping request][docs-mapping] builder that can be configured before sending.
@@ -87,11 +86,12 @@ where
     [types-mod]: ../types/index.html
     [documents-mod]: ../types/document/index.html
     */
-    pub fn document_put_mapping<TDocument>(&self, index: Index<'static>) -> PutMappingRequestBuilder<TSender, TDocument>
+    pub fn document_put_mapping<TDocument>(&self) -> PutMappingRequestBuilder<TSender, TDocument>
     where
-        TDocument: Serialize + DocumentType,
+        TDocument: DocumentType + StaticIndex + StaticType,
     {
-        let ty = TDocument::name().into();
+        let index = TDocument::static_index().into();
+        let ty = TDocument::static_ty().into();
 
         RequestBuilder::initial(
             self.clone(),

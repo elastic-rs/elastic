@@ -1,14 +1,11 @@
 /*! Mapping for Elasticsearch document types. */
 
-use std::marker::PhantomData;
 use serde::{Serialize, Serializer};
 use serde::ser::SerializeStruct;
 
 /** A field that will be mapped as a nested document. */
-pub trait DocumentFieldType<M>
-where
-    M: DocumentMapping,
-{
+pub trait ObjectFieldType {
+    type Mapping: ObjectMapping;
 }
 
 /** Elasticsearch datatype name. */
@@ -21,12 +18,9 @@ pub const DYNAMIC_DATATYPE: &'static str = "dynamic";
 pub const NESTED_DATATYPE: &'static str = "nested";
 
 /** The base requirements for mapping an `object` type. */
-pub trait DocumentMapping
-where
-    Self: PropertiesMapping + Default,
-{
-    /** Get the indexed name for this mapping. */
-    fn name() -> &'static str;
+pub trait ObjectMapping {
+    /** The source of properties for this document. */
+    type Properties: PropertiesMapping;
 
     /** Get the type name for this mapping, like `object` or `nested`. */
     fn data_type() -> &'static str {
@@ -81,28 +75,6 @@ pub trait PropertiesMapping {
         S: SerializeStruct;
 }
 
-#[derive(Default)]
-struct Properties<TMapping>
-where
-    TMapping: DocumentMapping,
-{
-    _m: PhantomData<TMapping>,
-}
-
-impl<TMapping> Serialize for Properties<TMapping>
-where
-    TMapping: DocumentMapping,
-{
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let mut state = try!(serializer.serialize_struct("properties", TMapping::props_len()));
-        try!(TMapping::serialize_props(&mut state));
-        state.end()
-    }
-}
-
 /**
 The dynamic setting may be set at the mapping type level, and on each inner object.
 Inner objects inherit the setting from their parent object or from the mapping type.
@@ -128,50 +100,67 @@ impl Serialize for Dynamic {
 }
 
 mod private {
+    use std::marker::PhantomData;
     use serde::{Serialize, Serializer};
     use serde::ser::SerializeStruct;
-    use document::{DocumentType, IndexDocumentMapping};
-    use private::field::{DocumentField, FieldMapping, FieldType};
-    use super::{DocumentFieldType, DocumentMapping, Properties, OBJECT_DATATYPE};
+    use document::{FieldDocumentMapping, IndexDocumentMapping};
+    use private::field::{StaticSerialize, SerializeFieldMapping, FieldMapping, FieldType};
+    use super::{ObjectFieldType, ObjectMapping, PropertiesMapping, OBJECT_DATATYPE};
 
     #[derive(Default)]
-    pub struct DocumentPivot;
+    pub struct ObjectPivot;
 
-    impl<TField, TMapping> FieldType<TMapping, DocumentPivot> for TField
+    impl<TField, TMapping> FieldType<TMapping, ObjectPivot> for TField
     where
-        TMapping: DocumentMapping,
-        TField: DocumentFieldType<TMapping>,
+        TMapping: ObjectMapping,
+        TField: ObjectFieldType<Mapping = TMapping>,
     {
     }
 
-    impl<TDocument, TMapping> DocumentFieldType<TMapping> for TDocument
+    impl<TMapping> FieldMapping<ObjectPivot> for TMapping
     where
-        TDocument: DocumentType<Mapping = TMapping>,
-        TMapping: DocumentMapping,
+        TMapping: ObjectMapping,
     {
-    }
-
-    impl<TMapping> FieldMapping<DocumentPivot> for TMapping
-    where
-        TMapping: DocumentMapping,
-    {
-        type DocumentField = DocumentField<TMapping, DocumentPivot>;
+        type SerializeFieldMapping = SerializeFieldMapping<TMapping, ObjectPivot>;
 
         fn data_type() -> &'static str {
-            <Self as DocumentMapping>::data_type()
+            <Self as ObjectMapping>::data_type()
         }
     }
 
-    impl<TMapping> Serialize for DocumentField<TMapping, DocumentPivot>
+    struct Properties<TMapping>
     where
-        TMapping: FieldMapping<DocumentPivot> + DocumentMapping,
+        TMapping: ObjectMapping,
+    {
+        _m: PhantomData<TMapping>,
+    }
+
+    impl<TMapping> Serialize for Properties<TMapping>
+    where
+        TMapping: ObjectMapping,
     {
         fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
         where
             S: Serializer,
         {
-            let ty = <TMapping as DocumentMapping>::data_type();
-            let (is_object, has_props) = (ty == OBJECT_DATATYPE, TMapping::props_len() > 0);
+            let mut state = try!(serializer.serialize_struct("properties", TMapping::Properties::props_len()));
+            try!(TMapping::Properties::serialize_props(&mut state));
+            state.end()
+        }
+    }
+
+    impl<TMapping> StaticSerialize for SerializeFieldMapping<TMapping, ObjectPivot>
+    where
+        TMapping: FieldMapping<ObjectPivot> + ObjectMapping,
+    {
+        fn static_serialize<S>(serializer: S) -> Result<S::Ok, S::Error>
+        where
+            S: Serializer,
+        {
+            let ty = <TMapping as ObjectMapping>::data_type();
+            let props_len = <TMapping as ObjectMapping>::Properties::props_len();
+
+            let (is_object, has_props) = (ty == OBJECT_DATATYPE, props_len > 0);
 
             let props_len = match (is_object, has_props) {
                 (true, true) => 5,
@@ -191,16 +180,28 @@ mod private {
             }
 
             if has_props {
-                try!(state.serialize_field("properties", &Properties::<TMapping>::default()));
+                try!(state.serialize_field("properties", &Properties::<TMapping> { _m: PhantomData }));
             }
 
             state.end()
         }
     }
 
+    impl<TMapping> Serialize for FieldDocumentMapping<TMapping>
+    where
+        TMapping: ObjectMapping,
+    {
+        fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+        where
+            S: Serializer,
+        {
+            SerializeFieldMapping::<TMapping, ObjectPivot>::static_serialize(serializer)
+        }
+    }
+
     impl<TMapping> Serialize for IndexDocumentMapping<TMapping>
     where
-        TMapping: DocumentMapping,
+        TMapping: ObjectMapping,
     {
         fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
         where
@@ -208,7 +209,7 @@ mod private {
         {
             let mut state = try!(serializer.serialize_struct("mapping", 1));
 
-            try!(state.serialize_field("properties", &Properties::<TMapping>::default()));
+            try!(state.serialize_field("properties", &Properties::<TMapping> { _m: PhantomData }));
 
             state.end()
         }

@@ -46,7 +46,6 @@ macro_rules! impl_string_type {
         TMapping: $mapping_ty {
             fn deserialize<D>(deserializer: D) -> Result<$wrapper_ty<TMapping>, D::Error> where
             D: Deserializer<'de> {
-                #[derive(Default)]
                 struct StringVisitor<TMapping> {
                     _m: PhantomData<TMapping>
                 }
@@ -66,7 +65,7 @@ macro_rules! impl_string_type {
                     }
                 }
 
-                deserializer.deserialize_any(StringVisitor::default())
+                deserializer.deserialize_any(StringVisitor { _m: PhantomData })
             }
         }
     );

@@ -4,7 +4,7 @@ use std::collections::{BTreeMap, HashMap};
 use serde::{Serialize, Serializer};
 use serde::ser::SerializeStruct;
 
-use super::field::{DocumentField, FieldMapping, FieldType};
+use super::field::{SerializeFieldMapping, StaticSerialize, FieldMapping, FieldType};
 
 pub trait DefaultFieldType {}
 
@@ -12,11 +12,15 @@ pub trait DefaultFieldType {}
 #[derive(Debug, PartialEq, Default, Clone)]
 pub struct DefaultMapping;
 impl FieldMapping<()> for DefaultMapping {
-    type DocumentField = DocumentField<DefaultMapping, ()>;
+    type SerializeFieldMapping = SerializeFieldMapping<DefaultMapping, ()>;
+
+    fn data_type() -> &'static str {
+        "object"
+    }
 }
 
-impl Serialize for DocumentField<DefaultMapping, ()> {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+impl StaticSerialize for SerializeFieldMapping<DefaultMapping, ()> {
+    fn static_serialize<S>(serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
     {
@@ -28,6 +32,9 @@ impl Serialize for DocumentField<DefaultMapping, ()> {
     }
 }
 
+/**
+A type that inherits its mapping from an inner value.
+*/
 pub trait WrappedFieldType<TMapping, TPivot> {}
 
 /**
@@ -40,7 +47,6 @@ So the mapping for an array or optional type is just the mapping for the type it
 pub struct WrappedMapping<TMapping, TPivot>
 where
     TMapping: FieldMapping<TPivot>,
-    TPivot: Default,
 {
     _m: PhantomData<(TMapping, TPivot)>,
 }
@@ -48,25 +54,23 @@ where
 impl<TMapping, TPivot> FieldMapping<TPivot> for WrappedMapping<TMapping, TPivot>
 where
     TMapping: FieldMapping<TPivot>,
-    TPivot: Default,
 {
-    type DocumentField = TMapping::DocumentField;
+    type SerializeFieldMapping = TMapping::SerializeFieldMapping;
 
     fn data_type() -> &'static str {
         TMapping::data_type()
     }
 }
 
-impl<TMapping, TPivot> Serialize for DocumentField<WrappedMapping<TMapping, TPivot>, TPivot>
+impl<TMapping, TPivot> StaticSerialize for SerializeFieldMapping<WrappedMapping<TMapping, TPivot>, TPivot>
 where
     TMapping: FieldMapping<TPivot>,
-    TPivot: Default,
 {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    fn static_serialize<S>(serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
     {
-        TMapping::DocumentField::default().serialize(serializer)
+        TMapping::SerializeFieldMapping::static_serialize(serializer)
     }
 }
 
@@ -96,7 +100,6 @@ impl<TField, TMapping, TPivot> FieldType<WrappedMapping<TMapping, TPivot>, TPivo
 where
     TField: WrappedFieldType<TMapping, TPivot>,
     TMapping: FieldMapping<TPivot>,
-    TPivot: Default,
 {
 }
 
@@ -104,7 +107,6 @@ impl<TField, TMapping, TPivot> WrappedFieldType<TMapping, TPivot> for Vec<TField
 where
     TField: FieldType<TMapping, TPivot>,
     TMapping: FieldMapping<TPivot>,
-    TPivot: Default,
 {
 }
 
@@ -112,6 +114,5 @@ impl<TField, TMapping, TPivot> WrappedFieldType<TMapping, TPivot> for Option<TFi
 where
     TField: FieldType<TMapping, TPivot>,
     TMapping: FieldMapping<TPivot>,
-    TPivot: Default,
 {
 }

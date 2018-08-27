@@ -326,9 +326,8 @@ where
     where
         D: Deserializer<'de>,
     {
-        #[derive(Default)]
         struct DateTimeVisitor<TMapping> {
-            _t: PhantomData<TMapping>,
+            _m: PhantomData<TMapping>,
         }
 
         impl<'de, TMapping> Visitor<'de> for DateTimeVisitor<TMapping>
@@ -366,7 +365,7 @@ where
             }
         }
 
-        deserializer.deserialize_any(DateTimeVisitor::<TMapping>::default())
+        deserializer.deserialize_any(DateTimeVisitor::<TMapping> { _m: PhantomData })
     }
 }
 

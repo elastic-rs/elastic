@@ -507,8 +507,8 @@ This is a particularly helpful feature for serialisation.
 - [Github](https://github.com/elastic-rs/elastic-types)
 */
 
-#![deny(warnings)]
-#![deny(missing_docs)]
+// #![deny(warnings)]
+// #![deny(missing_docs)]
 
 extern crate geohash;
 
