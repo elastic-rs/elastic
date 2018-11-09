@@ -246,33 +246,3 @@ pub fn bulk_update_script_fluent<TScript, TBuilder, TParams>(script: TScript, bu
 {
     BulkOperation::new_update_script(script).script_fluent(builder)
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn create_doc() {
-        unimplemented!()
-    }
-
-    #[test]
-    fn index_doc() {
-        unimplemented!()
-    }
-
-    #[test]
-    fn update_doc() {
-        unimplemented!()
-    }
-
-    #[test]
-    fn update_script() {
-        unimplemented!()
-    }
-
-    #[test]
-    fn delete() {
-        unimplemented!()
-    }
-}
