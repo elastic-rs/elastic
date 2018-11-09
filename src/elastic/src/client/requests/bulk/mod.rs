@@ -14,8 +14,10 @@ use serde::ser::Serialize;
 use serde::de::DeserializeOwned;
 
 use error::{self, Error};
-use client::{AsyncSender, Client, Sender, SyncSender};
-use client::requests::{RequestBuilder, SyncBody, AsyncBody};
+use client::{Client, RequestParams};
+use client::sender::{AsyncSender, Sender, SyncSender};
+use client::requests::RequestBuilder;
+use http::{SyncBody, AsyncBody};
 use client::requests::params::{Index, Type};
 use client::requests::endpoints::BulkRequest;
 use client::requests::raw::RawRequestInner;
@@ -81,9 +83,8 @@ where
     [docs-querystring]: https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html
     */
     pub fn bulk(&self) -> BulkRequestBuilder<TSender, Vec<u8>, BulkResponse> {
-        RequestBuilder::new(
+        RequestBuilder::initial(
             self.clone(),
-            None,
             BulkRequestInner {
                 index: None,
                 ty: None,
@@ -122,9 +123,8 @@ impl Client<AsyncSender> {
     [docs-querystring]: https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html
     */
     pub fn bulk_stream<TDocument>(&self) -> BulkRequestBuilder<AsyncSender, Streamed<TDocument>, BulkResponse> {
-        RequestBuilder::new(
+        RequestBuilder::initial(
             self.clone(),
-            None,
             BulkRequestInner {
                 index: None,
                 ty: None,
@@ -187,7 +187,7 @@ where
     {
         RequestBuilder::new(
             self.client,
-            self.params,
+            self.params_builder,
             BulkRequestInner {
                 index: self.inner.index,
                 ty: self.inner.ty,
@@ -210,7 +210,7 @@ where
     {
         RequestBuilder::new(
             self.client,
-            self.params,
+            self.params_builder,
             BulkRequestInner {
                 index: self.inner.index,
                 ty: self.inner.ty,
@@ -233,7 +233,7 @@ where
     {
         RequestBuilder::new(
             self.client,
-            self.params,
+            self.params_builder,
             BulkRequestInner {
                 index: self.inner.index,
                 ty: self.inner.ty,
@@ -257,7 +257,7 @@ where
     pub fn errors_only(self) -> BulkRequestBuilder<TSender, TBody, BulkErrorsResponse<TIndex, TType, TId>> {
         RequestBuilder::new(
             self.client,
-            self.params,
+            self.params_builder,
             BulkRequestInner {
                 index: self.inner.index,
                 ty: self.inner.ty,
@@ -386,9 +386,10 @@ impl<TDocument, TResponse> BulkRequestBuilder<AsyncSender, Streamed<TDocument>, 
         let body_size = body.body_size;
         let duration = body.timeout;
 
+        let params = self.params_builder.into_value(RequestParams::default);
         let body = SenderBody::new(body_size);
         let timeout = Timeout::new(duration);
-        let req_template = SenderRequestTemplate::new(self.client, self.params, self.inner.index, self.inner.ty);
+        let req_template = SenderRequestTemplate::new(self.client, params, self.inner.index, self.inner.ty);
 
         BulkSender::new(req_template, timeout, body)
     }
@@ -424,7 +425,7 @@ where
 */
 impl<TBody, TResponse> BulkRequestBuilder<SyncSender, TBody, TResponse>
 where
-    TBody: Into<SyncBody> + BulkBody,
+    TBody: Into<SyncBody> + BulkBody + 'static,
     TResponse: DeserializeOwned + IsOk + 'static,
 {
     /**
@@ -441,7 +442,7 @@ where
     pub fn send(self) -> Result<TResponse, Error> {
         let req = self.inner.into_request()?;
 
-        RequestBuilder::new(self.client, self.params, RawRequestInner::new(req))
+        RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
             .send()?
             .into_response()
     }
@@ -467,12 +468,12 @@ where
     [AsyncClient]: ../../type.AsyncClient.html
     */
     pub fn send(self) -> Pending<TResponse> {
-        let (client, params, inner) = (self.client, self.params, self.inner);
+        let (client, params_builder, inner) = (self.client, self.params_builder, self.inner);
 
         let req_future = client.sender.maybe_async(move || inner.into_request());
 
         let res_future = req_future.and_then(move |req| {
-            RequestBuilder::new(client, params, RawRequestInner::new(req))
+            RequestBuilder::new(client, params_builder, RawRequestInner::new(req))
                 .send()
                 .and_then(|res| res.into_response())
         });

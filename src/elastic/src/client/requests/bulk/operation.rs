@@ -220,6 +220,13 @@ pub fn bulk_create<TDocument>(doc: TDocument) -> BulkOperation<Doc<TDocument>> {
 }
 
 /**
+A convenient method for creating a delete bulk operation.
+*/
+pub fn bulk_delete() -> BulkOperation<()> {
+    BulkOperation::new(Action::Delete, None)
+}
+
+/**
 A convenient method for creating an update bulk operation.
 */
 pub fn bulk_update_script<TScript>(script: TScript) -> BulkOperation<Script<DefaultParams>>
@@ -238,13 +245,6 @@ pub fn bulk_update_script_fluent<TScript, TBuilder, TParams>(script: TScript, bu
         TBuilder: Fn(ScriptBuilder<DefaultParams>) -> ScriptBuilder<TParams>,
 {
     BulkOperation::new_update_script(script).script_fluent(builder)
-}
-
-/**
-A convenient method for creating a delete bulk operation.
-*/
-pub fn bulk_delete() -> BulkOperation<()> {
-    BulkOperation::new(Action::Delete, None)
 }
 
 #[cfg(test)]

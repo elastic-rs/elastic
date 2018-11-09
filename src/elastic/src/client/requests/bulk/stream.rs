@@ -6,13 +6,15 @@ use std::marker::PhantomData;
 
 use bytes::{BufMut, BytesMut};
 use futures::{Future, Poll, Async, AsyncSink, Sink, Stream};
+use fluent_builder::FluentBuilder;
 use tokio_timer::{Timer, Sleep};
 use channel::{self, TrySendError, TryRecvError};
 use serde::ser::Serialize;
 use serde::de::DeserializeOwned;
 
 use error::{self, Error};
-use client::{AsyncSender, Client, RequestParams};
+use client::{Client, RequestParams};
+use client::sender::AsyncSender;
 use client::requests::RequestBuilder;
 use client::requests::params::{Index, Type};
 use client::responses::parse::IsOk;
@@ -51,14 +53,14 @@ impl<TDocument, TResponse> BulkSender<TDocument, TResponse> {
 
 pub(super) struct SenderRequestTemplate<TResponse> {
     client: Client<AsyncSender>,
-    params: Option<RequestParams>,
+    params: RequestParams,
     index: Option<Index<'static>>,
     ty: Option<Type<'static>>,
     _marker: PhantomData<TResponse>,
 }
 
 impl<TResponse> SenderRequestTemplate<TResponse> {
-    pub(super) fn new(client: Client<AsyncSender>, params: Option<RequestParams>, index: Option<Index<'static>>, ty: Option<Type<'static>>) -> Self {
+    pub(super) fn new(client: Client<AsyncSender>, params: RequestParams, index: Option<Index<'static>>, ty: Option<Type<'static>>) -> Self {
         SenderRequestTemplate {
             client,
             params,
@@ -71,7 +73,7 @@ impl<TResponse> SenderRequestTemplate<TResponse> {
     fn to_request(&self, body: Vec<u8>) -> BulkRequestBuilder<AsyncSender, Vec<u8>, TResponse> {
         RequestBuilder::new(
             self.client.clone(),
-            self.params.clone(),
+            FluentBuilder::new().value(self.params.clone()),
             BulkRequestInner::<Vec<u8>, TResponse> {
                 index: self.index.clone(),
                 ty: self.ty.clone(),
