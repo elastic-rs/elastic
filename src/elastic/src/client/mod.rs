@@ -102,6 +102,7 @@ They're exposed as methods on the `Client`:
 Client method                                                 | Elasticsearch API                  | Raw request type                                        | Response type
 ------------------------------------------------------------- | ---------------------------------- | ------------------------------------------------------- | ------------------------------------
 [`search`][Client.search]                                     | [Search][docs-search]              | [`SearchRequest`][SearchRequest]                        | [`SearchResponse`][SearchResponse]
+[`bulk`][Client.bulk]                                         | [Bulk][docs-bulk]                  | [`BulkRequest`][BulkRequest]                            | [`BulkResponse`][BulkResponse]
 [`document_get`][Client.document_get]                         | [Get Document][docs-get]           | [`GetRequest`][GetRequest]                              | [`GetResponse`][GetResponse]
 [`document_index`][Client.document_index]                     | [Index Document][docs-index]       | [`IndexRequest`][IndexRequest]                          | [`IndexResponse`][IndexResponse]
 [`document_update`][Client.document_update]                   | [Update Document][docs-update]     | [`UpdateRequest`][UpdateRequest]                        | [`UpdateResponse`][UpdateResponse]
