@@ -87,14 +87,17 @@ pub fn call(client: AsyncClient, max_concurrent_tests: usize) -> Box<Future<Item
     use search;
     use document;
     use index;
+    use bulk;
 
     let document_tests = document::tests().into_iter();
     let search_tests = search::tests().into_iter();
     let index_tests = index::tests().into_iter();
+    let bulk_tests = bulk::tests().into_iter();
 
     let all_tests = document_tests
         .chain(search_tests)
         .chain(index_tests)
+        .chain(bulk_tests)
         .map(move |t| t(client.clone()));
 
     let test_stream = stream::futures_unordered(all_tests)

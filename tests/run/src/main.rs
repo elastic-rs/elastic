@@ -27,6 +27,7 @@ use term_painter::ToStyle;
 use term_painter::Color::*;
 use clap::{App, Arg};
 
+mod bulk;
 mod document;
 mod search;
 mod index;

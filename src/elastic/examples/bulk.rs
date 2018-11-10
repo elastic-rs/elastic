@@ -9,6 +9,8 @@
 
 extern crate elastic;
 extern crate env_logger;
+#[macro_use]
+extern crate serde_json;
 
 use std::error::Error;
 use elastic::prelude::*;
@@ -17,11 +19,20 @@ fn run() -> Result<(), Box<Error>> {
     // A HTTP client and request parameters
     let client = SyncClientBuilder::new().build()?;
 
+    let ops = (0..1000)
+        .into_iter()
+        .map(|i| bulk_index(json!({
+                "id": i,
+                "title": "some string value"
+            }))
+            .id(i));
+
     // Execute a bulk request
-    let bulk = client
-        .request(BulkRequest::new(bulk_body()))
-        .send()?
-        .into_response::<BulkResponse>()?;
+    let bulk = client.bulk()
+        .index("bulk_idx")
+        .ty("bulk_ty")
+        .extend(ops)
+        .send()?;
 
     for op in bulk {
         match op {
@@ -31,24 +42,6 @@ fn run() -> Result<(), Box<Error>> {
     }
 
     Ok(())
-}
-
-fn bulk_body() -> String {
-    let mut bulk = String::new();
-    for i in 1..1000 {
-        let header = format!(
-            "{{ \"index\" : {{ \"_index\" : \"test\", \"_type\" : \"ty\", \"_id\" : \"{}\" }} }}",
-            i
-        );
-        let body = format!("{{ \"title\" : \"string value {}\" }}", i);
-
-        bulk.push_str(&header);
-        bulk.push('\n');
-        bulk.push_str(&body);
-        bulk.push('\n');
-    }
-
-    bulk
 }
 
 fn main() {

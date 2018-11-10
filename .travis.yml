@@ -16,10 +16,6 @@ matrix:
     - rust: nightly
       env:
         - CHANNEL="nightly"
-        - KIND="bench"
-    - rust: nightly
-      env:
-        - CHANNEL="nightly"
         - KIND="integration"
 
 script: ./ci/travis.sh

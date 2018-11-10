@@ -286,6 +286,7 @@ extern crate elastic_types;
 #[macro_use]
 extern crate error_chain;
 extern crate fluent_builder;
+#[macro_use]
 extern crate futures;
 extern crate futures_cpupool;
 #[macro_use]
@@ -293,6 +294,7 @@ extern crate log;
 #[macro_use]
 extern crate quick_error;
 extern crate reqwest;
+extern crate crossbeam_channel as channel;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
@@ -301,6 +303,7 @@ extern crate serde_json;
 extern crate tokio_core;
 extern crate tokio_io;
 extern crate url;
+extern crate tokio_timer;
 extern crate uuid;
 
 pub mod error;

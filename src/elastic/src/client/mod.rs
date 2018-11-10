@@ -102,6 +102,7 @@ They're exposed as methods on the `Client`:
 Client method                                                 | Elasticsearch API                  | Raw request type                                        | Response type
 ------------------------------------------------------------- | ---------------------------------- | ------------------------------------------------------- | ------------------------------------
 [`search`][Client.search]                                     | [Search][docs-search]              | [`SearchRequest`][SearchRequest]                        | [`SearchResponse`][SearchResponse]
+[`bulk`][Client.bulk]                                         | [Bulk][docs-bulk]                  | [`BulkRequest`][BulkRequest]                            | [`BulkResponse`][BulkResponse]
 [`document_get`][Client.document_get]                         | [Get Document][docs-get]           | [`GetRequest`][GetRequest]                              | [`GetResponse`][GetResponse]
 [`document_index`][Client.document_index]                     | [Index Document][docs-index]       | [`IndexRequest`][IndexRequest]                          | [`IndexResponse`][IndexResponse]
 [`document_update`][Client.document_update]                   | [Update Document][docs-update]     | [`UpdateRequest`][UpdateRequest]                        | [`UpdateResponse`][UpdateResponse]
@@ -437,6 +438,7 @@ future.and_then(|body| {
 `AsyncHttpResponse` implements the async `Stream` trait so you can buffer out the raw response data.
 For more details see the [`responses`][responses-mod] module.
 
+[docs-bulk]: http://www.elastic.co/guide/en/elasticsearch/reference/current/docs-bulk.html
 [docs-search]: http://www.elastic.co/guide/en/elasticsearch/reference/current/search-search.html
 [docs-get]: http://www.elastic.co/guide/en/elasticsearch/reference/current/docs-get.html
 [docs-update]: http://www.elastic.co/guide/en/elasticsearch/reference/current/docs-update.html
@@ -458,6 +460,7 @@ For more details see the [`responses`][responses-mod] module.
 [AsyncClient]: type.AsyncClient.html
 [AsyncClientBuilder]: struct.AsyncClientBuilder.html
 [Client.request]: struct.Client.html#method.request
+[Client.bulk]: struct.Client.html#bulk-request
 [Client.search]: struct.Client.html#search-request
 [Client.document_get]: struct.Client.html#get-document-request
 [Client.document_update]: struct.Client.html#update-document-request
@@ -475,6 +478,7 @@ For more details see the [`responses`][responses-mod] module.
 [RequestBuilder.params]: requests/struct.RequestBuilder.html#method.params
 [RawRequestBuilder]: requests/type.RawRequestBuilder.html
 [SearchRequest]: requests/endpoints/struct.SearchRequest.html
+[BulkRequest]: requests/endpoints/struct.BulkRequest.html
 [GetRequest]: requests/endpoints/struct.GetRequest.html
 [UpdateRequest]: requests/endpoints/struct.UpdateRequest.html
 [DeleteRequest]: requests/endpoints/struct.DeleteRequest.html
@@ -494,10 +498,11 @@ For more details see the [`responses`][responses-mod] module.
 [AsyncResponseBuilder]: responses/struct.AsyncResponseBuilder.html
 [AsyncResponseBuilder.into_response]: responses/struct.AsyncResponseBuilder.html#method.into_response
 [AsyncResponseBuilder.into_raw]: responses/struct.AsyncResponseBuilder.html#method.into_raw
-[SearchResponse]: responses/type.SearchResponse.html
-[GetResponse]: responses/type.GetResponse.html
-[UpdateResponse]: responses/type.UpdateResponse.html
-[DeleteResponse]: responses/type.DeleteResponse.html
+[SearchResponse]: responses/struct.SearchResponse.html
+[BulkResponse]: responses/struct.BulkResponse.html
+[GetResponse]: responses/struct.GetResponse.html
+[UpdateResponse]: responses/struct.UpdateResponse.html
+[DeleteResponse]: responses/struct.DeleteResponse.html
 [IndexResponse]: responses/struct.IndexResponse.html
 [IndicesExistsResponse]: responses/struct.IndicesExistsResponse.html
 [PingResponse]: responses/struct.PingResponse.html
