@@ -72,12 +72,52 @@ where
 
     # Examples
 
-    > TODO
+    Send a bulk request to index some documents:
 
-    [BulkRequestBuilder]: requests/search/type.BulkRequestBuilder.html
-    [builder-methods]: requests/search/type.BulkRequestBuilder.html#builder-methods
-    [send-sync]: requests/search/type.BulkRequestBuilder.html#send-synchronously
-    [send-async]: requests/search/type.BulkRequestBuilder.html#send-asynchronously
+    ```no_run
+    # extern crate serde;
+    # #[macro_use]
+    # extern crate serde_derive;
+    # #[macro_use]
+    # extern crate elastic_derive;
+    # extern crate elastic;
+    # use elastic::prelude::*;
+    # fn main() { run().unwrap() }
+    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # #[derive(Serialize, Deserialize, ElasticType)]
+    # struct MyType {
+    #     pub id: i32,
+    #     pub title: String,
+    # }
+    # let client = SyncClientBuilder::new().build()?;
+    let ops = (0..1000)
+        .into_iter()
+        .map(|i| bulk_index(MyType {
+                id: i,
+                title: "some string value".into()
+            })
+            .id(i));
+
+    let response = client.bulk()
+                         .index("myindex")
+                         .ty(MyType::name())
+                         .extend(ops)
+                         .send()?;
+
+    for op in response {
+        match op {
+            Ok(op) => println!("ok: {:?}", op),
+            Err(op) => println!("err: {:?}", op),
+        }
+    }
+    # Ok(())
+    # }
+    ```
+
+    [BulkRequestBuilder]: requests/bulk/type.BulkRequestBuilder.html
+    [builder-methods]: requests/bulk/type.BulkRequestBuilder.html#builder-methods
+    [send-sync]: requests/bulk/type.BulkRequestBuilder.html#send-synchronously
+    [send-async]: requests/bulk/type.BulkRequestBuilder.html#send-asynchronously
     [types-mod]: ../../types/index.html
     [documents-mod]: ../../types/document/index.html
     [docs-querystring]: https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html
@@ -102,6 +142,9 @@ impl Client<AsyncSender> {
     /** 
     Create a [`BulkRequestBuilder`][BulkRequestBuilder] with this `Client` that can be configured before sending.
 
+    This method can configure a channel that individual bulk operations can be sent to.
+    The operations will be batched and debounced in the backgroun rather than being sent immediately.
+
     For more details, see:
 
     - [builder methods][builder-methods]
@@ -111,13 +154,63 @@ impl Client<AsyncSender> {
 
     # Examples
 
-    > TODO
+    Stream a bulk request to index some documents:
 
-    [BulkRequestBuilder]: requests/search/type.BulkRequestBuilder.html
-    [builder-methods]: requests/search/type.BulkRequestBuilder.html#builder-methods
-    [stream-builder-methods]: requests/search/type.BulkRequestBuilder.html#stream-builder-methods
-    [send-sync]: requests/search/type.BulkRequestBuilder.html#send-synchronously
-    [send-async]: requests/search/type.BulkRequestBuilder.html#send-asynchronously
+    ```no_run
+    # extern crate serde;
+    # extern crate futures;
+    # extern crate tokio_core;
+    # #[macro_use] extern crate serde_derive;
+    # #[macro_use] extern crate elastic_derive;
+    # extern crate elastic;
+    # use std::time::Duration;
+    # use futures::{Future, Stream, Sink};
+    # use elastic::prelude::*;
+    # fn main() { run().unwrap() }
+    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # #[derive(Serialize, Deserialize, ElasticType)]
+    # struct MyType {
+    #     pub id: i32,
+    #     pub title: String,
+    # }
+    # let core = tokio_core::reactor::Core::new()?;
+    # let client = AsyncClientBuilder::new().build(&core.handle())?;
+    let (bulk_stream, bulk_responses) = client.bulk_stream()
+        .index("bulk_idx")
+        .ty(MyType::name())
+        .timeout(Duration::from_secs(5))
+        .body_size_bytes(1024)
+        .build();
+
+    let ops = (0..1000)
+        .into_iter()
+        .map(|i| bulk_index(MyType {
+                id: i,
+                title: "some string value".into()
+            })
+            .id(i));
+
+    let req_future = bulk_stream.send_all(futures::stream::iter_ok(ops));
+
+    let res_future = bulk_responses.for_each(|bulk| {
+        println!("response:");
+        for op in bulk {
+            match op {
+                Ok(op) => println!("  ok: {:?}", op),
+                Err(op) => println!("  err: {:?}", op),
+            }
+        }
+
+        Ok(())
+    });
+    # Ok(())
+    # }
+    ```
+
+    [BulkRequestBuilder]: requests/bulk/type.BulkRequestBuilder.html
+    [builder-methods]: requests/bulk/type.BulkRequestBuilder.html#stream-builder-methods\
+    [send-sync]: requests/bulk/type.BulkRequestBuilder.html#send-synchronously
+    [send-async]: requests/bulk/type.BulkRequestBuilder.html#send-asynchronously
     [types-mod]: ../../types/index.html
     [documents-mod]: ../../types/document/index.html
     [docs-querystring]: https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html
@@ -435,7 +528,47 @@ where
 
     # Examples
 
-    > TODO
+    Send a bulk request to index some documents:
+
+    ```no_run
+    # extern crate serde;
+    # #[macro_use]
+    # extern crate serde_derive;
+    # #[macro_use]
+    # extern crate elastic_derive;
+    # extern crate elastic;
+    # use elastic::prelude::*;
+    # fn main() { run().unwrap() }
+    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # #[derive(Serialize, Deserialize, ElasticType)]
+    # struct MyType {
+    #     pub id: i32,
+    #     pub title: String,
+    # }
+    # let client = SyncClientBuilder::new().build()?;
+    let ops = (0..1000)
+        .into_iter()
+        .map(|i| bulk_index(MyType {
+                id: i,
+                title: "some string value".into()
+            })
+            .id(i));
+
+    let response = client.bulk()
+                         .index("myindex")
+                         .ty(MyType::name())
+                         .extend(ops)
+                         .send()?;
+
+    for op in response {
+        match op {
+            Ok(op) => println!("ok: {:?}", op),
+            Err(op) => println!("err: {:?}", op),
+        }
+    }
+    # Ok(())
+    # }
+    ```
 
     [SyncClient]: ../../type.SyncClient.html
     */
@@ -463,7 +596,53 @@ where
 
     # Examples
 
-    > TODO
+    Send a bulk request to index some documents:
+
+    ```no_run
+    # extern crate serde;
+    # extern crate futures;
+    # extern crate tokio_core;
+    # #[macro_use] extern crate serde_derive;
+    # #[macro_use] extern crate elastic_derive;
+    # extern crate elastic;
+    # use futures::Future;
+    # use elastic::prelude::*;
+    # fn main() { run().unwrap() }
+    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # #[derive(Serialize, Deserialize, ElasticType)]
+    # struct MyType {
+    #     pub id: i32,
+    #     pub title: String,
+    # }
+    # let core = tokio_core::reactor::Core::new()?;
+    # let client = AsyncClientBuilder::new().build(&core.handle())?;
+    let ops = (0..1000)
+        .into_iter()
+        .map(|i| bulk_index(MyType {
+                id: i,
+                title: "some string value".into()
+            })
+            .id(i));
+
+    let future = client.bulk()
+                         .index("myindex")
+                         .ty(MyType::name())
+                         .extend(ops)
+                         .send();
+
+    future.and_then(|response| {
+        for op in response {
+            match op {
+                Ok(op) => println!("ok: {:?}", op),
+                Err(op) => println!("err: {:?}", op),
+            }
+        }
+
+        Ok(())
+    });
+    # Ok(())
+    # }
+    ```
 
     [AsyncClient]: ../../type.AsyncClient.html
     */
