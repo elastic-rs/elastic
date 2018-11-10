@@ -50,7 +50,11 @@ pub use self::index_exists::IndexExistsRequestBuilder;
 
 // Misc requests
 pub mod ping;
+pub mod bulk;
 pub use self::ping::PingRequestBuilder;
+pub use self::bulk::BulkRequestBuilder;
+
+pub mod common;
 
 /**
 A builder for a request.
@@ -243,6 +247,13 @@ pub mod prelude {
 
     pub use super::params::*;
     pub use super::endpoints::*;
+
+    pub use super::bulk::{
+        bulk_index,
+        bulk_update,
+        bulk_create,
+        bulk_delete,
+    };
 
     pub use super::{
         empty_body,

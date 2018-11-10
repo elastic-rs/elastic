@@ -6,8 +6,8 @@ Builders for [update document requests][docs-update].
 
 use std::marker::PhantomData;
 use futures::{Future, Poll};
-use serde_json::{self, Map, Value};
-use serde::ser::{Serialize, Serializer};
+use serde_json;
+use serde::ser::Serialize;
 
 use error::{self, Error};
 use client::Client;
@@ -18,6 +18,8 @@ use client::requests::endpoints::UpdateRequest;
 use client::requests::raw::RawRequestInner;
 use client::responses::UpdateResponse;
 use types::document::DocumentType;
+
+pub use client::requests::common::{Doc, Script, ScriptBuilder, DefaultParams};
 
 /** 
 An [update document request][docs-update] builder that can be configured before sending.
@@ -638,136 +640,6 @@ impl Future for Pending {
 
     fn poll(&mut self) -> Poll<Self::Item, Self::Error> {
         self.inner.poll()
-    }
-}
-
-/** Update an indexed document using a new document. */
-#[derive(Serialize)]
-pub struct Doc<TDocument> {
-    doc: DocInner<TDocument>,
-}
-
-impl<TDocument> Doc<TDocument> {
-    fn empty() -> Self {
-        Doc {
-            doc: DocInner { inner: None },
-        }
-    }
-
-    fn value(doc: TDocument) -> Self {
-        Doc {
-            doc: DocInner { inner: Some(doc) },
-        }
-    }
-}
-
-struct DocInner<TDocument> {
-    inner: Option<TDocument>,
-}
-
-impl<TDocument> Serialize for DocInner<TDocument>
-where
-    TDocument: Serialize,
-{
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        match self.inner {
-            Some(ref doc) => doc.serialize(serializer),
-            None => Value::Object(Map::new()).serialize(serializer),
-        }
-    }
-}
-
-type DefaultParams = Map<String, Value>;
-
-/** Update an indexed document using a script. */
-#[derive(Serialize)]
-pub struct Script<TParams> {
-    script: ScriptInner<TParams>,
-}
-
-#[derive(Serialize)]
-struct ScriptInner<TParams> {
-    #[serde(rename = "inline")] source: String,
-    #[serde(skip_serializing_if = "Option::is_none")] lang: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")] params: Option<TParams>,
-}
-
-/** A builder for an update script that can be configured before sending. */
-pub struct ScriptBuilder<TParams> {
-    source: String,
-    lang: Option<String>,
-    params: Option<TParams>,
-}
-
-impl ScriptBuilder<DefaultParams> {
-    /** Create a new script builder using the given source. */
-    pub fn new<TScript>(source: TScript) -> Self
-    where
-        TScript: ToString,
-    {
-        ScriptBuilder {
-            source: source.to_string(),
-            params: None,
-            lang: None,
-        }
-    }
-
-    /** Set a script parameter. */
-    pub fn param<TKey, TValue>(mut self, key: TKey, value: TValue) -> Self
-    where
-        TKey: ToString,
-        TValue: Into<Value>,
-    {
-        let mut params = self.params.unwrap_or_else(DefaultParams::new);
-        params.insert(key.to_string(), value.into());
-
-        self.params = Some(params);
-        self
-    }
-}
-
-impl<TParams> ScriptBuilder<TParams> {
-    /** Set the language for the update script. */
-    pub fn lang<TLang>(mut self, lang: Option<TLang>) -> Self
-    where
-        TLang: ToString,
-    {
-        self.lang = lang.map(|lang| lang.to_string());
-        self
-    }
-
-    /** Specify a new set of parameters for the update script. */
-    pub fn params<TNewParams>(self, params: TNewParams) -> ScriptBuilder<TNewParams> {
-        ScriptBuilder {
-            source: self.source,
-            lang: self.lang,
-            params: Some(params),
-        }
-    }
-
-    fn build(self) -> Script<TParams> {
-        Script {
-            script: ScriptInner {
-                source: self.source,
-                params: self.params,
-                lang: self.lang,
-            },
-        }
-    }
-}
-
-impl From<String> for ScriptBuilder<DefaultParams> {
-    fn from(source: String) -> Self {
-        ScriptBuilder::new(source)
-    }
-}
-
-impl<'a> From<&'a str> for ScriptBuilder<DefaultParams> {
-    fn from(source: &'a str) -> Self {
-        ScriptBuilder::new(source)
     }
 }
 

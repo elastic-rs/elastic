@@ -508,7 +508,7 @@ where
 }
 
 /** The bulk action being performed. */
-#[derive(Deserialize, Debug, Clone, Copy)]
+#[derive(Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Action {
     #[serde(rename = "index")] Index,
     #[serde(rename = "create")] Create,
