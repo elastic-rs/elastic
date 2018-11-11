@@ -31,6 +31,13 @@ impl DerivedDocument2 {
 }
 
 #[derive(ElasticType)]
+pub struct DerivedDocument2U32 {
+    #[elastic(id(expr = "ToString::to_string"))]
+    pub field1: i32,
+    pub field2: i32,
+}
+
+#[derive(ElasticType)]
 #[elastic(index = "derived_documents", id(expr = "DerivedDocument3::id"))]
 pub struct DerivedDocument3 {
     pub field1: String,

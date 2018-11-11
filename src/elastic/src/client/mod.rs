@@ -103,17 +103,18 @@ Client method                                                 | Elasticsearch AP
 ------------------------------------------------------------- | ---------------------------------- | ------------------------------------------------------- | ------------------------------------
 [`search`][Client.search]                                     | [Search][docs-search]              | [`SearchRequest`][SearchRequest]                        | [`SearchResponse`][SearchResponse]
 [`bulk`][Client.bulk]                                         | [Bulk][docs-bulk]                  | [`BulkRequest`][BulkRequest]                            | [`BulkResponse`][BulkResponse]
-[`document_get`][Client.document_get]                         | [Get Document][docs-get]           | [`GetRequest`][GetRequest]                              | [`GetResponse`][GetResponse]
-[`document_index`][Client.document_index]                     | [Index Document][docs-index]       | [`IndexRequest`][IndexRequest]                          | [`IndexResponse`][IndexResponse]
-[`document_update`][Client.document_update]                   | [Update Document][docs-update]     | [`UpdateRequest`][UpdateRequest]                        | [`UpdateResponse`][UpdateResponse]
-[`document_delete`][Client.document_delete]                   | [Delete Document][docs-delete]     | [`DeleteRequest`][DeleteRequest]                        | [`DeleteResponse`][DeleteResponse]
-[`document_put_mapping`][Client.document_put_mapping]         | [Put Mapping][docs-mapping]        | [`IndicesPutMappingRequest`][IndicesPutMappingRequest]  | [`CommandResponse`][CommandResponse]
-[`index_create`][Client.index_create]                         | [Create Index][docs-create-index]  | [`IndicesCreateRequest`][IndicesCreateRequest]          | [`CommandResponse`][CommandResponse]
-[`index_open`][Client.index_open]                             | [Open Index][docs-open-index]      | [`IndicesOpenRequest`][IndicesOpenRequest]              | [`CommandResponse`][CommandResponse]
-[`index_close`][Client.index_close]                           | [Close Index][docs-close-index]    | [`IndicesCloseRequest`][IndicesCloseRequest]            | [`CommandResponse`][CommandResponse]
-[`index_delete`][Client.index_delete]                         | [Delete Index][docs-delete-index]  | [`IndicesDeleteRequest`][IndicesDeleteRequest]          | [`CommandResponse`][CommandResponse]
-[`index_exists`][Client.index_exists]                         | [Index Exists][docs-index-exists]  | [`IndicesExistsRequest`][IndicesExistsRequest]          | [`IndicesExistsResponse`][IndicesExistsResponse]
 [`ping`][Client.ping]                                         | -                                  | [`PingRequest`][PingRequest]                            | [`PingResponse`][PingResponse]
+[`document.search`][Client.document.search]                   | [Search][docs-search]              | [`SearchRequest`][SearchRequest]                        | [`SearchResponse`][SearchResponse]
+[`document.get`][Client.document.get]                         | [Get Document][docs-get]           | [`GetRequest`][GetRequest]                              | [`GetResponse`][GetResponse]
+[`document.index`][Client.document.index]                     | [Index Document][docs-index]       | [`IndexRequest`][IndexRequest]                          | [`IndexResponse`][IndexResponse]
+[`document.update`][Client.document.update]                   | [Update Document][docs-update]     | [`UpdateRequest`][UpdateRequest]                        | [`UpdateResponse`][UpdateResponse]
+[`document.delete`][Client.document.delete]                   | [Delete Document][docs-delete]     | [`DeleteRequest`][DeleteRequest]                        | [`DeleteResponse`][DeleteResponse]
+[`document.put_mapping`][Client.document.put_mapping]         | [Put Mapping][docs-mapping]        | [`IndicesPutMappingRequest`][IndicesPutMappingRequest]  | [`CommandResponse`][CommandResponse]
+[`index.create`][Client.index.create]                         | [Create Index][docs-create-index]  | [`IndicesCreateRequest`][IndicesCreateRequest]          | [`CommandResponse`][CommandResponse]
+[`index.open`][Client.index.open]                             | [Open Index][docs-open-index]      | [`IndicesOpenRequest`][IndicesOpenRequest]              | [`CommandResponse`][CommandResponse]
+[`index.close`][Client.index.close]                           | [Close Index][docs-close-index]    | [`IndicesCloseRequest`][IndicesCloseRequest]            | [`CommandResponse`][CommandResponse]
+[`index.delete`][Client.index.delete]                         | [Delete Index][docs-delete-index]  | [`IndicesDeleteRequest`][IndicesDeleteRequest]          | [`CommandResponse`][CommandResponse]
+[`index.exists`][Client.index.exists]                         | [Index Exists][docs-index-exists]  | [`IndicesExistsRequest`][IndicesExistsRequest]          | [`IndicesExistsResponse`][IndicesExistsResponse]
 
 All builders follow a standard pattern:
 
@@ -122,7 +123,7 @@ All builders follow a standard pattern:
 - `send` will return a specific response type
 
 The high-level request builders are wrappers around the [`Client.request`][Client.request] method, taking a [raw request type][endpoints-mod].
-For example, a `document_get` request for a value:
+For example, a `get` request for an anonymous json value:
 
 ```no_run
 # extern crate serde_json;
@@ -132,7 +133,7 @@ For example, a `document_get` request for a value:
 # fn main() { run().unwrap() }
 # fn run() -> Result<(), Box<::std::error::Error>> {
 # let client = SyncClientBuilder::new().build()?;
-let response = client.document_get::<Value>(index("values"), id(1)).send()?;
+let response = client.document::<Value>().get_raw("values", 1).send()?;
 # Ok(())
 # }
 ```
@@ -462,16 +463,17 @@ For more details see the [`responses`][responses-mod] module.
 [Client.request]: struct.Client.html#method.request
 [Client.bulk]: struct.Client.html#bulk-request
 [Client.search]: struct.Client.html#search-request
-[Client.document_get]: struct.Client.html#get-document-request
-[Client.document_update]: struct.Client.html#update-document-request
-[Client.document_delete]: struct.Client.html#delete-document-request
-[Client.document_index]: struct.Client.html#index-document-request
-[Client.document_put_mapping]: struct.Client.html#method.document_put_mapping
-[Client.index_create]: struct.Client.html#create-index-request
-[Client.index_open]: struct.Client.html#open-index-request
-[Client.index_close]: struct.Client.html#close-index-request
-[Client.index_delete]: struct.Client.html#delete-index-request
-[Client.index_exists]: struct.Client.html#index-exists-request
+[Client.document.search]: struct.DocumentClient.html#search-request
+[Client.document.get]: struct.DocumentClient.html#get-document-request
+[Client.document.update]: struct.DocumentClient.html#update-document-request
+[Client.document.delete]: struct.DocumentClient.html#delete-document-request
+[Client.document.index]: struct.DocumentClient.html#index-document-request
+[Client.document.put_mapping]: struct.DocumentClient.html#method.put_mapping
+[Client.index.create]: struct.IndexClient.html#create-index-request
+[Client.index.open]: struct.IndexClient.html#open-index-request
+[Client.index.close]: struct.IndexClient.html#close-index-request
+[Client.index.delete]: struct.IndexClient.html#delete-index-request
+[Client.index.exists]: struct.IndexClient.html#index-exists-request
 [Client.ping]: struct.Client.html#ping-request
 
 [RequestBuilder]: requests/struct.RequestBuilder.html
@@ -518,7 +520,9 @@ pub mod responses;
 
 pub use self::sender::{AsyncClient, AsyncClientBuilder, PreRequestParams, RequestParams, SyncClient, SyncClientBuilder};
 
-use self::sender::NodeAddresses;
+use std::marker::PhantomData;
+use self::sender::{Sender, NodeAddresses};
+use self::requests::params::Index;
 
 /**
 A HTTP client for the Elasticsearch REST API.
@@ -577,6 +581,59 @@ core.run(response_future)?;
 pub struct Client<TSender> {
     sender: TSender,
     addresses: NodeAddresses<TSender>,
+}
+
+impl<TSender> Client<TSender>
+where
+    TSender: Sender,
+{
+    /**
+    Get a client for a specific document type.
+    
+    The document type can provide extra metadata like index and type names
+    that can be used to simplify other API methods.
+    */
+    pub fn document<TDocument>(&self) -> DocumentClient<TSender, TDocument> {
+        DocumentClient {
+            inner: (*self).clone(),
+            _m: Default::default(),
+        }
+    }
+
+    /**
+    Get a client for a specific index.
+    */
+    pub fn index<TIndex>(&self, index: TIndex) -> IndexClient<TSender>
+    where
+        TIndex: Into<Index<'static>>,
+    {
+        IndexClient {
+            inner: (*self).clone(),
+            index: index.into(),
+        }
+    }
+}
+
+/**
+A [`Client`] for a specific document type.
+
+[`Client`]: struct.Client.html
+*/
+#[derive(Clone)]
+pub struct DocumentClient<TSender, TDocument> {
+    inner: Client<TSender>,
+    _m: PhantomData<TDocument>,
+}
+
+/**
+A [`Client`] for a specific index.
+
+[`Client`]: struct.Client.html
+*/
+#[derive(Clone)]
+pub struct IndexClient<TSender> {
+    inner: Client<TSender>,
+    index: Index<'static>,
 }
 
 pub mod prelude {

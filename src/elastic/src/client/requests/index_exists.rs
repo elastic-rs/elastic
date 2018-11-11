@@ -7,7 +7,7 @@ Builders for [index exists requests][docs-index-exists].
 use futures::{Future, Poll};
 
 use error::*;
-use client::Client;
+use client::IndexClient;
 use client::sender::{AsyncSender, Sender, SyncSender};
 use client::requests::RequestBuilder;
 use client::requests::params::Index;
@@ -36,7 +36,7 @@ pub struct IndexExistsRequestInner {
 /**
 # Index exists request
 */
-impl<TSender> Client<TSender>
+impl<TSender> IndexClient<TSender>
 where
     TSender: Sender,
 {
@@ -58,7 +58,7 @@ where
     # fn main() { run().unwrap() }
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # let client = SyncClientBuilder::new().build()?;
-    let response = client.index_exists(index("myindex")).send()?;
+    let response = client.index("myindex").exists().send()?;
 
     assert!(response.exists());
     # Ok(())
@@ -70,8 +70,8 @@ where
     [send-sync]: requests/index_exists/type.IndexExistsRequestBuilder.html#send-synchronously
     [send-async]: requests/index_exists/type.IndexExistsRequestBuilder.html#send-asynchronously
     */
-    pub fn index_exists(&self, index: Index<'static>) -> IndexExistsRequestBuilder<TSender> {
-        RequestBuilder::initial(self.clone(), IndexExistsRequestInner { index: index })
+    pub fn exists(self) -> IndexExistsRequestBuilder<TSender> {
+        RequestBuilder::initial(self.inner, IndexExistsRequestInner { index: self.index })
     }
 }
 

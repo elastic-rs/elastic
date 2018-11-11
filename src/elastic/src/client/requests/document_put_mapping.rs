@@ -9,7 +9,7 @@ use serde_json;
 use futures::{Future, Poll};
 
 use error::{self, Error, Result};
-use client::Client;
+use client::DocumentClient;
 use client::sender::{AsyncSender, Sender, SyncSender};
 use client::requests::RequestBuilder;
 use client::requests::params::{Index, Type};
@@ -41,7 +41,7 @@ pub struct PutMappingRequestInner<TDocument> {
 /**
 # Put mapping request
 */
-impl<TSender> Client<TSender>
+impl<TSender, TDocument> DocumentClient<TSender, TDocument>
 where
     TSender: Sender,
 {
@@ -69,7 +69,8 @@ where
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType { }
     # let client = SyncClientBuilder::new().build()?;
-    let response = client.document_put_mapping::<MyType>(index("myindex"))
+    let response = client.document::<MyType>()
+                         .put_mapping()
                          .send()?;
 
     assert!(response.acknowledged());
@@ -86,7 +87,7 @@ where
     [types-mod]: ../types/index.html
     [documents-mod]: ../types/document/index.html
     */
-    pub fn document_put_mapping<TDocument>(&self) -> PutMappingRequestBuilder<TSender, TDocument>
+    pub fn put_mapping(self) -> PutMappingRequestBuilder<TSender, TDocument>
     where
         TDocument: DocumentType + StaticIndex + StaticType,
     {
@@ -94,7 +95,7 @@ where
         let ty = TDocument::static_ty().into();
 
         RequestBuilder::initial(
-            self.clone(),
+            self.inner,
             PutMappingRequestInner {
                 index: index,
                 ty: ty,

@@ -9,7 +9,7 @@ use futures::{Future, Poll};
 use serde::de::DeserializeOwned;
 
 use error::{Error, Result};
-use client::Client;
+use client::DocumentClient;
 use client::sender::{AsyncSender, Sender, SyncSender};
 use client::requests::RequestBuilder;
 use client::requests::params::{Id, Index, Type};
@@ -42,7 +42,7 @@ pub struct GetRequestInner<TDocument> {
 /**
 # Get document request
 */
-impl<TSender> Client<TSender>
+impl<TSender, TDocument> DocumentClient<TSender, TDocument>
 where
     TSender: Sender,
 {
@@ -61,34 +61,68 @@ where
     
     ```no_run
     # extern crate serde;
-    # #[macro_use]
-    # extern crate serde_derive;
-    # #[macro_use]
-    # extern crate elastic_derive;
+    # extern crate serde_json;
+    # #[macro_use] extern crate serde_derive;
+    # #[macro_use] extern crate elastic_derive;
     # extern crate elastic;
+    # use serde_json::Value;
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
     #     pub id: i32,
     #     pub title: String,
     #     pub timestamp: Date<DefaultDateMapping>
     # }
+    # fn run() -> Result<(), Box<::std::error::Error>> {
     # let client = SyncClientBuilder::new().build()?;
-    let response = client.document_get::<MyType>(index("myindex"), id(1))
+    let response = client.document::<MyType>()
+                         .get(1)
                          .send()?;
-
-    if let Some(doc) = response.into_document() {
-        println!("id: {}", doc.id);
-    }
     # Ok(())
     # }
     ```
 
     For more details on document types, see the [`types`][types-mod] module.
 
-    Get the same document as a `serde_json::Value`:
+    [GetRequestBuilder]: requests/document_get/type.GetRequestBuilder.html
+    [builder-methods]: requests/document_get/type.GetRequestBuilder.html#builder-methods
+    [send-sync]: requests/document_get/type.GetRequestBuilder.html#send-synchronously
+    [send-async]: requests/document_get/type.GetRequestBuilder.html#send-asynchronously
+    [types-mod]: ../types/index.html
+    [documents-mod]: ../types/document/index.html
+    */
+    pub fn get<TId>(self, id: TId) -> GetRequestBuilder<TSender, TDocument>
+    where
+        TId: Into<Id<'static>>,
+        TDocument: DeserializeOwned + DocumentType + StaticIndex + StaticType,
+    {
+        let index = TDocument::static_index().into();
+        let ty = TDocument::static_ty().into();
+
+        RequestBuilder::initial(
+            self.inner,
+            GetRequestInner {
+                index: index,
+                ty: ty,
+                id: id.into(),
+                _marker: PhantomData,
+            },
+        )
+    }
+
+    /** 
+    Create a [`GetRequestBuilder`][GetRequestBuilder] with this `Client` that can be configured before sending.
+
+    For more details, see:
+
+    - [builder methods][builder-methods]
+    - [send synchronously][send-sync]
+    - [send asynchronously][send-async]
+
+    # Examples
+
+    Get a document as a `serde_json::Value`:
 
     ```no_run
     # extern crate serde;
@@ -101,8 +135,8 @@ where
     # fn main() { run().unwrap() }
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # let client = SyncClientBuilder::new().build()?;
-    let response = client.document_get::<Value>(index("myindex"), id(1))
-                         .ty("mytype")
+    let response = client.document::<Value>()
+                         .get_raw("myindex", "mytype", 1)
                          .send()?;
     # Ok(())
     # }
@@ -115,19 +149,19 @@ where
     [types-mod]: ../types/index.html
     [documents-mod]: ../types/document/index.html
     */
-    pub fn document_get<TDocument>(&self, id: Id<'static>) -> GetRequestBuilder<TSender, TDocument>
+    pub fn get_raw<TIndex, TType, TId>(self, index: TIndex, ty: TType, id: TId) -> GetRequestBuilder<TSender, TDocument>
     where
-        TDocument: DeserializeOwned + DocumentType + StaticIndex + StaticType,
+        TIndex: Into<Index<'static>>,
+        TType: Into<Type<'static>>,
+        TId: Into<Id<'static>>,
+        TDocument: DeserializeOwned,
     {
-        let index = TDocument::static_index().into();
-        let ty = TDocument::static_ty().into();
-
         RequestBuilder::initial(
-            self.clone(),
+            self.inner,
             GetRequestInner {
-                index: index,
-                ty: ty,
-                id: id,
+                index: index.into(),
+                ty: ty.into(),
+                id: id.into(),
                 _marker: PhantomData,
             },
         )

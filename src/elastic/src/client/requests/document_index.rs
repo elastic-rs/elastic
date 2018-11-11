@@ -11,7 +11,7 @@ use futures::{Future, Poll};
 use serde::Serialize;
 
 use error::{self, Error, Result};
-use client::Client;
+use client::DocumentClient;
 use client::sender::{AsyncSender, Sender, SyncSender};
 use client::requests::RequestBuilder;
 use client::requests::params::{Id, Index, Type};
@@ -44,7 +44,7 @@ pub struct IndexRequestInner<TDocument> {
 /**
 # Index document request
 */
-impl<TSender> Client<TSender>
+impl<TSender, TDocument> DocumentClient<TSender, TDocument>
 where
     TSender: Sender,
 {
@@ -69,21 +69,88 @@ where
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
     # fn run() -> Result<(), Box<::std::error::Error>> {
-    # #[derive(Serialize, Deserialize, ElasticType)]
-    # struct MyType {
-    #     pub id: i32,
-    #     pub title: String,
-    #     pub timestamp: Date<DefaultDateMapping>
-    # }
     # let client = SyncClientBuilder::new().build()?;
+    #[derive(Serialize, Deserialize, ElasticType)]
+    struct MyType {
+        #[elastic(id)]
+         pub id: String,
+         pub title: String,
+         pub timestamp: Date<DefaultDateMapping>
+    }
+
     let doc = MyType {
-        id: 1,
+        id: String::from(1),
         title: String::from("A title"),
         timestamp: Date::now()
     };
 
-    let doc_id = doc.id;
-    let response = client.document_index(index("myindex"), doc)
+    let response = client.document()
+                         .index(doc)
+                         .send()?;
+    
+    assert!(response.created());
+    # Ok(())
+    # }
+    ```
+
+    For more details on document types and mapping, see the [`types`][types-mod] module.
+    
+    [IndexRequestBuilder]: requests/document_index/type.IndexRequestBuilder.html
+    [builder-methods]: requests/document_index/type.IndexRequestBuilder.html#builder-methods
+    [send-sync]: requests/document_index/type.IndexRequestBuilder.html#send-synchronously
+    [send-async]: requests/document_index/type.IndexRequestBuilder.html#send-asynchronously
+    [types-mod]: ../types/index.html
+    [documents-mod]: ../types/document/index.html
+    */
+    pub fn index(self, doc: TDocument) -> IndexRequestBuilder<TSender, TDocument>
+    where
+        TDocument: Serialize + DocumentType,
+    {
+        let index = doc.index().into_owned().into();
+        let ty = doc.ty().into_owned().into();
+        let id = doc.partial_id().map(Cow::into_owned).map(Into::into);
+
+        RequestBuilder::initial(
+            self.inner,
+            IndexRequestInner {
+                index: index,
+                ty: ty,
+                id: id,
+                doc: doc,
+            },
+        )
+    }
+
+    /**
+    Create a [`IndexRequestBuilder`][IndexRequestBuilder] with this `Client` that can be configured before sending.
+
+    For more details, see:
+
+    - [builder methods][builder-methods]
+    - [send synchronously][send-sync]
+    - [send asynchronously][send-async]
+
+    # Examples
+
+    Index a [`DocumentType`][documents-mod] called `MyType` with an id of `1`:
+
+    ```no_run
+    # extern crate serde;
+    # #[macro_use] extern crate serde_derive;
+    # #[macro_use] extern crate elastic_derive;
+    # extern crate elastic;
+    # use elastic::prelude::*;
+    # fn main() { run().unwrap() }
+    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # let client = SyncClientBuilder::new().build()?;
+    let doc_id = 123;
+    let doc = json!({
+        "id": doc_id,
+        "title": "A document"
+    });
+
+    let response = client.document()
+                         .index_raw("myindex", "mytype", doc)
                          .id(doc_id)
                          .send()?;
     
@@ -101,20 +168,18 @@ where
     [types-mod]: ../types/index.html
     [documents-mod]: ../types/document/index.html
     */
-    pub fn document_index<TDocument>(&self, doc: TDocument) -> IndexRequestBuilder<TSender, TDocument>
+    pub fn index_raw<TIndex, TType>(self, index: TIndex, ty: TType, doc: TDocument) -> IndexRequestBuilder<TSender, TDocument>
     where
-        TDocument: Serialize + DocumentType,
+        TIndex: Into<Index<'static>>,
+        TType: Into<Type<'static>>,
+        TDocument: Serialize,
     {
-        let index = doc.index().into_owned().into();
-        let ty = doc.ty().into_owned().into();
-        let id = doc.partial_id().map(Cow::into_owned).map(Into::into);
-
         RequestBuilder::initial(
-            self.clone(),
+            self.inner,
             IndexRequestInner {
-                index: index,
-                ty: ty,
-                id: id,
+                index: index.into(),
+                ty: ty.into(),
+                id: None,
                 doc: doc,
             },
         )

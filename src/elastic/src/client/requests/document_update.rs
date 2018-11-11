@@ -10,7 +10,7 @@ use serde_json;
 use serde::ser::Serialize;
 
 use error::{self, Error};
-use client::Client;
+use client::DocumentClient;
 use client::sender::{AsyncSender, Sender, SyncSender};
 use client::requests::RequestBuilder;
 use client::requests::params::{Id, Index, Type};
@@ -46,7 +46,7 @@ pub struct UpdateRequestInner<TBody> {
 /**
 # Update document request
 */
-impl<TSender> Client<TSender>
+impl<TSender, TDocument> DocumentClient<TSender, TDocument>
 where
     TSender: Sender,
 {
@@ -81,7 +81,8 @@ where
     # }
     # let client = SyncClientBuilder::new().build()?;
     # let new_doc = MyType { id: 1, title: String::new(), timestamp: Date::now() };
-    let response = client.document_update::<MyType>(index("myindex"), id(1))
+    let response = client.document::<MyType>()
+                         .update(1)
                          .doc(new_doc)
                          .send()?;
 
@@ -112,7 +113,8 @@ where
     #     pub timestamp: Date<DefaultDateMapping>
     # }
     # let client = SyncClientBuilder::new().build()?;
-    let response = client.document_update::<MyType>(index("myindex"), id(1))
+    let response = client.document::<MyType>()
+                         .update(1)
                          .doc(json!({
                              "title": "New Title"
                          }))
@@ -143,7 +145,8 @@ where
     # }
     # let client = SyncClientBuilder::new().build()?;
     # let new_doc = MyType { id: 1, title: String::new(), timestamp: Date::now() };
-    let response = client.document_update::<MyType>(index("myindex"), id(1))
+    let response = client.document::<MyType>()
+                         .update(1)
                          .script(r#"ctx._source.title = "New Title""#)
                          .send()?;
 
@@ -172,7 +175,8 @@ where
     # }
     # let client = SyncClientBuilder::new().build()?;
     # let new_doc = MyType { id: 1, title: String::new(), timestamp: Date::now() };
-    let response = client.document_update::<MyType>(id(1))
+    let response = client.document::<MyType>()
+                         .update(1)
                          .script_fluent("ctx._source.title = params.newTitle", |script| script
                             .param("newTitle", "New Title"))
                          .send()?;
@@ -188,19 +192,81 @@ where
     [send-async]: requests/document_update/type.UpdateRequestBuilder.html#send-asynchronously
     [documents-mod]: ../types/document/index.html
     */
-    pub fn document_update<TDocument>(&self, id: Id<'static>) -> UpdateRequestBuilder<TSender, Doc<TDocument>>
+    pub fn update<TId>(self, id: TId) -> UpdateRequestBuilder<TSender, Doc<TDocument>>
     where
+        TId: Into<Id<'static>>,
         TDocument: DocumentType + StaticIndex + StaticType,
     {
         let index = TDocument::static_index().into();
         let ty = TDocument::static_ty().into();
 
         RequestBuilder::initial(
-            self.clone(),
+            self.inner,
             UpdateRequestInner {
                 index: index,
                 ty: ty,
-                id: id,
+                id: id.into(),
+                body: Doc::empty(),
+                _marker: PhantomData,
+            },
+        )
+    }
+}
+
+impl<TSender> DocumentClient<TSender, ()>
+where
+    TSender: Sender,
+{
+    /** 
+    Create an [`UpdateRequestBuilder`][UpdateRequestBuilder] with this `Client` that can be configured before sending.
+
+    For more details, see:
+
+    - [builder methods][builder-methods]
+    - [send synchronously][send-sync]
+    - [send asynchronously][send-async]
+
+    # Examples
+
+    Update a document with an id of `1` using a new document value:
+    
+    ```no_run
+    # extern crate serde;
+    # #[macro_use]
+    # extern crate serde_json;
+    # #[macro_use]
+    # extern crate serde_derive;
+    # #[macro_use]
+    # extern crate elastic_derive;
+    # extern crate elastic;
+    # use elastic::prelude::*;
+    # fn main() { run().unwrap() }
+    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # let client = SyncClientBuilder::new().build()?;
+    let response = client.document()
+                         .update_raw("myindex", "mytype", 1)
+                         .doc(json!({
+                             "title": "New Title"
+                         }))
+                         .send()?;
+
+    assert!(response.updated());
+    # Ok(())
+    # }
+    ```
+    */
+    pub fn update_raw<TIndex, TType, TId>(self, index: TIndex, ty: TType, id: TId) -> UpdateRequestBuilder<TSender, Doc<()>>
+    where
+        TIndex: Into<Index<'static>>,
+        TType: Into<Type<'static>>,
+        TId: Into<Id<'static>>,
+    {
+        RequestBuilder::initial(
+            self.inner,
+            UpdateRequestInner {
+                index: index.into(),
+                ty: ty.into(),
+                id: id.into(),
                 body: Doc::empty(),
                 _marker: PhantomData,
             },

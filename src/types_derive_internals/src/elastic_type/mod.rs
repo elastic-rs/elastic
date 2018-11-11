@@ -187,10 +187,16 @@ fn get_doc_ty_impl_block(
 
             let id = get_method_from_struct(item, "id")
                 .map(|id_expr| match id_expr {
-                    MethodFromStruct::Literal(_) => panic!("id attributes on a struct definition must be of the form #[id(expr = \"expression\")]"),
                     MethodFromStruct::Expr(method) => quote!(#method (self)),
+                    _ => panic!("id attributes on a struct definition must be of the form #[id(expr = \"expression\")]"),                    
                 })
-                .or_else(|| get_method_from_fields(fields, "id").map(|field| quote!(&self . #field)))
+                .or_else(|| get_method_from_fields(fields, "id").map(|field| {
+                    match field {
+                        MethodFromField::Field(field) => quote!(&self . #field),
+                        MethodFromField::Expr(field, method) => quote!(#method (&self . #field)),
+                        _ => panic!("id attributes on a field must be of the form #[id] or #[id(expr = \"expression\")]")
+                    }
+                }))
                 .map(|id_expr| quote!(Some((#id_expr).into())))
                 .unwrap_or_else(|| quote!(None));
 
@@ -226,7 +232,13 @@ fn get_doc_ty_impl_block(
 
             (Some(method), Some(block))
         } else {
-            (None, None)
+            let method = quote!(
+                fn partial_static_index() -> ::std::option::Option<&'static str> {
+                    None
+                }
+            );
+
+            (Some(method), None)
         };
 
         let (partial_static_ty, static_ty_block) = if ty_is_static {
@@ -242,7 +254,13 @@ fn get_doc_ty_impl_block(
 
             (Some(method), Some(block))
         } else {
-            (None, None)
+            let method = quote!(
+                fn partial_static_ty() -> ::std::option::Option<&'static str> {
+                    None
+                }
+            );
+
+            (Some(method), None)
         };
 
         let instance_methods = quote!(
@@ -362,7 +380,12 @@ quick_error! {
 enum MethodFromStruct {
     Literal(Tokens),
     Expr(Tokens),
+}
 
+enum MethodFromField {
+    Field(Tokens),
+    Literal(Tokens, Tokens),
+    Expr(Tokens, Tokens),
 }
 
 // Get the mapping ident supplied by an #[elastic()] attribute or create a default one
@@ -394,17 +417,40 @@ fn get_method_from_struct(item: &syn::MacroInput, method: &str) -> Option<Method
     None
 }
 
-fn get_method_from_fields(fields: &[(syn::Ident, &syn::Field)], method: &str) -> Option<Tokens> {
+fn get_method_from_fields(fields: &[(syn::Ident, &syn::Field)], method: &str) -> Option<MethodFromField> {
     for &(_, ref field) in fields {
-        if get_elastic_meta_items(&field.attrs)
+        let val = get_elastic_meta_items(&field.attrs);
+        let field = &field.ident;
+
+        // Return the field name for `#[method]`
+        if val
             .iter()
             .any(|meta| {
                 expect_ident(method, meta)
             })
         {
-            let field = &field.ident;
+            return Some(MethodFromField::Field(quote!(#field)));
+        }
+    
+        // Return the literal value for `#[method = literal]`
+        if let Some(lit) = val
+            .iter()
+            .filter_map(|meta| expect_name_value(method, meta))
+            .next()
+        {
+            return Some(MethodFromField::Literal(quote!(#field), quote!(#lit)))
+        }
 
-            return  Some(quote!(#field));
+        // Return the expr value for `#[method(expr = expr)]`
+        if let Some(expr) = val
+            .iter()
+            .filter_map(|meta| expect_list(method, meta))
+            .flat_map(|attrs| attrs)
+            .filter_map(|meta| expect_name_value("expr", meta))
+            .next()
+            .and_then(|expr| get_tokens_from_lit(expr).ok())
+        {
+            return Some(MethodFromField::Expr(quote!(#field), quote!(#expr)))
         }
     }
 
