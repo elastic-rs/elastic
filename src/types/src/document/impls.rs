@@ -29,20 +29,30 @@ pub trait DocumentType: ObjectFieldType {
 
     /** Try get an id for this document. */
     fn partial_id(&self) -> Option<Cow<str>>;
+
+    /** Try get a statically known index this document belongs to. */
+    fn partial_static_index() -> Option<&'static str>;
+
+    /** Try get a statically known type this document belongs to. */
+    fn partial_static_ty() -> Option<&'static str>;
 }
 
 /**
 An indexable Elasticsearch type with a static index.
 */
 pub trait StaticIndex: DocumentType {
-    fn static_index() -> &'static str;
+    fn static_index() -> &'static str {
+        Self::partial_static_index().expect("missing static index")
+    }
 }
 
 /**
 An indexable Elasticsearch type with a static document type.
 */
 pub trait StaticType: DocumentType {
-    fn static_ty() -> &'static str;
+    fn static_ty() -> &'static str {
+        Self::partial_static_ty().expect("missing static type")
+    }
 }
 
 /**
@@ -315,6 +325,14 @@ where
     fn partial_id(&self) -> Option<Cow<str>> {
         (*self).partial_id()
     }
+
+    fn partial_static_index() -> Option<&'static str> {
+        TDocument::partial_static_index()
+    }
+
+    fn partial_static_ty() -> Option<&'static str> {
+        TDocument::partial_static_ty()
+    }
 }
 
 impl<'a, TObject, TMapping> ObjectFieldType for Cow<'a, TObject>
@@ -339,6 +357,14 @@ where
 
     fn partial_id(&self) -> Option<Cow<str>> {
         self.as_ref().partial_id()
+    }
+
+    fn partial_static_index() -> Option<&'static str> {
+        TDocument::partial_static_index()
+    }
+
+    fn partial_static_ty() -> Option<&'static str> {
+        TDocument::partial_static_ty()
     }
 }
 

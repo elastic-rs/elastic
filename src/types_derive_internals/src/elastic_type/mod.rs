@@ -211,6 +211,40 @@ fn get_doc_ty_impl_block(
             ref id,
         } = get_doc_type_methods(item, fields);
 
+        let doc_ty = &item.ident;
+
+        let (partial_static_index, static_index_block) = if index_is_static {
+            let method = quote!(
+                fn partial_static_index() -> ::std::option::Option<&'static str> {
+                    Some(#index)
+                }
+            );
+
+            let block = quote!(
+                impl #crate_root::derive::StaticIndex for #doc_ty { }
+            );
+
+            (Some(method), Some(block))
+        } else {
+            (None, None)
+        };
+
+        let (partial_static_ty, static_ty_block) = if ty_is_static {
+            let method = quote!(
+                fn partial_static_ty() -> ::std::option::Option<&'static str> {
+                    Some(#ty)
+                }
+            );
+            
+            let block = quote!(
+                impl #crate_root::derive::StaticType for #doc_ty { }
+            );
+
+            (Some(method), Some(block))
+        } else {
+            (None, None)
+        };
+
         let instance_methods = quote!(
             fn index(&self) -> ::std::borrow::Cow<str> {
                 (#index).into()
@@ -223,33 +257,11 @@ fn get_doc_ty_impl_block(
             fn partial_id(&self) -> ::std::option::Option<::std::borrow::Cow<str>> {
                 (#id).into()
             }
+
+            #partial_static_index
+
+            #partial_static_ty
         );
-
-        let doc_ty = &item.ident;
-
-        let static_index_block = if index_is_static {
-            Some(quote!(
-                impl #crate_root::derive::StaticIndex for #doc_ty {
-                    fn static_index() -> &'static str {
-                        #index
-                    }
-                }
-            ))
-        } else {
-            None
-        };
-
-        let static_ty_block = if ty_is_static {
-            Some(quote!(
-                impl #crate_root::derive::StaticType for #doc_ty {
-                    fn static_ty() -> &'static str {
-                        #ty
-                    }
-                }
-            ))
-        } else {
-            None
-        };
 
         MetadataBlock {
             instance_methods,
