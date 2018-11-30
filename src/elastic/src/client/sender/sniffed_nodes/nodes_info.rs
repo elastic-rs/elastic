@@ -67,7 +67,7 @@ where
                 {
                     let mut nodes = Vec::with_capacity(access.size_hint().unwrap_or(0));
 
-                    while let Some((_, node)) = access.next_entry::<&str, _>()? {
+                    while let Some((_, node)) = access.next_entry::<String, _>()? {
                         nodes.push(node);
                     }
 
