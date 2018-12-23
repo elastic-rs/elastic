@@ -80,8 +80,7 @@
 //! - [`elastic_reqwest`](https://github.com/elastic-rs/elastic-reqwest)
 //! - [Github](https://github.com/elastic-rs/elastic-requests)
 
-// TODO
-// #![deny(warnings)]
+#![deny(warnings)]
 
 mod genned;
 

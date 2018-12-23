@@ -152,7 +152,7 @@ impl AsyncElasticClient for Client {
         I: Into<HttpRequest<'static, B>>,
         B: Into<AsyncBody>,
     {
-        let mut req = build_req(&self, params, req);
+        let req = build_req(&self, params, req);
         Pending::new(req.send().map_err(Into::into))
     }
 }

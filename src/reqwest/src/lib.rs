@@ -207,8 +207,7 @@ A library for generating minified json strings from Rust syntax.
 [crates]: https://crates.io/crates/elastic_reqwest
 */
 
-// TODO
-// #![deny(warnings)]
+#![deny(warnings)]
 #![deny(missing_docs)]
 
 #[macro_use]

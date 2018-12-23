@@ -43,8 +43,7 @@ fn main() {
     build_container::start(run).unwrap();
 
     // Wait until the container is ready
-    // TODO
-    thread::sleep(Duration::from_secs(60));
+    block_on_all(wait_until_ready::call(client.clone(), 60));
 
     // Run the integration tests
     let results = block_on_all(run_tests::call(client, 8)).unwrap();
