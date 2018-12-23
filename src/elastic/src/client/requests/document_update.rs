@@ -577,14 +577,14 @@ where
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
     # fn run() -> Result<(), Box<::std::error::Error>> {
-    # let core = tokio_core::reactor::Core::new()?;
+
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
     #     pub id: i32,
     #     pub title: String,
     #     pub timestamp: Date<DefaultDateMapping>
     # }
-    # let client = AsyncClientBuilder::new().build(&core.handle())?;
+    # let client = AsyncClientBuilder::new().build()?;
     # let new_doc = MyType { id: 1, title: String::new(), timestamp: Date::now() };
     let future = client.document_update::<Value>(index("myindex"), id(1))
                        .doc(new_doc)

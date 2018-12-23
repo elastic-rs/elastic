@@ -305,7 +305,7 @@ pub mod http {
     They may eventually be wrapped and made implementation details.
     */
 
-    pub use reqwest::header;
+    pub use reqwest::hyper_011::header;
     pub use reqwest::Body as SyncBody;
     pub use reqwest::async::Chunk as AsyncChunk;
 }

@@ -129,7 +129,7 @@ macro_rules! build_request_async {
                 let core = Core::new().unwrap();
 
                 let params = RequestParams::default();
-                let cli = ClientAsync::new(&core.handle());
+                let cli = ClientAsync::new();
 
                 b.iter(|| {
                     build_req_async(&cli, &params, PingRequest::new())

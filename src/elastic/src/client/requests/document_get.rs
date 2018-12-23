@@ -236,8 +236,7 @@ where
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
     # fn run() -> Result<(), Box<::std::error::Error>> {
-    # let core = tokio_core::reactor::Core::new()?;
-    # let client = AsyncClientBuilder::new().build(&core.handle())?;
+    # let client = AsyncClientBuilder::new().build()?;
     let future = client.document_get::<Value>(index("myindex"), id(1))
                        .ty("mytype")
                        .send();

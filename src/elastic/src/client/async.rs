@@ -30,12 +30,11 @@ Create an asynchronous `Client` and send a ping request:
 # use elastic::prelude::*;
 # fn main() { run().unwrap() }
 # fn run() -> Result<(), Box<::std::error::Error>> {
-let mut core = Core::new()?;
-let client = AsyncClientBuilder::new().build(&core.handle())?;
+let client = AsyncClientBuilder::new().build()?;
 
 let response_future = client.ping().send();
 
-block_on_all;(response_future)?;
+block_on_all(response_future)?;
 # Ok(())
 # }
 ```

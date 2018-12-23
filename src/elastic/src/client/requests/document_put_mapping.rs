@@ -213,8 +213,8 @@ where
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType { }
-    # let core = tokio_core::reactor::Core::new()?;
-    # let client = AsyncClientBuilder::new().build(&core.handle())?;
+
+    # let client = AsyncClientBuilder::new().build()?;
     let future = client.document_put_mapping::<MyType>(index("myindex"))
                        .send();
 

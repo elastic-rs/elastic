@@ -39,8 +39,7 @@ The asynchronous client requires a handle to a `tokio::reactor::Core`:
 # use elastic::prelude::*;
 # fn main() { run().unwrap() }
 # fn run() -> Result<(), Box<::std::error::Error>> {
-# let core = tokio_core::reactor::Core::new()?;
-let client = AsyncClientBuilder::new().build(&core.handle())?;
+let client = AsyncClientBuilder::new().build()?;
 # Ok(())
 # }
 ```
@@ -380,8 +379,7 @@ Call [`AsyncResponseBuilder.into_response`][AsyncResponseBuilder.into_response] 
 #     pub title: String,
 #     pub timestamp: Date<DefaultDateMapping>
 # }
-# let core = tokio_core::reactor::Core::new()?;
-# let client = AsyncClientBuilder::new().build(&core.handle())?;
+# let client = AsyncClientBuilder::new().build()?;
 # let req = PingRequest::new();
 let future = client.request(req)
                    .send()
@@ -414,8 +412,7 @@ Alternatively, call [`AsyncResponseBuilder.into_raw`][AsyncResponseBuilder.into_
 # use elastic::prelude::*;
 # fn main() { run().unwrap() }
 # fn run() -> Result<(), Box<::std::error::Error>> {
-# let core = tokio_core::reactor::Core::new()?;
-# let client = AsyncClientBuilder::new().build(&core.handle())?;
+# let client = AsyncClientBuilder::new().build()?;
 # let req = PingRequest::new();
 let future = client.request(req)
                    .send()
@@ -582,14 +579,13 @@ Create an asynchronous `Client` and send a ping request:
 # use elastic::prelude::*;
 # fn main() { run().unwrap() }
 # fn run() -> Result<(), Box<::std::error::Error>> {
-let mut core = Core::new()?;
-let client = AsyncClientBuilder::new().build(&core.handle())?;
+let client = AsyncClientBuilder::new().build()?;
 
 let response_future = client.request(PingRequest::new())
                             .send()
                             .and_then(|res| res.into_response::<PingResponse>());
 
-block_on_all;(response_future)?;
+block_on_all(response_future)?;
 # Ok(())
 # }
 ```

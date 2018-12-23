@@ -65,8 +65,7 @@ impl AsyncResponseBuilder {
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # #[derive(Debug, Serialize, Deserialize, ElasticType)]
     # struct MyType { }
-    # let core = tokio_core::reactor::Core::new()?;
-    # let client = AsyncClientBuilder::new().build(&core.handle())?;
+    # let client = AsyncClientBuilder::new().build()?;
     let future = client.request(SimpleSearchRequest::for_index_ty("myindex", "mytype"))
                        .send()
                        .and_then(|response| response.into_response::<SearchResponse<MyType>>());
@@ -96,8 +95,7 @@ impl AsyncResponseBuilder {
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
     # fn run() -> Result<(), Box<::std::error::Error>> {
-    # let core = tokio_core::reactor::Core::new()?;
-    # let client = AsyncClientBuilder::new().build(&core.handle())?;
+    # let client = AsyncClientBuilder::new().build()?;
     let future = client.request(SimpleSearchRequest::for_index_ty("myindex", "mytype"))
                        .send()
                        .and_then(|response| response.into_response::<Value>());

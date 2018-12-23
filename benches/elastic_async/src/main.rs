@@ -48,7 +48,7 @@ fn main() {
 
     let client = AsyncClientBuilder::new()
         .params(|p| p.header(http::header::Connection::keep_alive()))
-        .build(&core.handle())
+        .build()
         .unwrap();
 
     let results_future = measure::run_future(runs, || {

@@ -148,8 +148,8 @@ impl PingRequestBuilder<AsyncSender> {
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # #[derive(Debug, Serialize, Deserialize, ElasticType)]
     # struct MyType { }
-    # let core = tokio_core::reactor::Core::new()?;
-    # let client = AsyncClientBuilder::new().build(&core.handle())?;
+
+    # let client = AsyncClientBuilder::new().build()?;
     let future = client.ping().send();
 
     future.and_then(|response| {

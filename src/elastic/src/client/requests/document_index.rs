@@ -239,8 +239,7 @@ where
     #     pub title: String,
     #     pub timestamp: Date<DefaultDateMapping>
     # }
-    # let core = tokio_core::reactor::Core::new()?;
-    # let client = AsyncClientBuilder::new().build(&core.handle())?;
+    # let client = AsyncClientBuilder::new().build()?;
     let doc = MyType {
         id: 1,
         title: String::from("A title"),

@@ -28,7 +28,7 @@ fn run() -> Result<(), Box<Error>> {
     let pool = CpuPool::new(4);
 
     let client = AsyncClientBuilder::new().serde_pool(pool).build(
-        &core.handle(),
+        ,
     )?;
 
     let gte = ts("now-1d").unwrap();
