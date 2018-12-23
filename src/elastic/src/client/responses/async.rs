@@ -2,10 +2,9 @@ use std::mem;
 use futures::{Future, Poll, Stream};
 use futures_cpupool::CpuPool;
 use serde::de::DeserializeOwned;
-use reqwest::unstable::async::{Decoder, Response as RawResponse};
+use reqwest::async::{Decoder, Response as RawResponse, Chunk as AsyncChunk};
 
 use error::{self, Error};
-use http::AsyncChunk;
 use super::parse::{parse, IsOk};
 
 /**
@@ -54,7 +53,7 @@ impl AsyncResponseBuilder {
     Get a strongly typed `SearchResponse`:
     
     ```no_run
-    # extern crate tokio_core;
+    # extern crate tokio;
     # extern crate futures;
     # extern crate serde;
     # #[macro_use] extern crate serde_derive;
@@ -88,7 +87,7 @@ impl AsyncResponseBuilder {
     if the HTTP status code is `Ok` or `Err(ApiError)` otherwise:
     
     ```no_run
-    # extern crate tokio_core;
+    # extern crate tokio;
     # extern crate futures;
     # extern crate serde_json;
     # extern crate elastic;

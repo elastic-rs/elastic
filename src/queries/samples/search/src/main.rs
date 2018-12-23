@@ -9,13 +9,13 @@ extern crate serde_derive;
 extern crate elastic;
 extern crate timestrings;
 extern crate futures;
-extern crate tokio_core;
+extern crate tokio;
 extern crate futures_cpupool;
 extern crate elastic_queries;
 
 use std::error::Error;
 use futures::Future;
-use tokio_core::reactor::Core;
+use tokio::runtime::current_thread::block_on_all;
 use futures_cpupool::CpuPool;
 use elastic::prelude::*;
 
@@ -67,7 +67,7 @@ fn run() -> Result<(), Box<Error>> {
         Ok(())
     });
 
-    core.run(search_future)?;
+    block_on_all;(search_future)?;
 
     Ok(())
 }

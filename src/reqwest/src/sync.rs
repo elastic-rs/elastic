@@ -113,13 +113,11 @@ where
     let method = build_method(req.method);
     let body = req.body;
 
-    let mut req = client.request(method, &url);
-    {
-        req.headers(params.get_headers());
+    let mut req = client.request(method, &url)
+        .headers_011(params.get_headers());
 
-        if let Some(body) = body {
-            req.body(body.into().into_inner());
-        }
+    if let Some(body) = body {
+        req = req.body(body.into().into_inner());
     }
 
     req
@@ -154,7 +152,7 @@ impl<TResponse: IsOk + DeserializeOwned> SyncFromResponse<TResponse> for Parse<T
 #[cfg(test)]
 mod tests {
     use reqwest::{Client, Method, RequestBuilder};
-    use reqwest::header::ContentType;
+    use reqwest::hyper_011::header::ContentType;
     use super::*;
     use req::*;
 
@@ -165,15 +163,13 @@ mod tests {
     }
 
     fn expected_req(cli: &Client, method: Method, url: &str, body: Option<Vec<u8>>) -> RequestBuilder {
-        let mut req = cli.request(method, url);
-        {
-            req.header(ContentType::json());
+        let mut req = cli.request(method, url)
+            .header_011(ContentType::json());
 
-            if let Some(body) = body {
-                req.body(body);
-            }
+        if let Some(body) = body {
+            req = req.body(body);
         }
-
+    
         req
     }
 
@@ -188,7 +184,7 @@ mod tests {
 
         let url = "eshost:9200/path/?pretty=true&q=*";
 
-        let expected = expected_req(&cli, Method::Head, url, None);
+        let expected = expected_req(&cli, Method::HEAD, url, None);
 
         assert_req(expected, req);
     }
@@ -200,7 +196,7 @@ mod tests {
 
         let url = "eshost:9200/path/_search?pretty=true&q=*";
 
-        let expected = expected_req(&cli, Method::Get, url, None);
+        let expected = expected_req(&cli, Method::GET, url, None);
 
         assert_req(expected, req);
     }
@@ -216,7 +212,7 @@ mod tests {
 
         let url = "eshost:9200/path/idx/ty/_percolate?pretty=true&q=*";
 
-        let expected = expected_req(&cli, Method::Post, url, Some(vec![]));
+        let expected = expected_req(&cli, Method::POST, url, Some(vec![]));
 
         assert_req(expected, req);
     }
@@ -232,7 +228,7 @@ mod tests {
 
         let url = "eshost:9200/path/idx?pretty=true&q=*";
 
-        let expected = expected_req(&cli, Method::Put, url, Some(vec![]));
+        let expected = expected_req(&cli, Method::PUT, url, Some(vec![]));
 
         assert_req(expected, req);
     }
@@ -244,7 +240,7 @@ mod tests {
 
         let url = "eshost:9200/path/idx?pretty=true&q=*";
 
-        let expected = expected_req(&cli, Method::Delete, url, None);
+        let expected = expected_req(&cli, Method::DELETE, url, None);
 
         assert_req(expected, req);
     }

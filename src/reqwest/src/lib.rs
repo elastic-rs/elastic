@@ -102,10 +102,10 @@ Execute a search request asynchronously and parse the response:
 #[macro_use]
 extern crate serde_json;
 extern crate elastic_reqwest;
-extern crate tokio_core;
+extern crate tokio;
 extern crate futures;
 
-use tokio_core::reactor::Core;
+use tokio::runtime::current_thread::block_on_all;
 use futures::Future;
 use serde_json::Value;
 use elastic_reqwest::{AsyncElasticClient, AsyncFromResponse, parse};
@@ -113,9 +113,7 @@ use elastic_reqwest::req::SearchRequest;
 use elastic_reqwest::res::SearchResponse;
 
 # fn main() {
-let mut core = Core::new().unwrap();
-
-let (client, params) = elastic_reqwest::async::default(&core.handle()).unwrap();
+let (client, params) = elastic_reqwest::async::default().unwrap();
 
 let search = SearchRequest::for_index_ty(
     "myindex", "mytype",
@@ -147,7 +145,7 @@ let search_future = client
         Ok(())  
     });
 
-core.run(search_future).unwrap();
+block_on_all(search_future).unwrap();
 # }
 ```
 
@@ -209,7 +207,8 @@ A library for generating minified json strings from Rust syntax.
 [crates]: https://crates.io/crates/elastic_reqwest
 */
 
-#![deny(warnings)]
+// TODO
+// #![deny(warnings)]
 #![deny(missing_docs)]
 
 #[macro_use]
@@ -223,7 +222,6 @@ extern crate reqwest;
 extern crate serde;
 #[cfg_attr(test, macro_use)]
 extern crate serde_json;
-extern crate tokio_core;
 extern crate url;
 
 mod private {
@@ -260,7 +258,7 @@ use std::sync::Arc;
 use std::collections::BTreeMap;
 use std::str;
 use reqwest::Error as ReqwestError;
-use reqwest::header::{ContentType, Header, Headers};
+use reqwest::hyper_011::{header::{ContentType, Header}, Headers};
 use url::form_urlencoded::Serializer;
 
 use self::res::error::ResponseError;
@@ -318,7 +316,7 @@ With custom headers:
 # extern crate reqwest;
 # extern crate elastic_reqwest;
 # use elastic_reqwest::RequestParams;
-# use reqwest::header::Authorization;
+# use reqwest::hyper_011::header::Authorization;
 # fn main() {
 let params = RequestParams::default()
     .header(Authorization("let me in".to_owned()));
@@ -470,12 +468,12 @@ fn build_url<'a>(req_url: &str, params: &RequestParams) -> String {
 
 fn build_method(method: HttpMethod) -> reqwest::Method {
     match method {
-        HttpMethod::Get => reqwest::Method::Get,
-        HttpMethod::Post => reqwest::Method::Post,
-        HttpMethod::Head => reqwest::Method::Head,
-        HttpMethod::Delete => reqwest::Method::Delete,
-        HttpMethod::Put => reqwest::Method::Put,
-        HttpMethod::Patch => reqwest::Method::Patch,
+        HttpMethod::Get => reqwest::Method::GET,
+        HttpMethod::Post => reqwest::Method::POST,
+        HttpMethod::Head => reqwest::Method::HEAD,
+        HttpMethod::Delete => reqwest::Method::DELETE,
+        HttpMethod::Put => reqwest::Method::PUT,
+        HttpMethod::Patch => reqwest::Method::PATCH,
     }
 }
 
@@ -487,7 +485,7 @@ fn assert_sync<T: Sync>() {}
 
 #[cfg(test)]
 mod tests {
-    use reqwest::header::{Authorization, ContentType, Referer};
+    use reqwest::hyper_011::header::{Authorization, ContentType, Referer};
     use super::*;
 
     #[test]

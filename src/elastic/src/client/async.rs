@@ -3,10 +3,9 @@ use uuid::Uuid;
 use futures::{Future, Poll};
 use futures::future::{FutureResult, IntoFuture, Either};
 use futures_cpupool::{CpuPool, CpuFuture};
-use tokio_core::reactor::Handle;
 use elastic_reqwest::{AsyncBody, AsyncElasticClient};
 use reqwest::Error as ReqwestError;
-use reqwest::unstable::async::{Client as AsyncHttpClient, ClientBuilder as AsyncHttpClientBuilder};
+use reqwest::async::{Client as AsyncHttpClient, ClientBuilder as AsyncHttpClientBuilder};
 
 use error::{self, Error};
 use client::requests::HttpRequest;
@@ -24,10 +23,10 @@ Create an asynchronous `Client` and send a ping request:
 
 ```no_run
 # extern crate futures;
-# extern crate tokio_core;
+# extern crate tokio;
 # extern crate elastic;
 # use futures::Future;
-# use tokio_core::reactor::Core;
+# use tokio::runtime::current_thread::block_on_all;
 # use elastic::prelude::*;
 # fn main() { run().unwrap() }
 # fn run() -> Result<(), Box<::std::error::Error>> {
@@ -36,7 +35,7 @@ let client = AsyncClientBuilder::new().build(&core.handle())?;
 
 let response_future = client.ping().send();
 
-core.run(response_future)?;
+block_on_all;(response_future)?;
 # Ok(())
 # }
 ```
@@ -164,14 +163,6 @@ impl IntoAsyncHttpClient for AsyncHttpClient {
 
     fn into_async_http_client(self) -> Result<AsyncHttpClient, Self::Error> {
         Ok(self)
-    }
-}
-
-impl<'a> IntoAsyncHttpClient for &'a Handle {
-    type Error = ReqwestError;
-
-    fn into_async_http_client(self) -> Result<AsyncHttpClient, Self::Error> {
-        AsyncHttpClientBuilder::new().build(self)
     }
 }
 
@@ -326,45 +317,22 @@ impl AsyncClientBuilder {
     This will build an `AsyncClient` with a default underlying `AsyncHttpClient` using the handle.
 
     ```no_run
-    # extern crate tokio_core;
+    # extern crate tokio;
     # extern crate elastic;
     # use elastic::prelude::*;
-    # use tokio_core::reactor::Core;
+    # use tokio::runtime::current_thread::block_on_all;
     # fn main() { run().unwrap() }
     # fn run() -> Result<(), Box<::std::error::Error>> {
-    let mut core = Core::new()?;
 
-    let builder = AsyncClientBuilder::new().build(&core.handle());
+    let builder = AsyncClientBuilder::new().build();
     # Ok(())
     # }
     ```
-
-    Build with a given `AsyncHttpClient`.
-
-    ```no_run
-    # extern crate tokio_core;
-    # extern crate reqwest;
-    # extern crate elastic;
-    # use tokio_core::reactor::Core;
-    # use reqwest::unstable::async::Client;
-    # use elastic::prelude::*;
-    # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<::std::error::Error>> {
-    let mut core = Core::new()?;
-    let client = Client::new(&core.handle());
-
-    let builder = AsyncClientBuilder::new().build(client);
-    # Ok(())
-    # }
-    ```
-
     [AsyncClient]: type.AsyncClient.html
     */
-    pub fn build<TIntoHttp>(self, client: TIntoHttp) -> Result<AsyncClient, Error>
-    where
-        TIntoHttp: IntoAsyncHttpClient,
-    {
-        let http = client.into_async_http_client().map_err(error::build)?;
+    
+    pub fn build(self) -> Result<AsyncClient, Error> {
+        let http = AsyncHttpClient::new();
 
         Ok(AsyncClient {
             sender: AsyncSender {

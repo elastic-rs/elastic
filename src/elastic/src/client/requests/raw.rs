@@ -124,7 +124,7 @@ where
     Send a raw request asynchronously and parse it to a concrete response type:
 
     ```no_run
-    # extern crate tokio_core;
+    # extern crate tokio;
     # extern crate futures;
     # extern crate elastic;
     # extern crate serde_json;

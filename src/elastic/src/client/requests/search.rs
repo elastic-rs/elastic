@@ -273,7 +273,7 @@ where
     Run a simple [Query String][docs-querystring] query for a [`DocumentType`][documents-mod] called `MyType`:
     
     ```no_run
-    # extern crate tokio_core;
+    # extern crate tokio;
     # extern crate futures;
     # extern crate serde;
     # #[macro_use] extern crate serde_derive;

@@ -566,7 +566,7 @@ where
 
     ```no_run
     # extern crate futures;
-    # extern crate tokio_core;
+    # extern crate tokio;
     # extern crate serde;
     # extern crate serde_json;
     # #[macro_use] extern crate serde_derive;

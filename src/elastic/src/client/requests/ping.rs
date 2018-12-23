@@ -136,7 +136,7 @@ impl PingRequestBuilder<AsyncSender> {
     Ping an Elasticsearch node:
     
     ```no_run
-    # extern crate tokio_core;
+    # extern crate tokio;
     # extern crate futures;
     # extern crate serde;
     # #[macro_use] extern crate serde_derive;

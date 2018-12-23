@@ -125,7 +125,8 @@ in a `GetResponse`.
 [parse]: parsing/fn.parse.html
 */
 
-#[deny(warnings, missing_docs)]
+// TODO
+// #[deny(warnings, missing_docs)]
 
 #[macro_use]
 extern crate serde_derive;

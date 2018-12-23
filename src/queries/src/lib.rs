@@ -1,5 +1,3 @@
-#![feature(custom_attribute)]
-#![feature(iterator_for_each)]
 #![recursion_limit = "256"]
 
 #[macro_use]
@@ -7,7 +5,6 @@ extern crate derive_builder;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
-#[marco_use]
 extern crate serde_json;
 //extern crate error_chain;
 

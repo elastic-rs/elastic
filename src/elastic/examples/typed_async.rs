@@ -19,14 +19,14 @@ extern crate serde;
 extern crate serde_derive;
 #[macro_use]
 extern crate serde_json;
-extern crate tokio_core;
-
+extern crate tokio;
 extern crate elastic;
 
 use std::error::Error as StdError;
 use futures::{Future, IntoFuture};
 use elastic::prelude::*;
 use elastic::error::{ApiError, Error};
+use tokio::runtime::current_thread::block_on_all;
 
 #[derive(Debug, Serialize, Deserialize, ElasticType)]
 struct MyType {
@@ -36,10 +36,8 @@ struct MyType {
 }
 
 fn run() -> Result<(), Box<StdError>> {
-    let mut core = tokio_core::reactor::Core::new()?;
-
     // A HTTP client and request parameters
-    let client = AsyncClientBuilder::new().build(&core.handle())?;
+    let client = AsyncClientBuilder::new().build()?;
 
     // Create a document to index
     let doc = MyType {
@@ -60,7 +58,7 @@ fn run() -> Result<(), Box<StdError>> {
         Ok(())
     });
 
-    core.run(res_future)?;
+    block_on_all(res_future)?;
 
     Ok(())
 }

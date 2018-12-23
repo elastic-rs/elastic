@@ -12,7 +12,7 @@ gzip = []
 
 [dependencies]
 elastic = { version = "*", path = "../../src/elastic" }
-reqwest = { version = "~0.8.0", features = ["unstable"] }
+reqwest = { version = "~0.9.0" }
 string_cache = { version = "*", optional = true }
 inlinable_string = { version = "*", features = ["serde"], optional = true }
 lazy_static = { version = "*" }

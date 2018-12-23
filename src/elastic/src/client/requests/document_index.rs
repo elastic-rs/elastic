@@ -225,7 +225,7 @@ where
     ```no_run
     # extern crate serde;
     # extern crate futures;
-    # extern crate tokio_core;
+    # extern crate tokio;
     # #[macro_use] extern crate serde_derive;
     # #[macro_use] extern crate elastic_derive;
     # extern crate elastic;

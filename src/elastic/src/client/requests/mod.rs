@@ -140,7 +140,7 @@ impl<TRequest> RequestBuilder<AsyncSender, TRequest> {
     Use the given thread pool to deserialise the response:
 
     ```no_run
-    # extern crate tokio_core;
+    # extern crate tokio;
     # extern crate futures_cpupool;
     # extern crate elastic;
     # use futures_cpupool::CpuPool;
@@ -160,7 +160,7 @@ impl<TRequest> RequestBuilder<AsyncSender, TRequest> {
     Never deserialise the response on a thread pool:
     
     ```no_run
-    # extern crate tokio_core;
+    # extern crate tokio;
     # extern crate futures_cpupool;
     # extern crate elastic;
     # use futures_cpupool::CpuPool;

@@ -6,7 +6,7 @@ extern crate elastic_derive;
 extern crate futures;
 #[macro_use]
 extern crate serde_derive;
-extern crate tokio_core;
+extern crate tokio;
 
 extern crate elastic;
 extern crate serde;
@@ -59,7 +59,7 @@ fn main() {
             .send()
     });
 
-    results = core.run(results_future).unwrap();
+    results = block_on_all;(results_future).unwrap();
 
     println!("{}", results);
 }

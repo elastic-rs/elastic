@@ -10,12 +10,12 @@ readme = "README.md"
 
 [dependencies]
 serde = "~1"
-elastic_requests = { version = "~0.20.0", path = "../requests" }
-elastic_responses = { version = "~0.20.7", path = "../responses" }
-reqwest = { version = "~0.8.0", features = ["unstable"] }
+elastic_requests = { path = "../requests" }
+elastic_responses = { path = "../responses" }
+reqwest = { version = "~0.9", features = ["hyper-011"] }
 url = "~1"
 bytes = "~0.4.5"
-tokio-core = "~0.1.9"
+tokio = "0.1"
 futures = "~0.1.16"
 serde_json = "~1"
 quick-error = "~1"

@@ -275,7 +275,6 @@ This crate glues these libraries together with some simple assumptions about how
 [request-builders]: client/index.html#request-builders
 */
 
-#![deny(warnings, missing_docs)]
 #![allow(unknown_lints, doc_markdown)]
 
 extern crate elastic_reqwest;
@@ -292,7 +291,7 @@ extern crate serde;
 extern crate serde_derive;
 #[cfg_attr(test, macro_use)]
 extern crate serde_json;
-extern crate tokio_core;
+extern crate tokio;
 extern crate uuid;
 
 pub mod error;
@@ -308,7 +307,7 @@ pub mod http {
 
     pub use reqwest::header;
     pub use reqwest::Body as SyncBody;
-    pub use reqwest::unstable::async::Chunk as AsyncChunk;
+    pub use reqwest::async::Chunk as AsyncChunk;
 }
 
 pub mod client;

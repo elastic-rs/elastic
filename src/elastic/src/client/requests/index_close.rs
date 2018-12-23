@@ -132,7 +132,7 @@ impl IndexCloseRequestBuilder<AsyncSender> {
     
     ```no_run
     # extern crate futures;
-    # extern crate tokio_core;
+    # extern crate tokio;
     # extern crate elastic;
     # use futures::Future;
     # use elastic::prelude::*;

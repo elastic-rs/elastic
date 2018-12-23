@@ -16,12 +16,13 @@ extern crate serde_derive;
 #[macro_use]
 extern crate serde_json;
 extern crate term_painter;
-extern crate tokio_core;
+extern crate tokio;
 extern crate tokio_timer;
 
 use std::process;
 use term_painter::ToStyle;
 use term_painter::Color::*;
+use tokio::runtime::current_thread::block_on_all;
 
 mod document;
 mod search;
@@ -32,19 +33,21 @@ mod build_container;
 mod wait_until_ready;
 
 fn main() {
+    use std::thread;
+    use std::time::Duration;
+
     let run = "default";
-    let mut core = tokio_core::reactor::Core::new().unwrap();
-    let client = build_client::call(&core.handle(), run).unwrap();
+    let client = build_client::call(run).unwrap();
 
     // Build and start a container to run tests against
     build_container::start(run).unwrap();
 
     // Wait until the container is ready
-    core.run(wait_until_ready::call(client.clone(), 60))
-        .unwrap();
+    // TODO
+    thread::sleep(Duration::from_secs(60));
 
     // Run the integration tests
-    let results = core.run(run_tests::call(client, 8)).unwrap();
+    let results = block_on_all(run_tests::call(client, 8)).unwrap();
     let failed: Vec<_> = results
         .iter()
         .filter(|success| **success == false)

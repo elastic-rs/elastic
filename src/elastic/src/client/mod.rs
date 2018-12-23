@@ -34,7 +34,7 @@ Use an [`AsyncClientBuilder`][AsyncClientBuilder] to configure an asynchronous c
 The asynchronous client requires a handle to a `tokio::reactor::Core`:
 
 ```
-# extern crate tokio_core;
+# extern crate tokio;
 # extern crate elastic;
 # use elastic::prelude::*;
 # fn main() { run().unwrap() }
@@ -363,7 +363,7 @@ Call [`AsyncResponseBuilder.into_response`][AsyncResponseBuilder.into_response] 
 
 ```no_run
 # extern crate futures;
-# extern crate tokio_core;
+# extern crate tokio;
 # extern crate serde;
 # extern crate serde_json;
 # #[macro_use] extern crate serde_derive;
@@ -403,7 +403,7 @@ Alternatively, call [`AsyncResponseBuilder.into_raw`][AsyncResponseBuilder.into_
 
 ```no_run
 # extern crate futures;
-# extern crate tokio_core;
+# extern crate tokio;
 # extern crate serde;
 # #[macro_use] extern crate serde_derive;
 # #[macro_use] extern crate elastic_derive;
@@ -575,10 +575,10 @@ Create an asynchronous `Client` and send a ping request:
 
 ```no_run
 # extern crate futures;
-# extern crate tokio_core;
+# extern crate tokio;
 # extern crate elastic;
 # use futures::Future;
-# use tokio_core::reactor::Core;
+# use tokio::runtime::current_thread::block_on_all;
 # use elastic::prelude::*;
 # fn main() { run().unwrap() }
 # fn run() -> Result<(), Box<::std::error::Error>> {
@@ -589,7 +589,7 @@ let response_future = client.request(PingRequest::new())
                             .send()
                             .and_then(|res| res.into_response::<PingResponse>());
 
-core.run(response_future)?;
+block_on_all;(response_future)?;
 # Ok(())
 # }
 ```

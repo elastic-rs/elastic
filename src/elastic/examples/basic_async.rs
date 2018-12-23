@@ -11,17 +11,16 @@ extern crate futures;
 extern crate futures_cpupool;
 #[macro_use]
 extern crate serde_json;
-extern crate tokio_core;
+extern crate tokio;
 
 use std::error::Error;
 use futures::Future;
 use futures_cpupool::CpuPool;
-use tokio_core::reactor::Core;
 use serde_json::Value;
 use elastic::prelude::*;
+use tokio::runtime::current_thread::block_on_all;
 
 fn run() -> Result<(), Box<Error>> {
-    let mut core = Core::new()?;
     let pool = CpuPool::new(4);
 
     // A reqwest HTTP client and default parameters.
@@ -29,7 +28,7 @@ fn run() -> Result<(), Box<Error>> {
     // We also specify a cpu pool for serialising and deserialising data on.
     let client = AsyncClientBuilder::new()
         .serde_pool(pool)
-        .build(&core.handle())?;
+        .build()?;
 
     // Send the request and process the response.
     let res_future = client
@@ -53,7 +52,7 @@ fn run() -> Result<(), Box<Error>> {
         Ok(())
     });
 
-    core.run(search_future)?;
+    block_on_all(search_future)?;
 
     Ok(())
 }
