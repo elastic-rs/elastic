@@ -6,8 +6,8 @@ extern crate test;
 extern crate tokio;
 
 use reqwest::Client as ClientSync;
-use reqwest::unstable::async::Client as ClientAsync;
-use reqwest::header::Referer;
+use reqwest::async::Client as ClientAsync;
+use reqwest::hyper_011::header::Referer;
 use tokio::runtime::current_thread::block_on_all;
 use elastic_reqwest::RequestParams;
 use elastic_reqwest::sync::build_req as build_req_sync;
@@ -126,8 +126,6 @@ macro_rules! build_request_async {
         $(
             #[bench]
             fn $name(b: &mut test::Bencher) {
-                let core = Core::new().unwrap();
-
                 let params = RequestParams::default();
                 let cli = ClientAsync::new();
 
