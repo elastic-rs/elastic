@@ -10,8 +10,8 @@ readme = "README.md"
 
 [dependencies]
 serde = "~1"
-elastic_requests = { path = "../requests" }
-elastic_responses = { path = "../responses" }
+elastic_requests = { version = "0.20.10", path = "../requests" }
+elastic_responses = { version = "0.20.10", path = "../responses" }
 reqwest = { version = "~0.9", features = ["hyper-011"] }
 url = "~1"
 bytes = "~0.4.5"
