@@ -3,7 +3,7 @@ use syn;
 
 mod parse;
 
-use super::{get_elastic_attr_name_value, get_str_from_lit};
+use super::{get_elastic_meta_items, expect_name_value, get_str_from_lit};
 
 /**
 Derive `DateFormat` for the given input.
@@ -25,14 +25,14 @@ pub fn expand_derive(crate_root: Tokens, input: &syn::MacroInput) -> Result<Vec<
 
     let format = get_format_from_attr(input).ok_or(DeriveDateFormatError::MissingFormat)?;
 
-    let name = get_name_from_attr(input).unwrap_or(format);
+    let name = get_name_from_attr(input).unwrap_or_else(|| format.clone());
 
-    let tokens: Vec<Tokens> = parse::to_tokens(format)?
+    let tokens: Vec<Tokens> = parse::to_tokens(&format)?
         .into_iter()
         .map(|t| t.into_tokens(&crate_root))
         .collect();
 
-    let derived = impl_date_format(crate_root, input, name, &tokens);
+    let derived = impl_date_format(crate_root, input, &name, &tokens);
 
     Ok(vec![derived])
 }
@@ -75,17 +75,27 @@ fn impl_date_format(crate_root: Tokens, item: &syn::MacroInput, name: &str, form
 }
 
 // Get the format string supplied by an #[elastic()] attribute
-fn get_format_from_attr<'a>(item: &'a syn::MacroInput) -> Option<&'a str> {
-    let val = get_elastic_attr_name_value("date_format", item);
+fn get_format_from_attr<'a>(item: &'a syn::MacroInput) -> Option<String> {
+    let val = get_elastic_meta_items(&item.attrs);
+        
+    let val = val
+        .iter()
+        .filter_map(|meta| expect_name_value("date_format", &meta))
+        .next();
 
-    val.and_then(|v| get_str_from_lit(v).ok())
+    val.and_then(|v| get_str_from_lit(v).ok().map(Into::into))
 }
 
 // Get the name string supplied by an #[elastic()] attribute
-fn get_name_from_attr<'a>(item: &'a syn::MacroInput) -> Option<&'a str> {
-    let val = get_elastic_attr_name_value("date_format_name", item);
+fn get_name_from_attr<'a>(item: &'a syn::MacroInput) -> Option<String> {
+    let val = get_elastic_meta_items(&item.attrs);
+        
+    let val = val
+        .iter()
+        .filter_map(|meta| expect_name_value("date_format_name", &meta))
+        .next();
 
-    val.and_then(|v| get_str_from_lit(v).ok())
+    val.and_then(|v| get_str_from_lit(v).ok().map(Into::into))
 }
 
 impl<'a> parse::DateFormatToken<'a> {

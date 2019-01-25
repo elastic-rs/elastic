@@ -7,7 +7,7 @@ Builders for [open index requests][docs-open-index].
 use futures::{Future, Poll};
 
 use error::*;
-use client::Client;
+use client::IndexClient;
 use client::sender::{AsyncSender, Sender, SyncSender};
 use client::requests::{empty_body, DefaultBody, RequestBuilder};
 use client::requests::params::Index;
@@ -36,7 +36,7 @@ pub struct IndexOpenRequestInner {
 /**
 # Open index request
 */
-impl<TSender> Client<TSender>
+impl<TSender> IndexClient<TSender>
 where
     TSender: Sender,
 {
@@ -58,7 +58,7 @@ where
     # fn main() { run().unwrap() }
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # let client = SyncClientBuilder::new().build()?;
-    let response = client.index_open(index("myindex")).send()?;
+    let response = client.index("myindex").open().send()?;
 
     assert!(response.acknowledged());
     # Ok(())
@@ -70,8 +70,8 @@ where
     [send-sync]: requests/index_open/type.IndexOpenRequestBuilder.html#send-synchronously
     [send-async]: requests/index_open/type.IndexOpenRequestBuilder.html#send-asynchronously
     */
-    pub fn index_open(&self, index: Index<'static>) -> IndexOpenRequestBuilder<TSender> {
-        RequestBuilder::initial(self.clone(), IndexOpenRequestInner { index: index })
+    pub fn open(self) -> IndexOpenRequestBuilder<TSender> {
+        RequestBuilder::initial(self.inner, IndexOpenRequestInner { index: self.index })
     }
 }
 
@@ -100,7 +100,7 @@ impl IndexOpenRequestBuilder<SyncSender> {
     # fn main() { run().unwrap() }
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # let client = SyncClientBuilder::new().build()?;
-    let response = client.index_open(index("myindex")).send()?;
+    let response = client.index("myindex").open().send()?;
 
     assert!(response.acknowledged());
     # Ok(())
@@ -141,7 +141,7 @@ impl IndexOpenRequestBuilder<AsyncSender> {
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # let core = tokio_core::reactor::Core::new()?;
     # let client = AsyncClientBuilder::new().build(&core.handle())?;
-    let future = client.index_open(index("myindex")).send();
+    let future = client.index("myindex").open().send();
 
     future.and_then(|response| {
         assert!(response.acknowledged());
@@ -198,7 +198,7 @@ mod tests {
     fn default_request() {
         let client = SyncClientBuilder::new().build().unwrap();
 
-        let req = client.index_open(index("testindex")).inner.into_request();
+        let req = client.index("testindex").open().inner.into_request();
 
         assert_eq!("/testindex/_open", req.url.as_ref());
     }

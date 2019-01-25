@@ -8,14 +8,15 @@ use std::marker::PhantomData;
 use futures::{Future, Poll};
 
 use error::{Error, Result};
-use client::Client;
+use client::DocumentClient;
 use client::sender::{AsyncSender, Sender, SyncSender};
 use client::requests::RequestBuilder;
 use client::requests::params::{Id, Index, Type};
 use client::requests::endpoints::DeleteRequest;
 use client::requests::raw::RawRequestInner;
 use client::responses::DeleteResponse;
-use types::document::DocumentType;
+use types::DEFAULT_TYPE;
+use types::document::{DocumentType, StaticIndex, StaticType};
 
 /** 
 A [delete document request][docs-delete] builder that can be configured before sending.
@@ -41,7 +42,7 @@ pub struct DeleteRequestInner<TDocument> {
 /**
 # Delete document request
 */
-impl<TSender> Client<TSender>
+impl<TSender, TDocument> DocumentClient<TSender, TDocument>
 where
     TSender: Sender,
 {
@@ -70,12 +71,13 @@ where
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
-    #     pub id: i32,
+    #     pub id: String,
     #     pub title: String,
     #     pub timestamp: Date<DefaultDateMapping>
     # }
     # let client = SyncClientBuilder::new().build()?;
-    let response = client.document_delete::<MyType>(index("myindex"), id(1))
+    let response = client.document::<MyType>()
+                         .delete(1)
                          .send()?;
 
     assert!(response.deleted());
@@ -89,18 +91,80 @@ where
     [send-async]: requests/document_delete/type.DeleteRequestBuilder.html#send-asynchronously
     [documents-mod]: ../types/document/index.html
     */
-    pub fn document_delete<TDocument>(&self, index: Index<'static>, id: Id<'static>) -> DeleteRequestBuilder<TSender, TDocument>
+    pub fn delete<TId>(self, id: TId) -> DeleteRequestBuilder<TSender, TDocument>
     where
-        TDocument: DocumentType,
+        TId: Into<Id<'static>>,
+        TDocument: DocumentType + StaticIndex + StaticType,
     {
-        let ty = TDocument::name().into();
+        let index = TDocument::static_index().into();
+        let ty = TDocument::static_ty().into();
 
         RequestBuilder::initial(
-            self.clone(),
+            self.inner,
             DeleteRequestInner {
                 index: index,
                 ty: ty,
-                id: id,
+                id: id.into(),
+                _marker: PhantomData,
+            },
+        )
+    }
+}
+
+impl<TSender> DocumentClient<TSender, ()>
+where
+    TSender: Sender,
+{
+    /** 
+    Create a [`DeleteRequestBuilder`][DeleteRequestBuilder] with this `Client` that can be configured before sending.
+
+    For more details, see:
+
+    - [builder methods][builder-methods]
+    - [send synchronously][send-sync]
+    - [send asynchronously][send-async]
+
+    # Examples
+
+    Delete a [`DocumentType`][documents-mod] called `MyType` with an id of `1`:
+    
+    ```no_run
+    # extern crate serde;
+    # #[macro_use]
+    # extern crate serde_derive;
+    # #[macro_use]
+    # extern crate elastic_derive;
+    # extern crate elastic;
+    # use elastic::prelude::*;
+    # fn main() { run().unwrap() }
+    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # let client = SyncClientBuilder::new().build()?;
+    let response = client.document()
+                         .delete_raw("myindex", 1)
+                         .send()?;
+
+    assert!(response.deleted());
+    # Ok(())
+    # }
+    ```
+
+    [DeleteRequestBuilder]: requests/document_delete/type.DeleteRequestBuilder.html
+    [builder-methods]: requests/document_delete/type.DeleteRequestBuilder.html#builder-methods
+    [send-sync]: requests/document_delete/type.DeleteRequestBuilder.html#send-synchronously
+    [send-async]: requests/document_delete/type.DeleteRequestBuilder.html#send-asynchronously
+    [documents-mod]: ../types/document/index.html
+    */
+    pub fn delete_raw<TIndex, TId>(self, index: TIndex, id: TId) -> DeleteRequestBuilder<TSender, ()>
+    where
+        TIndex: Into<Index<'static>>,
+        TId: Into<Id<'static>>,
+    {
+        RequestBuilder::initial(
+            self.inner,
+            DeleteRequestInner {
+                index: index.into(),
+                ty: DEFAULT_TYPE.into(),
+                id: id.into(),
                 _marker: PhantomData,
             },
         )
@@ -122,6 +186,15 @@ impl<TSender, TDocument> DeleteRequestBuilder<TSender, TDocument>
 where
     TSender: Sender,
 {
+    /** Set the index for the delete request. */
+    pub fn index<I>(mut self, index: I) -> Self
+    where
+        I: Into<Index<'static>>,
+    {
+        self.inner.index = index.into();
+        self
+    }
+
     /** Set the type for the delete request. */
     pub fn ty<I>(mut self, ty: I) -> Self
     where
@@ -143,7 +216,7 @@ impl<TDocument> DeleteRequestBuilder<SyncSender, TDocument> {
 
     # Examples
 
-    Delete a document from an index called `myindex` with an id of `1`:
+    Delete a [`DocumentType`][documents-mod] called `MyType` with an id of `1`:
 
     ```no_run
     # extern crate serde;
@@ -157,12 +230,13 @@ impl<TDocument> DeleteRequestBuilder<SyncSender, TDocument> {
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
-    #     pub id: i32,
+    #     pub id: String,
     #     pub title: String,
     #     pub timestamp: Date<DefaultDateMapping>
     # }
     # let client = SyncClientBuilder::new().build()?;
-    let response = client.document_delete::<MyType>(index("myindex"), id(1))
+    let response = client.document::<MyType>()
+                         .delete(1)
                          .send()?;
 
     assert!(response.deleted());
@@ -171,6 +245,7 @@ impl<TDocument> DeleteRequestBuilder<SyncSender, TDocument> {
     ```
 
     [SyncClient]: ../../type.SyncClient.html
+    [documents-mod]: ../types/document/index.html
     */
     pub fn send(self) -> Result<DeleteResponse> {
         let req = self.inner.into_request();
@@ -192,7 +267,7 @@ impl<TDocument> DeleteRequestBuilder<AsyncSender, TDocument> {
 
     # Examples
 
-    Delete a document from an index called `myindex` with an id of `1`:
+    Delete a [`DocumentType`][documents-mod] called `MyType` with an id of `1`:
 
     ```no_run
     # extern crate futures;
@@ -205,11 +280,14 @@ impl<TDocument> DeleteRequestBuilder<AsyncSender, TDocument> {
     # use serde_json::Value;
     # use futures::Future;
     # use elastic::prelude::*;
+    # #[derive(ElasticType)]
+    # struct MyType { }
     # fn main() { run().unwrap() }
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # let core = tokio_core::reactor::Core::new()?;
     # let client = AsyncClientBuilder::new().build(&core.handle())?;
-    let future = client.document_delete::<Value>(index("myindex"), id(1))
+    let future = client.document::<MyType>()
+                       .delete(1)
                        .ty("mytype")
                        .send();
     
@@ -223,6 +301,7 @@ impl<TDocument> DeleteRequestBuilder<AsyncSender, TDocument> {
     ```
 
     [AsyncClient]: ../../type.AsyncClient.html
+    [documents-mod]: ../types/document/index.html
     */
     pub fn send(self) -> Pending {
         let req = self.inner.into_request();
@@ -262,19 +341,36 @@ impl Future for Pending {
 
 #[cfg(test)]
 mod tests {
-    use serde_json::Value;
     use prelude::*;
+
+    #[derive(ElasticType)]
+    struct TestDoc { }
 
     #[test]
     fn default_request() {
         let client = SyncClientBuilder::new().build().unwrap();
 
         let req = client
-            .document_delete::<Value>(index("test-idx"), id("1"))
+            .document::<TestDoc>()
+            .delete("1")
             .inner
             .into_request();
 
-        assert_eq!("/test-idx/value/1", req.url.as_ref());
+        assert_eq!("/testdoc/doc/1", req.url.as_ref());
+    }
+
+    #[test]
+    fn specify_index() {
+        let client = SyncClientBuilder::new().build().unwrap();
+
+        let req = client
+            .document::<TestDoc>()
+            .delete("1")
+            .index("new-idx")
+            .inner
+            .into_request();
+
+        assert_eq!("/new-idx/doc/1", req.url.as_ref());
     }
 
     #[test]
@@ -282,11 +378,12 @@ mod tests {
         let client = SyncClientBuilder::new().build().unwrap();
 
         let req = client
-            .document_delete::<Value>(index("test-idx"), id("1"))
+            .document::<TestDoc>()
+            .delete("1")
             .ty("new-ty")
             .inner
             .into_request();
 
-        assert_eq!("/test-idx/new-ty/1", req.url.as_ref());
+        assert_eq!("/testdoc/new-ty/1", req.url.as_ref());
     }
 }

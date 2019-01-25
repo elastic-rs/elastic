@@ -16,16 +16,10 @@ pub struct DeleteResponse {
     #[serde(rename = "_id")] id: String,
     #[serde(rename = "_version")] version: Option<u32>,
     #[serde(rename = "_routing")] routing: Option<String>,
-    found: bool,
     result: DocumentResult,
 }
 
 impl DeleteResponse {
-    /** Whether or not a matching document was found. */
-    pub fn found(&self) -> bool {
-        self.found
-    }
-
     /** Whether or not the document was deleted. */
     pub fn deleted(&self) -> bool {
         match self.result {

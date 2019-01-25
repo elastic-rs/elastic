@@ -7,7 +7,7 @@ Builders for [create index requests][docs-create-index].
 use futures::{Future, Poll};
 
 use error::*;
-use client::Client;
+use client::IndexClient;
 use client::sender::{AsyncSender, Sender, SyncSender};
 use client::requests::{empty_body, DefaultBody, RequestBuilder};
 use client::requests::params::Index;
@@ -37,7 +37,7 @@ pub struct IndexCreateRequestInner<TBody> {
 /**
 # Create index request
 */
-impl<TSender> Client<TSender>
+impl<TSender> IndexClient<TSender>
 where
     TSender: Sender,
 {
@@ -62,7 +62,7 @@ where
     # let client = SyncClientBuilder::new().build()?;
     let my_index = index("myindex");
 
-    let response = client.index_create(my_index).send()?;
+    let response = client.index(my_index).create().send()?;
 
     assert!(response.acknowledged());
     # Ok(())
@@ -91,11 +91,12 @@ where
             }
         },
         "mappings": {
-            MyType::name(): MyType::index_mapping()
+            MyType::static_index(): MyType::index_mapping()
         }
     });
 
-    let response = client.index_create(index("myindex"))
+    let response = client.index("myindex")
+                         .create()
                          .body(body.to_string())
                          .send()?;
 
@@ -113,11 +114,11 @@ where
     [types-mod]: ../types/index.html
     [documents-mod]: ../types/document/index.html
     */
-    pub fn index_create(&self, index: Index<'static>) -> IndexCreateRequestBuilder<TSender, DefaultBody> {
+    pub fn create(self) -> IndexCreateRequestBuilder<TSender, DefaultBody> {
         RequestBuilder::initial(
-            self.clone(),
+            self.inner,
             IndexCreateRequestInner {
-                index: index,
+                index: self.index,
                 body: empty_body(),
             },
         )
@@ -182,7 +183,7 @@ where
     # fn main() { run().unwrap() }
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # let client = SyncClientBuilder::new().build()?;
-    let response = client.index_create(index("myindex")).send()?;
+    let response = client.index("myindex").create().send()?;
 
     assert!(response.acknowledged());
     # Ok(())
@@ -226,7 +227,7 @@ where
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # let core = tokio_core::reactor::Core::new()?;
     # let client = AsyncClientBuilder::new().build(&core.handle())?;
-    let future = client.index_create(index("myindex")).send();
+    let future = client.index("myindex").create().send();
 
     future.and_then(|response| {
         assert!(response.acknowledged());
@@ -283,7 +284,7 @@ mod tests {
     fn default_request() {
         let client = SyncClientBuilder::new().build().unwrap();
 
-        let req = client.index_create(index("testindex")).inner.into_request();
+        let req = client.index("testindex").create().inner.into_request();
 
         assert_eq!("/testindex", req.url.as_ref());
     }
@@ -293,7 +294,8 @@ mod tests {
         let client = SyncClientBuilder::new().build().unwrap();
 
         let req = client
-            .index_create(index("testindex"))
+            .index("testindex")
+            .create()
             .body("{}")
             .inner
             .into_request();

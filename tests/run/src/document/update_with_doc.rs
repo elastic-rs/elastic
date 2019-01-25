@@ -7,18 +7,19 @@ use run_tests::IntegrationTest;
 pub struct UpdateWithDoc;
 
 #[derive(Debug, PartialEq, Serialize, Deserialize, ElasticType)]
+#[elastic(index = "update_doc_idx")]
 pub struct Doc {
-    id: i32,
+    #[elastic(id)]
+    id: String,
     title: String,
 }
 
-const INDEX: &'static str = "update_doc_idx";
 const EXPECTED_TITLE: &'static str = "Edited title";
-const ID: i32 = 1;
+const ID: &'static str = "1";
 
 fn doc() -> Doc {
     Doc {
-        id: ID,
+        id: ID.to_owned(),
         title: "Not edited title".to_owned(),
     }
 }
@@ -35,7 +36,7 @@ impl IntegrationTest for UpdateWithDoc {
 
     // Ensure the index doesn't exist
     fn prepare(&self, client: AsyncClient) -> Box<Future<Item = (), Error = Error>> {
-        let delete_res = client.index_delete(index(INDEX)).send().map(|_| ());
+        let delete_res = client.index(Doc::static_index()).delete().send().map(|_| ());
 
         Box::new(delete_res)
     }
@@ -43,21 +44,21 @@ impl IntegrationTest for UpdateWithDoc {
     // Execute an update request against that index using a new document
     fn request(&self, client: AsyncClient) -> Box<Future<Item = Self::Response, Error = Error>> {
         let index_res = client
-            .document_index(index(INDEX), doc())
-            .id(ID)
+            .document()
+            .index(doc())
             .params_fluent(|p| p.url_param("refresh", true))
             .send();
 
         let update_res = client
-            .document_update::<Doc>(index(INDEX), id(ID))
-            .doc(Doc {
-                id: ID,
-                title: EXPECTED_TITLE.to_owned(),
-            })
+            .document::<Doc>()
+            .update(ID)
+            .doc(json!({
+                "title": EXPECTED_TITLE.to_owned(),
+            }))
             .params_fluent(|p| p.url_param("refresh", true))
             .send();
 
-        let get_res = client.document_get(index(INDEX), id(ID)).send();
+        let get_res = client.document().get(ID).send();
 
         Box::new(
             index_res

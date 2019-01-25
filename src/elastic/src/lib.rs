@@ -115,7 +115,8 @@ Derive `Serialize`, `Deserialize` and `ElasticType` on your document types:
 # fn run() -> Result<(), Box<::std::error::Error>> {
 #[derive(Serialize, Deserialize, ElasticType)]
 struct MyType {
-    pub id: i32,
+    #[elastic(id(expr = "ToString::to_string"))]
+    pub id: String,
     pub title: String,
     pub timestamp: Date<DefaultDateMapping>
 }
@@ -123,7 +124,7 @@ struct MyType {
 # }
 ```
 
-Call [`Client.document_put_mapping`][Client.document_put_mapping] to ensure an index has the right mapping for your document types:
+Call [`Client.document().put_mapping`][Client.document.put_mapping] to ensure an index has the right mapping for your document types:
 
 ```no_run
 # extern crate serde;
@@ -136,13 +137,14 @@ Call [`Client.document_put_mapping`][Client.document_put_mapping] to ensure an i
 # #[derive(Serialize, Deserialize, ElasticType)]
 # struct MyType { }
 # let client = SyncClientBuilder::new().build()?;
-client.document_put_mapping::<MyType>(index("myindex"))
+client.document::<MyType>()
+      .put_mapping()
       .send()?;
 # Ok(())
 # }
 ```
 
-Then call [`Client.document_index`][Client.document_index] to index documents in Elasticsearch:
+Then call [`Client.document().index`][Client.document.index] to index documents in Elasticsearch:
 
 ```no_run
 # extern crate serde;
@@ -154,20 +156,19 @@ Then call [`Client.document_index`][Client.document_index] to index documents in
 # fn run() -> Result<(), Box<::std::error::Error>> {
 # #[derive(Serialize, Deserialize, ElasticType)]
 # struct MyType {
-#     pub id: i32,
+#     pub id: String,
 #     pub title: String,
 #     pub timestamp: Date<DefaultDateMapping>
 # }
 # let client = SyncClientBuilder::new().build()?;
 let doc = MyType {
-    id: 1,
+    id: "1".to_owned(),
     title: String::from("A title"),
     timestamp: Date::now()
 };
 
-let doc_id = doc.id;
-let response = client.document_index(index("myindex"), doc)
-                     .id(doc_id)
+let response = client.document()
+                     .index(doc)
                      .send()?;
 # Ok(())
 # }
@@ -185,12 +186,13 @@ Call [`Client.document_get`][Client.document_get] to retrieve a single document 
 # fn run() -> Result<(), Box<::std::error::Error>> {
 # #[derive(Serialize, Deserialize, ElasticType)]
 # struct MyType {
-#     pub id: i32,
+#     pub id: String,
 #     pub title: String,
 #     pub timestamp: Date<DefaultDateMapping>
 # }
 # let client = SyncClientBuilder::new().build()?;
-let response = client.document_get::<MyType>(index("myindex"), id(1))
+let response = client.document::<MyType>()
+                     .get(1)
                      .send()?;
 
 if let Some(doc) = response.into_document() {
@@ -204,7 +206,7 @@ For more details on document types, see the [`types`][types-mod] module.
 
 ### Searching documents
 
-Call [`Client.search`][Client.search] to execute [Query DSL][docs-search] queries:
+Call [`Client.doument().search`][Client.document.search] to execute [Query DSL][docs-search] queries:
 
 ```no_run
 # extern crate serde;
@@ -218,8 +220,8 @@ Call [`Client.search`][Client.search] to execute [Query DSL][docs-search] querie
 # #[derive(Debug, Serialize, Deserialize, ElasticType)]
 # struct MyType { }
 # let client = SyncClientBuilder::new().build()?;
-let response = client.search::<MyType>()
-                     .index("myindex")
+let response = client.document::<MyType>()
+                     .search()
                      .body(json!({
                          "query": {
                             "query_string": {
@@ -266,10 +268,10 @@ This crate glues these libraries together with some simple assumptions about how
 [SyncClientBuilder]: client/struct.SyncClientBuilder.html
 [AsyncClient]: client/type.AsyncClient.html
 [Client]: client/struct.Client.html
-[Client.document_put_mapping]: client/struct.Client.html#method.document_put_mapping
-[Client.document_index]: client/struct.Client.html#method.document_index
-[Client.document_get]: client/struct.Client.html#method.document_get
-[Client.search]: client/struct.Client.html#method.search
+[Client.document.put_mapping]: client/struct.Client.html#method.document_put_mapping
+[Client.document.index]: client/struct.Client.html#method.document_index
+[Client.document.get]: client/struct.Client.html#method.document_get
+[Client.document.search]: client/struct.Client.html#method.search
 [client-mod]: client/index.html
 [requests-mod]: client/requests/index.html
 [types-mod]: types/index.html
@@ -306,6 +308,10 @@ extern crate url;
 extern crate tokio_timer;
 extern crate uuid;
 
+#[cfg(test)]
+#[macro_use]
+extern crate elastic_derive;
+
 pub mod error;
 pub use error::Error;
 
@@ -328,4 +334,10 @@ pub mod prelude {
 mod tests {
     pub fn assert_send<T: Send>() {}
     pub fn assert_sync<T: Sync>() {}
+}
+
+// This is a simple workaround for paths needed by `elastic_derive`.
+#[cfg(test)]
+mod elastic {
+    pub use types;
 }

@@ -2,7 +2,7 @@ use std::io::{Error as IoError, Result as IoResult};
 use std::fs::File;
 use std::path::Path;
 use ops::Client;
-use elastic::client::requests::BulkRequest;
+use elastic::prelude::*;
 use elastic::client::responses::bulk::{BulkErrorsResponse, ErrorItem};
 use elastic::http::SyncBody;
 use elastic::Error as ResponseError;
@@ -77,6 +77,6 @@ mod tests {
     fn put_request_url() {
         let req = put(vec![]);
 
-        assert_eq!("/bank-sample/account/_bulk", req.url.as_ref());
+        assert_eq!("/bank-sample/doc/_bulk", req.url.as_ref());
     }
 }

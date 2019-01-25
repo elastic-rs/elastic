@@ -10,14 +10,15 @@ use serde_json;
 use serde::ser::Serialize;
 
 use error::{self, Error};
-use client::Client;
+use client::DocumentClient;
 use client::sender::{AsyncSender, Sender, SyncSender};
 use client::requests::RequestBuilder;
 use client::requests::params::{Id, Index, Type};
 use client::requests::endpoints::UpdateRequest;
 use client::requests::raw::RawRequestInner;
 use client::responses::UpdateResponse;
-use types::document::DocumentType;
+use types::DEFAULT_TYPE;
+use types::document::{DocumentType, StaticIndex, StaticType};
 
 pub use client::requests::common::{Doc, Script, ScriptBuilder, DefaultParams};
 
@@ -46,7 +47,7 @@ pub struct UpdateRequestInner<TBody> {
 /**
 # Update document request
 */
-impl<TSender> Client<TSender>
+impl<TSender, TDocument> DocumentClient<TSender, TDocument>
 where
     TSender: Sender,
 {
@@ -75,13 +76,14 @@ where
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
-    #     pub id: i32,
+    #     pub id: String,
     #     pub title: String,
     #     pub timestamp: Date<DefaultDateMapping>
     # }
     # let client = SyncClientBuilder::new().build()?;
-    # let new_doc = MyType { id: 1, title: String::new(), timestamp: Date::now() };
-    let response = client.document_update::<MyType>(index("myindex"), id(1))
+    # let new_doc = MyType { id: "1".to_owned(), title: String::new(), timestamp: Date::now() };
+    let response = client.document::<MyType>()
+                         .update(1)
                          .doc(new_doc)
                          .send()?;
 
@@ -107,12 +109,13 @@ where
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
-    #     pub id: i32,
+    #     pub id: String,
     #     pub title: String,
     #     pub timestamp: Date<DefaultDateMapping>
     # }
     # let client = SyncClientBuilder::new().build()?;
-    let response = client.document_update::<MyType>(index("myindex"), id(1))
+    let response = client.document::<MyType>()
+                         .update(1)
                          .doc(json!({
                              "title": "New Title"
                          }))
@@ -137,13 +140,14 @@ where
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
-    #     pub id: i32,
+    #     pub id: String,
     #     pub title: String,
     #     pub timestamp: Date<DefaultDateMapping>
     # }
     # let client = SyncClientBuilder::new().build()?;
-    # let new_doc = MyType { id: 1, title: String::new(), timestamp: Date::now() };
-    let response = client.document_update::<MyType>(index("myindex"), id(1))
+    # let new_doc = MyType { id: "1".to_owned(), title: String::new(), timestamp: Date::now() };
+    let response = client.document::<MyType>()
+                         .update(1)
                          .script(r#"ctx._source.title = "New Title""#)
                          .send()?;
 
@@ -166,13 +170,14 @@ where
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
-    #     pub id: i32,
+    #     pub id: String,
     #     pub title: String,
     #     pub timestamp: Date<DefaultDateMapping>
     # }
     # let client = SyncClientBuilder::new().build()?;
-    # let new_doc = MyType { id: 1, title: String::new(), timestamp: Date::now() };
-    let response = client.document_update::<MyType>(index("myindex"), id(1))
+    # let new_doc = MyType { id: "1".to_owned(), title: String::new(), timestamp: Date::now() };
+    let response = client.document::<MyType>()
+                         .update(1)
                          .script_fluent("ctx._source.title = params.newTitle", |script| script
                             .param("newTitle", "New Title"))
                          .send()?;
@@ -188,18 +193,80 @@ where
     [send-async]: requests/document_update/type.UpdateRequestBuilder.html#send-asynchronously
     [documents-mod]: ../types/document/index.html
     */
-    pub fn document_update<TDocument>(&self, index: Index<'static>, id: Id<'static>) -> UpdateRequestBuilder<TSender, Doc<TDocument>>
+    pub fn update<TId>(self, id: TId) -> UpdateRequestBuilder<TSender, Doc<TDocument>>
     where
-        TDocument: DocumentType,
+        TId: Into<Id<'static>>,
+        TDocument: DocumentType + StaticIndex + StaticType,
     {
-        let ty = TDocument::name().into();
+        let index = TDocument::static_index().into();
+        let ty = TDocument::static_ty().into();
 
         RequestBuilder::initial(
-            self.clone(),
+            self.inner,
             UpdateRequestInner {
                 index: index,
                 ty: ty,
-                id: id,
+                id: id.into(),
+                body: Doc::empty(),
+                _marker: PhantomData,
+            },
+        )
+    }
+}
+
+impl<TSender> DocumentClient<TSender, ()>
+where
+    TSender: Sender,
+{
+    /** 
+    Create an [`UpdateRequestBuilder`][UpdateRequestBuilder] with this `Client` that can be configured before sending.
+
+    For more details, see:
+
+    - [builder methods][builder-methods]
+    - [send synchronously][send-sync]
+    - [send asynchronously][send-async]
+
+    # Examples
+
+    Update a document with an id of `1` using a new document value:
+    
+    ```no_run
+    # extern crate serde;
+    # #[macro_use]
+    # extern crate serde_json;
+    # #[macro_use]
+    # extern crate serde_derive;
+    # #[macro_use]
+    # extern crate elastic_derive;
+    # extern crate elastic;
+    # use elastic::prelude::*;
+    # fn main() { run().unwrap() }
+    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # let client = SyncClientBuilder::new().build()?;
+    let response = client.document()
+                         .update_raw("myindex", 1)
+                         .doc(json!({
+                             "title": "New Title"
+                         }))
+                         .send()?;
+
+    assert!(response.updated());
+    # Ok(())
+    # }
+    ```
+    */
+    pub fn update_raw<TIndex, TId>(self, index: TIndex, id: TId) -> UpdateRequestBuilder<TSender, Doc<()>>
+    where
+        TIndex: Into<Index<'static>>,
+        TId: Into<Id<'static>>,
+    {
+        RequestBuilder::initial(
+            self.inner,
+            UpdateRequestInner {
+                index: index.into(),
+                ty: DEFAULT_TYPE.into(),
+                id: id.into(),
                 body: Doc::empty(),
                 _marker: PhantomData,
             },
@@ -232,6 +299,15 @@ impl<TSender, TBody> UpdateRequestBuilder<TSender, TBody>
 where
     TSender: Sender,
 {
+    /** Set the index for the update request. */
+    pub fn index<I>(mut self, index: I) -> Self
+    where
+        I: Into<Index<'static>>,
+    {
+        self.inner.index = index.into();
+        self
+    }
+
     /** Set the type for the update request. */
     pub fn ty<I>(mut self, ty: I) -> Self
     where
@@ -260,13 +336,14 @@ where
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
-    #     pub id: i32,
+    #     pub id: String,
     #     pub title: String,
     #     pub timestamp: Date<DefaultDateMapping>
     # }
     # let client = SyncClientBuilder::new().build()?;
-    # let new_doc = MyType { id: 1, title: String::new(), timestamp: Date::now() };
-    let response = client.document_update::<MyType>(index("myindex"), id(1))
+    # let new_doc = MyType { id: "1".to_owned(), title: String::new(), timestamp: Date::now() };
+    let response = client.document::<MyType>()
+                         .update(1)
                          .doc(new_doc)
                          .send();
     # Ok(())
@@ -290,12 +367,13 @@ where
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
-    #     pub id: i32,
+    #     pub id: String,
     #     pub title: String,
     #     pub timestamp: Date<DefaultDateMapping>
     # }
     # let client = SyncClientBuilder::new().build()?;
-    let response = client.document_update::<MyType>(index("myindex"), id(1))
+    let response = client.document::<MyType>()
+                         .update(1)
                          .doc(json!({
                              "title": "New Title"
                          }))
@@ -308,7 +386,7 @@ where
     */
     pub fn doc<TDocument>(self, doc: TDocument) -> UpdateRequestBuilder<TSender, Doc<TDocument>>
     where
-        TDocument: Serialize + DocumentType,
+        TDocument: Serialize,
     {
         RequestBuilder::new(
             self.client,
@@ -342,13 +420,13 @@ where
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
-    #     pub id: i32,
+    #     pub id: String,
     #     pub title: String,
     #     pub timestamp: Date<DefaultDateMapping>
     # }
     # let client = SyncClientBuilder::new().build()?;
-    # let new_doc = MyType { id: 1, title: String::new(), timestamp: Date::now() };
-    let response = client.document_update::<MyType>(index("myindex"), id(1))
+    let response = client.document::<MyType>()
+                         .update(1)
                          .script(r#"ctx._source.title = "New Title""#)
                          .send();
     # Ok(())
@@ -370,16 +448,16 @@ where
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
-    #     pub id: i32,
+    #     pub id: String,
     #     pub title: String,
     #     pub timestamp: Date<DefaultDateMapping>
     # }
     # let client = SyncClientBuilder::new().build()?;
-    # let new_doc = MyType { id: 1, title: String::new(), timestamp: Date::now() };
     let script = ScriptBuilder::new("ctx._source.title = params.newTitle")
         .param("newTitle", "New Title");
 
-    let response = client.document_update::<MyType>(index("myindex"), id(1))
+    let response = client.document::<MyType>()
+                         .update(1)
                          .script(script)
                          .send()?;
 
@@ -429,13 +507,14 @@ where
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
-    #     pub id: i32,
+    #     pub id: String,
     #     pub title: String,
     #     pub timestamp: Date<DefaultDateMapping>
     # }
     # let client = SyncClientBuilder::new().build()?;
-    # let new_doc = MyType { id: 1, title: String::new(), timestamp: Date::now() };
-    let response = client.document_update::<MyType>(index("myindex"), id(1))
+    # let new_doc = MyType { id: "1".to_owned(), title: String::new(), timestamp: Date::now() };
+    let response = client.document::<MyType>()
+                         .update(1)
                          .script_fluent("ctx._source.title = params.newTitle", |script| script
                             .param("newTitle", "New Title"))
                          .send()?;
@@ -460,18 +539,19 @@ where
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
-    #     pub id: i32,
+    #     pub id: String,
     #     pub title: String,
     #     pub timestamp: Date<DefaultDateMapping>
     # }
     # let client = SyncClientBuilder::new().build()?;
-    # let new_doc = MyType { id: 1, title: String::new(), timestamp: Date::now() };
+    # let new_doc = MyType { id: "1".to_owned(), title: String::new(), timestamp: Date::now() };
     #[derive(Serialize)]
     struct MyParams {
         title: &'static str
     }
 
-    let response = client.document_update::<MyType>(index("myindex"), id(1))
+    let response = client.document::<MyType>()
+                         .update(1)
                          .script_fluent("ctx._source.title = params.title", |script| script
                             .params(MyParams {
                                 title: "New Title",
@@ -510,7 +590,7 @@ where
 
     # Examples
 
-    Update a document from an index called `myindex` with an id of `1`:
+    Update a [`DocumentType`][documents-mod] called `MyType` with an id of `1` using a new document value:
 
     ```no_run
     # extern crate serde;
@@ -524,13 +604,14 @@ where
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
-    #     pub id: i32,
+    #     pub id: String,
     #     pub title: String,
     #     pub timestamp: Date<DefaultDateMapping>
     # }
     # let client = SyncClientBuilder::new().build()?;
-    # let new_doc = MyType { id: 1, title: String::new(), timestamp: Date::now() };
-    let response = client.document_update::<MyType>(index("myindex"), id(1))
+    # let new_doc = MyType { id: "1".to_owned(), title: String::new(), timestamp: Date::now() };
+    let response = client.document::<MyType>()
+                         .update(1)
                          .doc(new_doc)
                          .send()?;
 
@@ -540,6 +621,7 @@ where
     ```
 
     [SyncClient]: ../../type.SyncClient.html
+    [documents-mod]: ../../types/document/index.html
     */
     pub fn send(self) -> Result<UpdateResponse, Error> {
         let req = self.inner.into_request()?;
@@ -564,7 +646,7 @@ where
 
     # Examples
 
-    Update a document from an index called `myindex` with an id of `1`:
+    Update a [`DocumentType`][documents-mod] called `MyType` with an id of `1` using a new document value:
 
     ```no_run
     # extern crate futures;
@@ -582,13 +664,14 @@ where
     # let core = tokio_core::reactor::Core::new()?;
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
-    #     pub id: i32,
+    #     pub id: String,
     #     pub title: String,
     #     pub timestamp: Date<DefaultDateMapping>
     # }
     # let client = AsyncClientBuilder::new().build(&core.handle())?;
-    # let new_doc = MyType { id: 1, title: String::new(), timestamp: Date::now() };
-    let future = client.document_update::<Value>(index("myindex"), id(1))
+    # let new_doc = MyType { id: "1".to_owned(), title: String::new(), timestamp: Date::now() };
+    let future = client.document::<MyType>()
+                       .update(1)
                        .doc(new_doc)
                        .send();
 
@@ -602,6 +685,7 @@ where
     ```
 
     [AsyncClient]: ../../type.AsyncClient.html
+    [documents-mod]: ../../types/document/index.html
     */
     pub fn send(self) -> Pending {
         let (client, params_builder, inner) = (self.client, self.params_builder, self.inner);
@@ -649,17 +733,21 @@ mod tests {
     use super::ScriptBuilder;
     use prelude::*;
 
+    #[derive(Serialize, ElasticType)]
+    struct TestDoc { }
+
     #[test]
     fn default_request() {
         let client = SyncClientBuilder::new().build().unwrap();
 
         let req = client
-            .document_update::<Value>(index("test-idx"), id("1"))
+            .document::<TestDoc>()
+            .update("1")
             .inner
             .into_request()
             .unwrap();
 
-        assert_eq!("/test-idx/value/1/_update", req.url.as_ref());
+        assert_eq!("/testdoc/doc/1/_update", req.url.as_ref());
 
         let expected_body = json!({
             "doc": {}
@@ -671,17 +759,33 @@ mod tests {
     }
 
     #[test]
+    fn specify_index() {
+        let client = SyncClientBuilder::new().build().unwrap();
+
+        let req = client
+            .document::<TestDoc>()
+            .update("1")
+            .index("new-idx")
+            .inner
+            .into_request()
+            .unwrap();
+
+        assert_eq!("/new-idx/doc/1/_update", req.url.as_ref());
+    }
+
+    #[test]
     fn specify_ty() {
         let client = SyncClientBuilder::new().build().unwrap();
 
         let req = client
-            .document_update::<Value>(index("test-idx"), id("1"))
+            .document::<TestDoc>()
+            .update("1")
             .ty("new-ty")
             .inner
             .into_request()
             .unwrap();
 
-        assert_eq!("/test-idx/new-ty/1/_update", req.url.as_ref());
+        assert_eq!("/testdoc/new-ty/1/_update", req.url.as_ref());
     }
 
     #[test]
@@ -696,7 +800,8 @@ mod tests {
         let expected_body = json!({ "doc": doc });
 
         let req = client
-            .document_update::<Value>(index("test-idx"), id("1"))
+            .document::<TestDoc>()
+            .update("1")
             .doc(doc)
             .inner
             .into_request()
@@ -712,7 +817,8 @@ mod tests {
         let client = SyncClientBuilder::new().build().unwrap();
 
         let req = client
-            .document_update::<Value>(index("test-idx"), id("1"))
+            .document::<TestDoc>()
+            .update("1")
             .script("ctx._source.a = params.str")
             .inner
             .into_request()
@@ -734,7 +840,8 @@ mod tests {
         let client = SyncClientBuilder::new().build().unwrap();
 
         let req = client
-            .document_update::<Value>(index("test-idx"), id("1"))
+            .document::<TestDoc>()
+            .update("1")
             .script(ScriptBuilder::new("ctx._source.a = params.str"))
             .inner
             .into_request()
@@ -756,7 +863,8 @@ mod tests {
         let client = SyncClientBuilder::new().build().unwrap();
 
         let req = client
-            .document_update::<Value>(index("test-idx"), id("1"))
+            .document::<TestDoc>()
+            .update("1")
             .script_fluent("ctx._source.a = params.str", |script| {
                 script
                     .lang(Some("painless"))
@@ -794,7 +902,8 @@ mod tests {
         let client = SyncClientBuilder::new().build().unwrap();
 
         let req = client
-            .document_update::<Value>(index("test-idx"), id("1"))
+            .document::<TestDoc>()
+            .update("1")
             .script_fluent("ctx._source.a = params.str", |script| {
                 script.params(MyParams {
                     a: "some value",

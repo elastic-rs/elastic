@@ -5,10 +5,11 @@
 //! Field serialisation and mapping is all handled in the same place
 //! so it's always in sync.
 
-use elastic::types::prelude::{DefaultKeywordMapping, DefaultTextMapping, DocumentType, Keyword, KeywordFieldType, Text, TextMapping};
+use elastic::prelude::*;
 
 /// Our main model; an account in the bank.
 #[derive(Debug, Serialize, Deserialize, ElasticType)]
+#[elastic(id(expr = "Account::id"))]
 pub struct Account {
     pub account_number: i32,
     pub balance: i32,
@@ -23,9 +24,15 @@ pub struct Account {
     pub state: State,
 }
 
+impl Account {
+    fn id(&self) -> String {
+        self.account_number.to_string()
+    }
+}
+
 /// Get the indexed document type name.
 pub fn name() -> &'static str {
-    Account::name()
+    Account::static_ty()
 }
 
 // We're using type aliases to make the `Account` definition more ergonomic.

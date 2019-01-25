@@ -1,5 +1,3 @@
-FROM docker.elastic.co/elasticsearch/elasticsearch:5.5.0
-
-RUN elasticsearch-plugin remove x-pack
+FROM docker.elastic.co/elasticsearch/elasticsearch:6.5.4
 
 EXPOSE 9200

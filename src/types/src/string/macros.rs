@@ -5,6 +5,33 @@ macro_rules! impl_string_type {
 
         impl_mapping_type!(String, $wrapper_ty, $mapping_ty);
 
+        impl<'a, TMapping> From<$wrapper_ty<TMapping>> for String
+        where
+            TMapping: $mapping_ty
+        {
+            fn from(wrapper: $wrapper_ty<TMapping>) -> Self {
+                wrapper.value
+            }
+        }
+
+        impl<'a, TMapping> From<&'a $wrapper_ty<TMapping>> for std::borrow::Cow<'a, str>
+        where
+            TMapping: $mapping_ty
+        {
+            fn from(wrapper: &'a $wrapper_ty<TMapping>) -> Self {
+                wrapper.as_ref().into()
+            }
+        }
+
+        impl<'a, TMapping> From<$wrapper_ty<TMapping>> for std::borrow::Cow<'a, str>
+        where
+            TMapping: $mapping_ty
+        {
+            fn from(wrapper: $wrapper_ty<TMapping>) -> Self {
+                String::from(wrapper).into()
+            }
+        }
+
         impl<TMapping> AsRef<str> for $wrapper_ty<TMapping> where
         TMapping: $mapping_ty {
             fn as_ref(&self) -> &str {
@@ -46,7 +73,6 @@ macro_rules! impl_string_type {
         TMapping: $mapping_ty {
             fn deserialize<D>(deserializer: D) -> Result<$wrapper_ty<TMapping>, D::Error> where
             D: Deserializer<'de> {
-                #[derive(Default)]
                 struct StringVisitor<TMapping> {
                     _m: PhantomData<TMapping>
                 }
@@ -66,7 +92,7 @@ macro_rules! impl_string_type {
                     }
                 }
 
-                deserializer.deserialize_any(StringVisitor::default())
+                deserializer.deserialize_any(StringVisitor { _m: PhantomData })
             }
         }
     );

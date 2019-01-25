@@ -3,10 +3,7 @@ use super::Point;
 use super::mapping::GeoPointMapping;
 
 /** A format used for parsing and formatting geo points. */
-pub trait GeoPointFormat
-where
-    Self: Default,
-{
+pub trait GeoPointFormat {
     /**
     Parses a `geo::Point`.
     
@@ -28,6 +25,7 @@ where
     */
     fn format<S, TMapping>(point: &Point, serializer: S) -> Result<S::Ok, S::Error>
     where
+        Self: Sized,
         TMapping: GeoPointMapping<Format = Self>,
         S: Serializer;
 }

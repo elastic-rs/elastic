@@ -7,18 +7,19 @@ use run_tests::IntegrationTest;
 pub struct UpdateWithScript;
 
 #[derive(Debug, PartialEq, Serialize, Deserialize, ElasticType)]
+#[elastic(index = "update_doc_script_idx")]
 pub struct Doc {
-    id: i32,
+    #[elastic(id)]
+    id: String,
     title: String,
 }
 
-const INDEX: &'static str = "update_doc_script_idx";
 const EXPECTED_TITLE: &'static str = "Edited title";
-const ID: i32 = 1;
+const ID: &'static str = "1";
 
 fn doc() -> Doc {
     Doc {
-        id: ID,
+        id: ID.to_owned(),
         title: "Not edited title".to_owned(),
     }
 }
@@ -35,11 +36,11 @@ impl IntegrationTest for UpdateWithScript {
 
     // Ensure the index doesn't exist
     fn prepare(&self, client: AsyncClient) -> Box<Future<Item = (), Error = Error>> {
-        let delete_res = client.index_delete(index(INDEX)).send();
+        let delete_res = client.index(Doc::static_index()).delete().send();
 
         let index_res = client
-            .document_index(index(INDEX), doc())
-            .id(ID)
+            .document()
+            .index(doc())
             .params_fluent(|p| p.url_param("refresh", true))
             .send();
 
@@ -49,14 +50,15 @@ impl IntegrationTest for UpdateWithScript {
     // Execute an update request against that index using a script
     fn request(&self, client: AsyncClient) -> Box<Future<Item = Self::Response, Error = Error>> {
         let update_res = client
-            .document_update::<Doc>(index(INDEX), id(ID))
+            .document::<Doc>()
+            .update(ID)
             .script_fluent("ctx._source.title = params.newTitle", |s| {
                 s.param("newTitle", EXPECTED_TITLE)
             })
             .params_fluent(|p| p.url_param("refresh", true))
             .send();
 
-        let get_res = client.document_get(index(INDEX), id(ID)).send();
+        let get_res = client.document().get(ID).send();
 
         Box::new(update_res.and_then(|update| get_res.map(|get| (update, get))))
     }

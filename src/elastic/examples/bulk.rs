@@ -21,7 +21,7 @@ fn run() -> Result<(), Box<Error>> {
 
     let ops = (0..1000)
         .into_iter()
-        .map(|i| bulk_index(json!({
+        .map(|i| bulk_raw().index(json!({
                 "id": i,
                 "title": "some string value"
             }))

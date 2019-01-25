@@ -18,8 +18,10 @@ use std::error::Error;
 use elastic::prelude::*;
 
 #[derive(Debug, Serialize, Deserialize, ElasticType)]
+#[elastic(index = "index_sample_index")]
 struct MyType {
-    id: i32,
+    #[elastic(id)]
+    id: String,
     title: String,
     timestamp: Date<DefaultDateMapping>,
 }
@@ -30,26 +32,26 @@ fn run() -> Result<(), Box<Error>> {
 
     // Create a document to index
     let doc = MyType {
-        id: 1,
+        id: "1".to_owned(),
         title: String::from("A title"),
         timestamp: Date::now(),
     };
 
     // Create the index if it doesn't exist
-    if !client.index_exists(sample_index()).send()?.exists() {
-        client.index_create(sample_index()).send()?;
+    if !client.index(MyType::static_index()).exists().send()?.exists() {
+        client.index(MyType::static_index()).create().send()?;
     }
 
     // Add the document mapping (optional, but makes sure `timestamp` is mapped as a `date`)
     client
-        .document_put_mapping::<MyType>(sample_index())
+        .document::<MyType>()
+        .put_mapping()
         .send()?;
 
     // Index the document
-    let doc_id = doc.id;
     client
-        .document_index(sample_index(), doc)
-        .id(doc_id)
+        .document()
+        .index(doc)
         .send()?;
 
     Ok(())
@@ -58,8 +60,4 @@ fn run() -> Result<(), Box<Error>> {
 fn main() {
     env_logger::init();
     run().unwrap();
-}
-
-fn sample_index() -> Index<'static> {
-    Index::from("index_sample_index")
 }

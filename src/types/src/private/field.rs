@@ -8,32 +8,28 @@ The idea is to use a concrete type for `TPivot` so non-overlapping blanket imple
 use std::marker::PhantomData;
 use std::borrow::Borrow;
 use std::ops::Deref;
-use serde::Serialize;
+use serde::ser::{Serialize, Serializer};
+
+pub trait StaticSerialize {
+    fn static_serialize<S>(serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer;
+}
 
 /** The base representation of an Elasticsearch data type. */
 pub trait FieldType<TMapping, TPivot>
 where
     TMapping: FieldMapping<TPivot>,
-    TPivot: Default,
 {
-    /** Get a serialisable instance of the type mapping as a field. */
-    fn field_mapping() -> TMapping {
-        TMapping::default()
-    }
+    
 }
 
 /** The base representation of an Elasticsearch data type mapping. */
-pub trait FieldMapping<TPivot>
-where
-    Self: Default,
-    TPivot: Default,
-{
+pub trait FieldMapping<TPivot> {
     /** Prevents infinite recursion when resolving `Serialize` on nested mappings. */
-    type DocumentField: Serialize + Default;
+    type SerializeFieldMapping: StaticSerialize;
 
-    fn data_type() -> &'static str {
-        "object"
-    }
+    fn data_type() -> &'static str;
 }
 
 /** Captures traits required for conversion between a field with mapping and a default counterpart. */
@@ -44,29 +40,48 @@ where
 {
 }
 
-// TODO: Rename `DocumentField` to `SerializeFieldMapping`
-
 /**
 A wrapper type used to work around conflicting implementations of `Serialize` for the various mapping traits.
 
-Serialising `DocumentField` will produce the mapping for the given type, suitable as the mapping of a field for a document.
-Individual implementations of `Serialize` for `DocumentField` are spread throughout other modules.
+Serialising `SerializeFieldMapping` will produce the mapping for the given type, suitable as the mapping of a field for a document.
+Individual implementations of `Serialize` for `SerializeFieldMapping` are spread throughout other modules.
 */
-#[derive(Default)]
-pub struct DocumentField<TMapping, TPivot>
+pub struct SerializeFieldMapping<TMapping, TPivot>
 where
     TMapping: FieldMapping<TPivot>,
-    TPivot: Default,
 {
     _m: PhantomData<(TMapping, TPivot)>,
 }
 
-impl<TMapping, TPivot> From<TMapping> for DocumentField<TMapping, TPivot>
+impl<TMapping, TPivot> Default for SerializeFieldMapping<TMapping, TPivot>
 where
     TMapping: FieldMapping<TPivot>,
-    TPivot: Default,
 {
-    fn from(_: TMapping) -> Self {
-        DocumentField::<TMapping, TPivot>::default()
+    fn default() -> Self {
+        SerializeFieldMapping {
+            _m: Default::default(),
+        }
     }
+}
+
+impl<TMapping, TPivot> Serialize for SerializeFieldMapping<TMapping, TPivot>
+where
+    TMapping: FieldMapping<TPivot>,
+    Self: StaticSerialize,
+{
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        Self::static_serialize(serializer)
+    }
+}
+
+#[cfg(test)]
+pub(crate) fn serialize<TMapping, TPivot>(_: TMapping) -> SerializeFieldMapping<TMapping, TPivot>
+where
+    TMapping: FieldMapping<TPivot>,
+    SerializeFieldMapping<TMapping, TPivot>: Serialize,
+{
+    SerializeFieldMapping::default()
 }

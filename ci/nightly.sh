@@ -25,9 +25,6 @@ if [ "$KIND" == "build" ]; then
         echo "Pushing gh-pages to GitHub"
         git push -q upstream HEAD:refs/heads/gh-pages --force
     fi
-elif [ "$KIND" == "bench" ]; then
-    cd benches
-    cargo build --all
 elif [ "$KIND" == "integration" ]; then 
     cd tests/run
     cargo build

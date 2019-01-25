@@ -125,7 +125,6 @@ where
     where
         D: Deserializer<'de>,
     {
-        #[derive(Default)]
         struct IpVisitor<TMapping> {
             _m: PhantomData<TMapping>,
         }
@@ -159,7 +158,7 @@ where
             }
         }
 
-        deserializer.deserialize_any(IpVisitor::<TMapping>::default())
+        deserializer.deserialize_any(IpVisitor::<TMapping> { _m: PhantomData })
     }
 }
 

@@ -5,8 +5,7 @@
 //! analysers, filters and mapping for `Account`s.
 
 use serde_json::Value;
-use elastic::client::requests::Index;
-use elastic::types::prelude::DocumentType;
+use elastic::prelude::*;
 use super::account::Account;
 
 /// Get the name of the bank index.
@@ -44,7 +43,7 @@ pub fn body() -> Value {
             }
         },
         "mappings": {
-            Account::name(): Account::index_mapping()
+            Account::static_ty(): Account::index_mapping()
         }
     })
 }

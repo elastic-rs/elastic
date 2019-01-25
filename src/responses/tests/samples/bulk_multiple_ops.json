@@ -13,7 +13,7 @@
                "successful": 1,
                "failed": 0
             },
-            "created": true,
+            "result":"created",
             "status": 201
          }
       },
@@ -29,6 +29,7 @@
                "successful": 1,
                "failed": 0
             },
+            "result":"not_found",
             "status": 404
          }
       },
@@ -43,7 +44,7 @@
                "successful": 1,
                "failed": 0
             },
-            "created": true,
+            "result":"created",
             "status": 201
          }
       },
@@ -58,6 +59,7 @@
                 "successful": 1,
                 "failed": 0
             },
+            "result":"updated",
             "status": 200
          }
       }

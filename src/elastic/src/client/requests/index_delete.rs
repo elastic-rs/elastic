@@ -7,7 +7,7 @@ Builders for [delete index requests][docs-delete-index].
 use futures::{Future, Poll};
 
 use error::*;
-use client::Client;
+use client::IndexClient;
 use client::sender::{AsyncSender, Sender, SyncSender};
 use client::requests::RequestBuilder;
 use client::requests::params::Index;
@@ -36,7 +36,7 @@ pub struct IndexDeleteRequestInner {
 /**
 # Delete index request
 */
-impl<TSender> Client<TSender>
+impl<TSender> IndexClient<TSender>
 where
     TSender: Sender,
 {
@@ -58,7 +58,7 @@ where
     # fn main() { run().unwrap() }
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # let client = SyncClientBuilder::new().build()?;
-    let response = client.index_delete(index("myindex")).send()?;
+    let response = client.index("myindex").delete().send()?;
 
     assert!(response.acknowledged());
     # Ok(())
@@ -70,8 +70,8 @@ where
     [send-sync]: requests/index_delete/type.IndexDeleteRequestBuilder.html#send-synchronously
     [send-async]: requests/index_delete/type.IndexDeleteRequestBuilder.html#send-asynchronously
     */
-    pub fn index_delete(&self, index: Index<'static>) -> IndexDeleteRequestBuilder<TSender> {
-        RequestBuilder::initial(self.clone(), IndexDeleteRequestInner { index: index })
+    pub fn delete(self) -> IndexDeleteRequestBuilder<TSender> {
+        RequestBuilder::initial(self.inner, IndexDeleteRequestInner { index: self.index })
     }
 }
 
@@ -100,7 +100,7 @@ impl IndexDeleteRequestBuilder<SyncSender> {
     # fn main() { run().unwrap() }
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # let client = SyncClientBuilder::new().build()?;
-    let response = client.index_delete(index("myindex")).send()?;
+    let response = client.index("myindex").delete().send()?;
 
     assert!(response.acknowledged());
     # Ok(())
@@ -141,7 +141,7 @@ impl IndexDeleteRequestBuilder<AsyncSender> {
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # let core = tokio_core::reactor::Core::new()?;
     # let client = AsyncClientBuilder::new().build(&core.handle())?;
-    let future = client.index_delete(index("myindex")).send();
+    let future = client.index("myindex").delete().send();
 
     future.and_then(|response| {
         assert!(response.acknowledged());
@@ -198,7 +198,7 @@ mod tests {
     fn default_request() {
         let client = SyncClientBuilder::new().build().unwrap();
 
-        let req = client.index_delete(index("testindex")).inner.into_request();
+        let req = client.index("testindex").delete().inner.into_request();
 
         assert_eq!("/testindex", req.url.as_ref());
     }

@@ -190,14 +190,8 @@ impl Read for SyncHttpResponse {
 
 #[cfg(test)]
 mod tests {
-    use std::fs::File;
     use client::requests::empty_body;
     use super::*;
-
-    #[test]
-    fn file_into_body() {
-        //SyncBody::from(File::open("Cargo.toml").unwrap());
-    }
 
     #[test]
     fn owned_string_into_body() {

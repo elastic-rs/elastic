@@ -9,13 +9,14 @@ use futures::{Future, Poll};
 use serde::de::DeserializeOwned;
 
 use error::{Error, Result};
-use client::Client;
+use client::{DocumentClient, Client};
 use client::sender::{AsyncSender, Sender, SyncSender};
 use client::requests::{empty_body, DefaultBody, RequestBuilder};
 use client::requests::params::{Index, Type};
 use client::requests::endpoints::SearchRequest;
 use client::requests::raw::RawRequestInner;
 use client::responses::SearchResponse;
+use types::document::DocumentType;
 
 /**
 A [search request][docs-search] builder that can be configured before sending. 
@@ -124,6 +125,89 @@ where
         TDocument: DeserializeOwned,
     {
         RequestBuilder::initial(self.clone(), SearchRequestInner::new(empty_body()))
+    }
+}
+
+/**
+# Search request
+*/
+impl<TSender, TDocument> DocumentClient<TSender, TDocument>
+where
+    TSender: Sender,
+{
+    /** 
+    Create a [`SearchRequestBuilder`][SearchRequestBuilder] with this `Client` that can be configured before sending.
+
+    The index and type parameters will be inferred from the document type.
+
+    For more details, see:
+
+    - [builder methods][builder-methods]
+    - [send synchronously][send-sync]
+    - [send asynchronously][send-async]
+
+    # Examples
+
+    Run a simple [Query String][docs-querystring] query for a [`DocumentType`][documents-mod] called `MyType`:
+    
+    ```no_run
+    # extern crate serde;
+    # #[macro_use] extern crate serde_derive;
+    # #[macro_use] extern crate elastic_derive;
+    # #[macro_use] extern crate serde_json;
+    # extern crate elastic;
+    # use elastic::prelude::*;
+    # fn main() { run().unwrap() }
+    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # #[derive(Debug, Serialize, Deserialize, ElasticType)]
+    # struct MyType { }
+    # let client = SyncClientBuilder::new().build()?;
+    let query = "a query string";
+
+    let response = client.document::<MyType>()
+                         .search()
+                         .body(json!({
+                             "query": {
+                                 "query_string": {
+                                     "query": query
+                                 }
+                             }
+                         }))
+                         .send()?;
+
+    // Iterate through the hits (of type `MyType`)
+    for hit in response.hits() {
+        println!("{:?}", hit);
+    }
+    # Ok(())
+    # }
+    ```
+
+    For more details on document types and mapping, see the [`types`][types-mod] module.
+
+    [SearchRequestBuilder]: requests/search/type.SearchRequestBuilder.html
+    [builder-methods]: requests/search/type.SearchRequestBuilder.html#builder-methods
+    [send-sync]: requests/search/type.SearchRequestBuilder.html#send-synchronously
+    [send-async]: requests/search/type.SearchRequestBuilder.html#send-asynchronously
+    [types-mod]: ../../types/index.html
+    [documents-mod]: ../../types/document/index.html
+    [docs-querystring]: https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html
+    */
+    pub fn search(self) -> SearchRequestBuilder<TSender, TDocument, DefaultBody>
+    where
+        TDocument: DeserializeOwned + DocumentType,
+    {
+        let index = TDocument::partial_static_index().map(|idx| Index::from(idx));
+        let ty = TDocument::partial_static_ty().map(|ty| Type::from(ty));
+
+        RequestBuilder::initial(
+            self.inner, 
+            SearchRequestInner {
+                index: index,
+                ty: ty,
+                body: empty_body(),
+                _marker: PhantomData,
+            })
     }
 }
 

@@ -186,10 +186,7 @@ struct MyFormat;
 # }
 ```
 */
-pub trait DateFormat
-where
-    Self: Default,
-{
+pub trait DateFormat {
     /** Parses a date string to a `chrono::DateTime<Utc>` result. */
     fn parse(date: &str) -> Result<DateValue, ParseError>;
 
