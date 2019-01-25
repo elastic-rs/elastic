@@ -1,4 +1,4 @@
-FROM docker.elastic.co/elasticsearch/elasticsearch:5.5.0
+FROM docker.elastic.co/elasticsearch/elasticsearch:6.5.4
 
 RUN elasticsearch-plugin remove x-pack
 
