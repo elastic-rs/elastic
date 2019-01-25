@@ -396,7 +396,7 @@ pub struct OkItem<TIndex = DefaultAllocatedField, TType = DefaultAllocatedField,
     id: TId,
     version: Option<u32>,
     shards: Option<Shards>,
-    result: DocumentResult,
+    result: Option<DocumentResult>,
 }
 
 impl<TIndex, TType, TId> OkItem<TIndex, TType, TId> {
@@ -417,7 +417,7 @@ impl<TIndex, TType, TId> OkItem<TIndex, TType, TId> {
     */
     pub fn created(&self) -> bool {
         match self.result {
-            DocumentResult::Created => true,
+            Some(DocumentResult::Created) => true,
             _ => false,
         }
     }
@@ -429,7 +429,7 @@ impl<TIndex, TType, TId> OkItem<TIndex, TType, TId> {
     */
     pub fn deleted(&self) -> bool {
         match self.result {
-            DocumentResult::Deleted => true,
+            Some(DocumentResult::Deleted) => true,
             _ => false,
         }
     }
@@ -539,7 +539,7 @@ struct ItemDeInner<TIndex, TType, TId> {
     #[serde(rename = "_id")] id: TId,
     #[serde(rename = "_version")] version: Option<u32>,
     #[serde(rename = "_shards")] shards: Option<Shards>,
-    result: DocumentResult,
+    result: Option<DocumentResult>,
     status: u16,
     error: Option<BulkError>,
 }

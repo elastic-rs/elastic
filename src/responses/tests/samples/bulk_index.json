@@ -13,7 +13,7 @@
 					"successful":1,
 					"failed":0
 				},
-				"created":false,
+				"result":"updated",
 				"status":200
 			}
 		},
@@ -28,7 +28,7 @@
 					"successful":1,
 					"failed":0
 				},
-				"created":false,
+				"result":"updated",
 				"status":200
 			}
 		},
@@ -43,7 +43,7 @@
 					"successful":1,
 					"failed":0
 				},
-				"created":false,
+				"result":"updated",
 				"status":200
 			}
 		},
@@ -58,7 +58,7 @@
 					"successful":1,
 					"failed":0
 				},
-				"created":false,
+				"result":"updated",
 				"status":200
 			}
 		},
@@ -73,7 +73,7 @@
 					"successful":1,
 					"failed":0
 				},
-				"created":false,
+				"result":"updated",
 				"status":200
 			}
 		}
