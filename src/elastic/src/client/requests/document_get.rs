@@ -16,6 +16,7 @@ use client::requests::params::{Id, Index, Type};
 use client::requests::endpoints::GetRequest;
 use client::requests::raw::RawRequestInner;
 use client::responses::GetResponse;
+use types::DEFAULT_TYPE;
 use types::document::{DocumentType, StaticIndex, StaticType};
 
 /** 
@@ -69,11 +70,7 @@ where
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
     # #[derive(Serialize, Deserialize, ElasticType)]
-    # struct MyType {
-    #     pub id: String
-    #     pub title: String,
-    #     pub timestamp: Date<DefaultDateMapping>
-    # }
+    # struct MyType { }
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # let client = SyncClientBuilder::new().build()?;
     let response = client.document::<MyType>()
@@ -149,10 +146,9 @@ where
     [types-mod]: ../types/index.html
     [documents-mod]: ../types/document/index.html
     */
-    pub fn get_raw<TIndex, TType, TId>(self, index: TIndex, ty: TType, id: TId) -> GetRequestBuilder<TSender, TDocument>
+    pub fn get_raw<TIndex, TId>(self, index: TIndex, id: TId) -> GetRequestBuilder<TSender, TDocument>
     where
         TIndex: Into<Index<'static>>,
-        TType: Into<Type<'static>>,
         TId: Into<Id<'static>>,
         TDocument: DeserializeOwned,
     {
@@ -160,7 +156,7 @@ where
             self.inner,
             GetRequestInner {
                 index: index.into(),
-                ty: ty.into(),
+                ty: DEFAULT_TYPE.into(),
                 id: id.into(),
                 _marker: PhantomData,
             },
@@ -183,6 +179,15 @@ impl<TSender, TDocument> GetRequestBuilder<TSender, TDocument>
 where
     TSender: Sender,
 {
+    /** Set the index for the get request. */
+    pub fn index<I>(mut self, index: I) -> Self
+    where
+        I: Into<Index<'static>>,
+    {
+        self.inner.index = index.into();
+        self
+    }
+
     /** Set the type for the get request. */
     pub fn ty<I>(mut self, ty: I) -> Self
     where
@@ -207,7 +212,7 @@ where
 
     # Examples
 
-    Get a document from an index called `myindex` with an id of `1`:
+    Get a [`DocumentType`][documents-mod] called `MyType` with an id of `1`:
 
     ```no_run
     # extern crate serde;
@@ -217,11 +222,13 @@ where
     # extern crate elastic;
     # use serde_json::Value;
     # use elastic::prelude::*;
+    # #[derive(ElasticType, Deserialize)]
+    # struct MyType { }
     # fn main() { run().unwrap() }
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # let client = SyncClientBuilder::new().build()?;
-    let response = client.document_get::<Value>(index("myindex"), id(1))
-                         .ty("mytype")
+    let response = client.document::<MyType>()
+                         .get(1)
                          .send()?;
     
     if let Some(doc) = response.into_document() {
@@ -232,6 +239,7 @@ where
     ```
 
     [SyncClient]: ../../type.SyncClient.html
+    [documents-mod]: ../types/document/index.html
     */
     pub fn send(self) -> Result<GetResponse<TDocument>> {
         let req = self.inner.into_request();
@@ -256,7 +264,7 @@ where
 
     # Examples
 
-    Get a document from an index called `myindex` with an id of `1`:
+    Get a [`DocumentType`][documents-mod] called `MyType` with an id of `1`:
 
     ```no_run
     # extern crate futures;
@@ -269,12 +277,14 @@ where
     # use serde_json::Value;
     # use futures::Future;
     # use elastic::prelude::*;
+    # #[derive(ElasticType, Deserialize)]
+    # struct MyType { }
     # fn main() { run().unwrap() }
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # let core = tokio_core::reactor::Core::new()?;
     # let client = AsyncClientBuilder::new().build(&core.handle())?;
-    let future = client.document_get::<Value>(index("myindex"), id(1))
-                       .ty("mytype")
+    let future = client.document::<MyType>()
+                       .get(1)
                        .send();
     
     future.and_then(|response| {
@@ -289,6 +299,7 @@ where
     ```
 
     [AsyncClient]: ../../type.AsyncClient.html
+    [documents-mod]: ../types/document/index.html
     */
     pub fn send(self) -> Pending<TDocument> {
         let req = self.inner.into_request();
@@ -346,7 +357,21 @@ mod tests {
             .inner
             .into_request();
 
-        assert_eq!("/test-idx/value/1", req.url.as_ref());
+        assert_eq!("/testdoc/_doc/1", req.url.as_ref());
+    }
+
+    #[test]
+    fn specify_index() {
+        let client = SyncClientBuilder::new().build().unwrap();
+
+        let req = client
+            .document::<TestDoc>()
+            .get("1")
+            .index("new-idx")
+            .inner
+            .into_request();
+
+        assert_eq!("/new-idx/_doc/1", req.url.as_ref());
     }
 
     #[test]
@@ -360,6 +385,6 @@ mod tests {
             .inner
             .into_request();
 
-        assert_eq!("/test-idx/new-ty/1", req.url.as_ref());
+        assert_eq!("/testdoc/new-ty/1", req.url.as_ref());
     }
 }

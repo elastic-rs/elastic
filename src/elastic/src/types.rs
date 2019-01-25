@@ -264,5 +264,7 @@ Serialising `MyType`s mapping will produce the following json:
 
 pub use elastic_types::{boolean, date, document, geo, ip, number, prelude, string};
 
+pub(crate) const DEFAULT_TYPE: &'static str = "_doc";
+
 #[doc(hidden)]
 pub use elastic_types::derive;

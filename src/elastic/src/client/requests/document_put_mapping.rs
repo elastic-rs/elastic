@@ -129,6 +129,15 @@ impl<TSender, TDocument> PutMappingRequestBuilder<TSender, TDocument>
 where
     TSender: Sender,
 {
+    /** Set the index for the put mapping request. */
+    pub fn index<I>(mut self, index: I) -> Self
+    where
+        I: Into<Index<'static>>,
+    {
+        self.inner.index = index.into();
+        self
+    }
+
     /** Set the type for the put mapping request. */
     pub fn ty<I>(mut self, ty: I) -> Self
     where
@@ -166,7 +175,8 @@ where
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType { }
     # let client = SyncClientBuilder::new().build()?;
-    let response = client.document_put_mapping::<MyType>(index("myindex"))
+    let response = client.document::<MyType>()
+                         .put_mapping()
                          .send()?;
 
     assert!(response.acknowledged());
@@ -216,7 +226,8 @@ where
     # struct MyType { }
     # let core = tokio_core::reactor::Core::new()?;
     # let client = AsyncClientBuilder::new().build(&core.handle())?;
-    let future = client.document_put_mapping::<MyType>(index("myindex"))
+    let future = client.document::<MyType>()
+                       .put_mapping()
                        .send();
 
     future.and_then(|response| {
@@ -297,8 +308,23 @@ mod tests {
 
         let actual_body: Value = serde_json::from_slice(&req.body).unwrap();
 
-        assert_eq!("/test-idx/_mappings/value", req.url.as_ref());
+        assert_eq!("/testdoc/_mappings/_doc", req.url.as_ref());
         assert_eq!(expected_body.to_string(), actual_body.to_string());
+    }
+
+    #[test]
+    fn specify_index() {
+        let client = SyncClientBuilder::new().build().unwrap();
+
+        let req = client
+            .document::<TestDoc>()
+            .put_mapping()
+            .index("new-idx")
+            .inner
+            .into_request()
+            .unwrap();
+
+        assert_eq!("/new-idx/_mappings/_doc", req.url.as_ref());
     }
 
     #[test]
@@ -313,6 +339,6 @@ mod tests {
             .into_request()
             .unwrap();
 
-        assert_eq!("/test-idx/_mappings/new-ty", req.url.as_ref());
+        assert_eq!("/testdoc/_mappings/new-ty", req.url.as_ref());
     }
 }

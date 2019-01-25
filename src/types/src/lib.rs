@@ -262,7 +262,7 @@ Take the following document:
 
 ```ignore
 {
-    "id": 15,
+    "id": "15",
     "timestamp": 1435935302478,
     "title": "my timestamped object"
 }
@@ -285,7 +285,8 @@ object:
 # use elastic_types::prelude::*;
 #[derive(Serialize, Deserialize, ElasticType)]
 struct MyType {
-    id: String
+    #[elastic(id)]
+    id: String,
     timestamp: Timestamp,
     title: String
 }
@@ -293,7 +294,7 @@ struct MyType {
 type Timestamp = Date<DefaultDateMapping<EpochMillis>>;
 
 # fn main() {
-# let json = "{\"id\": 15,\"timestamp\": 1435935302478,\"title\": \"my timestamped object\"}";
+# let json = "{\"id\": \"15\",\"timestamp\": 1435935302478,\"title\": \"my timestamped object\"}";
 let de: MyType = serde_json::from_str(json).unwrap();
 
 assert_eq!(2015, de.timestamp.year());
@@ -346,7 +347,8 @@ use elastic_types::prelude::*;
 
 #[derive(Serialize, Deserialize, ElasticType)]
 struct Article {
-    pub id: String
+    #[elastic(id)]
+    pub id: String,
     pub title: String,
     pub content: Text<ContentMapping>,
     pub timestamp: Option<Date<TimestampMapping>>,
@@ -385,7 +387,7 @@ impl DateMapping for TimestampMapping {
 
 fn main() {
     println!("\"{}\":{{ {} }}",
-        Article::name(),
+        Article::static_ty(),
         serde_json::to_string(&Article::index_mapping()).unwrap()
     );
 }

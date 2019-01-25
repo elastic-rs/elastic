@@ -18,6 +18,7 @@ use client::requests::params::{Id, Index, Type};
 use client::requests::endpoints::IndexRequest;
 use client::requests::raw::RawRequestInner;
 use client::responses::IndexResponse;
+use types::DEFAULT_TYPE;
 use types::document::DocumentType;
 
 /** 
@@ -168,17 +169,16 @@ where
     [types-mod]: ../types/index.html
     [documents-mod]: ../types/document/index.html
     */
-    pub fn index_raw<TIndex, TType>(self, index: TIndex, ty: TType, doc: TDocument) -> IndexRequestBuilder<TSender, TDocument>
+    pub fn index_raw<TIndex>(self, index: TIndex, doc: TDocument) -> IndexRequestBuilder<TSender, TDocument>
     where
         TIndex: Into<Index<'static>>,
-        TType: Into<Type<'static>>,
         TDocument: Serialize,
     {
         RequestBuilder::initial(
             self.inner,
             IndexRequestInner {
                 index: index.into(),
-                ty: ty.into(),
+                ty: DEFAULT_TYPE.into(),
                 id: None,
                 doc: doc,
             },
@@ -211,6 +211,15 @@ impl<TSender, TDocument> IndexRequestBuilder<TSender, TDocument>
 where
     TSender: Sender,
 {
+    /** Set the index for the index request. */
+    pub fn index<I>(mut self, index: I) -> Self
+    where
+        I: Into<Index<'static>>,
+    {
+        self.inner.index = index.into();
+        self
+    }
+
     /** Set the type for the index request. */
     pub fn ty<I>(mut self, ty: I) -> Self
     where
@@ -268,8 +277,8 @@ where
     };
 
     let doc_id = doc.id;
-    let response = client.document_index(index("myindex"), doc)
-                         .id(doc_id)
+    let response = client.document()
+                         .index(doc)
                          .send()?;
     
     assert!(response.created());
@@ -329,9 +338,8 @@ where
         timestamp: Date::now()
     };
 
-    let doc_id = doc.id;
-    let future = client.document_index(index("myindex"), doc)
-                       .id(doc_id)
+    let future = client.document()
+                       .index(doc)
                        .send();
     
     future.and_then(|response| {
@@ -403,8 +411,23 @@ mod tests {
             .into_request()
             .unwrap();
 
-        assert_eq!("/test-idx/value", req.url.as_ref());
+        assert_eq!("/testdoc/_doc", req.url.as_ref());
         assert_eq!("{}".as_bytes().to_vec(), req.body);
+    }
+
+    #[test]
+    fn specify_index() {
+        let client = SyncClientBuilder::new().build().unwrap();
+
+        let req = client
+            .document::<TestDoc>()
+            .index(TestDoc {})
+            .index("new-idx")
+            .inner
+            .into_request()
+            .unwrap();
+
+        assert_eq!("/new-idx/_doc", req.url.as_ref());
     }
 
     #[test]
@@ -419,7 +442,7 @@ mod tests {
             .into_request()
             .unwrap();
 
-        assert_eq!("/test-idx/new-ty", req.url.as_ref());
+        assert_eq!("/testdoc/new-ty", req.url.as_ref());
     }
 
     #[test]
@@ -434,6 +457,6 @@ mod tests {
             .into_request()
             .unwrap();
 
-        assert_eq!("/test-idx/value/1", req.url.as_ref());
+        assert_eq!("/testdoc/_doc/1", req.url.as_ref());
     }
 }

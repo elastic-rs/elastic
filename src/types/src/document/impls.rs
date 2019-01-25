@@ -216,9 +216,9 @@ pub struct MyIndex {
 struct Mappings;
 impl Serialize for Mappings {
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-        let mut state = try!(serializer.serialize_struct("mappings", 1));
+        let mut state = serializer.serialize_struct("mappings", 1)?;
 
-        try!(state.serialize_field(MyType::name(), &MyType::index_mapping().into_mapping()));
+        state.serialize_field(MyType::static_ty(), &MyType::index_mapping())?;
 
         state.end()
     }
@@ -228,7 +228,7 @@ impl Serialize for Mappings {
 # let json = json_str!(
 # {
 #     "mappings": {
-#         "mytype": {
+#         "_doc": {
 #             "properties": {
 #                 "my_date": {
 #                     "type": "date",

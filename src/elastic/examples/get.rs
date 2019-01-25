@@ -22,7 +22,7 @@ fn run() -> Result<(), Box<StdError>> {
     let client = SyncClientBuilder::new().build()?;
 
     let res = client
-        .document::<Value>().get_raw("typed_sample_index", "mytype", "1")
+        .document::<Value>().get_raw("typed_sample_index", "1")
         .send();
 
     // Responses can be unpacked in various ways. In this case we check if:

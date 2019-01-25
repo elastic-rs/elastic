@@ -15,6 +15,7 @@ use client::requests::params::{Id, Index, Type};
 use client::requests::endpoints::DeleteRequest;
 use client::requests::raw::RawRequestInner;
 use client::responses::DeleteResponse;
+use types::DEFAULT_TYPE;
 use types::document::{DocumentType, StaticIndex, StaticType};
 
 /** 
@@ -153,17 +154,16 @@ where
     [send-async]: requests/document_delete/type.DeleteRequestBuilder.html#send-asynchronously
     [documents-mod]: ../types/document/index.html
     */
-    pub fn delete_raw<TIndex, TType, TId>(self, index: TIndex, ty: TType, id: TId) -> DeleteRequestBuilder<TSender, ()>
+    pub fn delete_raw<TIndex, TId>(self, index: TIndex, id: TId) -> DeleteRequestBuilder<TSender, ()>
     where
         TIndex: Into<Index<'static>>,
-        TType: Into<Type<'static>>,
         TId: Into<Id<'static>>,
     {
         RequestBuilder::initial(
             self.inner,
             DeleteRequestInner {
                 index: index.into(),
-                ty: ty.into(),
+                ty: DEFAULT_TYPE.into(),
                 id: id.into(),
                 _marker: PhantomData,
             },
@@ -186,6 +186,15 @@ impl<TSender, TDocument> DeleteRequestBuilder<TSender, TDocument>
 where
     TSender: Sender,
 {
+    /** Set the index for the delete request. */
+    pub fn index<I>(mut self, index: I) -> Self
+    where
+        I: Into<Index<'static>>,
+    {
+        self.inner.index = index.into();
+        self
+    }
+
     /** Set the type for the delete request. */
     pub fn ty<I>(mut self, ty: I) -> Self
     where
@@ -341,7 +350,21 @@ mod tests {
             .inner
             .into_request();
 
-        assert_eq!("/test-idx/value/1", req.url.as_ref());
+        assert_eq!("/testdoc/_doc/1", req.url.as_ref());
+    }
+
+    #[test]
+    fn specify_index() {
+        let client = SyncClientBuilder::new().build().unwrap();
+
+        let req = client
+            .document::<TestDoc>()
+            .delete("1")
+            .index("new-idx")
+            .inner
+            .into_request();
+
+        assert_eq!("/new-idx/_doc/1", req.url.as_ref());
     }
 
     #[test]
@@ -355,6 +378,6 @@ mod tests {
             .inner
             .into_request();
 
-        assert_eq!("/test-idx/new-ty/1", req.url.as_ref());
+        assert_eq!("/testdoc/new-ty/1", req.url.as_ref());
     }
 }

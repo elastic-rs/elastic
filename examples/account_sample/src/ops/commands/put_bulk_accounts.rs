@@ -77,6 +77,6 @@ mod tests {
     fn put_request_url() {
         let req = put(vec![]);
 
-        assert_eq!("/bank-sample/account/_bulk", req.url.as_ref());
+        assert_eq!("/bank-sample/_doc/_bulk", req.url.as_ref());
     }
 }

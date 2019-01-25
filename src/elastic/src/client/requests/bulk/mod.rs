@@ -882,7 +882,7 @@ mod tests {
     }
 
     #[test]
-    fn specify_ty() {
+    fn specify_ty_without_index() {
         let client = SyncClientBuilder::new().build().unwrap();
 
         let req = client
