@@ -4,7 +4,7 @@ Response types for a [bulk request](https://www.elastic.co/guide/en/elasticsearc
 
 use serde::de::{Deserialize, Deserializer, Error as DeError, MapAccess, SeqAccess, Visitor};
 use serde_json::Value;
-use common::{DefaultAllocatedField, Shards};
+use common::{DocumentResult, DefaultAllocatedField, Shards};
 
 use parsing::IsOkOnSuccess;
 
@@ -396,8 +396,7 @@ pub struct OkItem<TIndex = DefaultAllocatedField, TType = DefaultAllocatedField,
     id: TId,
     version: Option<u32>,
     shards: Option<Shards>,
-    created: Option<bool>,
-    found: Option<bool>,
+    result: DocumentResult,
 }
 
 impl<TIndex, TType, TId> OkItem<TIndex, TType, TId> {
@@ -417,16 +416,22 @@ impl<TIndex, TType, TId> OkItem<TIndex, TType, TId> {
     `created` will only be `true` if the action is `Index` and the document didn't already exist.
     */
     pub fn created(&self) -> bool {
-        self.created.clone().unwrap_or(false)
+        match self.result {
+            DocumentResult::Created => true,
+            _ => false,
+        }
     }
 
     /** 
-    Whether or not this item found the document.
+    Whether or not this item deleted the document.
     
-    `found` will only be `true` if the action is `Delete` and the document did already exist.
+    `deleted` will only be `true` if the action is `Delete` and the document existed
     */
-    pub fn found(&self) -> bool {
-        self.found.clone().unwrap_or(false)
+    pub fn deleted(&self) -> bool {
+        match self.result {
+            DocumentResult::Deleted => true,
+            _ => false,
+        }
     }
 
     /** The index for this item. */
@@ -534,8 +539,7 @@ struct ItemDeInner<TIndex, TType, TId> {
     #[serde(rename = "_id")] id: TId,
     #[serde(rename = "_version")] version: Option<u32>,
     #[serde(rename = "_shards")] shards: Option<Shards>,
-    created: Option<bool>,
-    found: Option<bool>,
+    result: DocumentResult,
     status: u16,
     error: Option<BulkError>,
 }
@@ -570,8 +574,7 @@ where
                 id: self.inner.id,
                 version: self.inner.version,
                 shards: self.inner.shards,
-                created: self.inner.created,
-                found: self.inner.found,
+                result: self.inner.result,
             })
         }
     }

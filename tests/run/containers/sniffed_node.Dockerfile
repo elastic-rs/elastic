@@ -5,6 +5,4 @@ USER root
 RUN chown elasticsearch:elasticsearch config/elasticsearch.yml
 USER elasticsearch
 
-RUN elasticsearch-plugin remove x-pack
-
 EXPOSE 9200

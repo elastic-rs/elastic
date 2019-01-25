@@ -3,8 +3,8 @@
 extern crate elastic_requests;
 extern crate test;
 
-use test::Bencher;
 use elastic_requests::*;
+use test::Bencher;
 
 #[bench]
 fn new_req(b: &mut Bencher) {

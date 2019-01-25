@@ -61,6 +61,6 @@ impl IntegrationTest for Delete {
     fn assert_ok(&self, res: &Self::Response) -> bool {
         let deleted = res.iter().next().unwrap().unwrap();
 
-        deleted.action() == BulkAction::Delete && deleted.found()
+        deleted.action() == BulkAction::Delete && deleted.deleted()
     }
 }

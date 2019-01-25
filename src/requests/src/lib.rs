@@ -112,14 +112,14 @@ pub mod endpoints {
     pub use genned::endpoints::*;
 }
 
-pub use genned::http::*;
-pub use self::params::*;
 pub use self::endpoints::*;
+pub use self::params::*;
+pub use genned::http::*;
 
 #[cfg(test)]
 mod tests {
-    use std::thread;
     use super::*;
+    use std::thread;
 
     fn do_something_with_request<'a, I: Into<Endpoint<'a, B>>, B: AsRef<[u8]>>(_: I) {}
 
@@ -155,14 +155,7 @@ mod tests {
 
     #[test]
     fn id_from_number() {
-        let ids = vec![
-            Id::from(1i32),
-            Id::from(1u32),
-            Id::from(1i64),
-            Id::from(1u64),
-            Id::from(1isize),
-            Id::from(1usize),
-        ];
+        let ids = vec![Id::from(1i32), Id::from(1u32), Id::from(1i64), Id::from(1u64), Id::from(1isize), Id::from(1usize)];
 
         for id in ids {
             assert_eq!("1", &*id);

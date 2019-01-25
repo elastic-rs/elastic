@@ -91,12 +91,15 @@ fn from_dir(path: &str) -> Result<Vec<(String, Endpoint)>, String> {
 
     for path in paths {
         let path = path.unwrap().path();
+        let name = path.file_name().map(|path| path.to_string_lossy());
         let display = path.to_string_lossy().into_owned();
 
-        let mut f = File::open(path).unwrap();
-        let parsed = try!(from_reader(display, &mut f));
+        if name.map(|name| !name.starts_with("_")).unwrap_or(true) {
+            let mut f = File::open(&path).unwrap();
+            let parsed = try!(from_reader(display, &mut f));
 
-        all_parsed.push(parsed);
+            all_parsed.push(parsed);
+        }
     }
 
     Ok(all_parsed)
