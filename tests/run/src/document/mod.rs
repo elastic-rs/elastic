@@ -2,12 +2,12 @@ use run_tests::{test, Test};
 
 mod compile_test;
 
-mod simple_index_get;
-mod update_with_doc;
-mod update_with_script;
-mod update_with_inline_script;
-mod update_no_index;
 mod delete;
+mod simple_index_get;
+mod update_no_index;
+mod update_with_doc;
+mod update_with_inline_script;
+mod update_with_script;
 
 pub fn tests() -> Vec<Test> {
     vec![

@@ -1,9 +1,9 @@
-use ops::Client;
-use std::io::Error as IoError;
-use serde_json::Error as JsonError;
+use elastic::http::StatusCode;
 use elastic::prelude::*;
 use elastic::Error as ResponseError;
-use elastic::http::StatusCode;
+use ops::Client;
+use serde_json::Error as JsonError;
+use std::io::Error as IoError;
 
 use model;
 
@@ -13,20 +13,14 @@ pub trait EnsureBankIndexExists {
 
 impl EnsureBankIndexExists for Client {
     fn ensure_bank_index_exists(&self) -> Result<(), EnsureBankIndexExistsError> {
-        let exists = self.io
-            .request(IndicesExistsRequest::for_index(model::index::name()))
-            .send()?;
+        let exists = self.io.request(IndicesExistsRequest::for_index(model::index::name())).send()?;
 
         match exists.status() {
             // Success, do nothing
             StatusCode::OK => (),
             // Not found, create the index
             StatusCode::NOT_FOUND => {
-                self.io
-                    .index(model::index::name())
-                    .create()
-                    .body(model::index::body().to_string())
-                    .send()?;
+                self.io.index(model::index::name()).create().body(model::index::body().to_string()).send()?;
             }
             // Some other response, deserialise
             _ => {
@@ -38,7 +32,7 @@ impl EnsureBankIndexExists for Client {
     }
 }
 
-quick_error!{
+quick_error! {
     #[derive(Debug)]
     pub enum EnsureBankIndexExistsError {
         Io(err: IoError) {

@@ -26,14 +26,14 @@ It's effectively a rewrite.
 mod nodes_info;
 use self::nodes_info::*;
 
-use std::time::{Duration, Instant};
-use std::sync::{Arc, RwLock};
-use url::Url;
 use futures::{Future, IntoFuture};
+use std::sync::{Arc, RwLock};
+use std::time::{Duration, Instant};
+use url::Url;
 
+use client::requests::{DefaultBody, NodesInfoRequest};
 use client::sender::static_nodes::StaticNodes;
 use client::sender::{AsyncSender, NextParams, NodeAddress, PreRequestParams, RequestParams, SendableRequest, SendableRequestParams, Sender, SyncSender};
-use client::requests::{DefaultBody, NodesInfoRequest};
 use error::{self, Error};
 use private;
 
@@ -124,10 +124,7 @@ impl SniffedNodesBuilder {
     where
         I: Into<NodeAddress>,
     {
-        SniffedNodesBuilder {
-            base_url: address.into(),
-            wait: None,
-        }
+        SniffedNodesBuilder { base_url: address.into(), wait: None }
     }
 
     /**
@@ -237,10 +234,7 @@ impl<TSender> SniffedNodes<TSender> {
     }
 
     fn sendable_request(&self) -> SendableRequest<NodesInfoRequest<'static>, RequestParams, DefaultBody> {
-        SendableRequest::new(
-            NodesInfoRequest::new(),
-            SendableRequestParams::Value(self.refresh_params.clone()),
-        )
+        SendableRequest::new(NodesInfoRequest::new(), SendableRequestParams::Value(self.refresh_params.clone()))
     }
 
     fn finish_refresh(inner: &RwLock<SniffedNodesInner>, refresh_params: &RequestParams, fresh_nodes: Result<NodesInfoResponse, Error>) -> Result<RequestParams, Error> {
@@ -265,9 +259,7 @@ impl<TSender> SniffedNodes<TSender> {
 impl SniffedNodesInner {
     fn should_refresh(&self) -> bool {
         // If there isn't a value for the last update then assume we need to refresh.
-        let last_update_is_stale = self.last_update
-            .as_ref()
-            .map(|last_update| last_update.elapsed() > self.wait);
+        let last_update_is_stale = self.last_update.as_ref().map(|last_update| last_update.elapsed() > self.wait);
 
         !self.refreshing && last_update_is_stale.unwrap_or(true)
     }
@@ -276,12 +268,10 @@ impl SniffedNodesInner {
         let nodes: Vec<_> = parsed
             .into_iter()
             .filter_map(|node| {
-                node.http
-                    .and_then(|http| http.publish_address)
-                    .map(|publish_address| {
-                        // NOTE: Nasty hack to include the correct scheme since `publish_address` is a `host:port`
-                        format!("{}://{}", scheme, publish_address).into()
-                    })
+                node.http.and_then(|http| http.publish_address).map(|publish_address| {
+                    // NOTE: Nasty hack to include the correct scheme since `publish_address` is a `host:port`
+                    format!("{}://{}", scheme, publish_address).into()
+                })
             })
             .collect();
 
@@ -296,11 +286,7 @@ impl NextParams for SniffedNodes<AsyncSender> {
     type Params = Box<Future<Item = RequestParams, Error = Error>>;
 
     fn next(&self) -> Self::Params {
-        self.async_next(|req| {
-            self.sender
-                .send(req)
-                .and_then(|res| res.into_response::<NodesInfoResponse>())
-        })
+        self.async_next(|req| self.sender.send(req).and_then(|res| res.into_response::<NodesInfoResponse>()))
     }
 }
 
@@ -308,18 +294,14 @@ impl NextParams for SniffedNodes<SyncSender> {
     type Params = Result<RequestParams, Error>;
 
     fn next(&self) -> Self::Params {
-        self.sync_next(|req| {
-            self.sender
-                .send(req)
-                .and_then(|res| res.into_response::<NodesInfoResponse>())
-        })
+        self.sync_next(|req| self.sender.send(req).and_then(|res| res.into_response::<NodesInfoResponse>()))
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use futures::Future;
     use super::*;
+    use futures::Future;
 
     fn sender() -> SniffedNodes<()> {
         SniffedNodesBuilder::new(initial_address()).build(PreRequestParams::default(), ())
@@ -330,9 +312,7 @@ mod tests {
             nodes: publish_addresses()
                 .into_iter()
                 .map(|address| SniffedNode {
-                    http: Some(SniffedNodeHttp {
-                        publish_address: Some(address.to_owned()),
-                    }),
+                    http: Some(SniffedNodeHttp { publish_address: Some(address.to_owned()) }),
                 })
                 .collect(),
         }

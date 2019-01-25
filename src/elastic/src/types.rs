@@ -67,7 +67,7 @@ that type is provided (like `Date`, which implements `Deref<Target = chrono::Dat
 
 ## Formats
 
-For some types (like `Date`), it's helpful to have an extra generic parameter that describes the way the data can be interpreted. 
+For some types (like `Date`), it's helpful to have an extra generic parameter that describes the way the data can be interpreted.
 For most types the format isn't exposed, because there aren't any alternative formats available.
 This is a particularly helpful feature for serialisation.
 

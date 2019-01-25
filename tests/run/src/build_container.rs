@@ -35,14 +35,7 @@ pub fn start(run: &str) -> Result<(), Box<Error>> {
 
         // Build the container
         Command::new("docker")
-            .args(&[
-                "build",
-                "-f",
-                &names.dockerfile_name,
-                "-t",
-                &names.build_name,
-                ".",
-            ])
+            .args(&["build", "-f", &names.dockerfile_name, "-t", &names.build_name, "."])
             .current_dir("./containers")
             .stdout(Stdio::inherit())
             .stderr(Stdio::inherit())
@@ -50,15 +43,7 @@ pub fn start(run: &str) -> Result<(), Box<Error>> {
 
         // Start the container
         Command::new("docker")
-            .args(&[
-                "run",
-                "-itd",
-                "-p",
-                "9200:9200",
-                "--name",
-                &names.container_name,
-                &names.build_name,
-            ])
+            .args(&["run", "-itd", "-p", "9200:9200", "--name", &names.container_name, &names.build_name])
             .stdout(Stdio::inherit())
             .stderr(Stdio::inherit())
             .output()?;
@@ -75,11 +60,7 @@ pub fn kill(run: &str) -> Result<(), Box<Error>> {
     let names = Names::from_run(run);
 
     // Kill the container if it's runnning
-    Command::new("docker")
-        .args(&["rm", "-f", &names.container_name])
-        .stdout(Stdio::inherit())
-        .stderr(Stdio::inherit())
-        .output()?;
+    Command::new("docker").args(&["rm", "-f", &names.container_name]).stdout(Stdio::inherit()).stderr(Stdio::inherit()).output()?;
 
     Ok(())
 }

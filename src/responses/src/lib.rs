@@ -42,7 +42,7 @@ let response = parse::<SearchResponse<Value>>().from_slice(response_status, resp
 for hit in response.hits() {
     let score = hit.score().unwrap_or(f32::default());
     let doc = hit.document();
-    
+
     println!("score: {}", score);
     println!("doc: {:?}", doc);
 }
@@ -51,7 +51,7 @@ for hit in response.hits() {
 for agg in response.aggs() {
     let min_ack_pkts = agg["min_ack_pkts_sent"].as_u64().unwrap();
     let max_ack_pkts = agg["max_ack_pkts_sent"].as_u64().unwrap();
-    
+
     println!("min: {}, max: {}", min_ack_pkts, max_ack_pkts);
 }
 # }
@@ -140,27 +140,27 @@ extern crate serde_json;
 pub mod error;
 pub mod parsing;
 
-mod common;
-mod command;
-mod ping;
-mod get;
-mod delete;
-mod update;
-pub mod search;
 pub mod bulk;
+mod command;
+mod common;
+mod delete;
+mod get;
 mod index;
+mod ping;
+pub mod search;
+mod update;
 
 mod indices_exists;
 
-pub use self::common::*;
-pub use self::command::*;
-pub use self::ping::*;
-pub use self::get::*;
-pub use self::delete::*;
-pub use self::update::*;
-pub use self::search::SearchResponse;
 pub use self::bulk::{BulkErrorsResponse, BulkResponse};
+pub use self::command::*;
+pub use self::common::*;
+pub use self::delete::*;
+pub use self::get::*;
 pub use self::index::*;
+pub use self::ping::*;
+pub use self::search::SearchResponse;
+pub use self::update::*;
 
 pub use self::indices_exists::*;
 

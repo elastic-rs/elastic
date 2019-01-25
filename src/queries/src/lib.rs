@@ -15,11 +15,11 @@ mod aggregations;
 mod filters;
 pub mod prelude;
 
-use std::collections::HashMap;
-use filters::Filters;
 use aggregations::Aggregation;
 use aggregations::BucketAggregation;
 use aggregations::EsAggregation;
+use filters::Filters;
+use std::collections::HashMap;
 
 #[derive(Clone, Debug, Serialize, Deserialize, Ord, PartialOrd, Eq, PartialEq)]
 #[serde(untagged)]
@@ -63,34 +63,42 @@ impl Bool {
         use BoolQuerySections::*;
 
         match section {
-            Must => if let Some(ref mut ve) = self.must {
-                if let Err(i) = ve.binary_search(&f) {
-                    ve.insert(i, f);
+            Must => {
+                if let Some(ref mut ve) = self.must {
+                    if let Err(i) = ve.binary_search(&f) {
+                        ve.insert(i, f);
+                    }
+                } else {
+                    self.must = Some(vec![f]);
                 }
-            } else {
-                self.must = Some(vec![f]);
-            },
-            Should => if let Some(ref mut ve) = self.should {
-                if let Err(i) = ve.binary_search(&f) {
-                    ve.insert(i, f);
+            }
+            Should => {
+                if let Some(ref mut ve) = self.should {
+                    if let Err(i) = ve.binary_search(&f) {
+                        ve.insert(i, f);
+                    }
+                } else {
+                    self.should = Some(vec![f]);
                 }
-            } else {
-                self.should = Some(vec![f]);
-            },
-            Filter => if let Some(ref mut ve) = self.filter {
-                if let Err(i) = ve.binary_search(&f) {
-                    ve.insert(i, f);
+            }
+            Filter => {
+                if let Some(ref mut ve) = self.filter {
+                    if let Err(i) = ve.binary_search(&f) {
+                        ve.insert(i, f);
+                    }
+                } else {
+                    self.filter = Some(vec![f]);
                 }
-            } else {
-                self.filter = Some(vec![f]);
-            },
-            MustNot => if let Some(ref mut ve) = self.must_not {
-                if let Err(i) = ve.binary_search(&f) {
-                    ve.insert(i, f);
+            }
+            MustNot => {
+                if let Some(ref mut ve) = self.must_not {
+                    if let Err(i) = ve.binary_search(&f) {
+                        ve.insert(i, f);
+                    }
+                } else {
+                    self.must_not = Some(vec![f]);
                 }
-            } else {
-                self.must_not = Some(vec![f]);
-            },
+            }
         }
     }
 
@@ -98,41 +106,50 @@ impl Bool {
         use BoolQuerySections::*;
 
         match section {
-            Must => if let Some(ref mut ve) = self.must {
-                if let Ok(i) = ve.binary_search(&f) {
-                    ve.remove(i);
+            Must => {
+                if let Some(ref mut ve) = self.must {
+                    if let Ok(i) = ve.binary_search(&f) {
+                        ve.remove(i);
+                    }
+                } else {
+                    self.must = Some(vec![f]);
                 }
-            } else {
-                self.must = Some(vec![f]);
-            },
-            Should => if let Some(ref mut ve) = self.should {
-                if let Ok(i) = ve.binary_search(&f) {
-                    ve.remove(i);
+            }
+            Should => {
+                if let Some(ref mut ve) = self.should {
+                    if let Ok(i) = ve.binary_search(&f) {
+                        ve.remove(i);
+                    }
+                } else {
+                    self.should = Some(vec![f]);
                 }
-            } else {
-                self.should = Some(vec![f]);
-            },
-            Filter => if let Some(ref mut ve) = self.filter {
-                if let Ok(i) = ve.binary_search(&f) {
-                    ve.remove(i);
+            }
+            Filter => {
+                if let Some(ref mut ve) = self.filter {
+                    if let Ok(i) = ve.binary_search(&f) {
+                        ve.remove(i);
+                    }
+                } else {
+                    self.filter = Some(vec![f]);
                 }
-            } else {
-                self.filter = Some(vec![f]);
-            },
-            MustNot => if let Some(ref mut ve) = self.must_not {
-                if let Ok(i) = ve.binary_search(&f) {
-                    ve.remove(i);
+            }
+            MustNot => {
+                if let Some(ref mut ve) = self.must_not {
+                    if let Ok(i) = ve.binary_search(&f) {
+                        ve.remove(i);
+                    }
+                } else {
+                    self.must_not = Some(vec![f]);
                 }
-            } else {
-                self.must_not = Some(vec![f]);
-            },
+            }
         }
     }
 }
 
 #[derive(Builder, Clone, Debug, Serialize, Deserialize)]
 pub struct QueryField {
-    #[builder(default = "self.default_bool()?")] pub bool: Bool,
+    #[builder(default = "self.default_bool()?")]
+    pub bool: Bool,
 }
 
 impl QueryFieldBuilder {
@@ -241,9 +258,11 @@ impl Query {
                 //Add the stored sub-children back
                 if let Some(newchild) = root.aggs_get(child) {
                     match out {
-                        Some(a) => for (name, key) in a {
-                            newchild.add_child(name, key.clone());
-                        },
+                        Some(a) => {
+                            for (name, key) in a {
+                                newchild.add_child(name, key.clone());
+                            }
+                        }
                         None => (),
                     };
                 }
@@ -309,8 +328,8 @@ impl QueryBuilder {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use super::filters::*;
+    use super::*;
 
     #[test]
     fn root_to_target() {
@@ -333,16 +352,13 @@ mod tests {
                     }"#;
         let t: TermAggregation = serde_json::from_str(j).unwrap();
 
-        agg.1
-            .add_child_to_target("Agg2Terms", "AggNew", Aggregation::term(t.clone()));
+        agg.1.add_child_to_target("Agg2Terms", "AggNew", Aggregation::term(t.clone()));
         assert_eq!(agg.1.aggs_get("AggNew").is_some(), true);
 
-        agg.1
-            .add_child_to_target("AggNew", "AggNew2", Aggregation::term(t.clone()));
+        agg.1.add_child_to_target("AggNew", "AggNew2", Aggregation::term(t.clone()));
 
         assert!(agg.1.aggs_get("AggNew2").is_some());
-        agg.1
-            .add_child_to_target("AggNew2", "AggNew3", Aggregation::term(t));
+        agg.1.add_child_to_target("AggNew2", "AggNew3", Aggregation::term(t));
 
         assert!(agg.1.aggs_get("AggNew3").is_some());
     }
@@ -358,40 +374,16 @@ mod tests {
 
     #[test]
     fn builder() {
-        let bo = BoolBuilder::default()
-            .build()
-            .expect("could not build bool");
-        let qb = QueryFieldBuilder::default()
-            .build()
-            .expect("could not build queryfield");
-        let mut q = QueryBuilder::default()
-            .build()
-            .expect("could not build query");
+        let bo = BoolBuilder::default().build().expect("could not build bool");
+        let qb = QueryFieldBuilder::default().build().expect("could not build queryfield");
+        let mut q = QueryBuilder::default().build().expect("could not build query");
 
-        q.add_filter(
-            BoolQuerySections::Must,
-            Filters::term(TermFilter::new(String::from("foo"), Values::Number(1))),
-        );
-        q.add_filter(
-            BoolQuerySections::MustNot,
-            Filters::term(TermFilter::new(String::from("foo"), Values::Number(1))),
-        );
-        q.add_filter(
-            BoolQuerySections::Must,
-            Filters::term(TermFilter::new(String::from("foo"), Values::Number(1))),
-        );
-        q.add_filter(
-            BoolQuerySections::MustNot,
-            Filters::term(TermFilter::new(String::from("foo"), Values::Number(1))),
-        );
-        q.add_filter(
-            BoolQuerySections::MustNot,
-            Filters::term(TermFilter::new(String::from("foo"), Values::Number(2))),
-        );
-        q.remove_filter(
-            BoolQuerySections::MustNot,
-            Filters::term(TermFilter::new(String::from("foo"), Values::Number(2))),
-        );
+        q.add_filter(BoolQuerySections::Must, Filters::term(TermFilter::new(String::from("foo"), Values::Number(1))));
+        q.add_filter(BoolQuerySections::MustNot, Filters::term(TermFilter::new(String::from("foo"), Values::Number(1))));
+        q.add_filter(BoolQuerySections::Must, Filters::term(TermFilter::new(String::from("foo"), Values::Number(1))));
+        q.add_filter(BoolQuerySections::MustNot, Filters::term(TermFilter::new(String::from("foo"), Values::Number(1))));
+        q.add_filter(BoolQuerySections::MustNot, Filters::term(TermFilter::new(String::from("foo"), Values::Number(2))));
+        q.remove_filter(BoolQuerySections::MustNot, Filters::term(TermFilter::new(String::from("foo"), Values::Number(2))));
 
         let j = serde_json::to_string(&q).unwrap();
         let expected = r#"{"query":{"bool":{"must":[{"term":{"foo":1}}],"must_not":[{"term":{"foo":1}}]}}}"#;
@@ -418,14 +410,8 @@ mod tests {
             "#;
 
         let mut s: Query = super::serde_json::from_str(j).unwrap();
-        s.add_filter(
-            BoolQuerySections::Must,
-            Filters::term(TermFilter::new(String::from("foo"), Values::Number(1))),
-        );
-        s.add_filter(
-            BoolQuerySections::MustNot,
-            Filters::term(TermFilter::new(String::from("foo"), Values::Number(1))),
-        );
+        s.add_filter(BoolQuerySections::Must, Filters::term(TermFilter::new(String::from("foo"), Values::Number(1))));
+        s.add_filter(BoolQuerySections::MustNot, Filters::term(TermFilter::new(String::from("foo"), Values::Number(1))));
     }
 
     #[test]

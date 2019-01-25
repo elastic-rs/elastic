@@ -6,17 +6,17 @@ Builders for [create index requests][docs-create-index].
 
 use futures::{Future, Poll};
 
-use error::*;
-use client::IndexClient;
-use client::sender::{AsyncSender, Sender, SyncSender};
-use client::requests::{empty_body, DefaultBody, RequestBuilder};
-use client::requests::params::Index;
 use client::requests::endpoints::IndicesCreateRequest;
+use client::requests::params::Index;
 use client::requests::raw::RawRequestInner;
+use client::requests::{empty_body, DefaultBody, RequestBuilder};
 use client::responses::CommandResponse;
+use client::sender::{AsyncSender, Sender, SyncSender};
+use client::IndexClient;
+use error::*;
 
-/** 
-A [create index request][docs-create-index] builder that can be configured before sending. 
+/**
+A [create index request][docs-create-index] builder that can be configured before sending.
 
 Call [`Client.index_create`][Client.index_create] to get an `IndexCreateRequestBuilder`.
 The `send` method will either send the request [synchronously][send-sync] or [asynchronously][send-async], depending on the `Client` it was created from.
@@ -41,7 +41,7 @@ impl<TSender> IndexClient<TSender>
 where
     TSender: Sender,
 {
-    /** 
+    /**
     Create an [`IndexCreateRequestBuilder`][IndexCreateRequestBuilder] with this `Client` that can be configured before sending.
 
     For more details, see:
@@ -49,11 +49,11 @@ where
     - [builder methods][builder-methods]
     - [send synchronously][send-sync]
     - [send asynchronously][send-async]
-    
+
     # Examples
-    
+
     Create an index called `myindex`:
-    
+
     ```no_run
     # extern crate elastic;
     # use elastic::prelude::*;
@@ -115,13 +115,7 @@ where
     [documents-mod]: ../types/document/index.html
     */
     pub fn create(self) -> IndexCreateRequestBuilder<TSender, DefaultBody> {
-        RequestBuilder::initial(
-            self.inner,
-            IndexCreateRequestInner {
-                index: self.index,
-                body: empty_body(),
-            },
-        )
+        RequestBuilder::initial(self.inner, IndexCreateRequestInner { index: self.index, body: empty_body() })
     }
 }
 
@@ -131,7 +125,7 @@ impl<TBody> IndexCreateRequestInner<TBody> {
     }
 }
 
-/** 
+/**
 # Builder methods
 
 Configure an `IndexCreateRequestBuilder` before sending it.
@@ -141,23 +135,16 @@ where
     TSender: Sender,
     TBody: Into<TSender::Body>,
 {
-    /** 
+    /**
     Set the body for the create index request.
-    
+
     If no body is specified then an empty query will be used.
     */
     pub fn body<TNewBody>(self, body: TNewBody) -> IndexCreateRequestBuilder<TSender, TNewBody>
     where
         TNewBody: Into<TSender::Body>,
     {
-        RequestBuilder::new(
-            self.client,
-            self.params_builder,
-            IndexCreateRequestInner {
-                index: self.inner.index,
-                body: body,
-            },
-        )
+        RequestBuilder::new(self.client, self.params_builder, IndexCreateRequestInner { index: self.inner.index, body: body })
     }
 }
 
@@ -174,9 +161,9 @@ where
     This will block the current thread until a response arrives and is deserialised.
 
     # Examples
-    
+
     Create an index called `myindex`:
-    
+
     ```no_run
     # extern crate elastic;
     # use elastic::prelude::*;
@@ -195,9 +182,7 @@ where
     pub fn send(self) -> Result<CommandResponse> {
         let req = self.inner.into_request();
 
-        RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
-            .send()?
-            .into_response()
+        RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req)).send()?.into_response()
     }
 }
 
@@ -210,13 +195,13 @@ where
 {
     /**
     Send an `IndexCreateRequestBuilder` asynchronously using an [`AsyncClient`][AsyncClient].
-    
+
     This will return a future that will resolve to the deserialised command response.
 
     # Examples
-    
+
     Create an index called `myindex`:
-    
+
     ```no_run
     # extern crate futures;
     # extern crate tokio_core;
@@ -243,9 +228,7 @@ where
     pub fn send(self) -> Pending {
         let req = self.inner.into_request();
 
-        let res_future = RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
-            .send()
-            .and_then(|res| res.into_response());
+        let res_future = RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req)).send().and_then(|res| res.into_response());
 
         Pending::new(res_future)
     }
@@ -261,9 +244,7 @@ impl Pending {
     where
         F: Future<Item = CommandResponse, Error = Error> + 'static,
     {
-        Pending {
-            inner: Box::new(fut),
-        }
+        Pending { inner: Box::new(fut) }
     }
 }
 
@@ -293,12 +274,7 @@ mod tests {
     fn specify_body() {
         let client = SyncClientBuilder::new().build().unwrap();
 
-        let req = client
-            .index("testindex")
-            .create()
-            .body("{}")
-            .inner
-            .into_request();
+        let req = client.index("testindex").create().body("{}").inner.into_request();
 
         assert_eq!("{}", req.body);
     }

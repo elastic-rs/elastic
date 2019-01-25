@@ -1,4 +1,4 @@
-/*! 
+/*!
 Elasticsearch Core Types Codegen
 
  Compile-time code generation for Elasticsearch type implementations.

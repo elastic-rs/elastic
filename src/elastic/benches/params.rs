@@ -5,10 +5,10 @@ extern crate reqwest;
 extern crate test;
 extern crate tokio_core;
 
+use elastic::client::requests::PingRequest;
+use elastic::client::RequestParams;
 use reqwest::header::Referer;
 use tokio_core::reactor::Core;
-use elastic::client::RequestParams;
-use elastic::client::requests::PingRequest;
 
 #[inline(always)]
 fn with_headers_1(params: RequestParams) -> RequestParams {
@@ -32,12 +32,7 @@ fn with_params_1(params: RequestParams) -> RequestParams {
 
 #[inline(always)]
 fn with_params_5(params: RequestParams) -> RequestParams {
-    params
-        .url_param("query", "*")
-        .url_param("query", "*")
-        .url_param("query", "*")
-        .url_param("query", "*")
-        .url_param("query", "*")
+    params.url_param("query", "*").url_param("query", "*").url_param("query", "*").url_param("query", "*").url_param("query", "*")
 }
 
 macro_rules! bench {

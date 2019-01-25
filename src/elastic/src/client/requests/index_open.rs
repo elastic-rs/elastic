@@ -6,17 +6,17 @@ Builders for [open index requests][docs-open-index].
 
 use futures::{Future, Poll};
 
-use error::*;
-use client::IndexClient;
-use client::sender::{AsyncSender, Sender, SyncSender};
-use client::requests::{empty_body, DefaultBody, RequestBuilder};
-use client::requests::params::Index;
 use client::requests::endpoints::IndicesOpenRequest;
+use client::requests::params::Index;
 use client::requests::raw::RawRequestInner;
+use client::requests::{empty_body, DefaultBody, RequestBuilder};
 use client::responses::CommandResponse;
+use client::sender::{AsyncSender, Sender, SyncSender};
+use client::IndexClient;
+use error::*;
 
-/** 
-An [open index request][docs-open-index] builder that can be configured before sending. 
+/**
+An [open index request][docs-open-index] builder that can be configured before sending.
 
 Call [`Client.index_open`][Client.index_open] to get an `IndexOpenRequestBuilder`.
 The `send` method will either send the request [synchronously][send-sync] or [asynchronously][send-async], depending on the `Client` it was opend from.
@@ -40,18 +40,18 @@ impl<TSender> IndexClient<TSender>
 where
     TSender: Sender,
 {
-    /** 
+    /**
     Open an [`IndexOpenRequestBuilder`][IndexOpenRequestBuilder] with this `Client` that can be configured before sending.
 
     For more details, see:
 
     - [send synchronously][send-sync]
     - [send asynchronously][send-async]
-    
+
     # Examples
-    
+
     Open an index called `myindex`:
-    
+
     ```no_run
     # extern crate elastic;
     # use elastic::prelude::*;
@@ -91,9 +91,9 @@ impl IndexOpenRequestBuilder<SyncSender> {
     This will block the current thread until a response arrives and is deserialised.
 
     # Examples
-    
+
     Open an index called `myindex`:
-    
+
     ```no_run
     # extern crate elastic;
     # use elastic::prelude::*;
@@ -112,9 +112,7 @@ impl IndexOpenRequestBuilder<SyncSender> {
     pub fn send(self) -> Result<CommandResponse> {
         let req = self.inner.into_request();
 
-        RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
-            .send()?
-            .into_response()
+        RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req)).send()?.into_response()
     }
 }
 
@@ -124,13 +122,13 @@ impl IndexOpenRequestBuilder<SyncSender> {
 impl IndexOpenRequestBuilder<AsyncSender> {
     /**
     Send an `IndexOpenRequestBuilder` asynchronously using an [`AsyncClient`][AsyncClient].
-    
+
     This will return a future that will resolve to the deserialised command response.
 
     # Examples
-    
+
     Open an index called `myindex`:
-    
+
     ```no_run
     # extern crate futures;
     # extern crate tokio_core;
@@ -157,9 +155,7 @@ impl IndexOpenRequestBuilder<AsyncSender> {
     pub fn send(self) -> Pending {
         let req = self.inner.into_request();
 
-        let res_future = RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
-            .send()
-            .and_then(|res| res.into_response());
+        let res_future = RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req)).send().and_then(|res| res.into_response());
 
         Pending::new(res_future)
     }
@@ -175,9 +171,7 @@ impl Pending {
     where
         F: Future<Item = CommandResponse, Error = Error> + 'static,
     {
-        Pending {
-            inner: Box::new(fut),
-        }
+        Pending { inner: Box::new(fut) }
     }
 }
 

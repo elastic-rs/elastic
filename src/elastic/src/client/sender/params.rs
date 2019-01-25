@@ -1,12 +1,12 @@
-use std::sync::Arc;
 use std::collections::HashMap;
+use std::sync::Arc;
 
 use reqwest;
 use reqwest::header::{ContentType, Header, Headers};
 use url::form_urlencoded::Serializer;
 
-use http::Method;
 use client::sender::NodeAddress;
+use http::Method;
 
 pub const DEFAULT_NODE_ADDRESS: &'static str = "http://localhost:9200";
 
@@ -71,9 +71,9 @@ pub struct RequestParams {
 }
 
 impl PreRequestParams {
-    /** 
+    /**
     Create a new container for request parameters.
-    
+
     This method takes a fully-qualified url for the Elasticsearch node.
     It will also set the `Content-Type` header to `application/json`.
     */
@@ -84,34 +84,28 @@ impl PreRequestParams {
         }
     }
 
-    /** 
+    /**
     Set a url param value.
-    
+
     These parameters are added as query parameters to request urls.
     */
-    pub fn url_param<T: ToString>(mut self, key: &'static str, value: T) -> Self {
+    pub fn url_param(mut self, key: &'static str, value: impl ToString) -> Self {
         Arc::make_mut(&mut self.url_params).insert(key, value.to_string());
         self
     }
 
     /** Set a request header. */
-    pub fn header<H>(self, header: H) -> Self
-    where
-        H: Header + Clone,
-    {
+    pub fn header(self, header: impl Header + Clone) -> Self {
         self.headers(move |h| h.set(header.clone()))
     }
 
-    /** 
+    /**
     Set a header value on the params.
-    
+
     Each call to `headers` will chain to the end of the last call.
     This function allocates a new `Arc` for each call.
     */
-    fn headers<F>(mut self, headers_builder: F) -> Self
-    where
-        F: Fn(&mut Headers) + Send + Sync + 'static,
-    {
+    fn headers(mut self, headers_builder: impl Fn(&mut Headers) + Send + Sync + 'static) -> Self {
         if let Some(old_headers_builder) = self.headers_builder {
             let headers_builder = move |mut headers: &mut Headers| {
                 old_headers_builder(&mut headers);
@@ -135,44 +129,38 @@ impl Default for PreRequestParams {
 
 impl RequestParams {
     /** Create a container for request parameters from a base url and pre request parameters. */
-    pub fn from_parts<T: Into<NodeAddress>>(base_url: T, inner: PreRequestParams) -> Self {
-        RequestParams {
-            base_url: base_url.into(),
-            inner: inner,
-        }
+    pub fn from_parts(base_url: impl Into<NodeAddress>, inner: PreRequestParams) -> Self {
+        RequestParams { base_url: base_url.into(), inner: inner }
     }
 
-    /** 
+    /**
     Create a new container for request parameters.
-    
+
     This method takes a fully-qualified url for the Elasticsearch node.
     It will also set the `Content-Type` header to `application/json`.
     */
-    pub fn new<T: Into<NodeAddress>>(base_url: T) -> Self {
+    pub fn new(base_url: impl Into<NodeAddress>) -> Self {
         RequestParams::from_parts(base_url.into(), PreRequestParams::new())
     }
 
     /** Set the base url for the Elasticsearch node. */
-    pub fn base_url<T: Into<NodeAddress>>(mut self, base_url: T) -> Self {
+    pub fn base_url(mut self, base_url: impl Into<NodeAddress>) -> Self {
         self.base_url = base_url.into();
         self
     }
 
-    /** 
+    /**
     Set a url param value.
-    
+
     These parameters are added as query parameters to request urls.
     */
-    pub fn url_param<T: ToString>(mut self, key: &'static str, value: T) -> Self {
+    pub fn url_param(mut self, key: &'static str, value: impl ToString) -> Self {
         self.inner = self.inner.url_param(key, value);
         self
     }
 
     /** Set a request header. */
-    pub fn header<H>(mut self, header: H) -> Self
-    where
-        H: Header + Clone,
-    {
+    pub fn header(mut self, header: impl Header + Clone) -> Self {
         self.inner = self.inner.header(header);
         self
     }
@@ -194,18 +182,16 @@ impl RequestParams {
         headers
     }
 
-    /** 
+    /**
     Get the url query params as a formatted string.
-    
+
     Follows the `application/x-www-form-urlencoded` format.
     This method returns the length of the query string and an optional value.
     If the value is `None`, then the length will be `0`.
     */
     pub fn get_url_qry(&self) -> (usize, Option<String>) {
         if self.inner.url_params.len() > 0 {
-            let qry: String = Serializer::for_suffix(String::from("?"), 1)
-                .extend_pairs(self.inner.url_params.iter())
-                .finish();
+            let qry: String = Serializer::for_suffix(String::from("?"), 1).extend_pairs(self.inner.url_params.iter()).finish();
 
             (qry.len(), Some(qry))
         } else {
@@ -254,9 +240,9 @@ pub(crate) fn build_reqwest_method(method: Method) -> reqwest::Method {
 
 #[cfg(test)]
 mod tests {
-    use tests::{assert_send, assert_sync};
-    use http::header::{Authorization, ContentType, Referer};
     use super::*;
+    use http::header::{Authorization, ContentType, Referer};
+    use tests::{assert_send, assert_sync};
 
     #[test]
     fn assert_send_sync() {
@@ -286,14 +272,8 @@ mod tests {
         let headers = req.get_headers();
 
         assert_eq!(Some(&ContentType::json()), headers.get::<ContentType>());
-        assert_eq!(
-            Some(&Referer::new("/People.html#tim")),
-            headers.get::<Referer>()
-        );
-        assert_eq!(
-            Some(&Authorization("let me in".to_owned())),
-            headers.get::<Authorization<String>>()
-        );
+        assert_eq!(Some(&Referer::new("/People.html#tim")), headers.get::<Referer>());
+        assert_eq!(Some(&Authorization("let me in".to_owned())), headers.get::<Authorization<String>>());
     }
 
     #[test]
@@ -312,9 +292,7 @@ mod tests {
 
     #[test]
     fn request_params_can_set_url_query() {
-        let req = RequestParams::new(DEFAULT_NODE_ADDRESS)
-            .url_param("pretty", false)
-            .url_param("pretty", true);
+        let req = RequestParams::new(DEFAULT_NODE_ADDRESS).url_param("pretty", false).url_param("pretty", true);
 
         assert_eq!((12, Some(String::from("?pretty=true"))), req.get_url_qry());
     }

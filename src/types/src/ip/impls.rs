@@ -1,11 +1,11 @@
+use super::mapping::{DefaultIpMapping, IpFieldType, IpMapping};
+use serde::de::{Error, Visitor};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::borrow::Borrow;
+use std::error::Error as StdError;
 use std::marker::PhantomData;
 use std::net::Ipv4Addr;
 use std::str::FromStr;
-use std::error::Error as StdError;
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
-use serde::de::{Error, Visitor};
-use super::mapping::{DefaultIpMapping, IpFieldType, IpMapping};
 
 impl IpFieldType<DefaultIpMapping> for Ipv4Addr {}
 
@@ -41,16 +41,16 @@ where
 {
     /**
     Creates a new `Ip` with the given mapping.
-    
+
     # Examples
-    
+
     Create a new `Ip` from a `Ip4vAddr`:
-    
+
     ```
     use std::net::Ipv4Addr;
     use elastic_types::ip::mapping::DefaultIpMapping;
     use elastic_types::ip::Ip;
-    
+
     let ip = Ip::<DefaultIpMapping>::new(Ipv4Addr::new(127, 0, 0, 1));
     ```
     */
@@ -58,19 +58,16 @@ where
     where
         I: Into<Ipv4Addr>,
     {
-        Ip {
-            value: ip.into(),
-            _m: PhantomData,
-        }
+        Ip { value: ip.into(), _m: PhantomData }
     }
 
     /**
     Change the mapping of this ip.
-    
+
     # Examples
-    
+
     Change the mapping for a given `Ip`:
-    
+
     ```
     # extern crate serde;
     # #[macro_use]
@@ -82,7 +79,7 @@ where
     # struct MyIpMapping;
     # impl IpMapping for MyIpMapping { }
     let es_ip = Ip::<DefaultIpMapping>::new(Ipv4Addr::new(127, 0, 0, 1));
-    
+
     let ip: Ip<MyIpMapping> = Ip::remap(es_ip);
     # }
     ```
@@ -95,11 +92,7 @@ where
     }
 }
 
-impl<TMapping> IpFieldType<TMapping> for Ip<TMapping>
-where
-    TMapping: IpMapping,
-{
-}
+impl<TMapping> IpFieldType<TMapping> for Ip<TMapping> where TMapping: IpMapping {}
 
 impl_mapping_type!(Ipv4Addr, Ip, IpMapping);
 

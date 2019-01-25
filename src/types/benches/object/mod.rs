@@ -1,27 +1,21 @@
-use serde_json;
 use elastic_types::prelude::*;
 use object_fixtures::*;
+use serde_json;
 use test::Bencher;
 
 #[bench]
 fn mapping_sml(b: &mut Bencher) {
-    b.iter(|| {
-        serde_json::to_string(&MySmlType::index_mapping()).unwrap()
-    });
+    b.iter(|| serde_json::to_string(&MySmlType::index_mapping()).unwrap());
 }
 
 #[bench]
 fn mapping_med(b: &mut Bencher) {
-    b.iter(|| {
-        serde_json::to_string(&MyMedType::index_mapping()).unwrap()
-    });
+    b.iter(|| serde_json::to_string(&MyMedType::index_mapping()).unwrap());
 }
 
 #[bench]
 fn mapping_lrg(b: &mut Bencher) {
-    b.iter(|| {
-        serde_json::to_string(&MyLrgType::index_mapping()).unwrap()
-    });
+    b.iter(|| serde_json::to_string(&MyLrgType::index_mapping()).unwrap());
 }
 
 #[bench]

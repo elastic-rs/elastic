@@ -5,13 +5,20 @@ use serde::Serialize;
 
 /** A unit of measure for distance. */
 pub enum DistanceUnit {
-    /** For `in`. */ Inches,
-    /** For `yd`. */ Yards,
-    /** For `mi`. */ Miles,
-    /** For `km`. */ Kilometers,
-    /** For `m`. */ Meters,
-    /** For `cm`. */ Centimeters,
-    /** For `mm`. */ Millimeters,
+    /** For `in`. */
+    Inches,
+    /** For `yd`. */
+    Yards,
+    /** For `mi`. */
+    Miles,
+    /** For `km`. */
+    Kilometers,
+    /** For `m`. */
+    Meters,
+    /** For `cm`. */
+    Centimeters,
+    /** For `mm`. */
+    Millimeters,
 }
 
 /** A distance value paired with a unit of measure. */

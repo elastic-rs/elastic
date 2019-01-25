@@ -1,6 +1,6 @@
-use futures::{future, Future};
-use elastic::prelude::*;
 use elastic::error::Error;
+use elastic::prelude::*;
+use futures::{future, Future};
 use run_tests::IntegrationTest;
 
 #[derive(Debug, Clone, Copy)]
@@ -14,9 +14,7 @@ pub struct Doc {
 }
 
 fn doc() -> Doc {
-    Doc {
-        id: "1".to_owned(),
-    }
+    Doc { id: "1".to_owned() }
 }
 
 impl IntegrationTest for RawQueryString {
@@ -33,13 +31,7 @@ impl IntegrationTest for RawQueryString {
     fn prepare(&self, client: AsyncClient) -> Box<Future<Item = (), Error = Error>> {
         let delete_res = client.index(Doc::static_index()).delete().send();
 
-        let index_reqs = future::join_all((0..10).into_iter().map(move |_| {
-            client
-                .document()
-                .index(doc())
-                .params_fluent(|p| p.url_param("refresh", true))
-                .send()
-        }));
+        let index_reqs = future::join_all((0..10).into_iter().map(move |_| client.document().index(doc()).params_fluent(|p| p.url_param("refresh", true)).send()));
 
         Box::new(delete_res.then(|_| index_reqs.map(|_| ())))
     }
@@ -63,8 +55,7 @@ impl IntegrationTest for RawQueryString {
 
     // Ensure the response contains documents
     fn assert_ok(&self, res: &Self::Response) -> bool {
-        let correct_hits = res.hits()
-            .all(|hit| hit.index() == Doc::static_index() && hit.ty() == Doc::static_ty());
+        let correct_hits = res.hits().all(|hit| hit.index() == Doc::static_index() && hit.ty() == Doc::static_ty());
         let len_greater_than_0 = res.documents().count() > 0;
 
         correct_hits && len_greater_than_0

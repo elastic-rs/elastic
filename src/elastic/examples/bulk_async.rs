@@ -14,10 +14,10 @@ extern crate tokio_core;
 #[macro_use]
 extern crate serde_json;
 
-use std::error::Error;
-use futures::Future;
-use tokio_core::reactor::Core;
 use elastic::prelude::*;
+use futures::Future;
+use std::error::Error;
+use tokio_core::reactor::Core;
 
 fn run() -> Result<(), Box<Error>> {
     let mut core = Core::new()?;
@@ -25,20 +25,17 @@ fn run() -> Result<(), Box<Error>> {
     // A HTTP client and request parameters
     let client = AsyncClientBuilder::new().build(&core.handle())?;
 
-    let ops = (0..1000)
-        .into_iter()
-        .map(|i| bulk_raw().index(json!({
+    let ops = (0..1000).into_iter().map(|i| {
+        bulk_raw()
+            .index(json!({
                 "id": i,
                 "title": "some string value"
             }))
-            .id(i));
+            .id(i)
+    });
 
     // Execute a bulk request
-    let res_future = client.bulk()
-        .index("bulk_idx")
-        .ty("bulk_ty")
-        .extend(ops)
-        .send();
+    let res_future = client.bulk().index("bulk_idx").ty("bulk_ty").extend(ops).send();
 
     let res_future = res_future.and_then(|bulk| {
         for op in bulk {

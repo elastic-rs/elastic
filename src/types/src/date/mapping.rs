@@ -1,7 +1,7 @@
 /*! Mapping for the Elasticsearch `date` type. */
 
-use std::marker::PhantomData;
 use super::{Date, DateFormat, DefaultDateFormat, FormattableDateValue};
+use std::marker::PhantomData;
 
 /** A field that will be mapped as a `date`. */
 pub trait DateFieldType<TMapping>
@@ -86,7 +86,7 @@ struct MyDateMapping<F> {
     _marker: PhantomData<F>
 }
 
-impl <F> DateMapping for MyDateMapping<F> 
+impl <F> DateMapping for MyDateMapping<F>
     where F: DateFormat
 {
     type Format = F;
@@ -179,11 +179,11 @@ where
 }
 
 mod private {
-    use serde::{Serialize, Serializer};
-    use serde::ser::SerializeStruct;
-    use date::{DateFormat, FormattableDateValue};
-    use private::field::{StaticSerialize, SerializeFieldMapping, FieldMapping, FieldType};
     use super::{DateFieldType, DateMapping};
+    use date::{DateFormat, FormattableDateValue};
+    use private::field::{FieldMapping, FieldType, SerializeFieldMapping, StaticSerialize};
+    use serde::ser::SerializeStruct;
+    use serde::{Serialize, Serializer};
 
     impl<TField, TMapping> FieldType<TMapping, DatePivot> for TField
     where
@@ -278,10 +278,7 @@ mod tests {
 
     #[test]
     fn serialise_mapping_default() {
-        let ser = serde_json::to_string(&field::serialize(DefaultDateMapping::<
-            DefaultDateFormat,
-        >::default()))
-            .unwrap();
+        let ser = serde_json::to_string(&field::serialize(DefaultDateMapping::<DefaultDateFormat>::default())).unwrap();
 
         let expected = json_str!({
             "type": "date",

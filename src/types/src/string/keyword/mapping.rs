@@ -1,10 +1,10 @@
 /*! Mapping for the Elasticsearch `keyword` type. */
 
-use std::collections::BTreeMap;
-use serde::{Serialize, Serializer};
-use serde::ser::SerializeStruct;
-use string::mapping::{IndexOptions, StringField};
 use private::field::FieldMapping;
+use serde::ser::SerializeStruct;
+use serde::{Serialize, Serializer};
+use std::collections::BTreeMap;
+use string::mapping::{IndexOptions, StringField};
 
 /** A field that will be mapped as a `keyword`. */
 pub trait KeywordFieldType<TMapping> {}
@@ -249,9 +249,12 @@ pub struct KeywordFieldMapping {
     Any characters over this length will be ignored.
     */
     pub ignore_above: Option<u32>,
-    /** Should the field be searchable? Accepts `true` (default) or `false`. */ pub index: Option<bool>,
-    /** What information should be stored in the index, for search and highlighting purposes. Defaults to `Positions`. */ pub index_options: Option<IndexOptions>,
-    /** Whether field-length should be taken into account when scoring queries. Accepts `true` (default) or `false`. */ pub norms: Option<bool>,
+    /** Should the field be searchable? Accepts `true` (default) or `false`. */
+    pub index: Option<bool>,
+    /** What information should be stored in the index, for search and highlighting purposes. Defaults to `Positions`. */
+    pub index_options: Option<IndexOptions>,
+    /** Whether field-length should be taken into account when scoring queries. Accepts `true` (default) or `false`. */
+    pub norms: Option<bool>,
     /**
     Whether the field value should be stored and retrievable separately from the `_source` field.
     Accepts `true` or `false` (default).
@@ -295,10 +298,10 @@ impl Serialize for KeywordFieldMapping {
 }
 
 mod private {
-    use serde::{Serialize, Serializer};
-    use serde::ser::SerializeStruct;
-    use private::field::{StaticSerialize, SerializeFieldMapping, FieldMapping, FieldType};
     use super::{KeywordFieldType, KeywordMapping};
+    use private::field::{FieldMapping, FieldType, SerializeFieldMapping, StaticSerialize};
+    use serde::ser::SerializeStruct;
+    use serde::{Serialize, Serializer};
 
     #[derive(Default)]
     pub struct KeywordPivot;
@@ -336,11 +339,7 @@ mod private {
             ser_field!(state, "boost", TMapping::boost());
             ser_field!(state, "analyzer", TMapping::analyzer());
             ser_field!(state, "doc_values", TMapping::doc_values());
-            ser_field!(
-                state,
-                "eager_global_ordinals",
-                TMapping::eager_global_ordinals()
-            );
+            ser_field!(state, "eager_global_ordinals", TMapping::eager_global_ordinals());
             ser_field!(state, "fields", TMapping::fields());
             ser_field!(state, "include_in_all", TMapping::include_in_all());
             ser_field!(state, "ignore_above", TMapping::ignore_above());

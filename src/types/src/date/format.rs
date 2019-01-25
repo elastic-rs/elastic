@@ -1,14 +1,14 @@
-use chrono::{self, NaiveDate, NaiveDateTime, NaiveTime, Utc};
+use super::ChronoDateTime;
 use chrono::format::{DelayedFormat, Item};
-use std::ops::Deref;
-use std::marker::PhantomData;
+use chrono::{self, NaiveDate, NaiveDateTime, NaiveTime, Utc};
 use std::borrow::Borrow;
 use std::error::Error;
 use std::fmt::{Display, Formatter, Result as FmtResult};
+use std::marker::PhantomData;
+use std::ops::Deref;
 use std::vec::IntoIter;
-use super::ChronoDateTime;
 
-/** 
+/**
 A date value produced and consumed by date formats.
 
 `DateValue` is a very thin wrapper over `DateTime<Utc>` that doesn't carry any formatting semantics.
@@ -81,7 +81,7 @@ impl Deref for DateValue {
     }
 }
 
-/** 
+/**
 A date value paired with a format.
 
 `FormattableDateValue<F>` bundles a `DateValue` with a specific format and is used to ensure the formats of mappable date types aren't accidentally changed.
@@ -195,7 +195,7 @@ pub trait DateFormat {
 
     /**
     The name of the format.
-    
+
     This is the string used when defining the format in the field mapping.
     */
     fn name() -> &'static str;
@@ -241,9 +241,7 @@ impl<'a> Display for FormattedDate<'a> {
 
 impl<'a> From<DelayedFormat<IntoIter<Item<'a>>>> for FormattedDate<'a> {
     fn from(formatted: DelayedFormat<IntoIter<Item<'a>>>) -> Self {
-        FormattedDate {
-            inner: FormattedDateInner::Delayed(formatted),
-        }
+        FormattedDate { inner: FormattedDateInner::Delayed(formatted) }
     }
 }
 
@@ -257,9 +255,7 @@ impl<'a> From<String> for FormattedDate<'a> {
 
 impl<'a> From<i64> for FormattedDate<'a> {
     fn from(formatted: i64) -> Self {
-        FormattedDate {
-            inner: FormattedDateInner::Number(formatted),
-        }
+        FormattedDate { inner: FormattedDateInner::Number(formatted) }
     }
 }
 
@@ -302,16 +298,12 @@ impl Error for ParseError {
 
 impl From<chrono::ParseError> for ParseError {
     fn from(err: chrono::ParseError) -> ParseError {
-        ParseError {
-            kind: ParseErrorKind::Chrono(err),
-        }
+        ParseError { kind: ParseErrorKind::Chrono(err) }
     }
 }
 
 impl From<String> for ParseError {
     fn from(err: String) -> ParseError {
-        ParseError {
-            kind: ParseErrorKind::Other(err),
-        }
+        ParseError { kind: ParseErrorKind::Other(err) }
     }
 }

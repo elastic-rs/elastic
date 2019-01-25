@@ -10,9 +10,9 @@ extern crate env_logger;
 #[macro_use]
 extern crate serde_json;
 
-use std::error::Error;
-use serde_json::Value;
 use elastic::prelude::*;
+use serde_json::Value;
+use std::error::Error;
 
 fn run() -> Result<(), Box<Error>> {
     // A reqwest HTTP client and default parameters.

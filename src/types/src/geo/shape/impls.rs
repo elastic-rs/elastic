@@ -1,8 +1,8 @@
+use super::mapping::{GeoShapeFieldType, GeoShapeMapping};
+use geojson::Geometry;
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::borrow::Borrow;
 use std::marker::PhantomData;
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
-use geojson::Geometry;
-use super::mapping::{GeoShapeFieldType, GeoShapeMapping};
 
 /**
 Geo shape type with a given mapping.
@@ -39,16 +39,16 @@ where
 {
     /**
     Creates a new `GeoShape` from the given `Geometry`.
-    
+
     This function will consume the provided `Geometry`.
-    
+
     # Examples
-    
+
     ```
     # extern crate elastic_types;
     # extern crate geojson;
     use geojson::{ Geometry, Value };
-    
+
     # use elastic_types::prelude::*;
     # fn main() {
     let point: GeoShape<DefaultGeoShapeMapping> = GeoShape::new(
@@ -63,10 +63,7 @@ where
     where
         I: Into<Geometry>,
     {
-        GeoShape {
-            value: geo.into(),
-            _m: PhantomData,
-        }
+        GeoShape { value: geo.into(), _m: PhantomData }
     }
 
     /** Change the mapping of this geo shape. */
@@ -78,11 +75,7 @@ where
     }
 }
 
-impl<TMapping> GeoShapeFieldType<TMapping> for GeoShape<TMapping>
-where
-    TMapping: GeoShapeMapping,
-{
-}
+impl<TMapping> GeoShapeFieldType<TMapping> for GeoShape<TMapping> where TMapping: GeoShapeMapping {}
 
 impl_mapping_type!(Geometry, GeoShape, GeoShapeMapping);
 
@@ -142,9 +135,9 @@ mod tests {
 
         assert_eq!(
             json_str!({
-            "coordinates": [ 1.0, 1.0 ],
-            "type": "Point"
-        }),
+                "coordinates": [ 1.0, 1.0 ],
+                "type": "Point"
+            }),
             ser
         );
     }
@@ -154,7 +147,8 @@ mod tests {
         let shape: GeoShape<DefaultGeoShapeMapping> = serde_json::from_str(&json_str!({
             "coordinates": [ 1, 1 ],
             "type": "Point"
-        })).unwrap();
+        }))
+        .unwrap();
 
         assert_eq!(Geometry::new(Value::Point(vec![1.0, 1.0])), *shape);
     }

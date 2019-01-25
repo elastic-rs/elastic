@@ -2,14 +2,14 @@
 Response types for an [index exists request](https://www.elastic.co/guide/en/elasticsearch/reference/master/indices-exists.html).
 */
 
-use parsing::{HttpResponseHead, IsOk, MaybeOkResponse, ResponseBody, Unbuffered};
-use http::StatusCode;
 use error::*;
+use http::StatusCode;
+use parsing::{HttpResponseHead, IsOk, MaybeOkResponse, ResponseBody, Unbuffered};
 
 /** Response for an [index exists request](https://www.elastic.co/guide/en/elasticsearch/reference/master/indices-exists.html). */
 #[derive(Deserialize, Debug)]
 pub struct IndicesExistsResponse {
-    exists: bool
+    exists: bool,
 }
 
 impl IndicesExistsResponse {

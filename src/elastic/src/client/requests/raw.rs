@@ -2,17 +2,17 @@
 Builders for raw requests.
 */
 
-use std::marker::PhantomData;
 use fluent_builder::TryIntoValue;
+use std::marker::PhantomData;
 
-use client::Client;
-use client::sender::{NextParams, NodeAddresses, SendableRequest, SendableRequestParams, Sender};
 use client::requests::{Endpoint, RequestBuilder};
+use client::sender::{NextParams, NodeAddresses, SendableRequest, SendableRequestParams, Sender};
+use client::Client;
 
 /**
 A raw request builder that can be configured before sending.
 
-Call [`Client.request`][Client.request] to get an `IndexRequest`. 
+Call [`Client.request`][Client.request] to get an `IndexRequest`.
 The `send` method will either send the request synchronously or asynchronously, depending on the `Client` it was created from.
 
 [Client.request]: ../../struct.Client.html#raw-request
@@ -27,10 +27,7 @@ pub struct RawRequestInner<TEndpoint, TBody> {
 
 impl<TEndpoint, TBody> RawRequestInner<TEndpoint, TBody> {
     pub(crate) fn new(endpoint: TEndpoint) -> Self {
-        RawRequestInner {
-            endpoint,
-            _marker: PhantomData,
-        }
+        RawRequestInner { endpoint, _marker: PhantomData }
     }
 }
 
@@ -48,9 +45,9 @@ where
     which includes the endpoint types in the [`endpoints`][endpoints-mod] module.
 
     # Examples
-    
+
     Send a cluster ping and read the returned metadata:
-    
+
     ```no_run
     # extern crate elastic;
     # use elastic::prelude::*;
@@ -59,10 +56,10 @@ where
     # let client = SyncClientBuilder::new().build()?;
     // `PingRequest` implements `Into<Endpoint>`
     let req = PingRequest::new();
-    
+
     // Turn the `PingRequest` into a `RequestBuilder`
     let builder = client.request(req);
-    
+
     // Send the `RequestBuilder` and parse as a `PingResponse`
     let ping = builder.send()?.into_response::<PingResponse>()?;
 
@@ -116,7 +113,7 @@ where
     let response = client.request(SimpleSearchRequest::for_index_ty("myindex", "mytype"))
                          .send()?
                          .into_response::<SearchResponse<Value>>()?;
-    
+
     // Iterate through the hits (of type `MyType`)
     for hit in response.hits() {
         println!("{:?}", hit);
@@ -142,7 +139,7 @@ where
     let future = client.request(SimpleSearchRequest::for_index_ty("myindex", "mytype"))
                        .send()
                        .and_then(|res| res.into_response::<SearchResponse<Value>>());
-    
+
     future.and_then(|response| {
         // Iterate through the hits (of type `MyType`)
         for hit in response.hits() {
@@ -167,10 +164,7 @@ where
         // Only try fetch a next address if an explicit `RequestParams` hasn't been given
         let params = match self.params_builder.try_into_value() {
             TryIntoValue::Value(value) => SendableRequestParams::Value(value),
-            TryIntoValue::Builder(builder) => SendableRequestParams::Builder {
-                params: client.addresses.next(),
-                builder,
-            },
+            TryIntoValue::Builder(builder) => SendableRequestParams::Builder { params: client.addresses.next(), builder },
         };
 
         let req = SendableRequest::new(endpoint, params);

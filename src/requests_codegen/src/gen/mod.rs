@@ -1,17 +1,17 @@
-pub mod url_params;
-pub mod url_builder;
-pub mod request_params;
 pub mod request_ctors;
 pub mod request_into_endpoint;
+pub mod request_params;
+pub mod url_builder;
+pub mod url_params;
 
 pub mod types {
     /// Type and declarations for the `Body` type.
     ///
     /// This type is an alias for a borrowed slice of bytes.
     pub mod url {
-        use syn;
-        use quote;
         use gen::helpers;
+        use quote;
+        use syn;
 
         pub fn ident() -> &'static str {
             "UrlPath"
@@ -34,7 +34,7 @@ pub mod types {
                         #ident (Cow::Borrowed(value))
                     }
                 }
-                
+
                 impl <'a> From<String> for #url {
                     fn from(value: String) -> #url {
                         #ident (Cow::Owned(value))
@@ -56,9 +56,9 @@ pub mod types {
     ///
     /// This type is an alias for a borrowed slice of bytes.
     pub mod body {
-        use syn;
-        use quote;
         use gen::helpers;
+        use quote;
+        use syn;
 
         pub fn ident() -> &'static str {
             "B"
@@ -93,9 +93,9 @@ pub mod types {
     /// This type is a simple, standard wrapper for a HTTP request.
     pub mod request {
         use super::{body, url};
+        use gen::helpers;
         use quote;
         use syn;
-        use gen::helpers;
 
         pub fn method_ident() -> &'static str {
             "Method"
@@ -135,9 +135,9 @@ pub mod types {
 
     /// Macro for declaring a wrapped type declaration.
     pub mod wrapped_ty {
+        use gen::helpers;
         use inflector::Inflector;
         use quote;
-        use gen::helpers;
 
         pub fn item(ty: &str) -> quote::Tokens {
             let ty = ty.to_pascal_case();
@@ -168,7 +168,7 @@ pub mod types {
 
                 impl <'a> ::std::ops::Deref for #ty {
                     type Target = str;
-                    
+
                     fn deref(&self) -> &str {
                         &self.0
                     }
@@ -179,9 +179,9 @@ pub mod types {
 }
 
 pub mod helpers {
-    use syn;
-    use quote;
     use inflector::Inflector;
+    use quote;
+    use syn;
 
     fn sanitise_ident(ident: &str) -> &str {
         match ident {
@@ -204,9 +204,7 @@ pub mod helpers {
 
     /// A standard `'a` lifetime.
     pub fn lifetime() -> syn::Lifetime {
-        syn::Lifetime {
-            ident: syn::Ident::new("'a"),
-        }
+        syn::Lifetime { ident: syn::Ident::new("'a") }
     }
 
     /// Generics with a standard `'a` lifetime.
@@ -222,14 +220,7 @@ pub mod helpers {
     /// Generics with the given lifetimes and type bounds.
     pub fn generics(lifetimes: Vec<syn::Lifetime>, types: Vec<syn::TyParam>) -> syn::Generics {
         syn::Generics {
-            lifetimes: lifetimes
-                .into_iter()
-                .map(|l| syn::LifetimeDef {
-                    attrs: vec![],
-                    lifetime: l,
-                    bounds: vec![],
-                })
-                .collect(),
+            lifetimes: lifetimes.into_iter().map(|l| syn::LifetimeDef { attrs: vec![], lifetime: l, bounds: vec![] }).collect(),
             ty_params: types,
             where_clause: syn::WhereClause::none(),
         }
@@ -257,13 +248,7 @@ pub mod helpers {
 
     /// AST for a generic type param bound.
     pub fn ty_bound(trait_ref: syn::Path) -> syn::TyParamBound {
-        syn::TyParamBound::Trait(
-            syn::PolyTraitRef {
-                bound_lifetimes: vec![],
-                trait_ref: trait_ref,
-            },
-            syn::TraitBoundModifier::None,
-        )
+        syn::TyParamBound::Trait(syn::PolyTraitRef { bound_lifetimes: vec![], trait_ref: trait_ref }, syn::TraitBoundModifier::None)
     }
 
     /// AST for a path type with lifetimes and type parameters.
@@ -301,11 +286,7 @@ pub mod helpers {
 
     /// AST for a simple method call.
     pub fn method(method: &str, args: Vec<&str>) -> syn::Expr {
-        syn::ExprKind::MethodCall(
-            ident(method),
-            vec![],
-            args.iter().map(|a| path_none(a).into_expr()).collect(),
-        ).into()
+        syn::ExprKind::MethodCall(ident(method), vec![], args.iter().map(|a| path_none(a).into_expr()).collect()).into()
     }
 
     /// AST for a simple field access.

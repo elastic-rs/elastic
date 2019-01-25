@@ -1,8 +1,8 @@
+use super::mapping::{BooleanFieldType, BooleanMapping, DefaultBooleanMapping};
+use serde::de::{Error, Visitor};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::borrow::Borrow;
 use std::marker::PhantomData;
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
-use serde::de::{Error, Visitor};
-use super::mapping::{BooleanFieldType, BooleanMapping, DefaultBooleanMapping};
 
 impl BooleanFieldType<DefaultBooleanMapping> for bool {}
 
@@ -35,11 +35,11 @@ where
 {
     /**
     Creates a new `Boolean` with the given mapping.
-    
+
     # Examples
-    
+
     Create a new `Boolean` from a `bool`:
-    
+
     ```
     # use elastic_types::prelude::*;
     let boolean = Boolean::<DefaultBooleanMapping>::new(false);
@@ -49,19 +49,16 @@ where
     where
         I: Into<bool>,
     {
-        Boolean {
-            value: boolean.into(),
-            _m: PhantomData,
-        }
+        Boolean { value: boolean.into(), _m: PhantomData }
     }
 
     /**
     Change the mapping of this boolean.
-    
+
     # Examples
-    
+
     Change the mapping for a given `Boolean`:
-    
+
     ```
     # extern crate serde;
     # #[macro_use]
@@ -72,7 +69,7 @@ where
     # struct MyBooleanMapping;
     # impl BooleanMapping for MyBooleanMapping { }
     let boolean = Boolean::<DefaultBooleanMapping>::new(true);
-    
+
     let boolean: Boolean<MyBooleanMapping> = Boolean::remap(boolean);
     # }
     ```
@@ -85,11 +82,7 @@ where
     }
 }
 
-impl<TMapping> BooleanFieldType<TMapping> for Boolean<TMapping>
-where
-    TMapping: BooleanMapping,
-{
-}
+impl<TMapping> BooleanFieldType<TMapping> for Boolean<TMapping> where TMapping: BooleanMapping {}
 
 impl_mapping_type!(bool, Boolean, BooleanMapping);
 

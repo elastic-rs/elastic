@@ -5,13 +5,13 @@ Error types from Elasticsearch.
 use serde::{Deserialize, Deserializer};
 use serde_json::{Error as JsonError, Map, Value};
 use std::error::Error as StdError;
-use std::io::Error as IoError;
 use std::fmt;
+use std::io::Error as IoError;
 
 mod inner {
-    use std::fmt;
-    use std::error::Error as StdError;
     use serde_json::{Map, Value};
+    use std::error::Error as StdError;
+    use std::fmt;
 
     use super::ApiError;
 
@@ -36,7 +36,7 @@ mod inner {
 
     pub enum ParsedApiError {
         Known(ApiError),
-        Unknown(Map<String, Value>)
+        Unknown(Map<String, Value>),
     }
 }
 
@@ -51,10 +51,11 @@ pub struct ParseError {
 }
 
 impl ParseError {
-    pub fn new<E>(err: E) -> Self where E: StdError + Send + Sync + 'static {
-        ParseError {
-            inner: Box::new(err)
-        }
+    pub fn new<E>(err: E) -> Self
+    where
+        E: StdError + Send + Sync + 'static,
+    {
+        ParseError { inner: Box::new(err) }
     }
 }
 
@@ -148,17 +149,14 @@ quick_error! {
 }
 
 macro_rules! error_key {
-    ($obj:ident [ $key:ident ] : |$cast:ident| $cast_expr:expr) => ({
-            let key = $obj.get(stringify!($key))
-                          .and_then(|$cast| $cast_expr)
-                          .map(|v| v.to_owned());
+    ($obj:ident [ $key:ident ] : |$cast:ident| $cast_expr:expr) => {{
+        let key = $obj.get(stringify!($key)).and_then(|$cast| $cast_expr).map(|v| v.to_owned());
 
-            match key {
-                Some(v) => v,
-                _ => return ParsedApiError::Unknown($obj)
-            }
+        match key {
+            Some(v) => v,
+            _ => return ParsedApiError::Unknown($obj),
         }
-    )
+    }};
 }
 
 impl<'de> Deserialize<'de> for ParsedApiError {
@@ -182,9 +180,7 @@ impl From<Map<String, Value>> for ParsedApiError {
         };
 
         let ty = {
-            let ty = obj.get("type")
-                .and_then(|v| v.as_str())
-                .map(|v| v.to_owned());
+            let ty = obj.get("type").and_then(|v| v.as_str()).map(|v| v.to_owned());
 
             match ty {
                 Some(ty) => ty,
@@ -196,30 +192,22 @@ impl From<Map<String, Value>> for ParsedApiError {
             "index_not_found_exception" => {
                 let index = error_key!(obj[index]: |v| v.as_str());
 
-                ParsedApiError::Known(ApiError::IndexNotFound {
-                    index: index.into(),
-                })
+                ParsedApiError::Known(ApiError::IndexNotFound { index: index.into() })
             }
             "index_already_exists_exception" => {
                 let index = error_key!(obj[index]: |v| v.as_str());
 
-                ParsedApiError::Known(ApiError::IndexAlreadyExists {
-                    index: index.into(),
-                })
+                ParsedApiError::Known(ApiError::IndexAlreadyExists { index: index.into() })
             }
             "document_missing_exception" => {
                 let index = error_key!(obj[index]: |v| v.as_str());
 
-                ParsedApiError::Known(ApiError::DocumentMissing {
-                    index: index.into(),
-                })
+                ParsedApiError::Known(ApiError::DocumentMissing { index: index.into() })
             }
             "action_request_validation_exception" => {
                 let reason = error_key!(obj[reason]: |v| v.as_str());
 
-                ParsedApiError::Known(ApiError::ActionRequestValidation {
-                    reason: reason.into(),
-                })
+                ParsedApiError::Known(ApiError::ActionRequestValidation { reason: reason.into() })
             }
             _ => ParsedApiError::Unknown(obj),
         }

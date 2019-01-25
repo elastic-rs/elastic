@@ -3,8 +3,6 @@ extern crate serde_json;
 
 use elastic_queries::prelude::*;
 
-
-
 #[test]
 fn aggregation_search() {
     let j = include_str!("complex.json");

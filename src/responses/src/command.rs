@@ -11,9 +11,9 @@ pub struct CommandResponse {
 }
 
 impl CommandResponse {
-    /** 
+    /**
     Whether or not the request was acknowledged.
-    
+
     This doesn't necessarily mean the request has been fully processed.
     */
     pub fn acknowledged(&self) -> bool {

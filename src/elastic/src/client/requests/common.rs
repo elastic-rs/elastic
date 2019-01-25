@@ -3,7 +3,7 @@ Types that are common between requests.
 */
 
 use serde::ser::{Serialize, Serializer};
-use serde_json::{Value, Map};
+use serde_json::{Map, Value};
 
 /** Update an indexed document using a new document. */
 #[derive(Serialize)]
@@ -13,15 +13,11 @@ pub struct Doc<TDocument> {
 
 impl<TDocument> Doc<TDocument> {
     pub(crate) fn empty() -> Self {
-        Doc {
-            doc: DocInner { inner: None },
-        }
+        Doc { doc: DocInner { inner: None } }
     }
 
     pub(crate) fn value(doc: TDocument) -> Self {
-        Doc {
-            doc: DocInner { inner: Some(doc) },
-        }
+        Doc { doc: DocInner { inner: Some(doc) } }
     }
 }
 
@@ -56,8 +52,8 @@ pub struct Script<TParams> {
 impl Script<DefaultParams> {
     /** Create a new script builder using the given source. */
     pub(crate) fn new<TScript>(source: TScript) -> Self
-        where
-            TScript: ToString,
+    where
+        TScript: ToString,
     {
         ScriptBuilder::new(source).build()
     }
@@ -65,9 +61,12 @@ impl Script<DefaultParams> {
 
 #[derive(Serialize)]
 struct ScriptInner<TParams> {
-    #[serde(rename = "inline")] source: String,
-    #[serde(skip_serializing_if = "Option::is_none")] lang: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")] params: Option<TParams>,
+    #[serde(rename = "inline")]
+    source: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    lang: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    params: Option<TParams>,
 }
 
 /** A builder for an update script that can be configured before sending. */

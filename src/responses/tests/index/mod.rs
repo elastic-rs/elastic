@@ -1,8 +1,8 @@
 extern crate elastic_responses;
 extern crate serde_json;
 
-use elastic_responses::*;
 use elastic_responses::error::*;
+use elastic_responses::*;
 use load_file;
 
 #[test]

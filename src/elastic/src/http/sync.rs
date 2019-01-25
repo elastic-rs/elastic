@@ -124,41 +124,31 @@ impl From<Bytes> for SyncBody {
 
 impl From<Vec<u8>> for SyncBody {
     fn from(body: Vec<u8>) -> SyncBody {
-        SyncBody(SyncBodyInner::Buffered(BufferedSyncBodyInner::Bytes(
-            body.into(),
-        )))
+        SyncBody(SyncBodyInner::Buffered(BufferedSyncBodyInner::Bytes(body.into())))
     }
 }
 
 impl From<String> for SyncBody {
     fn from(body: String) -> SyncBody {
-        SyncBody(SyncBodyInner::Buffered(BufferedSyncBodyInner::Str(
-            body.into(),
-        )))
+        SyncBody(SyncBodyInner::Buffered(BufferedSyncBodyInner::Str(body.into())))
     }
 }
 
 impl From<Value> for SyncBody {
     fn from(body: Value) -> SyncBody {
-        SyncBody(SyncBodyInner::Buffered(BufferedSyncBodyInner::Str(
-            body.to_string().into(),
-        )))
+        SyncBody(SyncBodyInner::Buffered(BufferedSyncBodyInner::Str(body.to_string().into())))
     }
 }
 
 impl From<&'static [u8]> for SyncBody {
     fn from(body: &'static [u8]) -> SyncBody {
-        SyncBody(SyncBodyInner::Buffered(BufferedSyncBodyInner::Bytes(
-            body.into(),
-        )))
+        SyncBody(SyncBodyInner::Buffered(BufferedSyncBodyInner::Bytes(body.into())))
     }
 }
 
 impl From<&'static str> for SyncBody {
     fn from(body: &'static str) -> SyncBody {
-        SyncBody(SyncBodyInner::Buffered(BufferedSyncBodyInner::Str(
-            body.into(),
-        )))
+        SyncBody(SyncBodyInner::Buffered(BufferedSyncBodyInner::Str(body.into())))
     }
 }
 
@@ -190,8 +180,8 @@ impl Read for SyncHttpResponse {
 
 #[cfg(test)]
 mod tests {
-    use client::requests::empty_body;
     use super::*;
+    use client::requests::empty_body;
 
     #[test]
     fn owned_string_into_body() {

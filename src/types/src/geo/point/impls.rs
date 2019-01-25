@@ -1,9 +1,9 @@
-use std::borrow::Borrow;
-use std::marker::PhantomData;
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
-use georust::{Geometry as GeoEnum, ToGeo};
 use super::mapping::{GeoPointFieldType, GeoPointMapping};
 use super::{Coordinate, GeoPointFormat, Geometry, Point};
+use georust::{Geometry as GeoEnum, ToGeo};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use std::borrow::Borrow;
+use std::marker::PhantomData;
 
 /**
 An Elasticsearch `geo_point` type with a format.
@@ -58,21 +58,21 @@ where
 {
     /**
     Creates a new `GeoPoint` from the given coordinate.
-    
+
     This function will consume the provided `Coordinate`.
-    
+
     # Examples
-    
+
     ```
     # extern crate elastic_types;
     # extern crate geo;
     # fn main() {
     use geo::{ Point, Coordinate };
     use elastic_types::prelude::*;
-    
+
     //Create a geo Coordinate struct
     let coord = Coordinate { x: 1.0, y: 1.0 };
-    
+
     //Give it to the GeoPoint struct
     let point: GeoPoint<DefaultGeoPointMapping> = GeoPoint::new(Point(coord));
     # }
@@ -82,15 +82,12 @@ where
     where
         I: Into<Point>,
     {
-        GeoPoint {
-            value: point.into(),
-            _m: PhantomData,
-        }
+        GeoPoint { value: point.into(), _m: PhantomData }
     }
 
     /**
     Creates an `GeoPoint` from the given `x` and `y` primitives:
-    
+
     ```
     # use elastic_types::prelude::*;
     let point: GeoPoint<DefaultGeoPointMapping> = GeoPoint::build(1.0, 1.0);
@@ -102,14 +99,14 @@ where
 
     /**
     Change the format/mapping of this geo point.
-    
+
     # Examples
-    
+
     ```
     # use elastic_types::prelude::*;
     //Get a point formatted as a string
     let point: GeoPoint<DefaultGeoPointMapping<GeoPointString>> = GeoPoint::build(1.0, 1.0);
-    
+
     //Change the format to an object
     let otherpoint: GeoPoint<DefaultGeoPointMapping<GeoPointObject>> = GeoPoint::remap(point);
     ```
@@ -122,11 +119,7 @@ where
     }
 }
 
-impl<TMapping> GeoPointFieldType<TMapping> for GeoPoint<TMapping>
-where
-    TMapping: GeoPointMapping,
-{
-}
+impl<TMapping> GeoPointFieldType<TMapping> for GeoPoint<TMapping> where TMapping: GeoPointMapping {}
 
 impl_mapping_type!(Point, GeoPoint, GeoPointMapping);
 

@@ -1,6 +1,6 @@
-use futures::Future;
-use elastic::prelude::*;
 use elastic::error::Error;
+use elastic::prelude::*;
+use futures::Future;
 use run_tests::IntegrationTest;
 
 #[derive(Debug, Clone, Copy)]
@@ -43,11 +43,7 @@ impl IntegrationTest for UpdateWithDoc {
 
     // Execute an update request against that index using a new document
     fn request(&self, client: AsyncClient) -> Box<Future<Item = Self::Response, Error = Error>> {
-        let index_res = client
-            .document()
-            .index(doc())
-            .params_fluent(|p| p.url_param("refresh", true))
-            .send();
+        let index_res = client.document().index(doc()).params_fluent(|p| p.url_param("refresh", true)).send();
 
         let update_res = client
             .document::<Doc>()
@@ -60,11 +56,7 @@ impl IntegrationTest for UpdateWithDoc {
 
         let get_res = client.document().get(ID).send();
 
-        Box::new(
-            index_res
-                .and_then(|_| update_res)
-                .and_then(|update| get_res.map(|get| (update, get))),
-        )
+        Box::new(index_res.and_then(|_| update_res).and_then(|update| get_res.map(|get| (update, get))))
     }
 
     // Ensure the response contains the expected document

@@ -22,31 +22,24 @@ extern crate term_painter;
 extern crate tokio_core;
 extern crate tokio_timer;
 
-use std::process;
-use term_painter::ToStyle;
-use term_painter::Color::*;
 use clap::{App, Arg};
+use std::process;
+use term_painter::Color::*;
+use term_painter::ToStyle;
 
-mod bulk;
-mod document;
-mod search;
-mod index;
-mod run_tests;
 mod build_client;
 mod build_container;
+mod bulk;
+mod document;
+mod index;
+mod run_tests;
+mod search;
 mod wait_until_ready;
 
 fn main() {
     env_logger::init();
 
-    let matches = App::new("elastic_integration_tests")
-        .arg(
-            Arg::with_name("runs")
-                .default_value("default")
-                .takes_value(true)
-                .multiple(true),
-        )
-        .get_matches();
+    let matches = App::new("elastic_integration_tests").arg(Arg::with_name("runs").default_value("default").takes_value(true).multiple(true)).get_matches();
 
     let mut failed = Vec::<run_tests::TestResult>::new();
     let mut total = 0;
@@ -63,8 +56,7 @@ fn main() {
         build_container::start(run).unwrap();
 
         // Wait until the container is ready
-        core.run(wait_until_ready::call(client.clone(), 60))
-            .unwrap();
+        core.run(wait_until_ready::call(client.clone(), 60)).unwrap();
 
         // Run the integration tests
         let results = core.run(run_tests::call(client, 8)).unwrap();
@@ -76,11 +68,7 @@ fn main() {
     }
 
     if failed.len() > 0 {
-        println!(
-            "\n{}",
-            Red.bold()
-                .paint(format!("{} of {} tests failed", failed.len(), total))
-        );
+        println!("\n{}", Red.bold().paint(format!("{} of {} tests failed", failed.len(), total)));
         process::exit(1);
     } else {
         println!("\n{}", Green.paint(format!("all {} tests passed", total)));

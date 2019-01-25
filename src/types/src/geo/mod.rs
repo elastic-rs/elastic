@@ -13,11 +13,11 @@ pub mod shape;
 pub mod prelude {
     /*!
     Includes all types for the `geo_point` and `geo_shape` types.
-    
+
     This is a convenience module to make it easy to build mappings for multiple types without too many `use` statements.
     */
 
+    pub use super::mapping::*;
     pub use super::point::prelude::*;
     pub use super::shape::prelude::*;
-    pub use super::mapping::*;
 }

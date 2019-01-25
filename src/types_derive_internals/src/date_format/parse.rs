@@ -1,5 +1,5 @@
-use std::str;
 use nom::simple_errors::Err as NomError;
+use std::str;
 
 pub type Error = NomError;
 
@@ -139,8 +139,8 @@ named!(escaped(&[u8]) -> DateFormatToken,
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use self::DateFormatToken::*;
+    use super::*;
 
     fn assert_parse(i: &[u8], expected: Vec<DateFormatToken>) {
         let (_, result) = format(i).unwrap();
@@ -155,37 +155,12 @@ mod tests {
 
     #[test]
     fn parse_basic_date_time() {
-        assert_parse(
-            b"yyyyMMdd'T'HHmmss.SSSZ",
-            vec![
-                Year,
-                Month,
-                DayOfMonth,
-                Escaped("T"),
-                Hour,
-                Minute,
-                Second,
-                Millisecond,
-                Utc,
-            ],
-        );
+        assert_parse(b"yyyyMMdd'T'HHmmss.SSSZ", vec![Year, Month, DayOfMonth, Escaped("T"), Hour, Minute, Second, Millisecond, Utc]);
     }
 
     #[test]
     fn parse_basic_date_time_no_millis() {
-        assert_parse(
-            b"yyyyMMdd'T'HHmmssZ",
-            vec![
-                Year,
-                Month,
-                DayOfMonth,
-                Escaped("T"),
-                Hour,
-                Minute,
-                Second,
-                Utc,
-            ],
-        );
+        assert_parse(b"yyyyMMdd'T'HHmmssZ", vec![Year, Month, DayOfMonth, Escaped("T"), Hour, Minute, Second, Utc]);
     }
 
     #[test]
@@ -197,20 +172,7 @@ mod tests {
     fn parse_date_hour_minute_second_millis() {
         assert_parse(
             b"yyyy-MM-dd'T'HH:mm:ss.SSS",
-            vec![
-                Year,
-                Delim("-"),
-                Month,
-                Delim("-"),
-                DayOfMonth,
-                Escaped("T"),
-                Hour,
-                Delim(":"),
-                Minute,
-                Delim(":"),
-                Second,
-                Millisecond,
-            ],
+            vec![Year, Delim("-"), Month, Delim("-"), DayOfMonth, Escaped("T"), Hour, Delim(":"), Minute, Delim(":"), Second, Millisecond],
         );
     }
 }

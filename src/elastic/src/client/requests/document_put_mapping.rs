@@ -4,24 +4,24 @@ Builders for [put mapping requests][docs-mapping].
 [docs-mapping]: https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping.html
 */
 
-use std::marker::PhantomData;
-use serde_json;
 use futures::{Future, Poll};
+use serde_json;
+use std::marker::PhantomData;
 
-use error::{self, Error, Result};
-use client::DocumentClient;
-use client::sender::{AsyncSender, Sender, SyncSender};
-use client::requests::RequestBuilder;
-use client::requests::params::{Index, Type};
 use client::requests::endpoints::IndicesPutMappingRequest;
+use client::requests::params::{Index, Type};
 use client::requests::raw::RawRequestInner;
+use client::requests::RequestBuilder;
 use client::responses::CommandResponse;
+use client::sender::{AsyncSender, Sender, SyncSender};
+use client::DocumentClient;
+use error::{self, Error, Result};
 use types::document::{DocumentType, StaticIndex, StaticType};
 
-/** 
+/**
 A [put mapping request][docs-mapping] builder that can be configured before sending.
 
-Call [`Client.document_put_mapping`][Client.document_put_mapping] to get a `PutMappingRequestBuilder`. 
+Call [`Client.document_put_mapping`][Client.document_put_mapping] to get a `PutMappingRequestBuilder`.
 The `send` method will either send the request [synchronously][send-sync] or [asynchronously][send-async], depending on the `Client` it was created from.
 
 [docs-mapping]: https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping.html
@@ -45,7 +45,7 @@ impl<TSender, TDocument> DocumentClient<TSender, TDocument>
 where
     TSender: Sender,
 {
-    /** 
+    /**
     Create a [`PutMappingRequestBuilder`][PutMappingRequestBuilder] with this `Client` that can be configured before sending.
 
     For more details, see:
@@ -53,7 +53,7 @@ where
     - [builder methods][builder-methods]
     - [send synchronously][send-sync]
     - [send asynchronously][send-async]
-    
+
     # Examples
 
     Put the document mapping for a [`DocumentType`][documents-mod] called `MyType`:
@@ -94,14 +94,7 @@ where
         let index = TDocument::static_index().into();
         let ty = TDocument::static_ty().into();
 
-        RequestBuilder::initial(
-            self.inner,
-            PutMappingRequestInner {
-                index: index,
-                ty: ty,
-                _marker: PhantomData,
-            },
-        )
+        RequestBuilder::initial(self.inner, PutMappingRequestInner { index: index, ty: ty, _marker: PhantomData })
     }
 }
 
@@ -112,15 +105,11 @@ where
     fn into_request(self) -> Result<IndicesPutMappingRequest<'static, Vec<u8>>> {
         let body = serde_json::to_vec(&TDocument::index_mapping()).map_err(error::request)?;
 
-        Ok(IndicesPutMappingRequest::for_index_ty(
-            self.index,
-            self.ty,
-            body,
-        ))
+        Ok(IndicesPutMappingRequest::for_index_ty(self.index, self.ty, body))
     }
 }
 
-/** 
+/**
 # Builder methods
 
 Configure a `PutMappingRequestBuilder` before sending it.
@@ -130,19 +119,13 @@ where
     TSender: Sender,
 {
     /** Set the index for the put mapping request. */
-    pub fn index<I>(mut self, index: I) -> Self
-    where
-        I: Into<Index<'static>>,
-    {
+    pub fn index(mut self, index: impl Into<Index<'static>>) -> Self {
         self.inner.index = index.into();
         self
     }
 
     /** Set the type for the put mapping request. */
-    pub fn ty<I>(mut self, ty: I) -> Self
-    where
-        I: Into<Type<'static>>,
-    {
+    pub fn ty(mut self, ty: impl Into<Type<'static>>) -> Self {
         self.inner.ty = ty.into();
         self
     }
@@ -189,9 +172,7 @@ where
     pub fn send(self) -> Result<CommandResponse> {
         let req = self.inner.into_request()?;
 
-        RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
-            .send()?
-            .into_response()
+        RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req)).send()?.into_response()
     }
 }
 
@@ -204,7 +185,7 @@ where
 {
     /**
     Send a `PutMappingRequestBuilder` asynchronously using an [`AsyncClient`][AsyncClient].
-    
+
     This will return a future that will resolve to the deserialised command response.
 
     # Examples
@@ -246,11 +227,7 @@ where
 
         let req_future = client.sender.maybe_async(move || inner.into_request());
 
-        let res_future = req_future.and_then(move |req| {
-            RequestBuilder::new(client, params_builder, RawRequestInner::new(req))
-                .send()
-                .and_then(|res| res.into_response())
-        });
+        let res_future = req_future.and_then(move |req| RequestBuilder::new(client, params_builder, RawRequestInner::new(req)).send().and_then(|res| res.into_response()));
 
         Pending::new(res_future)
     }
@@ -266,9 +243,7 @@ impl Pending {
     where
         F: Future<Item = CommandResponse, Error = Error> + 'static,
     {
-        Pending {
-            inner: Box::new(fut),
-        }
+        Pending { inner: Box::new(fut) }
     }
 }
 
@@ -283,22 +258,17 @@ impl Future for Pending {
 
 #[cfg(test)]
 mod tests {
-    use serde_json::{self, Value};
     use prelude::*;
+    use serde_json::{self, Value};
 
     #[derive(ElasticType)]
-    struct TestDoc { }
+    struct TestDoc {}
 
     #[test]
     fn default_request() {
         let client = SyncClientBuilder::new().build().unwrap();
 
-        let req = client
-            .document::<TestDoc>()
-            .put_mapping()
-            .inner
-            .into_request()
-            .unwrap();
+        let req = client.document::<TestDoc>().put_mapping().inner.into_request().unwrap();
 
         let expected_body = json!({
             "properties": {
@@ -316,13 +286,7 @@ mod tests {
     fn specify_index() {
         let client = SyncClientBuilder::new().build().unwrap();
 
-        let req = client
-            .document::<TestDoc>()
-            .put_mapping()
-            .index("new-idx")
-            .inner
-            .into_request()
-            .unwrap();
+        let req = client.document::<TestDoc>().put_mapping().index("new-idx").inner.into_request().unwrap();
 
         assert_eq!("/new-idx/_mappings/doc", req.url.as_ref());
     }
@@ -331,13 +295,7 @@ mod tests {
     fn specify_ty() {
         let client = SyncClientBuilder::new().build().unwrap();
 
-        let req = client
-            .document::<TestDoc>()
-            .put_mapping()
-            .ty("new-ty")
-            .inner
-            .into_request()
-            .unwrap();
+        let req = client.document::<TestDoc>().put_mapping().ty("new-ty").inner.into_request().unwrap();
 
         assert_eq!("/testdoc/_mappings/new-ty", req.url.as_ref());
     }

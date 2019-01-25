@@ -5,16 +5,16 @@ This module is 'private' and should only be consumed by `elastic_types_derive`.
 Its contents aren't subject to SemVer.
 */
 
-use serde_json;
-use serde::Serialize;
-use chrono::{DateTime, Utc};
 use chrono::format::{self, Parsed};
+use chrono::{DateTime, Utc};
+use serde::Serialize;
+use serde_json;
 
-use private::field::{SerializeFieldMapping, FieldMapping, FieldType};
+use private::field::{FieldMapping, FieldType, SerializeFieldMapping};
 
 pub use date::{DateFormat, DateValue, FormattedDate, ParseError};
+pub use document::mapping::{ObjectFieldType, ObjectMapping, PropertiesMapping};
 pub use document::{DocumentType, StaticIndex, StaticType};
-pub use document::mapping::{ObjectMapping, ObjectFieldType, PropertiesMapping};
 
 pub use chrono::format::{Fixed, Item, Numeric, Pad};
 pub use serde::ser::SerializeStruct;

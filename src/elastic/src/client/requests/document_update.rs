@@ -4,25 +4,25 @@ Builders for [update document requests][docs-update].
 [docs-update]: http://www.elastic.co/guide/en/elasticsearch/reference/current/docs-update.html
 */
 
-use std::marker::PhantomData;
 use futures::{Future, Poll};
-use serde_json;
 use serde::ser::Serialize;
+use serde_json;
+use std::marker::PhantomData;
 
-use error::{self, Error};
-use client::DocumentClient;
-use client::sender::{AsyncSender, Sender, SyncSender};
-use client::requests::RequestBuilder;
-use client::requests::params::{Id, Index, Type};
 use client::requests::endpoints::UpdateRequest;
+use client::requests::params::{Id, Index, Type};
 use client::requests::raw::RawRequestInner;
+use client::requests::RequestBuilder;
 use client::responses::UpdateResponse;
-use types::DEFAULT_TYPE;
+use client::sender::{AsyncSender, Sender, SyncSender};
+use client::DocumentClient;
+use error::{self, Error};
 use types::document::{DocumentType, StaticIndex, StaticType};
+use types::DEFAULT_TYPE;
 
-pub use client::requests::common::{Doc, Script, ScriptBuilder, DefaultParams};
+pub use client::requests::common::{DefaultParams, Doc, Script, ScriptBuilder};
 
-/** 
+/**
 An [update document request][docs-update] builder that can be configured before sending.
 
 Call [`Client.document_update`][Client.document_update] to get an `UpdateRequestBuilder`.
@@ -51,7 +51,7 @@ impl<TSender, TDocument> DocumentClient<TSender, TDocument>
 where
     TSender: Sender,
 {
-    /** 
+    /**
     Create an [`UpdateRequestBuilder`][UpdateRequestBuilder] with this `Client` that can be configured before sending.
 
     For more details, see:
@@ -63,7 +63,7 @@ where
     # Examples
 
     Update a [`DocumentType`][documents-mod] called `MyType` with an id of `1` using a new document value:
-    
+
     ```no_run
     # extern crate serde;
     # #[macro_use]
@@ -193,9 +193,8 @@ where
     [send-async]: requests/document_update/type.UpdateRequestBuilder.html#send-asynchronously
     [documents-mod]: ../types/document/index.html
     */
-    pub fn update<TId>(self, id: TId) -> UpdateRequestBuilder<TSender, Doc<TDocument>>
+    pub fn update(self, id: impl Into<Id<'static>>) -> UpdateRequestBuilder<TSender, Doc<TDocument>>
     where
-        TId: Into<Id<'static>>,
         TDocument: DocumentType + StaticIndex + StaticType,
     {
         let index = TDocument::static_index().into();
@@ -218,7 +217,7 @@ impl<TSender> DocumentClient<TSender, ()>
 where
     TSender: Sender,
 {
-    /** 
+    /**
     Create an [`UpdateRequestBuilder`][UpdateRequestBuilder] with this `Client` that can be configured before sending.
 
     For more details, see:
@@ -230,7 +229,7 @@ where
     # Examples
 
     Update a document with an id of `1` using a new document value:
-    
+
     ```no_run
     # extern crate serde;
     # #[macro_use]
@@ -256,11 +255,7 @@ where
     # }
     ```
     */
-    pub fn update_raw<TIndex, TId>(self, index: TIndex, id: TId) -> UpdateRequestBuilder<TSender, Doc<()>>
-    where
-        TIndex: Into<Index<'static>>,
-        TId: Into<Id<'static>>,
-    {
+    pub fn update_raw(self, index: impl Into<Index<'static>>, id: impl Into<Id<'static>>) -> UpdateRequestBuilder<TSender, Doc<()>> {
         RequestBuilder::initial(
             self.inner,
             UpdateRequestInner {
@@ -281,12 +276,7 @@ where
     fn into_request(self) -> Result<UpdateRequest<'static, Vec<u8>>, Error> {
         let body = serde_json::to_vec(&self.body).map_err(error::request)?;
 
-        Ok(UpdateRequest::for_index_ty_id(
-            self.index,
-            self.ty,
-            self.id,
-            body,
-        ))
+        Ok(UpdateRequest::for_index_ty_id(self.index, self.ty, self.id, body))
     }
 }
 
@@ -300,30 +290,24 @@ where
     TSender: Sender,
 {
     /** Set the index for the update request. */
-    pub fn index<I>(mut self, index: I) -> Self
-    where
-        I: Into<Index<'static>>,
-    {
+    pub fn index(mut self, index: impl Into<Index<'static>>) -> Self {
         self.inner.index = index.into();
         self
     }
 
     /** Set the type for the update request. */
-    pub fn ty<I>(mut self, ty: I) -> Self
-    where
-        I: Into<Type<'static>>,
-    {
+    pub fn ty(mut self, ty: impl Into<Type<'static>>) -> Self {
         self.inner.ty = ty.into();
         self
     }
 
     /**
     Update the source using a document.
-    
+
     # Examples
 
     Update a [`DocumentType`][documents-mod] called `MyType` with an id of `1` using a new document value:
-    
+
     ```no_run
     # extern crate serde;
     # #[macro_use]
@@ -403,7 +387,7 @@ where
 
     /**
     Update the source using [an inline script][painless-lang].
-    
+
     # Examples
 
     Update the `title` property of a document using a script:
@@ -434,7 +418,7 @@ where
     ```
 
      Update the `title` property of a document using a parameterised script:
-    
+
     ```no_run
     # extern crate serde;
     # #[macro_use]
@@ -494,7 +478,7 @@ where
     # Examples
 
     Update the `title` property of a document using a parameterised script:
-    
+
     ```no_run
     # extern crate serde;
     # #[macro_use]
@@ -565,10 +549,9 @@ where
 
     [painless-lang]: https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-scripting-painless.html
     */
-    pub fn script_fluent<TScript, TBuilder, TParams>(self, source: TScript, builder: TBuilder) -> UpdateRequestBuilder<TSender, Script<TParams>>
+    pub fn script_fluent<TScript, TParams>(self, source: TScript, builder: impl Fn(ScriptBuilder<DefaultParams>) -> ScriptBuilder<TParams>) -> UpdateRequestBuilder<TSender, Script<TParams>>
     where
         TScript: ToString,
-        TBuilder: Fn(ScriptBuilder<DefaultParams>) -> ScriptBuilder<TParams>,
     {
         let builder = builder(ScriptBuilder::new(source));
 
@@ -626,9 +609,7 @@ where
     pub fn send(self) -> Result<UpdateResponse, Error> {
         let req = self.inner.into_request()?;
 
-        RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
-            .send()?
-            .into_response()
+        RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req)).send()?.into_response()
     }
 }
 
@@ -641,7 +622,7 @@ where
 {
     /**
     Send an `UpdateRequestBuilder` asynchronously using an [`AsyncClient`][AsyncClient].
-    
+
     This will return a future that will resolve to the deserialised update document response.
 
     # Examples
@@ -692,11 +673,7 @@ where
 
         let req_future = client.sender.maybe_async(move || inner.into_request());
 
-        let res_future = req_future.and_then(move |req| {
-            RequestBuilder::new(client, params_builder, RawRequestInner::new(req))
-                .send()
-                .and_then(|res| res.into_response())
-        });
+        let res_future = req_future.and_then(move |req| RequestBuilder::new(client, params_builder, RawRequestInner::new(req)).send().and_then(|res| res.into_response()));
 
         Pending::new(res_future)
     }
@@ -712,9 +689,7 @@ impl Pending {
     where
         F: Future<Item = UpdateResponse, Error = Error> + 'static,
     {
-        Pending {
-            inner: Box::new(fut),
-        }
+        Pending { inner: Box::new(fut) }
     }
 }
 
@@ -729,23 +704,18 @@ impl Future for Pending {
 
 #[cfg(test)]
 mod tests {
-    use serde_json::{self, Value};
     use super::ScriptBuilder;
     use prelude::*;
+    use serde_json::{self, Value};
 
     #[derive(Serialize, ElasticType)]
-    struct TestDoc { }
+    struct TestDoc {}
 
     #[test]
     fn default_request() {
         let client = SyncClientBuilder::new().build().unwrap();
 
-        let req = client
-            .document::<TestDoc>()
-            .update("1")
-            .inner
-            .into_request()
-            .unwrap();
+        let req = client.document::<TestDoc>().update("1").inner.into_request().unwrap();
 
         assert_eq!("/testdoc/doc/1/_update", req.url.as_ref());
 
@@ -762,13 +732,7 @@ mod tests {
     fn specify_index() {
         let client = SyncClientBuilder::new().build().unwrap();
 
-        let req = client
-            .document::<TestDoc>()
-            .update("1")
-            .index("new-idx")
-            .inner
-            .into_request()
-            .unwrap();
+        let req = client.document::<TestDoc>().update("1").index("new-idx").inner.into_request().unwrap();
 
         assert_eq!("/new-idx/doc/1/_update", req.url.as_ref());
     }
@@ -777,13 +741,7 @@ mod tests {
     fn specify_ty() {
         let client = SyncClientBuilder::new().build().unwrap();
 
-        let req = client
-            .document::<TestDoc>()
-            .update("1")
-            .ty("new-ty")
-            .inner
-            .into_request()
-            .unwrap();
+        let req = client.document::<TestDoc>().update("1").ty("new-ty").inner.into_request().unwrap();
 
         assert_eq!("/testdoc/new-ty/1/_update", req.url.as_ref());
     }
@@ -799,13 +757,7 @@ mod tests {
 
         let expected_body = json!({ "doc": doc });
 
-        let req = client
-            .document::<TestDoc>()
-            .update("1")
-            .doc(doc)
-            .inner
-            .into_request()
-            .unwrap();
+        let req = client.document::<TestDoc>().update("1").doc(doc).inner.into_request().unwrap();
 
         let actual_body: Value = serde_json::from_slice(&req.body).unwrap();
 
@@ -816,13 +768,7 @@ mod tests {
     fn specify_inline_script() {
         let client = SyncClientBuilder::new().build().unwrap();
 
-        let req = client
-            .document::<TestDoc>()
-            .update("1")
-            .script("ctx._source.a = params.str")
-            .inner
-            .into_request()
-            .unwrap();
+        let req = client.document::<TestDoc>().update("1").script("ctx._source.a = params.str").inner.into_request().unwrap();
 
         let expected_body = json!({
             "script": {
@@ -839,13 +785,7 @@ mod tests {
     fn specify_script_value() {
         let client = SyncClientBuilder::new().build().unwrap();
 
-        let req = client
-            .document::<TestDoc>()
-            .update("1")
-            .script(ScriptBuilder::new("ctx._source.a = params.str"))
-            .inner
-            .into_request()
-            .unwrap();
+        let req = client.document::<TestDoc>().update("1").script(ScriptBuilder::new("ctx._source.a = params.str")).inner.into_request().unwrap();
 
         let expected_body = json!({
             "script": {
@@ -865,12 +805,7 @@ mod tests {
         let req = client
             .document::<TestDoc>()
             .update("1")
-            .script_fluent("ctx._source.a = params.str", |script| {
-                script
-                    .lang(Some("painless"))
-                    .param("str", "some value")
-                    .param("other", "some other value")
-            })
+            .script_fluent("ctx._source.a = params.str", |script| script.lang(Some("painless")).param("str", "some value").param("other", "some other value"))
             .inner
             .into_request()
             .unwrap();
@@ -904,12 +839,7 @@ mod tests {
         let req = client
             .document::<TestDoc>()
             .update("1")
-            .script_fluent("ctx._source.a = params.str", |script| {
-                script.params(MyParams {
-                    a: "some value",
-                    b: 42,
-                })
-            })
+            .script_fluent("ctx._source.a = params.str", |script| script.params(MyParams { a: "some value", b: 42 }))
             .inner
             .into_request()
             .unwrap();

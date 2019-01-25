@@ -13,10 +13,10 @@ extern crate serde_derive;
 #[macro_use]
 extern crate serde_json;
 
-use std::error::Error;
-use serde_json::Value;
-use elastic::prelude::*;
 use elastic::client::responses::parse::*;
+use elastic::prelude::*;
+use serde_json::Value;
+use std::error::Error;
 
 #[derive(Deserialize, Debug)]
 struct SearchResponse {
@@ -30,12 +30,13 @@ struct Hits {
 
 #[derive(Deserialize, Debug)]
 struct Hit {
-    #[serde(rename = "_source")] pub source: Value,
+    #[serde(rename = "_source")]
+    pub source: Value,
 }
 
 // Implement `IsOkOnSuccess` for our custom `SearchResponse` so it can be used in the call to `into_response`.
 // `IsOkOnSuccess` will return `Ok` if the response is in the `200` range.
-impl IsOkOnSuccess for SearchResponse { }
+impl IsOkOnSuccess for SearchResponse {}
 
 fn run() -> Result<(), Box<Error>> {
     // A reqwest HTTP client and default parameters.

@@ -60,31 +60,41 @@ This will produce the following mapping:
 */
 
 macro_rules! number_mapping {
-    ($mapping:ident, $pivot:ident, $field_trait:ident, $datatype_name:expr, $std_ty:ty, $private_mod:ident) => (
+    ($mapping:ident, $pivot:ident, $field_trait:ident, $datatype_name:expr, $std_ty:ty, $private_mod:ident) => {
         /** A field that will be mapped as a number. */
         pub trait $field_trait<TMapping> {}
 
         /** Base `number` mapping. */
-        pub trait $mapping where
-        Self: Default {
+        pub trait $mapping
+        where
+            Self: Default,
+        {
             /** Try to convert strings to numbers and truncate fractions for integers. Accepts `true` (default) and `false`. */
-            fn coerce() -> Option<bool> { None }
+            fn coerce() -> Option<bool> {
+                None
+            }
 
             /** Field-level index time boosting. Accepts a floating point number, defaults to `1.0`. */
-            fn boost() -> Option<f32> { None }
+            fn boost() -> Option<f32> {
+                None
+            }
 
             /**
             Should the field be stored on disk in a column-stride fashion,
             so that it can later be used for sorting, aggregations, or scripting?
             Accepts `true` (default) or `false`.
             */
-            fn doc_values() -> Option<bool> { None }
+            fn doc_values() -> Option<bool> {
+                None
+            }
 
             /**
             If `true`, malformed numbers are ignored. If `false` (default),
             malformed numbers throw an exception and reject the whole document.
             */
-            fn ignore_malformed() -> Option<bool> { None }
+            fn ignore_malformed() -> Option<bool> {
+                None
+            }
 
             /**
             Whether or not the field value should be included in the `_all` field?
@@ -92,51 +102,67 @@ macro_rules! number_mapping {
             or if a parent object field sets `include_in_all` to false.
             Otherwise defaults to `true`.
             */
-            fn include_in_all() -> Option<bool> { None }
+            fn include_in_all() -> Option<bool> {
+                None
+            }
 
             /** Should the field be searchable? Accepts `not_analyzed` (default) and `no`. */
-            fn index() -> Option<bool> { None }
+            fn index() -> Option<bool> {
+                None
+            }
 
             /**
             Accepts a numeric value of the same type as the field which is substituted for any explicit null values.
             Defaults to `null`, which means the field is treated as missing.
             */
-            fn null_value() -> Option<$std_ty> { None }
+            fn null_value() -> Option<$std_ty> {
+                None
+            }
 
             /**
             Whether the field value should be stored and retrievable separately from the `_source` field.
             Accepts true or false (default).
             */
-            fn store() -> Option<bool> { None }
+            fn store() -> Option<bool> {
+                None
+            }
         }
 
         mod $private_mod {
-            use serde::Serialize;
-            use serde::ser::SerializeStruct;
-            use private::field::{StaticSerialize, FieldType, SerializeFieldMapping, FieldMapping};
             use super::{$field_trait, $mapping};
+            use private::field::{FieldMapping, FieldType, SerializeFieldMapping, StaticSerialize};
+            use serde::ser::SerializeStruct;
+            use serde::Serialize;
 
             #[derive(Default)]
             pub struct $pivot;
 
             impl<TField, TMapping> FieldType<TMapping, $pivot> for TField
-                where TField: $field_trait<TMapping> + Serialize,
-                      TMapping: $mapping
-            { }
+            where
+                TField: $field_trait<TMapping> + Serialize,
+                TMapping: $mapping,
+            {
+            }
 
             impl<TMapping> FieldMapping<$pivot> for TMapping
-                where TMapping: $mapping
+            where
+                TMapping: $mapping,
             {
                 type SerializeFieldMapping = SerializeFieldMapping<TMapping, $pivot>;
 
-                fn data_type() -> &'static str { $datatype_name }
+                fn data_type() -> &'static str {
+                    $datatype_name
+                }
             }
 
             impl<TMapping> StaticSerialize for SerializeFieldMapping<TMapping, $pivot>
-                where TMapping: FieldMapping<$pivot> + $mapping
+            where
+                TMapping: FieldMapping<$pivot> + $mapping,
             {
-                fn static_serialize<S>(serializer: S) -> Result<S::Ok, S::Error> where
-                S: ::serde::Serializer {
+                fn static_serialize<S>(serializer: S) -> Result<S::Ok, S::Error>
+                where
+                    S: ::serde::Serializer,
+                {
                     let mut state = try!(serializer.serialize_struct("mapping", 8));
 
                     try!(state.serialize_field("type", TMapping::data_type()));
@@ -153,57 +179,15 @@ macro_rules! number_mapping {
                 }
             }
         }
-    )
+    };
 }
 
-number_mapping!(
-    IntegerMapping,
-    IntegerFormat,
-    IntegerFieldType,
-    "integer",
-    i32,
-    private_i32
-);
-number_mapping!(
-    LongMapping,
-    LongFormat,
-    LongFieldType,
-    "long",
-    i64,
-    private_i64
-);
-number_mapping!(
-    ShortMapping,
-    ShortFormat,
-    ShortFieldType,
-    "short",
-    i16,
-    private_i16
-);
-number_mapping!(
-    ByteMapping,
-    ByteFormat,
-    ByteFieldType,
-    "byte",
-    i8,
-    private_i8
-);
-number_mapping!(
-    FloatMapping,
-    FloatFormat,
-    FloatFieldType,
-    "float",
-    f32,
-    private_f32
-);
-number_mapping!(
-    DoubleMapping,
-    DoubleFormat,
-    DoubleFieldType,
-    "double",
-    f64,
-    private_f64
-);
+number_mapping!(IntegerMapping, IntegerFormat, IntegerFieldType, "integer", i32, private_i32);
+number_mapping!(LongMapping, LongFormat, LongFieldType, "long", i64, private_i64);
+number_mapping!(ShortMapping, ShortFormat, ShortFieldType, "short", i16, private_i16);
+number_mapping!(ByteMapping, ByteFormat, ByteFieldType, "byte", i8, private_i8);
+number_mapping!(FloatMapping, FloatFormat, FloatFieldType, "float", f32, private_f32);
+number_mapping!(DoubleMapping, DoubleFormat, DoubleFieldType, "double", f64, private_f64);
 
 /** Default mapping for an `integer` type. */
 #[derive(PartialEq, Debug, Default, Clone, Copy)]

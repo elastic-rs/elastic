@@ -1,9 +1,9 @@
+use super::super::Values;
+use super::common::EsDateFormat;
 use serde;
 use serde::de::Visitor;
 use serde::ser::{Serialize, SerializeMap, Serializer};
 use std::fmt;
-use super::super::Values;
-use super::common::EsDateFormat;
 
 //FIXME: Implement builder pattern for RangeFilter
 #[derive(Clone, Debug, Serialize, Deserialize, Ord, PartialOrd, Eq, PartialEq)]
@@ -14,10 +14,7 @@ pub struct RangeFilter {
 impl RangeFilter {
     pub fn new(field: &str, params: RangeParams) -> RangeFilter {
         RangeFilter {
-            range: RangeField {
-                field: field.to_string(),
-                params: params,
-            },
+            range: RangeField { field: field.to_string(), params: params },
         }
     }
 }
@@ -90,10 +87,7 @@ impl<'de> Visitor<'de> for RangeFilterVisitor {
         let field: String = map.next_key()?.ok_or(A::Error::custom("expected field"))?;
         let value: RangeParams = map.next_value()?;
 
-        Ok(RangeField {
-            field: field,
-            params: value,
-        })
+        Ok(RangeField { field: field, params: value })
     }
 }
 
@@ -104,11 +98,7 @@ mod tests {
 
     #[test]
     fn range_filter_new() {
-        let p = RangeParamsBuilder::default()
-            .gte(Some(0.into()))
-            .lte(Some(1.into()))
-            .build()
-            .unwrap();
+        let p = RangeParamsBuilder::default().gte(Some(0.into())).lte(Some(1.into())).build().unwrap();
 
         let r = RangeFilter::new("foo", p);
 

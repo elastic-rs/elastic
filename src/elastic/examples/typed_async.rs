@@ -23,10 +23,10 @@ extern crate tokio_core;
 
 extern crate elastic;
 
-use std::error::Error as StdError;
-use futures::{Future, IntoFuture};
-use elastic::prelude::*;
 use elastic::error::{ApiError, Error};
+use elastic::prelude::*;
+use futures::{Future, IntoFuture};
+use std::error::Error as StdError;
 
 #[derive(Debug, Serialize, Deserialize, ElasticType)]
 #[elastic(index = "typed_sample_index")]
@@ -68,11 +68,7 @@ fn run() -> Result<(), Box<StdError>> {
 }
 
 fn ensure_indexed(client: AsyncClient, doc: MyType) -> Box<Future<Item = (), Error = Error>> {
-    let get_res = client
-        .document::<MyType>()
-        .get(doc.id.clone())
-        .send()
-        .map(|res| res.into_document());
+    let get_res = client.document::<MyType>().get(doc.id.clone()).send().map(|res| res.into_document());
 
     let put_doc = get_res.then(move |res| {
         match res {
@@ -107,22 +103,13 @@ fn ensure_indexed(client: AsyncClient, doc: MyType) -> Box<Future<Item = (), Err
 fn put_index(client: AsyncClient) -> Box<Future<Item = (), Error = Error>> {
     let create_index = client.index(MyType::static_index()).create().send();
 
-    let put_mapping = client
-        .document::<MyType>()
-        .put_mapping()
-        .send()
-        .map(|_| ());
+    let put_mapping = client.document::<MyType>().put_mapping().send().map(|_| ());
 
     Box::new(create_index.and_then(|_| put_mapping))
 }
 
 fn put_doc(client: AsyncClient, doc: MyType) -> Box<Future<Item = (), Error = Error>> {
-    let index_doc = client
-        .document()
-        .index(doc)
-        .params_fluent(|p| p.url_param("refresh", true))
-        .send()
-        .map(|_| ());
+    let index_doc = client.document().index(doc).params_fluent(|p| p.url_param("refresh", true)).send().map(|_| ());
 
     Box::new(index_doc)
 }
@@ -132,12 +119,12 @@ fn search(client: AsyncClient, query: &'static str) -> Box<Future<Item = SearchR
         .search()
         .index(MyType::static_index())
         .body(json!({
-                "query": {
-                    "query_string": {
-                        "query": query
-                    }
-                }
-          }))
+              "query": {
+                  "query_string": {
+                      "query": query
+                  }
+              }
+        }))
         .send();
 
     Box::new(search)

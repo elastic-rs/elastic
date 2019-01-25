@@ -4,9 +4,9 @@
 //! for checking whether the bank index exists and creating it along with
 //! analysers, filters and mapping for `Account`s.
 
-use serde_json::Value;
-use elastic::prelude::*;
 use super::account::Account;
+use elastic::prelude::*;
+use serde_json::Value;
 
 /// Get the name of the bank index.
 pub fn name() -> Index<'static> {

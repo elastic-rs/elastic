@@ -52,8 +52,8 @@ pub mod date_fixtures {
 }
 
 pub mod string_fixtures {
-    use std::collections::BTreeMap;
     use elastic_types::prelude::*;
+    use std::collections::BTreeMap;
 
     #[derive(Default, Clone)]
     pub struct MyTextMapping;
@@ -69,24 +69,15 @@ pub mod string_fixtures {
                 }),
             );
 
-            fields.insert(
-                "count",
-                StringField::TokenCount(ElasticTokenCountFieldMapping::default()),
-            );
+            fields.insert("count", StringField::TokenCount(ElasticTokenCountFieldMapping::default()));
 
-            fields.insert(
-                "comp",
-                StringField::Completion(ElasticCompletionFieldMapping::default()),
-            );
+            fields.insert("comp", StringField::Completion(ElasticCompletionFieldMapping::default()));
 
             Some(fields)
         }
 
         fn fielddata_frequency_filter() -> Option<FieldDataFrequencyFilter> {
-            Some(FieldDataFrequencyFilter {
-                min: Some(0.0),
-                ..Default::default()
-            })
+            Some(FieldDataFrequencyFilter { min: Some(0.0), ..Default::default() })
         }
 
         fn analyzer() -> Option<&'static str> {
@@ -164,15 +155,9 @@ pub mod string_fixtures {
                 }),
             );
 
-            fields.insert(
-                "count",
-                StringField::TokenCount(ElasticTokenCountFieldMapping::default()),
-            );
+            fields.insert("count", StringField::TokenCount(ElasticTokenCountFieldMapping::default()));
 
-            fields.insert(
-                "comp",
-                StringField::Completion(ElasticCompletionFieldMapping::default()),
-            );
+            fields.insert("comp", StringField::Completion(ElasticCompletionFieldMapping::default()));
 
             Some(fields)
         }
@@ -480,8 +465,8 @@ pub mod number_fixtures {
 }
 
 pub mod ip_fixtures {
-    use std::net::Ipv4Addr;
     use elastic_types::prelude::*;
+    use std::net::Ipv4Addr;
 
     #[derive(Default, Clone)]
     pub struct MyIpMapping;
@@ -575,9 +560,9 @@ pub mod geo_shape_fixtures {
 }
 
 pub mod object_fixtures {
-    use serde::ser::SerializeStruct;
     use chrono::{DateTime, Utc};
     use elastic_types::prelude::*;
+    use serde::ser::SerializeStruct;
 
     #[derive(ElasticType)]
     #[elastic(mapping = "MySmlMapping")]
@@ -630,10 +615,10 @@ pub mod object_fixtures {
     }
 }
 
-pub mod object;
+pub mod boolean;
+pub mod date;
 pub mod geo_point;
 pub mod geo_shape;
-pub mod date;
-pub mod string;
 pub mod number;
-pub mod boolean;
+pub mod object;
+pub mod string;

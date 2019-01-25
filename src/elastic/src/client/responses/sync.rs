@@ -1,9 +1,9 @@
-use serde::de::DeserializeOwned;
 use reqwest::Response as RawResponse;
+use serde::de::DeserializeOwned;
 
+use super::parse::{parse, IsOk};
 use error::{self, Result};
 use http::{StatusCode, SyncHttpResponse};
-use super::parse::{parse, IsOk};
 
 /**
 A builder for a response.
@@ -26,7 +26,7 @@ impl SyncResponseBuilder {
 
     /**
     Get the response body from JSON.
-    
+
     Convert the builder into a raw HTTP response that implements `Read`.
     */
     pub fn into_raw(self) -> SyncHttpResponse {
@@ -35,15 +35,15 @@ impl SyncResponseBuilder {
 
     /**
     Parse an API response type from the HTTP body.
-    
+
     This will consume the `SyncResponseBuilder` and return a [concrete response type][response-types] or an error.
-    
+
     The response is parsed according to the `IsOk` implementation for `T` that will inspect the response and either return an `Ok(T)` or an `Err(ApiError)`.
-    
+
     # Examples
-    
+
     Get a strongly typed `SearchResponse`:
-    
+
     ```no_run
     # extern crate serde;
     # #[macro_use]
@@ -67,10 +67,10 @@ impl SyncResponseBuilder {
     # Ok(())
     # }
     ```
-    
+
     You can also read a response as a `serde_json::Value`, which will be `Ok(Value)`
     if the HTTP status code is `Ok` or `Err(ApiError)` otherwise:
-    
+
     ```no_run
     # extern crate elastic;
     # extern crate serde_json;
@@ -93,8 +93,6 @@ impl SyncResponseBuilder {
         T: IsOk + DeserializeOwned,
     {
         let status = self.0;
-        parse()
-            .from_reader(status, self.1)
-            .map_err(|e| error::response(status, e))
+        parse().from_reader(status, self.1).map_err(|e| error::response(status, e))
     }
 }

@@ -1,7 +1,7 @@
+use super::{expect_ident, expect_list, expect_name_value, get_elastic_meta_items, get_ident_from_lit, get_tokens_from_lit};
 use quote::Tokens;
-use syn;
 use serde_derive_internals::{self, attr as serde_attr};
-use super::{get_elastic_meta_items, expect_list, expect_name_value, expect_ident, get_ident_from_lit, get_tokens_from_lit};
+use syn;
 
 struct ElasticDocumentMapping {
     ident: syn::Ident,
@@ -32,48 +32,31 @@ pub fn expand_derive(crate_root: Tokens, input: &syn::MacroInput) -> Result<Vec<
     let fields = fields.ok_or(DeriveElasticTypeError::InvalidInput)?;
 
     // Get the serializable fields
-    let fields: Vec<(syn::Ident, &syn::Field)> = fields
-        .iter()
-        .map(|f| get_ser_field(f))
-        .filter(|f| f.is_some())
-        .map(|f| f.unwrap())
-        .collect();
+    let fields: Vec<(syn::Ident, &syn::Field)> = fields.iter().map(|f| get_ser_field(f)).filter(|f| f.is_some()).map(|f| f.unwrap()).collect();
 
     let mapping = get_mapping(&crate_root, input);
 
-    let doc_ty_impl_block = get_doc_ty_impl_block(
-        &crate_root,
-        input,
-        &fields,
-        &mapping.ident,
-    );
+    let doc_ty_impl_block = get_doc_ty_impl_block(&crate_root, input, &fields, &mapping.ident);
 
-
-    let props_impl_block = get_props_impl_block(
-        &crate_root,
-        &input.ident,
-        &fields,
-    );
+    let props_impl_block = get_props_impl_block(&crate_root, &input.ident, &fields);
 
     let dummy_wrapper = syn::Ident::new(format!("_IMPL_EASTIC_TYPE_FOR_{}", input.ident));
 
     let mapping_definition = &mapping.definition;
     let mapping_impl_block = &mapping.impl_block;
 
-    Ok(vec![
-        quote!(
+    Ok(vec![quote!(
         #mapping_definition
 
         #[allow(non_upper_case_globals, dead_code, unused_variables)]
-        const #dummy_wrapper: () = {            
+        const #dummy_wrapper: () = {
             #mapping_impl_block
 
             #doc_ty_impl_block
 
             #props_impl_block
         };
-    ),
-    ])
+    )])
 }
 
 fn get_mapping(crate_root: &Tokens, input: &syn::MacroInput) -> ElasticDocumentMapping {
@@ -93,11 +76,8 @@ fn get_mapping(crate_root: &Tokens, input: &syn::MacroInput) -> ElasticDocumentM
     // Get the mapping ident supplied by an #[elastic()] attribute or create a default one
     fn get_mapping_from_attr(item: &syn::MacroInput) -> Option<syn::Ident> {
         let val = get_elastic_meta_items(&item.attrs);
-            
-        let val = val
-            .iter()
-            .filter_map(|meta| expect_name_value("mapping", &meta))
-            .next();
+
+        let val = val.iter().filter_map(|meta| expect_name_value("mapping", &meta)).next();
 
         val.and_then(|v| get_ident_from_lit(v).ok())
     }
@@ -122,32 +102,19 @@ fn get_mapping(crate_root: &Tokens, input: &syn::MacroInput) -> ElasticDocumentM
         let definition = define_mapping(&input.vis, &ident);
         let impl_block = impl_document_mapping(&crate_root, &ident, &input.ident);
 
-        ElasticDocumentMapping {
-            ident,
-            definition,
-            impl_block,
-        }
+        ElasticDocumentMapping { ident, definition, impl_block }
     }
 }
 
 // Implement DocumentType for the type being derived with the mapping
-fn get_doc_ty_impl_block(
-    crate_root: &Tokens,
-    item: &syn::MacroInput,
-    fields: &[(syn::Ident, &syn::Field)],
-    mapping: &syn::Ident)
--> Tokens {
+fn get_doc_ty_impl_block(crate_root: &Tokens, item: &syn::MacroInput, fields: &[(syn::Ident, &syn::Field)], mapping: &syn::Ident) -> Tokens {
     struct MetadataBlock {
         instance_methods: Tokens,
         static_impls: Tokens,
     }
 
     // Implement DocumentMetadata for the type being derived with the mapping
-    fn get_doc_ty_methods(
-        crate_root: &Tokens,
-        item: &syn::MacroInput,
-        fields: &[(syn::Ident, &syn::Field)])
-    -> MetadataBlock {
+    fn get_doc_ty_methods(crate_root: &Tokens, item: &syn::MacroInput, fields: &[(syn::Ident, &syn::Field)]) -> MetadataBlock {
         struct ElasticMetadataMethods {
             index: Tokens,
             index_is_static: bool,
@@ -160,10 +127,7 @@ fn get_doc_ty_impl_block(
         fn get_doc_type_methods(item: &syn::MacroInput, fields: &[(syn::Ident, &syn::Field)]) -> ElasticMetadataMethods {
             // Get the default name for the indexed elasticsearch type name
             fn get_elastic_type_name(item: &syn::MacroInput) -> syn::Lit {
-                syn::Lit::Str(
-                    format!("{}", item.ident).to_lowercase(),
-                    syn::StrStyle::Cooked,
-                )
+                syn::Lit::Str(format!("{}", item.ident).to_lowercase(), syn::StrStyle::Cooked)
             }
 
             let (index, index_is_static) = {
@@ -173,7 +137,7 @@ fn get_doc_ty_impl_block(
                     _ => {
                         let name = get_elastic_type_name(item);
                         (quote!(#name), true)
-                    },
+                    }
                 }
             };
 
@@ -188,25 +152,19 @@ fn get_doc_ty_impl_block(
             let id = get_method_from_struct(item, "id")
                 .map(|id_expr| match id_expr {
                     MethodFromStruct::Expr(method) => quote!(#method (self)),
-                    _ => panic!("id attributes on a struct definition must be of the form #[id(expr = \"expression\")]"),                    
+                    _ => panic!("id attributes on a struct definition must be of the form #[id(expr = \"expression\")]"),
                 })
-                .or_else(|| get_method_from_fields(fields, "id").map(|field| {
-                    match field {
+                .or_else(|| {
+                    get_method_from_fields(fields, "id").map(|field| match field {
                         MethodFromField::Field(field) => quote!(&self . #field),
                         MethodFromField::Expr(field, method) => quote!(#method (&self . #field)),
-                        _ => panic!("id attributes on a field must be of the form #[id] or #[id(expr = \"expression\")]")
-                    }
-                }))
+                        _ => panic!("id attributes on a field must be of the form #[id] or #[id(expr = \"expression\")]"),
+                    })
+                })
                 .map(|id_expr| quote!(Some((#id_expr).into())))
                 .unwrap_or_else(|| quote!(None));
 
-            ElasticMetadataMethods {
-                index,
-                index_is_static,
-                ty,
-                ty_is_static,
-                id,
-            }
+            ElasticMetadataMethods { index, index_is_static, ty, ty_is_static, id }
         }
 
         let ElasticMetadataMethods {
@@ -247,7 +205,7 @@ fn get_doc_ty_impl_block(
                     Some(#ty)
                 }
             );
-            
+
             let block = quote!(
                 impl #crate_root::derive::StaticType for #doc_ty { }
             );
@@ -287,7 +245,7 @@ fn get_doc_ty_impl_block(
                 #static_index_block
 
                 #static_ty_block
-            )
+            ),
         }
     }
 
@@ -309,11 +267,7 @@ fn get_doc_ty_impl_block(
 }
 
 // Implement PropertiesMapping for the mapping
-fn get_props_impl_block(
-    crate_root: &Tokens,
-    props_ty: &syn::Ident,
-    fields: &[(syn::Ident, &syn::Field)])
--> Tokens {
+fn get_props_impl_block(crate_root: &Tokens, props_ty: &syn::Ident, fields: &[(syn::Ident, &syn::Field)]) -> Tokens {
     // Get the serde serialisation statements for each of the fields on the type being derived
     fn get_field_ser_stmts(crate_root: &Tokens, fields: &[(syn::Ident, &syn::Field)]) -> Vec<Tokens> {
         let fields: Vec<Tokens> = fields
@@ -338,7 +292,7 @@ fn get_props_impl_block(
         impl #crate_root::derive::PropertiesMapping for #props_ty {
             fn props_len() -> usize { #stmts_len }
 
-            fn serialize_props<S>(state: &mut S) -> ::std::result::Result<(), S::Error> 
+            fn serialize_props<S>(state: &mut S) -> ::std::result::Result<(), S::Error>
                 where S: #crate_root::derive::SerializeStruct {
                 #(#stmts)*
                 Ok(())
@@ -362,10 +316,7 @@ fn get_ser_field(field: &syn::Field) -> Option<(syn::Ident, &syn::Field)> {
         return None;
     }
 
-    Some((
-        syn::Ident::from(serde_field.name().serialize_name().as_ref()),
-        field,
-    ))
+    Some((syn::Ident::from(serde_field.name().serialize_name().as_ref()), field))
 }
 
 quick_error! {
@@ -393,14 +344,10 @@ enum MethodFromField {
 // Parses #[elastic(method(expr = $expr))]
 fn get_method_from_struct(item: &syn::MacroInput, method: &str) -> Option<MethodFromStruct> {
     let val = get_elastic_meta_items(&item.attrs);
-    
-    // Attempt to get a literal 
-    if let Some(lit) = val
-        .iter()
-        .filter_map(|meta| expect_name_value(method, meta))
-        .next()
-    {
-        return Some(MethodFromStruct::Literal(quote!(#lit)))
+
+    // Attempt to get a literal
+    if let Some(lit) = val.iter().filter_map(|meta| expect_name_value(method, meta)).next() {
+        return Some(MethodFromStruct::Literal(quote!(#lit)));
     }
 
     if let Some(expr) = val
@@ -411,7 +358,7 @@ fn get_method_from_struct(item: &syn::MacroInput, method: &str) -> Option<Method
         .next()
         .and_then(|expr| get_tokens_from_lit(expr).ok())
     {
-        return Some(MethodFromStruct::Expr(quote!(#expr)))
+        return Some(MethodFromStruct::Expr(quote!(#expr)));
     }
 
     None
@@ -423,22 +370,13 @@ fn get_method_from_fields(fields: &[(syn::Ident, &syn::Field)], method: &str) ->
         let field = &field.ident;
 
         // Return the field name for `#[method]`
-        if val
-            .iter()
-            .any(|meta| {
-                expect_ident(method, meta)
-            })
-        {
+        if val.iter().any(|meta| expect_ident(method, meta)) {
             return Some(MethodFromField::Field(quote!(#field)));
         }
-    
+
         // Return the literal value for `#[method = literal]`
-        if let Some(lit) = val
-            .iter()
-            .filter_map(|meta| expect_name_value(method, meta))
-            .next()
-        {
-            return Some(MethodFromField::Literal(quote!(#field), quote!(#lit)))
+        if let Some(lit) = val.iter().filter_map(|meta| expect_name_value(method, meta)).next() {
+            return Some(MethodFromField::Literal(quote!(#field), quote!(#lit)));
         }
 
         // Return the expr value for `#[method(expr = expr)]`
@@ -450,7 +388,7 @@ fn get_method_from_fields(fields: &[(syn::Ident, &syn::Field)], method: &str) ->
             .next()
             .and_then(|expr| get_tokens_from_lit(expr).ok())
         {
-            return Some(MethodFromField::Expr(quote!(#field), quote!(#expr)))
+            return Some(MethodFromField::Expr(quote!(#field), quote!(#expr)));
         }
     }
 

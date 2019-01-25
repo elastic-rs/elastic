@@ -1,8 +1,8 @@
 /*! Mapping for the Elasticsearch `geo_point` type. */
 
-use std::marker::PhantomData;
 use super::{DefaultGeoPointFormat, GeoPointFormat};
 use geo::mapping::Distance;
+use std::marker::PhantomData;
 
 /** A field that will be mapped as a `geo_point`. */
 pub trait GeoPointFieldType<M> {}
@@ -149,10 +149,10 @@ where
 }
 
 mod private {
-    use serde::{Serialize, Serializer};
-    use serde::ser::SerializeStruct;
-    use private::field::{StaticSerialize, SerializeFieldMapping, FieldMapping, FieldType};
     use super::{GeoPointFieldType, GeoPointMapping};
+    use private::field::{FieldMapping, FieldType, SerializeFieldMapping, StaticSerialize};
+    use serde::ser::SerializeStruct;
+    use serde::{Serialize, Serializer};
 
     #[derive(Default)]
     pub struct GeoPointPivot;
@@ -233,10 +233,7 @@ mod tests {
 
     #[test]
     fn serialise_mapping_default() {
-        let ser = serde_json::to_string(&field::serialize(DefaultGeoPointMapping::<
-            DefaultGeoPointFormat,
-        >::default()))
-            .unwrap();
+        let ser = serde_json::to_string(&field::serialize(DefaultGeoPointMapping::<DefaultGeoPointFormat>::default())).unwrap();
 
         let expected = json_str!({
             "type": "geo_point"

@@ -2,18 +2,18 @@
 Response types for a [bulk request](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-bulk.html).
 */
 
+use common::{DefaultAllocatedField, DocumentResult, Shards};
 use serde::de::{Deserialize, Deserializer, Error as DeError, MapAccess, SeqAccess, Visitor};
 use serde_json::Value;
-use common::{DocumentResult, DefaultAllocatedField, Shards};
 
 use parsing::IsOkOnSuccess;
 
 use std::cmp;
+use std::error::Error;
 use std::fmt;
+use std::marker::PhantomData;
 use std::slice::Iter;
 use std::vec::IntoIter;
-use std::marker::PhantomData;
-use std::error::Error;
 
 type BulkError = Value;
 
@@ -128,7 +128,7 @@ Otherwise the function will only accept a default `BulkResponse`:
 ```
 # use elastic_responses::*;
 // Do: Supports any BulkResponse
-fn takes_any_response<TIndex, TType, TId>(res: BulkResponse<TIndex, TType, TId>) { 
+fn takes_any_response<TIndex, TType, TId>(res: BulkResponse<TIndex, TType, TId>) {
 
 }
 
@@ -143,7 +143,8 @@ fn takes_default_response(res: BulkResponse) {
 pub struct BulkResponse<TIndex = DefaultAllocatedField, TType = DefaultAllocatedField, TId = DefaultAllocatedField> {
     took: u64,
     errors: bool,
-    #[serde(deserialize_with = "deserialize_bulk_items")] items: Vec<ItemResult<TIndex, TType, TId>>,
+    #[serde(deserialize_with = "deserialize_bulk_items")]
+    items: Vec<ItemResult<TIndex, TType, TId>>,
 }
 
 impl<TIndex, TType, TId> BulkResponse<TIndex, TType, TId> {
@@ -164,23 +165,23 @@ impl<TIndex, TType, TId> BulkResponse<TIndex, TType, TId> {
 
     /**
     Iterate through the bulk items.
-    
+
     The items in this iterator are a standard `Result` where `Ok` means the item succeeded
     and `Err` means it failed.
-    
+
     To move out of the items in a `BulkResponse` instead of borrowing them, call `into_iter`.
-    
+
     # Examples
-    
+
     Iterate through the individual items in a `BulkResponse`:
-    
+
     ```no_run
     # extern crate elastic_responses;
     # use elastic_responses::*;
     # fn do_request() -> BulkResponse { unimplemented!() }
     # fn main() {
     let response: BulkResponse = do_request();
-    
+
     // Iterate through all items
     for item in response.iter() {
         match item {
@@ -256,7 +257,7 @@ let response: BulkErrorsResponse = do_request();
 for item in response {
     match item.action() {
         Action::Delete => (), // Ignore failed deletes
-        _ => println!("err: {:?}", item) 
+        _ => println!("err: {:?}", item)
     }
 }
 # }
@@ -290,7 +291,7 @@ Otherwise the function will only accept a default `BulkErrorsResponse`:
 ```
 # use elastic_responses::*;
 // Do: Supports any BulkErrorsResponse
-fn takes_any_response<TIndex, TType, TId>(res: BulkErrorsResponse<TIndex, TType, TId>) { 
+fn takes_any_response<TIndex, TType, TId>(res: BulkErrorsResponse<TIndex, TType, TId>) {
 
 }
 
@@ -305,7 +306,8 @@ fn takes_default_response(res: BulkErrorsResponse) {
 pub struct BulkErrorsResponse<TIndex = DefaultAllocatedField, TType = DefaultAllocatedField, TId = DefaultAllocatedField> {
     took: u64,
     errors: bool,
-    #[serde(deserialize_with = "deserialize_bulk_item_errors")] items: Vec<ErrorItem<TIndex, TType, TId>>,
+    #[serde(deserialize_with = "deserialize_bulk_item_errors")]
+    items: Vec<ErrorItem<TIndex, TType, TId>>,
 }
 
 impl<TIndex, TType, TId> IntoIterator for BulkErrorsResponse<TIndex, TType, TId> {
@@ -355,22 +357,22 @@ impl<TIndex, TType, TId> BulkErrorsResponse<TIndex, TType, TId> {
         self.errors
     }
 
-    /** 
+    /**
     Iterate through the bulk item errors.
-    
+
     Items in this iterator all all errors that occurred while handling the bulk request.
-    
+
     # Examples
-    
+
     Iterate through the individual items in a `BulkErrorsResponse`:
-    
+
     ```no_run
     # extern crate elastic_responses;
     # use elastic_responses::*;
     # fn do_request() -> BulkErrorsResponse { unimplemented!() }
     # fn main() {
     let response: BulkErrorsResponse = do_request();
-    
+
     // Iterate through all items
     for item in response.iter() {
         // Do something with failed items
@@ -410,9 +412,9 @@ impl<TIndex, TType, TId> OkItem<TIndex, TType, TId> {
         self.version.clone()
     }
 
-    /** 
+    /**
     Whether or not this item created the document.
-    
+
     `created` will only be `true` if the action is `Index` and the document didn't already exist.
     */
     pub fn created(&self) -> bool {
@@ -422,9 +424,9 @@ impl<TIndex, TType, TId> OkItem<TIndex, TType, TId> {
         }
     }
 
-    /** 
+    /**
     Whether or not this item deleted the document.
-    
+
     `deleted` will only be `true` if the action is `Delete` and the document existed
     */
     pub fn deleted(&self) -> bool {
@@ -489,11 +491,7 @@ where
     TId: fmt::Display + fmt::Debug,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(
-            f,
-            "bulk item failed. Details: index: {}, type: {}, id: {}, inner error: {}",
-            self.index, self.ty, self.id, self.err
-        )
+        write!(f, "bulk item failed. Details: index: {}, type: {}, id: {}, inner error: {}", self.index, self.ty, self.id, self.err)
     }
 }
 
@@ -515,10 +513,14 @@ where
 /** The bulk action being performed. */
 #[derive(Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Action {
-    #[serde(rename = "index")] Index,
-    #[serde(rename = "create")] Create,
-    #[serde(rename = "update")] Update,
-    #[serde(rename = "delete")] Delete,
+    #[serde(rename = "index")]
+    Index,
+    #[serde(rename = "create")]
+    Create,
+    #[serde(rename = "update")]
+    Update,
+    #[serde(rename = "delete")]
+    Delete,
 }
 
 impl<TIndex, TType, TId> IsOkOnSuccess for BulkResponse<TIndex, TType, TId> {}
@@ -534,11 +536,16 @@ struct ItemDe<TIndex, TType, TId> {
 
 #[derive(Deserialize, Debug, Clone)]
 struct ItemDeInner<TIndex, TType, TId> {
-    #[serde(rename = "_index")] index: TIndex,
-    #[serde(rename = "_type")] ty: TType,
-    #[serde(rename = "_id")] id: TId,
-    #[serde(rename = "_version")] version: Option<u32>,
-    #[serde(rename = "_shards")] shards: Option<Shards>,
+    #[serde(rename = "_index")]
+    index: TIndex,
+    #[serde(rename = "_type")]
+    ty: TType,
+    #[serde(rename = "_id")]
+    id: TId,
+    #[serde(rename = "_version")]
+    version: Option<u32>,
+    #[serde(rename = "_shards")]
+    shards: Option<Shards>,
     result: Option<DocumentResult>,
     status: u16,
     error: Option<BulkError>,
@@ -610,22 +617,15 @@ where
             where
                 V: MapAccess<'de>,
             {
-                let (action, inner) = visitor
-                    .next_entry()?
-                    .ok_or(V::Error::custom("expected at least one field"))?;
+                let (action, inner) = visitor.next_entry()?.ok_or(V::Error::custom("expected at least one field"))?;
 
-                let result = ItemDe {
-                    action: action,
-                    inner: inner,
-                };
+                let result = ItemDe { action: action, inner: inner };
 
                 Ok(result)
             }
         }
 
-        deserializer.deserialize_any(ItemDeVisitor {
-            _marker: PhantomData,
-        })
+        deserializer.deserialize_any(ItemDeVisitor { _marker: PhantomData })
     }
 }
 
@@ -675,9 +675,7 @@ where
         }
     }
 
-    deserializer.deserialize_any(OkItemsVisitor {
-        _marker: PhantomData,
-    })
+    deserializer.deserialize_any(OkItemsVisitor { _marker: PhantomData })
 }
 
 fn deserialize_bulk_item_errors<'de, D, TIndex, TType, TId>(deserializer: D) -> Result<Vec<ErrorItem<TIndex, TType, TId>>, D::Error>
@@ -728,7 +726,5 @@ where
         }
     }
 
-    deserializer.deserialize_any(BulkErrorItemsVisitor {
-        _marker: PhantomData,
-    })
+    deserializer.deserialize_any(BulkErrorItemsVisitor { _marker: PhantomData })
 }

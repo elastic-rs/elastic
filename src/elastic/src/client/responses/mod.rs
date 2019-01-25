@@ -8,22 +8,22 @@ This module also contains helpers that can be used to parse responses from a raw
 [request-builders]: ../index.html#request-builders
 */
 
-mod sync;
 mod async;
+mod sync;
 
 pub mod parse;
 
-pub use self::sync::*;
 pub use self::async::*;
+pub use self::sync::*;
 
 pub use elastic_responses::{BulkErrorsResponse, BulkResponse, CommandResponse, DeleteResponse, GetResponse, IndexResponse, IndicesExistsResponse, PingResponse, SearchResponse, Shards, UpdateResponse};
 
-pub use elastic_responses::search;
 pub use elastic_responses::bulk;
+pub use elastic_responses::search;
 
 pub mod prelude {
     /*! A glob import for convenience. */
 
     pub use super::bulk::Action as BulkAction;
-    pub use super::{AsyncResponseBuilder, SyncResponseBuilder, BulkErrorsResponse, BulkResponse, CommandResponse, DeleteResponse, GetResponse, IndexResponse, IndicesExistsResponse, PingResponse, SearchResponse, Shards, UpdateResponse};
+    pub use super::{AsyncResponseBuilder, BulkErrorsResponse, BulkResponse, CommandResponse, DeleteResponse, GetResponse, IndexResponse, IndicesExistsResponse, PingResponse, SearchResponse, Shards, SyncResponseBuilder, UpdateResponse};
 }

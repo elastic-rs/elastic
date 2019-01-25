@@ -28,9 +28,14 @@ impl Shards {
 
 #[derive(Clone, Copy, Deserialize, Debug, PartialEq, Eq)]
 pub(crate) enum DocumentResult {
-    #[serde(rename = "deleted")] Deleted,
-    #[serde(rename = "updated")] Updated,
-    #[serde(rename = "not_found")] NotFound,
-    #[serde(rename = "noop")] NoOp,
-    #[serde(rename = "created")] Created,
+    #[serde(rename = "deleted")]
+    Deleted,
+    #[serde(rename = "updated")]
+    Updated,
+    #[serde(rename = "not_found")]
+    NotFound,
+    #[serde(rename = "noop")]
+    NoOp,
+    #[serde(rename = "created")]
+    Created,
 }

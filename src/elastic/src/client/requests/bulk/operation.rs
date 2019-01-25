@@ -1,12 +1,12 @@
 use std::io::{self, Write};
-use std::ops::Deref;
 use std::marker::PhantomData;
+use std::ops::Deref;
 
-use serde::ser::{Serialize, Serializer, SerializeMap};
+use serde::ser::{Serialize, SerializeMap, Serializer};
 use serde_json;
 
-use client::requests::params::{Index, Type, Id};
-use client::requests::common::{Doc, Script, ScriptBuilder, DefaultParams};
+use client::requests::common::{DefaultParams, Doc, Script, ScriptBuilder};
+use client::requests::params::{Id, Index, Type};
 use types::document::DocumentType;
 
 pub use client::responses::bulk::Action;
@@ -60,10 +60,7 @@ impl<TValue> BulkOperation<TValue> {
     /**
     Set the index for this bulk operation.
     */
-    pub fn index<I>(mut self, index: I) -> Self
-    where
-        I: Into<Index<'static>>,
-    {
+    pub fn index(mut self, index: impl Into<Index<'static>>) -> Self {
         self.header.index = Some(index.into());
         self
     }
@@ -71,10 +68,7 @@ impl<TValue> BulkOperation<TValue> {
     /**
     Set the type for this bulk operation.
     */
-    pub fn ty<I>(mut self, ty: I) -> Self
-    where
-        I: Into<Type<'static>>,
-    {
+    pub fn ty(mut self, ty: impl Into<Type<'static>>) -> Self {
         self.header.ty = Some(ty.into());
         self
     }
@@ -93,7 +87,7 @@ impl<TValue> BulkOperation<TValue> {
 
 impl<TDocument> BulkOperation<TDocument>
 where
-    TDocument: Serialize
+    TDocument: Serialize,
 {
     /**
     Write the operation to the given writer.
@@ -102,8 +96,8 @@ where
     This method will write a json header, then a newline, then the document body.
     */
     pub fn write<W>(&self, mut writer: W) -> io::Result<()>
-        where
-            W: Write,
+    where
+        W: Write,
     {
         struct Header<'a> {
             action: Action,
@@ -112,7 +106,8 @@ where
 
         impl<'a> Serialize for Header<'a> {
             fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-                where S: Serializer
+            where
+                S: Serializer,
             {
                 let mut map = serializer.serialize_map(Some(1))?;
 
@@ -150,9 +145,7 @@ where
     TDocument: DocumentType,
 {
     pub fn new() -> Self {
-        BulkDocumentOperation {
-            _marker: PhantomData,
-        }
+        BulkDocumentOperation { _marker: PhantomData }
     }
 
     pub fn index(self, doc: TDocument) -> BulkOperation<Doc<TDocument>> {
@@ -254,19 +247,13 @@ pub struct BulkRawOperation {
 
 impl BulkRawOperation {
     pub fn new() -> Self {
-        BulkRawOperation {
-            _private: (),
-        }
+        BulkRawOperation { _private: () }
     }
 
     pub fn index<TDocument>(self, doc: TDocument) -> BulkOperation<Doc<TDocument>> {
         BulkOperation {
             action: Action::Index,
-            header: BulkHeader {
-                index: None,
-                ty: None,
-                id: None,
-            },
+            header: BulkHeader { index: None, ty: None, id: None },
             inner: Some(Doc::value(doc)),
         }
     }
@@ -274,11 +261,7 @@ impl BulkRawOperation {
     pub fn update<TDocument>(self, doc: TDocument) -> BulkOperation<Doc<TDocument>> {
         BulkOperation {
             action: Action::Update,
-            header: BulkHeader {
-                index: None,
-                ty: None,
-                id: None,
-            },
+            header: BulkHeader { index: None, ty: None, id: None },
             inner: Some(Doc::value(doc)),
         }
     }
@@ -289,11 +272,7 @@ impl BulkRawOperation {
     {
         BulkOperation {
             action: Action::Update,
-            header: BulkHeader {
-                index: None,
-                ty: None,
-                id: None,
-            },
+            header: BulkHeader { index: None, ty: None, id: None },
             inner: Some(Script::new(script)),
         }
     }
@@ -305,11 +284,7 @@ impl BulkRawOperation {
     {
         BulkOperation {
             action: Action::Update,
-            header: BulkHeader {
-                index: None,
-                ty: None,
-                id: None,
-            },
+            header: BulkHeader { index: None, ty: None, id: None },
             inner: Some(Script::new(script)),
         }
         .script_fluent(builder)
@@ -318,11 +293,7 @@ impl BulkRawOperation {
     pub fn create<TDocument>(self, doc: TDocument) -> BulkOperation<Doc<TDocument>> {
         BulkOperation {
             action: Action::Create,
-            header: BulkHeader {
-                index: None,
-                ty: None,
-                id: None,
-            },
+            header: BulkHeader { index: None, ty: None, id: None },
             inner: Some(Doc::value(doc)),
         }
     }
@@ -330,11 +301,7 @@ impl BulkRawOperation {
     pub fn delete(self) -> BulkOperation<()> {
         BulkOperation {
             action: Action::Delete,
-            header: BulkHeader {
-                index: None,
-                ty: None,
-                id: None,
-            },
+            header: BulkHeader { index: None, ty: None, id: None },
             inner: None,
         }
     }

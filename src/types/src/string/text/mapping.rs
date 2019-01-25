@@ -1,10 +1,10 @@
 /*! Mapping for the Elasticsearch `text` type. */
 
-use std::collections::BTreeMap;
-use serde::{Serialize, Serializer};
-use serde::ser::SerializeStruct;
-use string::mapping::{IndexOptions, StringField};
 use private::field::FieldMapping;
+use serde::ser::SerializeStruct;
+use serde::{Serialize, Serializer};
+use std::collections::BTreeMap;
+use string::mapping::{IndexOptions, StringField};
 
 /** A field that will be mapped as `text`. */
 pub trait TextFieldType<TMapping> {}
@@ -242,11 +242,16 @@ impl TextMapping for DefaultTextMapping {}
 /** Term vectors contain information about the terms produced by the analysis process. */
 #[derive(Debug, Clone, Copy)]
 pub enum TermVector {
-    /** No term vectors are stored. (default) */ No,
-    /** Just the terms in the field are stored. */ Yes,
-    /** Terms and positions are stored. */ WithPositions,
-    /** Terms and character offsets are stored. */ WithOffsets,
-    /** Terms, positions, and character offsets are stored. */ WithPositionsOffsets,
+    /** No term vectors are stored. (default) */
+    No,
+    /** Just the terms in the field are stored. */
+    Yes,
+    /** Terms and positions are stored. */
+    WithPositions,
+    /** Terms and character offsets are stored. */
+    WithOffsets,
+    /** Terms, positions, and character offsets are stored. */
+    WithPositionsOffsets,
 }
 
 impl Serialize for TermVector {
@@ -267,9 +272,12 @@ impl Serialize for TermVector {
 /** Fielddata for term frequency as a percentage range. */
 #[derive(Debug, Default, PartialEq, Clone, Copy)]
 pub struct FieldDataFrequencyFilter {
-    /** The min frequency percentage. */ pub min: Option<f32>,
-    /** The max frequency percentage. */ pub max: Option<f32>,
-    /** The minimum number of docs a segment should contain. */ pub min_segment_size: Option<i32>,
+    /** The min frequency percentage. */
+    pub min: Option<f32>,
+    /** The max frequency percentage. */
+    pub max: Option<f32>,
+    /** The minimum number of docs a segment should contain. */
+    pub min_segment_size: Option<i32>,
 }
 
 impl Serialize for FieldDataFrequencyFilter {
@@ -324,9 +332,12 @@ pub struct TextFieldMapping {
     Any characters over this length will be ignored.
     */
     pub ignore_above: Option<u32>,
-    /** Should the field be searchable? Accepts `true` (default) or `false`. */ pub index: Option<bool>,
-    /** What information should be stored in the index, for search and highlighting purposes. Defaults to `Positions`. */ pub index_options: Option<IndexOptions>,
-    /** Whether field-length should be taken into account when scoring queries. Accepts `true` (default) or `false`. */ pub norms: Option<bool>,
+    /** Should the field be searchable? Accepts `true` (default) or `false`. */
+    pub index: Option<bool>,
+    /** What information should be stored in the index, for search and highlighting purposes. Defaults to `Positions`. */
+    pub index_options: Option<IndexOptions>,
+    /** Whether field-length should be taken into account when scoring queries. Accepts `true` (default) or `false`. */
+    pub norms: Option<bool>,
     /**
     The number of fake term position which should be inserted between each element of an array of strings.
     Defaults to the `position_increment_gap` configured on the analyzer which defaults to `100`.
@@ -373,11 +384,7 @@ impl Serialize for TextFieldMapping {
         ser_field!(state, "analyzer", self.analyzer);
         ser_field!(state, "eager_global_ordinals", self.eager_global_ordinals);
         ser_field!(state, "fielddata", self.fielddata);
-        ser_field!(
-            state,
-            "fielddata_frequency_filter",
-            self.fielddata_frequency_filter
-        );
+        ser_field!(state, "fielddata_frequency_filter", self.fielddata_frequency_filter);
         ser_field!(state, "include_in_all", self.include_in_all);
         ser_field!(state, "ignore_above", self.ignore_above);
         ser_field!(state, "index", self.index);
@@ -395,10 +402,10 @@ impl Serialize for TextFieldMapping {
 }
 
 mod private {
-    use serde::{Serialize, Serializer};
-    use serde::ser::SerializeStruct;
-    use private::field::{StaticSerialize, SerializeFieldMapping, FieldMapping, FieldType};
     use super::{TextFieldType, TextMapping};
+    use private::field::{FieldMapping, FieldType, SerializeFieldMapping, StaticSerialize};
+    use serde::ser::SerializeStruct;
+    use serde::{Serialize, Serializer};
 
     #[derive(Default)]
     pub struct TextPivot;
@@ -435,35 +442,19 @@ mod private {
 
             ser_field!(state, "boost", TMapping::boost());
             ser_field!(state, "analyzer", TMapping::analyzer());
-            ser_field!(
-                state,
-                "eager_global_ordinals",
-                TMapping::eager_global_ordinals()
-            );
+            ser_field!(state, "eager_global_ordinals", TMapping::eager_global_ordinals());
             ser_field!(state, "fielddata", TMapping::fielddata());
-            ser_field!(
-                state,
-                "fielddata_frequency_filter",
-                TMapping::fielddata_frequency_filter()
-            );
+            ser_field!(state, "fielddata_frequency_filter", TMapping::fielddata_frequency_filter());
             ser_field!(state, "fields", TMapping::fields());
             ser_field!(state, "include_in_all", TMapping::include_in_all());
             ser_field!(state, "ignore_above", TMapping::ignore_above());
             ser_field!(state, "index", TMapping::index());
             ser_field!(state, "index_options", TMapping::index_options());
             ser_field!(state, "norms", TMapping::norms());
-            ser_field!(
-                state,
-                "position_increment_gap",
-                TMapping::position_increment_gap()
-            );
+            ser_field!(state, "position_increment_gap", TMapping::position_increment_gap());
             ser_field!(state, "store", TMapping::store());
             ser_field!(state, "search_analyzer", TMapping::search_analyzer());
-            ser_field!(
-                state,
-                "search_quote_analyzer",
-                TMapping::search_quote_analyzer()
-            );
+            ser_field!(state, "search_quote_analyzer", TMapping::search_quote_analyzer());
             ser_field!(state, "similarity", TMapping::similarity());
             ser_field!(state, "term_vector", TMapping::term_vector());
 

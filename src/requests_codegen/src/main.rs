@@ -15,15 +15,15 @@ extern crate syn;
 
 extern crate inflector;
 
-pub mod parse;
 pub mod gen;
+pub mod parse;
 
 use std::collections::BTreeMap;
-use std::io::{stdout, Read, Write};
 use std::fs::{read_dir, File};
+use std::io::{stdout, Read, Write};
 
-use quote::Tokens;
 use parse::*;
+use quote::Tokens;
 
 fn main() {
     start_comment_block_for_logging();
@@ -40,36 +40,17 @@ fn main() {
 
     let mut tokens = quote::Tokens::new();
 
-    let mut endpoints = from_dir(dir)
-        .expect("Couldn't parse the REST API spec")
-        .add_simple_search()
-        .add_get_ping_req();
+    let mut endpoints = from_dir(dir).expect("Couldn't parse the REST API spec").add_simple_search().add_get_ping_req();
 
-    endpoints = endpoints
-        .into_iter()
-        .map(|e| strip_methods(e))
-        .map(|e| dedup_urls(e))
-        .collect();
+    endpoints = endpoints.into_iter().map(|e| strip_methods(e)).map(|e| dedup_urls(e)).collect();
 
     let http_mod_name = "http";
 
-    build_mod("endpoints", &mut tokens, |ref mut tokens| {
-        endpoints_mod(
-            tokens,
-            derives.clone(),
-            http_mod_name,
-            endpoints,
-            &mut params_to_emit,
-        )
-    });
+    build_mod("endpoints", &mut tokens, |ref mut tokens| endpoints_mod(tokens, derives.clone(), http_mod_name, endpoints, &mut params_to_emit));
 
-    build_mod(http_mod_name, &mut tokens, |ref mut tokens| {
-        http_mod(tokens, derives.clone())
-    });
+    build_mod(http_mod_name, &mut tokens, |ref mut tokens| http_mod(tokens, derives.clone()));
 
-    build_mod("params", &mut tokens, |ref mut tokens| {
-        params_mod(tokens, derives.clone(), params_to_emit)
-    });
+    build_mod("params", &mut tokens, |ref mut tokens| params_mod(tokens, derives.clone(), params_to_emit));
 
     end_comment_block_for_logging();
 
@@ -117,9 +98,7 @@ where
 fn strip_methods(endpoint: (String, Endpoint)) -> (String, Endpoint) {
     let (name, mut endpoint) = endpoint;
 
-    let preferred_method = endpoint
-        .preferred_method()
-        .expect("there should always be at least 1 method");
+    let preferred_method = endpoint.preferred_method().expect("there should always be at least 1 method");
 
     endpoint.methods = vec![preferred_method];
 
@@ -149,40 +128,38 @@ trait CustomEndpoints {
 
 impl CustomEndpoints for Vec<(String, Endpoint)> {
     fn add_simple_search(self) -> Vec<(String, Endpoint)> {
-        self.into_iter()
-            .fold(vec![], |mut endpoints, (name, endpoint)| {
-                match name.as_ref() {
-                    "search" => {
-                        let mut simple_search_endpoint = endpoint.clone();
-                        simple_search_endpoint.methods = vec![Method::Get];
-                        simple_search_endpoint.body = None;
+        self.into_iter().fold(vec![], |mut endpoints, (name, endpoint)| {
+            match name.as_ref() {
+                "search" => {
+                    let mut simple_search_endpoint = endpoint.clone();
+                    simple_search_endpoint.methods = vec![Method::Get];
+                    simple_search_endpoint.body = None;
 
-                        endpoints.push((String::from("simple_search"), simple_search_endpoint));
-                        endpoints.push((String::from("search"), endpoint));
-                    }
-                    _ => endpoints.push((name, endpoint)),
+                    endpoints.push((String::from("simple_search"), simple_search_endpoint));
+                    endpoints.push((String::from("search"), endpoint));
                 }
+                _ => endpoints.push((name, endpoint)),
+            }
 
-                endpoints
-            })
+            endpoints
+        })
     }
 
     fn add_get_ping_req(self) -> Vec<(String, Endpoint)> {
-        self.into_iter()
-            .fold(vec![], |mut endpoints, (name, endpoint)| {
-                match name.as_ref() {
-                    "ping" => {
-                        let mut get_endpoint = endpoint.clone();
-                        get_endpoint.methods = vec![Method::Get];
+        self.into_iter().fold(vec![], |mut endpoints, (name, endpoint)| {
+            match name.as_ref() {
+                "ping" => {
+                    let mut get_endpoint = endpoint.clone();
+                    get_endpoint.methods = vec![Method::Get];
 
-                        endpoints.push((String::from("ping"), get_endpoint));
-                        endpoints.push((String::from("ping_head"), endpoint));
-                    }
-                    _ => endpoints.push((name, endpoint)),
+                    endpoints.push((String::from("ping"), get_endpoint));
+                    endpoints.push((String::from("ping_head"), endpoint));
                 }
+                _ => endpoints.push((name, endpoint)),
+            }
 
-                endpoints
-            })
+            endpoints
+        })
     }
 }
 
@@ -244,13 +221,7 @@ fn http_mod(tokens: &mut Tokens, derives: Tokens) {
 
     tokens.append("\n\n");
 
-    tokens.append_all(vec![
-        derives.clone(),
-        url_tokens,
-        derives.clone(),
-        http_req_item,
-        body_tokens,
-    ]);
+    tokens.append_all(vec![derives.clone(), url_tokens, derives.clone(), http_req_item, body_tokens]);
 }
 
 fn params_mod(tokens: &mut Tokens, derives: Tokens, params_to_emit: BTreeMap<String, bool>) {

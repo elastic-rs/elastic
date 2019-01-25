@@ -3,7 +3,7 @@ use syn;
 
 mod parse;
 
-use super::{get_elastic_meta_items, expect_name_value, get_str_from_lit};
+use super::{expect_name_value, get_elastic_meta_items, get_str_from_lit};
 
 /**
 Derive `DateFormat` for the given input.
@@ -27,10 +27,7 @@ pub fn expand_derive(crate_root: Tokens, input: &syn::MacroInput) -> Result<Vec<
 
     let name = get_name_from_attr(input).unwrap_or_else(|| format.clone());
 
-    let tokens: Vec<Tokens> = parse::to_tokens(&format)?
-        .into_iter()
-        .map(|t| t.into_tokens(&crate_root))
-        .collect();
+    let tokens: Vec<Tokens> = parse::to_tokens(&format)?.into_iter().map(|t| t.into_tokens(&crate_root)).collect();
 
     let derived = impl_date_format(crate_root, input, &name, &tokens);
 
@@ -77,11 +74,8 @@ fn impl_date_format(crate_root: Tokens, item: &syn::MacroInput, name: &str, form
 // Get the format string supplied by an #[elastic()] attribute
 fn get_format_from_attr<'a>(item: &'a syn::MacroInput) -> Option<String> {
     let val = get_elastic_meta_items(&item.attrs);
-        
-    let val = val
-        .iter()
-        .filter_map(|meta| expect_name_value("date_format", &meta))
-        .next();
+
+    let val = val.iter().filter_map(|meta| expect_name_value("date_format", &meta)).next();
 
     val.and_then(|v| get_str_from_lit(v).ok().map(Into::into))
 }
@@ -89,11 +83,8 @@ fn get_format_from_attr<'a>(item: &'a syn::MacroInput) -> Option<String> {
 // Get the name string supplied by an #[elastic()] attribute
 fn get_name_from_attr<'a>(item: &'a syn::MacroInput) -> Option<String> {
     let val = get_elastic_meta_items(&item.attrs);
-        
-    let val = val
-        .iter()
-        .filter_map(|meta| expect_name_value("date_format_name", &meta))
-        .next();
+
+    let val = val.iter().filter_map(|meta| expect_name_value("date_format_name", &meta)).next();
 
     val.and_then(|v| get_str_from_lit(v).ok().map(Into::into))
 }
@@ -118,7 +109,7 @@ impl<'a> parse::DateFormatToken<'a> {
     }
 }
 
-quick_error!{
+quick_error! {
     #[derive(Debug)]
     pub enum DeriveDateFormatError {
         InvalidInput {

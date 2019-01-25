@@ -1,10 +1,10 @@
 use std::fmt::Debug;
 
-use term_painter::ToStyle;
-use term_painter::Color::*;
-use futures::{stream, Future, Stream};
-use elastic::prelude::*;
 use elastic::error::{ApiError, Error};
+use elastic::prelude::*;
+use futures::{stream, Future, Stream};
+use term_painter::Color::*;
+use term_painter::ToStyle;
 
 pub type TestResult = bool;
 pub type Test = Box<Fn(AsyncClient) -> Box<Future<Item = TestResult, Error = ()>>>;
@@ -51,7 +51,8 @@ where
     let assert_err_failed = format!("{} unexpected error:", prefix);
     let ok = format!("{} ok", prefix);
 
-    let fut = test.prepare(client.clone())
+    let fut = test
+        .prepare(client.clone())
         .then(move |prep| match prep {
             Err(ref e) if !test.prepare_err(e) => {
                 println!("{} {:?}", Red.bold().paint(prep_failed), e);
@@ -84,25 +85,19 @@ where
 }
 
 pub fn call(client: AsyncClient, max_concurrent_tests: usize) -> Box<Future<Item = Vec<TestResult>, Error = ()>> {
-    use search;
+    use bulk;
     use document;
     use index;
-    use bulk;
+    use search;
 
     let document_tests = document::tests().into_iter();
     let search_tests = search::tests().into_iter();
     let index_tests = index::tests().into_iter();
     let bulk_tests = bulk::tests().into_iter();
 
-    let all_tests = document_tests
-        .chain(search_tests)
-        .chain(index_tests)
-        .chain(bulk_tests)
-        .map(move |t| t(client.clone()));
+    let all_tests = document_tests.chain(search_tests).chain(index_tests).chain(bulk_tests).map(move |t| t(client.clone()));
 
-    let test_stream = stream::futures_unordered(all_tests)
-        .map(|r| Ok(r))
-        .buffer_unordered(max_concurrent_tests);
+    let test_stream = stream::futures_unordered(all_tests).map(|r| Ok(r)).buffer_unordered(max_concurrent_tests);
 
     Box::new(test_stream.collect())
 }

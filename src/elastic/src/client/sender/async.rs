@@ -1,23 +1,23 @@
-use std::sync::Arc;
-use std::error::Error as StdError;
-use futures::{Future, IntoFuture, Poll};
-use futures::future::{FutureResult, Either};
-use futures_cpupool::{CpuPool, CpuFuture};
-use tokio_core::reactor::Handle;
-use reqwest::Error as ReqwestError;
-use reqwest::unstable::async::{Client as AsyncHttpClient, ClientBuilder as AsyncHttpClientBuilder, RequestBuilder as AsyncHttpRequestBuilder};
 use fluent_builder::FluentBuilder;
+use futures::future::{Either, FutureResult};
+use futures::{Future, IntoFuture, Poll};
+use futures_cpupool::{CpuFuture, CpuPool};
+use reqwest::unstable::async::{Client as AsyncHttpClient, ClientBuilder as AsyncHttpClientBuilder, RequestBuilder as AsyncHttpRequestBuilder};
+use reqwest::Error as ReqwestError;
+use std::error::Error as StdError;
+use std::sync::Arc;
+use tokio_core::reactor::Handle;
 
-use error::{self, Error};
-use private;
 use client::requests::Endpoint;
-use http::{AsyncBody, AsyncHttpRequest, Url};
-use client::sender::{build_reqwest_method, build_url, NextParams, NodeAddress, NodeAddresses, NodeAddressesBuilder, NodeAddressesInner, PreRequestParams, RequestParams, SendableRequest, SendableRequestParams, Sender};
-use client::sender::sniffed_nodes::SniffedNodesBuilder;
 use client::responses::{async_response, AsyncResponseBuilder};
+use client::sender::sniffed_nodes::SniffedNodesBuilder;
+use client::sender::{build_reqwest_method, build_url, NextParams, NodeAddress, NodeAddresses, NodeAddressesBuilder, NodeAddressesInner, PreRequestParams, RequestParams, SendableRequest, SendableRequestParams, Sender};
 use client::Client;
+use error::{self, Error};
+use http::{AsyncBody, AsyncHttpRequest, Url};
+use private;
 
-/** 
+/**
 An asynchronous Elasticsearch client.
 
 Use an [`AsyncClientBuilder`][AsyncClientBuilder] to configure and build an `AsyncClient`.
@@ -64,8 +64,7 @@ pub struct AsyncSender {
 impl private::Sealed for AsyncSender {}
 
 impl AsyncSender {
-    pub(crate) fn maybe_async<TFn, TResult>(&self, f: TFn)
-    -> Either<CpuFuture<TResult, Error>, FutureResult<TResult, Error>>
+    pub(crate) fn maybe_async<TFn, TResult>(&self, f: TFn) -> Either<CpuFuture<TResult, Error>, FutureResult<TResult, Error>>
     where
         TFn: FnOnce() -> Result<TResult, Error> + Send + 'static,
         TResult: Send + 'static,
@@ -92,36 +91,21 @@ impl Sender for AsyncSender {
         let correlation_id = request.correlation_id;
         let serde_pool = self.serde_pool.clone();
         let params = request.params;
-        let Endpoint {
-            url, method, body, ..
-        } = request.inner.into();
+        let Endpoint { url, method, body, .. } = request.inner.into();
 
-        info!(
-            "Elasticsearch Request: correlation_id: '{}', path: '{}'",
-            correlation_id,
-            url.as_ref()
-        );
+        info!("Elasticsearch Request: correlation_id: '{}', path: '{}'", correlation_id, url.as_ref());
 
         let params_future = match params {
             SendableRequestParams::Value(params) => Either::A(Ok(params).into_future()),
             SendableRequestParams::Builder { params, builder } => {
-                let params = params.into().log_err(move |e| {
-                    error!(
-                        "Elasticsearch Node Selection: correlation_id: '{}', error: '{:?}'",
-                        correlation_id, e
-                    )
-                });
+                let params = params.into().log_err(move |e| error!("Elasticsearch Node Selection: correlation_id: '{}', error: '{:?}'", correlation_id, e));
 
                 Either::B(params.and_then(|params| Ok(builder.into_value(move || params))))
             }
         };
 
         let build_req_future = params_future
-            .and_then(move |params| {
-                Url::parse(&build_url(&url, &params))
-                    .map_err(error::request)
-                    .map(|url| (params, url))
-            })
+            .and_then(move |params| Url::parse(&build_url(&url, &params)).map_err(error::request).map(|url| (params, url)))
             .and_then(move |(params, url)| {
                 Ok(AsyncHttpRequest {
                     url,
@@ -135,12 +119,7 @@ impl Sender for AsyncSender {
         let pre_send = self.pre_send.clone();
         let pre_send_future = build_req_future.and_then(move |mut req| {
             if let Some(pre_send) = pre_send {
-                Either::A(
-                    pre_send(&mut req)
-                        .map_err(error::wrapped)
-                        .map_err(error::request)
-                        .and_then(move |_| Ok(req).into_future()),
-                )
+                Either::A(pre_send(&mut req).map_err(error::wrapped).map_err(error::request).and_then(move |_| Ok(req).into_future()))
             } else {
                 Either::B(Ok(req).into_future())
             }
@@ -148,17 +127,8 @@ impl Sender for AsyncSender {
 
         let pre_send_http = self.http.clone();
         let pre_send_future = pre_send_future
-            .and_then(move |req| {
-                build_reqwest(&pre_send_http, req)
-                    .build()
-                    .map_err(error::request)
-            })
-            .log_err(move |e| {
-                error!(
-                    "Elasticsearch Request: correlation_id: '{}', error: '{:?}'",
-                    correlation_id, e
-                )
-            });
+            .and_then(move |req| build_reqwest(&pre_send_http, req).build().map_err(error::request))
+            .log_err(move |e| error!("Elasticsearch Request: correlation_id: '{}', error: '{:?}'", correlation_id, e));
 
         let req_http = self.http.clone();
         let req_future = pre_send_future.and_then(move |req| {
@@ -166,19 +136,10 @@ impl Sender for AsyncSender {
                 .execute(req)
                 .map_err(error::request)
                 .and_then(move |res| {
-                    info!(
-                        "Elasticsearch Response: correlation_id: '{}', status: '{}'",
-                        correlation_id,
-                        res.status()
-                    );
+                    info!("Elasticsearch Response: correlation_id: '{}', status: '{}'", correlation_id, res.status());
                     async_response(res, serde_pool).into_future()
                 })
-                .log_err(move |e| {
-                    error!(
-                        "Elasticsearch Response: correlation_id: '{}', error: '{:?}'",
-                        correlation_id, e
-                    )
-                })
+                .log_err(move |e| error!("Elasticsearch Response: correlation_id: '{}', error: '{:?}'", correlation_id, e))
         });
 
         PendingResponse::new(req_future)
@@ -206,9 +167,7 @@ impl PendingParams {
     where
         F: Future<Item = RequestParams, Error = Error> + 'static,
     {
-        PendingParams {
-            inner: Box::new(fut),
-        }
+        PendingParams { inner: Box::new(fut) }
     }
 }
 
@@ -229,13 +188,7 @@ impl From<RequestParams> for PendingParams {
 
 /** Build an asynchronous `reqwest::RequestBuilder` from an Elasticsearch request. */
 fn build_reqwest(client: &AsyncHttpClient, req: AsyncHttpRequest) -> AsyncHttpRequestBuilder {
-    let AsyncHttpRequest {
-        url,
-        method,
-        headers,
-        body,
-        ..
-    } = req;
+    let AsyncHttpRequest { url, method, headers, body, .. } = req;
 
     let method = build_reqwest_method(method);
 
@@ -261,9 +214,7 @@ impl PendingResponse {
     where
         F: Future<Item = AsyncResponseBuilder, Error = Error> + 'static,
     {
-        PendingResponse {
-            inner: Box::new(fut),
-        }
+        PendingResponse { inner: Box::new(fut) }
     }
 }
 
@@ -323,7 +274,7 @@ impl Default for AsyncClientBuilder {
 }
 
 impl AsyncClientBuilder {
-    /** 
+    /**
     Create a new client builder.
 
     By default, a client constructed by this builder will:
@@ -357,10 +308,7 @@ impl AsyncClientBuilder {
     /**
     Specify a static node nodes to send requests to.
     */
-    pub fn static_node<S>(self, node: S) -> Self
-    where
-        S: Into<NodeAddress>,
-    {
+    pub fn static_node(self, node: impl Into<NodeAddress>) -> Self {
         self.static_nodes(vec![node])
     }
 
@@ -391,10 +339,7 @@ impl AsyncClientBuilder {
         .sniff_nodes("http://localhost:9200");
     ```
     */
-    pub fn sniff_nodes<I>(mut self, builder: I) -> Self
-    where
-        I: Into<SniffedNodesBuilder>,
-    {
+    pub fn sniff_nodes(mut self, builder: impl Into<SniffedNodesBuilder>) -> Self {
         self.nodes = self.nodes.sniff_nodes(builder.into());
 
         self
@@ -415,11 +360,7 @@ impl AsyncClientBuilder {
             .wait(Duration::from_secs(90)));
     ```
     */
-    pub fn sniff_nodes_fluent<I, F>(mut self, address: I, builder: F) -> Self
-    where
-        I: Into<NodeAddress>,
-        F: Fn(SniffedNodesBuilder) -> SniffedNodesBuilder + 'static,
-    {
+    pub fn sniff_nodes_fluent(mut self, address: impl Into<NodeAddress>, builder: impl Fn(SniffedNodesBuilder) -> SniffedNodesBuilder + 'static) -> Self {
         self.nodes = self.nodes.sniff_nodes_fluent(address.into(), builder);
 
         self
@@ -427,11 +368,11 @@ impl AsyncClientBuilder {
 
     /**
     Specify default request parameters.
-    
+
     # Examples
-    
+
     Require all responses use pretty-printing:
-    
+
     ```
     # use elastic::prelude::*;
     let builder = AsyncClientBuilder::new()
@@ -450,10 +391,7 @@ impl AsyncClientBuilder {
             .header(Authorization("let me in".to_owned())));
     ```
     */
-    pub fn params_fluent<F>(mut self, builder: F) -> Self
-    where
-        F: Fn(PreRequestParams) -> PreRequestParams + 'static,
-    {
+    pub fn params_fluent(mut self, builder: impl Fn(PreRequestParams) -> PreRequestParams + 'static) -> Self {
         self.params = self.params.fluent(builder).boxed();
 
         self
@@ -463,9 +401,9 @@ impl AsyncClientBuilder {
     Specify default request parameters.
 
     # Examples
-    
+
     Require all responses use pretty-printing:
-    
+
     ```
     # use elastic::prelude::*;
     let builder = AsyncClientBuilder::new()
@@ -484,16 +422,13 @@ impl AsyncClientBuilder {
             .header(Authorization("let me in".to_owned())));
     ```
     */
-    pub fn params<I>(mut self, params: I) -> Self
-    where
-        I: Into<PreRequestParams>,
-    {
+    pub fn params(mut self, params: impl Into<PreRequestParams>) -> Self {
         self.params = self.params.value(params.into());
 
         self
     }
 
-    /** 
+    /**
     Use the given `CpuPool` for serialising and deserialising responses.
 
     If the pool is `None` then responses will be serialised and deserialised on the same thread as the io `Core`.
@@ -516,10 +451,7 @@ impl AsyncClientBuilder {
     # }
     ```
     */
-    pub fn serde_pool<P>(mut self, serde_pool: P) -> Self
-    where
-        P: Into<Option<CpuPool>>,
-    {
+    pub fn serde_pool(mut self, serde_pool: impl Into<Option<CpuPool>>) -> Self {
         self.serde_pool = serde_pool.into();
 
         self
@@ -532,16 +464,13 @@ impl AsyncClientBuilder {
     such as request singing.
     Prefer the `params` method on the client or individual requests where possible.
     */
-    pub fn pre_send_raw<F>(mut self, pre_send: F) -> Self
-    where
-        F: Fn(&mut AsyncHttpRequest) -> Box<Future<Item = (), Error = Box<StdError + Send + Sync>>> + 'static,
-    {
+    pub fn pre_send_raw(mut self, pre_send: impl Fn(&mut AsyncHttpRequest) -> Box<Future<Item = (), Error = Box<StdError + Send + Sync>>> + 'static) -> Self {
         self.pre_send = Some(Arc::new(pre_send));
 
         self
     }
 
-    /** 
+    /**
     Construct an [`AsyncClient`][AsyncClient] from this builder.
 
     The `build` method accepts any type that can be used to construct a http client from.
@@ -586,10 +515,7 @@ impl AsyncClientBuilder {
 
     [AsyncClient]: type.AsyncClient.html
     */
-    pub fn build<TIntoHttp>(self, client: TIntoHttp) -> Result<AsyncClient, Error>
-    where
-        TIntoHttp: IntoAsyncHttpClient,
-    {
+    pub fn build(self, client: impl IntoAsyncHttpClient) -> Result<AsyncClient, Error> {
         let http = client.into_async_http_client().map_err(error::build)?;
         let params = self.params.into_value(|| PreRequestParams::default());
 
@@ -601,10 +527,7 @@ impl AsyncClientBuilder {
 
         let addresses = self.nodes.build(params, sender.clone());
 
-        Ok(AsyncClient {
-            sender: sender,
-            addresses: addresses,
-        })
+        Ok(AsyncClient { sender: sender, addresses: addresses })
     }
 }
 
@@ -650,9 +573,6 @@ where
     where
         L: FnOnce(&E),
     {
-        PendingLogErr {
-            future: self,
-            log: Some(log),
-        }
+        PendingLogErr { future: self, log: Some(log) }
     }
 }

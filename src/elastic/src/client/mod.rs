@@ -63,7 +63,51 @@ Requests can be sent with an instance of a client using a builder API:
 # let client = SyncClientBuilder::new().build()?;
 let response = client.search::<Value>()
                      .index("myindex")
-                     .ty(Some("myty"))
+                     .ty("myty")
+                     .body(json!({
+                         "query": {
+                             "query_string": {
+                                 "query": "*"
+                             }
+                         }
+                     }))
+                     .send();
+
+match response {
+    Ok(response) => {
+        // Iterate through the response hits
+        for hit in response.hits() {
+            println!("{:?}", hit);
+        }
+    },
+    Err(Error::Api(e)) => {
+        // handle a REST API error
+    },
+    Err(e) => {
+        // handle a HTTP or JSON error
+    }
+}
+# Ok(())
+# }
+```
+
+Requests that work with [document types][documents-mod] can infer index and type metadata:
+
+```no_run
+# #[macro_use] extern crate serde_json;
+# #[macro_use] extern crate elastic_derive;
+# #[macro_use] extern crate serde_derive;
+# extern crate elastic;
+# use serde_json::Value;
+# use elastic::prelude::*;
+# use elastic::Error;
+# fn main() { run().unwrap() }
+# fn run() -> Result<(), Box<::std::error::Error>> {
+# let client = SyncClientBuilder::new().build()?;
+# #[derive(ElasticType, Deserialize, Debug)]
+# struct MyType { }
+let response = client.document::<MyType>()
+                     .search()
                      .body(json!({
                          "query": {
                              "query_string": {
@@ -512,17 +556,19 @@ For more details see the [`responses`][responses-mod] module.
 [SyncHttpResponse]: responses/struct.SyncHttpResponse.html
 [AsyncHttpResponse]: responses/struct.AsyncHttpResponse.html
 [response-types]: responses/parse/trait.IsOk.html#implementors
+
+[documents-mod]: ../types/documents/index.html
 */
 
-pub mod sender;
 pub mod requests;
 pub mod responses;
+pub mod sender;
 
 pub use self::sender::{AsyncClient, AsyncClientBuilder, PreRequestParams, RequestParams, SyncClient, SyncClientBuilder};
 
-use std::marker::PhantomData;
-use self::sender::{Sender, NodeAddresses};
 use self::requests::params::Index;
+use self::sender::{NodeAddresses, Sender};
+use std::marker::PhantomData;
 
 /**
 A HTTP client for the Elasticsearch REST API.
@@ -588,8 +634,8 @@ where
     TSender: Sender,
 {
     /**
-    Get a client for a specific document type.
-    
+    Get a client for working with specific document type.
+
     The document type can provide extra metadata like index and type names
     that can be used to simplify other API methods.
     */
@@ -601,16 +647,10 @@ where
     }
 
     /**
-    Get a client for a specific index.
+    Get a client for working with a specific index.
     */
-    pub fn index<TIndex>(&self, index: TIndex) -> IndexClient<TSender>
-    where
-        TIndex: Into<Index<'static>>,
-    {
-        IndexClient {
-            inner: (*self).clone(),
-            index: index.into(),
-        }
+    pub fn index(&self, index: impl Into<Index<'static>>) -> IndexClient<TSender> {
+        IndexClient { inner: (*self).clone(), index: index.into() }
     }
 }
 
@@ -639,10 +679,10 @@ pub struct IndexClient<TSender> {
 pub mod prelude {
     /*! A glob import for convenience. */
 
-    pub use super::sender::{PreRequestParams, RequestParams};
-    pub use super::{AsyncClient, AsyncClientBuilder, SyncClient, SyncClientBuilder};
     pub use super::requests::prelude::*;
     pub use super::responses::prelude::*;
+    pub use super::sender::{PreRequestParams, RequestParams};
+    pub use super::{AsyncClient, AsyncClientBuilder, SyncClient, SyncClientBuilder};
 }
 
 #[cfg(test)]

@@ -1,6 +1,6 @@
-use futures::Future;
-use elastic::prelude::*;
 use elastic::error::Error;
+use elastic::prelude::*;
+use futures::Future;
 use run_tests::IntegrationTest;
 
 #[derive(Debug, Clone, Copy)]
@@ -44,11 +44,7 @@ impl IntegrationTest for SimpleIndexGet {
 
     // Index a document, then get it
     fn request(&self, client: AsyncClient) -> Box<Future<Item = Self::Response, Error = Error>> {
-        let index_res = client
-            .document()
-            .index(doc())
-            .params_fluent(|p| p.url_param("refresh", true))
-            .send();
+        let index_res = client.document().index(doc()).params_fluent(|p| p.url_param("refresh", true)).send();
 
         let get_res = client.document().get(ID).send();
 

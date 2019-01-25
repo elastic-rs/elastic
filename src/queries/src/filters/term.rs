@@ -1,5 +1,5 @@
-use super::super::Values;
 use super::super::filters::common::*;
+use super::super::Values;
 
 #[derive(Clone, Debug, Serialize, Deserialize, Ord, PartialOrd, Eq, PartialEq)]
 pub struct TermFilter {
@@ -8,9 +8,7 @@ pub struct TermFilter {
 
 impl TermFilter {
     pub fn new(f: String, v: Values) -> TermFilter {
-        TermFilter {
-            term: FieldAndValue { field: f, value: v },
-        }
+        TermFilter { term: FieldAndValue { field: f, value: v } }
     }
 }
 

@@ -1,8 +1,8 @@
+use super::mapping::{TextFieldType, TextMapping};
+use serde::de::{Error, Visitor};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::borrow::Borrow;
 use std::marker::PhantomData;
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
-use serde::de::{Error, Visitor};
-use super::mapping::{TextFieldType, TextMapping};
 use string::mapping::DefaultStringMapping;
 
 impl TextFieldType<DefaultStringMapping> for String {}
@@ -39,15 +39,15 @@ where
 {
     /**
     Creates a new `Text` with the given mapping.
-    
+
     # Examples
-    
+
     Create a new `Text` from a `String`:
-    
+
     ```
     use elastic_types::string::text::mapping::DefaultTextMapping;
     use elastic_types::string::text::Text;
-    
+
     let string = Text::<DefaultTextMapping>::new("my string");
     ```
     */
@@ -55,10 +55,7 @@ where
     where
         I: Into<String>,
     {
-        Text {
-            value: string.into(),
-            _m: PhantomData,
-        }
+        Text { value: string.into(), _m: PhantomData }
     }
 
     /** Change the mapping of this string. */

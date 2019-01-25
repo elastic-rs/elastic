@@ -1,7 +1,7 @@
-use syn;
-use parse;
-use super::types;
 use super::helpers::*;
+use super::types;
+use parse;
+use syn;
 
 /// Builder for request parameters enum.
 pub struct RequestParamBuilder {
@@ -35,14 +35,12 @@ impl RequestParamBuilder {
     }
 
     pub fn build(self) -> (syn::Item, syn::Ty) {
-        let mut fields = vec![
-            syn::Field {
-                ident: Some(ident("url")),
-                vis: syn::Visibility::Public,
-                attrs: vec![],
-                ty: types::url::ty(),
-            },
-        ];
+        let mut fields = vec![syn::Field {
+            ident: Some(ident("url")),
+            vis: syn::Visibility::Public,
+            attrs: vec![],
+            ty: types::url::ty(),
+        }];
 
         let mut generics = generics(vec![lifetime()], vec![]);
 
@@ -54,25 +52,15 @@ impl RequestParamBuilder {
                 ty: types::body::ty(),
             });
 
-            generics
-                .ty_params
-                .push(ty_param(types::body::ident(), vec![]));
+            generics.ty_params.push(ty_param(types::body::ident(), vec![]));
         }
 
         let fields = syn::VariantData::Struct(fields);
 
         let ty = ty_path(
             self.name.as_ref(),
-            generics
-                .lifetimes
-                .iter()
-                .map(|l| l.lifetime.to_owned())
-                .collect(),
-            generics
-                .ty_params
-                .iter()
-                .map(|t| ty(t.ident.as_ref()))
-                .collect(),
+            generics.lifetimes.iter().map(|l| l.lifetime.to_owned()).collect(),
+            generics.ty_params.iter().map(|t| ty(t.ident.as_ref())).collect(),
         );
 
         let mut attrs = vec![];
@@ -98,17 +86,12 @@ impl<'a> From<&'a (String, parse::Endpoint)> for RequestParamBuilder {
 
         let name = format!("{}Request", endpoint_name.into_rust_type());
         let doc_comment = if let Some(method) = endpoint.preferred_method() {
-            format!(
-                "`{:?}: {}`\n\n[Elasticsearch Documentation]({})",
-                method, endpoint.url.path, endpoint.documentation
-            )
+            format!("`{:?}: {}`\n\n[Elasticsearch Documentation]({})", method, endpoint.url.path, endpoint.documentation)
         } else {
             format!("`{}`", endpoint.url.path)
         };
 
-        let builder = RequestParamBuilder::new(&name)
-            .has_body(endpoint.has_body())
-            .doc_comment(doc_comment);
+        let builder = RequestParamBuilder::new(&name).has_body(endpoint.has_body()).doc_comment(doc_comment);
 
         builder
     }
@@ -133,7 +116,7 @@ mod tests {
 
         let expected = quote!(
             pub struct Request<'a> {
-                pub url: UrlPath<'a>
+                pub url: UrlPath<'a>,
             }
         );
 
@@ -151,16 +134,13 @@ mod tests {
 
     #[test]
     fn gen_request_params_with_body_doc() {
-        let (result, _) = RequestParamBuilder::new("Request")
-            .has_body(true)
-            .doc_comment("Some doc")
-            .build();
+        let (result, _) = RequestParamBuilder::new("Request").has_body(true).doc_comment("Some doc").build();
 
         let expected = quote!(
             #[doc = "Some doc"]
             pub struct Request<'a, B> {
                 pub url: UrlPath<'a>,
-                pub body: B
+                pub body: B,
             }
         );
 
@@ -177,9 +157,7 @@ mod tests {
                 documentation: String::new(),
                 methods: vec![Method::Get],
                 url: get_url(),
-                body: Some(Body {
-                    description: String::new(),
-                }),
+                body: Some(Body { description: String::new() }),
             },
         );
 
@@ -189,7 +167,7 @@ mod tests {
             #[doc = "`Get: /_search`\n\n[Elasticsearch Documentation]()"]
             pub struct IndicesExistsAliasRequest<'a, B> {
                 pub url: UrlPath<'a>,
-                pub body: B
+                pub body: B,
             }
         );
 

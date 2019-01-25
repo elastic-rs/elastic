@@ -1,12 +1,12 @@
-/*! 
+/*!
 Response type parsing.
 */
 
-use std::marker::PhantomData;
-use std::io::{Cursor, Read};
+use http::StatusCode;
 use serde::de::DeserializeOwned;
 use serde_json::{self, Value};
-use http::StatusCode;
+use std::io::{Cursor, Read};
+use std::marker::PhantomData;
 
 use error::*;
 
@@ -15,7 +15,7 @@ pub struct Parse<T> {
     _marker: PhantomData<T>,
 }
 
-/* 
+/*
 Try parse a http response into a concrete type.
 
 Parsing is split between two calls:
@@ -77,9 +77,7 @@ let get_response = parse().from_slice(response_status, response_body);
 ```
 */
 pub fn parse<T: IsOk + DeserializeOwned>() -> Parse<T> {
-    Parse {
-        _marker: PhantomData,
-    }
+    Parse { _marker: PhantomData }
 }
 
 impl<T: IsOk + DeserializeOwned> Parse<T> {
@@ -166,7 +164,7 @@ impl<B: Read> ResponseBody for ReadBody<B> {
     fn parse_err(self) -> Result<ApiError, ParseError> {
         match serde_json::from_reader(self.0)? {
             ParsedApiError::Known(err) => Ok(err),
-            ParsedApiError::Unknown(err) => Err(ParseError::new(UnknownApiError(err)))
+            ParsedApiError::Unknown(err) => Err(ParseError::new(UnknownApiError(err))),
         }
     }
 }
@@ -191,7 +189,7 @@ impl<B: AsRef<[u8]>> ResponseBody for SliceBody<B> {
     fn parse_err(self) -> Result<ApiError, ParseError> {
         match serde_json::from_slice(self.0.as_ref())? {
             ParsedApiError::Known(err) => Ok(err),
-            ParsedApiError::Unknown(err) => Err(ParseError::new(UnknownApiError(err)))
+            ParsedApiError::Unknown(err) => Err(ParseError::new(UnknownApiError(err))),
         }
     }
 }
@@ -212,7 +210,7 @@ impl ResponseBody for Value {
     fn parse_err(self) -> Result<ApiError, ParseError> {
         match serde_json::from_value(self)? {
             ParsedApiError::Known(err) => Ok(err),
-            ParsedApiError::Unknown(err) => Err(ParseError::new(UnknownApiError(err)))
+            ParsedApiError::Unknown(err) => Err(ParseError::new(UnknownApiError(err))),
         }
     }
 }
@@ -307,7 +305,7 @@ impl<B> MaybeOkResponse<B>
 where
     B: ResponseBody,
 {
-    /** 
+    /**
     Create a new response that indicates where or not the
     body is successful or an `ApiError`.
     */
@@ -315,10 +313,7 @@ where
     where
         I: Into<MaybeBufferedResponse<B>>,
     {
-        MaybeOkResponse {
-            ok: ok,
-            res: res.into(),
-        }
+        MaybeOkResponse { ok: ok, res: res.into() }
     }
 
     /** Create a response where the body is successful. */
@@ -351,7 +346,7 @@ impl<B: ResponseBody> Unbuffered<B> {
 /** A response body that has been buffered. */
 pub struct Buffered<B: ResponseBody>(B::Buffered);
 
-/** 
+/**
 A response body that may or may not have been buffered.
 
 This type makes it possible to inspect the response body for

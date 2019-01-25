@@ -16,10 +16,10 @@ extern crate serde_json;
 pub mod model;
 pub mod ops;
 
-use std::error::Error;
-use ops::Client;
 use ops::commands::{EnsureBankIndexExists, PutBulkAccounts};
 use ops::queries::SimpleSearchQuery;
+use ops::Client;
+use std::error::Error;
 
 fn run() -> Result<(), Box<Error>> {
     let client = Client::new("http://localhost:9200")?;

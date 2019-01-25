@@ -1,6 +1,6 @@
+use serde_json::Value;
 use std::collections::BTreeMap;
 use std::fmt;
-use serde_json::Value;
 
 mod parse;
 
@@ -24,10 +24,7 @@ pub struct Endpoint {
 
 impl Endpoint {
     pub fn has_body(&self) -> bool {
-        self.body.is_some()
-            || self.methods
-                .iter()
-                .any(|m| m == &Method::Post || m == &Method::Put)
+        self.body.is_some() || self.methods.iter().any(|m| m == &Method::Post || m == &Method::Put)
     }
 
     pub fn preferred_method(&self) -> Option<Method> {
@@ -35,31 +32,41 @@ impl Endpoint {
         match iter.len() {
             0 => None,
             1 => iter.next(),
-            _ => if iter.any(|m| m == Method::Post) {
-                Some(Method::Post)
-            } else {
-                iter.next()
-            },
+            _ => {
+                if iter.any(|m| m == Method::Post) {
+                    Some(Method::Post)
+                } else {
+                    iter.next()
+                }
+            }
         }
     }
 }
 
 #[derive(Debug, PartialEq, Deserialize, Clone, Copy)]
 pub enum Method {
-    #[serde(rename = "HEAD")] Head,
-    #[serde(rename = "GET")] Get,
-    #[serde(rename = "POST")] Post,
-    #[serde(rename = "PUT")] Put,
-    #[serde(rename = "PATCH")] Patch,
-    #[serde(rename = "DELETE")] Delete,
+    #[serde(rename = "HEAD")]
+    Head,
+    #[serde(rename = "GET")]
+    Get,
+    #[serde(rename = "POST")]
+    Post,
+    #[serde(rename = "PUT")]
+    Put,
+    #[serde(rename = "PATCH")]
+    Patch,
+    #[serde(rename = "DELETE")]
+    Delete,
 }
 
 #[derive(Debug, PartialEq, Deserialize, Clone)]
 pub struct Url {
     pub path: Path,
     pub paths: Vec<Path>,
-    #[serde(default = "BTreeMap::new")] pub parts: BTreeMap<String, Type>,
-    #[serde(default = "BTreeMap::new")] pub params: BTreeMap<String, Type>,
+    #[serde(default = "BTreeMap::new")]
+    pub parts: BTreeMap<String, Type>,
+    #[serde(default = "BTreeMap::new")]
+    pub params: BTreeMap<String, Type>,
 }
 
 impl Url {
@@ -70,25 +77,38 @@ impl Url {
 
 #[derive(Debug, PartialEq, Deserialize, Clone)]
 pub struct Type {
-    #[serde(rename = "type", default)] pub ty: TypeKind,
+    #[serde(rename = "type", default)]
+    pub ty: TypeKind,
     pub description: String,
-    #[serde(default = "Vec::new")] pub options: Vec<Value>,
-    #[serde(default)] pub default: Option<Value>,
+    #[serde(default = "Vec::new")]
+    pub options: Vec<Value>,
+    #[serde(default)]
+    pub default: Option<Value>,
 }
 
 #[derive(Debug, PartialEq, Deserialize, Clone)]
 pub enum TypeKind {
     None,
-    #[serde(rename = "list")] List,
-    #[serde(rename = "enum")] Enum,
-    #[serde(rename = "string")] String,
-    #[serde(rename = "text")] Text,
-    #[serde(rename = "boolean")] Boolean,
-    #[serde(rename = "number")] Number,
-    #[serde(rename = "float")] Float,
-    #[serde(rename = "integer")] Integer,
-    #[serde(rename = "time")] Time,
-    #[serde(rename = "duration")] Duration,
+    #[serde(rename = "list")]
+    List,
+    #[serde(rename = "enum")]
+    Enum,
+    #[serde(rename = "string")]
+    String,
+    #[serde(rename = "text")]
+    Text,
+    #[serde(rename = "boolean")]
+    Boolean,
+    #[serde(rename = "number")]
+    Number,
+    #[serde(rename = "float")]
+    Float,
+    #[serde(rename = "integer")]
+    Integer,
+    #[serde(rename = "time")]
+    Time,
+    #[serde(rename = "duration")]
+    Duration,
 }
 
 impl Default for TypeKind {
@@ -204,11 +224,7 @@ pub struct Body {
 pub fn get_url() -> Url {
     Url {
         path: Path("/_search".to_string()),
-        paths: vec![
-            Path("/_search".to_string()),
-            Path("/{index}/_search".to_string()),
-            Path("/{index}/{type}/_search".to_string()),
-        ],
+        paths: vec![Path("/_search".to_string()), Path("/{index}/_search".to_string()), Path("/{index}/{type}/_search".to_string())],
         parts: {
             let mut map = BTreeMap::new();
 
@@ -270,11 +286,7 @@ mod tests {
         fn parse_param_first() {
             let path = Path("{index}/{type}".to_string());
 
-            let expected = vec![
-                PathPart::Param("index"),
-                PathPart::Literal("/"),
-                PathPart::Param("type"),
-            ];
+            let expected = vec![PathPart::Param("index"), PathPart::Literal("/"), PathPart::Param("type")];
 
             assert_eq!(expected, path.split());
         }
@@ -283,12 +295,7 @@ mod tests {
         fn parse_params_and_literals() {
             let path = Path("/{index}/part/{type}".to_string());
 
-            let expected = vec![
-                PathPart::Literal("/"),
-                PathPart::Param("index"),
-                PathPart::Literal("/part/"),
-                PathPart::Param("type"),
-            ];
+            let expected = vec![PathPart::Literal("/"), PathPart::Param("index"), PathPart::Literal("/part/"), PathPart::Param("type")];
 
             assert_eq!(expected, path.split());
         }
@@ -321,9 +328,7 @@ mod tests {
                 documentation: String::new(),
                 methods: vec![Method::Get],
                 url: get_url(),
-                body: Some(Body {
-                    description: String::new(),
-                }),
+                body: Some(Body { description: String::new() }),
             };
 
             assert!(endpoint.has_body());
@@ -403,10 +408,10 @@ mod tests {
     }
 
     mod ser {
-        use std::collections::BTreeMap;
+        use parse::*;
         use serde_json;
         use serde_json::value::to_value;
-        use parse::*;
+        use std::collections::BTreeMap;
 
         fn http_eq(expected: Method, ser: &'static str) {
             assert_eq!(expected, serde_json::from_str::<Method>(ser).unwrap());
@@ -486,20 +491,14 @@ mod tests {
                 description: "The search definition using the Query DSL".to_string(),
             });
 
-            assert_eq!(
-                expected,
-                serde_json::from_str::<Option<Body>>(&ser).unwrap()
-            );
+            assert_eq!(expected, serde_json::from_str::<Option<Body>>(&ser).unwrap());
         }
 
         #[test]
         fn deserialise_body_none() {
             let expected: Option<Body> = None;
 
-            assert_eq!(
-                expected,
-                serde_json::from_str::<Option<Body>>("null").unwrap()
-            );
+            assert_eq!(expected, serde_json::from_str::<Option<Body>>("null").unwrap());
         }
 
         #[test]
@@ -527,11 +526,7 @@ mod tests {
 
             let expected = Url {
                 path: Path("/_search".to_string()),
-                paths: vec![
-                    Path("/_search".to_string()),
-                    Path("/{index}/_search".to_string()),
-                    Path("/{index}/{type}/_search".to_string()),
-                ],
+                paths: vec![Path("/_search".to_string()), Path("/{index}/_search".to_string()), Path("/{index}/{type}/_search".to_string())],
                 parts: {
                     let mut map = BTreeMap::new();
 

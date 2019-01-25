@@ -1,56 +1,70 @@
+use super::mapping::*;
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::borrow::Borrow;
 use std::marker::PhantomData;
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
-use super::mapping::*;
 
 macro_rules! number_type {
-    ($wrapper_ty:ident, $mapping_ty:ident, $field_trait:ident, $std_ty:ident) => (
+    ($wrapper_ty:ident, $mapping_ty:ident, $field_trait:ident, $std_ty:ident) => {
         /** Number type with a given mapping. */
         #[derive(Debug, Default, Clone, PartialEq)]
-        pub struct $wrapper_ty<TMapping>  where TMapping: $mapping_ty {
+        pub struct $wrapper_ty<TMapping>
+        where
+            TMapping: $mapping_ty,
+        {
             value: $std_ty,
-            _m: PhantomData<TMapping>
+            _m: PhantomData<TMapping>,
         }
 
-        impl<TMapping> $wrapper_ty<TMapping> where TMapping: $mapping_ty {
+        impl<TMapping> $wrapper_ty<TMapping>
+        where
+            TMapping: $mapping_ty,
+        {
             /** Creates a new number with the given mapping. */
             pub fn new<I: Into<$std_ty>>(num: I) -> $wrapper_ty<TMapping> {
-                $wrapper_ty {
-                    value: num.into(),
-                    _m: PhantomData
-                }
+                $wrapper_ty { value: num.into(), _m: PhantomData }
             }
 
             /** Change the mapping of this number. */
             pub fn remap<TNewMapping>(number: $wrapper_ty<TMapping>) -> $wrapper_ty<TNewMapping>
-                where TNewMapping: $mapping_ty
+            where
+                TNewMapping: $mapping_ty,
             {
                 $wrapper_ty::new(number.value)
             }
         }
 
-        impl<TMapping> $field_trait<TMapping> for $wrapper_ty<TMapping> where TMapping: $mapping_ty { }
+        impl<TMapping> $field_trait<TMapping> for $wrapper_ty<TMapping> where TMapping: $mapping_ty {}
 
         impl_mapping_type!($std_ty, $wrapper_ty, $mapping_ty);
 
         //Serialize elastic number.
-        impl<TMapping> Serialize for $wrapper_ty<TMapping> where TMapping: $mapping_ty {
-            fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where
-            S: Serializer {
+        impl<TMapping> Serialize for $wrapper_ty<TMapping>
+        where
+            TMapping: $mapping_ty,
+        {
+            fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+            where
+                S: Serializer,
+            {
                 self.value.serialize(serializer)
             }
         }
 
         //Deserialize elastic number.
-        impl <'de, TMapping> Deserialize<'de> for $wrapper_ty<TMapping> where TMapping: $mapping_ty {
-            fn deserialize<D>(deserializer: D) -> Result<$wrapper_ty<TMapping>, D::Error> where
-            D: Deserializer<'de> {
+        impl<'de, TMapping> Deserialize<'de> for $wrapper_ty<TMapping>
+        where
+            TMapping: $mapping_ty,
+        {
+            fn deserialize<D>(deserializer: D) -> Result<$wrapper_ty<TMapping>, D::Error>
+            where
+                D: Deserializer<'de>,
+            {
                 let t = try!($std_ty::deserialize(deserializer));
 
                 Ok($wrapper_ty::new(t))
             }
         }
-    )
+    };
 }
 
 number_type!(Integer, IntegerMapping, IntegerFieldType, i32);
@@ -152,16 +166,6 @@ mod tests {
         let float_de: Float<MyFloatMapping> = serde_json::from_str("1.01").unwrap();
         let double_de: Double<MyDoubleMapping> = serde_json::from_str("1.01").unwrap();
 
-        assert_eq!(
-            (1i32, 1i64, 1i16, 1i8, 1.01f32, 1.01f64),
-            (
-                *int_de,
-                *long_de,
-                *short_de,
-                *byte_de,
-                *float_de,
-                *double_de
-            )
-        );
+        assert_eq!((1i32, 1i64, 1i16, 1i8, 1.01f32, 1.01f64), (*int_de, *long_de, *short_de, *byte_de, *float_de, *double_de));
     }
 }

@@ -1,7 +1,7 @@
 use run_tests::{test, Test};
 
-mod no_index;
 mod empty_query;
+mod no_index;
 mod raw_query_string;
 
 pub fn tests() -> Vec<Test> {

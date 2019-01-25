@@ -1,11 +1,11 @@
-use std::str::FromStr;
-use std::fmt::Write;
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
-use serde::de::{Error, SeqAccess, Unexpected, Visitor};
-use geohash;
-use super::{Coordinate, GeoPointFormat, Point};
 use super::mapping::GeoPointMapping;
+use super::{Coordinate, GeoPointFormat, Point};
 use geo::mapping::Distance;
+use geohash;
+use serde::de::{Error, SeqAccess, Unexpected, Visitor};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use std::fmt::Write;
+use std::str::FromStr;
 
 /** The default `geo_point` format (`GeoPointArray`). */
 pub type DefaultGeoPointFormat = GeoPointArray;
@@ -35,10 +35,7 @@ impl GeoPointFormat for GeoPointObject {
         TMapping: GeoPointMapping<Format = Self>,
         S: Serializer,
     {
-        GeoPointObjectType {
-            lon: point.x(),
-            lat: point.y(),
-        }.serialize(serializer)
+        GeoPointObjectType { lon: point.x(), lat: point.y() }.serialize(serializer)
     }
 }
 
@@ -78,10 +75,7 @@ impl GeoPointFormat for GeoPointString {
 
         let xy: Vec<&str> = fmtd.split(",").collect();
         if xy.len() != 2 {
-            return Err(D::Error::invalid_value(
-                Unexpected::Str(&fmtd),
-                &"point must be formatted as `'y,x'`",
-            ));
+            return Err(D::Error::invalid_value(Unexpected::Str(&fmtd), &"point must be formatted as `'y,x'`"));
         }
 
         let x = match f64::from_str(xy[1]) {
@@ -155,13 +149,7 @@ impl GeoPointFormat for GeoPointHash {
             None => 12usize,
         };
 
-        geohash::encode(
-            Coordinate {
-                x: point.x(),
-                y: point.y(),
-            },
-            len,
-        ).serialize(serializer)
+        geohash::encode(Coordinate { x: point.x(), y: point.y() }, len).serialize(serializer)
     }
 }
 
@@ -189,20 +177,14 @@ impl GeoPointFormat for GeoPointArray {
 
                 while let Some(value) = visitor.next_element()? {
                     if values.len() == 2 {
-                        Err(S::Error::invalid_value(
-                            Unexpected::Seq,
-                            &"a json array with 2 values",
-                        ))?;
+                        Err(S::Error::invalid_value(Unexpected::Seq, &"a json array with 2 values"))?;
                     }
 
                     values.push(value);
                 }
 
                 if values.len() != 2 {
-                    Err(S::Error::invalid_value(
-                        Unexpected::Seq,
-                        &"a json array with 2 values",
-                    ))?;
+                    Err(S::Error::invalid_value(Unexpected::Seq, &"a json array with 2 values"))?;
                 }
 
                 Ok(Point::new(values[0], values[1]))
@@ -267,10 +249,7 @@ mod tests {
     fn hash() {
         let point: GeoPoint<DefaultGeoPointMapping<GeoPointHash>> = serde_json::from_str(r#""drm3btev3e86""#).unwrap();
 
-        assert_eq!(
-            (-71.34000012651086, 41.12000000663102),
-            (point.x(), point.y())
-        );
+        assert_eq!((-71.34000012651086, 41.12000000663102), (point.x(), point.y()));
 
         let ser = serde_json::to_string(&point).unwrap();
 

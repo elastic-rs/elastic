@@ -4,28 +4,28 @@ Builders for [bulk requests][docs-bulk].
 [docs-bulk]: https://www.elastic.co/guide/en/elasticsearch/reference/current/bulk.html
 */
 
-use std::fmt;
 use std::error::Error as StdError;
-use std::time::Duration;
+use std::fmt;
 use std::marker::PhantomData;
+use std::time::Duration;
 
 use futures::{Future, Poll};
-use serde::ser::Serialize;
 use serde::de::DeserializeOwned;
+use serde::ser::Serialize;
 
-use error::{self, Error};
-use client::{Client, RequestParams};
-use client::sender::{AsyncSender, Sender, SyncSender};
-use client::requests::RequestBuilder;
-use http::{SyncBody, AsyncBody};
-use client::requests::params::{Index, Type};
 use client::requests::endpoints::BulkRequest;
+use client::requests::params::{Index, Type};
 use client::requests::raw::RawRequestInner;
-use client::responses::{BulkResponse, BulkErrorsResponse};
+use client::requests::RequestBuilder;
 use client::responses::parse::IsOk;
+use client::responses::{BulkErrorsResponse, BulkResponse};
+use client::sender::{AsyncSender, Sender, SyncSender};
+use client::{Client, RequestParams};
+use error::{self, Error};
+use http::{AsyncBody, SyncBody};
 
 /**
-A [bulk request][docs-bulk] builder that can be configured before sending. 
+A [bulk request][docs-bulk] builder that can be configured before sending.
 
 Call [`Client.bulk`][Client.bulk] to get a `BulkRequestBuilder`.
 The `send` method will either send the request [synchronously][send-sync] or [asynchronously][send-async], depending on the `Client` it was created from.
@@ -40,11 +40,11 @@ Call [`Client.bulk_stream`][Client.bulk_stream] to get a `BulkRequestBuilder` th
 */
 pub type BulkRequestBuilder<TSender, TBody, TResponse> = RequestBuilder<TSender, BulkRequestInner<TBody, TResponse>>;
 
-mod stream;
 mod operation;
+mod stream;
 
-pub use self::stream::*;
 pub use self::operation::*;
+pub use self::stream::*;
 
 #[doc(hidden)]
 pub struct BulkRequestInner<TBody, TResponse> {
@@ -61,7 +61,7 @@ impl<TSender> Client<TSender>
 where
     TSender: Sender,
 {
-    /** 
+    /**
     Create a [`BulkRequestBuilder`][BulkRequestBuilder] with this `Client` that can be configured before sending.
 
     For more details, see:
@@ -139,7 +139,7 @@ where
 # Bulk stream request
 */
 impl Client<AsyncSender> {
-    /** 
+    /**
     Create a [`BulkRequestBuilder`][BulkRequestBuilder] with this `Client` that can be configured before sending.
 
     This method can configure a channel that individual bulk operations can be sent to.
@@ -239,37 +239,31 @@ where
 {
     /**
     Set the default type for the bulk request.
-    
+
     If an operation doesn't specify a type, then it will default to the supplied value here.
-    
+
     # Deferred errors
-    
+
     Calling `ty` without also calling `index` will result in an error when sending the request.
     */
-    pub fn ty<I>(mut self, ty: I) -> Self
-    where
-        I: Into<Type<'static>>,
-    {
+    pub fn ty(mut self, ty: impl Into<Type<'static>>) -> Self {
         self.inner.ty = Some(ty.into());
         self
     }
 
     /**
     Set the default index for the bulk request.
-    
+
     If an operation doesn't specify an index, then it will default to the supplied value here.
     */
-    pub fn index<I>(mut self, index: I) -> Self
-    where
-        I: Into<Index<'static>>,
-    {
+    pub fn index(mut self, index: impl Into<Index<'static>>) -> Self {
         self.inner.index = Some(index.into());
         self
     }
 
     /**
     Set the type used to deserialize the index field on the response.
-    
+
     Sometimes a bulk response will use the same index value many times.
     To avoid allocating a lot of individual strings, the type used to deserialize the field can be changed.
     `string_cache::DefaultAtom` or a custom `enum` can be effective ways to reduce allocations in large bulk responses.
@@ -292,7 +286,7 @@ where
 
     /**
     Set the type used to deserialize the type field on the response.
-    
+
     Sometimes a bulk response will use the same type value many times.
     To avoid allocating a lot of individual strings, the type used to deserialize the field can be changed.
     `string_cache::DefaultAtom` or a custom `enum` can be effective ways to reduce allocations in large bulk responses.
@@ -315,7 +309,7 @@ where
 
     /**
     Set the type used to deserialize the id field on the response.
-    
+
     It's less likely that id fields in bulk responses will be repeated, but they're probably short.
     To avoid allocating a lot of individual strings, the type used to deserialize the field can be changed.
     `inlinable_string::InlinableString` can be an effective way to recude allocation in large bulk responses.
@@ -415,8 +409,9 @@ where
     TBody: BulkBody,
     TDocument: Serialize,
 {
-    fn extend<T>(&mut self, iter: T) where
-    T: IntoIterator<Item = BulkOperation<TDocument>>,
+    fn extend<T>(&mut self, iter: T)
+    where
+        T: IntoIterator<Item = BulkOperation<TDocument>>,
     {
         for op in iter.into_iter() {
             self.push_internal(op);
@@ -496,19 +491,10 @@ where
         let body = self.body.try_into_inner()?;
 
         match (self.index, self.ty) {
-            (Some(index), None) => Ok(BulkRequest::for_index(
-                index,
-                body,
-            )),
-            (Some(index), Some(ty)) => Ok(BulkRequest::for_index_ty(
-                index,
-                ty,
-                body,
-            )),
-            (None, None) => Ok(BulkRequest::new(
-                body,
-            )),
-            (None, Some(_)) => Err(error::request(BulkRequestError("missing `index` parameter".to_owned())))
+            (Some(index), None) => Ok(BulkRequest::for_index(index, body)),
+            (Some(index), Some(ty)) => Ok(BulkRequest::for_index_ty(index, ty, body)),
+            (None, None) => Ok(BulkRequest::new(body)),
+            (None, Some(_)) => Err(error::request(BulkRequestError("missing `index` parameter".to_owned()))),
         }
     }
 }
@@ -575,9 +561,7 @@ where
     pub fn send(self) -> Result<TResponse, Error> {
         let req = self.inner.into_request()?;
 
-        RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
-            .send()?
-            .into_response()
+        RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req)).send()?.into_response()
     }
 }
 
@@ -591,7 +575,7 @@ where
 {
     /**
     Send a `BulkRequestBuilder` asynchronously using an [`AsyncClient`][AsyncClient].
-    
+
     This will return a future that will resolve to the deserialised search response.
 
     # Examples
@@ -651,11 +635,7 @@ where
 
         let req_future = client.sender.maybe_async(move || inner.into_request());
 
-        let res_future = req_future.and_then(move |req| {
-            RequestBuilder::new(client, params_builder, RawRequestInner::new(req))
-                .send()
-                .and_then(|res| res.into_response())
-        });
+        let res_future = req_future.and_then(move |req| RequestBuilder::new(client, params_builder, RawRequestInner::new(req)).send().and_then(|res| res.into_response()));
 
         Pending::new(res_future)
     }
@@ -690,16 +670,10 @@ struct WrappedBody<T> {
 
 impl<T> WrappedBody<T> {
     fn new(inner: T) -> Self {
-        WrappedBody {
-            inner,
-            errs: Vec::new()
-        }
+        WrappedBody { inner, errs: Vec::new() }
     }
 
-    fn with_inner_mut<F>(&mut self, f: F)
-    where
-        F: FnOnce(&mut T) -> Result<(), Error>
-    {
+    fn with_inner_mut(&mut self, f: impl FnOnce(&mut T) -> Result<(), Error>) {
         if let Err(e) = f(&mut self.inner) {
             self.errs.push(e);
         }
@@ -708,8 +682,7 @@ impl<T> WrappedBody<T> {
     fn try_into_inner(self) -> Result<T, Error> {
         if self.errs.len() > 0 {
             Err(error::request(BulkBodyError(self.errs)))
-        }
-        else {
+        } else {
             Ok(self.inner)
         }
     }
@@ -765,11 +738,16 @@ pub trait BulkBody {
     If the document can't be serialized then this method will return an error.
     There's no guarantee that other operations can be pushed onto the body after an error has occurred.
     */
-    fn push<TDocument>(&mut self, op: BulkOperation<TDocument>) -> Result<(), Error> where TDocument: Serialize;
+    fn push<TDocument>(&mut self, op: BulkOperation<TDocument>) -> Result<(), Error>
+    where
+        TDocument: Serialize;
 }
 
 impl BulkBody for Vec<u8> {
-    fn push<TDocument>(&mut self, op: BulkOperation<TDocument>) -> Result<(), Error> where TDocument: Serialize {
+    fn push<TDocument>(&mut self, op: BulkOperation<TDocument>) -> Result<(), Error>
+    where
+        TDocument: Serialize,
+    {
         op.write(self).map_err(error::request)?;
 
         Ok(())
@@ -786,9 +764,7 @@ impl<TResponse> Pending<TResponse> {
     where
         F: Future<Item = TResponse, Error = Error> + 'static,
     {
-        Pending {
-            inner: Box::new(fut),
-        }
+        Pending { inner: Box::new(fut) }
     }
 }
 
@@ -802,7 +778,9 @@ impl<TResponse> Future for Pending<TResponse> {
 }
 
 #[doc(hidden)]
-pub trait ChangeIndex<TIndex> { type WithNewIndex; }
+pub trait ChangeIndex<TIndex> {
+    type WithNewIndex;
+}
 
 impl<TIndex, TType, TId, TNewIndex> ChangeIndex<TNewIndex> for BulkResponse<TIndex, TType, TId> {
     type WithNewIndex = BulkResponse<TNewIndex, TType, TId>;
@@ -813,7 +791,9 @@ impl<TIndex, TType, TId, TNewIndex> ChangeIndex<TNewIndex> for BulkErrorsRespons
 }
 
 #[doc(hidden)]
-pub trait ChangeType<TType> { type WithNewType; }
+pub trait ChangeType<TType> {
+    type WithNewType;
+}
 
 impl<TIndex, TType, TId, TNewType> ChangeType<TNewType> for BulkResponse<TIndex, TType, TId> {
     type WithNewType = BulkResponse<TIndex, TNewType, TId>;
@@ -824,7 +804,9 @@ impl<TIndex, TType, TId, TNewType> ChangeType<TNewType> for BulkErrorsResponse<T
 }
 
 #[doc(hidden)]
-pub trait ChangeId<TId> { type WithNewId; }
+pub trait ChangeId<TId> {
+    type WithNewId;
+}
 
 impl<TIndex, TType, TId, TNewId> ChangeId<TNewId> for BulkResponse<TIndex, TType, TId> {
     type WithNewId = BulkResponse<TIndex, TType, TNewId>;
@@ -836,18 +818,13 @@ impl<TIndex, TType, TId, TNewId> ChangeId<TNewId> for BulkErrorsResponse<TIndex,
 
 #[cfg(test)]
 mod tests {
-    use serde_json::{self, Value};
     use prelude::*;
 
     #[test]
     fn default_request() {
         let client = SyncClientBuilder::new().build().unwrap();
 
-        let req = client
-            .bulk()
-            .inner
-            .into_request()
-            .unwrap();
+        let req = client.bulk().inner.into_request().unwrap();
 
         assert_eq!("/_bulk", req.url.as_ref());
     }
@@ -856,12 +833,7 @@ mod tests {
     fn specify_index() {
         let client = SyncClientBuilder::new().build().unwrap();
 
-        let req = client
-            .bulk()
-            .index("test-idx")
-            .inner
-            .into_request()
-            .unwrap();
+        let req = client.bulk().index("test-idx").inner.into_request().unwrap();
 
         assert_eq!("/test-idx/_bulk", req.url.as_ref());
     }
@@ -870,13 +842,7 @@ mod tests {
     fn specify_index_ty() {
         let client = SyncClientBuilder::new().build().unwrap();
 
-        let req = client
-            .bulk()
-            .index("test-idx")
-            .ty("new-ty")
-            .inner
-            .into_request()
-            .unwrap();
+        let req = client.bulk().index("test-idx").ty("new-ty").inner.into_request().unwrap();
 
         assert_eq!("/test-idx/new-ty/_bulk", req.url.as_ref());
     }
@@ -885,11 +851,7 @@ mod tests {
     fn specify_ty_without_index() {
         let client = SyncClientBuilder::new().build().unwrap();
 
-        let req = client
-            .bulk()
-            .ty("new-ty")
-            .inner
-            .into_request();
+        let req = client.bulk().ty("new-ty").inner.into_request();
 
         assert!(req.is_err());
     }

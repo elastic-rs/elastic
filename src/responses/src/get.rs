@@ -2,22 +2,28 @@
 Response types for a [get document request](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-get.html).
 */
 
-use serde::de::DeserializeOwned;
 use http::StatusCode;
+use serde::de::DeserializeOwned;
 
-use parsing::{HttpResponseHead, IsOk, MaybeOkResponse, ResponseBody, Unbuffered};
 use error::*;
+use parsing::{HttpResponseHead, IsOk, MaybeOkResponse, ResponseBody, Unbuffered};
 
 /** Response for a [get document request](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-get.html). */
 #[derive(Deserialize, Debug)]
 pub struct GetResponse<T> {
-    #[serde(rename = "_index")] index: String,
-    #[serde(rename = "_type")] ty: String,
-    #[serde(rename = "_id")] id: String,
-    #[serde(rename = "_version")] version: Option<u32>,
+    #[serde(rename = "_index")]
+    index: String,
+    #[serde(rename = "_type")]
+    ty: String,
+    #[serde(rename = "_id")]
+    id: String,
+    #[serde(rename = "_version")]
+    version: Option<u32>,
     found: bool,
-    #[serde(rename = "_source")] source: Option<T>,
-    #[serde(rename = "_routing")] routing: Option<String>,
+    #[serde(rename = "_source")]
+    source: Option<T>,
+    #[serde(rename = "_routing")]
+    routing: Option<String>,
 }
 
 impl<T> GetResponse<T> {
@@ -66,10 +72,7 @@ impl<T: DeserializeOwned> IsOk for GetResponse<T> {
                 // Check if the response contains a root 'error' node
                 let (maybe_err, body) = body.body()?;
 
-                let is_ok = maybe_err
-                    .as_object()
-                    .and_then(|maybe_err| maybe_err.get("error"))
-                    .is_none();
+                let is_ok = maybe_err.as_object().and_then(|maybe_err| maybe_err.get("error")).is_none();
 
                 Ok(MaybeOkResponse::new(is_ok, body))
             }

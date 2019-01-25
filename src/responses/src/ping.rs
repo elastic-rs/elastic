@@ -1,4 +1,4 @@
-/*! 
+/*!
 Response types for a cluster ping request.
 */
 

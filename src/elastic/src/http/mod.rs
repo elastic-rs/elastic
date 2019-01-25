@@ -1,18 +1,18 @@
-/*! 
+/*!
 Raw HTTP modules.
 
 These types are re-exported from `reqwest` and used in parts of `elastic`s public API.
 They may eventually be wrapped and made implementation details.
 */
 
-mod sync;
 mod async;
+mod sync;
 
-pub use self::sync::*;
 pub use self::async::*;
+pub use self::sync::*;
 
-pub use reqwest::Url;
 pub use reqwest::header;
+pub use reqwest::Url;
 
 pub use elastic_requests::Method;
 pub use elastic_responses::StatusCode;

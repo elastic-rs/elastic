@@ -1,10 +1,10 @@
 /*! Common mapping for the Elasticsearch `string` types. */
 
-use std::collections::BTreeMap;
-use serde::{Serialize, Serializer};
-use serde::ser::SerializeStruct;
-use super::text::mapping::{TextFieldMapping, TextMapping};
 use super::keyword::mapping::KeywordFieldMapping;
+use super::text::mapping::{TextFieldMapping, TextMapping};
+use serde::ser::SerializeStruct;
+use serde::{Serialize, Serializer};
+use std::collections::BTreeMap;
 
 /** Default mapping for `String`. */
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
@@ -13,10 +13,7 @@ impl TextMapping for DefaultStringMapping {
     fn fields() -> Option<BTreeMap<&'static str, StringField>> {
         let mut fields = BTreeMap::new();
 
-        let keyword = KeywordFieldMapping {
-            ignore_above: Some(256),
-            ..Default::default()
-        };
+        let keyword = KeywordFieldMapping { ignore_above: Some(256), ..Default::default() };
 
         fields.insert("keyword", StringField::Keyword(keyword));
 
@@ -27,7 +24,8 @@ impl TextMapping for DefaultStringMapping {
 /** The `index_options` parameter controls what information is added to the inverted index, for search and highlighting purposes. */
 #[derive(Debug, Clone, Copy)]
 pub enum IndexOptions {
-    /** Only the doc number is indexed. Can answer the question Does this term exist in this field? */ Docs,
+    /** Only the doc number is indexed. Can answer the question Does this term exist in this field? */
+    Docs,
     /**
     Doc number and term frequencies are indexed.
     Term frequencies are used to score repeated terms higher than single terms.
@@ -67,10 +65,14 @@ String types can have a number of alternative field representations for differen
 */
 #[derive(Debug, Clone, Copy)]
 pub enum StringField {
-    /** A `token_count` sub field. */ TokenCount(ElasticTokenCountFieldMapping),
-    /** A `completion` suggester sub field. */ Completion(ElasticCompletionFieldMapping),
-    /** A `keyword` sub field. */ Keyword(KeywordFieldMapping),
-    /** A `text` sub field. */ Text(TextFieldMapping),
+    /** A `token_count` sub field. */
+    TokenCount(ElasticTokenCountFieldMapping),
+    /** A `completion` suggester sub field. */
+    Completion(ElasticCompletionFieldMapping),
+    /** A `keyword` sub field. */
+    Keyword(KeywordFieldMapping),
+    /** A `text` sub field. */
+    Text(TextFieldMapping),
 }
 
 impl Serialize for StringField {
@@ -96,14 +98,16 @@ pub struct ElasticTokenCountFieldMapping {
     Defaults to the default index analyzer, or the `standard` analyzer.
     */
     pub analyzer: Option<&'static str>,
-    /** Field-level index time boosting. Accepts a floating point number, defaults to `1.0`. */ pub boost: Option<f32>,
+    /** Field-level index time boosting. Accepts a floating point number, defaults to `1.0`. */
+    pub boost: Option<f32>,
     /**
     Should the field be stored on disk in a column-stride fashion,
     so that it can later be used for sorting, aggregations, or scripting?
     Accepts `true` (default) or `false`.
     */
     pub doc_values: Option<bool>,
-    /** Should the field be searchable? Accepts `not_analyzed` (default) and `no`. */ pub index: Option<IndexAnalysis>,
+    /** Should the field be searchable? Accepts `not_analyzed` (default) and `no`. */
+    pub index: Option<IndexAnalysis>,
     /**
     Whether or not the field value should be included in the `_all` field?
     Accepts true or false.
@@ -153,8 +157,10 @@ pub struct ElasticCompletionFieldMapping {
     Defaults to the default index analyzer, or the `standard` analyzer.
     */
     pub analyzer: Option<&'static str>,
-    /** The search analyzer to use, defaults to value of analyzer. */ pub search_analyzer: Option<&'static str>,
-    /** Enables the storing of payloads, defaults to `false`. */ pub payloads: Option<bool>,
+    /** The search analyzer to use, defaults to value of analyzer. */
+    pub search_analyzer: Option<&'static str>,
+    /** Enables the storing of payloads, defaults to `false`. */
+    pub payloads: Option<bool>,
     /**
     Preserves the separators, defaults to `true`.
     If disabled, you could find a field starting with Foo Fighters,
@@ -193,11 +199,7 @@ impl Serialize for ElasticCompletionFieldMapping {
         ser_field!(state, "search_analyzer", self.search_analyzer);
         ser_field!(state, "payloads", self.payloads);
         ser_field!(state, "preserve_separators", self.preserve_separators);
-        ser_field!(
-            state,
-            "preserve_position_increments",
-            self.preserve_position_increments
-        );
+        ser_field!(state, "preserve_position_increments", self.preserve_position_increments);
         ser_field!(state, "max_input_length", self.max_input_length);
 
         state.end()
@@ -222,7 +224,8 @@ pub enum IndexAnalysis {
     `not_analyzed` fields are usually used with term-level queries for structured search.
     */
     NotAnalyzed,
-    /** Do not add this field value to the index. With this setting, the field will not be queryable. */ No,
+    /** Do not add this field value to the index. With this setting, the field will not be queryable. */
+    No,
 }
 
 impl Serialize for IndexAnalysis {
@@ -260,24 +263,15 @@ mod tests {
                 }),
             );
 
-            fields.insert(
-                "count",
-                StringField::TokenCount(ElasticTokenCountFieldMapping::default()),
-            );
+            fields.insert("count", StringField::TokenCount(ElasticTokenCountFieldMapping::default()));
 
-            fields.insert(
-                "comp",
-                StringField::Completion(ElasticCompletionFieldMapping::default()),
-            );
+            fields.insert("comp", StringField::Completion(ElasticCompletionFieldMapping::default()));
 
             Some(fields)
         }
 
         fn fielddata_frequency_filter() -> Option<FieldDataFrequencyFilter> {
-            Some(FieldDataFrequencyFilter {
-                min: Some(0.0),
-                ..Default::default()
-            })
+            Some(FieldDataFrequencyFilter { min: Some(0.0), ..Default::default() })
         }
 
         fn analyzer() -> Option<&'static str> {
@@ -355,15 +349,9 @@ mod tests {
                 }),
             );
 
-            fields.insert(
-                "count",
-                StringField::TokenCount(ElasticTokenCountFieldMapping::default()),
-            );
+            fields.insert("count", StringField::TokenCount(ElasticTokenCountFieldMapping::default()));
 
-            fields.insert(
-                "comp",
-                StringField::Completion(ElasticCompletionFieldMapping::default()),
-            );
+            fields.insert("comp", StringField::Completion(ElasticCompletionFieldMapping::default()));
 
             Some(fields)
         }
@@ -558,12 +546,8 @@ mod tests {
 
     #[test]
     fn serialise_mapping_index_options() {
-        let io_opts: Vec<String> = vec![
-            IndexOptions::Docs,
-            IndexOptions::Freqs,
-            IndexOptions::Positions,
-            IndexOptions::Offsets,
-        ].iter()
+        let io_opts: Vec<String> = vec![IndexOptions::Docs, IndexOptions::Freqs, IndexOptions::Positions, IndexOptions::Offsets]
+            .iter()
             .map(|i| serde_json::to_string(i).unwrap())
             .collect();
 
@@ -582,23 +566,12 @@ mod tests {
 
     #[test]
     fn serialise_mapping_terms_vector() {
-        let v_opts: Vec<String> = vec![
-            TermVector::No,
-            TermVector::Yes,
-            TermVector::WithPositions,
-            TermVector::WithOffsets,
-            TermVector::WithPositionsOffsets,
-        ].iter()
+        let v_opts: Vec<String> = vec![TermVector::No, TermVector::Yes, TermVector::WithPositions, TermVector::WithOffsets, TermVector::WithPositionsOffsets]
+            .iter()
             .map(|i| serde_json::to_string(i).unwrap())
             .collect();
 
-        let expected_opts = vec![
-            r#""no""#,
-            r#""yes""#,
-            r#""with_positions""#,
-            r#""with_offsets""#,
-            r#""with_positions_offsets""#,
-        ];
+        let expected_opts = vec![r#""no""#, r#""yes""#, r#""with_positions""#, r#""with_offsets""#, r#""with_positions_offsets""#];
 
         let mut success = true;
         for i in 0..v_opts.len() {
@@ -649,10 +622,7 @@ mod tests {
     #[test]
     fn serialise_mapping_text_field() {
         let mapping = StringField::Text(TextFieldMapping {
-            fielddata_frequency_filter: Some(FieldDataFrequencyFilter {
-                min: Some(0.0),
-                ..Default::default()
-            }),
+            fielddata_frequency_filter: Some(FieldDataFrequencyFilter { min: Some(0.0), ..Default::default() }),
             analyzer: Some("my_analyzer"),
             eager_global_ordinals: Some(true),
             fielddata: Some(false),

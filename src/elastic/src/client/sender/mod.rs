@@ -15,23 +15,23 @@ Some notable types include:
 
 use fluent_builder::{FluentBuilder, StatefulFluentBuilder};
 
-pub mod static_nodes;
 pub mod sniffed_nodes;
+pub mod static_nodes;
 
-mod sync;
 mod async;
 mod params;
-pub use self::sync::*;
+mod sync;
 pub use self::async::*;
 pub use self::params::*;
+pub use self::sync::*;
 
-use std::sync::Arc;
 use std::marker::PhantomData;
+use std::sync::Arc;
 use uuid::Uuid;
 
-use client::requests::Endpoint;
-use self::static_nodes::StaticNodes;
 use self::sniffed_nodes::{SniffedNodes, SniffedNodesBuilder};
+use self::static_nodes::StaticNodes;
+use client::requests::Endpoint;
 use private;
 
 /**
@@ -62,10 +62,7 @@ impl<TEndpoint, TParams, TBody> SendableRequest<TEndpoint, TParams, TBody> {
 
 pub(crate) enum SendableRequestParams<TParams> {
     Value(RequestParams),
-    Builder {
-        params: TParams,
-        builder: FluentBuilder<RequestParams>,
-    },
+    Builder { params: TParams, builder: FluentBuilder<RequestParams> },
 }
 
 /**
@@ -148,15 +145,11 @@ pub struct NodeAddresses<TSender> {
 
 impl<TSender> NodeAddresses<TSender> {
     fn static_nodes(nodes: StaticNodes) -> Self {
-        NodeAddresses {
-            inner: NodeAddressesInner::Static(nodes),
-        }
+        NodeAddresses { inner: NodeAddressesInner::Static(nodes) }
     }
 
     fn sniffed_nodes(nodes: SniffedNodes<TSender>) -> Self {
-        NodeAddresses {
-            inner: NodeAddressesInner::Sniffed(nodes),
-        }
+        NodeAddresses { inner: NodeAddressesInner::Sniffed(nodes) }
     }
 }
 
@@ -207,9 +200,7 @@ impl NodeAddressesBuilder {
                 NodeAddresses::static_nodes(nodes)
             }
             NodeAddressesBuilder::Sniffed(builder) => {
-                let nodes = builder
-                    .into_value(|node| SniffedNodesBuilder::new(node))
-                    .build(params, sender);
+                let nodes = builder.into_value(|node| SniffedNodesBuilder::new(node)).build(params, sender);
 
                 NodeAddresses::sniffed_nodes(nodes)
             }

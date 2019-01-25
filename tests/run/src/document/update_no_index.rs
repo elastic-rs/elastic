@@ -1,6 +1,6 @@
-use futures::Future;
-use elastic::prelude::*;
 use elastic::error::{ApiError, Error};
+use elastic::prelude::*;
+use futures::Future;
 use run_tests::IntegrationTest;
 
 #[derive(Debug, Clone, Copy)]
@@ -32,11 +32,7 @@ impl IntegrationTest for UpdateNoIndex {
 
     // Execute an update request against that index
     fn request(&self, client: AsyncClient) -> Box<Future<Item = Self::Response, Error = Error>> {
-        let res = client
-            .document::<Doc>()
-            .update("1")
-            .doc(json!({}))
-            .send();
+        let res = client.document::<Doc>().update("1").doc(json!({})).send();
 
         Box::new(res)
     }

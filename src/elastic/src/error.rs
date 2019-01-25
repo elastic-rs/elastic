@@ -37,13 +37,13 @@ match response {
 ```
 */
 
-use std::io;
-use std::fmt;
 use std::error::Error as StdError;
+use std::fmt;
+use std::io;
 
-use serde_json;
-use reqwest::Error as ReqwestError;
 use elastic_responses::error::ResponseError;
+use reqwest::Error as ReqwestError;
+use serde_json;
 
 pub use elastic_responses::error::ApiError;
 
@@ -52,7 +52,7 @@ use http::StatusCode;
 /** An alias for a result. */
 pub type Result<T> = ::std::result::Result<T, Error>;
 
-/** 
+/**
 An error encountered while interacting with Elasticsearch.
 
 API errors can be easily matched and destructured whereas client errors
@@ -181,9 +181,7 @@ where
 /** A convenient method to generate errors in tests. */
 #[cfg(test)]
 pub(crate) fn test() -> Error {
-    Error::Client(ClientError {
-        inner: inner::Error::from("a test error"),
-    })
+    Error::Client(ClientError { inner: inner::Error::from("a test error") })
 }
 
 pub(crate) enum MaybeApiError<E> {

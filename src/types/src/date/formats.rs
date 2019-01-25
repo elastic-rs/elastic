@@ -1,6 +1,6 @@
-use std::error::Error;
-use chrono::{DateTime, NaiveDateTime, Timelike, Utc};
 use super::{DateFormat, DateValue, FormattedDate, ParseError};
+use chrono::{DateTime, NaiveDateTime, Timelike, Utc};
+use std::error::Error;
 
 /** The default `date` format (`BasicDateTime`). */
 pub type DefaultDateFormat = BasicDateTime;
@@ -48,8 +48,7 @@ impl DateFormat for EpochMillis {
     }
 
     fn parse(date: &str) -> Result<DateValue, ParseError> {
-        let millis = date.parse::<i64>()
-            .map_err(|e| e.description().to_string())?;
+        let millis = date.parse::<i64>().map_err(|e| e.description().to_string())?;
 
         let (s, m) = {
             // For positive timestamps:
@@ -85,17 +84,7 @@ mod tests {
     fn chrono() {
         let date = parse::<DefaultDateMapping<ChronoFormat>>("2015-07-03T14:55:02Z").unwrap();
 
-        assert_eq!(
-            (2015i32, 7u32, 3u32, 14u32, 55u32, 2u32),
-            (
-                date.year(),
-                date.month(),
-                date.day(),
-                date.hour(),
-                date.minute(),
-                date.second()
-            )
-        );
+        assert_eq!((2015i32, 7u32, 3u32, 14u32, 55u32, 2u32), (date.year(), date.month(), date.day(), date.hour(), date.minute(), date.second()));
 
         let fmtd = format(&date).to_string();
         assert_eq!("2015-07-03T14:55:02Z", &fmtd);
@@ -110,17 +99,7 @@ mod tests {
     fn basic_datetime_no_millis() {
         let date = parse::<DefaultDateMapping<BasicDateTimeNoMillis>>("20150703T145502Z").unwrap();
 
-        assert_eq!(
-            (2015i32, 7u32, 3u32, 14u32, 55u32, 2u32),
-            (
-                date.year(),
-                date.month(),
-                date.day(),
-                date.hour(),
-                date.minute(),
-                date.second()
-            )
-        );
+        assert_eq!((2015i32, 7u32, 3u32, 14u32, 55u32, 2u32), (date.year(), date.month(), date.day(), date.hour(), date.minute(), date.second()));
 
         let fmtd = format(&date).to_string();
         assert_eq!("20150703T145502Z", &fmtd);
@@ -137,15 +116,7 @@ mod tests {
 
         assert_eq!(
             (2015i32, 7u32, 3u32, 14u32, 55u32, 2u32, 478u32),
-            (
-                date.year(),
-                date.month(),
-                date.day(),
-                date.hour(),
-                date.minute(),
-                date.second(),
-                date.nanosecond() / 1000000
-            )
+            (date.year(), date.month(), date.day(), date.hour(), date.minute(), date.second(), date.nanosecond() / 1000000)
         );
 
         let fmtd = format(&date).to_string();
@@ -163,15 +134,7 @@ mod tests {
 
         assert_eq!(
             (2015i32, 7u32, 3u32, 14u32, 55u32, 2u32, 478u32),
-            (
-                date.year(),
-                date.month(),
-                date.day(),
-                date.hour(),
-                date.minute(),
-                date.second(),
-                date.nanosecond() / 1000000
-            )
+            (date.year(), date.month(), date.day(), date.hour(), date.minute(), date.second(), date.nanosecond() / 1000000)
         );
 
         let fmtd = format(&date).to_string();
@@ -189,15 +152,7 @@ mod tests {
 
         assert_eq!(
             (2015i32, 7u32, 3u32, 14u32, 55u32, 2u32, 0u32),
-            (
-                date.year(),
-                date.month(),
-                date.day(),
-                date.hour(),
-                date.minute(),
-                date.second(),
-                date.nanosecond() / 1000000
-            )
+            (date.year(), date.month(), date.day(), date.hour(), date.minute(), date.second(), date.nanosecond() / 1000000)
         );
 
         let fmtd = format(&date).to_string();
@@ -210,15 +165,7 @@ mod tests {
 
         assert_eq!(
             (1715i32, 7u32, 3u32, 14u32, 55u32, 1u32, 522u32),
-            (
-                date.year(),
-                date.month(),
-                date.day(),
-                date.hour(),
-                date.minute(),
-                date.second(),
-                date.nanosecond() / 1000000
-            )
+            (date.year(), date.month(), date.day(), date.hour(), date.minute(), date.second(), date.nanosecond() / 1000000)
         );
 
         let fmtd = format(&date).to_string();
@@ -231,15 +178,7 @@ mod tests {
 
         assert_eq!(
             (1715i32, 7u32, 3u32, 14u32, 55u32, 1u32, 1000u32),
-            (
-                date.year(),
-                date.month(),
-                date.day(),
-                date.hour(),
-                date.minute(),
-                date.second(),
-                date.nanosecond() / 1000000
-            )
+            (date.year(), date.month(), date.day(), date.hour(), date.minute(), date.second(), date.nanosecond() / 1000000)
         );
 
         let fmtd = format(&date).to_string();
@@ -252,15 +191,7 @@ mod tests {
 
         assert_eq!(
             (1970i32, 1u32, 1u32, 0u32, 0u32, 0u32, 100u32),
-            (
-                date.year(),
-                date.month(),
-                date.day(),
-                date.hour(),
-                date.minute(),
-                date.second(),
-                date.nanosecond() / 1000000
-            )
+            (date.year(), date.month(), date.day(), date.hour(), date.minute(), date.second(), date.nanosecond() / 1000000)
         );
 
         let fmtd = format(&date).to_string();
@@ -273,15 +204,7 @@ mod tests {
 
         assert_eq!(
             (1970i32, 1u32, 1u32, 0u32, 0u32, 5u32, 100u32),
-            (
-                date.year(),
-                date.month(),
-                date.day(),
-                date.hour(),
-                date.minute(),
-                date.second(),
-                date.nanosecond() / 1000000
-            )
+            (date.year(), date.month(), date.day(), date.hour(), date.minute(), date.second(), date.nanosecond() / 1000000)
         );
 
         let fmtd = format(&date).to_string();
@@ -294,15 +217,7 @@ mod tests {
 
         assert_eq!(
             (1969i32, 12u32, 31u32, 23u32, 59u32, 59u32, 900u32),
-            (
-                date.year(),
-                date.month(),
-                date.day(),
-                date.hour(),
-                date.minute(),
-                date.second(),
-                date.nanosecond() / 1000000
-            )
+            (date.year(), date.month(), date.day(), date.hour(), date.minute(), date.second(), date.nanosecond() / 1000000)
         );
 
         let fmtd = format(&date).to_string();
@@ -315,15 +230,7 @@ mod tests {
 
         assert_eq!(
             (1969i32, 12u32, 31u32, 23u32, 59u32, 54u32, 900u32),
-            (
-                date.year(),
-                date.month(),
-                date.day(),
-                date.hour(),
-                date.minute(),
-                date.second(),
-                date.nanosecond() / 1000000
-            )
+            (date.year(), date.month(), date.day(), date.hour(), date.minute(), date.second(), date.nanosecond() / 1000000)
         );
 
         let fmtd = format(&date).to_string();
@@ -336,15 +243,7 @@ mod tests {
 
         assert_eq!(
             (1970i32, 1u32, 1u32, 0u32, 0u32, 0u32, 0u32),
-            (
-                date.year(),
-                date.month(),
-                date.day(),
-                date.hour(),
-                date.minute(),
-                date.second(),
-                date.nanosecond() / 1000000
-            )
+            (date.year(), date.month(), date.day(), date.hour(), date.minute(), date.second(), date.nanosecond() / 1000000)
         );
 
         let fmtd = format(&date).to_string();
@@ -373,17 +272,7 @@ mod tests {
 
         let date = parse::<DefaultDateMapping<MyCustomFormat>>("2015-07-03T14:55:02+00:00").unwrap();
 
-        assert_eq!(
-            (2015i32, 7u32, 3u32, 14u32, 55u32, 2u32),
-            (
-                date.year(),
-                date.month(),
-                date.day(),
-                date.hour(),
-                date.minute(),
-                date.second()
-            )
-        );
+        assert_eq!((2015i32, 7u32, 3u32, 14u32, 55u32, 2u32), (date.year(), date.month(), date.day(), date.hour(), date.minute(), date.second()));
 
         let fmtd = format(&date).to_string();
         assert_eq!("2015-07-03T14:55:02+00:00", &fmtd);

@@ -4,18 +4,23 @@ Response types for a [delete document request](https://www.elastic.co/guide/en/e
 
 use http::StatusCode;
 
-use parsing::{HttpResponseHead, IsOk, MaybeOkResponse, ResponseBody, Unbuffered};
 use common::DocumentResult;
 use error::*;
+use parsing::{HttpResponseHead, IsOk, MaybeOkResponse, ResponseBody, Unbuffered};
 
 /** Response for a [delete document request](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-delete.html). */
 #[derive(Deserialize, Debug)]
 pub struct DeleteResponse {
-    #[serde(rename = "_index")] index: String,
-    #[serde(rename = "_type")] ty: String,
-    #[serde(rename = "_id")] id: String,
-    #[serde(rename = "_version")] version: Option<u32>,
-    #[serde(rename = "_routing")] routing: Option<String>,
+    #[serde(rename = "_index")]
+    index: String,
+    #[serde(rename = "_type")]
+    ty: String,
+    #[serde(rename = "_id")]
+    id: String,
+    #[serde(rename = "_version")]
+    version: Option<u32>,
+    #[serde(rename = "_routing")]
+    routing: Option<String>,
     result: DocumentResult,
 }
 

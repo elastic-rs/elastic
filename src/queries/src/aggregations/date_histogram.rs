@@ -1,11 +1,12 @@
-use std::collections::HashMap;
 use super::BucketAggregation;
 use super::EsAggregation;
+use std::collections::HashMap;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct DateHistogramAggregation {
     pub date_histogram: DateHistogramFields,
-    #[serde(skip_serializing_if = "Option::is_none")] pub aggs: Option<EsAggregation>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub aggs: Option<EsAggregation>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

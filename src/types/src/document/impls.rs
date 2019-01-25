@@ -1,8 +1,8 @@
-use std::borrow::Cow;
-use std::marker::PhantomData;
+use super::mapping::{ObjectFieldType, ObjectMapping, PropertiesMapping};
 use serde::ser::SerializeStruct;
 use serde_json::Value;
-use super::mapping::{ObjectFieldType, ObjectMapping, PropertiesMapping};
+use std::borrow::Cow;
+use std::marker::PhantomData;
 
 /**
 An indexable Elasticsearch type.
@@ -56,7 +56,7 @@ pub trait StaticType: DocumentType {
 }
 
 /**
-A wrapper type for serialising user types as fields. 
+A wrapper type for serialising user types as fields.
 */
 #[derive(Clone, Copy)]
 pub struct FieldDocumentMapping<TMapping>(PhantomData<TMapping>);
@@ -267,9 +267,7 @@ where
     TMapping: ObjectMapping,
 {
     fn default() -> Self {
-        IndexDocumentMapping {
-            _m: Default::default()
-        }
+        IndexDocumentMapping { _m: Default::default() }
     }
 }
 
@@ -406,10 +404,10 @@ where
 
 #[cfg(test)]
 mod tests {
-    use std::borrow::Cow;
-    use serde_json::{self, Value};
+    use super::{DocumentType, IndexDocumentMapping, StaticIndex, StaticType};
     use prelude::*;
-    use super::{DocumentType, StaticIndex, StaticType, IndexDocumentMapping};
+    use serde_json::{self, Value};
+    use std::borrow::Cow;
 
     // Make sure we can derive with no `uses`.
     pub mod no_prelude {
@@ -450,15 +448,13 @@ mod tests {
     }
 
     #[derive(Serialize, ElasticType)]
-    #[elastic(
-        index = "renamed_index",
-        ty = "renamed_ty",
-        id(expr = "CustomType::id"),
-        mapping = "ManualCustomTypeMapping")]
+    #[elastic(index = "renamed_index", ty = "renamed_ty", id(expr = "CustomType::id"), mapping = "ManualCustomTypeMapping")]
     pub struct CustomType {
         pub field: i32,
-        #[serde(skip_serializing)] pub ignored_field: i32,
-        #[serde(rename = "renamed_field")] pub field2: i32,
+        #[serde(skip_serializing)]
+        pub ignored_field: i32,
+        #[serde(rename = "renamed_field")]
+        pub field2: i32,
     }
 
     impl CustomType {
@@ -530,11 +526,7 @@ mod tests {
 
     #[test]
     fn get_custom_type_id() {
-        let doc = CustomType {
-            field: 13,
-            ignored_field: 0,
-            field2: 1,
-        };
+        let doc = CustomType { field: 13, ignored_field: 0, field2: 1 };
 
         assert_eq!("13", doc.partial_id().unwrap().as_ref());
     }
@@ -686,10 +678,7 @@ mod tests {
 
     #[test]
     fn serialise_mapping_dynamic() {
-        let d_opts: Vec<String> = vec![Dynamic::True, Dynamic::False, Dynamic::Strict]
-            .iter()
-            .map(|i| serde_json::to_string(i).unwrap())
-            .collect();
+        let d_opts: Vec<String> = vec![Dynamic::True, Dynamic::False, Dynamic::Strict].iter().map(|i| serde_json::to_string(i).unwrap()).collect();
 
         let expected_opts = vec![r#"true"#, r#"false"#, r#""strict""#];
 

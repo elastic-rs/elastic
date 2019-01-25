@@ -1,8 +1,8 @@
-use serde_json;
-use georust::{Coordinate, Point};
 use elastic_types;
 use elastic_types::prelude::*;
 use geo_point_fixtures::*;
+use georust::{Coordinate, Point};
+use serde_json;
 
 use test::Bencher;
 
@@ -17,10 +17,7 @@ fn parse_string(b: &mut Bencher) {
 
 #[bench]
 fn fmt_string(b: &mut Bencher) {
-    let point = GeoPoint::<DefaultGeoPointMapping<GeoPointString>>::new(Point(Coordinate {
-        x: -71.34,
-        y: 41.12,
-    }));
+    let point = GeoPoint::<DefaultGeoPointMapping<GeoPointString>>::new(Point(Coordinate { x: -71.34, y: 41.12 }));
 
     b.iter(|| serde_json::to_string(&point).unwrap());
 }
@@ -36,10 +33,7 @@ fn parse_object(b: &mut Bencher) {
 
 #[bench]
 fn fmt_object(b: &mut Bencher) {
-    let point = GeoPoint::<DefaultGeoPointMapping<GeoPointObject>>::new(Point(Coordinate {
-        x: -71.34,
-        y: 41.12,
-    }));
+    let point = GeoPoint::<DefaultGeoPointMapping<GeoPointObject>>::new(Point(Coordinate { x: -71.34, y: 41.12 }));
 
     b.iter(|| serde_json::to_string(&point).unwrap());
 }
@@ -55,10 +49,7 @@ fn parse_hash(b: &mut Bencher) {
 
 #[bench]
 fn fmt_hash(b: &mut Bencher) {
-    let point = GeoPoint::<DefaultGeoPointMapping<GeoPointHash>>::new(Point(Coordinate {
-        x: -71.34,
-        y: 41.12,
-    }));
+    let point = GeoPoint::<DefaultGeoPointMapping<GeoPointHash>>::new(Point(Coordinate { x: -71.34, y: 41.12 }));
 
     b.iter(|| serde_json::to_string(&point).unwrap());
 }
@@ -74,17 +65,12 @@ fn parse_array(b: &mut Bencher) {
 
 #[bench]
 fn fmt_array(b: &mut Bencher) {
-    let point = GeoPoint::<DefaultGeoPointMapping<GeoPointArray>>::new(Point(Coordinate {
-        x: -71.34,
-        y: 41.12,
-    }));
+    let point = GeoPoint::<DefaultGeoPointMapping<GeoPointArray>>::new(Point(Coordinate { x: -71.34, y: 41.12 }));
 
     b.iter(|| serde_json::to_string(&point).unwrap());
 }
 
 #[bench]
 fn mapping(b: &mut Bencher) {
-    b.iter(|| {
-        elastic_types::derive::standalone_field_ser(MyGeoPointMapping).unwrap()
-    });
+    b.iter(|| elastic_types::derive::standalone_field_ser(MyGeoPointMapping).unwrap());
 }

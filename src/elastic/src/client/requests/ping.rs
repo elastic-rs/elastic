@@ -4,16 +4,16 @@ Builders for ping requests.
 
 use futures::{Future, Poll};
 
-use error::{Error, Result};
-use client::Client;
-use client::sender::{AsyncSender, Sender, SyncSender};
-use client::requests::RequestBuilder;
 use client::requests::endpoints::PingRequest;
 use client::requests::raw::RawRequestInner;
+use client::requests::RequestBuilder;
 use client::responses::PingResponse;
+use client::sender::{AsyncSender, Sender, SyncSender};
+use client::Client;
+use error::{Error, Result};
 
 /**
-A ping request builder that can be configured before sending. 
+A ping request builder that can be configured before sending.
 
 Call [`Client.ping`][Client.ping] to get a `PingRequestBuilder`.
 The `send` method will either send the request [synchronously][send-sync] or [asynchronously][send-async], depending on the `Client` it was created from.
@@ -34,7 +34,7 @@ impl<TSender> Client<TSender>
 where
     TSender: Sender,
 {
-    /** 
+    /**
     Create a [`PingRequestBuilder`][PingRequestBuilder] with this `Client` that can be configured before sending.
 
     For more details, see:
@@ -92,7 +92,7 @@ impl PingRequestBuilder<SyncSender> {
     # Examples
 
     Ping an Elasticsearch node:
-    
+
     ```no_run
     # extern crate serde;
     # #[macro_use] extern crate serde_derive;
@@ -117,9 +117,7 @@ impl PingRequestBuilder<SyncSender> {
     pub fn send(self) -> Result<PingResponse> {
         let req = self.inner.into_request();
 
-        RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
-            .send()?
-            .into_response()
+        RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req)).send()?.into_response()
     }
 }
 
@@ -129,13 +127,13 @@ impl PingRequestBuilder<SyncSender> {
 impl PingRequestBuilder<AsyncSender> {
     /**
     Send a `PingRequestBuilder` asynchronously using an [`AsyncClient`][AsyncClient].
-    
+
     This will return a future that will resolve to the deserialised ping response.
 
     # Examples
 
     Ping an Elasticsearch node:
-    
+
     ```no_run
     # extern crate tokio_core;
     # extern crate futures;
@@ -167,9 +165,7 @@ impl PingRequestBuilder<AsyncSender> {
     pub fn send(self) -> Pending {
         let req = self.inner.into_request();
 
-        let res_future = RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
-            .send()
-            .and_then(|res| res.into_response());
+        let res_future = RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req)).send().and_then(|res| res.into_response());
 
         Pending::new(res_future)
     }
@@ -185,9 +181,7 @@ impl Pending {
     where
         F: Future<Item = PingResponse, Error = Error> + 'static,
     {
-        Pending {
-            inner: Box::new(fut),
-        }
+        Pending { inner: Box::new(fut) }
     }
 }
 

@@ -10,10 +10,10 @@ fn load_file(p: &str) -> File {
     File::open(p).unwrap()
 }
 
-pub mod command;
-pub mod ping;
-pub mod get;
-pub mod search;
 pub mod bulk;
+pub mod command;
+pub mod get;
 pub mod index;
 pub mod indices_exists;
+pub mod ping;
+pub mod search;
