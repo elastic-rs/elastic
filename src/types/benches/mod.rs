@@ -589,7 +589,7 @@ pub mod object_fixtures {
 
     #[derive(Default, Clone)]
     pub struct MySmlMapping;
-    impl DocumentMapping for MySmlMapping {
+    impl OpjectMapping for MySmlMapping {
         fn name() -> &'static str {
             "ty"
         }
@@ -606,7 +606,7 @@ pub mod object_fixtures {
 
     #[derive(Default, Clone)]
     pub struct MyMedMapping;
-    impl DocumentMapping for MyMedMapping {
+    impl OpjectMapping for MyMedMapping {
         fn name() -> &'static str {
             "ty"
         }
@@ -623,7 +623,7 @@ pub mod object_fixtures {
 
     #[derive(Default, Clone)]
     pub struct MyLrgMapping;
-    impl DocumentMapping for MyLrgMapping {
+    impl OpjectMapping for MyLrgMapping {
         fn name() -> &'static str {
             "ty"
         }

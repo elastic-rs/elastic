@@ -56,17 +56,14 @@ This will produce the following mapping:
 }
 # );
 # #[cfg(feature = "nightly")]
-# let mapping = serde_json::to_string(&DocumentField::from(MyBooleanMapping)).unwrap();
+# let mapping = serde_json::to_string(&field::serialize(MyBooleanMapping)).unwrap();
 # #[cfg(not(feature = "nightly"))]
 # let mapping = json.clone();
 # assert_eq!(json, mapping);
 # }
 ```
 */
-pub trait BooleanMapping
-where
-    Self: Default,
-{
+pub trait BooleanMapping {
     /** Field-level index time boosting. Accepts a floating point number, defaults to `1.0`. */
     fn boost() -> Option<f32> {
         None
@@ -111,7 +108,7 @@ impl BooleanMapping for DefaultBooleanMapping {}
 mod private {
     use serde::{Serialize, Serializer};
     use serde::ser::SerializeStruct;
-    use private::field::{DocumentField, FieldMapping, FieldType};
+    use private::field::{StaticSerialize, SerializeFieldMapping, FieldMapping, FieldType};
     use super::{BooleanFieldType, BooleanMapping};
 
     #[derive(Default)]
@@ -128,18 +125,18 @@ mod private {
     where
         TMapping: BooleanMapping,
     {
-        type DocumentField = DocumentField<TMapping, BooleanPivot>;
+        type SerializeFieldMapping = SerializeFieldMapping<TMapping, BooleanPivot>;
 
         fn data_type() -> &'static str {
             "boolean"
         }
     }
 
-    impl<TMapping> Serialize for DocumentField<TMapping, BooleanPivot>
+    impl<TMapping> StaticSerialize for SerializeFieldMapping<TMapping, BooleanPivot>
     where
         TMapping: FieldMapping<BooleanPivot> + BooleanMapping,
     {
-        fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+        fn static_serialize<S>(serializer: S) -> Result<S::Ok, S::Error>
         where
             S: Serializer,
         {
@@ -163,7 +160,7 @@ mod tests {
     use serde_json;
 
     use prelude::*;
-    use private::field::{DocumentField, FieldType};
+    use private::field;
 
     #[derive(Default, Clone)]
     pub struct MyBooleanMapping;
@@ -190,13 +187,8 @@ mod tests {
     }
 
     #[test]
-    fn bool_has_default_mapping() {
-        assert_eq!(DefaultBooleanMapping, bool::field_mapping());
-    }
-
-    #[test]
     fn serialise_mapping_default() {
-        let ser = serde_json::to_string(&DocumentField::from(DefaultBooleanMapping)).unwrap();
+        let ser = serde_json::to_string(&field::serialize(DefaultBooleanMapping)).unwrap();
 
         let expected = json_str!({
             "type": "boolean"
@@ -207,7 +199,7 @@ mod tests {
 
     #[test]
     fn serialise_mapping_custom() {
-        let ser = serde_json::to_string(&DocumentField::from(MyBooleanMapping)).unwrap();
+        let ser = serde_json::to_string(&field::serialize(MyBooleanMapping)).unwrap();
 
         let expected = json_str!({
             "type": "boolean",

@@ -91,7 +91,7 @@ Using the `Date` type for the `timestamp`, we can correctly deserialise the docu
 ```rust
 #[derive(Deserialize)]
 struct MyType {
-  id: i32,
+  id: String,
   timestamp: Timestamp,
   title: String
 }

@@ -9,14 +9,15 @@ use futures::{Future, Poll};
 use serde::de::DeserializeOwned;
 
 use error::{Error, Result};
-use client::Client;
+use client::DocumentClient;
 use client::sender::{AsyncSender, Sender, SyncSender};
 use client::requests::RequestBuilder;
 use client::requests::params::{Id, Index, Type};
 use client::requests::endpoints::GetRequest;
 use client::requests::raw::RawRequestInner;
 use client::responses::GetResponse;
-use types::document::DocumentType;
+use types::DEFAULT_TYPE;
+use types::document::{DocumentType, StaticIndex, StaticType};
 
 /** 
 A [get document request][docs-get] builder that can be configured before sending.
@@ -42,7 +43,7 @@ pub struct GetRequestInner<TDocument> {
 /**
 # Get document request
 */
-impl<TSender> Client<TSender>
+impl<TSender, TDocument> DocumentClient<TSender, TDocument>
 where
     TSender: Sender,
 {
@@ -61,34 +62,64 @@ where
     
     ```no_run
     # extern crate serde;
-    # #[macro_use]
-    # extern crate serde_derive;
-    # #[macro_use]
-    # extern crate elastic_derive;
+    # extern crate serde_json;
+    # #[macro_use] extern crate serde_derive;
+    # #[macro_use] extern crate elastic_derive;
     # extern crate elastic;
+    # use serde_json::Value;
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
-    # struct MyType {
-    #     pub id: i32,
-    #     pub title: String,
-    #     pub timestamp: Date<DefaultDateMapping>
-    # }
+    # struct MyType { }
+    # fn run() -> Result<(), Box<::std::error::Error>> {
     # let client = SyncClientBuilder::new().build()?;
-    let response = client.document_get::<MyType>(index("myindex"), id(1))
+    let response = client.document::<MyType>()
+                         .get(1)
                          .send()?;
-
-    if let Some(doc) = response.into_document() {
-        println!("id: {}", doc.id);
-    }
     # Ok(())
     # }
     ```
 
     For more details on document types, see the [`types`][types-mod] module.
 
-    Get the same document as a `serde_json::Value`:
+    [GetRequestBuilder]: requests/document_get/type.GetRequestBuilder.html
+    [builder-methods]: requests/document_get/type.GetRequestBuilder.html#builder-methods
+    [send-sync]: requests/document_get/type.GetRequestBuilder.html#send-synchronously
+    [send-async]: requests/document_get/type.GetRequestBuilder.html#send-asynchronously
+    [types-mod]: ../types/index.html
+    [documents-mod]: ../types/document/index.html
+    */
+    pub fn get<TId>(self, id: TId) -> GetRequestBuilder<TSender, TDocument>
+    where
+        TId: Into<Id<'static>>,
+        TDocument: DeserializeOwned + DocumentType + StaticIndex + StaticType,
+    {
+        let index = TDocument::static_index().into();
+        let ty = TDocument::static_ty().into();
+
+        RequestBuilder::initial(
+            self.inner,
+            GetRequestInner {
+                index: index,
+                ty: ty,
+                id: id.into(),
+                _marker: PhantomData,
+            },
+        )
+    }
+
+    /** 
+    Create a [`GetRequestBuilder`][GetRequestBuilder] with this `Client` that can be configured before sending.
+
+    For more details, see:
+
+    - [builder methods][builder-methods]
+    - [send synchronously][send-sync]
+    - [send asynchronously][send-async]
+
+    # Examples
+
+    Get a document as a `serde_json::Value`:
 
     ```no_run
     # extern crate serde;
@@ -101,8 +132,8 @@ where
     # fn main() { run().unwrap() }
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # let client = SyncClientBuilder::new().build()?;
-    let response = client.document_get::<Value>(index("myindex"), id(1))
-                         .ty("mytype")
+    let response = client.document::<Value>()
+                         .get_raw("myindex", 1)
                          .send()?;
     # Ok(())
     # }
@@ -115,18 +146,18 @@ where
     [types-mod]: ../types/index.html
     [documents-mod]: ../types/document/index.html
     */
-    pub fn document_get<TDocument>(&self, index: Index<'static>, id: Id<'static>) -> GetRequestBuilder<TSender, TDocument>
+    pub fn get_raw<TIndex, TId>(self, index: TIndex, id: TId) -> GetRequestBuilder<TSender, TDocument>
     where
-        TDocument: DeserializeOwned + DocumentType,
+        TIndex: Into<Index<'static>>,
+        TId: Into<Id<'static>>,
+        TDocument: DeserializeOwned,
     {
-        let ty = TDocument::name().into();
-
         RequestBuilder::initial(
-            self.clone(),
+            self.inner,
             GetRequestInner {
-                index: index,
-                ty: ty,
-                id: id,
+                index: index.into(),
+                ty: DEFAULT_TYPE.into(),
+                id: id.into(),
                 _marker: PhantomData,
             },
         )
@@ -148,6 +179,15 @@ impl<TSender, TDocument> GetRequestBuilder<TSender, TDocument>
 where
     TSender: Sender,
 {
+    /** Set the index for the get request. */
+    pub fn index<I>(mut self, index: I) -> Self
+    where
+        I: Into<Index<'static>>,
+    {
+        self.inner.index = index.into();
+        self
+    }
+
     /** Set the type for the get request. */
     pub fn ty<I>(mut self, ty: I) -> Self
     where
@@ -172,7 +212,7 @@ where
 
     # Examples
 
-    Get a document from an index called `myindex` with an id of `1`:
+    Get a [`DocumentType`][documents-mod] called `MyType` with an id of `1`:
 
     ```no_run
     # extern crate serde;
@@ -182,11 +222,13 @@ where
     # extern crate elastic;
     # use serde_json::Value;
     # use elastic::prelude::*;
+    # #[derive(Debug, ElasticType, Deserialize)]
+    # struct MyType { }
     # fn main() { run().unwrap() }
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # let client = SyncClientBuilder::new().build()?;
-    let response = client.document_get::<Value>(index("myindex"), id(1))
-                         .ty("mytype")
+    let response = client.document::<MyType>()
+                         .get(1)
                          .send()?;
     
     if let Some(doc) = response.into_document() {
@@ -197,6 +239,7 @@ where
     ```
 
     [SyncClient]: ../../type.SyncClient.html
+    [documents-mod]: ../types/document/index.html
     */
     pub fn send(self) -> Result<GetResponse<TDocument>> {
         let req = self.inner.into_request();
@@ -221,7 +264,7 @@ where
 
     # Examples
 
-    Get a document from an index called `myindex` with an id of `1`:
+    Get a [`DocumentType`][documents-mod] called `MyType` with an id of `1`:
 
     ```no_run
     # extern crate futures;
@@ -234,12 +277,14 @@ where
     # use serde_json::Value;
     # use futures::Future;
     # use elastic::prelude::*;
+    # #[derive(Debug, ElasticType, Deserialize)]
+    # struct MyType { }
     # fn main() { run().unwrap() }
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # let core = tokio_core::reactor::Core::new()?;
     # let client = AsyncClientBuilder::new().build(&core.handle())?;
-    let future = client.document_get::<Value>(index("myindex"), id(1))
-                       .ty("mytype")
+    let future = client.document::<MyType>()
+                       .get(1)
                        .send();
     
     future.and_then(|response| {
@@ -254,6 +299,7 @@ where
     ```
 
     [AsyncClient]: ../../type.AsyncClient.html
+    [documents-mod]: ../types/document/index.html
     */
     pub fn send(self) -> Pending<TDocument> {
         let req = self.inner.into_request();
@@ -296,19 +342,36 @@ where
 
 #[cfg(test)]
 mod tests {
-    use serde_json::Value;
     use prelude::*;
+
+    #[derive(Deserialize, ElasticType)]
+    struct TestDoc { }
 
     #[test]
     fn default_request() {
         let client = SyncClientBuilder::new().build().unwrap();
 
         let req = client
-            .document_get::<Value>(index("test-idx"), id("1"))
+            .document::<TestDoc>()
+            .get("1")
             .inner
             .into_request();
 
-        assert_eq!("/test-idx/value/1", req.url.as_ref());
+        assert_eq!("/testdoc/doc/1", req.url.as_ref());
+    }
+
+    #[test]
+    fn specify_index() {
+        let client = SyncClientBuilder::new().build().unwrap();
+
+        let req = client
+            .document::<TestDoc>()
+            .get("1")
+            .index("new-idx")
+            .inner
+            .into_request();
+
+        assert_eq!("/new-idx/doc/1", req.url.as_ref());
     }
 
     #[test]
@@ -316,11 +379,12 @@ mod tests {
         let client = SyncClientBuilder::new().build().unwrap();
 
         let req = client
-            .document_get::<Value>(index("test-idx"), id("1"))
+            .document::<TestDoc>()
+            .get("1")
             .ty("new-ty")
             .inner
             .into_request();
 
-        assert_eq!("/test-idx/new-ty/1", req.url.as_ref());
+        assert_eq!("/testdoc/new-ty/1", req.url.as_ref());
     }
 }

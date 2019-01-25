@@ -7,17 +7,16 @@ Builders for [put mapping requests][docs-mapping].
 use std::marker::PhantomData;
 use serde_json;
 use futures::{Future, Poll};
-use serde::Serialize;
 
 use error::{self, Error, Result};
-use client::Client;
+use client::DocumentClient;
 use client::sender::{AsyncSender, Sender, SyncSender};
 use client::requests::RequestBuilder;
 use client::requests::params::{Index, Type};
 use client::requests::endpoints::IndicesPutMappingRequest;
 use client::requests::raw::RawRequestInner;
 use client::responses::CommandResponse;
-use types::document::DocumentType;
+use types::document::{DocumentType, StaticIndex, StaticType};
 
 /** 
 A [put mapping request][docs-mapping] builder that can be configured before sending.
@@ -42,7 +41,7 @@ pub struct PutMappingRequestInner<TDocument> {
 /**
 # Put mapping request
 */
-impl<TSender> Client<TSender>
+impl<TSender, TDocument> DocumentClient<TSender, TDocument>
 where
     TSender: Sender,
 {
@@ -70,7 +69,8 @@ where
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType { }
     # let client = SyncClientBuilder::new().build()?;
-    let response = client.document_put_mapping::<MyType>(index("myindex"))
+    let response = client.document::<MyType>()
+                         .put_mapping()
                          .send()?;
 
     assert!(response.acknowledged());
@@ -87,14 +87,15 @@ where
     [types-mod]: ../types/index.html
     [documents-mod]: ../types/document/index.html
     */
-    pub fn document_put_mapping<TDocument>(&self, index: Index<'static>) -> PutMappingRequestBuilder<TSender, TDocument>
+    pub fn put_mapping(self) -> PutMappingRequestBuilder<TSender, TDocument>
     where
-        TDocument: Serialize + DocumentType,
+        TDocument: DocumentType + StaticIndex + StaticType,
     {
-        let ty = TDocument::name().into();
+        let index = TDocument::static_index().into();
+        let ty = TDocument::static_ty().into();
 
         RequestBuilder::initial(
-            self.clone(),
+            self.inner,
             PutMappingRequestInner {
                 index: index,
                 ty: ty,
@@ -128,6 +129,15 @@ impl<TSender, TDocument> PutMappingRequestBuilder<TSender, TDocument>
 where
     TSender: Sender,
 {
+    /** Set the index for the put mapping request. */
+    pub fn index<I>(mut self, index: I) -> Self
+    where
+        I: Into<Index<'static>>,
+    {
+        self.inner.index = index.into();
+        self
+    }
+
     /** Set the type for the put mapping request. */
     pub fn ty<I>(mut self, ty: I) -> Self
     where
@@ -165,7 +175,8 @@ where
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType { }
     # let client = SyncClientBuilder::new().build()?;
-    let response = client.document_put_mapping::<MyType>(index("myindex"))
+    let response = client.document::<MyType>()
+                         .put_mapping()
                          .send()?;
 
     assert!(response.acknowledged());
@@ -215,7 +226,8 @@ where
     # struct MyType { }
     # let core = tokio_core::reactor::Core::new()?;
     # let client = AsyncClientBuilder::new().build(&core.handle())?;
-    let future = client.document_put_mapping::<MyType>(index("myindex"))
+    let future = client.document::<MyType>()
+                       .put_mapping()
                        .send();
 
     future.and_then(|response| {
@@ -274,12 +286,16 @@ mod tests {
     use serde_json::{self, Value};
     use prelude::*;
 
+    #[derive(ElasticType)]
+    struct TestDoc { }
+
     #[test]
     fn default_request() {
         let client = SyncClientBuilder::new().build().unwrap();
 
         let req = client
-            .document_put_mapping::<Value>(index("test-idx"))
+            .document::<TestDoc>()
+            .put_mapping()
             .inner
             .into_request()
             .unwrap();
@@ -292,8 +308,23 @@ mod tests {
 
         let actual_body: Value = serde_json::from_slice(&req.body).unwrap();
 
-        assert_eq!("/test-idx/_mappings/value", req.url.as_ref());
+        assert_eq!("/testdoc/_mappings/doc", req.url.as_ref());
         assert_eq!(expected_body.to_string(), actual_body.to_string());
+    }
+
+    #[test]
+    fn specify_index() {
+        let client = SyncClientBuilder::new().build().unwrap();
+
+        let req = client
+            .document::<TestDoc>()
+            .put_mapping()
+            .index("new-idx")
+            .inner
+            .into_request()
+            .unwrap();
+
+        assert_eq!("/new-idx/_mappings/doc", req.url.as_ref());
     }
 
     #[test]
@@ -301,12 +332,13 @@ mod tests {
         let client = SyncClientBuilder::new().build().unwrap();
 
         let req = client
-            .document_put_mapping::<Value>(index("test-idx"))
+            .document::<TestDoc>()
+            .put_mapping()
             .ty("new-ty")
             .inner
             .into_request()
             .unwrap();
 
-        assert_eq!("/test-idx/_mappings/new-ty", req.url.as_ref());
+        assert_eq!("/testdoc/_mappings/new-ty", req.url.as_ref());
     }
 }

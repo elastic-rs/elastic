@@ -54,7 +54,7 @@ where
     let fut = test.prepare(client.clone())
         .then(move |prep| match prep {
             Err(ref e) if !test.prepare_err(e) => {
-                println!("{} `{}`", Red.bold().paint(prep_failed), e);
+                println!("{} {:?}", Red.bold().paint(prep_failed), e);
                 Err(())
             }
             _ => Ok(test),
@@ -62,11 +62,11 @@ where
         .and_then(move |test| {
             test.request(client.clone()).then(move |res| match res {
                 Ok(ref res) if !test.assert_ok(res) => {
-                    println!("{} `{:?}`", Red.bold().paint(assert_ok_failed), res);
+                    println!("{} {:?}", Red.bold().paint(assert_ok_failed), res);
                     Err(())
                 }
                 Err(ref e) if !test.assert_err(e) => {
-                    println!("{} `{}`", Red.bold().paint(assert_err_failed), e);
+                    println!("{} {:?}", Red.bold().paint(assert_err_failed), e);
                     Err(())
                 }
                 _ => {

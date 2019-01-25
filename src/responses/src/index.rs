@@ -2,7 +2,7 @@
 Response types for an [index document request](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html).
 */
 
-use common::Shards;
+use common::{DocumentResult, Shards};
 use parsing::IsOkOnSuccess;
 
 /** Response for an [index document request](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html). */
@@ -12,7 +12,7 @@ pub struct IndexResponse {
     #[serde(rename = "_type")] ty: String,
     #[serde(rename = "_id")] id: String,
     #[serde(rename = "_version")] version: Option<u32>,
-    created: bool,
+    result: DocumentResult,
     #[serde(rename = "_shards")] shards: Shards,
 }
 
@@ -24,7 +24,10 @@ impl IndexResponse {
 
     /** Whether or not a matching document was created. */
     pub fn created(&self) -> bool {
-        self.created
+        match self.result {
+            DocumentResult::Created => true,
+            _ => false,
+        }
     }
 
     /** The index for the document. */

@@ -10,36 +10,25 @@ use serde::Serialize;
 use chrono::{DateTime, Utc};
 use chrono::format::{self, Parsed};
 
-use private::field::{DocumentField, FieldMapping, FieldType};
+use private::field::{SerializeFieldMapping, FieldMapping, FieldType};
 
 pub use date::{DateFormat, DateValue, FormattedDate, ParseError};
-pub use document::DocumentType;
-pub use document::mapping::{DocumentMapping, PropertiesMapping};
+pub use document::{DocumentType, StaticIndex, StaticType};
+pub use document::mapping::{ObjectMapping, ObjectFieldType, PropertiesMapping};
 
 pub use chrono::format::{Fixed, Item, Numeric, Pad};
 pub use serde::ser::SerializeStruct;
 
-/** Get the mapping for a field. */
+/** Serialise a field mapping as a field using the given serialiser. */
 #[inline]
-pub fn mapping<TField, TMapping, TPivot>() -> TMapping
+pub fn field_ser<TField, TMapping, TPivot, S>(state: &mut S, field: &'static str) -> Result<(), S::Error>
 where
     TField: FieldType<TMapping, TPivot>,
     TMapping: FieldMapping<TPivot>,
-    TPivot: Default,
-{
-    TMapping::default()
-}
-
-/** Serialise a field mapping as a field using the given serialiser. */
-#[inline]
-pub fn field_ser<S, TMapping, TPivot>(state: &mut S, field: &'static str, _: TMapping) -> Result<(), S::Error>
-where
     S: SerializeStruct,
-    TMapping: FieldMapping<TPivot>,
-    TPivot: Default,
-    DocumentField<TMapping, TPivot>: Serialize,
+    SerializeFieldMapping<TMapping, TPivot>: Serialize,
 {
-    state.serialize_field(field, &DocumentField::<TMapping, TPivot>::default())
+    state.serialize_field(field, &SerializeFieldMapping::<TMapping, TPivot>::default())
 }
 
 /**
@@ -51,10 +40,9 @@ This method isn't intended to be used publicly, but is useful in the docs.
 pub fn standalone_field_ser<TMapping, TPivot>(_: TMapping) -> Result<String, serde_json::Error>
 where
     TMapping: FieldMapping<TPivot>,
-    TPivot: Default,
-    DocumentField<TMapping, TPivot>: Serialize,
+    SerializeFieldMapping<TMapping, TPivot>: Serialize,
 {
-    serde_json::to_string(&DocumentField::<TMapping, TPivot>::default())
+    serde_json::to_string(&SerializeFieldMapping::<TMapping, TPivot>::default())
 }
 
 /** Parse a date string using an owned slice of items. */

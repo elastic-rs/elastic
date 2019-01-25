@@ -244,7 +244,7 @@ mod tests {
     use std::collections::BTreeMap;
 
     use prelude::*;
-    use private::field::{DocumentField, FieldType};
+    use private::field;
 
     #[derive(Default, Clone)]
     pub struct MyTextMapping;
@@ -422,13 +422,8 @@ mod tests {
     }
 
     #[test]
-    fn string_has_default_mapping() {
-        assert_eq!(DefaultStringMapping, String::field_mapping());
-    }
-
-    #[test]
     fn serialise_string_mapping_default() {
-        let ser = serde_json::to_string(&DocumentField::from(DefaultStringMapping)).unwrap();
+        let ser = serde_json::to_string(&field::serialize(DefaultStringMapping)).unwrap();
 
         let expected = json_str!({
             "type":"text",
@@ -445,7 +440,7 @@ mod tests {
 
     #[test]
     fn serialise_text_mapping_default() {
-        let ser = serde_json::to_string(&DocumentField::from(DefaultTextMapping)).unwrap();
+        let ser = serde_json::to_string(&field::serialize(DefaultTextMapping)).unwrap();
 
         let expected = json_str!({
             "type": "text"
@@ -456,7 +451,7 @@ mod tests {
 
     #[test]
     fn serialise_text_mapping_custom() {
-        let ser = serde_json::to_string(&DocumentField::from(MyTextMapping)).unwrap();
+        let ser = serde_json::to_string(&field::serialize(MyTextMapping)).unwrap();
 
         let expected = json_str!({
             "type":"text",
@@ -497,7 +492,7 @@ mod tests {
 
     #[test]
     fn serialise_keyword_mapping_default() {
-        let ser = serde_json::to_string(&DocumentField::from(DefaultKeywordMapping)).unwrap();
+        let ser = serde_json::to_string(&field::serialize(DefaultKeywordMapping)).unwrap();
 
         let expected = json_str!({
             "type": "keyword"
@@ -508,7 +503,7 @@ mod tests {
 
     #[test]
     fn serialise_keyword_mapping_custom() {
-        let ser = serde_json::to_string(&DocumentField::from(MyKeywordMapping)).unwrap();
+        let ser = serde_json::to_string(&field::serialize(MyKeywordMapping)).unwrap();
 
         let expected = json_str!({
             "type": "keyword",

@@ -61,17 +61,14 @@ This will produce the following mapping:
 }
 # );
 # #[cfg(feature = "nightly")]
-# let mapping = serde_json::to_string(&DocumentField::from(MyStringMapping)).unwrap();
+# let mapping = serde_json::to_string(&field::serialize(MyStringMapping)).unwrap();
 # #[cfg(not(feature = "nightly"))]
 # let mapping = json.clone();
 # assert_eq!(json, mapping);
 # }
 ```
 */
-pub trait KeywordMapping
-where
-    Self: Default,
-{
+pub trait KeywordMapping {
     /**
     The analyzer which should be used for analyzed string fields,
     both at index-time and at search-time (unless overridden by the `search_analyzer`).
@@ -300,7 +297,7 @@ impl Serialize for KeywordFieldMapping {
 mod private {
     use serde::{Serialize, Serializer};
     use serde::ser::SerializeStruct;
-    use private::field::{DocumentField, FieldMapping, FieldType};
+    use private::field::{StaticSerialize, SerializeFieldMapping, FieldMapping, FieldType};
     use super::{KeywordFieldType, KeywordMapping};
 
     #[derive(Default)]
@@ -317,18 +314,18 @@ mod private {
     where
         TMapping: KeywordMapping,
     {
-        type DocumentField = DocumentField<TMapping, KeywordPivot>;
+        type SerializeFieldMapping = SerializeFieldMapping<TMapping, KeywordPivot>;
 
         fn data_type() -> &'static str {
             "keyword"
         }
     }
 
-    impl<TMapping> Serialize for DocumentField<TMapping, KeywordPivot>
+    impl<TMapping> StaticSerialize for SerializeFieldMapping<TMapping, KeywordPivot>
     where
         TMapping: FieldMapping<KeywordPivot> + KeywordMapping,
     {
-        fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+        fn static_serialize<S>(serializer: S) -> Result<S::Ok, S::Error>
         where
             S: Serializer,
         {

@@ -1,37 +1,82 @@
-use std::sync::{Mutex, RwLock};
 use std::borrow::Cow;
 use std::marker::PhantomData;
-use serde::ser::{Serialize, SerializeStruct};
+use serde::ser::SerializeStruct;
 use serde_json::Value;
-use super::mapping::{DocumentMapping, PropertiesMapping};
+use super::mapping::{ObjectFieldType, ObjectMapping, PropertiesMapping};
 
 /**
-The additional fields available to an indexable Elasticsearch type.
+An indexable Elasticsearch type.
 
 This trait is implemented for the type being mapped, rather than the mapping
 type itself.
 */
-pub trait DocumentType {
-    /** The mapping type for this document. */
-    type Mapping: DocumentMapping;
-
-    /**
-    Get the name for this type.
-    
-    This is a convenience method that returns the `name` of the bound `DocumentMapping`.
-    */
-    fn name() -> &'static str {
-        Self::Mapping::name()
-    }
-
+pub trait DocumentType: ObjectFieldType {
     /** Get a serialisable instance of the type mapping as a field. */
-    fn field_mapping() -> Self::Mapping {
-        Self::Mapping::default()
+    fn field_mapping() -> FieldDocumentMapping<<Self as ObjectFieldType>::Mapping> {
+        FieldDocumentMapping::default()
     }
 
     /** Get a serialisable instance of the type mapping as an indexable type */
-    fn index_mapping() -> IndexDocumentMapping<Self::Mapping> {
+    fn index_mapping() -> IndexDocumentMapping<<Self as ObjectFieldType>::Mapping> {
         IndexDocumentMapping::default()
+    }
+
+    /** Get the name of the index this document belongs to. */
+    fn index(&self) -> Cow<str>;
+
+    /** Get the name of the type this document belongs to. */
+    fn ty(&self) -> Cow<str>;
+
+    /** Try get an id for this document. */
+    fn partial_id(&self) -> Option<Cow<str>>;
+
+    /** Try get a statically known index this document belongs to. */
+    fn partial_static_index() -> Option<&'static str>;
+
+    /** Try get a statically known type this document belongs to. */
+    fn partial_static_ty() -> Option<&'static str>;
+}
+
+/**
+An indexable Elasticsearch type with a static index.
+*/
+pub trait StaticIndex: DocumentType {
+    fn static_index() -> &'static str {
+        Self::partial_static_index().expect("missing static index")
+    }
+}
+
+/**
+An indexable Elasticsearch type with a static document type.
+*/
+pub trait StaticType: DocumentType {
+    fn static_ty() -> &'static str {
+        Self::partial_static_ty().expect("missing static type")
+    }
+}
+
+/**
+A wrapper type for serialising user types as fields. 
+*/
+#[derive(Clone, Copy)]
+pub struct FieldDocumentMapping<TMapping>(PhantomData<TMapping>);
+
+#[cfg(test)]
+impl<TMapping> FieldDocumentMapping<TMapping>
+where
+    TMapping: ObjectMapping + Default,
+{
+    fn into_mapping(&self) -> TMapping {
+        TMapping::default()
+    }
+}
+
+impl<TMapping> Default for FieldDocumentMapping<TMapping>
+where
+    TMapping: ObjectMapping,
+{
+    fn default() -> Self {
+        FieldDocumentMapping(Default::default())
     }
 }
 
@@ -171,9 +216,9 @@ pub struct MyIndex {
 struct Mappings;
 impl Serialize for Mappings {
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-        let mut state = try!(serializer.serialize_struct("mappings", 1));
+        let mut state = serializer.serialize_struct("mappings", 1)?;
 
-        try!(state.serialize_field(MyType::name(), &MyType::index_mapping()));
+        state.serialize_field(MyType::static_ty(), &MyType::index_mapping())?;
 
         state.end()
     }
@@ -183,7 +228,7 @@ impl Serialize for Mappings {
 # let json = json_str!(
 # {
 #     "mappings": {
-#         "mytype": {
+#         "doc": {
 #             "properties": {
 #                 "my_date": {
 #                     "type": "date",
@@ -210,29 +255,41 @@ impl Serialize for Mappings {
 # }
 ```
 */
-#[derive(Default)]
 pub struct IndexDocumentMapping<TMapping>
 where
-    TMapping: DocumentMapping,
+    TMapping: ObjectMapping,
 {
     _m: PhantomData<TMapping>,
 }
 
-/** Mapping for an anonymous json object. */
-#[derive(Default)]
-pub struct ValueDocumentMapping;
-
-impl DocumentMapping for ValueDocumentMapping {
-    fn name() -> &'static str {
-        "value"
+impl<TMapping> Default for IndexDocumentMapping<TMapping>
+where
+    TMapping: ObjectMapping,
+{
+    fn default() -> Self {
+        IndexDocumentMapping {
+            _m: Default::default()
+        }
     }
 }
 
-impl DocumentType for Value {
-    type Mapping = ValueDocumentMapping;
+/** Mapping for an anonymous json object. */
+#[derive(Default)]
+pub struct ValueObjectMapping;
+
+impl ObjectMapping for ValueObjectMapping {
+    type Properties = EmptyPropertiesMapping;
 }
 
-impl PropertiesMapping for ValueDocumentMapping {
+impl ObjectFieldType for Value {
+    type Mapping = ValueObjectMapping;
+}
+
+/** Mapping for an anonymous json object. */
+#[derive(Default)]
+pub struct EmptyPropertiesMapping;
+
+impl PropertiesMapping for EmptyPropertiesMapping {
     fn props_len() -> usize {
         0
     }
@@ -245,44 +302,114 @@ impl PropertiesMapping for ValueDocumentMapping {
     }
 }
 
-impl<'a, TDocument, TMapping> DocumentType for &'a TDocument
+impl<'a, TObject, TMapping> ObjectFieldType for &'a TObject
 where
-    TDocument: DocumentType<Mapping = TMapping> + Serialize,
-    TMapping: DocumentMapping,
+    TObject: ObjectFieldType<Mapping = TMapping>,
+    TMapping: ObjectMapping,
 {
     type Mapping = TMapping;
 }
 
-impl<TDocument, TMapping> DocumentType for Mutex<TDocument>
+impl<'a, TDocument> DocumentType for &'a TDocument
 where
-    TDocument: DocumentType<Mapping = TMapping> + Serialize,
-    TMapping: DocumentMapping,
+    TDocument: DocumentType,
+{
+    fn index(&self) -> Cow<str> {
+        (*self).index()
+    }
+
+    fn ty(&self) -> Cow<str> {
+        (*self).ty()
+    }
+
+    fn partial_id(&self) -> Option<Cow<str>> {
+        (*self).partial_id()
+    }
+
+    fn partial_static_index() -> Option<&'static str> {
+        TDocument::partial_static_index()
+    }
+
+    fn partial_static_ty() -> Option<&'static str> {
+        TDocument::partial_static_ty()
+    }
+}
+
+impl<'a, TObject, TMapping> ObjectFieldType for Cow<'a, TObject>
+where
+    TObject: ObjectFieldType<Mapping = TMapping> + Clone,
+    TMapping: ObjectMapping,
 {
     type Mapping = TMapping;
 }
 
-impl<TDocument, TMapping> DocumentType for RwLock<TDocument>
+impl<'a, TDocument> DocumentType for Cow<'a, TDocument>
 where
-    TDocument: DocumentType<Mapping = TMapping> + Serialize,
-    TMapping: DocumentMapping,
+    TDocument: DocumentType + Clone,
 {
-    type Mapping = TMapping;
+    fn index(&self) -> Cow<str> {
+        self.as_ref().index()
+    }
+
+    fn ty(&self) -> Cow<str> {
+        self.as_ref().ty()
+    }
+
+    fn partial_id(&self) -> Option<Cow<str>> {
+        self.as_ref().partial_id()
+    }
+
+    fn partial_static_index() -> Option<&'static str> {
+        TDocument::partial_static_index()
+    }
+
+    fn partial_static_ty() -> Option<&'static str> {
+        TDocument::partial_static_ty()
+    }
 }
 
-impl<'a, TDocument, TMapping> DocumentType for Cow<'a, TDocument>
+impl<'a, TDocument> StaticIndex for &'a TDocument
 where
-    TDocument: DocumentType<Mapping = TMapping> + Serialize + Clone,
-    TMapping: DocumentMapping,
+    TDocument: StaticIndex,
 {
-    type Mapping = TMapping;
+    fn static_index() -> &'static str {
+        TDocument::static_index()
+    }
+}
+
+impl<'a, TDocument> StaticIndex for Cow<'a, TDocument>
+where
+    TDocument: StaticIndex + Clone,
+{
+    fn static_index() -> &'static str {
+        TDocument::static_index()
+    }
+}
+
+impl<'a, TDocument> StaticType for &'a TDocument
+where
+    TDocument: StaticType,
+{
+    fn static_ty() -> &'static str {
+        TDocument::static_ty()
+    }
+}
+
+impl<'a, TDocument> StaticType for Cow<'a, TDocument>
+where
+    TDocument: StaticType + Clone,
+{
+    fn static_ty() -> &'static str {
+        TDocument::static_ty()
+    }
 }
 
 #[cfg(test)]
 mod tests {
-    use std::sync::{Mutex, RwLock};
     use std::borrow::Cow;
     use serde_json::{self, Value};
     use prelude::*;
+    use super::{DocumentType, StaticIndex, StaticType, IndexDocumentMapping};
 
     // Make sure we can derive with no `uses`.
     pub mod no_prelude {
@@ -290,7 +417,7 @@ mod tests {
 
         #[derive(Serialize, ElasticType)]
         pub struct TypeWithNoPath {
-            id: i32,
+            id: String,
         }
 
         #[derive(Default, ElasticDateFormat)]
@@ -303,7 +430,7 @@ mod tests {
     fn fn_scope() {
         #[derive(Serialize, ElasticType)]
         pub struct TypeInFn {
-            id: i32,
+            id: String,
         }
 
         #[derive(Default, ElasticDateFormat)]
@@ -323,19 +450,27 @@ mod tests {
     }
 
     #[derive(Serialize, ElasticType)]
-    #[elastic(mapping = "ManualCustomTypeMapping")]
+    #[elastic(
+        index = "renamed_index",
+        ty = "renamed_ty",
+        id(expr = "CustomType::id"),
+        mapping = "ManualCustomTypeMapping")]
     pub struct CustomType {
         pub field: i32,
         #[serde(skip_serializing)] pub ignored_field: i32,
         #[serde(rename = "renamed_field")] pub field2: i32,
     }
 
+    impl CustomType {
+        fn id(&self) -> String {
+            self.field.to_string()
+        }
+    }
+
     #[derive(PartialEq, Debug, Default)]
     pub struct ManualCustomTypeMapping;
-    impl DocumentMapping for ManualCustomTypeMapping {
-        fn name() -> &'static str {
-            "renamed_type"
-        }
+    impl ObjectMapping for ManualCustomTypeMapping {
+        type Properties = CustomType;
     }
 
     #[derive(Serialize, ElasticType)]
@@ -345,6 +480,7 @@ mod tests {
         pub field3: &'static str,
         pub field4: Value,
         pub field5: Option<SimpleNestedType>,
+        pub field6: Value,
     }
 
     #[derive(Serialize, ElasticType)]
@@ -373,28 +509,39 @@ mod tests {
     }
 
     #[test]
-    fn get_type_name() {
-        assert_eq!("simpletype", SimpleTypeMapping::name());
+    fn get_default_type_index() {
+        assert_eq!("simpletype", SimpleType::static_index());
     }
 
     #[test]
-    fn get_default_type_name() {
-        assert_eq!("simpletype", SimpleType::name());
+    fn get_custom_type_index() {
+        assert_eq!("renamed_index", CustomType::static_index());
     }
 
     #[test]
-    fn get_custom_type_name() {
-        assert_eq!("renamed_type", CustomType::name());
+    fn get_default_type() {
+        assert_eq!("doc", SimpleType::static_ty());
     }
 
     #[test]
-    fn get_value_type_name() {
-        assert_eq!("value", Value::name());
+    fn get_custom_type() {
+        assert_eq!("renamed_ty", CustomType::static_ty());
+    }
+
+    #[test]
+    fn get_custom_type_id() {
+        let doc = CustomType {
+            field: 13,
+            ignored_field: 0,
+            field2: 1,
+        };
+
+        assert_eq!("13", doc.partial_id().unwrap().as_ref());
     }
 
     #[test]
     fn derive_custom_type_mapping() {
-        assert_eq!(ManualCustomTypeMapping, CustomType::field_mapping());
+        assert_eq!(ManualCustomTypeMapping, CustomType::field_mapping().into_mapping());
     }
 
     #[test]
@@ -424,24 +571,6 @@ mod tests {
     #[test]
     fn serialise_document_borrowed() {
         let ser = serde_json::to_string(&<&'static SimpleType>::index_mapping()).unwrap();
-
-        let expected = serde_json::to_string(&SimpleType::index_mapping()).unwrap();
-
-        assert_eq!(expected, ser);
-    }
-
-    #[test]
-    fn serialise_document_mutex() {
-        let ser = serde_json::to_string(&Mutex::<SimpleType>::index_mapping()).unwrap();
-
-        let expected = serde_json::to_string(&SimpleType::index_mapping()).unwrap();
-
-        assert_eq!(expected, ser);
-    }
-
-    #[test]
-    fn serialise_document_rwlock() {
-        let ser = serde_json::to_string(&RwLock::<SimpleType>::index_mapping()).unwrap();
 
         let expected = serde_json::to_string(&SimpleType::index_mapping()).unwrap();
 
@@ -487,17 +616,6 @@ mod tests {
     }
 
     #[test]
-    fn serialise_document_for_value() {
-        let ser = serde_json::to_string(&Value::index_mapping()).unwrap();
-
-        let expected = json_str!({
-            "properties": {}
-        });
-
-        assert_eq!(expected, ser);
-    }
-
-    #[test]
     fn serialise_mapping_with_wrapped_types() {
         let ser = serde_json::to_string(&Wrapped::index_mapping()).unwrap();
 
@@ -528,6 +646,9 @@ mod tests {
                             "type": "integer"
                         }
                     }
+                },
+                "field6": {
+                    "type": "nested"
                 }
             }
         });

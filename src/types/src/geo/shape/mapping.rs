@@ -61,10 +61,7 @@ This will produce the following mapping:
 # }
 ```
 */
-pub trait GeoShapeMapping
-where
-    Self: Default,
-{
+pub trait GeoShapeMapping {
     /**
     Name of the PrefixTree implementation to be used:
     `geohash` for `GeohashPrefixTree` and `quadtree` for `QuadPrefixTree`.
@@ -218,7 +215,7 @@ impl Serialize for Orientation {
 mod private {
     use serde::{Serialize, Serializer};
     use serde::ser::SerializeStruct;
-    use private::field::{DocumentField, FieldMapping, FieldType};
+    use private::field::{StaticSerialize, SerializeFieldMapping, FieldMapping, FieldType};
     use super::{GeoShapeFieldType, GeoShapeMapping};
 
     impl<TField, TMapping> FieldType<TMapping, GeoShapePivot> for TField
@@ -235,18 +232,18 @@ mod private {
     where
         TMapping: GeoShapeMapping,
     {
-        type DocumentField = DocumentField<TMapping, GeoShapePivot>;
+        type SerializeFieldMapping = SerializeFieldMapping<TMapping, GeoShapePivot>;
 
         fn data_type() -> &'static str {
             "geo_shape"
         }
     }
 
-    impl<TMapping> Serialize for DocumentField<TMapping, GeoShapePivot>
+    impl<TMapping> StaticSerialize for SerializeFieldMapping<TMapping, GeoShapePivot>
     where
         TMapping: FieldMapping<GeoShapePivot> + GeoShapeMapping,
     {
-        fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+        fn static_serialize<S>(serializer: S) -> Result<S::Ok, S::Error>
         where
             S: Serializer,
         {
@@ -272,7 +269,7 @@ mod tests {
     use serde_json;
 
     use prelude::*;
-    use private::field::DocumentField;
+    use private::field;
 
     #[derive(Default, Clone)]
     pub struct MyGeoShapeMapping;
@@ -308,7 +305,7 @@ mod tests {
 
     #[test]
     fn serialise_mapping_default() {
-        let ser = serde_json::to_string(&DocumentField::from(DefaultGeoShapeMapping)).unwrap();
+        let ser = serde_json::to_string(&field::serialize(DefaultGeoShapeMapping)).unwrap();
 
         let expected = json_str!({
             "type": "geo_shape"
@@ -319,7 +316,7 @@ mod tests {
 
     #[test]
     fn serialise_mapping_custom() {
-        let ser = serde_json::to_string(&DocumentField::from(MyGeoShapeMapping)).unwrap();
+        let ser = serde_json::to_string(&field::serialize(MyGeoShapeMapping)).unwrap();
 
         let expected = json_str!({
             "type": "geo_shape",

@@ -1,12 +1,12 @@
 {
-  "field_stats": {
-    "documentation": "http://www.elastic.co/guide/en/elasticsearch/reference/master/search-field-stats.html",
+  "field_caps": {
+    "documentation": "http://www.elastic.co/guide/en/elasticsearch/reference/master/search-field-caps.html",
     "methods": ["GET", "POST"],
     "url": {
-      "path": "/_field_stats",
+      "path": "/_field_caps",
       "paths": [
-        "/_field_stats",
-        "/{index}/_field_stats"
+        "/_field_caps",
+        "/{index}/_field_caps"
       ],
       "parts": {
         "index": {
@@ -17,13 +17,7 @@
       "params": {
         "fields": {
           "type" : "list",
-          "description" : "A comma-separated list of fields for to get field statistics for (min value, max value, and more)"
-        },
-        "level": {
-          "type" : "enum",
-          "options" : ["indices", "cluster"],
-          "default" : "cluster",
-          "description" : "Defines if field stats should be returned on a per index level or on a cluster wide level"
+          "description" : "A comma-separated list of field names"
         },
         "ignore_unavailable": {
           "type" : "boolean",
@@ -42,7 +36,7 @@
       }
     },
     "body": {
-      "description": "Field json objects containing the name and optionally a range to filter out indices result, that have results outside the defined bounds",
+      "description": "Field json objects containing an array of field names",
       "required": false
     }
   }

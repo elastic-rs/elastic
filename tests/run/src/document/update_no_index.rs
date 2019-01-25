@@ -7,11 +7,11 @@ use run_tests::IntegrationTest;
 pub struct UpdateNoIndex;
 
 #[derive(Debug, PartialEq, Serialize, Deserialize, ElasticType)]
+#[elastic(index = "update_no_index_idx")]
 pub struct Doc {
-    id: i32,
+    #[elastic(id)]
+    id: String,
 }
-
-const INDEX: &'static str = "update_no_index_idx";
 
 impl IntegrationTest for UpdateNoIndex {
     type Response = UpdateResponse;
@@ -25,7 +25,7 @@ impl IntegrationTest for UpdateNoIndex {
 
     // Ensure the index doesn't exist
     fn prepare(&self, client: AsyncClient) -> Box<Future<Item = (), Error = Error>> {
-        let delete_res = client.index_delete(index(INDEX)).send().map(|_| ());
+        let delete_res = client.index(Doc::static_index()).delete().send().map(|_| ());
 
         Box::new(delete_res)
     }
@@ -33,8 +33,9 @@ impl IntegrationTest for UpdateNoIndex {
     // Execute an update request against that index
     fn request(&self, client: AsyncClient) -> Box<Future<Item = Self::Response, Error = Error>> {
         let res = client
-            .document_update::<Doc>(index(INDEX), id(1))
-            .doc(Doc { id: 1 })
+            .document::<Doc>()
+            .update("1")
+            .doc(json!({}))
             .send();
 
         Box::new(res)

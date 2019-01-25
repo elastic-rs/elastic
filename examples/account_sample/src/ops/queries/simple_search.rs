@@ -1,5 +1,5 @@
 use ops::Client;
-use elastic::client::responses::SearchResponse;
+use elastic::prelude::*;
 use elastic::error::Result;
 
 use model;

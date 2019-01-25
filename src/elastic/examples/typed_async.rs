@@ -29,8 +29,10 @@ use elastic::prelude::*;
 use elastic::error::{ApiError, Error};
 
 #[derive(Debug, Serialize, Deserialize, ElasticType)]
+#[elastic(index = "typed_sample_index")]
 struct MyType {
-    id: i32,
+    #[elastic(id)]
+    id: String,
     title: String,
     timestamp: Date<DefaultDateMapping>,
 }
@@ -43,7 +45,7 @@ fn run() -> Result<(), Box<StdError>> {
 
     // Create a document to index
     let doc = MyType {
-        id: 1,
+        id: "1".to_owned(),
         title: String::from("A title"),
         timestamp: Date::now(),
     };
@@ -65,13 +67,10 @@ fn run() -> Result<(), Box<StdError>> {
     Ok(())
 }
 
-fn sample_index() -> Index<'static> {
-    Index::from("typed_sample_index")
-}
-
 fn ensure_indexed(client: AsyncClient, doc: MyType) -> Box<Future<Item = (), Error = Error>> {
     let get_res = client
-        .document_get::<MyType>(sample_index(), id(doc.id))
+        .document::<MyType>()
+        .get(doc.id.clone())
         .send()
         .map(|res| res.into_document());
 
@@ -106,10 +105,11 @@ fn ensure_indexed(client: AsyncClient, doc: MyType) -> Box<Future<Item = (), Err
 }
 
 fn put_index(client: AsyncClient) -> Box<Future<Item = (), Error = Error>> {
-    let create_index = client.index_create(sample_index()).send();
+    let create_index = client.index(MyType::static_index()).create().send();
 
     let put_mapping = client
-        .document_put_mapping::<MyType>(sample_index())
+        .document::<MyType>()
+        .put_mapping()
         .send()
         .map(|_| ());
 
@@ -117,11 +117,9 @@ fn put_index(client: AsyncClient) -> Box<Future<Item = (), Error = Error>> {
 }
 
 fn put_doc(client: AsyncClient, doc: MyType) -> Box<Future<Item = (), Error = Error>> {
-    let doc_id = doc.id;
-
     let index_doc = client
-        .document_index(sample_index(), doc)
-        .id(doc_id)
+        .document()
+        .index(doc)
         .params_fluent(|p| p.url_param("refresh", true))
         .send()
         .map(|_| ());
@@ -132,7 +130,7 @@ fn put_doc(client: AsyncClient, doc: MyType) -> Box<Future<Item = (), Error = Er
 fn search(client: AsyncClient, query: &'static str) -> Box<Future<Item = SearchResponse<MyType>, Error = Error>> {
     let search = client
         .search()
-        .index(sample_index())
+        .index(MyType::static_index())
         .body(json!({
                 "query": {
                     "query_string": {

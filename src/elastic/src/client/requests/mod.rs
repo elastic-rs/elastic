@@ -249,10 +249,9 @@ pub mod prelude {
     pub use super::endpoints::*;
 
     pub use super::bulk::{
-        bulk_index,
-        bulk_update,
-        bulk_create,
-        bulk_delete,
+        BulkOperation,
+        bulk,
+        bulk_raw,
     };
 
     pub use super::{

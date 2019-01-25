@@ -23,9 +23,9 @@ fn success_parse_found_doc_response() {
 #[test]
 fn success_into_document() {
     let f = load_file("tests/samples/get_found.json");
-    let deserialized = parse::<GetResponse<Value>>().from_reader(StatusCode::OK, f);
+    let deserialized = parse::<GetResponse<Value>>().from_reader(StatusCode::OK, f).unwrap();
 
-    match deserialized.ok().and_then(GetResponse::into_document) {
+    match deserialized.into_document() {
         Some(doc) => {
             let id = doc.as_object()
                 .and_then(|src| src.get("id"))

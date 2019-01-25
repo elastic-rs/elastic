@@ -25,33 +25,52 @@ extern crate chrono;
 pub mod elastic_type;
 pub mod date_format;
 
-fn get_elastic_meta_items(attr: &syn::Attribute) -> Option<&[syn::NestedMetaItem]> {
-    match attr.value {
-        // Get elastic meta items
-        syn::MetaItem::List(ref name, ref items) if name == &"elastic" => Some(items),
+fn get_elastic_meta_items<'a, I>(attrs: I) -> Vec<syn::NestedMetaItem>
+where
+    I: IntoIterator<Item = &'a syn::Attribute> + 'a,
+{
+    attrs
+        .into_iter()
+        .filter_map(|attr| match attr.value {
+            syn::MetaItem::List(ref key, ref list) if key == "elastic" => Some(list),
+            _ => None,
+        })
+        .flat_map(|list| list)
+        .cloned()
+        .collect()
+}
+
+fn expect_name_value<'a>(name: &str, meta_item: &'a syn::NestedMetaItem) -> Option<&'a syn::Lit> {
+    match *meta_item {
+        syn::NestedMetaItem::MetaItem(syn::MetaItem::NameValue(ref key, ref lit)) if key == name => Some(lit),
         _ => None,
     }
 }
 
-// Get the mapping ident supplied by an #[elastic()] attribute or create a default one
-fn get_elastic_attr_name_value<'a>(name: &str, item: &'a syn::MacroInput) -> Option<&'a syn::Lit> {
-    for meta_items in item.attrs.iter().filter_map(get_elastic_meta_items) {
-        for meta_item in meta_items {
-            match *meta_item {
-                // Parse `#[elastic({name}="foo")]`
-                syn::NestedMetaItem::MetaItem(syn::MetaItem::NameValue(ref key, ref lit)) if key == name => {
-                    return Some(lit);
-                }
-                _ => (),
-            }
-        }
+fn expect_list<'a>(name: &str, meta_item: &'a syn::NestedMetaItem) -> Option<&'a [syn::NestedMetaItem]> {
+    match *meta_item {
+        syn::NestedMetaItem::MetaItem(syn::MetaItem::List(ref key, ref list)) if key == name => Some(list),
+        _ => None,
     }
+}
 
-    None
+fn expect_ident<'a>(name: &str, meta_item: &'a syn::NestedMetaItem) -> bool {
+    match *meta_item {
+        syn::NestedMetaItem::MetaItem(syn::MetaItem::Word(ref ident)) if ident == name => true,
+        _ => false,
+    }
 }
 
 fn get_ident_from_lit(lit: &syn::Lit) -> Result<syn::Ident, &'static str> {
-    get_str_from_lit(lit).map(|s| syn::Ident::from(s))
+    get_str_from_lit(lit).map(Into::into)
+}
+
+fn get_tokens_from_lit<'a>(lit: &'a syn::Lit) -> Result<quote::Tokens, &'static str> {
+    get_str_from_lit(lit).map(|s| {
+        let mut tokens = quote::Tokens::new();
+        tokens.append(s);
+        tokens
+    })
 }
 
 fn get_str_from_lit<'a>(lit: &'a syn::Lit) -> Result<&'a str, &'static str> {

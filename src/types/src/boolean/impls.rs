@@ -113,7 +113,6 @@ where
     where
         D: Deserializer<'de>,
     {
-        #[derive(Default)]
         struct BooleanVisitor<TMapping> {
             _m: PhantomData<TMapping>,
         }
@@ -136,7 +135,7 @@ where
             }
         }
 
-        deserializer.deserialize_any(BooleanVisitor::<TMapping>::default())
+        deserializer.deserialize_any(BooleanVisitor::<TMapping> { _m: PhantomData })
     }
 }
 

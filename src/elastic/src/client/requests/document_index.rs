@@ -4,18 +4,21 @@ Builders for [index requests][docs-index].
 [docs-index]: https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html
 */
 
+use std::borrow::Cow;
+
 use serde_json;
 use futures::{Future, Poll};
 use serde::Serialize;
 
 use error::{self, Error, Result};
-use client::Client;
+use client::DocumentClient;
 use client::sender::{AsyncSender, Sender, SyncSender};
 use client::requests::RequestBuilder;
 use client::requests::params::{Id, Index, Type};
 use client::requests::endpoints::IndexRequest;
 use client::requests::raw::RawRequestInner;
 use client::responses::IndexResponse;
+use types::DEFAULT_TYPE;
 use types::document::DocumentType;
 
 /** 
@@ -42,7 +45,7 @@ pub struct IndexRequestInner<TDocument> {
 /**
 # Index document request
 */
-impl<TSender> Client<TSender>
+impl<TSender, TDocument> DocumentClient<TSender, TDocument>
 where
     TSender: Sender,
 {
@@ -67,21 +70,90 @@ where
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
     # fn run() -> Result<(), Box<::std::error::Error>> {
-    # #[derive(Serialize, Deserialize, ElasticType)]
-    # struct MyType {
-    #     pub id: i32,
-    #     pub title: String,
-    #     pub timestamp: Date<DefaultDateMapping>
-    # }
     # let client = SyncClientBuilder::new().build()?;
+    #[derive(Serialize, Deserialize, ElasticType)]
+    struct MyType {
+        #[elastic(id)]
+         pub id: String,
+         pub title: String,
+         pub timestamp: Date<DefaultDateMapping>
+    }
+
     let doc = MyType {
-        id: 1,
-        title: String::from("A title"),
+        id: "1".to_owned(),
+        title: "A title".to_owned(),
         timestamp: Date::now()
     };
 
-    let doc_id = doc.id;
-    let response = client.document_index(index("myindex"), doc)
+    let response = client.document()
+                         .index(doc)
+                         .send()?;
+    
+    assert!(response.created());
+    # Ok(())
+    # }
+    ```
+
+    For more details on document types and mapping, see the [`types`][types-mod] module.
+    
+    [IndexRequestBuilder]: requests/document_index/type.IndexRequestBuilder.html
+    [builder-methods]: requests/document_index/type.IndexRequestBuilder.html#builder-methods
+    [send-sync]: requests/document_index/type.IndexRequestBuilder.html#send-synchronously
+    [send-async]: requests/document_index/type.IndexRequestBuilder.html#send-asynchronously
+    [types-mod]: ../types/index.html
+    [documents-mod]: ../types/document/index.html
+    */
+    // TODO: Consider `doc: impl AsRef<TDocument>`
+    pub fn index(self, doc: TDocument) -> IndexRequestBuilder<TSender, TDocument>
+    where
+        TDocument: Serialize + DocumentType,
+    {
+        let index = doc.index().into_owned().into();
+        let ty = doc.ty().into_owned().into();
+        let id = doc.partial_id().map(Cow::into_owned).map(Into::into);
+
+        RequestBuilder::initial(
+            self.inner,
+            IndexRequestInner {
+                index: index,
+                ty: ty,
+                id: id,
+                doc: doc,
+            },
+        )
+    }
+
+    /**
+    Create a [`IndexRequestBuilder`][IndexRequestBuilder] with this `Client` that can be configured before sending.
+
+    For more details, see:
+
+    - [builder methods][builder-methods]
+    - [send synchronously][send-sync]
+    - [send asynchronously][send-async]
+
+    # Examples
+
+    Index a [`DocumentType`][documents-mod] called `MyType` with an id of `1`:
+
+    ```no_run
+    # extern crate serde;
+    # #[macro_use] extern crate serde_derive;
+    # #[macro_use] extern crate elastic_derive;
+    # #[macro_use] extern crate serde_json;
+    # extern crate elastic;
+    # use elastic::prelude::*;
+    # fn main() { run().unwrap() }
+    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # let client = SyncClientBuilder::new().build()?;
+    let doc_id = 123;
+    let doc = json!({
+        "id": doc_id,
+        "title": "A document"
+    });
+
+    let response = client.document()
+                         .index_raw("myindex", doc)
                          .id(doc_id)
                          .send()?;
     
@@ -99,17 +171,16 @@ where
     [types-mod]: ../types/index.html
     [documents-mod]: ../types/document/index.html
     */
-    pub fn document_index<TDocument>(&self, index: Index<'static>, doc: TDocument) -> IndexRequestBuilder<TSender, TDocument>
+    pub fn index_raw<TIndex>(self, index: TIndex, doc: TDocument) -> IndexRequestBuilder<TSender, TDocument>
     where
-        TDocument: Serialize + DocumentType,
+        TIndex: Into<Index<'static>>,
+        TDocument: Serialize,
     {
-        let ty = TDocument::name().into();
-
         RequestBuilder::initial(
-            self.clone(),
+            self.inner,
             IndexRequestInner {
-                index: index,
-                ty: ty,
+                index: index.into(),
+                ty: DEFAULT_TYPE.into(),
                 id: None,
                 doc: doc,
             },
@@ -142,6 +213,15 @@ impl<TSender, TDocument> IndexRequestBuilder<TSender, TDocument>
 where
     TSender: Sender,
 {
+    /** Set the index for the index request. */
+    pub fn index<I>(mut self, index: I) -> Self
+    where
+        I: Into<Index<'static>>,
+    {
+        self.inner.index = index.into();
+        self
+    }
+
     /** Set the type for the index request. */
     pub fn ty<I>(mut self, ty: I) -> Self
     where
@@ -187,20 +267,19 @@ where
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
-    #     pub id: i32,
+    #     pub id: String,
     #     pub title: String,
     #     pub timestamp: Date<DefaultDateMapping>
     # }
     # let client = SyncClientBuilder::new().build()?;
     let doc = MyType {
-        id: 1,
+        id: "1".to_owned(),
         title: String::from("A title"),
         timestamp: Date::now()
     };
 
-    let doc_id = doc.id;
-    let response = client.document_index(index("myindex"), doc)
-                         .id(doc_id)
+    let response = client.document()
+                         .index(doc)
                          .send()?;
     
     assert!(response.created());
@@ -248,21 +327,20 @@ where
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
-    #     pub id: i32,
+    #     pub id: String,
     #     pub title: String,
     #     pub timestamp: Date<DefaultDateMapping>
     # }
     # let core = tokio_core::reactor::Core::new()?;
     # let client = AsyncClientBuilder::new().build(&core.handle())?;
     let doc = MyType {
-        id: 1,
+        id: "1".to_owned(),
         title: String::from("A title"),
         timestamp: Date::now()
     };
 
-    let doc_id = doc.id;
-    let future = client.document_index(index("myindex"), doc)
-                       .id(doc_id)
+    let future = client.document()
+                       .index(doc)
                        .send();
     
     future.and_then(|response| {
@@ -318,21 +396,39 @@ impl Future for Pending {
 
 #[cfg(test)]
 mod tests {
-    use serde_json::Value;
     use prelude::*;
+
+    #[derive(Serialize, ElasticType)]
+    struct TestDoc { }
 
     #[test]
     fn default_request() {
         let client = SyncClientBuilder::new().build().unwrap();
 
         let req = client
-            .document_index(index("test-idx"), Value::Null)
+            .document::<TestDoc>()
+            .index(TestDoc {})
             .inner
             .into_request()
             .unwrap();
 
-        assert_eq!("/test-idx/value", req.url.as_ref());
-        assert_eq!("null".as_bytes().to_vec(), req.body);
+        assert_eq!("/testdoc/doc", req.url.as_ref());
+        assert_eq!("{}".as_bytes().to_vec(), req.body);
+    }
+
+    #[test]
+    fn specify_index() {
+        let client = SyncClientBuilder::new().build().unwrap();
+
+        let req = client
+            .document::<TestDoc>()
+            .index(TestDoc {})
+            .index("new-idx")
+            .inner
+            .into_request()
+            .unwrap();
+
+        assert_eq!("/new-idx/doc", req.url.as_ref());
     }
 
     #[test]
@@ -340,13 +436,14 @@ mod tests {
         let client = SyncClientBuilder::new().build().unwrap();
 
         let req = client
-            .document_index(index("test-idx"), Value::Null)
+            .document::<TestDoc>()
+            .index(TestDoc {})
             .ty("new-ty")
             .inner
             .into_request()
             .unwrap();
 
-        assert_eq!("/test-idx/new-ty", req.url.as_ref());
+        assert_eq!("/testdoc/new-ty", req.url.as_ref());
     }
 
     #[test]
@@ -354,26 +451,13 @@ mod tests {
         let client = SyncClientBuilder::new().build().unwrap();
 
         let req = client
-            .document_index(index("test-idx"), Value::Null)
+            .document::<TestDoc>()
+            .index(TestDoc {})
             .id(1)
             .inner
             .into_request()
             .unwrap();
 
-        assert_eq!("/test-idx/value/1", req.url.as_ref());
-    }
-
-    #[test]
-    fn document_borrow() {
-        let client = SyncClientBuilder::new().build().unwrap();
-
-        let doc = Value::Null;
-        let req = client
-            .document_index(index("test-idx"), &doc)
-            .inner
-            .into_request()
-            .unwrap();
-
-        assert_eq!("/test-idx/value", req.url.as_ref());
+        assert_eq!("/testdoc/doc/1", req.url.as_ref());
     }
 }

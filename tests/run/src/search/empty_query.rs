@@ -7,11 +7,17 @@ use run_tests::IntegrationTest;
 pub struct EmptyQuery;
 
 #[derive(Debug, Serialize, Deserialize, ElasticType)]
+#[elastic(index = "empty_query_idx")]
 pub struct Doc {
-    id: i32,
+    #[elastic(id)]
+    id: String,
 }
 
-const INDEX: &'static str = "empty_query_idx";
+fn doc() -> Doc {
+    Doc {
+        id: "1".to_owned(),
+    }
+}
 
 impl IntegrationTest for EmptyQuery {
     type Response = SearchResponse<Doc>;
@@ -25,12 +31,12 @@ impl IntegrationTest for EmptyQuery {
 
     // Ensure the index doesn't exist
     fn prepare(&self, client: AsyncClient) -> Box<Future<Item = (), Error = Error>> {
-        let delete_res = client.index_delete(index(INDEX)).send();
+        let delete_res = client.index(Doc::static_index()).delete().send();
 
-        let index_reqs = future::join_all((0..10).into_iter().map(move |i| {
+        let index_reqs = future::join_all((0..10).into_iter().map(move |_| {
             client
-                .document_index(index(INDEX), Doc { id: i })
-                .id(i)
+                .document()
+                .index(doc())
                 .params_fluent(|p| p.url_param("refresh", true))
                 .send()
         }));
@@ -40,7 +46,7 @@ impl IntegrationTest for EmptyQuery {
 
     // Execute a search request against that index
     fn request(&self, client: AsyncClient) -> Box<Future<Item = Self::Response, Error = Error>> {
-        let res = client.search().index(INDEX).send();
+        let res = client.search().index(Doc::static_index()).send();
 
         Box::new(res)
     }
@@ -48,7 +54,7 @@ impl IntegrationTest for EmptyQuery {
     // Ensure the response contains documents
     fn assert_ok(&self, res: &Self::Response) -> bool {
         let correct_hits = res.hits()
-            .all(|hit| hit.index() == INDEX && hit.ty() == Doc::name());
+            .all(|hit| hit.index() == Doc::static_index() && hit.ty() == Doc::static_ty());
         let len_greater_than_0 = res.documents().count() > 0;
 
         correct_hits && len_greater_than_0

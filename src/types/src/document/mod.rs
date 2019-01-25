@@ -87,6 +87,151 @@ This will produce the following field mapping:
 
 It's also possible to adjust the mapping using the `#[elastic]` attribute.
 
+### Specifying a default index name
+
+Documents will default to using an index name that's derived from the name of the Rust type.
+The `#[elastic(index)]` attribute can be used to set the index name that documents belong to:
+
+```
+# #[macro_use]
+# extern crate json_str;
+# #[macro_use]
+# extern crate serde_derive;
+# #[macro_use]
+# extern crate elastic_types_derive;
+# #[macro_use]
+# extern crate elastic_types;
+# extern crate serde;
+# use elastic_types::prelude::*;
+#[derive(Serialize, ElasticType)]
+#[elastic(index = "my-index")]
+pub struct MyType {
+    pub my_date: Date<DefaultDateMapping>,
+    pub my_string: String,
+    pub my_num: i32
+}
+# fn main() {
+# }
+```
+
+Not all documents have a static index that's the same for all instances though.
+For index names that depend on document fields, use the `#[elastic(index(expr = "function"))]` attribute:
+
+```
+# #[macro_use]
+# extern crate json_str;
+# #[macro_use]
+# extern crate serde_derive;
+# #[macro_use]
+# extern crate elastic_types_derive;
+# #[macro_use]
+# extern crate elastic_types;
+# extern crate serde;
+# use elastic_types::prelude::*;
+#[derive(Serialize, ElasticType)]
+#[elastic(index(expr = "MyType::index"))]
+pub struct MyType {
+    pub my_date: Date<DefaultDateMapping>,
+    pub my_string: String,
+    pub my_num: i32
+}
+
+impl MyType {
+    fn index(&self) -> String {
+        format!("my-index-{}", self.my_date)
+    }
+}
+# fn main() {
+# }
+```
+
+### Specifying a type name
+
+Documents will default to using `_doc` as the type name.
+The `#[elastic(ty)]` attribute can be used to set the type name that documents belong to:
+
+```
+# #[macro_use]
+# extern crate json_str;
+# #[macro_use]
+# extern crate serde_derive;
+# #[macro_use]
+# extern crate elastic_types_derive;
+# #[macro_use]
+# extern crate elastic_types;
+# extern crate serde;
+# use elastic_types::prelude::*;
+#[derive(Serialize, ElasticType)]
+#[elastic(ty = "my-type")]
+pub struct MyType {
+    pub my_date: Date<DefaultDateMapping>,
+    pub my_string: String,
+    pub my_num: i32
+}
+# fn main() {
+# }
+```
+
+### Specifying an id field
+
+Documents will default to not using a field as an id.
+The `#[elastic(id)]` attribute can be used to specify an id field:
+
+```
+# #[macro_use]
+# extern crate json_str;
+# #[macro_use]
+# extern crate serde_derive;
+# #[macro_use]
+# extern crate elastic_types_derive;
+# #[macro_use]
+# extern crate elastic_types;
+# extern crate serde;
+# use elastic_types::prelude::*;
+#[derive(Serialize, ElasticType)]
+pub struct MyType {
+    #[elastic(id)]
+    pub my_id: String,
+    pub my_date: Date<DefaultDateMapping>,
+    pub my_string: String,
+    pub my_num: i32
+}
+# fn main() {
+# }
+```
+
+The field annotated with `#[elastic(id)]` must satisfy `impl Into<Cow<'_, str>>`.
+An id can also be calculated based on an expression function using the `#[elastic(id(expr = "function"))]` attribute:
+
+```
+# #[macro_use]
+# extern crate json_str;
+# #[macro_use]
+# extern crate serde_derive;
+# #[macro_use]
+# extern crate elastic_types_derive;
+# #[macro_use]
+# extern crate elastic_types;
+# extern crate serde;
+# use elastic_types::prelude::*;
+#[derive(Serialize, ElasticType)]
+#[elastic(id(expr = "MyType::id"))]
+pub struct MyType {
+    pub my_id: i32,
+    pub my_date: Date<DefaultDateMapping>,
+    pub my_string: String,
+    pub my_num: i32
+}
+
+impl MyType {
+    fn id(&self) -> String {
+        self.my_id.to_string()
+    }
+}
+# fn main() {
+# }
+```
+
 ### Override Default Mapping Properties
 
 You can override the mapping meta properties for an object by providing your own mapping type with `#[elastic(mapping="{TypeName}")]`:
@@ -112,9 +257,8 @@ pub struct MyType {
 
 #[derive(Default)]
 pub struct MyTypeMapping;
-impl DocumentMapping for MyTypeMapping {
-    //Give your own name to a type
-    fn name() -> &'static str { "my_type" }
+impl ObjectMapping for MyTypeMapping {
+    type Properties = MyType;
 
     fn data_type() -> &'static str { OBJECT_DATATYPE }
 }
@@ -146,8 +290,8 @@ This will produce the following field mapping:
 #
 # #[derive(Default)]
 # pub struct MyTypeMapping;
-# impl DocumentMapping for MyTypeMapping {
-#   fn name() -> &'static str { "my_type" }
+# impl ObjectMapping for MyTypeMapping {
+#   type Properties = MyType;
 #   fn data_type() -> &'static str { OBJECT_DATATYPE }
 # }
 # fn main() {
@@ -235,6 +379,11 @@ pub mod prelude {
     This is a convenience module to make it easy to build mappings for multiple types without too many `use` statements.
     */
 
-    pub use super::impls::*;
+    pub use super::impls::{
+        DocumentType,
+        IndexDocumentMapping,
+        StaticIndex,
+        StaticType,
+    };
     pub use super::mapping::*;
 }

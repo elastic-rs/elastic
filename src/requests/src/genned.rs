@@ -65,8 +65,8 @@ pub mod endpoints {
         pub fn url(self) -> UrlPath<'a> {
             match self {
                 ReindexRethrottleUrlParams::TaskId(ref task_id) => {
-                    let mut url = String::with_capacity(30usize + task_id.len());
-                    url.push_str("/_delete_by_query/");
+                    let mut url = String::with_capacity(22usize + task_id.len());
+                    url.push_str("/_reindex/");
                     url.push_str(task_id.as_ref());
                     url.push_str("/_rethrottle");
                     UrlPath::from(url)
@@ -81,7 +81,7 @@ pub mod endpoints {
         pub body: B,
     }
     impl<'a, B> ReindexRethrottleRequest<'a, B> {
-        #[doc = "Request to: `/_delete_by_query/{task_id}/_rethrottle`"]
+        #[doc = "Request to: `/_reindex/{task_id}/_rethrottle`"]
         pub fn for_task_id<ITaskId>(task_id: ITaskId, body: B) -> Self
         where
             ITaskId: Into<TaskId<'a>>,
@@ -243,6 +243,41 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    enum ScriptsPainlessExecuteUrlParams {
+        None,
+    }
+    impl ScriptsPainlessExecuteUrlParams {
+        pub fn url<'a>(self) -> UrlPath<'a> {
+            match self {
+                ScriptsPainlessExecuteUrlParams::None => UrlPath::from("/_scripts/painless/_execute"),
+            }
+        }
+    }
+    #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Post: /_scripts/painless/_execute`\n\n[Elasticsearch Documentation](https://www.elastic.co/guide/en/elasticsearch/painless/master/painless-execute-api.html)"]
+    pub struct ScriptsPainlessExecuteRequest<'a, B> {
+        pub url: UrlPath<'a>,
+        pub body: B,
+    }
+    impl<'a, B> ScriptsPainlessExecuteRequest<'a, B> {
+        #[doc = "Request to: `/_scripts/painless/_execute`"]
+        pub fn new(body: B) -> Self {
+            ScriptsPainlessExecuteRequest {
+                url: ScriptsPainlessExecuteUrlParams::None.url(),
+                body: body,
+            }
+        }
+    }
+    impl<'a, B> Into<Endpoint<'a, B>> for ScriptsPainlessExecuteRequest<'a, B> {
+        fn into(self) -> Endpoint<'a, B> {
+            Endpoint {
+                url: self.url,
+                method: Method::POST,
+                body: Some(self.body),
+            }
+        }
+    }
+    #[derive(Debug, PartialEq, Clone)]
     enum RenderSearchTemplateUrlParams<'a> {
         None,
         Id(Id<'a>),
@@ -286,77 +321,6 @@ pub mod endpoints {
         }
     }
     impl<'a, B> Into<Endpoint<'a, B>> for RenderSearchTemplateRequest<'a, B> {
-        fn into(self) -> Endpoint<'a, B> {
-            Endpoint {
-                url: self.url,
-                method: Method::POST,
-                body: Some(self.body),
-            }
-        }
-    }
-    #[derive(Debug, PartialEq, Clone)]
-    enum CountPercolateUrlParams<'a> {
-        IndexType(Index<'a>, Type<'a>),
-        IndexTypeId(Index<'a>, Type<'a>, Id<'a>),
-    }
-    impl<'a> CountPercolateUrlParams<'a> {
-        pub fn url(self) -> UrlPath<'a> {
-            match self {
-                CountPercolateUrlParams::IndexType(ref index, ref ty) => {
-                    let mut url = String::with_capacity(19usize + index.len() + ty.len());
-                    url.push_str("/");
-                    url.push_str(index.as_ref());
-                    url.push_str("/");
-                    url.push_str(ty.as_ref());
-                    url.push_str("/_percolate/count");
-                    UrlPath::from(url)
-                }
-                CountPercolateUrlParams::IndexTypeId(ref index, ref ty, ref id) => {
-                    let mut url = String::with_capacity(20usize + index.len() + ty.len() + id.len());
-                    url.push_str("/");
-                    url.push_str(index.as_ref());
-                    url.push_str("/");
-                    url.push_str(ty.as_ref());
-                    url.push_str("/");
-                    url.push_str(id.as_ref());
-                    url.push_str("/_percolate/count");
-                    UrlPath::from(url)
-                }
-            }
-        }
-    }
-    #[derive(Debug, PartialEq, Clone)]
-    #[doc = "`Post: /{index}/{type}/_percolate/count`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/search-percolate.html)"]
-    pub struct CountPercolateRequest<'a, B> {
-        pub url: UrlPath<'a>,
-        pub body: B,
-    }
-    impl<'a, B> CountPercolateRequest<'a, B> {
-        #[doc = "Request to: `/{index}/{type}/_percolate/count`"]
-        pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: B) -> Self
-        where
-            IIndex: Into<Index<'a>>,
-            IType: Into<Type<'a>>,
-        {
-            CountPercolateRequest {
-                url: CountPercolateUrlParams::IndexType(index.into(), ty.into()).url(),
-                body: body,
-            }
-        }
-        #[doc = "Request to: `/{index}/{type}/{id}/_percolate/count`"]
-        pub fn for_index_ty_id<IIndex, IType, IId>(index: IIndex, ty: IType, id: IId, body: B) -> Self
-        where
-            IIndex: Into<Index<'a>>,
-            IType: Into<Type<'a>>,
-            IId: Into<Id<'a>>,
-        {
-            CountPercolateRequest {
-                url: CountPercolateUrlParams::IndexTypeId(index.into(), ty.into(), id.into()).url(),
-                body: body,
-            }
-        }
-    }
-    impl<'a, B> Into<Endpoint<'a, B>> for CountPercolateRequest<'a, B> {
         fn into(self) -> Endpoint<'a, B> {
             Endpoint {
                 url: self.url,
@@ -521,9 +485,7 @@ pub mod endpoints {
     impl<'a> TasksListRequest<'a> {
         #[doc = "Request to: `/_tasks`"]
         pub fn new() -> Self {
-            TasksListRequest {
-                url: TasksListUrlParams::None.url(),
-            }
+            TasksListRequest { url: TasksListUrlParams::None.url() }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for TasksListRequest<'a> {
@@ -694,9 +656,7 @@ pub mod endpoints {
     impl<'a> ClusterStatsRequest<'a> {
         #[doc = "Request to: `/_cluster/stats`"]
         pub fn new() -> Self {
-            ClusterStatsRequest {
-                url: ClusterStatsUrlParams::None.url(),
-            }
+            ClusterStatsRequest { url: ClusterStatsUrlParams::None.url() }
         }
         #[doc = "Request to: `/_cluster/stats/nodes/{node_id}`"]
         pub fn for_node_id<INodeId>(node_id: INodeId) -> Self
@@ -836,10 +796,7 @@ pub mod endpoints {
     impl<'a, B> MgetRequest<'a, B> {
         #[doc = "Request to: `/_mget`"]
         pub fn new(body: B) -> Self {
-            MgetRequest {
-                url: MgetUrlParams::None.url(),
-                body: body,
-            }
+            MgetRequest { url: MgetUrlParams::None.url(), body: body }
         }
         #[doc = "Request to: `/{index}/_mget`"]
         pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
@@ -938,6 +895,37 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    enum ClusterRemoteInfoUrlParams {
+        None,
+    }
+    impl ClusterRemoteInfoUrlParams {
+        pub fn url<'a>(self) -> UrlPath<'a> {
+            match self {
+                ClusterRemoteInfoUrlParams::None => UrlPath::from("/_remote/info"),
+            }
+        }
+    }
+    #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Get: /_remote/info`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/cluster-remote-info.html)"]
+    pub struct ClusterRemoteInfoRequest<'a> {
+        pub url: UrlPath<'a>,
+    }
+    impl<'a> ClusterRemoteInfoRequest<'a> {
+        #[doc = "Request to: `/_remote/info`"]
+        pub fn new() -> Self {
+            ClusterRemoteInfoRequest { url: ClusterRemoteInfoUrlParams::None.url() }
+        }
+    }
+    impl<'a> Into<Endpoint<'a, DefaultBody>> for ClusterRemoteInfoRequest<'a> {
+        fn into(self) -> Endpoint<'a, DefaultBody> {
+            Endpoint {
+                url: self.url,
+                method: Method::GET,
+                body: None,
+            }
+        }
+    }
+    #[derive(Debug, PartialEq, Clone)]
     enum CatHealthUrlParams {
         None,
     }
@@ -956,9 +944,7 @@ pub mod endpoints {
     impl<'a> CatHealthRequest<'a> {
         #[doc = "Request to: `/_cat/health`"]
         pub fn new() -> Self {
-            CatHealthRequest {
-                url: CatHealthUrlParams::None.url(),
-            }
+            CatHealthRequest { url: CatHealthUrlParams::None.url() }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for CatHealthRequest<'a> {
@@ -1176,10 +1162,7 @@ pub mod endpoints {
     impl<'a, B> ScrollRequest<'a, B> {
         #[doc = "Request to: `/_search/scroll`"]
         pub fn new(body: B) -> Self {
-            ScrollRequest {
-                url: ScrollUrlParams::None.url(),
-                body: body,
-            }
+            ScrollRequest { url: ScrollUrlParams::None.url(), body: body }
         }
         #[doc = "Request to: `/_search/scroll/{scroll_id}`"]
         pub fn for_scroll_id<IScrollId>(scroll_id: IScrollId, body: B) -> Self
@@ -1203,20 +1186,12 @@ pub mod endpoints {
     }
     #[derive(Debug, PartialEq, Clone)]
     enum IndicesExistsAliasUrlParams<'a> {
-        Index(Index<'a>),
         IndexName(Index<'a>, Name<'a>),
         Name(Name<'a>),
     }
     impl<'a> IndicesExistsAliasUrlParams<'a> {
         pub fn url(self) -> UrlPath<'a> {
             match self {
-                IndicesExistsAliasUrlParams::Index(ref index) => {
-                    let mut url = String::with_capacity(8usize + index.len());
-                    url.push_str("/");
-                    url.push_str(index.as_ref());
-                    url.push_str("/_alias");
-                    UrlPath::from(url)
-                }
                 IndicesExistsAliasUrlParams::IndexName(ref index, ref name) => {
                     let mut url = String::with_capacity(9usize + index.len() + name.len());
                     url.push_str("/");
@@ -1240,15 +1215,6 @@ pub mod endpoints {
         pub url: UrlPath<'a>,
     }
     impl<'a> IndicesExistsAliasRequest<'a> {
-        #[doc = "Request to: `/{index}/_alias`"]
-        pub fn for_index<IIndex>(index: IIndex) -> Self
-        where
-            IIndex: Into<Index<'a>>,
-        {
-            IndicesExistsAliasRequest {
-                url: IndicesExistsAliasUrlParams::Index(index.into()).url(),
-            }
-        }
         #[doc = "Request to: `/{index}/_alias/{name}`"]
         pub fn for_index_name<IIndex, IName>(index: IIndex, name: IName) -> Self
         where
@@ -1279,40 +1245,50 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
-    enum PutTemplateUrlParams<'a> {
-        Id(Id<'a>),
+    enum FieldCapsUrlParams<'a> {
+        None,
+        Index(Index<'a>),
     }
-    impl<'a> PutTemplateUrlParams<'a> {
+    impl<'a> FieldCapsUrlParams<'a> {
         pub fn url(self) -> UrlPath<'a> {
             match self {
-                PutTemplateUrlParams::Id(ref id) => {
-                    let mut url = String::with_capacity(18usize + id.len());
-                    url.push_str("/_search/template/");
-                    url.push_str(id.as_ref());
+                FieldCapsUrlParams::None => UrlPath::from("/_field_caps"),
+                FieldCapsUrlParams::Index(ref index) => {
+                    let mut url = String::with_capacity(13usize + index.len());
+                    url.push_str("/");
+                    url.push_str(index.as_ref());
+                    url.push_str("/_field_caps");
                     UrlPath::from(url)
                 }
             }
         }
     }
     #[derive(Debug, PartialEq, Clone)]
-    #[doc = "`Post: /_search/template/{id}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/search-template.html)"]
-    pub struct PutTemplateRequest<'a, B> {
+    #[doc = "`Post: /_field_caps`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/search-field-caps.html)"]
+    pub struct FieldCapsRequest<'a, B> {
         pub url: UrlPath<'a>,
         pub body: B,
     }
-    impl<'a, B> PutTemplateRequest<'a, B> {
-        #[doc = "Request to: `/_search/template/{id}`"]
-        pub fn for_id<IId>(id: IId, body: B) -> Self
+    impl<'a, B> FieldCapsRequest<'a, B> {
+        #[doc = "Request to: `/_field_caps`"]
+        pub fn new(body: B) -> Self {
+            FieldCapsRequest {
+                url: FieldCapsUrlParams::None.url(),
+                body: body,
+            }
+        }
+        #[doc = "Request to: `/{index}/_field_caps`"]
+        pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
         where
-            IId: Into<Id<'a>>,
+            IIndex: Into<Index<'a>>,
         {
-            PutTemplateRequest {
-                url: PutTemplateUrlParams::Id(id.into()).url(),
+            FieldCapsRequest {
+                url: FieldCapsUrlParams::Index(index.into()).url(),
                 body: body,
             }
         }
     }
-    impl<'a, B> Into<Endpoint<'a, B>> for PutTemplateRequest<'a, B> {
+    impl<'a, B> Into<Endpoint<'a, B>> for FieldCapsRequest<'a, B> {
         fn into(self) -> Endpoint<'a, B> {
             Endpoint {
                 url: self.url,
@@ -1359,80 +1335,6 @@ pub mod endpoints {
         }
     }
     impl<'a, B> Into<Endpoint<'a, B>> for SnapshotCreateRequest<'a, B> {
-        fn into(self) -> Endpoint<'a, B> {
-            Endpoint {
-                url: self.url,
-                method: Method::POST,
-                body: Some(self.body),
-            }
-        }
-    }
-    #[derive(Debug, PartialEq, Clone)]
-    enum MpercolateUrlParams<'a> {
-        None,
-        Index(Index<'a>),
-        IndexType(Index<'a>, Type<'a>),
-    }
-    impl<'a> MpercolateUrlParams<'a> {
-        pub fn url(self) -> UrlPath<'a> {
-            match self {
-                MpercolateUrlParams::None => UrlPath::from("/_mpercolate"),
-                MpercolateUrlParams::Index(ref index) => {
-                    let mut url = String::with_capacity(13usize + index.len());
-                    url.push_str("/");
-                    url.push_str(index.as_ref());
-                    url.push_str("/_mpercolate");
-                    UrlPath::from(url)
-                }
-                MpercolateUrlParams::IndexType(ref index, ref ty) => {
-                    let mut url = String::with_capacity(14usize + index.len() + ty.len());
-                    url.push_str("/");
-                    url.push_str(index.as_ref());
-                    url.push_str("/");
-                    url.push_str(ty.as_ref());
-                    url.push_str("/_mpercolate");
-                    UrlPath::from(url)
-                }
-            }
-        }
-    }
-    #[derive(Debug, PartialEq, Clone)]
-    #[doc = "`Post: /_mpercolate`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/search-percolate.html)"]
-    pub struct MpercolateRequest<'a, B> {
-        pub url: UrlPath<'a>,
-        pub body: B,
-    }
-    impl<'a, B> MpercolateRequest<'a, B> {
-        #[doc = "Request to: `/_mpercolate`"]
-        pub fn new(body: B) -> Self {
-            MpercolateRequest {
-                url: MpercolateUrlParams::None.url(),
-                body: body,
-            }
-        }
-        #[doc = "Request to: `/{index}/_mpercolate`"]
-        pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
-        where
-            IIndex: Into<Index<'a>>,
-        {
-            MpercolateRequest {
-                url: MpercolateUrlParams::Index(index.into()).url(),
-                body: body,
-            }
-        }
-        #[doc = "Request to: `/{index}/{type}/_mpercolate`"]
-        pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: B) -> Self
-        where
-            IIndex: Into<Index<'a>>,
-            IType: Into<Type<'a>>,
-        {
-            MpercolateRequest {
-                url: MpercolateUrlParams::IndexType(index.into(), ty.into()).url(),
-                body: body,
-            }
-        }
-    }
-    impl<'a, B> Into<Endpoint<'a, B>> for MpercolateRequest<'a, B> {
         fn into(self) -> Endpoint<'a, B> {
             Endpoint {
                 url: self.url,
@@ -1528,9 +1430,7 @@ pub mod endpoints {
     impl<'a> IndicesGetMappingRequest<'a> {
         #[doc = "Request to: `/_mapping`"]
         pub fn new() -> Self {
-            IndicesGetMappingRequest {
-                url: IndicesGetMappingUrlParams::None.url(),
-            }
+            IndicesGetMappingRequest { url: IndicesGetMappingUrlParams::None.url() }
         }
         #[doc = "Request to: `/{index}/_mapping`"]
         pub fn for_index<IIndex>(index: IIndex) -> Self
@@ -1608,10 +1508,7 @@ pub mod endpoints {
     impl<'a, B> BulkRequest<'a, B> {
         #[doc = "Request to: `/_bulk`"]
         pub fn new(body: B) -> Self {
-            BulkRequest {
-                url: BulkUrlParams::None.url(),
-                body: body,
-            }
+            BulkRequest { url: BulkUrlParams::None.url(), body: body }
         }
         #[doc = "Request to: `/{index}/_bulk`"]
         pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
@@ -1670,9 +1567,7 @@ pub mod endpoints {
     impl<'a> ClusterHealthRequest<'a> {
         #[doc = "Request to: `/_cluster/health`"]
         pub fn new() -> Self {
-            ClusterHealthRequest {
-                url: ClusterHealthUrlParams::None.url(),
-            }
+            ClusterHealthRequest { url: ClusterHealthUrlParams::None.url() }
         }
         #[doc = "Request to: `/_cluster/health/{index}`"]
         pub fn for_index<IIndex>(index: IIndex) -> Self
@@ -1719,9 +1614,7 @@ pub mod endpoints {
     impl<'a> CatAliasesRequest<'a> {
         #[doc = "Request to: `/_cat/aliases`"]
         pub fn new() -> Self {
-            CatAliasesRequest {
-                url: CatAliasesUrlParams::None.url(),
-            }
+            CatAliasesRequest { url: CatAliasesUrlParams::None.url() }
         }
         #[doc = "Request to: `/_cat/aliases/{name}`"]
         pub fn for_name<IName>(name: IName) -> Self
@@ -1768,9 +1661,7 @@ pub mod endpoints {
     impl<'a> CatSegmentsRequest<'a> {
         #[doc = "Request to: `/_cat/segments`"]
         pub fn new() -> Self {
-            CatSegmentsRequest {
-                url: CatSegmentsUrlParams::None.url(),
-            }
+            CatSegmentsRequest { url: CatSegmentsUrlParams::None.url() }
         }
         #[doc = "Request to: `/_cat/segments/{index}`"]
         pub fn for_index<IIndex>(index: IIndex) -> Self
@@ -1828,9 +1719,7 @@ pub mod endpoints {
     impl<'a> SimpleSearchRequest<'a> {
         #[doc = "Request to: `/_search`"]
         pub fn new() -> Self {
-            SimpleSearchRequest {
-                url: SimpleSearchUrlParams::None.url(),
-            }
+            SimpleSearchRequest { url: SimpleSearchUrlParams::None.url() }
         }
         #[doc = "Request to: `/{index}/_search`"]
         pub fn for_index<IIndex>(index: IIndex) -> Self
@@ -1899,10 +1788,7 @@ pub mod endpoints {
     impl<'a, B> SearchRequest<'a, B> {
         #[doc = "Request to: `/_search`"]
         pub fn new(body: B) -> Self {
-            SearchRequest {
-                url: SearchUrlParams::None.url(),
-                body: body,
-            }
+            SearchRequest { url: SearchUrlParams::None.url(), body: body }
         }
         #[doc = "Request to: `/{index}/_search`"]
         pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
@@ -1954,9 +1840,7 @@ pub mod endpoints {
     impl<'a> ClusterPendingTasksRequest<'a> {
         #[doc = "Request to: `/_cluster/pending_tasks`"]
         pub fn new() -> Self {
-            ClusterPendingTasksRequest {
-                url: ClusterPendingTasksUrlParams::None.url(),
-            }
+            ClusterPendingTasksRequest { url: ClusterPendingTasksUrlParams::None.url() }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for ClusterPendingTasksRequest<'a> {
@@ -1969,42 +1853,49 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
-    enum GetTemplateUrlParams<'a> {
-        Id(Id<'a>),
+    enum ExistsSourceUrlParams<'a> {
+        IndexTypeId(Index<'a>, Type<'a>, Id<'a>),
     }
-    impl<'a> GetTemplateUrlParams<'a> {
+    impl<'a> ExistsSourceUrlParams<'a> {
         pub fn url(self) -> UrlPath<'a> {
             match self {
-                GetTemplateUrlParams::Id(ref id) => {
-                    let mut url = String::with_capacity(18usize + id.len());
-                    url.push_str("/_search/template/");
+                ExistsSourceUrlParams::IndexTypeId(ref index, ref ty, ref id) => {
+                    let mut url = String::with_capacity(11usize + index.len() + ty.len() + id.len());
+                    url.push_str("/");
+                    url.push_str(index.as_ref());
+                    url.push_str("/");
+                    url.push_str(ty.as_ref());
+                    url.push_str("/");
                     url.push_str(id.as_ref());
+                    url.push_str("/_source");
                     UrlPath::from(url)
                 }
             }
         }
     }
     #[derive(Debug, PartialEq, Clone)]
-    #[doc = "`Get: /_search/template/{id}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/search-template.html)"]
-    pub struct GetTemplateRequest<'a> {
+    #[doc = "`Head: /{index}/{type}/{id}/_source`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/docs-get.html)"]
+    pub struct ExistsSourceRequest<'a> {
         pub url: UrlPath<'a>,
     }
-    impl<'a> GetTemplateRequest<'a> {
-        #[doc = "Request to: `/_search/template/{id}`"]
-        pub fn for_id<IId>(id: IId) -> Self
+    impl<'a> ExistsSourceRequest<'a> {
+        #[doc = "Request to: `/{index}/{type}/{id}/_source`"]
+        pub fn for_index_ty_id<IIndex, IType, IId>(index: IIndex, ty: IType, id: IId) -> Self
         where
+            IIndex: Into<Index<'a>>,
+            IType: Into<Type<'a>>,
             IId: Into<Id<'a>>,
         {
-            GetTemplateRequest {
-                url: GetTemplateUrlParams::Id(id.into()).url(),
+            ExistsSourceRequest {
+                url: ExistsSourceUrlParams::IndexTypeId(index.into(), ty.into(), id.into()).url(),
             }
         }
     }
-    impl<'a> Into<Endpoint<'a, DefaultBody>> for GetTemplateRequest<'a> {
+    impl<'a> Into<Endpoint<'a, DefaultBody>> for ExistsSourceRequest<'a> {
         fn into(self) -> Endpoint<'a, DefaultBody> {
             Endpoint {
                 url: self.url,
-                method: Method::GET,
+                method: Method::HEAD,
                 body: None,
             }
         }
@@ -2035,9 +1926,7 @@ pub mod endpoints {
     impl<'a> CatThreadPoolRequest<'a> {
         #[doc = "Request to: `/_cat/thread_pool`"]
         pub fn new() -> Self {
-            CatThreadPoolRequest {
-                url: CatThreadPoolUrlParams::None.url(),
-            }
+            CatThreadPoolRequest { url: CatThreadPoolUrlParams::None.url() }
         }
         #[doc = "Request to: `/_cat/thread_pool/{thread_pool_patterns}`"]
         pub fn for_thread_pool_patterns<IThreadPoolPatterns>(thread_pool_patterns: IThreadPoolPatterns) -> Self
@@ -2059,50 +1948,41 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
-    enum SuggestUrlParams<'a> {
-        None,
-        Index(Index<'a>),
+    enum UpdateByQueryRethrottleUrlParams<'a> {
+        TaskId(TaskId<'a>),
     }
-    impl<'a> SuggestUrlParams<'a> {
+    impl<'a> UpdateByQueryRethrottleUrlParams<'a> {
         pub fn url(self) -> UrlPath<'a> {
             match self {
-                SuggestUrlParams::None => UrlPath::from("/_suggest"),
-                SuggestUrlParams::Index(ref index) => {
-                    let mut url = String::with_capacity(10usize + index.len());
-                    url.push_str("/");
-                    url.push_str(index.as_ref());
-                    url.push_str("/_suggest");
+                UpdateByQueryRethrottleUrlParams::TaskId(ref task_id) => {
+                    let mut url = String::with_capacity(30usize + task_id.len());
+                    url.push_str("/_update_by_query/");
+                    url.push_str(task_id.as_ref());
+                    url.push_str("/_rethrottle");
                     UrlPath::from(url)
                 }
             }
         }
     }
     #[derive(Debug, PartialEq, Clone)]
-    #[doc = "`Post: /_suggest`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/search-suggesters.html)"]
-    pub struct SuggestRequest<'a, B> {
+    #[doc = "`Post: /_update_by_query/{task_id}/_rethrottle`\n\n[Elasticsearch Documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-update-by-query.html)"]
+    pub struct UpdateByQueryRethrottleRequest<'a, B> {
         pub url: UrlPath<'a>,
         pub body: B,
     }
-    impl<'a, B> SuggestRequest<'a, B> {
-        #[doc = "Request to: `/_suggest`"]
-        pub fn new(body: B) -> Self {
-            SuggestRequest {
-                url: SuggestUrlParams::None.url(),
-                body: body,
-            }
-        }
-        #[doc = "Request to: `/{index}/_suggest`"]
-        pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
+    impl<'a, B> UpdateByQueryRethrottleRequest<'a, B> {
+        #[doc = "Request to: `/_update_by_query/{task_id}/_rethrottle`"]
+        pub fn for_task_id<ITaskId>(task_id: ITaskId, body: B) -> Self
         where
-            IIndex: Into<Index<'a>>,
+            ITaskId: Into<TaskId<'a>>,
         {
-            SuggestRequest {
-                url: SuggestUrlParams::Index(index.into()).url(),
+            UpdateByQueryRethrottleRequest {
+                url: UpdateByQueryRethrottleUrlParams::TaskId(task_id.into()).url(),
                 body: body,
             }
         }
     }
-    impl<'a, B> Into<Endpoint<'a, B>> for SuggestRequest<'a, B> {
+    impl<'a, B> Into<Endpoint<'a, B>> for UpdateByQueryRethrottleRequest<'a, B> {
         fn into(self) -> Endpoint<'a, B> {
             Endpoint {
                 url: self.url,
@@ -2198,9 +2078,7 @@ pub mod endpoints {
     impl<'a> SnapshotStatusRequest<'a> {
         #[doc = "Request to: `/_snapshot/_status`"]
         pub fn new() -> Self {
-            SnapshotStatusRequest {
-                url: SnapshotStatusUrlParams::None.url(),
-            }
+            SnapshotStatusRequest { url: SnapshotStatusUrlParams::None.url() }
         }
         #[doc = "Request to: `/_snapshot/{repository}/_status`"]
         pub fn for_repository<IRepository>(repository: IRepository) -> Self
@@ -2228,6 +2106,50 @@ pub mod endpoints {
                 url: self.url,
                 method: Method::GET,
                 body: None,
+            }
+        }
+    }
+    #[derive(Debug, PartialEq, Clone)]
+    enum DeleteByQueryRethrottleUrlParams<'a> {
+        TaskId(TaskId<'a>),
+    }
+    impl<'a> DeleteByQueryRethrottleUrlParams<'a> {
+        pub fn url(self) -> UrlPath<'a> {
+            match self {
+                DeleteByQueryRethrottleUrlParams::TaskId(ref task_id) => {
+                    let mut url = String::with_capacity(30usize + task_id.len());
+                    url.push_str("/_delete_by_query/");
+                    url.push_str(task_id.as_ref());
+                    url.push_str("/_rethrottle");
+                    UrlPath::from(url)
+                }
+            }
+        }
+    }
+    #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Post: /_delete_by_query/{task_id}/_rethrottle`\n\n[Elasticsearch Documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-delete-by-query.html)"]
+    pub struct DeleteByQueryRethrottleRequest<'a, B> {
+        pub url: UrlPath<'a>,
+        pub body: B,
+    }
+    impl<'a, B> DeleteByQueryRethrottleRequest<'a, B> {
+        #[doc = "Request to: `/_delete_by_query/{task_id}/_rethrottle`"]
+        pub fn for_task_id<ITaskId>(task_id: ITaskId, body: B) -> Self
+        where
+            ITaskId: Into<TaskId<'a>>,
+        {
+            DeleteByQueryRethrottleRequest {
+                url: DeleteByQueryRethrottleUrlParams::TaskId(task_id.into()).url(),
+                body: body,
+            }
+        }
+    }
+    impl<'a, B> Into<Endpoint<'a, B>> for DeleteByQueryRethrottleRequest<'a, B> {
+        fn into(self) -> Endpoint<'a, B> {
+            Endpoint {
+                url: self.url,
+                method: Method::POST,
+                body: Some(self.body),
             }
         }
     }
@@ -2303,9 +2225,7 @@ pub mod endpoints {
     impl<'a> CatTemplatesRequest<'a> {
         #[doc = "Request to: `/_cat/templates`"]
         pub fn new() -> Self {
-            CatTemplatesRequest {
-                url: CatTemplatesUrlParams::None.url(),
-            }
+            CatTemplatesRequest { url: CatTemplatesUrlParams::None.url() }
         }
         #[doc = "Request to: `/_cat/templates/{name}`"]
         pub fn for_name<IName>(name: IName) -> Self
@@ -2370,7 +2290,6 @@ pub mod endpoints {
     #[derive(Debug, PartialEq, Clone)]
     enum IndicesGetUrlParams<'a> {
         Index(Index<'a>),
-        IndexFeature(Index<'a>, Feature<'a>),
     }
     impl<'a> IndicesGetUrlParams<'a> {
         pub fn url(self) -> UrlPath<'a> {
@@ -2379,14 +2298,6 @@ pub mod endpoints {
                     let mut url = String::with_capacity(1usize + index.len());
                     url.push_str("/");
                     url.push_str(index.as_ref());
-                    UrlPath::from(url)
-                }
-                IndicesGetUrlParams::IndexFeature(ref index, ref feature) => {
-                    let mut url = String::with_capacity(2usize + index.len() + feature.len());
-                    url.push_str("/");
-                    url.push_str(index.as_ref());
-                    url.push_str("/");
-                    url.push_str(feature.as_ref());
                     UrlPath::from(url)
                 }
             }
@@ -2405,16 +2316,6 @@ pub mod endpoints {
         {
             IndicesGetRequest {
                 url: IndicesGetUrlParams::Index(index.into()).url(),
-            }
-        }
-        #[doc = "Request to: `/{index}/{feature}`"]
-        pub fn for_index_feature<IIndex, IFeature>(index: IIndex, feature: IFeature) -> Self
-        where
-            IIndex: Into<Index<'a>>,
-            IFeature: Into<Feature<'a>>,
-        {
-            IndicesGetRequest {
-                url: IndicesGetUrlParams::IndexFeature(index.into(), feature.into()).url(),
             }
         }
     }
@@ -2564,9 +2465,7 @@ pub mod endpoints {
     impl<'a> NodesStatsRequest<'a> {
         #[doc = "Request to: `/_nodes/stats`"]
         pub fn new() -> Self {
-            NodesStatsRequest {
-                url: NodesStatsUrlParams::None.url(),
-            }
+            NodesStatsRequest { url: NodesStatsUrlParams::None.url() }
         }
         #[doc = "Request to: `/_nodes/stats/{metric}`"]
         pub fn for_metric<IMetric>(metric: IMetric) -> Self
@@ -2653,9 +2552,7 @@ pub mod endpoints {
     impl<'a> CatSnapshotsRequest<'a> {
         #[doc = "Request to: `/_cat/snapshots`"]
         pub fn new() -> Self {
-            CatSnapshotsRequest {
-                url: CatSnapshotsUrlParams::None.url(),
-            }
+            CatSnapshotsRequest { url: CatSnapshotsUrlParams::None.url() }
         }
         #[doc = "Request to: `/_cat/snapshots/{repository}`"]
         pub fn for_repository<IRepository>(repository: IRepository) -> Self
@@ -2719,9 +2616,7 @@ pub mod endpoints {
     impl<'a> IndicesGetSettingsRequest<'a> {
         #[doc = "Request to: `/_settings`"]
         pub fn new() -> Self {
-            IndicesGetSettingsRequest {
-                url: IndicesGetSettingsUrlParams::None.url(),
-            }
+            IndicesGetSettingsRequest { url: IndicesGetSettingsUrlParams::None.url() }
         }
         #[doc = "Request to: `/{index}/_settings`"]
         pub fn for_index<IIndex>(index: IIndex) -> Self
@@ -2762,17 +2657,68 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    enum RankEvalUrlParams<'a> {
+        None,
+        Index(Index<'a>),
+    }
+    impl<'a> RankEvalUrlParams<'a> {
+        pub fn url(self) -> UrlPath<'a> {
+            match self {
+                RankEvalUrlParams::None => UrlPath::from("/_rank_eval"),
+                RankEvalUrlParams::Index(ref index) => {
+                    let mut url = String::with_capacity(12usize + index.len());
+                    url.push_str("/");
+                    url.push_str(index.as_ref());
+                    url.push_str("/_rank_eval");
+                    UrlPath::from(url)
+                }
+            }
+        }
+    }
+    #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Post: /_rank_eval`\n\n[Elasticsearch Documentation](https://www.elastic.co/guide/en/elasticsearch/reference/master/search-rank-eval.html)"]
+    pub struct RankEvalRequest<'a, B> {
+        pub url: UrlPath<'a>,
+        pub body: B,
+    }
+    impl<'a, B> RankEvalRequest<'a, B> {
+        #[doc = "Request to: `/_rank_eval`"]
+        pub fn new(body: B) -> Self {
+            RankEvalRequest {
+                url: RankEvalUrlParams::None.url(),
+                body: body,
+            }
+        }
+        #[doc = "Request to: `/{index}/_rank_eval`"]
+        pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
+        where
+            IIndex: Into<Index<'a>>,
+        {
+            RankEvalRequest {
+                url: RankEvalUrlParams::Index(index.into()).url(),
+                body: body,
+            }
+        }
+    }
+    impl<'a, B> Into<Endpoint<'a, B>> for RankEvalRequest<'a, B> {
+        fn into(self) -> Endpoint<'a, B> {
+            Endpoint {
+                url: self.url,
+                method: Method::POST,
+                body: Some(self.body),
+            }
+        }
+    }
+    #[derive(Debug, PartialEq, Clone)]
     enum DeleteScriptUrlParams<'a> {
-        LangId(Lang<'a>, Id<'a>),
+        Id(Id<'a>),
     }
     impl<'a> DeleteScriptUrlParams<'a> {
         pub fn url(self) -> UrlPath<'a> {
             match self {
-                DeleteScriptUrlParams::LangId(ref lang, ref id) => {
-                    let mut url = String::with_capacity(11usize + lang.len() + id.len());
+                DeleteScriptUrlParams::Id(ref id) => {
+                    let mut url = String::with_capacity(10usize + id.len());
                     url.push_str("/_scripts/");
-                    url.push_str(lang.as_ref());
-                    url.push_str("/");
                     url.push_str(id.as_ref());
                     UrlPath::from(url)
                 }
@@ -2780,19 +2726,18 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
-    #[doc = "`Delete: /_scripts/{lang}/{id}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/modules-scripting.html)"]
+    #[doc = "`Delete: /_scripts/{id}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/modules-scripting.html)"]
     pub struct DeleteScriptRequest<'a> {
         pub url: UrlPath<'a>,
     }
     impl<'a> DeleteScriptRequest<'a> {
-        #[doc = "Request to: `/_scripts/{lang}/{id}`"]
-        pub fn for_lang_id<ILang, IId>(lang: ILang, id: IId) -> Self
+        #[doc = "Request to: `/_scripts/{id}`"]
+        pub fn for_id<IId>(id: IId) -> Self
         where
-            ILang: Into<Lang<'a>>,
             IId: Into<Id<'a>>,
         {
             DeleteScriptRequest {
-                url: DeleteScriptUrlParams::LangId(lang.into(), id.into()).url(),
+                url: DeleteScriptUrlParams::Id(id.into()).url(),
             }
         }
     }
@@ -2961,9 +2906,7 @@ pub mod endpoints {
     impl<'a> CatPendingTasksRequest<'a> {
         #[doc = "Request to: `/_cat/pending_tasks`"]
         pub fn new() -> Self {
-            CatPendingTasksRequest {
-                url: CatPendingTasksUrlParams::None.url(),
-            }
+            CatPendingTasksRequest { url: CatPendingTasksUrlParams::None.url() }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for CatPendingTasksRequest<'a> {
@@ -3001,9 +2944,7 @@ pub mod endpoints {
     impl<'a> IngestGetPipelineRequest<'a> {
         #[doc = "Request to: `/_ingest/pipeline`"]
         pub fn new() -> Self {
-            IngestGetPipelineRequest {
-                url: IngestGetPipelineUrlParams::None.url(),
-            }
+            IngestGetPipelineRequest { url: IngestGetPipelineUrlParams::None.url() }
         }
         #[doc = "Request to: `/_ingest/pipeline/{id}`"]
         pub fn for_id<IId>(id: IId) -> Self
@@ -3051,9 +2992,7 @@ pub mod endpoints {
     impl<'a> IndicesRecoveryRequest<'a> {
         #[doc = "Request to: `/_recovery`"]
         pub fn new() -> Self {
-            IndicesRecoveryRequest {
-                url: IndicesRecoveryUrlParams::None.url(),
-            }
+            IndicesRecoveryRequest { url: IndicesRecoveryUrlParams::None.url() }
         }
         #[doc = "Request to: `/{index}/_recovery`"]
         pub fn for_index<IIndex>(index: IIndex) -> Self
@@ -3116,9 +3055,7 @@ pub mod endpoints {
     impl<'a> NodesInfoRequest<'a> {
         #[doc = "Request to: `/_nodes`"]
         pub fn new() -> Self {
-            NodesInfoRequest {
-                url: NodesInfoUrlParams::None.url(),
-            }
+            NodesInfoRequest { url: NodesInfoUrlParams::None.url() }
         }
         #[doc = "Request to: `/_nodes/{metric}`"]
         pub fn for_metric<IMetric>(metric: IMetric) -> Self
@@ -3276,9 +3213,7 @@ pub mod endpoints {
     impl<'a> IndicesShardStoresRequest<'a> {
         #[doc = "Request to: `/_shard_stores`"]
         pub fn new() -> Self {
-            IndicesShardStoresRequest {
-                url: IndicesShardStoresUrlParams::None.url(),
-            }
+            IndicesShardStoresRequest { url: IndicesShardStoresUrlParams::None.url() }
         }
         #[doc = "Request to: `/{index}/_shard_stores`"]
         pub fn for_index<IIndex>(index: IIndex) -> Self
@@ -3325,9 +3260,7 @@ pub mod endpoints {
     impl<'a> IndicesGetTemplateRequest<'a> {
         #[doc = "Request to: `/_template`"]
         pub fn new() -> Self {
-            IndicesGetTemplateRequest {
-                url: IndicesGetTemplateUrlParams::None.url(),
-            }
+            IndicesGetTemplateRequest { url: IndicesGetTemplateUrlParams::None.url() }
         }
         #[doc = "Request to: `/_template/{name}`"]
         pub fn for_name<IName>(name: IName) -> Self
@@ -3432,9 +3365,7 @@ pub mod endpoints {
     impl<'a> CatMasterRequest<'a> {
         #[doc = "Request to: `/_cat/master`"]
         pub fn new() -> Self {
-            CatMasterRequest {
-                url: CatMasterUrlParams::None.url(),
-            }
+            CatMasterRequest { url: CatMasterUrlParams::None.url() }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for CatMasterRequest<'a> {
@@ -3473,9 +3404,7 @@ pub mod endpoints {
     impl<'a> NodesHotThreadsRequest<'a> {
         #[doc = "Request to: `/_nodes/hot_threads`"]
         pub fn new() -> Self {
-            NodesHotThreadsRequest {
-                url: NodesHotThreadsUrlParams::None.url(),
-            }
+            NodesHotThreadsRequest { url: NodesHotThreadsUrlParams::None.url() }
         }
         #[doc = "Request to: `/_nodes/{node_id}/hot_threads`"]
         pub fn for_node_id<INodeId>(node_id: INodeId) -> Self
@@ -3754,10 +3683,7 @@ pub mod endpoints {
     impl<'a, B> CountRequest<'a, B> {
         #[doc = "Request to: `/_count`"]
         pub fn new(body: B) -> Self {
-            CountRequest {
-                url: CountUrlParams::None.url(),
-                body: body,
-            }
+            CountRequest { url: CountUrlParams::None.url(), body: body }
         }
         #[doc = "Request to: `/{index}/_count`"]
         pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
@@ -3816,9 +3742,7 @@ pub mod endpoints {
     impl<'a> CatRecoveryRequest<'a> {
         #[doc = "Request to: `/_cat/recovery`"]
         pub fn new() -> Self {
-            CatRecoveryRequest {
-                url: CatRecoveryUrlParams::None.url(),
-            }
+            CatRecoveryRequest { url: CatRecoveryUrlParams::None.url() }
         }
         #[doc = "Request to: `/_cat/recovery/{index}`"]
         pub fn for_index<IIndex>(index: IIndex) -> Self
@@ -3925,6 +3849,89 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    enum NodesUsageUrlParams<'a> {
+        None,
+        Metric(Metric<'a>),
+        NodeId(NodeId<'a>),
+        NodeIdMetric(NodeId<'a>, Metric<'a>),
+    }
+    impl<'a> NodesUsageUrlParams<'a> {
+        pub fn url(self) -> UrlPath<'a> {
+            match self {
+                NodesUsageUrlParams::None => UrlPath::from("/_nodes/usage"),
+                NodesUsageUrlParams::Metric(ref metric) => {
+                    let mut url = String::with_capacity(14usize + metric.len());
+                    url.push_str("/_nodes/usage/");
+                    url.push_str(metric.as_ref());
+                    UrlPath::from(url)
+                }
+                NodesUsageUrlParams::NodeId(ref node_id) => {
+                    let mut url = String::with_capacity(14usize + node_id.len());
+                    url.push_str("/_nodes/");
+                    url.push_str(node_id.as_ref());
+                    url.push_str("/usage");
+                    UrlPath::from(url)
+                }
+                NodesUsageUrlParams::NodeIdMetric(ref node_id, ref metric) => {
+                    let mut url = String::with_capacity(15usize + node_id.len() + metric.len());
+                    url.push_str("/_nodes/");
+                    url.push_str(node_id.as_ref());
+                    url.push_str("/usage/");
+                    url.push_str(metric.as_ref());
+                    UrlPath::from(url)
+                }
+            }
+        }
+    }
+    #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Get: /_nodes/usage`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/cluster-nodes-usage.html)"]
+    pub struct NodesUsageRequest<'a> {
+        pub url: UrlPath<'a>,
+    }
+    impl<'a> NodesUsageRequest<'a> {
+        #[doc = "Request to: `/_nodes/usage`"]
+        pub fn new() -> Self {
+            NodesUsageRequest { url: NodesUsageUrlParams::None.url() }
+        }
+        #[doc = "Request to: `/_nodes/usage/{metric}`"]
+        pub fn for_metric<IMetric>(metric: IMetric) -> Self
+        where
+            IMetric: Into<Metric<'a>>,
+        {
+            NodesUsageRequest {
+                url: NodesUsageUrlParams::Metric(metric.into()).url(),
+            }
+        }
+        #[doc = "Request to: `/_nodes/{node_id}/usage`"]
+        pub fn for_node_id<INodeId>(node_id: INodeId) -> Self
+        where
+            INodeId: Into<NodeId<'a>>,
+        {
+            NodesUsageRequest {
+                url: NodesUsageUrlParams::NodeId(node_id.into()).url(),
+            }
+        }
+        #[doc = "Request to: `/_nodes/{node_id}/usage/{metric}`"]
+        pub fn for_node_id_metric<INodeId, IMetric>(node_id: INodeId, metric: IMetric) -> Self
+        where
+            INodeId: Into<NodeId<'a>>,
+            IMetric: Into<Metric<'a>>,
+        {
+            NodesUsageRequest {
+                url: NodesUsageUrlParams::NodeIdMetric(node_id.into(), metric.into()).url(),
+            }
+        }
+    }
+    impl<'a> Into<Endpoint<'a, DefaultBody>> for NodesUsageRequest<'a> {
+        fn into(self) -> Endpoint<'a, DefaultBody> {
+            Endpoint {
+                url: self.url,
+                method: Method::GET,
+                body: None,
+            }
+        }
+    }
+    #[derive(Debug, PartialEq, Clone)]
     enum IndicesFlushSyncedUrlParams<'a> {
         None,
         Index(Index<'a>),
@@ -3996,9 +4003,7 @@ pub mod endpoints {
     impl<'a> CatHelpRequest<'a> {
         #[doc = "Request to: `/_cat`"]
         pub fn new() -> Self {
-            CatHelpRequest {
-                url: CatHelpUrlParams::None.url(),
-            }
+            CatHelpRequest { url: CatHelpUrlParams::None.url() }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for CatHelpRequest<'a> {
@@ -4007,6 +4012,52 @@ pub mod endpoints {
                 url: self.url,
                 method: Method::GET,
                 body: None,
+            }
+        }
+    }
+    #[derive(Debug, PartialEq, Clone)]
+    enum IndicesSplitUrlParams<'a> {
+        IndexTarget(Index<'a>, Target<'a>),
+    }
+    impl<'a> IndicesSplitUrlParams<'a> {
+        pub fn url(self) -> UrlPath<'a> {
+            match self {
+                IndicesSplitUrlParams::IndexTarget(ref index, ref target) => {
+                    let mut url = String::with_capacity(9usize + index.len() + target.len());
+                    url.push_str("/");
+                    url.push_str(index.as_ref());
+                    url.push_str("/_split/");
+                    url.push_str(target.as_ref());
+                    UrlPath::from(url)
+                }
+            }
+        }
+    }
+    #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Post: /{index}/_split/{target}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/indices-split-index.html)"]
+    pub struct IndicesSplitRequest<'a, B> {
+        pub url: UrlPath<'a>,
+        pub body: B,
+    }
+    impl<'a, B> IndicesSplitRequest<'a, B> {
+        #[doc = "Request to: `/{index}/_split/{target}`"]
+        pub fn for_index_target<IIndex, ITarget>(index: IIndex, target: ITarget, body: B) -> Self
+        where
+            IIndex: Into<Index<'a>>,
+            ITarget: Into<Target<'a>>,
+        {
+            IndicesSplitRequest {
+                url: IndicesSplitUrlParams::IndexTarget(index.into(), target.into()).url(),
+                body: body,
+            }
+        }
+    }
+    impl<'a, B> Into<Endpoint<'a, B>> for IndicesSplitRequest<'a, B> {
+        fn into(self) -> Endpoint<'a, B> {
+            Endpoint {
+                url: self.url,
+                method: Method::POST,
+                body: Some(self.body),
             }
         }
     }
@@ -4071,9 +4122,7 @@ pub mod endpoints {
     impl<'a> CatIndicesRequest<'a> {
         #[doc = "Request to: `/_cat/indices`"]
         pub fn new() -> Self {
-            CatIndicesRequest {
-                url: CatIndicesUrlParams::None.url(),
-            }
+            CatIndicesRequest { url: CatIndicesUrlParams::None.url() }
         }
         #[doc = "Request to: `/_cat/indices/{index}`"]
         pub fn for_index<IIndex>(index: IIndex) -> Self
@@ -4238,16 +4287,14 @@ pub mod endpoints {
     }
     #[derive(Debug, PartialEq, Clone)]
     enum GetScriptUrlParams<'a> {
-        LangId(Lang<'a>, Id<'a>),
+        Id(Id<'a>),
     }
     impl<'a> GetScriptUrlParams<'a> {
         pub fn url(self) -> UrlPath<'a> {
             match self {
-                GetScriptUrlParams::LangId(ref lang, ref id) => {
-                    let mut url = String::with_capacity(11usize + lang.len() + id.len());
+                GetScriptUrlParams::Id(ref id) => {
+                    let mut url = String::with_capacity(10usize + id.len());
                     url.push_str("/_scripts/");
-                    url.push_str(lang.as_ref());
-                    url.push_str("/");
                     url.push_str(id.as_ref());
                     UrlPath::from(url)
                 }
@@ -4255,20 +4302,17 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
-    #[doc = "`Get: /_scripts/{lang}/{id}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/modules-scripting.html)"]
+    #[doc = "`Get: /_scripts/{id}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/modules-scripting.html)"]
     pub struct GetScriptRequest<'a> {
         pub url: UrlPath<'a>,
     }
     impl<'a> GetScriptRequest<'a> {
-        #[doc = "Request to: `/_scripts/{lang}/{id}`"]
-        pub fn for_lang_id<ILang, IId>(lang: ILang, id: IId) -> Self
+        #[doc = "Request to: `/_scripts/{id}`"]
+        pub fn for_id<IId>(id: IId) -> Self
         where
-            ILang: Into<Lang<'a>>,
             IId: Into<Id<'a>>,
         {
-            GetScriptRequest {
-                url: GetScriptUrlParams::LangId(lang.into(), id.into()).url(),
-            }
+            GetScriptRequest { url: GetScriptUrlParams::Id(id.into()).url() }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for GetScriptRequest<'a> {
@@ -4424,9 +4468,7 @@ pub mod endpoints {
     impl<'a> IndicesStatsRequest<'a> {
         #[doc = "Request to: `/_stats`"]
         pub fn new() -> Self {
-            IndicesStatsRequest {
-                url: IndicesStatsUrlParams::None.url(),
-            }
+            IndicesStatsRequest { url: IndicesStatsUrlParams::None.url() }
         }
         #[doc = "Request to: `/{index}/_stats`"]
         pub fn for_index<IIndex>(index: IIndex) -> Self
@@ -4492,9 +4534,7 @@ pub mod endpoints {
     impl<'a> CatShardsRequest<'a> {
         #[doc = "Request to: `/_cat/shards`"]
         pub fn new() -> Self {
-            CatShardsRequest {
-                url: CatShardsUrlParams::None.url(),
-            }
+            CatShardsRequest { url: CatShardsUrlParams::None.url() }
         }
         #[doc = "Request to: `/_cat/shards/{index}`"]
         pub fn for_index<IIndex>(index: IIndex) -> Self
@@ -4594,9 +4634,7 @@ pub mod endpoints {
     impl<'a> CatCountRequest<'a> {
         #[doc = "Request to: `/_cat/count`"]
         pub fn new() -> Self {
-            CatCountRequest {
-                url: CatCountUrlParams::None.url(),
-            }
+            CatCountRequest { url: CatCountUrlParams::None.url() }
         }
         #[doc = "Request to: `/_cat/count/{index}`"]
         pub fn for_index<IIndex>(index: IIndex) -> Self
@@ -4636,9 +4674,7 @@ pub mod endpoints {
     impl<'a> CatRepositoriesRequest<'a> {
         #[doc = "Request to: `/_cat/repositories`"]
         pub fn new() -> Self {
-            CatRepositoriesRequest {
-                url: CatRepositoriesUrlParams::None.url(),
-            }
+            CatRepositoriesRequest { url: CatRepositoriesUrlParams::None.url() }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for CatRepositoriesRequest<'a> {
@@ -4669,9 +4705,7 @@ pub mod endpoints {
     impl<'a> InfoRequest<'a> {
         #[doc = "Request to: `/`"]
         pub fn new() -> Self {
-            InfoRequest {
-                url: InfoUrlParams::None.url(),
-            }
+            InfoRequest { url: InfoUrlParams::None.url() }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for InfoRequest<'a> {
@@ -4746,9 +4780,7 @@ pub mod endpoints {
     impl<'a> ClusterGetSettingsRequest<'a> {
         #[doc = "Request to: `/_cluster/settings`"]
         pub fn new() -> Self {
-            ClusterGetSettingsRequest {
-                url: ClusterGetSettingsUrlParams::None.url(),
-            }
+            ClusterGetSettingsRequest { url: ClusterGetSettingsUrlParams::None.url() }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for ClusterGetSettingsRequest<'a> {
@@ -4803,9 +4835,7 @@ pub mod endpoints {
     impl<'a> IndicesGetAliasRequest<'a> {
         #[doc = "Request to: `/_alias`"]
         pub fn new() -> Self {
-            IndicesGetAliasRequest {
-                url: IndicesGetAliasUrlParams::None.url(),
-            }
+            IndicesGetAliasRequest { url: IndicesGetAliasUrlParams::None.url() }
         }
         #[doc = "Request to: `/{index}/_alias`"]
         pub fn for_index<IIndex>(index: IIndex) -> Self
@@ -4917,9 +4947,7 @@ pub mod endpoints {
     impl<'a> CatNodeattrsRequest<'a> {
         #[doc = "Request to: `/_cat/nodeattrs`"]
         pub fn new() -> Self {
-            CatNodeattrsRequest {
-                url: CatNodeattrsUrlParams::None.url(),
-            }
+            CatNodeattrsRequest { url: CatNodeattrsUrlParams::None.url() }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for CatNodeattrsRequest<'a> {
@@ -5028,59 +5056,6 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
-    enum FieldStatsUrlParams<'a> {
-        None,
-        Index(Index<'a>),
-    }
-    impl<'a> FieldStatsUrlParams<'a> {
-        pub fn url(self) -> UrlPath<'a> {
-            match self {
-                FieldStatsUrlParams::None => UrlPath::from("/_field_stats"),
-                FieldStatsUrlParams::Index(ref index) => {
-                    let mut url = String::with_capacity(14usize + index.len());
-                    url.push_str("/");
-                    url.push_str(index.as_ref());
-                    url.push_str("/_field_stats");
-                    UrlPath::from(url)
-                }
-            }
-        }
-    }
-    #[derive(Debug, PartialEq, Clone)]
-    #[doc = "`Post: /_field_stats`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/search-field-stats.html)"]
-    pub struct FieldStatsRequest<'a, B> {
-        pub url: UrlPath<'a>,
-        pub body: B,
-    }
-    impl<'a, B> FieldStatsRequest<'a, B> {
-        #[doc = "Request to: `/_field_stats`"]
-        pub fn new(body: B) -> Self {
-            FieldStatsRequest {
-                url: FieldStatsUrlParams::None.url(),
-                body: body,
-            }
-        }
-        #[doc = "Request to: `/{index}/_field_stats`"]
-        pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
-        where
-            IIndex: Into<Index<'a>>,
-        {
-            FieldStatsRequest {
-                url: FieldStatsUrlParams::Index(index.into()).url(),
-                body: body,
-            }
-        }
-    }
-    impl<'a, B> Into<Endpoint<'a, B>> for FieldStatsRequest<'a, B> {
-        fn into(self) -> Endpoint<'a, B> {
-            Endpoint {
-                url: self.url,
-                method: Method::POST,
-                body: Some(self.body),
-            }
-        }
-    }
-    #[derive(Debug, PartialEq, Clone)]
     enum SnapshotDeleteRepositoryUrlParams<'a> {
         Repository(Repository<'a>),
     }
@@ -5148,9 +5123,7 @@ pub mod endpoints {
     impl<'a> IndicesSegmentsRequest<'a> {
         #[doc = "Request to: `/_segments`"]
         pub fn new() -> Self {
-            IndicesSegmentsRequest {
-                url: IndicesSegmentsUrlParams::None.url(),
-            }
+            IndicesSegmentsRequest { url: IndicesSegmentsUrlParams::None.url() }
         }
         #[doc = "Request to: `/{index}/_segments`"]
         pub fn for_index<IIndex>(index: IIndex) -> Self
@@ -5190,9 +5163,7 @@ pub mod endpoints {
     impl<'a> CatNodesRequest<'a> {
         #[doc = "Request to: `/_cat/nodes`"]
         pub fn new() -> Self {
-            CatNodesRequest {
-                url: CatNodesUrlParams::None.url(),
-            }
+            CatNodesRequest { url: CatNodesUrlParams::None.url() }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for CatNodesRequest<'a> {
@@ -5273,9 +5244,7 @@ pub mod endpoints {
     impl<'a> CatAllocationRequest<'a> {
         #[doc = "Request to: `/_cat/allocation`"]
         pub fn new() -> Self {
-            CatAllocationRequest {
-                url: CatAllocationUrlParams::None.url(),
-            }
+            CatAllocationRequest { url: CatAllocationUrlParams::None.url() }
         }
         #[doc = "Request to: `/_cat/allocation/{node_id}`"]
         pub fn for_node_id<INodeId>(node_id: INodeId) -> Self
@@ -5323,9 +5292,7 @@ pub mod endpoints {
     impl<'a> IndicesGetUpgradeRequest<'a> {
         #[doc = "Request to: `/_upgrade`"]
         pub fn new() -> Self {
-            IndicesGetUpgradeRequest {
-                url: IndicesGetUpgradeUrlParams::None.url(),
-            }
+            IndicesGetUpgradeRequest { url: IndicesGetUpgradeUrlParams::None.url() }
         }
         #[doc = "Request to: `/{index}/_upgrade`"]
         pub fn for_index<IIndex>(index: IIndex) -> Self
@@ -5406,9 +5373,7 @@ pub mod endpoints {
     impl<'a> PingRequest<'a> {
         #[doc = "Request to: `/`"]
         pub fn new() -> Self {
-            PingRequest {
-                url: PingUrlParams::None.url(),
-            }
+            PingRequest { url: PingUrlParams::None.url() }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for PingRequest<'a> {
@@ -5439,9 +5404,7 @@ pub mod endpoints {
     impl<'a> PingHeadRequest<'a> {
         #[doc = "Request to: `/`"]
         pub fn new() -> Self {
-            PingHeadRequest {
-                url: PingHeadUrlParams::None.url(),
-            }
+            PingHeadRequest { url: PingHeadUrlParams::None.url() }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for PingHeadRequest<'a> {
@@ -5573,118 +5536,6 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
-    enum DeleteTemplateUrlParams<'a> {
-        Id(Id<'a>),
-    }
-    impl<'a> DeleteTemplateUrlParams<'a> {
-        pub fn url(self) -> UrlPath<'a> {
-            match self {
-                DeleteTemplateUrlParams::Id(ref id) => {
-                    let mut url = String::with_capacity(18usize + id.len());
-                    url.push_str("/_search/template/");
-                    url.push_str(id.as_ref());
-                    UrlPath::from(url)
-                }
-            }
-        }
-    }
-    #[derive(Debug, PartialEq, Clone)]
-    #[doc = "`Delete: /_search/template/{id}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/search-template.html)"]
-    pub struct DeleteTemplateRequest<'a> {
-        pub url: UrlPath<'a>,
-    }
-    impl<'a> DeleteTemplateRequest<'a> {
-        #[doc = "Request to: `/_search/template/{id}`"]
-        pub fn for_id<IId>(id: IId) -> Self
-        where
-            IId: Into<Id<'a>>,
-        {
-            DeleteTemplateRequest {
-                url: DeleteTemplateUrlParams::Id(id.into()).url(),
-            }
-        }
-    }
-    impl<'a> Into<Endpoint<'a, DefaultBody>> for DeleteTemplateRequest<'a> {
-        fn into(self) -> Endpoint<'a, DefaultBody> {
-            Endpoint {
-                url: self.url,
-                method: Method::DELETE,
-                body: None,
-            }
-        }
-    }
-    #[derive(Debug, PartialEq, Clone)]
-    enum PercolateUrlParams<'a> {
-        IndexType(Index<'a>, Type<'a>),
-        IndexTypeId(Index<'a>, Type<'a>, Id<'a>),
-    }
-    impl<'a> PercolateUrlParams<'a> {
-        pub fn url(self) -> UrlPath<'a> {
-            match self {
-                PercolateUrlParams::IndexType(ref index, ref ty) => {
-                    let mut url = String::with_capacity(13usize + index.len() + ty.len());
-                    url.push_str("/");
-                    url.push_str(index.as_ref());
-                    url.push_str("/");
-                    url.push_str(ty.as_ref());
-                    url.push_str("/_percolate");
-                    UrlPath::from(url)
-                }
-                PercolateUrlParams::IndexTypeId(ref index, ref ty, ref id) => {
-                    let mut url = String::with_capacity(14usize + index.len() + ty.len() + id.len());
-                    url.push_str("/");
-                    url.push_str(index.as_ref());
-                    url.push_str("/");
-                    url.push_str(ty.as_ref());
-                    url.push_str("/");
-                    url.push_str(id.as_ref());
-                    url.push_str("/_percolate");
-                    UrlPath::from(url)
-                }
-            }
-        }
-    }
-    #[derive(Debug, PartialEq, Clone)]
-    #[doc = "`Post: /{index}/{type}/_percolate`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/search-percolate.html)"]
-    pub struct PercolateRequest<'a, B> {
-        pub url: UrlPath<'a>,
-        pub body: B,
-    }
-    impl<'a, B> PercolateRequest<'a, B> {
-        #[doc = "Request to: `/{index}/{type}/_percolate`"]
-        pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: B) -> Self
-        where
-            IIndex: Into<Index<'a>>,
-            IType: Into<Type<'a>>,
-        {
-            PercolateRequest {
-                url: PercolateUrlParams::IndexType(index.into(), ty.into()).url(),
-                body: body,
-            }
-        }
-        #[doc = "Request to: `/{index}/{type}/{id}/_percolate`"]
-        pub fn for_index_ty_id<IIndex, IType, IId>(index: IIndex, ty: IType, id: IId, body: B) -> Self
-        where
-            IIndex: Into<Index<'a>>,
-            IType: Into<Type<'a>>,
-            IId: Into<Id<'a>>,
-        {
-            PercolateRequest {
-                url: PercolateUrlParams::IndexTypeId(index.into(), ty.into(), id.into()).url(),
-                body: body,
-            }
-        }
-    }
-    impl<'a, B> Into<Endpoint<'a, B>> for PercolateRequest<'a, B> {
-        fn into(self) -> Endpoint<'a, B> {
-            Endpoint {
-                url: self.url,
-                method: Method::POST,
-                body: Some(self.body),
-            }
-        }
-    }
-    #[derive(Debug, PartialEq, Clone)]
     enum ClusterStateUrlParams<'a> {
         None,
         Metric(Metric<'a>),
@@ -5719,9 +5570,7 @@ pub mod endpoints {
     impl<'a> ClusterStateRequest<'a> {
         #[doc = "Request to: `/_cluster/state`"]
         pub fn new() -> Self {
-            ClusterStateRequest {
-                url: ClusterStateUrlParams::None.url(),
-            }
+            ClusterStateRequest { url: ClusterStateUrlParams::None.url() }
         }
         #[doc = "Request to: `/_cluster/state/{metric}`"]
         pub fn for_metric<IMetric>(metric: IMetric) -> Self
@@ -5837,10 +5686,7 @@ pub mod endpoints {
     impl<'a, B> MsearchRequest<'a, B> {
         #[doc = "Request to: `/_msearch`"]
         pub fn new(body: B) -> Self {
-            MsearchRequest {
-                url: MsearchUrlParams::None.url(),
-                body: body,
-            }
+            MsearchRequest { url: MsearchUrlParams::None.url(), body: body }
         }
         #[doc = "Request to: `/{index}/_msearch`"]
         pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
@@ -5918,6 +5764,59 @@ pub mod endpoints {
         }
     }
     impl<'a, B> Into<Endpoint<'a, B>> for IndicesAnalyzeRequest<'a, B> {
+        fn into(self) -> Endpoint<'a, B> {
+            Endpoint {
+                url: self.url,
+                method: Method::POST,
+                body: Some(self.body),
+            }
+        }
+    }
+    #[derive(Debug, PartialEq, Clone)]
+    enum NodesReloadSecureSettingsUrlParams<'a> {
+        None,
+        NodeId(NodeId<'a>),
+    }
+    impl<'a> NodesReloadSecureSettingsUrlParams<'a> {
+        pub fn url(self) -> UrlPath<'a> {
+            match self {
+                NodesReloadSecureSettingsUrlParams::None => UrlPath::from("/_nodes/reload_secure_settings"),
+                NodesReloadSecureSettingsUrlParams::NodeId(ref node_id) => {
+                    let mut url = String::with_capacity(31usize + node_id.len());
+                    url.push_str("/_nodes/");
+                    url.push_str(node_id.as_ref());
+                    url.push_str("/reload_secure_settings");
+                    UrlPath::from(url)
+                }
+            }
+        }
+    }
+    #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Post: /_nodes/reload_secure_settings`\n\n[Elasticsearch Documentation](https://www.elastic.co/guide/en/elasticsearch/reference/6.x/secure-settings.html#reloadable-secure-settings)"]
+    pub struct NodesReloadSecureSettingsRequest<'a, B> {
+        pub url: UrlPath<'a>,
+        pub body: B,
+    }
+    impl<'a, B> NodesReloadSecureSettingsRequest<'a, B> {
+        #[doc = "Request to: `/_nodes/reload_secure_settings`"]
+        pub fn new(body: B) -> Self {
+            NodesReloadSecureSettingsRequest {
+                url: NodesReloadSecureSettingsUrlParams::None.url(),
+                body: body,
+            }
+        }
+        #[doc = "Request to: `/_nodes/{node_id}/reload_secure_settings`"]
+        pub fn for_node_id<INodeId>(node_id: INodeId, body: B) -> Self
+        where
+            INodeId: Into<NodeId<'a>>,
+        {
+            NodesReloadSecureSettingsRequest {
+                url: NodesReloadSecureSettingsUrlParams::NodeId(node_id.into()).url(),
+                body: body,
+            }
+        }
+    }
+    impl<'a, B> Into<Endpoint<'a, B>> for NodesReloadSecureSettingsRequest<'a, B> {
         fn into(self) -> Endpoint<'a, B> {
             Endpoint {
                 url: self.url,
@@ -6116,9 +6015,7 @@ pub mod endpoints {
     impl<'a> CatPluginsRequest<'a> {
         #[doc = "Request to: `/_cat/plugins`"]
         pub fn new() -> Self {
-            CatPluginsRequest {
-                url: CatPluginsUrlParams::None.url(),
-            }
+            CatPluginsRequest { url: CatPluginsUrlParams::None.url() }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for CatPluginsRequest<'a> {
@@ -6150,10 +6047,7 @@ pub mod endpoints {
     impl<'a, B> ReindexRequest<'a, B> {
         #[doc = "Request to: `/_reindex`"]
         pub fn new(body: B) -> Self {
-            ReindexRequest {
-                url: ReindexUrlParams::None.url(),
-                body: body,
-            }
+            ReindexRequest { url: ReindexUrlParams::None.url(), body: body }
         }
     }
     impl<'a, B> Into<Endpoint<'a, B>> for ReindexRequest<'a, B> {
@@ -6191,9 +6085,7 @@ pub mod endpoints {
     impl<'a> CatFielddataRequest<'a> {
         #[doc = "Request to: `/_cat/fielddata`"]
         pub fn new() -> Self {
-            CatFielddataRequest {
-                url: CatFielddataUrlParams::None.url(),
-            }
+            CatFielddataRequest { url: CatFielddataUrlParams::None.url() }
         }
         #[doc = "Request to: `/_cat/fielddata/{fields}`"]
         pub fn for_fields<IFields>(fields: IFields) -> Self
@@ -6233,12 +6125,41 @@ pub mod endpoints {
     impl<'a> CatTasksRequest<'a> {
         #[doc = "Request to: `/_cat/tasks`"]
         pub fn new() -> Self {
-            CatTasksRequest {
-                url: CatTasksUrlParams::None.url(),
-            }
+            CatTasksRequest { url: CatTasksUrlParams::None.url() }
         }
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for CatTasksRequest<'a> {
+        fn into(self) -> Endpoint<'a, DefaultBody> {
+            Endpoint {
+                url: self.url,
+                method: Method::GET,
+                body: None,
+            }
+        }
+    }
+    #[derive(Debug, PartialEq, Clone)]
+    enum IngestProcessorGrokUrlParams {
+        None,
+    }
+    impl IngestProcessorGrokUrlParams {
+        pub fn url<'a>(self) -> UrlPath<'a> {
+            match self {
+                IngestProcessorGrokUrlParams::None => UrlPath::from("/_ingest/processor/grok"),
+            }
+        }
+    }
+    #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Get: /_ingest/processor/grok`\n\n[Elasticsearch Documentation](https://www.elastic.co/guide/en/elasticsearch/plugins/master/ingest.html)"]
+    pub struct IngestProcessorGrokRequest<'a> {
+        pub url: UrlPath<'a>,
+    }
+    impl<'a> IngestProcessorGrokRequest<'a> {
+        #[doc = "Request to: `/_ingest/processor/grok`"]
+        pub fn new() -> Self {
+            IngestProcessorGrokRequest { url: IngestProcessorGrokUrlParams::None.url() }
+        }
+    }
+    impl<'a> Into<Endpoint<'a, DefaultBody>> for IngestProcessorGrokRequest<'a> {
         fn into(self) -> Endpoint<'a, DefaultBody> {
             Endpoint {
                 url: self.url,
@@ -6378,37 +6299,54 @@ pub mod endpoints {
     }
     #[derive(Debug, PartialEq, Clone)]
     enum PutScriptUrlParams<'a> {
-        LangId(Lang<'a>, Id<'a>),
+        Id(Id<'a>),
+        IdContext(Id<'a>, Context<'a>),
     }
     impl<'a> PutScriptUrlParams<'a> {
         pub fn url(self) -> UrlPath<'a> {
             match self {
-                PutScriptUrlParams::LangId(ref lang, ref id) => {
-                    let mut url = String::with_capacity(11usize + lang.len() + id.len());
+                PutScriptUrlParams::Id(ref id) => {
+                    let mut url = String::with_capacity(10usize + id.len());
                     url.push_str("/_scripts/");
-                    url.push_str(lang.as_ref());
-                    url.push_str("/");
                     url.push_str(id.as_ref());
+                    UrlPath::from(url)
+                }
+                PutScriptUrlParams::IdContext(ref id, ref context) => {
+                    let mut url = String::with_capacity(11usize + id.len() + context.len());
+                    url.push_str("/_scripts/");
+                    url.push_str(id.as_ref());
+                    url.push_str("/");
+                    url.push_str(context.as_ref());
                     UrlPath::from(url)
                 }
             }
         }
     }
     #[derive(Debug, PartialEq, Clone)]
-    #[doc = "`Post: /_scripts/{lang}/{id}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/modules-scripting.html)"]
+    #[doc = "`Post: /_scripts/{id}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/modules-scripting.html)"]
     pub struct PutScriptRequest<'a, B> {
         pub url: UrlPath<'a>,
         pub body: B,
     }
     impl<'a, B> PutScriptRequest<'a, B> {
-        #[doc = "Request to: `/_scripts/{lang}/{id}`"]
-        pub fn for_lang_id<ILang, IId>(lang: ILang, id: IId, body: B) -> Self
+        #[doc = "Request to: `/_scripts/{id}`"]
+        pub fn for_id<IId>(id: IId, body: B) -> Self
         where
-            ILang: Into<Lang<'a>>,
             IId: Into<Id<'a>>,
         {
             PutScriptRequest {
-                url: PutScriptUrlParams::LangId(lang.into(), id.into()).url(),
+                url: PutScriptUrlParams::Id(id.into()).url(),
+                body: body,
+            }
+        }
+        #[doc = "Request to: `/_scripts/{id}/{context}`"]
+        pub fn for_id_context<IId, IContext>(id: IId, context: IContext, body: B) -> Self
+        where
+            IId: Into<Id<'a>>,
+            IContext: Into<Context<'a>>,
+        {
+            PutScriptRequest {
+                url: PutScriptUrlParams::IdContext(id.into(), context.into()).url(),
                 body: body,
             }
         }
@@ -6496,24 +6434,24 @@ pub mod params {
     }
 
     #[derive(Debug, PartialEq, Clone)]
-    pub struct Feature<'a>(pub Cow<'a, str>);
-    pub fn feature<'a, I>(value: I) -> Feature<'a>
+    pub struct Context<'a>(pub Cow<'a, str>);
+    pub fn context<'a, I>(value: I) -> Context<'a>
     where
-        I: Into<Feature<'a>>,
+        I: Into<Context<'a>>,
     {
         value.into()
     }
-    impl<'a> From<&'a str> for Feature<'a> {
-        fn from(value: &'a str) -> Feature<'a> {
-            Feature(Cow::Borrowed(value))
+    impl<'a> From<&'a str> for Context<'a> {
+        fn from(value: &'a str) -> Context<'a> {
+            Context(Cow::Borrowed(value))
         }
     }
-    impl<'a> From<String> for Feature<'a> {
-        fn from(value: String) -> Feature<'a> {
-            Feature(Cow::Owned(value))
+    impl<'a> From<String> for Context<'a> {
+        fn from(value: String) -> Context<'a> {
+            Context(Cow::Owned(value))
         }
     }
-    impl<'a> ::std::ops::Deref for Feature<'a> {
+    impl<'a> ::std::ops::Deref for Context<'a> {
         type Target = str;
         fn deref(&self) -> &str {
             &self.0
@@ -6614,31 +6552,6 @@ pub mod params {
         }
     }
     impl<'a> ::std::ops::Deref for IndexMetric<'a> {
-        type Target = str;
-        fn deref(&self) -> &str {
-            &self.0
-        }
-    }
-
-    #[derive(Debug, PartialEq, Clone)]
-    pub struct Lang<'a>(pub Cow<'a, str>);
-    pub fn lang<'a, I>(value: I) -> Lang<'a>
-    where
-        I: Into<Lang<'a>>,
-    {
-        value.into()
-    }
-    impl<'a> From<&'a str> for Lang<'a> {
-        fn from(value: &'a str) -> Lang<'a> {
-            Lang(Cow::Borrowed(value))
-        }
-    }
-    impl<'a> From<String> for Lang<'a> {
-        fn from(value: String) -> Lang<'a> {
-            Lang(Cow::Owned(value))
-        }
-    }
-    impl<'a> ::std::ops::Deref for Lang<'a> {
         type Target = str;
         fn deref(&self) -> &str {
             &self.0

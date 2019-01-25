@@ -7,7 +7,7 @@ Builders for [index exists requests][docs-index-exists].
 use futures::{Future, Poll};
 
 use error::*;
-use client::Client;
+use client::IndexClient;
 use client::sender::{AsyncSender, Sender, SyncSender};
 use client::requests::RequestBuilder;
 use client::requests::params::Index;
@@ -36,7 +36,7 @@ pub struct IndexExistsRequestInner {
 /**
 # Index exists request
 */
-impl<TSender> Client<TSender>
+impl<TSender> IndexClient<TSender>
 where
     TSender: Sender,
 {
@@ -58,7 +58,7 @@ where
     # fn main() { run().unwrap() }
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # let client = SyncClientBuilder::new().build()?;
-    let response = client.index_exists(index("myindex")).send()?;
+    let response = client.index("myindex").exists().send()?;
 
     assert!(response.exists());
     # Ok(())
@@ -70,8 +70,8 @@ where
     [send-sync]: requests/index_exists/type.IndexExistsRequestBuilder.html#send-synchronously
     [send-async]: requests/index_exists/type.IndexExistsRequestBuilder.html#send-asynchronously
     */
-    pub fn index_exists(&self, index: Index<'static>) -> IndexExistsRequestBuilder<TSender> {
-        RequestBuilder::initial(self.clone(), IndexExistsRequestInner { index: index })
+    pub fn exists(self) -> IndexExistsRequestBuilder<TSender> {
+        RequestBuilder::initial(self.inner, IndexExistsRequestInner { index: self.index })
     }
 }
 
@@ -100,7 +100,7 @@ impl IndexExistsRequestBuilder<SyncSender> {
     # fn main() { run().unwrap() }
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # let client = SyncClientBuilder::new().build()?;
-    let response = client.index_exists(index("myindex")).send()?;
+    let response = client.index("myindex").exists().send()?;
 
     assert!(response.exists());
     # Ok(())
@@ -141,7 +141,7 @@ impl IndexExistsRequestBuilder<AsyncSender> {
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # let core = tokio_core::reactor::Core::new()?;
     # let client = AsyncClientBuilder::new().build(&core.handle())?;
-    let future = client.index_exists(index("myindex")).send();
+    let future = client.index("myindex").exists().send();
 
     future.and_then(|response| {
         assert!(response.exists());
@@ -198,7 +198,7 @@ mod tests {
     fn default_request() {
         let client = SyncClientBuilder::new().build().unwrap();
 
-        let req = client.index_exists(index("testindex")).inner.into_request();
+        let req = client.index("testindex").exists().inner.into_request();
 
         assert_eq!("/testindex", req.url.as_ref());
     }
