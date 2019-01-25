@@ -116,7 +116,7 @@ Derive `Serialize`, `Deserialize` and `ElasticType` on your document types:
 #[derive(Serialize, Deserialize, ElasticType)]
 struct MyType {
     #[elastic(id(expr = "ToString::to_string"))]
-    pub id: String
+    pub id: String,
     pub title: String,
     pub timestamp: Date<DefaultDateMapping>
 }
@@ -138,7 +138,7 @@ Call [`Client.document().put_mapping`][Client.document.put_mapping] to ensure an
 # struct MyType { }
 # let client = SyncClientBuilder::new().build()?;
 client.document::<MyType>()
-      .put_mapping("myindex")
+      .put_mapping()
       .send()?;
 # Ok(())
 # }
@@ -156,13 +156,13 @@ Then call [`Client.document().index`][Client.document.index] to index documents 
 # fn run() -> Result<(), Box<::std::error::Error>> {
 # #[derive(Serialize, Deserialize, ElasticType)]
 # struct MyType {
-#     pub id: String
+#     pub id: String,
 #     pub title: String,
 #     pub timestamp: Date<DefaultDateMapping>
 # }
 # let client = SyncClientBuilder::new().build()?;
 let doc = MyType {
-    id: 1,
+    id: "1".to_owned(),
     title: String::from("A title"),
     timestamp: Date::now()
 };
@@ -186,13 +186,13 @@ Call [`Client.document_get`][Client.document_get] to retrieve a single document 
 # fn run() -> Result<(), Box<::std::error::Error>> {
 # #[derive(Serialize, Deserialize, ElasticType)]
 # struct MyType {
-#     pub id: String
+#     pub id: String,
 #     pub title: String,
 #     pub timestamp: Date<DefaultDateMapping>
 # }
 # let client = SyncClientBuilder::new().build()?;
 let response = client.document::<MyType>()
-                     .get("myindex", 1)
+                     .get(1)
                      .send()?;
 
 if let Some(doc) = response.into_document() {

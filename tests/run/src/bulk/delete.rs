@@ -10,7 +10,7 @@ pub struct Delete;
 #[elastic(index = "bulk_delete")]
 pub struct Doc {
     #[elastic(id)]
-    id: String
+    id: String,
 }
 
 const ID: &'static str = "1";

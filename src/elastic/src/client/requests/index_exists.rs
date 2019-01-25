@@ -100,7 +100,7 @@ impl IndexExistsRequestBuilder<SyncSender> {
     # fn main() { run().unwrap() }
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # let client = SyncClientBuilder::new().build()?;
-    let response = client.index_exists(index("myindex")).send()?;
+    let response = client.index("myindex").exists().send()?;
 
     assert!(response.exists());
     # Ok(())
@@ -141,7 +141,7 @@ impl IndexExistsRequestBuilder<AsyncSender> {
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # let core = tokio_core::reactor::Core::new()?;
     # let client = AsyncClientBuilder::new().build(&core.handle())?;
-    let future = client.index_exists(index("myindex")).send();
+    let future = client.index("myindex").exists().send();
 
     future.and_then(|response| {
         assert!(response.exists());

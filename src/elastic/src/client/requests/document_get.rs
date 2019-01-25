@@ -133,7 +133,7 @@ where
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # let client = SyncClientBuilder::new().build()?;
     let response = client.document::<Value>()
-                         .get_raw("myindex", "mytype", 1)
+                         .get_raw("myindex", 1)
                          .send()?;
     # Ok(())
     # }
@@ -222,7 +222,7 @@ where
     # extern crate elastic;
     # use serde_json::Value;
     # use elastic::prelude::*;
-    # #[derive(ElasticType, Deserialize)]
+    # #[derive(Debug, ElasticType, Deserialize)]
     # struct MyType { }
     # fn main() { run().unwrap() }
     # fn run() -> Result<(), Box<::std::error::Error>> {
@@ -277,7 +277,7 @@ where
     # use serde_json::Value;
     # use futures::Future;
     # use elastic::prelude::*;
-    # #[derive(ElasticType, Deserialize)]
+    # #[derive(Debug, ElasticType, Deserialize)]
     # struct MyType { }
     # fn main() { run().unwrap() }
     # fn run() -> Result<(), Box<::std::error::Error>> {

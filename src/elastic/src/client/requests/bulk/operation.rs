@@ -58,21 +58,6 @@ impl<TParams> BulkOperation<Script<TParams>> {
 
 impl<TValue> BulkOperation<TValue> {
     /**
-    Create a new operation for the given action.
-    */
-    fn new(action: Action, value: Option<TValue>) -> Self {
-        BulkOperation {
-            action,
-            header: BulkHeader {
-                index: None,
-                ty: None,
-                id: None,
-            },
-            inner: value,
-        }
-    }
-    
-    /**
     Set the index for this bulk operation.
     */
     pub fn index<I>(mut self, index: I) -> Self

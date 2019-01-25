@@ -86,21 +86,21 @@ where
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
-    #     pub id: String
+    #     pub id: String,
     #     pub title: String,
     # }
     # let client = SyncClientBuilder::new().build()?;
     let ops = (0..1000)
         .into_iter()
-        .map(|i| bulk_index(MyType {
-                id: i,
-                title: "some string value".into()
+        .map(|i| bulk::<MyType>().index(MyType {
+                id: i.to_string(),
+                title: "some string value".to_owned()
             })
             .id(i));
 
     let response = client.bulk()
                          .index("myindex")
-                         .ty(MyType::name())
+                         .ty(MyType::static_ty())
                          .extend(ops)
                          .send()?;
 
@@ -170,22 +170,22 @@ impl Client<AsyncSender> {
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
-    #     pub id: String
+    #     pub id: String,
     #     pub title: String,
     # }
     # let core = tokio_core::reactor::Core::new()?;
     # let client = AsyncClientBuilder::new().build(&core.handle())?;
     let (bulk_stream, bulk_responses) = client.bulk_stream()
         .index("bulk_idx")
-        .ty(MyType::name())
+        .ty(MyType::static_ty())
         .timeout(Duration::from_secs(5))
         .body_size_bytes(1024)
         .build();
 
     let ops = (0..1000)
         .into_iter()
-        .map(|i| bulk_index(MyType {
-                id: i,
+        .map(|i| bulk::<MyType>().index(MyType {
+                id: i.to_string(),
                 title: "some string value".into()
             })
             .id(i));
@@ -542,21 +542,21 @@ where
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
-    #     pub id: String
+    #     pub id: String,
     #     pub title: String,
     # }
     # let client = SyncClientBuilder::new().build()?;
     let ops = (0..1000)
         .into_iter()
-        .map(|i| bulk_index(MyType {
-                id: i,
+        .map(|i| bulk::<MyType>().index(MyType {
+                id: i.to_string(),
                 title: "some string value".into()
             })
             .id(i));
 
     let response = client.bulk()
                          .index("myindex")
-                         .ty(MyType::name())
+                         .ty(MyType::static_ty())
                          .extend(ops)
                          .send()?;
 
@@ -611,24 +611,24 @@ where
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
-    #     pub id: String
+    #     pub id: String,
     #     pub title: String,
     # }
     # let core = tokio_core::reactor::Core::new()?;
     # let client = AsyncClientBuilder::new().build(&core.handle())?;
     let ops = (0..1000)
         .into_iter()
-        .map(|i| bulk_index(MyType {
-                id: i,
+        .map(|i| bulk::<MyType>().index(MyType {
+                id: i.to_string(),
                 title: "some string value".into()
             })
             .id(i));
 
     let future = client.bulk()
-                         .index("myindex")
-                         .ty(MyType::name())
-                         .extend(ops)
-                         .send();
+                       .index("myindex")
+                       .ty(MyType::static_ty())
+                       .extend(ops)
+                       .send();
 
     future.and_then(|response| {
         for op in response {

@@ -76,12 +76,12 @@ where
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
-    #     pub id: String
+    #     pub id: String,
     #     pub title: String,
     #     pub timestamp: Date<DefaultDateMapping>
     # }
     # let client = SyncClientBuilder::new().build()?;
-    # let new_doc = MyType { id: 1, title: String::new(), timestamp: Date::now() };
+    # let new_doc = MyType { id: "1".to_owned(), title: String::new(), timestamp: Date::now() };
     let response = client.document::<MyType>()
                          .update(1)
                          .doc(new_doc)
@@ -109,7 +109,7 @@ where
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
-    #     pub id: String
+    #     pub id: String,
     #     pub title: String,
     #     pub timestamp: Date<DefaultDateMapping>
     # }
@@ -140,12 +140,12 @@ where
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
-    #     pub id: String
+    #     pub id: String,
     #     pub title: String,
     #     pub timestamp: Date<DefaultDateMapping>
     # }
     # let client = SyncClientBuilder::new().build()?;
-    # let new_doc = MyType { id: 1, title: String::new(), timestamp: Date::now() };
+    # let new_doc = MyType { id: "1".to_owned(), title: String::new(), timestamp: Date::now() };
     let response = client.document::<MyType>()
                          .update(1)
                          .script(r#"ctx._source.title = "New Title""#)
@@ -170,12 +170,12 @@ where
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
-    #     pub id: String
+    #     pub id: String,
     #     pub title: String,
     #     pub timestamp: Date<DefaultDateMapping>
     # }
     # let client = SyncClientBuilder::new().build()?;
-    # let new_doc = MyType { id: 1, title: String::new(), timestamp: Date::now() };
+    # let new_doc = MyType { id: "1".to_owned(), title: String::new(), timestamp: Date::now() };
     let response = client.document::<MyType>()
                          .update(1)
                          .script_fluent("ctx._source.title = params.newTitle", |script| script
@@ -336,12 +336,12 @@ where
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
-    #     pub id: String
+    #     pub id: String,
     #     pub title: String,
     #     pub timestamp: Date<DefaultDateMapping>
     # }
     # let client = SyncClientBuilder::new().build()?;
-    # let new_doc = MyType { id: 1, title: String::new(), timestamp: Date::now() };
+    # let new_doc = MyType { id: "1".to_owned(), title: String::new(), timestamp: Date::now() };
     let response = client.document::<MyType>()
                          .update(1)
                          .doc(new_doc)
@@ -367,7 +367,7 @@ where
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
-    #     pub id: String
+    #     pub id: String,
     #     pub title: String,
     #     pub timestamp: Date<DefaultDateMapping>
     # }
@@ -420,12 +420,12 @@ where
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
-    #     pub id: String
+    #     pub id: String,
     #     pub title: String,
     #     pub timestamp: Date<DefaultDateMapping>
     # }
     # let client = SyncClientBuilder::new().build()?;
-    let response = client.documenr::<MyType>()
+    let response = client.document::<MyType>()
                          .update(1)
                          .script(r#"ctx._source.title = "New Title""#)
                          .send();
@@ -448,7 +448,7 @@ where
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
-    #     pub id: String
+    #     pub id: String,
     #     pub title: String,
     #     pub timestamp: Date<DefaultDateMapping>
     # }
@@ -507,12 +507,12 @@ where
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
-    #     pub id: String
+    #     pub id: String,
     #     pub title: String,
     #     pub timestamp: Date<DefaultDateMapping>
     # }
     # let client = SyncClientBuilder::new().build()?;
-    # let new_doc = MyType { id: 1, title: String::new(), timestamp: Date::now() };
+    # let new_doc = MyType { id: "1".to_owned(), title: String::new(), timestamp: Date::now() };
     let response = client.document::<MyType>()
                          .update(1)
                          .script_fluent("ctx._source.title = params.newTitle", |script| script
@@ -539,12 +539,12 @@ where
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
-    #     pub id: String
+    #     pub id: String,
     #     pub title: String,
     #     pub timestamp: Date<DefaultDateMapping>
     # }
     # let client = SyncClientBuilder::new().build()?;
-    # let new_doc = MyType { id: 1, title: String::new(), timestamp: Date::now() };
+    # let new_doc = MyType { id: "1".to_owned(), title: String::new(), timestamp: Date::now() };
     #[derive(Serialize)]
     struct MyParams {
         title: &'static str
@@ -604,12 +604,12 @@ where
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
-    #     pub id: String
+    #     pub id: String,
     #     pub title: String,
     #     pub timestamp: Date<DefaultDateMapping>
     # }
     # let client = SyncClientBuilder::new().build()?;
-    # let new_doc = MyType { id: 1, title: String::new(), timestamp: Date::now() };
+    # let new_doc = MyType { id: "1".to_owned(), title: String::new(), timestamp: Date::now() };
     let response = client.document::<MyType>()
                          .update(1)
                          .doc(new_doc)
@@ -664,12 +664,12 @@ where
     # let core = tokio_core::reactor::Core::new()?;
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
-    #     pub id: String
+    #     pub id: String,
     #     pub title: String,
     #     pub timestamp: Date<DefaultDateMapping>
     # }
     # let client = AsyncClientBuilder::new().build(&core.handle())?;
-    # let new_doc = MyType { id: 1, title: String::new(), timestamp: Date::now() };
+    # let new_doc = MyType { id: "1".to_owned(), title: String::new(), timestamp: Date::now() };
     let future = client.document::<MyType>()
                        .update(1)
                        .doc(new_doc)

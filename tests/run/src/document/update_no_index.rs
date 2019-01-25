@@ -10,7 +10,7 @@ pub struct UpdateNoIndex;
 #[elastic(index = "update_no_index_idx")]
 pub struct Doc {
     #[elastic(id)]
-    id: String
+    id: String,
 }
 
 impl IntegrationTest for UpdateNoIndex {

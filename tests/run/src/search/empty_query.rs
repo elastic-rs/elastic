@@ -10,7 +10,7 @@ pub struct EmptyQuery;
 #[elastic(index = "empty_query_idx")]
 pub struct Doc {
     #[elastic(id)]
-    id: String
+    id: String,
 }
 
 fn doc() -> Doc {

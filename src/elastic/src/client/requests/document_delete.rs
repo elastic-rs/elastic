@@ -71,7 +71,7 @@ where
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
-    #     pub id: String
+    #     pub id: String,
     #     pub title: String,
     #     pub timestamp: Date<DefaultDateMapping>
     # }
@@ -140,7 +140,7 @@ where
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # let client = SyncClientBuilder::new().build()?;
     let response = client.document()
-                         .delete_raw("myindex", "mytype", 1)
+                         .delete_raw("myindex", 1)
                          .send()?;
 
     assert!(response.deleted());
@@ -216,7 +216,7 @@ impl<TDocument> DeleteRequestBuilder<SyncSender, TDocument> {
 
     # Examples
 
-    Delete a document from an index called `myindex` with an id of `1`:
+    Delete a [`DocumentType`][documents-mod] called `MyType` with an id of `1`:
 
     ```no_run
     # extern crate serde;
@@ -230,12 +230,13 @@ impl<TDocument> DeleteRequestBuilder<SyncSender, TDocument> {
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
-    #     pub id: String
+    #     pub id: String,
     #     pub title: String,
     #     pub timestamp: Date<DefaultDateMapping>
     # }
     # let client = SyncClientBuilder::new().build()?;
-    let response = client.document_delete::<MyType>(index("myindex"), id(1))
+    let response = client.document::<MyType>()
+                         .delete(1)
                          .send()?;
 
     assert!(response.deleted());
@@ -244,6 +245,7 @@ impl<TDocument> DeleteRequestBuilder<SyncSender, TDocument> {
     ```
 
     [SyncClient]: ../../type.SyncClient.html
+    [documents-mod]: ../types/document/index.html
     */
     pub fn send(self) -> Result<DeleteResponse> {
         let req = self.inner.into_request();
@@ -265,7 +267,7 @@ impl<TDocument> DeleteRequestBuilder<AsyncSender, TDocument> {
 
     # Examples
 
-    Delete a document from an index called `myindex` with an id of `1`:
+    Delete a [`DocumentType`][documents-mod] called `MyType` with an id of `1`:
 
     ```no_run
     # extern crate futures;
@@ -278,11 +280,14 @@ impl<TDocument> DeleteRequestBuilder<AsyncSender, TDocument> {
     # use serde_json::Value;
     # use futures::Future;
     # use elastic::prelude::*;
+    # #[derive(ElasticType)]
+    # struct MyType { }
     # fn main() { run().unwrap() }
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # let core = tokio_core::reactor::Core::new()?;
     # let client = AsyncClientBuilder::new().build(&core.handle())?;
-    let future = client.document_delete::<Value>(index("myindex"), id(1))
+    let future = client.document::<MyType>()
+                       .delete(1)
                        .ty("mytype")
                        .send();
     
@@ -296,6 +301,7 @@ impl<TDocument> DeleteRequestBuilder<AsyncSender, TDocument> {
     ```
 
     [AsyncClient]: ../../type.AsyncClient.html
+    [documents-mod]: ../types/document/index.html
     */
     pub fn send(self) -> Pending {
         let req = self.inner.into_request();

@@ -56,7 +56,7 @@ impl SyncResponseBuilder {
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
-    #     pub id: String
+    #     pub id: String,
     #     pub title: String,
     #     pub timestamp: Date<DefaultDateMapping>
     # }

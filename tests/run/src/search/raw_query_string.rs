@@ -10,7 +10,7 @@ pub struct RawQueryString;
 #[elastic(index = "raw_query_string_idx")]
 pub struct Doc {
     #[elastic(id)]
-    id: String
+    id: String,
 }
 
 fn doc() -> Doc {

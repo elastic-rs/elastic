@@ -80,8 +80,8 @@ where
     }
 
     let doc = MyType {
-        id: String::from(1),
-        title: String::from("A title"),
+        id: "1".to_owned(),
+        title: "A title".to_owned(),
         timestamp: Date::now()
     };
 
@@ -103,6 +103,7 @@ where
     [types-mod]: ../types/index.html
     [documents-mod]: ../types/document/index.html
     */
+    // TODO: Consider `doc: impl AsRef<TDocument>`
     pub fn index(self, doc: TDocument) -> IndexRequestBuilder<TSender, TDocument>
     where
         TDocument: Serialize + DocumentType,
@@ -139,6 +140,7 @@ where
     # extern crate serde;
     # #[macro_use] extern crate serde_derive;
     # #[macro_use] extern crate elastic_derive;
+    # #[macro_use] extern crate serde_json;
     # extern crate elastic;
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
@@ -151,7 +153,7 @@ where
     });
 
     let response = client.document()
-                         .index_raw("myindex", "mytype", doc)
+                         .index_raw("myindex", doc)
                          .id(doc_id)
                          .send()?;
     
@@ -265,18 +267,17 @@ where
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
-    #     pub id: String
+    #     pub id: String,
     #     pub title: String,
     #     pub timestamp: Date<DefaultDateMapping>
     # }
     # let client = SyncClientBuilder::new().build()?;
     let doc = MyType {
-        id: 1,
+        id: "1".to_owned(),
         title: String::from("A title"),
         timestamp: Date::now()
     };
 
-    let doc_id = doc.id;
     let response = client.document()
                          .index(doc)
                          .send()?;
@@ -326,14 +327,14 @@ where
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
-    #     pub id: String
+    #     pub id: String,
     #     pub title: String,
     #     pub timestamp: Date<DefaultDateMapping>
     # }
     # let core = tokio_core::reactor::Core::new()?;
     # let client = AsyncClientBuilder::new().build(&core.handle())?;
     let doc = MyType {
-        id: 1,
+        id: "1".to_owned(),
         title: String::from("A title"),
         timestamp: Date::now()
     };
