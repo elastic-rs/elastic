@@ -308,7 +308,7 @@ mod tests {
 
         let actual_body: Value = serde_json::from_slice(&req.body).unwrap();
 
-        assert_eq!("/testdoc/_mappings/_doc", req.url.as_ref());
+        assert_eq!("/testdoc/_mappings/doc", req.url.as_ref());
         assert_eq!(expected_body.to_string(), actual_body.to_string());
     }
 
@@ -324,7 +324,7 @@ mod tests {
             .into_request()
             .unwrap();
 
-        assert_eq!("/new-idx/_mappings/_doc", req.url.as_ref());
+        assert_eq!("/new-idx/_mappings/doc", req.url.as_ref());
     }
 
     #[test]

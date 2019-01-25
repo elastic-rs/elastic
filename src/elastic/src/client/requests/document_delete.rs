@@ -356,7 +356,7 @@ mod tests {
             .inner
             .into_request();
 
-        assert_eq!("/testdoc/_doc/1", req.url.as_ref());
+        assert_eq!("/testdoc/doc/1", req.url.as_ref());
     }
 
     #[test]
@@ -370,7 +370,7 @@ mod tests {
             .inner
             .into_request();
 
-        assert_eq!("/new-idx/_doc/1", req.url.as_ref());
+        assert_eq!("/new-idx/doc/1", req.url.as_ref());
     }
 
     #[test]

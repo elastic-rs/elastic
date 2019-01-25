@@ -412,7 +412,7 @@ mod tests {
             .into_request()
             .unwrap();
 
-        assert_eq!("/testdoc/_doc", req.url.as_ref());
+        assert_eq!("/testdoc/doc", req.url.as_ref());
         assert_eq!("{}".as_bytes().to_vec(), req.body);
     }
 
@@ -428,7 +428,7 @@ mod tests {
             .into_request()
             .unwrap();
 
-        assert_eq!("/new-idx/_doc", req.url.as_ref());
+        assert_eq!("/new-idx/doc", req.url.as_ref());
     }
 
     #[test]
@@ -458,6 +458,6 @@ mod tests {
             .into_request()
             .unwrap();
 
-        assert_eq!("/testdoc/_doc/1", req.url.as_ref());
+        assert_eq!("/testdoc/doc/1", req.url.as_ref());
     }
 }

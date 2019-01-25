@@ -181,7 +181,7 @@ fn get_doc_ty_impl_block(
                 match get_method_from_struct(item, "ty") {
                     Some(MethodFromStruct::Literal(name)) => (name, true),
                     Some(MethodFromStruct::Expr(method)) => (quote!(#method(self)), false),
-                    _ => (quote!("_doc"), true),
+                    _ => (quote!("doc"), true),
                 }
             };
 
