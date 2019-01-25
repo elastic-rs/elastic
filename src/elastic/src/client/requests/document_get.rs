@@ -331,15 +331,18 @@ where
 
 #[cfg(test)]
 mod tests {
-    use serde_json::Value;
     use prelude::*;
+
+    #[derive(Deserialize, ElasticType)]
+    struct TestDoc { }
 
     #[test]
     fn default_request() {
         let client = SyncClientBuilder::new().build().unwrap();
 
         let req = client
-            .document_get::<Value>(index("test-idx"), id("1"))
+            .document::<TestDoc>()
+            .get("1")
             .inner
             .into_request();
 
@@ -351,7 +354,8 @@ mod tests {
         let client = SyncClientBuilder::new().build().unwrap();
 
         let req = client
-            .document_get::<Value>(index("test-idx"), id("1"))
+            .document::<TestDoc>()
+            .get("1")
             .ty("new-ty")
             .inner
             .into_request();

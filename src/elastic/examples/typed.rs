@@ -59,7 +59,7 @@ fn run() -> Result<(), Box<StdError>> {
 fn ensure_indexed(client: &SyncClient, doc: MyType) -> Result<(), Error> {
     let get_res = client
         .document::<MyType>()
-        .get(&*doc.id)
+        .get(doc.id.clone())
         .send();
 
     match get_res.map(|res| res.into_document()) {
@@ -98,7 +98,6 @@ fn put_index(client: &SyncClient) -> Result<(), Error> {
 }
 
 fn put_doc(client: &SyncClient, doc: MyType) -> Result<(), Error> {
-    let doc_id = doc.id;
     client
         .document()
         .index(doc)

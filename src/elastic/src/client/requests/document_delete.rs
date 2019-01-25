@@ -326,15 +326,18 @@ impl Future for Pending {
 
 #[cfg(test)]
 mod tests {
-    use serde_json::Value;
     use prelude::*;
+
+    #[derive(ElasticType)]
+    struct TestDoc { }
 
     #[test]
     fn default_request() {
         let client = SyncClientBuilder::new().build().unwrap();
 
         let req = client
-            .document_delete::<Value>(index("test-idx"), id("1"))
+            .document::<TestDoc>()
+            .delete("1")
             .inner
             .into_request();
 
@@ -346,7 +349,8 @@ mod tests {
         let client = SyncClientBuilder::new().build().unwrap();
 
         let req = client
-            .document_delete::<Value>(index("test-idx"), id("1"))
+            .document::<TestDoc>()
+            .delete("1")
             .ty("new-ty")
             .inner
             .into_request();

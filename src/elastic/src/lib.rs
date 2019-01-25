@@ -308,6 +308,10 @@ extern crate url;
 extern crate tokio_timer;
 extern crate uuid;
 
+#[cfg(test)]
+#[macro_use]
+extern crate elastic_derive;
+
 pub mod error;
 pub use error::Error;
 
@@ -330,4 +334,10 @@ pub mod prelude {
 mod tests {
     pub fn assert_send<T: Send>() {}
     pub fn assert_sync<T: Sync>() {}
+}
+
+// This is a simple workaround for paths needed by `elastic_derive`.
+#[cfg(test)]
+mod elastic {
+    pub use types;
 }

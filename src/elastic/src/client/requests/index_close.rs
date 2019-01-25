@@ -194,11 +194,13 @@ impl Future for Pending {
 mod tests {
     use prelude::*;
 
+    
+
     #[test]
     fn default_request() {
         let client = SyncClientBuilder::new().build().unwrap();
 
-        let req = client.index_close(index("testindex")).inner.into_request();
+        let req = client.index("testindex").close().inner.into_request();
 
         assert_eq!("/testindex/_close", req.url.as_ref());
     }

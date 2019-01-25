@@ -39,8 +39,6 @@ fn run() -> Result<(), Box<Error>> {
         timestamp: Date::now(),
     };
 
-    let doc_id = doc.id;
-
     // Create the index
     client.index(MyType::static_index()).create().send()?;
 

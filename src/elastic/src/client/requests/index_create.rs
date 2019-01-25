@@ -284,7 +284,7 @@ mod tests {
     fn default_request() {
         let client = SyncClientBuilder::new().build().unwrap();
 
-        let req = client.index_create(index("testindex")).inner.into_request();
+        let req = client.index("testindex").create().inner.into_request();
 
         assert_eq!("/testindex", req.url.as_ref());
     }
@@ -294,7 +294,8 @@ mod tests {
         let client = SyncClientBuilder::new().build().unwrap();
 
         let req = client
-            .index_create(index("testindex"))
+            .index("testindex")
+            .create()
             .body("{}")
             .inner
             .into_request();

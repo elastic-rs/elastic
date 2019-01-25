@@ -70,7 +70,7 @@ fn run() -> Result<(), Box<StdError>> {
 fn ensure_indexed(client: AsyncClient, doc: MyType) -> Box<Future<Item = (), Error = Error>> {
     let get_res = client
         .document::<MyType>()
-        .get(&*doc.id)
+        .get(doc.id.clone())
         .send()
         .map(|res| res.into_document());
 
@@ -117,8 +117,6 @@ fn put_index(client: AsyncClient) -> Box<Future<Item = (), Error = Error>> {
 }
 
 fn put_doc(client: AsyncClient, doc: MyType) -> Box<Future<Item = (), Error = Error>> {
-    let doc_id = doc.id;
-
     let index_doc = client
         .document()
         .index(doc)

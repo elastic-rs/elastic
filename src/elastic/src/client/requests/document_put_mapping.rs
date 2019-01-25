@@ -275,12 +275,16 @@ mod tests {
     use serde_json::{self, Value};
     use prelude::*;
 
+    #[derive(ElasticType)]
+    struct TestDoc { }
+
     #[test]
     fn default_request() {
         let client = SyncClientBuilder::new().build().unwrap();
 
         let req = client
-            .document_put_mapping::<Value>(index("test-idx"))
+            .document::<TestDoc>()
+            .put_mapping()
             .inner
             .into_request()
             .unwrap();
@@ -302,7 +306,8 @@ mod tests {
         let client = SyncClientBuilder::new().build().unwrap();
 
         let req = client
-            .document_put_mapping::<Value>(index("test-idx"))
+            .document::<TestDoc>()
+            .put_mapping()
             .ty("new-ty")
             .inner
             .into_request()

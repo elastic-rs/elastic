@@ -387,21 +387,24 @@ impl Future for Pending {
 
 #[cfg(test)]
 mod tests {
-    use serde_json::Value;
     use prelude::*;
+
+    #[derive(Serialize, ElasticType)]
+    struct TestDoc { }
 
     #[test]
     fn default_request() {
         let client = SyncClientBuilder::new().build().unwrap();
 
         let req = client
-            .document_index(index("test-idx"), Value::Null)
+            .document::<TestDoc>()
+            .index(TestDoc {})
             .inner
             .into_request()
             .unwrap();
 
         assert_eq!("/test-idx/value", req.url.as_ref());
-        assert_eq!("null".as_bytes().to_vec(), req.body);
+        assert_eq!("{}".as_bytes().to_vec(), req.body);
     }
 
     #[test]
@@ -409,7 +412,8 @@ mod tests {
         let client = SyncClientBuilder::new().build().unwrap();
 
         let req = client
-            .document_index(index("test-idx"), Value::Null)
+            .document::<TestDoc>()
+            .index(TestDoc {})
             .ty("new-ty")
             .inner
             .into_request()
@@ -423,26 +427,13 @@ mod tests {
         let client = SyncClientBuilder::new().build().unwrap();
 
         let req = client
-            .document_index(index("test-idx"), Value::Null)
+            .document::<TestDoc>()
+            .index(TestDoc {})
             .id(1)
             .inner
             .into_request()
             .unwrap();
 
         assert_eq!("/test-idx/value/1", req.url.as_ref());
-    }
-
-    #[test]
-    fn document_borrow() {
-        let client = SyncClientBuilder::new().build().unwrap();
-
-        let doc = Value::Null;
-        let req = client
-            .document_index(index("test-idx"), &doc)
-            .inner
-            .into_request()
-            .unwrap();
-
-        assert_eq!("/test-idx/value", req.url.as_ref());
     }
 }

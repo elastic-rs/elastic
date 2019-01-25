@@ -198,7 +198,7 @@ mod tests {
     fn default_request() {
         let client = SyncClientBuilder::new().build().unwrap();
 
-        let req = client.index_open(index("testindex")).inner.into_request();
+        let req = client.index("testindex").open().inner.into_request();
 
         assert_eq!("/testindex/_open", req.url.as_ref());
     }

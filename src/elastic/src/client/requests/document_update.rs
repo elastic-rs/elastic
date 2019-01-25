@@ -716,12 +716,16 @@ mod tests {
     use super::ScriptBuilder;
     use prelude::*;
 
+    #[derive(Serialize, ElasticType)]
+    struct TestDoc { }
+
     #[test]
     fn default_request() {
         let client = SyncClientBuilder::new().build().unwrap();
 
         let req = client
-            .document_update::<Value>(index("test-idx"), id("1"))
+            .document::<TestDoc>()
+            .update("1")
             .inner
             .into_request()
             .unwrap();
@@ -742,7 +746,8 @@ mod tests {
         let client = SyncClientBuilder::new().build().unwrap();
 
         let req = client
-            .document_update::<Value>(index("test-idx"), id("1"))
+            .document::<TestDoc>()
+            .update("1")
             .ty("new-ty")
             .inner
             .into_request()
@@ -763,7 +768,8 @@ mod tests {
         let expected_body = json!({ "doc": doc });
 
         let req = client
-            .document_update::<Value>(index("test-idx"), id("1"))
+            .document::<TestDoc>()
+            .update("1")
             .doc(doc)
             .inner
             .into_request()
@@ -779,7 +785,8 @@ mod tests {
         let client = SyncClientBuilder::new().build().unwrap();
 
         let req = client
-            .document_update::<Value>(index("test-idx"), id("1"))
+            .document::<TestDoc>()
+            .update("1")
             .script("ctx._source.a = params.str")
             .inner
             .into_request()
@@ -801,7 +808,8 @@ mod tests {
         let client = SyncClientBuilder::new().build().unwrap();
 
         let req = client
-            .document_update::<Value>(index("test-idx"), id("1"))
+            .document::<TestDoc>()
+            .update("1")
             .script(ScriptBuilder::new("ctx._source.a = params.str"))
             .inner
             .into_request()
@@ -823,7 +831,8 @@ mod tests {
         let client = SyncClientBuilder::new().build().unwrap();
 
         let req = client
-            .document_update::<Value>(index("test-idx"), id("1"))
+            .document::<TestDoc>()
+            .update("1")
             .script_fluent("ctx._source.a = params.str", |script| {
                 script
                     .lang(Some("painless"))
@@ -861,7 +870,8 @@ mod tests {
         let client = SyncClientBuilder::new().build().unwrap();
 
         let req = client
-            .document_update::<Value>(index("test-idx"), id("1"))
+            .document::<TestDoc>()
+            .update("1")
             .script_fluent("ctx._source.a = params.str", |script| {
                 script.params(MyParams {
                     a: "some value",
