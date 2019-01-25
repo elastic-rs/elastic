@@ -78,10 +78,10 @@ pub fn expand_derive(crate_root: Tokens, input: &syn::MacroInput) -> Result<Vec<
 
 fn get_mapping(crate_root: &Tokens, input: &syn::MacroInput) -> ElasticDocumentMapping {
     // Define a struct for the mapping with a few defaults
-    fn define_mapping(name: &syn::Ident) -> Tokens {
+    fn define_mapping(vis: &syn::Visibility, name: &syn::Ident) -> Tokens {
         quote!(
             #[derive(Default, Clone, Copy, Debug)]
-            pub struct #name;
+            #vis struct #name;
         )
     }
 
@@ -119,7 +119,7 @@ fn get_mapping(crate_root: &Tokens, input: &syn::MacroInput) -> ElasticDocumentM
         }
     } else {
         let ident = get_default_mapping(input);
-        let definition = define_mapping(&ident);
+        let definition = define_mapping(&input.vis, &ident);
         let impl_block = impl_document_mapping(&crate_root, &ident, &input.ident);
 
         ElasticDocumentMapping {

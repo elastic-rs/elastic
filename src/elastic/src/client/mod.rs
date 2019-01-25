@@ -303,7 +303,7 @@ Call [`SyncResponseBuilder.into_response`][SyncResponseBuilder.into_response] on
 # fn run() -> Result<(), Box<::std::error::Error>> {
 # #[derive(Serialize, Deserialize, ElasticType)]
 # struct MyType {
-#     pub id: i32,
+#     pub id: String
 #     pub title: String,
 #     pub timestamp: Date<DefaultDateMapping>
 # }
@@ -378,7 +378,7 @@ Call [`AsyncResponseBuilder.into_response`][AsyncResponseBuilder.into_response] 
 # fn run() -> Result<(), Box<::std::error::Error>> {
 # #[derive(Serialize, Deserialize, ElasticType)]
 # struct MyType {
-#     pub id: i32,
+#     pub id: String
 #     pub title: String,
 #     pub timestamp: Date<DefaultDateMapping>
 # }

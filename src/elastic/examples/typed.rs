@@ -26,8 +26,10 @@ use elastic::error::{ApiError, Error};
 use elastic::prelude::*;
 
 #[derive(Debug, Serialize, Deserialize, ElasticType)]
+#[elastic(index = "typed_sample_index")]
 struct MyType {
-    id: i32,
+    #[elastic(id)]
+    id: String,
     title: String,
     timestamp: Date<DefaultDateMapping>,
 }
@@ -38,7 +40,7 @@ fn run() -> Result<(), Box<StdError>> {
 
     // Create a document to index
     let doc = MyType {
-        id: 1,
+        id: "1".to_owned(),
         title: String::from("A title"),
         timestamp: Date::now(),
     };
@@ -54,13 +56,10 @@ fn run() -> Result<(), Box<StdError>> {
     Ok(())
 }
 
-fn sample_index() -> Index<'static> {
-    Index::from("typed_sample_index")
-}
-
 fn ensure_indexed(client: &SyncClient, doc: MyType) -> Result<(), Error> {
     let get_res = client
-        .document_get::<MyType>(sample_index(), id(doc.id))
+        .document::<MyType>()
+        .get(&*doc.id)
         .send();
 
     match get_res.map(|res| res.into_document()) {
@@ -89,9 +88,10 @@ fn ensure_indexed(client: &SyncClient, doc: MyType) -> Result<(), Error> {
 }
 
 fn put_index(client: &SyncClient) -> Result<(), Error> {
-    client.index_create(sample_index()).send()?;
+    client.index(MyType::static_index()).create().send()?;
     client
-        .document_put_mapping::<MyType>(sample_index())
+        .document::<MyType>()
+        .put_mapping()
         .send()?;
 
     Ok(())
@@ -100,8 +100,8 @@ fn put_index(client: &SyncClient) -> Result<(), Error> {
 fn put_doc(client: &SyncClient, doc: MyType) -> Result<(), Error> {
     let doc_id = doc.id;
     client
-        .document_index(sample_index(), doc)
-        .id(doc_id)
+        .document()
+        .index(doc)
         .params_fluent(|p| p.url_param("refresh", true))
         .send()?;
 
@@ -111,7 +111,7 @@ fn put_doc(client: &SyncClient, doc: MyType) -> Result<(), Error> {
 fn search(client: &SyncClient, query: &'static str) -> Result<SearchResponse<MyType>, Error> {
     client
         .search()
-        .index(sample_index())
+        .index(MyType::static_index())
         .body(json!({
                 "query": {
                     "query_string": {

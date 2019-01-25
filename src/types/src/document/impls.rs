@@ -417,7 +417,7 @@ mod tests {
 
         #[derive(Serialize, ElasticType)]
         pub struct TypeWithNoPath {
-            id: i32,
+            id: String
         }
 
         #[derive(Default, ElasticDateFormat)]
@@ -430,7 +430,7 @@ mod tests {
     fn fn_scope() {
         #[derive(Serialize, ElasticType)]
         pub struct TypeInFn {
-            id: i32,
+            id: String
         }
 
         #[derive(Default, ElasticDateFormat)]

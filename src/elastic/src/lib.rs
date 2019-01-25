@@ -116,7 +116,7 @@ Derive `Serialize`, `Deserialize` and `ElasticType` on your document types:
 #[derive(Serialize, Deserialize, ElasticType)]
 struct MyType {
     #[elastic(id(expr = "ToString::to_string"))]
-    pub id: i32,
+    pub id: String
     pub title: String,
     pub timestamp: Date<DefaultDateMapping>
 }
@@ -156,7 +156,7 @@ Then call [`Client.document().index`][Client.document.index] to index documents 
 # fn run() -> Result<(), Box<::std::error::Error>> {
 # #[derive(Serialize, Deserialize, ElasticType)]
 # struct MyType {
-#     pub id: i32,
+#     pub id: String
 #     pub title: String,
 #     pub timestamp: Date<DefaultDateMapping>
 # }
@@ -186,7 +186,7 @@ Call [`Client.document_get`][Client.document_get] to retrieve a single document 
 # fn run() -> Result<(), Box<::std::error::Error>> {
 # #[derive(Serialize, Deserialize, ElasticType)]
 # struct MyType {
-#     pub id: i32,
+#     pub id: String
 #     pub title: String,
 #     pub timestamp: Date<DefaultDateMapping>
 # }

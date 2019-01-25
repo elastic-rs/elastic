@@ -87,7 +87,7 @@ Document mapping is derived at compile-time from your _Plain Old Rust Structures
 ```rust
 #[derive(ElasticType, Serialize, Deserialize)]
 struct MyDocument {
-	pub id: i32,
+	pub id: String
 	pub title: String,
 	pub timestamp: Date<DefaultDateMapping<EpochMillis>>,
 	pub content: Text<DefaultTextMapping>,

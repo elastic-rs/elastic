@@ -8,17 +8,18 @@ pub struct IndexCreate;
 
 #[derive(Debug, PartialEq, Serialize, Deserialize, ElasticType)]
 pub struct Doc {
-    id: i32,
+    #[elastic(id)]
+    id: String,
     title: String,
     timestamp: Date<DefaultDateMapping>,
 }
 
 const INDEX: &'static str = "bulk_index_create";
-const ID: i32 = 1;
+const ID: &'static str = "1";
 
 fn doc() -> Doc {
     Doc {
-        id: ID,
+        id: ID.to_owned(),
         title: "A document title".to_owned(),
         timestamp: Date::build(2017, 03, 24, 13, 44, 0, 0),
     }
@@ -36,7 +37,7 @@ impl IntegrationTest for IndexCreate {
 
     // Ensure the index doesn't exist
     fn prepare(&self, client: AsyncClient) -> Box<Future<Item = (), Error = Error>> {
-        let delete_res = client.index_delete(index(INDEX)).send().map(|_| ());
+        let delete_res = client.index(INDEX).delete().send().map(|_| ());
 
         Box::new(delete_res)
     }
@@ -45,10 +46,7 @@ impl IntegrationTest for IndexCreate {
     fn request(&self, client: AsyncClient) -> Box<Future<Item = Self::Response, Error = Error>> {
         let bulk_res = client
             .bulk()
-            .push(bulk_create(doc())
-                .index(INDEX)
-                .ty(Doc::name())
-                .id(ID))
+            .push(bulk().create(doc()))
             .send();
 
         Box::new(bulk_res)

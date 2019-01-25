@@ -1,8 +1,7 @@
 use ops::Client;
 use std::io::Error as IoError;
 use serde_json::Error as JsonError;
-use elastic::client::requests::IndicesExistsRequest;
-use elastic::client::responses::CommandResponse;
+use elastic::prelude::*;
 use elastic::Error as ResponseError;
 use elastic::http::StatusCode;
 
@@ -24,7 +23,8 @@ impl EnsureBankIndexExists for Client {
             // Not found, create the index
             StatusCode::NOT_FOUND => {
                 self.io
-                    .index_create(model::index::name())
+                    .index(model::index::name())
+                    .create()
                     .body(model::index::body().to_string())
                     .send()?;
             }

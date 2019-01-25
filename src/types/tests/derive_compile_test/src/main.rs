@@ -39,7 +39,7 @@ pub struct DerivedDocument2U32 {
 
 #[derive(ElasticType)]
 #[elastic(index = "derived_documents", id(expr = "DerivedDocument3::id"))]
-pub struct DerivedDocument3 {
+struct DerivedDocument3 {
     pub field1: String,
     pub field2: i32,
 }

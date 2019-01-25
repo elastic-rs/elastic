@@ -90,7 +90,7 @@ Use simple generic types to annotate your Rust structures with Elasticsearch doc
 #[derive(Serialize, Deserialize, ElasticType)]
 struct MyType {
     // Mapped as an `integer` field
-    id: i32,
+    id: String
     // Mapped as a `text` field with a `keyword` subfield
     title: String,
     // Mapped as a `date` field with an `epoch_millis` format
@@ -135,7 +135,7 @@ This will produce the following JSON:
 # fn run() -> Result<(), Box<::std::error::Error>> {
 # #[derive(Serialize, Deserialize, ElasticType)]
 # struct MyType {
-#     id: i32,
+#     id: String
 #     title: String,
 #     timestamp: Date<DefaultDateMapping<EpochMillis>>
 # }

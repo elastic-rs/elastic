@@ -86,7 +86,7 @@ where
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
-    #     pub id: i32,
+    #     pub id: String
     #     pub title: String,
     # }
     # let client = SyncClientBuilder::new().build()?;
@@ -170,7 +170,7 @@ impl Client<AsyncSender> {
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
-    #     pub id: i32,
+    #     pub id: String
     #     pub title: String,
     # }
     # let core = tokio_core::reactor::Core::new()?;
@@ -542,7 +542,7 @@ where
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
-    #     pub id: i32,
+    #     pub id: String
     #     pub title: String,
     # }
     # let client = SyncClientBuilder::new().build()?;
@@ -611,7 +611,7 @@ where
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
-    #     pub id: i32,
+    #     pub id: String
     #     pub title: String,
     # }
     # let core = tokio_core::reactor::Core::new()?;

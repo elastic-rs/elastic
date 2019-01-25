@@ -7,12 +7,19 @@ use run_tests::IntegrationTest;
 pub struct Delete;
 
 #[derive(Debug, PartialEq, Serialize, Deserialize, ElasticType)]
+#[elastic(index = "bulk_delete")]
 pub struct Doc {
-    id: i32,
+    #[elastic(id)]
+    id: String
 }
 
-const INDEX: &'static str = "bulk_delete";
-const ID: i32 = 1;
+const ID: &'static str = "1";
+
+fn doc() -> Doc {
+    Doc {
+        id: ID.to_owned(),
+    }
+}
 
 impl IntegrationTest for Delete {
     type Response = BulkResponse;
@@ -26,7 +33,7 @@ impl IntegrationTest for Delete {
 
     // Ensure the index doesn't exist
     fn prepare(&self, client: AsyncClient) -> Box<Future<Item = (), Error = Error>> {
-        let delete_res = client.index_delete(index(INDEX)).send().map(|_| ());
+        let delete_res = client.index(Doc::static_index()).delete().send().map(|_| ());
 
         Box::new(delete_res)
     }
@@ -34,17 +41,14 @@ impl IntegrationTest for Delete {
     // Index a document, get it, delete it, then try get it again
     fn request(&self, client: AsyncClient) -> Box<Future<Item = Self::Response, Error = Error>> {
         let index_res = client
-            .document_index(index(INDEX), Doc { id: ID })
-            .id(ID)
+            .document()
+            .index(doc())
             .params_fluent(|p| p.url_param("refresh", true))
             .send();
 
         let delete_res = client
             .bulk()
-            .push(bulk_delete()
-                .index(INDEX)
-                .ty(Doc::name())
-                .id(ID))
+            .push(bulk::<Doc>().delete(ID))
             .send();
 
         Box::new(

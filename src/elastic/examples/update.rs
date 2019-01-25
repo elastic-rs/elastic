@@ -20,8 +20,10 @@ use std::error::Error;
 use elastic::prelude::*;
 
 #[derive(Debug, Serialize, Deserialize, ElasticType)]
+#[elastic(index = "index_sample_index")]
 struct MyType {
-    id: i32,
+    #[elastic(id)]
+    id: String,
     title: String,
     timestamp: Date<DefaultDateMapping>,
 }
@@ -32,7 +34,7 @@ fn run() -> Result<(), Box<Error>> {
 
     // Create a document to index
     let doc = MyType {
-        id: 1,
+        id: "1".to_owned(),
         title: String::from("A title"),
         timestamp: Date::now(),
     };
@@ -40,23 +42,25 @@ fn run() -> Result<(), Box<Error>> {
     let doc_id = doc.id;
 
     // Create the index
-    client.index_create(sample_index()).send()?;
+    client.index(MyType::static_index()).create().send()?;
 
     // Add the document mapping (optional, but makes sure `timestamp` is mapped as a `date`)
     client
-        .document_put_mapping::<MyType>(sample_index())
+        .document::<MyType>()
+        .put_mapping()
         .send()?;
 
     // Index the document
     client
-        .document_index(sample_index(), doc)
-        .id(doc_id)
+        .document()
+        .index(doc)
         .params_fluent(|p| p.url_param("refresh", true))
         .send()?;
 
     // Update the document using a script
     let update = client
-        .document_update::<MyType>(sample_index(), id(doc_id))
+        .document::<MyType>()
+        .update("1")
         .script(r#"ctx._source.title = "A new title""#)
         .send()?;
 
@@ -68,8 +72,4 @@ fn run() -> Result<(), Box<Error>> {
 fn main() {
     env_logger::init();
     run().unwrap();
-}
-
-fn sample_index() -> Index<'static> {
-    Index::from("index_sample_index")
 }

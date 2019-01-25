@@ -1,11 +1,13 @@
 use std::io::{self, Write};
 use std::ops::Deref;
+use std::marker::PhantomData;
 
 use serde::ser::{Serialize, Serializer, SerializeMap};
 use serde_json;
 
 use client::requests::params::{Index, Type, Id};
 use client::requests::common::{Doc, Script, ScriptBuilder, DefaultParams};
+use types::document::DocumentType;
 
 pub use client::responses::bulk::Action;
 
@@ -34,50 +36,6 @@ where
     T: Deref<Target = str>,
 {
     serializer.serialize_str(&*field.as_ref().expect("serialize `None` value"))
-}
-
-impl<TDocument> BulkOperation<Doc<TDocument>> {
-    /**
-    A convenient method for creating an index bulk operation.
-    */
-    pub fn new_index(doc: TDocument) -> Self {
-        BulkOperation::new(Action::Index, Some(Doc::value(doc)))
-    }
-
-    /**
-    A convenient method for creating an update bulk operation.
-    */
-    pub fn new_update(doc: TDocument) -> Self {
-        BulkOperation::new(Action::Update, Some(Doc::value(doc)))
-    }
-
-    /**
-    A convenient method for creating a create bulk operation.
-    */
-    pub fn new_create(doc: TDocument) -> Self {
-        BulkOperation::new(Action::Create, Some(Doc::value(doc)))
-    }
-}
-
-impl BulkOperation<()> {
-    /**
-    A convenient method for creating a delete bulk operation.
-    */
-    pub fn new_delete() -> Self {
-        BulkOperation::new(Action::Delete, None)
-    }
-}
-
-impl BulkOperation<Script<DefaultParams>> {
-    /**
-    A convenient method for creating an update bulk operation.
-    */
-    pub fn new_update_script<TScript>(script: TScript) -> Self
-    where
-        TScript: ToString,
-    {
-        BulkOperation::new(Action::Update, Some(Script::new(script)))
-    }
 }
 
 impl<TParams> BulkOperation<Script<TParams>> {
@@ -198,51 +156,179 @@ where
     }
 }
 
-/**
-A convenient method for creating an index bulk operation.
-*/
-pub fn bulk_index<TDocument>(doc: TDocument) -> BulkOperation<Doc<TDocument>> {
-    BulkOperation::new_index(doc)
+pub struct BulkDocumentOperation<TDocument> {
+    header: BulkHeader,
+    _m: PhantomData<TDocument>,
 }
 
-/**
-A convenient method for creating an update bulk operation.
-*/
-pub fn bulk_update<TDocument>(doc: TDocument) -> BulkOperation<Doc<TDocument>> {
-    BulkOperation::new_update(doc)
-}
-
-/**
-A convenient method for creating a create bulk operation.
-*/
-pub fn bulk_create<TDocument>(doc: TDocument) -> BulkOperation<Doc<TDocument>> {
-    BulkOperation::new_create(doc)
-}
-
-/**
-A convenient method for creating a delete bulk operation.
-*/
-pub fn bulk_delete() -> BulkOperation<()> {
-    BulkOperation::new(Action::Delete, None)
-}
-
-/**
-A convenient method for creating an update bulk operation.
-*/
-pub fn bulk_update_script<TScript>(script: TScript) -> BulkOperation<Script<DefaultParams>>
+impl<TDocument> BulkDocumentOperation<TDocument>
 where
-    TScript: ToString,
+    TDocument: DocumentType,
 {
-    BulkOperation::new_update_script(script)
+    pub fn new() -> Self {
+        BulkDocumentOperation {
+            header: BulkHeader {
+                index: TDocument::partial_static_index().map(Into::into),
+                ty: TDocument::partial_static_ty().map(Into::into),
+                id: None,
+            },
+            _m: PhantomData,
+        }
+    }
+
+    pub fn index(mut self, doc: TDocument) -> BulkOperation<Doc<TDocument>> {
+        self.header.id = doc.partial_id().map(|id| Id::from(id.into_owned()));
+
+        BulkOperation {
+            action: Action::Index,
+            header: self.header,
+            inner: Some(Doc::value(doc)),
+        }
+    }
+
+    pub fn update(mut self, doc: TDocument) -> BulkOperation<Doc<TDocument>> {
+        self.header.id = doc.partial_id().map(|id| Id::from(id.into_owned()));
+
+        BulkOperation {
+            action: Action::Update,
+            header: self.header,
+            inner: Some(Doc::value(doc)),
+        }
+    }
+
+    pub fn update_script<TId, TScript>(mut self, id: TId, script: TScript) -> BulkOperation<Script<DefaultParams>>
+    where
+        TId: Into<Id<'static>>,
+        TScript: ToString,
+    {
+        self.header.id = Some(id.into());
+
+        BulkOperation {
+            action: Action::Update,
+            header: self.header,
+            inner: Some(Script::new(script)),
+        }
+    }
+
+    pub fn update_script_fluent<TId, TScript, TBuilder, TParams>(mut self, id: TId, script: TScript, builder: TBuilder) -> BulkOperation<Script<TParams>>
+    where
+        TId: Into<Id<'static>>,
+        TScript: ToString,
+        TBuilder: Fn(ScriptBuilder<DefaultParams>) -> ScriptBuilder<TParams>,
+    {
+        self.header.id = Some(id.into());
+
+        BulkOperation {
+            action: Action::Update,
+            header: self.header,
+            inner: Some(Script::new(script)),
+        }
+        .script_fluent(builder)
+    }
+
+    pub fn create(mut self, doc: TDocument) -> BulkOperation<Doc<TDocument>> {
+        self.header.id = doc.partial_id().map(|id| Id::from(id.into_owned()));
+
+        BulkOperation {
+            action: Action::Create,
+            header: self.header,
+            inner: Some(Doc::value(doc)),
+        }
+    }
+
+    pub fn delete<TId>(mut self, id: TId) -> BulkOperation<()>
+    where
+        TId: Into<Id<'static>>,
+    {
+        self.header.id = Some(id.into());
+
+        BulkOperation {
+            action: Action::Index,
+            header: self.header,
+            inner: None,
+        }
+    }
 }
 
-/**
-A convenient method for creating an update bulk operation.
-*/
-pub fn bulk_update_script_fluent<TScript, TBuilder, TParams>(script: TScript, builder: TBuilder) -> BulkOperation<Script<TParams>>
+pub fn bulk<TDocument>() -> BulkDocumentOperation<TDocument>
+where
+    TDocument: DocumentType,
+{
+    BulkDocumentOperation::new()
+}
+
+pub struct BulkRawOperation {
+    header: BulkHeader,
+}
+
+impl BulkRawOperation {
+    pub fn new() -> Self {
+        BulkRawOperation {
+            header: BulkHeader {
+                index: None,
+                ty: None,
+                id: None,
+            },
+        }
+    }
+
+    pub fn index<TDocument>(self, doc: TDocument) -> BulkOperation<Doc<TDocument>> {
+        BulkOperation {
+            action: Action::Index,
+            header: self.header,
+            inner: Some(Doc::value(doc)),
+        }
+    }
+
+    pub fn update<TDocument>(self, doc: TDocument) -> BulkOperation<Doc<TDocument>> {
+        BulkOperation {
+            action: Action::Update,
+            header: self.header,
+            inner: Some(Doc::value(doc)),
+        }
+    }
+
+    pub fn update_script<TScript>(self, script: TScript) -> BulkOperation<Script<DefaultParams>>
+    where
+        TScript: ToString,
+    {
+        BulkOperation {
+            action: Action::Update,
+            header: self.header,
+            inner: Some(Script::new(script)),
+        }
+    }
+
+    pub fn update_script_fluent<TId, TScript, TBuilder, TParams>(self, script: TScript, builder: TBuilder) -> BulkOperation<Script<TParams>>
     where
         TScript: ToString,
         TBuilder: Fn(ScriptBuilder<DefaultParams>) -> ScriptBuilder<TParams>,
-{
-    BulkOperation::new_update_script(script).script_fluent(builder)
+    {
+        BulkOperation {
+            action: Action::Update,
+            header: self.header,
+            inner: Some(Script::new(script)),
+        }
+        .script_fluent(builder)
+    }
+
+    pub fn create<TDocument>(self, doc: TDocument) -> BulkOperation<Doc<TDocument>> {
+        BulkOperation {
+            action: Action::Create,
+            header: self.header,
+            inner: Some(Doc::value(doc)),
+        }
+    }
+
+    pub fn delete(self) -> BulkOperation<()> {
+        BulkOperation {
+            action: Action::Index,
+            header: self.header,
+            inner: None,
+        }
+    }
+}
+
+pub fn bulk_raw() -> BulkRawOperation {
+    BulkRawOperation::new()
 }

@@ -285,7 +285,7 @@ object:
 # use elastic_types::prelude::*;
 #[derive(Serialize, Deserialize, ElasticType)]
 struct MyType {
-    id: i32,
+    id: String
     timestamp: Timestamp,
     title: String
 }
@@ -346,7 +346,7 @@ use elastic_types::prelude::*;
 
 #[derive(Serialize, Deserialize, ElasticType)]
 struct Article {
-    pub id: i32,
+    pub id: String
     pub title: String,
     pub content: Text<ContentMapping>,
     pub timestamp: Option<Date<TimestampMapping>>,

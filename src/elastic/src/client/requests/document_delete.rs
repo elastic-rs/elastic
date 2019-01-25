@@ -70,7 +70,7 @@ where
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
-    #     pub id: i32,
+    #     pub id: String
     #     pub title: String,
     #     pub timestamp: Date<DefaultDateMapping>
     # }
@@ -221,7 +221,7 @@ impl<TDocument> DeleteRequestBuilder<SyncSender, TDocument> {
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
-    #     pub id: i32,
+    #     pub id: String
     #     pub title: String,
     #     pub timestamp: Date<DefaultDateMapping>
     # }
