@@ -99,6 +99,8 @@ impl<'a> From<&'a (String, parse::Endpoint)> for RequestParamBuilder {
 
 #[cfg(test)]
 mod tests {
+    #![cfg_attr(rustfmt, rustfmt_skip)]
+    
     use super::*;
 
     #[test]

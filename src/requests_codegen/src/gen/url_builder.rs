@@ -323,6 +323,8 @@ impl<'a> From<(&'a (String, Endpoint), &'a (syn::Item, syn::Ty))> for UrlMethodB
 
 #[cfg(test)]
 mod tests {
+    #![cfg_attr(rustfmt, rustfmt_skip)]
+    
     use super::*;
     use gen::url_params::*;
     use parse::PathPart;

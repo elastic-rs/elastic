@@ -331,6 +331,8 @@ impl<'a> From<(&'a (String, Endpoint), &'a syn::Ty, &'a (syn::Item, syn::Ty))> f
 
 #[cfg(test)]
 pub mod tests {
+    #![cfg_attr(rustfmt, rustfmt_skip)]
+    
     use super::*;
 
     #[test]

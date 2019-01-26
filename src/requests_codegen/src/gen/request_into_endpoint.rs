@@ -78,6 +78,8 @@ impl<'a> From<(&'a (String, Endpoint), &'a syn::Ty)> for RequestIntoEndpointBuil
 
 #[cfg(test)]
 mod tests {
+    #![cfg_attr(rustfmt, rustfmt_skip)]
+    
     use super::*;
     use parse::*;
 
