@@ -97,12 +97,12 @@ mod tests {
         let result = RequestIntoEndpointBuilder::from((&endpoint, &req_ty)).build();
 
         let expected = quote!(
-            impl<'a, B> Into<Endpoint<'a, B>> for Request<'a, B> {
+            impl<'a, B> Into<Endpoint<'a, B> > for Request<'a, B> {
                 fn into(self) -> Endpoint<'a, B> {
                     Endpoint {
                         url: self.url,
                         method: Method::GET,
-                        body: Some(self.body),
+                        body: Some(self.body)
                     }
                 }
             }
@@ -127,12 +127,12 @@ mod tests {
         let result = RequestIntoEndpointBuilder::from((&endpoint, &req_ty)).build();
 
         let expected = quote!(
-            impl<'a> Into<Endpoint<'a, DefaultBody>> for Request<'a> {
+            impl<'a> Into<Endpoint<'a, DefaultBody> > for Request<'a> {
                 fn into(self) -> Endpoint<'a, DefaultBody> {
                     Endpoint {
                         url: self.url,
                         method: Method::GET,
-                        body: None,
+                        body: None
                     }
                 }
             }

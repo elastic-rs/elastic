@@ -362,12 +362,12 @@ pub mod tests {
                 #[doc = "A doc comment"]
                 pub fn for_index_ty_id<IIndex, IType, IId>(index: IIndex, ty: IType, id: IId) -> Self
                 where
-                    IIndex: Into<Index<'a>>,
-                    IType: Into<Type<'a>>,
-                    IId: Into<Id<'a>>,
+                    IIndex: Into<Index<'a> >,
+                    IType: Into<Type<'a> >,
+                    IId: Into<Id<'a> >
                 {
                     Request {
-                        url: UrlParams::IndexTypeId(index.into(), ty.into(), id.into()).url(),
+                        url: UrlParams::IndexTypeId(index.into(), ty.into(), id.into()).url()
                     }
                 }
             }
@@ -401,13 +401,13 @@ pub mod tests {
             impl<'a, B> Request<'a, B> {
                 pub fn for_index_ty_id<IIndex, IType, IId>(index: IIndex, ty: IType, id: IId, body: B) -> Self
                 where
-                    IIndex: Into<Index<'a>>,
-                    IType: Into<Type<'a>>,
-                    IId: Into<Id<'a>>,
+                    IIndex: Into<Index<'a> >,
+                    IType: Into<Type<'a> >,
+                    IId: Into<Id<'a> >
                 {
                     Request {
                         url: UrlParams::IndexTypeId(index.into(), ty.into(), id.into()).url(),
-                        body: body,
+                        body: body
                     }
                 }
             }
@@ -442,30 +442,30 @@ pub mod tests {
                 pub fn new(body: B) -> Self {
                     IndicesExistsAliasRequest {
                         url: IndicesExistsAliasUrlParams::None.url(),
-                        body: body,
+                        body: body
                     }
                 }
 
                 #[doc = "Request to: `/{index}/_search`"]
                 pub fn for_index<IIndex>(index: IIndex, body: B) -> Self
                 where
-                    IIndex: Into<Index<'a>>,
+                    IIndex: Into<Index<'a> >
                 {
                     IndicesExistsAliasRequest {
                         url: IndicesExistsAliasUrlParams::Index(index.into()).url(),
-                        body: body,
+                        body: body
                     }
                 }
 
                 #[doc = "Request to: `/{index}/{type}/_search`"]
                 pub fn for_index_ty<IIndex, IType>(index: IIndex, ty: IType, body: B) -> Self
                 where
-                    IIndex: Into<Index<'a>>,
-                    IType: Into<Type<'a>>,
+                    IIndex: Into<Index<'a> >,
+                    IType: Into<Type<'a> >
                 {
                     IndicesExistsAliasRequest {
                         url: IndicesExistsAliasUrlParams::IndexType(index.into(), ty.into()).url(),
-                        body: body,
+                        body: body
                     }
                 }
             }

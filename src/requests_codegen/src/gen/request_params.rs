@@ -116,7 +116,7 @@ mod tests {
 
         let expected = quote!(
             pub struct Request<'a> {
-                pub url: UrlPath<'a>,
+                pub url: UrlPath<'a>
             }
         );
 
@@ -140,7 +140,7 @@ mod tests {
             #[doc = "Some doc"]
             pub struct Request<'a, B> {
                 pub url: UrlPath<'a>,
-                pub body: B,
+                pub body: B
             }
         );
 
@@ -167,7 +167,7 @@ mod tests {
             #[doc = "`Get: /_search`\n\n[Elasticsearch Documentation]()"]
             pub struct IndicesExistsAliasRequest<'a, B> {
                 pub url: UrlPath<'a>,
-                pub body: B,
+                pub body: B
             }
         );
 
