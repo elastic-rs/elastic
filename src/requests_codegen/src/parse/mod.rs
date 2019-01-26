@@ -24,7 +24,11 @@ pub struct Endpoint {
 
 impl Endpoint {
     pub fn has_body(&self) -> bool {
-        self.body.is_some() || self.methods.iter().any(|m| m == &Method::Post || m == &Method::Put)
+        self.body.is_some()
+            || self
+                .methods
+                .iter()
+                .any(|m| m == &Method::Post || m == &Method::Put)
     }
 
     pub fn preferred_method(&self) -> Option<Method> {
@@ -224,7 +228,11 @@ pub struct Body {
 pub fn get_url() -> Url {
     Url {
         path: Path("/_search".to_string()),
-        paths: vec![Path("/_search".to_string()), Path("/{index}/_search".to_string()), Path("/{index}/{type}/_search".to_string())],
+        paths: vec![
+            Path("/_search".to_string()),
+            Path("/{index}/_search".to_string()),
+            Path("/{index}/{type}/_search".to_string()),
+        ],
         parts: {
             let mut map = BTreeMap::new();
 
@@ -271,7 +279,10 @@ pub fn get_url() -> Url {
 #[cfg(test)]
 mod tests {
     mod path {
-        use parse::{Path, PathPart};
+        use parse::{
+            Path,
+            PathPart,
+        };
 
         #[test]
         fn parse_param_only() {
@@ -286,7 +297,11 @@ mod tests {
         fn parse_param_first() {
             let path = Path("{index}/{type}".to_string());
 
-            let expected = vec![PathPart::Param("index"), PathPart::Literal("/"), PathPart::Param("type")];
+            let expected = vec![
+                PathPart::Param("index"),
+                PathPart::Literal("/"),
+                PathPart::Param("type"),
+            ];
 
             assert_eq!(expected, path.split());
         }
@@ -295,7 +310,12 @@ mod tests {
         fn parse_params_and_literals() {
             let path = Path("/{index}/part/{type}".to_string());
 
-            let expected = vec![PathPart::Literal("/"), PathPart::Param("index"), PathPart::Literal("/part/"), PathPart::Param("type")];
+            let expected = vec![
+                PathPart::Literal("/"),
+                PathPart::Param("index"),
+                PathPart::Literal("/part/"),
+                PathPart::Param("type"),
+            ];
 
             assert_eq!(expected, path.split());
         }
@@ -328,7 +348,9 @@ mod tests {
                 documentation: String::new(),
                 methods: vec![Method::Get],
                 url: get_url(),
-                body: Some(Body { description: String::new() }),
+                body: Some(Body {
+                    description: String::new(),
+                }),
             };
 
             assert!(endpoint.has_body());
@@ -491,14 +513,20 @@ mod tests {
                 description: "The search definition using the Query DSL".to_string(),
             });
 
-            assert_eq!(expected, serde_json::from_str::<Option<Body>>(&ser).unwrap());
+            assert_eq!(
+                expected,
+                serde_json::from_str::<Option<Body>>(&ser).unwrap()
+            );
         }
 
         #[test]
         fn deserialise_body_none() {
             let expected: Option<Body> = None;
 
-            assert_eq!(expected, serde_json::from_str::<Option<Body>>("null").unwrap());
+            assert_eq!(
+                expected,
+                serde_json::from_str::<Option<Body>>("null").unwrap()
+            );
         }
 
         #[test]
@@ -526,7 +554,11 @@ mod tests {
 
             let expected = Url {
                 path: Path("/_search".to_string()),
-                paths: vec![Path("/_search".to_string()), Path("/{index}/_search".to_string()), Path("/{index}/{type}/_search".to_string())],
+                paths: vec![
+                    Path("/_search".to_string()),
+                    Path("/{index}/_search".to_string()),
+                    Path("/{index}/{type}/_search".to_string()),
+                ],
                 parts: {
                     let mut map = BTreeMap::new();
 
@@ -534,7 +566,8 @@ mod tests {
                         "index".to_string(),
                         Type {
                             ty: TypeKind::List,
-                            description: "A comma-separated list of index names to search".to_string(),
+                            description: "A comma-separated list of index names to search"
+                                .to_string(),
                             options: vec![],
                             default: None,
                         },
@@ -544,7 +577,8 @@ mod tests {
                         "type".to_string(),
                         Type {
                             ty: TypeKind::List,
-                            description: "A comma-separated list of document types to search".to_string(),
+                            description: "A comma-separated list of document types to search"
+                                .to_string(),
                             options: vec![],
                             default: None,
                         },

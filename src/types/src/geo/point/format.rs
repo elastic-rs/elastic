@@ -1,6 +1,9 @@
 use super::mapping::GeoPointMapping;
 use super::Point;
-use serde::{Deserializer, Serializer};
+use serde::{
+    Deserializer,
+    Serializer,
+};
 
 /** A format used for parsing and formatting geo points. */
 pub trait GeoPointFormat {

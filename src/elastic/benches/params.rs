@@ -32,7 +32,12 @@ fn with_params_1(params: RequestParams) -> RequestParams {
 
 #[inline(always)]
 fn with_params_5(params: RequestParams) -> RequestParams {
-    params.url_param("query", "*").url_param("query", "*").url_param("query", "*").url_param("query", "*").url_param("query", "*")
+    params
+        .url_param("query", "*")
+        .url_param("query", "*")
+        .url_param("query", "*")
+        .url_param("query", "*")
+        .url_param("query", "*")
 }
 
 macro_rules! bench {

@@ -1,16 +1,32 @@
 use bytes::Bytes;
 use serde_json::Value;
 use std::borrow::Cow;
-use std::io::{self, Cursor, Read};
+use std::io::{
+    self,
+    Cursor,
+    Read,
+};
 
-use futures::{Poll, Stream};
-use reqwest::unstable::async::{Body, Response as RawResponse};
-use tokio_io::AsyncRead;
+use futures::{
+    Poll,
+    Stream,
+};
+use reqwest::async::{
+    Body,
+    Response as RawResponse,
+};
+use tokio::io::AsyncRead;
 
-use error::{self, Error};
-use http::{HttpRequest, StatusCode};
+use error::{
+    self,
+    Error,
+};
+use http::{
+    HttpRequest,
+    StatusCode,
+};
 
-pub use reqwest::unstable::async::Chunk as AsyncChunk;
+pub use reqwest::async::Chunk as AsyncChunk;
 
 /** A http request with an asynchronous body; */
 pub type AsyncHttpRequest = HttpRequest<AsyncBody>;
@@ -69,7 +85,9 @@ impl AsyncBody {
     Get a reader over the asynchronous body.
     */
     pub fn reader(&mut self) -> AsyncBodyReader {
-        AsyncBodyReader { inner: Cursor::new(&self.0) }
+        AsyncBodyReader {
+            inner: Cursor::new(&self.0),
+        }
     }
 }
 
@@ -123,7 +141,10 @@ impl Stream for AsyncHttpResponse {
     type Error = Error;
 
     fn poll(&mut self) -> Poll<Option<Self::Item>, Self::Error> {
-        self.1.body_mut().poll().map_err(|e| error::response(self.0, e))
+        self.1
+            .body_mut()
+            .poll()
+            .map_err(|e| error::response(self.0, e))
     }
 }
 

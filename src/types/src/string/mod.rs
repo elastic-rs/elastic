@@ -140,7 +140,8 @@ mod tests {
 
     #[test]
     fn deserialise_elastic_keyword() {
-        let string: Keyword<DefaultKeywordMapping> = serde_json::from_str(r#""my string""#).unwrap();
+        let string: Keyword<DefaultKeywordMapping> =
+            serde_json::from_str(r#""my string""#).unwrap();
 
         assert_eq!("my string", string);
     }

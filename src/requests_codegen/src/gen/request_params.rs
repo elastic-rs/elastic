@@ -52,15 +52,25 @@ impl RequestParamBuilder {
                 ty: types::body::ty(),
             });
 
-            generics.ty_params.push(ty_param(types::body::ident(), vec![]));
+            generics
+                .ty_params
+                .push(ty_param(types::body::ident(), vec![]));
         }
 
         let fields = syn::VariantData::Struct(fields);
 
         let ty = ty_path(
             self.name.as_ref(),
-            generics.lifetimes.iter().map(|l| l.lifetime.to_owned()).collect(),
-            generics.ty_params.iter().map(|t| ty(t.ident.as_ref())).collect(),
+            generics
+                .lifetimes
+                .iter()
+                .map(|l| l.lifetime.to_owned())
+                .collect(),
+            generics
+                .ty_params
+                .iter()
+                .map(|t| ty(t.ident.as_ref()))
+                .collect(),
         );
 
         let mut attrs = vec![];
@@ -86,12 +96,17 @@ impl<'a> From<&'a (String, parse::Endpoint)> for RequestParamBuilder {
 
         let name = format!("{}Request", endpoint_name.into_rust_type());
         let doc_comment = if let Some(method) = endpoint.preferred_method() {
-            format!("`{:?}: {}`\n\n[Elasticsearch Documentation]({})", method, endpoint.url.path, endpoint.documentation)
+            format!(
+                "`{:?}: {}`\n\n[Elasticsearch Documentation]({})",
+                method, endpoint.url.path, endpoint.documentation
+            )
         } else {
             format!("`{}`", endpoint.url.path)
         };
 
-        let builder = RequestParamBuilder::new(&name).has_body(endpoint.has_body()).doc_comment(doc_comment);
+        let builder = RequestParamBuilder::new(&name)
+            .has_body(endpoint.has_body())
+            .doc_comment(doc_comment);
 
         builder
     }

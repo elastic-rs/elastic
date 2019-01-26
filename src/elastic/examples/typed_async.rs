@@ -23,9 +23,15 @@ extern crate tokio_core;
 
 extern crate elastic;
 
-use elastic::error::{ApiError, Error};
+use elastic::error::{
+    ApiError,
+    Error,
+};
 use elastic::prelude::*;
-use futures::{Future, IntoFuture};
+use futures::{
+    Future,
+    IntoFuture,
+};
 use std::error::Error as StdError;
 
 #[derive(Debug, Serialize, Deserialize, ElasticType)]
@@ -68,7 +74,11 @@ fn run() -> Result<(), Box<StdError>> {
 }
 
 fn ensure_indexed(client: AsyncClient, doc: MyType) -> Box<Future<Item = (), Error = Error>> {
-    let get_res = client.document::<MyType>().get(doc.id.clone()).send().map(|res| res.into_document());
+    let get_res = client
+        .document::<MyType>()
+        .get(doc.id.clone())
+        .send()
+        .map(|res| res.into_document());
 
     let put_doc = get_res.then(move |res| {
         match res {
@@ -109,12 +119,20 @@ fn put_index(client: AsyncClient) -> Box<Future<Item = (), Error = Error>> {
 }
 
 fn put_doc(client: AsyncClient, doc: MyType) -> Box<Future<Item = (), Error = Error>> {
-    let index_doc = client.document().index(doc).params_fluent(|p| p.url_param("refresh", true)).send().map(|_| ());
+    let index_doc = client
+        .document()
+        .index(doc)
+        .params_fluent(|p| p.url_param("refresh", true))
+        .send()
+        .map(|_| ());
 
     Box::new(index_doc)
 }
 
-fn search(client: AsyncClient, query: &'static str) -> Box<Future<Item = SearchResponse<MyType>, Error = Error>> {
+fn search(
+    client: AsyncClient,
+    query: &'static str,
+) -> Box<Future<Item = SearchResponse<MyType>, Error = Error>> {
     let search = client
         .search()
         .index(MyType::static_index())

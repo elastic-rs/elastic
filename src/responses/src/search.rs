@@ -3,7 +3,10 @@ Response types for a [search request](https://www.elastic.co/guide/en/elasticsea
 */
 
 use serde::de::DeserializeOwned;
-use serde_json::{Map, Value};
+use serde_json::{
+    Map,
+    Value,
+};
 
 use common::Shards;
 use parsing::IsOkOnSuccess;
@@ -152,7 +155,9 @@ pub struct Hits<'a, T: 'a> {
 
 impl<'a, T: 'a> Hits<'a, T> {
     fn new(hits: &'a HitsWrapper<T>) -> Self {
-        Hits { inner: hits.inner.iter() }
+        Hits {
+            inner: hits.inner.iter(),
+        }
     }
 }
 
@@ -171,7 +176,9 @@ pub struct IntoHits<T> {
 
 impl<T> IntoHits<T> {
     fn new(hits: HitsWrapper<T>) -> Self {
-        IntoHits { inner: hits.inner.into_iter() }
+        IntoHits {
+            inner: hits.inner.into_iter(),
+        }
     }
 }
 
@@ -190,7 +197,9 @@ pub struct Documents<'a, T: 'a> {
 
 impl<'a, T: 'a> Documents<'a, T> {
     fn new(hits: &'a HitsWrapper<T>) -> Self {
-        Documents { inner: hits.inner.iter() }
+        Documents {
+            inner: hits.inner.iter(),
+        }
     }
 }
 
@@ -209,7 +218,9 @@ pub struct IntoDocuments<T> {
 
 impl<T> IntoDocuments<T> {
     fn new(hits: HitsWrapper<T>) -> Self {
-        IntoDocuments { inner: hits.inner.into_iter() }
+        IntoDocuments {
+            inner: hits.inner.into_iter(),
+        }
     }
 }
 
@@ -290,7 +301,13 @@ impl<'a> Aggs<'a> {
             match aggregations.and_then(|aggs| aggs.0.as_object()) {
                 Some(o) => o
                     .into_iter()
-                    .filter_map(|(key, child)| child.as_object().and_then(|child| child.get("buckets")).and_then(Value::as_array).map(|array| (key.as_ref(), array.iter())))
+                    .filter_map(|(key, child)| {
+                        child
+                            .as_object()
+                            .and_then(|child| child.get("buckets"))
+                            .and_then(Value::as_array)
+                            .map(|array| (key.as_ref(), array.iter()))
+                    })
                     .collect(),
                 None => Vec::new(),
             }
@@ -307,7 +324,12 @@ impl<'a> Aggs<'a> {
 type Object = Map<String, Value>;
 type RowData<'a> = BTreeMap<Cow<'a, str>, &'a Value>;
 
-fn insert_value<'a>(fieldname: &str, json_object: &'a Object, keyname: &str, rowdata: &mut RowData<'a>) {
+fn insert_value<'a>(
+    fieldname: &str,
+    json_object: &'a Object,
+    keyname: &str,
+    rowdata: &mut RowData<'a>,
+) {
     if let Some(v) = json_object.get(fieldname) {
         let field_name = format!("{}_{}", keyname, fieldname);
         rowdata.insert(Cow::Owned(field_name), v);
@@ -361,7 +383,9 @@ impl<'a> Iterator for Aggs<'a> {
                                 insert_value("std_deviation", c, key, row);
 
                                 if c.contains_key("std_deviation_bounds") {
-                                    if let Some(child_values) = c.get("std_deviation_bounds").unwrap().as_object() {
+                                    if let Some(child_values) =
+                                        c.get("std_deviation_bounds").unwrap().as_object()
+                                    {
                                         let u = child_values.get("upper");
                                         let l = child_values.get("lower");
                                         let un = format!("{}_std_deviation_bounds_upper", key);

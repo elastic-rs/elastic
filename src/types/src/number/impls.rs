@@ -1,5 +1,10 @@
 use super::mapping::*;
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use serde::{
+    Deserialize,
+    Deserializer,
+    Serialize,
+    Serializer,
+};
 use std::borrow::Borrow;
 use std::marker::PhantomData;
 
@@ -166,6 +171,9 @@ mod tests {
         let float_de: Float<MyFloatMapping> = serde_json::from_str("1.01").unwrap();
         let double_de: Double<MyDoubleMapping> = serde_json::from_str("1.01").unwrap();
 
-        assert_eq!((1i32, 1i64, 1i16, 1i8, 1.01f32, 1.01f64), (*int_de, *long_de, *short_de, *byte_de, *float_de, *double_de));
+        assert_eq!(
+            (1i32, 1i64, 1i16, 1i8, 1.01f32, 1.01f64),
+            (*int_de, *long_de, *short_de, *byte_de, *float_de, *double_de)
+        );
     }
 }

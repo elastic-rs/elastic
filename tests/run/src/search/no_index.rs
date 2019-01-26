@@ -1,4 +1,7 @@
-use elastic::error::{ApiError, Error};
+use elastic::error::{
+    ApiError,
+    Error,
+};
 use elastic::prelude::*;
 use futures::Future;
 use run_tests::IntegrationTest;

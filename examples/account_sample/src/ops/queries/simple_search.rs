@@ -2,7 +2,6 @@ use elastic::error::Result;
 use elastic::prelude::*;
 use ops::Client;
 
-use model;
 use model::account::Account;
 
 pub trait SimpleSearchQuery {
@@ -55,6 +54,10 @@ impl SimpleSearchQuery for Client {
           }
         });
 
-        self.io.document::<Account>().search().body(query.to_string()).send()
+        self.io
+            .document::<Account>()
+            .search()
+            .body(query.to_string())
+            .send()
     }
 }

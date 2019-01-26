@@ -1,24 +1,59 @@
 use std::error::Error as StdError;
 use std::io;
 use std::marker::PhantomData;
-use std::time::Duration;
-use std::{fmt, mem};
+use std::time::{
+    Duration,
+    Instant,
+};
+use std::{
+    fmt,
+    mem,
+};
 
-use bytes::{BufMut, BytesMut};
-use channel::{self, TryRecvError, TrySendError};
+use bytes::{
+    BufMut,
+    BytesMut,
+};
+use channel::{
+    self,
+    TryRecvError,
+    TrySendError,
+};
 use fluent_builder::FluentBuilder;
-use futures::{Async, AsyncSink, Future, Poll, Sink, Stream};
+use futures::{
+    Async,
+    AsyncSink,
+    Future,
+    Poll,
+    Sink,
+    Stream,
+};
 use serde::de::DeserializeOwned;
 use serde::ser::Serialize;
-use tokio_timer::{Sleep, Timer};
+use tokio::timer::Delay;
 
-use super::{BulkOperation, BulkRequestBuilder, BulkRequestInner, Pending, WrappedBody};
-use client::requests::params::{Index, Type};
+use super::{
+    BulkOperation,
+    BulkRequestBuilder,
+    BulkRequestInner,
+    Pending,
+    WrappedBody,
+};
+use client::requests::params::{
+    Index,
+    Type,
+};
 use client::requests::RequestBuilder;
 use client::responses::parse::IsOk;
 use client::sender::AsyncSender;
-use client::{Client, RequestParams};
-use error::{self, Error};
+use client::{
+    Client,
+    RequestParams,
+};
+use error::{
+    self,
+    Error,
+};
 
 /**
 The sending half of a stream of bulk operations.
@@ -35,7 +70,11 @@ pub struct BulkSender<TDocument, TResponse> {
 }
 
 impl<TDocument, TResponse> BulkSender<TDocument, TResponse> {
-    pub(super) fn new(req_template: SenderRequestTemplate<TResponse>, timeout: Timeout, body: SenderBody) -> (Self, BulkReceiver<TResponse>) {
+    pub(super) fn new(
+        req_template: SenderRequestTemplate<TResponse>,
+        timeout: Timeout,
+        body: SenderBody,
+    ) -> (Self, BulkReceiver<TResponse>) {
         let (tx, rx) = channel::bounded(1);
 
         let sender = BulkSender {
@@ -47,7 +86,12 @@ impl<TDocument, TResponse> BulkSender<TDocument, TResponse> {
             _marker: PhantomData,
         };
 
-        (sender, BulkReceiver { rx: BulkReceiverInner(rx) })
+        (
+            sender,
+            BulkReceiver {
+                rx: BulkReceiverInner(rx),
+            },
+        )
     }
 }
 
@@ -60,7 +104,12 @@ pub(super) struct SenderRequestTemplate<TResponse> {
 }
 
 impl<TResponse> SenderRequestTemplate<TResponse> {
-    pub(super) fn new(client: Client<AsyncSender>, params: RequestParams, index: Option<Index<'static>>, ty: Option<Type<'static>>) -> Self {
+    pub(super) fn new(
+        client: Client<AsyncSender>,
+        params: RequestParams,
+        index: Option<Index<'static>>,
+        ty: Option<Type<'static>>,
+    ) -> Self {
         SenderRequestTemplate {
             client,
             params,
@@ -85,21 +134,19 @@ impl<TResponse> SenderRequestTemplate<TResponse> {
 }
 
 pub(super) struct Timeout {
-    timer: Timer,
     duration: Duration,
-    sleep: Sleep,
+    delay: Delay,
 }
 
 impl Timeout {
     pub(super) fn new(duration: Duration) -> Self {
-        let timer = Timer::default();
-        let sleep = timer.sleep(duration);
+        let delay = Delay::new(Instant::now() + duration);
 
-        Timeout { duration, timer, sleep }
+        Timeout { duration, delay }
     }
 
     fn restart(&mut self) {
-        self.sleep = self.timer.sleep(self.duration);
+        self.delay.reset(Instant::now() + self.duration);
     }
 }
 
@@ -108,7 +155,7 @@ impl Future for Timeout {
     type Error = Error;
 
     fn poll(&mut self) -> Poll<Self::Item, Self::Error> {
-        self.sleep.poll().map_err(error::request)
+        self.delay.poll().map_err(error::request)
     }
 }
 
@@ -213,7 +260,10 @@ where
     type SinkItem = BulkOperation<TDocument>;
     type SinkError = Error;
 
-    fn start_send(&mut self, item: Self::SinkItem) -> Result<AsyncSink<Self::SinkItem>, Self::SinkError> {
+    fn start_send(
+        &mut self,
+        item: Self::SinkItem,
+    ) -> Result<AsyncSink<Self::SinkItem>, Self::SinkError> {
         match self.timeout.poll() {
             // Only respect the timeout if the body is not empty
             Ok(Async::Ready(())) if !self.body.is_empty() => {
@@ -244,7 +294,9 @@ where
             BulkSenderInFlight::ReadyToSend => {
                 match self.timeout.poll() {
                     // If the timeout hasn't expired and the body isn't full then we're not ready
-                    Ok(Async::NotReady) if !self.body.is_full() && !self.body.is_empty() => return Ok(Async::NotReady),
+                    Ok(Async::NotReady) if !self.body.is_full() && !self.body.is_empty() => {
+                        return Ok(Async::NotReady);
+                    }
                     // Continue
                     Ok(Async::NotReady) => (),
                     // Restart the expired timer
@@ -307,7 +359,10 @@ where
     type SinkItem = T;
     type SinkError = Error;
 
-    fn start_send(&mut self, item: Self::SinkItem) -> Result<AsyncSink<Self::SinkItem>, Self::SinkError> {
+    fn start_send(
+        &mut self,
+        item: Self::SinkItem,
+    ) -> Result<AsyncSink<Self::SinkItem>, Self::SinkError> {
         self.0
             .as_ref()
             .map(|tx| match tx.try_send(item) {

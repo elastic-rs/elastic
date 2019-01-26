@@ -4,18 +4,36 @@ Builders for [delete document requests][docs-delete].
 [docs-delete]: http://www.elastic.co/guide/en/elasticsearch/reference/current/docs-delete.html
 */
 
-use futures::{Future, Poll};
+use futures::{
+    Future,
+    Poll,
+};
 use std::marker::PhantomData;
 
 use client::requests::endpoints::DeleteRequest;
-use client::requests::params::{Id, Index, Type};
+use client::requests::params::{
+    Id,
+    Index,
+    Type,
+};
 use client::requests::raw::RawRequestInner;
 use client::requests::RequestBuilder;
 use client::responses::DeleteResponse;
-use client::sender::{AsyncSender, Sender, SyncSender};
+use client::sender::{
+    AsyncSender,
+    Sender,
+    SyncSender,
+};
 use client::DocumentClient;
-use error::{Error, Result};
-use types::document::{DocumentType, StaticIndex, StaticType};
+use error::{
+    Error,
+    Result,
+};
+use types::document::{
+    DocumentType,
+    StaticIndex,
+    StaticType,
+};
 use types::DEFAULT_TYPE;
 
 /**
@@ -29,7 +47,8 @@ The `send` method will either send the request [synchronously][send-sync] or [as
 [send-async]: #send-asynchronously
 [Client.document_delete]: ../../struct.Client.html#delete-document
 */
-pub type DeleteRequestBuilder<TSender, TDocument> = RequestBuilder<TSender, DeleteRequestInner<TDocument>>;
+pub type DeleteRequestBuilder<TSender, TDocument> =
+    RequestBuilder<TSender, DeleteRequestInner<TDocument>>;
 
 #[doc(hidden)]
 pub struct DeleteRequestInner<TDocument> {
@@ -153,7 +172,11 @@ where
     [send-async]: requests/document_delete/type.DeleteRequestBuilder.html#send-asynchronously
     [documents-mod]: ../types/document/index.html
     */
-    pub fn delete_raw(self, index: impl Into<Index<'static>>, id: impl Into<Id<'static>>) -> DeleteRequestBuilder<TSender, ()> {
+    pub fn delete_raw(
+        self,
+        index: impl Into<Index<'static>>,
+        id: impl Into<Id<'static>>,
+    ) -> DeleteRequestBuilder<TSender, ()> {
         RequestBuilder::initial(
             self.inner,
             DeleteRequestInner {
@@ -239,7 +262,9 @@ impl<TDocument> DeleteRequestBuilder<SyncSender, TDocument> {
     pub fn send(self) -> Result<DeleteResponse> {
         let req = self.inner.into_request();
 
-        RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req)).send()?.into_response()
+        RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
+            .send()?
+            .into_response()
     }
 }
 
@@ -293,7 +318,10 @@ impl<TDocument> DeleteRequestBuilder<AsyncSender, TDocument> {
     pub fn send(self) -> Pending {
         let req = self.inner.into_request();
 
-        let res_future = RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req)).send().and_then(|res| res.into_response());
+        let res_future =
+            RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
+                .send()
+                .and_then(|res| res.into_response());
 
         Pending::new(res_future)
     }
@@ -309,7 +337,9 @@ impl Pending {
     where
         F: Future<Item = DeleteResponse, Error = Error> + 'static,
     {
-        Pending { inner: Box::new(fut) }
+        Pending {
+            inner: Box::new(fut),
+        }
     }
 }
 
@@ -333,7 +363,11 @@ mod tests {
     fn default_request() {
         let client = SyncClientBuilder::new().build().unwrap();
 
-        let req = client.document::<TestDoc>().delete("1").inner.into_request();
+        let req = client
+            .document::<TestDoc>()
+            .delete("1")
+            .inner
+            .into_request();
 
         assert_eq!("/testdoc/doc/1", req.url.as_ref());
     }
@@ -342,7 +376,12 @@ mod tests {
     fn specify_index() {
         let client = SyncClientBuilder::new().build().unwrap();
 
-        let req = client.document::<TestDoc>().delete("1").index("new-idx").inner.into_request();
+        let req = client
+            .document::<TestDoc>()
+            .delete("1")
+            .index("new-idx")
+            .inner
+            .into_request();
 
         assert_eq!("/new-idx/doc/1", req.url.as_ref());
     }
@@ -351,7 +390,12 @@ mod tests {
     fn specify_ty() {
         let client = SyncClientBuilder::new().build().unwrap();
 
-        let req = client.document::<TestDoc>().delete("1").ty("new-ty").inner.into_request();
+        let req = client
+            .document::<TestDoc>()
+            .delete("1")
+            .ty("new-ty")
+            .inner
+            .into_request();
 
         assert_eq!("/testdoc/new-ty/1", req.url.as_ref());
     }

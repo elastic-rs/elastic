@@ -1,9 +1,18 @@
 use reqwest::Response as RawResponse;
 use serde::de::DeserializeOwned;
 
-use super::parse::{parse, IsOk};
-use error::{self, Result};
-use http::{StatusCode, SyncHttpResponse};
+use super::parse::{
+    parse,
+    IsOk,
+};
+use error::{
+    self,
+    Result,
+};
+use http::{
+    StatusCode,
+    SyncHttpResponse,
+};
 
 /**
 A builder for a response.
@@ -93,6 +102,8 @@ impl SyncResponseBuilder {
         T: IsOk + DeserializeOwned,
     {
         let status = self.0;
-        parse().from_reader(status, self.1).map_err(|e| error::response(status, e))
+        parse()
+            .from_reader(status, self.1)
+            .map_err(|e| error::response(status, e))
     }
 }

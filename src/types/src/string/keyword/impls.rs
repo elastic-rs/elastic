@@ -1,6 +1,17 @@
-use super::mapping::{KeywordFieldType, KeywordMapping};
-use serde::de::{Error, Visitor};
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use super::mapping::{
+    KeywordFieldType,
+    KeywordMapping,
+};
+use serde::de::{
+    Error,
+    Visitor,
+};
+use serde::{
+    Deserialize,
+    Deserializer,
+    Serialize,
+    Serializer,
+};
 use std::borrow::Borrow;
 use std::marker::PhantomData;
 
@@ -51,7 +62,10 @@ where
     where
         I: Into<String>,
     {
-        Keyword { value: string.into(), _m: PhantomData }
+        Keyword {
+            value: string.into(),
+            _m: PhantomData,
+        }
     }
 
     /** Change the mapping of this string. */

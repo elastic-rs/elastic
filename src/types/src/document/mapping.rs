@@ -1,7 +1,10 @@
 /*! Mapping for Elasticsearch document types. */
 
 use serde::ser::SerializeStruct;
-use serde::{Serialize, Serializer};
+use serde::{
+    Serialize,
+    Serializer,
+};
 
 /** A field that will be mapped as a nested document. */
 pub trait ObjectFieldType {
@@ -103,11 +106,27 @@ impl Serialize for Dynamic {
 }
 
 mod private {
-    use super::{ObjectFieldType, ObjectMapping, PropertiesMapping, OBJECT_DATATYPE};
-    use document::{FieldDocumentMapping, IndexDocumentMapping};
-    use private::field::{FieldMapping, FieldType, SerializeFieldMapping, StaticSerialize};
+    use super::{
+        ObjectFieldType,
+        ObjectMapping,
+        PropertiesMapping,
+        OBJECT_DATATYPE,
+    };
+    use document::{
+        FieldDocumentMapping,
+        IndexDocumentMapping,
+    };
+    use private::field::{
+        FieldMapping,
+        FieldType,
+        SerializeFieldMapping,
+        StaticSerialize,
+    };
     use serde::ser::SerializeStruct;
-    use serde::{Serialize, Serializer};
+    use serde::{
+        Serialize,
+        Serializer,
+    };
     use std::marker::PhantomData;
 
     #[derive(Default)]
@@ -146,7 +165,8 @@ mod private {
         where
             S: Serializer,
         {
-            let mut state = try!(serializer.serialize_struct("properties", TMapping::Properties::props_len()));
+            let mut state =
+                try!(serializer.serialize_struct("properties", TMapping::Properties::props_len()));
             try!(TMapping::Properties::serialize_props(&mut state));
             state.end()
         }
@@ -183,7 +203,8 @@ mod private {
             }
 
             if has_props {
-                try!(state.serialize_field("properties", &Properties::<TMapping> { _m: PhantomData }));
+                try!(state
+                    .serialize_field("properties", &Properties::<TMapping> { _m: PhantomData }));
             }
 
             state.end()

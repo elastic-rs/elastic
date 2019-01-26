@@ -38,7 +38,12 @@ fn run() -> Result<(), Box<Error>> {
     };
 
     // Create the index if it doesn't exist
-    if !client.index(MyType::static_index()).exists().send()?.exists() {
+    if !client
+        .index(MyType::static_index())
+        .exists()
+        .send()?
+        .exists()
+    {
         client.index(MyType::static_index()).create().send()?;
     }
 

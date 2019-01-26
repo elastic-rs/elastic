@@ -69,15 +69,24 @@ pub mod string_fixtures {
                 }),
             );
 
-            fields.insert("count", StringField::TokenCount(ElasticTokenCountFieldMapping::default()));
+            fields.insert(
+                "count",
+                StringField::TokenCount(ElasticTokenCountFieldMapping::default()),
+            );
 
-            fields.insert("comp", StringField::Completion(ElasticCompletionFieldMapping::default()));
+            fields.insert(
+                "comp",
+                StringField::Completion(ElasticCompletionFieldMapping::default()),
+            );
 
             Some(fields)
         }
 
         fn fielddata_frequency_filter() -> Option<FieldDataFrequencyFilter> {
-            Some(FieldDataFrequencyFilter { min: Some(0.0), ..Default::default() })
+            Some(FieldDataFrequencyFilter {
+                min: Some(0.0),
+                ..Default::default()
+            })
         }
 
         fn analyzer() -> Option<&'static str> {
@@ -155,9 +164,15 @@ pub mod string_fixtures {
                 }),
             );
 
-            fields.insert("count", StringField::TokenCount(ElasticTokenCountFieldMapping::default()));
+            fields.insert(
+                "count",
+                StringField::TokenCount(ElasticTokenCountFieldMapping::default()),
+            );
 
-            fields.insert("comp", StringField::Completion(ElasticCompletionFieldMapping::default()));
+            fields.insert(
+                "comp",
+                StringField::Completion(ElasticCompletionFieldMapping::default()),
+            );
 
             Some(fields)
         }
@@ -560,7 +575,10 @@ pub mod geo_shape_fixtures {
 }
 
 pub mod object_fixtures {
-    use chrono::{DateTime, Utc};
+    use chrono::{
+        DateTime,
+        Utc,
+    };
     use elastic_types::prelude::*;
     use serde::ser::SerializeStruct;
 

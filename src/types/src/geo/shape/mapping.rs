@@ -1,7 +1,10 @@
 /*! Mapping for Elasticsearch `geo_shape` types. */
 
 use geo::mapping::Distance;
-use serde::{Serialize, Serializer};
+use serde::{
+    Serialize,
+    Serializer,
+};
 
 /** A field that will be mapped as a `geo_shape`. */
 pub trait GeoShapeFieldType<TMapping> {}
@@ -219,10 +222,21 @@ impl Serialize for Orientation {
 }
 
 mod private {
-    use super::{GeoShapeFieldType, GeoShapeMapping};
-    use private::field::{FieldMapping, FieldType, SerializeFieldMapping, StaticSerialize};
+    use super::{
+        GeoShapeFieldType,
+        GeoShapeMapping,
+    };
+    use private::field::{
+        FieldMapping,
+        FieldType,
+        SerializeFieldMapping,
+        StaticSerialize,
+    };
     use serde::ser::SerializeStruct;
-    use serde::{Serialize, Serializer};
+    use serde::{
+        Serialize,
+        Serializer,
+    };
 
     impl<TField, TMapping> FieldType<TMapping, GeoShapePivot> for TField
     where

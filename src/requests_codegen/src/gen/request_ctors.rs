@@ -70,8 +70,16 @@ impl RequestParamsCtorBuilder {
     /// A constructor function with url parameters.
     ///
     /// This function has the form `param1_param2(param1, param2, body?)`.
-    fn ctor(name: &str, fields: Vec<String>, has_body: bool, doc_comment: Option<String>) -> Constructor {
-        let fields: Vec<(syn::Ident, syn::Ty)> = fields.iter().map(|f| (ident(f.into_rust_var()), ty_a(f))).collect();
+    fn ctor(
+        name: &str,
+        fields: Vec<String>,
+        has_body: bool,
+        doc_comment: Option<String>,
+    ) -> Constructor {
+        let fields: Vec<(syn::Ident, syn::Ty)> = fields
+            .iter()
+            .map(|f| (ident(f.into_rust_var()), ty_a(f)))
+            .collect();
 
         let body_field = Self::body_field(has_body);
 
@@ -140,7 +148,11 @@ impl RequestParamsCtorBuilder {
             match ctor.params_fields.len() {
                 0 => ident("None"),
                 _ => {
-                    let params_ty_variant: Vec<String> = ctor.params_fields.iter().map(|&(_, ref t)| t.get_ident().into_rust_type()).collect();
+                    let params_ty_variant: Vec<String> = ctor
+                        .params_fields
+                        .iter()
+                        .map(|&(_, ref t)| t.get_ident().into_rust_type())
+                        .collect();
 
                     let params_ty_variant = params_ty_variant.join("");
 
@@ -156,7 +168,14 @@ impl RequestParamsCtorBuilder {
 
         let params_expr = match ctor.params_fields.len() {
             0 => syn::ExprKind::Path(None, params_ty).into(),
-            _ => syn::ExprKind::Call(Box::new(syn::ExprKind::Path(None, params_ty).into()), ctor.params_fields.iter().map(|&(ref f, _)| Self::expr_into(f)).collect()).into(),
+            _ => syn::ExprKind::Call(
+                Box::new(syn::ExprKind::Path(None, params_ty).into()),
+                ctor.params_fields
+                    .iter()
+                    .map(|&(ref f, _)| Self::expr_into(f))
+                    .collect(),
+            )
+            .into(),
         };
 
         // AST to set the url field: `url: UrlParams::SomeVariant(a, b).url()`
@@ -206,7 +225,10 @@ impl RequestParamsCtorBuilder {
             args.push({
                 let (ref name, _) = *body;
 
-                syn::FnArg::Captured(syn::Pat::Path(None, path_none(&name.to_string())), types::body::ty())
+                syn::FnArg::Captured(
+                    syn::Pat::Path(None, path_none(&name.to_string())),
+                    types::body::ty(),
+                )
             });
         }
 
@@ -228,14 +250,22 @@ impl RequestParamsCtorBuilder {
             })
             .collect();
 
-        let generic_field_tys: Vec<syn::TyParam> = generic_fields.iter().map(|ty| Self::ctor_field_generic(ty)).collect();
+        let generic_field_tys: Vec<syn::TyParam> = generic_fields
+            .iter()
+            .map(|ty| Self::ctor_field_generic(ty))
+            .collect();
 
-        let generic_field_where_tys: Vec<syn::WherePredicate> = generic_fields.iter().map(|ty| Self::ctor_field_generic_where_bound(ty)).collect();
+        let generic_field_where_tys: Vec<syn::WherePredicate> = generic_fields
+            .iter()
+            .map(|ty| Self::ctor_field_generic_where_bound(ty))
+            .collect();
 
         let generics = syn::Generics {
             lifetimes: vec![],
             ty_params: generic_field_tys,
-            where_clause: syn::WhereClause { predicates: generic_field_where_tys },
+            where_clause: syn::WhereClause {
+                predicates: generic_field_where_tys,
+            },
         };
 
         let fndecl = Self::ctor_decl(&ctor);
@@ -266,14 +296,29 @@ impl RequestParamsCtorBuilder {
     }
 
     pub fn build(self) -> syn::Item {
-        let ctors: Vec<syn::ImplItem> = self.ctors.iter().map(|c| Self::ctor_item(self.req_ty.clone(), self.params_ty.clone(), c)).collect();
+        let ctors: Vec<syn::ImplItem> = self
+            .ctors
+            .iter()
+            .map(|c| Self::ctor_item(self.req_ty.clone(), self.params_ty.clone(), c))
+            .collect();
 
         let generics = {
-            let segment = self.req_ty.get_path().to_owned().segments.into_iter().next().unwrap();
+            let segment = self
+                .req_ty
+                .get_path()
+                .to_owned()
+                .segments
+                .into_iter()
+                .next()
+                .unwrap();
 
             match segment.parameters {
                 syn::PathParameters::AngleBracketed(data) => {
-                    let types = data.types.iter().map(|t| ty_param(t.get_ident().as_ref(), vec![])).collect();
+                    let types = data
+                        .types
+                        .iter()
+                        .map(|t| ty_param(t.get_ident().as_ref(), vec![]))
+                        .collect();
 
                     generics(data.lifetimes, types)
                 }
@@ -285,16 +330,39 @@ impl RequestParamsCtorBuilder {
             ident: ident(""),
             vis: syn::Visibility::Public,
             attrs: vec![],
-            node: syn::ItemKind::Impl(syn::Unsafety::Normal, syn::ImplPolarity::Positive, generics, None, Box::new(self.req_ty), ctors),
+            node: syn::ItemKind::Impl(
+                syn::Unsafety::Normal,
+                syn::ImplPolarity::Positive,
+                generics,
+                None,
+                Box::new(self.req_ty),
+                ctors,
+            ),
         }
     }
 }
 
-impl<'a> From<(&'a (String, Endpoint), &'a syn::Ty, &'a (syn::Item, syn::Ty))> for RequestParamsCtorBuilder {
-    fn from(value: (&'a (String, Endpoint), &'a syn::Ty, &'a (syn::Item, syn::Ty))) -> Self {
+impl<'a>
+    From<(
+        &'a (String, Endpoint),
+        &'a syn::Ty,
+        &'a (syn::Item, syn::Ty),
+    )> for RequestParamsCtorBuilder
+{
+    fn from(
+        value: (
+            &'a (String, Endpoint),
+            &'a syn::Ty,
+            &'a (syn::Item, syn::Ty),
+        ),
+    ) -> Self {
         let (&(_, ref endpoint), ref req_ty, &(ref params, ref params_ty)) = value;
 
-        let mut builder = RequestParamsCtorBuilder::new(endpoint.has_body(), (*req_ty).to_owned(), (*params_ty).to_owned());
+        let mut builder = RequestParamsCtorBuilder::new(
+            endpoint.has_body(),
+            (*req_ty).to_owned(),
+            (*params_ty).to_owned(),
+        );
 
         let ctors: Vec<(Vec<String>, String)> = match params.node {
             syn::ItemKind::Enum(ref variants, _) => variants
@@ -310,7 +378,10 @@ impl<'a> From<(&'a (String, Endpoint), &'a syn::Ty, &'a (syn::Item, syn::Ty))> f
                             (args, doc)
                         }
                         syn::VariantData::Tuple(ref fields) => {
-                            let args = fields.iter().map(|f| f.ty.get_ident().to_string()).collect();
+                            let args = fields
+                                .iter()
+                                .map(|f| f.ty.get_ident().to_string())
+                                .collect();
 
                             (args, doc)
                         }

@@ -264,7 +264,16 @@ Serialising `MyType`s mapping will produce the following json:
 [geoshape-mod]: geo/shape/index.html
 */
 
-pub use elastic_types::{boolean, date, document, geo, ip, number, prelude, string};
+pub use elastic_types::{
+    boolean,
+    date,
+    document,
+    geo,
+    ip,
+    number,
+    prelude,
+    string,
+};
 
 pub(crate) const DEFAULT_TYPE: &'static str = "doc";
 

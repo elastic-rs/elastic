@@ -279,7 +279,7 @@ This crate glues these libraries together with some simple assumptions about how
 */
 
 //#![deny(warnings, missing_docs)]
-#![allow(unknown_lints, doc_markdown)]
+#![allow(unknown_lints)]
 
 extern crate bytes;
 extern crate elastic_requests;
@@ -290,7 +290,7 @@ extern crate error_chain;
 extern crate fluent_builder;
 #[macro_use]
 extern crate futures;
-extern crate futures_cpupool;
+extern crate tokio_threadpool;
 #[macro_use]
 extern crate log;
 #[macro_use]
@@ -302,9 +302,7 @@ extern crate serde;
 extern crate serde_derive;
 #[cfg_attr(test, macro_use)]
 extern crate serde_json;
-extern crate tokio_core;
-extern crate tokio_io;
-extern crate tokio_timer;
+extern crate tokio;
 extern crate url;
 extern crate uuid;
 

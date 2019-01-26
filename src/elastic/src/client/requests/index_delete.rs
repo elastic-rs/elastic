@@ -4,14 +4,21 @@ Builders for [delete index requests][docs-delete-index].
 [docs-delete-index]: https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-delete-index.html
 */
 
-use futures::{Future, Poll};
+use futures::{
+    Future,
+    Poll,
+};
 
 use client::requests::endpoints::IndicesDeleteRequest;
 use client::requests::params::Index;
 use client::requests::raw::RawRequestInner;
 use client::requests::RequestBuilder;
 use client::responses::CommandResponse;
-use client::sender::{AsyncSender, Sender, SyncSender};
+use client::sender::{
+    AsyncSender,
+    Sender,
+    SyncSender,
+};
 use client::IndexClient;
 use error::*;
 
@@ -112,7 +119,9 @@ impl IndexDeleteRequestBuilder<SyncSender> {
     pub fn send(self) -> Result<CommandResponse> {
         let req = self.inner.into_request();
 
-        RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req)).send()?.into_response()
+        RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
+            .send()?
+            .into_response()
     }
 }
 
@@ -155,7 +164,10 @@ impl IndexDeleteRequestBuilder<AsyncSender> {
     pub fn send(self) -> Pending {
         let req = self.inner.into_request();
 
-        let res_future = RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req)).send().and_then(|res| res.into_response());
+        let res_future =
+            RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
+                .send()
+                .and_then(|res| res.into_response());
 
         Pending::new(res_future)
     }
@@ -171,7 +183,9 @@ impl Pending {
     where
         F: Future<Item = CommandResponse, Error = Error> + 'static,
     {
-        Pending { inner: Box::new(fut) }
+        Pending {
+            inner: Box::new(fut),
+        }
     }
 }
 

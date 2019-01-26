@@ -4,19 +4,37 @@ Builders for [get document requests][docs-get].
 [docs-get]: http://www.elastic.co/guide/en/elasticsearch/reference/current/docs-get.html
 */
 
-use futures::{Future, Poll};
+use futures::{
+    Future,
+    Poll,
+};
 use serde::de::DeserializeOwned;
 use std::marker::PhantomData;
 
 use client::requests::endpoints::GetRequest;
-use client::requests::params::{Id, Index, Type};
+use client::requests::params::{
+    Id,
+    Index,
+    Type,
+};
 use client::requests::raw::RawRequestInner;
 use client::requests::RequestBuilder;
 use client::responses::GetResponse;
-use client::sender::{AsyncSender, Sender, SyncSender};
+use client::sender::{
+    AsyncSender,
+    Sender,
+    SyncSender,
+};
 use client::DocumentClient;
-use error::{Error, Result};
-use types::document::{DocumentType, StaticIndex, StaticType};
+use error::{
+    Error,
+    Result,
+};
+use types::document::{
+    DocumentType,
+    StaticIndex,
+    StaticType,
+};
 use types::DEFAULT_TYPE;
 
 /**
@@ -30,7 +48,8 @@ The `send` method will either send the request [synchronously][send-sync] or [as
 [send-async]: #send-asynchronously
 [Client.document_get]: ../../struct.Client.html#get-document
 */
-pub type GetRequestBuilder<TSender, TDocument> = RequestBuilder<TSender, GetRequestInner<TDocument>>;
+pub type GetRequestBuilder<TSender, TDocument> =
+    RequestBuilder<TSender, GetRequestInner<TDocument>>;
 
 #[doc(hidden)]
 pub struct GetRequestInner<TDocument> {
@@ -145,7 +164,11 @@ where
     [types-mod]: ../types/index.html
     [documents-mod]: ../types/document/index.html
     */
-    pub fn get_raw(self, index: impl Into<Index<'static>>, id: impl Into<Id<'static>>) -> GetRequestBuilder<TSender, TDocument>
+    pub fn get_raw(
+        self,
+        index: impl Into<Index<'static>>,
+        id: impl Into<Id<'static>>,
+    ) -> GetRequestBuilder<TSender, TDocument>
     where
         TDocument: DeserializeOwned,
     {
@@ -235,7 +258,9 @@ where
     pub fn send(self) -> Result<GetResponse<TDocument>> {
         let req = self.inner.into_request();
 
-        RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req)).send()?.into_response()
+        RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
+            .send()?
+            .into_response()
     }
 }
 
@@ -293,7 +318,10 @@ where
     pub fn send(self) -> Pending<TDocument> {
         let req = self.inner.into_request();
 
-        let res_future = RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req)).send().and_then(|res| res.into_response());
+        let res_future =
+            RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
+                .send()
+                .and_then(|res| res.into_response());
 
         Pending::new(res_future)
     }
@@ -309,7 +337,9 @@ impl<TDocument> Pending<TDocument> {
     where
         F: Future<Item = GetResponse<TDocument>, Error = Error> + 'static,
     {
-        Pending { inner: Box::new(fut) }
+        Pending {
+            inner: Box::new(fut),
+        }
     }
 }
 
@@ -345,7 +375,12 @@ mod tests {
     fn specify_index() {
         let client = SyncClientBuilder::new().build().unwrap();
 
-        let req = client.document::<TestDoc>().get("1").index("new-idx").inner.into_request();
+        let req = client
+            .document::<TestDoc>()
+            .get("1")
+            .index("new-idx")
+            .inner
+            .into_request();
 
         assert_eq!("/new-idx/doc/1", req.url.as_ref());
     }
@@ -354,7 +389,12 @@ mod tests {
     fn specify_ty() {
         let client = SyncClientBuilder::new().build().unwrap();
 
-        let req = client.document::<TestDoc>().get("1").ty("new-ty").inner.into_request();
+        let req = client
+            .document::<TestDoc>()
+            .get("1")
+            .ty("new-ty")
+            .inner
+            .into_request();
 
         assert_eq!("/testdoc/new-ty/1", req.url.as_ref());
     }

@@ -1,6 +1,18 @@
-use super::mapping::{DefaultIpMapping, IpFieldType, IpMapping};
-use serde::de::{Error, Visitor};
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use super::mapping::{
+    DefaultIpMapping,
+    IpFieldType,
+    IpMapping,
+};
+use serde::de::{
+    Error,
+    Visitor,
+};
+use serde::{
+    Deserialize,
+    Deserializer,
+    Serialize,
+    Serializer,
+};
 use std::borrow::Borrow;
 use std::error::Error as StdError;
 use std::marker::PhantomData;
@@ -58,7 +70,10 @@ where
     where
         I: Into<Ipv4Addr>,
     {
-        Ip { value: ip.into(), _m: PhantomData }
+        Ip {
+            value: ip.into(),
+            _m: PhantomData,
+        }
     }
 
     /**
@@ -136,7 +151,9 @@ where
             where
                 E: Error,
             {
-                let de = try!(Ipv4Addr::from_str(&v).map_err(|e| E::custom(e.description().to_string())));
+                let de = try!(
+                    Ipv4Addr::from_str(&v).map_err(|e| E::custom(e.description().to_string()))
+                );
 
                 Ok(Ip::new(de))
             }
@@ -145,7 +162,8 @@ where
             where
                 E: Error,
             {
-                let de = try!(Ipv4Addr::from_str(v).map_err(|e| E::custom(e.description().to_string())));
+                let de =
+                    try!(Ipv4Addr::from_str(v).map_err(|e| E::custom(e.description().to_string())));
 
                 Ok(Ip::new(de))
             }

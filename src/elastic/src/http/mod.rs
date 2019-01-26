@@ -17,20 +17,22 @@ pub use reqwest::Url;
 pub use elastic_requests::Method;
 pub use elastic_responses::StatusCode;
 
-use std::fmt;
+use std::{
+    fmt,
+    sync::Arc,
+};
 
-use self::header::Headers;
+use self::header::HeaderMap;
 
 /**
 A request just before being sent.
 */
 #[derive(Clone)]
 pub struct HttpRequest<TBody> {
-    pub url: Url,
-    pub method: Method,
-    pub headers: Headers,
-    pub body: Option<TBody>,
-    pub(crate) _private: (),
+    pub(crate) url: Url,
+    pub(crate) method: Method,
+    pub(crate) headers: Arc<HeaderMap>,
+    pub(crate) body: Option<TBody>,
 }
 
 impl<TBody> fmt::Debug for HttpRequest<TBody> {

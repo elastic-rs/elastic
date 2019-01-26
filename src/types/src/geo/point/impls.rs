@@ -1,7 +1,23 @@
-use super::mapping::{GeoPointFieldType, GeoPointMapping};
-use super::{Coordinate, GeoPointFormat, Geometry, Point};
-use georust::{Geometry as GeoEnum, ToGeo};
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use super::mapping::{
+    GeoPointFieldType,
+    GeoPointMapping,
+};
+use super::{
+    Coordinate,
+    GeoPointFormat,
+    Geometry,
+    Point,
+};
+use georust::{
+    Geometry as GeoEnum,
+    ToGeo,
+};
+use serde::{
+    Deserialize,
+    Deserializer,
+    Serialize,
+    Serializer,
+};
 use std::borrow::Borrow;
 use std::marker::PhantomData;
 
@@ -82,7 +98,10 @@ where
     where
         I: Into<Point>,
     {
-        GeoPoint { value: point.into(), _m: PhantomData }
+        GeoPoint {
+            value: point.into(),
+            _m: PhantomData,
+        }
     }
 
     /**
@@ -169,7 +188,12 @@ where
 
 #[cfg(test)]
 mod tests {
-    use georust::{Coordinate, Geometry, Point, ToGeo};
+    use georust::{
+        Coordinate,
+        Geometry,
+        Point,
+        ToGeo,
+    };
 
     use prelude::*;
 
@@ -179,7 +203,8 @@ mod tests {
             true
         }
 
-        let point: GeoPoint<DefaultGeoPointMapping<GeoPointString>> = GeoPoint::new(Point(Coordinate { x: 1.0, y: 1.0 }));
+        let point: GeoPoint<DefaultGeoPointMapping<GeoPointString>> =
+            GeoPoint::new(Point(Coordinate { x: 1.0, y: 1.0 }));
 
         assert!(takes_custom_mapping(GeoPoint::remap(point)));
     }
@@ -188,14 +213,19 @@ mod tests {
     fn can_build_point_from_geo() {
         let coord = Coordinate { x: 1.0, y: 1.0 };
 
-        let point = GeoPoint::<DefaultGeoPointMapping<DefaultGeoPointFormat>>::new(Point(coord.clone()));
+        let point =
+            GeoPoint::<DefaultGeoPointMapping<DefaultGeoPointFormat>>::new(Point(coord.clone()));
 
         assert_eq!((coord.x, coord.y), (point.x(), point.y()));
     }
 
     #[test]
     fn can_convert_point_to_geo() {
-        let point = GeoPoint::<DefaultGeoPointMapping<DefaultGeoPointFormat>>::new(Point(Coordinate { x: 1.0, y: 1.0 }));
+        let point =
+            GeoPoint::<DefaultGeoPointMapping<DefaultGeoPointFormat>>::new(Point(Coordinate {
+                x: 1.0,
+                y: 1.0,
+            }));
         let geo = point.to_geo();
 
         match geo {

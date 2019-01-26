@@ -92,7 +92,10 @@ pub mod types {
     ///
     /// This type is a simple, standard wrapper for a HTTP request.
     pub mod request {
-        use super::{body, url};
+        use super::{
+            body,
+            url,
+        };
         use gen::helpers;
         use quote;
         use syn;
@@ -204,7 +207,9 @@ pub mod helpers {
 
     /// A standard `'a` lifetime.
     pub fn lifetime() -> syn::Lifetime {
-        syn::Lifetime { ident: syn::Ident::new("'a") }
+        syn::Lifetime {
+            ident: syn::Ident::new("'a"),
+        }
     }
 
     /// Generics with a standard `'a` lifetime.
@@ -220,7 +225,14 @@ pub mod helpers {
     /// Generics with the given lifetimes and type bounds.
     pub fn generics(lifetimes: Vec<syn::Lifetime>, types: Vec<syn::TyParam>) -> syn::Generics {
         syn::Generics {
-            lifetimes: lifetimes.into_iter().map(|l| syn::LifetimeDef { attrs: vec![], lifetime: l, bounds: vec![] }).collect(),
+            lifetimes: lifetimes
+                .into_iter()
+                .map(|l| syn::LifetimeDef {
+                    attrs: vec![],
+                    lifetime: l,
+                    bounds: vec![],
+                })
+                .collect(),
             ty_params: types,
             where_clause: syn::WhereClause::none(),
         }
@@ -248,7 +260,13 @@ pub mod helpers {
 
     /// AST for a generic type param bound.
     pub fn ty_bound(trait_ref: syn::Path) -> syn::TyParamBound {
-        syn::TyParamBound::Trait(syn::PolyTraitRef { bound_lifetimes: vec![], trait_ref: trait_ref }, syn::TraitBoundModifier::None)
+        syn::TyParamBound::Trait(
+            syn::PolyTraitRef {
+                bound_lifetimes: vec![],
+                trait_ref: trait_ref,
+            },
+            syn::TraitBoundModifier::None,
+        )
     }
 
     /// AST for a path type with lifetimes and type parameters.
@@ -274,11 +292,13 @@ pub mod helpers {
                 .into_iter()
                 .map(|(path, lifetimes, types)| syn::PathSegment {
                     ident: syn::Ident::new(sanitise_ident(path)),
-                    parameters: syn::PathParameters::AngleBracketed(syn::AngleBracketedParameterData {
-                        lifetimes: lifetimes,
-                        types: types,
-                        bindings: vec![],
-                    }),
+                    parameters: syn::PathParameters::AngleBracketed(
+                        syn::AngleBracketedParameterData {
+                            lifetimes: lifetimes,
+                            types: types,
+                            bindings: vec![],
+                        },
+                    ),
                 })
                 .collect(),
         }
@@ -286,7 +306,12 @@ pub mod helpers {
 
     /// AST for a simple method call.
     pub fn method(method: &str, args: Vec<&str>) -> syn::Expr {
-        syn::ExprKind::MethodCall(ident(method), vec![], args.iter().map(|a| path_none(a).into_expr()).collect()).into()
+        syn::ExprKind::MethodCall(
+            ident(method),
+            vec![],
+            args.iter().map(|a| path_none(a).into_expr()).collect(),
+        )
+        .into()
     }
 
     /// AST for a simple field access.

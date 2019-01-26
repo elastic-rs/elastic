@@ -36,14 +36,22 @@ impl IntegrationTest for UpdateWithDoc {
 
     // Ensure the index doesn't exist
     fn prepare(&self, client: AsyncClient) -> Box<Future<Item = (), Error = Error>> {
-        let delete_res = client.index(Doc::static_index()).delete().send().map(|_| ());
+        let delete_res = client
+            .index(Doc::static_index())
+            .delete()
+            .send()
+            .map(|_| ());
 
         Box::new(delete_res)
     }
 
     // Execute an update request against that index using a new document
     fn request(&self, client: AsyncClient) -> Box<Future<Item = Self::Response, Error = Error>> {
-        let index_res = client.document().index(doc()).params_fluent(|p| p.url_param("refresh", true)).send();
+        let index_res = client
+            .document()
+            .index(doc())
+            .params_fluent(|p| p.url_param("refresh", true))
+            .send();
 
         let update_res = client
             .document::<Doc>()
@@ -56,7 +64,11 @@ impl IntegrationTest for UpdateWithDoc {
 
         let get_res = client.document().get(ID).send();
 
-        Box::new(index_res.and_then(|_| update_res).and_then(|update| get_res.map(|get| (update, get))))
+        Box::new(
+            index_res
+                .and_then(|_| update_res)
+                .and_then(|update| get_res.map(|get| (update, get))),
+        )
     }
 
     // Ensure the response contains the expected document

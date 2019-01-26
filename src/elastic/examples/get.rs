@@ -11,7 +11,10 @@ extern crate elastic;
 extern crate env_logger;
 extern crate serde_json;
 
-use elastic::error::{ApiError, Error};
+use elastic::error::{
+    ApiError,
+    Error,
+};
 use elastic::prelude::*;
 use serde_json::Value;
 use std::error::Error as StdError;
@@ -21,7 +24,10 @@ fn run() -> Result<(), Box<StdError>> {
     // The `params` includes the base node url (http://localhost:9200).
     let client = SyncClientBuilder::new().build()?;
 
-    let res = client.document::<Value>().get_raw("typed_sample_index", "1").send();
+    let res = client
+        .document::<Value>()
+        .get_raw("typed_sample_index", "1")
+        .send();
 
     // Responses can be unpacked in various ways. In this case we check if:
     // - The call succeeded and the document was found

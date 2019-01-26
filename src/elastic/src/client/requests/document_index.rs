@@ -6,18 +6,33 @@ Builders for [index requests][docs-index].
 
 use std::borrow::Cow;
 
-use futures::{Future, Poll};
+use futures::{
+    Future,
+    Poll,
+};
 use serde::Serialize;
 use serde_json;
 
 use client::requests::endpoints::IndexRequest;
-use client::requests::params::{Id, Index, Type};
+use client::requests::params::{
+    Id,
+    Index,
+    Type,
+};
 use client::requests::raw::RawRequestInner;
 use client::requests::RequestBuilder;
 use client::responses::IndexResponse;
-use client::sender::{AsyncSender, Sender, SyncSender};
+use client::sender::{
+    AsyncSender,
+    Sender,
+    SyncSender,
+};
 use client::DocumentClient;
-use error::{self, Error, Result};
+use error::{
+    self,
+    Error,
+    Result,
+};
 use types::document::DocumentType;
 use types::DEFAULT_TYPE;
 
@@ -32,7 +47,8 @@ The `send` method will either send the request [synchronously][send-sync] or [as
 [send-async]: #send-asynchronously
 [Client.document_index]: ../../struct.Client.html#index-document
 */
-pub type IndexRequestBuilder<TSender, TDocument> = RequestBuilder<TSender, IndexRequestInner<TDocument>>;
+pub type IndexRequestBuilder<TSender, TDocument> =
+    RequestBuilder<TSender, IndexRequestInner<TDocument>>;
 
 #[doc(hidden)]
 pub struct IndexRequestInner<TDocument> {
@@ -111,7 +127,15 @@ where
         let ty = doc.ty().into_owned().into();
         let id = doc.partial_id().map(Cow::into_owned).map(Into::into);
 
-        RequestBuilder::initial(self.inner, IndexRequestInner { index: index, ty: ty, id: id, doc: doc })
+        RequestBuilder::initial(
+            self.inner,
+            IndexRequestInner {
+                index: index,
+                ty: ty,
+                id: id,
+                doc: doc,
+            },
+        )
     }
 
     /**
@@ -162,7 +186,11 @@ where
     [types-mod]: ../types/index.html
     [documents-mod]: ../types/document/index.html
     */
-    pub fn index_raw(self, index: impl Into<Index<'static>>, doc: TDocument) -> IndexRequestBuilder<TSender, TDocument>
+    pub fn index_raw(
+        self,
+        index: impl Into<Index<'static>>,
+        doc: TDocument,
+    ) -> IndexRequestBuilder<TSender, TDocument>
     where
         TDocument: Serialize,
     {
@@ -273,7 +301,9 @@ where
     pub fn send(self) -> Result<IndexResponse> {
         let req = self.inner.into_request()?;
 
-        RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req)).send()?.into_response()
+        RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
+            .send()?
+            .into_response()
     }
 }
 
@@ -338,7 +368,11 @@ where
 
         let req_future = client.sender.maybe_async(move || inner.into_request());
 
-        let res_future = req_future.and_then(move |req| RequestBuilder::new(client, params_builder, RawRequestInner::new(req)).send().and_then(|res| res.into_response()));
+        let res_future = req_future.and_then(move |req| {
+            RequestBuilder::new(client, params_builder, RawRequestInner::new(req))
+                .send()
+                .and_then(|res| res.into_response())
+        });
 
         Pending::new(res_future)
     }
@@ -354,7 +388,9 @@ impl Pending {
     where
         F: Future<Item = IndexResponse, Error = Error> + 'static,
     {
-        Pending { inner: Box::new(fut) }
+        Pending {
+            inner: Box::new(fut),
+        }
     }
 }
 
@@ -378,7 +414,12 @@ mod tests {
     fn default_request() {
         let client = SyncClientBuilder::new().build().unwrap();
 
-        let req = client.document::<TestDoc>().index(TestDoc {}).inner.into_request().unwrap();
+        let req = client
+            .document::<TestDoc>()
+            .index(TestDoc {})
+            .inner
+            .into_request()
+            .unwrap();
 
         assert_eq!("/testdoc/doc", req.url.as_ref());
         assert_eq!("{}".as_bytes().to_vec(), req.body);
@@ -388,7 +429,13 @@ mod tests {
     fn specify_index() {
         let client = SyncClientBuilder::new().build().unwrap();
 
-        let req = client.document::<TestDoc>().index(TestDoc {}).index("new-idx").inner.into_request().unwrap();
+        let req = client
+            .document::<TestDoc>()
+            .index(TestDoc {})
+            .index("new-idx")
+            .inner
+            .into_request()
+            .unwrap();
 
         assert_eq!("/new-idx/doc", req.url.as_ref());
     }
@@ -397,7 +444,13 @@ mod tests {
     fn specify_ty() {
         let client = SyncClientBuilder::new().build().unwrap();
 
-        let req = client.document::<TestDoc>().index(TestDoc {}).ty("new-ty").inner.into_request().unwrap();
+        let req = client
+            .document::<TestDoc>()
+            .index(TestDoc {})
+            .ty("new-ty")
+            .inner
+            .into_request()
+            .unwrap();
 
         assert_eq!("/testdoc/new-ty", req.url.as_ref());
     }
@@ -406,7 +459,13 @@ mod tests {
     fn specify_id() {
         let client = SyncClientBuilder::new().build().unwrap();
 
-        let req = client.document::<TestDoc>().index(TestDoc {}).id(1).inner.into_request().unwrap();
+        let req = client
+            .document::<TestDoc>()
+            .index(TestDoc {})
+            .id(1)
+            .inner
+            .into_request()
+            .unwrap();
 
         assert_eq!("/testdoc/doc/1", req.url.as_ref());
     }

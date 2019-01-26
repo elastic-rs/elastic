@@ -1,6 +1,9 @@
 use elastic::error::Error;
 use elastic::prelude::*;
-use futures::{future, Future};
+use futures::{
+    future,
+    Future,
+};
 use run_tests::IntegrationTest;
 
 #[derive(Debug, Clone, Copy)]
@@ -31,7 +34,13 @@ impl IntegrationTest for EmptyQuery {
     fn prepare(&self, client: AsyncClient) -> Box<Future<Item = (), Error = Error>> {
         let delete_res = client.index(Doc::static_index()).delete().send();
 
-        let index_reqs = future::join_all((0..10).into_iter().map(move |_| client.document().index(doc()).params_fluent(|p| p.url_param("refresh", true)).send()));
+        let index_reqs = future::join_all((0..10).into_iter().map(move |_| {
+            client
+                .document()
+                .index(doc())
+                .params_fluent(|p| p.url_param("refresh", true))
+                .send()
+        }));
 
         Box::new(delete_res.then(|_| index_reqs.map(|_| ())))
     }
@@ -45,7 +54,9 @@ impl IntegrationTest for EmptyQuery {
 
     // Ensure the response contains documents
     fn assert_ok(&self, res: &Self::Response) -> bool {
-        let correct_hits = res.hits().all(|hit| hit.index() == Doc::static_index() && hit.ty() == Doc::static_ty());
+        let correct_hits = res
+            .hits()
+            .all(|hit| hit.index() == Doc::static_index() && hit.ty() == Doc::static_ty());
         let len_greater_than_0 = res.documents().count() > 0;
 
         correct_hits && len_greater_than_0

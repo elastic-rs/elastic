@@ -1,11 +1,28 @@
-use futures::{Future, Poll, Stream};
-use futures_cpupool::CpuPool;
-use reqwest::unstable::async::Response as RawResponse;
-use serde::de::DeserializeOwned;
+use std::sync::Arc;
 
-use super::parse::{parse, IsOk};
-use error::{self, Error};
-use http::{AsyncChunk, AsyncHttpResponse, StatusCode};
+use futures::future::lazy;
+use futures::{
+    Future,
+    Poll,
+    Stream,
+};
+use reqwest::async::Response as RawResponse;
+use serde::de::DeserializeOwned;
+use tokio_threadpool::ThreadPool;
+
+use super::parse::{
+    parse,
+    IsOk,
+};
+use error::{
+    self,
+    Error,
+};
+use http::{
+    AsyncChunk,
+    AsyncHttpResponse,
+    StatusCode,
+};
 
 /**
 A builder for a response.
@@ -16,12 +33,19 @@ You can also `Read` directly from the response body.
 pub struct AsyncResponseBuilder {
     inner: RawResponse,
     status: StatusCode,
-    de_pool: Option<CpuPool>,
+    de_pool: Option<Arc<ThreadPool>>,
 }
 
-pub(crate) fn async_response(res: RawResponse, de_pool: Option<CpuPool>) -> Result<AsyncResponseBuilder, Error> {
+pub(crate) fn async_response(
+    res: RawResponse,
+    de_pool: Option<Arc<ThreadPool>>,
+) -> Result<AsyncResponseBuilder, Error> {
     let status = StatusCode::from_u16(res.status().into()).map_err(error::request)?;
-    Ok(AsyncResponseBuilder { inner: res, status, de_pool: de_pool })
+    Ok(AsyncResponseBuilder {
+        inner: res,
+        status,
+        de_pool: de_pool,
+    })
 }
 
 impl AsyncResponseBuilder {
@@ -113,12 +137,18 @@ impl AsyncResponseBuilder {
         let status = self.status;
         let body = self.inner.into_body();
 
-        let de_fn = move |body: AsyncChunk| parse().from_slice(status, body.as_ref()).map_err(move |e| error::response(status, e));
+        let de_fn = move |body: AsyncChunk| {
+            parse()
+                .from_slice(status, body.as_ref())
+                .map_err(move |e| error::response(status, e))
+        };
 
         let body_future = body.concat2().map_err(move |e| error::response(status, e));
 
         if let Some(de_pool) = self.de_pool {
-            IntoResponse::new(body_future.and_then(move |body| de_pool.spawn_fn(move || de_fn(body))))
+            IntoResponse::new(
+                body_future.and_then(move |body| de_pool.spawn_handle(lazy(move || de_fn(body)))),
+            )
         } else {
             IntoResponse::new(body_future.and_then(de_fn))
         }
@@ -135,7 +165,9 @@ impl<T> IntoResponse<T> {
     where
         F: Future<Item = T, Error = Error> + 'static,
     {
-        IntoResponse { inner: Box::new(fut) }
+        IntoResponse {
+            inner: Box::new(fut),
+        }
     }
 }
 

@@ -6,7 +6,13 @@ use http::StatusCode;
 
 use common::DocumentResult;
 use error::*;
-use parsing::{HttpResponseHead, IsOk, MaybeOkResponse, ResponseBody, Unbuffered};
+use parsing::{
+    HttpResponseHead,
+    IsOk,
+    MaybeOkResponse,
+    ResponseBody,
+    Unbuffered,
+};
 
 /** Response for a [delete document request](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-delete.html). */
 #[derive(Deserialize, Debug)]
@@ -55,9 +61,14 @@ impl DeleteResponse {
 }
 
 impl IsOk for DeleteResponse {
-    fn is_ok<B: ResponseBody>(head: HttpResponseHead, body: Unbuffered<B>) -> Result<MaybeOkResponse<B>, ParseError> {
+    fn is_ok<B: ResponseBody>(
+        head: HttpResponseHead,
+        body: Unbuffered<B>,
+    ) -> Result<MaybeOkResponse<B>, ParseError> {
         match head.status() {
-            status if status.is_success() || status == StatusCode::NOT_FOUND => Ok(MaybeOkResponse::ok(body)),
+            status if status.is_success() || status == StatusCode::NOT_FOUND => {
+                Ok(MaybeOkResponse::ok(body))
+            }
             _ => Ok(MaybeOkResponse::err(body)),
         }
     }

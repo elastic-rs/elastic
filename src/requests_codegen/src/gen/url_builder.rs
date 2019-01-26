@@ -1,6 +1,9 @@
 use super::helpers::*;
 use super::types;
-use parse::{Endpoint, PathPart};
+use parse::{
+    Endpoint,
+    PathPart,
+};
 use syn;
 
 /// Builder for match statements over a request parameters enum.
@@ -11,7 +14,10 @@ pub struct UrlParamMatchBuilder {
 
 impl UrlParamMatchBuilder {
     pub fn new(url_params: syn::Ty) -> Self {
-        UrlParamMatchBuilder { url_params: url_params, arms: vec![] }
+        UrlParamMatchBuilder {
+            url_params: url_params,
+            arms: vec![],
+        }
     }
 
     pub fn with_variant(mut self, variant: &syn::Variant, body: &syn::Block) -> Self {
@@ -48,7 +54,8 @@ impl UrlParamMatchBuilder {
             segment.parameters = syn::PathParameters::none();
         }
 
-        ty.segments.push(syn::PathSegment::from(variant.ident.to_string()));
+        ty.segments
+            .push(syn::PathSegment::from(variant.ident.to_string()));
 
         ty
     }
@@ -61,7 +68,11 @@ impl UrlParamMatchBuilder {
                 .map(|f| {
                     let path = f.ty.get_ident().into_rust_var();
 
-                    syn::Pat::Ident(syn::BindingMode::ByRef(syn::Mutability::Immutable), ident(path), None)
+                    syn::Pat::Ident(
+                        syn::BindingMode::ByRef(syn::Mutability::Immutable),
+                        ident(path),
+                        None,
+                    )
                 })
                 .collect(),
             syn::VariantData::Unit => vec![],
@@ -154,7 +165,9 @@ impl<'a> UrlReplaceBuilder<'a> {
 
         let expr = parse_expr(quote!(#url_ty ::from(#lit)));
 
-        syn::Block { stmts: vec![syn::Stmt::Expr(Box::new(expr))] }
+        syn::Block {
+            stmts: vec![syn::Stmt::Expr(Box::new(expr))],
+        }
     }
 
     /// Get the number of chars in all literal parts for the url.
@@ -174,7 +187,14 @@ impl<'a> UrlReplaceBuilder<'a> {
     fn parameter_length_exprs(url: &[PathPart<'a>]) -> Vec<syn::Expr> {
         url.iter()
             .filter_map(|p| match *p {
-                PathPart::Param(p) => Some(syn::ExprKind::MethodCall(ident("len"), vec![], vec![syn::ExprKind::Path(None, path_none(p)).into()]).into()),
+                PathPart::Param(p) => Some(
+                    syn::ExprKind::MethodCall(
+                        ident("len"),
+                        vec![],
+                        vec![syn::ExprKind::Path(None, path_none(p)).into()],
+                    )
+                    .into(),
+                ),
                 _ => None,
             })
             .collect()
@@ -189,7 +209,9 @@ impl<'a> UrlReplaceBuilder<'a> {
 
                 let first_expr = Box::new(len_iter.next().unwrap());
 
-                *(len_iter.map(|p| Box::new(p)).fold(first_expr, |acc, p| Box::new(syn::ExprKind::Binary(syn::BinOp::Add, acc, p).into())))
+                *(len_iter.map(|p| Box::new(p)).fold(first_expr, |acc, p| {
+                    Box::new(syn::ExprKind::Binary(syn::BinOp::Add, acc, p).into())
+                }))
             }
         }
     }
@@ -200,7 +222,9 @@ impl<'a> UrlReplaceBuilder<'a> {
             Box::new(
                 syn::ExprKind::Path(None, {
                     let mut method = path_none("String");
-                    method.segments.push(syn::PathSegment::from("with_capacity"));
+                    method
+                        .segments
+                        .push(syn::PathSegment::from("with_capacity"));
                     method
                 })
                 .into(),
@@ -210,7 +234,11 @@ impl<'a> UrlReplaceBuilder<'a> {
         .into();
 
         syn::Stmt::Local(Box::new(syn::Local {
-            pat: Box::new(syn::Pat::Ident(syn::BindingMode::ByValue(syn::Mutability::Mutable), url_ident.to_owned(), None)),
+            pat: Box::new(syn::Pat::Ident(
+                syn::BindingMode::ByValue(syn::Mutability::Mutable),
+                url_ident.to_owned(),
+                None,
+            )),
             ty: None,
             init: Some(Box::new(string_with_capacity)),
             attrs: vec![],
@@ -229,7 +257,9 @@ impl<'a> UrlReplaceBuilder<'a> {
                 PathPart::Param(p) => {
                     let ident = ident(p);
 
-                    syn::Stmt::Semi(Box::new(parse_expr(quote!(#url_ident.push_str(#ident.as_ref())))))
+                    syn::Stmt::Semi(Box::new(parse_expr(
+                        quote!(#url_ident.push_str(#ident.as_ref())),
+                    )))
                 }
             })
             .collect()
@@ -262,7 +292,10 @@ pub struct UrlMethodBuilder {
 
 impl UrlMethodBuilder {
     pub fn new(url_params_ty: syn::Ty, body: syn::Expr) -> Self {
-        UrlMethodBuilder { params_ty: url_params_ty, body: body }
+        UrlMethodBuilder {
+            params_ty: url_params_ty,
+            body: body,
+        }
     }
 
     pub fn build(self) -> syn::Item {
@@ -295,7 +328,9 @@ impl UrlMethodBuilder {
                     decl: fndecl,
                     generics: fngenerics,
                 },
-                syn::Block { stmts: vec![self.body.into_stmt()] },
+                syn::Block {
+                    stmts: vec![self.body.into_stmt()],
+                },
             ),
         };
 
@@ -303,7 +338,14 @@ impl UrlMethodBuilder {
             ident: ident(""),
             vis: syn::Visibility::Public,
             attrs: vec![],
-            node: syn::ItemKind::Impl(syn::Unsafety::Normal, syn::ImplPolarity::Positive, generics, None, Box::new(self.params_ty), vec![item]),
+            node: syn::ItemKind::Impl(
+                syn::Unsafety::Normal,
+                syn::ImplPolarity::Positive,
+                generics,
+                None,
+                Box::new(self.params_ty),
+                vec![item],
+            ),
         }
     }
 }
@@ -313,7 +355,12 @@ impl<'a> From<(&'a (String, Endpoint), &'a (syn::Item, syn::Ty))> for UrlMethodB
         let (&(_, ref endpoint), params) = value;
         let &(_, ref params_ty) = params;
 
-        let bodies: Vec<syn::Block> = endpoint.url.paths.iter().map(|p| UrlReplaceBuilder::new(p.split()).build()).collect();
+        let bodies: Vec<syn::Block> = endpoint
+            .url
+            .paths
+            .iter()
+            .map(|p| UrlReplaceBuilder::new(p.split()).build())
+            .collect();
 
         let match_expr = UrlParamMatchBuilder::from((params, bodies)).build();
 

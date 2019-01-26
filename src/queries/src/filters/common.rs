@@ -1,7 +1,11 @@
 use super::super::Values;
 use serde;
 use serde::de::Visitor;
-use serde::ser::{Serialize, SerializeMap, Serializer};
+use serde::ser::{
+    Serialize,
+    SerializeMap,
+    Serializer,
+};
 use std::fmt;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialOrd, PartialEq, Ord, Eq)]

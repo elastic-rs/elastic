@@ -5,7 +5,10 @@ Most of these types have a generic `TPivot` parameter.
 The idea is to use a concrete type for `TPivot` so non-overlapping blanket implementations can be added for `TMapping`.
 */
 
-use serde::ser::{Serialize, Serializer};
+use serde::ser::{
+    Serialize,
+    Serializer,
+};
 use std::borrow::Borrow;
 use std::marker::PhantomData;
 use std::ops::Deref;
@@ -57,7 +60,9 @@ where
     TMapping: FieldMapping<TPivot>,
 {
     fn default() -> Self {
-        SerializeFieldMapping { _m: Default::default() }
+        SerializeFieldMapping {
+            _m: Default::default(),
+        }
     }
 }
 

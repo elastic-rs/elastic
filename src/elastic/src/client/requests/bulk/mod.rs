@@ -9,20 +9,42 @@ use std::fmt;
 use std::marker::PhantomData;
 use std::time::Duration;
 
-use futures::{Future, Poll};
+use futures::{
+    Future,
+    Poll,
+};
 use serde::de::DeserializeOwned;
 use serde::ser::Serialize;
 
 use client::requests::endpoints::BulkRequest;
-use client::requests::params::{Index, Type};
+use client::requests::params::{
+    Index,
+    Type,
+};
 use client::requests::raw::RawRequestInner;
 use client::requests::RequestBuilder;
 use client::responses::parse::IsOk;
-use client::responses::{BulkErrorsResponse, BulkResponse};
-use client::sender::{AsyncSender, Sender, SyncSender};
-use client::{Client, RequestParams};
-use error::{self, Error};
-use http::{AsyncBody, SyncBody};
+use client::responses::{
+    BulkErrorsResponse,
+    BulkResponse,
+};
+use client::sender::{
+    AsyncSender,
+    Sender,
+    SyncSender,
+};
+use client::{
+    Client,
+    RequestParams,
+};
+use error::{
+    self,
+    Error,
+};
+use http::{
+    AsyncBody,
+    SyncBody,
+};
 
 /**
 A [bulk request][docs-bulk] builder that can be configured before sending.
@@ -38,7 +60,8 @@ Call [`Client.bulk_stream`][Client.bulk_stream] to get a `BulkRequestBuilder` th
 [Client.bulk]: ../../struct.Client.html#bulk-request
 [Client.bulk_stream]: ../../struct.Client.html#bulk-stream-request
 */
-pub type BulkRequestBuilder<TSender, TBody, TResponse> = RequestBuilder<TSender, BulkRequestInner<TBody, TResponse>>;
+pub type BulkRequestBuilder<TSender, TBody, TResponse> =
+    RequestBuilder<TSender, BulkRequestInner<TBody, TResponse>>;
 
 mod operation;
 mod stream;
@@ -215,7 +238,9 @@ impl Client<AsyncSender> {
     [documents-mod]: ../../types/document/index.html
     [docs-querystring]: https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html
     */
-    pub fn bulk_stream<TDocument>(&self) -> BulkRequestBuilder<AsyncSender, Streamed<TDocument>, BulkResponse> {
+    pub fn bulk_stream<TDocument>(
+        &self,
+    ) -> BulkRequestBuilder<AsyncSender, Streamed<TDocument>, BulkResponse> {
         RequestBuilder::initial(
             self.clone(),
             BulkRequestInner {
@@ -331,7 +356,8 @@ where
     }
 }
 
-impl<TSender, TBody, TIndex, TType, TId> BulkRequestBuilder<TSender, TBody, BulkResponse<TIndex, TType, TId>>
+impl<TSender, TBody, TIndex, TType, TId>
+    BulkRequestBuilder<TSender, TBody, BulkResponse<TIndex, TType, TId>>
 where
     TSender: Sender,
 {
@@ -341,7 +367,9 @@ where
     Elasticsearch returns a response that's proportional in size to the number of operations in the request.
     If you only care about failures then it can be more efficient to ignore the common case where operations succeed.
     */
-    pub fn errors_only(self) -> BulkRequestBuilder<TSender, TBody, BulkErrorsResponse<TIndex, TType, TId>> {
+    pub fn errors_only(
+        self,
+    ) -> BulkRequestBuilder<TSender, TBody, BulkErrorsResponse<TIndex, TType, TId>> {
         RequestBuilder::new(
             self.client,
             self.params_builder,
@@ -403,7 +431,8 @@ where
     }
 }
 
-impl<TSender, TBody, TDocument, TResponse> Extend<BulkOperation<TDocument>> for BulkRequestBuilder<TSender, TBody, TResponse>
+impl<TSender, TBody, TDocument, TResponse> Extend<BulkOperation<TDocument>>
+    for BulkRequestBuilder<TSender, TBody, TResponse>
 where
     TSender: Sender,
     TBody: BulkBody,
@@ -469,7 +498,11 @@ impl<TDocument, TResponse> BulkRequestBuilder<AsyncSender, Streamed<TDocument>, 
     > TODO
     */
     pub fn build(self) -> (BulkSender<TDocument, TResponse>, BulkReceiver<TResponse>) {
-        let body = self.inner.body.try_into_inner().expect("building a stream should be infallible");
+        let body = self
+            .inner
+            .body
+            .try_into_inner()
+            .expect("building a stream should be infallible");
 
         let body_size = body.body_size;
         let duration = body.timeout;
@@ -477,7 +510,8 @@ impl<TDocument, TResponse> BulkRequestBuilder<AsyncSender, Streamed<TDocument>, 
         let params = self.params_builder.into_value(RequestParams::default);
         let body = SenderBody::new(body_size);
         let timeout = Timeout::new(duration);
-        let req_template = SenderRequestTemplate::new(self.client, params, self.inner.index, self.inner.ty);
+        let req_template =
+            SenderRequestTemplate::new(self.client, params, self.inner.index, self.inner.ty);
 
         BulkSender::new(req_template, timeout, body)
     }
@@ -494,7 +528,9 @@ where
             (Some(index), None) => Ok(BulkRequest::for_index(index, body)),
             (Some(index), Some(ty)) => Ok(BulkRequest::for_index_ty(index, ty, body)),
             (None, None) => Ok(BulkRequest::new(body)),
-            (None, Some(_)) => Err(error::request(BulkRequestError("missing `index` parameter".to_owned()))),
+            (None, Some(_)) => Err(error::request(BulkRequestError(
+                "missing `index` parameter".to_owned(),
+            ))),
         }
     }
 }
@@ -561,7 +597,9 @@ where
     pub fn send(self) -> Result<TResponse, Error> {
         let req = self.inner.into_request()?;
 
-        RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req)).send()?.into_response()
+        RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
+            .send()?
+            .into_response()
     }
 }
 
@@ -635,7 +673,11 @@ where
 
         let req_future = client.sender.maybe_async(move || inner.into_request());
 
-        let res_future = req_future.and_then(move |req| RequestBuilder::new(client, params_builder, RawRequestInner::new(req)).send().and_then(|res| res.into_response()));
+        let res_future = req_future.and_then(move |req| {
+            RequestBuilder::new(client, params_builder, RawRequestInner::new(req))
+                .send()
+                .and_then(|res| res.into_response())
+        });
 
         Pending::new(res_future)
     }
@@ -670,7 +712,10 @@ struct WrappedBody<T> {
 
 impl<T> WrappedBody<T> {
     fn new(inner: T) -> Self {
-        WrappedBody { inner, errs: Vec::new() }
+        WrappedBody {
+            inner,
+            errs: Vec::new(),
+        }
     }
 
     fn with_inner_mut(&mut self, f: impl FnOnce(&mut T) -> Result<(), Error>) {
@@ -764,7 +809,9 @@ impl<TResponse> Pending<TResponse> {
     where
         F: Future<Item = TResponse, Error = Error> + 'static,
     {
-        Pending { inner: Box::new(fut) }
+        Pending {
+            inner: Box::new(fut),
+        }
     }
 }
 
@@ -786,7 +833,9 @@ impl<TIndex, TType, TId, TNewIndex> ChangeIndex<TNewIndex> for BulkResponse<TInd
     type WithNewIndex = BulkResponse<TNewIndex, TType, TId>;
 }
 
-impl<TIndex, TType, TId, TNewIndex> ChangeIndex<TNewIndex> for BulkErrorsResponse<TIndex, TType, TId> {
+impl<TIndex, TType, TId, TNewIndex> ChangeIndex<TNewIndex>
+    for BulkErrorsResponse<TIndex, TType, TId>
+{
     type WithNewIndex = BulkErrorsResponse<TNewIndex, TType, TId>;
 }
 
@@ -833,7 +882,12 @@ mod tests {
     fn specify_index() {
         let client = SyncClientBuilder::new().build().unwrap();
 
-        let req = client.bulk().index("test-idx").inner.into_request().unwrap();
+        let req = client
+            .bulk()
+            .index("test-idx")
+            .inner
+            .into_request()
+            .unwrap();
 
         assert_eq!("/test-idx/_bulk", req.url.as_ref());
     }
@@ -842,7 +896,13 @@ mod tests {
     fn specify_index_ty() {
         let client = SyncClientBuilder::new().build().unwrap();
 
-        let req = client.bulk().index("test-idx").ty("new-ty").inner.into_request().unwrap();
+        let req = client
+            .bulk()
+            .index("test-idx")
+            .ty("new-ty")
+            .inner
+            .into_request()
+            .unwrap();
 
         assert_eq!("/test-idx/new-ty/_bulk", req.url.as_ref());
     }

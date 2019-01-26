@@ -1,6 +1,14 @@
-use super::mapping::{GeoShapeFieldType, GeoShapeMapping};
+use super::mapping::{
+    GeoShapeFieldType,
+    GeoShapeMapping,
+};
 use geojson::Geometry;
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use serde::{
+    Deserialize,
+    Deserializer,
+    Serialize,
+    Serializer,
+};
 use std::borrow::Borrow;
 use std::marker::PhantomData;
 
@@ -63,7 +71,10 @@ where
     where
         I: Into<Geometry>,
     {
-        GeoShape { value: geo.into(), _m: PhantomData }
+        GeoShape {
+            value: geo.into(),
+            _m: PhantomData,
+        }
     }
 
     /** Change the mapping of this geo shape. */
@@ -109,7 +120,10 @@ where
 mod tests {
     use serde_json;
 
-    use geojson::{Geometry, Value};
+    use geojson::{
+        Geometry,
+        Value,
+    };
     use prelude::*;
 
     #[derive(Default)]
@@ -122,14 +136,16 @@ mod tests {
             true
         }
 
-        let point: GeoShape<DefaultGeoShapeMapping> = GeoShape::new(Geometry::new(Value::Point(vec![1.0, 1.0])));
+        let point: GeoShape<DefaultGeoShapeMapping> =
+            GeoShape::new(Geometry::new(Value::Point(vec![1.0, 1.0])));
 
         assert!(takes_custom_mapping(GeoShape::remap(point)));
     }
 
     #[test]
     fn serialise_elastic_geo_shape() {
-        let shape = GeoShape::<DefaultGeoShapeMapping>::new(Geometry::new(Value::Point(vec![1.0, 1.0])));
+        let shape =
+            GeoShape::<DefaultGeoShapeMapping>::new(Geometry::new(Value::Point(vec![1.0, 1.0])));
 
         let ser = serde_json::to_string(&shape).unwrap();
 

@@ -1,9 +1,22 @@
 use super::ChronoDateTime;
-use chrono::format::{DelayedFormat, Item};
-use chrono::{self, NaiveDate, NaiveDateTime, NaiveTime, Utc};
+use chrono::format::{
+    DelayedFormat,
+    Item,
+};
+use chrono::{
+    self,
+    NaiveDate,
+    NaiveDateTime,
+    NaiveTime,
+    Utc,
+};
 use std::borrow::Borrow;
 use std::error::Error;
-use std::fmt::{Display, Formatter, Result as FmtResult};
+use std::fmt::{
+    Display,
+    Formatter,
+    Result as FmtResult,
+};
 use std::marker::PhantomData;
 use std::ops::Deref;
 use std::vec::IntoIter;
@@ -25,7 +38,15 @@ impl DateValue {
     }
 
     /** Construct a `DateValue` from individual parts. */
-    pub fn build(year: i32, month: u32, day: u32, hour: u32, minute: u32, second: u32, milli: u32) -> Self {
+    pub fn build(
+        year: i32,
+        month: u32,
+        day: u32,
+        hour: u32,
+        minute: u32,
+        second: u32,
+        milli: u32,
+    ) -> Self {
         let ndate = NaiveDate::from_ymd(year, month, day);
         let ntime = NaiveTime::from_hms_milli(hour, minute, second, milli);
 
@@ -241,7 +262,9 @@ impl<'a> Display for FormattedDate<'a> {
 
 impl<'a> From<DelayedFormat<IntoIter<Item<'a>>>> for FormattedDate<'a> {
     fn from(formatted: DelayedFormat<IntoIter<Item<'a>>>) -> Self {
-        FormattedDate { inner: FormattedDateInner::Delayed(formatted) }
+        FormattedDate {
+            inner: FormattedDateInner::Delayed(formatted),
+        }
     }
 }
 
@@ -255,7 +278,9 @@ impl<'a> From<String> for FormattedDate<'a> {
 
 impl<'a> From<i64> for FormattedDate<'a> {
     fn from(formatted: i64) -> Self {
-        FormattedDate { inner: FormattedDateInner::Number(formatted) }
+        FormattedDate {
+            inner: FormattedDateInner::Number(formatted),
+        }
     }
 }
 
@@ -298,12 +323,16 @@ impl Error for ParseError {
 
 impl From<chrono::ParseError> for ParseError {
     fn from(err: chrono::ParseError) -> ParseError {
-        ParseError { kind: ParseErrorKind::Chrono(err) }
+        ParseError {
+            kind: ParseErrorKind::Chrono(err),
+        }
     }
 }
 
 impl From<String> for ParseError {
     fn from(err: String) -> ParseError {
-        ParseError { kind: ParseErrorKind::Other(err) }
+        ParseError {
+            kind: ParseErrorKind::Other(err),
+        }
     }
 }

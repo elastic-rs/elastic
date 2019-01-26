@@ -2,7 +2,12 @@ use std::collections::HashMap;
 use std::sync::Arc;
 
 use reqwest;
-use reqwest::header::{ContentType, Header, Headers};
+use reqwest::header::{
+    HeaderMap,
+    HeaderName,
+    HeaderValue,
+    CONTENT_TYPE,
+};
 use url::form_urlencoded::Serializer;
 
 use client::sender::NodeAddress;
@@ -19,8 +24,8 @@ When requests are load balanced between multiple Elasticsearch nodes the url to 
 #[derive(Clone)]
 pub struct PreRequestParams {
     url_params: Arc<HashMap<&'static str, String>>,
-    // We should be able to replace this with `Arc<HeadersMap>` from the `http` crate
-    headers_builder: Option<Arc<Fn(&mut Headers) + Send + Sync + 'static>>,
+    // We should be able to replace this with `Arc<HeaderMapMap>` from the `http` crate
+    headers: Arc<HeaderMap>,
 }
 
 /**
@@ -79,7 +84,12 @@ impl PreRequestParams {
     */
     pub fn new() -> Self {
         PreRequestParams {
-            headers_builder: None,
+            headers: Arc::new({
+                let mut headers = HeaderMap::new();
+                headers.insert(CONTENT_TYPE, HeaderValue::from_static("application/json"));
+
+                headers
+            }),
             url_params: Arc::new(HashMap::new()),
         }
     }
@@ -95,28 +105,8 @@ impl PreRequestParams {
     }
 
     /** Set a request header. */
-    pub fn header(self, header: impl Header + Clone) -> Self {
-        self.headers(move |h| h.set(header.clone()))
-    }
-
-    /**
-    Set a header value on the params.
-
-    Each call to `headers` will chain to the end of the last call.
-    This function allocates a new `Arc` for each call.
-    */
-    fn headers(mut self, headers_builder: impl Fn(&mut Headers) + Send + Sync + 'static) -> Self {
-        if let Some(old_headers_builder) = self.headers_builder {
-            let headers_builder = move |mut headers: &mut Headers| {
-                old_headers_builder(&mut headers);
-                headers_builder(&mut headers);
-            };
-
-            self.headers_builder = Some(Arc::new(headers_builder));
-        } else {
-            self.headers_builder = Some(Arc::new(headers_builder));
-        }
-
+    pub fn header(mut self, key: HeaderName, value: HeaderValue) -> Self {
+        Arc::make_mut(&mut self.headers).insert(key, value);
         self
     }
 }
@@ -130,7 +120,10 @@ impl Default for PreRequestParams {
 impl RequestParams {
     /** Create a container for request parameters from a base url and pre request parameters. */
     pub fn from_parts(base_url: impl Into<NodeAddress>, inner: PreRequestParams) -> Self {
-        RequestParams { base_url: base_url.into(), inner: inner }
+        RequestParams {
+            base_url: base_url.into(),
+            inner: inner,
+        }
     }
 
     /**
@@ -160,8 +153,8 @@ impl RequestParams {
     }
 
     /** Set a request header. */
-    pub fn header(mut self, header: impl Header + Clone) -> Self {
-        self.inner = self.inner.header(header);
+    pub fn header(mut self, key: HeaderName, value: HeaderValue) -> Self {
+        self.inner = self.inner.header(key, value);
         self
     }
 
@@ -170,16 +163,8 @@ impl RequestParams {
         self.base_url.as_ref()
     }
 
-    /** Create a new `Headers` structure, and thread it through the configuration functions. */
-    pub fn get_headers(&self) -> Headers {
-        let mut headers = Headers::new();
-        headers.set(ContentType::json());
-
-        if let Some(ref headers_builder) = self.inner.headers_builder {
-            headers_builder(&mut headers);
-        }
-
-        headers
+    pub(crate) fn get_headers(&self) -> Arc<HeaderMap> {
+        self.inner.headers.clone()
     }
 
     /**
@@ -191,7 +176,9 @@ impl RequestParams {
     */
     pub fn get_url_qry(&self) -> (usize, Option<String>) {
         if self.inner.url_params.len() > 0 {
-            let qry: String = Serializer::for_suffix(String::from("?"), 1).extend_pairs(self.inner.url_params.iter()).finish();
+            let qry: String = Serializer::for_suffix(String::from("?"), 1)
+                .extend_pairs(self.inner.url_params.iter())
+                .finish();
 
             (qry.len(), Some(qry))
         } else {
@@ -228,21 +215,30 @@ pub(crate) fn build_url<'a>(req_url: &str, params: &RequestParams) -> String {
 
 pub(crate) fn build_reqwest_method(method: Method) -> reqwest::Method {
     match method {
-        Method::GET => reqwest::Method::Get,
-        Method::POST => reqwest::Method::Post,
-        Method::HEAD => reqwest::Method::Head,
-        Method::DELETE => reqwest::Method::Delete,
-        Method::PUT => reqwest::Method::Put,
-        Method::PATCH => reqwest::Method::Patch,
-        method => reqwest::Method::Extension(method.as_str().to_owned()),
+        Method::GET => reqwest::Method::GET,
+        Method::POST => reqwest::Method::POST,
+        Method::HEAD => reqwest::Method::HEAD,
+        Method::DELETE => reqwest::Method::DELETE,
+        Method::PUT => reqwest::Method::PUT,
+        Method::PATCH => reqwest::Method::PATCH,
+        method => {
+            reqwest::Method::from_bytes(method.as_str().as_bytes()).expect("invalid HTTP method")
+        }
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use http::header::{Authorization, ContentType, Referer};
-    use tests::{assert_send, assert_sync};
+    use http::header::{
+        AUTHORIZATION,
+        CONTENT_TYPE,
+        REFERER,
+    };
+    use tests::{
+        assert_send,
+        assert_sync,
+    };
 
     #[test]
     fn assert_send_sync() {
@@ -259,21 +255,39 @@ mod tests {
 
         let headers = req.get_headers();
 
-        assert_eq!(Some(&ContentType::json()), headers.get::<ContentType>());
+        assert_eq!(
+            Some("application/json"),
+            headers
+                .get(CONTENT_TYPE)
+                .map(|header| header.to_str().unwrap())
+        );
     }
 
     #[test]
     fn set_multiple_headers() {
         let req = RequestParams::new(DEFAULT_NODE_ADDRESS)
-            .header(Referer::new("/not-the-value"))
-            .header(Referer::new("/People.html#tim"))
-            .header(Authorization("let me in".to_owned()));
+            .header(REFERER, HeaderValue::from_str("/not-the-value").unwrap())
+            .header(REFERER, HeaderValue::from_str("/People.html#tim").unwrap())
+            .header(AUTHORIZATION, HeaderValue::from_str("let me in").unwrap());
 
         let headers = req.get_headers();
 
-        assert_eq!(Some(&ContentType::json()), headers.get::<ContentType>());
-        assert_eq!(Some(&Referer::new("/People.html#tim")), headers.get::<Referer>());
-        assert_eq!(Some(&Authorization("let me in".to_owned())), headers.get::<Authorization<String>>());
+        assert_eq!(
+            Some("application/json"),
+            headers
+                .get(CONTENT_TYPE)
+                .map(|header| header.to_str().unwrap())
+        );
+        assert_eq!(
+            Some("/People.html#tim"),
+            headers.get(REFERER).map(|header| header.to_str().unwrap())
+        );
+        assert_eq!(
+            Some("let me in"),
+            headers
+                .get(AUTHORIZATION)
+                .map(|header| header.to_str().unwrap())
+        );
     }
 
     #[test]
@@ -292,7 +306,9 @@ mod tests {
 
     #[test]
     fn request_params_can_set_url_query() {
-        let req = RequestParams::new(DEFAULT_NODE_ADDRESS).url_param("pretty", false).url_param("pretty", true);
+        let req = RequestParams::new(DEFAULT_NODE_ADDRESS)
+            .url_param("pretty", false)
+            .url_param("pretty", true);
 
         assert_eq!((12, Some(String::from("?pretty=true"))), req.get_url_qry());
     }

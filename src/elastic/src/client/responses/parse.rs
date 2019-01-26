@@ -90,4 +90,13 @@ See the [`IsOk`][IsOk] trait for more details.
 pub(crate) use elastic_responses::parse;
 
 pub use elastic_responses::error::ParseError;
-pub use elastic_responses::parsing::{Buffered, HttpResponseHead, IsOk, IsOkOnSuccess, MaybeBufferedResponse, MaybeOkResponse, ResponseBody, Unbuffered};
+pub use elastic_responses::parsing::{
+    Buffered,
+    HttpResponseHead,
+    IsOk,
+    IsOkOnSuccess,
+    MaybeBufferedResponse,
+    MaybeOkResponse,
+    ResponseBody,
+    Unbuffered,
+};

@@ -7,7 +7,10 @@ use test::Bencher;
 
 #[bench]
 fn parse_string(b: &mut Bencher) {
-    b.iter(|| serde_json::from_str::<Date<DefaultDateMapping<BasicDateTime>>>("\"20150620T134501.034Z\"").unwrap());
+    b.iter(|| {
+        serde_json::from_str::<Date<DefaultDateMapping<BasicDateTime>>>("\"20150620T134501.034Z\"")
+            .unwrap()
+    });
 }
 
 #[bench]
@@ -19,7 +22,9 @@ fn fmt_string(b: &mut Bencher) {
 
 #[bench]
 fn parse_epoch(b: &mut Bencher) {
-    b.iter(|| serde_json::from_str::<Date<DefaultDateMapping<EpochMillis>>>("\"1435935302478\"").unwrap());
+    b.iter(|| {
+        serde_json::from_str::<Date<DefaultDateMapping<EpochMillis>>>("\"1435935302478\"").unwrap()
+    });
 }
 
 #[bench]

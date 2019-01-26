@@ -1,6 +1,18 @@
-use super::mapping::{BooleanFieldType, BooleanMapping, DefaultBooleanMapping};
-use serde::de::{Error, Visitor};
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use super::mapping::{
+    BooleanFieldType,
+    BooleanMapping,
+    DefaultBooleanMapping,
+};
+use serde::de::{
+    Error,
+    Visitor,
+};
+use serde::{
+    Deserialize,
+    Deserializer,
+    Serialize,
+    Serializer,
+};
 use std::borrow::Borrow;
 use std::marker::PhantomData;
 
@@ -49,7 +61,10 @@ where
     where
         I: Into<bool>,
     {
-        Boolean { value: boolean.into(), _m: PhantomData }
+        Boolean {
+            value: boolean.into(),
+            _m: PhantomData,
+        }
     }
 
     /**

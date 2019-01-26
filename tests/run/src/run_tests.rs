@@ -1,8 +1,15 @@
 use std::fmt::Debug;
 
-use elastic::error::{ApiError, Error};
+use elastic::error::{
+    ApiError,
+    Error,
+};
 use elastic::prelude::*;
-use futures::{stream, Future, Stream};
+use futures::{
+    stream,
+    Future,
+    Stream,
+};
 use term_painter::Color::*;
 use term_painter::ToStyle;
 
@@ -84,7 +91,10 @@ where
     Box::new(fut)
 }
 
-pub fn call(client: AsyncClient, max_concurrent_tests: usize) -> Box<Future<Item = Vec<TestResult>, Error = ()>> {
+pub fn call(
+    client: AsyncClient,
+    max_concurrent_tests: usize,
+) -> Box<Future<Item = Vec<TestResult>, Error = ()>> {
     use bulk;
     use document;
     use index;
@@ -95,9 +105,15 @@ pub fn call(client: AsyncClient, max_concurrent_tests: usize) -> Box<Future<Item
     let index_tests = index::tests().into_iter();
     let bulk_tests = bulk::tests().into_iter();
 
-    let all_tests = document_tests.chain(search_tests).chain(index_tests).chain(bulk_tests).map(move |t| t(client.clone()));
+    let all_tests = document_tests
+        .chain(search_tests)
+        .chain(index_tests)
+        .chain(bulk_tests)
+        .map(move |t| t(client.clone()));
 
-    let test_stream = stream::futures_unordered(all_tests).map(|r| Ok(r)).buffer_unordered(max_concurrent_tests);
+    let test_stream = stream::futures_unordered(all_tests)
+        .map(|r| Ok(r))
+        .buffer_unordered(max_concurrent_tests);
 
     Box::new(test_stream.collect())
 }

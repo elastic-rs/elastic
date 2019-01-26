@@ -15,7 +15,12 @@ extern crate tokio_core;
 extern crate serde_json;
 
 use elastic::prelude::*;
-use futures::{stream, Future, Sink, Stream};
+use futures::{
+    stream,
+    Future,
+    Sink,
+    Stream,
+};
 use std::error::Error;
 use std::time::Duration;
 use tokio_core::reactor::Core;
@@ -28,7 +33,13 @@ fn run() -> Result<(), Box<Error>> {
 
     // Get a stream for bulk operations
     // Individual operations can be sent to the stream and will be buffered to Elasticsearch
-    let (bulk_stream, bulk_responses) = client.bulk_stream().index("bulk_idx").ty("bulk_ty").timeout(Duration::from_secs(5)).body_size_bytes(1024).build();
+    let (bulk_stream, bulk_responses) = client
+        .bulk_stream()
+        .index("bulk_idx")
+        .ty("bulk_ty")
+        .timeout(Duration::from_secs(5))
+        .body_size_bytes(1024)
+        .build();
 
     let ops = (0..1000).into_iter().map(|i| {
         bulk_raw()

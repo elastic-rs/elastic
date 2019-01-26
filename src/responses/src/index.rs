@@ -2,7 +2,10 @@
 Response types for an [index document request](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html).
 */
 
-use common::{DocumentResult, Shards};
+use common::{
+    DocumentResult,
+    Shards,
+};
 use parsing::IsOkOnSuccess;
 
 /** Response for an [index document request](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html). */

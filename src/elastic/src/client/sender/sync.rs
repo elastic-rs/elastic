@@ -1,15 +1,42 @@
 use fluent_builder::FluentBuilder;
-use reqwest::{Client as SyncHttpClient, ClientBuilder as SyncHttpClientBuilder, RequestBuilder as SyncHttpRequestBuilder};
+use reqwest::{
+    Client as SyncHttpClient,
+    ClientBuilder as SyncHttpClientBuilder,
+    RequestBuilder as SyncHttpRequestBuilder,
+};
 use std::error::Error as StdError;
 use std::sync::Arc;
 
 use client::requests::Endpoint;
-use client::responses::{sync_response, SyncResponseBuilder};
+use client::responses::{
+    sync_response,
+    SyncResponseBuilder,
+};
 use client::sender::sniffed_nodes::SniffedNodesBuilder;
-use client::sender::{build_reqwest_method, build_url, NextParams, NodeAddress, NodeAddresses, NodeAddressesBuilder, NodeAddressesInner, PreRequestParams, RequestParams, SendableRequest, SendableRequestParams, Sender};
+use client::sender::{
+    build_reqwest_method,
+    build_url,
+    NextParams,
+    NodeAddress,
+    NodeAddresses,
+    NodeAddressesBuilder,
+    NodeAddressesInner,
+    PreRequestParams,
+    RequestParams,
+    SendableRequest,
+    SendableRequestParams,
+    Sender,
+};
 use client::Client;
-use error::{self, Error};
-use http::{SyncBody, SyncHttpRequest, Url};
+use error::{
+    self,
+    Error,
+};
+use http::{
+    SyncBody,
+    SyncHttpRequest,
+    Url,
+};
 use private;
 
 /**
@@ -45,7 +72,9 @@ pub type SyncClient = Client<SyncSender>;
 #[derive(Clone)]
 pub struct SyncSender {
     pub(in client) http: SyncHttpClient,
-    pre_send: Option<Arc<Fn(&mut SyncHttpRequest) -> Result<(), Box<StdError + Send + Sync>> + Send + Sync>>,
+    pre_send: Option<
+        Arc<Fn(&mut SyncHttpRequest) -> Result<(), Box<StdError + Send + Sync>> + Send + Sync>,
+    >,
 }
 
 impl private::Sealed for SyncSender {}
@@ -55,7 +84,10 @@ impl Sender for SyncSender {
     type Response = Result<SyncResponseBuilder, Error>;
     type Params = Params;
 
-    fn send<TEndpoint, TParams, TBody>(&self, request: SendableRequest<TEndpoint, TParams, TBody>) -> Self::Response
+    fn send<TEndpoint, TParams, TBody>(
+        &self,
+        request: SendableRequest<TEndpoint, TParams, TBody>,
+    ) -> Self::Response
     where
         TEndpoint: Into<Endpoint<'static, TBody>>,
         TBody: Into<Self::Body> + 'static,
@@ -65,35 +97,63 @@ impl Sender for SyncSender {
         let params = request.params;
         let endpoint = request.inner.into();
 
-        info!("Elasticsearch Request: correlation_id: '{}', path: '{}'", correlation_id, endpoint.url.as_ref());
+        info!(
+            "Elasticsearch Request: correlation_id: '{}', path: '{}'",
+            correlation_id,
+            endpoint.url.as_ref()
+        );
 
         let params = match params {
             SendableRequestParams::Value(params) => params,
             SendableRequestParams::Builder { params, builder } => {
-                let params = params.into().inner.log_err(|e| error!("Elasticsearch Node Selection: correlation_id: '{}', error: '{:?}'", correlation_id, e))?;
+                let params = params.into().inner.log_err(|e| {
+                    error!(
+                        "Elasticsearch Node Selection: correlation_id: '{}', error: '{:?}'",
+                        correlation_id, e
+                    )
+                })?;
 
                 builder.into_value(move || params)
             }
         };
 
-        let mut req = build_req(endpoint, params).log_err(|e| error!("Elasticsearch Request: correlation_id: '{}', error: '{:?}'", correlation_id, e))?;
+        let mut req = build_req(endpoint, params).log_err(|e| {
+            error!(
+                "Elasticsearch Request: correlation_id: '{}', error: '{:?}'",
+                correlation_id, e
+            )
+        })?;
 
         if let Some(ref pre_send) = self.pre_send {
             pre_send(&mut req)
                 .map_err(error::wrapped)
                 .map_err(error::request)
-                .log_err(|e| error!("Elasticsearch Request Pre-send: correlation_id: '{}', error: '{:?}'", correlation_id, e))?;
+                .log_err(|e| {
+                    error!(
+                        "Elasticsearch Request Pre-send: correlation_id: '{}', error: '{:?}'",
+                        correlation_id, e
+                    )
+                })?;
         }
 
-        let req = build_reqwest(&self.http, req).build().map_err(error::request)?;
+        let req = build_reqwest(&self.http, req)
+            .build()
+            .map_err(error::request)?;
 
         let res = match self.http.execute(req).map_err(error::request) {
             Ok(res) => {
-                info!("Elasticsearch Response: correlation_id: '{}', status: '{}'", correlation_id, res.status());
+                info!(
+                    "Elasticsearch Response: correlation_id: '{}', status: '{}'",
+                    correlation_id,
+                    res.status()
+                );
                 res
             }
             Err(e) => {
-                error!("Elasticsearch Response: correlation_id: '{}', error: '{:?}'", correlation_id, e);
+                error!(
+                    "Elasticsearch Response: correlation_id: '{}', error: '{:?}'",
+                    correlation_id, e
+                );
                 Err(e)?
             }
         };
@@ -131,13 +191,15 @@ impl From<RequestParams> for Params {
 }
 
 /** Build an Elasticsearch request from an endpoint. */
-fn build_req(endpoint: Endpoint<impl Into<SyncBody>>, params: RequestParams) -> Result<SyncHttpRequest, Error> {
+fn build_req(
+    endpoint: Endpoint<impl Into<SyncBody>>,
+    params: RequestParams,
+) -> Result<SyncHttpRequest, Error> {
     let endpoint = SyncHttpRequest {
         url: Url::parse(&build_url(&endpoint.url, &params)).map_err(error::request)?,
         method: endpoint.method,
         headers: params.get_headers(),
         body: endpoint.body.map(|body| body.into()),
-        _private: (),
     };
 
     Ok(endpoint)
@@ -145,16 +207,22 @@ fn build_req(endpoint: Endpoint<impl Into<SyncBody>>, params: RequestParams) -> 
 
 /** Build a synchronous `reqwest::RequestBuilder` from an Elasticsearch request. */
 fn build_reqwest(client: &SyncHttpClient, req: SyncHttpRequest) -> SyncHttpRequestBuilder {
-    let SyncHttpRequest { url, method, headers, body, .. } = req;
+    let SyncHttpRequest {
+        url,
+        method,
+        headers,
+        body,
+        ..
+    } = req;
 
     let method = build_reqwest_method(method);
 
     let mut req = client.request(method, url);
     {
-        req.headers(headers);
+        req = req.headers((&*headers).clone());
 
         if let Some(body) = body {
-            req.body(body.into_inner());
+            req = req.body(body.into_inner());
         }
     }
 
@@ -166,7 +234,14 @@ pub struct SyncClientBuilder {
     http: Option<SyncHttpClient>,
     nodes: NodeAddressesBuilder,
     params: FluentBuilder<PreRequestParams>,
-    pre_send: Option<Arc<Fn(&mut SyncHttpRequest) -> Result<(), Box<StdError + Send + Sync>> + Send + Sync + 'static>>,
+    pre_send: Option<
+        Arc<
+            Fn(&mut SyncHttpRequest) -> Result<(), Box<StdError + Send + Sync>>
+                + Send
+                + Sync
+                + 'static,
+        >,
+    >,
 }
 
 impl Default for SyncClientBuilder {
@@ -261,7 +336,11 @@ impl SyncClientBuilder {
             .wait(Duration::from_secs(90)));
     ```
     */
-    pub fn sniff_nodes_fluent(mut self, address: impl Into<NodeAddress>, builder: impl Fn(SniffedNodesBuilder) -> SniffedNodesBuilder + 'static) -> Self {
+    pub fn sniff_nodes_fluent(
+        mut self,
+        address: impl Into<NodeAddress>,
+        builder: impl Fn(SniffedNodesBuilder) -> SniffedNodesBuilder + 'static,
+    ) -> Self {
         self.nodes = self.nodes.sniff_nodes_fluent(address.into(), builder);
 
         self
@@ -292,7 +371,10 @@ impl SyncClientBuilder {
             .header(Authorization("let me in".to_owned())));
     ```
     */
-    pub fn params_fluent(mut self, builder: impl Fn(PreRequestParams) -> PreRequestParams + 'static) -> Self {
+    pub fn params_fluent(
+        mut self,
+        builder: impl Fn(PreRequestParams) -> PreRequestParams + 'static,
+    ) -> Self {
         self.params = self.params.fluent(builder).boxed();
 
         self
@@ -343,7 +425,13 @@ impl SyncClientBuilder {
     such as request singing.
     Prefer the `params` method on the client or individual requests where possible.
     */
-    pub fn pre_send_raw(mut self, pre_send: impl Fn(&mut SyncHttpRequest) -> Result<(), Box<StdError + Send + Sync>> + Send + Sync + 'static) -> Self {
+    pub fn pre_send_raw(
+        mut self,
+        pre_send: impl Fn(&mut SyncHttpRequest) -> Result<(), Box<StdError + Send + Sync>>
+            + Send
+            + Sync
+            + 'static,
+    ) -> Self {
         self.pre_send = Some(Arc::new(pre_send));
 
         self
@@ -355,14 +443,24 @@ impl SyncClientBuilder {
     [SyncClient]: type.SyncClient.html
     */
     pub fn build(self) -> Result<SyncClient, Error> {
-        let http = self.http.map(Ok).unwrap_or_else(|| SyncHttpClientBuilder::new().build()).map_err(error::build)?;
+        let http = self
+            .http
+            .map(Ok)
+            .unwrap_or_else(|| SyncHttpClientBuilder::new().build())
+            .map_err(error::build)?;
 
         let params = self.params.into_value(|| PreRequestParams::default());
-        let sender = SyncSender { http, pre_send: self.pre_send };
+        let sender = SyncSender {
+            http,
+            pre_send: self.pre_send,
+        };
 
         let addresses = self.nodes.build(params, sender.clone());
 
-        Ok(SyncClient { sender: sender, addresses: addresses })
+        Ok(SyncClient {
+            sender: sender,
+            addresses: addresses,
+        })
     }
 }
 

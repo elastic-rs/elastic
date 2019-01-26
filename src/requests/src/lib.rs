@@ -123,7 +123,12 @@ mod tests {
 
     fn do_something_with_request<'a, I: Into<Endpoint<'a, B>>, B: AsRef<[u8]>>(_: I) {}
 
-    fn do_something_with_static_request<I: Into<Endpoint<'static, B>>, B: 'static + AsRef<[u8]> + Send>(req: I) -> thread::JoinHandle<()> {
+    fn do_something_with_static_request<
+        I: Into<Endpoint<'static, B>>,
+        B: 'static + AsRef<[u8]> + Send,
+    >(
+        req: I,
+    ) -> thread::JoinHandle<()> {
         let req = req.into();
         thread::spawn(move || {
             assert_eq!("/test_index/test_ty/_search", *req.url);
@@ -132,7 +137,8 @@ mod tests {
 
     #[test]
     fn it_works() {
-        let req = SearchRequest::for_index_ty("test_index", "test_ty", "{'query': { 'match_all': {}}}");
+        let req =
+            SearchRequest::for_index_ty("test_index", "test_ty", "{'query': { 'match_all': {}}}");
 
         assert_eq!("/test_index/test_ty/_search", *req.url);
 
@@ -155,7 +161,14 @@ mod tests {
 
     #[test]
     fn id_from_number() {
-        let ids = vec![Id::from(1i32), Id::from(1u32), Id::from(1i64), Id::from(1u64), Id::from(1isize), Id::from(1usize)];
+        let ids = vec![
+            Id::from(1i32),
+            Id::from(1u32),
+            Id::from(1i64),
+            Id::from(1u64),
+            Id::from(1isize),
+            Id::from(1usize),
+        ];
 
         for id in ids {
             assert_eq!("1", &*id);

@@ -1,10 +1,21 @@
 use serde::ser::SerializeStruct;
-use serde::{Serialize, Serializer};
-use std::collections::{BTreeMap, HashMap};
+use serde::{
+    Serialize,
+    Serializer,
+};
+use std::collections::{
+    BTreeMap,
+    HashMap,
+};
 use std::hash::Hash;
 use std::marker::PhantomData;
 
-use super::field::{FieldMapping, FieldType, SerializeFieldMapping, StaticSerialize};
+use super::field::{
+    FieldMapping,
+    FieldType,
+    SerializeFieldMapping,
+    StaticSerialize,
+};
 
 pub trait DefaultFieldType {}
 
@@ -62,7 +73,8 @@ where
     }
 }
 
-impl<TMapping, TPivot> StaticSerialize for SerializeFieldMapping<WrappedMapping<TMapping, TPivot>, TPivot>
+impl<TMapping, TPivot> StaticSerialize
+    for SerializeFieldMapping<WrappedMapping<TMapping, TPivot>, TPivot>
 where
     TMapping: FieldMapping<TPivot>,
 {

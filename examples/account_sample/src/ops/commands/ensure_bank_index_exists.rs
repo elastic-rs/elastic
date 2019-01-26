@@ -13,14 +13,21 @@ pub trait EnsureBankIndexExists {
 
 impl EnsureBankIndexExists for Client {
     fn ensure_bank_index_exists(&self) -> Result<(), EnsureBankIndexExistsError> {
-        let exists = self.io.request(IndicesExistsRequest::for_index(model::index::name())).send()?;
+        let exists = self
+            .io
+            .request(IndicesExistsRequest::for_index(model::index::name()))
+            .send()?;
 
         match exists.status() {
             // Success, do nothing
             StatusCode::OK => (),
             // Not found, create the index
             StatusCode::NOT_FOUND => {
-                self.io.index(model::index::name()).create().body(model::index::body().to_string()).send()?;
+                self.io
+                    .index(model::index::name())
+                    .create()
+                    .body(model::index::body().to_string())
+                    .send()?;
             }
             // Some other response, deserialise
             _ => {

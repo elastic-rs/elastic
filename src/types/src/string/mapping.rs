@@ -1,9 +1,15 @@
 /*! Common mapping for the Elasticsearch `string` types. */
 
 use super::keyword::mapping::KeywordFieldMapping;
-use super::text::mapping::{TextFieldMapping, TextMapping};
+use super::text::mapping::{
+    TextFieldMapping,
+    TextMapping,
+};
 use serde::ser::SerializeStruct;
-use serde::{Serialize, Serializer};
+use serde::{
+    Serialize,
+    Serializer,
+};
 use std::collections::BTreeMap;
 
 /** Default mapping for `String`. */
@@ -13,7 +19,10 @@ impl TextMapping for DefaultStringMapping {
     fn fields() -> Option<BTreeMap<&'static str, StringField>> {
         let mut fields = BTreeMap::new();
 
-        let keyword = KeywordFieldMapping { ignore_above: Some(256), ..Default::default() };
+        let keyword = KeywordFieldMapping {
+            ignore_above: Some(256),
+            ..Default::default()
+        };
 
         fields.insert("keyword", StringField::Keyword(keyword));
 
@@ -199,7 +208,11 @@ impl Serialize for ElasticCompletionFieldMapping {
         ser_field!(state, "search_analyzer", self.search_analyzer);
         ser_field!(state, "payloads", self.payloads);
         ser_field!(state, "preserve_separators", self.preserve_separators);
-        ser_field!(state, "preserve_position_increments", self.preserve_position_increments);
+        ser_field!(
+            state,
+            "preserve_position_increments",
+            self.preserve_position_increments
+        );
         ser_field!(state, "max_input_length", self.max_input_length);
 
         state.end()
@@ -263,15 +276,24 @@ mod tests {
                 }),
             );
 
-            fields.insert("count", StringField::TokenCount(ElasticTokenCountFieldMapping::default()));
+            fields.insert(
+                "count",
+                StringField::TokenCount(ElasticTokenCountFieldMapping::default()),
+            );
 
-            fields.insert("comp", StringField::Completion(ElasticCompletionFieldMapping::default()));
+            fields.insert(
+                "comp",
+                StringField::Completion(ElasticCompletionFieldMapping::default()),
+            );
 
             Some(fields)
         }
 
         fn fielddata_frequency_filter() -> Option<FieldDataFrequencyFilter> {
-            Some(FieldDataFrequencyFilter { min: Some(0.0), ..Default::default() })
+            Some(FieldDataFrequencyFilter {
+                min: Some(0.0),
+                ..Default::default()
+            })
         }
 
         fn analyzer() -> Option<&'static str> {
@@ -349,9 +371,15 @@ mod tests {
                 }),
             );
 
-            fields.insert("count", StringField::TokenCount(ElasticTokenCountFieldMapping::default()));
+            fields.insert(
+                "count",
+                StringField::TokenCount(ElasticTokenCountFieldMapping::default()),
+            );
 
-            fields.insert("comp", StringField::Completion(ElasticCompletionFieldMapping::default()));
+            fields.insert(
+                "comp",
+                StringField::Completion(ElasticCompletionFieldMapping::default()),
+            );
 
             Some(fields)
         }
@@ -546,10 +574,15 @@ mod tests {
 
     #[test]
     fn serialise_mapping_index_options() {
-        let io_opts: Vec<String> = vec![IndexOptions::Docs, IndexOptions::Freqs, IndexOptions::Positions, IndexOptions::Offsets]
-            .iter()
-            .map(|i| serde_json::to_string(i).unwrap())
-            .collect();
+        let io_opts: Vec<String> = vec![
+            IndexOptions::Docs,
+            IndexOptions::Freqs,
+            IndexOptions::Positions,
+            IndexOptions::Offsets,
+        ]
+        .iter()
+        .map(|i| serde_json::to_string(i).unwrap())
+        .collect();
 
         let expected_opts = vec![r#""docs""#, r#""freqs""#, r#""positions""#, r#""offsets""#];
 
@@ -566,12 +599,24 @@ mod tests {
 
     #[test]
     fn serialise_mapping_terms_vector() {
-        let v_opts: Vec<String> = vec![TermVector::No, TermVector::Yes, TermVector::WithPositions, TermVector::WithOffsets, TermVector::WithPositionsOffsets]
-            .iter()
-            .map(|i| serde_json::to_string(i).unwrap())
-            .collect();
+        let v_opts: Vec<String> = vec![
+            TermVector::No,
+            TermVector::Yes,
+            TermVector::WithPositions,
+            TermVector::WithOffsets,
+            TermVector::WithPositionsOffsets,
+        ]
+        .iter()
+        .map(|i| serde_json::to_string(i).unwrap())
+        .collect();
 
-        let expected_opts = vec![r#""no""#, r#""yes""#, r#""with_positions""#, r#""with_offsets""#, r#""with_positions_offsets""#];
+        let expected_opts = vec![
+            r#""no""#,
+            r#""yes""#,
+            r#""with_positions""#,
+            r#""with_offsets""#,
+            r#""with_positions_offsets""#,
+        ];
 
         let mut success = true;
         for i in 0..v_opts.len() {
@@ -622,7 +667,10 @@ mod tests {
     #[test]
     fn serialise_mapping_text_field() {
         let mapping = StringField::Text(TextFieldMapping {
-            fielddata_frequency_filter: Some(FieldDataFrequencyFilter { min: Some(0.0), ..Default::default() }),
+            fielddata_frequency_filter: Some(FieldDataFrequencyFilter {
+                min: Some(0.0),
+                ..Default::default()
+            }),
             analyzer: Some("my_analyzer"),
             eager_global_ordinals: Some(true),
             fielddata: Some(false),

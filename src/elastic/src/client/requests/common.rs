@@ -2,8 +2,14 @@
 Types that are common between requests.
 */
 
-use serde::ser::{Serialize, Serializer};
-use serde_json::{Map, Value};
+use serde::ser::{
+    Serialize,
+    Serializer,
+};
+use serde_json::{
+    Map,
+    Value,
+};
 
 /** Update an indexed document using a new document. */
 #[derive(Serialize)]
@@ -13,11 +19,15 @@ pub struct Doc<TDocument> {
 
 impl<TDocument> Doc<TDocument> {
     pub(crate) fn empty() -> Self {
-        Doc { doc: DocInner { inner: None } }
+        Doc {
+            doc: DocInner { inner: None },
+        }
     }
 
     pub(crate) fn value(doc: TDocument) -> Self {
-        Doc { doc: DocInner { inner: Some(doc) } }
+        Doc {
+            doc: DocInner { inner: Some(doc) },
+        }
     }
 }
 

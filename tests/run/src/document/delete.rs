@@ -31,18 +31,30 @@ impl IntegrationTest for Delete {
 
     // Ensure the index doesn't exist
     fn prepare(&self, client: AsyncClient) -> Box<Future<Item = (), Error = Error>> {
-        let delete_res = client.index(Doc::static_index()).delete().send().map(|_| ());
+        let delete_res = client
+            .index(Doc::static_index())
+            .delete()
+            .send()
+            .map(|_| ());
 
         Box::new(delete_res)
     }
 
     // Index a document, get it, delete it, then try get it again
     fn request(&self, client: AsyncClient) -> Box<Future<Item = Self::Response, Error = Error>> {
-        let index_res = client.document().index(doc()).params_fluent(|p| p.url_param("refresh", true)).send();
+        let index_res = client
+            .document()
+            .index(doc())
+            .params_fluent(|p| p.url_param("refresh", true))
+            .send();
 
         let pre_delete_res = client.document().get(ID).send();
 
-        let delete_res = client.document::<Doc>().delete(ID).params_fluent(|p| p.url_param("refresh", true)).send();
+        let delete_res = client
+            .document::<Doc>()
+            .delete(ID)
+            .params_fluent(|p| p.url_param("refresh", true))
+            .send();
 
         let post_delete_res = client.document().get(ID).send();
 

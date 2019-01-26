@@ -4,18 +4,38 @@ Builders for [search requests][docs-search].
 [docs-search]: https://www.elastic.co/guide/en/elasticsearch/reference/current/search-search.html
 */
 
-use futures::{Future, Poll};
+use futures::{
+    Future,
+    Poll,
+};
 use serde::de::DeserializeOwned;
 use std::marker::PhantomData;
 
 use client::requests::endpoints::SearchRequest;
-use client::requests::params::{Index, Type};
+use client::requests::params::{
+    Index,
+    Type,
+};
 use client::requests::raw::RawRequestInner;
-use client::requests::{empty_body, DefaultBody, RequestBuilder};
+use client::requests::{
+    empty_body,
+    DefaultBody,
+    RequestBuilder,
+};
 use client::responses::SearchResponse;
-use client::sender::{AsyncSender, Sender, SyncSender};
-use client::{Client, DocumentClient};
-use error::{Error, Result};
+use client::sender::{
+    AsyncSender,
+    Sender,
+    SyncSender,
+};
+use client::{
+    Client,
+    DocumentClient,
+};
+use error::{
+    Error,
+    Result,
+};
 use types::document::DocumentType;
 
 /**
@@ -29,7 +49,8 @@ The `send` method will either send the request [synchronously][send-sync] or [as
 [send-async]: #send-asynchronously
 [Client.search]: ../../struct.Client.html#search-request
 */
-pub type SearchRequestBuilder<TSender, TDocument, TBody> = RequestBuilder<TSender, SearchRequestInner<TDocument, TBody>>;
+pub type SearchRequestBuilder<TSender, TDocument, TBody> =
+    RequestBuilder<TSender, SearchRequestInner<TDocument, TBody>>;
 
 #[doc(hidden)]
 pub struct SearchRequestInner<TDocument, TBody> {
@@ -265,7 +286,10 @@ where
 
     If no body is specified then an empty query will be used.
     */
-    pub fn body<TNewBody>(self, body: TNewBody) -> SearchRequestBuilder<TSender, TDocument, TNewBody>
+    pub fn body<TNewBody>(
+        self,
+        body: TNewBody,
+    ) -> SearchRequestBuilder<TSender, TDocument, TNewBody>
     where
         TNewBody: Into<TSender::Body>,
     {
@@ -329,7 +353,9 @@ where
     pub fn send(self) -> Result<SearchResponse<TDocument>> {
         let req = self.inner.into_request();
 
-        RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req)).send()?.into_response()
+        RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
+            .send()?
+            .into_response()
     }
 }
 
@@ -388,7 +414,10 @@ where
     pub fn send(self) -> Pending<TDocument> {
         let req = self.inner.into_request();
 
-        let res_future = RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req)).send().and_then(|res| res.into_response());
+        let res_future =
+            RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
+                .send()
+                .and_then(|res| res.into_response());
 
         Pending::new(res_future)
     }
@@ -404,7 +433,9 @@ impl<TDocument> Pending<TDocument> {
     where
         F: Future<Item = SearchResponse<TDocument>, Error = Error> + 'static,
     {
-        Pending { inner: Box::new(fut) }
+        Pending {
+            inner: Box::new(fut),
+        }
     }
 }
 
@@ -438,7 +469,11 @@ mod tests {
     fn specify_index() {
         let client = SyncClientBuilder::new().build().unwrap();
 
-        let req = client.search::<Value>().index("new-idx").inner.into_request();
+        let req = client
+            .search::<Value>()
+            .index("new-idx")
+            .inner
+            .into_request();
 
         assert_eq!("/new-idx/_search", req.url.as_ref());
     }

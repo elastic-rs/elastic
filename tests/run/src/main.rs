@@ -12,17 +12,19 @@ extern crate elastic;
 extern crate elastic_derive;
 extern crate env_logger;
 extern crate futures;
-extern crate futures_cpupool;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
 #[macro_use]
 extern crate serde_json;
 extern crate term_painter;
-extern crate tokio_core;
-extern crate tokio_timer;
+extern crate tokio;
+extern crate tokio_threadpool;
 
-use clap::{App, Arg};
+use clap::{
+    App,
+    Arg,
+};
 use std::process;
 use term_painter::Color::*;
 use term_painter::ToStyle;
@@ -39,7 +41,14 @@ mod wait_until_ready;
 fn main() {
     env_logger::init();
 
-    let matches = App::new("elastic_integration_tests").arg(Arg::with_name("runs").default_value("default").takes_value(true).multiple(true)).get_matches();
+    let matches = App::new("elastic_integration_tests")
+        .arg(
+            Arg::with_name("runs")
+                .default_value("default")
+                .takes_value(true)
+                .multiple(true),
+        )
+        .get_matches();
 
     let mut failed = Vec::<run_tests::TestResult>::new();
     let mut total = 0;
@@ -49,17 +58,16 @@ fn main() {
     for run in runs {
         println!("\n{} tests\n", run);
 
-        let mut core = tokio_core::reactor::Core::new().unwrap();
-        let client = build_client::call(&core.handle(), run).unwrap();
+        let client = build_client::call(run).unwrap();
 
         // Build and start a container to run tests against
         build_container::start(run).unwrap();
 
         // Wait until the container is ready
-        core.run(wait_until_ready::call(client.clone(), 60)).unwrap();
+        tokio::executor::current_thread::block_on_all(wait_until_ready::call(client.clone(), 60)).unwrap();
 
         // Run the integration tests
-        let results = core.run(run_tests::call(client, 8)).unwrap();
+        let results = tokio::executor::current_thread::block_on_all(run_tests::call(client, 8)).unwrap();
         failed.extend(results.iter().filter(|success| **success == false));
         total += results.len();
 
@@ -68,7 +76,11 @@ fn main() {
     }
 
     if failed.len() > 0 {
-        println!("\n{}", Red.bold().paint(format!("{} of {} tests failed", failed.len(), total)));
+        println!(
+            "\n{}",
+            Red.bold()
+                .paint(format!("{} of {} tests failed", failed.len(), total))
+        );
         process::exit(1);
     } else {
         println!("\n{}", Green.paint(format!("all {} tests passed", total)));

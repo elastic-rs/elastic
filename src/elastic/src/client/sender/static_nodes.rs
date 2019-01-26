@@ -1,9 +1,20 @@
 /*! Multiple static nodes that can be load balanced by some strategy. */
 
-use client::sender::{NextParams, NodeAddress, PreRequestParams, RequestParams};
-use error::{self, Error};
+use client::sender::{
+    NextParams,
+    NodeAddress,
+    PreRequestParams,
+    RequestParams,
+};
+use error::{
+    self,
+    Error,
+};
 use private;
-use std::sync::atomic::{AtomicUsize, Ordering};
+use std::sync::atomic::{
+    AtomicUsize,
+    Ordering,
+};
 use std::sync::Arc;
 
 /** Select a base address for a given request using some strategy. */
@@ -21,7 +32,10 @@ where
     type Params = Result<RequestParams, Error>;
 
     fn next(&self) -> Self::Params {
-        self.strategy.try_next(&self.nodes).map(|address| RequestParams::from_parts(address, self.params.clone())).map_err(error::request)
+        self.strategy
+            .try_next(&self.nodes)
+            .map(|address| RequestParams::from_parts(address, self.params.clone()))
+            .map_err(error::request)
     }
 }
 
@@ -30,7 +44,9 @@ impl<TStrategy> private::Sealed for StaticNodes<TStrategy> {}
 impl<TStrategy> StaticNodes<TStrategy> {
     pub(crate) fn set(&mut self, nodes: Vec<NodeAddress>) -> Result<(), Error> {
         if nodes.len() == 0 {
-            Err(error::request(error::message("the number of node addresses must be greater than 0")))?
+            Err(error::request(error::message(
+                "the number of node addresses must be greater than 0",
+            )))?
         }
 
         self.nodes = nodes;
@@ -96,7 +112,9 @@ pub struct RoundRobin {
 
 impl Default for RoundRobin {
     fn default() -> Self {
-        RoundRobin { index: Arc::new(AtomicUsize::new(0)) }
+        RoundRobin {
+            index: Arc::new(AtomicUsize::new(0)),
+        }
     }
 }
 

@@ -5,14 +5,24 @@ This module contains implementation details that are useful if you want to custo
 */
 
 use fluent_builder::FluentBuilder;
-use futures_cpupool::CpuPool;
+use std::sync::Arc;
+use tokio_threadpool::ThreadPool;
 
-use client::sender::{AsyncSender, RequestParams, Sender};
+use client::sender::{
+    AsyncSender,
+    RequestParams,
+    Sender,
+};
 use client::Client;
 
 pub use elastic_requests::endpoints;
 pub use elastic_requests::params;
-pub use elastic_requests::{empty_body, DefaultBody, Endpoint, UrlPath};
+pub use elastic_requests::{
+    empty_body,
+    DefaultBody,
+    Endpoint,
+    UrlPath,
+};
 
 pub use self::endpoints::*;
 pub use self::params::*;
@@ -140,7 +150,10 @@ where
     # }
     ```
     */
-    pub fn params_fluent(mut self, builder: impl Fn(RequestParams) -> RequestParams + 'static) -> Self {
+    pub fn params_fluent(
+        mut self,
+        builder: impl Fn(RequestParams) -> RequestParams + 'static,
+    ) -> Self {
         self.params_builder = self.params_builder.fluent(builder).boxed();
 
         self
@@ -191,16 +204,16 @@ impl<TRequest> RequestBuilder<AsyncSender, TRequest> {
 
     ```no_run
     # extern crate tokio_core;
-    # extern crate futures_cpupool;
+    # extern crate tokio_threadpool;
     # extern crate elastic;
-    # use futures_cpupool::CpuPool;
+    # use tokio_threadpool::ThreadPool;
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # let core = tokio_core::reactor::Core::new()?;
     # let client = AsyncClientBuilder::new().build(&core.handle())?;
     # fn get_req() -> PingRequest<'static> { PingRequest::new() }
-    let pool = CpuPool::new(4);
+    let pool = ThreadPool::new();
     let builder = client.request(get_req())
                         .serde_pool(pool.clone());
     # Ok(())
@@ -211,9 +224,9 @@ impl<TRequest> RequestBuilder<AsyncSender, TRequest> {
 
     ```no_run
     # extern crate tokio_core;
-    # extern crate futures_cpupool;
+    # extern crate tokio_threadpool;
     # extern crate elastic;
-    # use futures_cpupool::CpuPool;
+    # use tokio_threadpool::ThreadPool;
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
     # fn run() -> Result<(), Box<::std::error::Error>> {
@@ -226,7 +239,7 @@ impl<TRequest> RequestBuilder<AsyncSender, TRequest> {
     # }
     ```
     */
-    pub fn serde_pool(mut self, pool: impl Into<Option<CpuPool>>) -> Self {
+    pub fn serde_pool(mut self, pool: impl Into<Option<Arc<ThreadPool>>>) -> Self {
         self.client.sender.serde_pool = pool.into();
 
         self
@@ -239,10 +252,26 @@ pub mod prelude {
     pub use super::endpoints::*;
     pub use super::params::*;
 
-    pub use super::bulk::{bulk, bulk_raw, BulkOperation};
+    pub use super::bulk::{
+        bulk,
+        bulk_raw,
+        BulkOperation,
+    };
 
     pub use super::{
-        empty_body, DefaultBody, DeleteRequestBuilder, GetRequestBuilder, IndexCloseRequestBuilder, IndexCreateRequestBuilder, IndexDeleteRequestBuilder, IndexOpenRequestBuilder, IndexRequestBuilder, PingRequestBuilder, PutMappingRequestBuilder,
-        RawRequestBuilder, SearchRequestBuilder, UpdateRequestBuilder,
+        empty_body,
+        DefaultBody,
+        DeleteRequestBuilder,
+        GetRequestBuilder,
+        IndexCloseRequestBuilder,
+        IndexCreateRequestBuilder,
+        IndexDeleteRequestBuilder,
+        IndexOpenRequestBuilder,
+        IndexRequestBuilder,
+        PingRequestBuilder,
+        PutMappingRequestBuilder,
+        RawRequestBuilder,
+        SearchRequestBuilder,
+        UpdateRequestBuilder,
     };
 }

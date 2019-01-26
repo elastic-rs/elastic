@@ -29,7 +29,12 @@ fn run() -> Result<(), Box<Error>> {
     });
 
     // Execute a bulk request
-    let bulk = client.bulk().index("bulk_idx").ty("bulk_ty").extend(ops).send()?;
+    let bulk = client
+        .bulk()
+        .index("bulk_idx")
+        .ty("bulk_ty")
+        .extend(ops)
+        .send()?;
 
     for op in bulk {
         match op {

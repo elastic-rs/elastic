@@ -1,16 +1,44 @@
-use super::format::{DateFormat, DateValue, FormattableDateValue, FormattedDate, ParseError};
+use super::format::{
+    DateFormat,
+    DateValue,
+    FormattableDateValue,
+    FormattedDate,
+    ParseError,
+};
 use super::formats::ChronoFormat;
-use super::mapping::{DateFieldType, DateMapping, DefaultDateMapping};
-use chrono::{DateTime, Utc};
+use super::mapping::{
+    DateFieldType,
+    DateMapping,
+    DefaultDateMapping,
+};
+use chrono::{
+    DateTime,
+    Utc,
+};
 use private::field::StdField;
-use serde::de::{Error, Visitor};
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use serde::de::{
+    Error,
+    Visitor,
+};
+use serde::{
+    Deserialize,
+    Deserializer,
+    Serialize,
+    Serializer,
+};
 use std::borrow::Borrow;
-use std::fmt::{Display, Formatter, Result as FmtResult};
+use std::fmt::{
+    Display,
+    Formatter,
+    Result as FmtResult,
+};
 use std::marker::PhantomData;
 use std::ops::Deref;
 
-pub use chrono::{Datelike, Timelike};
+pub use chrono::{
+    Datelike,
+    Timelike,
+};
 
 /** A re-export of the `chrono::DateTime` struct with `Utc` timezone. */
 pub type ChronoDateTime = DateTime<Utc>;
@@ -147,8 +175,18 @@ where
     let date: Date<DefaultDateMapping> = Date::build(2015, 5, 14, 16, 45, 8, 886);
     ```
     */
-    pub fn build(year: i32, month: u32, day: u32, hour: u32, minute: u32, second: u32, milli: u32) -> Self {
-        Date::new(DateValue::build(year, month, day, hour, minute, second, milli))
+    pub fn build(
+        year: i32,
+        month: u32,
+        day: u32,
+        hour: u32,
+        minute: u32,
+        second: u32,
+        milli: u32,
+    ) -> Self {
+        Date::new(DateValue::build(
+            year, month, day, hour, minute, second, milli,
+        ))
     }
 
     /**
@@ -321,7 +359,10 @@ where
             type Value = Date<TMapping>;
 
             fn expecting(&self, formatter: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
-                write!(formatter, "a json string or number containing a formatted date")
+                write!(
+                    formatter,
+                    "a json string or number containing a formatted date"
+                )
             }
 
             fn visit_str<E>(self, v: &str) -> Result<Date<TMapping>, E>
@@ -539,7 +580,10 @@ where
     It serialises to the literal string `"now"`, which is interpreted by Elasticsearch when indexing.
     */
     pub fn now() -> Self {
-        DateExpr { anchor: DateExprAnchor::Now, ops: Vec::new() }
+        DateExpr {
+            anchor: DateExprAnchor::Now,
+            ops: Vec::new(),
+        }
     }
 
     /**
@@ -608,8 +652,18 @@ where
     impl_expr_ops!(DateExprOpUnit::Week, add_weeks, sub_weeks, round_week);
     impl_expr_ops!(DateExprOpUnit::Day, add_days, sub_days, round_day);
     impl_expr_ops!(DateExprOpUnit::Hour, add_hours, sub_hours, round_hour);
-    impl_expr_ops!(DateExprOpUnit::Minute, add_minutes, sub_minutes, round_minute);
-    impl_expr_ops!(DateExprOpUnit::Second, add_seconds, sub_seconds, round_second);
+    impl_expr_ops!(
+        DateExprOpUnit::Minute,
+        add_minutes,
+        sub_minutes,
+        round_minute
+    );
+    impl_expr_ops!(
+        DateExprOpUnit::Second,
+        add_seconds,
+        sub_seconds,
+        round_second
+    );
 }
 
 impl<TFormat> Serialize for DateExpr<TFormat>
@@ -685,28 +739,62 @@ mod tests {
     fn can_build_date_from_value() {
         let date: Date<DefaultDateMapping> = Date::new(DateValue::build(2015, 05, 13, 0, 0, 0, 0));
 
-        assert_eq!((2015, 5, 13, 0, 0, 0), (date.year(), date.month(), date.day(), date.hour(), date.minute(), date.second()));
+        assert_eq!(
+            (2015, 5, 13, 0, 0, 0),
+            (
+                date.year(),
+                date.month(),
+                date.day(),
+                date.hour(),
+                date.minute(),
+                date.second()
+            )
+        );
     }
 
     #[test]
     fn can_build_date_from_chrono() {
-        let date = chrono::Utc.datetime_from_str("13/05/2015 00:00:00", "%d/%m/%Y %H:%M:%S").unwrap();
+        let date = chrono::Utc
+            .datetime_from_str("13/05/2015 00:00:00", "%d/%m/%Y %H:%M:%S")
+            .unwrap();
 
         let date: Date<DefaultDateMapping<ChronoFormat>> = Date::new(date);
 
-        assert_eq!((2015, 5, 13, 0, 0, 0), (date.year(), date.month(), date.day(), date.hour(), date.minute(), date.second()));
+        assert_eq!(
+            (2015, 5, 13, 0, 0, 0),
+            (
+                date.year(),
+                date.month(),
+                date.day(),
+                date.hour(),
+                date.minute(),
+                date.second()
+            )
+        );
     }
 
     #[test]
     fn can_build_date_from_prim() {
         let date: Date<DefaultDateMapping> = Date::build(2015, 5, 13, 0, 0, 0, 0);
 
-        assert_eq!((2015, 5, 13, 0, 0, 0), (date.year(), date.month(), date.day(), date.hour(), date.minute(), date.second()));
+        assert_eq!(
+            (2015, 5, 13, 0, 0, 0),
+            (
+                date.year(),
+                date.month(),
+                date.day(),
+                date.hour(),
+                date.minute(),
+                date.second()
+            )
+        );
     }
 
     #[test]
     fn serialise_elastic_date() {
-        let date = Date::<DefaultDateMapping<BasicDateTime>>::new(DateValue::build(2015, 05, 13, 0, 0, 0, 0));
+        let date = Date::<DefaultDateMapping<BasicDateTime>>::new(DateValue::build(
+            2015, 05, 13, 0, 0, 0, 0,
+        ));
 
         let ser = serde_json::to_string(&date).unwrap();
 
@@ -715,7 +803,8 @@ mod tests {
 
     #[test]
     fn deserialise_elastic_date() {
-        let date: Date<DefaultDateMapping<BasicDateTime>> = serde_json::from_str(r#""20150513T000000.000Z""#).unwrap();
+        let date: Date<DefaultDateMapping<BasicDateTime>> =
+            serde_json::from_str(r#""20150513T000000.000Z""#).unwrap();
 
         assert_eq!((2015, 5, 13), (date.year(), date.month(), date.day()));
     }
@@ -731,7 +820,9 @@ mod tests {
 
     #[test]
     fn serialise_date_expr_chrono() {
-        let date = chrono::Utc.datetime_from_str("13/05/2015 00:00:00", "%d/%m/%Y %H:%M:%S").unwrap();
+        let date = chrono::Utc
+            .datetime_from_str("13/05/2015 00:00:00", "%d/%m/%Y %H:%M:%S")
+            .unwrap();
 
         let expr = DateExpr::value(date);
 
@@ -742,7 +833,9 @@ mod tests {
 
     #[test]
     fn serialise_date_expr_date() {
-        let expr = DateExpr::value(Date::<DefaultDateMapping<BasicDateTime>>::build(2015, 5, 13, 0, 0, 0, 0));
+        let expr = DateExpr::value(Date::<DefaultDateMapping<BasicDateTime>>::build(
+            2015, 5, 13, 0, 0, 0, 0,
+        ));
 
         let ser = serde_json::to_string(&expr).unwrap();
 
@@ -751,7 +844,11 @@ mod tests {
 
     #[test]
     fn serialise_date_expr_value_with_ops() {
-        let expr = DateExpr::value(Date::<DefaultDateMapping<BasicDateTime>>::build(2015, 5, 13, 0, 0, 0, 0)).add_days(2).round_week();
+        let expr = DateExpr::value(Date::<DefaultDateMapping<BasicDateTime>>::build(
+            2015, 5, 13, 0, 0, 0, 0,
+        ))
+        .add_days(2)
+        .round_week();
 
         let ser = serde_json::to_string(&expr).unwrap();
 
@@ -760,7 +857,14 @@ mod tests {
 
     #[test]
     fn serialise_date_expr_add() {
-        let expr = DateExpr::<DefaultDateFormat>::now().add_years(1).add_months(2).add_weeks(3).add_days(4).add_hours(5).add_minutes(6).add_seconds(7);
+        let expr = DateExpr::<DefaultDateFormat>::now()
+            .add_years(1)
+            .add_months(2)
+            .add_weeks(3)
+            .add_days(4)
+            .add_hours(5)
+            .add_minutes(6)
+            .add_seconds(7);
 
         let ser = serde_json::to_string(&expr).unwrap();
 
@@ -769,7 +873,14 @@ mod tests {
 
     #[test]
     fn serialise_date_expr_sub() {
-        let expr = DateExpr::<DefaultDateFormat>::now().sub_years(1).sub_months(2).sub_weeks(3).sub_days(4).sub_hours(5).sub_minutes(6).sub_seconds(7);
+        let expr = DateExpr::<DefaultDateFormat>::now()
+            .sub_years(1)
+            .sub_months(2)
+            .sub_weeks(3)
+            .sub_days(4)
+            .sub_hours(5)
+            .sub_minutes(6)
+            .sub_seconds(7);
 
         let ser = serde_json::to_string(&expr).unwrap();
 
@@ -778,7 +889,14 @@ mod tests {
 
     #[test]
     fn serialise_date_expr_round() {
-        let expr = DateExpr::<DefaultDateFormat>::now().round_year().round_month().round_week().round_day().round_hour().round_minute().round_second();
+        let expr = DateExpr::<DefaultDateFormat>::now()
+            .round_year()
+            .round_month()
+            .round_week()
+            .round_day()
+            .round_hour()
+            .round_minute()
+            .round_second();
 
         let ser = serde_json::to_string(&expr).unwrap();
 

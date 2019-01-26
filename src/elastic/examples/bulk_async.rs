@@ -35,7 +35,12 @@ fn run() -> Result<(), Box<Error>> {
     });
 
     // Execute a bulk request
-    let res_future = client.bulk().index("bulk_idx").ty("bulk_ty").extend(ops).send();
+    let res_future = client
+        .bulk()
+        .index("bulk_idx")
+        .ty("bulk_ty")
+        .extend(ops)
+        .send();
 
     let res_future = res_future.and_then(|bulk| {
         for op in bulk {

@@ -1,4 +1,7 @@
-use run_tests::{test, Test};
+use run_tests::{
+    test,
+    Test,
+};
 
 mod empty_query;
 mod no_index;

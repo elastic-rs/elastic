@@ -2,9 +2,15 @@
 
 use private::field::FieldMapping;
 use serde::ser::SerializeStruct;
-use serde::{Serialize, Serializer};
+use serde::{
+    Serialize,
+    Serializer,
+};
 use std::collections::BTreeMap;
-use string::mapping::{IndexOptions, StringField};
+use string::mapping::{
+    IndexOptions,
+    StringField,
+};
 
 /** A field that will be mapped as `text`. */
 pub trait TextFieldType<TMapping> {}
@@ -384,7 +390,11 @@ impl Serialize for TextFieldMapping {
         ser_field!(state, "analyzer", self.analyzer);
         ser_field!(state, "eager_global_ordinals", self.eager_global_ordinals);
         ser_field!(state, "fielddata", self.fielddata);
-        ser_field!(state, "fielddata_frequency_filter", self.fielddata_frequency_filter);
+        ser_field!(
+            state,
+            "fielddata_frequency_filter",
+            self.fielddata_frequency_filter
+        );
         ser_field!(state, "include_in_all", self.include_in_all);
         ser_field!(state, "ignore_above", self.ignore_above);
         ser_field!(state, "index", self.index);
@@ -402,10 +412,21 @@ impl Serialize for TextFieldMapping {
 }
 
 mod private {
-    use super::{TextFieldType, TextMapping};
-    use private::field::{FieldMapping, FieldType, SerializeFieldMapping, StaticSerialize};
+    use super::{
+        TextFieldType,
+        TextMapping,
+    };
+    use private::field::{
+        FieldMapping,
+        FieldType,
+        SerializeFieldMapping,
+        StaticSerialize,
+    };
     use serde::ser::SerializeStruct;
-    use serde::{Serialize, Serializer};
+    use serde::{
+        Serialize,
+        Serializer,
+    };
 
     #[derive(Default)]
     pub struct TextPivot;
@@ -442,19 +463,35 @@ mod private {
 
             ser_field!(state, "boost", TMapping::boost());
             ser_field!(state, "analyzer", TMapping::analyzer());
-            ser_field!(state, "eager_global_ordinals", TMapping::eager_global_ordinals());
+            ser_field!(
+                state,
+                "eager_global_ordinals",
+                TMapping::eager_global_ordinals()
+            );
             ser_field!(state, "fielddata", TMapping::fielddata());
-            ser_field!(state, "fielddata_frequency_filter", TMapping::fielddata_frequency_filter());
+            ser_field!(
+                state,
+                "fielddata_frequency_filter",
+                TMapping::fielddata_frequency_filter()
+            );
             ser_field!(state, "fields", TMapping::fields());
             ser_field!(state, "include_in_all", TMapping::include_in_all());
             ser_field!(state, "ignore_above", TMapping::ignore_above());
             ser_field!(state, "index", TMapping::index());
             ser_field!(state, "index_options", TMapping::index_options());
             ser_field!(state, "norms", TMapping::norms());
-            ser_field!(state, "position_increment_gap", TMapping::position_increment_gap());
+            ser_field!(
+                state,
+                "position_increment_gap",
+                TMapping::position_increment_gap()
+            );
             ser_field!(state, "store", TMapping::store());
             ser_field!(state, "search_analyzer", TMapping::search_analyzer());
-            ser_field!(state, "search_quote_analyzer", TMapping::search_quote_analyzer());
+            ser_field!(
+                state,
+                "search_quote_analyzer",
+                TMapping::search_quote_analyzer()
+            );
             ser_field!(state, "similarity", TMapping::similarity());
             ser_field!(state, "term_vector", TMapping::term_vector());
 

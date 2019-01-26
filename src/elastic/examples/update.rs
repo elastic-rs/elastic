@@ -44,10 +44,18 @@ fn run() -> Result<(), Box<Error>> {
     client.document::<MyType>().put_mapping().send()?;
 
     // Index the document
-    client.document().index(doc).params_fluent(|p| p.url_param("refresh", true)).send()?;
+    client
+        .document()
+        .index(doc)
+        .params_fluent(|p| p.url_param("refresh", true))
+        .send()?;
 
     // Update the document using a script
-    let update = client.document::<MyType>().update("1").script(r#"ctx._source.title = "A new title""#).send()?;
+    let update = client
+        .document::<MyType>()
+        .update("1")
+        .script(r#"ctx._source.title = "A new title""#)
+        .send()?;
 
     assert!(update.updated());
 

@@ -1,4 +1,8 @@
-use super::mapping::{ObjectFieldType, ObjectMapping, PropertiesMapping};
+use super::mapping::{
+    ObjectFieldType,
+    ObjectMapping,
+    PropertiesMapping,
+};
 use serde::ser::SerializeStruct;
 use serde_json::Value;
 use std::borrow::Cow;
@@ -267,7 +271,9 @@ where
     TMapping: ObjectMapping,
 {
     fn default() -> Self {
-        IndexDocumentMapping { _m: Default::default() }
+        IndexDocumentMapping {
+            _m: Default::default(),
+        }
     }
 }
 
@@ -404,9 +410,17 @@ where
 
 #[cfg(test)]
 mod tests {
-    use super::{DocumentType, IndexDocumentMapping, StaticIndex, StaticType};
+    use super::{
+        DocumentType,
+        IndexDocumentMapping,
+        StaticIndex,
+        StaticType,
+    };
     use prelude::*;
-    use serde_json::{self, Value};
+    use serde_json::{
+        self,
+        Value,
+    };
     use std::borrow::Cow;
 
     // Make sure we can derive with no `uses`.
@@ -448,7 +462,12 @@ mod tests {
     }
 
     #[derive(Serialize, ElasticType)]
-    #[elastic(index = "renamed_index", ty = "renamed_ty", id(expr = "CustomType::id"), mapping = "ManualCustomTypeMapping")]
+    #[elastic(
+        index = "renamed_index",
+        ty = "renamed_ty",
+        id(expr = "CustomType::id"),
+        mapping = "ManualCustomTypeMapping"
+    )]
     pub struct CustomType {
         pub field: i32,
         #[serde(skip_serializing)]
@@ -526,14 +545,21 @@ mod tests {
 
     #[test]
     fn get_custom_type_id() {
-        let doc = CustomType { field: 13, ignored_field: 0, field2: 1 };
+        let doc = CustomType {
+            field: 13,
+            ignored_field: 0,
+            field2: 1,
+        };
 
         assert_eq!("13", doc.partial_id().unwrap().as_ref());
     }
 
     #[test]
     fn derive_custom_type_mapping() {
-        assert_eq!(ManualCustomTypeMapping, CustomType::field_mapping().into_mapping());
+        assert_eq!(
+            ManualCustomTypeMapping,
+            CustomType::field_mapping().into_mapping()
+        );
     }
 
     #[test]
@@ -678,7 +704,10 @@ mod tests {
 
     #[test]
     fn serialise_mapping_dynamic() {
-        let d_opts: Vec<String> = vec![Dynamic::True, Dynamic::False, Dynamic::Strict].iter().map(|i| serde_json::to_string(i).unwrap()).collect();
+        let d_opts: Vec<String> = vec![Dynamic::True, Dynamic::False, Dynamic::Strict]
+            .iter()
+            .map(|i| serde_json::to_string(i).unwrap())
+            .collect();
 
         let expected_opts = vec![r#"true"#, r#"false"#, r#""strict""#];
 

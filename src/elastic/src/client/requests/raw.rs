@@ -5,8 +5,17 @@ Builders for raw requests.
 use fluent_builder::TryIntoValue;
 use std::marker::PhantomData;
 
-use client::requests::{Endpoint, RequestBuilder};
-use client::sender::{NextParams, NodeAddresses, SendableRequest, SendableRequestParams, Sender};
+use client::requests::{
+    Endpoint,
+    RequestBuilder,
+};
+use client::sender::{
+    NextParams,
+    NodeAddresses,
+    SendableRequest,
+    SendableRequestParams,
+    Sender,
+};
 use client::Client;
 
 /**
@@ -17,7 +26,8 @@ The `send` method will either send the request synchronously or asynchronously, 
 
 [Client.request]: ../../struct.Client.html#raw-request
 */
-pub type RawRequestBuilder<TSender, TEndpoint, TBody> = RequestBuilder<TSender, RawRequestInner<TEndpoint, TBody>>;
+pub type RawRequestBuilder<TSender, TEndpoint, TBody> =
+    RequestBuilder<TSender, RawRequestInner<TEndpoint, TBody>>;
 
 #[doc(hidden)]
 pub struct RawRequestInner<TEndpoint, TBody> {
@@ -27,7 +37,10 @@ pub struct RawRequestInner<TEndpoint, TBody> {
 
 impl<TEndpoint, TBody> RawRequestInner<TEndpoint, TBody> {
     pub(crate) fn new(endpoint: TEndpoint) -> Self {
-        RawRequestInner { endpoint, _marker: PhantomData }
+        RawRequestInner {
+            endpoint,
+            _marker: PhantomData,
+        }
     }
 }
 
@@ -72,7 +85,10 @@ where
     [RawRequestBuilder]: requests/raw/type.RawRequestBuilder.html
     [endpoints-mod]: requests/endpoints/index.html
     */
-    pub fn request<TEndpoint, TBody>(&self, endpoint: TEndpoint) -> RawRequestBuilder<TSender, TEndpoint, TBody>
+    pub fn request<TEndpoint, TBody>(
+        &self,
+        endpoint: TEndpoint,
+    ) -> RawRequestBuilder<TSender, TEndpoint, TBody>
     where
         TEndpoint: Into<Endpoint<'static, TBody>>,
         TBody: Into<TSender::Body>,
@@ -164,7 +180,10 @@ where
         // Only try fetch a next address if an explicit `RequestParams` hasn't been given
         let params = match self.params_builder.try_into_value() {
             TryIntoValue::Value(value) => SendableRequestParams::Value(value),
-            TryIntoValue::Builder(builder) => SendableRequestParams::Builder { params: client.addresses.next(), builder },
+            TryIntoValue::Builder(builder) => SendableRequestParams::Builder {
+                params: client.addresses.next(),
+                builder,
+            },
         };
 
         let req = SendableRequest::new(endpoint, params);

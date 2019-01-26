@@ -564,10 +564,20 @@ pub mod requests;
 pub mod responses;
 pub mod sender;
 
-pub use self::sender::{AsyncClient, AsyncClientBuilder, PreRequestParams, RequestParams, SyncClient, SyncClientBuilder};
+pub use self::sender::{
+    AsyncClient,
+    AsyncClientBuilder,
+    PreRequestParams,
+    RequestParams,
+    SyncClient,
+    SyncClientBuilder,
+};
 
 use self::requests::params::Index;
-use self::sender::{NodeAddresses, Sender};
+use self::sender::{
+    NodeAddresses,
+    Sender,
+};
 use std::marker::PhantomData;
 
 /**
@@ -650,7 +660,10 @@ where
     Get a client for working with a specific index.
     */
     pub fn index(&self, index: impl Into<Index<'static>>) -> IndexClient<TSender> {
-        IndexClient { inner: (*self).clone(), index: index.into() }
+        IndexClient {
+            inner: (*self).clone(),
+            index: index.into(),
+        }
     }
 }
 
@@ -681,8 +694,16 @@ pub mod prelude {
 
     pub use super::requests::prelude::*;
     pub use super::responses::prelude::*;
-    pub use super::sender::{PreRequestParams, RequestParams};
-    pub use super::{AsyncClient, AsyncClientBuilder, SyncClient, SyncClientBuilder};
+    pub use super::sender::{
+        PreRequestParams,
+        RequestParams,
+    };
+    pub use super::{
+        AsyncClient,
+        AsyncClientBuilder,
+        SyncClient,
+        SyncClientBuilder,
+    };
 }
 
 #[cfg(test)]

@@ -38,7 +38,11 @@ impl IntegrationTest for UpdateWithInlineScript {
     fn prepare(&self, client: AsyncClient) -> Box<Future<Item = (), Error = Error>> {
         let delete_res = client.index(Doc::static_index()).delete().send();
 
-        let index_res = client.document().index(doc()).params_fluent(|p| p.url_param("refresh", true)).send();
+        let index_res = client
+            .document()
+            .index(doc())
+            .params_fluent(|p| p.url_param("refresh", true))
+            .send();
 
         Box::new(delete_res.then(|_| index_res).map(|_| ()))
     }

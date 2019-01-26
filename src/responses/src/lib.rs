@@ -152,7 +152,10 @@ mod update;
 
 mod indices_exists;
 
-pub use self::bulk::{BulkErrorsResponse, BulkResponse};
+pub use self::bulk::{
+    BulkErrorsResponse,
+    BulkResponse,
+};
 pub use self::command::*;
 pub use self::common::*;
 pub use self::delete::*;

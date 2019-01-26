@@ -21,7 +21,10 @@ extern crate serde_json;
 
 extern crate elastic;
 
-use elastic::error::{ApiError, Error};
+use elastic::error::{
+    ApiError,
+    Error,
+};
 use elastic::prelude::*;
 use std::error::Error as StdError;
 
@@ -92,7 +95,11 @@ fn put_index(client: &SyncClient) -> Result<(), Error> {
 }
 
 fn put_doc(client: &SyncClient, doc: MyType) -> Result<(), Error> {
-    client.document().index(doc).params_fluent(|p| p.url_param("refresh", true)).send()?;
+    client
+        .document()
+        .index(doc)
+        .params_fluent(|p| p.url_param("refresh", true))
+        .send()?;
 
     Ok(())
 }

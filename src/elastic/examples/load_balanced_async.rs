@@ -18,14 +18,20 @@ fn run() -> Result<(), Box<Error>> {
     let mut core = Core::new()?;
 
     // An async HTTP client that will sniff node addresses from the given base address.
-    let client = AsyncClientBuilder::new().sniff_nodes("http://localhost:9200").build(&core.handle())?;
+    let client = AsyncClientBuilder::new()
+        .sniff_nodes("http://localhost:9200")
+        .build(&core.handle())?;
 
     // Send the request and process the response.
-    let ping_future = client.request(PingRequest::new()).send().and_then(|res| res.into_response::<PingResponse>()).and_then(|ping| {
-        println!("{:?}", ping);
+    let ping_future = client
+        .request(PingRequest::new())
+        .send()
+        .and_then(|res| res.into_response::<PingResponse>())
+        .and_then(|ping| {
+            println!("{:?}", ping);
 
-        Ok(())
-    });
+            Ok(())
+        });
 
     core.run(ping_future)?;
 

@@ -1,6 +1,9 @@
 use super::helpers::*;
 use super::types;
-use parse::{Endpoint, Method};
+use parse::{
+    Endpoint,
+    Method,
+};
 use quote;
 use syn;
 

@@ -1,6 +1,17 @@
-use super::mapping::{TextFieldType, TextMapping};
-use serde::de::{Error, Visitor};
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use super::mapping::{
+    TextFieldType,
+    TextMapping,
+};
+use serde::de::{
+    Error,
+    Visitor,
+};
+use serde::{
+    Deserialize,
+    Deserializer,
+    Serialize,
+    Serializer,
+};
 use std::borrow::Borrow;
 use std::marker::PhantomData;
 use string::mapping::DefaultStringMapping;
@@ -55,7 +66,10 @@ where
     where
         I: Into<String>,
     {
-        Text { value: string.into(), _m: PhantomData }
+        Text {
+            value: string.into(),
+            _m: PhantomData,
+        }
     }
 
     /** Change the mapping of this string. */

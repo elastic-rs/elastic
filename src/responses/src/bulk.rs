@@ -2,8 +2,19 @@
 Response types for a [bulk request](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-bulk.html).
 */
 
-use common::{DefaultAllocatedField, DocumentResult, Shards};
-use serde::de::{Deserialize, Deserializer, Error as DeError, MapAccess, SeqAccess, Visitor};
+use common::{
+    DefaultAllocatedField,
+    DocumentResult,
+    Shards,
+};
+use serde::de::{
+    Deserialize,
+    Deserializer,
+    Error as DeError,
+    MapAccess,
+    SeqAccess,
+    Visitor,
+};
 use serde_json::Value;
 
 use parsing::IsOkOnSuccess;
@@ -139,8 +150,14 @@ fn takes_default_response(res: BulkResponse) {
 ```
 */
 #[derive(Deserialize, Debug, Clone)]
-#[serde(bound(deserialize = "TIndex: Deserialize<'de>, TType: Deserialize<'de>, TId: Deserialize<'de>"))]
-pub struct BulkResponse<TIndex = DefaultAllocatedField, TType = DefaultAllocatedField, TId = DefaultAllocatedField> {
+#[serde(bound(
+    deserialize = "TIndex: Deserialize<'de>, TType: Deserialize<'de>, TId: Deserialize<'de>"
+))]
+pub struct BulkResponse<
+    TIndex = DefaultAllocatedField,
+    TType = DefaultAllocatedField,
+    TId = DefaultAllocatedField,
+> {
     took: u64,
     errors: bool,
     #[serde(deserialize_with = "deserialize_bulk_items")]
@@ -302,8 +319,14 @@ fn takes_default_response(res: BulkErrorsResponse) {
 ```
 */
 #[derive(Deserialize, Debug, Clone)]
-#[serde(bound(deserialize = "TIndex: Deserialize<'de>, TType: Deserialize<'de>, TId: Deserialize<'de>"))]
-pub struct BulkErrorsResponse<TIndex = DefaultAllocatedField, TType = DefaultAllocatedField, TId = DefaultAllocatedField> {
+#[serde(bound(
+    deserialize = "TIndex: Deserialize<'de>, TType: Deserialize<'de>, TId: Deserialize<'de>"
+))]
+pub struct BulkErrorsResponse<
+    TIndex = DefaultAllocatedField,
+    TType = DefaultAllocatedField,
+    TId = DefaultAllocatedField,
+> {
     took: u64,
     errors: bool,
     #[serde(deserialize_with = "deserialize_bulk_item_errors")]
@@ -386,12 +409,18 @@ impl<TIndex, TType, TId> BulkErrorsResponse<TIndex, TType, TId> {
     }
 }
 
-type ItemResult<TIndex, TType, TId> = Result<OkItem<TIndex, TType, TId>, ErrorItem<TIndex, TType, TId>>;
-type ItemResultBrw<'a, TIndex, TType, TId> = Result<&'a OkItem<TIndex, TType, TId>, &'a ErrorItem<TIndex, TType, TId>>;
+type ItemResult<TIndex, TType, TId> =
+    Result<OkItem<TIndex, TType, TId>, ErrorItem<TIndex, TType, TId>>;
+type ItemResultBrw<'a, TIndex, TType, TId> =
+    Result<&'a OkItem<TIndex, TType, TId>, &'a ErrorItem<TIndex, TType, TId>>;
 
 /** A successful bulk response item. */
 #[derive(Debug, Clone)]
-pub struct OkItem<TIndex = DefaultAllocatedField, TType = DefaultAllocatedField, TId = DefaultAllocatedField> {
+pub struct OkItem<
+    TIndex = DefaultAllocatedField,
+    TType = DefaultAllocatedField,
+    TId = DefaultAllocatedField,
+> {
     action: Action,
     index: TIndex,
     ty: TType,
@@ -454,7 +483,11 @@ impl<TIndex, TType, TId> OkItem<TIndex, TType, TId> {
 
 /** A failed bulk response item. */
 #[derive(Debug, Clone)]
-pub struct ErrorItem<TIndex = DefaultAllocatedField, TType = DefaultAllocatedField, TId = DefaultAllocatedField> {
+pub struct ErrorItem<
+    TIndex = DefaultAllocatedField,
+    TType = DefaultAllocatedField,
+    TId = DefaultAllocatedField,
+> {
     action: Action,
     index: TIndex,
     ty: TType,
@@ -491,7 +524,11 @@ where
     TId: fmt::Display + fmt::Debug,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "bulk item failed. Details: index: {}, type: {}, id: {}, inner error: {}", self.index, self.ty, self.id, self.err)
+        write!(
+            f,
+            "bulk item failed. Details: index: {}, type: {}, id: {}, inner error: {}",
+            self.index, self.ty, self.id, self.err
+        )
     }
 }
 
@@ -617,19 +654,28 @@ where
             where
                 V: MapAccess<'de>,
             {
-                let (action, inner) = visitor.next_entry()?.ok_or(V::Error::custom("expected at least one field"))?;
+                let (action, inner) = visitor
+                    .next_entry()?
+                    .ok_or(V::Error::custom("expected at least one field"))?;
 
-                let result = ItemDe { action: action, inner: inner };
+                let result = ItemDe {
+                    action: action,
+                    inner: inner,
+                };
 
                 Ok(result)
             }
         }
 
-        deserializer.deserialize_any(ItemDeVisitor { _marker: PhantomData })
+        deserializer.deserialize_any(ItemDeVisitor {
+            _marker: PhantomData,
+        })
     }
 }
 
-fn deserialize_bulk_items<'de, D, TIndex, TType, TId>(deserializer: D) -> Result<Vec<ItemResult<TIndex, TType, TId>>, D::Error>
+fn deserialize_bulk_items<'de, D, TIndex, TType, TId>(
+    deserializer: D,
+) -> Result<Vec<ItemResult<TIndex, TType, TId>>, D::Error>
 where
     D: Deserializer<'de>,
     TIndex: Deserialize<'de>,
@@ -661,7 +707,10 @@ where
         }
 
         #[inline]
-        fn visit_seq<V>(self, mut visitor: V) -> Result<Vec<ItemResult<TIndex, TType, TId>>, V::Error>
+        fn visit_seq<V>(
+            self,
+            mut visitor: V,
+        ) -> Result<Vec<ItemResult<TIndex, TType, TId>>, V::Error>
         where
             V: SeqAccess<'de>,
         {
@@ -675,10 +724,14 @@ where
         }
     }
 
-    deserializer.deserialize_any(OkItemsVisitor { _marker: PhantomData })
+    deserializer.deserialize_any(OkItemsVisitor {
+        _marker: PhantomData,
+    })
 }
 
-fn deserialize_bulk_item_errors<'de, D, TIndex, TType, TId>(deserializer: D) -> Result<Vec<ErrorItem<TIndex, TType, TId>>, D::Error>
+fn deserialize_bulk_item_errors<'de, D, TIndex, TType, TId>(
+    deserializer: D,
+) -> Result<Vec<ErrorItem<TIndex, TType, TId>>, D::Error>
 where
     D: Deserializer<'de>,
     TIndex: Deserialize<'de>,
@@ -710,7 +763,10 @@ where
         }
 
         #[inline]
-        fn visit_seq<V>(self, mut visitor: V) -> Result<Vec<ErrorItem<TIndex, TType, TId>>, V::Error>
+        fn visit_seq<V>(
+            self,
+            mut visitor: V,
+        ) -> Result<Vec<ErrorItem<TIndex, TType, TId>>, V::Error>
         where
             V: SeqAccess<'de>,
         {
@@ -726,5 +782,7 @@ where
         }
     }
 
-    deserializer.deserialize_any(BulkErrorItemsVisitor { _marker: PhantomData })
+    deserializer.deserialize_any(BulkErrorItemsVisitor {
+        _marker: PhantomData,
+    })
 }

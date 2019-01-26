@@ -4,8 +4,14 @@ Response type parsing.
 
 use http::StatusCode;
 use serde::de::DeserializeOwned;
-use serde_json::{self, Value};
-use std::io::{Cursor, Read};
+use serde_json::{
+    self,
+    Value,
+};
+use std::io::{
+    Cursor,
+    Read,
+};
 use std::marker::PhantomData;
 
 use error::*;
@@ -77,22 +83,35 @@ let get_response = parse().from_slice(response_status, response_body);
 ```
 */
 pub fn parse<T: IsOk + DeserializeOwned>() -> Parse<T> {
-    Parse { _marker: PhantomData }
+    Parse {
+        _marker: PhantomData,
+    }
 }
 
 impl<T: IsOk + DeserializeOwned> Parse<T> {
     /** Try parse a contiguous slice of bytes into a concrete response. */
-    pub fn from_slice<B: AsRef<[u8]>, H: Into<HttpResponseHead>>(self, head: H, body: B) -> Result<T, ResponseError> {
+    pub fn from_slice<B: AsRef<[u8]>, H: Into<HttpResponseHead>>(
+        self,
+        head: H,
+        body: B,
+    ) -> Result<T, ResponseError> {
         from_body(head.into(), SliceBody(body))
     }
 
     /** Try parse an arbitrary reader into a concrete response. */
-    pub fn from_reader<B: Read, H: Into<HttpResponseHead>>(self, head: H, body: B) -> Result<T, ResponseError> {
+    pub fn from_reader<B: Read, H: Into<HttpResponseHead>>(
+        self,
+        head: H,
+        body: B,
+    ) -> Result<T, ResponseError> {
         from_body(head.into(), ReadBody(body))
     }
 }
 
-fn from_body<B: ResponseBody, T: IsOk + DeserializeOwned>(head: HttpResponseHead, body: B) -> Result<T, ResponseError> {
+fn from_body<B: ResponseBody, T: IsOk + DeserializeOwned>(
+    head: HttpResponseHead,
+    body: B,
+) -> Result<T, ResponseError> {
     let maybe = T::is_ok(head, Unbuffered(body))?;
 
     match maybe.ok {
@@ -272,7 +291,10 @@ impl IsOk for MyResponse {
 */
 pub trait IsOk {
     /** Inspect the http response to determine whether or not it succeeded. */
-    fn is_ok<B: ResponseBody>(head: HttpResponseHead, unbuffered: Unbuffered<B>) -> Result<MaybeOkResponse<B>, ParseError>;
+    fn is_ok<B: ResponseBody>(
+        head: HttpResponseHead,
+        unbuffered: Unbuffered<B>,
+    ) -> Result<MaybeOkResponse<B>, ParseError>;
 }
 
 /**
@@ -281,7 +303,10 @@ A convenient trait that automatically derives `IsOk` if the status code is in th
 pub trait IsOkOnSuccess {}
 
 impl<T: IsOkOnSuccess> IsOk for T {
-    fn is_ok<B: ResponseBody>(head: HttpResponseHead, body: Unbuffered<B>) -> Result<MaybeOkResponse<B>, ParseError> {
+    fn is_ok<B: ResponseBody>(
+        head: HttpResponseHead,
+        body: Unbuffered<B>,
+    ) -> Result<MaybeOkResponse<B>, ParseError> {
         if head.status().is_success() {
             Ok(MaybeOkResponse::ok(body))
         } else {
@@ -313,7 +338,10 @@ where
     where
         I: Into<MaybeBufferedResponse<B>>,
     {
-        MaybeOkResponse { ok: ok, res: res.into() }
+        MaybeOkResponse {
+            ok: ok,
+            res: res.into(),
+        }
     }
 
     /** Create a response where the body is successful. */

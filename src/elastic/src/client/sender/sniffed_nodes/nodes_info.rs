@@ -1,7 +1,12 @@
 /*! Contains the `NodesInfoResponse` type for sniffing node addresses in the cluster. */
 
 use client::responses::parse::IsOkOnSuccess;
-use serde::de::{Deserialize, Deserializer, MapAccess, Visitor};
+use serde::de::{
+    Deserialize,
+    Deserializer,
+    MapAccess,
+    Visitor,
+};
 use std::fmt;
 
 use std::iter::IntoIterator;

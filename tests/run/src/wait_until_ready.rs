@@ -1,10 +1,20 @@
 use elastic::prelude::*;
 use elastic::Error;
-use futures::{stream, Future, Stream};
+use futures::{
+    stream,
+    Future,
+    Stream,
+};
 use std::error::Error as StdError;
 use std::fmt;
-use std::time::{Duration, Instant};
-use tokio_timer::{Deadline, Interval};
+use std::time::{
+    Duration,
+    Instant,
+};
+use tokio::timer::{
+    Timeout,
+    Interval,
+};
 
 #[derive(Clone)]
 struct Ping {
@@ -24,18 +34,33 @@ impl Ping {
     }
 }
 
-pub fn call(client: AsyncClient, timeout_secs: u64) -> Box<Future<Item = (), Error = Box<StdError>>> {
-    println!("waiting up to {}s until the cluster is ready...", timeout_secs);
+pub fn call(
+    client: AsyncClient,
+    timeout_secs: u64,
+) -> Box<Future<Item = (), Error = Box<StdError>>> {
+    println!(
+        "waiting up to {}s until the cluster is ready...",
+        timeout_secs
+    );
 
     let stream = stream::repeat(Ping { client: client });
 
     let wait = Interval::new(Instant::now(), Duration::from_secs(10)).from_err();
 
-    let poll = stream.take_while(|ping| ping.is_ready().map(|ready| !ready)).zip(wait).collect();
+    let poll = stream
+        .take_while(|ping| ping.is_ready().map(|ready| !ready))
+        .zip(wait)
+        .collect();
 
-    let poll_or_timeout = Deadline::new(poll, Instant::now() + Duration::from_secs(timeout_secs))
+    let poll_or_timeout = Timeout::new(poll, Duration::from_secs(timeout_secs))
         .map(|_| ())
-        .map_err(|e| if let Some(e) = e.into_inner() { e } else { Box::new(TimeoutError) });
+        .map_err(|e| {
+            if let Some(e) = e.into_inner() {
+                e
+            } else {
+                Box::new(TimeoutError)
+            }
+        });
 
     Box::new(poll_or_timeout)
 }

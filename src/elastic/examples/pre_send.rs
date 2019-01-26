@@ -10,7 +10,10 @@ use elastic::http::SyncHttpRequest;
 use elastic::prelude::*;
 use std::collections::hash_map::DefaultHasher;
 use std::error::Error;
-use std::hash::{Hash, Hasher};
+use std::hash::{
+    Hash,
+    Hasher,
+};
 use std::io::Read;
 
 fn hash_request(request: &mut SyncHttpRequest) -> Result<(), Box<Error + Send + Sync>> {
@@ -48,7 +51,9 @@ fn hash_request(request: &mut SyncHttpRequest) -> Result<(), Box<Error + Send + 
 
 fn run() -> Result<(), Box<Error>> {
     // A HTTP client and request parameters
-    let client = SyncClientBuilder::new().pre_send_raw(hash_request).build()?;
+    let client = SyncClientBuilder::new()
+        .pre_send_raw(hash_request)
+        .build()?;
 
     // Ping the cluster
     let ping = client.ping().send()?;

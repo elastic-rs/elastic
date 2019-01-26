@@ -3,7 +3,11 @@ pub(crate) mod stats;
 pub(crate) mod terms;
 
 use self::date_histogram::DateHistogramAggregation;
-use self::stats::{AvgAggregation, MaxAggregation, SumAggregation};
+use self::stats::{
+    AvgAggregation,
+    MaxAggregation,
+    SumAggregation,
+};
 use self::terms::TermAggregation;
 use std::collections::hash_map::Iter;
 use std::collections::HashMap;
@@ -272,7 +276,10 @@ impl<'i> Iterator for AggregationIterator<'i> {
                 _ => (),
             };
 
-            return Some(AggHolder { name: next.0, agg: next.1 });
+            return Some(AggHolder {
+                name: next.0,
+                agg: next.1,
+            });
         }
 
         None
@@ -306,7 +313,15 @@ mod tests {
 
         s1.replace_target_agg("Agg3Terms", "AggNew", Aggregation::term(t));
 
-        assert!(s1.aggs_get("Agg2Terms").unwrap().aggs_get("AggNew").unwrap().aggs_get("Agg4Terms").unwrap().aggs().is_some());
+        assert!(s1
+            .aggs_get("Agg2Terms")
+            .unwrap()
+            .aggs_get("AggNew")
+            .unwrap()
+            .aggs_get("Agg4Terms")
+            .unwrap()
+            .aggs()
+            .is_some());
     }
 
     #[test]
@@ -319,9 +334,19 @@ mod tests {
 
         s1.drop_target_agg("Agg3Terms");
 
-        assert!(s1.aggs_get("Agg2Terms").unwrap().aggs_get("Agg3Terms").is_none());
+        assert!(s1
+            .aggs_get("Agg2Terms")
+            .unwrap()
+            .aggs_get("Agg3Terms")
+            .is_none());
 
-        assert!(s1.aggs_get("Agg2Terms").unwrap().aggs_get("Agg4Terms").unwrap().aggs().is_some());
+        assert!(s1
+            .aggs_get("Agg2Terms")
+            .unwrap()
+            .aggs_get("Agg4Terms")
+            .unwrap()
+            .aggs()
+            .is_some());
     }
 
     #[test]
@@ -344,7 +369,15 @@ mod tests {
         use aggregations::terms::*;
 
         s1.insert_child_after("Agg2Terms", "AggNew", Aggregation::term(t));
-        assert!(s1.aggs_get("Agg2Terms").unwrap().aggs_get("AggNew").unwrap().aggs_get("Agg3Terms").unwrap().aggs().is_some());
+        assert!(s1
+            .aggs_get("Agg2Terms")
+            .unwrap()
+            .aggs_get("AggNew")
+            .unwrap()
+            .aggs_get("Agg3Terms")
+            .unwrap()
+            .aggs()
+            .is_some());
     }
 
     #[test]
@@ -360,7 +393,9 @@ mod tests {
 
         //Destructuring FTW
         if let term(TermAggregation {
-            terms: TermsAggFields { field: ref mut a, .. },
+            terms: TermsAggFields {
+                field: ref mut a, ..
+            },
             ..
         }) = *a
         {
@@ -387,7 +422,8 @@ mod tests {
         let a = s1.aggs_get("Agg3Terms");
         if let Some(a) = a {
             if let term(TermAggregation {
-                terms: TermsAggFields { field: ref a, .. }, ..
+                terms: TermsAggFields { field: ref a, .. },
+                ..
             }) = *a
             {
                 assert_eq!(a, "Agg3Terms");
