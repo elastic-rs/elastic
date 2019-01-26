@@ -16,8 +16,9 @@ use std::error::Error;
 
 fn run() -> Result<(), Box<Error>> {
     // A reqwest HTTP client and default parameters.
-    // The `params` includes the base node url (http://localhost:9200).
-    let client = SyncClientBuilder::new().build()?;
+    let client = SyncClientBuilder::new()
+        .static_node("http://localhost:9200")
+        .build()?;
 
     // Send the request and process the response.
     let res = client

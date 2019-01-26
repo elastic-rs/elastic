@@ -35,6 +35,24 @@ pub struct HttpRequest<TBody> {
     pub(crate) body: Option<TBody>,
 }
 
+impl<TBody> HttpRequest<TBody> {
+    pub fn url_mut(&mut self) -> &mut Url {
+        &mut self.url
+    }
+
+    pub fn method_mut(&mut self) -> &mut Method {
+        &mut self.method
+    }
+
+    pub fn headers_mut(&mut self) -> &mut HeaderMap {
+        Arc::make_mut(&mut self.headers)
+    }
+
+    pub fn body_mut(&mut self) -> Option<&mut TBody> {
+        self.body.as_mut()
+    }
+}
+
 impl<TBody> fmt::Debug for HttpRequest<TBody> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         f.debug_struct("HttpRequest")

@@ -10,7 +10,7 @@
 extern crate elastic;
 extern crate env_logger;
 extern crate futures;
-extern crate tokio_core;
+extern crate tokio;
 #[macro_use]
 extern crate serde_json;
 
@@ -23,13 +23,10 @@ use futures::{
 };
 use std::error::Error;
 use std::time::Duration;
-use tokio_core::reactor::Core;
 
 fn run() -> Result<(), Box<Error>> {
-    let mut core = Core::new()?;
-
     // A HTTP client and request parameters
-    let client = AsyncClientBuilder::new().build(&core.handle())?;
+    let client = AsyncClientBuilder::new().build()?;
 
     // Get a stream for bulk operations
     // Individual operations can be sent to the stream and will be buffered to Elasticsearch
@@ -64,7 +61,7 @@ fn run() -> Result<(), Box<Error>> {
         Ok(())
     });
 
-    core.run(req_future.join(res_future))?;
+    tokio::executor::current_thread::block_on_all(req_future.join(res_future))?;
 
     Ok(())
 }

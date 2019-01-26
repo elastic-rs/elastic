@@ -7,20 +7,17 @@
 extern crate elastic;
 extern crate env_logger;
 extern crate futures;
-extern crate tokio_core;
+extern crate tokio;
 
 use elastic::prelude::*;
 use futures::Future;
 use std::error::Error;
-use tokio_core::reactor::Core;
 
 fn run() -> Result<(), Box<Error>> {
-    let mut core = Core::new()?;
-
     // An async HTTP client that will sniff node addresses from the given base address.
     let client = AsyncClientBuilder::new()
         .sniff_nodes("http://localhost:9200")
-        .build(&core.handle())?;
+        .build()?;
 
     // Send the request and process the response.
     let ping_future = client
@@ -33,7 +30,7 @@ fn run() -> Result<(), Box<Error>> {
             Ok(())
         });
 
-    core.run(ping_future)?;
+    tokio::executor::current_thread::block_on_all(ping_future)?;
 
     Ok(())
 }
