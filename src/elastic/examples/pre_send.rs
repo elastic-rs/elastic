@@ -7,22 +7,22 @@ extern crate env_logger;
 extern crate reqwest;
 
 use elastic::http::{
-    SyncHttpRequest,
     header::{
         HeaderName,
         HeaderValue,
     },
+    SyncHttpRequest,
 };
 use elastic::prelude::*;
 use std::{
     collections::hash_map::DefaultHasher,
-    str::FromStr,
     error::Error,
     hash::{
         Hash,
         Hasher,
     },
     io::Read,
+    str::FromStr,
 };
 
 fn hash_request(request: &mut SyncHttpRequest) -> Result<(), Box<Error + Send + Sync>> {
@@ -45,7 +45,9 @@ fn hash_request(request: &mut SyncHttpRequest) -> Result<(), Box<Error + Send + 
 
     // Add a raw header to the request
     let hash = hasher.finish();
-    request.headers_mut().insert(HeaderName::from_str("X-BadHash")?, HeaderValue::from(hash));
+    request
+        .headers_mut()
+        .insert(HeaderName::from_str("X-BadHash")?, HeaderValue::from(hash));
 
     Ok(())
 }

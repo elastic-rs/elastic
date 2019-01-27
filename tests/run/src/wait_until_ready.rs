@@ -6,9 +6,7 @@ use futures::{
 };
 use std::error::Error as StdError;
 use std::fmt;
-use std::time::{
-    Duration,
-};
+use std::time::Duration;
 
 type Error = Box<StdError>;
 
@@ -21,10 +19,7 @@ pub fn call(client: AsyncClient, timeout_secs: u64) -> Result<(), Error> {
     }
 }
 
-fn call_future(
-    client: AsyncClient,
-    timeout_secs: u64,
-) -> Box<Future<Item = (), Error = Done>> {
+fn call_future(client: AsyncClient, timeout_secs: u64) -> Box<Future<Item = (), Error = Done>> {
     println!(
         "waiting up to {}s until the cluster is ready...",
         timeout_secs
@@ -37,21 +32,21 @@ fn call_future(
             let client = client.clone();
 
             let poll = tokio_timer::sleep(Duration::from_secs(3))
-            .map_err(Error::from)
-            .and_then(move |_| {
-                client
-                    .ping()
-                    .send()
-                    .then(|r| {
-                        let r: Result<_, Error> = match r {
-                            Ok(_) => Ok(((), true)),
-                            Err(_) => Ok(((), false)),
-                        };
+                .map_err(Error::from)
+                .and_then(move |_| {
+                    client
+                        .ping()
+                        .send()
+                        .then(|r| {
+                            let r: Result<_, Error> = match r {
+                                Ok(_) => Ok(((), true)),
+                                Err(_) => Ok(((), false)),
+                            };
 
-                        r
-                    })
-                    .map_err(Error::from)
-            });
+                            r
+                        })
+                        .map_err(Error::from)
+                });
 
             Some(poll)
         }

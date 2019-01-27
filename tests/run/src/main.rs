@@ -19,8 +19,8 @@ extern crate serde_derive;
 extern crate serde_json;
 extern crate term_painter;
 extern crate tokio;
-extern crate tokio_timer;
 extern crate tokio_threadpool;
+extern crate tokio_timer;
 
 use clap::{
     App,

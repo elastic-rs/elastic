@@ -15,12 +15,12 @@ extern crate tokio;
 
 use elastic::prelude::*;
 use futures::Future;
-use tokio_threadpool::ThreadPool;
 use serde_json::Value;
 use std::{
-    sync::Arc,
     error::Error,
+    sync::Arc,
 };
+use tokio_threadpool::ThreadPool;
 
 fn run() -> Result<(), Box<Error>> {
     // A reqwest HTTP client and default parameters.
