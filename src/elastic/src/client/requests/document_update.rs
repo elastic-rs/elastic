@@ -669,7 +669,7 @@ where
 
     ```no_run
     # extern crate futures;
-    # extern crate tokio_core;
+    # extern crate tokio;
     # extern crate serde;
     # extern crate serde_json;
     # #[macro_use] extern crate serde_derive;
@@ -680,14 +680,13 @@ where
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
     # fn run() -> Result<(), Box<::std::error::Error>> {
-    # let core = tokio_core::reactor::Core::new()?;
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
     #     pub id: String,
     #     pub title: String,
     #     pub timestamp: Date<DefaultDateMapping>
     # }
-    # let client = AsyncClientBuilder::new().build(&core.handle())?;
+    # let client = AsyncClientBuilder::new().build()?;
     # let new_doc = MyType { id: "1".to_owned(), title: String::new(), timestamp: Date::now() };
     let future = client.document::<MyType>()
                        .update(1)

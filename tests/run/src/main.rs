@@ -64,10 +64,10 @@ fn main() {
         build_container::start(run).unwrap();
 
         // Wait until the container is ready
-        tokio::executor::current_thread::block_on_all(wait_until_ready::call(client.clone(), 60)).unwrap();
+        tokio::runtime::current_thread::block_on_all(wait_until_ready::call(client.clone(), 60)).unwrap();
 
         // Run the integration tests
-        let results = tokio::executor::current_thread::block_on_all(run_tests::call(client, 8)).unwrap();
+        let results = tokio::runtime::current_thread::block_on_all(run_tests::call(client, 8)).unwrap();
         failed.extend(results.iter().filter(|success| **success == false));
         total += results.len();
 

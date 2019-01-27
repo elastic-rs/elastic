@@ -54,10 +54,19 @@ let params = RequestParams::new("http://mybaseurl:9200");
 With custom headers:
 
 ```
-# use elastic::client::RequestParams;
-# use elastic::http::header::Authorization;
+# extern crate elastic;
+# use elastic::prelude::*;
+# use std::str::FromStr;
+# fn main() { run().unwrap() }
+# fn run() -> Result<(), Box<::std::error::Error>> {
+use elastic::http::header::{self, AUTHORIZATION, HeaderValue};
+
+let auth = HeaderValue::from_str("let me in")?;
+
 let params = RequestParams::default()
-    .header(Authorization("let me in".to_owned()));
+    .header(AUTHORIZATION, auth);
+# Ok(())
+# }
 ```
 
 With url query parameters:

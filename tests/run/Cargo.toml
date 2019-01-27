@@ -1,5 +1,5 @@
 [package]
-name = "run"
+name = "integration_tests"
 version = "0.1.0"
 authors = ["Ashley Mannix <ashleymannix@live.com.au>"]
 publish = false

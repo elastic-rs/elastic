@@ -182,7 +182,7 @@ impl Client<AsyncSender> {
     ```no_run
     # extern crate serde;
     # extern crate futures;
-    # extern crate tokio_core;
+    # extern crate tokio;
     # #[macro_use] extern crate serde_derive;
     # #[macro_use] extern crate elastic_derive;
     # extern crate elastic;
@@ -196,8 +196,7 @@ impl Client<AsyncSender> {
     #     pub id: String,
     #     pub title: String,
     # }
-    # let core = tokio_core::reactor::Core::new()?;
-    # let client = AsyncClientBuilder::new().build(&core.handle())?;
+    # let client = AsyncClientBuilder::new().build()?;
     let (bulk_stream, bulk_responses) = client.bulk_stream()
         .index("bulk_idx")
         .ty(MyType::static_ty())
@@ -623,7 +622,7 @@ where
     ```no_run
     # extern crate serde;
     # extern crate futures;
-    # extern crate tokio_core;
+    # extern crate tokio;
     # #[macro_use] extern crate serde_derive;
     # #[macro_use] extern crate elastic_derive;
     # extern crate elastic;
@@ -636,8 +635,7 @@ where
     #     pub id: String,
     #     pub title: String,
     # }
-    # let core = tokio_core::reactor::Core::new()?;
-    # let client = AsyncClientBuilder::new().build(&core.handle())?;
+    # let client = AsyncClientBuilder::new().build()?;
     let ops = (0..1000)
         .into_iter()
         .map(|i| bulk::<MyType>().index(MyType {

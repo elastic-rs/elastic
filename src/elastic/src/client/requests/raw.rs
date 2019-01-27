@@ -141,7 +141,7 @@ where
     Send a raw request asynchronously and parse it to a concrete response type:
 
     ```no_run
-    # extern crate tokio_core;
+    # extern crate tokio;
     # extern crate futures;
     # extern crate elastic;
     # extern crate serde_json;
@@ -150,8 +150,7 @@ where
     # use futures::Future;
     # fn main() { run().unwrap() }
     # fn run() -> Result<(), Box<::std::error::Error>> {
-    # let core = tokio_core::reactor::Core::new()?;
-    # let client = AsyncClientBuilder::new().build(&core.handle())?;
+    # let client = AsyncClientBuilder::new().build()?;
     let future = client.request(SimpleSearchRequest::for_index_ty("myindex", "mytype"))
                        .send()
                        .and_then(|res| res.into_response::<SearchResponse<Value>>());

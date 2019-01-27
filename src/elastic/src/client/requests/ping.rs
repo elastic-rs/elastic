@@ -147,7 +147,7 @@ impl PingRequestBuilder<AsyncSender> {
     Ping an Elasticsearch node:
 
     ```no_run
-    # extern crate tokio_core;
+    # extern crate tokio;
     # extern crate futures;
     # extern crate serde;
     # #[macro_use] extern crate serde_derive;
@@ -159,8 +159,7 @@ impl PingRequestBuilder<AsyncSender> {
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # #[derive(Debug, Serialize, Deserialize, ElasticType)]
     # struct MyType { }
-    # let core = tokio_core::reactor::Core::new()?;
-    # let client = AsyncClientBuilder::new().build(&core.handle())?;
+    # let client = AsyncClientBuilder::new().build()?;
     let future = client.ping().send();
 
     future.and_then(|response| {

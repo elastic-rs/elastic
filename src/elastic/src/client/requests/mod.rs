@@ -203,19 +203,19 @@ impl<TRequest> RequestBuilder<AsyncSender, TRequest> {
     Use the given thread pool to deserialise the response:
 
     ```no_run
-    # extern crate tokio_core;
+    # extern crate tokio;
     # extern crate tokio_threadpool;
     # extern crate elastic;
+    # use std::sync::Arc;
     # use tokio_threadpool::ThreadPool;
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
     # fn run() -> Result<(), Box<::std::error::Error>> {
-    # let core = tokio_core::reactor::Core::new()?;
-    # let client = AsyncClientBuilder::new().build(&core.handle())?;
+    # let client = AsyncClientBuilder::new().build()?;
     # fn get_req() -> PingRequest<'static> { PingRequest::new() }
     let pool = ThreadPool::new();
     let builder = client.request(get_req())
-                        .serde_pool(pool.clone());
+                        .serde_pool(Arc::new(pool));
     # Ok(())
     # }
     ```
@@ -223,15 +223,14 @@ impl<TRequest> RequestBuilder<AsyncSender, TRequest> {
     Never deserialise the response on a thread pool:
 
     ```no_run
-    # extern crate tokio_core;
+    # extern crate tokio;
     # extern crate tokio_threadpool;
     # extern crate elastic;
     # use tokio_threadpool::ThreadPool;
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
     # fn run() -> Result<(), Box<::std::error::Error>> {
-    # let core = tokio_core::reactor::Core::new()?;
-    # let client = AsyncClientBuilder::new().build(&core.handle())?;
+    # let client = AsyncClientBuilder::new().build()?;
     # fn get_req() -> PingRequest<'static> { PingRequest::new() }
     let builder = client.request(get_req())
                         .serde_pool(None);

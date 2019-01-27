@@ -64,21 +64,19 @@ Create an asynchronous `Client` and send a ping request:
 
 ```no_run
 # extern crate futures;
-# extern crate tokio_core;
+# extern crate tokio;
 # extern crate elastic;
 # use futures::Future;
-# use tokio_core::reactor::Core;
 # use elastic::prelude::*;
 # fn main() { run().unwrap() }
 # fn run() -> Result<(), Box<::std::error::Error>> {
-let mut core = Core::new()?;
-let client = AsyncClientBuilder::new().build(&core.handle())?;
+let client = AsyncClientBuilder::new().build()?;
 
 let response_future = client.request(PingRequest::new())
                             .send()
                             .and_then(|res| res.into_response::<PingResponse>());
 
-core.run(response_future)?;
+tokio::runtime::current_thread::block_on_all(response_future)?;
 # Ok(())
 # }
 ```
@@ -454,17 +452,6 @@ impl AsyncClientBuilder {
         .params_fluent(|p| p
             .url_param("pretty", true));
     ```
-
-    Add an authorization header:
-
-    ```
-    # use elastic::prelude::*;
-    use elastic::http::header::Authorization;
-
-    let builder = AsyncClientBuilder::new()
-        .params_fluent(|p| p
-            .header(Authorization("let me in".to_owned())));
-    ```
     */
     pub fn params_fluent(
         mut self,
@@ -488,17 +475,6 @@ impl AsyncClientBuilder {
         .params(PreRequestParams::new()
             .url_param("pretty", true));
     ```
-
-    Add an authorization header:
-
-    ```
-    # use elastic::prelude::*;
-    use elastic::http::header::Authorization;
-
-    let builder = AsyncClientBuilder::new()
-        .params(PreRequestParams::new()
-            .header(Authorization("let me in".to_owned())));
-    ```
     */
     pub fn params(mut self, params: impl Into<PreRequestParams>) -> Self {
         self.params = self.params.value(params.into());
@@ -516,15 +492,16 @@ impl AsyncClientBuilder {
     Use a cpu pool to serialise and deserialise responses:
 
     ```
-    # extern crate futures_cpupool;
+    # extern crate tokio_threadpool;
     # extern crate elastic;
+    # use std::sync::Arc;
     # use elastic::prelude::*;
-    # use futures_cpupool::ThreadPool;
+    # use tokio_threadpool::ThreadPool;
     # fn main() { run().unwrap() }
     # fn run() -> Result<(), Box<::std::error::Error>> {
-    let pool = ThreadPool::new(4);
+    let pool = ThreadPool::new();
 
-    let builder = AsyncClientBuilder::new().serde_pool(pool);
+    let builder = AsyncClientBuilder::new().serde_pool(Arc::new(pool));
     # Ok(())
     # }
     ```
@@ -563,46 +540,6 @@ impl AsyncClientBuilder {
 
     /**
     Construct an [`AsyncClient`][AsyncClient] from this builder.
-
-    The `build` method accepts any type that can be used to construct a http client from.
-
-    # Examples
-
-    Build with an asynchronous `Handle`.
-    This will build an `AsyncClient` with a default underlying `AsyncHttpClient` using the handle.
-
-    ```no_run
-    # extern crate tokio_core;
-    # extern crate elastic;
-    # use elastic::prelude::*;
-    # use tokio_core::reactor::Core;
-    # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<::std::error::Error>> {
-    let mut core = Core::new()?;
-
-    let builder = AsyncClientBuilder::new().build(&core.handle());
-    # Ok(())
-    # }
-    ```
-
-    Build with a given `AsyncHttpClient`.
-
-    ```no_run
-    # extern crate tokio_core;
-    # extern crate reqwest;
-    # extern crate elastic;
-    # use tokio_core::reactor::Core;
-    # use reqwest::async::Client;
-    # use elastic::prelude::*;
-    # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<::std::error::Error>> {
-    let mut core = Core::new()?;
-    let client = Client::new(&core.handle());
-
-    let builder = AsyncClientBuilder::new().build(client);
-    # Ok(())
-    # }
-    ```
 
     [AsyncClient]: type.AsyncClient.html
     */

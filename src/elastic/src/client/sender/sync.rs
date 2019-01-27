@@ -359,17 +359,6 @@ impl SyncClientBuilder {
         .params_fluent(|p| p
             .url_param("pretty", true));
     ```
-
-    Add an authorization header:
-
-    ```
-    # use elastic::prelude::*;
-    use elastic::http::header::Authorization;
-
-    let builder = SyncClientBuilder::new()
-        .params_fluent(|p| p
-            .header(Authorization("let me in".to_owned())));
-    ```
     */
     pub fn params_fluent(
         mut self,
@@ -392,17 +381,6 @@ impl SyncClientBuilder {
     let builder = SyncClientBuilder::new()
         .params(PreRequestParams::default()
             .url_param("pretty", true));
-    ```
-
-    Add an authorization header:
-
-    ```
-    # use elastic::prelude::*;
-    use elastic::http::header::Authorization;
-
-    let builder = SyncClientBuilder::new()
-        .params(PreRequestParams::default()
-            .header(Authorization("let me in".to_owned())));
     ```
     */
     pub fn params(mut self, params: impl Into<PreRequestParams>) -> Self {

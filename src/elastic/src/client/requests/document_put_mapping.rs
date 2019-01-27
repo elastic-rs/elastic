@@ -224,7 +224,7 @@ where
 
     ```no_run
     # extern crate futures;
-    # extern crate tokio_core;
+    # extern crate tokio;
     # extern crate serde;
     # #[macro_use] extern crate serde_derive;
     # #[macro_use] extern crate elastic_derive;
@@ -235,8 +235,7 @@ where
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType { }
-    # let core = tokio_core::reactor::Core::new()?;
-    # let client = AsyncClientBuilder::new().build(&core.handle())?;
+    # let client = AsyncClientBuilder::new().build()?;
     let future = client.document::<MyType>()
                        .put_mapping()
                        .send();

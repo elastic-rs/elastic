@@ -30,7 +30,7 @@ impl Names {
 
 pub fn start(run: &str) -> Result<(), Box<Error>> {
     let names = Names::from_run(run);
-    let containers_path = "./containers";
+    let containers_path = "tests/run/containers";
 
     let mut dockerfile_path = PathBuf::from(containers_path);
     dockerfile_path.push(&names.dockerfile_name);
@@ -49,7 +49,7 @@ pub fn start(run: &str) -> Result<(), Box<Error>> {
                 &names.build_name,
                 ".",
             ])
-            .current_dir("./containers")
+            .current_dir(containers_path)
             .stdout(Stdio::inherit())
             .stderr(Stdio::inherit())
             .output()?;

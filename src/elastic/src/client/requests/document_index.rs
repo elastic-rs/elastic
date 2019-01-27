@@ -326,7 +326,7 @@ where
     ```no_run
     # extern crate serde;
     # extern crate futures;
-    # extern crate tokio_core;
+    # extern crate tokio;
     # #[macro_use] extern crate serde_derive;
     # #[macro_use] extern crate elastic_derive;
     # extern crate elastic;
@@ -340,8 +340,7 @@ where
     #     pub title: String,
     #     pub timestamp: Date<DefaultDateMapping>
     # }
-    # let core = tokio_core::reactor::Core::new()?;
-    # let client = AsyncClientBuilder::new().build(&core.handle())?;
+    # let client = AsyncClientBuilder::new().build()?;
     let doc = MyType {
         id: "1".to_owned(),
         title: String::from("A title"),

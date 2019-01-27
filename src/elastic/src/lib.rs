@@ -56,16 +56,19 @@ The builder allows you to configure default parameters for all requests:
 
 ```no_run
 # extern crate elastic;
+# use elastic::prelude::*;
+# use std::str::FromStr;
 # fn main() { run().unwrap() }
 # fn run() -> Result<(), Box<::std::error::Error>> {
-use elastic::prelude::*;
-use elastic::http::header::Authorization;
+use elastic::http::header::{self, AUTHORIZATION, HeaderValue};
+
+let auth = HeaderValue::from_str("let me in")?;
 
 let builder = SyncClientBuilder::new()
     .static_node("http://es_host:9200")
-    .params_fluent(|p| p
+    .params_fluent(move |p| p
         .url_param("pretty", true)
-        .header(Authorization("let me in".to_owned())));
+        .header(AUTHORIZATION, auth.clone()));
 
 let client = builder.build()?;
 # Ok(())

@@ -231,14 +231,13 @@ where
 
     ```no_run
     # extern crate futures;
-    # extern crate tokio_core;
+    # extern crate tokio;
     # extern crate elastic;
     # use futures::Future;
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
     # fn run() -> Result<(), Box<::std::error::Error>> {
-    # let core = tokio_core::reactor::Core::new()?;
-    # let client = AsyncClientBuilder::new().build(&core.handle())?;
+    # let client = AsyncClientBuilder::new().build()?;
     let future = client.index("myindex").create().send();
 
     future.and_then(|response| {
