@@ -91,7 +91,11 @@ where
     Box::new(fut)
 }
 
-pub fn call(
+pub fn call(client: AsyncClient, max_concurrent_tests: usize) -> Result<Vec<TestResult>, ()> {
+    tokio::runtime::current_thread::block_on_all(call_future(client, max_concurrent_tests))
+}
+
+fn call_future(
     client: AsyncClient,
     max_concurrent_tests: usize,
 ) -> Box<Future<Item = Vec<TestResult>, Error = ()>> {

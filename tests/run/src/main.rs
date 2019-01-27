@@ -19,6 +19,7 @@ extern crate serde_derive;
 extern crate serde_json;
 extern crate term_painter;
 extern crate tokio;
+extern crate tokio_timer;
 extern crate tokio_threadpool;
 
 use clap::{
@@ -39,7 +40,7 @@ mod search;
 mod wait_until_ready;
 
 fn main() {
-    env_logger::init();
+    env_logger::init_from_env("ELASTIC_LOG");
 
     let matches = App::new("elastic_integration_tests")
         .arg(
@@ -64,10 +65,10 @@ fn main() {
         build_container::start(run).unwrap();
 
         // Wait until the container is ready
-        tokio::runtime::current_thread::block_on_all(wait_until_ready::call(client.clone(), 60)).unwrap();
+        wait_until_ready::call(client.clone(), 60).unwrap();
 
         // Run the integration tests
-        let results = tokio::runtime::current_thread::block_on_all(run_tests::call(client, 8)).unwrap();
+        let results = run_tests::call(client, 8).unwrap();
         failed.extend(results.iter().filter(|success| **success == false));
         total += results.len();
 

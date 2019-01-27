@@ -26,5 +26,5 @@ if [ "$KIND" == "build" ]; then
         git push -q upstream HEAD:refs/heads/gh-pages --force
     fi
 elif [ "$KIND" == "integration" ]; then
-    RUST_LOG=info cargo run -p integration_tests -- default sniffed_node
+    ELASTIC_LOG=info cargo run -p integration_tests -- default sniffed_node
 fi

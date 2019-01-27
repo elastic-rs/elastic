@@ -1,5 +1,4 @@
 use elastic::prelude::*;
-use elastic::Error;
 use futures::{
     stream,
     Future,
@@ -9,66 +8,82 @@ use std::error::Error as StdError;
 use std::fmt;
 use std::time::{
     Duration,
-    Instant,
-};
-use tokio::timer::{
-    Timeout,
-    Interval,
 };
 
-#[derive(Clone)]
-struct Ping {
-    client: AsyncClient,
-}
+type Error = Box<StdError>;
 
-impl Ping {
-    fn is_ready(&self) -> Box<Future<Item = bool, Error = Box<StdError>>> {
-        let request = self.client.ping().send().map_err(|e| e.into());
+pub fn call(client: AsyncClient, timeout_secs: u64) -> Result<(), Error> {
+    let wait = tokio::runtime::current_thread::block_on_all(call_future(client, timeout_secs));
 
-        let check = request.then(|res: Result<PingResponse, Error>| match res {
-            Ok(_) => Ok(true),
-            _ => Ok(false),
-        });
-
-        Box::new(check)
+    match wait {
+        Ok(()) | Err(Done::Ready) => Ok(()),
+        Err(Done::Error(e)) => Err(e),
     }
 }
 
-pub fn call(
+fn call_future(
     client: AsyncClient,
     timeout_secs: u64,
-) -> Box<Future<Item = (), Error = Box<StdError>>> {
+) -> Box<Future<Item = (), Error = Done>> {
     println!(
         "waiting up to {}s until the cluster is ready...",
         timeout_secs
     );
 
-    let stream = stream::repeat(Ping { client: client });
+    let stream = stream::unfold(false, move |is_done| {
+        if is_done {
+            None
+        } else {
+            let client = client.clone();
 
-    let wait = Interval::new(Instant::now(), Duration::from_secs(10)).from_err();
+            let poll = tokio_timer::sleep(Duration::from_secs(3))
+            .map_err(Error::from)
+            .and_then(move |_| {
+                client
+                    .ping()
+                    .send()
+                    .then(|r| {
+                        let r: Result<_, Error> = match r {
+                            Ok(_) => Ok(((), true)),
+                            Err(_) => Ok(((), false)),
+                        };
+
+                        r
+                    })
+                    .map_err(Error::from)
+            });
+
+            Some(poll)
+        }
+    });
 
     let poll = stream
-        .take_while(|ping| ping.is_ready().map(|ready| !ready))
-        .zip(wait)
-        .collect();
+        .fold((), |_, _| {
+            let r: Result<_, Error> = Ok(());
 
-    let poll_or_timeout = Timeout::new(poll, Duration::from_secs(timeout_secs))
-        .map(|_| ())
-        .map_err(|e| {
-            if let Some(e) = e.into_inner() {
-                e
-            } else {
-                Box::new(TimeoutError)
-            }
+            r
+        })
+        // FIXME: This is a super weird hack
+        // The stream seems to never terminate
+        // unless we return an error. My guess
+        // is the runtime attempting to wait on
+        // any remaining futures is never returning.
+        // I'm not too sure why...
+        .then(|r| match r {
+            Ok(_) => Err(Done::Ready),
+            Err(e) => Err(Done::Error(e)),
         });
 
-    Box::new(poll_or_timeout)
+    Box::new(poll)
 }
 
 #[derive(Debug)]
-struct TimeoutError;
+enum Done {
+    Ready,
+    Error(Error),
+}
 
-impl StdError for TimeoutError {
+impl StdError for Done {
     fn description(&self) -> &str {
         "timeout"
     }
@@ -78,7 +93,7 @@ impl StdError for TimeoutError {
     }
 }
 
-impl fmt::Display for TimeoutError {
+impl fmt::Display for Done {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "timeout")
     }
