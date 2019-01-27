@@ -10,14 +10,15 @@ extern crate env_logger;
 #[macro_use]
 extern crate serde_json;
 
-use std::error::Error;
-use serde_json::Value;
 use elastic::prelude::*;
+use serde_json::Value;
+use std::error::Error;
 
 fn run() -> Result<(), Box<Error>> {
     // A reqwest HTTP client and default parameters.
-    // The `params` includes the base node url (http://localhost:9200).
-    let client = SyncClientBuilder::new().build()?;
+    let client = SyncClientBuilder::new()
+        .static_node("http://localhost:9200")
+        .build()?;
 
     // Send the request and process the response.
     let res = client

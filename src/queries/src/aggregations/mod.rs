@@ -1,13 +1,17 @@
 pub(crate) mod date_histogram;
-pub(crate) mod terms;
 pub(crate) mod stats;
+pub(crate) mod terms;
 
-use std::option::Option;
-use std::collections::HashMap;
 use self::date_histogram::DateHistogramAggregation;
+use self::stats::{
+    AvgAggregation,
+    MaxAggregation,
+    SumAggregation,
+};
 use self::terms::TermAggregation;
-use self::stats::{AvgAggregation, MaxAggregation, SumAggregation};
 use std::collections::hash_map::Iter;
+use std::collections::HashMap;
+use std::option::Option;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(untagged)]
@@ -172,8 +176,8 @@ pub trait BucketAggregation {
     where
         F: Fn(&str, &mut Aggregation),
     {
-        use Aggregation::*;
         use aggregations::BucketAggregation;
+        use Aggregation::*;
         if let Some(a) = self.aggs_mut() {
             for (name, child) in a {
                 f(name, child);
@@ -284,9 +288,9 @@ impl<'i> Iterator for AggregationIterator<'i> {
 
 #[cfg(test)]
 mod tests {
+    use super::super::Query;
     use super::*;
     use serde_json;
-    use super::super::Query;
 
     #[test]
     fn api_replace() {
@@ -309,16 +313,15 @@ mod tests {
 
         s1.replace_target_agg("Agg3Terms", "AggNew", Aggregation::term(t));
 
-        assert!(
-            s1.aggs_get("Agg2Terms")
-                .unwrap()
-                .aggs_get("AggNew")
-                .unwrap()
-                .aggs_get("Agg4Terms")
-                .unwrap()
-                .aggs()
-                .is_some()
-        );
+        assert!(s1
+            .aggs_get("Agg2Terms")
+            .unwrap()
+            .aggs_get("AggNew")
+            .unwrap()
+            .aggs_get("Agg4Terms")
+            .unwrap()
+            .aggs()
+            .is_some());
     }
 
     #[test]
@@ -331,21 +334,19 @@ mod tests {
 
         s1.drop_target_agg("Agg3Terms");
 
-        assert!(
-            s1.aggs_get("Agg2Terms")
-                .unwrap()
-                .aggs_get("Agg3Terms")
-                .is_none()
-        );
+        assert!(s1
+            .aggs_get("Agg2Terms")
+            .unwrap()
+            .aggs_get("Agg3Terms")
+            .is_none());
 
-        assert!(
-            s1.aggs_get("Agg2Terms")
-                .unwrap()
-                .aggs_get("Agg4Terms")
-                .unwrap()
-                .aggs()
-                .is_some()
-        );
+        assert!(s1
+            .aggs_get("Agg2Terms")
+            .unwrap()
+            .aggs_get("Agg4Terms")
+            .unwrap()
+            .aggs()
+            .is_some());
     }
 
     #[test]
@@ -368,22 +369,21 @@ mod tests {
         use aggregations::terms::*;
 
         s1.insert_child_after("Agg2Terms", "AggNew", Aggregation::term(t));
-        assert!(
-            s1.aggs_get("Agg2Terms")
-                .unwrap()
-                .aggs_get("AggNew")
-                .unwrap()
-                .aggs_get("Agg3Terms")
-                .unwrap()
-                .aggs()
-                .is_some()
-        );
+        assert!(s1
+            .aggs_get("Agg2Terms")
+            .unwrap()
+            .aggs_get("AggNew")
+            .unwrap()
+            .aggs_get("Agg3Terms")
+            .unwrap()
+            .aggs()
+            .is_some());
     }
 
     #[test]
     fn find_and_insert_hard_way() {
-        use Aggregation::*;
         use aggregations::terms::TermsAggFields;
+        use Aggregation::*;
 
         let j = include_str!("../../tests/complex.json");
         let mut s1: Query = serde_json::from_str(j).unwrap();

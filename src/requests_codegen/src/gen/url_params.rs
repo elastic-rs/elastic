@@ -1,7 +1,7 @@
-use inflector::Inflector;
-use syn;
-use parse;
 use super::helpers::*;
+use inflector::Inflector;
+use parse;
+use syn;
 
 /// Builder for request url parameters enum.
 ///
@@ -122,6 +122,8 @@ impl<'a> From<&'a (String, parse::Endpoint)> for UrlParamBuilder {
 
 #[cfg(test)]
 mod tests {
+    #![cfg_attr(rustfmt, rustfmt_skip)]
+    
     use super::*;
 
     #[test]
@@ -129,8 +131,8 @@ mod tests {
         let (result, _) = UrlParamBuilder::new("RequestParams").build();
 
         let expected = quote!(
-            enum RequestParams { 
-                None, 
+            enum RequestParams {
+                None,
             }
         );
 
@@ -139,17 +141,13 @@ mod tests {
 
     #[test]
     fn gen_params_enum_with_param_sets() {
-        let (result, _) = UrlParamBuilder::new("RequestParams")
-            .with_param_set(vec![])
-            .with_param_set(vec!["Index"])
-            .with_param_set(vec!["Index", "Type", "Id"])
-            .build();
+        let (result, _) = UrlParamBuilder::new("RequestParams").with_param_set(vec![]).with_param_set(vec!["Index"]).with_param_set(vec!["Index", "Type", "Id"]).build();
 
         let expected = quote!(
-            enum RequestParams<'a> { 
-                None, 
-                Index(Index<'a>), 
-                IndexTypeId(Index<'a>, Type<'a>, Id<'a>), 
+            enum RequestParams<'a> {
+                None,
+                Index(Index<'a>),
+                IndexTypeId(Index<'a>, Type<'a>, Id<'a>),
             }
         );
 
@@ -173,10 +171,10 @@ mod tests {
         let (result, _) = UrlParamBuilder::from(&endpoint).build();
 
         let expected = quote!(
-            enum IndicesExistsAliasUrlParams<'a> { 
+            enum IndicesExistsAliasUrlParams<'a> {
                 None,
-                Index(Index<'a>), 
-                IndexType(Index<'a>, Type<'a>), 
+                Index(Index<'a>),
+                IndexType(Index<'a>, Type<'a>),
             }
         );
 

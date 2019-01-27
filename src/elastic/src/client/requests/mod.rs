@@ -4,18 +4,28 @@ Request types for the Elasticsearch REST API.
 This module contains implementation details that are useful if you want to customise the request process, but aren't generally important for sending requests.
 */
 
-use futures_cpupool::CpuPool;
 use fluent_builder::FluentBuilder;
+use std::sync::Arc;
+use tokio_threadpool::ThreadPool;
 
+use client::sender::{
+    AsyncSender,
+    RequestParams,
+    Sender,
+};
 use client::Client;
-use client::sender::{AsyncSender, RequestParams, Sender};
 
-pub use elastic_requests::{empty_body, DefaultBody, Endpoint, UrlPath};
-pub use elastic_requests::params;
 pub use elastic_requests::endpoints;
+pub use elastic_requests::params;
+pub use elastic_requests::{
+    empty_body,
+    DefaultBody,
+    Endpoint,
+    UrlPath,
+};
 
-pub use self::params::*;
 pub use self::endpoints::*;
+pub use self::params::*;
 
 pub mod raw;
 pub use self::raw::RawRequestBuilder;
@@ -25,34 +35,34 @@ pub mod search;
 pub use self::search::SearchRequestBuilder;
 
 // Document requests
+pub mod document_delete;
 pub mod document_get;
 pub mod document_index;
-pub mod document_update;
-pub mod document_delete;
 pub mod document_put_mapping;
+pub mod document_update;
+pub use self::document_delete::DeleteRequestBuilder;
 pub use self::document_get::GetRequestBuilder;
 pub use self::document_index::IndexRequestBuilder;
-pub use self::document_update::UpdateRequestBuilder;
-pub use self::document_delete::DeleteRequestBuilder;
 pub use self::document_put_mapping::PutMappingRequestBuilder;
+pub use self::document_update::UpdateRequestBuilder;
 
 // Index requests
-pub mod index_create;
-pub mod index_open;
 pub mod index_close;
+pub mod index_create;
 pub mod index_delete;
 pub mod index_exists;
-pub use self::index_create::IndexCreateRequestBuilder;
-pub use self::index_open::IndexOpenRequestBuilder;
+pub mod index_open;
 pub use self::index_close::IndexCloseRequestBuilder;
+pub use self::index_create::IndexCreateRequestBuilder;
 pub use self::index_delete::IndexDeleteRequestBuilder;
 pub use self::index_exists::IndexExistsRequestBuilder;
+pub use self::index_open::IndexOpenRequestBuilder;
 
 // Misc requests
-pub mod ping;
 pub mod bulk;
-pub use self::ping::PingRequestBuilder;
+pub mod ping;
 pub use self::bulk::BulkRequestBuilder;
+pub use self::ping::PingRequestBuilder;
 
 pub mod common;
 
@@ -103,15 +113,15 @@ where
 
     /**
     Override the parameters for this request.
-    
+
     This method will box the given closure and use it to mutate the request parameters.
     It will be called after a node address has been chosen so `params` can be used to override the url a request will be sent to.
     Each call to `params` will be chained so it can be called multiple times but it's recommended to only call once.
-    
+
     # Examples
-    
+
     Add a url param to force an index refresh:
-    
+
     ```no_run
     # extern crate elastic;
     # use elastic::prelude::*;
@@ -140,10 +150,10 @@ where
     # }
     ```
     */
-    pub fn params_fluent<F>(mut self, builder: F) -> Self
-    where
-        F: Fn(RequestParams) -> RequestParams + 'static,
-    {
+    pub fn params_fluent(
+        mut self,
+        builder: impl Fn(RequestParams) -> RequestParams + 'static,
+    ) -> Self {
         self.params_builder = self.params_builder.fluent(builder).boxed();
 
         self
@@ -154,11 +164,11 @@ where
 
     This method differs from `params_fluent` by not taking any default parameters into account.
     The `RequestParams` passed in are exactly the `RequestParams` used to build the request.
-    
+
     # Examples
-    
+
     Add a url param to force an index refresh and send the request to `http://different-host:9200`:
-    
+
     ```no_run
     # extern crate elastic;
     # use elastic::prelude::*;
@@ -172,10 +182,7 @@ where
     # }
     ```
     */
-    pub fn params<I>(mut self, params: I) -> Self
-    where
-        I: Into<RequestParams>,
-    {
+    pub fn params(mut self, params: impl Into<RequestParams>) -> Self {
         self.params_builder = self.params_builder.value(params.into());
 
         self
@@ -190,41 +197,40 @@ The following methods can be called on any asynchronous request builder.
 impl<TRequest> RequestBuilder<AsyncSender, TRequest> {
     /**
     Override the thread pool used for deserialisation for this request.
-        
+
     # Examples
 
     Use the given thread pool to deserialise the response:
 
     ```no_run
-    # extern crate tokio_core;
-    # extern crate futures_cpupool;
+    # extern crate tokio;
+    # extern crate tokio_threadpool;
     # extern crate elastic;
-    # use futures_cpupool::CpuPool;
+    # use std::sync::Arc;
+    # use tokio_threadpool::ThreadPool;
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
     # fn run() -> Result<(), Box<::std::error::Error>> {
-    # let core = tokio_core::reactor::Core::new()?;
-    # let client = AsyncClientBuilder::new().build(&core.handle())?;
+    # let client = AsyncClientBuilder::new().build()?;
     # fn get_req() -> PingRequest<'static> { PingRequest::new() }
-    let pool = CpuPool::new(4);
+    let pool = ThreadPool::new();
     let builder = client.request(get_req())
-                        .serde_pool(pool.clone());
+                        .serde_pool(Arc::new(pool));
     # Ok(())
     # }
     ```
-    
+
     Never deserialise the response on a thread pool:
-    
+
     ```no_run
-    # extern crate tokio_core;
-    # extern crate futures_cpupool;
+    # extern crate tokio;
+    # extern crate tokio_threadpool;
     # extern crate elastic;
-    # use futures_cpupool::CpuPool;
+    # use tokio_threadpool::ThreadPool;
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
     # fn run() -> Result<(), Box<::std::error::Error>> {
-    # let core = tokio_core::reactor::Core::new()?;
-    # let client = AsyncClientBuilder::new().build(&core.handle())?;
+    # let client = AsyncClientBuilder::new().build()?;
     # fn get_req() -> PingRequest<'static> { PingRequest::new() }
     let builder = client.request(get_req())
                         .serde_pool(None);
@@ -232,10 +238,7 @@ impl<TRequest> RequestBuilder<AsyncSender, TRequest> {
     # }
     ```
     */
-    pub fn serde_pool<P>(mut self, pool: P) -> Self
-    where
-        P: Into<Option<CpuPool>>,
-    {
+    pub fn serde_pool(mut self, pool: impl Into<Option<Arc<ThreadPool>>>) -> Self {
         self.client.sender.serde_pool = pool.into();
 
         self
@@ -245,13 +248,13 @@ impl<TRequest> RequestBuilder<AsyncSender, TRequest> {
 pub mod prelude {
     /*! A glob import for convenience. */
 
-    pub use super::params::*;
     pub use super::endpoints::*;
+    pub use super::params::*;
 
     pub use super::bulk::{
-        BulkOperation,
         bulk,
         bulk_raw,
+        BulkOperation,
     };
 
     pub use super::{
@@ -259,15 +262,15 @@ pub mod prelude {
         DefaultBody,
         DeleteRequestBuilder,
         GetRequestBuilder,
+        IndexCloseRequestBuilder,
         IndexCreateRequestBuilder,
         IndexDeleteRequestBuilder,
         IndexOpenRequestBuilder,
-        IndexCloseRequestBuilder,
         IndexRequestBuilder,
+        PingRequestBuilder,
         PutMappingRequestBuilder,
         RawRequestBuilder,
         SearchRequestBuilder,
-        PingRequestBuilder,
         UpdateRequestBuilder,
     };
 }

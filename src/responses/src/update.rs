@@ -2,17 +2,22 @@
 Response types for a [update document request](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-update.html).
 */
 
-use parsing::IsOkOnSuccess;
 use common::DocumentResult;
+use parsing::IsOkOnSuccess;
 
 /** Response for a [update document request](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-update.html). */
 #[derive(Deserialize, Debug)]
 pub struct UpdateResponse {
-    #[serde(rename = "_index")] index: String,
-    #[serde(rename = "_type")] ty: String,
-    #[serde(rename = "_id")] id: String,
-    #[serde(rename = "_version")] version: Option<u32>,
-    #[serde(rename = "_routing")] routing: Option<String>,
+    #[serde(rename = "_index")]
+    index: String,
+    #[serde(rename = "_type")]
+    ty: String,
+    #[serde(rename = "_id")]
+    id: String,
+    #[serde(rename = "_version")]
+    version: Option<u32>,
+    #[serde(rename = "_routing")]
+    routing: Option<String>,
     result: DocumentResult,
 }
 

@@ -1,9 +1,25 @@
+use super::mapping::{
+    GeoPointFieldType,
+    GeoPointMapping,
+};
+use super::{
+    Coordinate,
+    GeoPointFormat,
+    Geometry,
+    Point,
+};
+use georust::{
+    Geometry as GeoEnum,
+    ToGeo,
+};
+use serde::{
+    Deserialize,
+    Deserializer,
+    Serialize,
+    Serializer,
+};
 use std::borrow::Borrow;
 use std::marker::PhantomData;
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
-use georust::{Geometry as GeoEnum, ToGeo};
-use super::mapping::{GeoPointFieldType, GeoPointMapping};
-use super::{Coordinate, GeoPointFormat, Geometry, Point};
 
 /**
 An Elasticsearch `geo_point` type with a format.
@@ -58,21 +74,21 @@ where
 {
     /**
     Creates a new `GeoPoint` from the given coordinate.
-    
+
     This function will consume the provided `Coordinate`.
-    
+
     # Examples
-    
+
     ```
     # extern crate elastic_types;
     # extern crate geo;
     # fn main() {
     use geo::{ Point, Coordinate };
     use elastic_types::prelude::*;
-    
+
     //Create a geo Coordinate struct
     let coord = Coordinate { x: 1.0, y: 1.0 };
-    
+
     //Give it to the GeoPoint struct
     let point: GeoPoint<DefaultGeoPointMapping> = GeoPoint::new(Point(coord));
     # }
@@ -90,7 +106,7 @@ where
 
     /**
     Creates an `GeoPoint` from the given `x` and `y` primitives:
-    
+
     ```
     # use elastic_types::prelude::*;
     let point: GeoPoint<DefaultGeoPointMapping> = GeoPoint::build(1.0, 1.0);
@@ -102,14 +118,14 @@ where
 
     /**
     Change the format/mapping of this geo point.
-    
+
     # Examples
-    
+
     ```
     # use elastic_types::prelude::*;
     //Get a point formatted as a string
     let point: GeoPoint<DefaultGeoPointMapping<GeoPointString>> = GeoPoint::build(1.0, 1.0);
-    
+
     //Change the format to an object
     let otherpoint: GeoPoint<DefaultGeoPointMapping<GeoPointObject>> = GeoPoint::remap(point);
     ```
@@ -122,11 +138,7 @@ where
     }
 }
 
-impl<TMapping> GeoPointFieldType<TMapping> for GeoPoint<TMapping>
-where
-    TMapping: GeoPointMapping,
-{
-}
+impl<TMapping> GeoPointFieldType<TMapping> for GeoPoint<TMapping> where TMapping: GeoPointMapping {}
 
 impl_mapping_type!(Point, GeoPoint, GeoPointMapping);
 
@@ -176,7 +188,12 @@ where
 
 #[cfg(test)]
 mod tests {
-    use georust::{Coordinate, Geometry, Point, ToGeo};
+    use georust::{
+        Coordinate,
+        Geometry,
+        Point,
+        ToGeo,
+    };
 
     use prelude::*;
 
@@ -186,7 +203,8 @@ mod tests {
             true
         }
 
-        let point: GeoPoint<DefaultGeoPointMapping<GeoPointString>> = GeoPoint::new(Point(Coordinate { x: 1.0, y: 1.0 }));
+        let point: GeoPoint<DefaultGeoPointMapping<GeoPointString>> =
+            GeoPoint::new(Point(Coordinate { x: 1.0, y: 1.0 }));
 
         assert!(takes_custom_mapping(GeoPoint::remap(point)));
     }
@@ -195,14 +213,19 @@ mod tests {
     fn can_build_point_from_geo() {
         let coord = Coordinate { x: 1.0, y: 1.0 };
 
-        let point = GeoPoint::<DefaultGeoPointMapping<DefaultGeoPointFormat>>::new(Point(coord.clone()));
+        let point =
+            GeoPoint::<DefaultGeoPointMapping<DefaultGeoPointFormat>>::new(Point(coord.clone()));
 
         assert_eq!((coord.x, coord.y), (point.x(), point.y()));
     }
 
     #[test]
     fn can_convert_point_to_geo() {
-        let point = GeoPoint::<DefaultGeoPointMapping<DefaultGeoPointFormat>>::new(Point(Coordinate { x: 1.0, y: 1.0 }));
+        let point =
+            GeoPoint::<DefaultGeoPointMapping<DefaultGeoPointFormat>>::new(Point(Coordinate {
+                x: 1.0,
+                y: 1.0,
+            }));
         let geo = point.to_geo();
 
         match geo {

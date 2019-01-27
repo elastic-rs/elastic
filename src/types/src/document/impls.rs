@@ -1,8 +1,12 @@
-use std::borrow::Cow;
-use std::marker::PhantomData;
+use super::mapping::{
+    ObjectFieldType,
+    ObjectMapping,
+    PropertiesMapping,
+};
 use serde::ser::SerializeStruct;
 use serde_json::Value;
-use super::mapping::{ObjectFieldType, ObjectMapping, PropertiesMapping};
+use std::borrow::Cow;
+use std::marker::PhantomData;
 
 /**
 An indexable Elasticsearch type.
@@ -56,7 +60,7 @@ pub trait StaticType: DocumentType {
 }
 
 /**
-A wrapper type for serialising user types as fields. 
+A wrapper type for serialising user types as fields.
 */
 #[derive(Clone, Copy)]
 pub struct FieldDocumentMapping<TMapping>(PhantomData<TMapping>);
@@ -268,7 +272,7 @@ where
 {
     fn default() -> Self {
         IndexDocumentMapping {
-            _m: Default::default()
+            _m: Default::default(),
         }
     }
 }
@@ -406,10 +410,18 @@ where
 
 #[cfg(test)]
 mod tests {
-    use std::borrow::Cow;
-    use serde_json::{self, Value};
+    use super::{
+        DocumentType,
+        IndexDocumentMapping,
+        StaticIndex,
+        StaticType,
+    };
     use prelude::*;
-    use super::{DocumentType, StaticIndex, StaticType, IndexDocumentMapping};
+    use serde_json::{
+        self,
+        Value,
+    };
+    use std::borrow::Cow;
 
     // Make sure we can derive with no `uses`.
     pub mod no_prelude {
@@ -454,11 +466,14 @@ mod tests {
         index = "renamed_index",
         ty = "renamed_ty",
         id(expr = "CustomType::id"),
-        mapping = "ManualCustomTypeMapping")]
+        mapping = "ManualCustomTypeMapping"
+    )]
     pub struct CustomType {
         pub field: i32,
-        #[serde(skip_serializing)] pub ignored_field: i32,
-        #[serde(rename = "renamed_field")] pub field2: i32,
+        #[serde(skip_serializing)]
+        pub ignored_field: i32,
+        #[serde(rename = "renamed_field")]
+        pub field2: i32,
     }
 
     impl CustomType {
@@ -541,7 +556,10 @@ mod tests {
 
     #[test]
     fn derive_custom_type_mapping() {
-        assert_eq!(ManualCustomTypeMapping, CustomType::field_mapping().into_mapping());
+        assert_eq!(
+            ManualCustomTypeMapping,
+            CustomType::field_mapping().into_mapping()
+        );
     }
 
     #[test]

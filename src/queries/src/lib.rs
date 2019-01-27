@@ -15,11 +15,11 @@ mod aggregations;
 mod filters;
 pub mod prelude;
 
-use std::collections::HashMap;
-use filters::Filters;
 use aggregations::Aggregation;
 use aggregations::BucketAggregation;
 use aggregations::EsAggregation;
+use filters::Filters;
+use std::collections::HashMap;
 
 #[derive(Clone, Debug, Serialize, Deserialize, Ord, PartialOrd, Eq, PartialEq)]
 #[serde(untagged)]
@@ -63,34 +63,42 @@ impl Bool {
         use BoolQuerySections::*;
 
         match section {
-            Must => if let Some(ref mut ve) = self.must {
-                if let Err(i) = ve.binary_search(&f) {
-                    ve.insert(i, f);
+            Must => {
+                if let Some(ref mut ve) = self.must {
+                    if let Err(i) = ve.binary_search(&f) {
+                        ve.insert(i, f);
+                    }
+                } else {
+                    self.must = Some(vec![f]);
                 }
-            } else {
-                self.must = Some(vec![f]);
-            },
-            Should => if let Some(ref mut ve) = self.should {
-                if let Err(i) = ve.binary_search(&f) {
-                    ve.insert(i, f);
+            }
+            Should => {
+                if let Some(ref mut ve) = self.should {
+                    if let Err(i) = ve.binary_search(&f) {
+                        ve.insert(i, f);
+                    }
+                } else {
+                    self.should = Some(vec![f]);
                 }
-            } else {
-                self.should = Some(vec![f]);
-            },
-            Filter => if let Some(ref mut ve) = self.filter {
-                if let Err(i) = ve.binary_search(&f) {
-                    ve.insert(i, f);
+            }
+            Filter => {
+                if let Some(ref mut ve) = self.filter {
+                    if let Err(i) = ve.binary_search(&f) {
+                        ve.insert(i, f);
+                    }
+                } else {
+                    self.filter = Some(vec![f]);
                 }
-            } else {
-                self.filter = Some(vec![f]);
-            },
-            MustNot => if let Some(ref mut ve) = self.must_not {
-                if let Err(i) = ve.binary_search(&f) {
-                    ve.insert(i, f);
+            }
+            MustNot => {
+                if let Some(ref mut ve) = self.must_not {
+                    if let Err(i) = ve.binary_search(&f) {
+                        ve.insert(i, f);
+                    }
+                } else {
+                    self.must_not = Some(vec![f]);
                 }
-            } else {
-                self.must_not = Some(vec![f]);
-            },
+            }
         }
     }
 
@@ -98,41 +106,50 @@ impl Bool {
         use BoolQuerySections::*;
 
         match section {
-            Must => if let Some(ref mut ve) = self.must {
-                if let Ok(i) = ve.binary_search(&f) {
-                    ve.remove(i);
+            Must => {
+                if let Some(ref mut ve) = self.must {
+                    if let Ok(i) = ve.binary_search(&f) {
+                        ve.remove(i);
+                    }
+                } else {
+                    self.must = Some(vec![f]);
                 }
-            } else {
-                self.must = Some(vec![f]);
-            },
-            Should => if let Some(ref mut ve) = self.should {
-                if let Ok(i) = ve.binary_search(&f) {
-                    ve.remove(i);
+            }
+            Should => {
+                if let Some(ref mut ve) = self.should {
+                    if let Ok(i) = ve.binary_search(&f) {
+                        ve.remove(i);
+                    }
+                } else {
+                    self.should = Some(vec![f]);
                 }
-            } else {
-                self.should = Some(vec![f]);
-            },
-            Filter => if let Some(ref mut ve) = self.filter {
-                if let Ok(i) = ve.binary_search(&f) {
-                    ve.remove(i);
+            }
+            Filter => {
+                if let Some(ref mut ve) = self.filter {
+                    if let Ok(i) = ve.binary_search(&f) {
+                        ve.remove(i);
+                    }
+                } else {
+                    self.filter = Some(vec![f]);
                 }
-            } else {
-                self.filter = Some(vec![f]);
-            },
-            MustNot => if let Some(ref mut ve) = self.must_not {
-                if let Ok(i) = ve.binary_search(&f) {
-                    ve.remove(i);
+            }
+            MustNot => {
+                if let Some(ref mut ve) = self.must_not {
+                    if let Ok(i) = ve.binary_search(&f) {
+                        ve.remove(i);
+                    }
+                } else {
+                    self.must_not = Some(vec![f]);
                 }
-            } else {
-                self.must_not = Some(vec![f]);
-            },
+            }
         }
     }
 }
 
 #[derive(Builder, Clone, Debug, Serialize, Deserialize)]
 pub struct QueryField {
-    #[builder(default = "self.default_bool()?")] pub bool: Bool,
+    #[builder(default = "self.default_bool()?")]
+    pub bool: Bool,
 }
 
 impl QueryFieldBuilder {
@@ -214,7 +231,12 @@ impl Query {
     }
 
     /// Add new Aggregation shifting current Aggregations down.
-    fn insert_child_after_internal(&mut self, target: &str, child: &str, agg: Aggregation) -> Option<aggregations::EsAggregation> {
+    fn insert_child_after_internal(
+        &mut self,
+        target: &str,
+        child: &str,
+        agg: Aggregation,
+    ) -> Option<aggregations::EsAggregation> {
         if let Some(root_aggs) = self.aggs_mut() {
             let mut returnable = HashMap::new();
 
@@ -241,9 +263,11 @@ impl Query {
                 //Add the stored sub-children back
                 if let Some(newchild) = root.aggs_get(child) {
                     match out {
-                        Some(a) => for (name, key) in a {
-                            newchild.add_child(name, key.clone());
-                        },
+                        Some(a) => {
+                            for (name, key) in a {
+                                newchild.add_child(name, key.clone());
+                            }
+                        }
                         None => (),
                     };
                 }
@@ -309,8 +333,8 @@ impl QueryBuilder {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use super::filters::*;
+    use super::*;
 
     #[test]
     fn root_to_target() {
@@ -394,7 +418,8 @@ mod tests {
         );
 
         let j = serde_json::to_string(&q).unwrap();
-        let expected = r#"{"query":{"bool":{"must":[{"term":{"foo":1}}],"must_not":[{"term":{"foo":1}}]}}}"#;
+        let expected =
+            r#"{"query":{"bool":{"must":[{"term":{"foo":1}}],"must_not":[{"term":{"foo":1}}]}}}"#;
         assert_eq!(expected, j);
     }
 

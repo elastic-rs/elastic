@@ -12,23 +12,25 @@ extern crate env_logger;
 #[macro_use]
 extern crate serde_json;
 
-use std::error::Error;
 use elastic::prelude::*;
+use std::error::Error;
 
 fn run() -> Result<(), Box<Error>> {
     // A HTTP client and request parameters
     let client = SyncClientBuilder::new().build()?;
 
-    let ops = (0..1000)
-        .into_iter()
-        .map(|i| bulk_raw().index(json!({
+    let ops = (0..1000).into_iter().map(|i| {
+        bulk_raw()
+            .index(json!({
                 "id": i,
                 "title": "some string value"
             }))
-            .id(i));
+            .id(i)
+    });
 
     // Execute a bulk request
-    let bulk = client.bulk()
+    let bulk = client
+        .bulk()
         .index("bulk_idx")
         .ty("bulk_ty")
         .extend(ops)

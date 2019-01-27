@@ -1,8 +1,11 @@
-use serde_json::Value;
-use futures::Future;
+use elastic::error::{
+    ApiError,
+    Error,
+};
 use elastic::prelude::*;
-use elastic::error::{ApiError, Error};
+use futures::Future;
 use run_tests::IntegrationTest;
+use serde_json::Value;
 
 #[derive(Debug, Clone, Copy)]
 pub struct NoIndex;
@@ -28,7 +31,7 @@ impl IntegrationTest for NoIndex {
 
     // Execute a search request against that index
     fn request(&self, client: AsyncClient) -> Box<Future<Item = Self::Response, Error = Error>> {
-        let res = client.search().index(INDEX).ty(Some("no_index_ty")).send();
+        let res = client.search().index(INDEX).ty("no_index_ty").send();
 
         Box::new(res)
     }

@@ -1,4 +1,7 @@
-use run_tests::{test, Test};
+use run_tests::{
+    test,
+    Test,
+};
 
 mod delete;
 mod index_create;

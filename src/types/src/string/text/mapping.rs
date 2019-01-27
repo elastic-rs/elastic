@@ -1,10 +1,16 @@
 /*! Mapping for the Elasticsearch `text` type. */
 
-use std::collections::BTreeMap;
-use serde::{Serialize, Serializer};
-use serde::ser::SerializeStruct;
-use string::mapping::{IndexOptions, StringField};
 use private::field::FieldMapping;
+use serde::ser::SerializeStruct;
+use serde::{
+    Serialize,
+    Serializer,
+};
+use std::collections::BTreeMap;
+use string::mapping::{
+    IndexOptions,
+    StringField,
+};
 
 /** A field that will be mapped as `text`. */
 pub trait TextFieldType<TMapping> {}
@@ -242,11 +248,16 @@ impl TextMapping for DefaultTextMapping {}
 /** Term vectors contain information about the terms produced by the analysis process. */
 #[derive(Debug, Clone, Copy)]
 pub enum TermVector {
-    /** No term vectors are stored. (default) */ No,
-    /** Just the terms in the field are stored. */ Yes,
-    /** Terms and positions are stored. */ WithPositions,
-    /** Terms and character offsets are stored. */ WithOffsets,
-    /** Terms, positions, and character offsets are stored. */ WithPositionsOffsets,
+    /** No term vectors are stored. (default) */
+    No,
+    /** Just the terms in the field are stored. */
+    Yes,
+    /** Terms and positions are stored. */
+    WithPositions,
+    /** Terms and character offsets are stored. */
+    WithOffsets,
+    /** Terms, positions, and character offsets are stored. */
+    WithPositionsOffsets,
 }
 
 impl Serialize for TermVector {
@@ -267,9 +278,12 @@ impl Serialize for TermVector {
 /** Fielddata for term frequency as a percentage range. */
 #[derive(Debug, Default, PartialEq, Clone, Copy)]
 pub struct FieldDataFrequencyFilter {
-    /** The min frequency percentage. */ pub min: Option<f32>,
-    /** The max frequency percentage. */ pub max: Option<f32>,
-    /** The minimum number of docs a segment should contain. */ pub min_segment_size: Option<i32>,
+    /** The min frequency percentage. */
+    pub min: Option<f32>,
+    /** The max frequency percentage. */
+    pub max: Option<f32>,
+    /** The minimum number of docs a segment should contain. */
+    pub min_segment_size: Option<i32>,
 }
 
 impl Serialize for FieldDataFrequencyFilter {
@@ -324,9 +338,12 @@ pub struct TextFieldMapping {
     Any characters over this length will be ignored.
     */
     pub ignore_above: Option<u32>,
-    /** Should the field be searchable? Accepts `true` (default) or `false`. */ pub index: Option<bool>,
-    /** What information should be stored in the index, for search and highlighting purposes. Defaults to `Positions`. */ pub index_options: Option<IndexOptions>,
-    /** Whether field-length should be taken into account when scoring queries. Accepts `true` (default) or `false`. */ pub norms: Option<bool>,
+    /** Should the field be searchable? Accepts `true` (default) or `false`. */
+    pub index: Option<bool>,
+    /** What information should be stored in the index, for search and highlighting purposes. Defaults to `Positions`. */
+    pub index_options: Option<IndexOptions>,
+    /** Whether field-length should be taken into account when scoring queries. Accepts `true` (default) or `false`. */
+    pub norms: Option<bool>,
     /**
     The number of fake term position which should be inserted between each element of an array of strings.
     Defaults to the `position_increment_gap` configured on the analyzer which defaults to `100`.
@@ -395,10 +412,21 @@ impl Serialize for TextFieldMapping {
 }
 
 mod private {
-    use serde::{Serialize, Serializer};
+    use super::{
+        TextFieldType,
+        TextMapping,
+    };
+    use private::field::{
+        FieldMapping,
+        FieldType,
+        SerializeFieldMapping,
+        StaticSerialize,
+    };
     use serde::ser::SerializeStruct;
-    use private::field::{StaticSerialize, SerializeFieldMapping, FieldMapping, FieldType};
-    use super::{TextFieldType, TextMapping};
+    use serde::{
+        Serialize,
+        Serializer,
+    };
 
     #[derive(Default)]
     pub struct TextPivot;

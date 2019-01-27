@@ -5,8 +5,8 @@
 extern crate elastic;
 extern crate env_logger;
 
-use std::error::Error;
 use elastic::prelude::*;
+use std::error::Error;
 
 fn run() -> Result<(), Box<Error>> {
     // A HTTP client and request parameters

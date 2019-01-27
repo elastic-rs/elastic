@@ -1,6 +1,16 @@
+use super::{
+    DateFormat,
+    DateValue,
+    FormattedDate,
+    ParseError,
+};
+use chrono::{
+    DateTime,
+    NaiveDateTime,
+    Timelike,
+    Utc,
+};
 use std::error::Error;
-use chrono::{DateTime, NaiveDateTime, Timelike, Utc};
-use super::{DateFormat, DateValue, FormattedDate, ParseError};
 
 /** The default `date` format (`BasicDateTime`). */
 pub type DefaultDateFormat = BasicDateTime;
@@ -17,7 +27,10 @@ Format for `basic_date_time_no_millis`.
 - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-date-format.html#built-in-date-formats)
 */
 #[derive(ElasticDateFormat, PartialEq, Debug, Default, Clone, Copy)]
-#[elastic(date_format = "yyyyMMdd'T'HHmmssZ", date_format_name = "basic_date_time_no_millis")]
+#[elastic(
+    date_format = "yyyyMMdd'T'HHmmssZ",
+    date_format_name = "basic_date_time_no_millis"
+)]
 pub struct BasicDateTimeNoMillis;
 
 /**
@@ -27,7 +40,10 @@ Format for `basic_date_time`.
 - [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-date-format.html#built-in-date-formats)
 */
 #[derive(ElasticDateFormat, PartialEq, Debug, Default, Clone, Copy)]
-#[elastic(date_format = "yyyyMMdd'T'HHmmss.SSSZ", date_format_name = "basic_date_time")]
+#[elastic(
+    date_format = "yyyyMMdd'T'HHmmss.SSSZ",
+    date_format_name = "basic_date_time"
+)]
 pub struct BasicDateTime;
 
 /**
@@ -48,7 +64,8 @@ impl DateFormat for EpochMillis {
     }
 
     fn parse(date: &str) -> Result<DateValue, ParseError> {
-        let millis = date.parse::<i64>()
+        let millis = date
+            .parse::<i64>()
             .map_err(|e| e.description().to_string())?;
 
         let (s, m) = {
@@ -77,8 +94,15 @@ impl DateFormat for EpochMillis {
 
 #[cfg(test)]
 mod tests {
-    use chrono::{DateTime, Utc};
-    use date::{format, parse, ParseError};
+    use chrono::{
+        DateTime,
+        Utc,
+    };
+    use date::{
+        format,
+        parse,
+        ParseError,
+    };
     use prelude::*;
 
     #[test]
@@ -371,7 +395,8 @@ mod tests {
             }
         }
 
-        let date = parse::<DefaultDateMapping<MyCustomFormat>>("2015-07-03T14:55:02+00:00").unwrap();
+        let date =
+            parse::<DefaultDateMapping<MyCustomFormat>>("2015-07-03T14:55:02+00:00").unwrap();
 
         assert_eq!(
             (2015i32, 7u32, 3u32, 14u32, 55u32, 2u32),

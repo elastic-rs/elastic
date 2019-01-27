@@ -4,22 +4,40 @@ Builders for [get document requests][docs-get].
 [docs-get]: http://www.elastic.co/guide/en/elasticsearch/reference/current/docs-get.html
 */
 
-use std::marker::PhantomData;
-use futures::{Future, Poll};
+use futures::{
+    Future,
+    Poll,
+};
 use serde::de::DeserializeOwned;
+use std::marker::PhantomData;
 
-use error::{Error, Result};
-use client::DocumentClient;
-use client::sender::{AsyncSender, Sender, SyncSender};
-use client::requests::RequestBuilder;
-use client::requests::params::{Id, Index, Type};
 use client::requests::endpoints::GetRequest;
+use client::requests::params::{
+    Id,
+    Index,
+    Type,
+};
 use client::requests::raw::RawRequestInner;
+use client::requests::RequestBuilder;
 use client::responses::GetResponse;
+use client::sender::{
+    AsyncSender,
+    Sender,
+    SyncSender,
+};
+use client::DocumentClient;
+use error::{
+    Error,
+    Result,
+};
+use types::document::{
+    DocumentType,
+    StaticIndex,
+    StaticType,
+};
 use types::DEFAULT_TYPE;
-use types::document::{DocumentType, StaticIndex, StaticType};
 
-/** 
+/**
 A [get document request][docs-get] builder that can be configured before sending.
 
 Call [`Client.document_get`][Client.document_get] to get a `GetRequestBuilder`.
@@ -30,7 +48,8 @@ The `send` method will either send the request [synchronously][send-sync] or [as
 [send-async]: #send-asynchronously
 [Client.document_get]: ../../struct.Client.html#get-document
 */
-pub type GetRequestBuilder<TSender, TDocument> = RequestBuilder<TSender, GetRequestInner<TDocument>>;
+pub type GetRequestBuilder<TSender, TDocument> =
+    RequestBuilder<TSender, GetRequestInner<TDocument>>;
 
 #[doc(hidden)]
 pub struct GetRequestInner<TDocument> {
@@ -47,7 +66,7 @@ impl<TSender, TDocument> DocumentClient<TSender, TDocument>
 where
     TSender: Sender,
 {
-    /** 
+    /**
     Create a [`GetRequestBuilder`][GetRequestBuilder] with this `Client` that can be configured before sending.
 
     For more details, see:
@@ -59,7 +78,7 @@ where
     # Examples
 
     Get a [`DocumentType`][documents-mod] called `MyType` with an id of `1`:
-    
+
     ```no_run
     # extern crate serde;
     # extern crate serde_json;
@@ -89,9 +108,8 @@ where
     [types-mod]: ../types/index.html
     [documents-mod]: ../types/document/index.html
     */
-    pub fn get<TId>(self, id: TId) -> GetRequestBuilder<TSender, TDocument>
+    pub fn get(self, id: impl Into<Id<'static>>) -> GetRequestBuilder<TSender, TDocument>
     where
-        TId: Into<Id<'static>>,
         TDocument: DeserializeOwned + DocumentType + StaticIndex + StaticType,
     {
         let index = TDocument::static_index().into();
@@ -108,7 +126,7 @@ where
         )
     }
 
-    /** 
+    /**
     Create a [`GetRequestBuilder`][GetRequestBuilder] with this `Client` that can be configured before sending.
 
     For more details, see:
@@ -146,10 +164,12 @@ where
     [types-mod]: ../types/index.html
     [documents-mod]: ../types/document/index.html
     */
-    pub fn get_raw<TIndex, TId>(self, index: TIndex, id: TId) -> GetRequestBuilder<TSender, TDocument>
+    pub fn get_raw(
+        self,
+        index: impl Into<Index<'static>>,
+        id: impl Into<Id<'static>>,
+    ) -> GetRequestBuilder<TSender, TDocument>
     where
-        TIndex: Into<Index<'static>>,
-        TId: Into<Id<'static>>,
         TDocument: DeserializeOwned,
     {
         RequestBuilder::initial(
@@ -180,19 +200,13 @@ where
     TSender: Sender,
 {
     /** Set the index for the get request. */
-    pub fn index<I>(mut self, index: I) -> Self
-    where
-        I: Into<Index<'static>>,
-    {
+    pub fn index(mut self, index: impl Into<Index<'static>>) -> Self {
         self.inner.index = index.into();
         self
     }
 
     /** Set the type for the get request. */
-    pub fn ty<I>(mut self, ty: I) -> Self
-    where
-        I: Into<Type<'static>>,
-    {
+    pub fn ty(mut self, ty: impl Into<Type<'static>>) -> Self {
         self.inner.ty = ty.into();
         self
     }
@@ -230,7 +244,7 @@ where
     let response = client.document::<MyType>()
                          .get(1)
                          .send()?;
-    
+
     if let Some(doc) = response.into_document() {
         println!("{:?}", doc);
     }
@@ -259,7 +273,7 @@ where
 {
     /**
     Send a `GetRequestBuilder` asynchronously using an [`AsyncClient`][AsyncClient].
-    
+
     This will return a future that will resolve to the deserialised get document response.
 
     # Examples
@@ -268,7 +282,7 @@ where
 
     ```no_run
     # extern crate futures;
-    # extern crate tokio_core;
+    # extern crate tokio;
     # extern crate serde;
     # extern crate serde_json;
     # #[macro_use] extern crate serde_derive;
@@ -281,12 +295,11 @@ where
     # struct MyType { }
     # fn main() { run().unwrap() }
     # fn run() -> Result<(), Box<::std::error::Error>> {
-    # let core = tokio_core::reactor::Core::new()?;
-    # let client = AsyncClientBuilder::new().build(&core.handle())?;
+    # let client = AsyncClientBuilder::new().build()?;
     let future = client.document::<MyType>()
                        .get(1)
                        .send();
-    
+
     future.and_then(|response| {
         if let Some(doc) = response.into_document() {
             println!("{:?}", doc);
@@ -304,9 +317,10 @@ where
     pub fn send(self) -> Pending<TDocument> {
         let req = self.inner.into_request();
 
-        let res_future = RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
-            .send()
-            .and_then(|res| res.into_response());
+        let res_future =
+            RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
+                .send()
+                .and_then(|res| res.into_response());
 
         Pending::new(res_future)
     }
@@ -345,17 +359,13 @@ mod tests {
     use prelude::*;
 
     #[derive(Deserialize, ElasticType)]
-    struct TestDoc { }
+    struct TestDoc {}
 
     #[test]
     fn default_request() {
         let client = SyncClientBuilder::new().build().unwrap();
 
-        let req = client
-            .document::<TestDoc>()
-            .get("1")
-            .inner
-            .into_request();
+        let req = client.document::<TestDoc>().get("1").inner.into_request();
 
         assert_eq!("/testdoc/doc/1", req.url.as_ref());
     }

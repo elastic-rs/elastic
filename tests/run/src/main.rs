@@ -12,32 +12,35 @@ extern crate elastic;
 extern crate elastic_derive;
 extern crate env_logger;
 extern crate futures;
-extern crate futures_cpupool;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
 #[macro_use]
 extern crate serde_json;
 extern crate term_painter;
-extern crate tokio_core;
+extern crate tokio;
+extern crate tokio_threadpool;
 extern crate tokio_timer;
 
+use clap::{
+    App,
+    Arg,
+};
 use std::process;
-use term_painter::ToStyle;
 use term_painter::Color::*;
-use clap::{App, Arg};
+use term_painter::ToStyle;
 
-mod bulk;
-mod document;
-mod search;
-mod index;
-mod run_tests;
 mod build_client;
 mod build_container;
+mod bulk;
+mod document;
+mod index;
+mod run_tests;
+mod search;
 mod wait_until_ready;
 
 fn main() {
-    env_logger::init();
+    env_logger::init_from_env("ELASTIC_LOG");
 
     let matches = App::new("elastic_integration_tests")
         .arg(
@@ -56,18 +59,16 @@ fn main() {
     for run in runs {
         println!("\n{} tests\n", run);
 
-        let mut core = tokio_core::reactor::Core::new().unwrap();
-        let client = build_client::call(&core.handle(), run).unwrap();
+        let client = build_client::call(run).unwrap();
 
         // Build and start a container to run tests against
         build_container::start(run).unwrap();
 
         // Wait until the container is ready
-        core.run(wait_until_ready::call(client.clone(), 60))
-            .unwrap();
+        wait_until_ready::call(client.clone(), 60).unwrap();
 
         // Run the integration tests
-        let results = core.run(run_tests::call(client, 8)).unwrap();
+        let results = run_tests::call(client, 8).unwrap();
         failed.extend(results.iter().filter(|success| **success == false));
         total += results.len();
 

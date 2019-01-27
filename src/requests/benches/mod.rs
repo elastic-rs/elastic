@@ -9,7 +9,8 @@ use test::Bencher;
 #[bench]
 fn new_req(b: &mut Bencher) {
     b.iter(|| {
-        let req = SearchRequest::for_index_ty("test_index", "test_ty", "{'query': { 'match_all': {}}}");
+        let req =
+            SearchRequest::for_index_ty("test_index", "test_ty", "{'query': { 'match_all': {}}}");
 
         test::black_box(req)
     });
@@ -18,7 +19,8 @@ fn new_req(b: &mut Bencher) {
 #[bench]
 fn owned_req_into_http_req(b: &mut Bencher) {
     b.iter(|| {
-        let req = SearchRequest::for_index_ty("test_index", "test_ty", "{'query': { 'match_all': {}}}");
+        let req =
+            SearchRequest::for_index_ty("test_index", "test_ty", "{'query': { 'match_all': {}}}");
 
         let http_req: Endpoint<_> = (req).into();
 

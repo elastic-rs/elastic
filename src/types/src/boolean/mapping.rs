@@ -106,10 +106,21 @@ pub struct DefaultBooleanMapping;
 impl BooleanMapping for DefaultBooleanMapping {}
 
 mod private {
-    use serde::{Serialize, Serializer};
+    use super::{
+        BooleanFieldType,
+        BooleanMapping,
+    };
+    use private::field::{
+        FieldMapping,
+        FieldType,
+        SerializeFieldMapping,
+        StaticSerialize,
+    };
     use serde::ser::SerializeStruct;
-    use private::field::{StaticSerialize, SerializeFieldMapping, FieldMapping, FieldType};
-    use super::{BooleanFieldType, BooleanMapping};
+    use serde::{
+        Serialize,
+        Serializer,
+    };
 
     #[derive(Default)]
     pub struct BooleanPivot;

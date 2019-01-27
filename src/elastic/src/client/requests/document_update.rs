@@ -4,25 +4,48 @@ Builders for [update document requests][docs-update].
 [docs-update]: http://www.elastic.co/guide/en/elasticsearch/reference/current/docs-update.html
 */
 
-use std::marker::PhantomData;
-use futures::{Future, Poll};
-use serde_json;
+use futures::{
+    Future,
+    Poll,
+};
 use serde::ser::Serialize;
+use serde_json;
+use std::marker::PhantomData;
 
-use error::{self, Error};
-use client::DocumentClient;
-use client::sender::{AsyncSender, Sender, SyncSender};
-use client::requests::RequestBuilder;
-use client::requests::params::{Id, Index, Type};
 use client::requests::endpoints::UpdateRequest;
+use client::requests::params::{
+    Id,
+    Index,
+    Type,
+};
 use client::requests::raw::RawRequestInner;
+use client::requests::RequestBuilder;
 use client::responses::UpdateResponse;
+use client::sender::{
+    AsyncSender,
+    Sender,
+    SyncSender,
+};
+use client::DocumentClient;
+use error::{
+    self,
+    Error,
+};
+use types::document::{
+    DocumentType,
+    StaticIndex,
+    StaticType,
+};
 use types::DEFAULT_TYPE;
-use types::document::{DocumentType, StaticIndex, StaticType};
 
-pub use client::requests::common::{Doc, Script, ScriptBuilder, DefaultParams};
+pub use client::requests::common::{
+    DefaultParams,
+    Doc,
+    Script,
+    ScriptBuilder,
+};
 
-/** 
+/**
 An [update document request][docs-update] builder that can be configured before sending.
 
 Call [`Client.document_update`][Client.document_update] to get an `UpdateRequestBuilder`.
@@ -51,7 +74,7 @@ impl<TSender, TDocument> DocumentClient<TSender, TDocument>
 where
     TSender: Sender,
 {
-    /** 
+    /**
     Create an [`UpdateRequestBuilder`][UpdateRequestBuilder] with this `Client` that can be configured before sending.
 
     For more details, see:
@@ -63,7 +86,7 @@ where
     # Examples
 
     Update a [`DocumentType`][documents-mod] called `MyType` with an id of `1` using a new document value:
-    
+
     ```no_run
     # extern crate serde;
     # #[macro_use]
@@ -193,9 +216,8 @@ where
     [send-async]: requests/document_update/type.UpdateRequestBuilder.html#send-asynchronously
     [documents-mod]: ../types/document/index.html
     */
-    pub fn update<TId>(self, id: TId) -> UpdateRequestBuilder<TSender, Doc<TDocument>>
+    pub fn update(self, id: impl Into<Id<'static>>) -> UpdateRequestBuilder<TSender, Doc<TDocument>>
     where
-        TId: Into<Id<'static>>,
         TDocument: DocumentType + StaticIndex + StaticType,
     {
         let index = TDocument::static_index().into();
@@ -218,7 +240,7 @@ impl<TSender> DocumentClient<TSender, ()>
 where
     TSender: Sender,
 {
-    /** 
+    /**
     Create an [`UpdateRequestBuilder`][UpdateRequestBuilder] with this `Client` that can be configured before sending.
 
     For more details, see:
@@ -230,7 +252,7 @@ where
     # Examples
 
     Update a document with an id of `1` using a new document value:
-    
+
     ```no_run
     # extern crate serde;
     # #[macro_use]
@@ -256,11 +278,11 @@ where
     # }
     ```
     */
-    pub fn update_raw<TIndex, TId>(self, index: TIndex, id: TId) -> UpdateRequestBuilder<TSender, Doc<()>>
-    where
-        TIndex: Into<Index<'static>>,
-        TId: Into<Id<'static>>,
-    {
+    pub fn update_raw(
+        self,
+        index: impl Into<Index<'static>>,
+        id: impl Into<Id<'static>>,
+    ) -> UpdateRequestBuilder<TSender, Doc<()>> {
         RequestBuilder::initial(
             self.inner,
             UpdateRequestInner {
@@ -282,10 +304,7 @@ where
         let body = serde_json::to_vec(&self.body).map_err(error::request)?;
 
         Ok(UpdateRequest::for_index_ty_id(
-            self.index,
-            self.ty,
-            self.id,
-            body,
+            self.index, self.ty, self.id, body,
         ))
     }
 }
@@ -300,30 +319,24 @@ where
     TSender: Sender,
 {
     /** Set the index for the update request. */
-    pub fn index<I>(mut self, index: I) -> Self
-    where
-        I: Into<Index<'static>>,
-    {
+    pub fn index(mut self, index: impl Into<Index<'static>>) -> Self {
         self.inner.index = index.into();
         self
     }
 
     /** Set the type for the update request. */
-    pub fn ty<I>(mut self, ty: I) -> Self
-    where
-        I: Into<Type<'static>>,
-    {
+    pub fn ty(mut self, ty: impl Into<Type<'static>>) -> Self {
         self.inner.ty = ty.into();
         self
     }
 
     /**
     Update the source using a document.
-    
+
     # Examples
 
     Update a [`DocumentType`][documents-mod] called `MyType` with an id of `1` using a new document value:
-    
+
     ```no_run
     # extern crate serde;
     # #[macro_use]
@@ -403,7 +416,7 @@ where
 
     /**
     Update the source using [an inline script][painless-lang].
-    
+
     # Examples
 
     Update the `title` property of a document using a script:
@@ -434,7 +447,7 @@ where
     ```
 
      Update the `title` property of a document using a parameterised script:
-    
+
     ```no_run
     # extern crate serde;
     # #[macro_use]
@@ -468,7 +481,10 @@ where
 
     [painless-lang]: https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-scripting-painless.html
      */
-    pub fn script<TScript, TParams>(self, builder: TScript) -> UpdateRequestBuilder<TSender, Script<TParams>>
+    pub fn script<TScript, TParams>(
+        self,
+        builder: TScript,
+    ) -> UpdateRequestBuilder<TSender, Script<TParams>>
     where
         TScript: Into<ScriptBuilder<TParams>>,
     {
@@ -494,7 +510,7 @@ where
     # Examples
 
     Update the `title` property of a document using a parameterised script:
-    
+
     ```no_run
     # extern crate serde;
     # #[macro_use]
@@ -565,10 +581,13 @@ where
 
     [painless-lang]: https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-scripting-painless.html
     */
-    pub fn script_fluent<TScript, TBuilder, TParams>(self, source: TScript, builder: TBuilder) -> UpdateRequestBuilder<TSender, Script<TParams>>
+    pub fn script_fluent<TScript, TParams>(
+        self,
+        source: TScript,
+        builder: impl Fn(ScriptBuilder<DefaultParams>) -> ScriptBuilder<TParams>,
+    ) -> UpdateRequestBuilder<TSender, Script<TParams>>
     where
         TScript: ToString,
-        TBuilder: Fn(ScriptBuilder<DefaultParams>) -> ScriptBuilder<TParams>,
     {
         let builder = builder(ScriptBuilder::new(source));
 
@@ -641,7 +660,7 @@ where
 {
     /**
     Send an `UpdateRequestBuilder` asynchronously using an [`AsyncClient`][AsyncClient].
-    
+
     This will return a future that will resolve to the deserialised update document response.
 
     # Examples
@@ -650,7 +669,7 @@ where
 
     ```no_run
     # extern crate futures;
-    # extern crate tokio_core;
+    # extern crate tokio;
     # extern crate serde;
     # extern crate serde_json;
     # #[macro_use] extern crate serde_derive;
@@ -661,14 +680,13 @@ where
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
     # fn run() -> Result<(), Box<::std::error::Error>> {
-    # let core = tokio_core::reactor::Core::new()?;
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
     #     pub id: String,
     #     pub title: String,
     #     pub timestamp: Date<DefaultDateMapping>
     # }
-    # let client = AsyncClientBuilder::new().build(&core.handle())?;
+    # let client = AsyncClientBuilder::new().build()?;
     # let new_doc = MyType { id: "1".to_owned(), title: String::new(), timestamp: Date::now() };
     let future = client.document::<MyType>()
                        .update(1)
@@ -729,12 +747,15 @@ impl Future for Pending {
 
 #[cfg(test)]
 mod tests {
-    use serde_json::{self, Value};
     use super::ScriptBuilder;
     use prelude::*;
+    use serde_json::{
+        self,
+        Value,
+    };
 
     #[derive(Serialize, ElasticType)]
-    struct TestDoc { }
+    struct TestDoc {}
 
     #[test]
     fn default_request() {

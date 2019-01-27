@@ -1,9 +1,12 @@
-/*! 
+/*!
 Response types for a [search request](https://www.elastic.co/guide/en/elasticsearch/reference/current/search-search.html).
 */
 
 use serde::de::DeserializeOwned;
-use serde_json::{Map, Value};
+use serde_json::{
+    Map,
+    Value,
+};
 
 use common::Shards;
 use parsing::IsOkOnSuccess;
@@ -13,7 +16,7 @@ use std::collections::BTreeMap;
 use std::slice::Iter;
 use std::vec::IntoIter;
 
-/** 
+/**
 Response for a [search request][search-req].
 
 This is the main `struct` of the crate, provides access to the `hits` and `aggs` iterators.
@@ -40,7 +43,7 @@ let response: SearchResponse<Value> = do_request();
 for hit in response.hits() {
     let score = hit.score().unwrap_or(f32::default());
     let doc = hit.document();
-    
+
     println!("score: {}", score);
     println!("doc: {:?}", doc);
 }
@@ -55,7 +58,8 @@ for hit in response.hits() {
 pub struct SearchResponse<T> {
     took: u64,
     timed_out: bool,
-    #[serde(rename = "_shards")] shards: Shards,
+    #[serde(rename = "_shards")]
+    shards: Shards,
     hits: HitsWrapper<T>,
     aggregations: Option<AggsWrapper>,
     status: Option<u16>,
@@ -66,7 +70,8 @@ pub struct SearchResponse<T> {
 struct HitsWrapper<T> {
     total: u64,
     max_score: Option<f32>,
-    #[serde(rename = "hits")] inner: Vec<Hit<T>>,
+    #[serde(rename = "hits")]
+    inner: Vec<Hit<T>>,
 }
 
 impl<T> SearchResponse<T> {
@@ -110,9 +115,9 @@ impl<T> SearchResponse<T> {
         IntoHits::new(self.hits)
     }
 
-    /** 
+    /**
     Iterate over the documents matched by the search query.
-    
+
     This iterator emits just the `_source` field for the returned hits.
     */
     pub fn documents(&self) -> Documents<T> {
@@ -124,9 +129,9 @@ impl<T> SearchResponse<T> {
         IntoDocuments::new(self.hits)
     }
 
-    /** 
+    /**
     Iterate over the aggregations in the response.
-    
+
     This Iterator transforms the tree-like JSON object into a row/table based format for use with standard iterator adaptors.
     */
     pub fn aggs(&self) -> Aggs {
@@ -230,12 +235,18 @@ impl<T> Iterator for IntoDocuments<T> {
 /** Full metadata and source for a single hit. */
 #[derive(Deserialize, Debug)]
 pub struct Hit<T> {
-    #[serde(rename = "_index")] index: String,
-    #[serde(rename = "_type")] ty: String,
-    #[serde(rename = "_version")] version: Option<u32>,
-    #[serde(rename = "_score")] score: Option<f32>,
-    #[serde(rename = "_source")] source: Option<T>,
-    #[serde(rename = "_routing")] routing: Option<String>,
+    #[serde(rename = "_index")]
+    index: String,
+    #[serde(rename = "_type")]
+    ty: String,
+    #[serde(rename = "_version")]
+    version: Option<u32>,
+    #[serde(rename = "_score")]
+    score: Option<f32>,
+    #[serde(rename = "_source")]
+    source: Option<T>,
+    #[serde(rename = "_routing")]
+    routing: Option<String>,
 }
 
 impl<T> Hit<T> {
@@ -274,7 +285,7 @@ impl<T> Hit<T> {
 #[derive(Deserialize, Debug)]
 struct AggsWrapper(Value);
 
-/** 
+/**
 Aggregator that traverses the results from Elasticsearch's aggregations and returns a result row by row in a table-styled fashion.
 */
 #[derive(Debug)]
@@ -288,7 +299,8 @@ impl<'a> Aggs<'a> {
     fn new(aggregations: Option<&'a AggsWrapper>) -> Aggs<'a> {
         let iter_stack = {
             match aggregations.and_then(|aggs| aggs.0.as_object()) {
-                Some(o) => o.into_iter()
+                Some(o) => o
+                    .into_iter()
                     .filter_map(|(key, child)| {
                         child
                             .as_object()
@@ -312,7 +324,12 @@ impl<'a> Aggs<'a> {
 type Object = Map<String, Value>;
 type RowData<'a> = BTreeMap<Cow<'a, str>, &'a Value>;
 
-fn insert_value<'a>(fieldname: &str, json_object: &'a Object, keyname: &str, rowdata: &mut RowData<'a>) {
+fn insert_value<'a>(
+    fieldname: &str,
+    json_object: &'a Object,
+    keyname: &str,
+    rowdata: &mut RowData<'a>,
+) {
     if let Some(v) = json_object.get(fieldname) {
         let field_name = format!("{}_{}", keyname, fieldname);
         rowdata.insert(Cow::Owned(field_name), v);
@@ -366,7 +383,9 @@ impl<'a> Iterator for Aggs<'a> {
                                 insert_value("std_deviation", c, key, row);
 
                                 if c.contains_key("std_deviation_bounds") {
-                                    if let Some(child_values) = c.get("std_deviation_bounds").unwrap().as_object() {
+                                    if let Some(child_values) =
+                                        c.get("std_deviation_bounds").unwrap().as_object()
+                                    {
                                         let u = child_values.get("upper");
                                         let l = child_values.get("lower");
                                         let un = format!("{}_std_deviation_bounds_upper", key);

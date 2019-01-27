@@ -25,10 +25,6 @@ if [ "$KIND" == "build" ]; then
         echo "Pushing gh-pages to GitHub"
         git push -q upstream HEAD:refs/heads/gh-pages --force
     fi
-elif [ "$KIND" == "integration" ]; then 
-    cd tests/run
-    cargo build
-
-    export RUST_LOG=info
-    ../../target/debug/run default sniffed_node
+elif [ "$KIND" == "integration" ]; then
+    ELASTIC_LOG=info cargo run -p integration_tests -- default sniffed_node
 fi

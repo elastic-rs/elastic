@@ -107,10 +107,21 @@ pub struct DefaultIpMapping;
 impl IpMapping for DefaultIpMapping {}
 
 mod private {
-    use serde::{Serialize, Serializer};
+    use super::{
+        IpFieldType,
+        IpMapping,
+    };
+    use private::field::{
+        FieldMapping,
+        FieldType,
+        SerializeFieldMapping,
+        StaticSerialize,
+    };
     use serde::ser::SerializeStruct;
-    use private::field::{StaticSerialize, SerializeFieldMapping, FieldMapping, FieldType};
-    use super::{IpFieldType, IpMapping};
+    use serde::{
+        Serialize,
+        Serializer,
+    };
 
     #[derive(Default)]
     pub struct IpPivot;

@@ -5,10 +5,13 @@ Most of these types have a generic `TPivot` parameter.
 The idea is to use a concrete type for `TPivot` so non-overlapping blanket implementations can be added for `TMapping`.
 */
 
-use std::marker::PhantomData;
+use serde::ser::{
+    Serialize,
+    Serializer,
+};
 use std::borrow::Borrow;
+use std::marker::PhantomData;
 use std::ops::Deref;
-use serde::ser::{Serialize, Serializer};
 
 pub trait StaticSerialize {
     fn static_serialize<S>(serializer: S) -> Result<S::Ok, S::Error>
@@ -21,7 +24,6 @@ pub trait FieldType<TMapping, TPivot>
 where
     TMapping: FieldMapping<TPivot>,
 {
-    
 }
 
 /** The base representation of an Elasticsearch data type mapping. */

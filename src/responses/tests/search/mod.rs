@@ -2,10 +2,10 @@ extern crate elastic_responses;
 extern crate serde;
 extern crate serde_json;
 
-use elastic_responses::*;
 use elastic_responses::error::*;
-use serde_json::Value;
+use elastic_responses::*;
 use load_file;
+use serde_json::Value;
 
 #[test]
 fn success_parse_empty() {
@@ -32,17 +32,26 @@ fn success_parse_hits_simple_of_t() {
     #[allow(dead_code)]
     #[derive(Deserialize)]
     struct Event {
-        #[serde(rename = "@version")] version: String,
-        #[serde(rename = "@timestamp")] timestamp: String,
+        #[serde(rename = "@version")]
+        version: String,
+        #[serde(rename = "@timestamp")]
+        timestamp: String,
         port: u16,
-        #[serde(rename = "type")] ty: String,
+        #[serde(rename = "type")]
+        ty: String,
         tags: Vec<String>,
-        #[serde(rename = "destinationAddress")] destination_address: String,
-        #[serde(rename = "countryCode", default)] country_code: String,
-        #[serde(rename = "countryName", default)] country_name: String,
-        #[serde(rename = "cityName", default)] city_name: String,
-        #[serde(rename = "internetServiceProviderName", default)] internet_service_provider_name: String,
-        #[serde(rename = "syslogProgram")] syslog_program: String,
+        #[serde(rename = "destinationAddress")]
+        destination_address: String,
+        #[serde(rename = "countryCode", default)]
+        country_code: String,
+        #[serde(rename = "countryName", default)]
+        country_name: String,
+        #[serde(rename = "cityName", default)]
+        city_name: String,
+        #[serde(rename = "internetServiceProviderName", default)]
+        internet_service_provider_name: String,
+        #[serde(rename = "syslogProgram")]
+        syslog_program: String,
     }
 
     let f = load_file("tests/samples/search_hits_only.json");

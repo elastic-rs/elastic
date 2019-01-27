@@ -3,7 +3,11 @@ use syn;
 
 mod parse;
 
-use super::{get_elastic_meta_items, expect_name_value, get_str_from_lit};
+use super::{
+    expect_name_value,
+    get_elastic_meta_items,
+    get_str_from_lit,
+};
 
 /**
 Derive `DateFormat` for the given input.
@@ -13,7 +17,10 @@ The input must satisfy the following rules:
 - It must be a unit struct.
 - It must have an `#[elastic(date_format="<value>")]` attribute.
 */
-pub fn expand_derive(crate_root: Tokens, input: &syn::MacroInput) -> Result<Vec<Tokens>, DeriveDateFormatError> {
+pub fn expand_derive(
+    crate_root: Tokens,
+    input: &syn::MacroInput,
+) -> Result<Vec<Tokens>, DeriveDateFormatError> {
     // Annotatable item for a unit struct
     match input.body {
         syn::Body::Struct(ref data) => match *data {
@@ -38,7 +45,12 @@ pub fn expand_derive(crate_root: Tokens, input: &syn::MacroInput) -> Result<Vec<
 }
 
 // Implement DateFormat for the type being derived with the mapping
-fn impl_date_format(crate_root: Tokens, item: &syn::MacroInput, name: &str, format: &[Tokens]) -> Tokens {
+fn impl_date_format(
+    crate_root: Tokens,
+    item: &syn::MacroInput,
+    name: &str,
+    format: &[Tokens],
+) -> Tokens {
     let ty = &item.ident;
 
     let parse_fn = quote!(
@@ -77,7 +89,7 @@ fn impl_date_format(crate_root: Tokens, item: &syn::MacroInput, name: &str, form
 // Get the format string supplied by an #[elastic()] attribute
 fn get_format_from_attr<'a>(item: &'a syn::MacroInput) -> Option<String> {
     let val = get_elastic_meta_items(&item.attrs);
-        
+
     let val = val
         .iter()
         .filter_map(|meta| expect_name_value("date_format", &meta))
@@ -89,7 +101,7 @@ fn get_format_from_attr<'a>(item: &'a syn::MacroInput) -> Option<String> {
 // Get the name string supplied by an #[elastic()] attribute
 fn get_name_from_attr<'a>(item: &'a syn::MacroInput) -> Option<String> {
     let val = get_elastic_meta_items(&item.attrs);
-        
+
     let val = val
         .iter()
         .filter_map(|meta| expect_name_value("date_format_name", &meta))
@@ -103,14 +115,30 @@ impl<'a> parse::DateFormatToken<'a> {
         use self::parse::DateFormatToken::*;
 
         match self {
-            Year => quote!(#crate_root::derive::Item::Numeric(#crate_root::derive::Numeric::Year, #crate_root::derive::Pad::Zero)),
-            Month => quote!(#crate_root::derive::Item::Numeric(#crate_root::derive::Numeric::Month, #crate_root::derive::Pad::Zero)),
-            DayOfMonth => quote!(#crate_root::derive::Item::Numeric(#crate_root::derive::Numeric::Day, #crate_root::derive::Pad::Zero)),
-            DayOfYear => quote!(#crate_root::derive::Item::Numeric(#crate_root::derive::Numeric::Ordinal, #crate_root::derive::Pad::Zero)),
-            Hour => quote!(#crate_root::derive::Item::Numeric(#crate_root::derive::Numeric::Hour, #crate_root::derive::Pad::Zero)),
-            Minute => quote!(#crate_root::derive::Item::Numeric(#crate_root::derive::Numeric::Minute, #crate_root::derive::Pad::Zero)),
-            Second => quote!(#crate_root::derive::Item::Numeric(#crate_root::derive::Numeric::Second, #crate_root::derive::Pad::Zero)),
-            Millisecond => quote!(#crate_root::derive::Item::Fixed(#crate_root::derive::Fixed::Nanosecond3)),
+            Year => {
+                quote!(#crate_root::derive::Item::Numeric(#crate_root::derive::Numeric::Year, #crate_root::derive::Pad::Zero))
+            }
+            Month => {
+                quote!(#crate_root::derive::Item::Numeric(#crate_root::derive::Numeric::Month, #crate_root::derive::Pad::Zero))
+            }
+            DayOfMonth => {
+                quote!(#crate_root::derive::Item::Numeric(#crate_root::derive::Numeric::Day, #crate_root::derive::Pad::Zero))
+            }
+            DayOfYear => {
+                quote!(#crate_root::derive::Item::Numeric(#crate_root::derive::Numeric::Ordinal, #crate_root::derive::Pad::Zero))
+            }
+            Hour => {
+                quote!(#crate_root::derive::Item::Numeric(#crate_root::derive::Numeric::Hour, #crate_root::derive::Pad::Zero))
+            }
+            Minute => {
+                quote!(#crate_root::derive::Item::Numeric(#crate_root::derive::Numeric::Minute, #crate_root::derive::Pad::Zero))
+            }
+            Second => {
+                quote!(#crate_root::derive::Item::Numeric(#crate_root::derive::Numeric::Second, #crate_root::derive::Pad::Zero))
+            }
+            Millisecond => {
+                quote!(#crate_root::derive::Item::Fixed(#crate_root::derive::Fixed::Nanosecond3))
+            }
             Utc => quote!(#crate_root::derive::Item::Literal("Z")),
             Delim(s) => quote!(#crate_root::derive::Item::Literal(#s)),
             Escaped(s) => quote!(#crate_root::derive::Item::Literal(#s)),
@@ -118,7 +146,7 @@ impl<'a> parse::DateFormatToken<'a> {
     }
 }
 
-quick_error!{
+quick_error! {
     #[derive(Debug)]
     pub enum DeriveDateFormatError {
         InvalidInput {

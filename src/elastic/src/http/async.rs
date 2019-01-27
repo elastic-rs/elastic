@@ -1,16 +1,32 @@
 use bytes::Bytes;
 use serde_json::Value;
 use std::borrow::Cow;
-use std::io::{self, Cursor, Read};
+use std::io::{
+    self,
+    Cursor,
+    Read,
+};
 
-use tokio_io::AsyncRead;
-use futures::{Poll, Stream};
-use reqwest::unstable::async::{Body, Response as RawResponse};
+use futures::{
+    Poll,
+    Stream,
+};
+use reqwest::async::{
+    Body,
+    Response as RawResponse,
+};
+use tokio::io::AsyncRead;
 
-use error::{self, Error};
-use http::{HttpRequest, StatusCode};
+use error::{
+    self,
+    Error,
+};
+use http::{
+    HttpRequest,
+    StatusCode,
+};
 
-pub use reqwest::unstable::async::Chunk as AsyncChunk;
+pub use reqwest::async::Chunk as AsyncChunk;
 
 /** A http request with an asynchronous body; */
 pub type AsyncHttpRequest = HttpRequest<AsyncBody>;
@@ -141,8 +157,8 @@ impl AsyncHttpResponse {
 
 #[cfg(test)]
 mod tests {
-    use client::requests::empty_body;
     use super::*;
+    use client::requests::empty_body;
 
     #[test]
     fn owned_string_into_body() {

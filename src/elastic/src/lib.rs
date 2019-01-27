@@ -56,16 +56,19 @@ The builder allows you to configure default parameters for all requests:
 
 ```no_run
 # extern crate elastic;
+# use elastic::prelude::*;
+# use std::str::FromStr;
 # fn main() { run().unwrap() }
 # fn run() -> Result<(), Box<::std::error::Error>> {
-use elastic::prelude::*;
-use elastic::http::header::Authorization;
+use elastic::http::header::{self, AUTHORIZATION, HeaderValue};
+
+let auth = HeaderValue::from_str("let me in")?;
 
 let builder = SyncClientBuilder::new()
     .static_node("http://es_host:9200")
-    .params_fluent(|p| p
+    .params_fluent(move |p| p
         .url_param("pretty", true)
-        .header(Authorization("let me in".to_owned())));
+        .header(AUTHORIZATION, auth.clone()));
 
 let client = builder.build()?;
 # Ok(())
@@ -279,7 +282,7 @@ This crate glues these libraries together with some simple assumptions about how
 */
 
 //#![deny(warnings, missing_docs)]
-#![allow(unknown_lints, doc_markdown)]
+#![allow(unknown_lints)]
 
 extern crate bytes;
 extern crate elastic_requests;
@@ -290,22 +293,20 @@ extern crate error_chain;
 extern crate fluent_builder;
 #[macro_use]
 extern crate futures;
-extern crate futures_cpupool;
+extern crate tokio_threadpool;
 #[macro_use]
 extern crate log;
 #[macro_use]
 extern crate quick_error;
-extern crate reqwest;
 extern crate crossbeam_channel as channel;
+extern crate reqwest;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
 #[cfg_attr(test, macro_use)]
 extern crate serde_json;
-extern crate tokio_core;
-extern crate tokio_io;
+extern crate tokio;
 extern crate url;
-extern crate tokio_timer;
 extern crate uuid;
 
 #[cfg(test)]
@@ -319,8 +320,8 @@ mod private {
     pub trait Sealed {}
 }
 
-pub mod http;
 pub mod client;
+pub mod http;
 pub mod types;
 
 pub mod prelude {

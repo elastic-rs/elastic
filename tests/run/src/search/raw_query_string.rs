@@ -1,6 +1,9 @@
-use futures::{future, Future};
-use elastic::prelude::*;
 use elastic::error::Error;
+use elastic::prelude::*;
+use futures::{
+    future,
+    Future,
+};
 use run_tests::IntegrationTest;
 
 #[derive(Debug, Clone, Copy)]
@@ -14,9 +17,7 @@ pub struct Doc {
 }
 
 fn doc() -> Doc {
-    Doc {
-        id: "1".to_owned(),
-    }
+    Doc { id: "1".to_owned() }
 }
 
 impl IntegrationTest for RawQueryString {
@@ -63,7 +64,8 @@ impl IntegrationTest for RawQueryString {
 
     // Ensure the response contains documents
     fn assert_ok(&self, res: &Self::Response) -> bool {
-        let correct_hits = res.hits()
+        let correct_hits = res
+            .hits()
             .all(|hit| hit.index() == Doc::static_index() && hit.ty() == Doc::static_ty());
         let len_greater_than_0 = res.documents().count() > 0;
 

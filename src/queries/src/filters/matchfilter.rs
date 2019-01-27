@@ -2,7 +2,8 @@ use super::common::*;
 
 #[derive(Clone, Debug, Serialize, Deserialize, Ord, PartialOrd, Eq, PartialEq)]
 pub struct MatchFilter {
-    #[serde(rename = "match")] pub match_: FieldAndValue,
+    #[serde(rename = "match")]
+    pub match_: FieldAndValue,
 }
 
 #[cfg(test)]

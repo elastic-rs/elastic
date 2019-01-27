@@ -1,7 +1,10 @@
-use run_tests::{test, Test};
+use run_tests::{
+    test,
+    Test,
+};
 
-mod exists;
 mod does_not_exist;
+mod exists;
 
 pub fn tests() -> Vec<Test> {
     vec![

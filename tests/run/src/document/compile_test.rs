@@ -1,7 +1,6 @@
 /**
 Tests for ensuring documents can be derived.
 */
-
 use std::collections::HashMap;
 
 #[derive(ElasticType, Serialize, Deserialize)]

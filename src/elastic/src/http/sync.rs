@@ -2,11 +2,21 @@ use bytes::Bytes;
 use serde_json::Value;
 use std::borrow::Cow;
 use std::fs::File;
-use std::io::{self, Cursor, Read};
+use std::io::{
+    self,
+    Cursor,
+    Read,
+};
 
-use reqwest::{Body, Response as RawResponse};
+use reqwest::{
+    Body,
+    Response as RawResponse,
+};
 
-use http::{HttpRequest, StatusCode};
+use http::{
+    HttpRequest,
+    StatusCode,
+};
 
 /** A http request with a synchronous body. */
 pub type SyncHttpRequest = HttpRequest<SyncBody>;
@@ -39,9 +49,15 @@ impl<'a> AsRef<[u8]> for BufferedSyncBodyInner<'a> {
 impl<'a> BufferedSyncBodyInner<'a> {
     fn as_ref(&self) -> BufferedSyncBodyInner {
         match *self {
-            BufferedSyncBodyInner::Shared(ref bytes) => BufferedSyncBodyInner::Shared(bytes.clone()),
-            BufferedSyncBodyInner::Bytes(ref bytes) => BufferedSyncBodyInner::Bytes(Cow::Borrowed(bytes)),
-            BufferedSyncBodyInner::Str(ref string) => BufferedSyncBodyInner::Str(Cow::Borrowed(string)),
+            BufferedSyncBodyInner::Shared(ref bytes) => {
+                BufferedSyncBodyInner::Shared(bytes.clone())
+            }
+            BufferedSyncBodyInner::Bytes(ref bytes) => {
+                BufferedSyncBodyInner::Bytes(Cow::Borrowed(bytes))
+            }
+            BufferedSyncBodyInner::Str(ref string) => {
+                BufferedSyncBodyInner::Str(Cow::Borrowed(string))
+            }
         }
     }
 }
@@ -71,7 +87,9 @@ impl SyncBody {
     pub fn reader(&mut self) -> SyncBodyReader {
         let state = match self.0 {
             SyncBodyInner::UnBuffered(ref mut reader) => SyncBodyReaderState::UnBuffered(reader),
-            SyncBodyInner::Buffered(ref inner) => SyncBodyReaderState::Buffered(Cursor::new(inner.as_ref())),
+            SyncBodyInner::Buffered(ref inner) => {
+                SyncBodyReaderState::Buffered(Cursor::new(inner.as_ref()))
+            }
         };
 
         SyncBodyReader { state }
@@ -98,7 +116,9 @@ impl<'a> SyncBodyReaderState<'a> {
                 let mut buf = Vec::new();
                 reader.read_to_end(&mut buf)?;
 
-                SyncBodyReaderState::Buffered(Cursor::new(BufferedSyncBodyInner::Bytes(Cow::Owned(buf))))
+                SyncBodyReaderState::Buffered(Cursor::new(BufferedSyncBodyInner::Bytes(
+                    Cow::Owned(buf),
+                )))
             }
         };
 
@@ -190,8 +210,8 @@ impl Read for SyncHttpResponse {
 
 #[cfg(test)]
 mod tests {
-    use client::requests::empty_body;
     use super::*;
+    use client::requests::empty_body;
 
     #[test]
     fn owned_string_into_body() {

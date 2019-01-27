@@ -4,22 +4,42 @@ Builders for [search requests][docs-search].
 [docs-search]: https://www.elastic.co/guide/en/elasticsearch/reference/current/search-search.html
 */
 
-use std::marker::PhantomData;
-use futures::{Future, Poll};
+use futures::{
+    Future,
+    Poll,
+};
 use serde::de::DeserializeOwned;
+use std::marker::PhantomData;
 
-use error::{Error, Result};
-use client::{DocumentClient, Client};
-use client::sender::{AsyncSender, Sender, SyncSender};
-use client::requests::{empty_body, DefaultBody, RequestBuilder};
-use client::requests::params::{Index, Type};
 use client::requests::endpoints::SearchRequest;
+use client::requests::params::{
+    Index,
+    Type,
+};
 use client::requests::raw::RawRequestInner;
+use client::requests::{
+    empty_body,
+    DefaultBody,
+    RequestBuilder,
+};
 use client::responses::SearchResponse;
+use client::sender::{
+    AsyncSender,
+    Sender,
+    SyncSender,
+};
+use client::{
+    Client,
+    DocumentClient,
+};
+use error::{
+    Error,
+    Result,
+};
 use types::document::DocumentType;
 
 /**
-A [search request][docs-search] builder that can be configured before sending. 
+A [search request][docs-search] builder that can be configured before sending.
 
 Call [`Client.search`][Client.search] to get a `SearchRequestBuilder`.
 The `send` method will either send the request [synchronously][send-sync] or [asynchronously][send-async], depending on the `Client` it was created from.
@@ -29,7 +49,8 @@ The `send` method will either send the request [synchronously][send-sync] or [as
 [send-async]: #send-asynchronously
 [Client.search]: ../../struct.Client.html#search-request
 */
-pub type SearchRequestBuilder<TSender, TDocument, TBody> = RequestBuilder<TSender, SearchRequestInner<TDocument, TBody>>;
+pub type SearchRequestBuilder<TSender, TDocument, TBody> =
+    RequestBuilder<TSender, SearchRequestInner<TDocument, TBody>>;
 
 #[doc(hidden)]
 pub struct SearchRequestInner<TDocument, TBody> {
@@ -46,7 +67,7 @@ impl<TSender> Client<TSender>
 where
     TSender: Sender,
 {
-    /** 
+    /**
     Create a [`SearchRequestBuilder`][SearchRequestBuilder] with this `Client` that can be configured before sending.
 
     For more details, see:
@@ -58,7 +79,7 @@ where
     # Examples
 
     Run a simple [Query String][docs-querystring] query for a [`DocumentType`][documents-mod] called `MyType`:
-    
+
     ```no_run
     # extern crate serde;
     # #[macro_use] extern crate serde_derive;
@@ -106,7 +127,7 @@ where
     # let client = SyncClientBuilder::new().build()?;
     let response = client.search::<Value>()
                          .index("myindex")
-                         .ty(Some("mytype"))
+                         .ty("my-type")
                          .send()?;
     # Ok(())
     # }
@@ -135,7 +156,7 @@ impl<TSender, TDocument> DocumentClient<TSender, TDocument>
 where
     TSender: Sender,
 {
-    /** 
+    /**
     Create a [`SearchRequestBuilder`][SearchRequestBuilder] with this `Client` that can be configured before sending.
 
     The index and type parameters will be inferred from the document type.
@@ -149,7 +170,7 @@ where
     # Examples
 
     Run a simple [Query String][docs-querystring] query for a [`DocumentType`][documents-mod] called `MyType`:
-    
+
     ```no_run
     # extern crate serde;
     # #[macro_use] extern crate serde_derive;
@@ -201,13 +222,14 @@ where
         let ty = TDocument::partial_static_ty().map(|ty| Type::from(ty));
 
         RequestBuilder::initial(
-            self.inner, 
+            self.inner,
             SearchRequestInner {
                 index: index,
                 ty: ty,
                 body: empty_body(),
                 _marker: PhantomData,
-            })
+            },
+        )
     }
 }
 
@@ -245,32 +267,29 @@ where
 {
     /**
     Set the indices for the search request.
-    
+
     If no index is specified then `_all` will be used.
     */
-    pub fn index<I>(mut self, index: I) -> Self
-    where
-        I: Into<Index<'static>>,
-    {
+    pub fn index(mut self, index: impl Into<Index<'static>>) -> Self {
         self.inner.index = Some(index.into());
         self
     }
 
     /** Set the types for the search request. */
-    pub fn ty<I>(mut self, ty: Option<I>) -> Self
-    where
-        I: Into<Type<'static>>,
-    {
-        self.inner.ty = ty.map(Into::into);
+    pub fn ty(mut self, ty: impl Into<Type<'static>>) -> Self {
+        self.inner.ty = Some(ty.into());
         self
     }
 
     /**
     Set the body for the search request.
-    
+
     If no body is specified then an empty query will be used.
     */
-    pub fn body<TNewBody>(self, body: TNewBody) -> SearchRequestBuilder<TSender, TDocument, TNewBody>
+    pub fn body<TNewBody>(
+        self,
+        body: TNewBody,
+    ) -> SearchRequestBuilder<TSender, TDocument, TNewBody>
     where
         TNewBody: Into<TSender::Body>,
     {
@@ -303,7 +322,7 @@ where
     # Examples
 
     Run a simple [Query String][docs-querystring] query for a [`DocumentType`][documents-mod] called `MyType`:
-    
+
     ```no_run
     # extern crate serde;
     # #[macro_use] extern crate serde_derive;
@@ -350,15 +369,15 @@ where
 {
     /**
     Send a `SearchRequestBuilder` asynchronously using an [`AsyncClient`][AsyncClient].
-    
+
     This will return a future that will resolve to the deserialised search response.
 
     # Examples
 
     Run a simple [Query String][docs-querystring] query for a [`DocumentType`][documents-mod] called `MyType`:
-    
+
     ```no_run
-    # extern crate tokio_core;
+    # extern crate tokio;
     # extern crate futures;
     # extern crate serde;
     # #[macro_use] extern crate serde_derive;
@@ -370,8 +389,7 @@ where
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # #[derive(Debug, Serialize, Deserialize, ElasticType)]
     # struct MyType { }
-    # let core = tokio_core::reactor::Core::new()?;
-    # let client = AsyncClientBuilder::new().build(&core.handle())?;
+    # let client = AsyncClientBuilder::new().build()?;
     let future = client.search::<MyType>()
                        .index("myindex")
                        .send();
@@ -395,9 +413,10 @@ where
     pub fn send(self) -> Pending<TDocument> {
         let req = self.inner.into_request();
 
-        let res_future = RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
-            .send()
-            .and_then(|res| res.into_response());
+        let res_future =
+            RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
+                .send()
+                .and_then(|res| res.into_response());
 
         Pending::new(res_future)
     }
@@ -433,8 +452,8 @@ where
 
 #[cfg(test)]
 mod tests {
-    use serde_json::Value;
     use prelude::*;
+    use serde_json::Value;
 
     #[test]
     fn default_request() {
@@ -462,11 +481,7 @@ mod tests {
     fn specify_ty() {
         let client = SyncClientBuilder::new().build().unwrap();
 
-        let req = client
-            .search::<Value>()
-            .ty(Some("new-ty"))
-            .inner
-            .into_request();
+        let req = client.search::<Value>().ty("new-ty").inner.into_request();
 
         assert_eq!("/_all/new-ty/_search", req.url.as_ref());
     }

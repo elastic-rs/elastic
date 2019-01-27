@@ -532,9 +532,9 @@ extern crate json_str;
 #[macro_use]
 mod private;
 
-pub mod document;
-pub mod date;
 pub mod boolean;
+pub mod date;
+pub mod document;
 pub mod geo;
 pub mod ip;
 pub mod number;
@@ -546,7 +546,7 @@ pub mod derive;
 pub mod prelude {
     /*!
     Includes all data types.
-    
+
     This is a convenience module to make it easy to build mappings for multiple types without too many `use` statements.
     */
 

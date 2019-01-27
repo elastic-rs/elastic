@@ -52,8 +52,10 @@ pub type State = Keyword<DefaultKeywordMapping>;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub enum Gender {
-    #[serde(rename = "F")] Female,
-    #[serde(rename = "M")] Male,
+    #[serde(rename = "F")]
+    Female,
+    #[serde(rename = "M")]
+    Male,
 }
 
 impl KeywordFieldType<DefaultKeywordMapping> for Gender {}
@@ -73,9 +75,9 @@ impl TextMapping for EmailMapping {
 
 #[cfg(test)]
 mod tests {
-    use serde_json;
-    use elastic::types::prelude::DocumentType;
     use super::*;
+    use elastic::types::prelude::DocumentType;
+    use serde_json;
 
     #[test]
     fn deserialize() {

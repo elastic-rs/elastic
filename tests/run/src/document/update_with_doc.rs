@@ -1,6 +1,6 @@
-use futures::Future;
-use elastic::prelude::*;
 use elastic::error::Error;
+use elastic::prelude::*;
+use futures::Future;
 use run_tests::IntegrationTest;
 
 #[derive(Debug, Clone, Copy)]
@@ -36,7 +36,11 @@ impl IntegrationTest for UpdateWithDoc {
 
     // Ensure the index doesn't exist
     fn prepare(&self, client: AsyncClient) -> Box<Future<Item = (), Error = Error>> {
-        let delete_res = client.index(Doc::static_index()).delete().send().map(|_| ());
+        let delete_res = client
+            .index(Doc::static_index())
+            .delete()
+            .send()
+            .map(|_| ());
 
         Box::new(delete_res)
     }

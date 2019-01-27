@@ -1,6 +1,6 @@
-use futures::Future;
-use elastic::prelude::*;
 use elastic::error::Error;
+use elastic::prelude::*;
+use futures::Future;
 use run_tests::IntegrationTest;
 
 #[derive(Debug, Clone, Copy)]
@@ -16,9 +16,7 @@ pub struct Doc {
 const ID: &'static str = "1";
 
 fn doc() -> Doc {
-    Doc {
-        id: ID.to_owned(),
-    }
+    Doc { id: ID.to_owned() }
 }
 
 impl IntegrationTest for Delete {
@@ -33,7 +31,11 @@ impl IntegrationTest for Delete {
 
     // Ensure the index doesn't exist
     fn prepare(&self, client: AsyncClient) -> Box<Future<Item = (), Error = Error>> {
-        let delete_res = client.index(Doc::static_index()).delete().send().map(|_| ());
+        let delete_res = client
+            .index(Doc::static_index())
+            .delete()
+            .send()
+            .map(|_| ());
 
         Box::new(delete_res)
     }
@@ -46,15 +48,9 @@ impl IntegrationTest for Delete {
             .params_fluent(|p| p.url_param("refresh", true))
             .send();
 
-        let delete_res = client
-            .bulk()
-            .push(bulk::<Doc>().delete(ID))
-            .send();
+        let delete_res = client.bulk().push(bulk::<Doc>().delete(ID)).send();
 
-        Box::new(
-            index_res
-                .and_then(|_| delete_res)
-        )
+        Box::new(index_res.and_then(|_| delete_res))
     }
 
     // Ensure the document was found before deleting but not found after deleting

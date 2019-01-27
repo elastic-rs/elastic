@@ -15,15 +15,22 @@ extern crate syn;
 
 extern crate inflector;
 
-pub mod parse;
 pub mod gen;
+pub mod parse;
 
 use std::collections::BTreeMap;
-use std::io::{stdout, Read, Write};
-use std::fs::{read_dir, File};
+use std::fs::{
+    read_dir,
+    File,
+};
+use std::io::{
+    stdout,
+    Read,
+    Write,
+};
 
-use quote::Tokens;
 use parse::*;
+use quote::Tokens;
 
 fn main() {
     start_comment_block_for_logging();
@@ -109,7 +116,8 @@ fn from_reader<R>(name: String, rdr: &mut R) -> Result<(String, Endpoint), Strin
 where
     R: Read,
 {
-    let endpoint: BTreeMap<String, Endpoint> = try!(serde_json::from_reader(rdr).map_err(|e| format!("Failed to parse {} because: {}", name, e)));
+    let endpoint: BTreeMap<String, Endpoint> = try!(serde_json::from_reader(rdr)
+        .map_err(|e| format!("Failed to parse {} because: {}", name, e)));
 
     Ok(endpoint.endpoint())
 }
@@ -186,7 +194,13 @@ impl CustomEndpoints for Vec<(String, Endpoint)> {
     }
 }
 
-fn endpoints_mod(tokens: &mut Tokens, derives: Tokens, http_mod: &'static str, endpoints: Vec<(String, Endpoint)>, params_to_emit: &mut BTreeMap<String, bool>) {
+fn endpoints_mod(
+    tokens: &mut Tokens,
+    derives: Tokens,
+    http_mod: &'static str,
+    endpoints: Vec<(String, Endpoint)>,
+    params_to_emit: &mut BTreeMap<String, bool>,
+) {
     let mut http_mod_tokens = Tokens::new();
     http_mod_tokens.append(http_mod);
 
@@ -206,12 +220,17 @@ fn endpoints_mod(tokens: &mut Tokens, derives: Tokens, http_mod: &'static str, e
         let url_params = gen::url_params::UrlParamBuilder::from(&e).build();
         let (ref url_params_item, _) = url_params;
 
-        let (req_params_item, req_params_ty) = gen::request_params::RequestParamBuilder::from(&e).build();
+        let (req_params_item, req_params_ty) =
+            gen::request_params::RequestParamBuilder::from(&e).build();
 
-        let req_ctors_item = gen::request_ctors::RequestParamsCtorBuilder::from((&e, &req_params_ty, &url_params)).build();
+        let req_ctors_item =
+            gen::request_ctors::RequestParamsCtorBuilder::from((&e, &req_params_ty, &url_params))
+                .build();
         let url_method_item = gen::url_builder::UrlMethodBuilder::from((&e, &url_params)).build();
 
-        let req_into_http_item = gen::request_into_endpoint::RequestIntoEndpointBuilder::from((&e, &req_params_ty)).build();
+        let req_into_http_item =
+            gen::request_into_endpoint::RequestIntoEndpointBuilder::from((&e, &req_params_ty))
+                .build();
 
         tokens.append_all(vec![
             derives.clone(),

@@ -26,15 +26,40 @@ It's effectively a rewrite.
 mod nodes_info;
 use self::nodes_info::*;
 
-use std::time::{Duration, Instant};
-use std::sync::{Arc, RwLock};
+use futures::{
+    Future,
+    IntoFuture,
+};
+use std::sync::{
+    Arc,
+    RwLock,
+};
+use std::time::{
+    Duration,
+    Instant,
+};
 use url::Url;
-use futures::{Future, IntoFuture};
 
+use client::requests::{
+    DefaultBody,
+    NodesInfoRequest,
+};
 use client::sender::static_nodes::StaticNodes;
-use client::sender::{AsyncSender, NextParams, NodeAddress, PreRequestParams, RequestParams, SendableRequest, SendableRequestParams, Sender, SyncSender};
-use client::requests::{DefaultBody, NodesInfoRequest};
-use error::{self, Error};
+use client::sender::{
+    AsyncSender,
+    NextParams,
+    NodeAddress,
+    PreRequestParams,
+    RequestParams,
+    SendableRequest,
+    SendableRequestParams,
+    Sender,
+    SyncSender,
+};
+use error::{
+    self,
+    Error,
+};
 use private;
 
 /**
@@ -76,9 +101,14 @@ impl<TSender> SniffedNodes<TSender> {
 
     This method takes a generic function that will resolve to a new set of node addresses.
     */
-    fn async_next<TRefresh, TRefreshFuture>(&self, refresh: TRefresh) -> Box<Future<Item = RequestParams, Error = Error>>
+    fn async_next<TRefresh, TRefreshFuture>(
+        &self,
+        refresh: TRefresh,
+    ) -> Box<Future<Item = RequestParams, Error = Error>>
     where
-        TRefresh: Fn(SendableRequest<NodesInfoRequest<'static>, RequestParams, DefaultBody>) -> TRefreshFuture,
+        TRefresh: Fn(
+            SendableRequest<NodesInfoRequest<'static>, RequestParams, DefaultBody>,
+        ) -> TRefreshFuture,
         TRefreshFuture: Future<Item = NodesInfoResponse, Error = Error> + 'static,
     {
         if let Some(address) = self.next_or_start_refresh() {
@@ -90,7 +120,8 @@ impl<TSender> SniffedNodes<TSender> {
         let req = self.sendable_request();
         let refresh_params = self.refresh_params.clone();
 
-        let refresh_nodes = refresh(req).then(move |fresh_nodes| Self::finish_refresh(&inner, &refresh_params, fresh_nodes));
+        let refresh_nodes = refresh(req)
+            .then(move |fresh_nodes| Self::finish_refresh(&inner, &refresh_params, fresh_nodes));
 
         Box::new(refresh_nodes)
     }
@@ -102,7 +133,9 @@ impl<TSender> SniffedNodes<TSender> {
     */
     fn sync_next<TRefresh>(&self, refresh: TRefresh) -> Result<RequestParams, Error>
     where
-        TRefresh: Fn(SendableRequest<NodesInfoRequest<'static>, RequestParams, DefaultBody>) -> Result<NodesInfoResponse, Error>,
+        TRefresh: Fn(
+            SendableRequest<NodesInfoRequest<'static>, RequestParams, DefaultBody>,
+        ) -> Result<NodesInfoResponse, Error>,
     {
         if let Some(address) = self.next_or_start_refresh() {
             return address;
@@ -154,7 +187,11 @@ impl SniffedNodesBuilder {
 
     A `filter_path` url parameter will be added to the `refresh_parameters`.
     */
-    pub(crate) fn build<TSender>(self, base_params: PreRequestParams, sender: TSender) -> SniffedNodes<TSender> {
+    pub(crate) fn build<TSender>(
+        self,
+        base_params: PreRequestParams,
+        sender: TSender,
+    ) -> SniffedNodes<TSender> {
         let nodes = StaticNodes::round_robin(vec![self.base_url.clone()], base_params.clone());
         let wait = self.wait.unwrap_or_else(|| Duration::from_secs(90));
 
@@ -164,7 +201,8 @@ impl SniffedNodesBuilder {
         // - we want more metadata about the nodes
         // The publish_address may not correspond to the address the node is actually available on
         // In this case, we might want to offer some kind of filter function that consumers can use to transform nodes
-        let refresh_params = RequestParams::from_parts(self.base_url, base_params).url_param("filter_path", "nodes.*.http.publish_address");
+        let refresh_params = RequestParams::from_parts(self.base_url, base_params)
+            .url_param("filter_path", "nodes.*.http.publish_address");
 
         SniffedNodes {
             sender: sender,
@@ -236,21 +274,28 @@ impl<TSender> SniffedNodes<TSender> {
         })
     }
 
-    fn sendable_request(&self) -> SendableRequest<NodesInfoRequest<'static>, RequestParams, DefaultBody> {
+    fn sendable_request(
+        &self,
+    ) -> SendableRequest<NodesInfoRequest<'static>, RequestParams, DefaultBody> {
         SendableRequest::new(
             NodesInfoRequest::new(),
             SendableRequestParams::Value(self.refresh_params.clone()),
         )
     }
 
-    fn finish_refresh(inner: &RwLock<SniffedNodesInner>, refresh_params: &RequestParams, fresh_nodes: Result<NodesInfoResponse, Error>) -> Result<RequestParams, Error> {
+    fn finish_refresh(
+        inner: &RwLock<SniffedNodesInner>,
+        refresh_params: &RequestParams,
+        fresh_nodes: Result<NodesInfoResponse, Error>,
+    ) -> Result<RequestParams, Error> {
         let mut inner = inner.write().expect("lock poisoned");
 
         inner.refreshing = false;
 
         // TODO: We need to deal with the scheme better here
         // The `NodeAddress` should one day be a properly typed url we can interrogate
-        let parsed_url = Url::parse(refresh_params.get_base_url().as_ref()).map_err(error::request)?;
+        let parsed_url =
+            Url::parse(refresh_params.get_base_url().as_ref()).map_err(error::request)?;
         let scheme = parsed_url.scheme();
 
         let fresh_nodes = fresh_nodes?;
@@ -265,14 +310,19 @@ impl<TSender> SniffedNodes<TSender> {
 impl SniffedNodesInner {
     fn should_refresh(&self) -> bool {
         // If there isn't a value for the last update then assume we need to refresh.
-        let last_update_is_stale = self.last_update
+        let last_update_is_stale = self
+            .last_update
             .as_ref()
             .map(|last_update| last_update.elapsed() > self.wait);
 
         !self.refreshing && last_update_is_stale.unwrap_or(true)
     }
 
-    fn update_nodes_and_next(&mut self, parsed: NodesInfoResponse, scheme: &str) -> Result<RequestParams, Error> {
+    fn update_nodes_and_next(
+        &mut self,
+        parsed: NodesInfoResponse,
+        scheme: &str,
+    ) -> Result<RequestParams, Error> {
         let nodes: Vec<_> = parsed
             .into_iter()
             .filter_map(|node| {
@@ -318,8 +368,8 @@ impl NextParams for SniffedNodes<SyncSender> {
 
 #[cfg(test)]
 mod tests {
-    use futures::Future;
     use super::*;
+    use futures::Future;
 
     fn sender() -> SniffedNodes<()> {
         SniffedNodesBuilder::new(initial_address()).build(PreRequestParams::default(), ())
@@ -354,7 +404,10 @@ mod tests {
         vec!["http://a:9200", "http://127.0.0.1:9200"]
     }
 
-    fn assert_node_addresses_equal(nodes: &SniffedNodes<()>, expected_addresses: Vec<&'static str>) {
+    fn assert_node_addresses_equal(
+        nodes: &SniffedNodes<()>,
+        expected_addresses: Vec<&'static str>,
+    ) {
         let inner = nodes.inner.read().expect("lock poisoned");
         let actual: Vec<&str> = inner.nodes.get().iter().map(|node| node.as_ref()).collect();
 

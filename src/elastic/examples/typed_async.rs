@@ -19,14 +19,20 @@ extern crate serde;
 extern crate serde_derive;
 #[macro_use]
 extern crate serde_json;
-extern crate tokio_core;
+extern crate tokio;
 
 extern crate elastic;
 
-use std::error::Error as StdError;
-use futures::{Future, IntoFuture};
+use elastic::error::{
+    ApiError,
+    Error,
+};
 use elastic::prelude::*;
-use elastic::error::{ApiError, Error};
+use futures::{
+    Future,
+    IntoFuture,
+};
+use std::error::Error as StdError;
 
 #[derive(Debug, Serialize, Deserialize, ElasticType)]
 #[elastic(index = "typed_sample_index")]
@@ -38,10 +44,8 @@ struct MyType {
 }
 
 fn run() -> Result<(), Box<StdError>> {
-    let mut core = tokio_core::reactor::Core::new()?;
-
     // A HTTP client and request parameters
-    let client = AsyncClientBuilder::new().build(&core.handle())?;
+    let client = AsyncClientBuilder::new().build()?;
 
     // Create a document to index
     let doc = MyType {
@@ -62,7 +66,7 @@ fn run() -> Result<(), Box<StdError>> {
         Ok(())
     });
 
-    core.run(res_future)?;
+    tokio::executor::current_thread::block_on_all(res_future)?;
 
     Ok(())
 }
@@ -107,11 +111,7 @@ fn ensure_indexed(client: AsyncClient, doc: MyType) -> Box<Future<Item = (), Err
 fn put_index(client: AsyncClient) -> Box<Future<Item = (), Error = Error>> {
     let create_index = client.index(MyType::static_index()).create().send();
 
-    let put_mapping = client
-        .document::<MyType>()
-        .put_mapping()
-        .send()
-        .map(|_| ());
+    let put_mapping = client.document::<MyType>().put_mapping().send().map(|_| ());
 
     Box::new(create_index.and_then(|_| put_mapping))
 }
@@ -127,17 +127,20 @@ fn put_doc(client: AsyncClient, doc: MyType) -> Box<Future<Item = (), Error = Er
     Box::new(index_doc)
 }
 
-fn search(client: AsyncClient, query: &'static str) -> Box<Future<Item = SearchResponse<MyType>, Error = Error>> {
+fn search(
+    client: AsyncClient,
+    query: &'static str,
+) -> Box<Future<Item = SearchResponse<MyType>, Error = Error>> {
     let search = client
         .search()
         .index(MyType::static_index())
         .body(json!({
-                "query": {
-                    "query_string": {
-                        "query": query
-                    }
-                }
-          }))
+              "query": {
+                  "query_string": {
+                      "query": query
+                  }
+              }
+        }))
         .send();
 
     Box::new(search)

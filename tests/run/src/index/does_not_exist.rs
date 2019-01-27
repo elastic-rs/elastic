@@ -1,6 +1,6 @@
-use futures::Future;
-use elastic::prelude::*;
 use elastic::error::Error;
+use elastic::prelude::*;
+use futures::Future;
 use run_tests::IntegrationTest;
 
 #[derive(Debug, Clone, Copy)]

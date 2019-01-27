@@ -14,8 +14,8 @@ extern crate serde_derive;
 
 extern crate elastic;
 
-use std::error::Error;
 use elastic::prelude::*;
+use std::error::Error;
 
 #[derive(Debug, Serialize, Deserialize, ElasticType)]
 #[elastic(index = "index_sample_index")]
@@ -38,21 +38,20 @@ fn run() -> Result<(), Box<Error>> {
     };
 
     // Create the index if it doesn't exist
-    if !client.index(MyType::static_index()).exists().send()?.exists() {
+    if !client
+        .index(MyType::static_index())
+        .exists()
+        .send()?
+        .exists()
+    {
         client.index(MyType::static_index()).create().send()?;
     }
 
     // Add the document mapping (optional, but makes sure `timestamp` is mapped as a `date`)
-    client
-        .document::<MyType>()
-        .put_mapping()
-        .send()?;
+    client.document::<MyType>().put_mapping().send()?;
 
     // Index the document
-    client
-        .document()
-        .index(doc)
-        .send()?;
+    client.document().index(doc).send()?;
 
     Ok(())
 }

@@ -3,39 +3,51 @@
 //! NOTE: This sample expects you have a node running on `localhost:9200`.
 
 extern crate elastic;
-extern crate reqwest;
 extern crate env_logger;
+extern crate reqwest;
 
-use std::error::Error;
-use std::io::Read;
-use std::collections::hash_map::DefaultHasher;
-use std::hash::{Hash, Hasher};
+use elastic::http::{
+    header::{
+        HeaderName,
+        HeaderValue,
+    },
+    SyncHttpRequest,
+};
 use elastic::prelude::*;
-use elastic::http::SyncHttpRequest;
+use std::{
+    collections::hash_map::DefaultHasher,
+    error::Error,
+    hash::{
+        Hash,
+        Hasher,
+    },
+    io::Read,
+    str::FromStr,
+};
 
 fn hash_request(request: &mut SyncHttpRequest) -> Result<(), Box<Error + Send + Sync>> {
-    let &mut SyncHttpRequest { ref mut url, ref mut method, ref mut body, ref mut headers, .. } = request;
-
     // Read the body into a temporary buffer
     let mut buffered = Vec::new();
-    if let &mut Some(ref mut body) = body {
+    if let Some(ref mut body) = request.body_mut() {
         body.reader().read_to_end(&mut buffered)?;
     }
 
     // Access the request data
     let mut hasher = DefaultHasher::new();
 
-    url.hash(&mut hasher);
-    method.hash(&mut hasher);
+    request.url_mut().hash(&mut hasher);
+    request.method_mut().hash(&mut hasher);
     buffered.hash(&mut hasher);
-    
-    for header in headers.iter() {
-        header.to_string().hash(&mut hasher);
+
+    for (key, value) in request.headers_mut().iter() {
+        format!("{}: {}", key, value.to_str()?).hash(&mut hasher);
     }
-    
+
     // Add a raw header to the request
     let hash = hasher.finish();
-    headers.set_raw("X-BadHash", hash.to_string());
+    request
+        .headers_mut()
+        .insert(HeaderName::from_str("X-BadHash")?, HeaderValue::from(hash));
 
     Ok(())
 }

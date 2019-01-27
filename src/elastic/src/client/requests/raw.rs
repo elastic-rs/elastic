@@ -2,22 +2,32 @@
 Builders for raw requests.
 */
 
-use std::marker::PhantomData;
 use fluent_builder::TryIntoValue;
+use std::marker::PhantomData;
 
+use client::requests::{
+    Endpoint,
+    RequestBuilder,
+};
+use client::sender::{
+    NextParams,
+    NodeAddresses,
+    SendableRequest,
+    SendableRequestParams,
+    Sender,
+};
 use client::Client;
-use client::sender::{NextParams, NodeAddresses, SendableRequest, SendableRequestParams, Sender};
-use client::requests::{Endpoint, RequestBuilder};
 
 /**
 A raw request builder that can be configured before sending.
 
-Call [`Client.request`][Client.request] to get an `IndexRequest`. 
+Call [`Client.request`][Client.request] to get an `IndexRequest`.
 The `send` method will either send the request synchronously or asynchronously, depending on the `Client` it was created from.
 
 [Client.request]: ../../struct.Client.html#raw-request
 */
-pub type RawRequestBuilder<TSender, TEndpoint, TBody> = RequestBuilder<TSender, RawRequestInner<TEndpoint, TBody>>;
+pub type RawRequestBuilder<TSender, TEndpoint, TBody> =
+    RequestBuilder<TSender, RawRequestInner<TEndpoint, TBody>>;
 
 #[doc(hidden)]
 pub struct RawRequestInner<TEndpoint, TBody> {
@@ -48,9 +58,9 @@ where
     which includes the endpoint types in the [`endpoints`][endpoints-mod] module.
 
     # Examples
-    
+
     Send a cluster ping and read the returned metadata:
-    
+
     ```no_run
     # extern crate elastic;
     # use elastic::prelude::*;
@@ -59,10 +69,10 @@ where
     # let client = SyncClientBuilder::new().build()?;
     // `PingRequest` implements `Into<Endpoint>`
     let req = PingRequest::new();
-    
+
     // Turn the `PingRequest` into a `RequestBuilder`
     let builder = client.request(req);
-    
+
     // Send the `RequestBuilder` and parse as a `PingResponse`
     let ping = builder.send()?.into_response::<PingResponse>()?;
 
@@ -75,7 +85,10 @@ where
     [RawRequestBuilder]: requests/raw/type.RawRequestBuilder.html
     [endpoints-mod]: requests/endpoints/index.html
     */
-    pub fn request<TEndpoint, TBody>(&self, endpoint: TEndpoint) -> RawRequestBuilder<TSender, TEndpoint, TBody>
+    pub fn request<TEndpoint, TBody>(
+        &self,
+        endpoint: TEndpoint,
+    ) -> RawRequestBuilder<TSender, TEndpoint, TBody>
     where
         TEndpoint: Into<Endpoint<'static, TBody>>,
         TBody: Into<TSender::Body>,
@@ -116,7 +129,7 @@ where
     let response = client.request(SimpleSearchRequest::for_index_ty("myindex", "mytype"))
                          .send()?
                          .into_response::<SearchResponse<Value>>()?;
-    
+
     // Iterate through the hits (of type `MyType`)
     for hit in response.hits() {
         println!("{:?}", hit);
@@ -128,7 +141,7 @@ where
     Send a raw request asynchronously and parse it to a concrete response type:
 
     ```no_run
-    # extern crate tokio_core;
+    # extern crate tokio;
     # extern crate futures;
     # extern crate elastic;
     # extern crate serde_json;
@@ -137,12 +150,11 @@ where
     # use futures::Future;
     # fn main() { run().unwrap() }
     # fn run() -> Result<(), Box<::std::error::Error>> {
-    # let core = tokio_core::reactor::Core::new()?;
-    # let client = AsyncClientBuilder::new().build(&core.handle())?;
+    # let client = AsyncClientBuilder::new().build()?;
     let future = client.request(SimpleSearchRequest::for_index_ty("myindex", "mytype"))
                        .send()
                        .and_then(|res| res.into_response::<SearchResponse<Value>>());
-    
+
     future.and_then(|response| {
         // Iterate through the hits (of type `MyType`)
         for hit in response.hits() {

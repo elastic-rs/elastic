@@ -7,7 +7,6 @@ A crate to handle parsing and handling Elasticsearch search results which provid
 `Cargo.toml`
 ```
 [dependencies]
-elastic_reqwest = "*"
 elastic_responses = "*" 
 ```
 

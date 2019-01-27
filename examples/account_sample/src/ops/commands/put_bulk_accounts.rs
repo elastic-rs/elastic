@@ -1,11 +1,17 @@
-use std::io::{Error as IoError, Result as IoResult};
-use std::fs::File;
-use std::path::Path;
-use ops::Client;
-use elastic::prelude::*;
-use elastic::client::responses::bulk::{BulkErrorsResponse, ErrorItem};
+use elastic::client::responses::bulk::{
+    BulkErrorsResponse,
+    ErrorItem,
+};
 use elastic::http::SyncBody;
+use elastic::prelude::*;
 use elastic::Error as ResponseError;
+use ops::Client;
+use std::fs::File;
+use std::io::{
+    Error as IoError,
+    Result as IoResult,
+};
+use std::path::Path;
 
 use model;
 
@@ -23,7 +29,8 @@ impl PutBulkAccounts for Client {
         let body = bulk_body(path)?;
         let req = put(body);
 
-        let res = self.io
+        let res = self
+            .io
             .request(req)
             .params_fluent(|params| params.url_param("refresh", true))
             .send()?
@@ -51,7 +58,7 @@ where
     File::open(path)
 }
 
-quick_error!{
+quick_error! {
     #[derive(Debug)]
     pub enum PutBulkAccountsError {
         Io(err: IoError) {

@@ -59,7 +59,7 @@ pub use self::impls::*;
 pub mod prelude {
     /*!
     Includes all types for the `boolean` type.
-    
+
     This is a convenience module to make it easy to build mappings for multiple types without too many `use` statements.
     */
 

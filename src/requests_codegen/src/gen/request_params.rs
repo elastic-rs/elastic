@@ -1,7 +1,7 @@
-use syn;
-use parse;
-use super::types;
 use super::helpers::*;
+use super::types;
+use parse;
+use syn;
 
 /// Builder for request parameters enum.
 pub struct RequestParamBuilder {
@@ -35,14 +35,12 @@ impl RequestParamBuilder {
     }
 
     pub fn build(self) -> (syn::Item, syn::Ty) {
-        let mut fields = vec![
-            syn::Field {
-                ident: Some(ident("url")),
-                vis: syn::Visibility::Public,
-                attrs: vec![],
-                ty: types::url::ty(),
-            },
-        ];
+        let mut fields = vec![syn::Field {
+            ident: Some(ident("url")),
+            vis: syn::Visibility::Public,
+            attrs: vec![],
+            ty: types::url::ty(),
+        }];
 
         let mut generics = generics(vec![lifetime()], vec![]);
 
@@ -116,6 +114,8 @@ impl<'a> From<&'a (String, parse::Endpoint)> for RequestParamBuilder {
 
 #[cfg(test)]
 mod tests {
+    #![cfg_attr(rustfmt, rustfmt_skip)]
+    
     use super::*;
 
     #[test]
@@ -151,10 +151,7 @@ mod tests {
 
     #[test]
     fn gen_request_params_with_body_doc() {
-        let (result, _) = RequestParamBuilder::new("Request")
-            .has_body(true)
-            .doc_comment("Some doc")
-            .build();
+        let (result, _) = RequestParamBuilder::new("Request").has_body(true).doc_comment("Some doc").build();
 
         let expected = quote!(
             #[doc = "Some doc"]
@@ -177,9 +174,7 @@ mod tests {
                 documentation: String::new(),
                 methods: vec![Method::Get],
                 url: get_url(),
-                body: Some(Body {
-                    description: String::new(),
-                }),
+                body: Some(Body { description: String::new() }),
             },
         );
 

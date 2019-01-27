@@ -1,10 +1,21 @@
+use serde::ser::SerializeStruct;
+use serde::{
+    Serialize,
+    Serializer,
+};
+use std::collections::{
+    BTreeMap,
+    HashMap,
+};
 use std::hash::Hash;
 use std::marker::PhantomData;
-use std::collections::{BTreeMap, HashMap};
-use serde::{Serialize, Serializer};
-use serde::ser::SerializeStruct;
 
-use super::field::{SerializeFieldMapping, StaticSerialize, FieldMapping, FieldType};
+use super::field::{
+    FieldMapping,
+    FieldType,
+    SerializeFieldMapping,
+    StaticSerialize,
+};
 
 pub trait DefaultFieldType {}
 
@@ -62,7 +73,8 @@ where
     }
 }
 
-impl<TMapping, TPivot> StaticSerialize for SerializeFieldMapping<WrappedMapping<TMapping, TPivot>, TPivot>
+impl<TMapping, TPivot> StaticSerialize
+    for SerializeFieldMapping<WrappedMapping<TMapping, TPivot>, TPivot>
 where
     TMapping: FieldMapping<TPivot>,
 {
@@ -74,11 +86,7 @@ where
     }
 }
 
-impl<TField> FieldType<DefaultMapping, ()> for TField
-where
-    TField: DefaultFieldType,
-{
-}
+impl<TField> FieldType<DefaultMapping, ()> for TField where TField: DefaultFieldType {}
 
 /** Mapping implementation for a standard binary tree map. */
 impl<K, V> DefaultFieldType for BTreeMap<K, V>

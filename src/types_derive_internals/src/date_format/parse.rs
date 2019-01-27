@@ -1,5 +1,5 @@
-use std::str;
 use nom::simple_errors::Err as NomError;
+use std::str;
 
 pub type Error = NomError;
 
@@ -139,8 +139,8 @@ named!(escaped(&[u8]) -> DateFormatToken,
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use self::DateFormatToken::*;
+    use super::*;
 
     fn assert_parse(i: &[u8], expected: Vec<DateFormatToken>) {
         let (_, result) = format(i).unwrap();

@@ -1,12 +1,28 @@
-use std::io::{self, Write};
-use std::ops::Deref;
+use std::io::{
+    self,
+    Write,
+};
 use std::marker::PhantomData;
+use std::ops::Deref;
 
-use serde::ser::{Serialize, Serializer, SerializeMap};
+use serde::ser::{
+    Serialize,
+    SerializeMap,
+    Serializer,
+};
 use serde_json;
 
-use client::requests::params::{Index, Type, Id};
-use client::requests::common::{Doc, Script, ScriptBuilder, DefaultParams};
+use client::requests::common::{
+    DefaultParams,
+    Doc,
+    Script,
+    ScriptBuilder,
+};
+use client::requests::params::{
+    Id,
+    Index,
+    Type,
+};
 use types::document::DocumentType;
 
 pub use client::responses::bulk::Action;
@@ -22,11 +38,23 @@ pub struct BulkOperation<TValue> {
 
 #[derive(Serialize)]
 struct BulkHeader {
-    #[serde(rename = "_index", serialize_with = "serialize_param", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "_index",
+        serialize_with = "serialize_param",
+        skip_serializing_if = "Option::is_none"
+    )]
     index: Option<Index<'static>>,
-    #[serde(rename = "_type", serialize_with = "serialize_param", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "_type",
+        serialize_with = "serialize_param",
+        skip_serializing_if = "Option::is_none"
+    )]
     ty: Option<Type<'static>>,
-    #[serde(rename = "_id", serialize_with = "serialize_param", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "_id",
+        serialize_with = "serialize_param",
+        skip_serializing_if = "Option::is_none"
+    )]
     id: Option<Id<'static>>,
 }
 
@@ -42,11 +70,16 @@ impl<TParams> BulkOperation<Script<TParams>> {
     /**
     Set the script for this bulk operation.
     */
-    pub fn script_fluent<TBuilder, TNewParams>(self, builder: TBuilder) -> BulkOperation<Script<TNewParams>>
+    pub fn script_fluent<TBuilder, TNewParams>(
+        self,
+        builder: TBuilder,
+    ) -> BulkOperation<Script<TNewParams>>
     where
         TBuilder: Fn(ScriptBuilder<TParams>) -> ScriptBuilder<TNewParams>,
     {
-        let inner = self.inner.map(|script| builder(ScriptBuilder::from_script(script)).build());
+        let inner = self
+            .inner
+            .map(|script| builder(ScriptBuilder::from_script(script)).build());
 
         BulkOperation {
             action: self.action,
@@ -60,10 +93,7 @@ impl<TValue> BulkOperation<TValue> {
     /**
     Set the index for this bulk operation.
     */
-    pub fn index<I>(mut self, index: I) -> Self
-    where
-        I: Into<Index<'static>>,
-    {
+    pub fn index(mut self, index: impl Into<Index<'static>>) -> Self {
         self.header.index = Some(index.into());
         self
     }
@@ -71,10 +101,7 @@ impl<TValue> BulkOperation<TValue> {
     /**
     Set the type for this bulk operation.
     */
-    pub fn ty<I>(mut self, ty: I) -> Self
-    where
-        I: Into<Type<'static>>,
-    {
+    pub fn ty(mut self, ty: impl Into<Type<'static>>) -> Self {
         self.header.ty = Some(ty.into());
         self
     }
@@ -93,7 +120,7 @@ impl<TValue> BulkOperation<TValue> {
 
 impl<TDocument> BulkOperation<TDocument>
 where
-    TDocument: Serialize
+    TDocument: Serialize,
 {
     /**
     Write the operation to the given writer.
@@ -102,8 +129,8 @@ where
     This method will write a json header, then a newline, then the document body.
     */
     pub fn write<W>(&self, mut writer: W) -> io::Result<()>
-        where
-            W: Write,
+    where
+        W: Write,
     {
         struct Header<'a> {
             action: Action,
@@ -112,7 +139,8 @@ where
 
         impl<'a> Serialize for Header<'a> {
             fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-                where S: Serializer
+            where
+                S: Serializer,
             {
                 let mut map = serializer.serialize_map(Some(1))?;
 
@@ -129,7 +157,13 @@ where
             }
         }
 
-        serde_json::to_writer(&mut writer, &Header { action: self.action, inner: &self.header })?;
+        serde_json::to_writer(
+            &mut writer,
+            &Header {
+                action: self.action,
+                inner: &self.header,
+            },
+        )?;
         write!(&mut writer, "\n")?;
 
         if let Some(ref inner) = self.inner {
@@ -179,7 +213,11 @@ where
         }
     }
 
-    pub fn update_script<TId, TScript>(self, id: TId, script: TScript) -> BulkOperation<Script<DefaultParams>>
+    pub fn update_script<TId, TScript>(
+        self,
+        id: TId,
+        script: TScript,
+    ) -> BulkOperation<Script<DefaultParams>>
     where
         TId: Into<Id<'static>>,
         TScript: ToString,
@@ -195,7 +233,12 @@ where
         }
     }
 
-    pub fn update_script_fluent<TId, TScript, TBuilder, TParams>(self, id: TId, script: TScript, builder: TBuilder) -> BulkOperation<Script<TParams>>
+    pub fn update_script_fluent<TId, TScript, TBuilder, TParams>(
+        self,
+        id: TId,
+        script: TScript,
+        builder: TBuilder,
+    ) -> BulkOperation<Script<TParams>>
     where
         TId: Into<Id<'static>>,
         TScript: ToString,
@@ -254,9 +297,7 @@ pub struct BulkRawOperation {
 
 impl BulkRawOperation {
     pub fn new() -> Self {
-        BulkRawOperation {
-            _private: (),
-        }
+        BulkRawOperation { _private: () }
     }
 
     pub fn index<TDocument>(self, doc: TDocument) -> BulkOperation<Doc<TDocument>> {
@@ -298,7 +339,11 @@ impl BulkRawOperation {
         }
     }
 
-    pub fn update_script_fluent<TId, TScript, TBuilder, TParams>(self, script: TScript, builder: TBuilder) -> BulkOperation<Script<TParams>>
+    pub fn update_script_fluent<TId, TScript, TBuilder, TParams>(
+        self,
+        script: TScript,
+        builder: TBuilder,
+    ) -> BulkOperation<Script<TParams>>
     where
         TScript: ToString,
         TBuilder: Fn(ScriptBuilder<DefaultParams>) -> ScriptBuilder<TParams>,

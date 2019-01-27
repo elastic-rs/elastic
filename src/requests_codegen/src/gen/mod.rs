@@ -1,17 +1,17 @@
-pub mod url_params;
-pub mod url_builder;
-pub mod request_params;
 pub mod request_ctors;
 pub mod request_into_endpoint;
+pub mod request_params;
+pub mod url_builder;
+pub mod url_params;
 
 pub mod types {
     /// Type and declarations for the `Body` type.
     ///
     /// This type is an alias for a borrowed slice of bytes.
     pub mod url {
-        use syn;
-        use quote;
         use gen::helpers;
+        use quote;
+        use syn;
 
         pub fn ident() -> &'static str {
             "UrlPath"
@@ -34,7 +34,7 @@ pub mod types {
                         #ident (Cow::Borrowed(value))
                     }
                 }
-                
+
                 impl <'a> From<String> for #url {
                     fn from(value: String) -> #url {
                         #ident (Cow::Owned(value))
@@ -56,9 +56,9 @@ pub mod types {
     ///
     /// This type is an alias for a borrowed slice of bytes.
     pub mod body {
-        use syn;
-        use quote;
         use gen::helpers;
+        use quote;
+        use syn;
 
         pub fn ident() -> &'static str {
             "B"
@@ -92,10 +92,13 @@ pub mod types {
     ///
     /// This type is a simple, standard wrapper for a HTTP request.
     pub mod request {
-        use super::{body, url};
+        use super::{
+            body,
+            url,
+        };
+        use gen::helpers;
         use quote;
         use syn;
-        use gen::helpers;
 
         pub fn method_ident() -> &'static str {
             "Method"
@@ -135,9 +138,9 @@ pub mod types {
 
     /// Macro for declaring a wrapped type declaration.
     pub mod wrapped_ty {
+        use gen::helpers;
         use inflector::Inflector;
         use quote;
-        use gen::helpers;
 
         pub fn item(ty: &str) -> quote::Tokens {
             let ty = ty.to_pascal_case();
@@ -168,7 +171,7 @@ pub mod types {
 
                 impl <'a> ::std::ops::Deref for #ty {
                     type Target = str;
-                    
+
                     fn deref(&self) -> &str {
                         &self.0
                     }
@@ -179,9 +182,9 @@ pub mod types {
 }
 
 pub mod helpers {
-    use syn;
-    use quote;
     use inflector::Inflector;
+    use quote;
+    use syn;
 
     fn sanitise_ident(ident: &str) -> &str {
         match ident {
@@ -289,11 +292,13 @@ pub mod helpers {
                 .into_iter()
                 .map(|(path, lifetimes, types)| syn::PathSegment {
                     ident: syn::Ident::new(sanitise_ident(path)),
-                    parameters: syn::PathParameters::AngleBracketed(syn::AngleBracketedParameterData {
-                        lifetimes: lifetimes,
-                        types: types,
-                        bindings: vec![],
-                    }),
+                    parameters: syn::PathParameters::AngleBracketed(
+                        syn::AngleBracketedParameterData {
+                            lifetimes: lifetimes,
+                            types: types,
+                            bindings: vec![],
+                        },
+                    ),
                 })
                 .collect(),
         }
@@ -305,7 +310,8 @@ pub mod helpers {
             ident(method),
             vec![],
             args.iter().map(|a| path_none(a).into_expr()).collect(),
-        ).into()
+        )
+        .into()
     }
 
     /// AST for a simple field access.

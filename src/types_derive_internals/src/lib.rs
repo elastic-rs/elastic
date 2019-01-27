@@ -1,4 +1,4 @@
-/*! 
+/*!
 Elasticsearch Core Types Codegen
 
 This crate contains the internals for `elastic_types`-related codegen.
@@ -22,8 +22,8 @@ extern crate serde_json;
 
 extern crate chrono;
 
-pub mod elastic_type;
 pub mod date_format;
+pub mod elastic_type;
 
 fn get_elastic_meta_items<'a, I>(attrs: I) -> Vec<syn::NestedMetaItem>
 where
@@ -42,14 +42,23 @@ where
 
 fn expect_name_value<'a>(name: &str, meta_item: &'a syn::NestedMetaItem) -> Option<&'a syn::Lit> {
     match *meta_item {
-        syn::NestedMetaItem::MetaItem(syn::MetaItem::NameValue(ref key, ref lit)) if key == name => Some(lit),
+        syn::NestedMetaItem::MetaItem(syn::MetaItem::NameValue(ref key, ref lit))
+            if key == name =>
+        {
+            Some(lit)
+        }
         _ => None,
     }
 }
 
-fn expect_list<'a>(name: &str, meta_item: &'a syn::NestedMetaItem) -> Option<&'a [syn::NestedMetaItem]> {
+fn expect_list<'a>(
+    name: &str,
+    meta_item: &'a syn::NestedMetaItem,
+) -> Option<&'a [syn::NestedMetaItem]> {
     match *meta_item {
-        syn::NestedMetaItem::MetaItem(syn::MetaItem::List(ref key, ref list)) if key == name => Some(list),
+        syn::NestedMetaItem::MetaItem(syn::MetaItem::List(ref key, ref list)) if key == name => {
+            Some(list)
+        }
         _ => None,
     }
 }

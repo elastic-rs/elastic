@@ -95,13 +95,13 @@ pub use self::text::Text;
 pub mod prelude {
     /*!
     Includes all types for the `string` types.
-    
+
     This is a convenience module to make it easy to build mappings for multiple types without too many `use` statements.
     */
 
     pub use super::keyword::prelude::*;
-    pub use super::text::prelude::*;
     pub use super::mapping::*;
+    pub use super::text::prelude::*;
 }
 
 #[cfg(test)]
@@ -140,7 +140,8 @@ mod tests {
 
     #[test]
     fn deserialise_elastic_keyword() {
-        let string: Keyword<DefaultKeywordMapping> = serde_json::from_str(r#""my string""#).unwrap();
+        let string: Keyword<DefaultKeywordMapping> =
+            serde_json::from_str(r#""my string""#).unwrap();
 
         assert_eq!("my string", string);
     }

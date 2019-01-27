@@ -1,11 +1,28 @@
-use futures::{Future, Poll, Stream};
-use futures_cpupool::CpuPool;
-use serde::de::DeserializeOwned;
-use reqwest::unstable::async::Response as RawResponse;
+use std::sync::Arc;
 
-use error::{self, Error};
-use http::{AsyncChunk, AsyncHttpResponse, StatusCode};
-use super::parse::{parse, IsOk};
+use futures::future::lazy;
+use futures::{
+    Future,
+    Poll,
+    Stream,
+};
+use reqwest::async::Response as RawResponse;
+use serde::de::DeserializeOwned;
+use tokio_threadpool::ThreadPool;
+
+use super::parse::{
+    parse,
+    IsOk,
+};
+use error::{
+    self,
+    Error,
+};
+use http::{
+    AsyncChunk,
+    AsyncHttpResponse,
+    StatusCode,
+};
 
 /**
 A builder for a response.
@@ -16,10 +33,13 @@ You can also `Read` directly from the response body.
 pub struct AsyncResponseBuilder {
     inner: RawResponse,
     status: StatusCode,
-    de_pool: Option<CpuPool>,
+    de_pool: Option<Arc<ThreadPool>>,
 }
 
-pub(crate) fn async_response(res: RawResponse, de_pool: Option<CpuPool>) -> Result<AsyncResponseBuilder, Error> {
+pub(crate) fn async_response(
+    res: RawResponse,
+    de_pool: Option<Arc<ThreadPool>>,
+) -> Result<AsyncResponseBuilder, Error> {
     let status = StatusCode::from_u16(res.status().into()).map_err(error::request)?;
     Ok(AsyncResponseBuilder {
         inner: res,
@@ -36,7 +56,7 @@ impl AsyncResponseBuilder {
 
     /**
     Get the response body from JSON.
-    
+
     Convert the builder into a raw HTTP response that implements `Read`.
     */
     pub fn into_raw(self) -> AsyncHttpResponse {
@@ -45,18 +65,18 @@ impl AsyncResponseBuilder {
 
     /**
     Parse an API response type from the HTTP body.
-    
+
     The deserialisation may occur on a background thread.
     This will consume the `AsyncResponseBuilder` and return a [concrete response type][response-types] or an error.
-    
+
     The response is parsed according to the `IsOk` implementation for `T` that will inspect the response and either return an `Ok(T)` or an `Err(ApiError)`.
-    
+
     # Examples
-    
+
     Get a strongly typed `SearchResponse`:
-    
+
     ```no_run
-    # extern crate tokio_core;
+    # extern crate tokio;
     # extern crate futures;
     # extern crate serde;
     # #[macro_use] extern crate serde_derive;
@@ -68,8 +88,7 @@ impl AsyncResponseBuilder {
     # fn run() -> Result<(), Box<::std::error::Error>> {
     # #[derive(Debug, Serialize, Deserialize, ElasticType)]
     # struct MyType { }
-    # let core = tokio_core::reactor::Core::new()?;
-    # let client = AsyncClientBuilder::new().build(&core.handle())?;
+    # let client = AsyncClientBuilder::new().build()?;
     let future = client.request(SimpleSearchRequest::for_index_ty("myindex", "mytype"))
                        .send()
                        .and_then(|response| response.into_response::<SearchResponse<MyType>>());
@@ -85,12 +104,12 @@ impl AsyncResponseBuilder {
     # Ok(())
     # }
     ```
-    
+
     You can also read a response as a `serde_json::Value`, which will be `Ok(Value)`
     if the HTTP status code is `Ok` or `Err(ApiError)` otherwise:
-    
+
     ```no_run
-    # extern crate tokio_core;
+    # extern crate tokio;
     # extern crate futures;
     # extern crate serde_json;
     # extern crate elastic;
@@ -99,8 +118,7 @@ impl AsyncResponseBuilder {
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
     # fn run() -> Result<(), Box<::std::error::Error>> {
-    # let core = tokio_core::reactor::Core::new()?;
-    # let client = AsyncClientBuilder::new().build(&core.handle())?;
+    # let client = AsyncClientBuilder::new().build()?;
     let future = client.request(SimpleSearchRequest::for_index_ty("myindex", "mytype"))
                        .send()
                        .and_then(|response| response.into_response::<Value>());
@@ -126,7 +144,9 @@ impl AsyncResponseBuilder {
         let body_future = body.concat2().map_err(move |e| error::response(status, e));
 
         if let Some(de_pool) = self.de_pool {
-            IntoResponse::new(body_future.and_then(move |body| de_pool.spawn_fn(move || de_fn(body))))
+            IntoResponse::new(
+                body_future.and_then(move |body| de_pool.spawn_handle(lazy(move || de_fn(body)))),
+            )
         } else {
             IntoResponse::new(body_future.and_then(de_fn))
         }

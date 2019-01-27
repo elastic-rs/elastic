@@ -1,4 +1,4 @@
-/*! 
+/*!
 Elasticsearch Core Types Codegen
 
  Compile-time code generation for Elasticsearch type implementations.
@@ -15,7 +15,10 @@ extern crate elastic_types_derive_internals as internals;
 extern crate quote;
 extern crate syn;
 
-use internals::{date_format, elastic_type};
+use internals::{
+    date_format,
+    elastic_type,
+};
 
 #[proc_macro_derive(ElasticType, attributes(elastic))]
 pub fn derive_elastic_type(input: proc_macro::TokenStream) -> proc_macro::TokenStream {

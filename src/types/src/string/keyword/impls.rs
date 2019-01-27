@@ -1,8 +1,19 @@
+use super::mapping::{
+    KeywordFieldType,
+    KeywordMapping,
+};
+use serde::de::{
+    Error,
+    Visitor,
+};
+use serde::{
+    Deserialize,
+    Deserializer,
+    Serialize,
+    Serializer,
+};
 use std::borrow::Borrow;
 use std::marker::PhantomData;
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
-use serde::de::{Error, Visitor};
-use super::mapping::{KeywordFieldType, KeywordMapping};
 
 /**
 An Elasticsearch `keyword` with a mapping.
@@ -35,15 +46,15 @@ where
 {
     /**
     Creates a new `Keyword` with the given mapping.
-    
+
     # Examples
-    
+
     Create a new `Keyword` from a `String`:
-    
+
     ```
     use elastic_types::string::keyword::mapping::DefaultKeywordMapping;
     use elastic_types::string::keyword::Keyword;
-    
+
     let string = Keyword::<DefaultKeywordMapping>::new("my string");
     ```
     */

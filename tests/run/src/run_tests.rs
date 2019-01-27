@@ -1,10 +1,17 @@
 use std::fmt::Debug;
 
-use term_painter::ToStyle;
-use term_painter::Color::*;
-use futures::{stream, Future, Stream};
+use elastic::error::{
+    ApiError,
+    Error,
+};
 use elastic::prelude::*;
-use elastic::error::{ApiError, Error};
+use futures::{
+    stream,
+    Future,
+    Stream,
+};
+use term_painter::Color::*;
+use term_painter::ToStyle;
 
 pub type TestResult = bool;
 pub type Test = Box<Fn(AsyncClient) -> Box<Future<Item = TestResult, Error = ()>>>;
@@ -51,7 +58,8 @@ where
     let assert_err_failed = format!("{} unexpected error:", prefix);
     let ok = format!("{} ok", prefix);
 
-    let fut = test.prepare(client.clone())
+    let fut = test
+        .prepare(client.clone())
         .then(move |prep| match prep {
             Err(ref e) if !test.prepare_err(e) => {
                 println!("{} {:?}", Red.bold().paint(prep_failed), e);
@@ -83,11 +91,18 @@ where
     Box::new(fut)
 }
 
-pub fn call(client: AsyncClient, max_concurrent_tests: usize) -> Box<Future<Item = Vec<TestResult>, Error = ()>> {
-    use search;
+pub fn call(client: AsyncClient, max_concurrent_tests: usize) -> Result<Vec<TestResult>, ()> {
+    tokio::runtime::current_thread::block_on_all(call_future(client, max_concurrent_tests))
+}
+
+fn call_future(
+    client: AsyncClient,
+    max_concurrent_tests: usize,
+) -> Box<Future<Item = Vec<TestResult>, Error = ()>> {
+    use bulk;
     use document;
     use index;
-    use bulk;
+    use search;
 
     let document_tests = document::tests().into_iter();
     let search_tests = search::tests().into_iter();

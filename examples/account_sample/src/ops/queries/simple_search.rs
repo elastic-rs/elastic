@@ -1,8 +1,7 @@
-use ops::Client;
-use elastic::prelude::*;
 use elastic::error::Result;
+use elastic::prelude::*;
+use ops::Client;
 
-use model;
 use model::account::Account;
 
 pub trait SimpleSearchQuery {
@@ -24,7 +23,7 @@ impl SimpleSearchQuery for Client {
                     },
                     {
                       "term": {
-                        "employer": { 
+                        "employer": {
                           "value": qry,
                           "boost": 1.3
                         }
@@ -56,9 +55,8 @@ impl SimpleSearchQuery for Client {
         });
 
         self.io
+            .document::<Account>()
             .search()
-            .index(model::index::name())
-            .ty(Some(model::account::name()))
             .body(query.to_string())
             .send()
     }

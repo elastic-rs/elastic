@@ -1,7 +1,10 @@
 /*! Mapping for Elasticsearch `geo_shape` types. */
 
-use serde::{Serialize, Serializer};
 use geo::mapping::Distance;
+use serde::{
+    Serialize,
+    Serializer,
+};
 
 /** A field that will be mapped as a `geo_shape`. */
 pub trait GeoShapeFieldType<TMapping> {}
@@ -153,8 +156,10 @@ impl GeoShapeMapping for DefaultGeoShapeMapping {}
 
 /** Name of the `PrefixTree` implementation to be used. */
 pub enum Tree {
-    /** For `GeohashPrefixTree`. */ Geohash,
-    /** For `QuadPrefixTree`. */ QuadPrefix,
+    /** For `GeohashPrefixTree`. */
+    Geohash,
+    /** For `QuadPrefixTree`. */
+    QuadPrefix,
 }
 
 impl Serialize for Tree {
@@ -171,8 +176,10 @@ impl Serialize for Tree {
 
 /** The strategy defines the approach for how to represent shapes at indexing and search time. */
 pub enum Strategy {
-    /** Recursive strategy supports all shape types. */ Recursive,
-    /** Term strategy supports point types only. */ Term,
+    /** Recursive strategy supports all shape types. */
+    Recursive,
+    /** Term strategy supports point types only. */
+    Term,
 }
 
 impl Serialize for Strategy {
@@ -196,8 +203,10 @@ The default orientation (counterclockwise) complies with the OGC standard which 
 ring vertices in counterclockwise order with inner ring(s) vertices (holes) in clockwise order.
 */
 pub enum Orientation {
-    /** For `cw`. */ Clockwise,
-    /** For `ccw`. */ CounterClockwise,
+    /** For `cw`. */
+    Clockwise,
+    /** For `ccw`. */
+    CounterClockwise,
 }
 
 impl Serialize for Orientation {
@@ -213,10 +222,21 @@ impl Serialize for Orientation {
 }
 
 mod private {
-    use serde::{Serialize, Serializer};
+    use super::{
+        GeoShapeFieldType,
+        GeoShapeMapping,
+    };
+    use private::field::{
+        FieldMapping,
+        FieldType,
+        SerializeFieldMapping,
+        StaticSerialize,
+    };
     use serde::ser::SerializeStruct;
-    use private::field::{StaticSerialize, SerializeFieldMapping, FieldMapping, FieldType};
-    use super::{GeoShapeFieldType, GeoShapeMapping};
+    use serde::{
+        Serialize,
+        Serializer,
+    };
 
     impl<TField, TMapping> FieldType<TMapping, GeoShapePivot> for TField
     where

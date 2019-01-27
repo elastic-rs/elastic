@@ -1,14 +1,27 @@
-use chrono::{self, NaiveDate, NaiveDateTime, NaiveTime, Utc};
-use chrono::format::{DelayedFormat, Item};
-use std::ops::Deref;
-use std::marker::PhantomData;
+use super::ChronoDateTime;
+use chrono::format::{
+    DelayedFormat,
+    Item,
+};
+use chrono::{
+    self,
+    NaiveDate,
+    NaiveDateTime,
+    NaiveTime,
+    Utc,
+};
 use std::borrow::Borrow;
 use std::error::Error;
-use std::fmt::{Display, Formatter, Result as FmtResult};
+use std::fmt::{
+    Display,
+    Formatter,
+    Result as FmtResult,
+};
+use std::marker::PhantomData;
+use std::ops::Deref;
 use std::vec::IntoIter;
-use super::ChronoDateTime;
 
-/** 
+/**
 A date value produced and consumed by date formats.
 
 `DateValue` is a very thin wrapper over `DateTime<Utc>` that doesn't carry any formatting semantics.
@@ -25,7 +38,15 @@ impl DateValue {
     }
 
     /** Construct a `DateValue` from individual parts. */
-    pub fn build(year: i32, month: u32, day: u32, hour: u32, minute: u32, second: u32, milli: u32) -> Self {
+    pub fn build(
+        year: i32,
+        month: u32,
+        day: u32,
+        hour: u32,
+        minute: u32,
+        second: u32,
+        milli: u32,
+    ) -> Self {
         let ndate = NaiveDate::from_ymd(year, month, day);
         let ntime = NaiveTime::from_hms_milli(hour, minute, second, milli);
 
@@ -81,7 +102,7 @@ impl Deref for DateValue {
     }
 }
 
-/** 
+/**
 A date value paired with a format.
 
 `FormattableDateValue<F>` bundles a `DateValue` with a specific format and is used to ensure the formats of mappable date types aren't accidentally changed.
@@ -195,7 +216,7 @@ pub trait DateFormat {
 
     /**
     The name of the format.
-    
+
     This is the string used when defining the format in the field mapping.
     */
     fn name() -> &'static str;

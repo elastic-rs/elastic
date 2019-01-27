@@ -1,6 +1,6 @@
-use futures::Future;
-use elastic::prelude::*;
 use elastic::error::Error;
+use elastic::prelude::*;
+use futures::Future;
 use run_tests::IntegrationTest;
 
 #[derive(Debug, Clone, Copy)]
@@ -16,9 +16,7 @@ pub struct Doc {
 const ID: &'static str = "1";
 
 fn doc() -> Doc {
-    Doc {
-        id: ID.to_owned(),
-    }
+    Doc { id: ID.to_owned() }
 }
 
 impl IntegrationTest for Delete {
@@ -33,7 +31,11 @@ impl IntegrationTest for Delete {
 
     // Ensure the index doesn't exist
     fn prepare(&self, client: AsyncClient) -> Box<Future<Item = (), Error = Error>> {
-        let delete_res = client.index(Doc::static_index()).delete().send().map(|_| ());
+        let delete_res = client
+            .index(Doc::static_index())
+            .delete()
+            .send()
+            .map(|_| ());
 
         Box::new(delete_res)
     }

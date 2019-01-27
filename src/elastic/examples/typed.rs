@@ -21,9 +21,12 @@ extern crate serde_json;
 
 extern crate elastic;
 
-use std::error::Error as StdError;
-use elastic::error::{ApiError, Error};
+use elastic::error::{
+    ApiError,
+    Error,
+};
 use elastic::prelude::*;
+use std::error::Error as StdError;
 
 #[derive(Debug, Serialize, Deserialize, ElasticType)]
 #[elastic(index = "typed_sample_index")]
@@ -57,10 +60,7 @@ fn run() -> Result<(), Box<StdError>> {
 }
 
 fn ensure_indexed(client: &SyncClient, doc: MyType) -> Result<(), Error> {
-    let get_res = client
-        .document::<MyType>()
-        .get(doc.id.clone())
-        .send();
+    let get_res = client.document::<MyType>().get(doc.id.clone()).send();
 
     match get_res.map(|res| res.into_document()) {
         // The doc was found: no need to index
@@ -89,10 +89,7 @@ fn ensure_indexed(client: &SyncClient, doc: MyType) -> Result<(), Error> {
 
 fn put_index(client: &SyncClient) -> Result<(), Error> {
     client.index(MyType::static_index()).create().send()?;
-    client
-        .document::<MyType>()
-        .put_mapping()
-        .send()?;
+    client.document::<MyType>().put_mapping().send()?;
 
     Ok(())
 }
@@ -112,12 +109,12 @@ fn search(client: &SyncClient, query: &'static str) -> Result<SearchResponse<MyT
         .search()
         .index(MyType::static_index())
         .body(json!({
-                "query": {
-                    "query_string": {
-                        "query": query
-                    }
-                }
-          }))
+              "query": {
+                  "query_string": {
+                      "query": query
+                  }
+              }
+        }))
         .send()
 }
 

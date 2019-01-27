@@ -10,38 +10,42 @@
 extern crate elastic;
 extern crate env_logger;
 extern crate futures;
-extern crate tokio_core;
+extern crate tokio;
 #[macro_use]
 extern crate serde_json;
 
+use elastic::prelude::*;
+use futures::{
+    stream,
+    Future,
+    Sink,
+    Stream,
+};
 use std::error::Error;
 use std::time::Duration;
-use futures::{stream, Future, Stream, Sink};
-use tokio_core::reactor::Core;
-use elastic::prelude::*;
 
 fn run() -> Result<(), Box<Error>> {
-    let mut core = Core::new()?;
-
     // A HTTP client and request parameters
-    let client = AsyncClientBuilder::new().build(&core.handle())?;
+    let client = AsyncClientBuilder::new().build()?;
 
     // Get a stream for bulk operations
     // Individual operations can be sent to the stream and will be buffered to Elasticsearch
-    let (bulk_stream, bulk_responses) = client.bulk_stream()
+    let (bulk_stream, bulk_responses) = client
+        .bulk_stream()
         .index("bulk_idx")
         .ty("bulk_ty")
         .timeout(Duration::from_secs(5))
         .body_size_bytes(1024)
         .build();
 
-    let ops = (0..1000)
-        .into_iter()
-        .map(|i| bulk_raw().index(json!({
+    let ops = (0..1000).into_iter().map(|i| {
+        bulk_raw()
+            .index(json!({
                 "id": i,
                 "title": "some string value"
             }))
-            .id(i));
+            .id(i)
+    });
 
     let req_future = bulk_stream.send_all(stream::iter_ok(ops));
 
@@ -57,7 +61,7 @@ fn run() -> Result<(), Box<Error>> {
         Ok(())
     });
 
-    core.run(req_future.join(res_future))?;
+    tokio::executor::current_thread::block_on_all(req_future.join(res_future))?;
 
     Ok(())
 }

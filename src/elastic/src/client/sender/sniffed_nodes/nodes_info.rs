@@ -1,15 +1,21 @@
 /*! Contains the `NodesInfoResponse` type for sniffing node addresses in the cluster. */
 
-use std::fmt;
-use serde::de::{Deserialize, Deserializer, MapAccess, Visitor};
 use client::responses::parse::IsOkOnSuccess;
+use serde::de::{
+    Deserialize,
+    Deserializer,
+    MapAccess,
+    Visitor,
+};
+use std::fmt;
 
 use std::iter::IntoIterator;
 use std::vec::IntoIter;
 
 #[derive(Debug, PartialEq, Deserialize)]
 pub struct NodesInfoResponse {
-    #[serde(deserialize_with = "deserialize_nodes")] pub nodes: Vec<SniffedNode>,
+    #[serde(deserialize_with = "deserialize_nodes")]
+    pub nodes: Vec<SniffedNode>,
 }
 
 #[derive(Debug, PartialEq, Deserialize)]
@@ -80,8 +86,8 @@ where
 
 #[cfg(test)]
 mod tests {
-    use serde_json;
     use super::*;
+    use serde_json;
 
     #[test]
     fn deserialise_nodes() {
@@ -98,7 +104,8 @@ mod tests {
                     }
                 }
             }
-        }).to_string();
+        })
+        .to_string();
 
         let expected = NodesInfoResponse {
             nodes: vec![
@@ -124,7 +131,8 @@ mod tests {
     fn deserialise_nodes_empty() {
         let nodes = json!({
             "nodes": { }
-        }).to_string();
+        })
+        .to_string();
 
         let expected = NodesInfoResponse { nodes: vec![] };
 

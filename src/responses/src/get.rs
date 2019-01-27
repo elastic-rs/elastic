@@ -2,22 +2,34 @@
 Response types for a [get document request](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-get.html).
 */
 
-use serde::de::DeserializeOwned;
 use http::StatusCode;
+use serde::de::DeserializeOwned;
 
-use parsing::{HttpResponseHead, IsOk, MaybeOkResponse, ResponseBody, Unbuffered};
 use error::*;
+use parsing::{
+    HttpResponseHead,
+    IsOk,
+    MaybeOkResponse,
+    ResponseBody,
+    Unbuffered,
+};
 
 /** Response for a [get document request](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-get.html). */
 #[derive(Deserialize, Debug)]
 pub struct GetResponse<T> {
-    #[serde(rename = "_index")] index: String,
-    #[serde(rename = "_type")] ty: String,
-    #[serde(rename = "_id")] id: String,
-    #[serde(rename = "_version")] version: Option<u32>,
+    #[serde(rename = "_index")]
+    index: String,
+    #[serde(rename = "_type")]
+    ty: String,
+    #[serde(rename = "_id")]
+    id: String,
+    #[serde(rename = "_version")]
+    version: Option<u32>,
     found: bool,
-    #[serde(rename = "_source")] source: Option<T>,
-    #[serde(rename = "_routing")] routing: Option<String>,
+    #[serde(rename = "_source")]
+    source: Option<T>,
+    #[serde(rename = "_routing")]
+    routing: Option<String>,
 }
 
 impl<T> GetResponse<T> {
@@ -58,7 +70,10 @@ impl<T> GetResponse<T> {
 }
 
 impl<T: DeserializeOwned> IsOk for GetResponse<T> {
-    fn is_ok<B: ResponseBody>(head: HttpResponseHead, body: Unbuffered<B>) -> Result<MaybeOkResponse<B>, ParseError> {
+    fn is_ok<B: ResponseBody>(
+        head: HttpResponseHead,
+        body: Unbuffered<B>,
+    ) -> Result<MaybeOkResponse<B>, ParseError> {
         match head.status() {
             status if status.is_success() => Ok(MaybeOkResponse::ok(body)),
             StatusCode::NOT_FOUND => {

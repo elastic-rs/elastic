@@ -6,25 +6,40 @@ Builders for [index requests][docs-index].
 
 use std::borrow::Cow;
 
-use serde_json;
-use futures::{Future, Poll};
+use futures::{
+    Future,
+    Poll,
+};
 use serde::Serialize;
+use serde_json;
 
-use error::{self, Error, Result};
-use client::DocumentClient;
-use client::sender::{AsyncSender, Sender, SyncSender};
-use client::requests::RequestBuilder;
-use client::requests::params::{Id, Index, Type};
 use client::requests::endpoints::IndexRequest;
+use client::requests::params::{
+    Id,
+    Index,
+    Type,
+};
 use client::requests::raw::RawRequestInner;
+use client::requests::RequestBuilder;
 use client::responses::IndexResponse;
-use types::DEFAULT_TYPE;
+use client::sender::{
+    AsyncSender,
+    Sender,
+    SyncSender,
+};
+use client::DocumentClient;
+use error::{
+    self,
+    Error,
+    Result,
+};
 use types::document::DocumentType;
+use types::DEFAULT_TYPE;
 
-/** 
+/**
 An [index request][docs-index] builder that can be configured before sending.
 
-Call [`Client.document_index`][Client.document_index] to get an `IndexRequest`. 
+Call [`Client.document_index`][Client.document_index] to get an `IndexRequest`.
 The `send` method will either send the request [synchronously][send-sync] or [asynchronously][send-async], depending on the `Client` it was created from.
 
 [docs-index]: https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html
@@ -32,7 +47,8 @@ The `send` method will either send the request [synchronously][send-sync] or [as
 [send-async]: #send-asynchronously
 [Client.document_index]: ../../struct.Client.html#index-document
 */
-pub type IndexRequestBuilder<TSender, TDocument> = RequestBuilder<TSender, IndexRequestInner<TDocument>>;
+pub type IndexRequestBuilder<TSender, TDocument> =
+    RequestBuilder<TSender, IndexRequestInner<TDocument>>;
 
 #[doc(hidden)]
 pub struct IndexRequestInner<TDocument> {
@@ -88,14 +104,14 @@ where
     let response = client.document()
                          .index(doc)
                          .send()?;
-    
+
     assert!(response.created());
     # Ok(())
     # }
     ```
 
     For more details on document types and mapping, see the [`types`][types-mod] module.
-    
+
     [IndexRequestBuilder]: requests/document_index/type.IndexRequestBuilder.html
     [builder-methods]: requests/document_index/type.IndexRequestBuilder.html#builder-methods
     [send-sync]: requests/document_index/type.IndexRequestBuilder.html#send-synchronously
@@ -103,7 +119,6 @@ where
     [types-mod]: ../types/index.html
     [documents-mod]: ../types/document/index.html
     */
-    // TODO: Consider `doc: impl AsRef<TDocument>`
     pub fn index(self, doc: TDocument) -> IndexRequestBuilder<TSender, TDocument>
     where
         TDocument: Serialize + DocumentType,
@@ -156,14 +171,14 @@ where
                          .index_raw("myindex", doc)
                          .id(doc_id)
                          .send()?;
-    
+
     assert!(response.created());
     # Ok(())
     # }
     ```
 
     For more details on document types and mapping, see the [`types`][types-mod] module.
-    
+
     [IndexRequestBuilder]: requests/document_index/type.IndexRequestBuilder.html
     [builder-methods]: requests/document_index/type.IndexRequestBuilder.html#builder-methods
     [send-sync]: requests/document_index/type.IndexRequestBuilder.html#send-synchronously
@@ -171,9 +186,12 @@ where
     [types-mod]: ../types/index.html
     [documents-mod]: ../types/document/index.html
     */
-    pub fn index_raw<TIndex>(self, index: TIndex, doc: TDocument) -> IndexRequestBuilder<TSender, TDocument>
+    pub fn index_raw(
+        self,
+        index: impl Into<Index<'static>>,
+        doc: TDocument,
+    ) -> IndexRequestBuilder<TSender, TDocument>
     where
-        TIndex: Into<Index<'static>>,
         TDocument: Serialize,
     {
         RequestBuilder::initial(
@@ -214,28 +232,19 @@ where
     TSender: Sender,
 {
     /** Set the index for the index request. */
-    pub fn index<I>(mut self, index: I) -> Self
-    where
-        I: Into<Index<'static>>,
-    {
+    pub fn index(mut self, index: impl Into<Index<'static>>) -> Self {
         self.inner.index = index.into();
         self
     }
 
     /** Set the type for the index request. */
-    pub fn ty<I>(mut self, ty: I) -> Self
-    where
-        I: Into<Type<'static>>,
-    {
+    pub fn ty(mut self, ty: impl Into<Type<'static>>) -> Self {
         self.inner.ty = ty.into();
         self
     }
 
     /** Set the id for the index request. */
-    pub fn id<I>(mut self, id: I) -> Self
-    where
-        I: Into<Id<'static>>
-    {
+    pub fn id(mut self, id: impl Into<Id<'static>>) -> Self {
         self.inner.id = Some(id.into());
         self
     }
@@ -281,7 +290,7 @@ where
     let response = client.document()
                          .index(doc)
                          .send()?;
-    
+
     assert!(response.created());
     # Ok(())
     # }
@@ -307,7 +316,7 @@ where
 {
     /**
     Send a `IndexRequestBuilder` asynchronously using an [`AsyncClient`][AsyncClient].
-    
+
     This will return a future that will resolve to the deserialised index response.
 
     # Examples
@@ -317,7 +326,7 @@ where
     ```no_run
     # extern crate serde;
     # extern crate futures;
-    # extern crate tokio_core;
+    # extern crate tokio;
     # #[macro_use] extern crate serde_derive;
     # #[macro_use] extern crate elastic_derive;
     # extern crate elastic;
@@ -331,8 +340,7 @@ where
     #     pub title: String,
     #     pub timestamp: Date<DefaultDateMapping>
     # }
-    # let core = tokio_core::reactor::Core::new()?;
-    # let client = AsyncClientBuilder::new().build(&core.handle())?;
+    # let client = AsyncClientBuilder::new().build()?;
     let doc = MyType {
         id: "1".to_owned(),
         title: String::from("A title"),
@@ -342,7 +350,7 @@ where
     let future = client.document()
                        .index(doc)
                        .send();
-    
+
     future.and_then(|response| {
         assert!(response.created());
 
@@ -399,7 +407,7 @@ mod tests {
     use prelude::*;
 
     #[derive(Serialize, ElasticType)]
-    struct TestDoc { }
+    struct TestDoc {}
 
     #[test]
     fn default_request() {

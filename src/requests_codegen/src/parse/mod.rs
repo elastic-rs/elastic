@@ -1,6 +1,6 @@
+use serde_json::Value;
 use std::collections::BTreeMap;
 use std::fmt;
-use serde_json::Value;
 
 mod parse;
 
@@ -25,7 +25,8 @@ pub struct Endpoint {
 impl Endpoint {
     pub fn has_body(&self) -> bool {
         self.body.is_some()
-            || self.methods
+            || self
+                .methods
                 .iter()
                 .any(|m| m == &Method::Post || m == &Method::Put)
     }
@@ -35,31 +36,41 @@ impl Endpoint {
         match iter.len() {
             0 => None,
             1 => iter.next(),
-            _ => if iter.any(|m| m == Method::Post) {
-                Some(Method::Post)
-            } else {
-                iter.next()
-            },
+            _ => {
+                if iter.any(|m| m == Method::Post) {
+                    Some(Method::Post)
+                } else {
+                    iter.next()
+                }
+            }
         }
     }
 }
 
 #[derive(Debug, PartialEq, Deserialize, Clone, Copy)]
 pub enum Method {
-    #[serde(rename = "HEAD")] Head,
-    #[serde(rename = "GET")] Get,
-    #[serde(rename = "POST")] Post,
-    #[serde(rename = "PUT")] Put,
-    #[serde(rename = "PATCH")] Patch,
-    #[serde(rename = "DELETE")] Delete,
+    #[serde(rename = "HEAD")]
+    Head,
+    #[serde(rename = "GET")]
+    Get,
+    #[serde(rename = "POST")]
+    Post,
+    #[serde(rename = "PUT")]
+    Put,
+    #[serde(rename = "PATCH")]
+    Patch,
+    #[serde(rename = "DELETE")]
+    Delete,
 }
 
 #[derive(Debug, PartialEq, Deserialize, Clone)]
 pub struct Url {
     pub path: Path,
     pub paths: Vec<Path>,
-    #[serde(default = "BTreeMap::new")] pub parts: BTreeMap<String, Type>,
-    #[serde(default = "BTreeMap::new")] pub params: BTreeMap<String, Type>,
+    #[serde(default = "BTreeMap::new")]
+    pub parts: BTreeMap<String, Type>,
+    #[serde(default = "BTreeMap::new")]
+    pub params: BTreeMap<String, Type>,
 }
 
 impl Url {
@@ -70,25 +81,38 @@ impl Url {
 
 #[derive(Debug, PartialEq, Deserialize, Clone)]
 pub struct Type {
-    #[serde(rename = "type", default)] pub ty: TypeKind,
+    #[serde(rename = "type", default)]
+    pub ty: TypeKind,
     pub description: String,
-    #[serde(default = "Vec::new")] pub options: Vec<Value>,
-    #[serde(default)] pub default: Option<Value>,
+    #[serde(default = "Vec::new")]
+    pub options: Vec<Value>,
+    #[serde(default)]
+    pub default: Option<Value>,
 }
 
 #[derive(Debug, PartialEq, Deserialize, Clone)]
 pub enum TypeKind {
     None,
-    #[serde(rename = "list")] List,
-    #[serde(rename = "enum")] Enum,
-    #[serde(rename = "string")] String,
-    #[serde(rename = "text")] Text,
-    #[serde(rename = "boolean")] Boolean,
-    #[serde(rename = "number")] Number,
-    #[serde(rename = "float")] Float,
-    #[serde(rename = "integer")] Integer,
-    #[serde(rename = "time")] Time,
-    #[serde(rename = "duration")] Duration,
+    #[serde(rename = "list")]
+    List,
+    #[serde(rename = "enum")]
+    Enum,
+    #[serde(rename = "string")]
+    String,
+    #[serde(rename = "text")]
+    Text,
+    #[serde(rename = "boolean")]
+    Boolean,
+    #[serde(rename = "number")]
+    Number,
+    #[serde(rename = "float")]
+    Float,
+    #[serde(rename = "integer")]
+    Integer,
+    #[serde(rename = "time")]
+    Time,
+    #[serde(rename = "duration")]
+    Duration,
 }
 
 impl Default for TypeKind {
@@ -255,7 +279,10 @@ pub fn get_url() -> Url {
 #[cfg(test)]
 mod tests {
     mod path {
-        use parse::{Path, PathPart};
+        use parse::{
+            Path,
+            PathPart,
+        };
 
         #[test]
         fn parse_param_only() {
@@ -403,10 +430,10 @@ mod tests {
     }
 
     mod ser {
-        use std::collections::BTreeMap;
+        use parse::*;
         use serde_json;
         use serde_json::value::to_value;
-        use parse::*;
+        use std::collections::BTreeMap;
 
         fn http_eq(expected: Method, ser: &'static str) {
             assert_eq!(expected, serde_json::from_str::<Method>(ser).unwrap());
@@ -539,7 +566,8 @@ mod tests {
                         "index".to_string(),
                         Type {
                             ty: TypeKind::List,
-                            description: "A comma-separated list of index names to search".to_string(),
+                            description: "A comma-separated list of index names to search"
+                                .to_string(),
                             options: vec![],
                             default: None,
                         },
@@ -549,7 +577,8 @@ mod tests {
                         "type".to_string(),
                         Type {
                             ty: TypeKind::List,
-                            description: "A comma-separated list of document types to search".to_string(),
+                            description: "A comma-separated list of document types to search"
+                                .to_string(),
                             options: vec![],
                             default: None,
                         },

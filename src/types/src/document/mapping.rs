@@ -1,7 +1,10 @@
 /*! Mapping for Elasticsearch document types. */
 
-use serde::{Serialize, Serializer};
 use serde::ser::SerializeStruct;
+use serde::{
+    Serialize,
+    Serializer,
+};
 
 /** A field that will be mapped as a nested document. */
 pub trait ObjectFieldType {
@@ -81,9 +84,12 @@ Inner objects inherit the setting from their parent object or from the mapping t
 */
 #[derive(Debug, Clone, Copy)]
 pub enum Dynamic {
-    /** Newly detected fields are added to the mapping. (default). */ True,
-    /** Newly detected fields are ignored. New fields must be added explicitly. */ False,
-    /** If new fields are detected, an exception is thrown and the document is rejected. */ Strict,
+    /** Newly detected fields are added to the mapping. (default). */
+    True,
+    /** Newly detected fields are ignored. New fields must be added explicitly. */
+    False,
+    /** If new fields are detected, an exception is thrown and the document is rejected. */
+    Strict,
 }
 
 impl Serialize for Dynamic {
@@ -100,12 +106,28 @@ impl Serialize for Dynamic {
 }
 
 mod private {
-    use std::marker::PhantomData;
-    use serde::{Serialize, Serializer};
+    use super::{
+        ObjectFieldType,
+        ObjectMapping,
+        PropertiesMapping,
+        OBJECT_DATATYPE,
+    };
+    use document::{
+        FieldDocumentMapping,
+        IndexDocumentMapping,
+    };
+    use private::field::{
+        FieldMapping,
+        FieldType,
+        SerializeFieldMapping,
+        StaticSerialize,
+    };
     use serde::ser::SerializeStruct;
-    use document::{FieldDocumentMapping, IndexDocumentMapping};
-    use private::field::{StaticSerialize, SerializeFieldMapping, FieldMapping, FieldType};
-    use super::{ObjectFieldType, ObjectMapping, PropertiesMapping, OBJECT_DATATYPE};
+    use serde::{
+        Serialize,
+        Serializer,
+    };
+    use std::marker::PhantomData;
 
     #[derive(Default)]
     pub struct ObjectPivot;
@@ -143,7 +165,8 @@ mod private {
         where
             S: Serializer,
         {
-            let mut state = try!(serializer.serialize_struct("properties", TMapping::Properties::props_len()));
+            let mut state =
+                try!(serializer.serialize_struct("properties", TMapping::Properties::props_len()));
             try!(TMapping::Properties::serialize_props(&mut state));
             state.end()
         }
@@ -180,7 +203,8 @@ mod private {
             }
 
             if has_props {
-                try!(state.serialize_field("properties", &Properties::<TMapping> { _m: PhantomData }));
+                try!(state
+                    .serialize_field("properties", &Properties::<TMapping> { _m: PhantomData }));
             }
 
             state.end()

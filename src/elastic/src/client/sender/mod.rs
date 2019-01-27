@@ -13,25 +13,31 @@ Some notable types include:
 [Client]: ../struct.Client.html
 */
 
-use fluent_builder::{FluentBuilder, StatefulFluentBuilder};
+use fluent_builder::{
+    FluentBuilder,
+    StatefulFluentBuilder,
+};
 
-pub mod static_nodes;
 pub mod sniffed_nodes;
+pub mod static_nodes;
 
-mod sync;
 mod async;
 mod params;
-pub use self::sync::*;
+mod sync;
 pub use self::async::*;
 pub use self::params::*;
+pub use self::sync::*;
 
-use std::sync::Arc;
 use std::marker::PhantomData;
+use std::sync::Arc;
 use uuid::Uuid;
 
-use client::requests::Endpoint;
+use self::sniffed_nodes::{
+    SniffedNodes,
+    SniffedNodesBuilder,
+};
 use self::static_nodes::StaticNodes;
-use self::sniffed_nodes::{SniffedNodes, SniffedNodesBuilder};
+use client::requests::Endpoint;
 use private;
 
 /**
@@ -91,7 +97,10 @@ pub trait Sender: private::Sealed + Clone {
     type Params;
 
     /* Send a request. */
-    fn send<TEndpoint, TParams, TBody>(&self, request: SendableRequest<TEndpoint, TParams, TBody>) -> Self::Response
+    fn send<TEndpoint, TParams, TBody>(
+        &self,
+        request: SendableRequest<TEndpoint, TParams, TBody>,
+    ) -> Self::Response
     where
         TEndpoint: Into<Endpoint<'static, TBody>>,
         TBody: Into<Self::Body> + 'static,
@@ -176,7 +185,9 @@ enum NodeAddressesBuilder {
 impl NodeAddressesBuilder {
     fn sniff_nodes(self, builder: SniffedNodesBuilder) -> Self {
         match self {
-            NodeAddressesBuilder::Sniffed(fluent_builder) => NodeAddressesBuilder::Sniffed(fluent_builder.value(builder)),
+            NodeAddressesBuilder::Sniffed(fluent_builder) => {
+                NodeAddressesBuilder::Sniffed(fluent_builder.value(builder))
+            }
             _ => NodeAddressesBuilder::Sniffed(StatefulFluentBuilder::from_value(builder.into())),
         }
     }
@@ -186,8 +197,12 @@ impl NodeAddressesBuilder {
         F: FnOnce(SniffedNodesBuilder) -> SniffedNodesBuilder + 'static,
     {
         match self {
-            NodeAddressesBuilder::Sniffed(fluent_builder) => NodeAddressesBuilder::Sniffed(fluent_builder.fluent(address.into(), fleunt_method).boxed()),
-            _ => NodeAddressesBuilder::Sniffed(StatefulFluentBuilder::from_fluent(address.into(), fleunt_method).boxed()),
+            NodeAddressesBuilder::Sniffed(fluent_builder) => NodeAddressesBuilder::Sniffed(
+                fluent_builder.fluent(address.into(), fleunt_method).boxed(),
+            ),
+            _ => NodeAddressesBuilder::Sniffed(
+                StatefulFluentBuilder::from_fluent(address.into(), fleunt_method).boxed(),
+            ),
         }
     }
 }

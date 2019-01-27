@@ -1,8 +1,16 @@
+use super::mapping::{
+    GeoShapeFieldType,
+    GeoShapeMapping,
+};
+use geojson::Geometry;
+use serde::{
+    Deserialize,
+    Deserializer,
+    Serialize,
+    Serializer,
+};
 use std::borrow::Borrow;
 use std::marker::PhantomData;
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
-use geojson::Geometry;
-use super::mapping::{GeoShapeFieldType, GeoShapeMapping};
 
 /**
 Geo shape type with a given mapping.
@@ -39,16 +47,16 @@ where
 {
     /**
     Creates a new `GeoShape` from the given `Geometry`.
-    
+
     This function will consume the provided `Geometry`.
-    
+
     # Examples
-    
+
     ```
     # extern crate elastic_types;
     # extern crate geojson;
     use geojson::{ Geometry, Value };
-    
+
     # use elastic_types::prelude::*;
     # fn main() {
     let point: GeoShape<DefaultGeoShapeMapping> = GeoShape::new(
@@ -78,11 +86,7 @@ where
     }
 }
 
-impl<TMapping> GeoShapeFieldType<TMapping> for GeoShape<TMapping>
-where
-    TMapping: GeoShapeMapping,
-{
-}
+impl<TMapping> GeoShapeFieldType<TMapping> for GeoShape<TMapping> where TMapping: GeoShapeMapping {}
 
 impl_mapping_type!(Geometry, GeoShape, GeoShapeMapping);
 
@@ -116,7 +120,10 @@ where
 mod tests {
     use serde_json;
 
-    use geojson::{Geometry, Value};
+    use geojson::{
+        Geometry,
+        Value,
+    };
     use prelude::*;
 
     #[derive(Default)]
@@ -129,22 +136,24 @@ mod tests {
             true
         }
 
-        let point: GeoShape<DefaultGeoShapeMapping> = GeoShape::new(Geometry::new(Value::Point(vec![1.0, 1.0])));
+        let point: GeoShape<DefaultGeoShapeMapping> =
+            GeoShape::new(Geometry::new(Value::Point(vec![1.0, 1.0])));
 
         assert!(takes_custom_mapping(GeoShape::remap(point)));
     }
 
     #[test]
     fn serialise_elastic_geo_shape() {
-        let shape = GeoShape::<DefaultGeoShapeMapping>::new(Geometry::new(Value::Point(vec![1.0, 1.0])));
+        let shape =
+            GeoShape::<DefaultGeoShapeMapping>::new(Geometry::new(Value::Point(vec![1.0, 1.0])));
 
         let ser = serde_json::to_string(&shape).unwrap();
 
         assert_eq!(
             json_str!({
-            "coordinates": [ 1.0, 1.0 ],
-            "type": "Point"
-        }),
+                "coordinates": [ 1.0, 1.0 ],
+                "type": "Point"
+            }),
             ser
         );
     }
@@ -154,7 +163,8 @@ mod tests {
         let shape: GeoShape<DefaultGeoShapeMapping> = serde_json::from_str(&json_str!({
             "coordinates": [ 1, 1 ],
             "type": "Point"
-        })).unwrap();
+        }))
+        .unwrap();
 
         assert_eq!(Geometry::new(Value::Point(vec![1.0, 1.0])), *shape);
     }

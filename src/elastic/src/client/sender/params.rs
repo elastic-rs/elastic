@@ -1,12 +1,17 @@
-use std::sync::Arc;
 use std::collections::HashMap;
+use std::sync::Arc;
 
 use reqwest;
-use reqwest::header::{ContentType, Header, Headers};
+use reqwest::header::{
+    HeaderMap,
+    HeaderName,
+    HeaderValue,
+    CONTENT_TYPE,
+};
 use url::form_urlencoded::Serializer;
 
-use http::Method;
 use client::sender::NodeAddress;
+use http::Method;
 
 pub const DEFAULT_NODE_ADDRESS: &'static str = "http://localhost:9200";
 
@@ -19,8 +24,8 @@ When requests are load balanced between multiple Elasticsearch nodes the url to 
 #[derive(Clone)]
 pub struct PreRequestParams {
     url_params: Arc<HashMap<&'static str, String>>,
-    // We should be able to replace this with `Arc<HeadersMap>` from the `http` crate
-    headers_builder: Option<Arc<Fn(&mut Headers) + Send + Sync + 'static>>,
+    // We should be able to replace this with `Arc<HeaderMapMap>` from the `http` crate
+    headers: Arc<HeaderMap>,
 }
 
 /**
@@ -49,10 +54,19 @@ let params = RequestParams::new("http://mybaseurl:9200");
 With custom headers:
 
 ```
-# use elastic::client::RequestParams;
-# use elastic::http::header::Authorization;
+# extern crate elastic;
+# use elastic::prelude::*;
+# use std::str::FromStr;
+# fn main() { run().unwrap() }
+# fn run() -> Result<(), Box<::std::error::Error>> {
+use elastic::http::header::{self, AUTHORIZATION, HeaderValue};
+
+let auth = HeaderValue::from_str("let me in")?;
+
 let params = RequestParams::default()
-    .header(Authorization("let me in".to_owned()));
+    .header(AUTHORIZATION, auth);
+# Ok(())
+# }
 ```
 
 With url query parameters:
@@ -71,58 +85,37 @@ pub struct RequestParams {
 }
 
 impl PreRequestParams {
-    /** 
+    /**
     Create a new container for request parameters.
-    
+
     This method takes a fully-qualified url for the Elasticsearch node.
     It will also set the `Content-Type` header to `application/json`.
     */
     pub fn new() -> Self {
         PreRequestParams {
-            headers_builder: None,
+            headers: Arc::new({
+                let mut headers = HeaderMap::new();
+                headers.insert(CONTENT_TYPE, HeaderValue::from_static("application/json"));
+
+                headers
+            }),
             url_params: Arc::new(HashMap::new()),
         }
     }
 
-    /** 
+    /**
     Set a url param value.
-    
+
     These parameters are added as query parameters to request urls.
     */
-    pub fn url_param<T: ToString>(mut self, key: &'static str, value: T) -> Self {
+    pub fn url_param(mut self, key: &'static str, value: impl ToString) -> Self {
         Arc::make_mut(&mut self.url_params).insert(key, value.to_string());
         self
     }
 
     /** Set a request header. */
-    pub fn header<H>(self, header: H) -> Self
-    where
-        H: Header + Clone,
-    {
-        self.headers(move |h| h.set(header.clone()))
-    }
-
-    /** 
-    Set a header value on the params.
-    
-    Each call to `headers` will chain to the end of the last call.
-    This function allocates a new `Arc` for each call.
-    */
-    fn headers<F>(mut self, headers_builder: F) -> Self
-    where
-        F: Fn(&mut Headers) + Send + Sync + 'static,
-    {
-        if let Some(old_headers_builder) = self.headers_builder {
-            let headers_builder = move |mut headers: &mut Headers| {
-                old_headers_builder(&mut headers);
-                headers_builder(&mut headers);
-            };
-
-            self.headers_builder = Some(Arc::new(headers_builder));
-        } else {
-            self.headers_builder = Some(Arc::new(headers_builder));
-        }
-
+    pub fn header(mut self, key: HeaderName, value: HeaderValue) -> Self {
+        Arc::make_mut(&mut self.headers).insert(key, value);
         self
     }
 }
@@ -135,45 +128,42 @@ impl Default for PreRequestParams {
 
 impl RequestParams {
     /** Create a container for request parameters from a base url and pre request parameters. */
-    pub fn from_parts<T: Into<NodeAddress>>(base_url: T, inner: PreRequestParams) -> Self {
+    pub fn from_parts(base_url: impl Into<NodeAddress>, inner: PreRequestParams) -> Self {
         RequestParams {
             base_url: base_url.into(),
             inner: inner,
         }
     }
 
-    /** 
+    /**
     Create a new container for request parameters.
-    
+
     This method takes a fully-qualified url for the Elasticsearch node.
     It will also set the `Content-Type` header to `application/json`.
     */
-    pub fn new<T: Into<NodeAddress>>(base_url: T) -> Self {
+    pub fn new(base_url: impl Into<NodeAddress>) -> Self {
         RequestParams::from_parts(base_url.into(), PreRequestParams::new())
     }
 
     /** Set the base url for the Elasticsearch node. */
-    pub fn base_url<T: Into<NodeAddress>>(mut self, base_url: T) -> Self {
+    pub fn base_url(mut self, base_url: impl Into<NodeAddress>) -> Self {
         self.base_url = base_url.into();
         self
     }
 
-    /** 
+    /**
     Set a url param value.
-    
+
     These parameters are added as query parameters to request urls.
     */
-    pub fn url_param<T: ToString>(mut self, key: &'static str, value: T) -> Self {
+    pub fn url_param(mut self, key: &'static str, value: impl ToString) -> Self {
         self.inner = self.inner.url_param(key, value);
         self
     }
 
     /** Set a request header. */
-    pub fn header<H>(mut self, header: H) -> Self
-    where
-        H: Header + Clone,
-    {
-        self.inner = self.inner.header(header);
+    pub fn header(mut self, key: HeaderName, value: HeaderValue) -> Self {
+        self.inner = self.inner.header(key, value);
         self
     }
 
@@ -182,21 +172,13 @@ impl RequestParams {
         self.base_url.as_ref()
     }
 
-    /** Create a new `Headers` structure, and thread it through the configuration functions. */
-    pub fn get_headers(&self) -> Headers {
-        let mut headers = Headers::new();
-        headers.set(ContentType::json());
-
-        if let Some(ref headers_builder) = self.inner.headers_builder {
-            headers_builder(&mut headers);
-        }
-
-        headers
+    pub(crate) fn get_headers(&self) -> Arc<HeaderMap> {
+        self.inner.headers.clone()
     }
 
-    /** 
+    /**
     Get the url query params as a formatted string.
-    
+
     Follows the `application/x-www-form-urlencoded` format.
     This method returns the length of the query string and an optional value.
     If the value is `None`, then the length will be `0`.
@@ -242,21 +224,30 @@ pub(crate) fn build_url<'a>(req_url: &str, params: &RequestParams) -> String {
 
 pub(crate) fn build_reqwest_method(method: Method) -> reqwest::Method {
     match method {
-        Method::GET => reqwest::Method::Get,
-        Method::POST => reqwest::Method::Post,
-        Method::HEAD => reqwest::Method::Head,
-        Method::DELETE => reqwest::Method::Delete,
-        Method::PUT => reqwest::Method::Put,
-        Method::PATCH => reqwest::Method::Patch,
-        method => reqwest::Method::Extension(method.as_str().to_owned()),
+        Method::GET => reqwest::Method::GET,
+        Method::POST => reqwest::Method::POST,
+        Method::HEAD => reqwest::Method::HEAD,
+        Method::DELETE => reqwest::Method::DELETE,
+        Method::PUT => reqwest::Method::PUT,
+        Method::PATCH => reqwest::Method::PATCH,
+        method => {
+            reqwest::Method::from_bytes(method.as_str().as_bytes()).expect("invalid HTTP method")
+        }
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use tests::{assert_send, assert_sync};
-    use http::header::{Authorization, ContentType, Referer};
     use super::*;
+    use http::header::{
+        AUTHORIZATION,
+        CONTENT_TYPE,
+        REFERER,
+    };
+    use tests::{
+        assert_send,
+        assert_sync,
+    };
 
     #[test]
     fn assert_send_sync() {
@@ -273,26 +264,38 @@ mod tests {
 
         let headers = req.get_headers();
 
-        assert_eq!(Some(&ContentType::json()), headers.get::<ContentType>());
+        assert_eq!(
+            Some("application/json"),
+            headers
+                .get(CONTENT_TYPE)
+                .map(|header| header.to_str().unwrap())
+        );
     }
 
     #[test]
     fn set_multiple_headers() {
         let req = RequestParams::new(DEFAULT_NODE_ADDRESS)
-            .header(Referer::new("/not-the-value"))
-            .header(Referer::new("/People.html#tim"))
-            .header(Authorization("let me in".to_owned()));
+            .header(REFERER, HeaderValue::from_str("/not-the-value").unwrap())
+            .header(REFERER, HeaderValue::from_str("/People.html#tim").unwrap())
+            .header(AUTHORIZATION, HeaderValue::from_str("let me in").unwrap());
 
         let headers = req.get_headers();
 
-        assert_eq!(Some(&ContentType::json()), headers.get::<ContentType>());
         assert_eq!(
-            Some(&Referer::new("/People.html#tim")),
-            headers.get::<Referer>()
+            Some("application/json"),
+            headers
+                .get(CONTENT_TYPE)
+                .map(|header| header.to_str().unwrap())
         );
         assert_eq!(
-            Some(&Authorization("let me in".to_owned())),
-            headers.get::<Authorization<String>>()
+            Some("/People.html#tim"),
+            headers.get(REFERER).map(|header| header.to_str().unwrap())
+        );
+        assert_eq!(
+            Some("let me in"),
+            headers
+                .get(AUTHORIZATION)
+                .map(|header| header.to_str().unwrap())
         );
     }
 

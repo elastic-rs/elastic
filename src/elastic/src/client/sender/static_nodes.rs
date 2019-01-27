@@ -1,10 +1,21 @@
 /*! Multiple static nodes that can be load balanced by some strategy. */
 
-use std::sync::Arc;
-use std::sync::atomic::{AtomicUsize, Ordering};
-use client::sender::{NextParams, NodeAddress, PreRequestParams, RequestParams};
-use error::{self, Error};
+use client::sender::{
+    NextParams,
+    NodeAddress,
+    PreRequestParams,
+    RequestParams,
+};
+use error::{
+    self,
+    Error,
+};
 use private;
+use std::sync::atomic::{
+    AtomicUsize,
+    Ordering,
+};
+use std::sync::Arc;
 
 /** Select a base address for a given request using some strategy. */
 #[derive(Clone)]
@@ -74,7 +85,7 @@ pub trait Strategy: Send + Sync {
     fn try_next(&self, nodes: &[NodeAddress]) -> Result<NodeAddress, StrategyError>;
 }
 
-/** 
+/**
 An error attempting to get an address using a strategy.
 */
 quick_error! {
@@ -120,8 +131,8 @@ impl Strategy for RoundRobin {
 
 #[cfg(test)]
 mod tests {
-    use client::sender::NextParams;
     use super::*;
+    use client::sender::NextParams;
 
     fn round_robin(addresses: Vec<&'static str>) -> StaticNodes<RoundRobin> {
         StaticNodes::round_robin(addresses, PreRequestParams::default())

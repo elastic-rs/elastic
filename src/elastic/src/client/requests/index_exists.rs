@@ -4,19 +4,26 @@ Builders for [index exists requests][docs-index-exists].
 [docs-index-exists]: https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-exists.html
 */
 
-use futures::{Future, Poll};
+use futures::{
+    Future,
+    Poll,
+};
 
-use error::*;
-use client::IndexClient;
-use client::sender::{AsyncSender, Sender, SyncSender};
-use client::requests::RequestBuilder;
-use client::requests::params::Index;
 use client::requests::endpoints::IndicesExistsRequest;
+use client::requests::params::Index;
 use client::requests::raw::RawRequestInner;
+use client::requests::RequestBuilder;
 use client::responses::IndicesExistsResponse;
+use client::sender::{
+    AsyncSender,
+    Sender,
+    SyncSender,
+};
+use client::IndexClient;
+use error::*;
 
-/** 
-An [index exists request][docs-index-exists] builder that can be configured before sending. 
+/**
+An [index exists request][docs-index-exists] builder that can be configured before sending.
 
 Call [`Client.index_exists`][Client.index_exists] to get an `IndexExistsRequestBuilder`.
 The `send` method will either send the request [synchronously][send-sync] or [asynchronously][send-async], depending on the `Client` it was opend from.
@@ -40,18 +47,18 @@ impl<TSender> IndexClient<TSender>
 where
     TSender: Sender,
 {
-    /** 
+    /**
     Open an [`IndexExistsRequestBuilder`][IndexExistsRequestBuilder] with this `Client` that can be configured before sending.
 
     For more details, see:
 
     - [send synchronously][send-sync]
     - [send asynchronously][send-async]
-    
+
     # Examples
-    
+
     Check whether an index called `myindex` exists:
-    
+
     ```no_run
     # extern crate elastic;
     # use elastic::prelude::*;
@@ -91,9 +98,9 @@ impl IndexExistsRequestBuilder<SyncSender> {
     This will block the current thread until a response arrives and is deserialised.
 
     # Examples
-    
+
     Check whether an index called `myindex` exists:
-    
+
     ```no_run
     # extern crate elastic;
     # use elastic::prelude::*;
@@ -124,23 +131,22 @@ impl IndexExistsRequestBuilder<SyncSender> {
 impl IndexExistsRequestBuilder<AsyncSender> {
     /**
     Send an `IndexExistsRequestBuilder` asynchronously using an [`AsyncClient`][AsyncClient].
-    
+
     This will return a future that will resolve to the deserialised command response.
 
     # Examples
-    
+
     Check whether an index called `myindex` exists:
-    
+
     ```no_run
     # extern crate futures;
-    # extern crate tokio_core;
+    # extern crate tokio;
     # extern crate elastic;
     # use futures::Future;
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
     # fn run() -> Result<(), Box<::std::error::Error>> {
-    # let core = tokio_core::reactor::Core::new()?;
-    # let client = AsyncClientBuilder::new().build(&core.handle())?;
+    # let client = AsyncClientBuilder::new().build()?;
     let future = client.index("myindex").exists().send();
 
     future.and_then(|response| {
@@ -157,9 +163,10 @@ impl IndexExistsRequestBuilder<AsyncSender> {
     pub fn send(self) -> Pending {
         let req = self.inner.into_request();
 
-        let res_future = RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
-            .send()
-            .and_then(|res| res.into_response());
+        let res_future =
+            RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
+                .send()
+                .and_then(|res| res.into_response());
 
         Pending::new(res_future)
     }
