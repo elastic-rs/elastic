@@ -5,9 +5,10 @@ A modular and efficient native client for the Elasticsearch REST API.
 
 # Supported Versions
 
- `elastic`       | Elasticsearch
- --------------- | -------------
- `0.x`           | `5.x`
+ `elastic`          | Elasticsearch
+ ------------------ | -------------
+ `0.0.x` - `0.20.x` | `5.x`
+ `0.21.x`           | `6.x`
 
 This crate depends heavily on the following crates:
 
