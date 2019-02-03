@@ -708,5 +708,8 @@ mod tests {
     fn client_is_send_sync() {
         assert_send::<SyncClient>();
         assert_sync::<SyncClient>();
+
+        assert_send::<AsyncClient>();
+        assert_sync::<AsyncClient>();
     }
 }
