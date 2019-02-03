@@ -32,14 +32,6 @@ The `elastic` crate brings a few independent crates together into a cohesive API
 
 There hasn't been much effort put into abstracting these dependencies at this stage, and `elastic` can't stabilise until these libraries and a few others do.
 
-### Branches
-
-The `master` branch should always be just about current with what's released on `crates.io`. Any non-breaking changes will be merged straight into `master` and released.
-
-The `vNext` branch is where breaking changes for upcoming releases are collected. Once we're ready for a new breaking release, we'll merge `vNext` into `master` and push out a new release.
-
-If you'd like to work on a new feature, base off `master`, unless you depend on code that's already in `vNext`. If the feature can be implemented in a non-breaking way then we'll merge it in to `master` for you. If it can't then we'll merge it in to `vNext`.
-
 ### Methodology
 
 The following is a simple set of guidelines that the codebase should follow. It's mostly a reminder to ourselves and not a hard set of rules.
