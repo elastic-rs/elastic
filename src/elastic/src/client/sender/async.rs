@@ -95,7 +95,7 @@ pub struct AsyncSender {
         Arc<
             Fn(
                 &mut AsyncHttpRequest,
-            ) -> Box<Future<Item = (), Error = Box<StdError + Send + Sync>>>,
+            ) -> Box<Future<Item = (), Error = Box<StdError + Send + Sync>>> + Send + Sync,
         >,
     >,
 }
@@ -329,7 +329,7 @@ pub struct AsyncClientBuilder {
         Arc<
             Fn(
                 &mut AsyncHttpRequest,
-            ) -> Box<Future<Item = (), Error = Box<StdError + Send + Sync>>>,
+            ) -> Box<Future<Item = (), Error = Box<StdError + Send + Sync>>> + Send + Sync,
         >,
     >,
 }
@@ -524,7 +524,7 @@ impl AsyncClientBuilder {
         pre_send: impl Fn(
                 &mut AsyncHttpRequest,
             ) -> Box<Future<Item = (), Error = Box<StdError + Send + Sync>>>
-            + 'static,
+            + Send + Sync + 'static,
     ) -> Self {
         self.pre_send = Some(Arc::new(pre_send));
 
