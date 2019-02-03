@@ -18,17 +18,15 @@ This crate is still quite unstable and is likely to continue to churn breaking r
 If you run into any problems upgrading in your own open source projects feel free to [open up an issue](https://github.com/elastic-rs/elastic/issues) and we'll give you a hand. The goal is definitely to offer a stable API eventually.
 
 ## Build Status
-Platform  | Channel | Status (`master`) | Status (`vNext`)
+Platform  | Channel | Status (`master`)
 ------------- | ------------- | ------------- | ------------
-Linux / OSX  | Stable/Nightly | [![Build Status](https://travis-ci.org/elastic-rs/elastic.svg?branch=master)](https://travis-ci.org/elastic-rs/elastic) | [![Build Status](https://travis-ci.org/elastic-rs/elastic.svg?branch=vNext)](https://travis-ci.org/elastic-rs/elastic)
-Windows  | Nightly | [![Build status](https://ci.appveyor.com/api/projects/status/csa78tcumdpnbur2?svg=true)](https://ci.appveyor.com/project/KodrAus/elastic) | [![Build status](https://ci.appveyor.com/api/projects/status/csa78tcumdpnbur2/branch/vNext?svg=true)](https://ci.appveyor.com/project/KodrAus/elastic/branch/vNext)
-
+Linux / OSX  | Stable/Nightly | [![Build Status](https://travis-ci.org/elastic-rs/elastic.svg?branch=master)](https://travis-ci.org/elastic-rs/elastic)
+Windows  | Nightly | [![Build status](https://ci.appveyor.com/api/projects/status/csa78tcumdpnbur2?svg=true)](https://ci.appveyor.com/project/KodrAus/elastic)
 ## Documentation
 
 Version                | Docs
 ---------------------- | -------------
 current (`master`)     | [![Documentation](https://img.shields.io/badge/docs-rustdoc-blue.svg)](https://docs.rs/elastic/*/elastic/)
-unstable (`vNext`)     | [![Documentation](https://img.shields.io/badge/docs-rustdoc-orange.svg)](http://elastic-rs.github.io/elastic/elastic/index.html)
 
 ## Example
 
@@ -87,6 +85,7 @@ Document mapping is derived at compile-time from your _Plain Old Rust Structures
 ```rust
 #[derive(ElasticType, Serialize, Deserialize)]
 struct MyDocument {
+	#[elastic(id)]
 	pub id: String,
 	pub title: String,
 	pub timestamp: Date<DefaultDateMapping<EpochMillis>>,
