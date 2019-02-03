@@ -239,6 +239,8 @@ pub struct Hit<T> {
     index: String,
     #[serde(rename = "_type")]
     ty: String,
+    #[serde(rename = "_id")]
+    id: String,
     #[serde(rename = "_version")]
     version: Option<u32>,
     #[serde(rename = "_score")]
@@ -268,6 +270,11 @@ impl<T> Hit<T> {
     /** The type of the hit. */
     pub fn ty(&self) -> &str {
         &self.ty
+    }
+
+    /** The id of the hit. */
+    pub fn id(&self) -> &str {
+        &self.id
     }
 
     /** The version of the hit. */
