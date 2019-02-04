@@ -31,7 +31,7 @@ impl IntegrationTest for UpdateWithInlineScript {
         "document"
     }
     fn name() -> &'static str {
-        "update_with_inline_script"
+        "update with inline script"
     }
 
     // Ensure the index doesn't exist

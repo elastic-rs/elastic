@@ -27,7 +27,7 @@ impl IntegrationTest for EmptyQuery {
         "search"
     }
     fn name() -> &'static str {
-        "empty_query"
+        "empty query"
     }
 
     // Ensure the index doesn't exist

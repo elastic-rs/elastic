@@ -222,7 +222,7 @@ impl SenderBody {
     }
 
     fn is_full(&self) -> bool {
-        self.scratch.len() > 0
+        self.scratch.len() > 0 || self.body.remaining_mut() == 0
     }
 
     fn push<TDocument>(&mut self, op: BulkOperation<TDocument>) -> Result<(), io::Error>
@@ -232,7 +232,7 @@ impl SenderBody {
         op.write(&mut self.scratch)?;
 
         // Copy the scratch buffer into the request buffer if it fits
-        if self.scratch.len() < self.body.remaining_mut() {
+        if self.scratch.len() <= self.body.remaining_mut() {
             self.body.put_slice(&self.scratch);
             self.scratch.clear();
 
@@ -294,9 +294,7 @@ where
             BulkSenderInFlight::ReadyToSend => {
                 match self.timeout.poll() {
                     // If the timeout hasn't expired and the body isn't full then we're not ready
-                    Ok(Async::NotReady) if !self.body.is_full() && !self.body.is_empty() => {
-                        return Ok(Async::NotReady);
-                    }
+                    Ok(Async::NotReady) if !self.body.is_full() && !self.body.is_empty() => return Ok(Async::NotReady),
                     // Continue
                     Ok(Async::NotReady) => (),
                     // Restart the expired timer
@@ -307,6 +305,8 @@ where
                 if self.body.is_empty() {
                     return Ok(Async::Ready(()));
                 }
+
+                debug!("Elasticsearch Bulk Stream: sending a bulk request");
 
                 let body = self.body.take();
 
@@ -326,6 +326,8 @@ where
                     match self.tx.start_send(item) {
                         Ok(AsyncSink::Ready) => BulkSenderInFlight::Transmitted,
                         Ok(AsyncSink::NotReady(item)) => {
+                            debug!("Elasticsearch Bulk Stream: waiting for receiver to accept bulk response");
+
                             *response = Some(item);
                             return Ok(Async::NotReady);
                         }

@@ -19,7 +19,7 @@ impl IntegrationTest for NoIndex {
         "search"
     }
     fn name() -> &'static str {
-        "no_index"
+        "no index"
     }
 
     // Ensure the index doesn't exist

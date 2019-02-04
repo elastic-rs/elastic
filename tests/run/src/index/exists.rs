@@ -15,7 +15,7 @@ impl IntegrationTest for Exists {
         "index"
     }
     fn name() -> &'static str {
-        "index_exists"
+        "exists"
     }
 
     // Ensure the index exists
