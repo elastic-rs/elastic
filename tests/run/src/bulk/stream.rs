@@ -14,8 +14,14 @@ pub struct Doc {
     id: String,
 }
 
+#[derive(Clone, Debug)]
+pub struct BulkResult {
+    requests: u32,
+    ops: Vec<OkItem>,
+}
+
 impl IntegrationTest for BulkStream {
-    type Response = Vec<OkItem>;
+    type Response = BulkResult;
 
     fn kind() -> &'static str {
         "bulk"
@@ -45,17 +51,18 @@ impl IntegrationTest for BulkStream {
 
         let req_future = bulk_stream.send_all(stream::iter_ok(ops));
 
-        let res_future = bulk_responses.fold(Vec::new(), |mut ops, bulk| {
-            ops.extend(bulk.into_iter().filter_map(Result::ok));
+        let res_future = bulk_responses.fold(BulkResult { requests: 0, ops: Vec::new() }, |mut res, bulk| {
+            res.requests += 1;
+            res.ops.extend(bulk.into_iter().filter_map(Result::ok));
             
-            Ok(ops)
+            Ok(res)
         });
 
         Box::new(req_future.join(res_future).map(|(_, ops)| ops))
     }
 
-    // Ensure the we see 20 successful items returned from the bulk stream
+    // Ensure the we see 20 successful items returned from the bulk stream but less than 20 requests sent
     fn assert_ok(&self, res: &Self::Response) -> bool {
-        res.len() == 20
+        res.requests < 20 && res.ops.len() == 20
     }
 }
