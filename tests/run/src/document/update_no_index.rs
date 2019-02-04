@@ -23,7 +23,7 @@ impl IntegrationTest for UpdateNoIndex {
         "document"
     }
     fn name() -> &'static str {
-        "update_no_index"
+        "update no index"
     }
 
     // Ensure the index doesn't exist

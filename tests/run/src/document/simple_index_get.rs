@@ -32,7 +32,7 @@ impl IntegrationTest for SimpleIndexGet {
         "document"
     }
     fn name() -> &'static str {
-        "simple_index_get"
+        "simple index get"
     }
 
     // Ensure the index doesn't exist

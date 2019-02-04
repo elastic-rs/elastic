@@ -32,7 +32,7 @@ impl IntegrationTest for IndexCreate {
         "bulk"
     }
     fn name() -> &'static str {
-        "index_create"
+        "index create"
     }
 
     // Ensure the index doesn't exist

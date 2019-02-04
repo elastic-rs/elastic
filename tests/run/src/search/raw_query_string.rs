@@ -27,7 +27,7 @@ impl IntegrationTest for RawQueryString {
         "search"
     }
     fn name() -> &'static str {
-        "raw_query_string"
+        "raw query string"
     }
 
     // Ensure the index doesn't exist

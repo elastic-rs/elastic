@@ -31,7 +31,7 @@ impl IntegrationTest for UpdateWithDoc {
         "document"
     }
     fn name() -> &'static str {
-        "update_with_doc"
+        "update with doc"
     }
 
     // Ensure the index doesn't exist
