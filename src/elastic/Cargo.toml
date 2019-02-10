@@ -7,7 +7,7 @@ keywords = ["elasticsearch", "search"]
 description = "A modular sync and async client for the Elasticsearch REST API."
 documentation = "https://docs.rs/elastic/"
 repository = "https://github.com/elastic-rs/elastic"
-readme = "README.md"
+readme = "../../README.md"
 
 [badges]
 travis-ci = { repository = "elastic-rs/elastic" }

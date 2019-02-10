@@ -6,7 +6,6 @@ license = "MIT/Apache-2.0"
 description = "A strongly-typed implementation of Elasticsearch core types and Mapping API."
 documentation = "https://docs.rs/elastic_types/"
 repository = "https://github.com/elastic-rs/elastic"
-readme = "README.md"
 
 [dependencies]
 serde = "~1"

@@ -6,7 +6,6 @@ license = "MIT/Apache-2.0"
 description = "Code generated request types for the Elasticsearch REST API."
 documentation = "https://docs.rs/elastic_requests/"
 repository = "https://github.com/elastic-rs/elastic"
-readme = "README.md"
 
 [dependencies]
 http = "~0.1"
