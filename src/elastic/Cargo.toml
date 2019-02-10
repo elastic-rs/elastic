@@ -31,12 +31,12 @@ tokio-threadpool = "~0.1"
 fluent_builder = "~0.5"
 crossbeam-channel = "~0.3"
 
-elastic_requests = { version = "~0.20.2", path = "../requests" }
-elastic_responses = { version = "~0.20.2", path = "../responses" }
-elastic_types = { version = "~0.20.0", path = "../types" }
+elastic_requests = { version = "~0.21.0-pre.1", path = "../requests" }
+elastic_responses = { version = "~0.21.0-pre.1", path = "../responses" }
+elastic_types = { version = "~0.21.0-pre.1", path = "../types" }
 
 [dev-dependencies]
 json_str = "~0.5"
 serde_derive = "~1"
-elastic_derive = { version = "~0.20.0", path = "../elastic_derive" }
+elastic_derive = { version = "~0.21.0-pre.1", path = "../elastic_derive" }
 env_logger = "~0.6"

@@ -24,7 +24,7 @@ To get started, add `elastic_types` and `elastic_types_derive` to your `Cargo.to
 
 ```ignore
 [dependencies]
-elastic_types = version = "*"
+elastic_types = version = "~0.21.0-pre.1"
 elastic_types_derive = "*"
 ```
 
