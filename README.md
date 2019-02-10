@@ -34,9 +34,9 @@ Add `elastic` to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-elastic = "*"
-elastic_derive = "*"
-serde_json = "*"
+elastic = "0.21.0-pre.1"
+elastic_derive = "0.21.0-pre.1"
+serde_json = "1"
 ```
 
 Create a `SyncClient` and start making requests:
