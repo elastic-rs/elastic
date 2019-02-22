@@ -189,7 +189,7 @@ where
         }
     }
 
-    pub fn index(self, doc: TDocument) -> BulkOperation<Doc<TDocument>> {
+    pub fn index(self, doc: TDocument) -> BulkOperation<TDocument> {
         BulkOperation {
             action: Action::Index,
             header: BulkHeader {
@@ -197,7 +197,7 @@ where
                 ty: Some(Type::from(doc.ty().into_owned())),
                 id: doc.partial_id().map(|id| Id::from(id.into_owned())),
             },
-            inner: Some(Doc::value(doc)),
+            inner: Some(doc),
         }
     }
 
@@ -256,7 +256,7 @@ where
         .script_fluent(builder)
     }
 
-    pub fn create(self, doc: TDocument) -> BulkOperation<Doc<TDocument>> {
+    pub fn create(self, doc: TDocument) -> BulkOperation<TDocument> {
         BulkOperation {
             action: Action::Create,
             header: BulkHeader {
@@ -264,7 +264,7 @@ where
                 ty: Some(Type::from(doc.ty().into_owned())),
                 id: doc.partial_id().map(|id| Id::from(id.into_owned())),
             },
-            inner: Some(Doc::value(doc)),
+            inner: Some(doc),
         }
     }
 
