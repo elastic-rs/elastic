@@ -1,6 +1,6 @@
 [package]
 name = "elastic"
-version = "0.21.0-pre.1"
+version = "0.21.0-pre.2"
 authors = ["Ashley Mannix <ashleymannix@live.com.au>"]
 license = "MIT/Apache-2.0"
 keywords = ["elasticsearch", "search"]
@@ -31,12 +31,12 @@ tokio-threadpool = "~0.1"
 fluent_builder = "~0.5"
 crossbeam-channel = "~0.3"
 
-elastic_requests = { version = "~0.21.0-pre.1", path = "../requests" }
-elastic_responses = { version = "~0.21.0-pre.1", path = "../responses" }
-elastic_types = { version = "~0.21.0-pre.1", path = "../types" }
+elastic_requests = { version = "~0.21.0-pre.2", path = "../requests" }
+elastic_responses = { version = "~0.21.0-pre.2", path = "../responses" }
+elastic_types = { version = "~0.21.0-pre.2", path = "../types" }
 
 [dev-dependencies]
 json_str = "~0.5"
 serde_derive = "~1"
-elastic_derive = { version = "~0.21.0-pre.1", path = "../elastic_derive" }
+elastic_derive = { version = "~0.21.0-pre.2", path = "../elastic_derive" }
 env_logger = "~0.6"

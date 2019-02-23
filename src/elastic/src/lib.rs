@@ -25,16 +25,16 @@ To get stated, add `elastic` to your `Cargo.toml`:
 
 ```ignore
 [dependencies]
-elastic = "*"
-elastic_derive = "*"
+elastic = "~0.21.0-pre.2"
+elastic_derive = "~0.21.0-pre.2"
 ```
 
 The following optional dependencies may also be useful:
 
 ```ignore
-serde = "*"
-serde_json = "*"
-serde_derive = "*"
+serde = "~1"
+serde_json = "~1"
+serde_derive = "~1"
 ```
 
 Then reference in your crate root:

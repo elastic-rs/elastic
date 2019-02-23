@@ -4,12 +4,12 @@ use run_tests::{
 };
 
 mod delete;
-mod index_get;
 mod index_create;
+mod index_get;
 mod stream;
 mod stream_tiny_size_limit;
-mod stream_zero_size_limit;
 mod stream_tiny_timeout;
+mod stream_zero_size_limit;
 
 pub fn tests() -> Vec<Test> {
     vec![

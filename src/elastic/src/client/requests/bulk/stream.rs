@@ -294,7 +294,9 @@ where
             BulkSenderInFlight::ReadyToSend => {
                 match self.timeout.poll() {
                     // If the timeout hasn't expired and the body isn't full then we're not ready
-                    Ok(Async::NotReady) if !self.body.is_full() && !self.body.is_empty() => return Ok(Async::NotReady),
+                    Ok(Async::NotReady) if !self.body.is_full() && !self.body.is_empty() => {
+                        return Ok(Async::NotReady);
+                    }
                     // Continue
                     Ok(Async::NotReady) => (),
                     // Restart the expired timer

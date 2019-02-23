@@ -16,7 +16,7 @@ Add `elastic_responses` to your `Cargo.toml`:
 
 ```text
 [dependencies]
-elastic_responses = "*"
+elastic_responses = "~0.21.0-pre.2"
 ```
 
 Use the [`parse`][parse] function to deserialise a http response to a `Result<T, ApiError>` for some
