@@ -39,19 +39,27 @@ impl IntegrationTest for SimpleMapping {
 
     // Put the document mapping, then get it back from Elasticsearch
     fn request(&self, client: AsyncClient) -> Box<Future<Item = Self::Response, Error = Error>> {
-        let create_index = client.index(Doc::static_index()).create().send().map(|_| ());
+        let create_index = client
+            .index(Doc::static_index())
+            .create()
+            .send()
+            .map(|_| ());
 
-        let put_mapping = client
-            .document::<Doc>()
-            .put_mapping()
-            .send();
+        let put_mapping = client.document::<Doc>().put_mapping().send();
 
         let get_mapping = client
-            .request(IndicesGetMappingRequest::for_index_ty(Doc::static_index(), Doc::static_ty()))
+            .request(IndicesGetMappingRequest::for_index_ty(
+                Doc::static_index(),
+                Doc::static_ty(),
+            ))
             .send()
             .and_then(|res| res.into_response::<Value>());
 
-        Box::new(create_index.and_then(|_| put_mapping).and_then(|_| get_mapping))
+        Box::new(
+            create_index
+                .and_then(|_| put_mapping)
+                .and_then(|_| get_mapping),
+        )
     }
 
     // Ensure the response contains the expected document

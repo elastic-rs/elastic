@@ -27,18 +27,24 @@ impl IntegrationTest for IndexGet {
 
     // Ensure the index doesn't exist
     fn prepare(&self, client: AsyncClient) -> Box<Future<Item = (), Error = Error>> {
-        let delete_res = client.index(Doc::static_index()).delete().send().map(|_| ());
+        let delete_res = client
+            .index(Doc::static_index())
+            .delete()
+            .send()
+            .map(|_| ());
 
         Box::new(delete_res)
     }
 
     // Index some bulk documents
     fn request(&self, client: AsyncClient) -> Box<Future<Item = Self::Response, Error = Error>> {
-        let ops = (0..10).into_iter().map(|i| bulk().index(Doc {
-            id: i.to_string(),
-            title: "A document title".to_owned(),
-            timestamp: Date::build(2017, 03, 24, 13, 44, 0, 0),
-        }));
+        let ops = (0..10).into_iter().map(|i| {
+            bulk().index(Doc {
+                id: i.to_string(),
+                title: "A document title".to_owned(),
+                timestamp: Date::build(2017, 03, 24, 13, 44, 0, 0),
+            })
+        });
 
         let bulk_res = client
             .bulk()

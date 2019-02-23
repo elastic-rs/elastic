@@ -1,6 +1,6 @@
 [package]
 name = "elastic_types_derive"
-version = "0.21.0-pre.1"
+version = "0.21.0-pre.2"
 authors = ["Ashley Mannix <ashleymannix@live.com.au>"]
 license = "MIT/Apache-2.0"
 description = "Compile-time code generation for Elasticsearch type implementations."
@@ -11,6 +11,6 @@ name = "elastic_types_derive"
 proc-macro = true
 
 [dependencies]
-elastic_types_derive_internals = { version = "~0.21.0-pre.1", path = "../types_derive_internals" }
+elastic_types_derive_internals = { version = "~0.21.0-pre.2", path = "../types_derive_internals" }
 syn = { version = "~0.11.0", features = ["full"] }
 quote = "~0.3.0"

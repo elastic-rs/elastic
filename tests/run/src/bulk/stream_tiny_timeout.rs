@@ -1,9 +1,14 @@
-use std::time::Duration;
+use elastic::client::responses::bulk::OkItem;
 use elastic::error::Error;
 use elastic::prelude::*;
-use elastic::client::responses::bulk::OkItem;
-use futures::{stream, Stream, Sink, Future};
+use futures::{
+    stream,
+    Future,
+    Sink,
+    Stream,
+};
 use run_tests::IntegrationTest;
+use std::time::Duration;
 
 #[derive(Debug, Clone, Copy)]
 pub struct BulkStreamTinyTimeout;
@@ -42,14 +47,16 @@ impl IntegrationTest for BulkStreamTinyTimeout {
             .bulk_stream()
             .timeout(Duration::from_nanos(1))
             .build();
-        
-        let ops = (0..20).into_iter().map(|i| bulk().index(Doc { id: i.to_string() }));
+
+        let ops = (0..20)
+            .into_iter()
+            .map(|i| bulk().index(Doc { id: i.to_string() }));
 
         let req_future = bulk_stream.send_all(stream::iter_ok(ops));
 
         let res_future = bulk_responses.fold(Vec::new(), |mut ops, bulk| {
             ops.extend(bulk.into_iter().filter_map(Result::ok));
-            
+
             Ok(ops)
         });
 

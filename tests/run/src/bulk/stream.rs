@@ -1,7 +1,12 @@
+use elastic::client::responses::bulk::OkItem;
 use elastic::error::Error;
 use elastic::prelude::*;
-use elastic::client::responses::bulk::OkItem;
-use futures::{stream, Stream, Sink, Future};
+use futures::{
+    stream,
+    Future,
+    Sink,
+    Stream,
+};
 use run_tests::IntegrationTest;
 
 #[derive(Debug, Clone, Copy)]
@@ -43,20 +48,26 @@ impl IntegrationTest for BulkStream {
 
     // Stream some bulk operations
     fn request(&self, client: AsyncClient) -> Box<Future<Item = Self::Response, Error = Error>> {
-        let (bulk_stream, bulk_responses) = client
-            .bulk_stream()
-            .build();
-        
-        let ops = (0..20).into_iter().map(|i| bulk().index(Doc { id: i.to_string() }));
+        let (bulk_stream, bulk_responses) = client.bulk_stream().build();
+
+        let ops = (0..20)
+            .into_iter()
+            .map(|i| bulk().index(Doc { id: i.to_string() }));
 
         let req_future = bulk_stream.send_all(stream::iter_ok(ops));
 
-        let res_future = bulk_responses.fold(BulkResult { requests: 0, ops: Vec::new() }, |mut res, bulk| {
-            res.requests += 1;
-            res.ops.extend(bulk.into_iter().filter_map(Result::ok));
-            
-            Ok(res)
-        });
+        let res_future = bulk_responses.fold(
+            BulkResult {
+                requests: 0,
+                ops: Vec::new(),
+            },
+            |mut res, bulk| {
+                res.requests += 1;
+                res.ops.extend(bulk.into_iter().filter_map(Result::ok));
+
+                Ok(res)
+            },
+        );
 
         Box::new(req_future.join(res_future).map(|(_, ops)| ops))
     }
