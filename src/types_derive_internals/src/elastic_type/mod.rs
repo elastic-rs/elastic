@@ -64,6 +64,7 @@ pub fn expand_derive(
     let mapping_impl_block = &mapping.impl_block;
 
     Ok(vec![quote!(
+        #[allow(missing_docs)]
         #mapping_definition
 
         #[allow(non_upper_case_globals, dead_code, unused_variables)]
