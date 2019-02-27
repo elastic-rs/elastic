@@ -164,6 +164,7 @@ fn get_doc_ty_impl_block(
 
         // Get the default method blocks for `DocumentType`
         fn get_doc_type_methods(
+            crate_root: &Tokens,
             item: &syn::MacroInput,
             fields: &[(syn::Ident, &syn::Field)],
         ) -> ElasticMetadataMethods {
@@ -190,7 +191,7 @@ fn get_doc_ty_impl_block(
                 match get_method_from_struct(item, "ty") {
                     Some(MethodFromStruct::Literal(name)) => (name, true),
                     Some(MethodFromStruct::Expr(method)) => (quote!(#method(self)), false),
-                    _ => (quote!("doc"), true),
+                    _ => (quote!(#crate_root::derive::DEFAULT_DOC_TYPE), true),
                 }
             };
 
@@ -224,7 +225,7 @@ fn get_doc_ty_impl_block(
             ref ty,
             ty_is_static,
             ref id,
-        } = get_doc_type_methods(item, fields);
+        } = get_doc_type_methods(crate_root, item, fields);
 
         let doc_ty = &item.ident;
 

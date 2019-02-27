@@ -34,6 +34,7 @@ pub use document::mapping::{
     PropertiesMapping,
 };
 pub use document::{
+    DEFAULT_DOC_TYPE,
     DocumentType,
     StaticIndex,
     StaticType,

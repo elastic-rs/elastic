@@ -34,7 +34,7 @@ use types::document::{
     StaticIndex,
     StaticType,
 };
-use types::DEFAULT_TYPE;
+use types::document::DEFAULT_DOC_TYPE;
 
 /**
 A [delete document request][docs-delete] builder that can be configured before sending.
@@ -181,7 +181,7 @@ where
             self.inner,
             DeleteRequestInner {
                 index: index.into(),
-                ty: DEFAULT_TYPE.into(),
+                ty: DEFAULT_DOC_TYPE.into(),
                 id: id.into(),
                 _marker: PhantomData,
             },
