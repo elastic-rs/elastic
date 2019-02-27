@@ -35,7 +35,7 @@ use types::document::{
     StaticIndex,
     StaticType,
 };
-use types::DEFAULT_TYPE;
+use types::document::DEFAULT_DOC_TYPE;
 
 /**
 A [get document request][docs-get] builder that can be configured before sending.
@@ -176,7 +176,7 @@ where
             self.inner,
             GetRequestInner {
                 index: index.into(),
-                ty: DEFAULT_TYPE.into(),
+                ty: DEFAULT_DOC_TYPE.into(),
                 id: id.into(),
                 _marker: PhantomData,
             },

@@ -33,8 +33,7 @@ use error::{
     Error,
     Result,
 };
-use types::document::DocumentType;
-use types::DEFAULT_TYPE;
+use types::document::{DocumentType, DEFAULT_DOC_TYPE};
 
 /**
 An [index request][docs-index] builder that can be configured before sending.
@@ -198,7 +197,7 @@ where
             self.inner,
             IndexRequestInner {
                 index: index.into(),
-                ty: DEFAULT_TYPE.into(),
+                ty: DEFAULT_DOC_TYPE.into(),
                 id: None,
                 doc: doc,
             },

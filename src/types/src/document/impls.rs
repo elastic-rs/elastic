@@ -9,6 +9,11 @@ use std::borrow::Cow;
 use std::marker::PhantomData;
 
 /**
+The default name for document types in a single document index.
+*/
+pub const DEFAULT_DOC_TYPE: &'static str = "doc";
+
+/**
 An indexable Elasticsearch type.
 
 This trait is implemented for the type being mapped, rather than the mapping

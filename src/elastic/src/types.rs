@@ -275,7 +275,5 @@ pub use elastic_types::{
     string,
 };
 
-pub(crate) const DEFAULT_TYPE: &'static str = "doc";
-
 #[doc(hidden)]
 pub use elastic_types::derive;

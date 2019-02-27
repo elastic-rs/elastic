@@ -35,8 +35,8 @@ use types::document::{
     DocumentType,
     StaticIndex,
     StaticType,
+    DEFAULT_DOC_TYPE,
 };
-use types::DEFAULT_TYPE;
 
 pub use client::requests::common::{
     DefaultParams,
@@ -287,7 +287,7 @@ where
             self.inner,
             UpdateRequestInner {
                 index: index.into(),
-                ty: DEFAULT_TYPE.into(),
+                ty: DEFAULT_DOC_TYPE.into(),
                 id: id.into(),
                 body: Doc::empty(),
                 _marker: PhantomData,
