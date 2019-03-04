@@ -155,6 +155,11 @@ quick_error! {
             description("action request failed validation")
             display("action request failed validation: '{}'", reason)
         }
+        /** The request body can't be parsed.  */
+        Parsing { reason: String } {
+            description("parsing failed")
+            display("parsing failed: '{}'", reason)
+        }
         #[doc(hidden)]
         __NonExhaustive {}
     }
@@ -232,6 +237,13 @@ impl From<Map<String, Value>> for ParsedApiError {
                 let reason = error_key!(obj[reason]: |v| v.as_str());
 
                 ParsedApiError::Known(ApiError::ActionRequestValidation {
+                    reason: reason.into(),
+                })
+            }
+            "parsing_exception" => {
+                let reason = error_key!(obj[reason]: |v| v.as_str());
+
+                ParsedApiError::Known(ApiError::Parsing {
                     reason: reason.into(),
                 })
             }
