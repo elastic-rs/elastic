@@ -160,6 +160,11 @@ quick_error! {
             description("parsing failed")
             display("parsing failed: '{}'", reason)
         }
+        /** There was an illegal argument in the request.  */
+        IllegalArgument { reason: String } {
+            description("illegal argument")
+            display("illegal argument: '{}'", reason)
+        }
         #[doc(hidden)]
         __NonExhaustive {}
     }
@@ -244,6 +249,13 @@ impl From<Map<String, Value>> for ParsedApiError {
                 let reason = error_key!(obj[reason]: |v| v.as_str());
 
                 ParsedApiError::Known(ApiError::Parsing {
+                    reason: reason.into(),
+                })
+            }
+            "illegal_argument_exception" => {
+                let reason = error_key!(obj[reason]: |v| v.as_str());
+
+                ParsedApiError::Known(ApiError::IllegalArgument {
                     reason: reason.into(),
                 })
             }
