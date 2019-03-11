@@ -110,8 +110,8 @@ impl StdError for WrappedError {
         self.0.description()
     }
 
-    fn cause(&self) -> Option<&StdError> {
-        self.0.cause()
+    fn source(&self) -> Option<&(StdError + 'static)> {
+        self.0.source()
     }
 }
 
@@ -126,8 +126,8 @@ impl StdError for ClientError {
         self.inner.description()
     }
 
-    fn cause(&self) -> Option<&StdError> {
-        self.inner.cause()
+    fn source(&self) -> Option<&(StdError + 'static)> {
+        self.inner.source()
     }
 }
 
