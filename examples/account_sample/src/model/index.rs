@@ -10,7 +10,7 @@ use serde_json::Value;
 
 /// Get the name of the bank index.
 pub fn name() -> Index<'static> {
-    "bank-sample".into()
+    "account".into()
 }
 
 /// Get the settings and mappings for the index.
