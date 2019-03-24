@@ -21,7 +21,7 @@ pub fn body() -> Value {
                 "filter" : {
                     "email": {
                         "type": "pattern_capture",
-                        "preserve_original": 1,
+                        "preserve_original": true,
                         "patterns": [
                             "([^@]+)",
                             "(\\p{L}+)",
