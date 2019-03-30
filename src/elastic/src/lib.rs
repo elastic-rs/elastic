@@ -119,8 +119,8 @@ Derive `Serialize`, `Deserialize` and `ElasticType` on your document types:
 # fn run() -> Result<(), Box<::std::error::Error>> {
 #[derive(Serialize, Deserialize, ElasticType)]
 struct MyType {
-    #[elastic(id(expr = "ToString::to_string"))]
-    pub id: String,
+    #[elastic(id(expr = "id.to_string()"))]
+    pub id: i32,
     pub title: String,
     pub timestamp: Date<DefaultDateMapping>
 }

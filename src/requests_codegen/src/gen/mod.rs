@@ -169,6 +169,12 @@ pub mod types {
                     }
                 }
 
+                impl <'a> From<#ty> for Cow<'a, str> {
+                    fn from(value: #ty) -> Cow<'a, str> {
+                        value.0
+                    }
+                }
+
                 impl <'a> ::std::ops::Deref for #ty {
                     type Target = str;
 

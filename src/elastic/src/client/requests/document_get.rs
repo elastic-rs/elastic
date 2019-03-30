@@ -30,12 +30,12 @@ use error::{
     Error,
     Result,
 };
+use types::document::DEFAULT_DOC_TYPE;
 use types::document::{
     DocumentType,
     StaticIndex,
     StaticType,
 };
-use types::document::DEFAULT_DOC_TYPE;
 
 /**
 A [get document request][docs-get] builder that can be configured before sending.

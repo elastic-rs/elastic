@@ -6656,6 +6656,11 @@ pub mod params {
             Alias(Cow::Owned(value))
         }
     }
+    impl<'a> From<Alias<'a>> for Cow<'a, str> {
+        fn from(value: Alias<'a>) -> Cow<'a, str> {
+            value.0
+        }
+    }
     impl<'a> ::std::ops::Deref for Alias<'a> {
         type Target = str;
         fn deref(&self) -> &str {
@@ -6679,6 +6684,11 @@ pub mod params {
     impl<'a> From<String> for Context<'a> {
         fn from(value: String) -> Context<'a> {
             Context(Cow::Owned(value))
+        }
+    }
+    impl<'a> From<Context<'a>> for Cow<'a, str> {
+        fn from(value: Context<'a>) -> Cow<'a, str> {
+            value.0
         }
     }
     impl<'a> ::std::ops::Deref for Context<'a> {
@@ -6706,6 +6716,11 @@ pub mod params {
             Fields(Cow::Owned(value))
         }
     }
+    impl<'a> From<Fields<'a>> for Cow<'a, str> {
+        fn from(value: Fields<'a>) -> Cow<'a, str> {
+            value.0
+        }
+    }
     impl<'a> ::std::ops::Deref for Fields<'a> {
         type Target = str;
         fn deref(&self) -> &str {
@@ -6729,6 +6744,11 @@ pub mod params {
     impl<'a> From<String> for Id<'a> {
         fn from(value: String) -> Id<'a> {
             Id(Cow::Owned(value))
+        }
+    }
+    impl<'a> From<Id<'a>> for Cow<'a, str> {
+        fn from(value: Id<'a>) -> Cow<'a, str> {
+            value.0
         }
     }
     impl<'a> ::std::ops::Deref for Id<'a> {
@@ -6756,6 +6776,11 @@ pub mod params {
             Index(Cow::Owned(value))
         }
     }
+    impl<'a> From<Index<'a>> for Cow<'a, str> {
+        fn from(value: Index<'a>) -> Cow<'a, str> {
+            value.0
+        }
+    }
     impl<'a> ::std::ops::Deref for Index<'a> {
         type Target = str;
         fn deref(&self) -> &str {
@@ -6779,6 +6804,11 @@ pub mod params {
     impl<'a> From<String> for IndexMetric<'a> {
         fn from(value: String) -> IndexMetric<'a> {
             IndexMetric(Cow::Owned(value))
+        }
+    }
+    impl<'a> From<IndexMetric<'a>> for Cow<'a, str> {
+        fn from(value: IndexMetric<'a>) -> Cow<'a, str> {
+            value.0
         }
     }
     impl<'a> ::std::ops::Deref for IndexMetric<'a> {
@@ -6806,6 +6836,11 @@ pub mod params {
             Metric(Cow::Owned(value))
         }
     }
+    impl<'a> From<Metric<'a>> for Cow<'a, str> {
+        fn from(value: Metric<'a>) -> Cow<'a, str> {
+            value.0
+        }
+    }
     impl<'a> ::std::ops::Deref for Metric<'a> {
         type Target = str;
         fn deref(&self) -> &str {
@@ -6829,6 +6864,11 @@ pub mod params {
     impl<'a> From<String> for Name<'a> {
         fn from(value: String) -> Name<'a> {
             Name(Cow::Owned(value))
+        }
+    }
+    impl<'a> From<Name<'a>> for Cow<'a, str> {
+        fn from(value: Name<'a>) -> Cow<'a, str> {
+            value.0
         }
     }
     impl<'a> ::std::ops::Deref for Name<'a> {
@@ -6856,6 +6896,11 @@ pub mod params {
             NewIndex(Cow::Owned(value))
         }
     }
+    impl<'a> From<NewIndex<'a>> for Cow<'a, str> {
+        fn from(value: NewIndex<'a>) -> Cow<'a, str> {
+            value.0
+        }
+    }
     impl<'a> ::std::ops::Deref for NewIndex<'a> {
         type Target = str;
         fn deref(&self) -> &str {
@@ -6879,6 +6924,11 @@ pub mod params {
     impl<'a> From<String> for NodeId<'a> {
         fn from(value: String) -> NodeId<'a> {
             NodeId(Cow::Owned(value))
+        }
+    }
+    impl<'a> From<NodeId<'a>> for Cow<'a, str> {
+        fn from(value: NodeId<'a>) -> Cow<'a, str> {
+            value.0
         }
     }
     impl<'a> ::std::ops::Deref for NodeId<'a> {
@@ -6906,6 +6956,11 @@ pub mod params {
             Repository(Cow::Owned(value))
         }
     }
+    impl<'a> From<Repository<'a>> for Cow<'a, str> {
+        fn from(value: Repository<'a>) -> Cow<'a, str> {
+            value.0
+        }
+    }
     impl<'a> ::std::ops::Deref for Repository<'a> {
         type Target = str;
         fn deref(&self) -> &str {
@@ -6929,6 +6984,11 @@ pub mod params {
     impl<'a> From<String> for ScrollId<'a> {
         fn from(value: String) -> ScrollId<'a> {
             ScrollId(Cow::Owned(value))
+        }
+    }
+    impl<'a> From<ScrollId<'a>> for Cow<'a, str> {
+        fn from(value: ScrollId<'a>) -> Cow<'a, str> {
+            value.0
         }
     }
     impl<'a> ::std::ops::Deref for ScrollId<'a> {
@@ -6956,6 +7016,11 @@ pub mod params {
             Snapshot(Cow::Owned(value))
         }
     }
+    impl<'a> From<Snapshot<'a>> for Cow<'a, str> {
+        fn from(value: Snapshot<'a>) -> Cow<'a, str> {
+            value.0
+        }
+    }
     impl<'a> ::std::ops::Deref for Snapshot<'a> {
         type Target = str;
         fn deref(&self) -> &str {
@@ -6979,6 +7044,11 @@ pub mod params {
     impl<'a> From<String> for Target<'a> {
         fn from(value: String) -> Target<'a> {
             Target(Cow::Owned(value))
+        }
+    }
+    impl<'a> From<Target<'a>> for Cow<'a, str> {
+        fn from(value: Target<'a>) -> Cow<'a, str> {
+            value.0
         }
     }
     impl<'a> ::std::ops::Deref for Target<'a> {
@@ -7006,6 +7076,11 @@ pub mod params {
             TaskId(Cow::Owned(value))
         }
     }
+    impl<'a> From<TaskId<'a>> for Cow<'a, str> {
+        fn from(value: TaskId<'a>) -> Cow<'a, str> {
+            value.0
+        }
+    }
     impl<'a> ::std::ops::Deref for TaskId<'a> {
         type Target = str;
         fn deref(&self) -> &str {
@@ -7031,6 +7106,11 @@ pub mod params {
             ThreadPoolPatterns(Cow::Owned(value))
         }
     }
+    impl<'a> From<ThreadPoolPatterns<'a>> for Cow<'a, str> {
+        fn from(value: ThreadPoolPatterns<'a>) -> Cow<'a, str> {
+            value.0
+        }
+    }
     impl<'a> ::std::ops::Deref for ThreadPoolPatterns<'a> {
         type Target = str;
         fn deref(&self) -> &str {
@@ -7054,6 +7134,11 @@ pub mod params {
     impl<'a> From<String> for Type<'a> {
         fn from(value: String) -> Type<'a> {
             Type(Cow::Owned(value))
+        }
+    }
+    impl<'a> From<Type<'a>> for Cow<'a, str> {
+        fn from(value: Type<'a>) -> Cow<'a, str> {
+            value.0
         }
     }
     impl<'a> ::std::ops::Deref for Type<'a> {
