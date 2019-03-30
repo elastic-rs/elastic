@@ -129,7 +129,7 @@ For index names that depend on document fields, use the `#[elastic(index(expr = 
 # extern crate serde;
 # use elastic_types::prelude::*;
 #[derive(Serialize, ElasticType)]
-#[elastic(index(expr = "MyType::index"))]
+#[elastic(index(expr = "self.index()"))]
 pub struct MyType {
     pub my_date: Date<DefaultDateMapping>,
     pub my_string: String,
@@ -201,7 +201,7 @@ pub struct MyType {
 ```
 
 The field annotated with `#[elastic(id)]` must satisfy `impl Into<Cow<'_, str>>`.
-An id can also be calculated based on an expression function using the `#[elastic(id(expr = "function"))]` attribute:
+An id can also be calculated based on an expression function using the `#[elastic(id(expr = "expression"))]` attribute:
 
 ```
 # #[macro_use]
@@ -215,7 +215,7 @@ An id can also be calculated based on an expression function using the `#[elasti
 # extern crate serde;
 # use elastic_types::prelude::*;
 #[derive(Serialize, ElasticType)]
-#[elastic(id(expr = "MyType::id"))]
+#[elastic(id(expr = "self.id()"))]
 pub struct MyType {
     pub my_id: i32,
     pub my_date: Date<DefaultDateMapping>,
@@ -227,6 +227,31 @@ impl MyType {
     fn id(&self) -> String {
         self.my_id.to_string()
     }
+}
+# fn main() {
+# }
+```
+
+An expression can also be used on fields, where an identifier with the same name as the field can be used:
+
+```
+# #[macro_use]
+# extern crate json_str;
+# #[macro_use]
+# extern crate serde_derive;
+# #[macro_use]
+# extern crate elastic_types_derive;
+# #[macro_use]
+# extern crate elastic_types;
+# extern crate serde;
+# use elastic_types::prelude::*;
+#[derive(Serialize, ElasticType)]
+pub struct MyType {
+    #[elastic(id(expr = "my_id.to_string()"))]
+    pub my_id: i32,
+    pub my_date: Date<DefaultDateMapping>,
+    pub my_string: String,
+    pub my_num: i32
 }
 # fn main() {
 # }

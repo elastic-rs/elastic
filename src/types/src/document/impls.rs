@@ -470,7 +470,7 @@ mod tests {
     #[elastic(
         index = "renamed_index",
         ty = "renamed_ty",
-        id(expr = "CustomType::id"),
+        id(expr = "self.id()"),
         mapping = "ManualCustomTypeMapping"
     )]
     pub struct CustomType {

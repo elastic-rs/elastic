@@ -7,10 +7,13 @@
 
 use elastic::prelude::*;
 
+use super::index;
+
 /// Our main model; an account in the bank.
 #[derive(Debug, Serialize, Deserialize, ElasticType)]
-#[elastic(id(expr = "Account::id"))]
+#[elastic(index(expr = "index::name()"))]
 pub struct Account {
+    #[elastic(id(expr = "account_number.to_string()"))]
     pub account_number: i32,
     pub balance: i32,
     pub firstname: FirstName,
@@ -22,12 +25,6 @@ pub struct Account {
     pub email: Email,
     pub city: City,
     pub state: State,
-}
-
-impl Account {
-    fn id(&self) -> String {
-        self.account_number.to_string()
-    }
 }
 
 /// Get the indexed document type name.

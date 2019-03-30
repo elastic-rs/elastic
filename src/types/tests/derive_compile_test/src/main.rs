@@ -17,7 +17,7 @@ pub struct DerivedDocument1 {
 }
 
 #[derive(ElasticType)]
-#[elastic(index(expr = "DerivedDocument2::index"), ty = "doc")]
+#[elastic(index(expr = "self.index()"), ty = "doc")]
 pub struct DerivedDocument2 {
     #[elastic(id)]
     pub field1: String,
@@ -32,13 +32,13 @@ impl DerivedDocument2 {
 
 #[derive(ElasticType)]
 pub struct DerivedDocument2U32 {
-    #[elastic(id(expr = "ToString::to_string"))]
+    #[elastic(id(expr = "field1.to_string()"))]
     pub field1: i32,
     pub field2: i32,
 }
 
 #[derive(ElasticType)]
-#[elastic(index = "derived_documents", id(expr = "DerivedDocument3::id"))]
+#[elastic(index = "derived_documents", id(expr = "self.id()"))]
 struct DerivedDocument3 {
     pub field1: String,
     pub field2: i32,

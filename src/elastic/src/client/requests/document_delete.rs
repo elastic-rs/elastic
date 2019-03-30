@@ -29,12 +29,12 @@ use error::{
     Error,
     Result,
 };
+use types::document::DEFAULT_DOC_TYPE;
 use types::document::{
     DocumentType,
     StaticIndex,
     StaticType,
 };
-use types::document::DEFAULT_DOC_TYPE;
 
 /**
 A [delete document request][docs-delete] builder that can be configured before sending.

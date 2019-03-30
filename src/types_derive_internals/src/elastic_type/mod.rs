@@ -179,7 +179,7 @@ fn get_doc_ty_impl_block(
             let (index, index_is_static) = {
                 match get_method_from_struct(item, "index") {
                     Some(MethodFromStruct::Literal(name)) => (name, true),
-                    Some(MethodFromStruct::Expr(expr)) => (quote!(#expr(self)), false),
+                    Some(MethodFromStruct::Expr(expr)) => (expr, false),
                     _ => {
                         let name = get_elastic_type_name(item);
                         (quote!(#name), true)
@@ -190,20 +190,23 @@ fn get_doc_ty_impl_block(
             let (ty, ty_is_static) = {
                 match get_method_from_struct(item, "ty") {
                     Some(MethodFromStruct::Literal(name)) => (name, true),
-                    Some(MethodFromStruct::Expr(method)) => (quote!(#method(self)), false),
+                    Some(MethodFromStruct::Expr(expr)) => (expr, false),
                     _ => (quote!(#crate_root::derive::DEFAULT_DOC_TYPE), true),
                 }
             };
 
             let id = get_method_from_struct(item, "id")
                 .map(|id_expr| match id_expr {
-                    MethodFromStruct::Expr(method) => quote!(#method (self)),
+                    MethodFromStruct::Expr(expr) => expr,
                     _ => panic!("id attributes on a struct definition must be of the form #[id(expr = \"expression\")]"),
                 })
                 .or_else(|| {
                     get_method_from_fields(fields, "id").map(|field| match field {
                         MethodFromField::Field(field) => quote!(&self . #field),
-                        MethodFromField::Expr(field, method) => quote!(#method (&self . #field)),
+                        MethodFromField::Expr(field, expr) => quote!({
+                            let #field = &self . #field;
+                            #expr
+                        }),
                         _ => panic!("id attributes on a field must be of the form #[id] or #[id(expr = \"expression\")]"),
                     })
                 })

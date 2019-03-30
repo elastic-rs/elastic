@@ -33,7 +33,10 @@ use error::{
     Error,
     Result,
 };
-use types::document::{DocumentType, DEFAULT_DOC_TYPE};
+use types::document::{
+    DocumentType,
+    DEFAULT_DOC_TYPE,
+};
 
 /**
 An [index request][docs-index] builder that can be configured before sending.
