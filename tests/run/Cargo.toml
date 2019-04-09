@@ -5,8 +5,8 @@ authors = ["Ashley Mannix <ashleymannix@live.com.au>"]
 publish = false
 
 [dependencies]
-elastic = { version = "~0.21.0-pre.2", path = "../../src/elastic" }
-elastic_derive = { version = "~0.21.0-pre.2", path = "../../src/elastic_derive" }
+elastic = { version = "~0.21.0-pre.3", path = "../../src/elastic" }
+elastic_derive = { version = "~0.21.0-pre.3", path = "../../src/elastic_derive" }
 
 serde = "~1"
 serde_derive = "~1"

@@ -5,5 +5,5 @@ authors = ["Ashley Mannix <ashleymannix@live.com.au>"]
 publish = false
 
 [dependencies]
-elastic_types = { version = "~0.21.0-pre.2", path = "../../" }
-elastic_types_derive = { version = "~0.21.0-pre.2", path = "../../../types_derive" }
+elastic_types = { version = "~0.21.0-pre.3", path = "../../" }
+elastic_types_derive = { version = "~0.21.0-pre.3", path = "../../../types_derive" }
