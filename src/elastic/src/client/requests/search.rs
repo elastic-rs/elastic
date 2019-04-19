@@ -137,8 +137,8 @@ where
     [builder-methods]: requests/search/type.SearchRequestBuilder.html#builder-methods
     [send-sync]: requests/search/type.SearchRequestBuilder.html#send-synchronously
     [send-async]: requests/search/type.SearchRequestBuilder.html#send-asynchronously
-    [types-mod]: ../../types/index.html
-    [documents-mod]: ../../types/document/index.html
+    [types-mod]: ../types/index.html
+    [documents-mod]: ../types/document/index.html
     [docs-querystring]: https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html
     */
     pub fn search<TDocument>(&self) -> SearchRequestBuilder<TSender, TDocument, DefaultBody>
