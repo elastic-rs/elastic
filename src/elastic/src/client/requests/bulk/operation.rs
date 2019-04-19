@@ -300,7 +300,7 @@ impl BulkRawOperation {
         BulkRawOperation { _private: () }
     }
 
-    pub fn index<TDocument>(self, doc: TDocument) -> BulkOperation<Doc<TDocument>> {
+    pub fn index<TDocument>(self, doc: TDocument) -> BulkOperation<TDocument> {
         BulkOperation {
             action: Action::Index,
             header: BulkHeader {
@@ -308,7 +308,7 @@ impl BulkRawOperation {
                 ty: None,
                 id: None,
             },
-            inner: Some(Doc::value(doc)),
+            inner: Some(doc),
         }
     }
 
@@ -360,7 +360,7 @@ impl BulkRawOperation {
         .script_fluent(builder)
     }
 
-    pub fn create<TDocument>(self, doc: TDocument) -> BulkOperation<Doc<TDocument>> {
+    pub fn create<TDocument>(self, doc: TDocument) -> BulkOperation<TDocument> {
         BulkOperation {
             action: Action::Create,
             header: BulkHeader {
@@ -368,7 +368,7 @@ impl BulkRawOperation {
                 ty: None,
                 id: None,
             },
-            inner: Some(Doc::value(doc)),
+            inner: Some(doc),
         }
     }
 

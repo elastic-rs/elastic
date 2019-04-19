@@ -4,10 +4,10 @@ use futures::Future;
 use run_tests::IntegrationTest;
 
 #[derive(Debug, Clone, Copy)]
-pub struct IndexGet;
+pub struct RawIndexGet;
 
 #[derive(Debug, PartialEq, Serialize, Deserialize, ElasticType)]
-#[elastic(ty = "document", index = "bulk_index_get")]
+#[elastic(ty = "document", index = "raw_bulk_index_get")]
 pub struct Doc {
     #[elastic(id)]
     id: String,
@@ -15,7 +15,7 @@ pub struct Doc {
     timestamp: Date<DefaultDateMapping>,
 }
 
-impl IntegrationTest for IndexGet {
+impl IntegrationTest for RawIndexGet {
     type Response = GetResponse<Doc>;
 
     fn kind() -> &'static str {
@@ -39,11 +39,15 @@ impl IntegrationTest for IndexGet {
     // Index some bulk documents
     fn request(&self, client: AsyncClient) -> Box<Future<Item = Self::Response, Error = Error>> {
         let ops = (0..10).into_iter().map(|i| {
-            bulk().index(Doc {
-                id: i.to_string(),
-                title: "A document title".to_owned(),
-                timestamp: Date::build(2017, 03, 24, 13, 44, 0, 0),
-            })
+            bulk_raw()
+                .index(Doc {
+                    id: i.to_string(),
+                    title: "A document title".to_owned(),
+                    timestamp: Date::build(2017, 03, 24, 13, 44, 0, 0),
+                })
+                .index(Doc::static_index())
+                .ty(Doc::static_ty())
+                .id(i.to_string())
         });
 
         let bulk_res = client
