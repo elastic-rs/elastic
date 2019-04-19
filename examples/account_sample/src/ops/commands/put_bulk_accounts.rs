@@ -48,7 +48,7 @@ fn put<B>(body: B) -> BulkRequest<'static, B>
 where
     B: Into<SyncBody>,
 {
-    BulkRequest::for_index_ty(model::index::name(), model::account::name(), body)
+    BulkRequest::for_index(model::index::name(), body)
 }
 
 fn bulk_body<P>(path: P) -> IoResult<File>
@@ -84,6 +84,6 @@ mod tests {
     fn put_request_url() {
         let req = put(vec![]);
 
-        assert_eq!("/bank-sample/doc/_bulk", req.url.as_ref());
+        assert_eq!("/bank-sample/_bulk", req.url.as_ref());
     }
 }
