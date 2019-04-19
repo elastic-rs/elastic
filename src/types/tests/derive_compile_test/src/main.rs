@@ -17,7 +17,7 @@ pub struct DerivedDocument1 {
 }
 
 #[derive(ElasticType)]
-#[elastic(index(expr = "self.index()"), ty = "doc")]
+#[elastic(index(expr = "self.index()"), ty = "_doc")]
 pub struct DerivedDocument2 {
     #[elastic(id)]
     pub field1: String,

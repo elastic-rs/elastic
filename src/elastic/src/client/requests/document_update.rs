@@ -768,7 +768,7 @@ mod tests {
             .into_request()
             .unwrap();
 
-        assert_eq!("/testdoc/doc/1/_update", req.url.as_ref());
+        assert_eq!("/testdoc/_doc/1/_update", req.url.as_ref());
 
         let expected_body = json!({
             "doc": {}
@@ -791,7 +791,7 @@ mod tests {
             .into_request()
             .unwrap();
 
-        assert_eq!("/new-idx/doc/1/_update", req.url.as_ref());
+        assert_eq!("/new-idx/_doc/1/_update", req.url.as_ref());
     }
 
     #[test]

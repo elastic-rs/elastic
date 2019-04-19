@@ -31,6 +31,7 @@ use error::{
     Result,
 };
 use types::document::{
+    DEFAULT_DOC_TYPE,
     DocumentType,
     StaticIndex,
     StaticType,
@@ -131,9 +132,15 @@ where
     fn into_request(self) -> Result<IndicesPutMappingRequest<'static, Vec<u8>>> {
         let body = serde_json::to_vec(&TDocument::index_mapping()).map_err(error::request)?;
 
-        Ok(IndicesPutMappingRequest::for_index_ty(
-            self.index, self.ty, body,
-        ))
+        if &self.ty[..] == DEFAULT_DOC_TYPE {
+            Ok(IndicesPutMappingRequest::for_index(
+                self.index, body,
+            ))
+        } else {
+            Ok(IndicesPutMappingRequest::for_index_ty(
+                self.index, self.ty, body,
+            ))
+        }
     }
 }
 
@@ -321,7 +328,7 @@ mod tests {
 
         let actual_body: Value = serde_json::from_slice(&req.body).unwrap();
 
-        assert_eq!("/testdoc/_mappings/doc", req.url.as_ref());
+        assert_eq!("/testdoc/_mapping", req.url.as_ref());
         assert_eq!(expected_body.to_string(), actual_body.to_string());
     }
 
@@ -337,7 +344,7 @@ mod tests {
             .into_request()
             .unwrap();
 
-        assert_eq!("/new-idx/_mappings/doc", req.url.as_ref());
+        assert_eq!("/new-idx/_mapping", req.url.as_ref());
     }
 
     #[test]

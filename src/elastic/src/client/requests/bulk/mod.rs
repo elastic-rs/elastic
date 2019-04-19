@@ -45,6 +45,7 @@ use http::{
     AsyncBody,
     SyncBody,
 };
+use types::document::DEFAULT_DOC_TYPE;
 
 /**
 A [bulk request][docs-bulk] builder that can be configured before sending.
@@ -524,8 +525,11 @@ where
         let body = self.body.try_into_inner()?;
 
         match (self.index, self.ty) {
-            (Some(index), None) => Ok(BulkRequest::for_index(index, body)),
-            (Some(index), Some(ty)) => Ok(BulkRequest::for_index_ty(index, ty, body)),
+            (Some(index), ty) => match ty {
+                None => Ok(BulkRequest::for_index(index, body)),
+                Some(ref ty) if &ty[..] == DEFAULT_DOC_TYPE => Ok(BulkRequest::for_index(index, body)),
+                Some(ty) => Ok(BulkRequest::for_index_ty(index, ty, body)),
+            },
             (None, None) => Ok(BulkRequest::new(body)),
             (None, Some(_)) => Err(error::request(BulkRequestError(
                 "missing `index` parameter".to_owned(),

@@ -11,7 +11,7 @@ use std::marker::PhantomData;
 /**
 The default name for document types in a single document index.
 */
-pub const DEFAULT_DOC_TYPE: &'static str = "doc";
+pub const DEFAULT_DOC_TYPE: &'static str = "_doc";
 
 /**
 An indexable Elasticsearch type.
@@ -237,7 +237,7 @@ impl Serialize for Mappings {
 # let json = json_str!(
 # {
 #     "mappings": {
-#         "doc": {
+#         "_doc": {
 #             "properties": {
 #                 "my_date": {
 #                     "type": "date",
@@ -542,7 +542,7 @@ mod tests {
 
     #[test]
     fn get_default_type() {
-        assert_eq!("doc", SimpleType::static_ty());
+        assert_eq!("_doc", SimpleType::static_ty());
     }
 
     #[test]
