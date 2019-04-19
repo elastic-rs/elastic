@@ -24,8 +24,8 @@ To get started, add `elastic_types` and `elastic_types_derive` to your `Cargo.to
 
 ```ignore
 [dependencies]
-elastic_types = version = "~0.21.0-pre.3"
-elastic_types_derive = "~0.21.0-pre.3"
+elastic_types = version = "~0.21.0-pre.4"
+elastic_types_derive = "~0.21.0-pre.4"
 ```
 
 And reference it in your crate root:
@@ -324,8 +324,8 @@ Our `Cargo.toml` specifies the dependencies as above:
 
 ```ignore
 [dependencies]
-elastic_types = "~0.21.0-pre.3"
-elastic_types_derive = "~0.21.0-pre.3"
+elastic_types = "~0.21.0-pre.4"
+elastic_types_derive = "~0.21.0-pre.4"
 ```
 
 And our `main.rs` contains the following:

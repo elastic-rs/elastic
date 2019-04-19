@@ -25,8 +25,8 @@ To get stated, add `elastic` to your `Cargo.toml`:
 
 ```ignore
 [dependencies]
-elastic = "~0.21.0-pre.3"
-elastic_derive = "~0.21.0-pre.3"
+elastic = "~0.21.0-pre.4"
+elastic_derive = "~0.21.0-pre.4"
 ```
 
 The following optional dependencies may also be useful:
