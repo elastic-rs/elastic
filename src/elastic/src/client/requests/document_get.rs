@@ -40,13 +40,13 @@ use types::document::{
 /**
 A [get document request][docs-get] builder that can be configured before sending.
 
-Call [`Client.document_get`][Client.document_get] to get a `GetRequestBuilder`.
+Call [`Client.document.get`][Client.document.get] to get a `GetRequestBuilder`.
 The `send` method will either send the request [synchronously][send-sync] or [asynchronously][send-async], depending on the `Client` it was created from.
 
 [docs-get]: http://www.elastic.co/guide/en/elasticsearch/reference/current/docs-get.html
 [send-sync]: #send-synchronously
 [send-async]: #send-asynchronously
-[Client.document_get]: ../../struct.Client.html#get-document
+[Client.document.get]: ../../struct.DocumentClient.html#get-document-request
 */
 pub type GetRequestBuilder<TSender, TDocument> =
     RequestBuilder<TSender, GetRequestInner<TDocument>>;

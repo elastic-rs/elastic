@@ -39,13 +39,13 @@ use types::document::{
 /**
 A [delete document request][docs-delete] builder that can be configured before sending.
 
-Call [`Client.document_delete`][Client.document_delete] to get a `DeleteRequestBuilder`.
+Call [`Client.document.delete`][Client.document.delete] to get a `DeleteRequestBuilder`.
 The `send` method will either send the request [synchronously][send-sync] or [asynchronously][send-async], depending on the `Client` it was created from.
 
 [docs-delete]: http://www.elastic.co/guide/en/elasticsearch/reference/current/docs-delete.html
 [send-sync]: #send-synchronously
 [send-async]: #send-asynchronously
-[Client.document_delete]: ../../struct.Client.html#delete-document
+[Client.document.delete]: ../../struct.DocumentClient.html#delete-document-request
 */
 pub type DeleteRequestBuilder<TSender, TDocument> =
     RequestBuilder<TSender, DeleteRequestInner<TDocument>>;
