@@ -48,13 +48,13 @@ pub use client::requests::common::{
 /**
 An [update document request][docs-update] builder that can be configured before sending.
 
-Call [`Client.document_update`][Client.document_update] to get an `UpdateRequestBuilder`.
+Call [`Client.document.update`][Client.document.update] to get an `UpdateRequestBuilder`.
 The `send` method will either send the request [synchronously][send-sync] or [asynchronously][send-async], depending on the `Client` it was created from.
 
 [docs-update]: http://www.elastic.co/guide/en/elasticsearch/reference/current/docs-update.html
 [send-sync]: #send-synchronously
 [send-async]: #send-asynchronously
-[Client.document_update]: ../../struct.Client.html#update-document
+[Client.document.update]: ../../struct.DocumentClient.html#update-document-request
 */
 pub type UpdateRequestBuilder<TSender, TBody> = RequestBuilder<TSender, UpdateRequestInner<TBody>>;
 

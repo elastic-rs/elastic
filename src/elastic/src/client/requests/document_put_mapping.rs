@@ -39,13 +39,13 @@ use types::document::{
 /**
 A [put mapping request][docs-mapping] builder that can be configured before sending.
 
-Call [`Client.document_put_mapping`][Client.document_put_mapping] to get a `PutMappingRequestBuilder`.
+Call [`Client.document.put_mapping`][Client.document.put_mapping] to get a `PutMappingRequestBuilder`.
 The `send` method will either send the request [synchronously][send-sync] or [asynchronously][send-async], depending on the `Client` it was created from.
 
 [docs-mapping]: https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping.html
 [send-sync]: #send-synchronously
 [send-async]: #send-asynchronously
-[Client.document_put_mapping]: ../../struct.Client.html#put-mapping-request
+[Client.document.put_mapping]: ../../struct.DocumentClient.html#put-mapping-request
 */
 pub type PutMappingRequestBuilder<TSender, TDocument> =
     RequestBuilder<TSender, PutMappingRequestInner<TDocument>>;
