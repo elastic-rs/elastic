@@ -27,6 +27,7 @@ pub use elastic_responses::{
     PingResponse,
     SearchResponse,
     Shards,
+    SqlResponse,
     UpdateResponse,
 };
 
@@ -49,6 +50,7 @@ pub mod prelude {
         PingResponse,
         SearchResponse,
         Shards,
+        SqlResponse,
         SyncResponseBuilder,
         UpdateResponse,
     };

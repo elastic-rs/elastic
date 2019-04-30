@@ -3400,6 +3400,41 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, PartialEq, Clone)]
+    enum SqlQueryUrlParams {
+        None,
+    }
+    impl SqlQueryUrlParams {
+        pub fn url<'a>(self) -> UrlPath<'a> {
+            match self {
+                SqlQueryUrlParams::None => UrlPath::from("/_xpack/sql"),
+            }
+        }
+    }
+    #[derive(Debug, PartialEq, Clone)]
+    #[doc = "`Post: /_xpack/sql`\n\n[Elasticsearch Documentation](Execute SQL)"]
+    pub struct SqlQueryRequest<'a, B> {
+        pub url: UrlPath<'a>,
+        pub body: B,
+    }
+    impl<'a, B> SqlQueryRequest<'a, B> {
+        #[doc = "Request to: `/_xpack/sql`"]
+        pub fn new(body: B) -> Self {
+            SqlQueryRequest {
+                url: SqlQueryUrlParams::None.url(),
+                body: body,
+            }
+        }
+    }
+    impl<'a, B> Into<Endpoint<'a, B>> for SqlQueryRequest<'a, B> {
+        fn into(self) -> Endpoint<'a, B> {
+            Endpoint {
+                url: self.url,
+                method: Method::POST,
+                body: Some(self.body),
+            }
+        }
+    }
+    #[derive(Debug, PartialEq, Clone)]
     enum UpdateByQueryUrlParams<'a> {
         Index(Index<'a>),
         IndexType(Index<'a>, Type<'a>),

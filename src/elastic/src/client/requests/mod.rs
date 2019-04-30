@@ -34,6 +34,10 @@ pub use self::raw::RawRequestBuilder;
 pub mod search;
 pub use self::search::SearchRequestBuilder;
 
+// Sql requests
+pub mod sql;
+pub use self::sql::SqlRequestBuilder;
+
 // Document requests
 pub mod document_delete;
 pub mod document_get;
@@ -271,6 +275,7 @@ pub mod prelude {
         PutMappingRequestBuilder,
         RawRequestBuilder,
         SearchRequestBuilder,
+        SqlRequestBuilder,
         UpdateRequestBuilder,
     };
 }

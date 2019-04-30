@@ -148,6 +148,7 @@ mod get;
 mod index;
 mod ping;
 pub mod search;
+mod sql;
 mod update;
 
 mod indices_exists;
@@ -163,6 +164,7 @@ pub use self::get::*;
 pub use self::index::*;
 pub use self::ping::*;
 pub use self::search::SearchResponse;
+pub use self::sql::*;
 pub use self::update::*;
 
 pub use self::indices_exists::*;
