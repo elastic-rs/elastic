@@ -14,7 +14,7 @@ pub struct SqlResponse {
 
 impl SqlResponse {
     /** Gets a reference to the result columns. */
-    pub fn columns(&self) -> &Vec<SqlColumn> {
+    pub fn columns(&self) -> &[SqlColumn] {
         &self.columns
     }
 
