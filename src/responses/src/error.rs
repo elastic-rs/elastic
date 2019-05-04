@@ -165,6 +165,11 @@ quick_error! {
             description("illegal argument")
             display("illegal argument: '{}'", reason)
         }
+        /** There was a problem with the SQL query. */
+        Verification { reason: String} {
+            description("verification exception")
+            display("verification error: '{}", reason)
+        }
         #[doc(hidden)]
         __NonExhaustive {}
     }
@@ -256,6 +261,13 @@ impl From<Map<String, Value>> for ParsedApiError {
                 let reason = error_key!(obj[reason]: |v| v.as_str());
 
                 ParsedApiError::Known(ApiError::IllegalArgument {
+                    reason: reason.into(),
+                })
+            }
+            "verification_exception" => {
+                let reason = error_key!(obj[reason]: |v| v.as_str());
+
+                ParsedApiError::Known(ApiError::Verification {
                     reason: reason.into(),
                 })
             }
