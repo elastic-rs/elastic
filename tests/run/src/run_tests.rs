@@ -103,16 +103,19 @@ fn call_future(
     use document;
     use index;
     use search;
+    use sql;
 
     let document_tests = document::tests().into_iter();
     let search_tests = search::tests().into_iter();
     let index_tests = index::tests().into_iter();
     let bulk_tests = bulk::tests().into_iter();
+    let sql_tests = sql::tests().into_iter();
 
     let all_tests = document_tests
         .chain(search_tests)
         .chain(index_tests)
         .chain(bulk_tests)
+        .chain(sql_tests)
         .map(move |t| t(client.clone()));
 
     let test_stream = stream::futures_unordered(all_tests)
