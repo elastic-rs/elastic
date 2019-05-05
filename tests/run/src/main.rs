@@ -37,6 +37,7 @@ mod document;
 mod index;
 mod run_tests;
 mod search;
+mod sql;
 mod wait_until_ready;
 
 fn main() {
