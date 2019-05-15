@@ -6,6 +6,7 @@ use serde::{
 use std::collections::{
     BTreeMap,
     HashMap,
+    HashSet,
 };
 use std::hash::Hash;
 use std::marker::PhantomData;
@@ -112,6 +113,13 @@ where
 }
 
 impl<TField, TMapping, TPivot> WrappedFieldType<TMapping, TPivot> for Vec<TField>
+where
+    TField: FieldType<TMapping, TPivot>,
+    TMapping: FieldMapping<TPivot>,
+{
+}
+
+impl<TField, TMapping, TPivot> WrappedFieldType<TMapping, TPivot> for HashSet<TField>
 where
     TField: FieldType<TMapping, TPivot>,
     TMapping: FieldMapping<TPivot>,
