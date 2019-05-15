@@ -427,6 +427,7 @@ mod tests {
         Value,
     };
     use std::borrow::Cow;
+    use std::collections::HashSet;
 
     // Make sure we can derive with no `uses`.
     pub mod no_prelude {
@@ -501,6 +502,7 @@ mod tests {
         pub field4: Value,
         pub field5: Option<SimpleNestedType>,
         pub field6: Value,
+        pub field7: HashSet<String>,
     }
 
     #[derive(Serialize, ElasticType)]
@@ -672,6 +674,15 @@ mod tests {
                 },
                 "field6": {
                     "type": "nested"
+                },
+                "field7": {
+                    "type": "text",
+                    "fields": {
+                        "keyword":{
+                            "type": "keyword",
+                            "ignore_above": 256
+                        }
+                    }
                 }
             }
         });
