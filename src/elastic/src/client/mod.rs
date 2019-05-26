@@ -568,10 +568,12 @@ pub use self::sender::{
     SyncClientBuilder,
 };
 
-use self::requests::params::Index;
-use self::sender::{
-    NodeAddresses,
-    Sender,
+use self::{
+    requests::params::Index,
+    sender::{
+        NodeAddresses,
+        Sender,
+    },
 };
 use std::marker::PhantomData;
 
@@ -685,13 +687,13 @@ pub struct IndexClient<TSender> {
 pub mod prelude {
     /*! A glob import for convenience. */
 
-    pub use super::requests::prelude::*;
-    pub use super::responses::prelude::*;
-    pub use super::sender::{
-        PreRequestParams,
-        RequestParams,
-    };
     pub use super::{
+        requests::prelude::*,
+        responses::prelude::*,
+        sender::{
+            PreRequestParams,
+            RequestParams,
+        },
         AsyncClient,
         AsyncClientBuilder,
         SyncClient,

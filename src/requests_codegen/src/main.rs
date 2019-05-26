@@ -18,15 +18,17 @@ extern crate inflector;
 pub mod gen;
 pub mod parse;
 
-use std::collections::BTreeMap;
-use std::fs::{
-    read_dir,
-    File,
-};
-use std::io::{
-    stdout,
-    Read,
-    Write,
+use std::{
+    collections::BTreeMap,
+    fs::{
+        read_dir,
+        File,
+    },
+    io::{
+        stdout,
+        Read,
+        Write,
+    },
 };
 
 use parse::*;

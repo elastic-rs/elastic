@@ -9,9 +9,11 @@ use serde::ser::{
     Serialize,
     Serializer,
 };
-use std::borrow::Borrow;
-use std::marker::PhantomData;
-use std::ops::Deref;
+use std::{
+    borrow::Borrow,
+    marker::PhantomData,
+    ops::Deref,
+};
 
 pub trait StaticSerialize {
     fn static_serialize<S>(serializer: S) -> Result<S::Ok, S::Error>

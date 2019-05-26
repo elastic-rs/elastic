@@ -5,18 +5,20 @@ Builders for raw requests.
 use fluent_builder::TryIntoValue;
 use std::marker::PhantomData;
 
-use client::requests::{
-    Endpoint,
-    RequestBuilder,
+use client::{
+    requests::{
+        Endpoint,
+        RequestBuilder,
+    },
+    sender::{
+        NextParams,
+        NodeAddresses,
+        SendableRequest,
+        SendableRequestParams,
+        Sender,
+    },
+    Client,
 };
-use client::sender::{
-    NextParams,
-    NodeAddresses,
-    SendableRequest,
-    SendableRequestParams,
-    Sender,
-};
-use client::Client;
 
 /**
 A raw request builder that can be configured before sending.

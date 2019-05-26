@@ -16,12 +16,14 @@ extern crate serde_json;
 pub mod model;
 pub mod ops;
 
-use ops::commands::{
-    EnsureBankIndexExists,
-    PutBulkAccounts,
+use ops::{
+    commands::{
+        EnsureBankIndexExists,
+        PutBulkAccounts,
+    },
+    queries::SimpleSearchQuery,
+    Client,
 };
-use ops::queries::SimpleSearchQuery;
-use ops::Client;
 use std::error::Error;
 
 fn run() -> Result<(), Box<Error>> {

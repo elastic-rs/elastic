@@ -11,24 +11,24 @@ use futures::{
 use serde::de::DeserializeOwned;
 use std::marker::PhantomData;
 
-use client::requests::endpoints::SearchRequest;
-use client::requests::params::{
-    Index,
-    Type,
-};
-use client::requests::raw::RawRequestInner;
-use client::requests::{
-    empty_body,
-    DefaultBody,
-    RequestBuilder,
-};
-use client::responses::SearchResponse;
-use client::sender::{
-    AsyncSender,
-    Sender,
-    SyncSender,
-};
 use client::{
+    requests::{
+        empty_body,
+        endpoints::SearchRequest,
+        params::{
+            Index,
+            Type,
+        },
+        raw::RawRequestInner,
+        DefaultBody,
+        RequestBuilder,
+    },
+    responses::SearchResponse,
+    sender::{
+        AsyncSender,
+        Sender,
+        SyncSender,
+    },
     Client,
     DocumentClient,
 };
@@ -454,8 +454,8 @@ where
 mod tests {
     use serde_json::Value;
 
-    use tests::*;
     use prelude::*;
+    use tests::*;
 
     #[test]
     fn is_send() {

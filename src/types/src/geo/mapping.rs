@@ -1,7 +1,9 @@
 /*! Common mapping for the Elasticsearch `geo` types. */
 
-use serde;
-use serde::Serialize;
+use serde::{
+    self,
+    Serialize,
+};
 
 /** A unit of measure for distance. */
 pub enum DistanceUnit {

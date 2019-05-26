@@ -1,10 +1,10 @@
 use fluent_builder::FluentBuilder;
-use futures::future::{
-    lazy,
-    Either,
-    FutureResult,
-};
 use futures::{
+    future::{
+        lazy,
+        Either,
+        FutureResult,
+    },
     Future,
     IntoFuture,
     Poll,
@@ -13,34 +13,38 @@ use reqwest::async::{
     Client as AsyncHttpClient,
     RequestBuilder as AsyncHttpRequestBuilder,
 };
-use std::error::Error as StdError;
-use std::sync::Arc;
+use std::{
+    error::Error as StdError,
+    sync::Arc,
+};
 use tokio_threadpool::{
     SpawnHandle,
     ThreadPool,
 };
 
-use client::requests::Endpoint;
-use client::responses::{
-    async_response,
-    AsyncResponseBuilder,
+use client::{
+    requests::Endpoint,
+    responses::{
+        async_response,
+        AsyncResponseBuilder,
+    },
+    sender::{
+        build_reqwest_method,
+        build_url,
+        sniffed_nodes::SniffedNodesBuilder,
+        NextParams,
+        NodeAddress,
+        NodeAddresses,
+        NodeAddressesBuilder,
+        NodeAddressesInner,
+        PreRequestParams,
+        RequestParams,
+        SendableRequest,
+        SendableRequestParams,
+        Sender,
+    },
+    Client,
 };
-use client::sender::sniffed_nodes::SniffedNodesBuilder;
-use client::sender::{
-    build_reqwest_method,
-    build_url,
-    NextParams,
-    NodeAddress,
-    NodeAddresses,
-    NodeAddressesBuilder,
-    NodeAddressesInner,
-    PreRequestParams,
-    RequestParams,
-    SendableRequest,
-    SendableRequestParams,
-    Sender,
-};
-use client::Client;
 use error::{
     self,
     Error,
@@ -95,7 +99,8 @@ pub struct AsyncSender {
         Arc<
             Fn(
                     &mut AsyncHttpRequest,
-                ) -> Box<Future<Item = (), Error = Box<StdError + Send + Sync>> + Send>
+                )
+                    -> Box<Future<Item = (), Error = Box<StdError + Send + Sync>> + Send>
                 + Send
                 + Sync,
         >,
@@ -331,7 +336,8 @@ pub struct AsyncClientBuilder {
         Arc<
             Fn(
                     &mut AsyncHttpRequest,
-                ) -> Box<Future<Item = (), Error = Box<StdError + Send + Sync>> + Send>
+                )
+                    -> Box<Future<Item = (), Error = Box<StdError + Send + Sync>> + Send>
                 + Send
                 + Sync,
         >,
@@ -527,7 +533,8 @@ impl AsyncClientBuilder {
         mut self,
         pre_send: impl Fn(
                 &mut AsyncHttpRequest,
-            ) -> Box<Future<Item = (), Error = Box<StdError + Send + Sync>> + Send>
+            )
+                -> Box<Future<Item = (), Error = Box<StdError + Send + Sync>> + Send>
             + Send
             + Sync
             + 'static,

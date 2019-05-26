@@ -11,20 +11,24 @@ use futures::{
 use serde_json;
 use std::marker::PhantomData;
 
-use client::requests::endpoints::IndicesPutMappingRequest;
-use client::requests::params::{
-    Index,
-    Type,
+use client::{
+    requests::{
+        endpoints::IndicesPutMappingRequest,
+        params::{
+            Index,
+            Type,
+        },
+        raw::RawRequestInner,
+        RequestBuilder,
+    },
+    responses::CommandResponse,
+    sender::{
+        AsyncSender,
+        Sender,
+        SyncSender,
+    },
+    DocumentClient,
 };
-use client::requests::raw::RawRequestInner;
-use client::requests::RequestBuilder;
-use client::responses::CommandResponse;
-use client::sender::{
-    AsyncSender,
-    Sender,
-    SyncSender,
-};
-use client::DocumentClient;
 use error::{
     self,
     Error,
@@ -293,12 +297,12 @@ impl Future for Pending {
 
 #[cfg(test)]
 mod tests {
+    use prelude::*;
     use serde_json::{
         self,
         Value,
     };
     use tests::*;
-    use prelude::*;
 
     #[test]
     fn is_send() {

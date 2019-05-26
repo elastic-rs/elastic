@@ -8,11 +8,13 @@ use serde_json::{
     self,
     Value,
 };
-use std::io::{
-    Cursor,
-    Read,
+use std::{
+    io::{
+        Cursor,
+        Read,
+    },
+    marker::PhantomData,
 };
-use std::marker::PhantomData;
 
 use error::*;
 

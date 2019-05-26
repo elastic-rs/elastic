@@ -9,17 +9,21 @@ use futures::{
     Poll,
 };
 
-use client::requests::endpoints::IndicesExistsRequest;
-use client::requests::params::Index;
-use client::requests::raw::RawRequestInner;
-use client::requests::RequestBuilder;
-use client::responses::IndicesExistsResponse;
-use client::sender::{
-    AsyncSender,
-    Sender,
-    SyncSender,
+use client::{
+    requests::{
+        endpoints::IndicesExistsRequest,
+        params::Index,
+        raw::RawRequestInner,
+        RequestBuilder,
+    },
+    responses::IndicesExistsResponse,
+    sender::{
+        AsyncSender,
+        Sender,
+        SyncSender,
+    },
+    IndexClient,
 };
-use client::IndexClient;
 use error::*;
 
 /**
@@ -199,8 +203,8 @@ impl Future for Pending {
 
 #[cfg(test)]
 mod tests {
-    use tests::*;
     use prelude::*;
+    use tests::*;
 
     #[test]
     fn is_send() {

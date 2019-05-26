@@ -8,11 +8,15 @@ They may eventually be wrapped and made implementation details.
 mod async;
 mod sync;
 
-pub use self::async::*;
-pub use self::sync::*;
+pub use self::{
+    async::*,
+    sync::*,
+};
 
-pub use reqwest::header;
-pub use reqwest::Url;
+pub use reqwest::{
+    header,
+    Url,
+};
 
 pub use elastic_requests::Method;
 pub use elastic_responses::StatusCode;

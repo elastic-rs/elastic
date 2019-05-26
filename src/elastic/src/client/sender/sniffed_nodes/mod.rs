@@ -30,31 +30,35 @@ use futures::{
     Future,
     IntoFuture,
 };
-use std::sync::{
-    Arc,
-    RwLock,
-};
-use std::time::{
-    Duration,
-    Instant,
+use std::{
+    sync::{
+        Arc,
+        RwLock,
+    },
+    time::{
+        Duration,
+        Instant,
+    },
 };
 use url::Url;
 
-use client::requests::{
-    DefaultBody,
-    NodesInfoRequest,
-};
-use client::sender::static_nodes::StaticNodes;
-use client::sender::{
-    AsyncSender,
-    NextParams,
-    NodeAddress,
-    PreRequestParams,
-    RequestParams,
-    SendableRequest,
-    SendableRequestParams,
-    Sender,
-    SyncSender,
+use client::{
+    requests::{
+        DefaultBody,
+        NodesInfoRequest,
+    },
+    sender::{
+        static_nodes::StaticNodes,
+        AsyncSender,
+        NextParams,
+        NodeAddress,
+        PreRequestParams,
+        RequestParams,
+        SendableRequest,
+        SendableRequestParams,
+        Sender,
+        SyncSender,
+    },
 };
 use error::{
     self,

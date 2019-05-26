@@ -21,8 +21,10 @@ use futures::{
     Sink,
     Stream,
 };
-use std::error::Error;
-use std::time::Duration;
+use std::{
+    error::Error,
+    time::Duration,
+};
 
 fn run() -> Result<(), Box<Error>> {
     // A HTTP client and request parameters

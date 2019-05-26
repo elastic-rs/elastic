@@ -1,15 +1,17 @@
-use serde::ser::SerializeStruct;
 use serde::{
+    ser::SerializeStruct,
     Serialize,
     Serializer,
 };
-use std::collections::{
-    BTreeMap,
-    HashMap,
-    HashSet,
+use std::{
+    collections::{
+        BTreeMap,
+        HashMap,
+        HashSet,
+    },
+    hash::Hash,
+    marker::PhantomData,
 };
-use std::hash::Hash;
-use std::marker::PhantomData;
 
 use super::field::{
     FieldMapping,

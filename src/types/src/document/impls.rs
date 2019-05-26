@@ -5,8 +5,10 @@ use super::mapping::{
 };
 use serde::ser::SerializeStruct;
 use serde_json::Value;
-use std::borrow::Cow;
-use std::marker::PhantomData;
+use std::{
+    borrow::Cow,
+    marker::PhantomData,
+};
 
 /**
 The default name for document types in a single document index.
@@ -426,8 +428,10 @@ mod tests {
         self,
         Value,
     };
-    use std::borrow::Cow;
-    use std::collections::HashSet;
+    use std::{
+        borrow::Cow,
+        collections::HashSet,
+    };
 
     // Make sure we can derive with no `uses`.
     pub mod no_prelude {

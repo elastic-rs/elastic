@@ -1,9 +1,11 @@
-use std::io::{
-    self,
-    Write,
+use std::{
+    io::{
+        self,
+        Write,
+    },
+    marker::PhantomData,
+    ops::Deref,
 };
-use std::marker::PhantomData;
-use std::ops::Deref;
 
 use serde::ser::{
     Serialize,
@@ -12,16 +14,18 @@ use serde::ser::{
 };
 use serde_json;
 
-use client::requests::common::{
-    DefaultParams,
-    Doc,
-    Script,
-    ScriptBuilder,
-};
-use client::requests::params::{
-    Id,
-    Index,
-    Type,
+use client::requests::{
+    common::{
+        DefaultParams,
+        Doc,
+        Script,
+        ScriptBuilder,
+    },
+    params::{
+        Id,
+        Index,
+        Type,
+    },
 };
 use types::document::DocumentType;
 

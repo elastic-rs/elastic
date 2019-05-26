@@ -1,13 +1,13 @@
-use std::error::Error as StdError;
-use std::io;
-use std::marker::PhantomData;
-use std::time::{
-    Duration,
-    Instant,
-};
 use std::{
+    error::Error as StdError,
     fmt,
+    io,
+    marker::PhantomData,
     mem,
+    time::{
+        Duration,
+        Instant,
+    },
 };
 
 use bytes::{
@@ -28,8 +28,10 @@ use futures::{
     Sink,
     Stream,
 };
-use serde::de::DeserializeOwned;
-use serde::ser::Serialize;
+use serde::{
+    de::DeserializeOwned,
+    ser::Serialize,
+};
 use tokio::timer::Delay;
 
 use super::{
@@ -39,14 +41,16 @@ use super::{
     Pending,
     WrappedBody,
 };
-use client::requests::params::{
-    Index,
-    Type,
-};
-use client::requests::RequestBuilder;
-use client::responses::parse::IsOk;
-use client::sender::AsyncSender;
 use client::{
+    requests::{
+        params::{
+            Index,
+            Type,
+        },
+        RequestBuilder,
+    },
+    responses::parse::IsOk,
+    sender::AsyncSender,
     Client,
     RequestParams,
 };

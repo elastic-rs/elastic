@@ -1,10 +1,12 @@
 use bytes::Bytes;
 use serde_json::Value;
-use std::borrow::Cow;
-use std::io::{
-    self,
-    Cursor,
-    Read,
+use std::{
+    borrow::Cow,
+    io::{
+        self,
+        Cursor,
+        Read,
+    },
 };
 
 use futures::{

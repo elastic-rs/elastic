@@ -17,7 +17,9 @@ pub mod prelude {
     This is a convenience module to make it easy to build mappings for multiple types without too many `use` statements.
     */
 
-    pub use super::mapping::*;
-    pub use super::point::prelude::*;
-    pub use super::shape::prelude::*;
+    pub use super::{
+        mapping::*,
+        point::prelude::*,
+        shape::prelude::*,
+    };
 }

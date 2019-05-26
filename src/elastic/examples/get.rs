@@ -11,11 +11,13 @@ extern crate elastic;
 extern crate env_logger;
 extern crate serde_json;
 
-use elastic::error::{
-    ApiError,
-    Error,
+use elastic::{
+    error::{
+        ApiError,
+        Error,
+    },
+    prelude::*,
 };
-use elastic::prelude::*;
 use serde_json::Value;
 use std::error::Error as StdError;
 

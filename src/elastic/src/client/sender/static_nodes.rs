@@ -11,11 +11,13 @@ use error::{
     Error,
 };
 use private;
-use std::sync::atomic::{
-    AtomicUsize,
-    Ordering,
+use std::sync::{
+    atomic::{
+        AtomicUsize,
+        Ordering,
+    },
+    Arc,
 };
-use std::sync::Arc;
 
 /** Select a base address for a given request using some strategy. */
 #[derive(Clone)]

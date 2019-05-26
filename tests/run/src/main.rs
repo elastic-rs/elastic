@@ -27,8 +27,10 @@ use clap::{
     Arg,
 };
 use std::process;
-use term_painter::Color::*;
-use term_painter::ToStyle;
+use term_painter::{
+    Color::*,
+    ToStyle,
+};
 
 mod build_client;
 mod build_container;

@@ -77,9 +77,11 @@ mod format;
 mod formats;
 mod impls;
 
-pub use self::format::*;
-pub use self::formats::*;
-pub use self::impls::*;
+pub use self::{
+    format::*,
+    formats::*,
+    impls::*,
+};
 
 pub mod prelude {
     /*!
@@ -88,9 +90,11 @@ pub mod prelude {
     This is a convenience module to make it easy to build mappings for multiple types without too many `use` statements.
     */
 
-    pub use super::format::*;
-    pub use super::formats::*;
-    pub use super::impls::*;
-    pub use super::mapping::*;
-    pub use super::DefaultGeoPointFormat;
+    pub use super::{
+        format::*,
+        formats::*,
+        impls::*,
+        mapping::*,
+        DefaultGeoPointFormat,
+    };
 }

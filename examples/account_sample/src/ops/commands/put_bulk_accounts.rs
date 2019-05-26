@@ -1,17 +1,21 @@
-use elastic::client::responses::bulk::{
-    BulkErrorsResponse,
-    ErrorItem,
+use elastic::{
+    client::responses::bulk::{
+        BulkErrorsResponse,
+        ErrorItem,
+    },
+    http::SyncBody,
+    prelude::*,
+    Error as ResponseError,
 };
-use elastic::http::SyncBody;
-use elastic::prelude::*;
-use elastic::Error as ResponseError;
 use ops::Client;
-use std::fs::File;
-use std::io::{
-    Error as IoError,
-    Result as IoResult,
+use std::{
+    fs::File,
+    io::{
+        Error as IoError,
+        Result as IoResult,
+    },
+    path::Path,
 };
-use std::path::Path;
 
 use model;
 

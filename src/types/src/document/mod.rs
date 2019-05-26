@@ -404,11 +404,13 @@ pub mod prelude {
     This is a convenience module to make it easy to build mappings for multiple types without too many `use` statements.
     */
 
-    pub use super::impls::{
-        DocumentType,
-        IndexDocumentMapping,
-        StaticIndex,
-        StaticType,
+    pub use super::{
+        impls::{
+            DocumentType,
+            IndexDocumentMapping,
+            StaticIndex,
+            StaticType,
+        },
+        mapping::*,
     };
-    pub use super::mapping::*;
 }

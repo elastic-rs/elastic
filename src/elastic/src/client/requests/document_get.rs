@@ -11,30 +11,34 @@ use futures::{
 use serde::de::DeserializeOwned;
 use std::marker::PhantomData;
 
-use client::requests::endpoints::GetRequest;
-use client::requests::params::{
-    Id,
-    Index,
-    Type,
+use client::{
+    requests::{
+        endpoints::GetRequest,
+        params::{
+            Id,
+            Index,
+            Type,
+        },
+        raw::RawRequestInner,
+        RequestBuilder,
+    },
+    responses::GetResponse,
+    sender::{
+        AsyncSender,
+        Sender,
+        SyncSender,
+    },
+    DocumentClient,
 };
-use client::requests::raw::RawRequestInner;
-use client::requests::RequestBuilder;
-use client::responses::GetResponse;
-use client::sender::{
-    AsyncSender,
-    Sender,
-    SyncSender,
-};
-use client::DocumentClient;
 use error::{
     Error,
     Result,
 };
-use types::document::DEFAULT_DOC_TYPE;
 use types::document::{
     DocumentType,
     StaticIndex,
     StaticType,
+    DEFAULT_DOC_TYPE,
 };
 
 /**
@@ -356,8 +360,8 @@ where
 
 #[cfg(test)]
 mod tests {
-    use tests::*;
     use prelude::*;
+    use tests::*;
 
     #[test]
     fn is_send() {

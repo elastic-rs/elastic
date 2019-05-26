@@ -116,8 +116,8 @@ mod private {
         SerializeFieldMapping,
         StaticSerialize,
     };
-    use serde::ser::SerializeStruct;
     use serde::{
+        ser::SerializeStruct,
         Serialize,
         Serializer,
     };

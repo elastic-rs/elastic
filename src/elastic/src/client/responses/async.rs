@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
-use futures::future::lazy;
 use futures::{
+    future::lazy,
     Future,
     Poll,
     Stream,

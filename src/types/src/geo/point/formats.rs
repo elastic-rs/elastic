@@ -1,25 +1,27 @@
-use super::mapping::GeoPointMapping;
 use super::{
+    mapping::GeoPointMapping,
     Coordinate,
     GeoPointFormat,
     Point,
 };
 use geo::mapping::Distance;
 use geohash;
-use serde::de::{
-    Error,
-    SeqAccess,
-    Unexpected,
-    Visitor,
-};
 use serde::{
+    de::{
+        Error,
+        SeqAccess,
+        Unexpected,
+        Visitor,
+    },
     Deserialize,
     Deserializer,
     Serialize,
     Serializer,
 };
-use std::fmt::Write;
-use std::str::FromStr;
+use std::{
+    fmt::Write,
+    str::FromStr,
+};
 
 /** The default `geo_point` format (`GeoPointArray`). */
 pub type DefaultGeoPointFormat = GeoPointArray;

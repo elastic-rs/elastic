@@ -21,11 +21,13 @@ extern crate serde_json;
 
 extern crate elastic;
 
-use elastic::error::{
-    ApiError,
-    Error,
+use elastic::{
+    error::{
+        ApiError,
+        Error,
+    },
+    prelude::*,
 };
-use elastic::prelude::*;
 use std::error::Error as StdError;
 
 #[derive(Debug, Serialize, Deserialize, ElasticType)]

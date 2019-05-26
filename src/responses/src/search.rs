@@ -11,10 +11,12 @@ use serde_json::{
 use common::Shards;
 use parsing::IsOkOnSuccess;
 
-use std::borrow::Cow;
-use std::collections::BTreeMap;
-use std::slice::Iter;
-use std::vec::IntoIter;
+use std::{
+    borrow::Cow,
+    collections::BTreeMap,
+    slice::Iter,
+    vec::IntoIter,
+};
 
 /**
 Response for a [search request][search-req].

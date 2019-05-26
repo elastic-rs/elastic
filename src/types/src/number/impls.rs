@@ -5,8 +5,10 @@ use serde::{
     Serialize,
     Serializer,
 };
-use std::borrow::Borrow;
-use std::marker::PhantomData;
+use std::{
+    borrow::Borrow,
+    marker::PhantomData,
+};
 
 macro_rules! number_type {
     ($wrapper_ty:ident, $mapping_ty:ident, $field_trait:ident, $std_ty:ident) => {

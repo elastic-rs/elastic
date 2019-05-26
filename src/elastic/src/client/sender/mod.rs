@@ -24,19 +24,25 @@ pub mod static_nodes;
 mod async;
 mod params;
 mod sync;
-pub use self::async::*;
-pub use self::params::*;
-pub use self::sync::*;
+pub use self::{
+    async::*,
+    params::*,
+    sync::*,
+};
 
-use std::marker::PhantomData;
-use std::sync::Arc;
+use std::{
+    marker::PhantomData,
+    sync::Arc,
+};
 use uuid::Uuid;
 
-use self::sniffed_nodes::{
-    SniffedNodes,
-    SniffedNodesBuilder,
+use self::{
+    sniffed_nodes::{
+        SniffedNodes,
+        SniffedNodesBuilder,
+    },
+    static_nodes::StaticNodes,
 };
-use self::static_nodes::StaticNodes;
 use client::requests::Endpoint;
 use private;
 

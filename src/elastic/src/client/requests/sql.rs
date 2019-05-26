@@ -9,20 +9,22 @@ use futures::{
     Poll,
 };
 
-use client::requests::endpoints::SqlQueryRequest;
-use client::requests::raw::RawRequestInner;
-use client::requests::{
-    empty_body,
-    DefaultBody,
-    RequestBuilder,
+use client::{
+    requests::{
+        empty_body,
+        endpoints::SqlQueryRequest,
+        raw::RawRequestInner,
+        DefaultBody,
+        RequestBuilder,
+    },
+    responses::SqlResponse,
+    sender::{
+        AsyncSender,
+        Sender,
+        SyncSender,
+    },
+    Client,
 };
-use client::responses::SqlResponse;
-use client::sender::{
-    AsyncSender,
-    Sender,
-    SyncSender,
-};
-use client::Client;
 
 use error::{
     Error,
@@ -323,8 +325,8 @@ impl Future for Pending {
 
 #[cfg(test)]
 mod tests {
-    use tests::*;
     use prelude::*;
+    use tests::*;
 
     #[test]
     fn is_send() {

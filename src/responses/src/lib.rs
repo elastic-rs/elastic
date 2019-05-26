@@ -153,19 +153,21 @@ mod update;
 
 mod indices_exists;
 
-pub use self::bulk::{
-    BulkErrorsResponse,
-    BulkResponse,
+pub use self::{
+    bulk::{
+        BulkErrorsResponse,
+        BulkResponse,
+    },
+    command::*,
+    common::*,
+    delete::*,
+    get::*,
+    index::*,
+    ping::*,
+    search::SearchResponse,
+    sql::*,
+    update::*,
 };
-pub use self::command::*;
-pub use self::common::*;
-pub use self::delete::*;
-pub use self::get::*;
-pub use self::index::*;
-pub use self::ping::*;
-pub use self::search::SearchResponse;
-pub use self::sql::*;
-pub use self::update::*;
 
 pub use self::indices_exists::*;
 

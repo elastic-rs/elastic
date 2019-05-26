@@ -78,6 +78,8 @@ pub mod prelude {
     This is a convenience module to make it easy to build mappings for multiple types without too many `use` statements.
     */
 
-    pub use super::impls::*;
-    pub use super::mapping::*;
+    pub use super::{
+        impls::*,
+        mapping::*,
+    };
 }

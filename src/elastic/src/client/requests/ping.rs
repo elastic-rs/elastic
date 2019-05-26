@@ -7,16 +7,20 @@ use futures::{
     Poll,
 };
 
-use client::requests::endpoints::PingRequest;
-use client::requests::raw::RawRequestInner;
-use client::requests::RequestBuilder;
-use client::responses::PingResponse;
-use client::sender::{
-    AsyncSender,
-    Sender,
-    SyncSender,
+use client::{
+    requests::{
+        endpoints::PingRequest,
+        raw::RawRequestInner,
+        RequestBuilder,
+    },
+    responses::PingResponse,
+    sender::{
+        AsyncSender,
+        Sender,
+        SyncSender,
+    },
+    Client,
 };
-use client::Client;
 use error::{
     Error,
     Result,
@@ -212,8 +216,8 @@ impl Future for Pending {
 
 #[cfg(test)]
 mod tests {
-    use tests::*;
     use prelude::*;
+    use tests::*;
 
     #[test]
     fn is_send() {

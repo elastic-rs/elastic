@@ -10,30 +10,34 @@ use futures::{
 };
 use std::marker::PhantomData;
 
-use client::requests::endpoints::DeleteRequest;
-use client::requests::params::{
-    Id,
-    Index,
-    Type,
+use client::{
+    requests::{
+        endpoints::DeleteRequest,
+        params::{
+            Id,
+            Index,
+            Type,
+        },
+        raw::RawRequestInner,
+        RequestBuilder,
+    },
+    responses::DeleteResponse,
+    sender::{
+        AsyncSender,
+        Sender,
+        SyncSender,
+    },
+    DocumentClient,
 };
-use client::requests::raw::RawRequestInner;
-use client::requests::RequestBuilder;
-use client::responses::DeleteResponse;
-use client::sender::{
-    AsyncSender,
-    Sender,
-    SyncSender,
-};
-use client::DocumentClient;
 use error::{
     Error,
     Result,
 };
-use types::document::DEFAULT_DOC_TYPE;
 use types::document::{
     DocumentType,
     StaticIndex,
     StaticType,
+    DEFAULT_DOC_TYPE,
 };
 
 /**
@@ -353,8 +357,8 @@ impl Future for Pending {
 
 #[cfg(test)]
 mod tests {
-    use tests::*;
     use prelude::*;
+    use tests::*;
 
     #[test]
     fn is_send() {

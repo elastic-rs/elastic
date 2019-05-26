@@ -4,30 +4,34 @@ use reqwest::{
     ClientBuilder as SyncHttpClientBuilder,
     RequestBuilder as SyncHttpRequestBuilder,
 };
-use std::error::Error as StdError;
-use std::sync::Arc;
+use std::{
+    error::Error as StdError,
+    sync::Arc,
+};
 
-use client::requests::Endpoint;
-use client::responses::{
-    sync_response,
-    SyncResponseBuilder,
+use client::{
+    requests::Endpoint,
+    responses::{
+        sync_response,
+        SyncResponseBuilder,
+    },
+    sender::{
+        build_reqwest_method,
+        build_url,
+        sniffed_nodes::SniffedNodesBuilder,
+        NextParams,
+        NodeAddress,
+        NodeAddresses,
+        NodeAddressesBuilder,
+        NodeAddressesInner,
+        PreRequestParams,
+        RequestParams,
+        SendableRequest,
+        SendableRequestParams,
+        Sender,
+    },
+    Client,
 };
-use client::sender::sniffed_nodes::SniffedNodesBuilder;
-use client::sender::{
-    build_reqwest_method,
-    build_url,
-    NextParams,
-    NodeAddress,
-    NodeAddresses,
-    NodeAddressesBuilder,
-    NodeAddressesInner,
-    PreRequestParams,
-    RequestParams,
-    SendableRequest,
-    SendableRequestParams,
-    Sender,
-};
-use client::Client;
 use error::{
     self,
     Error,

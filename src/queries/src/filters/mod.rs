@@ -5,11 +5,13 @@ pub(crate) mod range;
 pub(crate) mod term;
 pub(crate) mod wildcard;
 
-pub(crate) use self::exists::ExistsFilter;
-pub(crate) use self::matchfilter::MatchFilter;
-pub(crate) use self::range::RangeFilter;
-pub(crate) use self::term::TermFilter;
-pub(crate) use self::wildcard::WildcardFilter;
+pub(crate) use self::{
+    exists::ExistsFilter,
+    matchfilter::MatchFilter,
+    range::RangeFilter,
+    term::TermFilter,
+    wildcard::WildcardFilter,
+};
 
 #[derive(Clone, Debug, Serialize, Deserialize, Ord, PartialOrd, Eq, PartialEq)]
 #[serde(untagged)]

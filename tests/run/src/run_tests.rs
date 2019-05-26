@@ -1,17 +1,21 @@
 use std::fmt::Debug;
 
-use elastic::error::{
-    ApiError,
-    Error,
+use elastic::{
+    error::{
+        ApiError,
+        Error,
+    },
+    prelude::*,
 };
-use elastic::prelude::*;
 use futures::{
     stream,
     Future,
     Stream,
 };
-use term_painter::Color::*;
-use term_painter::ToStyle;
+use term_painter::{
+    Color::*,
+    ToStyle,
+};
 
 pub type TestResult = bool;
 pub type Test = Box<Fn(AsyncClient) -> Box<Future<Item = TestResult, Error = ()>>>;

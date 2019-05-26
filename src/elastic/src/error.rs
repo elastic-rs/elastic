@@ -37,9 +37,11 @@ match response {
 ```
 */
 
-use std::error::Error as StdError;
-use std::fmt;
-use std::io;
+use std::{
+    error::Error as StdError,
+    fmt,
+    io,
+};
 
 use elastic_responses::error::ResponseError;
 use reqwest::Error as ReqwestError;

@@ -1,5 +1,7 @@
-use elastic::error::Error;
-use elastic::prelude::*;
+use elastic::{
+    error::Error,
+    prelude::*,
+};
 use futures::Future;
 use run_tests::IntegrationTest;
 
@@ -44,11 +46,15 @@ impl IntegrationTest for RawIndexCreate {
 
     // Index a document, then get it
     fn request(&self, client: AsyncClient) -> Box<Future<Item = Self::Response, Error = Error>> {
-        let bulk_res = client.bulk().push(bulk_raw()
-            .create(doc())
-            .index(INDEX)
-            .ty(Doc::static_ty())
-            .id(ID))
+        let bulk_res = client
+            .bulk()
+            .push(
+                bulk_raw()
+                    .create(doc())
+                    .index(INDEX)
+                    .ty(Doc::static_ty())
+                    .id(ID),
+            )
             .send();
 
         Box::new(bulk_res)

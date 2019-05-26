@@ -13,8 +13,10 @@ extern crate serde_derive;
 #[macro_use]
 extern crate serde_json;
 
-use elastic::client::responses::parse::*;
-use elastic::prelude::*;
+use elastic::{
+    client::responses::parse::*,
+    prelude::*,
+};
 use serde_json::Value;
 use std::error::Error;
 

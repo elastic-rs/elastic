@@ -3,21 +3,23 @@ use super::mapping::{
     IpFieldType,
     IpMapping,
 };
-use serde::de::{
-    Error,
-    Visitor,
-};
 use serde::{
+    de::{
+        Error,
+        Visitor,
+    },
     Deserialize,
     Deserializer,
     Serialize,
     Serializer,
 };
-use std::borrow::Borrow;
-use std::error::Error as StdError;
-use std::marker::PhantomData;
-use std::net::Ipv4Addr;
-use std::str::FromStr;
+use std::{
+    borrow::Borrow,
+    error::Error as StdError,
+    marker::PhantomData,
+    net::Ipv4Addr,
+    str::FromStr,
+};
 
 impl IpFieldType<DefaultIpMapping> for Ipv4Addr {}
 

@@ -23,11 +23,13 @@ extern crate tokio;
 
 extern crate elastic;
 
-use elastic::error::{
-    ApiError,
-    Error,
+use elastic::{
+    error::{
+        ApiError,
+        Error,
+    },
+    prelude::*,
 };
-use elastic::prelude::*;
 use futures::{
     Future,
     IntoFuture,

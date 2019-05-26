@@ -1,8 +1,8 @@
 /*! Mapping for the Elasticsearch `text` type. */
 
 use private::field::FieldMapping;
-use serde::ser::SerializeStruct;
 use serde::{
+    ser::SerializeStruct,
     Serialize,
     Serializer,
 };
@@ -422,8 +422,8 @@ mod private {
         SerializeFieldMapping,
         StaticSerialize,
     };
-    use serde::ser::SerializeStruct;
     use serde::{
+        ser::SerializeStruct,
         Serialize,
         Serializer,
     };

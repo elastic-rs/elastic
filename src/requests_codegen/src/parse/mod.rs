@@ -1,6 +1,8 @@
 use serde_json::Value;
-use std::collections::BTreeMap;
-use std::fmt;
+use std::{
+    collections::BTreeMap,
+    fmt,
+};
 
 mod parse;
 
@@ -431,8 +433,10 @@ mod tests {
 
     mod ser {
         use parse::*;
-        use serde_json;
-        use serde_json::value::to_value;
+        use serde_json::{
+            self,
+            value::to_value,
+        };
         use std::collections::BTreeMap;
 
         fn http_eq(expected: Method, ser: &'static str) {

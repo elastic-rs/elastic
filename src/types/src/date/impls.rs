@@ -1,39 +1,43 @@
-use super::format::{
-    DateFormat,
-    DateValue,
-    FormattableDateValue,
-    FormattedDate,
-    ParseError,
-};
-use super::formats::ChronoFormat;
-use super::mapping::{
-    DateFieldType,
-    DateMapping,
-    DefaultDateMapping,
+use super::{
+    format::{
+        DateFormat,
+        DateValue,
+        FormattableDateValue,
+        FormattedDate,
+        ParseError,
+    },
+    formats::ChronoFormat,
+    mapping::{
+        DateFieldType,
+        DateMapping,
+        DefaultDateMapping,
+    },
 };
 use chrono::{
     DateTime,
     Utc,
 };
 use private::field::StdField;
-use serde::de::{
-    Error,
-    Visitor,
-};
 use serde::{
+    de::{
+        Error,
+        Visitor,
+    },
     Deserialize,
     Deserializer,
     Serialize,
     Serializer,
 };
-use std::borrow::Borrow;
-use std::fmt::{
-    Display,
-    Formatter,
-    Result as FmtResult,
+use std::{
+    borrow::Borrow,
+    fmt::{
+        Display,
+        Formatter,
+        Result as FmtResult,
+    },
+    marker::PhantomData,
+    ops::Deref,
 };
-use std::marker::PhantomData;
-use std::ops::Deref;
 
 pub use chrono::{
     Datelike,
@@ -680,8 +684,10 @@ where
 
 #[cfg(test)]
 mod tests {
-    use chrono;
-    use chrono::offset::TimeZone;
+    use chrono::{
+        self,
+        offset::TimeZone,
+    };
     use serde_json;
 
     use prelude::*;

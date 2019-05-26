@@ -9,8 +9,10 @@ use serde::de::{
 };
 use std::fmt;
 
-use std::iter::IntoIterator;
-use std::vec::IntoIter;
+use std::{
+    iter::IntoIterator,
+    vec::IntoIter,
+};
 
 #[derive(Debug, PartialEq, Deserialize)]
 pub struct NodesInfoResponse {

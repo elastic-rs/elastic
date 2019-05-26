@@ -13,21 +13,25 @@ use futures::{
 use serde::Serialize;
 use serde_json;
 
-use client::requests::endpoints::IndexRequest;
-use client::requests::params::{
-    Id,
-    Index,
-    Type,
+use client::{
+    requests::{
+        endpoints::IndexRequest,
+        params::{
+            Id,
+            Index,
+            Type,
+        },
+        raw::RawRequestInner,
+        RequestBuilder,
+    },
+    responses::IndexResponse,
+    sender::{
+        AsyncSender,
+        Sender,
+        SyncSender,
+    },
+    DocumentClient,
 };
-use client::requests::raw::RawRequestInner;
-use client::requests::RequestBuilder;
-use client::responses::IndexResponse;
-use client::sender::{
-    AsyncSender,
-    Sender,
-    SyncSender,
-};
-use client::DocumentClient;
 use error::{
     self,
     Error,
@@ -406,8 +410,8 @@ impl Future for Pending {
 
 #[cfg(test)]
 mod tests {
-    use tests::*;
     use prelude::*;
+    use tests::*;
 
     #[test]
     fn is_send() {

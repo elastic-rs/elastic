@@ -4,36 +4,42 @@ Builders for [bulk requests][docs-bulk].
 [docs-bulk]: https://www.elastic.co/guide/en/elasticsearch/reference/current/bulk.html
 */
 
-use std::error::Error as StdError;
-use std::fmt;
-use std::marker::PhantomData;
-use std::time::Duration;
+use std::{
+    error::Error as StdError,
+    fmt,
+    marker::PhantomData,
+    time::Duration,
+};
 
 use futures::{
     Future,
     Poll,
 };
-use serde::de::DeserializeOwned;
-use serde::ser::Serialize;
+use serde::{
+    de::DeserializeOwned,
+    ser::Serialize,
+};
 
-use client::requests::endpoints::BulkRequest;
-use client::requests::params::{
-    Index,
-    Type,
-};
-use client::requests::raw::RawRequestInner;
-use client::requests::RequestBuilder;
-use client::responses::parse::IsOk;
-use client::responses::{
-    BulkErrorsResponse,
-    BulkResponse,
-};
-use client::sender::{
-    AsyncSender,
-    Sender,
-    SyncSender,
-};
 use client::{
+    requests::{
+        endpoints::BulkRequest,
+        params::{
+            Index,
+            Type,
+        },
+        raw::RawRequestInner,
+        RequestBuilder,
+    },
+    responses::{
+        parse::IsOk,
+        BulkErrorsResponse,
+        BulkResponse,
+    },
+    sender::{
+        AsyncSender,
+        Sender,
+        SyncSender,
+    },
     Client,
     RequestParams,
 };
@@ -66,8 +72,10 @@ pub type BulkRequestBuilder<TSender, TBody, TResponse> =
 mod operation;
 mod stream;
 
-pub use self::operation::*;
-pub use self::stream::*;
+pub use self::{
+    operation::*,
+    stream::*,
+};
 
 #[doc(hidden)]
 pub struct BulkRequestInner<TBody, TResponse> {
@@ -865,8 +873,8 @@ impl<TIndex, TType, TId, TNewId> ChangeId<TNewId> for BulkErrorsResponse<TIndex,
 
 #[cfg(test)]
 mod tests {
-    use tests::*;
     use prelude::*;
+    use tests::*;
 
     #[test]
     fn is_send() {
