@@ -722,13 +722,13 @@ where
 
 /** A future returned by calling `send`. */
 pub struct Pending {
-    inner: Box<Future<Item = UpdateResponse, Error = Error>>,
+    inner: Box<Future<Item = UpdateResponse, Error = Error> + Send>,
 }
 
 impl Pending {
     fn new<F>(fut: F) -> Self
     where
-        F: Future<Item = UpdateResponse, Error = Error> + 'static,
+        F: Future<Item = UpdateResponse, Error = Error> + Send + 'static,
     {
         Pending {
             inner: Box::new(fut),
@@ -748,11 +748,17 @@ impl Future for Pending {
 #[cfg(test)]
 mod tests {
     use super::ScriptBuilder;
-    use prelude::*;
     use serde_json::{
         self,
         Value,
     };
+    use tests::*;
+    use prelude::*;
+
+    #[test]
+    fn is_send() {
+        assert_send::<super::Pending>();
+    }
 
     #[derive(Serialize, ElasticType)]
     struct TestDoc {}

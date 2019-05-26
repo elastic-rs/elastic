@@ -156,7 +156,7 @@ where
     */
     pub fn params_fluent(
         mut self,
-        builder: impl Fn(RequestParams) -> RequestParams + 'static,
+        builder: impl Fn(RequestParams) -> RequestParams + Send + 'static,
     ) -> Self {
         self.params_builder = self.params_builder.fluent(builder).boxed();
 

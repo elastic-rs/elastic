@@ -539,8 +539,8 @@ where
 */
 impl<TBody, TResponse> BulkRequestBuilder<SyncSender, TBody, TResponse>
 where
-    TBody: Into<SyncBody> + BulkBody + 'static,
-    TResponse: DeserializeOwned + IsOk + 'static,
+    TBody: Into<SyncBody> + BulkBody + Send + 'static,
+    TResponse: DeserializeOwned + IsOk + Send + 'static,
 {
     /**
     Send a `BulkRequestBuilder` synchronously using a [`SyncClient`][SyncClient].
@@ -799,13 +799,13 @@ impl BulkBody for Vec<u8> {
 
 /** A future returned by calling `send`. */
 pub struct Pending<TResponse> {
-    inner: Box<Future<Item = TResponse, Error = Error>>,
+    inner: Box<Future<Item = TResponse, Error = Error> + Send>,
 }
 
 impl<TResponse> Pending<TResponse> {
     fn new<F>(fut: F) -> Self
     where
-        F: Future<Item = TResponse, Error = Error> + 'static,
+        F: Future<Item = TResponse, Error = Error> + Send + 'static,
     {
         Pending {
             inner: Box::new(fut),
@@ -865,7 +865,13 @@ impl<TIndex, TType, TId, TNewId> ChangeId<TNewId> for BulkErrorsResponse<TIndex,
 
 #[cfg(test)]
 mod tests {
+    use tests::*;
     use prelude::*;
+
+    #[test]
+    fn is_send() {
+        assert_send::<super::Pending<BulkResponse>>();
+    }
 
     #[test]
     fn default_request() {

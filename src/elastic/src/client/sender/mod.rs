@@ -103,8 +103,8 @@ pub trait Sender: private::Sealed + Clone {
     ) -> Self::Response
     where
         TEndpoint: Into<Endpoint<'static, TBody>>,
-        TBody: Into<Self::Body> + 'static,
-        TParams: Into<Self::Params> + 'static;
+        TBody: Into<Self::Body> + Send + 'static,
+        TParams: Into<Self::Params> + Send + 'static;
 }
 
 /**
@@ -194,7 +194,7 @@ impl NodeAddressesBuilder {
 
     fn sniff_nodes_fluent<F>(self, address: NodeAddress, fleunt_method: F) -> Self
     where
-        F: FnOnce(SniffedNodesBuilder) -> SniffedNodesBuilder + 'static,
+        F: FnOnce(SniffedNodesBuilder) -> SniffedNodesBuilder + Send + 'static,
     {
         match self {
             NodeAddressesBuilder::Sniffed(fluent_builder) => NodeAddressesBuilder::Sniffed(

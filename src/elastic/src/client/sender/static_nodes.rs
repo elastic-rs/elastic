@@ -85,10 +85,10 @@ pub trait Strategy: Send + Sync {
     fn try_next(&self, nodes: &[NodeAddress]) -> Result<NodeAddress, StrategyError>;
 }
 
-/**
-An error attempting to get an address using a strategy.
-*/
 quick_error! {
+    /**
+    An error attempting to get an address using a strategy.
+    */
     #[derive(Debug)]
     pub enum StrategyError {
         Empty {

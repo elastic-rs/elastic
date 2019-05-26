@@ -196,7 +196,7 @@ where
  */
 impl<TBody> SqlRequestBuilder<SyncSender, TBody>
 where
-    TBody: Into<<SyncSender as Sender>::Body> + 'static,
+    TBody: Into<<SyncSender as Sender>::Body> + Send + 'static,
 {
     /**
     Sends a `SqlRequestBuilder` synchronously using a [`SyncClient`][SyncClient].
@@ -243,7 +243,7 @@ where
  */
 impl<TBody> SqlRequestBuilder<AsyncSender, TBody>
 where
-    TBody: Into<<AsyncSender as Sender>::Body> + 'static,
+    TBody: Into<<AsyncSender as Sender>::Body> + Send + 'static,
 {
     /**
     Sends a `SqlRequestBuilder` asynchronously using an [`AsyncClient`][AsyncClient].
@@ -298,13 +298,13 @@ where
 
 /** A future returned by calling `send`. */
 pub struct Pending {
-    inner: Box<Future<Item = SqlResponse, Error = Error>>,
+    inner: Box<Future<Item = SqlResponse, Error = Error> + Send>,
 }
 
 impl Pending {
     fn new<F>(fut: F) -> Self
     where
-        F: Future<Item = SqlResponse, Error = Error> + 'static,
+        F: Future<Item = SqlResponse, Error = Error> + Send + 'static,
     {
         Pending {
             inner: Box::new(fut),
@@ -323,8 +323,13 @@ impl Future for Pending {
 
 #[cfg(test)]
 mod tests {
+    use tests::*;
     use prelude::*;
-    use serde_json::Value;
+
+    #[test]
+    fn is_send() {
+        assert_send::<super::Pending>();
+    }
 
     #[test]
     fn default_request() {

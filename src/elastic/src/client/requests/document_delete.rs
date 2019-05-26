@@ -328,13 +328,13 @@ impl<TDocument> DeleteRequestBuilder<AsyncSender, TDocument> {
 
 /** A future returned by calling `send`. */
 pub struct Pending {
-    inner: Box<Future<Item = DeleteResponse, Error = Error>>,
+    inner: Box<Future<Item = DeleteResponse, Error = Error> + Send>,
 }
 
 impl Pending {
     fn new<F>(fut: F) -> Self
     where
-        F: Future<Item = DeleteResponse, Error = Error> + 'static,
+        F: Future<Item = DeleteResponse, Error = Error> + Send + 'static,
     {
         Pending {
             inner: Box::new(fut),
@@ -353,7 +353,13 @@ impl Future for Pending {
 
 #[cfg(test)]
 mod tests {
+    use tests::*;
     use prelude::*;
+
+    #[test]
+    fn is_send() {
+        assert_send::<super::Pending>();
+    }
 
     #[derive(ElasticType)]
     struct TestDoc {}

@@ -52,16 +52,16 @@ use http::StatusCode;
 /** An alias for a result. */
 pub type Result<T> = ::std::result::Result<T, Error>;
 
-/**
-An error encountered while interacting with Elasticsearch.
-
-API errors can be easily matched and destructured whereas client errors
-can be formatted, but not destructured.
-
-If the `RUST_BACKTRACE` environment variable is `1` then client errors will
-also contain a backtrace.
-*/
 quick_error! {
+    /**
+    An error encountered while interacting with Elasticsearch.
+
+    API errors can be easily matched and destructured whereas client errors
+    can be formatted, but not destructured.
+
+    If the `RUST_BACKTRACE` environment variable is `1` then client errors will
+    also contain a backtrace.
+    */
     #[derive(Debug)]
     pub enum Error {
         /** An API error from Elasticsearch. */

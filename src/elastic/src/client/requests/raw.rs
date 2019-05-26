@@ -101,9 +101,9 @@ impl<TSender, TEndpoint, TBody> RawRequestBuilder<TSender, TEndpoint, TBody>
 where
     TSender: Sender,
     TEndpoint: Into<Endpoint<'static, TBody>>,
-    TBody: Into<<TSender>::Body> + 'static,
+    TBody: Into<<TSender>::Body> + Send + 'static,
     NodeAddresses<TSender>: NextParams,
-    <NodeAddresses<TSender> as NextParams>::Params: Into<TSender::Params> + 'static,
+    <NodeAddresses<TSender> as NextParams>::Params: Into<TSender::Params> + Send + 'static,
 {
     /**
     Send a `RawRequestBuilder`.

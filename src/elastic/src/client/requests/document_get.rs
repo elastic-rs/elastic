@@ -328,13 +328,13 @@ where
 
 /** A future returned by calling `send`. */
 pub struct Pending<TDocument> {
-    inner: Box<Future<Item = GetResponse<TDocument>, Error = Error>>,
+    inner: Box<Future<Item = GetResponse<TDocument>, Error = Error> + Send>,
 }
 
 impl<TDocument> Pending<TDocument> {
     fn new<F>(fut: F) -> Self
     where
-        F: Future<Item = GetResponse<TDocument>, Error = Error> + 'static,
+        F: Future<Item = GetResponse<TDocument>, Error = Error> + Send + 'static,
     {
         Pending {
             inner: Box::new(fut),
@@ -356,7 +356,13 @@ where
 
 #[cfg(test)]
 mod tests {
+    use tests::*;
     use prelude::*;
+
+    #[test]
+    fn is_send() {
+        assert_send::<super::Pending<TestDoc>>();
+    }
 
     #[derive(Deserialize, ElasticType)]
     struct TestDoc {}

@@ -90,8 +90,8 @@ impl Sender for SyncSender {
     ) -> Self::Response
     where
         TEndpoint: Into<Endpoint<'static, TBody>>,
-        TBody: Into<Self::Body> + 'static,
-        TParams: Into<Self::Params> + 'static,
+        TBody: Into<Self::Body> + Send + 'static,
+        TParams: Into<Self::Params> + Send + 'static,
     {
         let correlation_id = request.correlation_id;
         let params = request.params;
@@ -339,7 +339,7 @@ impl SyncClientBuilder {
     pub fn sniff_nodes_fluent(
         mut self,
         address: impl Into<NodeAddress>,
-        builder: impl Fn(SniffedNodesBuilder) -> SniffedNodesBuilder + 'static,
+        builder: impl Fn(SniffedNodesBuilder) -> SniffedNodesBuilder + Send + 'static,
     ) -> Self {
         self.nodes = self.nodes.sniff_nodes_fluent(address.into(), builder);
 
@@ -362,7 +362,7 @@ impl SyncClientBuilder {
     */
     pub fn params_fluent(
         mut self,
-        builder: impl Fn(PreRequestParams) -> PreRequestParams + 'static,
+        builder: impl Fn(PreRequestParams) -> PreRequestParams + Send + 'static,
     ) -> Self {
         self.params = self.params.fluent(builder).boxed();
 
