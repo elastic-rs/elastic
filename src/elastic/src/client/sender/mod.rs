@@ -14,8 +14,8 @@ Some notable types include:
 */
 
 use fluent_builder::{
-    FluentBuilder,
-    StatefulFluentBuilder,
+    SharedFluentBuilder,
+    SharedStatefulFluentBuilder,
 };
 
 pub mod sniffed_nodes;
@@ -76,7 +76,7 @@ pub(crate) enum SendableRequestParams<TParams> {
     Value(RequestParams),
     Builder {
         params: TParams,
-        builder: FluentBuilder<RequestParams>,
+        builder: SharedFluentBuilder<RequestParams>,
     },
 }
 
@@ -185,7 +185,7 @@ enum NodeAddressesInner<TSender> {
 
 enum NodeAddressesBuilder {
     Static(Vec<NodeAddress>),
-    Sniffed(StatefulFluentBuilder<SniffedNodesBuilder, NodeAddress>),
+    Sniffed(SharedStatefulFluentBuilder<SniffedNodesBuilder, NodeAddress>),
 }
 
 impl NodeAddressesBuilder {
@@ -194,7 +194,7 @@ impl NodeAddressesBuilder {
             NodeAddressesBuilder::Sniffed(fluent_builder) => {
                 NodeAddressesBuilder::Sniffed(fluent_builder.value(builder))
             }
-            _ => NodeAddressesBuilder::Sniffed(StatefulFluentBuilder::from_value(builder.into())),
+            _ => NodeAddressesBuilder::Sniffed(SharedStatefulFluentBuilder::from_value(builder.into())),
         }
     }
 
@@ -204,10 +204,10 @@ impl NodeAddressesBuilder {
     {
         match self {
             NodeAddressesBuilder::Sniffed(fluent_builder) => NodeAddressesBuilder::Sniffed(
-                fluent_builder.fluent(address.into(), fleunt_method).boxed(),
+                fluent_builder.fluent(address.into(), fleunt_method).shared(),
             ),
             _ => NodeAddressesBuilder::Sniffed(
-                StatefulFluentBuilder::from_fluent(address.into(), fleunt_method).boxed(),
+                SharedStatefulFluentBuilder::from_fluent(address.into(), fleunt_method).shared(),
             ),
         }
     }

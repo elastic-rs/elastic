@@ -1,4 +1,4 @@
-use fluent_builder::FluentBuilder;
+use fluent_builder::SharedFluentBuilder;
 use futures::{
     future::{
         lazy,
@@ -331,7 +331,7 @@ pub struct AsyncClientBuilder {
     http: Option<AsyncHttpClient>,
     serde_pool: Option<Arc<ThreadPool>>,
     nodes: NodeAddressesBuilder,
-    params: FluentBuilder<PreRequestParams>,
+    params: SharedFluentBuilder<PreRequestParams>,
     pre_send: Option<
         Arc<
             Fn(
@@ -365,7 +365,7 @@ impl AsyncClientBuilder {
         AsyncClientBuilder {
             http: None,
             serde_pool: None,
-            params: FluentBuilder::new(),
+            params: SharedFluentBuilder::new(),
             nodes: NodeAddressesBuilder::default(),
             pre_send: None,
         }
@@ -378,7 +378,7 @@ impl AsyncClientBuilder {
         AsyncClientBuilder {
             http: None,
             serde_pool: None,
-            params: FluentBuilder::new().value(params),
+            params: SharedFluentBuilder::new().value(params),
             nodes: NodeAddressesBuilder::default(),
             pre_send: None,
         }
@@ -467,7 +467,7 @@ impl AsyncClientBuilder {
         mut self,
         builder: impl Fn(PreRequestParams) -> PreRequestParams + Send + 'static,
     ) -> Self {
-        self.params = self.params.fluent(builder).boxed();
+        self.params = self.params.fluent(builder).shared();
 
         self
     }

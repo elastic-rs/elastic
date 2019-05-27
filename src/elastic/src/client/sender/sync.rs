@@ -1,4 +1,4 @@
-use fluent_builder::FluentBuilder;
+use fluent_builder::SharedFluentBuilder;
 use reqwest::{
     Client as SyncHttpClient,
     ClientBuilder as SyncHttpClientBuilder,
@@ -237,7 +237,7 @@ fn build_reqwest(client: &SyncHttpClient, req: SyncHttpRequest) -> SyncHttpReque
 pub struct SyncClientBuilder {
     http: Option<SyncHttpClient>,
     nodes: NodeAddressesBuilder,
-    params: FluentBuilder<PreRequestParams>,
+    params: SharedFluentBuilder<PreRequestParams>,
     pre_send: Option<
         Arc<
             Fn(&mut SyncHttpRequest) -> Result<(), Box<StdError + Send + Sync>>
@@ -268,7 +268,7 @@ impl SyncClientBuilder {
         SyncClientBuilder {
             http: None,
             nodes: NodeAddressesBuilder::default(),
-            params: FluentBuilder::new(),
+            params: SharedFluentBuilder::new(),
             pre_send: None,
         }
     }
@@ -280,7 +280,7 @@ impl SyncClientBuilder {
         SyncClientBuilder {
             http: None,
             nodes: NodeAddressesBuilder::default(),
-            params: FluentBuilder::new().value(params),
+            params: SharedFluentBuilder::new().value(params),
             pre_send: None,
         }
     }
@@ -368,7 +368,7 @@ impl SyncClientBuilder {
         mut self,
         builder: impl Fn(PreRequestParams) -> PreRequestParams + Send + 'static,
     ) -> Self {
-        self.params = self.params.fluent(builder).boxed();
+        self.params = self.params.fluent(builder).shared();
 
         self
     }

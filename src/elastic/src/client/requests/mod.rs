@@ -4,7 +4,7 @@ Request types for the Elasticsearch REST API.
 This module contains implementation details that are useful if you want to customise the request process, but aren't generally important for sending requests.
 */
 
-use fluent_builder::FluentBuilder;
+use fluent_builder::SharedFluentBuilder;
 use std::sync::Arc;
 use tokio_threadpool::ThreadPool;
 
@@ -96,7 +96,7 @@ where
     TSender: Sender,
 {
     client: Client<TSender>,
-    params_builder: FluentBuilder<RequestParams>,
+    params_builder: SharedFluentBuilder<RequestParams>,
     inner: TRequest,
 }
 
@@ -112,12 +112,12 @@ where
     fn initial(client: Client<TSender>, req: TRequest) -> Self {
         RequestBuilder {
             client: client,
-            params_builder: FluentBuilder::new(),
+            params_builder: SharedFluentBuilder::new(),
             inner: req,
         }
     }
 
-    fn new(client: Client<TSender>, builder: FluentBuilder<RequestParams>, req: TRequest) -> Self {
+    fn new(client: Client<TSender>, builder: SharedFluentBuilder<RequestParams>, req: TRequest) -> Self {
         RequestBuilder {
             client: client,
             params_builder: builder,
@@ -168,7 +168,7 @@ where
         mut self,
         builder: impl Fn(RequestParams) -> RequestParams + Send + 'static,
     ) -> Self {
-        self.params_builder = self.params_builder.fluent(builder).boxed();
+        self.params_builder = self.params_builder.fluent(builder).shared();
 
         self
     }
