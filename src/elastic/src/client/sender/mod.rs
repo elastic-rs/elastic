@@ -185,7 +185,7 @@ enum NodeAddressesInner<TSender> {
 
 enum NodeAddressesBuilder {
     Static(Vec<NodeAddress>),
-    Sniffed(SharedStatefulFluentBuilder<SniffedNodesBuilder, NodeAddress>),
+    Sniffed(SharedStatefulFluentBuilder<NodeAddress, SniffedNodesBuilder>),
 }
 
 impl NodeAddressesBuilder {
@@ -207,7 +207,7 @@ impl NodeAddressesBuilder {
                 fluent_builder.fluent(address.into(), fleunt_method).shared(),
             ),
             _ => NodeAddressesBuilder::Sniffed(
-                SharedStatefulFluentBuilder::from_fluent(address.into(), fleunt_method).shared(),
+                SharedStatefulFluentBuilder::from_fluent(address.into(), fleunt_method),
             ),
         }
     }
