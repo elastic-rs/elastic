@@ -3386,7 +3386,8 @@ pub mod endpoints {
         pub fn url(self) -> UrlPath<'a> {
             match self {
                 IndicesPutMappingUrlParams::Index(ref index) => {
-                    let mut url = String::with_capacity(9usize + index.len());
+                    let mut url = String::with_capacity(10usize + index.len());
+                    url.push_str("/");
                     url.push_str(index.as_ref());
                     url.push_str("/_mapping");
                     UrlPath::from(url)
