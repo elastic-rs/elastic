@@ -1,5 +1,7 @@
-use super::mapping::GeoPointMapping;
-use super::Point;
+use super::{
+    mapping::GeoPointMapping,
+    Point,
+};
 use serde::{
     Deserializer,
     Serializer,

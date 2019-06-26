@@ -9,21 +9,23 @@ use futures::{
     Poll,
 };
 
-use client::requests::endpoints::IndicesCreateRequest;
-use client::requests::params::Index;
-use client::requests::raw::RawRequestInner;
-use client::requests::{
-    empty_body,
-    DefaultBody,
-    RequestBuilder,
+use client::{
+    requests::{
+        empty_body,
+        endpoints::IndicesCreateRequest,
+        params::Index,
+        raw::RawRequestInner,
+        DefaultBody,
+        RequestBuilder,
+    },
+    responses::CommandResponse,
+    sender::{
+        AsyncSender,
+        Sender,
+        SyncSender,
+    },
+    IndexClient,
 };
-use client::responses::CommandResponse;
-use client::sender::{
-    AsyncSender,
-    Sender,
-    SyncSender,
-};
-use client::IndexClient;
 use error::*;
 
 /**
@@ -178,7 +180,7 @@ where
 */
 impl<TBody> IndexCreateRequestBuilder<SyncSender, TBody>
 where
-    TBody: Into<<SyncSender as Sender>::Body> + 'static,
+    TBody: Into<<SyncSender as Sender>::Body> + Send + 'static,
 {
     /**
     Send an `IndexCreateRequestBuilder` synchronously using a [`SyncClient`][SyncClient].
@@ -218,7 +220,7 @@ where
 */
 impl<TBody> IndexCreateRequestBuilder<AsyncSender, TBody>
 where
-    TBody: Into<<AsyncSender as Sender>::Body> + 'static,
+    TBody: Into<<AsyncSender as Sender>::Body> + Send + 'static,
 {
     /**
     Send an `IndexCreateRequestBuilder` asynchronously using an [`AsyncClient`][AsyncClient].
@@ -265,13 +267,13 @@ where
 
 /** A future returned by calling `send`. */
 pub struct Pending {
-    inner: Box<Future<Item = CommandResponse, Error = Error>>,
+    inner: Box<Future<Item = CommandResponse, Error = Error> + Send>,
 }
 
 impl Pending {
     fn new<F>(fut: F) -> Self
     where
-        F: Future<Item = CommandResponse, Error = Error> + 'static,
+        F: Future<Item = CommandResponse, Error = Error> + Send + 'static,
     {
         Pending {
             inner: Box::new(fut),
@@ -291,6 +293,12 @@ impl Future for Pending {
 #[cfg(test)]
 mod tests {
     use prelude::*;
+    use tests::*;
+
+    #[test]
+    fn is_send() {
+        assert_send::<super::Pending>();
+    }
 
     #[test]
     fn default_request() {

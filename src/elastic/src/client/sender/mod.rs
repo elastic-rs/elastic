@@ -14,8 +14,8 @@ Some notable types include:
 */
 
 use fluent_builder::{
-    FluentBuilder,
-    StatefulFluentBuilder,
+    SharedFluentBuilder,
+    SharedStatefulFluentBuilder,
 };
 
 pub mod sniffed_nodes;
@@ -24,19 +24,25 @@ pub mod static_nodes;
 mod async;
 mod params;
 mod sync;
-pub use self::async::*;
-pub use self::params::*;
-pub use self::sync::*;
+pub use self::{
+    async::*,
+    params::*,
+    sync::*,
+};
 
-use std::marker::PhantomData;
-use std::sync::Arc;
+use std::{
+    marker::PhantomData,
+    sync::Arc,
+};
 use uuid::Uuid;
 
-use self::sniffed_nodes::{
-    SniffedNodes,
-    SniffedNodesBuilder,
+use self::{
+    sniffed_nodes::{
+        SniffedNodes,
+        SniffedNodesBuilder,
+    },
+    static_nodes::StaticNodes,
 };
-use self::static_nodes::StaticNodes;
 use client::requests::Endpoint;
 use private;
 
@@ -70,7 +76,7 @@ pub(crate) enum SendableRequestParams<TParams> {
     Value(RequestParams),
     Builder {
         params: TParams,
-        builder: FluentBuilder<RequestParams>,
+        builder: SharedFluentBuilder<RequestParams>,
     },
 }
 
@@ -103,8 +109,8 @@ pub trait Sender: private::Sealed + Clone {
     ) -> Self::Response
     where
         TEndpoint: Into<Endpoint<'static, TBody>>,
-        TBody: Into<Self::Body> + 'static,
-        TParams: Into<Self::Params> + 'static;
+        TBody: Into<Self::Body> + Send + 'static,
+        TParams: Into<Self::Params> + Send + 'static;
 }
 
 /**
@@ -179,7 +185,7 @@ enum NodeAddressesInner<TSender> {
 
 enum NodeAddressesBuilder {
     Static(Vec<NodeAddress>),
-    Sniffed(StatefulFluentBuilder<SniffedNodesBuilder, NodeAddress>),
+    Sniffed(SharedStatefulFluentBuilder<NodeAddress, SniffedNodesBuilder>),
 }
 
 impl NodeAddressesBuilder {
@@ -188,20 +194,20 @@ impl NodeAddressesBuilder {
             NodeAddressesBuilder::Sniffed(fluent_builder) => {
                 NodeAddressesBuilder::Sniffed(fluent_builder.value(builder))
             }
-            _ => NodeAddressesBuilder::Sniffed(StatefulFluentBuilder::from_value(builder.into())),
+            _ => NodeAddressesBuilder::Sniffed(SharedStatefulFluentBuilder::from_value(builder.into())),
         }
     }
 
     fn sniff_nodes_fluent<F>(self, address: NodeAddress, fleunt_method: F) -> Self
     where
-        F: FnOnce(SniffedNodesBuilder) -> SniffedNodesBuilder + 'static,
+        F: FnOnce(SniffedNodesBuilder) -> SniffedNodesBuilder + Send + 'static,
     {
         match self {
             NodeAddressesBuilder::Sniffed(fluent_builder) => NodeAddressesBuilder::Sniffed(
-                fluent_builder.fluent(address.into(), fleunt_method).boxed(),
+                fluent_builder.fluent(address.into(), fleunt_method).shared(),
             ),
             _ => NodeAddressesBuilder::Sniffed(
-                StatefulFluentBuilder::from_fluent(address.into(), fleunt_method).boxed(),
+                SharedStatefulFluentBuilder::from_fluent(address.into(), fleunt_method),
             ),
         }
     }

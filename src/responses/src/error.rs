@@ -11,17 +11,21 @@ use serde_json::{
     Map,
     Value,
 };
-use std::error::Error as StdError;
-use std::fmt;
-use std::io::Error as IoError;
+use std::{
+    error::Error as StdError,
+    fmt,
+    io::Error as IoError,
+};
 
 mod inner {
     use serde_json::{
         Map,
         Value,
     };
-    use std::error::Error as StdError;
-    use std::fmt;
+    use std::{
+        error::Error as StdError,
+        fmt,
+    };
 
     use super::ApiError;
 

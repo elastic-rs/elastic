@@ -6,14 +6,16 @@ extern crate elastic;
 extern crate env_logger;
 extern crate reqwest;
 
-use elastic::http::{
-    header::{
-        HeaderName,
-        HeaderValue,
+use elastic::{
+    http::{
+        header::{
+            HeaderName,
+            HeaderValue,
+        },
+        SyncHttpRequest,
     },
-    SyncHttpRequest,
+    prelude::*,
 };
-use elastic::prelude::*;
 use std::{
     collections::hash_map::DefaultHasher,
     error::Error,

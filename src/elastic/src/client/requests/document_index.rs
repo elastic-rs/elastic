@@ -13,21 +13,25 @@ use futures::{
 use serde::Serialize;
 use serde_json;
 
-use client::requests::endpoints::IndexRequest;
-use client::requests::params::{
-    Id,
-    Index,
-    Type,
+use client::{
+    requests::{
+        endpoints::IndexRequest,
+        params::{
+            Id,
+            Index,
+            Type,
+        },
+        raw::RawRequestInner,
+        RequestBuilder,
+    },
+    responses::IndexResponse,
+    sender::{
+        AsyncSender,
+        Sender,
+        SyncSender,
+    },
+    DocumentClient,
 };
-use client::requests::raw::RawRequestInner;
-use client::requests::RequestBuilder;
-use client::responses::IndexResponse;
-use client::sender::{
-    AsyncSender,
-    Sender,
-    SyncSender,
-};
-use client::DocumentClient;
 use error::{
     self,
     Error,
@@ -381,13 +385,13 @@ where
 
 /** A future returned by calling `send`. */
 pub struct Pending {
-    inner: Box<Future<Item = IndexResponse, Error = Error>>,
+    inner: Box<Future<Item = IndexResponse, Error = Error> + Send>,
 }
 
 impl Pending {
     fn new<F>(fut: F) -> Self
     where
-        F: Future<Item = IndexResponse, Error = Error> + 'static,
+        F: Future<Item = IndexResponse, Error = Error> + Send + 'static,
     {
         Pending {
             inner: Box::new(fut),
@@ -407,6 +411,12 @@ impl Future for Pending {
 #[cfg(test)]
 mod tests {
     use prelude::*;
+    use tests::*;
+
+    #[test]
+    fn is_send() {
+        assert_send::<super::Pending>();
+    }
 
     #[derive(Serialize, ElasticType)]
     struct TestDoc {}

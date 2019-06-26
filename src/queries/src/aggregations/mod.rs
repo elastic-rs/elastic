@@ -2,16 +2,22 @@ pub(crate) mod date_histogram;
 pub(crate) mod stats;
 pub(crate) mod terms;
 
-use self::date_histogram::DateHistogramAggregation;
-use self::stats::{
-    AvgAggregation,
-    MaxAggregation,
-    SumAggregation,
+use self::{
+    date_histogram::DateHistogramAggregation,
+    stats::{
+        AvgAggregation,
+        MaxAggregation,
+        SumAggregation,
+    },
+    terms::TermAggregation,
 };
-use self::terms::TermAggregation;
-use std::collections::hash_map::Iter;
-use std::collections::HashMap;
-use std::option::Option;
+use std::{
+    collections::{
+        hash_map::Iter,
+        HashMap,
+    },
+    option::Option,
+};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(untagged)]
@@ -288,8 +294,10 @@ impl<'i> Iterator for AggregationIterator<'i> {
 
 #[cfg(test)]
 mod tests {
-    use super::super::Query;
-    use super::*;
+    use super::{
+        super::Query,
+        *,
+    };
     use serde_json;
 
     #[test]

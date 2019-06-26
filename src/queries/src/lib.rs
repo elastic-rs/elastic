@@ -15,9 +15,11 @@ mod aggregations;
 mod filters;
 pub mod prelude;
 
-use aggregations::Aggregation;
-use aggregations::BucketAggregation;
-use aggregations::EsAggregation;
+use aggregations::{
+    Aggregation,
+    BucketAggregation,
+    EsAggregation,
+};
 use filters::Filters;
 use std::collections::HashMap;
 
@@ -333,8 +335,10 @@ impl QueryBuilder {
 
 #[cfg(test)]
 mod tests {
-    use super::filters::*;
-    use super::*;
+    use super::{
+        filters::*,
+        *,
+    };
 
     #[test]
     fn root_to_target() {

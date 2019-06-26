@@ -9,8 +9,10 @@ extern crate elastic;
 extern crate env_logger;
 
 use elastic::prelude::*;
-use std::error::Error;
-use std::io::Read;
+use std::{
+    error::Error,
+    io::Read,
+};
 
 fn run() -> Result<(), Box<Error>> {
     // A reqwest HTTP client and default parameters.

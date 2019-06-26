@@ -2,18 +2,20 @@ use super::mapping::{
     KeywordFieldType,
     KeywordMapping,
 };
-use serde::de::{
-    Error,
-    Visitor,
-};
 use serde::{
+    de::{
+        Error,
+        Visitor,
+    },
     Deserialize,
     Deserializer,
     Serialize,
     Serializer,
 };
-use std::borrow::Borrow;
-use std::marker::PhantomData;
+use std::{
+    borrow::Borrow,
+    marker::PhantomData,
+};
 
 /**
 An Elasticsearch `keyword` with a mapping.

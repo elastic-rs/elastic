@@ -1,11 +1,15 @@
-use super::super::Values;
-use super::common::EsDateFormat;
-use serde;
-use serde::de::Visitor;
-use serde::ser::{
-    Serialize,
-    SerializeMap,
-    Serializer,
+use super::{
+    super::Values,
+    common::EsDateFormat,
+};
+use serde::{
+    self,
+    de::Visitor,
+    ser::{
+        Serialize,
+        SerializeMap,
+        Serializer,
+    },
 };
 use std::fmt;
 

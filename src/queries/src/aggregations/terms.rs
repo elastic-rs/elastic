@@ -1,6 +1,8 @@
-use super::super::filters::common::*;
-use super::BucketAggregation;
-use super::EsAggregation;
+use super::{
+    super::filters::common::*,
+    BucketAggregation,
+    EsAggregation,
+};
 use std::collections::HashMap;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

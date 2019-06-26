@@ -9,17 +9,21 @@ use futures::{
     Poll,
 };
 
-use client::requests::endpoints::IndicesDeleteRequest;
-use client::requests::params::Index;
-use client::requests::raw::RawRequestInner;
-use client::requests::RequestBuilder;
-use client::responses::CommandResponse;
-use client::sender::{
-    AsyncSender,
-    Sender,
-    SyncSender,
+use client::{
+    requests::{
+        endpoints::IndicesDeleteRequest,
+        params::Index,
+        raw::RawRequestInner,
+        RequestBuilder,
+    },
+    responses::CommandResponse,
+    sender::{
+        AsyncSender,
+        Sender,
+        SyncSender,
+    },
+    IndexClient,
 };
-use client::IndexClient;
 use error::*;
 
 /**
@@ -174,13 +178,13 @@ impl IndexDeleteRequestBuilder<AsyncSender> {
 
 /** A future returned by calling `send`. */
 pub struct Pending {
-    inner: Box<Future<Item = CommandResponse, Error = Error>>,
+    inner: Box<Future<Item = CommandResponse, Error = Error> + Send>,
 }
 
 impl Pending {
     fn new<F>(fut: F) -> Self
     where
-        F: Future<Item = CommandResponse, Error = Error> + 'static,
+        F: Future<Item = CommandResponse, Error = Error> + Send + 'static,
     {
         Pending {
             inner: Box::new(fut),
@@ -200,6 +204,12 @@ impl Future for Pending {
 #[cfg(test)]
 mod tests {
     use prelude::*;
+    use tests::*;
+
+    #[test]
+    fn is_send() {
+        assert_send::<super::Pending>();
+    }
 
     #[test]
     fn default_request() {

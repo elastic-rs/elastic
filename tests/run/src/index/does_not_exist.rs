@@ -1,5 +1,7 @@
-use elastic::error::Error;
-use elastic::prelude::*;
+use elastic::{
+    error::Error,
+    prelude::*,
+};
 use futures::Future;
 use run_tests::IntegrationTest;
 

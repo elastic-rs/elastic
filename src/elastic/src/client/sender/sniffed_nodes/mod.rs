@@ -30,31 +30,35 @@ use futures::{
     Future,
     IntoFuture,
 };
-use std::sync::{
-    Arc,
-    RwLock,
-};
-use std::time::{
-    Duration,
-    Instant,
+use std::{
+    sync::{
+        Arc,
+        RwLock,
+    },
+    time::{
+        Duration,
+        Instant,
+    },
 };
 use url::Url;
 
-use client::requests::{
-    DefaultBody,
-    NodesInfoRequest,
-};
-use client::sender::static_nodes::StaticNodes;
-use client::sender::{
-    AsyncSender,
-    NextParams,
-    NodeAddress,
-    PreRequestParams,
-    RequestParams,
-    SendableRequest,
-    SendableRequestParams,
-    Sender,
-    SyncSender,
+use client::{
+    requests::{
+        DefaultBody,
+        NodesInfoRequest,
+    },
+    sender::{
+        static_nodes::StaticNodes,
+        AsyncSender,
+        NextParams,
+        NodeAddress,
+        PreRequestParams,
+        RequestParams,
+        SendableRequest,
+        SendableRequestParams,
+        Sender,
+        SyncSender,
+    },
 };
 use error::{
     self,
@@ -104,12 +108,12 @@ impl<TSender> SniffedNodes<TSender> {
     fn async_next<TRefresh, TRefreshFuture>(
         &self,
         refresh: TRefresh,
-    ) -> Box<Future<Item = RequestParams, Error = Error>>
+    ) -> Box<Future<Item = RequestParams, Error = Error> + Send>
     where
         TRefresh: Fn(
             SendableRequest<NodesInfoRequest<'static>, RequestParams, DefaultBody>,
         ) -> TRefreshFuture,
-        TRefreshFuture: Future<Item = NodesInfoResponse, Error = Error> + 'static,
+        TRefreshFuture: Future<Item = NodesInfoResponse, Error = Error> + Send + 'static,
     {
         if let Some(address) = self.next_or_start_refresh() {
             return Box::new(address.into_future());
@@ -343,7 +347,7 @@ impl SniffedNodesInner {
 impl<TSender> private::Sealed for SniffedNodes<TSender> {}
 
 impl NextParams for SniffedNodes<AsyncSender> {
-    type Params = Box<Future<Item = RequestParams, Error = Error>>;
+    type Params = Box<Future<Item = RequestParams, Error = Error> + Send>;
 
     fn next(&self) -> Self::Params {
         self.async_next(|req| {

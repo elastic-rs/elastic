@@ -112,8 +112,10 @@ pub mod endpoints {
     pub use genned::endpoints::*;
 }
 
-pub use self::endpoints::*;
-pub use self::params::*;
+pub use self::{
+    endpoints::*,
+    params::*,
+};
 pub use genned::http::*;
 
 #[cfg(test)]

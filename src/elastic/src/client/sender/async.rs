@@ -1,10 +1,10 @@
-use fluent_builder::FluentBuilder;
-use futures::future::{
-    lazy,
-    Either,
-    FutureResult,
-};
+use fluent_builder::SharedFluentBuilder;
 use futures::{
+    future::{
+        lazy,
+        Either,
+        FutureResult,
+    },
     Future,
     IntoFuture,
     Poll,
@@ -13,34 +13,38 @@ use reqwest::async::{
     Client as AsyncHttpClient,
     RequestBuilder as AsyncHttpRequestBuilder,
 };
-use std::error::Error as StdError;
-use std::sync::Arc;
+use std::{
+    error::Error as StdError,
+    sync::Arc,
+};
 use tokio_threadpool::{
     SpawnHandle,
     ThreadPool,
 };
 
-use client::requests::Endpoint;
-use client::responses::{
-    async_response,
-    AsyncResponseBuilder,
+use client::{
+    requests::Endpoint,
+    responses::{
+        async_response,
+        AsyncResponseBuilder,
+    },
+    sender::{
+        build_reqwest_method,
+        build_url,
+        sniffed_nodes::SniffedNodesBuilder,
+        NextParams,
+        NodeAddress,
+        NodeAddresses,
+        NodeAddressesBuilder,
+        NodeAddressesInner,
+        PreRequestParams,
+        RequestParams,
+        SendableRequest,
+        SendableRequestParams,
+        Sender,
+    },
+    Client,
 };
-use client::sender::sniffed_nodes::SniffedNodesBuilder;
-use client::sender::{
-    build_reqwest_method,
-    build_url,
-    NextParams,
-    NodeAddress,
-    NodeAddresses,
-    NodeAddressesBuilder,
-    NodeAddressesInner,
-    PreRequestParams,
-    RequestParams,
-    SendableRequest,
-    SendableRequestParams,
-    Sender,
-};
-use client::Client;
 use error::{
     self,
     Error,
@@ -95,7 +99,8 @@ pub struct AsyncSender {
         Arc<
             Fn(
                     &mut AsyncHttpRequest,
-                ) -> Box<Future<Item = (), Error = Box<StdError + Send + Sync>>>
+                )
+                    -> Box<Future<Item = (), Error = Box<StdError + Send + Sync>> + Send>
                 + Send
                 + Sync,
         >,
@@ -132,8 +137,8 @@ impl Sender for AsyncSender {
     ) -> Self::Response
     where
         TEndpoint: Into<Endpoint<'static, TBody>>,
-        TBody: Into<Self::Body> + 'static,
-        TParams: Into<Self::Params> + 'static,
+        TBody: Into<Self::Body> + Send + 'static,
+        TParams: Into<Self::Params> + Send + 'static,
     {
         let correlation_id = request.correlation_id;
         let serde_pool = self.serde_pool.clone();
@@ -243,13 +248,13 @@ impl NextParams for NodeAddresses<AsyncSender> {
 
 /** A future returned by calling `next` on an async set of `NodeAddresses`. */
 pub struct PendingParams {
-    inner: Box<Future<Item = RequestParams, Error = Error>>,
+    inner: Box<Future<Item = RequestParams, Error = Error> + Send>,
 }
 
 impl PendingParams {
     fn new<F>(fut: F) -> Self
     where
-        F: Future<Item = RequestParams, Error = Error> + 'static,
+        F: Future<Item = RequestParams, Error = Error> + Send + 'static,
     {
         PendingParams {
             inner: Box::new(fut),
@@ -298,13 +303,13 @@ fn build_reqwest(client: &AsyncHttpClient, req: AsyncHttpRequest) -> AsyncHttpRe
 
 /** A future returned by calling `send` on an `AsyncSender`. */
 pub struct PendingResponse {
-    inner: Box<Future<Item = AsyncResponseBuilder, Error = Error>>,
+    inner: Box<Future<Item = AsyncResponseBuilder, Error = Error> + Send>,
 }
 
 impl PendingResponse {
     fn new<F>(fut: F) -> Self
     where
-        F: Future<Item = AsyncResponseBuilder, Error = Error> + 'static,
+        F: Future<Item = AsyncResponseBuilder, Error = Error> + Send + 'static,
     {
         PendingResponse {
             inner: Box::new(fut),
@@ -326,12 +331,13 @@ pub struct AsyncClientBuilder {
     http: Option<AsyncHttpClient>,
     serde_pool: Option<Arc<ThreadPool>>,
     nodes: NodeAddressesBuilder,
-    params: FluentBuilder<PreRequestParams>,
+    params: SharedFluentBuilder<PreRequestParams>,
     pre_send: Option<
         Arc<
             Fn(
                     &mut AsyncHttpRequest,
-                ) -> Box<Future<Item = (), Error = Box<StdError + Send + Sync>>>
+                )
+                    -> Box<Future<Item = (), Error = Box<StdError + Send + Sync>> + Send>
                 + Send
                 + Sync,
         >,
@@ -359,7 +365,7 @@ impl AsyncClientBuilder {
         AsyncClientBuilder {
             http: None,
             serde_pool: None,
-            params: FluentBuilder::new(),
+            params: SharedFluentBuilder::new(),
             nodes: NodeAddressesBuilder::default(),
             pre_send: None,
         }
@@ -372,7 +378,7 @@ impl AsyncClientBuilder {
         AsyncClientBuilder {
             http: None,
             serde_pool: None,
-            params: FluentBuilder::new().value(params),
+            params: SharedFluentBuilder::new().value(params),
             nodes: NodeAddressesBuilder::default(),
             pre_send: None,
         }
@@ -436,7 +442,7 @@ impl AsyncClientBuilder {
     pub fn sniff_nodes_fluent(
         mut self,
         address: impl Into<NodeAddress>,
-        builder: impl Fn(SniffedNodesBuilder) -> SniffedNodesBuilder + 'static,
+        builder: impl Fn(SniffedNodesBuilder) -> SniffedNodesBuilder + Send + 'static,
     ) -> Self {
         self.nodes = self.nodes.sniff_nodes_fluent(address.into(), builder);
 
@@ -459,9 +465,9 @@ impl AsyncClientBuilder {
     */
     pub fn params_fluent(
         mut self,
-        builder: impl Fn(PreRequestParams) -> PreRequestParams + 'static,
+        builder: impl Fn(PreRequestParams) -> PreRequestParams + Send + 'static,
     ) -> Self {
-        self.params = self.params.fluent(builder).boxed();
+        self.params = self.params.fluent(builder).shared();
 
         self
     }
@@ -527,7 +533,8 @@ impl AsyncClientBuilder {
         mut self,
         pre_send: impl Fn(
                 &mut AsyncHttpRequest,
-            ) -> Box<Future<Item = (), Error = Box<StdError + Send + Sync>>>
+            )
+                -> Box<Future<Item = (), Error = Box<StdError + Send + Sync>> + Send>
             + Send
             + Sync
             + 'static,
@@ -614,5 +621,16 @@ where
             future: self,
             log: Some(log),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use tests::*;
+
+    #[test]
+    fn is_send() {
+        assert_send::<super::PendingParams>();
+        assert_send::<super::PendingResponse>();
     }
 }

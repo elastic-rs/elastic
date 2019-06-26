@@ -4,9 +4,11 @@ use futures::{
     Future,
     Stream,
 };
-use std::error::Error as StdError;
-use std::fmt;
-use std::time::Duration;
+use std::{
+    error::Error as StdError,
+    fmt,
+    time::Duration,
+};
 
 type Error = Box<StdError>;
 

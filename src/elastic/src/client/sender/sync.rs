@@ -1,33 +1,37 @@
-use fluent_builder::FluentBuilder;
+use fluent_builder::SharedFluentBuilder;
 use reqwest::{
     Client as SyncHttpClient,
     ClientBuilder as SyncHttpClientBuilder,
     RequestBuilder as SyncHttpRequestBuilder,
 };
-use std::error::Error as StdError;
-use std::sync::Arc;
+use std::{
+    error::Error as StdError,
+    sync::Arc,
+};
 
-use client::requests::Endpoint;
-use client::responses::{
-    sync_response,
-    SyncResponseBuilder,
+use client::{
+    requests::Endpoint,
+    responses::{
+        sync_response,
+        SyncResponseBuilder,
+    },
+    sender::{
+        build_reqwest_method,
+        build_url,
+        sniffed_nodes::SniffedNodesBuilder,
+        NextParams,
+        NodeAddress,
+        NodeAddresses,
+        NodeAddressesBuilder,
+        NodeAddressesInner,
+        PreRequestParams,
+        RequestParams,
+        SendableRequest,
+        SendableRequestParams,
+        Sender,
+    },
+    Client,
 };
-use client::sender::sniffed_nodes::SniffedNodesBuilder;
-use client::sender::{
-    build_reqwest_method,
-    build_url,
-    NextParams,
-    NodeAddress,
-    NodeAddresses,
-    NodeAddressesBuilder,
-    NodeAddressesInner,
-    PreRequestParams,
-    RequestParams,
-    SendableRequest,
-    SendableRequestParams,
-    Sender,
-};
-use client::Client;
 use error::{
     self,
     Error,
@@ -90,8 +94,8 @@ impl Sender for SyncSender {
     ) -> Self::Response
     where
         TEndpoint: Into<Endpoint<'static, TBody>>,
-        TBody: Into<Self::Body> + 'static,
-        TParams: Into<Self::Params> + 'static,
+        TBody: Into<Self::Body> + Send + 'static,
+        TParams: Into<Self::Params> + Send + 'static,
     {
         let correlation_id = request.correlation_id;
         let params = request.params;
@@ -233,7 +237,7 @@ fn build_reqwest(client: &SyncHttpClient, req: SyncHttpRequest) -> SyncHttpReque
 pub struct SyncClientBuilder {
     http: Option<SyncHttpClient>,
     nodes: NodeAddressesBuilder,
-    params: FluentBuilder<PreRequestParams>,
+    params: SharedFluentBuilder<PreRequestParams>,
     pre_send: Option<
         Arc<
             Fn(&mut SyncHttpRequest) -> Result<(), Box<StdError + Send + Sync>>
@@ -264,7 +268,7 @@ impl SyncClientBuilder {
         SyncClientBuilder {
             http: None,
             nodes: NodeAddressesBuilder::default(),
-            params: FluentBuilder::new(),
+            params: SharedFluentBuilder::new(),
             pre_send: None,
         }
     }
@@ -276,7 +280,7 @@ impl SyncClientBuilder {
         SyncClientBuilder {
             http: None,
             nodes: NodeAddressesBuilder::default(),
-            params: FluentBuilder::new().value(params),
+            params: SharedFluentBuilder::new().value(params),
             pre_send: None,
         }
     }
@@ -339,7 +343,7 @@ impl SyncClientBuilder {
     pub fn sniff_nodes_fluent(
         mut self,
         address: impl Into<NodeAddress>,
-        builder: impl Fn(SniffedNodesBuilder) -> SniffedNodesBuilder + 'static,
+        builder: impl Fn(SniffedNodesBuilder) -> SniffedNodesBuilder + Send + 'static,
     ) -> Self {
         self.nodes = self.nodes.sniff_nodes_fluent(address.into(), builder);
 
@@ -362,9 +366,9 @@ impl SyncClientBuilder {
     */
     pub fn params_fluent(
         mut self,
-        builder: impl Fn(PreRequestParams) -> PreRequestParams + 'static,
+        builder: impl Fn(PreRequestParams) -> PreRequestParams + Send + 'static,
     ) -> Self {
-        self.params = self.params.fluent(builder).boxed();
+        self.params = self.params.fluent(builder).shared();
 
         self
     }

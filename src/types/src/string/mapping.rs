@@ -1,12 +1,14 @@
 /*! Common mapping for the Elasticsearch `string` types. */
 
-use super::keyword::mapping::KeywordFieldMapping;
-use super::text::mapping::{
-    TextFieldMapping,
-    TextMapping,
+use super::{
+    keyword::mapping::KeywordFieldMapping,
+    text::mapping::{
+        TextFieldMapping,
+        TextMapping,
+    },
 };
-use serde::ser::SerializeStruct;
 use serde::{
+    ser::SerializeStruct,
     Serialize,
     Serializer,
 };

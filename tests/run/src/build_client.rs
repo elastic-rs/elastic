@@ -1,5 +1,7 @@
-use elastic::prelude::*;
-use elastic::Error;
+use elastic::{
+    prelude::*,
+    Error,
+};
 use std::time::Duration;
 
 pub fn call(run: &str) -> Result<AsyncClient, Error> {

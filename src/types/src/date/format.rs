@@ -1,25 +1,27 @@
 use super::ChronoDateTime;
-use chrono::format::{
-    DelayedFormat,
-    Item,
-};
 use chrono::{
     self,
+    format::{
+        DelayedFormat,
+        Item,
+    },
     NaiveDate,
     NaiveDateTime,
     NaiveTime,
     Utc,
 };
-use std::borrow::Borrow;
-use std::error::Error;
-use std::fmt::{
-    Display,
-    Formatter,
-    Result as FmtResult,
+use std::{
+    borrow::Borrow,
+    error::Error,
+    fmt::{
+        Display,
+        Formatter,
+        Result as FmtResult,
+    },
+    marker::PhantomData,
+    ops::Deref,
+    vec::IntoIter,
 };
-use std::marker::PhantomData;
-use std::ops::Deref;
-use std::vec::IntoIter;
 
 /**
 A date value produced and consumed by date formats.

@@ -1,5 +1,7 @@
-use elastic::error::Result;
-use elastic::prelude::*;
+use elastic::{
+    error::Result,
+    prelude::*,
+};
 use ops::Client;
 
 use model::account::Account;

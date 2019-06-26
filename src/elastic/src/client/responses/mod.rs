@@ -13,8 +13,10 @@ mod sync;
 
 pub mod parse;
 
-pub use self::async::*;
-pub use self::sync::*;
+pub use self::{
+    async::*,
+    sync::*,
+};
 
 pub use elastic_responses::{
     BulkErrorsResponse,
@@ -31,14 +33,16 @@ pub use elastic_responses::{
     UpdateResponse,
 };
 
-pub use elastic_responses::bulk;
-pub use elastic_responses::search;
+pub use elastic_responses::{
+    bulk,
+    search,
+};
 
 pub mod prelude {
     /*! A glob import for convenience. */
 
-    pub use super::bulk::Action as BulkAction;
     pub use super::{
+        bulk::Action as BulkAction,
         AsyncResponseBuilder,
         BulkErrorsResponse,
         BulkResponse,

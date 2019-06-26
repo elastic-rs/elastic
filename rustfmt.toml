@@ -1,2 +1,3 @@
 imports_indent = "Block"
 imports_layout = "Vertical"
+merge_imports = true

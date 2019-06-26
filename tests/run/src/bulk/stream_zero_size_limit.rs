@@ -1,6 +1,8 @@
-use elastic::client::responses::bulk::OkItem;
-use elastic::error::Error;
-use elastic::prelude::*;
+use elastic::{
+    client::responses::bulk::OkItem,
+    error::Error,
+    prelude::*,
+};
 use futures::{
     stream,
     Future,

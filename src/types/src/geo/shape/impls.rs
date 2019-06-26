@@ -9,8 +9,10 @@ use serde::{
     Serialize,
     Serializer,
 };
-use std::borrow::Borrow;
-use std::marker::PhantomData;
+use std::{
+    borrow::Borrow,
+    marker::PhantomData,
+};
 
 /**
 Geo shape type with a given mapping.

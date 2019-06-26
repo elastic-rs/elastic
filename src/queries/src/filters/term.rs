@@ -1,5 +1,7 @@
-use super::super::filters::common::*;
-use super::super::Values;
+use super::super::{
+    filters::common::*,
+    Values,
+};
 
 #[derive(Clone, Debug, Serialize, Deserialize, Ord, PartialOrd, Eq, PartialEq)]
 pub struct TermFilter {

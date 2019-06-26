@@ -1,6 +1,8 @@
-use elastic::http::StatusCode;
-use elastic::prelude::*;
-use elastic::Error as ResponseError;
+use elastic::{
+    http::StatusCode,
+    prelude::*,
+    Error as ResponseError,
+};
 use ops::Client;
 use serde_json::Error as JsonError;
 use std::io::Error as IoError;

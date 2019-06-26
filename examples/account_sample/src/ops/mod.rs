@@ -1,11 +1,13 @@
 pub mod commands;
 pub mod queries;
 
-use elastic::client::{
-    SyncClient,
-    SyncClientBuilder,
+use elastic::{
+    client::{
+        SyncClient,
+        SyncClientBuilder,
+    },
+    error::Result,
 };
-use elastic::error::Result;
 
 /// A wrapper over the `elastic::Client` that we can implement commands
 /// and queries for.

@@ -28,7 +28,7 @@ reqwest = { version = "~0.9", default-features = false, features = ["rustls-tls"
 futures = "~0.1"
 tokio = "~0.1"
 tokio-threadpool = "~0.1"
-fluent_builder = "~0.5"
+fluent_builder = "~0.6"
 crossbeam-channel = "~0.3"
 
 elastic_requests = { version = "~0.21.0-pre.4", path = "../requests" }

@@ -5,11 +5,11 @@ This module is 'private' and should only be consumed by `elastic_types_derive`.
 Its contents aren't subject to SemVer.
 */
 
-use chrono::format::{
-    self,
-    Parsed,
-};
 use chrono::{
+    format::{
+        self,
+        Parsed,
+    },
     DateTime,
     Utc,
 };
@@ -28,12 +28,12 @@ pub use date::{
     FormattedDate,
     ParseError,
 };
-pub use document::mapping::{
-    ObjectFieldType,
-    ObjectMapping,
-    PropertiesMapping,
-};
 pub use document::{
+    mapping::{
+        ObjectFieldType,
+        ObjectMapping,
+        PropertiesMapping,
+    },
     DocumentType,
     StaticIndex,
     StaticType,

@@ -4,28 +4,32 @@ Request types for the Elasticsearch REST API.
 This module contains implementation details that are useful if you want to customise the request process, but aren't generally important for sending requests.
 */
 
-use fluent_builder::FluentBuilder;
+use fluent_builder::SharedFluentBuilder;
 use std::sync::Arc;
 use tokio_threadpool::ThreadPool;
 
-use client::sender::{
-    AsyncSender,
-    RequestParams,
-    Sender,
+use client::{
+    sender::{
+        AsyncSender,
+        RequestParams,
+        Sender,
+    },
+    Client,
 };
-use client::Client;
 
-pub use elastic_requests::endpoints;
-pub use elastic_requests::params;
 pub use elastic_requests::{
     empty_body,
+    endpoints,
+    params,
     DefaultBody,
     Endpoint,
     UrlPath,
 };
 
-pub use self::endpoints::*;
-pub use self::params::*;
+pub use self::{
+    endpoints::*,
+    params::*,
+};
 
 pub mod raw;
 pub use self::raw::RawRequestBuilder;
@@ -44,11 +48,13 @@ pub mod document_get;
 pub mod document_index;
 pub mod document_put_mapping;
 pub mod document_update;
-pub use self::document_delete::DeleteRequestBuilder;
-pub use self::document_get::GetRequestBuilder;
-pub use self::document_index::IndexRequestBuilder;
-pub use self::document_put_mapping::PutMappingRequestBuilder;
-pub use self::document_update::UpdateRequestBuilder;
+pub use self::{
+    document_delete::DeleteRequestBuilder,
+    document_get::GetRequestBuilder,
+    document_index::IndexRequestBuilder,
+    document_put_mapping::PutMappingRequestBuilder,
+    document_update::UpdateRequestBuilder,
+};
 
 // Index requests
 pub mod index_close;
@@ -56,17 +62,21 @@ pub mod index_create;
 pub mod index_delete;
 pub mod index_exists;
 pub mod index_open;
-pub use self::index_close::IndexCloseRequestBuilder;
-pub use self::index_create::IndexCreateRequestBuilder;
-pub use self::index_delete::IndexDeleteRequestBuilder;
-pub use self::index_exists::IndexExistsRequestBuilder;
-pub use self::index_open::IndexOpenRequestBuilder;
+pub use self::{
+    index_close::IndexCloseRequestBuilder,
+    index_create::IndexCreateRequestBuilder,
+    index_delete::IndexDeleteRequestBuilder,
+    index_exists::IndexExistsRequestBuilder,
+    index_open::IndexOpenRequestBuilder,
+};
 
 // Misc requests
 pub mod bulk;
 pub mod ping;
-pub use self::bulk::BulkRequestBuilder;
-pub use self::ping::PingRequestBuilder;
+pub use self::{
+    bulk::BulkRequestBuilder,
+    ping::PingRequestBuilder,
+};
 
 pub mod common;
 
@@ -86,7 +96,7 @@ where
     TSender: Sender,
 {
     client: Client<TSender>,
-    params_builder: FluentBuilder<RequestParams>,
+    params_builder: SharedFluentBuilder<RequestParams>,
     inner: TRequest,
 }
 
@@ -102,12 +112,12 @@ where
     fn initial(client: Client<TSender>, req: TRequest) -> Self {
         RequestBuilder {
             client: client,
-            params_builder: FluentBuilder::new(),
+            params_builder: SharedFluentBuilder::new(),
             inner: req,
         }
     }
 
-    fn new(client: Client<TSender>, builder: FluentBuilder<RequestParams>, req: TRequest) -> Self {
+    fn new(client: Client<TSender>, builder: SharedFluentBuilder<RequestParams>, req: TRequest) -> Self {
         RequestBuilder {
             client: client,
             params_builder: builder,
@@ -156,9 +166,9 @@ where
     */
     pub fn params_fluent(
         mut self,
-        builder: impl Fn(RequestParams) -> RequestParams + 'static,
+        builder: impl Fn(RequestParams) -> RequestParams + Send + 'static,
     ) -> Self {
-        self.params_builder = self.params_builder.fluent(builder).boxed();
+        self.params_builder = self.params_builder.fluent(builder).shared();
 
         self
     }
@@ -252,8 +262,10 @@ impl<TRequest> RequestBuilder<AsyncSender, TRequest> {
 pub mod prelude {
     /*! A glob import for convenience. */
 
-    pub use super::endpoints::*;
-    pub use super::params::*;
+    pub use super::{
+        endpoints::*,
+        params::*,
+    };
 
     pub use super::bulk::{
         bulk,

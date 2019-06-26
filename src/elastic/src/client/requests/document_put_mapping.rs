@@ -11,20 +11,24 @@ use futures::{
 use serde_json;
 use std::marker::PhantomData;
 
-use client::requests::endpoints::IndicesPutMappingRequest;
-use client::requests::params::{
-    Index,
-    Type,
+use client::{
+    requests::{
+        endpoints::IndicesPutMappingRequest,
+        params::{
+            Index,
+            Type,
+        },
+        raw::RawRequestInner,
+        RequestBuilder,
+    },
+    responses::CommandResponse,
+    sender::{
+        AsyncSender,
+        Sender,
+        SyncSender,
+    },
+    DocumentClient,
 };
-use client::requests::raw::RawRequestInner;
-use client::requests::RequestBuilder;
-use client::responses::CommandResponse;
-use client::sender::{
-    AsyncSender,
-    Sender,
-    SyncSender,
-};
-use client::DocumentClient;
 use error::{
     self,
     Error,
@@ -275,13 +279,13 @@ where
 
 /** A future returned by calling `send`. */
 pub struct Pending {
-    inner: Box<Future<Item = CommandResponse, Error = Error>>,
+    inner: Box<Future<Item = CommandResponse, Error = Error> + Send>,
 }
 
 impl Pending {
     fn new<F>(fut: F) -> Self
     where
-        F: Future<Item = CommandResponse, Error = Error> + 'static,
+        F: Future<Item = CommandResponse, Error = Error> + Send + 'static,
     {
         Pending {
             inner: Box::new(fut),
@@ -305,6 +309,12 @@ mod tests {
         self,
         Value,
     };
+    use tests::*;
+
+    #[test]
+    fn is_send() {
+        assert_send::<super::Pending>();
+    }
 
     #[derive(ElasticType)]
     struct TestDoc {}

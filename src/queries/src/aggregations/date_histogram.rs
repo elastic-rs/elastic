@@ -1,5 +1,7 @@
-use super::BucketAggregation;
-use super::EsAggregation;
+use super::{
+    BucketAggregation,
+    EsAggregation,
+};
 use std::collections::HashMap;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

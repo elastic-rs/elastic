@@ -4,36 +4,42 @@ Builders for [bulk requests][docs-bulk].
 [docs-bulk]: https://www.elastic.co/guide/en/elasticsearch/reference/current/bulk.html
 */
 
-use std::error::Error as StdError;
-use std::fmt;
-use std::marker::PhantomData;
-use std::time::Duration;
+use std::{
+    error::Error as StdError,
+    fmt,
+    marker::PhantomData,
+    time::Duration,
+};
 
 use futures::{
     Future,
     Poll,
 };
-use serde::de::DeserializeOwned;
-use serde::ser::Serialize;
+use serde::{
+    de::DeserializeOwned,
+    ser::Serialize,
+};
 
-use client::requests::endpoints::BulkRequest;
-use client::requests::params::{
-    Index,
-    Type,
-};
-use client::requests::raw::RawRequestInner;
-use client::requests::RequestBuilder;
-use client::responses::parse::IsOk;
-use client::responses::{
-    BulkErrorsResponse,
-    BulkResponse,
-};
-use client::sender::{
-    AsyncSender,
-    Sender,
-    SyncSender,
-};
 use client::{
+    requests::{
+        endpoints::BulkRequest,
+        params::{
+            Index,
+            Type,
+        },
+        raw::RawRequestInner,
+        RequestBuilder,
+    },
+    responses::{
+        parse::IsOk,
+        BulkErrorsResponse,
+        BulkResponse,
+    },
+    sender::{
+        AsyncSender,
+        Sender,
+        SyncSender,
+    },
     Client,
     RequestParams,
 };
@@ -67,8 +73,10 @@ pub type BulkRequestBuilder<TSender, TBody, TResponse> =
 mod operation;
 mod stream;
 
-pub use self::operation::*;
-pub use self::stream::*;
+pub use self::{
+    operation::*,
+    stream::*,
+};
 
 #[doc(hidden)]
 pub struct BulkRequestInner<TBody, TResponse> {
@@ -543,8 +551,8 @@ where
 */
 impl<TBody, TResponse> BulkRequestBuilder<SyncSender, TBody, TResponse>
 where
-    TBody: Into<SyncBody> + BulkBody + 'static,
-    TResponse: DeserializeOwned + IsOk + 'static,
+    TBody: Into<SyncBody> + BulkBody + Send + 'static,
+    TResponse: DeserializeOwned + IsOk + Send + 'static,
 {
     /**
     Send a `BulkRequestBuilder` synchronously using a [`SyncClient`][SyncClient].
@@ -803,13 +811,13 @@ impl BulkBody for Vec<u8> {
 
 /** A future returned by calling `send`. */
 pub struct Pending<TResponse> {
-    inner: Box<Future<Item = TResponse, Error = Error>>,
+    inner: Box<Future<Item = TResponse, Error = Error> + Send>,
 }
 
 impl<TResponse> Pending<TResponse> {
     fn new<F>(fut: F) -> Self
     where
-        F: Future<Item = TResponse, Error = Error> + 'static,
+        F: Future<Item = TResponse, Error = Error> + Send + 'static,
     {
         Pending {
             inner: Box::new(fut),
@@ -870,6 +878,12 @@ impl<TIndex, TType, TId, TNewId> ChangeId<TNewId> for BulkErrorsResponse<TIndex,
 #[cfg(test)]
 mod tests {
     use prelude::*;
+    use tests::*;
+
+    #[test]
+    fn is_send() {
+        assert_send::<super::Pending<BulkResponse>>();
+    }
 
     #[test]
     fn default_request() {

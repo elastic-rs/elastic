@@ -1,8 +1,10 @@
 /*This code is automatically generated
 */
 pub mod endpoints {
-    use super::http::*;
-    use super::params::*;
+    use super::{
+        http::*,
+        params::*,
+    };
 
     #[derive(Debug, PartialEq, Clone)]
     enum IndicesUpgradeUrlParams<'a> {
@@ -6877,8 +6879,10 @@ pub mod endpoints {
 }
 
 pub mod http {
-    use std::borrow::Cow;
-    use std::ops::Deref;
+    use std::{
+        borrow::Cow,
+        ops::Deref,
+    };
     extern crate http;
     pub use self::http::Method;
 

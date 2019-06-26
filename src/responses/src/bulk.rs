@@ -19,12 +19,14 @@ use serde_json::Value;
 
 use parsing::IsOkOnSuccess;
 
-use std::cmp;
-use std::error::Error;
-use std::fmt;
-use std::marker::PhantomData;
-use std::slice::Iter;
-use std::vec::IntoIter;
+use std::{
+    cmp,
+    error::Error,
+    fmt,
+    marker::PhantomData,
+    slice::Iter,
+    vec::IntoIter,
+};
 
 type BulkError = Value;
 
@@ -517,7 +519,9 @@ impl<TIndex, TType, TId> ErrorItem<TIndex, TType, TId> {
     }
 
     /** Raw error JSON. */
-    pub fn err(&self) -> &BulkError { &self.err }
+    pub fn err(&self) -> &BulkError {
+        &self.err
+    }
 }
 
 impl<TIndex, TType, TId> fmt::Display for ErrorItem<TIndex, TType, TId>

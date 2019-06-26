@@ -1,12 +1,16 @@
-use std::collections::HashMap;
-use std::sync::Arc;
+use std::{
+    collections::HashMap,
+    sync::Arc,
+};
 
-use reqwest;
-use reqwest::header::{
-    HeaderMap,
-    HeaderName,
-    HeaderValue,
-    CONTENT_TYPE,
+use reqwest::{
+    self,
+    header::{
+        HeaderMap,
+        HeaderName,
+        HeaderValue,
+        CONTENT_TYPE,
+    },
 };
 use url::form_urlencoded::Serializer;
 

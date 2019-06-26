@@ -11,24 +11,24 @@ use futures::{
 use serde::de::DeserializeOwned;
 use std::marker::PhantomData;
 
-use client::requests::endpoints::SearchRequest;
-use client::requests::params::{
-    Index,
-    Type,
-};
-use client::requests::raw::RawRequestInner;
-use client::requests::{
-    empty_body,
-    DefaultBody,
-    RequestBuilder,
-};
-use client::responses::SearchResponse;
-use client::sender::{
-    AsyncSender,
-    Sender,
-    SyncSender,
-};
 use client::{
+    requests::{
+        empty_body,
+        endpoints::SearchRequest,
+        params::{
+            Index,
+            Type,
+        },
+        raw::RawRequestInner,
+        DefaultBody,
+        RequestBuilder,
+    },
+    responses::SearchResponse,
+    sender::{
+        AsyncSender,
+        Sender,
+        SyncSender,
+    },
     Client,
     DocumentClient,
 };
@@ -312,7 +312,7 @@ where
 impl<TDocument, TBody> SearchRequestBuilder<SyncSender, TDocument, TBody>
 where
     TDocument: DeserializeOwned,
-    TBody: Into<<SyncSender as Sender>::Body> + 'static,
+    TBody: Into<<SyncSender as Sender>::Body> + Send + 'static,
 {
     /**
     Send a `SearchRequestBuilder` synchronously using a [`SyncClient`][SyncClient].
@@ -365,7 +365,7 @@ where
 impl<TDocument, TBody> SearchRequestBuilder<AsyncSender, TDocument, TBody>
 where
     TDocument: DeserializeOwned + Send + 'static,
-    TBody: Into<<AsyncSender as Sender>::Body> + 'static,
+    TBody: Into<<AsyncSender as Sender>::Body> + Send + 'static,
 {
     /**
     Send a `SearchRequestBuilder` asynchronously using an [`AsyncClient`][AsyncClient].
@@ -424,13 +424,13 @@ where
 
 /** A future returned by calling `send`. */
 pub struct Pending<TDocument> {
-    inner: Box<Future<Item = SearchResponse<TDocument>, Error = Error>>,
+    inner: Box<Future<Item = SearchResponse<TDocument>, Error = Error> + Send>,
 }
 
 impl<TDocument> Pending<TDocument> {
     fn new<F>(fut: F) -> Self
     where
-        F: Future<Item = SearchResponse<TDocument>, Error = Error> + 'static,
+        F: Future<Item = SearchResponse<TDocument>, Error = Error> + Send + 'static,
     {
         Pending {
             inner: Box::new(fut),
@@ -452,8 +452,18 @@ where
 
 #[cfg(test)]
 mod tests {
-    use prelude::*;
     use serde_json::Value;
+
+    use prelude::*;
+    use tests::*;
+
+    #[test]
+    fn is_send() {
+        assert_send::<super::Pending<TestDoc>>();
+    }
+
+    #[derive(Serialize, ElasticType)]
+    struct TestDoc {}
 
     #[test]
     fn default_request() {

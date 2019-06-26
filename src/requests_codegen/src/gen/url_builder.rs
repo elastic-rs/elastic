@@ -1,5 +1,7 @@
-use super::helpers::*;
-use super::types;
+use super::{
+    helpers::*,
+    types,
+};
 use parse::{
     Endpoint,
     PathPart,

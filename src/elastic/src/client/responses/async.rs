@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
-use futures::future::lazy;
 use futures::{
+    future::lazy,
     Future,
     Poll,
     Stream,
@@ -155,13 +155,13 @@ impl AsyncResponseBuilder {
 
 /** A future returned by calling `into_response`. */
 pub struct IntoResponse<T> {
-    inner: Box<Future<Item = T, Error = Error>>,
+    inner: Box<Future<Item = T, Error = Error> + Send>,
 }
 
 impl<T> IntoResponse<T> {
     fn new<F>(fut: F) -> Self
     where
-        F: Future<Item = T, Error = Error> + 'static,
+        F: Future<Item = T, Error = Error> + Send + 'static,
     {
         IntoResponse {
             inner: Box::new(fut),
@@ -178,5 +178,16 @@ where
 
     fn poll(&mut self) -> Poll<Self::Item, Self::Error> {
         self.inner.poll()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use client;
+    use tests::*;
+
+    #[test]
+    fn is_send() {
+        assert_send::<super::IntoResponse<client::responses::PingResponse>>();
     }
 }

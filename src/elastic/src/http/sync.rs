@@ -1,11 +1,13 @@
 use bytes::Bytes;
 use serde_json::Value;
-use std::borrow::Cow;
-use std::fs::File;
-use std::io::{
-    self,
-    Cursor,
-    Read,
+use std::{
+    borrow::Cow,
+    fs::File,
+    io::{
+        self,
+        Cursor,
+        Read,
+    },
 };
 
 use reqwest::{

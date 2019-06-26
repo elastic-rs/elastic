@@ -1,8 +1,8 @@
-use super::mapping::{
-    GeoPointFieldType,
-    GeoPointMapping,
-};
 use super::{
+    mapping::{
+        GeoPointFieldType,
+        GeoPointMapping,
+    },
     Coordinate,
     GeoPointFormat,
     Geometry,
@@ -18,8 +18,10 @@ use serde::{
     Serialize,
     Serializer,
 };
-use std::borrow::Borrow;
-use std::marker::PhantomData;
+use std::{
+    borrow::Borrow,
+    marker::PhantomData,
+};
 
 /**
 An Elasticsearch `geo_point` type with a format.
