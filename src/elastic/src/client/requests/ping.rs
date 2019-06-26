@@ -7,23 +7,22 @@ use futures::{
     Poll,
 };
 
-use client::{
-    requests::{
-        endpoints::PingRequest,
-        raw::RawRequestInner,
-        RequestBuilder,
+use crate::{
+    client::{
+        requests::{
+            raw::RawRequestInner,
+            RequestBuilder,
+        },
+        responses::PingResponse,
+        Client,
     },
-    responses::PingResponse,
-    sender::{
+    endpoints::PingRequest,
+    error::Error,
+    http::sender::{
         AsyncSender,
         Sender,
         SyncSender,
     },
-    Client,
-};
-use error::{
-    Error,
-    Result,
 };
 
 /**
@@ -61,14 +60,12 @@ where
     Ping an Elasticsearch node.
 
     ```no_run
-    # extern crate serde;
     # #[macro_use] extern crate serde_derive;
     # #[macro_use] extern crate elastic_derive;
     # #[macro_use] extern crate serde_json;
-    # extern crate elastic;
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
     # #[derive(Debug, Serialize, Deserialize, ElasticType)]
     # struct MyType { }
     # let client = SyncClientBuilder::new().build()?;
@@ -108,14 +105,12 @@ impl PingRequestBuilder<SyncSender> {
     Ping an Elasticsearch node:
 
     ```no_run
-    # extern crate serde;
     # #[macro_use] extern crate serde_derive;
     # #[macro_use] extern crate elastic_derive;
     # #[macro_use] extern crate serde_json;
-    # extern crate elastic;
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
     # #[derive(Debug, Serialize, Deserialize, ElasticType)]
     # struct MyType { }
     # let client = SyncClientBuilder::new().build()?;
@@ -128,7 +123,7 @@ impl PingRequestBuilder<SyncSender> {
 
     [SyncClient]: ../../type.SyncClient.html
     */
-    pub fn send(self) -> Result<PingResponse> {
+    pub fn send(self) -> Result<PingResponse, Error> {
         let req = self.inner.into_request();
 
         RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
@@ -151,16 +146,12 @@ impl PingRequestBuilder<AsyncSender> {
     Ping an Elasticsearch node:
 
     ```no_run
-    # extern crate tokio;
-    # extern crate futures;
-    # extern crate serde;
     # #[macro_use] extern crate serde_derive;
     # #[macro_use] extern crate elastic_derive;
-    # extern crate elastic;
     # use futures::Future;
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
     # #[derive(Debug, Serialize, Deserialize, ElasticType)]
     # struct MyType { }
     # let client = AsyncClientBuilder::new().build()?;
@@ -191,7 +182,7 @@ impl PingRequestBuilder<AsyncSender> {
 
 /** A future returned by calling `send`. */
 pub struct Pending {
-    inner: Box<Future<Item = PingResponse, Error = Error> + Send>,
+    inner: Box<dyn Future<Item = PingResponse, Error = Error> + Send>,
 }
 
 impl Pending {
@@ -216,8 +207,10 @@ impl Future for Pending {
 
 #[cfg(test)]
 mod tests {
-    use prelude::*;
-    use tests::*;
+    use crate::{
+        prelude::*,
+        tests::*,
+    };
 
     #[test]
     fn is_send() {

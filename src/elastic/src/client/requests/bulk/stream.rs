@@ -41,22 +41,24 @@ use super::{
     Pending,
     WrappedBody,
 };
-use client::{
-    requests::{
-        params::{
-            Index,
-            Type,
-        },
-        RequestBuilder,
+use crate::{
+    client::{
+        requests::RequestBuilder,
+        Client,
+        RequestParams,
     },
-    responses::parse::IsOk,
-    sender::AsyncSender,
-    Client,
-    RequestParams,
-};
-use error::{
-    self,
-    Error,
+    error::{
+        self,
+        Error,
+    },
+    http::{
+        receiver::IsOk,
+        sender::AsyncSender,
+    },
+    params::{
+        Index,
+        Type,
+    },
 };
 
 /**

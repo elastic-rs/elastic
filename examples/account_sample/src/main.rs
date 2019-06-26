@@ -26,7 +26,7 @@ use ops::{
 };
 use std::error::Error;
 
-fn run() -> Result<(), Box<Error>> {
+fn run() -> Result<(), Box<dyn Error>> {
     let client = Client::new("http://localhost:9200")?;
 
     println!("checking index");

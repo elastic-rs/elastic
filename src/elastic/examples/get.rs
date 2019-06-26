@@ -21,10 +21,10 @@ use elastic::{
 use serde_json::Value;
 use std::error::Error as StdError;
 
-fn run() -> Result<(), Box<StdError>> {
+fn run() -> Result<(), Box<dyn StdError>> {
     // A reqwest HTTP client and default parameters.
     // The `params` includes the base node url (http://localhost:9200).
-    let client = SyncClientBuilder::new().build()?;
+    let client = SyncClient::builder().build()?;
 
     let res = client
         .document::<Value>()

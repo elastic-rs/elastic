@@ -13,7 +13,7 @@ use super::index;
 #[derive(Debug, Serialize, Deserialize, ElasticType)]
 #[elastic(index(expr = "index::name()"))]
 pub struct Account {
-    #[elastic(id(expr = "account_number.to_string()"))]
+    #[elastic(id(expr = "account_number"))]
     pub account_number: i32,
     pub balance: i32,
     pub firstname: FirstName,
@@ -25,11 +25,6 @@ pub struct Account {
     pub email: Email,
     pub city: City,
     pub state: State,
-}
-
-/// Get the indexed document type name.
-pub fn name() -> &'static str {
-    Account::static_ty()
 }
 
 // We're using type aliases to make the `Account` definition more ergonomic.

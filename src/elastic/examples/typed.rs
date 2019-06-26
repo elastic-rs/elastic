@@ -39,9 +39,9 @@ struct MyType {
     timestamp: Date<DefaultDateMapping>,
 }
 
-fn run() -> Result<(), Box<StdError>> {
+fn run() -> Result<(), Box<dyn StdError>> {
     // A HTTP client and request parameters
-    let client = SyncClientBuilder::new().build()?;
+    let client = SyncClient::builder().build()?;
 
     // Create a document to index
     let doc = MyType {

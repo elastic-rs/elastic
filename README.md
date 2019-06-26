@@ -1,13 +1,12 @@
 # [`elastic`](https://docs.rs/elastic/*/elastic/) [![Latest Version](https://img.shields.io/crates/v/elastic.svg)](https://crates.io/crates/elastic) [![Gitter](https://img.shields.io/gitter/room/nwjs/nw.js.svg)](https://gitter.im/elastic-rs/Lobby)
 
 `elastic` is an efficient, modular API client for [Elasticsearch](https://github.com/elastic/elasticsearch) written in [Rust](https://www.rust-lang.org).
-The API is targeting the Elastic Stack `6.x`.
+The API is targeting the Elastic Stack `7.x`.
 
 `elastic` provides strongly-typed documents and weakly-typed queries.
 
 Quick reference:
 
-- [crates](#crates)
 - [simple examples](https://github.com/elastic-rs/elastic/tree/master/src/elastic/examples)
 - [example apps](https://github.com/elastic-rs/elastic/tree/master/examples)
 
@@ -53,7 +52,7 @@ use elastic::prelude::*;
 
 // A reqwest HTTP client and default parameters.
 // The builder includes the base node url (http://localhost:9200).
-let client = SyncClientBuilder::new().build()?;
+let client = SyncClient::builder().build()?;
 
 let query = "some query string";
 
@@ -105,7 +104,7 @@ If you'd like to use a strongly-typed Query DSL builder see [`rs-es`](https://gi
 
 To provide a full-featured and efficient Elasticsearch client for Rust over asynchronous io. Rust gives us a lot of tools for building super-performant but highly accessible libraries, which we aim to continue. `elastic` is aimed at people who need to work with Elasticsearch and are considering using Rust, as well as users that are already using Rust. We want to offer a solution to interacting with Elasticsearch that's compelling from both within and outside the Rust ecosystem.
 
-The REST API is covered by a simple inline JSON macro like `serde_json`'s [`json!`](https://docs.serde.rs/serde_json/macro.json.html) macro or the [`json_str!`](https://github.com/KodrAus/json_str) macro so it's always possible to build any query. This means you don't need to learn another API for interacting with Elasticsearch; queries mocked in [Dev Tools](https://www.elastic.co/blog/found-sense-a-cool-json-aware-interface-to-elasticsearch) could just be copy+pasted into your Rust source.
+The REST API is covered by a simple inline JSON macro like `serde_json`'s [`json!`](https://docs.serde.rs/serde_json/macro.json.html) so it's always possible to build any query. This means you don't need to learn another API for interacting with Elasticsearch; queries mocked in [Dev Tools](https://www.elastic.co/blog/found-sense-a-cool-json-aware-interface-to-elasticsearch) could just be copy+pasted into your Rust source.
 
 The core focus of this project is on strong typing over your document types and query responses in Elasticsearch, rather than trying to map the entire Query DSL.
 

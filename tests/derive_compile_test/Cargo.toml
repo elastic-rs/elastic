@@ -1,0 +1,10 @@
+[package]
+name = "derive_compile_test"
+version = "0.0.0"
+edition = "2018"
+authors = ["Ashley Mannix <ashleymannix@live.com.au>"]
+publish = false
+
+[dependencies]
+elastic = { version = "~0.21.0-pre.4", path = "../../src/elastic" }
+elastic_derive = { version = "~0.21.0-pre.4", path = "../../src/elastic_derive" }

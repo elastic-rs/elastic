@@ -14,8 +14,8 @@ use serde::ser::{
 };
 use serde_json;
 
-use client::requests::{
-    common::{
+use crate::{
+    client::requests::common::{
         DefaultParams,
         Doc,
         Script,
@@ -26,10 +26,10 @@ use client::requests::{
         Index,
         Type,
     },
+    types::document::DocumentType,
 };
-use types::document::DocumentType;
 
-pub use client::responses::bulk::Action;
+pub use crate::client::responses::bulk::Action;
 
 /**
 A bulk operation.
@@ -197,9 +197,9 @@ where
         BulkOperation {
             action: Action::Index,
             header: BulkHeader {
-                index: Some(Index::from(doc.index().into_owned())),
-                ty: Some(Type::from(doc.ty().into_owned())),
-                id: doc.partial_id().map(|id| Id::from(id.into_owned())),
+                index: Some(doc.index().to_owned()),
+                ty: Some(doc.ty().to_owned()),
+                id: doc.partial_id().map(|id| id.to_owned()),
             },
             inner: Some(doc),
         }
@@ -209,9 +209,9 @@ where
         BulkOperation {
             action: Action::Update,
             header: BulkHeader {
-                index: Some(Index::from(doc.index().into_owned())),
-                ty: Some(Type::from(doc.ty().into_owned())),
-                id: doc.partial_id().map(|id| Id::from(id.into_owned())),
+                index: Some(doc.index().to_owned()),
+                ty: Some(doc.ty().to_owned()),
+                id: doc.partial_id().map(|id| id.to_owned()),
             },
             inner: Some(Doc::value(doc)),
         }
@@ -229,8 +229,8 @@ where
         BulkOperation {
             action: Action::Update,
             header: BulkHeader {
-                index: TDocument::partial_static_index().map(Into::into),
-                ty: TDocument::partial_static_ty().map(Into::into),
+                index: TDocument::partial_static_index(),
+                ty: TDocument::partial_static_ty(),
                 id: Some(id.into()),
             },
             inner: Some(Script::new(script)),
@@ -264,9 +264,9 @@ where
         BulkOperation {
             action: Action::Create,
             header: BulkHeader {
-                index: Some(Index::from(doc.index().into_owned())),
-                ty: Some(Type::from(doc.ty().into_owned())),
-                id: doc.partial_id().map(|id| Id::from(id.into_owned())),
+                index: Some(doc.index().to_owned()),
+                ty: Some(doc.ty().to_owned()),
+                id: doc.partial_id().map(|id| id.to_owned()),
             },
             inner: Some(doc),
         }
@@ -279,8 +279,8 @@ where
         BulkOperation {
             action: Action::Delete,
             header: BulkHeader {
-                index: TDocument::partial_static_index().map(Into::into),
-                ty: TDocument::partial_static_ty().map(Into::into),
+                index: TDocument::partial_static_index(),
+                ty: TDocument::partial_static_ty(),
                 id: Some(id.into()),
             },
             inner: None,

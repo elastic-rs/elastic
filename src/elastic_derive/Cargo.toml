@@ -11,6 +11,11 @@ name = "elastic_derive"
 proc-macro = true
 
 [dependencies]
-elastic_types_derive_internals = { version = "~0.21.0-pre.4", path = "../types_derive_internals" }
+serde = "~1"
+serde_json = "~1"
 syn = { version = "~0.11.0", features = ["aster", "visit", "parsing", "full"] }
 quote = "~0.3.0"
+serde_derive_internals = { version = "~0.15.0", default-features = false }
+quick-error = "~1"
+nom = "~2"
+chrono = { version = "~0.4.0", features = [ "serde" ]}

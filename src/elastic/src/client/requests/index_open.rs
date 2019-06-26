@@ -1,7 +1,7 @@
 /*!
 Builders for [open index requests][docs-open-index].
 
-[docs-open-index]: https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-open-close.html
+[docs-open-index]: https://www.elastic.co/guide/en/elasticsearch/reference/master/indices-open-close.html
 */
 
 use futures::{
@@ -9,24 +9,28 @@ use futures::{
     Poll,
 };
 
-use client::{
-    requests::{
+use crate::{
+    client::{
+        requests::{
+            raw::RawRequestInner,
+            RequestBuilder,
+        },
+        responses::CommandResponse,
+        IndexClient,
+    },
+    endpoints::IndicesOpenRequest,
+    error::Error,
+    http::{
         empty_body,
-        endpoints::IndicesOpenRequest,
-        params::Index,
-        raw::RawRequestInner,
+        sender::{
+            AsyncSender,
+            Sender,
+            SyncSender,
+        },
         DefaultBody,
-        RequestBuilder,
     },
-    responses::CommandResponse,
-    sender::{
-        AsyncSender,
-        Sender,
-        SyncSender,
-    },
-    IndexClient,
+    params::Index,
 };
-use error::*;
 
 /**
 An [open index request][docs-open-index] builder that can be configured before sending.
@@ -34,7 +38,7 @@ An [open index request][docs-open-index] builder that can be configured before s
 Call [`Client.index_open`][Client.index_open] to get an `IndexOpenRequestBuilder`.
 The `send` method will either send the request [synchronously][send-sync] or [asynchronously][send-async], depending on the `Client` it was opend from.
 
-[docs-open-index]: https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-open-close.html
+[docs-open-index]: https://www.elastic.co/guide/en/elasticsearch/reference/master/indices-open-close.html
 [send-sync]: #send-synchronously
 [send-async]: #send-asynchronously
 [Client.index_open]: ../../struct.Client.html#open-index-request
@@ -66,10 +70,9 @@ where
     Open an index called `myindex`:
 
     ```no_run
-    # extern crate elastic;
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
     # let client = SyncClientBuilder::new().build()?;
     let response = client.index("myindex").open().send()?;
 
@@ -108,10 +111,9 @@ impl IndexOpenRequestBuilder<SyncSender> {
     Open an index called `myindex`:
 
     ```no_run
-    # extern crate elastic;
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
     # let client = SyncClientBuilder::new().build()?;
     let response = client.index("myindex").open().send()?;
 
@@ -122,7 +124,7 @@ impl IndexOpenRequestBuilder<SyncSender> {
 
     [SyncClient]: ../../type.SyncClient.html
     */
-    pub fn send(self) -> Result<CommandResponse> {
+    pub fn send(self) -> Result<CommandResponse, Error> {
         let req = self.inner.into_request();
 
         RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
@@ -145,13 +147,10 @@ impl IndexOpenRequestBuilder<AsyncSender> {
     Open an index called `myindex`:
 
     ```no_run
-    # extern crate futures;
-    # extern crate tokio;
-    # extern crate elastic;
     # use futures::Future;
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
     # let client = AsyncClientBuilder::new().build()?;
     let future = client.index("myindex").open().send();
 
@@ -180,7 +179,7 @@ impl IndexOpenRequestBuilder<AsyncSender> {
 
 /** A future returned by calling `send`. */
 pub struct Pending {
-    inner: Box<Future<Item = CommandResponse, Error = Error> + Send>,
+    inner: Box<dyn Future<Item = CommandResponse, Error = Error> + Send>,
 }
 
 impl Pending {
@@ -205,8 +204,10 @@ impl Future for Pending {
 
 #[cfg(test)]
 mod tests {
-    use prelude::*;
-    use tests::*;
+    use crate::{
+        prelude::*,
+        tests::*,
+    };
 
     #[test]
     fn is_send() {

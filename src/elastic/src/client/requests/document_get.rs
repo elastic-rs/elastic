@@ -1,7 +1,7 @@
 /*!
 Builders for [get document requests][docs-get].
 
-[docs-get]: http://www.elastic.co/guide/en/elasticsearch/reference/current/docs-get.html
+[docs-get]: http://www.elastic.co/guide/en/elasticsearch/reference/master/docs-get.html
 */
 
 use futures::{
@@ -11,34 +11,33 @@ use futures::{
 use serde::de::DeserializeOwned;
 use std::marker::PhantomData;
 
-use client::{
-    requests::{
-        endpoints::GetRequest,
-        params::{
-            Id,
-            Index,
-            Type,
+use crate::{
+    client::{
+        requests::{
+            raw::RawRequestInner,
+            RequestBuilder,
         },
-        raw::RawRequestInner,
-        RequestBuilder,
+        responses::GetResponse,
+        DocumentClient,
     },
-    responses::GetResponse,
-    sender::{
+    endpoints::GetRequest,
+    error::Error,
+    http::sender::{
         AsyncSender,
         Sender,
         SyncSender,
     },
-    DocumentClient,
-};
-use error::{
-    Error,
-    Result,
-};
-use types::document::{
-    DocumentType,
-    StaticIndex,
-    StaticType,
-    DEFAULT_DOC_TYPE,
+    params::{
+        Id,
+        Index,
+        Type,
+    },
+    types::document::{
+        DocumentType,
+        StaticIndex,
+        StaticType,
+        DEFAULT_DOC_TYPE,
+    },
 };
 
 /**
@@ -47,7 +46,7 @@ A [get document request][docs-get] builder that can be configured before sending
 Call [`Client.document.get`][Client.document.get] to get a `GetRequestBuilder`.
 The `send` method will either send the request [synchronously][send-sync] or [asynchronously][send-async], depending on the `Client` it was created from.
 
-[docs-get]: http://www.elastic.co/guide/en/elasticsearch/reference/current/docs-get.html
+[docs-get]: http://www.elastic.co/guide/en/elasticsearch/reference/master/docs-get.html
 [send-sync]: #send-synchronously
 [send-async]: #send-asynchronously
 [Client.document.get]: ../../struct.DocumentClient.html#get-document-request
@@ -84,17 +83,15 @@ where
     Get a [`DocumentType`][documents-mod] called `MyType` with an id of `1`:
 
     ```no_run
-    # extern crate serde;
-    # extern crate serde_json;
+    # #[macro_use] extern crate serde_json;
     # #[macro_use] extern crate serde_derive;
     # #[macro_use] extern crate elastic_derive;
-    # extern crate elastic;
     # use serde_json::Value;
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType { }
-    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
     # let client = SyncClientBuilder::new().build()?;
     let response = client.document::<MyType>()
                          .get(1)
@@ -144,15 +141,13 @@ where
     Get a document as a `serde_json::Value`:
 
     ```no_run
-    # extern crate serde;
-    # extern crate serde_json;
+    # #[macro_use] extern crate serde_json;
     # #[macro_use] extern crate serde_derive;
     # #[macro_use] extern crate elastic_derive;
-    # extern crate elastic;
     # use serde_json::Value;
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
     # let client = SyncClientBuilder::new().build()?;
     let response = client.document::<Value>()
                          .get_raw("myindex", 1)
@@ -233,17 +228,15 @@ where
     Get a [`DocumentType`][documents-mod] called `MyType` with an id of `1`:
 
     ```no_run
-    # extern crate serde;
-    # extern crate serde_json;
+    # #[macro_use] extern crate serde_json;
     # #[macro_use] extern crate serde_derive;
     # #[macro_use] extern crate elastic_derive;
-    # extern crate elastic;
     # use serde_json::Value;
     # use elastic::prelude::*;
     # #[derive(Debug, ElasticType, Deserialize)]
     # struct MyType { }
     # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
     # let client = SyncClientBuilder::new().build()?;
     let response = client.document::<MyType>()
                          .get(1)
@@ -259,7 +252,7 @@ where
     [SyncClient]: ../../type.SyncClient.html
     [documents-mod]: ../types/document/index.html
     */
-    pub fn send(self) -> Result<GetResponse<TDocument>> {
+    pub fn send(self) -> Result<GetResponse<TDocument>, Error> {
         let req = self.inner.into_request();
 
         RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
@@ -285,20 +278,16 @@ where
     Get a [`DocumentType`][documents-mod] called `MyType` with an id of `1`:
 
     ```no_run
-    # extern crate futures;
-    # extern crate tokio;
-    # extern crate serde;
-    # extern crate serde_json;
+    # #[macro_use] extern crate serde_json;
     # #[macro_use] extern crate serde_derive;
     # #[macro_use] extern crate elastic_derive;
-    # extern crate elastic;
     # use serde_json::Value;
     # use futures::Future;
     # use elastic::prelude::*;
     # #[derive(Debug, ElasticType, Deserialize)]
     # struct MyType { }
     # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
     # let client = AsyncClientBuilder::new().build()?;
     let future = client.document::<MyType>()
                        .get(1)
@@ -332,7 +321,7 @@ where
 
 /** A future returned by calling `send`. */
 pub struct Pending<TDocument> {
-    inner: Box<Future<Item = GetResponse<TDocument>, Error = Error> + Send>,
+    inner: Box<dyn Future<Item = GetResponse<TDocument>, Error = Error> + Send>,
 }
 
 impl<TDocument> Pending<TDocument> {
@@ -360,8 +349,10 @@ where
 
 #[cfg(test)]
 mod tests {
-    use prelude::*;
-    use tests::*;
+    use crate::{
+        prelude::*,
+        tests::*,
+    };
 
     #[test]
     fn is_send() {
@@ -369,6 +360,7 @@ mod tests {
     }
 
     #[derive(Deserialize, ElasticType)]
+    #[elastic(crate_root = "crate::types")]
     struct TestDoc {}
 
     #[test]

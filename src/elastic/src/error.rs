@@ -9,13 +9,12 @@ Any method defined in `elastic` that could fail will return a `Result<T, Error>`
 The below example sends a request and then checks the response for an `Error::Api`:
 
 ```no_run
-# extern crate elastic;
-# extern crate serde_json;
+# #[macro_use] extern crate serde_json;
 # use serde_json::Value;
 # use elastic::prelude::*;
 # use elastic::Error;
 # fn main() { run().unwrap() }
-# fn run() -> Result<(), Box<::std::error::Error>> {
+# fn run() -> Result<(), Box<dyn ::std::error::Error>> {
 # let client = SyncClientBuilder::new().build()?;
 // Send a request.
 // The returned error may be a REST API error from Elasticsearch or an internal error
@@ -43,16 +42,14 @@ use std::{
     io,
 };
 
-use elastic_responses::error::ResponseError;
+use crate::http::{
+    receiver::ResponseError,
+    StatusCode,
+};
 use reqwest::Error as ReqwestError;
 use serde_json;
 
-pub use elastic_responses::error::ApiError;
-
-use http::StatusCode;
-
-/** An alias for a result. */
-pub type Result<T> = ::std::result::Result<T, Error>;
+pub use crate::http::receiver::ApiError;
 
 quick_error! {
     /**
@@ -93,7 +90,7 @@ pub(crate) mod string_error {
     }
 }
 
-pub(crate) struct WrappedError(Box<StdError + Send + Sync>);
+pub(crate) struct WrappedError(Box<dyn StdError + Send + Sync>);
 
 impl fmt::Display for WrappedError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -112,7 +109,7 @@ impl StdError for WrappedError {
         self.0.description()
     }
 
-    fn source(&self) -> Option<&(StdError + 'static)> {
+    fn source(&self) -> Option<&(dyn StdError + 'static)> {
         self.0.source()
     }
 }
@@ -128,7 +125,7 @@ impl StdError for ClientError {
         self.inner.description()
     }
 
-    fn source(&self) -> Option<&(StdError + 'static)> {
+    fn source(&self) -> Option<&(dyn StdError + 'static)> {
         self.inner.source()
     }
 }
@@ -148,7 +145,7 @@ where
     })
 }
 
-pub(crate) fn wrapped(err: Box<StdError + Send + Sync>) -> WrappedError {
+pub(crate) fn wrapped(err: Box<dyn StdError + Send + Sync>) -> WrappedError {
     WrappedError(err)
 }
 
@@ -246,7 +243,7 @@ mod inner {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use tests::*;
+    use crate::tests::*;
 
     #[test]
     fn error_is_send_sync() {

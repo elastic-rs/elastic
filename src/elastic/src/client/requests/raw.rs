@@ -5,19 +5,19 @@ Builders for raw requests.
 use fluent_builder::TryIntoValue;
 use std::marker::PhantomData;
 
-use client::{
-    requests::{
-        Endpoint,
-        RequestBuilder,
+use crate::{
+    client::{
+        requests::RequestBuilder,
+        Client,
     },
-    sender::{
+    endpoints::Endpoint,
+    http::sender::{
         NextParams,
         NodeAddresses,
         SendableRequest,
         SendableRequestParams,
         Sender,
     },
-    Client,
 };
 
 /**
@@ -64,10 +64,9 @@ where
     Send a cluster ping and read the returned metadata:
 
     ```no_run
-    # extern crate elastic;
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
     # let client = SyncClientBuilder::new().build()?;
     // `PingRequest` implements `Into<Endpoint>`
     let req = PingRequest::new();
@@ -121,12 +120,11 @@ where
     Send a raw request synchronously and parse it to a concrete response type:
 
     ```no_run
-    # extern crate elastic;
-    # extern crate serde_json;
+    # #[macro_use] extern crate serde_json;
     # use serde_json::Value;
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
     # let client = SyncClientBuilder::new().build()?;
     let response = client.request(SimpleSearchRequest::for_index_ty("myindex", "mytype"))
                          .send()?
@@ -143,15 +141,12 @@ where
     Send a raw request asynchronously and parse it to a concrete response type:
 
     ```no_run
-    # extern crate tokio;
-    # extern crate futures;
-    # extern crate elastic;
-    # extern crate serde_json;
+    # #[macro_use] extern crate serde_json;
     # use serde_json::Value;
     # use elastic::prelude::*;
     # use futures::Future;
     # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
     # let client = AsyncClientBuilder::new().build()?;
     let future = client.request(SimpleSearchRequest::for_index_ty("myindex", "mytype"))
                        .send()
@@ -190,5 +185,73 @@ where
         let req = SendableRequest::new(endpoint, params);
 
         client.sender.send(req)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::{
+        endpoints::{
+            PingRequest,
+            SearchRequest,
+        },
+        http::empty_body,
+        params::Id,
+    };
+    use std::thread;
+
+    fn do_something_with_request<'a, I: Into<Endpoint<'a, B>>, B: AsRef<[u8]>>(_: I) {}
+
+    fn do_something_with_static_request<
+        I: Into<Endpoint<'static, B>>,
+        B: 'static + AsRef<[u8]> + Send,
+    >(
+        req: I,
+    ) -> thread::JoinHandle<()> {
+        let req = req.into();
+        thread::spawn(move || {
+            assert_eq!("/test_index/test_ty/_search", *req.url);
+        })
+    }
+
+    #[test]
+    fn it_works() {
+        let req =
+            SearchRequest::for_index_ty("test_index", "test_ty", "{'query': { 'match_all': {}}}");
+
+        assert_eq!("/test_index/test_ty/_search", *req.url);
+
+        do_something_with_request(req);
+    }
+
+    #[test]
+    fn it_works_no_body() {
+        let req = PingRequest::new();
+
+        do_something_with_request(req);
+    }
+
+    #[test]
+    fn it_works_static() {
+        let req = SearchRequest::for_index_ty(String::from("test_index"), "test_ty", empty_body());
+
+        do_something_with_static_request(req).join().unwrap();
+    }
+
+    #[test]
+    fn id_from_number() {
+        let ids = vec![
+            Id::from(1i32),
+            Id::from(1u32),
+            Id::from(1i64),
+            Id::from(1u64),
+            Id::from(1isize),
+            Id::from(1usize),
+        ];
+
+        for id in ids {
+            assert_eq!("1", &*id);
+        }
     }
 }

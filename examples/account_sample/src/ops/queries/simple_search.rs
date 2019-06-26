@@ -1,5 +1,5 @@
 use elastic::{
-    error::Result,
+    error::Error,
     prelude::*,
 };
 use ops::Client;
@@ -7,11 +7,11 @@ use ops::Client;
 use model::account::Account;
 
 pub trait SimpleSearchQuery {
-    fn simple_search_query(&self, qry: &str) -> Result<SearchResponse<Account>>;
+    fn simple_search_query(&self, qry: &str) -> Result<SearchResponse<Account>, Error>;
 }
 
 impl SimpleSearchQuery for Client {
-    fn simple_search_query(&self, qry: &str) -> Result<SearchResponse<Account>> {
+    fn simple_search_query(&self, qry: &str) -> Result<SearchResponse<Account>, Error> {
         let query = json!({
           "query": {
             "function_score": {

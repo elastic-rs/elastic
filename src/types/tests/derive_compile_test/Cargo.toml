@@ -1,9 +1,0 @@
-[package]
-name = "derive_compile_test"
-version = "0.1.0"
-authors = ["Ashley Mannix <ashleymannix@live.com.au>"]
-publish = false
-
-[dependencies]
-elastic_types = { version = "~0.21.0-pre.4", path = "../../" }
-elastic_types_derive = { version = "~0.21.0-pre.4", path = "../../../types_derive" }
