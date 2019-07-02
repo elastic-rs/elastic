@@ -73,6 +73,7 @@ pub struct SearchResponse<T> {
     hits: HitsWrapper<T>,
     aggregations: Option<AggsWrapper>,
     status: Option<u16>,
+    scroll_id: Option<String>,
 }
 
 /** Struct to hold the search's Hits, serializable to type `T` or `serde_json::Value`. */
@@ -121,6 +122,11 @@ impl<T> SearchResponse<T> {
         self.hits.max_score.clone()
     }
 
+    /** The scroll id associated with this response. */
+    pub fn scroll_id(&self) -> Option<&str> {
+        self.scroll_id.as_ref().map(|scroll_id| &**scroll_id)
+    }
+
     /** Iterate over the hits matched by the search query. */
     pub fn hits(&self) -> Hits<T> {
         Hits::new(&self.hits)
@@ -166,14 +172,21 @@ impl<T: DeserializeOwned> IsOkOnSuccess for SearchResponse<T> {}
 
 /** A borrowing iterator over search query hits. */
 pub struct Hits<'a, T: 'a> {
+    len: usize,
     inner: Iter<'a, Hit<T>>,
 }
 
 impl<'a, T: 'a> Hits<'a, T> {
     fn new(hits: &'a HitsWrapper<T>) -> Self {
         Hits {
+            len: hits.inner.len(),
             inner: hits.inner.iter(),
         }
+    }
+
+    /** The total number of hits in this response. */
+    pub fn len(&self) -> usize {
+        self.len
     }
 }
 

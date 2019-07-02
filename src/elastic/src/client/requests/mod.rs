@@ -22,18 +22,6 @@ pub mod raw;
 #[doc(inline)]
 pub use self::raw::RawRequestBuilder;
 
-// Search requests
-pub mod search;
-
-#[doc(inline)]
-pub use self::search::SearchRequestBuilder;
-
-// Sql requests
-pub mod sql;
-
-#[doc(inline)]
-pub use self::sql::SqlRequestBuilder;
-
 // Document requests
 pub mod document_delete;
 pub mod document_get;
@@ -69,11 +57,16 @@ pub use self::{
 // Misc requests
 pub mod bulk;
 pub mod ping;
+pub mod search;
+pub mod sql;
+pub mod scroll;
 
 #[doc(inline)]
 pub use self::{
     bulk::BulkRequestBuilder,
     ping::PingRequestBuilder,
+    search::SearchRequestBuilder,
+    sql::SqlRequestBuilder,
 };
 
 pub mod common;
