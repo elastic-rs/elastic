@@ -251,6 +251,7 @@ pub struct Hit<T> {
     source: Option<T>,
     #[serde(rename = "_routing")]
     routing: Option<String>,
+    highlight: Option<Value>,
 }
 
 impl<T> Hit<T> {
@@ -287,6 +288,26 @@ impl<T> Hit<T> {
     /** The score of the hit. */
     pub fn score(&self) -> Option<f32> {
         self.score.clone()
+    }
+
+    /**
+    A reference to the [highlighted] snippets of the part(s) of the field(s)
+    matching the search query.
+
+    [highlighted]: https://www.elastic.co/guide/en/elasticsearch/reference/current/search-request-highlighting.html
+    */
+    pub fn highlight(&self) -> Option<&Value> {
+        self.highlight.as_ref()
+    }
+
+    /**
+    A clone of the [highlighted] snippets of the part(s) of the field(s)
+    matching the search query.
+
+    [highlighted]: https://www.elastic.co/guide/en/elasticsearch/reference/current/search-request-highlighting.html
+    */
+    pub fn into_highlight(&self) -> Option<Value> {
+        self.highlight.clone()
     }
 }
 
