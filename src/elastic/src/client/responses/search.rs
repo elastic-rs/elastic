@@ -313,16 +313,6 @@ impl<T> Hit<T> {
     pub fn highlight(&self) -> Option<&Value> {
         self.highlight.as_ref()
     }
-
-    /**
-    A clone of the [highlighted] snippets of the part(s) of the field(s)
-    matching the search query.
-
-    [highlighted]: https://www.elastic.co/guide/en/elasticsearch/reference/current/search-request-highlighting.html
-    */
-    pub fn into_highlight(&self) -> Option<Value> {
-        self.highlight.clone()
-    }
 }
 
 /** Type Struct to hold a generic `serde_json::Value` tree of the aggregation results. */
