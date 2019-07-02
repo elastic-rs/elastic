@@ -1,7 +1,7 @@
 /*!
 Builders for [delete document requests][docs-delete].
 
-[docs-delete]: http://www.elastic.co/guide/en/elasticsearch/reference/current/docs-delete.html
+[docs-delete]: http://www.elastic.co/guide/en/elasticsearch/reference/master/docs-delete.html
 */
 
 use futures::{
@@ -10,34 +10,33 @@ use futures::{
 };
 use std::marker::PhantomData;
 
-use client::{
-    requests::{
-        endpoints::DeleteRequest,
-        params::{
-            Id,
-            Index,
-            Type,
+use crate::{
+    client::{
+        requests::{
+            raw::RawRequestInner,
+            RequestBuilder,
         },
-        raw::RawRequestInner,
-        RequestBuilder,
+        responses::DeleteResponse,
+        DocumentClient,
     },
-    responses::DeleteResponse,
-    sender::{
+    endpoints::DeleteRequest,
+    error::Error,
+    http::sender::{
         AsyncSender,
         Sender,
         SyncSender,
     },
-    DocumentClient,
-};
-use error::{
-    Error,
-    Result,
-};
-use types::document::{
-    DocumentType,
-    StaticIndex,
-    StaticType,
-    DEFAULT_DOC_TYPE,
+    params::{
+        Id,
+        Index,
+        Type,
+    },
+    types::document::{
+        DocumentType,
+        StaticIndex,
+        StaticType,
+        DEFAULT_DOC_TYPE,
+    },
 };
 
 /**
@@ -46,7 +45,7 @@ A [delete document request][docs-delete] builder that can be configured before s
 Call [`Client.document.delete`][Client.document.delete] to get a `DeleteRequestBuilder`.
 The `send` method will either send the request [synchronously][send-sync] or [asynchronously][send-async], depending on the `Client` it was created from.
 
-[docs-delete]: http://www.elastic.co/guide/en/elasticsearch/reference/current/docs-delete.html
+[docs-delete]: http://www.elastic.co/guide/en/elasticsearch/reference/master/docs-delete.html
 [send-sync]: #send-synchronously
 [send-async]: #send-asynchronously
 [Client.document.delete]: ../../struct.DocumentClient.html#delete-document-request
@@ -83,15 +82,11 @@ where
     Delete a [`DocumentType`][documents-mod] called `MyType` with an id of `1`:
 
     ```no_run
-    # extern crate serde;
-    # #[macro_use]
-    # extern crate serde_derive;
-    # #[macro_use]
-    # extern crate elastic_derive;
-    # extern crate elastic;
+    # #[macro_use] extern crate serde_derive;
+    # #[macro_use] extern crate elastic_derive;
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
     #     pub id: String,
@@ -151,15 +146,11 @@ where
     Delete a [`DocumentType`][documents-mod] called `MyType` with an id of `1`:
 
     ```no_run
-    # extern crate serde;
-    # #[macro_use]
-    # extern crate serde_derive;
-    # #[macro_use]
-    # extern crate elastic_derive;
-    # extern crate elastic;
+    # #[macro_use] extern crate serde_derive;
+    # #[macro_use] extern crate elastic_derive;
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
     # let client = SyncClientBuilder::new().build()?;
     let response = client.document()
                          .delete_raw("myindex", 1)
@@ -235,15 +226,11 @@ impl<TDocument> DeleteRequestBuilder<SyncSender, TDocument> {
     Delete a [`DocumentType`][documents-mod] called `MyType` with an id of `1`:
 
     ```no_run
-    # extern crate serde;
-    # #[macro_use]
-    # extern crate serde_derive;
-    # #[macro_use]
-    # extern crate elastic_derive;
-    # extern crate elastic;
+    # #[macro_use] extern crate serde_derive;
+    # #[macro_use] extern crate elastic_derive;
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
     #     pub id: String,
@@ -263,7 +250,7 @@ impl<TDocument> DeleteRequestBuilder<SyncSender, TDocument> {
     [SyncClient]: ../../type.SyncClient.html
     [documents-mod]: ../types/document/index.html
     */
-    pub fn send(self) -> Result<DeleteResponse> {
+    pub fn send(self) -> Result<DeleteResponse, Error> {
         let req = self.inner.into_request();
 
         RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
@@ -286,20 +273,16 @@ impl<TDocument> DeleteRequestBuilder<AsyncSender, TDocument> {
     Delete a [`DocumentType`][documents-mod] called `MyType` with an id of `1`:
 
     ```no_run
-    # extern crate futures;
-    # extern crate tokio;
-    # extern crate serde;
-    # extern crate serde_json;
+    # #[macro_use] extern crate serde_json;
     # #[macro_use] extern crate serde_derive;
     # #[macro_use] extern crate elastic_derive;
-    # extern crate elastic;
     # use serde_json::Value;
     # use futures::Future;
     # use elastic::prelude::*;
     # #[derive(ElasticType)]
     # struct MyType { }
     # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
     # let client = AsyncClientBuilder::new().build()?;
     let future = client.document::<MyType>()
                        .delete(1)
@@ -332,7 +315,7 @@ impl<TDocument> DeleteRequestBuilder<AsyncSender, TDocument> {
 
 /** A future returned by calling `send`. */
 pub struct Pending {
-    inner: Box<Future<Item = DeleteResponse, Error = Error> + Send>,
+    inner: Box<dyn Future<Item = DeleteResponse, Error = Error> + Send>,
 }
 
 impl Pending {
@@ -357,8 +340,10 @@ impl Future for Pending {
 
 #[cfg(test)]
 mod tests {
-    use prelude::*;
-    use tests::*;
+    use crate::{
+        prelude::*,
+        tests::*,
+    };
 
     #[test]
     fn is_send() {
@@ -366,6 +351,7 @@ mod tests {
     }
 
     #[derive(ElasticType)]
+    #[elastic(crate_root = "crate::types")]
     struct TestDoc {}
 
     #[test]

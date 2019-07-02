@@ -9,11 +9,11 @@ This list should grow over time, and be updated as things change.
 
 ### Adding a new client method
 
-1. The raw request type should already exist in `elastic_requests` (the types are pre-generated).
-1. Add the response type to `elastic_responses`. The name should align with the generated name for the request, like `IndicesExistsRequest` and `IndicesExistsResponse`.
-1. Add a client method to `elastic` in a new module under the `src/elastic/src/client/requests` folder. The naming convention is `document_*` for document methods like `document_get`, `index_*` for index methods like `index_exists` and no prefix for other methods like `search`.
+1. The raw request type should already exist in `src/elastic/genned/mod.rs` (the types are pre-generated).
+1. Add the response type to `src/elastic/client/responses`. The name should align with the generated name for the request, like `IndicesExistsRequest` and `IndicesExistsResponse`. The name of the module should align with the high-level request, like `src/client/requests/index_exists` and `src/client/responses/index_exists`.
+1. Add a client method to `elastic` in a new module under the `src/elastic/src/client/requests` folder. The naming convention is `document_*` for document methods like `document_get`, `index_*` for index methods like `index_exists` and no prefix for other methods like `search`. You can copy one of the existing methods as a template. They all follow a similar pattern of defining a synchronous and asynchronous implementation.
 1. Add the method to the table in the client docs under `src/elastic/src/client/mod.rs`.
-1. Add an integration test to `tests/run`.
+1. Add an integration test to `tests/integration`. You can copy one of the existing integration tests as a template. You can also run just your integration test by calling `cargo run -p integration -- --filter integration::tests::{group}::{case}`.
 
 Some other considerations:
 
@@ -21,13 +21,12 @@ Some other considerations:
 
 ## Development
 
-`elastic` targets the `stable` channel, so it doesn't use any unstable features, but we'd like to track where improvements can be made by unstable features once they stabilise. There is another [GitHub Project](https://github.com/orgs/elastic-rs/projects/8) to record these possible enhancements.
-
-The `elastic` crate brings a few independent crates together into a cohesive API. It aims to provide the glue between them and offer some good defaults. If you have a more specialised use-case, you can pick and choose the crates that will best support it. See the [crates](#crates) section for a full list.
+`elastic` targets the _latest_ `stable` channel, so it doesn't use any unstable features, but we'd like to track where improvements can be made by unstable features once they stabilise.
 
 `elastic` sits on a stack with hard dependencies on the following libraries:
 
 - `reqwest`/`hyper` for HTTP transport
+- `tokio` for async IO
 - `serde` for serialisation
 
 There hasn't been much effort put into abstracting these dependencies at this stage, and `elastic` can't stabilise until these libraries and a few others do.
@@ -60,23 +59,3 @@ The following is a simple set of guidelines that the codebase should follow. It'
 - Type methods should have examples and document any panics/error cases
 - Modules should have general guidance for the types they contain
 - Make it easy to navigate between related types. `elastic` uses a lot of generic code that can be hard to follow, so we need to work hard to help the user follow what's happening
-
-## Navigating the repository
-
-`elastic` bundles up a couple of crates into a single client. This might make it difficult to find your way around the codebase when following items or finding out where a change should live.
-
-### `elastic`
-
-This is the main crate that bundles up `elastic_requests`, `elastic_types`, `elastic_requests` and `elastic_responses`.
-
-### `elastic_requests`
-
-Zero-copy request types for the REST API endpoints. These are automatically generated from the official spec.
-
-### `elastic_responses`
-
-Idiomatic support for inspecting Elasticsearch responses and iterating over hits.
-
-### `elastic_types`
-
-A library for building Elasticsearch types in Rust. Define your Elasticsearch types as PORS (Plain Old Rust Structures) and generate an equivalent Elasticsearch mapping from them, where correctness is enforced by Rust's type system.

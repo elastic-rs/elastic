@@ -1,0 +1,17 @@
+{
+  "took" : 20,
+  "timed_out" : false,
+  "_shards" : {
+    "total" : 5,
+    "successful" : 5,
+    "failed" : 0
+  },
+  "hits" : {
+    "total":{
+      "value":2008,
+      "relation":"eq"
+    },
+    "max_score" : null,
+    "hits" : [ ]
+  }
+}

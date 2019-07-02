@@ -1,7 +1,7 @@
 /*!
 Builders for [create index requests][docs-create-index].
 
-[docs-create-index]: https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-create-index.html
+[docs-create-index]: https://www.elastic.co/guide/en/elasticsearch/reference/master/indices-create-index.html
 */
 
 use futures::{
@@ -9,24 +9,28 @@ use futures::{
     Poll,
 };
 
-use client::{
-    requests::{
+use crate::{
+    client::{
+        requests::{
+            raw::RawRequestInner,
+            RequestBuilder,
+        },
+        responses::CommandResponse,
+        IndexClient,
+    },
+    endpoints::IndicesCreateRequest,
+    error::Error,
+    http::{
         empty_body,
-        endpoints::IndicesCreateRequest,
-        params::Index,
-        raw::RawRequestInner,
+        sender::{
+            AsyncSender,
+            Sender,
+            SyncSender,
+        },
         DefaultBody,
-        RequestBuilder,
     },
-    responses::CommandResponse,
-    sender::{
-        AsyncSender,
-        Sender,
-        SyncSender,
-    },
-    IndexClient,
+    params::Index,
 };
-use error::*;
 
 /**
 A [create index request][docs-create-index] builder that can be configured before sending.
@@ -34,7 +38,7 @@ A [create index request][docs-create-index] builder that can be configured befor
 Call [`Client.index_create`][Client.index_create] to get an `IndexCreateRequestBuilder`.
 The `send` method will either send the request [synchronously][send-sync] or [asynchronously][send-async], depending on the `Client` it was created from.
 
-[docs-create-index]: https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-create-index.html
+[docs-create-index]: https://www.elastic.co/guide/en/elasticsearch/reference/master/indices-create-index.html
 [send-sync]: #send-synchronously
 [send-async]: #send-asynchronously
 [Client.index_create]: ../../struct.Client.html#create-index-request
@@ -69,10 +73,9 @@ where
     Create an index called `myindex`:
 
     ```no_run
-    # extern crate elastic;
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
     # let client = SyncClientBuilder::new().build()?;
     let my_index = index("myindex");
 
@@ -86,16 +89,14 @@ where
     Create an index with settings and document mappings for a [`DocumentType`][documents-mod] called `MyType`:
 
     ```no_run
-    # extern crate serde;
     # #[macro_use] extern crate serde_derive;
     # #[macro_use] extern crate elastic_derive;
     # #[macro_use] extern crate serde_json;
-    # extern crate elastic;
     # use elastic::prelude::*;
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType { }
     # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
     # let client = SyncClientBuilder::new().build()?;
     let body = json!({
         "settings": {
@@ -192,10 +193,9 @@ where
     Create an index called `myindex`:
 
     ```no_run
-    # extern crate elastic;
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
     # let client = SyncClientBuilder::new().build()?;
     let response = client.index("myindex").create().send()?;
 
@@ -206,7 +206,7 @@ where
 
     [SyncClient]: ../../type.SyncClient.html
     */
-    pub fn send(self) -> Result<CommandResponse> {
+    pub fn send(self) -> Result<CommandResponse, Error> {
         let req = self.inner.into_request();
 
         RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
@@ -232,13 +232,10 @@ where
     Create an index called `myindex`:
 
     ```no_run
-    # extern crate futures;
-    # extern crate tokio;
-    # extern crate elastic;
     # use futures::Future;
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
     # let client = AsyncClientBuilder::new().build()?;
     let future = client.index("myindex").create().send();
 
@@ -267,7 +264,7 @@ where
 
 /** A future returned by calling `send`. */
 pub struct Pending {
-    inner: Box<Future<Item = CommandResponse, Error = Error> + Send>,
+    inner: Box<dyn Future<Item = CommandResponse, Error = Error> + Send>,
 }
 
 impl Pending {
@@ -292,8 +289,10 @@ impl Future for Pending {
 
 #[cfg(test)]
 mod tests {
-    use prelude::*;
-    use tests::*;
+    use crate::{
+        prelude::*,
+        tests::*,
+    };
 
     #[test]
     fn is_send() {

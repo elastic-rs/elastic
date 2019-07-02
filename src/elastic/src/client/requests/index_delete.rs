@@ -1,7 +1,7 @@
 /*!
 Builders for [delete index requests][docs-delete-index].
 
-[docs-delete-index]: https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-delete-index.html
+[docs-delete-index]: https://www.elastic.co/guide/en/elasticsearch/reference/master/indices-delete-index.html
 */
 
 use futures::{
@@ -9,22 +9,24 @@ use futures::{
     Poll,
 };
 
-use client::{
-    requests::{
-        endpoints::IndicesDeleteRequest,
-        params::Index,
-        raw::RawRequestInner,
-        RequestBuilder,
+use crate::{
+    client::{
+        requests::{
+            raw::RawRequestInner,
+            RequestBuilder,
+        },
+        responses::CommandResponse,
+        IndexClient,
     },
-    responses::CommandResponse,
-    sender::{
+    endpoints::IndicesDeleteRequest,
+    error::Error,
+    http::sender::{
         AsyncSender,
         Sender,
         SyncSender,
     },
-    IndexClient,
+    params::Index,
 };
-use error::*;
 
 /**
 A [delete index request][docs-delete-index] builder that can be configured before sending.
@@ -32,7 +34,7 @@ A [delete index request][docs-delete-index] builder that can be configured befor
 Call [`Client.index_delete`][Client.index_delete] to get an `IndexDeleteRequestBuilder`.
 The `send` method will either send the request [synchronously][send-sync] or [asynchronously][send-async], depending on the `Client` it was deleted from.
 
-[docs-delete-index]: https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-delete-index.html
+[docs-delete-index]: https://www.elastic.co/guide/en/elasticsearch/reference/master/indices-delete-index.html
 [send-sync]: #send-synchronously
 [send-async]: #send-asynchronously
 [Client.index_delete]: ../../struct.Client.html#delete-index-request
@@ -64,10 +66,9 @@ where
     Delete an index called `myindex`:
 
     ```no_run
-    # extern crate elastic;
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
     # let client = SyncClientBuilder::new().build()?;
     let response = client.index("myindex").delete().send()?;
 
@@ -106,10 +107,9 @@ impl IndexDeleteRequestBuilder<SyncSender> {
     Delete an index called `myindex`:
 
     ```no_run
-    # extern crate elastic;
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
     # let client = SyncClientBuilder::new().build()?;
     let response = client.index("myindex").delete().send()?;
 
@@ -120,7 +120,7 @@ impl IndexDeleteRequestBuilder<SyncSender> {
 
     [SyncClient]: ../../type.SyncClient.html
     */
-    pub fn send(self) -> Result<CommandResponse> {
+    pub fn send(self) -> Result<CommandResponse, Error> {
         let req = self.inner.into_request();
 
         RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
@@ -143,13 +143,10 @@ impl IndexDeleteRequestBuilder<AsyncSender> {
     Delete an index called `myindex`:
 
     ```no_run
-    # extern crate futures;
-    # extern crate tokio;
-    # extern crate elastic;
     # use futures::Future;
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
     # let client = AsyncClientBuilder::new().build()?;
     let future = client.index("myindex").delete().send();
 
@@ -178,7 +175,7 @@ impl IndexDeleteRequestBuilder<AsyncSender> {
 
 /** A future returned by calling `send`. */
 pub struct Pending {
-    inner: Box<Future<Item = CommandResponse, Error = Error> + Send>,
+    inner: Box<dyn Future<Item = CommandResponse, Error = Error> + Send>,
 }
 
 impl Pending {
@@ -203,8 +200,10 @@ impl Future for Pending {
 
 #[cfg(test)]
 mod tests {
-    use prelude::*;
-    use tests::*;
+    use crate::{
+        prelude::*,
+        tests::*,
+    };
 
     #[test]
     fn is_send() {

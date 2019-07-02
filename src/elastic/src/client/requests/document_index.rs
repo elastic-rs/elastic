@@ -1,10 +1,8 @@
 /*!
 Builders for [index requests][docs-index].
 
-[docs-index]: https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html
+[docs-index]: https://www.elastic.co/guide/en/elasticsearch/reference/master/docs-index_.html
 */
-
-use std::borrow::Cow;
 
 use futures::{
     Future,
@@ -13,33 +11,34 @@ use futures::{
 use serde::Serialize;
 use serde_json;
 
-use client::{
-    requests::{
-        endpoints::IndexRequest,
-        params::{
-            Id,
-            Index,
-            Type,
+use crate::{
+    client::{
+        requests::{
+            raw::RawRequestInner,
+            RequestBuilder,
         },
-        raw::RawRequestInner,
-        RequestBuilder,
+        responses::IndexResponse,
+        DocumentClient,
     },
-    responses::IndexResponse,
-    sender::{
+    endpoints::IndexRequest,
+    error::{
+        self,
+        Error,
+    },
+    http::sender::{
         AsyncSender,
         Sender,
         SyncSender,
     },
-    DocumentClient,
-};
-use error::{
-    self,
-    Error,
-    Result,
-};
-use types::document::{
-    DocumentType,
-    DEFAULT_DOC_TYPE,
+    params::{
+        Id,
+        Index,
+        Type,
+    },
+    types::document::{
+        DocumentType,
+        DEFAULT_DOC_TYPE,
+    },
 };
 
 /**
@@ -48,7 +47,7 @@ An [index request][docs-index] builder that can be configured before sending.
 Call [`Client.document.index`][Client.document.index] to get an `IndexRequest`.
 The `send` method will either send the request [synchronously][send-sync] or [asynchronously][send-async], depending on the `Client` it was created from.
 
-[docs-index]: https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html
+[docs-index]: https://www.elastic.co/guide/en/elasticsearch/reference/master/docs-index_.html
 [send-sync]: #send-synchronously
 [send-async]: #send-asynchronously
 [Client.document.index]: ../../struct.DocumentClient.html#index-document-request
@@ -85,13 +84,11 @@ where
     Index a [`DocumentType`][documents-mod] called `MyType` with an id of `1`:
 
     ```no_run
-    # extern crate serde;
     # #[macro_use] extern crate serde_derive;
     # #[macro_use] extern crate elastic_derive;
-    # extern crate elastic;
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
     # let client = SyncClientBuilder::new().build()?;
     #[derive(Serialize, Deserialize, ElasticType)]
     struct MyType {
@@ -129,16 +126,12 @@ where
     where
         TDocument: Serialize + DocumentType,
     {
-        let index = doc.index().into_owned().into();
-        let ty = doc.ty().into_owned().into();
-        let id = doc.partial_id().map(Cow::into_owned).map(Into::into);
-
         RequestBuilder::initial(
             self.inner,
             IndexRequestInner {
-                index: index,
-                ty: ty,
-                id: id,
+                index: doc.index().to_owned(),
+                ty: doc.ty().to_owned(),
+                id: doc.partial_id().map(|id| id.to_owned()),
                 doc: doc,
             },
         )
@@ -158,14 +151,12 @@ where
     Index a [`DocumentType`][documents-mod] called `MyType` with an id of `1`:
 
     ```no_run
-    # extern crate serde;
     # #[macro_use] extern crate serde_derive;
     # #[macro_use] extern crate elastic_derive;
     # #[macro_use] extern crate serde_json;
-    # extern crate elastic;
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
     # let client = SyncClientBuilder::new().build()?;
     let doc_id = 123;
     let doc = json!({
@@ -216,7 +207,7 @@ impl<TDocument> IndexRequestInner<TDocument>
 where
     TDocument: Serialize,
 {
-    fn into_request(self) -> Result<IndexRequest<'static, Vec<u8>>> {
+    fn into_request(self) -> Result<IndexRequest<'static, Vec<u8>>, Error> {
         let body = serde_json::to_vec(&self.doc).map_err(error::request)?;
 
         let request = match self.id {
@@ -273,13 +264,11 @@ where
     Index a document with an id of `1`:
 
     ```no_run
-    # extern crate serde;
     # #[macro_use] extern crate serde_derive;
     # #[macro_use] extern crate elastic_derive;
-    # extern crate elastic;
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
     #     pub id: String,
@@ -304,7 +293,7 @@ where
 
     [SyncClient]: ../../type.SyncClient.html
     */
-    pub fn send(self) -> Result<IndexResponse> {
+    pub fn send(self) -> Result<IndexResponse, Error> {
         let req = self.inner.into_request()?;
 
         RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
@@ -330,16 +319,12 @@ where
     Index a document with an id of `1`:
 
     ```no_run
-    # extern crate serde;
-    # extern crate futures;
-    # extern crate tokio;
     # #[macro_use] extern crate serde_derive;
     # #[macro_use] extern crate elastic_derive;
-    # extern crate elastic;
     # use futures::Future;
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
     #     pub id: String,
@@ -385,7 +370,7 @@ where
 
 /** A future returned by calling `send`. */
 pub struct Pending {
-    inner: Box<Future<Item = IndexResponse, Error = Error> + Send>,
+    inner: Box<dyn Future<Item = IndexResponse, Error = Error> + Send>,
 }
 
 impl Pending {
@@ -410,8 +395,10 @@ impl Future for Pending {
 
 #[cfg(test)]
 mod tests {
-    use prelude::*;
-    use tests::*;
+    use crate::{
+        prelude::*,
+        tests::*,
+    };
 
     #[test]
     fn is_send() {
@@ -419,6 +406,7 @@ mod tests {
     }
 
     #[derive(Serialize, ElasticType)]
+    #[elastic(crate_root = "crate::types")]
     struct TestDoc {}
 
     #[test]

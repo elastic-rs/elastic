@@ -8,7 +8,7 @@ A modular and efficient native client for the Elasticsearch REST API.
  `elastic`          | Elasticsearch
  ------------------ | -------------
  `0.0.x` - `0.20.x` | `5.x`
- `0.21.x`           | `6.x`
+ `0.21.x`           | `7.x`
 
 This crate depends heavily on the following crates:
 
@@ -56,11 +56,10 @@ A synchronous client can be created through the [`SyncClientBuilder`][SyncClient
 The builder allows you to configure default parameters for all requests:
 
 ```no_run
-# extern crate elastic;
 # use elastic::prelude::*;
 # use std::str::FromStr;
 # fn main() { run().unwrap() }
-# fn run() -> Result<(), Box<::std::error::Error>> {
+# fn run() -> Result<(), Box<dyn ::std::error::Error>> {
 use elastic::http::header::{self, AUTHORIZATION, HeaderValue};
 
 let auth = HeaderValue::from_str("let me in")?;
@@ -79,12 +78,11 @@ let client = builder.build()?;
 Individual requests can override these parameter values:
 
 ```no_run
-# extern crate elastic;
-# extern crate serde_json;
+# #[macro_use] extern crate serde_json;
 # use serde_json::Value;
 # use elastic::prelude::*;
 # fn main() { run().unwrap() }
-# fn run() -> Result<(), Box<::std::error::Error>> {
+# fn run() -> Result<(), Box<dyn ::std::error::Error>> {
 let client = SyncClientBuilder::new().build()?;
 
 let response = client.search::<Value>()
@@ -110,13 +108,11 @@ The [Document Mapping API][docs-mapping] is provided as a custom derive plugin a
 Derive `Serialize`, `Deserialize` and `ElasticType` on your document types:
 
 ```no_run
-# extern crate serde;
 # #[macro_use] extern crate serde_derive;
 # #[macro_use] extern crate elastic_derive;
-# extern crate elastic;
 # use elastic::prelude::*;
 # fn main() { run().unwrap() }
-# fn run() -> Result<(), Box<::std::error::Error>> {
+# fn run() -> Result<(), Box<dyn ::std::error::Error>> {
 #[derive(Serialize, Deserialize, ElasticType)]
 struct MyType {
     #[elastic(id(expr = "id.to_string()"))]
@@ -131,13 +127,11 @@ struct MyType {
 Call [`Client.document().put_mapping`][Client.document.put_mapping] to ensure an index has the right mapping for your document types:
 
 ```no_run
-# extern crate serde;
 # #[macro_use] extern crate serde_derive;
 # #[macro_use] extern crate elastic_derive;
-# extern crate elastic;
 # use elastic::prelude::*;
 # fn main() { run().unwrap() }
-# fn run() -> Result<(), Box<::std::error::Error>> {
+# fn run() -> Result<(), Box<dyn ::std::error::Error>> {
 # #[derive(Serialize, Deserialize, ElasticType)]
 # struct MyType { }
 # let client = SyncClientBuilder::new().build()?;
@@ -151,13 +145,11 @@ client.document::<MyType>()
 Then call [`Client.document().index`][Client.document.index] to index documents in Elasticsearch:
 
 ```no_run
-# extern crate serde;
 # #[macro_use] extern crate serde_derive;
 # #[macro_use] extern crate elastic_derive;
-# extern crate elastic;
 # use elastic::prelude::*;
 # fn main() { run().unwrap() }
-# fn run() -> Result<(), Box<::std::error::Error>> {
+# fn run() -> Result<(), Box<dyn ::std::error::Error>> {
 # #[derive(Serialize, Deserialize, ElasticType)]
 # struct MyType {
 #     pub id: String,
@@ -181,13 +173,11 @@ let response = client.document()
 Call [`Client.document_get`][Client.document_get] to retrieve a single document from an index:
 
 ```no_run
-# extern crate serde;
 # #[macro_use] extern crate serde_derive;
 # #[macro_use] extern crate elastic_derive;
-# extern crate elastic;
 # use elastic::prelude::*;
 # fn main() { run().unwrap() }
-# fn run() -> Result<(), Box<::std::error::Error>> {
+# fn run() -> Result<(), Box<dyn ::std::error::Error>> {
 # #[derive(Serialize, Deserialize, ElasticType)]
 # struct MyType {
 #     pub id: String,
@@ -213,14 +203,12 @@ For more details on document types, see the [`types`][types-mod] module.
 Call [`Client.doument().search`][Client.document.search] to execute [Query DSL][docs-search] queries:
 
 ```no_run
-# extern crate serde;
 # #[macro_use] extern crate serde_json;
 # #[macro_use] extern crate serde_derive;
 # #[macro_use] extern crate elastic_derive;
-# extern crate elastic;
 # use elastic::prelude::*;
 # fn main() { run().unwrap() }
-# fn run() -> Result<(), Box<::std::error::Error>> {
+# fn run() -> Result<(), Box<dyn ::std::error::Error>> {
 # #[derive(Debug, Serialize, Deserialize, ElasticType)]
 # struct MyType { }
 # let client = SyncClientBuilder::new().build()?;
@@ -247,7 +235,7 @@ for hit in response.hits() {
 
 This crate is mostly a meta-package composed of a number of smaller pieces including:
 
-- `elastic_requests` API request builders
+- `crate::client::requests::raw` API request builders
 - `elastic_responses` API response parsers
 - `elastic_types` tools for document and mapping APIs
 
@@ -264,9 +252,9 @@ This crate glues these libraries together with some simple assumptions about how
 [crates-io]: https://crates.io/crates/elastic
 [github]: https://github.com/elastic-rs/elastic
 
-[docs-root]: https://www.elastic.co/guide/en/elasticsearch/reference/current/index.html
-[docs-mapping]: https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping.html
-[docs-search]: http://www.elastic.co/guide/en/elasticsearch/reference/current/search-search.html
+[docs-root]: https://www.elastic.co/guide/en/elasticsearch/reference/master/index.html
+[docs-mapping]: https://www.elastic.co/guide/en/elasticsearch/reference/master/mapping.html
+[docs-search]: http://www.elastic.co/guide/en/elasticsearch/reference/master/search-search.html
 
 [SyncClient]: client/type.SyncClient.html
 [SyncClientBuilder]: client/struct.SyncClientBuilder.html
@@ -283,39 +271,59 @@ This crate glues these libraries together with some simple assumptions about how
 */
 
 //#![deny(warnings, missing_docs)]
-#![allow(unknown_lints)]
 
-extern crate bytes;
-extern crate elastic_requests;
-extern crate elastic_responses;
-extern crate elastic_types;
 #[macro_use]
 extern crate error_chain;
-extern crate fluent_builder;
 #[macro_use]
 extern crate futures;
-extern crate tokio_threadpool;
 #[macro_use]
 extern crate log;
 #[macro_use]
 extern crate quick_error;
 extern crate crossbeam_channel as channel;
-extern crate reqwest;
-extern crate serde;
 #[macro_use]
 extern crate serde_derive;
-#[cfg_attr(test, macro_use)]
+#[macro_use]
 extern crate serde_json;
-extern crate tokio;
-extern crate url;
-extern crate uuid;
 
 #[cfg(test)]
 #[macro_use]
 extern crate elastic_derive;
 
+mod genned;
+
+/// Common url params like `Id` and `Index`.
+///
+/// The parameter types are basically just a wrapper around a maybe
+/// owned string.
+/// They can all be constructed from a `String` or an `&str`, but some
+/// parameters may have other implementations in the future.
+pub mod params {
+    pub use super::genned::params::*;
+}
+
+/// REST API endpoints.
+///
+/// Each type corresponds to a single HTTP method on a single endpoint.
+/// Request types have constructor functions that take the form
+/// `for_param_1_param_2_param_n`, and accept a `Body` parameter if the underlying
+/// method is a `POST` or `PUT`.
+/// Other request parameters accept any type that can be converted into the
+/// parameter type, usually a `String` or `&str`.
+///
+/// Request types don't take ownership of their inputs unless you pass in owned
+/// data.
+/// That means if some function expects a `SearchRequest<'static>` then you can
+/// either use a `SearchRequest` with owned `String` inputs, or one that uses only
+/// `'static` inputs.
+pub mod endpoints {
+    pub use super::genned::{
+        endpoints::*,
+        http::Endpoint,
+    };
+}
+
 pub mod error;
-pub use error::Error;
 
 mod private {
     pub trait Sealed {}
@@ -325,21 +333,28 @@ pub mod client;
 pub mod http;
 pub mod types;
 
+pub use self::{
+    client::{
+        AsyncClient,
+        SyncClient,
+    },
+    error::Error,
+};
+
 pub mod prelude {
     /*! A glob import for convenience. */
 
-    pub use client::prelude::*;
-    pub use types::prelude::*;
+    pub use super::{
+        client::prelude::*,
+        endpoints::*,
+        http::empty_body,
+        params::*,
+        types::prelude::*,
+    };
 }
 
 #[cfg(test)]
 mod tests {
     pub fn assert_send<T: Send>() {}
     pub fn assert_sync<T: Sync>() {}
-}
-
-// This is a simple workaround for paths needed by `elastic_derive`.
-#[cfg(test)]
-mod elastic {
-    pub use types;
 }

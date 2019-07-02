@@ -2,11 +2,8 @@ pub mod commands;
 pub mod queries;
 
 use elastic::{
-    client::{
-        SyncClient,
-        SyncClientBuilder,
-    },
-    error::Result,
+    client::SyncClient,
+    error::Error,
 };
 
 /// A wrapper over the `elastic::Client` that we can implement commands
@@ -20,8 +17,8 @@ pub struct Client {
 }
 
 impl Client {
-    pub fn new(address: &'static str) -> Result<Self> {
-        let client = SyncClientBuilder::new().static_node(address).build()?;
+    pub fn new(address: &'static str) -> Result<Self, Error> {
+        let client = SyncClient::builder().static_node(address).build()?;
 
         Ok(Client { io: client })
     }

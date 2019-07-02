@@ -27,7 +27,7 @@ use std::{
     str::FromStr,
 };
 
-fn hash_request(request: &mut SyncHttpRequest) -> Result<(), Box<Error + Send + Sync>> {
+fn hash_request(request: &mut SyncHttpRequest) -> Result<(), Box<dyn Error + Send + Sync>> {
     // Read the body into a temporary buffer
     let mut buffered = Vec::new();
     if let Some(ref mut body) = request.body_mut() {
@@ -54,11 +54,9 @@ fn hash_request(request: &mut SyncHttpRequest) -> Result<(), Box<Error + Send + 
     Ok(())
 }
 
-fn run() -> Result<(), Box<Error>> {
+fn run() -> Result<(), Box<dyn Error>> {
     // A HTTP client and request parameters
-    let client = SyncClientBuilder::new()
-        .pre_send_raw(hash_request)
-        .build()?;
+    let client = SyncClient::builder().pre_send_raw(hash_request).build()?;
 
     // Ping the cluster
     let ping = client.ping().send()?;

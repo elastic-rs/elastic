@@ -15,9 +15,9 @@ extern crate serde_json;
 use elastic::prelude::*;
 use std::error::Error;
 
-fn run() -> Result<(), Box<Error>> {
+fn run() -> Result<(), Box<dyn Error>> {
     // A HTTP client and request parameters
-    let client = SyncClientBuilder::new().build()?;
+    let client = SyncClient::builder().build()?;
 
     let ops = (0..1000).into_iter().map(|i| {
         bulk_raw()

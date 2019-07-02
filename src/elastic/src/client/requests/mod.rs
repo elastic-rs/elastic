@@ -8,38 +8,30 @@ use fluent_builder::SharedFluentBuilder;
 use std::sync::Arc;
 use tokio_threadpool::ThreadPool;
 
-use client::{
-    sender::{
+use crate::{
+    client::Client,
+    http::sender::{
         AsyncSender,
         RequestParams,
         Sender,
     },
-    Client,
-};
-
-pub use elastic_requests::{
-    empty_body,
-    endpoints,
-    params,
-    DefaultBody,
-    Endpoint,
-    UrlPath,
-};
-
-pub use self::{
-    endpoints::*,
-    params::*,
 };
 
 pub mod raw;
+
+#[doc(inline)]
 pub use self::raw::RawRequestBuilder;
 
 // Search requests
 pub mod search;
+
+#[doc(inline)]
 pub use self::search::SearchRequestBuilder;
 
 // Sql requests
 pub mod sql;
+
+#[doc(inline)]
 pub use self::sql::SqlRequestBuilder;
 
 // Document requests
@@ -48,6 +40,8 @@ pub mod document_get;
 pub mod document_index;
 pub mod document_put_mapping;
 pub mod document_update;
+
+#[doc(inline)]
 pub use self::{
     document_delete::DeleteRequestBuilder,
     document_get::GetRequestBuilder,
@@ -62,6 +56,8 @@ pub mod index_create;
 pub mod index_delete;
 pub mod index_exists;
 pub mod index_open;
+
+#[doc(inline)]
 pub use self::{
     index_close::IndexCloseRequestBuilder,
     index_create::IndexCreateRequestBuilder,
@@ -73,6 +69,8 @@ pub use self::{
 // Misc requests
 pub mod bulk;
 pub mod ping;
+
+#[doc(inline)]
 pub use self::{
     bulk::BulkRequestBuilder,
     ping::PingRequestBuilder,
@@ -117,7 +115,11 @@ where
         }
     }
 
-    fn new(client: Client<TSender>, builder: SharedFluentBuilder<RequestParams>, req: TRequest) -> Self {
+    fn new(
+        client: Client<TSender>,
+        builder: SharedFluentBuilder<RequestParams>,
+        req: TRequest,
+    ) -> Self {
         RequestBuilder {
             client: client,
             params_builder: builder,
@@ -137,10 +139,9 @@ where
     Add a url param to force an index refresh:
 
     ```no_run
-    # extern crate elastic;
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
     # let client = SyncClientBuilder::new().build()?;
     # fn get_req() -> PingRequest<'static> { PingRequest::new() }
     let builder = client.request(get_req())
@@ -152,10 +153,9 @@ where
     Force the request to be sent to `http://different-host:9200`:
 
     ```no_run
-    # extern crate elastic;
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
     # let client = SyncClientBuilder::new().build()?;
     # fn get_req() -> PingRequest<'static> { PingRequest::new() }
     let builder = client.request(get_req())
@@ -184,10 +184,9 @@ where
     Add a url param to force an index refresh and send the request to `http://different-host:9200`:
 
     ```no_run
-    # extern crate elastic;
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
     # let client = SyncClientBuilder::new().build()?;
     # fn get_req() -> PingRequest<'static> { PingRequest::new() }
     let builder = client.request(get_req())
@@ -217,14 +216,12 @@ impl<TRequest> RequestBuilder<AsyncSender, TRequest> {
     Use the given thread pool to deserialise the response:
 
     ```no_run
-    # extern crate tokio;
     # extern crate tokio_threadpool;
-    # extern crate elastic;
     # use std::sync::Arc;
     # use tokio_threadpool::ThreadPool;
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
     # let client = AsyncClientBuilder::new().build()?;
     # fn get_req() -> PingRequest<'static> { PingRequest::new() }
     let pool = ThreadPool::new();
@@ -237,13 +234,11 @@ impl<TRequest> RequestBuilder<AsyncSender, TRequest> {
     Never deserialise the response on a thread pool:
 
     ```no_run
-    # extern crate tokio;
     # extern crate tokio_threadpool;
-    # extern crate elastic;
     # use tokio_threadpool::ThreadPool;
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
     # let client = AsyncClientBuilder::new().build()?;
     # fn get_req() -> PingRequest<'static> { PingRequest::new() }
     let builder = client.request(get_req())
@@ -262,11 +257,6 @@ impl<TRequest> RequestBuilder<AsyncSender, TRequest> {
 pub mod prelude {
     /*! A glob import for convenience. */
 
-    pub use super::{
-        endpoints::*,
-        params::*,
-    };
-
     pub use super::bulk::{
         bulk,
         bulk_raw,
@@ -274,8 +264,6 @@ pub mod prelude {
     };
 
     pub use super::{
-        empty_body,
-        DefaultBody,
         DeleteRequestBuilder,
         GetRequestBuilder,
         IndexCloseRequestBuilder,

@@ -1,6 +1,5 @@
 sudo: required
 language: rust
-cache: cargo
 services:
   - docker
 

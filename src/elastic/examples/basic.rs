@@ -14,9 +14,9 @@ use elastic::prelude::*;
 use serde_json::Value;
 use std::error::Error;
 
-fn run() -> Result<(), Box<Error>> {
+fn run() -> Result<(), Box<dyn Error>> {
     // A reqwest HTTP client and default parameters.
-    let client = SyncClientBuilder::new()
+    let client = SyncClient::builder()
         .static_node("http://localhost:9200")
         .build()?;
 

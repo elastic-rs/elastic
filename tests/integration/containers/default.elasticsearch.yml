@@ -1,0 +1,6 @@
+cluster.name: "docker-cluster"
+
+discovery.type: single-node
+
+network.host: 0.0.0.0
+network.publish_host: 127.0.0.1

@@ -1,7 +1,7 @@
 /*!
 Builders for [sql queries][sql].
 
-[sql]: https://www.elastic.co/guide/en/elasticsearch/reference/current/sql-rest.html
+[sql]: https://www.elastic.co/guide/en/elasticsearch/reference/master/sql-rest.html
 */
 
 use futures::{
@@ -9,27 +9,28 @@ use futures::{
     Poll,
 };
 
-use client::{
-    requests::{
+use crate::{
+    client::{
+        requests::{
+            raw::RawRequestInner,
+            RequestBuilder,
+        },
+        responses::SqlResponse,
+        Client,
+    },
+    endpoints::SqlQueryRequest,
+    http::{
         empty_body,
-        endpoints::SqlQueryRequest,
-        raw::RawRequestInner,
+        sender::{
+            AsyncSender,
+            Sender,
+            SyncSender,
+        },
         DefaultBody,
-        RequestBuilder,
     },
-    responses::SqlResponse,
-    sender::{
-        AsyncSender,
-        Sender,
-        SyncSender,
-    },
-    Client,
 };
 
-use error::{
-    Error,
-    Result,
-};
+use crate::error::Error;
 
 use serde_json::json;
 
@@ -39,7 +40,7 @@ A [sql query request][sql] builder that can be configured before sending.
 Call [`Client.sql`][Client.sql] to get a `SqlRequestBuilder`.
 The `send` method will either send the request [synchronously][send-sync] or [asynchronously][send-async], depending on the `Client` it was created from.
 
-[sql]: https://www.elastic.co/guide/en/elasticsearch/reference/current/sql-rest.html[docs-delete]: http://www.elastic.co/guide/en/elasticsearch/reference/current/docs-delete.html
+[sql]: https://www.elastic.co/guide/en/elasticsearch/reference/master/sql-rest.html[docs-delete]: http://www.elastic.co/guide/en/elasticsearch/reference/master/docs-delete.html
 [send-sync]: #send-synchronously
 [send-async]: #send-asynchronously
 [Client.sql]: ../../struct.Client.html#sql-request
@@ -72,11 +73,10 @@ where
     Runs a simple [Query String][docs-querystring] query:
 
     ```no_run
-    # extern crate elastic;
     # #[macro_use] extern crate serde_json;
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
     # let client = SyncClientBuilder::new().build()?;
     let response = client.sql()
                          .body(json!({
@@ -98,7 +98,7 @@ where
     [builder-methods]: requests/sql/type.SqlRequestBuilder.html#builder-methods
     [send-sync]: requests/sql/type.SqlRequestBuilder.html#send-synchronously
     [send-async]: requests/sql/type.SqlRequestBuilder.html#send-asynchronously
-    [docs-querystring]: https://www.elastic.co/guide/en/elasticsearch/reference/current/sql-commands.html
+    [docs-querystring]: https://www.elastic.co/guide/en/elasticsearch/reference/master/sql-commands.html
     */
     pub fn sql(&self) -> SqlRequestBuilder<TSender, DefaultBody> {
         RequestBuilder::initial(self.clone(), SqlRequestInner::new(empty_body()))
@@ -117,10 +117,9 @@ where
     Runs a simple [Query String][docs-querystring] query:
 
     ```no_run
-    # extern crate elastic;
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
     # let client = SyncClientBuilder::new().build()?;
     let response = client.sql_query("SELECT * FROM library GROUP BY author")
                          .send()?;
@@ -137,7 +136,7 @@ where
 
     [send-sync]: requests/sql/type.SqlRequestBuilder.html#send-synchronously
     [send-async]: requests/sql/type.SqlRequestBuilder.html#send-asynchronously
-    [docs-querystring]: https://www.elastic.co/guide/en/elasticsearch/reference/current/sql-commands.html
+    [docs-querystring]: https://www.elastic.co/guide/en/elasticsearch/reference/master/sql-commands.html
     */
     pub fn sql_query(&self, query: &str) -> SqlRequestBuilder<TSender, serde_json::Value> {
         self.sql().query(query)
@@ -210,10 +209,9 @@ where
     Runs a simple [Query String][docs-querystring] query:
 
     ```no_run
-    # extern crate elastic;
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
     # let client = SyncClientBuilder::new().build()?;
     let response = client.sql_query("SELECT * FROM library GROUP BY author")
                          .send()?;
@@ -229,9 +227,9 @@ where
     ```
 
     [SyncClient]: ../../type.SyncClient.html
-    [docs-querystring]: https://www.elastic.co/guide/en/elasticsearch/reference/current/sql-commands.html
+    [docs-querystring]: https://www.elastic.co/guide/en/elasticsearch/reference/master/sql-commands.html
      */
-    pub fn send(self) -> Result<SqlResponse> {
+    pub fn send(self) -> Result<SqlResponse, Error> {
         let req = self.inner.into_request();
 
         RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
@@ -257,13 +255,10 @@ where
     Runs a simple [Query String][docs-querystring] query:
 
     ```no_run
-    # extern crate tokio;
-    # extern crate futures;
-    # extern crate elastic;
     # use futures::Future;
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
     # let client = AsyncClientBuilder::new().build()?;
     let future = client.sql_query("SELECT * FROM library GROUP BY author")
                        .send();
@@ -283,7 +278,7 @@ where
     ```
 
     [AsyncClient]: ../../type.AsyncClient.html
-    [docs-querystring]: https://www.elastic.co/guide/en/elasticsearch/reference/current/sql-commands.html
+    [docs-querystring]: https://www.elastic.co/guide/en/elasticsearch/reference/master/sql-commands.html
     */
 
     pub fn send(self) -> Pending {
@@ -300,7 +295,7 @@ where
 
 /** A future returned by calling `send`. */
 pub struct Pending {
-    inner: Box<Future<Item = SqlResponse, Error = Error> + Send>,
+    inner: Box<dyn Future<Item = SqlResponse, Error = Error> + Send>,
 }
 
 impl Pending {
@@ -325,8 +320,10 @@ impl Future for Pending {
 
 #[cfg(test)]
 mod tests {
-    use prelude::*;
-    use tests::*;
+    use crate::{
+        prelude::*,
+        tests::*,
+    };
 
     #[test]
     fn is_send() {

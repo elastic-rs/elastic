@@ -22,11 +22,11 @@ use std::{
 };
 use tokio_threadpool::ThreadPool;
 
-fn run() -> Result<(), Box<Error>> {
+fn run() -> Result<(), Box<dyn Error>> {
     // A reqwest HTTP client and default parameters.
     // We also specify a cpu pool for serialising and deserialising data on.
     // The cpu pool is optional.
-    let client = AsyncClientBuilder::new()
+    let client = AsyncClient::builder()
         .static_node("http://localhost:9200")
         .serde_pool(Arc::new(ThreadPool::new()))
         .build()?;

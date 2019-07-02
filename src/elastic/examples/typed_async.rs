@@ -45,9 +45,9 @@ struct MyType {
     timestamp: Date<DefaultDateMapping>,
 }
 
-fn run() -> Result<(), Box<StdError>> {
+fn run() -> Result<(), Box<dyn StdError>> {
     // A HTTP client and request parameters
-    let client = AsyncClientBuilder::new().build()?;
+    let client = AsyncClient::builder().build()?;
 
     // Create a document to index
     let doc = MyType {
@@ -73,7 +73,7 @@ fn run() -> Result<(), Box<StdError>> {
     Ok(())
 }
 
-fn ensure_indexed(client: AsyncClient, doc: MyType) -> Box<Future<Item = (), Error = Error>> {
+fn ensure_indexed(client: AsyncClient, doc: MyType) -> Box<dyn Future<Item = (), Error = Error>> {
     let get_res = client
         .document::<MyType>()
         .get(doc.id.clone())
@@ -110,7 +110,7 @@ fn ensure_indexed(client: AsyncClient, doc: MyType) -> Box<Future<Item = (), Err
     Box::new(put_doc)
 }
 
-fn put_index(client: AsyncClient) -> Box<Future<Item = (), Error = Error>> {
+fn put_index(client: AsyncClient) -> Box<dyn Future<Item = (), Error = Error>> {
     let create_index = client.index(MyType::static_index()).create().send();
 
     let put_mapping = client.document::<MyType>().put_mapping().send().map(|_| ());
@@ -118,7 +118,7 @@ fn put_index(client: AsyncClient) -> Box<Future<Item = (), Error = Error>> {
     Box::new(create_index.and_then(|_| put_mapping))
 }
 
-fn put_doc(client: AsyncClient, doc: MyType) -> Box<Future<Item = (), Error = Error>> {
+fn put_doc(client: AsyncClient, doc: MyType) -> Box<dyn Future<Item = (), Error = Error>> {
     let index_doc = client
         .document()
         .index(doc)
@@ -132,7 +132,7 @@ fn put_doc(client: AsyncClient, doc: MyType) -> Box<Future<Item = (), Error = Er
 fn search(
     client: AsyncClient,
     query: &'static str,
-) -> Box<Future<Item = SearchResponse<MyType>, Error = Error>> {
+) -> Box<dyn Future<Item = SearchResponse<MyType>, Error = Error>> {
     let search = client
         .search()
         .index(MyType::static_index())

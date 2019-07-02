@@ -8,9 +8,9 @@ extern crate env_logger;
 use elastic::prelude::*;
 use std::error::Error;
 
-fn run() -> Result<(), Box<Error>> {
+fn run() -> Result<(), Box<dyn Error>> {
     // A HTTP client and request parameters
-    let client = SyncClientBuilder::new().build()?;
+    let client = SyncClient::builder().build()?;
 
     // Ping the cluster
     let ping = client.ping().send()?;

@@ -26,9 +26,9 @@ use std::{
     time::Duration,
 };
 
-fn run() -> Result<(), Box<Error>> {
+fn run() -> Result<(), Box<dyn Error>> {
     // A HTTP client and request parameters
-    let client = AsyncClientBuilder::new().build()?;
+    let client = AsyncClient::builder().build()?;
 
     // Get a stream for bulk operations
     // Individual operations can be sent to the stream and will be buffered to Elasticsearch
@@ -63,7 +63,7 @@ fn run() -> Result<(), Box<Error>> {
         Ok(())
     });
 
-    tokio::executor::current_thread::block_on_all(req_future.join(res_future))?;
+    let _ = tokio::executor::current_thread::block_on_all(req_future.join(res_future))?;
 
     Ok(())
 }

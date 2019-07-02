@@ -14,7 +14,7 @@ extern crate serde_derive;
 extern crate serde_json;
 
 use elastic::{
-    client::responses::parse::*,
+    http::receiver::IsOkOnSuccess,
     prelude::*,
 };
 use serde_json::Value;
@@ -40,10 +40,10 @@ struct Hit {
 // `IsOkOnSuccess` will return `Ok` if the response is in the `200` range.
 impl IsOkOnSuccess for SearchResponse {}
 
-fn run() -> Result<(), Box<Error>> {
+fn run() -> Result<(), Box<dyn Error>> {
     // A reqwest HTTP client and default parameters.
     // The `params` includes the base node url (http://localhost:9200).
-    let client = SyncClientBuilder::new().build()?;
+    let client = SyncClient::builder().build()?;
 
     let query = json!({
         "query": {

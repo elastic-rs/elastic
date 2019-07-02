@@ -1,25 +1,39 @@
 /*!
 Raw HTTP modules.
 
-These types are re-exported from `reqwest` and used in parts of `elastic`s public API.
-They may eventually be wrapped and made implementation details.
+These types are lower-level details for sending requests and receiving
+responses.
 */
 
-mod async;
-mod sync;
+mod asynchronous;
+mod synchronous;
 
 pub use self::{
-    async::*,
-    sync::*,
+    asynchronous::*,
+    synchronous::*,
 };
 
+pub mod receiver;
+pub mod sender;
+
+#[doc(inline)]
 pub use reqwest::{
     header,
     Url,
 };
 
-pub use elastic_requests::Method;
-pub use elastic_responses::StatusCode;
+#[doc(inline)]
+pub use http::{
+    Method,
+    StatusCode,
+};
+
+#[doc(inline)]
+pub use crate::genned::http::{
+    empty_body,
+    DefaultBody,
+    UrlPath,
+};
 
 use std::{
     fmt,

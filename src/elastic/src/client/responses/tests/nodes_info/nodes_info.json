@@ -1,0 +1,14 @@
+{
+    "nodes": {
+        "node1": {
+            "http": {
+                "publish_address": "1.1.1.1:9200"
+            }
+        },
+        "node2": {
+            "http": {
+                "publish_address": "1.1.1.2:9200"
+            }
+        }
+    }
+}

@@ -1,7 +1,7 @@
 /*!
 Builders for [bulk requests][docs-bulk].
 
-[docs-bulk]: https://www.elastic.co/guide/en/elasticsearch/reference/current/bulk.html
+[docs-bulk]: https://www.elastic.co/guide/en/elasticsearch/reference/master/bulk.html
 */
 
 use std::{
@@ -20,38 +20,40 @@ use serde::{
     ser::Serialize,
 };
 
-use client::{
-    requests::{
-        endpoints::BulkRequest,
-        params::{
-            Index,
-            Type,
+use crate::{
+    client::{
+        requests::{
+            raw::RawRequestInner,
+            RequestBuilder,
         },
-        raw::RawRequestInner,
-        RequestBuilder,
+        responses::{
+            BulkErrorsResponse,
+            BulkResponse,
+        },
+        Client,
+        RequestParams,
     },
-    responses::{
-        parse::IsOk,
-        BulkErrorsResponse,
-        BulkResponse,
+    endpoints::BulkRequest,
+    error::{
+        self,
+        Error,
     },
-    sender::{
-        AsyncSender,
-        Sender,
-        SyncSender,
+    http::{
+        receiver::IsOk,
+        sender::{
+            AsyncSender,
+            Sender,
+            SyncSender,
+        },
+        AsyncBody,
+        SyncBody,
     },
-    Client,
-    RequestParams,
+    params::{
+        Index,
+        Type,
+    },
+    types::document::DEFAULT_DOC_TYPE,
 };
-use error::{
-    self,
-    Error,
-};
-use http::{
-    AsyncBody,
-    SyncBody,
-};
-use types::document::DEFAULT_DOC_TYPE;
 
 /**
 A [bulk request][docs-bulk] builder that can be configured before sending.
@@ -61,7 +63,7 @@ The `send` method will either send the request [synchronously][send-sync] or [as
 
 Call [`Client.bulk_stream`][Client.bulk_stream] to get a `BulkRequestBuilder` that can be used to stream bulk operations asynchronously.
 
-[docs-bulk]: https://www.elastic.co/guide/en/elasticsearch/reference/current/bulk.html
+[docs-bulk]: https://www.elastic.co/guide/en/elasticsearch/reference/master/bulk.html
 [send-sync]: #send-synchronously
 [send-async]: #send-asynchronously
 [Client.bulk]: ../../struct.Client.html#bulk-request
@@ -107,15 +109,11 @@ where
     Send a bulk request to index some documents:
 
     ```no_run
-    # extern crate serde;
-    # #[macro_use]
-    # extern crate serde_derive;
-    # #[macro_use]
-    # extern crate elastic_derive;
-    # extern crate elastic;
+    # #[macro_use] extern crate serde_derive;
+    # #[macro_use] extern crate elastic_derive;
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
     #     pub id: String,
@@ -152,7 +150,7 @@ where
     [send-async]: requests/bulk/type.BulkRequestBuilder.html#send-asynchronously
     [types-mod]: ../../types/index.html
     [documents-mod]: ../../types/document/index.html
-    [docs-querystring]: https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html
+    [docs-querystring]: https://www.elastic.co/guide/en/elasticsearch/reference/master/query-dsl-query-string-query.html
     */
     pub fn bulk(&self) -> BulkRequestBuilder<TSender, Vec<u8>, BulkResponse> {
         RequestBuilder::initial(
@@ -189,17 +187,13 @@ impl Client<AsyncSender> {
     Stream a bulk request to index some documents:
 
     ```no_run
-    # extern crate serde;
-    # extern crate futures;
-    # extern crate tokio;
     # #[macro_use] extern crate serde_derive;
     # #[macro_use] extern crate elastic_derive;
-    # extern crate elastic;
     # use std::time::Duration;
     # use futures::{Future, Stream, Sink};
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
     #     pub id: String,
@@ -244,7 +238,7 @@ impl Client<AsyncSender> {
     [send-async]: requests/bulk/type.BulkRequestBuilder.html#send-asynchronously
     [types-mod]: ../../types/index.html
     [documents-mod]: ../../types/document/index.html
-    [docs-querystring]: https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html
+    [docs-querystring]: https://www.elastic.co/guide/en/elasticsearch/reference/master/query-dsl-query-string-query.html
     */
     pub fn bulk_stream<TDocument>(
         &self,
@@ -535,7 +529,9 @@ where
         match (self.index, self.ty) {
             (Some(index), ty) => match ty {
                 None => Ok(BulkRequest::for_index(index, body)),
-                Some(ref ty) if &ty[..] == DEFAULT_DOC_TYPE => Ok(BulkRequest::for_index(index, body)),
+                Some(ref ty) if &ty[..] == DEFAULT_DOC_TYPE => {
+                    Ok(BulkRequest::for_index(index, body))
+                }
                 Some(ty) => Ok(BulkRequest::for_index_ty(index, ty, body)),
             },
             (None, None) => Ok(BulkRequest::new(body)),
@@ -564,15 +560,11 @@ where
     Send a bulk request to index some documents:
 
     ```no_run
-    # extern crate serde;
-    # #[macro_use]
-    # extern crate serde_derive;
-    # #[macro_use]
-    # extern crate elastic_derive;
-    # extern crate elastic;
+    # #[macro_use] extern crate serde_derive;
+    # #[macro_use] extern crate elastic_derive;
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
     #     pub id: String,
@@ -632,16 +624,12 @@ where
     Send a bulk request to index some documents:
 
     ```no_run
-    # extern crate serde;
-    # extern crate futures;
-    # extern crate tokio;
     # #[macro_use] extern crate serde_derive;
     # #[macro_use] extern crate elastic_derive;
-    # extern crate elastic;
     # use futures::Future;
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
     #     pub id: String,
@@ -811,7 +799,7 @@ impl BulkBody for Vec<u8> {
 
 /** A future returned by calling `send`. */
 pub struct Pending<TResponse> {
-    inner: Box<Future<Item = TResponse, Error = Error> + Send>,
+    inner: Box<dyn Future<Item = TResponse, Error = Error> + Send>,
 }
 
 impl<TResponse> Pending<TResponse> {
@@ -877,8 +865,10 @@ impl<TIndex, TType, TId, TNewId> ChangeId<TNewId> for BulkErrorsResponse<TIndex,
 
 #[cfg(test)]
 mod tests {
-    use prelude::*;
-    use tests::*;
+    use crate::{
+        prelude::*,
+        tests::*,
+    };
 
     #[test]
     fn is_send() {

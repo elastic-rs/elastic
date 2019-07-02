@@ -1,49 +1,50 @@
 /*!
-Response types for the Elasticsearch REST API.
+Elasticsearch Response types.
 
-All [high-level builders][request-builders] return one of these response types for you.
-This module also contains helpers that can be used to parse responses from a raw [`HttpResponse`][HttpResponse].
-
-[HttpResponse]: struct.HttpResponse.html
-[request-builders]: ../index.html#request-builders
+This module contains implementation details that are useful if you want to customise the request process, but aren't generally important for sending requests.
 */
 
-mod async;
-mod sync;
+pub mod bulk;
+mod command;
+pub mod common;
+mod document_delete;
+mod document_get;
+mod document_index;
+mod document_update;
+pub mod nodes_info;
+mod ping;
+pub mod search;
+mod sql;
 
-pub mod parse;
+mod index_exists;
 
+#[cfg(test)]
+mod tests;
+
+#[doc(inline)]
 pub use self::{
-    async::*,
-    sync::*,
+    bulk::{
+        BulkErrorsResponse,
+        BulkResponse,
+    },
+    command::*,
+    document_delete::*,
+    document_get::*,
+    document_index::*,
+    document_update::*,
+    nodes_info::NodesInfoResponse,
+    ping::*,
+    search::SearchResponse,
+    sql::*,
 };
 
-pub use elastic_responses::{
-    BulkErrorsResponse,
-    BulkResponse,
-    CommandResponse,
-    DeleteResponse,
-    GetResponse,
-    IndexResponse,
-    IndicesExistsResponse,
-    PingResponse,
-    SearchResponse,
-    Shards,
-    SqlResponse,
-    UpdateResponse,
-};
-
-pub use elastic_responses::{
-    bulk,
-    search,
-};
+pub use self::index_exists::*;
 
 pub mod prelude {
     /*! A glob import for convenience. */
 
     pub use super::{
         bulk::Action as BulkAction,
-        AsyncResponseBuilder,
         BulkErrorsResponse,
         BulkResponse,
         CommandResponse,
@@ -51,11 +52,10 @@ pub mod prelude {
         GetResponse,
         IndexResponse,
         IndicesExistsResponse,
+        NodesInfoResponse,
         PingResponse,
         SearchResponse,
-        Shards,
         SqlResponse,
-        SyncResponseBuilder,
         UpdateResponse,
     };
 }

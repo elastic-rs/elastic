@@ -1,7 +1,7 @@
 /*!
 Builders for [update document requests][docs-update].
 
-[docs-update]: http://www.elastic.co/guide/en/elasticsearch/reference/current/docs-update.html
+[docs-update]: http://www.elastic.co/guide/en/elasticsearch/reference/master/docs-update.html
 */
 
 use futures::{
@@ -12,37 +12,39 @@ use serde::ser::Serialize;
 use serde_json;
 use std::marker::PhantomData;
 
-use client::{
-    requests::{
-        endpoints::UpdateRequest,
-        params::{
-            Id,
-            Index,
-            Type,
+use crate::{
+    client::{
+        requests::{
+            raw::RawRequestInner,
+            RequestBuilder,
         },
-        raw::RawRequestInner,
-        RequestBuilder,
+        responses::UpdateResponse,
+        DocumentClient,
     },
-    responses::UpdateResponse,
-    sender::{
+    endpoints::UpdateRequest,
+    error::{
+        self,
+        Error,
+    },
+    http::sender::{
         AsyncSender,
         Sender,
         SyncSender,
     },
-    DocumentClient,
-};
-use error::{
-    self,
-    Error,
-};
-use types::document::{
-    DocumentType,
-    StaticIndex,
-    StaticType,
-    DEFAULT_DOC_TYPE,
+    params::{
+        Id,
+        Index,
+        Type,
+    },
+    types::document::{
+        DocumentType,
+        StaticIndex,
+        StaticType,
+        DEFAULT_DOC_TYPE,
+    },
 };
 
-pub use client::requests::common::{
+pub use crate::client::requests::common::{
     DefaultParams,
     Doc,
     Script,
@@ -55,7 +57,7 @@ An [update document request][docs-update] builder that can be configured before 
 Call [`Client.document.update`][Client.document.update] to get an `UpdateRequestBuilder`.
 The `send` method will either send the request [synchronously][send-sync] or [asynchronously][send-async], depending on the `Client` it was created from.
 
-[docs-update]: http://www.elastic.co/guide/en/elasticsearch/reference/current/docs-update.html
+[docs-update]: http://www.elastic.co/guide/en/elasticsearch/reference/master/docs-update.html
 [send-sync]: #send-synchronously
 [send-async]: #send-asynchronously
 [Client.document.update]: ../../struct.DocumentClient.html#update-document-request
@@ -92,15 +94,11 @@ where
     Update a [`DocumentType`][documents-mod] called `MyType` with an id of `1` using a new document value:
 
     ```no_run
-    # extern crate serde;
-    # #[macro_use]
-    # extern crate serde_derive;
-    # #[macro_use]
-    # extern crate elastic_derive;
-    # extern crate elastic;
+    # #[macro_use] extern crate serde_derive;
+    # #[macro_use] extern crate elastic_derive;
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
     #     pub id: String,
@@ -123,17 +121,12 @@ where
     Be careful though because this can lead to unexpected results or runtime errors if the document types don't align:
 
     ```no_run
-    # extern crate serde;
-    # #[macro_use]
-    # extern crate serde_json;
-    # #[macro_use]
-    # extern crate serde_derive;
-    # #[macro_use]
-    # extern crate elastic_derive;
-    # extern crate elastic;
+    # #[macro_use] extern crate serde_json;
+    # #[macro_use] extern crate serde_derive;
+    # #[macro_use] extern crate elastic_derive;
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
     #     pub id: String,
@@ -156,15 +149,11 @@ where
     Documents can also be updated using a script:
 
     ```no_run
-    # extern crate serde;
-    # #[macro_use]
-    # extern crate serde_derive;
-    # #[macro_use]
-    # extern crate elastic_derive;
-    # extern crate elastic;
+    # #[macro_use] extern crate serde_derive;
+    # #[macro_use] extern crate elastic_derive;
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
     #     pub id: String,
@@ -186,15 +175,11 @@ where
     Scripts can be configured with parameters:
 
     ```no_run
-    # extern crate serde;
-    # #[macro_use]
-    # extern crate serde_derive;
-    # #[macro_use]
-    # extern crate elastic_derive;
-    # extern crate elastic;
+    # #[macro_use] extern crate serde_derive;
+    # #[macro_use] extern crate elastic_derive;
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
     #     pub id: String,
@@ -258,17 +243,12 @@ where
     Update a document with an id of `1` using a new document value:
 
     ```no_run
-    # extern crate serde;
-    # #[macro_use]
-    # extern crate serde_json;
-    # #[macro_use]
-    # extern crate serde_derive;
-    # #[macro_use]
-    # extern crate elastic_derive;
-    # extern crate elastic;
+    # #[macro_use] extern crate serde_json;
+    # #[macro_use] extern crate serde_derive;
+    # #[macro_use] extern crate elastic_derive;
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
     # let client = SyncClientBuilder::new().build()?;
     let response = client.document()
                          .update_raw("myindex", 1)
@@ -342,15 +322,11 @@ where
     Update a [`DocumentType`][documents-mod] called `MyType` with an id of `1` using a new document value:
 
     ```no_run
-    # extern crate serde;
-    # #[macro_use]
-    # extern crate serde_derive;
-    # #[macro_use]
-    # extern crate elastic_derive;
-    # extern crate elastic;
+    # #[macro_use] extern crate serde_derive;
+    # #[macro_use] extern crate elastic_derive;
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
     #     pub id: String,
@@ -371,17 +347,12 @@ where
     Be careful though because this can lead to unexpected results or runtime errors if the document types don't align:
 
     ```no_run
-    # extern crate serde;
-    # #[macro_use]
-    # extern crate serde_json;
-    # #[macro_use]
-    # extern crate serde_derive;
-    # #[macro_use]
-    # extern crate elastic_derive;
-    # extern crate elastic;
+    # #[macro_use] extern crate serde_json;
+    # #[macro_use] extern crate serde_derive;
+    # #[macro_use] extern crate elastic_derive;
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
     #     pub id: String,
@@ -426,15 +397,11 @@ where
     Update the `title` property of a document using a script:
 
     ```no_run
-    # extern crate serde;
-    # #[macro_use]
-    # extern crate serde_derive;
-    # #[macro_use]
-    # extern crate elastic_derive;
-    # extern crate elastic;
+    # #[macro_use] extern crate serde_derive;
+    # #[macro_use] extern crate elastic_derive;
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
     #     pub id: String,
@@ -453,16 +420,12 @@ where
      Update the `title` property of a document using a parameterised script:
 
     ```no_run
-    # extern crate serde;
-    # #[macro_use]
-    # extern crate serde_derive;
-    # #[macro_use]
-    # extern crate elastic_derive;
-    # extern crate elastic;
+    # #[macro_use] extern crate serde_derive;
+    # #[macro_use] extern crate elastic_derive;
     # use elastic::client::requests::document_update::ScriptBuilder;
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
     #     pub id: String,
@@ -483,7 +446,7 @@ where
     # }
     ```
 
-    [painless-lang]: https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-scripting-painless.html
+    [painless-lang]: https://www.elastic.co/guide/en/elasticsearch/reference/master/modules-scripting-painless.html
      */
     pub fn script<TScript, TParams>(
         self,
@@ -516,15 +479,11 @@ where
     Update the `title` property of a document using a parameterised script:
 
     ```no_run
-    # extern crate serde;
-    # #[macro_use]
-    # extern crate serde_derive;
-    # #[macro_use]
-    # extern crate elastic_derive;
-    # extern crate elastic;
+    # #[macro_use] extern crate serde_derive;
+    # #[macro_use] extern crate elastic_derive;
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
     #     pub id: String,
@@ -548,15 +507,11 @@ where
     If the parameters don't serialize to an object then Elasticsearch will fail to parse them:
 
     ```no_run
-    # extern crate serde;
-    # #[macro_use]
-    # extern crate serde_derive;
-    # #[macro_use]
-    # extern crate elastic_derive;
-    # extern crate elastic;
+    # #[macro_use] extern crate serde_derive;
+    # #[macro_use] extern crate elastic_derive;
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
     #     pub id: String,
@@ -583,7 +538,7 @@ where
     # }
     ```
 
-    [painless-lang]: https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-scripting-painless.html
+    [painless-lang]: https://www.elastic.co/guide/en/elasticsearch/reference/master/modules-scripting-painless.html
     */
     pub fn script_fluent<TScript, TParams>(
         self,
@@ -616,15 +571,11 @@ where
     Update a [`DocumentType`][documents-mod] called `MyType` with an id of `1` using a new document value:
 
     ```no_run
-    # extern crate serde;
-    # #[macro_use]
-    # extern crate serde_derive;
-    # #[macro_use]
-    # extern crate elastic_derive;
-    # extern crate elastic;
+    # #[macro_use] extern crate serde_derive;
+    # #[macro_use] extern crate elastic_derive;
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
     #     pub id: String,
@@ -672,18 +623,14 @@ where
     Update a [`DocumentType`][documents-mod] called `MyType` with an id of `1` using a new document value:
 
     ```no_run
-    # extern crate futures;
-    # extern crate tokio;
-    # extern crate serde;
-    # extern crate serde_json;
+    # #[macro_use] extern crate serde_json;
     # #[macro_use] extern crate serde_derive;
     # #[macro_use] extern crate elastic_derive;
-    # extern crate elastic;
     # use serde_json::Value;
     # use futures::Future;
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
     #     pub id: String,
@@ -726,7 +673,7 @@ where
 
 /** A future returned by calling `send`. */
 pub struct Pending {
-    inner: Box<Future<Item = UpdateResponse, Error = Error> + Send>,
+    inner: Box<dyn Future<Item = UpdateResponse, Error = Error> + Send>,
 }
 
 impl Pending {
@@ -752,12 +699,14 @@ impl Future for Pending {
 #[cfg(test)]
 mod tests {
     use super::ScriptBuilder;
-    use prelude::*;
+    use crate::{
+        prelude::*,
+        tests::*,
+    };
     use serde_json::{
         self,
         Value,
     };
-    use tests::*;
 
     #[test]
     fn is_send() {
@@ -765,6 +714,7 @@ mod tests {
     }
 
     #[derive(Serialize, ElasticType)]
+    #[elastic(crate_root = "crate::types")]
     struct TestDoc {}
 
     #[test]

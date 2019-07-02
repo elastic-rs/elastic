@@ -18,9 +18,9 @@ use elastic::prelude::*;
 use futures::Future;
 use std::error::Error;
 
-fn run() -> Result<(), Box<Error>> {
+fn run() -> Result<(), Box<dyn Error>> {
     // A HTTP client and request parameters
-    let client = AsyncClientBuilder::new().build()?;
+    let client = AsyncClient::builder().build()?;
 
     let ops = (0..1000).into_iter().map(|i| {
         bulk_raw()

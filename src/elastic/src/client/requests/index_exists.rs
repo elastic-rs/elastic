@@ -1,7 +1,7 @@
 /*!
 Builders for [index exists requests][docs-index-exists].
 
-[docs-index-exists]: https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-exists.html
+[docs-index-exists]: https://www.elastic.co/guide/en/elasticsearch/reference/master/indices-exists.html
 */
 
 use futures::{
@@ -9,22 +9,24 @@ use futures::{
     Poll,
 };
 
-use client::{
-    requests::{
-        endpoints::IndicesExistsRequest,
-        params::Index,
-        raw::RawRequestInner,
-        RequestBuilder,
+use crate::{
+    client::{
+        requests::{
+            raw::RawRequestInner,
+            RequestBuilder,
+        },
+        responses::IndicesExistsResponse,
+        IndexClient,
     },
-    responses::IndicesExistsResponse,
-    sender::{
+    endpoints::IndicesExistsRequest,
+    error::Error,
+    http::sender::{
         AsyncSender,
         Sender,
         SyncSender,
     },
-    IndexClient,
+    params::Index,
 };
-use error::*;
 
 /**
 An [index exists request][docs-index-exists] builder that can be configured before sending.
@@ -32,7 +34,7 @@ An [index exists request][docs-index-exists] builder that can be configured befo
 Call [`Client.index_exists`][Client.index_exists] to get an `IndexExistsRequestBuilder`.
 The `send` method will either send the request [synchronously][send-sync] or [asynchronously][send-async], depending on the `Client` it was opend from.
 
-[docs-index-exists]: https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-exists.html
+[docs-index-exists]: https://www.elastic.co/guide/en/elasticsearch/reference/master/indices-exists.html
 [send-sync]: #send-synchronously
 [send-async]: #send-asynchronously
 [Client.index_exists]: ../../struct.Client.html#index-exists-request
@@ -64,10 +66,9 @@ where
     Check whether an index called `myindex` exists:
 
     ```no_run
-    # extern crate elastic;
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
     # let client = SyncClientBuilder::new().build()?;
     let response = client.index("myindex").exists().send()?;
 
@@ -106,10 +107,9 @@ impl IndexExistsRequestBuilder<SyncSender> {
     Check whether an index called `myindex` exists:
 
     ```no_run
-    # extern crate elastic;
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
     # let client = SyncClientBuilder::new().build()?;
     let response = client.index("myindex").exists().send()?;
 
@@ -120,7 +120,7 @@ impl IndexExistsRequestBuilder<SyncSender> {
 
     [SyncClient]: ../../type.SyncClient.html
     */
-    pub fn send(self) -> Result<IndicesExistsResponse> {
+    pub fn send(self) -> Result<IndicesExistsResponse, Error> {
         let req = self.inner.into_request();
 
         RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
@@ -143,13 +143,10 @@ impl IndexExistsRequestBuilder<AsyncSender> {
     Check whether an index called `myindex` exists:
 
     ```no_run
-    # extern crate futures;
-    # extern crate tokio;
-    # extern crate elastic;
     # use futures::Future;
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
     # let client = AsyncClientBuilder::new().build()?;
     let future = client.index("myindex").exists().send();
 
@@ -178,7 +175,7 @@ impl IndexExistsRequestBuilder<AsyncSender> {
 
 /** A future returned by calling `send`. */
 pub struct Pending {
-    inner: Box<Future<Item = IndicesExistsResponse, Error = Error> + Send>,
+    inner: Box<dyn Future<Item = IndicesExistsResponse, Error = Error> + Send>,
 }
 
 impl Pending {
@@ -203,8 +200,10 @@ impl Future for Pending {
 
 #[cfg(test)]
 mod tests {
-    use prelude::*;
-    use tests::*;
+    use crate::{
+        prelude::*,
+        tests::*,
+    };
 
     #[test]
     fn is_send() {

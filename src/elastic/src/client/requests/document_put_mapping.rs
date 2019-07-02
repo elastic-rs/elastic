@@ -1,7 +1,7 @@
 /*!
 Builders for [put mapping requests][docs-mapping].
 
-[docs-mapping]: https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping.html
+[docs-mapping]: https://www.elastic.co/guide/en/elasticsearch/reference/master/mapping.html
 */
 
 use futures::{
@@ -11,34 +11,35 @@ use futures::{
 use serde_json;
 use std::marker::PhantomData;
 
-use client::{
-    requests::{
-        endpoints::IndicesPutMappingRequest,
-        params::{
-            Index,
-            Type,
+use crate::{
+    client::{
+        requests::{
+            raw::RawRequestInner,
+            RequestBuilder,
         },
-        raw::RawRequestInner,
-        RequestBuilder,
+        responses::CommandResponse,
+        DocumentClient,
     },
-    responses::CommandResponse,
-    sender::{
+    endpoints::IndicesPutMappingRequest,
+    error::{
+        self,
+        Error,
+    },
+    http::sender::{
         AsyncSender,
         Sender,
         SyncSender,
     },
-    DocumentClient,
-};
-use error::{
-    self,
-    Error,
-    Result,
-};
-use types::document::{
-    DEFAULT_DOC_TYPE,
-    DocumentType,
-    StaticIndex,
-    StaticType,
+    params::{
+        Index,
+        Type,
+    },
+    types::document::{
+        DocumentType,
+        StaticIndex,
+        StaticType,
+        DEFAULT_DOC_TYPE,
+    },
 };
 
 /**
@@ -47,7 +48,7 @@ A [put mapping request][docs-mapping] builder that can be configured before send
 Call [`Client.document.put_mapping`][Client.document.put_mapping] to get a `PutMappingRequestBuilder`.
 The `send` method will either send the request [synchronously][send-sync] or [asynchronously][send-async], depending on the `Client` it was created from.
 
-[docs-mapping]: https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping.html
+[docs-mapping]: https://www.elastic.co/guide/en/elasticsearch/reference/master/mapping.html
 [send-sync]: #send-synchronously
 [send-async]: #send-asynchronously
 [Client.document.put_mapping]: ../../struct.DocumentClient.html#put-mapping-request
@@ -83,13 +84,11 @@ where
     Put the document mapping for a [`DocumentType`][documents-mod] called `MyType`:
 
     ```no_run
-    # extern crate serde;
     # #[macro_use] extern crate serde_derive;
     # #[macro_use] extern crate elastic_derive;
-    # extern crate elastic;
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType { }
     # let client = SyncClientBuilder::new().build()?;
@@ -133,13 +132,11 @@ impl<TDocument> PutMappingRequestInner<TDocument>
 where
     TDocument: DocumentType,
 {
-    fn into_request(self) -> Result<IndicesPutMappingRequest<'static, Vec<u8>>> {
+    fn into_request(self) -> Result<IndicesPutMappingRequest<'static, Vec<u8>>, Error> {
         let body = serde_json::to_vec(&TDocument::index_mapping()).map_err(error::request)?;
 
         if &self.ty[..] == DEFAULT_DOC_TYPE {
-            Ok(IndicesPutMappingRequest::for_index(
-                self.index, body,
-            ))
+            Ok(IndicesPutMappingRequest::for_index(self.index, body))
         } else {
             Ok(IndicesPutMappingRequest::for_index_ty(
                 self.index, self.ty, body,
@@ -187,13 +184,11 @@ where
     Put the mapping for a document type called `MyType`:
 
     ```no_run
-    # extern crate serde;
     # #[macro_use] extern crate serde_derive;
     # #[macro_use] extern crate elastic_derive;
-    # extern crate elastic;
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType { }
     # let client = SyncClientBuilder::new().build()?;
@@ -208,7 +203,7 @@ where
 
     [SyncClient]: ../../type.SyncClient.html
     */
-    pub fn send(self) -> Result<CommandResponse> {
+    pub fn send(self) -> Result<CommandResponse, Error> {
         let req = self.inner.into_request()?;
 
         RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
@@ -234,16 +229,12 @@ where
     Put the mapping for a document type called `MyType`:
 
     ```no_run
-    # extern crate futures;
-    # extern crate tokio;
-    # extern crate serde;
     # #[macro_use] extern crate serde_derive;
     # #[macro_use] extern crate elastic_derive;
-    # extern crate elastic;
     # use futures::Future;
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<::std::error::Error>> {
+    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType { }
     # let client = AsyncClientBuilder::new().build()?;
@@ -279,7 +270,7 @@ where
 
 /** A future returned by calling `send`. */
 pub struct Pending {
-    inner: Box<Future<Item = CommandResponse, Error = Error> + Send>,
+    inner: Box<dyn Future<Item = CommandResponse, Error = Error> + Send>,
 }
 
 impl Pending {
@@ -304,12 +295,14 @@ impl Future for Pending {
 
 #[cfg(test)]
 mod tests {
-    use prelude::*;
+    use crate::{
+        prelude::*,
+        tests::*,
+    };
     use serde_json::{
         self,
         Value,
     };
-    use tests::*;
 
     #[test]
     fn is_send() {
@@ -317,6 +310,7 @@ mod tests {
     }
 
     #[derive(ElasticType)]
+    #[elastic(crate_root = "crate::types")]
     struct TestDoc {}
 
     #[test]
