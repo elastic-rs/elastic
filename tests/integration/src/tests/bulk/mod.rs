@@ -4,6 +4,8 @@ test_cases![
     index_get,
     raw_index_create,
     raw_index_get,
+    raw_upsert,
+    raw_upsert_update,
     stream_tiny_size_limit,
     stream_tiny_timeout,
     stream_zero_size_limit,

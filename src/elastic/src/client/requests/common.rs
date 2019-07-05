@@ -2,6 +2,8 @@
 Types that are common between requests.
 */
 
+use std::ops::Not;
+
 use serde::ser::{
     Serialize,
     Serializer,
@@ -15,19 +17,29 @@ use serde_json::{
 #[derive(Serialize)]
 pub struct Doc<TDocument> {
     doc: DocInner<TDocument>,
+    #[serde(skip_serializing_if = "Not::not")]
+    doc_as_upsert: bool,
 }
 
 impl<TDocument> Doc<TDocument> {
     pub(crate) fn empty() -> Self {
         Doc {
             doc: DocInner { inner: None },
+            doc_as_upsert: false,
         }
     }
 
     pub(crate) fn value(doc: TDocument) -> Self {
         Doc {
             doc: DocInner { inner: Some(doc) },
+            doc_as_upsert: false,
         }
+    }
+
+    pub(crate) fn doc_as_upsert(mut self) -> Self {
+        self.doc_as_upsert = true;
+
+        self
     }
 }
 
