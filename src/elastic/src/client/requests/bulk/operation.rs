@@ -122,6 +122,19 @@ impl<TValue> BulkOperation<TValue> {
     }
 }
 
+impl<TDocument> BulkOperation<Doc<TDocument>>
+where
+    TDocument: Serialize,
+{
+    pub fn doc_as_upsert(mut self) -> Self {
+        if let Some(inner) = self.inner {
+            self.inner = Some(inner.doc_as_upsert());
+        };
+
+        self
+    }
+}
+
 impl<TDocument> BulkOperation<TDocument>
 where
     TDocument: Serialize,
