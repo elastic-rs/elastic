@@ -13,7 +13,7 @@ use futures::{
 test! {
     const description: &'static str = "invalid syntax";
 
-    type Response = SqlResponse;
+    type Response = SqlQueryResponse;
 
     // Ensure the index doesn't exist
     fn prepare(&self, _client: AsyncClient) -> Box<dyn Future<Item = (), Error = Error>> {

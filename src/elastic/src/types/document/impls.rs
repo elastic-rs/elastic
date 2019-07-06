@@ -59,6 +59,7 @@ pub trait DocumentType: ObjectFieldType {
 An indexable Elasticsearch type with a static index.
 */
 pub trait StaticIndex: DocumentType {
+    /** Get the statically known index this document belongs to. */
     fn static_index() -> Index<'static> {
         Self::partial_static_index().expect("missing static index")
     }
@@ -68,6 +69,7 @@ pub trait StaticIndex: DocumentType {
 An indexable Elasticsearch type with a static document type.
 */
 pub trait StaticType: DocumentType {
+    /** Get the statically known type this document belongs to. */
     fn static_ty() -> Type<'static> {
         Self::partial_static_ty().expect("missing static type")
     }
@@ -103,8 +105,8 @@ A wrapper type for serialising user types.
 
 Serialising `Document` will produce the mapping for the given type,
 suitable as the mapping for
-[Put Mapping](https://www.elastic.co/guide/en/elasticsearch/reference/master/indices-put-mapping.html)
-or [Create Index](https://www.elastic.co/guide/en/elasticsearch/reference/master/indices-create-index.html).
+[Put Mapping](https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-put-mapping.html)
+or [Create Index](https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-create-index.html).
 */
 pub struct IndexDocumentMapping<TMapping>
 where

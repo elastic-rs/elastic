@@ -1,5 +1,5 @@
 /*!
-Response types for a [update document request](https://www.elastic.co/guide/en/elasticsearch/reference/master/docs-update.html).
+Response types for a [update document request](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-update.html).
 */
 
 use super::common::DocumentResult;
@@ -13,7 +13,7 @@ use crate::{
     },
 };
 
-/** Response for a [update document request](https://www.elastic.co/guide/en/elasticsearch/reference/master/docs-update.html). */
+/** Response for a [update document request](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-update.html). */
 #[derive(Deserialize, Debug)]
 pub struct UpdateResponse {
     #[serde(rename = "_index")]

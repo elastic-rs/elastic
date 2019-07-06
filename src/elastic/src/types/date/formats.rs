@@ -27,7 +27,7 @@ pub struct ChronoFormat;
 Format for `basic_date_time_no_millis`.
 
 # Links
-- [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/master/mapping-date-format.html#built-in-date-formats)
+- [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-date-format.html#built-in-date-formats)
 */
 #[derive(ElasticDateFormat, PartialEq, Debug, Default, Clone, Copy)]
 #[elastic(crate_root = "crate::types")]
@@ -41,7 +41,7 @@ pub struct BasicDateTimeNoMillis;
 Format for `basic_date_time`.
 
 # Links
-- [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/master/mapping-date-format.html#built-in-date-formats)
+- [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-date-format.html#built-in-date-formats)
 */
 #[derive(ElasticDateFormat, PartialEq, Debug, Default, Clone, Copy)]
 #[elastic(crate_root = "crate::types")]
@@ -58,7 +58,7 @@ Takes up to a 13 digit string of millis since the epoch and converts to a `DateT
 This is an efficient formatter, so is a good choice for storing timestamps.
 
 # Links
-- [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/master/mapping-date-format.html#built-in-date-formats)
+- [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-date-format.html#built-in-date-formats)
 */
 #[derive(PartialEq, Debug, Default, Clone, Copy)]
 pub struct EpochMillis;

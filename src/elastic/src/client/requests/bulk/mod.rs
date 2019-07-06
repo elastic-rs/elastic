@@ -1,7 +1,7 @@
 /*!
 Builders for [bulk requests][docs-bulk].
 
-[docs-bulk]: https://www.elastic.co/guide/en/elasticsearch/reference/master/bulk.html
+[docs-bulk]: https://www.elastic.co/guide/en/elasticsearch/reference/current/bulk.html
 */
 
 use std::{
@@ -63,7 +63,7 @@ The `send` method will either send the request [synchronously][send-sync] or [as
 
 Call [`Client.bulk_stream`][Client.bulk_stream] to get a `BulkRequestBuilder` that can be used to stream bulk operations asynchronously.
 
-[docs-bulk]: https://www.elastic.co/guide/en/elasticsearch/reference/master/bulk.html
+[docs-bulk]: https://www.elastic.co/guide/en/elasticsearch/reference/current/bulk.html
 [send-sync]: #send-synchronously
 [send-async]: #send-asynchronously
 [Client.bulk]: ../../struct.Client.html#bulk-request
@@ -150,7 +150,7 @@ where
     [send-async]: requests/bulk/type.BulkRequestBuilder.html#send-asynchronously
     [types-mod]: ../../types/index.html
     [documents-mod]: ../../types/document/index.html
-    [docs-querystring]: https://www.elastic.co/guide/en/elasticsearch/reference/master/query-dsl-query-string-query.html
+    [docs-querystring]: https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html
     */
     pub fn bulk(&self) -> BulkRequestBuilder<TSender, Vec<u8>, BulkResponse> {
         RequestBuilder::initial(
@@ -238,7 +238,7 @@ impl Client<AsyncSender> {
     [send-async]: requests/bulk/type.BulkRequestBuilder.html#send-asynchronously
     [types-mod]: ../../types/index.html
     [documents-mod]: ../../types/document/index.html
-    [docs-querystring]: https://www.elastic.co/guide/en/elasticsearch/reference/master/query-dsl-query-string-query.html
+    [docs-querystring]: https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html
     */
     pub fn bulk_stream<TDocument>(
         &self,

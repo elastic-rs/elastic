@@ -633,7 +633,7 @@ mod tests {
         fn deserialise_endpoint() {
             let ser = json!({
                 "search": {
-                    "documentation": "http://www.elastic.co/guide/en/elasticsearch/reference/master/search-search.html",
+                    "documentation": "http://www.elastic.co/guide/en/elasticsearch/reference/current/search-search.html",
                     "methods": ["GET", "POST"],
                     "url": {
                         "path": "/_search",
@@ -651,7 +651,7 @@ mod tests {
             expected.insert(
                 "search".to_string(),
                 Endpoint {
-                    documentation: "http://www.elastic.co/guide/en/elasticsearch/reference/master/search-search.html".to_string(),
+                    documentation: "http://www.elastic.co/guide/en/elasticsearch/reference/current/search-search.html".to_string(),
                     methods: vec![Method::Get, Method::Post],
                     url: Url {
                         path: Path("/_search".to_string()),

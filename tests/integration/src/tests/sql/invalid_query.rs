@@ -12,7 +12,7 @@ const INDEX: &'static str = "no_sql_index_idx";
 test! {
     const description: &'static str = "invalid query";
 
-    type Response = SqlResponse;
+    type Response = SqlQueryResponse;
 
     // Ensure the index doesn't exist
     fn prepare(&self, client: AsyncClient) -> Box<dyn Future<Item = (), Error = Error>> {

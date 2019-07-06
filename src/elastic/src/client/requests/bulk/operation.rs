@@ -195,6 +195,9 @@ where
     }
 }
 
+/**
+A builder for a bulk operation for a specific document type.
+*/
 pub struct BulkDocumentOperation<TDocument> {
     _marker: PhantomData<TDocument>,
 }
@@ -203,12 +206,18 @@ impl<TDocument> BulkDocumentOperation<TDocument>
 where
     TDocument: DocumentType,
 {
+    /**
+    Create a bulk operation.
+    */
     pub fn new() -> Self {
         BulkDocumentOperation {
             _marker: PhantomData,
         }
     }
 
+    /**
+    Create a bulk operation to index a document.
+    */
     pub fn index(self, doc: TDocument) -> BulkOperation<TDocument> {
         BulkOperation {
             action: Action::Index,
@@ -221,6 +230,9 @@ where
         }
     }
 
+    /**
+    Create a bulk operation to update a document.
+    */
     pub fn update(self, doc: TDocument) -> BulkOperation<Doc<TDocument>> {
         BulkOperation {
             action: Action::Update,
@@ -233,6 +245,9 @@ where
         }
     }
 
+    /**
+    Create a bulk operation to update a documennt with a script.
+    */
     pub fn update_script<TId, TScript>(
         self,
         id: TId,
@@ -253,6 +268,9 @@ where
         }
     }
 
+    /**
+    Update the bulk operation sctipt.
+    */
     pub fn update_script_fluent<TId, TScript, TBuilder, TParams>(
         self,
         id: TId,
@@ -276,6 +294,9 @@ where
         .script_fluent(builder)
     }
 
+    /**
+    Create a bulk operation to create a document.
+    */
     pub fn create(self, doc: TDocument) -> BulkOperation<TDocument> {
         BulkOperation {
             action: Action::Create,
@@ -288,6 +309,9 @@ where
         }
     }
 
+    /**
+    Create a bulk operation to delete a document.
+    */
     pub fn delete<TId>(self, id: TId) -> BulkOperation<()>
     where
         TId: Into<Id<'static>>,
@@ -304,6 +328,9 @@ where
     }
 }
 
+/**
+Create a builder for a bulk operation for a specific document type.
+*/
 pub fn bulk<TDocument>() -> BulkDocumentOperation<TDocument>
 where
     TDocument: DocumentType,
@@ -311,15 +338,24 @@ where
     BulkDocumentOperation::new()
 }
 
+/**
+A builder for a bulk operation.
+*/
 pub struct BulkRawOperation {
     _private: (),
 }
 
 impl BulkRawOperation {
+    /**
+    Create a bulk operation.
+    */
     pub fn new() -> Self {
         BulkRawOperation { _private: () }
     }
 
+    /**
+    Create a bulk operation to index a document.
+    */
     pub fn index<TDocument>(self, doc: TDocument) -> BulkOperation<TDocument> {
         BulkOperation {
             action: Action::Index,
@@ -332,6 +368,9 @@ impl BulkRawOperation {
         }
     }
 
+    /**
+    Create a bulk operation to update a document.
+    */
     pub fn update<TDocument>(self, doc: TDocument) -> BulkOperation<Doc<TDocument>> {
         BulkOperation {
             action: Action::Update,
@@ -344,6 +383,9 @@ impl BulkRawOperation {
         }
     }
 
+    /**
+    Create a bulk operation to update a document with a script.
+    */
     pub fn update_script<TScript>(self, script: TScript) -> BulkOperation<Script<DefaultParams>>
     where
         TScript: ToString,
@@ -359,6 +401,9 @@ impl BulkRawOperation {
         }
     }
 
+    /**
+    Update the bulk operation script.
+    */
     pub fn update_script_fluent<TId, TScript, TBuilder, TParams>(
         self,
         script: TScript,
@@ -380,6 +425,9 @@ impl BulkRawOperation {
         .script_fluent(builder)
     }
 
+    /**
+    Create a bulk operation to create a document.
+    */
     pub fn create<TDocument>(self, doc: TDocument) -> BulkOperation<TDocument> {
         BulkOperation {
             action: Action::Create,
@@ -392,6 +440,9 @@ impl BulkRawOperation {
         }
     }
 
+    /**
+    Create a bulk operation to delete a document.
+    */
     pub fn delete(self) -> BulkOperation<()> {
         BulkOperation {
             action: Action::Delete,
@@ -405,6 +456,9 @@ impl BulkRawOperation {
     }
 }
 
+/**
+Create a builder for a bulk operation.
+*/
 pub fn bulk_raw() -> BulkRawOperation {
     BulkRawOperation::new()
 }

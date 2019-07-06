@@ -1,6 +1,6 @@
 {
   "indices.rollover": {
-    "documentation": "http://www.elastic.co/guide/en/elasticsearch/reference/master/indices-rollover-index.html",
+    "documentation": "http://www.elastic.co/guide/en/elasticsearch/reference/current/indices-rollover-index.html",
     "methods": ["POST"],
     "url": {
       "path": "/{alias}/_rollover",

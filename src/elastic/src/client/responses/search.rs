@@ -1,5 +1,5 @@
 /*!
-Response types for a [search request](https://www.elastic.co/guide/en/elasticsearch/reference/master/search-search.html).
+Response types for a [search request](https://www.elastic.co/guide/en/elasticsearch/reference/current/search-search.html).
 */
 
 use serde::de::DeserializeOwned;
@@ -60,9 +60,9 @@ for hit in response.hits() {
 # }
 ```
 
-[search-req]: https://www.elastic.co/guide/en/elasticsearch/reference/master/search-search.html
-[metric-aggs]: https://www.elastic.co/guide/en/elasticsearch/reference/master/search-aggregations-metrics.html
-[stats-aggs]: https://www.elastic.co/guide/en/elasticsearch/reference/master/search-aggregations-metrics-stats-aggregation.html
+[search-req]: https://www.elastic.co/guide/en/elasticsearch/reference/current/search-search.html
+[metric-aggs]: https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations-metrics.html
+[stats-aggs]: https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations-metrics-stats-aggregation.html
 */
 #[derive(Deserialize, Debug)]
 pub struct SearchResponse<T> {

@@ -133,19 +133,38 @@ The details are explained below.
 # Request builders
 
 Some commonly used endpoints have high-level builder methods you can use to configure requests easily.
-They're exposed as methods on the `Client`:
+They're exposed as methods on the `Client`.
+
+## Common requests
+
+These request methods are called directly on a [`Client`][`Client`].
 
 Client method                                                 | Elasticsearch API                  | Raw request type                                        | Response type
 ------------------------------------------------------------- | ---------------------------------- | ------------------------------------------------------- | ------------------------------------
 [`search`][Client.search]                                     | [Search][docs-search]              | [`SearchRequest`][SearchRequest]                        | [`SearchResponse`][SearchResponse]
 [`bulk`][Client.bulk]                                         | [Bulk][docs-bulk]                  | [`BulkRequest`][BulkRequest]                            | [`BulkResponse`][BulkResponse]
 [`ping`][Client.ping]                                         | -                                  | [`PingRequest`][PingRequest]                            | [`PingResponse`][PingResponse]
+[`sql`][Client.sql]                                           | [SQL][docs-sql]                    | [`SqlQueryRequest`][SqlQueryRequest]                    | [`SqlQueryResponse`][SqlQueryResponse]
+
+## Document requests
+
+These request methods are called on a [`DocumentClient`][`DocumentClient`].
+
+Client method                                                 | Elasticsearch API                  | Raw request type                                        | Response type
+------------------------------------------------------------- | ---------------------------------- | ------------------------------------------------------- | ------------------------------------
 [`document.search`][Client.document.search]                   | [Search][docs-search]              | [`SearchRequest`][SearchRequest]                        | [`SearchResponse`][SearchResponse]
 [`document.get`][Client.document.get]                         | [Get Document][docs-get]           | [`GetRequest`][GetRequest]                              | [`GetResponse`][GetResponse]
 [`document.index`][Client.document.index]                     | [Index Document][docs-index]       | [`IndexRequest`][IndexRequest]                          | [`IndexResponse`][IndexResponse]
 [`document.update`][Client.document.update]                   | [Update Document][docs-update]     | [`UpdateRequest`][UpdateRequest]                        | [`UpdateResponse`][UpdateResponse]
 [`document.delete`][Client.document.delete]                   | [Delete Document][docs-delete]     | [`DeleteRequest`][DeleteRequest]                        | [`DeleteResponse`][DeleteResponse]
 [`document.put_mapping`][Client.document.put_mapping]         | [Put Mapping][docs-mapping]        | [`IndicesPutMappingRequest`][IndicesPutMappingRequest]  | [`CommandResponse`][CommandResponse]
+
+## Index requests
+
+These request methods are called on a [`IndexClient`][`IndexClient`].
+
+Client method                                                 | Elasticsearch API                  | Raw request type                                        | Response type
+------------------------------------------------------------- | ---------------------------------- | ------------------------------------------------------- | ------------------------------------
 [`index.create`][Client.index.create]                         | [Create Index][docs-create-index]  | [`IndicesCreateRequest`][IndicesCreateRequest]          | [`CommandResponse`][CommandResponse]
 [`index.open`][Client.index.open]                             | [Open Index][docs-open-index]      | [`IndicesOpenRequest`][IndicesOpenRequest]              | [`CommandResponse`][CommandResponse]
 [`index.close`][Client.index.close]                           | [Close Index][docs-close-index]    | [`IndicesCloseRequest`][IndicesCloseRequest]            | [`CommandResponse`][CommandResponse]
@@ -217,7 +236,7 @@ The basic flow from request to response is:
 [RawRequestBuilder.send()] ---> [ResponseBuilder]
 ```
 
-**3)** Parse the response builder to a [response type][response-types]:
+**3)** Parse the response builder to a response type:
 
 ```text
 [ResponseBuilder.into_response()] ---> [ResponseType]
@@ -316,7 +335,7 @@ let response = request_builder.send();
 
 ### 3. Parsing responses synchronously
 
-Call [`SyncResponseBuilder.into_response`][SyncResponseBuilder.into_response] on a sent request to get a [strongly typed response][response-types]:
+Call [`SyncResponseBuilder.into_response`][SyncResponseBuilder.into_response] on a sent request to get a [strongly typed response][responses-mod]:
 
 ```no_run
 # #[macro_use] extern crate serde_json;
@@ -385,7 +404,7 @@ For more details see the [`responses`][responses-mod] module.
 
 ### 3. Parsing responses asynchronously
 
-Call [`AsyncResponseBuilder.into_response`][AsyncResponseBuilder.into_response] on a sent request to get a [strongly typed response][response-types]:
+Call [`AsyncResponseBuilder.into_response`][AsyncResponseBuilder.into_response] on a sent request to get a [strongly typed response][responses-mod]:
 
 ```no_run
 # #[macro_use] extern crate serde_json;
@@ -453,18 +472,19 @@ future.and_then(|body| {
 `AsyncHttpResponse` implements the async `Stream` trait so you can buffer out the raw response data.
 For more details see the [`responses`][responses-mod] module.
 
-[docs-bulk]: http://www.elastic.co/guide/en/elasticsearch/reference/master/docs-bulk.html
-[docs-search]: http://www.elastic.co/guide/en/elasticsearch/reference/master/search-search.html
-[docs-get]: http://www.elastic.co/guide/en/elasticsearch/reference/master/docs-get.html
-[docs-update]: http://www.elastic.co/guide/en/elasticsearch/reference/master/docs-update.html
-[docs-delete]: http://www.elastic.co/guide/en/elasticsearch/reference/master/docs-delete.html
-[docs-index]: https://www.elastic.co/guide/en/elasticsearch/reference/master/docs-index_.html
-[docs-mapping]: https://www.elastic.co/guide/en/elasticsearch/reference/master/mapping.html
-[docs-create-index]: https://www.elastic.co/guide/en/elasticsearch/reference/master/indices-create-index.html
-[docs-close-index]: https://www.elastic.co/guide/en/elasticsearch/reference/master/indices-open-close.html
-[docs-open-index]: https://www.elastic.co/guide/en/elasticsearch/reference/master/indices-open-close.html
-[docs-index-exists]: https://www.elastic.co/guide/en/elasticsearch/reference/master/indices-exists.html
-[docs-delete-index]: https://www.elastic.co/guide/en/elasticsearch/reference/master/indices-delete-index.html
+[docs-bulk]: http://www.elastic.co/guide/en/elasticsearch/reference/current/docs-bulk.html
+[docs-search]: http://www.elastic.co/guide/en/elasticsearch/reference/current/search-search.html
+[docs-sql]: https://www.elastic.co/guide/en/elasticsearch/reference/current/sql-spec.html
+[docs-get]: http://www.elastic.co/guide/en/elasticsearch/reference/current/docs-get.html
+[docs-update]: http://www.elastic.co/guide/en/elasticsearch/reference/current/docs-update.html
+[docs-delete]: http://www.elastic.co/guide/en/elasticsearch/reference/current/docs-delete.html
+[docs-index]: https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html
+[docs-mapping]: https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping.html
+[docs-create-index]: https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-create-index.html
+[docs-close-index]: https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-open-close.html
+[docs-open-index]: https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-open-close.html
+[docs-index-exists]: https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-exists.html
+[docs-delete-index]: https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-delete-index.html
 
 [tokio]: https://tokio.rs
 
@@ -474,9 +494,13 @@ For more details see the [`responses`][responses-mod] module.
 [SyncClientBuilder]: struct.SyncClientBuilder.html
 [AsyncClient]: type.AsyncClient.html
 [AsyncClientBuilder]: struct.AsyncClientBuilder.html
+[`Client`]: struct.Client.html
+[`DocumentClient`]: struct.DocumentClient.html
+[`IndexClient`]: struct.IndexClient.html
 [Client.request]: struct.Client.html#method.request
 [Client.bulk]: struct.Client.html#bulk-request
 [Client.search]: struct.Client.html#search-request
+[Client.sql]: struct.Client.html#sql-request
 [Client.document.search]: struct.DocumentClient.html#search-request
 [Client.document.get]: struct.DocumentClient.html#get-document-request
 [Client.document.update]: struct.DocumentClient.html#update-document-request
@@ -494,6 +518,7 @@ For more details see the [`responses`][responses-mod] module.
 [RequestBuilder.params]: requests/struct.RequestBuilder.html#method.params
 [RawRequestBuilder]: requests/type.RawRequestBuilder.html
 [SearchRequest]: requests/endpoints/struct.SearchRequest.html
+[SqlQueryRequest]: requests/endpoints/struct.SqlQueryRequest.html
 [BulkRequest]: requests/endpoints/struct.BulkRequest.html
 [GetRequest]: requests/endpoints/struct.GetRequest.html
 [UpdateRequest]: requests/endpoints/struct.UpdateRequest.html
@@ -508,13 +533,14 @@ For more details see the [`responses`][responses-mod] module.
 [PingRequest]: requests/endpoints/struct.PingRequest.html
 
 [responses-mod]: responses/index.html
-[SyncResponseBuilder]: responses/struct.SyncResponseBuilder.html
-[SyncResponseBuilder.into_response]: responses/struct.SyncResponseBuilder.html#method.into_response
-[SyncResponseBuilder.into_raw]: responses/struct.SyncResponseBuilder.html#method.into_raw
-[AsyncResponseBuilder]: responses/struct.AsyncResponseBuilder.html
-[AsyncResponseBuilder.into_response]: responses/struct.AsyncResponseBuilder.html#method.into_response
-[AsyncResponseBuilder.into_raw]: responses/struct.AsyncResponseBuilder.html#method.into_raw
+[SyncResponseBuilder]: ../http/receiver/struct.SyncResponseBuilder.html
+[SyncResponseBuilder.into_response]: ../http/receiver/struct.SyncResponseBuilder.html#method.into_response
+[SyncResponseBuilder.into_raw]: ../http/receiver/struct.SyncResponseBuilder.html#method.into_raw
+[AsyncResponseBuilder]: ../http/receiver/struct.AsyncResponseBuilder.html
+[AsyncResponseBuilder.into_response]: ../http/receiver/struct.AsyncResponseBuilder.html#method.into_response
+[AsyncResponseBuilder.into_raw]: ../http/receiver/struct.AsyncResponseBuilder.html#method.into_raw
 [SearchResponse]: responses/struct.SearchResponse.html
+[SqlQueryResponse]: responses/struct.SqlQueryResponse.html
 [BulkResponse]: responses/struct.BulkResponse.html
 [GetResponse]: responses/struct.GetResponse.html
 [UpdateResponse]: responses/struct.UpdateResponse.html
@@ -523,9 +549,8 @@ For more details see the [`responses`][responses-mod] module.
 [IndicesExistsResponse]: responses/struct.IndicesExistsResponse.html
 [PingResponse]: responses/struct.PingResponse.html
 [CommandResponse]: responses/struct.CommandResponse.html
-[SyncHttpResponse]: responses/struct.SyncHttpResponse.html
-[AsyncHttpResponse]: responses/struct.AsyncHttpResponse.html
-[response-types]: responses/parse/trait.IsOk.html#implementors
+[SyncHttpResponse]: ../http/receiver/struct.SyncHttpResponse.html
+[AsyncHttpResponse]: ../http/receiver/struct.AsyncHttpResponse.html
 
 [documents-mod]: ../types/documents/index.html
 */

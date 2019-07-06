@@ -15,7 +15,7 @@ use std::{
     vec::IntoIter,
 };
 
-/** Response for a [nodes info request](http://www.elastic.co/guide/en/elasticsearch/reference/master/cluster-nodes-info.html). */
+/** Response for a [nodes info request](http://www.elastic.co/guide/en/elasticsearch/reference/current/cluster-nodes-info.html). */
 #[derive(Debug, PartialEq, Deserialize)]
 pub struct NodesInfoResponse {
     #[serde(deserialize_with = "deserialize_nodes")]
@@ -44,6 +44,11 @@ impl NodesInfoResponse {
     }
 }
 
+/**
+An iterator over node publish addresses.
+
+This is the result of calling [`NodesInfoResponse.iter_addrs()`](structNodesInfoResponse.html#method.iter_addrs).
+*/
 pub struct IterAddrs<'a>(Iter<'a, SniffedNode>);
 
 impl<'a> Iterator for IterAddrs<'a> {
@@ -64,6 +69,11 @@ impl<'a> Iterator for IterAddrs<'a> {
     }
 }
 
+/**
+An iterator over node publish addresses.
+
+This is the result of calling [`NodesInfoResponse.innto_iter_addrs()`](structNodesInfoResponse.html#method.innto_iter_addrs).
+*/
 pub struct IntoIterAddrs(IntoIter<SniffedNode>);
 
 impl Iterator for IntoIterAddrs {

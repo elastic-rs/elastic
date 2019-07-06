@@ -1,7 +1,7 @@
 /*!
 Builders for [update document requests][docs-update].
 
-[docs-update]: http://www.elastic.co/guide/en/elasticsearch/reference/master/docs-update.html
+[docs-update]: http://www.elastic.co/guide/en/elasticsearch/reference/current/docs-update.html
 */
 
 use futures::{
@@ -57,7 +57,7 @@ An [update document request][docs-update] builder that can be configured before 
 Call [`Client.document.update`][Client.document.update] to get an `UpdateRequestBuilder`.
 The `send` method will either send the request [synchronously][send-sync] or [asynchronously][send-async], depending on the `Client` it was created from.
 
-[docs-update]: http://www.elastic.co/guide/en/elasticsearch/reference/master/docs-update.html
+[docs-update]: http://www.elastic.co/guide/en/elasticsearch/reference/current/docs-update.html
 [send-sync]: #send-synchronously
 [send-async]: #send-asynchronously
 [Client.document.update]: ../../struct.DocumentClient.html#update-document-request
@@ -446,7 +446,7 @@ where
     # }
     ```
 
-    [painless-lang]: https://www.elastic.co/guide/en/elasticsearch/reference/master/modules-scripting-painless.html
+    [painless-lang]: https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-scripting-painless.html
      */
     pub fn script<TScript, TParams>(
         self,
@@ -538,7 +538,7 @@ where
     # }
     ```
 
-    [painless-lang]: https://www.elastic.co/guide/en/elasticsearch/reference/master/modules-scripting-painless.html
+    [painless-lang]: https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-scripting-painless.html
     */
     pub fn script_fluent<TScript, TParams>(
         self,

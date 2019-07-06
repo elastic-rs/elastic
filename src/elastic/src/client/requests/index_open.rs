@@ -1,7 +1,7 @@
 /*!
 Builders for [open index requests][docs-open-index].
 
-[docs-open-index]: https://www.elastic.co/guide/en/elasticsearch/reference/master/indices-open-close.html
+[docs-open-index]: https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-open-close.html
 */
 
 use futures::{
@@ -38,7 +38,7 @@ An [open index request][docs-open-index] builder that can be configured before s
 Call [`Client.index_open`][Client.index_open] to get an `IndexOpenRequestBuilder`.
 The `send` method will either send the request [synchronously][send-sync] or [asynchronously][send-async], depending on the `Client` it was opend from.
 
-[docs-open-index]: https://www.elastic.co/guide/en/elasticsearch/reference/master/indices-open-close.html
+[docs-open-index]: https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-open-close.html
 [send-sync]: #send-synchronously
 [send-async]: #send-asynchronously
 [Client.index_open]: ../../struct.Client.html#open-index-request

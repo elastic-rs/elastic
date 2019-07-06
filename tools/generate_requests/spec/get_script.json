@@ -1,6 +1,6 @@
 {
   "get_script": {
-    "documentation": "http://www.elastic.co/guide/en/elasticsearch/reference/master/modules-scripting.html",
+    "documentation": "http://www.elastic.co/guide/en/elasticsearch/reference/current/modules-scripting.html",
     "methods": ["GET"],
     "url": {
       "path": "/_scripts/{id}",

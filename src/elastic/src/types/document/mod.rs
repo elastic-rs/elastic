@@ -311,8 +311,8 @@ So you can't `#[derive(ElasticType)]` on `MyType<T>`.
 So you can't share `MyTypeMapping` between `MyType` and `MyOtherType`.
 
 # Links
-- [Field Types](https://www.elastic.co/guide/en/elasticsearch/reference/master/mapping-types.html)
-- [Document Types](https://www.elastic.co/guide/en/elasticsearch/reference/master/mapping.html)
+- [Field Types](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-types.html)
+- [Document Types](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping.html)
 */
 
 pub mod mapping;

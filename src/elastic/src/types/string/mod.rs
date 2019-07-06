@@ -70,7 +70,7 @@ impl KeywordFieldType<DefaultKeywordMapping> for MyKeywordField {}
 
 # Links
 
-- [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/master/string.html)
+- [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/string.html)
 */
 
 #[macro_use]

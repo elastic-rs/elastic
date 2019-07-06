@@ -97,14 +97,14 @@ At some point in the future though this may be made more generic so you could re
 [Client]: struct.Client.html
 */
 pub trait Sender: private::Sealed + Clone {
-    /* The kind of request body this sender accepts. */
+    /** The kind of request body this sender accepts. */
     type Body;
-    /* The kind of response this sender produces. */
+    /** The kind of response this sender produces. */
     type Response;
-    /* The kind of request parameters this sender accepts. */
+    /** The kind of request parameters this sender accepts. */
     type Params;
 
-    /* Send a request. */
+    /** Send a request. */
     fn send<TEndpoint, TParams, TBody>(
         &self,
         request: SendableRequest<TEndpoint, TParams, TBody>,
@@ -123,14 +123,14 @@ The `NextParams` trait makes it possible to load balance requests between multip
 Out of the box `elastic` provides implementations for a static set of nodes or nodes sniffed from the [Nodes Stats API]().
 */
 pub trait NextParams: private::Sealed + Clone {
-    /*
+    /**
     The kind of parameters produces.
 
     This type is designed to link a `NextParams` implementation with a particular `Sender`.
     */
     type Params;
 
-    /* Get a set of request parameters. */
+    /** Get a set of request parameters. */
     fn next(&self) -> Self::Params;
 }
 

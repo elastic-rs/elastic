@@ -25,8 +25,8 @@ To get stated, add `elastic` to your `Cargo.toml`:
 
 ```ignore
 [dependencies]
-elastic = "~0.21.0-pre.4"
-elastic_derive = "~0.21.0-pre.4"
+elastic = "~0.21.0-pre.5"
+elastic_derive = "~0.21.0-pre.5"
 ```
 
 The following optional dependencies may also be useful:
@@ -124,7 +124,7 @@ struct MyType {
 # }
 ```
 
-Call [`Client.document().put_mapping`][Client.document.put_mapping] to ensure an index has the right mapping for your document types:
+Call [`Client.document().put_mapping()`][Client.document.put_mapping] to ensure an index has the right mapping for your document types:
 
 ```no_run
 # #[macro_use] extern crate serde_derive;
@@ -142,7 +142,7 @@ client.document::<MyType>()
 # }
 ```
 
-Then call [`Client.document().index`][Client.document.index] to index documents in Elasticsearch:
+Then call [`Client.document().index()`][Client.document.index] to index documents in Elasticsearch:
 
 ```no_run
 # #[macro_use] extern crate serde_derive;
@@ -170,7 +170,7 @@ let response = client.document()
 # }
 ```
 
-Call [`Client.document_get`][Client.document_get] to retrieve a single document from an index:
+Call [`Client.document().get()`][Client.document.get] to retrieve a single document from an index:
 
 ```no_run
 # #[macro_use] extern crate serde_derive;
@@ -200,7 +200,7 @@ For more details on document types, see the [`types`][types-mod] module.
 
 ### Searching documents
 
-Call [`Client.doument().search`][Client.document.search] to execute [Query DSL][docs-search] queries:
+Call [`Client.doument().search()`][Client.document.search] to execute [Query DSL][docs-search] queries:
 
 ```no_run
 # #[macro_use] extern crate serde_json;
@@ -231,16 +231,6 @@ for hit in response.hits() {
 # }
 ```
 
-# Crate design
-
-This crate is mostly a meta-package composed of a number of smaller pieces including:
-
-- `crate::client::requests::raw` API request builders
-- `elastic_responses` API response parsers
-- `elastic_types` tools for document and mapping APIs
-
-This crate glues these libraries together with some simple assumptions about how they're going to be used.
-
 # Links
 
 - [Elasticsearch Docs][docs-root]
@@ -252,25 +242,25 @@ This crate glues these libraries together with some simple assumptions about how
 [crates-io]: https://crates.io/crates/elastic
 [github]: https://github.com/elastic-rs/elastic
 
-[docs-root]: https://www.elastic.co/guide/en/elasticsearch/reference/master/index.html
-[docs-mapping]: https://www.elastic.co/guide/en/elasticsearch/reference/master/mapping.html
-[docs-search]: http://www.elastic.co/guide/en/elasticsearch/reference/master/search-search.html
+[docs-root]: https://www.elastic.co/guide/en/elasticsearch/reference/current/index.html
+[docs-mapping]: https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping.html
+[docs-search]: http://www.elastic.co/guide/en/elasticsearch/reference/current/search-search.html
 
 [SyncClient]: client/type.SyncClient.html
 [SyncClientBuilder]: client/struct.SyncClientBuilder.html
 [AsyncClient]: client/type.AsyncClient.html
 [Client]: client/struct.Client.html
-[Client.document.put_mapping]: client/struct.Client.html#method.document_put_mapping
-[Client.document.index]: client/struct.Client.html#method.document_index
-[Client.document.get]: client/struct.Client.html#method.document_get
-[Client.document.search]: client/struct.Client.html#method.search
+[Client.document.put_mapping]: client/struct.DocumentClient.html#put-mapping-request
+[Client.document.index]: client/struct.DocumentClient.html#index-document-request
+[Client.document.get]: client/struct.DocumentClient.html#get-document-request
+[Client.document.search]: client/struct.DocumentClient.html#search-request
 [client-mod]: client/index.html
 [requests-mod]: client/requests/index.html
 [types-mod]: types/index.html
 [request-builders]: client/index.html#request-builders
 */
 
-//#![deny(warnings, missing_docs)]
+#![deny(warnings, missing_docs)]
 
 #[macro_use]
 extern crate error_chain;

@@ -1,7 +1,7 @@
 /*!
 Builders for [put mapping requests][docs-mapping].
 
-[docs-mapping]: https://www.elastic.co/guide/en/elasticsearch/reference/master/mapping.html
+[docs-mapping]: https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping.html
 */
 
 use futures::{
@@ -48,7 +48,7 @@ A [put mapping request][docs-mapping] builder that can be configured before send
 Call [`Client.document.put_mapping`][Client.document.put_mapping] to get a `PutMappingRequestBuilder`.
 The `send` method will either send the request [synchronously][send-sync] or [asynchronously][send-async], depending on the `Client` it was created from.
 
-[docs-mapping]: https://www.elastic.co/guide/en/elasticsearch/reference/master/mapping.html
+[docs-mapping]: https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping.html
 [send-sync]: #send-synchronously
 [send-async]: #send-asynchronously
 [Client.document.put_mapping]: ../../struct.DocumentClient.html#put-mapping-request

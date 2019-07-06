@@ -1,7 +1,7 @@
 /*!
 Builders for [delete document requests][docs-delete].
 
-[docs-delete]: http://www.elastic.co/guide/en/elasticsearch/reference/master/docs-delete.html
+[docs-delete]: http://www.elastic.co/guide/en/elasticsearch/reference/current/docs-delete.html
 */
 
 use futures::{
@@ -45,7 +45,7 @@ A [delete document request][docs-delete] builder that can be configured before s
 Call [`Client.document.delete`][Client.document.delete] to get a `DeleteRequestBuilder`.
 The `send` method will either send the request [synchronously][send-sync] or [asynchronously][send-async], depending on the `Client` it was created from.
 
-[docs-delete]: http://www.elastic.co/guide/en/elasticsearch/reference/master/docs-delete.html
+[docs-delete]: http://www.elastic.co/guide/en/elasticsearch/reference/current/docs-delete.html
 [send-sync]: #send-synchronously
 [send-async]: #send-asynchronously
 [Client.document.delete]: ../../struct.DocumentClient.html#delete-document-request

@@ -1,7 +1,7 @@
 /*!
 Builders for [get document requests][docs-get].
 
-[docs-get]: http://www.elastic.co/guide/en/elasticsearch/reference/master/docs-get.html
+[docs-get]: http://www.elastic.co/guide/en/elasticsearch/reference/current/docs-get.html
 */
 
 use futures::{
@@ -46,7 +46,7 @@ A [get document request][docs-get] builder that can be configured before sending
 Call [`Client.document.get`][Client.document.get] to get a `GetRequestBuilder`.
 The `send` method will either send the request [synchronously][send-sync] or [asynchronously][send-async], depending on the `Client` it was created from.
 
-[docs-get]: http://www.elastic.co/guide/en/elasticsearch/reference/master/docs-get.html
+[docs-get]: http://www.elastic.co/guide/en/elasticsearch/reference/current/docs-get.html
 [send-sync]: #send-synchronously
 [send-async]: #send-asynchronously
 [Client.document.get]: ../../struct.DocumentClient.html#get-document-request

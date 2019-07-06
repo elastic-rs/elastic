@@ -19,6 +19,9 @@ use crate::http::{
     Method,
 };
 
+/**
+The default Elasticsearch address to connect to.
+*/
 pub const DEFAULT_NODE_ADDRESS: &'static str = "http://localhost:9200";
 
 /**

@@ -1,5 +1,7 @@
 /*! Multiple static nodes that can be load balanced by some strategy. */
 
+#![allow(missing_docs)]
+
 use crate::{
     error::{
         self,

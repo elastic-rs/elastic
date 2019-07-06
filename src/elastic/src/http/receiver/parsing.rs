@@ -24,7 +24,7 @@ pub struct Parse<T> {
     _marker: PhantomData<T>,
 }
 
-/*
+/**
 Try parse a http response into a concrete type.
 
 Parsing is split between two calls:
@@ -374,8 +374,17 @@ pub enum MaybeBufferedResponse<B>
 where
     B: ResponseBody,
 {
+    /**
+    The response body has not been buffered.
+    */
     Unbuffered(B),
+    /**
+    The response body has been buffered.
+    */
     Buffered(B::Buffered),
+    /**
+    The response body has been deserialized.
+    */
     Value(Value),
 }
 
