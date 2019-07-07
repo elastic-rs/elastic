@@ -3,6 +3,7 @@ This code is automatically generated
 run the `tools/generate_requests.sh` script to update it
 */
 pub mod endpoints {
+    #![allow(missing_docs)]
     use super::{
         http::*,
         params::*,
@@ -38,7 +39,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Post: /_bulk`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/docs-bulk.html)"]
+    #[doc = "`Post: /_bulk`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/docs-bulk.html)"]
     pub struct BulkRequest<'a, B> {
         pub url: UrlPath<'a>,
         pub body: B,
@@ -101,7 +102,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Get: /_cat/aliases`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/cat-alias.html)"]
+    #[doc = "`Get: /_cat/aliases`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/cat-alias.html)"]
     pub struct CatAliasesRequest<'a> {
         pub url: UrlPath<'a>,
     }
@@ -150,7 +151,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Get: /_cat/allocation`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/cat-allocation.html)"]
+    #[doc = "`Get: /_cat/allocation`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/cat-allocation.html)"]
     pub struct CatAllocationRequest<'a> {
         pub url: UrlPath<'a>,
     }
@@ -199,7 +200,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Get: /_cat/count`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/cat-count.html)"]
+    #[doc = "`Get: /_cat/count`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/cat-count.html)"]
     pub struct CatCountRequest<'a> {
         pub url: UrlPath<'a>,
     }
@@ -248,7 +249,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Get: /_cat/fielddata`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/cat-fielddata.html)"]
+    #[doc = "`Get: /_cat/fielddata`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/cat-fielddata.html)"]
     pub struct CatFielddataRequest<'a> {
         pub url: UrlPath<'a>,
     }
@@ -290,7 +291,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Get: /_cat/health`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/cat-health.html)"]
+    #[doc = "`Get: /_cat/health`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/cat-health.html)"]
     pub struct CatHealthRequest<'a> {
         pub url: UrlPath<'a>,
     }
@@ -323,7 +324,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Get: /_cat`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/cat.html)"]
+    #[doc = "`Get: /_cat`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/cat.html)"]
     pub struct CatHelpRequest<'a> {
         pub url: UrlPath<'a>,
     }
@@ -363,7 +364,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Get: /_cat/indices`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/cat-indices.html)"]
+    #[doc = "`Get: /_cat/indices`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/cat-indices.html)"]
     pub struct CatIndicesRequest<'a> {
         pub url: UrlPath<'a>,
     }
@@ -405,7 +406,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Get: /_cat/master`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/cat-master.html)"]
+    #[doc = "`Get: /_cat/master`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/cat-master.html)"]
     pub struct CatMasterRequest<'a> {
         pub url: UrlPath<'a>,
     }
@@ -438,7 +439,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Get: /_cat/nodeattrs`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/cat-nodeattrs.html)"]
+    #[doc = "`Get: /_cat/nodeattrs`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/cat-nodeattrs.html)"]
     pub struct CatNodeattrsRequest<'a> {
         pub url: UrlPath<'a>,
     }
@@ -471,7 +472,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Get: /_cat/nodes`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/cat-nodes.html)"]
+    #[doc = "`Get: /_cat/nodes`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/cat-nodes.html)"]
     pub struct CatNodesRequest<'a> {
         pub url: UrlPath<'a>,
     }
@@ -504,7 +505,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Get: /_cat/pending_tasks`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/cat-pending-tasks.html)"]
+    #[doc = "`Get: /_cat/pending_tasks`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/cat-pending-tasks.html)"]
     pub struct CatPendingTasksRequest<'a> {
         pub url: UrlPath<'a>,
     }
@@ -537,7 +538,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Get: /_cat/plugins`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/cat-plugins.html)"]
+    #[doc = "`Get: /_cat/plugins`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/cat-plugins.html)"]
     pub struct CatPluginsRequest<'a> {
         pub url: UrlPath<'a>,
     }
@@ -577,7 +578,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Get: /_cat/recovery`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/cat-recovery.html)"]
+    #[doc = "`Get: /_cat/recovery`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/cat-recovery.html)"]
     pub struct CatRecoveryRequest<'a> {
         pub url: UrlPath<'a>,
     }
@@ -619,7 +620,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Get: /_cat/repositories`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/cat-repositories.html)"]
+    #[doc = "`Get: /_cat/repositories`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/cat-repositories.html)"]
     pub struct CatRepositoriesRequest<'a> {
         pub url: UrlPath<'a>,
     }
@@ -659,7 +660,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Get: /_cat/segments`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/cat-segments.html)"]
+    #[doc = "`Get: /_cat/segments`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/cat-segments.html)"]
     pub struct CatSegmentsRequest<'a> {
         pub url: UrlPath<'a>,
     }
@@ -708,7 +709,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Get: /_cat/shards`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/cat-shards.html)"]
+    #[doc = "`Get: /_cat/shards`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/cat-shards.html)"]
     pub struct CatShardsRequest<'a> {
         pub url: UrlPath<'a>,
     }
@@ -757,7 +758,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Get: /_cat/snapshots`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/cat-snapshots.html)"]
+    #[doc = "`Get: /_cat/snapshots`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/cat-snapshots.html)"]
     pub struct CatSnapshotsRequest<'a> {
         pub url: UrlPath<'a>,
     }
@@ -799,7 +800,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Get: /_cat/tasks`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/tasks.html)"]
+    #[doc = "`Get: /_cat/tasks`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/tasks.html)"]
     pub struct CatTasksRequest<'a> {
         pub url: UrlPath<'a>,
     }
@@ -839,7 +840,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Get: /_cat/templates`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/cat-templates.html)"]
+    #[doc = "`Get: /_cat/templates`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/cat-templates.html)"]
     pub struct CatTemplatesRequest<'a> {
         pub url: UrlPath<'a>,
     }
@@ -888,7 +889,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Get: /_cat/thread_pool`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/cat-thread-pool.html)"]
+    #[doc = "`Get: /_cat/thread_pool`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/cat-thread-pool.html)"]
     pub struct CatThreadPoolRequest<'a> {
         pub url: UrlPath<'a>,
     }
@@ -939,7 +940,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Delete: /_search/scroll/{scroll_id}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/search-request-scroll.html)"]
+    #[doc = "`Delete: /_search/scroll/{scroll_id}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/search-request-scroll.html)"]
     pub struct ClearScrollRequest<'a, B> {
         pub url: UrlPath<'a>,
         pub body: B,
@@ -986,7 +987,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Post: /_cluster/allocation/explain`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/cluster-allocation-explain.html)"]
+    #[doc = "`Post: /_cluster/allocation/explain`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/cluster-allocation-explain.html)"]
     pub struct ClusterAllocationExplainRequest<'a, B> {
         pub url: UrlPath<'a>,
         pub body: B,
@@ -1021,7 +1022,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Get: /_cluster/settings`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/cluster-update-settings.html)"]
+    #[doc = "`Get: /_cluster/settings`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/cluster-update-settings.html)"]
     pub struct ClusterGetSettingsRequest<'a> {
         pub url: UrlPath<'a>,
     }
@@ -1061,7 +1062,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Get: /_cluster/health`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/cluster-health.html)"]
+    #[doc = "`Get: /_cluster/health`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/cluster-health.html)"]
     pub struct ClusterHealthRequest<'a> {
         pub url: UrlPath<'a>,
     }
@@ -1103,7 +1104,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Get: /_cluster/pending_tasks`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/cluster-pending.html)"]
+    #[doc = "`Get: /_cluster/pending_tasks`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/cluster-pending.html)"]
     pub struct ClusterPendingTasksRequest<'a> {
         pub url: UrlPath<'a>,
     }
@@ -1136,7 +1137,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Put: /_cluster/settings`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/cluster-update-settings.html)"]
+    #[doc = "`Put: /_cluster/settings`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/cluster-update-settings.html)"]
     pub struct ClusterPutSettingsRequest<'a, B> {
         pub url: UrlPath<'a>,
         pub body: B,
@@ -1171,7 +1172,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Get: /_remote/info`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/cluster-remote-info.html)"]
+    #[doc = "`Get: /_remote/info`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/cluster-remote-info.html)"]
     pub struct ClusterRemoteInfoRequest<'a> {
         pub url: UrlPath<'a>,
     }
@@ -1204,7 +1205,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Post: /_cluster/reroute`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/cluster-reroute.html)"]
+    #[doc = "`Post: /_cluster/reroute`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/cluster-reroute.html)"]
     pub struct ClusterRerouteRequest<'a, B> {
         pub url: UrlPath<'a>,
         pub body: B,
@@ -1255,7 +1256,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Get: /_cluster/state`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/cluster-state.html)"]
+    #[doc = "`Get: /_cluster/state`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/cluster-state.html)"]
     pub struct ClusterStateRequest<'a> {
         pub url: UrlPath<'a>,
     }
@@ -1314,7 +1315,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Get: /_cluster/stats`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/cluster-stats.html)"]
+    #[doc = "`Get: /_cluster/stats`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/cluster-stats.html)"]
     pub struct ClusterStatsRequest<'a> {
         pub url: UrlPath<'a>,
     }
@@ -1374,7 +1375,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Post: /_count`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/search-count.html)"]
+    #[doc = "`Post: /_count`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/search-count.html)"]
     pub struct CountRequest<'a, B> {
         pub url: UrlPath<'a>,
         pub body: B,
@@ -1450,7 +1451,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Post: /{index}/_create/{id}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/docs-index_.html)"]
+    #[doc = "`Post: /{index}/_create/{id}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html)"]
     pub struct CreateRequest<'a, B> {
         pub url: UrlPath<'a>,
         pub body: B,
@@ -1524,7 +1525,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Delete: /{index}/_doc/{id}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/docs-delete.html)"]
+    #[doc = "`Delete: /{index}/_doc/{id}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/docs-delete.html)"]
     pub struct DeleteRequest<'a> {
         pub url: UrlPath<'a>,
     }
@@ -1588,7 +1589,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Post: /{index}/_delete_by_query`\n\n[Elasticsearch Documentation](https://www.elastic.co/guide/en/elasticsearch/reference/master/docs-delete-by-query.html)"]
+    #[doc = "`Post: /{index}/_delete_by_query`\n\n[Elasticsearch Documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-delete-by-query.html)"]
     pub struct DeleteByQueryRequest<'a, B> {
         pub url: UrlPath<'a>,
         pub body: B,
@@ -1643,7 +1644,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Post: /_delete_by_query/{task_id}/_rethrottle`\n\n[Elasticsearch Documentation](https://www.elastic.co/guide/en/elasticsearch/reference/master/docs-delete-by-query.html)"]
+    #[doc = "`Post: /_delete_by_query/{task_id}/_rethrottle`\n\n[Elasticsearch Documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-delete-by-query.html)"]
     pub struct DeleteByQueryRethrottleRequest<'a, B> {
         pub url: UrlPath<'a>,
         pub body: B,
@@ -1686,7 +1687,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Delete: /_scripts/{id}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/modules-scripting.html)"]
+    #[doc = "`Delete: /_scripts/{id}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/modules-scripting.html)"]
     pub struct DeleteScriptRequest<'a> {
         pub url: UrlPath<'a>,
     }
@@ -1740,7 +1741,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Head: /{index}/_doc/{id}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/docs-get.html)"]
+    #[doc = "`Head: /{index}/_doc/{id}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/docs-get.html)"]
     pub struct ExistsRequest<'a> {
         pub url: UrlPath<'a>,
     }
@@ -1808,7 +1809,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Head: /{index}/_source/{id}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/docs-get.html)"]
+    #[doc = "`Head: /{index}/_source/{id}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/docs-get.html)"]
     pub struct ExistsSourceRequest<'a> {
         pub url: UrlPath<'a>,
     }
@@ -1876,7 +1877,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Post: /{index}/_explain/{id}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/search-explain.html)"]
+    #[doc = "`Post: /{index}/_explain/{id}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/search-explain.html)"]
     pub struct ExplainRequest<'a, B> {
         pub url: UrlPath<'a>,
         pub body: B,
@@ -1940,7 +1941,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Post: /_field_caps`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/search-field-caps.html)"]
+    #[doc = "`Post: /_field_caps`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/search-field-caps.html)"]
     pub struct FieldCapsRequest<'a, B> {
         pub url: UrlPath<'a>,
         pub body: B,
@@ -2003,7 +2004,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Get: /{index}/_doc/{id}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/docs-get.html)"]
+    #[doc = "`Get: /{index}/_doc/{id}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/docs-get.html)"]
     pub struct GetRequest<'a> {
         pub url: UrlPath<'a>,
     }
@@ -2056,7 +2057,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Get: /_scripts/{id}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/modules-scripting.html)"]
+    #[doc = "`Get: /_scripts/{id}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/modules-scripting.html)"]
     pub struct GetScriptRequest<'a> {
         pub url: UrlPath<'a>,
     }
@@ -2112,7 +2113,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Get: /{index}/_source/{id}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/docs-get.html)"]
+    #[doc = "`Get: /{index}/_source/{id}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/docs-get.html)"]
     pub struct GetSourceRequest<'a> {
         pub url: UrlPath<'a>,
     }
@@ -2195,7 +2196,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Post: /{index}/_doc`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/docs-index_.html)"]
+    #[doc = "`Post: /{index}/_doc`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html)"]
     pub struct IndexRequest<'a, B> {
         pub url: UrlPath<'a>,
         pub body: B,
@@ -2280,7 +2281,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Post: /_analyze`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/indices-analyze.html)"]
+    #[doc = "`Post: /_analyze`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/indices-analyze.html)"]
     pub struct IndicesAnalyzeRequest<'a, B> {
         pub url: UrlPath<'a>,
         pub body: B,
@@ -2333,7 +2334,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Post: /_cache/clear`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/indices-clearcache.html)"]
+    #[doc = "`Post: /_cache/clear`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/indices-clearcache.html)"]
     pub struct IndicesClearCacheRequest<'a, B> {
         pub url: UrlPath<'a>,
         pub body: B,
@@ -2384,7 +2385,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Post: /{index}/_close`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/indices-open-close.html)"]
+    #[doc = "`Post: /{index}/_close`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/indices-open-close.html)"]
     pub struct IndicesCloseRequest<'a, B> {
         pub url: UrlPath<'a>,
         pub body: B,
@@ -2427,7 +2428,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Put: /{index}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/indices-create-index.html)"]
+    #[doc = "`Put: /{index}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/indices-create-index.html)"]
     pub struct IndicesCreateRequest<'a, B> {
         pub url: UrlPath<'a>,
         pub body: B,
@@ -2470,7 +2471,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Delete: /{index}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/indices-delete-index.html)"]
+    #[doc = "`Delete: /{index}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/indices-delete-index.html)"]
     pub struct IndicesDeleteRequest<'a> {
         pub url: UrlPath<'a>,
     }
@@ -2513,7 +2514,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Delete: /{index}/_alias/{name}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/indices-aliases.html)"]
+    #[doc = "`Delete: /{index}/_alias/{name}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/indices-aliases.html)"]
     pub struct IndicesDeleteAliasRequest<'a> {
         pub url: UrlPath<'a>,
     }
@@ -2555,7 +2556,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Delete: /_template/{name}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/indices-templates.html)"]
+    #[doc = "`Delete: /_template/{name}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/indices-templates.html)"]
     pub struct IndicesDeleteTemplateRequest<'a> {
         pub url: UrlPath<'a>,
     }
@@ -2596,7 +2597,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Head: /{index}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/indices-exists.html)"]
+    #[doc = "`Head: /{index}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/indices-exists.html)"]
     pub struct IndicesExistsRequest<'a> {
         pub url: UrlPath<'a>,
     }
@@ -2646,7 +2647,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Head: /_alias/{name}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/indices-aliases.html)"]
+    #[doc = "`Head: /_alias/{name}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/indices-aliases.html)"]
     pub struct IndicesExistsAliasRequest<'a> {
         pub url: UrlPath<'a>,
     }
@@ -2697,7 +2698,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Head: /_template/{name}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/indices-templates.html)"]
+    #[doc = "`Head: /_template/{name}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/indices-templates.html)"]
     pub struct IndicesExistsTemplateRequest<'a> {
         pub url: UrlPath<'a>,
     }
@@ -2740,7 +2741,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Head: /{index}/_mapping/{type}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/indices-types-exists.html)"]
+    #[doc = "`Head: /{index}/_mapping/{type}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/indices-types-exists.html)"]
     pub struct IndicesExistsTypeRequest<'a> {
         pub url: UrlPath<'a>,
     }
@@ -2785,7 +2786,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Post: /_flush`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/indices-flush.html)"]
+    #[doc = "`Post: /_flush`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/indices-flush.html)"]
     pub struct IndicesFlushRequest<'a, B> {
         pub url: UrlPath<'a>,
         pub body: B,
@@ -2838,7 +2839,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Post: /_flush/synced`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/indices-synced-flush.html)"]
+    #[doc = "`Post: /_flush/synced`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/indices-synced-flush.html)"]
     pub struct IndicesFlushSyncedRequest<'a, B> {
         pub url: UrlPath<'a>,
         pub body: B,
@@ -2891,7 +2892,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Post: /_forcemerge`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/indices-forcemerge.html)"]
+    #[doc = "`Post: /_forcemerge`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/indices-forcemerge.html)"]
     pub struct IndicesForcemergeRequest<'a, B> {
         pub url: UrlPath<'a>,
         pub body: B,
@@ -2941,7 +2942,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Get: /{index}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/indices-get-index.html)"]
+    #[doc = "`Get: /{index}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/indices-get-index.html)"]
     pub struct IndicesGetRequest<'a> {
         pub url: UrlPath<'a>,
     }
@@ -3001,7 +3002,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Get: /_alias/`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/indices-aliases.html)"]
+    #[doc = "`Get: /_alias/`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/indices-aliases.html)"]
     pub struct IndicesGetAliasRequest<'a> {
         pub url: UrlPath<'a>,
     }
@@ -3097,7 +3098,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Get: /_mapping/field/{fields}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/indices-get-field-mapping.html)"]
+    #[doc = "`Get: /_mapping/field/{fields}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/indices-get-field-mapping.html)"]
     pub struct IndicesGetFieldMappingRequest<'a> {
         pub url: UrlPath<'a>,
     }
@@ -3198,7 +3199,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Get: /_mapping`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/indices-get-mapping.html)"]
+    #[doc = "`Get: /_mapping`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/indices-get-mapping.html)"]
     pub struct IndicesGetMappingRequest<'a> {
         pub url: UrlPath<'a>,
     }
@@ -3283,7 +3284,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Get: /_settings`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/indices-get-settings.html)"]
+    #[doc = "`Get: /_settings`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/indices-get-settings.html)"]
     pub struct IndicesGetSettingsRequest<'a> {
         pub url: UrlPath<'a>,
     }
@@ -3351,7 +3352,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Get: /_template/{name}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/indices-templates.html)"]
+    #[doc = "`Get: /_template/{name}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/indices-templates.html)"]
     pub struct IndicesGetTemplateRequest<'a> {
         pub url: UrlPath<'a>,
     }
@@ -3401,7 +3402,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Get: /_upgrade`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/indices-upgrade.html)"]
+    #[doc = "`Get: /_upgrade`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/indices-upgrade.html)"]
     pub struct IndicesGetUpgradeRequest<'a> {
         pub url: UrlPath<'a>,
     }
@@ -3449,7 +3450,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Post: /{index}/_open`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/indices-open-close.html)"]
+    #[doc = "`Post: /{index}/_open`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/indices-open-close.html)"]
     pub struct IndicesOpenRequest<'a, B> {
         pub url: UrlPath<'a>,
         pub body: B,
@@ -3494,7 +3495,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Post: /{index}/_alias/{name}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/indices-aliases.html)"]
+    #[doc = "`Post: /{index}/_alias/{name}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/indices-aliases.html)"]
     pub struct IndicesPutAliasRequest<'a, B> {
         pub url: UrlPath<'a>,
         pub body: B,
@@ -3555,7 +3556,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Post: /{index}/{type}/_mapping`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/indices-put-mapping.html)"]
+    #[doc = "`Post: /{index}/{type}/_mapping`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/indices-put-mapping.html)"]
     pub struct IndicesPutMappingRequest<'a, B> {
         pub url: UrlPath<'a>,
         pub body: B,
@@ -3622,7 +3623,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Put: /_settings`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/indices-update-settings.html)"]
+    #[doc = "`Put: /_settings`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/indices-update-settings.html)"]
     pub struct IndicesPutSettingsRequest<'a, B> {
         pub url: UrlPath<'a>,
         pub body: B,
@@ -3672,7 +3673,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Post: /_template/{name}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/indices-templates.html)"]
+    #[doc = "`Post: /_template/{name}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/indices-templates.html)"]
     pub struct IndicesPutTemplateRequest<'a, B> {
         pub url: UrlPath<'a>,
         pub body: B,
@@ -3718,7 +3719,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Get: /_recovery`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/indices-recovery.html)"]
+    #[doc = "`Get: /_recovery`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/indices-recovery.html)"]
     pub struct IndicesRecoveryRequest<'a> {
         pub url: UrlPath<'a>,
     }
@@ -3768,7 +3769,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Post: /_refresh`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/indices-refresh.html)"]
+    #[doc = "`Post: /_refresh`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/indices-refresh.html)"]
     pub struct IndicesRefreshRequest<'a, B> {
         pub url: UrlPath<'a>,
         pub body: B,
@@ -3828,7 +3829,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Post: /{alias}/_rollover`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/indices-rollover-index.html)"]
+    #[doc = "`Post: /{alias}/_rollover`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/indices-rollover-index.html)"]
     pub struct IndicesRolloverRequest<'a, B> {
         pub url: UrlPath<'a>,
         pub body: B,
@@ -3889,7 +3890,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Get: /_segments`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/indices-segments.html)"]
+    #[doc = "`Get: /_segments`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/indices-segments.html)"]
     pub struct IndicesSegmentsRequest<'a> {
         pub url: UrlPath<'a>,
     }
@@ -3939,7 +3940,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Get: /_shard_stores`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/indices-shards-stores.html)"]
+    #[doc = "`Get: /_shard_stores`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/indices-shards-stores.html)"]
     pub struct IndicesShardStoresRequest<'a> {
         pub url: UrlPath<'a>,
     }
@@ -3988,7 +3989,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Post: /{index}/_shrink/{target}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/indices-shrink-index.html)"]
+    #[doc = "`Post: /{index}/_shrink/{target}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/indices-shrink-index.html)"]
     pub struct IndicesShrinkRequest<'a, B> {
         pub url: UrlPath<'a>,
         pub body: B,
@@ -4034,7 +4035,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Post: /{index}/_split/{target}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/indices-split-index.html)"]
+    #[doc = "`Post: /{index}/_split/{target}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/indices-split-index.html)"]
     pub struct IndicesSplitRequest<'a, B> {
         pub url: UrlPath<'a>,
         pub body: B,
@@ -4097,7 +4098,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Get: /_stats`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/indices-stats.html)"]
+    #[doc = "`Get: /_stats`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/indices-stats.html)"]
     pub struct IndicesStatsRequest<'a> {
         pub url: UrlPath<'a>,
     }
@@ -4158,7 +4159,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Post: /_aliases`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/indices-aliases.html)"]
+    #[doc = "`Post: /_aliases`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/indices-aliases.html)"]
     pub struct IndicesUpdateAliasesRequest<'a, B> {
         pub url: UrlPath<'a>,
         pub body: B,
@@ -4201,7 +4202,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Post: /_upgrade`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/indices-upgrade.html)"]
+    #[doc = "`Post: /_upgrade`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/indices-upgrade.html)"]
     pub struct IndicesUpgradeRequest<'a, B> {
         pub url: UrlPath<'a>,
         pub body: B,
@@ -4264,7 +4265,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Post: /_validate/query`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/search-validate.html)"]
+    #[doc = "`Post: /_validate/query`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/search-validate.html)"]
     pub struct IndicesValidateQueryRequest<'a, B> {
         pub url: UrlPath<'a>,
         pub body: B,
@@ -4358,7 +4359,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Delete: /_ingest/pipeline/{id}`\n\n[Elasticsearch Documentation](https://www.elastic.co/guide/en/elasticsearch/reference/master/delete-pipeline-api.html)"]
+    #[doc = "`Delete: /_ingest/pipeline/{id}`\n\n[Elasticsearch Documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/delete-pipeline-api.html)"]
     pub struct IngestDeletePipelineRequest<'a> {
         pub url: UrlPath<'a>,
     }
@@ -4401,7 +4402,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Get: /_ingest/pipeline/{id}`\n\n[Elasticsearch Documentation](https://www.elastic.co/guide/en/elasticsearch/reference/master/get-pipeline-api.html)"]
+    #[doc = "`Get: /_ingest/pipeline/{id}`\n\n[Elasticsearch Documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/get-pipeline-api.html)"]
     pub struct IngestGetPipelineRequest<'a> {
         pub url: UrlPath<'a>,
     }
@@ -4443,7 +4444,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Get: /_ingest/processor/grok`\n\n[Elasticsearch Documentation](https://www.elastic.co/guide/en/elasticsearch/reference/master/grok-processor.html#grok-processor-rest-get)"]
+    #[doc = "`Get: /_ingest/processor/grok`\n\n[Elasticsearch Documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/grok-processor.html#grok-processor-rest-get)"]
     pub struct IngestProcessorGrokRequest<'a> {
         pub url: UrlPath<'a>,
     }
@@ -4481,7 +4482,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Put: /_ingest/pipeline/{id}`\n\n[Elasticsearch Documentation](https://www.elastic.co/guide/en/elasticsearch/reference/master/put-pipeline-api.html)"]
+    #[doc = "`Put: /_ingest/pipeline/{id}`\n\n[Elasticsearch Documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/put-pipeline-api.html)"]
     pub struct IngestPutPipelineRequest<'a, B> {
         pub url: UrlPath<'a>,
         pub body: B,
@@ -4527,7 +4528,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Post: /_ingest/pipeline/_simulate`\n\n[Elasticsearch Documentation](https://www.elastic.co/guide/en/elasticsearch/reference/master/simulate-pipeline-api.html)"]
+    #[doc = "`Post: /_ingest/pipeline/_simulate`\n\n[Elasticsearch Documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/simulate-pipeline-api.html)"]
     pub struct IngestSimulateRequest<'a, B> {
         pub url: UrlPath<'a>,
         pub body: B,
@@ -4590,7 +4591,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Post: /_mget`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/docs-multi-get.html)"]
+    #[doc = "`Post: /_mget`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/docs-multi-get.html)"]
     pub struct MgetRequest<'a, B> {
         pub url: UrlPath<'a>,
         pub body: B,
@@ -4664,7 +4665,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Post: /_msearch`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/search-multi-search.html)"]
+    #[doc = "`Post: /_msearch`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/search-multi-search.html)"]
     pub struct MsearchRequest<'a, B> {
         pub url: UrlPath<'a>,
         pub body: B,
@@ -4738,7 +4739,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Post: /_msearch/template`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/search-multi-search.html)"]
+    #[doc = "`Post: /_msearch/template`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/search-multi-search.html)"]
     pub struct MsearchTemplateRequest<'a, B> {
         pub url: UrlPath<'a>,
         pub body: B,
@@ -4812,7 +4813,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Post: /_mtermvectors`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/docs-multi-termvectors.html)"]
+    #[doc = "`Post: /_mtermvectors`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/docs-multi-termvectors.html)"]
     pub struct MtermvectorsRequest<'a, B> {
         pub url: UrlPath<'a>,
         pub body: B,
@@ -4876,7 +4877,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Get: /_nodes/hot_threads`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/cluster-nodes-hot-threads.html)"]
+    #[doc = "`Get: /_nodes/hot_threads`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/cluster-nodes-hot-threads.html)"]
     pub struct NodesHotThreadsRequest<'a> {
         pub url: UrlPath<'a>,
     }
@@ -4941,7 +4942,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Get: /_nodes`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/cluster-nodes-info.html)"]
+    #[doc = "`Get: /_nodes`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/cluster-nodes-info.html)"]
     pub struct NodesInfoRequest<'a> {
         pub url: UrlPath<'a>,
     }
@@ -5012,7 +5013,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Post: /_nodes/reload_secure_settings`\n\n[Elasticsearch Documentation](https://www.elastic.co/guide/en/elasticsearch/reference/master/secure-settings.html#reloadable-secure-settings)"]
+    #[doc = "`Post: /_nodes/reload_secure_settings`\n\n[Elasticsearch Documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/secure-settings.html#reloadable-secure-settings)"]
     pub struct NodesReloadSecureSettingsRequest<'a, B> {
         pub url: UrlPath<'a>,
         pub body: B,
@@ -5108,7 +5109,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Get: /_nodes/stats`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/cluster-nodes-stats.html)"]
+    #[doc = "`Get: /_nodes/stats`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/cluster-nodes-stats.html)"]
     pub struct NodesStatsRequest<'a> {
         pub url: UrlPath<'a>,
     }
@@ -5227,7 +5228,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Get: /_nodes/usage`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/cluster-nodes-usage.html)"]
+    #[doc = "`Get: /_nodes/usage`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/cluster-nodes-usage.html)"]
     pub struct NodesUsageRequest<'a> {
         pub url: UrlPath<'a>,
     }
@@ -5368,7 +5369,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Post: /_scripts/{id}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/modules-scripting.html)"]
+    #[doc = "`Post: /_scripts/{id}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/modules-scripting.html)"]
     pub struct PutScriptRequest<'a, B> {
         pub url: UrlPath<'a>,
         pub body: B,
@@ -5425,7 +5426,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Post: /_rank_eval`\n\n[Elasticsearch Documentation](https://www.elastic.co/guide/en/elasticsearch/reference/master/search-rank-eval.html)"]
+    #[doc = "`Post: /_rank_eval`\n\n[Elasticsearch Documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/search-rank-eval.html)"]
     pub struct RankEvalRequest<'a, B> {
         pub url: UrlPath<'a>,
         pub body: B,
@@ -5470,7 +5471,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Post: /_reindex`\n\n[Elasticsearch Documentation](https://www.elastic.co/guide/en/elasticsearch/reference/master/docs-reindex.html)"]
+    #[doc = "`Post: /_reindex`\n\n[Elasticsearch Documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-reindex.html)"]
     pub struct ReindexRequest<'a, B> {
         pub url: UrlPath<'a>,
         pub body: B,
@@ -5511,7 +5512,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Post: /_reindex/{task_id}/_rethrottle`\n\n[Elasticsearch Documentation](https://www.elastic.co/guide/en/elasticsearch/reference/master/docs-reindex.html)"]
+    #[doc = "`Post: /_reindex/{task_id}/_rethrottle`\n\n[Elasticsearch Documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-reindex.html)"]
     pub struct ReindexRethrottleRequest<'a, B> {
         pub url: UrlPath<'a>,
         pub body: B,
@@ -5556,7 +5557,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Post: /_render/template`\n\n[Elasticsearch Documentation](http://www.elasticsearch.org/guide/en/elasticsearch/reference/master/search-template.html)"]
+    #[doc = "`Post: /_render/template`\n\n[Elasticsearch Documentation](http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/search-template.html)"]
     pub struct RenderSearchTemplateRequest<'a, B> {
         pub url: UrlPath<'a>,
         pub body: B,
@@ -5645,7 +5646,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Post: /_search/scroll`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/search-request-scroll.html)"]
+    #[doc = "`Post: /_search/scroll`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/search-request-scroll.html)"]
     pub struct ScrollRequest<'a, B> {
         pub url: UrlPath<'a>,
         pub body: B,
@@ -5708,7 +5709,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Get: /_search`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/search-search.html)"]
+    #[doc = "`Get: /_search`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/search-search.html)"]
     pub struct SimpleSearchRequest<'a> {
         pub url: UrlPath<'a>,
     }
@@ -5778,7 +5779,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Post: /_search`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/search-search.html)"]
+    #[doc = "`Post: /_search`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/search-search.html)"]
     pub struct SearchRequest<'a, B> {
         pub url: UrlPath<'a>,
         pub body: B,
@@ -5842,7 +5843,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Post: /{index}/_search_shards`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/search-shards.html)"]
+    #[doc = "`Post: /{index}/_search_shards`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/search-shards.html)"]
     pub struct SearchShardsRequest<'a, B> {
         pub url: UrlPath<'a>,
         pub body: B,
@@ -5905,7 +5906,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Post: /_search/template`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/search-template.html)"]
+    #[doc = "`Post: /_search/template`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/search-template.html)"]
     pub struct SearchTemplateRequest<'a, B> {
         pub url: UrlPath<'a>,
         pub body: B,
@@ -5969,7 +5970,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Post: /_snapshot/{repository}/{snapshot}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/modules-snapshots.html)"]
+    #[doc = "`Post: /_snapshot/{repository}/{snapshot}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/modules-snapshots.html)"]
     pub struct SnapshotCreateRequest<'a, B> {
         pub url: UrlPath<'a>,
         pub body: B,
@@ -6021,7 +6022,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Post: /_snapshot/{repository}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/modules-snapshots.html)"]
+    #[doc = "`Post: /_snapshot/{repository}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/modules-snapshots.html)"]
     pub struct SnapshotCreateRepositoryRequest<'a, B> {
         pub url: UrlPath<'a>,
         pub body: B,
@@ -6067,7 +6068,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Delete: /_snapshot/{repository}/{snapshot}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/modules-snapshots.html)"]
+    #[doc = "`Delete: /_snapshot/{repository}/{snapshot}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/modules-snapshots.html)"]
     pub struct SnapshotDeleteRequest<'a> {
         pub url: UrlPath<'a>,
     }
@@ -6116,7 +6117,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Delete: /_snapshot/{repository}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/modules-snapshots.html)"]
+    #[doc = "`Delete: /_snapshot/{repository}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/modules-snapshots.html)"]
     pub struct SnapshotDeleteRepositoryRequest<'a> {
         pub url: UrlPath<'a>,
     }
@@ -6160,7 +6161,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Get: /_snapshot/{repository}/{snapshot}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/modules-snapshots.html)"]
+    #[doc = "`Get: /_snapshot/{repository}/{snapshot}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/modules-snapshots.html)"]
     pub struct SnapshotGetRequest<'a> {
         pub url: UrlPath<'a>,
     }
@@ -6208,7 +6209,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Get: /_snapshot`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/modules-snapshots.html)"]
+    #[doc = "`Get: /_snapshot`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/modules-snapshots.html)"]
     pub struct SnapshotGetRepositoryRequest<'a> {
         pub url: UrlPath<'a>,
     }
@@ -6259,7 +6260,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Post: /_snapshot/{repository}/{snapshot}/_restore`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/modules-snapshots.html)"]
+    #[doc = "`Post: /_snapshot/{repository}/{snapshot}/_restore`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/modules-snapshots.html)"]
     pub struct SnapshotRestoreRequest<'a, B> {
         pub url: UrlPath<'a>,
         pub body: B,
@@ -6325,7 +6326,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Get: /_snapshot/_status`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/modules-snapshots.html)"]
+    #[doc = "`Get: /_snapshot/_status`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/modules-snapshots.html)"]
     pub struct SnapshotStatusRequest<'a> {
         pub url: UrlPath<'a>,
     }
@@ -6390,7 +6391,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Post: /_snapshot/{repository}/_verify`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/modules-snapshots.html)"]
+    #[doc = "`Post: /_snapshot/{repository}/_verify`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/modules-snapshots.html)"]
     pub struct SnapshotVerifyRepositoryRequest<'a, B> {
         pub url: UrlPath<'a>,
         pub body: B,
@@ -6471,7 +6472,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Post: /_tasks`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/tasks.html)"]
+    #[doc = "`Post: /_tasks`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/tasks.html)"]
     pub struct TasksCancelRequest<'a, B> {
         pub url: UrlPath<'a>,
         pub body: B,
@@ -6521,7 +6522,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Get: /_tasks/{task_id}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/tasks.html)"]
+    #[doc = "`Get: /_tasks/{task_id}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/tasks.html)"]
     pub struct TasksGetRequest<'a> {
         pub url: UrlPath<'a>,
     }
@@ -6557,7 +6558,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Get: /_tasks`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/tasks.html)"]
+    #[doc = "`Get: /_tasks`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/tasks.html)"]
     pub struct TasksListRequest<'a> {
         pub url: UrlPath<'a>,
     }
@@ -6628,7 +6629,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Post: /{index}/_termvectors/{id}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/docs-termvectors.html)"]
+    #[doc = "`Post: /{index}/_termvectors/{id}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/docs-termvectors.html)"]
     pub struct TermvectorsRequest<'a, B> {
         pub url: UrlPath<'a>,
         pub body: B,
@@ -6725,7 +6726,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Post: /{index}/_update/{id}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/master/docs-update.html)"]
+    #[doc = "`Post: /{index}/_update/{id}`\n\n[Elasticsearch Documentation](http://www.elastic.co/guide/en/elasticsearch/reference/current/docs-update.html)"]
     pub struct UpdateRequest<'a, B> {
         pub url: UrlPath<'a>,
         pub body: B,
@@ -6797,7 +6798,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Post: /{index}/_update_by_query`\n\n[Elasticsearch Documentation](https://www.elastic.co/guide/en/elasticsearch/reference/master/docs-update-by-query.html)"]
+    #[doc = "`Post: /{index}/_update_by_query`\n\n[Elasticsearch Documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-update-by-query.html)"]
     pub struct UpdateByQueryRequest<'a, B> {
         pub url: UrlPath<'a>,
         pub body: B,
@@ -6852,7 +6853,7 @@ pub mod endpoints {
         }
     }
     #[derive(Debug, Clone, PartialEq)]
-    #[doc = "`Post: /_update_by_query/{task_id}/_rethrottle`\n\n[Elasticsearch Documentation](https://www.elastic.co/guide/en/elasticsearch/reference/master/docs-update-by-query.html)"]
+    #[doc = "`Post: /_update_by_query/{task_id}/_rethrottle`\n\n[Elasticsearch Documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-update-by-query.html)"]
     pub struct UpdateByQueryRethrottleRequest<'a, B> {
         pub url: UrlPath<'a>,
         pub body: B,
@@ -6881,6 +6882,7 @@ pub mod endpoints {
 }
 
 pub mod http {
+    #![allow(missing_docs)]
     pub use crate::http::Method;
     use std::{
         borrow::Cow,
@@ -6923,6 +6925,7 @@ pub mod http {
 }
 
 pub mod params {
+    #![allow(missing_docs)]
 
     include!("genned.params.rs");
 

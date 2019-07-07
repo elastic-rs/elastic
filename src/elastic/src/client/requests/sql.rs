@@ -1,7 +1,7 @@
 /*!
 Builders for [sql queries][sql].
 
-[sql]: https://www.elastic.co/guide/en/elasticsearch/reference/master/sql-rest.html
+[sql]: https://www.elastic.co/guide/en/elasticsearch/reference/current/sql-rest.html
 */
 
 use futures::{
@@ -15,7 +15,7 @@ use crate::{
             raw::RawRequestInner,
             RequestBuilder,
         },
-        responses::SqlResponse,
+        responses::SqlQueryResponse,
         Client,
     },
     endpoints::SqlQueryRequest,
@@ -40,7 +40,7 @@ A [sql query request][sql] builder that can be configured before sending.
 Call [`Client.sql`][Client.sql] to get a `SqlRequestBuilder`.
 The `send` method will either send the request [synchronously][send-sync] or [asynchronously][send-async], depending on the `Client` it was created from.
 
-[sql]: https://www.elastic.co/guide/en/elasticsearch/reference/master/sql-rest.html[docs-delete]: http://www.elastic.co/guide/en/elasticsearch/reference/master/docs-delete.html
+[sql]: https://www.elastic.co/guide/en/elasticsearch/reference/current/sql-spec.html
 [send-sync]: #send-synchronously
 [send-async]: #send-asynchronously
 [Client.sql]: ../../struct.Client.html#sql-request
@@ -86,7 +86,7 @@ where
 
     // Iterate through the hits
     for row in response.rows() {
-        for column in row {
+        for column in row.columns() {
             println!("{:?}", column);
         }
     }
@@ -98,7 +98,7 @@ where
     [builder-methods]: requests/sql/type.SqlRequestBuilder.html#builder-methods
     [send-sync]: requests/sql/type.SqlRequestBuilder.html#send-synchronously
     [send-async]: requests/sql/type.SqlRequestBuilder.html#send-asynchronously
-    [docs-querystring]: https://www.elastic.co/guide/en/elasticsearch/reference/master/sql-commands.html
+    [docs-querystring]: https://www.elastic.co/guide/en/elasticsearch/reference/current/sql-commands.html
     */
     pub fn sql(&self) -> SqlRequestBuilder<TSender, DefaultBody> {
         RequestBuilder::initial(self.clone(), SqlRequestInner::new(empty_body()))
@@ -126,7 +126,7 @@ where
 
     // Iterate through the hits
     for row in response.rows() {
-        for column in row {
+        for column in row.columns() {
             println!("{:?}", column);
         }
     }
@@ -136,7 +136,7 @@ where
 
     [send-sync]: requests/sql/type.SqlRequestBuilder.html#send-synchronously
     [send-async]: requests/sql/type.SqlRequestBuilder.html#send-asynchronously
-    [docs-querystring]: https://www.elastic.co/guide/en/elasticsearch/reference/master/sql-commands.html
+    [docs-querystring]: https://www.elastic.co/guide/en/elasticsearch/reference/current/sql-commands.html
     */
     pub fn sql_query(&self, query: &str) -> SqlRequestBuilder<TSender, serde_json::Value> {
         self.sql().query(query)
@@ -218,7 +218,7 @@ where
 
     // Iterate through the hits
     for row in response.rows() {
-        for column in row {
+        for column in row.columns() {
             println!("{:?}", column);
         }
     }
@@ -227,9 +227,9 @@ where
     ```
 
     [SyncClient]: ../../type.SyncClient.html
-    [docs-querystring]: https://www.elastic.co/guide/en/elasticsearch/reference/master/sql-commands.html
+    [docs-querystring]: https://www.elastic.co/guide/en/elasticsearch/reference/current/sql-commands.html
      */
-    pub fn send(self) -> Result<SqlResponse, Error> {
+    pub fn send(self) -> Result<SqlQueryResponse, Error> {
         let req = self.inner.into_request();
 
         RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
@@ -266,7 +266,7 @@ where
     future.and_then(|response| {
         // Iterate through the hits
         for row in response.rows() {
-            for column in row {
+            for column in row.columns() {
                 println!("{:?}", column);
             }
         }
@@ -278,7 +278,7 @@ where
     ```
 
     [AsyncClient]: ../../type.AsyncClient.html
-    [docs-querystring]: https://www.elastic.co/guide/en/elasticsearch/reference/master/sql-commands.html
+    [docs-querystring]: https://www.elastic.co/guide/en/elasticsearch/reference/current/sql-commands.html
     */
 
     pub fn send(self) -> Pending {
@@ -295,13 +295,13 @@ where
 
 /** A future returned by calling `send`. */
 pub struct Pending {
-    inner: Box<dyn Future<Item = SqlResponse, Error = Error> + Send>,
+    inner: Box<dyn Future<Item = SqlQueryResponse, Error = Error> + Send>,
 }
 
 impl Pending {
     fn new<F>(fut: F) -> Self
     where
-        F: Future<Item = SqlResponse, Error = Error> + Send + 'static,
+        F: Future<Item = SqlQueryResponse, Error = Error> + Send + 'static,
     {
         Pending {
             inner: Box::new(fut),
@@ -310,7 +310,7 @@ impl Pending {
 }
 
 impl Future for Pending {
-    type Item = SqlResponse;
+    type Item = SqlQueryResponse;
     type Error = Error;
 
     fn poll(&mut self) -> Poll<Self::Item, Self::Error> {

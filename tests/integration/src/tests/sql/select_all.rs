@@ -25,7 +25,7 @@ fn doc(i: i32) -> Doc {
 test! {
     const description: &'static str = "select all documents";
 
-    type Response = SqlResponse;
+    type Response = SqlQueryResponse;
 
     // Ensure the index doesn't exist
     fn prepare(&self, client: AsyncClient) -> Box<dyn Future<Item = (), Error = Error>> {

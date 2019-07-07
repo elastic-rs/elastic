@@ -1,5 +1,5 @@
 /*!
-Response types for an [index exists request](https://www.elastic.co/guide/en/elasticsearch/reference/master/indices-exists.html).
+Response types for an [index exists request](https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-exists.html).
 */
 
 use crate::http::{
@@ -14,7 +14,7 @@ use crate::http::{
     StatusCode,
 };
 
-/** Response for an [index exists request](https://www.elastic.co/guide/en/elasticsearch/reference/master/indices-exists.html). */
+/** Response for an [index exists request](https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-exists.html). */
 #[derive(Deserialize, Debug)]
 pub struct IndicesExistsResponse {
     exists: bool,

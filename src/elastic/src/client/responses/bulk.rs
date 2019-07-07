@@ -1,5 +1,5 @@
 /*!
-Response types for a [bulk request](https://www.elastic.co/guide/en/elasticsearch/reference/master/docs-bulk.html).
+Response types for a [bulk request](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-bulk.html).
 */
 
 use super::common::{
@@ -31,7 +31,7 @@ use std::{
 type BulkError = Value;
 
 /**
-Response for a [bulk request](https://www.elastic.co/guide/en/elasticsearch/reference/master/docs-bulk.html).
+Response for a [bulk request](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-bulk.html).
 
 Individual bulk items are a `Result` of [`OkItem`](struct.OkItem.html) or [`ErrorItem`](struct.ErrorItem.html) and can be iterated over.
 Any individual bulk item may be an `Err(ErrorItem)`, so it's important to check them.
@@ -249,7 +249,7 @@ impl<'a, TIndex: 'a, TType: 'a, TId: 'a> Iterator for ResultIter<'a, TIndex, TTy
 }
 
 /**
-Response for a [bulk request](https://www.elastic.co/guide/en/elasticsearch/reference/master/docs-bulk.html).
+Response for a [bulk request](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-bulk.html).
 
 This type only accumulates bulk items that failed.
 It can be more efficient if you only care about errors.
@@ -549,12 +549,16 @@ where
 /** The bulk action being performed. */
 #[derive(Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Action {
+    /** Index a document. */
     #[serde(rename = "index")]
     Index,
+    /** Create a new document. */
     #[serde(rename = "create")]
     Create,
+    /** U[date an existing document.] */
     #[serde(rename = "update")]
     Update,
+    /** Delete an existing document. */
     #[serde(rename = "delete")]
     Delete,
 }

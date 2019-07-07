@@ -100,7 +100,7 @@ impl Serialize for StringField {
     }
 }
 
-/** A multi-field string mapping for a [token count](https://www.elastic.co/guide/en/elasticsearch/reference/master/token-count.html). */
+/** A multi-field string mapping for a [token count](https://www.elastic.co/guide/en/elasticsearch/reference/current/token-count.html). */
 #[derive(Debug, Default, Clone, Copy)]
 pub struct ElasticTokenCountFieldMapping {
     /**
@@ -159,7 +159,7 @@ impl Serialize for ElasticTokenCountFieldMapping {
     }
 }
 
-/** A multi-field string mapping for a [completion suggester](https://www.elastic.co/guide/en/elasticsearch/reference/master/search-suggesters-completion.html#search-suggesters-completion). */
+/** A multi-field string mapping for a [completion suggester](https://www.elastic.co/guide/en/elasticsearch/reference/current/search-suggesters-completion.html#search-suggesters-completion). */
 #[derive(Debug, Default, Clone, Copy)]
 pub struct ElasticCompletionFieldMapping {
     /**

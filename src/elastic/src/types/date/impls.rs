@@ -97,7 +97,7 @@ println!("{}/{}/{} {}:{}:{}.{}",
 
 # Links
 
-- [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/master/date.html)
+- [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/date.html)
 */
 #[derive(Debug, Clone, PartialEq)]
 pub struct Date<TMapping>
@@ -410,7 +410,7 @@ where
 }
 
 /**
-A [date math](https://www.elastic.co/guide/en/elasticsearch/reference/master/common-options.html#date-math) expression.
+A [date math](https://www.elastic.co/guide/en/elasticsearch/reference/current/common-options.html#date-math) expression.
 
 Date math expressions start from an anchor date, like the literal `now` or `2017-05-06` and apply math operations to produce a new date value.
 

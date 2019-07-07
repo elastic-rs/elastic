@@ -8,6 +8,7 @@ use serde::{
 
 /** A field that will be mapped as a nested document. */
 pub trait ObjectFieldType {
+    /** The type of mapping for a document. */
     type Mapping: ObjectMapping;
 }
 

@@ -2,6 +2,8 @@
 Error types from Elasticsearch.
 */
 
+#![allow(missing_docs)]
+
 use serde::{
     Deserialize,
     Deserializer,
@@ -65,6 +67,9 @@ pub struct ParseError {
 }
 
 impl ParseError {
+    /**
+    Capture a standard error as a `ParseError`.
+    */
     pub fn new<E>(err: E) -> Self
     where
         E: StdError + Send + Sync + 'static,

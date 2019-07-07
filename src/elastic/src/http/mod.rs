@@ -54,18 +54,30 @@ pub struct HttpRequest<TBody> {
 }
 
 impl<TBody> HttpRequest<TBody> {
+    /**
+    Get a mutable reference to the request url.
+    */
     pub fn url_mut(&mut self) -> &mut Url {
         &mut self.url
     }
 
+    /**
+    Get a mutable reference to the request method.
+    */
     pub fn method_mut(&mut self) -> &mut Method {
         &mut self.method
     }
 
+    /**
+    Get a mutable reference to the request headers.
+    */
     pub fn headers_mut(&mut self) -> &mut HeaderMap {
         Arc::make_mut(&mut self.headers)
     }
 
+    /**
+    Get a mutable reference to the request body.
+    */
     pub fn body_mut(&mut self) -> Option<&mut TBody> {
         self.body.as_mut()
     }

@@ -196,12 +196,14 @@ fn endpoints_mod(
     let mut http_mod_tokens = Tokens::new();
     http_mod_tokens.append(http_mod);
 
-    let uses = quote!(
+    let header = quote!(
+        #![allow(missing_docs)]
+
         use super:: #http_mod_tokens ::*;
         use super::params::*;
     );
 
-    tokens.append(uses.to_string());
+    tokens.append(header);
     tokens.append("\n\n");
 
     for e in endpoints {
@@ -236,7 +238,9 @@ fn http_mod(tokens: &mut Tokens) {
 
     let body_tokens = gen::http::body::tokens();
 
-    let uses = quote!(
+    let header = quote!(
+        #![allow(missing_docs)]
+
         use std::borrow::Cow;
         use std::ops::Deref;
 
@@ -245,7 +249,7 @@ fn http_mod(tokens: &mut Tokens) {
 
     let http_req_item = gen::http::endpoint::tokens();
 
-    tokens.append(uses.to_string());
+    tokens.append(header);
 
     tokens.append("\n\n");
 
@@ -253,6 +257,12 @@ fn http_mod(tokens: &mut Tokens) {
 }
 
 fn params_mod(tokens: &mut Tokens, params_to_emit: BTreeMap<String, bool>) {
+    let header = quote!(
+        #![allow(missing_docs)]
+    );
+
+    tokens.append(header);
+
     tokens.append("\n\n");
 
     tokens.append(r#"include!("genned.params.rs");"#);

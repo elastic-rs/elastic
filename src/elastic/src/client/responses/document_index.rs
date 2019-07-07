@@ -1,5 +1,5 @@
 /*!
-Response types for an [index document request](https://www.elastic.co/guide/en/elasticsearch/reference/master/docs-index_.html).
+Response types for an [index document request](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html).
 */
 
 use super::common::{
@@ -16,7 +16,7 @@ use crate::{
     },
 };
 
-/** Response for an [index document request](https://www.elastic.co/guide/en/elasticsearch/reference/master/docs-index_.html). */
+/** Response for an [index document request](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html). */
 #[derive(Deserialize, Debug)]
 pub struct IndexResponse {
     #[serde(rename = "_index")]

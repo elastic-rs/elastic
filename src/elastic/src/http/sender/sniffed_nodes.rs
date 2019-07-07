@@ -73,7 +73,7 @@ The base url for the node is obtained by the `http.publish_address` field on a [
 Nodes are refreshed on the next request after the specified timeout.
 If updating the nodes fails for some reason then the request itself will also fail.
 
-[node info request]: https://www.elastic.co/guide/en/elasticsearch/reference/master/cluster-nodes-info.html
+[node info request]: https://www.elastic.co/guide/en/elasticsearch/reference/current/cluster-nodes-info.html
 */
 #[derive(Clone)]
 pub struct SniffedNodes<TSender> {

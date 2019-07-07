@@ -55,7 +55,7 @@ pub mod prelude {
         NodesInfoResponse,
         PingResponse,
         SearchResponse,
-        SqlResponse,
+        SqlQueryResponse,
         UpdateResponse,
     };
 }

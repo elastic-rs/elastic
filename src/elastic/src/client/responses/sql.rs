@@ -1,29 +1,41 @@
 /*!
-Response types for a [sql request](https://www.elastic.co/guide/en/elasticsearch/reference/master/sql-rest.html)
+Response types for a [sql request](https://www.elastic.co/guide/en/elasticsearch/reference/current/sql-rest.html).
 */
 
 use crate::http::receiver::IsOkOnSuccess;
 use serde_json::Value;
 
-/** Response for a [sql request][sql-request]. */
+/** Response for a [sql request](https://www.elastic.co/guide/en/elasticsearch/reference/current/sql-rest.html). */
 #[derive(Deserialize, Debug)]
-pub struct SqlResponse {
+pub struct SqlQueryResponse {
     columns: Vec<SqlColumn>,
-    rows: Vec<Vec<Value>>,
+    rows: Vec<SqlRow>,
 }
 
-impl SqlResponse {
+impl SqlQueryResponse {
     /** Gets a reference to the result columns. */
     pub fn columns(&self) -> &[SqlColumn] {
         &self.columns
     }
 
-    /** Gets a reference to a vector of rows each a vector of a values. */
-    pub fn rows(&self) -> &Vec<Vec<Value>> {
+    /** Gets a reference to the result rows. */
+    pub fn rows(&self) -> &[SqlRow] {
         &self.rows
     }
 }
 
+/** A row in the result set. */
+#[derive(Deserialize, Debug)]
+pub struct SqlRow(Vec<Value>);
+
+impl SqlRow {
+    /** Gets a reference to the result columns. */
+    pub fn columns(&self) -> &[Value] {
+        &self.0
+    }
+}
+
+/** A column in the result set. */
 #[derive(Deserialize, Debug)]
 pub struct SqlColumn {
     name: String,
@@ -32,13 +44,15 @@ pub struct SqlColumn {
 }
 
 impl SqlColumn {
+    /** The name of the column. */
     pub fn name(&self) -> &str {
         &self.name
     }
 
+    /** The type of the column. */
     pub fn ty(&self) -> &str {
         &self.ty
     }
 }
 
-impl IsOkOnSuccess for SqlResponse {}
+impl IsOkOnSuccess for SqlQueryResponse {}

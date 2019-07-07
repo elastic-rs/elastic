@@ -33,8 +33,8 @@ Add `elastic` to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-elastic = "0.21.0-pre.4"
-elastic_derive = "0.21.0-pre.4"
+elastic = "0.21.0-pre.5"
+elastic_derive = "0.21.0-pre.5"
 serde_json = "1"
 ```
 

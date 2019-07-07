@@ -1,7 +1,7 @@
 /*!
 Builders for [search requests][docs-search].
 
-[docs-search]: https://www.elastic.co/guide/en/elasticsearch/reference/master/search-search.html
+[docs-search]: https://www.elastic.co/guide/en/elasticsearch/reference/current/search-search.html
 */
 
 use futures::{
@@ -45,7 +45,7 @@ A [search request][docs-search] builder that can be configured before sending.
 Call [`Client.search`][Client.search] to get a `SearchRequestBuilder`.
 The `send` method will either send the request [synchronously][send-sync] or [asynchronously][send-async], depending on the `Client` it was created from.
 
-[docs-search]: https://www.elastic.co/guide/en/elasticsearch/reference/master/search-search.html
+[docs-search]: https://www.elastic.co/guide/en/elasticsearch/reference/current/search-search.html
 [send-sync]: #send-synchronously
 [send-async]: #send-asynchronously
 [Client.search]: ../../struct.Client.html#search-request
@@ -137,7 +137,7 @@ where
     [send-async]: requests/search/type.SearchRequestBuilder.html#send-asynchronously
     [types-mod]: ../types/index.html
     [documents-mod]: ../types/document/index.html
-    [docs-querystring]: https://www.elastic.co/guide/en/elasticsearch/reference/master/query-dsl-query-string-query.html
+    [docs-querystring]: https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html
     */
     pub fn search<TDocument>(&self) -> SearchRequestBuilder<TSender, TDocument, DefaultBody>
     where
@@ -208,7 +208,7 @@ where
     [send-async]: requests/search/type.SearchRequestBuilder.html#send-asynchronously
     [types-mod]: ../../types/index.html
     [documents-mod]: ../../types/document/index.html
-    [docs-querystring]: https://www.elastic.co/guide/en/elasticsearch/reference/master/query-dsl-query-string-query.html
+    [docs-querystring]: https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html
     */
     pub fn search(self) -> SearchRequestBuilder<TSender, TDocument, DefaultBody>
     where
@@ -342,7 +342,7 @@ where
 
     [SyncClient]: ../../type.SyncClient.html
     [documents-mod]: ../../../types/document/index.html
-    [docs-querystring]: https://www.elastic.co/guide/en/elasticsearch/reference/master/query-dsl-query-string-query.html
+    [docs-querystring]: https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html
     */
     pub fn send(self) -> Result<SearchResponse<TDocument>, Error> {
         let req = self.inner.into_request();
@@ -398,7 +398,7 @@ where
 
     [AsyncClient]: ../../type.AsyncClient.html
     [documents-mod]: ../../../types/document/index.html
-    [docs-querystring]: https://www.elastic.co/guide/en/elasticsearch/reference/master/query-dsl-query-string-query.html
+    [docs-querystring]: https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html
     */
     pub fn send(self) -> Pending<TDocument> {
         let req = self.inner.into_request();

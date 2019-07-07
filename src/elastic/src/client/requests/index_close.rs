@@ -1,7 +1,7 @@
 /*!
 Builders for [close index requests][docs-close-index].
 
-[docs-close-index]: https://www.elastic.co/guide/en/elasticsearch/reference/master/indices-open-close.html
+[docs-close-index]: https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-open-close.html
 */
 
 use futures::{
@@ -38,7 +38,7 @@ A [close index request][docs-close-index] builder that can be configured before 
 Call [`Client.index_close`][Client.index_close] to get an `IndexCloseRequestBuilder`.
 The `send` method will either send the request [synchronously][send-sync] or [asynchronously][send-async], depending on the `Client` it was closed from.
 
-[docs-close-index]: https://www.elastic.co/guide/en/elasticsearch/reference/master/indices-open-close.html
+[docs-close-index]: https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-open-close.html
 [send-sync]: #send-synchronously
 [send-async]: #send-asynchronously
 [Client.index_close]: ../../struct.Client.html#close-index-request

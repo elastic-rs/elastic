@@ -1,6 +1,6 @@
 {
   "ingest.processor_grok": {
-    "documentation": "https://www.elastic.co/guide/en/elasticsearch/reference/master/grok-processor.html#grok-processor-rest-get",
+    "documentation": "https://www.elastic.co/guide/en/elasticsearch/reference/current/grok-processor.html#grok-processor-rest-get",
     "methods": [ "GET" ],
     "url": {
       "path": "/_ingest/processor/grok",

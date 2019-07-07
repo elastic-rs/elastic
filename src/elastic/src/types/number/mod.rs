@@ -56,7 +56,7 @@ impl IntegerFieldType<DefaultIntegerMapping> for MyIntegerField {}
 
 # Links
 
-- [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/master/number.html)
+- [Elasticsearch Doc](https://www.elastic.co/guide/en/elasticsearch/reference/current/number.html)
 */
 
 pub mod mapping;

@@ -1,7 +1,7 @@
 /*!
 Builders for [create index requests][docs-create-index].
 
-[docs-create-index]: https://www.elastic.co/guide/en/elasticsearch/reference/master/indices-create-index.html
+[docs-create-index]: https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-create-index.html
 */
 
 use futures::{
@@ -38,7 +38,7 @@ A [create index request][docs-create-index] builder that can be configured befor
 Call [`Client.index_create`][Client.index_create] to get an `IndexCreateRequestBuilder`.
 The `send` method will either send the request [synchronously][send-sync] or [asynchronously][send-async], depending on the `Client` it was created from.
 
-[docs-create-index]: https://www.elastic.co/guide/en/elasticsearch/reference/master/indices-create-index.html
+[docs-create-index]: https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-create-index.html
 [send-sync]: #send-synchronously
 [send-async]: #send-asynchronously
 [Client.index_create]: ../../struct.Client.html#create-index-request

@@ -1,6 +1,6 @@
 {
   "indices.shrink": {
-    "documentation": "http://www.elastic.co/guide/en/elasticsearch/reference/master/indices-shrink-index.html",
+    "documentation": "http://www.elastic.co/guide/en/elasticsearch/reference/current/indices-shrink-index.html",
     "methods": ["PUT", "POST"],
     "url": {
       "path": "/{index}/_shrink/{target}",

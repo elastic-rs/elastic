@@ -1,5 +1,5 @@
 /*!
-Response types for a [delete document request](https://www.elastic.co/guide/en/elasticsearch/reference/master/docs-delete.html).
+Response types for a [delete document request](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-delete.html).
 */
 
 use crate::{
@@ -23,7 +23,7 @@ use crate::{
 
 use super::common::DocumentResult;
 
-/** Response for a [delete document request](https://www.elastic.co/guide/en/elasticsearch/reference/master/docs-delete.html). */
+/** Response for a [delete document request](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-delete.html). */
 #[derive(Deserialize, Debug)]
 pub struct DeleteResponse {
     #[serde(rename = "_index")]

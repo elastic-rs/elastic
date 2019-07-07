@@ -1,7 +1,7 @@
 /*!
 Builders for [index requests][docs-index].
 
-[docs-index]: https://www.elastic.co/guide/en/elasticsearch/reference/master/docs-index_.html
+[docs-index]: https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html
 */
 
 use futures::{
@@ -47,7 +47,7 @@ An [index request][docs-index] builder that can be configured before sending.
 Call [`Client.document.index`][Client.document.index] to get an `IndexRequest`.
 The `send` method will either send the request [synchronously][send-sync] or [asynchronously][send-async], depending on the `Client` it was created from.
 
-[docs-index]: https://www.elastic.co/guide/en/elasticsearch/reference/master/docs-index_.html
+[docs-index]: https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html
 [send-sync]: #send-synchronously
 [send-async]: #send-asynchronously
 [Client.document.index]: ../../struct.DocumentClient.html#index-document-request

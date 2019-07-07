@@ -1,7 +1,7 @@
 /*!
 Builders for [index exists requests][docs-index-exists].
 
-[docs-index-exists]: https://www.elastic.co/guide/en/elasticsearch/reference/master/indices-exists.html
+[docs-index-exists]: https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-exists.html
 */
 
 use futures::{
@@ -34,7 +34,7 @@ An [index exists request][docs-index-exists] builder that can be configured befo
 Call [`Client.index_exists`][Client.index_exists] to get an `IndexExistsRequestBuilder`.
 The `send` method will either send the request [synchronously][send-sync] or [asynchronously][send-async], depending on the `Client` it was opend from.
 
-[docs-index-exists]: https://www.elastic.co/guide/en/elasticsearch/reference/master/indices-exists.html
+[docs-index-exists]: https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-exists.html
 [send-sync]: #send-synchronously
 [send-async]: #send-asynchronously
 [Client.index_exists]: ../../struct.Client.html#index-exists-request

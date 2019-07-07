@@ -1,3 +1,7 @@
+/*!
+Types that are common to many responses.
+*/
+
 /** A default type for allocated fields in responses. */
 pub(crate) type DefaultAllocatedField = String;
 
