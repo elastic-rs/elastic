@@ -41,7 +41,8 @@ Provide an explicit response type in the `parse` function:
 
 ```no_run
 # use serde_json::Value;
-# use elastic::http::receiver::parse;
+# use elastic::http::{StatusCode, receiver::{parse, ParseError}};
+# use elastic::client::responses::*;
 # fn do_request() -> (StatusCode, Vec<u8>) { unimplemented!() }
 # fn main() {
 # let (response_status, response_body) = do_request();
@@ -53,11 +54,12 @@ Provide an explicit response type on the result ident:
 
 ```no_run
 # use serde_json::Value;
-# use elastic::http::receiver::parse;
+# use elastic::http::{StatusCode, receiver::{parse, ResponseError}};
+# use elastic::client::responses::*;
 # fn do_request() -> (StatusCode, Vec<u8>) { unimplemented!() }
 # fn main() {
 # let (response_status, response_body) = do_request();
-let get_response: Result<GetResponse<Value>, ParseError> = parse().from_slice(response_status, response_body);
+let get_response: Result<GetResponse<Value>, ResponseError> = parse().from_slice(response_status, response_body);
 # }
 ```
 
@@ -65,10 +67,11 @@ If Rust can infer the concrete response type then you can avoid specifying it at
 
 ```no_run
 # use serde_json::Value;
-# use elastic::http::receiver::parse;
+# use elastic::http::{StatusCode, receiver::{parse, ResponseError}};
+# use elastic::client::responses::*;
 # fn do_request() -> (StatusCode, Vec<u8>) { unimplemented!() }
 # fn main() {
-# fn parse_response() -> Result<GetResponse<Value>, ParseError> {
+# fn parse_response() -> Result<GetResponse<Value>, ResponseError> {
 # let (response_status, response_body) = do_request();
 let get_response = parse().from_slice(response_status, response_body);
 # get_response
