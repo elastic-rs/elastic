@@ -50,7 +50,7 @@ let response = client.request(PingRequest::new())
 # }
 ```
 
-[Client]: ../struct.Client.html
+[Client]: ../client/struct.Client.html
 [SyncClientBuilder]: struct.SyncClientBuilder.html
 */
 pub type SyncClient = Client<SyncSender>;
@@ -228,7 +228,7 @@ impl SyncClientBuilder {
     Specify a function to tweak a raw request before sending.
 
     This function will be applied to all outgoing requests and gives you the chance to perform operations the require the complete raw request,
-    such as request singing.
+    such as request signing.
     Prefer the `params` method on the client or individual requests where possible.
     */
     pub fn pre_send_raw(
