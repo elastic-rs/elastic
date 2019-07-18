@@ -49,7 +49,7 @@ tokio::runtime::current_thread::block_on_all(response_future)?;
 # }
 ```
 
-[Client]: ../struct.Client.html
+[Client]: ../client/struct.Client.html
 [AsyncClientBuilder]: struct.AsyncClientBuilder.html
 */
 pub type AsyncClient = Client<AsyncSender>;
@@ -253,7 +253,7 @@ impl AsyncClientBuilder {
     Specify a function to tweak a raw request before sending.
 
     This function will be applied to all outgoing requests and gives you the chance to perform operations the require the complete raw request,
-    such as request singing.
+    such as request signing.
     Prefer the `params` method on the client or individual requests where possible.
     */
     pub fn pre_send_raw(
