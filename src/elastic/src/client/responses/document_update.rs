@@ -2,6 +2,9 @@
 Response types for a [update document request](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-update.html).
 */
 
+use serde::de::DeserializeOwned;
+use serde_json::Value;
+
 use super::common::DocumentResult;
 
 use crate::{
@@ -12,6 +15,14 @@ use crate::{
         Type,
     },
 };
+
+#[derive(Deserialize, Debug)]
+struct UpdatedSource<T> {
+    #[serde(rename = "_source")]
+    source: Option<T>,
+}
+
+impl<T> IsOkOnSuccess for UpdatedSource<T> {}
 
 /** Response for a [update document request](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-update.html). */
 #[derive(Deserialize, Debug)]
@@ -31,9 +42,24 @@ pub struct UpdateResponse {
     #[serde(rename = "_routing")]
     routing: Option<String>,
     result: DocumentResult,
+    get: Option<UpdatedSource<Value>>,
 }
 
 impl UpdateResponse {
+    /** Convert the source in the response into the updated document. The request must have been made with the [`_source` parameter](https://www.elastic.co/guide/en/elasticsearch/reference/current/search-request-body.html#request-body-search-source-filtering). */
+    pub fn into_document<T>(self) -> Option<T>
+    where
+        T: DeserializeOwned,
+    {
+        self.get.map_or_else(
+            || None,
+            |get| {
+                get.source
+                    .map_or_else(|| None, |doc| serde_json::from_value::<T>(doc).ok())
+            },
+        )
+    }
+
     /** Whether or not the document was updated. */
     pub fn updated(&self) -> bool {
         match self.result {
