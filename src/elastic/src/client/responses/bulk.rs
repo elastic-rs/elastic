@@ -9,6 +9,7 @@ use super::common::{
 };
 use serde::de::{
     Deserialize,
+    DeserializeOwned,
     Deserializer,
     Error as DeError,
     MapAccess,
@@ -427,6 +428,7 @@ pub struct OkItem<
     primary_term: Option<u32>,
     shards: Option<Shards>,
     result: Option<DocumentResult>,
+    get: Option<Value>,
 }
 
 impl<TIndex, TType, TId> OkItem<TIndex, TType, TId> {
@@ -495,6 +497,21 @@ impl<TIndex, TType, TId> OkItem<TIndex, TType, TId> {
     /** The document id for this item. */
     pub fn id(&self) -> &TId {
         &self.id
+    }
+
+    /** Convert the source in the response into the updated document. The request must have been made with the [`_source` parameter](https://www.elastic.co/guide/en/elasticsearch/reference/current/search-request-body.html#request-body-search-source-filtering). */
+    pub fn into_document<T>(self) -> Option<T>
+    where
+        T: DeserializeOwned,
+    {
+        self.get.map_or_else(
+            || None,
+            |obj| {
+                obj.get("_source")
+                    .cloned()
+                    .map_or_else(|| None, |doc| serde_json::from_value::<T>(doc).ok())
+            },
+        )
     }
 }
 
@@ -611,6 +628,7 @@ struct ItemDeInner<TIndex, TType, TId> {
     sequence_number: Option<u32>,
     #[serde(rename = "_primary_term")]
     primary_term: Option<u32>,
+    get: Option<Value>,
     #[serde(rename = "_shards")]
     shards: Option<Shards>,
     result: Option<DocumentResult>,
@@ -651,6 +669,7 @@ where
                 primary_term: self.inner.primary_term,
                 shards: self.inner.shards,
                 result: self.inner.result,
+                get: self.inner.get,
             })
         }
     }

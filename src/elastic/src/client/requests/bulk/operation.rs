@@ -12,7 +12,7 @@ use serde::ser::{
     SerializeMap,
     Serializer,
 };
-use serde_json;
+use serde_json::Value;
 
 use crate::{
     client::requests::common::{
@@ -132,6 +132,19 @@ where
     pub fn doc_as_upsert(mut self) -> Self {
         if let Some(inner) = self.inner {
             self.inner = Some(inner.doc_as_upsert());
+        };
+
+        self
+    }
+
+    /**
+    Control the [source filtering] for this operation.
+
+    [source filtering]: https://www.elastic.co/guide/en/elasticsearch/reference/current/search-request-body.html#request-body-search-source-filtering
+    */
+    pub fn source(mut self, value: impl Into<Value>) -> Self {
+        if let Some(inner) = self.inner {
+            self.inner = Some(inner.source(value));
         };
 
         self

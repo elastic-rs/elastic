@@ -19,6 +19,8 @@ pub struct Doc<TDocument> {
     doc: DocInner<TDocument>,
     #[serde(skip_serializing_if = "Not::not")]
     doc_as_upsert: bool,
+    #[serde(rename = "_source")]
+    source: Value,
 }
 
 impl<TDocument> Doc<TDocument> {
@@ -26,6 +28,7 @@ impl<TDocument> Doc<TDocument> {
         Doc {
             doc: DocInner { inner: None },
             doc_as_upsert: false,
+            source: false.into(),
         }
     }
 
@@ -33,11 +36,18 @@ impl<TDocument> Doc<TDocument> {
         Doc {
             doc: DocInner { inner: Some(doc) },
             doc_as_upsert: false,
+            source: false.into(),
         }
     }
 
     pub(crate) fn doc_as_upsert(mut self) -> Self {
         self.doc_as_upsert = true;
+
+        self
+    }
+
+    pub(crate) fn source(mut self, value: impl Into<Value>) -> Self {
+        self.source = value.into();
 
         self
     }
