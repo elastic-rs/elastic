@@ -420,6 +420,8 @@ pub struct OkItem<
     ty: TType,
     id: TId,
     version: Option<u32>,
+    sequence_number: Option<u32>,
+    primary_term: Option<u32>,
     shards: Option<Shards>,
     result: Option<DocumentResult>,
 }
@@ -433,6 +435,24 @@ impl<TIndex, TType, TId> OkItem<TIndex, TType, TId> {
     /** The document version after this item. */
     pub fn version(&self) -> Option<u32> {
         self.version.clone()
+    }
+
+    /**
+     * The [sequence number] of the document.
+     *
+     * [sequence number]: https://www.elastic.co/guide/en/elasticsearch/reference/current/optimistic-concurrency-control.html
+     */
+    pub fn sequence_number(&self) -> Option<u32> {
+        self.sequence_number.clone()
+    }
+
+    /**
+     * The [primary term] of the document.
+     *
+     * [primary term]: https://www.elastic.co/guide/en/elasticsearch/reference/current/optimistic-concurrency-control.html
+     */
+    pub fn primary_term(&self) -> Option<u32> {
+        self.primary_term.clone()
     }
 
     /**
@@ -584,6 +604,10 @@ struct ItemDeInner<TIndex, TType, TId> {
     id: TId,
     #[serde(rename = "_version")]
     version: Option<u32>,
+    #[serde(rename = "_seq_no")]
+    sequence_number: Option<u32>,
+    #[serde(rename = "_primary_term")]
+    primary_term: Option<u32>,
     #[serde(rename = "_shards")]
     shards: Option<Shards>,
     result: Option<DocumentResult>,
@@ -620,6 +644,8 @@ where
                 ty: self.inner.ty,
                 id: self.inner.id,
                 version: self.inner.version,
+                sequence_number: self.inner.sequence_number,
+                primary_term: self.inner.primary_term,
                 shards: self.inner.shards,
                 result: self.inner.result,
             })
