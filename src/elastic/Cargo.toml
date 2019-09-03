@@ -30,7 +30,7 @@ quick-error = "~1"
 error-chain = "~0.11"
 log = "~0.4"
 uuid = { version = "~0.6", features = [ "v4" ] }
-url = "~1"
+url = "~2"
 bytes = "~0.4"
 http = "~0.1"
 serde = "~1"
