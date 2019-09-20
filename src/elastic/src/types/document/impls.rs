@@ -336,6 +336,7 @@ mod tests {
     }
 
     impl CustomType {
+        #[allow(dead_code)]
         fn id(&self) -> String {
             self.field.to_string()
         }
