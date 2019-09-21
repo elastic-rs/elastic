@@ -79,7 +79,7 @@ impl<TParams> BulkOperation<Script<TParams>> {
         builder: TBuilder,
     ) -> BulkOperation<Script<TNewParams>>
     where
-        TBuilder: Fn(ScriptBuilder<TParams>) -> ScriptBuilder<TNewParams>,
+        TBuilder: FnOnce(ScriptBuilder<TParams>) -> ScriptBuilder<TNewParams>,
     {
         let inner = self
             .inner
@@ -280,7 +280,7 @@ where
     where
         TId: Into<Id<'static>>,
         TScript: ToString,
-        TBuilder: Fn(ScriptBuilder<DefaultParams>) -> ScriptBuilder<TParams>,
+        TBuilder: FnOnce(ScriptBuilder<DefaultParams>) -> ScriptBuilder<TParams>,
     {
         BulkOperation {
             action: Action::Update,
@@ -411,7 +411,7 @@ impl BulkRawOperation {
     ) -> BulkOperation<Script<TParams>>
     where
         TScript: ToString,
-        TBuilder: Fn(ScriptBuilder<DefaultParams>) -> ScriptBuilder<TParams>,
+        TBuilder: FnOnce(ScriptBuilder<DefaultParams>) -> ScriptBuilder<TParams>,
     {
         BulkOperation {
             action: Action::Update,

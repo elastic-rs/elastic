@@ -543,7 +543,7 @@ where
     pub fn script_fluent<TScript, TParams>(
         self,
         source: TScript,
-        builder: impl Fn(ScriptBuilder<DefaultParams>) -> ScriptBuilder<TParams>,
+        builder: impl FnOnce(ScriptBuilder<DefaultParams>) -> ScriptBuilder<TParams>,
     ) -> UpdateRequestBuilder<TSender, Script<TParams>>
     where
         TScript: ToString,
