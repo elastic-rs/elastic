@@ -404,7 +404,7 @@ impl BulkRawOperation {
     /**
     Update the bulk operation script.
     */
-    pub fn update_script_fluent<TId, TScript, TBuilder, TParams>(
+    pub fn update_script_fluent<TScript, TBuilder, TParams>(
         self,
         script: TScript,
         builder: TBuilder,
