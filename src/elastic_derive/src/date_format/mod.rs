@@ -1,12 +1,15 @@
-use quote::Tokens;
-use syn;
+use syn::{
+    Data,
+    DeriveInput,
+    Fields,
+};
 
 mod parse;
 
 use super::{
     expect_name_value,
     get_elastic_meta_items,
-    get_str_from_lit,
+    get_string_from_lit,
 };
 
 /**
@@ -18,13 +21,13 @@ The input must satisfy the following rules:
 - It must have an `#[elastic(date_format="<value>")]` attribute.
 */
 pub fn expand_derive(
-    crate_root: Tokens,
-    input: &syn::MacroInput,
-) -> Result<Vec<Tokens>, DeriveDateFormatError> {
+    crate_root: proc_macro2::TokenStream,
+    input: &DeriveInput,
+) -> Result<Vec<proc_macro2::TokenStream>, DeriveDateFormatError> {
     // Annotatable item for a unit struct
-    match input.body {
-        syn::Body::Struct(ref data) => match *data {
-            syn::VariantData::Unit => Ok(()),
+    match input.data {
+        Data::Struct(ref data) => match data.fields {
+            Fields::Unit => Ok(()),
             _ => Err(DeriveDateFormatError::InvalidInput),
         },
         _ => Err(DeriveDateFormatError::InvalidInput),
@@ -34,7 +37,7 @@ pub fn expand_derive(
 
     let name = get_name_from_attr(input).unwrap_or_else(|| format.clone());
 
-    let tokens: Vec<Tokens> = parse::to_tokens(&format)?
+    let tokens: Vec<proc_macro2::TokenStream> = parse::to_tokens(&format)?
         .into_iter()
         .map(|t| t.into_tokens(&crate_root))
         .collect();
@@ -46,11 +49,11 @@ pub fn expand_derive(
 
 // Implement DateFormat for the type being derived with the mapping
 fn impl_date_format(
-    crate_root: Tokens,
-    item: &syn::MacroInput,
+    crate_root: proc_macro2::TokenStream,
+    item: &DeriveInput,
     name: &str,
-    format: &[Tokens],
-) -> Tokens {
+    format: &[proc_macro2::TokenStream],
+) -> proc_macro2::TokenStream {
     let ty = &item.ident;
 
     let parse_fn = quote!(
@@ -87,7 +90,7 @@ fn impl_date_format(
 }
 
 // Get the format string supplied by an #[elastic()] attribute
-fn get_format_from_attr<'a>(item: &'a syn::MacroInput) -> Option<String> {
+fn get_format_from_attr<'a>(item: &'a DeriveInput) -> Option<String> {
     let val = get_elastic_meta_items(&item.attrs);
 
     let val = val
@@ -95,11 +98,11 @@ fn get_format_from_attr<'a>(item: &'a syn::MacroInput) -> Option<String> {
         .filter_map(|meta| expect_name_value("date_format", &meta))
         .next();
 
-    val.and_then(|v| get_str_from_lit(v).ok().map(Into::into))
+    val.and_then(|v| get_string_from_lit(v).ok().map(Into::into))
 }
 
 // Get the name string supplied by an #[elastic()] attribute
-fn get_name_from_attr<'a>(item: &'a syn::MacroInput) -> Option<String> {
+fn get_name_from_attr<'a>(item: &'a DeriveInput) -> Option<String> {
     let val = get_elastic_meta_items(&item.attrs);
 
     let val = val
@@ -107,11 +110,11 @@ fn get_name_from_attr<'a>(item: &'a syn::MacroInput) -> Option<String> {
         .filter_map(|meta| expect_name_value("date_format_name", &meta))
         .next();
 
-    val.and_then(|v| get_str_from_lit(v).ok().map(Into::into))
+    val.and_then(|v| get_string_from_lit(v).ok().map(Into::into))
 }
 
 impl<'a> parse::DateFormatToken<'a> {
-    fn into_tokens(self, crate_root: &Tokens) -> Tokens {
+    fn into_tokens(self, crate_root: &proc_macro2::TokenStream) -> proc_macro2::TokenStream {
         use self::parse::DateFormatToken::*;
 
         match self {
