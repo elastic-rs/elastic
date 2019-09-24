@@ -1,4 +1,8 @@
-use syn;
+use syn::{
+    Data,
+    DeriveInput,
+    Fields,
+};
 
 mod parse;
 
@@ -18,12 +22,12 @@ The input must satisfy the following rules:
 */
 pub fn expand_derive(
     crate_root: proc_macro2::TokenStream,
-    input: &syn::DeriveInput,
+    input: &DeriveInput,
 ) -> Result<Vec<proc_macro2::TokenStream>, DeriveDateFormatError> {
     // Annotatable item for a unit struct
     match input.data {
-        syn::Data::Struct(ref data) => match data.fields {
-            syn::Fields::Unit => Ok(()),
+        Data::Struct(ref data) => match data.fields {
+            Fields::Unit => Ok(()),
             _ => Err(DeriveDateFormatError::InvalidInput),
         },
         _ => Err(DeriveDateFormatError::InvalidInput),
@@ -46,7 +50,7 @@ pub fn expand_derive(
 // Implement DateFormat for the type being derived with the mapping
 fn impl_date_format(
     crate_root: proc_macro2::TokenStream,
-    item: &syn::DeriveInput,
+    item: &DeriveInput,
     name: &str,
     format: &[proc_macro2::TokenStream],
 ) -> proc_macro2::TokenStream {
@@ -86,7 +90,7 @@ fn impl_date_format(
 }
 
 // Get the format string supplied by an #[elastic()] attribute
-fn get_format_from_attr<'a>(item: &'a syn::DeriveInput) -> Option<String> {
+fn get_format_from_attr<'a>(item: &'a DeriveInput) -> Option<String> {
     let val = get_elastic_meta_items(&item.attrs);
 
     let val = val
@@ -98,7 +102,7 @@ fn get_format_from_attr<'a>(item: &'a syn::DeriveInput) -> Option<String> {
 }
 
 // Get the name string supplied by an #[elastic()] attribute
-fn get_name_from_attr<'a>(item: &'a syn::DeriveInput) -> Option<String> {
+fn get_name_from_attr<'a>(item: &'a DeriveInput) -> Option<String> {
     let val = get_elastic_meta_items(&item.attrs);
 
     let val = val
