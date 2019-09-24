@@ -65,7 +65,7 @@ pub fn derive_date_format(input: proc_macro::TokenStream) -> proc_macro::TokenSt
 }
 
 // Get the format string supplied by an #[elastic()] attribute
-fn get_crate_root<'a>(item: &'a syn::DeriveInput) -> Result<proc_macro2::TokenStream, String> {
+fn get_crate_root<'a>(item: &'a syn::DeriveInput) -> Result<proc_macro2::TokenStream, syn::Error> {
     let val = get_elastic_meta_items(&item.attrs);
 
     let val = val
@@ -75,8 +75,8 @@ fn get_crate_root<'a>(item: &'a syn::DeriveInput) -> Result<proc_macro2::TokenSt
 
     match val {
         Some(crate_root) => {
-            // FIXME: do not hardcode the crate_root
-            Ok(quote!(crate::types).into())
+            let root = get_tokens_from_lit(&crate_root)?;
+            Ok(quote!(#root).into())
         }
         None => Ok(quote!(elastic::types).into()),
     }
