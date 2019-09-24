@@ -27,6 +27,7 @@ extern crate serde_json;
 extern crate chrono;
 
 use quote::TokenStreamExt;
+use syn::spanned::Spanned;
 
 mod date_format;
 mod elastic_type;
@@ -141,8 +142,14 @@ fn get_ident_from_lit(lit: &syn::Lit) -> Result<syn::Ident, &'static str> {
     get_string_from_lit(lit).map(|s| proc_macro2::Ident::new(&s, proc_macro2::Span::call_site()))
 }
 
-fn get_tokens_from_lit<'a>(lit: &'a syn::Lit) -> Result<proc_macro2::TokenStream, &'static str> {
-    get_string_from_lit(lit).map(|s| quote!(#s))
+fn get_tokens_from_lit<'a>(lit: &'a syn::Lit) -> Result<proc_macro2::TokenStream, syn::Error> {
+    if let syn::Lit::Str(ref s) = *lit {
+        let toks = s.parse::<syn::Expr>()?;
+        Ok(quote!(#toks))
+    } else {
+        let err = syn::Error::new(lit.span(), "Unable to get TokenStream from syn::Lit");
+        Err(err)
+    }
 }
 
 fn get_string_from_lit<'a>(lit: &'a syn::Lit) -> Result<String, &'static str> {
