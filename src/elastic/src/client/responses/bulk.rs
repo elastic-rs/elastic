@@ -262,9 +262,9 @@ Send a bulk request and iterate through the errors:
 ```no_run
 # use elastic::prelude::*;
 # use elastic::client::responses::bulk::Action;
-# fn do_request() -> BulkErrorsResponse { unimplemented!() }
+# let client = SyncClientBuilder::new().build()?;
 # fn main() {
-let response: BulkErrorsResponse = do_request();
+let response: BulkErrorsResponse = client.errors_only().send();
 
 // Do something with failed items
 for item in response {
@@ -280,9 +280,9 @@ Use `iter` to iterate over individual errors without taking ownership of them:
 
 ```no_run
 # use elastic::prelude::*;
-# fn do_request() -> BulkErrorsResponse { unimplemented!() }
+# let client = SyncClientBuilder::new().build()?;
 # fn main() {
-let response: BulkErrorsResponse = do_request();
+let response: BulkErrorsResponse = client.errors_only().send();
 
 // Do something with errors for index `myindex`
 let item_iter = response.iter()
@@ -370,7 +370,7 @@ impl<TIndex, TType, TId> BulkErrorsResponse<TIndex, TType, TId> {
         !self.errors
     }
 
-    /** Returns `true` if any bulk itemss failed. */
+    /** Returns `true` if any bulk items failed. */
     pub fn is_err(&self) -> bool {
         self.errors
     }
@@ -386,9 +386,9 @@ impl<TIndex, TType, TId> BulkErrorsResponse<TIndex, TType, TId> {
 
     ```no_run
     # use elastic::prelude::*;
-    # fn do_request() -> BulkErrorsResponse { unimplemented!() }
+    # let client = SyncClientBuilder::new().build()?;
     # fn main() {
-    let response: BulkErrorsResponse = do_request();
+    let response: BulkErrorsResponse = client.errors_only().send();
 
     // Iterate through all items
     for item in response.iter() {
