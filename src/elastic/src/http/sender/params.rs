@@ -3,14 +3,14 @@ use std::{
     sync::Arc,
 };
 
-use reqwest::{
-    self,
+use http::{
     header::{
         HeaderMap,
         HeaderName,
         HeaderValue,
         CONTENT_TYPE,
     },
+    method::Method as HttpMethod,
 };
 use url::form_urlencoded::Serializer;
 
@@ -230,16 +230,16 @@ pub(crate) fn build_url<'a>(req_url: &str, params: &RequestParams) -> String {
     url
 }
 
-pub(crate) fn build_reqwest_method(method: Method) -> reqwest::Method {
+pub(crate) fn build_reqwest_method(method: Method) -> HttpMethod {
     match method {
-        Method::GET => reqwest::Method::GET,
-        Method::POST => reqwest::Method::POST,
-        Method::HEAD => reqwest::Method::HEAD,
-        Method::DELETE => reqwest::Method::DELETE,
-        Method::PUT => reqwest::Method::PUT,
-        Method::PATCH => reqwest::Method::PATCH,
+        Method::GET => HttpMethod::GET,
+        Method::POST => HttpMethod::POST,
+        Method::HEAD => HttpMethod::HEAD,
+        Method::DELETE => HttpMethod::DELETE,
+        Method::PUT => HttpMethod::PUT,
+        Method::PATCH => HttpMethod::PATCH,
         method => {
-            reqwest::Method::from_bytes(method.as_str().as_bytes()).expect("invalid HTTP method")
+            HttpMethod::from_bytes(method.as_str().as_bytes()).expect("invalid HTTP method")
         }
     }
 }
