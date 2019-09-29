@@ -488,7 +488,7 @@ For more details see the [`responses`][responses-mod] module.
 
 [tokio]: https://tokio.rs
 
-[endpoints-mod]: requests/endpoints/index.html
+[endpoints-mod]: ../endpoints/index.html
 [RequestParams]: struct.RequestParams.html
 [SyncClient]: type.SyncClient.html
 [SyncClientBuilder]: struct.SyncClientBuilder.html
@@ -517,20 +517,20 @@ For more details see the [`responses`][responses-mod] module.
 [RequestBuilder]: requests/struct.RequestBuilder.html
 [RequestBuilder.params]: requests/struct.RequestBuilder.html#method.params
 [RawRequestBuilder]: requests/type.RawRequestBuilder.html
-[SearchRequest]: requests/endpoints/struct.SearchRequest.html
-[SqlQueryRequest]: requests/endpoints/struct.SqlQueryRequest.html
-[BulkRequest]: requests/endpoints/struct.BulkRequest.html
-[GetRequest]: requests/endpoints/struct.GetRequest.html
-[UpdateRequest]: requests/endpoints/struct.UpdateRequest.html
-[DeleteRequest]: requests/endpoints/struct.DeleteRequest.html
-[IndexRequest]: requests/endpoints/struct.IndexRequest.html
-[IndicesPutMappingRequest]: requests/endpoints/struct.IndicesPutMappingRequest.html
-[IndicesCreateRequest]: requests/endpoints/struct.IndicesCreateRequest.html
-[IndicesOpenRequest]: requests/endpoints/struct.IndicesOpenRequest.html
-[IndicesCloseRequest]: requests/endpoints/struct.IndicesCloseRequest.html
-[IndicesDeleteRequest]: requests/endpoints/struct.IndicesDeleteRequest.html
-[IndicesExistsRequest]: requests/endpoints/struct.IndicesExistsRequest.html
-[PingRequest]: requests/endpoints/struct.PingRequest.html
+[SearchRequest]: ../endpoints/struct.SearchRequest.html
+[SqlQueryRequest]: ../endpoints/struct.SqlQueryRequest.html
+[BulkRequest]: ../endpoints/struct.BulkRequest.html
+[GetRequest]: ../endpoints/struct.GetRequest.html
+[UpdateRequest]: ../endpoints/struct.UpdateRequest.html
+[DeleteRequest]: ../endpoints/struct.DeleteRequest.html
+[IndexRequest]: ../endpoints/struct.IndexRequest.html
+[IndicesPutMappingRequest]: ../endpoints/struct.IndicesPutMappingRequest.html
+[IndicesCreateRequest]: ../endpoints/struct.IndicesCreateRequest.html
+[IndicesOpenRequest]: ../endpoints/struct.IndicesOpenRequest.html
+[IndicesCloseRequest]: ../endpoints/struct.IndicesCloseRequest.html
+[IndicesDeleteRequest]: ../endpoints/struct.IndicesDeleteRequest.html
+[IndicesExistsRequest]: ../endpoints/struct.IndicesExistsRequest.html
+[PingRequest]: ../endpoints/struct.PingRequest.html
 
 [responses-mod]: responses/index.html
 [SyncResponseBuilder]: ../http/receiver/struct.SyncResponseBuilder.html

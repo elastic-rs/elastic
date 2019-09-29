@@ -262,9 +262,9 @@ Send a bulk request and iterate through the errors:
 ```no_run
 # use elastic::prelude::*;
 # use elastic::client::responses::bulk::Action;
-# fn do_request() -> BulkErrorsResponse { unimplemented!() }
-# fn main() {
-let response: BulkErrorsResponse = do_request();
+# fn main() -> Result<(), elastic::Error>{
+# let client = SyncClientBuilder::new().build()?;
+let response: BulkErrorsResponse = client.bulk().errors_only().send()?;
 
 // Do something with failed items
 for item in response {
@@ -273,6 +273,7 @@ for item in response {
         _ => println!("err: {:?}", item)
     }
 }
+# Ok(())
 # }
 ```
 
@@ -280,9 +281,9 @@ Use `iter` to iterate over individual errors without taking ownership of them:
 
 ```no_run
 # use elastic::prelude::*;
-# fn do_request() -> BulkErrorsResponse { unimplemented!() }
-# fn main() {
-let response: BulkErrorsResponse = do_request();
+# fn main() -> Result<(), elastic::Error>{
+# let client = SyncClientBuilder::new().build()?;
+let response: BulkErrorsResponse = client.bulk().errors_only().send()?;
 
 // Do something with errors for index `myindex`
 let item_iter = response.iter()
@@ -291,6 +292,7 @@ let item_iter = response.iter()
 for item in item_iter {
     println!("err: {:?}", item);
 }
+# Ok(())
 # }
 ```
 
@@ -370,7 +372,7 @@ impl<TIndex, TType, TId> BulkErrorsResponse<TIndex, TType, TId> {
         !self.errors
     }
 
-    /** Returns `true` if any bulk itemss failed. */
+    /** Returns `true` if any bulk items failed. */
     pub fn is_err(&self) -> bool {
         self.errors
     }
@@ -386,15 +388,16 @@ impl<TIndex, TType, TId> BulkErrorsResponse<TIndex, TType, TId> {
 
     ```no_run
     # use elastic::prelude::*;
-    # fn do_request() -> BulkErrorsResponse { unimplemented!() }
-    # fn main() {
-    let response: BulkErrorsResponse = do_request();
+    # fn main() -> Result<(), elastic::Error> {
+    # let client = SyncClientBuilder::new().build()?;
+    let response: BulkErrorsResponse = client.bulk().errors_only().send()?;
 
     // Iterate through all items
     for item in response.iter() {
         // Do something with failed items
         println!("err: {:?}", item)
     }
+    # Ok(())
     # }
     ```
     */

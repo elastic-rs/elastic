@@ -82,9 +82,9 @@ where
     # }
     ```
 
-    [Endpoint]: requests/struct.Endpoint.html
+    [Endpoint]: ../endpoints/struct.Endpoint.html
     [RawRequestBuilder]: requests/raw/type.RawRequestBuilder.html
-    [endpoints-mod]: requests/endpoints/index.html
+    [endpoints-mod]: ../endpoints/index.html
     */
     pub fn request<TEndpoint, TBody>(
         &self,
