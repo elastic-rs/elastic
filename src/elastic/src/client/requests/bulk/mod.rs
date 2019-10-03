@@ -22,6 +22,7 @@ use crate::{
         requests::{
             Pending as BasePending,
             raw::RawRequestInner,
+            RequestInner,
             RequestBuilder,
         },
         responses::{
@@ -84,6 +85,32 @@ pub struct BulkRequestInner<TBody, TResponse> {
     ty: Option<Type<'static>>,
     body: WrappedBody<TBody>,
     _marker: PhantomData<TResponse>,
+}
+
+impl<TBody, TResponse> RequestInner for BulkRequestInner<TBody, TResponse>
+where
+    TBody: BulkBody,
+{
+    type Request = BulkRequest<'static, TBody>;
+    type Response = BulkResponse;
+
+    fn into_request(self) -> Result<Self::Request, Error> {
+        let body = self.body.try_into_inner()?;
+
+        match (self.index, self.ty) {
+            (Some(index), ty) => match ty {
+                None => Ok(BulkRequest::for_index(index, body)),
+                Some(ref ty) if &ty[..] == DEFAULT_DOC_TYPE => {
+                    Ok(BulkRequest::for_index(index, body))
+                }
+                Some(ty) => Ok(BulkRequest::for_index_ty(index, ty, body)),
+            },
+            (None, None) => Ok(BulkRequest::new(body)),
+            (None, Some(_)) => Err(error::request(BulkRequestError(
+                "missing `index` parameter".to_owned(),
+            ))),
+        }
+    }
 }
 
 /**
@@ -517,29 +544,6 @@ impl<TDocument, TResponse> BulkRequestBuilder<AsyncSender, Streamed<TDocument>, 
     }
 }
 
-impl<TBody, TResponse> BulkRequestInner<TBody, TResponse>
-where
-    TBody: BulkBody,
-{
-    fn into_request(self) -> Result<BulkRequest<'static, TBody>, Error> {
-        let body = self.body.try_into_inner()?;
-
-        match (self.index, self.ty) {
-            (Some(index), ty) => match ty {
-                None => Ok(BulkRequest::for_index(index, body)),
-                Some(ref ty) if &ty[..] == DEFAULT_DOC_TYPE => {
-                    Ok(BulkRequest::for_index(index, body))
-                }
-                Some(ty) => Ok(BulkRequest::for_index_ty(index, ty, body)),
-            },
-            (None, None) => Ok(BulkRequest::new(body)),
-            (None, Some(_)) => Err(error::request(BulkRequestError(
-                "missing `index` parameter".to_owned(),
-            ))),
-        }
-    }
-}
-
 /**
 # Send synchronously
 */
@@ -842,6 +846,7 @@ impl<TIndex, TType, TId, TNewId> ChangeId<TNewId> for BulkErrorsResponse<TIndex,
 #[cfg(test)]
 mod tests {
     use crate::{
+        client::requests::RequestInner,
         prelude::*,
         tests::*,
     };

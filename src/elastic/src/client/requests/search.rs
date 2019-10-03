@@ -13,6 +13,7 @@ use crate::{
         requests::{
             Pending as BasePending,
             raw::RawRequestInner,
+            RequestInner,
             RequestBuilder,
         },
         responses::SearchResponse,
@@ -57,6 +58,23 @@ pub struct SearchRequestInner<TDocument, TBody> {
     ty: Option<Type<'static>>,
     body: TBody,
     _marker: PhantomData<TDocument>,
+}
+
+impl<TDocument, TBody> RequestInner for SearchRequestInner<TDocument, TBody>
+where
+    TDocument: DeserializeOwned,
+{
+    type Request = SearchRequest<'static, TBody>;
+    type Response = SearchResponse<TDocument>;
+
+    fn into_request(self) -> Result<Self::Request, Error> {
+        let index = self.index.unwrap_or_else(|| "_all".into());
+
+        Ok(match self.ty {
+            Some(ty) => SearchRequest::for_index_ty(index, ty, self.body),
+            None => SearchRequest::for_index(index, self.body),
+        })
+    }
 }
 
 /**
@@ -239,15 +257,6 @@ where
             _marker: PhantomData,
         }
     }
-
-    fn into_request(self) -> SearchRequest<'static, TBody> {
-        let index = self.index.unwrap_or_else(|| "_all".into());
-
-        match self.ty {
-            Some(ty) => SearchRequest::for_index_ty(index, ty, self.body),
-            None => SearchRequest::for_index(index, self.body),
-        }
-    }
 }
 
 /**
@@ -343,7 +352,7 @@ where
     [docs-querystring]: https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html
     */
     pub fn send(self) -> Result<SearchResponse<TDocument>, Error> {
-        let req = self.inner.into_request();
+        let req = self.inner.into_request().unwrap();
 
         RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
             .send()?
@@ -399,7 +408,7 @@ where
     [docs-querystring]: https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html
     */
     pub fn send(self) -> Pending<TDocument> {
-        let req = self.inner.into_request();
+        let req = self.inner.into_request().unwrap();
 
         let res_future =
             RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
@@ -418,6 +427,7 @@ mod tests {
     use serde_json::Value;
 
     use crate::{
+        client::requests::RequestInner,
         prelude::*,
         tests::*,
     };
@@ -435,7 +445,7 @@ mod tests {
     fn default_request() {
         let client = SyncClientBuilder::new().build().unwrap();
 
-        let req = client.search::<Value>().inner.into_request();
+        let req = client.search::<Value>().inner.into_request().unwrap();
 
         assert_eq!("/_all/_search", req.url.as_ref());
     }
@@ -448,7 +458,8 @@ mod tests {
             .search::<Value>()
             .index("new-idx")
             .inner
-            .into_request();
+            .into_request()
+            .unwrap();
 
         assert_eq!("/new-idx/_search", req.url.as_ref());
     }
@@ -457,7 +468,7 @@ mod tests {
     fn specify_ty() {
         let client = SyncClientBuilder::new().build().unwrap();
 
-        let req = client.search::<Value>().ty("new-ty").inner.into_request();
+        let req = client.search::<Value>().ty("new-ty").inner.into_request().unwrap();
 
         assert_eq!("/_all/new-ty/_search", req.url.as_ref());
     }
@@ -466,7 +477,7 @@ mod tests {
     fn specify_body() {
         let client = SyncClientBuilder::new().build().unwrap();
 
-        let req = client.search::<Value>().body("{}").inner.into_request();
+        let req = client.search::<Value>().body("{}").inner.into_request().unwrap();
 
         assert_eq!("{}", req.body);
     }

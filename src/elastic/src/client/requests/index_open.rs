@@ -11,6 +11,7 @@ use crate::{
         requests::{
             Pending as BasePending,
             raw::RawRequestInner,
+            RequestInner,
             RequestBuilder,
         },
         responses::CommandResponse,
@@ -46,6 +47,15 @@ pub type IndexOpenRequestBuilder<TSender> = RequestBuilder<TSender, IndexOpenReq
 #[doc(hidden)]
 pub struct IndexOpenRequestInner {
     index: Index<'static>,
+}
+
+impl RequestInner for IndexOpenRequestInner {
+    type Request = IndicesOpenRequest<'static, DefaultBody>;
+    type Response = CommandResponse;
+    
+    fn into_request(self) -> Result<Self::Request, Error> {
+        Ok(IndicesOpenRequest::for_index(self.index, empty_body()))
+    }
 }
 
 /**
@@ -89,12 +99,6 @@ where
     }
 }
 
-impl IndexOpenRequestInner {
-    fn into_request(self) -> IndicesOpenRequest<'static, DefaultBody> {
-        IndicesOpenRequest::for_index(self.index, empty_body())
-    }
-}
-
 /**
 # Send synchronously
 */
@@ -123,7 +127,7 @@ impl IndexOpenRequestBuilder<SyncSender> {
     [SyncClient]: ../../type.SyncClient.html
     */
     pub fn send(self) -> Result<CommandResponse, Error> {
-        let req = self.inner.into_request();
+        let req = self.inner.into_request()?;
 
         RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
             .send()?
@@ -164,7 +168,7 @@ impl IndexOpenRequestBuilder<AsyncSender> {
     [AsyncClient]: ../../type.AsyncClient.html
     */
     pub fn send(self) -> Pending {
-        let req = self.inner.into_request();
+        let req = self.inner.into_request().unwrap();
 
         let res_future =
             RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
@@ -181,6 +185,7 @@ pub type Pending = BasePending<CommandResponse>;
 #[cfg(test)]
 mod tests {
     use crate::{
+        client::requests::RequestInner,
         prelude::*,
         tests::*,
     };
@@ -194,7 +199,7 @@ mod tests {
     fn default_request() {
         let client = SyncClientBuilder::new().build().unwrap();
 
-        let req = client.index("testindex").open().inner.into_request();
+        let req = client.index("testindex").open().inner.into_request().unwrap();
 
         assert_eq!("/testindex/_open", req.url.as_ref());
     }

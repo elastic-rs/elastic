@@ -14,6 +14,7 @@ use crate::{
         requests::{
             Pending as BasePending,
             raw::RawRequestInner,
+            RequestInner,
             RequestBuilder,
         },
         responses::UpdateResponse,
@@ -69,6 +70,22 @@ pub struct UpdateRequestInner<TBody> {
     id: Id<'static>,
     body: TBody,
     _marker: PhantomData<TBody>,
+}
+
+impl<TBody> RequestInner for UpdateRequestInner<TBody>
+where
+    TBody: Serialize,
+{
+    type Request = UpdateRequest<'static, Vec<u8>>;
+    type Response = UpdateResponse;
+
+    fn into_request(self) -> Result<UpdateRequest<'static, Vec<u8>>, Error> {
+        let body = serde_json::to_vec(&self.body).map_err(error::request)?;
+
+        Ok(UpdateRequest::for_index_ty_id(
+            self.index, self.ty, self.id, body,
+        ))
+    }
 }
 
 /**
@@ -275,19 +292,6 @@ where
                 _marker: PhantomData,
             },
         )
-    }
-}
-
-impl<TBody> UpdateRequestInner<TBody>
-where
-    TBody: Serialize,
-{
-    fn into_request(self) -> Result<UpdateRequest<'static, Vec<u8>>, Error> {
-        let body = serde_json::to_vec(&self.body).map_err(error::request)?;
-
-        Ok(UpdateRequest::for_index_ty_id(
-            self.index, self.ty, self.id, body,
-        ))
     }
 }
 
@@ -676,6 +680,7 @@ pub type Pending = BasePending<UpdateResponse>;
 mod tests {
     use super::ScriptBuilder;
     use crate::{
+        client::requests::RequestInner,
         prelude::*,
         tests::*,
     };

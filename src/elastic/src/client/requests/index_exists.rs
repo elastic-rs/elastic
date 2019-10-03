@@ -11,6 +11,7 @@ use crate::{
         requests::{
             Pending as BasePending,
             raw::RawRequestInner,
+            RequestInner,
             RequestBuilder,
         },
         responses::IndicesExistsResponse,
@@ -42,6 +43,15 @@ pub type IndexExistsRequestBuilder<TSender> = RequestBuilder<TSender, IndexExist
 #[doc(hidden)]
 pub struct IndexExistsRequestInner {
     index: Index<'static>,
+}
+
+impl RequestInner for IndexExistsRequestInner {
+    type Request = IndicesExistsRequest<'static>;
+    type Response = IndicesExistsResponse;
+
+    fn into_request(self) -> Result<Self::Request, Error> {
+        Ok(IndicesExistsRequest::for_index(self.index))
+    }
 }
 
 /**
@@ -85,12 +95,6 @@ where
     }
 }
 
-impl IndexExistsRequestInner {
-    fn into_request(self) -> IndicesExistsRequest<'static> {
-        IndicesExistsRequest::for_index(self.index)
-    }
-}
-
 /**
 # Send synchronously
 */
@@ -119,7 +123,7 @@ impl IndexExistsRequestBuilder<SyncSender> {
     [SyncClient]: ../../type.SyncClient.html
     */
     pub fn send(self) -> Result<IndicesExistsResponse, Error> {
-        let req = self.inner.into_request();
+        let req = self.inner.into_request()?;
 
         RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
             .send()?
@@ -160,7 +164,7 @@ impl IndexExistsRequestBuilder<AsyncSender> {
     [AsyncClient]: ../../type.AsyncClient.html
     */
     pub fn send(self) -> Pending {
-        let req = self.inner.into_request();
+        let req = self.inner.into_request().unwrap();
 
         let res_future =
             RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
@@ -177,6 +181,7 @@ pub type Pending = BasePending<IndicesExistsResponse>;
 #[cfg(test)]
 mod tests {
     use crate::{
+        client::requests::RequestInner,
         prelude::*,
         tests::*,
     };
@@ -190,7 +195,7 @@ mod tests {
     fn default_request() {
         let client = SyncClientBuilder::new().build().unwrap();
 
-        let req = client.index("testindex").exists().inner.into_request();
+        let req = client.index("testindex").exists().inner.into_request().unwrap();
 
         assert_eq!("/testindex", req.url.as_ref());
     }

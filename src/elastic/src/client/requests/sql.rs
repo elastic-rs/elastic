@@ -11,6 +11,7 @@ use crate::{
         requests::{
             Pending as BasePending,
             raw::RawRequestInner,
+            RequestInner,
             RequestBuilder,
         },
         responses::SqlQueryResponse,
@@ -48,6 +49,15 @@ pub type SqlRequestBuilder<TSender, TBody> = RequestBuilder<TSender, SqlRequestI
 #[doc(hidden)]
 pub struct SqlRequestInner<TBody> {
     body: TBody,
+}
+
+impl<TBody> RequestInner for SqlRequestInner<TBody> {
+    type Request = SqlQueryRequest<'static, TBody>;
+    type Response = SqlQueryResponse;
+
+    fn into_request(self) -> Result<Self::Request, Error> {
+        Ok(SqlQueryRequest::new(self.body))
+    }
 }
 
 /**
@@ -145,10 +155,6 @@ impl<TBody> SqlRequestInner<TBody> {
     fn new(body: TBody) -> Self {
         SqlRequestInner { body: body }
     }
-
-    fn into_request(self) -> SqlQueryRequest<'static, TBody> {
-        SqlQueryRequest::new(self.body)
-    }
 }
 
 /**
@@ -228,7 +234,7 @@ where
     [docs-querystring]: https://www.elastic.co/guide/en/elasticsearch/reference/current/sql-commands.html
      */
     pub fn send(self) -> Result<SqlQueryResponse, Error> {
-        let req = self.inner.into_request();
+        let req = self.inner.into_request()?;
 
         RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
             .send()?
@@ -280,7 +286,7 @@ where
     */
 
     pub fn send(self) -> Pending {
-        let req = self.inner.into_request();
+        let req = self.inner.into_request().unwrap();
 
         let res_future =
             RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
@@ -297,6 +303,7 @@ pub type Pending = BasePending<SqlQueryResponse>;
 #[cfg(test)]
 mod tests {
     use crate::{
+        client::requests::RequestInner,
         prelude::*,
         tests::*,
     };
@@ -310,7 +317,7 @@ mod tests {
     fn default_request() {
         let client = SyncClientBuilder::new().build().unwrap();
 
-        let req = client.sql().inner.into_request();
+        let req = client.sql().inner.into_request().unwrap();
 
         assert_eq!("/_xpack/sql", req.url.as_ref());
     }
@@ -319,7 +326,7 @@ mod tests {
     fn specify_body() {
         let client = SyncClientBuilder::new().build().unwrap();
 
-        let req = client.sql().body("{}").inner.into_request();
+        let req = client.sql().body("{}").inner.into_request().unwrap();
 
         assert_eq!("{}", req.body);
     }

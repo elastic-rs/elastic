@@ -12,6 +12,7 @@ use crate::{
         requests::{
             Pending as BasePending,
             raw::RawRequestInner,
+            RequestInner,
             RequestBuilder,
         },
         responses::DeleteResponse,
@@ -57,6 +58,15 @@ pub struct DeleteRequestInner<TDocument> {
     ty: Type<'static>,
     id: Id<'static>,
     _marker: PhantomData<TDocument>,
+}
+
+impl<TDocument> RequestInner for DeleteRequestInner<TDocument> {
+    type Request = DeleteRequest<'static>;
+    type Response = DeleteResponse;
+
+    fn into_request(self) -> Result<Self::Request, Error> {
+        Ok(DeleteRequest::for_index_ty_id(self.index, self.ty, self.id))
+    }
 }
 
 /**
@@ -182,12 +192,6 @@ where
     }
 }
 
-impl<TDocument> DeleteRequestInner<TDocument> {
-    fn into_request(self) -> DeleteRequest<'static> {
-        DeleteRequest::for_index_ty_id(self.index, self.ty, self.id)
-    }
-}
-
 /**
 # Builder methods
 
@@ -249,7 +253,7 @@ impl<TDocument> DeleteRequestBuilder<SyncSender, TDocument> {
     [documents-mod]: ../types/document/index.html
     */
     pub fn send(self) -> Result<DeleteResponse, Error> {
-        let req = self.inner.into_request();
+        let req = self.inner.into_request()?;
 
         RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
             .send()?
@@ -300,7 +304,7 @@ impl<TDocument> DeleteRequestBuilder<AsyncSender, TDocument> {
     [documents-mod]: ../types/document/index.html
     */
     pub fn send(self) -> Pending {
-        let req = self.inner.into_request();
+        let req = self.inner.into_request().unwrap();
 
         let res_future =
             RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
@@ -317,6 +321,7 @@ pub type Pending = BasePending<DeleteResponse>;
 #[cfg(test)]
 mod tests {
     use crate::{
+        client::requests::RequestInner,
         prelude::*,
         tests::*,
     };
@@ -338,7 +343,8 @@ mod tests {
             .document::<TestDoc>()
             .delete("1")
             .inner
-            .into_request();
+            .into_request()
+            .unwrap();
 
         assert_eq!("/testdoc/_doc/1", req.url.as_ref());
     }
@@ -352,7 +358,8 @@ mod tests {
             .delete("1")
             .index("new-idx")
             .inner
-            .into_request();
+            .into_request()
+            .unwrap();
 
         assert_eq!("/new-idx/_doc/1", req.url.as_ref());
     }
@@ -366,7 +373,8 @@ mod tests {
             .delete("1")
             .ty("new-ty")
             .inner
-            .into_request();
+            .into_request()
+            .unwrap();
 
         assert_eq!("/testdoc/new-ty/1", req.url.as_ref());
     }

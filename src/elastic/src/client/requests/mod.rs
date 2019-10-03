@@ -9,6 +9,7 @@ use futures::{
     Poll
 };
 use fluent_builder::SharedFluentBuilder;
+use serde::de::DeserializeOwned;
 use std::sync::Arc;
 use std::marker::PhantomData;
 use tokio_threadpool::ThreadPool;
@@ -16,10 +17,14 @@ use tokio_threadpool::ThreadPool;
 use crate::{
     client::Client,
     error::Error,
-    http::sender::{
-        AsyncSender,
-        RequestParams,
-        Sender,
+    http::{
+        receiver::IsOk,
+        sender::{
+            AsyncSender,
+            RequestParams,
+            Sender,
+            TypedSender,
+        },
     },
 };
 
@@ -83,6 +88,26 @@ pub use self::{
 };
 
 pub mod common;
+
+/**
+Trait for inner request object
+*/
+pub trait RequestInner {
+    /**
+    Full request type for this request
+    */
+    type Request: IntoEndpoint<'static>;
+
+    /**
+    Type for the response of the request.
+    */
+    type Response: IsOk + DeserializeOwned;
+
+    /**
+    Converts this request builder to the corresponding request type
+    */
+    fn into_request(self) -> Result<Self::Request, Error>;
+}
 
 /**
 A builder for a request.

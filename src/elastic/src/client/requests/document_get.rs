@@ -13,6 +13,7 @@ use crate::{
         requests::{
             Pending as BasePending,
             raw::RawRequestInner,
+            RequestInner,
             RequestBuilder,
         },
         responses::GetResponse,
@@ -58,6 +59,18 @@ pub struct GetRequestInner<TDocument> {
     ty: Type<'static>,
     id: Id<'static>,
     _marker: PhantomData<TDocument>,
+}
+
+impl<TDocument> RequestInner for GetRequestInner<TDocument>
+where
+    TDocument: DeserializeOwned,
+{
+    type Request = GetRequest<'static>;
+    type Response = GetResponse<TDocument>;
+
+    fn into_request(self) -> Result<Self::Request, Error> {
+        Ok(GetRequest::for_index_ty_id(self.index, self.ty, self.id))
+    }
 }
 
 /**
@@ -181,12 +194,6 @@ where
     }
 }
 
-impl<TDocument> GetRequestInner<TDocument> {
-    fn into_request(self) -> GetRequest<'static> {
-        GetRequest::for_index_ty_id(self.index, self.ty, self.id)
-    }
-}
-
 /**
 # Builder methods
 
@@ -251,7 +258,7 @@ where
     [documents-mod]: ../types/document/index.html
     */
     pub fn send(self) -> Result<GetResponse<TDocument>, Error> {
-        let req = self.inner.into_request();
+        let req = self.inner.into_request()?;
 
         RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
             .send()?
@@ -306,7 +313,7 @@ where
     [documents-mod]: ../types/document/index.html
     */
     pub fn send(self) -> Pending<TDocument> {
-        let req = self.inner.into_request();
+        let req = self.inner.into_request().unwrap();
 
         let res_future =
             RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
@@ -323,6 +330,7 @@ pub type Pending<TDocument> = BasePending<GetResponse<TDocument>>;
 #[cfg(test)]
 mod tests {
     use crate::{
+        client::requests::RequestInner,
         prelude::*,
         tests::*,
     };
@@ -340,7 +348,7 @@ mod tests {
     fn default_request() {
         let client = SyncClientBuilder::new().build().unwrap();
 
-        let req = client.document::<TestDoc>().get("1").inner.into_request();
+        let req = client.document::<TestDoc>().get("1").inner.into_request().unwrap();
 
         assert_eq!("/testdoc/_doc/1", req.url.as_ref());
     }
@@ -354,7 +362,8 @@ mod tests {
             .get("1")
             .index("new-idx")
             .inner
-            .into_request();
+            .into_request()
+            .unwrap();
 
         assert_eq!("/new-idx/_doc/1", req.url.as_ref());
     }
@@ -368,7 +377,8 @@ mod tests {
             .get("1")
             .ty("new-ty")
             .inner
-            .into_request();
+            .into_request()
+            .unwrap();
 
         assert_eq!("/testdoc/new-ty/1", req.url.as_ref());
     }

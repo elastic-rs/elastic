@@ -13,6 +13,7 @@ use crate::{
         requests::{
             Pending as BasePending,
             raw::RawRequestInner,
+            RequestInner,
             RequestBuilder,
         },
         responses::IndexResponse,
@@ -59,6 +60,25 @@ pub struct IndexRequestInner<TDocument> {
     ty: Type<'static>,
     id: Option<Id<'static>>,
     doc: TDocument,
+}
+
+impl<TDocument> RequestInner for IndexRequestInner<TDocument>
+where
+    TDocument: Serialize,
+{
+    type Request = IndexRequest<'static, Vec<u8>>;
+    type Response = IndexResponse;
+
+    fn into_request(self) -> Result<Self::Request, Error> {
+        let body = serde_json::to_vec(&self.doc).map_err(error::request)?;
+
+        let request = match self.id {
+            Some(id) => IndexRequest::for_index_ty_id(self.index, self.ty, id, body),
+            None => IndexRequest::for_index_ty(self.index, self.ty, body),
+        };
+
+        Ok(request)
+    }
 }
 
 /**
@@ -198,22 +218,6 @@ where
                 doc: doc,
             },
         )
-    }
-}
-
-impl<TDocument> IndexRequestInner<TDocument>
-where
-    TDocument: Serialize,
-{
-    fn into_request(self) -> Result<IndexRequest<'static, Vec<u8>>, Error> {
-        let body = serde_json::to_vec(&self.doc).map_err(error::request)?;
-
-        let request = match self.id {
-            Some(id) => IndexRequest::for_index_ty_id(self.index, self.ty, id, body),
-            None => IndexRequest::for_index_ty(self.index, self.ty, body),
-        };
-
-        Ok(request)
     }
 }
 
@@ -372,6 +376,7 @@ pub type Pending = BasePending<IndexResponse>;
 #[cfg(test)]
 mod tests {
     use crate::{
+        client::requests::RequestInner,
         prelude::*,
         tests::*,
     };

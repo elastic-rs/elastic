@@ -11,6 +11,7 @@ use crate::{
         requests::{
             Pending as BasePending,
             raw::RawRequestInner,
+            RequestInner,
             RequestBuilder,
         },
         responses::CommandResponse,
@@ -48,6 +49,15 @@ pub type IndexCreateRequestBuilder<TSender, TBody> =
 pub struct IndexCreateRequestInner<TBody> {
     index: Index<'static>,
     body: TBody,
+}
+
+impl<TBody> RequestInner for IndexCreateRequestInner<TBody> {
+    type Request = IndicesCreateRequest<'static, TBody>;
+    type Response = CommandResponse;
+
+    fn into_request(self) -> Result<Self::Request, Error> {
+        Ok(IndicesCreateRequest::for_index(self.index, self.body))
+    }
 }
 
 /**
@@ -138,12 +148,6 @@ where
     }
 }
 
-impl<TBody> IndexCreateRequestInner<TBody> {
-    fn into_request(self) -> IndicesCreateRequest<'static, TBody> {
-        IndicesCreateRequest::for_index(self.index, self.body)
-    }
-}
-
 /**
 # Builder methods
 
@@ -205,7 +209,7 @@ where
     [SyncClient]: ../../type.SyncClient.html
     */
     pub fn send(self) -> Result<CommandResponse, Error> {
-        let req = self.inner.into_request();
+        let req = self.inner.into_request()?;
 
         RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
             .send()?
@@ -249,7 +253,7 @@ where
     [AsyncClient]: ../../type.AsyncClient.html
     */
     pub fn send(self) -> Pending {
-        let req = self.inner.into_request();
+        let req = self.inner.into_request().unwrap();
 
         let res_future =
             RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
@@ -268,6 +272,7 @@ mod tests {
     use crate::{
         prelude::*,
         tests::*,
+        client::requests::RequestInner,
     };
 
     #[test]
@@ -279,7 +284,7 @@ mod tests {
     fn default_request() {
         let client = SyncClientBuilder::new().build().unwrap();
 
-        let req = client.index("testindex").create().inner.into_request();
+        let req = client.index("testindex").create().inner.into_request().unwrap();
 
         assert_eq!("/testindex", req.url.as_ref());
     }
@@ -293,7 +298,8 @@ mod tests {
             .create()
             .body("{}")
             .inner
-            .into_request();
+            .into_request()
+            .unwrap();
 
         assert_eq!("{}", req.body);
     }

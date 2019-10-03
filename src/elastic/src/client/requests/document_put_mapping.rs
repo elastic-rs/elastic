@@ -13,6 +13,7 @@ use crate::{
         requests::{
             Pending as BasePending,
             raw::RawRequestInner,
+            RequestInner,
             RequestBuilder,
         },
         responses::CommandResponse,
@@ -59,6 +60,26 @@ pub struct PutMappingRequestInner<TDocument> {
     index: Index<'static>,
     ty: Type<'static>,
     _marker: PhantomData<TDocument>,
+}
+
+impl<TDocument> RequestInner for PutMappingRequestInner<TDocument>
+where
+    TDocument: DocumentType,
+{
+    type Request = IndicesPutMappingRequest<'static, Vec<u8>>;
+    type Response = CommandResponse;
+
+    fn into_request(self) -> Result<Self::Request, Error> {
+        let body = serde_json::to_vec(&TDocument::index_mapping()).map_err(error::request)?;
+
+        if &self.ty[..] == DEFAULT_DOC_TYPE {
+            Ok(IndicesPutMappingRequest::for_index(self.index, body))
+        } else {
+            Ok(IndicesPutMappingRequest::for_index_ty(
+                self.index, self.ty, body,
+            ))
+        }
+    }
 }
 
 /**
@@ -123,23 +144,6 @@ where
                 _marker: PhantomData,
             },
         )
-    }
-}
-
-impl<TDocument> PutMappingRequestInner<TDocument>
-where
-    TDocument: DocumentType,
-{
-    fn into_request(self) -> Result<IndicesPutMappingRequest<'static, Vec<u8>>, Error> {
-        let body = serde_json::to_vec(&TDocument::index_mapping()).map_err(error::request)?;
-
-        if &self.ty[..] == DEFAULT_DOC_TYPE {
-            Ok(IndicesPutMappingRequest::for_index(self.index, body))
-        } else {
-            Ok(IndicesPutMappingRequest::for_index_ty(
-                self.index, self.ty, body,
-            ))
-        }
     }
 }
 
@@ -272,6 +276,7 @@ pub type Pending = BasePending<CommandResponse>;
 #[cfg(test)]
 mod tests {
     use crate::{
+        client::requests::RequestInner,
         prelude::*,
         tests::*,
     };

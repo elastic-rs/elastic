@@ -9,6 +9,7 @@ use crate::{
         requests::{
             Pending as BasePending,
             raw::RawRequestInner,
+            RequestInner,
             RequestBuilder,
         },
         responses::PingResponse,
@@ -37,6 +38,15 @@ pub type PingRequestBuilder<TSender> = RequestBuilder<TSender, PingRequestInner>
 
 #[doc(hidden)]
 pub struct PingRequestInner;
+
+impl RequestInner for PingRequestInner {
+    type Request = PingRequest<'static>;
+    type Response = PingResponse;
+    
+    fn into_request(self) -> Result<Self::Request, Error> {
+        Ok(PingRequest::new())
+    }
+}
 
 /**
 # Ping request
@@ -83,12 +93,6 @@ where
     }
 }
 
-impl PingRequestInner {
-    fn into_request(self) -> PingRequest<'static> {
-        PingRequest::new()
-    }
-}
-
 /**
 # Send synchronously
 */
@@ -122,7 +126,7 @@ impl PingRequestBuilder<SyncSender> {
     [SyncClient]: ../../type.SyncClient.html
     */
     pub fn send(self) -> Result<PingResponse, Error> {
-        let req = self.inner.into_request();
+        let req = self.inner.into_request()?;
 
         RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
             .send()?
@@ -167,7 +171,7 @@ impl PingRequestBuilder<AsyncSender> {
     [AsyncClient]: ../../type.AsyncClient.html
     */
     pub fn send(self) -> Pending {
-        let req = self.inner.into_request();
+        let req = self.inner.into_request().unwrap();
 
         let res_future =
             RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
@@ -184,6 +188,7 @@ pub type Pending = BasePending<PingResponse>;
 #[cfg(test)]
 mod tests {
     use crate::{
+        client::requests::RequestInner,
         prelude::*,
         tests::*,
     };
@@ -197,7 +202,7 @@ mod tests {
     fn default_request() {
         let client = SyncClientBuilder::new().build().unwrap();
 
-        let req = client.ping().inner.into_request();
+        let req = client.ping().inner.into_request().unwrap();
 
         assert_eq!("/", req.url.as_ref());
     }
