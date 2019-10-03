@@ -4,15 +4,13 @@ Builders for [delete document requests][docs-delete].
 [docs-delete]: http://www.elastic.co/guide/en/elasticsearch/reference/current/docs-delete.html
 */
 
-use futures::{
-    Future,
-    Poll,
-};
+use futures::Future;
 use std::marker::PhantomData;
 
 use crate::{
     client::{
         requests::{
+            Pending as BasePending,
             raw::RawRequestInner,
             RequestBuilder,
         },
@@ -314,29 +312,7 @@ impl<TDocument> DeleteRequestBuilder<AsyncSender, TDocument> {
 }
 
 /** A future returned by calling `send`. */
-pub struct Pending {
-    inner: Box<dyn Future<Item = DeleteResponse, Error = Error> + Send>,
-}
-
-impl Pending {
-    fn new<F>(fut: F) -> Self
-    where
-        F: Future<Item = DeleteResponse, Error = Error> + Send + 'static,
-    {
-        Pending {
-            inner: Box::new(fut),
-        }
-    }
-}
-
-impl Future for Pending {
-    type Item = DeleteResponse;
-    type Error = Error;
-
-    fn poll(&mut self) -> Poll<Self::Item, Self::Error> {
-        self.inner.poll()
-    }
-}
+pub type Pending = BasePending<DeleteResponse>;
 
 #[cfg(test)]
 mod tests {

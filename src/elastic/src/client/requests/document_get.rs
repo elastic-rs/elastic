@@ -4,16 +4,14 @@ Builders for [get document requests][docs-get].
 [docs-get]: http://www.elastic.co/guide/en/elasticsearch/reference/current/docs-get.html
 */
 
-use futures::{
-    Future,
-    Poll,
-};
+use futures::Future;
 use serde::de::DeserializeOwned;
 use std::marker::PhantomData;
 
 use crate::{
     client::{
         requests::{
+            Pending as BasePending,
             raw::RawRequestInner,
             RequestBuilder,
         },
@@ -320,32 +318,7 @@ where
 }
 
 /** A future returned by calling `send`. */
-pub struct Pending<TDocument> {
-    inner: Box<dyn Future<Item = GetResponse<TDocument>, Error = Error> + Send>,
-}
-
-impl<TDocument> Pending<TDocument> {
-    fn new<F>(fut: F) -> Self
-    where
-        F: Future<Item = GetResponse<TDocument>, Error = Error> + Send + 'static,
-    {
-        Pending {
-            inner: Box::new(fut),
-        }
-    }
-}
-
-impl<TDocument> Future for Pending<TDocument>
-where
-    TDocument: DeserializeOwned + Send + 'static,
-{
-    type Item = GetResponse<TDocument>;
-    type Error = Error;
-
-    fn poll(&mut self) -> Poll<Self::Item, Self::Error> {
-        self.inner.poll()
-    }
-}
+pub type Pending<TDocument> = BasePending<GetResponse<TDocument>>;
 
 #[cfg(test)]
 mod tests {
