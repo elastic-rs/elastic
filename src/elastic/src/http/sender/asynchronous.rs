@@ -22,6 +22,7 @@ use tokio_threadpool::{
 };
 
 use crate::{
+    client::responses::nodes_info::NodesInfoResponse,
     endpoints::Endpoint,
     error::{
         self,
@@ -42,6 +43,10 @@ use crate::{
             SendableRequest,
             SendableRequestParams,
             Sender,
+            sniffed_nodes::{
+                NextOrRefresh,
+                SniffedNodes,
+            },
         },
         AsyncBody,
         AsyncHttpRequest,
@@ -201,6 +206,30 @@ impl NextParams for NodeAddresses<AsyncSender> {
             NodeAddressesInner::Static(ref nodes) => PendingParams::new(nodes.next().into_future()),
             NodeAddressesInner::Sniffed(ref sniffer) => PendingParams::new(sniffer.next()),
         }
+    }
+}
+
+impl NextParams for SniffedNodes<AsyncSender> {
+    type Params = Box<dyn Future<Item = RequestParams, Error = Error> + Send>;
+
+    fn next(&self) -> Self::Params {
+        let refresher = match self.next_or_start_refresh() {
+            Ok(NextOrRefresh::Next(address)) => {
+                return Box::new(Ok(address).into_future());
+            },
+            Ok(NextOrRefresh::NeedsRefresh(r)) => r,
+            Err(err) => {
+                return Box::new(Err(err).into_future());
+            }
+        };
+
+        let req = self.sendable_request();
+        let refresh_nodes = self.sender()
+            .send(req)
+            .and_then(|res| res.into_response::<NodesInfoResponse>())
+            .then(move |fresh_nodes| refresher.update_nodes_and_next(fresh_nodes));
+
+        Box::new(refresh_nodes)
     }
 }
 
