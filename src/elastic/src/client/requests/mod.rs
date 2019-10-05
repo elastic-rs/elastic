@@ -259,8 +259,10 @@ where
     The returned object is a `Sender`-implementation-specific handle to the results
     of the query. For example, for the `SyncSender` this is a plain `Result<T, elastic::error::Error>`,
     while for the `AsyncSender` this is an object implementing `Future<Item=T, Error=elastic::error::Error>`.
+
+    For information on the result type, consult the page for the request.
     */
-    pub fn generic_send(self) -> TSender::TypedResponse {
+    pub fn send(self) -> TSender::TypedResponse {
         let client = self.client;
         let params_builder = self.params_builder;
         let request_res = self.inner

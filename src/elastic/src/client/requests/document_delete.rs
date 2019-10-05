@@ -4,14 +4,11 @@ Builders for [delete document requests][docs-delete].
 [docs-delete]: http://www.elastic.co/guide/en/elasticsearch/reference/current/docs-delete.html
 */
 
-use futures::Future;
 use std::marker::PhantomData;
 
 use crate::{
     client::{
         requests::{
-            Pending as BasePending,
-            raw::RawRequestInner,
             RequestInner,
             RequestBuilder,
         },
@@ -20,11 +17,7 @@ use crate::{
     },
     endpoints::DeleteRequest,
     error::Error,
-    http::sender::{
-        AsyncSender,
-        Sender,
-        SyncSender,
-    },
+    http::sender::Sender,
     params::{
         Id,
         Index,
@@ -214,122 +207,12 @@ where
     }
 }
 
-/**
-# Send synchronously
-*/
-impl<TDocument> DeleteRequestBuilder<SyncSender, TDocument> {
-    /**
-    Send a `DeleteRequestBuilder` synchronously using a [`SyncClient`][SyncClient].
-
-    This will block the current thread until a response arrives and is deserialised.
-
-    # Examples
-
-    Delete a [`DocumentType`][documents-mod] called `MyType` with an id of `1`:
-
-    ```no_run
-    # #[macro_use] extern crate serde_derive;
-    # #[macro_use] extern crate elastic_derive;
-    # use elastic::prelude::*;
-    # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
-    # #[derive(Serialize, Deserialize, ElasticType)]
-    # struct MyType {
-    #     pub id: String,
-    #     pub title: String,
-    #     pub timestamp: Date<DefaultDateMapping>
-    # }
-    # let client = SyncClientBuilder::new().build()?;
-    let response = client.document::<MyType>()
-                         .delete(1)
-                         .send()?;
-
-    assert!(response.deleted());
-    # Ok(())
-    # }
-    ```
-
-    [SyncClient]: ../../type.SyncClient.html
-    [documents-mod]: ../types/document/index.html
-    */
-    pub fn send(self) -> Result<DeleteResponse, Error> {
-        let req = self.inner.into_request()?;
-
-        RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
-            .send()?
-            .into_response()
-    }
-}
-
-/**
-# Send asynchronously
-*/
-impl<TDocument> DeleteRequestBuilder<AsyncSender, TDocument> {
-    /**
-    Send a `DeleteRequestBuilder` asynchronously using an [`AsyncClient`][AsyncClient].
-
-    This will return a future that will resolve to the deserialised delete document response.
-
-    # Examples
-
-    Delete a [`DocumentType`][documents-mod] called `MyType` with an id of `1`:
-
-    ```no_run
-    # #[macro_use] extern crate serde_json;
-    # #[macro_use] extern crate serde_derive;
-    # #[macro_use] extern crate elastic_derive;
-    # use serde_json::Value;
-    # use futures::Future;
-    # use elastic::prelude::*;
-    # #[derive(ElasticType)]
-    # struct MyType { }
-    # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
-    # let client = AsyncClientBuilder::new().build()?;
-    let future = client.document::<MyType>()
-                       .delete(1)
-                       .ty("mytype")
-                       .send();
-
-    future.and_then(|response| {
-        assert!(response.deleted());
-
-        Ok(())
-    });
-    # Ok(())
-    # }
-    ```
-
-    [AsyncClient]: ../../type.AsyncClient.html
-    [documents-mod]: ../types/document/index.html
-    */
-    pub fn send(self) -> Pending {
-        let req = self.inner.into_request().unwrap();
-
-        let res_future =
-            RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
-                .send()
-                .and_then(|res| res.into_response());
-
-        Pending::new(res_future)
-    }
-}
-
-/** A future returned by calling `send`. */
-pub type Pending = BasePending<DeleteResponse>;
-
 #[cfg(test)]
 mod tests {
     use crate::{
         client::requests::RequestInner,
         prelude::*,
-        tests::*,
     };
-
-    #[test]
-    fn is_send() {
-        assert_send::<super::Pending>();
-    }
 
     #[derive(ElasticType)]
     #[elastic(crate_root = "crate::types")]

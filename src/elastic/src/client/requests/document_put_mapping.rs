@@ -4,15 +4,12 @@ Builders for [put mapping requests][docs-mapping].
 [docs-mapping]: https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping.html
 */
 
-use futures::Future;
 use serde_json;
 use std::marker::PhantomData;
 
 use crate::{
     client::{
         requests::{
-            Pending as BasePending,
-            raw::RawRequestInner,
             RequestInner,
             RequestBuilder,
         },
@@ -24,11 +21,7 @@ use crate::{
         self,
         Error,
     },
-    http::sender::{
-        AsyncSender,
-        Sender,
-        SyncSender,
-    },
+    http::sender::Sender,
     params::{
         Index,
         Type,
@@ -169,126 +162,16 @@ where
     }
 }
 
-/**
-# Send synchronously
-*/
-impl<TDocument> PutMappingRequestBuilder<SyncSender, TDocument>
-where
-    TDocument: DocumentType,
-{
-    /**
-    Send a `PutMappingRequestBuilder` synchronously using a [`SyncClient`][SyncClient].
-
-    This will block the current thread until a response arrives and is deserialised.
-
-    # Examples
-
-    Put the mapping for a document type called `MyType`:
-
-    ```no_run
-    # #[macro_use] extern crate serde_derive;
-    # #[macro_use] extern crate elastic_derive;
-    # use elastic::prelude::*;
-    # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
-    # #[derive(Serialize, Deserialize, ElasticType)]
-    # struct MyType { }
-    # let client = SyncClientBuilder::new().build()?;
-    let response = client.document::<MyType>()
-                         .put_mapping()
-                         .send()?;
-
-    assert!(response.acknowledged());
-    # Ok(())
-    # }
-    ```
-
-    [SyncClient]: ../../type.SyncClient.html
-    */
-    pub fn send(self) -> Result<CommandResponse, Error> {
-        let req = self.inner.into_request()?;
-
-        RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
-            .send()?
-            .into_response()
-    }
-}
-
-/**
-# Send asynchronously
-*/
-impl<TDocument> PutMappingRequestBuilder<AsyncSender, TDocument>
-where
-    TDocument: DocumentType + Send + 'static,
-{
-    /**
-    Send a `PutMappingRequestBuilder` asynchronously using an [`AsyncClient`][AsyncClient].
-
-    This will return a future that will resolve to the deserialised command response.
-
-    # Examples
-
-    Put the mapping for a document type called `MyType`:
-
-    ```no_run
-    # #[macro_use] extern crate serde_derive;
-    # #[macro_use] extern crate elastic_derive;
-    # use futures::Future;
-    # use elastic::prelude::*;
-    # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
-    # #[derive(Serialize, Deserialize, ElasticType)]
-    # struct MyType { }
-    # let client = AsyncClientBuilder::new().build()?;
-    let future = client.document::<MyType>()
-                       .put_mapping()
-                       .send();
-
-    future.and_then(|response| {
-        assert!(response.acknowledged());
-
-        Ok(())
-    });
-    # Ok(())
-    # }
-    ```
-
-    [AsyncClient]: ../../type.AsyncClient.html
-    */
-    pub fn send(self) -> Pending {
-        let (client, params_builder, inner) = (self.client, self.params_builder, self.inner);
-
-        let req_future = client.sender.maybe_async(move || inner.into_request());
-
-        let res_future = req_future.and_then(move |req| {
-            RequestBuilder::new(client, params_builder, RawRequestInner::new(req))
-                .send()
-                .and_then(|res| res.into_response())
-        });
-
-        Pending::new(res_future)
-    }
-}
-
-/** A future returned by calling `send`. */
-pub type Pending = BasePending<CommandResponse>;
-
 #[cfg(test)]
 mod tests {
     use crate::{
         client::requests::RequestInner,
         prelude::*,
-        tests::*,
     };
     use serde_json::{
         self,
         Value,
     };
-
-    #[test]
-    fn is_send() {
-        assert_send::<super::Pending>();
-    }
 
     #[derive(ElasticType)]
     #[elastic(crate_root = "crate::types")]

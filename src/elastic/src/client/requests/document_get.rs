@@ -4,15 +4,12 @@ Builders for [get document requests][docs-get].
 [docs-get]: http://www.elastic.co/guide/en/elasticsearch/reference/current/docs-get.html
 */
 
-use futures::Future;
 use serde::de::DeserializeOwned;
 use std::marker::PhantomData;
 
 use crate::{
     client::{
         requests::{
-            Pending as BasePending,
-            raw::RawRequestInner,
             RequestInner,
             RequestBuilder,
         },
@@ -21,11 +18,7 @@ use crate::{
     },
     endpoints::GetRequest,
     error::Error,
-    http::sender::{
-        AsyncSender,
-        Sender,
-        SyncSender,
-    },
+    http::sender::Sender,
     params::{
         Id,
         Index,
@@ -216,129 +209,12 @@ where
     }
 }
 
-/**
-# Send synchronously
-*/
-impl<TDocument> GetRequestBuilder<SyncSender, TDocument>
-where
-    TDocument: DeserializeOwned + Send + 'static,
-{
-    /**
-    Send a `GetRequestBuilder` synchronously using a [`SyncClient`][SyncClient].
-
-    This will block the current thread until a response arrives and is deserialised.
-
-    # Examples
-
-    Get a [`DocumentType`][documents-mod] called `MyType` with an id of `1`:
-
-    ```no_run
-    # #[macro_use] extern crate serde_json;
-    # #[macro_use] extern crate serde_derive;
-    # #[macro_use] extern crate elastic_derive;
-    # use serde_json::Value;
-    # use elastic::prelude::*;
-    # #[derive(Debug, ElasticType, Deserialize)]
-    # struct MyType { }
-    # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
-    # let client = SyncClientBuilder::new().build()?;
-    let response = client.document::<MyType>()
-                         .get(1)
-                         .send()?;
-
-    if let Some(doc) = response.into_document() {
-        println!("{:?}", doc);
-    }
-    # Ok(())
-    # }
-    ```
-
-    [SyncClient]: ../../type.SyncClient.html
-    [documents-mod]: ../types/document/index.html
-    */
-    pub fn send(self) -> Result<GetResponse<TDocument>, Error> {
-        let req = self.inner.into_request()?;
-
-        RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
-            .send()?
-            .into_response()
-    }
-}
-
-/**
-# Send asynchronously
-*/
-impl<TDocument> GetRequestBuilder<AsyncSender, TDocument>
-where
-    TDocument: DeserializeOwned + Send + 'static,
-{
-    /**
-    Send a `GetRequestBuilder` asynchronously using an [`AsyncClient`][AsyncClient].
-
-    This will return a future that will resolve to the deserialised get document response.
-
-    # Examples
-
-    Get a [`DocumentType`][documents-mod] called `MyType` with an id of `1`:
-
-    ```no_run
-    # #[macro_use] extern crate serde_json;
-    # #[macro_use] extern crate serde_derive;
-    # #[macro_use] extern crate elastic_derive;
-    # use serde_json::Value;
-    # use futures::Future;
-    # use elastic::prelude::*;
-    # #[derive(Debug, ElasticType, Deserialize)]
-    # struct MyType { }
-    # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
-    # let client = AsyncClientBuilder::new().build()?;
-    let future = client.document::<MyType>()
-                       .get(1)
-                       .send();
-
-    future.and_then(|response| {
-        if let Some(doc) = response.into_document() {
-            println!("{:?}", doc);
-        }
-
-        Ok(())
-    });
-    # Ok(())
-    # }
-    ```
-
-    [AsyncClient]: ../../type.AsyncClient.html
-    [documents-mod]: ../types/document/index.html
-    */
-    pub fn send(self) -> Pending<TDocument> {
-        let req = self.inner.into_request().unwrap();
-
-        let res_future =
-            RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
-                .send()
-                .and_then(|res| res.into_response());
-
-        Pending::new(res_future)
-    }
-}
-
-/** A future returned by calling `send`. */
-pub type Pending<TDocument> = BasePending<GetResponse<TDocument>>;
-
 #[cfg(test)]
 mod tests {
     use crate::{
         client::requests::RequestInner,
         prelude::*,
-        tests::*,
     };
-
-    #[test]
-    fn is_send() {
-        assert_send::<super::Pending<TestDoc>>();
-    }
 
     #[derive(Deserialize, ElasticType)]
     #[elastic(crate_root = "crate::types")]

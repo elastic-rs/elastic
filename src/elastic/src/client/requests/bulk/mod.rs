@@ -11,7 +11,6 @@ use std::{
     time::Duration,
 };
 
-use futures::Future;
 use serde::{
     de::DeserializeOwned,
     ser::Serialize,
@@ -21,7 +20,6 @@ use crate::{
     client::{
         requests::{
             Pending as BasePending,
-            raw::RawRequestInner,
             RequestInner,
             RequestBuilder,
         },
@@ -42,10 +40,7 @@ use crate::{
         sender::{
             AsyncSender,
             Sender,
-            SyncSender,
         },
-        AsyncBody,
-        SyncBody,
     },
     params::{
         Index,
@@ -90,9 +85,10 @@ pub struct BulkRequestInner<TBody, TResponse> {
 impl<TBody, TResponse> RequestInner for BulkRequestInner<TBody, TResponse>
 where
     TBody: BulkBody + Send + 'static,
+    TResponse: IsOk + DeserializeOwned + Send + 'static,
 {
     type Request = BulkRequest<'static, TBody>;
-    type Response = BulkResponse;
+    type Response = TResponse;
 
     fn into_request(self) -> Result<Self::Request, Error> {
         let body = self.body.try_into_inner()?;
@@ -541,145 +537,6 @@ impl<TDocument, TResponse> BulkRequestBuilder<AsyncSender, Streamed<TDocument>, 
             SenderRequestTemplate::new(self.client, params, self.inner.index, self.inner.ty);
 
         BulkSender::new(req_template, timeout, body)
-    }
-}
-
-/**
-# Send synchronously
-*/
-impl<TBody, TResponse> BulkRequestBuilder<SyncSender, TBody, TResponse>
-where
-    TBody: Into<SyncBody> + BulkBody + Send + 'static,
-    TResponse: DeserializeOwned + IsOk + Send + 'static,
-{
-    /**
-    Send a `BulkRequestBuilder` synchronously using a [`SyncClient`][SyncClient].
-
-    This will block the current thread until a response arrives and is deserialised.
-
-    # Examples
-
-    Send a bulk request to index some documents:
-
-    ```no_run
-    # #[macro_use] extern crate serde_derive;
-    # #[macro_use] extern crate elastic_derive;
-    # use elastic::prelude::*;
-    # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
-    # #[derive(Serialize, Deserialize, ElasticType)]
-    # struct MyType {
-    #     pub id: String,
-    #     pub title: String,
-    # }
-    # let client = SyncClientBuilder::new().build()?;
-    let ops = (0..1000)
-        .into_iter()
-        .map(|i| bulk::<MyType>().index(MyType {
-                id: i.to_string(),
-                title: "some string value".into()
-            })
-            .id(i));
-
-    let response = client.bulk()
-                         .index("myindex")
-                         .ty(MyType::static_ty())
-                         .extend(ops)
-                         .send()?;
-
-    for op in response {
-        match op {
-            Ok(op) => println!("ok: {:?}", op),
-            Err(op) => println!("err: {:?}", op),
-        }
-    }
-    # Ok(())
-    # }
-    ```
-
-    [SyncClient]: ../../type.SyncClient.html
-    */
-    pub fn send(self) -> Result<TResponse, Error> {
-        let req = self.inner.into_request()?;
-
-        RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
-            .send()?
-            .into_response()
-    }
-}
-
-/**
-# Send asynchronously
-*/
-impl<TBody, TResponse> BulkRequestBuilder<AsyncSender, TBody, TResponse>
-where
-    TBody: Into<AsyncBody> + BulkBody + Send + 'static,
-    TResponse: DeserializeOwned + IsOk + Send + 'static,
-{
-    /**
-    Send a `BulkRequestBuilder` asynchronously using an [`AsyncClient`][AsyncClient].
-
-    This will return a future that will resolve to the deserialised search response.
-
-    # Examples
-
-    Send a bulk request to index some documents:
-
-    ```no_run
-    # #[macro_use] extern crate serde_derive;
-    # #[macro_use] extern crate elastic_derive;
-    # use futures::Future;
-    # use elastic::prelude::*;
-    # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
-    # #[derive(Serialize, Deserialize, ElasticType)]
-    # struct MyType {
-    #     pub id: String,
-    #     pub title: String,
-    # }
-    # let client = AsyncClientBuilder::new().build()?;
-    let ops = (0..1000)
-        .into_iter()
-        .map(|i| bulk::<MyType>().index(MyType {
-                id: i.to_string(),
-                title: "some string value".into()
-            })
-            .id(i));
-
-    let future = client.bulk()
-                       .index("myindex")
-                       .ty(MyType::static_ty())
-                       .extend(ops)
-                       .send();
-
-    future.and_then(|response| {
-        for op in response {
-            match op {
-                Ok(op) => println!("ok: {:?}", op),
-                Err(op) => println!("err: {:?}", op),
-            }
-        }
-
-        Ok(())
-    });
-    # Ok(())
-    # }
-    ```
-
-    [AsyncClient]: ../../type.AsyncClient.html
-    */
-    pub fn send(self) -> Pending<TResponse> {
-        let (client, params_builder, inner) = (self.client, self.params_builder, self.inner);
-
-        let req_future = client.sender.maybe_async(move || inner.into_request());
-
-        let res_future = req_future.and_then(move |req| {
-            RequestBuilder::new(client, params_builder, RawRequestInner::new(req))
-                .send()
-                .and_then(|res| res.into_response())
-        });
-
-        Pending::new(res_future)
     }
 }
 

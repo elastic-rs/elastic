@@ -4,13 +4,9 @@ Builders for [close index requests][docs-close-index].
 [docs-close-index]: https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-open-close.html
 */
 
-use futures::Future;
-
 use crate::{
     client::{
         requests::{
-            Pending as BasePending,
-            raw::RawRequestInner,
             RequestInner,
             RequestBuilder,
         },
@@ -21,11 +17,7 @@ use crate::{
     error::Error,
     http::{
         empty_body,
-        sender::{
-            AsyncSender,
-            Sender,
-            SyncSender,
-        },
+        sender::Sender,
         DefaultBody,
     },
     params::Index,
@@ -99,101 +91,12 @@ where
     }
 }
 
-/**
-# Send synchronously
-*/
-impl IndexCloseRequestBuilder<SyncSender> {
-    /**
-    Send an `IndexCloseRequestBuilder` synchronously using a [`SyncClient`][SyncClient].
-
-    This will block the current thread until a response arrives and is deserialised.
-
-    # Examples
-
-    Close an index called `myindex`:
-
-    ```no_run
-    # use elastic::prelude::*;
-    # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
-    # let client = SyncClientBuilder::new().build()?;
-    let response = client.index("myindex").close().send()?;
-
-    assert!(response.acknowledged());
-    # Ok(())
-    # }
-    ```
-
-    [SyncClient]: ../../type.SyncClient.html
-    */
-    pub fn send(self) -> Result<CommandResponse, Error> {
-        let req = self.inner.into_request()?;
-
-        RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
-            .send()?
-            .into_response()
-    }
-}
-
-/**
-# Send asynchronously
-*/
-impl IndexCloseRequestBuilder<AsyncSender> {
-    /**
-    Send an `IndexCloseRequestBuilder` asynchronously using an [`AsyncClient`][AsyncClient].
-
-    This will return a future that will resolve to the deserialised command response.
-
-    # Examples
-
-    Close an index called `myindex`:
-
-    ```no_run
-    # use futures::Future;
-    # use elastic::prelude::*;
-    # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
-    # let client = AsyncClientBuilder::new().build()?;
-    let future = client.index("myindex").close().send();
-
-    future.and_then(|response| {
-        assert!(response.acknowledged());
-
-        Ok(())
-    });
-    # Ok(())
-    # }
-    ```
-
-    [AsyncClient]: ../../type.AsyncClient.html
-    */
-    pub fn send(self) -> Pending {
-        let req = self.inner.into_request().unwrap();
-
-        let res_future =
-            RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
-                .send()
-                .and_then(|res| res.into_response());
-
-        Pending::new(res_future)
-    }
-}
-
-/** A future returned by calling `send`. */
-pub type Pending = BasePending<CommandResponse>;
-
 #[cfg(test)]
 mod tests {
     use crate::{
         client::requests::RequestInner,
         prelude::*,
-        tests::*,
     };
-
-    #[test]
-    fn is_send() {
-        assert_send::<super::Pending>();
-    }
 
     #[test]
     fn default_request() {
