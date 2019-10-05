@@ -23,10 +23,7 @@ use tokio_threadpool::{
 
 use crate::{
     client::{
-        requests::{
-            Pending,
-            RequestInner,
-        },
+        requests::RequestInner,
         responses::nodes_info::NodesInfoResponse,
     },
     endpoints::Endpoint,
@@ -55,6 +52,7 @@ use crate::{
             },
             TypedSender,
         },
+        Pending,
         AsyncBody,
         AsyncHttpRequest,
         Url,

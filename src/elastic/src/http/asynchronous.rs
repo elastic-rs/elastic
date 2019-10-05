@@ -7,9 +7,12 @@ use std::{
         Cursor,
         Read,
     },
+    marker::PhantomData,
 };
 
 use futures::{
+    Future,
+    IntoFuture,
     Poll,
     Stream,
 };
@@ -156,6 +159,42 @@ impl AsyncHttpResponse {
     /** Get the HTTP status for the response. */
     pub fn status(&self) -> StatusCode {
         self.0
+    }
+}
+
+/** A boxed future wrapper. */
+pub struct Pending<T> {
+    inner: Box<dyn Future<Item = T, Error = Error> + Send>,
+    _ph: PhantomData<T>,
+}
+
+impl<T> Pending<T> {
+    /** Creates a new `Pending`, wrapping an existing future */
+    pub fn new<F>(fut: F) -> Self
+    where
+        F: Future<Item = T, Error = Error> + Send + 'static,
+    {
+        Pending {
+            inner: Box::new(fut),
+            _ph: Default::default(),
+        }
+    }
+}
+
+impl<T> Future for Pending<T> {
+    type Item = T;
+    type Error = Error;
+
+    fn poll(&mut self) -> Poll<Self::Item, Self::Error> {
+        self.inner.poll()
+    }
+}
+
+impl<T> From<T> for Pending<T>
+where T: Send + 'static
+{
+    fn from(v: T) -> Pending<T> {
+        Self::new(Ok(v).into_future())
     }
 }
 

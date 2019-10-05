@@ -19,7 +19,6 @@ use serde::{
 use crate::{
     client::{
         requests::{
-            Pending as BasePending,
             RequestInner,
             RequestBuilder,
         },
@@ -656,9 +655,6 @@ impl BulkBody for Vec<u8> {
     }
 }
 
-/** A future returned by calling `send`. */
-pub type Pending<TResponse> = BasePending<TResponse>;
-
 #[doc(hidden)]
 pub trait ChangeIndex<TIndex> {
     type WithNewIndex;
@@ -705,13 +701,7 @@ mod tests {
     use crate::{
         client::requests::RequestInner,
         prelude::*,
-        tests::*,
     };
-
-    #[test]
-    fn is_send() {
-        assert_send::<super::Pending<BulkResponse>>();
-    }
 
     #[test]
     fn default_request() {
