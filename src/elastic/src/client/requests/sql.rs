@@ -51,7 +51,10 @@ pub struct SqlRequestInner<TBody> {
     body: TBody,
 }
 
-impl<TBody> RequestInner for SqlRequestInner<TBody> {
+impl<TBody> RequestInner for SqlRequestInner<TBody>
+where
+    TBody: Send + 'static
+{
     type Request = SqlQueryRequest<'static, TBody>;
     type Response = SqlQueryResponse;
 

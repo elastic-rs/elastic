@@ -44,7 +44,9 @@ use self::{
     static_nodes::StaticNodes,
 };
 use crate::{
+    client::requests::RequestInner,
     endpoints::Endpoint,
+    error::Error,
     private,
 };
 
@@ -82,6 +84,7 @@ pub(crate) enum SendableRequestParams<TParams> {
     },
 }
 
+
 /**
 Represents a type that can send a request.
 
@@ -104,13 +107,62 @@ pub trait Sender: private::Sealed + Clone {
     /** The kind of request parameters this sender accepts. */
     type Params;
 
-    /** Send a request. */
+    /** Send a raw request. */
     fn send<TEndpoint, TParams, TBody>(
         &self,
         request: SendableRequest<TEndpoint, TParams, TBody>,
     ) -> Self::Response
     where
         TEndpoint: Into<Endpoint<'static, TBody>>,
+        TBody: Into<Self::Body> + Send + 'static,
+        TParams: Into<Self::Params> + Send + 'static;
+}
+/**
+Represents a type that can send a typed request and deserialize the result.
+
+You probably don't need to touch this trait directly.
+See the [`Client`][Client] type for making requests.
+
+Senders should implement this for every type implementing `RequestInner`, for example
+via `impl<T: RequestInner> TypedSender<T> for MySender`.
+
+In the future, when [generic associated types][gna] are stabilized, this trait should be
+folded into the `Sender` trait, using a generic associated type for the response object
+(ex. `type TypedResponse<TReqInner>`).
+
+[gna]: https://rust-lang.github.io/rfcs/1598-generic_associated_types.html
+*/
+pub trait TypedSender<TReqInner>: Sender
+where
+    TReqInner: RequestInner,
+{
+    
+    /**
+    Response object containing the deserialized result or an error.
+
+    This is very generic to allow flexibility between sync and async implementations,
+    but should ideally be some type using the `TReqInner::Response` type.
+
+    For `SyncSender`, this is `Result<TReqInner::Response, elastic::error::Error>`.
+    For `AsyncSender`, this is a type that implements `Future<Item=TReqInner::Response, elastic::error::Error>`.
+    */
+    type TypedResponse;
+
+    
+    /**
+    Sends a request and deserializes the result.
+
+    The caller is responsible for converting the request object (`TEndpoint::Request`)
+    to a `SendableRequest`. The caller passes either the sendable request or an error if
+    the conversion failed. If it's an error, the implementation should return an appropriate
+    error type (Ex. `Err` for `SyncSender` or a pre-failed future for `AsyncSender`).
+    */
+    fn typed_send<TParams, TEndpoint, TBody>(
+        &self,
+        request: Result<SendableRequest<TEndpoint, TParams, TBody>, Error>,
+    ) -> Self::TypedResponse
+    where
+        TEndpoint: Into<Endpoint<'static, TBody>> + Send + 'static,
         TBody: Into<Self::Body> + Send + 'static,
         TParams: Into<Self::Params> + Send + 'static;
 }
@@ -128,7 +180,7 @@ pub trait NextParams: private::Sealed + Clone {
 
     This type is designed to link a `NextParams` implementation with a particular `Sender`.
     */
-    type Params;
+    type Params: Send+'static;
 
     /** Get a set of request parameters. */
     fn next(&self) -> Self::Params;

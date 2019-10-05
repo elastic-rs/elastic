@@ -8,7 +8,10 @@ use std::{
 };
 
 use crate::{
-    client::responses::nodes_info::NodesInfoResponse,
+    client::{
+        responses::nodes_info::NodesInfoResponse,
+        requests::RequestInner,
+    },
     endpoints::Endpoint,
     error::{
         self,
@@ -33,6 +36,7 @@ use crate::{
                 NextOrRefresh,
                 SniffedNodes,
             },
+            TypedSender,
         },
         SyncBody,
         SyncHttpRequest,
@@ -135,6 +139,25 @@ impl Sender for SyncSender {
         sync_response(res)
     }
 }
+impl<TReqInner> TypedSender<TReqInner> for SyncSender
+where
+    TReqInner: RequestInner,
+{
+    type TypedResponse = Result<TReqInner::Response, Error>;
+    fn typed_send<TParams, TEndpoint, TBody>(
+        &self,
+        request: Result<SendableRequest<TEndpoint, TParams, TBody>, Error>,
+    ) -> Self::TypedResponse
+    where
+        TEndpoint: Into<Endpoint<'static, TBody>>,
+        TBody: Into<Self::Body> + Send + 'static,
+        TParams: Into<Self::Params> + Send + 'static,
+    {
+        let sendable_req = request?;
+        self.send(sendable_req).and_then(|resp| resp.into_response())
+    }
+}
+
 
 impl NextParams for NodeAddresses<SyncSender> {
     type Params = Params;

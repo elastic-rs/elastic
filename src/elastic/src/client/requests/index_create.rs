@@ -51,7 +51,10 @@ pub struct IndexCreateRequestInner<TBody> {
     body: TBody,
 }
 
-impl<TBody> RequestInner for IndexCreateRequestInner<TBody> {
+impl<TBody> RequestInner for IndexCreateRequestInner<TBody>
+where
+    TBody: Send + 'static
+{
     type Request = IndicesCreateRequest<'static, TBody>;
     type Response = CommandResponse;
 

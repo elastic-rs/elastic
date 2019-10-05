@@ -310,6 +310,7 @@ pub mod endpoints {
     pub use super::genned::{
         endpoints::*,
         http::Endpoint,
+        http::IntoEndpoint,
     };
 }
 

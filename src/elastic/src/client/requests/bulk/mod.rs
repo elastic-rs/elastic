@@ -89,7 +89,7 @@ pub struct BulkRequestInner<TBody, TResponse> {
 
 impl<TBody, TResponse> RequestInner for BulkRequestInner<TBody, TResponse>
 where
-    TBody: BulkBody,
+    TBody: BulkBody + Send + 'static,
 {
     type Request = BulkRequest<'static, TBody>;
     type Response = BulkResponse;

@@ -95,6 +95,10 @@ where
     }
 }
 
+//impl<TSender> IndexExistsRequestBuilder<TSender>
+//where
+//    TSender: 
+
 /**
 # Send synchronously
 */

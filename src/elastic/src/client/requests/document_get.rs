@@ -63,7 +63,7 @@ pub struct GetRequestInner<TDocument> {
 
 impl<TDocument> RequestInner for GetRequestInner<TDocument>
 where
-    TDocument: DeserializeOwned,
+    TDocument: DeserializeOwned + Send + 'static,
 {
     type Request = GetRequest<'static>;
     type Response = GetResponse<TDocument>;
@@ -221,7 +221,7 @@ where
 */
 impl<TDocument> GetRequestBuilder<SyncSender, TDocument>
 where
-    TDocument: DeserializeOwned,
+    TDocument: DeserializeOwned + Send + 'static,
 {
     /**
     Send a `GetRequestBuilder` synchronously using a [`SyncClient`][SyncClient].

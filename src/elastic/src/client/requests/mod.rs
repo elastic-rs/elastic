@@ -6,9 +6,13 @@ This module contains implementation details that are useful if you want to custo
 
 use futures::{
     Future,
-    Poll
+    IntoFuture,
+    Poll,
 };
-use fluent_builder::SharedFluentBuilder;
+use fluent_builder::{
+    SharedFluentBuilder,
+    TryIntoValue,
+};
 use serde::de::DeserializeOwned;
 use std::sync::Arc;
 use std::marker::PhantomData;
@@ -16,12 +20,17 @@ use tokio_threadpool::ThreadPool;
 
 use crate::{
     client::Client,
+    endpoints::IntoEndpoint,
     error::Error,
     http::{
         receiver::IsOk,
         sender::{
             AsyncSender,
+            NextParams,
+            NodeAddresses,
             RequestParams,
+            SendableRequest,
+            SendableRequestParams,
             Sender,
             TypedSender,
         },
@@ -90,21 +99,24 @@ pub use self::{
 pub mod common;
 
 /**
-Trait for inner request object
+Trait for inner request object, that varies based on what request is being made.
+
+Note that `RawRequestInner` does _not_ implement this, since it passes the response
+as a raw object without deserialization.
 */
 pub trait RequestInner {
     /**
-    Full request type for this request
+    Full request type for this request.
     */
-    type Request: IntoEndpoint<'static>;
+    type Request: IntoEndpoint<'static> + Send + 'static;
 
     /**
     Type for the response of the request.
     */
-    type Response: IsOk + DeserializeOwned;
+    type Response: IsOk + DeserializeOwned + Send + 'static;
 
     /**
-    Converts this request builder to the corresponding request type
+    Converts this request builder to its corresponding request type.
     */
     fn into_request(self) -> Result<Self::Request, Error>;
 }
@@ -233,6 +245,44 @@ where
     }
 }
 
+impl<TSender, TReqInner> RequestBuilder<TSender, TReqInner>
+where
+    TReqInner: RequestInner,
+    TSender: TypedSender<TReqInner>,
+    <TReqInner::Request as IntoEndpoint<'static>>::BodyType: Send + Into<TSender::Body>,
+    NodeAddresses<TSender>: NextParams,
+    <NodeAddresses<TSender> as NextParams>::Params: Into<TSender::Params>,
+{
+    /**
+    Sends the request.
+
+    The returned object is a `Sender`-implementation-specific handle to the results
+    of the query. For example, for the `SyncSender` this is a plain `Result<T, elastic::error::Error>`,
+    while for the `AsyncSender` this is an object implementing `Future<Item=T, Error=elastic::error::Error>`.
+    */
+    pub fn generic_send(self) -> TSender::TypedResponse {
+        let client = self.client;
+        let params_builder = self.params_builder;
+        let request_res = self.inner
+            .into_request()
+            .map(|req| {
+                let endpoint = req.into_endpoint();
+
+                // Only try fetch a next address if an explicit `RequestParams` hasn't been given
+                let params = match params_builder.try_into_value() {
+                    TryIntoValue::Value(value) => SendableRequestParams::Value(value),
+                    TryIntoValue::Builder(builder) => SendableRequestParams::Builder {
+                        params: client.addresses.next(),
+                        builder,
+                    },
+                };
+
+                SendableRequest::new(endpoint, params)
+            });
+        client.sender.typed_send(request_res)
+    }
+}
+
 /**
 # Methods for asynchronous request builders
 
@@ -292,7 +342,8 @@ pub struct Pending<T> {
 }
 
 impl<T> Pending<T> {
-    fn new<F>(fut: F) -> Self
+    /** Creates a new `Pending`, wrapping an existing future */
+    pub fn new<F>(fut: F) -> Self
     where
         F: Future<Item = T, Error = Error> + Send + 'static,
     {
@@ -309,6 +360,14 @@ impl<T> Future for Pending<T> {
 
     fn poll(&mut self) -> Poll<Self::Item, Self::Error> {
         self.inner.poll()
+    }
+}
+
+impl<T> From<T> for Pending<T>
+where T: Send + 'static
+{
+    fn from(v: T) -> Pending<T> {
+        Self::new(Ok(v).into_future())
     }
 }
 

@@ -62,7 +62,8 @@ pub struct SearchRequestInner<TDocument, TBody> {
 
 impl<TDocument, TBody> RequestInner for SearchRequestInner<TDocument, TBody>
 where
-    TDocument: DeserializeOwned,
+    TBody: Send + 'static,
+    TDocument: DeserializeOwned + Send + 'static,
 {
     type Request = SearchRequest<'static, TBody>;
     type Response = SearchResponse<TDocument>;
@@ -314,7 +315,7 @@ where
 */
 impl<TDocument, TBody> SearchRequestBuilder<SyncSender, TDocument, TBody>
 where
-    TDocument: DeserializeOwned,
+    TDocument: DeserializeOwned + Send + 'static,
     TBody: Into<<SyncSender as Sender>::Body> + Send + 'static,
 {
     /**
