@@ -4,10 +4,8 @@ run the `tools/generate_requests.sh` script to update it
 */
 pub mod endpoints {
     #![allow(missing_docs)]
-    use super::{
-        http::*,
-        params::*,
-    };
+    use super::http::*;
+    use super::params::*;
 
     #[derive(Debug, Clone, PartialEq)]
     enum BulkUrlParams<'a> {
@@ -76,6 +74,12 @@ pub mod endpoints {
     }
     impl<'a, B> Into<Endpoint<'a, B>> for BulkRequest<'a, B> {
         fn into(self) -> Endpoint<'a, B> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a, B> IntoEndpoint<'a> for BulkRequest<'a, B> {
+        type BodyType = B;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::POST,
@@ -125,6 +129,12 @@ pub mod endpoints {
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for CatAliasesRequest<'a> {
         fn into(self) -> Endpoint<'a, DefaultBody> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a> IntoEndpoint<'a> for CatAliasesRequest<'a> {
+        type BodyType = DefaultBody;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::GET,
@@ -174,6 +184,12 @@ pub mod endpoints {
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for CatAllocationRequest<'a> {
         fn into(self) -> Endpoint<'a, DefaultBody> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a> IntoEndpoint<'a> for CatAllocationRequest<'a> {
+        type BodyType = DefaultBody;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::GET,
@@ -223,6 +239,12 @@ pub mod endpoints {
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for CatCountRequest<'a> {
         fn into(self) -> Endpoint<'a, DefaultBody> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a> IntoEndpoint<'a> for CatCountRequest<'a> {
+        type BodyType = DefaultBody;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::GET,
@@ -272,6 +294,12 @@ pub mod endpoints {
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for CatFielddataRequest<'a> {
         fn into(self) -> Endpoint<'a, DefaultBody> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a> IntoEndpoint<'a> for CatFielddataRequest<'a> {
+        type BodyType = DefaultBody;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::GET,
@@ -305,6 +333,12 @@ pub mod endpoints {
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for CatHealthRequest<'a> {
         fn into(self) -> Endpoint<'a, DefaultBody> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a> IntoEndpoint<'a> for CatHealthRequest<'a> {
+        type BodyType = DefaultBody;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::GET,
@@ -338,6 +372,12 @@ pub mod endpoints {
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for CatHelpRequest<'a> {
         fn into(self) -> Endpoint<'a, DefaultBody> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a> IntoEndpoint<'a> for CatHelpRequest<'a> {
+        type BodyType = DefaultBody;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::GET,
@@ -387,6 +427,12 @@ pub mod endpoints {
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for CatIndicesRequest<'a> {
         fn into(self) -> Endpoint<'a, DefaultBody> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a> IntoEndpoint<'a> for CatIndicesRequest<'a> {
+        type BodyType = DefaultBody;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::GET,
@@ -420,6 +466,12 @@ pub mod endpoints {
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for CatMasterRequest<'a> {
         fn into(self) -> Endpoint<'a, DefaultBody> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a> IntoEndpoint<'a> for CatMasterRequest<'a> {
+        type BodyType = DefaultBody;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::GET,
@@ -453,6 +505,12 @@ pub mod endpoints {
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for CatNodeattrsRequest<'a> {
         fn into(self) -> Endpoint<'a, DefaultBody> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a> IntoEndpoint<'a> for CatNodeattrsRequest<'a> {
+        type BodyType = DefaultBody;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::GET,
@@ -486,6 +544,12 @@ pub mod endpoints {
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for CatNodesRequest<'a> {
         fn into(self) -> Endpoint<'a, DefaultBody> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a> IntoEndpoint<'a> for CatNodesRequest<'a> {
+        type BodyType = DefaultBody;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::GET,
@@ -519,6 +583,12 @@ pub mod endpoints {
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for CatPendingTasksRequest<'a> {
         fn into(self) -> Endpoint<'a, DefaultBody> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a> IntoEndpoint<'a> for CatPendingTasksRequest<'a> {
+        type BodyType = DefaultBody;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::GET,
@@ -552,6 +622,12 @@ pub mod endpoints {
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for CatPluginsRequest<'a> {
         fn into(self) -> Endpoint<'a, DefaultBody> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a> IntoEndpoint<'a> for CatPluginsRequest<'a> {
+        type BodyType = DefaultBody;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::GET,
@@ -601,6 +677,12 @@ pub mod endpoints {
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for CatRecoveryRequest<'a> {
         fn into(self) -> Endpoint<'a, DefaultBody> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a> IntoEndpoint<'a> for CatRecoveryRequest<'a> {
+        type BodyType = DefaultBody;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::GET,
@@ -634,6 +716,12 @@ pub mod endpoints {
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for CatRepositoriesRequest<'a> {
         fn into(self) -> Endpoint<'a, DefaultBody> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a> IntoEndpoint<'a> for CatRepositoriesRequest<'a> {
+        type BodyType = DefaultBody;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::GET,
@@ -683,6 +771,12 @@ pub mod endpoints {
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for CatSegmentsRequest<'a> {
         fn into(self) -> Endpoint<'a, DefaultBody> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a> IntoEndpoint<'a> for CatSegmentsRequest<'a> {
+        type BodyType = DefaultBody;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::GET,
@@ -732,6 +826,12 @@ pub mod endpoints {
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for CatShardsRequest<'a> {
         fn into(self) -> Endpoint<'a, DefaultBody> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a> IntoEndpoint<'a> for CatShardsRequest<'a> {
+        type BodyType = DefaultBody;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::GET,
@@ -781,6 +881,12 @@ pub mod endpoints {
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for CatSnapshotsRequest<'a> {
         fn into(self) -> Endpoint<'a, DefaultBody> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a> IntoEndpoint<'a> for CatSnapshotsRequest<'a> {
+        type BodyType = DefaultBody;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::GET,
@@ -814,6 +920,12 @@ pub mod endpoints {
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for CatTasksRequest<'a> {
         fn into(self) -> Endpoint<'a, DefaultBody> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a> IntoEndpoint<'a> for CatTasksRequest<'a> {
+        type BodyType = DefaultBody;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::GET,
@@ -863,6 +975,12 @@ pub mod endpoints {
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for CatTemplatesRequest<'a> {
         fn into(self) -> Endpoint<'a, DefaultBody> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a> IntoEndpoint<'a> for CatTemplatesRequest<'a> {
+        type BodyType = DefaultBody;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::GET,
@@ -914,6 +1032,12 @@ pub mod endpoints {
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for CatThreadPoolRequest<'a> {
         fn into(self) -> Endpoint<'a, DefaultBody> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a> IntoEndpoint<'a> for CatThreadPoolRequest<'a> {
+        type BodyType = DefaultBody;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::GET,
@@ -966,6 +1090,12 @@ pub mod endpoints {
     }
     impl<'a, B> Into<Endpoint<'a, B>> for ClearScrollRequest<'a, B> {
         fn into(self) -> Endpoint<'a, B> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a, B> IntoEndpoint<'a> for ClearScrollRequest<'a, B> {
+        type BodyType = B;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::DELETE,
@@ -1003,6 +1133,12 @@ pub mod endpoints {
     }
     impl<'a, B> Into<Endpoint<'a, B>> for ClusterAllocationExplainRequest<'a, B> {
         fn into(self) -> Endpoint<'a, B> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a, B> IntoEndpoint<'a> for ClusterAllocationExplainRequest<'a, B> {
+        type BodyType = B;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::POST,
@@ -1036,6 +1172,12 @@ pub mod endpoints {
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for ClusterGetSettingsRequest<'a> {
         fn into(self) -> Endpoint<'a, DefaultBody> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a> IntoEndpoint<'a> for ClusterGetSettingsRequest<'a> {
+        type BodyType = DefaultBody;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::GET,
@@ -1085,6 +1227,12 @@ pub mod endpoints {
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for ClusterHealthRequest<'a> {
         fn into(self) -> Endpoint<'a, DefaultBody> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a> IntoEndpoint<'a> for ClusterHealthRequest<'a> {
+        type BodyType = DefaultBody;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::GET,
@@ -1118,6 +1266,12 @@ pub mod endpoints {
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for ClusterPendingTasksRequest<'a> {
         fn into(self) -> Endpoint<'a, DefaultBody> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a> IntoEndpoint<'a> for ClusterPendingTasksRequest<'a> {
+        type BodyType = DefaultBody;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::GET,
@@ -1153,6 +1307,12 @@ pub mod endpoints {
     }
     impl<'a, B> Into<Endpoint<'a, B>> for ClusterPutSettingsRequest<'a, B> {
         fn into(self) -> Endpoint<'a, B> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a, B> IntoEndpoint<'a> for ClusterPutSettingsRequest<'a, B> {
+        type BodyType = B;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::PUT,
@@ -1186,6 +1346,12 @@ pub mod endpoints {
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for ClusterRemoteInfoRequest<'a> {
         fn into(self) -> Endpoint<'a, DefaultBody> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a> IntoEndpoint<'a> for ClusterRemoteInfoRequest<'a> {
+        type BodyType = DefaultBody;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::GET,
@@ -1221,6 +1387,12 @@ pub mod endpoints {
     }
     impl<'a, B> Into<Endpoint<'a, B>> for ClusterRerouteRequest<'a, B> {
         fn into(self) -> Endpoint<'a, B> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a, B> IntoEndpoint<'a> for ClusterRerouteRequest<'a, B> {
+        type BodyType = B;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::POST,
@@ -1289,6 +1461,12 @@ pub mod endpoints {
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for ClusterStateRequest<'a> {
         fn into(self) -> Endpoint<'a, DefaultBody> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a> IntoEndpoint<'a> for ClusterStateRequest<'a> {
+        type BodyType = DefaultBody;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::GET,
@@ -1338,6 +1516,12 @@ pub mod endpoints {
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for ClusterStatsRequest<'a> {
         fn into(self) -> Endpoint<'a, DefaultBody> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a> IntoEndpoint<'a> for ClusterStatsRequest<'a> {
+        type BodyType = DefaultBody;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::GET,
@@ -1412,6 +1596,12 @@ pub mod endpoints {
     }
     impl<'a, B> Into<Endpoint<'a, B>> for CountRequest<'a, B> {
         fn into(self) -> Endpoint<'a, B> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a, B> IntoEndpoint<'a> for CountRequest<'a, B> {
+        type BodyType = B;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::POST,
@@ -1488,6 +1678,12 @@ pub mod endpoints {
     }
     impl<'a, B> Into<Endpoint<'a, B>> for CreateRequest<'a, B> {
         fn into(self) -> Endpoint<'a, B> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a, B> IntoEndpoint<'a> for CreateRequest<'a, B> {
+        type BodyType = B;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::POST,
@@ -1554,6 +1750,12 @@ pub mod endpoints {
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for DeleteRequest<'a> {
         fn into(self) -> Endpoint<'a, DefaultBody> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a> IntoEndpoint<'a> for DeleteRequest<'a> {
+        type BodyType = DefaultBody;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::DELETE,
@@ -1619,6 +1821,12 @@ pub mod endpoints {
     }
     impl<'a, B> Into<Endpoint<'a, B>> for DeleteByQueryRequest<'a, B> {
         fn into(self) -> Endpoint<'a, B> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a, B> IntoEndpoint<'a> for DeleteByQueryRequest<'a, B> {
+        type BodyType = B;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::POST,
@@ -1663,6 +1871,12 @@ pub mod endpoints {
     }
     impl<'a, B> Into<Endpoint<'a, B>> for DeleteByQueryRethrottleRequest<'a, B> {
         fn into(self) -> Endpoint<'a, B> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a, B> IntoEndpoint<'a> for DeleteByQueryRethrottleRequest<'a, B> {
+        type BodyType = B;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::POST,
@@ -1704,6 +1918,12 @@ pub mod endpoints {
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for DeleteScriptRequest<'a> {
         fn into(self) -> Endpoint<'a, DefaultBody> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a> IntoEndpoint<'a> for DeleteScriptRequest<'a> {
+        type BodyType = DefaultBody;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::DELETE,
@@ -1770,6 +1990,12 @@ pub mod endpoints {
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for ExistsRequest<'a> {
         fn into(self) -> Endpoint<'a, DefaultBody> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a> IntoEndpoint<'a> for ExistsRequest<'a> {
+        type BodyType = DefaultBody;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::HEAD,
@@ -1838,6 +2064,12 @@ pub mod endpoints {
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for ExistsSourceRequest<'a> {
         fn into(self) -> Endpoint<'a, DefaultBody> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a> IntoEndpoint<'a> for ExistsSourceRequest<'a> {
+        type BodyType = DefaultBody;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::HEAD,
@@ -1914,6 +2146,12 @@ pub mod endpoints {
     }
     impl<'a, B> Into<Endpoint<'a, B>> for ExplainRequest<'a, B> {
         fn into(self) -> Endpoint<'a, B> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a, B> IntoEndpoint<'a> for ExplainRequest<'a, B> {
+        type BodyType = B;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::POST,
@@ -1967,6 +2205,12 @@ pub mod endpoints {
     }
     impl<'a, B> Into<Endpoint<'a, B>> for FieldCapsRequest<'a, B> {
         fn into(self) -> Endpoint<'a, B> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a, B> IntoEndpoint<'a> for FieldCapsRequest<'a, B> {
+        type BodyType = B;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::POST,
@@ -2033,6 +2277,12 @@ pub mod endpoints {
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for GetRequest<'a> {
         fn into(self) -> Endpoint<'a, DefaultBody> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a> IntoEndpoint<'a> for GetRequest<'a> {
+        type BodyType = DefaultBody;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::GET,
@@ -2074,6 +2324,12 @@ pub mod endpoints {
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for GetScriptRequest<'a> {
         fn into(self) -> Endpoint<'a, DefaultBody> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a> IntoEndpoint<'a> for GetScriptRequest<'a> {
+        type BodyType = DefaultBody;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::GET,
@@ -2142,6 +2398,12 @@ pub mod endpoints {
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for GetSourceRequest<'a> {
         fn into(self) -> Endpoint<'a, DefaultBody> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a> IntoEndpoint<'a> for GetSourceRequest<'a> {
+        type BodyType = DefaultBody;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::GET,
@@ -2254,6 +2516,12 @@ pub mod endpoints {
     }
     impl<'a, B> Into<Endpoint<'a, B>> for IndexRequest<'a, B> {
         fn into(self) -> Endpoint<'a, B> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a, B> IntoEndpoint<'a> for IndexRequest<'a, B> {
+        type BodyType = B;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::POST,
@@ -2307,6 +2575,12 @@ pub mod endpoints {
     }
     impl<'a, B> Into<Endpoint<'a, B>> for IndicesAnalyzeRequest<'a, B> {
         fn into(self) -> Endpoint<'a, B> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a, B> IntoEndpoint<'a> for IndicesAnalyzeRequest<'a, B> {
+        type BodyType = B;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::POST,
@@ -2360,6 +2634,12 @@ pub mod endpoints {
     }
     impl<'a, B> Into<Endpoint<'a, B>> for IndicesClearCacheRequest<'a, B> {
         fn into(self) -> Endpoint<'a, B> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a, B> IntoEndpoint<'a> for IndicesClearCacheRequest<'a, B> {
+        type BodyType = B;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::POST,
@@ -2404,6 +2684,12 @@ pub mod endpoints {
     }
     impl<'a, B> Into<Endpoint<'a, B>> for IndicesCloseRequest<'a, B> {
         fn into(self) -> Endpoint<'a, B> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a, B> IntoEndpoint<'a> for IndicesCloseRequest<'a, B> {
+        type BodyType = B;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::POST,
@@ -2447,6 +2733,12 @@ pub mod endpoints {
     }
     impl<'a, B> Into<Endpoint<'a, B>> for IndicesCreateRequest<'a, B> {
         fn into(self) -> Endpoint<'a, B> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a, B> IntoEndpoint<'a> for IndicesCreateRequest<'a, B> {
+        type BodyType = B;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::PUT,
@@ -2488,6 +2780,12 @@ pub mod endpoints {
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for IndicesDeleteRequest<'a> {
         fn into(self) -> Endpoint<'a, DefaultBody> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a> IntoEndpoint<'a> for IndicesDeleteRequest<'a> {
+        type BodyType = DefaultBody;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::DELETE,
@@ -2532,6 +2830,12 @@ pub mod endpoints {
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for IndicesDeleteAliasRequest<'a> {
         fn into(self) -> Endpoint<'a, DefaultBody> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a> IntoEndpoint<'a> for IndicesDeleteAliasRequest<'a> {
+        type BodyType = DefaultBody;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::DELETE,
@@ -2573,6 +2877,12 @@ pub mod endpoints {
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for IndicesDeleteTemplateRequest<'a> {
         fn into(self) -> Endpoint<'a, DefaultBody> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a> IntoEndpoint<'a> for IndicesDeleteTemplateRequest<'a> {
+        type BodyType = DefaultBody;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::DELETE,
@@ -2614,6 +2924,12 @@ pub mod endpoints {
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for IndicesExistsRequest<'a> {
         fn into(self) -> Endpoint<'a, DefaultBody> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a> IntoEndpoint<'a> for IndicesExistsRequest<'a> {
+        type BodyType = DefaultBody;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::HEAD,
@@ -2674,6 +2990,12 @@ pub mod endpoints {
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for IndicesExistsAliasRequest<'a> {
         fn into(self) -> Endpoint<'a, DefaultBody> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a> IntoEndpoint<'a> for IndicesExistsAliasRequest<'a> {
+        type BodyType = DefaultBody;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::HEAD,
@@ -2715,6 +3037,12 @@ pub mod endpoints {
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for IndicesExistsTemplateRequest<'a> {
         fn into(self) -> Endpoint<'a, DefaultBody> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a> IntoEndpoint<'a> for IndicesExistsTemplateRequest<'a> {
+        type BodyType = DefaultBody;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::HEAD,
@@ -2759,6 +3087,12 @@ pub mod endpoints {
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for IndicesExistsTypeRequest<'a> {
         fn into(self) -> Endpoint<'a, DefaultBody> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a> IntoEndpoint<'a> for IndicesExistsTypeRequest<'a> {
+        type BodyType = DefaultBody;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::HEAD,
@@ -2812,6 +3146,12 @@ pub mod endpoints {
     }
     impl<'a, B> Into<Endpoint<'a, B>> for IndicesFlushRequest<'a, B> {
         fn into(self) -> Endpoint<'a, B> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a, B> IntoEndpoint<'a> for IndicesFlushRequest<'a, B> {
+        type BodyType = B;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::POST,
@@ -2865,6 +3205,12 @@ pub mod endpoints {
     }
     impl<'a, B> Into<Endpoint<'a, B>> for IndicesFlushSyncedRequest<'a, B> {
         fn into(self) -> Endpoint<'a, B> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a, B> IntoEndpoint<'a> for IndicesFlushSyncedRequest<'a, B> {
+        type BodyType = B;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::POST,
@@ -2918,6 +3264,12 @@ pub mod endpoints {
     }
     impl<'a, B> Into<Endpoint<'a, B>> for IndicesForcemergeRequest<'a, B> {
         fn into(self) -> Endpoint<'a, B> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a, B> IntoEndpoint<'a> for IndicesForcemergeRequest<'a, B> {
+        type BodyType = B;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::POST,
@@ -2959,6 +3311,12 @@ pub mod endpoints {
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for IndicesGetRequest<'a> {
         fn into(self) -> Endpoint<'a, DefaultBody> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a> IntoEndpoint<'a> for IndicesGetRequest<'a> {
+        type BodyType = DefaultBody;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::GET,
@@ -3044,6 +3402,12 @@ pub mod endpoints {
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for IndicesGetAliasRequest<'a> {
         fn into(self) -> Endpoint<'a, DefaultBody> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a> IntoEndpoint<'a> for IndicesGetAliasRequest<'a> {
+        type BodyType = DefaultBody;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::GET,
@@ -3156,6 +3520,12 @@ pub mod endpoints {
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for IndicesGetFieldMappingRequest<'a> {
         fn into(self) -> Endpoint<'a, DefaultBody> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a> IntoEndpoint<'a> for IndicesGetFieldMappingRequest<'a> {
+        type BodyType = DefaultBody;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::GET,
@@ -3241,6 +3611,12 @@ pub mod endpoints {
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for IndicesGetMappingRequest<'a> {
         fn into(self) -> Endpoint<'a, DefaultBody> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a> IntoEndpoint<'a> for IndicesGetMappingRequest<'a> {
+        type BodyType = DefaultBody;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::GET,
@@ -3326,6 +3702,12 @@ pub mod endpoints {
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for IndicesGetSettingsRequest<'a> {
         fn into(self) -> Endpoint<'a, DefaultBody> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a> IntoEndpoint<'a> for IndicesGetSettingsRequest<'a> {
+        type BodyType = DefaultBody;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::GET,
@@ -3375,6 +3757,12 @@ pub mod endpoints {
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for IndicesGetTemplateRequest<'a> {
         fn into(self) -> Endpoint<'a, DefaultBody> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a> IntoEndpoint<'a> for IndicesGetTemplateRequest<'a> {
+        type BodyType = DefaultBody;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::GET,
@@ -3425,6 +3813,12 @@ pub mod endpoints {
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for IndicesGetUpgradeRequest<'a> {
         fn into(self) -> Endpoint<'a, DefaultBody> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a> IntoEndpoint<'a> for IndicesGetUpgradeRequest<'a> {
+        type BodyType = DefaultBody;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::GET,
@@ -3469,6 +3863,12 @@ pub mod endpoints {
     }
     impl<'a, B> Into<Endpoint<'a, B>> for IndicesOpenRequest<'a, B> {
         fn into(self) -> Endpoint<'a, B> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a, B> IntoEndpoint<'a> for IndicesOpenRequest<'a, B> {
+        type BodyType = B;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::POST,
@@ -3515,6 +3915,12 @@ pub mod endpoints {
     }
     impl<'a, B> Into<Endpoint<'a, B>> for IndicesPutAliasRequest<'a, B> {
         fn into(self) -> Endpoint<'a, B> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a, B> IntoEndpoint<'a> for IndicesPutAliasRequest<'a, B> {
+        type BodyType = B;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::POST,
@@ -3596,6 +4002,12 @@ pub mod endpoints {
     }
     impl<'a, B> Into<Endpoint<'a, B>> for IndicesPutMappingRequest<'a, B> {
         fn into(self) -> Endpoint<'a, B> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a, B> IntoEndpoint<'a> for IndicesPutMappingRequest<'a, B> {
+        type BodyType = B;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::POST,
@@ -3649,6 +4061,12 @@ pub mod endpoints {
     }
     impl<'a, B> Into<Endpoint<'a, B>> for IndicesPutSettingsRequest<'a, B> {
         fn into(self) -> Endpoint<'a, B> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a, B> IntoEndpoint<'a> for IndicesPutSettingsRequest<'a, B> {
+        type BodyType = B;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::PUT,
@@ -3692,6 +4110,12 @@ pub mod endpoints {
     }
     impl<'a, B> Into<Endpoint<'a, B>> for IndicesPutTemplateRequest<'a, B> {
         fn into(self) -> Endpoint<'a, B> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a, B> IntoEndpoint<'a> for IndicesPutTemplateRequest<'a, B> {
+        type BodyType = B;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::POST,
@@ -3742,6 +4166,12 @@ pub mod endpoints {
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for IndicesRecoveryRequest<'a> {
         fn into(self) -> Endpoint<'a, DefaultBody> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a> IntoEndpoint<'a> for IndicesRecoveryRequest<'a> {
+        type BodyType = DefaultBody;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::GET,
@@ -3795,6 +4225,12 @@ pub mod endpoints {
     }
     impl<'a, B> Into<Endpoint<'a, B>> for IndicesRefreshRequest<'a, B> {
         fn into(self) -> Endpoint<'a, B> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a, B> IntoEndpoint<'a> for IndicesRefreshRequest<'a, B> {
+        type BodyType = B;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::POST,
@@ -3863,6 +4299,12 @@ pub mod endpoints {
     }
     impl<'a, B> Into<Endpoint<'a, B>> for IndicesRolloverRequest<'a, B> {
         fn into(self) -> Endpoint<'a, B> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a, B> IntoEndpoint<'a> for IndicesRolloverRequest<'a, B> {
+        type BodyType = B;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::POST,
@@ -3913,6 +4355,12 @@ pub mod endpoints {
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for IndicesSegmentsRequest<'a> {
         fn into(self) -> Endpoint<'a, DefaultBody> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a> IntoEndpoint<'a> for IndicesSegmentsRequest<'a> {
+        type BodyType = DefaultBody;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::GET,
@@ -3963,6 +4411,12 @@ pub mod endpoints {
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for IndicesShardStoresRequest<'a> {
         fn into(self) -> Endpoint<'a, DefaultBody> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a> IntoEndpoint<'a> for IndicesShardStoresRequest<'a> {
+        type BodyType = DefaultBody;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::GET,
@@ -4009,6 +4463,12 @@ pub mod endpoints {
     }
     impl<'a, B> Into<Endpoint<'a, B>> for IndicesShrinkRequest<'a, B> {
         fn into(self) -> Endpoint<'a, B> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a, B> IntoEndpoint<'a> for IndicesShrinkRequest<'a, B> {
+        type BodyType = B;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::POST,
@@ -4055,6 +4515,12 @@ pub mod endpoints {
     }
     impl<'a, B> Into<Endpoint<'a, B>> for IndicesSplitRequest<'a, B> {
         fn into(self) -> Endpoint<'a, B> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a, B> IntoEndpoint<'a> for IndicesSplitRequest<'a, B> {
+        type BodyType = B;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::POST,
@@ -4140,6 +4606,12 @@ pub mod endpoints {
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for IndicesStatsRequest<'a> {
         fn into(self) -> Endpoint<'a, DefaultBody> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a> IntoEndpoint<'a> for IndicesStatsRequest<'a> {
+        type BodyType = DefaultBody;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::GET,
@@ -4175,6 +4647,12 @@ pub mod endpoints {
     }
     impl<'a, B> Into<Endpoint<'a, B>> for IndicesUpdateAliasesRequest<'a, B> {
         fn into(self) -> Endpoint<'a, B> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a, B> IntoEndpoint<'a> for IndicesUpdateAliasesRequest<'a, B> {
+        type BodyType = B;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::POST,
@@ -4228,6 +4706,12 @@ pub mod endpoints {
     }
     impl<'a, B> Into<Endpoint<'a, B>> for IndicesUpgradeRequest<'a, B> {
         fn into(self) -> Endpoint<'a, B> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a, B> IntoEndpoint<'a> for IndicesUpgradeRequest<'a, B> {
+        type BodyType = B;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::POST,
@@ -4302,6 +4786,12 @@ pub mod endpoints {
     }
     impl<'a, B> Into<Endpoint<'a, B>> for IndicesValidateQueryRequest<'a, B> {
         fn into(self) -> Endpoint<'a, B> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a, B> IntoEndpoint<'a> for IndicesValidateQueryRequest<'a, B> {
+        type BodyType = B;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::POST,
@@ -4335,6 +4825,12 @@ pub mod endpoints {
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for InfoRequest<'a> {
         fn into(self) -> Endpoint<'a, DefaultBody> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a> IntoEndpoint<'a> for InfoRequest<'a> {
+        type BodyType = DefaultBody;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::GET,
@@ -4376,6 +4872,12 @@ pub mod endpoints {
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for IngestDeletePipelineRequest<'a> {
         fn into(self) -> Endpoint<'a, DefaultBody> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a> IntoEndpoint<'a> for IngestDeletePipelineRequest<'a> {
+        type BodyType = DefaultBody;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::DELETE,
@@ -4425,6 +4927,12 @@ pub mod endpoints {
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for IngestGetPipelineRequest<'a> {
         fn into(self) -> Endpoint<'a, DefaultBody> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a> IntoEndpoint<'a> for IngestGetPipelineRequest<'a> {
+        type BodyType = DefaultBody;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::GET,
@@ -4458,6 +4966,12 @@ pub mod endpoints {
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for IngestProcessorGrokRequest<'a> {
         fn into(self) -> Endpoint<'a, DefaultBody> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a> IntoEndpoint<'a> for IngestProcessorGrokRequest<'a> {
+        type BodyType = DefaultBody;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::GET,
@@ -4501,6 +5015,12 @@ pub mod endpoints {
     }
     impl<'a, B> Into<Endpoint<'a, B>> for IngestPutPipelineRequest<'a, B> {
         fn into(self) -> Endpoint<'a, B> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a, B> IntoEndpoint<'a> for IngestPutPipelineRequest<'a, B> {
+        type BodyType = B;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::PUT,
@@ -4554,6 +5074,12 @@ pub mod endpoints {
     }
     impl<'a, B> Into<Endpoint<'a, B>> for IngestSimulateRequest<'a, B> {
         fn into(self) -> Endpoint<'a, B> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a, B> IntoEndpoint<'a> for IngestSimulateRequest<'a, B> {
+        type BodyType = B;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::POST,
@@ -4628,6 +5154,12 @@ pub mod endpoints {
     }
     impl<'a, B> Into<Endpoint<'a, B>> for MgetRequest<'a, B> {
         fn into(self) -> Endpoint<'a, B> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a, B> IntoEndpoint<'a> for MgetRequest<'a, B> {
+        type BodyType = B;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::POST,
@@ -4702,6 +5234,12 @@ pub mod endpoints {
     }
     impl<'a, B> Into<Endpoint<'a, B>> for MsearchRequest<'a, B> {
         fn into(self) -> Endpoint<'a, B> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a, B> IntoEndpoint<'a> for MsearchRequest<'a, B> {
+        type BodyType = B;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::POST,
@@ -4776,6 +5314,12 @@ pub mod endpoints {
     }
     impl<'a, B> Into<Endpoint<'a, B>> for MsearchTemplateRequest<'a, B> {
         fn into(self) -> Endpoint<'a, B> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a, B> IntoEndpoint<'a> for MsearchTemplateRequest<'a, B> {
+        type BodyType = B;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::POST,
@@ -4850,6 +5394,12 @@ pub mod endpoints {
     }
     impl<'a, B> Into<Endpoint<'a, B>> for MtermvectorsRequest<'a, B> {
         fn into(self) -> Endpoint<'a, B> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a, B> IntoEndpoint<'a> for MtermvectorsRequest<'a, B> {
+        type BodyType = B;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::POST,
@@ -4900,6 +5450,12 @@ pub mod endpoints {
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for NodesHotThreadsRequest<'a> {
         fn into(self) -> Endpoint<'a, DefaultBody> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a> IntoEndpoint<'a> for NodesHotThreadsRequest<'a> {
+        type BodyType = DefaultBody;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::GET,
@@ -4984,6 +5540,12 @@ pub mod endpoints {
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for NodesInfoRequest<'a> {
         fn into(self) -> Endpoint<'a, DefaultBody> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a> IntoEndpoint<'a> for NodesInfoRequest<'a> {
+        type BodyType = DefaultBody;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::GET,
@@ -5039,6 +5601,12 @@ pub mod endpoints {
     }
     impl<'a, B> Into<Endpoint<'a, B>> for NodesReloadSecureSettingsRequest<'a, B> {
         fn into(self) -> Endpoint<'a, B> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a, B> IntoEndpoint<'a> for NodesReloadSecureSettingsRequest<'a, B> {
+        type BodyType = B;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::POST,
@@ -5185,6 +5753,12 @@ pub mod endpoints {
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for NodesStatsRequest<'a> {
         fn into(self) -> Endpoint<'a, DefaultBody> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a> IntoEndpoint<'a> for NodesStatsRequest<'a> {
+        type BodyType = DefaultBody;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::GET,
@@ -5270,6 +5844,12 @@ pub mod endpoints {
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for NodesUsageRequest<'a> {
         fn into(self) -> Endpoint<'a, DefaultBody> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a> IntoEndpoint<'a> for NodesUsageRequest<'a> {
+        type BodyType = DefaultBody;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::GET,
@@ -5303,6 +5883,12 @@ pub mod endpoints {
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for PingRequest<'a> {
         fn into(self) -> Endpoint<'a, DefaultBody> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a> IntoEndpoint<'a> for PingRequest<'a> {
+        type BodyType = DefaultBody;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::GET,
@@ -5336,6 +5922,12 @@ pub mod endpoints {
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for PingHeadRequest<'a> {
         fn into(self) -> Endpoint<'a, DefaultBody> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a> IntoEndpoint<'a> for PingHeadRequest<'a> {
+        type BodyType = DefaultBody;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::HEAD,
@@ -5399,6 +5991,12 @@ pub mod endpoints {
     }
     impl<'a, B> Into<Endpoint<'a, B>> for PutScriptRequest<'a, B> {
         fn into(self) -> Endpoint<'a, B> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a, B> IntoEndpoint<'a> for PutScriptRequest<'a, B> {
+        type BodyType = B;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::POST,
@@ -5452,6 +6050,12 @@ pub mod endpoints {
     }
     impl<'a, B> Into<Endpoint<'a, B>> for RankEvalRequest<'a, B> {
         fn into(self) -> Endpoint<'a, B> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a, B> IntoEndpoint<'a> for RankEvalRequest<'a, B> {
+        type BodyType = B;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::POST,
@@ -5487,6 +6091,12 @@ pub mod endpoints {
     }
     impl<'a, B> Into<Endpoint<'a, B>> for ReindexRequest<'a, B> {
         fn into(self) -> Endpoint<'a, B> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a, B> IntoEndpoint<'a> for ReindexRequest<'a, B> {
+        type BodyType = B;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::POST,
@@ -5531,6 +6141,12 @@ pub mod endpoints {
     }
     impl<'a, B> Into<Endpoint<'a, B>> for ReindexRethrottleRequest<'a, B> {
         fn into(self) -> Endpoint<'a, B> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a, B> IntoEndpoint<'a> for ReindexRethrottleRequest<'a, B> {
+        type BodyType = B;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::POST,
@@ -5583,6 +6199,12 @@ pub mod endpoints {
     }
     impl<'a, B> Into<Endpoint<'a, B>> for RenderSearchTemplateRequest<'a, B> {
         fn into(self) -> Endpoint<'a, B> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a, B> IntoEndpoint<'a> for RenderSearchTemplateRequest<'a, B> {
+        type BodyType = B;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::POST,
@@ -5620,6 +6242,12 @@ pub mod endpoints {
     }
     impl<'a, B> Into<Endpoint<'a, B>> for ScriptsPainlessExecuteRequest<'a, B> {
         fn into(self) -> Endpoint<'a, B> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a, B> IntoEndpoint<'a> for ScriptsPainlessExecuteRequest<'a, B> {
+        type BodyType = B;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::POST,
@@ -5672,6 +6300,12 @@ pub mod endpoints {
     }
     impl<'a, B> Into<Endpoint<'a, B>> for ScrollRequest<'a, B> {
         fn into(self) -> Endpoint<'a, B> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a, B> IntoEndpoint<'a> for ScrollRequest<'a, B> {
+        type BodyType = B;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::POST,
@@ -5742,6 +6376,12 @@ pub mod endpoints {
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for SimpleSearchRequest<'a> {
         fn into(self) -> Endpoint<'a, DefaultBody> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a> IntoEndpoint<'a> for SimpleSearchRequest<'a> {
+        type BodyType = DefaultBody;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::GET,
@@ -5816,6 +6456,12 @@ pub mod endpoints {
     }
     impl<'a, B> Into<Endpoint<'a, B>> for SearchRequest<'a, B> {
         fn into(self) -> Endpoint<'a, B> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a, B> IntoEndpoint<'a> for SearchRequest<'a, B> {
+        type BodyType = B;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::POST,
@@ -5869,6 +6515,12 @@ pub mod endpoints {
     }
     impl<'a, B> Into<Endpoint<'a, B>> for SearchShardsRequest<'a, B> {
         fn into(self) -> Endpoint<'a, B> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a, B> IntoEndpoint<'a> for SearchShardsRequest<'a, B> {
+        type BodyType = B;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::POST,
@@ -5943,6 +6595,12 @@ pub mod endpoints {
     }
     impl<'a, B> Into<Endpoint<'a, B>> for SearchTemplateRequest<'a, B> {
         fn into(self) -> Endpoint<'a, B> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a, B> IntoEndpoint<'a> for SearchTemplateRequest<'a, B> {
+        type BodyType = B;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::POST,
@@ -5998,6 +6656,12 @@ pub mod endpoints {
     }
     impl<'a, B> Into<Endpoint<'a, B>> for SnapshotCreateRequest<'a, B> {
         fn into(self) -> Endpoint<'a, B> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a, B> IntoEndpoint<'a> for SnapshotCreateRequest<'a, B> {
+        type BodyType = B;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::POST,
@@ -6041,6 +6705,12 @@ pub mod endpoints {
     }
     impl<'a, B> Into<Endpoint<'a, B>> for SnapshotCreateRepositoryRequest<'a, B> {
         fn into(self) -> Endpoint<'a, B> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a, B> IntoEndpoint<'a> for SnapshotCreateRepositoryRequest<'a, B> {
+        type BodyType = B;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::POST,
@@ -6093,6 +6763,12 @@ pub mod endpoints {
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for SnapshotDeleteRequest<'a> {
         fn into(self) -> Endpoint<'a, DefaultBody> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a> IntoEndpoint<'a> for SnapshotDeleteRequest<'a> {
+        type BodyType = DefaultBody;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::DELETE,
@@ -6134,6 +6810,12 @@ pub mod endpoints {
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for SnapshotDeleteRepositoryRequest<'a> {
         fn into(self) -> Endpoint<'a, DefaultBody> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a> IntoEndpoint<'a> for SnapshotDeleteRepositoryRequest<'a> {
+        type BodyType = DefaultBody;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::DELETE,
@@ -6183,6 +6865,12 @@ pub mod endpoints {
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for SnapshotGetRequest<'a> {
         fn into(self) -> Endpoint<'a, DefaultBody> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a> IntoEndpoint<'a> for SnapshotGetRequest<'a> {
+        type BodyType = DefaultBody;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::GET,
@@ -6232,6 +6920,12 @@ pub mod endpoints {
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for SnapshotGetRepositoryRequest<'a> {
         fn into(self) -> Endpoint<'a, DefaultBody> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a> IntoEndpoint<'a> for SnapshotGetRepositoryRequest<'a> {
+        type BodyType = DefaultBody;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::GET,
@@ -6288,6 +6982,12 @@ pub mod endpoints {
     }
     impl<'a, B> Into<Endpoint<'a, B>> for SnapshotRestoreRequest<'a, B> {
         fn into(self) -> Endpoint<'a, B> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a, B> IntoEndpoint<'a> for SnapshotRestoreRequest<'a, B> {
+        type BodyType = B;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::POST,
@@ -6366,6 +7066,12 @@ pub mod endpoints {
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for SnapshotStatusRequest<'a> {
         fn into(self) -> Endpoint<'a, DefaultBody> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a> IntoEndpoint<'a> for SnapshotStatusRequest<'a> {
+        type BodyType = DefaultBody;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::GET,
@@ -6410,6 +7116,12 @@ pub mod endpoints {
     }
     impl<'a, B> Into<Endpoint<'a, B>> for SnapshotVerifyRepositoryRequest<'a, B> {
         fn into(self) -> Endpoint<'a, B> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a, B> IntoEndpoint<'a> for SnapshotVerifyRepositoryRequest<'a, B> {
+        type BodyType = B;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::POST,
@@ -6445,6 +7157,12 @@ pub mod endpoints {
     }
     impl<'a, B> Into<Endpoint<'a, B>> for SqlQueryRequest<'a, B> {
         fn into(self) -> Endpoint<'a, B> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a, B> IntoEndpoint<'a> for SqlQueryRequest<'a, B> {
+        type BodyType = B;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::POST,
@@ -6498,6 +7216,12 @@ pub mod endpoints {
     }
     impl<'a, B> Into<Endpoint<'a, B>> for TasksCancelRequest<'a, B> {
         fn into(self) -> Endpoint<'a, B> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a, B> IntoEndpoint<'a> for TasksCancelRequest<'a, B> {
+        type BodyType = B;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::POST,
@@ -6539,6 +7263,12 @@ pub mod endpoints {
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for TasksGetRequest<'a> {
         fn into(self) -> Endpoint<'a, DefaultBody> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a> IntoEndpoint<'a> for TasksGetRequest<'a> {
+        type BodyType = DefaultBody;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::GET,
@@ -6572,6 +7302,12 @@ pub mod endpoints {
     }
     impl<'a> Into<Endpoint<'a, DefaultBody>> for TasksListRequest<'a> {
         fn into(self) -> Endpoint<'a, DefaultBody> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a> IntoEndpoint<'a> for TasksListRequest<'a> {
+        type BodyType = DefaultBody;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::GET,
@@ -6687,6 +7423,12 @@ pub mod endpoints {
     }
     impl<'a, B> Into<Endpoint<'a, B>> for TermvectorsRequest<'a, B> {
         fn into(self) -> Endpoint<'a, B> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a, B> IntoEndpoint<'a> for TermvectorsRequest<'a, B> {
+        type BodyType = B;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::POST,
@@ -6763,6 +7505,12 @@ pub mod endpoints {
     }
     impl<'a, B> Into<Endpoint<'a, B>> for UpdateRequest<'a, B> {
         fn into(self) -> Endpoint<'a, B> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a, B> IntoEndpoint<'a> for UpdateRequest<'a, B> {
+        type BodyType = B;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::POST,
@@ -6828,6 +7576,12 @@ pub mod endpoints {
     }
     impl<'a, B> Into<Endpoint<'a, B>> for UpdateByQueryRequest<'a, B> {
         fn into(self) -> Endpoint<'a, B> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a, B> IntoEndpoint<'a> for UpdateByQueryRequest<'a, B> {
+        type BodyType = B;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::POST,
@@ -6872,6 +7626,12 @@ pub mod endpoints {
     }
     impl<'a, B> Into<Endpoint<'a, B>> for UpdateByQueryRethrottleRequest<'a, B> {
         fn into(self) -> Endpoint<'a, B> {
+            self.into_endpoint()
+        }
+    }
+    impl<'a, B> IntoEndpoint<'a> for UpdateByQueryRethrottleRequest<'a, B> {
+        type BodyType = B;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
             Endpoint {
                 url: self.url,
                 method: Method::POST,
@@ -6884,10 +7644,8 @@ pub mod endpoints {
 pub mod http {
     #![allow(missing_docs)]
     pub use crate::http::Method;
-    use std::{
-        borrow::Cow,
-        ops::Deref,
-    };
+    use std::borrow::Cow;
+    use std::ops::Deref;
 
     #[doc = r" A wrapper around an owned or borrowed url path."]
     #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -6914,6 +7672,14 @@ pub mod http {
         pub url: UrlPath<'a>,
         pub method: Method,
         pub body: Option<B>,
+    }
+    #[doc = r" Trait for converting a request into its endpoint."]
+    #[doc = r""]
+    #[doc = r" Like `From`, but the client API doesn't need to know the exact"]
+    #[doc = r" type to convert into."]
+    pub trait IntoEndpoint<'a> {
+        type BodyType;
+        fn into_endpoint(self) -> Endpoint<'a, Self::BodyType>;
     }
     #[doc = r" A default body type."]
     pub type DefaultBody = &'static [u8];
@@ -8050,5 +8816,4 @@ pub mod params {
             &self.0
         }
     }
-
 }
