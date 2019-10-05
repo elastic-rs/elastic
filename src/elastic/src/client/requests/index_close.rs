@@ -91,7 +91,7 @@ where
     }
 }
 
-#[cfg(test)]
+#[cfg(all(test, feature="sync_sender"))]
 mod tests {
     use crate::{
         client::requests::RequestInner,

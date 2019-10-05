@@ -21,14 +21,17 @@ use fluent_builder::{
 pub mod sniffed_nodes;
 pub mod static_nodes;
 
-mod asynchronous;
 mod params;
+pub use self::params::*;
+
+#[cfg(feature="async_sender")]
+mod asynchronous;
+#[cfg(feature="sync_sender")]
 mod synchronous;
-pub use self::{
-    asynchronous::*,
-    params::*,
-    synchronous::*,
-};
+#[cfg(feature="async_sender")]
+pub use self::asynchronous::*;
+#[cfg(feature="sync_sender")]
+pub use self::synchronous::*;
 
 use std::{
     marker::PhantomData,
@@ -47,7 +50,6 @@ use crate::{
     client::requests::RequestInner,
     endpoints::Endpoint,
     error::Error,
-    private,
 };
 
 /**
@@ -59,9 +61,12 @@ This type encapsulates the state needed between a [`Client`][Client] and a [`Sen
 [Sender]: trait.Sender.html
 */
 pub struct SendableRequest<TEndpoint, TParams, TBody> {
-    correlation_id: Uuid,
-    inner: TEndpoint,
-    params: SendableRequestParams<TParams>,
+    /** Unique ID for the request. */
+    pub correlation_id: Uuid,
+    /** Endpoint for the request */
+    pub inner: TEndpoint,
+    /** Parameters for the request */
+    pub params: SendableRequestParams<TParams>,
     _marker: PhantomData<TBody>,
 }
 
@@ -76,10 +81,15 @@ impl<TEndpoint, TParams, TBody> SendableRequest<TEndpoint, TParams, TBody> {
     }
 }
 
-pub(crate) enum SendableRequestParams<TParams> {
+/** Parameters for a SendableRequest */
+pub enum SendableRequestParams<TParams> {
+    /** Parameters were explicitly defined for this specific request */
     Value(RequestParams),
+    /** Paremeters weren't explicitly defined, so they must be built */
     Builder {
+        /** Base parameters */
         params: TParams,
+        /** Builder for the parameters */
         builder: SharedFluentBuilder<RequestParams>,
     },
 }
@@ -99,7 +109,7 @@ At some point in the future though this may be made more generic so you could re
 
 [Client]: struct.Client.html
 */
-pub trait Sender: private::Sealed + Clone {
+pub trait Sender: Clone {
     /** The kind of request body this sender accepts. */
     type Body;
     /** The kind of response this sender produces. */
@@ -174,7 +184,7 @@ A set of request parameters are fetched before each HTTP request.
 The `NextParams` trait makes it possible to load balance requests between multiple nodes in an Elasticsearch cluster.
 Out of the box `elastic` provides implementations for a static set of nodes or nodes sniffed from the [Nodes Stats API]().
 */
-pub trait NextParams: private::Sealed + Clone {
+pub trait NextParams: Clone {
     /**
     The kind of parameters produces.
 
@@ -211,39 +221,36 @@ where
 A common container for a source of node addresses.
 */
 #[derive(Clone)]
-pub struct NodeAddresses<TSender> {
-    inner: NodeAddressesInner<TSender>,
-}
-
-impl<TSender> NodeAddresses<TSender> {
-    pub(crate) fn static_nodes(nodes: StaticNodes) -> Self {
-        NodeAddresses {
-            inner: NodeAddressesInner::Static(nodes),
-        }
-    }
-
-    pub(crate) fn sniffed_nodes(nodes: SniffedNodes<TSender>) -> Self {
-        NodeAddresses {
-            inner: NodeAddressesInner::Sniffed(nodes),
-        }
-    }
-}
-
-impl<TSender> private::Sealed for NodeAddresses<TSender> {}
-
-#[derive(Clone)]
-enum NodeAddressesInner<TSender> {
+pub enum NodeAddresses<TSender> {
+    /** Static list of nodes */
     Static(StaticNodes),
+    /** Fetch set of nodes from a single node of the cluster */
     Sniffed(SniffedNodes<TSender>),
 }
 
-pub(crate) enum NodeAddressesBuilder {
+impl<TSender> NodeAddresses<TSender> {
+    /** Static set of nodes to connect to */
+    pub fn static_nodes(nodes: StaticNodes) -> Self {
+        NodeAddresses::Static(nodes)
+    }
+
+    /** Fetch set of nodes from a single node of the cluster */
+    pub fn sniffed_nodes(nodes: SniffedNodes<TSender>) -> Self {
+        NodeAddresses::Sniffed(nodes)
+    }
+}
+
+/** Builder for `NodeAddresses` */
+pub enum NodeAddressesBuilder {
+    /** Static list of nodes */
     Static(Vec<NodeAddress>),
+    /** Fetch set of nodes from a single node of the cluster */
     Sniffed(SharedStatefulFluentBuilder<NodeAddress, SniffedNodesBuilder>),
 }
 
 impl NodeAddressesBuilder {
-    pub(crate) fn sniff_nodes(self, builder: SniffedNodesBuilder) -> Self {
+    /** Sniff nodes */
+    pub fn sniff_nodes(self, builder: SniffedNodesBuilder) -> Self {
         match self {
             NodeAddressesBuilder::Sniffed(fluent_builder) => {
                 NodeAddressesBuilder::Sniffed(fluent_builder.value(builder))
@@ -254,7 +261,8 @@ impl NodeAddressesBuilder {
         }
     }
 
-    pub(crate) fn sniff_nodes_fluent<F>(self, address: NodeAddress, fleunt_method: F) -> Self
+    /** Sniff nodes */
+    pub fn sniff_nodes_fluent<F>(self, address: NodeAddress, fleunt_method: F) -> Self
     where
         F: FnOnce(SniffedNodesBuilder) -> SniffedNodesBuilder + Send + 'static,
     {
@@ -279,7 +287,8 @@ impl Default for NodeAddressesBuilder {
 }
 
 impl NodeAddressesBuilder {
-    pub(crate) fn build<TSender>(
+    /** Builds the node addresses */
+    pub fn build<TSender>(
         self,
         params: PreRequestParams,
         sender: TSender,

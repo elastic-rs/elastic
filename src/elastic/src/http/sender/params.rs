@@ -180,7 +180,8 @@ impl RequestParams {
         self.base_url.as_ref()
     }
 
-    pub(crate) fn get_headers(&self) -> Arc<HeaderMap> {
+    /** Gets a shared reference to the headers */
+    pub fn get_headers(&self) -> Arc<HeaderMap> {
         self.inner.headers.clone()
     }
 
@@ -215,7 +216,8 @@ impl Default for RequestParams {
     }
 }
 
-pub(crate) fn build_url<'a>(req_url: &str, params: &RequestParams) -> String {
+/** Creates the full URL for a request */
+pub fn build_url<'a>(req_url: &str, params: &RequestParams) -> String {
     let (qry_len, qry) = params.get_url_qry();
 
     let mut url = String::with_capacity(params.base_url.as_ref().len() + req_url.len() + qry_len);
@@ -230,7 +232,8 @@ pub(crate) fn build_url<'a>(req_url: &str, params: &RequestParams) -> String {
     url
 }
 
-pub(crate) fn build_reqwest_method(method: Method) -> HttpMethod {
+/** Converts an elastic crate Method object to an http crate HttpMethod */
+pub fn build_http_method(method: Method) -> HttpMethod {
     match method {
         Method::GET => HttpMethod::GET,
         Method::POST => HttpMethod::POST,

@@ -128,7 +128,7 @@ impl SniffedNodesBuilder {
 
     A `filter_path` url parameter will be added to the `refresh_parameters`.
     */
-    pub(crate) fn build<TSender>(
+    pub fn build<TSender>(
         self,
         base_params: PreRequestParams,
         sender: TSender,

@@ -37,11 +37,10 @@ use crate::{
             AsyncResponseBuilder,
         },
         sender::{
-            build_reqwest_method,
+            build_http_method,
             build_url,
             NextParams,
             NodeAddresses,
-            NodeAddressesInner,
             RequestParams,
             SendableRequest,
             SendableRequestParams,
@@ -231,9 +230,9 @@ impl NextParams for NodeAddresses<AsyncSender> {
     type Params = PendingParams;
 
     fn next(&self) -> Self::Params {
-        match self.inner {
-            NodeAddressesInner::Static(ref nodes) => PendingParams::new(nodes.next().into_future()),
-            NodeAddressesInner::Sniffed(ref sniffer) => PendingParams::new(sniffer.next()),
+        match self {
+            NodeAddresses::Static(ref nodes) => PendingParams::new(nodes.next().into_future()),
+            NodeAddresses::Sniffed(ref sniffer) => PendingParams::new(sniffer.next()),
         }
     }
 }
@@ -276,7 +275,7 @@ fn build_reqwest(client: &AsyncHttpClient, req: AsyncHttpRequest) -> AsyncHttpRe
         ..
     } = req;
 
-    let method = build_reqwest_method(method);
+    let method = build_http_method(method);
 
     let mut req = client.request(method, url);
     {

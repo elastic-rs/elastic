@@ -9,7 +9,9 @@ use fluent_builder::{
     TryIntoValue,
 };
 use serde::de::DeserializeOwned;
+#[cfg(feature="async_sender")]
 use std::sync::Arc;
+#[cfg(feature="async_sender")]
 use tokio_threadpool::ThreadPool;
 
 use crate::{
@@ -19,7 +21,6 @@ use crate::{
     http::{
         receiver::IsOk,
         sender::{
-            AsyncSender,
             NextParams,
             NodeAddresses,
             RequestParams,
@@ -30,6 +31,8 @@ use crate::{
         },
     },
 };
+#[cfg(feature="async_sender")]
+use crate::http::sender::AsyncSender;
 
 pub mod raw;
 
@@ -284,6 +287,7 @@ where
 
 The following methods can be called on any asynchronous request builder.
 */
+#[cfg(feature="async_sender")]
 impl<TRequest> RequestBuilder<AsyncSender, TRequest> {
     /**
     Override the thread pool used for deserialisation for this request.

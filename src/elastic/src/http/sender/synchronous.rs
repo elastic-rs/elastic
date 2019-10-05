@@ -23,11 +23,10 @@ use crate::{
             SyncResponseBuilder,
         },
         sender::{
-            build_reqwest_method,
+            build_http_method,
             build_url,
             NextParams,
             NodeAddresses,
-            NodeAddressesInner,
             RequestParams,
             SendableRequest,
             SendableRequestParams,
@@ -163,9 +162,9 @@ impl NextParams for NodeAddresses<SyncSender> {
     type Params = Params;
 
     fn next(&self) -> Self::Params {
-        match self.inner {
-            NodeAddressesInner::Static(ref nodes) => Params::new(nodes.next()),
-            NodeAddressesInner::Sniffed(ref sniffer) => Params::new(sniffer.next()),
+        match self {
+            NodeAddresses::Static(ref nodes) => Params::new(nodes.next()),
+            NodeAddresses::Sniffed(ref sniffer) => Params::new(sniffer.next()),
         }
     }
 }
@@ -231,7 +230,7 @@ fn build_reqwest(client: &SyncHttpClient, req: SyncHttpRequest) -> SyncHttpReque
         ..
     } = req;
 
-    let method = build_reqwest_method(method);
+    let method = build_http_method(method);
 
     let mut req = client.request(method, url);
     {

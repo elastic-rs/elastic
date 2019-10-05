@@ -6,14 +6,19 @@ This module contains low-level implementation details for the high-level [`Clien
 [Client]: ../struct.Client.html
 */
 
+#[cfg(feature="async_sender")]
 mod asynchronous;
 mod error;
 mod parsing;
+#[cfg(feature="sync_sender")]
 mod synchronous;
 
 pub use self::{
-    asynchronous::*,
     error::*,
     parsing::*,
-    synchronous::*,
 };
+
+#[cfg(feature="async_sender")]
+pub use self::asynchronous::*;
+#[cfg(feature="sync_sender")]
+pub use self::synchronous::*;

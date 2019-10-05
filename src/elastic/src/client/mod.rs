@@ -558,13 +558,15 @@ For more details see the [`responses`][responses-mod] module.
 pub mod requests;
 pub mod responses;
 
+#[cfg(feature="async_sender")]
 mod asynchronous;
+#[cfg(feature="sync_sender")]
 mod synchronous;
 
-pub use self::{
-    asynchronous::*,
-    synchronous::*,
-};
+#[cfg(feature="async_sender")]
+pub use self::asynchronous::*;
+#[cfg(feature="sync_sender")]
+pub use self::synchronous::*;
 
 #[doc(inline)]
 pub use crate::http::sender::{
@@ -691,10 +693,18 @@ pub mod prelude {
     pub use super::{
         requests::prelude::*,
         responses::prelude::*,
-        AsyncClient,
-        AsyncClientBuilder,
         PreRequestParams,
         RequestParams,
+    };
+
+    #[cfg(feature="async_sender")]
+    pub use super::{
+        AsyncClient,
+        AsyncClientBuilder,
+    };
+
+    #[cfg(feature="sync_sender")]
+    pub use super::{
         SyncClient,
         SyncClientBuilder,
     };

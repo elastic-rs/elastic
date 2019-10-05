@@ -8,8 +8,9 @@ use std::{
     error::Error as StdError,
     fmt,
     marker::PhantomData,
-    time::Duration,
 };
+#[cfg(feature="async_sender")]
+use std::time::Duration;
 
 use serde::{
     de::DeserializeOwned,
@@ -27,7 +28,6 @@ use crate::{
             BulkResponse,
         },
         Client,
-        RequestParams,
     },
     endpoints::BulkRequest,
     error::{
@@ -36,16 +36,19 @@ use crate::{
     },
     http::{
         receiver::IsOk,
-        sender::{
-            AsyncSender,
-            Sender,
-        },
+        sender::Sender,
     },
     params::{
         Index,
         Type,
     },
     types::document::DEFAULT_DOC_TYPE,
+};
+
+#[cfg(feature="async_sender")]
+use crate::{
+    client::RequestParams,
+    http::sender::AsyncSender,
 };
 
 /**
@@ -66,12 +69,13 @@ pub type BulkRequestBuilder<TSender, TBody, TResponse> =
     RequestBuilder<TSender, BulkRequestInner<TBody, TResponse>>;
 
 mod operation;
+#[cfg(feature="async_sender")]
 mod stream;
 
-pub use self::{
-    operation::*,
-    stream::*,
-};
+pub use self::operation::*;
+
+#[cfg(feature="async_sender")]
+pub use self::stream::*;
 
 #[doc(hidden)]
 pub struct BulkRequestInner<TBody, TResponse> {
@@ -188,6 +192,7 @@ where
 /**
 # Bulk stream request
 */
+#[cfg(feature="async_sender")]
 impl Client<AsyncSender> {
     /**
     Create a [`BulkRequestBuilder`][BulkRequestBuilder] with this `Client` that can be configured before sending.
@@ -475,6 +480,7 @@ where
 
 Configure a `SearchRequestBuilder` before sending it.
 */
+#[cfg(feature="async_sender")]
 impl<TDocument, TResponse> BulkRequestBuilder<AsyncSender, Streamed<TDocument>, TResponse> {
     /**
     Specify a timeout for filling up the request buffer.
@@ -539,18 +545,22 @@ impl<TDocument, TResponse> BulkRequestBuilder<AsyncSender, Streamed<TDocument>, 
     }
 }
 
+#[cfg(feature="async_sender")]
 const DEFAULT_BODY_SIZE: usize = 1024 * 1024 * 5;
+#[cfg(feature="async_sender")]
 const DEFAULT_TIMEOUT_SECS: u64 = 30;
 
 /**
 A streaming bulk request body.
 */
+#[cfg(feature="async_sender")]
 pub struct Streamed<TDocument> {
     body_size: usize,
     timeout: Duration,
     _marker: PhantomData<TDocument>,
 }
 
+#[cfg(feature="async_sender")]
 impl<TDocument> Streamed<TDocument> {
     fn new() -> Self {
         Streamed {
