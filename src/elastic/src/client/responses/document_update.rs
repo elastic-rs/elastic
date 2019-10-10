@@ -2,12 +2,15 @@
 Response types for a [update document request](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-update.html).
 */
 
+use std::marker::PhantomData;
+
 use serde::de::DeserializeOwned;
 use serde_json::Value;
 
 use super::common::DocumentResult;
 
 use crate::{
+    client::requests::document_update::DefaultUpdatedSource,
     http::receiver::IsOkOnSuccess,
     types::document::{
         Id,
@@ -16,17 +19,9 @@ use crate::{
     },
 };
 
+/** Response for an [update document request](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-update.html). */
 #[derive(Deserialize, Debug)]
-struct UpdatedSource<T> {
-    #[serde(rename = "_source")]
-    source: Option<T>,
-}
-
-impl<T> IsOkOnSuccess for UpdatedSource<T> {}
-
-/** Response for a [update document request](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-update.html). */
-#[derive(Deserialize, Debug)]
-pub struct UpdateResponse {
+pub struct UpdateResponse<TSource = DefaultUpdatedSource> {
     #[serde(rename = "_index")]
     index: String,
     #[serde(rename = "_type")]
@@ -42,20 +37,55 @@ pub struct UpdateResponse {
     #[serde(rename = "_routing")]
     routing: Option<String>,
     result: DocumentResult,
-    get: Option<UpdatedSource<Value>>,
+    get: Option<Value>,
+    #[serde(skip)]
+    _marker: PhantomData<TSource>,
 }
 
-impl UpdateResponse {
-    /** Convert the source in the response into the updated document. The request must have been made with the [`_source` parameter](https://www.elastic.co/guide/en/elasticsearch/reference/current/search-request-body.html#request-body-search-source-filtering). */
-    pub fn into_document<T>(self) -> Option<T>
-    where
-        T: DeserializeOwned,
-    {
-        self.get.map_or_else(
+impl<TSource> UpdateResponse<TSource>
+where
+    TSource: DeserializeOwned,
+{
+    /**
+    Convert the source in the response into the updated document.
+
+    The [`source`] method must have been called first on the
+    [`UpdateRequestBuilder`], otherwise this will return `None`.
+
+    # Examples
+
+    ```no_run
+    # #[macro_use] extern crate serde_derive;
+    # #[macro_use] extern crate elastic_derive;
+    # use elastic::prelude::*;
+    # fn main() { run().unwrap() }
+    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+    # #[derive(Serialize, Deserialize, ElasticType)]
+    # struct NewsArticle { likes: i64 }
+    # #[derive(Serialize, Deserialize, ElasticType)]
+    # struct UpdatedNewsArticle { likes: i64 }
+    # let client = SyncClientBuilder::new().build()?;
+    let response = client.document::<NewsArticle>()
+                         .update(1)
+                         .script("ctx._source.likes++")
+                         .source::<UpdatedNewsArticle>()
+                         .send()?;
+
+    assert!(response.into_document().unwrap().likes >= 1);
+    # Ok(())
+    # }
+    ```
+
+    [`source`]: ../requests/document_update/type.UpdateRequestBuilder.html#method.source
+    [`UpdateRequestBuilder`]: ../requests/document_update/type.UpdateRequestBuilder.html
+    */
+    pub fn into_document(&self) -> Option<TSource> {
+        self.get.as_ref().map_or_else(
             || None,
-            |get| {
-                get.source
-                    .map_or_else(|| None, |doc| serde_json::from_value::<T>(doc).ok())
+            |obj| {
+                obj.get("_source")
+                    .cloned()
+                    .map_or_else(|| None, |doc| serde_json::from_value::<TSource>(doc).ok())
             },
         )
     }
@@ -107,4 +137,4 @@ impl UpdateResponse {
     }
 }
 
-impl IsOkOnSuccess for UpdateResponse {}
+impl<TSource> IsOkOnSuccess for UpdateResponse<TSource> {}

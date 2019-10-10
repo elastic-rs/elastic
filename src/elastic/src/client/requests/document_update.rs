@@ -12,8 +12,8 @@ use std::marker::PhantomData;
 use crate::{
     client::{
         requests::{
-            Pending as BasePending,
             raw::RawRequestInner,
+            Pending as BasePending,
             RequestBuilder,
         },
         responses::UpdateResponse,
@@ -49,6 +49,8 @@ pub use crate::client::requests::common::{
     ScriptBuilder,
 };
 
+pub(crate) type DefaultUpdatedSource = serde_json::Value;
+
 /**
 An [update document request][docs-update] builder that can be configured before sending.
 
@@ -60,15 +62,17 @@ The `send` method will either send the request [synchronously][send-sync] or [as
 [send-async]: #send-asynchronously
 [Client.document.update]: ../../struct.DocumentClient.html#update-document-request
 */
-pub type UpdateRequestBuilder<TSender, TBody> = RequestBuilder<TSender, UpdateRequestInner<TBody>>;
+pub type UpdateRequestBuilder<TSender, TBody, TSource = DefaultUpdatedSource> =
+    RequestBuilder<TSender, UpdateRequestInner<TBody, TSource>>;
 
 #[doc(hidden)]
-pub struct UpdateRequestInner<TBody> {
+pub struct UpdateRequestInner<TBody, TSource> {
     index: Index<'static>,
     ty: Type<'static>,
     id: Id<'static>,
     body: TBody,
-    _marker: PhantomData<TBody>,
+    _body_marker: PhantomData<TBody>,
+    _update_source_marker: PhantomData<TSource>,
 }
 
 /**
@@ -217,7 +221,8 @@ where
                 ty: ty,
                 id: id.into(),
                 body: Doc::empty(),
-                _marker: PhantomData,
+                _body_marker: PhantomData,
+                _update_source_marker: PhantomData,
             },
         )
     }
@@ -272,13 +277,14 @@ where
                 ty: DEFAULT_DOC_TYPE.into(),
                 id: id.into(),
                 body: Doc::empty(),
-                _marker: PhantomData,
+                _body_marker: PhantomData,
+                _update_source_marker: PhantomData,
             },
         )
     }
 }
 
-impl<TBody> UpdateRequestInner<TBody>
+impl<TBody, TSource> UpdateRequestInner<TBody, TSource>
 where
     TBody: Serialize,
 {
@@ -382,7 +388,8 @@ where
                 index: self.inner.index,
                 ty: self.inner.ty,
                 id: self.inner.id,
-                _marker: PhantomData,
+                _body_marker: PhantomData,
+                _update_source_marker: PhantomData,
             },
         )
     }
@@ -461,7 +468,8 @@ where
                 index: self.inner.index,
                 ty: self.inner.ty,
                 id: self.inner.id,
-                _marker: PhantomData,
+                _body_marker: PhantomData,
+                _update_source_marker: PhantomData,
             },
         )
     }
@@ -552,10 +560,73 @@ where
     }
 }
 
+impl<TSender, TBody, TSource> UpdateRequestBuilder<TSender, TBody, TSource>
+where
+    TSender: Sender,
+{
+    /**
+    Request that the [`UpdateResponse`] include the `source` of the updated document.
+
+    Although not a requirement, be careful that both the document and
+    updated document types use the same index, e.g. by using the
+    [`#[elastic(index)]` attribute][index-attr].
+
+    # Examples
+
+    Request that the `source` is returned with the response and deserialize
+    the updated document by calling [`into_document`] on the [`UpdateResponse`]:
+
+    ```no_run
+    # #[macro_use] extern crate serde_derive;
+    # #[macro_use] extern crate elastic_derive;
+    # use elastic::prelude::*;
+    # fn main() { run().unwrap() }
+    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+    # #[derive(Serialize, Deserialize, ElasticType)]
+    # struct NewsArticle { likes: i64 }
+    # #[derive(Serialize, Deserialize, ElasticType)]
+    # struct UpdatedNewsArticle { likes: i64 }
+    # let client = SyncClientBuilder::new().build()?;
+    let response = client.document::<NewsArticle>()
+                         .update(1)
+                         .script("ctx._source.likes++")
+                         .source::<UpdatedNewsArticle>()
+                         .send()?;
+
+    assert!(response.into_document().unwrap().likes >= 1);
+    # Ok(())
+    # }
+    ```
+
+    [index-attr]: ../../../types/document/index.html#specifying-a-default-index-name
+    [`UpdateResponse`]: ../../responses/struct.UpdateResponse.html
+    [`into_document`]: ../../responses/struct.UpdateResponse.html#method.into_document
+    */
+    pub fn source<T>(self) -> UpdateRequestBuilder<TSender, TBody, T>
+    where
+        T: DeserializeOwned,
+    {
+        RequestBuilder::new(
+            self.client,
+            self.params_builder
+                .fluent(|params| params.url_param("_source", true))
+                .shared(),
+            UpdateRequestInner {
+                body: self.inner.body,
+                index: self.inner.index,
+                ty: self.inner.ty,
+                id: self.inner.id,
+                _body_marker: PhantomData,
+                _update_source_marker: PhantomData,
+            },
+        )
+    }
+}
+
 /**
 # Send synchronously
 */
-impl<TBody> UpdateRequestBuilder<SyncSender, TBody>
+impl<TBody, TSource> UpdateRequestBuilder<SyncSender, TBody, TSource>
 where
     TBody: Serialize,
 {
@@ -595,7 +666,7 @@ where
     [SyncClient]: ../../type.SyncClient.html
     [documents-mod]: ../../types/document/index.html
     */
-    pub fn send(self) -> Result<UpdateResponse, Error> {
+    pub fn send(self) -> Result<UpdateResponse<TSource>, Error> {
         let req = self.inner.into_request()?;
 
         RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
@@ -607,9 +678,10 @@ where
 /**
 # Send asynchronously
 */
-impl<TBody> UpdateRequestBuilder<AsyncSender, TBody>
+impl<TBody, TSource> UpdateRequestBuilder<AsyncSender, TBody, TSource>
 where
     TBody: Serialize + Send + 'static,
+    TSource: Send + 'static,
 {
     /**
     Send an `UpdateRequestBuilder` asynchronously using an [`AsyncClient`][AsyncClient].
@@ -654,7 +726,7 @@ where
     [AsyncClient]: ../../type.AsyncClient.html
     [documents-mod]: ../../types/document/index.html
     */
-    pub fn send(self) -> Pending {
+    pub fn send(self) -> Pending<TSource> {
         let (client, params_builder, inner) = (self.client, self.params_builder, self.inner);
 
         let req_future = client.sender.maybe_async(move || inner.into_request());
@@ -686,7 +758,7 @@ mod tests {
 
     #[test]
     fn is_send() {
-        assert_send::<super::Pending>();
+        assert_send::<super::Pending<serde_json::Value>>();
     }
 
     #[derive(Serialize, ElasticType)]
