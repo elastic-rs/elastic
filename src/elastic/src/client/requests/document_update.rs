@@ -4,10 +4,7 @@ Builders for [update document requests][docs-update].
 [docs-update]: http://www.elastic.co/guide/en/elasticsearch/reference/current/docs-update.html
 */
 
-use futures::{
-    Future,
-    Poll,
-};
+use futures::Future;
 use serde::ser::Serialize;
 use serde_json;
 use std::marker::PhantomData;
@@ -15,6 +12,7 @@ use std::marker::PhantomData;
 use crate::{
     client::{
         requests::{
+            Pending as BasePending,
             raw::RawRequestInner,
             RequestBuilder,
         },
@@ -672,29 +670,7 @@ where
 }
 
 /** A future returned by calling `send`. */
-pub struct Pending {
-    inner: Box<dyn Future<Item = UpdateResponse, Error = Error> + Send>,
-}
-
-impl Pending {
-    fn new<F>(fut: F) -> Self
-    where
-        F: Future<Item = UpdateResponse, Error = Error> + Send + 'static,
-    {
-        Pending {
-            inner: Box::new(fut),
-        }
-    }
-}
-
-impl Future for Pending {
-    type Item = UpdateResponse;
-    type Error = Error;
-
-    fn poll(&mut self) -> Poll<Self::Item, Self::Error> {
-        self.inner.poll()
-    }
-}
+pub type Pending = BasePending<UpdateResponse>;
 
 #[cfg(test)]
 mod tests {

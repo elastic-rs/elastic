@@ -11,10 +11,7 @@ use std::{
     time::Duration,
 };
 
-use futures::{
-    Future,
-    Poll,
-};
+use futures::Future;
 use serde::{
     de::DeserializeOwned,
     ser::Serialize,
@@ -23,6 +20,7 @@ use serde::{
 use crate::{
     client::{
         requests::{
+            Pending as BasePending,
             raw::RawRequestInner,
             RequestBuilder,
         },
@@ -798,29 +796,7 @@ impl BulkBody for Vec<u8> {
 }
 
 /** A future returned by calling `send`. */
-pub struct Pending<TResponse> {
-    inner: Box<dyn Future<Item = TResponse, Error = Error> + Send>,
-}
-
-impl<TResponse> Pending<TResponse> {
-    fn new<F>(fut: F) -> Self
-    where
-        F: Future<Item = TResponse, Error = Error> + Send + 'static,
-    {
-        Pending {
-            inner: Box::new(fut),
-        }
-    }
-}
-
-impl<TResponse> Future for Pending<TResponse> {
-    type Item = TResponse;
-    type Error = Error;
-
-    fn poll(&mut self) -> Poll<Self::Item, Self::Error> {
-        self.inner.poll()
-    }
-}
+pub type Pending<TResponse> = BasePending<TResponse>;
 
 #[doc(hidden)]
 pub trait ChangeIndex<TIndex> {
