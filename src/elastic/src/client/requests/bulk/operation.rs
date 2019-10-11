@@ -107,9 +107,9 @@ impl<TParams> BulkOperation<Script<TParams>> {
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
     # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
-    # #[derive(Serialize, Deserialize, ElasticType)]
+    # #[derive(Serialize, Deserialize, ElasticType, Debug)]
     # struct NewsArticle { id: i64, likes: i64 }
-    # #[derive(Serialize, Deserialize, ElasticType)]
+    # #[derive(Serialize, Deserialize, ElasticType, Debug)]
     # struct UpdatedNewsArticle { id: i64, likes: i64 }
     # let client = SyncClientBuilder::new().build()?;
     let update_ops = (0..10).into_iter().map(|i| {
@@ -126,12 +126,11 @@ impl<TParams> BulkOperation<Script<TParams>> {
         .send()?;
 
     for op in response {
-        for op in response {
-            if let Ok(op) = op {
-                println!("{:?}", op.into_document::<UpdatedNewsArticle>().unwrap());
-            }
+        if let Ok(op) = op {
+            println!("{:?}", op.into_document::<UpdatedNewsArticle>().unwrap());
         }
     }
+
     # Ok(())
     # }
     ```

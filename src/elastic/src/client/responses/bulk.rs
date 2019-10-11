@@ -517,9 +517,9 @@ impl<TIndex, TType, TId> OkItem<TIndex, TType, TId> {
     # use elastic::prelude::*;
     # fn main() { run().unwrap() }
     # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
-    # #[derive(Serialize, Deserialize, ElasticType)]
+    # #[derive(Serialize, Deserialize, ElasticType, Debug)]
     # struct NewsArticle { id: i64, likes: i64 }
-    # #[derive(Serialize, Deserialize, ElasticType)]
+    # #[derive(Serialize, Deserialize, ElasticType, Debug)]
     # struct UpdatedNewsArticle { id: i64, likes: i64 }
     # let client = SyncClientBuilder::new().build()?;
     let update_ops = (0..10).into_iter().map(|i| {
@@ -536,12 +536,11 @@ impl<TIndex, TType, TId> OkItem<TIndex, TType, TId> {
         .send()?;
 
     for op in response {
-        for op in response {
-            if let Ok(op) = op {
-                println!("{:?}", op.into_document::<UpdatedNewsArticle>().unwrap());
-            }
+        if let Ok(op) = op {
+            println!("{:?}", op.into_document::<UpdatedNewsArticle>().unwrap());
         }
     }
+
     # Ok(())
     # }
     ```
@@ -550,11 +549,11 @@ impl<TIndex, TType, TId> OkItem<TIndex, TType, TId> {
     [`BulkOperation`]: ../../requests/bulk/struct.BulkOperation.html
     [index-attr]: ../../../types/document/index.html#specifying-a-default-index-name
     */
-    pub fn into_document<T>(self) -> Option<T>
+    pub fn into_document<T>(&self) -> Option<T>
     where
         T: DeserializeOwned,
     {
-        self.get.map_or_else(
+        self.get.as_ref().map_or_else(
             || None,
             |obj| {
                 obj.get("_source")

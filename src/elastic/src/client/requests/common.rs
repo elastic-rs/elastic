@@ -19,8 +19,8 @@ pub struct Doc<TDocument> {
     doc: DocInner<TDocument>,
     #[serde(skip_serializing_if = "Not::not")]
     doc_as_upsert: bool,
-    #[serde(rename = "_source")]
-    source: Value,
+    #[serde(rename = "_source", skip_serializing_if = "Option::is_none")]
+    source: Option<Value>,
 }
 
 impl<TDocument> Doc<TDocument> {
@@ -28,7 +28,7 @@ impl<TDocument> Doc<TDocument> {
         Doc {
             doc: DocInner { inner: None },
             doc_as_upsert: false,
-            source: false.into(),
+            source: None,
         }
     }
 
@@ -36,7 +36,7 @@ impl<TDocument> Doc<TDocument> {
         Doc {
             doc: DocInner { inner: Some(doc) },
             doc_as_upsert: false,
-            source: false.into(),
+            source: None,
         }
     }
 
@@ -48,7 +48,7 @@ impl<TDocument> Doc<TDocument> {
 
     /** Modify this `Doc` by adding a `source` field. */
     pub(crate) fn source(mut self, value: impl Into<Value>) -> Self {
-        self.source = value.into();
+        self.source = Some(value.into());
 
         self
     }
@@ -80,14 +80,14 @@ pub type DefaultParams = Map<String, Value>;
 #[derive(Serialize)]
 pub struct Script<TParams> {
     script: ScriptInner<TParams>,
-    #[serde(rename = "_source")]
-    source: Value,
+    #[serde(rename = "_source", skip_serializing_if = "Option::is_none")]
+    source: Option<Value>,
 }
 
 impl<TParams> Script<TParams> {
     /** Modify this `Script` by adding a `source` field. */
     pub(crate) fn source(mut self, value: impl Into<Value>) -> Self {
-        self.source = value.into();
+        self.source = Some(value.into());
 
         self
     }
@@ -183,7 +183,7 @@ impl<TParams> ScriptBuilder<TParams> {
                 params: self.params,
                 lang: self.lang,
             },
-            source: false.into(),
+            source: None,
         }
     }
 }
