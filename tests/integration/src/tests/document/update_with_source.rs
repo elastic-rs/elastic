@@ -33,7 +33,7 @@ fn doc() -> Doc {
 test! {
     const description: &'static str = "update and return source";
 
-    type Response = UpdateResponse<UpdatedDoc>;
+    type Response = UpdateResponse;
 
     // Ensure the index doesn't exist
     fn prepare(&self, client: AsyncClient) -> Box<dyn Future<Item = (), Error = Error>> {
@@ -64,7 +64,7 @@ test! {
             .doc(json!({
                 "title": EXPECTED_TITLE.to_owned(),
             }))
-            .source::<UpdatedDoc>()
+            .source()
             .send();
 
         Box::new(
@@ -78,7 +78,7 @@ test! {
     fn assert_ok(&self, res: &Self::Response) -> bool {
         let updated = res.updated();
         let correct_version = res.version() == Some(2);
-        let correct_title = res.into_document().unwrap().title == EXPECTED_TITLE;
+        let correct_title = res.into_document::<UpdatedDoc>().unwrap().title == EXPECTED_TITLE;
 
         updated && correct_version && correct_title
     }

@@ -49,8 +49,6 @@ pub use crate::client::requests::common::{
     ScriptBuilder,
 };
 
-pub(crate) type DefaultUpdatedSource = serde_json::Value;
-
 /**
 An [update document request][docs-update] builder that can be configured before sending.
 
@@ -62,17 +60,15 @@ The `send` method will either send the request [synchronously][send-sync] or [as
 [send-async]: #send-asynchronously
 [Client.document.update]: ../../struct.DocumentClient.html#update-document-request
 */
-pub type UpdateRequestBuilder<TSender, TBody, TSource = DefaultUpdatedSource> =
-    RequestBuilder<TSender, UpdateRequestInner<TBody, TSource>>;
+pub type UpdateRequestBuilder<TSender, TBody> = RequestBuilder<TSender, UpdateRequestInner<TBody>>;
 
 #[doc(hidden)]
-pub struct UpdateRequestInner<TBody, TSource> {
+pub struct UpdateRequestInner<TBody> {
     index: Index<'static>,
     ty: Type<'static>,
     id: Id<'static>,
     body: TBody,
-    _body_marker: PhantomData<TBody>,
-    _update_source_marker: PhantomData<TSource>,
+    _marker: PhantomData<TBody>,
 }
 
 /**
@@ -221,8 +217,7 @@ where
                 ty: ty,
                 id: id.into(),
                 body: Doc::empty(),
-                _body_marker: PhantomData,
-                _update_source_marker: PhantomData,
+                _marker: PhantomData,
             },
         )
     }
@@ -277,14 +272,13 @@ where
                 ty: DEFAULT_DOC_TYPE.into(),
                 id: id.into(),
                 body: Doc::empty(),
-                _body_marker: PhantomData,
-                _update_source_marker: PhantomData,
+                _marker: PhantomData,
             },
         )
     }
 }
 
-impl<TBody, TSource> UpdateRequestInner<TBody, TSource>
+impl<TBody> UpdateRequestInner<TBody>
 where
     TBody: Serialize,
 {
@@ -388,8 +382,7 @@ where
                 index: self.inner.index,
                 ty: self.inner.ty,
                 id: self.inner.id,
-                _body_marker: PhantomData,
-                _update_source_marker: PhantomData,
+                _marker: PhantomData,
             },
         )
     }
@@ -468,8 +461,7 @@ where
                 index: self.inner.index,
                 ty: self.inner.ty,
                 id: self.inner.id,
-                _body_marker: PhantomData,
-                _update_source_marker: PhantomData,
+                _marker: PhantomData,
             },
         )
     }
@@ -560,7 +552,7 @@ where
     }
 }
 
-impl<TSender, TBody, TSource> UpdateRequestBuilder<TSender, TBody, TSource>
+impl<TSender, TBody> UpdateRequestBuilder<TSender, TBody>
 where
     TSender: Sender,
 {
@@ -583,17 +575,17 @@ where
     # fn main() { run().unwrap() }
     # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
-    # struct NewsArticle { likes: i64 }
+    # struct NewsArticle { id: i64, likes: i64 }
     # #[derive(Serialize, Deserialize, ElasticType)]
-    # struct UpdatedNewsArticle { likes: i64 }
+    # struct UpdatedNewsArticle { id: i64, likes: i64 }
     # let client = SyncClientBuilder::new().build()?;
     let response = client.document::<NewsArticle>()
                          .update(1)
                          .script("ctx._source.likes++")
-                         .source::<UpdatedNewsArticle>()
+                         .source()
                          .send()?;
 
-    assert!(response.into_document().unwrap().likes >= 1);
+    assert!(response.into_document::<UpdatedNewsArticle>().unwrap().likes >= 1);
     # Ok(())
     # }
     ```
@@ -602,12 +594,11 @@ where
     [`UpdateResponse`]: ../../responses/struct.UpdateResponse.html
     [`into_document`]: ../../responses/struct.UpdateResponse.html#method.into_document
     */
-    pub fn source<T>(self) -> UpdateRequestBuilder<TSender, TBody, T>
-    where
-        T: DeserializeOwned,
-    {
+    pub fn source(self) -> UpdateRequestBuilder<TSender, TBody> {
         RequestBuilder::new(
             self.client,
+            // TODO: allow passing in `source` parameter add `_source` to body
+            // instead because it supports more options
             self.params_builder
                 .fluent(|params| params.url_param("_source", true))
                 .shared(),
@@ -616,8 +607,7 @@ where
                 index: self.inner.index,
                 ty: self.inner.ty,
                 id: self.inner.id,
-                _body_marker: PhantomData,
-                _update_source_marker: PhantomData,
+                _marker: PhantomData,
             },
         )
     }
@@ -626,7 +616,7 @@ where
 /**
 # Send synchronously
 */
-impl<TBody, TSource> UpdateRequestBuilder<SyncSender, TBody, TSource>
+impl<TBody> UpdateRequestBuilder<SyncSender, TBody>
 where
     TBody: Serialize,
 {
@@ -666,7 +656,7 @@ where
     [SyncClient]: ../../type.SyncClient.html
     [documents-mod]: ../../types/document/index.html
     */
-    pub fn send(self) -> Result<UpdateResponse<TSource>, Error> {
+    pub fn send(self) -> Result<UpdateResponse, Error> {
         let req = self.inner.into_request()?;
 
         RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
@@ -678,10 +668,9 @@ where
 /**
 # Send asynchronously
 */
-impl<TBody, TSource> UpdateRequestBuilder<AsyncSender, TBody, TSource>
+impl<TBody> UpdateRequestBuilder<AsyncSender, TBody>
 where
     TBody: Serialize + Send + 'static,
-    TSource: Send + 'static,
 {
     /**
     Send an `UpdateRequestBuilder` asynchronously using an [`AsyncClient`][AsyncClient].
@@ -726,7 +715,7 @@ where
     [AsyncClient]: ../../type.AsyncClient.html
     [documents-mod]: ../../types/document/index.html
     */
-    pub fn send(self) -> Pending<TSource> {
+    pub fn send(self) -> Pending {
         let (client, params_builder, inner) = (self.client, self.params_builder, self.inner);
 
         let req_future = client.sender.maybe_async(move || inner.into_request());
@@ -758,7 +747,7 @@ mod tests {
 
     #[test]
     fn is_send() {
-        assert_send::<super::Pending<serde_json::Value>>();
+        assert_send::<super::Pending>();
     }
 
     #[derive(Serialize, ElasticType)]

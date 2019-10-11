@@ -57,14 +57,14 @@ fn run() -> Result<(), Box<dyn Error>> {
         .update("1")
         .script("ctx._source.likes++")
         // Request that the updated document be returned with the response
-        .source::<UpdatedNewsArticle>()
+        .source()
         .send()?;
 
     assert!(update.updated());
 
-    // Deserialize the updated document to the type we requested earlier;
-    // this will return `None` if `source()` was not called on the request
-    let updated_doc = update.into_document().unwrap();
+    // Deserialize the updated document,
+    // will return `None` if `source()` was not called on the request
+    let updated_doc = update.into_document::<UpdatedNewsArticle>().unwrap();
 
     assert!(updated_doc.likes > 0);
 

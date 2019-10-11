@@ -2,15 +2,12 @@
 Response types for a [update document request](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-update.html).
 */
 
-use std::marker::PhantomData;
-
 use serde::de::DeserializeOwned;
 use serde_json::Value;
 
 use super::common::DocumentResult;
 
 use crate::{
-    client::requests::document_update::DefaultUpdatedSource,
     http::receiver::IsOkOnSuccess,
     types::document::{
         Id,
@@ -21,7 +18,7 @@ use crate::{
 
 /** Response for an [update document request](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-update.html). */
 #[derive(Deserialize, Debug)]
-pub struct UpdateResponse<TSource = DefaultUpdatedSource> {
+pub struct UpdateResponse {
     #[serde(rename = "_index")]
     index: String,
     #[serde(rename = "_type")]
@@ -38,14 +35,9 @@ pub struct UpdateResponse<TSource = DefaultUpdatedSource> {
     routing: Option<String>,
     result: DocumentResult,
     get: Option<Value>,
-    #[serde(skip)]
-    _marker: PhantomData<TSource>,
 }
 
-impl<TSource> UpdateResponse<TSource>
-where
-    TSource: DeserializeOwned,
-{
+impl UpdateResponse {
     /**
     Convert the source in the response into the updated document.
 
@@ -61,17 +53,17 @@ where
     # fn main() { run().unwrap() }
     # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
-    # struct NewsArticle { likes: i64 }
+    # struct NewsArticle { id: i64, likes: i64 }
     # #[derive(Serialize, Deserialize, ElasticType)]
-    # struct UpdatedNewsArticle { likes: i64 }
+    # struct UpdatedNewsArticle { id: i64, likes: i64 }
     # let client = SyncClientBuilder::new().build()?;
     let response = client.document::<NewsArticle>()
                          .update(1)
                          .script("ctx._source.likes++")
-                         .source::<UpdatedNewsArticle>()
+                         .source()
                          .send()?;
 
-    assert!(response.into_document().unwrap().likes >= 1);
+    assert!(response.into_document::<UpdatedNewsArticle>().unwrap().likes >= 1);
     # Ok(())
     # }
     ```
@@ -79,13 +71,16 @@ where
     [`source`]: ../requests/document_update/type.UpdateRequestBuilder.html#method.source
     [`UpdateRequestBuilder`]: ../requests/document_update/type.UpdateRequestBuilder.html
     */
-    pub fn into_document(&self) -> Option<TSource> {
+    pub fn into_document<T>(&self) -> Option<T>
+    where
+        T: DeserializeOwned,
+    {
         self.get.as_ref().map_or_else(
             || None,
             |obj| {
                 obj.get("_source")
                     .cloned()
-                    .map_or_else(|| None, |doc| serde_json::from_value::<TSource>(doc).ok())
+                    .map_or_else(|| None, |doc| serde_json::from_value::<T>(doc).ok())
             },
         )
     }
@@ -137,4 +132,4 @@ where
     }
 }
 
-impl<TSource> IsOkOnSuccess for UpdateResponse<TSource> {}
+impl IsOkOnSuccess for UpdateResponse {}
