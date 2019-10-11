@@ -49,8 +49,10 @@ The following table illustrates the types provided by `elastic`:
  `boolean`           | `bool`                      | `std`     | [`Boolean<M>`][boolean-mod]                              | -
  `ip`                | `Ipv4Addr`                  | `std`     | [`Ip<M>`][ip-mod]                                        | -
  `date`              | `DateTime<UTC>`             | `chrono`  | [`Date<M>`][date-mod]                                    | `DateFormat`
- `geo_point`         | `Point`                     | `geo`     | [`GeoPoint<M>`][geopoint-mod]                            | `GeoPointFormat`
- `geo_shape`         | -                           | `geojson` | [`GeoShape<M>`][geoshape-mod]                            | -
+ `geo_point`[^geo]   | `Point`                     | `geo`     | [`GeoPoint<M>`][geopoint-mod]                            | `GeoPointFormat`
+ `geo_shape`[^geo]   | -                           | `geojson` | [`GeoShape<M>`][geoshape-mod]                            | -
+
+[^geo]: requires building with the `geo-types` feature (which is enabled by default)
 
 ## Mapping
 
@@ -248,6 +250,7 @@ mod private;
 pub mod boolean;
 pub mod date;
 pub mod document;
+#[cfg(features = "geo-types")]
 pub mod geo;
 pub mod ip;
 pub mod number;
@@ -268,9 +271,11 @@ pub mod prelude {
     pub use super::{
         boolean::prelude::*,
         date::prelude::*,
-        geo::prelude::*,
         ip::prelude::*,
         number::prelude::*,
         string::prelude::*,
     };
+
+    #[cfg(features = "geo-types")]
+    pub use geo::prelude::*;
 }
