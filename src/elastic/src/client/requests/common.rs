@@ -46,6 +46,7 @@ impl<TDocument> Doc<TDocument> {
         self
     }
 
+    /** Modify this `Doc` by adding a `source` field. */
     pub(crate) fn source(mut self, value: impl Into<Value>) -> Self {
         self.source = value.into();
 
@@ -79,6 +80,17 @@ pub type DefaultParams = Map<String, Value>;
 #[derive(Serialize)]
 pub struct Script<TParams> {
     script: ScriptInner<TParams>,
+    #[serde(rename = "_source")]
+    source: Value,
+}
+
+impl<TParams> Script<TParams> {
+    /** Modify this `Script` by adding a `source` field. */
+    pub(crate) fn source(mut self, value: impl Into<Value>) -> Self {
+        self.source = value.into();
+
+        self
+    }
 }
 
 impl Script<DefaultParams> {
@@ -171,6 +183,7 @@ impl<TParams> ScriptBuilder<TParams> {
                 params: self.params,
                 lang: self.lang,
             },
+            source: false.into(),
         }
     }
 }
