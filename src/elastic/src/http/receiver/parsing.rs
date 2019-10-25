@@ -111,15 +111,12 @@ fn from_body<B: ResponseBody, T: IsOk + DeserializeOwned>(
 ) -> Result<T, ResponseError> {
     let maybe = T::is_ok(head, Unbuffered(body))?;
 
-    match maybe.ok {
-        true => {
-            let ok = maybe.res.parse_ok()?;
-            Ok(ok)
-        }
-        false => {
-            let err = maybe.res.parse_err()?;
-            Err(ResponseError::Api(err))
-        }
+    if maybe.ok {
+        let ok = maybe.res.parse_ok()?;
+        Ok(ok)
+    } else {
+        let err = maybe.res.parse_err()?;
+        Err(ResponseError::Api(err))
     }
 }
 
@@ -332,7 +329,7 @@ where
         I: Into<MaybeBufferedResponse<B>>,
     {
         MaybeOkResponse {
-            ok: ok,
+            ok,
             res: res.into(),
         }
     }

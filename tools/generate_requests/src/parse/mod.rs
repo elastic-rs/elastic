@@ -82,7 +82,7 @@ pub struct Url {
 
 impl Url {
     pub fn get_type<'a>(&'a self, name: &str) -> Option<&'a Type> {
-        self.parts.get(name).or(self.params.get(name))
+        self.parts.get(name).or_else(|| self.params.get(name))
     }
 }
 
@@ -167,7 +167,7 @@ impl Path {
     }
 
     fn parse<'a>(i: &'a [u8], state: PathParseState, r: Vec<PathPart<'a>>) -> Vec<PathPart<'a>> {
-        if i.len() == 0 {
+        if i.is_empty() {
             return r;
         }
 
@@ -177,7 +177,7 @@ impl Path {
             PathParseState::Literal => {
                 let (rest, part) = Path::parse_literal(i);
 
-                if part.len() > 0 {
+                if !part.is_empty() {
                     r.push(PathPart::Literal(part));
                 }
 
@@ -186,7 +186,7 @@ impl Path {
             PathParseState::Param => {
                 let (rest, part) = Path::parse_param(i);
 
-                if part.len() > 0 {
+                if !part.is_empty() {
                     r.push(PathPart::Param(part));
                 }
 

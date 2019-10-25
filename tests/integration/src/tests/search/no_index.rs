@@ -8,7 +8,7 @@ use elastic::{
 use futures::Future;
 use serde_json::Value;
 
-const INDEX: &'static str = "no_index_idx";
+const INDEX: &str = "no_index_idx";
 
 test! {
     const description: &'static str = "no index";

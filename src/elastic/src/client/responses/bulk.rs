@@ -437,7 +437,7 @@ impl<TIndex, TType, TId> OkItem<TIndex, TType, TId> {
 
     /** The document version after this item. */
     pub fn version(&self) -> Option<u32> {
-        self.version.clone()
+        self.version
     }
 
     /**
@@ -446,7 +446,7 @@ impl<TIndex, TType, TId> OkItem<TIndex, TType, TId> {
      * [sequence number]: https://www.elastic.co/guide/en/elasticsearch/reference/current/optimistic-concurrency-control.html
      */
     pub fn sequence_number(&self) -> Option<u32> {
-        self.sequence_number.clone()
+        self.sequence_number
     }
 
     /**
@@ -455,7 +455,7 @@ impl<TIndex, TType, TId> OkItem<TIndex, TType, TId> {
      * [primary term]: https://www.elastic.co/guide/en/elasticsearch/reference/current/optimistic-concurrency-control.html
      */
     pub fn primary_term(&self) -> Option<u32> {
-        self.primary_term.clone()
+        self.primary_term
     }
 
     /**
@@ -631,7 +631,7 @@ where
                 index: self.inner.index,
                 ty: self.inner.ty,
                 id: self.inner.id,
-                err: err,
+                err,
             }),
             None => None,
         }
@@ -688,12 +688,9 @@ where
             {
                 let (action, inner) = visitor
                     .next_entry()?
-                    .ok_or(V::Error::custom("expected at least one field"))?;
+                    .ok_or_else(|| V::Error::custom("expected at least one field"))?;
 
-                let result = ItemDe {
-                    action: action,
-                    inner: inner,
-                };
+                let result = ItemDe { action, inner };
 
                 Ok(result)
             }

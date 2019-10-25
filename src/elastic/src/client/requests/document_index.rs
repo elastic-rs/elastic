@@ -11,8 +11,8 @@ use serde_json;
 use crate::{
     client::{
         requests::{
-            Pending as BasePending,
             raw::RawRequestInner,
+            Pending as BasePending,
             RequestBuilder,
         },
         responses::IndexResponse,
@@ -130,7 +130,7 @@ where
                 index: doc.index().to_owned(),
                 ty: doc.ty().to_owned(),
                 id: doc.partial_id().map(|id| id.to_owned()),
-                doc: doc,
+                doc,
             },
         )
     }
@@ -195,7 +195,7 @@ where
                 index: index.into(),
                 ty: DEFAULT_DOC_TYPE.into(),
                 id: None,
-                doc: doc,
+                doc,
             },
         )
     }
@@ -397,7 +397,7 @@ mod tests {
             .unwrap();
 
         assert_eq!("/testdoc/_doc", req.url.as_ref());
-        assert_eq!("{}".as_bytes().to_vec(), req.body);
+        assert_eq!(b"{}".to_vec(), req.body);
     }
 
     #[test]

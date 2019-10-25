@@ -60,7 +60,7 @@ fn run() -> Result<(), Box<dyn StdError>> {
     let index_future = ensure_indexed(client.clone(), doc);
 
     // Do a search request
-    let search_future = search(client.clone(), "title");
+    let search_future = search(client, "title");
 
     let res_future = index_future.and_then(|_| search_future).and_then(|res| {
         println!("{:?}", res);

@@ -208,5 +208,4 @@ mod tests {
 
         assert_eq!(Ipv4Addr::new(127, 0, 0, 1), ip);
     }
-
 }

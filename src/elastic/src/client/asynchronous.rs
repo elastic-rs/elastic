@@ -284,8 +284,8 @@ impl AsyncClientBuilder {
     [AsyncClient]: type.AsyncClient.html
     */
     pub fn build(self) -> Result<AsyncClient, Error> {
-        let http = self.http.unwrap_or_else(|| AsyncHttpClient::new());
-        let params = self.params.into_value(|| PreRequestParams::default());
+        let http = self.http.unwrap_or_else(AsyncHttpClient::new);
+        let params = self.params.into_value(PreRequestParams::default);
 
         let sender = AsyncSender {
             http,
@@ -295,9 +295,6 @@ impl AsyncClientBuilder {
 
         let addresses = self.nodes.build(params, sender.clone());
 
-        Ok(AsyncClient {
-            sender: sender,
-            addresses: addresses,
-        })
+        Ok(AsyncClient { sender, addresses })
     }
 }

@@ -7,7 +7,7 @@ use elastic::{
 };
 use futures::Future;
 
-const INDEX: &'static str = "no_sql_index_idx";
+const INDEX: &str = "no_sql_index_idx";
 
 test! {
     const description: &'static str = "invalid query";

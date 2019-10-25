@@ -11,7 +11,7 @@ pub struct Doc {
     id: String,
 }
 
-const ID: &'static str = "1";
+const ID: &str = "1";
 
 fn doc() -> Doc {
     Doc { id: ID.to_owned() }

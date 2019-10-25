@@ -9,8 +9,8 @@ use futures::Future;
 use crate::{
     client::{
         requests::{
-            Pending as BasePending,
             raw::RawRequestInner,
+            Pending as BasePending,
             RequestBuilder,
         },
         responses::SqlQueryResponse,
@@ -143,7 +143,7 @@ where
 
 impl<TBody> SqlRequestInner<TBody> {
     fn new(body: TBody) -> Self {
-        SqlRequestInner { body: body }
+        SqlRequestInner { body }
     }
 
     fn into_request(self) -> SqlQueryRequest<'static, TBody> {
@@ -169,11 +169,7 @@ where
     where
         TNewBody: Into<TSender::Body>,
     {
-        RequestBuilder::new(
-            self.client,
-            self.params_builder,
-            SqlRequestInner { body: body },
-        )
+        RequestBuilder::new(self.client, self.params_builder, SqlRequestInner { body })
     }
 
     /**

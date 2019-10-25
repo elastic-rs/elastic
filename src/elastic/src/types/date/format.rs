@@ -133,7 +133,7 @@ where
 
 impl<TFormat> From<DateValue> for FormattableDateValue<TFormat> {
     fn from(date: DateValue) -> Self {
-        FormattableDateValue(date.into(), PhantomData)
+        FormattableDateValue(date, PhantomData)
     }
 }
 

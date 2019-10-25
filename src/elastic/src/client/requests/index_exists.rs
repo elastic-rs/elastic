@@ -9,8 +9,8 @@ use futures::Future;
 use crate::{
     client::{
         requests::{
-            Pending as BasePending,
             raw::RawRequestInner,
+            Pending as BasePending,
             RequestBuilder,
         },
         responses::IndicesExistsResponse,

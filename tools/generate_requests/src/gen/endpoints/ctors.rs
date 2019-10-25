@@ -33,8 +33,8 @@ impl Builder {
     pub fn new(has_body: bool, request_ty: syn::Ty, params_ty: syn::Ty) -> Self {
         Builder {
             req_ty: request_ty,
-            params_ty: params_ty,
-            has_body: has_body,
+            params_ty,
+            has_body,
             ctors: vec![],
         }
     }
@@ -65,9 +65,9 @@ impl Builder {
 
         Constructor {
             ident: ident("new"),
-            doc_comment: doc_comment,
+            doc_comment,
             params_fields: vec![],
-            body_field: body_field,
+            body_field,
         }
     }
 
@@ -89,9 +89,9 @@ impl Builder {
 
         Constructor {
             ident: ident(name),
-            doc_comment: doc_comment,
+            doc_comment,
             params_fields: fields,
-            body_field: body_field,
+            body_field,
         }
     }
 
@@ -191,7 +191,7 @@ impl Builder {
         }];
 
         // AST to set the body field, if present: `body: Body::new(body)`
-        if let &Some((ref body_ident, _)) = &ctor.body_field {
+        if let Some((ref body_ident, _)) = ctor.body_field {
             fields.push(syn::FieldValue {
                 attrs: vec![],
                 ident: ident("body"),
@@ -274,7 +274,7 @@ impl Builder {
 
         let fndecl = Self::ctor_decl(&ctor);
 
-        let body = Self::ctor_body(req_ty.clone(), params_ty, &ctor);
+        let body = Self::ctor_body(req_ty, params_ty, &ctor);
 
         let mut attrs = vec![];
         if let Some(ref doc_comment) = ctor.doc_comment {
@@ -285,14 +285,14 @@ impl Builder {
             ident: ctor.ident.clone(),
             vis: syn::Visibility::Public,
             defaultness: syn::Defaultness::Final,
-            attrs: attrs,
+            attrs,
             node: syn::ImplItemKind::Method(
                 syn::MethodSig {
                     unsafety: syn::Unsafety::Normal,
                     constness: syn::Constness::NotConst,
                     abi: None,
                     decl: fndecl,
-                    generics: generics,
+                    generics,
                 },
                 body,
             ),
@@ -407,7 +407,7 @@ impl<'a>
 #[cfg(test)]
 pub mod tests {
     #![cfg_attr(rustfmt, rustfmt_skip)]
-    
+
     use super::*;
 
     #[test]

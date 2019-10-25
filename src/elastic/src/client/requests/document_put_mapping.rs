@@ -11,8 +11,8 @@ use std::marker::PhantomData;
 use crate::{
     client::{
         requests::{
-            Pending as BasePending,
             raw::RawRequestInner,
+            Pending as BasePending,
             RequestBuilder,
         },
         responses::CommandResponse,
@@ -112,14 +112,14 @@ where
     where
         TDocument: DocumentType + StaticIndex + StaticType,
     {
-        let index = TDocument::static_index().into();
-        let ty = TDocument::static_ty().into();
+        let index = TDocument::static_index();
+        let ty = TDocument::static_ty();
 
         RequestBuilder::initial(
             self.inner,
             PutMappingRequestInner {
-                index: index,
-                ty: ty,
+                index,
+                ty,
                 _marker: PhantomData,
             },
         )

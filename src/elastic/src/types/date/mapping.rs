@@ -316,5 +316,4 @@ mod tests {
 
         assert_eq!(expected, ser);
     }
-
 }

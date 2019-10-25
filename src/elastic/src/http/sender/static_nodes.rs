@@ -49,10 +49,10 @@ impl<TStrategy> private::Sealed for StaticNodes<TStrategy> {}
 
 impl<TStrategy> StaticNodes<TStrategy> {
     pub(crate) fn set(&mut self, nodes: Vec<NodeAddress>) -> Result<(), Error> {
-        if nodes.len() == 0 {
-            Err(error::request(error::message(
+        if nodes.is_empty() {
+            return Err(error::request(error::message(
                 "the number of node addresses must be greater than 0",
-            )))?
+            )));
         }
 
         self.nodes = nodes;
@@ -78,9 +78,9 @@ impl StaticNodes<RoundRobin> {
         let strategy = RoundRobin::default();
 
         StaticNodes {
-            nodes: nodes,
-            strategy: strategy,
-            params: params,
+            nodes,
+            strategy,
+            params,
         }
     }
 }
@@ -126,7 +126,7 @@ impl Default for RoundRobin {
 
 impl Strategy for RoundRobin {
     fn try_next(&self, nodes: &[NodeAddress]) -> Result<NodeAddress, StrategyError> {
-        if nodes.len() == 0 {
+        if nodes.is_empty() {
             Err(StrategyError::Empty)
         } else {
             let i = self.index.fetch_add(1, Ordering::Relaxed) % nodes.len();

@@ -83,7 +83,7 @@ fn ensure_indexed(client: &SyncClient, doc: MyType) -> Result<(), Error> {
             put_doc(client, doc)?;
         }
         // Something went wrong: panic
-        Err(e) => Err(e)?,
+        Err(e) => return Err(e),
     }
 
     Ok(())

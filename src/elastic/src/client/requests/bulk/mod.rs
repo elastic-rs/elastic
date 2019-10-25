@@ -20,8 +20,8 @@ use serde::{
 use crate::{
     client::{
         requests::{
-            Pending as BasePending,
             raw::RawRequestInner,
+            Pending as BasePending,
             RequestBuilder,
         },
         responses::{
@@ -721,7 +721,7 @@ impl<T> WrappedBody<T> {
     }
 
     fn try_into_inner(self) -> Result<T, Error> {
-        if self.errs.len() > 0 {
+        if !self.errs.is_empty() {
             Err(error::request(BulkBodyError(self.errs)))
         } else {
             Ok(self.inner)

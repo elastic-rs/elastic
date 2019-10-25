@@ -184,11 +184,11 @@ where
                 inner: &self.header,
             },
         )?;
-        write!(&mut writer, "\n")?;
+        writeln!(&mut writer)?;
 
         if let Some(ref inner) = self.inner {
             serde_json::to_writer(&mut writer, inner)?;
-            write!(&mut writer, "\n")?;
+            writeln!(&mut writer)?;
         }
 
         Ok(())

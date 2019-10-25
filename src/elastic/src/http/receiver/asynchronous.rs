@@ -46,7 +46,7 @@ pub(crate) fn async_response(
     Ok(AsyncResponseBuilder {
         inner: res,
         status,
-        de_pool: de_pool,
+        de_pool,
     })
 }
 

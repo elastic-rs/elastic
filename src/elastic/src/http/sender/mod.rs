@@ -67,8 +67,8 @@ impl<TEndpoint, TParams, TBody> SendableRequest<TEndpoint, TParams, TBody> {
     pub(crate) fn new(inner: TEndpoint, params: SendableRequestParams<TParams>) -> Self {
         SendableRequest {
             correlation_id: Uuid::new_v4(),
-            inner: inner,
-            params: params,
+            inner,
+            params,
             _marker: PhantomData,
         }
     }
@@ -196,9 +196,7 @@ impl NodeAddressesBuilder {
             NodeAddressesBuilder::Sniffed(fluent_builder) => {
                 NodeAddressesBuilder::Sniffed(fluent_builder.value(builder))
             }
-            _ => NodeAddressesBuilder::Sniffed(SharedStatefulFluentBuilder::from_value(
-                builder.into(),
-            )),
+            _ => NodeAddressesBuilder::Sniffed(SharedStatefulFluentBuilder::from_value(builder)),
         }
     }
 
@@ -208,12 +206,10 @@ impl NodeAddressesBuilder {
     {
         match self {
             NodeAddressesBuilder::Sniffed(fluent_builder) => NodeAddressesBuilder::Sniffed(
-                fluent_builder
-                    .fluent(address.into(), fleunt_method)
-                    .shared(),
+                fluent_builder.fluent(address, fleunt_method).shared(),
             ),
             _ => NodeAddressesBuilder::Sniffed(SharedStatefulFluentBuilder::from_fluent(
-                address.into(),
+                address,
                 fleunt_method,
             )),
         }
@@ -240,7 +236,7 @@ impl NodeAddressesBuilder {
             }
             NodeAddressesBuilder::Sniffed(builder) => {
                 let nodes = builder
-                    .into_value(|node| SniffedNodesBuilder::new(node))
+                    .into_value(SniffedNodesBuilder::new)
                     .build(params, sender);
 
                 NodeAddresses::sniffed_nodes(nodes)

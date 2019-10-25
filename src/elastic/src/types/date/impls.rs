@@ -706,9 +706,9 @@ mod tests {
 
     #[test]
     fn dates_should_use_chrono_format() {
-        let dt = DateValue::build(2015, 05, 13, 0, 0, 0, 0);
+        let dt = DateValue::build(2015, 5, 13, 0, 0, 0, 0);
 
-        let dt = Date::<DefaultDateMapping<NamedDateFormat>>::new(dt.clone());
+        let dt = Date::<DefaultDateMapping<NamedDateFormat>>::new(dt);
         let actual = format(&dt).to_string();
 
         assert_eq!("2015/05/13 00:00:00", actual);
@@ -716,9 +716,9 @@ mod tests {
 
     #[test]
     fn dates_should_use_es_format() {
-        let dt = DateValue::build(2015, 05, 13, 0, 0, 0, 0);
+        let dt = DateValue::build(2015, 5, 13, 0, 0, 0, 0);
 
-        let dt = Date::<DefaultDateMapping<UnNamedDateFormat>>::new(dt.clone());
+        let dt = Date::<DefaultDateMapping<UnNamedDateFormat>>::new(dt);
         let actual = format(&dt).to_string();
 
         assert_eq!("20150513", actual);
@@ -737,7 +737,7 @@ mod tests {
 
     #[test]
     fn can_build_date_from_value() {
-        let date: Date<DefaultDateMapping> = Date::new(DateValue::build(2015, 05, 13, 0, 0, 0, 0));
+        let date: Date<DefaultDateMapping> = Date::new(DateValue::build(2015, 5, 13, 0, 0, 0, 0));
 
         assert_eq!(
             (2015, 5, 13, 0, 0, 0),
@@ -793,7 +793,7 @@ mod tests {
     #[test]
     fn serialise_elastic_date() {
         let date = Date::<DefaultDateMapping<BasicDateTime>>::new(DateValue::build(
-            2015, 05, 13, 0, 0, 0, 0,
+            2015, 5, 13, 0, 0, 0, 0,
         ));
 
         let ser = serde_json::to_string(&date).unwrap();

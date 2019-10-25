@@ -11,8 +11,8 @@ use std::marker::PhantomData;
 use crate::{
     client::{
         requests::{
-            Pending as BasePending,
             raw::RawRequestInner,
+            Pending as BasePending,
             RequestBuilder,
         },
         responses::SearchResponse,
@@ -218,8 +218,8 @@ where
         RequestBuilder::initial(
             self.inner,
             SearchRequestInner {
-                index: index,
-                ty: ty,
+                index,
+                ty,
                 body: empty_body(),
                 _marker: PhantomData,
             },
@@ -235,7 +235,7 @@ where
         SearchRequestInner {
             index: None,
             ty: None,
-            body: body,
+            body,
             _marker: PhantomData,
         }
     }
@@ -291,7 +291,7 @@ where
             self.client,
             self.params_builder,
             SearchRequestInner {
-                body: body,
+                body,
                 index: self.inner.index,
                 ty: self.inner.ty,
                 _marker: PhantomData,

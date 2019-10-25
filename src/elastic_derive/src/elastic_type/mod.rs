@@ -384,9 +384,8 @@ fn get_ser_field(field: &Field) -> Option<(Ident, &Field)> {
         serde_attr::Field::from_ast(&ctxt, 0, field, None, &serde_attr::Default::None);
 
     // If the `serde` parse fails, return `None` and let `serde` panic later
-    match ctxt.check() {
-        Err(_) => return None,
-        _ => (),
+    if ctxt.check().is_err() {
+        return None;
     };
 
     // Get all fields on struct where there isn't `skip_serializing`

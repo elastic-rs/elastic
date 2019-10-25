@@ -50,7 +50,7 @@ fn run() -> Result<(), Box<dyn StdError>> {
             println!("index not found");
         }
         // Some other error
-        Err(e) => Err(e)?,
+        Err(e) => return Err(e.into()),
     }
 
     Ok(())

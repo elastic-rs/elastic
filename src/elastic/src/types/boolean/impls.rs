@@ -182,5 +182,4 @@ mod tests {
 
         assert_eq!(true, boolean);
     }
-
 }

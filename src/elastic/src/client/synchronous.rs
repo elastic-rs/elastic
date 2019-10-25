@@ -255,7 +255,7 @@ impl SyncClientBuilder {
             .unwrap_or_else(|| SyncHttpClientBuilder::new().build())
             .map_err(error::build)?;
 
-        let params = self.params.into_value(|| PreRequestParams::default());
+        let params = self.params.into_value(PreRequestParams::default);
         let sender = SyncSender {
             http,
             pre_send: self.pre_send,
@@ -263,9 +263,6 @@ impl SyncClientBuilder {
 
         let addresses = self.nodes.build(params, sender.clone());
 
-        Ok(SyncClient {
-            sender: sender,
-            addresses: addresses,
-        })
+        Ok(SyncClient { sender, addresses })
     }
 }

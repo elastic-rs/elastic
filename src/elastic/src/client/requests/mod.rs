@@ -4,13 +4,17 @@ Request types for the Elasticsearch REST API.
 This module contains implementation details that are useful if you want to customise the request process, but aren't generally important for sending requests.
 */
 
+use std::{
+    marker::PhantomData,
+    sync::Arc,
+};
+
+use fluent_builder::SharedFluentBuilder;
 use futures::{
     Future,
-    Poll
+    Poll,
 };
-use fluent_builder::SharedFluentBuilder;
-use std::sync::Arc;
-use std::marker::PhantomData;
+
 use tokio_threadpool::ThreadPool;
 
 use crate::{
@@ -115,7 +119,7 @@ where
 {
     fn initial(client: Client<TSender>, req: TRequest) -> Self {
         RequestBuilder {
-            client: client,
+            client,
             params_builder: SharedFluentBuilder::new(),
             inner: req,
         }
@@ -127,7 +131,7 @@ where
         req: TRequest,
     ) -> Self {
         RequestBuilder {
-            client: client,
+            client,
             params_builder: builder,
             inner: req,
         }
@@ -286,7 +290,6 @@ impl<T> Future for Pending<T> {
         self.inner.poll()
     }
 }
-
 
 pub mod prelude {
     /*! A glob import for convenience. */
