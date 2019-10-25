@@ -17,7 +17,6 @@ extern crate syn;
 #[macro_use]
 extern crate quick_error;
 
-#[macro_use]
 extern crate nom;
 
 extern crate serde;
