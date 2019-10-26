@@ -9,6 +9,7 @@ use std::{
     fmt,
 };
 
+#[allow(clippy::module_inception)]
 mod parse;
 
 pub trait ApiEndpoint {

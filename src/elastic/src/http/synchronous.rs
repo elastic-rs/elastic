@@ -106,6 +106,7 @@ pub struct SyncBodyReader<'a> {
 }
 
 enum SyncBodyReaderState<'a> {
+    #[allow(clippy::borrowed_box)]
     UnBuffered(&'a mut Box<dyn Read + Send>),
     Buffered(Cursor<BufferedSyncBodyInner<'a>>),
 }

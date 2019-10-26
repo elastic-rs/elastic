@@ -79,6 +79,7 @@ pub fn parse<T: IsOk + DeserializeOwned>() -> Parse<T> {
     }
 }
 
+#[allow(clippy::wrong_self_convention)]
 impl<T: IsOk + DeserializeOwned> Parse<T> {
     /** Try parse a contiguous slice of bytes into a concrete response. */
     pub fn from_slice<B: AsRef<[u8]>, H: Into<HttpResponseHead>>(
