@@ -86,10 +86,9 @@ where
     # #[macro_use] extern crate elastic_derive;
     # use serde_json::Value;
     # use elastic::prelude::*;
-    # fn main() { run().unwrap() }
-    # #[derive(Serialize, Deserialize, ElasticType)]
+        # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType { }
-    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+    # fn main() -> Result<(), Box<dyn ::std::error::Error>> {
     # let client = SyncClientBuilder::new().build()?;
     let response = client.document::<MyType>()
                          .get(1)
@@ -144,8 +143,7 @@ where
     # #[macro_use] extern crate elastic_derive;
     # use serde_json::Value;
     # use elastic::prelude::*;
-    # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+        # fn main() -> Result<(), Box<dyn ::std::error::Error>> {
     # let client = SyncClientBuilder::new().build()?;
     let response = client.document::<Value>()
                          .get_raw("myindex", 1)
@@ -233,8 +231,7 @@ where
     # use elastic::prelude::*;
     # #[derive(Debug, ElasticType, Deserialize)]
     # struct MyType { }
-    # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+        # fn main() -> Result<(), Box<dyn ::std::error::Error>> {
     # let client = SyncClientBuilder::new().build()?;
     let response = client.document::<MyType>()
                          .get(1)
@@ -284,8 +281,7 @@ where
     # use elastic::prelude::*;
     # #[derive(Debug, ElasticType, Deserialize)]
     # struct MyType { }
-    # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+        # fn main() -> Result<(), Box<dyn ::std::error::Error>> {
     # let client = AsyncClientBuilder::new().build()?;
     let future = client.document::<MyType>()
                        .get(1)

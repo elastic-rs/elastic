@@ -85,8 +85,7 @@ where
     # #[macro_use] extern crate serde_derive;
     # #[macro_use] extern crate elastic_derive;
     # use elastic::prelude::*;
-    # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+        # fn main() -> Result<(), Box<dyn ::std::error::Error>> {
     # let client = SyncClientBuilder::new().build()?;
     #[derive(Serialize, Deserialize, ElasticType)]
     struct MyType {
@@ -153,8 +152,7 @@ where
     # #[macro_use] extern crate elastic_derive;
     # #[macro_use] extern crate serde_json;
     # use elastic::prelude::*;
-    # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+        # fn main() -> Result<(), Box<dyn ::std::error::Error>> {
     # let client = SyncClientBuilder::new().build()?;
     let doc_id = 123;
     let doc = json!({
@@ -265,8 +263,7 @@ where
     # #[macro_use] extern crate serde_derive;
     # #[macro_use] extern crate elastic_derive;
     # use elastic::prelude::*;
-    # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+        # fn main() -> Result<(), Box<dyn ::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
     #     pub id: String,
@@ -321,8 +318,7 @@ where
     # #[macro_use] extern crate elastic_derive;
     # use futures::Future;
     # use elastic::prelude::*;
-    # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+        # fn main() -> Result<(), Box<dyn ::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
     #     pub id: String,

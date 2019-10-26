@@ -38,7 +38,6 @@ impl DateMapping for MyDateMapping {
         Some(1.5)
     }
 }
-# fn main() {}
 ```
 
 This will produce the following mapping:
@@ -55,7 +54,6 @@ This will produce the following mapping:
 #         Some(1.5)
 #     }
 # }
-# fn main() {
 # let mapping = elastic::types::__derive::standalone_field_ser(MyDateMapping).unwrap();
 # let json = json!(
 {
@@ -65,7 +63,6 @@ This will produce the following mapping:
 }
 # );
 # assert_eq!(json, mapping);
-# }
 ```
 
 ## Map with a generic Format
@@ -85,7 +82,6 @@ impl <F> DateMapping for MyDateMapping<F>
 {
     type Format = F;
 }
-# fn main() {}
 ```
 
 This is how `DefaultDateMapping` is able to support any format.

@@ -177,11 +177,9 @@ on a unit struct:
 ```
 # #[macro_use] extern crate elastic_derive;
 # use elastic::types::prelude::*;
-# fn main() {
 #[derive(Default, ElasticDateFormat)]
 #[elastic(date_format="yyyy-MM-dd'T'HH:mm:ss")]
 struct MyFormat;
-# }
 ```
 
 The `#[elastic(date_format)]` attribute is required,
@@ -194,11 +192,9 @@ You can customise the indexed format name by adding an `#[elastic(date_format_na
 ```
 # #[macro_use] extern crate elastic_derive;
 # use elastic::types::prelude::*;
-# fn main() {
 #[derive(Default, ElasticDateFormat)]
 #[elastic(date_format="yyyyMMdd'T'HHmmssZ", date_format_name="basic_date_time_no_millis")]
 struct MyFormat;
-# }
 ```
 */
 pub trait DateFormat {

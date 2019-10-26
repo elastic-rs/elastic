@@ -65,8 +65,7 @@ With custom headers:
 ```
 # use elastic::prelude::*;
 # use std::str::FromStr;
-# fn main() { run().unwrap() }
-# fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+# fn main() -> Result<(), Box<dyn ::std::error::Error>> {
 use elastic::http::header::{self, AUTHORIZATION, HeaderValue};
 
 let auth = HeaderValue::from_str("let me in")?;

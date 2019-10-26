@@ -44,7 +44,6 @@ Send a bulk request and iterate through the results:
 ```no_run
 # use elastic::prelude::*;
 # fn do_request() -> BulkResponse { unimplemented!() }
-# fn main() {
 let response: BulkResponse = do_request();
 
 // Check if the response contains any errors
@@ -65,7 +64,6 @@ for item in response {
         }
     }
 }
-# }
 ```
 
 Use `iter` to iterate over individual items without taking ownership of them:
@@ -73,7 +71,6 @@ Use `iter` to iterate over individual items without taking ownership of them:
 ```no_run
 # use elastic::prelude::*;
 # fn do_request() -> BulkResponse { unimplemented!() }
-# fn main() {
 let response: BulkResponse = do_request();
 
 // Do something with successful items for index `myindex`
@@ -85,7 +82,6 @@ for item in item_iter {
     // Do something with the `OkItem`s
     println!("ok: {:?}", item);
 }
-# }
 ```
 
 # Optimising bulk responses
@@ -104,7 +100,6 @@ and an index called `myindex`:
 # #[macro_use] extern crate serde_derive;
 # #[macro_use] extern crate serde_json;
 # use elastic::prelude::*;
-# fn main() {
 # fn do_request() -> BulkResponse<Index, Type> { unimplemented!() }
 #[derive(Deserialize)]
 #[serde(rename_all = "lowercase")]
@@ -120,7 +115,6 @@ enum Type {
 }
 
 let bulk: BulkResponse<Index, Type> = do_request();
-# }
 ```
 
 Other crates that can avoid allocating strings:
@@ -193,7 +187,6 @@ impl<TIndex, TType, TId> BulkResponse<TIndex, TType, TId> {
     ```no_run
     # use elastic::prelude::*;
     # fn do_request() -> BulkResponse { unimplemented!() }
-    # fn main() {
     let response: BulkResponse = do_request();
 
     // Iterate through all items
@@ -209,7 +202,6 @@ impl<TIndex, TType, TId> BulkResponse<TIndex, TType, TId> {
             }
         }
     }
-    # }
     ```
     */
     pub fn iter(&self) -> ResultIter<TIndex, TType, TId> {

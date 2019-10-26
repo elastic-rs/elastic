@@ -133,7 +133,6 @@ where
 
     ```
     # use elastic::types::prelude::*;
-    # fn main() {
     use chrono::Utc;
 
     //Create a chrono DateTime struct
@@ -141,7 +140,6 @@ where
 
     //Give it to the Date struct
     let date: Date<DefaultDateMapping<ChronoFormat>> = Date::new(chronoDate);
-    # }
     ```
 
     If the `Date`s format isn't `ChronoFormat`, then the `chrono::DateTime` will need to be converted into a `DateValue` first.
@@ -149,7 +147,6 @@ where
 
     ```
     # use elastic::types::prelude::*;
-    # fn main() {
     use chrono::Utc;
 
     //Create a chrono DateTime struct
@@ -157,7 +154,6 @@ where
 
     //Give it to the Date struct
     let date: Date<DefaultDateMapping<EpochMillis>> = Date::new(DateValue::from(chronoDate));
-    # }
     ```
     */
     pub fn new<I>(date: I) -> Self
@@ -428,14 +424,12 @@ Which serialises to:
 ```
 # #[macro_use] extern crate serde_json;
 # use elastic::types::prelude::*;
-# fn main() {
 # let expr: DateExpr<BasicDateTime> = DateExpr::now().add_days(2);
 # let ser = serde_json::to_value(&expr).unwrap();
 # let expected = json!(
 "now+2d"
 # );
 # assert_eq!(expected, ser);
-# }
 ```
 
 A date expression using a concrete date value plus 2 days:
@@ -450,14 +444,12 @@ Which serialises to:
 ```
 # #[macro_use] extern crate serde_json;
 # use elastic::types::prelude::*;
-# fn main() {
 # let expr: DateExpr<BasicDateTime> = DateExpr::value(DateValue::build(2015, 03, 01, 14, 55, 0, 0)).add_days(2);
 # let ser = serde_json::to_value(&expr).unwrap();
 # let expected = json!(
 "20150301T145500.000Z||+2d"
 # );
 # assert_eq!(expected, ser);
-# }
 ```
 */
 #[derive(Debug, Clone, PartialEq)]

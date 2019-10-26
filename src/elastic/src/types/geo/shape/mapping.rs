@@ -28,7 +28,6 @@ impl GeoShapeMapping for MyGeoShapeMapping {
         Some(2)
     }
 }
-# fn main() {}
 ```
 
 This will produce the following mapping:

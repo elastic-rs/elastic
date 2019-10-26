@@ -46,7 +46,6 @@ Iterate over the hits in a search response:
 # use serde_json::Value;
 # use elastic::prelude::*;
 # fn do_request() -> SearchResponse<Value> { unimplemented!() }
-# fn main() {
 let response: SearchResponse<Value> = do_request();
 
 // Iterate over hits. Could also use `documents`
@@ -57,7 +56,6 @@ for hit in response.hits() {
     println!("score: {}", score);
     println!("doc: {:?}", doc);
 }
-# }
 ```
 
 [search-req]: https://www.elastic.co/guide/en/elasticsearch/reference/current/search-search.html

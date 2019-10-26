@@ -82,8 +82,7 @@ impl AsyncResponseBuilder {
     # #[macro_use] extern crate elastic_derive;
     # use futures::Future;
     # use elastic::prelude::*;
-    # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<::std::error::Error>> {
+        # fn main() -> Result<(), Box<::std::error::Error>> {
     # #[derive(Debug, Serialize, Deserialize, ElasticType)]
     # struct MyType { }
     # let client = AsyncClientBuilder::new().build()?;
@@ -110,8 +109,7 @@ impl AsyncResponseBuilder {
     # use futures::Future;
     # use serde_json::Value;
     # use elastic::prelude::*;
-    # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<::std::error::Error>> {
+        # fn main() -> Result<(), Box<::std::error::Error>> {
     # let client = AsyncClientBuilder::new().build()?;
     let future = client.request(SimpleSearchRequest::for_index_ty("myindex", "mytype"))
                        .send()

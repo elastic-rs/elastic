@@ -86,7 +86,7 @@ where
     Change the mapping for a given `Ip`:
 
     ```
-    # #[macro_use] fn main() {
+    # #[macro_use]
     # use std::net::Ipv4Addr;
     # use elastic::types::prelude::*;
     # #[derive(Default)]
@@ -95,7 +95,6 @@ where
     let es_ip = Ip::<DefaultIpMapping>::new(Ipv4Addr::new(127, 0, 0, 1));
 
     let ip: Ip<MyIpMapping> = Ip::remap(es_ip);
-    # }
     ```
     */
     pub fn remap<TNewMapping>(ip: Ip<TMapping>) -> Ip<TNewMapping>

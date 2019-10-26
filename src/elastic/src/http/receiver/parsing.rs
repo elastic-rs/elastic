@@ -44,10 +44,8 @@ Provide an explicit response type in the `parse` function:
 # use elastic::http::{StatusCode, receiver::{parse, ParseError}};
 # use elastic::client::responses::*;
 # fn do_request() -> (StatusCode, Vec<u8>) { unimplemented!() }
-# fn main() {
 # let (response_status, response_body) = do_request();
 let get_response = parse::<GetResponse<Value>>().from_slice(response_status, response_body);
-# }
 ```
 
 Provide an explicit response type on the result ident:
@@ -57,10 +55,8 @@ Provide an explicit response type on the result ident:
 # use elastic::http::{StatusCode, receiver::{parse, ResponseError}};
 # use elastic::client::responses::*;
 # fn do_request() -> (StatusCode, Vec<u8>) { unimplemented!() }
-# fn main() {
 # let (response_status, response_body) = do_request();
 let get_response: Result<GetResponse<Value>, ResponseError> = parse().from_slice(response_status, response_body);
-# }
 ```
 
 If Rust can infer the concrete response type then you can avoid specifying it at all:
@@ -70,12 +66,10 @@ If Rust can infer the concrete response type then you can avoid specifying it at
 # use elastic::http::{StatusCode, receiver::{parse, ResponseError}};
 # use elastic::client::responses::*;
 # fn do_request() -> (StatusCode, Vec<u8>) { unimplemented!() }
-# fn main() {
 # fn parse_response() -> Result<GetResponse<Value>, ResponseError> {
 # let (response_status, response_body) = do_request();
 let get_response = parse().from_slice(response_status, response_body);
 # get_response
-# }
 # }
 ```
 */
@@ -255,7 +249,6 @@ Implement `IsOk` for a custom response type, where a http `404` might still cont
 ```
 # #[macro_use] extern crate serde_derive;
 # use elastic::http::{StatusCode, receiver::{parse, IsOk, ResponseBody, HttpResponseHead, Unbuffered, MaybeOkResponse, ParseError}};
-# fn main() {}
 # #[derive(Deserialize)]
 # struct MyResponse;
 impl IsOk for MyResponse {
