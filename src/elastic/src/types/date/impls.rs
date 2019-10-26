@@ -268,10 +268,6 @@ where
     fn eq(&self, other: &ChronoDateTime) -> bool {
         PartialEq::eq(&self.value, other)
     }
-
-    fn ne(&self, other: &ChronoDateTime) -> bool {
-        PartialEq::ne(&self.value, other)
-    }
 }
 
 impl<TMapping> PartialEq<Date<TMapping>> for ChronoDateTime
@@ -280,10 +276,6 @@ where
 {
     fn eq(&self, other: &Date<TMapping>) -> bool {
         PartialEq::eq(self, &other.value)
-    }
-
-    fn ne(&self, other: &Date<TMapping>) -> bool {
-        PartialEq::ne(self, &other.value)
     }
 }
 

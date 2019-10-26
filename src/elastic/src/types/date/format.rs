@@ -74,19 +74,11 @@ impl PartialEq<ChronoDateTime> for DateValue {
     fn eq(&self, other: &ChronoDateTime) -> bool {
         PartialEq::eq(&self.0, other)
     }
-
-    fn ne(&self, other: &ChronoDateTime) -> bool {
-        PartialEq::ne(&self.0, other)
-    }
 }
 
 impl PartialEq<DateValue> for ChronoDateTime {
     fn eq(&self, other: &DateValue) -> bool {
         PartialEq::eq(self, &other.0)
-    }
-
-    fn ne(&self, other: &DateValue) -> bool {
-        PartialEq::ne(self, &other.0)
     }
 }
 
@@ -147,19 +139,11 @@ impl<TFormat> PartialEq<ChronoDateTime> for FormattableDateValue<TFormat> {
     fn eq(&self, other: &ChronoDateTime) -> bool {
         PartialEq::eq(&self.0, other)
     }
-
-    fn ne(&self, other: &ChronoDateTime) -> bool {
-        PartialEq::ne(&self.0, other)
-    }
 }
 
 impl<TFormat> PartialEq<FormattableDateValue<TFormat>> for ChronoDateTime {
     fn eq(&self, other: &FormattableDateValue<TFormat>) -> bool {
         PartialEq::eq(self, &other.0)
-    }
-
-    fn ne(&self, other: &FormattableDateValue<TFormat>) -> bool {
-        PartialEq::ne(self, &other.0)
     }
 }
 
