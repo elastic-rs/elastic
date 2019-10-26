@@ -198,6 +198,7 @@ fn endpoints_mod(
 
     let header = quote!(
         #![allow(missing_docs)]
+        #![allow(clippy::all)]
 
         use super:: #http_mod_tokens ::*;
         use super::params::*;
@@ -240,6 +241,7 @@ fn http_mod(tokens: &mut Tokens) {
 
     let header = quote!(
         #![allow(missing_docs)]
+        #![allow(clippy::all)]
 
         use std::borrow::Cow;
         use std::ops::Deref;
@@ -259,6 +261,7 @@ fn http_mod(tokens: &mut Tokens) {
 fn params_mod(tokens: &mut Tokens, params_to_emit: BTreeMap<String, bool>) {
     let header = quote!(
         #![allow(missing_docs)]
+        #![allow(clippy::all)]
     );
 
     tokens.append(header);
