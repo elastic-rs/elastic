@@ -27,13 +27,11 @@ Map with a default `date`:
 
 ```
 # use elastic::types::prelude::*;
-# fn main() {
 use chrono::{DateTime, Utc};
 
 struct MyType {
     pub field: DateTime<Utc>
 }
-# }
 ```
 
 For custom formats, the most ergonomic approach is to declare a type alias using the mapping and format:
@@ -52,7 +50,6 @@ Map with a custom `date` mapping:
 ```
 # #[macro_use] use std::marker::PhantomData;
 # use elastic::types::prelude::*;
-# fn main() {
 # use elastic::types::prelude::*;
 # #[derive(Default)]
 # struct MyDateMapping;
@@ -60,7 +57,6 @@ Map with a custom `date` mapping:
 struct MyType {
     pub field: Date<MyDateMapping>
 }
-# }
 ```
 
 ## Creating Formats
@@ -71,11 +67,9 @@ This will convert an Elasticsearch format string into a `Vec<chrono::format::Ite
 ```
 # #[macro_use] extern crate elastic_derive;
 # use elastic::types::prelude::*;
-# fn main() {
 #[derive(Default, ElasticDateFormat)]
 #[elastic(date_format="yyyy-MM-dd'T'HH:mm:ss")]
 struct MyFormat;
-# }
 ```
 
 You can also manually implement `DateFormat` and write your own arbitrary format/parse logic:
@@ -83,7 +77,6 @@ You can also manually implement `DateFormat` and write your own arbitrary format
 ```
 # use elastic::types::prelude::*;
 # use elastic::types::date::ParseError;
-# fn main() {
 use chrono::{DateTime, Utc};
 
 #[derive(Default, Clone)]
@@ -101,7 +94,6 @@ impl DateFormat for Rfc3339Format {
         Ok(DateTime::from_utc(date.naive_local(), Utc).into())
     }
 }
-# }
 ```
 
 # Links

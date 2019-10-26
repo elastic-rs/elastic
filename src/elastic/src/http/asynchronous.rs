@@ -181,7 +181,7 @@ mod tests {
 
     #[test]
     fn borrowed_vec_into_body() {
-        static BODY: &'static [u8] = &[0, 1, 2];
+        static BODY: &[u8] = &[0, 1, 2];
 
         AsyncBody::from(BODY);
     }

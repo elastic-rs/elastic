@@ -31,27 +31,23 @@ Map with a custom `number` (`integer` in this case):
 
 ```
 # #[macro_use] use elastic::types::prelude::*;
-# fn main() {
 # #[derive(Default)]
 # struct MyIntegerMapping;
 # impl IntegerMapping for MyIntegerMapping { }
 struct MyType {
     pub field: Integer<MyIntegerMapping>
 }
-# }
 ```
 
 Map a custom type as a `number` field (`integer` in this case):
 
 ```
 #[macro_use] extern crate serde_derive;
-# fn main() {
 # use elastic::types::prelude::*;
 #[derive(Serialize)]
 struct MyIntegerField(i32);
 
 impl IntegerFieldType<DefaultIntegerMapping> for MyIntegerField {}
-# }
 ```
 
 # Links

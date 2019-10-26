@@ -30,7 +30,6 @@ impl GeoPointMapping for MyGeoPointMapping {
         Some(true)
     }
 }
-# fn main() {}
 ```
 
 This will produce the following mapping:
@@ -76,7 +75,6 @@ struct MyGeoPointMapping<F> {
 impl <F: GeoPointFormat> GeoPointMapping for MyGeoPointMapping<F> {
     type Format = F;
 }
-# fn main() {}
 ```
 */
 pub trait GeoPointMapping {
@@ -264,5 +262,4 @@ mod tests {
 
         assert_eq!(expected, ser);
     }
-
 }

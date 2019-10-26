@@ -13,13 +13,13 @@ pub struct Doc {
     timestamp: Date<DefaultDateMapping>,
 }
 
-const ID: &'static str = "1";
+const ID: &str = "1";
 
 fn doc() -> Doc {
     Doc {
         id: ID.to_owned(),
         title: "A document title".to_owned(),
-        timestamp: Date::build(2017, 03, 24, 13, 44, 0, 0),
+        timestamp: Date::build(2017, 3, 24, 13, 44, 0, 0),
     }
 }
 

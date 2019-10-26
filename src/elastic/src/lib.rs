@@ -40,7 +40,7 @@ serde_derive = "~1"
 Then reference in your crate root:
 
 ```
-# fn main() {}
+# fn main() -> Result<(), Box<dyn ::std::error::Error>> { Ok(()) }
 extern crate elastic;
 #[macro_use]
 extern crate elastic_derive;
@@ -58,8 +58,7 @@ The builder allows you to configure default parameters for all requests:
 ```no_run
 # use elastic::prelude::*;
 # use std::str::FromStr;
-# fn main() { run().unwrap() }
-# fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+# fn main() -> Result<(), Box<dyn ::std::error::Error>> {
 use elastic::http::header::{self, AUTHORIZATION, HeaderValue};
 
 let auth = HeaderValue::from_str("let me in")?;
@@ -81,8 +80,7 @@ Individual requests can override these parameter values:
 # #[macro_use] extern crate serde_json;
 # use serde_json::Value;
 # use elastic::prelude::*;
-# fn main() { run().unwrap() }
-# fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+# fn main() -> Result<(), Box<dyn ::std::error::Error>> {
 let client = SyncClientBuilder::new().build()?;
 
 let response = client.search::<Value>()
@@ -111,8 +109,7 @@ Derive `Serialize`, `Deserialize` and `ElasticType` on your document types:
 # #[macro_use] extern crate serde_derive;
 # #[macro_use] extern crate elastic_derive;
 # use elastic::prelude::*;
-# fn main() { run().unwrap() }
-# fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+# fn main() -> Result<(), Box<dyn ::std::error::Error>> {
 #[derive(Serialize, Deserialize, ElasticType)]
 struct MyType {
     #[elastic(id(expr = "id.to_string()"))]
@@ -130,8 +127,7 @@ Call [`Client.document().put_mapping()`][Client.document.put_mapping] to ensure 
 # #[macro_use] extern crate serde_derive;
 # #[macro_use] extern crate elastic_derive;
 # use elastic::prelude::*;
-# fn main() { run().unwrap() }
-# fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+# fn main() -> Result<(), Box<dyn ::std::error::Error>> {
 # #[derive(Serialize, Deserialize, ElasticType)]
 # struct MyType { }
 # let client = SyncClientBuilder::new().build()?;
@@ -148,8 +144,7 @@ Then call [`Client.document().index()`][Client.document.index] to index document
 # #[macro_use] extern crate serde_derive;
 # #[macro_use] extern crate elastic_derive;
 # use elastic::prelude::*;
-# fn main() { run().unwrap() }
-# fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+# fn main() -> Result<(), Box<dyn ::std::error::Error>> {
 # #[derive(Serialize, Deserialize, ElasticType)]
 # struct MyType {
 #     pub id: String,
@@ -176,8 +171,7 @@ Call [`Client.document().get()`][Client.document.get] to retrieve a single docum
 # #[macro_use] extern crate serde_derive;
 # #[macro_use] extern crate elastic_derive;
 # use elastic::prelude::*;
-# fn main() { run().unwrap() }
-# fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+# fn main() -> Result<(), Box<dyn ::std::error::Error>> {
 # #[derive(Serialize, Deserialize, ElasticType)]
 # struct MyType {
 #     pub id: String,
@@ -207,8 +201,7 @@ Call [`Client.doument().search()`][Client.document.search] to execute [Query DSL
 # #[macro_use] extern crate serde_derive;
 # #[macro_use] extern crate elastic_derive;
 # use elastic::prelude::*;
-# fn main() { run().unwrap() }
-# fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+# fn main() -> Result<(), Box<dyn ::std::error::Error>> {
 # #[derive(Debug, Serialize, Deserialize, ElasticType)]
 # struct MyType { }
 # let client = SyncClientBuilder::new().build()?;

@@ -184,11 +184,11 @@ where
                 inner: &self.header,
             },
         )?;
-        write!(&mut writer, "\n")?;
+        writeln!(&mut writer)?;
 
         if let Some(ref inner) = self.inner {
             serde_json::to_writer(&mut writer, inner)?;
-            write!(&mut writer, "\n")?;
+            writeln!(&mut writer)?;
         }
 
         Ok(())
@@ -200,6 +200,15 @@ A builder for a bulk operation for a specific document type.
 */
 pub struct BulkDocumentOperation<TDocument> {
     _marker: PhantomData<TDocument>,
+}
+
+impl<TDocument> Default for BulkDocumentOperation<TDocument>
+where
+    TDocument: DocumentType,
+{
+    fn default() -> BulkDocumentOperation<TDocument> {
+        BulkDocumentOperation::new()
+    }
 }
 
 impl<TDocument> BulkDocumentOperation<TDocument>
@@ -341,6 +350,7 @@ where
 /**
 A builder for a bulk operation.
 */
+#[derive(Default)]
 pub struct BulkRawOperation {
     _private: (),
 }
@@ -350,7 +360,7 @@ impl BulkRawOperation {
     Create a bulk operation.
     */
     pub fn new() -> Self {
-        BulkRawOperation { _private: () }
+        BulkRawOperation::default()
     }
 
     /**

@@ -25,8 +25,6 @@ pub struct MyType {
     pub my_string: String,
     pub my_num: i32
 }
-# fn main() {
-# }
 ```
 
 This will produce the following field mapping:
@@ -42,7 +40,6 @@ This will produce the following field mapping:
 #   pub my_string: String,
 #   pub my_num: i32
 # }
-# fn main() {
 # let mapping = elastic::types::__derive::standalone_field_ser(MyTypeMapping).unwrap();
 # let json = json!(
 {
@@ -68,7 +65,6 @@ This will produce the following field mapping:
 }
 # );
 # assert_eq!(json, mapping);
-# }
 ```
 
 It's also possible to adjust the mapping using the `#[elastic]` attribute.
@@ -89,8 +85,6 @@ pub struct MyType {
     pub my_string: String,
     pub my_num: i32
 }
-# fn main() {
-# }
 ```
 
 Not all documents have a static index that's the same for all instances though.
@@ -113,8 +107,6 @@ impl MyType {
         format!("my-index-{}", self.my_date)
     }
 }
-# fn main() {
-# }
 ```
 
 ### Specifying a type name
@@ -133,8 +125,6 @@ pub struct MyType {
     pub my_string: String,
     pub my_num: i32
 }
-# fn main() {
-# }
 ```
 
 ### Specifying an id field
@@ -154,8 +144,6 @@ pub struct MyType {
     pub my_string: String,
     pub my_num: i32
 }
-# fn main() {
-# }
 ```
 
 The field annotated with `#[elastic(id)]` must satisfy `impl Into<Cow<'_, str>>`.
@@ -179,8 +167,6 @@ impl MyType {
         self.my_id.to_string()
     }
 }
-# fn main() {
-# }
 ```
 
 An expression can also be used on fields, where an identifier with the same name as the field can be used:
@@ -197,8 +183,6 @@ pub struct MyType {
     pub my_string: String,
     pub my_num: i32
 }
-# fn main() {
-# }
 ```
 
 ### Override Default Mapping Properties
@@ -224,8 +208,6 @@ impl ObjectMapping for MyTypeMapping {
 
     fn data_type() -> &'static str { OBJECT_DATATYPE }
 }
-# fn main() {
-# }
 ```
 
 This will produce the following field mapping:
@@ -249,7 +231,6 @@ This will produce the following field mapping:
 #   type Properties = MyType;
 #   fn data_type() -> &'static str { OBJECT_DATATYPE }
 # }
-# fn main() {
 # let mapping = elastic::types::__derive::standalone_field_ser(MyTypeMapping).unwrap();
 # let json = json!(
 {
@@ -275,7 +256,6 @@ This will produce the following field mapping:
 }
 # );
 # assert_eq!(json, mapping);
-# }
 ```
 
 ### Ignore or Rename Fields
@@ -294,8 +274,6 @@ pub struct MyType {
     pub ignored: String,
     pub my_num: i32
 }
-# fn main() {
-# }
 ```
 
 > NOTE: Fields with a `#[serde(skip_deserializing)]` attribute will still be mapped, because they can

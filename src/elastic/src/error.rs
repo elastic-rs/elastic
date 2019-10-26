@@ -13,8 +13,7 @@ The below example sends a request and then checks the response for an `Error::Ap
 # use serde_json::Value;
 # use elastic::prelude::*;
 # use elastic::Error;
-# fn main() { run().unwrap() }
-# fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+# fn main() -> Result<(), Box<dyn ::std::error::Error>> {
 # let client = SyncClientBuilder::new().build()?;
 // Send a request.
 // The returned error may be a REST API error from Elasticsearch or an internal error

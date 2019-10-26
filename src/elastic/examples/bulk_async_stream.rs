@@ -40,7 +40,7 @@ fn run() -> Result<(), Box<dyn Error>> {
         .body_size_bytes(1024)
         .build();
 
-    let ops = (0..1000).into_iter().map(|i| {
+    let ops = (0..1000).map(|i| {
         bulk_raw()
             .index(json!({
                 "id": i,

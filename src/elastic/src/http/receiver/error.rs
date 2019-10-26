@@ -234,51 +234,37 @@ impl From<Map<String, Value>> for ParsedApiError {
             "index_not_found_exception" => {
                 let index = error_key!(obj[index]: |v| v.as_str());
 
-                ParsedApiError::Known(ApiError::IndexNotFound {
-                    index: index.into(),
-                })
+                ParsedApiError::Known(ApiError::IndexNotFound { index })
             }
             "index_already_exists_exception" => {
                 let index = error_key!(obj[index]: |v| v.as_str());
 
-                ParsedApiError::Known(ApiError::IndexAlreadyExists {
-                    index: index.into(),
-                })
+                ParsedApiError::Known(ApiError::IndexAlreadyExists { index })
             }
             "document_missing_exception" => {
                 let index = error_key!(obj[index]: |v| v.as_str());
 
-                ParsedApiError::Known(ApiError::DocumentMissing {
-                    index: index.into(),
-                })
+                ParsedApiError::Known(ApiError::DocumentMissing { index })
             }
             "action_request_validation_exception" => {
                 let reason = error_key!(obj[reason]: |v| v.as_str());
 
-                ParsedApiError::Known(ApiError::ActionRequestValidation {
-                    reason: reason.into(),
-                })
+                ParsedApiError::Known(ApiError::ActionRequestValidation { reason })
             }
             "parsing_exception" => {
                 let reason = error_key!(obj[reason]: |v| v.as_str());
 
-                ParsedApiError::Known(ApiError::Parsing {
-                    reason: reason.into(),
-                })
+                ParsedApiError::Known(ApiError::Parsing { reason })
             }
             "illegal_argument_exception" => {
                 let reason = error_key!(obj[reason]: |v| v.as_str());
 
-                ParsedApiError::Known(ApiError::IllegalArgument {
-                    reason: reason.into(),
-                })
+                ParsedApiError::Known(ApiError::IllegalArgument { reason })
             }
             "verification_exception" => {
                 let reason = error_key!(obj[reason]: |v| v.as_str());
 
-                ParsedApiError::Known(ApiError::Verification {
-                    reason: reason.into(),
-                })
+                ParsedApiError::Known(ApiError::Verification { reason })
             }
             _ => ParsedApiError::Unknown(obj),
         }

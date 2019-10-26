@@ -46,7 +46,6 @@ Iterate over the hits in a search response:
 # use serde_json::Value;
 # use elastic::prelude::*;
 # fn do_request() -> SearchResponse<Value> { unimplemented!() }
-# fn main() {
 let response: SearchResponse<Value> = do_request();
 
 // Iterate over hits. Could also use `documents`
@@ -57,7 +56,6 @@ for hit in response.hits() {
     println!("score: {}", score);
     println!("doc: {:?}", doc);
 }
-# }
 ```
 
 [search-req]: https://www.elastic.co/guide/en/elasticsearch/reference/current/search-search.html
@@ -108,7 +106,7 @@ impl<T> SearchResponse<T> {
 
     /** A http status associated with the response. */
     pub fn status(&self) -> Option<u16> {
-        self.status.clone()
+        self.status
     }
 
     /** The total number of documents that matched the search query. */
@@ -118,7 +116,7 @@ impl<T> SearchResponse<T> {
 
     /** The max score for documents that matched the search query. */
     pub fn max_score(&self) -> Option<f32> {
-        self.hits.max_score.clone()
+        self.hits.max_score
     }
 
     /** Iterate over the hits matched by the search query. */
@@ -296,12 +294,12 @@ impl<T> Hit<T> {
 
     /** The version of the hit. */
     pub fn version(&self) -> Option<u32> {
-        self.version.clone()
+        self.version
     }
 
     /** The score of the hit. */
     pub fn score(&self) -> Option<f32> {
-        self.score.clone()
+        self.score
     }
 
     /**
@@ -350,7 +348,7 @@ impl<'a> Aggs<'a> {
         Aggs {
             current_row: None,
             current_row_finished: false,
-            iter_stack: iter_stack,
+            iter_stack,
         }
     }
 }

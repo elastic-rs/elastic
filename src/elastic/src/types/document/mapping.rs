@@ -13,13 +13,13 @@ pub trait ObjectFieldType {
 }
 
 /** Elasticsearch datatype name. */
-pub const OBJECT_DATATYPE: &'static str = "object";
+pub const OBJECT_DATATYPE: &str = "object";
 
 /** Elasticsearch datatype name. */
-pub const DYNAMIC_DATATYPE: &'static str = "dynamic";
+pub const DYNAMIC_DATATYPE: &str = "dynamic";
 
 /** Elasticsearch datatype name. */
-pub const NESTED_DATATYPE: &'static str = "nested";
+pub const NESTED_DATATYPE: &str = "nested";
 
 /** The base requirements for mapping an `object` type. */
 pub trait ObjectMapping {

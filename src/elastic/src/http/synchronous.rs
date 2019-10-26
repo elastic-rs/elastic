@@ -106,6 +106,7 @@ pub struct SyncBodyReader<'a> {
 }
 
 enum SyncBodyReaderState<'a> {
+    #[allow(clippy::borrowed_box)]
     UnBuffered(&'a mut Box<dyn Read + Send>),
     Buffered(Cursor<BufferedSyncBodyInner<'a>>),
 }
@@ -232,7 +233,7 @@ mod tests {
 
     #[test]
     fn borrowed_vec_into_body() {
-        static BODY: &'static [u8] = &[0, 1, 2];
+        static BODY: &[u8] = &[0, 1, 2];
 
         SyncBody::from(BODY);
     }

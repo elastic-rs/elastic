@@ -52,9 +52,8 @@ use crate::{
 
 pub(crate) type AsyncPreSend = dyn Fn(
         &mut AsyncHttpRequest,
-    ) -> Box<
-        dyn Future<Item = (), Error = Box<dyn StdError + Send + Sync>> + Send,
-    > + Send
+    ) -> Box<dyn Future<Item = (), Error = Box<dyn StdError + Send + Sync>> + Send>
+    + Send
     + Sync;
 
 /** An asynchronous request sender. */

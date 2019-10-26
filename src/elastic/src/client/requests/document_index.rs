@@ -11,8 +11,8 @@ use serde_json;
 use crate::{
     client::{
         requests::{
-            Pending as BasePending,
             raw::RawRequestInner,
+            Pending as BasePending,
             RequestBuilder,
         },
         responses::IndexResponse,
@@ -85,8 +85,7 @@ where
     # #[macro_use] extern crate serde_derive;
     # #[macro_use] extern crate elastic_derive;
     # use elastic::prelude::*;
-    # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+        # fn main() -> Result<(), Box<dyn ::std::error::Error>> {
     # let client = SyncClientBuilder::new().build()?;
     #[derive(Serialize, Deserialize, ElasticType)]
     struct MyType {
@@ -130,7 +129,7 @@ where
                 index: doc.index().to_owned(),
                 ty: doc.ty().to_owned(),
                 id: doc.partial_id().map(|id| id.to_owned()),
-                doc: doc,
+                doc,
             },
         )
     }
@@ -153,8 +152,7 @@ where
     # #[macro_use] extern crate elastic_derive;
     # #[macro_use] extern crate serde_json;
     # use elastic::prelude::*;
-    # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+        # fn main() -> Result<(), Box<dyn ::std::error::Error>> {
     # let client = SyncClientBuilder::new().build()?;
     let doc_id = 123;
     let doc = json!({
@@ -195,7 +193,7 @@ where
                 index: index.into(),
                 ty: DEFAULT_DOC_TYPE.into(),
                 id: None,
-                doc: doc,
+                doc,
             },
         )
     }
@@ -265,8 +263,7 @@ where
     # #[macro_use] extern crate serde_derive;
     # #[macro_use] extern crate elastic_derive;
     # use elastic::prelude::*;
-    # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+        # fn main() -> Result<(), Box<dyn ::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
     #     pub id: String,
@@ -321,8 +318,7 @@ where
     # #[macro_use] extern crate elastic_derive;
     # use futures::Future;
     # use elastic::prelude::*;
-    # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+        # fn main() -> Result<(), Box<dyn ::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
     #     pub id: String,
@@ -397,7 +393,7 @@ mod tests {
             .unwrap();
 
         assert_eq!("/testdoc/_doc", req.url.as_ref());
-        assert_eq!("{}".as_bytes().to_vec(), req.body);
+        assert_eq!(b"{}".to_vec(), req.body);
     }
 
     #[test]

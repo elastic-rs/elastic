@@ -11,8 +11,8 @@ use std::marker::PhantomData;
 use crate::{
     client::{
         requests::{
-            Pending as BasePending,
             raw::RawRequestInner,
+            Pending as BasePending,
             RequestBuilder,
         },
         responses::CommandResponse,
@@ -85,8 +85,7 @@ where
     # #[macro_use] extern crate serde_derive;
     # #[macro_use] extern crate elastic_derive;
     # use elastic::prelude::*;
-    # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+        # fn main() -> Result<(), Box<dyn ::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType { }
     # let client = SyncClientBuilder::new().build()?;
@@ -112,14 +111,14 @@ where
     where
         TDocument: DocumentType + StaticIndex + StaticType,
     {
-        let index = TDocument::static_index().into();
-        let ty = TDocument::static_ty().into();
+        let index = TDocument::static_index();
+        let ty = TDocument::static_ty();
 
         RequestBuilder::initial(
             self.inner,
             PutMappingRequestInner {
-                index: index,
-                ty: ty,
+                index,
+                ty,
                 _marker: PhantomData,
             },
         )
@@ -185,8 +184,7 @@ where
     # #[macro_use] extern crate serde_derive;
     # #[macro_use] extern crate elastic_derive;
     # use elastic::prelude::*;
-    # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+        # fn main() -> Result<(), Box<dyn ::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType { }
     # let client = SyncClientBuilder::new().build()?;
@@ -231,8 +229,7 @@ where
     # #[macro_use] extern crate elastic_derive;
     # use futures::Future;
     # use elastic::prelude::*;
-    # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+        # fn main() -> Result<(), Box<dyn ::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType { }
     # let client = AsyncClientBuilder::new().build()?;

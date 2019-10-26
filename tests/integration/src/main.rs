@@ -83,14 +83,14 @@ fn main() {
 
         // Run the integration tests
         let results = run_tests::call(client, cases, 8).unwrap();
-        failed.extend(results.iter().filter(|success| **success == false));
+        failed.extend(results.iter().filter(|success| !(**success)));
         total += results.len();
 
         // Kill the container
         build_container::kill(run).unwrap();
     }
 
-    if failed.len() > 0 {
+    if !failed.is_empty() {
         println!(
             "\n{}",
             Red.bold()

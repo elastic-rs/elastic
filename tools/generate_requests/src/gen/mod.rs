@@ -74,7 +74,7 @@ mod helpers {
         syn::TyParam {
             attrs: vec![],
             ident: ident(ty),
-            bounds: bounds,
+            bounds,
             default: None,
         }
     }
@@ -84,7 +84,7 @@ mod helpers {
         syn::TyParamBound::Trait(
             syn::PolyTraitRef {
                 bound_lifetimes: vec![],
-                trait_ref: trait_ref,
+                trait_ref,
             },
             syn::TraitBoundModifier::None,
         )
@@ -115,8 +115,8 @@ mod helpers {
                     ident: syn::Ident::new(sanitise_ident(path)),
                     parameters: syn::PathParameters::AngleBracketed(
                         syn::AngleBracketedParameterData {
-                            lifetimes: lifetimes,
-                            types: types,
+                            lifetimes,
+                            types,
                             bindings: vec![],
                         },
                     ),
@@ -173,7 +173,7 @@ mod helpers {
 
     impl<'a> IntoRustVarName for &'a str {
         fn into_rust_var(self) -> String {
-            let ident = self.split(".").last().unwrap().to_snake_case();
+            let ident = self.split('.').last().unwrap().to_snake_case();
 
             sanitise_ident(&ident).to_string()
         }
@@ -191,8 +191,8 @@ mod helpers {
 
     impl GetPath for syn::Ty {
         fn get_path(&self) -> &syn::Path {
-            match self {
-                &syn::Ty::Path(_, ref p) => &p,
+            match *self {
+                syn::Ty::Path(_, ref p) => &p,
                 _ => panic!("Only path types are supported."),
             }
         }
@@ -220,8 +220,8 @@ mod helpers {
 
     impl<T: GetPath> HasLifetime for T {
         fn has_lifetime(&self) -> bool {
-            match &self.get_path().segments[0].parameters {
-                &syn::PathParameters::AngleBracketed(ref params) => params.lifetimes.len() > 0,
+            match self.get_path().segments[0].parameters {
+                syn::PathParameters::AngleBracketed(ref params) => !params.lifetimes.is_empty(),
                 _ => false,
             }
         }

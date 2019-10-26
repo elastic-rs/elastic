@@ -9,6 +9,7 @@ use std::{
     fmt,
 };
 
+#[allow(clippy::module_inception)]
 mod parse;
 
 pub trait ApiEndpoint {
@@ -82,7 +83,7 @@ pub struct Url {
 
 impl Url {
     pub fn get_type<'a>(&'a self, name: &str) -> Option<&'a Type> {
-        self.parts.get(name).or(self.params.get(name))
+        self.parts.get(name).or_else(|| self.params.get(name))
     }
 }
 
@@ -167,7 +168,7 @@ impl Path {
     }
 
     fn parse<'a>(i: &'a [u8], state: PathParseState, r: Vec<PathPart<'a>>) -> Vec<PathPart<'a>> {
-        if i.len() == 0 {
+        if i.is_empty() {
             return r;
         }
 
@@ -177,7 +178,7 @@ impl Path {
             PathParseState::Literal => {
                 let (rest, part) = Path::parse_literal(i);
 
-                if part.len() > 0 {
+                if !part.is_empty() {
                     r.push(PathPart::Literal(part));
                 }
 
@@ -186,7 +187,7 @@ impl Path {
             PathParseState::Param => {
                 let (rest, part) = Path::parse_param(i);
 
-                if part.len() > 0 {
+                if !part.is_empty() {
                     r.push(PathPart::Param(part));
                 }
 
@@ -195,7 +196,7 @@ impl Path {
         }
     }
 
-    fn parse_literal<'a>(i: &'a [u8]) -> (&'a [u8], &'a str) {
+    fn parse_literal(i: &[u8]) -> (&[u8], &str) {
         if i[0] == b'}' {
             let i = parse::shift(i, 1);
             parse::take_while(i, |c| c != b'{')
@@ -204,7 +205,7 @@ impl Path {
         }
     }
 
-    fn parse_param<'a>(i: &'a [u8]) -> (&'a [u8], &'a str) {
+    fn parse_param(i: &[u8]) -> (&[u8], &str) {
         if i[0] == b'{' {
             let i = parse::shift(i, 1);
             parse::take_while(i, |c| c != b'}')

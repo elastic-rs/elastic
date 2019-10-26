@@ -9,8 +9,8 @@ use futures::Future;
 use crate::{
     client::{
         requests::{
-            Pending as BasePending,
             raw::RawRequestInner,
+            Pending as BasePending,
             RequestBuilder,
         },
         responses::CommandResponse,
@@ -69,8 +69,7 @@ where
 
     ```no_run
     # use elastic::prelude::*;
-    # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+        # fn main() -> Result<(), Box<dyn ::std::error::Error>> {
     # let client = SyncClientBuilder::new().build()?;
     let response = client.index("myindex").close().send()?;
 
@@ -110,8 +109,7 @@ impl IndexCloseRequestBuilder<SyncSender> {
 
     ```no_run
     # use elastic::prelude::*;
-    # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+        # fn main() -> Result<(), Box<dyn ::std::error::Error>> {
     # let client = SyncClientBuilder::new().build()?;
     let response = client.index("myindex").close().send()?;
 
@@ -147,8 +145,7 @@ impl IndexCloseRequestBuilder<AsyncSender> {
     ```no_run
     # use futures::Future;
     # use elastic::prelude::*;
-    # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+        # fn main() -> Result<(), Box<dyn ::std::error::Error>> {
     # let client = AsyncClientBuilder::new().build()?;
     let future = client.index("myindex").close().send();
 

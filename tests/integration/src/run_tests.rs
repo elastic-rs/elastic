@@ -119,7 +119,7 @@ fn call_future(
     println!("Running {} tests", all_tests.len());
 
     let test_stream = stream::futures_unordered(all_tests)
-        .map(|r| Ok(r))
+        .map(Ok)
         .buffer_unordered(max_concurrent_tests);
 
     Box::new(test_stream.collect())

@@ -36,8 +36,7 @@ Create an asynchronous `Client` and send a ping request:
 ```no_run
 # use futures::Future;
 # use elastic::prelude::*;
-# fn main() { run().unwrap() }
-# fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+# fn main() -> Result<(), Box<dyn ::std::error::Error>> {
 let client = AsyncClientBuilder::new().build()?;
 
 let response_future = client.request(PingRequest::new())
@@ -234,8 +233,7 @@ impl AsyncClientBuilder {
     # use std::sync::Arc;
     # use elastic::prelude::*;
     # use tokio_threadpool::ThreadPool;
-    # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+        # fn main() -> Result<(), Box<dyn ::std::error::Error>> {
     let pool = ThreadPool::new();
 
     let builder = AsyncClientBuilder::new().serde_pool(Arc::new(pool));
@@ -284,8 +282,8 @@ impl AsyncClientBuilder {
     [AsyncClient]: type.AsyncClient.html
     */
     pub fn build(self) -> Result<AsyncClient, Error> {
-        let http = self.http.unwrap_or_else(|| AsyncHttpClient::new());
-        let params = self.params.into_value(|| PreRequestParams::default());
+        let http = self.http.unwrap_or_else(AsyncHttpClient::new);
+        let params = self.params.into_value(PreRequestParams::default);
 
         let sender = AsyncSender {
             http,
@@ -295,9 +293,6 @@ impl AsyncClientBuilder {
 
         let addresses = self.nodes.build(params, sender.clone());
 
-        Ok(AsyncClient {
-            sender: sender,
-            addresses: addresses,
-        })
+        Ok(AsyncClient { sender, addresses })
     }
 }

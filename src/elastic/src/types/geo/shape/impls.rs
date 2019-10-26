@@ -168,5 +168,4 @@ mod tests {
 
         assert_eq!(Geometry::new(Value::Point(vec![1.0, 1.0])), *shape);
     }
-
 }

@@ -18,7 +18,6 @@ impl IntegerMapping for MyIntegerMapping {
         Some(42)
     }
 }
-# fn main() {}
 ```
 
 This will produce the following mapping:
@@ -34,7 +33,6 @@ This will produce the following mapping:
 #       Some(42)
 #   }
 # }
-# fn main() {
 # let json = json!(
 {
     "type": "integer",
@@ -43,7 +41,6 @@ This will produce the following mapping:
 # );
 # let mapping = elastic::types::__derive::standalone_field_ser(MyIntegerMapping).unwrap();
 # assert_eq!(json, mapping);
-# }
 ```
 */
 

@@ -4,7 +4,7 @@ use elastic::{
 };
 use futures::Future;
 
-const INDEX: &'static str = "index_does_not_exist";
+const INDEX: &str = "index_does_not_exist";
 
 test! {
     const description: &'static str = "get index that doesn't exist";

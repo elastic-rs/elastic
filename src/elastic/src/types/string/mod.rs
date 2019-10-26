@@ -28,25 +28,21 @@ struct MyType {
 Map a `keyword`:
 
 ```
-# fn main() {
 # use elastic::types::prelude::*;
 # use elastic::types::string::prelude::*;
 struct MyType {
     pub field: Keyword<DefaultKeywordMapping>
 }
-# }
 ```
 
 Map `text`:
 
 ```
-# fn main() {
 # use elastic::types::prelude::*;
 # use elastic::types::string::prelude::*;
 struct MyType {
     pub field: Text<DefaultTextMapping>
 }
-# }
 ```
 
 Map a custom type as a `keyword` field.
@@ -54,7 +50,6 @@ This is especially useful for simple `enum`s:
 
 ```
 #[macro_use] extern crate serde_derive;
-# fn main() {
 # use elastic::types::prelude::*;
 #[derive(Serialize)]
 #[serde(rename_all = "lowercase")]
@@ -65,7 +60,6 @@ enum MyKeywordField {
 }
 
 impl KeywordFieldType<DefaultKeywordMapping> for MyKeywordField {}
-# }
 ```
 
 # Links

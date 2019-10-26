@@ -22,8 +22,8 @@ impl Builder {
     pub fn new(http_verb: Method, has_body: bool, request_ty: syn::Ty) -> Self {
         Builder {
             req_ty: request_ty,
-            has_body: has_body,
-            http_verb: http_verb,
+            has_body,
+            http_verb,
         }
     }
 

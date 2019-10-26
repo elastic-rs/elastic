@@ -34,11 +34,11 @@ test! {
         &self,
         client: AsyncClient,
     ) -> Box<dyn Future<Item = Self::Response, Error = Error>> {
-        let ops = (0..10).into_iter().map(|i| {
+        let ops = (0..10).map(|i| {
             bulk().index(Doc {
                 id: i.to_string(),
                 title: "A document title".to_owned(),
-                timestamp: Date::build(2017, 03, 24, 13, 44, 0, 0),
+                timestamp: Date::build(2017, 3, 24, 13, 44, 0, 0),
             })
         });
 

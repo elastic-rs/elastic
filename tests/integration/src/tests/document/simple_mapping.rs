@@ -81,6 +81,6 @@ test! {
             }
         });
 
-        res.to_string() == expected.to_string()
+        res == &expected
     }
 }

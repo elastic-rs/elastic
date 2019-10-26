@@ -155,7 +155,7 @@ mod tests {
 
         let mut success = true;
         for i in 0..ser.len() {
-            if expected_ser[i] != &ser[i] {
+            if expected_ser[i] != ser[i] {
                 success = false;
                 break;
             }

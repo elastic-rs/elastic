@@ -9,8 +9,8 @@ use futures::Future;
 use crate::{
     client::{
         requests::{
-            Pending as BasePending,
             raw::RawRequestInner,
+            Pending as BasePending,
             RequestBuilder,
         },
         responses::IndicesExistsResponse,
@@ -65,8 +65,7 @@ where
 
     ```no_run
     # use elastic::prelude::*;
-    # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+        # fn main() -> Result<(), Box<dyn ::std::error::Error>> {
     # let client = SyncClientBuilder::new().build()?;
     let response = client.index("myindex").exists().send()?;
 
@@ -106,8 +105,7 @@ impl IndexExistsRequestBuilder<SyncSender> {
 
     ```no_run
     # use elastic::prelude::*;
-    # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+        # fn main() -> Result<(), Box<dyn ::std::error::Error>> {
     # let client = SyncClientBuilder::new().build()?;
     let response = client.index("myindex").exists().send()?;
 
@@ -143,8 +141,7 @@ impl IndexExistsRequestBuilder<AsyncSender> {
     ```no_run
     # use futures::Future;
     # use elastic::prelude::*;
-    # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+        # fn main() -> Result<(), Box<dyn ::std::error::Error>> {
     # let client = AsyncClientBuilder::new().build()?;
     let future = client.index("myindex").exists().send();
 

@@ -74,19 +74,11 @@ impl PartialEq<ChronoDateTime> for DateValue {
     fn eq(&self, other: &ChronoDateTime) -> bool {
         PartialEq::eq(&self.0, other)
     }
-
-    fn ne(&self, other: &ChronoDateTime) -> bool {
-        PartialEq::ne(&self.0, other)
-    }
 }
 
 impl PartialEq<DateValue> for ChronoDateTime {
     fn eq(&self, other: &DateValue) -> bool {
         PartialEq::eq(self, &other.0)
-    }
-
-    fn ne(&self, other: &DateValue) -> bool {
-        PartialEq::ne(self, &other.0)
     }
 }
 
@@ -119,7 +111,7 @@ where
     TFormat: DateFormat,
 {
     /** Format the wrapped date value using the generic format. */
-    pub fn format<'a>(&'a self) -> FormattedDate<'a> {
+    pub fn format(&self) -> FormattedDate {
         TFormat::format(&self.0)
     }
 
@@ -133,7 +125,7 @@ where
 
 impl<TFormat> From<DateValue> for FormattableDateValue<TFormat> {
     fn from(date: DateValue) -> Self {
-        FormattableDateValue(date.into(), PhantomData)
+        FormattableDateValue(date, PhantomData)
     }
 }
 
@@ -147,19 +139,11 @@ impl<TFormat> PartialEq<ChronoDateTime> for FormattableDateValue<TFormat> {
     fn eq(&self, other: &ChronoDateTime) -> bool {
         PartialEq::eq(&self.0, other)
     }
-
-    fn ne(&self, other: &ChronoDateTime) -> bool {
-        PartialEq::ne(&self.0, other)
-    }
 }
 
 impl<TFormat> PartialEq<FormattableDateValue<TFormat>> for ChronoDateTime {
     fn eq(&self, other: &FormattableDateValue<TFormat>) -> bool {
         PartialEq::eq(self, &other.0)
-    }
-
-    fn ne(&self, other: &FormattableDateValue<TFormat>) -> bool {
-        PartialEq::ne(self, &other.0)
     }
 }
 
@@ -177,11 +161,9 @@ on a unit struct:
 ```
 # #[macro_use] extern crate elastic_derive;
 # use elastic::types::prelude::*;
-# fn main() {
 #[derive(Default, ElasticDateFormat)]
 #[elastic(date_format="yyyy-MM-dd'T'HH:mm:ss")]
 struct MyFormat;
-# }
 ```
 
 The `#[elastic(date_format)]` attribute is required,
@@ -194,11 +176,9 @@ You can customise the indexed format name by adding an `#[elastic(date_format_na
 ```
 # #[macro_use] extern crate elastic_derive;
 # use elastic::types::prelude::*;
-# fn main() {
 #[derive(Default, ElasticDateFormat)]
 #[elastic(date_format="yyyyMMdd'T'HHmmssZ", date_format_name="basic_date_time_no_millis")]
 struct MyFormat;
-# }
 ```
 */
 pub trait DateFormat {
@@ -206,7 +186,7 @@ pub trait DateFormat {
     fn parse(date: &str) -> Result<DateValue, ParseError>;
 
     /** Formats a given `chrono::DateTime<Utc>` as a string. */
-    fn format<'a>(date: &'a DateValue) -> FormattedDate<'a>;
+    fn format(date: &DateValue) -> FormattedDate;
 
     /**
     The name of the format.

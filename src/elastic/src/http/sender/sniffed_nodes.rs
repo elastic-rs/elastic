@@ -207,13 +207,13 @@ impl SniffedNodesBuilder {
             .url_param("filter_path", "nodes.*.http.publish_address");
 
         SniffedNodes {
-            sender: sender,
-            refresh_params: refresh_params,
+            sender,
+            refresh_params,
             inner: Arc::new(RwLock::new(SniffedNodesInner {
                 last_update: None,
-                wait: wait,
+                wait,
                 refreshing: false,
-                nodes: nodes,
+                nodes,
             })),
         }
     }

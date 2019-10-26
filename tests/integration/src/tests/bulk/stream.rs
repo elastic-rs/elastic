@@ -47,7 +47,6 @@ test! {
         let (bulk_stream, bulk_responses) = client.bulk_stream().build();
 
         let ops = (0..20)
-            .into_iter()
             .map(|i| bulk().index(Doc { id: i.to_string() }));
 
         let req_future = bulk_stream.send_all(stream::iter_ok(ops));

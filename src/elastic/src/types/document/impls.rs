@@ -20,7 +20,7 @@ pub use crate::params::{
 /**
 The default name for document types in a single document index.
 */
-pub const DEFAULT_DOC_TYPE: &'static str = "_doc";
+pub const DEFAULT_DOC_TYPE: &str = "_doc";
 
 /**
 An indexable Elasticsearch type.
@@ -86,6 +86,7 @@ impl<TMapping> FieldDocumentMapping<TMapping>
 where
     TMapping: ObjectMapping + Default,
 {
+    #[allow(clippy::wrong_self_convention)]
     fn into_mapping(&self) -> TMapping {
         TMapping::default()
     }
@@ -379,7 +380,6 @@ mod tests {
         where
             TDocument: DocumentType,
         {
-            assert!(true);
         }
 
         use_document::<SimpleType>();

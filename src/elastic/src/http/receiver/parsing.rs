@@ -44,10 +44,8 @@ Provide an explicit response type in the `parse` function:
 # use elastic::http::{StatusCode, receiver::{parse, ParseError}};
 # use elastic::client::responses::*;
 # fn do_request() -> (StatusCode, Vec<u8>) { unimplemented!() }
-# fn main() {
 # let (response_status, response_body) = do_request();
 let get_response = parse::<GetResponse<Value>>().from_slice(response_status, response_body);
-# }
 ```
 
 Provide an explicit response type on the result ident:
@@ -57,10 +55,8 @@ Provide an explicit response type on the result ident:
 # use elastic::http::{StatusCode, receiver::{parse, ResponseError}};
 # use elastic::client::responses::*;
 # fn do_request() -> (StatusCode, Vec<u8>) { unimplemented!() }
-# fn main() {
 # let (response_status, response_body) = do_request();
 let get_response: Result<GetResponse<Value>, ResponseError> = parse().from_slice(response_status, response_body);
-# }
 ```
 
 If Rust can infer the concrete response type then you can avoid specifying it at all:
@@ -70,12 +66,10 @@ If Rust can infer the concrete response type then you can avoid specifying it at
 # use elastic::http::{StatusCode, receiver::{parse, ResponseError}};
 # use elastic::client::responses::*;
 # fn do_request() -> (StatusCode, Vec<u8>) { unimplemented!() }
-# fn main() {
 # fn parse_response() -> Result<GetResponse<Value>, ResponseError> {
 # let (response_status, response_body) = do_request();
 let get_response = parse().from_slice(response_status, response_body);
 # get_response
-# }
 # }
 ```
 */
@@ -85,6 +79,7 @@ pub fn parse<T: IsOk + DeserializeOwned>() -> Parse<T> {
     }
 }
 
+#[allow(clippy::wrong_self_convention)]
 impl<T: IsOk + DeserializeOwned> Parse<T> {
     /** Try parse a contiguous slice of bytes into a concrete response. */
     pub fn from_slice<B: AsRef<[u8]>, H: Into<HttpResponseHead>>(
@@ -111,15 +106,12 @@ fn from_body<B: ResponseBody, T: IsOk + DeserializeOwned>(
 ) -> Result<T, ResponseError> {
     let maybe = T::is_ok(head, Unbuffered(body))?;
 
-    match maybe.ok {
-        true => {
-            let ok = maybe.res.parse_ok()?;
-            Ok(ok)
-        }
-        false => {
-            let err = maybe.res.parse_err()?;
-            Err(ResponseError::Api(err))
-        }
+    if maybe.ok {
+        let ok = maybe.res.parse_ok()?;
+        Ok(ok)
+    } else {
+        let err = maybe.res.parse_err()?;
+        Err(ResponseError::Api(err))
     }
 }
 
@@ -258,7 +250,6 @@ Implement `IsOk` for a custom response type, where a http `404` might still cont
 ```
 # #[macro_use] extern crate serde_derive;
 # use elastic::http::{StatusCode, receiver::{parse, IsOk, ResponseBody, HttpResponseHead, Unbuffered, MaybeOkResponse, ParseError}};
-# fn main() {}
 # #[derive(Deserialize)]
 # struct MyResponse;
 impl IsOk for MyResponse {
@@ -332,7 +323,7 @@ where
         I: Into<MaybeBufferedResponse<B>>,
     {
         MaybeOkResponse {
-            ok: ok,
+            ok,
             res: res.into(),
         }
     }
