@@ -202,6 +202,15 @@ pub struct BulkDocumentOperation<TDocument> {
     _marker: PhantomData<TDocument>,
 }
 
+impl<TDocument> Default for BulkDocumentOperation<TDocument>
+where
+    TDocument: DocumentType,
+{
+    fn default() -> BulkDocumentOperation<TDocument> {
+        BulkDocumentOperation::new()
+    }
+}
+
 impl<TDocument> BulkDocumentOperation<TDocument>
 where
     TDocument: DocumentType,
@@ -341,6 +350,7 @@ where
 /**
 A builder for a bulk operation.
 */
+#[derive(Default)]
 pub struct BulkRawOperation {
     _private: (),
 }
@@ -350,7 +360,7 @@ impl BulkRawOperation {
     Create a bulk operation.
     */
     pub fn new() -> Self {
-        BulkRawOperation { _private: () }
+        BulkRawOperation::default()
     }
 
     /**
