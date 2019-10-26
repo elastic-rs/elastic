@@ -111,7 +111,7 @@ where
     TFormat: DateFormat,
 {
     /** Format the wrapped date value using the generic format. */
-    pub fn format<'a>(&'a self) -> FormattedDate<'a> {
+    pub fn format(&self) -> FormattedDate {
         TFormat::format(&self.0)
     }
 
@@ -186,7 +186,7 @@ pub trait DateFormat {
     fn parse(date: &str) -> Result<DateValue, ParseError>;
 
     /** Formats a given `chrono::DateTime<Utc>` as a string. */
-    fn format<'a>(date: &'a DateValue) -> FormattedDate<'a>;
+    fn format(date: &DateValue) -> FormattedDate;
 
     /**
     The name of the format.

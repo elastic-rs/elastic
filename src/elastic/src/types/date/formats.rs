@@ -91,7 +91,7 @@ impl DateFormat for EpochMillis {
         Ok(date.into())
     }
 
-    fn format<'a>(date: &'a DateValue) -> FormattedDate<'a> {
+    fn format(date: &DateValue) -> FormattedDate {
         let msec = (date.timestamp() * 1000) + (date.nanosecond() as i64 / 1_000_000);
         msec.into()
     }
@@ -391,7 +391,7 @@ mod tests {
                 "yyyy-MM-dd'T'HH:mm:ssZ"
             }
 
-            fn format<'a>(date: &'a DateValue) -> FormattedDate<'a> {
+            fn format(date: &DateValue) -> FormattedDate {
                 date.to_rfc3339().into()
             }
 

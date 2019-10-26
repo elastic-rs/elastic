@@ -195,7 +195,7 @@ impl Path {
         }
     }
 
-    fn parse_literal<'a>(i: &'a [u8]) -> (&'a [u8], &'a str) {
+    fn parse_literal(i: &[u8]) -> (&[u8], &str) {
         if i[0] == b'}' {
             let i = parse::shift(i, 1);
             parse::take_while(i, |c| c != b'{')
@@ -204,7 +204,7 @@ impl Path {
         }
     }
 
-    fn parse_param<'a>(i: &'a [u8]) -> (&'a [u8], &'a str) {
+    fn parse_param(i: &[u8]) -> (&[u8], &str) {
         if i[0] == b'{' {
             let i = parse::shift(i, 1);
             parse::take_while(i, |c| c != b'}')
