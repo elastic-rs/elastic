@@ -19,7 +19,7 @@ If you run into any problems upgrading in your own open source projects feel fre
 ## Build Status
 Platform  | Channel | Status (`master`)
 ------------- | ------------- | -------------
-Linux / OSX  | Stable/Nightly | [![Build Status](https://travis-ci.org/elastic-rs/elastic.svg?branch=master)](https://travis-ci.org/elastic-rs/elastic)
+Linux / macOS  | Stable/Nightly | [![Build Status](https://travis-ci.org/elastic-rs/elastic.svg?branch=master)](https://travis-ci.org/elastic-rs/elastic)
 Windows  | Nightly | [![Build status](https://ci.appveyor.com/api/projects/status/csa78tcumdpnbur2?svg=true)](https://ci.appveyor.com/project/KodrAus/elastic)
 ## Documentation
 
