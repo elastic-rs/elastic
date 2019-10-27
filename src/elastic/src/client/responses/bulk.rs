@@ -9,6 +9,7 @@ use super::common::{
 };
 use serde::de::{
     Deserialize,
+    DeserializeOwned,
     Deserializer,
     Error as DeError,
     MapAccess,
@@ -419,6 +420,7 @@ pub struct OkItem<
     primary_term: Option<u32>,
     shards: Option<Shards>,
     result: Option<DocumentResult>,
+    get: Option<Value>,
 }
 
 impl<TIndex, TType, TId> OkItem<TIndex, TType, TId> {
@@ -487,6 +489,70 @@ impl<TIndex, TType, TId> OkItem<TIndex, TType, TId> {
     /** The document id for this item. */
     pub fn id(&self) -> &TId {
         &self.id
+    }
+
+    /**
+    Convert the source in the response into the updated document.
+
+    The [`source`] method must have been called first on the [`BulkOperation`],
+    otherwise this will return `None`.
+
+    Although not a requirement, be careful that both the document and
+    updated document types use the same index, e.g. by using the
+    [`#[elastic(index)]` attribute][index-attr].
+
+    # Examples
+
+    ```no_run
+    # #[macro_use] extern crate serde_derive;
+    # #[macro_use] extern crate elastic_derive;
+    # use elastic::prelude::*;
+    # fn main() { run().unwrap() }
+    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+    # #[derive(Serialize, Deserialize, ElasticType, Debug)]
+    # struct NewsArticle { id: i64, likes: i64 }
+    # #[derive(Serialize, Deserialize, ElasticType, Debug)]
+    # struct UpdatedNewsArticle { id: i64, likes: i64 }
+    # let client = SyncClientBuilder::new().build()?;
+    let update_ops = (0..10).into_iter().map(|i| {
+        bulk::<NewsArticle>()
+            .update_script(i, "ctx._source.likes++")
+            .source(true)
+    });
+
+    let response = client
+        .bulk()
+        .index(NewsArticle::static_index())
+        .ty(NewsArticle::static_ty())
+        .extend(update_ops)
+        .send()?;
+
+    for op in response {
+        if let Ok(op) = op {
+            println!("{:?}", op.into_document::<UpdatedNewsArticle>().unwrap());
+        }
+    }
+
+    # Ok(())
+    # }
+    ```
+
+    [`source`]: ../../requests/bulk/struct.BulkOperation.html#method.source
+    [`BulkOperation`]: ../../requests/bulk/struct.BulkOperation.html
+    [index-attr]: ../../../types/document/index.html#specifying-a-default-index-name
+    */
+    pub fn into_document<T>(&self) -> Option<T>
+    where
+        T: DeserializeOwned,
+    {
+        self.get.as_ref().map_or_else(
+            || None,
+            |obj| {
+                obj.get("_source")
+                    .cloned()
+                    .map_or_else(|| None, |doc| serde_json::from_value::<T>(doc).ok())
+            },
+        )
     }
 }
 
@@ -603,6 +669,7 @@ struct ItemDeInner<TIndex, TType, TId> {
     sequence_number: Option<u32>,
     #[serde(rename = "_primary_term")]
     primary_term: Option<u32>,
+    get: Option<Value>,
     #[serde(rename = "_shards")]
     shards: Option<Shards>,
     result: Option<DocumentResult>,
@@ -643,6 +710,7 @@ where
                 primary_term: self.inner.primary_term,
                 shards: self.inner.shards,
                 result: self.inner.result,
+                get: self.inner.get,
             })
         }
     }
