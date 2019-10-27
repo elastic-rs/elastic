@@ -5,7 +5,8 @@ test_cases![
     update_no_index,
     update_with_doc,
     update_with_inline_script,
-    update_with_script
+    update_with_script,
+    update_with_source
 ];
 
 mod compile_test;
