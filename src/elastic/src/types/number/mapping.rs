@@ -148,7 +148,7 @@ macro_rules! number_mapping {
                 where
                     S: ::serde::Serializer,
                 {
-                    let mut state = serializer.serialize_struct("mapping", 8)?;
+                    let mut state = serializer.serialize_struct("mapping", 9)?;
 
                     state.serialize_field("type", TMapping::data_type())?;
 
@@ -157,6 +157,7 @@ macro_rules! number_mapping {
                     ser_field!(state, "doc_values", TMapping::doc_values());
                     ser_field!(state, "ignore_malformed", TMapping::ignore_malformed());
                     ser_field!(state, "include_in_all", TMapping::include_in_all());
+                    ser_field!(state, "index", TMapping::index());
                     ser_field!(state, "null_value", TMapping::null_value());
                     ser_field!(state, "store", TMapping::store());
 
@@ -471,6 +472,7 @@ mod tests {
             "doc_values": false,
             "ignore_malformed": true,
             "include_in_all": true,
+            "index": false,
             "null_value": 42,
             "store": true
         });
@@ -499,6 +501,7 @@ mod tests {
             "doc_values": false,
             "ignore_malformed": true,
             "include_in_all": true,
+            "index": false,
             "null_value": -42,
             "store": true
         });
@@ -527,6 +530,7 @@ mod tests {
             "doc_values": false,
             "ignore_malformed": true,
             "include_in_all": true,
+            "index": false,
             "null_value": 42,
             "store": true
         });
@@ -555,6 +559,7 @@ mod tests {
             "doc_values": false,
             "ignore_malformed": true,
             "include_in_all": true,
+            "index": false,
             "null_value": 1,
             "store": true
         });
@@ -582,6 +587,7 @@ mod tests {
             "coerce": true,
             "doc_values": false,
             "ignore_malformed": true,
+            "index": false,
             "include_in_all": true,
             "null_value": -0.00002,
             "store": true
@@ -611,6 +617,7 @@ mod tests {
             "doc_values": false,
             "ignore_malformed": true,
             "include_in_all": true,
+            "index": false,
             "store": true
         });
 
