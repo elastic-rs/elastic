@@ -151,7 +151,7 @@ macro_rules! number_mapping {
                 where
                     S: ::serde::Serializer,
                 {
-                    let mut state = serializer.serialize_struct("mapping", 8)?;
+                    let mut state = serializer.serialize_struct("mapping", 9)?;
 
                     state.serialize_field("type", TMapping::data_type())?;
 
