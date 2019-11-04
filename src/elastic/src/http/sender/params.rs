@@ -1,5 +1,6 @@
 use std::{
     collections::HashMap,
+    fmt,
     sync::Arc,
 };
 
@@ -9,6 +10,8 @@ use reqwest::{
         HeaderMap,
         HeaderName,
         HeaderValue,
+        InvalidHeaderValue,
+        AUTHORIZATION,
         CONTENT_TYPE,
     },
 };
@@ -124,6 +127,25 @@ impl PreRequestParams {
     pub fn header(mut self, key: HeaderName, value: HeaderValue) -> Self {
         Arc::make_mut(&mut self.headers).insert(key, value);
         self
+    }
+
+    /** Enables HTTP basic authentication. */
+    pub fn basic_auth<U, P>(
+        mut self,
+        username: U,
+        password: Option<P>,
+    ) -> Result<Self, InvalidHeaderValue>
+    where
+        U: fmt::Display,
+        P: fmt::Display,
+    {
+        let auth = match password {
+            Some(password) => format!("{}:{}", username, password),
+            None => format!("{}:", username),
+        };
+        let header_value = HeaderValue::from_str(&format!("Basic {}", base64::encode(&auth)))?;
+        Arc::make_mut(&mut self.headers).insert(AUTHORIZATION, header_value);
+        Ok(self)
     }
 }
 
