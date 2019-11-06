@@ -663,6 +663,16 @@ where
             index: index.into(),
         }
     }
+
+    /**
+    Creates a new client with a manually created sender and list of node addresses.
+    */
+    pub fn from_sender(sender: TSender, addresses: NodeAddresses<TSender>) -> Self {
+        Self {
+            sender,
+            addresses,
+        }
+    }
 }
 
 /**
