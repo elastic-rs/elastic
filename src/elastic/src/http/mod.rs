@@ -48,10 +48,14 @@ A request just before being sent.
 */
 #[derive(Clone)]
 pub struct HttpRequest<TBody> {
-    pub(crate) url: Url,
-    pub(crate) method: Method,
-    pub(crate) headers: Arc<HeaderMap>,
-    pub(crate) body: Option<TBody>,
+    /** URL to send to */
+    pub url: Url,
+    /** Request method to use */
+    pub method: Method,
+    /** Request headers */
+    pub headers: Arc<HeaderMap>,
+    /** Request body */
+    pub body: Option<TBody>,
 }
 
 impl<TBody> HttpRequest<TBody> {
