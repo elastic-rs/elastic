@@ -69,6 +69,19 @@ pub enum Method {
     #[serde(rename = "DELETE")]
     Delete,
 }
+impl Method {
+    /// Converts the enum to the method name as a string
+    pub fn to_name(self) -> &'static str {
+        match self {
+            Method::Head => "HEAD",
+            Method::Get => "GET",
+            Method::Post => "POST",
+            Method::Put => "PUT",
+            Method::Patch => "PATCH",
+            Method::Delete => "DELETE",
+        }
+    }
+}
 
 #[derive(Debug, PartialEq, Deserialize, Clone)]
 pub struct Url {
