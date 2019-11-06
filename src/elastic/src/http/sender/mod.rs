@@ -151,7 +151,7 @@ where
     T: Into<Arc<str>>,
 {
     fn from(address: T) -> Self {
-        NodeAddress(address.into())
+        NodeAddress(address.into().trim_end_matches('/').into())
     }
 }
 
