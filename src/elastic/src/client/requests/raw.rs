@@ -12,8 +12,6 @@ use crate::{
     },
     endpoints::Endpoint,
     http::sender::{
-        NextParams,
-        NodeAddresses,
         SendableRequest,
         SendableRequestParams,
         Sender,
@@ -103,8 +101,6 @@ where
     TSender: Sender,
     TEndpoint: Into<Endpoint<'static, TBody>>,
     TBody: Into<<TSender>::Body> + Send + 'static,
-    NodeAddresses<TSender>: NextParams,
-    <NodeAddresses<TSender> as NextParams>::Params: Into<TSender::Params> + Send + 'static,
 {
     /**
     Send a `RawRequestBuilder`.
@@ -177,7 +173,7 @@ where
         let params = match self.params_builder.try_into_value() {
             TryIntoValue::Value(value) => SendableRequestParams::Value(value),
             TryIntoValue::Builder(builder) => SendableRequestParams::Builder {
-                params: client.addresses.next(),
+                params: client.sender.next_params(&client.addresses),
                 builder,
             },
         };

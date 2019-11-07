@@ -39,16 +39,12 @@ use crate::{
         sender::{
             build_http_method,
             build_url,
-            NextParams,
             NodeAddresses,
             RequestParams,
             SendableRequest,
             SendableRequestParams,
             Sender,
-            sniffed_nodes::{
-                NextOrRefresh,
-                SniffedNodes,
-            },
+            sniffed_nodes::NextOrRefresh,
             TypedSender,
         },
         Pending,
@@ -200,6 +196,34 @@ impl Sender for AsyncSender {
 
         PendingResponse::new(req_future)
     }
+
+    fn next_params(
+        &self,
+        addresses: &NodeAddresses<Self>
+    ) -> Self::Params {
+        match addresses {
+            NodeAddresses::Static(ref nodes) => PendingParams::new(nodes.next().into_future()),
+            NodeAddresses::Sniffed(ref sniffer) => {
+                let refresher = match sniffer.next_or_start_refresh() {
+                    Ok(NextOrRefresh::Next(address)) => {
+                        return Pending::new(Box::new(Ok(address).into_future()));
+                    },
+                    Ok(NextOrRefresh::NeedsRefresh(r)) => r,
+                    Err(err) => {
+                        return Pending::new(Box::new(Err(err).into_future()));
+                    }
+                };
+
+                let req = sniffer.sendable_request();
+                let refresh_nodes = self
+                    .send(req)
+                    .and_then(|res| res.into_response::<NodesInfoResponse>())
+                    .then(move |fresh_nodes| refresher.update_nodes_and_next(fresh_nodes));
+
+                PendingParams::new(Box::new(refresh_nodes))
+            }
+        }
+    }
 }
 impl<TReqInner> TypedSender<TReqInner> for AsyncSender
 where
@@ -222,42 +246,6 @@ where
             })
             .and_then(|v| v.into_response::<TReqInner::Response>());
         return Pending::new(fut);
-    }
-}
-
-
-impl NextParams for NodeAddresses<AsyncSender> {
-    type Params = PendingParams;
-
-    fn next(&self) -> Self::Params {
-        match self {
-            NodeAddresses::Static(ref nodes) => PendingParams::new(nodes.next().into_future()),
-            NodeAddresses::Sniffed(ref sniffer) => PendingParams::new(sniffer.next()),
-        }
-    }
-}
-
-impl NextParams for SniffedNodes<AsyncSender> {
-    type Params = Box<dyn Future<Item = RequestParams, Error = Error> + Send>;
-
-    fn next(&self) -> Self::Params {
-        let refresher = match self.next_or_start_refresh() {
-            Ok(NextOrRefresh::Next(address)) => {
-                return Box::new(Ok(address).into_future());
-            },
-            Ok(NextOrRefresh::NeedsRefresh(r)) => r,
-            Err(err) => {
-                return Box::new(Err(err).into_future());
-            }
-        };
-
-        let req = self.sendable_request();
-        let refresh_nodes = self.sender()
-            .send(req)
-            .and_then(|res| res.into_response::<NodesInfoResponse>())
-            .then(move |fresh_nodes| refresher.update_nodes_and_next(fresh_nodes));
-
-        Box::new(refresh_nodes)
     }
 }
 

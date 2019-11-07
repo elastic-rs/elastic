@@ -21,8 +21,6 @@ use crate::{
     http::{
         receiver::IsOk,
         sender::{
-            NextParams,
-            NodeAddresses,
             RequestParams,
             SendableRequest,
             SendableRequestParams,
@@ -247,8 +245,6 @@ where
     TReqInner: RequestInner,
     TSender: TypedSender<TReqInner>,
     <TReqInner::Request as IntoEndpoint<'static>>::BodyType: Send + Into<TSender::Body>,
-    NodeAddresses<TSender>: NextParams,
-    <NodeAddresses<TSender> as NextParams>::Params: Into<TSender::Params>,
 {
     /**
     Sends the request.
@@ -271,7 +267,7 @@ where
                 let params = match params_builder.try_into_value() {
                     TryIntoValue::Value(value) => SendableRequestParams::Value(value),
                     TryIntoValue::Builder(builder) => SendableRequestParams::Builder {
-                        params: client.addresses.next(),
+                        params: client.sender.next_params(&client.addresses),
                         builder,
                     },
                 };

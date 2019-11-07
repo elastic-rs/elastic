@@ -25,23 +25,18 @@ use crate::{
         sender::{
             build_http_method,
             build_url,
-            NextParams,
             NodeAddresses,
             RequestParams,
             SendableRequest,
             SendableRequestParams,
             Sender,
-            sniffed_nodes::{
-                NextOrRefresh,
-                SniffedNodes,
-            },
+            sniffed_nodes::NextOrRefresh,
             TypedSender,
         },
         SyncBody,
         SyncHttpRequest,
         Url,
     },
-    private,
 };
 
 pub(crate) type SyncPreSend =
@@ -53,8 +48,6 @@ pub struct SyncSender {
     pub(crate) http: SyncHttpClient,
     pub(crate) pre_send: Option<Arc<SyncPreSend>>,
 }
-
-impl private::Sealed for SyncSender {}
 
 impl Sender for SyncSender {
     type Body = SyncBody;
@@ -137,6 +130,29 @@ impl Sender for SyncSender {
 
         sync_response(res)
     }
+
+    fn next_params(
+        &self,
+        addresses: &NodeAddresses<Self>
+    ) -> Self::Params {
+        match addresses {
+            NodeAddresses::Static(ref nodes) => Params::new(nodes.next()),
+            NodeAddresses::Sniffed(ref sniffer) => {
+                let refresher = match sniffer.next_or_start_refresh() {
+                    Ok(NextOrRefresh::Next(address)) => { return Params::new(Ok(address)); },
+                    Ok(NextOrRefresh::NeedsRefresh(r)) => r,
+                    Err(err) => { return Params::new(Err(err)); }
+                };
+
+                // Perform the refresh
+                let req = sniffer.sendable_request();
+                let fresh_nodes = self
+                    .send(req)
+                    .and_then(|res| res.into_response::<NodesInfoResponse>());
+                Params::new(refresher.update_nodes_and_next(fresh_nodes))
+            }
+        }
+    }
 }
 impl<TReqInner> TypedSender<TReqInner> for SyncSender
 where
@@ -154,37 +170,6 @@ where
     {
         let sendable_req = request?;
         self.send(sendable_req).and_then(|resp| resp.into_response())
-    }
-}
-
-
-impl NextParams for NodeAddresses<SyncSender> {
-    type Params = Params;
-
-    fn next(&self) -> Self::Params {
-        match self {
-            NodeAddresses::Static(ref nodes) => Params::new(nodes.next()),
-            NodeAddresses::Sniffed(ref sniffer) => Params::new(sniffer.next()),
-        }
-    }
-}
-
-impl NextParams for SniffedNodes<SyncSender> {
-    type Params = Result<RequestParams, Error>;
-
-    fn next(&self) -> Self::Params {
-        let refresher = match self.next_or_start_refresh() {
-            Ok(NextOrRefresh::Next(address)) => { return Ok(address); },
-            Ok(NextOrRefresh::NeedsRefresh(r)) => r,
-            Err(err) => { return Err(err); }
-        };
-
-        // Perform the refresh
-        let req = self.sendable_request();
-        let fresh_nodes = self.sender()
-            .send(req)
-            .and_then(|res| res.into_response::<NodesInfoResponse>());
-        refresher.update_nodes_and_next(fresh_nodes)
     }
 }
 

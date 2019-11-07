@@ -45,7 +45,6 @@ use crate::{
     http::{
         sender::{
             static_nodes::StaticNodes,
-            NextParams,
             NodeAddress,
             PreRequestParams,
             RequestParams,

@@ -6,7 +6,6 @@ Most of the types here aren't currently usable directly, but once the low-level 
 Some notable types include:
 
 - `Sender`: a generic trait that can send a http request and return a response
-- `NextParams`: a generic trait that can fetch a set of parameters to associate with a request
 - `SyncSender`: a synchronous http client
 - `AsyncSender`: an asynchronous http client.
 
@@ -115,7 +114,7 @@ pub trait Sender: Clone {
     /** The kind of response this sender produces. */
     type Response;
     /** The kind of request parameters this sender accepts. */
-    type Params;
+    type Params: Send+'static;
 
     /** Send a raw request. */
     fn send<TEndpoint, TParams, TBody>(
@@ -126,6 +125,19 @@ pub trait Sender: Clone {
         TEndpoint: Into<Endpoint<'static, TBody>>,
         TBody: Into<Self::Body> + Send + 'static,
         TParams: Into<Self::Params> + Send + 'static;
+
+    /**
+    Gets the parameters for the next query.
+
+    A set of request parameters are fetched before each HTTP request. This method
+    makes it possible to load balance requests between multiple nodes in an Elasticsearch
+    cluster. Out of the box elastic provides implementations for a static set of nodes or
+    nodes sniffed from the Nodes Stats API.
+    */
+    fn next_params(
+        &self,
+        addresses: &NodeAddresses<Self>
+    ) -> Self::Params;
 }
 /**
 Represents a type that can send a typed request and deserialize the result.
@@ -175,25 +187,6 @@ where
         TEndpoint: Into<Endpoint<'static, TBody>> + Send + 'static,
         TBody: Into<Self::Body> + Send + 'static,
         TParams: Into<Self::Params> + Send + 'static;
-}
-
-/**
-Represents a type that can fetch request parameters.
-
-A set of request parameters are fetched before each HTTP request.
-The `NextParams` trait makes it possible to load balance requests between multiple nodes in an Elasticsearch cluster.
-Out of the box `elastic` provides implementations for a static set of nodes or nodes sniffed from the [Nodes Stats API]().
-*/
-pub trait NextParams: Clone {
-    /**
-    The kind of parameters produces.
-
-    This type is designed to link a `NextParams` implementation with a particular `Sender`.
-    */
-    type Params: Send+'static;
-
-    /** Get a set of request parameters. */
-    fn next(&self) -> Self::Params;
 }
 
 /**
