@@ -153,7 +153,8 @@ pub fn wrapped(err: Box<dyn StdError + Send + Sync>) -> WrappedError {
     WrappedError(err)
 }
 
-pub(crate) fn request<E>(err: E) -> Error
+/** Creates an error for when a request could not be generated or sent */
+pub fn request<E>(err: E) -> Error
 where
     E: StdError + Send + 'static,
 {
