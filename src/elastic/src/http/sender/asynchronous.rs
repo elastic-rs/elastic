@@ -199,7 +199,7 @@ impl Sender for AsyncSender {
 
     fn next_params(
         &self,
-        addresses: &NodeAddresses<Self>
+        addresses: &NodeAddresses,
     ) -> Self::Params {
         match addresses {
             NodeAddresses::Static(ref nodes) => PendingParams::new(nodes.next().into_future()),

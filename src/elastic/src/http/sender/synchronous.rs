@@ -133,7 +133,7 @@ impl Sender for SyncSender {
 
     fn next_params(
         &self,
-        addresses: &NodeAddresses<Self>
+        addresses: &NodeAddresses,
     ) -> Self::Params {
         match addresses {
             NodeAddresses::Static(ref nodes) => Params::new(nodes.next()),

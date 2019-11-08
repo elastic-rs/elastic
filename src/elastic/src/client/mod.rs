@@ -634,7 +634,7 @@ tokio::runtime::current_thread::block_on_all(response_future)?;
 #[derive(Clone)]
 pub struct Client<TSender> {
     sender: TSender,
-    addresses: NodeAddresses<TSender>,
+    addresses: NodeAddresses,
 }
 
 impl<TSender> Client<TSender>
@@ -667,7 +667,7 @@ where
     /**
     Creates a new client with a manually created sender and list of node addresses.
     */
-    pub fn from_sender(sender: TSender, addresses: NodeAddresses<TSender>) -> Self {
+    pub fn from_sender(sender: TSender, addresses: NodeAddresses) -> Self {
         Self {
             sender,
             addresses,

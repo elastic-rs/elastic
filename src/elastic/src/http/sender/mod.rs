@@ -136,7 +136,7 @@ pub trait Sender: Clone {
     */
     fn next_params(
         &self,
-        addresses: &NodeAddresses<Self>
+        addresses: &NodeAddresses,
     ) -> Self::Params;
 }
 /**
@@ -214,21 +214,21 @@ where
 A common container for a source of node addresses.
 */
 #[derive(Clone)]
-pub enum NodeAddresses<TSender> {
+pub enum NodeAddresses {
     /** Static list of nodes */
     Static(StaticNodes),
     /** Fetch set of nodes from a single node of the cluster */
-    Sniffed(SniffedNodes<TSender>),
+    Sniffed(SniffedNodes),
 }
 
-impl<TSender> NodeAddresses<TSender> {
+impl NodeAddresses {
     /** Static set of nodes to connect to */
     pub fn static_nodes(nodes: StaticNodes) -> Self {
         NodeAddresses::Static(nodes)
     }
 
     /** Fetch set of nodes from a single node of the cluster */
-    pub fn sniffed_nodes(nodes: SniffedNodes<TSender>) -> Self {
+    pub fn sniffed_nodes(nodes: SniffedNodes) -> Self {
         NodeAddresses::Sniffed(nodes)
     }
 }
@@ -281,11 +281,10 @@ impl Default for NodeAddressesBuilder {
 
 impl NodeAddressesBuilder {
     /** Builds the node addresses */
-    pub fn build<TSender>(
+    pub fn build(
         self,
         params: PreRequestParams,
-        sender: TSender,
-    ) -> NodeAddresses<TSender> {
+    ) -> NodeAddresses {
         match self {
             NodeAddressesBuilder::Static(nodes) => {
                 let nodes = StaticNodes::round_robin(nodes, params);
@@ -295,7 +294,7 @@ impl NodeAddressesBuilder {
             NodeAddressesBuilder::Sniffed(builder) => {
                 let nodes = builder
                     .into_value(|node| SniffedNodesBuilder::new(node))
-                    .build(params, sender);
+                    .build(params);
 
                 NodeAddresses::sniffed_nodes(nodes)
             }

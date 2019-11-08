@@ -53,7 +53,6 @@ use crate::{
         },
         DefaultBody,
     },
-    private,
 };
 
 /**
@@ -68,8 +67,7 @@ If updating the nodes fails for some reason then the request itself will also fa
 [node info request]: https://www.elastic.co/guide/en/elasticsearch/reference/current/cluster-nodes-info.html
 */
 #[derive(Clone)]
-pub struct SniffedNodes<TSender> {
-    sender: TSender,
+pub struct SniffedNodes {
     refresh_params: RequestParams,
     inner: Arc<RwLock<SniffedNodesInner>>,
 }
@@ -123,15 +121,14 @@ impl SniffedNodesBuilder {
     }
 
     /**
-    Build a cluster sniffer using the given sender and parameters.
+    Build a cluster sniffer using the given parameters.
 
     A `filter_path` url parameter will be added to the `refresh_parameters`.
     */
-    pub fn build<TSender>(
+    pub fn build(
         self,
         base_params: PreRequestParams,
-        sender: TSender,
-    ) -> SniffedNodes<TSender> {
+    ) -> SniffedNodes {
         let nodes = StaticNodes::round_robin(vec![self.base_url.clone()], base_params.clone());
         let wait = self.wait.unwrap_or_else(|| Duration::from_secs(90));
 
@@ -145,7 +142,6 @@ impl SniffedNodesBuilder {
             .url_param("filter_path", "nodes.*.http.publish_address");
 
         SniffedNodes {
-            sender: sender,
             refresh_params: refresh_params,
             inner: Arc::new(RwLock::new(SniffedNodesInner {
                 last_update: None,
@@ -172,12 +168,7 @@ Shared logic between sync and async methods.
 These methods definitely aren't intended to be made public.
 There are invariants that are shared between them that require they're called in specific ways.
 */
-impl<TSender> SniffedNodes<TSender> {
-    /** Gets the sender */
-    pub fn sender(&self) -> &TSender {
-        &self.sender
-    }
-    
+impl SniffedNodes {
     /**
     Return a node address if the set of nodes is still current.
 
@@ -259,8 +250,6 @@ impl SniffedNodesInner {
     }
 }
 
-impl<TSender> private::Sealed for SniffedNodes<TSender> {}
-
 /** Result of `SniffedNodes::next_or_start_refresh`. */
 pub enum NextOrRefresh {
     /** Don't need to refresh, an address is available. */
@@ -317,8 +306,8 @@ mod tests {
     use super::*;
     use serde_json;
 
-    fn sender() -> SniffedNodes<()> {
-        SniffedNodesBuilder::new(initial_address()).build(PreRequestParams::default(), ())
+    fn sender() -> SniffedNodes {
+        SniffedNodesBuilder::new(initial_address()).build(PreRequestParams::default())
     }
 
     fn expected_nodes() -> NodesInfoResponse {
@@ -352,7 +341,7 @@ mod tests {
     }
 
     fn assert_node_addresses_equal(
-        nodes: &SniffedNodes<()>,
+        nodes: &SniffedNodes,
         expected_addresses: Vec<&'static str>,
     ) {
         let inner = nodes.inner.read().expect("lock poisoned");
@@ -361,12 +350,12 @@ mod tests {
         assert_eq!(expected_addresses, actual);
     }
 
-    fn assert_refreshing_equal(nodes: &SniffedNodes<()>, refreshing: bool) {
+    fn assert_refreshing_equal(nodes: &SniffedNodes, refreshing: bool) {
         let inner = nodes.inner.read().expect("lock poisoned");
         assert_eq!(refreshing, inner.refreshing);
     }
 
-    fn assert_should_refresh_equal(nodes: &SniffedNodes<()>, should_refresh: bool) {
+    fn assert_should_refresh_equal(nodes: &SniffedNodes, should_refresh: bool) {
         let inner = nodes.inner.read().expect("lock poisoned");
         assert_eq!(should_refresh, inner.should_refresh());
     }
