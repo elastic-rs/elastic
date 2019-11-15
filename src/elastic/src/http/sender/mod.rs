@@ -6,7 +6,6 @@ Most of the types here aren't currently usable directly, but once the low-level 
 Some notable types include:
 
 - `Sender`: a generic trait that can send a http request and return a response
-- `NextParams`: a generic trait that can fetch a set of parameters to associate with a request
 - `SyncSender`: a synchronous http client
 - `AsyncSender`: an asynchronous http client.
 
@@ -21,14 +20,17 @@ use fluent_builder::{
 pub mod sniffed_nodes;
 pub mod static_nodes;
 
-mod asynchronous;
 mod params;
+pub use self::params::*;
+
+#[cfg(feature="async_sender")]
+mod asynchronous;
+#[cfg(feature="sync_sender")]
 mod synchronous;
-pub use self::{
-    asynchronous::*,
-    params::*,
-    synchronous::*,
-};
+#[cfg(feature="async_sender")]
+pub use self::asynchronous::*;
+#[cfg(feature="sync_sender")]
+pub use self::synchronous::*;
 
 use std::{
     marker::PhantomData,
@@ -44,8 +46,9 @@ use self::{
     static_nodes::StaticNodes,
 };
 use crate::{
+    client::requests::RequestInner,
     endpoints::Endpoint,
-    private,
+    error::Error,
 };
 
 /**
@@ -57,9 +60,12 @@ This type encapsulates the state needed between a [`Client`][Client] and a [`Sen
 [Sender]: trait.Sender.html
 */
 pub struct SendableRequest<TEndpoint, TParams, TBody> {
-    correlation_id: Uuid,
-    inner: TEndpoint,
-    params: SendableRequestParams<TParams>,
+    /** Unique ID for the request. */
+    pub correlation_id: Uuid,
+    /** Endpoint for the request */
+    pub inner: TEndpoint,
+    /** Parameters for the request */
+    pub params: SendableRequestParams<TParams>,
     _marker: PhantomData<TBody>,
 }
 
@@ -74,10 +80,15 @@ impl<TEndpoint, TParams, TBody> SendableRequest<TEndpoint, TParams, TBody> {
     }
 }
 
-pub(crate) enum SendableRequestParams<TParams> {
+/** Parameters for a SendableRequest */
+pub enum SendableRequestParams<TParams> {
+    /** Parameters were explicitly defined for this specific request */
     Value(RequestParams),
+    /** Paremeters weren't explicitly defined, so they must be built */
     Builder {
+        /** Base parameters */
         params: TParams,
+        /** Builder for the parameters */
         builder: SharedFluentBuilder<RequestParams>,
     },
 }
@@ -96,15 +107,15 @@ At some point in the future though this may be made more generic so you could re
 
 [Client]: struct.Client.html
 */
-pub trait Sender: private::Sealed + Clone {
+pub trait Sender: Clone {
     /** The kind of request body this sender accepts. */
     type Body;
     /** The kind of response this sender produces. */
     type Response;
     /** The kind of request parameters this sender accepts. */
-    type Params;
+    type Params: Send+'static;
 
-    /** Send a request. */
+    /** Send a raw request. */
     fn send<TEndpoint, TParams, TBody>(
         &self,
         request: SendableRequest<TEndpoint, TParams, TBody>,
@@ -113,25 +124,69 @@ pub trait Sender: private::Sealed + Clone {
         TEndpoint: Into<Endpoint<'static, TBody>>,
         TBody: Into<Self::Body> + Send + 'static,
         TParams: Into<Self::Params> + Send + 'static;
+
+    /**
+    Gets the parameters for the next query.
+
+    A set of request parameters are fetched before each HTTP request. This method
+    makes it possible to load balance requests between multiple nodes in an Elasticsearch
+    cluster. Out of the box elastic provides implementations for a static set of nodes or
+    nodes sniffed from the Nodes Stats API.
+    */
+    fn next_params(
+        &self,
+        addresses: &NodeAddresses,
+    ) -> Self::Params;
 }
 
 /**
-Represents a type that can fetch request parameters.
+Represents a type that can send a typed request and deserialize the result.
 
-A set of request parameters are fetched before each HTTP request.
-The `NextParams` trait makes it possible to load balance requests between multiple nodes in an Elasticsearch cluster.
-Out of the box `elastic` provides implementations for a static set of nodes or nodes sniffed from the [Nodes Stats API]().
+You probably don't need to touch this trait directly.
+See the [`Client`][Client] type for making requests.
+
+Senders should implement this for every type implementing `RequestInner`, for example
+via `impl<T: RequestInner> TypedSender<T> for MySender`.
+
+In the future, when [generic associated types][gna] are stabilized, this trait should be
+folded into the `Sender` trait, using a generic associated type for the response object
+(ex. `type TypedResponse<TReqInner>`).
+
+[gna]: https://rust-lang.github.io/rfcs/1598-generic_associated_types.html
 */
-pub trait NextParams: private::Sealed + Clone {
+pub trait TypedSender<TReqInner>: Sender
+where
+    TReqInner: RequestInner,
+{
+    
     /**
-    The kind of parameters produces.
+    Response object containing the deserialized result or an error.
 
-    This type is designed to link a `NextParams` implementation with a particular `Sender`.
+    This is very generic to allow flexibility between sync and async implementations,
+    but should ideally be some type using the `TReqInner::Response` type.
+
+    For `SyncSender`, this is `Result<TReqInner::Response, elastic::error::Error>`.
+    For `AsyncSender`, this is a type that implements `Future<Item=TReqInner::Response, elastic::error::Error>`.
     */
-    type Params;
+    type TypedResponse;
 
-    /** Get a set of request parameters. */
-    fn next(&self) -> Self::Params;
+    
+    /**
+    Sends a request and deserializes the result.
+
+    The caller is responsible for converting the request object (`TEndpoint::Request`)
+    to a `SendableRequest`. The caller passes either the sendable request or an error if
+    the conversion failed. If it's an error, the implementation should return an appropriate
+    error type (Ex. `Err` for `SyncSender` or a pre-failed future for `AsyncSender`).
+    */
+    fn typed_send<TParams, TEndpoint, TBody>(
+        &self,
+        request: Result<SendableRequest<TEndpoint, TParams, TBody>, Error>,
+    ) -> Self::TypedResponse
+    where
+        TEndpoint: Into<Endpoint<'static, TBody>> + Send + 'static,
+        TBody: Into<Self::Body> + Send + 'static,
+        TParams: Into<Self::Params> + Send + 'static;
 }
 
 /**
@@ -159,39 +214,36 @@ where
 A common container for a source of node addresses.
 */
 #[derive(Clone)]
-pub struct NodeAddresses<TSender> {
-    inner: NodeAddressesInner<TSender>,
-}
-
-impl<TSender> NodeAddresses<TSender> {
-    pub(crate) fn static_nodes(nodes: StaticNodes) -> Self {
-        NodeAddresses {
-            inner: NodeAddressesInner::Static(nodes),
-        }
-    }
-
-    pub(crate) fn sniffed_nodes(nodes: SniffedNodes<TSender>) -> Self {
-        NodeAddresses {
-            inner: NodeAddressesInner::Sniffed(nodes),
-        }
-    }
-}
-
-impl<TSender> private::Sealed for NodeAddresses<TSender> {}
-
-#[derive(Clone)]
-enum NodeAddressesInner<TSender> {
+pub enum NodeAddresses {
+    /** Static list of nodes */
     Static(StaticNodes),
-    Sniffed(SniffedNodes<TSender>),
+    /** Fetch set of nodes from a single node of the cluster */
+    Sniffed(SniffedNodes),
 }
 
-pub(crate) enum NodeAddressesBuilder {
+impl NodeAddresses {
+    /** Static set of nodes to connect to */
+    pub fn static_nodes(nodes: StaticNodes) -> Self {
+        NodeAddresses::Static(nodes)
+    }
+
+    /** Fetch set of nodes from a single node of the cluster */
+    pub fn sniffed_nodes(nodes: SniffedNodes) -> Self {
+        NodeAddresses::Sniffed(nodes)
+    }
+}
+
+/** Builder for `NodeAddresses` */
+pub enum NodeAddressesBuilder {
+    /** Static list of nodes */
     Static(Vec<NodeAddress>),
+    /** Fetch set of nodes from a single node of the cluster */
     Sniffed(SharedStatefulFluentBuilder<NodeAddress, SniffedNodesBuilder>),
 }
 
 impl NodeAddressesBuilder {
-    pub(crate) fn sniff_nodes(self, builder: SniffedNodesBuilder) -> Self {
+    /** Sniff nodes */
+    pub fn sniff_nodes(self, builder: SniffedNodesBuilder) -> Self {
         match self {
             NodeAddressesBuilder::Sniffed(fluent_builder) => {
                 NodeAddressesBuilder::Sniffed(fluent_builder.value(builder))
@@ -200,7 +252,8 @@ impl NodeAddressesBuilder {
         }
     }
 
-    pub(crate) fn sniff_nodes_fluent<F>(self, address: NodeAddress, fleunt_method: F) -> Self
+    /** Sniff nodes */
+    pub fn sniff_nodes_fluent<F>(self, address: NodeAddress, fleunt_method: F) -> Self
     where
         F: FnOnce(SniffedNodesBuilder) -> SniffedNodesBuilder + Send + 'static,
     {
@@ -223,11 +276,11 @@ impl Default for NodeAddressesBuilder {
 }
 
 impl NodeAddressesBuilder {
-    pub(crate) fn build<TSender>(
+    /** Builds the node addresses */
+    pub fn build(
         self,
         params: PreRequestParams,
-        sender: TSender,
-    ) -> NodeAddresses<TSender> {
+    ) -> NodeAddresses {
         match self {
             NodeAddressesBuilder::Static(nodes) => {
                 let nodes = StaticNodes::round_robin(nodes, params);
@@ -237,7 +290,7 @@ impl NodeAddressesBuilder {
             NodeAddressesBuilder::Sniffed(builder) => {
                 let nodes = builder
                     .into_value(SniffedNodesBuilder::new)
-                    .build(params, sender);
+                    .build(params);
 
                 NodeAddresses::sniffed_nodes(nodes)
             }

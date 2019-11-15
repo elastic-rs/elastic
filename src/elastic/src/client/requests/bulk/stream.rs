@@ -38,7 +38,6 @@ use super::{
     BulkOperation,
     BulkRequestBuilder,
     BulkRequestInner,
-    Pending,
     WrappedBody,
 };
 use crate::{
@@ -52,6 +51,7 @@ use crate::{
         Error,
     },
     http::{
+        Pending,
         receiver::IsOk,
         sender::AsyncSender,
     },

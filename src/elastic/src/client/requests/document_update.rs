@@ -4,7 +4,6 @@ Builders for [update document requests][docs-update].
 [docs-update]: http://www.elastic.co/guide/en/elasticsearch/reference/current/docs-update.html
 */
 
-use futures::Future;
 use serde::ser::Serialize;
 use serde_json;
 use std::marker::PhantomData;
@@ -12,8 +11,7 @@ use std::marker::PhantomData;
 use crate::{
     client::{
         requests::{
-            raw::RawRequestInner,
-            Pending as BasePending,
+            RequestInner,
             RequestBuilder,
         },
         responses::UpdateResponse,
@@ -24,11 +22,7 @@ use crate::{
         self,
         Error,
     },
-    http::sender::{
-        AsyncSender,
-        Sender,
-        SyncSender,
-    },
+    http::sender::Sender,
     params::{
         Id,
         Index,
@@ -69,6 +63,22 @@ pub struct UpdateRequestInner<TBody> {
     id: Id<'static>,
     body: TBody,
     _marker: PhantomData<TBody>,
+}
+
+impl<TBody> RequestInner for UpdateRequestInner<TBody>
+where
+    TBody: Serialize,
+{
+    type Request = UpdateRequest<'static, Vec<u8>>;
+    type Response = UpdateResponse;
+
+    fn into_request(self) -> Result<UpdateRequest<'static, Vec<u8>>, Error> {
+        let body = serde_json::to_vec(&self.body).map_err(error::request)?;
+
+        Ok(UpdateRequest::for_index_ty_id(
+            self.index, self.ty, self.id, body,
+        ))
+    }
 }
 
 /**
@@ -270,19 +280,6 @@ where
                 _marker: PhantomData,
             },
         )
-    }
-}
-
-impl<TBody> UpdateRequestInner<TBody>
-where
-    TBody: Serialize,
-{
-    fn into_request(self) -> Result<UpdateRequest<'static, Vec<u8>>, Error> {
-        let body = serde_json::to_vec(&self.body).map_err(error::request)?;
-
-        Ok(UpdateRequest::for_index_ty_id(
-            self.index, self.ty, self.id, body,
-        ))
     }
 }
 
@@ -539,12 +536,7 @@ where
 
         self.script(builder)
     }
-}
 
-impl<TSender, TBody> UpdateRequestBuilder<TSender, TBody>
-where
-    TSender: Sender,
-{
     /**
     Request that the [`UpdateResponse`] include the `source` of the updated document.
 
@@ -602,140 +594,17 @@ where
     }
 }
 
-/**
-# Send synchronously
-*/
-impl<TBody> UpdateRequestBuilder<SyncSender, TBody>
-where
-    TBody: Serialize,
-{
-    /**
-    Send an `UpdateRequestBuilder` synchronously using a [`SyncClient`][SyncClient].
-
-    This will block the current thread until a response arrives and is deserialised.
-
-    # Examples
-
-    Update a [`DocumentType`][documents-mod] called `MyType` with an id of `1` using a new document value:
-
-    ```no_run
-    # #[macro_use] extern crate serde_derive;
-    # #[macro_use] extern crate elastic_derive;
-    # use elastic::prelude::*;
-        # fn main() -> Result<(), Box<dyn ::std::error::Error>> {
-    # #[derive(Serialize, Deserialize, ElasticType)]
-    # struct MyType {
-    #     pub id: String,
-    #     pub title: String,
-    #     pub timestamp: Date<DefaultDateMapping>
-    # }
-    # let client = SyncClientBuilder::new().build()?;
-    # let new_doc = MyType { id: "1".to_owned(), title: String::new(), timestamp: Date::now() };
-    let response = client.document::<MyType>()
-                         .update(1)
-                         .doc(new_doc)
-                         .send()?;
-
-    assert!(response.updated());
-    # Ok(())
-    # }
-    ```
-
-    [SyncClient]: ../../type.SyncClient.html
-    [documents-mod]: ../../types/document/index.html
-    */
-    pub fn send(self) -> Result<UpdateResponse, Error> {
-        let req = self.inner.into_request()?;
-
-        RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
-            .send()?
-            .into_response()
-    }
-}
-
-/**
-# Send asynchronously
-*/
-impl<TBody> UpdateRequestBuilder<AsyncSender, TBody>
-where
-    TBody: Serialize + Send + 'static,
-{
-    /**
-    Send an `UpdateRequestBuilder` asynchronously using an [`AsyncClient`][AsyncClient].
-
-    This will return a future that will resolve to the deserialised update document response.
-
-    # Examples
-
-    Update a [`DocumentType`][documents-mod] called `MyType` with an id of `1` using a new document value:
-
-    ```no_run
-    # #[macro_use] extern crate serde_json;
-    # #[macro_use] extern crate serde_derive;
-    # #[macro_use] extern crate elastic_derive;
-    # use serde_json::Value;
-    # use futures::Future;
-    # use elastic::prelude::*;
-        # fn main() -> Result<(), Box<dyn ::std::error::Error>> {
-    # #[derive(Serialize, Deserialize, ElasticType)]
-    # struct MyType {
-    #     pub id: String,
-    #     pub title: String,
-    #     pub timestamp: Date<DefaultDateMapping>
-    # }
-    # let client = AsyncClientBuilder::new().build()?;
-    # let new_doc = MyType { id: "1".to_owned(), title: String::new(), timestamp: Date::now() };
-    let future = client.document::<MyType>()
-                       .update(1)
-                       .doc(new_doc)
-                       .send();
-
-    future.and_then(|response| {
-        assert!(response.updated());
-
-        Ok(())
-    });
-    # Ok(())
-    # }
-    ```
-
-    [AsyncClient]: ../../type.AsyncClient.html
-    [documents-mod]: ../../types/document/index.html
-    */
-    pub fn send(self) -> Pending {
-        let (client, params_builder, inner) = (self.client, self.params_builder, self.inner);
-
-        let req_future = client.sender.maybe_async(move || inner.into_request());
-
-        let res_future = req_future.and_then(move |req| {
-            RequestBuilder::new(client, params_builder, RawRequestInner::new(req))
-                .send()
-                .and_then(|res| res.into_response())
-        });
-
-        Pending::new(res_future)
-    }
-}
-
-/** A future returned by calling `send`. */
-pub type Pending = BasePending<UpdateResponse>;
-
-#[cfg(test)]
+#[cfg(all(test, feature="sync_sender"))]
 mod tests {
     use super::ScriptBuilder;
     use crate::{
+        client::requests::RequestInner,
         prelude::*,
-        tests::*,
     };
     use serde_json::{
         self,
         Value,
     };
-
-    #[test]
-    fn is_send() {
-        assert_send::<super::Pending>();
-    }
 
     #[derive(Serialize, ElasticType)]
     #[elastic(crate_root = "crate::types")]

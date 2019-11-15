@@ -8,6 +8,10 @@ use std::{
 };
 
 use crate::{
+    client::{
+        responses::nodes_info::NodesInfoResponse,
+        requests::RequestInner,
+    },
     endpoints::Endpoint,
     error::{
         self,
@@ -19,21 +23,20 @@ use crate::{
             SyncResponseBuilder,
         },
         sender::{
-            build_reqwest_method,
+            build_http_method,
             build_url,
-            NextParams,
             NodeAddresses,
-            NodeAddressesInner,
             RequestParams,
             SendableRequest,
             SendableRequestParams,
             Sender,
+            sniffed_nodes::NextOrRefresh,
+            TypedSender,
         },
         SyncBody,
         SyncHttpRequest,
         Url,
     },
-    private,
 };
 
 pub(crate) type SyncPreSend =
@@ -45,8 +48,6 @@ pub struct SyncSender {
     pub(crate) http: SyncHttpClient,
     pub(crate) pre_send: Option<Arc<SyncPreSend>>,
 }
-
-impl private::Sealed for SyncSender {}
 
 impl Sender for SyncSender {
     type Body = SyncBody;
@@ -129,16 +130,46 @@ impl Sender for SyncSender {
 
         sync_response(res)
     }
-}
 
-impl NextParams for NodeAddresses<SyncSender> {
-    type Params = Params;
+    fn next_params(
+        &self,
+        addresses: &NodeAddresses,
+    ) -> Self::Params {
+        match addresses {
+            NodeAddresses::Static(ref nodes) => Params::new(nodes.next()),
+            NodeAddresses::Sniffed(ref sniffer) => {
+                let refresher = match sniffer.next_or_start_refresh() {
+                    Ok(NextOrRefresh::Next(address)) => { return Params::new(Ok(address)); },
+                    Ok(NextOrRefresh::NeedsRefresh(r)) => r,
+                    Err(err) => { return Params::new(Err(err)); }
+                };
 
-    fn next(&self) -> Self::Params {
-        match self.inner {
-            NodeAddressesInner::Static(ref nodes) => Params::new(nodes.next()),
-            NodeAddressesInner::Sniffed(ref sniffer) => Params::new(sniffer.next()),
+                // Perform the refresh
+                let req = sniffer.sendable_request();
+                let fresh_nodes = self
+                    .send(req)
+                    .and_then(|res| res.into_response::<NodesInfoResponse>());
+                Params::new(refresher.update_nodes_and_next(fresh_nodes))
+            }
         }
+    }
+}
+impl<TReqInner> TypedSender<TReqInner> for SyncSender
+where
+    TReqInner: RequestInner,
+{
+    type TypedResponse = Result<TReqInner::Response, Error>;
+    fn typed_send<TParams, TEndpoint, TBody>(
+        &self,
+        request: Result<SendableRequest<TEndpoint, TParams, TBody>, Error>,
+    ) -> Self::TypedResponse
+    where
+        TEndpoint: Into<Endpoint<'static, TBody>>,
+        TBody: Into<Self::Body> + Send + 'static,
+        TParams: Into<Self::Params> + Send + 'static,
+    {
+        let sendable_req = request?;
+        self.send(sendable_req).and_then(|resp| resp.into_response())
     }
 }
 
@@ -184,7 +215,7 @@ fn build_reqwest(client: &SyncHttpClient, req: SyncHttpRequest) -> SyncHttpReque
         ..
     } = req;
 
-    let method = build_reqwest_method(method);
+    let method = build_http_method(method);
 
     let mut req = client.request(method, url);
     {

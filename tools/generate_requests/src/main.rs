@@ -3,7 +3,6 @@
 #[macro_use]
 extern crate quote;
 
-#[allow(unused_imports)]
 #[macro_use]
 extern crate serde_derive;
 
@@ -252,11 +251,13 @@ fn http_mod(tokens: &mut Tokens) {
 
     let http_req_item = gen::http::endpoint::tokens();
 
+    let into_endpoint_tokens = gen::http::into_endpoint::tokens();
+
     tokens.append(header);
 
     tokens.append("\n\n");
 
-    tokens.append_all(vec![url_tokens, http_req_item, body_tokens]);
+    tokens.append_all(vec![url_tokens, http_req_item, into_endpoint_tokens, body_tokens]);
 }
 
 fn params_mod(tokens: &mut Tokens, params_to_emit: BTreeMap<String, bool>) {

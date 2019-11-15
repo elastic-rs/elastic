@@ -4,14 +4,12 @@ Builders for [delete document requests][docs-delete].
 [docs-delete]: http://www.elastic.co/guide/en/elasticsearch/reference/current/docs-delete.html
 */
 
-use futures::Future;
 use std::marker::PhantomData;
 
 use crate::{
     client::{
         requests::{
-            raw::RawRequestInner,
-            Pending as BasePending,
+            RequestInner,
             RequestBuilder,
         },
         responses::DeleteResponse,
@@ -19,11 +17,7 @@ use crate::{
     },
     endpoints::DeleteRequest,
     error::Error,
-    http::sender::{
-        AsyncSender,
-        Sender,
-        SyncSender,
-    },
+    http::sender::Sender,
     params::{
         Id,
         Index,
@@ -57,6 +51,15 @@ pub struct DeleteRequestInner<TDocument> {
     ty: Type<'static>,
     id: Id<'static>,
     _marker: PhantomData<TDocument>,
+}
+
+impl<TDocument> RequestInner for DeleteRequestInner<TDocument> {
+    type Request = DeleteRequest<'static>;
+    type Response = DeleteResponse;
+
+    fn into_request(self) -> Result<Self::Request, Error> {
+        Ok(DeleteRequest::for_index_ty_id(self.index, self.ty, self.id))
+    }
 }
 
 /**
@@ -116,8 +119,8 @@ where
         RequestBuilder::initial(
             self.inner,
             DeleteRequestInner {
-                index,
-                ty,
+                index: index,
+                ty: ty,
                 id: id.into(),
                 _marker: PhantomData,
             },
@@ -180,12 +183,6 @@ where
     }
 }
 
-impl<TDocument> DeleteRequestInner<TDocument> {
-    fn into_request(self) -> DeleteRequest<'static> {
-        DeleteRequest::for_index_ty_id(self.index, self.ty, self.id)
-    }
-}
-
 /**
 # Builder methods
 
@@ -208,119 +205,12 @@ where
     }
 }
 
-/**
-# Send synchronously
-*/
-impl<TDocument> DeleteRequestBuilder<SyncSender, TDocument> {
-    /**
-    Send a `DeleteRequestBuilder` synchronously using a [`SyncClient`][SyncClient].
-
-    This will block the current thread until a response arrives and is deserialised.
-
-    # Examples
-
-    Delete a [`DocumentType`][documents-mod] called `MyType` with an id of `1`:
-
-    ```no_run
-    # #[macro_use] extern crate serde_derive;
-    # #[macro_use] extern crate elastic_derive;
-    # use elastic::prelude::*;
-        # fn main() -> Result<(), Box<dyn ::std::error::Error>> {
-    # #[derive(Serialize, Deserialize, ElasticType)]
-    # struct MyType {
-    #     pub id: String,
-    #     pub title: String,
-    #     pub timestamp: Date<DefaultDateMapping>
-    # }
-    # let client = SyncClientBuilder::new().build()?;
-    let response = client.document::<MyType>()
-                         .delete(1)
-                         .send()?;
-
-    assert!(response.deleted());
-    # Ok(())
-    # }
-    ```
-
-    [SyncClient]: ../../type.SyncClient.html
-    [documents-mod]: ../types/document/index.html
-    */
-    pub fn send(self) -> Result<DeleteResponse, Error> {
-        let req = self.inner.into_request();
-
-        RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
-            .send()?
-            .into_response()
-    }
-}
-
-/**
-# Send asynchronously
-*/
-impl<TDocument> DeleteRequestBuilder<AsyncSender, TDocument> {
-    /**
-    Send a `DeleteRequestBuilder` asynchronously using an [`AsyncClient`][AsyncClient].
-
-    This will return a future that will resolve to the deserialised delete document response.
-
-    # Examples
-
-    Delete a [`DocumentType`][documents-mod] called `MyType` with an id of `1`:
-
-    ```no_run
-    # #[macro_use] extern crate serde_json;
-    # #[macro_use] extern crate serde_derive;
-    # #[macro_use] extern crate elastic_derive;
-    # use serde_json::Value;
-    # use futures::Future;
-    # use elastic::prelude::*;
-    # #[derive(ElasticType)]
-    # struct MyType { }
-        # fn main() -> Result<(), Box<dyn ::std::error::Error>> {
-    # let client = AsyncClientBuilder::new().build()?;
-    let future = client.document::<MyType>()
-                       .delete(1)
-                       .ty("mytype")
-                       .send();
-
-    future.and_then(|response| {
-        assert!(response.deleted());
-
-        Ok(())
-    });
-    # Ok(())
-    # }
-    ```
-
-    [AsyncClient]: ../../type.AsyncClient.html
-    [documents-mod]: ../types/document/index.html
-    */
-    pub fn send(self) -> Pending {
-        let req = self.inner.into_request();
-
-        let res_future =
-            RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
-                .send()
-                .and_then(|res| res.into_response());
-
-        Pending::new(res_future)
-    }
-}
-
-/** A future returned by calling `send`. */
-pub type Pending = BasePending<DeleteResponse>;
-
-#[cfg(test)]
+#[cfg(all(test, feature="sync_sender"))]
 mod tests {
     use crate::{
+        client::requests::RequestInner,
         prelude::*,
-        tests::*,
     };
-
-    #[test]
-    fn is_send() {
-        assert_send::<super::Pending>();
-    }
 
     #[derive(ElasticType)]
     #[elastic(crate_root = "crate::types")]
@@ -334,7 +224,8 @@ mod tests {
             .document::<TestDoc>()
             .delete("1")
             .inner
-            .into_request();
+            .into_request()
+            .unwrap();
 
         assert_eq!("/testdoc/_doc/1", req.url.as_ref());
     }
@@ -348,7 +239,8 @@ mod tests {
             .delete("1")
             .index("new-idx")
             .inner
-            .into_request();
+            .into_request()
+            .unwrap();
 
         assert_eq!("/new-idx/_doc/1", req.url.as_ref());
     }
@@ -362,7 +254,8 @@ mod tests {
             .delete("1")
             .ty("new-ty")
             .inner
-            .into_request();
+            .into_request()
+            .unwrap();
 
         assert_eq!("/testdoc/new-ty/1", req.url.as_ref());
     }

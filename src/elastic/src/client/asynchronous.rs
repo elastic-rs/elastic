@@ -291,7 +291,7 @@ impl AsyncClientBuilder {
             pre_send: self.pre_send,
         };
 
-        let addresses = self.nodes.build(params, sender.clone());
+        let addresses = self.nodes.build(params);
 
         Ok(AsyncClient { sender, addresses })
     }

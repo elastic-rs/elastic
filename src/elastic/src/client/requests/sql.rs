@@ -4,13 +4,10 @@ Builders for [sql queries][sql].
 [sql]: https://www.elastic.co/guide/en/elasticsearch/reference/current/sql-rest.html
 */
 
-use futures::Future;
-
 use crate::{
     client::{
         requests::{
-            raw::RawRequestInner,
-            Pending as BasePending,
+            RequestInner,
             RequestBuilder,
         },
         responses::SqlQueryResponse,
@@ -19,11 +16,7 @@ use crate::{
     endpoints::SqlQueryRequest,
     http::{
         empty_body,
-        sender::{
-            AsyncSender,
-            Sender,
-            SyncSender,
-        },
+        sender::Sender,
         DefaultBody,
     },
 };
@@ -48,6 +41,18 @@ pub type SqlRequestBuilder<TSender, TBody> = RequestBuilder<TSender, SqlRequestI
 #[doc(hidden)]
 pub struct SqlRequestInner<TBody> {
     body: TBody,
+}
+
+impl<TBody> RequestInner for SqlRequestInner<TBody>
+where
+    TBody: Send + 'static
+{
+    type Request = SqlQueryRequest<'static, TBody>;
+    type Response = SqlQueryResponse;
+
+    fn into_request(self) -> Result<Self::Request, Error> {
+        Ok(SqlQueryRequest::new(self.body))
+    }
 }
 
 /**
@@ -143,10 +148,6 @@ impl<TBody> SqlRequestInner<TBody> {
     fn new(body: TBody) -> Self {
         SqlRequestInner { body }
     }
-
-    fn into_request(self) -> SqlQueryRequest<'static, TBody> {
-        SqlQueryRequest::new(self.body)
-    }
 }
 
 /**
@@ -184,125 +185,18 @@ where
     }
 }
 
-/**
-# Send synchronously
- */
-impl<TBody> SqlRequestBuilder<SyncSender, TBody>
-where
-    TBody: Into<<SyncSender as Sender>::Body> + Send + 'static,
-{
-    /**
-    Sends a `SqlRequestBuilder` synchronously using a [`SyncClient`][SyncClient].
-
-    This will block the current thread until a response arrives and is deserialised.
-
-    # Examples
-
-    Runs a simple [Query String][docs-querystring] query:
-
-    ```no_run
-    # use elastic::prelude::*;
-        # fn main() -> Result<(), Box<dyn ::std::error::Error>> {
-    # let client = SyncClientBuilder::new().build()?;
-    let response = client.sql_query("SELECT * FROM library GROUP BY author")
-                         .send()?;
-
-    // Iterate through the hits
-    for row in response.rows() {
-        for column in row.columns() {
-            println!("{:?}", column);
-        }
-    }
-    # Ok(())
-    # }
-    ```
-
-    [SyncClient]: ../../type.SyncClient.html
-    [docs-querystring]: https://www.elastic.co/guide/en/elasticsearch/reference/current/sql-commands.html
-     */
-    pub fn send(self) -> Result<SqlQueryResponse, Error> {
-        let req = self.inner.into_request();
-
-        RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
-            .send()?
-            .into_response()
-    }
-}
-
-/**
-# Send asynchronously
- */
-impl<TBody> SqlRequestBuilder<AsyncSender, TBody>
-where
-    TBody: Into<<AsyncSender as Sender>::Body> + Send + 'static,
-{
-    /**
-    Sends a `SqlRequestBuilder` asynchronously using an [`AsyncClient`][AsyncClient].
-
-    This will return a future that will resolve to the deserialised search response.
-
-    # Examples
-
-    Runs a simple [Query String][docs-querystring] query:
-
-    ```no_run
-    # use futures::Future;
-    # use elastic::prelude::*;
-        # fn main() -> Result<(), Box<dyn ::std::error::Error>> {
-    # let client = AsyncClientBuilder::new().build()?;
-    let future = client.sql_query("SELECT * FROM library GROUP BY author")
-                       .send();
-
-    future.and_then(|response| {
-        // Iterate through the hits
-        for row in response.rows() {
-            for column in row.columns() {
-                println!("{:?}", column);
-            }
-        }
-
-        Ok(())
-    });
-    # Ok(())
-    # }
-    ```
-
-    [AsyncClient]: ../../type.AsyncClient.html
-    [docs-querystring]: https://www.elastic.co/guide/en/elasticsearch/reference/current/sql-commands.html
-    */
-
-    pub fn send(self) -> Pending {
-        let req = self.inner.into_request();
-
-        let res_future =
-            RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
-                .send()
-                .and_then(|res| res.into_response());
-
-        Pending::new(res_future)
-    }
-}
-
-/** A future returned by calling `send`. */
-pub type Pending = BasePending<SqlQueryResponse>;
-
-#[cfg(test)]
+#[cfg(all(test, feature="sync_sender"))]
 mod tests {
     use crate::{
+        client::requests::RequestInner,
         prelude::*,
-        tests::*,
     };
-
-    #[test]
-    fn is_send() {
-        assert_send::<super::Pending>();
-    }
 
     #[test]
     fn default_request() {
         let client = SyncClientBuilder::new().build().unwrap();
 
-        let req = client.sql().inner.into_request();
+        let req = client.sql().inner.into_request().unwrap();
 
         assert_eq!("/_xpack/sql", req.url.as_ref());
     }
@@ -311,7 +205,7 @@ mod tests {
     fn specify_body() {
         let client = SyncClientBuilder::new().build().unwrap();
 
-        let req = client.sql().body("{}").inner.into_request();
+        let req = client.sql().body("{}").inner.into_request().unwrap();
 
         assert_eq!("{}", req.body);
     }

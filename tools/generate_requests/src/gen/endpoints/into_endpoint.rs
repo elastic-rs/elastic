@@ -47,6 +47,12 @@ impl Builder {
             quote!(
                 impl <'a, #generic_body> Into<#endpoint_ty<'a, #generic_body> > for #req_ty {
                     fn into(self) -> #endpoint_ty<'a, #generic_body> {
+                        self.into_endpoint()
+                    }
+                }
+                impl<'a, #generic_body> IntoEndpoint<'a> for #req_ty {
+                    type BodyType = #generic_body;
+                    fn into_endpoint(self) -> #endpoint_ty<'a, Self::BodyType> {
                         #endpoint_ty {
                             url: self.url,
                             method: #method,
@@ -61,6 +67,12 @@ impl Builder {
             quote!(
                 impl <'a> Into<#endpoint_ty<'a, #default_body> > for #req_ty {
                     fn into(self) -> #endpoint_ty<'a, #default_body> {
+                        self.into_endpoint()
+                    }
+                }
+                impl<'a> IntoEndpoint<'a> for #req_ty {
+                    type BodyType = #default_body;
+                    fn into_endpoint(self) -> #endpoint_ty<'a, Self::BodyType> {
                         #endpoint_ty {
                             url: self.url,
                             method: #method,
@@ -109,6 +121,12 @@ mod tests {
         let expected = quote!(
             impl<'a, B> Into<Endpoint<'a, B> > for Request<'a, B> {
                 fn into(self) -> Endpoint<'a, B> {
+                    self.into_endpoint()
+                }
+            }
+            impl<'a, B> IntoEndpoint<'a> for Request<'a, B> {
+                type BodyType = B;
+                fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
                     Endpoint {
                         url: self.url,
                         method: Method::GET,
@@ -139,6 +157,12 @@ mod tests {
         let expected = quote!(
             impl<'a> Into<Endpoint<'a, DefaultBody> > for Request<'a> {
                 fn into(self) -> Endpoint<'a, DefaultBody> {
+                    self.into_endpoint()
+                }
+            }
+            impl<'a> IntoEndpoint<'a> for Request<'a> {
+                type BodyType = DefaultBody;
+                fn into_endpoint(self) -> Endpoint<'a, Self::BodyType> {
                     Endpoint {
                         url: self.url,
                         method: Method::GET,

@@ -4,15 +4,13 @@ Builders for [index requests][docs-index].
 [docs-index]: https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html
 */
 
-use futures::Future;
 use serde::Serialize;
 use serde_json;
 
 use crate::{
     client::{
         requests::{
-            raw::RawRequestInner,
-            Pending as BasePending,
+            RequestInner,
             RequestBuilder,
         },
         responses::IndexResponse,
@@ -23,11 +21,7 @@ use crate::{
         self,
         Error,
     },
-    http::sender::{
-        AsyncSender,
-        Sender,
-        SyncSender,
-    },
+    http::sender::Sender,
     params::{
         Id,
         Index,
@@ -59,6 +53,25 @@ pub struct IndexRequestInner<TDocument> {
     ty: Type<'static>,
     id: Option<Id<'static>>,
     doc: TDocument,
+}
+
+impl<TDocument> RequestInner for IndexRequestInner<TDocument>
+where
+    TDocument: Serialize,
+{
+    type Request = IndexRequest<'static, Vec<u8>>;
+    type Response = IndexResponse;
+
+    fn into_request(self) -> Result<Self::Request, Error> {
+        let body = serde_json::to_vec(&self.doc).map_err(error::request)?;
+
+        let request = match self.id {
+            Some(id) => IndexRequest::for_index_ty_id(self.index, self.ty, id, body),
+            None => IndexRequest::for_index_ty(self.index, self.ty, body),
+        };
+
+        Ok(request)
+    }
 }
 
 /**
@@ -199,22 +212,6 @@ where
     }
 }
 
-impl<TDocument> IndexRequestInner<TDocument>
-where
-    TDocument: Serialize,
-{
-    fn into_request(self) -> Result<IndexRequest<'static, Vec<u8>>, Error> {
-        let body = serde_json::to_vec(&self.doc).map_err(error::request)?;
-
-        let request = match self.id {
-            Some(id) => IndexRequest::for_index_ty_id(self.index, self.ty, id, body),
-            None => IndexRequest::for_index_ty(self.index, self.ty, body),
-        };
-
-        Ok(request)
-    }
-}
-
 /**
 # Builder methods
 
@@ -243,139 +240,12 @@ where
     }
 }
 
-/**
-# Send synchronously
-*/
-impl<TDocument> IndexRequestBuilder<SyncSender, TDocument>
-where
-    TDocument: Serialize,
-{
-    /**
-    Send a `IndexRequestBuilder` synchronously using a [`SyncClient`][SyncClient].
-
-    This will block the current thread until a response arrives and is deserialised.
-
-    # Examples
-
-    Index a document with an id of `1`:
-
-    ```no_run
-    # #[macro_use] extern crate serde_derive;
-    # #[macro_use] extern crate elastic_derive;
-    # use elastic::prelude::*;
-        # fn main() -> Result<(), Box<dyn ::std::error::Error>> {
-    # #[derive(Serialize, Deserialize, ElasticType)]
-    # struct MyType {
-    #     pub id: String,
-    #     pub title: String,
-    #     pub timestamp: Date<DefaultDateMapping>
-    # }
-    # let client = SyncClientBuilder::new().build()?;
-    let doc = MyType {
-        id: "1".to_owned(),
-        title: String::from("A title"),
-        timestamp: Date::now()
-    };
-
-    let response = client.document()
-                         .index(doc)
-                         .send()?;
-
-    assert!(response.created());
-    # Ok(())
-    # }
-    ```
-
-    [SyncClient]: ../../type.SyncClient.html
-    */
-    pub fn send(self) -> Result<IndexResponse, Error> {
-        let req = self.inner.into_request()?;
-
-        RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
-            .send()?
-            .into_response()
-    }
-}
-
-/**
-# Send asynchronously
-*/
-impl<TDocument> IndexRequestBuilder<AsyncSender, TDocument>
-where
-    TDocument: Serialize + Send + 'static,
-{
-    /**
-    Send a `IndexRequestBuilder` asynchronously using an [`AsyncClient`][AsyncClient].
-
-    This will return a future that will resolve to the deserialised index response.
-
-    # Examples
-
-    Index a document with an id of `1`:
-
-    ```no_run
-    # #[macro_use] extern crate serde_derive;
-    # #[macro_use] extern crate elastic_derive;
-    # use futures::Future;
-    # use elastic::prelude::*;
-        # fn main() -> Result<(), Box<dyn ::std::error::Error>> {
-    # #[derive(Serialize, Deserialize, ElasticType)]
-    # struct MyType {
-    #     pub id: String,
-    #     pub title: String,
-    #     pub timestamp: Date<DefaultDateMapping>
-    # }
-    # let client = AsyncClientBuilder::new().build()?;
-    let doc = MyType {
-        id: "1".to_owned(),
-        title: String::from("A title"),
-        timestamp: Date::now()
-    };
-
-    let future = client.document()
-                       .index(doc)
-                       .send();
-
-    future.and_then(|response| {
-        assert!(response.created());
-
-        Ok(())
-    });
-    # Ok(())
-    # }
-    ```
-
-    [AsyncClient]: ../../type.AsyncClient.html
-    */
-    pub fn send(self) -> Pending {
-        let (client, params_builder, inner) = (self.client, self.params_builder, self.inner);
-
-        let req_future = client.sender.maybe_async(move || inner.into_request());
-
-        let res_future = req_future.and_then(move |req| {
-            RequestBuilder::new(client, params_builder, RawRequestInner::new(req))
-                .send()
-                .and_then(|res| res.into_response())
-        });
-
-        Pending::new(res_future)
-    }
-}
-
-/** A future returned by calling `send`. */
-pub type Pending = BasePending<IndexResponse>;
-
-#[cfg(test)]
+#[cfg(all(test, feature="sync_sender"))]
 mod tests {
     use crate::{
+        client::requests::RequestInner,
         prelude::*,
-        tests::*,
     };
-
-    #[test]
-    fn is_send() {
-        assert_send::<super::Pending>();
-    }
 
     #[derive(Serialize, ElasticType)]
     #[elastic(crate_root = "crate::types")]

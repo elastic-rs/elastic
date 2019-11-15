@@ -45,6 +45,7 @@ use crate::http::{
     receiver::ResponseError,
     StatusCode,
 };
+#[cfg(any(feature="async_sender", feature="sync_sender"))]
 use reqwest::Error as ReqwestError;
 use serde_json;
 
@@ -89,7 +90,8 @@ pub(crate) mod string_error {
     }
 }
 
-pub(crate) struct WrappedError(Box<dyn StdError + Send + Sync>);
+/** Wraps a boxed stdlib error */
+pub struct WrappedError(Box<dyn StdError + Send + Sync>);
 
 impl fmt::Display for WrappedError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -135,7 +137,8 @@ impl fmt::Display for ClientError {
     }
 }
 
-pub(crate) fn build<E>(err: E) -> Error
+/** Creates a client error by wrapping an existing error */
+pub fn build<E>(err: E) -> Error
 where
     E: StdError + Send + 'static,
 {
@@ -144,11 +147,13 @@ where
     })
 }
 
-pub(crate) fn wrapped(err: Box<dyn StdError + Send + Sync>) -> WrappedError {
+/** Wraps a boxed stdlib error into a `WrappedError` */
+pub fn wrapped(err: Box<dyn StdError + Send + Sync>) -> WrappedError {
     WrappedError(err)
 }
 
-pub(crate) fn request<E>(err: E) -> Error
+/** Creates an error for when a request could not be generated or sent */
+pub fn request<E>(err: E) -> Error
 where
     E: StdError + Send + 'static,
 {
@@ -157,7 +162,8 @@ where
     })
 }
 
-pub(crate) fn response<E>(status: StatusCode, err: E) -> Error
+/** Creates an error from a failure response */
+pub fn response<E>(status: StatusCode, err: E) -> Error
 where
     E: Into<MaybeApiError<E>> + StdError + Send + 'static,
 {
@@ -184,8 +190,11 @@ pub(crate) fn test() -> Error {
     })
 }
 
-pub(crate) enum MaybeApiError<E> {
+/** Error that can be either an ApiError or some other error */
+pub enum MaybeApiError<E> {
+    /** An API error */
     Api(ApiError),
+    /** A different error */
     Other(E),
 }
 
@@ -204,6 +213,7 @@ impl Into<MaybeApiError<io::Error>> for io::Error {
     }
 }
 
+#[cfg(any(feature="async_sender", feature="sync_sender"))]
 impl Into<MaybeApiError<ReqwestError>> for ReqwestError {
     fn into(self) -> MaybeApiError<Self> {
         MaybeApiError::Other(self)

@@ -8,7 +8,6 @@ use crate::{
         Error,
     },
     http::sender::{
-        NextParams,
         NodeAddress,
         PreRequestParams,
         RequestParams,
@@ -31,23 +30,12 @@ pub struct StaticNodes<TStrategy = RoundRobin> {
     params: PreRequestParams,
 }
 
-impl<TStrategy> NextParams for StaticNodes<TStrategy>
+impl<TStrategy> private::Sealed for StaticNodes<TStrategy> {}
+
+impl<TStrategy> StaticNodes<TStrategy>
 where
     TStrategy: Strategy + Clone,
 {
-    type Params = Result<RequestParams, Error>;
-
-    fn next(&self) -> Self::Params {
-        self.strategy
-            .try_next(&self.nodes)
-            .map(|address| RequestParams::from_parts(address, self.params.clone()))
-            .map_err(error::request)
-    }
-}
-
-impl<TStrategy> private::Sealed for StaticNodes<TStrategy> {}
-
-impl<TStrategy> StaticNodes<TStrategy> {
     pub(crate) fn set(&mut self, nodes: Vec<NodeAddress>) -> Result<(), Error> {
         if nodes.is_empty() {
             return Err(error::request(error::message(
@@ -58,6 +46,16 @@ impl<TStrategy> StaticNodes<TStrategy> {
         self.nodes = nodes;
 
         Ok(())
+    }
+
+    /**
+    Gets the next node to use, based on the strategy provided at creation.
+    */
+    pub fn next(&self) -> Result<RequestParams, Error> {
+        self.strategy
+            .try_next(&self.nodes)
+            .map(|address| RequestParams::from_parts(address, self.params.clone()))
+            .map_err(error::request)
     }
 
     #[cfg(test)]
@@ -138,7 +136,6 @@ impl Strategy for RoundRobin {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::http::sender::NextParams;
 
     fn round_robin(addresses: Vec<&'static str>) -> StaticNodes<RoundRobin> {
         StaticNodes::round_robin(addresses, PreRequestParams::default())

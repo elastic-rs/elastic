@@ -257,8 +257,10 @@ for hit in response.hits() {
 
 #[macro_use]
 extern crate error_chain;
+#[cfg(feature="async_sender")]
 #[macro_use]
 extern crate futures;
+#[cfg(any(feature="async_sender", feature="sync_sender"))]
 #[macro_use]
 extern crate log;
 #[macro_use]
@@ -303,6 +305,7 @@ pub mod endpoints {
     pub use super::genned::{
         endpoints::*,
         http::Endpoint,
+        http::IntoEndpoint,
     };
 }
 
@@ -316,13 +319,12 @@ pub mod client;
 pub mod http;
 pub mod types;
 
-pub use self::{
-    client::{
-        AsyncClient,
-        SyncClient,
-    },
-    error::Error,
-};
+#[cfg(feature="async_sender")]
+pub use self::client::AsyncClient;
+#[cfg(feature="sync_sender")]
+pub use self::client::SyncClient;
+
+pub use self::error::Error;
 
 pub mod prelude {
     /*! A glob import for convenience. */

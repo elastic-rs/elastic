@@ -4,28 +4,33 @@ Request types for the Elasticsearch REST API.
 This module contains implementation details that are useful if you want to customise the request process, but aren't generally important for sending requests.
 */
 
-use std::{
-    marker::PhantomData,
-    sync::Arc,
+use fluent_builder::{
+    SharedFluentBuilder,
+    TryIntoValue,
 };
-
-use fluent_builder::SharedFluentBuilder;
-use futures::{
-    Future,
-    Poll,
-};
-
+use serde::de::DeserializeOwned;
+#[cfg(feature="async_sender")]
+use std::sync::Arc;
+#[cfg(feature="async_sender")]
 use tokio_threadpool::ThreadPool;
 
 use crate::{
     client::Client,
+    endpoints::IntoEndpoint,
     error::Error,
-    http::sender::{
-        AsyncSender,
-        RequestParams,
-        Sender,
+    http::{
+        receiver::IsOk,
+        sender::{
+            RequestParams,
+            SendableRequest,
+            SendableRequestParams,
+            Sender,
+            TypedSender,
+        },
     },
 };
+#[cfg(feature="async_sender")]
+use crate::http::sender::AsyncSender;
 
 pub mod raw;
 
@@ -87,6 +92,29 @@ pub use self::{
 };
 
 pub mod common;
+
+/**
+Trait for inner request object, that varies based on what request is being made.
+
+Note that `RawRequestInner` does _not_ implement this, since it passes the response
+as a raw object without deserialization.
+*/
+pub trait RequestInner {
+    /**
+    Full request type for this request.
+    */
+    type Request: IntoEndpoint<'static> + Send + 'static;
+
+    /**
+    Type for the response of the request.
+    */
+    type Response: IsOk + DeserializeOwned + Send + 'static;
+
+    /**
+    Converts this request builder to its corresponding request type.
+    */
+    fn into_request(self) -> Result<Self::Request, Error>;
+}
 
 /**
 A builder for a request.
@@ -209,11 +237,50 @@ where
     }
 }
 
+impl<TSender, TReqInner> RequestBuilder<TSender, TReqInner>
+where
+    TReqInner: RequestInner,
+    TSender: TypedSender<TReqInner>,
+    <TReqInner::Request as IntoEndpoint<'static>>::BodyType: Send + Into<TSender::Body>,
+{
+    /**
+    Sends the request.
+
+    The returned object is a `Sender`-implementation-specific handle to the results
+    of the query. For example, for the `SyncSender` this is a plain `Result<T, elastic::error::Error>`,
+    while for the `AsyncSender` this is an object implementing `Future<Item=T, Error=elastic::error::Error>`.
+
+    For information on the result type, consult the page for the request.
+    */
+    pub fn send(self) -> TSender::TypedResponse {
+        let client = self.client;
+        let params_builder = self.params_builder;
+        let request_res = self.inner
+            .into_request()
+            .map(|req| {
+                let endpoint = req.into_endpoint();
+
+                // Only try fetch a next address if an explicit `RequestParams` hasn't been given
+                let params = match params_builder.try_into_value() {
+                    TryIntoValue::Value(value) => SendableRequestParams::Value(value),
+                    TryIntoValue::Builder(builder) => SendableRequestParams::Builder {
+                        params: client.sender.next_params(&client.addresses),
+                        builder,
+                    },
+                };
+
+                SendableRequest::new(endpoint, params)
+            });
+        client.sender.typed_send(request_res)
+    }
+}
+
 /**
 # Methods for asynchronous request builders
 
 The following methods can be called on any asynchronous request builder.
 */
+#[cfg(feature="async_sender")]
 impl<TRequest> RequestBuilder<AsyncSender, TRequest> {
     /**
     Override the thread pool used for deserialisation for this request.
@@ -243,7 +310,8 @@ impl<TRequest> RequestBuilder<AsyncSender, TRequest> {
     # extern crate tokio_threadpool;
     # use tokio_threadpool::ThreadPool;
     # use elastic::prelude::*;
-        # fn main() -> Result<(), Box<dyn ::std::error::Error>> {
+    # fn main() { run().unwrap() }
+    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
     # let client = AsyncClientBuilder::new().build()?;
     # fn get_req() -> PingRequest<'static> { PingRequest::new() }
     let builder = client.request(get_req())
@@ -256,33 +324,6 @@ impl<TRequest> RequestBuilder<AsyncSender, TRequest> {
         self.client.sender.serde_pool = pool.into();
 
         self
-    }
-}
-
-/** A future returned by calling `send`. */
-pub struct Pending<T> {
-    inner: Box<dyn Future<Item = T, Error = Error> + Send>,
-    _ph: PhantomData<T>,
-}
-
-impl<T> Pending<T> {
-    fn new<F>(fut: F) -> Self
-    where
-        F: Future<Item = T, Error = Error> + Send + 'static,
-    {
-        Pending {
-            inner: Box::new(fut),
-            _ph: Default::default(),
-        }
-    }
-}
-
-impl<T> Future for Pending<T> {
-    type Item = T;
-    type Error = Error;
-
-    fn poll(&mut self) -> Poll<Self::Item, Self::Error> {
-        self.inner.poll()
     }
 }
 

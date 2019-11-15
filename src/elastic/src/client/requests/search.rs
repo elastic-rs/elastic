@@ -4,15 +4,13 @@ Builders for [search requests][docs-search].
 [docs-search]: https://www.elastic.co/guide/en/elasticsearch/reference/current/search-search.html
 */
 
-use futures::Future;
 use serde::de::DeserializeOwned;
 use std::marker::PhantomData;
 
 use crate::{
     client::{
         requests::{
-            raw::RawRequestInner,
-            Pending as BasePending,
+            RequestInner,
             RequestBuilder,
         },
         responses::SearchResponse,
@@ -23,11 +21,7 @@ use crate::{
     error::Error,
     http::{
         empty_body,
-        sender::{
-            AsyncSender,
-            Sender,
-            SyncSender,
-        },
+        sender::Sender,
         DefaultBody,
     },
     params::{
@@ -57,6 +51,24 @@ pub struct SearchRequestInner<TDocument, TBody> {
     ty: Option<Type<'static>>,
     body: TBody,
     _marker: PhantomData<TDocument>,
+}
+
+impl<TDocument, TBody> RequestInner for SearchRequestInner<TDocument, TBody>
+where
+    TBody: Send + 'static,
+    TDocument: DeserializeOwned + Send + 'static,
+{
+    type Request = SearchRequest<'static, TBody>;
+    type Response = SearchResponse<TDocument>;
+
+    fn into_request(self) -> Result<Self::Request, Error> {
+        let index = self.index.unwrap_or_else(|| "_all".into());
+
+        Ok(match self.ty {
+            Some(ty) => SearchRequest::for_index_ty(index, ty, self.body),
+            None => SearchRequest::for_index(index, self.body),
+        })
+    }
 }
 
 /**
@@ -236,15 +248,6 @@ where
             _marker: PhantomData,
         }
     }
-
-    fn into_request(self) -> SearchRequest<'static, TBody> {
-        let index = self.index.unwrap_or_else(|| "_all".into());
-
-        match self.ty {
-            Some(ty) => SearchRequest::for_index_ty(index, ty, self.body),
-            None => SearchRequest::for_index(index, self.body),
-        }
-    }
 }
 
 /**
@@ -297,130 +300,14 @@ where
     }
 }
 
-/**
-# Send synchronously
-*/
-impl<TDocument, TBody> SearchRequestBuilder<SyncSender, TDocument, TBody>
-where
-    TDocument: DeserializeOwned,
-    TBody: Into<<SyncSender as Sender>::Body> + Send + 'static,
-{
-    /**
-    Send a `SearchRequestBuilder` synchronously using a [`SyncClient`][SyncClient].
-
-    This will block the current thread until a response arrives and is deserialised.
-
-    # Examples
-
-    Run a simple [Query String][docs-querystring] query for a [`DocumentType`][documents-mod] called `MyType`:
-
-    ```no_run
-    # #[macro_use] extern crate serde_derive;
-    # #[macro_use] extern crate elastic_derive;
-    # use elastic::prelude::*;
-        # fn main() -> Result<(), Box<dyn ::std::error::Error>> {
-    # #[derive(Debug, Serialize, Deserialize, ElasticType)]
-    # struct MyType { }
-    # let client = SyncClientBuilder::new().build()?;
-    let response = client.search::<MyType>()
-                         .index("myindex")
-                         .send()?;
-
-    // Iterate through the hits (of type `MyType`)
-    for hit in response.hits() {
-        println!("{:?}", hit);
-    }
-    # Ok(())
-    # }
-    ```
-
-    [SyncClient]: ../../type.SyncClient.html
-    [documents-mod]: ../../../types/document/index.html
-    [docs-querystring]: https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html
-    */
-    pub fn send(self) -> Result<SearchResponse<TDocument>, Error> {
-        let req = self.inner.into_request();
-
-        RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
-            .send()?
-            .into_response()
-    }
-}
-
-/**
-# Send asynchronously
-*/
-impl<TDocument, TBody> SearchRequestBuilder<AsyncSender, TDocument, TBody>
-where
-    TDocument: DeserializeOwned + Send + 'static,
-    TBody: Into<<AsyncSender as Sender>::Body> + Send + 'static,
-{
-    /**
-    Send a `SearchRequestBuilder` asynchronously using an [`AsyncClient`][AsyncClient].
-
-    This will return a future that will resolve to the deserialised search response.
-
-    # Examples
-
-    Run a simple [Query String][docs-querystring] query for a [`DocumentType`][documents-mod] called `MyType`:
-
-    ```no_run
-    # #[macro_use] extern crate serde_derive;
-    # #[macro_use] extern crate elastic_derive;
-    # use futures::Future;
-    # use elastic::prelude::*;
-        # fn main() -> Result<(), Box<dyn ::std::error::Error>> {
-    # #[derive(Debug, Serialize, Deserialize, ElasticType)]
-    # struct MyType { }
-    # let client = AsyncClientBuilder::new().build()?;
-    let future = client.search::<MyType>()
-                       .index("myindex")
-                       .send();
-
-    future.and_then(|response| {
-        // Iterate through the hits (of type `MyType`)
-        for hit in response.hits() {
-            println!("{:?}", hit);
-        }
-
-        Ok(())
-    });
-    # Ok(())
-    # }
-    ```
-
-    [AsyncClient]: ../../type.AsyncClient.html
-    [documents-mod]: ../../../types/document/index.html
-    [docs-querystring]: https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html
-    */
-    pub fn send(self) -> Pending<TDocument> {
-        let req = self.inner.into_request();
-
-        let res_future =
-            RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
-                .send()
-                .and_then(|res| res.into_response());
-
-        Pending::new(res_future)
-    }
-}
-
-/** A future returned by calling `send`. */
-pub type Pending<TDocument> = BasePending<SearchResponse<TDocument>>;
-
-#[cfg(test)]
+#[cfg(all(test, feature="sync_sender"))]
 mod tests {
     use serde_json::Value;
 
     use crate::{
+        client::requests::RequestInner,
         prelude::*,
-        tests::*,
     };
-
-    #[test]
-    fn is_send() {
-        assert_send::<super::Pending<TestDoc>>();
-    }
 
     #[derive(Serialize, ElasticType)]
     #[elastic(crate_root = "crate::types")]
@@ -430,7 +317,7 @@ mod tests {
     fn default_request() {
         let client = SyncClientBuilder::new().build().unwrap();
 
-        let req = client.search::<Value>().inner.into_request();
+        let req = client.search::<Value>().inner.into_request().unwrap();
 
         assert_eq!("/_all/_search", req.url.as_ref());
     }
@@ -443,7 +330,8 @@ mod tests {
             .search::<Value>()
             .index("new-idx")
             .inner
-            .into_request();
+            .into_request()
+            .unwrap();
 
         assert_eq!("/new-idx/_search", req.url.as_ref());
     }
@@ -452,7 +340,7 @@ mod tests {
     fn specify_ty() {
         let client = SyncClientBuilder::new().build().unwrap();
 
-        let req = client.search::<Value>().ty("new-ty").inner.into_request();
+        let req = client.search::<Value>().ty("new-ty").inner.into_request().unwrap();
 
         assert_eq!("/_all/new-ty/_search", req.url.as_ref());
     }
@@ -461,7 +349,7 @@ mod tests {
     fn specify_body() {
         let client = SyncClientBuilder::new().build().unwrap();
 
-        let req = client.search::<Value>().body("{}").inner.into_request();
+        let req = client.search::<Value>().body("{}").inner.into_request().unwrap();
 
         assert_eq!("{}", req.body);
     }

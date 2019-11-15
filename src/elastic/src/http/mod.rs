@@ -5,22 +5,23 @@ These types are lower-level details for sending requests and receiving
 responses.
 */
 
+#[cfg(feature="async_sender")]
 mod asynchronous;
+#[cfg(feature="sync_sender")]
 mod synchronous;
 
-pub use self::{
-    asynchronous::*,
-    synchronous::*,
-};
+#[cfg(feature="async_sender")]
+pub use self::asynchronous::*;
+#[cfg(feature="sync_sender")]
+pub use self::synchronous::*;
 
 pub mod receiver;
 pub mod sender;
 
 #[doc(inline)]
-pub use reqwest::{
-    header,
-    Url,
-};
+pub use http::header;
+#[doc(inline)]
+pub use url::Url;
 
 #[doc(inline)]
 pub use http::{
@@ -47,10 +48,14 @@ A request just before being sent.
 */
 #[derive(Clone)]
 pub struct HttpRequest<TBody> {
-    pub(crate) url: Url,
-    pub(crate) method: Method,
-    pub(crate) headers: Arc<HeaderMap>,
-    pub(crate) body: Option<TBody>,
+    /** URL to send to */
+    pub url: Url,
+    /** Request method to use */
+    pub method: Method,
+    /** Request headers */
+    pub headers: Arc<HeaderMap>,
+    /** Request body */
+    pub body: Option<TBody>,
 }
 
 impl<TBody> HttpRequest<TBody> {

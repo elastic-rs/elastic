@@ -22,6 +22,10 @@ use tokio_threadpool::{
 };
 
 use crate::{
+    client::{
+        requests::RequestInner,
+        responses::nodes_info::NodesInfoResponse,
+    },
     endpoints::Endpoint,
     error::{
         self,
@@ -33,16 +37,17 @@ use crate::{
             AsyncResponseBuilder,
         },
         sender::{
-            build_reqwest_method,
+            build_http_method,
             build_url,
-            NextParams,
             NodeAddresses,
-            NodeAddressesInner,
             RequestParams,
             SendableRequest,
             SendableRequestParams,
             Sender,
+            sniffed_nodes::NextOrRefresh,
+            TypedSender,
         },
+        Pending,
         AsyncBody,
         AsyncHttpRequest,
         Url,
@@ -190,49 +195,62 @@ impl Sender for AsyncSender {
 
         PendingResponse::new(req_future)
     }
-}
 
-impl NextParams for NodeAddresses<AsyncSender> {
-    type Params = PendingParams;
+    fn next_params(
+        &self,
+        addresses: &NodeAddresses,
+    ) -> Self::Params {
+        match addresses {
+            NodeAddresses::Static(ref nodes) => PendingParams::new(nodes.next().into_future()),
+            NodeAddresses::Sniffed(ref sniffer) => {
+                let refresher = match sniffer.next_or_start_refresh() {
+                    Ok(NextOrRefresh::Next(address)) => {
+                        return Pending::new(Box::new(Ok(address).into_future()));
+                    },
+                    Ok(NextOrRefresh::NeedsRefresh(r)) => r,
+                    Err(err) => {
+                        return Pending::new(Box::new(Err(err).into_future()));
+                    }
+                };
 
-    fn next(&self) -> Self::Params {
-        match self.inner {
-            NodeAddressesInner::Static(ref nodes) => PendingParams::new(nodes.next().into_future()),
-            NodeAddressesInner::Sniffed(ref sniffer) => PendingParams::new(sniffer.next()),
+                let req = sniffer.sendable_request();
+                let refresh_nodes = self
+                    .send(req)
+                    .and_then(|res| res.into_response::<NodesInfoResponse>())
+                    .then(move |fresh_nodes| refresher.update_nodes_and_next(fresh_nodes));
+
+                PendingParams::new(Box::new(refresh_nodes))
+            }
         }
     }
 }
+impl<TReqInner> TypedSender<TReqInner> for AsyncSender
+where
+    TReqInner: RequestInner,
+{
+    type TypedResponse = Pending<TReqInner::Response>;
+    fn typed_send<TParams, TEndpoint, TBody>(
+        &self,
+        request: Result<SendableRequest<TEndpoint, TParams, TBody>, Error>,
+    ) -> Self::TypedResponse
+    where
+        TEndpoint: Into<Endpoint<'static, TBody>> + Send + 'static,
+        TBody: Into<Self::Body> + Send + 'static,
+        TParams: Into<Self::Params> + Send + 'static,
+    {
+        let this = self.clone();
+        let fut = self.maybe_async(move || request)
+            .and_then(move |sendable_request| {
+                this.send(sendable_request)
+            })
+            .and_then(|v| v.into_response::<TReqInner::Response>());
+        return Pending::new(fut);
+    }
+}
+
 
 /** A future returned by calling `next` on an async set of `NodeAddresses`. */
-pub struct PendingParams {
-    inner: Box<dyn Future<Item = RequestParams, Error = Error> + Send>,
-}
-
-impl PendingParams {
-    fn new<F>(fut: F) -> Self
-    where
-        F: Future<Item = RequestParams, Error = Error> + Send + 'static,
-    {
-        PendingParams {
-            inner: Box::new(fut),
-        }
-    }
-}
-
-impl Future for PendingParams {
-    type Item = RequestParams;
-    type Error = Error;
-
-    fn poll(&mut self) -> Poll<Self::Item, Self::Error> {
-        self.inner.poll()
-    }
-}
-
-impl From<RequestParams> for PendingParams {
-    fn from(params: RequestParams) -> Self {
-        PendingParams::new(Ok(params).into_future())
-    }
-}
+pub type PendingParams = Pending<RequestParams>;
 
 /** Build an asynchronous `reqwest::RequestBuilder` from an Elasticsearch request. */
 fn build_reqwest(client: &AsyncHttpClient, req: AsyncHttpRequest) -> AsyncHttpRequestBuilder {
@@ -244,7 +262,7 @@ fn build_reqwest(client: &AsyncHttpClient, req: AsyncHttpRequest) -> AsyncHttpRe
         ..
     } = req;
 
-    let method = build_reqwest_method(method);
+    let method = build_http_method(method);
 
     let mut req = client.request(method, url);
     {
@@ -258,30 +276,10 @@ fn build_reqwest(client: &AsyncHttpClient, req: AsyncHttpRequest) -> AsyncHttpRe
     req
 }
 
+
+
 /** A future returned by calling `send` on an `AsyncSender`. */
-pub struct PendingResponse {
-    inner: Box<dyn Future<Item = AsyncResponseBuilder, Error = Error> + Send>,
-}
-
-impl PendingResponse {
-    fn new<F>(fut: F) -> Self
-    where
-        F: Future<Item = AsyncResponseBuilder, Error = Error> + Send + 'static,
-    {
-        PendingResponse {
-            inner: Box::new(fut),
-        }
-    }
-}
-
-impl Future for PendingResponse {
-    type Item = AsyncResponseBuilder;
-    type Error = Error;
-
-    fn poll(&mut self) -> Poll<Self::Item, Self::Error> {
-        self.inner.poll()
-    }
-}
+pub type PendingResponse = Pending<AsyncResponseBuilder>;
 
 struct PendingLogErr<F, L> {
     future: F,

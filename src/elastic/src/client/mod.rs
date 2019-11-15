@@ -543,13 +543,15 @@ For more details see the [`responses`][responses-mod] module.
 pub mod requests;
 pub mod responses;
 
+#[cfg(feature="async_sender")]
 mod asynchronous;
+#[cfg(feature="sync_sender")]
 mod synchronous;
 
-pub use self::{
-    asynchronous::*,
-    synchronous::*,
-};
+#[cfg(feature="async_sender")]
+pub use self::asynchronous::*;
+#[cfg(feature="sync_sender")]
+pub use self::synchronous::*;
 
 #[doc(inline)]
 pub use crate::http::sender::{
@@ -615,7 +617,7 @@ tokio::runtime::current_thread::block_on_all(response_future)?;
 #[derive(Clone)]
 pub struct Client<TSender> {
     sender: TSender,
-    addresses: NodeAddresses<TSender>,
+    addresses: NodeAddresses,
 }
 
 impl<TSender> Client<TSender>
@@ -642,6 +644,16 @@ where
         IndexClient {
             inner: (*self).clone(),
             index: index.into(),
+        }
+    }
+
+    /**
+    Creates a new client with a manually created sender and list of node addresses.
+    */
+    pub fn from_sender(sender: TSender, addresses: NodeAddresses) -> Self {
+        Self {
+            sender,
+            addresses,
         }
     }
 }
@@ -674,10 +686,18 @@ pub mod prelude {
     pub use super::{
         requests::prelude::*,
         responses::prelude::*,
-        AsyncClient,
-        AsyncClientBuilder,
         PreRequestParams,
         RequestParams,
+    };
+
+    #[cfg(feature="async_sender")]
+    pub use super::{
+        AsyncClient,
+        AsyncClientBuilder,
+    };
+
+    #[cfg(feature="sync_sender")]
+    pub use super::{
         SyncClient,
         SyncClientBuilder,
     };

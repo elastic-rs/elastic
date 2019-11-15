@@ -8,10 +8,10 @@ use std::{
     error::Error as StdError,
     fmt,
     marker::PhantomData,
-    time::Duration,
 };
+#[cfg(feature="async_sender")]
+use std::time::Duration;
 
-use futures::Future;
 use serde::{
     de::DeserializeOwned,
     ser::Serialize,
@@ -20,8 +20,7 @@ use serde::{
 use crate::{
     client::{
         requests::{
-            raw::RawRequestInner,
-            Pending as BasePending,
+            RequestInner,
             RequestBuilder,
         },
         responses::{
@@ -29,7 +28,6 @@ use crate::{
             BulkResponse,
         },
         Client,
-        RequestParams,
     },
     endpoints::BulkRequest,
     error::{
@@ -38,19 +36,19 @@ use crate::{
     },
     http::{
         receiver::IsOk,
-        sender::{
-            AsyncSender,
-            Sender,
-            SyncSender,
-        },
-        AsyncBody,
-        SyncBody,
+        sender::Sender,
     },
     params::{
         Index,
         Type,
     },
     types::document::DEFAULT_DOC_TYPE,
+};
+
+#[cfg(feature="async_sender")]
+use crate::{
+    client::RequestParams,
+    http::sender::AsyncSender,
 };
 
 /**
@@ -71,12 +69,13 @@ pub type BulkRequestBuilder<TSender, TBody, TResponse> =
     RequestBuilder<TSender, BulkRequestInner<TBody, TResponse>>;
 
 mod operation;
+#[cfg(feature="async_sender")]
 mod stream;
 
-pub use self::{
-    operation::*,
-    stream::*,
-};
+pub use self::operation::*;
+
+#[cfg(feature="async_sender")]
+pub use self::stream::*;
 
 #[doc(hidden)]
 pub struct BulkRequestInner<TBody, TResponse> {
@@ -84,6 +83,33 @@ pub struct BulkRequestInner<TBody, TResponse> {
     ty: Option<Type<'static>>,
     body: WrappedBody<TBody>,
     _marker: PhantomData<TResponse>,
+}
+
+impl<TBody, TResponse> RequestInner for BulkRequestInner<TBody, TResponse>
+where
+    TBody: BulkBody + Send + 'static,
+    TResponse: IsOk + DeserializeOwned + Send + 'static,
+{
+    type Request = BulkRequest<'static, TBody>;
+    type Response = TResponse;
+
+    fn into_request(self) -> Result<Self::Request, Error> {
+        let body = self.body.try_into_inner()?;
+
+        match (self.index, self.ty) {
+            (Some(index), ty) => match ty {
+                None => Ok(BulkRequest::for_index(index, body)),
+                Some(ref ty) if &ty[..] == DEFAULT_DOC_TYPE => {
+                    Ok(BulkRequest::for_index(index, body))
+                }
+                Some(ty) => Ok(BulkRequest::for_index_ty(index, ty, body)),
+            },
+            (None, None) => Ok(BulkRequest::new(body)),
+            (None, Some(_)) => Err(error::request(BulkRequestError(
+                "missing `index` parameter".to_owned(),
+            ))),
+        }
+    }
 }
 
 /**
@@ -165,6 +191,7 @@ where
 /**
 # Bulk stream request
 */
+#[cfg(feature="async_sender")]
 impl Client<AsyncSender> {
     /**
     Create a [`BulkRequestBuilder`][BulkRequestBuilder] with this `Client` that can be configured before sending.
@@ -451,6 +478,7 @@ where
 
 Configure a `SearchRequestBuilder` before sending it.
 */
+#[cfg(feature="async_sender")]
 impl<TDocument, TResponse> BulkRequestBuilder<AsyncSender, Streamed<TDocument>, TResponse> {
     /**
     Specify a timeout for filling up the request buffer.
@@ -515,178 +543,22 @@ impl<TDocument, TResponse> BulkRequestBuilder<AsyncSender, Streamed<TDocument>, 
     }
 }
 
-impl<TBody, TResponse> BulkRequestInner<TBody, TResponse>
-where
-    TBody: BulkBody,
-{
-    fn into_request(self) -> Result<BulkRequest<'static, TBody>, Error> {
-        let body = self.body.try_into_inner()?;
-
-        match (self.index, self.ty) {
-            (Some(index), ty) => match ty {
-                None => Ok(BulkRequest::for_index(index, body)),
-                Some(ref ty) if &ty[..] == DEFAULT_DOC_TYPE => {
-                    Ok(BulkRequest::for_index(index, body))
-                }
-                Some(ty) => Ok(BulkRequest::for_index_ty(index, ty, body)),
-            },
-            (None, None) => Ok(BulkRequest::new(body)),
-            (None, Some(_)) => Err(error::request(BulkRequestError(
-                "missing `index` parameter".to_owned(),
-            ))),
-        }
-    }
-}
-
-/**
-# Send synchronously
-*/
-impl<TBody, TResponse> BulkRequestBuilder<SyncSender, TBody, TResponse>
-where
-    TBody: Into<SyncBody> + BulkBody + Send + 'static,
-    TResponse: DeserializeOwned + IsOk + Send + 'static,
-{
-    /**
-    Send a `BulkRequestBuilder` synchronously using a [`SyncClient`][SyncClient].
-
-    This will block the current thread until a response arrives and is deserialised.
-
-    # Examples
-
-    Send a bulk request to index some documents:
-
-    ```no_run
-    # #[macro_use] extern crate serde_derive;
-    # #[macro_use] extern crate elastic_derive;
-    # use elastic::prelude::*;
-        # fn main() -> Result<(), Box<dyn ::std::error::Error>> {
-    # #[derive(Serialize, Deserialize, ElasticType)]
-    # struct MyType {
-    #     pub id: String,
-    #     pub title: String,
-    # }
-    # let client = SyncClientBuilder::new().build()?;
-    let ops = (0..1000)
-        .into_iter()
-        .map(|i| bulk::<MyType>().index(MyType {
-                id: i.to_string(),
-                title: "some string value".into()
-            })
-            .id(i));
-
-    let response = client.bulk()
-                         .index("myindex")
-                         .ty(MyType::static_ty())
-                         .extend(ops)
-                         .send()?;
-
-    for op in response {
-        match op {
-            Ok(op) => println!("ok: {:?}", op),
-            Err(op) => println!("err: {:?}", op),
-        }
-    }
-    # Ok(())
-    # }
-    ```
-
-    [SyncClient]: ../../type.SyncClient.html
-    */
-    pub fn send(self) -> Result<TResponse, Error> {
-        let req = self.inner.into_request()?;
-
-        RequestBuilder::new(self.client, self.params_builder, RawRequestInner::new(req))
-            .send()?
-            .into_response()
-    }
-}
-
-/**
-# Send asynchronously
-*/
-impl<TBody, TResponse> BulkRequestBuilder<AsyncSender, TBody, TResponse>
-where
-    TBody: Into<AsyncBody> + BulkBody + Send + 'static,
-    TResponse: DeserializeOwned + IsOk + Send + 'static,
-{
-    /**
-    Send a `BulkRequestBuilder` asynchronously using an [`AsyncClient`][AsyncClient].
-
-    This will return a future that will resolve to the deserialised search response.
-
-    # Examples
-
-    Send a bulk request to index some documents:
-
-    ```no_run
-    # #[macro_use] extern crate serde_derive;
-    # #[macro_use] extern crate elastic_derive;
-    # use futures::Future;
-    # use elastic::prelude::*;
-        # fn main() -> Result<(), Box<dyn ::std::error::Error>> {
-    # #[derive(Serialize, Deserialize, ElasticType)]
-    # struct MyType {
-    #     pub id: String,
-    #     pub title: String,
-    # }
-    # let client = AsyncClientBuilder::new().build()?;
-    let ops = (0..1000)
-        .into_iter()
-        .map(|i| bulk::<MyType>().index(MyType {
-                id: i.to_string(),
-                title: "some string value".into()
-            })
-            .id(i));
-
-    let future = client.bulk()
-                       .index("myindex")
-                       .ty(MyType::static_ty())
-                       .extend(ops)
-                       .send();
-
-    future.and_then(|response| {
-        for op in response {
-            match op {
-                Ok(op) => println!("ok: {:?}", op),
-                Err(op) => println!("err: {:?}", op),
-            }
-        }
-
-        Ok(())
-    });
-    # Ok(())
-    # }
-    ```
-
-    [AsyncClient]: ../../type.AsyncClient.html
-    */
-    pub fn send(self) -> Pending<TResponse> {
-        let (client, params_builder, inner) = (self.client, self.params_builder, self.inner);
-
-        let req_future = client.sender.maybe_async(move || inner.into_request());
-
-        let res_future = req_future.and_then(move |req| {
-            RequestBuilder::new(client, params_builder, RawRequestInner::new(req))
-                .send()
-                .and_then(|res| res.into_response())
-        });
-
-        Pending::new(res_future)
-    }
-}
-
+#[cfg(feature="async_sender")]
 const DEFAULT_BODY_SIZE: usize = 1024 * 1024 * 5;
+#[cfg(feature="async_sender")]
 const DEFAULT_TIMEOUT_SECS: u64 = 30;
 
 /**
 A streaming bulk request body.
 */
+#[cfg(feature="async_sender")]
 pub struct Streamed<TDocument> {
     body_size: usize,
     timeout: Duration,
     _marker: PhantomData<TDocument>,
 }
 
+#[cfg(feature="async_sender")]
 impl<TDocument> Streamed<TDocument> {
     fn new() -> Self {
         Streamed {
@@ -791,9 +663,6 @@ impl BulkBody for Vec<u8> {
     }
 }
 
-/** A future returned by calling `send`. */
-pub type Pending<TResponse> = BasePending<TResponse>;
-
 #[doc(hidden)]
 pub trait ChangeIndex<TIndex> {
     type WithNewIndex;
@@ -838,14 +707,9 @@ impl<TIndex, TType, TId, TNewId> ChangeId<TNewId> for BulkErrorsResponse<TIndex,
 #[cfg(test)]
 mod tests {
     use crate::{
+        client::requests::RequestInner,
         prelude::*,
-        tests::*,
     };
-
-    #[test]
-    fn is_send() {
-        assert_send::<super::Pending<BulkResponse>>();
-    }
 
     #[test]
     fn default_request() {
