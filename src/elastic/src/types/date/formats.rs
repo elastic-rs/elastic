@@ -86,13 +86,13 @@ impl DateFormat for EpochMillis {
             }
         };
 
-        let date = DateTime::from_utc(NaiveDateTime::from_timestamp(s, m as u32 * 1000000), Utc);
+        let date = DateTime::from_utc(NaiveDateTime::from_timestamp(s, m as u32 * 1_000_000), Utc);
 
         Ok(date.into())
     }
 
-    fn format<'a>(date: &'a DateValue) -> FormattedDate<'a> {
-        let msec = (date.timestamp() * 1000) + (date.nanosecond() as i64 / 1000000);
+    fn format(date: &DateValue) -> FormattedDate {
+        let msec = (date.timestamp() * 1000) + (date.nanosecond() as i64 / 1_000_000);
         msec.into()
     }
 }
@@ -175,7 +175,7 @@ mod tests {
                 date.hour(),
                 date.minute(),
                 date.second(),
-                date.nanosecond() / 1000000
+                date.nanosecond() / 1_000_000
             )
         );
 
@@ -201,7 +201,7 @@ mod tests {
                 date.hour(),
                 date.minute(),
                 date.second(),
-                date.nanosecond() / 1000000
+                date.nanosecond() / 1_000_000
             )
         );
 
@@ -227,7 +227,7 @@ mod tests {
                 date.hour(),
                 date.minute(),
                 date.second(),
-                date.nanosecond() / 1000000
+                date.nanosecond() / 1_000_000
             )
         );
 
@@ -248,7 +248,7 @@ mod tests {
                 date.hour(),
                 date.minute(),
                 date.second(),
-                date.nanosecond() / 1000000
+                date.nanosecond() / 1_000_000
             )
         );
 
@@ -269,7 +269,7 @@ mod tests {
                 date.hour(),
                 date.minute(),
                 date.second(),
-                date.nanosecond() / 1000000
+                date.nanosecond() / 1_000_000
             )
         );
 
@@ -290,7 +290,7 @@ mod tests {
                 date.hour(),
                 date.minute(),
                 date.second(),
-                date.nanosecond() / 1000000
+                date.nanosecond() / 1_000_000
             )
         );
 
@@ -311,7 +311,7 @@ mod tests {
                 date.hour(),
                 date.minute(),
                 date.second(),
-                date.nanosecond() / 1000000
+                date.nanosecond() / 1_000_000
             )
         );
 
@@ -332,7 +332,7 @@ mod tests {
                 date.hour(),
                 date.minute(),
                 date.second(),
-                date.nanosecond() / 1000000
+                date.nanosecond() / 1_000_000
             )
         );
 
@@ -353,7 +353,7 @@ mod tests {
                 date.hour(),
                 date.minute(),
                 date.second(),
-                date.nanosecond() / 1000000
+                date.nanosecond() / 1_000_000
             )
         );
 
@@ -374,7 +374,7 @@ mod tests {
                 date.hour(),
                 date.minute(),
                 date.second(),
-                date.nanosecond() / 1000000
+                date.nanosecond() / 1_000_000
             )
         );
 
@@ -391,12 +391,12 @@ mod tests {
                 "yyyy-MM-dd'T'HH:mm:ssZ"
             }
 
-            fn format<'a>(date: &'a DateValue) -> FormattedDate<'a> {
+            fn format(date: &DateValue) -> FormattedDate {
                 date.to_rfc3339().into()
             }
 
             fn parse(date: &str) -> Result<DateValue, ParseError> {
-                let date = DateTime::parse_from_rfc3339(date).map_err(|e| ParseError::from(e))?;
+                let date = DateTime::parse_from_rfc3339(date).map_err(ParseError::from)?;
 
                 Ok(DateTime::from_utc(date.naive_local(), Utc).into())
             }

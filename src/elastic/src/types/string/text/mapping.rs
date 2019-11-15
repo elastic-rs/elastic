@@ -36,7 +36,6 @@ impl TextMapping for MyStringMapping {
         Some(1.5)
     }
 }
-# fn main() {}
 ```
 
 This will produce the following mapping:
@@ -52,7 +51,6 @@ This will produce the following mapping:
 #         Some(1.5)
 #     }
 # }
-# fn main() {
 # let json = json!(
 {
     "type": "text",
@@ -61,7 +59,6 @@ This will produce the following mapping:
 # );
 # let mapping = elastic::types::__derive::standalone_field_ser(MyStringMapping).unwrap();
 # assert_eq!(json, mapping);
-# }
 ```
 */
 pub trait TextMapping {
@@ -136,7 +133,6 @@ pub trait TextMapping {
         Some(fields)
     }
     # }
-    # fn main() {}
     ```
     */
     fn fields() -> Option<BTreeMap<&'static str, StringField>> {

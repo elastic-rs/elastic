@@ -76,7 +76,7 @@ impl<T> GetResponse<T> {
 
     /** The version of the document. */
     pub fn version(&self) -> Option<u32> {
-        self.version.clone()
+        self.version
     }
 
     /**
@@ -85,7 +85,7 @@ impl<T> GetResponse<T> {
      * [sequence number]: https://www.elastic.co/guide/en/elasticsearch/reference/current/optimistic-concurrency-control.html
      */
     pub fn sequence_number(&self) -> Option<u32> {
-        self.sequence_number.clone()
+        self.sequence_number
     }
 
     /**
@@ -94,7 +94,7 @@ impl<T> GetResponse<T> {
      * [primary term]: https://www.elastic.co/guide/en/elasticsearch/reference/current/optimistic-concurrency-control.html
      */
     pub fn primary_term(&self) -> Option<u32> {
-        self.primary_term.clone()
+        self.primary_term
     }
 }
 

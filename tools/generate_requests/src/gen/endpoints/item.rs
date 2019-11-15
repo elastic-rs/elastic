@@ -98,7 +98,7 @@ impl Builder {
         let item = syn::Item {
             ident: self.name,
             vis: syn::Visibility::Public,
-            attrs: attrs,
+            attrs,
             node: syn::ItemKind::Struct(fields, generics),
         };
 
@@ -120,18 +120,16 @@ impl<'a> From<&'a (String, Endpoint)> for Builder {
             format!("`{}`", endpoint.url.path)
         };
 
-        let builder = Builder::new(&name)
+        Builder::new(&name)
             .has_body(endpoint.has_body())
-            .doc_comment(doc_comment);
-
-        builder
+            .doc_comment(doc_comment)
     }
 }
 
 #[cfg(test)]
 mod tests {
     #![cfg_attr(rustfmt, rustfmt_skip)]
-    
+
     use super::*;
 
     #[test]

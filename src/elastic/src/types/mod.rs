@@ -49,8 +49,10 @@ The following table illustrates the types provided by `elastic`:
  `boolean`           | `bool`                      | `std`     | [`Boolean<M>`][boolean-mod]                              | -
  `ip`                | `Ipv4Addr`                  | `std`     | [`Ip<M>`][ip-mod]                                        | -
  `date`              | `DateTime<UTC>`             | `chrono`  | [`Date<M>`][date-mod]                                    | `DateFormat`
- `geo_point`         | `Point`                     | `geo`     | [`GeoPoint<M>`][geopoint-mod]                            | `GeoPointFormat`
- `geo_shape`         | -                           | `geojson` | [`GeoShape<M>`][geoshape-mod]                            | -
+ `geo_point`[^geo]   | `Point`                     | `geo`     | [`GeoPoint<M>`][geopoint-mod]                            | `GeoPointFormat`
+ `geo_shape`[^geo]   | -                           | `geojson` | [`GeoShape<M>`][geoshape-mod]                            | -
+
+[^geo]: requires building with the `geo-types` feature (which is enabled by default)
 
 ## Mapping
 
@@ -82,7 +84,6 @@ Use simple generic types to annotate your Rust structures with Elasticsearch doc
 # #[macro_use] extern crate elastic_derive;
 # #[macro_use] extern crate serde_derive;
 # use elastic::prelude::*;
-# fn main() {
 #[derive(Serialize, Deserialize, ElasticType)]
 struct MyType {
     // Mapped as an `integer` field
@@ -94,7 +95,6 @@ struct MyType {
     // Mapped as a `date` field with an `epoch_millis` format
     timestamp: Date<DefaultDateMapping<EpochMillis>>
 }
-# }
 ```
 
 You can use the `IndexDocumentMapping` type wrapper to serialise the mapping for your document types:
@@ -104,8 +104,7 @@ You can use the `IndexDocumentMapping` type wrapper to serialise the mapping for
 # #[macro_use] extern crate serde_json;
 # #[macro_use] extern crate serde_derive;
 # use elastic::prelude::*;
-# fn main() { run().unwrap() }
-# fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+# fn main() -> Result<(), Box<dyn ::std::error::Error>> {
 # #[derive(Serialize, Deserialize, ElasticType)]
 # struct MyType {}
 let doc = MyType::index_mapping();
@@ -122,8 +121,7 @@ This will produce the following JSON:
 # #[macro_use] extern crate serde_json;
 # #[macro_use] extern crate serde_derive;
 # use elastic::prelude::*;
-# fn main() { run().unwrap() }
-# fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+# fn main() -> Result<(), Box<dyn ::std::error::Error>> {
 # #[derive(Serialize, Deserialize, ElasticType)]
 # struct MyType {
 #     id: Keyword<DefaultKeywordMapping>,
@@ -169,7 +167,6 @@ In the below example, variants of `MyEnum` will be serialised as a string, which
 # #[macro_use] extern crate elastic_derive;
 # #[macro_use] extern crate serde_derive;
 # use elastic::prelude::*;
-# fn main() {
 # #[derive(Serialize, Deserialize)]
 enum MyEnum {
     OptionA,
@@ -179,7 +176,6 @@ enum MyEnum {
 
 // Map `MyEnum` as a `keyword` in Elasticsearch, but treat it as an enum in Rust
 impl KeywordFieldType<DefaultKeywordMapping> for MyEnum {}
-# }
 ```
 
 You can then use `MyEnum` on any document type:
@@ -188,7 +184,6 @@ You can then use `MyEnum` on any document type:
 # #[macro_use] extern crate elastic_derive;
 # #[macro_use] extern crate serde_derive;
 # use elastic::prelude::*;
-# fn main() {
 # #[derive(Serialize, Deserialize)]
 # enum MyEnum {}
 # impl KeywordFieldType<DefaultKeywordMapping> for MyEnum {}
@@ -196,7 +191,6 @@ You can then use `MyEnum` on any document type:
 struct MyType {
     value: MyEnum
 }
-# }
 ```
 
 Serialising `MyType`s mapping will produce the following json:
@@ -213,8 +207,7 @@ Serialising `MyType`s mapping will produce the following json:
 # struct MyType {
 #     value: MyEnum
 # }
-# fn main() { run().unwrap() }
-# fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+# fn main() -> Result<(), Box<dyn ::std::error::Error>> {
 # let mapping = serde_json::to_value(&MyType::index_mapping())?;
 # let expected = json!(
 {
@@ -248,6 +241,7 @@ mod private;
 pub mod boolean;
 pub mod date;
 pub mod document;
+#[cfg(features = "geo-types")]
 pub mod geo;
 pub mod ip;
 pub mod number;
@@ -268,9 +262,11 @@ pub mod prelude {
     pub use super::{
         boolean::prelude::*,
         date::prelude::*,
-        geo::prelude::*,
         ip::prelude::*,
         number::prelude::*,
         string::prelude::*,
     };
+
+    #[cfg(features = "geo-types")]
+    pub use geo::prelude::*;
 }

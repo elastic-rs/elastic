@@ -96,8 +96,7 @@ where
     # #[macro_use] extern crate elastic_derive;
     # #[macro_use] extern crate serde_json;
     # use elastic::prelude::*;
-    # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+        # fn main() -> Result<(), Box<dyn ::std::error::Error>> {
     # #[derive(Debug, Serialize, Deserialize, ElasticType)]
     # struct MyType { }
     # let client = SyncClientBuilder::new().build()?;
@@ -130,8 +129,7 @@ where
     # #[macro_use] extern crate serde_json;
     # use serde_json::Value;
     # use elastic::prelude::*;
-    # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+        # fn main() -> Result<(), Box<dyn ::std::error::Error>> {
     # let client = SyncClientBuilder::new().build()?;
     let response = client.search::<Value>()
                          .index("myindex")
@@ -184,8 +182,7 @@ where
     # #[macro_use] extern crate elastic_derive;
     # #[macro_use] extern crate serde_json;
     # use elastic::prelude::*;
-    # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+        # fn main() -> Result<(), Box<dyn ::std::error::Error>> {
     # #[derive(Debug, Serialize, Deserialize, ElasticType)]
     # struct MyType { }
     # let client = SyncClientBuilder::new().build()?;
@@ -230,8 +227,8 @@ where
         RequestBuilder::initial(
             self.inner,
             SearchRequestInner {
-                index: index,
-                ty: ty,
+                index,
+                ty,
                 body: empty_body(),
                 _marker: PhantomData,
             },
@@ -247,7 +244,7 @@ where
         SearchRequestInner {
             index: None,
             ty: None,
-            body: body,
+            body,
             _marker: PhantomData,
         }
     }
@@ -294,7 +291,7 @@ where
             self.client,
             self.params_builder,
             SearchRequestInner {
-                body: body,
+                body,
                 index: self.inner.index,
                 ty: self.inner.ty,
                 _marker: PhantomData,

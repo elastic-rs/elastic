@@ -5,15 +5,23 @@ use elastic::{
 use futures::Future;
 
 #[derive(Debug, PartialEq, Serialize, Deserialize, ElasticType)]
-#[elastic(index = "update_doc_idx")]
+#[elastic(index = "update_doc_source_idx")]
 pub struct Doc {
     #[elastic(id)]
     id: String,
     title: String,
 }
 
-const EXPECTED_TITLE: &str = "Edited title";
-const ID: &str = "1";
+#[derive(Debug, PartialEq, Serialize, Deserialize, ElasticType)]
+#[elastic(index = "update_doc_source_idx")]
+pub struct UpdatedDoc {
+    #[elastic(id)]
+    id: String,
+    title: String,
+}
+
+const EXPECTED_TITLE: &'static str = "Edited title";
+const ID: &'static str = "1";
 
 fn doc() -> Doc {
     Doc {
@@ -23,9 +31,9 @@ fn doc() -> Doc {
 }
 
 test! {
-    const description: &'static str = "update with new document";
+    const description: &'static str = "update and return source";
 
-    type Response = (UpdateResponse, GetResponse<Doc>);
+    type Response = UpdateResponse;
 
     // Ensure the index doesn't exist
     fn prepare(&self, client: AsyncClient) -> Box<dyn Future<Item = (), Error = Error>> {
@@ -38,7 +46,8 @@ test! {
         Box::new(delete_res)
     }
 
-    // Execute an update request against that index using a new document
+    // Execute an update request against that index using a new document & request
+    // that the updated document's `source` be returned with the response.
     fn request(
         &self,
         client: AsyncClient,
@@ -55,26 +64,21 @@ test! {
             .doc(json!({
                 "title": EXPECTED_TITLE.to_owned(),
             }))
-            .params_fluent(|p| p.url_param("refresh", true))
+            .source()
             .send();
-
-        let get_res = client.document().get(ID).send();
 
         Box::new(
             index_res
                 .and_then(|_| update_res)
-                .and_then(|update| get_res.map(|get| (update, get))),
+                .map(|update| update)
         )
     }
 
     // Ensure the response contains the expected document
     fn assert_ok(&self, res: &Self::Response) -> bool {
-        let update = &res.0;
-        let get = &res.1;
-
-        let updated = update.updated();
-        let correct_version = update.version() == Some(2);
-        let correct_title = get.document().map(|doc| doc.title.as_ref()) == Some(EXPECTED_TITLE);
+        let updated = res.updated();
+        let correct_version = res.version() == Some(2);
+        let correct_title = res.into_document::<UpdatedDoc>().unwrap().title == EXPECTED_TITLE;
 
         updated && correct_version && correct_title
     }

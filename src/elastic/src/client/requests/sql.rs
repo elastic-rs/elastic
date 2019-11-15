@@ -78,8 +78,7 @@ where
     ```no_run
     # #[macro_use] extern crate serde_json;
     # use elastic::prelude::*;
-    # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+        # fn main() -> Result<(), Box<dyn ::std::error::Error>> {
     # let client = SyncClientBuilder::new().build()?;
     let response = client.sql()
                          .body(json!({
@@ -121,8 +120,7 @@ where
 
     ```no_run
     # use elastic::prelude::*;
-    # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+        # fn main() -> Result<(), Box<dyn ::std::error::Error>> {
     # let client = SyncClientBuilder::new().build()?;
     let response = client.sql_query("SELECT * FROM library GROUP BY author")
                          .send()?;
@@ -148,7 +146,7 @@ where
 
 impl<TBody> SqlRequestInner<TBody> {
     fn new(body: TBody) -> Self {
-        SqlRequestInner { body: body }
+        SqlRequestInner { body }
     }
 }
 
@@ -170,11 +168,7 @@ where
     where
         TNewBody: Into<TSender::Body>,
     {
-        RequestBuilder::new(
-            self.client,
-            self.params_builder,
-            SqlRequestInner { body: body },
-        )
+        RequestBuilder::new(self.client, self.params_builder, SqlRequestInner { body })
     }
 
     /**

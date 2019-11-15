@@ -20,7 +20,7 @@ impl Builder {
     pub fn new(url_params_ty: syn::Ty, body: syn::Expr) -> Self {
         Builder {
             params_ty: url_params_ty,
-            body: body,
+            body,
         }
     }
 
@@ -103,7 +103,7 @@ struct MatchBuilder {
 impl MatchBuilder {
     pub fn new(url_params: syn::Ty) -> Self {
         MatchBuilder {
-            url_params: url_params,
+            url_params,
             arms: vec![],
         }
     }
@@ -203,7 +203,7 @@ struct ReplaceBuilder<'a> {
 
 impl<'a> ReplaceBuilder<'a> {
     pub fn new(url: Vec<PathPart<'a>>) -> Self {
-        ReplaceBuilder { url: url }
+        ReplaceBuilder { url }
     }
 
     /// Build an allocated url from the path literals and params.
@@ -232,7 +232,7 @@ impl<'a> ReplaceBuilder<'a> {
 
         stmts.push(return_expr);
 
-        syn::Block { stmts: stmts }
+        syn::Block { stmts }
     }
 
     /// Build a non-allocated url from the path literals.
@@ -297,7 +297,7 @@ impl<'a> ReplaceBuilder<'a> {
 
                 let first_expr = Box::new(len_iter.next().unwrap());
 
-                *(len_iter.map(|p| Box::new(p)).fold(first_expr, |acc, p| {
+                *(len_iter.map(Box::new).fold(first_expr, |acc, p| {
                     Box::new(syn::ExprKind::Binary(syn::BinOp::Add, acc, p).into())
                 }))
             }
@@ -324,7 +324,7 @@ impl<'a> ReplaceBuilder<'a> {
         syn::Stmt::Local(Box::new(syn::Local {
             pat: Box::new(syn::Pat::Ident(
                 syn::BindingMode::ByValue(syn::Mutability::Mutable),
-                url_ident.to_owned(),
+                url_ident,
                 None,
             )),
             ty: None,

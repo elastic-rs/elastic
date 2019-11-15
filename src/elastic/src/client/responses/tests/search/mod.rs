@@ -18,7 +18,7 @@ fn success_parse_empty() {
         .from_slice(StatusCode::OK, f as &[_])
         .unwrap();
 
-    assert_eq!(deserialized.hits().into_iter().count(), 0);
+    assert_eq!(deserialized.hits().count(), 0);
 }
 
 #[test]
@@ -28,7 +28,7 @@ fn success_parse_hits_simple() {
         .from_slice(StatusCode::OK, f as &[_])
         .unwrap();
 
-    assert_eq!(deserialized.hits().into_iter().count(), 5);
+    assert_eq!(deserialized.hits().count(), 5);
 }
 
 #[test]
@@ -63,7 +63,7 @@ fn success_parse_hits_simple_of_t() {
         .from_slice(StatusCode::OK, f as &[_])
         .unwrap();
 
-    assert_eq!(deserialized.hits().into_iter().count(), 5);
+    assert_eq!(deserialized.hits().count(), 5);
 }
 
 #[test]
@@ -73,7 +73,7 @@ fn success_parse_hits_no_score() {
         .from_slice(StatusCode::OK, f as &[_])
         .unwrap();
 
-    assert_eq!(deserialized.hits().into_iter().count(), 1);
+    assert_eq!(deserialized.hits().count(), 1);
 }
 
 #[test]
@@ -83,7 +83,7 @@ fn success_parse_hits_bank_sample() {
         .from_slice(StatusCode::OK, f as &[_])
         .unwrap();
 
-    assert_eq!(deserialized.hits().into_iter().count(), 10);
+    assert_eq!(deserialized.hits().count(), 10);
 }
 
 #[test]
@@ -148,7 +148,7 @@ fn success_parse_3level_multichild_aggs() {
     let mut first = true;
     let mut count = 0;
 
-    for i in deserialized.aggs().take(500000) {
+    for i in deserialized.aggs().take(500_000) {
         count += 1;
         if first {
             assert_eq!(&json!(12), i["max_ack_pkts_sent"]);
@@ -170,7 +170,7 @@ fn success_parse_3level_multistats_aggs() {
 
     let mut first = true;
     let mut count = 0;
-    for i in deserialized.aggs().take(500000) {
+    for i in deserialized.aggs().take(500_000) {
         count += 1;
         if first {
             assert_eq!(&json!(2), i["extstats_ack_pkts_sent_min"]);

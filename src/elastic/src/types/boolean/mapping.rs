@@ -14,7 +14,6 @@ Define a custom `BooleanMapping`:
 
 ```
 # #[macro_use] use elastic::types::prelude::*;
-# fn main() {
 #[derive(Default)]
 struct MyBooleanMapping;
 impl BooleanMapping for MyBooleanMapping {
@@ -23,7 +22,6 @@ impl BooleanMapping for MyBooleanMapping {
         Some(1.5)
     }
 }
-# }
 ```
 
 This will produce the following mapping:
@@ -39,7 +37,6 @@ This will produce the following mapping:
 #         Some(1.5)
 #     }
 # }
-# fn main() {
 # let json = json!(
 {
     "type": "boolean",
@@ -48,7 +45,6 @@ This will produce the following mapping:
 # );
 # let mapping = elastic::types::__derive::standalone_field_ser(MyBooleanMapping).unwrap();
 # assert_eq!(json, mapping);
-# }
 ```
 */
 pub trait BooleanMapping {
@@ -208,5 +204,4 @@ mod tests {
 
         assert_eq!(expected, ser);
     }
-
 }

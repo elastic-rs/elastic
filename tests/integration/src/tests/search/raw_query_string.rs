@@ -27,7 +27,7 @@ test! {
     fn prepare(&self, client: AsyncClient) -> Box<dyn Future<Item = (), Error = Error>> {
         let delete_res = client.index(Doc::static_index()).delete().send();
 
-        let index_reqs = future::join_all((0..10).into_iter().map(move |_| {
+        let index_reqs = future::join_all((0..10).map(move |_| {
             client
                 .document()
                 .index(doc())

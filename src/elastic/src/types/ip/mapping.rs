@@ -24,7 +24,6 @@ impl IpMapping for MyIpMapping {
         Some(1.5)
     }
 }
-# fn main() {}
 ```
 
 This will produce the following mapping:
@@ -40,7 +39,6 @@ This will produce the following mapping:
 #         Some(1.5)
 #     }
 # }
-# fn main() {
 # let json = json!(
 {
     "type": "ip",
@@ -49,7 +47,6 @@ This will produce the following mapping:
 # );
 # let mapping = elastic::types::__derive::standalone_field_ser(MyIpMapping).unwrap();
 # assert_eq!(json, mapping);
-# }
 ```
 */
 pub trait IpMapping {
@@ -210,5 +207,4 @@ mod tests {
 
         assert_eq!(expected, ser);
     }
-
 }

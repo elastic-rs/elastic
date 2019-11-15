@@ -16,7 +16,7 @@ struct MyType {
 Map with a custom `boolean`:
 
 ```
-# #[macro_use] fn main() {
+# #[macro_use]
 # use elastic::types::prelude::*;
 # #[derive(Default)]
 # struct MyBooleanMapping;
@@ -24,20 +24,17 @@ Map with a custom `boolean`:
 struct MyType {
     pub field: Boolean<MyBooleanMapping>
 }
-# }
 ```
 
 Map a custom type as a `boolean` field:
 
 ```
 #[macro_use] extern crate serde_derive;
-# fn main() {
 # use elastic::types::prelude::*;
 #[derive(Serialize)]
 struct MyBooleanField(bool);
 
 impl BooleanFieldType<DefaultBooleanMapping> for MyBooleanField {}
-# }
 ```
 
 # Links

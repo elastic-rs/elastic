@@ -31,7 +31,7 @@ test! {
     fn prepare(&self, client: AsyncClient) -> Box<dyn Future<Item = (), Error = Error>> {
         let delete_res = client.index(Doc::static_index()).delete().send();
 
-        let index_reqs = future::join_all((0..10).into_iter().map(move |i| {
+        let index_reqs = future::join_all((0..10).map(move |i| {
             client
                 .document()
                 .index(doc(i))
@@ -56,13 +56,10 @@ test! {
 
     // Ensure the response contains documents
     fn assert_ok(&self, res: &Self::Response) -> bool {
-        let correct_columns = vec!["id", "field1"].sort()
-            == res
-                .columns()
-                .iter()
-                .map(|c| c.name())
-                .collect::<Vec<&str>>()
-                .sort();
+        let mut columns = res.columns().iter().map(|c| c.name()).collect::<Vec<&str>>();
+        columns.sort();
+
+        let correct_columns = vec!["field1", "id"] == columns;
 
         let correct_length = res.rows().len() == 10;
 

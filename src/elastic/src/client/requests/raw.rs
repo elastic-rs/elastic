@@ -63,8 +63,7 @@ where
 
     ```no_run
     # use elastic::prelude::*;
-    # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+        # fn main() -> Result<(), Box<dyn ::std::error::Error>> {
     # let client = SyncClientBuilder::new().build()?;
     // `PingRequest` implements `Into<Endpoint>`
     let req = PingRequest::new();
@@ -80,9 +79,9 @@ where
     # }
     ```
 
-    [Endpoint]: requests/struct.Endpoint.html
+    [Endpoint]: ../endpoints/struct.Endpoint.html
     [RawRequestBuilder]: requests/raw/type.RawRequestBuilder.html
-    [endpoints-mod]: requests/endpoints/index.html
+    [endpoints-mod]: ../endpoints/index.html
     */
     pub fn request<TEndpoint, TBody>(
         &self,
@@ -119,8 +118,7 @@ where
     # #[macro_use] extern crate serde_json;
     # use serde_json::Value;
     # use elastic::prelude::*;
-    # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+        # fn main() -> Result<(), Box<dyn ::std::error::Error>> {
     # let client = SyncClientBuilder::new().build()?;
     let response = client.request(SimpleSearchRequest::for_index_ty("myindex", "mytype"))
                          .send()?
@@ -141,8 +139,7 @@ where
     # use serde_json::Value;
     # use elastic::prelude::*;
     # use futures::Future;
-    # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+        # fn main() -> Result<(), Box<dyn ::std::error::Error>> {
     # let client = AsyncClientBuilder::new().build()?;
     let future = client.request(SimpleSearchRequest::for_index_ty("myindex", "mytype"))
                        .send()

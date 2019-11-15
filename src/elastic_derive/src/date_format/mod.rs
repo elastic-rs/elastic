@@ -90,7 +90,7 @@ fn impl_date_format(
 }
 
 // Get the format string supplied by an #[elastic()] attribute
-fn get_format_from_attr<'a>(item: &'a DeriveInput) -> Option<String> {
+fn get_format_from_attr(item: &DeriveInput) -> Option<String> {
     let val = get_elastic_meta_items(&item.attrs);
 
     let val = val
@@ -102,7 +102,7 @@ fn get_format_from_attr<'a>(item: &'a DeriveInput) -> Option<String> {
 }
 
 // Get the name string supplied by an #[elastic()] attribute
-fn get_name_from_attr<'a>(item: &'a DeriveInput) -> Option<String> {
+fn get_name_from_attr(item: &DeriveInput) -> Option<String> {
     let val = get_elastic_meta_items(&item.attrs);
 
     let val = val

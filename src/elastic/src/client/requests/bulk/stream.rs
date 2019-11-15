@@ -211,7 +211,7 @@ impl SenderBody {
 
         // Copy out any scratch into the new buffer
         // This would probably be a single operation that didn't fit
-        if self.scratch.len() > 0 {
+        if !self.scratch.is_empty() {
             new_body.put_slice(&self.scratch);
             self.scratch.clear();
         }
@@ -220,7 +220,7 @@ impl SenderBody {
     }
 
     fn has_capacity(&self) -> bool {
-        self.scratch.len() == 0 && self.body.remaining_mut() > 0
+        self.scratch.is_empty() && self.body.remaining_mut() > 0
     }
 
     fn is_empty(&self) -> bool {
@@ -228,7 +228,7 @@ impl SenderBody {
     }
 
     fn is_full(&self) -> bool {
-        self.scratch.len() > 0 || self.body.remaining_mut() == 0
+        !self.scratch.is_empty() || self.body.remaining_mut() == 0
     }
 
     fn push<TDocument>(&mut self, op: BulkOperation<TDocument>) -> Result<(), io::Error>
@@ -245,7 +245,7 @@ impl SenderBody {
             Ok(())
         }
         // If the body is empty and the buffer doesn't fit, replace the current body buffer
-        else if self.body.len() == 0 {
+        else if self.body.is_empty() {
             let scratch = mem::replace(&mut self.scratch, Vec::new());
             self.body = BytesMut::from(scratch);
 
@@ -347,7 +347,7 @@ where
             }
             // The request has completed
             BulkSenderInFlight::Transmitted => {
-                let _ = try_ready!(self.tx.poll_complete());
+                try_ready!(self.tx.poll_complete());
                 BulkSenderInFlight::ReadyToSend
             }
         };
@@ -357,7 +357,7 @@ where
     }
 
     fn close(&mut self) -> Poll<(), Self::SinkError> {
-        let _ = try_ready!(self.poll_complete());
+        try_ready!(self.poll_complete());
         self.tx.close()
     }
 }
@@ -380,7 +380,7 @@ where
                 Err(TrySendError::Full(item)) => Ok(AsyncSink::NotReady(item)),
                 Err(TrySendError::Disconnected(_)) => Err(error::request(Disconnected)),
             })
-            .unwrap_or(Err(error::request(Disconnected)))
+            .unwrap_or_else(|| Err(error::request(Disconnected)))
     }
 
     fn poll_complete(&mut self) -> Poll<(), Self::SinkError> {

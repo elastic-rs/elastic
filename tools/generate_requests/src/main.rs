@@ -3,6 +3,7 @@
 #[macro_use]
 extern crate quote;
 
+#[macro_use]
 extern crate serde_derive;
 
 #[cfg(test)]
@@ -49,8 +50,8 @@ fn main() {
 
     endpoints = endpoints
         .into_iter()
-        .map(|e| strip_methods(e))
-        .map(|e| dedup_urls(e))
+        .map(strip_methods)
+        .map(dedup_urls)
         .collect();
 
     let http_mod_name = "http";
@@ -69,15 +70,15 @@ fn main() {
 
     end_comment_block_for_logging();
 
-    stdout().write(tokens.to_string().as_bytes()).unwrap();
+    stdout().write_all(tokens.to_string().as_bytes()).unwrap();
 }
 
 fn start_comment_block_for_logging() {
-    stdout().write(b"/*\n").unwrap();
+    stdout().write_all(b"/*\n").unwrap();
 }
 
 fn end_comment_block_for_logging() {
-    stdout().write(b"*/").unwrap();
+    stdout().write_all(b"*/").unwrap();
 }
 
 fn from_dir(path: &str) -> Result<Vec<(String, Endpoint)>, String> {
@@ -90,7 +91,7 @@ fn from_dir(path: &str) -> Result<Vec<(String, Endpoint)>, String> {
         let name = path.file_name().map(|path| path.to_string_lossy());
         let display = path.to_string_lossy().into_owned();
 
-        if name.map(|name| !name.starts_with("_")).unwrap_or(true) {
+        if name.map(|name| !name.starts_with('_')).unwrap_or(true) {
             let mut f = File::open(&path).unwrap();
             let parsed = from_reader(display, &mut f)?;
 
@@ -197,6 +198,7 @@ fn endpoints_mod(
 
     let header = quote!(
         #![allow(missing_docs)]
+        #![allow(clippy::all)]
 
         use super:: #http_mod_tokens ::*;
         use super::params::*;
@@ -206,7 +208,7 @@ fn endpoints_mod(
     tokens.append("\n\n");
 
     for e in endpoints {
-        for (ty, _) in &e.1.url.parts {
+        for ty in e.1.url.parts.keys() {
             params_to_emit.insert(ty.to_owned(), true);
         }
 
@@ -239,6 +241,7 @@ fn http_mod(tokens: &mut Tokens) {
 
     let header = quote!(
         #![allow(missing_docs)]
+        #![allow(clippy::all)]
 
         use std::borrow::Cow;
         use std::ops::Deref;
@@ -260,6 +263,7 @@ fn http_mod(tokens: &mut Tokens) {
 fn params_mod(tokens: &mut Tokens, params_to_emit: BTreeMap<String, bool>) {
     let header = quote!(
         #![allow(missing_docs)]
+        #![allow(clippy::all)]
     );
 
     tokens.append(header);

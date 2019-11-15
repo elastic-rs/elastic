@@ -23,9 +23,9 @@ impl Names {
         let dockerfile_name = format!("{}.Dockerfile", run);
 
         Names {
-            container_name: container_name,
-            build_name: build_name,
-            dockerfile_name: dockerfile_name,
+            container_name,
+            build_name,
+            dockerfile_name,
         }
     }
 }

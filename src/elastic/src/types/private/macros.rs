@@ -42,12 +42,6 @@ macro_rules! impl_mapping_type {
 
                 PartialEq::eq(borrow(&self.value), other)
             }
-
-            fn ne(&self, other: &$std_ty) -> bool {
-                borrow_fn!($std_ty);
-
-                PartialEq::ne(borrow(&self.value), other)
-            }
         }
 
         impl<M> PartialEq<$wrapper_ty<M>> for $std_ty
@@ -58,12 +52,6 @@ macro_rules! impl_mapping_type {
                 borrow_fn!($std_ty);
 
                 PartialEq::eq(self, borrow(&other.value))
-            }
-
-            fn ne(&self, other: &$wrapper_ty<M>) -> bool {
-                borrow_fn!($std_ty);
-
-                PartialEq::ne(self, borrow(&other.value))
             }
         }
 

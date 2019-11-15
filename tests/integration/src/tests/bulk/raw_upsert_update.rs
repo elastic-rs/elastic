@@ -12,14 +12,14 @@ pub struct Doc {
     timestamp: Option<Date<DefaultDateMapping>>,
 }
 
-const INDEX: &'static str = "raw_bulk_upsert_update";
-const ID: &'static str = "1";
+const INDEX: &str = "raw_bulk_upsert_update";
+const ID: &str = "1";
 
 fn doc() -> Doc {
     Doc {
         id: ID.to_owned(),
         title: Some("A document title".to_owned()),
-        timestamp: Some(Date::build(2017, 03, 24, 13, 44, 0, 0)),
+        timestamp: Some(Date::build(2017, 3, 24, 13, 44, 0, 0)),
     }
 }
 

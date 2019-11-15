@@ -73,8 +73,8 @@ impl<TEndpoint, TParams, TBody> SendableRequest<TEndpoint, TParams, TBody> {
     pub(crate) fn new(inner: TEndpoint, params: SendableRequestParams<TParams>) -> Self {
         SendableRequest {
             correlation_id: Uuid::new_v4(),
-            inner: inner,
-            params: params,
+            inner,
+            params,
             _marker: PhantomData,
         }
     }
@@ -92,7 +92,6 @@ pub enum SendableRequestParams<TParams> {
         builder: SharedFluentBuilder<RequestParams>,
     },
 }
-
 
 /**
 Represents a type that can send a request.
@@ -139,6 +138,7 @@ pub trait Sender: Clone {
         addresses: &NodeAddresses,
     ) -> Self::Params;
 }
+
 /**
 Represents a type that can send a typed request and deserialize the result.
 
@@ -206,7 +206,7 @@ where
     T: Into<Arc<str>>,
 {
     fn from(address: T) -> Self {
-        NodeAddress(address.into())
+        NodeAddress(address.into().trim_end_matches('/').into())
     }
 }
 
@@ -248,9 +248,7 @@ impl NodeAddressesBuilder {
             NodeAddressesBuilder::Sniffed(fluent_builder) => {
                 NodeAddressesBuilder::Sniffed(fluent_builder.value(builder))
             }
-            _ => NodeAddressesBuilder::Sniffed(SharedStatefulFluentBuilder::from_value(
-                builder.into(),
-            )),
+            _ => NodeAddressesBuilder::Sniffed(SharedStatefulFluentBuilder::from_value(builder)),
         }
     }
 
@@ -261,12 +259,10 @@ impl NodeAddressesBuilder {
     {
         match self {
             NodeAddressesBuilder::Sniffed(fluent_builder) => NodeAddressesBuilder::Sniffed(
-                fluent_builder
-                    .fluent(address.into(), fleunt_method)
-                    .shared(),
+                fluent_builder.fluent(address, fleunt_method).shared(),
             ),
             _ => NodeAddressesBuilder::Sniffed(SharedStatefulFluentBuilder::from_fluent(
-                address.into(),
+                address,
                 fleunt_method,
             )),
         }
@@ -293,7 +289,7 @@ impl NodeAddressesBuilder {
             }
             NodeAddressesBuilder::Sniffed(builder) => {
                 let nodes = builder
-                    .into_value(|node| SniffedNodesBuilder::new(node))
+                    .into_value(SniffedNodesBuilder::new)
                     .build(params);
 
                 NodeAddresses::sniffed_nodes(nodes)

@@ -4,6 +4,7 @@ run the `tools/generate_requests.sh` script to update it
 */
 pub mod endpoints {
     #![allow(missing_docs)]
+    #![allow(clippy::all)]
     use super::http::*;
     use super::params::*;
 
@@ -7643,6 +7644,7 @@ pub mod endpoints {
 
 pub mod http {
     #![allow(missing_docs)]
+    #![allow(clippy::all)]
     pub use crate::http::Method;
     use std::borrow::Cow;
     use std::ops::Deref;
@@ -7692,6 +7694,7 @@ pub mod http {
 
 pub mod params {
     #![allow(missing_docs)]
+    #![allow(clippy::all)]
 
     include!("genned.params.rs");
 

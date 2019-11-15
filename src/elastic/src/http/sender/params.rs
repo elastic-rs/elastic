@@ -1,5 +1,6 @@
 use std::{
     collections::HashMap,
+    fmt,
     sync::Arc,
 };
 
@@ -8,6 +9,8 @@ use http::{
         HeaderMap,
         HeaderName,
         HeaderValue,
+        InvalidHeaderValue,
+        AUTHORIZATION,
         CONTENT_TYPE,
     },
     method::Method as HttpMethod,
@@ -22,7 +25,7 @@ use crate::http::{
 /**
 The default Elasticsearch address to connect to.
 */
-pub const DEFAULT_NODE_ADDRESS: &'static str = "http://localhost:9200";
+pub const DEFAULT_NODE_ADDRESS: &str = "http://localhost:9200";
 
 /**
 An incomplete set of request parameters.
@@ -65,8 +68,7 @@ With custom headers:
 ```
 # use elastic::prelude::*;
 # use std::str::FromStr;
-# fn main() { run().unwrap() }
-# fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+# fn main() -> Result<(), Box<dyn ::std::error::Error>> {
 use elastic::http::header::{self, AUTHORIZATION, HeaderValue};
 
 let auth = HeaderValue::from_str("let me in")?;
@@ -126,6 +128,25 @@ impl PreRequestParams {
         Arc::make_mut(&mut self.headers).insert(key, value);
         self
     }
+
+    /** Enables HTTP basic authentication. */
+    pub fn basic_auth<U, P>(
+        mut self,
+        username: U,
+        password: Option<P>,
+    ) -> Result<Self, InvalidHeaderValue>
+    where
+        U: fmt::Display,
+        P: fmt::Display,
+    {
+        let auth = match password {
+            Some(password) => format!("{}:{}", username, password),
+            None => format!("{}:", username),
+        };
+        let header_value = HeaderValue::from_str(&format!("Basic {}", base64::encode(&auth)))?;
+        Arc::make_mut(&mut self.headers).insert(AUTHORIZATION, header_value);
+        Ok(self)
+    }
 }
 
 impl Default for PreRequestParams {
@@ -139,7 +160,7 @@ impl RequestParams {
     pub fn from_parts(base_url: impl Into<NodeAddress>, inner: PreRequestParams) -> Self {
         RequestParams {
             base_url: base_url.into(),
-            inner: inner,
+            inner,
         }
     }
 
@@ -217,7 +238,7 @@ impl Default for RequestParams {
 }
 
 /** Creates the full URL for a request */
-pub fn build_url<'a>(req_url: &str, params: &RequestParams) -> String {
+pub fn build_url(req_url: &str, params: &RequestParams) -> String {
     let (qry_len, qry) = params.get_url_qry();
 
     let mut url = String::with_capacity(params.base_url.as_ref().len() + req_url.len() + qry_len);

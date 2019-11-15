@@ -16,8 +16,7 @@ Use a [`SyncClientBuilder`][SyncClientBuilder] to configure a synchronous client
 
 ```
 # use elastic::prelude::*;
-# fn main() { run().unwrap() }
-# fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+# fn main() -> Result<(), Box<dyn ::std::error::Error>> {
 let client = SyncClient::builder().build()?;
 # Ok(())
 # }
@@ -32,8 +31,7 @@ Use an [`AsyncClientBuilder`][AsyncClientBuilder] to configure an asynchronous c
 
 ```
 # use elastic::prelude::*;
-# fn main() { run().unwrap() }
-# fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+# fn main() -> Result<(), Box<dyn ::std::error::Error>> {
 let client = AsyncClient::builder().build()?;
 # Ok(())
 # }
@@ -51,8 +49,7 @@ Requests can be sent with an instance of a client using a builder API:
 # use serde_json::Value;
 # use elastic::prelude::*;
 # use elastic::Error;
-# fn main() { run().unwrap() }
-# fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+# fn main() -> Result<(), Box<dyn ::std::error::Error>> {
 # let client = SyncClient::builder().build()?;
 let response = client.search::<Value>()
                      .index("myindex")
@@ -93,8 +90,7 @@ Requests that work with [document types][documents-mod] can infer index and type
 # use serde_json::Value;
 # use elastic::prelude::*;
 # use elastic::Error;
-# fn main() { run().unwrap() }
-# fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+# fn main() -> Result<(), Box<dyn ::std::error::Error>> {
 # let client = SyncClient::builder().build()?;
 # #[derive(ElasticType, Deserialize, Debug)]
 # struct MyType { }
@@ -184,8 +180,7 @@ For example, a `get` request for an anonymous json value:
 # #[macro_use] extern crate serde_json;
 # use serde_json::Value;
 # use elastic::prelude::*;
-# fn main() { run().unwrap() }
-# fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+# fn main() -> Result<(), Box<dyn ::std::error::Error>> {
 # let client = SyncClient::builder().build()?;
 let response = client.document::<Value>().get_raw("values", 1).send()?;
 # Ok(())
@@ -198,8 +193,7 @@ is equivalent to:
 # #[macro_use] extern crate serde_json;
 # use serde_json::Value;
 # use elastic::prelude::*;
-# fn main() { run().unwrap() }
-# fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+# fn main() -> Result<(), Box<dyn ::std::error::Error>> {
 # let client = SyncClient::builder().build()?;
 let response = client.request(GetRequest::for_index_ty_id("values", "value", 1))
                      .send()?
@@ -248,8 +242,7 @@ The example below shows how these pieces fit together in code  by sending a simp
 # #[macro_use] extern crate serde_json;
 # use elastic::prelude::*;
 # use serde_json::Value;
-# fn main() { run().unwrap() }
-# fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+# fn main() -> Result<(), Box<dyn ::std::error::Error>> {
 # let client = SyncClient::builder().build()?;
 let req = SearchRequest::for_index("_all", empty_body());
 
@@ -270,7 +263,6 @@ A raw search request:
 ```no_run
 # #[macro_use] extern crate serde_json;
 # use elastic::prelude::*;
-# fn main() {
 let req = {
     let body = json!({
         "query": {
@@ -282,7 +274,6 @@ let req = {
 
     SearchRequest::for_index_ty("myindex", "myty", body)
 };
-# }
 ```
 
 A raw request to index a document:
@@ -290,8 +281,7 @@ A raw request to index a document:
 ```no_run
 # #[macro_use] extern crate serde_json;
 # use elastic::prelude::*;
-# fn main() { run().unwrap() }
-# fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+# fn main() -> Result<(), Box<dyn ::std::error::Error>> {
 # let doc = true;
 let req = {
     let body = serde_json::to_string(&doc)?;
@@ -315,8 +305,7 @@ If the request was sent asynchronously, the response is returned as a `Future`.
 
 ```no_run
 # use elastic::prelude::*;
-# fn main() { run().unwrap() }
-# fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+# fn main() -> Result<(), Box<dyn ::std::error::Error>> {
 # let client = SyncClient::builder().build()?;
 # let req = PingRequest::new();
 let request_builder = client.request(req);
@@ -344,8 +333,7 @@ Call [`SyncResponseBuilder.into_response`][SyncResponseBuilder.into_response] on
 # use serde_json::Value;
 # use elastic::prelude::*;
 # use elastic::Error;
-# fn main() { run().unwrap() }
-# fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+# fn main() -> Result<(), Box<dyn ::std::error::Error>> {
 # #[derive(Serialize, Deserialize, ElasticType)]
 # struct MyType {
 #     pub id: String,
@@ -383,8 +371,7 @@ Alternatively, call [`SyncResponseBuilder.into_raw`][SyncResponseBuilder.into_ra
 # #[macro_use] extern crate elastic_derive;
 # use std::io::Read;
 # use elastic::prelude::*;
-# fn main() { run().unwrap() }
-# fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+# fn main() -> Result<(), Box<dyn ::std::error::Error>> {
 # let client = SyncClient::builder().build()?;
 # let req = PingRequest::new();
 let mut response = client.request(req)
@@ -413,8 +400,7 @@ Call [`AsyncResponseBuilder.into_response`][AsyncResponseBuilder.into_response] 
 # use futures::Future;
 # use serde_json::Value;
 # use elastic::prelude::*;
-# fn main() { run().unwrap() }
-# fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+# fn main() -> Result<(), Box<dyn ::std::error::Error>> {
 # #[derive(Serialize, Deserialize, ElasticType)]
 # struct MyType {
 #     pub id: String,
@@ -448,8 +434,7 @@ Alternatively, call [`AsyncResponseBuilder.into_raw`][AsyncResponseBuilder.into_
 # use std::io::Read;
 # use futures::{Future, Stream};
 # use elastic::prelude::*;
-# fn main() { run().unwrap() }
-# fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+# fn main() -> Result<(), Box<dyn ::std::error::Error>> {
 # let client = AsyncClient::builder().build()?;
 # let req = PingRequest::new();
 let future = client.request(req)
@@ -488,7 +473,7 @@ For more details see the [`responses`][responses-mod] module.
 
 [tokio]: https://tokio.rs
 
-[endpoints-mod]: requests/endpoints/index.html
+[endpoints-mod]: ../endpoints/index.html
 [RequestParams]: struct.RequestParams.html
 [SyncClient]: type.SyncClient.html
 [SyncClientBuilder]: struct.SyncClientBuilder.html
@@ -517,20 +502,20 @@ For more details see the [`responses`][responses-mod] module.
 [RequestBuilder]: requests/struct.RequestBuilder.html
 [RequestBuilder.params]: requests/struct.RequestBuilder.html#method.params
 [RawRequestBuilder]: requests/type.RawRequestBuilder.html
-[SearchRequest]: requests/endpoints/struct.SearchRequest.html
-[SqlQueryRequest]: requests/endpoints/struct.SqlQueryRequest.html
-[BulkRequest]: requests/endpoints/struct.BulkRequest.html
-[GetRequest]: requests/endpoints/struct.GetRequest.html
-[UpdateRequest]: requests/endpoints/struct.UpdateRequest.html
-[DeleteRequest]: requests/endpoints/struct.DeleteRequest.html
-[IndexRequest]: requests/endpoints/struct.IndexRequest.html
-[IndicesPutMappingRequest]: requests/endpoints/struct.IndicesPutMappingRequest.html
-[IndicesCreateRequest]: requests/endpoints/struct.IndicesCreateRequest.html
-[IndicesOpenRequest]: requests/endpoints/struct.IndicesOpenRequest.html
-[IndicesCloseRequest]: requests/endpoints/struct.IndicesCloseRequest.html
-[IndicesDeleteRequest]: requests/endpoints/struct.IndicesDeleteRequest.html
-[IndicesExistsRequest]: requests/endpoints/struct.IndicesExistsRequest.html
-[PingRequest]: requests/endpoints/struct.PingRequest.html
+[SearchRequest]: ../endpoints/struct.SearchRequest.html
+[SqlQueryRequest]: ../endpoints/struct.SqlQueryRequest.html
+[BulkRequest]: ../endpoints/struct.BulkRequest.html
+[GetRequest]: ../endpoints/struct.GetRequest.html
+[UpdateRequest]: ../endpoints/struct.UpdateRequest.html
+[DeleteRequest]: ../endpoints/struct.DeleteRequest.html
+[IndexRequest]: ../endpoints/struct.IndexRequest.html
+[IndicesPutMappingRequest]: ../endpoints/struct.IndicesPutMappingRequest.html
+[IndicesCreateRequest]: ../endpoints/struct.IndicesCreateRequest.html
+[IndicesOpenRequest]: ../endpoints/struct.IndicesOpenRequest.html
+[IndicesCloseRequest]: ../endpoints/struct.IndicesCloseRequest.html
+[IndicesDeleteRequest]: ../endpoints/struct.IndicesDeleteRequest.html
+[IndicesExistsRequest]: ../endpoints/struct.IndicesExistsRequest.html
+[PingRequest]: ../endpoints/struct.PingRequest.html
 
 [responses-mod]: responses/index.html
 [SyncResponseBuilder]: ../http/receiver/struct.SyncResponseBuilder.html
@@ -599,8 +584,7 @@ Create a synchronous `Client` and send a ping request:
 
 ```no_run
 # use elastic::prelude::*;
-# fn main() { run().unwrap() }
-# fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+# fn main() -> Result<(), Box<dyn ::std::error::Error>> {
 let client = SyncClient::builder().build()?;
 
 let response = client.request(PingRequest::new())
@@ -615,8 +599,7 @@ Create an asynchronous `Client` and send a ping request:
 ```no_run
 # use futures::Future;
 # use elastic::prelude::*;
-# fn main() { run().unwrap() }
-# fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+# fn main() -> Result<(), Box<dyn ::std::error::Error>> {
 let client = AsyncClient::builder().build()?;
 
 let response_future = client.request(PingRequest::new())

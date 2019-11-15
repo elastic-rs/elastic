@@ -86,8 +86,7 @@ where
     # #[macro_use] extern crate serde_derive;
     # #[macro_use] extern crate elastic_derive;
     # use elastic::prelude::*;
-    # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+        # fn main() -> Result<(), Box<dyn ::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
     #     pub id: String,
@@ -114,8 +113,8 @@ where
     where
         TDocument: DocumentType + StaticIndex + StaticType,
     {
-        let index = TDocument::static_index().into();
-        let ty = TDocument::static_ty().into();
+        let index = TDocument::static_index();
+        let ty = TDocument::static_ty();
 
         RequestBuilder::initial(
             self.inner,
@@ -150,8 +149,7 @@ where
     # #[macro_use] extern crate serde_derive;
     # #[macro_use] extern crate elastic_derive;
     # use elastic::prelude::*;
-    # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+        # fn main() -> Result<(), Box<dyn ::std::error::Error>> {
     # let client = SyncClientBuilder::new().build()?;
     let response = client.document()
                          .delete_raw("myindex", 1)

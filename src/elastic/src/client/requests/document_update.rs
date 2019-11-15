@@ -105,8 +105,7 @@ where
     # #[macro_use] extern crate serde_derive;
     # #[macro_use] extern crate elastic_derive;
     # use elastic::prelude::*;
-    # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+        # fn main() -> Result<(), Box<dyn ::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
     #     pub id: String,
@@ -133,8 +132,7 @@ where
     # #[macro_use] extern crate serde_derive;
     # #[macro_use] extern crate elastic_derive;
     # use elastic::prelude::*;
-    # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+        # fn main() -> Result<(), Box<dyn ::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
     #     pub id: String,
@@ -160,8 +158,7 @@ where
     # #[macro_use] extern crate serde_derive;
     # #[macro_use] extern crate elastic_derive;
     # use elastic::prelude::*;
-    # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+        # fn main() -> Result<(), Box<dyn ::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
     #     pub id: String,
@@ -186,8 +183,7 @@ where
     # #[macro_use] extern crate serde_derive;
     # #[macro_use] extern crate elastic_derive;
     # use elastic::prelude::*;
-    # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+        # fn main() -> Result<(), Box<dyn ::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
     #     pub id: String,
@@ -217,14 +213,14 @@ where
     where
         TDocument: DocumentType + StaticIndex + StaticType,
     {
-        let index = TDocument::static_index().into();
-        let ty = TDocument::static_ty().into();
+        let index = TDocument::static_index();
+        let ty = TDocument::static_ty();
 
         RequestBuilder::initial(
             self.inner,
             UpdateRequestInner {
-                index: index,
-                ty: ty,
+                index,
+                ty,
                 id: id.into(),
                 body: Doc::empty(),
                 _marker: PhantomData,
@@ -255,8 +251,7 @@ where
     # #[macro_use] extern crate serde_derive;
     # #[macro_use] extern crate elastic_derive;
     # use elastic::prelude::*;
-    # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+        # fn main() -> Result<(), Box<dyn ::std::error::Error>> {
     # let client = SyncClientBuilder::new().build()?;
     let response = client.document()
                          .update_raw("myindex", 1)
@@ -320,8 +315,7 @@ where
     # #[macro_use] extern crate serde_derive;
     # #[macro_use] extern crate elastic_derive;
     # use elastic::prelude::*;
-    # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+        # fn main() -> Result<(), Box<dyn ::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
     #     pub id: String,
@@ -346,8 +340,7 @@ where
     # #[macro_use] extern crate serde_derive;
     # #[macro_use] extern crate elastic_derive;
     # use elastic::prelude::*;
-    # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+        # fn main() -> Result<(), Box<dyn ::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
     #     pub id: String,
@@ -395,8 +388,7 @@ where
     # #[macro_use] extern crate serde_derive;
     # #[macro_use] extern crate elastic_derive;
     # use elastic::prelude::*;
-    # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+        # fn main() -> Result<(), Box<dyn ::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
     #     pub id: String,
@@ -419,8 +411,7 @@ where
     # #[macro_use] extern crate elastic_derive;
     # use elastic::client::requests::document_update::ScriptBuilder;
     # use elastic::prelude::*;
-    # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+        # fn main() -> Result<(), Box<dyn ::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
     #     pub id: String,
@@ -477,8 +468,7 @@ where
     # #[macro_use] extern crate serde_derive;
     # #[macro_use] extern crate elastic_derive;
     # use elastic::prelude::*;
-    # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+        # fn main() -> Result<(), Box<dyn ::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
     #     pub id: String,
@@ -505,8 +495,7 @@ where
     # #[macro_use] extern crate serde_derive;
     # #[macro_use] extern crate elastic_derive;
     # use elastic::prelude::*;
-    # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+        # fn main() -> Result<(), Box<dyn ::std::error::Error>> {
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType {
     #     pub id: String,
@@ -546,6 +535,62 @@ where
         let builder = builder(ScriptBuilder::new(source));
 
         self.script(builder)
+    }
+
+    /**
+    Request that the [`UpdateResponse`] include the `source` of the updated document.
+
+    Although not a requirement, be careful that both the document and
+    updated document types use the same index, e.g. by using the
+    [`#[elastic(index)]` attribute][index-attr].
+
+    # Examples
+
+    Request that the `source` is returned with the response and deserialize
+    the updated document by calling [`into_document`] on the [`UpdateResponse`]:
+
+    ```no_run
+    # #[macro_use] extern crate serde_derive;
+    # #[macro_use] extern crate elastic_derive;
+    # use elastic::prelude::*;
+    # fn main() { run().unwrap() }
+    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+    # #[derive(Serialize, Deserialize, ElasticType)]
+    # struct NewsArticle { id: i64, likes: i64 }
+    # #[derive(Serialize, Deserialize, ElasticType)]
+    # struct UpdatedNewsArticle { id: i64, likes: i64 }
+    # let client = SyncClientBuilder::new().build()?;
+    let response = client.document::<NewsArticle>()
+                         .update(1)
+                         .script("ctx._source.likes++")
+                         .source()
+                         .send()?;
+
+    assert!(response.into_document::<UpdatedNewsArticle>().unwrap().likes >= 1);
+    # Ok(())
+    # }
+    ```
+
+    [index-attr]: ../../../types/document/index.html#specifying-a-default-index-name
+    [`UpdateResponse`]: ../../responses/struct.UpdateResponse.html
+    [`into_document`]: ../../responses/struct.UpdateResponse.html#method.into_document
+    */
+    pub fn source(self) -> UpdateRequestBuilder<TSender, TBody> {
+        RequestBuilder::new(
+            self.client,
+            // TODO: allow passing in `source` parameter add `_source` to body
+            // instead because it supports more options
+            self.params_builder
+                .fluent(|params| params.url_param("_source", true))
+                .shared(),
+            UpdateRequestInner {
+                body: self.inner.body,
+                index: self.inner.index,
+                ty: self.inner.ty,
+                id: self.inner.id,
+                _marker: PhantomData,
+            },
+        )
     }
 }
 

@@ -124,7 +124,7 @@ impl Sender for SyncSender {
                     "Elasticsearch Response: correlation_id: '{}', error: '{:?}'",
                     correlation_id, e
                 );
-                Err(e)?
+                return Err(e);
             }
         };
 

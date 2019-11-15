@@ -12,8 +12,8 @@ pub struct Doc {
     title: String,
 }
 
-const EXPECTED_TITLE: &'static str = "Edited title";
-const ID: &'static str = "1";
+const EXPECTED_TITLE: &str = "Edited title";
+const ID: &str = "1";
 
 fn doc() -> Doc {
     Doc {

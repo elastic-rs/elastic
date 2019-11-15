@@ -56,10 +56,6 @@ macro_rules! impl_string_type {
             fn eq(&self, other: &&'a str) -> bool {
                 PartialEq::eq(&self.value, *other)
             }
-
-            fn ne(&self, other: &&'a str) -> bool {
-                PartialEq::ne(&self.value, *other)
-            }
         }
 
         impl<'a, TMapping> PartialEq<$wrapper_ty<TMapping>> for &'a str
@@ -68,10 +64,6 @@ macro_rules! impl_string_type {
         {
             fn eq(&self, other: &$wrapper_ty<TMapping>) -> bool {
                 PartialEq::eq(*self, &other.value)
-            }
-
-            fn ne(&self, other: &$wrapper_ty<TMapping>) -> bool {
-                PartialEq::ne(*self, &other.value)
             }
         }
 

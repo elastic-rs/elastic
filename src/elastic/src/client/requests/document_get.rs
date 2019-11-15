@@ -92,10 +92,9 @@ where
     # #[macro_use] extern crate elastic_derive;
     # use serde_json::Value;
     # use elastic::prelude::*;
-    # fn main() { run().unwrap() }
-    # #[derive(Serialize, Deserialize, ElasticType)]
+        # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType { }
-    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+    # fn main() -> Result<(), Box<dyn ::std::error::Error>> {
     # let client = SyncClientBuilder::new().build()?;
     let response = client.document::<MyType>()
                          .get(1)
@@ -117,14 +116,14 @@ where
     where
         TDocument: DeserializeOwned + DocumentType + StaticIndex + StaticType,
     {
-        let index = TDocument::static_index().into();
-        let ty = TDocument::static_ty().into();
+        let index = TDocument::static_index();
+        let ty = TDocument::static_ty();
 
         RequestBuilder::initial(
             self.inner,
             GetRequestInner {
-                index: index,
-                ty: ty,
+                index,
+                ty,
                 id: id.into(),
                 _marker: PhantomData,
             },
@@ -150,8 +149,7 @@ where
     # #[macro_use] extern crate elastic_derive;
     # use serde_json::Value;
     # use elastic::prelude::*;
-    # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+        # fn main() -> Result<(), Box<dyn ::std::error::Error>> {
     # let client = SyncClientBuilder::new().build()?;
     let response = client.document::<Value>()
                          .get_raw("myindex", 1)

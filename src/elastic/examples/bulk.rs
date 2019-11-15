@@ -19,7 +19,7 @@ fn run() -> Result<(), Box<dyn Error>> {
     // A HTTP client and request parameters
     let client = SyncClient::builder().build()?;
 
-    let ops = (0..1000).into_iter().map(|i| {
+    let ops = (0..1000).map(|i| {
         bulk_raw()
             .index(json!({
                 "id": i,

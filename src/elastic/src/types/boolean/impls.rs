@@ -77,7 +77,7 @@ where
     Change the mapping for a given `Boolean`:
 
     ```
-    # #[macro_use] fn main() {
+    # #[macro_use]
     # use elastic::types::prelude::*;
     # #[derive(Default)]
     # struct MyBooleanMapping;
@@ -85,7 +85,6 @@ where
     let boolean = Boolean::<DefaultBooleanMapping>::new(true);
 
     let boolean: Boolean<MyBooleanMapping> = Boolean::remap(boolean);
-    # }
     ```
     */
     pub fn remap<TNewMapping>(boolean: Boolean<TMapping>) -> Boolean<TNewMapping>
@@ -182,5 +181,4 @@ mod tests {
 
         assert_eq!(true, boolean);
     }
-
 }

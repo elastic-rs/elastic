@@ -9,6 +9,7 @@ use super::common::{
 };
 use serde::de::{
     Deserialize,
+    DeserializeOwned,
     Deserializer,
     Error as DeError,
     MapAccess,
@@ -44,7 +45,6 @@ Send a bulk request and iterate through the results:
 ```no_run
 # use elastic::prelude::*;
 # fn do_request() -> BulkResponse { unimplemented!() }
-# fn main() {
 let response: BulkResponse = do_request();
 
 // Check if the response contains any errors
@@ -65,7 +65,6 @@ for item in response {
         }
     }
 }
-# }
 ```
 
 Use `iter` to iterate over individual items without taking ownership of them:
@@ -73,7 +72,6 @@ Use `iter` to iterate over individual items without taking ownership of them:
 ```no_run
 # use elastic::prelude::*;
 # fn do_request() -> BulkResponse { unimplemented!() }
-# fn main() {
 let response: BulkResponse = do_request();
 
 // Do something with successful items for index `myindex`
@@ -85,7 +83,6 @@ for item in item_iter {
     // Do something with the `OkItem`s
     println!("ok: {:?}", item);
 }
-# }
 ```
 
 # Optimising bulk responses
@@ -104,7 +101,6 @@ and an index called `myindex`:
 # #[macro_use] extern crate serde_derive;
 # #[macro_use] extern crate serde_json;
 # use elastic::prelude::*;
-# fn main() {
 # fn do_request() -> BulkResponse<Index, Type> { unimplemented!() }
 #[derive(Deserialize)]
 #[serde(rename_all = "lowercase")]
@@ -120,7 +116,6 @@ enum Type {
 }
 
 let bulk: BulkResponse<Index, Type> = do_request();
-# }
 ```
 
 Other crates that can avoid allocating strings:
@@ -193,7 +188,6 @@ impl<TIndex, TType, TId> BulkResponse<TIndex, TType, TId> {
     ```no_run
     # use elastic::prelude::*;
     # fn do_request() -> BulkResponse { unimplemented!() }
-    # fn main() {
     let response: BulkResponse = do_request();
 
     // Iterate through all items
@@ -209,7 +203,6 @@ impl<TIndex, TType, TId> BulkResponse<TIndex, TType, TId> {
             }
         }
     }
-    # }
     ```
     */
     pub fn iter(&self) -> ResultIter<TIndex, TType, TId> {
@@ -262,9 +255,9 @@ Send a bulk request and iterate through the errors:
 ```no_run
 # use elastic::prelude::*;
 # use elastic::client::responses::bulk::Action;
-# fn do_request() -> BulkErrorsResponse { unimplemented!() }
-# fn main() {
-let response: BulkErrorsResponse = do_request();
+# fn main() -> Result<(), elastic::Error>{
+# let client = SyncClientBuilder::new().build()?;
+let response: BulkErrorsResponse = client.bulk().errors_only().send()?;
 
 // Do something with failed items
 for item in response {
@@ -273,6 +266,7 @@ for item in response {
         _ => println!("err: {:?}", item)
     }
 }
+# Ok(())
 # }
 ```
 
@@ -280,9 +274,9 @@ Use `iter` to iterate over individual errors without taking ownership of them:
 
 ```no_run
 # use elastic::prelude::*;
-# fn do_request() -> BulkErrorsResponse { unimplemented!() }
-# fn main() {
-let response: BulkErrorsResponse = do_request();
+# fn main() -> Result<(), elastic::Error>{
+# let client = SyncClientBuilder::new().build()?;
+let response: BulkErrorsResponse = client.bulk().errors_only().send()?;
 
 // Do something with errors for index `myindex`
 let item_iter = response.iter()
@@ -291,6 +285,7 @@ let item_iter = response.iter()
 for item in item_iter {
     println!("err: {:?}", item);
 }
+# Ok(())
 # }
 ```
 
@@ -370,7 +365,7 @@ impl<TIndex, TType, TId> BulkErrorsResponse<TIndex, TType, TId> {
         !self.errors
     }
 
-    /** Returns `true` if any bulk itemss failed. */
+    /** Returns `true` if any bulk items failed. */
     pub fn is_err(&self) -> bool {
         self.errors
     }
@@ -386,15 +381,16 @@ impl<TIndex, TType, TId> BulkErrorsResponse<TIndex, TType, TId> {
 
     ```no_run
     # use elastic::prelude::*;
-    # fn do_request() -> BulkErrorsResponse { unimplemented!() }
-    # fn main() {
-    let response: BulkErrorsResponse = do_request();
+    # fn main() -> Result<(), elastic::Error> {
+    # let client = SyncClientBuilder::new().build()?;
+    let response: BulkErrorsResponse = client.bulk().errors_only().send()?;
 
     // Iterate through all items
     for item in response.iter() {
         // Do something with failed items
         println!("err: {:?}", item)
     }
+    # Ok(())
     # }
     ```
     */
@@ -424,6 +420,7 @@ pub struct OkItem<
     primary_term: Option<u32>,
     shards: Option<Shards>,
     result: Option<DocumentResult>,
+    get: Option<Value>,
 }
 
 impl<TIndex, TType, TId> OkItem<TIndex, TType, TId> {
@@ -434,7 +431,7 @@ impl<TIndex, TType, TId> OkItem<TIndex, TType, TId> {
 
     /** The document version after this item. */
     pub fn version(&self) -> Option<u32> {
-        self.version.clone()
+        self.version
     }
 
     /**
@@ -443,7 +440,7 @@ impl<TIndex, TType, TId> OkItem<TIndex, TType, TId> {
      * [sequence number]: https://www.elastic.co/guide/en/elasticsearch/reference/current/optimistic-concurrency-control.html
      */
     pub fn sequence_number(&self) -> Option<u32> {
-        self.sequence_number.clone()
+        self.sequence_number
     }
 
     /**
@@ -452,7 +449,7 @@ impl<TIndex, TType, TId> OkItem<TIndex, TType, TId> {
      * [primary term]: https://www.elastic.co/guide/en/elasticsearch/reference/current/optimistic-concurrency-control.html
      */
     pub fn primary_term(&self) -> Option<u32> {
-        self.primary_term.clone()
+        self.primary_term
     }
 
     /**
@@ -492,6 +489,70 @@ impl<TIndex, TType, TId> OkItem<TIndex, TType, TId> {
     /** The document id for this item. */
     pub fn id(&self) -> &TId {
         &self.id
+    }
+
+    /**
+    Convert the source in the response into the updated document.
+
+    The [`source`] method must have been called first on the [`BulkOperation`],
+    otherwise this will return `None`.
+
+    Although not a requirement, be careful that both the document and
+    updated document types use the same index, e.g. by using the
+    [`#[elastic(index)]` attribute][index-attr].
+
+    # Examples
+
+    ```no_run
+    # #[macro_use] extern crate serde_derive;
+    # #[macro_use] extern crate elastic_derive;
+    # use elastic::prelude::*;
+    # fn main() { run().unwrap() }
+    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+    # #[derive(Serialize, Deserialize, ElasticType, Debug)]
+    # struct NewsArticle { id: i64, likes: i64 }
+    # #[derive(Serialize, Deserialize, ElasticType, Debug)]
+    # struct UpdatedNewsArticle { id: i64, likes: i64 }
+    # let client = SyncClientBuilder::new().build()?;
+    let update_ops = (0..10).into_iter().map(|i| {
+        bulk::<NewsArticle>()
+            .update_script(i, "ctx._source.likes++")
+            .source(true)
+    });
+
+    let response = client
+        .bulk()
+        .index(NewsArticle::static_index())
+        .ty(NewsArticle::static_ty())
+        .extend(update_ops)
+        .send()?;
+
+    for op in response {
+        if let Ok(op) = op {
+            println!("{:?}", op.into_document::<UpdatedNewsArticle>().unwrap());
+        }
+    }
+
+    # Ok(())
+    # }
+    ```
+
+    [`source`]: ../../requests/bulk/struct.BulkOperation.html#method.source
+    [`BulkOperation`]: ../../requests/bulk/struct.BulkOperation.html
+    [index-attr]: ../../../types/document/index.html#specifying-a-default-index-name
+    */
+    pub fn into_document<T>(&self) -> Option<T>
+    where
+        T: DeserializeOwned,
+    {
+        self.get.as_ref().map_or_else(
+            || None,
+            |obj| {
+                obj.get("_source")
+                    .cloned()
+                    .map_or_else(|| None, |doc| serde_json::from_value::<T>(doc).ok())
+            },
+        )
     }
 }
 
@@ -608,6 +669,7 @@ struct ItemDeInner<TIndex, TType, TId> {
     sequence_number: Option<u32>,
     #[serde(rename = "_primary_term")]
     primary_term: Option<u32>,
+    get: Option<Value>,
     #[serde(rename = "_shards")]
     shards: Option<Shards>,
     result: Option<DocumentResult>,
@@ -628,7 +690,7 @@ where
                 index: self.inner.index,
                 ty: self.inner.ty,
                 id: self.inner.id,
-                err: err,
+                err,
             }),
             None => None,
         }
@@ -648,6 +710,7 @@ where
                 primary_term: self.inner.primary_term,
                 shards: self.inner.shards,
                 result: self.inner.result,
+                get: self.inner.get,
             })
         }
     }
@@ -685,12 +748,9 @@ where
             {
                 let (action, inner) = visitor
                     .next_entry()?
-                    .ok_or(V::Error::custom("expected at least one field"))?;
+                    .ok_or_else(|| V::Error::custom("expected at least one field"))?;
 
-                let result = ItemDe {
-                    action: action,
-                    inner: inner,
-                };
+                let result = ItemDe { action, inner };
 
                 Ok(result)
             }

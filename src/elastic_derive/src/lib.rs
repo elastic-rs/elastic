@@ -17,7 +17,6 @@ extern crate syn;
 #[macro_use]
 extern crate quick_error;
 
-#[macro_use]
 extern crate nom;
 
 extern crate serde;
@@ -78,7 +77,7 @@ pub fn derive_date_format(input: proc_macro::TokenStream) -> proc_macro::TokenSt
 }
 
 // Get the format string supplied by an #[elastic()] attribute
-fn get_crate_root<'a>(item: &'a DeriveInput) -> Result<proc_macro2::TokenStream, SynError> {
+fn get_crate_root(item: &DeriveInput) -> Result<proc_macro2::TokenStream, SynError> {
     let val = get_elastic_meta_items(&item.attrs);
 
     let val = val
@@ -89,9 +88,9 @@ fn get_crate_root<'a>(item: &'a DeriveInput) -> Result<proc_macro2::TokenStream,
     match val {
         Some(crate_root) => {
             let root = get_tokens_from_lit(&crate_root)?;
-            Ok(quote!(#root).into())
+            Ok(quote!(#root))
         }
-        None => Ok(quote!(elastic::types).into()),
+        None => Ok(quote!(elastic::types)),
     }
 }
 
@@ -103,9 +102,11 @@ where
         .into_iter()
         .filter_map(|attr| {
             attr.parse_meta().ok().and_then(|meta| match meta {
-                Meta::List(MetaList { ref path, ref nested, .. })
-                    if path.get_ident() == Some(&quote::format_ident!("{}", "elastic")) =>
-                {
+                Meta::List(MetaList {
+                    ref path,
+                    ref nested,
+                    ..
+                }) if path.get_ident() == Some(&quote::format_ident!("{}", "elastic")) => {
                     Some(nested.clone().into_iter())
                 }
                 _ => None,
@@ -150,7 +151,7 @@ fn get_ident_from_lit(lit: &Lit) -> Result<Ident, &'static str> {
     get_string_from_lit(lit).map(|s| proc_macro2::Ident::new(&s, proc_macro2::Span::call_site()))
 }
 
-fn get_tokens_from_lit<'a>(lit: &'a Lit) -> Result<proc_macro2::TokenStream, SynError> {
+fn get_tokens_from_lit(lit: &Lit) -> Result<proc_macro2::TokenStream, SynError> {
     if let Lit::Str(ref s) = *lit {
         let toks = s.parse::<Expr>()?;
         Ok(quote!(#toks))
@@ -163,8 +164,6 @@ fn get_tokens_from_lit<'a>(lit: &'a Lit) -> Result<proc_macro2::TokenStream, Syn
 fn get_string_from_lit<'a>(lit: &'a Lit) -> Result<String, &'static str> {
     match *lit {
         Lit::Str(ref s) => Ok(s.value()),
-        _ => {
-            return Err("Unable to get String from Lit");
-        }
+        _ => Err("Unable to get String from Lit"),
     }
 }

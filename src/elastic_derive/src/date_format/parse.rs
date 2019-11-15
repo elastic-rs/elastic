@@ -1,7 +1,27 @@
-use nom::simple_errors::Err as NomError;
 use std::str;
 
-pub type Error = NomError;
+use nom::{
+    branch::alt,
+    bytes::complete::take_while1,
+    character::complete::{
+        alpha1,
+        char,
+    },
+    combinator::map,
+    error::ErrorKind as NomErrorKind,
+    multi::{
+        count,
+        many1,
+    },
+    sequence::{
+        delimited,
+        preceded,
+    },
+    Err as NomErr,
+    IResult,
+};
+
+pub type Error = NomErrorKind;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum DateFormatToken<'a> {
@@ -19,123 +39,98 @@ pub enum DateFormatToken<'a> {
 }
 
 pub fn to_tokens<'a>(input: &'a str) -> Result<Vec<DateFormatToken<'a>>, Error> {
-    format(input.as_bytes()).to_result()
+    match format(input.as_bytes()) {
+        Ok(result) => Ok(result.1),
+        Err(err) => {
+            match err {
+                NomErr::Error((_data, kind)) | NomErr::Failure((_data, kind)) => Err(kind),
+                // TODO: how to handle `NomErr::Incomplete`?
+                NomErr::Incomplete(_) => Err(NomErrorKind::Complete),
+            }
+        }
+    }
 }
 
-named!(format(&[u8]) -> Vec<DateFormatToken>,
-    complete!(tokens)
-);
-
-named!(tokens(&[u8]) -> Vec<DateFormatToken>,
-    many1!(
-        alt!(
-            year |
-            month |
-            day_of_month |
-            day_of_year |
-            hour |
-            minute |
-            second |
-            millisecond |
-            utc |
-            escaped |
-            delim
-        )
-    )
-);
+fn format(input: &[u8]) -> IResult<&[u8], Vec<DateFormatToken>> {
+    many1(alt((
+        year,
+        month,
+        day_of_month,
+        day_of_year,
+        hour,
+        minute,
+        second,
+        millisecond,
+        utc,
+        escaped,
+        delim,
+    )))(input)
+}
 
 /* Parse `yyyy` as a 4 digit year. */
-named!(year(&[u8]) -> DateFormatToken,
-    do_parse!(
-        count!(char!('y'), 4) >>
-        (DateFormatToken::Year)
-    )
-);
+fn year(input: &[u8]) -> IResult<&[u8], DateFormatToken> {
+    map(count(char('y'), 4), |_| DateFormatToken::Year)(input)
+}
 
 /* Parse `MM` as a 2 digit month of year. */
-named!(month(&[u8]) -> DateFormatToken,
-    do_parse!(
-        count!(char!('M'), 2) >>
-        (DateFormatToken::Month)
-    )
-);
+fn month(input: &[u8]) -> IResult<&[u8], DateFormatToken> {
+    map(count(char('M'), 2), |_| DateFormatToken::Month)(input)
+}
 
 /* Parse `dd` as a 2 digit day of month. */
-named!(day_of_month(&[u8]) -> DateFormatToken,
-    do_parse!(
-        count!(char!('d'), 2) >>
-        (DateFormatToken::DayOfMonth)
-    )
-);
+fn day_of_month(input: &[u8]) -> IResult<&[u8], DateFormatToken> {
+    map(count(char('d'), 2), |_| DateFormatToken::DayOfMonth)(input)
+}
 
 /* Parse `DDD` as a 3 digit day of year. */
-named!(day_of_year(&[u8]) -> DateFormatToken,
-    do_parse!(
-        count!(char!('D'), 3) >>
-        (DateFormatToken::DayOfYear)
-    )
-);
+fn day_of_year(input: &[u8]) -> IResult<&[u8], DateFormatToken> {
+    map(count(char('D'), 3), |_| DateFormatToken::DayOfYear)(input)
+}
 
 /* Parse `HH` as a 2 digit hour of day (24hr). */
-named!(hour(&[u8]) -> DateFormatToken,
-    do_parse!(
-        count!(char!('H'), 2) >>
-        (DateFormatToken::Hour)
-    )
-);
+fn hour(input: &[u8]) -> IResult<&[u8], DateFormatToken> {
+    map(count(char('H'), 2), |_| DateFormatToken::Hour)(input)
+}
 
 /* Parse `mm` as a 2 digit minute of hour. */
-named!(minute(&[u8]) -> DateFormatToken,
-    do_parse!(
-        count!(char!('m'), 2) >>
-        (DateFormatToken::Minute)
-    )
-);
+fn minute(input: &[u8]) -> IResult<&[u8], DateFormatToken> {
+    map(count(char('m'), 2), |_| DateFormatToken::Minute)(input)
+}
 
 /* Parse `ss` as a 2 digit second of minute. */
-named!(second(&[u8]) -> DateFormatToken,
-    do_parse!(
-        count!(char!('s'), 2) >>
-        (DateFormatToken::Second)
-    )
-);
+fn second(input: &[u8]) -> IResult<&[u8], DateFormatToken> {
+    map(count(char('s'), 2), |_| DateFormatToken::Second)(input)
+}
 
 /* Parse `.SSS` as a 3 digit millisecond of second. */
-named!(millisecond(&[u8]) -> DateFormatToken,
-    do_parse!(
-        tag!(".") >>
-        count!(char!('S'), 3) >>
-        (DateFormatToken::Millisecond)
-    )
-);
+fn millisecond(input: &[u8]) -> IResult<&[u8], DateFormatToken> {
+    map(preceded(char('.'), count(char('S'), 3)), |_| {
+        DateFormatToken::Millisecond
+    })(input)
+}
 
 /* Parse `Z` as a Utc timezone. */
-named!(utc(&[u8]) -> DateFormatToken,
-    do_parse!(
-        char!('Z') >>
-        (DateFormatToken::Utc)
-    )
-);
+fn utc(input: &[u8]) -> IResult<&[u8], DateFormatToken> {
+    map(char('Z'), |_| DateFormatToken::Utc)(input)
+}
 
 fn is_delim(i: u8) -> bool {
     i == b'-' || i == b':' || i == b'.' || i == b'/' || i == b' '
 }
 
 /* Parse a stream of `.`, `-`, `/`, `:` or ` ` as delimiters. */
-named!(delim(&[u8]) -> DateFormatToken,
-    do_parse!(
-        i: take_while1!(is_delim) >>
-        (DateFormatToken::Delim(str::from_utf8(i).unwrap()))
-    )
-);
+fn delim(input: &[u8]) -> IResult<&[u8], DateFormatToken> {
+    map(take_while1(is_delim), |i| {
+        DateFormatToken::Delim(str::from_utf8(i).unwrap())
+    })(input)
+}
 
 /* Parse a stream of characters between `'`. */
-named!(escaped(&[u8]) -> DateFormatToken,
-    do_parse!(
-        i: delimited!(char!('\''), is_not!("'"), char!('\'')) >>
-        (DateFormatToken::Escaped(str::from_utf8(i).unwrap()))
-    )
-);
+fn escaped(input: &[u8]) -> IResult<&[u8], DateFormatToken> {
+    map(delimited(char('\''), alpha1, char('\'')), |i| {
+        DateFormatToken::Escaped(str::from_utf8(i).unwrap())
+    })(input)
+}
 
 #[cfg(test)]
 mod tests {

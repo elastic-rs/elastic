@@ -133,7 +133,6 @@ where
 
     ```
     # use elastic::types::prelude::*;
-    # fn main() {
     use chrono::Utc;
 
     //Create a chrono DateTime struct
@@ -141,7 +140,6 @@ where
 
     //Give it to the Date struct
     let date: Date<DefaultDateMapping<ChronoFormat>> = Date::new(chronoDate);
-    # }
     ```
 
     If the `Date`s format isn't `ChronoFormat`, then the `chrono::DateTime` will need to be converted into a `DateValue` first.
@@ -149,7 +147,6 @@ where
 
     ```
     # use elastic::types::prelude::*;
-    # fn main() {
     use chrono::Utc;
 
     //Create a chrono DateTime struct
@@ -157,7 +154,6 @@ where
 
     //Give it to the Date struct
     let date: Date<DefaultDateMapping<EpochMillis>> = Date::new(DateValue::from(chronoDate));
-    # }
     ```
     */
     pub fn new<I>(date: I) -> Self
@@ -272,10 +268,6 @@ where
     fn eq(&self, other: &ChronoDateTime) -> bool {
         PartialEq::eq(&self.value, other)
     }
-
-    fn ne(&self, other: &ChronoDateTime) -> bool {
-        PartialEq::ne(&self.value, other)
-    }
 }
 
 impl<TMapping> PartialEq<Date<TMapping>> for ChronoDateTime
@@ -284,10 +276,6 @@ where
 {
     fn eq(&self, other: &Date<TMapping>) -> bool {
         PartialEq::eq(self, &other.value)
-    }
-
-    fn ne(&self, other: &Date<TMapping>) -> bool {
-        PartialEq::ne(self, &other.value)
     }
 }
 
@@ -428,14 +416,12 @@ Which serialises to:
 ```
 # #[macro_use] extern crate serde_json;
 # use elastic::types::prelude::*;
-# fn main() {
 # let expr: DateExpr<BasicDateTime> = DateExpr::now().add_days(2);
 # let ser = serde_json::to_value(&expr).unwrap();
 # let expected = json!(
 "now+2d"
 # );
 # assert_eq!(expected, ser);
-# }
 ```
 
 A date expression using a concrete date value plus 2 days:
@@ -450,14 +436,12 @@ Which serialises to:
 ```
 # #[macro_use] extern crate serde_json;
 # use elastic::types::prelude::*;
-# fn main() {
 # let expr: DateExpr<BasicDateTime> = DateExpr::value(DateValue::build(2015, 03, 01, 14, 55, 0, 0)).add_days(2);
 # let ser = serde_json::to_value(&expr).unwrap();
 # let expected = json!(
 "20150301T145500.000Z||+2d"
 # );
 # assert_eq!(expected, ser);
-# }
 ```
 */
 #[derive(Debug, Clone, PartialEq)]
@@ -706,9 +690,9 @@ mod tests {
 
     #[test]
     fn dates_should_use_chrono_format() {
-        let dt = DateValue::build(2015, 05, 13, 0, 0, 0, 0);
+        let dt = DateValue::build(2015, 5, 13, 0, 0, 0, 0);
 
-        let dt = Date::<DefaultDateMapping<NamedDateFormat>>::new(dt.clone());
+        let dt = Date::<DefaultDateMapping<NamedDateFormat>>::new(dt);
         let actual = format(&dt).to_string();
 
         assert_eq!("2015/05/13 00:00:00", actual);
@@ -716,9 +700,9 @@ mod tests {
 
     #[test]
     fn dates_should_use_es_format() {
-        let dt = DateValue::build(2015, 05, 13, 0, 0, 0, 0);
+        let dt = DateValue::build(2015, 5, 13, 0, 0, 0, 0);
 
-        let dt = Date::<DefaultDateMapping<UnNamedDateFormat>>::new(dt.clone());
+        let dt = Date::<DefaultDateMapping<UnNamedDateFormat>>::new(dt);
         let actual = format(&dt).to_string();
 
         assert_eq!("20150513", actual);
@@ -737,7 +721,7 @@ mod tests {
 
     #[test]
     fn can_build_date_from_value() {
-        let date: Date<DefaultDateMapping> = Date::new(DateValue::build(2015, 05, 13, 0, 0, 0, 0));
+        let date: Date<DefaultDateMapping> = Date::new(DateValue::build(2015, 5, 13, 0, 0, 0, 0));
 
         assert_eq!(
             (2015, 5, 13, 0, 0, 0),
@@ -793,7 +777,7 @@ mod tests {
     #[test]
     fn serialise_elastic_date() {
         let date = Date::<DefaultDateMapping<BasicDateTime>>::new(DateValue::build(
-            2015, 05, 13, 0, 0, 0, 0,
+            2015, 5, 13, 0, 0, 0, 0,
         ));
 
         let ser = serde_json::to_string(&date).unwrap();

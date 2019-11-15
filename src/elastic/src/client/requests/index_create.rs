@@ -77,8 +77,7 @@ where
 
     ```no_run
     # use elastic::prelude::*;
-    # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+        # fn main() -> Result<(), Box<dyn ::std::error::Error>> {
     # let client = SyncClientBuilder::new().build()?;
     let my_index = index("myindex");
 
@@ -98,8 +97,7 @@ where
     # use elastic::prelude::*;
     # #[derive(Serialize, Deserialize, ElasticType)]
     # struct MyType { }
-    # fn main() { run().unwrap() }
-    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+        # fn main() -> Result<(), Box<dyn ::std::error::Error>> {
     # let client = SyncClientBuilder::new().build()?;
     let body = json!({
         "settings": {
@@ -167,7 +165,7 @@ where
             self.params_builder,
             IndexCreateRequestInner {
                 index: self.inner.index,
-                body: body,
+                body,
             },
         )
     }

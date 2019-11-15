@@ -12,7 +12,7 @@ use serde::ser::{
     SerializeMap,
     Serializer,
 };
-use serde_json;
+use serde_json::Value;
 
 use crate::{
     client::requests::common::{
@@ -91,6 +91,64 @@ impl<TParams> BulkOperation<Script<TParams>> {
             inner,
         }
     }
+
+    /**
+    Control the [source filtering] for this operation in order to return part or
+    all of the updated document in the response.
+
+    # Examples
+
+    To obtain the updated document, use `source` with the [`into_document`]
+    method of the [`OkItem`] response:
+
+    ```no_run
+    # #[macro_use] extern crate serde_derive;
+    # #[macro_use] extern crate elastic_derive;
+    # use elastic::prelude::*;
+    # fn main() { run().unwrap() }
+    # fn run() -> Result<(), Box<dyn ::std::error::Error>> {
+    # #[derive(Serialize, Deserialize, ElasticType, Debug)]
+    # struct NewsArticle { id: i64, likes: i64 }
+    # #[derive(Serialize, Deserialize, ElasticType, Debug)]
+    # struct UpdatedNewsArticle { id: i64, likes: i64 }
+    # let client = SyncClientBuilder::new().build()?;
+    let update_ops = (0..10).into_iter().map(|i| {
+        bulk::<NewsArticle>()
+            .update_script(i, "ctx._source.likes++")
+            .source(true)
+    });
+
+    let response = client
+        .bulk()
+        .index(NewsArticle::static_index())
+        .ty(NewsArticle::static_ty())
+        .extend(update_ops)
+        .send()?;
+
+    for op in response {
+        if let Ok(op) = op {
+            println!("{:?}", op.into_document::<UpdatedNewsArticle>().unwrap());
+        }
+    }
+
+    # Ok(())
+    # }
+    ```
+
+    [source filtering]: https://www.elastic.co/guide/en/elasticsearch/reference/current/search-request-body.html#request-body-search-source-filtering
+    [`into_document`]: ../../responses/bulk/struct.OkItem.html#method.into_document
+    [`OkItem`]: ../../responses/bulk/struct.OkItem.html
+    */
+    pub fn source<T>(mut self, value: T) -> Self
+    where
+        T: Into<Value>,
+    {
+        if let Some(inner) = self.inner {
+            self.inner = Some(inner.source(value));
+        };
+
+        self
+    }
 }
 
 impl<TValue> BulkOperation<TValue> {
@@ -132,6 +190,34 @@ where
     pub fn doc_as_upsert(mut self) -> Self {
         if let Some(inner) = self.inner {
             self.inner = Some(inner.doc_as_upsert());
+        };
+
+        self
+    }
+
+    /**
+    Control the [source filtering] for this operation in order to return part or
+    all of the updated document in the response.
+
+    To obtain the updated document, use `source` with the [`into_document`]
+    method of the [`OkItem`] response.
+
+    # Examples
+
+    See the [`source`] method on [`BulkOperation<Script<TParams>>`].
+
+    [source filtering]: https://www.elastic.co/guide/en/elasticsearch/reference/current/search-request-body.html#request-body-search-source-filtering
+    [`into_document`]: ../../responses/bulk/struct.OkItem.html#method.into_document
+    [`OkItem`]: ../../responses/bulk/struct.OkItem.html
+    [`source`]: struct.BulkOperation.html#method.source
+    [`BulkOperation<Script<TParams>>`]: struct.BulkOperation.html
+    */
+    pub fn source<T>(mut self, value: T) -> Self
+    where
+        T: Into<Value>,
+    {
+        if let Some(inner) = self.inner {
+            self.inner = Some(inner.source(value));
         };
 
         self
@@ -184,11 +270,11 @@ where
                 inner: &self.header,
             },
         )?;
-        write!(&mut writer, "\n")?;
+        writeln!(&mut writer)?;
 
         if let Some(ref inner) = self.inner {
             serde_json::to_writer(&mut writer, inner)?;
-            write!(&mut writer, "\n")?;
+            writeln!(&mut writer)?;
         }
 
         Ok(())
@@ -200,6 +286,15 @@ A builder for a bulk operation for a specific document type.
 */
 pub struct BulkDocumentOperation<TDocument> {
     _marker: PhantomData<TDocument>,
+}
+
+impl<TDocument> Default for BulkDocumentOperation<TDocument>
+where
+    TDocument: DocumentType,
+{
+    fn default() -> BulkDocumentOperation<TDocument> {
+        BulkDocumentOperation::new()
+    }
 }
 
 impl<TDocument> BulkDocumentOperation<TDocument>
@@ -341,6 +436,7 @@ where
 /**
 A builder for a bulk operation.
 */
+#[derive(Default)]
 pub struct BulkRawOperation {
     _private: (),
 }
@@ -350,7 +446,7 @@ impl BulkRawOperation {
     Create a bulk operation.
     */
     pub fn new() -> Self {
-        BulkRawOperation { _private: () }
+        BulkRawOperation::default()
     }
 
     /**
