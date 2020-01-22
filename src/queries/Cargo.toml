@@ -7,6 +7,7 @@ description = "Constuct and manipulate strongly typed Elasticsearch Queries usin
 documentation = "https://docs.rs/elastic_queries"
 repository = "https://github.com/stephanbuys/elastic-queries"
 exclude = [ "samples" ]
+edition = "2018"
 
 [dependencies]
 derive_builder = "0.9.0"
