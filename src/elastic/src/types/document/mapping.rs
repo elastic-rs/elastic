@@ -28,7 +28,7 @@ pub trait ObjectMapping {
 
     /** Get the type name for this mapping, like `object` or `nested`. */
     fn data_type() -> &'static str {
-        NESTED_DATATYPE
+        OBJECT_DATATYPE
     }
 
     /**
