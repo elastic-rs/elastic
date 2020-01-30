@@ -280,13 +280,6 @@ impl Display for ParseError {
 }
 
 impl Error for ParseError {
-    fn description(&self) -> &str {
-        match self.kind {
-            ParseErrorKind::Chrono(ref err) => err.description(),
-            ParseErrorKind::Other(ref err) => &err[..],
-        }
-    }
-
     fn cause(&self) -> Option<&dyn Error> {
         match self.kind {
             ParseErrorKind::Chrono(ref err) => Some(err),

@@ -65,13 +65,11 @@ quick_error! {
         /** An API error from Elasticsearch. */
         Api(err: ApiError) {
             cause(err)
-            description("API error returned from Elasticsearch")
             display("API error returned from Elasticsearch. Caused by: {}", err)
         }
         /** Any other kind of error. */
         Client(err: ClientError) {
             cause(err)
-            description("error sending a request or receiving a response")
             display("error sending a request or receiving a response. Caused by: {}", err)
         }
     }
@@ -82,7 +80,6 @@ pub(crate) mod string_error {
         #[derive(Debug)]
         pub enum Error {
             Message(err: String) {
-                description("An error occurred")
                 display("{}", err)
             }
         }
@@ -104,10 +101,6 @@ impl fmt::Debug for WrappedError {
 }
 
 impl StdError for WrappedError {
-    fn description(&self) -> &str {
-        self.0.description()
-    }
-
     fn source(&self) -> Option<&(dyn StdError + 'static)> {
         self.0.source()
     }
@@ -120,10 +113,6 @@ pub struct ClientError {
 }
 
 impl StdError for ClientError {
-    fn description(&self) -> &str {
-        self.inner.description()
-    }
-
     fn source(&self) -> Option<&(dyn StdError + 'static)> {
         self.inner.source()
     }
@@ -224,15 +213,12 @@ mod inner {
     error_chain! {
         errors {
             Build {
-                description("error attempting to build a client")
                 display("error attempting to build a client")
             }
             Request {
-                description("error sending a request")
                 display("error sending a request")
             }
             Response(status: StatusCode) {
-                description("error receiving a response")
                 display("error receiving a response. Status code: {}", status)
             }
         }

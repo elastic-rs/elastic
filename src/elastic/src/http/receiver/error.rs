@@ -99,10 +99,6 @@ impl fmt::Display for ParseError {
 }
 
 impl StdError for ParseError {
-    fn description(&self) -> &str {
-        self.inner.description()
-    }
-
     fn cause(&self) -> Option<&dyn StdError> {
         Some(&*self.inner)
     }

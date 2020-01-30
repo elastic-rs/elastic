@@ -15,7 +15,6 @@ use serde::{
 };
 use std::{
     borrow::Borrow,
-    error::Error as StdError,
     marker::PhantomData,
     net::Ipv4Addr,
     str::FromStr,
@@ -149,8 +148,7 @@ where
             where
                 E: Error,
             {
-                let de =
-                    Ipv4Addr::from_str(&v).map_err(|e| E::custom(e.description().to_string()))?;
+                let de = Ipv4Addr::from_str(&v).map_err(|e| E::custom(e.to_string()))?;
 
                 Ok(Ip::new(de))
             }
@@ -159,8 +157,7 @@ where
             where
                 E: Error,
             {
-                let de =
-                    Ipv4Addr::from_str(v).map_err(|e| E::custom(e.description().to_string()))?;
+                let de = Ipv4Addr::from_str(v).map_err(|e| E::custom(e.to_string()))?;
 
                 Ok(Ip::new(de))
             }

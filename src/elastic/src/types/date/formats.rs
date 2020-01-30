@@ -10,7 +10,6 @@ use chrono::{
     Timelike,
     Utc,
 };
-use std::error::Error;
 
 use elastic_derive::ElasticDateFormat;
 
@@ -69,9 +68,7 @@ impl DateFormat for EpochMillis {
     }
 
     fn parse(date: &str) -> Result<DateValue, ParseError> {
-        let millis = date
-            .parse::<i64>()
-            .map_err(|e| e.description().to_string())?;
+        let millis = date.parse::<i64>().map_err(|e| e.to_string())?;
 
         let (s, m) = {
             // For positive timestamps:
