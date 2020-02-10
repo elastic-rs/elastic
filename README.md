@@ -10,6 +10,8 @@ Quick reference:
 - [simple examples](https://github.com/elastic-rs/elastic/tree/master/src/elastic/examples)
 - [example apps](https://github.com/elastic-rs/elastic/tree/master/examples)
 
+Also check out the official [**elasticsearch**](https://github.com/elastic/elasticsearch-rs) crate! 
+
 ## Stability
 
 This crate is still quite unstable and is likely to continue to churn breaking releases over the near future with not-so-detailed changelogs.
@@ -98,7 +100,9 @@ See the [docs](https://docs.rs/elastic/*/elastic/types/index.html) for more deta
 
 ## Alternatives
 
-If you'd like to use a strongly-typed Query DSL builder see [`rs-es`](https://github.com/benashford/rs-es). This client does the hard work of providing an idiomatic Rust API for interacting with Elasticsearch. It has the advantage of letting you know your queries will parse at compile-time instead of runtime.
+[elastic.co](https://www.elastic.co) [released](https://www.elastic.co/blog/rust-client-for-elasticsearch-alpha-release) an official client, [elasticsearch](https://github.com/elastic/elasticsearch-rs). Although it is still in an alpha stage (as of 2020-02-10), it is very comprehensive and generates most of its code from the official REST API specifications.
+
+Additionally, if you'd like to use a strongly-typed Query DSL builder see [`rs-es`](https://github.com/benashford/rs-es). This client does the hard work of providing an idiomatic Rust API for interacting with Elasticsearch. It has the advantage of letting you know your queries will parse at compile-time instead of runtime.
 
 ## Goals
 
