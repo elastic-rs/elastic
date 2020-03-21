@@ -264,6 +264,7 @@ pub struct Hit<T> {
     #[serde(rename = "_routing")]
     routing: Option<String>,
     highlight: Option<Value>,
+    sort: Option<Value>,
 }
 
 impl<T> Hit<T> {
@@ -310,6 +311,13 @@ impl<T> Hit<T> {
     */
     pub fn highlight(&self) -> Option<&Value> {
         self.highlight.as_ref()
+    }
+
+    /**
+    A reference to the sort value of the hit, if the query was sorted by something else other than score.
+    */
+    pub fn sort(&self) -> Option<&Value> {
+        self.sort.as_ref()
     }
 }
 
